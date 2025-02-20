@@ -458,7 +458,7 @@ struct hash<error_condition> {
     }
 };
 
-class _System_error : public runtime_error { // base of all system-error exceptions
+class _NODISCARD _System_error : public runtime_error { // base of all system-error exceptions
 private:
     static string _Makestr(error_code _Errcode, string _Message) { // compose error message
         if (!_Message.empty()) {
@@ -478,7 +478,7 @@ protected:
     error_code _Mycode; // the stored error code
 };
 
-_EXPORT_STD class system_error : public _System_error { // base of all system-error exceptions
+_EXPORT_STD class _NODISCARD system_error : public _System_error { // base of all system-error exceptions
 private:
     using _Mybase = _System_error;
 

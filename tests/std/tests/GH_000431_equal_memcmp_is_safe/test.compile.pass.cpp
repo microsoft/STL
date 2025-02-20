@@ -500,14 +500,14 @@ STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<false, int (EmptyDerived::*)()
 // Don't allow user-defined types
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<false, StatefulBase, StatefulBase>());
 
-// Test _Char_traits_eq
-STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<true, char, char, _Char_traits_eq<char_traits<char>>>());
-STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<true, wchar_t, wchar_t, _Char_traits_eq<char_traits<wchar_t>>>());
+// Test _Std_char_traits_eq
+STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<true, char, char, _Std_char_traits_eq<char>>());
+STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<true, wchar_t, wchar_t, _Std_char_traits_eq<wchar_t>>());
 #ifdef __cpp_lib_char8_t
-STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<true, char8_t, char8_t, _Char_traits_eq<char_traits<char8_t>>>());
+STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<true, char8_t, char8_t, _Std_char_traits_eq<char8_t>>());
 #endif // __cpp_lib_char8_t
-STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<true, char16_t, char16_t, _Char_traits_eq<char_traits<char16_t>>>());
-STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<true, char32_t, char32_t, _Char_traits_eq<char_traits<char32_t>>>());
+STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<true, char16_t, char16_t, _Std_char_traits_eq<char16_t>>());
+STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<true, char32_t, char32_t, _Std_char_traits_eq<char32_t>>());
 
 // Test different containers
 #if _HAS_CXX20

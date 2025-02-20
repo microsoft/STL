@@ -2930,10 +2930,435 @@ namespace {
         return _Result;
     }
 
-    namespace __std_find_first_of {
+#ifndef _M_ARM64EC
+    namespace __std_find_meow_of_bitmap_details {
+        __m256i _Bitmap_step(const __m256i _Bitmap, const __m256i _Data) noexcept {
+            const __m256i _Data_high    = _mm256_srli_epi32(_Data, 5);
+            const __m256i _Bitmap_parts = _mm256_permutevar8x32_epi32(_Bitmap, _Data_high);
+            const __m256i _Data_low_inv = _mm256_andnot_si256(_Data, _mm256_set1_epi32(0x1F));
+            const __m256i _Mask         = _mm256_sllv_epi32(_Bitmap_parts, _Data_low_inv);
+            return _Mask;
+        }
 
         template <class _Ty>
-        const void* __stdcall _Fallback(const void* _First1, const void* const _Last1, const void* const _First2,
+        __m256i _Load_avx_256_8(const _Ty* const _Src) noexcept {
+            if constexpr (sizeof(_Ty) == 1) {
+                return _mm256_cvtepu8_epi32(_mm_loadu_si64(_Src));
+            } else if constexpr (sizeof(_Ty) == 2) {
+                return _mm256_cvtepu16_epi32(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src)));
+            } else if constexpr (sizeof(_Ty) == 4) {
+                return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
+            } else if constexpr (sizeof(_Ty) == 8) {
+                const __m256i _Low  = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
+                const __m256i _High = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src) + 1);
+                const __m256i _Pack = _mm256_packs_epi32(_Low, _High);
+                return _mm256_permute4x64_epi64(_Pack, _MM_SHUFFLE(3, 1, 2, 0));
+            } else {
+                static_assert(false, "Unexpected size");
+            }
+        }
+
+        template <class _Ty>
+        __m256i _Load_avx_256_8_last(const _Ty* const _Src, const size_t _Count) noexcept {
+            if constexpr (sizeof(_Ty) == 1) {
+                uint8_t _Buf[8];
+                memcpy(_Buf, _Src, _Count);
+                return _mm256_cvtepu8_epi32(_mm_loadu_si64(_Buf));
+            } else if constexpr (sizeof(_Ty) == 2) {
+                uint8_t _Buf[16];
+                memcpy(_Buf, _Src, _Count * 2);
+                return _mm256_cvtepu16_epi32(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_Buf)));
+            } else if constexpr (sizeof(_Ty) == 4) {
+                return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Avx2_tail_mask_32(_Count));
+            } else if constexpr (sizeof(_Ty) == 8) {
+                const __m256i _Mask_low  = _Avx2_tail_mask_32((_Count > 4 ? 4 : _Count) << 1);
+                const __m256i _Low       = _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src) + 0, _Mask_low);
+                const __m256i _Mask_high = _Avx2_tail_mask_32((_Count > 4 ? _Count - 4 : 0) << 1);
+                const __m256i _High      = _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src) + 8, _Mask_high);
+                const __m256i _Pack      = _mm256_packs_epi32(_Low, _High);
+                return _mm256_permute4x64_epi64(_Pack, _MM_SHUFFLE(3, 1, 2, 0));
+            } else {
+                static_assert(false, "Unexpected size");
+            }
+        }
+
+        template <class _Ty>
+        __m256i _Mask_out_overflow(const __m256i _Mask, const __m256i _Data) noexcept {
+            if constexpr (sizeof(_Ty) == 1) {
+                return _Mask;
+            } else {
+                const __m256i _Data_high = _mm256_and_si256(_Data, _mm256_set1_epi32(static_cast<int>(0xFFFF'FF00)));
+                const __m256i _Fit_mask  = _mm256_cmpeq_epi32(_Data_high, _mm256_setzero_si256());
+                return _mm256_and_si256(_Mask, _Fit_mask);
+            }
+        }
+
+        template <class _Ty>
+        __m256i _Make_bitmap_small(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
+            __m256i _Bitmap = _mm256_setzero_si256();
+
+            const _Ty* const _Stop = _Needle_ptr + _Needle_length;
+
+            for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
+                const _Ty _Val            = *_Needle_ptr;
+                const __m128i _Count_low  = _mm_cvtsi32_si128(_Val & 0x3F);
+                const auto _Count_high_x8 = static_cast<uint32_t>((_Val >> 3) & 0x18);
+                const __m256i _One_1_high = _mm256_cvtepu8_epi64(_mm_cvtsi32_si128(1u << _Count_high_x8));
+                const __m256i _One_1      = _mm256_sll_epi64(_One_1_high, _Count_low);
+                _Bitmap                   = _mm256_or_si256(_Bitmap, _One_1);
+            }
+
+            return _Bitmap;
+        }
+
+        template <class _Ty>
+        __m256i _Make_bitmap_large(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
+            alignas(32) uint8_t _Table[256] = {};
+
+            const _Ty* const _Stop = _Needle_ptr + _Needle_length;
+
+            for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
+                _Table[*_Needle_ptr] = 0xFF;
+            }
+
+            const auto _Table_as_avx = reinterpret_cast<const __m256i*>(_Table);
+
+            return _mm256_setr_epi32( //
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 0)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 1)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 2)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 3)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 4)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 5)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 6)),
+                _mm256_movemask_epi8(_mm256_load_si256(_Table_as_avx + 7)));
+        }
+
+        template <class _Ty>
+        __m256i _Make_bitmap(const _Ty* const _Needle_ptr, const size_t _Needle_length) noexcept {
+            if (_Needle_length <= 20) {
+                return _Make_bitmap_small(_Needle_ptr, _Needle_length);
+            } else {
+                return _Make_bitmap_large(_Needle_ptr, _Needle_length);
+            }
+        }
+    } // namespace __std_find_meow_of_bitmap_details
+#endif // !_M_ARM64EC
+
+    namespace __std_find_meow_of_bitmap {
+#ifndef _M_ARM64EC
+        template <class _Ty>
+        bool _Use_bitmap_avx(const size_t _Count1, const size_t _Count2) noexcept {
+            if constexpr (sizeof(_Ty) == 1) {
+                if (_Count2 <= 16) {
+                    return _Count1 > 1000;
+                } else if (_Count2 <= 48) {
+                    return _Count1 > 80;
+                } else if (_Count2 <= 240) {
+                    return _Count1 > 40;
+                } else if (_Count2 <= 1000) {
+                    return _Count1 > 32;
+                } else {
+                    return _Count1 > 16;
+                }
+            } else if constexpr (sizeof(_Ty) == 2) {
+                if (_Count2 <= 8) {
+                    return _Count1 > 128;
+                } else if (_Count2 <= 48) {
+                    return _Count1 > 32;
+                } else if (_Count2 <= 72) {
+                    return _Count1 > 24;
+                } else if (_Count2 <= 144) {
+                    return _Count1 > 16;
+                } else {
+                    return _Count1 > 8;
+                }
+            } else if constexpr (sizeof(_Ty) == 4) {
+                if (_Count2 <= 8) {
+                    return _Count1 > 64;
+                } else if (_Count2 <= 24) {
+                    return _Count1 > 40;
+                } else if (_Count2 <= 44) {
+                    return _Count1 > 24;
+                } else if (_Count2 <= 112) {
+                    return _Count1 > 16;
+                } else {
+                    return _Count1 > 8;
+                }
+            } else if constexpr (sizeof(_Ty) == 8) {
+                if (_Count2 <= 8) {
+                    return _Count1 > 40;
+                } else if (_Count2 <= 12) {
+                    return _Count1 > 20;
+                } else if (_Count2 <= 48) {
+                    return _Count1 > 16;
+                } else if (_Count2 <= 64) {
+                    return _Count1 > 12;
+                } else if (_Count2 <= 192) {
+                    return _Count1 > 8;
+                } else {
+                    return _Count1 > 4;
+                }
+            } else {
+                static_assert(false, "unexpected size");
+            }
+        }
+
+        template <class _Ty>
+        bool _Use_bitmap_scalar(const size_t _Count1, const size_t _Count2) noexcept {
+            if constexpr (sizeof(_Ty) == 1) {
+                if (_Count2 <= 32) {
+                    return false;
+                } else if (_Count2 <= 48) {
+                    return _Count1 > 416;
+                } else if (_Count2 <= 64) {
+                    return _Count1 > 224;
+                } else if (_Count2 <= 80) {
+                    return _Count1 > 128;
+                } else if (_Count2 <= 540) {
+                    return _Count1 > 48;
+                } else {
+                    return _Count1 > 32;
+                }
+            } else if constexpr (sizeof(_Ty) == 2) {
+                if (_Count2 <= 8) {
+                    return false;
+                } else if (_Count2 <= 80) {
+                    return _Count1 > 16;
+                } else {
+                    return _Count1 > 8;
+                }
+            } else if constexpr (sizeof(_Ty) == 4) {
+                if (_Count2 <= 32) {
+                    return false;
+                } else if (_Count2 <= 112) {
+                    return _Count1 > 16;
+                } else {
+                    return _Count1 > 8;
+                }
+            } else if constexpr (sizeof(_Ty) == 8) {
+                if (_Count2 <= 16) {
+                    return false;
+                } else if (_Count2 <= 32) {
+                    return _Count1 > 16;
+                } else if (_Count2 <= 112) {
+                    return _Count1 > 8;
+                } else {
+                    return _Count1 > 4;
+                }
+            } else {
+                static_assert(false, "unexpected size");
+            }
+        }
+
+        enum class _Strategy { _No_bitmap, _Scalar_bitmap, _Vector_bitmap };
+
+        template <class _Ty>
+        _Strategy _Pick_strategy(const size_t _Count1, const size_t _Count2, const bool _Use_avx2_) noexcept {
+            if (_Use_avx2_ && _Count1 > 48) {
+                return _Use_bitmap_avx<_Ty>(_Count1, _Count2) ? _Strategy::_Vector_bitmap : _Strategy::_No_bitmap;
+            } else {
+                return _Use_bitmap_scalar<_Ty>(_Count1, _Count2) ? _Strategy::_Scalar_bitmap : _Strategy::_No_bitmap;
+            }
+        }
+
+        template <class _Ty>
+        bool _Can_fit_256_bits_sse(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
+            if constexpr (sizeof(_Ty) == 1) {
+                return true;
+            } else {
+                __m128i _Mask = _mm_undefined_si128();
+                if constexpr (sizeof(_Ty) == 2) {
+                    _Mask = _mm_set1_epi16(static_cast<short>(0xFF00));
+                } else if constexpr (sizeof(_Ty) == 4) {
+                    _Mask = _mm_set1_epi32(static_cast<int>(0xFFFF'FF00));
+                } else if constexpr (sizeof(_Ty) == 8) {
+                    _Mask = _mm_set1_epi64x(static_cast<long long>(0xFFFF'FFFF'FFFF'FF00));
+                } else {
+                    static_assert(false, "Unexpected size");
+                }
+
+                const size_t _Byte_size = _Needle_length * sizeof(_Ty);
+
+                const void* _Stop = _Needle_ptr;
+                _Advance_bytes(_Stop, _Byte_size & ~size_t{0x1F});
+                for (; _Needle_ptr != _Stop; _Needle_ptr += 32 / sizeof(_Ty)) {
+                    const __m128i _Data = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Needle_ptr));
+                    if (!_mm_testz_si128(_Mask, _Data)) {
+                        return false;
+                    }
+                }
+
+                _Advance_bytes(_Stop, _Byte_size & 0x1E);
+                for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
+                    if ((*_Needle_ptr & ~_Ty{0xFF}) != 0) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        template <class _Ty>
+        size_t _Impl_first_avx(const void* const _Haystack, const size_t _Haystack_length, const void* const _Needle,
+            const size_t _Needle_length) noexcept {
+            using namespace __std_find_meow_of_bitmap_details;
+
+            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
+            const auto _Haystack_ptr = static_cast<const _Ty*>(_Haystack);
+            const auto _Needle_ptr   = static_cast<const _Ty*>(_Needle);
+
+            const __m256i _Bitmap = _Make_bitmap(_Needle_ptr, _Needle_length);
+
+            const size_t _Haystack_length_vec = _Haystack_length & ~size_t{7};
+            for (size_t _Ix = 0; _Ix != _Haystack_length_vec; _Ix += 8) {
+                const __m256i _Data       = _Load_avx_256_8(_Haystack_ptr + _Ix);
+                const __m256i _Mask       = _Mask_out_overflow<_Ty>(_Bitmap_step(_Bitmap, _Data), _Data);
+                const unsigned int _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask));
+                if (_Bingo != 0) {
+                    return _Ix + _tzcnt_u32(_Bingo);
+                }
+            }
+
+            const size_t _Haystack_length_tail = _Haystack_length & 7;
+            if (_Haystack_length_tail != 0) {
+                const unsigned int _Tail_bingo_mask = (1 << _Haystack_length_tail) - 1;
+                const __m256i _Data = _Load_avx_256_8_last(_Haystack_ptr + _Haystack_length_vec, _Haystack_length_tail);
+                const __m256i _Mask = _Mask_out_overflow<_Ty>(_Bitmap_step(_Bitmap, _Data), _Data);
+                const unsigned int _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask)) & _Tail_bingo_mask;
+                if (_Bingo != 0) {
+                    return _Haystack_length_vec + _tzcnt_u32(_Bingo);
+                }
+            }
+
+            return static_cast<size_t>(-1);
+        }
+
+        template <class _Ty>
+        size_t _Impl_last_avx(const void* const _Haystack, size_t _Haystack_length, const void* const _Needle,
+            const size_t _Needle_length) noexcept {
+            using namespace __std_find_meow_of_bitmap_details;
+
+            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
+            const auto _Haystack_ptr = static_cast<const _Ty*>(_Haystack);
+            const auto _Needle_ptr   = static_cast<const _Ty*>(_Needle);
+
+            const __m256i _Bitmap = _Make_bitmap(_Needle_ptr, _Needle_length);
+
+            while (_Haystack_length >= 8) {
+                _Haystack_length -= 8;
+                const __m256i _Data       = _Load_avx_256_8(_Haystack_ptr + _Haystack_length);
+                const __m256i _Mask       = _Mask_out_overflow<_Ty>(_Bitmap_step(_Bitmap, _Data), _Data);
+                const unsigned int _Bingo = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask));
+                if (_Bingo != 0) {
+                    return _Haystack_length + 31 - _lzcnt_u32(_Bingo);
+                }
+            }
+
+            const size_t _Haystack_length_tail = _Haystack_length & 7;
+            if (_Haystack_length_tail != 0) {
+                const unsigned int _Tail_bingo_mask = (1 << _Haystack_length_tail) - 1;
+                const __m256i _Data                 = _Load_avx_256_8_last(_Haystack_ptr, _Haystack_length_tail);
+                const __m256i _Mask                 = _Mask_out_overflow<_Ty>(_Bitmap_step(_Bitmap, _Data), _Data);
+                const unsigned int _Bingo           = _mm256_movemask_ps(_mm256_castsi256_ps(_Mask)) & _Tail_bingo_mask;
+                if (_Bingo != 0) {
+                    return 31 - _lzcnt_u32(_Bingo);
+                }
+            }
+
+            return static_cast<size_t>(-1);
+        }
+#endif // !_M_ARM64EC
+
+        using _Scalar_table_t = bool[256];
+
+        template <class _Ty>
+        [[nodiscard]] bool _Build_scalar_table(
+            const void* const _Needle, const size_t _Needle_length, _Scalar_table_t& _Table) noexcept {
+            auto _Ptr       = static_cast<const _Ty*>(_Needle);
+            const auto _End = _Ptr + _Needle_length;
+
+            for (; _Ptr != _End; ++_Ptr) {
+                const _Ty _Val = *_Ptr;
+
+                if constexpr (sizeof(_Val) > 1) {
+                    if (_Val >= 256) {
+                        return false;
+                    }
+                }
+
+                _Table[_Val] = true;
+            }
+
+            return true;
+        }
+
+#ifndef _M_ARM64EC
+        template <class _Ty>
+        void _Build_scalar_table_no_check(
+            const void* const _Needle, const size_t _Needle_length, _Scalar_table_t& _Table) noexcept {
+            auto _Ptr       = static_cast<const _Ty*>(_Needle);
+            const auto _End = _Ptr + _Needle_length;
+
+            for (; _Ptr != _End; ++_Ptr) {
+                _Table[*_Ptr] = true;
+            }
+        }
+#endif // !_M_ARM64EC
+
+        template <class _Ty>
+        size_t _Impl_first_scalar(
+            const void* const _Haystack, const size_t _Haystack_length, const _Scalar_table_t& _Table) noexcept {
+            const auto _Haystack_ptr = static_cast<const _Ty*>(_Haystack);
+
+            for (size_t _Ix = 0; _Ix != _Haystack_length; ++_Ix) {
+                const _Ty _Val = _Haystack_ptr[_Ix];
+
+                if constexpr (sizeof(_Val) > 1) {
+                    if (_Val >= 256) {
+                        continue;
+                    }
+                }
+
+                if (_Table[_Val]) {
+                    return _Ix;
+                }
+            }
+
+            return static_cast<size_t>(-1);
+        }
+
+        template <class _Ty>
+        size_t _Impl_last_scalar(
+            const void* const _Haystack, size_t _Haystack_length, const _Scalar_table_t& _Table) noexcept {
+            const auto _Haystack_ptr = static_cast<const _Ty*>(_Haystack);
+
+            while (_Haystack_length != 0) {
+                --_Haystack_length;
+
+                const _Ty _Val = _Haystack_ptr[_Haystack_length];
+
+                if constexpr (sizeof(_Val) > 1) {
+                    if (_Val >= 256) {
+                        continue;
+                    }
+                }
+
+                if (_Table[_Val]) {
+                    return _Haystack_length;
+                }
+            }
+
+            return static_cast<size_t>(-1);
+        }
+    } // namespace __std_find_meow_of_bitmap
+
+    namespace __std_find_first_of {
+        template <class _Ty>
+        const void* _Fallback(const void* _First1, const void* const _Last1, const void* const _First2,
             const void* const _Last2) noexcept {
             auto _Ptr_haystack           = static_cast<const _Ty*>(_First1);
             const auto _Ptr_haystack_end = static_cast<const _Ty*>(_Last1);
@@ -2951,42 +3376,39 @@ namespace {
             return _Ptr_haystack;
         }
 
-        template <class _Ty>
-        const void* __stdcall _Impl_pcmpestri(const void* _First1, const void* const _Last1, const void* const _First2,
-            const void* const _Last2) noexcept {
 #ifndef _M_ARM64EC
-            if (_Use_sse42()) {
-                constexpr int _Op = (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ANY
-                                  | _SIDD_LEAST_SIGNIFICANT;
-                constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
-                const size_t _Needle_length = _Byte_length(_First2, _Last2);
+        template <class _Ty>
+        const void* _Impl_pcmpestri(const void* _First1, const size_t _Haystack_length, const void* const _First2,
+            const size_t _Needle_length) noexcept {
+            constexpr int _Op =
+                (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ANY | _SIDD_LEAST_SIGNIFICANT;
+            constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
 
-                const size_t _Haystack_length = _Byte_length(_First1, _Last1);
-                const void* _Stop_at          = _First1;
-                _Advance_bytes(_Stop_at, _Haystack_length & ~size_t{0xF});
+            const void* _Stop_at = _First1;
+            _Advance_bytes(_Stop_at, _Haystack_length & ~size_t{0xF});
 
-                if (_Needle_length <= 16) {
-                    // Special handling of small needle
-                    // The generic branch could also be modified to handle it, but with slightly worse performance
+            if (_Needle_length <= 16) {
+                // Special handling of small needle
+                // The generic branch could also be modified to handle it, but with slightly worse performance
 
-                    const int _Needle_length_el = static_cast<int>(_Needle_length / sizeof(_Ty));
+                const int _Needle_length_el = static_cast<int>(_Needle_length / sizeof(_Ty));
 
-                    alignas(16) uint8_t _Tmp2[16];
-                    memcpy(_Tmp2, _First2, _Needle_length);
-                    const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+                alignas(16) uint8_t _Tmp2[16];
+                memcpy(_Tmp2, _First2, _Needle_length);
+                const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
 
-                    while (_First1 != _Stop_at) {
-                        const __m128i _Data1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
-                        if (_mm_cmpestrc(_Data2, _Needle_length_el, _Data1, _Part_size_el, _Op)) {
-                            const int _Pos = _mm_cmpestri(_Data2, _Needle_length_el, _Data1, _Part_size_el, _Op);
-                            _Advance_bytes(_First1, _Pos * sizeof(_Ty));
-                            return _First1;
-                        }
-
-                        _Advance_bytes(_First1, 16);
+                while (_First1 != _Stop_at) {
+                    const __m128i _Data1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+                    if (_mm_cmpestrc(_Data2, _Needle_length_el, _Data1, _Part_size_el, _Op)) {
+                        const int _Pos = _mm_cmpestri(_Data2, _Needle_length_el, _Data1, _Part_size_el, _Op);
+                        _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                        return _First1;
                     }
 
-                    const size_t _Last_part_size = _Haystack_length & 0xF;
+                    _Advance_bytes(_First1, 16);
+                }
+
+                if (const size_t _Last_part_size = _Haystack_length & 0xF; _Last_part_size != 0) {
                     const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
 
                     alignas(16) uint8_t _Tmp1[16];
@@ -3000,60 +3422,62 @@ namespace {
                     }
 
                     _Advance_bytes(_First1, _Last_part_size);
-                    return _First1;
-                } else {
-                    const void* _Last_needle = _First2;
-                    _Advance_bytes(_Last_needle, _Needle_length & ~size_t{0xF});
+                }
 
-                    const int _Last_needle_length = static_cast<int>(_Needle_length & 0xF);
+                return _First1;
+            } else {
+                const void* _Last_needle = _First2;
+                _Advance_bytes(_Last_needle, _Needle_length & ~size_t{0xF});
 
-                    alignas(16) uint8_t _Tmp2[16];
-                    memcpy(_Tmp2, _Last_needle, _Last_needle_length);
-                    const __m128i _Last_needle_val   = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
-                    const int _Last_needle_length_el = _Last_needle_length / sizeof(_Ty);
+                const int _Last_needle_length = static_cast<int>(_Needle_length & 0xF);
 
-                    constexpr int _Not_found = 16; // arbitrary value greater than any found value
+                alignas(16) uint8_t _Tmp2[16];
+                memcpy(_Tmp2, _Last_needle, _Last_needle_length);
+                const __m128i _Last_needle_val   = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+                const int _Last_needle_length_el = _Last_needle_length / sizeof(_Ty);
 
-                    int _Found_pos = _Not_found;
+                constexpr int _Not_found = 16; // arbitrary value greater than any found value
 
-                    const auto _Step = [&_Found_pos](const __m128i _Data2, const int _Size2, const __m128i _Data1,
-                                           const int _Size1) noexcept {
-                        if (_mm_cmpestrc(_Data2, _Size2, _Data1, _Size1, _Op)) {
-                            const int _Pos = _mm_cmpestri(_Data2, _Size2, _Data1, _Size1, _Op);
-                            if (_Pos < _Found_pos) {
-                                _Found_pos = _Pos;
-                            }
+                int _Found_pos = _Not_found;
+
+                const auto _Step = [&_Found_pos](const __m128i _Data2, const int _Size2, const __m128i _Data1,
+                                       const int _Size1) noexcept {
+                    if (_mm_cmpestrc(_Data2, _Size2, _Data1, _Size1, _Op)) {
+                        const int _Pos = _mm_cmpestri(_Data2, _Size2, _Data1, _Size1, _Op);
+                        if (_Pos < _Found_pos) {
+                            _Found_pos = _Pos;
                         }
-                    };
+                    }
+                };
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
-                    const auto _Test_whole_needle = [=](const __m128i _Data1, const int _Size1) noexcept {
-                        const void* _Cur_needle = _First2;
-                        do {
-                            const __m128i _Data2 = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
-                            _Step(_Data2, _Part_size_el, _Data1, _Size1);
-                            _Advance_bytes(_Cur_needle, 16);
-                        } while (_Cur_needle != _Last_needle);
+                const auto _Test_whole_needle = [=](const __m128i _Data1, const int _Size1) noexcept {
+                    const void* _Cur_needle = _First2;
+                    do {
+                        const __m128i _Data2 = _mm_loadu_si128(static_cast<const __m128i*>(_Cur_needle));
+                        _Step(_Data2, _Part_size_el, _Data1, _Size1);
+                        _Advance_bytes(_Cur_needle, 16);
+                    } while (_Cur_needle != _Last_needle);
 
-                        if (_Last_needle_length_el != 0) {
-                            _Step(_Last_needle_val, _Last_needle_length_el, _Data1, _Size1);
-                        }
-                    };
+                    if (_Last_needle_length_el != 0) {
+                        _Step(_Last_needle_val, _Last_needle_length_el, _Data1, _Size1);
+                    }
+                };
 #pragma warning(pop)
 
-                    while (_First1 != _Stop_at) {
-                        _Test_whole_needle(_mm_loadu_si128(static_cast<const __m128i*>(_First1)), _Part_size_el);
+                while (_First1 != _Stop_at) {
+                    _Test_whole_needle(_mm_loadu_si128(static_cast<const __m128i*>(_First1)), _Part_size_el);
 
-                        if (_Found_pos != _Not_found) {
-                            _Advance_bytes(_First1, _Found_pos * sizeof(_Ty));
-                            return _First1;
-                        }
-
-                        _Advance_bytes(_First1, 16);
+                    if (_Found_pos != _Not_found) {
+                        _Advance_bytes(_First1, _Found_pos * sizeof(_Ty));
+                        return _First1;
                     }
 
-                    const size_t _Last_part_size = _Haystack_length & 0xF;
+                    _Advance_bytes(_First1, 16);
+                }
+
+                if (const size_t _Last_part_size = _Haystack_length & 0xF; _Last_part_size != 0) {
                     const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
 
                     alignas(16) uint8_t _Tmp1[16];
@@ -3065,15 +3489,18 @@ namespace {
                     _Test_whole_needle(_Data1, _Last_part_size_el);
 
                     _Advance_bytes(_First1, _Found_pos * sizeof(_Ty));
-                    return _First1;
                 }
-            }
-#endif // !_M_ARM64EC
-            return _Fallback<_Ty>(_First1, _Last1, _First2, _Last2);
-        }
 
-        struct _Traits_4 : _Find_traits_4 {
-            using _Ty = uint32_t;
+                return _First1;
+            }
+        }
+#endif // !_M_ARM64EC
+
+        template <class _Ty>
+        struct _Find_first_of_traits;
+
+        template <>
+        struct _Find_first_of_traits<uint32_t> : _Find_traits_4 {
 #ifndef _M_ARM64EC
             template <size_t _Amount>
             static __m256i _Spread_avx(__m256i _Val, const size_t _Needle_length_el) noexcept {
@@ -3118,8 +3545,8 @@ namespace {
 #endif // !_M_ARM64EC
         };
 
-        struct _Traits_8 : _Find_traits_8 {
-            using _Ty = uint64_t;
+        template <>
+        struct _Find_first_of_traits<uint64_t> : _Find_traits_8 {
 #ifndef _M_ARM64EC
             template <size_t _Amount>
             static __m256i _Spread_avx(const __m256i _Val, const size_t _Needle_length_el) noexcept {
@@ -3183,17 +3610,15 @@ namespace {
             return _Eq;
         }
 
-        template <class _Traits, bool _Large, size_t _Last2_length_el_magnitude>
-        const void* _Shuffle_impl(const void* _First1, const void* const _Last1, const void* const _First2,
+        template <class _Ty, bool _Large, size_t _Last2_length_el_magnitude>
+        const void* _Shuffle_impl(const void* _First1, const size_t _Haystack_length, const void* const _First2,
             const void* const _Stop2, const size_t _Last2_length_el) noexcept {
-            using _Ty                   = _Traits::_Ty;
+            using _Traits               = _Find_first_of_traits<_Ty>;
             constexpr size_t _Length_el = 32 / sizeof(_Ty);
 
             const __m256i _Last2val = _mm256_maskload_epi32(
                 reinterpret_cast<const int*>(_Stop2), _Avx2_tail_mask_32(_Last2_length_el * (sizeof(_Ty) / 4)));
             const __m256i _Last2s0 = _Traits::_Spread_avx<_Last2_length_el_magnitude>(_Last2val, _Last2_length_el);
-
-            const size_t _Haystack_length = _Byte_length(_First1, _Last1);
 
             const void* _Stop1 = _First1;
             _Advance_bytes(_Stop1, _Haystack_length & ~size_t{0x1F});
@@ -3240,61 +3665,192 @@ namespace {
             return _First1;
         }
 
-        template <class _Traits, bool _Large>
-        const void* _Shuffle_impl_dispatch_magnitude(const void* const _First1, const void* const _Last1,
+        template <class _Ty, bool _Large>
+        const void* _Shuffle_impl_dispatch_magnitude(const void* const _First1, const size_t _Haystack_length,
             const void* const _First2, const void* const _Stop2, const size_t _Last2_length_el) noexcept {
             if (_Last2_length_el == 0) {
-                return _Shuffle_impl<_Traits, _Large, 0>(_First1, _Last1, _First2, _Stop2, _Last2_length_el);
+                return _Shuffle_impl<_Ty, _Large, 0>(_First1, _Haystack_length, _First2, _Stop2, _Last2_length_el);
             } else if (_Last2_length_el == 1) {
-                return _Shuffle_impl<_Traits, _Large, 1>(_First1, _Last1, _First2, _Stop2, _Last2_length_el);
+                return _Shuffle_impl<_Ty, _Large, 1>(_First1, _Haystack_length, _First2, _Stop2, _Last2_length_el);
             } else if (_Last2_length_el == 2) {
-                return _Shuffle_impl<_Traits, _Large, 2>(_First1, _Last1, _First2, _Stop2, _Last2_length_el);
+                return _Shuffle_impl<_Ty, _Large, 2>(_First1, _Haystack_length, _First2, _Stop2, _Last2_length_el);
             } else if (_Last2_length_el <= 4) {
-                return _Shuffle_impl<_Traits, _Large, 4>(_First1, _Last1, _First2, _Stop2, _Last2_length_el);
+                return _Shuffle_impl<_Ty, _Large, 4>(_First1, _Haystack_length, _First2, _Stop2, _Last2_length_el);
             } else if (_Last2_length_el <= 8) {
-                if constexpr (sizeof(_Traits::_Ty) == 4) {
-                    return _Shuffle_impl<_Traits, _Large, 8>(_First1, _Last1, _First2, _Stop2, _Last2_length_el);
+                if constexpr (sizeof(_Ty) == 4) {
+                    return _Shuffle_impl<_Ty, _Large, 8>(_First1, _Haystack_length, _First2, _Stop2, _Last2_length_el);
                 }
             }
 
             _STL_UNREACHABLE;
         }
 
+        template <class _Ty>
+        const void* _Impl_4_8(const void* const _First1, const size_t _Haystack_length, const void* const _First2,
+            const size_t _Needle_length) noexcept {
+            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
+            const size_t _Last_needle_length    = _Needle_length & 0x1F;
+            const size_t _Last_needle_length_el = _Last_needle_length / sizeof(_Ty);
+
+            if (const size_t _Needle_length_large = _Needle_length & ~size_t{0x1F}; _Needle_length_large != 0) {
+                const void* _Stop2 = _First2;
+                _Advance_bytes(_Stop2, _Needle_length_large);
+                return _Shuffle_impl_dispatch_magnitude<_Ty, true>(
+                    _First1, _Haystack_length, _First2, _Stop2, _Last_needle_length_el);
+            } else {
+                return _Shuffle_impl_dispatch_magnitude<_Ty, false>(
+                    _First1, _Haystack_length, _First2, _First2, _Last_needle_length_el);
+            }
+        }
 #endif // !_M_ARM64EC
 
-        template <class _Traits>
-        const void* __stdcall _Impl_4_8(const void* const _First1, const void* const _Last1, const void* const _First2,
+        template <class _Ty>
+        const void* _Dispatch_ptr(const void* const _First1, const void* const _Last1, const void* const _First2,
             const void* const _Last2) noexcept {
-            using _Ty = _Traits::_Ty;
 #ifndef _M_ARM64EC
-            if (_Use_avx2()) {
-                _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
-
-                const size_t _Needle_length         = _Byte_length(_First2, _Last2);
-                const size_t _Last_needle_length    = _Needle_length & 0x1F;
-                const size_t _Last_needle_length_el = _Last_needle_length / sizeof(_Ty);
-
-                if (const size_t _Needle_length_large = _Needle_length & ~size_t{0x1F}; _Needle_length_large != 0) {
-                    const void* _Stop2 = _First2;
-                    _Advance_bytes(_Stop2, _Needle_length_large);
-                    return _Shuffle_impl_dispatch_magnitude<_Traits, true>(
-                        _First1, _Last1, _First2, _Stop2, _Last_needle_length_el);
-                } else {
-                    return _Shuffle_impl_dispatch_magnitude<_Traits, false>(
-                        _First1, _Last1, _First2, _First2, _Last_needle_length_el);
+            if constexpr (sizeof(_Ty) <= 2) {
+                if (_Use_sse42()) {
+                    return _Impl_pcmpestri<_Ty>(
+                        _First1, _Byte_length(_First1, _Last1), _First2, _Byte_length(_First2, _Last2));
+                }
+            } else {
+                if (_Use_avx2()) {
+                    return _Impl_4_8<_Ty>(
+                        _First1, _Byte_length(_First1, _Last1), _First2, _Byte_length(_First2, _Last2));
                 }
             }
 #endif // !_M_ARM64EC
+
             return _Fallback<_Ty>(_First1, _Last1, _First2, _Last2);
+        }
+
+        template <class _Ty>
+        size_t _Pos_from_ptr(const void* const _Result, const void* const _First1, const void* const _Last1) noexcept {
+            if (_Result != _Last1) {
+                return _Byte_length(_First1, _Result) / sizeof(_Ty);
+            } else {
+                return static_cast<size_t>(-1);
+            }
+        }
+
+#ifndef _M_ARM64EC
+        template <class _Ty>
+        size_t _Dispatch_pos_sse_1_2(
+            const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
+            using namespace __std_find_meow_of_bitmap;
+
+            const _Strategy _Strat = _Pick_strategy<_Ty>(_Count1, _Count2, _Use_avx2());
+
+            if (_Strat == _Strategy::_Vector_bitmap) {
+                if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+                    return _Impl_first_avx<_Ty>(_First1, _Count1, _First2, _Count2);
+                }
+            } else if (_Strat == _Strategy::_Scalar_bitmap) {
+                if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+                    alignas(32) _Scalar_table_t _Table = {};
+                    _Build_scalar_table_no_check<_Ty>(_First2, _Count2, _Table);
+                    return _Impl_first_scalar<_Ty>(_First1, _Count1, _Table);
+                }
+            }
+
+            const void* const _Last1   = static_cast<const _Ty*>(_First1) + _Count1;
+            const size_t _Size_bytes_1 = _Count1 * sizeof(_Ty);
+            const size_t _Size_bytes_2 = _Count2 * sizeof(_Ty);
+
+            return _Pos_from_ptr<_Ty>(
+                _Impl_pcmpestri<_Ty>(_First1, _Size_bytes_1, _First2, _Size_bytes_2), _First1, _Last1);
+        }
+
+        template <class _Ty>
+        size_t _Dispatch_pos_avx_4_8(
+            const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
+            using namespace __std_find_meow_of_bitmap;
+
+            const auto _Strat = _Pick_strategy<_Ty>(_Count1, _Count2, true);
+
+            if (_Strat == _Strategy::_Vector_bitmap) {
+                if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+                    return _Impl_first_avx<_Ty>(_First1, _Count1, _First2, _Count2);
+                }
+            } else if (_Strat == _Strategy::_Scalar_bitmap) {
+                if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+                    alignas(32) _Scalar_table_t _Table = {};
+                    _Build_scalar_table_no_check<_Ty>(_First2, _Count2, _Table);
+                    return _Impl_first_scalar<_Ty>(_First1, _Count1, _Table);
+                }
+            }
+
+            const void* const _Last1   = static_cast<const _Ty*>(_First1) + _Count1;
+            const size_t _Size_bytes_1 = _Count1 * sizeof(_Ty);
+            const size_t _Size_bytes_2 = _Count2 * sizeof(_Ty);
+
+            return _Pos_from_ptr<_Ty>(_Impl_4_8<_Ty>(_First1, _Size_bytes_1, _First2, _Size_bytes_2), _First1, _Last1);
+        }
+#endif // !_M_ARM64EC
+
+        template <class _Ty>
+        size_t _Dispatch_pos_fallback(
+            const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
+            using namespace __std_find_meow_of_bitmap;
+
+            _Scalar_table_t _Table = {};
+            if (_Build_scalar_table<_Ty>(_First2, _Count2, _Table)) {
+                return _Impl_first_scalar<_Ty>(_First1, _Count1, _Table);
+            }
+
+            const void* const _Last1 = static_cast<const _Ty*>(_First1) + _Count1;
+            const void* const _Last2 = static_cast<const _Ty*>(_First2) + _Count2;
+
+            return _Pos_from_ptr<_Ty>(_Fallback<_Ty>(_First1, _Last1, _First2, _Last2), _First1, _Last1);
+        }
+
+        template <class _Ty>
+        size_t _Dispatch_pos(
+            const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
+#ifndef _M_ARM64EC
+            if constexpr (sizeof(_Ty) <= 2) {
+                if (_Use_sse42()) {
+                    return _Dispatch_pos_sse_1_2<_Ty>(_First1, _Count1, _First2, _Count2);
+                }
+            } else {
+                if (_Use_avx2()) {
+                    return _Dispatch_pos_avx_4_8<_Ty>(_First1, _Count1, _First2, _Count2);
+                }
+            }
+#endif // !_M_ARM64EC
+            return _Dispatch_pos_fallback<_Ty>(_First1, _Count1, _First2, _Count2);
         }
     } // namespace __std_find_first_of
 
-    template <class _Ty>
-    size_t __stdcall __std_find_last_of_pos_impl(const void* const _Haystack, const size_t _Haystack_length,
-        const void* const _Needle, const size_t _Needle_length) noexcept {
+    namespace __std_find_last_of {
+        template <class _Ty>
+        size_t __stdcall _Fallback(const void* const _Haystack, const size_t _Haystack_length,
+            const void* const _Needle, const size_t _Needle_length) noexcept {
+
+            const auto _Ptr_haystack = static_cast<const _Ty*>(_Haystack);
+            size_t _Pos              = _Haystack_length;
+            const auto _Needle_end   = static_cast<const _Ty*>(_Needle) + _Needle_length;
+
+            while (_Pos != 0) {
+                --_Pos;
+
+                for (auto _Ptr = static_cast<const _Ty*>(_Needle); _Ptr != _Needle_end; ++_Ptr) {
+                    if (_Ptr_haystack[_Pos] == *_Ptr) {
+                        return _Pos;
+                    }
+                }
+            }
+
+            return static_cast<size_t>(-1);
+        }
+
 #ifndef _M_ARM64EC
-        const size_t _Haystack_length_bytes = _Haystack_length * sizeof(_Ty);
-        if (_Use_sse42() && _Haystack_length_bytes >= 16) {
+        template <class _Ty>
+        size_t _Impl(const void* const _Haystack, const size_t _Haystack_length, const void* const _Needle,
+            const size_t _Needle_length) noexcept {
+            const size_t _Haystack_length_bytes = _Haystack_length * sizeof(_Ty);
+
             constexpr int _Op =
                 (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ANY | _SIDD_MOST_SIGNIFICANT;
             constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
@@ -3327,11 +3883,21 @@ namespace {
                     }
                 }
 
-                const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
-                const __m128i _Data1         = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Haystack));
+                if (_Last_part_size != 0) {
+                    const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
+                    __m128i _Data1;
 
-                if (_mm_cmpestrc(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op)) {
-                    return _mm_cmpestri(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op);
+                    if (_Haystack_length_bytes >= 16) {
+                        _Data1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Haystack));
+                    } else {
+                        alignas(16) uint8_t _Tmp1[16];
+                        memcpy(_Tmp1, _Haystack, _Haystack_length_bytes);
+                        _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                    }
+
+                    if (_mm_cmpestrc(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op)) {
+                        return _mm_cmpestri(_Data2, _Needle_length_el, _Data1, _Last_part_size_el, _Op);
+                    }
                 }
 
                 return static_cast<size_t>(-1);
@@ -3384,30 +3950,60 @@ namespace {
                     }
                 }
 
-                const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
-                const __m128i _Data1         = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Haystack));
-                _Test_whole_needle(_Data1, _Last_part_size_el);
+                if (_Last_part_size != 0) {
+                    const int _Last_part_size_el = static_cast<int>(_Last_part_size / sizeof(_Ty));
+                    __m128i _Data1;
+
+                    if (_Haystack_length_bytes >= 16) {
+                        _Data1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Haystack));
+                    } else {
+                        alignas(16) uint8_t _Tmp1[16];
+                        memcpy(_Tmp1, _Haystack, _Haystack_length_bytes);
+                        _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                    }
+
+                    _Test_whole_needle(_Data1, _Last_part_size_el);
+                }
 
                 return static_cast<size_t>(_Found_pos);
             }
         }
 #endif // !_M_ARM64EC
-        const auto _Ptr_haystack = static_cast<const _Ty*>(_Haystack);
-        size_t _Pos              = _Haystack_length;
-        const auto _Needle_end   = static_cast<const _Ty*>(_Needle) + _Needle_length;
 
-        while (_Pos != 0) {
-            --_Pos;
+        template <class _Ty>
+        size_t _Dispatch_pos(
+            const void* const _First1, const size_t _Count1, const void* const _First2, const size_t _Count2) noexcept {
+            using namespace __std_find_meow_of_bitmap;
 
-            for (auto _Ptr = static_cast<const _Ty*>(_Needle); _Ptr != _Needle_end; ++_Ptr) {
-                if (_Ptr_haystack[_Pos] == *_Ptr) {
-                    return _Pos;
+#ifndef _M_ARM64EC
+            if (_Use_sse42()) {
+                const auto _Strat = _Pick_strategy<_Ty>(_Count1, _Count2, _Use_avx2());
+
+                if (_Strat == _Strategy::_Vector_bitmap) {
+                    if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+                        return _Impl_last_avx<_Ty>(_First1, _Count1, _First2, _Count2);
+                    }
+                } else if (_Strat == _Strategy::_Scalar_bitmap) {
+                    if (_Can_fit_256_bits_sse(static_cast<const _Ty*>(_First2), _Count2)) {
+                        alignas(32) _Scalar_table_t _Table = {};
+                        _Build_scalar_table_no_check<_Ty>(_First2, _Count2, _Table);
+                        return _Impl_last_scalar<_Ty>(_First1, _Count1, _Table);
+                    }
                 }
+
+                return _Impl<_Ty>(_First1, _Count1, _First2, _Count2);
+            } else
+#endif // !_M_ARM64EC
+            {
+                alignas(32) _Scalar_table_t _Table = {};
+                if (_Build_scalar_table<_Ty>(_First2, _Count2, _Table)) {
+                    return _Impl_last_scalar<_Ty>(_First1, _Count1, _Table);
+                }
+
+                return _Fallback<_Ty>(_First1, _Count1, _First2, _Count2);
             }
         }
-
-        return static_cast<size_t>(-1);
-    }
+    } // namespace __std_find_last_of
 
     template <class _Traits, class _Ty>
     __declspec(noalias) size_t __stdcall __std_mismatch_impl(
@@ -3633,18 +4229,270 @@ namespace {
             return _Last1;
         }
     }
+
+    template <class _Traits, class _Ty>
+    const void* __stdcall __std_find_end_impl(
+        const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+        if (_Count2 == 0) {
+            return _Last1;
+        }
+
+        if (_Count2 == 1) {
+            return __std_find_last_trivial_impl<_Traits>(_First1, _Last1, *static_cast<const _Ty*>(_First2));
+        }
+
+        const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
+        const size_t _Size_bytes_2 = _Count2 * sizeof(_Ty);
+
+        if (_Size_bytes_1 < _Size_bytes_2) {
+            return _Last1;
+        }
+
+#ifndef _M_ARM64EC
+        if (_Use_sse42() && _Size_bytes_1 >= 16) {
+            constexpr int _Op = (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ORDERED;
+            constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
+
+            static constexpr int8_t _Low_part_mask[] = {//
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, //
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+            if (_Size_bytes_2 <= 16) {
+                const int _Size_el_2                  = static_cast<int>(_Count2);
+                constexpr unsigned int _Whole_mask    = (1 << _Part_size_el) - 1;
+                const unsigned int _Needle_fit_mask   = (1 << (_Part_size_el - _Size_el_2 + 1)) - 1;
+                const unsigned int _Needle_unfit_mask = _Whole_mask ^ _Needle_fit_mask;
+
+                const void* _Stop1 = _First1;
+                _Advance_bytes(_Stop1, _Size_bytes_1 & 0xF);
+
+                alignas(16) uint8_t _Tmp2[16];
+                memcpy(_Tmp2, _First2, _Size_bytes_2);
+                const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+
+                const void* _Mid1 = _Last1;
+                _Rewind_bytes(_Mid1, 16);
+
+                const auto _Check_fit = [&_Mid1, _Needle_fit_mask](const unsigned int _Match) noexcept {
+                    const unsigned int _Fit_match = _Match & _Needle_fit_mask;
+                    if (_Fit_match != 0) {
+                        unsigned long _Match_last_pos;
+
+                        // CodeQL [SM02313] Result is always initialized: we just tested that _Fit_match is non-zero.
+                        _BitScanReverse(&_Match_last_pos, _Fit_match);
+
+                        _Advance_bytes(_Mid1, _Match_last_pos * sizeof(_Ty));
+                        return true;
+                    }
+
+                    return false;
+                };
+
+#pragma warning(push)
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier
+                const auto _Check_unfit = [=, &_Mid1](const unsigned int _Match) noexcept {
+                    long _Unfit_match = _Match & _Needle_unfit_mask;
+                    while (_Unfit_match != 0) {
+                        const void* _Tmp1 = _Mid1;
+                        unsigned long _Match_last_pos;
+
+                        // CodeQL [SM02313] Result is always initialized: we just tested that _Unfit_match is non-zero.
+                        _BitScanReverse(&_Match_last_pos, _Unfit_match);
+
+                        _Advance_bytes(_Tmp1, _Match_last_pos * sizeof(_Ty));
+
+                        const __m128i _Match_data = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                        const __m128i _Cmp_result = _mm_xor_si128(_Data2, _Match_data);
+                        const __m128i _Data_mask =
+                            _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Low_part_mask + 16 - _Size_bytes_2));
+
+                        if (_mm_testz_si128(_Cmp_result, _Data_mask)) {
+                            _Mid1 = _Tmp1;
+                            return true;
+                        }
+
+                        _bittestandreset(&_Unfit_match, _Match_last_pos);
+                    }
+
+                    return false;
+                };
+#pragma warning(pop)
+
+                // TRANSITION, DevCom-10689455, the code below could test with _mm_cmpestrc,
+                // if it has been fused with _mm_cmpestrm.
+
+                // The very last part, for any match needle should fit, otherwise false match
+                const __m128i _Data1_last          = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                const auto _Match_last             = _mm_cmpestrm(_Data2, _Size_el_2, _Data1_last, _Part_size_el, _Op);
+                const unsigned int _Match_last_val = _mm_cvtsi128_si32(_Match_last);
+                if (_Check_fit(_Match_last_val)) {
+                    return _Mid1;
+                }
+
+                // The middle part, fit and unfit needle
+                while (_Mid1 != _Stop1) {
+                    _Rewind_bytes(_Mid1, 16);
+                    const __m128i _Data1          = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                    const auto _Match             = _mm_cmpestrm(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
+                    const unsigned int _Match_val = _mm_cvtsi128_si32(_Match);
+                    if (_Match_val != 0 && (_Check_unfit(_Match_val) || _Check_fit(_Match_val))) {
+                        return _Mid1;
+                    }
+                }
+
+                // The first part, fit and unfit needle, mask out already processed positions
+                if (const size_t _Tail_bytes_1 = _Size_bytes_1 & 0xF; _Tail_bytes_1 != 0) {
+                    _Mid1                         = _First1;
+                    const __m128i _Data1          = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                    const auto _Match             = _mm_cmpestrm(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
+                    const unsigned int _Match_val = _mm_cvtsi128_si32(_Match) & ((1 << _Tail_bytes_1) - 1);
+                    if (_Match_val != 0 && (_Check_unfit(_Match_val) || _Check_fit(_Match_val))) {
+                        return _Mid1;
+                    }
+                }
+
+                return _Last1;
+            } else {
+                const __m128i _Data2 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First2));
+
+                const void* _Tail2 = _First2;
+                _Advance_bytes(_Tail2, 16);
+
+                const void* _Mid1 = _Last1;
+                _Rewind_bytes(_Mid1, _Size_bytes_2);
+
+                const size_t _Size_diff_bytes = _Size_bytes_1 - _Size_bytes_2;
+                const void* _Stop1            = _First1;
+                _Advance_bytes(_Stop1, _Size_diff_bytes & 0xF);
+
+#pragma warning(push)
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier
+                const auto _Check = [=, &_Mid1](long _Match) noexcept {
+                    while (_Match != 0) {
+                        const void* _Tmp1 = _Mid1;
+                        unsigned long _Match_last_pos;
+
+                        // CodeQL [SM02313] Result is always initialized: we just tested that _Match is non-zero.
+                        _BitScanReverse(&_Match_last_pos, _Match);
+
+                        bool _Match_1st_16 = true;
+
+                        if (_Match_last_pos != 0) {
+                            _Advance_bytes(_Tmp1, _Match_last_pos * sizeof(_Ty));
+
+                            const __m128i _Match_data = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                            const __m128i _Cmp_result = _mm_xor_si128(_Data2, _Match_data);
+
+                            if (!_mm_testz_si128(_Cmp_result, _Cmp_result)) {
+                                _Match_1st_16 = false;
+                            }
+                        }
+
+                        if (_Match_1st_16) {
+                            const void* _Tail1 = _Tmp1;
+                            _Advance_bytes(_Tail1, 16);
+
+                            if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - 16) == 0) {
+                                _Mid1 = _Tmp1;
+                                return true;
+                            }
+                        }
+
+                        _bittestandreset(&_Match, _Match_last_pos);
+                    }
+
+                    return false;
+                };
+#pragma warning(pop)
+                // The very last part, just compare, as true match must start with first symbol
+                const __m128i _Data1_last = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                const __m128i _Match_last = _mm_xor_si128(_Data2, _Data1_last);
+                if (_mm_testz_si128(_Match_last, _Match_last)) {
+                    // Matched 16 bytes, check the rest
+                    const void* _Tail1 = _Mid1;
+                    _Advance_bytes(_Tail1, 16);
+
+                    if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - 16) == 0) {
+                        return _Mid1;
+                    }
+                }
+
+                // TRANSITION, DevCom-10689455, the code below could test with _mm_cmpestrc,
+                // if it has been fused with _mm_cmpestrm.
+
+                // The main part, match all characters
+                while (_Mid1 != _Stop1) {
+                    _Rewind_bytes(_Mid1, 16);
+
+                    const __m128i _Data1          = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                    const auto _Match             = _mm_cmpestrm(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
+                    const unsigned int _Match_val = _mm_cvtsi128_si32(_Match);
+                    if (_Match_val != 0 && _Check(_Match_val)) {
+                        return _Mid1;
+                    }
+                }
+
+                // The first part, mask out already processed positions
+                if (const size_t _Tail_bytes_1 = _Size_diff_bytes & 0xF; _Tail_bytes_1 != 0) {
+                    _Mid1                         = _First1;
+                    const __m128i _Data1          = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                    const auto _Match             = _mm_cmpestrm(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
+                    const unsigned int _Match_val = _mm_cvtsi128_si32(_Match) & ((1 << _Tail_bytes_1) - 1);
+                    if (_Match_val != 0 && _Check(_Match_val)) {
+                        return _Mid1;
+                    }
+                }
+
+                return _Last1;
+            }
+        } else
+#endif // !defined(_M_ARM64EC)
+        {
+            auto _Ptr1       = static_cast<const _Ty*>(_Last1) - _Count2;
+            const auto _Ptr2 = static_cast<const _Ty*>(_First2);
+
+            for (;;) {
+                if (*_Ptr1 == *_Ptr2) {
+                    bool _Equal = true;
+
+                    for (size_t _Idx = 1; _Idx != _Count2; ++_Idx) {
+                        if (_Ptr1[_Idx] != _Ptr2[_Idx]) {
+                            _Equal = false;
+                            break;
+                        }
+                    }
+
+                    if (_Equal) {
+                        return _Ptr1;
+                    }
+                }
+
+                if (_Ptr1 == _First1) {
+                    return _Last1;
+                }
+
+                --_Ptr1;
+            }
+        }
+    }
 } // unnamed namespace
 
 extern "C" {
 
 // TRANSITION, ABI: preserved for binary compatibility
 const void* __stdcall __std_find_trivial_unsized_1(const void* const _First, const uint8_t _Val) noexcept {
+    // C23 7.27.5.2 "The memchr generic function"/2 says "The implementation shall behave as if
+    // it reads the characters sequentially and stops as soon as a matching character is found."
     return memchr(_First, _Val, SIZE_MAX);
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
 const void* __stdcall __std_find_trivial_unsized_2(const void* const _First, const uint16_t _Val) noexcept {
-    return wmemchr(static_cast<const wchar_t*>(_First), static_cast<wchar_t>(_Val), SIZE_MAX);
+    // C23 7.27.5.2 "The memchr generic function"/2 says "The implementation shall behave as if
+    // it reads the characters sequentially and stops as soon as a matching character is found."
+    // C23 7.32.4.6.9 "The wmemchr generic function"/2 lacks such wording,
+    // so we don't use wmemchr(), avoiding issues with unreachable_sentinel_t.
+    return __std_find_trivial_unsized_impl(_First, _Val);
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
@@ -3719,32 +4567,52 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_8(
 
 const void* __stdcall __std_find_first_of_trivial_1(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return __std_find_first_of::_Impl_pcmpestri<uint8_t>(_First1, _Last1, _First2, _Last2);
+    return __std_find_first_of::_Dispatch_ptr<uint8_t>(_First1, _Last1, _First2, _Last2);
 }
 
 const void* __stdcall __std_find_first_of_trivial_2(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return __std_find_first_of::_Impl_pcmpestri<uint16_t>(_First1, _Last1, _First2, _Last2);
+    return __std_find_first_of::_Dispatch_ptr<uint16_t>(_First1, _Last1, _First2, _Last2);
 }
 
 const void* __stdcall __std_find_first_of_trivial_4(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return __std_find_first_of::_Impl_4_8<__std_find_first_of::_Traits_4>(_First1, _Last1, _First2, _Last2);
+    return __std_find_first_of::_Dispatch_ptr<uint32_t>(_First1, _Last1, _First2, _Last2);
 }
 
 const void* __stdcall __std_find_first_of_trivial_8(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return __std_find_first_of::_Impl_4_8<__std_find_first_of::_Traits_8>(_First1, _Last1, _First2, _Last2);
+    return __std_find_first_of::_Dispatch_ptr<uint64_t>(_First1, _Last1, _First2, _Last2);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_1(
+    const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
+    return __std_find_first_of::_Dispatch_pos<uint8_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_2(
+    const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
+    return __std_find_first_of::_Dispatch_pos<uint16_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_4(
+    const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
+    return __std_find_first_of::_Dispatch_pos<uint32_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_8(
+    const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
+    return __std_find_first_of::_Dispatch_pos<uint64_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_1(const void* const _Haystack,
     const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
-    return __std_find_last_of_pos_impl<uint8_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    return __std_find_last_of::_Dispatch_pos<uint8_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_2(const void* const _Haystack,
     const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
-    return __std_find_last_of_pos_impl<uint16_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    return __std_find_last_of::_Dispatch_pos<uint16_t>(_Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
 const void* __stdcall __std_search_1(
@@ -3755,6 +4623,16 @@ const void* __stdcall __std_search_1(
 const void* __stdcall __std_search_2(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
     return __std_search_impl<_Find_traits_2, uint16_t>(_First1, _Last1, _First2, _Count2);
+}
+
+const void* __stdcall __std_find_end_1(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+    return __std_find_end_impl<_Find_traits_1, uint8_t>(_First1, _Last1, _First2, _Count2);
+}
+
+const void* __stdcall __std_find_end_2(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+    return __std_find_end_impl<_Find_traits_2, uint16_t>(_First1, _Last1, _First2, _Count2);
 }
 
 __declspec(noalias) size_t __stdcall __std_mismatch_1(
@@ -4438,7 +5316,7 @@ namespace {
                 _Size_convert = _Size_bits;
 
                 for (size_t _Ix = _Size_bits; _Ix < _Size_chars; ++_Ix) {
-                    if (const _Elem _Cur = _Src[_Ix]; _Cur != _Elem0 && _Cur != _Elem1) [[unlikely]] {
+                    if (const _Elem _Cur = _Src[_Ix]; _Cur != _Elem0 && _Cur != _Elem1) {
                         return false;
                     }
                 }
@@ -4449,7 +5327,7 @@ namespace {
             for (size_t _Ix = 0; _Ix != _Size_convert; ++_Ix) {
                 const _Elem _Cur = _Src[_Size_convert - _Ix - 1];
 
-                if (_Cur != _Elem0 && _Cur != _Elem1) [[unlikely]] {
+                if (_Cur != _Elem0 && _Cur != _Elem1) {
                     return false;
                 }
 

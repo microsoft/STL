@@ -9,6 +9,8 @@
 
 #undef _ENFORCE_ONLY_CORE_HEADERS // TRANSITION, <xfacet> should be a core header
 
+#define _SILENCE_LOCALE_EMPTY_DEPRECATION_WARNING
+
 #include <crtdbg.h>
 #include <internal_shared.h>
 #include <xatomic.h>
@@ -125,15 +127,15 @@ __PURE_APPDOMAIN_GLOBAL locale::_Locimp* locale::_Locimp::_Clocptr = nullptr; //
 
 __PURE_APPDOMAIN_GLOBAL int locale::id::_Id_cnt = 0; // unique id counter for facets
 
-__PURE_APPDOMAIN_GLOBAL locale::id ctype<char>::id(0);
+__PURE_APPDOMAIN_GLOBAL locale::id ctype<char>::id{};
 
-__PURE_APPDOMAIN_GLOBAL locale::id ctype<wchar_t>::id(0);
+__PURE_APPDOMAIN_GLOBAL locale::id ctype<wchar_t>::id{};
 
-__PURE_APPDOMAIN_GLOBAL locale::id codecvt<wchar_t, char, mbstate_t>::id(0);
+__PURE_APPDOMAIN_GLOBAL locale::id codecvt<wchar_t, char, mbstate_t>::id{};
 
-__PURE_APPDOMAIN_GLOBAL locale::id ctype<unsigned short>::id(0);
+__PURE_APPDOMAIN_GLOBAL locale::id ctype<unsigned short>::id{};
 
-__PURE_APPDOMAIN_GLOBAL locale::id codecvt<unsigned short, char, mbstate_t>::id(0);
+__PURE_APPDOMAIN_GLOBAL locale::id codecvt<unsigned short, char, mbstate_t>::id{};
 
 _MRTIMP2_PURE const locale& __CLRCALL_PURE_OR_CDECL locale::classic() { // get reference to "C" locale
 #if !defined(_M_CEE_PURE)

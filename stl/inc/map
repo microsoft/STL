@@ -387,12 +387,12 @@ map(initializer_list<pair<_Kty, _Ty>>, _Alloc) -> map<_Kty, _Ty, less<_Kty>, _Al
 template <_RANGES input_range _Rng, class _Pr = less<_Range_key_type<_Rng>>,
     _Allocator_for_container _Alloc = allocator<_Range_to_alloc_type<_Rng>>>
     requires (!_Allocator_for_container<_Pr>)
-map(from_range_t, _Rng&&, _Pr = _Pr(),
-    _Alloc = _Alloc()) -> map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Pr, _Alloc>;
+map(from_range_t, _Rng&&, _Pr = _Pr(), _Alloc = _Alloc())
+    -> map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Pr, _Alloc>;
 
 template <_RANGES input_range _Rng, _Allocator_for_container _Alloc>
-map(from_range_t, _Rng&&,
-    _Alloc) -> map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, less<_Range_key_type<_Rng>>, _Alloc>;
+map(from_range_t, _Rng&&, _Alloc)
+    -> map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, less<_Range_key_type<_Rng>>, _Alloc>;
 #endif // _HAS_CXX23
 #endif // _HAS_CXX17
 
@@ -601,8 +601,8 @@ public:
 #if _HAS_CXX17
 template <class _Iter, class _Pr = less<_Guide_key_t<_Iter>>, class _Alloc = allocator<_Guide_pair_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
-multimap(
-    _Iter, _Iter, _Pr = _Pr(), _Alloc = _Alloc()) -> multimap<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, _Pr, _Alloc>;
+multimap(_Iter, _Iter, _Pr = _Pr(), _Alloc = _Alloc())
+    -> multimap<_Guide_key_t<_Iter>, _Guide_val_t<_Iter>, _Pr, _Alloc>;
 
 template <class _Kty, class _Ty, class _Pr = less<_Kty>, class _Alloc = allocator<pair<const _Kty, _Ty>>,
     enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
@@ -618,12 +618,12 @@ multimap(initializer_list<pair<_Kty, _Ty>>, _Alloc) -> multimap<_Kty, _Ty, less<
 template <_RANGES input_range _Rng, class _Pr = less<_Range_key_type<_Rng>>,
     _Allocator_for_container _Alloc = allocator<_Range_to_alloc_type<_Rng>>>
     requires (!_Allocator_for_container<_Pr>)
-multimap(from_range_t, _Rng&&, _Pr = _Pr(),
-    _Alloc = _Alloc()) -> multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Pr, _Alloc>;
+multimap(from_range_t, _Rng&&, _Pr = _Pr(), _Alloc = _Alloc())
+    -> multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Pr, _Alloc>;
 
 template <_RANGES input_range _Rng, _Allocator_for_container _Alloc>
-multimap(from_range_t, _Rng&&,
-    _Alloc) -> multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, less<_Range_key_type<_Rng>>, _Alloc>;
+multimap(from_range_t, _Rng&&, _Alloc)
+    -> multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, less<_Range_key_type<_Rng>>, _Alloc>;
 #endif // _HAS_CXX23
 #endif // _HAS_CXX17
 

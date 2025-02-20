@@ -327,32 +327,6 @@ struct is_convertible : bool_constant<__is_convertible_to(_From, _To)> {
 _EXPORT_STD template <class _From, class _To>
 constexpr bool is_convertible_v = __is_convertible_to(_From, _To);
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1627396
-template <class _Ty>
-struct is_convertible<_Ty&, volatile _Ty&> : true_type {};
-
-template <class _Ty>
-struct is_convertible<volatile _Ty&, volatile _Ty&> : true_type {};
-
-template <class _Ty>
-struct is_convertible<_Ty&, const volatile _Ty&> : true_type {};
-
-template <class _Ty>
-struct is_convertible<volatile _Ty&, const volatile _Ty&> : true_type {};
-
-template <class _Ty>
-constexpr bool is_convertible_v<_Ty&, volatile _Ty&> = true;
-
-template <class _Ty>
-constexpr bool is_convertible_v<volatile _Ty&, volatile _Ty&> = true;
-
-template <class _Ty>
-constexpr bool is_convertible_v<_Ty&, const volatile _Ty&> = true;
-
-template <class _Ty>
-constexpr bool is_convertible_v<volatile _Ty&, const volatile _Ty&> = true;
-#endif // ^^^ workaround ^^^
-
 _EXPORT_STD template <class _Ty>
 struct is_enum : bool_constant<__is_enum(_Ty)> {}; // determine whether _Ty is an enumerated type
 
@@ -1659,8 +1633,8 @@ struct _Invoker_pmd_pointer {
     static constexpr _Invoker_strategy _Strategy = _Invoker_strategy::_Pmd_pointer;
 
     template <class _Decayed, class _Ty1>
-    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1)
-        noexcept(noexcept((*static_cast<_Ty1&&>(_Arg1)).*_Pmd)) -> decltype((*static_cast<_Ty1&&>(_Arg1)).*_Pmd) {
+    static constexpr auto _Call(_Decayed _Pmd, _Ty1&& _Arg1) noexcept(noexcept((*static_cast<_Ty1&&>(_Arg1)).*_Pmd))
+        -> decltype((*static_cast<_Ty1&&>(_Arg1)).*_Pmd) {
         return (*static_cast<_Ty1&&>(_Arg1)).*_Pmd;
     }
 };
@@ -1691,8 +1665,8 @@ template <class _Callable, class _Ty1, class _Removed_cvref>
 struct _Invoker1<_Callable, _Ty1, _Removed_cvref, false, false> : _Invoker_functor {};
 
 _EXPORT_STD template <class _Callable>
-constexpr auto invoke(_Callable&& _Obj)
-    noexcept(noexcept(static_cast<_Callable&&>(_Obj)())) -> decltype(static_cast<_Callable&&>(_Obj)()) {
+constexpr auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&&>(_Obj)()))
+    -> decltype(static_cast<_Callable&&>(_Obj)()) {
     return static_cast<_Callable&&>(_Obj)();
 }
 
@@ -1912,12 +1886,12 @@ _EXPORT_STD template <class _Base, class _Derived>
 constexpr bool is_pointer_interconvertible_base_of_v = __is_pointer_interconvertible_base_of(_Base, _Derived);
 
 _EXPORT_STD template <class _ClassTy, class _MemberTy>
-_NODISCARD constexpr bool is_pointer_interconvertible_with_class(_MemberTy _ClassTy::*_Pm) noexcept {
+_NODISCARD constexpr bool is_pointer_interconvertible_with_class(_MemberTy _ClassTy::* _Pm) noexcept {
     return __is_pointer_interconvertible_with_class(_ClassTy, _Pm);
 }
 
 _EXPORT_STD template <class _ClassTy1, class _ClassTy2, class _MemberTy1, class _MemberTy2>
-_NODISCARD constexpr bool is_corresponding_member(_MemberTy1 _ClassTy1::*_Pm1, _MemberTy2 _ClassTy2::*_Pm2) noexcept {
+_NODISCARD constexpr bool is_corresponding_member(_MemberTy1 _ClassTy1::* _Pm1, _MemberTy2 _ClassTy2::* _Pm2) noexcept {
     return __is_corresponding_member(_ClassTy1, _ClassTy2, _Pm1, _Pm2);
 }
 #endif // ^^^ no workaround ^^^
@@ -2205,13 +2179,7 @@ struct _Is_trivially_swappable : bool_constant<_Is_trivially_swappable_v<_Ty>> {
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _From, class _To>
-concept convertible_to =
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1627396
-    is_convertible_v<_From, _To>
-#else // ^^^ workaround / no workaround vvv
-    __is_convertible_to(_From, _To)
-#endif // ^^^ no workaround ^^^
-    && requires { static_cast<_To>(_STD declval<_From>()); };
+concept convertible_to = __is_convertible_to(_From, _To) && requires { static_cast<_To>(_STD declval<_From>()); };
 
 template <class _RefWrap, class _Ty, class _RefWrapQ, class _TyQ>
 concept _Ref_wrap_common_reference_exists_with = _Is_specialization_v<_RefWrap, reference_wrapper> && requires {
@@ -2299,7 +2267,7 @@ _NODISCARD inline size_t _Fnv1a_append_bytes(size_t _Val, const unsigned char* c
 template <class _Ty>
 _NODISCARD size_t _Fnv1a_append_range(const size_t _Val, const _Ty* const _First,
     const _Ty* const _Last) noexcept { // accumulate range [_First, _Last) into partial FNV-1a hash _Val
-    static_assert(is_trivial_v<_Ty>, "Only trivial types can be directly hashed.");
+    static_assert(is_trivially_copyable_v<_Ty>, "Only trivially copyable types can be directly hashed.");
     const auto _Firstb = reinterpret_cast<const unsigned char*>(_First);
     const auto _Lastb  = reinterpret_cast<const unsigned char*>(_Last);
     return _Fnv1a_append_bytes(_Val, _Firstb, static_cast<size_t>(_Lastb - _Firstb));
@@ -2308,7 +2276,7 @@ _NODISCARD size_t _Fnv1a_append_range(const size_t _Val, const _Ty* const _First
 template <class _Kty>
 _NODISCARD size_t _Fnv1a_append_value(
     const size_t _Val, const _Kty& _Keyval) noexcept { // accumulate _Keyval into partial FNV-1a hash _Val
-    static_assert(is_trivial_v<_Kty>, "Only trivial types can be directly hashed.");
+    static_assert(is_trivially_copyable_v<_Kty>, "Only trivially copyable types can be directly hashed.");
     return _Fnv1a_append_bytes(_Val, &reinterpret_cast<const unsigned char&>(_Keyval), sizeof(_Kty));
 }
 
@@ -2320,7 +2288,7 @@ _NODISCARD size_t _Hash_representation(const _Kty& _Keyval) noexcept { // bitwis
 template <class _Kty>
 _NODISCARD size_t _Hash_array_representation(
     const _Kty* const _First, const size_t _Count) noexcept { // bitwise hashes the representation of an array
-    static_assert(is_trivial_v<_Kty>, "Only trivial types can be directly hashed.");
+    static_assert(is_trivially_copyable_v<_Kty>, "Only trivially copyable types can be directly hashed.");
     return _Fnv1a_append_bytes(
         _FNV_offset_basis, reinterpret_cast<const unsigned char*>(_First), _Count * sizeof(_Kty));
 }

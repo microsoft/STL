@@ -47,11 +47,11 @@ _MRTIMP2_PURE locale __CLRCALL_PURE_OR_CDECL locale::global(const locale& loc) {
     if ((_CATMASK(Facet::_Getcat()) & cat) == 0) {                                                          \
         ;                                                                                                   \
     } else if (ptrloc == nullptr) {                                                                         \
-        ptrimp->_Addfac(new Facet(lobj), Facet::id);                                                        \
+        ptrimp->_Addfac(new Facet(lobj), Facet::id._Get_index());                                           \
     } else {                                                                                                \
         ptrimp->_Addfac(                                                                                    \
             const_cast<locale::facet*>(static_cast<const locale::facet*>(&_STD use_facet<Facet>(*ptrloc))), \
-            Facet::id);                                                                                     \
+            Facet::id._Get_index());                                                                        \
     }
 
 using _Tc1 = ctype<char>;
@@ -124,8 +124,10 @@ void __CLRCALL_PURE_OR_CDECL locale::_Locimp::_Locimp_Addfac(
         }
     }
     ptrfac->_Incref();
-#pragma warning(suppress : 6001) // PREfast isn't following through _realloc_crt here
+#pragma warning(push)
+#pragma warning(disable : 6001) // PREfast isn't following through _realloc_crt here
     if (_This->_Facetvec[id] != nullptr) {
+#pragma warning(pop)
         delete _This->_Facetvec[id]->_Decref();
     }
 

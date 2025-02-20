@@ -320,22 +320,26 @@ _FS_DLL space_info __CLRCALL_PURE_OR_CDECL _Statvfs(const wchar_t* _Fname) noexc
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
     const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept { // test for equivalent file names
+    // See GH-3571: File IDs are only guaranteed to be unique and stable while handles remain open
 #ifdef _CRT_APP
     _FILE_ID_INFO _Info1 = {0};
     _FILE_ID_INFO _Info2 = {0};
     bool _Ok1            = false;
     bool _Ok2            = false;
 
-    HANDLE _Handle = _FilesysOpenFile(_Fname1, FILE_READ_ATTRIBUTES, FILE_FLAG_BACKUP_SEMANTICS);
-    if (_Handle != INVALID_HANDLE_VALUE) { // get file1 info
-        _Ok1 = GetFileInformationByHandleEx(_Handle, FileIdInfo, &_Info1, sizeof(_Info1)) != 0;
-        CloseHandle(_Handle);
+    HANDLE _Handle1 = _FilesysOpenFile(_Fname1, FILE_READ_ATTRIBUTES, FILE_FLAG_BACKUP_SEMANTICS);
+    if (_Handle1 != INVALID_HANDLE_VALUE) { // get file1 info
+        _Ok1 = GetFileInformationByHandleEx(_Handle1, FileIdInfo, &_Info1, sizeof(_Info1)) != 0;
     }
 
-    _Handle = _FilesysOpenFile(_Fname2, FILE_READ_ATTRIBUTES, FILE_FLAG_BACKUP_SEMANTICS);
-    if (_Handle != INVALID_HANDLE_VALUE) { // get file2 info
-        _Ok2 = GetFileInformationByHandleEx(_Handle, FileIdInfo, &_Info2, sizeof(_Info2)) != 0;
-        CloseHandle(_Handle);
+    HANDLE _Handle2 = _FilesysOpenFile(_Fname2, FILE_READ_ATTRIBUTES, FILE_FLAG_BACKUP_SEMANTICS);
+    if (_Handle2 != INVALID_HANDLE_VALUE) { // get file2 info
+        _Ok2 = GetFileInformationByHandleEx(_Handle2, FileIdInfo, &_Info2, sizeof(_Info2)) != 0;
+        CloseHandle(_Handle2);
+    }
+
+    if (_Handle1 != INVALID_HANDLE_VALUE) {
+        CloseHandle(_Handle1);
     }
 
     if (!_Ok1 && !_Ok2) {
@@ -351,16 +355,19 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
     bool _Ok1                         = false;
     bool _Ok2                         = false;
 
-    HANDLE _Handle = _FilesysOpenFile(_Fname1, FILE_READ_ATTRIBUTES, FILE_FLAG_BACKUP_SEMANTICS);
-    if (_Handle != INVALID_HANDLE_VALUE) { // get file1 info
-        _Ok1 = GetFileInformationByHandle(_Handle, &_Info1) != 0;
-        CloseHandle(_Handle);
+    HANDLE _Handle1 = _FilesysOpenFile(_Fname1, FILE_READ_ATTRIBUTES, FILE_FLAG_BACKUP_SEMANTICS);
+    if (_Handle1 != INVALID_HANDLE_VALUE) { // get file1 info
+        _Ok1 = GetFileInformationByHandle(_Handle1, &_Info1) != 0;
     }
 
-    _Handle = _FilesysOpenFile(_Fname2, FILE_READ_ATTRIBUTES, FILE_FLAG_BACKUP_SEMANTICS);
-    if (_Handle != INVALID_HANDLE_VALUE) { // get file2 info
-        _Ok2 = GetFileInformationByHandle(_Handle, &_Info2) != 0;
-        CloseHandle(_Handle);
+    HANDLE _Handle2 = _FilesysOpenFile(_Fname2, FILE_READ_ATTRIBUTES, FILE_FLAG_BACKUP_SEMANTICS);
+    if (_Handle2 != INVALID_HANDLE_VALUE) { // get file2 info
+        _Ok2 = GetFileInformationByHandle(_Handle2, &_Info2) != 0;
+        CloseHandle(_Handle2);
+    }
+
+    if (_Handle1 != INVALID_HANDLE_VALUE) {
+        CloseHandle(_Handle1);
     }
 
     if (!_Ok1 && !_Ok2) {

@@ -701,7 +701,7 @@ int run_test()
         struct TestConstexpr : public std::any {
           constexpr TestConstexpr() : std::any() {}
         };
-        static TEST_CONSTINIT std::any a;
+        TEST_CONSTINIT static std::any a;
         (void)a;
     }
 #endif // ^^^ no workaround ^^^

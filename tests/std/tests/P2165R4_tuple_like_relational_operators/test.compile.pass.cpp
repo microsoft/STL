@@ -59,7 +59,7 @@ constexpr bool test() {
         static_assert(verify_comparisons<tuple<int, int>, pair<int, int>>);
         static_assert(!verify_comparisons<tuple<int, int>, pair<int, Incomparable>>);
         static_assert(!verify_comparisons<tuple<int*, int*>,
-                      subrange<int*, int*>>); // subrange does not model equality_comparable
+            subrange<int*, int*>>); // subrange does not model equality_comparable
 
         static_assert(tuple{1, 2} == array<int, 2>{1, 2});
         static_assert(tuple<int, int>{2, 1} != array<int, 2>{1, 2});

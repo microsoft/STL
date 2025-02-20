@@ -483,48 +483,50 @@ private:
         _STL_INTERNAL_CHECK(_Old_last_ != nullptr);
         _STL_INTERNAL_CHECK(_New_last_ != nullptr);
 
+        if constexpr (!_Disable_ASan_container_annotations_for_allocator<allocator_type>) {
 #if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            return;
-        }
+            if (_STD is_constant_evaluated()) {
+                return;
+            }
 #endif // _HAS_CXX20
 
-        if (!_Asan_vector_should_annotate) {
-            return;
-        }
-
-        const void* const _First    = _STD _Unfancy(_First_);
-        const void* const _End      = _STD _Unfancy(_End_);
-        const void* const _Old_last = _STD _Unfancy(_Old_last_);
-        const void* const _New_last = _STD _Unfancy(_New_last_);
-        if constexpr ((_Container_allocation_minimum_asan_alignment<vector>) >= _Asan_granularity) {
-            // old state:
-            //   [_First, _Old_last) valid
-            //   [_Old_last, _End) poison
-            // new state:
-            //   [_First, _New_last) valid
-            //   [_New_last, asan_aligned_after(_End)) poison
-            _CSTD __sanitizer_annotate_contiguous_container(
-                _First, _STD _Get_asan_aligned_after(_End), _Old_last, _New_last);
-        } else {
-            const auto _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
-            if (_Aligned._First == _Aligned._End) {
-                // The buffer does not end at least one shadow memory section; nothing to do.
+            if (!_Asan_vector_should_annotate) {
                 return;
             }
 
-            const void* const _Old_fixed = _Aligned._Clamp_to_end(_Old_last);
-            const void* const _New_fixed = _Aligned._Clamp_to_end(_New_last);
+            const void* const _First    = _STD _Unfancy(_First_);
+            const void* const _End      = _STD _Unfancy(_End_);
+            const void* const _Old_last = _STD _Unfancy(_Old_last_);
+            const void* const _New_last = _STD _Unfancy(_New_last_);
+            if constexpr ((_Container_allocation_minimum_asan_alignment<vector>) >= _Asan_granularity) {
+                // old state:
+                //   [_First, _Old_last) valid
+                //   [_Old_last, _End) poison
+                // new state:
+                //   [_First, _New_last) valid
+                //   [_New_last, asan_aligned_after(_End)) poison
+                _CSTD __sanitizer_annotate_contiguous_container(
+                    _First, _STD _Get_asan_aligned_after(_End), _Old_last, _New_last);
+            } else {
+                const auto _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
+                if (_Aligned._First == _Aligned._End) {
+                    // The buffer does not end at least one shadow memory section; nothing to do.
+                    return;
+                }
 
-            // old state:
-            //   [_Aligned._First, _Old_fixed) valid
-            //   [_Old_fixed, _Aligned._End) poison
-            //   [_Aligned._End, _End) valid
-            // new state:
-            //   [_Aligned._First, _New_fixed) valid
-            //   [_New_fixed, _Aligned._End) poison
-            //   [_Aligned._End, _End) valid
-            _CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
+                const void* const _Old_fixed = _Aligned._Clamp_to_end(_Old_last);
+                const void* const _New_fixed = _Aligned._Clamp_to_end(_New_last);
+
+                // old state:
+                //   [_Aligned._First, _Old_fixed) valid
+                //   [_Old_fixed, _Aligned._End) poison
+                //   [_Aligned._End, _End) valid
+                // new state:
+                //   [_Aligned._First, _New_fixed) valid
+                //   [_New_fixed, _Aligned._End) poison
+                //   [_Aligned._End, _End) valid
+                _CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
+            }
         }
     }
 
@@ -1488,6 +1490,8 @@ public:
 #if _HAS_CXX23
     template <_Container_compatible_range<_Ty> _Rng>
     constexpr void assign_range(_Rng&& _Range) {
+        static_assert(assignable_from<_Ty&, _RANGES range_reference_t<_Rng>>,
+            "Elements must be assignable from the range's reference type (N4993 [sequence.reqmts]/60).");
         if constexpr (_RANGES sized_range<_Rng> || _RANGES forward_range<_Rng>) {
             const auto _Length = _To_unsigned_like(_RANGES distance(_Range));
             const auto _Count  = _Convert_size<size_type>(_Length);
@@ -1733,8 +1737,8 @@ public:
         pointer& _Mylast = _My_data._Mylast;
 
 #if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_My_data._Myfirst != _Mylast, "vector empty before pop");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_My_data._Myfirst != _Mylast, "pop_back() called on empty vector");
+#endif
 
         _Orphan_range(_Mylast - 1, _Mylast);
         _Alty_traits::destroy(_Getal(), _Unfancy(_Mylast - 1));
@@ -1912,7 +1916,7 @@ public:
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(
             _Pos < static_cast<size_type>(_My_data._Mylast - _My_data._Myfirst), "vector subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _My_data._Myfirst[_Pos];
     }
@@ -1922,7 +1926,7 @@ public:
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(
             _Pos < static_cast<size_type>(_My_data._Mylast - _My_data._Myfirst), "vector subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _My_data._Myfirst[_Pos];
     }
@@ -1949,7 +1953,7 @@ public:
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "front() called on empty vector");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *_My_data._Myfirst;
     }
@@ -1958,7 +1962,7 @@ public:
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "front() called on empty vector");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *_My_data._Myfirst;
     }
@@ -1967,7 +1971,7 @@ public:
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "back() called on empty vector");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _My_data._Mylast[-1];
     }
@@ -1976,7 +1980,7 @@ public:
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "back() called on empty vector");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _My_data._Mylast[-1];
     }
@@ -2441,9 +2445,6 @@ private:
     using _Mybase          = _Vb_iter_base<_Alvbase_wrapped>;
     using _Mycont          = typename _Mybase::_Mycont;
     using _Difference_type = typename _Mybase::_Difference_type;
-
-    // TRANSITION, ABI: non-trivial constructor
-    _CONSTEXPR20 _Vb_reference() = default;
 
 public:
     _CONSTEXPR20 _Vb_reference(const _Vb_reference&) = default;
@@ -3210,7 +3211,7 @@ public:
     _NODISCARD _CONSTEXPR20 const_reference operator[](size_type _Off) const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off < this->_Mysize, "vector<bool> subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         const_iterator _It = begin();
         _It._Advance(_Off);
@@ -3220,7 +3221,7 @@ public:
     _NODISCARD _CONSTEXPR20 reference operator[](size_type _Off) noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Off < this->_Mysize, "vector<bool> subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         iterator _It = begin();
         _It._Advance(_Off);
@@ -3230,7 +3231,7 @@ public:
     _NODISCARD _CONSTEXPR20 reference front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Mysize != 0, "front() called on empty vector<bool>");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *begin();
     }
@@ -3238,7 +3239,7 @@ public:
     _NODISCARD _CONSTEXPR20 const_reference front() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Mysize != 0, "front() called on empty vector<bool>");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *begin();
     }
@@ -3246,7 +3247,7 @@ public:
     _NODISCARD _CONSTEXPR20 reference back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Mysize != 0, "back() called on empty vector<bool>");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *(end() - 1);
     }
@@ -3254,7 +3255,7 @@ public:
     _NODISCARD _CONSTEXPR20 const_reference back() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Mysize != 0, "back() called on empty vector<bool>");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return *(end() - 1);
     }
@@ -3329,6 +3330,8 @@ public:
 
     template <_Container_compatible_range<bool> _Rng>
     constexpr void assign_range(_Rng&& _Range) {
+        static_assert(assignable_from<bool&, _RANGES range_reference_t<_Rng>>,
+            "Elements must be assignable from the range's reference type (N4993 [sequence.reqmts]/60).");
         clear();
         if constexpr (_RANGES forward_range<_Rng> || _RANGES sized_range<_Rng>) {
             const auto _Length = _To_unsigned_like(_RANGES distance(_Range));
@@ -3419,11 +3422,13 @@ public:
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(end() > _Where, "vector<bool> erase iterator outside range");
+#endif
+
         _STD copy(_Next_iter(_Where), end(), _Where);
+
+#if _ITERATOR_DEBUG_LEVEL == 2
         _Orphan_range(static_cast<size_type>(_Off), this->_Mysize);
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
-        _STD copy(_Next_iter(_Where), end(), _Where);
-#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
+#endif
 
         _Trim(this->_Mysize - 1);
         return begin() + _Off;
@@ -3438,14 +3443,16 @@ public:
         if (_First != _Last) { // worth doing, copy down over hole
 #if _ITERATOR_DEBUG_LEVEL == 2
             _STL_VERIFY(_Last >= _First && end() >= _Last, "vector<bool> erase iterator outside range");
+#endif
+
             iterator _Next      = _STD copy(_Last, end(), _First);
             const auto _Newsize = static_cast<size_type>(_Next - begin());
+
+#if _ITERATOR_DEBUG_LEVEL == 2
             _Orphan_range(_Newsize, this->_Mysize);
+#endif
+
             _Trim(_Newsize);
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL < 2 vvv
-            iterator _Next = _STD copy(_Last, end(), _First);
-            _Trim(static_cast<size_type>(_Next - begin()));
-#endif // ^^^ _ITERATOR_DEBUG_LEVEL < 2 ^^^
         }
         return begin() + _Off;
     }

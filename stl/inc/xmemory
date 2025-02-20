@@ -809,6 +809,10 @@ struct _Simple_types { // wraps types from allocators with simple addressing for
 _INLINE_VAR constexpr size_t _Asan_granularity      = 8;
 _INLINE_VAR constexpr size_t _Asan_granularity_mask = _Asan_granularity - 1;
 
+// Controls whether ASan `container-overflow` errors are reported for this allocator.
+template <class>
+constexpr bool _Disable_ASan_container_annotations_for_allocator = false;
+
 struct _Asan_aligned_pointers {
     const void* _First;
     const void* _End;
@@ -1605,6 +1609,12 @@ void _Return_temporary_buffer(_Ty* const _Pbuf) noexcept {
     }
 }
 
+template <class _Ty, class _InIt>
+void _Construct_in_place_by_deref(_Ty& _Val, _InIt& _Iter)
+    noexcept(noexcept(::new (static_cast<void*>(_STD addressof(_Val))) _Ty(*_Iter))) {
+    ::new (static_cast<void*>(_STD addressof(_Val))) _Ty(*_Iter);
+}
+
 template <class _NoThrowFwdIt>
 struct _NODISCARD _Uninitialized_backout {
     // struct to undo partially constructed ranges in _Uninitialized_xxx algorithms
@@ -1629,6 +1639,25 @@ struct _NODISCARD _Uninitialized_backout {
         ++_Last;
     }
 
+    template <class _InIt>
+    void _Emplace_back_deref(_InIt& _Iter) {
+        // construct a new element at *_Last from the result of dereferencing _Iter and increment.
+        _STD _Construct_in_place_by_deref(*_Last, _Iter);
+        ++_Last;
+    }
+
+    template <class _InIt>
+    void _Emplace_back_deref_move(_InIt& _Iter) {
+        // construct a new element at *_Last from the result of dereferencing _Iter and increment,
+        // with lvalue cast to xvalue if necessary for uninitialized_move(_n).
+        if constexpr (is_lvalue_reference_v<decltype(*_Iter)>) {
+            _STD _Construct_in_place(*_Last, _STD move(*_Iter));
+        } else {
+            _STD _Construct_in_place_by_deref(*_Last, _Iter);
+        }
+        ++_Last;
+    }
+
     constexpr _NoThrowFwdIt _Release() { // suppress any exception handling backout and return _Last
         _First = _Last;
         return _Last;
@@ -1636,19 +1665,19 @@ struct _NODISCARD _Uninitialized_backout {
 };
 
 template <class _InIt, class _NoThrowFwdIt>
-_CONSTEXPR20 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
+_NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // move [_First, _Last) to raw [_Dest, ...)
     if constexpr (_Iter_move_cat<_InIt, _NoThrowFwdIt>::_Bitcopy_constructible) {
-#if _HAS_CXX20
+#if 0 // TRANSITION, _HAS_CXX26
         if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
+#endif // _HAS_CXX26
         {
             return _STD _Copy_memmove(_First, _Last, _Dest);
         }
     }
     _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
     for (; _First != _Last; ++_First) {
-        _Backout._Emplace_back(_STD move(*_First));
+        _Backout._Emplace_back_deref_move(_First);
     }
 
     return _Backout._Release();
@@ -1761,23 +1790,31 @@ namespace ranges {
         requires (constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>)
     uninitialized_move_result<_It, _Out> _Uninitialized_move_unchecked(
         _It _IFirst, _Se _ILast, _Out _OFirst, _OSe _OLast) {
-        constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
-        constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
-        if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_constructible && _Sized_or_unreachable_sentinel_for<_Se, _It>
-                      && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
+        constexpr bool _Is_sized1  = sized_sentinel_for<_Se, _It>;
+        constexpr bool _Is_sized2  = sized_sentinel_for<_OSe, _Out>;
+        constexpr bool _Can_memcpy = _Iter_move_cat<_It, _Out>::_Bitcopy_constructible
+                                  && _Sized_or_unreachable_sentinel_for<_Se, _It>
+                                  && _Sized_or_unreachable_sentinel_for<_OSe, _Out>;
+        if constexpr (_Can_memcpy && (_Is_sized1 || _Is_sized2)) {
             if constexpr (_Is_sized1 && _Is_sized2) {
                 return _RANGES _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
                     _RANGES next(_OFirst, _STD move(_OLast)));
             } else if constexpr (_Is_sized1) {
                 return _RANGES _Copy_memcpy_distance(
                     _IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
-            } else if constexpr (_Is_sized2) {
+            } else {
+                _STL_INTERNAL_STATIC_ASSERT(_Is_sized2);
                 return _RANGES _Copy_memcpy_distance(
                     _IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
-            } else {
-                _STL_ASSERT(false, "Tried to uninitialized_move two ranges with unreachable sentinels");
             }
         } else {
+            if constexpr (_Can_memcpy) {
+                // We were eligible for the memcpy optimization above, except for both sentinels being unreachable.
+                // The following classic code is doomed, because no exceptions will end the infinite loop.
+                // Following our usual pattern, let's emit a debug assertion, then run the loop anyways.
+                _STL_ASSERT(false, "Tried to std::uninitialized_move() two ranges with unreachable sentinels");
+            }
+
             _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
             for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
@@ -1909,12 +1946,12 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy_n(
 }
 
 template <class _InIt, class _NoThrowFwdIt>
-_CONSTEXPR20 _NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
+_NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // copy [_First, _Last) to raw [_Dest, ...)
     if constexpr (_Iter_copy_cat<_InIt, _NoThrowFwdIt>::_Bitcopy_constructible) {
-#if _HAS_CXX20
+#if 0 // TRANSITION, _HAS_CXX26
         if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
+#endif // _HAS_CXX26
         {
             return _STD _Copy_memmove(_First, _Last, _Dest);
         }
@@ -1922,7 +1959,7 @@ _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _In
 
     _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
     for (; _First != _Last; ++_First) {
-        _Backout._Emplace_back(*_First);
+        _Backout._Emplace_back_deref(_First);
     }
 
     return _Backout._Release();
@@ -2092,15 +2129,22 @@ _CXX17_DEPRECATE_TEMPORARY_BUFFER void return_temporary_buffer(_Ty* _Pbuf) {
 }
 #endif // _HAS_DEPRECATED_TEMPORARY_BUFFER
 
-// assumes _Args have already been _Remove_cvref_t'd
+// The key_type of an (unordered) associative container is cv-unqualified, and we can't bind const Key& to a
+// volatile glvalue. Also, Cpp17CopyInsertable and Cpp17MoveInsertable don't require value-preservation for
+// the construction from a volatile glvalue, so generally we can't perform this optimization for them.
+// See N4993 [container.alloc.reqmts]/2.3, /2.4.
+template <class _Ty>
+using _Remove_const_ref_t = remove_const_t<remove_reference_t<_Ty>>;
+
+// assumes _Args have already been _Remove_const_ref_t'd
 template <class _Key, class... _Args>
-struct _In_place_key_extract_set {
+struct _In_place_key_extract_set_impl {
     // by default we can't extract the key in the emplace family and must construct a node we might not use
     static constexpr bool _Extractable = false;
 };
 
 template <class _Key>
-struct _In_place_key_extract_set<_Key, _Key> {
+struct _In_place_key_extract_set_impl<_Key, _Key> {
     // we can extract the key in emplace if the emplaced type is identical to the key type
     static constexpr bool _Extractable = true;
     static const _Key& _Extract(const _Key& _Val) noexcept {
@@ -2108,15 +2152,18 @@ struct _In_place_key_extract_set<_Key, _Key> {
     }
 };
 
-// assumes _Args have already been _Remove_cvref_t'd
+template <class... _Valtys>
+using _In_place_key_extract_set = _In_place_key_extract_set_impl<_Remove_const_ref_t<_Valtys>...>;
+
+// assumes _Args have already been _Remove_const_ref_t'd
 template <class _Key, class... _Args>
-struct _In_place_key_extract_map {
+struct _In_place_key_extract_map_impl {
     // by default we can't extract the key in the emplace family and must construct a node we might not use
     static constexpr bool _Extractable = false;
 };
 
 template <class _Key, class _Second>
-struct _In_place_key_extract_map<_Key, _Key, _Second> {
+struct _In_place_key_extract_map_impl<_Key, _Key, _Second> {
     // if we would call the pair(key, value) constructor family, we can use the first parameter as the key
     static constexpr bool _Extractable = true;
     static const _Key& _Extract(const _Key& _Val, const _Second&) noexcept {
@@ -2125,13 +2172,48 @@ struct _In_place_key_extract_map<_Key, _Key, _Second> {
 };
 
 template <class _Key, class _First, class _Second>
-struct _In_place_key_extract_map<_Key, pair<_First, _Second>> {
+struct _In_place_key_extract_map_impl<_Key, pair<_First, _Second>> {
     // if we would call the pair(pair<other, other>) constructor family, we can use the pair.first member as the key
-    static constexpr bool _Extractable = is_same_v<_Key, _Remove_cvref_t<_First>>;
-    static const _Key& _Extract(const pair<_First, _Second>& _Val) {
+    static constexpr bool _Extractable = is_same_v<_Key, _Remove_const_ref_t<_First>>;
+    static const _Key& _Extract(const pair<_First, _Second>& _Val) noexcept {
         return _Val.first;
     }
 };
+
+#if _HAS_CXX23
+// if we would call the pair(pair-like) constructor family and the argument is not a subrange,
+// we can use get<0>(pair-like) as the key
+
+template <class _Key, class _Elem>
+struct _In_place_key_extract_map_impl<_Key, array<_Elem, 2>> {
+    static constexpr bool _Extractable = is_same_v<_Key, remove_const_t<_Elem>>;
+    static const _Key& _Extract(const array<_Elem, 2>& _Val) noexcept {
+        return _Val[0];
+    }
+};
+
+template <class _Key, class _First, class _Second>
+struct _In_place_key_extract_map_impl<_Key, tuple<_First, _Second>> {
+    static constexpr bool _Extractable = is_same_v<_Key, _Remove_const_ref_t<_First>>;
+    static const _Key& _Extract(const tuple<_First, _Second>& _Val) noexcept {
+        return _STD get<0>(_Val);
+    }
+};
+#endif // _HAS_CXX23
+
+template <class _Key, class _First, class... _RestTypes>
+struct _In_place_key_extract_map_impl<_Key, piecewise_construct_t, tuple<_First>, tuple<_RestTypes...>> {
+    // if we would call the piecewise_construct_t constructor and the first argument is a 1-tuple,
+    // we can use get<0>(first_tuple) as the key
+    static constexpr bool _Extractable = is_same_v<_Key, _Remove_const_ref_t<_First>>;
+    static const _Key& _Extract(
+        const piecewise_construct_t&, const tuple<_First>& _Tup_val, const tuple<_RestTypes...>&) noexcept {
+        return _STD get<0>(_Tup_val);
+    }
+};
+
+template <class... _Valtys>
+using _In_place_key_extract_map = _In_place_key_extract_map_impl<_Remove_const_ref_t<_Valtys>...>;
 
 #pragma warning(push)
 #pragma warning(disable : 4624) // '%s': destructor was implicitly defined as deleted

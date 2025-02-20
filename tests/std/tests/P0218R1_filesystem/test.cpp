@@ -1267,7 +1267,9 @@ void test_directory_iterator_common_parts(const string_view typeName) {
 
     // DirectoryIterator() noexcept;
     // ~DirectoryIterator();
-    { DirectoryIterator default_ctor; }
+    {
+        DirectoryIterator default_ctor;
+    }
 
     // explicit DirectoryIterator(const path& _Path_arg);
     // DirectoryIterator(const path& _Path_arg, directory_options _Options_arg);
@@ -4082,11 +4084,15 @@ int wmain(int argc, wchar_t* argv[]) {
     try {
         return run_all_tests(argc, argv);
     } catch (const filesystem_error& fe) {
-        cout << "filesystem_error: " << fe.what() << endl;
+        cout << "Caught filesystem_error." << endl;
+        cout << "    what: " << fe.what() << endl;
+        cout << "   value: " << fe.code().value() << endl;
+        cout << "category: " << fe.code().category().name() << endl;
     } catch (const exception& e) {
-        cout << "exception: " << e.what() << endl;
+        cout << "Caught exception." << endl;
+        cout << "what: " << e.what() << endl;
     } catch (...) {
-        cout << "Unknown exception." << endl;
+        cout << "Caught unknown exception." << endl;
     }
 
     return EXIT_FAILURE;

@@ -12,8 +12,9 @@
 #include <vector>
 
 #include "lorem.hpp"
-using namespace std::string_view_literals;
+#include "skewed_allocator.hpp"
 
+using namespace std::string_view_literals;
 
 template <size_t Size, bool Last_is_different>
 constexpr auto make_fill_pattern_array() {
@@ -48,12 +49,18 @@ constexpr data_and_pattern patterns[] = {
     /* 5. Large, evil */ {fill_pattern_view<3000, false>, fill_pattern_view<20, true>},
 };
 
+template <class T>
+using not_highly_aligned_basic_string = std::basic_string<T, std::char_traits<T>, not_highly_aligned_allocator<T>>;
+
+using not_highly_aligned_string  = not_highly_aligned_basic_string<char>;
+using not_highly_aligned_wstring = not_highly_aligned_basic_string<wchar_t>;
+
 void c_strstr(benchmark::State& state) {
     const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
     const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
 
-    const std::string haystack(src_haystack);
-    const std::string needle(src_needle);
+    const not_highly_aligned_string haystack(src_haystack);
+    const not_highly_aligned_string needle(src_needle);
 
     for (auto _ : state) {
         benchmark::DoNotOptimize(haystack);
@@ -68,8 +75,8 @@ void classic_search(benchmark::State& state) {
     const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
     const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
 
-    const std::vector<T> haystack(src_haystack.begin(), src_haystack.end());
-    const std::vector<T> needle(src_needle.begin(), src_needle.end());
+    const std::vector<T, not_highly_aligned_allocator<T>> haystack(src_haystack.begin(), src_haystack.end());
+    const std::vector<T, not_highly_aligned_allocator<T>> needle(src_needle.begin(), src_needle.end());
 
     for (auto _ : state) {
         benchmark::DoNotOptimize(haystack);
@@ -84,8 +91,8 @@ void ranges_search(benchmark::State& state) {
     const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
     const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
 
-    const std::vector<T> haystack(src_haystack.begin(), src_haystack.end());
-    const std::vector<T> needle(src_needle.begin(), src_needle.end());
+    const std::vector<T, not_highly_aligned_allocator<T>> haystack(src_haystack.begin(), src_haystack.end());
+    const std::vector<T, not_highly_aligned_allocator<T>> needle(src_needle.begin(), src_needle.end());
 
     for (auto _ : state) {
         benchmark::DoNotOptimize(haystack);
@@ -100,8 +107,8 @@ void search_default_searcher(benchmark::State& state) {
     const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
     const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
 
-    const std::vector<T> haystack(src_haystack.begin(), src_haystack.end());
-    const std::vector<T> needle(src_needle.begin(), src_needle.end());
+    const std::vector<T, not_highly_aligned_allocator<T>> haystack(src_haystack.begin(), src_haystack.end());
+    const std::vector<T, not_highly_aligned_allocator<T>> needle(src_needle.begin(), src_needle.end());
 
     for (auto _ : state) {
         benchmark::DoNotOptimize(haystack);
@@ -112,12 +119,28 @@ void search_default_searcher(benchmark::State& state) {
 }
 
 template <class T>
+void member_find(benchmark::State& state) {
+    const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
+    const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
+
+    const T haystack(src_haystack.begin(), src_haystack.end());
+    const T needle(src_needle.begin(), src_needle.end());
+
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(haystack);
+        benchmark::DoNotOptimize(needle);
+        auto res = haystack.find(needle);
+        benchmark::DoNotOptimize(res);
+    }
+}
+
+template <class T>
 void classic_find_end(benchmark::State& state) {
     const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
     const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
 
-    const std::vector<T> haystack(src_haystack.begin(), src_haystack.end());
-    const std::vector<T> needle(src_needle.begin(), src_needle.end());
+    const std::vector<T, not_highly_aligned_allocator<T>> haystack(src_haystack.begin(), src_haystack.end());
+    const std::vector<T, not_highly_aligned_allocator<T>> needle(src_needle.begin(), src_needle.end());
 
     for (auto _ : state) {
         benchmark::DoNotOptimize(haystack);
@@ -132,13 +155,29 @@ void ranges_find_end(benchmark::State& state) {
     const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
     const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
 
-    const std::vector<T> haystack(src_haystack.begin(), src_haystack.end());
-    const std::vector<T> needle(src_needle.begin(), src_needle.end());
+    const std::vector<T, not_highly_aligned_allocator<T>> haystack(src_haystack.begin(), src_haystack.end());
+    const std::vector<T, not_highly_aligned_allocator<T>> needle(src_needle.begin(), src_needle.end());
 
     for (auto _ : state) {
         benchmark::DoNotOptimize(haystack);
         benchmark::DoNotOptimize(needle);
         auto res = std::ranges::find_end(haystack, needle);
+        benchmark::DoNotOptimize(res);
+    }
+}
+
+template <class T>
+void member_rfind(benchmark::State& state) {
+    const auto& src_haystack = patterns[static_cast<size_t>(state.range())].data;
+    const auto& src_needle   = patterns[static_cast<size_t>(state.range())].pattern;
+
+    const T haystack(src_haystack.begin(), src_haystack.end());
+    const T needle(src_needle.begin(), src_needle.end());
+
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(haystack);
+        benchmark::DoNotOptimize(needle);
+        auto res = haystack.rfind(needle);
         benchmark::DoNotOptimize(res);
     }
 }
@@ -158,10 +197,16 @@ BENCHMARK(ranges_search<std::uint16_t>)->Apply(common_args);
 BENCHMARK(search_default_searcher<std::uint8_t>)->Apply(common_args);
 BENCHMARK(search_default_searcher<std::uint16_t>)->Apply(common_args);
 
+BENCHMARK(member_find<not_highly_aligned_string>)->Apply(common_args);
+BENCHMARK(member_find<not_highly_aligned_wstring>)->Apply(common_args);
+
 BENCHMARK(classic_find_end<std::uint8_t>)->Apply(common_args);
 BENCHMARK(classic_find_end<std::uint16_t>)->Apply(common_args);
 
 BENCHMARK(ranges_find_end<std::uint8_t>)->Apply(common_args);
 BENCHMARK(ranges_find_end<std::uint16_t>)->Apply(common_args);
+
+BENCHMARK(member_rfind<not_highly_aligned_string>)->Apply(common_args);
+BENCHMARK(member_rfind<not_highly_aligned_wstring>)->Apply(common_args);
 
 BENCHMARK_MAIN();
