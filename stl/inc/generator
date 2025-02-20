@@ -286,6 +286,13 @@ namespace _Gen_detail {
             return _Nested_awaitable{_STD move(_Elem.range)};
         }
 
+        template <class _Rty, class _Vty, class _Alloc, class _Unused>
+            requires same_as<_Yield_t<_Reference_t<_Rty, _Vty>>, _Yielded>
+        _NODISCARD auto yield_value(_RANGES elements_of<generator<_Rty, _Vty, _Alloc>&, _Unused> _Elem) noexcept {
+            using _Nested_awaitable = _Nested_awaitable_provider<_Rty, _Vty, _Alloc>::_Awaitable;
+            return _Nested_awaitable{_STD move(_Elem.range)};
+        }
+
         template <_RANGES input_range _Rng, class _Alloc>
             requires convertible_to<_RANGES range_reference_t<_Rng>, _Yielded>
         _NODISCARD auto yield_value(_RANGES elements_of<_Rng, _Alloc> _Elem) {
