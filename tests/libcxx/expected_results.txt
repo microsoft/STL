@@ -239,7 +239,8 @@ std/containers/container.adaptors/flat.map/flat.map.capacity/empty.pass.cpp:0 FA
 std/containers/container.adaptors/flat.map/flat.map.capacity/empty.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.capacity/size.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.capacity/size.pass.cpp:1 FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/assign_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/assign_initializer_list.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/assign_initializer_list.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/copy_alloc.pass.cpp:0 SKIPPED
 std/containers/container.adaptors/flat.map/flat.map.cons/copy_alloc.pass.cpp:1 SKIPPED
 std/containers/container.adaptors/flat.map/flat.map.cons/copy_assign.pass.cpp:0 FAIL
@@ -307,7 +308,8 @@ std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_or_assign_t
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_or_assign.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_or_assign.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_range.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_rv.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_rv.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_rv.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_sorted_initializer_list.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_sorted_iter_iter.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_transparent.pass.cpp:0 FAIL
@@ -326,7 +328,8 @@ std/containers/container.adaptors/flat.map/flat.map.observers/keys_values.pass.c
 std/containers/container.adaptors/flat.map/flat.map.observers/keys_values.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.operations/contains_transparent.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.operations/contains_transparent.pass.cpp:1 FAIL
-std/containers/container.adaptors/flat.map/flat.map.operations/contains.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.operations/contains.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.operations/contains.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.operations/count_transparent.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.operations/count_transparent.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.operations/count.pass.cpp:0 FAIL
