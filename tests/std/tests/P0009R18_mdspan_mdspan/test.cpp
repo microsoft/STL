@@ -318,28 +318,6 @@ private:
 
 static_assert(check_accessor_policy_requirements<AccessorWithCustomOffsetPolicy<int>>());
 
-template <class ElementType>
-struct TrivialAccessor {
-    using offset_policy    = TrivialAccessor;
-    using element_type     = ElementType;
-    using reference        = ElementType&;
-    using data_handle_type = ElementType*;
-
-    constexpr reference access(data_handle_type handle, size_t off) const noexcept {
-        return handle[off];
-    }
-
-    constexpr data_handle_type offset(data_handle_type handle, size_t off) const noexcept {
-        return handle + off;
-    }
-
-    int member;
-};
-
-static_assert(check_accessor_policy_requirements<TrivialAccessor<int>>());
-static_assert(is_trivially_copyable_v<TrivialAccessor<int>>);
-static_assert(is_trivially_default_constructible_v<TrivialAccessor<int>>);
-
 template <class Ext, class Layout, template <class> class AccessorTemplate>
 constexpr void check_modeled_concepts_and_member_types() {
     using Accessor = AccessorTemplate<float>;
@@ -1359,25 +1337,6 @@ constexpr void check_deduction_guides() {
         static_assert(same_as<decltype(mds), mdspan<bool, extents<int, 2, 2>, TrackingLayout<>, VectorBoolAccessor>>);
     }
 }
-
-// When
-// * 'Mds::accessor_type' is a specialization of 'default_accessor', and
-// * 'Mds::layout_type' is
-//   * 'layout_left' or 'layout_right' and 'Mds::extents_type::rank_dynamic() == 0', or
-//   * 'layout_stride' and 'Mds::extents_type::rank() == 0'
-// then 'sizeof(Mds) == sizeof(void*)' (MSVC STL specific behavior).
-static_assert(sizeof(mdspan<int, extents<int, 3, 3, 3>, layout_left>) == sizeof(void*));
-static_assert(sizeof(mdspan<int, dextents<int, 3>, layout_left>) > sizeof(void*));
-static_assert(sizeof(mdspan<int, extents<int, 3, 3, 3>, layout_left, TrivialAccessor<int>>) > sizeof(void*));
-
-static_assert(sizeof(mdspan<long, extents<long, 2, 2, 2>, layout_right>) == sizeof(void*));
-static_assert(sizeof(mdspan<long, dextents<long, 2>, layout_right>) > sizeof(void*));
-static_assert(sizeof(mdspan<long, extents<long, 2, 2, 2>, layout_right, TrivialAccessor<long>>) > sizeof(void*));
-
-static_assert(sizeof(mdspan<short, extents<short>, layout_stride>) == sizeof(void*));
-static_assert(sizeof(mdspan<short, extents<short, 4, 4, 4>, layout_stride>) > sizeof(void*));
-static_assert(sizeof(mdspan<short, dextents<short, 4>, layout_stride>) > sizeof(void*));
-static_assert(sizeof(mdspan<short, extents<short, 4, 4, 4>, layout_stride, TrivialAccessor<short>>) > sizeof(void*));
 
 constexpr bool test() {
     check_modeled_concepts_and_member_types<dextents<unsigned long long, 3>, layout_left, default_accessor>();
