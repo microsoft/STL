@@ -900,7 +900,7 @@ public:
     }
 
     _NODISCARD reference front() noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_FORWARD_LIST || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mypair._Myval2._Myhead != nullptr, "front() called on empty forward_list");
 #endif
 
@@ -908,7 +908,7 @@ public:
     }
 
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_FORWARD_LIST || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mypair._Myval2._Myhead != nullptr, "front() called on empty forward_list");
 #endif
 
@@ -927,6 +927,10 @@ public:
 #endif // _HAS_CXX23
 
     void pop_front() noexcept /* strengthened */ {
+#if _MSVC_STL_HARDENING_FORWARD_LIST || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Mypair._Myval2._Myhead != nullptr, "pop_front() called on empty forward_list");
+#endif
+
         _Erase_after(_Mypair._Myval2._Before_head());
     }
 

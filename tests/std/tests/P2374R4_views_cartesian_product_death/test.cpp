@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <array>
 #include <cassert>
 #include <limits>
@@ -78,11 +76,6 @@ int main(int argc, char* argv[]) {
         test_iterator_advance_before_begin,
         test_iterator_differencing,
         test_iterator_and_default_sentinel_differencing,
-    });
-#else // ^^^ test everything / test only _CONTAINER_DEBUG_LEVEL cases vvv
-    exec.add_death_tests({
-        test_view_size,
-        test_view_const_size,
     });
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
