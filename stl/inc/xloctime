@@ -55,8 +55,8 @@ ios_base::iostate _Getint_v2(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int&
     }
 
     for (char* const _Pe = &_Ac[_Max_int_dig - 1];
-         _First != _Last && '0' <= (_Ch = _Ctype_fac.narrow(*_First)) && _Ch <= '9' && _Digits_read < _Hi_digits;
-         ++_Digits_read, (void) ++_First) { // copy digits
+        _First != _Last && '0' <= (_Ch = _Ctype_fac.narrow(*_First)) && _Ch <= '9' && _Digits_read < _Hi_digits;
+        ++_Digits_read, (void) ++_First) { // copy digits
         *_Ptr = _Ch;
         if (_Ptr < _Pe) {
             ++_Ptr; // drop trailing digits if already too large

@@ -348,7 +348,9 @@ void test_osyncstream(string_buffer<typename Alloc::value_type>* buf = nullptr) 
     { // test synchronization
         OSyncStream oss(buf);
         oss << "Last ";
-        { OSyncStream(oss.get_wrapped()) << "First Input!\n"; }
+        {
+            OSyncStream(oss.get_wrapped()) << "First Input!\n";
+        }
         oss << "Input!" << '\n';
     }
     if (buf) {

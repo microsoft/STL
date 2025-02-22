@@ -73,9 +73,11 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(end1 - string
         auto bbuffer = _malloc_crt_t(unsigned char, n1);
 
         if (bbuffer) {
-#pragma warning(suppress : 6386) // PREfast doesn't understand LCMAP_SORTKEY
+#pragma warning(push)
+#pragma warning(disable : 6386) // PREfast doesn't understand LCMAP_SORTKEY
             size = __crtLCMapStringW(locale_name, LCMAP_SORTKEY, string2, static_cast<int>(n2),
                 reinterpret_cast<wchar_t*>(bbuffer.get()), static_cast<int>(n1));
+#pragma warning(pop)
 
             if (size == 0) {
                 // buffer not big enough, get size required.

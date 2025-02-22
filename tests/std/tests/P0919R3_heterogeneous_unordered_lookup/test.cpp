@@ -272,6 +272,9 @@ void assert_unique() {
     emplace_test_strings(cRawToExtract);
 #endif // _HAS_CXX23
 
+    // GH-5207 "<xhash>: Some member functions of transparent hash containers fail to work with initializer lists"
+    typename Container::key_type testNotInStringListSrc(testNotInString.data(), testNotInString.size());
+
     // Test that transparent containers pass through the string_view; non-transparent containers
     // are only passed in here with string_view value_type, so they also don't allocate.
     [[maybe_unused]] prohibit_allocations prohibitor(true);
@@ -280,6 +283,18 @@ void assert_unique() {
     assert(c.contains(testNotInString) == false);
     assert(c.count(testNotInString) == 0);
     assert_range_empty(c.equal_range(testNotInString));
+
+    assert(c.find({testNotInStringListSrc}) == c.end());
+    assert(c.contains({testNotInStringListSrc}) == false);
+    assert(c.count({testNotInStringListSrc}) == 0);
+    assert_range_empty(c.equal_range({testNotInStringListSrc}));
+
+    // Test non-const overloads.
+    assert(cRaw.find(testNotInString) == cRaw.end());
+    assert_range_empty(cRaw.equal_range(testNotInString));
+
+    assert(cRaw.find({testNotInStringListSrc}) == cRaw.end());
+    assert_range_empty(cRaw.equal_range({testNotInStringListSrc}));
 
     for (const auto& example : testStrings) {
         const auto target = c.find(example);
@@ -328,6 +343,9 @@ void assert_multi() {
 #endif // _HAS_CXX23
     }
 
+    // GH-5207 "<xhash>: Some member functions of transparent hash containers fail to work with initializer lists"
+    typename Container::key_type testNotInStringListSrc(testNotInString.data(), testNotInString.size());
+
     // Test that transparent containers pass through the string_view; non-transparent containers
     // are only passed in here with string_view value_type, so they also don't allocate.
     [[maybe_unused]] prohibit_allocations prohibitor(true);
@@ -336,6 +354,18 @@ void assert_multi() {
     assert(c.contains(testNotInString) == false);
     assert(c.count(testNotInString) == 0);
     assert_range_empty(c.equal_range(testNotInString));
+
+    assert(c.find({testNotInStringListSrc}) == c.end());
+    assert(c.contains({testNotInStringListSrc}) == false);
+    assert(c.count({testNotInStringListSrc}) == 0);
+    assert_range_empty(c.equal_range({testNotInStringListSrc}));
+
+    // Test non-const overloads.
+    assert(cRaw.find(testNotInString) == cRaw.end());
+    assert_range_empty(cRaw.equal_range(testNotInString));
+
+    assert(cRaw.find({testNotInStringListSrc}) == cRaw.end());
+    assert_range_empty(cRaw.equal_range({testNotInStringListSrc}));
 
     for (const auto& example : testStrings) {
         const auto target = c.find(example);

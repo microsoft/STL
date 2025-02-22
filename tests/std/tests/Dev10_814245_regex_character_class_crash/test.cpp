@@ -111,12 +111,39 @@ void test_VSO_984741_splitting_a_string_with_a_regex() {
     assert(equal(i, sregex_token_iterator{}, begin(tokens), end(tokens)));
 }
 
+void test_gh_5164_case_insensitive_ranges() {
+    using ch_traits = char_traits<char>;
+    const regex_traits<char> re_traits;
+    for (size_t upper = 0; upper < characterCount; ++upper) {
+        for (size_t lower = 0; lower < characterCount; ++lower) {
+            const string pattern(g_firstCharacters[lower] + "-" + g_secondCharacters[upper]);
+            const char left_bound  = re_traits.translate_nocase(g_inputs[lower][0]);
+            const char right_bound = re_traits.translate_nocase(g_inputs[upper][0]);
+
+            if (ch_traits::lt(right_bound, left_bound)) {
+                g_regexTester.should_throw(pattern, error_range, icase);
+            } else {
+                const regex r(pattern, icase);
+                for (size_t c = 0; c < characterCount; ++c) {
+                    const char input_icase = re_traits.translate_nocase(g_inputs[c][0]);
+                    if (ch_traits::lt(input_icase, left_bound) || ch_traits::lt(right_bound, input_icase)) {
+                        g_regexTester.should_not_match(g_inputs[c], pattern, r);
+                    } else {
+                        g_regexTester.should_match(g_inputs[c], pattern, r);
+                    }
+                }
+            }
+        }
+    }
+}
+
 int main() {
     init_character_strings();
     test_dev10_814245_character_class_should_not_crash();
     test_dev10_723057_normal_to_high_bit_ranges_should_not_throw_error_range();
     test_VSO_153556_singular_classes_can_have_high_bit_set();
     test_VSO_984741_splitting_a_string_with_a_regex();
+    test_gh_5164_case_insensitive_ranges();
 
     return g_regexTester.result();
 }

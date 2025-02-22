@@ -619,15 +619,15 @@ STATIC_ASSERT(
 STATIC_ASSERT(
     !is_nothrow_move_assignable_v<basic_istringstream<char, char_traits<char>, pmr::polymorphic_allocator<char>>>);
 STATIC_ASSERT(!is_nothrow_move_assignable_v<
-              basic_istringstream<wchar_t, char_traits<wchar_t>, pmr::polymorphic_allocator<wchar_t>>>);
+    basic_istringstream<wchar_t, char_traits<wchar_t>, pmr::polymorphic_allocator<wchar_t>>>);
 STATIC_ASSERT(
     !is_nothrow_move_assignable_v<basic_ostringstream<char, char_traits<char>, pmr::polymorphic_allocator<char>>>);
 STATIC_ASSERT(!is_nothrow_move_assignable_v<
-              basic_ostringstream<wchar_t, char_traits<wchar_t>, pmr::polymorphic_allocator<wchar_t>>>);
+    basic_ostringstream<wchar_t, char_traits<wchar_t>, pmr::polymorphic_allocator<wchar_t>>>);
 STATIC_ASSERT(
     !is_nothrow_move_assignable_v<basic_stringstream<char, char_traits<char>, pmr::polymorphic_allocator<char>>>);
 STATIC_ASSERT(!is_nothrow_move_assignable_v<
-              basic_stringstream<wchar_t, char_traits<wchar_t>, pmr::polymorphic_allocator<wchar_t>>>);
+    basic_stringstream<wchar_t, char_traits<wchar_t>, pmr::polymorphic_allocator<wchar_t>>>);
 #endif // _HAS_CXX17
 
 STATIC_ASSERT(is_nothrow_std_swappable<stringbuf>);

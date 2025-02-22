@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <array>
 #include <cstddef>
 #include <mdspan>
@@ -97,6 +95,8 @@ void test_construction_from_array_with_unrepresentable_as_index_type_values() {
 
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec;
+
+#if _ITERATOR_DEBUG_LEVEL != 0
     exec.add_death_tests({
         test_static_extent_function_with_invalid_index,
         test_extent_function_with_invalid_index,
@@ -111,5 +111,7 @@ int main(int argc, char* argv[]) {
         test_construction_from_array_with_invalid_values,
         test_construction_from_array_with_unrepresentable_as_index_type_values,
     });
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
     return exec.run(argc, argv);
 }

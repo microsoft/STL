@@ -3481,7 +3481,7 @@ namespace move_iterator_test {
     static_assert(
         !has_greater_eq<move_iterator<simple_random_iter<sentinel_base>>, move_sentinel<std::default_sentinel_t>>);
     static_assert(!three_way_comparable<move_iterator<simple_random_iter<sentinel_base>>,
-                  move_sentinel<std::default_sentinel_t>>);
+        move_sentinel<std::default_sentinel_t>>);
 
     // GH-3014 "<ranges>: list-initialization is misused"
     void test_gh_3014() { // COMPILE-ONLY

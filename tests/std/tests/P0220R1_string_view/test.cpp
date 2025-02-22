@@ -1284,20 +1284,14 @@ namespace test_lwg_3950 {
     template <class Traits>
     concept characterized_traits = requires { typename Traits::is_characterized; };
 
-#ifdef __clang__ // TRANSITION, LLVM-75404
-#define CONST_PARAM const
-#else // ^^^ workaround / no workaround vvv
-#define CONST_PARAM
-#endif // ^^^ no workaround ^^^
-
     template <class CharT, characterized_traits Traits>
-    constexpr bool operator==(CONST_PARAM basic_string_view<CharT, Traits> x,
-        CONST_PARAM type_identity_t<basic_string_view<CharT, Traits>> y) noexcept {
+    constexpr bool operator==(
+        basic_string_view<CharT, Traits> x, type_identity_t<basic_string_view<CharT, Traits>> y) noexcept {
         return x.size() == y.size() && x.compare(y) == 0;
     }
     template <class CharT, characterized_traits Traits>
-    constexpr get_string_comparison_category_t<Traits> operator<=>(CONST_PARAM basic_string_view<CharT, Traits> x,
-        CONST_PARAM type_identity_t<basic_string_view<CharT, Traits>> y) noexcept {
+    constexpr get_string_comparison_category_t<Traits> operator<=>(
+        basic_string_view<CharT, Traits> x, type_identity_t<basic_string_view<CharT, Traits>> y) noexcept {
         return static_cast<get_string_comparison_category_t<Traits>>(x.compare(y) <=> 0);
     }
 

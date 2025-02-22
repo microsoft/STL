@@ -2145,6 +2145,8 @@ _NODISCARD _OutputIt _Fmt_write(
     case 'g':
         if (_Precision == -1) {
             _Precision = 6;
+        } else if (_Precision == 0) {
+            _Precision = 1;
         }
         _Format = chars_format::general;
         break;
@@ -2698,7 +2700,7 @@ struct _Arg_formatter {
     _Basic_format_specs<_CharT>* _Specs = nullptr;
 
     _OutputIt operator()(basic_format_arg<_Context>::handle) {
-        _STL_VERIFY(false, "The custom handler should be structurally unreachable for _Arg_formatter");
+        _STL_REPORT_ERROR("The custom handler should be structurally unreachable for _Arg_formatter");
         _STL_INTERNAL_CHECK(_Ctx);
         return _Ctx->out();
     }
@@ -3288,9 +3290,11 @@ void _Range_formatter_format_as_string(_Range&& _Rng, _FormatContext& _Ctx, cons
     if constexpr (_RANGES contiguous_range<_Range>) {
         const auto _Size = _STD _To_unsigned_like(_RANGES distance(_Rng));
 
-        if (!_STD in_range<size_t>(_Size)) [[unlikely]] {
-            _Throw_format_error("Formatted range is too long.");
+#ifdef _DEBUG
+        if constexpr (sizeof(_Size) > sizeof(size_t)) {
+            _STL_VERIFY(_Size <= size_t{PTRDIFF_MAX}, "contiguous range has impossible size.");
         }
+#endif // defined(_DEBUG)
 
         formatter<basic_string_view<_CharT>, _CharT> _String_view_formatter;
         if (_Debug) {

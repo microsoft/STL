@@ -236,11 +236,11 @@ void test_shared_ptr_all_copy_ctors() {
         const shared_ptr<const string[4]>&>); // GOOD: known-to-unknown is compatible
 
     STATIC_ASSERT(!is_constructible_v<shared_ptr<const string[4]>,
-                  const shared_ptr<string[]>&>); // BAD: unknown-to-known isn't allowed
+        const shared_ptr<string[]>&>); // BAD: unknown-to-known isn't allowed
     STATIC_ASSERT(
         is_nothrow_constructible_v<shared_ptr<const string[4]>, const shared_ptr<string[4]>&>); // GOOD: adds const
     STATIC_ASSERT(!is_constructible_v<shared_ptr<const string[4]>,
-                  const shared_ptr<const string[]>&>); // BAD: unknown-to-known isn't allowed
+        const shared_ptr<const string[]>&>); // BAD: unknown-to-known isn't allowed
     STATIC_ASSERT(is_nothrow_constructible_v<shared_ptr<const string[4]>,
         const shared_ptr<const string[4]>&>); // GOOD: same (plain, not converting)
 
@@ -297,7 +297,7 @@ void test_shared_ptr_all_move_ctors() {
         !is_constructible_v<shared_ptr<const string[4]>, shared_ptr<string[]>>); // BAD: unknown-to-known isn't allowed
     STATIC_ASSERT(is_nothrow_constructible_v<shared_ptr<const string[4]>, shared_ptr<string[4]>>); // GOOD: adds const
     STATIC_ASSERT(!is_constructible_v<shared_ptr<const string[4]>,
-                  shared_ptr<const string[]>>); // BAD: unknown-to-known isn't allowed
+        shared_ptr<const string[]>>); // BAD: unknown-to-known isn't allowed
     STATIC_ASSERT(is_nothrow_constructible_v<shared_ptr<const string[4]>,
         shared_ptr<const string[4]>>); // GOOD: same (plain, not converting)
 
@@ -351,10 +351,10 @@ void test_shared_ptr_weak_ctor() {
         const weak_ptr<const string[4]>&>); // GOOD: known-to-unknown is compatible
 
     STATIC_ASSERT(!is_constructible_v<shared_ptr<const string[4]>,
-                  const weak_ptr<string[]>&>); // BAD: unknown-to-known isn't allowed
+        const weak_ptr<string[]>&>); // BAD: unknown-to-known isn't allowed
     STATIC_ASSERT(is_constructible_v<shared_ptr<const string[4]>, const weak_ptr<string[4]>&>); // GOOD: adds const
     STATIC_ASSERT(!is_constructible_v<shared_ptr<const string[4]>,
-                  const weak_ptr<const string[]>&>); // BAD: unknown-to-known isn't allowed
+        const weak_ptr<const string[]>&>); // BAD: unknown-to-known isn't allowed
     STATIC_ASSERT(is_constructible_v<shared_ptr<const string[4]>, const weak_ptr<const string[4]>&>); // GOOD: same
 
     impl_shared_ptr_weak_ctor<string[], string[]>();
@@ -406,7 +406,7 @@ void test_shared_ptr_unique_ctor() {
     STATIC_ASSERT(
         !is_constructible_v<shared_ptr<const string[4]>, unique_ptr<string[]>>); // BAD: unknown-to-known isn't allowed
     STATIC_ASSERT(!is_constructible_v<shared_ptr<const string[4]>,
-                  unique_ptr<const string[]>>); // BAD: unknown-to-known isn't allowed
+        unique_ptr<const string[]>>); // BAD: unknown-to-known isn't allowed
 
     impl_shared_ptr_unique_ctor<string[], string[]>();
     impl_shared_ptr_unique_ctor<const string[], string[]>();
@@ -678,11 +678,11 @@ void test_weak_ptr_all_copy_ctors_and_shared_ctor() {
         const weak_ptr<const string[4]>&>); // GOOD: known-to-unknown is compatible
 
     STATIC_ASSERT(!is_constructible_v<weak_ptr<const string[4]>,
-                  const weak_ptr<string[]>&>); // BAD: unknown-to-known isn't allowed
+        const weak_ptr<string[]>&>); // BAD: unknown-to-known isn't allowed
     STATIC_ASSERT(
         is_nothrow_constructible_v<weak_ptr<const string[4]>, const weak_ptr<string[4]>&>); // GOOD: adds const
     STATIC_ASSERT(!is_constructible_v<weak_ptr<const string[4]>,
-                  const weak_ptr<const string[]>&>); // BAD: unknown-to-known isn't allowed
+        const weak_ptr<const string[]>&>); // BAD: unknown-to-known isn't allowed
     STATIC_ASSERT(is_nothrow_constructible_v<weak_ptr<const string[4]>,
         const weak_ptr<const string[4]>&>); // GOOD: same (plain, not converting)
 
@@ -708,11 +708,11 @@ void test_weak_ptr_all_copy_ctors_and_shared_ctor() {
         const shared_ptr<const string[4]>&>); // GOOD: known-to-unknown is compatible
 
     STATIC_ASSERT(!is_constructible_v<weak_ptr<const string[4]>,
-                  const shared_ptr<string[]>&>); // BAD: unknown-to-known isn't allowed
+        const shared_ptr<string[]>&>); // BAD: unknown-to-known isn't allowed
     STATIC_ASSERT(
         is_nothrow_constructible_v<weak_ptr<const string[4]>, const shared_ptr<string[4]>&>); // GOOD: adds const
     STATIC_ASSERT(!is_constructible_v<weak_ptr<const string[4]>,
-                  const shared_ptr<const string[]>&>); // BAD: unknown-to-known isn't allowed
+        const shared_ptr<const string[]>&>); // BAD: unknown-to-known isn't allowed
     STATIC_ASSERT(
         is_nothrow_constructible_v<weak_ptr<const string[4]>, const shared_ptr<const string[4]>&>); // GOOD: same
 
@@ -768,7 +768,7 @@ void test_weak_ptr_all_move_ctors() {
         !is_constructible_v<weak_ptr<const string[4]>, weak_ptr<string[]>>); // BAD: unknown-to-known isn't allowed
     STATIC_ASSERT(is_nothrow_constructible_v<weak_ptr<const string[4]>, weak_ptr<string[4]>>); // GOOD: adds const
     STATIC_ASSERT(!is_constructible_v<weak_ptr<const string[4]>,
-                  weak_ptr<const string[]>>); // BAD: unknown-to-known isn't allowed
+        weak_ptr<const string[]>>); // BAD: unknown-to-known isn't allowed
     STATIC_ASSERT(is_nothrow_constructible_v<weak_ptr<const string[4]>,
         weak_ptr<const string[4]>>); // GOOD: same (plain, not converting)
 

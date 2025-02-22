@@ -532,7 +532,7 @@ int main(int argc, char* argv[]) {
     });
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
     exec.add_death_tests({
         test_case_empty_front_bad,
         test_case_empty_cfront_bad,
@@ -541,7 +541,7 @@ int main(int argc, char* argv[]) {
         test_case_pop_front_bad,
         test_case_pop_back_bad,
     });
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 
     return exec.run(argc, argv);
 }

@@ -1608,8 +1608,11 @@ namespace chrono {
             // Returns the number of fractional digits of _Num / _Den in the range [0, 18].
             // If it can't be represented, 6 is returned.
             // Example: _Fractional_width(1, 8) would return 3 for 0.125.
-            auto _Den = _Duration::period::den;
-            _STL_ASSERT(_Duration::period::num > 0 && _Den > 0, "Numerator and denominator can't be less than 1.");
+
+            _STL_INTERNAL_STATIC_ASSERT(_Duration::period::num > 0); // N5001 [time.duration.general]/3
+            _STL_INTERNAL_STATIC_ASSERT(_Duration::period::den > 0); // N5001 [ratio.ratio]/1, /2.2
+
+            auto _Den                       = _Duration::period::den;
             unsigned int _Power_of_2_in_den = 0u;
             unsigned int _Power_of_5_in_den = 0u;
             for (; _Den % 2 == 0; _Den /= 2, ++_Power_of_2_in_den) {

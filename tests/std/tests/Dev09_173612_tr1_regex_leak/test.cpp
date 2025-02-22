@@ -157,7 +157,9 @@ void test(const char* s) {
     const int orig_scalars = g_scalars;
     const int orig_arrays  = g_arrays;
 
-    { regex r(s); }
+    {
+        regex r(s);
+    }
 
     if (g_scalars != orig_scalars) {
         printf("test(): %d scalar allocation leak(s)!\n", g_scalars - orig_scalars);
