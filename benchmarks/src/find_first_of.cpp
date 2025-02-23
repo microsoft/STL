@@ -55,7 +55,7 @@ void bm(benchmark::State& state) {
 
     if constexpr (Alg == AlgType::str_member_first_not || Alg == AlgType::str_member_last_not) {
         for (size_t i = 0, m = h.size(); i != m; ++i) {
-            h[i] = NeedleFillerBase + (i + Which) % IncremantCap;
+            h[i] = n[(i + Which) % NSize];
         }
 
         h[Pos] = HaystackFillerBase;
