@@ -272,6 +272,14 @@ _EMIT_STL_ERROR(STL1008, "_STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER has been 
 #define _STL_INTERNAL_CHECK(...) _Analysis_assume_(__VA_ARGS__)
 #endif // ^^^ !defined(_ENABLE_STL_INTERNAL_CHECK) ^^^
 
+#ifndef _MSVC_STL_DESTRUCTOR_TOMBSTONES
+#define _MSVC_STL_DESTRUCTOR_TOMBSTONES 0
+#endif
+
+#ifndef _MSVC_STL_UINTPTR_TOMBSTONE_VALUE
+#define _MSVC_STL_UINTPTR_TOMBSTONE_VALUE uintptr_t{19937}
+#endif
+
 #include <use_ansi.h>
 
 #ifdef _STATIC_CPPLIB
