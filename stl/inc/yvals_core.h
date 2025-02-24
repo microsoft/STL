@@ -2015,8 +2015,8 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #endif // ^^^ !defined(_ENABLE_STL_INTERNAL_CHECK) ^^^
 
 #if defined(__CUDACC__) || (defined(__clang__) && __clang_major__ < 16)
-// TRANSITION, CUDA 12.4 doesn't have downlevel support for static call operators
-// TRANSITION, VSO-2397560, we don't generally attempt to support old versions of Clang
+// TRANSITION, CUDA 12.4 doesn't have downlevel support for static call operators.
+// TRANSITION, VSO-2397560, temporary workaround for Real World Code relying on ancient Clang versions.
 #define _STATIC_CALL_OPERATOR
 #define _CONST_CALL_OPERATOR const
 #define _STATIC_LAMBDA
