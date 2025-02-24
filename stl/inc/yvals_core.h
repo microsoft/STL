@@ -2014,11 +2014,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // ^^^ !defined(_ENABLE_STL_INTERNAL_CHECK) ^^^
 
-#ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't have downlevel support for static call operators
-#define _STATIC_CALL_OPERATOR
-#define _CONST_CALL_OPERATOR const
-#define _STATIC_LAMBDA
-#elif defined(__clang__) || defined(__EDG__) // no workaround
+#if defined(__clang__) || defined(__EDG__) // no workaround
 #define _STATIC_CALL_OPERATOR static
 #define _CONST_CALL_OPERATOR
 #define _STATIC_LAMBDA static
