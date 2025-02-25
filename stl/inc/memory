@@ -3418,6 +3418,15 @@ public:
         if (_Mypair._Myval2) {
             _Mypair._Get_first()(_Mypair._Myval2);
         }
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        if constexpr (is_pointer_v<pointer>) {
+            if (!_STD _Is_constant_evaluated()) {
+                const auto _Tombstone{reinterpret_cast<pointer>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+                _Mypair._Myval2 = _Tombstone;
+            }
+        }
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
     }
 
     _NODISCARD _CONSTEXPR23 _Dx& get_deleter() noexcept {
@@ -3555,6 +3564,15 @@ public:
         if (_Mypair._Myval2) {
             _Mypair._Get_first()(_Mypair._Myval2);
         }
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        if constexpr (is_pointer_v<pointer>) {
+            if (!_STD _Is_constant_evaluated()) {
+                const auto _Tombstone{reinterpret_cast<pointer>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+                _Mypair._Myval2 = _Tombstone;
+            }
+        }
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
     }
 
     _NODISCARD _CONSTEXPR23 _Dx& get_deleter() noexcept {
