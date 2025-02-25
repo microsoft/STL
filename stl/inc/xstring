@@ -401,6 +401,19 @@ public:
 
     _CONSTEXPR20 _String_val() noexcept : _Bx() {}
 
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+    _CONSTEXPR20 ~_String_val() noexcept {
+        if constexpr (is_pointer_v<pointer>) {
+            if (!_STD _Is_constant_evaluated()) {
+                const auto _Tombstone{reinterpret_cast<pointer>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+                _Bx._Ptr = _Tombstone;
+                _Mysize  = 0;
+                _Myres   = (_Small_string_capacity + 1) | _Alloc_mask; // first capacity when entering large mode
+            }
+        }
+    }
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
+
     // length of internal buffer, [1, 16] (NB: used by the debugger visualizer)
     static constexpr size_type _BUF_SIZE = 16 / sizeof(value_type) < 1 ? 1 : 16 / sizeof(value_type);
     // roundup mask for allocated buffers, [0, 15]
