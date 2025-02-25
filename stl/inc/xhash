@@ -436,6 +436,13 @@ public:
 #endif // _ENABLE_STL_INTERNAL_CHECK
     }
 
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+    ~_Hash() noexcept {
+        _Mask   = _Min_buckets - 1;
+        _Maxidx = _Min_buckets;
+    }
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
+
 private:
     void _Swap_val(_Hash& _Right) noexcept { // swap contents with equal allocator _Hash _Right
         _List._Swap_val(_Right._List);
