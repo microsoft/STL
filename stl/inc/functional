@@ -928,6 +928,11 @@ public:
 
     ~_Func_class() noexcept {
         _Tidy();
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        const auto _Tombstone{reinterpret_cast<_Ptrt*>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+        _Set(_Tombstone);
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
     }
 
 protected:
