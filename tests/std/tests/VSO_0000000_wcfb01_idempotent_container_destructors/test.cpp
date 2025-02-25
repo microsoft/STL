@@ -7,23 +7,25 @@
 
 using namespace std;
 
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+#error This test is fundamentally incompatible with destructor tombstones.
+#endif
+
 int main() {
-    // this is nonstandard behavior, but historically our containers
-    // have allowed it so we want to preserve it in the current ABI
-    //
-    // TRANSITION, ABI
-    // in the next ABI breaking release we will change this behavior to terminate programs that do nonstandard things
-    // like this
+    // Idempotent destruction is an abomination that our `string` and `vector` have historically allowed.
+    // We're preserving it for the time being, except when destructor tombstones are enabled.
+
+    // TRANSITION, ABI: In the next ABI-breaking release, we'll stop supporting this nonstandard usage.
 
     { // small string
-        char buff[sizeof(string)];
+        alignas(string) char buff[sizeof(string)];
         string& s = *::new (buff) string;
         s.~string();
         s.~string();
     }
 
     { // big string
-        char buff[sizeof(string)];
+        alignas(string) char buff[sizeof(string)];
         string& s = *::new (buff) string("a really long string that is going to trigger separate allocation");
         s.~string();
         s.~string();
@@ -32,14 +34,14 @@ int main() {
     using vecT = vector<int>;
 
     { // empty vector
-        char buff[sizeof(vecT)];
+        alignas(vecT) char buff[sizeof(vecT)];
         vecT& v = *::new (buff) vecT;
         v.~vecT();
         v.~vecT();
     }
 
     { // data vector
-        char buff[sizeof(vecT)];
+        alignas(vecT) char buff[sizeof(vecT)];
         vecT& v = *::new (buff) vecT;
         v.push_back(42);
         v.~vecT();
