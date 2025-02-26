@@ -756,6 +756,10 @@ public:
           _Which{static_cast<_Index_t>(_Idx)} { // initialize alternative _Idx from _Args...
     }
 
+    // N5001 [variant.dtor]/2: "Remarks: If is_trivially_destructible_v<Ti> is true for all Ti,
+    // then this destructor is trivial."
+    // This prevents us from adding a destructor to the trivial case for _MSVC_STL_DESTRUCTOR_TOMBSTONES.
+
     _NODISCARD constexpr bool valueless_by_exception() const noexcept { // does this variant NOT hold a value?
         return _Which < 0;
     }
@@ -839,6 +843,10 @@ struct _Variant_destroy_layer_ : _Variant_base<_Types...> { // destruction behav
 
     _CONSTEXPR20 ~_Variant_destroy_layer_() noexcept { // Destroy contained value, if any
         this->_Destroy();
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        this->_Set_index(variant_npos);
+#endif
     }
 
     _Variant_destroy_layer_()                                          = default;
