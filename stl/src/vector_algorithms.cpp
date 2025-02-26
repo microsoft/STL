@@ -4186,6 +4186,8 @@ namespace {
             // It is not possible to leave them untouched while keeping this optimization efficient.
             // This should not be a problem though, as they should be either overwritten by the next step,
             // or left in the removed range.
+            // 'remove' does not require any specific values, 
+            // 'unique' needs the last element value to be preserved, as it will be loaded again.
             for (; _Nx != _Size_h / _Ew; ++_Nx) {
                 // Inner loop needed for cases where the shuffle mask operates on element parts rather than whole
                 // elements; for whole elements there would be one iteration.
