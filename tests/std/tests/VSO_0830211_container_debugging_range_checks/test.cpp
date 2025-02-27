@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <array>
 #include <cstddef>
 #include <deque>
@@ -203,6 +201,10 @@ struct TestCases {
             test_case_operator_equal_incompatible_value_initialized,
             test_case_operator_less_incompatible_different_views,
             test_case_operator_less_incompatible_value_initialized,
+            test_case_operator_subscript_out_of_range_empty,
+            test_case_operator_subscript_out_of_range,
+            test_case_front_empty,
+            test_case_back_empty,
         });
 
         if constexpr (Traits::has_arrow) {
@@ -211,14 +213,9 @@ struct TestCases {
                 test_case_operator_arrow_end_iterator,
             });
         }
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-
-        exec.add_death_tests({
-            test_case_operator_subscript_out_of_range_empty,
-            test_case_operator_subscript_out_of_range,
-            test_case_front_empty,
-            test_case_back_empty,
-        });
+#else // ^^^ _ITERATOR_DEBUG_LEVEL != 0 / _ITERATOR_DEBUG_LEVEL == 0 vvv
+        (void) exec;
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 };
 

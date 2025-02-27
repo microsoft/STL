@@ -1535,7 +1535,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // next warning number: STL4049
 
-// next error number: STL1006
+// next error number: STL1009
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
@@ -2026,7 +2026,9 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // ^^^ !defined(_ENABLE_STL_INTERNAL_CHECK) ^^^
 
-#ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't have downlevel support for static call operators
+#if defined(__CUDACC__) || (defined(__clang__) && __clang_major__ < 16)
+// TRANSITION, CUDA 12.4 doesn't have downlevel support for static call operators.
+// TRANSITION, VSO-2397560, temporary workaround for Real World Code relying on ancient Clang versions.
 #define _STATIC_CALL_OPERATOR
 #define _CONST_CALL_OPERATOR const
 #define _STATIC_LAMBDA

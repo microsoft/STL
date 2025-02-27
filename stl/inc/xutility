@@ -3823,9 +3823,11 @@ namespace ranges {
             requires forward_range<_Derived>
         {
             auto& _Self = _Cast();
-#if _CONTAINER_DEBUG_LEVEL > 0
+
+#if _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE || _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(!_RANGES empty(_Self), "front() called on empty ranges::view_interface");
 #endif
+
             return *_RANGES begin(_Self);
         }
 
@@ -3833,9 +3835,11 @@ namespace ranges {
             requires forward_range<const _Derived>
         {
             auto& _Self = _Cast();
-#if _CONTAINER_DEBUG_LEVEL > 0
+
+#if _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE || _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(!_RANGES empty(_Self), "front() called on empty ranges::view_interface");
 #endif
+
             return *_RANGES begin(_Self);
         }
 
@@ -3843,9 +3847,11 @@ namespace ranges {
             requires bidirectional_range<_Derived> && common_range<_Derived>
         {
             auto& _Self = _Cast();
-#if _CONTAINER_DEBUG_LEVEL > 0
+
+#if _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE || _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(!_RANGES empty(_Self), "back() called on empty ranges::view_interface");
 #endif
+
             auto _Last = _RANGES end(_Self);
             return *--_Last;
         }
@@ -3854,9 +3860,11 @@ namespace ranges {
             requires bidirectional_range<const _Derived> && common_range<const _Derived>
         {
             auto& _Self = _Cast();
-#if _CONTAINER_DEBUG_LEVEL > 0
+
+#if _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE || _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(!_RANGES empty(_Self), "back() called on empty ranges::view_interface");
 #endif
+
             auto _Last = _RANGES end(_Self);
             return *--_Last;
         }
@@ -3864,26 +3872,30 @@ namespace ranges {
         template <random_access_range _Rng = _Derived>
         _NODISCARD constexpr decltype(auto) operator[](const range_difference_t<_Rng> _Idx) {
             auto& _Self = _Cast();
-#if _CONTAINER_DEBUG_LEVEL > 0
+
+#if _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE || _ITERATOR_DEBUG_LEVEL != 0
             if constexpr (sized_range<_Derived>) {
                 using _U_diff = _Make_unsigned_like_t<range_difference_t<_Rng>>;
                 _STL_VERIFY(static_cast<_U_diff>(_Idx) < static_cast<_U_diff>(_RANGES size(_Self)),
                     "ranges::view_interface subscript out of range");
             }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE || _ITERATOR_DEBUG_LEVEL != 0
+
             return _RANGES begin(_Self)[_Idx];
         }
 
         template <random_access_range _Rng = const _Derived>
         _NODISCARD constexpr decltype(auto) operator[](const range_difference_t<_Rng> _Idx) const {
             auto& _Self = _Cast();
-#if _CONTAINER_DEBUG_LEVEL > 0
+
+#if _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE || _ITERATOR_DEBUG_LEVEL != 0
             if constexpr (sized_range<_Derived>) {
                 using _U_diff = _Make_unsigned_like_t<range_difference_t<_Rng>>;
                 _STL_VERIFY(static_cast<_U_diff>(_Idx) < static_cast<_U_diff>(_RANGES size(_Self)),
                     "ranges::view_interface subscript out of range");
             }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE || _ITERATOR_DEBUG_LEVEL != 0
+
             return _RANGES begin(_Self)[_Idx];
         }
     };

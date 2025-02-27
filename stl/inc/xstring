@@ -2246,17 +2246,19 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 reference operator[](const size_type _Off) noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Off <= _Mypair._Myval2._Mysize, "string subscript out of range");
 #endif
+
         return _Mypair._Myval2._Myptr()[_Off];
     }
 
     _NODISCARD _CONSTEXPR20 const_reference operator[](const size_type _Off) const noexcept
     /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Off <= _Mypair._Myval2._Mysize, "string subscript out of range");
 #endif
+
         return _Mypair._Myval2._Myptr()[_Off];
     }
 
@@ -2291,14 +2293,16 @@ public:
 
     _CONSTEXPR20 void pop_back() noexcept /* strengthened */ {
         const size_type _Old_size = _Mypair._Myval2._Mysize;
-#if _ITERATOR_DEBUG_LEVEL >= 1
+
+#if _MSVC_STL_HARDENING_BASIC_STRING || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Old_size != 0, "pop_back() called on empty string");
-#endif // _ITERATOR_DEBUG_LEVEL >= 1
+#endif
+
         _Eos(_Old_size - 1);
     }
 
     _NODISCARD _CONSTEXPR20 reference front() noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "front() called on empty string");
 #endif
 
@@ -2306,7 +2310,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 const_reference front() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "front() called on empty string");
 #endif
 
@@ -2314,7 +2318,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 reference back() noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "back() called on empty string");
 #endif
 
@@ -2322,7 +2326,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 const_reference back() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "back() called on empty string");
 #endif
 
@@ -2391,10 +2395,10 @@ public:
         auto _Arg_size                  = _New_size;
         const auto _Result_size         = _STD move(_Op)(_Arg_ptr, _Arg_size);
         const auto _Result_as_size_type = static_cast<size_type>(_Result_size);
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0");
         _STL_VERIFY(_Result_as_size_type <= _New_size, "the returned size can't be greater than the passed size");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _ITERATOR_DEBUG_LEVEL != 0
         _Eos(_Result_as_size_type);
     }
 
