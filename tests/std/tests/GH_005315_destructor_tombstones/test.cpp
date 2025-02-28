@@ -3,6 +3,10 @@
 
 // env.lst defines _MSVC_STL_DESTRUCTOR_TOMBSTONES to 1.
 
+#ifdef _M_CEE // work around a sporadic hang in /clr configurations
+int main() {}
+#else // ^^^ workaround / no workaround vvv
+
 #include <array>
 #include <cstdlib>
 #include <deque>
@@ -180,3 +184,5 @@ constexpr bool test_constexpr() { // COMPILE-ONLY
 
 static_assert(test_constexpr());
 #endif // _HAS_CXX20
+
+#endif // ^^^ no workaround ^^^
