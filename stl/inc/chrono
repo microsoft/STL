@@ -1849,7 +1849,7 @@ namespace chrono {
             // time zone name. In vNext, this should be a dedicated argument.
             const string _Tz_arg = _Name + static_cast<char>(_Type);
 
-            const auto _Tz_len = _Name.length();
+            const auto _Tz_len = _Name.size();
 
             const auto _Info =
                 _Make_unique_tzdb_info<__std_tzdb_get_sys_info>(_Tz_arg.c_str(), _Tz_len, _Internal_dur.count());
