@@ -2866,6 +2866,8 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
 #if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        // Destroying _Myvec will store tombstones in its pointers, setting its apparent size to 0.
+        // We should also set our _Mysize to 0 for consistency, allowing precondition hardening to detect UB earlier.
         _Mysize = 0;
 #endif
     }

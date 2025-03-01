@@ -409,6 +409,12 @@ public:
                 _Bx._Ptr = _Tombstone;
                 _Mysize  = 0;
                 _Myres   = (_Small_string_capacity + 1) | _Alloc_mask; // first capacity when entering large mode
+
+                // The capacity indicates whether we're in small mode or large mode; see _Large_mode_engaged().
+                // The string would be usable in small mode, so we need large mode for the tombstone to be effective.
+                // `_Small_string_capacity + 1` would be sufficient to make _Large_mode_engaged() return true. However,
+                // basic_string uses a "roundup mask" when allocating; see _Calculate_growth(). So to avoid confusing
+                // the SSO logic, we use the first capacity that would normally be used when entering large mode.
             }
         }
     }

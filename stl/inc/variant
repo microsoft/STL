@@ -756,9 +756,9 @@ public:
           _Which{static_cast<_Index_t>(_Idx)} { // initialize alternative _Idx from _Args...
     }
 
+    // For the trivially destructible case, we can't add a destructor for _MSVC_STL_DESTRUCTOR_TOMBSTONES, due to
     // N5001 [variant.dtor]/2: "Remarks: If is_trivially_destructible_v<Ti> is true for all Ti,
     // then this destructor is trivial."
-    // This prevents us from adding a destructor to the trivial case for _MSVC_STL_DESTRUCTOR_TOMBSTONES.
 
     _NODISCARD constexpr bool valueless_by_exception() const noexcept { // does this variant NOT hold a value?
         return _Which < 0;
@@ -845,6 +845,9 @@ struct _Variant_destroy_layer_ : _Variant_base<_Types...> { // destruction behav
         this->_Destroy();
 
 #if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        // For the non-trivially destructible case, we can set the variant to be valueless.
+        // We don't attempt to scribble over the bytes of the object's storage because that could be expensive
+        // and we don't know whether the object has an invalid representation, much less what it could be.
         this->_Set_index(variant_npos);
 #endif
     }
