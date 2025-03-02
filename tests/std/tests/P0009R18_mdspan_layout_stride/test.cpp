@@ -105,9 +105,10 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
     using Strides = array<IndexType, sizeof...(Extents)>;
     using Mapping = layout_stride::mapping<Ext>;
 
-    // layout_stride meets the layout mapping policy requirements and is a trivial type
+    // layout_stride meets the requirements of N5001 [mdspan.layout.policy.overview]/1
     static_assert(check_layout_mapping_policy_requirements<layout_stride, Ext>());
-    static_assert(is_trivial_v<layout_stride>);
+    static_assert(is_trivially_copyable_v<layout_stride>);
+    static_assert(is_trivially_default_constructible_v<layout_stride>);
 
     // layout_stride::mapping<Ext> is a trivially copyable type that models regular for each Ext
     static_assert(is_trivially_copyable_v<Mapping>);
@@ -352,11 +353,11 @@ constexpr void check_construction_from_other_mappings() {
         static_assert(!is_constructible_v<Mapping, layout_right::mapping<extents<long, 3, 3>>>);
         static_assert(!is_constructible_v<Mapping, layout_stride::mapping<extents<int, 4, 4, 3>>>);
         static_assert(!is_constructible_v<Mapping,
-                      LyingLayout<AlwaysUnique::no, AlwaysStrided::yes>::mapping<extents<long, 4, 4>>>);
+            LyingLayout<AlwaysUnique::no, AlwaysStrided::yes>::mapping<extents<long, 4, 4>>>);
         static_assert(!is_constructible_v<Mapping,
-                      LyingLayout<AlwaysUnique::yes, AlwaysStrided::no>::mapping<extents<long, 4, 4>>>);
+            LyingLayout<AlwaysUnique::yes, AlwaysStrided::no>::mapping<extents<long, 4, 4>>>);
         static_assert(!is_constructible_v<Mapping,
-                      LyingLayout<AlwaysUnique::no, AlwaysStrided::no>::mapping<extents<long, 4, 4>>>);
+            LyingLayout<AlwaysUnique::no, AlwaysStrided::no>::mapping<extents<long, 4, 4>>>);
     }
 
     { // Check construction from layout_left::mapping
@@ -539,13 +540,13 @@ constexpr void check_comparisons() {
         static_assert(!equality_comparable_with<DynamicStrideMapping, layout_right::mapping<extents<int, 2>>>);
         static_assert(!equality_comparable_with<StaticStrideMapping, layout_left::mapping<dextents<int, 1>>>);
         static_assert(!equality_comparable_with<DynamicStrideMapping,
-                      LyingLayout<AlwaysUnique::yes, AlwaysStrided::no>::mapping<dextents<int, 2>>>);
+            LyingLayout<AlwaysUnique::yes, AlwaysStrided::no>::mapping<dextents<int, 2>>>);
         static_assert(!equality_comparable_with<StaticStrideMapping,
-                      LyingLayout<AlwaysUnique::yes, AlwaysStrided::no>::mapping<extents<int, 2, 3>>>);
+            LyingLayout<AlwaysUnique::yes, AlwaysStrided::no>::mapping<extents<int, 2, 3>>>);
         static_assert(!equality_comparable_with<DynamicStrideMapping,
-                      LyingLayout<AlwaysUnique::no, AlwaysStrided::no>::mapping<dextents<int, 2>>>);
+            LyingLayout<AlwaysUnique::no, AlwaysStrided::no>::mapping<dextents<int, 2>>>);
         static_assert(!equality_comparable_with<StaticStrideMapping,
-                      LyingLayout<AlwaysUnique::no, AlwaysStrided::no>::mapping<extents<int, 2, 3>>>);
+            LyingLayout<AlwaysUnique::no, AlwaysStrided::no>::mapping<extents<int, 2, 3>>>);
     }
 
     { // Check correctness: layout_stride::mapping with layout_stride::mapping

@@ -336,6 +336,30 @@ constexpr bool test_lwg4016() {
     return true;
 }
 
+struct adl_only_range {
+    static constexpr int numbers[2]{42, 1729};
+
+    void begin() const = delete;
+    void end() const   = delete;
+
+    friend constexpr const int* begin(const adl_only_range&) {
+        return ranges::begin(numbers);
+    }
+    friend constexpr const int* end(const adl_only_range&) {
+        return ranges::end(numbers);
+    }
+};
+
+constexpr bool test_lwg4016_regression() {
+    using vec = restricted_vector<restriction_kind::push_back, int>;
+
+    ranges::contiguous_range auto r = adl_only_range{};
+    auto v                          = r | ranges::to<vec>();
+    assert(ranges::equal(v, adl_only_range::numbers));
+
+    return true;
+}
+
 int main() {
     test_reservable();
     static_assert(test_reservable());
@@ -356,4 +380,7 @@ int main() {
 
     test_lwg4016();
     static_assert(test_lwg4016());
+
+    test_lwg4016_regression();
+    static_assert(test_lwg4016_regression());
 }

@@ -98,15 +98,6 @@ const void* __stdcall __std_find_last_trivial_2(const void* _First, const void* 
 const void* __stdcall __std_find_last_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
 
-const void* __stdcall __std_find_first_of_trivial_1(
-    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
-const void* __stdcall __std_find_first_of_trivial_2(
-    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
-const void* __stdcall __std_find_first_of_trivial_4(
-    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
-const void* __stdcall __std_find_first_of_trivial_8(
-    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
-
 const void* __stdcall __std_search_1(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
 const void* __stdcall __std_search_2(
@@ -251,27 +242,6 @@ _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val
 
 // find_first_of vectorization is likely to be a win after this size (in elements)
 _INLINE_VAR constexpr ptrdiff_t _Threshold_find_first_of = 16;
-
-template <class _Ty1, class _Ty2>
-_Ty1* _Find_first_of_vectorized(
-    _Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _First2, _Ty2* const _Last2) noexcept {
-    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Ty1) == sizeof(_Ty2));
-    if constexpr (sizeof(_Ty1) == 1) {
-        return const_cast<_Ty1*>(
-            static_cast<const _Ty1*>(::__std_find_first_of_trivial_1(_First1, _Last1, _First2, _Last2)));
-    } else if constexpr (sizeof(_Ty1) == 2) {
-        return const_cast<_Ty1*>(
-            static_cast<const _Ty1*>(::__std_find_first_of_trivial_2(_First1, _Last1, _First2, _Last2)));
-    } else if constexpr (sizeof(_Ty1) == 4) {
-        return const_cast<_Ty1*>(
-            static_cast<const _Ty1*>(::__std_find_first_of_trivial_4(_First1, _Last1, _First2, _Last2)));
-    } else if constexpr (sizeof(_Ty1) == 8) {
-        return const_cast<_Ty1*>(
-            static_cast<const _Ty1*>(::__std_find_first_of_trivial_8(_First1, _Last1, _First2, _Last2)));
-    } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
-    }
-}
 
 template <class _Ty1, class _Ty2>
 _Ty1* _Search_vectorized(_Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _First2, const size_t _Count2) noexcept {
@@ -2063,14 +2033,14 @@ _NODISCARD constexpr _Ty* end(_Ty (&_Array)[_Size]) noexcept {
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD constexpr auto cbegin(const _Container& _Cont)
-    noexcept(noexcept(_STD begin(_Cont))) -> decltype(_STD begin(_Cont)) {
+_NODISCARD constexpr auto cbegin(const _Container& _Cont) noexcept(noexcept(_STD begin(_Cont)))
+    -> decltype(_STD begin(_Cont)) {
     return _STD begin(_Cont);
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD constexpr auto cend(const _Container& _Cont)
-    noexcept(noexcept(_STD end(_Cont))) -> decltype(_STD end(_Cont)) {
+_NODISCARD constexpr auto cend(const _Container& _Cont) noexcept(noexcept(_STD end(_Cont)))
+    -> decltype(_STD end(_Cont)) {
     return _STD end(_Cont);
 }
 
@@ -2923,7 +2893,7 @@ namespace ranges {
 
     template <input_range _Rng>
     _NODISCARD _MSVC_INTRINSIC constexpr auto& _Possibly_const_range(_Rng& _Range) noexcept {
-        if constexpr (constant_range<const _Rng> && !constant_range<_Rng>) {
+        if constexpr (input_range<const _Rng>) {
             return _STD as_const(_Range);
         } else {
             return _Range;
@@ -3854,8 +3824,8 @@ namespace ranges {
         {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(!_RANGES empty(_Self), "front called on empty view_interface");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(!_RANGES empty(_Self), "front() called on empty ranges::view_interface");
+#endif
             return *_RANGES begin(_Self);
         }
 
@@ -3864,8 +3834,8 @@ namespace ranges {
         {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(!_RANGES empty(_Self), "front called on empty view_interface");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(!_RANGES empty(_Self), "front() called on empty ranges::view_interface");
+#endif
             return *_RANGES begin(_Self);
         }
 
@@ -3874,8 +3844,8 @@ namespace ranges {
         {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(!_RANGES empty(_Self), "back called on empty view_interface");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(!_RANGES empty(_Self), "back() called on empty ranges::view_interface");
+#endif
             auto _Last = _RANGES end(_Self);
             return *--_Last;
         }
@@ -3885,8 +3855,8 @@ namespace ranges {
         {
             auto& _Self = _Cast();
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(!_RANGES empty(_Self), "back called on empty view_interface");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(!_RANGES empty(_Self), "back() called on empty ranges::view_interface");
+#endif
             auto _Last = _RANGES end(_Self);
             return *--_Last;
         }
@@ -3898,7 +3868,7 @@ namespace ranges {
             if constexpr (sized_range<_Derived>) {
                 using _U_diff = _Make_unsigned_like_t<range_difference_t<_Rng>>;
                 _STL_VERIFY(static_cast<_U_diff>(_Idx) < static_cast<_U_diff>(_RANGES size(_Self)),
-                    "index out of range for view_interface");
+                    "ranges::view_interface subscript out of range");
             }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             return _RANGES begin(_Self)[_Idx];
@@ -3911,7 +3881,7 @@ namespace ranges {
             if constexpr (sized_range<_Derived>) {
                 using _U_diff = _Make_unsigned_like_t<range_difference_t<_Rng>>;
                 _STL_VERIFY(static_cast<_U_diff>(_Idx) < static_cast<_U_diff>(_RANGES size(_Self)),
-                    "index out of range for view_interface");
+                    "ranges::view_interface subscript out of range");
             }
 #endif // _CONTAINER_DEBUG_LEVEL > 0
             return _RANGES begin(_Self)[_Idx];
@@ -4153,10 +4123,9 @@ namespace ranges {
     subrange(_It, _Se, _Make_unsigned_like_t<iter_difference_t<_It>>) -> subrange<_It, _Se, subrange_kind::sized>;
 
     template <borrowed_range _Rng>
-    subrange(_Rng&&)
-        -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
-            (sized_range<_Rng> || sized_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>) ? subrange_kind::sized
-                                                                                          : subrange_kind::unsized>;
+    subrange(_Rng&&) -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
+        (sized_range<_Rng> || sized_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>) ? subrange_kind::sized
+                                                                                      : subrange_kind::unsized>;
 
     template <borrowed_range _Rng>
     subrange(_Rng&&, _Make_unsigned_like_t<range_difference_t<_Rng>>)

@@ -520,7 +520,7 @@ STATIC_ASSERT(!is_constructible_v<tuple<int, int, int>, allocator_arg_t, allocat
 STATIC_ASSERT(
     is_constructible_v<tuple<int, int, int>, allocator_arg_t, allocator<int>, const int&, const int&, const int&>);
 STATIC_ASSERT(!is_constructible_v<tuple<int, int, int>, allocator_arg_t, allocator<int>, const int&, const int&,
-              const int&, const int&>);
+    const int&, const int&>);
 
 STATIC_ASSERT(!is_constructible_v<tuple<int, int, int>, allocator_arg_t, allocator<int>, short, short>);
 STATIC_ASSERT(is_constructible_v<tuple<int, int, int>, allocator_arg_t, allocator<int>, short, short, short>);

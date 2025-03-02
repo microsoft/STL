@@ -80,6 +80,8 @@
 //     (__cpp_lib_freestanding_algorithm and __cpp_lib_freestanding_array only)
 // P2937R0 Freestanding Library: Remove strtok
 // P2968R2 Make std::ignore A First-Class Object
+// P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
+//     (for atomic<cv T>)
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()
@@ -314,6 +316,9 @@
 // P2905R2 Runtime Format Strings
 // P2909R4 Fix Formatting Of Code Units As Integers
 // P2997R1 Removing The Common Reference Requirement From The Indirectly Invocable Concepts
+// P3136R1 Retiring Niebloids
+// P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
+//     (for atomic_ref<cv T>)
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -559,20 +564,6 @@
 #define _FALLTHROUGH
 #endif
 
-#ifndef __has_cpp_attribute // vvv no attributes vvv
-#define _LIKELY
-#define _UNLIKELY
-#elif __has_cpp_attribute(likely) >= 201803L && __has_cpp_attribute(unlikely) >= 201803L // ^^^ no attr / C++20 attr vvv
-#define _LIKELY   [[likely]]
-#define _UNLIKELY [[unlikely]]
-#elif defined(__clang__) // ^^^ C++20 attributes / clang attributes and C++17 or C++14 vvv
-#define _LIKELY   [[__likely__]]
-#define _UNLIKELY [[__unlikely__]]
-#else // ^^^ clang attributes and C++17 or C++14 / C1XX attributes and C++17 or C++14 vvv
-#define _LIKELY
-#define _UNLIKELY
-#endif // ^^^ C1XX attributes and C++17 or C++14 ^^^
-
 // _HAS_NODISCARD (in vcruntime.h) controls:
 // [[nodiscard]] attributes on STL functions
 
@@ -810,6 +801,7 @@
 // warning C5220: a non-static data member with a volatile qualified type no longer implies that compiler generated
 //                copy/move constructors and copy/move assignment operators are not trivial (/Wall)
 // warning C5246: 'member': the initialization of a subobject should be wrapped in braces (/Wall)
+// warning C5278: adding a specialization for 'type trait' has undefined behavior
 // warning C6294: Ill-defined for-loop: initial condition does not satisfy test. Loop body not executed
 
 #ifndef _STL_DISABLED_WARNINGS
@@ -817,7 +809,7 @@
 #define _STL_DISABLED_WARNINGS                        \
     4180 4324 4412 4455 4494 4514 4574 4582 4583 4587 \
     4588 4619 4623 4625 4626 4643 4648 4702 4793 4820 \
-    4868 4988 5026 5027 5045 5220 5246 6294           \
+    4868 4988 5026 5027 5045 5220 5246 5278 6294      \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
@@ -913,7 +905,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202411L
+#define _MSVC_STL_UPDATE  202502L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -923,8 +915,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 12.4 or new
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 18
-_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 18.0.0 or newer.");
+#if __clang_major__ < 19
+_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 19.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
 #if _MSC_VER < 1942 // Coarse-grained, not inspecting _MSC_FULL_VER
@@ -1515,7 +1507,17 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4048
+#if !defined(_SILENCE_LOCALE_EMPTY_DEPRECATION_WARNING) && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
+#define _DEPRECATE_LOCALE_EMPTY                                                                                        \
+    [[deprecated(                                                                                                      \
+        "warning STL4048: locale::empty() is a non-Standard extension and will be removed in the future. A "           \
+        "default-constructed locale can be used instead. You can define _SILENCE_LOCALE_EMPTY_DEPRECATION_WARNING or " \
+        "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _DEPRECATE_LOCALE_EMPTY
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4049
 
 // next error number: STL1006
 

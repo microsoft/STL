@@ -89,7 +89,7 @@ namespace ranges {
                         && same_as<sentinel_t<_Rng>, sentinel_t<const _Rng>>;
 
     template <class _It>
-    concept _Has_arrow = input_iterator<_It> && (is_pointer_v<_It> || _Has_member_arrow<_It&>);
+    concept _Has_arrow = input_iterator<_It> && (is_pointer_v<_It> || _Has_member_arrow<const _It&>);
 
     template <bool _IsWrapped, class _Ty>
     using _Maybe_wrapped = conditional_t<_IsWrapped, _Ty, _Unwrapped_t<_Ty>>;
@@ -1025,8 +1025,8 @@ namespace ranges {
     };
 
     template <class _Wi, class _Bo>
-        requires (!_Integer_like<_Wi> || !_Integer_like<_Bo>
-                     || (_Signed_integer_like<_Wi> == _Signed_integer_like<_Bo>) )
+        requires (
+            !_Integer_like<_Wi> || !_Integer_like<_Bo> || (_Signed_integer_like<_Wi> == _Signed_integer_like<_Bo>) )
     iota_view(_Wi, _Bo) -> iota_view<_Wi, _Bo>;
 
     template <class _Wi, class _Bo>
@@ -1112,7 +1112,7 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
                 _STL_VERIFY(_Current < (numeric_limits<_Index_type>::max)(),
                     "cannot increment repeat_view iterator past end (integer overflow)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
                 ++_Current;
                 return *this;
             }
@@ -1761,7 +1761,7 @@ namespace ranges {
         _NODISCARD constexpr const _Pr& pred() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "filter_view has no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             return *_Pred;
         }
 
@@ -1769,7 +1769,7 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(
                 _Pred, "N4950 [range.filter.view]/3 forbids calling begin on a filter_view that holds no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             if constexpr (forward_range<_Vw>) {
                 if (this->_Has_cache()) {
                     return _Iterator{*this, this->_Get_cache(_Range)};
@@ -1917,7 +1917,7 @@ namespace ranges {
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Count_ >= 0, "Number of elements to take must be non-negative (N4971 [range.take.view]/1)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         }
 
         _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) /* strengthened */
@@ -2225,7 +2225,7 @@ namespace ranges {
         _NODISCARD constexpr const _Pr& pred() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "take_while_view has no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             return *_Pred;
         }
 
@@ -2247,7 +2247,7 @@ namespace ranges {
         {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "cannot call end on a take_while_view with no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             return _Sentinel<false>{_RANGES end(_Range), _STD addressof(*_Pred)};
         }
 
@@ -2257,7 +2257,7 @@ namespace ranges {
         {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "cannot call end on a take_while_view with no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             return _Sentinel<true>{_RANGES end(_Range), _STD addressof(*_Pred)};
         }
     };
@@ -2337,7 +2337,7 @@ namespace ranges {
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Count_ >= 0, "Number of elements to drop must be non-negative (N4971 [range.drop.view]/1)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         }
 
         _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) /* strengthened */
@@ -2559,7 +2559,7 @@ namespace ranges {
         _NODISCARD constexpr const _Pr& pred() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "drop_while_view has no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             return *_Pred;
         }
 
@@ -2567,7 +2567,7 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(
                 _Pred, "N4950 [range.drop.while.view]/3 forbids calling begin on a drop_while_view with no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             if constexpr (forward_range<_Vw>) {
                 if (this->_Has_cache()) {
                     return this->_Get_cache(_Range);
@@ -3989,8 +3989,8 @@ namespace ranges {
     lazy_split_view(_Rng&&, _Pat&&) -> lazy_split_view<views::all_t<_Rng>, views::all_t<_Pat>>;
 
     template <input_range _Rng>
-    lazy_split_view(
-        _Rng&&, range_value_t<_Rng>) -> lazy_split_view<views::all_t<_Rng>, single_view<range_value_t<_Rng>>>;
+    lazy_split_view(_Rng&&, range_value_t<_Rng>)
+        -> lazy_split_view<views::all_t<_Rng>, single_view<range_value_t<_Rng>>>;
 
 #if _HAS_CXX23
     template <class _Rng, class _Pat>
@@ -4216,12 +4216,11 @@ namespace ranges {
                 using _Decayed = decay_t<_It>;
                 _STL_INTERNAL_STATIC_ASSERT(input_or_output_iterator<_Decayed>);
                 if constexpr (contiguous_iterator<_Decayed>) {
-                    return {_St::_Span,
-                        noexcept(span(_STD to_address(_STD declval<_It>()), iter_difference_t<_Decayed>{}))};
+                    return {_St::_Span, true};
                 } else if constexpr (random_access_iterator<_Decayed>) {
                     return {_St::_Subrange,
                         noexcept(subrange(_STD declval<_It>(), _STD declval<_It>() + iter_difference_t<_Decayed>{}))};
-                } else if constexpr (constructible_from<_Decayed, _It>) {
+                } else if constexpr (is_convertible_v<_It, _Decayed>) {
                     return {_St::_Subrange_counted,
                         noexcept(subrange(
                             counted_iterator(_STD declval<_It>(), iter_difference_t<_Decayed>{}), default_sentinel))};
@@ -4240,7 +4239,7 @@ namespace ranges {
                 const iter_difference_t<decay_t<_It>> _Count) _CONST_CALL_OPERATOR noexcept(_Choice<_It>._No_throw) {
 #if _CONTAINER_DEBUG_LEVEL > 0
                 _STL_VERIFY(_Count >= 0, "The size passed to views::counted must be non-negative");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
                 constexpr _St _Strat = _Choice<_It>._Strategy;
 
                 if constexpr (_Strat == _St::_Span) {
@@ -5672,7 +5671,7 @@ namespace ranges {
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Count > 0, "chunk size must be greater than 0");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         }
 
         _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) /* strengthened */
@@ -5945,7 +5944,7 @@ namespace ranges {
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Count > 0, "chunk size must be greater than 0");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         }
 
         _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) /* strengthened */
@@ -6322,7 +6321,7 @@ namespace ranges {
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Count > 0, "The window size must be positive (N4950 [range.slide.view]/1)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         }
 
         _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) // strengthened
@@ -6598,14 +6597,14 @@ namespace ranges {
         _NODISCARD constexpr const _Pr& pred() const noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "chunk_by_view has no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             return *_Pred;
         }
 
         _NODISCARD constexpr _Iterator begin() {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "cannot call begin on a chunk_by_view with no predicate");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
             const auto _First = _RANGES begin(_Range);
             if (this->_Has_cache()) {
@@ -6930,7 +6929,7 @@ namespace ranges {
             : _Range(_STD move(_Range_)), _Stride(_Stride_) {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Stride > 0, "stride must be greater than 0");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         }
 
         _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) // strengthened
@@ -7158,13 +7157,9 @@ namespace ranges {
         private:
             friend zip_view;
 
-#if defined(__clang__) && __clang_major__ <= 18 // TRANSITION, Clang 19 (was thought to be LLVM-61763)
-        public:
-#else // ^^^ workaround / no workaround vvv
             template <class _Func, class... _OtherViews>
                 requires _Zip_transform_constraints<_Func, _OtherViews...>
             friend class zip_transform_view;
-#endif // ^^^ no workaround ^^^
 
             using _My_tuple = tuple<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
 
@@ -7983,13 +7978,9 @@ namespace ranges {
         private:
             friend adjacent_view;
 
-#if defined(__clang__) && __clang_major__ <= 18 // TRANSITION, Clang 19 (was thought to be LLVM-61763)
-        public:
-#else // ^^^ workaround / no workaround vvv
             template <class _Vw2, class _Fn, size_t _Nx2>
                 requires _Adjacent_transform_constraints<_Vw2, _Fn, _Nx2>
             friend class adjacent_transform_view;
-#endif // ^^^ no workaround ^^^
 
             using _Base          = _Maybe_const<_Const, _Vw>;
             using _Base_iterator = iterator_t<_Base>;

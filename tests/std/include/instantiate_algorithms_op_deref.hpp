@@ -333,7 +333,9 @@ void test_optional() {
         const optional<Evil> oe{Evil()};
         (void) oe.value();
     }
-    { (void) optional<Evil>{Evil()}.value(); }
+    {
+        (void) optional<Evil>{Evil()}.value();
+    }
     {
         using T = const optional<Evil>;
         (void) T{Evil()}.value();

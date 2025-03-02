@@ -40,15 +40,33 @@ extern "C" {
     // convert to name of Windows error, return 0 for failure, otherwise return number of chars in buffer
     // __std_system_error_deallocate_message should be called even if 0 is returned
     // pre: *_Ptr_str == nullptr
-    DWORD _Lang_id;
-    const int _Ret = GetLocaleInfoEx(LOCALE_NAME_SYSTEM_DEFAULT, LOCALE_ILANGUAGE | LOCALE_RETURN_NUMBER,
-        reinterpret_cast<LPWSTR>(&_Lang_id), sizeof(_Lang_id) / sizeof(wchar_t));
-    if (_Ret == 0) {
-        _Lang_id = 0;
+
+    // We start by requesting US English for system_category() messages. (See GH-2451 and GH-3254 for the history.)
+    // This is consistent with generic_category(), which uses a table of US English strings in the STL.
+    // In general, system_error messages aren't directly useful to end-users - they're meant for programmer-users.
+    // Of course, the programmer-user might not speak US English, but machine translation of the message
+    // (and the numeric value of the error code) should help them understand the error.
+
+    constexpr auto _Flags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
+
+    DWORD _Lang_id = 0;
+    DWORD _Chars   = 0;
+
+    for (int _Attempt = 0; _Attempt < 3 && _Chars == 0; ++_Attempt) {
+        if (_Attempt == 0) {
+            _Lang_id = 0x0409; // 1033 decimal, "en-US" locale
+        } else if (_Attempt == 1) {
+            const int _Ret = GetLocaleInfoEx(LOCALE_NAME_SYSTEM_DEFAULT, LOCALE_ILANGUAGE | LOCALE_RETURN_NUMBER,
+                reinterpret_cast<LPWSTR>(&_Lang_id), sizeof(_Lang_id) / sizeof(wchar_t));
+            if (_Ret == 0) {
+                continue; // If we can't get the system locale's language ID, skip this attempt
+            }
+        } else {
+            _Lang_id = 0;
+        }
+
+        _Chars = FormatMessageA(_Flags, nullptr, _Message_id, _Lang_id, reinterpret_cast<char*>(_Ptr_str), 0, nullptr);
     }
-    const unsigned long _Chars =
-        FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-            nullptr, _Message_id, _Lang_id, reinterpret_cast<char*>(_Ptr_str), 0, nullptr);
 
     return _CSTD __std_get_string_size_without_trailing_whitespace(*_Ptr_str, _Chars);
 }

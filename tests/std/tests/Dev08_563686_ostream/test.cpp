@@ -49,7 +49,9 @@ int main() {
     _CrtMemCheckpoint(&before);
 
     // Construct and destroy an iostream, which previously leaked.
-    { std::iostream s(nullptr); }
+    {
+        std::iostream s(nullptr);
+    }
 
     // Get memory state after iostream allocation/deallocation
     _CrtMemState after;

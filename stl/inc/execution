@@ -137,11 +137,6 @@ template <>
 struct is_execution_policy<execution::unsequenced_policy> : true_type {};
 #endif // _HAS_CXX20
 
-template <class _Ty, class _FwdIt>
-void _Construct_in_place_by_deref(_Ty& _Val, const _FwdIt& _Iter) {
-    ::new (static_cast<void*>(_STD addressof(_Val))) _Ty(*_Iter);
-}
-
 template <class _Ty, class _UnaryOp, class _FwdIt>
 void _Construct_in_place_by_transform_deref(_Ty& _Val, _UnaryOp _Transform_op, const _FwdIt& _Iter) {
     ::new (static_cast<void*>(_STD addressof(_Val))) _Ty(_Transform_op(*_Iter));
@@ -166,7 +161,7 @@ void _Implicitly_construct_in_place_by_binary_op_transform_deref_rhs(
         _Ty([&]() -> _Ty { return _Reduce_op(_STD forward<_LeftTy>(_Left), _Transform_op(*_Iter)); }());
 }
 
-struct _Parallelism_resources_exhausted : exception {
+struct _NODISCARD _Parallelism_resources_exhausted : exception {
     _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         // return pointer to message string
         return "Insufficient resources were available to use additional parallelism.";
@@ -505,7 +500,8 @@ struct _Parallel_choose_max_chunk {
 
 template <class _Ty>
 struct alignas(_Ty) alignas(size_t) alignas(_Atomic_counter_t) _Circular_buffer { // work stealing deque extent type
-    static_assert(is_trivial_v<_Ty>, "Work stealing deques work only with trivial operations");
+    static_assert(is_trivially_copyable_v<_Ty> && is_trivially_default_constructible_v<_Ty>,
+        "Work stealing deques work only with trivial operations");
 
     size_t _Log_size;
     _Atomic_counter_t _Ref_count;
@@ -681,7 +677,9 @@ public:
 private:
     atomic<size_t> _Bottom{0}; // modified by only owning thread
     atomic<size_t> _Top{0}; // modified by all threads
+    // clang-format off: clang-format 19 doesn't understand _Guarded_by_ and will damage the following code
     _Guarded_by_(_Segment_lock) _Circular_buffer<_Ty>* _Segment { _Circular_buffer<_Ty>::_New_circular_buffer() };
+    // clang-format on
     mutex _Segment_lock{};
 };
 

@@ -547,6 +547,17 @@ void test_VSO_226914_word_boundaries() {
     aWordAny.should_search_fail("aa", match_not_bow | match_not_eow);
 }
 
+void test_construction_from_nullptr_and_zero() {
+    {
+        regex re(nullptr, 0);
+        assert(re.mark_count() == 0);
+    }
+    {
+        wregex re(nullptr, 0);
+        assert(re.mark_count() == 0);
+    }
+}
+
 void test_gh_993() {
     // GH-993 regex::icase is not handled correctly for some input.
     {
@@ -580,6 +591,36 @@ void test_gh_993() {
         z_case_regex.should_search_match(lowercase_subject, L"z");
         z_icase_regex.should_search_match(lowercase_subject, L"z");
     }
+}
+
+void test_gh_4995() {
+    // GH-4995: R"([\d-e])" should be rejected
+    g_regexTester.should_throw(R"([\d-e])", error_range);
+    g_regexTester.should_throw(R"([e-\d])", error_range);
+    g_regexTester.should_throw(R"([\w-\d])", error_range);
+    g_regexTester.should_throw("[[:digit:]-e]", error_range);
+    g_regexTester.should_throw("[e-[:digit:]]", error_range);
+    g_regexTester.should_throw("[[:alpha:]-[:digit:]]", error_range);
+    g_regexTester.should_throw("[[=a=]-e]", error_range, ECMAScript | regex::collate);
+    g_regexTester.should_throw("[e-[=a=]]", error_range, ECMAScript | regex::collate);
+    g_regexTester.should_throw("[[=a=]-[=b=]]", error_range, ECMAScript | regex::collate);
+
+    // Test valid cases:
+    g_regexTester.should_not_match("b", R"([\d-])");
+    g_regexTester.should_match("5", R"([\d-])");
+    g_regexTester.should_match("-", R"([\d-])");
+
+    g_regexTester.should_not_match("b", R"([-\d])");
+    g_regexTester.should_match("5", R"([-\d])");
+    g_regexTester.should_match("-", R"([-\d])");
+
+    g_regexTester.should_match("b", R"([a-c\d])");
+    g_regexTester.should_match("5", R"([a-c\d])");
+    g_regexTester.should_not_match("-", R"([a-c\d])");
+
+    g_regexTester.should_match("b", R"([\da-c])");
+    g_regexTester.should_match("5", R"([\da-c])");
+    g_regexTester.should_not_match("-", R"([\da-c])");
 }
 
 void test_gh_5058() {
@@ -629,6 +670,84 @@ void test_gh_5058() {
     }
 }
 
+void test_gh_5160() {
+    // GH-5160 fixed mishandled negated character class escapes
+    // outside character class definitions
+    const test_wregex neg_regex(&g_regexTester, LR"(Y\S*Z)");
+    neg_regex.should_search_match(L"xxxYxx\x0078xxxZxxx", L"Yxx\x0078xxxZ"); // U+0078 LATIN SMALL LETTER X
+    neg_regex.should_search_match(L"xxxYxx\x03C7xxxZxxx", L"Yxx\x03C7xxxZ"); // U+03C7 GREEK SMALL LETTER CHI
+    neg_regex.should_search_fail(L"xxxYxx xxxZxxx");
+    neg_regex.should_search_fail(L"xxxYxx\x2009xxxZxxx"); // U+2009 THIN SPACE
+}
+
+void test_gh_5167() {
+    // GH-5167: Limit backreference parsing to single digit for basic regular expressions
+    g_regexTester.should_match("abab0", R"(\(ab*\)\10)", basic);
+    g_regexTester.should_match("abab0", R"(\(ab*\)\10)", grep);
+    g_regexTester.should_match("abbcdccdc5abb8", R"(\(ab*\)\([cd]*\)\25\18)", basic);
+    g_regexTester.should_match("abbcdccdc5abb8", R"(\(ab*\)\([cd]*\)\25\18)", grep);
+    g_regexTester.should_not_match("abbcdccdc5abb8", R"(\(ab*\)\([cd]*\)\15\28)", basic);
+    g_regexTester.should_not_match("abbcdccdc5abb8", R"(\(ab*\)\([cd]*\)\15\28)", grep);
+    g_regexTester.should_throw(R"(abc\1d)", error_backref, basic);
+    g_regexTester.should_throw(R"(abc\1d)", error_backref, grep);
+    g_regexTester.should_throw(R"(abc\10)", error_backref, basic);
+    g_regexTester.should_throw(R"(abc\10)", error_backref, grep);
+}
+
+void test_gh_5192() {
+    // GH-5192: Correct characters not matched by special character dot
+    for (const syntax_option_type option : {
+             regex_constants::basic,
+             regex_constants::extended,
+             regex_constants::awk,
+             regex_constants::grep,
+             regex_constants::egrep,
+         }) {
+        const test_regex caretDotStar(&g_regexTester, "^.*", option);
+        caretDotStar.should_search_match("abc\nd\re\0f"s, "abc\nd\re"s);
+        caretDotStar.should_search_match("abcd\re\ngh\0i"s, "abcd\re\ngh"s);
+
+        const test_wregex wCaretDotStar(&g_regexTester, L"^.*", option);
+        wCaretDotStar.should_search_match(L"abc\nd\re\0f"s, L"abc\nd\re"s);
+        wCaretDotStar.should_search_match(L"abcd\re\ngh\0i"s, L"abcd\re\ngh"s);
+        wCaretDotStar.should_search_match(L"abc\u2028d\ne\0f"s, L"abc\u2028d\ne"s); // U+2028 LINE SEPARATOR
+        wCaretDotStar.should_search_match(L"abc\u2029d\ne\0f"s, L"abc\u2029d\ne"s); // U+2029 PARAGRAPH SEPARATOR
+    }
+
+    for (const syntax_option_type option : {
+             regex_constants::ECMAScript,
+             syntax_option_type(),
+         }) {
+        const test_regex caretDotStar(&g_regexTester, "^.*", option);
+        caretDotStar.should_search_match("ab\0c\nd\re\0f"s, "ab\0c"s);
+        caretDotStar.should_search_match("ab\0cd\re\ngh\0i"s, "ab\0cd"s);
+
+        const test_wregex wCaretDotStar(&g_regexTester, L"^.*", option);
+        wCaretDotStar.should_search_match(L"abc\0\nd\re\0f"s, L"abc\0"s);
+        wCaretDotStar.should_search_match(L"ab\0cd\re\ngh\0i"s, L"ab\0cd"s);
+        wCaretDotStar.should_search_match(L"ab\0c\u2028d\ne\0f"s, L"ab\0c"s); // U+2028 LINE SEPARATOR
+        wCaretDotStar.should_search_match(L"a\0bc\u2029d\ne\0f"s, L"a\0bc"s); // U+2029 PARAGRAPH SEPARATOR
+    }
+}
+
+void test_gh_5214() {
+    // GH-5214 makes negated character class escapes not match characters not included in the negated character class
+    {
+        const test_wregex neg_word_regex(&g_regexTester, LR"([\W])");
+        neg_word_regex.should_search_fail(L"\u0100"); // U+0100 LATIN CAPITAL LETTER A WITH MACRON
+    }
+
+    {
+        const test_wregex neg_space_regex(&g_regexTester, LR"([\S])");
+        neg_space_regex.should_search_fail(L"\u2028"); // U+2028 LINE SEPARATOR
+    }
+
+    {
+        const test_wregex neg_digit_regex(&g_regexTester, LR"([\D])");
+        neg_digit_regex.should_search_fail(L"\u0662"); // U+0662 ARABIC-INDIC DIGIT TWO
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -655,8 +774,14 @@ int main() {
     test_VSO_225160_match_bol_flag();
     test_VSO_225160_match_eol_flag();
     test_VSO_226914_word_boundaries();
+    test_construction_from_nullptr_and_zero();
     test_gh_993();
+    test_gh_4995();
     test_gh_5058();
+    test_gh_5160();
+    test_gh_5167();
+    test_gh_5192();
+    test_gh_5214();
 
     return g_regexTester.result();
 }

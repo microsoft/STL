@@ -178,7 +178,7 @@ public:
     _NODISCARD reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
         const auto _Mycont = static_cast<const _Mytree*>(this->_Getcont());
-        _STL_ASSERT(_Mycont, "cannot dereference value-initialized map/set iterator");
+        _STL_VERIFY(_Mycont, "cannot dereference value-initialized map/set iterator");
         _STL_VERIFY(this->_Ptr != _Mycont->_Myhead, "cannot dereference end map/set iterator");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
@@ -207,7 +207,7 @@ public:
 
     _Tree_const_iterator& operator--() noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_ASSERT(this->_Getcont(), "cannot decrement value-initialized map/set iterator");
+        _STL_VERIFY(this->_Getcont(), "cannot decrement value-initialized map/set iterator");
         _Nodeptr _Ptrsav = this->_Ptr;
         _Mybase::operator--();
         _STL_VERIFY(_Ptrsav != this->_Ptr, "cannot decrement begin map/set iterator");

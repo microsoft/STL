@@ -20,7 +20,9 @@ int __cdecl main() {
         // copy / move / destroy it as well.
         std::any a = f(small_but_nontrivial{});
         std::any b = a;
-        { std::any c = std::move(a); }
+        {
+            std::any c = std::move(a);
+        }
     }
 
     assert(small_but_nontrivial::constructions == small_but_nontrivial::destructions);

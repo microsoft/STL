@@ -12,10 +12,10 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <functional>
 #include <limits>
 #include <new>
 #include <type_traits>
-
 
 using namespace std;
 
@@ -437,6 +437,17 @@ STATIC_ASSERT(atomic<Bytes<1>*>::is_always_lock_free);
 STATIC_ASSERT(atomic<void*>::is_always_lock_free);
 STATIC_ASSERT(atomic<int (*)(int)>::is_always_lock_free);
 #endif // _HAS_CXX17
+
+// Also test LWG-4169 std::atomic<T>'s default constructor should be constrained
+// (backported to C++14/17 modes as we backported P0883R2)
+STATIC_ASSERT(is_default_constructible_v<atomic<int>>);
+STATIC_ASSERT(is_default_constructible_v<atomic<bool>>);
+STATIC_ASSERT(is_default_constructible_v<atomic<void*>>);
+STATIC_ASSERT(is_default_constructible_v<atomic<X>>);
+STATIC_ASSERT(is_default_constructible_v<atomic<Y>>);
+STATIC_ASSERT(!is_default_constructible_v<atomic<reference_wrapper<int>>>);
+STATIC_ASSERT(!is_default_constructible_v<atomic<reference_wrapper<const int>>>);
+STATIC_ASSERT(!is_default_constructible_v<atomic<reference_wrapper<int()>>>);
 
 
 // Also test P0418R2 atomic compare_exchange memory_order Requirements

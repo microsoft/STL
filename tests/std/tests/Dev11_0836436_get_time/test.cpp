@@ -912,7 +912,7 @@ void test_gh_4820() {
 
 void test_gh_4882() {
     // GH-4882 <iomanip>: std::put_time should not crash on invalid/out-of-range tm struct values
-    const auto fieldValidation = [](int tm::*const field, const int value, const string& fmt) {
+    const auto fieldValidation = [](int tm::* const field, const int value, const string& fmt) {
         time_t t = time(nullptr);
         tm currentTime;
         localtime_s(&currentTime, &t);
@@ -939,7 +939,7 @@ void test_gh_4882() {
     };
 
     struct FormatTestData {
-        int tm::*field;
+        int tm::* field;
         int lo;
         int hi;
         string fmt;
