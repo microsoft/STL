@@ -743,7 +743,7 @@ void test_unique(mt19937_64& gen) {
     binomial_distribution<TD> dis(number_of_values);
 
     if constexpr (is_pointer_v<T>) {
-        tmp_array = std::make_unique<remove_pointer<T>[]>(5);
+        tmp_array = make_unique<remove_pointer<T>[]>(5);
     }
 
     vector<T> source;
