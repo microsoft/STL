@@ -18,8 +18,7 @@ void u(benchmark::State& state) {
     using TD = std::conditional_t<sizeof(T) == 1, int, T>;
     std::binomial_distribution<TD> dis(5);
 
-    std::vector<T, not_highly_aligned_allocator<T>> src;
-    src.resize(2552);
+    std::vector<T, not_highly_aligned_allocator<T>> src(2552);
     std::generate(src.begin(), src.end(), [&] { return static_cast<T>(dis(gen)); });
 
     std::vector<T, not_highly_aligned_allocator<T>> v;
