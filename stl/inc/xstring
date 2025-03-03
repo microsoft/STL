@@ -401,6 +401,25 @@ public:
 
     _CONSTEXPR20 _String_val() noexcept : _Bx() {}
 
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+    _CONSTEXPR20 ~_String_val() noexcept {
+        if constexpr (is_pointer_v<pointer>) {
+            if (!_STD _Is_constant_evaluated()) {
+                const auto _Tombstone{reinterpret_cast<pointer>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+                _Bx._Ptr = _Tombstone;
+                _Mysize  = 0;
+                _Myres   = (_Small_string_capacity + 1) | _Alloc_mask; // first capacity when entering large mode
+
+                // The capacity indicates whether we're in small mode or large mode; see _Large_mode_engaged().
+                // The string would be usable in small mode, so we need large mode for the tombstone to be effective.
+                // `_Small_string_capacity + 1` would be sufficient to make _Large_mode_engaged() return true. However,
+                // basic_string uses a "roundup mask" when allocating; see _Calculate_growth(). So to avoid confusing
+                // the SSO logic, we use the first capacity that would normally be used when entering large mode.
+            }
+        }
+    }
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
+
     // length of internal buffer, [1, 16] (NB: used by the debugger visualizer)
     static constexpr size_type _BUF_SIZE = 16 / sizeof(value_type) < 1 ? 1 : 16 / sizeof(value_type);
     // roundup mask for allocated buffers, [0, 15]

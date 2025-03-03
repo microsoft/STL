@@ -352,6 +352,16 @@ public:
 
     _List_val() noexcept : _Myhead(), _Mysize(0) {} // initialize data
 
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+    ~_List_val() noexcept {
+        if constexpr (is_pointer_v<_Nodeptr>) {
+            const auto _Tombstone{reinterpret_cast<_Nodeptr>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+            _Myhead = _Tombstone;
+            _Mysize = 0;
+        }
+    }
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
+
     void _Orphan_ptr2(_Nodeptr _Ptr) noexcept { // orphan iterators with specified node pointers
 #if _ITERATOR_DEBUG_LEVEL == 2
         _Lockit _Lock(_LOCK_DEBUG);

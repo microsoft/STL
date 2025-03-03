@@ -88,6 +88,9 @@ struct _Optional_destruct_base { // either contains a value of _Ty or is empty (
         : _Value(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg))), _Has_value{true} {}
 #endif // _HAS_CXX23
 
+    // For the trivially destructible case, we can't add a destructor for _MSVC_STL_DESTRUCTOR_TOMBSTONES, due to
+    // N5001 [optional.dtor]/2: "Remarks: If is_trivially_destructible_v<T> is true, then this destructor is trivial."
+
     _CONSTEXPR20 void reset() noexcept {
         _Has_value = false;
     }
@@ -104,6 +107,13 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
     _CONSTEXPR20 ~_Optional_destruct_base() noexcept {
         if (_Has_value) {
             _Value.~_Ty();
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+            // For the non-trivially destructible case, we can set the optional to be empty.
+            // We don't attempt to scribble over the bytes of the object's storage because that could be expensive
+            // and we don't know whether the object has an invalid representation, much less what it could be.
+            _Has_value = false;
+#endif
         }
     }
 

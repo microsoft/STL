@@ -137,6 +137,14 @@ public:
 
     ~valarray() noexcept {
         _Tidy_deallocate();
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        const auto _Tombstone{reinterpret_cast<_Ty*>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+        _Myptr = _Tombstone;
+
+        // _Tidy_deallocate() sets _Mysize to 0, so we don't need to set it here.
+        _STL_INTERNAL_CHECK(_Mysize == 0);
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
     }
 
     valarray& operator=(const valarray& _Right) {
