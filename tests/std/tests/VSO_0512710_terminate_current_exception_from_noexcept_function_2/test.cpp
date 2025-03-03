@@ -30,8 +30,10 @@ using namespace std;
 #endif // __clang__
 struct A {
     ~A() noexcept {
-#pragma warning(suppress : 4297) // function assumed not to throw an exception but does
+#pragma warning(push)
+#pragma warning(disable : 4297) // function assumed not to throw an exception but does
         throw runtime_error("Runtime error happened");
+#pragma warning(pop)
     }
 };
 #ifdef __clang__

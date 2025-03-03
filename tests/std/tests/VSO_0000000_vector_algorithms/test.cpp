@@ -1179,6 +1179,38 @@ void test_case_string_find_last_of(const basic_string<T>& input_haystack, const 
 }
 
 template <class T>
+void test_case_string_find_ch(const basic_string<T>& input_haystack, const T value) {
+    ptrdiff_t expected;
+
+    const auto expected_iter = last_known_good_find(input_haystack.begin(), input_haystack.end(), value);
+
+    if (expected_iter != input_haystack.end()) {
+        expected = expected_iter - input_haystack.begin();
+    } else {
+        expected = -1;
+    }
+
+    const auto actual = static_cast<ptrdiff_t>(input_haystack.find(value));
+    assert(expected == actual);
+}
+
+template <class T>
+void test_case_string_rfind_ch(const basic_string<T>& input_haystack, const T value) {
+    ptrdiff_t expected;
+
+    const auto expected_iter = last_known_good_find_last(input_haystack.begin(), input_haystack.end(), value);
+
+    if (expected_iter != input_haystack.end()) {
+        expected = expected_iter - input_haystack.begin();
+    } else {
+        expected = -1;
+    }
+
+    const auto actual = static_cast<ptrdiff_t>(input_haystack.rfind(value));
+    assert(expected == actual);
+}
+
+template <class T>
 void test_case_string_find_str(const basic_string<T>& input_haystack, const basic_string<T>& input_needle) {
     ptrdiff_t expected;
     if (input_needle.empty()) {
@@ -1226,6 +1258,10 @@ void test_basic_string_dis(mt19937_64& gen, D& dis) {
     temp.reserve(needleDataCount);
 
     for (;;) {
+        const auto input_element = static_cast<T>(dis(gen));
+        test_case_string_find_ch(input_haystack, input_element);
+        test_case_string_rfind_ch(input_haystack, input_element);
+
         input_needle.clear();
 
         test_case_string_find_first_of(input_haystack, input_needle);

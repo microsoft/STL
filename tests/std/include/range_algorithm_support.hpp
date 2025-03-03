@@ -964,7 +964,12 @@ namespace test {
         requires std::signed_integral<Diff> && requires { typename std::iterator_traits<It>::iterator_category; }
     struct redifference_iterator_category_base<Diff, It> {
         using iterator_category = std::iterator_traits<It>::iterator_category;
-        using iterator_concept  = decltype([] {
+    };
+
+    template <std::_Signed_integer_like Diff, std::input_iterator It>
+    class redifference_iterator : public redifference_iterator_category_base<Diff, It> {
+    public:
+        using iterator_concept = decltype([] {
             if constexpr (std::contiguous_iterator<It>) {
                 return std::contiguous_iterator_tag{};
             } else if constexpr (std::random_access_iterator<It>) {
@@ -977,13 +982,8 @@ namespace test {
                 return std::input_iterator_tag{};
             }
         }());
-    };
-
-    template <std::_Signed_integer_like Diff, std::input_iterator It>
-    class redifference_iterator : public redifference_iterator_category_base<Diff, It> {
-    public:
-        using value_type      = std::iter_value_t<It>;
-        using difference_type = Diff;
+        using value_type       = std::iter_value_t<It>;
+        using difference_type  = Diff;
 
         redifference_iterator() = default;
         constexpr explicit redifference_iterator(It it) : i_{std::move(it)} {}
@@ -1052,22 +1052,22 @@ namespace test {
             return i.i_ == j.i_;
         }
 
-        [[nodiscard]] friend constexpr redifference_iterator operator+(
-            const redifference_iterator& it, std::same_as<difference_type> auto n)
+        template <std::same_as<difference_type> I> // TRANSITION, DevCom-10735214, should be abbreviated
+        [[nodiscard]] friend constexpr redifference_iterator operator+(const redifference_iterator& it, I n)
             requires std::random_access_iterator<It>
         {
             return redifference_iterator{it.i_ + static_cast<std::iter_difference_t<It>>(n)};
         }
 
-        [[nodiscard]] friend constexpr redifference_iterator operator+(
-            std::same_as<difference_type> auto n, const redifference_iterator& it)
+        template <std::same_as<difference_type> I> // TRANSITION, DevCom-10735214, should be abbreviated
+        [[nodiscard]] friend constexpr redifference_iterator operator+(I n, const redifference_iterator& it)
             requires std::random_access_iterator<It>
         {
             return redifference_iterator{it.i_ + static_cast<std::iter_difference_t<It>>(n)};
         }
 
-        [[nodiscard]] friend constexpr redifference_iterator operator-(
-            const redifference_iterator& it, std::same_as<difference_type> auto n)
+        template <std::same_as<difference_type> I> // TRANSITION, DevCom-10735214, should be abbreviated
+        [[nodiscard]] friend constexpr redifference_iterator operator-(const redifference_iterator& it, I n)
             requires std::random_access_iterator<It>
         {
             return redifference_iterator{it.i_ - static_cast<std::iter_difference_t<It>>(n)};
@@ -1163,10 +1163,10 @@ namespace test {
         if constexpr (is_sized) {
             const auto sz = to_unsigned(static_cast<Diff>(ranges::distance(r)));
             return ranges::subrange<rediff_iter, rediff_sent, ranges::subrange_kind::sized>{
-                rediff_iter{r.begin()}, rediff_sent{r.end()}, sz};
+                rediff_iter{ranges::begin(r)}, rediff_sent{ranges::end(r)}, sz};
         } else {
             return ranges::subrange<rediff_iter, rediff_sent, ranges::subrange_kind::unsized>{
-                rediff_iter{r.begin()}, rediff_sent{r.end()}};
+                rediff_iter{ranges::begin(r)}, rediff_sent{ranges::end(r)}};
         }
     }
 } // namespace test

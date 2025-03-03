@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define ISA_AVAILABILITY delete
+#define error_parse      delete
 #define nsec             delete
 #define sec              delete
 #define xtime            delete

@@ -98,10 +98,12 @@ void dump_map() {
     }
 }
 
+#pragma warning(push)
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier
 struct alignas(64) OverAlignedInt {
     int x;
-#pragma warning(suppress : 4324) // structure was padded due to alignment specifier
 };
+#pragma warning(pop)
 
 void test_gh_2362() {
     // GH-2362 suggests to add a debug-only nullptr assertion inside std::allocator<T>::deallocate, checking

@@ -330,7 +330,7 @@ void test_lwg_3749() { // COMPILE-ONLY
 
     using large_unbounded_iota = decltype(views::iota(42ull));
     static_assert(!common_iterator_has_iterator_category<ranges::iterator_t<large_unbounded_iota>,
-                  ranges::sentinel_t<large_unbounded_iota>>);
+        ranges::sentinel_t<large_unbounded_iota>>);
 }
 
 // Validate that _Variantish works when fed with a non-trivially-destructible type

@@ -93,14 +93,10 @@ const void* __stdcall __std_find_trivial_2(const void* _First, const void* _Last
 const void* __stdcall __std_find_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
 const void* __stdcall __std_find_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
 
-const void* __stdcall __std_find_first_of_trivial_1(
-    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
-const void* __stdcall __std_find_first_of_trivial_2(
-    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
-const void* __stdcall __std_find_first_of_trivial_4(
-    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
-const void* __stdcall __std_find_first_of_trivial_8(
-    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
+const void* __stdcall __std_find_last_trivial_1(const void* _First, const void* _Last, uint8_t _Val) noexcept;
+const void* __stdcall __std_find_last_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
+const void* __stdcall __std_find_last_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
+const void* __stdcall __std_find_last_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
 
 const void* __stdcall __std_search_1(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
@@ -217,29 +213,35 @@ _Ty* _Find_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noe
     }
 }
 
-// find_first_of vectorization is likely to be a win after this size (in elements)
-_INLINE_VAR constexpr ptrdiff_t _Threshold_find_first_of = 16;
-
-template <class _Ty1, class _Ty2>
-_Ty1* _Find_first_of_vectorized(
-    _Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _First2, _Ty2* const _Last2) noexcept {
-    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Ty1) == sizeof(_Ty2));
-    if constexpr (sizeof(_Ty1) == 1) {
-        return const_cast<_Ty1*>(
-            static_cast<const _Ty1*>(::__std_find_first_of_trivial_1(_First1, _Last1, _First2, _Last2)));
-    } else if constexpr (sizeof(_Ty1) == 2) {
-        return const_cast<_Ty1*>(
-            static_cast<const _Ty1*>(::__std_find_first_of_trivial_2(_First1, _Last1, _First2, _Last2)));
-    } else if constexpr (sizeof(_Ty1) == 4) {
-        return const_cast<_Ty1*>(
-            static_cast<const _Ty1*>(::__std_find_first_of_trivial_4(_First1, _Last1, _First2, _Last2)));
-    } else if constexpr (sizeof(_Ty1) == 8) {
-        return const_cast<_Ty1*>(
-            static_cast<const _Ty1*>(::__std_find_first_of_trivial_8(_First1, _Last1, _First2, _Last2)));
+template <class _Ty, class _TVal>
+_Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
+    if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
+#ifdef _WIN64
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, reinterpret_cast<uint64_t>(_Val))));
+#else
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_last_trivial_4(_First, _Last, reinterpret_cast<uint32_t>(_Val))));
+#endif
+    } else if constexpr (sizeof(_Ty) == 1) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_last_trivial_1(_First, _Last, static_cast<uint8_t>(_Val))));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_last_trivial_2(_First, _Last, static_cast<uint16_t>(_Val))));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_last_trivial_4(_First, _Last, static_cast<uint32_t>(_Val))));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+
+// find_first_of vectorization is likely to be a win after this size (in elements)
+_INLINE_VAR constexpr ptrdiff_t _Threshold_find_first_of = 16;
 
 template <class _Ty1, class _Ty2>
 _Ty1* _Search_vectorized(_Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _First2, const size_t _Count2) noexcept {
@@ -2031,14 +2033,14 @@ _NODISCARD constexpr _Ty* end(_Ty (&_Array)[_Size]) noexcept {
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD constexpr auto cbegin(const _Container& _Cont)
-    noexcept(noexcept(_STD begin(_Cont))) -> decltype(_STD begin(_Cont)) {
+_NODISCARD constexpr auto cbegin(const _Container& _Cont) noexcept(noexcept(_STD begin(_Cont)))
+    -> decltype(_STD begin(_Cont)) {
     return _STD begin(_Cont);
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD constexpr auto cend(const _Container& _Cont)
-    noexcept(noexcept(_STD end(_Cont))) -> decltype(_STD end(_Cont)) {
+_NODISCARD constexpr auto cend(const _Container& _Cont) noexcept(noexcept(_STD end(_Cont)))
+    -> decltype(_STD end(_Cont)) {
     return _STD end(_Cont);
 }
 
@@ -2891,7 +2893,7 @@ namespace ranges {
 
     template <input_range _Rng>
     _NODISCARD _MSVC_INTRINSIC constexpr auto& _Possibly_const_range(_Rng& _Range) noexcept {
-        if constexpr (constant_range<const _Rng> && !constant_range<_Rng>) {
+        if constexpr (input_range<const _Rng>) {
             return _STD as_const(_Range);
         } else {
             return _Range;
@@ -3821,9 +3823,11 @@ namespace ranges {
             requires forward_range<_Derived>
         {
             auto& _Self = _Cast();
-#if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(!_RANGES empty(_Self), "front called on empty view_interface");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+#if _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE || _ITERATOR_DEBUG_LEVEL != 0
+            _STL_VERIFY(!_RANGES empty(_Self), "front() called on empty ranges::view_interface");
+#endif
+
             return *_RANGES begin(_Self);
         }
 
@@ -3831,9 +3835,11 @@ namespace ranges {
             requires forward_range<const _Derived>
         {
             auto& _Self = _Cast();
-#if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(!_RANGES empty(_Self), "front called on empty view_interface");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+#if _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE || _ITERATOR_DEBUG_LEVEL != 0
+            _STL_VERIFY(!_RANGES empty(_Self), "front() called on empty ranges::view_interface");
+#endif
+
             return *_RANGES begin(_Self);
         }
 
@@ -3841,9 +3847,11 @@ namespace ranges {
             requires bidirectional_range<_Derived> && common_range<_Derived>
         {
             auto& _Self = _Cast();
-#if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(!_RANGES empty(_Self), "back called on empty view_interface");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+#if _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE || _ITERATOR_DEBUG_LEVEL != 0
+            _STL_VERIFY(!_RANGES empty(_Self), "back() called on empty ranges::view_interface");
+#endif
+
             auto _Last = _RANGES end(_Self);
             return *--_Last;
         }
@@ -3852,9 +3860,11 @@ namespace ranges {
             requires bidirectional_range<const _Derived> && common_range<const _Derived>
         {
             auto& _Self = _Cast();
-#if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(!_RANGES empty(_Self), "back called on empty view_interface");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+#if _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE || _ITERATOR_DEBUG_LEVEL != 0
+            _STL_VERIFY(!_RANGES empty(_Self), "back() called on empty ranges::view_interface");
+#endif
+
             auto _Last = _RANGES end(_Self);
             return *--_Last;
         }
@@ -3862,26 +3872,30 @@ namespace ranges {
         template <random_access_range _Rng = _Derived>
         _NODISCARD constexpr decltype(auto) operator[](const range_difference_t<_Rng> _Idx) {
             auto& _Self = _Cast();
-#if _CONTAINER_DEBUG_LEVEL > 0
+
+#if _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE || _ITERATOR_DEBUG_LEVEL != 0
             if constexpr (sized_range<_Derived>) {
                 using _U_diff = _Make_unsigned_like_t<range_difference_t<_Rng>>;
                 _STL_VERIFY(static_cast<_U_diff>(_Idx) < static_cast<_U_diff>(_RANGES size(_Self)),
-                    "index out of range for view_interface");
+                    "ranges::view_interface subscript out of range");
             }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE || _ITERATOR_DEBUG_LEVEL != 0
+
             return _RANGES begin(_Self)[_Idx];
         }
 
         template <random_access_range _Rng = const _Derived>
         _NODISCARD constexpr decltype(auto) operator[](const range_difference_t<_Rng> _Idx) const {
             auto& _Self = _Cast();
-#if _CONTAINER_DEBUG_LEVEL > 0
+
+#if _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE || _ITERATOR_DEBUG_LEVEL != 0
             if constexpr (sized_range<_Derived>) {
                 using _U_diff = _Make_unsigned_like_t<range_difference_t<_Rng>>;
                 _STL_VERIFY(static_cast<_U_diff>(_Idx) < static_cast<_U_diff>(_RANGES size(_Self)),
-                    "index out of range for view_interface");
+                    "ranges::view_interface subscript out of range");
             }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE || _ITERATOR_DEBUG_LEVEL != 0
+
             return _RANGES begin(_Self)[_Idx];
         }
     };
@@ -4121,10 +4135,9 @@ namespace ranges {
     subrange(_It, _Se, _Make_unsigned_like_t<iter_difference_t<_It>>) -> subrange<_It, _Se, subrange_kind::sized>;
 
     template <borrowed_range _Rng>
-    subrange(_Rng&&)
-        -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
-            (sized_range<_Rng> || sized_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>) ? subrange_kind::sized
-                                                                                          : subrange_kind::unsized>;
+    subrange(_Rng&&) -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>,
+        (sized_range<_Rng> || sized_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>) ? subrange_kind::sized
+                                                                                      : subrange_kind::unsized>;
 
     template <borrowed_range _Rng>
     subrange(_Rng&&, _Make_unsigned_like_t<range_difference_t<_Rng>>)
@@ -6178,12 +6191,12 @@ namespace ranges {
     template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
         requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
     _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj = {}) {
-        constexpr bool _Elements_are_1_or_2_bytes = sizeof(_Iter_value_t<_It>) <= 2;
-        constexpr bool _Is_sized                  = sized_sentinel_for<_Se, _It>;
+        constexpr bool _Elements_are_1_byte = sizeof(_Iter_value_t<_It>) == 1;
+        constexpr bool _Is_sized            = sized_sentinel_for<_Se, _It>;
 
         if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty>
-                      && (_Elements_are_1_or_2_bytes ? _Is_sized || same_as<_Se, unreachable_sentinel_t>
-                                                     : _Is_sized && _USE_STD_VECTOR_ALGORITHMS)
+                      && (_Elements_are_1_byte ? _Is_sized || same_as<_Se, unreachable_sentinel_t>
+                                               : _Is_sized && _USE_STD_VECTOR_ALGORITHMS)
                       && same_as<_Pj, identity>) {
             if (!_STD is_constant_evaluated()) {
                 if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
@@ -6201,13 +6214,13 @@ namespace ranges {
                 _Ptr_t _Result;
 #if _USE_STD_VECTOR_ALGORITHMS
                 if constexpr (_Is_sized) {
-                    // When _Is_sized && _Elements_are_1_or_2_bytes, prefer this over memchr()/wmemchr() for performance
+                    // When _Is_sized && _Elements_are_1_byte, prefer this over memchr() for performance
                     const auto _Last_ptr = _First_ptr + (_Last - _First);
                     _Result              = _STD _Find_vectorized(_First_ptr, _Last_ptr, _Val);
                 } else
 #endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
                 {
-                    _STL_INTERNAL_STATIC_ASSERT(_Elements_are_1_or_2_bytes);
+                    _STL_INTERNAL_STATIC_ASSERT(_Elements_are_1_byte);
                     size_t _Count;
                     if constexpr (_Is_sized) {
                         _Count = static_cast<size_t>(_Last - _First);
@@ -6215,14 +6228,11 @@ namespace ranges {
                         _Count = SIZE_MAX;
                     }
 
-                    if constexpr (sizeof(_Iter_value_t<_It>) == 1) {
-                        _Result =
-                            static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
-                    } else {
-                        _STL_INTERNAL_STATIC_ASSERT(sizeof(_Iter_value_t<_It>) == 2);
-                        _Result = reinterpret_cast<_Ptr_t>(const_cast<wchar_t*>(_CSTD wmemchr(
-                            reinterpret_cast<const wchar_t*>(_First_ptr), static_cast<wchar_t>(_Val), _Count)));
-                    }
+                    // C23 7.27.5.2 "The memchr generic function"/2 says "The implementation shall behave as if
+                    // it reads the characters sequentially and stops as soon as a matching character is found."
+                    // C23 7.32.4.6.9 "The wmemchr generic function"/2 lacks such wording,
+                    // so we don't use wmemchr(), avoiding issues with unreachable_sentinel_t.
+                    _Result = static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
 
                     if constexpr (_Is_sized) {
                         if (_Result == nullptr) {

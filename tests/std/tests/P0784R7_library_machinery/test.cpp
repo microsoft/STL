@@ -84,6 +84,9 @@ constexpr bool test() {
         assert(equal(begin(expected_copy), end(expected_copy), begin(output), end(output)));
     }
 
+#if 1 // TRANSITION, !_HAS_CXX26
+    if (!is_constant_evaluated())
+#endif // !_HAS_CXX26
     { // _Uninitialized_copy_unchecked
         int_wrapper_copy input[] = {1, 2, 3, 4};
         int_wrapper_copy output[4];
@@ -133,6 +136,9 @@ constexpr bool test() {
         }
     }
 
+#if 1 // TRANSITION, !_HAS_CXX26
+    if (!is_constant_evaluated())
+#endif // !_HAS_CXX26
     { // _Uninitialized_move_unchecked
         int_wrapper_move input[] = {1, 2, 3, 4};
         int_wrapper_move output[4];

@@ -41,7 +41,7 @@ union _Immortalizer_impl { // constructs _Ty, never destroys
 };
 
 #if defined(_M_CEE) || defined(_M_ARM64EC) || defined(_M_HYBRID) \
-    || defined(__clang__) // TRANSITION, Clang doesn't recognize /ALTERNATENAME, not yet reported
+    || defined(__clang__) // TRANSITION, avoid /ALTERNATENAME for Clang, see GH-5224
 #define _WINDOWS_API              __stdcall
 #define _RENAME_WINDOWS_API(_Api) _Api##_clr
 #else // ^^^ use forwarders / use /ALTERNATENAME vvv

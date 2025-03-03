@@ -49,13 +49,18 @@ def beNice(prio: str) -> list[ConfigAction]:
     }
     psutil.Process().nice(priority_map[prio])
   except ImportError:
-    import sys
-    print(f'NOTE: Module "psutil" is not installed, so the priority setting "{prio}" has no effect.', file=sys.stderr)
+    if not hasattr(beNice, 'suppress'):
+      import sys
+      print(f'NOTE: Module "psutil" is not installed, so the priority setting "{prio}" has no effect.', file=sys.stderr)
+      beNice.suppress = True
   return []
 
 
 def getDefaultParameters(config, litConfig):
     DEFAULT_PARAMETERS = [
+      Parameter(name='test-only-edg', choices=[True, False], type=bool, default=False,
+                help="Whether to only run edg tests (those that use the /BE flag).",
+                actions=lambda enabled: [AddFeature(name='test-only-edg')] if enabled else []),
       Parameter(name='long_tests', choices=[True, False], type=bool, default=True,
                 help="Whether to run tests that take a long time. This can be useful when running on a slow device.",
                 actions=lambda enabled: [AddFeature(name='long_tests')] if enabled else []),
