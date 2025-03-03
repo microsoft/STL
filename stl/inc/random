@@ -491,7 +491,7 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
         // and let normal unsigned modulo take care of it
         return static_cast<_Uint>(static_cast<_Uint>(_Ax * _Prev) + _Cx);
     } else if constexpr (_Cx == 0 && _Mx == 2147483647) {
-        // minstd_rand
+        // for minstd_rand and minstd_rand0 we can improve performance by avoiding constant divisions
         auto _Mul = static_cast<unsigned long long>(_Prev) * _Ax;
         _Mul      = (_Mul >> 31) + (_Mul & _Mx);
         _Mul      = _Mul < _Mx ? _Mul : _Mul - _Mx;
