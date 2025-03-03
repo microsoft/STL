@@ -31,6 +31,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#undef msvc
+
 _STD_BEGIN
 namespace ranges {
     // MUCH machinery defined in <xutility>, some in <__msvc_ranges_to.hpp>
@@ -1087,7 +1091,7 @@ namespace ranges {
             using _Index_type = conditional_t<same_as<_Bo, unreachable_sentinel_t>, ptrdiff_t, _Bo>;
 
             const _Ty* _Value{};
-            /* [[no_unique_address]] */ _Index_type _Current{};
+            _Index_type _Current{};
 
             constexpr explicit _Iterator(const _Ty* _Val, _Index_type _Bo_ = _Index_type{}) noexcept // strengthened
                 : _Value(_Val), _Current(_Bo_) {
@@ -3453,7 +3457,7 @@ namespace ranges {
             using _Parent_t = _Maybe_const<_Const, join_with_view>;
             using _Base     = _Maybe_const<_Const, _Vw>;
 
-            /* [[no_unique_address]] */ sentinel_t<_Base> _Last{};
+            _MSVC_NO_UNIQUE_ADDRESS sentinel_t<_Base> _Last{};
 
             constexpr explicit _Sentinel(_Parent_t& _Parent)
                 noexcept(noexcept(_RANGES end(_Parent._Range))
@@ -5129,7 +5133,7 @@ namespace ranges {
             using _Base_iterator  = iterator_t<_Base_t>;
             using _Reference_type = tuple<range_difference_t<_Base_t>, range_reference_t<_Base_t>>;
 
-            /* [[no_unique_address]] */ _Base_iterator _Current{};
+            _MSVC_NO_UNIQUE_ADDRESS _Base_iterator _Current{};
             range_difference_t<_Base_t> _Pos = 0;
 
             constexpr explicit _Iterator(_Base_iterator _Current_, range_difference_t<_Base_t> _Pos_)
@@ -5289,7 +5293,7 @@ namespace ranges {
             using _Base_t        = _Maybe_const<_Const, _Vw>;
             using _Base_sentinel = sentinel_t<_Base_t>;
 
-            /* [[no_unique_address]] */ _Base_sentinel _End{};
+            _MSVC_NO_UNIQUE_ADDRESS _Base_sentinel _End{};
 
             constexpr explicit _Sentinel(_Base_sentinel _End_)
                 noexcept(is_nothrow_move_constructible_v<_Base_sentinel>) // strengthened
@@ -5725,8 +5729,8 @@ namespace ranges {
             using _Base_iterator = iterator_t<_Base>;
             using _Base_sentinel = sentinel_t<_Base>;
 
-            /* [[no_unique_address]] */ _Base_iterator _Current{};
-            /* [[no_unique_address]] */ _Base_sentinel _End{};
+            _MSVC_NO_UNIQUE_ADDRESS _Base_iterator _Current{};
+            _MSVC_NO_UNIQUE_ADDRESS _Base_sentinel _End{};
             range_difference_t<_Base> _Count   = 0;
             range_difference_t<_Base> _Missing = 0;
 
@@ -6284,7 +6288,7 @@ namespace ranges {
         class _Sentinel {
         private:
             friend slide_view;
-            /* [[no_unique_address]] */ sentinel_t<_Vw> _Last{};
+            _MSVC_NO_UNIQUE_ADDRESS sentinel_t<_Vw> _Last{};
 
             constexpr explicit _Sentinel(sentinel_t<_Vw> _Last_)
                 noexcept(is_nothrow_move_constructible_v<sentinel_t<_Vw>>) /* strengthened */
@@ -9242,6 +9246,9 @@ namespace ranges {
 _EXPORT_STD namespace views = ranges::views;
 
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
