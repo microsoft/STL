@@ -3,7 +3,6 @@
 
 // Tests MSVC STL specific behavior on ABI.
 
-#include <cstddef>
 #include <mdspan>
 #include <type_traits>
 
@@ -40,7 +39,7 @@ static_assert(is_empty_v<layout_stride::mapping<extents<long long>>>);
 // * 'Mds::layout_type' is
 //   * 'layout_left' or 'layout_right' and 'Mds::extents_type::rank_dynamic() == 0', or
 //   * 'layout_stride' and 'Mds::extents_type::rank() == 0'
-// then 'sizeof(Mds) == sizeof(void*)' (MSVC STL specific behavior).
+// then 'sizeof(Mds) == sizeof(void*)'.
 static_assert(sizeof(mdspan<int, extents<int, 3, 3, 3>, layout_left>) == sizeof(void*));
 static_assert(sizeof(mdspan<int, dextents<int, 3>, layout_left>) > sizeof(void*));
 static_assert(sizeof(mdspan<int, extents<int, 3, 3, 3>, layout_left, TrivialAccessor<int>>) > sizeof(void*));
