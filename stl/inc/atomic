@@ -134,55 +134,21 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
 
 #define _ATOMIC_LOAD_ARM64(_Result, _Width, _Ptr, _Order_var) \
-    switch (_Order_var) {                                     \
-    case _Atomic_memory_order_relaxed:                        \
+    _Check_load_memory_order(_Order_var);                     \
+    if (_Order_var == memory_order_relaxed) {                 \
         _Result = __iso_volatile_load##_Width(_Ptr);          \
-        break;                                                \
-    case _Atomic_memory_order_consume:                        \
-    case _Atomic_memory_order_acquire:                        \
-    case _Atomic_memory_order_seq_cst:                        \
+    } else {                                                  \
         _Result = __LOAD_ACQUIRE_ARM64(_Width, _Ptr);         \
         _Compiler_barrier();                                  \
-        break;                                                \
-    case _Atomic_memory_order_release:                        \
-    case _Atomic_memory_order_acq_rel:                        \
-    default:                                                  \
-        _Result = __iso_volatile_load##_Width(_Ptr);          \
-        _INVALID_MEMORY_ORDER;                                \
-        break;                                                \
     }
 
 #endif // _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
 
 #define _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(_Order_var) \
-    switch (_Order_var) {                               \
-    case _Atomic_memory_order_relaxed:                  \
-        break;                                          \
-    case _Atomic_memory_order_consume:                  \
-    case _Atomic_memory_order_acquire:                  \
-    case _Atomic_memory_order_seq_cst:                  \
+    _Check_load_memory_order(_Order_var);               \
+    if (_Order_var != memory_order_relaxed) {           \
         _Compiler_or_memory_barrier();                  \
-        break;                                          \
-    case _Atomic_memory_order_release:                  \
-    case _Atomic_memory_order_acq_rel:                  \
-    default:                                            \
-        _INVALID_MEMORY_ORDER;                          \
-        break;                                          \
     }
-
-#define _ATOMIC_STORE_PREFIX(_Width, _Ptr, _Desired)      \
-    case _Atomic_memory_order_relaxed:                    \
-        __iso_volatile_store##_Width((_Ptr), (_Desired)); \
-        return;                                           \
-    case _Atomic_memory_order_release:                    \
-        __STORE_RELEASE(_Width, _Ptr, _Desired);          \
-        return;                                           \
-    default:                                              \
-    case _Atomic_memory_order_consume:                    \
-    case _Atomic_memory_order_acquire:                    \
-    case _Atomic_memory_order_acq_rel:                    \
-        _INVALID_MEMORY_ORDER;                            \
-        _FALLTHROUGH;
 
 #define _ATOMIC_STORE_SEQ_CST_ARM(_Width, _Ptr, _Desired) \
     _Memory_barrier();                                    \
@@ -731,11 +697,15 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
     void store(const _TVal _Value, const memory_order _Order) noexcept { // store with given memory order
         const auto _Mem      = _STD _Atomic_address_as<char>(_Storage);
         const char _As_bytes = _STD _Atomic_reinterpret_as<char>(_Value);
-        switch (static_cast<unsigned int>(_Order)) {
-            _ATOMIC_STORE_PREFIX(8, _Mem, _As_bytes)
-        case _Atomic_memory_order_seq_cst:
+
+        _Check_store_memory_order(_Order);
+
+        if (_Order == memory_order_relaxed) {
+            __iso_volatile_store8(_Mem, _As_bytes);
+        } else if (_Order == memory_order_release) {
+            __STORE_RELEASE(8, _Mem, _As_bytes);
+        } else {
             store(_Value);
-            return;
         }
     }
 
@@ -744,10 +714,10 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         const auto _Mem = _STD _Atomic_address_as<char>(_Storage);
         char _As_bytes;
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
-        _ATOMIC_LOAD_ARM64(_As_bytes, 8, _Mem, static_cast<unsigned int>(_Order))
+        _ATOMIC_LOAD_ARM64(_As_bytes, 8, _Mem, _Order)
 #else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 vvv
         _As_bytes = __iso_volatile_load8(_Mem);
-        _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(static_cast<unsigned int>(_Order))
+        _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(_Order)
 #endif // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 ^^^
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
@@ -834,11 +804,15 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
     void store(const _TVal _Value, const memory_order _Order) noexcept { // store with given memory order
         const auto _Mem       = _STD _Atomic_address_as<short>(_Storage);
         const short _As_bytes = _STD _Atomic_reinterpret_as<short>(_Value);
-        switch (static_cast<unsigned int>(_Order)) {
-            _ATOMIC_STORE_PREFIX(16, _Mem, _As_bytes)
-        case _Atomic_memory_order_seq_cst:
+
+        _Check_store_memory_order(_Order);
+
+        if (_Order == memory_order_relaxed) {
+            __iso_volatile_store16(_Mem, _As_bytes);
+        } else if (_Order == memory_order_release) {
+            __STORE_RELEASE(16, _Mem, _As_bytes);
+        } else {
             store(_Value);
-            return;
         }
     }
 
@@ -847,10 +821,10 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         const auto _Mem = _STD _Atomic_address_as<short>(_Storage);
         short _As_bytes;
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
-        _ATOMIC_LOAD_ARM64(_As_bytes, 16, _Mem, static_cast<unsigned int>(_Order))
+        _ATOMIC_LOAD_ARM64(_As_bytes, 16, _Mem, _Order)
 #else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 vvv
         _As_bytes = __iso_volatile_load16(_Mem);
-        _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(static_cast<unsigned int>(_Order))
+        _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(_Order)
 #endif // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 ^^^
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
@@ -936,11 +910,15 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
     void store(const _TVal _Value, const memory_order _Order) noexcept { // store with given memory order
         const auto _Mem     = _STD _Atomic_address_as<int>(_Storage);
         const int _As_bytes = _STD _Atomic_reinterpret_as<int>(_Value);
-        switch (static_cast<unsigned int>(_Order)) {
-            _ATOMIC_STORE_PREFIX(32, _Mem, _As_bytes)
-        case _Atomic_memory_order_seq_cst:
+
+        _Check_store_memory_order(_Order);
+
+        if (_Order == memory_order_relaxed) {
+            __iso_volatile_store32(_Mem, _As_bytes);
+        } else if (_Order == memory_order_release) {
+            __STORE_RELEASE(32, _Mem, _As_bytes);
+        } else {
             store(_Value);
-            return;
         }
     }
 
@@ -949,10 +927,10 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         const auto _Mem = _STD _Atomic_address_as<int>(_Storage);
         int _As_bytes;
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
-        _ATOMIC_LOAD_ARM64(_As_bytes, 32, _Mem, static_cast<unsigned int>(_Order))
+        _ATOMIC_LOAD_ARM64(_As_bytes, 32, _Mem, _Order)
 #else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 vvv
         _As_bytes = __iso_volatile_load32(_Mem);
-        _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(static_cast<unsigned int>(_Order))
+        _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(_Order)
 #endif // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 0 ^^^
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
@@ -1038,11 +1016,15 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     void store(const _TVal _Value, const memory_order _Order) noexcept { // store with given memory order
         const auto _Mem           = _STD _Atomic_address_as<long long>(_Storage);
         const long long _As_bytes = _STD _Atomic_reinterpret_as<long long>(_Value);
-        switch (static_cast<unsigned int>(_Order)) {
-            _ATOMIC_STORE_PREFIX(64, _Mem, _As_bytes)
-        case _Atomic_memory_order_seq_cst:
+
+        _Check_store_memory_order(_Order);
+
+        if (_Order == memory_order_relaxed) {
+            __iso_volatile_store64(_Mem, _As_bytes);
+        } else if (_Order == memory_order_release) {
+            __STORE_RELEASE(64, _Mem, _As_bytes);
+        } else {
             store(_Value);
-            return;
         }
     }
 
@@ -1051,7 +1033,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         const auto _Mem = _STD _Atomic_address_as<long long>(_Storage);
         long long _As_bytes;
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
-        _ATOMIC_LOAD_ARM64(_As_bytes, 64, _Mem, static_cast<unsigned int>(_Order))
+        _ATOMIC_LOAD_ARM64(_As_bytes, 64, _Mem, _Order)
 #else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR != 1 vvv
 
 #ifdef _M_ARM
@@ -1060,7 +1042,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         _As_bytes = __iso_volatile_load64(_Mem);
 #endif
 
-        _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(static_cast<unsigned int>(_Order))
+        _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(_Order)
 #endif // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR != 1 ^^^
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
@@ -1180,9 +1162,9 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
         case memory_order_acquire:
             (void) _INTRIN_ACQUIRE(_InterlockedCompareExchange128)(_Storage_ptr, 0, 0, &_Result._Low);
             break;
-        default:
         case memory_order_release:
         case memory_order_acq_rel:
+        default:
             _INVALID_MEMORY_ORDER;
             _FALLTHROUGH;
         case memory_order_seq_cst:
@@ -2328,7 +2310,8 @@ public:
 
     explicit atomic_ref(_Ty& _Value) noexcept /* strengthened */ : _Base(_Value) {
         if constexpr (is_always_lock_free) {
-            _Check_alignment(_Value);
+            _STL_ASSERT((reinterpret_cast<uintptr_t>(_STD addressof(_Value)) & (required_alignment - 1)) == 0,
+                "atomic_ref underlying object is not aligned as required_alignment");
         } else {
             this->_Init_spinlock_for_ref();
         }
@@ -2435,13 +2418,6 @@ public:
         requires (!is_const_v<_Ty>)
     {
         const_cast<atomic_ref*>(this)->_Base::notify_all();
-    }
-
-private:
-    static void _Check_alignment([[maybe_unused]] const _Ty& _Value) {
-        _ATOMIC_REF_CHECK_ALIGNMENT(
-            (reinterpret_cast<uintptr_t>(_STD addressof(_Value)) & (required_alignment - 1)) == 0,
-            "atomic_ref underlying object is not aligned as required_alignment");
     }
 };
 #endif // _HAS_CXX20
@@ -3042,7 +3018,6 @@ _STD_END
 
 #undef _ATOMIC_CHOOSE_INTRINSIC
 #undef _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED
-#undef _ATOMIC_STORE_PREFIX
 #undef _ATOMIC_STORE_SEQ_CST_ARM
 #undef _ATOMIC_STORE_SEQ_CST_X86_X64
 #undef _ATOMIC_STORE_32_SEQ_CST_X86_X64

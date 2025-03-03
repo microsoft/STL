@@ -2145,6 +2145,8 @@ _NODISCARD _OutputIt _Fmt_write(
     case 'g':
         if (_Precision == -1) {
             _Precision = 6;
+        } else if (_Precision == 0) {
+            _Precision = 1;
         }
         _Format = chars_format::general;
         break;
@@ -2698,7 +2700,7 @@ struct _Arg_formatter {
     _Basic_format_specs<_CharT>* _Specs = nullptr;
 
     _OutputIt operator()(basic_format_arg<_Context>::handle) {
-        _STL_VERIFY(false, "The custom handler should be structurally unreachable for _Arg_formatter");
+        _STL_REPORT_ERROR("The custom handler should be structurally unreachable for _Arg_formatter");
         _STL_INTERNAL_CHECK(_Ctx);
         return _Ctx->out();
     }

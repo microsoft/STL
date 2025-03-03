@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <array>
 #include <cstddef>
 #include <deque>
@@ -12,6 +10,12 @@
 #include <test_death.hpp>
 
 using namespace std;
+
+#pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
+
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
+#endif
 
 template <typename Traits>
 struct TestCases {
@@ -26,15 +30,11 @@ struct TestCases {
         (void) *it;
     }
 
-    static void test_case_operator_arrow_value_initialized_iterator2(true_type) {
-        IteratorType it;
-        (void) it.operator->();
-    }
-
-    static void test_case_operator_arrow_value_initialized_iterator2(false_type) {}
-
     static void test_case_operator_arrow_value_initialized_iterator() {
-        return test_case_operator_arrow_value_initialized_iterator2(bool_constant<Traits::has_arrow>{});
+        if constexpr (Traits::has_arrow) {
+            IteratorType it;
+            (void) it.operator->();
+        }
     }
 
     static void test_case_operator_preincrement_value_initialized_iterator() {
@@ -73,16 +73,12 @@ struct TestCases {
         (void) *it;
     }
 
-    static void test_case_operator_arrow_end_iterator2(true_type) {
-        ContainerType a{false, true, false, true};
-        auto it = a.end();
-        (void) it.operator->();
-    }
-
-    static void test_case_operator_arrow_end_iterator2(false_type) {}
-
     static void test_case_operator_arrow_end_iterator() {
-        return test_case_operator_arrow_end_iterator2(bool_constant<Traits::has_arrow>{});
+        if constexpr (Traits::has_arrow) {
+            ContainerType a{false, true, false, true};
+            auto it = a.end();
+            (void) it.operator->();
+        }
     }
 
     static void test_case_operator_preincrement_off_end() {
@@ -186,8 +182,7 @@ struct TestCases {
 
     static void add_cases(std_testing::death_test_executive& exec) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        static constexpr std_testing::death_function_t a[] = {
-            // TRANSITION, VSO-847348
+        exec.add_death_tests({
             test_case_operator_dereference_value_initialized_iterator,
             test_case_operator_preincrement_value_initialized_iterator,
             test_case_operator_predecrement_value_initialized_iterator,
@@ -206,27 +201,21 @@ struct TestCases {
             test_case_operator_equal_incompatible_value_initialized,
             test_case_operator_less_incompatible_different_views,
             test_case_operator_less_incompatible_value_initialized,
-        };
-        exec.add_death_tests(a);
-
-        if (Traits::has_arrow) {
-            static constexpr std_testing::death_function_t b[] = {
-                // TRANSITION, VSO-847348
-                test_case_operator_arrow_value_initialized_iterator,
-                test_case_operator_arrow_end_iterator,
-            };
-            exec.add_death_tests(b);
-        }
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-
-        static constexpr std_testing::death_function_t c[] = {
-            // TRANSITION, VSO-847348
             test_case_operator_subscript_out_of_range_empty,
             test_case_operator_subscript_out_of_range,
             test_case_front_empty,
             test_case_back_empty,
-        };
-        exec.add_death_tests(c);
+        });
+
+        if constexpr (Traits::has_arrow) {
+            exec.add_death_tests({
+                test_case_operator_arrow_value_initialized_iterator,
+                test_case_operator_arrow_end_iterator,
+            });
+        }
+#else // ^^^ _ITERATOR_DEBUG_LEVEL != 0 / _ITERATOR_DEBUG_LEVEL == 0 vvv
+        (void) exec;
+#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
 };
 

@@ -40,14 +40,16 @@ foreach ($workload in $VisualStudioWorkloads) {
 }
 
 # https://github.com/PowerShell/PowerShell/releases/latest
-$PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/PowerShell-7.4.6-win-x64.msi'
+$PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/PowerShell-7.5.0-win-x64.msi'
 $PowerShellArgs = @('/quiet', '/norestart')
 
-$PythonUrl = 'https://www.python.org/ftp/python/3.13.1/python-3.13.1-amd64.exe'
+$PythonUrl = 'https://www.python.org/ftp/python/3.13.2/python-3.13.2-amd64.exe'
 $PythonArgs = @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1', 'Include_doc=0')
 
+# TRANSITION, GH-5282: Install only nvcc and cudart, then manually add CUDA to the PATH (see below).
 $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda_12.4.0_551.61_windows.exe'
-$CudaArgs = @('-s', '-n', 'nvcc_12.4')
+$CudaArgs = @('-s', '-n', 'nvcc_12.4', 'cudart_12.4')
+$CudaPath = 'C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4\bin'
 
 <#
 .SYNOPSIS
@@ -111,6 +113,12 @@ DownloadAndInstall -Name 'Visual Studio' -Url $VisualStudioUrl -Args $VisualStud
 DownloadAndInstall -Name 'CUDA'          -Url $CudaUrl         -Args $CudaArgs
 
 Write-Host 'Setting environment variables...'
+
+# TRANSITION, GH-5282: Manually add CUDA to the PATH.
+# Don't use $Env:PATH here - that's the local path for this running script, captured before we installed anything.
+# The machine path was just updated by the installers above.
+$machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
+[Environment]::SetEnvironmentVariable('Path', "$machinePath;$CudaPath", 'Machine')
 
 # The STL's PR/CI builds are totally unrepresentative of customer usage.
 [Environment]::SetEnvironmentVariable('VSCMD_SKIP_SENDTELEMETRY', '1', 'Machine')

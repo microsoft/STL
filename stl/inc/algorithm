@@ -7157,9 +7157,7 @@ _CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last, _Pr _Pred) { // order h
     const auto _ULast  = _STD _Get_unwrapped(_Last);
 #if _ITERATOR_DEBUG_LEVEL == 2
     const auto _Counterexample = _STD _Is_heap_until_unchecked(_UFirst, _ULast, _STD _Pass_fn(_Pred));
-    if (_Counterexample != _ULast) {
-        _STL_REPORT_ERROR("invalid heap in sort_heap()");
-    }
+    _STL_VERIFY(_Counterexample == _ULast, "invalid heap in sort_heap()");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
     _STD _Sort_heap_unchecked(_UFirst, _ULast, _STD _Pass_fn(_Pred));
 }
