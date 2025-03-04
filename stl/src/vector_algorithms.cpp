@@ -4757,7 +4757,7 @@ namespace {
     }
 
     template <class _Ty>
-    void* _Unique_fallback(void* const _First, void* const _Last, void* const _Dest) {
+    void* _Unique_fallback(void* const _First, void* const _Last, void* const _Dest) noexcept {
         _Ty* _Out = reinterpret_cast<_Ty*>(_Dest);
         _Ty* _Src = reinterpret_cast<_Ty*>(_First);
 
