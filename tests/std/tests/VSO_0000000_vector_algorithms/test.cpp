@@ -756,8 +756,7 @@ void test_unique(mt19937_64& gen) {
     test_case_unique(in_out_expected, in_out_actual, in_out_actual_r);
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
         if constexpr (is_pointer_v<T>) {
-            const auto pos = static_cast<int>(dis(gen));
-            source.push_back(ptr_val_array.data() + pos);
+            source.push_back(ptr_val_array.data() + dis(gen));
         } else {
             source.push_back(static_cast<T>(dis(gen)));
         }
