@@ -2024,10 +2024,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _STATIC_CALL_OPERATOR static
 #define _CONST_CALL_OPERATOR
 #define _STATIC_LAMBDA static
-#elif _MSC_VER < 1944 // TRANSITION, internal toolset needs to be updated to VS 2022 17.14 Preview 1
-#define _STATIC_CALL_OPERATOR
-#define _CONST_CALL_OPERATOR const
-#define _STATIC_LAMBDA
 #else // TRANSITION, VSO-2383148, fixed in VS 2022 17.14 Preview 3
 #define _STATIC_CALL_OPERATOR static
 #define _CONST_CALL_OPERATOR
