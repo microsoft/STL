@@ -4984,8 +4984,8 @@ namespace {
         }
     };
 
-    template <class _Traits>
-    void* _Remove_impl(void* _First, const void* _Stop, const auto _Val) noexcept {
+    template <class _Traits, class _Ty>
+    void* _Remove_impl(void* _First, const void* _Stop, const _Ty _Val) noexcept {
         void* _Out        = _First;
         const auto _Match = _Traits::_Set(_Val);
 
