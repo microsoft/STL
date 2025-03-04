@@ -13,7 +13,6 @@
 #include <functional>
 #include <limits>
 #include <list>
-#include <memory>
 #include <numeric>
 #include <random>
 #include <stdexcept>
