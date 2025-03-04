@@ -735,8 +735,6 @@ void test_case_unique(vector<T>& in_out_expected, vector<T>& in_out_actual, vect
 
 template <class T>
 void test_unique(mt19937_64& gen) {
-    using TD = conditional_t<sizeof(T) == 1 || is_pointer_v<T>, int, T>;
-
     constexpr int number_of_values = 5;
 
     struct unused_t {};
