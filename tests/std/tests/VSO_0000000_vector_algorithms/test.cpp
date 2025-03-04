@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
+#include <array>
 #include <bitset>
 #include <cassert>
 #include <climits>
@@ -741,14 +742,10 @@ void test_unique(mt19937_64& gen) {
 
     struct unused_t {};
 
-    conditional_t<is_pointer_v<T>, unique_ptr<remove_pointer_t<T>[]>, unused_t> ptr_array;
+    conditional_t<is_pointer_v<T>, array<remove_pointer_t<T>, number_of_values>, unused_t> ptr_val_array;
 
     using TD = conditional_t<sizeof(T) == 1 || is_pointer_v<T>, int, T>;
     binomial_distribution<TD> dis(number_of_values);
-
-    if constexpr (is_pointer_v<T>) {
-        ptr_array = make_unique<remove_pointer_t<T>[]>(number_of_values);
-    }
 
     vector<T> source;
     vector<T> in_out_expected;
@@ -763,7 +760,7 @@ void test_unique(mt19937_64& gen) {
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
         if constexpr (is_pointer_v<T>) {
             const auto pos = static_cast<int>(dis(gen));
-            source.push_back(ptr_array.get() + pos);
+            source.push_back(ptr_val_array.data() + pos);
         } else {
             source.push_back(static_cast<T>(dis(gen)));
         }
