@@ -739,7 +739,7 @@ void test_unique(mt19937_64& gen) {
 
     struct unused_t {};
 
-    conditional_t<is_pointer_v<T>, array<remove_pointer_t<T>, number_of_values>, unused_t> ptr_val_array;
+    conditional_t<is_pointer_v<T>, array<remove_pointer_t<T>, number_of_values>, unused_t> ptr_val_array{};
 
     using TD = conditional_t<sizeof(T) == 1 || is_pointer_v<T>, int, T>;
     binomial_distribution<TD> dis(number_of_values);
