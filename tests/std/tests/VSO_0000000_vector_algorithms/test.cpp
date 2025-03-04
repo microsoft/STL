@@ -735,15 +735,19 @@ void test_case_unique(vector<T>& in_out_expected, vector<T>& in_out_actual, vect
 
 template <class T>
 void test_unique(mt19937_64& gen) {
-    shared_ptr<void> tmp_array;
+    using TD = conditional_t<sizeof(T) == 1 || is_pointer_v<T>, int, T>;
 
     constexpr int number_of_values = 5;
+
+    struct unused_t {};
+
+    conditional_t<is_pointer_v<T>, unique_ptr<remove_pointer_t<T>[]>, unused_t> ptr_array;
 
     using TD = conditional_t<sizeof(T) == 1 || is_pointer_v<T>, int, T>;
     binomial_distribution<TD> dis(number_of_values);
 
     if constexpr (is_pointer_v<T>) {
-        tmp_array = make_unique<remove_pointer<T>[]>(5);
+        ptr_array = make_unique<remove_pointer_t<T>[]>(number_of_values);
     }
 
     vector<T> source;
@@ -759,7 +763,7 @@ void test_unique(mt19937_64& gen) {
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
         if constexpr (is_pointer_v<T>) {
             const auto pos = static_cast<int>(dis(gen));
-            source.push_back(static_cast<T>(tmp_array.get()) + pos);
+            source.push_back(ptr_array.get() + pos);
         } else {
             source.push_back(static_cast<T>(dis(gen)));
         }
