@@ -2742,7 +2742,7 @@ namespace {
     }
 
     template <class _Traits, _Find_one_predicate _Pred, class _Ty>
-    size_t __stdcall __std_find_last_pos(const void* const _First, const void* const _Last, _Ty _Val) noexcept {
+    size_t __stdcall __std_find_last_pos(const void* const _First, const void* const _Last, const _Ty _Val) noexcept {
         const void* const _Result = __std_find_last_trivial_impl<_Traits, _Pred>(_First, _Last, _Val);
         if (_Result == _Last) {
             return static_cast<size_t>(-1);
