@@ -169,7 +169,7 @@ void test_count(mt19937_64& gen) {
     }
 }
 
-template <class FwdIt, class T, class Pred = std::equal_to<>>
+template <class FwdIt, class T, class Pred = equal_to<>>
 auto last_known_good_find(FwdIt first, FwdIt last, T v, Pred pred = {}) {
     for (; first != last; ++first) {
         if (pred(*first, v)) {
@@ -179,7 +179,7 @@ auto last_known_good_find(FwdIt first, FwdIt last, T v, Pred pred = {}) {
     return first;
 }
 
-template <class FwdIt, class T, class Pred = std::equal_to<>>
+template <class FwdIt, class T, class Pred = equal_to<>>
 auto last_known_good_find_last(FwdIt first, FwdIt last, T v, Pred pred = {}) {
     FwdIt last_save = last;
     for (;;) {
@@ -1165,7 +1165,7 @@ void test_case_string_find_not_ch(const basic_string<T>& input_haystack, const T
     ptrdiff_t expected;
 
     const auto expected_iter =
-        last_known_good_find(input_haystack.begin(), input_haystack.end(), value, std::not_equal_to<>{});
+        last_known_good_find(input_haystack.begin(), input_haystack.end(), value, not_equal_to<>{});
 
     if (expected_iter != input_haystack.end()) {
         expected = expected_iter - input_haystack.begin();
@@ -1182,7 +1182,7 @@ void test_case_string_rfind_not_ch(const basic_string<T>& input_haystack, const 
     ptrdiff_t expected;
 
     const auto expected_iter =
-        last_known_good_find_last(input_haystack.begin(), input_haystack.end(), value, std::not_equal_to<>{});
+        last_known_good_find_last(input_haystack.begin(), input_haystack.end(), value, not_equal_to<>{});
 
     if (expected_iter != input_haystack.end()) {
         expected = expected_iter - input_haystack.begin();
