@@ -41,7 +41,7 @@ The caveats of this technique are:
   + This limitation is subtle (not readily apparent from the source code) and critical.
     If shared global state is necessary, our only option while preserving bincompat is adding a satellite DLL.
 * Due to having just two flavors of the import library (debug and release),
-  we cannot use anything that depends on `_CONTAINER_DEBUG_LEVEL` or `_ITERATOR_DEBUG_LEVEL`.
+  we cannot use anything that depends on `_ITERATOR_DEBUG_LEVEL`.
 
 For these reasons, especially the last one, we need to strictly control what is used by the import library.
 In particular, `basic_string` must not be used there.

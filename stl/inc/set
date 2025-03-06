@@ -415,8 +415,8 @@ template <_RANGES input_range _Rng, class _Pr = less<_RANGES range_value_t<_Rng>
 multiset(from_range_t, _Rng&&, _Pr = _Pr(), _Alloc = _Alloc()) -> multiset<_RANGES range_value_t<_Rng>, _Pr, _Alloc>;
 
 template <_RANGES input_range _Rng, _Allocator_for_container _Alloc>
-multiset(
-    from_range_t, _Rng&&, _Alloc) -> multiset<_RANGES range_value_t<_Rng>, less<_RANGES range_value_t<_Rng>>, _Alloc>;
+multiset(from_range_t, _Rng&&, _Alloc)
+    -> multiset<_RANGES range_value_t<_Rng>, less<_RANGES range_value_t<_Rng>>, _Alloc>;
 #endif // _HAS_CXX23
 #endif // _HAS_CXX17
 

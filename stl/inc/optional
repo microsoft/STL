@@ -35,7 +35,7 @@ _EXPORT_STD struct nullopt_t { // no-value state indicator
 };
 _EXPORT_STD inline constexpr nullopt_t nullopt{nullopt_t::_Tag{}};
 
-_EXPORT_STD class bad_optional_access : public exception {
+_EXPORT_STD class _NODISCARD bad_optional_access : public exception {
 public:
     _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         return "Bad optional access";
@@ -88,6 +88,9 @@ struct _Optional_destruct_base { // either contains a value of _Ty or is empty (
         : _Value(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg))), _Has_value{true} {}
 #endif // _HAS_CXX23
 
+    // For the trivially destructible case, we can't add a destructor for _MSVC_STL_DESTRUCTOR_TOMBSTONES, due to
+    // N5001 [optional.dtor]/2: "Remarks: If is_trivially_destructible_v<T> is true, then this destructor is trivial."
+
     _CONSTEXPR20 void reset() noexcept {
         _Has_value = false;
     }
@@ -104,6 +107,13 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
     _CONSTEXPR20 ~_Optional_destruct_base() noexcept {
         if (_Has_value) {
             _Value.~_Ty();
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+            // For the non-trivially destructible case, we can set the optional to be empty.
+            // We don't attempt to scribble over the bytes of the object's storage because that could be expensive
+            // and we don't know whether the object has an invalid representation, much less what it could be.
+            _Has_value = false;
+#endif
         }
     }
 
@@ -181,30 +191,34 @@ struct _Optional_construct_base : _Optional_destruct_base<_Ty> {
     }
 
     _NODISCARD constexpr _Ty& operator*() & noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_OPTIONAL || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this->_Has_value, "operator*() called on empty optional");
+#endif
+
         return this->_Value;
     }
 
     _NODISCARD constexpr const _Ty& operator*() const& noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_OPTIONAL || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this->_Has_value, "operator*() called on empty optional");
+#endif
+
         return this->_Value;
     }
 
     _NODISCARD constexpr _Ty&& operator*() && noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_OPTIONAL || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this->_Has_value, "operator*() called on empty optional");
+#endif
+
         return _STD move(this->_Value);
     }
 
     _NODISCARD constexpr const _Ty&& operator*() const&& noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_OPTIONAL || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this->_Has_value, "operator*() called on empty optional");
+#endif
+
         return _STD move(this->_Value);
     }
 };
@@ -252,7 +266,7 @@ public:
         negation<conjunction<is_same<remove_cv_t<_Ty>, bool>, _Is_specialization<_Remove_cvref_t<_Ty2>, optional>>>,
         is_constructible<_Ty, _Ty2>>>;
 
-    template <class _Ty2 = _Ty, enable_if_t<_AllowDirectConversion<_Ty2>::value, int> = 0>
+    template <class _Ty2 = remove_cv_t<_Ty>, enable_if_t<_AllowDirectConversion<_Ty2>::value, int> = 0>
     constexpr explicit(!is_convertible_v<_Ty2, _Ty>) optional(_Ty2&& _Right)
         noexcept(is_nothrow_constructible_v<_Ty, _Ty2>) // strengthened
         : _Mybase(in_place, _STD forward<_Ty2>(_Right)) {}
@@ -288,10 +302,11 @@ public:
         return *this;
     }
 
-    template <class _Ty2 = _Ty, enable_if_t<conjunction_v<negation<is_same<optional, _Remove_cvref_t<_Ty2>>>,
-                                                negation<conjunction<is_scalar<_Ty>, is_same<_Ty, decay_t<_Ty2>>>>,
-                                                is_constructible<_Ty, _Ty2>, is_assignable<_Ty&, _Ty2>>,
-                                    int> = 0>
+    template <class _Ty2 = remove_cv_t<_Ty>,
+        enable_if_t<conjunction_v<negation<is_same<optional, _Remove_cvref_t<_Ty2>>>,
+                        negation<conjunction<is_scalar<_Ty>, is_same<_Ty, decay_t<_Ty2>>>>, is_constructible<_Ty, _Ty2>,
+                        is_assignable<_Ty&, _Ty2>>,
+            int>         = 0>
     _CONSTEXPR20 optional& operator=(_Ty2&& _Right)
         noexcept(is_nothrow_assignable_v<_Ty&, _Ty2> && is_nothrow_constructible_v<_Ty, _Ty2>) /* strengthened */ {
         this->_Assign(_STD forward<_Ty2>(_Right));
@@ -375,15 +390,17 @@ public:
     }
 
     _NODISCARD constexpr const _Ty* operator->() const noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_OPTIONAL || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this->_Has_value, "operator->() called on empty optional");
+#endif
+
         return _STD addressof(this->_Value);
     }
     _NODISCARD constexpr _Ty* operator->() noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_OPTIONAL || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this->_Has_value, "operator->() called on empty optional");
+#endif
+
         return _STD addressof(this->_Value);
     }
 
@@ -425,13 +442,14 @@ public:
         return _STD move(this->_Value);
     }
 
-    template <class _Ty2>
+    template <class _Ty2 = remove_cv_t<_Ty>>
     _NODISCARD constexpr remove_cv_t<_Ty> value_or(_Ty2&& _Right) const& {
         static_assert(is_convertible_v<const _Ty&, remove_cv_t<_Ty>>,
             "The const overload of optional<T>::value_or requires const T& to be convertible to remove_cv_t<T> "
             "(N4950 [optional.observe]/15 as modified by LWG-3424).");
-        static_assert(is_convertible_v<_Ty2, _Ty>,
-            "optional<T>::value_or(U) requires U to be convertible to T (N4950 [optional.observe]/15).");
+        static_assert(is_convertible_v<_Ty2, remove_cv_t<_Ty>>,
+            "optional<T>::value_or(U) requires U to be convertible to remove_cv_t<T> "
+            "(N4950 [optional.observe]/15 as modified by LWG-3424).");
 
         if (this->_Has_value) {
             return static_cast<const _Ty&>(this->_Value);
@@ -439,13 +457,14 @@ public:
 
         return static_cast<remove_cv_t<_Ty>>(_STD forward<_Ty2>(_Right));
     }
-    template <class _Ty2>
+    template <class _Ty2 = remove_cv_t<_Ty>>
     _NODISCARD constexpr remove_cv_t<_Ty> value_or(_Ty2&& _Right) && {
         static_assert(is_convertible_v<_Ty, remove_cv_t<_Ty>>,
             "The rvalue overload of optional<T>::value_or requires T to be convertible to remove_cv_t<T> "
             "(N4950 [optional.observe]/17 as modified by LWG-3424).");
-        static_assert(is_convertible_v<_Ty2, _Ty>,
-            "optional<T>::value_or(U) requires U to be convertible to T (N4950 [optional.observe]/17).");
+        static_assert(is_convertible_v<_Ty2, remove_cv_t<_Ty>>,
+            "optional<T>::value_or(U) requires U to be convertible to remove_cv_t<T> "
+            "(N4950 [optional.observe]/17 as modified by LWG-3424).");
 
         if (this->_Has_value) {
             return static_cast<_Ty&&>(this->_Value);

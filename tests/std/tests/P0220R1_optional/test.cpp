@@ -8372,6 +8372,11 @@ int run_test()
 #include <type_traits>
 #include <utility>
 
+#if _HAS_CXX20
+#define CONSTEXPR20 constexpr
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#define CONSTEXPR20 inline
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 namespace msvc {
     namespace size {
@@ -8422,12 +8427,6 @@ namespace msvc {
     namespace lwg3836 {
         static_assert(std::is_convertible_v<std::optional<int>, std::optional<bool>>);
         static_assert(std::is_convertible_v<const std::optional<int>&, std::optional<bool>>);
-
-#if _HAS_CXX20
-#define CONSTEXPR20 constexpr
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-#define CONSTEXPR20 inline
-#endif // ^^^ !_HAS_CXX20 ^^^
         CONSTEXPR20 bool run_test() {
             std::optional<int> oi  = 0;
             std::optional<bool> ob = oi;
@@ -8436,12 +8435,150 @@ namespace msvc {
 
             return true;
         }
-#undef CONSTEXPR20
-
 #if _HAS_CXX20
         static_assert(run_test());
 #endif // _HAS_CXX20
     } // namespace lwg3836
+
+    namespace lwg3886 {
+        enum class Qualification {
+            None,
+            Const,
+            Volatile,
+            ConstVolatile,
+        };
+
+        template <class T>
+        constexpr Qualification CvQualOf =
+            std::is_const_v<std::remove_reference_t<T>>
+                ? (std::is_volatile_v<std::remove_reference_t<T>> ? Qualification::ConstVolatile : Qualification::Const)
+                : (std::is_volatile_v<std::remove_reference_t<T>> ? Qualification::Volatile : Qualification::None);
+
+        struct QualDistinction {
+            QualDistinction() = default;
+
+            constexpr QualDistinction(QualDistinction&&) noexcept : qual_{Qualification::None} {}
+            constexpr QualDistinction(const QualDistinction&) noexcept : qual_{Qualification::Const} {}
+            template <class T,
+                std::enable_if_t<std::is_same_v<std::remove_cv_t<std::remove_reference_t<T>>, QualDistinction>, int> =
+                    0>
+            constexpr QualDistinction(T&&) noexcept : qual_{CvQualOf<T>} {}
+
+            constexpr QualDistinction& operator=(QualDistinction&&) noexcept {
+                qual_ = Qualification::None;
+                return *this;
+            }
+            constexpr QualDistinction& operator=(const QualDistinction&) noexcept {
+                qual_ = Qualification::Const;
+                return *this;
+            }
+            template <class T,
+                std::enable_if_t<std::is_same_v<std::remove_cv_t<std::remove_reference_t<T>>, QualDistinction>, int> =
+                    0>
+            constexpr QualDistinction& operator=(T&&) noexcept {
+                qual_ = CvQualOf<T>;
+                return *this;
+            }
+            template <class T,
+                std::enable_if_t<std::is_same_v<std::remove_cv_t<std::remove_reference_t<T>>, QualDistinction>, int> =
+                    0>
+            constexpr const QualDistinction& operator=(T&&) const noexcept {
+                qual_ = CvQualOf<T>;
+                return *this;
+            }
+            template <class T,
+                std::enable_if_t<std::is_same_v<std::remove_cv_t<std::remove_reference_t<T>>, QualDistinction>, int> =
+                    0>
+            volatile QualDistinction& operator=(T&&) volatile noexcept {
+                qual_ = CvQualOf<T>;
+                return *this;
+            }
+            template <class T,
+                std::enable_if_t<std::is_same_v<std::remove_cv_t<std::remove_reference_t<T>>, QualDistinction>, int> =
+                    0>
+            const volatile QualDistinction& operator=(T&&) const volatile noexcept {
+                qual_ = CvQualOf<T>;
+                return *this;
+            }
+
+            mutable Qualification qual_ = Qualification::None;
+        };
+
+        constexpr bool test_value_or() {
+            assert(std::optional<QualDistinction>{}.value_or({}).qual_ == Qualification::None);
+            assert(std::optional<const QualDistinction>{}.value_or({}).qual_ == Qualification::None);
+            {
+                std::optional<QualDistinction> opt;
+                assert(opt.value_or({}).qual_ == Qualification::None);
+            }
+            {
+                std::optional<const QualDistinction> opt;
+                assert(opt.value_or({}).qual_ == Qualification::None);
+            }
+            return true;
+        }
+
+        CONSTEXPR20 bool test_assignment() {
+            assert((std::optional<QualDistinction>{} = {QualDistinction{}}).value().qual_ == Qualification::None);
+            assert((std::optional<const QualDistinction>{} = {QualDistinction{}}).value().qual_ == Qualification::None);
+            {
+                std::optional<QualDistinction> opt{std::in_place};
+                assert((opt = {QualDistinction{}}).value().qual_ == Qualification::None);
+                opt.reset();
+                assert((opt = {QualDistinction{}}).value().qual_ == Qualification::None);
+            }
+            {
+                std::optional<const QualDistinction> opt{std::in_place};
+                assert((opt = {QualDistinction{}}).value().qual_ == Qualification::None);
+                opt.reset();
+                assert((opt = {QualDistinction{}}).value().qual_ == Qualification::None);
+            }
+            return true;
+        }
+
+        bool test_volatile() {
+            assert(std::optional<volatile QualDistinction>{}.value_or({}).qual_ == Qualification::None);
+            assert(std::optional<const volatile QualDistinction>{}.value_or({}).qual_ == Qualification::None);
+            {
+                std::optional<volatile QualDistinction> opt;
+                assert(opt.value_or({}).qual_ == Qualification::None);
+            }
+            {
+                std::optional<const volatile QualDistinction> opt;
+                assert(opt.value_or({}).qual_ == Qualification::None);
+            }
+
+            assert(
+                (std::optional<volatile QualDistinction>{} = {QualDistinction{}}).value().qual_ == Qualification::None);
+            assert((std::optional<const volatile QualDistinction>{} = {QualDistinction{}}).value().qual_
+                   == Qualification::None);
+            {
+                std::optional<volatile QualDistinction> opt{std::in_place};
+                assert((opt = {QualDistinction{}}).value().qual_ == Qualification::None);
+                opt.reset();
+                assert((opt = {QualDistinction{}}).value().qual_ == Qualification::None);
+            }
+            {
+                std::optional<const volatile QualDistinction> opt{std::in_place};
+                assert((opt = {QualDistinction{}}).value().qual_ == Qualification::None);
+                opt.reset();
+                assert((opt = {QualDistinction{}}).value().qual_ == Qualification::None);
+            }
+
+            return true;
+        }
+
+        static_assert(test_value_or());
+#if _HAS_CXX20
+        static_assert(test_assignment());
+#endif // _HAS_CXX20
+
+        void run_test() {
+            test_value_or();
+            test_assignment();
+            test_volatile();
+        }
+    } // namespace lwg3886
 
     namespace vso406124 {
         // Defend against regression of VSO-406124
@@ -8719,6 +8856,7 @@ int main() {
     optional_includes_initializer_list::run_test();
 
     msvc::lwg3836::run_test();
+    msvc::lwg3886::run_test();
 
     msvc::vso406124::run_test();
     msvc::vso508126::run_test();

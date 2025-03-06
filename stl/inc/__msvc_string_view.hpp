@@ -29,6 +29,15 @@ extern "C" {
 // compiler has to assume that the denoted arrays are "globally address taken", and that any later calls to
 // unanalyzable routines may modify those arrays.
 
+__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_1(
+    const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept;
+__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_2(
+    const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept;
+__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_4(
+    const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept;
+__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_8(
+    const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept;
+
 __declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_1(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept;
 __declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_2(
@@ -51,6 +60,23 @@ __declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_8(
 } // extern "C"
 
 _STD_BEGIN
+
+template <class _Ty1, class _Ty2>
+size_t _Find_first_of_pos_vectorized(const _Ty1* const _Haystack, const size_t _Haystack_length,
+    const _Ty2* const _Needle, const size_t _Needle_length) noexcept {
+    _STL_INTERNAL_STATIC_ASSERT(sizeof(_Ty1) == sizeof(_Ty2));
+    if constexpr (sizeof(_Ty1) == 1) {
+        return ::__std_find_first_of_trivial_pos_1(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    } else if constexpr (sizeof(_Ty1) == 2) {
+        return ::__std_find_first_of_trivial_pos_2(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    } else if constexpr (sizeof(_Ty1) == 4) {
+        return ::__std_find_first_of_trivial_pos_4(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    } else if constexpr (sizeof(_Ty1) == 8) {
+        return ::__std_find_first_of_trivial_pos_8(_Haystack, _Haystack_length, _Needle, _Needle_length);
+    } else {
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+    }
+}
 
 template <class _Ty1, class _Ty2>
 size_t _Find_last_of_pos_vectorized(const _Ty1* const _Haystack, const size_t _Haystack_length,
@@ -877,48 +903,31 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
     const auto _Hay_end   = _Haystack + _Hay_size;
 
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
+#if _USE_STD_VECTOR_ALGORITHMS
         if (!_STD _Is_constant_evaluated()) {
-            using _Elem = typename _Traits::char_type;
-
-#if _USE_STD_VECTOR_ALGORITHMS
-            const bool _Try_vectorize = _Hay_size - _Start_at > _Threshold_find_first_of;
-
-            // Additional condition for when the vectorization outperforms the table lookup
-            constexpr size_t _Find_first_of_bitmap_threshold = sizeof(_Elem) == 1 ? 48 : sizeof(_Elem) == 8 ? 8 : 16;
-
-            const bool _Use_bitmap = !_Try_vectorize || _Needle_size > _Find_first_of_bitmap_threshold;
-#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
-            const bool _Use_bitmap = true;
-#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
-
-            if (_Use_bitmap) {
-                _String_bitmap<_Elem> _Matches;
-
-                if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
-                    for (auto _Match_try = _Hay_start; _Match_try < _Hay_end; ++_Match_try) {
-                        if (_Matches._Match(*_Match_try)) {
-                            return static_cast<size_t>(_Match_try - _Haystack); // found a match
-                        }
-                    }
-                    return static_cast<size_t>(-1); // no match
+            const size_t _Remaining_size = _Hay_size - _Start_at;
+            if (_Remaining_size + _Needle_size >= _Threshold_find_first_of) {
+                size_t _Pos = _Find_first_of_pos_vectorized(_Hay_start, _Remaining_size, _Needle, _Needle_size);
+                if (_Pos != static_cast<size_t>(-1)) {
+                    _Pos += _Start_at;
                 }
-
-                // couldn't put one of the characters into the bitmap, fall back to vectorized or serial algorithms
+                return _Pos;
             }
-
-#if _USE_STD_VECTOR_ALGORITHMS
-            if (_Try_vectorize) {
-                const _Traits_ptr_t<_Traits> _Found =
-                    _STD _Find_first_of_vectorized(_Hay_start, _Hay_end, _Needle, _Needle + _Needle_size);
-
-                if (_Found != _Hay_end) {
-                    return static_cast<size_t>(_Found - _Haystack); // found a match
-                } else {
-                    return static_cast<size_t>(-1); // no match
-                }
-            }
-#endif // _USE_STD_VECTOR_ALGORITHMS
         }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
+        _String_bitmap<typename _Traits::char_type> _Matches;
+
+        if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
+            for (auto _Match_try = _Hay_start; _Match_try < _Hay_end; ++_Match_try) {
+                if (_Matches._Match(*_Match_try)) {
+                    return static_cast<size_t>(_Match_try - _Haystack); // found a match
+                }
+            }
+            return static_cast<size_t>(-1); // no match
+        }
+
+        // couldn't put one of the characters into the bitmap, fall back to serial algorithm
     }
 
     for (auto _Match_try = _Hay_start; _Match_try < _Hay_end; ++_Match_try) {
@@ -942,47 +951,32 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
     const auto _Hay_start = (_STD min)(_Start_at, _Hay_size - 1);
 
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
-        if (!_STD _Is_constant_evaluated()) {
-            using _Elem = typename _Traits::char_type;
-
-            bool _Use_bitmap = true;
+        using _Elem = typename _Traits::char_type;
 #if _USE_STD_VECTOR_ALGORITHMS
-            bool _Try_vectorize = false;
-
-            if constexpr (sizeof(_Elem) <= 2) {
-                _Try_vectorize = _Hay_start + 1 > _Threshold_find_first_of;
-                // Additional condition for when the vectorization outperforms the table lookup
-                constexpr size_t _Find_last_of_bitmap_threshold = sizeof(_Elem) == 1 ? 48 : 8;
-
-                _Use_bitmap = !_Try_vectorize || _Needle_size > _Find_last_of_bitmap_threshold;
-            }
-#endif // _USE_STD_VECTOR_ALGORITHMS
-
-            if (_Use_bitmap) {
-                _String_bitmap<_Elem> _Matches;
-                if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
-                    for (auto _Match_try = _Haystack + _Hay_start;; --_Match_try) {
-                        if (_Matches._Match(*_Match_try)) {
-                            return static_cast<size_t>(_Match_try - _Haystack); // found a match
-                        }
-
-                        if (_Match_try == _Haystack) {
-                            return static_cast<size_t>(-1); // at beginning, no more chance for match
-                        }
-                    }
-                }
-
-                // couldn't put one of the characters into the bitmap, fall back to vectorized or serial algorithms
-            }
-
-#if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (sizeof(_Elem) <= 2) {
-                if (_Try_vectorize) {
-                    return _STD _Find_last_of_pos_vectorized(_Haystack, _Hay_start + 1, _Needle, _Needle_size);
+        if constexpr (sizeof(_Elem) <= 2) {
+            if (!_STD _Is_constant_evaluated()) {
+                const size_t _Remaining_size = _Hay_start + 1;
+                if (_Remaining_size + _Needle_size >= _Threshold_find_first_of) { // same threshold for first/last
+                    return _Find_last_of_pos_vectorized(_Haystack, _Remaining_size, _Needle, _Needle_size);
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
         }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
+        _String_bitmap<_Elem> _Matches;
+        if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
+            for (auto _Match_try = _Haystack + _Hay_start;; --_Match_try) {
+                if (_Matches._Match(*_Match_try)) {
+                    return static_cast<size_t>(_Match_try - _Haystack); // found a match
+                }
+
+                if (_Match_try == _Haystack) {
+                    return static_cast<size_t>(-1); // at beginning, no more chance for match
+                }
+            }
+        }
+
+        // couldn't put one of the characters into the bitmap, fall back to serial algorithm
     }
 
     for (auto _Match_try = _Haystack + _Hay_start;; --_Match_try) {
@@ -1419,9 +1413,10 @@ public:
         "Bad char_traits for basic_string_view; N4950 [string.view.template.general]/1 "
         "\"The program is ill-formed if traits::char_type is not the same type as charT.\"");
 
-    static_assert(!is_array_v<_Elem> && is_trivial_v<_Elem> && is_standard_layout_v<_Elem>,
-        "The character type of basic_string_view must be a non-array trivial standard-layout type. See N4950 "
-        "[strings.general]/1.");
+    static_assert(!is_array_v<_Elem> && is_trivially_copyable_v<_Elem> && is_trivially_default_constructible_v<_Elem>
+                      && is_standard_layout_v<_Elem>,
+        "The character type of basic_string_view must be a non-array trivially copyable standard-layout type T where "
+        "is_trivially_default_constructible_v<T> is true. See N5001 [strings.general]/1.");
 
     using traits_type            = _Traits;
     using value_type             = _Elem;
@@ -1453,9 +1448,9 @@ public:
     constexpr basic_string_view(
         _In_reads_(_Count) const const_pointer _Cts, const size_type _Count) noexcept // strengthened
         : _Mydata(_Cts), _Mysize(_Count) {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Count == 0 || _Cts, "non-zero size null string_view");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Count == 0 || _Cts, "cannot construct a string_view from a null pointer and a non-zero size");
+#endif
     }
 
 #if _HAS_CXX20
@@ -1548,9 +1543,9 @@ public:
     }
 
     _NODISCARD constexpr const_reference operator[](const size_type _Off) const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING_VIEW || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Off < _Mysize, "string_view subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         // CodeQL [SM01954] This index is optionally validated above.
         return _Mydata[_Off];
@@ -1563,31 +1558,35 @@ public:
     }
 
     _NODISCARD constexpr const_reference front() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize != 0, "cannot call front on empty string_view");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING_VIEW || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Mysize != 0, "front() called on empty string_view");
+#endif
+
         return _Mydata[0];
     }
 
     _NODISCARD constexpr const_reference back() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize != 0, "cannot call back on empty string_view");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING_VIEW || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Mysize != 0, "back() called on empty string_view");
+#endif
+
         return _Mydata[_Mysize - 1];
     }
 
     constexpr void remove_prefix(const size_type _Count) noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize >= _Count, "cannot remove prefix longer than total size");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING_VIEW || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Mysize >= _Count, "cannot remove_prefix() larger than string_view size");
+#endif
+
         _Mydata += _Count;
         _Mysize -= _Count;
     }
 
     constexpr void remove_suffix(const size_type _Count) noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize >= _Count, "cannot remove suffix longer than total size");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING_VIEW || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Mysize >= _Count, "cannot remove_suffix() larger than string_view size");
+#endif
+
         _Mysize -= _Count;
     }
 

@@ -110,16 +110,18 @@ namespace _Gen_detail {
         }
 
         template <class _Alloc2, class... _Args>
-            requires convertible_to<const _Alloc2&, _Proto_allocator>
         _NODISCARD_RAW_PTR_ALLOC static void* operator new(
             const size_t _Size, allocator_arg_t, const _Alloc2& _Al, const _Args&...) {
+            static_assert(convertible_to<const _Alloc2&, _Proto_allocator>,
+                "Allocator argument must be convertible to the allocator type (N5001 [coro.generator.promise]/18)");
             return _Allocate(static_cast<_Alloc>(static_cast<_Proto_allocator>(_Al)), _Size);
         }
 
         template <class _This, class _Alloc2, class... _Args>
-            requires convertible_to<const _Alloc2&, _Proto_allocator>
         _NODISCARD_RAW_PTR_ALLOC static void* operator new(
             const size_t _Size, const _This&, allocator_arg_t, const _Alloc2& _Al, const _Args&...) {
+            static_assert(convertible_to<const _Alloc2&, _Proto_allocator>,
+                "Allocator argument must be convertible to the allocator type (N5001 [coro.generator.promise]/18)");
             return _Allocate(static_cast<_Alloc>(static_cast<_Proto_allocator>(_Al)), _Size);
         }
 
@@ -284,14 +286,20 @@ namespace _Gen_detail {
             return _Nested_awaitable{_STD move(_Elem.range)};
         }
 
+        template <class _Rty, class _Vty, class _Alloc, class _Unused>
+            requires same_as<_Yield_t<_Reference_t<_Rty, _Vty>>, _Yielded>
+        _NODISCARD auto yield_value(_RANGES elements_of<generator<_Rty, _Vty, _Alloc>&, _Unused> _Elem) noexcept {
+            using _Nested_awaitable = _Nested_awaitable_provider<_Rty, _Vty, _Alloc>::_Awaitable;
+            return _Nested_awaitable{_STD move(_Elem.range)};
+        }
+
         template <_RANGES input_range _Rng, class _Alloc>
             requires convertible_to<_RANGES range_reference_t<_Rng>, _Yielded>
         _NODISCARD auto yield_value(_RANGES elements_of<_Rng, _Alloc> _Elem) {
-            using _Vty              = _RANGES range_value_t<_Rng>;
-            using _Nested_awaitable = _Nested_awaitable_provider<_Yielded, _Vty, _Alloc>::_Awaitable;
+            using _Nested_awaitable = _Nested_awaitable_provider<_Yielded, void, _Alloc>::_Awaitable;
 
             auto _Lambda = [](allocator_arg_t, _Alloc, _RANGES iterator_t<_Rng> _It,
-                               const _RANGES sentinel_t<_Rng> _Se) -> generator<_Yielded, _Vty, _Alloc> {
+                               const _RANGES sentinel_t<_Rng> _Se) -> generator<_Yielded, void, _Alloc> {
                 for (; _It != _Se; ++_It) {
                     co_yield static_cast<_Yielded>(*_It);
                 }
@@ -476,16 +484,16 @@ namespace _Gen_detail {
 
         _NODISCARD _Ref operator*() const
             noexcept(noexcept(static_cast<_Ref>(*_Coro.promise()._Get_top().promise()._Ptr))) /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(!_Coro.done(), "Can't dereference generator end iterator");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             return static_cast<_Ref>(*_Coro.promise()._Get_top().promise()._Ptr);
         }
 
         _Iterator& operator++() {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(!_Coro.done(), "Can't increment generator end iterator");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
             _Coro.promise()._Get_top().resume();
             return *this;
         }
@@ -564,9 +572,9 @@ public:
 
     _NODISCARD _Gen_detail::_Iter_provider<_Value, _Ref>::_Iterator begin() {
         // Pre: _Coro is suspended at its initial suspend point
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Coro, "Can't call begin on moved-from generator");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
         _Coro.resume();
         return typename _Gen_detail::_Iter_provider<_Value, _Ref>::_Iterator{_Gen_detail::_Secret_tag{},
             coroutine_handle<_Gen_detail::_Promise_base<yielded>>::from_address(_Coro.address())};

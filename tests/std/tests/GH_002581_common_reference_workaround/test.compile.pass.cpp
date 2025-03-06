@@ -23,8 +23,8 @@ static_assert(contiguous_iterator<volatile Scoped*>);
 static_assert(contiguous_iterator<const volatile Scoped*>);
 static_assert(contiguous_iterator<Test* volatile*>);
 static_assert(contiguous_iterator<Test* const volatile*>);
-static_assert(contiguous_iterator<int Test::*volatile*>);
-static_assert(contiguous_iterator<int Test::*const volatile*>);
+static_assert(contiguous_iterator<int Test::* volatile*>);
+static_assert(contiguous_iterator<int Test::* const volatile*>);
 
 // Tests for move_iterator specializations
 static_assert(random_access_iterator<move_iterator<volatile int*>>);
@@ -39,5 +39,5 @@ static_assert(random_access_iterator<move_iterator<volatile Scoped*>>);
 static_assert(random_access_iterator<move_iterator<const volatile Scoped*>>);
 static_assert(random_access_iterator<move_iterator<Test* volatile*>>);
 static_assert(random_access_iterator<move_iterator<Test* const volatile*>>);
-static_assert(random_access_iterator<move_iterator<int Test::*volatile*>>);
-static_assert(random_access_iterator<move_iterator<int Test::*const volatile*>>);
+static_assert(random_access_iterator<move_iterator<int Test::* volatile*>>);
+static_assert(random_access_iterator<move_iterator<int Test::* const volatile*>>);

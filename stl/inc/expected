@@ -25,7 +25,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 _EXPORT_STD template <class _Err>
-class unexpected;
+class _NODISCARD unexpected;
 
 template <class _Err>
 struct _Check_unexpected_argument : true_type {
@@ -39,7 +39,7 @@ struct _Check_unexpected_argument : true_type {
 
 // [expected.un.general]
 _EXPORT_STD template <class _Err>
-class unexpected {
+class _NODISCARD unexpected {
     static_assert(_Check_unexpected_argument<_Err>::value);
 
     template <class _Ty, class _Err2>
@@ -107,10 +107,10 @@ template <class _Err>
 unexpected(_Err) -> unexpected<_Err>;
 
 _EXPORT_STD template <class _Err>
-class bad_expected_access;
+class _NODISCARD bad_expected_access;
 
 template <>
-class bad_expected_access<void> : public exception {
+class _NODISCARD bad_expected_access<void> : public exception {
 public:
     _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         return "Bad expected access";
@@ -131,7 +131,7 @@ protected:
 };
 
 _EXPORT_STD template <class _Err>
-class bad_expected_access : public bad_expected_access<void> {
+class _NODISCARD bad_expected_access : public bad_expected_access<void> {
 public:
     explicit bad_expected_access(_Err _Unex) noexcept(is_nothrow_move_constructible_v<_Err>) // strengthened
         : _Unexpected(_STD move(_Unex)) {}
@@ -205,7 +205,7 @@ concept _Trivially_move_constructible_assignable_destructible =
     && is_trivially_destructible_v<_Type>;
 
 _EXPORT_STD template <class _Ty, class _Err>
-class expected {
+class _NODISCARD expected {
 private:
     static_assert(_Check_expected_argument<_Ty>::value);
     static_assert(_Check_unexpected_argument<_Err>::value);
@@ -304,7 +304,7 @@ public:
         }
     }
 
-    template <class _Uty = _Ty>
+    template <class _Uty = remove_cv_t<_Ty>>
         requires (!is_same_v<remove_cvref_t<_Uty>, in_place_t> && !is_same_v<remove_cvref_t<_Uty>, expected>
                      && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected>
                      && (!is_same_v<remove_cv_t<_Ty>, bool>
@@ -469,7 +469,7 @@ public:
                   && _Trivially_move_constructible_assignable_destructible<_Err>
     = default;
 
-    template <class _Uty = _Ty>
+    template <class _Uty = remove_cv_t<_Ty>>
         requires (!is_same_v<remove_cvref_t<_Uty>, expected> && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected>
                   && is_constructible_v<_Ty, _Uty> && is_assignable_v<_Ty&, _Uty>
                   && (is_nothrow_constructible_v<_Ty, _Uty> || is_nothrow_move_constructible_v<_Ty>
@@ -620,40 +620,46 @@ public:
 
     // [expected.object.obs]
     _NODISCARD constexpr const _Ty* operator->() const noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Has_value, "expected stores an error, not a value");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_EXPECTED || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Has_value, "operator->() called on a std::expected that contains an error, not a value");
+#endif
+
         return _STD addressof(_Value);
     }
     _NODISCARD constexpr _Ty* operator->() noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Has_value, "expected stores an error, not a value");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_EXPECTED || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Has_value, "operator->() called on a std::expected that contains an error, not a value");
+#endif
+
         return _STD addressof(_Value);
     }
 
     _NODISCARD constexpr const _Ty& operator*() const& noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Has_value, "expected stores an error, not a value");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_EXPECTED || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Has_value, "operator*() called on a std::expected that contains an error, not a value");
+#endif
+
         return _Value;
     }
     _NODISCARD constexpr _Ty& operator*() & noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Has_value, "expected stores an error, not a value");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_EXPECTED || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Has_value, "operator*() called on a std::expected that contains an error, not a value");
+#endif
+
         return _Value;
     }
     _NODISCARD constexpr const _Ty&& operator*() const&& noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Has_value, "expected stores an error, not a value");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_EXPECTED || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Has_value, "operator*() called on a std::expected that contains an error, not a value");
+#endif
+
         return _STD move(_Value);
     }
     _NODISCARD constexpr _Ty&& operator*() && noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Has_value, "expected stores an error, not a value");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_EXPECTED || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Has_value, "operator*() called on a std::expected that contains an error, not a value");
+#endif
+
         return _STD move(_Value);
     }
 
@@ -706,56 +712,66 @@ public:
     }
 
     _NODISCARD constexpr const _Err& error() const& noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!_Has_value, "expected stores a value, not an error");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_EXPECTED || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(!_Has_value, "error() called on a std::expected that contains a value, not an error");
+#endif
+
         return _Unexpected;
     }
     _NODISCARD constexpr _Err& error() & noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!_Has_value, "expected stores a value, not an error");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_EXPECTED || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(!_Has_value, "error() called on a std::expected that contains a value, not an error");
+#endif
+
         return _Unexpected;
     }
     _NODISCARD constexpr const _Err&& error() const&& noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!_Has_value, "expected stores a value, not an error");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_EXPECTED || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(!_Has_value, "error() called on a std::expected that contains a value, not an error");
+#endif
+
         return _STD move(_Unexpected);
     }
     _NODISCARD constexpr _Err&& error() && noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!_Has_value, "expected stores a value, not an error");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_EXPECTED || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(!_Has_value, "error() called on a std::expected that contains a value, not an error");
+#endif
+
         return _STD move(_Unexpected);
     }
 
-    template <class _Uty>
-    _NODISCARD constexpr _Ty value_or(_Uty&& _Other) const& noexcept(
-        is_nothrow_copy_constructible_v<_Ty> && is_nothrow_convertible_v<_Uty, _Ty>) /* strengthened */ {
-        static_assert(
-            is_copy_constructible_v<_Ty>, "is_copy_constructible_v<T> must be true. (N4950 [expected.object.obs]/18)");
-        static_assert(
-            is_convertible_v<_Uty, _Ty>, "is_convertible_v<U, T> must be true. (N4950 [expected.object.obs]/18)");
+    template <class _Uty = remove_cv_t<_Ty>>
+    _NODISCARD constexpr remove_cv_t<_Ty> value_or(_Uty&& _Other) const& noexcept(
+        is_nothrow_convertible_v<const _Ty&, remove_cv_t<_Ty>>
+        && is_nothrow_convertible_v<_Uty, remove_cv_t<_Ty>>) /* strengthened */ {
+        static_assert(is_convertible_v<const _Ty&, remove_cv_t<_Ty>>,
+            "is_convertible_v<const T&, remove_cv_t<T>> must be true. "
+            "(N5001 [expected.object.obs]/18 as modified by LWG-3424)");
+        static_assert(is_convertible_v<_Uty, remove_cv_t<_Ty>>,
+            "is_convertible_v<U, remove_cv_t<T>> must be true. "
+            "(N5001 [expected.object.obs]/18 as modified by LWG-3424)");
 
         if (_Has_value) {
             return _Value;
         } else {
-            return static_cast<_Ty>(_STD forward<_Uty>(_Other));
+            return static_cast<remove_cv_t<_Ty>>(_STD forward<_Uty>(_Other));
         }
     }
-    template <class _Uty>
-    _NODISCARD constexpr _Ty value_or(_Uty&& _Other) && noexcept(
-        is_nothrow_move_constructible_v<_Ty> && is_nothrow_convertible_v<_Uty, _Ty>) /* strengthened */ {
-        static_assert(
-            is_move_constructible_v<_Ty>, "is_move_constructible_v<T> must be true. (N4950 [expected.object.obs]/20)");
-        static_assert(
-            is_convertible_v<_Uty, _Ty>, "is_convertible_v<U, T> must be true. (N4950 [expected.object.obs]/20)");
+    template <class _Uty = remove_cv_t<_Ty>>
+    _NODISCARD constexpr remove_cv_t<_Ty> value_or(_Uty&& _Other) && noexcept(
+        is_nothrow_convertible_v<_Ty, remove_cv_t<_Ty>>
+        && is_nothrow_convertible_v<_Uty, remove_cv_t<_Ty>>) /* strengthened */ {
+        static_assert(is_convertible_v<_Ty, remove_cv_t<_Ty>>,
+            "is_convertible_v<T, remove_cv_t<T>> must be true. "
+            "(N5001 [expected.object.obs]/20 as modified by LWG-3424)");
+        static_assert(is_convertible_v<_Uty, remove_cv_t<_Ty>>,
+            "is_convertible_v<U, remove_cv_t<T>> must be true. "
+            "(N5001 [expected.object.obs]/20 as modified by LWG-3424)");
 
         if (_Has_value) {
             return _STD move(_Value);
         } else {
-            return static_cast<_Ty>(_STD forward<_Uty>(_Other));
+            return static_cast<remove_cv_t<_Ty>>(_STD forward<_Uty>(_Other));
         }
     }
 
@@ -1210,7 +1226,7 @@ concept _Expected_unary_move_assignable = is_move_assignable_v<_Err> && is_move_
 
 template <class _Ty, class _Err>
     requires is_void_v<_Ty>
-class expected<_Ty, _Err> {
+class _NODISCARD expected<_Ty, _Err> {
 private:
     static_assert(_Check_unexpected_argument<_Err>::value);
 
@@ -1462,9 +1478,9 @@ public:
     }
 
     constexpr void operator*() const noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Has_value, "expected stores an error, not a value");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_EXPECTED || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Has_value, "operator*() called on a std::expected that contains an error, not a value");
+#endif
     }
 
     constexpr void value() const& {
@@ -1483,27 +1499,31 @@ public:
     }
 
     _NODISCARD constexpr const _Err& error() const& noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!_Has_value, "expected stores a value, not an error");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_EXPECTED || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(!_Has_value, "error() called on a std::expected that contains a value, not an error");
+#endif
+
         return _Unexpected;
     }
     _NODISCARD constexpr _Err& error() & noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!_Has_value, "expected stores a value, not an error");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_EXPECTED || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(!_Has_value, "error() called on a std::expected that contains a value, not an error");
+#endif
+
         return _Unexpected;
     }
     _NODISCARD constexpr const _Err&& error() const&& noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!_Has_value, "expected stores a value, not an error");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_EXPECTED || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(!_Has_value, "error() called on a std::expected that contains a value, not an error");
+#endif
+
         return _STD move(_Unexpected);
     }
     _NODISCARD constexpr _Err&& error() && noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(!_Has_value, "expected stores a value, not an error");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_EXPECTED || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(!_Has_value, "error() called on a std::expected that contains a value, not an error");
+#endif
+
         return _STD move(_Unexpected);
     }
 

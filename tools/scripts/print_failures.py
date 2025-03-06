@@ -21,7 +21,10 @@ if __name__ == "__main__":
             for testcase_elem in test_xml.getElementsByTagName("testcase"):
                 for failure_elem in testcase_elem.getElementsByTagName("failure"):
                     print(f"name: {testcase_elem.getAttribute('classname')}")
-                    print(f"output: {failure_elem.firstChild.data}")
+                    if failure_elem.firstChild is None:
+                        print("No output, possibly because this was an XPASS.")
+                    else:
+                        print(f"output: {failure_elem.firstChild.data}")
                     print("==================================================")
         else:
             test_log = json.load(file)

@@ -108,7 +108,7 @@ public:
     using seek_dir  = unsigned int;
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 
-    class failure : public system_error { // base of all iostreams exceptions
+    class _NODISCARD failure : public system_error { // base of all iostreams exceptions
     public:
         explicit failure(const string& _Message, const error_code& _Errcode = _STD make_error_code(io_errc::stream))
             : system_error(_Errcode, _Message) {} // construct with message
