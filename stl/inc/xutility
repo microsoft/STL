@@ -2211,6 +2211,9 @@ struct _Basic_const_iterator_category<_Iter> {
 _EXPORT_STD template <input_iterator _Iter>
 class basic_const_iterator : public _Basic_const_iterator_category<_Iter> {
 private:
+    template <input_iterator>
+    friend class basic_const_iterator;
+
     /* [[no_unique_address]] */ _Iter _Current{};
 
     using _Reference        = iter_const_reference_t<_Iter>;

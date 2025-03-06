@@ -380,6 +380,15 @@ constexpr bool all_tests() {
     return true;
 }
 
+// GH-5321 "<xutility>: basic_const_iterator<int *> Cannot Convert to basic_const_iterator<const int *>"
+void test_conversion_instantiation() { // COMPILE-ONLY
+    struct Base {};
+    struct Derived : Base {};
+
+    [[maybe_unused]] basic_const_iterator<const int*> cit1 = basic_const_iterator<const int*>{};
+    [[maybe_unused]] basic_const_iterator<Base*> cit2      = basic_const_iterator<Derived*>{};
+}
+
 int main() {
     static_assert(all_tests());
     all_tests();
