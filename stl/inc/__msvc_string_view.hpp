@@ -1039,7 +1039,7 @@ constexpr size_t _Traits_find_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_
 #if _USE_STD_VECTOR_ALGORITHMS
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         if (!_STD _Is_constant_evaluated()) {
-            const auto _Result = _Find_not_ch_vectorized(_Haystack + _Start_at, _End, _Ch);
+            const auto _Result = _STD _Find_not_ch_vectorized(_Haystack + _Start_at, _End, _Ch);
             if (_Result != _End) {
                 return static_cast<size_t>(_Result - _Haystack);
             } else {
