@@ -170,7 +170,7 @@ void test_count(mt19937_64& gen) {
 }
 
 template <class FwdIt, class T, class Pred = std::equal_to<>>
-auto last_known_good_find(FwdIt first, FwdIt last, T v, Pred pred = std::equal_to<>{}) {
+auto last_known_good_find(FwdIt first, FwdIt last, T v, Pred pred = {}) {
     for (; first != last; ++first) {
         if (pred(*first, v)) {
             break;
@@ -180,7 +180,7 @@ auto last_known_good_find(FwdIt first, FwdIt last, T v, Pred pred = std::equal_t
 }
 
 template <class FwdIt, class T, class Pred = std::equal_to<>>
-auto last_known_good_find_last(FwdIt first, FwdIt last, T v, Pred pred = std::equal_to<>{}) {
+auto last_known_good_find_last(FwdIt first, FwdIt last, T v, Pred pred = {}) {
     FwdIt last_save = last;
     for (;;) {
         if (last == first) {
