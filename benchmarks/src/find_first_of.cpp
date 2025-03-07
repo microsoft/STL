@@ -35,18 +35,18 @@ void bm(benchmark::State& state) {
     using container = conditional_t<Alg == AlgType::std_func, vector<T, not_highly_aligned_allocator<T>>,
         basic_string<T, char_traits<T>, not_highly_aligned_allocator<T>>>;
 
-    constexpr size_t IncremantCap = 16;
+    constexpr size_t IncrementCap = 16;
 
     constexpr T HaystackFillerBase = {' '};
     static_assert(
-        NeedleFillerBase + IncremantCap <= HaystackFillerBase || HaystackFillerBase + IncremantCap <= NeedleFillerBase,
+        NeedleFillerBase + IncrementCap <= HaystackFillerBase || HaystackFillerBase + IncrementCap <= NeedleFillerBase,
         "Would match where it shouldn't");
 
     container h(HSize, T{0});
     container n(NSize, T{0});
 
     for (size_t i = 0, m = n.size(); i != m; ++i) {
-        n[i] = NeedleFillerBase + i % IncremantCap;
+        n[i] = NeedleFillerBase + i % IncrementCap;
     }
 
     if (Pos >= HSize || Which >= NSize) {
@@ -61,7 +61,7 @@ void bm(benchmark::State& state) {
         h[Pos] = HaystackFillerBase;
     } else {
         for (size_t i = 0, m = h.size(); i != m; ++i) {
-            h[i] = HaystackFillerBase + i % IncremantCap;
+            h[i] = HaystackFillerBase + i % IncrementCap;
         }
 
         h[Pos] = n[Which];
