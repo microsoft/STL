@@ -4072,6 +4072,7 @@ namespace {
                             _Found                    = _mm_and_si128(_Found, _Found_part);
                             _Advance_bytes(_Cur_needle, 16);
                         }
+
                         if (_Last_needle_length_el != 0) {
                             const __m128i _Found_part =
                                 _mm_cmpestrm(_Last_needle_val, _Last_needle_length_el, _Data1, _Size1, _Op_mask);
