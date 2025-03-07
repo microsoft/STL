@@ -6,14 +6,21 @@
 
 using namespace std;
 
-void construct(benchmark::State& state) {
+void mof_none(benchmark::State& state) {
+    move_only_function<void()> mof;
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(mof);
+    }
+}
+
+void mof_construct(benchmark::State& state) {
     for (auto _ : state) {
         move_only_function<void()> mof;
         benchmark::DoNotOptimize(mof);
     }
 }
 
-void move(benchmark::State& state) {
+void mof_move(benchmark::State& state) {
     move_only_function<void()> mof;
     for (auto _ : state) {
         auto mof_move = move(mof);
@@ -21,7 +28,7 @@ void move(benchmark::State& state) {
     }
 }
 
-void construct_and_move(benchmark::State& state) {
+void mof_construct_and_move(benchmark::State& state) {
     for (auto _ : state) {
         move_only_function<void()> mof{};
         benchmark::DoNotOptimize(mof);
@@ -30,8 +37,9 @@ void construct_and_move(benchmark::State& state) {
     }
 }
 
-BENCHMARK(construct);
-BENCHMARK(move);
-BENCHMARK(construct_and_move);
+BENCHMARK(mof_none);
+BENCHMARK(mof_construct);
+BENCHMARK(mof_move);
+BENCHMARK(mof_construct_and_move);
 
 BENCHMARK_MAIN();
