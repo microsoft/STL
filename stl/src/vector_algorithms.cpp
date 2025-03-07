@@ -3547,8 +3547,8 @@ namespace {
                             _Found = _mm_and_si128(_Found, _Found_part);
                         }
 
-                        int _Bingo     = _mm_cvtsi128_si32(_Found);
-                        int _Found_pos = _Found_pos_init;
+                        const int _Bingo = _mm_cvtsi128_si32(_Found);
+                        int _Found_pos   = _Found_pos_init;
 
                         if (_Bingo != 0) {
                             unsigned long _Tmp;
@@ -4776,14 +4776,14 @@ __declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_2(const void
         _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
-__declspec(noalias) size_t __stdcall __std_find_first_not_of_trivial_pos_1(
-    const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
+__declspec(noalias) size_t __stdcall __std_find_first_not_of_trivial_pos_1(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
     return __std_find_first_of::_Dispatch_pos<uint8_t, _Find_meow_of_predicate::_None_of>(
         _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
-__declspec(noalias) size_t __stdcall __std_find_first_not_of_trivial_pos_2(
-    const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
+__declspec(noalias) size_t __stdcall __std_find_first_not_of_trivial_pos_2(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
     return __std_find_first_of::_Dispatch_pos<uint16_t, _Find_meow_of_predicate::_None_of>(
         _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
