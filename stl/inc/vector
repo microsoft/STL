@@ -402,6 +402,19 @@ public:
     _CONSTEXPR20 _Vector_val(pointer _First, pointer _Last, pointer _End) noexcept
         : _Myfirst(_First), _Mylast(_Last), _Myend(_End) {}
 
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+    _CONSTEXPR20 ~_Vector_val() noexcept {
+        if constexpr (is_pointer_v<pointer>) {
+            if (!_STD _Is_constant_evaluated()) {
+                const auto _Tombstone{reinterpret_cast<pointer>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+                _Myfirst = _Tombstone;
+                _Mylast  = _Tombstone;
+                _Myend   = _Tombstone;
+            }
+        }
+    }
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
+
     _CONSTEXPR20 void _Swap_val(_Vector_val& _Right) noexcept {
         this->_Swap_proxy_and_iterators(_Right);
         swap(_Myfirst, _Right._Myfirst); // intentional ADL
@@ -2851,6 +2864,12 @@ public:
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alvbase, this->_Getal());
         _Delete_plain_internal(_Alproxy, _STD exchange(this->_Myproxy, nullptr));
 #endif // _ITERATOR_DEBUG_LEVEL != 0
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        // Destroying _Myvec will store tombstones in its pointers, setting its apparent size to 0.
+        // We should also set our _Mysize to 0 for consistency, allowing precondition hardening to detect UB earlier.
+        _Mysize = 0;
+#endif
     }
 
     _CONSTEXPR20 _Alvbase& _Getal() noexcept {

@@ -1311,7 +1311,15 @@ protected:
 
     constexpr _Ptr_base() noexcept = default;
 
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+    ~_Ptr_base() noexcept {
+        const uintptr_t _Tombstone_value{_MSVC_STL_UINTPTR_TOMBSTONE_VALUE};
+        _Ptr = reinterpret_cast<element_type*>(_Tombstone_value);
+        _Rep = reinterpret_cast<_Ref_count_base*>(_Tombstone_value);
+    }
+#else // ^^^ _MSVC_STL_DESTRUCTOR_TOMBSTONES / !_MSVC_STL_DESTRUCTOR_TOMBSTONES vvv
     ~_Ptr_base() = default;
+#endif // ^^^ !_MSVC_STL_DESTRUCTOR_TOMBSTONES ^^^
 
     template <class _Ty2>
     void _Move_construct_from(_Ptr_base<_Ty2>&& _Right) noexcept {
@@ -3418,6 +3426,15 @@ public:
         if (_Mypair._Myval2) {
             _Mypair._Get_first()(_Mypair._Myval2);
         }
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        if constexpr (is_pointer_v<pointer>) {
+            if (!_STD _Is_constant_evaluated()) {
+                const auto _Tombstone{reinterpret_cast<pointer>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+                _Mypair._Myval2 = _Tombstone;
+            }
+        }
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
     }
 
     _NODISCARD _CONSTEXPR23 _Dx& get_deleter() noexcept {
@@ -3555,6 +3572,15 @@ public:
         if (_Mypair._Myval2) {
             _Mypair._Get_first()(_Mypair._Myval2);
         }
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        if constexpr (is_pointer_v<pointer>) {
+            if (!_STD _Is_constant_evaluated()) {
+                const auto _Tombstone{reinterpret_cast<pointer>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+                _Mypair._Myval2 = _Tombstone;
+            }
+        }
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
     }
 
     _NODISCARD _CONSTEXPR23 _Dx& get_deleter() noexcept {

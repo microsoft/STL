@@ -1923,6 +1923,11 @@ public:
 
     ~basic_regex() noexcept {
         _Tidy();
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        const auto _Tombstone{reinterpret_cast<_Root_node*>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+        _Rep = _Tombstone;
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
     }
 
     basic_regex& operator=(const basic_regex& _Right) {

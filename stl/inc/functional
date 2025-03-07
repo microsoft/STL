@@ -928,6 +928,11 @@ public:
 
     ~_Func_class() noexcept {
         _Tidy();
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        const auto _Tombstone{reinterpret_cast<_Ptrt*>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+        _Set(_Tombstone);
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
     }
 
 protected:
@@ -1934,6 +1939,11 @@ public:
         // Do cleanup in this class destructor rather than base,
         // so that if object construction throws, the unnecessary cleanup isn't called.
         this->_Checked_destroy(this->_Data);
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        const auto _Tombstone{reinterpret_cast<const void*>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+        this->_Data._Impl = _Tombstone;
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
     }
 
     move_only_function& operator=(nullptr_t) noexcept {

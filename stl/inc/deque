@@ -555,6 +555,18 @@ public:
 
     _Deque_val() noexcept : _Map(), _Mapsize(0), _Myoff(0), _Mysize(0) {}
 
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+    ~_Deque_val() noexcept {
+        if constexpr (is_pointer_v<_Mapptr>) {
+            const auto _Tombstone{reinterpret_cast<_Mapptr>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+            _Map     = _Tombstone;
+            _Mapsize = 0;
+            _Myoff   = 0;
+            _Mysize  = 0;
+        }
+    }
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
+
     _Map_difference_type _Getblock(size_type _Off) const noexcept {
         // NB: _Mapsize and _Block_size are guaranteed to be powers of 2
         return static_cast<_Map_difference_type>((_Off / _Block_size) & (_Mapsize - 1));

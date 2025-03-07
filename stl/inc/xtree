@@ -449,6 +449,16 @@ public:
 
     _Tree_val() noexcept : _Myhead(), _Mysize(0) {}
 
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+    ~_Tree_val() noexcept {
+        if constexpr (is_pointer_v<_Nodeptr>) {
+            const auto _Tombstone{reinterpret_cast<_Nodeptr>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+            _Myhead = _Tombstone;
+            _Mysize = 0;
+        }
+    }
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
+
     enum _Redbl { // colors for link to parent
         _Red,
         _Black
