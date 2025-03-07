@@ -40,7 +40,7 @@ void bm(benchmark::State& state) {
     constexpr T HaystackFillerBase = {' '};
     static_assert(
         NeedleFillerBase + IncremantCap <= HaystackFillerBase || HaystackFillerBase + IncremantCap <= NeedleFillerBase,
-        "Would match where shouldn't");
+        "Would match where it shouldn't");
 
     container h(HSize, T{0});
     container n(NSize, T{0});
