@@ -42,7 +42,7 @@ void bm(benchmark::State& state) {
     container h(HSize, T{0});
     container n(NSize, T{0});
 
-    for (size_t i = 0, m = n.size(); i != m; ++i) {
+    for (size_t i = 0; i != NSize; ++i) {
         n[i] = NeedleFillerBase + i % IncrementCap;
     }
 
@@ -51,13 +51,13 @@ void bm(benchmark::State& state) {
     }
 
     if constexpr (Alg == AlgType::str_member_first_not || Alg == AlgType::str_member_last_not) {
-        for (size_t i = 0, m = h.size(); i != m; ++i) {
+        for (size_t i = 0; i != HSize; ++i) {
             h[i] = n[(i + Which) % NSize];
         }
 
         h[Pos] = HaystackFillerBase;
     } else {
-        for (size_t i = 0, m = h.size(); i != m; ++i) {
+        for (size_t i = 0; i != HSize; ++i) {
             h[i] = HaystackFillerBase + i % IncrementCap;
         }
 
