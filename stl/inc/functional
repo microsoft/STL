@@ -1506,11 +1506,6 @@ public:
         _Other._Reset_to_null();
     }
 
-    void _Construct_with_null() noexcept {
-        _Data._Impl = nullptr;
-        _Data._Set_large_fn_ptr(nullptr); // initialize, since we'll be copying it
-    }
-
     void _Reset_to_null() noexcept {
         _Data._Impl = nullptr;
     }
@@ -1888,11 +1883,11 @@ public:
     using typename _Call::result_type;
 
     move_only_function() noexcept {
-        this->_Construct_with_null();
+        this->_Reset_to_null();
     }
 
     move_only_function(nullptr_t) noexcept {
-        this->_Construct_with_null();
+        this->_Reset_to_null();
     }
 
     move_only_function(move_only_function&&) noexcept = default;
@@ -1906,7 +1901,7 @@ public:
 
         if constexpr (is_member_pointer_v<_Vt> || is_pointer_v<_Vt> || _Is_specialization_v<_Vt, move_only_function>) {
             if (_Callable == nullptr) {
-                this->_Construct_with_null();
+                this->_Reset_to_null();
                 return;
             }
         }
