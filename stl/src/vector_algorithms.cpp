@@ -3555,7 +3555,7 @@ namespace {
                             // CodeQL [SM02313] _Tmp is always initialized: we just tested `if (_Bingo != 0)`.
                             _BitScanForward(&_Tmp, _Bingo);
                             if (_Found_pos > static_cast<int>(_Tmp)) {
-                                _Found_pos = _Tmp;
+                                _Found_pos = static_cast<int>(_Tmp);
                             }
                         }
 
@@ -4087,7 +4087,7 @@ namespace {
                             unsigned long _Tmp;
                             // CodeQL [SM02313] _Tmp is always initialized: we just tested `if (_Bingo != 0)`.
                             _BitScanReverse(&_Tmp, _Bingo);
-                            _Found_pos = _Tmp;
+                            _Found_pos = static_cast<int>(_Tmp);
                         }
 
                         return _Found_pos;
