@@ -48,22 +48,22 @@ Enable GitHub Pages for your fork:
 
 GitHub's GraphQL API requires authentication:
 
-1. Go to your [Personal Access Tokens][] on GitHub.
+1. Go to your [Fine-grained personal access tokens][] on GitHub.
 2. Click "Generate new token".
 3. Name it "STL Status Chart" or anything else you'd like.
-4. Don't select any scopes. (This will be a "public access" token.)
-5. Click "Generate token". Keep this page open.
-6. In your `chart` repo, create a file named `.env` containing:
+4. Set the expiration to be no greater than 180 days.
+5. Don't change any other settings. (This will be a read-only token.)
+6. Click "Generate token". Keep this page open.
+7. In your `chart` repo, create a file named `.env` containing:
     ```
-    SECRET_GITHUB_PERSONAL_ACCESS_TOKEN=ghp_abcdABCD0123wxyzWXYZ6789
+    SECRET_GITHUB_PERSONAL_ACCESS_TOKEN=github_pat_MEOW
     ```
-7. Replace `ghp_abcdABCD0123wxyzWXYZ6789` with the personal access token that you just generated.
+8. Replace `github_pat_MEOW` with the personal access token that you just generated.
     + The token is unique, so it's used without your username.
-    + The [prefix][token-formats] will be `ghp_`.
-8. Save the `.env` file.
-9. Close the page displaying your personal access token.
-10. Clear your clipboard.
-11. Verify that `git status` reports "nothing to commit, working tree clean".
+9. Save the `.env` file.
+10. Close the page displaying your personal access token.
+11. Clear your clipboard.
+12. Verify that `git status` reports "nothing to commit, working tree clean".
     + This indicates that `.env` is being properly ignored.
 
 **The `.env` file now contains a secret - treat it with respect.**
@@ -112,7 +112,6 @@ Copyright (c) Microsoft Corporation.
 SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 [Chart.js]: https://www.chartjs.org/
+[Fine-grained personal access tokens]: https://github.com/settings/personal-access-tokens
 [Node.js]: https://nodejs.org/en/
-[Personal Access Tokens]: https://github.com/settings/tokens
 [Status Chart]: https://microsoft.github.io/STL/
-[token-formats]: https://github.blog/2021-04-05-behind-githubs-new-authentication-token-formats/
