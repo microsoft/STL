@@ -30,7 +30,7 @@ void mof_move(benchmark::State& state) {
 
 void mof_construct_and_move(benchmark::State& state) {
     for (auto _ : state) {
-        move_only_function<void()> mof{};
+        move_only_function<void()> mof;
         benchmark::DoNotOptimize(mof);
         auto moved_mof = move(mof);
         benchmark::DoNotOptimize(moved_mof);
