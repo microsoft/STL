@@ -22,7 +22,7 @@ $ImageSku = '2025-datacenter-azure-edition'
 
 $LogFile = '1es-hosted-pool.log'
 $ProgressActivity = 'Preparing STL CI pool'
-$TotalProgress = 26
+$TotalProgress = 30
 $CurrentProgress = 1
 
 <#
@@ -103,6 +103,29 @@ $AdminPWSecure = New-Password
 $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
 
 ####################################################################################################
+Display-ProgressBar -Status 'Creating public IP address'
+
+$PublicIpAddressName = $ResourceGroupName + '-PublicIpAddress'
+$PublicIpAddress = New-AzPublicIpAddress `
+  -Name $PublicIpAddressName `
+  -ResourceGroupName $ResourceGroupName `
+  -Location $Location `
+  -Sku 'Standard' `
+  -AllocationMethod 'Static'
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating NAT gateway'
+
+$NatGatewayName = $ResourceGroupName + '-NatGateway'
+$NatGateway = New-AzNatGateway `
+  -Name $NatGatewayName `
+  -ResourceGroupName $ResourceGroupName `
+  -Location $Location `
+  -IdleTimeoutInMinutes 10 `
+  -Sku 'Standard' `
+  -PublicIpAddress $PublicIpAddress
+
+####################################################################################################
 Display-ProgressBar -Status 'Creating virtual network'
 
 $NetworkSecurityGroupName = $ResourceGroupName + '-NetworkSecurity'
@@ -119,6 +142,7 @@ $Subnet = New-AzVirtualNetworkSubnetConfig `
   -Name $SubnetName `
   -AddressPrefix '10.0.0.0/16' `
   -DefaultOutboundAccess $false `
+  -NatGateway $NatGateway `
   -NetworkSecurityGroup $NetworkSecurityGroup
 
 $VirtualNetworkName = $ResourceGroupName + '-Network'
@@ -372,6 +396,22 @@ Display-ProgressBar -Status 'Deleting unused network security group'
 Remove-AzNetworkSecurityGroup `
 -ResourceGroupName $ResourceGroupName `
 -Name $NetworkSecurityGroupName `
+-Force >> $LogFile
+
+####################################################################################################
+Display-ProgressBar -Status 'Deleting unused NAT gateway'
+
+Remove-AzNatGateway `
+-ResourceGroupName $ResourceGroupName `
+-Name $NatGatewayName `
+-Force >> $LogFile
+
+####################################################################################################
+Display-ProgressBar -Status 'Deleting unused public IP address'
+
+Remove-AzPublicIpAddress `
+-ResourceGroupName $ResourceGroupName `
+-Name $PublicIpAddressName `
 -Force >> $LogFile
 
 ####################################################################################################
