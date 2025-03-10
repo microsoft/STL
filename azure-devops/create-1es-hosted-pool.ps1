@@ -111,10 +111,14 @@ $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location
 
+# TRANSITION, 2025-09-30: "On September 30, 2025, default outbound access for new deployments will be retired."
+# https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/default-outbound-access
+# We're using `-DefaultOutboundAccess $false` to opt-in early.
 $SubnetName = $ResourceGroupName + '-Subnet'
 $Subnet = New-AzVirtualNetworkSubnetConfig `
   -Name $SubnetName `
   -AddressPrefix '10.0.0.0/16' `
+  -DefaultOutboundAccess $false `
   -NetworkSecurityGroup $NetworkSecurityGroup
 
 $VirtualNetworkName = $ResourceGroupName + '-Network'
