@@ -378,41 +378,41 @@ Remove-AzDisk `
 Display-ProgressBar -Status 'Deleting unused network interface'
 
 Remove-AzNetworkInterface `
--ResourceGroupName $ResourceGroupName `
--Name $NicName `
--Force >> $LogFile
+  -ResourceGroupName $ResourceGroupName `
+  -Name $NicName `
+  -Force >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Deleting unused virtual network'
 
 Remove-AzVirtualNetwork `
--ResourceGroupName $ResourceGroupName `
--Name $VirtualNetworkName `
--Force >> $LogFile
+  -ResourceGroupName $ResourceGroupName `
+  -Name $VirtualNetworkName `
+  -Force >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Deleting unused network security group'
 
 Remove-AzNetworkSecurityGroup `
--ResourceGroupName $ResourceGroupName `
--Name $NetworkSecurityGroupName `
--Force >> $LogFile
+  -ResourceGroupName $ResourceGroupName `
+  -Name $NetworkSecurityGroupName `
+  -Force >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Deleting unused NAT gateway'
 
 Remove-AzNatGateway `
--ResourceGroupName $ResourceGroupName `
--Name $NatGatewayName `
--Force >> $LogFile
+  -ResourceGroupName $ResourceGroupName `
+  -Name $NatGatewayName `
+  -Force >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Deleting unused public IP address'
 
 Remove-AzPublicIpAddress `
--ResourceGroupName $ResourceGroupName `
--Name $PublicIpAddressName `
--Force >> $LogFile
+  -ResourceGroupName $ResourceGroupName `
+  -Name $PublicIpAddressName `
+  -Force >> $LogFile
 
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
