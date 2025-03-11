@@ -11,8 +11,7 @@
 #include <cstdlib>
 #include <xtr1common>
 
-#if !defined(__clang__) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER) \
-    && !defined(_M_CEE) // TRANSITION, VSO-1663104
+#if !defined(__clang__) && !defined(__CUDACC__) && !defined(_M_CEE) // TRANSITION, VSO-1663104
 #define _HAS_CMATH_INTRINSICS 1
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_CMATH_INTRINSICS 0
