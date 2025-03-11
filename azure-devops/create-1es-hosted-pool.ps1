@@ -22,7 +22,7 @@ $ImageSku = '2025-datacenter-azure-edition'
 
 $LogFile = '1es-hosted-pool.log'
 $ProgressActivity = 'Preparing STL CI pool'
-$TotalProgress = 30
+$TotalProgress = 38
 $CurrentProgress = 1
 
 <#
@@ -126,13 +126,16 @@ $NatGateway = New-AzNatGateway `
   -PublicIpAddress $PublicIpAddress
 
 ####################################################################################################
-Display-ProgressBar -Status 'Creating virtual network'
+Display-ProgressBar -Status 'Creating network security group'
 
 $NetworkSecurityGroupName = $ResourceGroupName + '-NetworkSecurity'
 $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
   -Name $NetworkSecurityGroupName `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating virtual network subnet config'
 
 # TRANSITION, 2025-09-30: "On September 30, 2025, default outbound access for new deployments will be retired."
 # https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/default-outbound-access
@@ -144,6 +147,9 @@ $Subnet = New-AzVirtualNetworkSubnetConfig `
   -DefaultOutboundAccess $false `
   -NatGateway $NatGateway `
   -NetworkSecurityGroup $NetworkSecurityGroup
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating virtual network'
 
 $VirtualNetworkName = $ResourceGroupName + '-Network'
 $VirtualNetwork = New-AzVirtualNetwork `
@@ -164,7 +170,7 @@ $Nic = New-AzNetworkInterface `
   -Subnet $VirtualNetwork.Subnets[0]
 
 ####################################################################################################
-Display-ProgressBar -Status 'Creating prototype VM'
+Display-ProgressBar -Status 'Creating prototype VM config'
 
 # Previously: -Priority 'Spot'
 $VM = New-AzVMConfig `
@@ -173,6 +179,9 @@ $VM = New-AzVMConfig `
   -DiskControllerType 'NVMe' `
   -Priority 'Regular'
 
+####################################################################################################
+Display-ProgressBar -Status 'Setting prototype VM OS'
+
 $VM = Set-AzVMOperatingSystem `
   -VM $VM `
   -Windows `
@@ -180,9 +189,15 @@ $VM = Set-AzVMOperatingSystem `
   -Credential $Credential `
   -ProvisionVMAgent
 
+####################################################################################################
+Display-ProgressBar -Status 'Adding prototype VM network interface'
+
 $VM = Add-AzVMNetworkInterface `
   -VM $VM `
   -Id $Nic.Id
+
+####################################################################################################
+Display-ProgressBar -Status 'Setting prototype VM source image'
 
 $VM = Set-AzVMSourceImage `
   -VM $VM `
@@ -191,14 +206,24 @@ $VM = Set-AzVMSourceImage `
   -Skus $ImageSku `
   -Version 'latest'
 
+####################################################################################################
+Display-ProgressBar -Status 'Setting prototype VM boot diagnostic'
+
 $VM = Set-AzVMBootDiagnostic `
   -VM $VM `
   -Disable
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating prototype VM'
 
 New-AzVm `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
   -VM $VM >> $LogFile
+
+
+####################################################################################################
+Display-ProgressBar -Status 'Getting prototype VM OS disk name'
 
 $VM = Get-AzVM `
   -ResourceGroupName $ResourceGroupName `
