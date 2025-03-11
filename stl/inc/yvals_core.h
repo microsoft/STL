@@ -526,14 +526,7 @@
 #define _STL_STRINGIZE_(S) #S
 #define _STL_STRINGIZE(S)  _STL_STRINGIZE_(S)
 
-// Note that _STL_PRAGMA is load-bearing;
-// it still needs to exist even once CUDA and ICC support _Pragma.
-#if defined(__CUDACC__) || defined(__INTEL_COMPILER)
-#define _STL_PRAGMA(PRAGMA) __pragma(PRAGMA)
-#else
-#define _STL_PRAGMA(PRAGMA) _Pragma(#PRAGMA)
-#endif
-
+#define _STL_PRAGMA(PRAGMA)          _Pragma(#PRAGMA)
 #define _STL_PRAGMA_MESSAGE(MESSAGE) _STL_PRAGMA(message(MESSAGE))
 #define _EMIT_STL_MESSAGE(MESSAGE)   _STL_PRAGMA_MESSAGE(__FILE__ "(" _STL_STRINGIZE(__LINE__) "): " MESSAGE)
 
@@ -883,26 +876,20 @@
 #define _STL_DISABLE_DEPRECATED_WARNING \
     _Pragma("clang diagnostic push")    \
     _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
-#elif defined(__CUDACC__) || defined(__INTEL_COMPILER)
-#define _STL_DISABLE_DEPRECATED_WARNING \
-    __pragma(warning(push))             \
-    __pragma(warning(disable : 4996)) // was declared deprecated
-#else // vvv MSVC vvv
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #define _STL_DISABLE_DEPRECATED_WARNING \
     _Pragma("warning(push)")            \
     _Pragma("warning(disable : 4996)") // was declared deprecated
-#endif // ^^^ MSVC ^^^
+#endif // ^^^ !defined(__clang__) ^^^
 #endif // _STL_DISABLE_DEPRECATED_WARNING
 // clang-format on
 
 #ifndef _STL_RESTORE_DEPRECATED_WARNING
 #ifdef __clang__
 #define _STL_RESTORE_DEPRECATED_WARNING _Pragma("clang diagnostic pop")
-#elif defined(__CUDACC__) || defined(__INTEL_COMPILER)
-#define _STL_RESTORE_DEPRECATED_WARNING __pragma(warning(pop))
-#else // vvv MSVC vvv
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #define _STL_RESTORE_DEPRECATED_WARNING _Pragma("warning(pop)")
-#endif // ^^^ MSVC ^^^
+#endif // ^^^ !defined(__clang__) ^^^
 #endif // !defined(_STL_RESTORE_DEPRECATED_WARNING)
 
 #define _CPPLIB_VER       650
