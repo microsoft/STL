@@ -350,7 +350,6 @@ std/containers/container.adaptors/flat.map/flat.map.operations/upper_bound_trans
 std/containers/container.adaptors/flat.map/flat.map.operations/upper_bound_transparent.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.operations/upper_bound.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.operations/upper_bound.pass.cpp:1 FAIL
-std/containers/container.adaptors/flat.map/incomplete_type.pass.cpp FAIL
 
 # P0533R9 constexpr For <cmath> And <cstdlib>
 std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
