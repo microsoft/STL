@@ -264,7 +264,8 @@ public:
         }
     };
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-81774 (Clang), VSO-1956558 (EDG)
+#if defined(__clang__) || defined(__EDG__) \
+    || defined(__CUDACC__) // TRANSITION, LLVM-81774 (Clang), VSO-1956558 (EDG), VSO-2411436 (needed by CUDA 12.8.1)
     basic_format_arg() noexcept : _Active_state(_Basic_format_arg_type::_None), _No_state() {}
 #else // ^^^ workaround / no workaround vvv
     basic_format_arg() noexcept = default;
