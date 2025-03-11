@@ -103,6 +103,67 @@ void test_adjacent_difference_with_heterogeneous_types() {
     assert(output == expected);
 }
 
+template <class InIt>
+InIt last_known_good_adj_find(InIt first, InIt last) {
+    if (first == last) {
+        return last;
+    }
+
+    auto next = first;
+    for (++next; next != last; ++first, ++next) {
+        if (*first == *next) {
+            return first;
+        }
+    }
+
+    return last;
+}
+
+template <class T>
+void test_case_adj_find(const vector<T>& input) {
+    const auto actual   = adjacent_find(input.begin(), input.end());
+    const auto expected = last_known_good_adj_find(input.begin(), input.end());
+    assert(actual == expected);
+
+#if _HAS_CXX20
+    auto actual_r = ranges::adjacent_find(input);
+    assert(actual_r == expected);
+#endif // _HAS_CXX20
+}
+
+template <class T>
+void test_adjacent_find(mt19937_64& gen) {
+    constexpr size_t replicaCount = 4;
+
+    using Limits = numeric_limits<T>;
+
+    uniform_int_distribution<conditional_t<sizeof(T) == 1, int, T>> dis(Limits::min(), Limits::max());
+
+    vector<T> master_input;
+    vector<T> input;
+
+    master_input.reserve(dataCount);
+    input.reserve(dataCount);
+
+    test_case_adj_find(input);
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        master_input.push_back(static_cast<T>(dis(gen)));
+        input = master_input;
+
+        test_case_adj_find(input);
+
+        if (master_input.size() > 2) {
+            uniform_int_distribution<size_t> pos_dis(0, master_input.size() - 2);
+
+            for (size_t replicas = 0; replicas < replicaCount; ++replicas) {
+                size_t replica_pos = pos_dis(gen);
+                input[replica_pos] = input[replica_pos + 1];
+                test_case_adj_find(input);
+            }
+        }
+    }
+}
+
 template <class FwdIt, class T>
 ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
     ptrdiff_t result = 0;
@@ -760,6 +821,16 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_adjacent_difference<unsigned long long>(gen);
 
     test_adjacent_difference_with_heterogeneous_types();
+
+    test_adjacent_find<char>(gen);
+    test_adjacent_find<signed char>(gen);
+    test_adjacent_find<unsigned char>(gen);
+    test_adjacent_find<short>(gen);
+    test_adjacent_find<unsigned short>(gen);
+    test_adjacent_find<int>(gen);
+    test_adjacent_find<unsigned int>(gen);
+    test_adjacent_find<long long>(gen);
+    test_adjacent_find<unsigned long long>(gen);
 
     test_count<char>(gen);
     test_count<signed char>(gen);
