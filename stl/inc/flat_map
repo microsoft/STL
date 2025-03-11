@@ -250,8 +250,6 @@ struct _Pairing_iterator_provider {
         _KeyIter _Key_it;
         _MappedIter _Mapped_it;
     };
-
-    _STL_INTERNAL_STATIC_ASSERT(swappable<_Iterator>);
 };
 
 _EXPORT_STD template <class _Key, class _Mapped, class _Compare = less<_Key>, class _KeyContainer = vector<_Key>,
@@ -296,9 +294,6 @@ public:
         "mapped_type should be the element type of mapped_container_type");
     static_assert(!_Is_vector_bool<key_container_type> && !_Is_vector_bool<mapped_container_type>,
         "vector<bool, A> cannot be adapted because it is not a sequence container.");
-
-    _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<iterator>);
-    _STL_INTERNAL_STATIC_ASSERT(convertible_to<iterator, const_iterator>);
 
     using value_compare = _Flat_map_value_compare_provider<key_type, mapped_type, key_compare>::value_compare;
     using containers    = _Flat_map_container_provider<key_container_type, mapped_container_type>::containers;
@@ -478,10 +473,13 @@ public:
 
     // [container.reqmts] iterators
     _NODISCARD iterator begin() noexcept {
+        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<iterator>);
         return iterator{_STD cbegin(_Data.keys), _Data.values.begin()};
     }
 
     _NODISCARD const_iterator begin() const noexcept {
+        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<const_iterator>);
+        _STL_INTERNAL_STATIC_ASSERT(convertible_to<iterator, const_iterator>);
         return const_iterator{_STD cbegin(_Data.keys), _Data.values.begin()};
     }
 
