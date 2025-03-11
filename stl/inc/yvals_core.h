@@ -698,8 +698,6 @@
 
 #ifndef __has_cpp_attribute
 #define _HAS_MSVC_ATTRIBUTE(x) 0
-#elif defined(__CUDACC__) // TRANSITION, CUDA - warning: attribute namespace "msvc" is unrecognized
-#define _HAS_MSVC_ATTRIBUTE(x) 0
 #else
 #define _HAS_MSVC_ATTRIBUTE(x) __has_cpp_attribute(msvc::x)
 #endif
