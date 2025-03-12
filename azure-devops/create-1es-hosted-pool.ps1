@@ -221,7 +221,6 @@ New-AzVm `
   -Location $Location `
   -VM $VM >> $LogFile
 
-
 ####################################################################################################
 Display-ProgressBar -Status 'Getting prototype VM OS disk name'
 
