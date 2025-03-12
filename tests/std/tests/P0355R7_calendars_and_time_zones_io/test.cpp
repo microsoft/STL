@@ -6,6 +6,7 @@
 #include <charconv>
 #include <chrono>
 #include <cstdint>
+#include <istream>
 #include <iterator>
 #include <limits>
 #include <locale>
