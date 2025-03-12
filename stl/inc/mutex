@@ -171,7 +171,7 @@ public:
     }
 
     unique_lock& operator=(unique_lock&& _Other) noexcept {
-        unique_lock(_STD move(_Other)).swap(*this);
+        unique_lock{_STD move(_Other)}.swap(*this);
         return *this;
     }
 

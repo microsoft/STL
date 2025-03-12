@@ -251,7 +251,7 @@ public:
     }
 
     shared_lock& operator=(shared_lock&& _Right) noexcept {
-        shared_lock(_STD move(_Right)).swap(*this);
+        shared_lock{_STD move(_Right)}.swap(*this);
         return *this;
     }
 
