@@ -4613,13 +4613,13 @@ namespace chrono {
         void from_stream() = delete; // Block unqualified name lookup
 #else // ^^^ no workaround / workaround vvv
         void from_stream();
-#endif // ^^^ workaorund ^^^
+#endif // ^^^ workaround ^^^
 
         template <class _Parsable, class _CharT, class _Traits, class... _Rest>
         concept _Can_from_stream = requires(
             basic_istream<_CharT, _Traits>& __istr, const _CharT* __s, _Parsable& __parsed, _Rest&&... __rest_args) {
             from_stream(__istr, +__s, __parsed, _STD forward<_Rest>(__rest_args)...); // intentional ADL
-        }
+        };
     } // namespace _From_stream_adl_only
 
     using _From_stream_adl_only::_Can_from_stream;
