@@ -1247,8 +1247,52 @@ void test_io_manipulator() {
     fail_parse(WIDEN(CharT, "a  b"), CStringOrStdString{WIDEN(CharT, "a%nb")}, time);
 }
 
+namespace lwg_3956 {
+    struct has_adl_from_stream {
+        int value = 0;
+
+        template <class CharT, class Traits, class... ArgTypes>
+        friend basic_istream<CharT, Traits>& from_stream(
+            basic_istream<CharT, Traits>& istr, const CharT*, has_adl_from_stream& parsed, ArgTypes&&...) {
+            parsed.value = 42;
+            return istr;
+        }
+    };
+
+    struct has_no_adl_from_stream {
+        operator year&() &;
+    };
+
+    template <class... ArgTypes>
+    concept can_parse = requires(ArgTypes&&... args) { parse(forward<ArgTypes>(args)...); };
+
+    static_assert(can_parse<const char*, has_adl_from_stream&>);
+    static_assert(can_parse<const string&, has_adl_from_stream&>);
+    static_assert(can_parse<const wchar_t*, has_adl_from_stream&>);
+    static_assert(can_parse<const wstring&, has_adl_from_stream&>);
+
+    static_assert(!can_parse<const char*, has_no_adl_from_stream&>);
+    static_assert(!can_parse<const string&, has_no_adl_from_stream&>);
+    static_assert(!can_parse<const wchar_t*, has_no_adl_from_stream&>);
+    static_assert(!can_parse<const wstring&, has_no_adl_from_stream&>);
+} // namespace lwg_3956
+
+void test_lwg_3956() {
+    {
+        lwg_3956::has_adl_from_stream parsed{};
+        test_parse("", "", parsed);
+        assert(parsed.value == 42);
+    }
+    {
+        lwg_3956::has_adl_from_stream parsed{};
+        test_parse(L"", L"", parsed);
+        assert(parsed.value == 42);
+    }
+}
+
 void test_parse() {
     test_lwg_3536();
+    test_lwg_3956();
     parse_seconds();
     parse_minutes();
     parse_hours();
