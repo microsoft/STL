@@ -402,7 +402,7 @@ bool _Nrand_for_tr1(
 }
 
 template <class _Gen, class = void>
-struct _Has_static_min_max : false_type {};
+struct _Has_static_min_max : false_type {}; // TRANSITION, VSO-2417491: Should be a variable template
 
 // This checks a requirement of N4981 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
 // to implement the whole concept - we just need to distinguish Standard machinery from tr1 machinery.
