@@ -30,7 +30,12 @@ struct lockable_with_counters {
     int shared_unlock_count = 0;
 };
 
-
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wself-move"
+#endif // __clang__
+#pragma warning(push)
+#pragma warning(disable : 26800) // use a moved-from object
 int main() {
     lockable_with_counters lockable1;
     lockable_with_counters lockable2;
@@ -99,3 +104,7 @@ int main() {
     assert(lockable2.shared_lock_count == 1);
     assert(lockable2.shared_unlock_count == 1);
 }
+#pragma warning(pop)
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
