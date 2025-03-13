@@ -868,7 +868,7 @@ private:
 
         _STL_INTERNAL_CHECK(_Mylast == _My_data._Myend); // check that we have no unused capacity
 
-        const auto _Whereoff = static_cast<size_type>(_Whereptr - _Myfirst);
+        const auto _Whereoff = _Whereptr - _Myfirst;
         const auto _Oldsize  = static_cast<size_type>(_Mylast - _Myfirst);
 
         if (_Oldsize == max_size()) {
@@ -879,7 +879,7 @@ private:
         size_type _Newcapacity   = _Calculate_growth(_Newsize);
 
         const pointer _Newvec           = _STD _Allocate_at_least_helper(_Al, _Newcapacity);
-        const pointer _Constructed_last = _Newvec + _Whereoff + 1;
+        const pointer _Constructed_last = _Newvec + static_cast<_Iter_diff_t<pointer>>(_Whereoff + 1);
 
         _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
         auto& _Constructed_first = _Guard._Constructed_first;
@@ -896,7 +896,8 @@ private:
         } else { // provide basic guarantee
             _STD _Uninitialized_move(_Myfirst, _Whereptr, _Newvec, _Al);
             _Constructed_first = _Newvec;
-            _STD _Uninitialized_move(_Whereptr, _Mylast, _Newvec + _Whereoff + 1, _Al);
+            _STD _Uninitialized_move(
+                _Whereptr, _Mylast, _Newvec + static_cast<_Iter_diff_t<pointer>>(_Whereoff + 1), _Al);
         }
 
         _Guard._New_begin = nullptr;
@@ -2060,8 +2061,8 @@ private:
         }
 
         _Myfirst = _Newvec;
-        _Mylast  = _Newvec + _Newsize;
-        _Myend   = _Newvec + _Newcapacity;
+        _Mylast  = _Newvec + static_cast<_Iter_diff_t<pointer>>(_Newsize);
+        _Myend   = _Newvec + static_cast<_Iter_diff_t<pointer>>(_Newcapacity);
         _ASAN_VECTOR_CREATE;
     }
 
