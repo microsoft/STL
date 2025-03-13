@@ -880,7 +880,7 @@ constexpr void year_month_day_test() {
                 assert(sys_days{ymd_max} == sys2 + days{254});
 
                 const year_month_day ymd_last = y / m / last;
-                sys2 += (ymd_last.day() - 1d);
+                sys2 += ymd_last.day() - 1d;
                 assert(sys_days{ymd_last} == sys2);
                 assert(year_month_day{sys2} == ymd_last);
 

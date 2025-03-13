@@ -1849,7 +1849,7 @@ namespace chrono {
             // time zone name. In vNext, this should be a dedicated argument.
             const string _Tz_arg = _Name + static_cast<char>(_Type);
 
-            const auto _Tz_len = _Name.length();
+            const auto _Tz_len = _Name.size();
 
             const auto _Info =
                 _Make_unique_tzdb_info<__std_tzdb_get_sys_info>(_Tz_arg.c_str(), _Tz_len, _Internal_dur.count());
@@ -3493,7 +3493,7 @@ namespace chrono {
 
                 return ratio_less_equal_v<_Period1, _Period2>
                     && ratio_greater_equal_v<ratio<_Max_tick, _Period2::num>, ratio_divide<ratio<1>, _Period1>>;
-            } else if (is_floating_point_v<_Rep1>) {
+            } else if constexpr (is_floating_point_v<_Rep1>) {
                 // With the smallest possible _Period1, ratio<1,INTMAX_MAX>, one day has a tick count of
                 // 86,400*INTMAX_MAX ~= 7.97e23. This is representable by float and double, so they can always represent
                 // at least one day. On the other hand, one second with the largest possible _Period1 needs a tick count

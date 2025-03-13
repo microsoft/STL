@@ -666,7 +666,7 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
     }
 
     _Istr.setstate(_State);
-    _Right = bitset<_Bits>(_Buf._Buf, _Count); // convert string and store
+    _Right = bitset<_Bits>{_Buf._Buf, _Count}; // convert string and store
     return _Istr;
 }
 

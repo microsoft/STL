@@ -433,10 +433,10 @@ public:
     using _Unchecked_const_iterator = _Tree_unchecked_const_iterator<_Tree_val>;
     using const_iterator            = _Tree_const_iterator<_Tree_val>;
 
-    template <class _AllocNode>
+    template <class _Alnode>
     struct _NODISCARD _Erase_tree_and_orphan_guard {
         _Tree_val* _Val_ptr;
-        _AllocNode& _Al;
+        _Alnode& _Al;
         _Nodeptr _New_root;
 
         _Erase_tree_and_orphan_guard& operator=(const _Erase_tree_and_orphan_guard&) = delete;
