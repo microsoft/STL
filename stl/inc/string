@@ -441,30 +441,22 @@ template <class _Elem, class _Ty>
 _NODISCARD basic_string<_Elem> _Integral_to_string(const _Ty _Val) {
     // convert _Val to string
     static_assert(is_integral_v<_Ty>, "_Ty must be integral");
-    using _UTy = make_unsigned_t<_Ty>;
     _Elem _Buff[21]; // can hold -2^63 and 2^64 - 1, plus NUL
     _Elem* const _Buff_end = _STD end(_Buff);
     _Elem* _RNext          = _Buff_end;
-    const auto _UVal       = static_cast<_UTy>(_Val);
-    if (_Val < 0) {
-        _RNext    = _UIntegral_to_buff(_RNext, 0 - _UVal);
-        *--_RNext = '-';
+
+    if constexpr (is_signed_v<_Ty>) {
+        const auto _UVal = static_cast<make_unsigned_t<_Ty>>(_Val);
+        if (_Val < 0) {
+            _RNext    = _UIntegral_to_buff(_RNext, 0 - _UVal);
+            *--_RNext = '-';
+        } else {
+            _RNext = _UIntegral_to_buff(_RNext, _UVal);
+        }
     } else {
-        _RNext = _UIntegral_to_buff(_RNext, _UVal);
+        _RNext = _UIntegral_to_buff(_RNext, _Val);
     }
 
-    return basic_string<_Elem>(_RNext, _Buff_end);
-}
-
-// TRANSITION, CUDA - warning: pointless comparison of unsigned integer with zero
-template <class _Elem, class _Ty>
-_NODISCARD basic_string<_Elem> _UIntegral_to_string(const _Ty _Val) {
-    // convert _Val to string
-    static_assert(is_integral_v<_Ty>, "_Ty must be integral");
-    static_assert(is_unsigned_v<_Ty>, "_Ty must be unsigned");
-    _Elem _Buff[21]; // can hold 2^64 - 1, plus NUL
-    _Elem* const _Buff_end = _STD end(_Buff);
-    _Elem* const _RNext    = _UIntegral_to_buff(_Buff_end, _Val);
     return basic_string<_Elem>(_RNext, _Buff_end);
 }
 
@@ -473,7 +465,7 @@ _EXPORT_STD _NODISCARD inline string to_string(int _Val) {
 }
 
 _EXPORT_STD _NODISCARD inline string to_string(unsigned int _Val) {
-    return _UIntegral_to_string<char>(_Val);
+    return _Integral_to_string<char>(_Val);
 }
 
 _EXPORT_STD _NODISCARD inline string to_string(long _Val) {
@@ -481,7 +473,7 @@ _EXPORT_STD _NODISCARD inline string to_string(long _Val) {
 }
 
 _EXPORT_STD _NODISCARD inline string to_string(unsigned long _Val) {
-    return _UIntegral_to_string<char>(_Val);
+    return _Integral_to_string<char>(_Val);
 }
 
 _EXPORT_STD _NODISCARD inline string to_string(long long _Val) {
@@ -489,7 +481,7 @@ _EXPORT_STD _NODISCARD inline string to_string(long long _Val) {
 }
 
 _EXPORT_STD _NODISCARD inline string to_string(unsigned long long _Val) {
-    return _UIntegral_to_string<char>(_Val);
+    return _Integral_to_string<char>(_Val);
 }
 
 _EXPORT_STD _NODISCARD inline string to_string(double _Val) {
@@ -512,7 +504,7 @@ _EXPORT_STD _NODISCARD inline wstring to_wstring(int _Val) {
 }
 
 _EXPORT_STD _NODISCARD inline wstring to_wstring(unsigned int _Val) {
-    return _UIntegral_to_string<wchar_t>(_Val);
+    return _Integral_to_string<wchar_t>(_Val);
 }
 
 _EXPORT_STD _NODISCARD inline wstring to_wstring(long _Val) {
@@ -520,7 +512,7 @@ _EXPORT_STD _NODISCARD inline wstring to_wstring(long _Val) {
 }
 
 _EXPORT_STD _NODISCARD inline wstring to_wstring(unsigned long _Val) {
-    return _UIntegral_to_string<wchar_t>(_Val);
+    return _Integral_to_string<wchar_t>(_Val);
 }
 
 _EXPORT_STD _NODISCARD inline wstring to_wstring(long long _Val) {
@@ -528,7 +520,7 @@ _EXPORT_STD _NODISCARD inline wstring to_wstring(long long _Val) {
 }
 
 _EXPORT_STD _NODISCARD inline wstring to_wstring(unsigned long long _Val) {
-    return _UIntegral_to_string<wchar_t>(_Val);
+    return _Integral_to_string<wchar_t>(_Val);
 }
 
 _EXPORT_STD _NODISCARD inline wstring to_wstring(double _Val) {

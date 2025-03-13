@@ -22,7 +22,7 @@ $ImageSku = '2025-datacenter-azure-edition'
 
 $LogFile = '1es-hosted-pool.log'
 $ProgressActivity = 'Preparing STL CI pool'
-$TotalProgress = 26
+$TotalProgress = 38
 $CurrentProgress = 1
 
 <#
@@ -103,7 +103,30 @@ $AdminPWSecure = New-Password
 $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
 
 ####################################################################################################
-Display-ProgressBar -Status 'Creating virtual network'
+Display-ProgressBar -Status 'Creating public IP address'
+
+$PublicIpAddressName = $ResourceGroupName + '-PublicIpAddress'
+$PublicIpAddress = New-AzPublicIpAddress `
+  -Name $PublicIpAddressName `
+  -ResourceGroupName $ResourceGroupName `
+  -Location $Location `
+  -Sku 'Standard' `
+  -AllocationMethod 'Static'
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating NAT gateway'
+
+$NatGatewayName = $ResourceGroupName + '-NatGateway'
+$NatGateway = New-AzNatGateway `
+  -Name $NatGatewayName `
+  -ResourceGroupName $ResourceGroupName `
+  -Location $Location `
+  -IdleTimeoutInMinutes 10 `
+  -Sku 'Standard' `
+  -PublicIpAddress $PublicIpAddress
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating network security group'
 
 $NetworkSecurityGroupName = $ResourceGroupName + '-NetworkSecurity'
 $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
@@ -111,11 +134,22 @@ $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location
 
+####################################################################################################
+Display-ProgressBar -Status 'Creating virtual network subnet config'
+
+# TRANSITION, 2025-09-30: "On September 30, 2025, default outbound access for new deployments will be retired."
+# https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/default-outbound-access
+# We're using `-DefaultOutboundAccess $false` to opt-in early.
 $SubnetName = $ResourceGroupName + '-Subnet'
 $Subnet = New-AzVirtualNetworkSubnetConfig `
   -Name $SubnetName `
   -AddressPrefix '10.0.0.0/16' `
+  -DefaultOutboundAccess $false `
+  -NatGateway $NatGateway `
   -NetworkSecurityGroup $NetworkSecurityGroup
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating virtual network'
 
 $VirtualNetworkName = $ResourceGroupName + '-Network'
 $VirtualNetwork = New-AzVirtualNetwork `
@@ -136,7 +170,7 @@ $Nic = New-AzNetworkInterface `
   -Subnet $VirtualNetwork.Subnets[0]
 
 ####################################################################################################
-Display-ProgressBar -Status 'Creating prototype VM'
+Display-ProgressBar -Status 'Creating prototype VM config'
 
 # Previously: -Priority 'Spot'
 $VM = New-AzVMConfig `
@@ -145,6 +179,9 @@ $VM = New-AzVMConfig `
   -DiskControllerType 'NVMe' `
   -Priority 'Regular'
 
+####################################################################################################
+Display-ProgressBar -Status 'Setting prototype VM OS'
+
 $VM = Set-AzVMOperatingSystem `
   -VM $VM `
   -Windows `
@@ -152,9 +189,15 @@ $VM = Set-AzVMOperatingSystem `
   -Credential $Credential `
   -ProvisionVMAgent
 
+####################################################################################################
+Display-ProgressBar -Status 'Adding prototype VM network interface'
+
 $VM = Add-AzVMNetworkInterface `
   -VM $VM `
   -Id $Nic.Id
+
+####################################################################################################
+Display-ProgressBar -Status 'Setting prototype VM source image'
 
 $VM = Set-AzVMSourceImage `
   -VM $VM `
@@ -163,14 +206,23 @@ $VM = Set-AzVMSourceImage `
   -Skus $ImageSku `
   -Version 'latest'
 
+####################################################################################################
+Display-ProgressBar -Status 'Setting prototype VM boot diagnostic'
+
 $VM = Set-AzVMBootDiagnostic `
   -VM $VM `
   -Disable
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating prototype VM'
 
 New-AzVm `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
   -VM $VM >> $LogFile
+
+####################################################################################################
+Display-ProgressBar -Status 'Getting prototype VM OS disk name'
 
 $VM = Get-AzVM `
   -ResourceGroupName $ResourceGroupName `
@@ -350,25 +402,41 @@ Remove-AzDisk `
 Display-ProgressBar -Status 'Deleting unused network interface'
 
 Remove-AzNetworkInterface `
--ResourceGroupName $ResourceGroupName `
--Name $NicName `
--Force >> $LogFile
+  -ResourceGroupName $ResourceGroupName `
+  -Name $NicName `
+  -Force >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Deleting unused virtual network'
 
 Remove-AzVirtualNetwork `
--ResourceGroupName $ResourceGroupName `
--Name $VirtualNetworkName `
--Force >> $LogFile
+  -ResourceGroupName $ResourceGroupName `
+  -Name $VirtualNetworkName `
+  -Force >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Deleting unused network security group'
 
 Remove-AzNetworkSecurityGroup `
--ResourceGroupName $ResourceGroupName `
--Name $NetworkSecurityGroupName `
--Force >> $LogFile
+  -ResourceGroupName $ResourceGroupName `
+  -Name $NetworkSecurityGroupName `
+  -Force >> $LogFile
+
+####################################################################################################
+Display-ProgressBar -Status 'Deleting unused NAT gateway'
+
+Remove-AzNatGateway `
+  -ResourceGroupName $ResourceGroupName `
+  -Name $NatGatewayName `
+  -Force >> $LogFile
+
+####################################################################################################
+Display-ProgressBar -Status 'Deleting unused public IP address'
+
+Remove-AzPublicIpAddress `
+  -ResourceGroupName $ResourceGroupName `
+  -Name $PublicIpAddressName `
+  -Force >> $LogFile
 
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed

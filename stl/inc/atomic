@@ -203,7 +203,7 @@ extern "C" inline void _Atomic_thread_fence(const unsigned int _Order) noexcept 
     if (_Order == _Atomic_memory_order_seq_cst) {
         volatile long _Guard; // Not initialized to avoid an unnecessary operation; the value does not matter
 
-        // _mm_mfence could have been used, but it is not supported on older x86 CPUs and is slower on some recent CPUs.
+        // _mm_mfence could have been used, but it is slower on some CPUs.
         // The memory fence provided by interlocked operations has some exceptions, but this is fine:
         // std::atomic_thread_fence works with respect to other atomics only; it may not be a full fence for all ops.
         (void) _InterlockedIncrement(&_Guard);

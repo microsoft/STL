@@ -206,7 +206,11 @@ struct _Span_extent_type {
 
     constexpr _Span_extent_type() noexcept = default;
 
-    constexpr explicit _Span_extent_type(const pointer _Data, size_t) noexcept : _Mydata{_Data} {}
+    constexpr explicit _Span_extent_type(const pointer _Data, size_t) noexcept : _Mydata{_Data} {
+        // Verify that later calls to size_bytes() won't overflow:
+        static_assert(
+            _Mysize <= dynamic_extent / sizeof(_Ty), "size of span in bytes exceeds numeric_limits<size_t>::max()");
+    }
 
     pointer _Mydata{nullptr};
     static constexpr size_t _Mysize = _Extent;
@@ -219,7 +223,13 @@ struct _Span_extent_type<_Ty, dynamic_extent> {
     constexpr _Span_extent_type() noexcept = default;
 
     constexpr explicit _Span_extent_type(const pointer _Data, const size_t _Size) noexcept
-        : _Mydata{_Data}, _Mysize{_Size} {}
+        : _Mydata{_Data}, _Mysize{_Size} {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        // Verify that later calls to size_bytes() won't overflow:
+        _STL_VERIFY(
+            _Mysize <= dynamic_extent / sizeof(_Ty), "size of span in bytes exceeds numeric_limits<size_t>::max()");
+#endif
+    }
 
     pointer _Mydata{nullptr};
     size_t _Mysize{0};
@@ -294,12 +304,12 @@ public:
     template <_Span_compatible_iterator<element_type> _It>
     constexpr explicit(_Extent != dynamic_extent) span(_It _First, size_type _Count) noexcept // strengthened
         : _Mybase(_STD to_address(_STD _Get_unwrapped_n(_First, _Count)), _Count) {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Count == _Extent,
                 "Cannot construct span with static extent from range [first, first + count) as count != extent");
         }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
     }
 
     template <_Span_compatible_iterator<element_type> _It, _Span_compatible_sentinel<_It> _Sentinel>
@@ -307,12 +317,12 @@ public:
         noexcept(noexcept(_Last - _First)) // strengthened
         : _Mybase(_STD to_address(_First), static_cast<size_type>(_Last - _First)) {
         _STD _Adl_verify_range(_First, _Last);
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Last - _First == _Extent,
                 "Cannot construct span with static extent from range [first, last) as last - first != extent");
         }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
     }
 
     template <size_t _Size>
@@ -331,12 +341,12 @@ public:
     template <_Span_compatible_range<element_type> _Rng>
     constexpr explicit(_Extent != dynamic_extent) span(_Rng&& _Range)
         : _Mybase(_RANGES data(_Range), static_cast<size_type>(_RANGES size(_Range))) {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_RANGES size(_Range) == _Extent,
                 "Cannot construct span with static extent from range r as std::ranges::size(r) != extent");
         }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
     }
 
     template <class _OtherTy, size_t _OtherExtent>
@@ -345,12 +355,12 @@ public:
     constexpr explicit(_Extent != dynamic_extent && _OtherExtent == dynamic_extent)
         span(const span<_OtherTy, _OtherExtent>& _Other) noexcept
         : _Mybase(_Other.data(), _Other.size()) {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
         if constexpr (_Extent != dynamic_extent) {
             _STL_VERIFY(_Other.size() == _Extent,
                 "Cannot construct span with static extent from other span as other.size() != extent");
         }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
     }
 
     // [span.sub] Subviews
@@ -359,18 +369,20 @@ public:
         if constexpr (_Extent != dynamic_extent) {
             static_assert(_Count <= _Extent, "Count out of range in span::first<Count>()");
         }
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
         else {
             _STL_VERIFY(_Count <= _Mysize, "Count out of range in span::first<Count>()");
         }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
+
         return span<element_type, _Count>{_Mydata, _Count};
     }
 
     _NODISCARD constexpr auto first(const size_type _Count) const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Count <= _Mysize, "Count out of range in span::first(count)");
 #endif
+
         return span<element_type, dynamic_extent>{_Mydata, _Count};
     }
 
@@ -379,18 +391,20 @@ public:
         if constexpr (_Extent != dynamic_extent) {
             static_assert(_Count <= _Extent, "Count out of range in span::last<Count>()");
         }
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
         else {
             _STL_VERIFY(_Count <= _Mysize, "Count out of range in span::last<Count>()");
         }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
+
         return span<element_type, _Count>{_Mydata + (_Mysize - _Count), _Count};
     }
 
     _NODISCARD constexpr auto last(const size_type _Count) const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Count <= _Mysize, "Count out of range in span::last(count)");
 #endif
+
         return span<element_type, dynamic_extent>{_Mydata + (_Mysize - _Count), _Count};
     }
 
@@ -401,7 +415,7 @@ public:
             static_assert(_Count == dynamic_extent || _Count <= _Extent - _Offset,
                 "Count out of range in span::subspan<Offset, Count>()");
         }
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
         else {
             _STL_VERIFY(_Offset <= _Mysize, "Offset out of range in span::subspan<Offset, Count>()");
 
@@ -409,7 +423,8 @@ public:
                 _STL_VERIFY(_Count <= _Mysize - _Offset, "Count out of range in span::subspan<Offset, Count>()");
             }
         }
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
+
         using _ReturnType = span<element_type,
             _Count != dynamic_extent ? _Count : (_Extent != dynamic_extent ? _Extent - _Offset : dynamic_extent)>;
         return _ReturnType{_Mydata + _Offset, _Count == dynamic_extent ? _Mysize - _Offset : _Count};
@@ -417,11 +432,12 @@ public:
 
     _NODISCARD constexpr auto subspan(const size_type _Offset, const size_type _Count = dynamic_extent) const noexcept
     /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Offset <= _Mysize, "Offset out of range in span::subspan(offset, count)");
         _STL_VERIFY(_Count == dynamic_extent || _Count <= _Mysize - _Offset,
             "Count out of range in span::subspan(offset, count)");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
+
         using _ReturnType = span<element_type, dynamic_extent>;
         return _ReturnType{_Mydata + _Offset, _Count == dynamic_extent ? _Mysize - _Offset : _Count};
     }
@@ -431,16 +447,10 @@ public:
         return _Mysize;
     }
 
-#pragma warning(push)
-#pragma warning(disable : 4127) // conditional expression is constant
     _NODISCARD constexpr size_type size_bytes() const noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(_Mysize <= dynamic_extent / sizeof(element_type),
-            "size of span in bytes exceeds std::numeric_limits<size_t>::max()");
-#endif
+        // Under _ITERATOR_DEBUG_LEVEL != 0, span's constructors verify that this multiplication won't overflow.
         return _Mysize * sizeof(element_type);
     }
-#pragma warning(pop)
 
     _NODISCARD constexpr bool empty() const noexcept {
         return _Mysize == 0;
@@ -448,25 +458,28 @@ public:
 
     // [span.elem] Element access
     _NODISCARD constexpr reference operator[](const size_type _Off) const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Off < _Mysize, "span subscript out of range");
 #endif
+
         return _Mydata[_Off];
     }
 
 #pragma warning(push)
 #pragma warning(disable : 4127) // conditional expression is constant
     _NODISCARD constexpr reference front() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mysize > 0, "front() called on empty span");
 #endif
+
         return _Mydata[0];
     }
 
     _NODISCARD constexpr reference back() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mysize > 0, "back() called on empty span");
 #endif
+
         return _Mydata[_Mysize - 1];
     }
 #pragma warning(pop)
