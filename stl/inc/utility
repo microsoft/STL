@@ -951,8 +951,8 @@ _NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23
-_EXPORT_STD template <class _Ty>
-_NODISCARD _MSVC_INTRINSIC constexpr underlying_type_t<_Ty> to_underlying(_Ty _Value) noexcept {
+_EXPORT_STD template <class _Ty> // TRANSITION, VSO-2253317: should be _MSVC_INTRINSIC
+_NODISCARD constexpr underlying_type_t<_Ty> to_underlying(_Ty _Value) noexcept {
     return static_cast<underlying_type_t<_Ty>>(_Value);
 }
 
