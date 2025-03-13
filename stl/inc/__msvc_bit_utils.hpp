@@ -51,7 +51,7 @@ _NODISCARD constexpr int _Countl_zero_fallback(_Ty _Val) noexcept {
     return static_cast<int>(_Nx) - static_cast<int>(_Val);
 }
 
-#if !defined(_M_CEE_PURE) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER)
+#if !defined(_M_CEE_PURE) && !defined(__CUDACC__)
 #define _HAS_COUNTL_ZERO_INTRINSICS 1
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_COUNTL_ZERO_INTRINSICS 0
@@ -179,7 +179,7 @@ _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
 }
 
 #if ((defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))) \
-    && !defined(_M_CEE_PURE) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER)
+    && !defined(_M_CEE_PURE) && !defined(__CUDACC__)
 #define _HAS_TZCNT_BSF_INTRINSICS 1
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_TZCNT_BSF_INTRINSICS 0
@@ -273,8 +273,7 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 
 #endif // _HAS_TZCNT_BSF_INTRINSICS
 
-#if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64)) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
-    && !defined(__INTEL_COMPILER)
+#if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64)) && !defined(_M_CEE_PURE) && !defined(__CUDACC__)
 #define _HAS_POPCNT_INTRINSICS 1
 #if defined(__AVX__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _POPCNT_INTRINSICS_ALWAYS_AVAILABLE 1

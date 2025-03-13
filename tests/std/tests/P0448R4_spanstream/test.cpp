@@ -674,6 +674,28 @@ void test_ispanstream() {
         assert(static_cast<test_buf*>(special_range_constructed.rdbuf())->epptr() == nullptr);
     }
 
+    { // GH-5308: <spanstream>: Constructing ispanstream from string no longer compiles since VS 17.13
+        basic_string<CharT> str(42, static_cast<CharT>('*'));
+        basic_ispanstream<CharT> from_string_constructed{str};
+        assert(from_string_constructed.span().data() == str.data());
+        assert(static_cast<test_buf*>(from_string_constructed.rdbuf())->eback() == str.data());
+        assert(static_cast<test_buf*>(from_string_constructed.rdbuf())->gptr() == str.data());
+        assert(static_cast<test_buf*>(from_string_constructed.rdbuf())->egptr() == str.data() + str.size());
+        assert(static_cast<test_buf*>(from_string_constructed.rdbuf())->pbase() == nullptr);
+        assert(static_cast<test_buf*>(from_string_constructed.rdbuf())->pptr() == nullptr);
+        assert(static_cast<test_buf*>(from_string_constructed.rdbuf())->epptr() == nullptr);
+
+        basic_ispanstream<CharT> from_string_reset{span<CharT>{}};
+        from_string_reset.span(str);
+        assert(from_string_reset.span().data() == str.data());
+        assert(static_cast<test_buf*>(from_string_reset.rdbuf())->eback() == str.data());
+        assert(static_cast<test_buf*>(from_string_reset.rdbuf())->gptr() == str.data());
+        assert(static_cast<test_buf*>(from_string_reset.rdbuf())->egptr() == str.data() + str.size());
+        assert(static_cast<test_buf*>(from_string_reset.rdbuf())->pbase() == nullptr);
+        assert(static_cast<test_buf*>(from_string_reset.rdbuf())->pptr() == nullptr);
+        assert(static_cast<test_buf*>(from_string_reset.rdbuf())->epptr() == nullptr);
+    }
+
     { // span
         CharT buffer[10];
         basic_ispanstream<CharT> is{span<CharT>{buffer}};
