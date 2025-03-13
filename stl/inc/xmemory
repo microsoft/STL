@@ -25,6 +25,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#undef msvc
+
 #if _USE_STD_VECTOR_ALGORITHMS
 extern "C" {
 void* __stdcall __std_remove_1(void* _First, void* _Last, uint8_t _Val) noexcept;
@@ -2736,8 +2740,8 @@ namespace ranges {
     _EXPORT_STD template <range _Rng, class _Alloc>
 #endif // ^^^ !defined(__cpp_lib_byte) ^^^
     struct elements_of {
-        /* [[no_unique_address]] */ _Rng range;
-        /* [[no_unique_address]] */ _Alloc allocator{};
+        _MSVC_NO_UNIQUE_ADDRESS _Rng range;
+        _MSVC_NO_UNIQUE_ADDRESS _Alloc allocator{};
     };
 
 #if defined(__cpp_lib_byte)
@@ -2800,6 +2804,9 @@ _STD_END
 #else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
 #define _LIST_REMOVE_RETURN void
 #endif // ^^^ !_HAS_CXX20 ^^^
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

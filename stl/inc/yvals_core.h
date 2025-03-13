@@ -730,6 +730,18 @@
 #define _MSVC_LIFETIMEBOUND
 #endif
 
+#if _HAS_CXX23 // TRANSITION, ABI, should just use [[no_unique_address]] when _HAS_CXX20.
+// Should we enable use of [[msvc::no_unique_address]] or [[no_unique_address]] to allow potentially-overlapping member
+// subobjects?
+#if _HAS_MSVC_ATTRIBUTE(no_unique_address)
+#define _MSVC_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+#elif __has_cpp_attribute(no_unique_address) // TRANSITION, DevCom-10747012, EDG recognizes [[no_unique_address]].
+#define _MSVC_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#else
+#error Either [[msvc::no_unique_address]] or [[no_unique_address]] must be supported because this is ABI-critical.
+#endif
+#endif // _HAS_CXX23
+
 #undef _HAS_MSVC_ATTRIBUTE
 #pragma pop_macro("lifetimebound")
 #pragma pop_macro("intrinsic")
