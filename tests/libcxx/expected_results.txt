@@ -235,8 +235,7 @@ std/containers/container.adaptors/flat.map/flat.map.cons/copy_assign.pass.cpp:0 
 std/containers/container.adaptors/flat.map/flat.map.cons/copy_assign.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/deduct_pmr.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/deduct_pmr.pass.cpp:1 FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/deduct.pass.cpp:0 FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/deduct.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/deduct.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/initializer_list.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/initializer_list.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/iter_iter.pass.cpp:0 FAIL
