@@ -171,25 +171,25 @@ void test_count(mt19937_64& gen) {
     }
 }
 
-template <class FwdIt, class T>
-auto last_known_good_find(FwdIt first, FwdIt last, T v) {
+template <class FwdIt, class T, class Pred = equal_to<>>
+auto last_known_good_find(FwdIt first, FwdIt last, T v, Pred pred = {}) {
     for (; first != last; ++first) {
-        if (*first == v) {
+        if (pred(*first, v)) {
             break;
         }
     }
     return first;
 }
 
-template <class FwdIt, class T>
-auto last_known_good_find_last(FwdIt first, FwdIt last, T v) {
+template <class FwdIt, class T, class Pred = equal_to<>>
+auto last_known_good_find_last(FwdIt first, FwdIt last, T v, Pred pred = {}) {
     FwdIt last_save = last;
     for (;;) {
         if (last == first) {
             return last_save;
         }
         --last;
-        if (*last == v) {
+        if (pred(*last, v)) {
             return last;
         }
     }
@@ -1162,12 +1162,48 @@ void test_case_string_rfind_str(const basic_string<T>& input_haystack, const bas
     assert(expected == actual);
 }
 
+template <class T>
+void test_case_string_find_not_ch(const basic_string<T>& input_haystack, const T value) {
+    ptrdiff_t expected;
+
+    const auto expected_iter =
+        last_known_good_find(input_haystack.begin(), input_haystack.end(), value, not_equal_to<>{});
+
+    if (expected_iter != input_haystack.end()) {
+        expected = expected_iter - input_haystack.begin();
+    } else {
+        expected = -1;
+    }
+
+    const auto actual = static_cast<ptrdiff_t>(input_haystack.find_first_not_of(value));
+    assert(expected == actual);
+}
+
+template <class T>
+void test_case_string_rfind_not_ch(const basic_string<T>& input_haystack, const T value) {
+    ptrdiff_t expected;
+
+    const auto expected_iter =
+        last_known_good_find_last(input_haystack.begin(), input_haystack.end(), value, not_equal_to<>{});
+
+    if (expected_iter != input_haystack.end()) {
+        expected = expected_iter - input_haystack.begin();
+    } else {
+        expected = -1;
+    }
+
+    const auto actual = static_cast<ptrdiff_t>(input_haystack.find_last_not_of(value));
+    assert(expected == actual);
+}
+
 template <class T, class D>
 void test_basic_string_dis(mt19937_64& gen, D& dis) {
     basic_string<T> input_haystack;
+    basic_string<T> input_haystack_not;
     basic_string<T> input_needle;
     basic_string<T> temp;
     input_haystack.reserve(haystackDataCount);
+    input_haystack_not.reserve(haystackDataCount);
     input_needle.reserve(needleDataCount);
     temp.reserve(needleDataCount);
 
@@ -1200,6 +1236,22 @@ void test_basic_string_dis(mt19937_64& gen, D& dis) {
                 test_case_string_find_str(input_haystack, input_needle);
                 test_case_string_rfind_str(input_haystack, input_needle);
                 copy(temp.begin(), temp.end(), overwritten_first);
+            }
+        }
+
+        const auto input_not_ch = static_cast<T>(dis(gen));
+        input_haystack_not.assign(input_haystack.size(), input_not_ch);
+
+        test_case_string_find_not_ch(input_haystack_not, input_not_ch);
+        test_case_string_rfind_not_ch(input_haystack_not, input_not_ch);
+        if (!input_haystack_not.empty()) {
+            uniform_int_distribution<size_t> not_pos_dis(0, input_haystack_not.size() - 1);
+
+            for (size_t attempts = 0; attempts < needleDataCount; ++attempts) {
+                const size_t pos        = not_pos_dis(gen);
+                input_haystack_not[pos] = input_haystack[pos];
+                test_case_string_find_not_ch(input_haystack_not, input_not_ch);
+                test_case_string_rfind_not_ch(input_haystack_not, input_not_ch);
             }
         }
 
