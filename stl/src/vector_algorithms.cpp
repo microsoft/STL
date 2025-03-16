@@ -2930,6 +2930,44 @@ namespace {
         return _Result;
     }
 
+    template <class _Traits, class _Ty>
+    const void* __stdcall __std_search_n_impl(
+        const void* _First, const void* const _Last, const size_t _Count, const _Ty _Val) noexcept {
+        auto _Match_start = static_cast<const _Ty*>(_First);
+        auto _Last_ptr    = static_cast<const _Ty*>(_Last);
+
+        if (static_cast<size_t>(_Last_ptr - _Match_start) < _Count) {
+            return _Last_ptr;
+        }
+
+        auto _Mid1      = _Match_start;
+        auto _Match_end = _Match_start + _Count;
+        auto _Mid2      = _Match_end;
+        for (;;) {
+            // Invariants: _Match_end - _Match_start == _Count, [_Match_start, _Mid1) and [_Mid2, _Match_end) match
+            // _Val:
+            //
+            // _Match_start  _Mid1    _Mid2    _Match_end
+            // |=============|????????|========|??????????...
+
+            --_Mid2;
+            if (*_Mid2 == _Val) { // match;
+                if (_Mid1 == _Mid2) { // [_Mid1, _Mid2) is empty, so [_Match_start, _Match_end) all match
+                    return _Match_start;
+                }
+            } else { // mismatch; skip past it
+                _Match_start = _Mid2 + 1;
+
+                if (static_cast<size_t>(_Last_ptr - _Match_start) < _Count) { // not enough space left
+                    return _Last_ptr;
+                }
+
+                _Mid1      = _Match_end;
+                _Match_end = _Match_start + _Count;
+                _Mid2      = _Match_end;
+            }
+        }
+    }
 #ifndef _M_ARM64EC
     namespace __std_find_meow_of_bitmap_details {
         __m256i _Bitmap_step(const __m256i _Bitmap, const __m256i _Data) noexcept {
@@ -4563,6 +4601,26 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_4(
 __declspec(noalias) size_t __stdcall __std_count_trivial_8(
     const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
     return __std_count_trivial_impl<_Count_traits_8>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_search_n_1(
+    const void* const _First, const void* const _Last, const size_t _Count, const uint8_t _Value) noexcept {
+    return __std_search_n_impl<_Find_traits_1>(_First, _Last, _Count, _Value);
+}
+
+const void* __stdcall __std_search_n_2(
+    const void* const _First, const void* const _Last, const size_t _Count, const uint16_t _Value) noexcept {
+    return __std_search_n_impl<_Find_traits_2>(_First, _Last, _Count, _Value);
+}
+
+const void* __stdcall __std_search_n_4(
+    const void* const _First, const void* const _Last, const size_t _Count, const uint32_t _Value) noexcept {
+    return __std_search_n_impl<_Find_traits_4>(_First, _Last, _Count, _Value);
+}
+
+const void* __stdcall __std_search_n_8(
+    const void* const _First, const void* const _Last, const size_t _Count, const uint64_t _Value) noexcept {
+    return __std_search_n_impl<_Find_traits_8>(_First, _Last, _Count, _Value);
 }
 
 const void* __stdcall __std_find_first_of_trivial_1(

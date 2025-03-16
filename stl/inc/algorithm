@@ -79,6 +79,11 @@ __declspec(noalias) void __stdcall __std_replace_4(
     void* _First, void* _Last, uint32_t _Old_val, uint32_t _New_val) noexcept;
 __declspec(noalias) void __stdcall __std_replace_8(
     void* _First, void* _Last, uint64_t _Old_val, uint64_t _New_val) noexcept;
+
+const void* __stdcall __std_search_n_1(const void* _First, const void* _Last, size_t _Count, uint8_t _Value) noexcept;
+const void* __stdcall __std_search_n_2(const void* _First, const void* _Last, size_t _Count, uint16_t _Value) noexcept;
+const void* __stdcall __std_search_n_4(const void* _First, const void* _Last, size_t _Count, uint32_t _Value) noexcept;
+const void* __stdcall __std_search_n_8(const void* _First, const void* _Last, size_t _Count, uint64_t _Value) noexcept;
 } // extern "C"
 
 _STD_BEGIN
@@ -205,6 +210,33 @@ __declspec(noalias) void _Replace_vectorized(
     }
 }
 
+template <class _Ty, class _TVal>
+_Ty* _Search_n_vectorized(_Ty* const _First, _Ty* const _Last, const size_t _Count, const _TVal _Val) noexcept {
+    if constexpr (is_pointer_v<_Ty>) {
+#ifdef _WIN64
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_search_n_8(_First, _Last, _Count, reinterpret_cast<uint64_t>(_Val))));
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_search_n_4(_First, _Last, _Count, reinterpret_cast<uint32_t>(_Val))));
+#endif // ^^^ !defined(_WIN64) ^^^
+    } else if constexpr (sizeof(_Ty) == 1) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_search_n_1(_First, _Last, _Count, static_cast<uint8_t>(_Val))));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_search_n_2(_First, _Last, _Count, static_cast<uint16_t>(_Val))));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_search_n_4(_First, _Last, _Count, static_cast<uint32_t>(_Val))));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(::__std_search_n_8(_First, _Last, _Count, static_cast<uint64_t>(_Val))));
+    } else {
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+    }
+}
+
 // Can we activate the vector algorithms for find_first_of?
 template <class _It1, class _It2, class _Pr>
 constexpr bool _Vector_alg_in_find_first_of_is_safe = _Equal_memcmp_is_safe<_It1, _It2, _Pr>;
@@ -219,6 +251,14 @@ template <class _Iter, class _Ty1, class _Ty2>
 constexpr bool _Vector_alg_in_ranges_replace_is_safe =
     _Vector_alg_in_replace_is_safe<_Iter, _Ty1> // can search and replace
     && _Vector_alg_in_find_is_safe_elem<_Ty2, _Iter_value_t<_Iter>>; // replacement fits
+
+template <class _Iter, class _Ty, class _Pr>
+constexpr bool _Vector_alg_in_search_n_is_safe = _Vector_alg_in_find_is_safe<_Iter, _Ty>
+                                              && _Is_any_of_v<_Pr,
+#if _HAS_CXX20
+                                                  ranges::equal_to,
+#endif
+                                                  equal_to<>>;
 _STD_END
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
@@ -2239,6 +2279,29 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (_Is_ranges_random_iter_v<_FwdIt>) {
+#if _USE_STD_VECTOR_ALGORITHMS
+        if constexpr (_Vector_alg_in_search_n_is_safe<decltype(_UFirst), _Ty, _Pr>) {
+            if (!_STD _Is_constant_evaluated()) {
+                if (!_STD _Could_compare_equal_to_value_type<decltype(_UFirst)>(_Val)) {
+                    return _Last;
+                }
+
+                const auto _First_ptr = _STD _To_address(_UFirst);
+                const auto _Result =
+                    _STD _Search_n_vectorized(_First_ptr, _STD _To_address(_ULast), static_cast<size_t>(_Count), _Val);
+
+                if constexpr (is_pointer_v<decltype(_UFirst)>) {
+                    _UFirst = _Result;
+                } else {
+                    _UFirst += (_Result - _First_ptr);
+                }
+
+                _STD _Seek_wrapped(_Last, _UFirst);
+                return _Last;
+            }
+        }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
         const auto _Count_diff = static_cast<_Iter_diff_t<_FwdIt>>(_Count);
         auto _UOld_first       = _UFirst;
         for (_Iter_diff_t<_FwdIt> _Inc = 0; _Count_diff <= _ULast - _UOld_first;) { // enough room, look for a match
@@ -2410,6 +2473,38 @@ namespace ranges {
                     _RANGES advance(_First, _Dist);
                     return {_First, _First};
                 }
+
+#if _USE_STD_VECTOR_ALGORITHMS
+                if constexpr (_Vector_alg_in_search_n_is_safe<_It, _Ty, _Pr> && is_same_v<_Pj, identity>) {
+                    if (!_STD is_constant_evaluated()) {
+                        if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
+                            _First += _Dist;
+                            return {_First, _First};
+                        }
+
+                        const auto _First_ptr = _STD _To_address(_First);
+                        const auto _Last_ptr  = _First_ptr + _Dist;
+                        const auto _Result    = _STD _Search_n_vectorized(
+                            _First_ptr, _First_ptr + _Dist, static_cast<size_t>(_Count), _Val);
+
+                        if constexpr (is_pointer_v<_It>) {
+                            if (_Result != _Last_ptr) {
+                                return {_Result, _Result + _Count};
+                            } else {
+                                return {_Result, _Result};
+                            }
+                        } else {
+                            if (_Result != _Last_ptr) {
+                                _First += _Result - _First_ptr;
+                                return {_First, _First + _Count};
+                            } else {
+                                _First += _Dist;
+                                return {_First, _First};
+                            }
+                        }
+                    }
+                }
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
                 auto _Last = _RANGES next(_First, _Count);
                 auto _Mid1 = _First;
