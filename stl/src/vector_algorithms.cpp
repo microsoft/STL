@@ -2933,6 +2933,56 @@ namespace {
     template <class _Traits, class _Ty>
     const void* __stdcall __std_search_n_impl(
         const void* _First, const void* const _Last, const size_t _Count, const _Ty _Val) noexcept {
+        if (_Count == 0) {
+            return _First;
+        } else if (_Count == 1) {
+            return __std_find_trivial_impl<_Traits>(_First, _Last, _Val);
+        }
+
+        auto _Mid1 = static_cast<const _Ty*>(_First);
+
+        const size_t _Length   = _Byte_length(_First, _Last);
+        const size_t _Cmp_size = _Count * sizeof(_Ty);
+        if (_Cmp_size <= 8 && _Length >= 32 && _Use_avx2()) {
+            const size_t _Sh1 = _Cmp_size < 4 ? _Cmp_size - 2 : 2;
+            const size_t _Sh2 = _Cmp_size < 4 ? 0 : _Cmp_size - 4;
+
+            const __m256i _Comparand = _Traits::_Set_avx(_Val);
+
+            const void* _Stop_at = _First;
+            _Advance_bytes(_Stop_at, _Length & ~size_t{0x1F});
+
+            size_t _Carry = 0;
+            do {
+                const __m256i _Data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
+                const auto _Mask    = static_cast<uint32_t>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Comparand, _Data)));
+
+                const uint32_t _MskN = ~_Mask;
+
+                if (_Carry + _tzcnt_u32(_MskN) >= _Cmp_size) {
+                    _Rewind_bytes(_First, _Carry);
+                    return _First;
+                }
+
+                uint32_t _MskX = _Mask;
+                _MskX          = (_Mask >> 1) & _Mask;
+                _MskX          = (_MskX >> _Sh1) & _MskX;
+                _MskX          = (_MskX >> _Sh2) & _MskX;
+
+                if (_MskX != 0) {
+                    _Advance_bytes(_First, _tzcnt_u32(_MskX));
+                    return _First;
+                }
+
+                _Carry = _lzcnt_u32(_MskN);
+
+                _Advance_bytes(_First, 32);
+            } while (_First != _Stop_at);
+
+            _Mid1 = static_cast<const _Ty*>(_First);
+            _Rewind_bytes(_First, _Carry);
+        }
+
         auto _Match_start = static_cast<const _Ty*>(_First);
         auto _Last_ptr    = static_cast<const _Ty*>(_Last);
 
@@ -2940,7 +2990,6 @@ namespace {
             return _Last_ptr;
         }
 
-        auto _Mid1      = _Match_start;
         auto _Match_end = _Match_start + _Count;
         auto _Mid2      = _Match_end;
         for (;;) {

@@ -13,7 +13,7 @@
 
 using namespace std;
 
-// NB: This particular algorithm has std and ranges implementations with different perf characteristics!
+// NB: This particular algorithm has std and ranges non-vectorized implementations with different perf characteristics!
 
 enum class AlgType { Std, Rng };
 
@@ -76,12 +76,12 @@ void bm(benchmark::State& state) {
 }
 
 void common_args_large_counts(auto bm) {
-    bm->ArgPair(3000, 200)->ArgPair(3000, 40)->ArgPair(3000, 20)->ArgPair(3000, 10)->ArgPair(3000, 5);
+    bm->ArgPair(3000, 200)->ArgPair(3000, 40)->ArgPair(3000, 20)->ArgPair(3000, 10)->ArgPair(3000, 9)->ArgPair(3000, 8);
 }
 
 void common_args(auto bm) {
     common_args_large_counts(bm);
-    bm->ArgPair(3000, 2)->ArgPair(3000, 1);
+    bm->ArgPair(3000, 5)->ArgPair(3000, 4)->ArgPair(3000, 2)->ArgPair(3000, 1);
 }
 
 
