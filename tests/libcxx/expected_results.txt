@@ -1237,7 +1237,6 @@ std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.con
 
 # Not analyzed. Various assertions.
 std/time/time.zone/time.zone.timezone/time.zone.members/get_info.local_time.pass.cpp FAIL
-std/time/time.zone/time.zone.timezone/time.zone.members/to_sys_choose.pass.cpp FAIL
 std/time/time.zone/time.zone.zonedtime/time.zone.zonedtime.members/get_info.pass.cpp FAIL
 std/time/time.zone/time.zone.zonedtime/time.zone.zonedtime.nonmembers/ostream.pass.cpp FAIL
 
