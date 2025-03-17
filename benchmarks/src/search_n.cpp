@@ -19,7 +19,6 @@ enum class AlgType { Std, Rng };
 
 enum class PartternType {
     TwoZones,
-    RareSignleMatches,
     DenseSmallSequences,
 };
 
@@ -35,18 +34,6 @@ void bm(benchmark::State& state) {
 
     if constexpr (Parttern == PartternType::TwoZones) {
         fill(v.begin() + v.size() / 2, v.end(), match);
-    } else if constexpr (Parttern == PartternType::RareSignleMatches) {
-        if (size != 0 && n != 0) {
-            mt19937 gen{275423};
-
-            uniform_int_distribution<size_t> pos_dis(0, size - 1);
-
-            const size_t single_match_amount = size / n;
-
-            for (size_t i = 0; i != single_match_amount; ++i) {
-                v[pos_dis(gen)] = match;
-            }
-        }
     } else if constexpr (Parttern == PartternType::DenseSmallSequences) {
         if (size != 0 && n != 0) {
             mt19937 gen{7687239};
@@ -75,41 +62,29 @@ void bm(benchmark::State& state) {
     }
 }
 
-void common_args_large_counts(auto bm) {
-    bm->ArgPair(3000, 200)->ArgPair(3000, 40)->ArgPair(3000, 20)->ArgPair(3000, 10)->ArgPair(3000, 9)->ArgPair(3000, 8);
-}
-
 void common_args(auto bm) {
-    common_args_large_counts(bm);
+    bm->ArgPair(3000, 200)->ArgPair(3000, 40)->ArgPair(3000, 20)->ArgPair(3000, 10)->ArgPair(3000, 9)->ArgPair(3000, 8);
     bm->ArgPair(3000, 5)->ArgPair(3000, 4)->ArgPair(3000, 2)->ArgPair(3000, 1);
 }
 
 
 BENCHMARK(bm<uint8_t, AlgType::Std, PartternType::TwoZones>)->Apply(common_args);
 BENCHMARK(bm<uint8_t, AlgType::Rng, PartternType::TwoZones>)->Apply(common_args);
-BENCHMARK(bm<uint8_t, AlgType::Std, PartternType::RareSignleMatches>)->Apply(common_args_large_counts);
-BENCHMARK(bm<uint8_t, AlgType::Rng, PartternType::RareSignleMatches>)->Apply(common_args_large_counts);
 BENCHMARK(bm<uint8_t, AlgType::Std, PartternType::DenseSmallSequences>)->Apply(common_args);
 BENCHMARK(bm<uint8_t, AlgType::Rng, PartternType::DenseSmallSequences>)->Apply(common_args);
 
 BENCHMARK(bm<uint16_t, AlgType::Std, PartternType::TwoZones>)->Apply(common_args);
 BENCHMARK(bm<uint16_t, AlgType::Rng, PartternType::TwoZones>)->Apply(common_args);
-BENCHMARK(bm<uint16_t, AlgType::Std, PartternType::RareSignleMatches>)->Apply(common_args_large_counts);
-BENCHMARK(bm<uint16_t, AlgType::Rng, PartternType::RareSignleMatches>)->Apply(common_args_large_counts);
 BENCHMARK(bm<uint16_t, AlgType::Std, PartternType::DenseSmallSequences>)->Apply(common_args);
 BENCHMARK(bm<uint16_t, AlgType::Rng, PartternType::DenseSmallSequences>)->Apply(common_args);
 
 BENCHMARK(bm<uint32_t, AlgType::Std, PartternType::TwoZones>)->Apply(common_args);
 BENCHMARK(bm<uint32_t, AlgType::Rng, PartternType::TwoZones>)->Apply(common_args);
-BENCHMARK(bm<uint32_t, AlgType::Std, PartternType::RareSignleMatches>)->Apply(common_args_large_counts);
-BENCHMARK(bm<uint32_t, AlgType::Rng, PartternType::RareSignleMatches>)->Apply(common_args_large_counts);
 BENCHMARK(bm<uint32_t, AlgType::Std, PartternType::DenseSmallSequences>)->Apply(common_args);
 BENCHMARK(bm<uint32_t, AlgType::Rng, PartternType::DenseSmallSequences>)->Apply(common_args);
 
 BENCHMARK(bm<uint64_t, AlgType::Std, PartternType::TwoZones>)->Apply(common_args);
 BENCHMARK(bm<uint64_t, AlgType::Rng, PartternType::TwoZones>)->Apply(common_args);
-BENCHMARK(bm<uint64_t, AlgType::Std, PartternType::RareSignleMatches>)->Apply(common_args_large_counts);
-BENCHMARK(bm<uint64_t, AlgType::Rng, PartternType::RareSignleMatches>)->Apply(common_args_large_counts);
 BENCHMARK(bm<uint64_t, AlgType::Std, PartternType::DenseSmallSequences>)->Apply(common_args);
 BENCHMARK(bm<uint64_t, AlgType::Rng, PartternType::DenseSmallSequences>)->Apply(common_args);
 
