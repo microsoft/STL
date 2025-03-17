@@ -36,11 +36,6 @@ std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp
 # LLVM-113609: [libc++][test] Non-rebindable test_alloc in string.capacity/deallocate_size.pass.cpp
 std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
 
-# LLVM-116054: [libc++] vprint_[non]unicode(ostream &, string_view, Args&&...) should not pad the output
-std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/print.pass.cpp FAIL
-std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/vprint_nonunicode.pass.cpp FAIL
-std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/vprint_unicode.pass.cpp FAIL
-
 # LLVM-122638: [libc++][test] re.regex.construct/bad_backref.pass.cpp assumes non-standard extension to extended regular expressions
 std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
 
