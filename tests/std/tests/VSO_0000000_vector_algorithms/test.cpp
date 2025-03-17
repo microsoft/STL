@@ -103,8 +103,8 @@ void test_adjacent_difference_with_heterogeneous_types() {
     assert(output == expected);
 }
 
-template <class InIt>
-InIt last_known_good_adj_find(InIt first, InIt last) {
+template <class FwdIt>
+FwdIt last_known_good_adj_find(FwdIt first, FwdIt last) {
     if (first == last) {
         return last;
     }
