@@ -139,21 +139,21 @@ void test_adjacent_find(mt19937_64& gen) {
 
     uniform_int_distribution<conditional_t<sizeof(T) == 1, int, T>> dis(Limits::min(), Limits::max());
 
-    vector<T> master_input;
+    vector<T> original_input;
     vector<T> input;
 
-    master_input.reserve(dataCount);
+    original_input.reserve(dataCount);
     input.reserve(dataCount);
 
     test_case_adj_find(input);
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
-        master_input.push_back(static_cast<T>(dis(gen)));
-        input = master_input;
+        original_input.push_back(static_cast<T>(dis(gen)));
+        input = original_input;
 
         test_case_adj_find(input);
 
-        if (master_input.size() > 2) {
-            uniform_int_distribution<size_t> pos_dis(0, master_input.size() - 2);
+        if (original_input.size() > 2) {
+            uniform_int_distribution<size_t> pos_dis(0, original_input.size() - 2);
 
             for (size_t replicas = 0; replicas < replicaCount; ++replicas) {
                 size_t replica_pos = pos_dis(gen);
