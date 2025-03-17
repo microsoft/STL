@@ -168,7 +168,9 @@ template <class FwdIt, class T>
 ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
     ptrdiff_t result = 0;
     for (; first != last; ++first) {
-        result += (*first == v);
+        if (*first == v) {
+            ++result;
+        }
     }
     return result;
 }

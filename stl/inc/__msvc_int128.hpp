@@ -36,8 +36,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-#if defined(_M_X64) && !defined(_M_ARM64EC) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
-    && !defined(__INTEL_COMPILER)
+#if defined(_M_X64) && !defined(_M_ARM64EC) && !defined(_M_CEE_PURE) && !defined(__CUDACC__)
 #define _STL_128_INTRINSICS 1
 #ifdef __clang__ // clang doesn't have _udiv128 / _div128
 #define _STL_128_DIV_INTRINSICS 0

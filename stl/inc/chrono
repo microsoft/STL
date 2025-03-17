@@ -1849,7 +1849,7 @@ namespace chrono {
             // time zone name. In vNext, this should be a dedicated argument.
             const string _Tz_arg = _Name + static_cast<char>(_Type);
 
-            const auto _Tz_len = _Name.length();
+            const auto _Tz_len = _Name.size();
 
             const auto _Info =
                 _Make_unique_tzdb_info<__std_tzdb_get_sys_info>(_Tz_arg.c_str(), _Tz_len, _Internal_dur.count());
@@ -3493,7 +3493,7 @@ namespace chrono {
 
                 return ratio_less_equal_v<_Period1, _Period2>
                     && ratio_greater_equal_v<ratio<_Max_tick, _Period2::num>, ratio_divide<ratio<1>, _Period1>>;
-            } else if (is_floating_point_v<_Rep1>) {
+            } else if constexpr (is_floating_point_v<_Rep1>) {
                 // With the smallest possible _Period1, ratio<1,INTMAX_MAX>, one day has a tick count of
                 // 86,400*INTMAX_MAX ~= 7.97e23. This is representable by float and double, so they can always represent
                 // at least one day. On the other hand, one second with the largest possible _Period1 needs a tick count
@@ -4608,6 +4608,22 @@ namespace chrono {
         return _Istr;
     }
 
+    namespace _From_stream_adl_only {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
+        void from_stream() = delete; // Block unqualified name lookup
+#else // ^^^ no workaround / workaround vvv
+        void from_stream();
+#endif // ^^^ workaround ^^^
+
+        template <class _Parsable, class _CharT, class _Traits, class... _Rest>
+        concept _Can_from_stream = requires(
+            basic_istream<_CharT, _Traits>& __istr, const _CharT* __s, _Parsable& __parsed, _Rest&&... __rest_args) {
+            from_stream(__istr, +__s, __parsed, _STD forward<_Rest>(__rest_args)...); // intentional ADL
+        };
+    } // namespace _From_stream_adl_only
+
+    using _From_stream_adl_only::_Can_from_stream;
+
     template <class _CharT, class _Traits, class _Alloc, class _Parsable>
     struct _Time_parse_iomanip_c_str {
         _Time_parse_iomanip_c_str(const _CharT* _Fmt_, _Parsable& _Tp_,
@@ -4618,6 +4634,7 @@ namespace chrono {
 
         friend basic_istream<_CharT, _Traits>& operator>>(
             basic_istream<_CharT, _Traits>& _Is, _Time_parse_iomanip_c_str&& _Tpi) {
+            using _From_stream_adl_only::from_stream;
             from_stream(_Is, _Tpi._Fmt, _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset); // intentional ADL
             return _Is;
         }
@@ -4638,6 +4655,7 @@ namespace chrono {
 
         friend basic_istream<_CharT, _Traits>& operator>>(
             basic_istream<_CharT, _Traits>& _Is, _Time_parse_iomanip&& _Tpi) {
+            using _From_stream_adl_only::from_stream;
             from_stream(_Is, _Tpi._Fmt.c_str(), _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset); // intentional ADL
             return _Is;
         }
@@ -4646,12 +4664,6 @@ namespace chrono {
         _Parsable& _Tp;
         basic_string<_CharT, _Traits, _Alloc>* _Abbrev;
         minutes* _Offset;
-    };
-
-    template <class _Parsable, class _CharT, class _Traits, class... _Rest>
-    concept _Can_from_stream = requires(
-        basic_istream<_CharT, _Traits>& __istr, const _CharT* __s, _Parsable& __parsed, _Rest&&... __rest_args) {
-        from_stream(__istr, +__s, __parsed, _STD forward<_Rest>(__rest_args)...); // intentional ADL
     };
 
     _EXPORT_STD template <class _CharT, _Can_from_stream<_CharT, char_traits<_CharT>> _Parsable>

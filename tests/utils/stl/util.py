@@ -177,15 +177,3 @@ def killProcessAndChildren(pid):
             psutilProc.kill()
         except psutil.NoSuchProcess:
             pass
-
-
-def executeCommandVerbose(cmd, *args, **kwargs):
-    """
-    Execute a command and print its output on failure.
-    """
-    out, err, exitCode = executeCommand(cmd, *args, **kwargs)
-    if exitCode != 0:
-        report = makeReport(cmd, out, err, exitCode)
-        report += "\n\nFailed!"
-        sys.stderr.write('%s\n' % report)
-    return out, err, exitCode

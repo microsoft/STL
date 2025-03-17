@@ -3545,7 +3545,7 @@ _NODISCARD _FormatContext::iterator _Tuple_formatter_format(const tuple<formatte
 
     const int _Width = _STD _Measure_display_width<_CharT>(_Tmp_str);
     return _STD _Write_aligned(
-        _Fmt_ctx.out(), _Width, _Format_specs, _Fmt_align::_Left, [&](typename _FormatContext::iterator _Out) {
+        _Fmt_ctx.out(), _Width, _Format_specs, _Fmt_align::_Left, [&](_FormatContext::iterator _Out) {
             return _STD _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Tmp_str});
         });
 }

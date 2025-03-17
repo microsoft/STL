@@ -526,14 +526,7 @@
 #define _STL_STRINGIZE_(S) #S
 #define _STL_STRINGIZE(S)  _STL_STRINGIZE_(S)
 
-// Note that _STL_PRAGMA is load-bearing;
-// it still needs to exist even once CUDA and ICC support _Pragma.
-#if defined(__CUDACC__) || defined(__INTEL_COMPILER)
-#define _STL_PRAGMA(PRAGMA) __pragma(PRAGMA)
-#else
-#define _STL_PRAGMA(PRAGMA) _Pragma(#PRAGMA)
-#endif
-
+#define _STL_PRAGMA(PRAGMA)          _Pragma(#PRAGMA)
 #define _STL_PRAGMA_MESSAGE(MESSAGE) _STL_PRAGMA(message(MESSAGE))
 #define _EMIT_STL_MESSAGE(MESSAGE)   _STL_PRAGMA_MESSAGE(__FILE__ "(" _STL_STRINGIZE(__LINE__) "): " MESSAGE)
 
@@ -697,8 +690,6 @@
 #undef lifetimebound
 
 #ifndef __has_cpp_attribute
-#define _HAS_MSVC_ATTRIBUTE(x) 0
-#elif defined(__CUDACC__) // TRANSITION, CUDA - warning: attribute namespace "msvc" is unrecognized
 #define _HAS_MSVC_ATTRIBUTE(x) 0
 #else
 #define _HAS_MSVC_ATTRIBUTE(x) __has_cpp_attribute(msvc::x)
@@ -885,31 +876,25 @@
 #define _STL_DISABLE_DEPRECATED_WARNING \
     _Pragma("clang diagnostic push")    \
     _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
-#elif defined(__CUDACC__) || defined(__INTEL_COMPILER)
-#define _STL_DISABLE_DEPRECATED_WARNING \
-    __pragma(warning(push))             \
-    __pragma(warning(disable : 4996)) // was declared deprecated
-#else // vvv MSVC vvv
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #define _STL_DISABLE_DEPRECATED_WARNING \
     _Pragma("warning(push)")            \
     _Pragma("warning(disable : 4996)") // was declared deprecated
-#endif // ^^^ MSVC ^^^
+#endif // ^^^ !defined(__clang__) ^^^
 #endif // _STL_DISABLE_DEPRECATED_WARNING
 // clang-format on
 
 #ifndef _STL_RESTORE_DEPRECATED_WARNING
 #ifdef __clang__
 #define _STL_RESTORE_DEPRECATED_WARNING _Pragma("clang diagnostic pop")
-#elif defined(__CUDACC__) || defined(__INTEL_COMPILER)
-#define _STL_RESTORE_DEPRECATED_WARNING __pragma(warning(pop))
-#else // vvv MSVC vvv
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #define _STL_RESTORE_DEPRECATED_WARNING _Pragma("warning(pop)")
-#endif // ^^^ MSVC ^^^
+#endif // ^^^ !defined(__clang__) ^^^
 #endif // !defined(_STL_RESTORE_DEPRECATED_WARNING)
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202502L
+#define _MSVC_STL_UPDATE  202503L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -923,8 +908,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 12.4 or new
 _EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 19.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1942 // Coarse-grained, not inspecting _MSC_FULL_VER
-_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.42 or newer.");
+#if _MSC_VER < 1944 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.44 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1001,7 +986,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // P0298R3 std::byte
 #ifndef _HAS_STD_BYTE
-#define _HAS_STD_BYTE _HAS_CXX17
+#define _HAS_STD_BYTE _HAS_CXX17 // TRANSITION, OS-14273702
 #endif // !defined(_HAS_STD_BYTE)
 
 // P0302R1 Removing Allocator Support In std::function
@@ -2024,10 +2009,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _STATIC_CALL_OPERATOR static
 #define _CONST_CALL_OPERATOR
 #define _STATIC_LAMBDA static
-#elif _MSC_VER < 1944 // TRANSITION, internal toolset needs to be updated to VS 2022 17.14 Preview 1
-#define _STATIC_CALL_OPERATOR
-#define _CONST_CALL_OPERATOR const
-#define _STATIC_LAMBDA
 #else // TRANSITION, VSO-2383148, fixed in VS 2022 17.14 Preview 3
 #define _STATIC_CALL_OPERATOR static
 #define _CONST_CALL_OPERATOR
