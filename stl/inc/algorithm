@@ -543,7 +543,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, 
     auto _ULast  = _STD _Get_unwrapped(_Last);
     if (_UFirst != _ULast) {
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (_Equal_memcmp_is_safe<_FwdIt, _FwdIt, _Pr>) {
+        if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst), decltype(_UFirst), _Pr>) {
             if (!_STD _Is_constant_evaluated()) {
                 const auto _First_ptr = _STD _To_address(_UFirst);
                 const auto _Result    = _STD _Adjacent_find_vectorized(_First_ptr, _STD _To_address(_ULast));
