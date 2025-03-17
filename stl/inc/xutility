@@ -6824,7 +6824,6 @@ namespace ranges {
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
             for (auto _Next = _First;; ++_First) {
-
                 if (++_Next == _Last) {
                     return _Next;
                 }
