@@ -126,7 +126,7 @@ void test_case_adj_find(const vector<T>& input) {
     assert(actual == expected);
 
 #if _HAS_CXX20
-    auto actual_r = ranges::adjacent_find(input);
+    const auto actual_r = ranges::adjacent_find(input);
     assert(actual_r == expected);
 #endif // _HAS_CXX20
 }
@@ -156,8 +156,8 @@ void test_adjacent_find(mt19937_64& gen) {
             uniform_int_distribution<size_t> pos_dis(0, original_input.size() - 2);
 
             for (size_t replicas = 0; replicas < replicaCount; ++replicas) {
-                size_t replica_pos = pos_dis(gen);
-                input[replica_pos] = input[replica_pos + 1];
+                const size_t replica_pos = pos_dis(gen);
+                input[replica_pos]       = input[replica_pos + 1];
                 test_case_adj_find(input);
             }
         }
