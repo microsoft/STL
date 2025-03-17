@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <benchmark/benchmark.h>
 #include <cstddef>
+#include <cstdint>
 #include <cstdlib>
 #include <vector>
 
@@ -42,14 +43,14 @@ void common_args(auto bm) {
     bm->ArgPair(2525, 1142);
 }
 
-BENCHMARK(bm<AlgType::Std, char>)->Apply(common_args);
-BENCHMARK(bm<AlgType::Std, short>)->Apply(common_args);
-BENCHMARK(bm<AlgType::Std, int>)->Apply(common_args);
-BENCHMARK(bm<AlgType::Std, long long>)->Apply(common_args);
+BENCHMARK(bm<AlgType::Std, int8_t>)->Apply(common_args);
+BENCHMARK(bm<AlgType::Std, int16_t>)->Apply(common_args);
+BENCHMARK(bm<AlgType::Std, int32_t>)->Apply(common_args);
+BENCHMARK(bm<AlgType::Std, int64_t>)->Apply(common_args);
 
-BENCHMARK(bm<AlgType::Rng, char>)->Apply(common_args);
-BENCHMARK(bm<AlgType::Rng, short>)->Apply(common_args);
-BENCHMARK(bm<AlgType::Rng, int>)->Apply(common_args);
-BENCHMARK(bm<AlgType::Rng, long long>)->Apply(common_args);
+BENCHMARK(bm<AlgType::Rng, int8_t>)->Apply(common_args);
+BENCHMARK(bm<AlgType::Rng, int16_t>)->Apply(common_args);
+BENCHMARK(bm<AlgType::Rng, int32_t>)->Apply(common_args);
+BENCHMARK(bm<AlgType::Rng, int64_t>)->Apply(common_args);
 
 BENCHMARK_MAIN();
