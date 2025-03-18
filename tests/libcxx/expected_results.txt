@@ -13,6 +13,8 @@ std/time/time.syn/formatter.local_time.pass.cpp:0 FAIL
 std/time/time.syn/formatter.local_time.pass.cpp:1 FAIL
 std/time/time.syn/formatter.sys_time.pass.cpp:0 FAIL
 std/time/time.syn/formatter.sys_time.pass.cpp:1 FAIL
+std/time/time.syn/formatter.utc_time.pass.cpp:0 FAIL
+std/time/time.syn/formatter.utc_time.pass.cpp:1 FAIL
 std/time/time.syn/formatter.year.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year.pass.cpp:1 FAIL
 std/time/time.syn/formatter.year_month.pass.cpp:0 FAIL
@@ -1138,6 +1140,7 @@ std/time/time.syn/formatter.file_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.hh_mm_ss.pass.cpp:2 FAIL
 std/time/time.syn/formatter.local_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.sys_time.pass.cpp:2 FAIL
+std/time/time.syn/formatter.utc_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.zoned_time.pass.cpp:2 FAIL
 
 # Not analyzed. constexpr evaluation fails with note: failure was caused by out of range index MEOW; allowed range is 0 <= index < 2
