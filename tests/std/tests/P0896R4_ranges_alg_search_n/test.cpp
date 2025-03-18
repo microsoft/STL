@@ -98,6 +98,20 @@ struct instantiator {
             assert(result.end() == range.begin());
         }
 
+        // trivial case: unit needle
+        {
+            const auto result = ranges::search_n(range, 1, 0, cmp, get_first);
+            static_assert(same_as<decltype(result), const ranges::subrange<ranges::iterator_t<Fwd>>>);
+            assert(result.begin() == ranges::next(range.begin(), 1));
+            assert(result.end() == ranges::next(range.begin(), 2));
+        }
+        {
+            const auto result = ranges::search_n(ranges::begin(range), ranges::end(range), 1, 0, cmp, get_first);
+            static_assert(same_as<decltype(result), const ranges::subrange<ranges::iterator_t<Fwd>>>);
+            assert(result.begin() == ranges::next(range.begin(), 1));
+            assert(result.end() == ranges::next(range.begin(), 2));
+        }
+
         // trivial case: range too small
         {
             const auto result = ranges::search_n(range, 99999, 0, cmp, get_first);
