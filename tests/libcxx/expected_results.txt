@@ -781,6 +781,10 @@ std/containers/sequences/vector/vector.capacity/resize_size_value_exceptions.pas
 # error: incomplete type 'std::char_traits<char>' named in nested name specifier
 std/iterators/iterator.requirements/iterator.assoc.types/readable.traits/indirectly_readable_traits.compile.pass.cpp FAIL
 
+# warning C5030: attribute [[clang::trivial_abi]] is not recognized
+std/containers/sequences/vector/trivial_relocation.pass.cpp:0 FAIL
+std/containers/sequences/vector/trivial_relocation.pass.cpp:1 FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not analyzed, likely STL bugs. Various assertions.
