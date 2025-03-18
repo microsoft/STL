@@ -628,6 +628,13 @@ std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
 
+# GH-5345: <vector>: _Copy_vbool() mishandles vector<bool>s of size 32 and 64, revealed by constexpr Clang
+std/algorithms/alg.modifying.operations/alg.copy/copy_n.pass.cpp:2 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:2 FAIL
+std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:2 FAIL
+std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp FAIL
+std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp FAIL
+
 
 # *** VCRUNTIME BUGS ***
 
