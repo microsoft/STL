@@ -967,21 +967,15 @@ std/numerics/rand/rand.dist/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp 
 # I don't know which is right.
 std/language.support/support.limits/limits/numeric.limits.members/tinyness_before.pass.cpp SKIPPED
 
-# Not analyzed. the test fails on x64 but passes on x86
-# warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-# warning C4244: 'initializing': conversion from 'unsigned __int64' to 'int', possible loss of data
-std/containers/associative/map/map.access/iterator.pass.cpp:0 SKIPPED
-std/containers/associative/map/map.access/iterator.pass.cpp:1 SKIPPED
-
-# Not analyzed. the test fails on x64 but passes on x86
-# warning C4244: 'return': conversion from '__int64' to 'CustomIt::difference_type', possible loss of data
-std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:0 SKIPPED
-std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:1 SKIPPED
-
-# Not analyzed. the test fails on x64 but passes on x86
-# warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+# Not analyzed. x64-specific truncation warnings.
+std/algorithms/alg.modifying.operations/alg.fill/fill_n.pass.cpp:0 SKIPPED
+std/algorithms/alg.modifying.operations/alg.fill/fill_n.pass.cpp:1 SKIPPED
 std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp:0 SKIPPED
 std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp:1 SKIPPED
+std/containers/associative/map/map.access/iterator.pass.cpp:0 SKIPPED
+std/containers/associative/map/map.access/iterator.pass.cpp:1 SKIPPED
+std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:0 SKIPPED
+std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:1 SKIPPED
 
 # Not analyzed. the test fails on x86 but passes on x64
 # warning C4389: '==': signed/unsigned mismatch
