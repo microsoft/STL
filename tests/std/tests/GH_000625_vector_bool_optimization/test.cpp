@@ -1304,6 +1304,29 @@ void randomized_test_copy(mt19937_64& gen) {
     }
 }
 
+#if _HAS_CXX20
+template <size_t N>
+constexpr bool gh_005345() {
+    vector<bool> src(N, true);
+
+    for (size_t i = 2; i != N; ++i) {
+        for (size_t j = i * 2; j < N; j += i) {
+            src[j] = false;
+        }
+    }
+
+    vector<bool> dst(N, false);
+    copy(src.begin(), src.end(), dst.begin());
+    return src == dst;
+}
+
+static_assert(gh_005345<17>());
+static_assert(gh_005345<32>());
+static_assert(gh_005345<43>());
+static_assert(gh_005345<64>());
+static_assert(gh_005345<120>());
+#endif
+
 int main() {
     test_fill();
     test_find();
