@@ -1202,8 +1202,7 @@ enum _Node_flags : int { // flags for nfa nodes with special properties
     _Fl_none    = 0x00,
     _Fl_negate  = 0x01,
     _Fl_greedy  = 0x02,
-    _Fl_final   = 0x04, // TRANSITION, ABI: parser used to mark some nodes with this flag
-    _Fl_longest = 0x08
+    _Fl_longest = 0x08 // TRANSITION, ABI: 0x04 is unused; the parser previously marked some nodes with it
 };
 
 _BITMASK_OPS(_EMPTY_ARGUMENT, _Node_flags)
