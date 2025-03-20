@@ -342,16 +342,20 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         const same_as<iterator_t<R>> auto i = r.begin();
         if (!is_empty) {
             // (static analyzer doesn't realize that `i == nullptr` implies `is_empty`)
-#pragma warning(suppress : 6011) // Dereferencing NULL pointer 'i'
+#pragma warning(push)
+#pragma warning(disable : 6011) // Dereferencing NULL pointer 'i'
             assert(*i == *begin(expected));
+#pragma warning(pop)
         }
 
         if constexpr (copy_constructible<V>) {
             auto r2                              = r;
             const same_as<iterator_t<R>> auto i2 = r2.begin();
             if (!is_empty) {
-#pragma warning(suppress : 6011) // Dereferencing NULL pointer 'i'
+#pragma warning(push)
+#pragma warning(disable : 6011) // Dereferencing NULL pointer 'i'
                 assert(*i2 == *i);
+#pragma warning(pop)
             }
         }
     }
@@ -361,16 +365,20 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     if constexpr (CanMemberBegin<const R>) {
         const same_as<iterator_t<const R>> auto ci = as_const(r).begin();
         if (!is_empty) {
-#pragma warning(suppress : 6011) // Dereferencing NULL pointer 'i'
+#pragma warning(push)
+#pragma warning(disable : 6011) // Dereferencing NULL pointer 'i'
             assert(*ci == *begin(expected));
+#pragma warning(pop)
         }
 
         if constexpr (copy_constructible<V>) {
             const auto cr2                              = r;
             const same_as<iterator_t<const R>> auto ci2 = cr2.begin();
             if (!is_empty) {
-#pragma warning(suppress : 6011) // Dereferencing NULL pointer 'i'
+#pragma warning(push)
+#pragma warning(disable : 6011) // Dereferencing NULL pointer 'i'
                 assert(*ci2 == *ci);
+#pragma warning(pop)
             }
         }
     }

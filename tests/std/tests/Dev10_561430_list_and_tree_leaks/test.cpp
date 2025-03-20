@@ -116,9 +116,13 @@ int main() {
     }
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
-    { shared_ptr<int> sp(new int(1729), default_delete<int>(), Mallocator<int>()); }
+    {
+        shared_ptr<int> sp(new int(1729), default_delete<int>(), Mallocator<int>());
+    }
 
-    { shared_ptr<int> sp = allocate_shared<int>(Mallocator<int>(), 1729); }
+    {
+        shared_ptr<int> sp = allocate_shared<int>(Mallocator<int>(), 1729);
+    }
 
 #ifndef _M_CEE_PURE
     {

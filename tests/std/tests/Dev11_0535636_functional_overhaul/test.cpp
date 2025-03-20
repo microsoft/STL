@@ -1017,7 +1017,7 @@ void test_reference_wrapper_invocation() {
     pmf = &Thing::product;
     assert(rw_pmf(sp, 3) == 60000);
 
-    int Thing::*pmd = &Thing::m_x;
+    int Thing::* pmd = &Thing::m_x;
     reference_wrapper<int Thing::*> rw_pmd(pmd);
     assert(rw_pmd(*sp) == 1000);
     assert(rw_pmd(sp.get()) == 1000);
@@ -1370,8 +1370,6 @@ _CONSTEXPR20 bool test_mem_fn() {
     const int&& r2 = mf_pmd(move(cw));
     assert(&r2 == &cw.m_i);
 
-
-#ifndef _M_CEE // TRANSITION, VSO-1664293
     w.m_i = 1000;
 
     assert(mem_fn(&Widget::nullary)(w) == 1001);
@@ -1395,7 +1393,6 @@ _CONSTEXPR20 bool test_mem_fn() {
     assert(mem_fn(&Widget::unary_lv)(&w, 6) == 1061);
 
     assert(mem_fn(&Widget::unary_rv)(move(w), 7) == 1404);
-#endif // ^^^ no workaround ^^^
 
     return true;
 }

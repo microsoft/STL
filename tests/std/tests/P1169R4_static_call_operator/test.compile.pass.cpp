@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifdef __cpp_static_call_operator
-
 #include <functional>
 #include <future>
 #include <type_traits>
@@ -51,5 +49,3 @@ void all_tests() {
     test_ctad<function>();
     test_ctad<packaged_task>();
 }
-
-#endif // ^^^ defined(__cpp_static_call_operator) ^^^

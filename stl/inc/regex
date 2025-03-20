@@ -334,8 +334,10 @@ public:
     template <class _Iter>
     char_class_type lookup_classname(_Iter _First, _Iter _Last, bool _Icase = false) const {
         // map [_First, _Last) to character class mask value
-#define _REGEX_CHAR_CLASS_NAME(n, c) \
-    { n, L##n, static_cast<unsigned int>(_STD size(n) - 1), c }
+#define _REGEX_CHAR_CLASS_NAME(n, c)                            \
+    {                                                           \
+        n, L##n, static_cast<unsigned int>(_STD size(n) - 1), c \
+    }
         static constexpr _Cl_names _Names[] = {
             // map class names to numeric constants
             _REGEX_CHAR_CLASS_NAME("alnum", _Ch_alnum),
@@ -531,7 +533,7 @@ private:
 inline bool _Is_word(unsigned char _UCh) {
     // special casing char to avoid branches for std::regex in this path
     static constexpr bool _Is_word_table[_STD _Max_limit<unsigned char>() + 1] = {
-        //        X0 X1 X2 X3 X4 X5 X6 X7 X8 X9 XA XB XC XD XE XF
+        //       X0 X1 X2 X3 X4 X5 X6 X7 X8 X9 XA XB XC XD XE XF
         /* 0X */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         /* 1X */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         /* 2X */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1919,6 +1921,11 @@ public:
 
     ~basic_regex() noexcept {
         _Tidy();
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        const auto _Tombstone{reinterpret_cast<_Root_node*>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+        _Rep = _Tombstone;
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
     }
 
     basic_regex& operator=(const basic_regex& _Right) {
@@ -3668,10 +3675,9 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
         case _N_none:
         default:
 #if _ITERATOR_DEBUG_LEVEL != 0
-            _STL_VERIFY(false, "internal data of regex node corrupted");
-#else // ^^^ _ITERATOR_DEBUG_LEVEL != 0 / _ITERATOR_DEBUG_LEVEL == 0 vvv
+            _STL_REPORT_ERROR("internal data of regex node corrupted");
+#endif
             return false;
-#endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
         }
 
         if (_Failed) {

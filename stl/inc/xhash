@@ -97,11 +97,6 @@ template <class _Kty, class _Hasher, class _Keyeq>
 struct _Uhash_choose_transparency {
     // transparency selector for non-transparent hashed containers
     static constexpr bool _Has_transparent_overloads = false;
-
-#if _HAS_CXX20 && defined(__EDG__) // TRANSITION, DevCom-10678753
-    template <class, class>
-    static constexpr bool _Supports_transparency = false;
-#endif // ^^^ workaround ^^^
 };
 
 #if _HAS_CXX20
@@ -440,6 +435,16 @@ public:
         _Right._Stl_internal_check_container_invariants();
 #endif // _ENABLE_STL_INTERNAL_CHECK
     }
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+    ~_Hash() noexcept {
+        // Destroying _List and _Vec will store tombstones in their pointers.
+        // We'll also set _Mask and _Maxidx back to the values used by _Hash's default constructor. Although this
+        // doesn't provide the same benefit as zeroing out size fields, it's consistent with the pattern elsewhere.
+        _Mask   = _Min_buckets - 1;
+        _Maxidx = _Min_buckets;
+    }
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
 
 private:
     void _Swap_val(_Hash& _Right) noexcept { // swap contents with equal allocator _Hash _Right

@@ -169,10 +169,10 @@ union U { // dummy union
     double d;
 };
 
-typedef int B::*pmo;
-typedef const int B::*pmoc;
-typedef volatile int B::*pmov;
-typedef const volatile int B::*pmocv;
+typedef int B::* pmo;
+typedef const int B::* pmoc;
+typedef volatile int B::* pmov;
+typedef const volatile int B::* pmocv;
 typedef void (B::*pmf)();
 typedef void (B::*pmfc)() const;
 typedef void (B::*pmfv)() volatile;
