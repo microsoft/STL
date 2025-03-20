@@ -12,7 +12,7 @@
 
 using namespace std;
 
-// NB: This particular algorthm has std and ranges implementations with different perf charactterstitics!
+// NB: This particular algorithm has std and ranges implementations with different perf characteristics!
 
 enum class AlgType { Std, Rng };
 
