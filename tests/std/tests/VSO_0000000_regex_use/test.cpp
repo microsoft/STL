@@ -719,32 +719,32 @@ void test_gh_5165_syntax_option(const syntax_option_type basic_or_grep) {
         double_carets.should_search_fail("ho^^meowner");
     }
 
-    g_regexTester.should_not_match("me^ow", R"-(me\(^o[wW]\))-", basic_or_grep);
-    g_regexTester.should_not_match("meow", R"-(me\(^o[wW]\))-", basic_or_grep);
+    g_regexTester.should_not_match("me^ow", R"(me\(^o[wW]\))", basic_or_grep);
+    g_regexTester.should_not_match("meow", R"(me\(^o[wW]\))", basic_or_grep);
 
     {
-        const test_regex firstgroup_anchor(&g_regexTester, R"-(\(^meo[wW]\))-", basic_or_grep);
+        const test_regex firstgroup_anchor(&g_regexTester, R"(\(^meo[wW]\))", basic_or_grep);
         firstgroup_anchor.should_search_match("meow_machine", "meow");
         firstgroup_anchor.should_search_fail("^meow_machine");
         firstgroup_anchor.should_search_fail("homeowner");
         firstgroup_anchor.should_search_fail("ho^meowner");
     }
     {
-        const test_regex prefixedgroup_anchor(&g_regexTester, R"-(.*\(^meo[wW]\))-", basic_or_grep);
+        const test_regex prefixedgroup_anchor(&g_regexTester, R"(.*\(^meo[wW]\))", basic_or_grep);
         prefixedgroup_anchor.should_search_match("meow_machine", "meow");
         prefixedgroup_anchor.should_search_fail("^meow_machine");
         prefixedgroup_anchor.should_search_fail("homeowner");
         prefixedgroup_anchor.should_search_fail("ho^meowner");
     }
     {
-        const test_regex secondgroup_anchor(&g_regexTester, R"-(\(.*\)\(^meo[wW]\))-", basic_or_grep);
+        const test_regex secondgroup_anchor(&g_regexTester, R"(\(.*\)\(^meo[wW]\))", basic_or_grep);
         secondgroup_anchor.should_search_match("meow_machine", "meow");
         secondgroup_anchor.should_search_fail("^meow_machine");
         secondgroup_anchor.should_search_fail("homeowner");
         secondgroup_anchor.should_search_fail("ho^meowner");
     }
     {
-        const test_regex nested_anchor(&g_regexTester, R"-(.*\(^\(^meo[wW]\)\))-", basic_or_grep);
+        const test_regex nested_anchor(&g_regexTester, R"(.*\(^\(^meo[wW]\)\))", basic_or_grep);
         nested_anchor.should_search_match("meow_machine", "meow");
         nested_anchor.should_search_fail("^meow_machine");
         nested_anchor.should_search_fail("^^meow_machine");
@@ -753,7 +753,7 @@ void test_gh_5165_syntax_option(const syntax_option_type basic_or_grep) {
         nested_anchor.should_search_fail("ho^^meowner");
     }
     {
-        const test_regex double_carets(&g_regexTester, R"-(.*\(^^meo[wW]\))-", basic_or_grep);
+        const test_regex double_carets(&g_regexTester, R"(.*\(^^meo[wW]\))", basic_or_grep);
         double_carets.should_search_fail("meow_machine");
         double_carets.should_search_match("^meow_machine", "^meow");
         double_carets.should_search_fail("^^meow_machine");
@@ -787,41 +787,41 @@ void test_gh_5165_syntax_option(const syntax_option_type basic_or_grep) {
     g_regexTester.should_not_match("^*aa", "^*a*", basic_or_grep);
     g_regexTester.should_not_match("^*a*", "^*a*", basic_or_grep);
 
-    g_regexTester.should_match("*", R"-(\(*\))-", basic_or_grep);
-    g_regexTester.should_not_match("**", R"-(\(*\))-", basic_or_grep);
-    g_regexTester.should_match("****", R"-(\(**\))-", basic_or_grep);
-    g_regexTester.should_throw(R"-(\(***\))-", error_badrepeat, basic_or_grep);
+    g_regexTester.should_match("*", R"(\(*\))", basic_or_grep);
+    g_regexTester.should_not_match("**", R"(\(*\))", basic_or_grep);
+    g_regexTester.should_match("****", R"(\(**\))", basic_or_grep);
+    g_regexTester.should_throw(R"(\(***\))", error_badrepeat, basic_or_grep);
 
-    g_regexTester.should_match("*", R"-(\(^*\))-", basic_or_grep);
-    g_regexTester.should_not_match("**", R"-(\(^*\))-", basic_or_grep);
-    g_regexTester.should_not_match("^*", R"-(\(^*\))-", basic_or_grep);
-    g_regexTester.should_match("***", R"-(\(^**\))-", basic_or_grep);
-    g_regexTester.should_throw(R"-(\(^***\))-", error_badrepeat, basic_or_grep);
+    g_regexTester.should_match("*", R"(\(^*\))", basic_or_grep);
+    g_regexTester.should_not_match("**", R"(\(^*\))", basic_or_grep);
+    g_regexTester.should_not_match("^*", R"(\(^*\))", basic_or_grep);
+    g_regexTester.should_match("***", R"(\(^**\))", basic_or_grep);
+    g_regexTester.should_throw(R"(\(^***\))", error_badrepeat, basic_or_grep);
 
-    g_regexTester.should_match("*aa", R"-(\(*a*\))-", basic_or_grep);
-    g_regexTester.should_match("*a", R"-(\(*a*\))-", basic_or_grep);
-    g_regexTester.should_not_match("aa", R"-(\(*a*\))-", basic_or_grep);
-    g_regexTester.should_not_match("*a*", R"-(\(*a*\))-", basic_or_grep);
+    g_regexTester.should_match("*aa", R"(\(*a*\))", basic_or_grep);
+    g_regexTester.should_match("*a", R"(\(*a*\))", basic_or_grep);
+    g_regexTester.should_not_match("aa", R"(\(*a*\))", basic_or_grep);
+    g_regexTester.should_not_match("*a*", R"(\(*a*\))", basic_or_grep);
 
-    g_regexTester.should_match("*aa", R"-(\(^*a*\))-", basic_or_grep);
-    g_regexTester.should_not_match("aa", R"-(\(^*a*\))-", basic_or_grep);
-    g_regexTester.should_not_match("*a*", R"-(\(^*a*\))-", basic_or_grep);
-    g_regexTester.should_not_match("^*a", R"-(\(^*a*\))-", basic_or_grep);
-    g_regexTester.should_not_match("^*aa", R"-(\(^*a*\))-", basic_or_grep);
-    g_regexTester.should_not_match("^*a*", R"-(\(^*a*\))-", basic_or_grep);
+    g_regexTester.should_match("*aa", R"(\(^*a*\))", basic_or_grep);
+    g_regexTester.should_not_match("aa", R"(\(^*a*\))", basic_or_grep);
+    g_regexTester.should_not_match("*a*", R"(\(^*a*\))", basic_or_grep);
+    g_regexTester.should_not_match("^*a", R"(\(^*a*\))", basic_or_grep);
+    g_regexTester.should_not_match("^*aa", R"(\(^*a*\))", basic_or_grep);
+    g_regexTester.should_not_match("^*a*", R"(\(^*a*\))", basic_or_grep);
 
-    g_regexTester.should_match("*", R"-(.*\(^*\))-", basic_or_grep);
-    g_regexTester.should_not_match("**", R"-(.*\(^*\))-", basic_or_grep);
-    g_regexTester.should_not_match("^*", R"-(.*\(^*\))-", basic_or_grep);
-    g_regexTester.should_match("***", R"-(.*\(^**\))-", basic_or_grep);
-    g_regexTester.should_throw(R"-(.*\(^***\))-", error_badrepeat, basic_or_grep);
+    g_regexTester.should_match("*", R"(.*\(^*\))", basic_or_grep);
+    g_regexTester.should_not_match("**", R"(.*\(^*\))", basic_or_grep);
+    g_regexTester.should_not_match("^*", R"(.*\(^*\))", basic_or_grep);
+    g_regexTester.should_match("***", R"(.*\(^**\))", basic_or_grep);
+    g_regexTester.should_throw(R"(.*\(^***\))", error_badrepeat, basic_or_grep);
 
-    g_regexTester.should_match("*aa", R"-(\(.*^*a*\))-", basic_or_grep);
-    g_regexTester.should_not_match("aa", R"-(.*\(^*a*\))-", basic_or_grep);
-    g_regexTester.should_not_match("*a*", R"-(.*\(^*a*\))-", basic_or_grep);
-    g_regexTester.should_not_match("^*a", R"-(.*\(^*a*\))-", basic_or_grep);
-    g_regexTester.should_not_match("^*aa", R"-(.*\(^*a*\))-", basic_or_grep);
-    g_regexTester.should_not_match("^*a*", R"-(.*\(^*a*\))-", basic_or_grep);
+    g_regexTester.should_match("*aa", R"(\(.*^*a*\))", basic_or_grep);
+    g_regexTester.should_not_match("aa", R"(.*\(^*a*\))", basic_or_grep);
+    g_regexTester.should_not_match("*a*", R"(.*\(^*a*\))", basic_or_grep);
+    g_regexTester.should_not_match("^*a", R"(.*\(^*a*\))", basic_or_grep);
+    g_regexTester.should_not_match("^*aa", R"(.*\(^*a*\))", basic_or_grep);
+    g_regexTester.should_not_match("^*a*", R"(.*\(^*a*\))", basic_or_grep);
 
     // Validate that there is no special behavior near bars,
     // as they are alternation operators in regex modes other than basic or grep.
