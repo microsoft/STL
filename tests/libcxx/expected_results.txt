@@ -697,6 +697,8 @@ std/thread/thread.threads/thread.thread.this/sleep_until.pass.cpp SKIPPED
 
 # "This is technically flaky" comments indicate tests with timing assumptions.
 # These tests have failed in practice, see VSO-2321213 and VSO-2416940.
+std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_for.pass.cpp SKIPPED
+std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_shared_for.pass.cpp SKIPPED
 std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_shared_until.pass.cpp SKIPPED
 std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_until.pass.cpp SKIPPED
 
