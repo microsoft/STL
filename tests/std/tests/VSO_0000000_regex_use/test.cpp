@@ -980,7 +980,7 @@ void test_gh_5165() {
 
     g_regexTester.should_not_match("ab", "^a\n*b", grep);
     g_regexTester.should_not_match("a\n\nb", "^a\n*b", grep);
-    g_regexTester.should_not_match("a\n*b", "^a\n^*b", grep);
+    g_regexTester.should_not_match("a\n*b", "^a\n*b", grep);
     g_regexTester.should_match("a", "^a\n*b", grep);
     g_regexTester.should_match("*b", "^a\n*b", grep);
     g_regexTester.should_match("a", "^a\n**b", grep);
