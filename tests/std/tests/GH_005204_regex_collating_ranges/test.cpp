@@ -38,8 +38,8 @@ class test_wregex_locale {
     wregex r;
 
 public:
-    test_wregex_locale(regex_fixture* fixture_, const wstring& pattern_, const string& locname_,
-        syntax_option_type syntax_ = ECMAScript)
+    test_wregex_locale(regex_fixture* const fixture_, const wstring& pattern_, const string& locname_,
+        const syntax_option_type syntax_ = ECMAScript)
         : fixture(fixture_), pattern(pattern_), locname(locname_), syntax(syntax_), r() {
         r.imbue(locale(locname));
         r.assign(pattern, syntax);
@@ -97,8 +97,8 @@ public:
 
 regex_fixture g_regexTester;
 
-void regex_with_locale_should_throw(const wstring& pattern, const string& locname, error_type expected,
-    syntax_option_type syntax = regex_constants::collate) {
+void regex_with_locale_should_throw(const wstring& pattern, const string& locname, const error_type expected,
+    const syntax_option_type syntax = regex_constants::collate) {
     wregex r;
     r.imbue(locale(locname));
     try {
