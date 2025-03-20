@@ -33,14 +33,14 @@ using namespace std::regex_constants;
 class test_wregex_locale {
     regex_fixture* const fixture;
     const wstring pattern;
-    const syntax_option_type syntax;
     const string locname;
+    const syntax_option_type syntax;
     wregex r;
 
 public:
     test_wregex_locale(regex_fixture* fixture_, const wstring& pattern_, const string& locname_,
         syntax_option_type syntax_ = ECMAScript)
-        : fixture(fixture_), pattern(pattern_), syntax(syntax_), locname(locname_), r() {
+        : fixture(fixture_), pattern(pattern_), locname(locname_), syntax(syntax_), r() {
         r.imbue(locale(locname));
         r.assign(pattern, syntax);
     }
