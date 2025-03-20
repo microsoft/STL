@@ -38,9 +38,9 @@ class test_wregex_locale {
     wregex r;
 
 public:
-    test_wregex_locale(
-        regex_fixture* fixture, const wstring& pattern, const string& locname, syntax_option_type syntax = ECMAScript)
-        : fixture(fixture), pattern(pattern), syntax(syntax), locname(locname), r() {
+    test_wregex_locale(regex_fixture* fixture_, const wstring& pattern_, const string& locname_,
+        syntax_option_type syntax_ = ECMAScript)
+        : fixture(fixture_), pattern(pattern_), syntax(syntax_), locname(locname_), r() {
         r.imbue(locale(locname));
         r.assign(pattern, syntax);
     }
