@@ -158,6 +158,20 @@ public:
 
     ~any() noexcept {
         reset();
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        // The two least significant bits (LSBs) of _Storage._TypeData encode whether we're in _Small, _Big,
+        // or _Trivial mode; see _Rep(). The rest of the bits encode the type_info pointer that's used
+        // to remember what type of object we're storing; see _TypeInfo(). So, we'll take the tombstone value,
+        // clear out the two LSBs with the _Rep_mask, then set the bits for _Small mode.
+        // _Small mode will prevent the most misuse, as the pseudo-vtable will be used for _Destroy, _Copy, and _Move.
+        // _Big mode wouldn't use the pseudo-vtable for _Move, and _Trivial mode doesn't have a pseudo-vtable at all.
+        const uintptr_t _Tombstone_value{_MSVC_STL_UINTPTR_TOMBSTONE_VALUE};
+        // Set the pseudo-vtable pointer:
+        _Storage._SmallStorage._RTTI = reinterpret_cast<const _Any_small_RTTI*>(_Tombstone_value);
+        // Set the combined type_info pointer and representation mode bits:
+        _Storage._TypeData = (_Tombstone_value & ~_Rep_mask) | static_cast<uintptr_t>(_Any_representation::_Small);
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
     }
 
     // Assignment [any.assign]

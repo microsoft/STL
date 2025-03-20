@@ -29,8 +29,10 @@ using namespace std;
 #pragma clang diagnostic ignored "-Wexceptions"
 #endif // __clang__
 void meow() noexcept {
-#pragma warning(suppress : 4297) // 'meow': function assumed not to throw an exception but does
+#pragma warning(push)
+#pragma warning(disable : 4297) // 'meow': function assumed not to throw an exception but does
     throw runtime_error("Runtime error happened");
+#pragma warning(pop)
 }
 #ifdef __clang__
 #pragma clang diagnostic pop

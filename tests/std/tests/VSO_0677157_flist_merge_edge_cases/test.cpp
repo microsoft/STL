@@ -267,18 +267,16 @@ int main(int argc, char* argv[]) {
         test_case_empty_source_bad<less<>>,
         test_case_empty_target_bad<non_noexcept_less_int>,
         test_case_empty_target_bad<less<>>,
-        test_case_front_bad,
-        test_case_cfront_bad,
     });
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
     exec.add_death_tests({
         test_case_front_bad,
         test_case_cfront_bad,
         test_case_pop_front_bad,
     });
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 
     return exec.run(argc, argv);
 }

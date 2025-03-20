@@ -23,7 +23,8 @@
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 #define _TEMPLATE_CLASS_INTEGRAL(type) template <class type, enable_if_t<is_integral_v<type>, int> = 0>
 #define _ZERO_OR_NO_INIT \
-    {} // Trivial default initialization is not allowed in constexpr functions before C++20.
+    {                    \
+    } // Trivial default initialization is not allowed in constexpr functions before C++20.
 #endif // ^^^ !_HAS_CXX20 ^^^
 
 #pragma pack(push, _CRT_PACKING)
@@ -35,8 +36,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-#if defined(_M_X64) && !defined(_M_ARM64EC) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
-    && !defined(__INTEL_COMPILER)
+#if defined(_M_X64) && !defined(_M_ARM64EC) && !defined(_M_CEE_PURE) && !defined(__CUDACC__)
 #define _STL_128_INTRINSICS 1
 #ifdef __clang__ // clang doesn't have _udiv128 / _div128
 #define _STL_128_DIV_INTRINSICS 0

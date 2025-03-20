@@ -1145,7 +1145,7 @@ namespace ranges {
                                      "the default-constructed object. (N4981 [range.utility.conv.to]/2.1.5)");
             }
         } else if constexpr (input_range<range_reference_t<_Rng>>) {
-            const auto _Xform = [](auto&& _Elem) _STATIC_CALL_OPERATOR {
+            const auto _Xform = [](auto&& _Elem) _STATIC_LAMBDA {
                 return _RANGES to<range_value_t<_Container>>(_STD forward<decltype(_Elem)>(_Elem));
             };
             return _RANGES to<_Container>(views::transform(ref_view{_Range}, _Xform), _STD forward<_Types>(_Args)...);

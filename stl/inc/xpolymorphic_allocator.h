@@ -221,6 +221,13 @@ namespace pmr {
 
         polymorphic_allocator& operator=(const polymorphic_allocator&) = delete;
 
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        ~polymorphic_allocator() noexcept {
+            const auto _Tombstone{reinterpret_cast<memory_resource*>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+            _Resource = _Tombstone;
+        }
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
+
         _NODISCARD_RAW_PTR_ALLOC __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
             // get space for _Count objects of type _Ty from _Resource
             void* const _Vp = _Resource->allocate(_Get_size_of_n<sizeof(_Ty)>(_Count), alignof(_Ty));

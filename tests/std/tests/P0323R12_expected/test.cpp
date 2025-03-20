@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <any>
 #include <cassert>
 #include <concepts>
@@ -2476,24 +2474,17 @@ static_assert(test_inherited_constructors());
 template <class T, class E>
 struct ambiguating_expected_copy_constructor_caller {
     struct const_lvalue_taker {
-        const_lvalue_taker(const expected<T, E>&) {}
+        const_lvalue_taker(const expected<T, E>&);
     };
 
-    void operator()(expected<T, E>) {}
-    void operator()(const_lvalue_taker) {}
+    void operator()(expected<T, E>);
+    void operator()(const_lvalue_taker);
 };
 
 template <class T, class E>
 struct ambiguating_expected_assignment_source {
-    operator const expected<T, E>&() && {
-        return ex;
-    }
-
-    operator expected<T, E>&&() && {
-        return move(ex);
-    }
-
-    expected<T, E> ex;
+    operator const expected<T, E>&() &&;
+    operator expected<T, E>&&() &&;
 };
 
 struct move_only {
@@ -2512,9 +2503,9 @@ static_assert(
 #ifndef __EDG__ // TRANSITION, VSO-1601179
 static_assert(!is_assignable_v<expected<int, char>&, ambiguating_expected_assignment_source<int, char>>);
 static_assert(!is_assignable_v<expected<void, int>&, ambiguating_expected_assignment_source<void, int>>);
-#endif // ^^^ no workaround ^^^
 static_assert(!is_assignable_v<expected<move_only, char>&, ambiguating_expected_assignment_source<move_only, char>>);
 static_assert(!is_assignable_v<expected<void, move_only>&, ambiguating_expected_assignment_source<void, move_only>>);
+#endif // ^^^ no workaround ^^^
 
 static_assert(test_lwg_3886());
 

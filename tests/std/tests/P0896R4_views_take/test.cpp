@@ -561,22 +561,17 @@ constexpr void move_only_test() {
 }
 
 constexpr void output_range_test() {
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1132704
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-    {
-        using R = test::range<output_iterator_tag, int, test::Sized::no, test::CanDifference::no, test::Common::no,
-            test::CanCompare::no, test::ProxyRef::yes, test::CanView::yes, test::Copyability::move_only>;
-        int some_writable_ints[] = {0, 1, 2, 3};
-        static_assert(same_as<decltype(views::take(R{some_writable_ints}, 99999)), ranges::take_view<R>>);
+    using R = test::range<output_iterator_tag, int, test::Sized::no, test::CanDifference::no, test::Common::no,
+        test::CanCompare::no, test::ProxyRef::yes, test::CanView::yes, test::Copyability::move_only>;
+    int some_writable_ints[] = {0, 1, 2, 3};
+    static_assert(same_as<decltype(views::take(R{some_writable_ints}, 99999)), ranges::take_view<R>>);
 
-        // How do I implement "Fill up to n elements in {output range} with {value}"?
-        ranges::fill(R{some_writable_ints} | views::take(99999), 42);
-        assert(ranges::equal(some_writable_ints, initializer_list<int>{42, 42, 42, 42}));
+    // How do I implement "Fill up to n elements in {output range} with {value}"?
+    ranges::fill(R{some_writable_ints} | views::take(99999), 42);
+    assert(ranges::equal(some_writable_ints, initializer_list<int>{42, 42, 42, 42}));
 
-        ranges::fill(R{some_writable_ints} | views::take(3), 13);
-        assert(ranges::equal(some_writable_ints, initializer_list<int>{13, 13, 13, 42}));
-    }
+    ranges::fill(R{some_writable_ints} | views::take(3), 13);
+    assert(ranges::equal(some_writable_ints, initializer_list<int>{13, 13, 13, 42}));
 }
 
 void test_DevCom_1397309() {

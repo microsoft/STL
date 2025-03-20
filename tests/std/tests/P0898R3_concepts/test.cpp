@@ -513,10 +513,8 @@ namespace test_convertible_to {
     static_assert(convertible_to<char (&)[], ConvertsFrom<char const*>>);
 
     // volatile array glvalues
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
     static_assert(convertible_to<int volatile (&)[42], int volatile (&)[42]>);
     static_assert(convertible_to<int volatile (&)[42][13], int volatile (&)[42][13]>);
-#endif // ^^^ no workaround ^^^
     static_assert(convertible_to<int volatile (&&)[42], int volatile (&&)[42]>);
     static_assert(convertible_to<int volatile (&&)[42][13], int volatile (&&)[42][13]>);
 
@@ -696,10 +694,8 @@ namespace test_common_reference_with {
     static_assert(test<SimpleBase, ConvertsFrom<int, SimpleBase>>());
 
     static_assert(test<int volatile&, int volatile&>());
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
     static_assert(test<int volatile (&)[42], int volatile (&)[42]>());
     static_assert(test<int volatile (&)[42][13], int volatile (&)[42][13]>());
-#endif // ^^^ no workaround ^^^
     static_assert(test<int volatile (&&)[42], int volatile (&&)[42]>());
     static_assert(test<int volatile (&&)[42][13], int volatile (&&)[42][13]>());
 } // namespace test_common_reference_with
@@ -2022,10 +2018,8 @@ namespace test_swappable_with {
 
     static_assert(test<int (&)[2][2], int (&)[2][2]>());
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
     static_assert(test<int volatile (&)[4], int volatile (&)[4]>());
     static_assert(test<int volatile (&)[3][4], int volatile (&)[3][4]>());
-#endif // ^^^ no workaround ^^^
 
     static_assert(test<MovableFriendSwap, MovableFriendSwap>() == is_permissive);
     static_assert(test<MovableFriendSwap&, MovableFriendSwap&>());

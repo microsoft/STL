@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <algorithm>
 #include <cstddef>
 #include <span>
@@ -261,7 +259,7 @@ void test_case_subspan_excessive_runtime_count_static_extent() {
 }
 
 void test_case_size_bytes_overflow() {
-    span<int> sp(begin(globalArray), static_cast<size_t>(-2)); // undefined behavior, not detected here
+    span<int> sp(begin(globalArray), static_cast<size_t>(-2)); // undefined behavior is detected here
     (void) sp.size_bytes(); // size of span in bytes exceeds std::numeric_limits<size_t>::max()
 }
 
@@ -330,11 +328,6 @@ int main(int argc, char* argv[]) {
         test_case_algorithm_incompatible_different_size,
         test_case_algorithm_incompatible_value_initialized,
         test_case_algorithm_incompatible_transposed,
-    });
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-
-    // _CONTAINER_DEBUG_LEVEL tests
-    exec.add_death_tests({
         test_case_constructor_first_count_incompatible_extent,
         test_case_constructor_first_last_incompatible_extent,
         test_case_constructor_range_incompatible_extent,
@@ -359,6 +352,7 @@ int main(int argc, char* argv[]) {
         test_case_front_empty_static_extent,
         test_case_back_empty_static_extent,
     });
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 
     return exec.run(argc, argv);
 }
