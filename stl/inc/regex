@@ -2925,7 +2925,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range2(const _Elem _Arg0, const _E
         _Node->_Small->_Mark(_Ex0);
     }
 
-    if (_Flags & regex_constants::collate || _Ex1 >= _Ex0) {
+    if ((_Flags & regex_constants::collate) || _Ex1 >= _Ex0) {
         if (_Ex1 - _Ex0 < _Get_tmax()) {
             for (; _Ex0 <= _Ex1; ++_Ex0) {
                 _Add_char_to_array(static_cast<_Elem>(_Ex0));
