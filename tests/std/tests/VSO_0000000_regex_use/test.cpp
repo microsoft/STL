@@ -875,11 +875,7 @@ void test_gh_5165_syntax_option(const syntax_option_type basic_or_grep) {
     g_regexTester.should_throw("^a|^**b", error_badrepeat, basic_or_grep);
 }
 
-void test_gh_5165() {
-    // GH-5165: Revise caret parsing in basic and grep mode
-    test_gh_5165_syntax_option(basic);
-    test_gh_5165_syntax_option(grep);
-
+void test_gh_5165_basic() {
     // test cases specific for basic regular expressions
     {
         const test_regex middle_nl(&g_regexTester, "^a\na", basic);
@@ -925,7 +921,9 @@ void test_gh_5165() {
     g_regexTester.should_not_match("a\n*b", "^a\n^*b", basic);
     g_regexTester.should_not_match("a\n^*b", "^a\n^*b", basic);
     g_regexTester.should_throw("^a\n^**b", error_badrepeat, basic);
+}
 
+void test_gh_5165_grep() {
     // test cases specific for grep mode
     {
         const test_regex middle_nl(&g_regexTester, "^a\na", grep);
@@ -996,6 +994,15 @@ void test_gh_5165() {
     g_regexTester.should_not_match("**b", "^a\n^*b", grep);
     g_regexTester.should_match("a", "^a\n^**b", grep);
     g_regexTester.should_match("****b", "^a\n^**b", grep);
+}
+
+void test_gh_5165() {
+    // GH-5165: Revise caret parsing in basic and grep mode
+    test_gh_5165_syntax_option(basic);
+    test_gh_5165_syntax_option(grep);
+
+    test_gh_5165_basic();
+    test_gh_5165_grep();
 }
 
 void test_gh_5167() {
