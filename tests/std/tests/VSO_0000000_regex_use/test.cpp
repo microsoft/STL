@@ -937,7 +937,7 @@ void test_gh_5165() {
     }
     {
         // This regular expression is not accepted by POSIX grep, but currently the regex parser does not reject it.
-        // If parser is changed to reject it, adjust this test case.
+        // If the parser is changed to reject it, adjust this test case.
         const test_regex group_middle_nl(&g_regexTester, "^\\(a\na\\)", grep);
         group_middle_nl.should_search_match("a\na", "a\na");
         group_middle_nl.should_search_fail("^a\na");
@@ -960,7 +960,7 @@ void test_gh_5165() {
     }
     {
         // This regular expression is not accepted by POSIX grep, but currently the regex parser does not reject it.
-        // If parser is changed to reject it, adjust this test case.
+        // If the parser is changed to reject it, adjust this test case.
         const test_regex group_middle_nl_with_caret(&g_regexTester, "^\\(a\n^b\\)", grep);
         group_middle_nl_with_caret.should_search_match("a\n^b", "a\n^b");
         group_middle_nl_with_caret.should_search_fail("a\nb");
