@@ -5,7 +5,6 @@
 #include <benchmark/benchmark.h>
 #include <cstddef>
 #include <cstdint>
-#include <limits>
 #include <vector>
 
 #include "skewed_allocator.hpp"
