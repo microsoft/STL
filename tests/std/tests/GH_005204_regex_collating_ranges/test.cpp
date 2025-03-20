@@ -118,6 +118,7 @@ void regex_with_locale_should_throw(const wstring& pattern, const string& locnam
                     L"\n",
                 pattern.c_str(), static_cast<unsigned int>(syntax), locname.c_str(),
                 static_cast<unsigned int>(e.code()), static_cast<unsigned int>(expected));
+            g_regexTester.fail_regex();
         }
     }
 }
