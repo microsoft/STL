@@ -20,7 +20,7 @@ template <class T, AlgType Alg>
 void bm(benchmark::State& state) {
     const auto size = static_cast<size_t>(state.range(0));
 
-    constexpr size_t count = 1;
+    constexpr size_t N = 1;
 
     constexpr T no_match{'-'};
     constexpr T match{'*'};
@@ -31,9 +31,9 @@ void bm(benchmark::State& state) {
 
     for (auto _ : state) {
         if constexpr (Alg == AlgType::Std) {
-            benchmark::DoNotOptimize(search_n(v.begin(), v.end(), count, match));
+            benchmark::DoNotOptimize(search_n(v.begin(), v.end(), N, match));
         } else if constexpr (Alg == AlgType::Rng) {
-            benchmark::DoNotOptimize(ranges::search_n(v, count, match));
+            benchmark::DoNotOptimize(ranges::search_n(v, N, match));
         }
     }
 }
