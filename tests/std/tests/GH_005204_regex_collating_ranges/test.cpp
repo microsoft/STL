@@ -107,7 +107,7 @@ void regex_with_locale_should_throw(const wstring& pattern, const string& locnam
     wregex r;
     r.imbue(locale{locname});
     try {
-        r.assign(pattern, regex_constants::collate);
+        r.assign(pattern, syntax);
         wprintf(LR"(regex r("%s", 0x%X) succeeded for locale "%hs" (which is bad).)"
                 L"\n",
             pattern.c_str(), static_cast<unsigned int>(syntax), locname.c_str());
