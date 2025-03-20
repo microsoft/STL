@@ -137,14 +137,14 @@ void test_collating_ranges_german() {
         for (const wstring& pattern : {L"[a-z]", L"[A-Z]", L"[A-z]"}) {
             {
                 test_wregex nocollate_nolocale(&g_regexTester, pattern);
-                for (const wchar_t* s : special_characters) {
+                for (const auto& s : special_characters) {
                     nocollate_nolocale.should_search_fail(s);
                 }
             }
 
             {
                 test_wregex_locale nocollate_locale(&g_regexTester, pattern, "de-DE");
-                for (const wchar_t* s : special_characters) {
+                for (const auto& s : special_characters) {
                     nocollate_locale.should_search_fail(s);
                 }
             }
@@ -183,7 +183,7 @@ void test_collating_ranges_german() {
         collate_a_to_a_regex.should_search_fail(L"\u00E4"); // U+00E4 LATIN SMALL LETTER A WITH DIARESIS
         collate_a_to_a_regex.should_search_fail(L"\u00C4"); // U+00C4 LATIN CAPITAL LETTER A WITH DIARESIS
         collate_a_to_a_regex.should_search_fail(L"b");
-        for (const wchar_t* s : special_characters_without_ae) {
+        for (const auto& s : special_characters_without_ae) {
             collate_a_to_a_regex.should_search_fail(s);
         }
     }
@@ -195,7 +195,7 @@ void test_collating_ranges_german() {
         collate_a_to_A_regex.should_search_fail(L"\u00E4"); // U+00E4 LATIN SMALL LETTER A WITH DIARESIS
         collate_a_to_A_regex.should_search_fail(L"\u00C4"); // U+00C4 LATIN CAPITAL LETTER A WITH DIARESIS
         collate_a_to_A_regex.should_search_fail(L"b");
-        for (const wchar_t* s : special_characters_without_ae) {
+        for (const auto& s : special_characters_without_ae) {
             collate_a_to_A_regex.should_search_fail(s);
         }
     }
@@ -209,7 +209,7 @@ void test_collating_ranges_german() {
         collate_a_to_ae_regex.should_search_match(L"\u00E4", L"\u00E4"); // U+00E4 LATIN SMALL LETTER A WITH DIARESIS
         collate_a_to_ae_regex.should_search_fail(L"\u00C4"); // U+00C4 LATIN CAPITAL LETTER A WITH DIARESIS
         collate_a_to_ae_regex.should_search_fail(L"b");
-        for (const wchar_t* s : special_characters_without_ae) {
+        for (const auto& s : special_characters_without_ae) {
             collate_a_to_ae_regex.should_search_fail(s);
         }
     }
@@ -223,7 +223,7 @@ void test_collating_ranges_german() {
         collate_a_to_Ae_regex.should_search_match(L"\u00E4", L"\u00E4"); // U+00E4 LATIN SMALL LETTER A WITH DIARESIS
         collate_a_to_Ae_regex.should_search_match(L"\u00C4", L"\u00C4"); // U+00C4 LATIN CAPITAL LETTER A WITH DIARESIS
         collate_a_to_Ae_regex.should_search_fail(L"b");
-        for (const wchar_t* s : special_characters_without_ae) {
+        for (const auto& s : special_characters_without_ae) {
             collate_a_to_Ae_regex.should_search_fail(s);
         }
     }
@@ -235,7 +235,7 @@ void test_collating_ranges_german() {
         collate_a_to_b_regex.should_search_match(L"\u00E4", L"\u00E4"); // U+00E4 LATIN SMALL LETTER A WITH DIARESIS
         collate_a_to_b_regex.should_search_match(L"\u00C4", L"\u00C4"); // U+00C4 LATIN CAPITAL LETTER A WITH DIARESIS
         collate_a_to_b_regex.should_search_match(L"b", L"b");
-        for (const wchar_t* s : special_characters_without_ae) {
+        for (const auto& s : special_characters_without_ae) {
             collate_a_to_b_regex.should_search_fail(s);
         }
     }
@@ -258,7 +258,7 @@ void test_collating_ranges_german() {
         collate_s_to_S_regex.should_search_fail(L"\u1E9E"); // U+1E9E LATIN CAPITAL LETTER SHARP S
         collate_s_to_S_regex.should_search_fail(L"t");
         collate_s_to_S_regex.should_search_fail(L"u");
-        for (const wchar_t* s : special_characters_without_sharp_s) {
+        for (const auto& s : special_characters_without_sharp_s) {
             collate_s_to_S_regex.should_search_fail(s);
         }
     }
@@ -274,7 +274,7 @@ void test_collating_ranges_german() {
         collate_s_to_sharp_s_regex.should_search_fail(L"\u1E9E"); // U+1E9E LATIN CAPITAL LETTER SHARP S
         collate_s_to_sharp_s_regex.should_search_fail(L"t");
         collate_s_to_sharp_s_regex.should_search_fail(L"u");
-        for (const wchar_t* s : special_characters_without_sharp_s) {
+        for (const auto& s : special_characters_without_sharp_s) {
             collate_s_to_sharp_s_regex.should_search_fail(s);
         }
     }
@@ -289,7 +289,7 @@ void test_collating_ranges_german() {
         collate_s_to_Sharp_S_regex.should_search_match(L"\u1E9E", L"\u1E9E"); // U+1E9E LATIN CAPITAL LETTER SHARP S
         collate_s_to_Sharp_S_regex.should_search_fail(L"t");
         collate_s_to_Sharp_S_regex.should_search_fail(L"u");
-        for (const wchar_t* s : special_characters_without_sharp_s) {
+        for (const auto& s : special_characters_without_sharp_s) {
             collate_s_to_Sharp_S_regex.should_search_fail(s);
         }
     }
@@ -303,7 +303,7 @@ void test_collating_ranges_german() {
         collate_s_to_t_regex.should_search_match(L"\u1E9E", L"\u1E9E"); // U+1E9E LATIN CAPITAL LETTER SHARP S
         collate_s_to_t_regex.should_search_match(L"t", L"t");
         collate_s_to_t_regex.should_search_fail(L"u");
-        for (const wchar_t* s : special_characters_without_sharp_s) {
+        for (const auto& s : special_characters_without_sharp_s) {
             collate_s_to_t_regex.should_search_fail(s);
         }
     }
@@ -317,7 +317,7 @@ void test_collating_ranges_german() {
         for (wchar_t ascii_lower = L'b'; ascii_lower <= 'z'; ++ascii_lower) {
             collate_A_to_z_regex.should_search_match(wstring(1, ascii_lower), wstring(1, ascii_lower));
         }
-        for (const wchar_t* s : special_characters) {
+        for (const auto& s : special_characters) {
             collate_A_to_z_regex.should_search_match(s, s);
         }
         collate_A_to_z_regex.should_search_fail(L"Z");
