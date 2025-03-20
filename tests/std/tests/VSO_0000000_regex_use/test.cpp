@@ -816,7 +816,7 @@ void test_gh_5165_syntax_option(const syntax_option_type basic_or_grep) {
     g_regexTester.should_match("***", R"(.*\(^**\))", basic_or_grep);
     g_regexTester.should_throw(R"(.*\(^***\))", error_badrepeat, basic_or_grep);
 
-    g_regexTester.should_match("*aa", R"(\(.*^*a*\))", basic_or_grep);
+    g_regexTester.should_match("*aa", R"(.*\(^*a*\))", basic_or_grep);
     g_regexTester.should_not_match("aa", R"(.*\(^*a*\))", basic_or_grep);
     g_regexTester.should_not_match("*a*", R"(.*\(^*a*\))", basic_or_grep);
     g_regexTester.should_not_match("^*a", R"(.*\(^*a*\))", basic_or_grep);
