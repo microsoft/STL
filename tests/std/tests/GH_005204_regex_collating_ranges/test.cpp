@@ -120,7 +120,7 @@ void regex_with_locale_should_throw(const wstring& pattern, const string& locnam
 void test_collating_ranges_german() {
 
     // special characters in German (umlauts and sharp s)
-    const wchar_t* special_characters[] = {
+    static constexpr const wchar_t* special_characters[] = {
         L"\u00E4", // U+00E4 LATIN SMALL LETTER A WITH DIARESIS
         L"\u00C4", // U+00C4 LATIN CAPITAL LETTER A WITH DIARESIS
         L"\u00DF", // U+00DF LATIN SMALL LETTER SHARP S
@@ -167,7 +167,7 @@ void test_collating_ranges_german() {
     // U+00DC LATIN CAPITAL LETTER U WITH DIARESIS,
     // v, V, ..., z, Z
 
-    const wchar_t* special_characters_without_ae[] = {
+    static constexpr const wchar_t* special_characters_without_ae[] = {
         L"\u00DF", // U+00DF LATIN SMALL LETTER SHARP S
         L"\u1E9E", // U+1E9E LATIN CAPITAL LETTER SHARP S
         L"\u00F6", // U+00F6 LATIN SMALL LETTER U WITH DIARESIS
@@ -240,7 +240,7 @@ void test_collating_ranges_german() {
         }
     }
 
-    const wchar_t* special_characters_without_sharp_s[] = {
+    static constexpr const wchar_t* special_characters_without_sharp_s[] = {
         L"\u00E4", // U+00E4 LATIN SMALL LETTER A WITH DIARESIS
         L"\u00C4", // U+00C4 LATIN CAPITAL LETTER A WITH DIARESIS
         L"\u00F6", // U+00F6 LATIN SMALL LETTER U WITH DIARESIS
