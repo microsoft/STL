@@ -317,10 +317,10 @@ void test_collating_ranges_german() {
     {
         test_wregex_locale collate_A_to_z_regex(&g_regexTester, L"[A-z]", "de-DE", regex_constants::collate);
         collate_A_to_z_regex.should_search_fail(L"a");
-        for (wchar_t ascii_upper = L'A'; ascii_upper < 'Z'; ++ascii_upper) {
+        for (wchar_t ascii_upper = L'A'; ascii_upper < L'Z'; ++ascii_upper) {
             collate_A_to_z_regex.should_search_match(wstring(1, ascii_upper), wstring(1, ascii_upper));
         }
-        for (wchar_t ascii_lower = L'b'; ascii_lower <= 'z'; ++ascii_lower) {
+        for (wchar_t ascii_lower = L'b'; ascii_lower <= L'z'; ++ascii_lower) {
             collate_A_to_z_regex.should_search_match(wstring(1, ascii_lower), wstring(1, ascii_lower));
         }
         for (const auto& s : special_characters) {
