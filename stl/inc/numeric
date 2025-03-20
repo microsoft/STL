@@ -671,10 +671,9 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> gcd(const _Mt _Mx, const _Nt _Nx) n
 #endif // ^^^ !defined(_DEBUG) ^^^
         {
             constexpr auto _Min_common = _STD _Min_limit<_Common>();
-            if (_Mx == _Min_common || _Nx == _Min_common) {
-                _STL_REPORT_ERROR("Preconditions: |m| and |n| are representable as a value of common_type_t<M, N>. "
-                                  "(N4981 [numeric.ops.gcd]/2, N4981 [numeric.ops.lcm]/2)");
-            }
+            _STL_VERIFY(_Mx != _Min_common && _Nx != _Min_common,
+                "Preconditions: |m| and |n| are representable as a value of common_type_t<M, N>. "
+                "(N4981 [numeric.ops.gcd]/2, N4981 [numeric.ops.lcm]/2)");
         }
     }
 
@@ -731,11 +730,10 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> lcm(const _Mt _Mx, const _Nt _Nx) n
 
     _Common_unsigned _Result = 0;
     _Common_unsigned _Tmp    = static_cast<_Common_unsigned>(_Mx_magnitude / _STD gcd(_Mx_magnitude, _Nx_magnitude));
+    const bool _Overflow     = _Mul_overflow(_Tmp, _Nx_magnitude, _Result) || !_In_range<_Common>(_Result);
 
-    if (_Mul_overflow(_Tmp, _Nx_magnitude, _Result) || !_In_range<_Common>(_Result)) {
-        _STL_REPORT_ERROR("Preconditions: The least common multiple of |m| and |n| is representable as a value of "
-                          "type common_type_t<M, N>. (N4981 [numeric.ops.lcm]/2)");
-    }
+    _STL_VERIFY(!_Overflow, "Preconditions: The least common multiple of |m| and |n| is representable as a value of "
+                            "type common_type_t<M, N>. (N4981 [numeric.ops.lcm]/2)");
 
     return static_cast<_Common>(_Result);
 }

@@ -18,10 +18,11 @@ $VMSize = 'Standard_F32as_v6'
 $ProtoVMName = 'PROTOTYPE'
 $ImagePublisher = 'MicrosoftWindowsServer'
 $ImageOffer = 'WindowsServer'
-$ImageSku = '2025-datacenter-g2'
+$ImageSku = '2025-datacenter-azure-edition'
 
+$LogFile = '1es-hosted-pool.log'
 $ProgressActivity = 'Preparing STL CI pool'
-$TotalProgress = 26
+$TotalProgress = 38
 $CurrentProgress = 1
 
 <#
@@ -78,13 +79,13 @@ $Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
 
 Update-AzConfig `
   -DisplayBreakingChangeWarning $false `
-  -Scope 'Process' | Out-Null
+  -Scope 'Process' >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Setting the subscription context'
 
 Set-AzContext `
-  -SubscriptionName 'CPP_STL_GitHub' | Out-Null
+  -SubscriptionName 'CPP_STL_GitHub' >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Creating resource group'
@@ -93,7 +94,7 @@ $ResourceGroupName = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 
 New-AzResourceGroup `
   -Name $ResourceGroupName `
-  -Location $Location | Out-Null
+  -Location $Location >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Creating credentials'
@@ -102,7 +103,30 @@ $AdminPWSecure = New-Password
 $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
 
 ####################################################################################################
-Display-ProgressBar -Status 'Creating virtual network'
+Display-ProgressBar -Status 'Creating public IP address'
+
+$PublicIpAddressName = $ResourceGroupName + '-PublicIpAddress'
+$PublicIpAddress = New-AzPublicIpAddress `
+  -Name $PublicIpAddressName `
+  -ResourceGroupName $ResourceGroupName `
+  -Location $Location `
+  -Sku 'Standard' `
+  -AllocationMethod 'Static'
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating NAT gateway'
+
+$NatGatewayName = $ResourceGroupName + '-NatGateway'
+$NatGateway = New-AzNatGateway `
+  -Name $NatGatewayName `
+  -ResourceGroupName $ResourceGroupName `
+  -Location $Location `
+  -IdleTimeoutInMinutes 10 `
+  -Sku 'Standard' `
+  -PublicIpAddress $PublicIpAddress
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating network security group'
 
 $NetworkSecurityGroupName = $ResourceGroupName + '-NetworkSecurity'
 $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
@@ -110,11 +134,22 @@ $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location
 
+####################################################################################################
+Display-ProgressBar -Status 'Creating virtual network subnet config'
+
+# TRANSITION, 2025-09-30: "On September 30, 2025, default outbound access for new deployments will be retired."
+# https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/default-outbound-access
+# We're using `-DefaultOutboundAccess $false` to opt-in early.
 $SubnetName = $ResourceGroupName + '-Subnet'
 $Subnet = New-AzVirtualNetworkSubnetConfig `
   -Name $SubnetName `
   -AddressPrefix '10.0.0.0/16' `
+  -DefaultOutboundAccess $false `
+  -NatGateway $NatGateway `
   -NetworkSecurityGroup $NetworkSecurityGroup
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating virtual network'
 
 $VirtualNetworkName = $ResourceGroupName + '-Network'
 $VirtualNetwork = New-AzVirtualNetwork `
@@ -135,7 +170,7 @@ $Nic = New-AzNetworkInterface `
   -Subnet $VirtualNetwork.Subnets[0]
 
 ####################################################################################################
-Display-ProgressBar -Status 'Creating prototype VM'
+Display-ProgressBar -Status 'Creating prototype VM config'
 
 # Previously: -Priority 'Spot'
 $VM = New-AzVMConfig `
@@ -144,6 +179,9 @@ $VM = New-AzVMConfig `
   -DiskControllerType 'NVMe' `
   -Priority 'Regular'
 
+####################################################################################################
+Display-ProgressBar -Status 'Setting prototype VM OS'
+
 $VM = Set-AzVMOperatingSystem `
   -VM $VM `
   -Windows `
@@ -151,9 +189,15 @@ $VM = Set-AzVMOperatingSystem `
   -Credential $Credential `
   -ProvisionVMAgent
 
+####################################################################################################
+Display-ProgressBar -Status 'Adding prototype VM network interface'
+
 $VM = Add-AzVMNetworkInterface `
   -VM $VM `
   -Id $Nic.Id
+
+####################################################################################################
+Display-ProgressBar -Status 'Setting prototype VM source image'
 
 $VM = Set-AzVMSourceImage `
   -VM $VM `
@@ -162,14 +206,23 @@ $VM = Set-AzVMSourceImage `
   -Skus $ImageSku `
   -Version 'latest'
 
+####################################################################################################
+Display-ProgressBar -Status 'Setting prototype VM boot diagnostic'
+
 $VM = Set-AzVMBootDiagnostic `
   -VM $VM `
   -Disable
 
+####################################################################################################
+Display-ProgressBar -Status 'Creating prototype VM'
+
 New-AzVm `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
-  -VM $VM | Out-Null
+  -VM $VM >> $LogFile
+
+####################################################################################################
+Display-ProgressBar -Status 'Getting prototype VM OS disk name'
 
 $VM = Get-AzVM `
   -ResourceGroupName $ResourceGroupName `
@@ -192,7 +245,7 @@ if ($ProvisionImageResult.value.Message -cnotmatch 'PROVISION_IMAGE_SUCCEEDED') 
 
   Stop-AzVM `
     -Id $VM.ID `
-    -Force | Out-Null
+    -Force >> $LogFile
 
   Write-Error "VM stopped. Remember to delete unusable resource group: $ResourceGroupName"
 }
@@ -201,7 +254,7 @@ if ($ProvisionImageResult.value.Message -cnotmatch 'PROVISION_IMAGE_SUCCEEDED') 
 Display-ProgressBar -Status 'Restarting VM'
 
 Restart-AzVM `
-  -Id $VM.ID | Out-Null
+  -Id $VM.ID >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Sleeping after restart'
@@ -216,7 +269,7 @@ Display-ProgressBar -Status 'Running sysprep in VM'
 Invoke-AzVMRunCommand `
   -ResourceId $VM.ID `
   -CommandId 'RunPowerShellScript' `
-  -ScriptString 'C:\Windows\system32\sysprep\sysprep.exe /oobe /generalize /mode:vm /shutdown' | Out-Null
+  -ScriptString 'C:\Windows\system32\sysprep\sysprep.exe /oobe /generalize /mode:vm /shutdown' >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Waiting for VM to shut down'
@@ -230,14 +283,14 @@ Display-ProgressBar -Status 'Stopping VM'
 
 Stop-AzVM `
   -Id $VM.ID `
-  -Force | Out-Null
+  -Force >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Generalizing VM'
 
 Set-AzVM `
   -Id $VM.ID `
-  -Generalized | Out-Null
+  -Generalized >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Creating gallery'
@@ -256,7 +309,7 @@ $ServicePrincipalObjectId = (Get-AzADServicePrincipal -DisplayName '1ES Resource
 New-AzRoleAssignment `
   -ObjectId $ServicePrincipalObjectId `
   -RoleDefinitionName 'Reader' `
-  -Scope $Gallery.Id | Out-Null
+  -Scope $Gallery.Id >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Creating image definition'
@@ -276,7 +329,7 @@ New-AzGalleryImageDefinition `
   -Offer $ImageOffer `
   -Sku $ImageSku `
   -Feature $ImageDefinitionFeatures `
-  -HyperVGeneration 'V2' | Out-Null
+  -HyperVGeneration 'V2' >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Creating image version'
@@ -294,7 +347,7 @@ $ImageVersion = New-AzGalleryImageVersion `
 Display-ProgressBar -Status 'Registering CloudTest resource provider'
 
 Register-AzResourceProvider `
-  -ProviderNamespace 'Microsoft.CloudTest' | Out-Null
+  -ProviderNamespace 'Microsoft.CloudTest' >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Creating 1ES image'
@@ -306,7 +359,7 @@ New-AzResource `
   -ResourceType 'Microsoft.CloudTest/Images' `
   -ResourceName $ImageName `
   -Properties @{ 'imageType' = 'SharedImageGallery'; 'resourceId' = $ImageVersion.Id; } `
-  -Force | Out-Null
+  -Force >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Creating 1ES Hosted Pool'
@@ -328,14 +381,14 @@ New-AzResource `
   -ResourceType 'Microsoft.CloudTest/hostedpools' `
   -ResourceName $PoolName `
   -Properties $PoolProperties `
-  -Force | Out-Null
+  -Force >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Deleting unused VM'
 
 Remove-AzVM `
   -Id $VM.ID `
-  -Force | Out-Null
+  -Force >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Deleting unused disk'
@@ -343,31 +396,47 @@ Display-ProgressBar -Status 'Deleting unused disk'
 Remove-AzDisk `
   -ResourceGroupName $ResourceGroupName `
   -DiskName $PrototypeOSDiskName `
-  -Force | Out-Null
+  -Force >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Deleting unused network interface'
 
 Remove-AzNetworkInterface `
--ResourceGroupName $ResourceGroupName `
--Name $NicName `
--Force | Out-Null
+  -ResourceGroupName $ResourceGroupName `
+  -Name $NicName `
+  -Force >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Deleting unused virtual network'
 
 Remove-AzVirtualNetwork `
--ResourceGroupName $ResourceGroupName `
--Name $VirtualNetworkName `
--Force | Out-Null
+  -ResourceGroupName $ResourceGroupName `
+  -Name $VirtualNetworkName `
+  -Force >> $LogFile
 
 ####################################################################################################
 Display-ProgressBar -Status 'Deleting unused network security group'
 
 Remove-AzNetworkSecurityGroup `
--ResourceGroupName $ResourceGroupName `
--Name $NetworkSecurityGroupName `
--Force | Out-Null
+  -ResourceGroupName $ResourceGroupName `
+  -Name $NetworkSecurityGroupName `
+  -Force >> $LogFile
+
+####################################################################################################
+Display-ProgressBar -Status 'Deleting unused NAT gateway'
+
+Remove-AzNatGateway `
+  -ResourceGroupName $ResourceGroupName `
+  -Name $NatGatewayName `
+  -Force >> $LogFile
+
+####################################################################################################
+Display-ProgressBar -Status 'Deleting unused public IP address'
+
+Remove-AzPublicIpAddress `
+  -ResourceGroupName $ResourceGroupName `
+  -Name $PublicIpAddressName `
+  -Force >> $LogFile
 
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed

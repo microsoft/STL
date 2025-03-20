@@ -2145,6 +2145,8 @@ _NODISCARD _OutputIt _Fmt_write(
     case 'g':
         if (_Precision == -1) {
             _Precision = 6;
+        } else if (_Precision == 0) {
+            _Precision = 1;
         }
         _Format = chars_format::general;
         break;
@@ -2698,7 +2700,7 @@ struct _Arg_formatter {
     _Basic_format_specs<_CharT>* _Specs = nullptr;
 
     _OutputIt operator()(basic_format_arg<_Context>::handle) {
-        _STL_VERIFY(false, "The custom handler should be structurally unreachable for _Arg_formatter");
+        _STL_REPORT_ERROR("The custom handler should be structurally unreachable for _Arg_formatter");
         _STL_INTERNAL_CHECK(_Ctx);
         return _Ctx->out();
     }
@@ -3543,7 +3545,7 @@ _NODISCARD _FormatContext::iterator _Tuple_formatter_format(const tuple<formatte
 
     const int _Width = _STD _Measure_display_width<_CharT>(_Tmp_str);
     return _STD _Write_aligned(
-        _Fmt_ctx.out(), _Width, _Format_specs, _Fmt_align::_Left, [&](typename _FormatContext::iterator _Out) {
+        _Fmt_ctx.out(), _Width, _Format_specs, _Fmt_align::_Left, [&](_FormatContext::iterator _Out) {
             return _STD _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Tmp_str});
         });
 }
