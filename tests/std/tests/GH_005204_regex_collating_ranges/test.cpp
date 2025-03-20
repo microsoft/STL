@@ -31,6 +31,7 @@ using namespace std;
 using namespace std::regex_constants;
 
 class test_wregex_locale {
+private:
     regex_fixture* const fixture;
     const wstring pattern;
     const string locname;
