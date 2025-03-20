@@ -3861,7 +3861,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
 #if _HAS_CXX20
     if (_STD is_constant_evaluated()) {
         if (_Dest._Myoff == _First._Myoff) {
-            const auto _FirstSourceVal = (*_VbFirst & _FirstSourceMask);
+            const auto _FirstSourceVal = *_VbFirst & _FirstSourceMask;
             *_VbDest                   = (*_VbDest & _FirstDestMask) | _FirstSourceVal;
 
             ++_VbFirst;
@@ -3871,7 +3871,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
             }
 
             if (_Last._Myoff != 0) {
-                const auto _SourceVal = (*_VbFirst & _LastSourceMask);
+                const auto _SourceVal = *_VbFirst & _LastSourceMask;
                 *_VbDest              = (*_VbDest & _LastDestMask) | _SourceVal;
             }
 
