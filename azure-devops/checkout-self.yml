@@ -11,6 +11,7 @@ steps:
   submodules: false
   fetchDepth: 1
   fetchTags: false
+  retryCountOnTaskFailure: 4
 - script: |
     git clean --quiet -x -d -f -f
   displayName: 'Clean after checkout'

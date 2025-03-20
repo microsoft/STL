@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <cassert>
 #include <cstddef>
 #include <ranges>
@@ -179,11 +177,6 @@ int main(int argc, char* argv[]) {
         test_iter_swap_value_initialized_iterators,
         test_iter_swap_value_initialized_iterator_left,
         test_iter_swap_value_initialized_iterator_right,
-    });
-#else // ^^^ test everything / test only _CONTAINER_DEBUG_LEVEL cases vvv
-    exec.add_death_tests({
-        test_view_predicate,
-        test_view_begin,
     });
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 

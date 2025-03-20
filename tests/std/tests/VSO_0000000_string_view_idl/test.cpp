@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <cstddef>
 #include <string_view>
 
@@ -187,13 +185,17 @@ void test_case_remove_suffix_incompatible() {
 void test_case_Copy_s() {
     string_view sv("text");
     char buffer[2];
-#pragma warning(suppress : 28020) // yay PREfast catches this mistake at compile time!
+#pragma warning(push)
+#pragma warning(disable : 28020) // yay PREfast catches this mistake at compile time!
     sv._Copy_s(buffer, 2, 4); // CRT invalid parameter handler (memcpy_s failed)
+#pragma warning(pop)
 }
 
 void test_case_null_constructor() {
-#pragma warning(suppress : 6387) // yay PREfast catches this mistake at compile time!
+#pragma warning(push)
+#pragma warning(disable : 6387) // yay PREfast catches this mistake at compile time!
     string_view sv(nullptr, 1); // non-zero size null string_view
+#pragma warning(pop)
     (void) sv;
 }
 
@@ -233,21 +235,21 @@ int main(int argc, char* argv[]) {
         test_case_operator_equal_incompatible_value_initialized,
         test_case_operator_less_incompatible_different_views,
         test_case_operator_less_incompatible_value_initialized,
-        test_case_remove_prefix_incompatible,
-        test_case_remove_suffix_incompatible,
-    });
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-
-    exec.add_death_tests({
-        // These tests are turned on for _ITERATOR_DEBUG_LEVEL == 0 as part of
-        // VSO-830211 "Macro to enable runtime bounds checking for subscript operator for STL containers"
         test_case_operator_subscript_out_of_range,
         test_case_front_empty,
         test_case_back_empty,
         test_case_remove_prefix_too_large,
         test_case_remove_suffix_too_large,
-        test_case_Copy_s,
+        test_case_remove_prefix_incompatible,
+        test_case_remove_suffix_incompatible,
         test_case_null_constructor,
+    });
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+    // basic_string_view::_Copy_s() is a non-Standard extension that's unconditionally checked.
+    // See: https://learn.microsoft.com/en-us/cpp/standard-library/basic-string-view-class?view=msvc-170#_copy_s
+    exec.add_death_tests({
+        test_case_Copy_s,
     });
 
     return exec.run(argc, argv);

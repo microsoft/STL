@@ -251,14 +251,7 @@ public:
     }
 
     shared_lock& operator=(shared_lock&& _Right) noexcept {
-        if (_Owns) {
-            _Pmtx->unlock_shared();
-        }
-
-        _Pmtx        = _Right._Pmtx;
-        _Owns        = _Right._Owns;
-        _Right._Pmtx = nullptr;
-        _Right._Owns = false;
+        shared_lock{_STD move(_Right)}.swap(*this);
         return *this;
     }
 

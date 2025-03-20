@@ -174,8 +174,8 @@ template <_Iterator_for_container _InIt, _Allocator_for_container _Alloc = alloc
 queue(_InIt, _InIt, _Alloc = _Alloc()) -> queue<_Iter_value_t<_InIt>, deque<_Iter_value_t<_InIt>, _Alloc>>;
 
 template <_RANGES input_range _Rng, _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
-queue(from_range_t, _Rng&&,
-    _Alloc = _Alloc()) -> queue<_RANGES range_value_t<_Rng>, deque<_RANGES range_value_t<_Rng>, _Alloc>>;
+queue(from_range_t, _Rng&&, _Alloc = _Alloc())
+    -> queue<_RANGES range_value_t<_Rng>, deque<_RANGES range_value_t<_Rng>, _Alloc>>;
 #endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Ty, class _Container>
@@ -450,8 +450,8 @@ priority_queue(_Pr, _Container) -> priority_queue<typename _Container::value_typ
 template <class _Iter, class _Pr = less<_Iter_value_t<_Iter>>, class _Container = vector<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, negation<_Is_allocator<_Pr>>, negation<_Is_allocator<_Container>>>,
         int> = 0>
-priority_queue(
-    _Iter, _Iter, _Pr = _Pr(), _Container = _Container()) -> priority_queue<_Iter_value_t<_Iter>, _Container, _Pr>;
+priority_queue(_Iter, _Iter, _Pr = _Pr(), _Container = _Container())
+    -> priority_queue<_Iter_value_t<_Iter>, _Container, _Pr>;
 
 template <class _Pr, class _Container, class _Alloc,
     enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, negation<_Is_allocator<_Container>>,
@@ -469,23 +469,23 @@ priority_queue(_Iter, _Iter, _Compare, _Alloc) -> priority_queue<_Iter_value_t<_
 
 template <class _Iter, class _Compare, class _Container, class _Alloc,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, uses_allocator<_Container, _Alloc>>, int> = 0>
-priority_queue(_Iter, _Iter, _Compare, _Container,
-    _Alloc) -> priority_queue<typename _Container::value_type, _Container, _Compare>;
+priority_queue(_Iter, _Iter, _Compare, _Container, _Alloc)
+    -> priority_queue<typename _Container::value_type, _Container, _Compare>;
 
 #if _HAS_CXX23
 template <_RANGES input_range _Rng, class _Pr = less<_RANGES range_value_t<_Rng>>,
     enable_if_t<!_Is_allocator<_Pr>::value, int> = 0>
-priority_queue(from_range_t, _Rng&&,
-    _Pr = _Pr()) -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>>, _Pr>;
+priority_queue(from_range_t, _Rng&&, _Pr = _Pr())
+    -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>>, _Pr>;
 
 template <_RANGES input_range _Rng, class _Pr, class _Alloc,
     enable_if_t<conjunction_v<negation<_Is_allocator<_Pr>>, _Is_allocator<_Alloc>>, int> = 0>
-priority_queue(from_range_t, _Rng&&, _Pr,
-    _Alloc) -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>, _Alloc>, _Pr>;
+priority_queue(from_range_t, _Rng&&, _Pr, _Alloc)
+    -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>, _Alloc>, _Pr>;
 
 template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
-priority_queue(from_range_t, _Rng&&,
-    _Alloc) -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>, _Alloc>>;
+priority_queue(from_range_t, _Rng&&, _Alloc)
+    -> priority_queue<_RANGES range_value_t<_Rng>, vector<_RANGES range_value_t<_Rng>, _Alloc>>;
 #endif // _HAS_CXX23
 #endif // _HAS_CXX17
 

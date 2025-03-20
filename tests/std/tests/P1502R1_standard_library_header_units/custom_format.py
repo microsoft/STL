@@ -62,9 +62,7 @@ class CustomTestFormat(STLTestFormat):
             # Generate JSON files that record how these headers depend on one another.
             if noisyProgress:
                 print('Scanning dependencies...')
-            cmd = [test.cxx, *test.flags, *test.compileFlags, *clOptions, '/scanDependencies', '.\\',
-                '/shallowScan', # TRANSITION, VSO-2293247 fixed in VS 2022 17.13 Preview 3 (remove /shallowScan)
-                *allHeaders]
+            cmd = [test.cxx, *test.flags, *test.compileFlags, *clOptions, '/scanDependencies', '.\\', *allHeaders]
             yield TestStep(cmd, shared.execDir, shared.env, False)
 
             # The JSON files also record what object files will be produced.

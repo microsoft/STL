@@ -29,8 +29,10 @@ void test_case() {
     assert(fake_bit_cast<MatchingUInt>(pos0d) == 0);
     const auto neg0d = static_cast<Floating>(0.0 * -1.0);
     assert(fake_bit_cast<MatchingUInt>(neg0d) == topBitSet);
-#pragma warning(suppress : 6326) // potential comparison of a constant with another constant
+#pragma warning(push)
+#pragma warning(disable : 6326) // potential comparison of a constant with another constant
     assert(pos0d == neg0d);
+#pragma warning(pop)
     assert(hash<Floating>()(pos0d) == hash<Floating>()(neg0d));
 
     array<size_t, 15> a{{
