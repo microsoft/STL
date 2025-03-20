@@ -70,7 +70,9 @@ public:
         } catch (const regex_error& e) {
             wprintf(LR"(Failed to regex_search("%s", regex("%s", 0x%X), 0x%X))", subject.c_str(), pattern.c_str(),
                 static_cast<unsigned int>(syntax), static_cast<unsigned int>(match_flags));
-            printf(" for locale \"%s\": regex_error: \"%s\"\n", locname.c_str(), e.what());
+            printf(R"( for locale "%s": regex_error: "%s")"
+                   "\n",
+                locname.c_str(), e.what());
             fixture->fail_regex();
         }
     }
@@ -89,7 +91,9 @@ public:
         } catch (const regex_error& e) {
             wprintf(LR"(Failed to regex_search("%s", regex("%s", 0x%X), 0x%X))", subject.c_str(), pattern.c_str(),
                 static_cast<unsigned int>(syntax), static_cast<unsigned int>(match_flags));
-            printf(" for locale \"%s\": regex_error: \"%s\"\n", locname.c_str(), e.what());
+            printf(R"( for locale "%s": regex_error: "%s")"
+                   "\n",
+                locname.c_str(), e.what());
             fixture->fail_regex();
         }
     }
