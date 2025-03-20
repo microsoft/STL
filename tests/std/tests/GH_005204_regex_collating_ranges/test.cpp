@@ -41,7 +41,7 @@ public:
     test_wregex_locale(regex_fixture* const fixture_, const wstring& pattern_, const string& locname_,
         const syntax_option_type syntax_ = ECMAScript)
         : fixture(fixture_), pattern(pattern_), locname(locname_), syntax(syntax_), r() {
-        r.imbue(locale(locname));
+        r.imbue(locale{locname});
         r.assign(pattern, syntax);
     }
 
@@ -100,7 +100,7 @@ regex_fixture g_regexTester;
 void regex_with_locale_should_throw(const wstring& pattern, const string& locname, const error_type expected,
     const syntax_option_type syntax = regex_constants::collate) {
     wregex r;
-    r.imbue(locale(locname));
+    r.imbue(locale{locname});
     try {
         r.assign(pattern, regex_constants::collate);
         wprintf(LR"(regex r("%s", 0x%X) succeeded for locale "%hs" (which is bad).)"
