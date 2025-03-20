@@ -833,7 +833,7 @@ void test_gh_5165_syntax_option(const syntax_option_type basic_or_grep) {
         middle_bar.should_search_fail("a");
     }
     {
-        const test_regex group_middle_bar(&g_regexTester, "^\\(a|a\\)", basic_or_grep);
+        const test_regex group_middle_bar(&g_regexTester, R"(^\(a|a\))", basic_or_grep);
         group_middle_bar.should_search_match("a|a", "a|a");
         group_middle_bar.should_search_fail("^a|a");
         group_middle_bar.should_search_fail("ba|a");
@@ -849,7 +849,7 @@ void test_gh_5165_syntax_option(const syntax_option_type basic_or_grep) {
         middle_bar_with_caret.should_search_fail("b");
     }
     {
-        const test_regex group_middle_bar_with_caret(&g_regexTester, "^\\(a|^b\\)", basic_or_grep);
+        const test_regex group_middle_bar_with_caret(&g_regexTester, R"(^\(a|^b\))", basic_or_grep);
         group_middle_bar_with_caret.should_search_match("a|^b", "a|^b");
         group_middle_bar_with_caret.should_search_fail("a|b");
         group_middle_bar_with_caret.should_search_fail("^a|^b");
