@@ -275,7 +275,7 @@ public:
             } else {
                 bool submatches_success = true;
                 for (std::size_t i = 1U; i < mr.size(); ++i) {
-                    const auto& expected_capture = *(capture_groups.begin() + (i - 1));
+                    const auto& expected_capture = capture_groups.begin()[i - 1];
                     const auto& actual_capture   = mr[i];
                     if (expected_capture.first == -1) {
                         if (actual_capture.matched) {
