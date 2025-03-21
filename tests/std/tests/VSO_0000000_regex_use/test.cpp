@@ -599,8 +599,8 @@ void test_gh_731() {
         ecma_regex.should_search_match_capture_groups("ddbacccd", "ddbacc", match_default, {{2, 6}});
     }
     for (syntax_option_type option : {extended, egrep, awk}) {
-        const test_regex ecma_regex(&g_regexTester, ".*(a|bacc|baccc)", option);
-        ecma_regex.should_search_match_capture_groups("ddbacccd", "ddbaccc", match_default, {{2, 7}});
+        const test_regex posix_regex(&g_regexTester, ".*(a|bacc|baccc)", option);
+        posix_regex.should_search_match_capture_groups("ddbacccd", "ddbaccc", match_default, {{2, 7}});
     }
 
     for (syntax_option_type option : {extended, egrep, awk}) {
