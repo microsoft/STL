@@ -2954,7 +2954,7 @@ namespace {
 
     struct _Search_n_traits_4 : _Find_traits_4 {
         using _MskX_t                         = uint32_t;
-        static constexpr size_t _Max_count    = 8;
+        static constexpr size_t _Max_count    = 4;
         static constexpr size_t _Scale        = 1;
         static constexpr size_t _Carry_adjust = 8;
 
@@ -2965,7 +2965,7 @@ namespace {
 
     struct _Search_n_traits_8 : _Find_traits_8 {
         using _MskX_t                         = uint32_t;
-        static constexpr size_t _Max_count    = 4;
+        static constexpr size_t _Max_count    = 2;
         static constexpr size_t _Scale        = 1;
         static constexpr size_t _Carry_adjust = 4;
 
@@ -2989,7 +2989,7 @@ namespace {
         if (_Count <= _Traits::_Max_count && _Length >= 32 && _Use_avx2()) {
             constexpr auto _Max_bits = _Traits::_Max_count * _Traits::_Scale;
             const size_t _Bits_count = _Count * _Traits::_Scale;
-            const size_t _Sh1        = _Bits_count < 4 ? _Bits_count - 2 : 2;
+            const size_t _Sh1        = _Max_bits > 2 ? (_Bits_count < 4 ? _Bits_count - 2 : 2) : 0;
             const size_t _Sh2 = _Max_bits > 4 ? (_Bits_count < 4 ? 0 : (_Bits_count < 8 ? _Bits_count - 4 : 4)) : 0;
             const size_t _Sh3 = _Max_bits > 8 ? (_Bits_count < 8 ? 0 : _Bits_count - 8) : 0;
 
@@ -3008,7 +3008,9 @@ namespace {
                 _MskX_t _MskX = _MskX_t{_Carry} | (_MskX_t{_Mask} << _Traits::_Carry_adjust);
                 if constexpr (_Traits::_Scale == 1) {
                     _MskX = (_MskX >> 1) & _MskX;
-                    _MskX = (_MskX >> _Sh1) & _MskX;
+                    if constexpr (_Max_bits > 2) {
+                        _MskX = (_MskX >> _Sh1) & _MskX;
+                    }
                 } else if constexpr (_Traits::_Scale == 2) {
                     _MskX = (_MskX >> 2) & _MskX;
                 }
