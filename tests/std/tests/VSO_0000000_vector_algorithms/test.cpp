@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
+#include <array>
 #include <bitset>
 #include <cassert>
 #include <climits>
@@ -759,6 +760,78 @@ void test_remove(mt19937_64& gen) {
     }
 }
 
+template <class FwdIt>
+FwdIt last_known_good_unique(FwdIt first, FwdIt last) {
+    if (first == last) {
+        return first;
+    }
+
+    FwdIt dest = first;
+    ++first;
+
+    while (first != last) {
+        if (*first != *dest) {
+            ++dest;
+            *dest = *first;
+        }
+
+        ++first;
+    }
+
+    ++dest;
+    return dest;
+}
+
+template <class T>
+void test_case_unique(vector<T>& in_out_expected, vector<T>& in_out_actual, vector<T>& in_out_actual_r) {
+    auto un_expected = last_known_good_unique(in_out_expected.begin(), in_out_expected.end());
+    auto un_actual   = unique(in_out_actual.begin(), in_out_actual.end());
+    assert(equal(in_out_expected.begin(), un_expected, in_out_actual.begin(), un_actual));
+
+#if _HAS_CXX20
+    auto un_actual_r = ranges::unique(in_out_actual_r);
+    assert(equal(in_out_expected.begin(), un_expected, begin(in_out_actual_r), begin(un_actual_r)));
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    (void) in_out_actual_r;
+#endif // ^^^ !_HAS_CXX20 ^^^
+}
+
+template <class T>
+void test_unique(mt19937_64& gen) {
+    constexpr int number_of_values = 5;
+
+    struct unused_t {};
+
+    conditional_t<is_pointer_v<T>, array<remove_pointer_t<T>, number_of_values>, unused_t> ptr_val_array{};
+
+    using TD = conditional_t<sizeof(T) == 1 || is_pointer_v<T>, int, T>;
+    binomial_distribution<TD> dis(number_of_values);
+
+    vector<T> source;
+    vector<T> in_out_expected;
+    vector<T> in_out_actual;
+    vector<T> in_out_actual_r;
+
+    for (const auto& v : {&source, &in_out_expected, &in_out_actual, &in_out_actual_r}) {
+        v->reserve(dataCount);
+    }
+
+    test_case_unique(in_out_expected, in_out_actual, in_out_actual_r);
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        if constexpr (is_pointer_v<T>) {
+            source.push_back(ptr_val_array.data() + dis(gen));
+        } else {
+            source.push_back(static_cast<T>(dis(gen)));
+        }
+
+        for (const auto& v : {&in_out_expected, &in_out_actual, &in_out_actual_r}) {
+            *v = source;
+        }
+
+        test_case_unique(in_out_expected, in_out_actual, in_out_actual_r);
+    }
+}
+
 template <class T>
 void test_swap_ranges(mt19937_64& gen) {
     const auto fn = [&]() { return static_cast<T>(gen()); };
@@ -962,6 +1035,18 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_remove<unsigned int>(gen);
     test_remove<long long>(gen);
     test_remove<unsigned long long>(gen);
+
+    test_unique<char>(gen);
+    test_unique<signed char>(gen);
+    test_unique<unsigned char>(gen);
+    test_unique<short>(gen);
+    test_unique<unsigned short>(gen);
+    test_unique<int>(gen);
+    test_unique<unsigned int>(gen);
+    test_unique<long long>(gen);
+    test_unique<unsigned long long>(gen);
+
+    test_unique<long*>(gen);
 
     test_swap_ranges<char>(gen);
     test_swap_ranges<short>(gen);
