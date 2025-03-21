@@ -659,7 +659,7 @@ static const regex_test tests[] = {
     {__LINE__, T("a[a-z]\\{2,4\\}"), T("abcdefghi"), "1 0 5", BASIC | GREP},
     {__LINE__, T("a[a-z]{2,4}?"), T("abcdefghi"), "1 0 3", ECMA},
     {__LINE__, T("(aa|aabaac|ba|b|c)*"), T("aabaac"), "2 0 4 2 4", ECMA},
-    {__LINE__, T("(aa|aabaac|ba|b|c)*"), T("aabaac"), "2 0 6 5 6", EEA},
+    {__LINE__, T("(aa|aabaac|ba|b|c)*"), T("aabaac"), "2 0 6 0 6", EEA},
     {__LINE__, T("(z)((a+)?(b+)?(c))*"), T("zaacbbbcac"), "6 0 10 0 1 8 10 8 9 -1 -1 9 10", ECMA},
     {__LINE__, T("(a*)b\\1+"), T("baaaac"), "2 0 1 0 0", ECMA},
     {__LINE__, T("(?=(a+))"), T("baaabac"), "2 1 1 1 4", ECMA},
@@ -774,7 +774,9 @@ static const regex_test tests[] = {
     {__LINE__, T("^[[:blank:]]*#([^\\n]*\\\\[[:space:]]+)*[^\\n]*"), T("#define some_symbol(x) #x"), "2 0 25 -1 -1",
         ECMA | AWK},
     {__LINE__, T("^[[:blank:]]*#([^\\n]*\\\\[[:space:]]+)*[^\\n]*"),
-        T("#define some_symbol(x) \\  \r\n  cat();\\\r\n   printf(#x);"), "2 0 53 30 42", ECMA | AWK},
+        T("#define some_symbol(x) \\  \r\n  cat();\\\r\n   printf(#x);"), "2 0 53 30 42", ECMA},
+    {__LINE__, T("^[[:blank:]]*#([^\\n]*\\\\[[:space:]]+)*[^\\n]*"),
+        T("#define some_symbol(x) \\  \r\n  cat();\\\r\n   printf(#x);"), "2 0 53 28 42", AWK},
 };
 
 static STD string check_matches(
