@@ -2751,6 +2751,94 @@ namespace {
         }
     }
 
+    template <class _Traits, class _Ty>
+    const void* __stdcall __std_adjacent_find_impl(const void* _First, const void* const _Last) noexcept {
+        if (_First == _Last) {
+            return _Last;
+        }
+
+        const size_t _Size_bytes = _Byte_length(_First, _Last) - sizeof(_Ty);
+
+        if (const size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
+            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
+            const void* _Stop_at = _First;
+            _Advance_bytes(_Stop_at, _Avx_size);
+
+            do {
+                const void* _Next = _First;
+                _Advance_bytes(_Next, sizeof(_Ty));
+
+                const __m256i _Data      = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
+                const __m256i _Comparand = _mm256_loadu_si256(static_cast<const __m256i*>(_Next));
+                const int _Bingo         = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+
+                if (_Bingo != 0) {
+                    const unsigned long _Offset = _tzcnt_u32(_Bingo);
+                    _Advance_bytes(_First, _Offset);
+                    return _First;
+                }
+
+                _Advance_bytes(_First, 32);
+            } while (_First != _Stop_at);
+
+            if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
+                const void* _Next = _First;
+                _Advance_bytes(_Next, sizeof(_Ty));
+
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+                const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
+                const __m256i _Comparand = _mm256_maskload_epi32(static_cast<const int*>(_Next), _Tail_mask);
+                const int _Bingo =
+                    _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
+
+                if (_Bingo != 0) {
+                    const unsigned long _Offset = _tzcnt_u32(_Bingo);
+                    _Advance_bytes(_First, _Offset);
+                    return _First;
+                }
+
+                _Advance_bytes(_First, _Avx_tail_size);
+            }
+
+            if constexpr (sizeof(_Ty) >= 4) {
+                return _Last;
+            }
+        } else if (const size_t _Sse_size = _Size_bytes & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
+            const void* _Stop_at = _First;
+            _Advance_bytes(_Stop_at, _Sse_size);
+
+            do {
+                const void* _Next = _First;
+                _Advance_bytes(_Next, sizeof(_Ty));
+
+                const __m128i _Data      = _mm_loadu_si128(static_cast<const __m128i*>(_First));
+                const __m128i _Comparand = _mm_loadu_si128(static_cast<const __m128i*>(_Next));
+                const int _Bingo         = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
+
+                if (_Bingo != 0) {
+                    unsigned long _Offset;
+                    // CodeQL [SM02313] _Offset is always initialized: we just tested `if (_Bingo != 0)`.
+                    _BitScanForward(&_Offset, _Bingo);
+                    _Advance_bytes(_First, _Offset);
+                    return _First;
+                }
+
+                _Advance_bytes(_First, 16);
+            } while (_First != _Stop_at);
+        }
+
+        auto _Ptr  = static_cast<const _Ty*>(_First);
+        auto _Next = _Ptr + 1;
+        for (; _Next != _Last; ++_Ptr, ++_Next) {
+            if (*_Ptr == *_Next) {
+                return _Ptr;
+            }
+        }
+
+        return _Last;
+    }
+
     struct _Count_traits_8 : _Find_traits_8 {
 #ifndef _M_ARM64EC
         static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
@@ -4786,6 +4874,22 @@ __declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_4(
 __declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_8(
     const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
     return __std_find_last_pos<_Find_traits_8, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_adjacent_find_1(const void* const _First, const void* const _Last) noexcept {
+    return __std_adjacent_find_impl<_Find_traits_1, uint8_t>(_First, _Last);
+}
+
+const void* __stdcall __std_adjacent_find_2(const void* const _First, const void* const _Last) noexcept {
+    return __std_adjacent_find_impl<_Find_traits_2, uint16_t>(_First, _Last);
+}
+
+const void* __stdcall __std_adjacent_find_4(const void* const _First, const void* const _Last) noexcept {
+    return __std_adjacent_find_impl<_Find_traits_4, uint32_t>(_First, _Last);
+}
+
+const void* __stdcall __std_adjacent_find_8(const void* const _First, const void* const _Last) noexcept {
+    return __std_adjacent_find_impl<_Find_traits_8, uint64_t>(_First, _Last);
 }
 
 __declspec(noalias) size_t __stdcall __std_count_trivial_1(
