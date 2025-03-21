@@ -24,8 +24,8 @@ enum class PartternType {
 
 template <class T, AlgType Alg, PartternType Parttern>
 void bm(benchmark::State& state) {
-    const auto size  = static_cast<size_t>(state.range(0));
-    const auto n = static_cast<size_t>(state.range(1));
+    const auto size = static_cast<size_t>(state.range(0));
+    const auto n    = static_cast<size_t>(state.range(1));
 
     constexpr T no_match{'-'};
     constexpr T match{'*'};
@@ -63,10 +63,10 @@ void bm(benchmark::State& state) {
 }
 
 void common_args(auto bm) {
-    bm->ArgPair(3000, 200)->ArgPair(3000, 40)->ArgPair(3000, 20)->ArgPair(3000, 10)->ArgPair(3000, 9)->ArgPair(3000, 8);
-    bm->ArgPair(3000, 5)->ArgPair(3000, 4)->ArgPair(3000, 2)->ArgPair(3000, 1);
+    for (const auto& n : {40, 18, 16, 14, 10, 8, 5, 4, 3, 2, 1}) {
+        bm->ArgPair(3000, n);
+    }
 }
-
 
 BENCHMARK(bm<uint8_t, AlgType::Std, PartternType::TwoZones>)->Apply(common_args);
 BENCHMARK(bm<uint8_t, AlgType::Rng, PartternType::TwoZones>)->Apply(common_args);
