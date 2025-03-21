@@ -13,3 +13,4 @@
 // UNSUPPORTED: msvc
 // UNSUPPORTED: no-filesystem, no-localization, no-tzdb, has-no-zdump
 // UNSUPPORTED: windows
+// XFAIL: msvc
