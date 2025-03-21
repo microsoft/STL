@@ -3469,7 +3469,7 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Better_match() { // check for bet
             return _Tgt_state._Grp_valid[_Ix];
         }
 
-        if (_Res._Grp_valid[_Ix] && _Tgt_state._Grp_valid[_Ix]) {
+        if (_Res._Grp_valid[_Ix]) { // now known to be equal to _Tgt_state._Grp_valid[_Ix], no need to test both
             // if both groups are matched, prefer the leftmost one
             if (_Res._Grps[_Ix]._Begin != _Tgt_state._Grps[_Ix]._Begin) {
                 return _STD distance(_Begin, _Res._Grps[_Ix]._Begin)
