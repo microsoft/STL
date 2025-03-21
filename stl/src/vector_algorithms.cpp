@@ -2930,50 +2930,6 @@ namespace {
         return _Result;
     }
 
-    struct _Search_n_traits_1 : _Find_traits_1 {
-        using _MskX_t                         = uint64_t;
-        static constexpr size_t _Max_count    = 16;
-        static constexpr size_t _Scale        = 1;
-        static constexpr size_t _Carry_adjust = 32;
-
-        static int _Cmp_avx_elem_mask(const __m256i _Data, const __m256i _Comparand) noexcept {
-            return _mm256_movemask_epi8(_mm256_cmpeq_epi8(_Comparand, _Data));
-        }
-    };
-
-    struct _Search_n_traits_2 : _Find_traits_2 {
-        using _MskX_t                         = uint64_t;
-        static constexpr size_t _Max_count    = 8;
-        static constexpr size_t _Scale        = 2;
-        static constexpr size_t _Carry_adjust = 32;
-
-        static int _Cmp_avx_elem_mask(const __m256i _Data, const __m256i _Comparand) noexcept {
-            return _mm256_movemask_epi8(_mm256_cmpeq_epi16(_Comparand, _Data));
-        }
-    };
-
-    struct _Search_n_traits_4 : _Find_traits_4 {
-        using _MskX_t                         = uint32_t;
-        static constexpr size_t _Max_count    = 4;
-        static constexpr size_t _Scale        = 1;
-        static constexpr size_t _Carry_adjust = 8;
-
-        static int _Cmp_avx_elem_mask(const __m256i _Data, const __m256i _Comparand) noexcept {
-            return _mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpeq_epi32(_Comparand, _Data)));
-        }
-    };
-
-    struct _Search_n_traits_8 : _Find_traits_8 {
-        using _MskX_t                         = uint32_t;
-        static constexpr size_t _Max_count    = 2;
-        static constexpr size_t _Scale        = 1;
-        static constexpr size_t _Carry_adjust = 4;
-
-        static int _Cmp_avx_elem_mask(const __m256i _Data, const __m256i _Comparand) noexcept {
-            return _mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpeq_epi64(_Comparand, _Data)));
-        }
-    };
-
     template <class _Traits, class _Ty>
     const void* __stdcall __std_search_n_impl(
         const void* _First, const void* const _Last, const size_t _Count, const _Ty _Val) noexcept {
@@ -2986,12 +2942,11 @@ namespace {
         auto _Mid1 = static_cast<const _Ty*>(_First);
 
         const size_t _Length = _Byte_length(_First, _Last);
-        if (_Count <= _Traits::_Max_count && _Length >= 32 && _Use_avx2()) {
-            constexpr auto _Max_bits = _Traits::_Max_count * _Traits::_Scale;
-            const size_t _Bits_count = _Count * _Traits::_Scale;
-            const size_t _Sh1        = _Max_bits > 2 ? (_Bits_count < 4 ? _Bits_count - 2 : 2) : 0;
-            const size_t _Sh2 = _Max_bits > 4 ? (_Bits_count < 4 ? 0 : (_Bits_count < 8 ? _Bits_count - 4 : 4)) : 0;
-            const size_t _Sh3 = _Max_bits > 8 ? (_Bits_count < 8 ? 0 : _Bits_count - 8) : 0;
+        if (_Count <= (16 / sizeof(_Ty)) && _Length >= 32 && _Use_avx2()) {
+            const int _Bits_count = static_cast<int>(_Count * sizeof(_Ty));
+            const int _Sh1        = sizeof(_Ty) == 1 ? (_Bits_count < 4 ? _Bits_count - 2 : 2) : 0;
+            const int _Sh2 = sizeof(_Ty) < 4 ? (_Bits_count < 4 ? 0 : (_Bits_count < 8 ? _Bits_count - 4 : 4)) : 0;
+            const int _Sh3 = sizeof(_Ty) < 8 ? (_Bits_count < 8 ? 0 : _Bits_count - 8) : 0;
 
             const __m256i _Comparand = _Traits::_Set_avx(_Val);
 
@@ -3001,29 +2956,42 @@ namespace {
             uint32_t _Carry = 0;
             do {
                 const __m256i _Data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
-                const auto _Mask    = static_cast<uint32_t>(_Traits::_Cmp_avx_elem_mask(_Comparand, _Data));
+                const auto _Mask    = static_cast<uint32_t>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Comparand, _Data)));
 
-                using _MskX_t = _Traits::_MskX_t;
+                uint64_t _MskX = uint64_t{_Carry} | (uint64_t{_Mask} << 32);
 
-                _MskX_t _MskX = _MskX_t{_Carry} | (_MskX_t{_Mask} << _Traits::_Carry_adjust);
-                if constexpr (_Traits::_Scale == 1) {
+                if constexpr (sizeof(_Ty) == 1) {
                     _MskX = (_MskX >> 1) & _MskX;
-                    if constexpr (_Max_bits > 2) {
-                        _MskX = (_MskX >> _Sh1) & _MskX;
-                    }
-                } else if constexpr (_Traits::_Scale == 2) {
+                    _MskX = __ull_rshift(_MskX, _Sh1) & _MskX;
+                }
+                if constexpr (sizeof(_Ty) == 2) {
                     _MskX = (_MskX >> 2) & _MskX;
                 }
-                if constexpr (_Max_bits > 4) {
-                    _MskX = (_MskX >> _Sh2) & _MskX;
-                    if constexpr (_Max_bits > 8) {
-                        _MskX = (_MskX >> _Sh3) & _MskX;
-                    }
+                if constexpr (sizeof(_Ty) < 4) {
+                    _MskX = __ull_rshift(_MskX, _Sh2) & _MskX;
+                }
+                if constexpr (sizeof(_Ty) == 4) {
+                    _MskX = (_MskX >> 4) & _MskX;
+                }
+                if constexpr (sizeof(_Ty) < 8) {
+                    _MskX = __ull_rshift(_MskX, _Sh3) & _MskX;
+                }
+                if constexpr (sizeof(_Ty) == 8) {
+                    _MskX = (_MskX >> 8) & _MskX;
                 }
 
                 if (_MskX != 0) {
-                    int _Shift = static_cast<int>(_tzcnt_u64(_MskX)) - _Traits::_Carry_adjust;
-                    _Advance_bytes(_First, _Shift * (sizeof(_Ty) / _Traits::_Scale));
+#ifdef _M_IX86
+                    const uint32_t _MskLow = static_cast<uint32_t>(_MskX);
+                    const int _Shift       = _MskLow != 0 ? static_cast<int>(_tzcnt_u32(_MskLow)) - 32
+                                                          : static_cast<int>(_tzcnt_u32(static_cast<uint32_t>(_MskX >> 32)));
+
+#elifdef _M_X64
+                    const int _Shift = static_cast<int>(_tzcnt_u64(_MskX)) - 32;
+#else
+#error Unsupported architecture
+#endif
+                    _Advance_bytes(_First, _Shift);
                     return _First;
                 }
 
@@ -3032,8 +3000,8 @@ namespace {
                 _Advance_bytes(_First, 32);
             } while (_First != _Stop_at);
 
-            _Rewind_bytes(_First, _Count * (sizeof(_Ty)));
             _Mid1 = static_cast<const _Ty*>(_First);
+            _Rewind_bytes(_First, _lzcnt_u32(~_Carry));
         }
 
         auto _Match_start = static_cast<const _Ty*>(_First);
@@ -4707,22 +4675,22 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_8(
 
 const void* __stdcall __std_search_n_1(
     const void* const _First, const void* const _Last, const size_t _Count, const uint8_t _Value) noexcept {
-    return __std_search_n_impl<_Search_n_traits_1>(_First, _Last, _Count, _Value);
+    return __std_search_n_impl<_Find_traits_1>(_First, _Last, _Count, _Value);
 }
 
 const void* __stdcall __std_search_n_2(
     const void* const _First, const void* const _Last, const size_t _Count, const uint16_t _Value) noexcept {
-    return __std_search_n_impl<_Search_n_traits_2>(_First, _Last, _Count, _Value);
+    return __std_search_n_impl<_Find_traits_2>(_First, _Last, _Count, _Value);
 }
 
 const void* __stdcall __std_search_n_4(
     const void* const _First, const void* const _Last, const size_t _Count, const uint32_t _Value) noexcept {
-    return __std_search_n_impl<_Search_n_traits_4>(_First, _Last, _Count, _Value);
+    return __std_search_n_impl<_Find_traits_4>(_First, _Last, _Count, _Value);
 }
 
 const void* __stdcall __std_search_n_8(
     const void* const _First, const void* const _Last, const size_t _Count, const uint64_t _Value) noexcept {
-    return __std_search_n_impl<_Search_n_traits_8>(_First, _Last, _Count, _Value);
+    return __std_search_n_impl<_Find_traits_8>(_First, _Last, _Count, _Value);
 }
 
 const void* __stdcall __std_find_first_of_trivial_1(
