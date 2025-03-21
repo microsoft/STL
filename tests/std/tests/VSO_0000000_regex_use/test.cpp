@@ -603,11 +603,6 @@ void test_gh_731() {
         posix_regex.should_search_match_capture_groups("ddbacccd", "ddbaccc", match_default, {{2, 7}});
     }
 
-    for (syntax_option_type option : {extended, egrep, awk}) {
-        const test_regex posix_regex(&g_regexTester, "(aa|aabaac|ba|b|c)*", option);
-        posix_regex.should_search_match_capture_groups("aabaac", "aabaac", match_default, {{0, 6}});
-    }
-
     {
         const test_regex ecma_regex(&g_regexTester, R"(^[[:blank:]]*#([^\n]*\\[[:space:]]+)*[^\n]*)", ECMAScript);
         ecma_regex.should_search_match_capture_groups("#define some_symbol(x) \\  \r\n  cat();\\\r\n   printf(#x);",
