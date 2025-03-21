@@ -3468,6 +3468,7 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Better_match() { // check for bet
         if (_Res._Grp_valid[_Ix] != _Tgt_state._Grp_valid[_Ix]) {
             return _Tgt_state._Grp_valid[_Ix];
         }
+
         if (_Res._Grp_valid[_Ix] && _Tgt_state._Grp_valid[_Ix]) {
             // if both groups are matched, prefer the leftmost one
             if (_Res._Grps[_Ix]._Begin != _Tgt_state._Grps[_Ix]._Begin) {
