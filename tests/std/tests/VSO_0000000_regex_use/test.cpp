@@ -1151,6 +1151,26 @@ void test_gh_5214() {
     }
 }
 
+void test_gh_5253() {
+    // GH-5253 cleaned up parsing logic for quantifiers that were applied to single characters
+    g_regexTester.should_match("abbb", "ab*");
+    g_regexTester.should_not_match("abab", "ab*");
+    g_regexTester.should_match("abbb", "(a)b*");
+    g_regexTester.should_not_match("abab", "(a)b*");
+    g_regexTester.should_match("abbb", "a(b)*");
+    g_regexTester.should_not_match("abab", "a(b)*");
+    g_regexTester.should_match("abbb", "(a)(b)*");
+    g_regexTester.should_not_match("abab", "(a)(b)*");
+    g_regexTester.should_not_match("abbb", "(ab)*");
+    g_regexTester.should_match("abab", "(ab)*");
+    g_regexTester.should_not_match("abbb", "(?:ab)*");
+    g_regexTester.should_match("abab", "(?:ab)*");
+    g_regexTester.should_match("aaaa", "a*");
+    g_regexTester.should_not_match("b", "a*");
+    g_regexTester.should_match("", "()*");
+    g_regexTester.should_not_match("a", "()*");
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -1187,6 +1207,7 @@ int main() {
     test_gh_5167();
     test_gh_5192();
     test_gh_5214();
+    test_gh_5253();
 
     return g_regexTester.result();
 }
