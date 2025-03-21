@@ -609,12 +609,12 @@ void test_gh_731() {
     }
 
     {
-        const test_regex ecma_regex(&g_regexTester, "^[[:blank:]]*#([^\\n]*\\\\[[:space:]]+)*[^\\n]*", ECMAScript);
+        const test_regex ecma_regex(&g_regexTester, R"(^[[:blank:]]*#([^\n]*\\[[:space:]]+)*[^\n]*)", ECMAScript);
         ecma_regex.should_search_match_capture_groups("#define some_symbol(x) \\  \r\n  cat();\\\r\n   printf(#x);",
             "#define some_symbol(x) \\  \r\n  cat();\\\r\n   printf(#x);", match_default, {{30, 42}});
     }
     {
-        const test_regex awk_regex(&g_regexTester, "^[[:blank:]]*#([^\\n]*\\\\[[:space:]]+)*[^\\n]*", awk);
+        const test_regex awk_regex(&g_regexTester, R"(^[[:blank:]]*#([^\n]*\\[[:space:]]+)*[^\n]*)", awk);
         awk_regex.should_search_match_capture_groups("#define some_symbol(x) \\  \r\n  cat();\\\r\n   printf(#x);",
             "#define some_symbol(x) \\  \r\n  cat();\\\r\n   printf(#x);", match_default, {{28, 42}});
     }
