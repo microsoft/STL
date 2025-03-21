@@ -635,7 +635,7 @@ void test_gh_731() {
 
     {
         // GH-996 test case
-        const test_regex ecma_regex(&g_regexTester, R"( *((<<)|(\[)|(.+)))");
+        const test_regex ecma_regex(&g_regexTester, R"( *((<<)|(\[)|(.+)))", ECMAScript);
         ecma_regex.should_search_match_capture_groups(
             " [<</Category/Export>>]>>", " [", match_default, {{1, 2}, {-1, -1}, {1, 2}, {-1, -1}});
     }
