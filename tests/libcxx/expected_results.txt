@@ -1450,6 +1450,11 @@ std/ranges/range.utility/range.utility.conv/to.pass.cpp:9 SKIPPED
 std/thread/thread.jthread/assign.move.pass.cpp:9 SKIPPED
 std/utilities/meta/meta.unary/dependent_return_type.compile.pass.cpp:9 SKIPPED
 
+# These tests are marked as `XFAIL: msvc`, but the MSVC-internal test harness doesn't yet parse XFAIL.
+std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp:9 SKIPPED
+std/input.output/iostream.format/print.fun/no_file_description.pass.cpp:9 SKIPPED
+std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp:9 SKIPPED
+
 # This test is marked as `REQUIRES: large_tests`. The GitHub test harness doesn't define that feature, so it doesn't
 # run this test. However, the MSVC-internal test harness doesn't yet parse REQUIRES, and simply runs everything.
 std/input.output/string.streams/stringstream/stringstream.members/gcount.pass.cpp:9 SKIPPED
