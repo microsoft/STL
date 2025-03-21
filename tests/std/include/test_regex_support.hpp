@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma once
+#include <cstddef>
 #include <cstdio>
 #include <initializer_list>
 #include <regex>
 #include <string>
+#include <utility>
 
 class regex_fixture {
     int regex_test_result = 0;
