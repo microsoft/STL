@@ -2932,7 +2932,7 @@ namespace {
 
     struct _Search_n_traits_1 : _Find_traits_1 {
         using _MskX_t                         = uint64_t;
-        static constexpr size_t _Max_count    = 8;
+        static constexpr size_t _Max_count    = 16;
         static constexpr size_t _Scale        = 1;
         static constexpr size_t _Carry_adjust = 32;
 
@@ -2943,7 +2943,7 @@ namespace {
 
     struct _Search_n_traits_2 : _Find_traits_2 {
         using _MskX_t                         = uint64_t;
-        static constexpr size_t _Max_count    = 4;
+        static constexpr size_t _Max_count    = 8;
         static constexpr size_t _Scale        = 2;
         static constexpr size_t _Carry_adjust = 32;
 
@@ -2987,9 +2987,11 @@ namespace {
 
         const size_t _Length = _Byte_length(_First, _Last);
         if (_Count <= _Traits::_Max_count && _Length >= 32 && _Use_avx2()) {
+            constexpr auto _Max_bits = _Traits::_Max_count * _Traits::_Scale;
             const size_t _Bits_count = _Count * _Traits::_Scale;
             const size_t _Sh1        = _Bits_count < 4 ? _Bits_count - 2 : 2;
-            const size_t _Sh2        = sizeof(_Ty) <= 4 ? (_Bits_count < 4 ? 0 : _Bits_count - 4) : 0;
+            const size_t _Sh2 = _Max_bits > 4 ? (_Bits_count < 4 ? 0 : (_Bits_count < 8 ? _Bits_count - 4 : 4)) : 0;
+            const size_t _Sh3 = _Max_bits > 8 ? (_Bits_count < 8 ? 0 : _Bits_count - 8) : 0;
 
             const __m256i _Comparand = _Traits::_Set_avx(_Val);
 
@@ -3010,8 +3012,11 @@ namespace {
                 } else if constexpr (_Traits::_Scale == 2) {
                     _MskX = (_MskX >> 2) & _MskX;
                 }
-                if constexpr (_Traits::_Scale * _Traits::_Max_count > 4) {
+                if constexpr (_Max_bits > 4) {
                     _MskX = (_MskX >> _Sh2) & _MskX;
+                    if constexpr (_Max_bits > 8) {
+                        _MskX = (_MskX >> _Sh3) & _MskX;
+                    }
                 }
 
                 if (_MskX != 0) {
