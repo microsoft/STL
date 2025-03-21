@@ -2262,6 +2262,16 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
         return _First;
     }
 
+    if constexpr (_Is_any_of_v<_Pr,
+#if _HAS_CXX20
+                      _RANGES equal_to,
+#endif
+                      equal_to<>>) {
+        if (_Count == 1) {
+            return _STD find(_First, _Last, _Val);
+        }
+    }
+
     if (static_cast<uintmax_t>(_Count) > static_cast<uintmax_t>(_STD _Max_limit<_Iter_diff_t<_FwdIt>>())) {
         // if the number of _Vals searched for is larger than the longest possible sequence, we can't find it
         return _Last;
@@ -2362,6 +2372,19 @@ namespace ranges {
                 return {_First, _First};
             }
 
+            if constexpr (_Is_any_of_v<_Pr, _STD equal_to<>, _RANGES equal_to>) {
+                if (_Count == 1) {
+                    auto _Res = _RANGES find(_First, _Last, _Val, _Pass_fn(_Proj));
+                    if (_Res != _Last) {
+                        auto _Res_end = _Res;
+                        ++_Res_end;
+                        return {_STD move(_Res), _STD move(_Res_end)};
+                    } else {
+                        return {_Res, _Res};
+                    }
+                }
+            }
+
             auto _UFirst = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
             auto _ULast  = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
 
@@ -2386,6 +2409,20 @@ namespace ranges {
 
             if (_Count <= 0) {
                 return {_First, _First};
+            }
+
+            if constexpr (_Is_any_of_v<_Pr, _STD equal_to<>, _RANGES equal_to>) {
+                if (_Count == 1) {
+                    auto _Res  = _RANGES find(_Range, _Val, _Pass_fn(_Proj));
+                    auto _Last = _RANGES end(_Range);
+                    if (_Res != _Last) {
+                        auto _Res_end = _Res;
+                        ++_Res_end;
+                        return {_STD move(_Res), _STD move(_Res_end)};
+                    } else {
+                        return {_Res, _Res};
+                    }
+                }
             }
 
             if constexpr (sized_range<_Rng>) {
