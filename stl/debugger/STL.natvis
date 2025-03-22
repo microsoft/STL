@@ -2410,4 +2410,20 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
+  <Type Name="std::_Pairing_iterator_provider&lt;*&gt;::_Iterator">
+    <DisplayString>({_Key_it}, {_Mapped_it})</DisplayString>
+    <Expand>
+      <Item Name="[key]">_Key_it</Item>
+      <Item Name="[value]">_Mapped_it</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::flat_set&lt;*&gt;">
+    <DisplayString>{_Mycont}</DisplayString>
+    <Expand>
+      <Item Name="[comparator]" ExcludeView="simple">_Mycomp</Item>
+      <ExpandedItem>_Mycont</ExpandedItem>
+    </Expand>
+  </Type>
+
 </AutoVisualizer>
