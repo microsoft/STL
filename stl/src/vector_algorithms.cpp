@@ -2989,7 +2989,7 @@ namespace {
                                                           : static_cast<int>(_tzcnt_u32(static_cast<uint32_t>(_MskX >> 32)));
 
 #elifdef _M_X64
-                    const int _Shift = static_cast<int>(_tzcnt_u64(_MskX)) - 32;
+                    const long long _Shift = static_cast<long long>(_tzcnt_u64(_MskX)) - 32;
 #else
 #error Unsupported architecture
 #endif
