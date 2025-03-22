@@ -7,12 +7,16 @@ std/time/time.syn/formatter.duration.pass.cpp:0 FAIL
 std/time/time.syn/formatter.duration.pass.cpp:1 FAIL
 std/time/time.syn/formatter.file_time.pass.cpp:0 FAIL
 std/time/time.syn/formatter.file_time.pass.cpp:1 FAIL
+std/time/time.syn/formatter.gps_time.pass.cpp:0 FAIL
+std/time/time.syn/formatter.gps_time.pass.cpp:1 FAIL
 std/time/time.syn/formatter.hh_mm_ss.pass.cpp:0 FAIL
 std/time/time.syn/formatter.hh_mm_ss.pass.cpp:1 FAIL
 std/time/time.syn/formatter.local_time.pass.cpp:0 FAIL
 std/time/time.syn/formatter.local_time.pass.cpp:1 FAIL
 std/time/time.syn/formatter.sys_time.pass.cpp:0 FAIL
 std/time/time.syn/formatter.sys_time.pass.cpp:1 FAIL
+std/time/time.syn/formatter.tai_time.pass.cpp:0 FAIL
+std/time/time.syn/formatter.tai_time.pass.cpp:1 FAIL
 std/time/time.syn/formatter.utc_time.pass.cpp:0 FAIL
 std/time/time.syn/formatter.utc_time.pass.cpp:1 FAIL
 std/time/time.syn/formatter.year.pass.cpp:0 FAIL
@@ -40,6 +44,10 @@ std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
 
 # LLVM-122638: [libc++][test] re.regex.construct/bad_backref.pass.cpp assumes non-standard extension to extended regular expressions
 std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
+
+# LLVM-132532: [libc++][test] Small fixes for time tests
+std/time/time.clock/time.clock.gps/types.compile.pass.cpp:2 FAIL
+std/time/time.clock/time.clock.tai/types.compile.pass.cpp:2 FAIL
 
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
@@ -1152,9 +1160,11 @@ std/localization/codecvt_unicode.pass.cpp FAIL
 # Not analyzed. Various runtime behavior differences.
 std/time/time.syn/formatter.duration.pass.cpp:2 FAIL
 std/time/time.syn/formatter.file_time.pass.cpp:2 FAIL
+std/time/time.syn/formatter.gps_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.hh_mm_ss.pass.cpp:2 FAIL
 std/time/time.syn/formatter.local_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.sys_time.pass.cpp:2 FAIL
+std/time/time.syn/formatter.tai_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.utc_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.zoned_time.pass.cpp:2 FAIL
 
@@ -1357,6 +1367,8 @@ std/atomics/atomics.ref/wait.pass.cpp SKIPPED
 std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/pointer_deleter.pass.cpp FAIL
 
 # Not analyzed. Various assertions.
+std/time/time.clock/time.clock.gps/gps_time.ostream.pass.cpp FAIL
+std/time/time.clock/time.clock.tai/tai_time.ostream.pass.cpp FAIL
 std/time/time.clock/time.clock.utc/time.clock.utc.members/to_sys.pass.cpp FAIL
 std/time/time.zone/time.zone.timezone/time.zone.members/get_info.local_time.pass.cpp FAIL
 std/time/time.zone/time.zone.zonedtime/time.zone.zonedtime.members/get_info.pass.cpp FAIL
