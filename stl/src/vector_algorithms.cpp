@@ -2943,6 +2943,8 @@ namespace {
 #ifndef _M_ARM64EC
         const size_t _Length = _Byte_length(_First, _Last);
         if (_Count <= (16 / sizeof(_Ty)) && _Length >= 32 && _Use_avx2()) {
+            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
             const int _Bits_count = static_cast<int>(_Count * sizeof(_Ty));
             const int _Sh1        = sizeof(_Ty) == 1 ? (_Bits_count < 4 ? _Bits_count - 2 : 2) : 0;
             const int _Sh2 = sizeof(_Ty) < 4 ? (_Bits_count < 4 ? 0 : (_Bits_count < 8 ? _Bits_count - 4 : 4)) : 0;
