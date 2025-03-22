@@ -80,10 +80,24 @@ __declspec(noalias) void __stdcall __std_replace_4(
 __declspec(noalias) void __stdcall __std_replace_8(
     void* _First, void* _Last, uint64_t _Old_val, uint64_t _New_val) noexcept;
 
+void* __stdcall __std_remove_copy_1(
+    const void* _First, const void* const _Last, void* _Out, const uint8_t _Val) noexcept;
+void* __stdcall __std_remove_copy_2(
+    const void* _First, const void* const _Last, void* _Out, const uint16_t _Val) noexcept;
+void* __stdcall __std_remove_copy_4(
+    const void* _First, const void* const _Last, void* _Out, const uint32_t _Val) noexcept;
+void* __stdcall __std_remove_copy_8(
+    const void* _First, const void* const _Last, void* _Out, const uint64_t _Val) noexcept;
+
 void* __stdcall __std_unique_1(void* _First, void* _Last) noexcept;
 void* __stdcall __std_unique_2(void* _First, void* _Last) noexcept;
 void* __stdcall __std_unique_4(void* _First, void* _Last) noexcept;
 void* __stdcall __std_unique_8(void* _First, void* _Last) noexcept;
+
+void* __stdcall __std_unique_copy_1(const void* _First, const void* _Last, void* _Dest) noexcept;
+void* __stdcall __std_unique_copy_2(const void* _First, const void* _Last, void* _Dest) noexcept;
+void* __stdcall __std_unique_copy_4(const void* _First, const void* _Last, void* _Dest) noexcept;
+void* __stdcall __std_unique_copy_8(const void* _First, const void* _Last, void* _Dest) noexcept;
 } // extern "C"
 
 _STD_BEGIN
@@ -225,6 +239,43 @@ _Ty* _Unique_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     }
 }
 
+template <class _Ty, class _TVal>
+_Ty* _Remove_copy_vectorized(
+    const _Ty* const _First, const _Ty* const _Last, _Ty* const _Dest, const _TVal _Val) noexcept {
+    if constexpr (is_pointer_v<_Ty>) {
+#ifdef _WIN64
+        return reinterpret_cast<_Ty*>(::__std_remove_copy_8(_First, _Last, _Dest, reinterpret_cast<uint64_t>(_Val)));
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
+        return reinterpret_cast<_Ty*>(::__std_remove_copy_4(_First, _Last, _Dest, reinterpret_cast<uint32_t>(_Val)));
+#endif // ^^^ !defined(_WIN64) ^^^
+    } else if constexpr (sizeof(_Ty) == 1) {
+        return reinterpret_cast<_Ty*>(::__std_remove_copy_1(_First, _Last, _Dest, static_cast<uint8_t>(_Val)));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return reinterpret_cast<_Ty*>(::__std_remove_copy_2(_First, _Last, _Dest, static_cast<uint16_t>(_Val)));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return reinterpret_cast<_Ty*>(::__std_remove_copy_4(_First, _Last, _Dest, static_cast<uint32_t>(_Val)));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return reinterpret_cast<_Ty*>(::__std_remove_copy_8(_First, _Last, _Dest, static_cast<uint64_t>(_Val)));
+    } else {
+        _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
+    }
+}
+
+template <class _Ty>
+_Ty* _Unique_copy_vectorized(const _Ty* const _First, const _Ty* const _Last, _Ty* const _Dest) noexcept {
+    if constexpr (sizeof(_Ty) == 1) {
+        return reinterpret_cast<_Ty*>(::__std_unique_copy_1(_First, _Last, _Dest));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return reinterpret_cast<_Ty*>(::__std_unique_copy_2(_First, _Last, _Dest));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return reinterpret_cast<_Ty*>(::__std_unique_copy_4(_First, _Last, _Dest));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return reinterpret_cast<_Ty*>(::__std_unique_copy_8(_First, _Last, _Dest));
+    } else {
+        _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
+    }
+}
+
 // Can we activate the vector algorithms for find_first_of?
 template <class _It1, class _It2, class _Pr>
 constexpr bool _Vector_alg_in_find_first_of_is_safe = _Equal_memcmp_is_safe<_It1, _It2, _Pr>;
@@ -243,6 +294,12 @@ constexpr bool _Vector_alg_in_ranges_replace_is_safe =
 // Can we activate the vector algorithms for unique?
 template <class _Iter, class _Pr>
 constexpr bool _Vector_alg_in_unique_is_safe = _Equal_memcmp_is_safe<_Iter, _Iter, _Pr>;
+
+// Can we activate the vector algorithms for unique_copy?
+template <class _IterSrc, class _IterDest, class _Pr>
+constexpr bool _Vector_alg_in_unique_copy_is_safe =
+    _Equal_memcmp_is_safe<_IterSrc, _IterSrc, _Pr> && _Iterator_is_contiguous<_IterDest>
+    && is_same_v<remove_const_t<_Iter_value_t<_IterSrc>>, _Iter_value_t<_IterDest>>;
 _STD_END
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
@@ -4570,6 +4627,33 @@ _CONSTEXPR20 _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
     auto _UDest       = _STD _Get_unwrapped_unverified(_Dest);
+
+#if _USE_STD_VECTOR_ALGORITHMS
+    if constexpr (_Vector_alg_in_find_is_safe<decltype(_UFirst), _Ty> && _Iterator_is_contiguous<decltype(_UDest)>
+                  && is_same_v<remove_const_t<_Iter_value_t<decltype(_UFirst)>>, _Iter_value_t<decltype(_UDest)>>) {
+        if (!_STD _Is_constant_evaluated()) {
+            if (!_STD _Could_compare_equal_to_value_type<decltype(_UFirst)>(_Val)) {
+                _UDest += _ULast - _UFirst;
+                _STD _Seek_wrapped(_Dest, _UDest);
+                return _Dest;
+            }
+
+            const auto _Dest_ptr = _STD _To_address(_UDest);
+            const auto _Result =
+                _STD _Remove_copy_vectorized(_STD _To_address(_UFirst), _STD _To_address(_ULast), _Dest_ptr, _Val);
+
+            if constexpr (is_pointer_v<decltype(_UDest)>) {
+                _UDest = _Result;
+            } else {
+                _UDest += _Result - _Dest_ptr;
+            }
+
+            _STD _Seek_wrapped(_Dest, _UDest);
+            return _Dest;
+        }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
     for (; _UFirst != _ULast; ++_UFirst) {
         if (!(*_UFirst == _Val)) {
             *_UDest = *_UFirst;
@@ -4794,6 +4878,31 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Out>);
             _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>);
+
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && _Iterator_is_contiguous<_Out>
+                          && is_same_v<remove_const_t<_Iter_value_t<_It>>, _Iter_value_t<_Out>>
+                          && sized_sentinel_for<_Se, _It> && is_same_v<_Pj, identity>) {
+                if (!_STD is_constant_evaluated()) {
+                    const auto _Size = _Last - _First;
+                    const auto _End  = _First + _Size;
+
+                    if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
+                        return {_End, _Output};
+                    }
+
+                    const auto _Dest_ptr = _STD to_address(_Output);
+                    const auto _Result =
+                        _STD _Remove_copy_vectorized(_STD to_address(_First), _STD to_address(_End), _Dest_ptr, _Val);
+
+                    if constexpr (is_pointer_v<_Out>) {
+                        return {_End, _Result};
+                    } else {
+                        return {_End, _Output + (_Result - _Dest_ptr)};
+                    }
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
             for (; _First != _Last; ++_First) {
                 if (_STD invoke(_Proj, *_First) != _Val) {
@@ -5042,6 +5151,25 @@ _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pr
 
     auto _UDest = _STD _Get_unwrapped_unverified(_Dest);
 
+#if _USE_STD_VECTOR_ALGORITHMS
+    if constexpr (_Vector_alg_in_unique_copy_is_safe<decltype(_UFirst), decltype(_UDest), _Pr>) {
+        if (!_STD _Is_constant_evaluated()) {
+            const auto _First_ptr = _STD _To_address(_UFirst);
+            const auto _Dest_ptr  = _STD _To_address(_UDest);
+            const auto _Result    = _STD _Unique_copy_vectorized(_First_ptr, _STD _To_address(_ULast), _Dest_ptr);
+
+            if constexpr (is_pointer_v<decltype(_UDest)>) {
+                _UDest = _Result;
+            } else {
+                _UDest += _Result - _Dest_ptr;
+            }
+
+            _STD _Seek_wrapped(_Dest, _UDest);
+            return _Dest;
+        }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
     if constexpr (_Is_ranges_fwd_iter_v<_InIt>) { // can reread the source for comparison
         auto _Firstb = _UFirst;
 
@@ -5168,6 +5296,25 @@ namespace ranges {
             if (_First == _Last) {
                 return {_STD move(_First), _STD move(_Output)};
             }
+
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<_Se, _It>
+                          && _Vector_alg_in_unique_copy_is_safe<_It, _Out, _Pr>) {
+                if (!_STD is_constant_evaluated()) {
+                    const auto _Size       = _Last - _First;
+                    const auto _First_ptr  = _STD to_address(_First);
+                    const auto _Last_ptr   = _First_ptr + static_cast<size_t>(_Size);
+                    const auto _Output_ptr = _STD to_address(_Output);
+                    const auto _Result     = _STD _Unique_copy_vectorized(_First_ptr, _Last_ptr, _Output_ptr);
+
+                    if constexpr (is_pointer_v<_It> && is_pointer_v<_Out>) {
+                        return {_Last_ptr, _Result};
+                    } else {
+                        return {_STD move(_First) + _Size, _STD move(_Output) + (_Result - _Output_ptr)};
+                    }
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
             if constexpr (_Is_input_with_value_type<_Out, iter_value_t<_It>>) {
                 // Can reread _Output

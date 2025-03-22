@@ -4740,9 +4740,10 @@ __declspec(noalias) void __stdcall __std_replace_8(
 
 namespace {
     template <class _Ty>
-    void* _Remove_fallback(void* const _First, void* const _Last, void* const _Out, const _Ty _Val) noexcept {
-        _Ty* _Src  = reinterpret_cast<_Ty*>(_First);
-        _Ty* _Dest = reinterpret_cast<_Ty*>(_Out);
+    void* _Remove_fallback(
+        const void* const _First, const void* const _Last, void* const _Out, const _Ty _Val) noexcept {
+        const _Ty* _Src = reinterpret_cast<const _Ty*>(_First);
+        _Ty* _Dest      = reinterpret_cast<_Ty*>(_Out);
 
         while (_Src != _Last) {
             if (*_Src != _Val) {
@@ -4757,9 +4758,9 @@ namespace {
     }
 
     template <class _Ty>
-    void* _Unique_fallback(void* const _First, void* const _Last, void* const _Dest) noexcept {
-        _Ty* _Out = reinterpret_cast<_Ty*>(_Dest);
-        _Ty* _Src = reinterpret_cast<_Ty*>(_First);
+    void* _Unique_fallback(const void* const _First, const void* const _Last, void* const _Dest) noexcept {
+        _Ty* _Out       = reinterpret_cast<_Ty*>(_Dest);
+        const _Ty* _Src = reinterpret_cast<const _Ty*>(_First);
 
         while (_Src != _Last) {
             if (*_Src != *_Out) {
@@ -4984,8 +4985,10 @@ namespace {
         }
     };
 
+    constexpr size_t _Remove_copy_buffer_size = 512;
+
     template <class _Traits, class _Ty>
-    void* _Remove_impl(void* _First, const void* _Stop, const _Ty _Val) noexcept {
+    void* _Remove_impl(void* _First, void* const _Stop, const _Ty _Val) noexcept {
         void* _Out        = _First;
         const auto _Match = _Traits::_Set(_Val);
 
@@ -4999,8 +5002,36 @@ namespace {
         return _Out;
     }
 
+    template <class _Traits, class _Ty>
+    void* _Remove_copy_impl(const void* _First, const void* const _Stop, void* _Out, const _Ty _Val) noexcept {
+        unsigned char _Buffer[_Remove_copy_buffer_size];
+        void* _Buffer_out        = _Buffer;
+        void* const _Buffer_stop = _Buffer + _Remove_copy_buffer_size - _Traits::_Step;
+
+        const auto _Match = _Traits::_Set(_Val);
+
+        do {
+            const auto _Src       = _Traits::_Load(_First);
+            const uint32_t _Bingo = _Traits::_Mask(_Src, _Match);
+            _Buffer_out           = _Traits::_Store_masked(_Buffer_out, _Src, _Bingo);
+            _Advance_bytes(_First, _Traits::_Step);
+
+            if (_Buffer_out >= _Buffer_stop) {
+                const size_t _Fill = _Byte_length(_Buffer, _Buffer_out);
+                memcpy(_Out, _Buffer, _Fill);
+                _Advance_bytes(_Out, _Fill);
+                _Buffer_out = _Buffer;
+            }
+        } while (_First != _Stop);
+
+        const size_t _Fill = _Byte_length(_Buffer, _Buffer_out);
+        memcpy(_Out, _Buffer, _Fill);
+        _Advance_bytes(_Out, _Fill);
+        return _Out;
+    }
+
     template <class _Traits>
-    void* _Unique_impl(void* _First, const void* _Stop) noexcept {
+    void* _Unique_impl(void* _First, void* const _Stop) noexcept {
         void* _Out = _First;
 
         do {
@@ -5017,6 +5048,34 @@ namespace {
         return _Out;
     }
 
+    template <class _Traits>
+    void* _Unique_copy_impl(const void* _First, const void* _Stop, void* _Out) noexcept {
+        unsigned char _Buffer[_Remove_copy_buffer_size];
+        void* _Buffer_out        = _Buffer;
+        void* const _Buffer_stop = _Buffer + _Remove_copy_buffer_size - _Traits::_Step;
+
+        do {
+            const auto _Src      = _Traits::_Load(_First);
+            const void* _First_d = _First;
+            _Rewind_bytes(_First_d, _Traits::_Elem_size);
+            const auto _Match     = _Traits::_Load(_First_d);
+            const uint32_t _Bingo = _Traits::_Mask(_Src, _Match);
+            _Buffer_out           = _Traits::_Store_masked(_Buffer_out, _Src, _Bingo);
+            _Advance_bytes(_First, _Traits::_Step);
+
+            if (_Buffer_out >= _Buffer_stop) {
+                const size_t _Fill = _Byte_length(_Buffer, _Buffer_out);
+                memcpy(static_cast<unsigned char*>(_Out) + _Traits::_Elem_size, _Buffer, _Fill);
+                _Advance_bytes(_Out, _Fill);
+                _Buffer_out = _Buffer;
+            }
+        } while (_First != _Stop);
+
+        const size_t _Fill = _Byte_length(_Buffer, _Buffer_out);
+        memcpy(static_cast<unsigned char*>(_Out) + _Traits::_Elem_size, _Buffer, _Fill);
+        _Advance_bytes(_Out, _Fill);
+        return _Out;
+    }
 #endif // !defined(_M_ARM64EC)
 } // unnamed namespace
 
@@ -5096,7 +5155,77 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
     return _Remove_fallback(_First, _Last, _Out, _Val);
 }
 
-void* __stdcall __std_unique_1(void* _First, void* _Last) noexcept {
+void* __stdcall __std_remove_copy_1(
+    const void* _First, const void* const _Last, void* _Out, const uint8_t _Val) noexcept {
+#ifndef _M_ARM64EC
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 8) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
+        _Out   = _Remove_copy_impl<_Remove_sse_1>(_First, _Stop, _Out, _Val);
+        _First = _Stop;
+    }
+#endif // !defined(_M_ARM64EC)
+
+    return _Remove_fallback(_First, _Last, _Out, _Val);
+}
+
+void* __stdcall __std_remove_copy_2(
+    const void* _First, const void* const _Last, void* _Out, const uint16_t _Val) noexcept {
+#ifndef _M_ARM64EC
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 16) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Out   = _Remove_copy_impl<_Remove_sse_2>(_First, _Stop, _Out, _Val);
+        _First = _Stop;
+    }
+#endif // !defined(_M_ARM64EC)
+
+    return _Remove_fallback(_First, _Last, _Out, _Val);
+}
+
+void* __stdcall __std_remove_copy_4(
+    const void* _First, const void* const _Last, void* _Out, const uint32_t _Val) noexcept {
+#ifndef _M_ARM64EC
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
+        _Out   = _Remove_copy_impl<_Remove_avx_4>(_First, _Stop, _Out, _Val);
+        _First = _Stop;
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+    } else if (_Use_sse42() && _Size_bytes >= 16) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Out   = _Remove_copy_impl<_Remove_sse_4>(_First, _Stop, _Out, _Val);
+        _First = _Stop;
+    }
+#endif // !defined(_M_ARM64EC)
+
+    return _Remove_fallback(_First, _Last, _Out, _Val);
+}
+
+void* __stdcall __std_remove_copy_8(
+    const void* _First, const void* const _Last, void* _Out, const uint64_t _Val) noexcept {
+#ifndef _M_ARM64EC
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
+        _Out   = _Remove_copy_impl<_Remove_avx_8>(_First, _Stop, _Out, _Val);
+        _First = _Stop;
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+    } else if (_Use_sse42() && _Size_bytes >= 16) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Out   = _Remove_copy_impl<_Remove_sse_8>(_First, _Stop, _Out, _Val);
+        _First = _Stop;
+    }
+#endif // !defined(_M_ARM64EC)
+
+    return _Remove_fallback(_First, _Last, _Out, _Val);
+}
+
+void* __stdcall __std_unique_1(void* _First, void* const _Last) noexcept {
     if (_First == _Last) {
         return _First;
     }
@@ -5116,7 +5245,7 @@ void* __stdcall __std_unique_1(void* _First, void* _Last) noexcept {
     return _Unique_fallback<uint8_t>(_First, _Last, _Dest);
 }
 
-void* __stdcall __std_unique_2(void* _First, void* _Last) noexcept {
+void* __stdcall __std_unique_2(void* _First, void* const _Last) noexcept {
     if (_First == _Last) {
         return _First;
     }
@@ -5136,7 +5265,7 @@ void* __stdcall __std_unique_2(void* _First, void* _Last) noexcept {
     return _Unique_fallback<uint16_t>(_First, _Last, _Dest);
 }
 
-void* __stdcall __std_unique_4(void* _First, void* _Last) noexcept {
+void* __stdcall __std_unique_4(void* _First, void* const _Last) noexcept {
     if (_First == _Last) {
         return _First;
     }
@@ -5183,6 +5312,100 @@ void* __stdcall __std_unique_8(void* _First, void* _Last) noexcept {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Dest  = _Unique_impl<_Remove_sse_8>(_First, _Stop);
+        _First = _Stop;
+    }
+#endif // !defined(_M_ARM64EC)
+
+    return _Unique_fallback<uint64_t>(_First, _Last, _Dest);
+}
+
+void* __stdcall __std_unique_copy_1(const void* _First, const void* const _Last, void* _Dest) noexcept {
+    if (_First == _Last) {
+        return _Dest;
+    }
+
+    memcpy(_Dest, _First, 1);
+    _Advance_bytes(_First, 1);
+
+#ifndef _M_ARM64EC
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 8) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
+        _Dest  = _Unique_copy_impl<_Remove_sse_1>(_First, _Stop, _Dest);
+        _First = _Stop;
+    }
+#endif // !defined(_M_ARM64EC)
+
+    return _Unique_fallback<uint8_t>(_First, _Last, _Dest);
+}
+
+void* __stdcall __std_unique_copy_2(const void* _First, const void* const _Last, void* _Dest) noexcept {
+    if (_First == _Last) {
+        return _Dest;
+    }
+
+    memcpy(_Dest, _First, 2);
+    _Advance_bytes(_First, 2);
+
+#ifndef _M_ARM64EC
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 16) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Dest  = _Unique_copy_impl<_Remove_sse_2>(_First, _Stop, _Dest);
+        _First = _Stop;
+    }
+#endif // !defined(_M_ARM64EC)
+
+    return _Unique_fallback<uint16_t>(_First, _Last, _Dest);
+}
+
+void* __stdcall __std_unique_copy_4(const void* _First, const void* const _Last, void* _Dest) noexcept {
+    if (_First == _Last) {
+        return _Dest;
+    }
+
+    memcpy(_Dest, _First, 4);
+    _Advance_bytes(_First, 4);
+
+#ifndef _M_ARM64EC
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
+        _Dest  = _Unique_copy_impl<_Remove_avx_4>(_First, _Stop, _Dest);
+        _First = _Stop;
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+    } else if (_Use_sse42() && _Size_bytes >= 16) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Dest  = _Unique_copy_impl<_Remove_sse_4>(_First, _Stop, _Dest);
+        _First = _Stop;
+    }
+#endif // !defined(_M_ARM64EC)
+
+    return _Unique_fallback<uint32_t>(_First, _Last, _Dest);
+}
+
+void* __stdcall __std_unique_copy_8(const void* _First, const void* const _Last, void* _Dest) noexcept {
+    if (_First == _Last) {
+        return _Dest;
+    }
+
+    memcpy(_Dest, _First, 8);
+    _Advance_bytes(_First, 8);
+
+#ifndef _M_ARM64EC
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
+        _Dest  = _Unique_copy_impl<_Remove_avx_8>(_First, _Stop, _Dest);
+        _First = _Stop;
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+    } else if (_Use_sse42() && _Size_bytes >= 16) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Dest  = _Unique_copy_impl<_Remove_sse_8>(_First, _Stop, _Dest);
         _First = _Stop;
     }
 #endif // !defined(_M_ARM64EC)
