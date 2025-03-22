@@ -2711,6 +2711,7 @@ namespace {
             return _Last;
         }
 
+#ifndef _M_ARM64EC
         const size_t _Size_bytes = _Byte_length(_First, _Last) - sizeof(_Ty);
 
         if (const size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
@@ -2781,6 +2782,7 @@ namespace {
                 _Advance_bytes(_First, 16);
             } while (_First != _Stop_at);
         }
+#endif // !_M_ARM64EC
 
         auto _Ptr  = static_cast<const _Ty*>(_First);
         auto _Next = _Ptr + 1;
