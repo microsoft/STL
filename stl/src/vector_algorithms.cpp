@@ -2940,7 +2940,7 @@ namespace {
         }
 
         auto _Mid1 = static_cast<const _Ty*>(_First);
-
+#ifndef _M_ARM64EC
         const size_t _Length = _Byte_length(_First, _Last);
         if (_Count <= (16 / sizeof(_Ty)) && _Length >= 32 && _Use_avx2()) {
             const int _Bits_count = static_cast<int>(_Count * sizeof(_Ty));
@@ -3003,7 +3003,7 @@ namespace {
             _Mid1 = static_cast<const _Ty*>(_First);
             _Rewind_bytes(_First, _lzcnt_u32(~_Carry));
         }
-
+#endif // !_M_ARM64EC
         auto _Match_start = static_cast<const _Ty*>(_First);
         auto _Last_ptr    = static_cast<const _Ty*>(_Last);
 
