@@ -3731,22 +3731,22 @@ _NODISCARD _CONSTEXPR20 _VbIt _Find_vbool(_VbIt _First, const _VbIt _Last, const
         const auto _SourceMask     = _FirstSourceMask & _LastSourceMask;
         const auto _SelectVal      = (_Val ? *_VbFirst : ~*_VbFirst) & _SourceMask;
         const auto _Count          = _Countr_zero(_SelectVal);
-        return _Count == _VBITS ? _Last : _First + static_cast<ptrdiff_t>(_Count - _First._Myoff);
+        return _Count == _VBITS ? _Last : _First + static_cast<_Iter_diff_t<_VbIt>>(_Count - _First._Myoff);
     }
 
     const auto _FirstVal   = (_Val ? *_VbFirst : ~*_VbFirst) & _FirstSourceMask;
     const auto _FirstCount = _Countr_zero(_FirstVal);
     if (_FirstCount != _VBITS) {
-        return _First + static_cast<ptrdiff_t>(_FirstCount - _First._Myoff);
+        return _First + static_cast<_Iter_diff_t<_VbIt>>(_FirstCount - _First._Myoff);
     }
     ++_VbFirst;
 
-    _Iter_diff_t<_VbIt> _TotalCount = static_cast<ptrdiff_t>(_VBITS - _First._Myoff);
+    auto _TotalCount = static_cast<_Iter_diff_t<_VbIt>>(_VBITS - _First._Myoff);
     for (; _VbFirst != _VbLast; ++_VbFirst, _TotalCount += _VBITS) {
         const auto _SelectVal = _Val ? *_VbFirst : ~*_VbFirst;
         const auto _Count     = _Countr_zero(_SelectVal);
         if (_Count != _VBITS) {
-            return _First + (_TotalCount + _Count);
+            return _First + static_cast<_Iter_diff_t<_VbIt>>(_TotalCount + _Count);
         }
     }
 
@@ -3755,7 +3755,7 @@ _NODISCARD _CONSTEXPR20 _VbIt _Find_vbool(_VbIt _First, const _VbIt _Last, const
         const auto _LastVal        = (_Val ? *_VbFirst : ~*_VbFirst) & _LastSourceMask;
         const auto _Count          = _Countr_zero(_LastVal);
         if (_Count != _VBITS) {
-            return _First + (_TotalCount + _Count);
+            return _First + static_cast<_Iter_diff_t<_VbIt>>(_TotalCount + _Count);
         }
     }
 
