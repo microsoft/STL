@@ -810,7 +810,7 @@ void limits_test() {
 void locale_test() {
     char c{};
     locale loc{};
-    // need all collates to instantiate xlocinfo _Lstrcoll and _Lstrxfrm
+    // need all collates to instantiate locale _Lstrcoll and _Lstrxfrm
     auto cc   = has_facet<collate<char>>(loc);
     auto cw   = has_facet<collate<wchar_t>>(loc);
     auto cbnc = has_facet<collate_byname<char>>(loc);
