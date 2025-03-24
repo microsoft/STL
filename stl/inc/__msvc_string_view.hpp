@@ -43,6 +43,20 @@ __declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_1(
 __declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_2(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept;
 
+const void* __stdcall __std_find_not_ch_1(const void* _First, const void* _Last, uint8_t _Val) noexcept;
+const void* __stdcall __std_find_not_ch_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
+const void* __stdcall __std_find_not_ch_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
+const void* __stdcall __std_find_not_ch_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
+
+__declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_1(
+    const void* _First, const void* _Last, uint8_t _Val) noexcept;
+__declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_2(
+    const void* _First, const void* _Last, uint16_t _Val) noexcept;
+__declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_4(
+    const void* _First, const void* _Last, uint32_t _Val) noexcept;
+__declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_8(
+    const void* _First, const void* _Last, uint64_t _Val) noexcept;
+
 } // extern "C"
 
 _STD_BEGIN
@@ -77,6 +91,35 @@ size_t _Find_last_of_pos_vectorized(const _Ty1* const _Haystack, const size_t _H
     }
 }
 
+template <class _Ty>
+const _Ty* _Find_not_ch_vectorized(const _Ty* const _First, const _Ty* const _Last, const _Ty _Ch) noexcept {
+    if constexpr (sizeof(_Ty) == 1) {
+        return static_cast<const _Ty*>(::__std_find_not_ch_1(_First, _Last, static_cast<uint8_t>(_Ch)));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return static_cast<const _Ty*>(::__std_find_not_ch_2(_First, _Last, static_cast<uint16_t>(_Ch)));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return static_cast<const _Ty*>(::__std_find_not_ch_4(_First, _Last, static_cast<uint32_t>(_Ch)));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return static_cast<const _Ty*>(::__std_find_not_ch_8(_First, _Last, static_cast<uint64_t>(_Ch)));
+    } else {
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+    }
+}
+
+template <class _Ty>
+size_t _Find_last_not_ch_pos_vectorized(const _Ty* const _First, const _Ty* const _Last, const _Ty _Ch) noexcept {
+    if constexpr (sizeof(_Ty) == 1) {
+        return ::__std_find_last_not_ch_pos_1(_First, _Last, static_cast<uint8_t>(_Ch));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return ::__std_find_last_not_ch_pos_2(_First, _Last, static_cast<uint16_t>(_Ch));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return ::__std_find_last_not_ch_pos_4(_First, _Last, static_cast<uint32_t>(_Ch));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return ::__std_find_last_not_ch_pos_8(_First, _Last, static_cast<uint64_t>(_Ch));
+    } else {
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+    }
+}
 _STD_END
 
 #endif // _USE_STD_VECTOR_ALGORITHMS
@@ -987,12 +1030,28 @@ template <class _Traits>
 constexpr size_t _Traits_find_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits> _Haystack,
     const size_t _Hay_size, const size_t _Start_at, const _Traits_ch_t<_Traits> _Ch) noexcept {
     // search [_Haystack, _Haystack + _Hay_size) for any value other than _Ch, at/after _Start_at
-    if (_Start_at < _Hay_size) { // room for match, look for it
-        const auto _End = _Haystack + _Hay_size;
-        for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
-            if (!_Traits::eq(*_Match_try, _Ch)) {
-                return static_cast<size_t>(_Match_try - _Haystack); // found a match
+    if (_Start_at >= _Hay_size) { // no room for match
+        return static_cast<size_t>(-1); // no match
+    }
+
+    const auto _End = _Haystack + _Hay_size;
+
+#if _USE_STD_VECTOR_ALGORITHMS
+    if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
+        if (!_STD _Is_constant_evaluated()) {
+            const auto _Result = _STD _Find_not_ch_vectorized(_Haystack + _Start_at, _End, _Ch);
+            if (_Result != _End) {
+                return static_cast<size_t>(_Result - _Haystack);
+            } else {
+                return static_cast<size_t>(-1); // no match
             }
+        }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
+    for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
+        if (!_Traits::eq(*_Match_try, _Ch)) {
+            return static_cast<size_t>(_Match_try - _Haystack); // found a match
         }
     }
 
@@ -1047,7 +1106,17 @@ constexpr size_t _Traits_rfind_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<
         return static_cast<size_t>(-1);
     }
 
-    for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
+    const size_t _Actual_start_at = (_STD min)(_Start_at, _Hay_size - 1);
+
+#if _USE_STD_VECTOR_ALGORITHMS
+    if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
+        if (!_STD _Is_constant_evaluated()) {
+            return _STD _Find_last_not_ch_pos_vectorized(_Haystack, _Haystack + _Actual_start_at + 1, _Ch);
+        }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
+    for (auto _Match_try = _Haystack + _Actual_start_at;; --_Match_try) {
         if (!_Traits::eq(*_Match_try, _Ch)) {
             return static_cast<size_t>(_Match_try - _Haystack); // found a match
         }
