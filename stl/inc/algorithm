@@ -2426,7 +2426,11 @@ namespace ranges {
                     // |=======|????????|========|??????...
 
                     --_Mid2;
-                    if (!_STD invoke(_Pred, _STD invoke(_Proj, *_Mid2), _Val)) { // mismatch; skip past it
+                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_Mid2), _Val)) {
+                        if (_Mid2 == _Mid1) { // [_Mid1, _Mid2) is empty, so [_First, _Last) all match
+                            return {_STD move(_First), _STD move(_Last)};
+                        }
+                    } else { // mismatch; skip past it
                         ++_Mid2;
                         const auto _Delta = _RANGES distance(_First, _Mid2);
 
@@ -2441,11 +2445,6 @@ namespace ranges {
                         _Mid1 = _Last;
                         _RANGES advance(_Last, _Delta);
                         _Mid2 = _Last;
-                        continue;
-                    }
-
-                    if (_Mid2 == _Mid1) { // [_Mid1, _Mid2) is empty, so [_First, _Last) all match
-                        return {_STD move(_First), _STD move(_Last)};
                     }
                 }
             } else {
