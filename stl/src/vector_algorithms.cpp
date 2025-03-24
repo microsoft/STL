@@ -2556,11 +2556,13 @@ namespace {
         return _Ptr;
     }
 
+    enum class _Find_one_predicate { _Equal, _Not_equal };
+
     // The below functions have exactly the same signature as the extern "C" functions, up to calling convention.
     // This makes sure the template specialization can be fused with the extern "C" function.
     // In optimized builds it avoids an extra call, as these functions are too large to inline.
 
-    template <class _Traits, class _Ty>
+    template <class _Traits, _Find_one_predicate _Pred, class _Ty>
     const void* __stdcall __std_find_trivial_impl(const void* _First, const void* _Last, _Ty _Val) noexcept {
 #ifndef _M_ARM64EC
         const size_t _Size_bytes = _Byte_length(_First, _Last);
@@ -2574,7 +2576,11 @@ namespace {
 
             do {
                 const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
-                const int _Bingo    = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+                int _Bingo          = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+
+                if constexpr (_Pred == _Find_one_predicate::_Not_equal) {
+                    _Bingo ^= 0xFFFF'FFFF;
+                }
 
                 if (_Bingo != 0) {
                     const unsigned long _Offset = _tzcnt_u32(_Bingo);
@@ -2588,8 +2594,11 @@ namespace {
             if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
                 const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
                 const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
-                const int _Bingo =
-                    _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
+                int _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
+
+                if constexpr (_Pred == _Find_one_predicate::_Not_equal) {
+                    _Bingo ^= (1 << _Avx_tail_size) - 1;
+                }
 
                 if (_Bingo != 0) {
                     const unsigned long _Offset = _tzcnt_u32(_Bingo);
@@ -2610,7 +2619,11 @@ namespace {
 
             do {
                 const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
-                const int _Bingo    = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
+                int _Bingo          = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
+
+                if constexpr (_Pred == _Find_one_predicate::_Not_equal) {
+                    _Bingo ^= 0xFFFF;
+                }
 
                 if (_Bingo != 0) {
                     unsigned long _Offset;
@@ -2625,13 +2638,19 @@ namespace {
         }
 #endif // !_M_ARM64EC
         auto _Ptr = static_cast<const _Ty*>(_First);
-        while (_Ptr != _Last && *_Ptr != _Val) {
-            ++_Ptr;
+        if constexpr (_Pred == _Find_one_predicate::_Not_equal) {
+            while (_Ptr != _Last && *_Ptr == _Val) {
+                ++_Ptr;
+            }
+        } else {
+            while (_Ptr != _Last && *_Ptr != _Val) {
+                ++_Ptr;
+            }
         }
         return _Ptr;
     }
 
-    template <class _Traits, class _Ty>
+    template <class _Traits, _Find_one_predicate _Pred, class _Ty>
     const void* __stdcall __std_find_last_trivial_impl(const void* _First, const void* _Last, _Ty _Val) noexcept {
         const void* const _Real_last = _Last;
 #ifndef _M_ARM64EC
@@ -2647,7 +2666,11 @@ namespace {
             do {
                 _Rewind_bytes(_Last, 32);
                 const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
-                const int _Bingo    = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+                int _Bingo          = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+
+                if constexpr (_Pred == _Find_one_predicate::_Not_equal) {
+                    _Bingo ^= 0xFFFF'FFFF;
+                }
 
                 if (_Bingo != 0) {
                     const unsigned long _Offset = _lzcnt_u32(_Bingo);
@@ -2660,8 +2683,11 @@ namespace {
                 _Rewind_bytes(_Last, _Avx_tail_size);
                 const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
                 const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_Last), _Tail_mask);
-                const int _Bingo =
-                    _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
+                int _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
+
+                if constexpr (_Pred == _Find_one_predicate::_Not_equal) {
+                    _Bingo ^= (1 << _Avx_tail_size) - 1;
+                }
 
                 if (_Bingo != 0) {
                     const unsigned long _Offset = _lzcnt_u32(_Bingo);
@@ -2681,7 +2707,11 @@ namespace {
             do {
                 _Rewind_bytes(_Last, 16);
                 const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
-                const int _Bingo    = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
+                int _Bingo          = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
+
+                if constexpr (_Pred == _Find_one_predicate::_Not_equal) {
+                    _Bingo ^= 0xFFFF;
+                }
 
                 if (_Bingo != 0) {
                     unsigned long _Offset;
@@ -2699,9 +2729,25 @@ namespace {
                 return _Real_last;
             }
             --_Ptr;
-            if (*_Ptr == _Val) {
-                return _Ptr;
+            if constexpr (_Pred == _Find_one_predicate::_Not_equal) {
+                if (*_Ptr != _Val) {
+                    return _Ptr;
+                }
+            } else {
+                if (*_Ptr == _Val) {
+                    return _Ptr;
+                }
             }
+        }
+    }
+
+    template <class _Traits, _Find_one_predicate _Pred, class _Ty>
+    size_t __stdcall __std_find_last_pos(const void* const _First, const void* const _Last, const _Ty _Val) noexcept {
+        const void* const _Result = __std_find_last_trivial_impl<_Traits, _Pred>(_First, _Last, _Val);
+        if (_Result == _Last) {
+            return static_cast<size_t>(-1);
+        } else {
+            return _Byte_length(_First, _Result) / sizeof(_Ty);
         }
     }
 
@@ -4244,7 +4290,8 @@ namespace {
         }
 
         if (_Count2 == 1) {
-            return __std_find_trivial_impl<_Traits>(_First1, _Last1, *static_cast<const _Ty*>(_First2));
+            return __std_find_trivial_impl<_Traits, _Find_one_predicate::_Equal>(
+                _First1, _Last1, *static_cast<const _Ty*>(_First2));
         }
 
         const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
@@ -4393,7 +4440,8 @@ namespace {
         }
 
         if (_Count2 == 1) {
-            return __std_find_last_trivial_impl<_Traits>(_First1, _Last1, *static_cast<const _Ty*>(_First2));
+            return __std_find_last_trivial_impl<_Traits, _Find_one_predicate::_Equal>(
+                _First1, _Last1, *static_cast<const _Ty*>(_First2));
         }
 
         const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
@@ -4662,42 +4710,82 @@ const void* __stdcall __std_find_trivial_unsized_8(const void* const _First, con
 
 const void* __stdcall __std_find_trivial_1(
     const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return __std_find_trivial_impl<_Find_traits_1>(_First, _Last, _Val);
+    return __std_find_trivial_impl<_Find_traits_1, _Find_one_predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_trivial_2(
     const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return __std_find_trivial_impl<_Find_traits_2>(_First, _Last, _Val);
+    return __std_find_trivial_impl<_Find_traits_2, _Find_one_predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_trivial_4(
     const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return __std_find_trivial_impl<_Find_traits_4>(_First, _Last, _Val);
+    return __std_find_trivial_impl<_Find_traits_4, _Find_one_predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_trivial_8(
     const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return __std_find_trivial_impl<_Find_traits_8>(_First, _Last, _Val);
+    return __std_find_trivial_impl<_Find_traits_8, _Find_one_predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_last_trivial_1(
     const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return __std_find_last_trivial_impl<_Find_traits_1>(_First, _Last, _Val);
+    return __std_find_last_trivial_impl<_Find_traits_1, _Find_one_predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_last_trivial_2(
     const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return __std_find_last_trivial_impl<_Find_traits_2>(_First, _Last, _Val);
+    return __std_find_last_trivial_impl<_Find_traits_2, _Find_one_predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_last_trivial_4(
     const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return __std_find_last_trivial_impl<_Find_traits_4>(_First, _Last, _Val);
+    return __std_find_last_trivial_impl<_Find_traits_4, _Find_one_predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_last_trivial_8(
     const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return __std_find_last_trivial_impl<_Find_traits_8>(_First, _Last, _Val);
+    return __std_find_last_trivial_impl<_Find_traits_8, _Find_one_predicate::_Equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_not_ch_1(
+    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
+    return __std_find_trivial_impl<_Find_traits_1, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_not_ch_2(
+    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
+    return __std_find_trivial_impl<_Find_traits_2, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_not_ch_4(
+    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
+    return __std_find_trivial_impl<_Find_traits_4, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_not_ch_8(
+    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
+    return __std_find_trivial_impl<_Find_traits_8, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_1(
+    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
+    return __std_find_last_pos<_Find_traits_1, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_2(
+    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
+    return __std_find_last_pos<_Find_traits_2, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_4(
+    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
+    return __std_find_last_pos<_Find_traits_4, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_8(
+    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
+    return __std_find_last_pos<_Find_traits_8, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
 }
 
 __declspec(noalias) size_t __stdcall __std_count_trivial_1(

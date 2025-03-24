@@ -230,6 +230,11 @@ private:
         _STL_VERIFY(*this <= _Last, "array iterator range transposed");
     }
 
+    friend constexpr void _Verify_range(
+        const _Array_const_iterator& _First, const _Array_const_iterator& _Last) noexcept {
+        _First._Verify_with(_Last);
+    }
+
     constexpr void _Seek_to(pointer _It) noexcept {
         _Idx = static_cast<size_t>(_It - _Ptr);
     }
@@ -276,15 +281,6 @@ public:
     }
 #endif // !_HAS_CXX20
 };
-
-#if _ITERATOR_DEBUG_LEVEL != 0
-template <class _Ty, size_t _Size>
-constexpr void _Verify_range(
-    const _Array_const_iterator<_Ty, _Size>& _First, const _Array_const_iterator<_Ty, _Size>& _Last) noexcept {
-    // TRANSITION, CUDA
-    _First._Verify_with(_Last);
-}
-#endif // _ITERATOR_DEBUG_LEVEL != 0
 
 #if _HAS_CXX20
 template <class _Ty, size_t _Size>

@@ -533,7 +533,7 @@ private:
 inline bool _Is_word(unsigned char _UCh) {
     // special casing char to avoid branches for std::regex in this path
     static constexpr bool _Is_word_table[_STD _Max_limit<unsigned char>() + 1] = {
-        //        X0 X1 X2 X3 X4 X5 X6 X7 X8 X9 XA XB XC XD XE XF
+        //       X0 X1 X2 X3 X4 X5 X6 X7 X8 X9 XA XB XC XD XE XF
         /* 0X */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         /* 1X */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         /* 2X */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

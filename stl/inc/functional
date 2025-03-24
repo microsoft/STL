@@ -1506,11 +1506,6 @@ public:
         _Other._Reset_to_null();
     }
 
-    void _Construct_with_null() noexcept {
-        _Data._Impl = nullptr;
-        _Data._Set_large_fn_ptr(nullptr); // initialize, since we'll be copying it
-    }
-
     void _Reset_to_null() noexcept {
         _Data._Impl = nullptr;
     }
@@ -1888,11 +1883,11 @@ public:
     using typename _Call::result_type;
 
     move_only_function() noexcept {
-        this->_Construct_with_null();
+        this->_Reset_to_null();
     }
 
     move_only_function(nullptr_t) noexcept {
-        this->_Construct_with_null();
+        this->_Reset_to_null();
     }
 
     move_only_function(move_only_function&&) noexcept = default;
@@ -1906,7 +1901,7 @@ public:
 
         if constexpr (is_member_pointer_v<_Vt> || is_pointer_v<_Vt> || _Is_specialization_v<_Vt, move_only_function>) {
             if (_Callable == nullptr) {
-                this->_Construct_with_null();
+                this->_Reset_to_null();
                 return;
             }
         }
@@ -2137,7 +2132,7 @@ template <class _Ret, class _CvFD, class _IntSeq, class _CvBoundTuple, class _Un
 concept _Can_call_binder = requires(_CvFD& _Fx, _CvBoundTuple& _Bound_tuple, _UnboundTuple&& _Unbound_tuple) {
     _STD _Call_binder(_Invoker_ret<_Ret>{}, _IntSeq{}, _Fx, _Bound_tuple, _STD move(_Unbound_tuple));
 };
-#else // ^^^ concept available / concept unavailable vvv
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ret, class _CvFD, class _IntSeq, class _CvBoundTuple, class _UnboundTuple, class = void>
 constexpr bool _Can_call_binder = false;
 
@@ -2145,7 +2140,7 @@ template <class _Ret, class _CvFD, class _IntSeq, class _CvBoundTuple, class _Un
 constexpr bool _Can_call_binder<_Ret, _CvFD, _IntSeq, _CvBoundTuple, _UnboundTuple,
     void_t<decltype(_STD _Call_binder(_Invoker_ret<_Ret>{}, _IntSeq{}, _STD declval<_CvFD&>(),
         _STD declval<_CvBoundTuple&>(), _STD declval<_UnboundTuple>()))>> = true;
-#endif // ^^^ concept unavailable ^^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 template <class _Ret>
 struct _Forced_result_type { // used by bind<R>()

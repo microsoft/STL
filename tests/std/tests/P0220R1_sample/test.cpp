@@ -41,7 +41,7 @@ namespace {
         assert(sample(SI{cbegin(source)}, SI{cend(source)}, DI{begin(dest1)}, n, cpy).base() == cbegin(dest1) + result);
         assert(equal(cbegin(dest0), cbegin(dest0) + result, cbegin(dest1), cbegin(dest1) + result));
 
-        if (is_base_of_v<forward_iterator_tag, SourceCategory>) {
+        if constexpr (is_base_of_v<forward_iterator_tag, SourceCategory>) {
             // Verify stability
             assert(is_sorted(cbegin(dest0), cbegin(dest0) + result));
         } else {

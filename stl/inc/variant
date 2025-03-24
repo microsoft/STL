@@ -899,7 +899,7 @@ struct _Variant_init_overload_set_<index_sequence<_Indices...>, _Types...>
 template <class... _Types>
 using _Variant_init_overload_set = _Variant_init_overload_set_<index_sequence_for<_Types...>, _Types...>;
 
-template <class Enable, class _Ty, class... _Types>
+template <class _Enable, class _Ty, class... _Types>
 struct _Variant_init_helper {}; // failure case (has no member "type")
 
 template <class _Ty, class... _Types>
