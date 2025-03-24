@@ -107,6 +107,7 @@ function(add_benchmark name)
 endfunction()
 
 add_benchmark(adjacent_difference src/adjacent_difference.cpp)
+add_benchmark(adjacent_find src/adjacent_find.cpp)
 add_benchmark(bitset_from_string src/bitset_from_string.cpp)
 add_benchmark(bitset_to_string src/bitset_to_string.cpp)
 add_benchmark(efficient_nonlocking_print src/efficient_nonlocking_print.cpp)
