@@ -130,7 +130,6 @@ size_t _Find_last_not_ch_pos_vectorized(const _Ty* const _First, const _Ty* cons
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
-
 template <class _Ty1, class _Ty2>
 size_t _Find_first_not_of_pos_vectorized(const _Ty1* const _Haystack, const size_t _Haystack_length,
     const _Ty2* const _Needle, const size_t _Needle_length) noexcept {
