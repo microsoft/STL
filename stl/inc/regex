@@ -1511,7 +1511,6 @@ public:
     using _Difft = typename iterator_traits<_FwdIt>::difference_type;
 
     _Builder(const _RxTraits& _Tr, regex_constants::syntax_option_type);
-    bool _Beg_expr() const;
     void _Setlong();
     // _Discard_pattern is an ABI zombie name
     void _Tidy() noexcept;
@@ -1547,7 +1546,6 @@ private:
     static void _Insert_node(_Node_base*, _Node_base*);
     _Node_base* _New_node(_Node_type _Kind);
     void _Add_str_node();
-    bool _Beg_expr(_Node_base*) const;
     void _Add_char_to_bitmap(_Elem _Ch);
     void _Add_char_to_array(_Elem _Ch);
     void _Add_elts(_Node_class<_Elem, _RxTraits>*, typename _RxTraits::char_class_type, bool);
@@ -2785,17 +2783,6 @@ _Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Getmark() const {
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Builder<_FwdIt, _Elem, _RxTraits>::_Beg_expr(_Node_base* _Nx) const {
-    // test for beginning of expression or subexpression
-    return _Nx->_Kind == _N_begin || _Nx->_Kind == _N_group || _Nx->_Kind == _N_capture;
-}
-
-template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Builder<_FwdIt, _Elem, _RxTraits>::_Beg_expr() const { // test for beginning of expression or subexpression
-    return _Beg_expr(_Current) || (_Current->_Kind == _N_bol && _Beg_expr(_Current->_Prev));
-}
-
-template <class _FwdIt, class _Elem, class _RxTraits>
 _Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Link_node(_Node_base* _Nx) { // insert _Nx at current location
     _Nx->_Prev = _Current;
     if (_Current->_Next) { // set back pointer
@@ -3905,17 +3892,16 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
         break;
 
     case _Meta_star:
-        if ((_L_flags & _L_star_beg) && _Nfa._Beg_expr()) {
-            _Mchar = _Meta_chr;
-        }
-
+        // A star can always act as a quantifier outside bracket expressions,
+        // but _L_star_beg (used by basic/grep) allows its use as an ordinary character
+        // at the beginning of a (sub-)expression (potentially after an optional caret anchor).
+        // We'll handle that when we are parsing alternatives in disjunctions.
         break;
 
     case _Meta_caret:
-        if ((_L_flags & _L_anch_rstr) && !_Nfa._Beg_expr()) {
-            _Mchar = _Meta_chr;
-        }
-
+        // A caret can always negate a bracket expression,
+        // but _L_anch_rstr (used by basic/grep) restricts caret anchors to the beginning.
+        // We'll handle that restriction when we're about to add a bol node.
         break;
 
     case _Meta_dlr:
@@ -4481,15 +4467,21 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alte
             _Next();
             _Quant = _Wrapped_disjunction();
             _Expect(_Meta_rpar, regex_constants::error_paren);
-        } else if (_Mchar == _Meta_caret) { // add bol node
+        } else if (_Mchar == _Meta_caret && (!(_L_flags & _L_anch_rstr) || !_Found)) { // add bol node
             _Nfa._Add_bol();
             _Next();
-            _Quant = false;
+            if ((_L_flags & _L_star_beg) && _Mchar == _Meta_star && !_Found) {
+                _Nfa._Add_char(_Char);
+                _Next();
+            } else {
+                _Quant = false;
+            }
         } else if (_Mchar == _Meta_dlr) { // add eol node
             _Nfa._Add_eol();
             _Next();
             _Quant = false;
-        } else if (_Mchar == _Meta_star || _Mchar == _Meta_plus || _Mchar == _Meta_query || _Mchar == _Meta_lbr) {
+        } else if ((_Mchar == _Meta_star && (!(_L_flags & _L_star_beg) || _Found)) || _Mchar == _Meta_plus
+                   || _Mchar == _Meta_query || _Mchar == _Meta_lbr) {
             _Error(regex_constants::error_badrepeat);
         } else if (_Mchar == _Meta_rbr && !(_L_flags & _L_paren_bal)) {
             _Error(regex_constants::error_brace);
