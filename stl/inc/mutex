@@ -170,17 +170,8 @@ public:
         _Other._Owns = false;
     }
 
-    unique_lock& operator=(unique_lock&& _Other) noexcept /* strengthened */ {
-        if (this != _STD addressof(_Other)) {
-            if (_Owns) {
-                _Pmtx->unlock();
-            }
-
-            _Pmtx        = _Other._Pmtx;
-            _Owns        = _Other._Owns;
-            _Other._Pmtx = nullptr;
-            _Other._Owns = false;
-        }
+    unique_lock& operator=(unique_lock&& _Other) noexcept {
+        unique_lock{_STD move(_Other)}.swap(*this);
         return *this;
     }
 
