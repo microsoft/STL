@@ -1031,7 +1031,6 @@ void test_gh_5165_grep() {
         middle_nl_with_caret.should_search_fail("^a");
         middle_nl_with_caret.should_search_fail("ca");
         middle_nl_with_caret.should_search_fail("^b");
-        middle_nl_with_caret.should_search_fail("ca");
         middle_nl_with_caret.should_search_fail("cb");
     }
     {
@@ -1171,6 +1170,197 @@ void test_gh_5253() {
     g_regexTester.should_not_match("a", "()*");
 }
 
+void test_gh_5362_syntax_option(const syntax_option_type basic_or_grep) {
+    {
+        const test_regex beginning_anchor(&g_regexTester, "meo[wW]$", basic_or_grep);
+        beginning_anchor.should_search_match("kitten_meow", "meow");
+        beginning_anchor.should_search_fail("homeowner");
+    }
+    {
+        const test_regex middle_anchor(&g_regexTester, "me$o[wW]", basic_or_grep);
+        middle_anchor.should_search_fail("kitten_meow");
+        middle_anchor.should_search_fail("homeowner");
+        middle_anchor.should_search_match("home$owner", "me$ow");
+    }
+    {
+        const test_regex double_carets(&g_regexTester, "meo[wW]$$", basic_or_grep);
+        double_carets.should_search_fail("kitten_meow");
+        double_carets.should_search_fail("homeowner");
+        double_carets.should_search_match("kitten_meow$", "meow$");
+        double_carets.should_search_fail("kitten_meow$$");
+        double_carets.should_search_fail("homeow$ner");
+        double_carets.should_search_fail("homeow$$ner");
+    }
+
+    g_regexTester.should_not_match("me^ow", R"(\(me$\)o[wW])", basic_or_grep);
+    g_regexTester.should_not_match("meow", R"(\(me$\)o[wW])", basic_or_grep);
+
+    {
+        const test_regex singlegroup_anchor(&g_regexTester, R"(\(meo[wW]$\))", basic_or_grep);
+        singlegroup_anchor.should_search_match("kitten_meow", "meow");
+        singlegroup_anchor.should_search_fail("kitten_meow$");
+        singlegroup_anchor.should_search_fail("homeowner");
+        singlegroup_anchor.should_search_fail("homeow$ner");
+    }
+    {
+        const test_regex suffixedgroup_anchor(&g_regexTester, R"(\(meo[wW]$\).*)", basic_or_grep);
+        suffixedgroup_anchor.should_search_match("kitten_meow", "meow");
+        suffixedgroup_anchor.should_search_fail("kitten_meow$");
+        suffixedgroup_anchor.should_search_fail("homeowner");
+        suffixedgroup_anchor.should_search_fail("homeow$ner");
+    }
+    {
+        const test_regex firstgroup_anchor(&g_regexTester, R"(\(meo[wW]$\)\(.*\))", basic_or_grep);
+        firstgroup_anchor.should_search_match("kitten_meow", "meow");
+        firstgroup_anchor.should_search_fail("^kitten_meow$");
+        firstgroup_anchor.should_search_fail("homeowner");
+        firstgroup_anchor.should_search_fail("homeow$ner");
+    }
+    {
+        const test_regex nested_anchor(&g_regexTester, R"(\(\(meo[wW]$\)$\).*)", basic_or_grep);
+        nested_anchor.should_search_match("kitten_meow", "meow");
+        nested_anchor.should_search_fail("kitten_meow$");
+        nested_anchor.should_search_fail("kitten_meow$$");
+        nested_anchor.should_search_fail("homeowner");
+        nested_anchor.should_search_fail("homeow$ner");
+        nested_anchor.should_search_fail("homeow$$ner");
+    }
+    {
+        const test_regex double_carets(&g_regexTester, R"(\(meo[wW]$$\).*)", basic_or_grep);
+        double_carets.should_search_fail("kitten_meow");
+        double_carets.should_search_match("kitten_meow$", "meow$");
+        double_carets.should_search_fail("kitten_meow$$");
+        double_carets.should_search_fail("homeowner");
+        double_carets.should_search_fail("homeow$ner");
+        double_carets.should_search_fail("homeow$$ner");
+    }
+
+    // Validate that there is no special behavior near bars,
+    // as they are alternation operators in regex modes other than basic or grep.
+    {
+        const test_regex middle_bar(&g_regexTester, "a|a$", basic_or_grep);
+        middle_bar.should_search_match("a|a", "a|a");
+        middle_bar.should_search_fail("a|a$");
+        middle_bar.should_search_fail("a|ab");
+        middle_bar.should_search_fail("a");
+    }
+    {
+        const test_regex group_middle_bar(&g_regexTester, R"(\(a|a\)$)", basic_or_grep);
+        group_middle_bar.should_search_match("a|a", "a|a");
+        group_middle_bar.should_search_fail("a|a$");
+        group_middle_bar.should_search_fail("a|ab");
+        group_middle_bar.should_search_fail("a");
+    }
+    {
+        const test_regex middle_bar_with_dollar(&g_regexTester, "a$|b$", basic_or_grep);
+        middle_bar_with_dollar.should_search_match("a$|b", "a$|b");
+        middle_bar_with_dollar.should_search_fail("a|b");
+        middle_bar_with_dollar.should_search_fail("a$|b$");
+        middle_bar_with_dollar.should_search_fail("a$|bc");
+        middle_bar_with_dollar.should_search_fail("a");
+        middle_bar_with_dollar.should_search_fail("b");
+    }
+    {
+        const test_regex group_middle_bar_with_dollar(&g_regexTester, R"(\(a$|b\)$)", basic_or_grep);
+        group_middle_bar_with_dollar.should_search_match("a$|b", "a$|b");
+        group_middle_bar_with_dollar.should_search_fail("a|b");
+        group_middle_bar_with_dollar.should_search_fail("a$|b$");
+        group_middle_bar_with_dollar.should_search_fail("a$|bc");
+        group_middle_bar_with_dollar.should_search_fail("a");
+        group_middle_bar_with_dollar.should_search_fail("b");
+    }
+}
+
+void test_gh_5362_basic() {
+    // test cases specific for basic regular expressions
+    {
+        const test_regex middle_nl(&g_regexTester, "a\na$", basic);
+        middle_nl.should_search_match("a\na", "a\na");
+        middle_nl.should_search_fail("a\na$");
+        middle_nl.should_search_fail("a\nab");
+        middle_nl.should_search_fail("a");
+    }
+    {
+        const test_regex group_middle_nl(&g_regexTester, "\\(a\na\\)$", basic);
+        group_middle_nl.should_search_match("a\na", "a\na");
+        group_middle_nl.should_search_fail("a\na$");
+        group_middle_nl.should_search_fail("a\nab");
+        group_middle_nl.should_search_fail("a");
+    }
+    {
+        const test_regex middle_nl_with_dollar(&g_regexTester, "a$\nb$", basic);
+        middle_nl_with_dollar.should_search_match("a$\nb", "a$\nb");
+        middle_nl_with_dollar.should_search_fail("a\nb");
+        middle_nl_with_dollar.should_search_fail("a$\nb$");
+        middle_nl_with_dollar.should_search_fail("a$\nbc");
+        middle_nl_with_dollar.should_search_fail("a");
+        middle_nl_with_dollar.should_search_fail("b");
+    }
+    {
+        const test_regex group_middle_nl_with_dollar(&g_regexTester, "^\\(a$\nb\\)$", basic);
+        group_middle_nl_with_dollar.should_search_match("a$\nb", "a$\nb");
+        group_middle_nl_with_dollar.should_search_fail("a\nb");
+        group_middle_nl_with_dollar.should_search_fail("a$\nb$");
+        group_middle_nl_with_dollar.should_search_fail("a$\nbc");
+        group_middle_nl_with_dollar.should_search_fail("a");
+        group_middle_nl_with_dollar.should_search_fail("b");
+    }
+}
+
+void test_gh_5362_grep() {
+    // test cases specific for grep mode
+    {
+        const test_regex middle_nl(&g_regexTester, "a\na$", grep);
+        middle_nl.should_search_match("a\na$", "a");
+        middle_nl.should_search_match("a\na$", "a");
+        middle_nl.should_search_match("a\nab", "a");
+        middle_nl.should_search_match("a", "a");
+        middle_nl.should_search_fail("b");
+    }
+    {
+        // This regular expression is not accepted by POSIX grep, but currently the regex parser does not reject it.
+        // If the parser is changed to reject it, adjust this test case.
+        const test_regex group_middle_nl(&g_regexTester, "\\(a\na\\)$", grep);
+        group_middle_nl.should_search_match("a\na", "a\na");
+        group_middle_nl.should_search_fail("a\na$");
+        group_middle_nl.should_search_fail("a\nac");
+        group_middle_nl.should_search_fail("a");
+    }
+    {
+        const test_regex middle_nl_with_dollar(&g_regexTester, "a$\nb$", grep);
+        middle_nl_with_dollar.should_search_match("a$\nb", "b");
+        middle_nl_with_dollar.should_search_match("a\nb", "a");
+        middle_nl_with_dollar.should_search_match("ba", "a");
+        middle_nl_with_dollar.should_search_match("a", "a");
+        middle_nl_with_dollar.should_search_match("b", "b");
+        middle_nl_with_dollar.should_search_match("ab", "b");
+        middle_nl_with_dollar.should_search_fail("a$");
+        middle_nl_with_dollar.should_search_fail("ac");
+        middle_nl_with_dollar.should_search_fail("b$");
+        middle_nl_with_dollar.should_search_fail("bc");
+    }
+    {
+        // This regular expression is not accepted by POSIX grep, but currently the regex parser does not reject it.
+        // If the parser is changed to reject it, adjust this test case.
+        const test_regex group_middle_nl_with_dollar(&g_regexTester, "\\(a$\nb\\)$", grep);
+        group_middle_nl_with_dollar.should_search_match("a$\nb", "a$\nb");
+        group_middle_nl_with_dollar.should_search_fail("a\nb");
+        group_middle_nl_with_dollar.should_search_fail("a$\nb$");
+        group_middle_nl_with_dollar.should_search_fail("a$\nbc");
+        group_middle_nl_with_dollar.should_search_fail("a");
+        group_middle_nl_with_dollar.should_search_fail("b");
+    }
+}
+
+void test_gh_5362() {
+    // GH-5362: `<regex>`: Properly parse dollar anchors in basic and grep mode
+    test_gh_5362_syntax_option(basic);
+    test_gh_5362_syntax_option(grep);
+
+    test_gh_5362_basic();
+    test_gh_5362_grep();
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -1208,6 +1398,7 @@ int main() {
     test_gh_5192();
     test_gh_5214();
     test_gh_5253();
+    test_gh_5362();
 
     return g_regexTester.result();
 }
