@@ -1734,7 +1734,7 @@ private:
     void _Do_ex_class(_Meta_type);
     bool _CharacterClassEscape(bool);
     _Prs_ret _ClassEscape2();
-    _Prs_ret _ClassAtom();
+    _Prs_ret _ClassAtom(bool);
     void _ClassRanges();
     void _CharacterClass();
     bool _IdentityEscape();
@@ -4111,7 +4111,7 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassEscape2() { // check for class
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassAtom() { // check for class atom
+_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassAtom(const bool _Initial) { // check for class atom
     if (_Mchar == _Meta_esc) { // check for valid escape sequence
         _Next();
         if (_L_flags & _L_grp_esc) {
@@ -4134,7 +4134,10 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassAtom() { // check for class at
             _Val = _Meta_lsq;
             return _Prs_chr;
         }
-    } else if (_Mchar == _Meta_rsq || _Mchar == _Meta_eos) {
+    } else if ((_Mchar == _Meta_rsq
+                   && (!(_L_flags & _L_brk_rstr)
+                       || !_Initial)) // initial ] does not close the class when it is not special
+               || _Mchar == _Meta_eos) {
         return _Prs_none;
     } else { // handle ordinary character
         _Val = _Char;
@@ -4147,10 +4150,12 @@ template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid class ranges
     _Prs_ret _Ret;
 
+    bool _Initial = true;
     for (;;) { // process characters through end of bracket expression
-        if ((_Ret = _ClassAtom()) == _Prs_none) {
+        if ((_Ret = _ClassAtom(_Initial)) == _Prs_none) {
             return;
         }
+        _Initial = false;
 
         if (_Ret == _Prs_chr && _Val == 0 && !(_L_flags & _L_bzr_chr)) {
             _Error(regex_constants::error_escape);
@@ -4160,7 +4165,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid clas
             _Next();
             _Elem _Chr1               = static_cast<_Elem>(_Val);
             const bool _Set_preceding = _Ret == _Prs_set;
-            if ((_Ret = _ClassAtom()) == _Prs_none) { // treat - as ordinary character
+            if ((_Ret = _ClassAtom(false)) == _Prs_none) { // treat - as ordinary character
                 if (!_Set_preceding) {
                     _Nfa._Add_char_to_class(_Chr1);
                 }
@@ -4209,10 +4214,6 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClass() { // add bracket expre
         _Next();
     }
 
-    if ((_L_flags & _L_brk_rstr) && _Mchar == _Meta_rsq) { // insert initial ] when not special
-        _Nfa._Add_char_to_class(_Meta_rsq);
-        _Next();
-    }
     _ClassRanges();
 }
 
