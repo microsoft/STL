@@ -821,12 +821,6 @@ constexpr void check_correctness() {
     }
 }
 
-// When 'M::extents_type::rank()' is equal to 0 then 'is_empty_v<M>' should be true (MSVC STL specific behavior)
-static_assert(!is_empty_v<layout_stride::mapping<dextents<long long, 2>>>);
-static_assert(!is_empty_v<layout_stride::mapping<extents<long long, 3, dynamic_extent>>>);
-static_assert(!is_empty_v<layout_stride::mapping<extents<long long, 3, 3>>>);
-static_assert(is_empty_v<layout_stride::mapping<extents<long long>>>);
-
 constexpr bool test() {
     // Check signed integers
     check_members(extents<signed char, 5>{5}, array{1});

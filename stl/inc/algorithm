@@ -398,8 +398,8 @@ namespace ranges {
 #if _HAS_CXX23
     _EXPORT_STD template <class _In, class _Ty>
     struct in_value_result {
-        /* [[no_unique_address]] */ _In in;
-        /* [[no_unique_address]] */ _Ty value;
+        _MSVC_NO_UNIQUE_ADDRESS _In in;
+        _MSVC_NO_UNIQUE_ADDRESS _Ty value;
 
         template <class _IIn, class _TTy>
             requires convertible_to<const _In&, _IIn> && convertible_to<const _Ty&, _TTy>

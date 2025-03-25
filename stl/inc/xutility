@@ -4972,8 +4972,8 @@ namespace ranges {
 #if _HAS_CXX23
     _EXPORT_STD template <class _Out, class _Ty>
     struct out_value_result {
-        /* [[no_unique_address]] */ _Out out;
-        /* [[no_unique_address]] */ _Ty value;
+        _MSVC_NO_UNIQUE_ADDRESS _Out out;
+        _MSVC_NO_UNIQUE_ADDRESS _Ty value;
 
         template <_Convertible_from<const _Out&> _OOut, _Convertible_from<const _Ty&> _TTy>
         constexpr operator out_value_result<_OOut, _TTy>() const& {
