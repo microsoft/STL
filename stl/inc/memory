@@ -2542,7 +2542,7 @@ private:
     }
 
     void _Destroy() noexcept override { // destroy managed resource
-        _STD _Destroy_in_place(_Storage._Value); // use the default mechanism per LWG-4024
+        _STD _Destroy_in_place(_Storage._Value);
     }
 
     void _Delete_this() noexcept override { // destroy self
@@ -2789,7 +2789,7 @@ private:
     }
 
     void _Destroy() noexcept override { // destroy managed resource
-        _STD _Reverse_destroy_multidimensional_n(_Get_ptr(), _Size); // use the default mechanism per LWG-4024
+        _STD _Reverse_destroy_multidimensional_n(_Get_ptr(), _Size);
     }
 
     void _Delete_this() noexcept override { // destroy self
@@ -2893,7 +2893,7 @@ private:
     void _Destroy() noexcept override { // destroy managed resource
         // not _Storage._Value as _Ty is an array type (not a class type or a scalar type),
         // and thus cannot be used as a pseudo-destructor (N4964 [expr.prim.id.dtor]).
-        _STD _Destroy_in_place(_Storage); // use the default mechanism per LWG-4024
+        _STD _Destroy_in_place(_Storage);
     }
 
     void _Delete_this() noexcept override { // destroy self
