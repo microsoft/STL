@@ -526,14 +526,7 @@
 #define _STL_STRINGIZE_(S) #S
 #define _STL_STRINGIZE(S)  _STL_STRINGIZE_(S)
 
-// Note that _STL_PRAGMA is load-bearing;
-// it still needs to exist even once CUDA and ICC support _Pragma.
-#if defined(__CUDACC__) || defined(__INTEL_COMPILER)
-#define _STL_PRAGMA(PRAGMA) __pragma(PRAGMA)
-#else
-#define _STL_PRAGMA(PRAGMA) _Pragma(#PRAGMA)
-#endif
-
+#define _STL_PRAGMA(PRAGMA)          _Pragma(#PRAGMA)
 #define _STL_PRAGMA_MESSAGE(MESSAGE) _STL_PRAGMA(message(MESSAGE))
 #define _EMIT_STL_MESSAGE(MESSAGE)   _STL_PRAGMA_MESSAGE(__FILE__ "(" _STL_STRINGIZE(__LINE__) "): " MESSAGE)
 
@@ -698,8 +691,6 @@
 
 #ifndef __has_cpp_attribute
 #define _HAS_MSVC_ATTRIBUTE(x) 0
-#elif defined(__CUDACC__) // TRANSITION, CUDA - warning: attribute namespace "msvc" is unrecognized
-#define _HAS_MSVC_ATTRIBUTE(x) 0
 #else
 #define _HAS_MSVC_ATTRIBUTE(x) __has_cpp_attribute(msvc::x)
 #endif
@@ -738,6 +729,18 @@
 #else
 #define _MSVC_LIFETIMEBOUND
 #endif
+
+#if _HAS_CXX23 // TRANSITION, ABI, should just use [[no_unique_address]] when _HAS_CXX20.
+// Should we enable use of [[msvc::no_unique_address]] or [[no_unique_address]] to allow potentially-overlapping member
+// subobjects?
+#if _HAS_MSVC_ATTRIBUTE(no_unique_address)
+#define _MSVC_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+#elif __has_cpp_attribute(no_unique_address) // TRANSITION, DevCom-10747012, EDG recognizes [[no_unique_address]].
+#define _MSVC_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#else
+#error Either [[msvc::no_unique_address]] or [[no_unique_address]] must be supported because this is ABI-critical.
+#endif
+#endif // _HAS_CXX23
 
 #undef _HAS_MSVC_ATTRIBUTE
 #pragma pop_macro("lifetimebound")
@@ -802,6 +805,8 @@
 //                copy/move constructors and copy/move assignment operators are not trivial (/Wall)
 // warning C5246: 'member': the initialization of a subobject should be wrapped in braces (/Wall)
 // warning C5278: adding a specialization for 'type trait' has undefined behavior
+// warning C5280: a static operator '()' requires at least '/std:c++23preview'
+// warning C5281: a static lambda requires at least '/std:c++23preview'
 // warning C6294: Ill-defined for-loop: initial condition does not satisfy test. Loop body not executed
 
 #ifndef _STL_DISABLED_WARNINGS
@@ -809,7 +814,8 @@
 #define _STL_DISABLED_WARNINGS                        \
     4180 4324 4412 4455 4494 4514 4574 4582 4583 4587 \
     4588 4619 4623 4625 4626 4643 4648 4702 4793 4820 \
-    4868 4988 5026 5027 5045 5220 5246 5278 6294      \
+    4868 4988 5026 5027 5045 5220 5246 5278 5280 5281 \
+    6294                                              \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
@@ -820,6 +826,7 @@
 // warning: constexpr if is a C++17 extension [-Wc++17-extensions]
 // warning: explicit(bool) is a C++20 extension [-Wc++20-extensions]
 // warning: declaring overloaded 'operator()' as 'static' is a C++23 extension [-Wc++23-extensions]
+// warning: static lambdas are a C++23 extension [-Wc++23-extensions]
 // warning: ignoring __declspec(allocator) because the function return type '%s' is not a pointer or reference type
 //     [-Wignored-attributes]
 // warning: '#pragma float_control' is not supported on this target - ignored [-Wignored-pragmas]
@@ -881,31 +888,25 @@
 #define _STL_DISABLE_DEPRECATED_WARNING \
     _Pragma("clang diagnostic push")    \
     _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
-#elif defined(__CUDACC__) || defined(__INTEL_COMPILER)
-#define _STL_DISABLE_DEPRECATED_WARNING \
-    __pragma(warning(push))             \
-    __pragma(warning(disable : 4996)) // was declared deprecated
-#else // vvv MSVC vvv
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #define _STL_DISABLE_DEPRECATED_WARNING \
     _Pragma("warning(push)")            \
     _Pragma("warning(disable : 4996)") // was declared deprecated
-#endif // ^^^ MSVC ^^^
+#endif // ^^^ !defined(__clang__) ^^^
 #endif // _STL_DISABLE_DEPRECATED_WARNING
 // clang-format on
 
 #ifndef _STL_RESTORE_DEPRECATED_WARNING
 #ifdef __clang__
 #define _STL_RESTORE_DEPRECATED_WARNING _Pragma("clang diagnostic pop")
-#elif defined(__CUDACC__) || defined(__INTEL_COMPILER)
-#define _STL_RESTORE_DEPRECATED_WARNING __pragma(warning(pop))
-#else // vvv MSVC vvv
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #define _STL_RESTORE_DEPRECATED_WARNING _Pragma("warning(pop)")
-#endif // ^^^ MSVC ^^^
+#endif // ^^^ !defined(__clang__) ^^^
 #endif // !defined(_STL_RESTORE_DEPRECATED_WARNING)
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202502L
+#define _MSVC_STL_UPDATE  202503L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -919,8 +920,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 12.4 or new
 _EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 19.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1942 // Coarse-grained, not inspecting _MSC_FULL_VER
-_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.42 or newer.");
+#if _MSC_VER < 1944 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.44 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -997,7 +998,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // P0298R3 std::byte
 #ifndef _HAS_STD_BYTE
-#define _HAS_STD_BYTE _HAS_CXX17
+#define _HAS_STD_BYTE _HAS_CXX17 // TRANSITION, OS-14273702
 #endif // !defined(_HAS_STD_BYTE)
 
 // P0302R1 Removing Allocator Support In std::function
@@ -1519,7 +1520,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // next warning number: STL4049
 
-// next error number: STL1006
+// next error number: STL1009
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
@@ -2010,13 +2011,21 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // ^^^ !defined(_ENABLE_STL_INTERNAL_CHECK) ^^^
 
-#ifdef __cpp_static_call_operator
-#define _STATIC_CALL_OPERATOR static
-#define _CONST_CALL_OPERATOR
-#else // ^^^ defined(__cpp_static_call_operator) / !defined(__cpp_static_call_operator) vvv
+#if defined(__CUDACC__) || (defined(__clang__) && __clang_major__ < 16)
+// TRANSITION, CUDA 12.4 doesn't have downlevel support for static call operators.
+// TRANSITION, VSO-2397560, temporary workaround for Real World Code relying on ancient Clang versions.
 #define _STATIC_CALL_OPERATOR
 #define _CONST_CALL_OPERATOR const
-#endif // ^^^ !defined(__cpp_static_call_operator) ^^^
+#define _STATIC_LAMBDA
+#elif defined(__clang__) || defined(__EDG__) // no workaround
+#define _STATIC_CALL_OPERATOR static
+#define _CONST_CALL_OPERATOR
+#define _STATIC_LAMBDA static
+#else // TRANSITION, VSO-2383148, fixed in VS 2022 17.14 Preview 3
+#define _STATIC_CALL_OPERATOR static
+#define _CONST_CALL_OPERATOR
+#define _STATIC_LAMBDA
+#endif // ^^^ workaround ^^^
 
 #ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't recognize MSVC __restrict; CUDA __restrict__ is not usable in C++
 #define _RESTRICT

@@ -234,6 +234,12 @@ public:
 
     ~exception_ptr() noexcept {
         __ExceptionPtrDestroy(this);
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        const auto _Tombstone{reinterpret_cast<void*>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+        _Data1 = _Tombstone;
+        _Data2 = _Tombstone;
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
     }
 
     exception_ptr(const exception_ptr& _Rhs) noexcept {

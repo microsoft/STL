@@ -190,6 +190,7 @@ tests\GH_001103_countl_zero_correctness
 tests\GH_001105_custom_streambuf_throws
 tests\GH_001123_random_cast_out_of_range
 tests\GH_001277_num_get_bad_grouping
+tests\GH_001394_msvc_no_unique_address_23
 tests\GH_001411_core_headers
 tests\GH_001530_binomial_accuracy
 tests\GH_001541_case_sensitive_boolalpha
@@ -254,6 +255,9 @@ tests\GH_004657_expected_constraints_permissive
 tests\GH_004845_logical_operator_traits_with_non_bool_constant
 tests\GH_004929_internal_tag_constructors
 tests\GH_004930_char_traits_user_specialization
+tests\GH_005090_stl_hardening
+tests\GH_005204_regex_collating_ranges
+tests\GH_005315_destructor_tombstones
 tests\LWG2381_num_get_floating_point
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
@@ -268,6 +272,7 @@ tests\LWG3561_discard_block_engine_counter
 tests\LWG3610_iota_view_size_and_integer_class
 tests\LWG4084_iostream_uppercase_inf_nan
 tests\LWG4105_ranges_ends_with_and_integer_class
+tests\LWG4172_unique_lock_self_move_assignment
 tests\P0009R18_mdspan_default_accessor
 tests\P0009R18_mdspan_extents
 tests\P0009R18_mdspan_extents_death
@@ -279,6 +284,7 @@ tests\P0009R18_mdspan_layout_stride
 tests\P0009R18_mdspan_layout_stride_death
 tests\P0009R18_mdspan_mdspan
 tests\P0009R18_mdspan_mdspan_death
+tests\P0009R18_mdspan_msabi
 tests\P0019R8_atomic_ref
 tests\P0024R2_parallel_algorithms_adjacent_difference
 tests\P0024R2_parallel_algorithms_adjacent_find

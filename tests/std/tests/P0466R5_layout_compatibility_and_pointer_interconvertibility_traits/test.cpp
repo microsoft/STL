@@ -199,7 +199,7 @@ constexpr bool test() {
         ASSERT(!is_corresponding_member(&S5::v1, &S6::v2));
         ASSERT(!is_corresponding_member(&S5::v2, &S6::v1));
         ASSERT(!is_corresponding_member(&S5::v3, &S6::v3));
-#ifndef _M_CEE // TRANSITION, VSO-1664293
+#ifndef _M_CEE // TRANSITION, VSO-2417635
         ASSERT(!is_corresponding_member<NS, NS>(&NS::v1, &NS::w1));
 #endif // ^^^ no workaround ^^^
         ASSERT(!is_corresponding_member(&S7::f1, &S7::f1));
@@ -236,7 +236,7 @@ constexpr bool test() {
         ASSERT(is_pointer_interconvertible_with_class(&U::v2));
 
         ASSERT(!is_pointer_interconvertible_with_class<NS>(&NS::a));
-#ifndef _M_CEE // TRANSITION, VSO-1664293
+#ifndef _M_CEE // TRANSITION, VSO-2417635
         ASSERT(!is_pointer_interconvertible_with_class<NS>(&NS::b));
 #endif // ^^^ no workaround ^^^
         ASSERT(!is_pointer_interconvertible_with_class(&C::f1));

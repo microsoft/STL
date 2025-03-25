@@ -374,9 +374,35 @@ constexpr void test_p2836r1() {
     }
 }
 
+// GH-5321 "<xutility>: basic_const_iterator<int *> Cannot Convert to basic_const_iterator<const int *>"
+constexpr void test_conversion_instantiation() {
+    struct Base {};
+    struct Derived : Base {};
+
+    {
+        basic_const_iterator<const int*> cit = basic_const_iterator<int*>{};
+        assert(cit.base() == nullptr);
+    }
+    {
+        int n{};
+        basic_const_iterator<const int*> cit = basic_const_iterator<int*>{&n};
+        assert(cit.base() == &n);
+    }
+    {
+        basic_const_iterator<Base*> cit = basic_const_iterator<Derived*>{};
+        assert(cit.base() == nullptr);
+    }
+    {
+        Derived d{};
+        basic_const_iterator<Base*> cit = basic_const_iterator<Derived*>{&d};
+        assert(cit.base() == static_cast<Base*>(&d));
+    }
+}
+
 constexpr bool all_tests() {
     instantiation_test();
     test_p2836r1();
+    test_conversion_instantiation();
     return true;
 }
 

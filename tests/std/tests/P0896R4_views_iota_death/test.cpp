@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _CONTAINER_DEBUG_LEVEL 1
-
 #include <ranges>
 #include <vector>
 
@@ -54,7 +52,7 @@ void test_misordered_iterator_sentinel_vector_iter() {
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec;
 
-#ifdef _DEBUG
+#if _ITERATOR_DEBUG_LEVEL != 0
     struct S {};
 
     exec.add_death_tests({
@@ -124,7 +122,7 @@ int main(int argc, char* argv[]) {
         test_misordered_iterator_sentinel_vector_iter<int>,
         test_misordered_iterator_sentinel_vector_iter<S>,
     });
-#endif // _DEBUG
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 
     return exec.run(argc, argv);
 }

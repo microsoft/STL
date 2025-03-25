@@ -8,7 +8,7 @@
 
 #include <Windows.h>
 
-inline bool _Primitive_wait_for(const _Cnd_t cond, const _Mtx_t mtx, unsigned int timeout) noexcept {
+inline bool _Primitive_wait_for(const _Cnd_t cond, const _Mtx_t mtx, const unsigned int timeout) noexcept {
     const auto pcv  = reinterpret_cast<PCONDITION_VARIABLE>(&cond->_Stl_cv._Win_cv);
     const auto psrw = reinterpret_cast<PSRWLOCK>(&mtx->_Critical_section._M_srw_lock);
     return SleepConditionVariableSRW(pcv, psrw, timeout, 0) != 0;

@@ -286,6 +286,13 @@ namespace _Gen_detail {
             return _Nested_awaitable{_STD move(_Elem.range)};
         }
 
+        template <class _Rty, class _Vty, class _Alloc, class _Unused>
+            requires same_as<_Yield_t<_Reference_t<_Rty, _Vty>>, _Yielded>
+        _NODISCARD auto yield_value(_RANGES elements_of<generator<_Rty, _Vty, _Alloc>&, _Unused> _Elem) noexcept {
+            using _Nested_awaitable = _Nested_awaitable_provider<_Rty, _Vty, _Alloc>::_Awaitable;
+            return _Nested_awaitable{_STD move(_Elem.range)};
+        }
+
         template <_RANGES input_range _Rng, class _Alloc>
             requires convertible_to<_RANGES range_reference_t<_Rng>, _Yielded>
         _NODISCARD auto yield_value(_RANGES elements_of<_Rng, _Alloc> _Elem) {
@@ -477,14 +484,14 @@ namespace _Gen_detail {
 
         _NODISCARD _Ref operator*() const
             noexcept(noexcept(static_cast<_Ref>(*_Coro.promise()._Get_top().promise()._Ptr))) /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(!_Coro.done(), "Can't dereference generator end iterator");
 #endif
             return static_cast<_Ref>(*_Coro.promise()._Get_top().promise()._Ptr);
         }
 
         _Iterator& operator++() {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(!_Coro.done(), "Can't increment generator end iterator");
 #endif
             _Coro.promise()._Get_top().resume();
@@ -565,7 +572,7 @@ public:
 
     _NODISCARD _Gen_detail::_Iter_provider<_Value, _Ref>::_Iterator begin() {
         // Pre: _Coro is suspended at its initial suspend point
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Coro, "Can't call begin on moved-from generator");
 #endif
         _Coro.resume();

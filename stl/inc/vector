@@ -402,6 +402,19 @@ public:
     _CONSTEXPR20 _Vector_val(pointer _First, pointer _Last, pointer _End) noexcept
         : _Myfirst(_First), _Mylast(_Last), _Myend(_End) {}
 
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+    _CONSTEXPR20 ~_Vector_val() noexcept {
+        if constexpr (is_pointer_v<pointer>) {
+            if (!_STD _Is_constant_evaluated()) {
+                const auto _Tombstone{reinterpret_cast<pointer>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+                _Myfirst = _Tombstone;
+                _Mylast  = _Tombstone;
+                _Myend   = _Tombstone;
+            }
+        }
+    }
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
+
     _CONSTEXPR20 void _Swap_val(_Vector_val& _Right) noexcept {
         this->_Swap_proxy_and_iterators(_Right);
         swap(_Myfirst, _Right._Myfirst); // intentional ADL
@@ -1736,7 +1749,7 @@ public:
         auto& _My_data   = _Mypair._Myval2;
         pointer& _Mylast = _My_data._Mylast;
 
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_My_data._Myfirst != _Mylast, "pop_back() called on empty vector");
 #endif
 
@@ -1913,7 +1926,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 _Ty& operator[](const size_type _Pos) noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(
             _Pos < static_cast<size_type>(_My_data._Mylast - _My_data._Myfirst), "vector subscript out of range");
 #endif
@@ -1923,7 +1936,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 const _Ty& operator[](const size_type _Pos) const noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(
             _Pos < static_cast<size_type>(_My_data._Mylast - _My_data._Myfirst), "vector subscript out of range");
 #endif
@@ -1951,7 +1964,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 _Ty& front() noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "front() called on empty vector");
 #endif
 
@@ -1960,7 +1973,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 const _Ty& front() const noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "front() called on empty vector");
 #endif
 
@@ -1969,7 +1982,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 _Ty& back() noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "back() called on empty vector");
 #endif
 
@@ -1978,7 +1991,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 const _Ty& back() const noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_My_data._Myfirst != _My_data._Mylast, "back() called on empty vector");
 #endif
 
@@ -2851,6 +2864,12 @@ public:
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alvbase, this->_Getal());
         _Delete_plain_internal(_Alproxy, _STD exchange(this->_Myproxy, nullptr));
 #endif // _ITERATOR_DEBUG_LEVEL != 0
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+        // Destroying _Myvec will store tombstones in its pointers, setting its apparent size to 0.
+        // We should also set our _Mysize to 0 for consistency, allowing precondition hardening to detect UB earlier.
+        _Mysize = 0;
+#endif
     }
 
     _CONSTEXPR20 _Alvbase& _Getal() noexcept {
@@ -3209,7 +3228,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 const_reference operator[](size_type _Off) const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Off < this->_Mysize, "vector<bool> subscript out of range");
 #endif
 
@@ -3219,7 +3238,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 reference operator[](size_type _Off) noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Off < this->_Mysize, "vector<bool> subscript out of range");
 #endif
 
@@ -3229,7 +3248,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 reference front() noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(this->_Mysize != 0, "front() called on empty vector<bool>");
 #endif
 
@@ -3237,7 +3256,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 const_reference front() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(this->_Mysize != 0, "front() called on empty vector<bool>");
 #endif
 
@@ -3245,7 +3264,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 reference back() noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(this->_Mysize != 0, "back() called on empty vector<bool>");
 #endif
 
@@ -3253,7 +3272,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 const_reference back() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(this->_Mysize != 0, "back() called on empty vector<bool>");
 #endif
 
@@ -3272,6 +3291,10 @@ public:
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 void pop_back() noexcept /* strengthened */ {
+#if _MSVC_STL_HARDENING_VECTOR || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(this->_Mysize != 0, "pop_back() called on empty vector<bool>");
+#endif
+
         erase(end() - 1);
     }
 
@@ -3708,22 +3731,22 @@ _NODISCARD _CONSTEXPR20 _VbIt _Find_vbool(_VbIt _First, const _VbIt _Last, const
         const auto _SourceMask     = _FirstSourceMask & _LastSourceMask;
         const auto _SelectVal      = (_Val ? *_VbFirst : ~*_VbFirst) & _SourceMask;
         const auto _Count          = _Countr_zero(_SelectVal);
-        return _Count == _VBITS ? _Last : _First + static_cast<ptrdiff_t>(_Count - _First._Myoff);
+        return _Count == _VBITS ? _Last : _First + static_cast<_Iter_diff_t<_VbIt>>(_Count - _First._Myoff);
     }
 
     const auto _FirstVal   = (_Val ? *_VbFirst : ~*_VbFirst) & _FirstSourceMask;
     const auto _FirstCount = _Countr_zero(_FirstVal);
     if (_FirstCount != _VBITS) {
-        return _First + static_cast<ptrdiff_t>(_FirstCount - _First._Myoff);
+        return _First + static_cast<_Iter_diff_t<_VbIt>>(_FirstCount - _First._Myoff);
     }
     ++_VbFirst;
 
-    _Iter_diff_t<_VbIt> _TotalCount = static_cast<ptrdiff_t>(_VBITS - _First._Myoff);
+    auto _TotalCount = static_cast<_Iter_diff_t<_VbIt>>(_VBITS - _First._Myoff);
     for (; _VbFirst != _VbLast; ++_VbFirst, _TotalCount += _VBITS) {
         const auto _SelectVal = _Val ? *_VbFirst : ~*_VbFirst;
         const auto _Count     = _Countr_zero(_SelectVal);
         if (_Count != _VBITS) {
-            return _First + (_TotalCount + _Count);
+            return _First + static_cast<_Iter_diff_t<_VbIt>>(_TotalCount + _Count);
         }
     }
 
@@ -3732,7 +3755,7 @@ _NODISCARD _CONSTEXPR20 _VbIt _Find_vbool(_VbIt _First, const _VbIt _Last, const
         const auto _LastVal        = (_Val ? *_VbFirst : ~*_VbFirst) & _LastSourceMask;
         const auto _Count          = _Countr_zero(_LastVal);
         if (_Count != _VBITS) {
-            return _First + (_TotalCount + _Count);
+            return _First + static_cast<_Iter_diff_t<_VbIt>>(_TotalCount + _Count);
         }
     }
 

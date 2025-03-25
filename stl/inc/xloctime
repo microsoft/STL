@@ -800,7 +800,7 @@ public:
                 _Elem _Percent  = _Fmtfirst[-1];
 
                 if (_Specifier == 'E' || _Specifier == 'O' || _Specifier == 'Q' || _Specifier == '#') {
-                    if (++_Fmtfirst == _Fmtlast) { // no specifier, copy %[E0Q#] as literal elements
+                    if (++_Fmtfirst == _Fmtlast) { // no specifier, copy %[EOQ#] as literal elements
                         *_Dest++ = _Percent;
                         *_Dest++ = _Specifier;
                         break;
@@ -940,7 +940,7 @@ public:
                 _Elem _Percent  = _Fmtfirst[-1];
 
                 if (_Specifier == 'E' || _Specifier == 'O' || _Specifier == 'Q' || _Specifier == '#') {
-                    if (++_Fmtfirst == _Fmtlast) { // no specifier, copy %[E0Q#] as literal elements
+                    if (++_Fmtfirst == _Fmtlast) { // no specifier, copy %[EOQ#] as literal elements
                         *_Dest++ = _Percent;
                         *_Dest++ = _Raw;
                         break;
@@ -1089,7 +1089,7 @@ public:
                 _Elem _Percent  = _Fmtfirst[-1];
 
                 if (_Specifier == 'E' || _Specifier == 'O' || _Specifier == 'Q' || _Specifier == '#') {
-                    if (++_Fmtfirst == _Fmtlast) { // no specifier, copy %[E0Q#] as literal elements
+                    if (++_Fmtfirst == _Fmtlast) { // no specifier, copy %[EOQ#] as literal elements
                         *_Dest++ = _Percent;
                         *_Dest++ = _Raw;
                         break;

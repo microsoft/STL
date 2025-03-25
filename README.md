@@ -58,7 +58,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N5001][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N5008][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
@@ -141,7 +141,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.13 Preview 4 or later.
+1. Install Visual Studio 2022 17.14 Preview 2 or later.
     * Select "Windows 11 SDK (10.0.22621.0)" in the VS Installer.
     * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
     if you would like to build the ARM64/ARM64EC target.
@@ -160,7 +160,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.13 Preview 4 or later.
+1. Install Visual Studio 2022 17.14 Preview 2 or later.
     * Select "Windows 11 SDK (10.0.22621.0)" in the VS Installer.
     * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
     if you would like to build the ARM64/ARM64EC target.
@@ -379,8 +379,8 @@ steps. Let's assume we want to debug a new feature with tests located in `tests\
 
 As always, build the STL from your branch and run the tests:
 ```
-C:\STL\out\x64> ninja
-C:\STL\out\x64> python tests\utils\stl-lit\stl-lit.py -v C:\STL\tests\std\tests\GH_XXXX_meow
+C:\Dev\STL\out\x64> ninja
+C:\Dev\STL\out\x64> python tests\utils\stl-lit\stl-lit.py -v C:\Dev\STL\tests\std\tests\GH_XXXX_meow
 ```
 
 Let's assume one of the tests fails an assert and we want to debug that configuration. `stl-lit` will conveniently print
@@ -390,15 +390,15 @@ provide debug symbols: `/Zi /Fdbark.pdb`.
 You can replace `bark` with any descriptive name you like. Add these before the `"-link"` option in the command line
 and recompile. Example:
 ```
-C:\STL\out\x64>cl "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp" [... more arguments ...]
-"-FeC:\STL\out\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe" /Zi /Fdbark.pdb "-link"
+C:\Dev\STL\out\x64>cl "C:\Dev\STL\tests\std\tests\GH_XXXX_meow\test.cpp" [... more arguments ...]
+"-FeC:\Dev\STL\out\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe" /Zi /Fdbark.pdb "-link"
 [... more arguments ...]
 ```
 
 You can now start debugging the test via:
 ```
-devenv "C:\STL\out\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe"
-       "C:\STL\tests\std\tests\GH_XXXX_meow\test.cpp"
+devenv "C:\Dev\STL\out\x64\tests\std\tests\GH_XXXX_meow\Output\02\GH_XXXX_meow.exe"
+       "C:\Dev\STL\tests\std\tests\GH_XXXX_meow\test.cpp"
 ```
 
 However, this might not work right away, as Visual Studio may complain about a missing `msvcp140_oss.dll`. The reason
@@ -406,7 +406,7 @@ is that the STL builds those and other DLLs itself and we should under no circum
 If you are testing one of the configurations with dynamic linkage (`/MD` or `/MDd`) the easiest solution is to add the
 build folder to your path:
 ```
-set PATH=C:\STL\out\x64\out\bin\amd64;%PATH%
+set PATH=C:\Dev\STL\out\x64\out\bin\amd64;%PATH%
 ```
 
 ## Running Tests With Address Sanitizer (ASan)
@@ -568,7 +568,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N5001]: https://wg21.link/N5001
+[N5008]: https://wg21.link/N5008
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [STL-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-CI?branchName=main "STL-CI"

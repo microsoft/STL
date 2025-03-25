@@ -107,7 +107,7 @@ void test_one(generator<R, V, A> g0, Ex&& expected) {
 
 // Some simple end-to-end tests, mostly from the Working Draft or P2502R2
 generator<int> ints(int start = 0) {
-    while (true) {
+    for (;;) {
         co_yield start++;
     }
 }
