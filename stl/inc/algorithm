@@ -298,12 +298,6 @@ constexpr bool _Vector_alg_in_ranges_replace_is_safe =
 // Can we activate the vector algorithms for unique?
 template <class _Iter, class _Pr>
 constexpr bool _Vector_alg_in_unique_is_safe = _Equal_memcmp_is_safe<_Iter, _Iter, _Pr>;
-
-// Can we activate the vector algorithms for unique_copy?
-template <class _IterSrc, class _IterDest, class _Pr>
-constexpr bool _Vector_alg_in_unique_copy_is_safe =
-    _Equal_memcmp_is_safe<_IterSrc, _IterSrc, _Pr> && _Iterator_is_contiguous<_IterDest>
-    && is_same_v<remove_const_t<_Iter_value_t<_IterSrc>>, _Iter_value_t<_IterDest>>;
 _STD_END
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
@@ -5210,7 +5204,8 @@ _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pr
     auto _UDest = _STD _Get_unwrapped_unverified(_Dest);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Vector_alg_in_unique_copy_is_safe<decltype(_UFirst), decltype(_UDest), _Pr>) {
+    if constexpr (_Vector_alg_in_unique_is_safe<decltype(_UFirst), _Pr> && _Iterator_is_contiguous<decltype(_UDest)>
+                  && is_same_v<remove_const_t<_Iter_value_t<decltype(_UFirst)>>, _Iter_value_t<decltype(_UDest)>>) {
         if (!_STD _Is_constant_evaluated()) {
             const auto _First_ptr = _STD _To_address(_UFirst);
             const auto _Dest_ptr  = _STD _To_address(_UDest);
@@ -5357,7 +5352,8 @@ namespace ranges {
 
 #if _USE_STD_VECTOR_ALGORITHMS
             if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<_Se, _It>
-                          && _Vector_alg_in_unique_copy_is_safe<_It, _Out, _Pr>) {
+                          && _Vector_alg_in_unique_is_safe<_It, _Out, _Pr> && _Iterator_is_contiguous<_Out>
+                          && is_same_v<remove_const_t<_Iter_value_t<_It>>, _Iter_value_t<_Out>>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _Size       = _Last - _First;
                     const auto _First_ptr  = _STD to_address(_First);
