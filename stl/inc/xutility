@@ -98,6 +98,11 @@ const void* __stdcall __std_find_last_trivial_2(const void* _First, const void* 
 const void* __stdcall __std_find_last_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
 
+const void* __stdcall __std_adjacent_find_1(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_adjacent_find_2(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_adjacent_find_4(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_adjacent_find_8(const void* _First, const void* _Last) noexcept;
+
 const void* __stdcall __std_search_1(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
 const void* __stdcall __std_search_2(
@@ -235,6 +240,21 @@ _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
+    } else {
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+    }
+}
+
+template <class _Ty>
+_Ty* _Adjacent_find_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
+    if constexpr (sizeof(_Ty) == 1) {
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_adjacent_find_1(_First, _Last)));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_adjacent_find_2(_First, _Last)));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_adjacent_find_4(_First, _Last)));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_adjacent_find_8(_First, _Last)));
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
@@ -6785,6 +6805,23 @@ namespace ranges {
             if (_First == _Last) {
                 return _First;
             }
+
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (_Equal_memcmp_is_safe<_It, _It, _Pr> && sized_sentinel_for<_Se, _It>
+                          && is_same_v<_Pj, identity>) {
+                if (!_STD is_constant_evaluated()) {
+                    const auto _First_ptr = _STD _To_address(_First);
+                    const auto _Last_ptr  = _First_ptr + (_Last - _First);
+
+                    const auto _Result = _STD _Adjacent_find_vectorized(_First_ptr, _Last_ptr);
+                    if constexpr (is_pointer_v<_It>) {
+                        return _Result;
+                    } else {
+                        return _First + (_Result - _First_ptr);
+                    }
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
             for (auto _Next = _First;; ++_First) {
                 if (++_Next == _Last) {

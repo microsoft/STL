@@ -1510,7 +1510,6 @@ public:
     using _Difft = typename iterator_traits<_FwdIt>::difference_type;
 
     _Builder(const _RxTraits& _Tr, regex_constants::syntax_option_type);
-    bool _Beg_expr() const;
     void _Setlong();
     // _Discard_pattern is an ABI zombie name
     void _Tidy() noexcept;
@@ -1545,7 +1544,6 @@ private:
     static void _Insert_node(_Node_base*, _Node_base*);
     _Node_base* _New_node(_Node_type _Kind);
     void _Add_str_node();
-    bool _Beg_expr(_Node_base*) const;
     void _Add_char_to_bitmap(_Elem _Ch);
     void _Add_char_to_array(_Elem _Ch);
     void _Add_elts(_Node_class<_Elem, _RxTraits>*, typename _RxTraits::char_class_type, bool);
@@ -1638,11 +1636,12 @@ public:
 
         if (_Matches) { // copy results to _Matches
             _Matches->_Resize(_Get_ncap());
+            const auto& _Result = _Longest ? _Res : _Tgt_state;
             for (unsigned int _Idx = 0; _Idx < _Get_ncap(); ++_Idx) { // copy submatch _Idx
-                if (_Res._Grp_valid[_Idx]) { // copy successful match
+                if (_Result._Grp_valid[_Idx]) { // copy successful match
                     _Matches->_At(_Idx).matched = true;
-                    _Matches->_At(_Idx).first   = _Res._Grps[_Idx]._Begin;
-                    _Matches->_At(_Idx).second  = _Res._Grps[_Idx]._End;
+                    _Matches->_At(_Idx).first   = _Result._Grps[_Idx]._Begin;
+                    _Matches->_At(_Idx).second  = _Result._Grps[_Idx]._End;
                 } else { // copy failed match
                     _Matches->_At(_Idx).matched = false;
                     _Matches->_At(_Idx).first   = _End;
@@ -1720,7 +1719,7 @@ public:
 
 private:
     // lexing
-    void _Error(regex_constants::error_type);
+    [[noreturn]] void _Error(regex_constants::error_type);
 
     bool _Is_esc() const;
     void _Trans();
@@ -2778,17 +2777,6 @@ _Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Getmark() const {
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Builder<_FwdIt, _Elem, _RxTraits>::_Beg_expr(_Node_base* _Nx) const {
-    // test for beginning of expression or subexpression
-    return _Nx->_Kind == _N_begin || _Nx->_Kind == _N_group || _Nx->_Kind == _N_capture;
-}
-
-template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Builder<_FwdIt, _Elem, _RxTraits>::_Beg_expr() const { // test for beginning of expression or subexpression
-    return _Beg_expr(_Current) || (_Current->_Kind == _N_bol && _Beg_expr(_Current->_Prev));
-}
-
-template <class _FwdIt, class _Elem, class _RxTraits>
 _Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Link_node(_Node_base* _Nx) { // insert _Nx at current location
     _Nx->_Prev = _Current;
     if (_Current->_Next) { // set back pointer
@@ -2917,7 +2905,8 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range2(const _Elem _Arg0, const _E
 
         _Node->_Small->_Mark(_Ex0);
     }
-    if (_Ex1 >= _Ex0) {
+
+    if ((_Flags & regex_constants::collate) || _Ex1 >= _Ex0) {
         if (_Ex1 - _Ex0 < _Get_tmax()) {
             for (; _Ex0 <= _Ex1; ++_Ex0) {
                 _Add_char_to_array(static_cast<_Elem>(_Ex0));
@@ -3284,6 +3273,20 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_rep(_Node_rep* _Node, bool _Gr
             _Psav->_Loop_iter = _STD addressof(_Cur_iter);
             _Matched0         = _Match_pat(_Node->_Next);
         }
+    } else if (_Longest) { // longest, try any number of repetitions
+
+        // match with no further repetition
+        _Matched0 = _Match_pat(_Node->_End_rep->_Next);
+        // match with at least one more repetition if last repetition made progress
+        if (_Progress) {
+            _Tgt_state        = _St;
+            _Psav->_Loop_idx  = _Init_idx + 1;
+            _Psav->_Loop_iter = _STD addressof(_Cur_iter);
+
+            if (_Match_pat(_Node->_Next)) { // always call _Match_pat, even when _Matched0 is already true
+                _Matched0 = true;
+            }
+        }
     } else if (!_Greedy) { // not greedy, favor minimum number of reps
         _Matched0 = _Match_pat(_Node->_End_rep->_Next);
         if (!_Matched0 && _Progress) { // tail failed, try another rep
@@ -3357,6 +3360,20 @@ bool _Lookup_range(unsigned int _Ch, const _Buf<_Elem>* _Bufptr) { // check whet
 }
 
 template <class _Elem, class _RxTraits>
+bool _Lookup_collating_range(const _Elem _Ch, const _Buf<_Elem>* const _Bufptr, const _RxTraits& _Traits) {
+    const typename _RxTraits::string_type _Str = _Traits.transform(_STD addressof(_Ch), _STD addressof(_Ch) + 1);
+    for (unsigned int _Ix = 0; _Ix < _Bufptr->_Size(); _Ix += 2) { // check current position
+        const _Elem _Left  = _Bufptr->_At(_Ix);
+        const _Elem _Right = _Bufptr->_At(_Ix + 1);
+        if (_Traits.transform(_STD addressof(_Left), _STD addressof(_Left) + 1) <= _Str
+            && _Str <= _Traits.transform(_STD addressof(_Right), _STD addressof(_Right) + 1)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+template <class _Elem, class _RxTraits>
 bool _Lookup_equiv(typename _RxTraits::_Uelem _Ch, const _Sequence<_Elem>* _Eq, const _RxTraits& _Traits) {
     // check whether _Ch is in _Eq
     typename _RxTraits::string_type _Str0;
@@ -3399,35 +3416,36 @@ _BidIt _Lookup_coll(_BidIt _First, _BidIt _Last, const _Sequence<_Elem>* _Eq) {
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
 bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_class(_Node_base* _Nx) { // apply bracket expression
     bool _Found;
-    auto _Ch = static_cast<typename _RxTraits::_Uelem>(*_Tgt_state._Cur);
+    _Elem _Ch = *_Tgt_state._Cur;
     if (_Sflags & regex_constants::icase) {
-        _Ch = static_cast<typename _RxTraits::_Uelem>(_Traits.translate_nocase(static_cast<_Elem>(_Ch)));
+        _Ch = _Traits.translate_nocase(_Ch);
+    } else if (_Sflags & regex_constants::collate) {
+        _Ch = _Traits.translate(_Ch);
     }
+    const auto _UCh = static_cast<typename _RxTraits::_Uelem>(_Ch);
 
     _It _Res0 = _Tgt_state._Cur;
     ++_Res0;
     _It _Resx;
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
     if (_Node->_Coll
-        && (_Resx = _Lookup_coll(_Tgt_state._Cur, _End, _Node->_Coll))
+        && (_Resx = _STD _Lookup_coll(_Tgt_state._Cur, _End, _Node->_Coll))
                != _Tgt_state._Cur) { // check for collation element
         _Res0  = _Resx;
         _Found = true;
     } else if (_Node->_Ranges
-               && (_Lookup_range(static_cast<typename _RxTraits::_Uelem>(
-                                     _Sflags & regex_constants::collate ? _Traits.translate(static_cast<_Elem>(_Ch))
-                                                                        : static_cast<_Elem>(_Ch)),
-                   _Node->_Ranges))) {
+               && (_Sflags & regex_constants::collate ? _STD _Lookup_collating_range(_Ch, _Node->_Ranges, _Traits)
+                                                      : _STD _Lookup_range(_UCh, _Node->_Ranges))) {
         _Found = true;
-    } else if (_Ch < _Bmp_max) {
-        _Found = _Node->_Small && _Node->_Small->_Find(_Ch);
+    } else if (_UCh < _Bmp_max) {
+        _Found = _Node->_Small && _Node->_Small->_Find(_UCh);
     } else if (_Node->_Large
                && _STD find(_Node->_Large->_Str(), _Node->_Large->_Str() + _Node->_Large->_Size(), _Ch)
                       != _Node->_Large->_Str() + _Node->_Large->_Size()) {
         _Found = true;
-    } else if (_Node->_Classes != 0 && _Traits.isctype(static_cast<_Elem>(_Ch), _Node->_Classes)) {
+    } else if (_Node->_Classes != typename _RxTraits::char_class_type{} && _Traits.isctype(_Ch, _Node->_Classes)) {
         _Found = true;
-    } else if (_Node->_Equiv && _Lookup_equiv(_Ch, _Node->_Equiv, _Traits)) {
+    } else if (_Node->_Equiv && _STD _Lookup_equiv(_UCh, _Node->_Equiv, _Traits)) {
         _Found = true;
     } else {
         _Found = false;
@@ -3444,16 +3462,24 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_class(_Node_base* _Nx) { // ap
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
-bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Better_match() { // check for better match under UNIX rules
+bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Better_match() { // check for better match under leftmost-longest rule
     for (unsigned int _Ix = 0; _Ix < _Get_ncap(); ++_Ix) { // check each capture group
-        if (_Res._Grp_valid[_Ix] && _Tgt_state._Grp_valid[_Ix]) {
+        // any match (even an empty one) is better than no match at all
+        if (_Res._Grp_valid[_Ix] != _Tgt_state._Grp_valid[_Ix]) {
+            return _Tgt_state._Grp_valid[_Ix];
+        }
+
+        if (_Res._Grp_valid[_Ix]) { // now known to be equal to _Tgt_state._Grp_valid[_Ix], no need to test both
+            // if both groups are matched, prefer the leftmost one
             if (_Res._Grps[_Ix]._Begin != _Tgt_state._Grps[_Ix]._Begin) {
                 return _STD distance(_Begin, _Res._Grps[_Ix]._Begin)
-                     < _STD distance(_Begin, _Tgt_state._Grps[_Ix]._Begin);
+                     > _STD distance(_Begin, _Tgt_state._Grps[_Ix]._Begin);
             }
 
+            // if both groups start at the same position, prefer the longer one
             if (_Res._Grps[_Ix]._End != _Tgt_state._Grps[_Ix]._End) {
-                return _STD distance(_Begin, _Res._Grps[_Ix]._End) < _STD distance(_Begin, _Tgt_state._Grps[_Ix]._End);
+                return _STD distance(_Res._Grps[_Ix]._Begin, _Res._Grps[_Ix]._End)
+                     < _STD distance(_Tgt_state._Grps[_Ix]._Begin, _Tgt_state._Grps[_Ix]._End);
             }
         }
     }
@@ -3672,7 +3698,7 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
                     && _Begin == _Tgt_state._Cur)
                 || (_Full && _Tgt_state._Cur != _End)) {
                 _Failed = true;
-            } else if (!_Matched || _Better_match()) { // record successful match
+            } else if (_Longest && (!_Matched || _Better_match())) { // record successful match
                 _Res     = _Tgt_state;
                 _Matched = true;
             }
@@ -3746,34 +3772,36 @@ _BidIt _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Skip(_BidIt _First_arg, _BidIt 
         case _N_class:
             { // check for string match
                 for (; _First_arg != _Last; ++_First_arg) { // look for starting match
-                    using _Uelem = typename _RxTraits::_Uelem;
                     bool _Found;
-                    auto _Ch                             = static_cast<_Uelem>(*_First_arg);
+                    _Elem _Ch = *_First_arg;
+                    if (_Sflags & regex_constants::icase) {
+                        _Ch = _Traits.translate_nocase(_Ch);
+                    } else if (_Sflags & regex_constants::collate) {
+                        _Ch = _Traits.translate(_Ch);
+                    }
+                    const auto _UCh = static_cast<typename _RxTraits::_Uelem>(_Ch);
+
                     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
                     _It _Next                            = _First_arg;
                     ++_Next;
 
-                    if (_Sflags & regex_constants::icase) {
-                        _Ch = static_cast<_Uelem>(_Traits.translate_nocase(static_cast<_Elem>(_Ch)));
-                    }
-
-                    if (_Node->_Coll && _Lookup_coll(_First_arg, _Next, _Node->_Coll) != _First_arg) {
+                    if (_Node->_Coll && _STD _Lookup_coll(_First_arg, _Next, _Node->_Coll) != _First_arg) {
                         _Found = true;
                     } else if (_Node->_Ranges
-                               && (_Lookup_range(static_cast<_Uelem>(_Sflags & regex_constants::collate
-                                                                         ? _Traits.translate(static_cast<_Elem>(_Ch))
-                                                                         : static_cast<_Elem>(_Ch)),
-                                   _Node->_Ranges))) {
+                               && (_Sflags & regex_constants::collate
+                                       ? _STD _Lookup_collating_range(_Ch, _Node->_Ranges, _Traits)
+                                       : _STD _Lookup_range(_UCh, _Node->_Ranges))) {
                         _Found = true;
-                    } else if (_Ch < _Bmp_max) {
-                        _Found = _Node->_Small && _Node->_Small->_Find(_Ch);
+                    } else if (_UCh < _Bmp_max) {
+                        _Found = _Node->_Small && _Node->_Small->_Find(_UCh);
                     } else if (_Node->_Large
                                && _STD find(_Node->_Large->_Str(), _Node->_Large->_Str() + _Node->_Large->_Size(), _Ch)
                                       != _Node->_Large->_Str() + _Node->_Large->_Size()) {
                         _Found = true;
-                    } else if (_Node->_Classes && _Traits.isctype(static_cast<_Elem>(_Ch), _Node->_Classes)) {
+                    } else if (_Node->_Classes != typename _RxTraits::char_class_type{}
+                               && _Traits.isctype(_Ch, _Node->_Classes)) {
                         _Found = true;
-                    } else if (_Node->_Equiv && _Lookup_equiv(_Ch, _Node->_Equiv, _Traits)) {
+                    } else if (_Node->_Equiv && _STD _Lookup_equiv(_UCh, _Node->_Equiv, _Traits)) {
                         _Found = true;
                     } else {
                         _Found = false;
@@ -3842,7 +3870,7 @@ _BidIt _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Skip(_BidIt _First_arg, _BidIt 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Error(regex_constants::error_type _Code) { // handle error
+[[noreturn]] void _Parser<_FwdIt, _Elem, _RxTraits>::_Error(regex_constants::error_type _Code) { // handle error
     _Xregex_error(_Code);
 }
 
@@ -3899,17 +3927,16 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
         break;
 
     case _Meta_star:
-        if ((_L_flags & _L_star_beg) && _Nfa._Beg_expr()) {
-            _Mchar = _Meta_chr;
-        }
-
+        // A star can always act as a quantifier outside bracket expressions,
+        // but _L_star_beg (used by basic/grep) allows its use as an ordinary character
+        // at the beginning of a (sub-)expression (potentially after an optional caret anchor).
+        // We'll handle that when we are parsing alternatives in disjunctions.
         break;
 
     case _Meta_caret:
-        if ((_L_flags & _L_anch_rstr) && !_Nfa._Beg_expr()) {
-            _Mchar = _Meta_chr;
-        }
-
+        // A caret can always negate a bracket expression,
+        // but _L_anch_rstr (used by basic/grep) restricts caret anchors to the beginning.
+        // We'll handle that restriction when we're about to add a bol node.
         break;
 
     case _Meta_dlr:
@@ -4156,7 +4183,14 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid clas
                 _Chr2 = _Traits.translate(_Chr2);
             }
 
-            if (static_cast<typename _RxTraits::_Uelem>(_Chr2) < static_cast<typename _RxTraits::_Uelem>(_Chr1)) {
+            if (_Flags & regex_constants::collate) {
+                const _Elem* const _Chr1_ptr = _STD addressof(_Chr1);
+                const _Elem* const _Chr2_ptr = _STD addressof(_Chr2);
+                if (_Traits.transform(_Chr2_ptr, _Chr2_ptr + 1) < _Traits.transform(_Chr1_ptr, _Chr1_ptr + 1)) {
+                    _Error(regex_constants::error_range);
+                }
+            } else if (static_cast<typename _RxTraits::_Uelem>(_Chr2)
+                       < static_cast<typename _RxTraits::_Uelem>(_Chr1)) {
                 _Error(regex_constants::error_range);
             }
 
@@ -4474,15 +4508,21 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alte
             _Next();
             _Quant = _Wrapped_disjunction();
             _Expect(_Meta_rpar, regex_constants::error_paren);
-        } else if (_Mchar == _Meta_caret) { // add bol node
+        } else if (_Mchar == _Meta_caret && (!(_L_flags & _L_anch_rstr) || !_Found)) { // add bol node
             _Nfa._Add_bol();
             _Next();
-            _Quant = false;
+            if ((_L_flags & _L_star_beg) && _Mchar == _Meta_star && !_Found) {
+                _Nfa._Add_char(_Char);
+                _Next();
+            } else {
+                _Quant = false;
+            }
         } else if (_Mchar == _Meta_dlr) { // add eol node
             _Nfa._Add_eol();
             _Next();
             _Quant = false;
-        } else if (_Mchar == _Meta_star || _Mchar == _Meta_plus || _Mchar == _Meta_query || _Mchar == _Meta_lbr) {
+        } else if ((_Mchar == _Meta_star && (!(_L_flags & _L_star_beg) || _Found)) || _Mchar == _Meta_plus
+                   || _Mchar == _Meta_query || _Mchar == _Meta_lbr) {
             _Error(regex_constants::error_badrepeat);
         } else if (_Mchar == _Meta_rbr && !(_L_flags & _L_paren_bal)) {
             _Error(regex_constants::error_brace);
