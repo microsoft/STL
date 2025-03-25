@@ -385,58 +385,6 @@ private:
     _Yarn<char> _Oldlocname; // old locale name to revert to on destruction
     _Yarn<char> _Newlocname; // new locale name for this object
 };
-
-template <class _Elem>
-int __CRTDECL _LStrcoll(const _Elem* _First1, const _Elem* _Last1, const _Elem* _First2, const _Elem* _Last2,
-    const _Locinfo::_Collvec*) { // perform locale-specific comparison of _Elem sequences
-    for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, ++_First2) {
-        if (*_First1 < *_First2) {
-            return -1; // [_First1, _Last1) < [_First2, _Last2)
-        } else if (*_First2 < *_First1) {
-            return +1; // [_First1, _Last1) > [_First2, _Last2)
-        }
-    }
-
-    return _First2 != _Last2 ? -1 : _First1 != _Last1 ? +1 : 0;
-}
-
-template <>
-inline int __CRTDECL _LStrcoll(const char* _First1, const char* _Last1, const char* _First2, const char* _Last2,
-    const _Locinfo::_Collvec* _Vector) { // perform locale-specific comparison of char sequences
-    return _Strcoll(_First1, _Last1, _First2, _Last2, _Vector);
-}
-
-template <>
-inline int __CRTDECL _LStrcoll(const wchar_t* _First1, const wchar_t* _Last1, const wchar_t* _First2,
-    const wchar_t* _Last2,
-    const _Locinfo::_Collvec* _Vector) { // perform locale-specific comparison of wchar_t sequences
-    return _Wcscoll(_First1, _Last1, _First2, _Last2, _Vector);
-}
-
-template <class _Elem>
-size_t __CRTDECL _LStrxfrm(_Elem* _First1, _Elem* _Last1, const _Elem* _First2, const _Elem* _Last2,
-    const _Locinfo::_Collvec*) { // perform locale-specific transform of _Elems [_First1, _Last1)
-    const ptrdiff_t _Count = _Last2 - _First2;
-    if (_Count <= _Last1 - _First1) {
-        _CSTD memcpy(_First1, _First2, _Count * sizeof(_Elem));
-    }
-
-    return _Count;
-}
-
-template <>
-inline size_t __CRTDECL _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return) char* _First1,
-    _In_z_ char* _Last1, const char* _First2, const char* _Last2,
-    const _Locinfo::_Collvec* _Vector) { // perform locale-specific transform of chars [_First1, _Last1)
-    return _Strxfrm(_First1, _Last1, _First2, _Last2, _Vector);
-}
-
-template <>
-inline size_t __CRTDECL _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return) wchar_t* _First1,
-    _In_z_ wchar_t* _Last1, const wchar_t* _First2, const wchar_t* _Last2,
-    const _Locinfo::_Collvec* _Vector) { // perform locale-specific transform of wchar_ts [_First1, _Last1)
-    return _Wcsxfrm(_First1, _Last1, _First2, _Last2, _Vector);
-}
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
