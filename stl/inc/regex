@@ -1721,7 +1721,7 @@ private:
     // lexing
     [[noreturn]] void _Error(regex_constants::error_type);
 
-    bool _Is_esc() const;
+    bool _Is_esc(_FwdIt) const;
     void _Trans();
     void _Next();
     void _Expect(_Meta_type, regex_constants::error_type);
@@ -3875,8 +3875,7 @@ template <class _FwdIt, class _Elem, class _RxTraits>
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_Is_esc() const { // assumes _Pat != _End
-    _FwdIt _Ch0 = _Pat;
+bool _Parser<_FwdIt, _Elem, _RxTraits>::_Is_esc(_FwdIt _Ch0) const { // assumes _Ch0 != _End
     return ++_Ch0 != _End
         && ((!(_L_flags & _L_nex_grp) && (*_Ch0 == _Meta_lpar || *_Ch0 == _Meta_rpar))
             || (!(_L_flags & _L_nex_rep) && (*_Ch0 == _Meta_lbr || *_Ch0 == _Meta_rbr)));
@@ -3897,7 +3896,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
     }
     switch (_Char) { // handle special cases
     case _Meta_esc:
-        if (_Is_esc()) { // replace escape sequence
+        if (_Is_esc(_Pat)) { // replace escape sequence
             _FwdIt _Ch0 = _Pat;
             _Mchar      = static_cast<_Meta_type>(_Char = *++_Ch0);
         }
@@ -3941,9 +3940,23 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
 
     case _Meta_dlr:
         { // check if $ is special
-            _FwdIt _Ch0 = _Pat;
-            if ((_L_flags & _L_anch_rstr) && ++_Ch0 != _End && *_Ch0 != _Meta_nl) {
-                _Mchar = _Meta_chr;
+            _FwdIt _Next = _Pat;
+            if ((_L_flags & _L_anch_rstr) && ++_Next != _End) {
+                const bool _Escaped = *_Next == _Meta_esc && _Is_esc(_Next);
+                if (_Escaped) {
+                    ++_Next;
+                }
+
+                const _Elem _Ch = *_Next;
+                const bool _Is_end_of_alternative =
+                    ((_L_flags & _L_alt_pipe) && _Ch == _Meta_bar) // dollar followed by pipe |
+                    || ((_L_flags & _L_alt_nl) && _Ch == _Meta_nl && _Disj_count == 0) // dollar followed by pipe \n
+                    || ((_Escaped || (_L_flags & _L_nex_grp)) && _Ch == _Meta_rpar
+                        && _Disj_count != 0); // dollar followed by parenthesis closing a group
+
+                if (!_Is_end_of_alternative) {
+                    _Mchar = _Meta_chr;
+                }
             }
 
             break;
@@ -3972,7 +3985,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_Next() { // advance to next input character
     if (_Pat != _End) { // advance
-        if (*_Pat == _Meta_esc && _Is_esc()) {
+        if (*_Pat == _Meta_esc && _Is_esc(_Pat)) {
             ++_Pat;
         }
 
