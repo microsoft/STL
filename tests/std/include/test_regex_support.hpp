@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma once
+#include <cstddef>
 #include <cstdio>
+#include <initializer_list>
 #include <regex>
 #include <string>
+#include <utility>
 
 class regex_fixture {
     int regex_test_result = 0;
@@ -232,6 +235,93 @@ public:
                     subject.c_str(), pattern.c_str(), static_cast<unsigned int>(syntax),
                     static_cast<unsigned int>(match_flags), mr.str().c_str());
                 fixture->fail_regex();
+            }
+        } catch (const std::regex_error& e) {
+            printf(R"(Failed to regex_search("%s", regex("%s", 0x%X), 0x%X): regex_error: "%s")"
+                   "\n",
+                subject.c_str(), pattern.c_str(), static_cast<unsigned int>(syntax),
+                static_cast<unsigned int>(match_flags), e.what());
+            fixture->fail_regex();
+        }
+    }
+
+    void should_search_match_capture_groups(const std::string& subject, const std::string& expected,
+        const std::regex_constants::match_flag_type match_flags,
+        std::initializer_list<std::pair<std::ptrdiff_t, std::ptrdiff_t>> capture_groups) const {
+        std::smatch mr;
+        try {
+            const bool search_result = std::regex_search(subject, mr, r, match_flags);
+            if (!search_result || mr[0] != expected) {
+                printf(R"(Expected regex_search("%s", regex("%s", 0x%X), 0x%X) to find "%s", )", subject.c_str(),
+                    pattern.c_str(), static_cast<unsigned int>(syntax), static_cast<unsigned int>(match_flags),
+                    expected.c_str());
+                if (search_result) {
+                    printf(R"(but it matched "%s")"
+                           "\n",
+                        mr.str().c_str());
+                } else {
+                    puts("but it failed to match");
+                }
+
+                fixture->fail_regex();
+            } else if (capture_groups.size() + 1 != mr.size()) {
+                printf(R"(Expected regex_search("%s", regex("%s", 0x%X), 0x%X) to match %zu capture groups in "%s", )",
+                    subject.c_str(), pattern.c_str(), static_cast<unsigned int>(syntax),
+                    static_cast<unsigned int>(match_flags), capture_groups.size() + 1, expected.c_str());
+                printf(R"(but it matched %zu groups)"
+                       "\n",
+                    mr.size());
+                fixture->fail_regex();
+            } else {
+                bool submatches_success = true;
+                for (std::size_t i = 1U; i < mr.size(); ++i) {
+                    const auto& expected_capture = capture_groups.begin()[i - 1];
+                    const auto& actual_capture   = mr[i];
+                    if (expected_capture.first == -1) {
+                        if (actual_capture.matched) {
+                            submatches_success = false;
+                            break;
+                        }
+                    } else if (!actual_capture.matched || actual_capture.first != (mr[0].first + expected_capture.first)
+                               || actual_capture.second != (mr[0].first + expected_capture.second)) {
+                        submatches_success = false;
+                        break;
+                    }
+                }
+                if (!submatches_success) {
+                    printf(R"(Expected regex_search("%s", regex("%s", 0x%X), 0x%X) to find capture groups {)",
+                        subject.c_str(), pattern.c_str(), static_cast<unsigned int>(syntax),
+                        static_cast<unsigned int>(match_flags));
+
+                    bool initial = true;
+                    for (const auto& expected_capture : capture_groups) {
+                        std::string capture = "(unmatched)";
+                        if (expected_capture.first != -1) {
+                            capture.assign(mr[0].first + expected_capture.first, mr[0].first + expected_capture.second);
+                        }
+                        printf(R"(%s"%s" [%td %td])", initial ? "" : ", ", capture.c_str(), expected_capture.first,
+                            expected_capture.second);
+                        initial = false;
+                    }
+                    printf(R"(} in "%s", but found {)", expected.c_str());
+
+                    initial = true;
+                    for (std::size_t i = 1U; i < mr.size(); ++i) {
+                        const auto& actual_capture = mr[i];
+                        std::string capture        = "(unmatched)";
+                        std::ptrdiff_t first       = -1;
+                        std::ptrdiff_t last        = -1;
+                        if (actual_capture.matched) {
+                            capture = actual_capture.str();
+                            first   = actual_capture.first - mr[0].first;
+                            last    = actual_capture.second - mr[0].first;
+                        }
+                        printf(R"(%s"%s" [%td %td])", initial ? "" : ", ", capture.c_str(), first, last);
+                        initial = false;
+                    }
+                    printf("}\n");
+                    fixture->fail_regex();
+                }
             }
         } catch (const std::regex_error& e) {
             printf(R"(Failed to regex_search("%s", regex("%s", 0x%X), 0x%X): regex_error: "%s")"
