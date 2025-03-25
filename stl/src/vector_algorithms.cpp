@@ -5476,6 +5476,8 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
 }
 
 void* __stdcall __std_unique_1(void* _First, void* _Last) noexcept {
+    _First = const_cast<void*>(__std_adjacent_find_1(_First, _Last));
+
     if (_First == _Last) {
         return _First;
     }
@@ -5496,6 +5498,8 @@ void* __stdcall __std_unique_1(void* _First, void* _Last) noexcept {
 }
 
 void* __stdcall __std_unique_2(void* _First, void* _Last) noexcept {
+    _First = const_cast<void*>(__std_adjacent_find_2(_First, _Last));
+
     if (_First == _Last) {
         return _First;
     }
@@ -5516,6 +5520,8 @@ void* __stdcall __std_unique_2(void* _First, void* _Last) noexcept {
 }
 
 void* __stdcall __std_unique_4(void* _First, void* _Last) noexcept {
+    _First = const_cast<void*>(__std_adjacent_find_4(_First, _Last));
+
     if (_First == _Last) {
         return _First;
     }
@@ -5543,6 +5549,8 @@ void* __stdcall __std_unique_4(void* _First, void* _Last) noexcept {
 }
 
 void* __stdcall __std_unique_8(void* _First, void* _Last) noexcept {
+    _First = const_cast<void*>(__std_adjacent_find_8(_First, _Last));
+
     if (_First == _Last) {
         return _First;
     }
