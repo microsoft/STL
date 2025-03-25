@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <benchmark/benchmark.h>
 #include <cstdint>
+#include <numeric>
 #include <random>
 #include <type_traits>
 #include <vector>
@@ -19,7 +20,9 @@ void u(benchmark::State& state) {
     std::binomial_distribution<TD> dis(5);
 
     std::vector<T, not_highly_aligned_allocator<T>> src(2552);
-    std::generate(src.begin(), src.end(), [&] { return static_cast<T>(dis(gen)); });
+    std::iota(src.begin(), src.begin() + 390, T{0});
+    std::iota(src.end() - 390, src.end(), T{0});
+    std::generate(src.begin() + 390, src.end() - 390, [&] { return static_cast<T>(dis(gen)); });
 
     std::vector<T, not_highly_aligned_allocator<T>> v;
     v.reserve(src.size());
