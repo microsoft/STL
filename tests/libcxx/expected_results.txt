@@ -7,12 +7,18 @@ std/time/time.syn/formatter.duration.pass.cpp:0 FAIL
 std/time/time.syn/formatter.duration.pass.cpp:1 FAIL
 std/time/time.syn/formatter.file_time.pass.cpp:0 FAIL
 std/time/time.syn/formatter.file_time.pass.cpp:1 FAIL
+std/time/time.syn/formatter.gps_time.pass.cpp:0 FAIL
+std/time/time.syn/formatter.gps_time.pass.cpp:1 FAIL
 std/time/time.syn/formatter.hh_mm_ss.pass.cpp:0 FAIL
 std/time/time.syn/formatter.hh_mm_ss.pass.cpp:1 FAIL
 std/time/time.syn/formatter.local_time.pass.cpp:0 FAIL
 std/time/time.syn/formatter.local_time.pass.cpp:1 FAIL
 std/time/time.syn/formatter.sys_time.pass.cpp:0 FAIL
 std/time/time.syn/formatter.sys_time.pass.cpp:1 FAIL
+std/time/time.syn/formatter.tai_time.pass.cpp:0 FAIL
+std/time/time.syn/formatter.tai_time.pass.cpp:1 FAIL
+std/time/time.syn/formatter.utc_time.pass.cpp:0 FAIL
+std/time/time.syn/formatter.utc_time.pass.cpp:1 FAIL
 std/time/time.syn/formatter.year.pass.cpp:0 FAIL
 std/time/time.syn/formatter.year.pass.cpp:1 FAIL
 std/time/time.syn/formatter.year_month.pass.cpp:0 FAIL
@@ -36,13 +42,12 @@ std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp
 # LLVM-113609: [libc++][test] Non-rebindable test_alloc in string.capacity/deallocate_size.pass.cpp
 std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
 
-# LLVM-116054: [libc++] vprint_[non]unicode(ostream &, string_view, Args&&...) should not pad the output
-std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/print.pass.cpp FAIL
-std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/vprint_nonunicode.pass.cpp FAIL
-std/input.output/iostream.format/output.streams/ostream.formatted/ostream.formatted.print/vprint_unicode.pass.cpp FAIL
-
 # LLVM-122638: [libc++][test] re.regex.construct/bad_backref.pass.cpp assumes non-standard extension to extended regular expressions
 std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
+
+# LLVM-132532: [libc++][test] Small fixes for time tests
+std/time/time.clock/time.clock.gps/types.compile.pass.cpp:2 FAIL
+std/time/time.clock/time.clock.tai/types.compile.pass.cpp:2 FAIL
 
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
@@ -226,27 +231,54 @@ std/depr/depr.c.headers/uchar_h.compile.pass.cpp FAIL
 std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 
 # P0429R9 <flat_map>
-# FIXME! Investigate these failures before merging!
-std/containers/container.adaptors/flat.map/flat.map.access/at_transparent.pass.cpp FAIL
+
+# FIXME! static_assert(!CanIndex<TransparentMap, NonConvertibleTransparent<int>>);
 std/containers/container.adaptors/flat.map/flat.map.access/index_transparent.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/copy_alloc.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.cons/copy_alloc.pass.cpp:1 SKIPPED
+
+# FIXME! static_assert(!CanEmplace<Map, Emplaceable>);
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/emplace.pass.cpp FAIL
+
+# FIXME! error: no type named 'value_type' in 'std::greater<int>'
+std/containers/container.adaptors/flat.map/flat.map.cons/deduct.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/deduct.pass.cpp FAIL
+
+# FIXME! Assertion failed: mo.empty()
+std/containers/container.adaptors/flat.map/flat.map.cons/move_alloc.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_alloc.pass.cpp FAIL
+
+# FIXME! Assertion failed: m.keys().size() == m.values().size()
+std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_clears.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/move_exceptions.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_assign_clears.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_exceptions.pass.cpp FAIL
+
+# FIXME! abort() has been called
+std/containers/container.adaptors/flat.map/flat.map.cons/move.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move.pass.cpp FAIL
+
+# FIXME! Assertion failed: false
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_range.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_sorted_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_sorted_iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_range.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_sorted_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_sorted_iter_iter.pass.cpp FAIL
+
+# FIXME! warning C4242: 'initializing': conversion from '_Ty' to '_Ty2', possible loss of data
 std/containers/container.adaptors/flat.map/flat.map.cons/copy_assign.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/copy_assign.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/deduct_pmr.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/deduct_pmr.pass.cpp:1 FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/deduct.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/initializer_list.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/initializer_list.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/iter_iter.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/iter_iter.pass.cpp:1 FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/move_alloc.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_clears.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_noexcept.pass.cpp:2 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_assign.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_assign.pass.cpp:1 FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/move_exceptions.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/move.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/pmr.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/pmr.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/range.pass.cpp:0 FAIL
@@ -257,106 +289,61 @@ std/containers/container.adaptors/flat.map/flat.map.cons/sorted_initializer_list
 std/containers/container.adaptors/flat.map/flat.map.cons/sorted_initializer_list.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/sorted_iter_iter.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/sorted_iter_iter.pass.cpp:1 FAIL
-std/containers/container.adaptors/flat.map/flat.map.erasure/erase_if_exceptions.pass.cpp:2 FAIL
-std/containers/container.adaptors/flat.map/flat.map.erasure/erase_if.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.erasure/erase_if.pass.cpp:1 SKIPPED
 std/containers/container.adaptors/flat.map/flat.map.modifiers/erase_key.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/erase_key.pass.cpp:1 FAIL
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_initializer_list.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_iter_iter.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_range.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_sorted_initializer_list.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_sorted_iter_iter.pass.cpp FAIL
-# FIXME! These tests perform narrowing conversions on x64 but not on x86.
-std/containers/container.adaptors/flat.map/flat.map.access/at.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.access/at.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.access/index_key.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.access/index_key.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.access/index_rv_key.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.access/index_rv_key.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.capacity/empty.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.capacity/empty.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.capacity/size.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.capacity/size.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.cons/assign_initializer_list.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.cons/assign_initializer_list.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.iterators/iterator.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.iterators/iterator.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.iterators/iterator_comparison.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.iterators/iterator_comparison.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.iterators/range_concept_conformance.compile.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.iterators/range_concept_conformance.compile.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/clear.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/clear.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/emplace.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/emplace.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/emplace_hint.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/emplace_hint.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/erase_iter.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/erase_iter.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/erase_iter_iter.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/erase_iter_iter.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/erase_key_transparent.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/erase_key_transparent.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/extract.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/extract.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_cv.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_cv.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_rv.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_rv.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_iter_cv.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_iter_cv.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_iter_rv.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_iter_rv.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_or_assign.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_or_assign.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_or_assign_transparent.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_or_assign_transparent.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_transparent.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_transparent.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/replace.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/replace.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/swap_free.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/swap_free.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/swap_member.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/swap_member.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/try_emplace.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/try_emplace.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/try_emplace_transparent.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.modifiers/try_emplace_transparent.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.observers/keys_values.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.observers/keys_values.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/contains.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/contains.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/contains_transparent.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/contains_transparent.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/count.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/count.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/count_transparent.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/count_transparent.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/equal_range.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/equal_range.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/equal_range_transparent.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/equal_range_transparent.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/find.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/find.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/find_transparent.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/find_transparent.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/lower_bound.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/lower_bound.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/lower_bound_transparent.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/lower_bound_transparent.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/upper_bound.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/upper_bound.pass.cpp:1 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/upper_bound_transparent.pass.cpp:0 SKIPPED
-std/containers/container.adaptors/flat.map/flat.map.operations/upper_bound_transparent.pass.cpp:1 SKIPPED
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/containers.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/containers.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/copy_assign.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/copy_assign.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/deduct_pmr.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/deduct_pmr.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/initializer_list.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/initializer_list.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/iter_iter.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/iter_iter.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_assign.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_assign.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/pmr.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/pmr.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/range.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/range.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/sorted_container.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/sorted_container.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/sorted_initializer_list.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/sorted_initializer_list.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/sorted_iter_iter.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/sorted_iter_iter.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/erase_key.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/erase_key.pass.cpp:1 FAIL
+
+# FIXME! error: unused type alias 'C' [-Werror,-Wunused-local-typedef]
+std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_noexcept.pass.cpp:2 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_assign_noexcept.pass.cpp:2 FAIL
+
+# FIXME! error: unused variable 'expected' [-Werror,-Wunused-variable]
+std/containers/container.adaptors/flat.map/flat.map.erasure/erase_if_exceptions.pass.cpp:2 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.erasure/erase_if_exceptions.pass.cpp:2 FAIL
 
 # P0533R9 constexpr For <cmath> And <cstdlib>
 std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
 
+# P0543R3 Saturation Arithmetic
+std/numerics/numeric.ops/numeric.ops.sat/add_sat.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/add_sat.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/div_sat.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/div_sat.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/mul_sat.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/mul_sat.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/sub_sat.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/sub_sat.pass.cpp FAIL
+
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp FAIL
 
 # P2674R1 is_implicit_lifetime
 std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp FAIL
@@ -483,6 +470,10 @@ std/strings/basic.string/string.modifiers/string_replace/iter_iter_string.pass.c
 std/strings/basic.string/string.modifiers/string_replace/iter_iter_string.pass.cpp:1 FAIL
 std/strings/basic.string/string.modifiers/string_replace/iter_iter_string_view.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_replace/iter_iter_string_view.pass.cpp:1 FAIL
+std/strings/strings.erasure/erase_if.pass.cpp:0 FAIL
+std/strings/strings.erasure/erase_if.pass.cpp:1 FAIL
+std/strings/strings.erasure/erase.pass.cpp:0 FAIL
+std/strings/strings.erasure/erase.pass.cpp:1 FAIL
 
 # VSO-2338880 constexpr error in vector::iterator's _Compat() check when using views::transform
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:0 FAIL
@@ -590,6 +581,13 @@ std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
 
+# GH-5345: <vector>: _Copy_vbool() mishandles vector<bool>s of size 32 and 64, revealed by constexpr Clang
+std/algorithms/alg.modifying.operations/alg.copy/copy_n.pass.cpp:2 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:2 FAIL
+std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:2 FAIL
+std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp FAIL
+std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp FAIL
+
 
 # *** VCRUNTIME BUGS ***
 
@@ -643,6 +641,13 @@ std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/m
 std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.locking/lock.pass.cpp SKIPPED
 std/thread/thread.threads/thread.thread.class/thread.thread.destr/dtor.pass.cpp SKIPPED
 std/thread/thread.threads/thread.thread.this/sleep_until.pass.cpp SKIPPED
+
+# "This is technically flaky" comments indicate tests with timing assumptions.
+# These tests have failed in practice, see VSO-2321213 and VSO-2416940.
+std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_for.pass.cpp SKIPPED
+std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_shared_for.pass.cpp SKIPPED
+std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_shared_until.pass.cpp SKIPPED
+std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_until.pass.cpp SKIPPED
 
 # Not analyzed, likely bogus tests. Various assertions, probably POSIX assumptions.
 std/diagnostics/syserr/syserr.syserr/syserr.syserr.members/ctor_error_code_const_char_pointer.pass.cpp FAIL
@@ -731,6 +736,10 @@ std/containers/sequences/vector/vector.capacity/resize_size_value_exceptions.pas
 # The definition of char_traits isn't required to be provided by <iterator>, so this test appears to be bogus.
 # error: incomplete type 'std::char_traits<char>' named in nested name specifier
 std/iterators/iterator.requirements/iterator.assoc.types/readable.traits/indirectly_readable_traits.compile.pass.cpp FAIL
+
+# warning C5030: attribute [[clang::trivial_abi]] is not recognized
+std/containers/sequences/vector/trivial_relocation.pass.cpp:0 FAIL
+std/containers/sequences/vector/trivial_relocation.pass.cpp:1 FAIL
 
 
 # *** LIKELY STL BUGS ***
@@ -907,21 +916,15 @@ std/numerics/rand/rand.dist/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp 
 # I don't know which is right.
 std/language.support/support.limits/limits/numeric.limits.members/tinyness_before.pass.cpp SKIPPED
 
-# Not analyzed. the test fails on x64 but passes on x86
-# warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-# warning C4244: 'initializing': conversion from 'unsigned __int64' to 'int', possible loss of data
-std/containers/associative/map/map.access/iterator.pass.cpp:0 SKIPPED
-std/containers/associative/map/map.access/iterator.pass.cpp:1 SKIPPED
-
-# Not analyzed. the test fails on x64 but passes on x86
-# warning C4244: 'return': conversion from '__int64' to 'CustomIt::difference_type', possible loss of data
-std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:0 SKIPPED
-std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:1 SKIPPED
-
-# Not analyzed. the test fails on x64 but passes on x86
-# warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+# Not analyzed. x64-specific truncation warnings.
+std/algorithms/alg.modifying.operations/alg.fill/fill_n.pass.cpp:0 SKIPPED
+std/algorithms/alg.modifying.operations/alg.fill/fill_n.pass.cpp:1 SKIPPED
 std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp:0 SKIPPED
 std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp:1 SKIPPED
+std/containers/associative/map/map.access/iterator.pass.cpp:0 SKIPPED
+std/containers/associative/map/map.access/iterator.pass.cpp:1 SKIPPED
+std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:0 SKIPPED
+std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:1 SKIPPED
 
 # Not analyzed. the test fails on x86 but passes on x64
 # warning C4389: '==': signed/unsigned mismatch
@@ -988,6 +991,8 @@ std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requir
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_piecewise_pair_evil.pass.cpp FAIL
 
 # Not analyzed, failing due to constexpr step limits.
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:2 FAIL
+std/algorithms/alg.modifying.operations/alg.rotate/rotate.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.contains/ranges.contains_subrange.pass.cpp:2 FAIL
 std/algorithms/alg.nonmodifying/alg.count/count.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.count/ranges.count.pass.cpp FAIL
@@ -1080,9 +1085,12 @@ std/localization/codecvt_unicode.pass.cpp FAIL
 # Not analyzed. Various runtime behavior differences.
 std/time/time.syn/formatter.duration.pass.cpp:2 FAIL
 std/time/time.syn/formatter.file_time.pass.cpp:2 FAIL
+std/time/time.syn/formatter.gps_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.hh_mm_ss.pass.cpp:2 FAIL
 std/time/time.syn/formatter.local_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.sys_time.pass.cpp:2 FAIL
+std/time/time.syn/formatter.tai_time.pass.cpp:2 FAIL
+std/time/time.syn/formatter.utc_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.zoned_time.pass.cpp:2 FAIL
 
 # Not analyzed. constexpr evaluation fails with note: failure was caused by out of range index MEOW; allowed range is 0 <= index < 2
@@ -1110,6 +1118,10 @@ std/strings/char.traits/char.traits.specializations/char.traits.specializations.
 # Not analyzed. Likely MSVC constexpr bug, "note: failure was caused by a read of a variable outside its lifetime"
 std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
 std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
+
+# Not analyzed. Likely MSVC constexpr bug, "note: a non-constant (sub-)expression was encountered" in swap()
+std/utilities/utility/utility.swap/swap_array.pass.cpp:0 FAIL
+std/utilities/utility/utility.swap/swap_array.pass.cpp:1 FAIL
 
 # Not analyzed. SKIPPED because this is x86-specific, fatal error C1060: compiler is out of heap space
 std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.binary.iterator.pass.cpp:0 SKIPPED
@@ -1280,8 +1292,10 @@ std/atomics/atomics.ref/wait.pass.cpp SKIPPED
 std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/pointer_deleter.pass.cpp FAIL
 
 # Not analyzed. Various assertions.
+std/time/time.clock/time.clock.gps/gps_time.ostream.pass.cpp FAIL
+std/time/time.clock/time.clock.tai/tai_time.ostream.pass.cpp FAIL
+std/time/time.clock/time.clock.utc/time.clock.utc.members/to_sys.pass.cpp FAIL
 std/time/time.zone/time.zone.timezone/time.zone.members/get_info.local_time.pass.cpp FAIL
-std/time/time.zone/time.zone.timezone/time.zone.members/to_sys_choose.pass.cpp FAIL
 std/time/time.zone/time.zone.zonedtime/time.zone.zonedtime.members/get_info.pass.cpp FAIL
 std/time/time.zone/time.zone.zonedtime/time.zone.zonedtime.nonmembers/ostream.pass.cpp FAIL
 
@@ -1307,6 +1321,9 @@ std/depr/depr.c.headers/stdalign_h.compile.pass.cpp:1 FAIL
 # Not analyzed. Probably an MSVC compiler bug, as it rejects `n | negate | negate` while Clang accepts.
 std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:1 FAIL
+
+# Not analyzed. Emitting easily-suppressed truncation warnings for MSVC, but also compiler errors for MSVC and Clang.
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.pass.cpp FAIL
 
 
 # *** XFAILS WHICH PASS ***
@@ -1370,16 +1387,10 @@ std/ranges/range.utility/range.utility.conv/to.pass.cpp:9 SKIPPED
 std/thread/thread.jthread/assign.move.pass.cpp:9 SKIPPED
 std/utilities/meta/meta.unary/dependent_return_type.compile.pass.cpp:9 SKIPPED
 
-# This test is marked as `XFAIL: msvc`, but the MSVC-internal test harness doesn't yet parse XFAIL.
-std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp:9 SKIPPED
-
-# Similarly, this test is marked as `XFAIL: msvc`
-# MSVC doesn't properly support [[no_unique_address]]
+# These tests are marked as `XFAIL: msvc`, but the MSVC-internal test harness doesn't yet parse XFAIL.
 std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp:9 SKIPPED
-
-# Similarly, this test is marked as `XFAIL: msvc, target={{.+}}-windows-gnu`
-# because it calls an `fmemopen` function that doesn't exist on Windows.
 std/input.output/iostream.format/print.fun/no_file_description.pass.cpp:9 SKIPPED
+std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp:9 SKIPPED
 
 # This test is marked as `REQUIRES: large_tests`. The GitHub test harness doesn't define that feature, so it doesn't
 # run this test. However, the MSVC-internal test harness doesn't yet parse REQUIRES, and simply runs everything.
@@ -1387,14 +1398,6 @@ std/input.output/string.streams/stringstream/stringstream.members/gcount.pass.cp
 
 # Similarly, this test is marked as `REQUIRES: 32-bit-pointer`.
 std/iterators/iterator.container/ssize.LWG3207.compile.pass.cpp:9 SKIPPED
-
-# This test is marked as `REQUIRES: has-unix-headers, libcpp-has-abi-bounded-iterators-in-vector`.
-# Listing these on separate lines would allow magic_comments.txt to recognize it.
-std/containers/sequences/vector/vector.modifiers/assert.push_back.invalidation.pass.cpp:9 SKIPPED
-
-# This test is marked as `REQUIRES: has-unix-headers, libcpp-has-abi-bounded-iterators-in-std-array`.
-# Listing these on separate lines would allow magic_comments.txt to recognize it.
-std/containers/sequences/array/assert.iterators.pass.cpp:9 SKIPPED
 
 # These tests emit C5321, which warns when the resolution to CWG-1656 affects a u8 string literal.
 # The conformant behavior is opt-in because it can silently change behavior.
