@@ -3094,7 +3094,8 @@ namespace {
             uint32_t _Carry = 0;
             do {
                 const __m256i _Data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
-                const auto _Mask    = static_cast<uint32_t>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Comparand, _Data)));
+
+                const auto _Mask = static_cast<uint32_t>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Comparand, _Data)));
 
                 uint64_t _MskX = uint64_t{_Carry} | (uint64_t{_Mask} << 32);
 
