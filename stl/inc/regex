@@ -1202,8 +1202,7 @@ enum _Node_flags : int { // flags for nfa nodes with special properties
     _Fl_none    = 0x00,
     _Fl_negate  = 0x01,
     _Fl_greedy  = 0x02,
-    _Fl_final   = 0x04,
-    _Fl_longest = 0x08
+    _Fl_longest = 0x08 // TRANSITION, ABI: 0x04 is unused; the parser previously marked some nodes with it
 };
 
 _BITMASK_OPS(_EMPTY_ARGUMENT, _Node_flags)
@@ -1521,7 +1520,7 @@ public:
     void _Add_eol();
     void _Add_wbound();
     void _Add_dot();
-    void _Add_char(_Elem _Ch);
+    void _Add_char2(_Elem _Ch);
     void _Add_class();
     void _Add_char_to_class(_Elem _Ch);
     void _Add_range2(_Elem, _Elem);
@@ -1536,9 +1535,8 @@ public:
     void _Add_backreference(unsigned int _Idx);
     _Node_base* _Begin_if(_Node_base* _Start);
     void _Else_if(_Node_base*, _Node_base*);
-    void _Add_rep(int _Min, int _Max, bool _Greedy);
+    void _Add_rep2(int _Min, int _Max, bool _Greedy);
     void _Negate();
-    void _Mark_final();
     _Root_node* _End_pattern();
 
 private:
@@ -2774,11 +2772,6 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Negate() { // set flag
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Mark_final() { // set flag
-    _Current->_Flags |= _Fl_final;
-}
-
-template <class _FwdIt, class _Elem, class _RxTraits>
 _Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Getmark() const {
     return _Current;
 }
@@ -2840,8 +2833,8 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_str_node() { // add string node
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char(_Elem _Ch) { // append character
-    if (_Current->_Kind != _N_str || (_Current->_Flags & _Fl_final)) {
+void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char2(_Elem _Ch) { // append character
+    if (_Current->_Kind != _N_str) {
         _Add_str_node();
     }
 
@@ -3090,11 +3083,12 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Else_if(_Node_base* _Start, _Node_base
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_rep(int _Min, int _Max, bool _Greedy) { // add repeat node
+void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_rep2(int _Min, int _Max, bool _Greedy) { // add repeat node
     if (_Current->_Kind == _N_str
         && static_cast<_Node_str<_Elem>*>(_Current)->_Data._Size() != 1) { // move final character to new string node
         _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Current);
-        _Add_char(_Node->_Data._Del());
+        _Add_str_node();
+        _Add_char2(_Node->_Data._Del());
     }
 
     _Node_base* _Pos = _Current;
@@ -4419,7 +4413,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom 
             if (!(_L_flags & _L_bzr_chr)) {
                 _Error(regex_constants::error_escape);
             } else {
-                _Nfa._Add_char(static_cast<_Elem>(_Val));
+                _Nfa._Add_char2(static_cast<_Elem>(_Val));
             }
         } else if (_Grp_idx < static_cast<size_t>(_Val) || _Finished_grps.size() <= static_cast<size_t>(_Val)
                    || !_Finished_grps[static_cast<size_t>(_Val)]) {
@@ -4428,7 +4422,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom 
             _Nfa._Add_backreference(static_cast<size_t>(_Val));
         }
     } else if (_CharacterEscape()) {
-        _Nfa._Add_char(static_cast<_Elem>(_Val));
+        _Nfa._Add_char2(static_cast<_Elem>(_Val));
     } else if (!(_L_flags & _L_esc_wsd) || !_CharacterClassEscape(true)) {
         _Error(regex_constants::error_escape);
     }
@@ -4471,14 +4465,13 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier 
         }
     }
 
-    _Nfa._Mark_final();
     _Next();
     const bool _Greedy = !(_L_flags & _L_ngr_rep) || _Mchar != _Meta_query;
     if (!_Greedy) { // add non-greedy repeat node
         _Next();
     }
 
-    _Nfa._Add_rep(_Min, _Max, _Greedy);
+    _Nfa._Add_rep2(_Min, _Max, _Greedy);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -4519,7 +4512,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alte
             _Nfa._Add_bol();
             _Next();
             if ((_L_flags & _L_star_beg) && _Mchar == _Meta_star && !_Found) {
-                _Nfa._Add_char(_Char);
+                _Nfa._Add_char2(_Char);
                 _Next();
             } else {
                 _Quant = false;
@@ -4536,7 +4529,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alte
         } else if (_Mchar == _Meta_rsq && !(_L_flags & _L_paren_bal)) {
             _Error(regex_constants::error_brack);
         } else { // add character
-            _Nfa._Add_char(_Char);
+            _Nfa._Add_char2(_Char);
             _Next();
         }
 
