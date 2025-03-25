@@ -5352,7 +5352,7 @@ namespace ranges {
 
 #if _USE_STD_VECTOR_ALGORITHMS
             if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<_Se, _It>
-                          && _Vector_alg_in_unique_is_safe<_It, _Out, _Pr> && _Iterator_is_contiguous<_Out>
+                          && _Vector_alg_in_unique_is_safe<_It, _Pr> && _Iterator_is_contiguous<_Out>
                           && is_same_v<remove_const_t<_Iter_value_t<_It>>, _Iter_value_t<_Out>>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _Size       = _Last - _First;
