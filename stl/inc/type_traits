@@ -334,11 +334,20 @@ _EXPORT_STD template <class _Ty>
 constexpr bool is_enum_v = __is_enum(_Ty);
 
 #if _HAS_CXX23
+#if defined(__clang__) && !defined(__EDG__) \
+    && __clang_major__ >= 16 // TRANSITION, DevCom-10870354, Real World Code relying on ancient Clang
+_EXPORT_STD template <class _Ty>
+constexpr bool is_scoped_enum_v = __is_scoped_enum(_Ty);
+
+_EXPORT_STD template <class _Ty>
+struct is_scoped_enum : bool_constant<__is_scoped_enum(_Ty)> {};
+#else // ^^^ no workaround / workaround vvv
 _EXPORT_STD template <class _Ty>
 constexpr bool is_scoped_enum_v = conjunction_v<is_enum<_Ty>, negation<is_convertible<_Ty, int>>>;
 
 _EXPORT_STD template <class _Ty>
 struct is_scoped_enum : bool_constant<is_scoped_enum_v<_Ty>> {};
+#endif // ^^^ workaround ^^^
 #endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Ty>
