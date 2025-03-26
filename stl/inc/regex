@@ -3572,14 +3572,19 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
         case _N_neg_assert:
         case _N_assert:
             { // check assert
+                _It _Ch              = _Tgt_state._Cur;
                 bool _Neg            = _Nx->_Kind == _N_neg_assert;
                 _Bt_state_t<_It> _St = _Tgt_state;
                 if (_Match_pat(static_cast<_Node_assert*>(_Nx)->_Child) == _Neg) {
                     // restore initial state and indicate failure
                     _Tgt_state = _St;
                     _Failed    = true;
-                } else if (!_Neg) {
-                    _Tgt_state._Cur = _St._Cur;
+                } else {
+                    if (_Neg) {
+                        _Tgt_state = _St;
+                    } else {
+                        _Tgt_state._Cur = _Ch;
+                    }
                 }
 
                 break;
