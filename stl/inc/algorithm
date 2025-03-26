@@ -98,10 +98,6 @@ void* __stdcall __std_unique_copy_1(const void* _First, const void* _Last, void*
 void* __stdcall __std_unique_copy_2(const void* _First, const void* _Last, void* _Dest) noexcept;
 void* __stdcall __std_unique_copy_4(const void* _First, const void* _Last, void* _Dest) noexcept;
 void* __stdcall __std_unique_copy_8(const void* _First, const void* _Last, void* _Dest) noexcept;
-void* __stdcall __std_unique_1(void* _First, void* _Last) noexcept;
-void* __stdcall __std_unique_2(void* _First, void* _Last) noexcept;
-void* __stdcall __std_unique_4(void* _First, void* _Last) noexcept;
-void* __stdcall __std_unique_8(void* _First, void* _Last) noexcept;
 } // extern "C"
 
 _STD_BEGIN
