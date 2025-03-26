@@ -1667,6 +1667,8 @@ private:
     _Tgt_state_t<_It> _Res;
     vector<_Loop_vals_t> _Loop_vals;
 
+    bool _Do_assert(_Node_assert*);
+    bool _Do_neg_assert(_Node_assert*);
     bool _Do_if(_Node_if*);
     bool _Do_rep0(_Node_rep*, bool);
     bool _Do_rep(_Node_rep*, bool, int);
@@ -3140,6 +3142,30 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Tidy() noexcept { // free memory
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
+bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_assert(_Node_assert* _Node) { // apply assert node
+
+    _It _Ch = _Tgt_state._Cur;
+    if (_Match_pat(_Node->_Child)) {
+        _Tgt_state._Cur = _Ch;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template <class _BidIt, class _Elem, class _RxTraits, class _It>
+bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_neg_assert(_Node_assert* _Node) { // apply negative assert node
+
+    _Bt_state_t<_It> _St = _Tgt_state;
+    if (!_Match_pat(_Node->_Child)) {
+        _Tgt_state = _St;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template <class _BidIt, class _Elem, class _RxTraits, class _It>
 bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_if(_Node_if* _Node) { // apply if node
     _Tgt_state_t<_It> _St = _Tgt_state;
 
@@ -3594,24 +3620,15 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
         case _N_end_group:
             break;
 
-        case _N_neg_assert:
         case _N_assert:
             { // check assert
-                _It _Ch              = _Tgt_state._Cur;
-                bool _Neg            = _Nx->_Kind == _N_neg_assert;
-                _Bt_state_t<_It> _St = _Tgt_state;
-                if (_Match_pat(static_cast<_Node_assert*>(_Nx)->_Child) == _Neg) {
-                    // restore initial state and indicate failure
-                    _Tgt_state = _St;
-                    _Failed    = true;
-                } else {
-                    if (_Neg) {
-                        _Tgt_state = _St;
-                    } else {
-                        _Tgt_state._Cur = _Ch;
-                    }
-                }
+                _Failed = !_Do_assert(static_cast<_Node_assert*>(_Nx));
+                break;
+            }
 
+        case _N_neg_assert:
+            { // check negative assert
+                _Failed = !_Do_neg_assert(static_cast<_Node_assert*>(_Nx));
                 break;
             }
 
