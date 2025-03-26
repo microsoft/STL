@@ -66,4 +66,14 @@ BENCHMARK(u<alg_type::rng, std::uint16_t>);
 BENCHMARK(u<alg_type::rng, std::uint32_t>);
 BENCHMARK(u<alg_type::rng, std::uint64_t>);
 
+BENCHMARK(uc<alg_type::std_fn, std::uint8_t>);
+BENCHMARK(uc<alg_type::std_fn, std::uint16_t>);
+BENCHMARK(uc<alg_type::std_fn, std::uint32_t>);
+BENCHMARK(uc<alg_type::std_fn, std::uint64_t>);
+
+BENCHMARK(uc<alg_type::rng, std::uint8_t>);
+BENCHMARK(uc<alg_type::rng, std::uint16_t>);
+BENCHMARK(uc<alg_type::rng, std::uint32_t>);
+BENCHMARK(uc<alg_type::rng, std::uint64_t>);
+
 BENCHMARK_MAIN();
