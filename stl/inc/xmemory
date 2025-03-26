@@ -25,6 +25,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#undef msvc
+
 #if _USE_STD_VECTOR_ALGORITHMS
 extern "C" {
 void* __stdcall __std_remove_1(void* _First, void* _Last, uint8_t _Val) noexcept;
@@ -1500,8 +1504,8 @@ struct _Container_proxy_ptr12 : _Basic_container_proxy_ptr12 {
 };
 
 #if _ITERATOR_DEBUG_LEVEL == 0
-_INLINE_VAR constexpr _Fake_allocator _Fake_alloc{};
-#define _GET_PROXY_ALLOCATOR(_Alty, _Al) _Fake_alloc // TRANSITION, VSO-1284799, should be _Fake_allocator{}
+#define _GET_PROXY_ALLOCATOR(_Alty, _Al) \
+    _Fake_allocator {}
 template <class _Alloc>
 using _Container_proxy_ptr = _Fake_proxy_ptr_impl;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL > 0 vvv
@@ -1786,23 +1790,31 @@ namespace ranges {
         requires (constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>)
     uninitialized_move_result<_It, _Out> _Uninitialized_move_unchecked(
         _It _IFirst, _Se _ILast, _Out _OFirst, _OSe _OLast) {
-        constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
-        constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
-        if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_constructible && _Sized_or_unreachable_sentinel_for<_Se, _It>
-                      && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
+        constexpr bool _Is_sized1  = sized_sentinel_for<_Se, _It>;
+        constexpr bool _Is_sized2  = sized_sentinel_for<_OSe, _Out>;
+        constexpr bool _Can_memcpy = _Iter_move_cat<_It, _Out>::_Bitcopy_constructible
+                                  && _Sized_or_unreachable_sentinel_for<_Se, _It>
+                                  && _Sized_or_unreachable_sentinel_for<_OSe, _Out>;
+        if constexpr (_Can_memcpy && (_Is_sized1 || _Is_sized2)) {
             if constexpr (_Is_sized1 && _Is_sized2) {
                 return _RANGES _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
                     _RANGES next(_OFirst, _STD move(_OLast)));
             } else if constexpr (_Is_sized1) {
                 return _RANGES _Copy_memcpy_distance(
                     _IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
-            } else if constexpr (_Is_sized2) {
+            } else {
+                _STL_INTERNAL_STATIC_ASSERT(_Is_sized2);
                 return _RANGES _Copy_memcpy_distance(
                     _IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
-            } else {
-                _STL_ASSERT(false, "Tried to uninitialized_move two ranges with unreachable sentinels");
             }
         } else {
+            if constexpr (_Can_memcpy) {
+                // We were eligible for the memcpy optimization above, except for both sentinels being unreachable.
+                // The following classic code is doomed, because no exceptions will end the infinite loop.
+                // Following our usual pattern, let's emit a debug assertion, then run the loop anyways.
+                _STL_ASSERT(false, "Tried to std::uninitialized_move() two ranges with unreachable sentinels");
+            }
+
             _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
             for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
@@ -2728,8 +2740,8 @@ namespace ranges {
     _EXPORT_STD template <range _Rng, class _Alloc>
 #endif // ^^^ !defined(__cpp_lib_byte) ^^^
     struct elements_of {
-        /* [[no_unique_address]] */ _Rng range;
-        /* [[no_unique_address]] */ _Alloc allocator{};
+        _MSVC_NO_UNIQUE_ADDRESS _Rng range;
+        _MSVC_NO_UNIQUE_ADDRESS _Alloc allocator{};
     };
 
 #if defined(__cpp_lib_byte)
@@ -2792,6 +2804,9 @@ _STD_END
 #else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
 #define _LIST_REMOVE_RETURN void
 #endif // ^^^ !_HAS_CXX20 ^^^
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

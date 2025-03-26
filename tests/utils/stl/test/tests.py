@@ -275,10 +275,16 @@ class STLTest(Test):
                 foundStd = True
                 if flag[5:] == 'c++latest':
                     self._addCustomFeature('c++23')
+                    self._addCustomFeature('std-at-least-c++23')
+                    self._addCustomFeature('std-at-least-c++20')
+                    self._addCustomFeature('std-at-least-c++17')
                 elif flag[5:] == 'c++20':
                     self._addCustomFeature('c++20')
+                    self._addCustomFeature('std-at-least-c++20')
+                    self._addCustomFeature('std-at-least-c++17')
                 elif flag[5:] == 'c++17':
                     self._addCustomFeature('c++17')
+                    self._addCustomFeature('std-at-least-c++17')
                 elif flag[5:] == 'c++14':
                     self._addCustomFeature('c++14')
             elif flag[1:11] == 'fsanitize=':

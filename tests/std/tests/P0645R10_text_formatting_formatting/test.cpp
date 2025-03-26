@@ -835,6 +835,7 @@ void test_float_specs() {
     assert(format(STR("{:3}"), Float{0}) == STR("  0"));
     assert(format(STR("{:#9G}"), Float{12.2}) == STR("  12.2000"));
     assert(format(STR("{:#12g}"), Float{1'000'000}) == STR(" 1.00000e+06"));
+    assert(format(STR("[{:#6.0g}]"), 1.234e-37) == STR("[1.e-37]"));
 
     // Precision
     Float value = 1234.52734375;
@@ -1386,6 +1387,10 @@ void libfmt_formatter_test_runtime_width() {
     assert(format(STR("{0:{1}}"), reinterpret_cast<void*>(0xcafe), 10) == STR("    0xcafe"));
     assert(format(STR("{0:{1}}"), 'x', 11) == STR("x          "));
     assert(format(STR("{0:{1}}"), STR("str"), 12) == STR("str         "));
+
+    // Test positive and negative dynamic width:
+    assert(format(STR("{:{}}"), 42, 5) == STR("   42"));
+    throw_helper(STR("{:{}}"), 42, -5);
 }
 
 template <class charT>
@@ -1425,6 +1430,10 @@ void libfmt_formatter_test_runtime_precision() {
     throw_helper(STR("{:.{}f}"), 3.14f, true);
     throw_helper(STR("{:.{}f}"), 3.14f, '0');
     assert(format(STR("{:.{}f}"), 3.14f, static_cast<signed char>(2)) == STR("3.14"));
+
+    // Test positive and negative dynamic precision:
+    assert(format(STR("{:.{}}"), 3.14159265358979, 5) == STR("3.1416"));
+    throw_helper(STR("{:.{}}"), 3.14159265358979, -5);
 }
 
 template <class charT>

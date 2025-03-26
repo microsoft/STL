@@ -241,7 +241,7 @@ public:
         template <class _Ty>
         explicit handle(_Ty& _Val) noexcept
             : _Ptr(_STD addressof(_Val)), _Format([](basic_format_parse_context<_CharType>& _Parse_ctx,
-                                                      _Context& _Format_ctx, const void* _Ptr) _STATIC_CALL_OPERATOR {
+                                                      _Context& _Format_ctx, const void* _Ptr) _STATIC_LAMBDA {
                   using _Td = remove_const_t<_Ty>;
                   // doesn't drop const-qualifier per an unnumbered LWG issue
                   using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
@@ -264,7 +264,8 @@ public:
         }
     };
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-81774 (Clang), VSO-1956558 (EDG)
+#if defined(__clang__) || defined(__EDG__) \
+    || defined(__CUDACC__) // TRANSITION, LLVM-81774 (Clang), VSO-1956558 (EDG), VSO-2411436 (needed by CUDA 12.8.1)
     basic_format_arg() noexcept : _Active_state(_Basic_format_arg_type::_None), _No_state() {}
 #else // ^^^ workaround / no workaround vvv
     basic_format_arg() noexcept = default;
@@ -324,7 +325,7 @@ public:
         case _Basic_format_arg_type::_Custom_type:
             return _STD forward<_Visitor>(_Vis)(_Custom_state);
         default:
-            _STL_VERIFY(false, "basic_format_arg is in impossible state");
+            _STL_REPORT_ERROR("basic_format_arg contains an impossible type");
             int _Dummy{};
             return _STD forward<_Visitor>(_Vis)(_Dummy);
         }

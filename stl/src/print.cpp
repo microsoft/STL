@@ -273,7 +273,7 @@ extern "C" {
     _Allocated_string _Allocated_str{};
     _Transcode_result _Transcoded_str{};
 
-    while (true) {
+    for (;;) {
         _Curr_str_segment = _Get_next_utf8_string_segment(_Remaining_str, _Remaining_str_size);
         _Transcoded_str   = _Transcode_utf8_string(_Allocated_str, _Curr_str_segment);
 

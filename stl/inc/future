@@ -474,14 +474,17 @@ struct _P_arg_type<void> { // type for functions returning void
     using type = int;
 };
 
+template <class _Ret>
+using _P_arg_type_t = typename _P_arg_type<_Ret>::type;
+
 template <class>
 class _Packaged_state;
 
 // class for managing associated asynchronous state for packaged_task
 template <class _Ret, class... _ArgTypes>
-class _Packaged_state<_Ret(_ArgTypes...)> : public _Associated_state<typename _P_arg_type<_Ret>::type> {
+class _Packaged_state<_Ret(_ArgTypes...)> : public _Associated_state<_P_arg_type_t<_Ret>> {
 public:
-    using _Mybase        = _Associated_state<typename _P_arg_type<_Ret>::type>;
+    using _Mybase        = _Associated_state<_P_arg_type_t<_Ret>>;
     using _Mydel         = typename _Mybase::_Mydel;
     using _Function_type = function<_Ret(_ArgTypes...)>; // TRANSITION, ABI, should not use std::function
 
@@ -1197,7 +1200,7 @@ template <class _Ret, class... _ArgTypes>
 class packaged_task<_Ret(_ArgTypes...)> {
     // class that defines an asynchronous provider that returns the result of a call to a function object
 private:
-    using _Ptype              = typename _P_arg_type<_Ret>::type;
+    using _Ptype              = _P_arg_type_t<_Ret>;
     using _MyPromiseType      = _Promise<_Ptype>;
     using _MyStateManagerType = _State_manager<_Ptype>;
     using _MyStateType        = _Packaged_state<_Ret(_ArgTypes...)>;
@@ -1344,7 +1347,7 @@ private:
 };
 
 template <class _Ret, class _Fty>
-_Associated_state<typename _P_arg_type<_Ret>::type>* _Get_associated_state(launch _Psync, _Fty&& _Fnarg) {
+_Associated_state<_P_arg_type_t<_Ret>>* _Get_associated_state(launch _Psync, _Fty&& _Fnarg) {
     // construct associated asynchronous state object for the launch type
     switch (_Psync) { // select launch type
     case launch::deferred:
@@ -1360,7 +1363,7 @@ _NODISCARD_ASYNC future<_Invoke_result_t<decay_t<_Fty>, decay_t<_ArgTypes>...>> 
     launch _Policy, _Fty&& _Fnarg, _ArgTypes&&... _Args) {
     // manages a callable object launched with supplied policy
     using _Ret   = _Invoke_result_t<decay_t<_Fty>, decay_t<_ArgTypes>...>;
-    using _Ptype = typename _P_arg_type<_Ret>::type;
+    using _Ptype = _P_arg_type_t<_Ret>;
     _Promise<_Ptype> _Pr(
         _Get_associated_state<_Ret>(_Policy, _Fake_no_copy_callable_adapter<_Fty, _ArgTypes...>(
                                                  _STD forward<_Fty>(_Fnarg), _STD forward<_ArgTypes>(_Args)...)));

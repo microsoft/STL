@@ -106,9 +106,9 @@ public:
             return;
         }
 
-        _STL_ASSERT(_Ptr, "cannot seek value-initialized string iterator");
+        _STL_VERIFY(_Ptr, "cannot seek value-initialized string iterator");
         const auto _Mycont = static_cast<const _Mystr*>(this->_Getcont());
-        _STL_ASSERT(_Mycont, "cannot seek string iterator because the iterator was "
+        _STL_VERIFY(_Mycont, "cannot seek string iterator because the iterator was "
                              "invalidated (e.g. reallocation occurred, or the string was destroyed)");
         const auto _Contptr = _Mycont->_Myptr();
         const auto _Rawptr  = _Unfancy(_Ptr);
@@ -400,6 +400,25 @@ public:
     using const_reference = const value_type&;
 
     _CONSTEXPR20 _String_val() noexcept : _Bx() {}
+
+#if _MSVC_STL_DESTRUCTOR_TOMBSTONES
+    _CONSTEXPR20 ~_String_val() noexcept {
+        if constexpr (is_pointer_v<pointer>) {
+            if (!_STD _Is_constant_evaluated()) {
+                const auto _Tombstone{reinterpret_cast<pointer>(_MSVC_STL_UINTPTR_TOMBSTONE_VALUE)};
+                _Bx._Ptr = _Tombstone;
+                _Mysize  = 0;
+                _Myres   = (_Small_string_capacity + 1) | _Alloc_mask; // first capacity when entering large mode
+
+                // The capacity indicates whether we're in small mode or large mode; see _Large_mode_engaged().
+                // The string would be usable in small mode, so we need large mode for the tombstone to be effective.
+                // `_Small_string_capacity + 1` would be sufficient to make _Large_mode_engaged() return true. However,
+                // basic_string uses a "roundup mask" when allocating; see _Calculate_growth(). So to avoid confusing
+                // the SSO logic, we use the first capacity that would normally be used when entering large mode.
+            }
+        }
+    }
+#endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
 
     // length of internal buffer, [1, 16] (NB: used by the debugger visualizer)
     static constexpr size_type _BUF_SIZE = 16 / sizeof(value_type) < 1 ? 1 : 16 / sizeof(value_type);
@@ -1503,7 +1522,7 @@ public:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const _Elem* const _Ptr,
-                const size_type _Count) _STATIC_CALL_OPERATOR {
+                const size_type _Count) _STATIC_LAMBDA {
                 _Traits::copy(_New_ptr, _Old_ptr, _Old_size);
                 _Traits::copy(_New_ptr + _Old_size, _Ptr, _Count);
                 _Traits::assign(_New_ptr[_Old_size + _Count], _Elem());
@@ -1530,7 +1549,7 @@ public:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Count,
-                const _Elem _Ch) _STATIC_CALL_OPERATOR {
+                const _Elem _Ch) _STATIC_LAMBDA {
                 _Traits::copy(_New_ptr, _Old_ptr, _Old_size);
                 _Traits::assign(_New_ptr + _Old_size, _Count, _Ch);
                 _Traits::assign(_New_ptr[_Old_size + _Count], _Elem());
@@ -1608,7 +1627,7 @@ public:
 
         return _Reallocate_for(
             _Count,
-            [](_Elem* const _New_ptr, const size_type _Count, const _Elem* const _Ptr) _STATIC_CALL_OPERATOR {
+            [](_Elem* const _New_ptr, const size_type _Count, const _Elem* const _Ptr) _STATIC_LAMBDA {
                 _Traits::copy(_New_ptr, _Ptr, _Count);
                 _Traits::assign(_New_ptr[_Count], _Elem());
             },
@@ -1632,7 +1651,7 @@ public:
 
         return _Reallocate_for(
             _Count,
-            [](_Elem* const _New_ptr, const size_type _Count, const _Elem _Ch) _STATIC_CALL_OPERATOR {
+            [](_Elem* const _New_ptr, const size_type _Count, const _Elem _Ch) _STATIC_LAMBDA {
                 _Traits::assign(_New_ptr, _Count, _Ch);
                 _Traits::assign(_New_ptr[_Count], _Elem());
             },
@@ -1748,7 +1767,7 @@ public:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const _Elem* const _Ptr, const size_type _Count) _STATIC_CALL_OPERATOR {
+                const _Elem* const _Ptr, const size_type _Count) _STATIC_LAMBDA {
                 _Traits::copy(_New_ptr, _Old_ptr, _Off);
                 _Traits::copy(_New_ptr + _Off, _Ptr, _Count);
                 _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off, _Old_size - _Off + 1);
@@ -1779,7 +1798,7 @@ public:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _Count, const _Elem _Ch) _STATIC_CALL_OPERATOR {
+                const size_type _Count, const _Elem _Ch) _STATIC_LAMBDA {
                 _Traits::copy(_New_ptr, _Old_ptr, _Off);
                 _Traits::assign(_New_ptr + _Off, _Count, _Ch);
                 _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off, _Old_size - _Off + 1);
@@ -1991,7 +2010,7 @@ public:
         return _Reallocate_grow_by(
             _Growth,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _Nx, const _Elem* const _Ptr, const size_type _Count) _STATIC_CALL_OPERATOR {
+                const size_type _Nx, const _Elem* const _Ptr, const size_type _Count) _STATIC_LAMBDA {
                 _Traits::copy(_New_ptr, _Old_ptr, _Off);
                 _Traits::copy(_New_ptr + _Off, _Ptr, _Count);
                 _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off + _Nx, _Old_size - _Nx - _Off + 1);
@@ -2031,7 +2050,7 @@ public:
         return _Reallocate_grow_by(
             _Count - _Nx,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _Nx, const size_type _Count, const _Elem _Ch) _STATIC_CALL_OPERATOR {
+                const size_type _Nx, const size_type _Count, const _Elem _Ch) _STATIC_LAMBDA {
                 _Traits::copy(_New_ptr, _Old_ptr, _Off);
                 _Traits::assign(_New_ptr + _Off, _Count, _Ch);
                 _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off + _Nx, _Old_size - _Nx - _Off + 1);
@@ -2246,17 +2265,19 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 reference operator[](const size_type _Off) noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Off <= _Mypair._Myval2._Mysize, "string subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
+
         return _Mypair._Myval2._Myptr()[_Off];
     }
 
     _NODISCARD _CONSTEXPR20 const_reference operator[](const size_type _Off) const noexcept
     /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Off <= _Mypair._Myval2._Mysize, "string subscript out of range");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
+
         return _Mypair._Myval2._Myptr()[_Off];
     }
 
@@ -2281,7 +2302,7 @@ public:
         _Reallocate_grow_by(
             1,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const _Elem _Ch)
-                _STATIC_CALL_OPERATOR {
+                _STATIC_LAMBDA {
                     _Traits::copy(_New_ptr, _Old_ptr, _Old_size);
                     _Traits::assign(_New_ptr[_Old_size], _Ch);
                     _Traits::assign(_New_ptr[_Old_size + 1], _Elem());
@@ -2291,40 +2312,42 @@ public:
 
     _CONSTEXPR20 void pop_back() noexcept /* strengthened */ {
         const size_type _Old_size = _Mypair._Myval2._Mysize;
-#if _ITERATOR_DEBUG_LEVEL >= 1
-        _STL_VERIFY(_Old_size != 0, "invalid to pop_back empty string");
-#endif // _ITERATOR_DEBUG_LEVEL >= 1
+
+#if _MSVC_STL_HARDENING_BASIC_STRING || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Old_size != 0, "pop_back() called on empty string");
+#endif
+
         _Eos(_Old_size - 1);
     }
 
     _NODISCARD _CONSTEXPR20 reference front() noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "front() called on empty string");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myptr()[0];
     }
 
     _NODISCARD _CONSTEXPR20 const_reference front() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "front() called on empty string");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myptr()[0];
     }
 
     _NODISCARD _CONSTEXPR20 reference back() noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "back() called on empty string");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myptr()[_Mypair._Myval2._Mysize - 1];
     }
 
     _NODISCARD _CONSTEXPR20 const_reference back() const noexcept /* strengthened */ {
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _MSVC_STL_HARDENING_BASIC_STRING || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "back() called on empty string");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif
 
         return _Mypair._Myval2._Myptr()[_Mypair._Myval2._Mysize - 1];
     }
@@ -2381,7 +2404,7 @@ public:
         if (_Mypair._Myval2._Myres < _New_size) {
             _Reallocate_grow_by(_New_size - _Mypair._Myval2._Mysize,
                 [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
-                    _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
+                    _STATIC_LAMBDA { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
         } else {
             _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
             _Mypair._Myval2._Mysize = _New_size;
@@ -2391,10 +2414,10 @@ public:
         auto _Arg_size                  = _New_size;
         const auto _Result_size         = _STD move(_Op)(_Arg_ptr, _Arg_size);
         const auto _Result_as_size_type = static_cast<size_type>(_Result_size);
-#if _CONTAINER_DEBUG_LEVEL > 0
+#if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0");
         _STL_VERIFY(_Result_as_size_type <= _New_size, "the returned size can't be greater than the passed size");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
+#endif // _ITERATOR_DEBUG_LEVEL != 0
         _Eos(_Result_as_size_type);
     }
 
@@ -2419,7 +2442,7 @@ public:
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         _Reallocate_grow_by(_Newcap - _Old_size,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
-                _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
+                _STATIC_LAMBDA { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
 
         // `_Reallocate_grow_by` calls `_ASAN_STRING_CREATE` assuming that the string
         // has size (initialized memory) equal to its new capacity (allocated memory).
@@ -2447,7 +2470,7 @@ public:
             const size_type _Old_size = _Mypair._Myval2._Mysize;
             _Reallocate_grow_by(_Newcap - _Old_size,
                 [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
-                    _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
+                    _STATIC_LAMBDA { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
 
             // `_Reallocate_grow_by` calls `_ASAN_STRING_CREATE` assuming that the string
             // has size (initialized memory) equal to its new capacity (allocated memory).
