@@ -77,7 +77,6 @@ add_subdirectory(google-benchmark EXCLUDE_FROM_ALL)
 set(benchmark_headers
     "inc/udt.hpp"
     "inc/utility.hpp"
-    "inc/xoshiro.hpp"
 )
 
 function(add_benchmark name)
