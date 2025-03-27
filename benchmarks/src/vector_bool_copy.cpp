@@ -11,7 +11,7 @@
 using namespace std;
 
 static vector<bool> createRandomVector(const size_t size) {
-    static mt19937 gen{random_device{}()};
+    static mt19937 gen;
     vector<bool> result(size);
     generate_n(result.begin(), size, [] { return bernoulli_distribution{0.5}(gen); });
     return result;

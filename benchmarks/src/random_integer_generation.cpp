@@ -32,7 +32,7 @@ static void BM_lcg(benchmark::State& state) {
 BENCHMARK(BM_lcg);
 
 std::uint32_t GetMax() {
-    std::random_device gen;
+    std::mt19937 gen;
     std::uniform_int_distribution<std::uint32_t> dist(10'000'000, 20'000'000);
     return dist(gen);
 }
