@@ -31,11 +31,8 @@ void has_single_bit(benchmark::State& state) {
     for (auto _ : state) {
         benchmark::DoNotOptimize(random_v);
         unsigned r = 0;
-        for (size_t i = 0; i < random_v.size(); i += 4) {
-            r += std::has_single_bit(random_v[i + 0]);
-            r += std::has_single_bit(random_v[i + 1]);
-            r += std::has_single_bit(random_v[i + 2]);
-            r += std::has_single_bit(random_v[i + 3]);
+        for (const auto& x : random_v) {
+            r += std::has_single_bit(x);
         }
         benchmark::DoNotOptimize(r);
     }
