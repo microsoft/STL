@@ -1,7 +1,7 @@
 ---
 name: Bug Report
 about: Report a bug in the STL
-title: "<header>: Problem"
+title: "`<header>`: Problem"
 labels: ''
 assignees: ''
 
