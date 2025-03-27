@@ -75,6 +75,8 @@ set(BENCHMARK_ENABLE_TESTING OFF)
 add_subdirectory(google-benchmark EXCLUDE_FROM_ALL)
 
 set(benchmark_headers
+    "inc/lorem.hpp"
+    "inc/skewed_allocator.hpp"
     "inc/udt.hpp"
     "inc/utility.hpp"
 )
