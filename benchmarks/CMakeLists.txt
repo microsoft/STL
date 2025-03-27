@@ -46,19 +46,6 @@ set_property(CACHE STL_BENCHMARK_MSVC_RUNTIME_LIBRARY
 )
 set(CMAKE_MSVC_RUNTIME_LIBRARY "${STL_BENCHMARK_MSVC_RUNTIME_LIBRARY}")
 
-set(STL_BENCHMARK_ITERATOR_DEBUG_LEVEL
-    default
-    CACHE STRING "What level of iterator debugging to use."
-)
-set_property(CACHE STL_BENCHMARK_ITERATOR_DEBUG_LEVEL
-    PROPERTY STRINGS
-    "default;0;1;2"
-)
-
-if(NOT STL_BENCHMARK_ITERATOR_DEBUG_LEVEL STREQUAL "default")
-    add_compile_definitions("_ITERATOR_DEBUG_LEVEL=${STL_BENCHMARK_ITERATOR_DEBUG_LEVEL}")
-endif()
-
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 # /utf-8 affects <format>.
