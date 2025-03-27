@@ -10,14 +10,14 @@
 
 using namespace std;
 
-static vector<bool> createRandomVector(const size_t size) {
+vector<bool> createRandomVector(const size_t size) {
     static mt19937 gen;
     vector<bool> result(size);
     generate_n(result.begin(), size, [] { return bernoulli_distribution{0.5}(gen); });
     return result;
 }
 
-static void move_block_aligned(benchmark::State& state) {
+void move_block_aligned(benchmark::State& state) {
     const auto size           = static_cast<size_t>(state.range(0));
     const vector<bool> source = createRandomVector(size);
     vector<bool> dest(size, false);
@@ -27,7 +27,7 @@ static void move_block_aligned(benchmark::State& state) {
     }
 }
 
-static void move_source_misaligned(benchmark::State& state) {
+void move_source_misaligned(benchmark::State& state) {
     const auto size           = static_cast<size_t>(state.range(0));
     const vector<bool> source = createRandomVector(size);
     vector<bool> dest(size, false);
@@ -37,7 +37,7 @@ static void move_source_misaligned(benchmark::State& state) {
     }
 }
 
-static void move_dest_misaligned(benchmark::State& state) {
+void move_dest_misaligned(benchmark::State& state) {
     const auto size           = static_cast<size_t>(state.range(0));
     const vector<bool> source = createRandomVector(size);
     vector<bool> dest(size, false);
@@ -48,7 +48,7 @@ static void move_dest_misaligned(benchmark::State& state) {
 }
 
 // Special benchmark for matching char alignment
-static void move_matching_alignment(benchmark::State& state) {
+void move_matching_alignment(benchmark::State& state) {
     const auto size           = static_cast<size_t>(state.range(0));
     const vector<bool> source = createRandomVector(size);
     vector<bool> dest(size, false);
@@ -59,7 +59,7 @@ static void move_matching_alignment(benchmark::State& state) {
 }
 
 // Special benchmarks for single block corner case
-static void move_both_single_blocks(benchmark::State& state) {
+void move_both_single_blocks(benchmark::State& state) {
     const vector<bool> source = createRandomVector(50);
     vector<bool> dest(50, false);
 
@@ -69,7 +69,7 @@ static void move_both_single_blocks(benchmark::State& state) {
     }
 }
 
-static void move_source_single_block(benchmark::State& state) {
+void move_source_single_block(benchmark::State& state) {
     const vector<bool> source = createRandomVector(50);
     vector<bool> dest(50, false);
 
@@ -79,7 +79,7 @@ static void move_source_single_block(benchmark::State& state) {
     }
 }
 
-static void move_dest_single_block(benchmark::State& state) {
+void move_dest_single_block(benchmark::State& state) {
     const vector<bool> source = createRandomVector(50);
     vector<bool> dest(50, false);
 
