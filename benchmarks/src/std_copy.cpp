@@ -11,80 +11,77 @@
 #include <udt.hpp>
 #include <utility.hpp>
 
-namespace {
-    template <typename Contained>
-    void handwritten_loop(benchmark::State& state) {
-        const size_t r0      = static_cast<size_t>(state.range(0));
-        const auto in_buffer = random_vector<Contained>(r0);
-        std::vector<Contained> out_buffer(r0);
-        for ([[maybe_unused]] auto _ : state) {
-            benchmark::DoNotOptimize(in_buffer.data());
-            const Contained* in_ptr           = in_buffer.data();
-            const Contained* const in_ptr_end = in_ptr + r0;
-            Contained* out_ptr                = out_buffer.data();
-            while (in_ptr != in_ptr_end) {
-                *out_ptr++ = *in_ptr++;
-            }
-
-            benchmark::DoNotOptimize(out_buffer.data());
+template <typename Contained>
+void handwritten_loop(benchmark::State& state) {
+    const size_t r0      = static_cast<size_t>(state.range(0));
+    const auto in_buffer = random_vector<Contained>(r0);
+    std::vector<Contained> out_buffer(r0);
+    for ([[maybe_unused]] auto _ : state) {
+        benchmark::DoNotOptimize(in_buffer.data());
+        const Contained* in_ptr           = in_buffer.data();
+        const Contained* const in_ptr_end = in_ptr + r0;
+        Contained* out_ptr                = out_buffer.data();
+        while (in_ptr != in_ptr_end) {
+            *out_ptr++ = *in_ptr++;
         }
+
+        benchmark::DoNotOptimize(out_buffer.data());
     }
+}
 
-    template <typename Contained>
-    void handwritten_loop_n(benchmark::State& state) {
-        const size_t r0      = static_cast<size_t>(state.range(0));
-        const auto in_buffer = random_vector<Contained>(r0);
-        std::vector<Contained> out_buffer(r0);
-        for ([[maybe_unused]] auto _ : state) {
-            benchmark::DoNotOptimize(in_buffer.data());
-            const Contained* const in_ptr = in_buffer.data();
-            Contained* const out_ptr      = out_buffer.data();
-            for (size_t idx = 0; idx < r0; ++idx) {
-                out_ptr[idx] = in_ptr[idx];
-            }
-
-            benchmark::DoNotOptimize(out_buffer.data());
+template <typename Contained>
+void handwritten_loop_n(benchmark::State& state) {
+    const size_t r0      = static_cast<size_t>(state.range(0));
+    const auto in_buffer = random_vector<Contained>(r0);
+    std::vector<Contained> out_buffer(r0);
+    for ([[maybe_unused]] auto _ : state) {
+        benchmark::DoNotOptimize(in_buffer.data());
+        const Contained* const in_ptr = in_buffer.data();
+        Contained* const out_ptr      = out_buffer.data();
+        for (size_t idx = 0; idx < r0; ++idx) {
+            out_ptr[idx] = in_ptr[idx];
         }
-    }
 
-    template <typename Contained>
-    void memcpy_call(benchmark::State& state) {
-        static_assert(
-            std::is_trivially_copyable_v<Contained>, "memcpy must only be called on trivially copyable types");
-        const size_t r0      = static_cast<size_t>(state.range(0));
-        const auto in_buffer = random_vector<Contained>(r0);
-        std::vector<Contained> out_buffer(r0);
-        for ([[maybe_unused]] auto _ : state) {
-            benchmark::DoNotOptimize(in_buffer.data());
-            memcpy(out_buffer.data(), in_buffer.data(), r0 * sizeof(Contained));
-            benchmark::DoNotOptimize(out_buffer.data());
-        }
+        benchmark::DoNotOptimize(out_buffer.data());
     }
+}
 
-    template <typename Contained>
-    void std_copy_call(benchmark::State& state) {
-        const size_t r0      = static_cast<size_t>(state.range(0));
-        const auto in_buffer = random_vector<Contained>(r0);
-        std::vector<Contained> out_buffer(r0);
-        for ([[maybe_unused]] auto _ : state) {
-            benchmark::DoNotOptimize(in_buffer.data());
-            std::copy(in_buffer.begin(), in_buffer.end(), out_buffer.begin());
-            benchmark::DoNotOptimize(out_buffer.data());
-        }
+template <typename Contained>
+void memcpy_call(benchmark::State& state) {
+    static_assert(std::is_trivially_copyable_v<Contained>, "memcpy must only be called on trivially copyable types");
+    const size_t r0      = static_cast<size_t>(state.range(0));
+    const auto in_buffer = random_vector<Contained>(r0);
+    std::vector<Contained> out_buffer(r0);
+    for ([[maybe_unused]] auto _ : state) {
+        benchmark::DoNotOptimize(in_buffer.data());
+        memcpy(out_buffer.data(), in_buffer.data(), r0 * sizeof(Contained));
+        benchmark::DoNotOptimize(out_buffer.data());
     }
+}
 
-    template <typename Contained>
-    void std_copy_n_call(benchmark::State& state) {
-        const size_t r0      = static_cast<size_t>(state.range(0));
-        const auto in_buffer = random_vector<Contained>(r0);
-        std::vector<Contained> out_buffer(r0);
-        for ([[maybe_unused]] auto _ : state) {
-            benchmark::DoNotOptimize(in_buffer.data());
-            std::copy_n(in_buffer.begin(), r0, out_buffer.begin());
-            benchmark::DoNotOptimize(out_buffer.data());
-        }
+template <typename Contained>
+void std_copy_call(benchmark::State& state) {
+    const size_t r0      = static_cast<size_t>(state.range(0));
+    const auto in_buffer = random_vector<Contained>(r0);
+    std::vector<Contained> out_buffer(r0);
+    for ([[maybe_unused]] auto _ : state) {
+        benchmark::DoNotOptimize(in_buffer.data());
+        std::copy(in_buffer.begin(), in_buffer.end(), out_buffer.begin());
+        benchmark::DoNotOptimize(out_buffer.data());
     }
-} // namespace
+}
+
+template <typename Contained>
+void std_copy_n_call(benchmark::State& state) {
+    const size_t r0      = static_cast<size_t>(state.range(0));
+    const auto in_buffer = random_vector<Contained>(r0);
+    std::vector<Contained> out_buffer(r0);
+    for ([[maybe_unused]] auto _ : state) {
+        benchmark::DoNotOptimize(in_buffer.data());
+        std::copy_n(in_buffer.begin(), r0, out_buffer.begin());
+        benchmark::DoNotOptimize(out_buffer.data());
+    }
+}
 
 BENCHMARK(handwritten_loop<char>)->Range(0, 1 << 18);
 BENCHMARK(handwritten_loop_n<char>)->Range(0, 1 << 18);
