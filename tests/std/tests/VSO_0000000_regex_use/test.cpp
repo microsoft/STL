@@ -1171,6 +1171,30 @@ void test_gh_5253() {
     g_regexTester.should_not_match("a", "()*");
 }
 
+void test_gh_5377() {
+    for (syntax_option_type option : {extended, egrep}) {
+        test_regex abcd_regex(&g_regexTester, R"(^((a)|(b)|(c)|(d))+$)", option);
+        abcd_regex.should_search_match_capture_groups(
+            "abcd", "abcd", match_default, {{3, 4}, {0, 1}, {1, 2}, {2, 3}, {3, 4}});
+        abcd_regex.should_search_match_capture_groups(
+            "acbd", "acbd", match_default, {{3, 4}, {0, 1}, {2, 3}, {1, 2}, {3, 4}});
+        abcd_regex.should_search_match_capture_groups(
+            "dcba", "dcba", match_default, {{3, 4}, {3, 4}, {2, 3}, {1, 2}, {0, 1}});
+    }
+
+    for (syntax_option_type option : {basic, grep}) {
+        test_regex abcd_regex(&g_regexTester, R"(^\(\(a\)*\(b\)*\(c\)*\(d\)*\)*$)", option);
+        abcd_regex.should_search_match_capture_groups(
+            "abcd", "abcd", match_default, {{0, 4}, {0, 1}, {1, 2}, {2, 3}, {3, 4}});
+        abcd_regex.should_search_match_capture_groups(
+            "acbd", "acbd", match_default, {{2, 4}, {0, 1}, {2, 3}, {1, 2}, {3, 4}});
+        abcd_regex.should_search_match_capture_groups(
+            "dcba", "dcba", match_default, {{3, 4}, {3, 4}, {2, 3}, {1, 2}, {0, 1}});
+
+        test_regex backref_regex(&g_regexTester, R"(^\(\(a\)\{0,1\}\(\2b\)\{0,1\}\)*)", option);
+        backref_regex.should_search_match_capture_groups("aaababb", "aaabab", match_default, {{4, 6}, {1, 2}, {4, 6}});
+    }
+}
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -1208,6 +1232,7 @@ int main() {
     test_gh_5192();
     test_gh_5214();
     test_gh_5253();
+    test_gh_5377();
 
     return g_regexTester.result();
 }
