@@ -142,6 +142,7 @@ struct coroutine_handle {
 
     void destroy() const noexcept { // strengthened
         __builtin_coro_destroy(_Ptr);
+        _Ptr = nullptr;
     }
 
     _NODISCARD _CoroPromise& promise() const noexcept { // strengthened
