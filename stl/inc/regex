@@ -3654,6 +3654,10 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
                     } else {
                         _Tgt_state._Cur = _Res0;
                     }
+                } else if (_Sflags
+                           & (regex_constants::basic | regex_constants::extended | regex_constants::grep
+                               | regex_constants::egrep | regex_constants::awk)) {
+                    _Failed = true;
                 }
                 break;
             }
