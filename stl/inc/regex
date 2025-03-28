@@ -3497,7 +3497,7 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Is_wbound() const {
         }
     } else { // --_Cur is not valid
         if (_Tgt_state._Cur == _End) {
-            return (_Mflags & (regex_constants::match_not_bow | regex_constants::match_not_eow)) == 0;
+            return false;
         } else {
             return (_Mflags & regex_constants::match_not_bow) == 0 && _Is_word(*_Tgt_state._Cur);
         }
