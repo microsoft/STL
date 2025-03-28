@@ -1076,7 +1076,11 @@ namespace iterator_cust_move_test {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1008447
     static_assert(same_as<iter_rvalue_reference_t<int(int)>, int (&)(int)>);
 #else // ^^^ no workaround / workaround vvv
+#ifdef _MSVC_INTERNAL_TESTING // TRANSITION, assertion will fire once VSO-2066340 ships.
+    static_assert(same_as<iter_rvalue_reference_t<int(int)>, int (&&)(int)>);
+#else // ^^^ defined(_MSVC_INTERNAL_TESTING) / !defined(_MSVC_INTERNAL_TESTING) vvv
     static_assert(same_as<iter_rvalue_reference_t<int(int)>, int (*)(int)>);
+#endif // ^^^ !defined(_MSVC_INTERNAL_TESTING)
 #endif // ^^^ workaround ^^^
 
     static_assert(same_as<iter_rvalue_reference_t<int[4]>, int&&>);
