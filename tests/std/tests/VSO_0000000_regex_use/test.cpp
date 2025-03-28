@@ -1171,6 +1171,17 @@ void test_gh_5253() {
     g_regexTester.should_not_match("a", "()*");
 }
 
+void test_gh_5374() {
+    // GH-5374: <regex>: Back-references to unmatched capture groups
+    // should not match in POSIX basic regular expressions
+    for (syntax_option_type option : {basic, grep}) {
+        g_regexTester.should_not_match("", R"(\(.\)*\1)", option);
+        g_regexTester.should_match("", R"(\(.*\)\1)", option);
+        g_regexTester.should_not_match("bc", R"(\(a\)*b\1c)", option);
+        g_regexTester.should_match("bc", R"(\(a*\)b\1c)", option);
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -1208,6 +1219,7 @@ int main() {
     test_gh_5192();
     test_gh_5214();
     test_gh_5253();
+    test_gh_5374();
 
     return g_regexTester.result();
 }
