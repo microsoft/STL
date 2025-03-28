@@ -46,12 +46,15 @@ set_property(CACHE STL_BENCHMARK_MSVC_RUNTIME_LIBRARY
 )
 set(CMAKE_MSVC_RUNTIME_LIBRARY "${STL_BENCHMARK_MSVC_RUNTIME_LIBRARY}")
 
-# Building the benchmarks as Release optimizes them with `/O2 /Ob2`; adding `/Zi` below makes profiling possible.
+# Building the benchmarks as Release optimizes them with `/O2 /Ob2`.
+# Compiling with `/Zi` and linking with `/DEBUG` below makes profiling possible.
 # (RelWithDebInfo would use `/O2 /Ob1 /Zi`.) See GH-4496.
 set(CMAKE_BUILD_TYPE Release)
 
 # /utf-8 affects <format>.
 add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/Zi;/nologo;/diagnostics:caret;/W4;/WX;/w14265;/w15038;/w15262;/utf-8;/Zc:preprocessor>")
+
+add_link_options("/DEBUG")
 
 if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/google-benchmark/.git")
     message(FATAL_ERROR "google-benchmark is not checked out; make sure to run\n    git submodule update --init benchmarks/google-benchmark")
