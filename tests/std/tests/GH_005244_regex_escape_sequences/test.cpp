@@ -70,6 +70,14 @@ public:
         return inner.value(ch, radix);
     }
 
+    locale_type imbue(locale_type l) {
+        return inner.imbue(l);
+    }
+
+    locale_type getloc() const {
+        return inner.getloc();
+    }
+
 private:
     regex_traits<charT> inner;
 };
