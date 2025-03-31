@@ -782,7 +782,9 @@ int main() {
         assert(ranges::empty(filtered_and_joined));
     }
 
+#ifndef _PREFAST_ // TRANSITION, GH-1030
     static_assert(instantiation_test());
+#endif
     instantiation_test();
 
     test_valueless_iterator();

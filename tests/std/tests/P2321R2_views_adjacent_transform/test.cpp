@@ -1063,9 +1063,13 @@ int main() {
         static_assert(CanMemberBase<weird_adjacent_transform_view>);
     }
 
+#ifndef _PREFAST_ // TRANSITION, GH-1030
     static_assert((instantiation_test(), true));
+#endif
     instantiation_test();
 
+#ifndef _PREFAST_ // TRANSITION, GH-1030
     static_assert((instantiation_input_only_test(), true));
+#endif
     instantiation_input_only_test();
 }

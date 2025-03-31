@@ -54,6 +54,8 @@ struct instantiator {
 };
 
 int main() {
+#ifndef _PREFAST_ // TRANSITION, GH-1030
     static_assert((test_in_write<instantiator, const P, int>(), true));
+#endif
     test_in_write<instantiator, const P, int>();
 }

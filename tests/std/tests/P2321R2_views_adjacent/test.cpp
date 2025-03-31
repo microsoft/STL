@@ -1016,9 +1016,13 @@ int main() {
         test_one<3>(span<const int>{}, span<tuple<int, int, int>>{});
     }
 
+#ifndef _PREFAST_ // TRANSITION, GH-1030
     static_assert((instantiation_test(), true));
+#endif
     instantiation_test();
 
+#ifndef _PREFAST_ // TRANSITION, GH-1030
     static_assert((instantiation_input_only_test(), true));
+#endif
     instantiation_input_only_test();
 }
