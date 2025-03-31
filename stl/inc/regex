@@ -1727,8 +1727,8 @@ private:
     void _Expect(_Meta_type, regex_constants::error_type);
 
     // parsing
-    int _Do_digits(int _Base, int _Count, regex_constants::error_type _Error_type);
-    bool _DecimalDigits2(regex_constants::error_type _Error_type, int _Count = INT_MAX);
+    int _Do_digits(int _Base, int _Initial, int _Count, regex_constants::error_type _Error_type);
+    bool _DecimalDigits3(regex_constants::error_type _Error_type, int _Initial = 0);
     void _HexDigits(int);
     bool _OctalDigits();
     void _Do_ex_class(_Meta_type);
@@ -3993,9 +3993,9 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Expect(_Meta_type _St, regex_constants:
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 int _Parser<_FwdIt, _Elem, _RxTraits>::_Do_digits(
-    int _Base, int _Count, regex_constants::error_type _Error_type) { // translate digits to numeric value
+    int _Base, int _Initial, int _Count, regex_constants::error_type _Error_type) { // translate digits to numeric value
     int _Chv;
-    _Val = 0;
+    _Val = _Initial;
     while (_Count != 0 && (_Chv = _Traits.value(_Char, _Base)) != -1) { // append next digit
         if (_Val > (INT_MAX - _Chv) / _Base) {
             _Error(_Error_type);
@@ -4009,21 +4009,21 @@ int _Parser<_FwdIt, _Elem, _RxTraits>::_Do_digits(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_DecimalDigits2(
-    const regex_constants::error_type _Error_type, const int _Count /* = INT_MAX */) { // check for decimal value
-    return _Do_digits(10, _Count, _Error_type) != _Count;
+bool _Parser<_FwdIt, _Elem, _RxTraits>::_DecimalDigits3(
+    const regex_constants::error_type _Error_type, const int _Initial /* = 0 */) { // check for decimal value
+    return _Do_digits(10, _Initial, INT_MAX, _Error_type) != INT_MAX;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_HexDigits(int _Count) { // check for _Count hex digits
-    if (_Do_digits(16, _Count, regex_constants::error_escape) != 0) {
+    if (_Do_digits(16, 0, _Count, regex_constants::error_escape) != 0) {
         _Error(regex_constants::error_escape);
     }
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 bool _Parser<_FwdIt, _Elem, _RxTraits>::_OctalDigits() { // check for up to 3 octal digits
-    return _Do_digits(8, 3, regex_constants::error_escape) != 3;
+    return _Do_digits(8, 0, 3, regex_constants::error_escape) != 3;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -4406,23 +4406,27 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape(bool _In_character_clas
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom escape
-    constexpr int _Bre_max_backref_digits = 1;
-    if ((_L_flags & _L_bzr_chr) && _Traits.value(_Char, 10) == 0) { // handle \0
+    if ((_L_flags & (_L_bzr_chr | _L_bckr)) && (_Val = _Traits.value(_Char, 10)) != -1) { // escaped decimal sequence
         _Next();
-        if (_Traits.value(_Char, 10) != -1) {
-            _Error(regex_constants::error_escape);
-        }
-        _Nfa._Add_char2(_Elem{});
-    } else if ((_L_flags & _L_bckr)
-               && _DecimalDigits2(regex_constants::error_backref,
-                   (_L_flags & _L_lim_bckr) ? _Bre_max_backref_digits : INT_MAX)) { // check for valid back reference
-        if (_Val == 0) {
-            _Error(regex_constants::error_escape);
-        } else if (_Grp_idx < static_cast<size_t>(_Val) || _Finished_grps.size() <= static_cast<size_t>(_Val)
-                   || !_Finished_grps[static_cast<size_t>(_Val)]) {
-            _Error(regex_constants::error_backref);
-        } else {
-            _Nfa._Add_backreference(static_cast<size_t>(_Val));
+        if ((_L_flags & _L_bzr_chr) && _Val == 0) { // handle \0
+            if (_Traits.value(_Char, 10) != -1) {
+                _Error(regex_constants::error_escape);
+            }
+            _Nfa._Add_char2(_Elem{});
+        } else if (_L_flags & _L_bckr) { // check for valid backreference
+
+            if (!(_L_flags & _L_lim_bckr)) {
+                (void) _DecimalDigits3(regex_constants::error_backref, _Val);
+            }
+
+            if (_Val == 0) {
+                _Error(regex_constants::error_escape);
+            } else if (_Grp_idx < static_cast<size_t>(_Val) || _Finished_grps.size() <= static_cast<size_t>(_Val)
+                       || !_Finished_grps[static_cast<size_t>(_Val)]) {
+                _Error(regex_constants::error_backref);
+            } else {
+                _Nfa._Add_backreference(static_cast<size_t>(_Val));
+            }
         }
     } else if (_CharacterEscape(false)) {
         _Nfa._Add_char2(static_cast<_Elem>(_Val));
@@ -4442,7 +4446,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier 
             _Max = 1;
         } else if (_Mchar == _Meta_lbr) { // check for valid bracketed value
             _Next();
-            if (!_DecimalDigits2(regex_constants::error_badbrace)) {
+            if (!_DecimalDigits3(regex_constants::error_badbrace)) {
                 _Error(regex_constants::error_badbrace);
             }
 
@@ -4452,7 +4456,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier 
             } else { // check for decimal constant following comma
                 _Next();
                 if (_Mchar != _Meta_rbr) {
-                    if (!_DecimalDigits2(regex_constants::error_badbrace)) {
+                    if (!_DecimalDigits3(regex_constants::error_badbrace)) {
                         _Error(regex_constants::error_badbrace);
                     }
 
