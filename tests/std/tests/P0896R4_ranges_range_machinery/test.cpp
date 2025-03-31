@@ -1753,6 +1753,25 @@ static_assert(!ranges::enable_view<const strange_view4&>);
 static_assert(!ranges::enable_view<strange_view4&&>);
 static_assert(!ranges::enable_view<const strange_view4&&>);
 
+// Verify that enable_view<view_interface<T>> is false, i.e., strict derivation is required
+static_assert(!ranges::enable_view<ranges::view_interface<strange_view4>>);
+static_assert(!ranges::enable_view<ranges::view_interface<strange_view5>>);
+
+// Verify that enable_view ignores cv-qualification by default
+template <class T>
+void test_enable_view_cv() { // COMPILE-ONLY
+    static_assert(ranges::enable_view<const T> == ranges::enable_view<T>);
+    static_assert(ranges::enable_view<volatile T> == ranges::enable_view<T>);
+    static_assert(ranges::enable_view<const volatile T> == ranges::enable_view<T>);
+}
+
+void test_enable_view_cv_all() { // COMPILE-ONLY
+    test_enable_view_cv<strange_view4>();
+    test_enable_view_cv<strange_view5>();
+    test_enable_view_cv<ranges::view_interface<strange_view4>>();
+    test_enable_view_cv<ranges::view_interface<strange_view5>>();
+}
+
 // Verify that the derived-from-view_interface mechanism can handle uses of incomplete types whenever possible
 struct incomplet;
 
@@ -1767,6 +1786,80 @@ template <>
 inline constexpr bool ranges::enable_view<strange_view> = true;
 template <>
 inline constexpr bool ranges::enable_view<strange_view3> = false;
+
+// Test types that satisfy `view` only when being cv-qualified.
+
+struct view_when_const1 : ranges::view_base {
+    view_when_const1(const view_when_const1&&);
+    const view_when_const1& operator=(const view_when_const1&&) const;
+
+    friend void swap(const view_when_const1&, const view_when_const1&);
+
+    int* begin() const;
+    int* end() const;
+};
+
+struct view_when_const2 : ranges::view_interface<view_when_const2> {
+    view_when_const2(const view_when_const2&&);
+    const view_when_const2& operator=(const view_when_const2&&) const;
+
+    friend void swap(const view_when_const2&, const view_when_const2&);
+
+    int* begin() const;
+    int* end() const;
+
+    // avoid checking ranges::view_interface<view_when_const2>::size()
+    void size()       = delete;
+    void size() const = delete;
+};
+
+struct view_when_volatile1 : ranges::view_base {
+    view_when_volatile1(volatile view_when_volatile1&&);
+    volatile view_when_volatile1& operator=(volatile view_when_volatile1&&) volatile;
+
+    friend void swap(volatile view_when_volatile1&, volatile view_when_volatile1&);
+
+    int* begin() volatile;
+    int* end() volatile;
+};
+
+struct view_when_volatile2 : ranges::view_interface<view_when_volatile2> {
+    view_when_volatile2(volatile view_when_volatile2&&);
+    volatile view_when_volatile2& operator=(volatile view_when_volatile2&&) volatile;
+
+    friend void swap(volatile view_when_volatile2&, volatile view_when_volatile2&);
+
+    int* begin() volatile;
+    int* end() volatile;
+
+    // avoid checking ranges::view_interface<view_when_volatile2>::size()
+    void size()       = delete;
+    void size() const = delete;
+};
+
+struct view_when_const_volatile1 : ranges::view_base {
+    view_when_const_volatile1(const volatile view_when_const_volatile1&&);
+    const volatile view_when_const_volatile1& operator=(const volatile view_when_const_volatile1&&) const volatile;
+
+    friend void swap(const volatile view_when_const_volatile1&, const volatile view_when_const_volatile1&);
+
+    int* begin() const volatile;
+    int* end() const volatile;
+};
+
+struct view_when_const_volatile2 : ranges::view_interface<view_when_const_volatile2> {
+    view_when_const_volatile2(const volatile view_when_const_volatile2&&);
+    const volatile view_when_const_volatile2& operator=(const volatile view_when_const_volatile2&&) const volatile;
+
+    friend void swap(const volatile view_when_const_volatile2&, const volatile view_when_const_volatile2&);
+
+    int* begin() const volatile;
+    int* end() const volatile;
+
+    // avoid checking ranges::view_interface<view_when_const_volatile2>::size()
+    void size()       = delete;
+    void size() const = delete;
+};
 
 namespace exhaustive_size_and_view_test {
     template <class Rng, bool IsView = false, class Iterator = invalid_type, class Size = invalid_type>
@@ -1869,6 +1962,56 @@ namespace exhaustive_size_and_view_test {
     static_assert(test<strange_view5&, false, I, S>());
     static_assert(test<strange_view5 const, false, CI, S>());
     static_assert(test<strange_view5 const&, false, CI, S>());
+
+    static_assert(test<view_when_const1, false, I, S>());
+    static_assert(test<view_when_const1 const, true, I, S>());
+    static_assert(test<view_when_const1&, false, I, S>());
+    static_assert(test<view_when_const1 const&, false, I, S>());
+
+    static_assert(test<view_when_const2, false, I, S>());
+    static_assert(test<view_when_const2 const, true, I, S>());
+    static_assert(test<view_when_const2&, false, I, S>());
+    static_assert(test<view_when_const2 const&, false, I, S>());
+
+    static_assert(test<view_when_volatile1, false, I, S>());
+    static_assert(test<view_when_volatile1 const, false>());
+    static_assert(test<view_when_volatile1&, false, I, S>());
+    static_assert(test<view_when_volatile1 const&, false>());
+
+    static_assert(test<view_when_volatile2, false, I, S>());
+    static_assert(test<view_when_volatile2 const, false>());
+    static_assert(test<view_when_volatile2&, false, I, S>());
+    static_assert(test<view_when_volatile2 const&, false>());
+
+    static_assert(test<view_when_volatile1 volatile, true, I, S>());
+    static_assert(test<view_when_volatile1 const volatile, false>());
+    static_assert(test<view_when_volatile1 volatile&, false, I, S>());
+    static_assert(test<view_when_volatile1 const volatile&, false>());
+
+    static_assert(test<view_when_volatile2 volatile, true, I, S>());
+    static_assert(test<view_when_volatile2 const volatile, false>());
+    static_assert(test<view_when_volatile2 volatile&, false, I, S>());
+    static_assert(test<view_when_volatile2 const volatile&, false>());
+
+    static_assert(test<view_when_const_volatile1, false, I, S>());
+    static_assert(test<view_when_const_volatile1 const, false, I, S>());
+    static_assert(test<view_when_const_volatile1&, false, I, S>());
+    static_assert(test<view_when_const_volatile1 const&, false, I, S>());
+
+    static_assert(test<view_when_const_volatile2, false, I, S>());
+    static_assert(test<view_when_const_volatile2 const, false, I, S>());
+    static_assert(test<view_when_const_volatile2&, false, I, S>());
+    static_assert(test<view_when_const_volatile2 const&, false, I, S>());
+
+    static_assert(test<view_when_const_volatile1 volatile, false, I, S>());
+    static_assert(test<view_when_const_volatile1 const volatile, true, I, S>());
+    static_assert(test<view_when_const_volatile1 volatile&, false, I, S>());
+    static_assert(test<view_when_const_volatile1 const volatile&, false, I, S>());
+
+    static_assert(test<view_when_const_volatile2 volatile, false, I, S>());
+    static_assert(test<view_when_const_volatile2 const volatile, true, I, S>());
+    static_assert(test<view_when_const_volatile2 volatile&, false, I, S>());
+    static_assert(test<view_when_const_volatile2 const volatile&, false, I, S>());
 } // namespace exhaustive_size_and_view_test
 
 // Validate output_range
