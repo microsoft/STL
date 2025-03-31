@@ -1647,32 +1647,6 @@ constexpr _Ret visit(_Callable&& _Obj, _Variants&&... _Args) {
 }
 #endif // _HAS_CXX20
 
-_EXPORT_STD _NODISCARD constexpr bool operator==(monostate, monostate) noexcept {
-    return true;
-}
-
-#if _HAS_CXX20
-_EXPORT_STD _NODISCARD constexpr strong_ordering operator<=>(monostate, monostate) noexcept {
-    return strong_ordering::equal;
-}
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-_NODISCARD constexpr bool operator!=(monostate, monostate) noexcept {
-    return false;
-}
-_NODISCARD constexpr bool operator<(monostate, monostate) noexcept {
-    return false;
-}
-_NODISCARD constexpr bool operator>(monostate, monostate) noexcept {
-    return false;
-}
-_NODISCARD constexpr bool operator<=(monostate, monostate) noexcept {
-    return true;
-}
-_NODISCARD constexpr bool operator>=(monostate, monostate) noexcept {
-    return true;
-}
-#endif // ^^^ !_HAS_CXX20 ^^^
-
 _EXPORT_STD template <class... _Types,
     enable_if_t<conjunction_v<is_move_constructible<_Types>..., is_swappable<_Types>...>, int> = 0>
 _CONSTEXPR20 void swap(variant<_Types...>& _Left, variant<_Types...>& _Right) noexcept(noexcept(_Left.swap(_Right))) {

@@ -973,6 +973,36 @@ _NODISCARD _MSVC_INTRINSIC constexpr _Forward_like_t<_Ty, _Uty> forward_like(_Ut
 }
 #endif // _HAS_CXX23
 
+#if _HAS_CXX17
+_EXPORT_STD struct monostate {};
+
+_EXPORT_STD _NODISCARD constexpr bool operator==(monostate, monostate) noexcept {
+    return true;
+}
+
+#if _HAS_CXX20
+_EXPORT_STD _NODISCARD constexpr strong_ordering operator<=>(monostate, monostate) noexcept {
+    return strong_ordering::equal;
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+_NODISCARD constexpr bool operator!=(monostate, monostate) noexcept {
+    return false;
+}
+_NODISCARD constexpr bool operator<(monostate, monostate) noexcept {
+    return false;
+}
+_NODISCARD constexpr bool operator>(monostate, monostate) noexcept {
+    return false;
+}
+_NODISCARD constexpr bool operator<=(monostate, monostate) noexcept {
+    return true;
+}
+_NODISCARD constexpr bool operator>=(monostate, monostate) noexcept {
+    return true;
+}
+#endif // ^^^ !_HAS_CXX20 ^^^
+#endif // _HAS_CXX17
+
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD get;
