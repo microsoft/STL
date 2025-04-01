@@ -1173,8 +1173,8 @@ void test_gh_5253() {
 
 void test_gh_5371() {
     // GH-5371 <regex>: \b and \B are backwards on empty strings
-    g_regexTester.should_not_match("", "\\b");
-    g_regexTester.should_match("", "\\B");
+    g_regexTester.should_not_match("", R"(\b)");
+    g_regexTester.should_match("", R"(\B)");
 }
 
 int main() {
