@@ -1,24 +1,26 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
 #include <benchmark/benchmark.h>
 #include <bit>
+#include <cstdint>
 
 #include <utility.hpp>
+
+using namespace std;
 
 template <typename T>
 void has_single_bit_if(benchmark::State& state) {
     const auto random_v = random_vector<T>(8);
     for (auto _ : state) {
         benchmark::DoNotOptimize(random_v);
-        unsigned count_true  = 0;
-        unsigned count_false = 0;
+        unsigned int count_true  = 0;
+        unsigned int count_false = 0;
         for (const auto& x : random_v) {
-            if (std::has_single_bit(x)) {
-                benchmark::DoNotOptimize(count_true++);
+            if (has_single_bit(x)) {
+                benchmark::DoNotOptimize(++count_true);
             } else {
-                benchmark::DoNotOptimize(count_false++);
+                benchmark::DoNotOptimize(++count_false);
             }
         }
     }
@@ -27,21 +29,22 @@ void has_single_bit_if(benchmark::State& state) {
 template <typename T>
 void has_single_bit(benchmark::State& state) {
     const auto random_v = random_vector<T>(8);
-    assert(random_v.size() % 4 == 0);
     for (auto _ : state) {
         benchmark::DoNotOptimize(random_v);
-        unsigned r = 0;
+        unsigned int r = 0;
         for (const auto& x : random_v) {
-            r += std::has_single_bit(x);
+            r += has_single_bit(x);
         }
         benchmark::DoNotOptimize(r);
     }
 }
 
+BENCHMARK(has_single_bit_if<uint8_t>);
 BENCHMARK(has_single_bit_if<uint16_t>);
 BENCHMARK(has_single_bit_if<uint32_t>);
 BENCHMARK(has_single_bit_if<uint64_t>);
 
+BENCHMARK(has_single_bit<uint8_t>);
 BENCHMARK(has_single_bit<uint16_t>);
 BENCHMARK(has_single_bit<uint32_t>);
 BENCHMARK(has_single_bit<uint64_t>);
