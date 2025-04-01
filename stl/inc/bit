@@ -84,7 +84,7 @@ _NODISCARD constexpr int countl_zero(_Ty _Val) noexcept;
 
 _EXPORT_STD template <_Standard_unsigned_integral _Ty>
 _NODISCARD constexpr bool has_single_bit(const _Ty _Val) noexcept {
-    return _Val != 0 && (_Val & (_Val - 1)) == 0;
+    return (_Val ^ (_Val - 1)) > _Val - 1;
 }
 
 inline void _Precondition_violation_in_bit_ceil() noexcept {}
