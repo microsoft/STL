@@ -1647,32 +1647,6 @@ constexpr _Ret visit(_Callable&& _Obj, _Variants&&... _Args) {
 }
 #endif // _HAS_CXX20
 
-_EXPORT_STD _NODISCARD constexpr bool operator==(monostate, monostate) noexcept {
-    return true;
-}
-
-#if _HAS_CXX20
-_EXPORT_STD _NODISCARD constexpr strong_ordering operator<=>(monostate, monostate) noexcept {
-    return strong_ordering::equal;
-}
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-_NODISCARD constexpr bool operator!=(monostate, monostate) noexcept {
-    return false;
-}
-_NODISCARD constexpr bool operator<(monostate, monostate) noexcept {
-    return false;
-}
-_NODISCARD constexpr bool operator>(monostate, monostate) noexcept {
-    return false;
-}
-_NODISCARD constexpr bool operator<=(monostate, monostate) noexcept {
-    return true;
-}
-_NODISCARD constexpr bool operator>=(monostate, monostate) noexcept {
-    return true;
-}
-#endif // ^^^ !_HAS_CXX20 ^^^
-
 _EXPORT_STD template <class... _Types,
     enable_if_t<conjunction_v<is_move_constructible<_Types>..., is_swappable<_Types>...>, int> = 0>
 _CONSTEXPR20 void swap(variant<_Types...>& _Left, variant<_Types...>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
@@ -1699,16 +1673,6 @@ struct hash<variant<_Types...>> : _Conditionally_enabled_hash<variant<_Types...>
         noexcept(conjunction_v<_Is_nothrow_hashable<remove_const_t<_Types>>...>) {
         // called from the CRTP base to hash _Var iff the hash is enabled
         return _STD _Variant_raw_visit(_Var.index(), _Var._Storage(), _Variant_hash_visitor{});
-    }
-};
-
-template <>
-struct hash<monostate> {
-    using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = monostate;
-    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
-
-    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(monostate) _CONST_CALL_OPERATOR noexcept {
-        return 1729; // Arbitrary value
     }
 };
 

@@ -7568,10 +7568,6 @@ struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator
     using reference         = _Reference;
 };
 
-#if _HAS_CXX17
-_EXPORT_STD struct monostate {};
-#endif // _HAS_CXX17
-
 #if _HAS_CXX23
 template <_Integer_like _Int>
 _NODISCARD constexpr bool _Add_overflow(const _Int _Left, const _Int _Right, _Int& _Out) {

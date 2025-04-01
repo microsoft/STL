@@ -973,6 +973,46 @@ _NODISCARD _MSVC_INTRINSIC constexpr _Forward_like_t<_Ty, _Uty> forward_like(_Ut
 }
 #endif // _HAS_CXX23
 
+#if _HAS_CXX17
+_EXPORT_STD struct monostate {};
+
+_EXPORT_STD _NODISCARD constexpr bool operator==(monostate, monostate) noexcept {
+    return true;
+}
+
+#if _HAS_CXX20
+_EXPORT_STD _NODISCARD constexpr strong_ordering operator<=>(monostate, monostate) noexcept {
+    return strong_ordering::equal;
+}
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+_NODISCARD constexpr bool operator!=(monostate, monostate) noexcept {
+    return false;
+}
+_NODISCARD constexpr bool operator<(monostate, monostate) noexcept {
+    return false;
+}
+_NODISCARD constexpr bool operator>(monostate, monostate) noexcept {
+    return false;
+}
+_NODISCARD constexpr bool operator<=(monostate, monostate) noexcept {
+    return true;
+}
+_NODISCARD constexpr bool operator>=(monostate, monostate) noexcept {
+    return true;
+}
+#endif // ^^^ !_HAS_CXX20 ^^^
+
+template <>
+struct hash<monostate> {
+    using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = monostate;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
+
+    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(monostate) _CONST_CALL_OPERATOR noexcept {
+        return 1729; // Arbitrary value
+    }
+};
+#endif // _HAS_CXX17
+
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD get;
