@@ -1676,16 +1676,6 @@ struct hash<variant<_Types...>> : _Conditionally_enabled_hash<variant<_Types...>
     }
 };
 
-template <>
-struct hash<monostate> {
-    using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = monostate;
-    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
-
-    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(monostate) _CONST_CALL_OPERATOR noexcept {
-        return 1729; // Arbitrary value
-    }
-};
-
 _STD_END
 
 #undef _STL_STAMP
