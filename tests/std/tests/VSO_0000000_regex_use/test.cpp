@@ -1180,6 +1180,12 @@ void test_gh_5374() {
         g_regexTester.should_not_match("bc", R"(\(a\)*b\1c)", option);
         g_regexTester.should_match("bc", R"(\(a*\)b\1c)", option);
     }
+
+    // ECMAScript's behavior is different:
+    g_regexTester.should_match("", R"((.)*\1)", ECMAScript);
+    g_regexTester.should_match("", R"((.*)\1)", ECMAScript);
+    g_regexTester.should_match("bc", R"((a)*b\1c)", ECMAScript);
+    g_regexTester.should_match("bc", R"((a*)b\1c)", ECMAScript);
 }
 
 int main() {
