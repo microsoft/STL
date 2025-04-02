@@ -1063,6 +1063,20 @@ namespace ranges {
     } // namespace views
 
 #if _HAS_CXX23
+    template <class _Ty, class _Tuple, size_t... _Indices>
+    constexpr _Movable_box<_Ty> _Make_box_from_tuple_impl(_Tuple&& _Tpl, index_sequence<_Indices...>)
+        noexcept(is_nothrow_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl)))...>) {
+        return _Movable_box<_Ty>(in_place, _STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
+    }
+
+    template <class _Ty, class _Tuple>
+    constexpr _Movable_box<_Ty> _Make_box_from_tuple(_Tuple&& _Tpl)
+        noexcept(noexcept(_RANGES _Make_box_from_tuple_impl<_Ty>(
+            _STD forward<_Tuple>(_Tpl), make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{}))) {
+        return _RANGES _Make_box_from_tuple_impl<_Ty>(
+            _STD forward<_Tuple>(_Tpl), make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
+    }
+
     template <class _Ty>
     concept _Integer_like_with_usable_difference_type =
         _Signed_integer_like<_Ty> || (_Integer_like<_Ty> && weakly_incrementable<_Ty>);
@@ -1229,11 +1243,6 @@ namespace ranges {
         /* [[no_unique_address]] */ _Movable_box<_Ty> _Value{};
         /* [[no_unique_address]] */ _Bo _Bound{};
 
-        template <class _Tuple, size_t... _Indices>
-        _NODISCARD_CTOR constexpr repeat_view(_Tuple& _Val, index_sequence<_Indices...>, _Bo _Bound_)
-            noexcept(is_nothrow_constructible_v<_Ty, tuple_element_t<_Indices, _Tuple>...>)
-            : _Value(in_place, _Tuple_get<_Indices>(_STD move(_Val))...), _Bound(_STD move(_Bound_)) {}
-
     public:
         repeat_view()
             requires default_initializable<_Ty>
@@ -1262,9 +1271,10 @@ namespace ranges {
             requires constructible_from<_Ty, _TArgs...> && constructible_from<_Bo, _BArgs...>
         _NODISCARD_CTOR constexpr explicit repeat_view(
             piecewise_construct_t, tuple<_TArgs...> _Val_args, tuple<_BArgs...> _Bound_args = tuple<>{})
-            noexcept(is_nothrow_constructible_v<_Ty, _TArgs...>
-                     && noexcept(_STD make_from_tuple<_Bo>(_Bound_args))) // strengthened
-            : repeat_view(_Val_args, index_sequence_for<_TArgs...>{}, _STD make_from_tuple<_Bo>(_Bound_args)) {
+            noexcept(noexcept(_RANGES _Make_box_from_tuple<_Ty>(_STD move(_Val_args)))
+                     && noexcept(_STD make_from_tuple<_Bo>(_STD move(_Bound_args)))) // strengthened
+            : _Value(_RANGES _Make_box_from_tuple<_Ty>(_STD move(_Val_args))),
+              _Bound(_STD make_from_tuple<_Bo>(_STD move(_Bound_args))) {
 #if _ITERATOR_DEBUG_LEVEL != 0
             if constexpr (_Signed_integer_like<_Bo>) {
                 _STL_VERIFY(_Bound >= 0, "Bound must be >= 0");
