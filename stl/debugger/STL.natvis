@@ -2240,6 +2240,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::chrono::time_point&lt;std::chrono::system_clock,std::chrono::duration&lt;__int64,std::ratio&lt;1,10000000&gt; &gt; &gt;">
+    <!-- clang-cl -->
+    <AlternativeType Name="std::chrono::time_point&lt;std::chrono::system_clock,std::chrono::duration&lt;long long,std::ratio&lt;1,10000000&gt; &gt; &gt;" />
+
     <!--
       Same computation as in std::chrono::year_month_day::_Civil_from_days
       and https://howardhinnant.github.io/date_algorithms.html#civil_from_days.
