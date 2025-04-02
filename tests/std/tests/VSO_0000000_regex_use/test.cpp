@@ -1172,20 +1172,43 @@ void test_gh_5253() {
 }
 
 void test_gh_5364() {
-    // GH-5364 `<regex>`: Allow initial ] to start character ranges in basic regular expressions
-    for (syntax_option_type option : {basic, extended, grep, egrep}) {
+    // GH-5364 <regex>: Allow initial ] to start character ranges in POSIX regular expressions
+    for (syntax_option_type option : {basic, extended, awk, grep, egrep}) {
         g_regexTester.should_match("]", "[]-_]", option);
         g_regexTester.should_match("^", "[]-_]", option);
         g_regexTester.should_match("_", "[]-_]", option);
         g_regexTester.should_not_match("-", "[]-_]", option);
 
+        g_regexTester.should_not_match("]", "[^]-_]", option);
+        g_regexTester.should_not_match("^", "[^]-_]", option);
+        g_regexTester.should_not_match("_", "[^]-_]", option);
+        g_regexTester.should_match("-", "[^]-_]", option);
+
         g_regexTester.should_match("]", "[]a]", option);
         g_regexTester.should_match("a", "[]a]", option);
+        g_regexTester.should_not_match("_", "[]a]", option);
         g_regexTester.should_not_match("a]", "[]a]", option);
         g_regexTester.should_not_match("]a", "[]a]", option);
+        g_regexTester.should_not_match("__", "[]a]", option);
+
+        g_regexTester.should_not_match("]", "[^]a]", option);
+        g_regexTester.should_not_match("a", "[^]a]", option);
+        g_regexTester.should_match("_", "[^]a]", option);
+        g_regexTester.should_not_match("a]", "[^]a]", option);
+        g_regexTester.should_not_match("]a", "[^]a]", option);
+        g_regexTester.should_not_match("__", "[^]a]", option);
 
         g_regexTester.should_throw("[]", error_brack, option);
+        g_regexTester.should_throw("[^]", error_brack, option);
     }
+
+    g_regexTester.should_throw("[]-_]", error_brack, ECMAScript);
+    g_regexTester.should_throw("[^]-_]", error_brack, ECMAScript);
+    g_regexTester.should_throw("[]a]", error_brack, ECMAScript);
+    g_regexTester.should_throw("[^]a]", error_brack, ECMAScript);
+
+    g_regexTester.should_not_match("c", "[]", ECMAScript);
+    g_regexTester.should_match("c", "[^]", ECMAScript);
 }
 
 int main() {
