@@ -3949,8 +3949,9 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
 
                 const _Elem _Ch = *_Next;
                 const bool _Is_end_of_alternative =
-                    ((_L_flags & _L_alt_pipe) && _Ch == _Meta_bar) // dollar followed by pipe |
-                    || ((_L_flags & _L_alt_nl) && _Ch == _Meta_nl && _Disj_count == 0) // dollar followed by pipe \n
+                    ((_L_flags & _L_alt_pipe) && _Ch == _Meta_bar) // dollar followed by pipe '|' for alternation
+                    || ((_L_flags & _L_alt_nl) && _Ch == _Meta_nl
+                        && _Disj_count == 0) // dollar followed by newline '\n' for alternation
                     || ((_Escaped || (_L_flags & _L_nex_grp)) && _Ch == _Meta_rpar
                         && _Disj_count != 0); // dollar followed by parenthesis closing a group
 
