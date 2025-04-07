@@ -1312,7 +1312,6 @@ void test_gh_5362_grep() {
     {
         const test_regex middle_nl(&g_regexTester, "a\na$", grep);
         middle_nl.should_search_match("a\na$", "a");
-        middle_nl.should_search_match("a\na$", "a");
         middle_nl.should_search_match("a\nab", "a");
         middle_nl.should_search_match("a", "a");
         middle_nl.should_search_fail("b");
