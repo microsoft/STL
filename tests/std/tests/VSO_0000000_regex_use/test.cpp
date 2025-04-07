@@ -1172,9 +1172,9 @@ void test_gh_5253() {
 
 void test_gh_5362_syntax_option(const syntax_option_type basic_or_grep) {
     {
-        const test_regex beginning_anchor(&g_regexTester, "meo[wW]$", basic_or_grep);
-        beginning_anchor.should_search_match("kitten_meow", "meow");
-        beginning_anchor.should_search_fail("homeowner");
+        const test_regex ending_anchor(&g_regexTester, "meo[wW]$", basic_or_grep);
+        ending_anchor.should_search_match("kitten_meow", "meow");
+        ending_anchor.should_search_fail("homeowner");
     }
     {
         const test_regex middle_anchor(&g_regexTester, "me$o[wW]", basic_or_grep);
@@ -1183,16 +1183,16 @@ void test_gh_5362_syntax_option(const syntax_option_type basic_or_grep) {
         middle_anchor.should_search_match("home$owner", "me$ow");
     }
     {
-        const test_regex double_carets(&g_regexTester, "meo[wW]$$", basic_or_grep);
-        double_carets.should_search_fail("kitten_meow");
-        double_carets.should_search_fail("homeowner");
-        double_carets.should_search_match("kitten_meow$", "meow$");
-        double_carets.should_search_fail("kitten_meow$$");
-        double_carets.should_search_fail("homeow$ner");
-        double_carets.should_search_fail("homeow$$ner");
+        const test_regex double_dollars(&g_regexTester, "meo[wW]$$", basic_or_grep);
+        double_dollars.should_search_fail("kitten_meow");
+        double_dollars.should_search_fail("homeowner");
+        double_dollars.should_search_match("kitten_meow$", "meow$");
+        double_dollars.should_search_fail("kitten_meow$$");
+        double_dollars.should_search_fail("homeow$ner");
+        double_dollars.should_search_fail("homeow$$ner");
     }
 
-    g_regexTester.should_not_match("me^ow", R"(\(me$\)o[wW])", basic_or_grep);
+    g_regexTester.should_not_match("me$ow", R"(\(me$\)o[wW])", basic_or_grep);
     g_regexTester.should_not_match("meow", R"(\(me$\)o[wW])", basic_or_grep);
 
     {
@@ -1212,7 +1212,7 @@ void test_gh_5362_syntax_option(const syntax_option_type basic_or_grep) {
     {
         const test_regex firstgroup_anchor(&g_regexTester, R"(\(meo[wW]$\)\(.*\))", basic_or_grep);
         firstgroup_anchor.should_search_match("kitten_meow", "meow");
-        firstgroup_anchor.should_search_fail("^kitten_meow$");
+        firstgroup_anchor.should_search_fail("kitten_meow$");
         firstgroup_anchor.should_search_fail("homeowner");
         firstgroup_anchor.should_search_fail("homeow$ner");
     }
@@ -1226,13 +1226,13 @@ void test_gh_5362_syntax_option(const syntax_option_type basic_or_grep) {
         nested_anchor.should_search_fail("homeow$$ner");
     }
     {
-        const test_regex double_carets(&g_regexTester, R"(\(meo[wW]$$\).*)", basic_or_grep);
-        double_carets.should_search_fail("kitten_meow");
-        double_carets.should_search_match("kitten_meow$", "meow$");
-        double_carets.should_search_fail("kitten_meow$$");
-        double_carets.should_search_fail("homeowner");
-        double_carets.should_search_fail("homeow$ner");
-        double_carets.should_search_fail("homeow$$ner");
+        const test_regex double_dollars(&g_regexTester, R"(\(meo[wW]$$\).*)", basic_or_grep);
+        double_dollars.should_search_fail("kitten_meow");
+        double_dollars.should_search_match("kitten_meow$", "meow$");
+        double_dollars.should_search_fail("kitten_meow$$");
+        double_dollars.should_search_fail("homeowner");
+        double_dollars.should_search_fail("homeow$ner");
+        double_dollars.should_search_fail("homeow$$ner");
     }
 
     // Validate that there is no special behavior near bars,
@@ -1297,7 +1297,7 @@ void test_gh_5362_basic() {
         middle_nl_with_dollar.should_search_fail("b");
     }
     {
-        const test_regex group_middle_nl_with_dollar(&g_regexTester, "^\\(a$\nb\\)$", basic);
+        const test_regex group_middle_nl_with_dollar(&g_regexTester, "\\(a$\nb\\)$", basic);
         group_middle_nl_with_dollar.should_search_match("a$\nb", "a$\nb");
         group_middle_nl_with_dollar.should_search_fail("a\nb");
         group_middle_nl_with_dollar.should_search_fail("a$\nb$");
