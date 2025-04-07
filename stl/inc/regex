@@ -3955,7 +3955,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
                     || ((_L_flags & _L_alt_nl) && _Ch == _Meta_nl
                         && _Disj_count == 0) // dollar followed by newline '\n' for alternation
                     || (_Escaped == _Has_escaped_capture_groups && _Ch == _Meta_rpar
-                        && _Disj_count != 0); // dollar followed by parenthesis closing a group
+                        && _Disj_count != 0); // dollar followed by right parenthesis ')' closing a group
 
                 if (!_Is_end_of_alternative) {
                     _Mchar = _Meta_chr;
