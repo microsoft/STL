@@ -3947,15 +3947,17 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
                     ++_Next;
                 }
 
-                const bool _Has_escaped_capture_groups = (_L_flags & _L_nex_grp) == 0;
+                // Only the basic and grep grammars set _L_anch_rstr, so _L_alt_pipe and _L_nex_grp must be unset.
+                // Therefore, we don't need to handle "dollar followed by pipe '|' for alternation"
+                // or "dollar followed by non-escaped right parenthesis ')' closing a group" below.
+                _STL_INTERNAL_CHECK((_L_flags & (_L_alt_pipe | _L_nex_grp)) == 0);
 
                 const _Elem _Ch = *_Next;
                 const bool _Is_end_of_alternative =
-                    ((_L_flags & _L_alt_pipe) && _Ch == _Meta_bar) // dollar followed by pipe '|' for alternation
-                    || ((_L_flags & _L_alt_nl) && _Ch == _Meta_nl
+                    ((_L_flags & _L_alt_nl) && _Ch == _Meta_nl
                         && _Disj_count == 0) // dollar followed by newline '\n' for alternation
-                    || (_Escaped == _Has_escaped_capture_groups && _Ch == _Meta_rpar
-                        && _Disj_count != 0); // dollar followed by right parenthesis ')' closing a group
+                    || (_Escaped && _Ch == _Meta_rpar
+                        && _Disj_count != 0); // dollar followed by (escaped) right parenthesis ')' closing a group
 
                 if (!_Is_end_of_alternative) {
                     _Mchar = _Meta_chr;
