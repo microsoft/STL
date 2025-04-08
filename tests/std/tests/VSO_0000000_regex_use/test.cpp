@@ -1154,20 +1154,24 @@ void test_gh_5214() {
 void test_gh_5245() {
     // GH-5245: <regex> : Successful negative lookahead assertions
     // sometimes mistakenly assign matches to capture groups
-    test_regex neg_assert(&g_regexTester, "^(?!(a)b)..$");
-    neg_assert.should_search_match_capture_groups("ac", "ac", match_default, {{-1, -1}});
-    neg_assert.should_search_fail("ab");
-    neg_assert.should_search_fail("acc");
-    neg_assert.should_search_fail("abcc");
-    neg_assert.should_search_fail("accc");
+    {
+        test_regex neg_assert(&g_regexTester, "^(?!(a)b)..$");
+        neg_assert.should_search_match_capture_groups("ac", "ac", match_default, {{-1, -1}});
+        neg_assert.should_search_fail("ab");
+        neg_assert.should_search_fail("acc");
+        neg_assert.should_search_fail("abcc");
+        neg_assert.should_search_fail("accc");
+    }
 
-    test_regex pos_assert(&g_regexTester, "^(?=(a)b)..$");
-    pos_assert.should_search_match_capture_groups("ab", "ab", match_default, {{0, 1}});
-    pos_assert.should_search_fail("ac");
-    pos_assert.should_search_fail("acc");
-    pos_assert.should_search_fail("accc");
-    pos_assert.should_search_fail("abb");
-    pos_assert.should_search_fail("abab");
+    {
+        test_regex pos_assert(&g_regexTester, "^(?=(a)b)..$");
+        pos_assert.should_search_match_capture_groups("ab", "ab", match_default, {{0, 1}});
+        pos_assert.should_search_fail("ac");
+        pos_assert.should_search_fail("acc");
+        pos_assert.should_search_fail("accc");
+        pos_assert.should_search_fail("abb");
+        pos_assert.should_search_fail("abab");
+    }
 }
 
 void test_gh_5253() {
