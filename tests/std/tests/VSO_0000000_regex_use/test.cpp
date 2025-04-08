@@ -1152,7 +1152,7 @@ void test_gh_5214() {
 }
 
 void test_gh_5245() {
-    // GH-5245: <regex> : Successful negative lookahead assertions
+    // GH-5245: <regex>: Successful negative lookahead assertions
     // sometimes mistakenly assign matches to capture groups
     {
         test_regex neg_assert(&g_regexTester, "^(?!(a)b)..$");
