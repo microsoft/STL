@@ -3146,7 +3146,6 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Tidy() noexcept { // free memory
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
 bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_assert(_Node_assert* _Node) { // apply assert node
-
     _It _Ch = _Tgt_state._Cur;
     if (_Match_pat(_Node->_Child)) {
         _Tgt_state._Cur = _Ch;
@@ -3158,7 +3157,6 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_assert(_Node_assert* _Node) { 
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
 bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_neg_assert(_Node_assert* _Node) { // apply negative assert node
-
     _Bt_state_t<_It> _St = _Tgt_state;
     if (!_Match_pat(_Node->_Child)) {
         _Tgt_state = _St;
