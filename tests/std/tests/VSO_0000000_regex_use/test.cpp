@@ -1156,8 +1156,8 @@ void test_gh_5245() {
     // sometimes mistakenly assign matches to capture groups
     {
         test_regex neg_assert(&g_regexTester, "^(?!(a)b)..$");
-        neg_assert.should_search_match_capture_groups("ac", "ac", match_default, {{-1, -1}});
         neg_assert.should_search_fail("ab");
+        neg_assert.should_search_match_capture_groups("ac", "ac", match_default, {{-1, -1}});
         neg_assert.should_search_fail("acc");
     }
 
@@ -1165,8 +1165,8 @@ void test_gh_5245() {
         test_regex pos_assert(&g_regexTester, "^(?=(a)b)..$");
         pos_assert.should_search_match_capture_groups("ab", "ab", match_default, {{0, 1}});
         pos_assert.should_search_fail("ac");
-        pos_assert.should_search_fail("acc");
         pos_assert.should_search_fail("abb");
+        pos_assert.should_search_fail("acc");
     }
 }
 
