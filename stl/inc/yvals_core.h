@@ -120,6 +120,7 @@
 // P0426R1 constexpr For char_traits
 // P0433R2 Deduction Guides For The STL
 // P0452R1 Unifying <numeric> Parallel Algorithms
+// P0472R3 Put monostate In <utility>
 // P0504R0 Revisiting in_place_t/in_place_type_t<T>/in_place_index_t<I>
 // P0505R0 constexpr For <chrono> (Again)
 // P0508R0 Clarifying insert_return_type
