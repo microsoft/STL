@@ -499,7 +499,7 @@ void test_VSO_225160_match_eol_flag() {
 
 void test_VSO_226914_word_boundaries() {
     const test_regex emptyAnchor(&g_regexTester, R"(\b)");
-    emptyAnchor.should_search_match("", "");
+    emptyAnchor.should_search_fail("");
     emptyAnchor.should_search_fail("", match_not_bow);
     emptyAnchor.should_search_fail("", match_not_eow);
     emptyAnchor.should_search_fail("", match_not_bow | match_not_eow);
@@ -1434,6 +1434,12 @@ void test_gh_5364() {
     g_regexTester.should_match("c", "[^]", ECMAScript);
 }
 
+void test_gh_5371() {
+    // GH-5371 <regex>: \b and \B are backwards on empty strings
+    g_regexTester.should_not_match("", R"(\b)");
+    g_regexTester.should_match("", R"(\B)");
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -1474,6 +1480,7 @@ int main() {
     test_gh_5253();
     test_gh_5362();
     test_gh_5364();
+    test_gh_5371();
 
     return g_regexTester.result();
 }
