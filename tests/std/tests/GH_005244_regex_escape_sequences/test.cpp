@@ -190,9 +190,7 @@ void test_gh_5244_atomescape_ecmascript() {
     // AtomEscape :: CharacterEscape :: HexEscapeSequence
     g_regexTester.should_match("\x00"s, R"(\x00)", ECMAScript);
     g_regexTester.should_not_match("\\x00", R"(\x00)", ECMAScript);
-    // clang-format off
-    g_regexTester.should_match("\x00""0"s, R"(\x000)", ECMAScript);
-    // clang-format on
+    g_regexTester.should_match("\x00"s + "0", R"(\x000)", ECMAScript);
     g_regexTester.should_match("A", R"(\x41)", ECMAScript);
     g_regexTester.should_not_match("\\", R"(\x41)", ECMAScript);
     g_regexTester.should_match("\xff", R"(\xff)", ECMAScript);
@@ -202,9 +200,7 @@ void test_gh_5244_atomescape_ecmascript() {
     // AtomEscape :: CharacterEscape :: UnicodeEscapeSequence
     g_regexTester.should_match("\u0000"s, R"(\u0000)", ECMAScript);
     g_regexTester.should_not_match("\\u0000", R"(\u0000)", ECMAScript);
-    // clang-format off
-    g_regexTester.should_match("\u0000""0"s, R"(\u00000)", ECMAScript);
-    // clang-format on
+    g_regexTester.should_match("\u0000"s + "0", R"(\u00000)", ECMAScript);
     g_regexTester.should_match("A", R"(\u0041)", ECMAScript);
     g_regexTester.should_not_match("\\", R"(\u0041)", ECMAScript);
     g_regexTester.should_throw(R"(\uffff)", error_escape, ECMAScript);
@@ -575,9 +571,7 @@ void test_gh_5244_atomescape_awk() {
     g_regexTester.should_not_match("11", R"(\111)", awk);
     g_regexTester.should_not_match("111", R"(\111)", awk);
     g_regexTester.should_not_match("\\111", R"(\111)", awk);
-    // clang-format off
-    g_regexTester.should_match("\111""1", R"(\1111)", awk);
-    // clang-format on
+    g_regexTester.should_match("\111"s + "1", R"(\1111)", awk);
     g_regexTester.should_not_match("\111", R"(\1111)", awk);
     g_regexTester.should_not_match("1", R"(\1111)", awk);
     g_regexTester.should_not_match("11", R"(\1111)", awk);
@@ -597,10 +591,8 @@ void test_gh_5244_atomescape_awk() {
     g_regexTester.should_match("\1", R"(\1)", awk);
     g_regexTester.should_match("\1a", R"(\1a)", awk);
     g_regexTester.should_throw(R"(\8)", error_escape, awk);
-    // clang-format off
-    g_regexTester.should_match("\1""8", R"(\18)", awk);
-    g_regexTester.should_match("\12""9", R"(\129)", awk);
-    // clang-format on
+    g_regexTester.should_match("\1"s + "8", R"(\18)", awk);
+    g_regexTester.should_match("\12"s + "9", R"(\129)", awk);
 
     // octal sequences evaluating to 0 are considered undefined by the standard
     g_regexTester.should_throw(R"(\0)", error_escape, awk);
