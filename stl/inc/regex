@@ -4275,8 +4275,9 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Wrapped_disjunction() { // add disjunct
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_IsIdentityEscape(
-    bool _In_character_class) const { // check for valid identity escape
+bool _Parser<_FwdIt, _Elem, _RxTraits>::_IsIdentityEscape(bool _In_character_class) const {
+    // check for valid identity escape
+
     if (_L_flags & _L_ident_ECMA) {
         // ECMAScript identity escape characters
         switch (_Char) {
@@ -4323,8 +4324,8 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_IsIdentityEscape(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_IdentityEscape(
-    bool _In_character_class) { // check whether an escape is valid, and process it if so
+bool _Parser<_FwdIt, _Elem, _RxTraits>::_IdentityEscape(bool _In_character_class) {
+    // check whether an escape is valid, and process it if so
     if (_IsIdentityEscape(_In_character_class)) {
         _Val = _Char;
         _Next();
@@ -4414,7 +4415,6 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom 
             }
             _Nfa._Add_char2(_Elem{});
         } else if (_L_flags & _L_bckr) { // check for valid backreference
-
             if (!(_L_flags & _L_lim_bckr)) {
                 (void) _DecimalDigits3(regex_constants::error_backref, _Val);
             }
