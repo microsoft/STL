@@ -852,6 +852,7 @@ void test_gh_5244_classescape_awk() {
 }
 
 void test_gh_5244() {
+    // GH-5244: <regex>: Some escape sequences are mishandled
     test_gh_5244_atomescape_ecmascript();
     test_gh_5244_classescape_ecmascript();
 
