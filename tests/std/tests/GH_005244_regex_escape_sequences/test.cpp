@@ -103,7 +103,7 @@ void check_no_match(const string& subject, const string& pattern, const Rx& re, 
     check_match(subject, pattern, re, flags, false);
 }
 
-void check_atomescape_controlescape(string expected, string c, syntax_option_type option) {
+void check_atomescape_controlescape(const string& expected, const string& c, syntax_option_type option) {
     string pattern = "\\" + c;
     g_regexTester.should_match(expected, pattern, option);
     g_regexTester.should_not_match("g", pattern, option);
@@ -112,7 +112,7 @@ void check_atomescape_controlescape(string expected, string c, syntax_option_typ
     g_regexTester.should_not_match(pattern, pattern, option);
 }
 
-void check_classescape_controlescape(string expected, string c, syntax_option_type option) {
+void check_classescape_controlescape(const string& expected, const string& c, syntax_option_type option) {
     string pattern = "[\\" + c + "]";
     g_regexTester.should_match(expected, pattern, option);
     g_regexTester.should_not_match("g", pattern, option);
@@ -120,7 +120,7 @@ void check_classescape_controlescape(string expected, string c, syntax_option_ty
     g_regexTester.should_not_match("\\", pattern, option);
 }
 
-void check_atomescape_identityescape(string c, syntax_option_type option) {
+void check_atomescape_identityescape(const string& c, syntax_option_type option) {
     string pattern = "\\" + c;
     g_regexTester.should_match(c, pattern, option);
     g_regexTester.should_not_match("g", pattern, option);
@@ -128,14 +128,14 @@ void check_atomescape_identityescape(string c, syntax_option_type option) {
     g_regexTester.should_not_match(pattern, pattern, option);
 }
 
-void check_classescape_identityescape(string c, syntax_option_type option) {
+void check_classescape_identityescape(const string& c, syntax_option_type option) {
     string pattern = "[\\" + c + "]";
     g_regexTester.should_match(c, pattern, option);
     g_regexTester.should_not_match("g", pattern, option);
     g_regexTester.should_not_match("\\", pattern, option);
 }
 
-void check_classescape_noescape(string c, syntax_option_type option) {
+void check_classescape_noescape(const string& c, syntax_option_type option) {
     string pattern = "[\\" + c + "]";
     g_regexTester.should_match(c, pattern, option);
     g_regexTester.should_match("\\", pattern, option);
