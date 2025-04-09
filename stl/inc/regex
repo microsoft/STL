@@ -3662,6 +3662,9 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
 
         case _N_back:
             { // check back reference
+                _STL_INTERNAL_CHECK(
+                    (_Sflags & (regex_constants::extended | regex_constants::egrep | regex_constants::awk))
+                    == 0); // these grammars don't have backreferences
                 _Node_back* _Node = static_cast<_Node_back*>(_Nx);
                 if (_Tgt_state._Grp_valid[_Node->_Idx]) { // check for match
                     _It _Res0 = _Tgt_state._Cur;
@@ -3673,6 +3676,8 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
                     } else {
                         _Tgt_state._Cur = _Res0;
                     }
+                } else if (_Sflags & (regex_constants::basic | regex_constants::grep)) {
+                    _Failed = true;
                 }
                 break;
             }
