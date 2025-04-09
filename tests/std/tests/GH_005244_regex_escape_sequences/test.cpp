@@ -625,7 +625,7 @@ void test_gh_5244_classescape_posix_not_awk(syntax_option_type option) {
     check_classescape_noescape("|", option);
 
     // TRANSITION, GH-5379
-    if (option & (extended | egrep | awk)) {
+    if (option & (extended | egrep)) {
         check_classescape_noescape("(", option);
         check_classescape_noescape(")", option);
         check_classescape_noescape("{", option);
@@ -637,7 +637,7 @@ void test_gh_5244_classescape_posix_not_awk(syntax_option_type option) {
     g_regexTester.should_not_match("\\", R"([\]])", option);
 
     // TRANSITION, GH-5379
-    if (option & (extended | egrep | awk)) {
+    if (option & (extended | egrep)) {
         check_classescape_noescape("}", option);
     }
 
