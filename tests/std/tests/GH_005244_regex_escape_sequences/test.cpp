@@ -220,6 +220,7 @@ void test_gh_5244_atomescape_ecmascript() {
     g_regexTester.should_not_match("-", R"(\d)", ECMAScript);
     g_regexTester.should_not_match("\1", R"(\d)", ECMAScript);
     g_regexTester.should_not_match("\\", R"(\d)", ECMAScript);
+    g_regexTester.should_not_match(" ", R"(\d)", ECMAScript);
     g_regexTester.should_not_match("0", R"(\D)", ECMAScript);
     g_regexTester.should_not_match("5", R"(\D)", ECMAScript);
     g_regexTester.should_match("a", R"(\D)", ECMAScript);
@@ -227,6 +228,7 @@ void test_gh_5244_atomescape_ecmascript() {
     g_regexTester.should_match("-", R"(\D)", ECMAScript);
     g_regexTester.should_match("\1", R"(\D)", ECMAScript);
     g_regexTester.should_match("\\", R"(\D)", ECMAScript);
+    g_regexTester.should_match(" ", R"(\D)", ECMAScript);
 
     g_regexTester.should_match("a", R"(\w)", ECMAScript);
     g_regexTester.should_match("A", R"(\w)", ECMAScript);
@@ -368,6 +370,7 @@ void test_gh_5244_classescape_ecmascript() {
     g_regexTester.should_not_match("-", R"([\d])", ECMAScript);
     g_regexTester.should_not_match("\1", R"([\d])", ECMAScript);
     g_regexTester.should_not_match("\\", R"([\d])", ECMAScript);
+    g_regexTester.should_not_match(" ", R"([\d])", ECMAScript);
     g_regexTester.should_not_match("0", R"([\D])", ECMAScript);
     g_regexTester.should_not_match("5", R"([\D])", ECMAScript);
     g_regexTester.should_match("a", R"([\D])", ECMAScript);
@@ -375,6 +378,7 @@ void test_gh_5244_classescape_ecmascript() {
     g_regexTester.should_match("-", R"([\D])", ECMAScript);
     g_regexTester.should_match("\1", R"([\D])", ECMAScript);
     g_regexTester.should_match("\\", R"([\D])", ECMAScript);
+    g_regexTester.should_match(" ", R"([\D])", ECMAScript);
 
     g_regexTester.should_match("a", R"([\w])", ECMAScript);
     g_regexTester.should_match("A", R"([\w])", ECMAScript);
