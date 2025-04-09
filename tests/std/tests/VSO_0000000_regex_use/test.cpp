@@ -1156,22 +1156,32 @@ void test_gh_5245() {
     // sometimes mistakenly assign matches to capture groups
     {
         test_regex neg_assert(&g_regexTester, "^(?!(a)b)..$");
-        neg_assert.should_search_fail("ab");
-        neg_assert.should_search_match_capture_groups("ac", "ac", match_default, {{-1, -1}});
-        neg_assert.should_search_match_capture_groups("cb", "cb", match_default, {{-1, -1}});
+        neg_assert.should_search_fail("ab"); // rejected by the negative assertion
+        neg_assert.should_search_match_capture_groups("ac", "ac", match_default, {{-1, -1}}); // test the fix
+        neg_assert.should_search_match_capture_groups("cb", "cb", match_default, {{-1, -1}}); // never captures
+
+        // These 3-character and 4-character tests verify that after a lookahead assertion, we reset the position:
         neg_assert.should_search_fail("abb");
         neg_assert.should_search_fail("acc");
         neg_assert.should_search_fail("cbb");
+        neg_assert.should_search_fail("abab");
+        neg_assert.should_search_fail("abcc");
+        neg_assert.should_search_fail("accc");
     }
 
     {
         test_regex pos_assert(&g_regexTester, "^(?=(a)b)..$");
-        pos_assert.should_search_match_capture_groups("ab", "ab", match_default, {{0, 1}});
-        pos_assert.should_search_fail("ac");
-        pos_assert.should_search_fail("cb");
+        pos_assert.should_search_match_capture_groups("ab", "ab", match_default, {{0, 1}}); // capture group retained
+        pos_assert.should_search_fail("ac"); // rejected by the positive assertion midway through
+        pos_assert.should_search_fail("cb"); // rejected by the positive assertion immediately
+
+        // These 3-character and 4-character tests verify that after a lookahead assertion, we reset the position:
         pos_assert.should_search_fail("abb");
         pos_assert.should_search_fail("acc");
         pos_assert.should_search_fail("cbb");
+        pos_assert.should_search_fail("abab");
+        pos_assert.should_search_fail("abcc");
+        pos_assert.should_search_fail("accc");
     }
 }
 
