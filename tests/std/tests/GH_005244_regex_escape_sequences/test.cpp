@@ -491,8 +491,8 @@ void test_gh_5244_atomescape_posix_not_awk(syntax_option_type option) {
     g_regexTester.should_throw(R"(\b)", error_escape, option);
     g_regexTester.should_throw(R"(\f)", error_escape, option);
     g_regexTester.should_throw(R"(\n)", error_escape, option);
-    g_regexTester.should_throw(R"(\t)", error_escape, option);
     g_regexTester.should_throw(R"(\r)", error_escape, option);
+    g_regexTester.should_throw(R"(\t)", error_escape, option);
     g_regexTester.should_throw(R"(\v)", error_escape, option);
     g_regexTester.should_throw(R"(\")", error_escape, option);
     g_regexTester.should_throw(R"(\/)", error_escape, option);
