@@ -1360,6 +1360,46 @@ void test_gh_5362() {
     test_gh_5362_grep();
 }
 
+void test_gh_5364() {
+    // GH-5364 <regex>: Allow initial ] to start character ranges in POSIX regular expressions
+    for (syntax_option_type option : {basic, extended, awk, grep, egrep}) {
+        g_regexTester.should_match("]", "[]-_]", option);
+        g_regexTester.should_match("^", "[]-_]", option);
+        g_regexTester.should_match("_", "[]-_]", option);
+        g_regexTester.should_not_match("-", "[]-_]", option);
+
+        g_regexTester.should_not_match("]", "[^]-_]", option);
+        g_regexTester.should_not_match("^", "[^]-_]", option);
+        g_regexTester.should_not_match("_", "[^]-_]", option);
+        g_regexTester.should_match("-", "[^]-_]", option);
+
+        g_regexTester.should_match("]", "[]a]", option);
+        g_regexTester.should_match("a", "[]a]", option);
+        g_regexTester.should_not_match("_", "[]a]", option);
+        g_regexTester.should_not_match("a]", "[]a]", option);
+        g_regexTester.should_not_match("]a", "[]a]", option);
+        g_regexTester.should_not_match("__", "[]a]", option);
+
+        g_regexTester.should_not_match("]", "[^]a]", option);
+        g_regexTester.should_not_match("a", "[^]a]", option);
+        g_regexTester.should_match("_", "[^]a]", option);
+        g_regexTester.should_not_match("a]", "[^]a]", option);
+        g_regexTester.should_not_match("]a", "[^]a]", option);
+        g_regexTester.should_not_match("__", "[^]a]", option);
+
+        g_regexTester.should_throw("[]", error_brack, option);
+        g_regexTester.should_throw("[^]", error_brack, option);
+    }
+
+    g_regexTester.should_throw("[]-_]", error_brack, ECMAScript);
+    g_regexTester.should_throw("[^]-_]", error_brack, ECMAScript);
+    g_regexTester.should_throw("[]a]", error_brack, ECMAScript);
+    g_regexTester.should_throw("[^]a]", error_brack, ECMAScript);
+
+    g_regexTester.should_not_match("c", "[]", ECMAScript);
+    g_regexTester.should_match("c", "[^]", ECMAScript);
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -1398,6 +1438,7 @@ int main() {
     test_gh_5214();
     test_gh_5253();
     test_gh_5362();
+    test_gh_5364();
 
     return g_regexTester.result();
 }
