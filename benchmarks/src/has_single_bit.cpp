@@ -10,7 +10,7 @@
 using namespace std;
 
 template <typename T>
-void has_single_bit_if(benchmark::State& state) {
+void bm_has_single_bit_if(benchmark::State& state) {
     const auto random_v = random_vector<T>(8);
     for (auto _ : state) {
         benchmark::DoNotOptimize(random_v);
@@ -27,7 +27,7 @@ void has_single_bit_if(benchmark::State& state) {
 }
 
 template <typename T>
-void has_single_bit(benchmark::State& state) {
+void bm_has_single_bit(benchmark::State& state) {
     const auto random_v = random_vector<T>(8);
     for (auto _ : state) {
         benchmark::DoNotOptimize(random_v);
@@ -39,14 +39,14 @@ void has_single_bit(benchmark::State& state) {
     }
 }
 
-BENCHMARK(has_single_bit_if<uint8_t>);
-BENCHMARK(has_single_bit_if<uint16_t>);
-BENCHMARK(has_single_bit_if<uint32_t>);
-BENCHMARK(has_single_bit_if<uint64_t>);
+BENCHMARK(bm_has_single_bit_if<uint8_t>);
+BENCHMARK(bm_has_single_bit_if<uint16_t>);
+BENCHMARK(bm_has_single_bit_if<uint32_t>);
+BENCHMARK(bm_has_single_bit_if<uint64_t>);
 
-BENCHMARK(has_single_bit<uint8_t>);
-BENCHMARK(has_single_bit<uint16_t>);
-BENCHMARK(has_single_bit<uint32_t>);
-BENCHMARK(has_single_bit<uint64_t>);
+BENCHMARK(bm_has_single_bit<uint8_t>);
+BENCHMARK(bm_has_single_bit<uint16_t>);
+BENCHMARK(bm_has_single_bit<uint32_t>);
+BENCHMARK(bm_has_single_bit<uint64_t>);
 
 BENCHMARK_MAIN();
