@@ -1795,7 +1795,8 @@ enum _Lang_flags { // describe language properties
     _L_anch_rstr  = 0x02000000, // anchor restricted to beginning/end
     _L_star_beg   = 0x04000000, // star okay at beginning of RE/expr (BRE)
     _L_empty_grp  = 0x08000000, // empty group allowed (ERE prohibits "()")
-    _L_paren_bal  = 0x10000000, // ')'/'}'/']' special only after '('/'{'/']'
+    _L_paren_bal  = 0x10000000, // ')'/'}' special only after '('/'{'
+    _L_brk_bal    = 0x20000000, // ']' special only after '[' (ERE, BRE); TRANSITION, ABI: same value as _L_brk_rstr
     _L_brk_rstr   = 0x20000000, // ']' not special when first character in set
     _L_mtch_long  = 0x40000000, // find longest match (ERE, BRE)
 };
@@ -4533,7 +4534,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alte
             _Error(regex_constants::error_badrepeat);
         } else if (_Mchar == _Meta_rbr && !(_L_flags & _L_paren_bal)) {
             _Error(regex_constants::error_brace);
-        } else if (_Mchar == _Meta_rsq && !(_L_flags & (_L_paren_bal | _L_brk_rstr))) {
+        } else if (_Mchar == _Meta_rsq && !(_L_flags & _L_brk_bal)) {
             _Error(regex_constants::error_brack);
         } else { // add character
             _Nfa._Add_char2(_Char);
@@ -4667,12 +4668,12 @@ _Parser<_FwdIt, _Elem, _RxTraits>::_Parser(
                                        | _L_empty_grp;
 
     constexpr unsigned int _Basic_flags =
-        _L_bckr | _L_lim_bckr | _L_anch_rstr | _L_star_beg | _L_empty_grp | _L_brk_rstr | _L_mtch_long;
+        _L_bckr | _L_lim_bckr | _L_anch_rstr | _L_star_beg | _L_empty_grp | _L_brk_bal | _L_brk_rstr | _L_mtch_long;
 
     constexpr unsigned int _Grep_flags = _Basic_flags | _L_alt_nl | _L_no_nl;
 
-    constexpr unsigned int _Extended_flags =
-        _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_ident_ERE | _L_paren_bal | _L_brk_rstr | _L_mtch_long;
+    constexpr unsigned int _Extended_flags = _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_ident_ERE
+                                           | _L_paren_bal | _L_brk_bal | _L_brk_rstr | _L_mtch_long;
 
     constexpr unsigned int _Awk_flags = _Extended_flags | _L_esc_oct | _L_esc_ffn | _L_esc_ffnx | _L_ident_awk;
 
