@@ -2252,7 +2252,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Intrinsic Name="mp"    Expression="(5*doy() + 2)/153"/>
     <Intrinsic Name="day"   Expression="doy() - (153*mp()+2)/5 + 1"/>
     <Intrinsic Name="month" Expression="mp() &lt; 10 ? mp()+3 : mp()-9"/>
-    <Intrinsic Name="year"  Expression="((long long)yoe()) + era() * 400 + (month() &lt; 2)"/>
+    <Intrinsic Name="year"  Expression="((long long)yoe()) + era() * 400 + (month() &lt;= 2)"/>
 
     <DisplayString Condition="_MyDur._MyRep &gt;= 0">
       {year(),d}-{month()/10,d}{month()%10,d}-{day()/10,d}{day()%10,d} {
