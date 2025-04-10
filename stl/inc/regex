@@ -4348,6 +4348,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_IsIdentityEscape(bool _In_character_cla
         return true;
     case _Meta_dot:
     case _Meta_lsq:
+    case _Meta_rsq:
     case _Meta_star:
     case _Meta_caret:
     case _Meta_dlr:
