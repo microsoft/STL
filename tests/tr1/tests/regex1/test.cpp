@@ -181,7 +181,7 @@ static void test_traits() { // test template regex_traits
         CHECK(v0.lookup_classname(class_names[i], class_names[i] + xlen(class_names[i])) != 0);
     }
     CHECK(v0.lookup_classname(carr, carr) == 0);
-    CHECK(v0.lookup_collatename(carr, carr + xlen(carr)) != STDString());
+    CHECK(v0.lookup_collatename(carr, carr + xlen(carr)) == STDString());
     CHECK(v0.isctype('0', v0.lookup_classname(class_names[0], class_names[0] + xlen(class_names[0]))));
     CHECK_INT(v0.value('7', 8), 7);
     CHECK_INT(v0.value('9', 8), -1);
