@@ -1670,6 +1670,8 @@ private:
     _Tgt_state_t<_It> _Res;
     vector<_Loop_vals_t> _Loop_vals;
 
+    bool _Do_assert(_Node_assert*);
+    bool _Do_neg_assert(_Node_assert*);
     bool _Do_if(_Node_if*);
     bool _Do_rep0(_Node_rep*, bool);
     bool _Do_rep(_Node_rep*, bool, int);
@@ -1721,7 +1723,7 @@ private:
     // lexing
     [[noreturn]] void _Error(regex_constants::error_type);
 
-    bool _Is_esc() const;
+    bool _Is_esc(_FwdIt) const;
     void _Trans();
     void _Next();
     void _Expect(_Meta_type, regex_constants::error_type);
@@ -1734,7 +1736,7 @@ private:
     void _Do_ex_class(_Meta_type);
     bool _CharacterClassEscape(bool);
     _Prs_ret _ClassEscape2();
-    _Prs_ret _ClassAtom();
+    _Prs_ret _ClassAtom(bool);
     void _ClassRanges();
     void _CharacterClass();
     bool _IdentityEscape();
@@ -3143,6 +3145,28 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Tidy() noexcept { // free memory
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
+bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_assert(_Node_assert* _Node) { // apply assert node
+    _It _Ch = _Tgt_state._Cur;
+    if (_Match_pat(_Node->_Child)) {
+        _Tgt_state._Cur = _Ch;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template <class _BidIt, class _Elem, class _RxTraits, class _It>
+bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_neg_assert(_Node_assert* _Node) { // apply negative assert node
+    _Bt_state_t<_It> _St = _Tgt_state;
+    if (!_Match_pat(_Node->_Child)) {
+        _Tgt_state = _St;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template <class _BidIt, class _Elem, class _RxTraits, class _It>
 bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_if(_Node_if* _Node) { // apply if node
     _Tgt_state_t<_It> _St = _Tgt_state;
 
@@ -3597,20 +3621,15 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
         case _N_end_group:
             break;
 
-        case _N_neg_assert:
         case _N_assert:
             { // check assert
-                _It _Ch              = _Tgt_state._Cur;
-                bool _Neg            = _Nx->_Kind == _N_neg_assert;
-                _Bt_state_t<_It> _St = _Tgt_state;
-                if (_Match_pat(static_cast<_Node_assert*>(_Nx)->_Child) == _Neg) {
-                    // restore initial state and indicate failure
-                    _Tgt_state = _St;
-                    _Failed    = true;
-                } else {
-                    _Tgt_state._Cur = _Ch;
-                }
+                _Failed = !_Do_assert(static_cast<_Node_assert*>(_Nx));
+                break;
+            }
 
+        case _N_neg_assert:
+            { // check negative assert
+                _Failed = !_Do_neg_assert(static_cast<_Node_assert*>(_Nx));
                 break;
             }
 
@@ -3875,8 +3894,7 @@ template <class _FwdIt, class _Elem, class _RxTraits>
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_Is_esc() const { // assumes _Pat != _End
-    _FwdIt _Ch0 = _Pat;
+bool _Parser<_FwdIt, _Elem, _RxTraits>::_Is_esc(_FwdIt _Ch0) const { // assumes _Ch0 != _End
     return ++_Ch0 != _End
         && ((!(_L_flags & _L_nex_grp) && (*_Ch0 == _Meta_lpar || *_Ch0 == _Meta_rpar))
             || (!(_L_flags & _L_nex_rep) && (*_Ch0 == _Meta_lbr || *_Ch0 == _Meta_rbr)));
@@ -3897,7 +3915,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
     }
     switch (_Char) { // handle special cases
     case _Meta_esc:
-        if (_Is_esc()) { // replace escape sequence
+        if (_Is_esc(_Pat)) { // replace escape sequence
             _FwdIt _Ch0 = _Pat;
             _Mchar      = static_cast<_Meta_type>(_Char = *++_Ch0);
         }
@@ -3941,9 +3959,28 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
 
     case _Meta_dlr:
         { // check if $ is special
-            _FwdIt _Ch0 = _Pat;
-            if ((_L_flags & _L_anch_rstr) && ++_Ch0 != _End && *_Ch0 != _Meta_nl) {
-                _Mchar = _Meta_chr;
+            _FwdIt _Next = _Pat;
+            if ((_L_flags & _L_anch_rstr) && ++_Next != _End) {
+                const bool _Escaped = *_Next == _Meta_esc && _Is_esc(_Next);
+                if (_Escaped) {
+                    ++_Next;
+                }
+
+                // Only the basic and grep grammars set _L_anch_rstr, so _L_alt_pipe and _L_nex_grp must be unset.
+                // Therefore, we don't need to handle "dollar followed by pipe '|' for alternation"
+                // or "dollar followed by non-escaped right parenthesis ')' closing a group" below.
+                _STL_INTERNAL_CHECK((_L_flags & (_L_alt_pipe | _L_nex_grp)) == 0);
+
+                const _Elem _Ch = *_Next;
+                const bool _Is_end_of_alternative =
+                    ((_L_flags & _L_alt_nl) && _Ch == _Meta_nl
+                        && _Disj_count == 0) // dollar followed by newline '\n' for alternation
+                    || (_Escaped && _Ch == _Meta_rpar
+                        && _Disj_count != 0); // dollar followed by (escaped) right parenthesis ')' closing a group
+
+                if (!_Is_end_of_alternative) {
+                    _Mchar = _Meta_chr;
+                }
             }
 
             break;
@@ -3972,7 +4009,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_Next() { // advance to next input character
     if (_Pat != _End) { // advance
-        if (*_Pat == _Meta_esc && _Is_esc()) {
+        if (*_Pat == _Meta_esc && _Is_esc(_Pat)) {
             ++_Pat;
         }
 
@@ -4111,7 +4148,7 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassEscape2() { // check for class
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassAtom() { // check for class atom
+_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassAtom(const bool _Initial) { // check for class atom
     if (_Mchar == _Meta_esc) { // check for valid escape sequence
         _Next();
         if (_L_flags & _L_grp_esc) {
@@ -4134,7 +4171,10 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassAtom() { // check for class at
             _Val = _Meta_lsq;
             return _Prs_chr;
         }
-    } else if (_Mchar == _Meta_rsq || _Mchar == _Meta_eos) {
+    } else if ((_Mchar == _Meta_rsq
+                   && (!(_L_flags & _L_brk_rstr)
+                       || !_Initial)) // initial ] does not close the class when it is not special
+               || _Mchar == _Meta_eos) {
         return _Prs_none;
     } else { // handle ordinary character
         _Val = _Char;
@@ -4147,10 +4187,12 @@ template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid class ranges
     _Prs_ret _Ret;
 
+    bool _Initial = true;
     for (;;) { // process characters through end of bracket expression
-        if ((_Ret = _ClassAtom()) == _Prs_none) {
+        if ((_Ret = _ClassAtom(_Initial)) == _Prs_none) {
             return;
         }
+        _Initial = false;
 
         if (_Ret == _Prs_chr && _Val == 0 && !(_L_flags & _L_bzr_chr)) {
             _Error(regex_constants::error_escape);
@@ -4160,7 +4202,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid clas
             _Next();
             _Elem _Chr1               = static_cast<_Elem>(_Val);
             const bool _Set_preceding = _Ret == _Prs_set;
-            if ((_Ret = _ClassAtom()) == _Prs_none) { // treat - as ordinary character
+            if ((_Ret = _ClassAtom(false)) == _Prs_none) { // treat - as ordinary character
                 if (!_Set_preceding) {
                     _Nfa._Add_char_to_class(_Chr1);
                 }
@@ -4209,10 +4251,6 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClass() { // add bracket expre
         _Next();
     }
 
-    if ((_L_flags & _L_brk_rstr) && _Mchar == _Meta_rsq) { // insert initial ] when not special
-        _Nfa._Add_char_to_class(_Meta_rsq);
-        _Next();
-    }
     _ClassRanges();
 }
 
