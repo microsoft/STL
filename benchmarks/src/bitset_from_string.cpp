@@ -12,89 +12,86 @@
 
 using namespace std;
 
-namespace {
-    template <size_t N, class charT, size_t Min_length>
-    auto random_digits_init() {
-        mt19937_64 rnd{};
-        uniform_int_distribution<> dis('0', '1');
+template <size_t N, class charT, size_t Min_length>
+auto random_digits_init() {
+    mt19937_64 rnd{};
+    uniform_int_distribution<> dis('0', '1');
 
-        constexpr size_t number_of_bitsets = (Min_length + N - 1) / N;
-        static_assert(number_of_bitsets != 0);
+    constexpr size_t number_of_bitsets = (Min_length + N - 1) / N;
+    static_assert(number_of_bitsets != 0);
 
-        constexpr size_t actual_size = number_of_bitsets * (N + 1); // +1 for \0
+    constexpr size_t actual_size = number_of_bitsets * (N + 1); // +1 for \0
 
-        array<charT, actual_size> result;
+    array<charT, actual_size> result;
 
-        for (size_t i = 0; i < actual_size; ++i) {
-            if (i % (N + 1) == N) {
-                result[i] = charT{'\0'}; // write null terminators
+    for (size_t i = 0; i < actual_size; ++i) {
+        if (i % (N + 1) == N) {
+            result[i] = charT{'\0'}; // write null terminators
+        } else {
+            result[i] = static_cast<charT>(dis(rnd)); // fill random digits
+        }
+    }
+
+    return result;
+}
+
+enum class length_type : bool { char_count, null_term };
+
+template <size_t N, class charT>
+const auto random_digits = random_digits_init<N, charT, 2048>();
+
+template <length_type Length, size_t N, class charT>
+void bitset_from_string(benchmark::State& state) {
+    const auto& digit_array = random_digits<N, charT>;
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(digit_array);
+        const auto arr_data = digit_array.data();
+        const auto arr_size = digit_array.size();
+        for (size_t pos = 0; pos != arr_size; pos += N + 1) {
+            if constexpr (Length == length_type::char_count) {
+                bitset<N> bs(arr_data + pos, N);
+                benchmark::DoNotOptimize(bs);
             } else {
-                result[i] = static_cast<charT>(dis(rnd)); // fill random digits
-            }
-        }
-
-        return result;
-    }
-
-    enum class length_type : bool { char_count, null_term };
-
-    template <size_t N, class charT>
-    const auto random_digits = random_digits_init<N, charT, 2048>();
-
-    template <length_type Length, size_t N, class charT>
-    void bitset_from_string(benchmark::State& state) {
-        const auto& digit_array = random_digits<N, charT>;
-        for (auto _ : state) {
-            benchmark::DoNotOptimize(digit_array);
-            const auto arr_data = digit_array.data();
-            const auto arr_size = digit_array.size();
-            for (size_t pos = 0; pos != arr_size; pos += N + 1) {
-                if constexpr (Length == length_type::char_count) {
-                    bitset<N> bs(arr_data + pos, N);
-                    benchmark::DoNotOptimize(bs);
-                } else {
-                    bitset<N> bs(arr_data + pos);
-                    benchmark::DoNotOptimize(bs);
-                }
+                bitset<N> bs(arr_data + pos);
+                benchmark::DoNotOptimize(bs);
             }
         }
     }
+}
 
-    template <class charT, size_t Length>
-    basic_string<charT> random_digits_contiguous_string_init() {
-        mt19937_64 rnd{};
-        uniform_int_distribution<> dis('0', '1');
+template <class charT, size_t Length>
+basic_string<charT> random_digits_contiguous_string_init() {
+    mt19937_64 rnd{};
+    uniform_int_distribution<> dis('0', '1');
 
-        basic_string<charT> result;
+    basic_string<charT> result;
 
-        result.resize_and_overwrite(Length, [&](charT* ptr, size_t) {
-            generate_n(ptr, Length, [&] { return static_cast<charT>(dis(rnd)); });
-            return Length;
-        });
+    result.resize_and_overwrite(Length, [&](charT* ptr, size_t) {
+        generate_n(ptr, Length, [&] { return static_cast<charT>(dis(rnd)); });
+        return Length;
+    });
 
-        return result;
-    }
+    return result;
+}
 
-    template <class charT, size_t Length>
-    const auto random_digits_contiguous_string = random_digits_contiguous_string_init<charT, Length>();
+template <class charT, size_t Length>
+const auto random_digits_contiguous_string = random_digits_contiguous_string_init<charT, Length>();
 
-    template <size_t N, class charT>
-    void bitset_from_stream(benchmark::State& state) {
-        constexpr size_t string_length = 2048;
-        constexpr size_t count         = string_length / N;
-        basic_istringstream<charT> stream(random_digits_contiguous_string<charT, string_length>);
-        bitset<N> bs;
-        for (auto _ : state) {
-            benchmark::DoNotOptimize(stream);
-            for (size_t i = 0; i != count; ++i) {
-                stream >> bs;
-            }
-            benchmark::DoNotOptimize(bs);
-            stream.seekg(0);
+template <size_t N, class charT>
+void bitset_from_stream(benchmark::State& state) {
+    constexpr size_t string_length = 2048;
+    constexpr size_t count         = string_length / N;
+    basic_istringstream<charT> stream(random_digits_contiguous_string<charT, string_length>);
+    bitset<N> bs;
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(stream);
+        for (size_t i = 0; i != count; ++i) {
+            stream >> bs;
         }
+        benchmark::DoNotOptimize(bs);
+        stream.seekg(0);
     }
-
-} // namespace
+}
 
 BENCHMARK(bitset_from_string<length_type::char_count, 15, char>);
 BENCHMARK(bitset_from_string<length_type::char_count, 16, char>);

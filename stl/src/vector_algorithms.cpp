@@ -5188,8 +5188,6 @@ namespace {
             // It is not possible to leave them untouched while keeping this optimization efficient.
             // This should not be a problem though, as they should be either overwritten by the next step,
             // or left in the removed range.
-            // 'remove' does not require any specific values,
-            // 'unique' needs the last element value to be preserved, as it will be loaded again.
             for (; _Nx != _Size_h / _Ew; ++_Nx) {
                 // Inner loop needed for cases where the shuffle mask operates on element parts rather than whole
                 // elements; for whole elements there would be one iteration.
@@ -5638,6 +5636,8 @@ void* __stdcall __std_remove_copy_8(
 }
 
 void* __stdcall __std_unique_1(void* _First, void* const _Last) noexcept {
+    _First = const_cast<void*>(__std_adjacent_find_1(_First, _Last));
+
     if (_First == _Last) {
         return _First;
     }
@@ -5658,6 +5658,8 @@ void* __stdcall __std_unique_1(void* _First, void* const _Last) noexcept {
 }
 
 void* __stdcall __std_unique_2(void* _First, void* const _Last) noexcept {
+    _First = const_cast<void*>(__std_adjacent_find_2(_First, _Last));
+
     if (_First == _Last) {
         return _First;
     }
@@ -5678,6 +5680,8 @@ void* __stdcall __std_unique_2(void* _First, void* const _Last) noexcept {
 }
 
 void* __stdcall __std_unique_4(void* _First, void* const _Last) noexcept {
+    _First = const_cast<void*>(__std_adjacent_find_4(_First, _Last));
+
     if (_First == _Last) {
         return _First;
     }
@@ -5705,6 +5709,8 @@ void* __stdcall __std_unique_4(void* _First, void* const _Last) noexcept {
 }
 
 void* __stdcall __std_unique_8(void* _First, void* const _Last) noexcept {
+    _First = const_cast<void*>(__std_adjacent_find_8(_First, _Last));
+
     if (_First == _Last) {
         return _First;
     }
