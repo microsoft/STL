@@ -1210,7 +1210,7 @@ public:
 
     template <class _Fty2, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, packaged_task>, int> = 0>
     explicit packaged_task(_Fty2&& _Fnarg) : _MyPromise(new _MyStateType(_STD forward<_Fty2>(_Fnarg))) {
-        static_assert(_Is_invocable_r<_Ret, decay_t<_Fty2>&, _ArgTypes...>::value, // per LWG-4154
+        static_assert(_Is_invocable_r<_Ret, decay_t<_Fty2>&, _ArgTypes...>::value,
             "The function object must be callable with _ArgTypes... and return _Ret (N4988 [futures.task.members]/3).");
     }
 
@@ -1222,7 +1222,7 @@ public:
     template <class _Fty2, class _Alloc, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, packaged_task>, int> = 0>
     packaged_task(allocator_arg_t, const _Alloc& _Al, _Fty2&& _Fnarg)
         : _MyPromise(_STD _Make_packaged_state<_MyStateType>(_STD forward<_Fty2>(_Fnarg), _Al)) {
-        static_assert(_Is_invocable_r<_Ret, decay_t<_Fty2>&, _ArgTypes...>::value, // per LWG-4154
+        static_assert(_Is_invocable_r<_Ret, decay_t<_Fty2>&, _ArgTypes...>::value,
             "The function object must be callable with _ArgTypes... and return _Ret (N4140 [futures.task.members]/2).");
     }
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT

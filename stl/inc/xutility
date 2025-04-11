@@ -417,8 +417,7 @@ auto _Max_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
 }
 
 template <size_t _Element_size>
-inline size_t // TRANSITION, GH-4496
-    _Mismatch_vectorized(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+size_t _Mismatch_vectorized(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
     if constexpr (_Element_size == 1) {
         return __std_mismatch_1(_First1, _First2, _Count);
     } else if constexpr (_Element_size == 2) {
@@ -823,14 +822,6 @@ using _Algorithm_int_t = conditional_t<is_integral_v<_Ty>, _Ty, ptrdiff_t>;
 #if _HAS_CXX20
 template <class _Ty>
 concept _Destructible_object = is_object_v<_Ty> && destructible<_Ty>;
-
-template <template <class...> class _Template, class... _Args>
-void _Derived_from_specialization_impl(const _Template<_Args...>&);
-
-template <class _Ty, template <class...> class _Template>
-concept _Derived_from_specialization_of = requires(const _Ty& _Obj) {
-    _STD _Derived_from_specialization_impl<_Template>(_Obj); // qualified: avoid ADL, handle incomplete types
-};
 
 namespace ranges {
     namespace _Iter_move {
@@ -3424,17 +3415,19 @@ namespace ranges {
 
     _EXPORT_STD struct view_base {};
 
-    template <class _Ty, template <class...> class _Template>
-    concept _Strictly_derived_from_specialization_of =
-        is_object_v<_Ty> && _Derived_from_specialization_of<_Ty, _Template>;
-
     _EXPORT_STD template <class _Derived>
         requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
     class view_interface;
 
+    template <class _Ty, class _Uty>
+        requires (!is_same_v<_Ty, view_interface<_Uty>>)
+    void _Strictly_derived_from_view_interface_impl(view_interface<_Uty>*);
+
     _EXPORT_STD template <class _Ty>
-    constexpr bool enable_view =
-        derived_from<_Ty, view_base> || _Strictly_derived_from_specialization_of<_Ty, view_interface>;
+    constexpr bool enable_view = derived_from<_Ty, view_base> || requires {
+        _RANGES _Strictly_derived_from_view_interface_impl<remove_cv_t<_Ty>>(
+            static_cast<remove_cv_t<_Ty>*>(nullptr)); // qualified: avoid ADL, handle incomplete types
+    };
 
     _EXPORT_STD template <class _Ty>
     concept view = range<_Ty> && movable<_Ty> && enable_view<_Ty>;
@@ -7567,10 +7560,6 @@ struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator
     using pointer           = _Pointer;
     using reference         = _Reference;
 };
-
-#if _HAS_CXX17
-_EXPORT_STD struct monostate {};
-#endif // _HAS_CXX17
 
 #if _HAS_CXX23
 template <_Integer_like _Int>

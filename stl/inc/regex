@@ -1670,6 +1670,8 @@ private:
     _Tgt_state_t<_It> _Res;
     vector<_Loop_vals_t> _Loop_vals;
 
+    bool _Do_assert(_Node_assert*);
+    bool _Do_neg_assert(_Node_assert*);
     bool _Do_if(_Node_if*);
     bool _Do_rep0(_Node_rep*, bool);
     bool _Do_rep(_Node_rep*, bool, int);
@@ -1721,27 +1723,27 @@ private:
     // lexing
     [[noreturn]] void _Error(regex_constants::error_type);
 
-    bool _Is_esc() const;
+    bool _Is_esc(_FwdIt) const;
     void _Trans();
     void _Next();
     void _Expect(_Meta_type, regex_constants::error_type);
 
     // parsing
-    int _Do_digits(int _Base, int _Count, regex_constants::error_type _Error_type);
-    bool _DecimalDigits2(regex_constants::error_type _Error_type, int _Count = INT_MAX);
+    int _Do_digits(int _Base, int _Initial, int _Count, regex_constants::error_type _Error_type);
+    bool _DecimalDigits3(regex_constants::error_type _Error_type, int _Initial = 0);
     void _HexDigits(int);
     bool _OctalDigits();
     void _Do_ex_class(_Meta_type);
     bool _CharacterClassEscape(bool);
-    _Prs_ret _ClassEscape2();
-    _Prs_ret _ClassAtom();
+    _Prs_ret _ClassEscape3();
+    _Prs_ret _ClassAtom(bool);
     void _ClassRanges();
     void _CharacterClass();
-    bool _IdentityEscape();
-    bool _IsIdentityEscape() const;
+    bool _IdentityEscape(bool);
+    bool _IsIdentityEscape(bool) const;
     bool _Do_ffn(_Elem);
     bool _Do_ffnx(_Elem);
-    bool _CharacterEscape();
+    bool _CharacterEscape(bool);
     void _AtomEscape();
     void _Do_capture_group();
     void _Do_noncapture_group();
@@ -1781,7 +1783,7 @@ enum _Lang_flags { // describe language properties
     _L_esc_uni    = 0x00000800, // has Unicode escape sequences
     _L_esc_hex    = 0x00001000, // has hexadecimal escape sequences
     _L_esc_oct    = 0x00002000, // has octal escape sequences
-    _L_esc_bsl    = 0x00004000, // has escape backslash in character classes
+    _L_esc_bsp    = 0x00004000, // has backspace escape in character classes
     _L_esc_ffnx   = 0x00008000, // has extra file escapes (\a and \b)
     _L_esc_ffn    = 0x00010000, // has limited file escapes (\[fnrtv])
     _L_esc_wsd    = 0x00020000, // has w, s, and d character set escapes
@@ -1795,7 +1797,8 @@ enum _Lang_flags { // describe language properties
     _L_anch_rstr  = 0x02000000, // anchor restricted to beginning/end
     _L_star_beg   = 0x04000000, // star okay at beginning of RE/expr (BRE)
     _L_empty_grp  = 0x08000000, // empty group allowed (ERE prohibits "()")
-    _L_paren_bal  = 0x10000000, // ')'/'}'/']' special only after '('/'{'/']'
+    _L_paren_bal  = 0x10000000, // ')'/'}' special only after '('/'{'
+    _L_brk_bal    = 0x20000000, // ']' special only after '[' (ERE, BRE); TRANSITION, ABI: same value as _L_brk_rstr
     _L_brk_rstr   = 0x20000000, // ']' not special when first character in set
     _L_mtch_long  = 0x40000000, // find longest match (ERE, BRE)
 };
@@ -3143,6 +3146,28 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Tidy() noexcept { // free memory
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
+bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_assert(_Node_assert* _Node) { // apply assert node
+    _It _Ch = _Tgt_state._Cur;
+    if (_Match_pat(_Node->_Child)) {
+        _Tgt_state._Cur = _Ch;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template <class _BidIt, class _Elem, class _RxTraits, class _It>
+bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_neg_assert(_Node_assert* _Node) { // apply negative assert node
+    _Bt_state_t<_It> _St = _Tgt_state;
+    if (!_Match_pat(_Node->_Child)) {
+        _Tgt_state = _St;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template <class _BidIt, class _Elem, class _RxTraits, class _It>
 bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_if(_Node_if* _Node) { // apply if node
     _Tgt_state_t<_It> _St = _Tgt_state;
 
@@ -3497,7 +3522,7 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Is_wbound() const {
         }
     } else { // --_Cur is not valid
         if (_Tgt_state._Cur == _End) {
-            return (_Mflags & (regex_constants::match_not_bow | regex_constants::match_not_eow)) == 0;
+            return false;
         } else {
             return (_Mflags & regex_constants::match_not_bow) == 0 && _Is_word(*_Tgt_state._Cur);
         }
@@ -3597,20 +3622,15 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
         case _N_end_group:
             break;
 
-        case _N_neg_assert:
         case _N_assert:
             { // check assert
-                _It _Ch              = _Tgt_state._Cur;
-                bool _Neg            = _Nx->_Kind == _N_neg_assert;
-                _Bt_state_t<_It> _St = _Tgt_state;
-                if (_Match_pat(static_cast<_Node_assert*>(_Nx)->_Child) == _Neg) {
-                    // restore initial state and indicate failure
-                    _Tgt_state = _St;
-                    _Failed    = true;
-                } else {
-                    _Tgt_state._Cur = _Ch;
-                }
+                _Failed = !_Do_assert(static_cast<_Node_assert*>(_Nx));
+                break;
+            }
 
+        case _N_neg_assert:
+            { // check negative assert
+                _Failed = !_Do_neg_assert(static_cast<_Node_assert*>(_Nx));
                 break;
             }
 
@@ -3622,9 +3642,13 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
             { // record current position
                 _Node_capture* _Node                 = static_cast<_Node_capture*>(_Nx);
                 _Tgt_state._Grps[_Node->_Idx]._Begin = _Tgt_state._Cur;
-                // CodeQL [SM02323] Comparing unchanging unsigned int _Node->_Idx to decreasing size_t _Idx is safe.
-                for (size_t _Idx = _Tgt_state._Grp_valid.size(); _Node->_Idx < _Idx;) {
-                    _Tgt_state._Grp_valid[--_Idx] = false;
+                if (!(_Sflags
+                        & (regex_constants::basic | regex_constants::extended | regex_constants::grep
+                            | regex_constants::egrep | regex_constants::awk))) {
+                    // CodeQL [SM02323] Comparing unchanging unsigned int _Node->_Idx to decreasing size_t _Idx is safe.
+                    for (size_t _Idx = _Tgt_state._Grp_valid.size(); _Node->_Idx < _Idx;) {
+                        _Tgt_state._Grp_valid[--_Idx] = false;
+                    }
                 }
 
                 break;
@@ -3643,6 +3667,9 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
 
         case _N_back:
             { // check back reference
+                _STL_INTERNAL_CHECK(
+                    (_Sflags & (regex_constants::extended | regex_constants::egrep | regex_constants::awk))
+                    == 0); // these grammars don't have backreferences
                 _Node_back* _Node = static_cast<_Node_back*>(_Nx);
                 if (_Tgt_state._Grp_valid[_Node->_Idx]) { // check for match
                     _It _Res0 = _Tgt_state._Cur;
@@ -3654,6 +3681,8 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Match_pat(_Node_base* _Nx) { // c
                     } else {
                         _Tgt_state._Cur = _Res0;
                     }
+                } else if (_Sflags & (regex_constants::basic | regex_constants::grep)) {
+                    _Failed = true;
                 }
                 break;
             }
@@ -3875,8 +3904,7 @@ template <class _FwdIt, class _Elem, class _RxTraits>
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_Is_esc() const { // assumes _Pat != _End
-    _FwdIt _Ch0 = _Pat;
+bool _Parser<_FwdIt, _Elem, _RxTraits>::_Is_esc(_FwdIt _Ch0) const { // assumes _Ch0 != _End
     return ++_Ch0 != _End
         && ((!(_L_flags & _L_nex_grp) && (*_Ch0 == _Meta_lpar || *_Ch0 == _Meta_rpar))
             || (!(_L_flags & _L_nex_rep) && (*_Ch0 == _Meta_lbr || *_Ch0 == _Meta_rbr)));
@@ -3897,7 +3925,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
     }
     switch (_Char) { // handle special cases
     case _Meta_esc:
-        if (_Is_esc()) { // replace escape sequence
+        if (_Is_esc(_Pat)) { // replace escape sequence
             _FwdIt _Ch0 = _Pat;
             _Mchar      = static_cast<_Meta_type>(_Char = *++_Ch0);
         }
@@ -3941,9 +3969,28 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
 
     case _Meta_dlr:
         { // check if $ is special
-            _FwdIt _Ch0 = _Pat;
-            if ((_L_flags & _L_anch_rstr) && ++_Ch0 != _End && *_Ch0 != _Meta_nl) {
-                _Mchar = _Meta_chr;
+            _FwdIt _Next = _Pat;
+            if ((_L_flags & _L_anch_rstr) && ++_Next != _End) {
+                const bool _Escaped = *_Next == _Meta_esc && _Is_esc(_Next);
+                if (_Escaped) {
+                    ++_Next;
+                }
+
+                // Only the basic and grep grammars set _L_anch_rstr, so _L_alt_pipe and _L_nex_grp must be unset.
+                // Therefore, we don't need to handle "dollar followed by pipe '|' for alternation"
+                // or "dollar followed by non-escaped right parenthesis ')' closing a group" below.
+                _STL_INTERNAL_CHECK((_L_flags & (_L_alt_pipe | _L_nex_grp)) == 0);
+
+                const _Elem _Ch = *_Next;
+                const bool _Is_end_of_alternative =
+                    ((_L_flags & _L_alt_nl) && _Ch == _Meta_nl
+                        && _Disj_count == 0) // dollar followed by newline '\n' for alternation
+                    || (_Escaped && _Ch == _Meta_rpar
+                        && _Disj_count != 0); // dollar followed by (escaped) right parenthesis ')' closing a group
+
+                if (!_Is_end_of_alternative) {
+                    _Mchar = _Meta_chr;
+                }
             }
 
             break;
@@ -3972,7 +4019,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_Next() { // advance to next input character
     if (_Pat != _End) { // advance
-        if (*_Pat == _Meta_esc && _Is_esc()) {
+        if (*_Pat == _Meta_esc && _Is_esc(_Pat)) {
             ++_Pat;
         }
 
@@ -3993,9 +4040,9 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Expect(_Meta_type _St, regex_constants:
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 int _Parser<_FwdIt, _Elem, _RxTraits>::_Do_digits(
-    int _Base, int _Count, regex_constants::error_type _Error_type) { // translate digits to numeric value
+    int _Base, int _Initial, int _Count, regex_constants::error_type _Error_type) { // translate digits to numeric value
     int _Chv;
-    _Val = 0;
+    _Val = _Initial;
     while (_Count != 0 && (_Chv = _Traits.value(_Char, _Base)) != -1) { // append next digit
         if (_Val > (INT_MAX - _Chv) / _Base) {
             _Error(_Error_type);
@@ -4009,21 +4056,21 @@ int _Parser<_FwdIt, _Elem, _RxTraits>::_Do_digits(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_DecimalDigits2(
-    const regex_constants::error_type _Error_type, const int _Count /* = INT_MAX */) { // check for decimal value
-    return _Do_digits(10, _Count, _Error_type) != _Count;
+bool _Parser<_FwdIt, _Elem, _RxTraits>::_DecimalDigits3(
+    const regex_constants::error_type _Error_type, const int _Initial /* = 0 */) { // check for decimal value
+    return _Do_digits(10, _Initial, INT_MAX, _Error_type) != INT_MAX;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_HexDigits(int _Count) { // check for _Count hex digits
-    if (_Do_digits(16, _Count, regex_constants::error_escape) != 0) {
+    if (_Do_digits(16, 0, _Count, regex_constants::error_escape) != 0) {
         _Error(regex_constants::error_escape);
     }
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 bool _Parser<_FwdIt, _Elem, _RxTraits>::_OctalDigits() { // check for up to 3 octal digits
-    return _Do_digits(8, 3, regex_constants::error_escape) != 3;
+    return _Do_digits(8, 0, 3, regex_constants::error_escape) != 3;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -4093,36 +4140,33 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { // 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassEscape2() { // check for class escape
-    if ((_L_flags & _L_esc_bsl) && _Char == _Esc_bsl) { // handle escape backslash if allowed
-        _Val = _Esc_bsl;
+_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassEscape3() { // check for class escape
+    if ((_L_flags & _L_esc_bsp) && _Char == _Esc_ctrl_b) { // handle backspace escape
         _Next();
+        _Val = _Meta_bsp;
         return _Prs_chr;
-    } else if ((_L_flags & _L_esc_wsd) && _CharacterClassEscape(false)) {
-        return _Prs_set;
-    } else if (_DecimalDigits2(regex_constants::error_escape)) { // check for invalid value
-        if (_Val != 0) {
+    } else if ((_L_flags & (_L_bzr_chr | _L_bckr))
+               && (_Val = _Traits.value(_Char, 10)) != -1) { // handle \0 and reject other escaped decimal literals
+        _Next();
+        if (!(_L_flags & _L_bzr_chr) || _Val != 0 || _Traits.value(_Char, 10) != -1) {
             _Error(regex_constants::error_escape);
         }
 
         return _Prs_chr;
+    } else if (_CharacterEscape(true)) {
+        return _Prs_chr;
+    } else if ((_L_flags & _L_esc_wsd) && _CharacterClassEscape(false)) {
+        return _Prs_set;
     }
-    return _CharacterEscape() ? _Prs_chr : _Prs_none;
+
+    _Error(regex_constants::error_escape);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassAtom() { // check for class atom
-    if (_Mchar == _Meta_esc) { // check for valid escape sequence
+_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassAtom(const bool _Initial) { // check for class atom
+    if (_Mchar == _Meta_esc && (_L_flags & (_L_grp_esc | _L_ident_awk))) { // check for valid escape sequence
         _Next();
-        if (_L_flags & _L_grp_esc) {
-            return _ClassEscape2();
-        } else if ((_L_flags & _L_esc_ffn && _Do_ffn(_Char))
-                   || (_L_flags & _L_esc_ffnx && _Do_ffnx(_Char))) { // advance to next character
-            _Next();
-            return _Prs_chr;
-        }
-        _Val = _Meta_esc;
-        return _Prs_chr;
+        return _ClassEscape3();
     } else if (_Mchar == _Meta_lsq) { // check for valid delimited expression
         _Next();
         if (_Mchar == _Meta_colon || _Mchar == _Meta_equal || _Mchar == _Meta_dot) { // handle delimited expression
@@ -4134,7 +4178,10 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassAtom() { // check for class at
             _Val = _Meta_lsq;
             return _Prs_chr;
         }
-    } else if (_Mchar == _Meta_rsq || _Mchar == _Meta_eos) {
+    } else if ((_Mchar == _Meta_rsq
+                   && (!(_L_flags & _L_brk_rstr)
+                       || !_Initial)) // initial ] does not close the class when it is not special
+               || _Mchar == _Meta_eos) {
         return _Prs_none;
     } else { // handle ordinary character
         _Val = _Char;
@@ -4147,10 +4194,12 @@ template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid class ranges
     _Prs_ret _Ret;
 
+    bool _Initial = true;
     for (;;) { // process characters through end of bracket expression
-        if ((_Ret = _ClassAtom()) == _Prs_none) {
+        if ((_Ret = _ClassAtom(_Initial)) == _Prs_none) {
             return;
         }
+        _Initial = false;
 
         if (_Ret == _Prs_chr && _Val == 0 && !(_L_flags & _L_bzr_chr)) {
             _Error(regex_constants::error_escape);
@@ -4160,7 +4209,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid clas
             _Next();
             _Elem _Chr1               = static_cast<_Elem>(_Val);
             const bool _Set_preceding = _Ret == _Prs_set;
-            if ((_Ret = _ClassAtom()) == _Prs_none) { // treat - as ordinary character
+            if ((_Ret = _ClassAtom(false)) == _Prs_none) { // treat - as ordinary character
                 if (!_Set_preceding) {
                     _Nfa._Add_char_to_class(_Chr1);
                 }
@@ -4209,10 +4258,6 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClass() { // add bracket expre
         _Next();
     }
 
-    if ((_L_flags & _L_brk_rstr) && _Mchar == _Meta_rsq) { // insert initial ] when not special
-        _Nfa._Add_char_to_class(_Meta_rsq);
-        _Next();
-    }
     _ClassRanges();
 }
 
@@ -4278,7 +4323,9 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Wrapped_disjunction() { // add disjunct
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_IsIdentityEscape() const { // check for valid identity escape
+bool _Parser<_FwdIt, _Elem, _RxTraits>::_IsIdentityEscape(bool _In_character_class) const {
+    // check for valid identity escape
+
     if (_L_flags & _L_ident_ECMA) {
         // ECMAScript identity escape characters
         switch (_Char) {
@@ -4296,26 +4343,28 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_IsIdentityEscape() const { // check for
     }
 
     switch (_Char) {
+    case _Meta_esc:
+        // BRE, ERE, awk identity escape characters (anywhere in awk)
+        return true;
     case _Meta_dot:
     case _Meta_lsq:
-    case _Meta_esc:
     case _Meta_star:
-    case _Meta_bar:
     case _Meta_caret:
     case _Meta_dlr:
-        // BRE, ERE, awk identity escape characters
-        return true;
+        // BRE, ERE, awk identity escape characters (outside character classes only)
+        return !_In_character_class;
     case _Meta_lpar:
     case _Meta_rpar:
+    case _Meta_bar:
     case _Meta_plus:
     case _Meta_query:
     case _Meta_lbr:
     case _Meta_rbr:
-        // additional ERE identity escape characters
-        return (_L_flags & _L_ident_ERE) != 0;
+        // additional ERE identity escape characters (outside character classes only)
+        return (_L_flags & _L_ident_ERE) != 0 && !_In_character_class;
     case '"':
     case '/':
-        // additional awk identity escape characters
+        // additional awk identity escape characters (anywhere)
         return (_L_flags & _L_ident_awk) != 0;
     default:
         return false;
@@ -4323,8 +4372,9 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_IsIdentityEscape() const { // check for
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_IdentityEscape() { // check whether an escape is valid, and process it if so
-    if (_IsIdentityEscape()) {
+bool _Parser<_FwdIt, _Elem, _RxTraits>::_IdentityEscape(bool _In_character_class) {
+    // check whether an escape is valid, and process it if so
+    if (_IsIdentityEscape(_In_character_class)) {
         _Val = _Char;
         _Next();
         return true;
@@ -4366,7 +4416,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ffnx(_Elem _Ch) { // check for the r
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape() { // check for valid character escape
+bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape(bool _In_character_class) { // check for valid character escape
     if (_Mchar == _Meta_eos) {
         _Error(regex_constants::error_escape);
     }
@@ -4392,7 +4442,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape() { // check for valid 
             _Error(regex_constants::error_escape);
         }
     } else {
-        return _IdentityEscape();
+        return _IdentityEscape(_In_character_class);
     }
 
     if (_STD _Max_limit<typename _RxTraits::_Uelem>() < static_cast<unsigned int>(_Val)) {
@@ -4405,23 +4455,28 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape() { // check for valid 
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom escape
-    constexpr int _Bre_max_backref_digits = 1;
-    if ((_L_flags & _L_bckr)
-        && _DecimalDigits2(regex_constants::error_backref,
-            (_L_flags & _L_lim_bckr) ? _Bre_max_backref_digits : INT_MAX)) { // check for valid back reference
-        if (_Val == 0) { // handle \0
-            if (!(_L_flags & _L_bzr_chr)) {
+    if ((_L_flags & (_L_bzr_chr | _L_bckr)) && (_Val = _Traits.value(_Char, 10)) != -1) { // escaped decimal sequence
+        _Next();
+        if ((_L_flags & _L_bzr_chr) && _Val == 0) { // handle \0
+            if (_Traits.value(_Char, 10) != -1) {
                 _Error(regex_constants::error_escape);
-            } else {
-                _Nfa._Add_char2(static_cast<_Elem>(_Val));
             }
-        } else if (_Grp_idx < static_cast<size_t>(_Val) || _Finished_grps.size() <= static_cast<size_t>(_Val)
-                   || !_Finished_grps[static_cast<size_t>(_Val)]) {
-            _Error(regex_constants::error_backref);
-        } else {
-            _Nfa._Add_backreference(static_cast<size_t>(_Val));
+            _Nfa._Add_char2(_Elem{});
+        } else if (_L_flags & _L_bckr) { // check for valid backreference
+            if (!(_L_flags & _L_lim_bckr)) {
+                (void) _DecimalDigits3(regex_constants::error_backref, _Val);
+            }
+
+            if (_Val == 0) {
+                _Error(regex_constants::error_escape);
+            } else if (_Grp_idx < static_cast<size_t>(_Val) || _Finished_grps.size() <= static_cast<size_t>(_Val)
+                       || !_Finished_grps[static_cast<size_t>(_Val)]) {
+                _Error(regex_constants::error_backref);
+            } else {
+                _Nfa._Add_backreference(static_cast<size_t>(_Val));
+            }
         }
-    } else if (_CharacterEscape()) {
+    } else if (_CharacterEscape(false)) {
         _Nfa._Add_char2(static_cast<_Elem>(_Val));
     } else if (!(_L_flags & _L_esc_wsd) || !_CharacterClassEscape(true)) {
         _Error(regex_constants::error_escape);
@@ -4439,7 +4494,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier 
             _Max = 1;
         } else if (_Mchar == _Meta_lbr) { // check for valid bracketed value
             _Next();
-            if (!_DecimalDigits2(regex_constants::error_badbrace)) {
+            if (!_DecimalDigits3(regex_constants::error_badbrace)) {
                 _Error(regex_constants::error_badbrace);
             }
 
@@ -4449,7 +4504,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier 
             } else { // check for decimal constant following comma
                 _Next();
                 if (_Mchar != _Meta_rbr) {
-                    if (!_DecimalDigits2(regex_constants::error_badbrace)) {
+                    if (!_DecimalDigits3(regex_constants::error_badbrace)) {
                         _Error(regex_constants::error_badbrace);
                     }
 
@@ -4526,7 +4581,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alte
             _Error(regex_constants::error_badrepeat);
         } else if (_Mchar == _Meta_rbr && !(_L_flags & _L_paren_bal)) {
             _Error(regex_constants::error_brace);
-        } else if (_Mchar == _Meta_rsq && !(_L_flags & _L_paren_bal)) {
+        } else if (_Mchar == _Meta_rsq && !(_L_flags & _L_brk_bal)) {
             _Error(regex_constants::error_brack);
         } else { // add character
             _Nfa._Add_char2(_Char);
@@ -4655,17 +4710,17 @@ _Parser<_FwdIt, _Elem, _RxTraits>::_Parser(
     : _Pat(_Pfirst), _Begin(_Pfirst), _End(_Plast), _Nfa(_Tr, _Fx), _Traits(_Tr), _Flags(_Fx) {
 
     constexpr unsigned int _ECMA_flags = _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_nc_grp | _L_asrt_gen
-                                       | _L_asrt_wrd | _L_bckr | _L_ngr_rep | _L_esc_uni | _L_esc_hex | _L_esc_bsl
+                                       | _L_asrt_wrd | _L_bckr | _L_ngr_rep | _L_esc_uni | _L_esc_hex | _L_esc_bsp
                                        | _L_esc_ffn | _L_esc_wsd | _L_esc_ctrl | _L_bzr_chr | _L_grp_esc | _L_ident_ECMA
                                        | _L_empty_grp;
 
     constexpr unsigned int _Basic_flags =
-        _L_bckr | _L_lim_bckr | _L_anch_rstr | _L_star_beg | _L_empty_grp | _L_brk_rstr | _L_mtch_long;
+        _L_bckr | _L_lim_bckr | _L_anch_rstr | _L_star_beg | _L_empty_grp | _L_brk_bal | _L_brk_rstr | _L_mtch_long;
 
     constexpr unsigned int _Grep_flags = _Basic_flags | _L_alt_nl | _L_no_nl;
 
-    constexpr unsigned int _Extended_flags =
-        _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_ident_ERE | _L_paren_bal | _L_brk_rstr | _L_mtch_long;
+    constexpr unsigned int _Extended_flags = _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_ident_ERE
+                                           | _L_paren_bal | _L_brk_bal | _L_brk_rstr | _L_mtch_long;
 
     constexpr unsigned int _Awk_flags = _Extended_flags | _L_esc_oct | _L_esc_ffn | _L_esc_ffnx | _L_ident_awk;
 

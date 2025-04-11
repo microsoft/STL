@@ -952,8 +952,19 @@ _NODISCARD constexpr bool operator>=(const _Ty1& _Left, const optional<_Ty2>& _R
 }
 
 #if _HAS_CXX20
+#ifdef __EDG__ // TRANSITION, DevCom-10880933
+template <class _Ty>
+void _Derived_from_optional_impl(const optional<_Ty>&);
+
+template <class _Ty>
+concept _Derived_from_optional = requires(const _Ty& __obj) { _STD _Derived_from_optional_impl(__obj); };
+#else // ^^^ workaround / no workaround vvv
+template <class _Ty>
+concept _Derived_from_optional = requires(const _Ty& __obj) { []<class _Uty>(const optional<_Uty>&) {}(__obj); };
+#endif // ^^^ no workaround ^^^
+
 _EXPORT_STD template <class _Ty1, class _Ty2>
-    requires (!_Derived_from_specialization_of<_Ty2, optional>) && three_way_comparable_with<_Ty1, _Ty2>
+    requires (!_Derived_from_optional<_Ty2>) && three_way_comparable_with<_Ty1, _Ty2>
 _NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2> operator<=>(const optional<_Ty1>& _Left, const _Ty2& _Right)
     noexcept(noexcept(*_Left <=> _Right)) /* strengthened */ {
     if (_Left) {
