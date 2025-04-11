@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception AND BSL-1.0
 
 
 // Copyright 2018 Ulf Adams
