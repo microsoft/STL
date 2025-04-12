@@ -23,7 +23,7 @@ void bm(benchmark::State& state) {
     vector<T> output(size);
 
     if constexpr (is_floating_point_v<T>) {
-        normal_distribution<T> dis(-100.0, 100.0);
+        normal_distribution<T> dis(0, 100000.0);
         ranges::generate(input, [&] { return dis(gen); });
     } else {
         static_assert(is_unsigned_v<T>, "This avoids signed integers to avoid UB; they shouldn't perform differently");
