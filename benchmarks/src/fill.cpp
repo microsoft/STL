@@ -3,6 +3,7 @@
 #include <memory>
 #include <ranges>
 #include <vector>
+
 namespace {
     template <typename Contained, Contained Value>
     void handwritten_loop(benchmark::State& state) {
