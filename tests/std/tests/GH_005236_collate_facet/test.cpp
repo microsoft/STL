@@ -26,8 +26,8 @@ void test_gh_5236() {
     const wchar_t V  = L'V';
 
     // German phonebook order: "U+00DC" is sorted between U and V in collation order
-    locale loc("de-DE_phoneb");
-    auto& coll = use_facet<collate<wchar_t>>(loc);
+    const locale loc("de-DE_phoneb");
+    const auto& coll = use_facet<collate<wchar_t>>(loc);
 
     assert(coll.compare(&U, &U + 1, &Ue, &Ue + 1) < 0);
     assert(coll.compare(&V, &V + 1, &Ue, &Ue + 1) > 0);
