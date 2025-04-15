@@ -37,6 +37,7 @@ void handwritten_loop_n(benchmark::State& state) {
     }
 }
 
+// Ensure that Contained and Value are ok for std::memset.
 template <typename Contained, Contained Value, template <typename T> typename Alloc>
 void memset_call(benchmark::State& state) {
     const size_t r0 = static_cast<size_t>(state.range(0));
@@ -44,7 +45,7 @@ void memset_call(benchmark::State& state) {
     for ([[maybe_unused]] auto _ : state) {
         benchmark::DoNotOptimize(buffer.data());
         Contained* ptr = buffer.data();
-        std::memset(ptr, Value, r0);
+        std::memset(ptr, Value, r0 * sizeof(Contained));
         benchmark::DoNotOptimize(buffer.data());
     }
 }
