@@ -81,6 +81,8 @@ BENCHMARK(handwritten_loop_n<char, 1>)->Range(0, 1 << 18);
 BENCHMARK(memset_call<char, 0>)->Range(0, 1 << 18);
 BENCHMARK(memset_call<char, 1>)->Range(0, 1 << 18);
 BENCHMARK(std_fill_call<char, 0>)->Range(0, 1 << 18);
+BENCHMARK(std_fill_call<char, 1>)->Range(0, 1 << 18);
 BENCHMARK(std_fill_n_call<char, 0>)->Range(0, 1 << 18);
+BENCHMARK(std_fill_n_call<char, 1>)->Range(0, 1 << 18);
 
 BENCHMARK_MAIN();
