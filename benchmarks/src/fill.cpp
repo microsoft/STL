@@ -8,10 +8,10 @@
 
 #include <skewed_allocator.hpp>
 
-template <typename Contained, Contained Value>
+template <typename Contained, Contained Value, template <typename T> typename Alloc>
 void handwritten_loop(benchmark::State& state) {
     const size_t r0 = static_cast<size_t>(state.range(0));
-    std::vector<Contained, highly_aligned_allocator<Contained>> buffer(r0);
+    std::vector<Contained, Alloc<Contained>> buffer(r0);
     for ([[maybe_unused]] auto _ : state) {
         benchmark::DoNotOptimize(buffer.data());
         Contained* ptr                 = buffer.data();
@@ -23,10 +23,10 @@ void handwritten_loop(benchmark::State& state) {
     }
 }
 
-template <typename Contained, Contained Value>
+template <typename Contained, Contained Value, template <typename T> typename Alloc>
 void handwritten_loop_n(benchmark::State& state) {
     const size_t r0 = static_cast<size_t>(state.range(0));
-    std::vector<Contained, highly_aligned_allocator<Contained>> buffer(r0);
+    std::vector<Contained, Alloc<Contained>> buffer(r0);
     for ([[maybe_unused]] auto _ : state) {
         benchmark::DoNotOptimize(buffer.data());
         Contained* ptr = buffer.data();
@@ -37,10 +37,10 @@ void handwritten_loop_n(benchmark::State& state) {
     }
 }
 
-template <typename Contained, Contained Value>
+template <typename Contained, Contained Value, template <typename T> typename Alloc>
 void memset_call(benchmark::State& state) {
     const size_t r0 = static_cast<size_t>(state.range(0));
-    std::vector<Contained, highly_aligned_allocator<Contained>> buffer(r0);
+    std::vector<Contained, Alloc<Contained>> buffer(r0);
     for ([[maybe_unused]] auto _ : state) {
         benchmark::DoNotOptimize(buffer.data());
         Contained* ptr = buffer.data();
@@ -49,10 +49,10 @@ void memset_call(benchmark::State& state) {
     }
 }
 
-template <typename Contained, Contained Value>
+template <typename Contained, Contained Value, template <typename T> typename Alloc>
 void std_fill_call(benchmark::State& state) {
     const size_t r0 = static_cast<size_t>(state.range(0));
-    std::vector<Contained, highly_aligned_allocator<Contained>> buffer(r0);
+    std::vector<Contained, Alloc<Contained>> buffer(r0);
     for ([[maybe_unused]] auto _ : state) {
         benchmark::DoNotOptimize(buffer.data());
         auto begin_it = buffer.data();
@@ -62,10 +62,10 @@ void std_fill_call(benchmark::State& state) {
     }
 }
 
-template <typename Contained, Contained Value>
+template <typename Contained, Contained Value, template <typename T> typename Alloc>
 void std_fill_n_call(benchmark::State& state) {
     const size_t r0 = static_cast<size_t>(state.range(0));
-    std::vector<Contained, not_highly_aligned_allocator<Contained>> buffer(r0);
+    std::vector<Contained, Alloc<Contained>> buffer(r0);
     for ([[maybe_unused]] auto _ : state) {
         benchmark::DoNotOptimize(buffer.data());
         auto begin_it = buffer.data();
@@ -74,15 +74,31 @@ void std_fill_n_call(benchmark::State& state) {
     }
 }
 
-BENCHMARK(handwritten_loop<char, 0>)->Range(0, 1 << 18);
-BENCHMARK(handwritten_loop<char, 1>)->Range(0, 1 << 18);
-BENCHMARK(handwritten_loop_n<char, 0>)->Range(0, 1 << 18);
-BENCHMARK(handwritten_loop_n<char, 1>)->Range(0, 1 << 18);
-BENCHMARK(memset_call<char, 0>)->Range(0, 1 << 18);
-BENCHMARK(memset_call<char, 1>)->Range(0, 1 << 18);
-BENCHMARK(std_fill_call<char, 0>)->Range(0, 1 << 18);
-BENCHMARK(std_fill_call<char, 1>)->Range(0, 1 << 18);
-BENCHMARK(std_fill_n_call<char, 0>)->Range(0, 1 << 18);
-BENCHMARK(std_fill_n_call<char, 1>)->Range(0, 1 << 18);
+// Short equal-length aliases to condense benchmark output:
+template <typename T>
+using HiAl = highly_aligned_allocator<T>;
+template <typename T>
+using NoAl = not_highly_aligned_allocator<T>;
+
+BENCHMARK(handwritten_loop<char, 0, HiAl>)->Range(0, 1 << 18);
+BENCHMARK(handwritten_loop<char, 0, NoAl>)->Range(0, 1 << 18);
+BENCHMARK(handwritten_loop<char, 1, HiAl>)->Range(0, 1 << 18);
+BENCHMARK(handwritten_loop<char, 1, NoAl>)->Range(0, 1 << 18);
+BENCHMARK(handwritten_loop_n<char, 0, HiAl>)->Range(0, 1 << 18);
+BENCHMARK(handwritten_loop_n<char, 0, NoAl>)->Range(0, 1 << 18);
+BENCHMARK(handwritten_loop_n<char, 1, HiAl>)->Range(0, 1 << 18);
+BENCHMARK(handwritten_loop_n<char, 1, NoAl>)->Range(0, 1 << 18);
+BENCHMARK(memset_call<char, 0, HiAl>)->Range(0, 1 << 18);
+BENCHMARK(memset_call<char, 0, NoAl>)->Range(0, 1 << 18);
+BENCHMARK(memset_call<char, 1, HiAl>)->Range(0, 1 << 18);
+BENCHMARK(memset_call<char, 1, NoAl>)->Range(0, 1 << 18);
+BENCHMARK(std_fill_call<char, 0, HiAl>)->Range(0, 1 << 18);
+BENCHMARK(std_fill_call<char, 0, NoAl>)->Range(0, 1 << 18);
+BENCHMARK(std_fill_call<char, 1, HiAl>)->Range(0, 1 << 18);
+BENCHMARK(std_fill_call<char, 1, NoAl>)->Range(0, 1 << 18);
+BENCHMARK(std_fill_n_call<char, 0, HiAl>)->Range(0, 1 << 18);
+BENCHMARK(std_fill_n_call<char, 0, NoAl>)->Range(0, 1 << 18);
+BENCHMARK(std_fill_n_call<char, 1, HiAl>)->Range(0, 1 << 18);
+BENCHMARK(std_fill_n_call<char, 1, NoAl>)->Range(0, 1 << 18);
 
 BENCHMARK_MAIN();
