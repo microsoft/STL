@@ -23,20 +23,6 @@ void handwritten_loop(benchmark::State& state) {
     }
 }
 
-template <typename Contained, Contained Value, size_t Size>
-void handwritten_loop_const_size(benchmark::State& state) {
-    std::vector<Contained, not_highly_aligned_allocator<Contained>> buffer(Size);
-    for ([[maybe_unused]] auto _ : state) {
-        benchmark::DoNotOptimize(buffer.data());
-        Contained* ptr                 = buffer.data();
-        const Contained* const ptr_end = ptr + Size;
-        while (ptr != ptr_end) {
-            *ptr++ = Value;
-        }
-        benchmark::DoNotOptimize(buffer.data());
-    }
-}
-
 template <typename Contained, Contained Value>
 void handwritten_loop_n(benchmark::State& state) {
     const size_t r0 = static_cast<size_t>(state.range(0));
@@ -45,19 +31,6 @@ void handwritten_loop_n(benchmark::State& state) {
         benchmark::DoNotOptimize(buffer.data());
         Contained* ptr = buffer.data();
         for (size_t idx = 0; idx < r0; ++idx) {
-            ptr[idx] = Value;
-        }
-        benchmark::DoNotOptimize(buffer.data());
-    }
-}
-
-template <typename Contained, Contained Value, size_t Size>
-void handwritten_loop_n_const_size(benchmark::State& state) {
-    std::vector<Contained, not_highly_aligned_allocator<Contained>> buffer(Size);
-    for ([[maybe_unused]] auto _ : state) {
-        benchmark::DoNotOptimize(buffer.data());
-        Contained* ptr = buffer.data();
-        for (size_t idx = 0; idx < Size; ++idx) {
             ptr[idx] = Value;
         }
         benchmark::DoNotOptimize(buffer.data());
@@ -103,26 +76,8 @@ void std_fill_n_call(benchmark::State& state) {
 
 BENCHMARK(handwritten_loop<char, 0>)->Range(0, 1 << 18);
 BENCHMARK(handwritten_loop<char, 1>)->Range(0, 1 << 18);
-BENCHMARK(handwritten_loop_const_size<char, 0, 0>);
-BENCHMARK(handwritten_loop_const_size<char, 0, 1>);
-BENCHMARK(handwritten_loop_const_size<char, 0, 8>);
-BENCHMARK(handwritten_loop_const_size<char, 0, 64>);
-BENCHMARK(handwritten_loop_const_size<char, 0, 512>);
-BENCHMARK(handwritten_loop_const_size<char, 0, 1000>);
-BENCHMARK(handwritten_loop_const_size<char, 0, 4096>);
-BENCHMARK(handwritten_loop_const_size<char, 0, 32768>);
-BENCHMARK(handwritten_loop_const_size<char, 0, 262144>);
 BENCHMARK(handwritten_loop_n<char, 0>)->Range(0, 1 << 18);
 BENCHMARK(handwritten_loop_n<char, 1>)->Range(0, 1 << 18);
-BENCHMARK(handwritten_loop_n_const_size<char, 0, 0>);
-BENCHMARK(handwritten_loop_n_const_size<char, 0, 1>);
-BENCHMARK(handwritten_loop_n_const_size<char, 0, 8>);
-BENCHMARK(handwritten_loop_n_const_size<char, 0, 64>);
-BENCHMARK(handwritten_loop_n_const_size<char, 0, 512>);
-BENCHMARK(handwritten_loop_n_const_size<char, 0, 1000>);
-BENCHMARK(handwritten_loop_n_const_size<char, 0, 4096>);
-BENCHMARK(handwritten_loop_n_const_size<char, 0, 32768>);
-BENCHMARK(handwritten_loop_n_const_size<char, 0, 262144>);
 BENCHMARK(memset_call<char, 0>)->Range(0, 1 << 18);
 BENCHMARK(memset_call<char, 1>)->Range(0, 1 << 18);
 BENCHMARK(std_fill_call<char, 0>)->Range(0, 1 << 18);
