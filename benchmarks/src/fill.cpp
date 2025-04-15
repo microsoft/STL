@@ -50,6 +50,7 @@ void handwritten_loop_n(benchmark::State& state) {
         benchmark::DoNotOptimize(buffer.data());
     }
 }
+
 template <typename Contained, Contained Value, size_t Size>
 void handwritten_loop_n_const_size(benchmark::State& state) {
     std::vector<Contained, not_highly_aligned_allocator<Contained>> buffer(Size);
@@ -74,6 +75,7 @@ void memset_call(benchmark::State& state) {
         benchmark::DoNotOptimize(buffer.data());
     }
 }
+
 template <typename Contained, Contained Value>
 void std_fill_call(benchmark::State& state) {
     const size_t r0 = static_cast<size_t>(state.range(0));
@@ -125,6 +127,5 @@ BENCHMARK(memset_call<char, 0>)->Range(0, 1 << 18);
 BENCHMARK(memset_call<char, 1>)->Range(0, 1 << 18);
 BENCHMARK(std_fill_call<char, 0>)->Range(0, 1 << 18);
 BENCHMARK(std_fill_n_call<char, 0>)->Range(0, 1 << 18);
-
 
 BENCHMARK_MAIN();
