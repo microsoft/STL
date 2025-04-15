@@ -46,23 +46,15 @@ set_property(CACHE STL_BENCHMARK_MSVC_RUNTIME_LIBRARY
 )
 set(CMAKE_MSVC_RUNTIME_LIBRARY "${STL_BENCHMARK_MSVC_RUNTIME_LIBRARY}")
 
-set(STL_BENCHMARK_ITERATOR_DEBUG_LEVEL
-    default
-    CACHE STRING "What level of iterator debugging to use."
-)
-set_property(CACHE STL_BENCHMARK_ITERATOR_DEBUG_LEVEL
-    PROPERTY STRINGS
-    "default;0;1;2"
-)
-
-if(NOT STL_BENCHMARK_ITERATOR_DEBUG_LEVEL STREQUAL "default")
-    add_compile_definitions("_ITERATOR_DEBUG_LEVEL=${STL_BENCHMARK_ITERATOR_DEBUG_LEVEL}")
-endif()
-
-set(CMAKE_BUILD_TYPE RelWithDebInfo)
+# Building the benchmarks as Release optimizes them with `/O2 /Ob2`.
+# Compiling with `/Zi` and linking with `/DEBUG` below makes profiling possible.
+# (RelWithDebInfo would use `/O2 /Ob1 /Zi`.) See GH-4496.
+set(CMAKE_BUILD_TYPE Release)
 
 # /utf-8 affects <format>.
-add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/WX;/w14265;/w15038;/w15262;/utf-8;/Zc:preprocessor>")
+add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/Zi;/nologo;/diagnostics:caret;/W4;/WX;/w14265;/w15038;/w15262;/utf-8;/Zc:preprocessor>")
+
+add_link_options("/DEBUG")
 
 if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/google-benchmark/.git")
     message(FATAL_ERROR "google-benchmark is not checked out; make sure to run\n    git submodule update --init benchmarks/google-benchmark")
@@ -72,15 +64,13 @@ set(BENCHMARK_ENABLE_DOXYGEN OFF)
 set(BENCHMARK_ENABLE_INSTALL OFF)
 set(BENCHMARK_ENABLE_TESTING OFF)
 
-set(HAVE_GNU_POSIX_REGEX OFF)
-set(HAVE_POSIX_REGEX OFF)
-
 add_subdirectory(google-benchmark EXCLUDE_FROM_ALL)
 
 set(benchmark_headers
+    "inc/lorem.hpp"
+    "inc/skewed_allocator.hpp"
     "inc/udt.hpp"
     "inc/utility.hpp"
-    "inc/xoshiro.hpp"
 )
 
 function(add_benchmark name)
@@ -114,6 +104,7 @@ add_benchmark(efficient_nonlocking_print src/efficient_nonlocking_print.cpp)
 add_benchmark(filesystem src/filesystem.cpp)
 add_benchmark(find_and_count src/find_and_count.cpp)
 add_benchmark(find_first_of src/find_first_of.cpp)
+add_benchmark(has_single_bit src/has_single_bit.cpp)
 add_benchmark(iota src/iota.cpp)
 add_benchmark(locale_classic src/locale_classic.cpp)
 add_benchmark(minmax_element src/minmax_element.cpp)
@@ -130,7 +121,6 @@ add_benchmark(std_copy src/std_copy.cpp)
 add_benchmark(sv_equal src/sv_equal.cpp)
 add_benchmark(swap_ranges src/swap_ranges.cpp)
 add_benchmark(unique src/unique.cpp)
-
-add_benchmark(vector_bool_copy src/std/containers/sequences/vector.bool/copy/test.cpp)
-add_benchmark(vector_bool_copy_n src/std/containers/sequences/vector.bool/copy_n/test.cpp)
-add_benchmark(vector_bool_move src/std/containers/sequences/vector.bool/move/test.cpp)
+add_benchmark(vector_bool_copy src/vector_bool_copy.cpp)
+add_benchmark(vector_bool_copy_n src/vector_bool_copy_n.cpp)
+add_benchmark(vector_bool_move src/vector_bool_move.cpp)
