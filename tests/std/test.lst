@@ -258,6 +258,7 @@ tests\GH_005090_stl_hardening
 tests\GH_005204_regex_collating_ranges
 tests\GH_005244_regex_escape_sequences
 tests\GH_005315_destructor_tombstones
+tests\GH_005402_string_with_volatile_range
 tests\LWG2381_num_get_floating_point
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
