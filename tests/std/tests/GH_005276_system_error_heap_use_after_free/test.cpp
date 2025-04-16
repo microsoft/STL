@@ -10,8 +10,8 @@ using namespace std;
 using namespace chrono;
 
 int main() {
-    string str{"abc"};
-    error_code ec{2, system_category()};
+    const string str{"abc"};
+    const error_code ec{2, system_category()};
     {
         system_error syserr1{ec};
         assert(syserr1.what() == "system error"sv);
