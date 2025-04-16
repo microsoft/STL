@@ -9,6 +9,7 @@
 using namespace std;
 using namespace chrono;
 
+// GH-5276 <system_error>: heap-use-after-free for _HAS_EXCEPTIONS=0
 int main() {
     const string str{"abc"};
     const error_code ec{2, system_category()};
