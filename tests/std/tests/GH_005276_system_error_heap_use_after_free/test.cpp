@@ -12,12 +12,37 @@ using namespace chrono;
 int main() {
     string str{"abc"};
     error_code ec{2, system_category()};
-    system_error syserr{ec};
-    assert(syserr.what() == "system error"sv);
+    {
+        system_error syserr1{ec};
+        assert(syserr1.what() == "system error"sv);
+    }
+    {
+        system_error syserr2{ec, str};
+        assert(syserr2.what() == "system error"sv);
+    }
+    {
+        system_error syserr3{ec, "meow"};
+        assert(syserr3.what() == "system error"sv);
+    }
+    {
+        system_error syserr4{2, system_category()};
+        assert(syserr4.what() == "system error"sv);
+    }
+    {
+        system_error syserr5{2, system_category(), str};
+        assert(syserr5.what() == "system error"sv);
+    }
+    {
+        system_error syserr6{2, system_category(), "meow"};
+        assert(syserr6.what() == "system error"sv);
+    }
 
-    ambiguous_local_time alt{local_seconds{}, local_info{}};
-    assert(alt.what() == "ambiguous local time"sv);
-
-    nonexistent_local_time nlt{local_seconds{}, local_info{}};
-    assert(nlt.what() == "nonexistent local time"sv);
+    {
+        ambiguous_local_time alt{local_seconds{}, local_info{}};
+        assert(alt.what() == "ambiguous local time"sv);
+    }
+    {
+        nonexistent_local_time nlt{local_seconds{}, local_info{}};
+        assert(nlt.what() == "nonexistent local time"sv);
+    }
 }
