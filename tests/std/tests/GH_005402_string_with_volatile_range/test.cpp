@@ -118,15 +118,20 @@ void test() {
 
 int main() {
     test<string>();
-    test<pmr::string>();
 #ifdef __cpp_char8_t
     test<u8string>();
-    test<pmr::u8string>();
 #endif // defined(__cpp_char8_t)
     test<u16string>();
-    test<pmr::u16string>();
     test<u32string>();
-    test<pmr::u32string>();
     test<wstring>();
+
+#if _HAS_CXX17
+    test<pmr::string>();
+#ifdef __cpp_char8_t
+    test<pmr::u8string>();
+#endif // defined(__cpp_char8_t)
+    test<pmr::u16string>();
+    test<pmr::u32string>();
     test<pmr::wstring>();
+#endif // _HAS_CXX17
 }
