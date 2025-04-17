@@ -629,6 +629,7 @@ public:
                     _Temp = (_Temp >> 31) + (_Temp & _Mx);
                     _Temp = _Temp < _Mx ? _Temp : _Temp - _Mx;
                 }
+
                 if (_Nskip >>= 1) {
                     _Mul = _Mul * _Mul;
                     _Mul = (_Mul >> 31) + (_Mul & _Mx);
