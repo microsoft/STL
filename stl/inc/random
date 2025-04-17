@@ -2782,10 +2782,13 @@ public:
         void _Init(_Ty1 _Mean0) noexcept { // set internal state
             _STL_ASSERT(0.0 < _Mean0, "invalid mean argument for poisson_distribution");
             _Mean = _Mean0;
+            if (_Mean0 < 12.0) {
+                _Small._Init(_Mean0);
+                return;
+            }
             _Sqrt = _CSTD sqrt(2.0 * _Mean0);
             _Logm = _CSTD log(_Mean0);
             _Gx1  = _Mean0 * _Logm - _XLgamma(_Mean0 + 1.0);
-            _Small._Init(_Mean0);
         }
 
         _Ty1 _Mean;
