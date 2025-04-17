@@ -232,9 +232,6 @@ std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 
 # P0429R9 <flat_map>
 
-# FIXME! static_assert(!CanIndex<TransparentMap, NonConvertibleTransparent<int>>);
-std/containers/container.adaptors/flat.map/flat.map.access/index_transparent.pass.cpp FAIL
-
 # FIXME! static_assert(!CanEmplace<Map, Emplaceable>);
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/emplace.pass.cpp FAIL
 

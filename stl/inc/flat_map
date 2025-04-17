@@ -1119,20 +1119,21 @@ public:
     }
 
     // [flat.map.access] Access
-    _NODISCARD mapped_type& operator[](const key_type& _Key_val)
+    mapped_type& operator[](const key_type& _Key_val)
         requires is_default_constructible_v<mapped_type>
     {
         return this->try_emplace(_Key_val).first->second;
     }
-    _NODISCARD mapped_type& operator[](key_type&& _Key_val)
+    mapped_type& operator[](key_type&& _Key_val)
         requires is_default_constructible_v<mapped_type>
     {
         return this->try_emplace(_STD move(_Key_val)).first->second;
     }
 
     template <class _OtherKey>
-    _NODISCARD mapped_type& operator[](_OtherKey&& _Key_val)
-        requires _Is_transparent_v<key_compare>
+    mapped_type& operator[](_OtherKey&& _Key_val)
+        requires _Is_transparent_v<key_compare> && is_constructible_v<key_type, _OtherKey>
+              && is_default_constructible_v<mapped_type>
     {
         return this->try_emplace(_STD forward<_OtherKey>(_Key_val)).first->second;
     }
