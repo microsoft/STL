@@ -304,7 +304,9 @@ private:
 
     void _Assign(any _That) noexcept { // intentionally pass by value
         reset();
-        _Move_from(_That);
+        if (this != &_That) {
+            _Move_from(_That);
+        }
     }
 
     template <class _Decayed, class... _Types>
