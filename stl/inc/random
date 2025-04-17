@@ -2779,10 +2779,12 @@ public:
             return _Mean;
         }
 
+        static constexpr double _Small_threshold = 12.0;
+
         void _Init(_Ty1 _Mean0) noexcept { // set internal state
             _STL_ASSERT(0.0 < _Mean0, "invalid mean argument for poisson_distribution");
             _Mean = _Mean0;
-            if (_Mean0 < 12.0) {
+            if (_Mean0 < _Small_threshold) {
                 _Small._Init(_Mean0);
                 return;
             }
@@ -2871,7 +2873,7 @@ public:
 private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
-        if (_Par0._Mean < 12.0) {
+        if (_Par0._Mean < param_type::_Small_threshold) {
             return _Par0._Small(_Eng);
         }
 
