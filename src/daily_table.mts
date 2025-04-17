@@ -2060,10 +2060,11 @@ export const daily_table: DailyRow[] = [
     { date: '2025-04-08', merged: 22.95, pr: 27, cxx20: null, cxx23: 6, cxx26: 72, lwg: 6, issue: 433, bug: 152, sum_age: 14.94, } as DailyRow,
     { date: '2025-04-09', merged: 27.40, pr: 22, cxx20: null, cxx23: 6, cxx26: 72, lwg: 6, issue: 431, bug: 149, sum_age: 13.50, } as DailyRow,
     { date: '2025-04-10', merged: 42.85, pr: 9, cxx20: null, cxx23: 6, cxx26: 71, lwg: 6, issue: 426, bug: 147, sum_age: 7.56, } as DailyRow,
-    { date: '2025-04-11', merged: 42.30, pr: 10, cxx20: null, cxx23: 6, cxx26: 71, lwg: 6, issue: 426, bug: 147, sum_age: 7.89, } as DailyRow,
-    { date: '2025-04-12', merged: 41.77, pr: 12, cxx20: null, cxx23: 6, cxx26: 71, lwg: 6, issue: 426, bug: 147, sum_age: 8.26, } as DailyRow,
-    { date: '2025-04-13', merged: 41.11, pr: 15, cxx20: null, cxx23: 6, cxx26: 71, lwg: 6, issue: 426, bug: 147, sum_age: 8.71, } as DailyRow,
-    { date: '2025-04-14', merged: 39.86, pr: 15, cxx20: null, cxx23: 6, cxx26: 71, lwg: 6, issue: 426, bug: 147, sum_age: 9.21, } as DailyRow,
-    { date: '2025-04-15', merged: 38.61, pr: 15, cxx20: null, cxx23: 6, cxx26: 71, lwg: 6, issue: 427, bug: 147, sum_age: 9.71, } as DailyRow,
+    { date: '2025-04-11', merged: 42.30, pr: 10, cxx20: null, cxx23: 6, cxx26: 71, lwg: 6, issue: 426, bug: 148, sum_age: 7.89, } as DailyRow,
+    { date: '2025-04-12', merged: 41.77, pr: 12, cxx20: null, cxx23: 6, cxx26: 71, lwg: 6, issue: 426, bug: 148, sum_age: 8.26, } as DailyRow,
+    { date: '2025-04-13', merged: 41.11, pr: 15, cxx20: null, cxx23: 6, cxx26: 71, lwg: 6, issue: 426, bug: 148, sum_age: 8.71, } as DailyRow,
+    { date: '2025-04-14', merged: 39.86, pr: 15, cxx20: null, cxx23: 6, cxx26: 71, lwg: 6, issue: 426, bug: 148, sum_age: 9.21, } as DailyRow,
+    { date: '2025-04-15', merged: 38.61, pr: 15, cxx20: null, cxx23: 6, cxx26: 71, lwg: 6, issue: 427, bug: 148, sum_age: 9.71, } as DailyRow,
+    { date: '2025-04-16', merged: 37.36, pr: 16, cxx20: null, cxx23: 6, cxx26: 71, lwg: 6, issue: 426, bug: 148, sum_age: 10.24, } as DailyRow,
 ];
 // Generated file - DO NOT EDIT manually!
