@@ -2740,7 +2740,7 @@ public:
     }
 
 private:
-    _Ty1 _Gx0;
+    _Ty1 _Gx0 = 0.0;
 };
 
 _EXPORT_STD template <class _Ty = int>
@@ -2793,10 +2793,10 @@ public:
             _Gx1  = _Mean0 * _Logm - _XLgamma(_Mean0 + 1.0);
         }
 
-        _Ty1 _Mean;
-        _Ty1 _Sqrt;
-        _Ty1 _Logm;
-        _Ty1 _Gx1;
+        _Ty1 _Mean = 0.0;
+        _Ty1 _Sqrt = 0.0;
+        _Ty1 _Logm = 0.0;
+        _Ty1 _Gx1  = 0.0;
 
         _Small_poisson_distribution<_Ty> _Small;
     };
