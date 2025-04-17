@@ -621,7 +621,7 @@ public:
             // for minstd_rand and minstd_rand0 we can improve performance by
             // performing fast exponentiation and avoiding constant divisions
             auto _Temp = static_cast<unsigned long long>(_Prev);
-            auto _Mul = static_cast<unsigned long long>(_Ax);
+            auto _Mul  = static_cast<unsigned long long>(_Ax);
 
             for (;;) {
                 if (_Nskip & 1) {
@@ -638,15 +638,15 @@ public:
                 }
             }
 
-          _Prev = static_cast<_Uint>(_Temp);
+            _Prev = static_cast<_Uint>(_Temp);
         } else {
-          auto _Temp = _Prev;
+            auto _Temp = _Prev;
 
-          for (; 0 < _Nskip; --_Nskip) {
-              _Temp = _Next_linear_congruential_value<_Uint, _Ax, _Cx, _Mx>(_Temp);
-          }
+            for (; 0 < _Nskip; --_Nskip) {
+                _Temp = _Next_linear_congruential_value<_Uint, _Ax, _Cx, _Mx>(_Temp);
+            }
 
-          _Prev = _Temp;
+            _Prev = _Temp;
         }
     }
 
