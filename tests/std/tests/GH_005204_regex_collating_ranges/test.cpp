@@ -363,13 +363,13 @@ public:
 
 using gh_994_regex = basic_regex<char, gh_994_regex_traits>;
 
-void gh_994_verify_match(const std::string& subject, const std::string& pattern, const bool correct,
-    const std::regex_constants::syntax_option_type syntax = ECMAScript) {
+void gh_994_verify_match(
+    const string& subject, const string& pattern, const bool correct, const syntax_option_type syntax = ECMAScript) {
 
     gh_994_regex r;
     try {
         r.assign(pattern, syntax);
-    } catch (const std::regex_error& e) {
+    } catch (const regex_error& e) {
         printf(R"(Failed to construct regex("%s", 0x%X) for traits gh_994_regex_traits: "%s")"
                "\n",
             pattern.c_str(), static_cast<unsigned int>(syntax), e.what());
