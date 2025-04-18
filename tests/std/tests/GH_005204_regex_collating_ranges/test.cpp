@@ -545,7 +545,7 @@ void test_gh_994() {
     g_regexTester.should_throw("[c-[=z=]]", error_range);
     g_regexTester.should_throw("[[=a=]-[=z=]]", error_range);
 
-#ifdef SKIP_COLLATE_TESTS
+#ifndef SKIP_COLLATE_TESTS
     g_regexTester.should_match("a", "[[=a=]]");
     g_regexTester.should_match("A", "[[=a=]]");
     g_regexTester.should_not_match("b", "[[=a=]]");
