@@ -1692,7 +1692,7 @@ private:
     bool _Match_pat(_Node_base*);
     bool _Better_match();
     bool _Is_wbound() const;
-    typename _RxTraits::char_class_type _Lookup_char_class(_Elem);
+    typename _RxTraits::char_class_type _Lookup_char_class(_Elem) const;
 
     unsigned int _Get_ncap() const;
 
@@ -3561,7 +3561,7 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Is_wbound() const {
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
 typename _RxTraits::char_class_type _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Lookup_char_class(
-    const _Elem _Class_name) {
+    const _Elem _Class_name) const {
     // look up character class with single-character name
     auto _Ptr = _STD addressof(_Class_name);
     return _Traits.lookup_classname(_Ptr, _Ptr + 1, (_Sflags & regex_constants::icase) != 0);
