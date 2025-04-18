@@ -541,11 +541,11 @@ void test_gh_994() {
     gh_994_should_throw("[a-[.cs.]]", error_range);
     gh_994_should_throw("[[.cs.]-[.dzs.]]", error_range);
 
+#ifndef SKIP_COLLATE_TESTS
     g_regexTester.should_throw("[[=a=]-c]", error_range);
     g_regexTester.should_throw("[c-[=z=]]", error_range);
     g_regexTester.should_throw("[[=a=]-[=z=]]", error_range);
 
-#ifndef SKIP_COLLATE_TESTS
     g_regexTester.should_match("a", "[[=a=]]");
     g_regexTester.should_match("A", "[[=a=]]");
     g_regexTester.should_not_match("b", "[[=a=]]");
