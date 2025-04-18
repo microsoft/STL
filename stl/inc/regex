@@ -3460,7 +3460,7 @@ _BidIt _Lookup_coll2(_Elem _First_ch, _BidIt _First, const _BidIt _Last, const _
         // match input character sequence to stored collating elements
         if (_Str.size() >= _Size) {
             const _Elem* const _Str_first = _Str.data();
-            const _Elem* const _Str_last  = _Str.data() + _Size;
+            const _Elem* const _Str_last  = _Str_first + _Size;
             const _Elem* _Current         = _Seq->_Data._Str();
             for (auto _Remaining = _Seq->_Data._Size(); _Remaining >= _Size; _Current += _Size, _Remaining -= _Size) {
                 if (_STD equal(_Str_first, _Str_last, _Current)) {
