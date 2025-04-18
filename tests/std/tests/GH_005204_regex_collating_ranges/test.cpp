@@ -339,7 +339,6 @@ void test_collating_ranges_german() {
 }
 
 class gh_994_regex_traits : public regex_traits<char> {
-
 public:
     template <class FwdIt>
     string_type lookup_collatename(FwdIt first, FwdIt last) const {
@@ -401,7 +400,6 @@ void gh_994_should_throw(
                "\n",
             pattern.c_str(), static_cast<unsigned int>(syntax));
         g_regexTester.fail_regex();
-
     } catch (const regex_error& e) {
         if (e.code() != expected_code) {
             printf(R"(regex r("%s", 0x%X) threw 0x%X for traits gh_994_regex_traits; expected 0x%X)"
