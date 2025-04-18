@@ -382,9 +382,7 @@ public:
 
     template <class _FwdIt>
     string_type lookup_collatename(_FwdIt _First, _FwdIt _Last) const { // map [_First, _Last) to collation element
-        _FwdIt _Next = _First;
-        ++_Next;
-        if (_Next == _Last) {
+        if (_First != _Last && _STD next(_First) == _Last) {
             return string_type{_First, _Last};
         }
         return string_type{};
