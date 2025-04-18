@@ -374,6 +374,7 @@ void gh_994_verify_match(
                "\n",
             pattern.c_str(), static_cast<unsigned int>(syntax), e.what());
         g_regexTester.fail_regex();
+        return;
     }
 
     try {
