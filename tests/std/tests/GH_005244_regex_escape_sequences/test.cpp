@@ -54,6 +54,11 @@ public:
     }
 
     template <class FwdIt>
+    string_type lookup_collatename(FwdIt first, FwdIt last) const {
+        return inner.lookup_collatename(first, last);
+    }
+
+    template <class FwdIt>
     char_class_type lookup_classname(FwdIt first, FwdIt last, bool icase = false) const {
         FwdIt next = first;
         ++next;
