@@ -4136,8 +4136,13 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ex_class2(
     } else {
         typename _RxTraits::string_type _Coll_elem = _Traits.lookup_collatename(_Beg, _End);
         const auto _Size                           = _Coll_elem.size();
-        if (_Size == 0 || _Size > _Max_limit<unsigned int>()) {
-            _Error(_Size ? regex_constants::error_space : regex_constants::error_collate);
+
+        if (_Size == 0) {
+            _Error(regex_constants::error_collate);
+        }
+
+        if (_Size > _Max_limit<unsigned int>()) {
+            _Error(regex_constants::error_space);
         }
 
         _Elem* const _Coll_elem_first      = &_Coll_elem.front();
