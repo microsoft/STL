@@ -678,10 +678,10 @@ void test_gh_992() {
             L"xxxYxx\x0662xxxZxxx", L"Yxx\x0662xxxZ"); // U+0662 ARABIC-INDIC DIGIT TWO
     }
     {
-        const test_wregex neg_s_regex_skip(&g_regexTester, LR"([\W])");
-        neg_s_regex_skip.should_search_match(L"xxxx\x2009xxxx", L"\x2009"); // U+2009 THIN SPACE
-        neg_s_regex_skip.should_search_fail(L"xxxx\x03C7xxxx"); // U+03C7 GREEK SMALL LETTER CHI
-        neg_s_regex_skip.should_search_fail(L"xxxx\x0662xxxx"); // U+0662 ARABIC-INDIC DIGIT TWO
+        const test_wregex neg_w_regex_skip(&g_regexTester, LR"([\W])");
+        neg_w_regex_skip.should_search_match(L"xxxx\x2009xxxx", L"\x2009"); // U+2009 THIN SPACE
+        neg_w_regex_skip.should_search_fail(L"xxxx\x03C7xxxx"); // U+03C7 GREEK SMALL LETTER CHI
+        neg_w_regex_skip.should_search_fail(L"xxxx\x0662xxxx"); // U+0662 ARABIC-INDIC DIGIT TWO
     }
     {
         const test_wregex neg_s_regex_skip(&g_regexTester, LR"([\S])");
@@ -840,10 +840,10 @@ void test_gh_5160() {
         neg_d_regex.should_search_fail(L"xxxYxx\x0662xxxZxxx"); // U+0662 ARABIC-INDIC DIGIT TWO
     }
     {
-        const test_wregex neg_s_regex_skip(&g_regexTester, LR"(\W)");
-        neg_s_regex_skip.should_search_match(L"xxxx\x2009xxxx", L"\x2009"); // U+2009 THIN SPACE
-        neg_s_regex_skip.should_search_fail(L"xxxx\x03C7xxxx"); // U+03C7 GREEK SMALL LETTER CHI
-        neg_s_regex_skip.should_search_fail(L"xxxx\x0662xxxx"); // U+0662 ARABIC-INDIC DIGIT TWO
+        const test_wregex neg_w_regex_skip(&g_regexTester, LR"(\W)");
+        neg_w_regex_skip.should_search_match(L"xxxx\x2009xxxx", L"\x2009"); // U+2009 THIN SPACE
+        neg_w_regex_skip.should_search_fail(L"xxxx\x03C7xxxx"); // U+03C7 GREEK SMALL LETTER CHI
+        neg_w_regex_skip.should_search_fail(L"xxxx\x0662xxxx"); // U+0662 ARABIC-INDIC DIGIT TWO
     }
     {
         const test_wregex neg_s_regex_skip(&g_regexTester, LR"(\S)");
