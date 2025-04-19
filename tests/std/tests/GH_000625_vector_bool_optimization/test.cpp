@@ -1306,7 +1306,8 @@ void randomized_test_copy(mt19937_64& gen) {
 
 #if _HAS_CXX20
 template <size_t N>
-constexpr bool gh_005345() {
+constexpr bool test_gh_5345() {
+    // GH-5345 <vector>: _Copy_vbool() mishandles vector<bool>s of size 32 and 64, revealed by constexpr Clang
     vector<bool> src(N, true);
 
     for (size_t i = 2; i != N; ++i) {
@@ -1320,11 +1321,11 @@ constexpr bool gh_005345() {
     return src == dst;
 }
 
-static_assert(gh_005345<17>());
-static_assert(gh_005345<32>());
-static_assert(gh_005345<43>());
-static_assert(gh_005345<64>());
-static_assert(gh_005345<120>());
+static_assert(test_gh_5345<17>());
+static_assert(test_gh_5345<32>());
+static_assert(test_gh_5345<43>());
+static_assert(test_gh_5345<64>());
+static_assert(test_gh_5345<120>());
 #endif // _HAS_CXX20
 
 int main() {
