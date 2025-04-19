@@ -8100,14 +8100,13 @@ namespace ranges {
             if constexpr (_Is_greater || _Is_predicate_less<_It, _Pr>) {
                 if (!_STD _Is_constant_evaluated()) {
                     const auto _First_ptr = _STD _To_address(_First);
-                    const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                    const auto _Last_ptr  = _First_ptr + static_cast<size_t>(_Last - _First);
                     const auto _Result    = _STD _Is_sorted_until(_First_ptr, _Last_ptr, _Is_greater);
 
                     if constexpr (is_pointer_v<_It>) {
                         return _Result;
                     } else {
-                        _First += _Result - _First_ptr;
-                        return _First;
+                        return _First + static_cast<iter_difference_t<_It>>(_Result - _First_ptr);
                     }
                 }
             }
