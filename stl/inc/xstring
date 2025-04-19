@@ -534,7 +534,7 @@ _CONSTEXPR20 void _Traits_copy_batch(_Out_writes_all_(_Count) _Traits_ch_t<_Trai
 
     if constexpr (is_volatile_v<_UElem>) {
         for (size_t _Idx = 0; _Idx != _Count; ++_Idx) {
-            _Traits::assign(_First1[_Idx], _Traits_ch_t<_Traits>(_First2[_Idx]));
+            _Traits::assign(_First1[_Idx], _Traits_ch_t<_Traits>{_First2[_Idx]});
         }
     } else {
         (void) _Traits::copy(_First1, _First2, _Count);
@@ -558,11 +558,11 @@ _CONSTEXPR20 void _Traits_move_batch(_Out_writes_all_(_Count) _Traits_ch_t<_Trai
 
         if (_Loop_forward) {
             for (size_t _Idx = 0; _Idx != _Count; ++_Idx) {
-                _Traits::assign(_First1[_Idx], _Traits_ch_t<_Traits>(_First2[_Idx]));
+                _Traits::assign(_First1[_Idx], _Traits_ch_t<_Traits>{_First2[_Idx]});
             }
         } else {
             for (size_t _Idx = _Count; _Idx != 0; --_Idx) {
-                _Traits::assign(_First1[_Idx - 1], _Traits_ch_t<_Traits>(_First2[_Idx - 1]));
+                _Traits::assign(_First1[_Idx - 1], _Traits_ch_t<_Traits>{_First2[_Idx - 1]});
             }
         }
     } else {
