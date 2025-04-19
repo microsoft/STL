@@ -27,7 +27,7 @@ void test_min_max_element_floating_with_values(mt19937_64& gen, const vector<T>&
 
 template <class T>
 vector<T> test_floating_input(mt19937_64& gen) {
-    normal_distribution<T> dis(-100000.0, 100000.0);
+    normal_distribution<T> dis(0, 100000.0);
 
     constexpr auto input_of_input_size = dataCount / 2;
     vector<T> result(input_of_input_size);
