@@ -54,9 +54,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifndef _USE_STD_VECTOR_FLOATING_ALGORITHMS
 #if _USE_STD_VECTOR_ALGORITHMS && !defined(_M_FP_EXCEPT)
 #define _USE_STD_VECTOR_FLOATING_ALGORITHMS 1
-#else // ^^^ use vector algorithms and fast math / not use vector algorithms or not use fast math vvv
+#else // ^^^ use vector algorithms and not use _M_FP_EXCEPT / not use vector algorithms or use _M_FP_EXCEPT vvv
 #define _USE_STD_VECTOR_FLOATING_ALGORITHMS 0
-#endif // ^^^ not use vector algorithms or not use fast math ^^^
+#endif // ^^^ not use vector algorithms or use _M_FP_EXCEPT ^^^
 #else // ^^^ !defined(_USE_STD_VECTOR_FLOATING_ALGORITHMS) / defined(_USE_STD_VECTOR_FLOATING_ALGORITHMS) vvv
 #if _USE_STD_VECTOR_FLOATING_ALGORITHMS && !_USE_STD_VECTOR_ALGORITHMS
 #error _USE_STD_VECTOR_FLOATING_ALGORITHMS must imply _USE_STD_VECTOR_ALGORITHMS.
