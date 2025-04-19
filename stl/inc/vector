@@ -3871,8 +3871,8 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
             }
 
             if (_Last._Myoff != 0) {
-                const auto _SourceVal = *_VbFirst & _LastSourceMask;
-                *_VbDest              = (*_VbDest & _LastDestMask) | _SourceVal;
+                const auto _LastSourceVal = *_VbFirst & _LastSourceMask;
+                *_VbDest                  = (*_VbDest & _LastDestMask) | _LastSourceVal;
             }
 
             return _DestEnd;
