@@ -3066,7 +3066,7 @@ private:
             }
 
             _Traits::move(_Insert_at + _Count, _Insert_at, _Old_size - _Off + 1); // move suffix + null down
-            _STD _Traits_move_batch<_Traits>(_Insert_at, _Ptr, _Ptr_shifted_after);
+            _STD _Traits_copy_batch<_Traits>(_Insert_at, _Ptr, _Ptr_shifted_after);
             _STD _Traits_copy_batch<_Traits>(
                 _Insert_at + _Ptr_shifted_after, _Ptr + _Count + _Ptr_shifted_after, _Count - _Ptr_shifted_after);
             return *this;
