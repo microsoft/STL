@@ -45,6 +45,15 @@ void common_args(auto bm) {
     bm->ArgPair(3000, 1800);
 }
 
+BENCHMARK(bm<std::int8_t, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm<std::int8_t, AlgType::Rng>)->Apply(common_args);
+BENCHMARK(bm<std::int16_t, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm<std::int16_t, AlgType::Rng>)->Apply(common_args);
+BENCHMARK(bm<std::int32_t, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm<std::int32_t, AlgType::Rng>)->Apply(common_args);
+BENCHMARK(bm<std::int64_t, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm<std::int64_t, AlgType::Rng>)->Apply(common_args);
+
 BENCHMARK(bm<std::uint8_t, AlgType::Std>)->Apply(common_args);
 BENCHMARK(bm<std::uint8_t, AlgType::Rng>)->Apply(common_args);
 BENCHMARK(bm<std::uint16_t, AlgType::Std>)->Apply(common_args);
