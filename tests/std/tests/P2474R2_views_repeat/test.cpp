@@ -288,6 +288,17 @@ struct tuple_tester {
     forward_tester z;
 };
 
+struct rvalue_only_to_sentinel {
+    template <class Sent>
+    constexpr operator Sent() && noexcept {
+        if constexpr (is_same_v<Sent, unreachable_sentinel_t>) {
+            return {};
+        } else {
+            return Sent{1};
+        }
+    }
+};
+
 
 template <class IntLike>
 constexpr void test_iterator_arithmetic() {
@@ -298,6 +309,51 @@ constexpr void test_iterator_arithmetic() {
     first += 2;
     last -= 3;
     assert(last - first == 15);
+}
+
+template <class T>
+constexpr void test_piecewise_construction_from_empty_braces() {
+    ranges::repeat_view<T> r{piecewise_construct, {}, {}};
+    assert(r.front() == T{});
+}
+
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+template <class T>
+struct holder {
+    T t;
+};
+
+struct incomplete;
+
+struct adl_validator {
+    constexpr explicit adl_validator(holder<incomplete>*) noexcept {}
+};
+
+constexpr void test_piecewise_construction_for_adl() {
+    constexpr holder<incomplete>* arg_ptr = nullptr;
+    // Intentionally std::-qualify make_tuple to avoid ADL.
+    {
+        (void) ranges::repeat_view<adl_validator>{piecewise_construct, std::make_tuple(arg_ptr)};
+    }
+    {
+        ranges::repeat_view<adl_validator, ptrdiff_t> r{piecewise_construct, std::make_tuple(arg_ptr)};
+        assert(r.size() == 0);
+    }
+    {
+        ranges::repeat_view<adl_validator, ptrdiff_t> r{
+            piecewise_construct, std::make_tuple(arg_ptr), std::make_tuple(ptrdiff_t{42})};
+        assert(r.size() == 42);
+    }
+}
+#endif // ^^^ no workaround ^^^
+
+template <class Sent>
+constexpr void test_make_sentinel_from_rvalue() {
+    ranges::repeat_view<int, Sent> r{piecewise_construct, make_tuple(42), make_tuple(rvalue_only_to_sentinel{})};
+    assert(r.front() == 42);
+    if constexpr (!is_same_v<Sent, unreachable_sentinel_t>) {
+        assert(r.size() == 1);
+    }
 }
 
 constexpr bool test() {
@@ -355,6 +411,16 @@ constexpr bool test() {
     test_iterator_arithmetic<char32_t>();
     test_iterator_arithmetic<wchar_t>();
     test_iterator_arithmetic<_Signed128>();
+
+    // GH-5387: "<ranges>: Cannot construct repeat_view via {piecewise_construct, {}, {}}"
+    test_piecewise_construction_from_empty_braces<int>();
+    test_piecewise_construction_from_empty_braces<string>();
+#ifndef _M_CEE // TRANSITION, VSO-1659496
+    test_piecewise_construction_for_adl();
+#endif // ^^^ no workaround ^^^
+    test_make_sentinel_from_rvalue<int>();
+    test_make_sentinel_from_rvalue<_Signed128>();
+    test_make_sentinel_from_rvalue<unreachable_sentinel_t>();
 
     return true;
 }
