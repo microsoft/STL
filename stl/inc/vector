@@ -3878,7 +3878,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
             return _DestEnd;
         }
     } else
-#endif
+#endif // _HAS_CXX20
     {
         // If _First and _Dest have matching char alignment, use memmove
         const auto _UnalignedFirstBits = _First._Myoff & _Vbase{7};

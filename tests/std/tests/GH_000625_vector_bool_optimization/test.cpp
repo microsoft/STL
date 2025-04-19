@@ -1325,7 +1325,7 @@ static_assert(gh_005345<32>());
 static_assert(gh_005345<43>());
 static_assert(gh_005345<64>());
 static_assert(gh_005345<120>());
-#endif
+#endif // _HAS_CXX20
 
 int main() {
     test_fill();
