@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <string>
+
 #if _HAS_CXX23
 #include <ranges>
 #endif // _HAS_CXX23
-#include <string>
 
 using namespace std;
 
