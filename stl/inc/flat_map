@@ -940,17 +940,8 @@ private:
         // Insert the new elements at the end
         for (; _First != _Last; ++_First) {
             value_type _Val = *_First;
-            if constexpr (requires { _Data.keys.push_back(_STD move(_Val.first)); }) {
-                _Data.keys.push_back(_STD move(_Val.first));
-            } else {
-                _Data.keys.insert(_Data.keys.end(), _STD move(_Val.first));
-            }
-
-            if constexpr (requires { _Data.values.push_back(_STD move(_Val.second)); }) {
-                _Data.values.push_back(_STD move(_Val.second));
-            } else {
-                _Data.values.insert(_Data.values.end(), _STD move(_Val.second));
-            }
+            _Data.keys.insert(_Data.keys.end(), _STD move(_Val.first));
+            _Data.values.insert(_Data.values.end(), _STD move(_Val.second));
         }
 
         // Sort the newly inserted elements
@@ -1451,7 +1442,9 @@ public:
 
     // [flat.multimap.modifiers] Modifiers
     template <class... _ArgTypes>
-    iterator emplace(_ArgTypes&&... _Args) {
+    iterator emplace(_ArgTypes&&... _Args)
+        requires is_constructible_v<value_type, _ArgTypes...>
+    {
         value_type _Val(_STD forward<_ArgTypes>(_Args)...);
         return _Emplace_key_mapped(_STD move(_Val.first), _STD move(_Val.second));
     }
