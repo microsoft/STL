@@ -656,14 +656,6 @@ std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
 
-# GH-5345: <vector>: _Copy_vbool() mishandles vector<bool>s of size 32 and 64, revealed by constexpr Clang
-std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:2 FAIL
-std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:2 FAIL
-std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:0 FAIL
-std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:1 FAIL
-std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:0 FAIL
-std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:1 FAIL
-
 
 # *** VCRUNTIME BUGS ***
 
@@ -1068,6 +1060,7 @@ std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/co
 
 # Not analyzed, failing due to constexpr step limits.
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:2 FAIL
+std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:2 FAIL
 std/algorithms/alg.modifying.operations/alg.rotate/rotate.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.contains/ranges.contains_subrange.pass.cpp:2 FAIL
 std/algorithms/alg.nonmodifying/alg.count/count.pass.cpp FAIL
@@ -1198,6 +1191,15 @@ std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
 # Not analyzed. Likely MSVC constexpr bug, "note: a non-constant (sub-)expression was encountered" in swap()
 std/utilities/utility/utility.swap/swap_array.pass.cpp:0 FAIL
 std/utilities/utility/utility.swap/swap_array.pass.cpp:1 FAIL
+
+# Not analyzed. MSVC constexpr ICE.
+std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:0 FAIL
+std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:1 FAIL
+std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:0 FAIL
+std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:1 FAIL
+
+# Not analyzed. Possible Clang constexpr bug involving the test's sized_allocator and our check for transposed ranges.
+std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:2 FAIL
 
 # Not analyzed. SKIPPED because this is x86-specific, fatal error C1060: compiler is out of heap space
 std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.binary.iterator.pass.cpp:0 SKIPPED
