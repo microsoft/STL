@@ -2334,7 +2334,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
                 if constexpr (is_pointer_v<decltype(_UFirst)>) {
                     _UFirst = _Result;
                 } else {
-                    _UFirst += (_Result - _First_ptr);
+                    _UFirst += _Result - _First_ptr;
                 }
 
                 _STD _Seek_wrapped(_Last, _UFirst);

@@ -3078,7 +3078,7 @@ namespace {
         auto _Mid1 = static_cast<const _Ty*>(_First);
 #ifndef _M_ARM64EC
         const size_t _Length = _Byte_length(_First, _Last);
-        if (_Count <= (16 / sizeof(_Ty)) && _Length >= 32 && _Use_avx2()) {
+        if (_Count <= 16 / sizeof(_Ty) && _Length >= 32 && _Use_avx2()) {
             _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
 
             const int _Bits_count = static_cast<int>(_Count * sizeof(_Ty));
