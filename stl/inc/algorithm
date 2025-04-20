@@ -2525,8 +2525,8 @@ namespace ranges {
 
                         const auto _First_ptr = _STD _To_address(_First);
                         const auto _Last_ptr  = _First_ptr + _Dist;
-                        const auto _Result    = _STD _Search_n_vectorized(
-                            _First_ptr, _First_ptr + _Dist, static_cast<size_t>(_Count), _Val);
+                        const auto _Result =
+                            _STD _Search_n_vectorized(_First_ptr, _Last_ptr, static_cast<size_t>(_Count), _Val);
 
                         if constexpr (is_pointer_v<_It>) {
                             if (_Result != _Last_ptr) {
