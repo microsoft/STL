@@ -76,6 +76,10 @@ void test_search_n(mt19937_64& gen) {
 
             test_case_search_n(input, count, val);
 
+            if (input.empty()) {
+                continue;
+            }
+
             binomial_distribution<size_t> pattern_length_dis(count * 2, 0.5);
             uniform_int_distribution<size_t> pos_dis(0, input.size() - 1);
 
