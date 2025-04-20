@@ -3149,8 +3149,8 @@ namespace {
             _Rewind_bytes(_First, _lzcnt_u32(~_Carry));
         }
 #endif // !_M_ARM64EC
-        auto _Match_start = static_cast<const _Ty*>(_First);
-        auto _Last_ptr    = static_cast<const _Ty*>(_Last);
+        auto _Match_start    = static_cast<const _Ty*>(_First);
+        const auto _Last_ptr = static_cast<const _Ty*>(_Last);
 
         if (static_cast<size_t>(_Last_ptr - _Match_start) < _Count) {
             return _Last_ptr;
