@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <iterator>
+#include <limits>
 #include <random>
 #include <type_traits>
 #include <vector>
