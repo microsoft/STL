@@ -6996,18 +6996,18 @@ constexpr bool _Is_min_max_iterators_safe =
         is_integral<_Elem>, is_pointer<_Elem>>; // ... integral or pointer type.
 
 template <class _Iter, class _Pr>
-constexpr bool _Is_predicate_less = disjunction_v<
+constexpr bool _Is_predicate_less = _Is_any_of_v<_Pr,
 #if _HAS_CXX20
-    is_same<_Pr, _RANGES less>, // predicate is ranges::less
+    _RANGES less,
 #endif // _HAS_CXX20
-    is_same<_Pr, less<>>, is_same<_Pr, less<_Iter_value_t<_Iter>>>>; // predicate is less
+    less<>, less<_Iter_value_t<_Iter>>>;
 
 template <class _Iter, class _Pr>
-constexpr bool _Is_predicate_greater = disjunction_v<
+constexpr bool _Is_predicate_greater = _Is_any_of_v<_Pr,
 #if _HAS_CXX20
-    is_same<_Pr, _RANGES greater>, // predicate is ranges::greater
+    _RANGES greater,
 #endif // _HAS_CXX20
-    is_same<_Pr, greater<>>, is_same<_Pr, greater<_Iter_value_t<_Iter>>>>; // predicate is greater
+    greater<>, greater<_Iter_value_t<_Iter>>>;
 
 template <class _Iter, class _Pr>
 constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms for min_/max_element?
