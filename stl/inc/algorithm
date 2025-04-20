@@ -10993,7 +10993,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt is_sorted_until(const _FwdIt _First, _FwdIt _Last
                 if constexpr (is_pointer_v<decltype(_UFirst)>) {
                     _UFirst = _Result;
                 } else {
-                    _UFirst += static_cast<iter_difference_t<decltype(_UFirst)>>(_Result - _First_ptr);
+                    _UFirst += static_cast<_Iter_diff_t<decltype(_UFirst)>>(_Result - _First_ptr);
                 }
 
                 _STD _Seek_wrapped(_Last, _UFirst);
