@@ -14,7 +14,7 @@ using namespace std;
 
 template <class FwdIt, class T>
 auto last_known_good_search_n(FwdIt first, FwdIt last, size_t count, T val) {
-    // Delibarately using simple approach, not smart bidi/random iterators "check from the other end" stuff
+    // Deliberately using simple approach, not smart bidi/random iterators "check from the other end" stuff
     if (count == 0) {
         return first;
     }

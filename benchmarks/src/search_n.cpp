@@ -17,12 +17,12 @@ using namespace std;
 
 enum class AlgType { Std, Rng };
 
-enum class PartternType {
+enum class PatternType {
     TwoZones,
     DenseSmallSequences,
 };
 
-template <class T, AlgType Alg, PartternType Parttern>
+template <class T, AlgType Alg, PatternType Pattern>
 void bm(benchmark::State& state) {
     const auto size = static_cast<size_t>(state.range(0));
     const auto n    = static_cast<size_t>(state.range(1));
@@ -32,9 +32,9 @@ void bm(benchmark::State& state) {
 
     vector<T, not_highly_aligned_allocator<T>> v(size, no_match);
 
-    if constexpr (Parttern == PartternType::TwoZones) {
+    if constexpr (Pattern == PatternType::TwoZones) {
         fill(v.begin() + v.size() / 2, v.end(), match);
-    } else if constexpr (Parttern == PartternType::DenseSmallSequences) {
+    } else if constexpr (Pattern == PatternType::DenseSmallSequences) {
         if (size != 0 && n != 0) {
             mt19937 gen{7687239};
 
@@ -68,25 +68,25 @@ void common_args(auto bm) {
     }
 }
 
-BENCHMARK(bm<uint8_t, AlgType::Std, PartternType::TwoZones>)->Apply(common_args);
-BENCHMARK(bm<uint8_t, AlgType::Rng, PartternType::TwoZones>)->Apply(common_args);
-BENCHMARK(bm<uint8_t, AlgType::Std, PartternType::DenseSmallSequences>)->Apply(common_args);
-BENCHMARK(bm<uint8_t, AlgType::Rng, PartternType::DenseSmallSequences>)->Apply(common_args);
+BENCHMARK(bm<uint8_t, AlgType::Std, PatternType::TwoZones>)->Apply(common_args);
+BENCHMARK(bm<uint8_t, AlgType::Rng, PatternType::TwoZones>)->Apply(common_args);
+BENCHMARK(bm<uint8_t, AlgType::Std, PatternType::DenseSmallSequences>)->Apply(common_args);
+BENCHMARK(bm<uint8_t, AlgType::Rng, PatternType::DenseSmallSequences>)->Apply(common_args);
 
-BENCHMARK(bm<uint16_t, AlgType::Std, PartternType::TwoZones>)->Apply(common_args);
-BENCHMARK(bm<uint16_t, AlgType::Rng, PartternType::TwoZones>)->Apply(common_args);
-BENCHMARK(bm<uint16_t, AlgType::Std, PartternType::DenseSmallSequences>)->Apply(common_args);
-BENCHMARK(bm<uint16_t, AlgType::Rng, PartternType::DenseSmallSequences>)->Apply(common_args);
+BENCHMARK(bm<uint16_t, AlgType::Std, PatternType::TwoZones>)->Apply(common_args);
+BENCHMARK(bm<uint16_t, AlgType::Rng, PatternType::TwoZones>)->Apply(common_args);
+BENCHMARK(bm<uint16_t, AlgType::Std, PatternType::DenseSmallSequences>)->Apply(common_args);
+BENCHMARK(bm<uint16_t, AlgType::Rng, PatternType::DenseSmallSequences>)->Apply(common_args);
 
-BENCHMARK(bm<uint32_t, AlgType::Std, PartternType::TwoZones>)->Apply(common_args);
-BENCHMARK(bm<uint32_t, AlgType::Rng, PartternType::TwoZones>)->Apply(common_args);
-BENCHMARK(bm<uint32_t, AlgType::Std, PartternType::DenseSmallSequences>)->Apply(common_args);
-BENCHMARK(bm<uint32_t, AlgType::Rng, PartternType::DenseSmallSequences>)->Apply(common_args);
+BENCHMARK(bm<uint32_t, AlgType::Std, PatternType::TwoZones>)->Apply(common_args);
+BENCHMARK(bm<uint32_t, AlgType::Rng, PatternType::TwoZones>)->Apply(common_args);
+BENCHMARK(bm<uint32_t, AlgType::Std, PatternType::DenseSmallSequences>)->Apply(common_args);
+BENCHMARK(bm<uint32_t, AlgType::Rng, PatternType::DenseSmallSequences>)->Apply(common_args);
 
-BENCHMARK(bm<uint64_t, AlgType::Std, PartternType::TwoZones>)->Apply(common_args);
-BENCHMARK(bm<uint64_t, AlgType::Rng, PartternType::TwoZones>)->Apply(common_args);
-BENCHMARK(bm<uint64_t, AlgType::Std, PartternType::DenseSmallSequences>)->Apply(common_args);
-BENCHMARK(bm<uint64_t, AlgType::Rng, PartternType::DenseSmallSequences>)->Apply(common_args);
+BENCHMARK(bm<uint64_t, AlgType::Std, PatternType::TwoZones>)->Apply(common_args);
+BENCHMARK(bm<uint64_t, AlgType::Rng, PatternType::TwoZones>)->Apply(common_args);
+BENCHMARK(bm<uint64_t, AlgType::Std, PatternType::DenseSmallSequences>)->Apply(common_args);
+BENCHMARK(bm<uint64_t, AlgType::Rng, PatternType::DenseSmallSequences>)->Apply(common_args);
 
 
 BENCHMARK_MAIN();
