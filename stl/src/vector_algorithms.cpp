@@ -3081,10 +3081,10 @@ namespace {
         if (_Count <= 16 / sizeof(_Ty) && _Length >= 32 && _Use_avx2()) {
             _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
 
-            const int _Bits_count = static_cast<int>(_Count * sizeof(_Ty));
-            const int _Sh1        = sizeof(_Ty) == 1 ? (_Bits_count < 4 ? _Bits_count - 2 : 2) : 0;
-            const int _Sh2 = sizeof(_Ty) < 4 ? (_Bits_count < 4 ? 0 : (_Bits_count < 8 ? _Bits_count - 4 : 4)) : 0;
-            const int _Sh3 = sizeof(_Ty) < 8 ? (_Bits_count < 8 ? 0 : _Bits_count - 8) : 0;
+            const int _Bytes_count = static_cast<int>(_Count * sizeof(_Ty));
+            const int _Sh1         = sizeof(_Ty) == 1 ? (_Bytes_count < 4 ? _Bytes_count - 2 : 2) : 0;
+            const int _Sh2 = sizeof(_Ty) < 4 ? (_Bytes_count < 4 ? 0 : (_Bytes_count < 8 ? _Bytes_count - 4 : 4)) : 0;
+            const int _Sh3 = sizeof(_Ty) < 8 ? (_Bytes_count < 8 ? 0 : _Bytes_count - 8) : 0;
 
             const __m256i _Comparand = _Traits::_Set_avx(_Val);
 
