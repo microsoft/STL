@@ -21,26 +21,20 @@ auto last_known_good_search_n(FwdIt first, const FwdIt last, const size_t count,
         return first;
     }
 
+    size_t found = 0;
+    FwdIt match{};
     for (; first != last; ++first) {
         if (*first == val) {
-            FwdIt match       = first;
-            size_t match_size = count;
-            for (;;) {
-                --match_size;
-                if (match_size == 0) {
-                    return match;
-                }
-
-                ++first;
-
-                if (first == last) {
-                    return last;
-                }
-
-                if (*first != val) {
-                    break;
-                }
+            ++found;
+            if (found == 1) {
+                match = first;
             }
+
+            if (found == count) {
+                return match;
+            }
+        } else {
+            found = 0;
         }
     }
     return last;
