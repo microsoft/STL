@@ -87,7 +87,7 @@ void test_search_n(mt19937_64& gen) {
                 const size_t pattern_length = pattern_length_dis(gen);
                 const size_t pattern_pos    = pos_dis(gen);
 
-                if (pattern_length + pattern_pos < input.size()) {
+                if (pattern_length + pattern_pos <= input.size()) {
                     fill_n(input.begin() + static_cast<ptrdiff_t>(pattern_pos), pattern_length, val);
 
                     test_case_search_n(input, count, val);
