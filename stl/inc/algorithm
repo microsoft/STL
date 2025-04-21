@@ -80,14 +80,10 @@ __declspec(noalias) void __stdcall __std_replace_4(
 __declspec(noalias) void __stdcall __std_replace_8(
     void* _First, void* _Last, uint64_t _Old_val, uint64_t _New_val) noexcept;
 
-void* __stdcall __std_remove_copy_1(
-    const void* _First, const void* const _Last, void* _Out, const uint8_t _Val) noexcept;
-void* __stdcall __std_remove_copy_2(
-    const void* _First, const void* const _Last, void* _Out, const uint16_t _Val) noexcept;
-void* __stdcall __std_remove_copy_4(
-    const void* _First, const void* const _Last, void* _Out, const uint32_t _Val) noexcept;
-void* __stdcall __std_remove_copy_8(
-    const void* _First, const void* const _Last, void* _Out, const uint64_t _Val) noexcept;
+void* __stdcall __std_remove_copy_1(const void* _First, const void* _Last, void* _Out, uint8_t _Val) noexcept;
+void* __stdcall __std_remove_copy_2(const void* _First, const void* _Last, void* _Out, uint16_t _Val) noexcept;
+void* __stdcall __std_remove_copy_4(const void* _First, const void* _Last, void* _Out, uint32_t _Val) noexcept;
+void* __stdcall __std_remove_copy_8(const void* _First, const void* _Last, void* _Out, uint64_t _Val) noexcept;
 
 void* __stdcall __std_unique_1(void* _First, void* _Last) noexcept;
 void* __stdcall __std_unique_2(void* _First, void* _Last) noexcept;
