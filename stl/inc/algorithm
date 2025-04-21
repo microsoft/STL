@@ -4939,10 +4939,10 @@ namespace ranges {
                           && sized_sentinel_for<_Se, _It> && is_same_v<_Pj, identity>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _Size = _Last - _First;
-                    const auto _End  = _First + _Size;
+                    auto _End        = _First + _Size;
 
                     if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
-                        return {_End, _Output};
+                        return {_STD move(_End), _STD move(_Output)};
                     }
 
                     const auto _Dest_ptr = _STD to_address(_Output);
@@ -4950,9 +4950,9 @@ namespace ranges {
                         _STD _Remove_copy_vectorized(_STD to_address(_First), _STD to_address(_End), _Dest_ptr, _Val);
 
                     if constexpr (is_pointer_v<_Out>) {
-                        return {_End, _Result};
+                        return {_STD move(_End), _Result};
                     } else {
-                        return {_End, _Output + (_Result - _Dest_ptr)};
+                        return {_STD move(_End), _STD move(_Output) + (_Result - _Dest_ptr)};
                     }
                 }
             }
