@@ -291,7 +291,7 @@ constexpr bool _Vector_alg_in_ranges_replace_is_safe =
 template <class _Iter, class _Pr>
 constexpr bool _Vector_alg_in_unique_is_safe = _Equal_memcmp_is_safe<_Iter, _Iter, _Pr>;
 
-// Can use this output iterator for remove_copy or unique_copy?
+// Can we use this output iterator for remove_copy or unique_copy?
 template <class _Out, class _In>
 constexpr bool _Output_iterator_for_vector_alg_is_safe() {
     if constexpr (_Iterator_is_contiguous<_Out>) {
