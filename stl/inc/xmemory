@@ -2752,6 +2752,9 @@ namespace ranges {
     elements_of(_Rng&&, _Alloc) -> elements_of<_Rng&&, _Alloc>;
 #endif // ^^^ !defined(__cpp_lib_byte) ^^^
 } // namespace ranges
+
+template <class>
+constexpr bool _Has_guaranteed_push_back = false; // N5008 [sequence.reqmts]/104, /108; used by flat_(multi)map::insert.
 #endif // _HAS_CXX23
 
 template <class _Elem, class _UTy>
