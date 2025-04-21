@@ -940,8 +940,17 @@ private:
         // Insert the new elements at the end
         for (; _First != _Last; ++_First) {
             value_type _Val = *_First;
-            _Data.keys.insert(_Data.keys.end(), _STD move(_Val.first));
-            _Data.values.insert(_Data.values.end(), _STD move(_Val.second));
+            if constexpr (_Has_guaranteed_push_back<_KeyContainer>) {
+                _Data.keys.push_back(_STD move(_Val.first));
+            } else {
+                _Data.keys.insert(_Data.keys.end(), _STD move(_Val.first));
+            }
+
+            if constexpr (_Has_guaranteed_push_back<_MappedContainer>) {
+                _Data.values.push_back(_STD move(_Val.second));
+            } else {
+                _Data.values.insert(_Data.values.end(), _STD move(_Val.second));
+            }
         }
 
         // Sort the newly inserted elements
