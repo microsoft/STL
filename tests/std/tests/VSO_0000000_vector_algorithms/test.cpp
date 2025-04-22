@@ -778,7 +778,8 @@ void test_remove(mt19937_64& gen) {
     vector<T> in_out_actual;
     vector<T> in_out_actual_r;
 
-    for (const auto& v : {&source, &in_out_expected, &in_out_actual, &in_out_actual_r}) {
+    for (const auto& v :
+        {&source, &in_out_expected, &in_out_actual, &in_out_actual_r, &out_expected, &out_actual, &out_actual_r}) {
         v->reserve(dataCount);
     }
 
