@@ -258,6 +258,7 @@ tests\GH_005090_stl_hardening
 tests\GH_005204_regex_collating_ranges
 tests\GH_005236_collate_facet
 tests\GH_005244_regex_escape_sequences
+tests\GH_005276_system_error_heap_use_after_free
 tests\GH_005315_destructor_tombstones
 tests\LWG2381_num_get_floating_point
 tests\LWG2597_complex_branch_cut

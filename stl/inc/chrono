@@ -1725,9 +1725,15 @@ namespace chrono {
 
     _EXPORT_STD class _NODISCARD nonexistent_local_time : public runtime_error {
     public:
+#if _HAS_EXCEPTIONS
         template <class _Duration>
         nonexistent_local_time(const local_time<_Duration>& _Tp, const local_info& _Info)
             : runtime_error(_Make_string(_Tp, _Info)) {}
+#else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv
+        template <class _Duration>
+        nonexistent_local_time(const local_time<_Duration>&, const local_info&)
+            : runtime_error("nonexistent local time") {}
+#endif // ^^^ !_HAS_EXCEPTIONS ^^^
 
     private:
         template <class _Duration>
@@ -1741,9 +1747,14 @@ namespace chrono {
 
     _EXPORT_STD class _NODISCARD ambiguous_local_time : public runtime_error {
     public:
+#if _HAS_EXCEPTIONS
         template <class _Duration>
         ambiguous_local_time(const local_time<_Duration>& _Tp, const local_info& _Info)
             : runtime_error(_Make_string(_Tp, _Info)) {}
+#else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv
+        template <class _Duration>
+        ambiguous_local_time(const local_time<_Duration>&, const local_info&) : runtime_error("ambiguous local time") {}
+#endif // ^^^ !_HAS_EXCEPTIONS ^^^
 
     private:
         template <class _Duration>
