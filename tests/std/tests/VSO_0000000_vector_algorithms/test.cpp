@@ -743,6 +743,7 @@ void test_case_remove(vector<T>& in_out_expected, vector<T>& in_out_actual, vect
 #if _HAS_CXX20
     auto rem_actual_r = ranges::remove(in_out_actual_r, val);
     assert(equal(in_out_expected.begin(), rem_expected, begin(in_out_actual_r), begin(rem_actual_r)));
+    assert(end(rem_actual_r) == in_out_actual_r.end());
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     (void) in_out_actual_r;
 #endif // ^^^ !_HAS_CXX20 ^^^
@@ -760,6 +761,7 @@ void test_case_remove_copy(
     auto rem_actual_r = ranges::remove_copy(source, out_actual_r.begin(), val);
     assert(equal(out_expected.begin(), rem_expected, out_actual_r.begin(), rem_actual_r.out));
     assert(equal(rem_expected, out_expected.end(), rem_actual_r.out, out_actual_r.end()));
+    assert(rem_actual_r.in == source.end());
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     (void) out_actual_r;
 #endif // ^^^ !_HAS_CXX20 ^^^
@@ -855,6 +857,7 @@ void test_case_unique(vector<T>& in_out_expected, vector<T>& in_out_actual, vect
 #if _HAS_CXX20
     auto un_actual_r = ranges::unique(in_out_actual_r);
     assert(equal(in_out_expected.begin(), un_expected, begin(in_out_actual_r), begin(un_actual_r)));
+    assert(end(un_actual_r) == in_out_actual_r.end());
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     (void) in_out_actual_r;
 #endif // ^^^ !_HAS_CXX20 ^^^
@@ -872,6 +875,7 @@ void test_case_unique_copy(
     auto un_actual_r = ranges::unique_copy(source, out_actual_r.begin());
     assert(equal(out_expected.begin(), un_expected, out_actual_r.begin(), un_actual_r.out));
     assert(equal(un_expected, out_expected.end(), un_actual_r.out, out_actual_r.end()));
+    assert(un_actual_r.in == source.end());
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     (void) out_actual_r;
 #endif // ^^^ !_HAS_CXX20 ^^^
