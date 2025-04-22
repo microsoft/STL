@@ -620,7 +620,8 @@ void test_is_sorted_until(mt19937_64& gen) {
         original_input.push_back(static_cast<T>(dis(gen)));
         input = original_input;
 
-        auto it = input.begin() + uniform_int_distribution<ptrdiff_t>{0, static_cast<ptrdiff_t>(input.size() - 1)}(gen);
+        uniform_int_distribution<ptrdiff_t> pos_dis{0, static_cast<ptrdiff_t>(input.size() - 1)};
+        auto it = input.begin() + pos_dis(gen);
 
         sort(input.begin(), it, less<>{});
         test_case_is_sorted_until(input, less<>{});
