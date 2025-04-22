@@ -1545,7 +1545,7 @@ namespace test_default_initializable {
 #endif // ^^^ no workaround ^^^
 
     // Also test GH-1603 "default_initializable accepts types that are not default-initializable"
-#if defined(__clang__) // TRANSITION, DevCom-1326684 (MSVC) and VSO-1898945 (EDG)
+#ifndef __EDG__ // TRANSITION, VSO-1898945
     static_assert(!default_initializable<AggregatesExplicitDefault>);
 #endif // ^^^ no workaround ^^^
 } // namespace test_default_initializable
