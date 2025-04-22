@@ -11,22 +11,16 @@
 #include <test_regex_support.hpp>
 
 // skip collation tests when linking to the DLL in case of
-// * undefined _NATIVE_WCHAR_T_DEFINED due to GH-5236
-// * _ITERATOR_DEBUG_LEVEL mismatch between code and linked DLL
+// _ITERATOR_DEBUG_LEVEL mismatch between code and linked DLL
 #ifdef _DEBUG
 #define DEFAULT_IDL_SETTING 2
 #else
 #define DEFAULT_IDL_SETTING 0
 #endif
 
-#ifdef _DLL
-#ifndef _NATIVE_WCHAR_T_DEFINED // TRANSITION, GH-212 or GH-5236
+#if defined(_DLL) && _ITERATOR_DEBUG_LEVEL != DEFAULT_IDL_SETTING
 #define SKIP_COLLATE_TESTS
-#elif _ITERATOR_DEBUG_LEVEL != DEFAULT_IDL_SETTING
-#define SKIP_COLLATE_TESTS
-#endif // !defined(_NATIVE_WCHAR_T_DEFINED) || _ITERATOR_DEBUG_LEVEL != DEFAULT_IDL_SETTING
-#endif // defined(_DLL)
-
+#endif // defined(_DLL) && _ITERATOR_DEBUG_LEVEL != DEFAULT_IDL_SETTING
 
 using namespace std;
 using namespace std::regex_constants;
