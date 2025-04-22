@@ -207,13 +207,7 @@ template <class _Ty>
 _Ty* _Is_sorted_until_vectorized(_Ty* const _First, _Ty* const _Last, const bool _Greater) noexcept {
     constexpr bool _Signed = is_signed_v<_Ty>;
 
-    if constexpr (is_pointer_v<_Ty>) {
-#ifdef _WIN64
-        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_is_sorted_until_8u(_First, _Last, _Greater)));
-#else
-        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_is_sorted_until_4u(_First, _Last, _Greater)));
-#endif
-    } else if constexpr (is_same_v<remove_const_t<_Ty>, float>) {
+    if constexpr (is_same_v<remove_const_t<_Ty>, float>) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_is_sorted_until_f(_First, _Last, _Greater)));
     } else if constexpr (_Is_any_of_v<remove_const_t<_Ty>, double, long double>) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_is_sorted_until_d(_First, _Last, _Greater)));
