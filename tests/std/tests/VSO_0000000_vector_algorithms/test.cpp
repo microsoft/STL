@@ -720,8 +720,8 @@ FwdIt last_known_good_remove(FwdIt first, FwdIt last, T val) {
     return dest;
 }
 
-template <class FwdItIn, class FwdItOut, class T>
-FwdItOut last_known_good_remove_copy(FwdItIn first, FwdItIn last, FwdItOut dest, T val) {
+template <class InIt, class OutIt, class T>
+OutIt last_known_good_remove_copy(InIt first, InIt last, OutIt dest, T val) {
     while (first != last) {
         if (*first != val) {
             *dest = *first;
