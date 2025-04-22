@@ -14,8 +14,8 @@ enum class AlgType { Std, Rng };
 
 template <class T, AlgType Alg>
 void bm(benchmark::State& state) {
-    const std::size_t size     = static_cast<size_t>(state.range(0));
-    const std::size_t sort_pos = static_cast<size_t>(state.range(1));
+    const std::size_t size     = static_cast<std::size_t>(state.range(0));
+    const std::size_t sort_pos = static_cast<std::size_t>(state.range(1));
 
     std::vector<T, not_highly_aligned_allocator<T>> v;
     if constexpr (std::is_integral_v<T>) {
