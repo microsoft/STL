@@ -2739,7 +2739,7 @@ public:
     }
 
 private:
-    _Ty1 _Gx0;
+    _Ty1 _Gx0 = 0.0;
 };
 
 _EXPORT_STD template <class _Ty = int>
@@ -2778,19 +2778,24 @@ public:
             return _Mean;
         }
 
+        static constexpr double _Small_threshold = 12.0;
+
         void _Init(_Ty1 _Mean0) noexcept { // set internal state
             _STL_ASSERT(0.0 < _Mean0, "invalid mean argument for poisson_distribution");
             _Mean = _Mean0;
+            if (_Mean0 < _Small_threshold) {
+                _Small._Init(_Mean0);
+                return;
+            }
             _Sqrt = _CSTD sqrt(2.0 * _Mean0);
             _Logm = _CSTD log(_Mean0);
             _Gx1  = _Mean0 * _Logm - _XLgamma(_Mean0 + 1.0);
-            _Small._Init(_Mean0);
         }
 
-        _Ty1 _Mean;
-        _Ty1 _Sqrt;
-        _Ty1 _Logm;
-        _Ty1 _Gx1;
+        _Ty1 _Mean = 0.0;
+        _Ty1 _Sqrt = 0.0;
+        _Ty1 _Logm = 0.0;
+        _Ty1 _Gx1  = 0.0;
 
         _Small_poisson_distribution<_Ty> _Small;
     };
@@ -2867,7 +2872,7 @@ public:
 private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
-        if (_Par0._Mean < 12.0) {
+        if (_Par0._Mean < param_type::_Small_threshold) {
             return _Par0._Small(_Eng);
         }
 
