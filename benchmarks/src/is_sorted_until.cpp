@@ -15,7 +15,7 @@
 enum class AlgType { Std, Rng };
 
 template <class T, AlgType Alg>
-void bm(benchmark::State& state) {
+void bm_is_sorted_until(benchmark::State& state) {
     const std::size_t size     = static_cast<std::size_t>(state.range(0));
     const std::size_t sort_pos = static_cast<std::size_t>(state.range(1));
 
