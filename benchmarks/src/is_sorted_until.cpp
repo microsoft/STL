@@ -4,7 +4,9 @@
 #include <algorithm>
 #include <benchmark/benchmark.h>
 #include <cstddef>
+#include <cstdint>
 #include <random>
+#include <type_traits>
 #include <vector>
 
 #include "skewed_allocator.hpp"
