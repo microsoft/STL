@@ -901,7 +901,7 @@ void test_unique(mt19937_64& gen) {
     }
 
     test_case_unique(in_out_expected, in_out_actual, in_out_actual_r);
-    test_case_unique_copy(source, out_expected, in_out_actual, out_actual_r);
+    test_case_unique_copy(source, out_expected, out_actual, out_actual_r);
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
         if constexpr (is_pointer_v<T>) {
             source.push_back(ptr_val_array.data() + dis(gen));
