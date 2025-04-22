@@ -46,8 +46,7 @@ void uc(benchmark::State& state) {
     std::vector<T, not_highly_aligned_allocator<T>> src(2552);
     std::generate(src.begin(), src.end(), [&] { return static_cast<T>(dis(gen)); });
 
-    std::vector<T, not_highly_aligned_allocator<T>> v;
-    v.resize(src.size());
+    std::vector<T, not_highly_aligned_allocator<T>> v(src.size());
     for (auto _ : state) {
         benchmark::DoNotOptimize(src);
         benchmark::DoNotOptimize(v);

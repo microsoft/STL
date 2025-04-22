@@ -29,8 +29,7 @@ void r(benchmark::State& state) {
 template <alg_type Type, class T>
 void rc(benchmark::State& state) {
     std::vector<T> src(lorem_ipsum.begin(), lorem_ipsum.end());
-    std::vector<T> v;
-    v.resize(lorem_ipsum.size());
+    std::vector<T> v(lorem_ipsum.size());
     for (auto _ : state) {
         benchmark::DoNotOptimize(src);
         benchmark::DoNotOptimize(v);
