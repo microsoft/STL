@@ -8105,7 +8105,7 @@ namespace ranges {
                 }
             }
         }
-#endif
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
         for (auto _Prev = _First; ++_First != _Last; ++_Prev) {
             if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Prev))) {
@@ -10996,7 +10996,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt is_sorted_until(const _FwdIt _First, _FwdIt _Last
             }
         }
     }
-#endif
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
     if (_UFirst != _ULast) {
         for (auto _UNext = _UFirst; ++_UNext != _ULast; ++_UFirst) {
