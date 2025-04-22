@@ -3198,8 +3198,6 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_if(_Node_if* _Node) { // apply
     }
 
     // see if there is a longer match
-    _Tgt_state_t<_It> _Final = _Tgt_state;
-    auto _Final_len          = _STD distance(_St._Cur, _Tgt_state._Cur);
     for (;;) { // process one branch of if
         _Node = _Node->_Child;
         if (!_Node) {
@@ -3207,17 +3205,8 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_if(_Node_if* _Node) { // apply
         }
 
         _Tgt_state = _St;
-        if (_Match_pat(_Node->_Next)) { // record match if it is longer
-            const auto _Len = _STD distance(_St._Cur, _Tgt_state._Cur);
-            if (_Final_len < _Len) { // memorize longest so far
-                _Final     = _Tgt_state;
-                _Final_len = _Len;
-            }
-        }
+        (void) _Match_pat(_Node->_Next);
     }
-
-    // set the input end to the longest match
-    _Tgt_state = _Final;
     return true;
 }
 
