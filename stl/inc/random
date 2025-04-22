@@ -617,12 +617,38 @@ public:
 
     void discard(unsigned long long _Nskip) noexcept /* strengthened */ {
         // discard _Nskip elements
-        auto _Temp = _Prev;
-        for (; 0 < _Nskip; --_Nskip) {
-            _Temp = _Next_linear_congruential_value<_Uint, _Ax, _Cx, _Mx>(_Temp);
-        }
+        if constexpr (_Cx == 0 && _Mx == 2147483647) {
+            // for minstd_rand and minstd_rand0 we can improve performance by
+            // performing fast exponentiation and avoiding constant divisions
+            auto _Temp = static_cast<unsigned long long>(_Prev);
+            auto _Mul  = static_cast<unsigned long long>(_Ax);
 
-        _Prev = _Temp;
+            for (;;) {
+                if (_Nskip & 1) {
+                    _Temp = _Temp * _Mul;
+                    _Temp = (_Temp >> 31) + (_Temp & _Mx);
+                    _Temp = _Temp < _Mx ? _Temp : _Temp - _Mx;
+                }
+
+                if (_Nskip >>= 1) {
+                    _Mul = _Mul * _Mul;
+                    _Mul = (_Mul >> 31) + (_Mul & _Mx);
+                    _Mul = _Mul < _Mx ? _Mul : _Mul - _Mx;
+                } else {
+                    break;
+                }
+            }
+
+            _Prev = static_cast<_Uint>(_Temp);
+        } else {
+            auto _Temp = _Prev;
+
+            for (; 0 < _Nskip; --_Nskip) {
+                _Temp = _Next_linear_congruential_value<_Uint, _Ax, _Cx, _Mx>(_Temp);
+            }
+
+            _Prev = _Temp;
+        }
     }
 
     _NODISCARD friend bool operator==(
