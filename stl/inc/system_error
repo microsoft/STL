@@ -470,10 +470,16 @@ private:
     }
 
 protected:
+#if _HAS_EXCEPTIONS
     _System_error(error_code _Errcode) : runtime_error(_Errcode.message()), _Mycode(_Errcode) {}
 
     _System_error(error_code _Errcode, const string& _Message)
         : runtime_error(_Makestr(_Errcode, _Message)), _Mycode(_Errcode) {}
+#else // ^^^ _HAS_EXCEPTIONS / !_HAS_EXCEPTIONS vvv
+    _System_error(error_code _Errcode) : runtime_error("system error"), _Mycode(_Errcode) {}
+
+    _System_error(error_code _Errcode, const string&) : runtime_error("system error"), _Mycode(_Errcode) {}
+#endif // ^^^ !_HAS_EXCEPTIONS ^^^
 
     error_code _Mycode; // the stored error code
 };

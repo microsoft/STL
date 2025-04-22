@@ -3817,7 +3817,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
 
     const auto _FirstSourceMask = static_cast<_Vbase>(-1) << _First._Myoff;
     const auto _FirstDestMask   = _Dest._Myoff == 0 ? 0 : (static_cast<_Vbase>(-1) >> (_VBITS - _Dest._Myoff));
-    const auto _LastSourceMask  = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+    const auto _LastSourceMask  = _Last._Myoff == 0 ? 0 : (static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff));
     const auto _LastDestMask    = static_cast<_Vbase>(-1) << _DestEnd._Myoff;
 
     const bool _IsSingleBlockSource = _VbFirst == _VbLast;
@@ -3860,8 +3860,26 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
     }
 
 #if _HAS_CXX20
-    if (!_STD is_constant_evaluated())
-#endif
+    if (_STD is_constant_evaluated()) {
+        if (_Dest._Myoff == _First._Myoff) {
+            const auto _FirstSourceVal = *_VbFirst & _FirstSourceMask;
+            *_VbDest                   = (*_VbDest & _FirstDestMask) | _FirstSourceVal;
+
+            ++_VbFirst;
+            ++_VbDest;
+            for (; _VbFirst != _VbLast; ++_VbFirst, ++_VbDest) {
+                *_VbDest = *_VbFirst;
+            }
+
+            if (_Last._Myoff != 0) {
+                const auto _LastSourceVal = *_VbFirst & _LastSourceMask;
+                *_VbDest                  = (*_VbDest & _LastDestMask) | _LastSourceVal;
+            }
+
+            return _DestEnd;
+        }
+    } else
+#endif // _HAS_CXX20
     {
         // If _First and _Dest have matching char alignment, use memmove
         const auto _UnalignedFirstBits = _First._Myoff & _Vbase{7};

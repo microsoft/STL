@@ -77,8 +77,8 @@ public:
 
     using arrival_token = _Arrival_token<_Completion_function>;
 
-    constexpr explicit barrier(
-        const ptrdiff_t _Expected, _Completion_function _Fn = _Completion_function()) noexcept /* strengthened */
+    constexpr explicit barrier(const ptrdiff_t _Expected, _Completion_function _Fn = _Completion_function())
+        noexcept(is_nothrow_move_constructible_v<_Completion_function>) // strengthened
         : _Val(_One_then_variadic_args_t{}, _STD move(_Fn), _Expected << _Barrier_value_shift) {
         _STL_VERIFY(_Expected >= 0 && _Expected <= (max) (),
             "Precondition: expected >= 0 and expected <= max() (N4950 [thread.barrier.class]/9)");
