@@ -2258,7 +2258,9 @@ namespace {
         const ptrdiff_t _Right_off = static_cast<ptrdiff_t>(_Greater) - 1;
 
         if constexpr (_Traits::_Vectorized) {
-#ifndef _M_ARM64EC
+#ifdef _M_ARM64EC
+            static_assert(false, "No vectorization for _M_ARM64EC yet");
+#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
             constexpr bool _Sign_cor = static_cast<_Ty>(-1) > _Ty{0};
 
             const size_t _Total_size_bytes = _Byte_length(_First, _Last);
