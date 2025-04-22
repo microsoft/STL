@@ -4688,7 +4688,7 @@ _CONSTEXPR20 _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _
                   && _Output_iterator_for_vector_alg_is_safe<decltype(_UDest), decltype(_UFirst)>()) {
         if (!_STD _Is_constant_evaluated()) {
             if (!_STD _Could_compare_equal_to_value_type<decltype(_UFirst)>(_Val)) {
-                _UDest += _ULast - _UFirst;
+                _UDest = _STD _Copy_unchecked(_UFirst, _ULast, _UDest);
                 _STD _Seek_wrapped(_Dest, _UDest);
                 return _Dest;
             }
@@ -4942,6 +4942,7 @@ namespace ranges {
                     auto _End        = _First + _Size;
 
                     if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
+                        _Output = _STD _Copy_unchecked(_First, _Last, _Output);
                         return {_STD move(_End), _STD move(_Output)};
                     }
 
