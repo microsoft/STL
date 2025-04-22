@@ -5,15 +5,7 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cmath>
-#include <cstddef>
-#include <type_traits>
-#include <utility>
 #include <vector>
-
-#if _HAS_CXX20
-#include <ranges>
-#endif
 
 template <class FwdIt, class Comp>
 FwdIt last_known_good_is_sorted_until(FwdIt first, FwdIt last, Comp comp) {
