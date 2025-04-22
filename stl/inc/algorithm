@@ -74,16 +74,16 @@ __declspec(noalias) _Min_max_8u __stdcall __std_minmax_8u(const void* _First, co
 __declspec(noalias) _Min_max_f __stdcall __std_minmax_f(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* _First, const void* _Last) noexcept;
 
-const void* __stdcall __std_is_sorted_until_1i(const void* _First, const void* _Last, const bool _Greater) noexcept;
-const void* __stdcall __std_is_sorted_until_1u(const void* _First, const void* _Last, const bool _Greater) noexcept;
-const void* __stdcall __std_is_sorted_until_2i(const void* _First, const void* _Last, const bool _Greater) noexcept;
-const void* __stdcall __std_is_sorted_until_2u(const void* _First, const void* _Last, const bool _Greater) noexcept;
-const void* __stdcall __std_is_sorted_until_4i(const void* _First, const void* _Last, const bool _Greater) noexcept;
-const void* __stdcall __std_is_sorted_until_4u(const void* _First, const void* _Last, const bool _Greater) noexcept;
-const void* __stdcall __std_is_sorted_until_8i(const void* _First, const void* _Last, const bool _Greater) noexcept;
-const void* __stdcall __std_is_sorted_until_8u(const void* _First, const void* _Last, const bool _Greater) noexcept;
-const void* __stdcall __std_is_sorted_until_f(const void* _First, const void* _Last, const bool _Greater) noexcept;
-const void* __stdcall __std_is_sorted_until_d(const void* _First, const void* _Last, const bool _Greater) noexcept;
+const void* __stdcall __std_is_sorted_until_1i(const void* _First, const void* _Last, bool _Greater) noexcept;
+const void* __stdcall __std_is_sorted_until_1u(const void* _First, const void* _Last, bool _Greater) noexcept;
+const void* __stdcall __std_is_sorted_until_2i(const void* _First, const void* _Last, bool _Greater) noexcept;
+const void* __stdcall __std_is_sorted_until_2u(const void* _First, const void* _Last, bool _Greater) noexcept;
+const void* __stdcall __std_is_sorted_until_4i(const void* _First, const void* _Last, bool _Greater) noexcept;
+const void* __stdcall __std_is_sorted_until_4u(const void* _First, const void* _Last, bool _Greater) noexcept;
+const void* __stdcall __std_is_sorted_until_8i(const void* _First, const void* _Last, bool _Greater) noexcept;
+const void* __stdcall __std_is_sorted_until_8u(const void* _First, const void* _Last, bool _Greater) noexcept;
+const void* __stdcall __std_is_sorted_until_f(const void* _First, const void* _Last, bool _Greater) noexcept;
+const void* __stdcall __std_is_sorted_until_d(const void* _First, const void* _Last, bool _Greater) noexcept;
 
 // TRANSITION, DevCom-10610477
 __declspec(noalias) void __stdcall __std_replace_4(
