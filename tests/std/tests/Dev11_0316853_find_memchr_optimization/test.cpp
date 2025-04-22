@@ -4,6 +4,7 @@
 // DevDiv-316853 "<algorithm>: find()'s memchr() optimization is incorrect"
 // DevDiv-468500 "<algorithm>: find()'s memchr() optimization is insufficiently aggressive"
 
+#pragma warning(disable : 4244) // '=': conversion from 'const _Ty' to 'unsigned int', possible loss of data
 #pragma warning(disable : 4389) // signed/unsigned mismatch
 #pragma warning(disable : 4805) // '==': unsafe mix of type '_Ty' and type 'const _Ty' in operation
 // This test intentionally triggers that warning when one of the inputs to find is bool
@@ -16,6 +17,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <iterator>
 #include <limits>
 #include <list>
@@ -762,5 +764,95 @@ int main() {
         static_assert(_Vector_alg_in_find_is_safe<int (**)(int), int (*)(int)>, "should optimize");
         static_assert(!_Vector_alg_in_find_is_safe<void (**)(int), int (*)(int)>, "should not optimize");
         static_assert(!_Vector_alg_in_find_is_safe<int (**)(), int (*)(int)>, "should not optimize");
+    }
+
+    { // quick checks to exercise more codepaths with _Could_compare_equal_to_value_type()
+        const vector<uint32_t> v{200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215};
+        const uint32_t u32{205};
+        const uint64_t u64{0x1234'5678'0000'00CDull};
+
+        assert(u32 != u64); // u64 is out-of-range for uint32_t, so it can never compare equal...
+        assert(u32 == static_cast<uint32_t>(u64)); // ... unless an algorithm performs an improper cast
+
+        assert(count(v.begin(), v.end(), u32) == 1);
+        assert(count(v.begin(), v.end(), u64) == 0);
+
+#if _HAS_CXX20
+        assert(ranges::count(v, u32) == 1);
+        assert(ranges::count(v, u64) == 0);
+#endif // _HAS_CXX20
+
+        assert(find(v.begin(), v.end(), u32) == v.begin() + 5);
+        assert(find(v.begin(), v.end(), u64) == v.end());
+
+#if _HAS_CXX20
+        assert(ranges::find(v, u32) == v.begin() + 5);
+        assert(ranges::find(v, u64) == v.end());
+#endif // _HAS_CXX20
+
+#if _HAS_CXX23
+        {
+            const auto result = ranges::find_last(v, u32);
+            assert(result.begin() == v.begin() + 5);
+            assert(result.end() == v.end());
+        }
+        {
+            const auto result = ranges::find_last(v, u64);
+            assert(result.begin() == v.end());
+            assert(result.end() == v.end());
+        }
+#endif // _HAS_CXX23
+
+        {
+            const vector<uint32_t> rem{200, 201, 202, 203, 204, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 0};
+
+            vector<uint32_t> dst(v.size(), 0);
+            assert(remove_copy(v.begin(), v.end(), dst.begin(), u32) == dst.end() - 1);
+            assert(dst == rem);
+
+            dst.assign(v.size(), 0);
+            assert(remove_copy(v.begin(), v.end(), dst.begin(), u64) == dst.end());
+            assert(dst == v);
+
+#if _HAS_CXX20
+            {
+                dst.assign(v.size(), 0);
+                const auto result = ranges::remove_copy(v, dst.begin(), u32);
+                assert(result.in == v.end());
+                assert(result.out == dst.end() - 1);
+                assert(dst == rem);
+            }
+            {
+                dst.assign(v.size(), 0);
+                const auto result = ranges::remove_copy(v, dst.begin(), u64);
+                assert(result.in == v.end());
+                assert(result.out == dst.end());
+                assert(dst == v);
+            }
+#endif // _HAS_CXX20
+        }
+
+        {
+            const vector<uint32_t> rep{200, 201, 202, 203, 204, 333, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215};
+            const uint32_t val{333};
+
+            vector<uint32_t> dst = v;
+            replace(dst.begin(), dst.end(), u32, val);
+            assert(dst == rep);
+
+            dst = v;
+            replace(dst.begin(), dst.end(), u64, uint64_t{val});
+            assert(dst == v);
+
+#if _HAS_CXX20
+            dst = v;
+            assert(ranges::replace(dst, u32, val) == dst.end());
+            assert(dst == rep);
+
+            dst = v;
+            assert(ranges::replace(dst, u64, val) == dst.end());
+            assert(dst == v);
+#endif // _HAS_CXX20
+        }
     }
 }

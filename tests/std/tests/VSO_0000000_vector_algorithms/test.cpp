@@ -720,6 +720,20 @@ FwdIt last_known_good_remove(FwdIt first, FwdIt last, T val) {
     return dest;
 }
 
+template <class InIt, class OutIt, class T>
+OutIt last_known_good_remove_copy(InIt first, InIt last, OutIt dest, T val) {
+    while (first != last) {
+        if (*first != val) {
+            *dest = *first;
+            ++dest;
+        }
+
+        ++first;
+    }
+
+    return dest;
+}
+
 template <class T>
 void test_case_remove(vector<T>& in_out_expected, vector<T>& in_out_actual, vector<T>& in_out_actual_r, const T val) {
     auto rem_expected = last_known_good_remove(in_out_expected.begin(), in_out_expected.end(), val);
@@ -729,8 +743,27 @@ void test_case_remove(vector<T>& in_out_expected, vector<T>& in_out_actual, vect
 #if _HAS_CXX20
     auto rem_actual_r = ranges::remove(in_out_actual_r, val);
     assert(equal(in_out_expected.begin(), rem_expected, begin(in_out_actual_r), begin(rem_actual_r)));
+    assert(end(rem_actual_r) == in_out_actual_r.end());
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     (void) in_out_actual_r;
+#endif // ^^^ !_HAS_CXX20 ^^^
+}
+
+template <class T>
+void test_case_remove_copy(
+    const vector<T>& source, vector<T>& out_expected, vector<T>& out_actual, vector<T>& out_actual_r, const T val) {
+    auto rem_expected = last_known_good_remove_copy(source.begin(), source.end(), out_expected.begin(), val);
+    auto rem_actual   = remove_copy(source.begin(), source.end(), out_actual.begin(), val);
+    assert(equal(out_expected.begin(), rem_expected, out_actual.begin(), rem_actual));
+    assert(equal(rem_expected, out_expected.end(), rem_actual, out_actual.end()));
+
+#if _HAS_CXX20
+    auto rem_actual_r = ranges::remove_copy(source, out_actual_r.begin(), val);
+    assert(equal(out_expected.begin(), rem_expected, out_actual_r.begin(), rem_actual_r.out));
+    assert(equal(rem_expected, out_expected.end(), rem_actual_r.out, out_actual_r.end()));
+    assert(rem_actual_r.in == source.end());
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    (void) out_actual_r;
 #endif // ^^^ !_HAS_CXX20 ^^^
 }
 
@@ -740,15 +773,21 @@ void test_remove(mt19937_64& gen) {
     binomial_distribution<TD> dis(10);
 
     vector<T> source;
+    vector<T> out_expected;
+    vector<T> out_actual;
+    vector<T> out_actual_r;
     vector<T> in_out_expected;
     vector<T> in_out_actual;
     vector<T> in_out_actual_r;
 
-    for (const auto& v : {&source, &in_out_expected, &in_out_actual, &in_out_actual_r}) {
+    for (const auto& v :
+        {&source, &in_out_expected, &in_out_actual, &in_out_actual_r, &out_expected, &out_actual, &out_actual_r}) {
         v->reserve(dataCount);
     }
 
     test_case_remove(in_out_expected, in_out_actual, in_out_actual_r, static_cast<T>(dis(gen)));
+    test_case_remove_copy(source, out_expected, out_actual, out_actual_r, static_cast<T>(dis(gen)));
+
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
         source.push_back(static_cast<T>(dis(gen)));
 
@@ -756,7 +795,12 @@ void test_remove(mt19937_64& gen) {
             *v = source;
         }
 
+        for (const auto& v : {&out_expected, &out_actual, &out_actual_r}) {
+            v->assign(source.size(), T{0});
+        }
+
         test_case_remove(in_out_expected, in_out_actual, in_out_actual_r, static_cast<T>(dis(gen)));
+        test_case_remove_copy(source, out_expected, out_actual, out_actual_r, static_cast<T>(dis(gen)));
     }
 }
 
@@ -782,6 +826,28 @@ FwdIt last_known_good_unique(FwdIt first, FwdIt last) {
     return dest;
 }
 
+template <class FwdItIn, class FwdItOut>
+FwdItOut last_known_good_unique_copy(FwdItIn first, FwdItIn last, FwdItOut dest) {
+    if (first == last) {
+        return dest;
+    }
+
+    *dest = *first;
+    ++first;
+
+    while (first != last) {
+        if (*first != *dest) {
+            ++dest;
+            *dest = *first;
+        }
+
+        ++first;
+    }
+
+    ++dest;
+    return dest;
+}
+
 template <class T>
 void test_case_unique(vector<T>& in_out_expected, vector<T>& in_out_actual, vector<T>& in_out_actual_r) {
     auto un_expected = last_known_good_unique(in_out_expected.begin(), in_out_expected.end());
@@ -791,8 +857,27 @@ void test_case_unique(vector<T>& in_out_expected, vector<T>& in_out_actual, vect
 #if _HAS_CXX20
     auto un_actual_r = ranges::unique(in_out_actual_r);
     assert(equal(in_out_expected.begin(), un_expected, begin(in_out_actual_r), begin(un_actual_r)));
+    assert(end(un_actual_r) == in_out_actual_r.end());
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     (void) in_out_actual_r;
+#endif // ^^^ !_HAS_CXX20 ^^^
+}
+
+template <class T>
+void test_case_unique_copy(
+    const vector<T>& source, vector<T>& out_expected, vector<T>& out_actual, vector<T>& out_actual_r) {
+    auto un_expected = last_known_good_unique_copy(source.begin(), source.end(), out_expected.begin());
+    auto un_actual   = unique_copy(source.begin(), source.end(), out_actual.begin());
+    assert(equal(out_expected.begin(), un_expected, out_actual.begin(), un_actual));
+    assert(equal(un_expected, out_expected.end(), un_actual, out_actual.end()));
+
+#if _HAS_CXX20
+    auto un_actual_r = ranges::unique_copy(source, out_actual_r.begin());
+    assert(equal(out_expected.begin(), un_expected, out_actual_r.begin(), un_actual_r.out));
+    assert(equal(un_expected, out_expected.end(), un_actual_r.out, out_actual_r.end()));
+    assert(un_actual_r.in == source.end());
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    (void) out_actual_r;
 #endif // ^^^ !_HAS_CXX20 ^^^
 }
 
@@ -808,15 +893,20 @@ void test_unique(mt19937_64& gen) {
     binomial_distribution<TD> dis(number_of_values);
 
     vector<T> source;
+    vector<T> out_expected;
+    vector<T> out_actual;
+    vector<T> out_actual_r;
     vector<T> in_out_expected;
     vector<T> in_out_actual;
     vector<T> in_out_actual_r;
 
-    for (const auto& v : {&source, &in_out_expected, &in_out_actual, &in_out_actual_r}) {
+    for (const auto& v :
+        {&source, &in_out_expected, &in_out_actual, &in_out_actual_r, &out_expected, &out_actual, &out_actual_r}) {
         v->reserve(dataCount);
     }
 
     test_case_unique(in_out_expected, in_out_actual, in_out_actual_r);
+    test_case_unique_copy(source, out_expected, out_actual, out_actual_r);
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
         if constexpr (is_pointer_v<T>) {
             source.push_back(ptr_val_array.data() + dis(gen));
@@ -828,7 +918,12 @@ void test_unique(mt19937_64& gen) {
             *v = source;
         }
 
+        for (const auto& v : {&out_expected, &out_actual, &out_actual_r}) {
+            v->assign(source.size(), T{0});
+        }
+
         test_case_unique(in_out_expected, in_out_actual, in_out_actual_r);
+        test_case_unique_copy(source, out_expected, out_actual, out_actual_r);
     }
 }
 
