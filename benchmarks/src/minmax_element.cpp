@@ -28,7 +28,7 @@ void bm(benchmark::State& state) {
     mt19937 gen(84710);
 
     if constexpr (is_floating_point_v<T>) {
-        normal_distribution<T> dis(0, 10000.0);
+        normal_distribution<T> dis(0, 100000.0);
         ranges::generate(a, [&] { return dis(gen); });
     } else {
         uniform_int_distribution<conditional_t<sizeof(T) != 1, T, int>> dis(1, 20);
