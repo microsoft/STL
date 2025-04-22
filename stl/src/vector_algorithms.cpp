@@ -5453,6 +5453,7 @@ namespace {
         _Advance_bytes(_Out, _Fill);
         return _Out;
     }
+
     template <class _Traits, class _Ty>
     void* _Remove_impl(void* _First, const void* _Stop, const _Ty _Val) noexcept {
         void* _Out        = _First;
