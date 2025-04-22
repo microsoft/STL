@@ -2563,7 +2563,7 @@ namespace {
     // In optimized builds it avoids an extra call, as these functions are too large to inline.
 
     template <class _Traits, _Find_one_predicate _Pred, class _Ty>
-    const void* __stdcall __std_find_trivial_impl(const void* _First, const void* _Last, _Ty _Val) noexcept {
+    const void* __stdcall __std_find_trivial_impl(const void* _First, const void* const _Last, _Ty _Val) noexcept {
 #ifndef _M_ARM64EC
         const size_t _Size_bytes = _Byte_length(_First, _Last);
 
@@ -3064,6 +3064,124 @@ namespace {
             }
         }
         return _Result;
+    }
+
+    template <class _Traits, class _Ty>
+    const void* __stdcall __std_search_n_impl(
+        const void* _First, const void* const _Last, const size_t _Count, const _Ty _Val) noexcept {
+        if (_Count == 0) {
+            return _First;
+        } else if (_Count == 1) {
+            return __std_find_trivial_impl<_Traits, _Find_one_predicate::_Equal>(_First, _Last, _Val);
+        }
+
+        auto _Mid1 = static_cast<const _Ty*>(_First);
+#ifndef _M_ARM64EC
+        const size_t _Length = _Byte_length(_First, _Last);
+        if (_Count <= 16 / sizeof(_Ty) && _Length >= 32 && _Use_avx2()) {
+            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
+            const int _Bytes_count = static_cast<int>(_Count * sizeof(_Ty));
+            const int _Sh1         = sizeof(_Ty) == 1 ? (_Bytes_count < 4 ? _Bytes_count - 2 : 2) : 0;
+            const int _Sh2 = sizeof(_Ty) < 4 ? (_Bytes_count < 4 ? 0 : (_Bytes_count < 8 ? _Bytes_count - 4 : 4)) : 0;
+            const int _Sh3 = sizeof(_Ty) < 8 ? (_Bytes_count < 8 ? 0 : _Bytes_count - 8) : 0;
+
+            const __m256i _Comparand = _Traits::_Set_avx(_Val);
+
+            const void* _Stop_at = _First;
+            _Advance_bytes(_Stop_at, _Length & ~size_t{0x1F});
+
+            uint32_t _Carry = 0;
+            do {
+                const __m256i _Data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
+
+                const auto _Mask = static_cast<uint32_t>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Comparand, _Data)));
+
+                uint64_t _MskX = uint64_t{_Carry} | (uint64_t{_Mask} << 32);
+
+                if constexpr (sizeof(_Ty) == 1) {
+                    _MskX = (_MskX >> 1) & _MskX;
+                    _MskX = __ull_rshift(_MskX, _Sh1) & _MskX;
+                }
+
+                if constexpr (sizeof(_Ty) == 2) {
+                    _MskX = (_MskX >> 2) & _MskX;
+                }
+
+                if constexpr (sizeof(_Ty) < 4) {
+                    _MskX = __ull_rshift(_MskX, _Sh2) & _MskX;
+                }
+
+                if constexpr (sizeof(_Ty) == 4) {
+                    _MskX = (_MskX >> 4) & _MskX;
+                }
+
+                if constexpr (sizeof(_Ty) < 8) {
+                    _MskX = __ull_rshift(_MskX, _Sh3) & _MskX;
+                }
+
+                if constexpr (sizeof(_Ty) == 8) {
+                    _MskX = (_MskX >> 8) & _MskX;
+                }
+
+                if (_MskX != 0) {
+#ifdef _M_IX86
+                    const uint32_t _MskLow = static_cast<uint32_t>(_MskX);
+
+                    const int _Shift = _MskLow != 0 ? static_cast<int>(_tzcnt_u32(_MskLow)) - 32
+                                                    : static_cast<int>(_tzcnt_u32(static_cast<uint32_t>(_MskX >> 32)));
+
+#elifdef _M_X64
+                    const long long _Shift = static_cast<long long>(_tzcnt_u64(_MskX)) - 32;
+#else
+#error Unsupported architecture
+#endif
+                    _Advance_bytes(_First, _Shift);
+                    return _First;
+                }
+
+                _Carry = _Mask;
+
+                _Advance_bytes(_First, 32);
+            } while (_First != _Stop_at);
+
+            _Mid1 = static_cast<const _Ty*>(_First);
+            _Rewind_bytes(_First, _lzcnt_u32(~_Carry));
+        }
+#endif // !_M_ARM64EC
+        auto _Match_start    = static_cast<const _Ty*>(_First);
+        const auto _Last_ptr = static_cast<const _Ty*>(_Last);
+
+        if (static_cast<size_t>(_Last_ptr - _Match_start) < _Count) {
+            return _Last_ptr;
+        }
+
+        auto _Match_end = _Match_start + _Count;
+        auto _Mid2      = _Match_end;
+        for (;;) {
+            // Invariants: _Match_end - _Match_start == _Count, [_Match_start, _Mid1) and [_Mid2, _Match_end) match
+            // _Val:
+            //
+            // _Match_start  _Mid1    _Mid2    _Match_end
+            // |=============|????????|========|??????????...
+
+            --_Mid2;
+            if (*_Mid2 == _Val) { // match;
+                if (_Mid1 == _Mid2) { // [_Mid1, _Mid2) is empty, so [_Match_start, _Match_end) all match
+                    return _Match_start;
+                }
+            } else { // mismatch; skip past it
+                _Match_start = _Mid2 + 1;
+
+                if (static_cast<size_t>(_Last_ptr - _Match_start) < _Count) { // not enough space left
+                    return _Last_ptr;
+                }
+
+                _Mid1      = _Match_end;
+                _Match_end = _Match_start + _Count;
+                _Mid2      = _Match_end;
+            }
+        }
     }
 
     enum class _Find_meow_of_predicate { _Any_of, _None_of };
@@ -4912,6 +5030,26 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_4(
 __declspec(noalias) size_t __stdcall __std_count_trivial_8(
     const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
     return __std_count_trivial_impl<_Count_traits_8>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_search_n_1(
+    const void* const _First, const void* const _Last, const size_t _Count, const uint8_t _Value) noexcept {
+    return __std_search_n_impl<_Find_traits_1>(_First, _Last, _Count, _Value);
+}
+
+const void* __stdcall __std_search_n_2(
+    const void* const _First, const void* const _Last, const size_t _Count, const uint16_t _Value) noexcept {
+    return __std_search_n_impl<_Find_traits_2>(_First, _Last, _Count, _Value);
+}
+
+const void* __stdcall __std_search_n_4(
+    const void* const _First, const void* const _Last, const size_t _Count, const uint32_t _Value) noexcept {
+    return __std_search_n_impl<_Find_traits_4>(_First, _Last, _Count, _Value);
+}
+
+const void* __stdcall __std_search_n_8(
+    const void* const _First, const void* const _Last, const size_t _Count, const uint64_t _Value) noexcept {
+    return __std_search_n_impl<_Find_traits_8>(_First, _Last, _Count, _Value);
 }
 
 const void* __stdcall __std_find_first_of_trivial_1(
