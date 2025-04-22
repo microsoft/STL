@@ -204,7 +204,7 @@ auto _Minmax_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
 }
 
 template <class _Ty>
-_Ty* _Is_sorted_until(_Ty* const _First, _Ty* const _Last, const bool _Greater) noexcept {
+_Ty* _Is_sorted_until_vectorized(_Ty* const _First, _Ty* const _Last, const bool _Greater) noexcept {
     constexpr bool _Signed = is_signed_v<_Ty>;
 
     if constexpr (is_pointer_v<_Ty>) {
@@ -8101,7 +8101,7 @@ namespace ranges {
                 if (!_STD _Is_constant_evaluated()) {
                     const auto _First_ptr = _STD _To_address(_First);
                     const auto _Last_ptr  = _First_ptr + static_cast<size_t>(_Last - _First);
-                    const auto _Result    = _STD _Is_sorted_until(_First_ptr, _Last_ptr, _Is_greater);
+                    const auto _Result    = _STD _Is_sorted_until_vectorized(_First_ptr, _Last_ptr, _Is_greater);
 
                     if constexpr (is_pointer_v<_It>) {
                         return _Result;
@@ -10988,7 +10988,8 @@ _NODISCARD _CONSTEXPR20 _FwdIt is_sorted_until(const _FwdIt _First, _FwdIt _Last
         if constexpr (_Is_greater || _Is_predicate_less<decltype(_UFirst), _Pr>) {
             if (!_STD _Is_constant_evaluated()) {
                 const auto _First_ptr = _STD _To_address(_UFirst);
-                const auto _Result    = _STD _Is_sorted_until(_First_ptr, _STD _To_address(_ULast), _Is_greater);
+                const auto _Result =
+                    _STD _Is_sorted_until_vectorized(_First_ptr, _STD _To_address(_ULast), _Is_greater);
 
                 if constexpr (is_pointer_v<decltype(_UFirst)>) {
                     _UFirst = _Result;
