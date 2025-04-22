@@ -47,27 +47,27 @@ void common_args(auto bm) {
     bm->ArgPair(3000, 1800);
 }
 
-BENCHMARK(bm<std::int8_t, AlgType::Std>)->Apply(common_args);
-BENCHMARK(bm<std::int8_t, AlgType::Rng>)->Apply(common_args);
-BENCHMARK(bm<std::int16_t, AlgType::Std>)->Apply(common_args);
-BENCHMARK(bm<std::int16_t, AlgType::Rng>)->Apply(common_args);
-BENCHMARK(bm<std::int32_t, AlgType::Std>)->Apply(common_args);
-BENCHMARK(bm<std::int32_t, AlgType::Rng>)->Apply(common_args);
-BENCHMARK(bm<std::int64_t, AlgType::Std>)->Apply(common_args);
-BENCHMARK(bm<std::int64_t, AlgType::Rng>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<std::int8_t, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<std::int8_t, AlgType::Rng>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<std::int16_t, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<std::int16_t, AlgType::Rng>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<std::int32_t, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<std::int32_t, AlgType::Rng>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<std::int64_t, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<std::int64_t, AlgType::Rng>)->Apply(common_args);
 
-BENCHMARK(bm<std::uint8_t, AlgType::Std>)->Apply(common_args);
-BENCHMARK(bm<std::uint8_t, AlgType::Rng>)->Apply(common_args);
-BENCHMARK(bm<std::uint16_t, AlgType::Std>)->Apply(common_args);
-BENCHMARK(bm<std::uint16_t, AlgType::Rng>)->Apply(common_args);
-BENCHMARK(bm<std::uint32_t, AlgType::Std>)->Apply(common_args);
-BENCHMARK(bm<std::uint32_t, AlgType::Rng>)->Apply(common_args);
-BENCHMARK(bm<std::uint64_t, AlgType::Std>)->Apply(common_args);
-BENCHMARK(bm<std::uint64_t, AlgType::Rng>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<std::uint8_t, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<std::uint8_t, AlgType::Rng>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<std::uint16_t, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<std::uint16_t, AlgType::Rng>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<std::uint32_t, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<std::uint32_t, AlgType::Rng>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<std::uint64_t, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<std::uint64_t, AlgType::Rng>)->Apply(common_args);
 
-BENCHMARK(bm<float, AlgType::Std>)->Apply(common_args);
-BENCHMARK(bm<float, AlgType::Rng>)->Apply(common_args);
-BENCHMARK(bm<double, AlgType::Std>)->Apply(common_args);
-BENCHMARK(bm<double, AlgType::Rng>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<float, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<float, AlgType::Rng>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<double, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm_is_sorted_until<double, AlgType::Rng>)->Apply(common_args);
 
 BENCHMARK_MAIN();
