@@ -131,17 +131,12 @@ void bm_uniform(benchmark::State& state) {
     benchmark_common<Type>(state, src);
 }
 
-template <alg_type Type, class Src>
-void bm_tukey_adversary(benchmark::State& state, const Src& adversary) {
-    benchmark_common<Type>(state, adversary);
-}
-
 BENCHMARK(bm_uniform<alg_type::std_fn>)->Arg(1024)->Arg(2048)->Arg(4096)->Arg(8192);
 BENCHMARK(bm_uniform<alg_type::rng>)->Arg(1024)->Arg(2048)->Arg(4096)->Arg(8192);
 
-BENCHMARK_CAPTURE(bm_tukey_adversary<alg_type::std_fn>, adversary1, tukey_ninther_adversary1);
-BENCHMARK_CAPTURE(bm_tukey_adversary<alg_type::rng>, adversary1, tukey_ninther_adversary1);
-BENCHMARK_CAPTURE(bm_tukey_adversary<alg_type::std_fn>, adversary2, tukey_ninther_adversary2);
-BENCHMARK_CAPTURE(bm_tukey_adversary<alg_type::rng>, adversary2, tukey_ninther_adversary2);
+BENCHMARK_CAPTURE(benchmark_common<alg_type::std_fn>, adversary1, tukey_ninther_adversary1);
+BENCHMARK_CAPTURE(benchmark_common<alg_type::rng>, adversary1, tukey_ninther_adversary1);
+BENCHMARK_CAPTURE(benchmark_common<alg_type::std_fn>, adversary2, tukey_ninther_adversary2);
+BENCHMARK_CAPTURE(benchmark_common<alg_type::rng>, adversary2, tukey_ninther_adversary2);
 
 BENCHMARK_MAIN();
