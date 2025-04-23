@@ -271,10 +271,19 @@ auto last_known_good_find_first_of(FwdItH h_first, FwdItH h_last, FwdItN n_first
 
 template <class RanItH, class RanItN>
 auto last_known_good_search(RanItH h_first, RanItH h_last, RanItN n_first, RanItN n_last) {
-    const auto n_len = n_last - n_first;
+    const ptrdiff_t n_len = n_last - n_first;
 
     for (; h_last - h_first >= n_len; ++h_first) {
-        if (equal(h_first, h_first + n_len, n_first, n_last)) {
+        bool is_equal = true;
+
+        for (ptrdiff_t i = 0; i != n_len; ++i) {
+            if (*(h_first + i) != *(n_first + i)) {
+                is_equal = false;
+                break;
+            }
+        }
+
+        if (is_equal) {
             return h_first;
         }
     }
@@ -284,7 +293,7 @@ auto last_known_good_search(RanItH h_first, RanItH h_last, RanItN n_first, RanIt
 
 template <class RanItH, class RanItN>
 auto last_known_good_find_end(RanItH h_first, RanItH h_last, RanItN n_first, RanItN n_last) {
-    const auto n_len = n_last - n_first;
+    const ptrdiff_t n_len = n_last - n_first;
 
     if (n_len > h_last - h_first) {
         return h_last;
@@ -293,7 +302,16 @@ auto last_known_good_find_end(RanItH h_first, RanItH h_last, RanItN n_first, Ran
     auto h_mid = h_last - n_len;
 
     for (;;) {
-        if (equal(h_mid, h_mid + n_len, n_first, n_last)) {
+        bool is_equal = true;
+
+        for (ptrdiff_t i = 0; i != n_len; ++i) {
+            if (*(h_mid + i) != *(n_first + i)) {
+                is_equal = false;
+                break;
+            }
+        }
+
+        if (is_equal) {
             return h_mid;
         }
 
