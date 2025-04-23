@@ -122,15 +122,14 @@ void test_nth_element(Algorithm alg, const Src& src) {
     vector<int> v;
     v.reserve(size(src));
 
-    for (vector<int>::difference_type nth{}, size = end(src) - begin(src); nth < size;
-        nth += static_cast<vector<int>::difference_type>(15)) {
+    for (vector<int>::difference_type nth{}, size = end(src) - begin(src); nth < size; nth += 15) {
         v.assign(begin(src), end(src));
         alg(v, nth);
         check_result(sorted, v, nth);
     }
     v.assign(begin(src), end(src));
-    alg(v, (v.end() - v.begin()) - static_cast<vector<int>::difference_type>(1));
-    check_result(sorted, v, (v.end() - v.begin()) - static_cast<vector<int>::difference_type>(1));
+    alg(v, (v.end() - v.begin()) - 1);
+    check_result(sorted, v, (v.end() - v.begin()) - 1);
 }
 
 template <class Algorithm>
