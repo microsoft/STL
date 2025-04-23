@@ -499,7 +499,7 @@ void test_VSO_225160_match_eol_flag() {
 
 void test_VSO_226914_word_boundaries() {
     const test_regex emptyAnchor(&g_regexTester, R"(\b)");
-    emptyAnchor.should_search_match("", "");
+    emptyAnchor.should_search_fail("");
     emptyAnchor.should_search_fail("", match_not_bow);
     emptyAnchor.should_search_fail("", match_not_eow);
     emptyAnchor.should_search_fail("", match_not_bow | match_not_eow);
@@ -636,6 +636,91 @@ void test_gh_731() {
     }
 }
 
+void test_gh_992() {
+    // GH-992 <regex> mishandles locale-based character classes outside of the char range
+    {
+        const test_wregex neg_w_regex(&g_regexTester, LR"(Y[\W]*Z)");
+        neg_w_regex.should_search_match(L"xxxY      Zxxx", L"Y      Z");
+        neg_w_regex.should_search_match(L"xxxY  \x2009   Zxxx", L"Y  \x2009   Z"); // U+2009 THIN SPACE
+        neg_w_regex.should_search_fail(L"xxxY  \x0078   Zxxx"); // U+0078 LATIN SMALL LETTER X
+        neg_w_regex.should_search_fail(L"xxxY  \x03C7   Zxxx"); // U+03C7 GREEK SMALL LETTER CHI
+        neg_w_regex.should_search_fail(L"xxxY  3   Zxxx");
+        neg_w_regex.should_search_fail(L"xxxY  \x0662   Zxxx"); // U+0662 ARABIC-INDIC DIGIT TWO
+    }
+    {
+        const test_wregex neg_s_regex(&g_regexTester, LR"(Y[\S]*Z)");
+        neg_s_regex.should_search_match(L"xxxYxx\x0078xxxZxxx", L"Yxx\x0078xxxZ"); // U+0078 LATIN SMALL LETTER X
+        neg_s_regex.should_search_match(L"xxxYxx\x03C7xxxZxxx", L"Yxx\x03C7xxxZ"); // U+03C7 GREEK SMALL LETTER CHI
+        neg_s_regex.should_search_match(L"xxxYxx3xxxZxxx", L"Yxx3xxxZ");
+        neg_s_regex.should_search_match(L"xxxYxx\x0662xxxZxxx", L"Yxx\x0662xxxZ"); // U+0662 ARABIC-INDIC DIGIT TWO
+        neg_s_regex.should_search_fail(L"xxxYxx xxxZxxx");
+        neg_s_regex.should_search_fail(L"xxxYxx\x2009xxxZxxx"); // U+2009 THIN SPACE
+    }
+    for (const wstring& pattern : {LR"(Y[\D]*Z)", LR"(Y[\W\D]*Z)"}) {
+        const test_wregex neg_d_regex(&g_regexTester, pattern);
+        neg_d_regex.should_search_match(L"xxxYxx\x0078xxxZxxx", L"Yxx\x0078xxxZ"); // U+0078 LATIN SMALL LETTER X
+        neg_d_regex.should_search_match(L"xxxYxx\x03C7xxxZxxx", L"Yxx\x03C7xxxZ"); // U+03C7 GREEK SMALL LETTER CHI
+        neg_d_regex.should_search_match(L"xxxYxx xxxZxxx", L"Yxx xxxZ");
+        neg_d_regex.should_search_match(L"xxxYxx\x2009xxxZxxx", L"Yxx\x2009xxxZ"); // U+2009 THIN SPACE
+        neg_d_regex.should_search_fail(L"xxxYxx3xxxZxxx");
+        neg_d_regex.should_search_fail(L"xxxYxx\x0662xxxZxxx"); // U+0662 ARABIC-INDIC DIGIT TWO
+    }
+    for (const wstring& pattern : {LR"(Y[\W\S]*Z)", LR"(Y[\S\D]*Z)", LR"(Y[\W\S\D]*Z)"}) {
+        const test_wregex class_matches_all_regex(&g_regexTester, pattern);
+        class_matches_all_regex.should_search_match(
+            L"xxxYxx\x0078xxxZxxx", L"Yxx\x0078xxxZ"); // U+0078 LATIN SMALL LETTER X
+        class_matches_all_regex.should_search_match(
+            L"xxxYxx\x03C7xxxZxxx", L"Yxx\x03C7xxxZ"); // U+03C7 GREEK SMALL LETTER CHI
+        class_matches_all_regex.should_search_match(L"xxxYxx xxxZxxx", L"Yxx xxxZ");
+        class_matches_all_regex.should_search_match(L"xxxYxx\x2009xxxZxxx", L"Yxx\x2009xxxZ"); // U+2009 THIN SPACE
+        class_matches_all_regex.should_search_match(L"xxxYxx3xxxZxxx", L"Yxx3xxxZ");
+        class_matches_all_regex.should_search_match(
+            L"xxxYxx\x0662xxxZxxx", L"Yxx\x0662xxxZ"); // U+0662 ARABIC-INDIC DIGIT TWO
+    }
+    {
+        const test_wregex neg_w_regex_skip(&g_regexTester, LR"([\W])");
+        neg_w_regex_skip.should_search_match(L"xxxx\x2009xxxx", L"\x2009"); // U+2009 THIN SPACE
+        neg_w_regex_skip.should_search_fail(L"xxxx\x03C7xxxx"); // U+03C7 GREEK SMALL LETTER CHI
+        neg_w_regex_skip.should_search_fail(L"xxxx\x0662xxxx"); // U+0662 ARABIC-INDIC DIGIT TWO
+    }
+    {
+        const test_wregex neg_s_regex_skip(&g_regexTester, LR"([\S])");
+        neg_s_regex_skip.should_search_match(L"  \x03C7  ", L"\x03C7"); // U+03C7 GREEK SMALL LETTER CHI
+        neg_s_regex_skip.should_search_match(L"  \x0662  ", L"\x0662"); // U+0662 ARABIC-INDIC DIGIT TWO
+        neg_s_regex_skip.should_search_fail(L"  \x2009  "); // U+2009 THIN SPACE
+    }
+    {
+        const test_wregex neg_d_regex_skip(&g_regexTester, LR"([\D])");
+        neg_d_regex_skip.should_search_match(L"1623\x03C7"s + L"253", L"\x03C7"); // U+03C7 GREEK SMALL LETTER CHI
+        neg_d_regex_skip.should_search_match(L"1623\x2009"s + L"253", L"\x2009"); // U+2009 THIN SPACE
+        neg_d_regex_skip.should_search_fail(L"1623\x0662"s + L"253"); // U+0662 ARABIC-INDIC DIGIT TWO
+    }
+    {
+        const test_wregex double_negative_w(&g_regexTester, LR"([^\W])");
+        double_negative_w.should_search_match(L"\x03C7", L"\x03C7"); // U+03C7 GREEK SMALL LETTER CHI
+        double_negative_w.should_search_match(L"\x0662", L"\x0662"); // U+0662 ARABIC-INDIC DIGIT TWO
+        double_negative_w.should_search_fail(L"\x2009"); // U+2009 THIN SPACE
+    }
+    {
+        const test_wregex double_negative_s(&g_regexTester, LR"([^\S])");
+        double_negative_s.should_search_fail(L"\x03C7"); // U+03C7 GREEK SMALL LETTER CHI
+        double_negative_s.should_search_fail(L"\x0662"); // U+0662 ARABIC-INDIC DIGIT TWO
+        double_negative_s.should_search_match(L"\x2009", L"\x2009"); // U+2009 THIN SPACE
+    }
+    {
+        const test_wregex double_negative_d(&g_regexTester, LR"([^\D])");
+        double_negative_d.should_search_fail(L"\x03C7"); // U+03C7 GREEK SMALL LETTER CHI
+        double_negative_d.should_search_match(L"\x0662", L"\x0662"); // U+0662 ARABIC-INDIC DIGIT TWO
+        double_negative_d.should_search_fail(L"\x2009"); // U+2009 THIN SPACE
+    }
+    for (const wstring& pattern : {LR"([\w\W])", LR"([\s\S])", LR"([\d\D])"}) {
+        const test_wregex omni_regex(&g_regexTester, pattern);
+        omni_regex.should_search_match(L"\x03C7", L"\x03C7"); // U+03C7 GREEK SMALL LETTER CHI
+        omni_regex.should_search_match(L"\x0662", L"\x0662"); // U+0662 ARABIC-INDIC DIGIT TWO
+        omni_regex.should_search_match(L"\x2009", L"\x2009"); // U+2009 THIN SPACE
+    }
+}
+
 void test_gh_993() {
     // GH-993 regex::icase is not handled correctly for some input.
     {
@@ -751,11 +836,51 @@ void test_gh_5058() {
 void test_gh_5160() {
     // GH-5160 fixed mishandled negated character class escapes
     // outside character class definitions
-    const test_wregex neg_regex(&g_regexTester, LR"(Y\S*Z)");
-    neg_regex.should_search_match(L"xxxYxx\x0078xxxZxxx", L"Yxx\x0078xxxZ"); // U+0078 LATIN SMALL LETTER X
-    neg_regex.should_search_match(L"xxxYxx\x03C7xxxZxxx", L"Yxx\x03C7xxxZ"); // U+03C7 GREEK SMALL LETTER CHI
-    neg_regex.should_search_fail(L"xxxYxx xxxZxxx");
-    neg_regex.should_search_fail(L"xxxYxx\x2009xxxZxxx"); // U+2009 THIN SPACE
+    {
+        const test_wregex neg_w_regex(&g_regexTester, LR"(Y\W*Z)");
+        neg_w_regex.should_search_match(L"xxxY      Zxxx", L"Y      Z");
+        neg_w_regex.should_search_match(L"xxxY  \x2009   Zxxx", L"Y  \x2009   Z"); // U+2009 THIN SPACE
+        neg_w_regex.should_search_fail(L"xxxY  \x0078   Zxxx"); // U+0078 LATIN SMALL LETTER X
+        neg_w_regex.should_search_fail(L"xxxY  \x03C7   Zxxx"); // U+03C7 GREEK SMALL LETTER CHI
+        neg_w_regex.should_search_fail(L"xxxY  3   Zxxx");
+        neg_w_regex.should_search_fail(L"xxxY  \x0662   Zxxx"); // U+0662 ARABIC-INDIC DIGIT TWO
+    }
+    {
+        const test_wregex neg_s_regex(&g_regexTester, LR"(Y\S*Z)");
+        neg_s_regex.should_search_match(L"xxxYxx\x0078xxxZxxx", L"Yxx\x0078xxxZ"); // U+0078 LATIN SMALL LETTER X
+        neg_s_regex.should_search_match(L"xxxYxx\x03C7xxxZxxx", L"Yxx\x03C7xxxZ"); // U+03C7 GREEK SMALL LETTER CHI
+        neg_s_regex.should_search_match(L"xxxYxx3xxxZxxx", L"Yxx3xxxZ");
+        neg_s_regex.should_search_match(L"xxxYxx\x0662xxxZxxx", L"Yxx\x0662xxxZ"); // U+0662 ARABIC-INDIC DIGIT TWO
+        neg_s_regex.should_search_fail(L"xxxYxx xxxZxxx");
+        neg_s_regex.should_search_fail(L"xxxYxx\x2009xxxZxxx"); // U+2009 THIN SPACE
+    }
+    {
+        const test_wregex neg_d_regex(&g_regexTester, LR"(Y\D*Z)");
+        neg_d_regex.should_search_match(L"xxxYxx\x0078xxxZxxx", L"Yxx\x0078xxxZ"); // U+0078 LATIN SMALL LETTER X
+        neg_d_regex.should_search_match(L"xxxYxx\x03C7xxxZxxx", L"Yxx\x03C7xxxZ"); // U+03C7 GREEK SMALL LETTER CHI
+        neg_d_regex.should_search_match(L"xxxYxx xxxZxxx", L"Yxx xxxZ");
+        neg_d_regex.should_search_match(L"xxxYxx\x2009xxxZxxx", L"Yxx\x2009xxxZ"); // U+2009 THIN SPACE
+        neg_d_regex.should_search_fail(L"xxxYxx3xxxZxxx");
+        neg_d_regex.should_search_fail(L"xxxYxx\x0662xxxZxxx"); // U+0662 ARABIC-INDIC DIGIT TWO
+    }
+    {
+        const test_wregex neg_w_regex_skip(&g_regexTester, LR"(\W)");
+        neg_w_regex_skip.should_search_match(L"xxxx\x2009xxxx", L"\x2009"); // U+2009 THIN SPACE
+        neg_w_regex_skip.should_search_fail(L"xxxx\x03C7xxxx"); // U+03C7 GREEK SMALL LETTER CHI
+        neg_w_regex_skip.should_search_fail(L"xxxx\x0662xxxx"); // U+0662 ARABIC-INDIC DIGIT TWO
+    }
+    {
+        const test_wregex neg_s_regex_skip(&g_regexTester, LR"(\S)");
+        neg_s_regex_skip.should_search_match(L"  \x03C7  ", L"\x03C7"); // U+03C7 GREEK SMALL LETTER CHI
+        neg_s_regex_skip.should_search_match(L"  \x0662  ", L"\x0662"); // U+0662 ARABIC-INDIC DIGIT TWO
+        neg_s_regex_skip.should_search_fail(L"  \x2009  "); // U+2009 THIN SPACE
+    }
+    {
+        const test_wregex neg_d_regex_skip(&g_regexTester, LR"(\D)");
+        neg_d_regex_skip.should_search_match(L"1623\x03C7"s + L"253", L"\x03C7"); // U+03C7 GREEK SMALL LETTER CHI
+        neg_d_regex_skip.should_search_match(L"1623\x2009"s + L"253", L"\x2009"); // U+2009 THIN SPACE
+        neg_d_regex_skip.should_search_fail(L"1623\x0662"s + L"253"); // U+0662 ARABIC-INDIC DIGIT TWO
+    }
 }
 
 void test_gh_5165_syntax_option(const syntax_option_type basic_or_grep) {
@@ -1031,7 +1156,6 @@ void test_gh_5165_grep() {
         middle_nl_with_caret.should_search_fail("^a");
         middle_nl_with_caret.should_search_fail("ca");
         middle_nl_with_caret.should_search_fail("^b");
-        middle_nl_with_caret.should_search_fail("ca");
         middle_nl_with_caret.should_search_fail("cb");
     }
     {
@@ -1151,6 +1275,40 @@ void test_gh_5214() {
     }
 }
 
+void test_gh_5245() {
+    // GH-5245: <regex>: Successful negative lookahead assertions
+    // sometimes mistakenly assign matches to capture groups
+    {
+        test_regex neg_assert(&g_regexTester, "^(?!(a)b)..$");
+        neg_assert.should_search_fail("ab"); // rejected by the negative assertion
+        neg_assert.should_search_match_capture_groups("ac", "ac", match_default, {{-1, -1}}); // test the fix
+        neg_assert.should_search_match_capture_groups("cb", "cb", match_default, {{-1, -1}}); // never captures
+
+        // These 3-character and 4-character tests verify that after a lookahead assertion, we reset the position:
+        neg_assert.should_search_fail("abb");
+        neg_assert.should_search_fail("acc");
+        neg_assert.should_search_fail("cbb");
+        neg_assert.should_search_fail("abab");
+        neg_assert.should_search_fail("abcc");
+        neg_assert.should_search_fail("accc");
+    }
+
+    {
+        test_regex pos_assert(&g_regexTester, "^(?=(a)b)..$");
+        pos_assert.should_search_match_capture_groups("ab", "ab", match_default, {{0, 1}}); // capture group retained
+        pos_assert.should_search_fail("ac"); // rejected by the positive assertion midway through
+        pos_assert.should_search_fail("cb"); // rejected by the positive assertion immediately
+
+        // These 3-character and 4-character tests verify that after a lookahead assertion, we reset the position:
+        pos_assert.should_search_fail("abb");
+        pos_assert.should_search_fail("acc");
+        pos_assert.should_search_fail("cbb");
+        pos_assert.should_search_fail("abab");
+        pos_assert.should_search_fail("abcc");
+        pos_assert.should_search_fail("accc");
+    }
+}
+
 void test_gh_5253() {
     // GH-5253 cleaned up parsing logic for quantifiers that were applied to single characters
     g_regexTester.should_match("abbb", "ab*");
@@ -1169,6 +1327,300 @@ void test_gh_5253() {
     g_regexTester.should_not_match("b", "a*");
     g_regexTester.should_match("", "()*");
     g_regexTester.should_not_match("a", "()*");
+}
+
+void test_gh_5362_syntax_option(const syntax_option_type basic_or_grep) {
+    {
+        const test_regex ending_anchor(&g_regexTester, "meo[wW]$", basic_or_grep);
+        ending_anchor.should_search_match("kitten_meow", "meow");
+        ending_anchor.should_search_fail("homeowner");
+    }
+    {
+        const test_regex middle_anchor(&g_regexTester, "me$o[wW]", basic_or_grep);
+        middle_anchor.should_search_fail("kitten_meow");
+        middle_anchor.should_search_fail("homeowner");
+        middle_anchor.should_search_match("home$owner", "me$ow");
+    }
+    {
+        const test_regex double_dollars(&g_regexTester, "meo[wW]$$", basic_or_grep);
+        double_dollars.should_search_fail("kitten_meow");
+        double_dollars.should_search_fail("homeowner");
+        double_dollars.should_search_match("kitten_meow$", "meow$");
+        double_dollars.should_search_fail("kitten_meow$$");
+        double_dollars.should_search_fail("homeow$ner");
+        double_dollars.should_search_fail("homeow$$ner");
+    }
+
+    g_regexTester.should_not_match("me$ow", R"(\(me$\)o[wW])", basic_or_grep);
+    g_regexTester.should_not_match("meow", R"(\(me$\)o[wW])", basic_or_grep);
+
+    {
+        const test_regex singlegroup_anchor(&g_regexTester, R"(\(meo[wW]$\))", basic_or_grep);
+        singlegroup_anchor.should_search_match("kitten_meow", "meow");
+        singlegroup_anchor.should_search_fail("kitten_meow$");
+        singlegroup_anchor.should_search_fail("homeowner");
+        singlegroup_anchor.should_search_fail("homeow$ner");
+    }
+    {
+        const test_regex suffixedgroup_anchor(&g_regexTester, R"(\(meo[wW]$\).*)", basic_or_grep);
+        suffixedgroup_anchor.should_search_match("kitten_meow", "meow");
+        suffixedgroup_anchor.should_search_fail("kitten_meow$");
+        suffixedgroup_anchor.should_search_fail("homeowner");
+        suffixedgroup_anchor.should_search_fail("homeow$ner");
+    }
+    {
+        const test_regex firstgroup_anchor(&g_regexTester, R"(\(meo[wW]$\)\(.*\))", basic_or_grep);
+        firstgroup_anchor.should_search_match("kitten_meow", "meow");
+        firstgroup_anchor.should_search_fail("kitten_meow$");
+        firstgroup_anchor.should_search_fail("homeowner");
+        firstgroup_anchor.should_search_fail("homeow$ner");
+    }
+    {
+        const test_regex nested_anchor(&g_regexTester, R"(\(\(meo[wW]$\)$\).*)", basic_or_grep);
+        nested_anchor.should_search_match("kitten_meow", "meow");
+        nested_anchor.should_search_fail("kitten_meow$");
+        nested_anchor.should_search_fail("kitten_meow$$");
+        nested_anchor.should_search_fail("homeowner");
+        nested_anchor.should_search_fail("homeow$ner");
+        nested_anchor.should_search_fail("homeow$$ner");
+    }
+    {
+        const test_regex double_dollars(&g_regexTester, R"(\(meo[wW]$$\).*)", basic_or_grep);
+        double_dollars.should_search_fail("kitten_meow");
+        double_dollars.should_search_match("kitten_meow$", "meow$");
+        double_dollars.should_search_fail("kitten_meow$$");
+        double_dollars.should_search_fail("homeowner");
+        double_dollars.should_search_fail("homeow$ner");
+        double_dollars.should_search_fail("homeow$$ner");
+    }
+
+    // Validate that there is no special behavior near bars,
+    // as they are alternation operators in regex modes other than basic or grep.
+    {
+        const test_regex middle_bar(&g_regexTester, "a|a$", basic_or_grep);
+        middle_bar.should_search_match("a|a", "a|a");
+        middle_bar.should_search_fail("a|a$");
+        middle_bar.should_search_fail("a|ab");
+        middle_bar.should_search_fail("a");
+    }
+    {
+        const test_regex group_middle_bar(&g_regexTester, R"(\(a|a\)$)", basic_or_grep);
+        group_middle_bar.should_search_match("a|a", "a|a");
+        group_middle_bar.should_search_fail("a|a$");
+        group_middle_bar.should_search_fail("a|ab");
+        group_middle_bar.should_search_fail("a");
+    }
+    {
+        const test_regex middle_bar_with_dollar(&g_regexTester, "a$|b$", basic_or_grep);
+        middle_bar_with_dollar.should_search_match("a$|b", "a$|b");
+        middle_bar_with_dollar.should_search_fail("a|b");
+        middle_bar_with_dollar.should_search_fail("a$|b$");
+        middle_bar_with_dollar.should_search_fail("a$|bc");
+        middle_bar_with_dollar.should_search_fail("a");
+        middle_bar_with_dollar.should_search_fail("b");
+    }
+    {
+        const test_regex group_middle_bar_with_dollar(&g_regexTester, R"(\(a$|b\)$)", basic_or_grep);
+        group_middle_bar_with_dollar.should_search_match("a$|b", "a$|b");
+        group_middle_bar_with_dollar.should_search_fail("a|b");
+        group_middle_bar_with_dollar.should_search_fail("a$|b$");
+        group_middle_bar_with_dollar.should_search_fail("a$|bc");
+        group_middle_bar_with_dollar.should_search_fail("a");
+        group_middle_bar_with_dollar.should_search_fail("b");
+    }
+}
+
+void test_gh_5362_basic() {
+    // test cases specific for basic regular expressions
+    {
+        const test_regex middle_nl(&g_regexTester, "a\na$", basic);
+        middle_nl.should_search_match("a\na", "a\na");
+        middle_nl.should_search_fail("a\na$");
+        middle_nl.should_search_fail("a\nab");
+        middle_nl.should_search_fail("a");
+    }
+    {
+        const test_regex group_middle_nl(&g_regexTester, "\\(a\na\\)$", basic);
+        group_middle_nl.should_search_match("a\na", "a\na");
+        group_middle_nl.should_search_fail("a\na$");
+        group_middle_nl.should_search_fail("a\nab");
+        group_middle_nl.should_search_fail("a");
+    }
+    {
+        const test_regex middle_nl_with_dollar(&g_regexTester, "a$\nb$", basic);
+        middle_nl_with_dollar.should_search_match("a$\nb", "a$\nb");
+        middle_nl_with_dollar.should_search_fail("a\nb");
+        middle_nl_with_dollar.should_search_fail("a$\nb$");
+        middle_nl_with_dollar.should_search_fail("a$\nbc");
+        middle_nl_with_dollar.should_search_fail("a");
+        middle_nl_with_dollar.should_search_fail("b");
+    }
+    {
+        const test_regex group_middle_nl_with_dollar(&g_regexTester, "\\(a$\nb\\)$", basic);
+        group_middle_nl_with_dollar.should_search_match("a$\nb", "a$\nb");
+        group_middle_nl_with_dollar.should_search_fail("a\nb");
+        group_middle_nl_with_dollar.should_search_fail("a$\nb$");
+        group_middle_nl_with_dollar.should_search_fail("a$\nbc");
+        group_middle_nl_with_dollar.should_search_fail("a");
+        group_middle_nl_with_dollar.should_search_fail("b");
+    }
+}
+
+void test_gh_5362_grep() {
+    // test cases specific for grep mode
+    {
+        const test_regex middle_nl(&g_regexTester, "a\na$", grep);
+        middle_nl.should_search_match("a\na$", "a");
+        middle_nl.should_search_match("a\nab", "a");
+        middle_nl.should_search_match("a", "a");
+        middle_nl.should_search_fail("b");
+    }
+    {
+        // This regular expression is not accepted by POSIX grep, but currently the regex parser does not reject it.
+        // If the parser is changed to reject it, adjust this test case.
+        const test_regex group_middle_nl(&g_regexTester, "\\(a\na\\)$", grep);
+        group_middle_nl.should_search_match("a\na", "a\na");
+        group_middle_nl.should_search_fail("a\na$");
+        group_middle_nl.should_search_fail("a\nac");
+        group_middle_nl.should_search_fail("a");
+    }
+    {
+        const test_regex middle_nl_with_dollar(&g_regexTester, "a$\nb$", grep);
+        middle_nl_with_dollar.should_search_match("a$\nb", "b");
+        middle_nl_with_dollar.should_search_match("a\nb", "a");
+        middle_nl_with_dollar.should_search_match("ba", "a");
+        middle_nl_with_dollar.should_search_match("a", "a");
+        middle_nl_with_dollar.should_search_match("b", "b");
+        middle_nl_with_dollar.should_search_match("ab", "b");
+        middle_nl_with_dollar.should_search_fail("a$");
+        middle_nl_with_dollar.should_search_fail("ac");
+        middle_nl_with_dollar.should_search_fail("b$");
+        middle_nl_with_dollar.should_search_fail("bc");
+    }
+    {
+        // This regular expression is not accepted by POSIX grep, but currently the regex parser does not reject it.
+        // If the parser is changed to reject it, adjust this test case.
+        const test_regex group_middle_nl_with_dollar(&g_regexTester, "\\(a$\nb\\)$", grep);
+        group_middle_nl_with_dollar.should_search_match("a$\nb", "a$\nb");
+        group_middle_nl_with_dollar.should_search_fail("a\nb");
+        group_middle_nl_with_dollar.should_search_fail("a$\nb$");
+        group_middle_nl_with_dollar.should_search_fail("a$\nbc");
+        group_middle_nl_with_dollar.should_search_fail("a");
+        group_middle_nl_with_dollar.should_search_fail("b");
+    }
+}
+
+void test_gh_5362() {
+    // GH-5362: `<regex>`: Properly parse dollar anchors in basic and grep mode
+    test_gh_5362_syntax_option(basic);
+    test_gh_5362_syntax_option(grep);
+
+    test_gh_5362_basic();
+    test_gh_5362_grep();
+}
+
+void test_gh_5364() {
+    // GH-5364 <regex>: Allow initial ] to start character ranges in POSIX regular expressions
+    for (syntax_option_type option : {basic, extended, awk, grep, egrep}) {
+        g_regexTester.should_match("]", "[]-_]", option);
+        g_regexTester.should_match("^", "[]-_]", option);
+        g_regexTester.should_match("_", "[]-_]", option);
+        g_regexTester.should_not_match("-", "[]-_]", option);
+
+        g_regexTester.should_not_match("]", "[^]-_]", option);
+        g_regexTester.should_not_match("^", "[^]-_]", option);
+        g_regexTester.should_not_match("_", "[^]-_]", option);
+        g_regexTester.should_match("-", "[^]-_]", option);
+
+        g_regexTester.should_match("]", "[]a]", option);
+        g_regexTester.should_match("a", "[]a]", option);
+        g_regexTester.should_not_match("_", "[]a]", option);
+        g_regexTester.should_not_match("a]", "[]a]", option);
+        g_regexTester.should_not_match("]a", "[]a]", option);
+        g_regexTester.should_not_match("__", "[]a]", option);
+
+        g_regexTester.should_not_match("]", "[^]a]", option);
+        g_regexTester.should_not_match("a", "[^]a]", option);
+        g_regexTester.should_match("_", "[^]a]", option);
+        g_regexTester.should_not_match("a]", "[^]a]", option);
+        g_regexTester.should_not_match("]a", "[^]a]", option);
+        g_regexTester.should_not_match("__", "[^]a]", option);
+
+        g_regexTester.should_throw("[]", error_brack, option);
+        g_regexTester.should_throw("[^]", error_brack, option);
+    }
+
+    g_regexTester.should_throw("[]-_]", error_brack, ECMAScript);
+    g_regexTester.should_throw("[^]-_]", error_brack, ECMAScript);
+    g_regexTester.should_throw("[]a]", error_brack, ECMAScript);
+    g_regexTester.should_throw("[^]a]", error_brack, ECMAScript);
+
+    g_regexTester.should_not_match("c", "[]", ECMAScript);
+    g_regexTester.should_match("c", "[^]", ECMAScript);
+}
+
+void test_gh_5371() {
+    // GH-5371 <regex>: \b and \B are backwards on empty strings
+    g_regexTester.should_not_match("", R"(\b)");
+    g_regexTester.should_match("", R"(\B)");
+}
+
+void test_gh_5374() {
+    // GH-5374: <regex>: Back-references to unmatched capture groups
+    // should not match in POSIX basic regular expressions
+    for (syntax_option_type option : {basic, grep}) {
+        g_regexTester.should_not_match("", R"(\(.\)*\1)", option);
+        g_regexTester.should_match("", R"(\(.*\)\1)", option);
+        g_regexTester.should_not_match("bc", R"(\(a\)*b\1c)", option);
+        g_regexTester.should_match("bc", R"(\(a*\)b\1c)", option);
+    }
+
+    // ECMAScript's behavior is different:
+    g_regexTester.should_match("", R"((.)*\1)", ECMAScript);
+    g_regexTester.should_match("", R"((.*)\1)", ECMAScript);
+    g_regexTester.should_match("bc", R"((a)*b\1c)", ECMAScript);
+    g_regexTester.should_match("bc", R"((a*)b\1c)", ECMAScript);
+}
+
+void test_gh_5377() {
+    // GH-5377 <regex>: Do not reset matched capture groups in POSIX regexes
+    for (syntax_option_type option : {extended, awk, egrep}) {
+        test_regex abcd_regex(&g_regexTester, R"(^((a)|(b)|(c)|(d))+$)", option);
+        abcd_regex.should_search_match_capture_groups(
+            "abcd", "abcd", match_default, {{3, 4}, {0, 1}, {1, 2}, {2, 3}, {3, 4}});
+        abcd_regex.should_search_match_capture_groups(
+            "acbd", "acbd", match_default, {{3, 4}, {0, 1}, {2, 3}, {1, 2}, {3, 4}});
+        abcd_regex.should_search_match_capture_groups(
+            "dcba", "dcba", match_default, {{3, 4}, {3, 4}, {2, 3}, {1, 2}, {0, 1}});
+    }
+
+    for (syntax_option_type option : {basic, grep}) {
+        test_regex abcd_regex(&g_regexTester, R"(^\(\(a\)*\(b\)*\(c\)*\(d\)*\)*$)", option);
+        abcd_regex.should_search_match_capture_groups(
+            "abcd", "abcd", match_default, {{0, 4}, {0, 1}, {1, 2}, {2, 3}, {3, 4}});
+        abcd_regex.should_search_match_capture_groups(
+            "acbd", "acbd", match_default, {{2, 4}, {0, 1}, {2, 3}, {1, 2}, {3, 4}});
+        abcd_regex.should_search_match_capture_groups(
+            "dcba", "dcba", match_default, {{3, 4}, {3, 4}, {2, 3}, {1, 2}, {0, 1}});
+
+        test_regex backref_regex(&g_regexTester, R"(^\(\(a\)\{0,1\}\(\2b\)\{0,1\}\)*)", option);
+        backref_regex.should_search_match_capture_groups("aaababb", "aaabab", match_default, {{4, 6}, {1, 2}, {4, 6}});
+    }
+
+    {
+        // ECMAScript's behavior is different:
+        test_regex abcd_regex(&g_regexTester, R"(^((a)|(b)|(c)|(d))+$)", ECMAScript);
+        abcd_regex.should_search_match_capture_groups(
+            "abcd", "abcd", match_default, {{3, 4}, {-1, -1}, {-1, -1}, {-1, -1}, {3, 4}});
+        abcd_regex.should_search_match_capture_groups(
+            "acbd", "acbd", match_default, {{3, 4}, {-1, -1}, {-1, -1}, {-1, -1}, {3, 4}});
+        abcd_regex.should_search_match_capture_groups(
+            "dcba", "dcba", match_default, {{3, 4}, {3, 4}, {-1, -1}, {-1, -1}, {-1, -1}});
+
+        test_regex backref_regex(&g_regexTester, R"(^((a){0,1}(\2b){0,1})*)", ECMAScript);
+        backref_regex.should_search_match_capture_groups(
+            "aaababb", "aaababb", match_default, {{6, 7}, {-1, -1}, {6, 7}});
+    }
 }
 
 int main() {
@@ -1199,6 +1651,7 @@ int main() {
     test_VSO_226914_word_boundaries();
     test_construction_from_nullptr_and_zero();
     test_gh_731();
+    test_gh_992();
     test_gh_993();
     test_gh_4995();
     test_gh_5058();
@@ -1207,7 +1660,13 @@ int main() {
     test_gh_5167();
     test_gh_5192();
     test_gh_5214();
+    test_gh_5245();
     test_gh_5253();
+    test_gh_5362();
+    test_gh_5364();
+    test_gh_5371();
+    test_gh_5374();
+    test_gh_5377();
 
     return g_regexTester.result();
 }

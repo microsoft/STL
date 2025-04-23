@@ -2542,7 +2542,7 @@ private:
     }
 
     void _Destroy() noexcept override { // destroy managed resource
-        _STD _Destroy_in_place(_Storage._Value); // use the default mechanism per LWG-4024
+        _STD _Destroy_in_place(_Storage._Value);
     }
 
     void _Delete_this() noexcept override { // destroy self
@@ -2789,7 +2789,7 @@ private:
     }
 
     void _Destroy() noexcept override { // destroy managed resource
-        _STD _Reverse_destroy_multidimensional_n(_Get_ptr(), _Size); // use the default mechanism per LWG-4024
+        _STD _Reverse_destroy_multidimensional_n(_Get_ptr(), _Size);
     }
 
     void _Delete_this() noexcept override { // destroy self
@@ -2893,7 +2893,7 @@ private:
     void _Destroy() noexcept override { // destroy managed resource
         // not _Storage._Value as _Ty is an array type (not a class type or a scalar type),
         // and thus cannot be used as a pseudo-destructor (N4964 [expr.prim.id.dtor]).
-        _STD _Destroy_in_place(_Storage); // use the default mechanism per LWG-4024
+        _STD _Destroy_in_place(_Storage);
     }
 
     void _Delete_this() noexcept override { // destroy self
@@ -3001,8 +3001,6 @@ template <class _Ty, class _Alloc, class... _Types>
 #endif // ^^^ !_HAS_CXX20 ^^^
 _NODISCARD_SMART_PTR_ALLOC shared_ptr<_Ty> allocate_shared(const _Alloc& _Al, _Types&&... _Args) {
     // make a shared_ptr to non-array object
-    // Note: As of 2019-05-28, this implements the proposed resolution of LWG-3210 (which controls whether
-    // allocator::construct sees T or const T when _Ty is const qualified)
     using _Refoa   = _Ref_count_obj_alloc3<remove_cv_t<_Ty>, _Alloc>;
     using _Alblock = _Rebind_alloc_t<_Alloc, _Refoa>;
     _Alblock _Rebound(_Al);

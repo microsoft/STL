@@ -402,12 +402,12 @@ bool _Nrand_for_tr1(
 }
 
 template <class _Gen, class = void>
-struct _Has_static_min_max : false_type {}; // TRANSITION, VSO-2417491: Should be a variable template
+constexpr bool _Has_static_min_max = false;
 
 // This checks a requirement of N4981 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
 // to implement the whole concept - we just need to distinguish Standard machinery from tr1 machinery.
 template <class _Gen>
-struct _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min)() < (_Gen::max)()>::value)>> : true_type {};
+constexpr bool _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min)() < (_Gen::max)()>::value)>> = true;
 
 template <class _Real, class _Gen>
 _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from random sequence
@@ -415,7 +415,7 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
 
     constexpr auto _Digits = static_cast<size_t>(numeric_limits<_Real>::digits);
 
-    if constexpr (_Has_static_min_max<_Gen>::value) {
+    if constexpr (_Has_static_min_max<_Gen>) {
         return _STD generate_canonical<_Real, _Digits>(_Gx);
     } else if constexpr (is_integral_v<typename _Gen::result_type>) {
         // TRANSITION, for integral tr1 machinery only; Standard machinery can call generate_canonical directly
@@ -617,12 +617,38 @@ public:
 
     void discard(unsigned long long _Nskip) noexcept /* strengthened */ {
         // discard _Nskip elements
-        auto _Temp = _Prev;
-        for (; 0 < _Nskip; --_Nskip) {
-            _Temp = _Next_linear_congruential_value<_Uint, _Ax, _Cx, _Mx>(_Temp);
-        }
+        if constexpr (_Cx == 0 && _Mx == 2147483647) {
+            // for minstd_rand and minstd_rand0 we can improve performance by
+            // performing fast exponentiation and avoiding constant divisions
+            auto _Temp = static_cast<unsigned long long>(_Prev);
+            auto _Mul  = static_cast<unsigned long long>(_Ax);
 
-        _Prev = _Temp;
+            for (;;) {
+                if (_Nskip & 1) {
+                    _Temp = _Temp * _Mul;
+                    _Temp = (_Temp >> 31) + (_Temp & _Mx);
+                    _Temp = _Temp < _Mx ? _Temp : _Temp - _Mx;
+                }
+
+                if (_Nskip >>= 1) {
+                    _Mul = _Mul * _Mul;
+                    _Mul = (_Mul >> 31) + (_Mul & _Mx);
+                    _Mul = _Mul < _Mx ? _Mul : _Mul - _Mx;
+                } else {
+                    break;
+                }
+            }
+
+            _Prev = static_cast<_Uint>(_Temp);
+        } else {
+            auto _Temp = _Prev;
+
+            for (; 0 < _Nskip; --_Nskip) {
+                _Temp = _Next_linear_congruential_value<_Uint, _Ax, _Cx, _Mx>(_Temp);
+            }
+
+            _Prev = _Temp;
+        }
     }
 
     _NODISCARD friend bool operator==(
@@ -2308,8 +2334,7 @@ private:
 
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, _Ty _Min, _Ty _Max) const { // compute next value in range [_Min, _Max]
-        conditional_t<_Has_static_min_max<_Engine>::value, _Rng_from_urng_v2<_Uty, _Engine>,
-            _Rng_from_urng<_Uty, _Engine>>
+        conditional_t<_Has_static_min_max<_Engine>, _Rng_from_urng_v2<_Uty, _Engine>, _Rng_from_urng<_Uty, _Engine>>
             _Generator(_Eng);
 
         const _Uty _Umin = _Adjust(static_cast<_Uty>(_Min));
@@ -2740,7 +2765,7 @@ public:
     }
 
 private:
-    _Ty1 _Gx0;
+    _Ty1 _Gx0 = 0.0;
 };
 
 _EXPORT_STD template <class _Ty = int>
@@ -2779,19 +2804,24 @@ public:
             return _Mean;
         }
 
+        static constexpr double _Small_threshold = 12.0;
+
         void _Init(_Ty1 _Mean0) noexcept { // set internal state
             _STL_ASSERT(0.0 < _Mean0, "invalid mean argument for poisson_distribution");
             _Mean = _Mean0;
+            if (_Mean0 < _Small_threshold) {
+                _Small._Init(_Mean0);
+                return;
+            }
             _Sqrt = _CSTD sqrt(2.0 * _Mean0);
             _Logm = _CSTD log(_Mean0);
             _Gx1  = _Mean0 * _Logm - _XLgamma(_Mean0 + 1.0);
-            _Small._Init(_Mean0);
         }
 
-        _Ty1 _Mean;
-        _Ty1 _Sqrt;
-        _Ty1 _Logm;
-        _Ty1 _Gx1;
+        _Ty1 _Mean = 0.0;
+        _Ty1 _Sqrt = 0.0;
+        _Ty1 _Logm = 0.0;
+        _Ty1 _Gx1  = 0.0;
 
         _Small_poisson_distribution<_Ty> _Small;
     };
@@ -2868,7 +2898,7 @@ public:
 private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
-        if (_Par0._Mean < 12.0) {
+        if (_Par0._Mean < param_type::_Small_threshold) {
             return _Par0._Small(_Eng);
         }
 

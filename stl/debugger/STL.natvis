@@ -2240,6 +2240,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::chrono::time_point&lt;std::chrono::system_clock,std::chrono::duration&lt;__int64,std::ratio&lt;1,10000000&gt; &gt; &gt;">
+    <!-- clang-cl -->
+    <AlternativeType Name="std::chrono::time_point&lt;std::chrono::system_clock,std::chrono::duration&lt;long long,std::ratio&lt;1,10000000&gt; &gt; &gt;" />
+
     <!--
       Same computation as in std::chrono::year_month_day::_Civil_from_days
       and https://howardhinnant.github.io/date_algorithms.html#civil_from_days.
@@ -2252,7 +2255,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Intrinsic Name="mp"    Expression="(5*doy() + 2)/153"/>
     <Intrinsic Name="day"   Expression="doy() - (153*mp()+2)/5 + 1"/>
     <Intrinsic Name="month" Expression="mp() &lt; 10 ? mp()+3 : mp()-9"/>
-    <Intrinsic Name="year"  Expression="((long long)yoe()) + era() * 400 + (month() &lt; 2)"/>
+    <Intrinsic Name="year"  Expression="((long long)yoe()) + era() * 400 + (month() &lt;= 2)"/>
 
     <DisplayString Condition="_MyDur._MyRep &gt;= 0">
       {year(),d}-{month()/10,d}{month()%10,d}-{day()/10,d}{day()%10,d} {
