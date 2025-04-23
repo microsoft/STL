@@ -9780,17 +9780,17 @@ _CONSTEXPR20 void _Nth_element_median_of_medians(_RanIt _First, _RanIt _Nth, _Ra
         auto _Median_mid = _First + (_Median_count >> 1);
         _STD _Nth_element_median_of_medians(_First, _Median_mid, _Median_last, _Pred);
 
-        // the medians before and after _Median_mid are
-        // less equal and greater equal _Median_mid, respectively.
-        // move the ones after _Median_mid near _Last and then partition
+        // The medians before and after _Median_mid are
+        // less-equal and greater-equal _Median_mid, respectively.
+        // Move the ones after _Median_mid near _Last and then partition
         // the elements between the medians at front and back by the pivot _Median_mid
         // so that they do not have to be considered or moved in the partitioning pass.
         _Diff _Median_greater_count = (_Median_last - _Median_mid) - 1;
         auto _Median_greater_first  = _Last - _Median_greater_count;
         _STD _Swap_ranges_unchecked(_Median_mid + static_cast<_Diff>(1), _Median_last, _Median_greater_first);
 
-        // swap the median of medians to the middle
-        // to reduce the number of times it will be moved by the partition function
+        // Swap the median of medians to the middle
+        // to reduce the number of times it will be moved by the partition function.
         auto _Middle = _First + ((_Last - _First) >> 1);
         swap(*_Median_mid, *_Middle);
 
@@ -9833,7 +9833,7 @@ _CONSTEXPR20 void _Nth_element_unchecked(_RanIt _First, _RanIt _Nth, _RanIt _Las
             _Last = _Mid.first;
         }
 
-        // processed range should be reduced by 25 % per iteration on average
+        // processed range should be reduced by 25% per iteration on average
         _Ideal = (_Ideal >> 1) + (_Ideal >> 2);
     }
 }
@@ -9978,9 +9978,9 @@ namespace ranges {
                 auto _Median_mid = _First + (_Median_count >> 1);
                 _Nth_element_median_of_medians_unchecked(_First, _Median_mid, _Median_last, _Pred, _Proj);
 
-                // the medians before and after _Median_mid are
-                // less equal and greater equal _Median_mid, respectively.
-                // move the ones after _Median_mid near _Last and then partition
+                // The medians before and after _Median_mid are
+                // less-equal and greater-equal _Median_mid, respectively.
+                // Move the ones after _Median_mid near _Last and then partition
                 // the elements between the medians at front and back by the pivot _Median_mid
                 // so that they do not have to be considered or moved in the partitioning pass.
                 _Diff _Median_greater_count = (_Median_last - _Median_mid) - 1;
@@ -9988,8 +9988,8 @@ namespace ranges {
                 (void) _RANGES _Swap_ranges_common(
                     _Median_mid + static_cast<_Diff>(1), _STD move(_Median_last), _Median_greater_first, _Last);
 
-                // swap the median of medians to the middle
-                // to reduce the number of times it will be moved by the partition function
+                // Swap the median of medians to the middle
+                // to reduce the number of times it will be moved by the partition function.
                 auto _Middle = _First + ((_Last - _First) >> 1);
                 _RANGES iter_swap(_Median_mid, _Middle);
 
@@ -10042,7 +10042,7 @@ namespace ranges {
                     _Last = _Mid.begin();
                 }
 
-                // processed range should be reduced by 25 % per iteration on average
+                // processed range should be reduced by 25% per iteration on average
                 _Ideal = (_Ideal >> 1) + (_Ideal >> 2);
             }
         }
