@@ -103,14 +103,14 @@ constexpr int tukey_ninther_adversary2[] = {1024, 31, 30, 29, 28, 36, 46, 51, 61
 
 enum class alg_type { std_fn, rng };
 
-template <alg_type Type>
-void benchmark_common(benchmark::State& state, const vector<int>& src) {
+template <alg_type Type, class Src>
+void benchmark_common(benchmark::State& state, const Src& src) {
 
     vector<int> v;
-    v.reserve(src.size());
+    v.reserve(size(src));
 
     for (auto _ : state) {
-        v = src;
+        v.assign(begin(src), end(src));
         benchmark::DoNotOptimize(v);
         auto mid = v.begin() + (v.size() / 2);
         if constexpr (Type == alg_type::std_fn) {
@@ -131,21 +131,17 @@ void bm_uniform(benchmark::State& state) {
     benchmark_common<Type>(state, src);
 }
 
-template <alg_type Type>
-void bm_tukey_adversary(benchmark::State& state, const int* const adversary_first, const int* const adversary_last) {
-    benchmark_common<Type>(state, vector<int>(adversary_first, adversary_last));
+template <alg_type Type, class Src>
+void bm_tukey_adversary(benchmark::State& state, const Src& adversary) {
+    benchmark_common<Type>(state, adversary);
 }
 
 BENCHMARK(bm_uniform<alg_type::std_fn>)->Arg(1024)->Arg(2048)->Arg(4096)->Arg(8192);
 BENCHMARK(bm_uniform<alg_type::rng>)->Arg(1024)->Arg(2048)->Arg(4096)->Arg(8192);
 
-BENCHMARK_CAPTURE(
-    bm_tukey_adversary<alg_type::std_fn>, adversary1, begin(tukey_ninther_adversary1), end(tukey_ninther_adversary1));
-BENCHMARK_CAPTURE(
-    bm_tukey_adversary<alg_type::rng>, adversary1, begin(tukey_ninther_adversary1), end(tukey_ninther_adversary1));
-BENCHMARK_CAPTURE(
-    bm_tukey_adversary<alg_type::std_fn>, adversary2, begin(tukey_ninther_adversary2), end(tukey_ninther_adversary2));
-BENCHMARK_CAPTURE(
-    bm_tukey_adversary<alg_type::rng>, adversary2, begin(tukey_ninther_adversary2), end(tukey_ninther_adversary2));
+BENCHMARK_CAPTURE(bm_tukey_adversary<alg_type::std_fn>, adversary1, tukey_ninther_adversary1);
+BENCHMARK_CAPTURE(bm_tukey_adversary<alg_type::rng>, adversary1, tukey_ninther_adversary1);
+BENCHMARK_CAPTURE(bm_tukey_adversary<alg_type::std_fn>, adversary2, tukey_ninther_adversary2);
+BENCHMARK_CAPTURE(bm_tukey_adversary<alg_type::rng>, adversary2, tukey_ninther_adversary2);
 
 BENCHMARK_MAIN();

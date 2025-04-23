@@ -115,30 +115,28 @@ void check_result(const vector<int>& expected, const vector<int>& computed, Diff
     }
 }
 
-template <class Algorithm>
-void test_nth_element(Algorithm alg, const int* const first, const int* const last) {
-    vector<int> src(first, last);
-
-    vector<int> sorted = src;
+template <class Algorithm, class Src>
+void test_nth_element(Algorithm alg, const Src& src) {
+    vector<int> sorted(begin(src), end(src));
     sort(sorted.begin(), sorted.end());
     vector<int> v;
-    v.reserve(src.size());
+    v.reserve(size(src));
 
-    for (vector<int>::difference_type nth{}, size = src.end() - src.begin(); nth < size;
+    for (vector<int>::difference_type nth{}, size = end(src) - begin(src); nth < size;
         nth += static_cast<vector<int>::difference_type>(15)) {
-        v = src;
+        v.assign(begin(src), end(src));
         alg(v, nth);
         check_result(sorted, v, nth);
     }
-    v = src;
+    v.assign(begin(src), end(src));
     alg(v, (v.end() - v.begin()) - static_cast<vector<int>::difference_type>(1));
     check_result(sorted, v, (v.end() - v.begin()) - static_cast<vector<int>::difference_type>(1));
 }
 
 template <class Algorithm>
 void test_nth_element_tukey_adversary(Algorithm alg) {
-    test_nth_element(alg, begin(tukey_ninther_adversary1), end(tukey_ninther_adversary1));
-    test_nth_element(alg, begin(tukey_ninther_adversary2), end(tukey_ninther_adversary2));
+    test_nth_element(alg, tukey_ninther_adversary1);
+    test_nth_element(alg, tukey_ninther_adversary2);
 }
 
 int main() {
