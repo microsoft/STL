@@ -98,9 +98,7 @@ STATIC_ASSERT(is_nothrow_convertible_v<double, unsigned char>);
 STATIC_ASSERT(is_nothrow_convertible_v<int, bool>);
 STATIC_ASSERT(is_nothrow_convertible_v<bool, int>);
 STATIC_ASSERT(is_nothrow_convertible_v<int, long long>);
-#ifndef __EDG__ // TRANSITION, VSO-892705
 STATIC_ASSERT(is_nothrow_convertible_v<int[], int*>);
-#endif // ^^^ no workaround ^^^
 STATIC_ASSERT(is_nothrow_convertible_v<int[1], int*>);
 STATIC_ASSERT(!is_nothrow_convertible_v<int[], int[]>);
 STATIC_ASSERT(!is_nothrow_convertible_v<int[], int[1]>);

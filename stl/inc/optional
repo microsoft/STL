@@ -952,7 +952,7 @@ _NODISCARD constexpr bool operator>=(const _Ty1& _Left, const optional<_Ty2>& _R
 }
 
 #if _HAS_CXX20
-#ifdef __EDG__ // TRANSITION, DevCom-10880933
+#ifndef __clang__ // TRANSITION, DevCom-10880933 (EDG) and VSO-2444237 (MSVC)
 template <class _Ty>
 void _Derived_from_optional_impl(const optional<_Ty>&);
 

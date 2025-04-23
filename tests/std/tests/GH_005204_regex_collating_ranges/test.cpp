@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <locale>
@@ -10,22 +11,16 @@
 #include <test_regex_support.hpp>
 
 // skip collation tests when linking to the DLL in case of
-// * undefined _NATIVE_WCHAR_T_DEFINED due to GH-5236
-// * _ITERATOR_DEBUG_LEVEL mismatch between code and linked DLL
+// _ITERATOR_DEBUG_LEVEL mismatch between code and linked DLL
 #ifdef _DEBUG
 #define DEFAULT_IDL_SETTING 2
 #else
 #define DEFAULT_IDL_SETTING 0
 #endif
 
-#ifdef _DLL
-#ifndef _NATIVE_WCHAR_T_DEFINED // TRANSITION, GH-212 or GH-5236
+#if defined(_DLL) && _ITERATOR_DEBUG_LEVEL != DEFAULT_IDL_SETTING
 #define SKIP_COLLATE_TESTS
-#elif _ITERATOR_DEBUG_LEVEL != DEFAULT_IDL_SETTING
-#define SKIP_COLLATE_TESTS
-#endif // !defined(_NATIVE_WCHAR_T_DEFINED) || _ITERATOR_DEBUG_LEVEL != DEFAULT_IDL_SETTING
-#endif // defined(_DLL)
-
+#endif // defined(_DLL) && _ITERATOR_DEBUG_LEVEL != DEFAULT_IDL_SETTING
 
 using namespace std;
 using namespace std::regex_constants;
@@ -338,8 +333,238 @@ void test_collating_ranges_german() {
 #endif // !defined(SKIP_COLLATE_TESTS)
 }
 
+class gh_994_regex_traits : public regex_traits<char> {
+public:
+    template <class FwdIt>
+    string_type lookup_collatename(FwdIt first, FwdIt last) const {
+        // from Hungarian
+        const string_type collating_symbols[] = {"cs", "Cs", "dzs"};
+        const string_type hyphen_name         = "hyphen";
+
+        for (const string_type& coll_symbol : collating_symbols) {
+            if (equal(first, last, begin(coll_symbol), end(coll_symbol))) {
+                return coll_symbol;
+            }
+        }
+
+        if (equal(first, last, begin(hyphen_name), end(hyphen_name))) {
+            return "-";
+        }
+
+        return regex_traits::lookup_collatename(first, last);
+    }
+};
+
+using gh_994_regex = basic_regex<char, gh_994_regex_traits>;
+
+void gh_994_verify_match(
+    const string& subject, const string& pattern, const bool correct, const syntax_option_type syntax = ECMAScript) {
+
+    gh_994_regex r;
+    try {
+        r.assign(pattern, syntax);
+    } catch (const regex_error& e) {
+        printf(R"(Failed to construct regex("%s", 0x%X) for traits gh_994_regex_traits: "%s")"
+               "\n",
+            pattern.c_str(), static_cast<unsigned int>(syntax), e.what());
+        g_regexTester.fail_regex();
+        return;
+    }
+
+    try {
+        if (regex_match(subject, r) != correct) {
+            printf(R"(Expected regex_match("%s", regex("%s", 0x%X)) to be %s for traits gh_994_regex_traits.)"
+                   "\n",
+                subject.c_str(), pattern.c_str(), static_cast<unsigned int>(syntax), correct ? "true" : "false");
+            g_regexTester.fail_regex();
+        }
+    } catch (const regex_error& e) {
+        printf(R"(Failed to regex_match("%s", regex("%s", 0x%X)) for traits gh_994_regex_traits: regex_error: "%s")"
+               "\n",
+            subject.c_str(), pattern.c_str(), static_cast<unsigned int>(syntax), e.what());
+        g_regexTester.fail_regex();
+    }
+}
+
+void gh_994_should_throw(
+    const string& pattern, const error_type expected_code, const syntax_option_type syntax = ECMAScript) {
+
+    try {
+        gh_994_regex r(pattern, syntax);
+
+        printf(R"(regex r("%s", 0x%X) succeeded for traits gh_994_regex_traits (which is bad).)"
+               "\n",
+            pattern.c_str(), static_cast<unsigned int>(syntax));
+        g_regexTester.fail_regex();
+    } catch (const regex_error& e) {
+        if (e.code() != expected_code) {
+            printf(R"(regex r("%s", 0x%X) threw 0x%X for traits gh_994_regex_traits; expected 0x%X)"
+                   "\n",
+                pattern.c_str(), static_cast<unsigned int>(syntax), static_cast<unsigned int>(e.code()),
+                static_cast<unsigned int>(expected_code));
+            g_regexTester.fail_regex();
+        }
+    }
+}
+
+void test_gh_994() {
+    // GH-994: Regex with collating symbol erroneously returns a match
+    // PR fixed parsing and matching of collating symbols and equivalences in character classes
+
+    g_regexTester.should_not_match("v", "[[.(.]a[a]");
+
+    g_regexTester.should_not_match("(((v", "[[.(.]]*");
+    g_regexTester.should_not_match("v", "[[.(.]]*");
+    g_regexTester.should_not_match("vv", "[[.(.]]*");
+
+    g_regexTester.should_match("xxx", "[[.(.]x]*");
+    g_regexTester.should_match("x((x(", "[[.(.]x]*");
+    g_regexTester.should_not_match("xxxv", "[[.(.]x]*");
+    g_regexTester.should_not_match("xxxvv", "[[.(.]x]*");
+    g_regexTester.should_not_match("x(xv", "[[.(.]x]*");
+    g_regexTester.should_not_match("v", "[[.(.]x]*");
+    g_regexTester.should_not_match("vv", "[[.(.]x]*");
+    g_regexTester.should_not_match("xxxv", "[[.(.]x]*");
+
+    g_regexTester.should_throw("[[.whatisthis.]]", error_collate);
+
+    gh_994_verify_match("a", "[[.cs.]a]", true);
+    gh_994_verify_match("c", "[[.cs.]a]", false);
+    gh_994_verify_match("ca", "[[.cs.]a]", false);
+    gh_994_verify_match("ct", "[[.cs.]a]", false);
+    gh_994_verify_match("cs", "[[.cs.]a]", true);
+    gh_994_verify_match("Cs", "[[.cs.]a]", false);
+    gh_994_verify_match("dsz", "[[.cs.]a]", false);
+    gh_994_should_throw("[[.CS.]]", error_collate);
+
+    gh_994_verify_match("cs", "[[.cs.][.dzs.]]", true);
+    gh_994_verify_match("dzs", "[[.cs.][.dzs.]]", true);
+    gh_994_verify_match("dz", "[[.cs.][.dzs.]]", false);
+    gh_994_verify_match("Cs", "[[.cs.][.dzs.]]", false);
+    gh_994_verify_match("cdzs", "[[.cs.][.dzs.]]", false);
+    gh_994_verify_match("csdzs", "[[.cs.][.dzs.]]", false);
+    gh_994_verify_match("a", "[[.cs.][.dzs.]]", false);
+    gh_994_verify_match("dzt", "[[.cs.][.dzs.]]", false);
+
+    gh_994_verify_match("csa", "[[.cs.][.dzs.]]a", true);
+    gh_994_verify_match("csb", "[[.cs.][.dzs.]]a", false);
+    gh_994_verify_match("Csa", "[[.cs.][.dzs.]]a", false);
+    gh_994_verify_match("dzsa", "[[.cs.][.dzs.]]a", true);
+    gh_994_verify_match("dzsb", "[[.cs.][.dzs.]]a", false);
+    gh_994_verify_match("dza", "[[.cs.][.dzs.]]a", false);
+    gh_994_verify_match("cdzsa", "[[.cs.][.dzs.]]a", false);
+    gh_994_verify_match("csdzsa", "[[.cs.][.dzs.]]a", false);
+    gh_994_verify_match("a", "[[.cs.][.dzs.]]a", false);
+    gh_994_verify_match("aa", "[[.cs.][.dzs.]]a", false);
+    gh_994_verify_match("dzta", "[[.cs.][.dzs.]]a", false);
+
+    gh_994_verify_match("dzscs", "[[.cs.][.dzs.]a]*", true);
+    gh_994_verify_match("dzsacs", "[[.cs.][.dzs.]a]*", true);
+    gh_994_verify_match("dzsbcsa", "[[.cs.][.dzs.]a]*", false);
+    gh_994_verify_match("dzscsb", "[[.cs.][.dzs.]a]*", false);
+    gh_994_verify_match("dzscsb", "[[.cs.][.dzs.]a]*b", true);
+    gh_994_verify_match("dzsCsb", "[[.cs.][.dzs.]a]*b", false);
+    gh_994_verify_match("bdzscs", "[[.cs.][.dzs.]a]*", false);
+    gh_994_verify_match("bdzscs", "b[[.cs.][.dzs.]a]*", true);
+
+    gh_994_verify_match("-", "[[.hyphen.]]", true);
+    gh_994_verify_match("hyphen", "[[.hyphen.]]", false);
+    gh_994_verify_match("h", "[[.hyphen.]]", false);
+    gh_994_verify_match("y", "[[.hyphen.]]", false);
+    gh_994_verify_match("n", "[[.hyphen.]]", false);
+
+    gh_994_verify_match("cs", "[[.cs.]]", true, icase);
+    gh_994_verify_match("Cs", "[[.cs.]]", true, icase);
+    gh_994_verify_match("CS", "[[.cs.]]", true, icase);
+    gh_994_verify_match("cs", "[[.Cs.]]", true, icase);
+    gh_994_verify_match("Cs", "[[.Cs.]]", true, icase);
+    gh_994_verify_match("CS", "[[.Cs.]]", true, icase);
+    gh_994_should_throw("[[.CS.]]", error_collate, icase);
+    gh_994_verify_match("dzscsb", "[[.Cs.][.dzs.]a]*", false, icase);
+    gh_994_verify_match("dzscsb", "[[.cs.][.dzs.]a]*b", true, icase);
+    gh_994_verify_match("dzsCsb", "[[.cs.][.dzs.]a]*b", true, icase);
+    gh_994_verify_match("DzsCsb", "[[.cs.][.dzs.]a]*b", true, icase);
+
+    gh_994_verify_match("cs", "[[.cs.]]", true, regex_constants::collate);
+    gh_994_verify_match("Cs", "[[.cs.]]", false, regex_constants::collate);
+    gh_994_verify_match("CS", "[[.cs.]]", false, regex_constants::collate);
+    gh_994_verify_match("cs", "[[.Cs.]]", false, regex_constants::collate);
+    gh_994_verify_match("Cs", "[[.Cs.]]", true, regex_constants::collate);
+    gh_994_verify_match("CS", "[[.Cs.]]", false, regex_constants::collate);
+    gh_994_should_throw("[[.CS.]]", error_collate, regex_constants::collate);
+    gh_994_verify_match("dzscsb", "[[.cs.][.dzs.]a]*", false, regex_constants::collate);
+    gh_994_verify_match("dzscsb", "[[.cs.][.dzs.]a]*b", true, regex_constants::collate);
+    gh_994_verify_match("dzsCsb", "[[.cs.][.dzs.]a]*b", false, regex_constants::collate);
+    gh_994_verify_match("DzsCsb", "[[.cs.][.dzs.]a]*b", false, regex_constants::collate);
+
+    g_regexTester.should_match("b", "[[.b.]-f]");
+    g_regexTester.should_match("f", "[[.b.]-f]");
+    g_regexTester.should_not_match("a", "[[.b.]-f]");
+    g_regexTester.should_not_match("g", "[[.b.]-f]");
+    g_regexTester.should_match("b", "[b-[.f.]]");
+    g_regexTester.should_match("f", "[b-[.f.]]");
+    g_regexTester.should_not_match("a", "[b-[.f.]]");
+    g_regexTester.should_not_match("g", "[b-[.f.]]");
+    g_regexTester.should_match("b", "[[.b.]-[.f.]]");
+    g_regexTester.should_match("f", "[[.b.]-[.f.]]");
+    g_regexTester.should_not_match("a", "[[.b.]-[.f.]]");
+    g_regexTester.should_not_match("g", "[[.b.]-[.f.]]");
+
+    g_regexTester.should_match("bi", "[[.b.]-f]i");
+    g_regexTester.should_match("fi", "[[.b.]-f]i");
+    g_regexTester.should_not_match("ai", "[[.b.]-f]i");
+    g_regexTester.should_not_match("gi", "[[.b.]-f]i");
+    g_regexTester.should_not_match("i", "[[.b.]-f]i");
+    g_regexTester.should_match("bi", "[b-[.f.]]i");
+    g_regexTester.should_match("fi", "[b-[.f.]]i");
+    g_regexTester.should_not_match("ai", "[b-[.f.]]i");
+    g_regexTester.should_not_match("gi", "[b-[.f.]]i");
+    g_regexTester.should_not_match("i", "[b-[.f.]]i");
+    g_regexTester.should_match("bi", "[[.b.]-[.f.]]i");
+    g_regexTester.should_match("fi", "[[.b.]-[.f.]]i");
+    g_regexTester.should_not_match("ai", "[[.b.]-[.f.]]i");
+    g_regexTester.should_not_match("gi", "[[.b.]-[.f.]]i");
+    g_regexTester.should_not_match("i", "[[.b.]-[.f.]]i");
+
+    g_regexTester.should_match("becdfi", "[[.b.]-[.f.]]*i");
+    g_regexTester.should_not_match("becdfb", "[[.b.]-[.f.]]*i");
+    g_regexTester.should_not_match("becdfj", "[[.b.]-[.f.]]*i");
+
+    // TRANSITION, GH-5391
+    gh_994_should_throw("[[.cs.]-f]", error_range);
+    gh_994_should_throw("[a-[.cs.]]", error_range);
+    gh_994_should_throw("[[.cs.]-[.dzs.]]", error_range);
+
+#ifndef SKIP_COLLATE_TESTS
+    g_regexTester.should_throw("[[=a=]-c]", error_range);
+    g_regexTester.should_throw("[c-[=z=]]", error_range);
+    g_regexTester.should_throw("[[=a=]-[=z=]]", error_range);
+
+    g_regexTester.should_match("a", "[[=a=]]");
+    g_regexTester.should_match("A", "[[=a=]]");
+    g_regexTester.should_not_match("b", "[[=a=]]");
+    g_regexTester.should_not_match("B", "[[=a=]]");
+    g_regexTester.should_match("z", "[[=Z=]]");
+    g_regexTester.should_match("Z", "[[=Z=]]");
+    g_regexTester.should_not_match("b", "[[=Z=]]");
+    g_regexTester.should_not_match("B", "[[=Z=]]");
+
+    g_regexTester.should_match("ab", "[[=a=]]b");
+    g_regexTester.should_match("Ab", "[[=a=]]b");
+    g_regexTester.should_not_match("Ab", "[[=a=]]B");
+    g_regexTester.should_not_match("b", "[[=a=]]b");
+    g_regexTester.should_not_match("aab", "[[=a=]]b");
+    g_regexTester.should_not_match("B", "[[=a=]]b");
+
+    g_regexTester.should_match("AaAaaAaab", "[[=a=]]*b");
+    g_regexTester.should_not_match("AaAaaAaab", "[[=a=]]*c");
+    g_regexTester.should_match("AaAabcaAaad", "[[=a=]bc]*d");
+#endif // !defined(SKIP_COLLATE_TESTS)
+}
+
 int main() {
     test_collating_ranges_german();
+    test_gh_994();
 
     return g_regexTester.result();
 }

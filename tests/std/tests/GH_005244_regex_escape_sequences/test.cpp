@@ -54,6 +54,11 @@ public:
     }
 
     template <class FwdIt>
+    string_type lookup_collatename(FwdIt first, FwdIt last) const {
+        return inner.lookup_collatename(first, last);
+    }
+
+    template <class FwdIt>
     char_class_type lookup_classname(FwdIt first, FwdIt last, bool icase = false) const {
         FwdIt next = first;
         ++next;
@@ -465,6 +470,13 @@ void test_gh_5244_atomescape_posix_common(syntax_option_type option) {
     check_atomescape_identityescape("^", option);
     check_atomescape_identityescape("$", option);
 
+    // Even though [ is special, ] is not,
+    // so the interpretation of the escape sequence \] is undefined
+    // according to the POSIX standard referenced in the C++ standard.
+    // But we treat \] as an identity escape in line with
+    // more recent versions of the POSIX standard.
+    check_atomescape_identityescape("]", option);
+
     // Sections on "BRE Special Characters" and "ERE Special Characters":
     // escaping ordinary characters is undefined -> reject
     g_regexTester.should_throw(R"(\B)", error_escape, option);
@@ -478,9 +490,6 @@ void test_gh_5244_atomescape_posix_common(syntax_option_type option) {
     g_regexTester.should_throw(R"(\W)", error_escape, option);
     g_regexTester.should_throw(R"(\s)", error_escape, option);
     g_regexTester.should_throw(R"(\S)", error_escape, option);
-
-    // while [ is special, ] is not
-    g_regexTester.should_throw(R"(\])", error_escape, option);
 }
 
 void test_gh_5244_atomescape_posix_not_awk(syntax_option_type option) {
@@ -519,8 +528,6 @@ void test_gh_5244_atomescape_basic_or_grep(syntax_option_type option) {
 }
 
 void test_gh_5244_atomescape_extended_egrep_awk(syntax_option_type option) {
-    test_gh_5244_atomescape_posix_common(option);
-
     // check that the parser accepts escaped characters
     // that are only special in extended regexes
     check_atomescape_identityescape("+", option);
@@ -552,6 +559,7 @@ void test_gh_5244_atomescape_extended_or_egrep(syntax_option_type option) {
 
 void test_gh_5244_atomescape_awk() {
     test_gh_5244_atomescape_extended_egrep_awk(awk);
+    test_gh_5244_atomescape_posix_common(awk);
 
     // awk-only escapes
     check_atomescape_controlescape("\a", "a", awk);

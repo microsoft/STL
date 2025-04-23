@@ -4,7 +4,10 @@
 #include <atomic>
 #include <barrier>
 #include <cassert>
+#include <cstddef>
+#include <exception>
 #include <thread>
+#include <type_traits>
 #include <utility>
 
 void test() {
@@ -125,12 +128,28 @@ void test_functor_types() {
     };
     std::barrier b1{1, f1{0, 0, 0}};
     b1.arrive_and_wait();
+    static_assert(std::is_nothrow_constructible_v<std::barrier<f1>, std::ptrdiff_t, f1>); // strengthened
 
     std::barrier b2{1, barrier_callback_function};
     b2.arrive_and_wait();
 
     std::barrier b3{1, []() noexcept {}};
     b3.arrive_and_wait();
+
+    struct f2 {
+        void operator()() noexcept {}
+
+        f2() = default;
+        f2(f2&&) {
+            throw std::exception{};
+        }
+    };
+    try {
+        std::barrier b4{1, f2{}};
+        assert(false);
+        static_assert(!std::is_nothrow_constructible_v<std::barrier<f2>, std::ptrdiff_t, f2>);
+    } catch (const std::exception&) {
+    }
 }
 
 int main() {
