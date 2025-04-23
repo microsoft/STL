@@ -5,10 +5,6 @@
 #include <cassert>
 #include <vector>
 
-#if _HAS_CXX20
-#include <ranges>
-#endif // _HAS_CXX20
-
 using namespace std;
 
 constexpr int tukey_ninther_adversary1[] = {0, 6, 12, 18, 22, 28, 34, 38, 44, 50, 54, 60, 66, 70, 76, 82, 86, 92, 98,

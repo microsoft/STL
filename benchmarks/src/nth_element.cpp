@@ -5,7 +5,6 @@
 #include <benchmark/benchmark.h>
 #include <cstddef>
 #include <random>
-#include <ranges>
 #include <vector>
 
 using namespace std;
