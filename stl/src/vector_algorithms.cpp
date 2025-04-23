@@ -2284,7 +2284,7 @@ namespace {
                 if (_Mask != 0) {
                     unsigned long _H_pos;
 
-                    // CodeQL [SM02313] _H_pos is always initialized: element exists, so _Mask is non-zero.
+                    // CodeQL [SM02313] _H_pos is always initialized: we just tested `if (_Mask != 0)`.
                     _BitScanForward(&_H_pos, _Mask);
                     _Advance_bytes(_First, _H_pos);
                     return _First;
@@ -2312,7 +2312,7 @@ namespace {
                     if (_Mask != 0) {
                         unsigned long _H_pos;
 
-                        // CodeQL [SM02313] _H_pos is always initialized: element exists, so _Mask is non-zero.
+                        // CodeQL [SM02313] _H_pos is always initialized: we just tested `if (_Mask != 0)`.
                         _BitScanForward(&_H_pos, _Mask);
                         _Advance_bytes(_First, _H_pos);
                         return _First;
