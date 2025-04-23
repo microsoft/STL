@@ -119,7 +119,6 @@ void test_nth_element(Algorithm alg, const Src& src) {
     vector<int> sorted(begin(src), end(src));
     sort(sorted.begin(), sorted.end());
     vector<int> v;
-    v.reserve(size(src));
 
     for (vector<int>::difference_type nth{}; nth < src_ssize; nth += 15) {
         v.assign(begin(src), end(src));
