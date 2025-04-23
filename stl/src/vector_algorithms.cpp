@@ -543,7 +543,8 @@ namespace {
 
     template <class _Base>
     struct _Minmax_traits_scalar : _Base {
-        static constexpr bool _Vectorized = false;
+        static constexpr bool _Vectorized  = false;
+        static constexpr size_t _Tail_mask = 0;
     };
 
 #ifndef _M_ARM64EC
@@ -2249,6 +2250,112 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
         return __std_minmax_impl<_Mode, typename _Traits::_Scalar, _Sign>(_First, _Last);
     }
+
+
+    template <class _Traits, class _Ty>
+    const void* __std_is_sorted_until_impl(const void* _First, const void* const _Last, const bool _Greater) noexcept {
+        const ptrdiff_t _Left_off  = 0 - static_cast<ptrdiff_t>(_Greater);
+        const ptrdiff_t _Right_off = static_cast<ptrdiff_t>(_Greater) - 1;
+
+        if constexpr (_Traits::_Vectorized) {
+#ifdef _M_ARM64EC
+            static_assert(false, "No vectorization for _M_ARM64EC yet");
+#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+            constexpr bool _Sign_cor = static_cast<_Ty>(-1) > _Ty{0};
+
+            const size_t _Total_size_bytes = _Byte_length(_First, _Last);
+            const size_t _Vec_byte_size    = _Total_size_bytes & ~_Traits::_Vec_mask;
+
+            const void* _Stop_at = _First;
+            _Advance_bytes(_Stop_at, _Vec_byte_size);
+
+            do {
+                auto _Left  = _Traits::_Load(static_cast<const _Ty*>(_First) + _Left_off);
+                auto _Right = _Traits::_Load(static_cast<const _Ty*>(_First) + _Right_off);
+
+                if constexpr (_Sign_cor) {
+                    _Left  = _Traits::_Sign_correction(_Left, false);
+                    _Right = _Traits::_Sign_correction(_Right, false);
+                }
+
+                const auto _Is_less = _Traits::_Cmp_gt(_Right, _Left);
+                unsigned long _Mask = _Traits::_Mask(_Traits::_Mask_cast(_Is_less));
+
+                if (_Mask != 0) {
+                    unsigned long _H_pos;
+
+                    // CodeQL [SM02313] _H_pos is always initialized: we just tested `if (_Mask != 0)`.
+                    _BitScanForward(&_H_pos, _Mask);
+                    _Advance_bytes(_First, _H_pos);
+                    return _First;
+                }
+
+                _Advance_bytes(_First, _Traits::_Vec_size);
+            } while (_First != _Stop_at);
+
+            if constexpr (_Traits::_Tail_mask != 0) {
+                const size_t _Tail_byte_size = _Total_size_bytes & _Traits::_Tail_mask;
+                if (_Tail_byte_size != 0) {
+                    const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size >> 2);
+
+                    auto _Left  = _Traits::_Load_mask(static_cast<const _Ty*>(_First) + _Left_off, _Tail_mask);
+                    auto _Right = _Traits::_Load_mask(static_cast<const _Ty*>(_First) + _Right_off, _Tail_mask);
+
+                    if constexpr (_Sign_cor) {
+                        _Left  = _Traits::_Sign_correction(_Left, false);
+                        _Right = _Traits::_Sign_correction(_Right, false);
+                    }
+
+                    const auto _Is_less = _Traits::_Cmp_gt(_Right, _Left);
+                    unsigned long _Mask = _Traits::_Mask(_mm256_and_si256(_Traits::_Mask_cast(_Is_less), _Tail_mask));
+
+                    if (_Mask != 0) {
+                        unsigned long _H_pos;
+
+                        // CodeQL [SM02313] _H_pos is always initialized: we just tested `if (_Mask != 0)`.
+                        _BitScanForward(&_H_pos, _Mask);
+                        _Advance_bytes(_First, _H_pos);
+                        return _First;
+                    }
+
+                    _Advance_bytes(_First, _Tail_byte_size);
+                }
+            }
+
+            _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+        }
+
+        if constexpr ((_Traits::_Tail_mask & sizeof(_Ty)) != sizeof(_Ty)) {
+            for (const _Ty* _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                if (_Ptr[_Left_off] < _Ptr[_Right_off]) {
+                    return _Ptr;
+                }
+            }
+        }
+
+        return _Last;
+    }
+
+    template <class _Traits, class _Ty>
+    const void* __std_is_sorted_until_disp(const void* _First, const void* const _Last, const bool _Greater) noexcept {
+        if (_First == _Last) {
+            return _First;
+        }
+
+        _Advance_bytes(_First, sizeof(_Ty));
+
+#ifndef _M_ARM64EC
+        if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
+            return __std_is_sorted_until_impl<typename _Traits::_Avx, _Ty>(_First, _Last, _Greater);
+        }
+
+        if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
+            return __std_is_sorted_until_impl<typename _Traits::_Sse, _Ty>(_First, _Last, _Greater);
+        }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+        return __std_is_sorted_until_impl<typename _Traits::_Scalar, _Ty>(_First, _Last, _Greater);
+    }
 } // unnamed namespace
 
 extern "C" {
@@ -2461,6 +2568,56 @@ __declspec(noalias) _Min_max_f __stdcall __std_minmax_f(const void* const _First
 
 __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* const _First, const void* const _Last) noexcept {
     return __std_minmax_disp<_Mode_both, _Minmax_traits_d, true>(_First, _Last);
+}
+
+const void* __stdcall __std_is_sorted_until_1i(
+    const void* const _First, const void* const _Last, const bool _Greater) noexcept {
+    return __std_is_sorted_until_disp<_Minmax_traits_1, int8_t>(_First, _Last, _Greater);
+}
+
+const void* __stdcall __std_is_sorted_until_1u(
+    const void* const _First, const void* const _Last, const bool _Greater) noexcept {
+    return __std_is_sorted_until_disp<_Minmax_traits_1, uint8_t>(_First, _Last, _Greater);
+}
+
+const void* __stdcall __std_is_sorted_until_2i(
+    const void* const _First, const void* const _Last, const bool _Greater) noexcept {
+    return __std_is_sorted_until_disp<_Minmax_traits_2, int16_t>(_First, _Last, _Greater);
+}
+
+const void* __stdcall __std_is_sorted_until_2u(
+    const void* const _First, const void* const _Last, const bool _Greater) noexcept {
+    return __std_is_sorted_until_disp<_Minmax_traits_2, uint16_t>(_First, _Last, _Greater);
+}
+
+const void* __stdcall __std_is_sorted_until_4i(
+    const void* const _First, const void* const _Last, const bool _Greater) noexcept {
+    return __std_is_sorted_until_disp<_Minmax_traits_4, int32_t>(_First, _Last, _Greater);
+}
+
+const void* __stdcall __std_is_sorted_until_4u(
+    const void* const _First, const void* const _Last, const bool _Greater) noexcept {
+    return __std_is_sorted_until_disp<_Minmax_traits_4, uint32_t>(_First, _Last, _Greater);
+}
+
+const void* __stdcall __std_is_sorted_until_8i(
+    const void* const _First, const void* const _Last, const bool _Greater) noexcept {
+    return __std_is_sorted_until_disp<_Minmax_traits_8, int64_t>(_First, _Last, _Greater);
+}
+
+const void* __stdcall __std_is_sorted_until_8u(
+    const void* const _First, const void* const _Last, const bool _Greater) noexcept {
+    return __std_is_sorted_until_disp<_Minmax_traits_8, uint64_t>(_First, _Last, _Greater);
+}
+
+const void* __stdcall __std_is_sorted_until_f(
+    const void* const _First, const void* const _Last, const bool _Greater) noexcept {
+    return __std_is_sorted_until_disp<_Minmax_traits_f, float>(_First, _Last, _Greater);
+}
+
+const void* __stdcall __std_is_sorted_until_d(
+    const void* const _First, const void* const _Last, const bool _Greater) noexcept {
+    return __std_is_sorted_until_disp<_Minmax_traits_d, double>(_First, _Last, _Greater);
 }
 
 } // extern "C"
