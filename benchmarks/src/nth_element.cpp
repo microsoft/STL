@@ -105,7 +105,6 @@ enum class alg_type { std_fn, rng };
 
 template <alg_type Type, class Src>
 void benchmark_common(benchmark::State& state, const Src& src) {
-
     vector<int> v;
     v.reserve(size(src));
 
