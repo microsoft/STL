@@ -99,7 +99,7 @@ constexpr int tukey_ninther_adversary2[] = {1024, 31, 30, 29, 28, 36, 46, 51, 61
     1008, 1019};
 
 template <class Diff>
-void check_result(const vector<int>& expected, const vector<int>& computed, Diff nth) {
+void check_result(const vector<int>& expected, const vector<int>& computed, const Diff nth) {
     assert(is_permutation(computed.begin(), computed.end(), expected.begin(), expected.end()));
     const auto mid    = computed.begin() + nth;
     const int val_nth = *mid;
@@ -137,11 +137,12 @@ void test_nth_element_tukey_adversary(Algorithm alg) {
 }
 
 int main() {
-    test_nth_element_tukey_adversary(
-        [](vector<int>& v, vector<int>::difference_type nth) { nth_element(v.begin(), v.begin() + nth, v.end()); });
+    test_nth_element_tukey_adversary([](vector<int>& v, const vector<int>::difference_type nth) {
+        nth_element(v.begin(), v.begin() + nth, v.end());
+    });
 
 #if _HAS_CXX20
-    test_nth_element_tukey_adversary([](vector<int>& v, vector<int>::difference_type nth) {
+    test_nth_element_tukey_adversary([](vector<int>& v, const vector<int>::difference_type nth) {
         ranges::nth_element(v.begin(), v.begin() + nth, v.end());
     });
 #endif

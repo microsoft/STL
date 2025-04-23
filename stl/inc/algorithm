@@ -9761,23 +9761,23 @@ template <class _RanIt, class _Pr>
 _CONSTEXPR20 void _Nth_element_median_of_medians(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) {
     using _Diff = _Iter_diff_t<_RanIt>;
     for (;;) {
-        auto _Length = _Last - _First;
+        const auto _Length = _Last - _First;
         if (_Length <= _ISORT_MAX) {
             _STD _Insertion_sort_unchecked(_First, _Last, _Pred); // sort any remainder
             return;
         }
 
         // collect the medians of five at the beginning of the range
-        _Diff _Median_count = _Length / static_cast<_Diff>(5);
-        auto _Median_last   = _First + _Median_count;
-        auto _Current       = _First;
+        const _Diff _Median_count = _Length / static_cast<_Diff>(5);
+        const auto _Median_last   = _First + _Median_count;
+        auto _Current             = _First;
         for (auto _Median_dest = _First; _Median_dest != _Median_last; ++_Median_dest) {
             _STD _Swap_med5_unchecked(_Current, _Median_dest, _Pred);
             _Current += static_cast<_Diff>(5);
         }
 
         // find the median of medians
-        auto _Median_mid = _First + (_Median_count >> 1);
+        const auto _Median_mid = _First + (_Median_count >> 1);
         _STD _Nth_element_median_of_medians(_First, _Median_mid, _Median_last, _Pred);
 
         // The medians before and after _Median_mid are
@@ -9785,16 +9785,16 @@ _CONSTEXPR20 void _Nth_element_median_of_medians(_RanIt _First, _RanIt _Nth, _Ra
         // Move the ones after _Median_mid near _Last and then partition
         // the elements between the medians at front and back by the pivot _Median_mid
         // so that they do not have to be considered or moved in the partitioning pass.
-        _Diff _Median_greater_count = (_Median_last - _Median_mid) - 1;
-        auto _Median_greater_first  = _Last - _Median_greater_count;
+        const _Diff _Median_greater_count = (_Median_last - _Median_mid) - 1;
+        const auto _Median_greater_first  = _Last - _Median_greater_count;
         _STD _Swap_ranges_unchecked(_Median_mid + static_cast<_Diff>(1), _Median_last, _Median_greater_first);
 
         // Swap the median of medians to the middle
         // to reduce the number of times it will be moved by the partition function.
-        auto _Middle = _First + ((_Last - _First) >> 1);
+        const auto _Middle = _First + ((_Last - _First) >> 1);
         swap(*_Median_mid, *_Middle);
 
-        auto _Mid = _STD _Partition_by_pivot_unchecked(_Median_mid, _Middle, _Median_greater_first, _Pred);
+        const auto _Mid = _STD _Partition_by_pivot_unchecked(_Median_mid, _Middle, _Median_greater_first, _Pred);
 
         if (_Mid.second <= _Nth) {
             _First = _Mid.second;
@@ -9811,7 +9811,7 @@ _CONSTEXPR20 void _Nth_element_unchecked(_RanIt _First, _RanIt _Nth, _RanIt _Las
     auto _Ideal = _Last - _First;
 
     for (;;) {
-        auto _Length = _Last - _First;
+        const auto _Length = _Last - _First;
         if (_Length <= _ISORT_MAX) {
             _STD _Insertion_sort_unchecked(_First, _Last, _Pred); // sort any remainder
             return;
@@ -9823,7 +9823,7 @@ _CONSTEXPR20 void _Nth_element_unchecked(_RanIt _First, _RanIt _Nth, _RanIt _Las
             return;
         }
 
-        auto _Mid = _STD _Partition_by_median_guess_unchecked(_First, _Last, _Pred);
+        const auto _Mid = _STD _Partition_by_median_guess_unchecked(_First, _Last, _Pred);
 
         if (_Mid.second <= _Nth) {
             _First = _Mid.second;
@@ -9958,7 +9958,7 @@ namespace ranges {
 
             using _Diff = iter_difference_t<_It>;
             for (;;) {
-                auto _Length = _Last - _First;
+                const auto _Length = _Last - _First;
                 if (_Length <= _ISORT_MAX) {
                     // sort any remainder
                     _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
@@ -9966,9 +9966,9 @@ namespace ranges {
                 }
 
                 // collect the medians of five at the beginning of the range
-                _Diff _Median_count = _Length / static_cast<_Diff>(5);
-                auto _Median_last   = _First + _Median_count;
-                auto _Current       = _First;
+                const _Diff _Median_count = _Length / static_cast<_Diff>(5);
+                auto _Median_last         = _First + _Median_count;
+                auto _Current             = _First;
                 for (auto _Median_dest = _First; _Median_dest != _Median_last; ++_Median_dest) {
                     _Swap_med5(_Current, _Median_dest, _Pred, _Proj);
                     _Current += static_cast<_Diff>(5);
@@ -9983,8 +9983,8 @@ namespace ranges {
                 // Move the ones after _Median_mid near _Last and then partition
                 // the elements between the medians at front and back by the pivot _Median_mid
                 // so that they do not have to be considered or moved in the partitioning pass.
-                _Diff _Median_greater_count = (_Median_last - _Median_mid) - 1;
-                auto _Median_greater_first  = _Last - _Median_greater_count;
+                const _Diff _Median_greater_count = (_Median_last - _Median_mid) - 1;
+                auto _Median_greater_first        = _Last - _Median_greater_count;
                 (void) _RANGES _Swap_ranges_common(
                     _Median_mid + static_cast<_Diff>(1), _STD move(_Median_last), _Median_greater_first, _Last);
 
@@ -9993,7 +9993,7 @@ namespace ranges {
                 auto _Middle = _First + ((_Last - _First) >> 1);
                 _RANGES iter_swap(_Median_mid, _Middle);
 
-                subrange<_It> _Mid = _RANGES _Partition_by_pivot_common(
+                const subrange<_It> _Mid = _RANGES _Partition_by_pivot_common(
                     _STD move(_Median_mid), _STD move(_Middle), _STD move(_Median_greater_first), _Pred, _Proj);
 
                 if (_Mid.end() <= _Nth) {
@@ -10018,7 +10018,7 @@ namespace ranges {
             auto _Ideal = _Last - _First;
 
             for (;;) {
-                auto _Length = _Last - _First;
+                const auto _Length = _Last - _First;
                 if (_Length <= _ISORT_MAX) {
                     // sort any remainder
                     _RANGES _Insertion_sort_common(_STD move(_First), _STD move(_Last), _Pred, _Proj);
@@ -10032,7 +10032,7 @@ namespace ranges {
                     return;
                 }
 
-                subrange<_It> _Mid = _RANGES _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
+                const subrange<_It> _Mid = _RANGES _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
 
                 if (_Mid.end() <= _Nth) {
                     _First = _Mid.end();
