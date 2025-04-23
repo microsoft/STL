@@ -274,16 +274,16 @@ auto last_known_good_search(RanItH h_first, RanItH h_last, RanItN n_first, RanIt
     const ptrdiff_t n_len = n_last - n_first;
 
     for (; h_last - h_first >= n_len; ++h_first) {
-        bool is_eq = true;
+        bool is_equal = true;
 
         for (ptrdiff_t i = 0; i != n_len; ++i) {
             if (*(h_first + i) != *(n_first + i)) {
-                is_eq = false;
+                is_equal = false;
                 break;
             }
         }
 
-        if (is_eq) {
+        if (is_equal) {
             return h_first;
         }
     }
@@ -302,16 +302,16 @@ auto last_known_good_find_end(RanItH h_first, RanItH h_last, RanItN n_first, Ran
     auto h_mid = h_last - n_len;
 
     for (;;) {
-        bool is_eq = true;
+        bool is_equal = true;
 
         for (ptrdiff_t i = 0; i != n_len; ++i) {
             if (*(h_mid + i) != *(n_first + i)) {
-                is_eq = false;
+                is_equal = false;
                 break;
             }
         }
 
-        if (is_eq) {
+        if (is_equal) {
             return h_mid;
         }
 
