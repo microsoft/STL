@@ -117,19 +117,21 @@ void check_result(const vector<int>& expected, const vector<int>& computed, Diff
 
 template <class Algorithm, class Src>
 void test_nth_element(Algorithm alg, const Src& src) {
+    const auto src_ssize = end(src) - begin(src);
+
     vector<int> sorted(begin(src), end(src));
     sort(sorted.begin(), sorted.end());
     vector<int> v;
     v.reserve(size(src));
 
-    for (vector<int>::difference_type nth{}, size = end(src) - begin(src); nth < size; nth += 15) {
+    for (vector<int>::difference_type nth{}; nth < src_ssize; nth += 15) {
         v.assign(begin(src), end(src));
         alg(v, nth);
         check_result(sorted, v, nth);
     }
     v.assign(begin(src), end(src));
-    alg(v, (v.end() - v.begin()) - 1);
-    check_result(sorted, v, (v.end() - v.begin()) - 1);
+    alg(v, src_ssize - 1);
+    check_result(sorted, v, src_ssize - 1);
 }
 
 template <class Algorithm>
