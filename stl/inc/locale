@@ -166,10 +166,14 @@ protected:
         size_t _Count;
         string_type _Str;
 
-        for (_Count = static_cast<size_t>(_Last - _First); 0 < _Count;) {
+        for (_Count = static_cast<size_t>(_Last - _First); _Str.size() < _Count;) {
             // grow string if locale-specific strxfrm fails
             _Str.resize(_Count);
-            if ((_Count = _LStrxfrm(&_Str[0], &_Str[0] + _Str.size(), _First, _Last, &_Coll)) <= _Str.size()) {
+            _Count = _LStrxfrm(&_Str[0], &_Str[0] + _Str.size(), _First, _Last, &_Coll);
+
+            if (_Count == static_cast<size_t>(-1)) {
+                // return empty string in case of error
+                _Count = 0;
                 break;
             }
         }
