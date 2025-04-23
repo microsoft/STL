@@ -8655,7 +8655,7 @@ _CONSTEXPR20 void _Guess_median_unchecked(_RanIt _First, _RanIt _Mid, _RanIt _La
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_pivot_unchecked(
     _RanIt _First, _RanIt _Pfirst, _RanIt _Last, _Pr _Pred) {
-    // partition [_First, _Last)
+    // partition [_First, _Last) by pivot _Pfirst
     _RanIt _Plast = _STD _Next_iter(_Pfirst);
 
     while (_First < _Pfirst && !_DEBUG_LT_PRED(_Pred, *_STD _Prev_iter(_Pfirst), *_Pfirst)
@@ -8723,6 +8723,7 @@ _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_pivot_unchecked(
 
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 pair<_RanIt, _RanIt> _Partition_by_median_guess_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
+    // partition [_First, _Last)
     _RanIt _Mid = _First + ((_Last - _First) >> 1); // shift for codegen
     _STD _Guess_median_unchecked(_First, _Mid, _STD _Prev_iter(_Last), _Pred);
 
@@ -8856,7 +8857,7 @@ namespace ranges {
         requires sortable<_It, _Pr, _Pj>
     _NODISCARD constexpr subrange<_It> _Partition_by_pivot_common(
         _It _First, _It _Pfirst, _It _Last, _Pr _Pred, _Pj _Proj) {
-        // Partition [_First, _Last) into elements less than pivot, elements equal to pivot, and
+        // Partition [_First, _Last) by pivot _Pfirst into elements less than pivot, elements equal to pivot, and
         // elements greater than pivot; return the equal partition as a subrange.
 
         _It _Plast = _RANGES next(_Pfirst);
