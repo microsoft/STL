@@ -9791,7 +9791,7 @@ _CONSTEXPR20 void _Nth_element_median_of_medians(_RanIt _First, _RanIt _Nth, _Ra
 
         // Swap the median of medians to the middle
         // to reduce the number of times it will be moved by the partition function.
-        const auto _Middle = _First + ((_Last - _First) >> 1);
+        const auto _Middle = _First + (_Length >> 1);
         swap(*_Median_mid, *_Middle);
 
         const auto _Mid = _STD _Partition_by_pivot_unchecked(_Median_mid, _Middle, _Median_greater_first, _Pred);
@@ -9990,7 +9990,7 @@ namespace ranges {
 
                 // Swap the median of medians to the middle
                 // to reduce the number of times it will be moved by the partition function.
-                auto _Middle = _First + ((_Last - _First) >> 1);
+                auto _Middle = _First + (_Length >> 1);
                 _RANGES iter_swap(_Median_mid, _Middle);
 
                 const subrange<_It> _Mid = _RANGES _Partition_by_pivot_common(
