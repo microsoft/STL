@@ -60,7 +60,6 @@ namespace {
 
     [[nodiscard]] __std_fs_copy_file_result __stdcall __vcp_Copyfile(
         const wchar_t* const _Source, const wchar_t* const _Target, const bool _Fail_if_exists) noexcept {
-#if defined(_CRT_APP)
         COPYFILE2_EXTENDED_PARAMETERS _Params{};
         _Params.dwSize      = sizeof(_Params);
         _Params.dwCopyFlags = _Fail_if_exists ? COPY_FILE_FAIL_IF_EXISTS : 0;
@@ -72,13 +71,6 @@ namespace {
 
         // take lower bits to undo HRESULT_FROM_WIN32
         return {false, __std_win_error{_Copy_result & 0x0000FFFFU}};
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
-        if (CopyFileW(_Source, _Target, _Fail_if_exists)) {
-            return {true, __std_win_error::_Success};
-        }
-
-        return {false, __std_win_error{GetLastError()}};
-#endif // defined(_CRT_APP)
     }
 
     [[nodiscard]] __std_win_error __stdcall _Create_symlink(
@@ -401,7 +393,7 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
             }
 
             if (!_Do_copy) {
-                // We only need to test `equivalent()` if we _aren't_ going to `CopyFileW()`,
+                // We only need to test `equivalent()` if we _aren't_ going to `CopyFile2()`,
                 // since that call will fail with an `ERROR_SHARING_VIOLATION` anyways.
                 FILE_ID_INFO _Source_id;
                 _Last_error = _Get_file_id_by_handle(_Source_handle._Get(), &_Source_id);

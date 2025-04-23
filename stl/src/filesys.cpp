@@ -433,7 +433,6 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Unlink(const wchar_t* _Fname) noexcept { //
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
     // copy _Fname1 to _Fname2
-#if defined(_ONECORE)
     COPYFILE2_EXTENDED_PARAMETERS _Params = {0};
     _Params.dwSize                        = sizeof(COPYFILE2_EXTENDED_PARAMETERS);
     _Params.dwCopyFlags                   = 0;
@@ -445,9 +444,6 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t* _Fname1, const wch
 
     // take lower bits to undo HRESULT_FROM_WIN32
     return _Copy_result & 0x0000FFFFU;
-#else // ^^^ defined(_ONECORE) / !defined(_ONECORE) vvv
-    return CopyFileW(_Fname1, _Fname2, 0) ? 0 : GetLastError();
-#endif // ^^^ !defined(_ONECORE) ^^^
 }
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Chmod(const wchar_t* _Fname, perms _Newmode) noexcept {
