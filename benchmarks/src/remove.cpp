@@ -26,6 +26,21 @@ void r(benchmark::State& state) {
     }
 }
 
+template <alg_type Type, class T>
+void rc(benchmark::State& state) {
+    std::vector<T> src(lorem_ipsum.begin(), lorem_ipsum.end());
+    std::vector<T> v(lorem_ipsum.size());
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(src);
+        benchmark::DoNotOptimize(v);
+        if constexpr (Type == alg_type::std_fn) {
+            benchmark::DoNotOptimize(std::remove_copy(src.begin(), src.end(), v.begin(), T{'l'}));
+        } else {
+            benchmark::DoNotOptimize(std::ranges::remove_copy(src, v.begin(), T{'l'}));
+        }
+    }
+}
+
 BENCHMARK(r<alg_type::std_fn, std::uint8_t>);
 BENCHMARK(r<alg_type::std_fn, std::uint16_t>);
 BENCHMARK(r<alg_type::std_fn, std::uint32_t>);
@@ -35,5 +50,15 @@ BENCHMARK(r<alg_type::rng, std::uint8_t>);
 BENCHMARK(r<alg_type::rng, std::uint16_t>);
 BENCHMARK(r<alg_type::rng, std::uint32_t>);
 BENCHMARK(r<alg_type::rng, std::uint64_t>);
+
+BENCHMARK(rc<alg_type::std_fn, std::uint8_t>);
+BENCHMARK(rc<alg_type::std_fn, std::uint16_t>);
+BENCHMARK(rc<alg_type::std_fn, std::uint32_t>);
+BENCHMARK(rc<alg_type::std_fn, std::uint64_t>);
+
+BENCHMARK(rc<alg_type::rng, std::uint8_t>);
+BENCHMARK(rc<alg_type::rng, std::uint16_t>);
+BENCHMARK(rc<alg_type::rng, std::uint32_t>);
+BENCHMARK(rc<alg_type::rng, std::uint64_t>);
 
 BENCHMARK_MAIN();

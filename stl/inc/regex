@@ -382,7 +382,10 @@ public:
 
     template <class _FwdIt>
     string_type lookup_collatename(_FwdIt _First, _FwdIt _Last) const { // map [_First, _Last) to collation element
-        return string_type{_First, _Last};
+        if (_First != _Last && _STD next(_First) == _Last) {
+            return string_type{_First, _Last};
+        }
+        return string_type{};
     }
 
     locale_type imbue(locale_type _Lx) { // store locale object
@@ -1199,10 +1202,16 @@ _INLINE_VAR constexpr unsigned int _Bmp_size  = (_Bmp_max + _Bmp_chrs - 1U) / _B
 _INLINE_VAR constexpr unsigned int _ARRAY_THRESHOLD = 4U;
 
 enum _Node_flags : int { // flags for nfa nodes with special properties
-    _Fl_none    = 0x00,
-    _Fl_negate  = 0x01,
-    _Fl_greedy  = 0x02,
-    _Fl_longest = 0x08 // TRANSITION, ABI: 0x04 is unused; the parser previously marked some nodes with it
+    _Fl_none            = 0x000,
+    _Fl_negate          = 0x001,
+    _Fl_greedy          = 0x002,
+    _Fl_longest         = 0x008, // TRANSITION, ABI: 0x004 is unused; the parser previously marked some nodes with it
+    _Fl_class_negated_w = 0x100,
+    _Fl_class_negated_s = 0x200,
+    _Fl_class_negated_d = 0x400,
+    _Fl_begin_needs_w   = 0x100,
+    _Fl_begin_needs_s   = 0x200,
+    _Fl_begin_needs_d   = 0x400
 };
 
 _BITMASK_OPS(_EMPTY_ARGUMENT, _Node_flags)
@@ -1504,11 +1513,16 @@ public:
     _Node_rep& operator=(const _Node_rep&) = delete;
 };
 
+enum class _Rx_char_class_kind : int { // must be aligned with corresponding _Node_flags
+    _Positive  = 0,
+    _Negated_w = _Fl_class_negated_w,
+    _Negated_s = _Fl_class_negated_s,
+    _Negated_d = _Fl_class_negated_d
+};
+
 template <class _FwdIt, class _Elem, class _RxTraits>
 class _Builder { // provides operations used by _Parser to build the nfa
 public:
-    using _Difft = typename iterator_traits<_FwdIt>::difference_type;
-
     _Builder(const _RxTraits& _Tr, regex_constants::syntax_option_type);
     void _Setlong();
     // _Discard_pattern is an ABI zombie name
@@ -1524,9 +1538,9 @@ public:
     void _Add_class();
     void _Add_char_to_class(_Elem _Ch);
     void _Add_range2(_Elem, _Elem);
-    void _Add_named_class(typename _RxTraits::char_class_type, bool);
-    void _Add_equiv(_FwdIt, _FwdIt, _Difft);
-    void _Add_coll(_FwdIt, _FwdIt, _Difft);
+    void _Add_named_class(typename _RxTraits::char_class_type, _Rx_char_class_kind);
+    void _Add_equiv2(const _Elem*, const _Elem*);
+    void _Add_coll2(const _Elem*, const _Elem*);
     _Node_base* _Begin_group();
     void _End_group(_Node_base* _Back);
     _Node_base* _Begin_assert_group(bool);
@@ -1547,7 +1561,7 @@ private:
     void _Add_char_to_bitmap(_Elem _Ch);
     void _Add_char_to_array(_Elem _Ch);
     void _Add_elts(_Node_class<_Elem, _RxTraits>*, typename _RxTraits::char_class_type, bool);
-    void _Char_to_elts(_FwdIt, _FwdIt, _Difft, _Sequence<_Elem>**);
+    void _Char_to_elts2(const _Elem*, const _Elem*, _Sequence<_Elem>**);
 
     _Root_node* _Root;
     _Node_base* _Current;
@@ -1679,6 +1693,7 @@ private:
     bool _Match_pat(_Node_base*);
     bool _Better_match();
     bool _Is_wbound() const;
+    typename _RxTraits::char_class_type _Lookup_char_class(_Elem) const;
 
     unsigned int _Get_ncap() const;
 
@@ -1733,7 +1748,7 @@ private:
     bool _DecimalDigits3(regex_constants::error_type _Error_type, int _Initial = 0);
     void _HexDigits(int);
     bool _OctalDigits();
-    void _Do_ex_class(_Meta_type);
+    _Prs_ret _Do_ex_class2(_Meta_type);
     bool _CharacterClassEscape(bool);
     _Prs_ret _ClassEscape3();
     _Prs_ret _ClassAtom(bool);
@@ -1752,6 +1767,7 @@ private:
     void _Quantifier();
     bool _Alternative();
     void _Disjunction();
+    void _Calculate_loop_simplicity(_Node_base* _Nx, _Node_base* _Ne, _Node_rep* _Outer_rep);
 
     _FwdIt _Pat;
     _FwdIt _Begin;
@@ -2942,26 +2958,34 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_elts(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_named_class(typename _RxTraits::char_class_type _Cl,
-    bool _Negate) { // add contents of named class to bracket expression
+void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_named_class(
+    typename _RxTraits::char_class_type _Cl, const _Rx_char_class_kind _Kind) {
+    // add contents of named class to bracket expression
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
-    _Add_elts(_Node, _Cl, _Negate);
-    if (_Bmp_max <= _STD _Max_limit<typename _RxTraits::_Uelem>() && !_Negate) {
-        _Node->_Classes = static_cast<typename _RxTraits::char_class_type>(_Node->_Classes | _Cl);
+    _Add_elts(_Node, _Cl, _Kind != _Rx_char_class_kind::_Positive);
+    if (_Bmp_max <= _STD _Max_limit<typename _RxTraits::_Uelem>()) {
+        if (_Kind == _Rx_char_class_kind::_Positive) {
+            _Node->_Classes = static_cast<typename _RxTraits::char_class_type>(_Node->_Classes | _Cl);
+        } else {
+            auto _Node_flag = static_cast<_Node_flags>(_Kind);
+            _Node->_Flags |= _Node_flag;
+            _Root->_Flags |= _Node_flag;
+        }
     }
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Char_to_elts(_FwdIt _First, _FwdIt _Last, _Difft _Diff,
+void _Builder<_FwdIt, _Elem, _RxTraits>::_Char_to_elts2(const _Elem* const _First, const _Elem* const _Last,
     _Sequence<_Elem>** _Cur) { // add collation element to element sequence
-    while (*_Cur && static_cast<unsigned int>(_Diff) < (*_Cur)->_Sz) {
+    auto _Diff = static_cast<unsigned int>(_Last - _First);
+    while (*_Cur && _Diff < (*_Cur)->_Sz) {
         _Cur = &(*_Cur)->_Next;
     }
 
-    if (!(*_Cur) || static_cast<unsigned int>(_Diff) != (*_Cur)->_Sz) {
+    if (!(*_Cur) || _Diff != (*_Cur)->_Sz) {
         // add new sequence holding elements of the same length
         _Sequence<_Elem>* _Node = *_Cur;
-        *_Cur                   = new _Sequence<_Elem>(static_cast<unsigned int>(_Diff));
+        *_Cur                   = new _Sequence<_Elem>(_Diff);
         (*_Cur)->_Next          = _Node;
     }
     (*_Cur)->_Data._Insert2(_First, _Last);
@@ -2978,10 +3002,15 @@ unsigned int _Builder<_FwdIt, _Elem, _RxTraits>::_Get_tmax() const {
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_equiv(_FwdIt _First, _FwdIt _Last, _Difft _Diff) {
+void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_equiv2(const _Elem* const _First, const _Elem* const _Last) {
     // add elements of equivalence class to bracket expression
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
     typename _RxTraits::string_type _Str = _Traits.transform_primary(_First, _Last);
+
+    if (_Str.empty()) {
+        _Xregex_error(regex_constants::error_collate);
+    }
+
     for (unsigned int _Ch = 0; _Ch < _Bmp_max; ++_Ch) { // add elements
         _Elem _Ex = static_cast<_Elem>(_Ch);
         if (_Traits.transform_primary(_STD addressof(_Ex), _STD addressof(_Ex) + 1)
@@ -2995,16 +3024,16 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_equiv(_FwdIt _First, _FwdIt _Last,
     }
     if (_Bmp_max < static_cast<unsigned int>(_STD _Max_limit<_Elem>())) { // map range
         _Sequence<_Elem>** _Cur = _STD addressof(_Node->_Equiv);
-        _Char_to_elts(_First, _Last, _Diff, _Cur);
+        _Char_to_elts2(_First, _Last, _Cur);
     }
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_coll(_FwdIt _First, _FwdIt _Last, _Difft _Diff) {
+void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_coll2(const _Elem* const _First, const _Elem* const _Last) {
     // add collation element to bracket expression
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
     _Sequence<_Elem>** _Cur              = _STD addressof(_Node->_Coll);
-    _Char_to_elts(_First, _Last, _Diff, _Cur);
+    _Char_to_elts2(_First, _Last, _Cur);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -3190,8 +3219,6 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_if(_Node_if* _Node) { // apply
     }
 
     // see if there is a longer match
-    _Tgt_state_t<_It> _Final = _Tgt_state;
-    auto _Final_len          = _STD distance(_St._Cur, _Tgt_state._Cur);
     for (;;) { // process one branch of if
         _Node = _Node->_Child;
         if (!_Node) {
@@ -3199,17 +3226,8 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_if(_Node_if* _Node) { // apply
         }
 
         _Tgt_state = _St;
-        if (_Match_pat(_Node->_Next)) { // record match if it is longer
-            const auto _Len = _STD distance(_St._Cur, _Tgt_state._Cur);
-            if (_Final_len < _Len) { // memorize longest so far
-                _Final     = _Tgt_state;
-                _Final_len = _Len;
-            }
-        }
+        (void) _Match_pat(_Node->_Next);
     }
-
-    // set the input end to the longest match
-    _Tgt_state = _Final;
     return true;
 }
 
@@ -3399,11 +3417,11 @@ bool _Lookup_collating_range(const _Elem _Ch, const _Buf<_Elem>* const _Bufptr, 
 }
 
 template <class _Elem, class _RxTraits>
-bool _Lookup_equiv(typename _RxTraits::_Uelem _Ch, const _Sequence<_Elem>* _Eq, const _RxTraits& _Traits) {
+bool _Lookup_equiv2(_Elem _Ch, const _Sequence<_Elem>* _Eq, const _RxTraits& _Traits) {
     // check whether _Ch is in _Eq
     typename _RxTraits::string_type _Str0;
     typename _RxTraits::string_type _Str1;
-    _Str1.push_back(static_cast<_Elem>(_Ch));
+    _Str1.push_back(_Ch);
     _Str1 = _Traits.transform_primary(_Str1.begin(), _Str1.end());
     while (_Eq) { // look for sequence of elements that are the right size
         for (unsigned int _Ix = 0; _Ix < _Eq->_Data._Size(); _Ix += _Eq->_Sz) { // look for _Ch
@@ -3418,22 +3436,48 @@ bool _Lookup_equiv(typename _RxTraits::_Uelem _Ch, const _Sequence<_Elem>* _Eq, 
     return false;
 }
 
-template <class _BidIt, class _Elem>
-_BidIt _Lookup_coll(_BidIt _First, _BidIt _Last, const _Sequence<_Elem>* _Eq) {
-    // look for collation element [_First, _Last) in _Eq
-    while (_Eq) { // look for sequence of elements that are the right size
-        for (unsigned int _Ix = 0; _Ix < _Eq->_Data._Size(); _Ix += _Eq->_Sz) { // look for character range
-            _BidIt _Res = _First;
-            for (size_t _Jx = 0; _Jx < _Eq->_Sz; ++_Jx) { // check current character
-                if (*_Res++ != *(_Eq->_Data._Str() + _Ix + _Jx)) {
-                    break;
+template <class _BidIt, class _Elem, class _RxTraits>
+_BidIt _Lookup_coll2(_Elem _First_ch, _BidIt _First, const _BidIt _Last, const _Sequence<_Elem>* _Seq,
+    const _RxTraits& _Traits, const regex_constants::syntax_option_type _Flags) {
+    // look for collation element [_First, _Last) in _Seq
+    typename _RxTraits::string_type _Str;
+
+    // extend translated input character sequence
+    if (_Seq) { // the longest collating elements come first
+        _Str.push_back(_First_ch);
+        const auto _Coll_size = _Seq->_Sz;
+        size_t _Str_size      = 1;
+        _BidIt _Pos           = _First;
+        ++_Pos;
+
+        for (; _Str_size < _Coll_size && _Pos != _Last; ++_Pos) {
+            _Elem _Ch = *_Pos;
+            if (_Flags & regex_constants::icase) {
+                _Ch = _Traits.translate_nocase(_Ch);
+            } else if (_Flags & regex_constants::collate) {
+                _Ch = _Traits.translate(_Ch);
+            }
+            _Str.push_back(_Ch);
+            ++_Str_size;
+        }
+    }
+
+    while (_Seq) { // look for sequence of elements that are the right size
+        const auto _Size = _Seq->_Sz;
+
+        // match input character sequence to stored collating elements
+        if (_Str.size() >= _Size) {
+            const _Elem* const _Str_first = _Str.data();
+            const _Elem* const _Str_last  = _Str_first + _Size;
+            const _Elem* _Current         = _Seq->_Data._Str();
+            for (auto _Remaining = _Seq->_Data._Size(); _Remaining >= _Size; _Current += _Size, _Remaining -= _Size) {
+                if (_STD equal(_Str_first, _Str_last, _Current)) {
+                    _STD advance(_First, static_cast<_Iter_diff_t<_BidIt>>(_Size));
+                    return _First;
                 }
             }
-            if (_Res == _Last) {
-                return _Last;
-            }
         }
-        _Eq = _Eq->_Next;
+        _Seq = _Seq->_Next;
     }
     return _First;
 }
@@ -3454,7 +3498,7 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_class(_Node_base* _Nx) { // ap
     _It _Resx;
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
     if (_Node->_Coll
-        && (_Resx = _STD _Lookup_coll(_Tgt_state._Cur, _End, _Node->_Coll))
+        && (_Resx = _STD _Lookup_coll2(_Ch, _Tgt_state._Cur, _End, _Node->_Coll, _Traits, _Sflags))
                != _Tgt_state._Cur) { // check for collation element
         _Res0  = _Resx;
         _Found = true;
@@ -3470,7 +3514,16 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_class(_Node_base* _Nx) { // ap
         _Found = true;
     } else if (_Node->_Classes != typename _RxTraits::char_class_type{} && _Traits.isctype(_Ch, _Node->_Classes)) {
         _Found = true;
-    } else if (_Node->_Equiv && _STD _Lookup_equiv(_UCh, _Node->_Equiv, _Traits)) {
+    } else if (_Node->_Equiv && _STD _Lookup_equiv2(_Ch, _Node->_Equiv, _Traits)) {
+        _Found = true;
+    } else if ((_Node->_Flags & _Fl_class_negated_w)
+               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('W')))) {
+        _Found = true;
+    } else if ((_Node->_Flags & _Fl_class_negated_s)
+               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('S')))) {
+        _Found = true;
+    } else if ((_Node->_Flags & _Fl_class_negated_d)
+               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('D')))) {
         _Found = true;
     } else {
         _Found = false;
@@ -3527,6 +3580,14 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Is_wbound() const {
             return (_Mflags & regex_constants::match_not_bow) == 0 && _Is_word(*_Tgt_state._Cur);
         }
     }
+}
+
+template <class _BidIt, class _Elem, class _RxTraits, class _It>
+typename _RxTraits::char_class_type _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Lookup_char_class(
+    const _Elem _Class_name) const {
+    // look up character class with single-character name
+    auto _Ptr = _STD addressof(_Class_name);
+    return _Traits.lookup_classname(_Ptr, _Ptr + 1, (_Sflags & regex_constants::icase) != 0);
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
@@ -3811,10 +3872,9 @@ _BidIt _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Skip(_BidIt _First_arg, _BidIt 
                     const auto _UCh = static_cast<typename _RxTraits::_Uelem>(_Ch);
 
                     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
-                    _It _Next                            = _First_arg;
-                    ++_Next;
 
-                    if (_Node->_Coll && _STD _Lookup_coll(_First_arg, _Next, _Node->_Coll) != _First_arg) {
+                    if (_Node->_Coll
+                        && _STD _Lookup_coll2(_Ch, _First_arg, _Last, _Node->_Coll, _Traits, _Sflags) != _First_arg) {
                         _Found = true;
                     } else if (_Node->_Ranges
                                && (_Sflags & regex_constants::collate
@@ -3830,7 +3890,16 @@ _BidIt _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Skip(_BidIt _First_arg, _BidIt 
                     } else if (_Node->_Classes != typename _RxTraits::char_class_type{}
                                && _Traits.isctype(_Ch, _Node->_Classes)) {
                         _Found = true;
-                    } else if (_Node->_Equiv && _STD _Lookup_equiv(_UCh, _Node->_Equiv, _Traits)) {
+                    } else if (_Node->_Equiv && _STD _Lookup_equiv2(_Ch, _Node->_Equiv, _Traits)) {
+                        _Found = true;
+                    } else if ((_Node->_Flags & _Fl_class_negated_w)
+                               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('W')))) {
+                        _Found = true;
+                    } else if ((_Node->_Flags & _Fl_class_negated_s)
+                               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('S')))) {
+                        _Found = true;
+                    } else if ((_Node->_Flags & _Fl_class_negated_d)
+                               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('D')))) {
                         _Found = true;
                     } else {
                         _Found = false;
@@ -4074,45 +4143,68 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_OctalDigits() { // check for up to 3 oc
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ex_class(
+_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ex_class2(
     _Meta_type _End_arg) { // handle delimited expressions within bracket expression
-    regex_constants::error_type _Errtype = (_End_arg == _Meta_colon   ? regex_constants::error_ctype
-                                            : _End_arg == _Meta_equal ? regex_constants::error_collate
-                                            : _End_arg == _Meta_dot   ? regex_constants::error_collate
-                                                                      : regex_constants::error_syntax);
-    _FwdIt _Beg                          = _Pat;
-    _Iter_diff_t<_FwdIt> _Diff           = 0;
+    const regex_constants::error_type _Errtype =
+        _End_arg == _Meta_colon ? regex_constants::error_ctype : regex_constants::error_collate;
+    const _FwdIt _Beg = _Pat;
 
     while (_Mchar != _Meta_colon && _Mchar != _Meta_equal && _Mchar != _Meta_dot && _Mchar != _Meta_eos) {
         // advance to end delimiter
         _Next();
-        ++_Diff;
     }
-    if (_Mchar != _End_arg) {
-        _Error(_Errtype);
-    } else if (_End_arg == _Meta_colon) { // handle named character class
+
+    const _FwdIt _End = _Pat;
+    _Expect(_End_arg, _Errtype);
+    _Expect(_Meta_rsq, _Errtype);
+
+    if (_End_arg == _Meta_colon) { // handle named character class
         typename _RxTraits::char_class_type _Cls =
-            _Traits.lookup_classname(_Beg, _Pat, (_Flags & regex_constants::icase) != 0);
+            _Traits.lookup_classname(_Beg, _End, (_Flags & regex_constants::icase) != 0);
         if (!_Cls) {
             _Error(regex_constants::error_ctype);
         }
 
-        _Nfa._Add_named_class(_Cls, false);
-    } else if (_End_arg == _Meta_equal) { // process =
-        if (_Beg == _Pat) {
+        _Nfa._Add_named_class(_Cls, _Rx_char_class_kind::_Positive);
+        return _Prs_set;
+    } else {
+        typename _RxTraits::string_type _Coll_elem = _Traits.lookup_collatename(_Beg, _End);
+        const auto _Size                           = _Coll_elem.size();
+
+        if (_Size == 0) {
             _Error(regex_constants::error_collate);
-        } else {
-            _Nfa._Add_equiv(_Beg, _Pat, _Diff);
         }
-    } else if (_End_arg == _Meta_dot) { // process .
-        if (_Beg == _Pat) {
-            _Error(regex_constants::error_collate);
-        } else {
-            _Nfa._Add_coll(_Beg, _Pat, _Diff);
+
+        if (_Size > _Max_limit<unsigned int>()) {
+            _Error(regex_constants::error_space);
+        }
+
+        _Elem* const _Coll_elem_first      = &_Coll_elem.front();
+        const _Elem* const _Coll_elem_last = _Coll_elem_first + _Size;
+        if (_End_arg == _Meta_equal) { // process equivalence
+            _Nfa._Add_equiv2(_Coll_elem_first, _Coll_elem_last);
+            return _Prs_set;
+        } else { // process collating element
+            if (_Size == 1) {
+                _Val = *_Coll_elem_first;
+                return _Prs_chr;
+            }
+
+            // Character ranges with multi-character bounds cannot be represented in NFA nodes yet (see GH-5391).
+            // Provisionally treat multi-character collating elements as character sets.
+            if (_Flags & regex_constants::icase) {
+                for (auto _Current = _Coll_elem_first; _Current != _Coll_elem_last; ++_Current) {
+                    *_Current = _Traits.translate_nocase(*_Current);
+                }
+            } else if (_Flags & regex_constants::collate) {
+                for (auto _Current = _Coll_elem_first; _Current != _Coll_elem_last; ++_Current) {
+                    *_Current = _Traits.translate(*_Current);
+                }
+            }
+            _Nfa._Add_coll2(_Coll_elem_first, _Coll_elem_last);
+            return _Prs_set;
         }
     }
-    _Next();
-    _Expect(_Meta_rsq, _Errtype);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -4123,18 +4215,23 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { // 
         return false;
     }
 
-    const bool _Negated = _Traits.isctype(_Char, _RxTraits::_Ch_upper);
+    auto _Kind = (_Char == 'W'   ? _Rx_char_class_kind::_Negated_w
+                  : _Char == 'S' ? _Rx_char_class_kind::_Negated_s
+                  : _Char == 'D' ? _Rx_char_class_kind::_Negated_d
+                                 : _Rx_char_class_kind::_Positive);
+
     if (_Addit) {
         _Nfa._Add_class();
         // GH-992: Outside character class definitions, _Cls completely defines the character class
         // so negating _Cls and negating the entire character class are equivalent.
         // Since the former negation is defective, do the latter instead.
-        if (_Negated) {
+        if (_Kind != _Rx_char_class_kind::_Positive) {
             _Nfa._Negate();
+            _Kind = _Rx_char_class_kind::_Positive;
         }
     }
 
-    _Nfa._Add_named_class(_Cls, _Negated && !_Addit);
+    _Nfa._Add_named_class(_Cls, _Kind);
     _Next();
     return true;
 }
@@ -4172,8 +4269,7 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassAtom(const bool _Initial) { //
         if (_Mchar == _Meta_colon || _Mchar == _Meta_equal || _Mchar == _Meta_dot) { // handle delimited expression
             _Meta_type _St = _Mchar;
             _Next();
-            _Do_ex_class(_St);
-            return _Prs_set;
+            return _Do_ex_class2(_St);
         } else { // handle ordinary [
             _Val = _Meta_lsq;
             return _Prs_chr;
@@ -4348,6 +4444,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_IsIdentityEscape(bool _In_character_cla
         return true;
     case _Meta_dot:
     case _Meta_lsq:
+    case _Meta_rsq:
     case _Meta_star:
     case _Meta_caret:
     case _Meta_dlr:
@@ -4621,7 +4718,9 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Disjunction() { // check for valid disj
     }
 }
 
-inline void _Calculate_loop_simplicity(_Node_base* _Nx, _Node_base* _Ne, _Node_rep* _Outer_rep) {
+template <class _FwdIt, class _Elem, class _RxTraits>
+void _Parser<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
+    _Node_base* _Nx, _Node_base* _Ne, _Node_rep* _Outer_rep) {
     // walks regex NFA, calculates values of _Node_rep::_Simple_loop
     for (; _Nx != _Ne && _Nx; _Nx = _Nx->_Next) {
         switch (_Nx->_Kind) {
@@ -4662,6 +4761,19 @@ inline void _Calculate_loop_simplicity(_Node_base* _Nx, _Node_base* _Ne, _Node_r
                 _Outer_rep = nullptr;
             }
             break;
+        case _N_class:
+            if (_Outer_rep) {
+                // _Node_rep is not simple if a class can match character sequences of different lengths
+                auto _Node = static_cast<const _Node_class<_Elem, _RxTraits>*>(_Nx);
+                bool _Coll_diff_size =
+                    _Node->_Coll
+                    && (_Node->_Small || _Node->_Large || _Node->_Ranges || _Node->_Classes || _Node->_Coll->_Next);
+                if (_Coll_diff_size || _Node->_Equiv
+                    || ((_Flags & regex_constants::collate) && (_Node->_Ranges || (_Node->_Flags & _Fl_negate)))) {
+                    _Outer_rep->_Simple_loop = 0;
+                }
+            }
+            break;
         case _N_none:
         case _N_nop:
         case _N_bol:
@@ -4669,7 +4781,6 @@ inline void _Calculate_loop_simplicity(_Node_base* _Nx, _Node_base* _Ne, _Node_r
         case _N_wbound:
         case _N_dot:
         case _N_str:
-        case _N_class:
         case _N_group:
         case _N_end_group:
         case _N_end_assert:

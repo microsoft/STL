@@ -2720,7 +2720,7 @@ namespace {
     // In optimized builds it avoids an extra call, as these functions are too large to inline.
 
     template <class _Traits, _Find_one_predicate _Pred, class _Ty>
-    const void* __stdcall __std_find_trivial_impl(const void* _First, const void* _Last, _Ty _Val) noexcept {
+    const void* __stdcall __std_find_trivial_impl(const void* _First, const void* const _Last, _Ty _Val) noexcept {
 #ifndef _M_ARM64EC
         const size_t _Size_bytes = _Byte_length(_First, _Last);
 
@@ -3221,6 +3221,124 @@ namespace {
             }
         }
         return _Result;
+    }
+
+    template <class _Traits, class _Ty>
+    const void* __stdcall __std_search_n_impl(
+        const void* _First, const void* const _Last, const size_t _Count, const _Ty _Val) noexcept {
+        if (_Count == 0) {
+            return _First;
+        } else if (_Count == 1) {
+            return __std_find_trivial_impl<_Traits, _Find_one_predicate::_Equal>(_First, _Last, _Val);
+        }
+
+        auto _Mid1 = static_cast<const _Ty*>(_First);
+#ifndef _M_ARM64EC
+        const size_t _Length = _Byte_length(_First, _Last);
+        if (_Count <= 16 / sizeof(_Ty) && _Length >= 32 && _Use_avx2()) {
+            _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
+            const int _Bytes_count = static_cast<int>(_Count * sizeof(_Ty));
+            const int _Sh1         = sizeof(_Ty) == 1 ? (_Bytes_count < 4 ? _Bytes_count - 2 : 2) : 0;
+            const int _Sh2 = sizeof(_Ty) < 4 ? (_Bytes_count < 4 ? 0 : (_Bytes_count < 8 ? _Bytes_count - 4 : 4)) : 0;
+            const int _Sh3 = sizeof(_Ty) < 8 ? (_Bytes_count < 8 ? 0 : _Bytes_count - 8) : 0;
+
+            const __m256i _Comparand = _Traits::_Set_avx(_Val);
+
+            const void* _Stop_at = _First;
+            _Advance_bytes(_Stop_at, _Length & ~size_t{0x1F});
+
+            uint32_t _Carry = 0;
+            do {
+                const __m256i _Data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
+
+                const auto _Mask = static_cast<uint32_t>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Comparand, _Data)));
+
+                uint64_t _MskX = uint64_t{_Carry} | (uint64_t{_Mask} << 32);
+
+                if constexpr (sizeof(_Ty) == 1) {
+                    _MskX = (_MskX >> 1) & _MskX;
+                    _MskX = __ull_rshift(_MskX, _Sh1) & _MskX;
+                }
+
+                if constexpr (sizeof(_Ty) == 2) {
+                    _MskX = (_MskX >> 2) & _MskX;
+                }
+
+                if constexpr (sizeof(_Ty) < 4) {
+                    _MskX = __ull_rshift(_MskX, _Sh2) & _MskX;
+                }
+
+                if constexpr (sizeof(_Ty) == 4) {
+                    _MskX = (_MskX >> 4) & _MskX;
+                }
+
+                if constexpr (sizeof(_Ty) < 8) {
+                    _MskX = __ull_rshift(_MskX, _Sh3) & _MskX;
+                }
+
+                if constexpr (sizeof(_Ty) == 8) {
+                    _MskX = (_MskX >> 8) & _MskX;
+                }
+
+                if (_MskX != 0) {
+#ifdef _M_IX86
+                    const uint32_t _MskLow = static_cast<uint32_t>(_MskX);
+
+                    const int _Shift = _MskLow != 0 ? static_cast<int>(_tzcnt_u32(_MskLow)) - 32
+                                                    : static_cast<int>(_tzcnt_u32(static_cast<uint32_t>(_MskX >> 32)));
+
+#elifdef _M_X64
+                    const long long _Shift = static_cast<long long>(_tzcnt_u64(_MskX)) - 32;
+#else
+#error Unsupported architecture
+#endif
+                    _Advance_bytes(_First, _Shift);
+                    return _First;
+                }
+
+                _Carry = _Mask;
+
+                _Advance_bytes(_First, 32);
+            } while (_First != _Stop_at);
+
+            _Mid1 = static_cast<const _Ty*>(_First);
+            _Rewind_bytes(_First, _lzcnt_u32(~_Carry));
+        }
+#endif // !_M_ARM64EC
+        auto _Match_start    = static_cast<const _Ty*>(_First);
+        const auto _Last_ptr = static_cast<const _Ty*>(_Last);
+
+        if (static_cast<size_t>(_Last_ptr - _Match_start) < _Count) {
+            return _Last_ptr;
+        }
+
+        auto _Match_end = _Match_start + _Count;
+        auto _Mid2      = _Match_end;
+        for (;;) {
+            // Invariants: _Match_end - _Match_start == _Count, [_Match_start, _Mid1) and [_Mid2, _Match_end) match
+            // _Val:
+            //
+            // _Match_start  _Mid1    _Mid2    _Match_end
+            // |=============|????????|========|??????????...
+
+            --_Mid2;
+            if (*_Mid2 == _Val) { // match;
+                if (_Mid1 == _Mid2) { // [_Mid1, _Mid2) is empty, so [_Match_start, _Match_end) all match
+                    return _Match_start;
+                }
+            } else { // mismatch; skip past it
+                _Match_start = _Mid2 + 1;
+
+                if (static_cast<size_t>(_Last_ptr - _Match_start) < _Count) { // not enough space left
+                    return _Last_ptr;
+                }
+
+                _Mid1      = _Match_end;
+                _Match_end = _Match_start + _Count;
+                _Mid2      = _Match_end;
+            }
+        }
     }
 
     enum class _Find_meow_of_predicate { _Any_of, _None_of };
@@ -5071,6 +5189,26 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_8(
     return __std_count_trivial_impl<_Count_traits_8>(_First, _Last, _Val);
 }
 
+const void* __stdcall __std_search_n_1(
+    const void* const _First, const void* const _Last, const size_t _Count, const uint8_t _Value) noexcept {
+    return __std_search_n_impl<_Find_traits_1>(_First, _Last, _Count, _Value);
+}
+
+const void* __stdcall __std_search_n_2(
+    const void* const _First, const void* const _Last, const size_t _Count, const uint16_t _Value) noexcept {
+    return __std_search_n_impl<_Find_traits_2>(_First, _Last, _Count, _Value);
+}
+
+const void* __stdcall __std_search_n_4(
+    const void* const _First, const void* const _Last, const size_t _Count, const uint32_t _Value) noexcept {
+    return __std_search_n_impl<_Find_traits_4>(_First, _Last, _Count, _Value);
+}
+
+const void* __stdcall __std_search_n_8(
+    const void* const _First, const void* const _Last, const size_t _Count, const uint64_t _Value) noexcept {
+    return __std_search_n_impl<_Find_traits_8>(_First, _Last, _Count, _Value);
+}
+
 const void* __stdcall __std_find_first_of_trivial_1(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
     return __std_find_first_of::_Dispatch_ptr<uint8_t>(_First1, _Last1, _First2, _Last2);
@@ -5276,9 +5414,10 @@ __declspec(noalias) void __stdcall __std_replace_8(
 
 namespace {
     template <class _Ty>
-    void* _Remove_fallback(void* const _First, void* const _Last, void* const _Out, const _Ty _Val) noexcept {
-        _Ty* _Src  = reinterpret_cast<_Ty*>(_First);
-        _Ty* _Dest = reinterpret_cast<_Ty*>(_Out);
+    void* _Remove_fallback(
+        const void* const _First, const void* const _Last, void* const _Out, const _Ty _Val) noexcept {
+        const _Ty* _Src = reinterpret_cast<const _Ty*>(_First);
+        _Ty* _Dest      = reinterpret_cast<_Ty*>(_Out);
 
         while (_Src != _Last) {
             if (*_Src != _Val) {
@@ -5293,9 +5432,9 @@ namespace {
     }
 
     template <class _Ty>
-    void* _Unique_fallback(void* const _First, void* const _Last, void* const _Dest) noexcept {
-        _Ty* _Out = reinterpret_cast<_Ty*>(_Dest);
-        _Ty* _Src = reinterpret_cast<_Ty*>(_First);
+    void* _Unique_fallback(const void* const _First, const void* const _Last, void* const _Dest) noexcept {
+        _Ty* _Out       = reinterpret_cast<_Ty*>(_Dest);
+        const _Ty* _Src = reinterpret_cast<const _Ty*>(_First);
 
         while (_Src != _Last) {
             if (*_Src != *_Out) {
@@ -5518,6 +5657,98 @@ namespace {
         }
     };
 
+    constexpr size_t _Remove_copy_buffer_size = 512;
+
+    template <class _Traits, class _Ty>
+    void* _Remove_impl(void* _First, void* const _Stop, const _Ty _Val) noexcept {
+        void* _Out        = _First;
+        const auto _Match = _Traits::_Set(_Val);
+
+        do {
+            const auto _Src       = _Traits::_Load(_First);
+            const uint32_t _Bingo = _Traits::_Mask(_Src, _Match);
+            _Out                  = _Traits::_Store_masked(_Out, _Src, _Bingo);
+            _Advance_bytes(_First, _Traits::_Step);
+        } while (_First != _Stop);
+
+        return _Out;
+    }
+
+    template <class _Traits, class _Ty>
+    void* _Remove_copy_impl(const void* _First, const void* const _Stop, void* _Out, const _Ty _Val) noexcept {
+        unsigned char _Buffer[_Remove_copy_buffer_size];
+        void* _Buffer_out        = _Buffer;
+        void* const _Buffer_stop = _Buffer + _Remove_copy_buffer_size - _Traits::_Step;
+
+        const auto _Match = _Traits::_Set(_Val);
+
+        do {
+            const auto _Src       = _Traits::_Load(_First);
+            const uint32_t _Bingo = _Traits::_Mask(_Src, _Match);
+            _Buffer_out           = _Traits::_Store_masked(_Buffer_out, _Src, _Bingo);
+            _Advance_bytes(_First, _Traits::_Step);
+
+            if (_Buffer_out >= _Buffer_stop) {
+                const size_t _Fill = _Byte_length(_Buffer, _Buffer_out);
+                memcpy(_Out, _Buffer, _Fill);
+                _Advance_bytes(_Out, _Fill);
+                _Buffer_out = _Buffer;
+            }
+        } while (_First != _Stop);
+
+        const size_t _Fill = _Byte_length(_Buffer, _Buffer_out);
+        memcpy(_Out, _Buffer, _Fill);
+        _Advance_bytes(_Out, _Fill);
+        return _Out;
+    }
+
+    template <class _Traits>
+    void* _Unique_impl(void* _First, void* const _Stop) noexcept {
+        void* _Out = _First;
+
+        do {
+            const auto _Src = _Traits::_Load(_First);
+            void* _First_d  = _First;
+            _Rewind_bytes(_First_d, _Traits::_Elem_size);
+            const auto _Match     = _Traits::_Load(_First_d);
+            const uint32_t _Bingo = _Traits::_Mask(_Src, _Match);
+            _Out                  = _Traits::_Store_masked(_Out, _Src, _Bingo);
+            _Advance_bytes(_First, _Traits::_Step);
+        } while (_First != _Stop);
+
+        _Rewind_bytes(_Out, _Traits::_Elem_size);
+        return _Out;
+    }
+
+    template <class _Traits>
+    void* _Unique_copy_impl(const void* _First, const void* const _Stop, void* _Out) noexcept {
+        unsigned char _Buffer[_Remove_copy_buffer_size];
+        void* _Buffer_out        = _Buffer;
+        void* const _Buffer_stop = _Buffer + _Remove_copy_buffer_size - _Traits::_Step;
+
+        do {
+            const auto _Src      = _Traits::_Load(_First);
+            const void* _First_d = _First;
+            _Rewind_bytes(_First_d, _Traits::_Elem_size);
+            const auto _Match     = _Traits::_Load(_First_d);
+            const uint32_t _Bingo = _Traits::_Mask(_Src, _Match);
+            _Buffer_out           = _Traits::_Store_masked(_Buffer_out, _Src, _Bingo);
+            _Advance_bytes(_First, _Traits::_Step);
+
+            if (_Buffer_out >= _Buffer_stop) {
+                const size_t _Fill = _Byte_length(_Buffer, _Buffer_out);
+                memcpy(static_cast<unsigned char*>(_Out) + _Traits::_Elem_size, _Buffer, _Fill);
+                _Advance_bytes(_Out, _Fill);
+                _Buffer_out = _Buffer;
+            }
+        } while (_First != _Stop);
+
+        const size_t _Fill = _Byte_length(_Buffer, _Buffer_out);
+        memcpy(static_cast<unsigned char*>(_Out) + _Traits::_Elem_size, _Buffer, _Fill);
+        _Advance_bytes(_Out, _Fill);
+        return _Out;
+    }
+
     template <class _Traits, class _Ty>
     void* _Remove_impl(void* _First, const void* _Stop, const _Ty _Val) noexcept {
         void* _Out        = _First;
@@ -5630,7 +5861,77 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
     return _Remove_fallback(_First, _Last, _Out, _Val);
 }
 
-void* __stdcall __std_unique_1(void* _First, void* _Last) noexcept {
+void* __stdcall __std_remove_copy_1(
+    const void* _First, const void* const _Last, void* _Out, const uint8_t _Val) noexcept {
+#ifndef _M_ARM64EC
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 8) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
+        _Out   = _Remove_copy_impl<_Remove_sse_1>(_First, _Stop, _Out, _Val);
+        _First = _Stop;
+    }
+#endif // !defined(_M_ARM64EC)
+
+    return _Remove_fallback(_First, _Last, _Out, _Val);
+}
+
+void* __stdcall __std_remove_copy_2(
+    const void* _First, const void* const _Last, void* _Out, const uint16_t _Val) noexcept {
+#ifndef _M_ARM64EC
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 16) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Out   = _Remove_copy_impl<_Remove_sse_2>(_First, _Stop, _Out, _Val);
+        _First = _Stop;
+    }
+#endif // !defined(_M_ARM64EC)
+
+    return _Remove_fallback(_First, _Last, _Out, _Val);
+}
+
+void* __stdcall __std_remove_copy_4(
+    const void* _First, const void* const _Last, void* _Out, const uint32_t _Val) noexcept {
+#ifndef _M_ARM64EC
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
+        _Out   = _Remove_copy_impl<_Remove_avx_4>(_First, _Stop, _Out, _Val);
+        _First = _Stop;
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+    } else if (_Use_sse42() && _Size_bytes >= 16) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Out   = _Remove_copy_impl<_Remove_sse_4>(_First, _Stop, _Out, _Val);
+        _First = _Stop;
+    }
+#endif // !defined(_M_ARM64EC)
+
+    return _Remove_fallback(_First, _Last, _Out, _Val);
+}
+
+void* __stdcall __std_remove_copy_8(
+    const void* _First, const void* const _Last, void* _Out, const uint64_t _Val) noexcept {
+#ifndef _M_ARM64EC
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
+        _Out   = _Remove_copy_impl<_Remove_avx_8>(_First, _Stop, _Out, _Val);
+        _First = _Stop;
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+    } else if (_Use_sse42() && _Size_bytes >= 16) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Out   = _Remove_copy_impl<_Remove_sse_8>(_First, _Stop, _Out, _Val);
+        _First = _Stop;
+    }
+#endif // !defined(_M_ARM64EC)
+
+    return _Remove_fallback(_First, _Last, _Out, _Val);
+}
+
+void* __stdcall __std_unique_1(void* _First, void* const _Last) noexcept {
     _First = const_cast<void*>(__std_adjacent_find_1(_First, _Last));
 
     if (_First == _Last) {
@@ -5652,7 +5953,7 @@ void* __stdcall __std_unique_1(void* _First, void* _Last) noexcept {
     return _Unique_fallback<uint8_t>(_First, _Last, _Dest);
 }
 
-void* __stdcall __std_unique_2(void* _First, void* _Last) noexcept {
+void* __stdcall __std_unique_2(void* _First, void* const _Last) noexcept {
     _First = const_cast<void*>(__std_adjacent_find_2(_First, _Last));
 
     if (_First == _Last) {
@@ -5674,7 +5975,7 @@ void* __stdcall __std_unique_2(void* _First, void* _Last) noexcept {
     return _Unique_fallback<uint16_t>(_First, _Last, _Dest);
 }
 
-void* __stdcall __std_unique_4(void* _First, void* _Last) noexcept {
+void* __stdcall __std_unique_4(void* _First, void* const _Last) noexcept {
     _First = const_cast<void*>(__std_adjacent_find_4(_First, _Last));
 
     if (_First == _Last) {
@@ -5703,7 +6004,7 @@ void* __stdcall __std_unique_4(void* _First, void* _Last) noexcept {
     return _Unique_fallback<uint32_t>(_First, _Last, _Dest);
 }
 
-void* __stdcall __std_unique_8(void* _First, void* _Last) noexcept {
+void* __stdcall __std_unique_8(void* _First, void* const _Last) noexcept {
     _First = const_cast<void*>(__std_adjacent_find_8(_First, _Last));
 
     if (_First == _Last) {
@@ -5725,6 +6026,100 @@ void* __stdcall __std_unique_8(void* _First, void* _Last) noexcept {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Dest  = _Unique_impl<_Remove_sse_8>(_First, _Stop);
+        _First = _Stop;
+    }
+#endif // !defined(_M_ARM64EC)
+
+    return _Unique_fallback<uint64_t>(_First, _Last, _Dest);
+}
+
+void* __stdcall __std_unique_copy_1(const void* _First, const void* const _Last, void* _Dest) noexcept {
+    if (_First == _Last) {
+        return _Dest;
+    }
+
+    memcpy(_Dest, _First, 1);
+    _Advance_bytes(_First, 1);
+
+#ifndef _M_ARM64EC
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 8) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
+        _Dest  = _Unique_copy_impl<_Remove_sse_1>(_First, _Stop, _Dest);
+        _First = _Stop;
+    }
+#endif // !defined(_M_ARM64EC)
+
+    return _Unique_fallback<uint8_t>(_First, _Last, _Dest);
+}
+
+void* __stdcall __std_unique_copy_2(const void* _First, const void* const _Last, void* _Dest) noexcept {
+    if (_First == _Last) {
+        return _Dest;
+    }
+
+    memcpy(_Dest, _First, 2);
+    _Advance_bytes(_First, 2);
+
+#ifndef _M_ARM64EC
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 16) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Dest  = _Unique_copy_impl<_Remove_sse_2>(_First, _Stop, _Dest);
+        _First = _Stop;
+    }
+#endif // !defined(_M_ARM64EC)
+
+    return _Unique_fallback<uint16_t>(_First, _Last, _Dest);
+}
+
+void* __stdcall __std_unique_copy_4(const void* _First, const void* const _Last, void* _Dest) noexcept {
+    if (_First == _Last) {
+        return _Dest;
+    }
+
+    memcpy(_Dest, _First, 4);
+    _Advance_bytes(_First, 4);
+
+#ifndef _M_ARM64EC
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
+        _Dest  = _Unique_copy_impl<_Remove_avx_4>(_First, _Stop, _Dest);
+        _First = _Stop;
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+    } else if (_Use_sse42() && _Size_bytes >= 16) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Dest  = _Unique_copy_impl<_Remove_sse_4>(_First, _Stop, _Dest);
+        _First = _Stop;
+    }
+#endif // !defined(_M_ARM64EC)
+
+    return _Unique_fallback<uint32_t>(_First, _Last, _Dest);
+}
+
+void* __stdcall __std_unique_copy_8(const void* _First, const void* const _Last, void* _Dest) noexcept {
+    if (_First == _Last) {
+        return _Dest;
+    }
+
+    memcpy(_Dest, _First, 8);
+    _Advance_bytes(_First, 8);
+
+#ifndef _M_ARM64EC
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
+        _Dest  = _Unique_copy_impl<_Remove_avx_8>(_First, _Stop, _Dest);
+        _First = _Stop;
+
+        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+    } else if (_Use_sse42() && _Size_bytes >= 16) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Dest  = _Unique_copy_impl<_Remove_sse_8>(_First, _Stop, _Dest);
         _First = _Stop;
     }
 #endif // !defined(_M_ARM64EC)
