@@ -29,7 +29,7 @@ void test_case_is_sorted_until(const std::vector<T>& input, Comp comp) {
     auto actual   = std::is_sorted_until(input.begin(), input.end(), comp);
     assert(expected == actual);
 #if _HAS_CXX20
-    auto actual_r = std::ranges::is_sorted_until(input.begin(), input.end(), comp);
+    auto actual_r = std::ranges::is_sorted_until(input, comp);
     assert(expected == actual_r);
 #endif // _HAS_CXX20
 }
