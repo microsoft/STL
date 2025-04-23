@@ -101,12 +101,13 @@ constexpr int tukey_ninther_adversary2[] = {1024, 31, 30, 29, 28, 36, 46, 51, 61
 template <class Diff>
 void check_result(const vector<int>& expected, const vector<int>& computed, Diff nth) {
     assert(is_permutation(computed.begin(), computed.end(), expected.begin(), expected.end()));
-    const int val_nth = *(computed.begin() + nth);
+    const auto mid    = computed.begin() + nth;
+    const int val_nth = *mid;
     assert(*(expected.begin() + nth) == val_nth);
-    for (auto it = computed.begin(), last = computed.begin() + nth; it < last; ++it) {
+    for (auto it = computed.begin(); it < mid; ++it) {
         assert(*it <= val_nth);
     }
-    for (auto it = computed.begin() + nth; it < computed.end(); ++it) {
+    for (auto it = mid; it < computed.end(); ++it) {
         assert(*it >= val_nth);
     }
 }
