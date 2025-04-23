@@ -104,7 +104,7 @@ constexpr int tukey_ninther_adversary2[] = {1024, 31, 30, 29, 28, 36, 46, 51, 61
 enum class alg_type { std_fn, rng };
 
 template <alg_type Type>
-void benchmark_common(benchmark::State& state, vector<int> src) {
+void benchmark_common(benchmark::State& state, const vector<int>& src) {
 
     vector<int> v;
     v.reserve(src.size());
@@ -128,7 +128,7 @@ void bm_uniform(benchmark::State& state) {
     mt19937 gen(84710);
     uniform_int_distribution<int> dis(1, 580);
     ranges::generate(src, [&] { return dis(gen); });
-    benchmark_common<Type>(state, move(src));
+    benchmark_common<Type>(state, src);
 }
 
 template <alg_type Type>
