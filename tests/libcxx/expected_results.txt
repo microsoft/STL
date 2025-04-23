@@ -563,13 +563,6 @@ std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
 
-# GH-5345: <vector>: _Copy_vbool() mishandles vector<bool>s of size 32 and 64, revealed by constexpr Clang
-std/algorithms/alg.modifying.operations/alg.copy/copy_n.pass.cpp:2 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:2 FAIL
-std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:2 FAIL
-std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp FAIL
-std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp FAIL
-
 
 # *** VCRUNTIME BUGS ***
 
@@ -722,6 +715,15 @@ std/iterators/iterator.requirements/iterator.assoc.types/readable.traits/indirec
 # warning C5030: attribute [[clang::trivial_abi]] is not recognized
 std/containers/sequences/vector/trivial_relocation.pass.cpp:0 FAIL
 std/containers/sequences/vector/trivial_relocation.pass.cpp:1 FAIL
+
+# These tests emit C5321, which warns when the resolution to CWG-1656 affects a u8 string literal.
+# The conformant behavior is opt-in because it can silently change behavior.
+# warning C5321: nonstandard extension used: encoding '\x80' as a multi-byte utf-8 character. Use \u instead
+# for cross platform compatibility or '/Zc:u8EscapeEncoding' to disable the extension.
+std/utilities/format/format.functions/escaped_output.unicode.pass.cpp:0 FAIL
+std/utilities/format/format.functions/escaped_output.unicode.pass.cpp:1 FAIL
+std/utilities/format/format.functions/fill.unicode.pass.cpp:0 FAIL
+std/utilities/format/format.functions/fill.unicode.pass.cpp:1 FAIL
 
 
 # *** LIKELY STL BUGS ***
@@ -974,6 +976,7 @@ std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/co
 
 # Not analyzed, failing due to constexpr step limits.
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:2 FAIL
+std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:2 FAIL
 std/algorithms/alg.modifying.operations/alg.rotate/rotate.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.contains/ranges.contains_subrange.pass.cpp:2 FAIL
 std/algorithms/alg.nonmodifying/alg.count/count.pass.cpp FAIL
@@ -1093,10 +1096,6 @@ std/ranges/range.adaptors/range.join/range.join.iterator/star.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:1 FAIL
 
-# Not analyzed. Likely MSVC constexpr bug with negative chars passed to __builtin_memcmp.
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/compare.pass.cpp:0 FAIL
-std/strings/char.traits/char.traits.specializations/char.traits.specializations.char/compare.pass.cpp:1 FAIL
-
 # Not analyzed. Likely MSVC constexpr bug, "note: failure was caused by a read of a variable outside its lifetime"
 std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
 std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
@@ -1104,6 +1103,15 @@ std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
 # Not analyzed. Likely MSVC constexpr bug, "note: a non-constant (sub-)expression was encountered" in swap()
 std/utilities/utility/utility.swap/swap_array.pass.cpp:0 FAIL
 std/utilities/utility/utility.swap/swap_array.pass.cpp:1 FAIL
+
+# Not analyzed. MSVC constexpr ICE.
+std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:0 FAIL
+std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:1 FAIL
+std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:0 FAIL
+std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:1 FAIL
+
+# Not analyzed. Possible Clang constexpr bug involving the test's sized_allocator and our check for transposed ranges.
+std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:2 FAIL
 
 # Not analyzed. SKIPPED because this is x86-specific, fatal error C1060: compiler is out of heap space
 std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.binary.iterator.pass.cpp:0 SKIPPED
@@ -1380,10 +1388,3 @@ std/input.output/string.streams/stringstream/stringstream.members/gcount.pass.cp
 
 # Similarly, this test is marked as `REQUIRES: 32-bit-pointer`.
 std/iterators/iterator.container/ssize.LWG3207.compile.pass.cpp:9 SKIPPED
-
-# These tests emit C5321, which warns when the resolution to CWG-1656 affects a u8 string literal.
-# The conformant behavior is opt-in because it can silently change behavior.
-# warning C5321: nonstandard extension used: encoding '\x80' as a multi-byte utf-8 character. Use \u instead
-# for cross platform compatibility or '/Zc:u8EscapeEncoding' to disable the extension.
-std/utilities/format/format.functions/escaped_output.unicode.pass.cpp:9 SKIPPED
-std/utilities/format/format.functions/fill.unicode.pass.cpp:9 SKIPPED

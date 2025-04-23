@@ -527,6 +527,49 @@ struct _String_constructor_concat_tag {
     explicit _String_constructor_concat_tag() = default;
 };
 
+template <class _Traits, class _UElem>
+_CONSTEXPR20 void _Traits_copy_batch(_Out_writes_all_(_Count) _Traits_ch_t<_Traits>* const _First1,
+    _In_reads_(_Count) const _UElem* const _First2, const size_t _Count) noexcept {
+    _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_UElem, _Traits_ch_t<_Traits>, volatile _Traits_ch_t<_Traits>>);
+
+    if constexpr (is_volatile_v<_UElem>) {
+        for (size_t _Idx = 0; _Idx != _Count; ++_Idx) {
+            _Traits::assign(_First1[_Idx], _Traits_ch_t<_Traits>{_First2[_Idx]});
+        }
+    } else {
+        (void) _Traits::copy(_First1, _First2, _Count);
+    }
+}
+
+template <class _Traits, class _UElem>
+_CONSTEXPR20 void _Traits_move_batch(_Out_writes_all_(_Count) _Traits_ch_t<_Traits>* const _First1,
+    _In_reads_(_Count) const _UElem* const _First2, const size_t _Count) noexcept {
+    _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_UElem, _Traits_ch_t<_Traits>, volatile _Traits_ch_t<_Traits>>);
+
+    if constexpr (is_volatile_v<_UElem>) {
+        bool _Loop_forward = true;
+
+        for (const _UElem* _Src = _First2; _Src != _First2 + _Count; ++_Src) {
+            if (_First1 == _Src) {
+                _Loop_forward = false;
+                break;
+            }
+        }
+
+        if (_Loop_forward) {
+            for (size_t _Idx = 0; _Idx != _Count; ++_Idx) {
+                _Traits::assign(_First1[_Idx], _Traits_ch_t<_Traits>{_First2[_Idx]});
+            }
+        } else {
+            for (size_t _Idx = _Count; _Idx != 0; --_Idx) {
+                _Traits::assign(_First1[_Idx - 1], _Traits_ch_t<_Traits>{_First2[_Idx - 1]});
+            }
+        }
+    } else {
+        (void) _Traits::move(_First1, _First2, _Count);
+    }
+}
+
 [[noreturn]] inline void _Xlen_string() {
     _Xlength_error("string too long");
 }
@@ -606,8 +649,10 @@ private:
 
     template <class _Iter>
     // TRANSITION, /clr:pure is incompatible with templated static constexpr data members
-    // static constexpr bool _Is_elem_cptr =_Is_any_of_v<_Iter, const _Elem* const, _Elem* const, const _Elem*, _Elem*>;
-    using _Is_elem_cptr = bool_constant<_Is_any_of_v<_Iter, const _Elem* const, _Elem* const, const _Elem*, _Elem*>>;
+    // static constexpr bool _Is_elem_cvptr =
+    //     _Is_any_of_v<remove_const_t<_Iter>, _Elem*, const _Elem*, volatile _Elem*, const volatile _Elem*>;
+    using _Is_elem_cvptr = bool_constant<
+        _Is_any_of_v<remove_const_t<_Iter>, _Elem*, const _Elem*, volatile _Elem*, const volatile _Elem*>>;
 
 #if _HAS_CXX17
     template <class _StringViewIsh>
@@ -803,7 +848,7 @@ public:
         if (_UFirst == _ULast) {
             _Construct_empty();
         } else {
-            if constexpr (_Is_elem_cptr<decltype(_UFirst)>::value) {
+            if constexpr (_Is_elem_cvptr<decltype(_UFirst)>::value) {
                 _Construct<_Construct_strategy::_From_ptr>(
                     _UFirst, _STD _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
             } else if constexpr (_Is_cpp17_fwd_iter_v<decltype(_UFirst)>) {
@@ -875,7 +920,7 @@ private:
         if constexpr (_Strat == _Construct_strategy::_From_char) {
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Char_or_ptr, _Elem>);
         } else {
-            _STL_INTERNAL_STATIC_ASSERT(_Is_elem_cptr<_Char_or_ptr>::value);
+            _STL_INTERNAL_STATIC_ASSERT(_Is_elem_cvptr<_Char_or_ptr>::value);
         }
 
         if (_Count > max_size()) {
@@ -894,7 +939,7 @@ private:
                 _Traits::assign(_My_data._Bx._Buf, _Count, _Arg);
                 _Traits::assign(_My_data._Bx._Buf[_Count], _Elem());
             } else if constexpr (_Strat == _Construct_strategy::_From_ptr) {
-                _Traits::copy(_My_data._Bx._Buf, _Arg, _Count);
+                _STD _Traits_copy_batch<_Traits>(_My_data._Bx._Buf, _Arg, _Count);
                 _Traits::assign(_My_data._Bx._Buf[_Count], _Elem());
             } else { // _Strat == _Construct_strategy::_From_string
 #ifdef _INSERT_STRING_ANNOTATION
@@ -918,7 +963,7 @@ private:
             _Traits::assign(_Unfancy(_New_ptr), _Count, _Arg);
             _Traits::assign(_Unfancy(_New_ptr)[_Count], _Elem());
         } else if constexpr (_Strat == _Construct_strategy::_From_ptr) {
-            _Traits::copy(_Unfancy(_New_ptr), _Arg, _Count);
+            _STD _Traits_copy_batch<_Traits>(_Unfancy(_New_ptr), _Arg, _Count);
             _Traits::assign(_Unfancy(_New_ptr)[_Count], _Elem());
         } else { // _Strat == _Construct_strategy::_From_string
             _Traits::copy(_Unfancy(_New_ptr), _Arg, _Count + 1);
@@ -1480,21 +1525,21 @@ public:
     }
 
     _CONSTEXPR20 basic_string& append(const basic_string& _Right) {
-        return append(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+        return _Append(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
     }
 
     _CONSTEXPR20 basic_string& append(const basic_string& _Right, const size_type _Roff, size_type _Count = npos) {
         // append _Right [_Roff, _Roff + _Count)
         _Right._Mypair._Myval2._Check_offset(_Roff);
         _Count = _Right._Mypair._Myval2._Clamp_suffix_size(_Roff, _Count);
-        return append(_Right._Mypair._Myval2._Myptr() + _Roff, _Count);
+        return _Append(_Right._Mypair._Myval2._Myptr() + _Roff, _Count);
     }
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     _CONSTEXPR20 basic_string& append(const _StringViewIsh& _Right) {
         const basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return append(_As_view.data(), _Convert_size<size_type>(_As_view.size()));
+        return _Append(_As_view.data(), _Convert_size<size_type>(_As_view.size()));
     }
 
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
@@ -1509,29 +1554,11 @@ public:
     _CONSTEXPR20 basic_string& append(
         _In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count) {
         // append [_Ptr, _Ptr + _Count)
-        const size_type _Old_size = _Mypair._Myval2._Mysize;
-        if (_Count <= _Mypair._Myval2._Myres - _Old_size) {
-            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
-            _Mypair._Myval2._Mysize = _Old_size + _Count;
-            _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
-            _Traits::move(_Old_ptr + _Old_size, _Ptr, _Count);
-            _Traits::assign(_Old_ptr[_Old_size + _Count], _Elem());
-            return *this;
-        }
-
-        return _Reallocate_grow_by(
-            _Count,
-            [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const _Elem* const _Ptr,
-                const size_type _Count) _STATIC_LAMBDA {
-                _Traits::copy(_New_ptr, _Old_ptr, _Old_size);
-                _Traits::copy(_New_ptr + _Old_size, _Ptr, _Count);
-                _Traits::assign(_New_ptr[_Old_size + _Count], _Elem());
-            },
-            _Ptr, _Count);
+        return _Append(_Ptr, _Count);
     }
 
     _CONSTEXPR20 basic_string& append(_In_z_ const _Elem* const _Ptr) { // append [_Ptr, <null>)
-        return append(_Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
+        return _Append(_Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
     }
 
     _CONSTEXPR20 basic_string& append(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch) {
@@ -1563,11 +1590,11 @@ public:
         _STD _Adl_verify_range(_First, _Last);
         const auto _UFirst = _STD _Get_unwrapped(_First);
         const auto _ULast  = _STD _Get_unwrapped(_Last);
-        if constexpr (_Is_elem_cptr<decltype(_UFirst)>::value) {
-            return append(_UFirst, _STD _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
+        if constexpr (_Is_elem_cvptr<decltype(_UFirst)>::value) {
+            return _Append(_UFirst, _STD _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
         } else {
             const basic_string _Right(_UFirst, _ULast, get_allocator());
-            return append(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+            return _Append(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
         }
     }
 
@@ -1576,10 +1603,10 @@ public:
     constexpr basic_string& append_range(_Rng&& _Range) {
         if constexpr (_RANGES sized_range<_Rng> && _Contiguous_range_of<_Rng, _Elem>) {
             const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
-            return append(_RANGES data(_Range), _Count);
+            return _Append(_RANGES data(_Range), _Count);
         } else {
             const basic_string _Right(from_range, _Range, get_allocator());
-            return append(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+            return _Append(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
         }
     }
 #endif // _HAS_CXX23
@@ -1593,14 +1620,14 @@ public:
         // assign _Right [_Roff, _Roff + _Count)
         _Right._Mypair._Myval2._Check_offset(_Roff);
         _Count = _Right._Mypair._Myval2._Clamp_suffix_size(_Roff, _Count);
-        return assign(_Right._Mypair._Myval2._Myptr() + _Roff, _Count);
+        return _Assign(_Right._Mypair._Myval2._Myptr() + _Roff, _Count);
     }
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     _CONSTEXPR20 basic_string& assign(const _StringViewIsh& _Right) {
         const basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return assign(_As_view.data(), _Convert_size<size_type>(_As_view.size()));
+        return _Assign(_As_view.data(), _Convert_size<size_type>(_As_view.size()));
     }
 
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
@@ -1615,27 +1642,11 @@ public:
     _CONSTEXPR20 basic_string& assign(
         _In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count) {
         // assign [_Ptr, _Ptr + _Count)
-        if (_Count <= _Mypair._Myval2._Myres) {
-            _ASAN_STRING_REMOVE(*this);
-            _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
-            _Mypair._Myval2._Mysize = _Count;
-            _Traits::move(_Old_ptr, _Ptr, _Count);
-            _Traits::assign(_Old_ptr[_Count], _Elem());
-            _ASAN_STRING_CREATE(*this);
-            return *this;
-        }
-
-        return _Reallocate_for(
-            _Count,
-            [](_Elem* const _New_ptr, const size_type _Count, const _Elem* const _Ptr) _STATIC_LAMBDA {
-                _Traits::copy(_New_ptr, _Ptr, _Count);
-                _Traits::assign(_New_ptr[_Count], _Elem());
-            },
-            _Ptr);
+        return _Assign(_Ptr, _Count);
     }
 
     _CONSTEXPR20 basic_string& assign(_In_z_ const _Elem* const _Ptr) {
-        return assign(_Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
+        return _Assign(_Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
     }
 
     _CONSTEXPR20 basic_string& assign(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch) {
@@ -1663,8 +1674,8 @@ public:
         _STD _Adl_verify_range(_First, _Last);
         const auto _UFirst = _STD _Get_unwrapped(_First);
         const auto _ULast  = _STD _Get_unwrapped(_Last);
-        if constexpr (_Is_elem_cptr<decltype(_UFirst)>::value) {
-            return assign(_UFirst, _STD _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
+        if constexpr (_Is_elem_cvptr<decltype(_UFirst)>::value) {
+            return _Assign(_UFirst, _STD _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
         } else {
             basic_string _Right(_UFirst, _ULast, get_allocator());
             if (_Mypair._Myval2._Myres < _Right._Mypair._Myval2._Myres) {
@@ -1672,7 +1683,7 @@ public:
                 _Swap_data(_Right);
                 return *this;
             } else {
-                return assign(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+                return _Assign(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
             }
         }
     }
@@ -1682,7 +1693,7 @@ public:
     constexpr basic_string& assign_range(_Rng&& _Range) {
         if constexpr (_RANGES sized_range<_Rng> && _Contiguous_range_of<_Rng, _Elem>) {
             const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
-            return assign(_RANGES data(_Range), _Count);
+            return _Assign(_RANGES data(_Range), _Count);
         } else {
             basic_string _Right(from_range, _Range, get_allocator());
             if (_Mypair._Myval2._Myres < _Right._Mypair._Myval2._Myres) {
@@ -1690,7 +1701,7 @@ public:
                 _Swap_data(_Right);
                 return *this;
             } else {
-                return assign(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+                return _Assign(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
             }
         }
     }
@@ -1698,7 +1709,7 @@ public:
 
     _CONSTEXPR20 basic_string& insert(const size_type _Off, const basic_string& _Right) {
         // insert _Right at _Off
-        return insert(_Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+        return _Insert(_Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
     }
 
     _CONSTEXPR20 basic_string& insert(
@@ -1706,7 +1717,7 @@ public:
         // insert _Right [_Roff, _Roff + _Count) at _Off
         _Right._Mypair._Myval2._Check_offset(_Roff);
         _Count = _Right._Mypair._Myval2._Clamp_suffix_size(_Roff, _Count);
-        return insert(_Off, _Right._Mypair._Myval2._Myptr() + _Roff, _Count);
+        return _Insert(_Off, _Right._Mypair._Myval2._Myptr() + _Roff, _Count);
     }
 
 #if _HAS_CXX17
@@ -1714,7 +1725,7 @@ public:
     _CONSTEXPR20 basic_string& insert(const size_type _Off, const _StringViewIsh& _Right) {
         // insert _Right at _Off
         const basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return insert(_Off, _As_view.data(), _Convert_size<size_type>(_As_view.size()));
+        return _Insert(_Off, _As_view.data(), _Convert_size<size_type>(_As_view.size()));
     }
 
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
@@ -1729,55 +1740,12 @@ public:
     _CONSTEXPR20 basic_string& insert(
         const size_type _Off, _In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count) {
         // insert [_Ptr, _Ptr + _Count) at _Off
-        _Mypair._Myval2._Check_offset(_Off);
-        const size_type _Old_size = _Mypair._Myval2._Mysize;
-
-        // We can't check for overlapping ranges when constant evaluated since comparison of pointers into string
-        // literals is unspecified, so always reallocate and copy to the new buffer if constant evaluated.
-#if _HAS_CXX20
-        const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size && !_STD is_constant_evaluated();
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size;
-#endif // ^^^ !_HAS_CXX20 ^^^
-
-        if (_Check_overlap) {
-            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
-            _Mypair._Myval2._Mysize = _Old_size + _Count;
-            _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
-            _Elem* const _Insert_at = _Old_ptr + _Off;
-            // the range [_Ptr, _Ptr + _Ptr_shifted_after) is left alone by moving the suffix out,
-            // while the range [_Ptr + _Ptr_shifted_after, _Ptr + _Count) shifts down by _Count
-            size_type _Ptr_shifted_after;
-            if (_Ptr + _Count <= _Insert_at || _Ptr > _Old_ptr + _Old_size) {
-                // inserted content is before the shifted region, or does not alias
-                _Ptr_shifted_after = _Count; // none of _Ptr's data shifts
-            } else if (_Insert_at <= _Ptr) { // all of [_Ptr, _Ptr + _Count) shifts
-                _Ptr_shifted_after = 0;
-            } else { // [_Ptr, _Ptr + _Count) contains _Insert_at, so only the part after _Insert_at shifts
-                _Ptr_shifted_after = static_cast<size_type>(_Insert_at - _Ptr);
-            }
-
-            _Traits::move(_Insert_at + _Count, _Insert_at, _Old_size - _Off + 1); // move suffix + null down
-            _Traits::copy(_Insert_at, _Ptr, _Ptr_shifted_after);
-            _Traits::copy(
-                _Insert_at + _Ptr_shifted_after, _Ptr + _Count + _Ptr_shifted_after, _Count - _Ptr_shifted_after);
-            return *this;
-        }
-
-        return _Reallocate_grow_by(
-            _Count,
-            [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const _Elem* const _Ptr, const size_type _Count) _STATIC_LAMBDA {
-                _Traits::copy(_New_ptr, _Old_ptr, _Off);
-                _Traits::copy(_New_ptr + _Off, _Ptr, _Count);
-                _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off, _Old_size - _Off + 1);
-            },
-            _Off, _Ptr, _Count);
+        return _Insert(_Off, _Ptr, _Count);
     }
 
     _CONSTEXPR20 basic_string& insert(const size_type _Off, _In_z_ const _Elem* const _Ptr) {
         // insert [_Ptr, <null>) at _Off
-        return insert(_Off, _Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
+        return _Insert(_Off, _Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
     }
 
     _CONSTEXPR20 basic_string& insert(
@@ -1836,11 +1804,11 @@ public:
         _STD _Adl_verify_range(_First, _Last);
         const auto _UFirst = _STD _Get_unwrapped(_First);
         const auto _ULast  = _STD _Get_unwrapped(_Last);
-        if constexpr (_Is_elem_cptr<decltype(_UFirst)>::value) {
-            insert(_Off, _UFirst, _STD _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
+        if constexpr (_Is_elem_cvptr<decltype(_UFirst)>::value) {
+            _Insert(_Off, _UFirst, _STD _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
         } else {
             const basic_string _Right(_UFirst, _ULast, get_allocator());
-            insert(_Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+            _Insert(_Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
         }
 
         return begin() + static_cast<difference_type>(_Off);
@@ -1856,10 +1824,10 @@ public:
 
         if constexpr (_RANGES sized_range<_Rng> && _Contiguous_range_of<_Rng, _Elem>) {
             const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
-            insert(_Off, _RANGES data(_Range), _Count);
+            _Insert(_Off, _RANGES data(_Range), _Count);
         } else {
             const basic_string _Right(from_range, _Range, get_allocator());
-            insert(_Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+            _Insert(_Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
         }
 
         return begin() + static_cast<difference_type>(_Off);
@@ -1918,7 +1886,7 @@ public:
 
     _CONSTEXPR20 basic_string& replace(const size_type _Off, const size_type _Nx, const basic_string& _Right) {
         // replace [_Off, _Off + _Nx) with _Right
-        return replace(_Off, _Nx, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+        return _Replace(_Off, _Nx, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
     }
 
     _CONSTEXPR20 basic_string& replace(const size_type _Off, size_type _Nx, const basic_string& _Right,
@@ -1926,7 +1894,7 @@ public:
         // replace [_Off, _Off + _Nx) with _Right [_Roff, _Roff + _Count)
         _Right._Mypair._Myval2._Check_offset(_Roff);
         _Count = _Right._Mypair._Myval2._Clamp_suffix_size(_Roff, _Count);
-        return replace(_Off, _Nx, _Right._Mypair._Myval2._Myptr() + _Roff, _Count);
+        return _Replace(_Off, _Nx, _Right._Mypair._Myval2._Myptr() + _Roff, _Count);
     }
 
 #if _HAS_CXX17
@@ -1934,7 +1902,7 @@ public:
     _CONSTEXPR20 basic_string& replace(const size_type _Off, const size_type _Nx, const _StringViewIsh& _Right) {
         // replace [_Off, _Off + _Nx) with _Right
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return replace(_Off, _Nx, _As_view.data(), _Convert_size<size_type>(_As_view.size()));
+        return _Replace(_Off, _Nx, _As_view.data(), _Convert_size<size_type>(_As_view.size()));
     }
 
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
@@ -1949,78 +1917,12 @@ public:
     _CONSTEXPR20 basic_string& replace(
         const size_type _Off, size_type _Nx, _In_reads_(_Count) const _Elem* const _Ptr, const size_type _Count) {
         // replace [_Off, _Off + _Nx) with [_Ptr, _Ptr + _Count)
-        _Mypair._Myval2._Check_offset(_Off);
-        _Nx = _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx);
-        if (_Nx == _Count) { // size doesn't change, so a single move does the trick
-            _Traits::move(_Mypair._Myval2._Myptr() + _Off, _Ptr, _Count);
-            return *this;
-        }
-
-        const size_type _Old_size    = _Mypair._Myval2._Mysize;
-        const size_type _Suffix_size = _Old_size - _Nx - _Off + 1;
-        if (_Count < _Nx) { // suffix shifts backwards; we don't have to move anything out of the way
-            _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
-            _Elem* const _Insert_at = _Old_ptr + _Off;
-            _Traits::move(_Insert_at, _Ptr, _Count);
-            _Traits::move(_Insert_at + _Count, _Insert_at + _Nx, _Suffix_size);
-
-            const auto _New_size = _Old_size - (_Nx - _Count);
-            _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
-            _Mypair._Myval2._Mysize = _New_size;
-            return *this;
-        }
-
-        const size_type _Growth = static_cast<size_type>(_Count - _Nx);
-
-        // checking for overlapping ranges is technically UB (considering string literals), so just always reallocate
-        // and copy to the new buffer if constant evaluated
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
-            if (_Growth <= _Mypair._Myval2._Myres - _Old_size) { // growth fits
-                _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Growth);
-                _Mypair._Myval2._Mysize = _Old_size + _Growth;
-                _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
-                _Elem* const _Insert_at = _Old_ptr + _Off;
-                _Elem* const _Suffix_at = _Insert_at + _Nx;
-
-                size_type _Ptr_shifted_after; // see rationale in insert
-                if (_Ptr + _Count <= _Insert_at || _Ptr > _Old_ptr + _Old_size) {
-                    _Ptr_shifted_after = _Count;
-                } else if (_Suffix_at <= _Ptr) {
-                    _Ptr_shifted_after = 0;
-                } else {
-                    _Ptr_shifted_after = static_cast<size_type>(_Suffix_at - _Ptr);
-                }
-
-                _Traits::move(_Suffix_at + _Growth, _Suffix_at, _Suffix_size);
-                // next case must be move, in case _Ptr begins before _Insert_at and contains part of the hole;
-                // this case doesn't occur in insert because the new content must come from outside the removed
-                // content there (because in insert there is no removed content)
-                _Traits::move(_Insert_at, _Ptr, _Ptr_shifted_after);
-                // the next case can be copy, because it comes from the chunk moved out of the way in the
-                // first move, and the hole we're filling can't alias the chunk we moved out of the way
-                _Traits::copy(
-                    _Insert_at + _Ptr_shifted_after, _Ptr + _Growth + _Ptr_shifted_after, _Count - _Ptr_shifted_after);
-                return *this;
-            }
-        }
-
-        return _Reallocate_grow_by(
-            _Growth,
-            [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _Nx, const _Elem* const _Ptr, const size_type _Count) _STATIC_LAMBDA {
-                _Traits::copy(_New_ptr, _Old_ptr, _Off);
-                _Traits::copy(_New_ptr + _Off, _Ptr, _Count);
-                _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off + _Nx, _Old_size - _Nx - _Off + 1);
-            },
-            _Off, _Nx, _Ptr, _Count);
+        return _Replace(_Off, _Nx, _Ptr, _Count);
     }
 
     _CONSTEXPR20 basic_string& replace(const size_type _Off, const size_type _Nx, _In_z_ const _Elem* const _Ptr) {
         // replace [_Off, _Off + _Nx) with [_Ptr, <null>)
-        return replace(_Off, _Nx, _Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
+        return _Replace(_Off, _Nx, _Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
     }
 
     _CONSTEXPR20 basic_string& replace(const size_type _Off, size_type _Nx, const size_type _Count, const _Elem _Ch) {
@@ -2129,12 +2031,12 @@ public:
         _STD _Adl_verify_range(_First2, _Last2);
         const auto _UFirst2 = _STD _Get_unwrapped(_First2);
         const auto _ULast2  = _STD _Get_unwrapped(_Last2);
-        if constexpr (_Is_elem_cptr<decltype(_UFirst2)>::value) {
-            return replace(
+        if constexpr (_Is_elem_cvptr<decltype(_UFirst2)>::value) {
+            return _Replace(
                 _Off, _Length, _UFirst2, _STD _Convert_size<size_type>(static_cast<size_t>(_ULast2 - _UFirst2)));
         } else {
             const basic_string _Right(_UFirst2, _ULast2, get_allocator());
-            return replace(_Off, _Length, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+            return _Replace(_Off, _Length, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
         }
     }
 
@@ -2150,10 +2052,10 @@ public:
 
         if constexpr (_RANGES sized_range<_Rng> && _Contiguous_range_of<_Rng, _Elem>) {
             const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
-            return replace(_Off, _Length, _RANGES data(_Range), _Count);
+            return _Replace(_Off, _Length, _RANGES data(_Range), _Count);
         } else {
             const basic_string _Right(from_range, _Range, get_allocator());
-            return replace(_Off, _Length, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+            return _Replace(_Off, _Length, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
         }
     }
 #endif // _HAS_CXX23
@@ -3075,6 +2977,185 @@ private:
         _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
         _Mypair._Myval2._Mysize = _New_size;
         _Traits::assign(_Mypair._Myval2._Myptr()[_New_size], _Elem());
+    }
+
+    template <class _UElem>
+    _CONSTEXPR20 basic_string& _Append(
+        _In_reads_(_Count) const _UElem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count) {
+        // append [_Ptr, _Ptr + _Count), handling volatile-qualified _Elem
+        _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_UElem, _Elem, volatile _Elem>);
+
+        const size_type _Old_size = _Mypair._Myval2._Mysize;
+        if (_Count <= _Mypair._Myval2._Myres - _Old_size) {
+            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
+            _Mypair._Myval2._Mysize = _Old_size + _Count;
+            _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
+            _STD _Traits_move_batch<_Traits>(_Old_ptr + _Old_size, _Ptr, _Count);
+            _Traits::assign(_Old_ptr[_Old_size + _Count], _Elem());
+            return *this;
+        }
+
+        return _Reallocate_grow_by(
+            _Count,
+            [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const _UElem* const _Ptr,
+                const size_type _Count) _STATIC_LAMBDA {
+                _Traits::copy(_New_ptr, _Old_ptr, _Old_size);
+                _STD _Traits_copy_batch<_Traits>(_New_ptr + _Old_size, _Ptr, _Count);
+                _Traits::assign(_New_ptr[_Old_size + _Count], _Elem());
+            },
+            _Ptr, _Count);
+    }
+
+    template <class _UElem>
+    _CONSTEXPR20 basic_string& _Assign(
+        _In_reads_(_Count) const _UElem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count) {
+        // assign [_Ptr, _Ptr + _Count), handling volatile-qualified _Elem
+        _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_UElem, _Elem, volatile _Elem>);
+
+        if (_Count <= _Mypair._Myval2._Myres) {
+            _ASAN_STRING_REMOVE(*this);
+            _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
+            _Mypair._Myval2._Mysize = _Count;
+            _STD _Traits_move_batch<_Traits>(_Old_ptr, _Ptr, _Count);
+            _Traits::assign(_Old_ptr[_Count], _Elem());
+            _ASAN_STRING_CREATE(*this);
+            return *this;
+        }
+
+        return _Reallocate_for(
+            _Count,
+            [](_Elem* const _New_ptr, const size_type _Count, const _UElem* const _Ptr) _STATIC_LAMBDA {
+                _STD _Traits_copy_batch<_Traits>(_New_ptr, _Ptr, _Count);
+                _Traits::assign(_New_ptr[_Count], _Elem());
+            },
+            _Ptr);
+    }
+
+    template <class _UElem>
+    _CONSTEXPR20 basic_string& _Insert(
+        const size_type _Off, _In_reads_(_Count) const _UElem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count) {
+        // insert [_Ptr, _Ptr + _Count) at _Off, handling volatile-qualified _Elem
+        _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_UElem, _Elem, volatile _Elem>);
+
+        _Mypair._Myval2._Check_offset(_Off);
+        const size_type _Old_size = _Mypair._Myval2._Mysize;
+
+        // We can't check for overlapping ranges when constant evaluated since comparison of pointers into string
+        // literals is unspecified, so always reallocate and copy to the new buffer if constant evaluated.
+#if _HAS_CXX20
+        const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size && !_STD is_constant_evaluated();
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+        const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size;
+#endif // ^^^ !_HAS_CXX20 ^^^
+
+        if (_Check_overlap) {
+            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
+            _Mypair._Myval2._Mysize = _Old_size + _Count;
+            _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
+            _Elem* const _Insert_at = _Old_ptr + _Off;
+            // the range [_Ptr, _Ptr + _Ptr_shifted_after) is left alone by moving the suffix out,
+            // while the range [_Ptr + _Ptr_shifted_after, _Ptr + _Count) shifts down by _Count
+            size_type _Ptr_shifted_after;
+            if (_Ptr + _Count <= _Insert_at || _Ptr > _Old_ptr + _Old_size) {
+                // inserted content is before the shifted region, or does not alias
+                _Ptr_shifted_after = _Count; // none of _Ptr's data shifts
+            } else if (_Insert_at <= _Ptr) { // all of [_Ptr, _Ptr + _Count) shifts
+                _Ptr_shifted_after = 0;
+            } else { // [_Ptr, _Ptr + _Count) contains _Insert_at, so only the part after _Insert_at shifts
+                _Ptr_shifted_after = static_cast<size_type>(_Insert_at - _Ptr);
+            }
+
+            _Traits::move(_Insert_at + _Count, _Insert_at, _Old_size - _Off + 1); // move suffix + null down
+            _STD _Traits_copy_batch<_Traits>(_Insert_at, _Ptr, _Ptr_shifted_after);
+            _STD _Traits_copy_batch<_Traits>(
+                _Insert_at + _Ptr_shifted_after, _Ptr + _Count + _Ptr_shifted_after, _Count - _Ptr_shifted_after);
+            return *this;
+        }
+
+        return _Reallocate_grow_by(
+            _Count,
+            [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
+                const _UElem* const _Ptr, const size_type _Count) _STATIC_LAMBDA {
+                _Traits::copy(_New_ptr, _Old_ptr, _Off);
+                _STD _Traits_copy_batch<_Traits>(_New_ptr + _Off, _Ptr, _Count);
+                _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off, _Old_size - _Off + 1);
+            },
+            _Off, _Ptr, _Count);
+    }
+
+    template <class _UElem>
+    _CONSTEXPR20 basic_string& _Replace(
+        const size_type _Off, size_type _Nx, _In_reads_(_Count) const _UElem* const _Ptr, const size_type _Count) {
+        // replace [_Off, _Off + _Nx) with [_Ptr, _Ptr + _Count), handling volatile-qualified _Elem
+        _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_UElem, _Elem, volatile _Elem>);
+
+        _Mypair._Myval2._Check_offset(_Off);
+        _Nx = _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx);
+        if (_Nx == _Count) { // size doesn't change, so a single move does the trick
+            _STD _Traits_move_batch<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Ptr, _Count);
+            return *this;
+        }
+
+        const size_type _Old_size    = _Mypair._Myval2._Mysize;
+        const size_type _Suffix_size = _Old_size - _Nx - _Off + 1;
+        if (_Count < _Nx) { // suffix shifts backwards; we don't have to move anything out of the way
+            _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
+            _Elem* const _Insert_at = _Old_ptr + _Off;
+            _STD _Traits_move_batch<_Traits>(_Insert_at, _Ptr, _Count);
+            _Traits::move(_Insert_at + _Count, _Insert_at + _Nx, _Suffix_size);
+
+            const auto _New_size = _Old_size - (_Nx - _Count);
+            _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
+            _Mypair._Myval2._Mysize = _New_size;
+            return *this;
+        }
+
+        const size_type _Growth = static_cast<size_type>(_Count - _Nx);
+
+        // checking for overlapping ranges is technically UB (considering string literals), so just always reallocate
+        // and copy to the new buffer if constant evaluated
+#if _HAS_CXX20
+        if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+        {
+            if (_Growth <= _Mypair._Myval2._Myres - _Old_size) { // growth fits
+                _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Growth);
+                _Mypair._Myval2._Mysize = _Old_size + _Growth;
+                _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
+                _Elem* const _Insert_at = _Old_ptr + _Off;
+                _Elem* const _Suffix_at = _Insert_at + _Nx;
+
+                size_type _Ptr_shifted_after; // see rationale in insert
+                if (_Ptr + _Count <= _Insert_at || _Ptr > _Old_ptr + _Old_size) {
+                    _Ptr_shifted_after = _Count;
+                } else if (_Suffix_at <= _Ptr) {
+                    _Ptr_shifted_after = 0;
+                } else {
+                    _Ptr_shifted_after = static_cast<size_type>(_Suffix_at - _Ptr);
+                }
+
+                _Traits::move(_Suffix_at + _Growth, _Suffix_at, _Suffix_size);
+                // next case must be move, in case _Ptr begins before _Insert_at and contains part of the hole;
+                // this case doesn't occur in insert because the new content must come from outside the removed
+                // content there (because in insert there is no removed content)
+                _STD _Traits_move_batch<_Traits>(_Insert_at, _Ptr, _Ptr_shifted_after);
+                // the next case can be copy, because it comes from the chunk moved out of the way in the
+                // first move, and the hole we're filling can't alias the chunk we moved out of the way
+                _STD _Traits_copy_batch<_Traits>(
+                    _Insert_at + _Ptr_shifted_after, _Ptr + _Growth + _Ptr_shifted_after, _Count - _Ptr_shifted_after);
+                return *this;
+            }
+        }
+
+        return _Reallocate_grow_by(
+            _Growth,
+            [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
+                const size_type _Nx, const _UElem* const _Ptr, const size_type _Count) _STATIC_LAMBDA {
+                _Traits::copy(_New_ptr, _Old_ptr, _Off);
+                _STD _Traits_copy_batch<_Traits>(_New_ptr + _Off, _Ptr, _Count);
+                _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off + _Nx, _Old_size - _Nx - _Off + 1);
+            },
+            _Off, _Nx, _Ptr, _Count);
     }
 
     _CONSTEXPR20 void _Tidy_deallocate() noexcept { // initialize buffer, deallocating any storage
