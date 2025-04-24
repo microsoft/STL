@@ -6450,7 +6450,7 @@ namespace {
                     _Elem _Tmp[_Per_vec];
                     _Traits::_Store(_Tmp, _Dx0);
                     _Elem* const _Tmpd = _Tmp + (_Per_vec - _Left);
-                    _CSTD memcpy(_Tmpd, _Src_end, _Left * sizeof(_Elem));
+                    memcpy(_Tmpd, _Src_end, _Left * sizeof(_Elem));
                     _Val = _Traits::_Load(_Tmp);
                 }
 
@@ -6494,7 +6494,7 @@ namespace {
 
             // Trim tail (may be padding tail, or too short string, or both)
             if (_Dst_words != _Dst_words_end) {
-                _CSTD memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
+                memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
             }
 
             return true;
@@ -6517,7 +6517,7 @@ namespace {
                 }
             }
 
-            _CSTD memset(_Dest, 0, _Size_bytes);
+            memset(_Dest, 0, _Size_bytes);
 
             for (size_t _Ix = 0; _Ix != _Size_convert; ++_Ix) {
                 const _Elem _Cur = _Src[_Size_convert - _Ix - 1];
