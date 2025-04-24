@@ -48,17 +48,12 @@ static wchar_t* _Strcpy(wchar_t (&_Dest)[_MAX_FILESYS_NAME], const wchar_t* _Src
 }
 
 static HANDLE _FilesysOpenFile(const wchar_t* _Fname, DWORD _Desired_access, DWORD _Flags) {
-#ifdef _CRT_APP
     CREATEFILE2_EXTENDED_PARAMETERS _Create_file_parameters = {};
     _Create_file_parameters.dwSize                          = sizeof(_Create_file_parameters);
     _Create_file_parameters.dwFileFlags                     = _Flags;
 
     return CreateFile2(_Fname, _Desired_access, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, OPEN_EXISTING,
         &_Create_file_parameters);
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
-    return CreateFileW(_Fname, _Desired_access, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
-        OPEN_EXISTING, _Flags, nullptr);
-#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(

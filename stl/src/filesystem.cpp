@@ -33,7 +33,6 @@ namespace {
 #define __vcrt_CreateSymbolicLinkW CreateSymbolicLinkW
 #endif // ^^^ !defined(_CRT_APP) ^^^
 
-#ifdef _CRT_APP
     HANDLE __stdcall __vcp_CreateFile(const wchar_t* const _File_name, const unsigned long _Desired_access,
         const unsigned long _Share, SECURITY_ATTRIBUTES* const _Security_attributes,
         const unsigned long _Creation_disposition, const unsigned long _Flags_and_attributes,
@@ -46,9 +45,6 @@ namespace {
         _Create_file_parameters.hTemplateFile        = _Template_file;
         return CreateFile2(_File_name, _Desired_access, _Share, _Creation_disposition, &_Create_file_parameters);
     }
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
-#define __vcp_CreateFile CreateFileW
-#endif // ^^^ !defined(_CRT_APP) ^^^
 
     [[nodiscard]] __std_win_error __stdcall _Translate_CreateFile_last_error(const HANDLE _Handle) {
         if (_Handle != INVALID_HANDLE_VALUE) {
