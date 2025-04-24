@@ -4160,7 +4160,7 @@ namespace {
             constexpr size_t _Length_el = 32 / sizeof(_Ty);
 
             const __m256i _Last2val = _mm256_maskload_epi32(
-                reinterpret_cast<const int*>(_Stop2), _Avx2_tail_mask_32(_Last2_length_el * (sizeof(_Ty))));
+                reinterpret_cast<const int*>(_Stop2), _Avx2_tail_mask_32(_Last2_length_el * sizeof(_Ty)));
             const __m256i _Last2s0 = _Traits::_Spread_avx<_Last2_length_el_magnitude>(_Last2val, _Last2_length_el);
 
             const void* _Stop1 = _First1;
