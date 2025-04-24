@@ -1537,7 +1537,7 @@ public:
     void _Add_char2(_Elem _Ch);
     void _Add_class();
     void _Add_char_to_class(_Elem _Ch);
-    void _Add_range2(_Elem, _Elem);
+    void _Add_range3(_Elem, _Elem);
     void _Add_named_class(typename _RxTraits::char_class_type, _Rx_char_class_kind);
     void _Add_equiv2(const _Elem*, const _Elem*);
     void _Add_coll2(const _Elem*, const _Elem*);
@@ -1567,11 +1567,8 @@ private:
     _Node_base* _Current;
     regex_constants::syntax_option_type _Flags;
     const _RxTraits& _Traits;
-    const int _Bmax; // Do not use; use _Get_bmax instead.
-    const int _Tmax; // Do not use; use _Get_tmax instead.
-
-    unsigned int _Get_bmax() const;
-    unsigned int _Get_tmax() const;
+    const int _Bmax; // TRANSITION, ABI: preserved for binary compatibility
+    const int _Tmax; // TRANSITION, ABI: preserved for binary compatibility
 
 public:
     _Builder& operator=(const _Builder&) = delete;
@@ -2911,33 +2908,61 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_class(_Elem _Ch) { // add 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range2(const _Elem _Arg0, const _Elem _Arg1) {
+void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range3(const _Elem _Arg0, const _Elem _Arg1) {
     // add character range to set
+    using string_type                    = typename _RxTraits::string_type;
     unsigned int _Ex0                    = static_cast<typename _RxTraits::_Uelem>(_Arg0);
     const unsigned int _Ex1              = static_cast<typename _RxTraits::_Uelem>(_Arg1);
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
 
-    for (; _Ex0 <= _Ex1 && _Ex1 < _Get_bmax(); ++_Ex0) { // set a bit
-        if (!_Node->_Small) {
+    // set bits and check that the range is non-empty
+    if (_Flags & regex_constants::collate) {
+        _Elem _Ch;
+        const auto _Ch_ptr          = _STD addressof(_Ch);
+        const auto _Arg0_ptr        = _STD addressof(_Arg0);
+        const auto _Arg1_ptr        = _STD addressof(_Arg1);
+        const string_type _Arg0_key = _Traits.transform(_Arg0_ptr, _Arg0_ptr + 1);
+        const string_type _Arg1_key = _Traits.transform(_Arg1_ptr, _Arg1_ptr + 1);
+
+        if (_Arg0_key > _Arg1_key) {
+            _Xregex_error(regex_constants::error_range);
+        }
+
+        for (unsigned int _UCh = 0; _UCh < _Bmp_max; ++_UCh) {
+            _Ch                       = static_cast<_Elem>(_UCh);
+            const string_type _Ch_key = _Traits.transform(_Ch_ptr, _Ch_ptr + 1);
+            if (_Arg0_key <= _Ch_key && _Ch_key <= _Arg1_key) {
+                if (!_Node->_Small) {
+                    _Node->_Small = new _Bitmap;
+                }
+                _Node->_Small->_Mark(_UCh);
+            }
+        }
+    } else if (_Ex0 > _Ex1) {
+        _Xregex_error(regex_constants::error_range);
+    } else {
+        if (!_Node->_Small && _Ex0 < _Bmp_max) {
             _Node->_Small = new _Bitmap;
         }
 
-        _Node->_Small->_Mark(_Ex0);
-    }
+        for (; _Ex0 <= _Ex1 && _Ex0 < _Bmp_max; ++_Ex0) {
+            _Node->_Small->_Mark(_Ex0);
+        }
 
-    if ((_Flags & regex_constants::collate) || _Ex1 >= _Ex0) {
-        if (_Ex1 - _Ex0 < _Get_tmax()) {
+        if (_Ex1 - _Ex0 < _ARRAY_THRESHOLD) {
             for (; _Ex0 <= _Ex1; ++_Ex0) {
                 _Add_char_to_array(static_cast<_Elem>(_Ex0));
             }
-        } else { // store remaining range as pair
-            if (!_Node->_Ranges) {
-                _Node->_Ranges = new _Buf<_Elem>;
-            }
-
-            _Node->_Ranges->_Insert2(static_cast<_Elem>(_Ex0));
-            _Node->_Ranges->_Insert2(_Arg1);
         }
+    }
+
+    if ((_Flags & regex_constants::collate) || _Ex1 >= _Ex0) { // store remaining range as pair
+        if (!_Node->_Ranges) {
+            _Node->_Ranges = new _Buf<_Elem>;
+        }
+
+        _Node->_Ranges->_Insert2(static_cast<_Elem>(_Ex0));
+        _Node->_Ranges->_Insert2(_Arg1);
     }
 }
 
@@ -2989,16 +3014,6 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Char_to_elts2(const _Elem* const _Firs
         (*_Cur)->_Next          = _Node;
     }
     (*_Cur)->_Data._Insert2(_First, _Last);
-}
-
-template <class _FwdIt, class _Elem, class _RxTraits>
-unsigned int _Builder<_FwdIt, _Elem, _RxTraits>::_Get_bmax() const {
-    return static_cast<unsigned int>(_Bmax);
-}
-
-template <class _FwdIt, class _Elem, class _RxTraits>
-unsigned int _Builder<_FwdIt, _Elem, _RxTraits>::_Get_tmax() const {
-    return static_cast<unsigned int>(_Tmax);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -4328,18 +4343,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid clas
                 _Chr2 = _Traits.translate(_Chr2);
             }
 
-            if (_Flags & regex_constants::collate) {
-                const _Elem* const _Chr1_ptr = _STD addressof(_Chr1);
-                const _Elem* const _Chr2_ptr = _STD addressof(_Chr2);
-                if (_Traits.transform(_Chr2_ptr, _Chr2_ptr + 1) < _Traits.transform(_Chr1_ptr, _Chr1_ptr + 1)) {
-                    _Error(regex_constants::error_range);
-                }
-            } else if (static_cast<typename _RxTraits::_Uelem>(_Chr2)
-                       < static_cast<typename _RxTraits::_Uelem>(_Chr1)) {
-                _Error(regex_constants::error_range);
-            }
-
-            _Nfa._Add_range2(_Chr1, _Chr2);
+            _Nfa._Add_range3(_Chr1, _Chr2);
         } else if (_Ret == _Prs_chr) {
             _Nfa._Add_char_to_class(static_cast<_Elem>(_Val));
         }
