@@ -42,11 +42,12 @@ namespace {
         }
     };
 
-    __m256i _Avx2_tail_mask_32(const size_t _Count_in_dwords) noexcept {
+    __m256i _Avx2_tail_mask_32(const size_t _Count_in_bytes) noexcept {
         // _Count_in_dwords must be within [0, 8].
         static constexpr unsigned int _Tail_masks[16] = {
             ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, 0, 0, 0, 0, 0, 0, 0, 0};
-        return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Tail_masks + (8 - _Count_in_dwords)));
+        return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(
+            reinterpret_cast<const unsigned char*>(_Tail_masks) + (32 - _Count_in_bytes)));
     }
 } // namespace
 #endif // !defined(_M_ARM64EC)
@@ -1886,7 +1887,7 @@ namespace {
                         const size_t _Tail_byte_size = _Remaining_byte_size & _Traits::_Tail_mask;
 
                         if (_Last_portion && _Tail_byte_size != 0) {
-                            const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size >> 2);
+                            const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size);
                             const auto _Tail_vals =
                                 _Traits::_Sign_correction(_Traits::_Load_mask(_First, _Tail_mask), _Sign);
                             _Cur_vals = _Traits::_Blendval(_Cur_vals, _Tail_vals, _Tail_mask);
@@ -2141,7 +2142,7 @@ namespace {
                     if constexpr (_Traits::_Tail_mask != 0) {
                         const size_t _Tail_byte_size = _Total_size_bytes & _Traits::_Tail_mask;
                         if (_Tail_byte_size != 0) {
-                            const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size >> 2);
+                            const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size);
                             auto _Tail_vals       = _Traits::_Load_mask(_First, _Tail_mask);
 
                             if constexpr (_Sign_correction) {
@@ -2309,7 +2310,7 @@ namespace {
             if constexpr (_Traits::_Tail_mask != 0) {
                 const size_t _Tail_byte_size = _Total_size_bytes & _Traits::_Tail_mask;
                 if (_Tail_byte_size != 0) {
-                    const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size >> 2);
+                    const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size);
 
                     auto _Left  = _Traits::_Load_mask(static_cast<const _Ty*>(_First) + _Left_off, _Tail_mask);
                     auto _Right = _Traits::_Load_mask(static_cast<const _Ty*>(_First) + _Right_off, _Tail_mask);
@@ -2763,7 +2764,7 @@ namespace {
             } while (_First != _Stop_at);
 
             if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
-                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
                 const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
                 int _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
 
@@ -2852,7 +2853,7 @@ namespace {
 
             if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
                 _Rewind_bytes(_Last, _Avx_tail_size);
-                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
                 const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_Last), _Tail_mask);
                 int _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
 
@@ -2958,7 +2959,7 @@ namespace {
                 const void* _Next = _First;
                 _Advance_bytes(_Next, sizeof(_Ty));
 
-                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
                 const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
                 const __m256i _Comparand = _mm256_maskload_epi32(static_cast<const int*>(_Next), _Tail_mask);
                 const int _Bingo =
@@ -3179,7 +3180,7 @@ namespace {
             }
 
             if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
-                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
                 const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
                 const __m256i _Mask      = _mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask);
                 const int _Bingo         = _mm256_movemask_epi8(_Mask);
@@ -3396,11 +3397,11 @@ namespace {
                 memcpy(_Buf, _Src, _Count * 2);
                 return _mm256_cvtepu16_epi32(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_Buf)));
             } else if constexpr (sizeof(_Ty) == 4) {
-                return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Avx2_tail_mask_32(_Count));
+                return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Avx2_tail_mask_32(_Count * 4));
             } else if constexpr (sizeof(_Ty) == 8) {
-                const __m256i _Mask_low  = _Avx2_tail_mask_32((_Count > 4 ? 4 : _Count) << 1);
+                const __m256i _Mask_low  = _Avx2_tail_mask_32((_Count > 4 ? 4 : _Count) * 8);
                 const __m256i _Low       = _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src) + 0, _Mask_low);
-                const __m256i _Mask_high = _Avx2_tail_mask_32((_Count > 4 ? _Count - 4 : 0) << 1);
+                const __m256i _Mask_high = _Avx2_tail_mask_32((_Count > 4 ? _Count - 4 : 0) * 8);
                 const __m256i _High      = _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src) + 8, _Mask_high);
                 const __m256i _Pack      = _mm256_packs_epi32(_Low, _High);
                 return _mm256_permute4x64_epi64(_Pack, _MM_SHUFFLE(3, 1, 2, 0));
@@ -4040,7 +4041,7 @@ namespace {
                     return _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(1, 0, 1, 0));
                 } else if constexpr (_Amount == 8) {
                     if (_Needle_length_el < 8) {
-                        const __m256i _Mask = _Avx2_tail_mask_32(_Needle_length_el);
+                        const __m256i _Mask = _Avx2_tail_mask_32(_Needle_length_el * 4);
                         // zero unused elements in sequential permutation mask, so will be filled by 1st
                         const __m256i _Perm = _mm256_and_si256(_mm256_set_epi32(7, 6, 5, 4, 3, 2, 1, 0), _Mask);
                         _Val                = _mm256_permutevar8x32_epi32(_Val, _Perm);
@@ -4139,7 +4140,7 @@ namespace {
             constexpr size_t _Length_el = 32 / sizeof(_Ty);
 
             const __m256i _Last2val = _mm256_maskload_epi32(
-                reinterpret_cast<const int*>(_Stop2), _Avx2_tail_mask_32(_Last2_length_el * (sizeof(_Ty) / 4)));
+                reinterpret_cast<const int*>(_Stop2), _Avx2_tail_mask_32(_Last2_length_el * (sizeof(_Ty))));
             const __m256i _Last2s0 = _Traits::_Spread_avx<_Last2_length_el_magnitude>(_Last2val, _Last2_length_el);
 
             const void* _Stop1 = _First1;
@@ -4164,7 +4165,7 @@ namespace {
             }
 
             if (const size_t _Haystack_tail_length = _Haystack_length & 0x1C; _Haystack_tail_length != 0) {
-                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Haystack_tail_length >> 2);
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Haystack_tail_length);
                 const __m256i _Data1     = _mm256_maskload_epi32(static_cast<const int*>(_First1), _Tail_mask);
                 __m256i _Eq              = _Shuffle_step<_Traits, _Last2_length_el_magnitude>(_Data1, _Last2s0);
 
@@ -4611,7 +4612,7 @@ namespace {
             const size_t _Count_tail = _Count_bytes & size_t{0x1C};
 
             if (_Count_tail != 0) {
-                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Count_tail >> 2);
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Count_tail);
                 const __m256i _Elem1 =
                     _mm256_maskload_epi32(reinterpret_cast<const int*>(_First1_ch + _Result), _Tail_mask);
                 const __m256i _Elem2 =
@@ -5363,7 +5364,7 @@ __declspec(noalias) void __stdcall __std_replace_4(
         }
 
         if (const size_t _Tail_length = _Full_length & 0x1C; _Tail_length != 0) {
-            const __m256i _Tail_mask = _Avx2_tail_mask_32(_Tail_length >> 2);
+            const __m256i _Tail_mask = _Avx2_tail_mask_32(_Tail_length);
             const __m256i _Data      = _mm256_maskload_epi32(reinterpret_cast<const int*>(_First), _Tail_mask);
             const __m256i _Mask      = _mm256_and_si256(_mm256_cmpeq_epi32(_Comparand, _Data), _Tail_mask);
             _mm256_maskstore_epi32(reinterpret_cast<int*>(_First), _Mask, _Replacement);
@@ -5406,7 +5407,7 @@ __declspec(noalias) void __stdcall __std_replace_8(
         }
 
         if (const size_t _Tail_length = _Full_length & 0x18; _Tail_length != 0) {
-            const __m256i _Tail_mask = _Avx2_tail_mask_32(_Tail_length >> 2);
+            const __m256i _Tail_mask = _Avx2_tail_mask_32(_Tail_length);
             const __m256i _Data      = _mm256_maskload_epi64(reinterpret_cast<const long long*>(_First), _Tail_mask);
             const __m256i _Mask      = _mm256_and_si256(_mm256_cmpeq_epi64(_Comparand, _Data), _Tail_mask);
             _mm256_maskstore_epi64(reinterpret_cast<long long*>(_First), _Mask, _Replacement);
