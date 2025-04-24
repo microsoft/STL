@@ -23,7 +23,7 @@ using namespace std;
 void test_gh_5210() {
 #ifndef SKIP_COLLATE_TRANSFORM_TESTS
     {
-        locale utf8_locale("en_US.utf8");
+        locale utf8_locale("en-US.UTF-8");
         const auto& coll = use_facet<collate<char>>(utf8_locale);
 
         const string test = "this i\xA0s a very brok\x80n utf-8\xC8string";
@@ -31,7 +31,7 @@ void test_gh_5210() {
     }
 
     {
-        locale en_us_locale("en_US");
+        locale en_us_locale("en-US");
         const auto& coll = use_facet<collate<char>>(en_us_locale);
 
         {
@@ -49,7 +49,7 @@ void test_gh_5210() {
     }
 
     {
-        locale en_us_locale("en_US");
+        locale en_us_locale("en-US");
         const auto& coll = use_facet<collate<wchar_t>>(en_us_locale);
 
         {
@@ -67,7 +67,7 @@ void test_gh_5210() {
     }
 
     {
-        locale de_DE_phone_locale("de_DE_phoneb");
+        locale de_DE_phone_locale("de-DE_phoneb");
         const auto& coll = use_facet<collate<wchar_t>>(de_DE_phone_locale);
 
         {
