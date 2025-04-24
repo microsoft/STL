@@ -1948,7 +1948,7 @@ namespace {
                             _Cur_max_val = _H_max_val;
                             const auto _Eq_mask =
                                 _Traits::_Cmp_eq(_H_max, _Cur_vals_max); // Mask of all elems eq to max
-                            int _Mask = _Traits::_Mask(_Traits::_Mask_cast(_Eq_mask));
+                            unsigned long _Mask = _Traits::_Mask(_Traits::_Mask_cast(_Eq_mask));
 
                             unsigned long _H_pos;
                             if constexpr (_Mode == _Mode_both) {
