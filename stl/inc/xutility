@@ -6981,24 +6981,37 @@ namespace ranges {
 } // namespace ranges
 #endif // _HAS_CXX20
 
-template <class _Iter, class _Pr, class _Elem = _Iter_value_t<_Iter>>
-constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms for min_/max_element?
+template <class _Iter, class _Elem = _Iter_value_t<_Iter>>
+constexpr bool _Is_min_max_iterators_safe =
     _Iterator_is_contiguous<_Iter> // The iterator must be contiguous so we can get raw pointers.
     && !_Iterator_is_volatile<_Iter> // The iterator must not be volatile.
-    && conjunction_v<disjunction<
+    && disjunction_v<
 #if _USE_STD_VECTOR_FLOATING_ALGORITHMS
 #if defined(__LDBL_DIG__) && __LDBL_DIG__ == 18
-                         is_same<_Elem, float>, is_same<_Elem, double>,
+        is_same<_Elem, float>, is_same<_Elem, double>,
 #else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
-                         is_floating_point<_Elem>, // Element is floating-point or...
+        is_floating_point<_Elem>, // Element is floating-point or...
 #endif // ^^^ 64-bit long double ^^^
 #endif // _USE_STD_VECTOR_FLOATING_ALGORITHMS
-                         is_integral<_Elem>, is_pointer<_Elem>>, // ... integral or pointer type.
-        disjunction< // And either of the following:
+        is_integral<_Elem>, is_pointer<_Elem>>; // ... integral or pointer type.
+
+template <class _Iter, class _Pr>
+constexpr bool _Is_predicate_less = _Is_any_of_v<_Pr,
 #if _HAS_CXX20
-            is_same<_Pr, _RANGES less>, // predicate is ranges::less
+    _RANGES less,
 #endif // _HAS_CXX20
-            is_same<_Pr, less<>>, is_same<_Pr, less<_Elem>>>>; // predicate is less
+    less<>, less<_Iter_value_t<_Iter>>>;
+
+template <class _Iter, class _Pr>
+constexpr bool _Is_predicate_greater = _Is_any_of_v<_Pr,
+#if _HAS_CXX20
+    _RANGES greater,
+#endif // _HAS_CXX20
+    greater<>, greater<_Iter_value_t<_Iter>>>;
+
+template <class _Iter, class _Pr>
+constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms for min_/max_element?
+    _Is_min_max_iterators_safe<_Iter> && _Is_predicate_less<_Iter, _Pr>;
 
 // Unlike the position-based vectorized implementation, the value-based vectorized implementation
 // does not always produce the expected results for floating-point types.
@@ -7016,7 +7029,7 @@ constexpr bool _Is_min_max_value_optimization_safe = // Activate the vector algo
 #ifndef _M_FP_FAST
     !is_floating_point_v<_Elem> &&
 #endif // ^^^ !defined(_M_FP_FAST) ^^^
-    _Is_min_max_optimization_safe<_Iter, _Pr, _Elem>;
+    _Is_min_max_optimization_safe<_Iter, _Pr>;
 
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element

@@ -26,6 +26,7 @@
 #include <ranges>
 #endif // _HAS_CXX20
 
+#include "test_is_sorted_until_support.hpp"
 #include "test_min_max_element_support.hpp"
 #include "test_vector_algorithms_support.hpp"
 
@@ -271,10 +272,19 @@ auto last_known_good_find_first_of(FwdItH h_first, FwdItH h_last, FwdItN n_first
 
 template <class RanItH, class RanItN>
 auto last_known_good_search(RanItH h_first, RanItH h_last, RanItN n_first, RanItN n_last) {
-    const auto n_len = n_last - n_first;
+    const ptrdiff_t n_len = n_last - n_first;
 
     for (; h_last - h_first >= n_len; ++h_first) {
-        if (equal(h_first, h_first + n_len, n_first, n_last)) {
+        bool is_equal = true;
+
+        for (ptrdiff_t i = 0; i != n_len; ++i) {
+            if (*(h_first + i) != *(n_first + i)) {
+                is_equal = false;
+                break;
+            }
+        }
+
+        if (is_equal) {
             return h_first;
         }
     }
@@ -284,7 +294,7 @@ auto last_known_good_search(RanItH h_first, RanItH h_last, RanItN n_first, RanIt
 
 template <class RanItH, class RanItN>
 auto last_known_good_find_end(RanItH h_first, RanItH h_last, RanItN n_first, RanItN n_last) {
-    const auto n_len = n_last - n_first;
+    const ptrdiff_t n_len = n_last - n_first;
 
     if (n_len > h_last - h_first) {
         return h_last;
@@ -293,7 +303,16 @@ auto last_known_good_find_end(RanItH h_first, RanItH h_last, RanItN n_first, Ran
     auto h_mid = h_last - n_len;
 
     for (;;) {
-        if (equal(h_mid, h_mid + n_len, n_first, n_last)) {
+        bool is_equal = true;
+
+        for (ptrdiff_t i = 0; i != n_len; ++i) {
+            if (*(h_mid + i) != *(n_first + i)) {
+                is_equal = false;
+                break;
+            }
+        }
+
+        if (is_equal) {
             return h_mid;
         }
 
@@ -599,6 +618,35 @@ void test_min_max_element_special_cases() {
     assert(minmax_element(v.begin(), v.end()).first == v.begin() + 2 * block_size_in_elements + 2);
     assert(minmax_element(v.begin(), v.end()).second
            == v.begin() + 2 * block_size_in_elements + last_vector_first_elem + 9);
+}
+
+template <class T>
+void test_is_sorted_until(mt19937_64& gen) {
+    using Limits = numeric_limits<T>;
+
+    uniform_int_distribution<conditional_t<sizeof(T) == 1, int, T>> dis(Limits::min(), Limits::max());
+
+    vector<T> original_input;
+    vector<T> input;
+    original_input.reserve(dataCount);
+    input.reserve(dataCount);
+
+    test_case_is_sorted_until(input, less<>{});
+    test_case_is_sorted_until(input, greater<>{});
+
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        original_input.push_back(static_cast<T>(dis(gen)));
+        input = original_input;
+
+        uniform_int_distribution<ptrdiff_t> pos_dis{0, static_cast<ptrdiff_t>(input.size() - 1)};
+        auto it = input.begin() + pos_dis(gen);
+
+        sort(input.begin(), it, less<>{});
+        test_case_is_sorted_until(input, less<>{});
+
+        reverse(input.begin(), it);
+        test_case_is_sorted_until(input, greater<>{});
+    }
 }
 
 template <class FwdIt, class T>
@@ -1088,6 +1136,16 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_case_min_max_element(vector<int64_t>{10, 0x8000'0000LL, 20, 30});
     test_case_min_max_element(
         vector<int64_t>{-6604286336755016904, -4365366089374418225, 6104371530830675888, -8582621853879131834});
+
+    test_is_sorted_until<char>(gen);
+    test_is_sorted_until<signed char>(gen);
+    test_is_sorted_until<unsigned char>(gen);
+    test_is_sorted_until<short>(gen);
+    test_is_sorted_until<unsigned short>(gen);
+    test_is_sorted_until<int>(gen);
+    test_is_sorted_until<unsigned int>(gen);
+    test_is_sorted_until<long long>(gen);
+    test_is_sorted_until<unsigned long long>(gen);
 
     // replace() is vectorized for 4 and 8 bytes only.
     test_replace<int>(gen);
