@@ -662,19 +662,23 @@ namespace {
         }
 
         static __m128i _H_min(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](const __m128i _Val1, const __m128i _Val2) { return _mm_min_epi8(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_min_epi8(_Val1, _Val2); });
         }
 
         static __m128i _H_max(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](const __m128i _Val1, const __m128i _Val2) { return _mm_max_epi8(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_max_epi8(_Val1, _Val2); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](const __m128i _Val1, const __m128i _Val2) { return _mm_min_epu8(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_min_epu8(_Val1, _Val2); });
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](const __m128i _Val1, const __m128i _Val2) { return _mm_max_epu8(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_max_epu8(_Val1, _Val2); });
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -751,22 +755,22 @@ namespace {
 
         static __m256i _H_min(const __m256i _Cur) noexcept {
             return _H_func(
-                _Cur, [](const __m256i _Val1, const __m256i _Val2) { return _mm256_min_epi8(_Val1, _Val2); });
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_min_epi8(_Val1, _Val2); });
         }
 
         static __m256i _H_max(const __m256i _Cur) noexcept {
             return _H_func(
-                _Cur, [](const __m256i _Val1, const __m256i _Val2) { return _mm256_max_epi8(_Val1, _Val2); });
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_max_epi8(_Val1, _Val2); });
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
             return _H_func(
-                _Cur, [](const __m256i _Val1, const __m256i _Val2) { return _mm256_min_epu8(_Val1, _Val2); });
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_min_epu8(_Val1, _Val2); });
         }
 
         static __m256i _H_max_u(const __m256i _Cur) noexcept {
             return _H_func(
-                _Cur, [](const __m256i _Val1, const __m256i _Val2) { return _mm256_max_epu8(_Val1, _Val2); });
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_max_epu8(_Val1, _Val2); });
         }
 
         static _Signed_t _Get_any(const __m256i _Cur) noexcept {
@@ -859,19 +863,23 @@ namespace {
         }
 
         static __m128i _H_min(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](const __m128i _Val1, const __m128i _Val2) { return _mm_min_epi16(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_min_epi16(_Val1, _Val2); });
         }
 
         static __m128i _H_max(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](const __m128i _Val1, const __m128i _Val2) { return _mm_max_epi16(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_max_epi16(_Val1, _Val2); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](const __m128i _Val1, const __m128i _Val2) { return _mm_min_epu16(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_min_epu16(_Val1, _Val2); });
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](const __m128i _Val1, const __m128i _Val2) { return _mm_max_epu16(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_max_epu16(_Val1, _Val2); });
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -948,22 +956,22 @@ namespace {
 
         static __m256i _H_min(const __m256i _Cur) noexcept {
             return _H_func(
-                _Cur, [](const __m256i _Val1, const __m256i _Val2) { return _mm256_min_epi16(_Val1, _Val2); });
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_min_epi16(_Val1, _Val2); });
         }
 
         static __m256i _H_max(const __m256i _Cur) noexcept {
             return _H_func(
-                _Cur, [](const __m256i _Val1, const __m256i _Val2) { return _mm256_max_epi16(_Val1, _Val2); });
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_max_epi16(_Val1, _Val2); });
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
             return _H_func(
-                _Cur, [](const __m256i _Val1, const __m256i _Val2) { return _mm256_min_epu16(_Val1, _Val2); });
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_min_epu16(_Val1, _Val2); });
         }
 
         static __m256i _H_max_u(const __m256i _Cur) noexcept {
             return _H_func(
-                _Cur, [](const __m256i _Val1, const __m256i _Val2) { return _mm256_max_epu16(_Val1, _Val2); });
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_max_epu16(_Val1, _Val2); });
         }
 
         static _Signed_t _Get_any(const __m256i _Cur) noexcept {
@@ -1057,19 +1065,23 @@ namespace {
         }
 
         static __m128i _H_min(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](const __m128i _Val1, const __m128i _Val2) { return _mm_min_epi32(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_min_epi32(_Val1, _Val2); });
         }
 
         static __m128i _H_max(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](const __m128i _Val1, const __m128i _Val2) { return _mm_max_epi32(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_max_epi32(_Val1, _Val2); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](const __m128i _Val1, const __m128i _Val2) { return _mm_min_epu32(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_min_epu32(_Val1, _Val2); });
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](const __m128i _Val1, const __m128i _Val2) { return _mm_max_epu32(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_max_epu32(_Val1, _Val2); });
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -1142,22 +1154,22 @@ namespace {
 
         static __m256i _H_min(const __m256i _Cur) noexcept {
             return _H_func(
-                _Cur, [](const __m256i _Val1, const __m256i _Val2) { return _mm256_min_epi32(_Val1, _Val2); });
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_min_epi32(_Val1, _Val2); });
         }
 
         static __m256i _H_max(const __m256i _Cur) noexcept {
             return _H_func(
-                _Cur, [](const __m256i _Val1, const __m256i _Val2) { return _mm256_max_epi32(_Val1, _Val2); });
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_max_epi32(_Val1, _Val2); });
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
             return _H_func(
-                _Cur, [](const __m256i _Val1, const __m256i _Val2) { return _mm256_min_epu32(_Val1, _Val2); });
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_min_epu32(_Val1, _Val2); });
         }
 
         static __m256i _H_max_u(const __m256i _Cur) noexcept {
             return _H_func(
-                _Cur, [](const __m256i _Val1, const __m256i _Val2) { return _mm256_max_epu32(_Val1, _Val2); });
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_max_epu32(_Val1, _Val2); });
         }
 
         static _Signed_t _Get_any(const __m256i _Cur) noexcept {
@@ -1247,19 +1259,19 @@ namespace {
         }
 
         static __m128i _H_min(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](const _Signed_t _Lhs, const _Signed_t _Rhs) { return _Lhs < _Rhs; });
+            return _H_func(_Cur, [](const _Signed_t _Lhs, const _Signed_t _Rhs) noexcept { return _Lhs < _Rhs; });
         }
 
         static __m128i _H_max(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](const _Signed_t _Lhs, const _Signed_t _Rhs) { return _Lhs > _Rhs; });
+            return _H_func(_Cur, [](const _Signed_t _Lhs, const _Signed_t _Rhs) noexcept { return _Lhs > _Rhs; });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](const _Unsigned_t _Lhs, const _Unsigned_t _Rhs) { return _Lhs < _Rhs; });
+            return _H_func(_Cur, [](const _Unsigned_t _Lhs, const _Unsigned_t _Rhs) noexcept { return _Lhs < _Rhs; });
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](const _Unsigned_t _Lhs, const _Unsigned_t _Rhs) { return _Lhs > _Rhs; });
+            return _H_func(_Cur, [](const _Unsigned_t _Lhs, const _Unsigned_t _Rhs) noexcept { return _Lhs > _Rhs; });
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -1346,19 +1358,19 @@ namespace {
         }
 
         static __m256i _H_min(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](const _Signed_t _Lhs, const _Signed_t _Rhs) { return _Lhs < _Rhs; });
+            return _H_func(_Cur, [](const _Signed_t _Lhs, const _Signed_t _Rhs) noexcept { return _Lhs < _Rhs; });
         }
 
         static __m256i _H_max(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](const _Signed_t _Lhs, const _Signed_t _Rhs) { return _Lhs > _Rhs; });
+            return _H_func(_Cur, [](const _Signed_t _Lhs, const _Signed_t _Rhs) noexcept { return _Lhs > _Rhs; });
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](const _Unsigned_t _Lhs, const _Unsigned_t _Rhs) { return _Lhs < _Rhs; });
+            return _H_func(_Cur, [](const _Unsigned_t _Lhs, const _Unsigned_t _Rhs) noexcept { return _Lhs < _Rhs; });
         }
 
         static __m256i _H_max_u(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](const _Unsigned_t _Lhs, const _Unsigned_t _Rhs) { return _Lhs > _Rhs; });
+            return _H_func(_Cur, [](const _Unsigned_t _Lhs, const _Unsigned_t _Rhs) noexcept { return _Lhs > _Rhs; });
         }
 
         static _Signed_t _Get_any(const __m256i _Cur) noexcept {
@@ -1450,11 +1462,13 @@ namespace {
         }
 
         static __m128 _H_min(const __m128 _Cur) noexcept {
-            return _H_func(_Cur, [](const __m128 _Val1, const __m128 _Val2) { return _mm_min_ps(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128 _Val1, const __m128 _Val2) noexcept { return _mm_min_ps(_Val1, _Val2); });
         }
 
         static __m128 _H_max(const __m128 _Cur) noexcept {
-            return _H_func(_Cur, [](const __m128 _Val1, const __m128 _Val2) { return _mm_max_ps(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128 _Val1, const __m128 _Val2) noexcept { return _mm_max_ps(_Val1, _Val2); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
@@ -1531,11 +1545,13 @@ namespace {
         }
 
         static __m256 _H_min(const __m256 _Cur) noexcept {
-            return _H_func(_Cur, [](const __m256 _Val1, const __m256 _Val2) { return _mm256_min_ps(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256 _Val1, const __m256 _Val2) noexcept { return _mm256_min_ps(_Val1, _Val2); });
         }
 
         static __m256 _H_max(const __m256 _Cur) noexcept {
-            return _H_func(_Cur, [](const __m256 _Val1, const __m256 _Val2) { return _mm256_max_ps(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256 _Val1, const __m256 _Val2) noexcept { return _mm256_max_ps(_Val1, _Val2); });
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
@@ -1619,11 +1635,13 @@ namespace {
         }
 
         static __m128d _H_min(const __m128d _Cur) noexcept {
-            return _H_func(_Cur, [](const __m128d _Val1, const __m128d _Val2) { return _mm_min_pd(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128d _Val1, const __m128d _Val2) noexcept { return _mm_min_pd(_Val1, _Val2); });
         }
 
         static __m128d _H_max(const __m128d _Cur) noexcept {
-            return _H_func(_Cur, [](const __m128d _Val1, const __m128d _Val2) { return _mm_max_pd(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128d _Val1, const __m128d _Val2) noexcept { return _mm_max_pd(_Val1, _Val2); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
@@ -1698,11 +1716,13 @@ namespace {
         }
 
         static __m256d _H_min(const __m256d _Cur) noexcept {
-            return _H_func(_Cur, [](const __m256d _Val1, const __m256d _Val2) { return _mm256_min_pd(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256d _Val1, const __m256d _Val2) noexcept { return _mm256_min_pd(_Val1, _Val2); });
         }
 
         static __m256d _H_max(const __m256d _Cur) noexcept {
-            return _H_func(_Cur, [](const __m256d _Val1, const __m256d _Val2) { return _mm256_max_pd(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256d _Val1, const __m256d _Val2) noexcept { return _mm256_max_pd(_Val1, _Val2); });
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
