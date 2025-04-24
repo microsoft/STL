@@ -43,7 +43,7 @@ namespace {
     };
 
     __m256i _Avx2_tail_mask_32(const size_t _Count_in_bytes) noexcept {
-        // _Count_in_dwords must be within [0, 8].
+        // _Count_in_bytes must be within [0, 32].
         static constexpr unsigned int _Tail_masks[16] = {
             ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, 0, 0, 0, 0, 0, 0, 0, 0};
         return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(
