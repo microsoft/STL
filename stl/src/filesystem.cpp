@@ -115,31 +115,7 @@ namespace {
             return __std_win_error::_Success;
         }
 
-        __std_win_error _Last_error{GetLastError()};
-
-#ifndef _CRT_APP
-        switch (_Last_error) {
-        case __std_win_error::_Not_supported:
-        case __std_win_error::_Invalid_parameter:
-            break; // try more things
-        default:
-            return _Last_error; // real error, bail to the caller
-        }
-
-        // try GetFileInformationByHandle as a fallback
-        BY_HANDLE_FILE_INFORMATION _Info;
-        if (GetFileInformationByHandle(_Handle, &_Info)) {
-            _Id->VolumeSerialNumber = _Info.dwVolumeSerialNumber;
-            _CSTD memcpy(&_Id->FileId.Identifier[0], &_Info.nFileIndexHigh, 4);
-            _CSTD memcpy(&_Id->FileId.Identifier[4], &_Info.nFileIndexLow, 4);
-            _CSTD memset(&_Id->FileId.Identifier[8], 0, 8);
-            return __std_win_error::_Success;
-        }
-
-        _Last_error = __std_win_error{GetLastError()};
-#endif // !defined(_CRT_APP)
-
-        return _Last_error;
+        return __std_win_error{GetLastError()};
     }
 
     [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error

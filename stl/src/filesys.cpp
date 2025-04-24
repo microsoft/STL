@@ -223,21 +223,12 @@ _FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _Hard_links(const wchar_t* _Fname) noe
         return static_cast<uintmax_t>(-1);
     }
 
-#ifdef _CRT_APP
     FILE_STANDARD_INFO _Info = {0};
 
     // get file info
     const auto _Ok = GetFileInformationByHandleEx(_Handle, FileStandardInfo, &_Info, sizeof(_Info));
     CloseHandle(_Handle);
     return _Ok ? _Info.NumberOfLinks : static_cast<uintmax_t>(-1);
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
-    BY_HANDLE_FILE_INFORMATION _Info = {0};
-
-    // get file info
-    const auto _Ok = GetFileInformationByHandle(_Handle, &_Info);
-    CloseHandle(_Handle);
-    return _Ok ? _Info.nNumberOfLinks : static_cast<uintmax_t>(-1);
-#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 _FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t* _Fname) noexcept { // get file size
@@ -316,7 +307,6 @@ _FS_DLL space_info __CLRCALL_PURE_OR_CDECL _Statvfs(const wchar_t* _Fname) noexc
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
     const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept { // test for equivalent file names
     // See GH-3571: File IDs are only guaranteed to be unique and stable while handles remain open
-#ifdef _CRT_APP
     _FILE_ID_INFO _Info1 = {0};
     _FILE_ID_INFO _Info2 = {0};
     bool _Ok1            = false;
@@ -344,38 +334,6 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
     } else { // test existing files for equivalence
         return memcmp(&_Info1, &_Info2, sizeof(_FILE_ID_INFO)) == 0 ? 1 : 0;
     }
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
-    BY_HANDLE_FILE_INFORMATION _Info1 = {0};
-    BY_HANDLE_FILE_INFORMATION _Info2 = {0};
-    bool _Ok1                         = false;
-    bool _Ok2                         = false;
-
-    HANDLE _Handle1 = _FilesysOpenFile(_Fname1, FILE_READ_ATTRIBUTES, FILE_FLAG_BACKUP_SEMANTICS);
-    if (_Handle1 != INVALID_HANDLE_VALUE) { // get file1 info
-        _Ok1 = GetFileInformationByHandle(_Handle1, &_Info1) != 0;
-    }
-
-    HANDLE _Handle2 = _FilesysOpenFile(_Fname2, FILE_READ_ATTRIBUTES, FILE_FLAG_BACKUP_SEMANTICS);
-    if (_Handle2 != INVALID_HANDLE_VALUE) { // get file2 info
-        _Ok2 = GetFileInformationByHandle(_Handle2, &_Info2) != 0;
-        CloseHandle(_Handle2);
-    }
-
-    if (_Handle1 != INVALID_HANDLE_VALUE) {
-        CloseHandle(_Handle1);
-    }
-
-    if (!_Ok1 && !_Ok2) {
-        return -1;
-    } else if (!_Ok1 || !_Ok2) {
-        return 0;
-    } else { // test existing files for equivalence
-        return _Info1.dwVolumeSerialNumber == _Info2.dwVolumeSerialNumber
-                    && _Info1.nFileIndexHigh == _Info2.nFileIndexHigh && _Info1.nFileIndexLow == _Info2.nFileIndexLow
-                 ? 1
-                 : 0;
-    }
-#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
