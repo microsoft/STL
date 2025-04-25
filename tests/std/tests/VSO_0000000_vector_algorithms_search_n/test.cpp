@@ -12,6 +12,11 @@
 
 #include "test_vector_algorithms_support.hpp"
 
+#pragma warning(disable : 4984) // if constexpr is a C++17 language extension
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wc++17-extensions"
+#endif // __clang__
+
 using namespace std;
 
 template <class UnderlyingIt>
@@ -78,7 +83,6 @@ auto last_known_good_search_n(FwdIt first, const FwdIt last, const size_t count,
 
 template <bool forward_only_iterators, class It, class T>
 void test_case_search_n(const It first, const It last, const size_t count, const T val) {
-#pragma warning(suppress : 4984) // 'if constexpr' is a C++17 language extension
     if constexpr (forward_only_iterators) {
         using iter_type = forward_iter_adaptor<It>;
         test_case_search_n<false>(iter_type(first), iter_type(last), count, val);
