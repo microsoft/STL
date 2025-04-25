@@ -2961,14 +2961,14 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_elts(
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_named_class(
     typename _RxTraits::char_class_type _Cl, const _Rx_char_class_kind _Kind) {
-    using _Char_class_type = typename _RxTraits::char_class_type;
     // add contents of named class to bracket expression
+    using _Char_class_type               = typename _RxTraits::char_class_type;
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
     _Add_elts(_Node, _Cl, _Kind != _Rx_char_class_kind::_Positive);
     if (_Bmp_max <= _STD _Max_limit<typename _RxTraits::_Uelem>()) {
         if (_Kind == _Rx_char_class_kind::_Positive) {
             auto _Cl_all_bits_set = static_cast<_Char_class_type>(-1);
-            if (_Node->_Classes != _Cl_all_bits_set && _Cl != _Cl_all_bits_set
+            if ((_Node->_Classes != _Cl_all_bits_set && _Cl != _Cl_all_bits_set)
                 || _Node->_Classes == _Char_class_type{}) {
                 _Node->_Classes = static_cast<_Char_class_type>(_Node->_Classes | _Cl);
             } else if (_Node->_Classes != _Cl) {
