@@ -3,14 +3,13 @@
 
 // implements multiprecision math for random number generators
 
-#include <limits>
-#include <random>
+#include <yvals.h>
 
 _STD_BEGIN
 constexpr int _MP_len = 5;
-using _MP_arr         = uint64_t[_MP_len];
+using _MP_arr         = unsigned long long[_MP_len];
 
-constexpr int shift                 = _STD numeric_limits<unsigned long long>::digits / 2;
+constexpr int shift                 = 64 / 2;
 constexpr unsigned long long mask   = ~(~0ULL << shift);
 constexpr unsigned long long maxVal = mask + 1;
 
