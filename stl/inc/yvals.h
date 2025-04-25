@@ -246,7 +246,7 @@ _EMIT_STL_ERROR(STL1008, "_STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER has been 
 #define _MSVC_STL_DOOM_FUNCTION(mesg) _CSTD abort()
 #elif defined(__clang__) // Use the Clang intrinsic:
 #define _MSVC_STL_DOOM_FUNCTION(mesg) __builtin_verbose_trap("MSVC STL error", mesg)
-#elif defined(_M_CEE_PURE) // Use the classic function because /clr:pure lacks the MSVC __fastfail intrinsic:
+#elif defined(_M_CEE) // TRANSITION, VSO-2457624 (/clr silent bad codegen for __fastfail); /clr:pure lacks __fastfail
 #define _MSVC_STL_DOOM_FUNCTION(mesg) ::_invoke_watson(nullptr, nullptr, nullptr, 0, 0)
 #else // Use the MSVC __fastfail intrinsic:
 extern "C" __declspec(noreturn) void __fastfail(unsigned int); // declared by <intrin.h>
