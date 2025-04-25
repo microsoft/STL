@@ -500,7 +500,7 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
         const auto _Mul =
             static_cast<unsigned int>(_Prev) * static_cast<unsigned int>(_Ax) + static_cast<unsigned int>(_Cx);
         return static_cast<_Uint>(_Mul % _Mx);
-    } else if constexpr (_Cx <= ULLONG_MAX && static_cast<_Uint>(_Mx - 1) <= (ULLONG_MAX - _Cx) / _Ax) {
+    } else if constexpr (static_cast<_Uint>(_Mx - 1) <= (ULLONG_MAX - _Cx) / _Ax) {
         // unsigned long long is sufficient to store intermediate calculation
         const auto _Mul = static_cast<unsigned long long>(_Prev) * _Ax + _Cx;
         return static_cast<_Uint>(_Mul % _Mx);
