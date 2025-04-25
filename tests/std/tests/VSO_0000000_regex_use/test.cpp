@@ -1275,6 +1275,50 @@ void test_gh_5214() {
     }
 }
 
+void test_gh_5243() {
+    // GH-5243: <regex>: wregex with regular expression [\w\s] fails to match some spaces
+    for (wstring pattern : {LR"([\w])", LR"([\w\w])"}) {
+        const test_wregex word_regex(&g_regexTester, pattern);
+        word_regex.should_search_match(L"a", L"a");
+        word_regex.should_search_match(L"2", L"2");
+        word_regex.should_search_match(L"_", L"_");
+        word_regex.should_search_match(L"\u00e4", L"\u00e4"); // U+00E4 LATIN SMALL LETTER A WITH DIAERESIS
+        word_regex.should_search_match(L"\u0662", L"\u0662"); // U+0662 ARABIC-INDIC DIGIT TWO
+        word_regex.should_search_fail(L" ");
+        word_regex.should_search_fail(L"\u2028"); // U+2028 LINE SEPARATOR
+        word_regex.should_search_fail(L".");
+        word_regex.should_search_fail(L"-");
+        word_regex.should_search_fail(L"\u203d"); // U+203D INTERROBANG
+    }
+    {
+        const test_wregex space_regex(&g_regexTester, LR"([\s])");
+        space_regex.should_search_fail(L"a");
+        space_regex.should_search_fail(L"2");
+        space_regex.should_search_fail(L"_");
+        space_regex.should_search_fail(L"\u00e4"); // U+00E4 LATIN SMALL LETTER A WITH DIAERESIS
+        space_regex.should_search_fail(L"\u0662"); // U+0662 ARABIC-INDIC DIGIT TWO
+        space_regex.should_search_match(L" ", L" ");
+        space_regex.should_search_match(L"\u2028", L"\u2028"); // U+2028 LINE SEPARATOR
+        space_regex.should_search_fail(L".");
+        space_regex.should_search_fail(L"-");
+        space_regex.should_search_fail(L"\u203d"); // U+203D INTERROBANG
+    }
+    for (wstring pattern : {LR"([\w\s])", LR"([\s\w])"}) {
+        const test_wregex word_or_space_regex(&g_regexTester, pattern);
+        word_or_space_regex.should_search_match(L"a", L"a");
+        word_or_space_regex.should_search_match(L"2", L"2");
+        word_or_space_regex.should_search_match(L"_", L"_");
+        word_or_space_regex.should_search_match(L"\u00e4", L"\u00e4"); // U+00E4 LATIN SMALL LETTER A WITH DIAERESIS
+        word_or_space_regex.should_search_match(L"\u0662", L"\u0662"); // U+0662 ARABIC-INDIC DIGIT TWO
+        word_or_space_regex.should_search_match(L" ", L" ");
+        word_or_space_regex.should_search_match(L"\u2028", L"\u2028"); // U+2028 LINE SEPARATOR
+        word_or_space_regex.should_search_fail(L".");
+        word_or_space_regex.should_search_fail(L"-");
+        word_or_space_regex.should_search_fail(L"\u203d"); // U+203D INTERROBANG
+    }
+}
+
+
 void test_gh_5245() {
     // GH-5245: <regex>: Successful negative lookahead assertions
     // sometimes mistakenly assign matches to capture groups
@@ -1660,6 +1704,7 @@ int main() {
     test_gh_5167();
     test_gh_5192();
     test_gh_5214();
+    test_gh_5243();
     test_gh_5245();
     test_gh_5253();
     test_gh_5362();
