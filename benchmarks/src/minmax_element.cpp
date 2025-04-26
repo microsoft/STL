@@ -10,6 +10,8 @@
 #include <type_traits>
 #include <vector>
 
+#include "skewed_allocator.hpp"
+
 enum class Op {
     Min,
     Max,
@@ -23,7 +25,7 @@ using namespace std;
 
 template <class T, Op Operation>
 void bm(benchmark::State& state) {
-    vector<T> a(static_cast<size_t>(state.range()));
+    vector<T, not_highly_aligned_allocator<T>> a(static_cast<size_t>(state.range()));
 
     mt19937 gen(84710);
 

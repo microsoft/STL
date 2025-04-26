@@ -11,6 +11,8 @@
 #include <type_traits>
 #include <vector>
 
+#include "skewed_allocator.hpp"
+
 using namespace std;
 
 template <class T>
@@ -19,8 +21,8 @@ void bm(benchmark::State& state) {
 
     const size_t size = static_cast<size_t>(state.range(0));
 
-    vector<T> input(size);
-    vector<T> output(size);
+    vector<T, not_highly_aligned_allocator<T>> input(size);
+    vector<T, not_highly_aligned_allocator<T>> output(size);
 
     if constexpr (is_floating_point_v<T>) {
         normal_distribution<T> dis(0, 100000.0);

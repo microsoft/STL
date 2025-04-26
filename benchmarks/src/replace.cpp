@@ -7,36 +7,43 @@
 #include <vector>
 
 #include "lorem.hpp"
+#include "skewed_allocator.hpp"
 
 template <class T>
 void r(benchmark::State& state) {
-    const std::vector<T> a(lorem_ipsum.begin(), lorem_ipsum.end());
-    std::vector<T> b(lorem_ipsum.size());
+    std::vector<T, not_highly_aligned_allocator<T>> a(lorem_ipsum.begin(), lorem_ipsum.end());
+    std::vector<T, not_highly_aligned_allocator<T>> b(lorem_ipsum.size());
 
     for (auto _ : state) {
+        benchmark::DoNotOptimize(a);
         b = a;
         std::replace(std::begin(b), std::end(b), T{'m'}, T{'w'});
+        benchmark::DoNotOptimize(b);
     }
 }
 
 template <class T>
 void rc(benchmark::State& state) {
-    const std::vector<T> a(lorem_ipsum.begin(), lorem_ipsum.end());
-    std::vector<T> b(lorem_ipsum.size());
+    std::vector<T, not_highly_aligned_allocator<T>> a(lorem_ipsum.begin(), lorem_ipsum.end());
+    std::vector<T, not_highly_aligned_allocator<T>> b(lorem_ipsum.size());
 
     for (auto _ : state) {
+        benchmark::DoNotOptimize(a);
         std::replace_copy(std::begin(a), std::end(a), std::begin(b), T{'m'}, T{'w'});
+        benchmark::DoNotOptimize(b);
     }
 }
 
 template <class T>
 void rc_if(benchmark::State& state) {
-    const std::vector<T> a(lorem_ipsum.begin(), lorem_ipsum.end());
-    std::vector<T> b(lorem_ipsum.size());
+    std::vector<T, not_highly_aligned_allocator<T>> a(lorem_ipsum.begin(), lorem_ipsum.end());
+    std::vector<T, not_highly_aligned_allocator<T>> b(lorem_ipsum.size());
 
     for (auto _ : state) {
+        benchmark::DoNotOptimize(a);
         (void) std::replace_copy_if(
             std::begin(a), std::end(a), std::begin(b), [](auto x) { return x <= T{'Z'}; }, T{'X'});
+        benchmark::DoNotOptimize(b);
     }
 }
 

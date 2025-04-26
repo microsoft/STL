@@ -8,6 +8,8 @@
 #include <cstdlib>
 #include <vector>
 
+#include "skewed_allocator.hpp"
+
 using namespace std;
 
 enum class AlgType { Std, Rng };
@@ -17,7 +19,7 @@ void bm(benchmark::State& state) {
     const size_t size = static_cast<size_t>(state.range(0));
     const size_t pos  = static_cast<size_t>(state.range(1));
 
-    vector<T> v(size);
+    vector<T, not_highly_aligned_allocator<T>> v(size);
 
     for (size_t i = 0; i != size; ++i) {
         v[i] = static_cast<T>(i & 3);
