@@ -2979,7 +2979,6 @@ public:
             _Sqrt  = _CSTD sqrt(2 * _Mean * (1 - _Pp));
             _Logp  = _CSTD log(_Pp);
             _Logp1 = _CSTD log(1.0 - _Pp);
-            _Small._Init(_Mean);
         }
 
         _Ty _Tx;
