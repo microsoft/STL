@@ -588,7 +588,7 @@ static const regex_test tests[] = {
     {__LINE__, T("[[:xdigit:]]"), T("g"), "0", ALL},
     {__LINE__, T("[[:xdigit:]]"), T("1"), "1 0 1", ALL},
     {__LINE__, T("[[:xdigit:]]"), T(" "), "0", ALL},
-    {__LINE__, T("[[=x=]]"), T("X"), "1 0 1", ALL},
+    {__LINE__, T("[[=x=]]"), T("X"), "0", ALL},
     {__LINE__, T("[[=x=]]"), T("x"), "1 0 1", ALL},
 
     // character class ranges
