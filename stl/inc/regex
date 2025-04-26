@@ -361,7 +361,10 @@ public:
                 _Res.resize(_Count);
             }
         }
-#endif // defined(_CPPRTTI)
+#else // ^^^ defined(_CPPRTTI) / !defined(_CPPRTTI) vvv
+        (void) _First;
+        (void) _Last;
+#endif // !defined(_CPPRTTI)
         return _Res;
     }
 
