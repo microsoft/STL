@@ -2941,11 +2941,11 @@ public:
         using distribution_type = binomial_distribution;
 
         param_type() noexcept /* strengthened */ {
-            _Init(1, _Ty1(0.5));
+            _Init_v2(1, _Ty1(0.5));
         }
 
         explicit param_type(_Ty _Tx0, _Ty1 _Px0 = _Ty1(0.5)) noexcept /* strengthened */ {
-            _Init(_Tx0, _Px0);
+            _Init_v2(_Tx0, _Px0);
         }
 
         _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
@@ -2968,7 +2968,7 @@ public:
             return _Px;
         }
 
-        void _Init(_Ty _Tx0, _Ty1 _Px0) noexcept { // initialize
+        void _Init_v2(_Ty _Tx0, _Ty1 _Px0) noexcept { // initialize
             _STL_ASSERT(0.0 <= _Tx0, "invalid max argument for binomial_distribution");
             _STL_ASSERT(0.0 <= _Px0 && _Px0 <= 1.0, "invalid probability argument for binomial_distribution");
             _Tx    = _Tx0;
@@ -3057,7 +3057,7 @@ public:
         binomial_distribution::_Ty1 _Px0;
         _In(_Istr, _Px0);
         _In(_Istr, _Tx0);
-        _Dist._Par._Init(_Tx0, _Px0);
+        _Dist._Par._Init_v2(_Tx0, _Px0);
         return _Istr;
     }
 
