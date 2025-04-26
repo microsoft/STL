@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// This file is compiled into the import library.
+// MAJOR LIMITATIONS apply to what can be included here!
+// Before editing this file, read: /docs/import_library.md
+
 #include <__msvc_xlocinfo_types.hpp>
 #include <clocale>
 #include <crtdefs.h>

@@ -3,7 +3,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// This header is used to compile the import library (via locale0_implib.cpp => locale0.cpp => xfacet => yvals.h).
+// This header is used to compile the import library
+// (via locale0_implib.cpp => locale0.cpp => xfacet => yvals.h and regex.cpp => awint.hpp => yvals.h).
 // MAJOR LIMITATIONS apply to what can be included here!
 // Before editing this file, read: /docs/import_library.md
 

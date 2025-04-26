@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // Internal definitions for A&W Win32 wrapper routines.
+
+// This file is compiled into the import library (via regex.cpp => awint.hpp).
+// MAJOR LIMITATIONS apply to what can be included here!
+// Before editing this file, read: /docs/import_library.md
+
 #pragma once
 
 #include <yvals.h>
