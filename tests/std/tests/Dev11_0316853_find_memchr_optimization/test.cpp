@@ -767,18 +767,18 @@ int main() {
     }
 
     { // quick checks to exercise more codepaths with _Could_compare_equal_to_value_type()
-        const vector<uint32_t> v{200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215};
+        const vector<uint32_t> v{200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 205, 205, 205, 214, 215};
         const uint32_t u32{205};
         const uint64_t u64{0x1234'5678'0000'00CDull};
 
         assert(u32 != u64); // u64 is out-of-range for uint32_t, so it can never compare equal...
         assert(u32 == static_cast<uint32_t>(u64)); // ... unless an algorithm performs an improper cast
 
-        assert(count(v.begin(), v.end(), u32) == 1);
+        assert(count(v.begin(), v.end(), u32) == 4);
         assert(count(v.begin(), v.end(), u64) == 0);
 
 #if _HAS_CXX20
-        assert(ranges::count(v, u32) == 1);
+        assert(ranges::count(v, u32) == 4);
         assert(ranges::count(v, u64) == 0);
 #endif // _HAS_CXX20
 
@@ -793,7 +793,7 @@ int main() {
 #if _HAS_CXX23
         {
             const auto result = ranges::find_last(v, u32);
-            assert(result.begin() == v.begin() + 5);
+            assert(result.begin() == v.end() - 3);
             assert(result.end() == v.end());
         }
         {
@@ -803,11 +803,27 @@ int main() {
         }
 #endif // _HAS_CXX23
 
+        assert(search_n(v.begin(), v.end(), 2, u32) == v.end() - 5);
+        assert(search_n(v.begin(), v.end(), 2, u64) == v.end());
+
+#if _HAS_CXX20
         {
-            const vector<uint32_t> rem{200, 201, 202, 203, 204, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 0};
+            const auto result = ranges::search_n(v, 2, u32);
+            assert(begin(result) == v.end() - 5);
+            assert(end(result) == v.end() - 3);
+        }
+        {
+            const auto result = ranges::search_n(v, 2, u64);
+            assert(begin(result) == v.end());
+            assert(end(result) == v.end());
+        }
+#endif // _HAS_CXX20
+
+        {
+            const vector<uint32_t> rem{200, 201, 202, 203, 204, 206, 207, 208, 209, 210, 214, 215, 0, 0, 0, 0};
 
             vector<uint32_t> dst(v.size(), 0);
-            assert(remove_copy(v.begin(), v.end(), dst.begin(), u32) == dst.end() - 1);
+            assert(remove_copy(v.begin(), v.end(), dst.begin(), u32) == dst.end() - 4);
             assert(dst == rem);
 
             dst.assign(v.size(), 0);
@@ -819,7 +835,7 @@ int main() {
                 dst.assign(v.size(), 0);
                 const auto result = ranges::remove_copy(v, dst.begin(), u32);
                 assert(result.in == v.end());
-                assert(result.out == dst.end() - 1);
+                assert(result.out == dst.end() - 4);
                 assert(dst == rem);
             }
             {
@@ -833,7 +849,7 @@ int main() {
         }
 
         {
-            const vector<uint32_t> rep{200, 201, 202, 203, 204, 333, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215};
+            const vector<uint32_t> rep{200, 201, 202, 203, 204, 333, 206, 207, 208, 209, 210, 333, 333, 333, 214, 215};
             const uint32_t val{333};
 
             vector<uint32_t> dst = v;
