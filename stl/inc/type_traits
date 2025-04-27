@@ -33,6 +33,8 @@ constexpr bool _Always_false = false; // TRANSITION, needed by CUDA 12.4 in clas
 
 #if _HAS_CXX23 && defined(__clang__)
 
+#define __cpp_lib_is_implicit_lifetime 202302L
+
 _EXPORT_STD template <class _Ty>
 struct is_implicit_lifetime : bool_constant<__builtin_is_implicit_lifetime(_Ty)> {};
 
