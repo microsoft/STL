@@ -23,7 +23,7 @@
 #error error STL1003: Unexpected compiler, expected C++ compiler.
 #endif // !defined(__cplusplus)
 
-// Implemented unconditionally
+// Implemented unconditionally:
 // N3911 void_t
 // N4089 Safe Conversions In unique_ptr<T[]>
 // N4169 invoke()
