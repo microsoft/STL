@@ -42,11 +42,12 @@ namespace {
         }
     };
 
-    __m256i _Avx2_tail_mask_32(const size_t _Count_in_dwords) noexcept {
-        // _Count_in_dwords must be within [0, 8].
+    __m256i _Avx2_tail_mask_32(const size_t _Count_in_bytes) noexcept {
+        // _Count_in_bytes must be within [0, 32].
         static constexpr unsigned int _Tail_masks[16] = {
             ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, 0, 0, 0, 0, 0, 0, 0, 0};
-        return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Tail_masks + (8 - _Count_in_dwords)));
+        return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(
+            reinterpret_cast<const unsigned char*>(_Tail_masks) + (32 - _Count_in_bytes)));
     }
 } // namespace
 #endif // !defined(_M_ARM64EC)
@@ -62,38 +63,38 @@ namespace {
     }
 
     template <class _BidIt, class _OutIt>
-    void _Reverse_copy_tail(_BidIt _First, _BidIt _Last, _OutIt _Dest) noexcept {
+    void _Reverse_copy_tail(const _BidIt _First, _BidIt _Last, _OutIt _Dest) noexcept {
         while (_First != _Last) {
             *_Dest++ = *--_Last;
         }
     }
 
-    size_t _Byte_length(const void* _First, const void* _Last) noexcept {
+    size_t _Byte_length(const void* const _First, const void* const _Last) noexcept {
         return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
     }
 
-    void _Rewind_bytes(void*& _Target, size_t _Offset) noexcept {
+    void _Rewind_bytes(void*& _Target, const size_t _Offset) noexcept {
         _Target = static_cast<unsigned char*>(_Target) - _Offset;
     }
 
-    void _Rewind_bytes(const void*& _Target, size_t _Offset) noexcept {
+    void _Rewind_bytes(const void*& _Target, const size_t _Offset) noexcept {
         _Target = static_cast<const unsigned char*>(_Target) - _Offset;
     }
 
     template <class _Integral>
-    void _Advance_bytes(void*& _Target, _Integral _Offset) noexcept {
+    void _Advance_bytes(void*& _Target, const _Integral _Offset) noexcept {
         _Target = static_cast<unsigned char*>(_Target) + _Offset;
     }
 
     template <class _Integral>
-    void _Advance_bytes(const void*& _Target, _Integral _Offset) noexcept {
+    void _Advance_bytes(const void*& _Target, const _Integral _Offset) noexcept {
         _Target = static_cast<const unsigned char*>(_Target) + _Offset;
     }
 } // unnamed namespace
 
 extern "C" {
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
-    void* _First1, void* _Last1, void* _First2) noexcept {
+    void* _First1, void* const _Last1, void* _First2) noexcept {
 #ifndef _M_ARM64EC
     constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
     if (_Byte_length(_First1, _Last1) >= 32 && _Use_avx2()) {
@@ -158,9 +159,9 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
 #endif
 #endif // !_M_ARM64EC
 
-    auto _First1c = static_cast<unsigned char*>(_First1);
-    auto _Last1c  = static_cast<unsigned char*>(_Last1);
-    auto _First2c = static_cast<unsigned char*>(_First2);
+    auto _First1c      = static_cast<unsigned char*>(_First1);
+    const auto _Last1c = static_cast<unsigned char*>(_Last1);
+    auto _First2c      = static_cast<unsigned char*>(_First2);
     for (; _First1c != _Last1c; ++_First1c, ++_First2c) {
         unsigned char _Ch = *_First1c;
         *_First1c         = *_First2c;
@@ -169,7 +170,8 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
 }
 
 // TRANSITION, ABI: __std_swap_ranges_trivially_swappable() is preserved for binary compatibility
-void* __cdecl __std_swap_ranges_trivially_swappable(void* _First1, void* _Last1, void* _First2) noexcept {
+void* __cdecl __std_swap_ranges_trivially_swappable(
+    void* const _First1, void* const _Last1, void* const _First2) noexcept {
     __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
     return static_cast<char*>(_First2) + (static_cast<char*>(_Last1) - static_cast<char*>(_First1));
 }
@@ -606,7 +608,7 @@ namespace {
             return _mm256_blendv_epi8(_Px1, _Px2, _Msk);
         }
 
-        static __m256i _Load_mask(const void* _Src, const __m256i _Mask) noexcept {
+        static __m256i _Load_mask(const void* const _Src, const __m256i _Mask) noexcept {
             return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Mask);
         }
     };
@@ -632,7 +634,7 @@ namespace {
 
 #ifndef _M_ARM64EC
     struct _Minmax_traits_1_sse : _Minmax_traits_1_base, _Minmax_traits_sse_base {
-        static __m128i _Load(const void* _Src) noexcept {
+        static __m128i _Load(const void* const _Src) noexcept {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
 
@@ -647,7 +649,7 @@ namespace {
         }
 
         template <class _Fn>
-        static __m128i _H_func(const __m128i _Cur, _Fn _Funct) noexcept {
+        static __m128i _H_func(const __m128i _Cur, const _Fn _Funct) noexcept {
             const __m128i _Shuf_bytes = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
             const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
 
@@ -660,19 +662,23 @@ namespace {
         }
 
         static __m128i _H_min(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epi8(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_min_epi8(_Val1, _Val2); });
         }
 
         static __m128i _H_max(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epi8(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_max_epi8(_Val1, _Val2); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu8(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_min_epu8(_Val1, _Val2); });
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu8(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_max_epu8(_Val1, _Val2); });
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -717,7 +723,7 @@ namespace {
     };
 
     struct _Minmax_traits_1_avx : _Minmax_traits_1_base, _Minmax_traits_avx_i_base {
-        static __m256i _Load(const void* _Src) noexcept {
+        static __m256i _Load(const void* const _Src) noexcept {
             return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
         }
 
@@ -734,7 +740,7 @@ namespace {
         }
 
         template <class _Fn>
-        static __m256i _H_func(const __m256i _Cur, _Fn _Funct) noexcept {
+        static __m256i _H_func(const __m256i _Cur, const _Fn _Funct) noexcept {
             const __m128i _Shuf_bytes = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
             const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
 
@@ -748,19 +754,23 @@ namespace {
         }
 
         static __m256i _H_min(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_min_epi8(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_min_epi8(_Val1, _Val2); });
         }
 
         static __m256i _H_max(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_max_epi8(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_max_epi8(_Val1, _Val2); });
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_min_epu8(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_min_epu8(_Val1, _Val2); });
         }
 
         static __m256i _H_max_u(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_max_epu8(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_max_epu8(_Val1, _Val2); });
         }
 
         static _Signed_t _Get_any(const __m256i _Cur) noexcept {
@@ -827,7 +837,7 @@ namespace {
 
 #ifndef _M_ARM64EC
     struct _Minmax_traits_2_sse : _Minmax_traits_2_base, _Minmax_traits_sse_base {
-        static __m128i _Load(const void* _Src) noexcept {
+        static __m128i _Load(const void* const _Src) noexcept {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
 
@@ -842,7 +852,7 @@ namespace {
         }
 
         template <class _Fn>
-        static __m128i _H_func(const __m128i _Cur, _Fn _Funct) noexcept {
+        static __m128i _H_func(const __m128i _Cur, const _Fn _Funct) noexcept {
             const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
 
             __m128i _H_min_val = _Cur;
@@ -853,19 +863,23 @@ namespace {
         }
 
         static __m128i _H_min(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epi16(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_min_epi16(_Val1, _Val2); });
         }
 
         static __m128i _H_max(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epi16(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_max_epi16(_Val1, _Val2); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu16(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_min_epu16(_Val1, _Val2); });
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu16(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_max_epu16(_Val1, _Val2); });
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -913,7 +927,7 @@ namespace {
     };
 
     struct _Minmax_traits_2_avx : _Minmax_traits_2_base, _Minmax_traits_avx_i_base {
-        static __m256i _Load(const void* _Src) noexcept {
+        static __m256i _Load(const void* const _Src) noexcept {
             return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
         }
 
@@ -929,7 +943,7 @@ namespace {
         }
 
         template <class _Fn>
-        static __m256i _H_func(const __m256i _Cur, _Fn _Funct) noexcept {
+        static __m256i _H_func(const __m256i _Cur, const _Fn _Funct) noexcept {
             const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
 
             __m256i _H_min_val = _Cur;
@@ -941,19 +955,23 @@ namespace {
         }
 
         static __m256i _H_min(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_min_epi16(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_min_epi16(_Val1, _Val2); });
         }
 
         static __m256i _H_max(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_max_epi16(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_max_epi16(_Val1, _Val2); });
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_min_epu16(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_min_epu16(_Val1, _Val2); });
         }
 
         static __m256i _H_max_u(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_max_epu16(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_max_epu16(_Val1, _Val2); });
         }
 
         static _Signed_t _Get_any(const __m256i _Cur) noexcept {
@@ -1024,7 +1042,7 @@ namespace {
 
 #ifndef _M_ARM64EC
     struct _Minmax_traits_4_sse : _Minmax_traits_4_base, _Minmax_traits_sse_base {
-        static __m128i _Load(const void* _Src) noexcept {
+        static __m128i _Load(const void* const _Src) noexcept {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
 
@@ -1039,7 +1057,7 @@ namespace {
         }
 
         template <class _Fn>
-        static __m128i _H_func(const __m128i _Cur, _Fn _Funct) noexcept {
+        static __m128i _H_func(const __m128i _Cur, const _Fn _Funct) noexcept {
             __m128i _H_min_val = _Cur;
             _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
             _H_min_val         = _Funct(_H_min_val, _mm_shuffle_epi32(_H_min_val, _MM_SHUFFLE(2, 3, 0, 1)));
@@ -1047,19 +1065,23 @@ namespace {
         }
 
         static __m128i _H_min(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epi32(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_min_epi32(_Val1, _Val2); });
         }
 
         static __m128i _H_max(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epi32(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_max_epi32(_Val1, _Val2); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_min_epu32(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_min_epu32(_Val1, _Val2); });
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](__m128i _Val1, __m128i _Val2) { return _mm_max_epu32(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128i _Val1, const __m128i _Val2) noexcept { return _mm_max_epu32(_Val1, _Val2); });
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -1106,7 +1128,7 @@ namespace {
     };
 
     struct _Minmax_traits_4_avx : _Minmax_traits_4_base, _Minmax_traits_avx_i_base {
-        static __m256i _Load(const void* _Src) noexcept {
+        static __m256i _Load(const void* const _Src) noexcept {
             return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
         }
 
@@ -1122,7 +1144,7 @@ namespace {
         }
 
         template <class _Fn>
-        static __m256i _H_func(const __m256i _Cur, _Fn _Funct) noexcept {
+        static __m256i _H_func(const __m256i _Cur, const _Fn _Funct) noexcept {
             __m256i _H_min_val = _Cur;
             _H_min_val         = _Funct(_H_min_val, _mm256_permute4x64_epi64(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
             _H_min_val         = _Funct(_H_min_val, _mm256_shuffle_epi32(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)));
@@ -1131,19 +1153,23 @@ namespace {
         }
 
         static __m256i _H_min(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_min_epi32(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_min_epi32(_Val1, _Val2); });
         }
 
         static __m256i _H_max(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_max_epi32(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_max_epi32(_Val1, _Val2); });
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_min_epu32(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_min_epu32(_Val1, _Val2); });
         }
 
         static __m256i _H_max_u(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](__m256i _Val1, __m256i _Val2) { return _mm256_max_epu32(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256i _Val1, const __m256i _Val2) noexcept { return _mm256_max_epu32(_Val1, _Val2); });
         }
 
         static _Signed_t _Get_any(const __m256i _Cur) noexcept {
@@ -1208,7 +1234,7 @@ namespace {
 
 #ifndef _M_ARM64EC
     struct _Minmax_traits_8_sse : _Minmax_traits_8_base, _Minmax_traits_sse_base {
-        static __m128i _Load(const void* _Src) noexcept {
+        static __m128i _Load(const void* const _Src) noexcept {
             return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
         }
 
@@ -1223,9 +1249,9 @@ namespace {
         }
 
         template <class _Fn>
-        static __m128i _H_func(const __m128i _Cur, _Fn _Funct) noexcept {
-            _Signed_t _H_min_a = _Get_any(_Cur);
-            _Signed_t _H_min_b = _Get_any(_mm_bsrli_si128(_Cur, 8));
+        static __m128i _H_func(const __m128i _Cur, const _Fn _Funct) noexcept {
+            _Signed_t _H_min_a       = _Get_any(_Cur);
+            const _Signed_t _H_min_b = _Get_any(_mm_bsrli_si128(_Cur, 8));
             if (_Funct(_H_min_b, _H_min_a)) {
                 _H_min_a = _H_min_b;
             }
@@ -1233,19 +1259,19 @@ namespace {
         }
 
         static __m128i _H_min(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](_Signed_t _Lhs, _Signed_t _Rhs) { return _Lhs < _Rhs; });
+            return _H_func(_Cur, [](const _Signed_t _Lhs, const _Signed_t _Rhs) noexcept { return _Lhs < _Rhs; });
         }
 
         static __m128i _H_max(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](_Signed_t _Lhs, _Signed_t _Rhs) { return _Lhs > _Rhs; });
+            return _H_func(_Cur, [](const _Signed_t _Lhs, const _Signed_t _Rhs) noexcept { return _Lhs > _Rhs; });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](_Unsigned_t _Lhs, _Unsigned_t _Rhs) { return _Lhs < _Rhs; });
+            return _H_func(_Cur, [](const _Unsigned_t _Lhs, const _Unsigned_t _Rhs) noexcept { return _Lhs < _Rhs; });
         }
 
         static __m128i _H_max_u(const __m128i _Cur) noexcept {
-            return _H_func(_Cur, [](_Unsigned_t _Lhs, _Unsigned_t _Rhs) { return _Lhs > _Rhs; });
+            return _H_func(_Cur, [](const _Unsigned_t _Lhs, const _Unsigned_t _Rhs) noexcept { return _Lhs > _Rhs; });
         }
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -1294,7 +1320,7 @@ namespace {
     };
 
     struct _Minmax_traits_8_avx : _Minmax_traits_8_base, _Minmax_traits_avx_i_base {
-        static __m256i _Load(const void* _Src) noexcept {
+        static __m256i _Load(const void* const _Src) noexcept {
             return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
         }
 
@@ -1310,7 +1336,7 @@ namespace {
         }
 
         template <class _Fn>
-        static __m256i _H_func(const __m256i _Cur, _Fn _Funct) noexcept {
+        static __m256i _H_func(const __m256i _Cur, const _Fn _Funct) noexcept {
             alignas(32) _Signed_t _Array[4];
             _mm256_store_si256(reinterpret_cast<__m256i*>(_Array), _Cur);
 
@@ -1332,19 +1358,19 @@ namespace {
         }
 
         static __m256i _H_min(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](_Signed_t _Lhs, _Signed_t _Rhs) { return _Lhs < _Rhs; });
+            return _H_func(_Cur, [](const _Signed_t _Lhs, const _Signed_t _Rhs) noexcept { return _Lhs < _Rhs; });
         }
 
         static __m256i _H_max(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](_Signed_t _Lhs, _Signed_t _Rhs) { return _Lhs > _Rhs; });
+            return _H_func(_Cur, [](const _Signed_t _Lhs, const _Signed_t _Rhs) noexcept { return _Lhs > _Rhs; });
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](_Unsigned_t _Lhs, _Unsigned_t _Rhs) { return _Lhs < _Rhs; });
+            return _H_func(_Cur, [](const _Unsigned_t _Lhs, const _Unsigned_t _Rhs) noexcept { return _Lhs < _Rhs; });
         }
 
         static __m256i _H_max_u(const __m256i _Cur) noexcept {
-            return _H_func(_Cur, [](_Unsigned_t _Lhs, _Unsigned_t _Rhs) { return _Lhs > _Rhs; });
+            return _H_func(_Cur, [](const _Unsigned_t _Lhs, const _Unsigned_t _Rhs) noexcept { return _Lhs > _Rhs; });
         }
 
         static _Signed_t _Get_any(const __m256i _Cur) noexcept {
@@ -1415,7 +1441,7 @@ namespace {
 
 #ifndef _M_ARM64EC
     struct _Minmax_traits_f_sse : _Minmax_traits_f_base, _Minmax_traits_sse_base {
-        static __m128 _Load(const void* _Src) noexcept {
+        static __m128 _Load(const void* const _Src) noexcept {
             return _mm_loadu_ps(reinterpret_cast<const float*>(_Src));
         }
 
@@ -1428,7 +1454,7 @@ namespace {
         }
 
         template <class _Fn>
-        static __m128 _H_func(const __m128 _Cur, _Fn _Funct) noexcept {
+        static __m128 _H_func(const __m128 _Cur, const _Fn _Funct) noexcept {
             __m128 _H_min_val = _Cur;
             _H_min_val        = _Funct(_mm_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(2, 3, 0, 1)), _H_min_val);
             _H_min_val        = _Funct(_mm_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(1, 0, 3, 2)), _H_min_val);
@@ -1436,11 +1462,13 @@ namespace {
         }
 
         static __m128 _H_min(const __m128 _Cur) noexcept {
-            return _H_func(_Cur, [](__m128 _Val1, __m128 _Val2) { return _mm_min_ps(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128 _Val1, const __m128 _Val2) noexcept { return _mm_min_ps(_Val1, _Val2); });
         }
 
         static __m128 _H_max(const __m128 _Cur) noexcept {
-            return _H_func(_Cur, [](__m128 _Val1, __m128 _Val2) { return _mm_max_ps(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128 _Val1, const __m128 _Val2) noexcept { return _mm_max_ps(_Val1, _Val2); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
@@ -1491,11 +1519,11 @@ namespace {
             return _mm256_blendv_ps(_Px1, _Px2, _mm256_castsi256_ps(_Msk));
         }
 
-        static __m256 _Load(const void* _Src) noexcept {
+        static __m256 _Load(const void* const _Src) noexcept {
             return _mm256_loadu_ps(reinterpret_cast<const float*>(_Src));
         }
 
-        static __m256 _Load_mask(const void* _Src, const __m256i _Mask) noexcept {
+        static __m256 _Load_mask(const void* const _Src, const __m256i _Mask) noexcept {
             return _mm256_maskload_ps(reinterpret_cast<const float*>(_Src), _Mask);
         }
 
@@ -1508,7 +1536,7 @@ namespace {
         }
 
         template <class _Fn>
-        static __m256 _H_func(const __m256 _Cur, _Fn _Funct) noexcept {
+        static __m256 _H_func(const __m256 _Cur, const _Fn _Funct) noexcept {
             __m256 _H_min_val = _Cur;
             _H_min_val        = _Funct(_mm256_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(2, 3, 0, 1)), _H_min_val);
             _H_min_val        = _Funct(_mm256_shuffle_ps(_H_min_val, _H_min_val, _MM_SHUFFLE(1, 0, 3, 2)), _H_min_val);
@@ -1517,11 +1545,13 @@ namespace {
         }
 
         static __m256 _H_min(const __m256 _Cur) noexcept {
-            return _H_func(_Cur, [](__m256 _Val1, __m256 _Val2) { return _mm256_min_ps(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256 _Val1, const __m256 _Val2) noexcept { return _mm256_min_ps(_Val1, _Val2); });
         }
 
         static __m256 _H_max(const __m256 _Cur) noexcept {
-            return _H_func(_Cur, [](__m256 _Val1, __m256 _Val2) { return _mm256_max_ps(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256 _Val1, const __m256 _Val2) noexcept { return _mm256_max_ps(_Val1, _Val2); });
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
@@ -1585,7 +1615,7 @@ namespace {
 
 #ifndef _M_ARM64EC
     struct _Minmax_traits_d_sse : _Minmax_traits_d_base, _Minmax_traits_sse_base {
-        static __m128d _Load(const void* _Src) noexcept {
+        static __m128d _Load(const void* const _Src) noexcept {
             return _mm_loadu_pd(reinterpret_cast<const double*>(_Src));
         }
 
@@ -1598,18 +1628,20 @@ namespace {
         }
 
         template <class _Fn>
-        static __m128d _H_func(const __m128d _Cur, _Fn _Funct) noexcept {
+        static __m128d _H_func(const __m128d _Cur, const _Fn _Funct) noexcept {
             __m128d _H_min_val = _Cur;
             _H_min_val         = _Funct(_mm_shuffle_pd(_H_min_val, _H_min_val, 1), _H_min_val);
             return _H_min_val;
         }
 
         static __m128d _H_min(const __m128d _Cur) noexcept {
-            return _H_func(_Cur, [](__m128d _Val1, __m128d _Val2) { return _mm_min_pd(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128d _Val1, const __m128d _Val2) noexcept { return _mm_min_pd(_Val1, _Val2); });
         }
 
         static __m128d _H_max(const __m128d _Cur) noexcept {
-            return _H_func(_Cur, [](__m128d _Val1, __m128d _Val2) { return _mm_max_pd(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m128d _Val1, const __m128d _Val2) noexcept { return _mm_max_pd(_Val1, _Val2); });
         }
 
         static __m128i _H_min_u(const __m128i _Cur) noexcept {
@@ -1659,11 +1691,11 @@ namespace {
             return _mm256_blendv_pd(_Px1, _Px2, _mm256_castsi256_pd(_Msk));
         }
 
-        static __m256d _Load(const void* _Src) noexcept {
+        static __m256d _Load(const void* const _Src) noexcept {
             return _mm256_loadu_pd(reinterpret_cast<const double*>(_Src));
         }
 
-        static __m256d _Load_mask(const void* _Src, const __m256i _Mask) noexcept {
+        static __m256d _Load_mask(const void* const _Src, const __m256i _Mask) noexcept {
             return _mm256_maskload_pd(reinterpret_cast<const double*>(_Src), _Mask);
         }
 
@@ -1676,7 +1708,7 @@ namespace {
         }
 
         template <class _Fn>
-        static __m256d _H_func(const __m256d _Cur, _Fn _Funct) noexcept {
+        static __m256d _H_func(const __m256d _Cur, const _Fn _Funct) noexcept {
             __m256d _H_min_val = _Cur;
             _H_min_val         = _Funct(_mm256_shuffle_pd(_H_min_val, _H_min_val, 0b0101), _H_min_val);
             _H_min_val         = _Funct(_mm256_permute4x64_pd(_H_min_val, _MM_SHUFFLE(1, 0, 3, 2)), _H_min_val);
@@ -1684,11 +1716,13 @@ namespace {
         }
 
         static __m256d _H_min(const __m256d _Cur) noexcept {
-            return _H_func(_Cur, [](__m256d _Val1, __m256d _Val2) { return _mm256_min_pd(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256d _Val1, const __m256d _Val2) noexcept { return _mm256_min_pd(_Val1, _Val2); });
         }
 
         static __m256d _H_max(const __m256d _Cur) noexcept {
-            return _H_func(_Cur, [](__m256d _Val1, __m256d _Val2) { return _mm256_max_pd(_Val1, _Val2); });
+            return _H_func(
+                _Cur, [](const __m256d _Val1, const __m256d _Val2) noexcept { return _mm256_max_pd(_Val1, _Val2); });
         }
 
         static __m256i _H_min_u(const __m256i _Cur) noexcept {
@@ -1873,7 +1907,7 @@ namespace {
                         const size_t _Tail_byte_size = _Remaining_byte_size & _Traits::_Tail_mask;
 
                         if (_Last_portion && _Tail_byte_size != 0) {
-                            const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size >> 2);
+                            const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size);
                             const auto _Tail_vals =
                                 _Traits::_Sign_correction(_Traits::_Load_mask(_First, _Tail_mask), _Sign);
                             _Cur_vals = _Traits::_Blendval(_Cur_vals, _Tail_vals, _Tail_mask);
@@ -1935,7 +1969,7 @@ namespace {
                             _Cur_max_val = _H_max_val;
                             const auto _Eq_mask =
                                 _Traits::_Cmp_eq(_H_max, _Cur_vals_max); // Mask of all elems eq to max
-                            int _Mask = _Traits::_Mask(_Traits::_Mask_cast(_Eq_mask));
+                            unsigned long _Mask = _Traits::_Mask(_Traits::_Mask_cast(_Eq_mask));
 
                             unsigned long _H_pos;
                             if constexpr (_Mode == _Mode_both) {
@@ -2128,7 +2162,7 @@ namespace {
                     if constexpr (_Traits::_Tail_mask != 0) {
                         const size_t _Tail_byte_size = _Total_size_bytes & _Traits::_Tail_mask;
                         if (_Tail_byte_size != 0) {
-                            const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size >> 2);
+                            const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size);
                             auto _Tail_vals       = _Traits::_Load_mask(_First, _Tail_mask);
 
                             if constexpr (_Sign_correction) {
@@ -2296,7 +2330,7 @@ namespace {
             if constexpr (_Traits::_Tail_mask != 0) {
                 const size_t _Tail_byte_size = _Total_size_bytes & _Traits::_Tail_mask;
                 if (_Tail_byte_size != 0) {
-                    const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size >> 2);
+                    const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_byte_size);
 
                     auto _Left  = _Traits::_Load_mask(static_cast<const _Ty*>(_First) + _Left_off, _Tail_mask);
                     auto _Right = _Traits::_Load_mask(static_cast<const _Ty*>(_First) + _Right_off, _Tail_mask);
@@ -2720,7 +2754,8 @@ namespace {
     // In optimized builds it avoids an extra call, as these functions are too large to inline.
 
     template <class _Traits, _Find_one_predicate _Pred, class _Ty>
-    const void* __stdcall __std_find_trivial_impl(const void* _First, const void* const _Last, _Ty _Val) noexcept {
+    const void* __stdcall __std_find_trivial_impl(
+        const void* _First, const void* const _Last, const _Ty _Val) noexcept {
 #ifndef _M_ARM64EC
         const size_t _Size_bytes = _Byte_length(_First, _Last);
 
@@ -2749,7 +2784,7 @@ namespace {
             } while (_First != _Stop_at);
 
             if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
-                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
                 const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
                 int _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
 
@@ -2808,7 +2843,7 @@ namespace {
     }
 
     template <class _Traits, _Find_one_predicate _Pred, class _Ty>
-    const void* __stdcall __std_find_last_trivial_impl(const void* _First, const void* _Last, _Ty _Val) noexcept {
+    const void* __stdcall __std_find_last_trivial_impl(const void* _First, const void* _Last, const _Ty _Val) noexcept {
         const void* const _Real_last = _Last;
 #ifndef _M_ARM64EC
         const size_t _Size_bytes = _Byte_length(_First, _Last);
@@ -2838,7 +2873,7 @@ namespace {
 
             if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
                 _Rewind_bytes(_Last, _Avx_tail_size);
-                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
                 const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_Last), _Tail_mask);
                 int _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask));
 
@@ -2944,7 +2979,7 @@ namespace {
                 const void* _Next = _First;
                 _Advance_bytes(_Next, sizeof(_Ty));
 
-                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
                 const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
                 const __m256i _Comparand = _mm256_maskload_epi32(static_cast<const int*>(_Next), _Tail_mask);
                 const int _Bingo =
@@ -3165,7 +3200,7 @@ namespace {
             }
 
             if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
-                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size >> 2);
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
                 const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
                 const __m256i _Mask      = _mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask);
                 const int _Bingo         = _mm256_movemask_epi8(_Mask);
@@ -3382,11 +3417,11 @@ namespace {
                 memcpy(_Buf, _Src, _Count * 2);
                 return _mm256_cvtepu16_epi32(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_Buf)));
             } else if constexpr (sizeof(_Ty) == 4) {
-                return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Avx2_tail_mask_32(_Count));
+                return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Avx2_tail_mask_32(_Count * 4));
             } else if constexpr (sizeof(_Ty) == 8) {
-                const __m256i _Mask_low  = _Avx2_tail_mask_32((_Count > 4 ? 4 : _Count) << 1);
+                const __m256i _Mask_low  = _Avx2_tail_mask_32((_Count > 4 ? 4 : _Count) * 8);
                 const __m256i _Low       = _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src) + 0, _Mask_low);
-                const __m256i _Mask_high = _Avx2_tail_mask_32((_Count > 4 ? _Count - 4 : 0) << 1);
+                const __m256i _Mask_high = _Avx2_tail_mask_32((_Count > 4 ? _Count - 4 : 0) * 8);
                 const __m256i _High      = _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src) + 8, _Mask_high);
                 const __m256i _Pack      = _mm256_packs_epi32(_Low, _High);
                 return _mm256_permute4x64_epi64(_Pack, _MM_SHUFFLE(3, 1, 2, 0));
@@ -4026,7 +4061,7 @@ namespace {
                     return _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(1, 0, 1, 0));
                 } else if constexpr (_Amount == 8) {
                     if (_Needle_length_el < 8) {
-                        const __m256i _Mask = _Avx2_tail_mask_32(_Needle_length_el);
+                        const __m256i _Mask = _Avx2_tail_mask_32(_Needle_length_el * 4);
                         // zero unused elements in sequential permutation mask, so will be filled by 1st
                         const __m256i _Perm = _mm256_and_si256(_mm256_set_epi32(7, 6, 5, 4, 3, 2, 1, 0), _Mask);
                         _Val                = _mm256_permutevar8x32_epi32(_Val, _Perm);
@@ -4125,7 +4160,7 @@ namespace {
             constexpr size_t _Length_el = 32 / sizeof(_Ty);
 
             const __m256i _Last2val = _mm256_maskload_epi32(
-                reinterpret_cast<const int*>(_Stop2), _Avx2_tail_mask_32(_Last2_length_el * (sizeof(_Ty) / 4)));
+                reinterpret_cast<const int*>(_Stop2), _Avx2_tail_mask_32(_Last2_length_el * sizeof(_Ty)));
             const __m256i _Last2s0 = _Traits::_Spread_avx<_Last2_length_el_magnitude>(_Last2val, _Last2_length_el);
 
             const void* _Stop1 = _First1;
@@ -4150,7 +4185,7 @@ namespace {
             }
 
             if (const size_t _Haystack_tail_length = _Haystack_length & 0x1C; _Haystack_tail_length != 0) {
-                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Haystack_tail_length >> 2);
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Haystack_tail_length);
                 const __m256i _Data1     = _mm256_maskload_epi32(static_cast<const int*>(_First1), _Tail_mask);
                 __m256i _Eq              = _Shuffle_step<_Traits, _Last2_length_el_magnitude>(_Data1, _Last2s0);
 
@@ -4597,7 +4632,7 @@ namespace {
             const size_t _Count_tail = _Count_bytes & size_t{0x1C};
 
             if (_Count_tail != 0) {
-                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Count_tail >> 2);
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Count_tail);
                 const __m256i _Elem1 =
                     _mm256_maskload_epi32(reinterpret_cast<const int*>(_First1_ch + _Result), _Tail_mask);
                 const __m256i _Elem2 =
@@ -5229,26 +5264,26 @@ const void* __stdcall __std_find_first_of_trivial_8(
     return __std_find_first_of::_Dispatch_ptr<uint64_t>(_First1, _Last1, _First2, _Last2);
 }
 
-__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_1(
-    const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
+__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_1(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
     return __std_find_first_of::_Dispatch_pos<uint8_t, _Find_meow_of_predicate::_Any_of>(
         _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
-__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_2(
-    const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
+__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_2(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
     return __std_find_first_of::_Dispatch_pos<uint16_t, _Find_meow_of_predicate::_Any_of>(
         _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
-__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_4(
-    const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
+__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_4(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
     return __std_find_first_of::_Dispatch_pos<uint32_t, _Find_meow_of_predicate::_Any_of>(
         _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
-__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_8(
-    const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept {
+__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_8(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
     return __std_find_first_of::_Dispatch_pos<uint64_t, _Find_meow_of_predicate::_Any_of>(
         _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
@@ -5349,7 +5384,7 @@ __declspec(noalias) void __stdcall __std_replace_4(
         }
 
         if (const size_t _Tail_length = _Full_length & 0x1C; _Tail_length != 0) {
-            const __m256i _Tail_mask = _Avx2_tail_mask_32(_Tail_length >> 2);
+            const __m256i _Tail_mask = _Avx2_tail_mask_32(_Tail_length);
             const __m256i _Data      = _mm256_maskload_epi32(reinterpret_cast<const int*>(_First), _Tail_mask);
             const __m256i _Mask      = _mm256_and_si256(_mm256_cmpeq_epi32(_Comparand, _Data), _Tail_mask);
             _mm256_maskstore_epi32(reinterpret_cast<int*>(_First), _Mask, _Replacement);
@@ -5392,7 +5427,7 @@ __declspec(noalias) void __stdcall __std_replace_8(
         }
 
         if (const size_t _Tail_length = _Full_length & 0x18; _Tail_length != 0) {
-            const __m256i _Tail_mask = _Avx2_tail_mask_32(_Tail_length >> 2);
+            const __m256i _Tail_mask = _Avx2_tail_mask_32(_Tail_length);
             const __m256i _Data      = _mm256_maskload_epi64(reinterpret_cast<const long long*>(_First), _Tail_mask);
             const __m256i _Mask      = _mm256_and_si256(_mm256_cmpeq_epi64(_Comparand, _Data), _Tail_mask);
             _mm256_maskstore_epi64(reinterpret_cast<long long*>(_First), _Mask, _Replacement);
@@ -5750,7 +5785,7 @@ namespace {
     }
 
     template <class _Traits, class _Ty>
-    void* _Remove_impl(void* _First, const void* _Stop, const _Ty _Val) noexcept {
+    void* _Remove_impl(void* _First, const void* const _Stop, const _Ty _Val) noexcept {
         void* _Out        = _First;
         const auto _Match = _Traits::_Set(_Val);
 
@@ -5765,7 +5800,7 @@ namespace {
     }
 
     template <class _Traits>
-    void* _Unique_impl(void* _First, const void* _Stop) noexcept {
+    void* _Unique_impl(void* _First, const void* const _Stop) noexcept {
         void* _Out = _First;
 
         do {
@@ -6156,7 +6191,7 @@ namespace {
                 return _Ex1;
             }
 
-            static void _Out(void* _Dest, const __m256i _Elems) noexcept {
+            static void _Out(void* const _Dest, const __m256i _Elems) noexcept {
                 _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Elems);
             }
         };
@@ -6178,7 +6213,7 @@ namespace {
                 return _Ex1;
             }
 
-            static void _Out(void* _Dest, const __m128i _Elems) noexcept {
+            static void _Out(void* const _Dest, const __m128i _Elems) noexcept {
                 _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Elems);
             }
         };
@@ -6203,7 +6238,7 @@ namespace {
                 return _Ex1;
             }
 
-            static void _Out(void* _Dest, const __m256i _Elems) noexcept {
+            static void _Out(void* const _Dest, const __m256i _Elems) noexcept {
                 _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Elems);
             }
         };
@@ -6223,7 +6258,7 @@ namespace {
                 return _Ex1;
             }
 
-            static void _Out(void* _Dest, const __m128i _Elems) noexcept {
+            static void _Out(void* const _Dest, const __m128i _Elems) noexcept {
                 _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Elems);
             }
         };
@@ -6436,7 +6471,7 @@ namespace {
                     _Elem _Tmp[_Per_vec];
                     _Traits::_Store(_Tmp, _Dx0);
                     _Elem* const _Tmpd = _Tmp + (_Per_vec - _Left);
-                    _CSTD memcpy(_Tmpd, _Src_end, _Left * sizeof(_Elem));
+                    memcpy(_Tmpd, _Src_end, _Left * sizeof(_Elem));
                     _Val = _Traits::_Load(_Tmp);
                 }
 
@@ -6480,7 +6515,7 @@ namespace {
 
             // Trim tail (may be padding tail, or too short string, or both)
             if (_Dst_words != _Dst_words_end) {
-                _CSTD memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
+                memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
             }
 
             return true;
@@ -6503,7 +6538,7 @@ namespace {
                 }
             }
 
-            _CSTD memset(_Dest, 0, _Size_bytes);
+            memset(_Dest, 0, _Size_bytes);
 
             for (size_t _Ix = 0; _Ix != _Size_convert; ++_Ix) {
                 const _Elem _Cur = _Src[_Size_convert - _Ix - 1];
@@ -6541,15 +6576,17 @@ namespace {
 
 extern "C" {
 
-__declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* _Dest, const char* _Src, size_t _Size_bytes,
-    size_t _Size_bits, size_t _Size_chars, char _Elem0, char _Elem1) noexcept {
+__declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* const _Dest, const char* const _Src,
+    const size_t _Size_bytes, const size_t _Size_bits, const size_t _Size_chars, const char _Elem0,
+    const char _Elem1) noexcept {
     using namespace __std_bitset_from_string;
 
     return _Dispatch<_Traits_1_avx, _Traits_1_sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
 }
 
-__declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* _Dest, const wchar_t* _Src, size_t _Size_bytes,
-    size_t _Size_bits, size_t _Size_chars, wchar_t _Elem0, wchar_t _Elem1) noexcept {
+__declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest, const wchar_t* const _Src,
+    const size_t _Size_bytes, const size_t _Size_bits, const size_t _Size_chars, const wchar_t _Elem0,
+    const wchar_t _Elem1) noexcept {
     using namespace __std_bitset_from_string;
 
     return _Dispatch<_Traits_2_avx, _Traits_2_sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
