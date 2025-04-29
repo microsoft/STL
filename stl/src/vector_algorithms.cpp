@@ -5448,8 +5448,8 @@ namespace {
                 for (; _Result != _Count_bytes_sse; _Result += 0x10) {
                     const __m128i _Elem1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First1_ch + _Result));
                     const __m128i _Elem2 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First2_ch + _Result));
-                    const auto _Bingo =
-                        static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Elem1, _Elem2))) ^ 0xFFFF;
+                    const __m128i _Cmp   = _Traits::_Cmp_sse(_Elem1, _Elem2);
+                    const auto _Bingo    = static_cast<unsigned int>(_mm_movemask_epi8(_Cmp)) ^ 0xFFFF;
                     if (_Bingo != 0) {
                         unsigned long _Offset;
                         // CodeQL [SM02313] _Offset is always initialized: we just tested `if (_Bingo != 0)`.
