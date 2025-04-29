@@ -416,7 +416,7 @@ The test matrices include both ASan and non-ASan configurations if you don't pas
 to exclude one or the other.
 
 However, to instrument the separately-compiled code (the DLL, the satellites, the [Import Library][] - everything that's
-in `/stl/src`), you need to build the STL with ASan. Change the build steps to add `-DSTL_ASAN_BUILD=ON`:
+in `stl\src`), you need to build the STL with ASan. Change the build steps to add `-DSTL_ASAN_BUILD=ON`:
 
 ```
 cmake --preset x64 -DSTL_ASAN_BUILD=ON
@@ -509,8 +509,7 @@ flowchart TB
             Provides compiler support mechanisms that
             live in each binary; such as machinery to
             call constructors and destructors for global
-            variables, the entry point, and the /GS cookie.
-
+            variables, the entry point, and the /GS cookie.<br>
             Merged into static and import libraries of VCRuntime.")
             VCRuntimeNode("<b>VCRuntime</b>
             Provides compiler support mechanisms that can be
