@@ -2690,8 +2690,13 @@ const void* __stdcall __std_is_sorted_until_d(
 
 namespace {
     namespace _Find {
+#ifdef _M_ARM64EC
+        using _Find_traits_1 = void;
+        using _Find_traits_2 = void;
+        using _Find_traits_4 = void;
+        using _Find_traits_8 = void;
+#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
         struct _Find_traits_1 {
-#ifndef _M_ARM64EC
             static __m256i _Set_avx(const uint8_t _Val) noexcept {
                 return _mm256_set1_epi8(_Val);
             }
@@ -2707,11 +2712,9 @@ namespace {
             static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
                 return _mm_cmpeq_epi8(_Lhs, _Rhs);
             }
-#endif // !_M_ARM64EC
         };
 
         struct _Find_traits_2 {
-#ifndef _M_ARM64EC
             static __m256i _Set_avx(const uint16_t _Val) noexcept {
                 return _mm256_set1_epi16(_Val);
             }
@@ -2727,11 +2730,9 @@ namespace {
             static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
                 return _mm_cmpeq_epi16(_Lhs, _Rhs);
             }
-#endif // !_M_ARM64EC
         };
 
         struct _Find_traits_4 {
-#ifndef _M_ARM64EC
             static __m256i _Set_avx(const uint32_t _Val) noexcept {
                 return _mm256_set1_epi32(_Val);
             }
@@ -2747,11 +2748,9 @@ namespace {
             static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
                 return _mm_cmpeq_epi32(_Lhs, _Rhs);
             }
-#endif // !_M_ARM64EC
         };
 
         struct _Find_traits_8 {
-#ifndef _M_ARM64EC
             static __m256i _Set_avx(const uint64_t _Val) noexcept {
                 return _mm256_set1_epi64x(_Val);
             }
@@ -2767,8 +2766,8 @@ namespace {
             static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
                 return _mm_cmpeq_epi64(_Lhs, _Rhs);
             }
-#endif // !_M_ARM64EC
         };
+#endif // !_M_ARM64EC
 
         // TRANSITION, ABI: used only in functions preserved for binary compatibility
         template <class _Ty>
@@ -3340,8 +3339,13 @@ const void* __stdcall __std_search_n_8(
 
 namespace {
     namespace _Count {
+#ifdef _M_ARM64EC
+        using _Count_traits_8 = void;
+        using _Count_traits_4 = void;
+        using _Count_traits_2 = void;
+        using _Count_traits_1 = void;
+#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
         struct _Count_traits_8 : _Find::_Find_traits_8 {
-#ifndef _M_ARM64EC
             static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
                 return _mm256_sub_epi64(_Lhs, _Rhs);
             }
@@ -3365,11 +3369,9 @@ namespace {
                 return _mm_cvtsi128_si64(_Val) + _mm_extract_epi64(_Val, 1);
 #endif // ^^^ defined(_M_X64) ^^^
             }
-#endif // !_M_ARM64EC
         };
 
         struct _Count_traits_4 : _Find::_Find_traits_4 {
-#ifndef _M_ARM64EC
             // For AVX2, we use hadd_epi32 three times to combine pairs of 32-bit counters into 32-bit results.
             // Therefore, _Max_count is 0x1FFF'FFFF, which is 0xFFFF'FFF8 when doubled three times; any more would
             // overflow.
@@ -3401,11 +3403,9 @@ namespace {
                 const __m128i _Rx5 = _mm_hadd_epi32(_Rx4, _mm_setzero_si128()); // (0+...+3),0,0,0
                 return static_cast<uint32_t>(_mm_cvtsi128_si32(_Rx5));
             }
-#endif // !_M_ARM64EC
         };
 
         struct _Count_traits_2 : _Find::_Find_traits_2 {
-#ifndef _M_ARM64EC
             // For both AVX2 and SSE4.2, we use hadd_epi16 once to combine pairs of 16-bit counters into 16-bit results.
             // Therefore, _Max_count is 0x7FFF, which is 0xFFFE when doubled; any more would overflow.
 
@@ -3430,11 +3430,9 @@ namespace {
                 const __m128i _Rx3 = _mm_unpacklo_epi16(_Rx2, _mm_setzero_si128());
                 return _Count_traits_4::_Reduce_sse(_Rx3);
             }
-#endif // !_M_ARM64EC
         };
 
         struct _Count_traits_1 : _Find::_Find_traits_1 {
-#ifndef _M_ARM64EC
             // For AVX2, _Max_portion_size below is _Max_count * 32 bytes, and we have 1-byte elements.
             // We're using packed 8-bit counters, and 32 of those fit in 256 bits.
 
@@ -3463,8 +3461,8 @@ namespace {
                 const __m128i _Rx1 = _mm_sad_epu8(_Val, _mm_setzero_si128());
                 return _Count_traits_8::_Reduce_sse(_Rx1);
             }
-#endif // !_M_ARM64EC
         };
+#endif // !_M_ARM64EC
 
         template <class _Traits, class _Ty>
         __declspec(noalias) size_t __stdcall _Count_impl(
