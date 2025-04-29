@@ -5826,7 +5826,7 @@ namespace {
             }
         };
 
-        constexpr size_t _Remove_copy_buffer_size = 512;
+        constexpr size_t _Copy_buffer_size = 512;
 
         template <class _Traits, class _Ty>
         void* _Remove_impl(void* _First, void* const _Stop, const _Ty _Val) noexcept {
@@ -5845,9 +5845,9 @@ namespace {
 
         template <class _Traits, class _Ty>
         void* _Remove_copy_impl(const void* _First, const void* const _Stop, void* _Out, const _Ty _Val) noexcept {
-            unsigned char _Buffer[_Remove_copy_buffer_size];
+            unsigned char _Buffer[_Copy_buffer_size];
             void* _Buffer_out        = _Buffer;
-            void* const _Buffer_stop = _Buffer + _Remove_copy_buffer_size - _Traits::_Step;
+            void* const _Buffer_stop = _Buffer + _Copy_buffer_size - _Traits::_Step;
 
             const auto _Match = _Traits::_Set(_Val);
 
@@ -5891,9 +5891,9 @@ namespace {
 
         template <class _Traits>
         void* _Unique_copy_impl(const void* _First, const void* const _Stop, void* _Out) noexcept {
-            unsigned char _Buffer[_Remove_copy_buffer_size];
+            unsigned char _Buffer[_Copy_buffer_size];
             void* _Buffer_out        = _Buffer;
-            void* const _Buffer_stop = _Buffer + _Remove_copy_buffer_size - _Traits::_Step;
+            void* const _Buffer_stop = _Buffer + _Copy_buffer_size - _Traits::_Step;
 
             do {
                 const auto _Src      = _Traits::_Load(_First);
