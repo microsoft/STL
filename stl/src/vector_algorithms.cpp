@@ -4253,14 +4253,16 @@ namespace {
                     return _First1;
                 }
             }
-#endif // !_M_ARM64EC
 
             template <class _Ty>
             struct _Find_first_of_traits;
 
             template <>
-            struct _Find_first_of_traits<uint32_t> : _Find_traits_4 {
-#ifndef _M_ARM64EC
+            struct _Find_first_of_traits<uint32_t> {
+                static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+                    return _mm256_cmpeq_epi32(_Lhs, _Rhs);
+                }
+
                 template <size_t _Amount>
                 static __m256i _Spread_avx(__m256i _Val, const size_t _Needle_length_el) noexcept {
                     if constexpr (_Amount == 0) {
@@ -4301,12 +4303,14 @@ namespace {
                         static_assert(false, "Unexpected amount");
                     }
                 }
-#endif // !_M_ARM64EC
             };
 
             template <>
-            struct _Find_first_of_traits<uint64_t> : _Find_traits_8 {
-#ifndef _M_ARM64EC
+            struct _Find_first_of_traits<uint64_t> {
+                static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+                    return _mm256_cmpeq_epi64(_Lhs, _Rhs);
+                }
+
                 template <size_t _Amount>
                 static __m256i _Spread_avx(const __m256i _Val, const size_t _Needle_length_el) noexcept {
                     if constexpr (_Amount == 0) {
@@ -4336,10 +4340,8 @@ namespace {
                         static_assert(false, "Unexpected amount");
                     }
                 }
-#endif // !_M_ARM64EC
             };
 
-#ifndef _M_ARM64EC
             template <class _Traits, size_t _Needle_length_el_magnitude>
             __m256i _Shuffle_step(const __m256i _Data1, const __m256i _Data2s0) noexcept {
                 __m256i _Eq = _mm256_setzero_si256();
