@@ -6300,7 +6300,7 @@ void* __stdcall __std_unique_copy_8(const void* _First, const void* const _Last,
 } // extern "C"
 
 namespace {
-    namespace __std_bitset_to_string {
+    namespace _Bitset_to_string {
 #ifdef _M_ARM64EC
         using _Traits_1_avx = void;
         using _Traits_1_sse = void;
@@ -6450,29 +6450,27 @@ namespace {
                 }
             }
         }
-    } // namespace __std_bitset_to_string
+    } // namespace _Bitset_to_string
 } // unnamed namespace
 
 extern "C" {
 
 __declspec(noalias) void __stdcall __std_bitset_to_string_1(
     char* const _Dest, const void* const _Src, const size_t _Size_bits, const char _Elem0, const char _Elem1) noexcept {
-    using namespace __std_bitset_to_string;
+    using namespace _Bitset_to_string;
     _Dispatch<_Traits_1_avx, _Traits_1_sse>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
 }
 
 __declspec(noalias) void __stdcall __std_bitset_to_string_2(wchar_t* const _Dest, const void* const _Src,
     const size_t _Size_bits, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
-    using namespace __std_bitset_to_string;
+    using namespace _Bitset_to_string;
     _Dispatch<_Traits_2_avx, _Traits_2_sse>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
 }
 
 } // extern "C"
 
 namespace {
-
-    namespace __std_bitset_from_string {
-
+    namespace _Bitset_from_string {
 #ifdef _M_ARM64EC
         using _Traits_1_avx = void;
         using _Traits_1_sse = void;
@@ -6704,9 +6702,7 @@ namespace {
                 return _Fallback(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
             }
         }
-
-    } // namespace __std_bitset_from_string
-
+    } // namespace _Bitset_from_string
 } // unnamed namespace
 
 extern "C" {
@@ -6714,7 +6710,7 @@ extern "C" {
 __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* const _Dest, const char* const _Src,
     const size_t _Size_bytes, const size_t _Size_bits, const size_t _Size_chars, const char _Elem0,
     const char _Elem1) noexcept {
-    using namespace __std_bitset_from_string;
+    using namespace _Bitset_from_string;
 
     return _Dispatch<_Traits_1_avx, _Traits_1_sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
 }
@@ -6722,7 +6718,7 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* const _Dest,
 __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest, const wchar_t* const _Src,
     const size_t _Size_bytes, const size_t _Size_bits, const size_t _Size_chars, const wchar_t _Elem0,
     const wchar_t _Elem1) noexcept {
-    using namespace __std_bitset_from_string;
+    using namespace _Bitset_from_string;
 
     return _Dispatch<_Traits_2_avx, _Traits_2_sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
 }
