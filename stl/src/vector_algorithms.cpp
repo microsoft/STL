@@ -21,8 +21,10 @@ extern "C" long __isa_enabled;
 #ifndef _DEBUG
 #pragma optimize("t", on) // Override /Os with /Ot for this TU
 #endif // !defined(_DEBUG)
+#endif // !defined(_M_ARM64EC)
 
 namespace {
+#ifndef _M_ARM64EC
     bool _Use_avx2() noexcept {
         return __isa_enabled & (1 << __ISA_AVAILABLE_AVX2);
     }
@@ -49,25 +51,7 @@ namespace {
         return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(
             reinterpret_cast<const unsigned char*>(_Tail_masks) + (32 - _Count_in_bytes)));
     }
-} // namespace
 #endif // !defined(_M_ARM64EC)
-
-namespace {
-    template <class _BidIt>
-    void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
-        for (; _First != _Last && _First != --_Last; ++_First) {
-            const auto _Temp = *_First;
-            *_First          = *_Last;
-            *_Last           = _Temp;
-        }
-    }
-
-    template <class _BidIt, class _OutIt>
-    void _Reverse_copy_tail(const _BidIt _First, _BidIt _Last, _OutIt _Dest) noexcept {
-        while (_First != _Last) {
-            *_Dest++ = *--_Last;
-        }
-    }
 
     size_t _Byte_length(const void* const _First, const void* const _Last) noexcept {
         return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
@@ -168,6 +152,27 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
         *_First2c         = _Ch;
     }
 }
+} // extern "C"
+
+namespace {
+    template <class _BidIt>
+    void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
+        for (; _First != _Last && _First != --_Last; ++_First) {
+            const auto _Temp = *_First;
+            *_First          = *_Last;
+            *_Last           = _Temp;
+        }
+    }
+
+    template <class _BidIt, class _OutIt>
+    void _Reverse_copy_tail(const _BidIt _First, _BidIt _Last, _OutIt _Dest) noexcept {
+        while (_First != _Last) {
+            *_Dest++ = *--_Last;
+        }
+    }
+} // unnamed namespace
+
+extern "C" {
 
 // TRANSITION, ABI: __std_swap_ranges_trivially_swappable() is preserved for binary compatibility
 void* __cdecl __std_swap_ranges_trivially_swappable(
