@@ -23,7 +23,7 @@
 #error error STL1003: Unexpected compiler, expected C++ compiler.
 #endif // !defined(__cplusplus)
 
-// Implemented unconditionally:
+// Implemented unconditionally
 // N3911 void_t
 // N4089 Safe Conversions In unique_ptr<T[]>
 // N4169 invoke()
@@ -37,6 +37,7 @@
 // N4389 bool_constant
 // N4508 shared_mutex (Untimed)
 // N4510 Supporting Incomplete Types In vector/list/forward_list
+// P2674R1 A trait for implicit lifetime types
 // P0006R0 Variable Templates For Type Traits (is_same_v, etc.)
 // P0007R1 as_const()
 // P0013R1 Logical Operator Type Traits (conjunction, etc.)
@@ -1779,6 +1780,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // C++23
 #if _HAS_CXX23
+#ifdef __clang__ // Clang only for now
+#define __cpp_lib_is_implicit_lifetime 202302L
+#endif
 #define __cpp_lib_adaptor_iterator_pair_constructor 202106L
 #define __cpp_lib_allocate_at_least                 202302L
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
