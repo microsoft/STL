@@ -6,6 +6,8 @@
 enum UnscopedEnum { Enumerator };
 enum struct ScopedEnum { Enumerator };
 
+using namespace std;
+
 int main()
 {
 #ifdef __cpp_lib_is_implicit_lifetime 
@@ -21,10 +23,8 @@ int main()
 	static_assert(std::is_implcit_lifetime_v<void(*)()>);
 
 	// Arrays
-	int n = 20;
 	static_assert(std::is_implcit_lifetime_v<int[]>);
 	static_assert(std::is_implcit_lifetime_v<int[2]>);
-	static_assert(std::is_implcit_lifetime_v<int[n]>);
 
 	static_assert(!std::is_implcit_lifetime_v<void>);
 	static_assert(!std::is_implcit_lifetime_v<const volatile void>);
