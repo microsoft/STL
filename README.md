@@ -369,7 +369,7 @@ The `SKIPPED` result code indicates that a given test was explicitly skipped by 
 `expected_results.txt`. A test may be skipped for a number of reasons, which include, but are not limited to:
 * being an incorrect test
 * taking a very long time to run
-* failing or passing for the incorrect reason
+* failing or passing for an incorrect reason
 
 ### Debugging Individual Tests
 
