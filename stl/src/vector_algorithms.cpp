@@ -3038,231 +3038,6 @@ namespace {
         return _Last;
     }
 
-    struct _Count_traits_8 : _Find_traits_8 {
-#ifndef _M_ARM64EC
-        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-            return _mm256_sub_epi64(_Lhs, _Rhs);
-        }
-
-        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-            return _mm_sub_epi64(_Lhs, _Rhs);
-        }
-
-        static size_t _Reduce_avx(const __m256i _Val) noexcept {
-            const __m128i _Lo64 = _mm256_extracti128_si256(_Val, 0);
-            const __m128i _Hi64 = _mm256_extracti128_si256(_Val, 1);
-            const __m128i _Rx8  = _mm_add_epi64(_Lo64, _Hi64);
-            return _Reduce_sse(_Rx8);
-        }
-
-        static size_t _Reduce_sse(const __m128i _Val) noexcept {
-#ifdef _M_IX86
-            return static_cast<uint32_t>(_mm_cvtsi128_si32(_Val)) + static_cast<uint32_t>(_mm_extract_epi32(_Val, 2));
-#else // ^^^ defined(_M_IX86) / defined(_M_X64) vvv
-            return _mm_cvtsi128_si64(_Val) + _mm_extract_epi64(_Val, 1);
-#endif // ^^^ defined(_M_X64) ^^^
-        }
-#endif // !_M_ARM64EC
-    };
-
-    struct _Count_traits_4 : _Find_traits_4 {
-#ifndef _M_ARM64EC
-        // For AVX2, we use hadd_epi32 three times to combine pairs of 32-bit counters into 32-bit results.
-        // Therefore, _Max_count is 0x1FFF'FFFF, which is 0xFFFF'FFF8 when doubled three times; any more would overflow.
-
-        // For SSE4.2, we use hadd_epi32 twice. This would allow a larger limit,
-        // but it's simpler to use the smaller limit for both codepaths.
-
-        static constexpr size_t _Max_count = 0x1FFF'FFFF;
-
-        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-            return _mm256_sub_epi32(_Lhs, _Rhs);
-        }
-
-        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-            return _mm_sub_epi32(_Lhs, _Rhs);
-        }
-
-        static size_t _Reduce_avx(const __m256i _Val) noexcept {
-            constexpr auto _Shuf = _MM_SHUFFLE(3, 1, 2, 0); // Cross lane, to reduce further on low lane
-            const __m256i _Rx4   = _mm256_hadd_epi32(_Val, _mm256_setzero_si256()); // (0+1),(2+3),0,0 per lane
-            const __m256i _Rx5   = _mm256_permute4x64_epi64(_Rx4, _Shuf); // low lane  (0+1),(2+3),(4+5),(6+7)
-            const __m256i _Rx6   = _mm256_hadd_epi32(_Rx5, _mm256_setzero_si256()); // (0+...+3),(4+...+7),0,0
-            const __m256i _Rx7   = _mm256_hadd_epi32(_Rx6, _mm256_setzero_si256()); // (0+...+7),0,0,0
-            return static_cast<uint32_t>(_mm_cvtsi128_si32(_mm256_castsi256_si128(_Rx7)));
-        }
-
-        static size_t _Reduce_sse(const __m128i _Val) noexcept {
-            const __m128i _Rx4 = _mm_hadd_epi32(_Val, _mm_setzero_si128()); // (0+1),(2+3),0,0
-            const __m128i _Rx5 = _mm_hadd_epi32(_Rx4, _mm_setzero_si128()); // (0+...+3),0,0,0
-            return static_cast<uint32_t>(_mm_cvtsi128_si32(_Rx5));
-        }
-#endif // !_M_ARM64EC
-    };
-
-    struct _Count_traits_2 : _Find_traits_2 {
-#ifndef _M_ARM64EC
-        // For both AVX2 and SSE4.2, we use hadd_epi16 once to combine pairs of 16-bit counters into 16-bit results.
-        // Therefore, _Max_count is 0x7FFF, which is 0xFFFE when doubled; any more would overflow.
-
-        static constexpr size_t _Max_count = 0x7FFF;
-
-        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-            return _mm256_sub_epi16(_Lhs, _Rhs);
-        }
-
-        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-            return _mm_sub_epi16(_Lhs, _Rhs);
-        }
-
-        static size_t _Reduce_avx(const __m256i _Val) noexcept {
-            const __m256i _Rx2 = _mm256_hadd_epi16(_Val, _mm256_setzero_si256());
-            const __m256i _Rx3 = _mm256_unpacklo_epi16(_Rx2, _mm256_setzero_si256());
-            return _Count_traits_4::_Reduce_avx(_Rx3);
-        }
-
-        static size_t _Reduce_sse(const __m128i _Val) noexcept {
-            const __m128i _Rx2 = _mm_hadd_epi16(_Val, _mm_setzero_si128());
-            const __m128i _Rx3 = _mm_unpacklo_epi16(_Rx2, _mm_setzero_si128());
-            return _Count_traits_4::_Reduce_sse(_Rx3);
-        }
-#endif // !_M_ARM64EC
-    };
-
-    struct _Count_traits_1 : _Find_traits_1 {
-#ifndef _M_ARM64EC
-        // For AVX2, _Max_portion_size below is _Max_count * 32 bytes, and we have 1-byte elements.
-        // We're using packed 8-bit counters, and 32 of those fit in 256 bits.
-
-        // For SSE4.2, _Max_portion_size below is _Max_count * 16 bytes, and we have 1-byte elements.
-        // We're using packed 8-bit counters, and 16 of those fit in 128 bits.
-
-        // For both codepaths, this is why _Max_count is the maximum unsigned 8-bit integer.
-        // (The reduction steps aren't the limiting factor here.)
-
-        static constexpr size_t _Max_count = 0xFF;
-
-        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-            return _mm256_sub_epi8(_Lhs, _Rhs);
-        }
-
-        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-            return _mm_sub_epi8(_Lhs, _Rhs);
-        }
-
-        static size_t _Reduce_avx(const __m256i _Val) noexcept {
-            const __m256i _Rx1 = _mm256_sad_epu8(_Val, _mm256_setzero_si256());
-            return _Count_traits_8::_Reduce_avx(_Rx1);
-        }
-
-        static size_t _Reduce_sse(const __m128i _Val) noexcept {
-            const __m128i _Rx1 = _mm_sad_epu8(_Val, _mm_setzero_si128());
-            return _Count_traits_8::_Reduce_sse(_Rx1);
-        }
-#endif // !_M_ARM64EC
-    };
-
-    template <class _Traits, class _Ty>
-    __declspec(noalias) size_t __stdcall __std_count_trivial_impl(
-        const void* _First, const void* const _Last, const _Ty _Val) noexcept {
-        size_t _Result = 0;
-
-#ifndef _M_ARM64EC
-        const size_t _Size_bytes = _Byte_length(_First, _Last);
-
-        if (size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
-            const __m256i _Comparand = _Traits::_Set_avx(_Val);
-            const void* _Stop_at     = _First;
-
-            for (;;) {
-                if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
-                    _Advance_bytes(_Stop_at, _Avx_size);
-                } else {
-                    constexpr size_t _Max_portion_size = _Traits::_Max_count * 32;
-                    const size_t _Portion_size         = _Avx_size < _Max_portion_size ? _Avx_size : _Max_portion_size;
-                    _Advance_bytes(_Stop_at, _Portion_size);
-                    _Avx_size -= _Portion_size;
-                }
-
-                __m256i _Count_vector = _mm256_setzero_si256();
-
-                do {
-                    const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
-                    const __m256i _Mask = _Traits::_Cmp_avx(_Data, _Comparand);
-                    _Count_vector       = _Traits::_Sub_avx(_Count_vector, _Mask);
-                    _Advance_bytes(_First, 32);
-                } while (_First != _Stop_at);
-
-                _Result += _Traits::_Reduce_avx(_Count_vector);
-
-                if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
-                    break;
-                } else {
-                    if (_Avx_size == 0) {
-                        break;
-                    }
-                }
-            }
-
-            if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
-                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
-                const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
-                const __m256i _Mask      = _mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask);
-                const int _Bingo         = _mm256_movemask_epi8(_Mask);
-                const size_t _Tail_count = __popcnt(_Bingo); // Assume available with SSE4.2
-                _Result += _Tail_count / sizeof(_Ty);
-                _Advance_bytes(_First, _Avx_tail_size);
-            }
-
-            _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-
-            if constexpr (sizeof(_Ty) >= 4) {
-                return _Result;
-            }
-        } else if (size_t _Sse_size = _Size_bytes & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
-            const __m128i _Comparand = _Traits::_Set_sse(_Val);
-            const void* _Stop_at     = _First;
-
-            for (;;) {
-                if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
-                    _Advance_bytes(_Stop_at, _Sse_size);
-                } else {
-                    constexpr size_t _Max_portion_size = _Traits::_Max_count * 16;
-                    const size_t _Portion_size         = _Sse_size < _Max_portion_size ? _Sse_size : _Max_portion_size;
-                    _Advance_bytes(_Stop_at, _Portion_size);
-                    _Sse_size -= _Portion_size;
-                }
-
-                __m128i _Count_vector = _mm_setzero_si128();
-
-                do {
-                    const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
-                    const __m128i _Mask = _Traits::_Cmp_sse(_Data, _Comparand);
-                    _Count_vector       = _Traits::_Sub_sse(_Count_vector, _Mask);
-                    _Advance_bytes(_First, 16);
-                } while (_First != _Stop_at);
-
-                _Result += _Traits::_Reduce_sse(_Count_vector);
-
-                if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
-                    break;
-                } else {
-                    if (_Sse_size == 0) {
-                        break;
-                    }
-                }
-            }
-        }
-#endif // !_M_ARM64EC
-
-        for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-            if (*_Ptr == _Val) {
-                ++_Result;
-            }
-        }
-        return _Result;
-    }
-
     template <class _Traits, class _Ty>
     const void* __stdcall __std_search_n_impl(
         const void* _First, const void* const _Last, const size_t _Count, const _Ty _Val) noexcept {
@@ -3506,26 +3281,6 @@ const void* __stdcall __std_adjacent_find_8(const void* const _First, const void
     return __std_adjacent_find_impl<_Find_traits_8, uint64_t>(_First, _Last);
 }
 
-__declspec(noalias) size_t __stdcall __std_count_trivial_1(
-    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return __std_count_trivial_impl<_Count_traits_1>(_First, _Last, _Val);
-}
-
-__declspec(noalias) size_t __stdcall __std_count_trivial_2(
-    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return __std_count_trivial_impl<_Count_traits_2>(_First, _Last, _Val);
-}
-
-__declspec(noalias) size_t __stdcall __std_count_trivial_4(
-    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return __std_count_trivial_impl<_Count_traits_4>(_First, _Last, _Val);
-}
-
-__declspec(noalias) size_t __stdcall __std_count_trivial_8(
-    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return __std_count_trivial_impl<_Count_traits_8>(_First, _Last, _Val);
-}
-
 const void* __stdcall __std_search_n_1(
     const void* const _First, const void* const _Last, const size_t _Count, const uint8_t _Value) noexcept {
     return __std_search_n_impl<_Find_traits_1>(_First, _Last, _Count, _Value);
@@ -3544,6 +3299,257 @@ const void* __stdcall __std_search_n_4(
 const void* __stdcall __std_search_n_8(
     const void* const _First, const void* const _Last, const size_t _Count, const uint64_t _Value) noexcept {
     return __std_search_n_impl<_Find_traits_8>(_First, _Last, _Count, _Value);
+}
+
+} // extern "C"
+
+namespace {
+    struct _Count_traits_8 : _Find_traits_8 {
+#ifndef _M_ARM64EC
+        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_sub_epi64(_Lhs, _Rhs);
+        }
+
+        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_sub_epi64(_Lhs, _Rhs);
+        }
+
+        static size_t _Reduce_avx(const __m256i _Val) noexcept {
+            const __m128i _Lo64 = _mm256_extracti128_si256(_Val, 0);
+            const __m128i _Hi64 = _mm256_extracti128_si256(_Val, 1);
+            const __m128i _Rx8  = _mm_add_epi64(_Lo64, _Hi64);
+            return _Reduce_sse(_Rx8);
+        }
+
+        static size_t _Reduce_sse(const __m128i _Val) noexcept {
+#ifdef _M_IX86
+            return static_cast<uint32_t>(_mm_cvtsi128_si32(_Val)) + static_cast<uint32_t>(_mm_extract_epi32(_Val, 2));
+#else // ^^^ defined(_M_IX86) / defined(_M_X64) vvv
+            return _mm_cvtsi128_si64(_Val) + _mm_extract_epi64(_Val, 1);
+#endif // ^^^ defined(_M_X64) ^^^
+        }
+#endif // !_M_ARM64EC
+    };
+
+    struct _Count_traits_4 : _Find_traits_4 {
+#ifndef _M_ARM64EC
+        // For AVX2, we use hadd_epi32 three times to combine pairs of 32-bit counters into 32-bit results.
+        // Therefore, _Max_count is 0x1FFF'FFFF, which is 0xFFFF'FFF8 when doubled three times; any more would overflow.
+
+        // For SSE4.2, we use hadd_epi32 twice. This would allow a larger limit,
+        // but it's simpler to use the smaller limit for both codepaths.
+
+        static constexpr size_t _Max_count = 0x1FFF'FFFF;
+
+        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_sub_epi32(_Lhs, _Rhs);
+        }
+
+        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_sub_epi32(_Lhs, _Rhs);
+        }
+
+        static size_t _Reduce_avx(const __m256i _Val) noexcept {
+            constexpr auto _Shuf = _MM_SHUFFLE(3, 1, 2, 0); // Cross lane, to reduce further on low lane
+            const __m256i _Rx4   = _mm256_hadd_epi32(_Val, _mm256_setzero_si256()); // (0+1),(2+3),0,0 per lane
+            const __m256i _Rx5   = _mm256_permute4x64_epi64(_Rx4, _Shuf); // low lane  (0+1),(2+3),(4+5),(6+7)
+            const __m256i _Rx6   = _mm256_hadd_epi32(_Rx5, _mm256_setzero_si256()); // (0+...+3),(4+...+7),0,0
+            const __m256i _Rx7   = _mm256_hadd_epi32(_Rx6, _mm256_setzero_si256()); // (0+...+7),0,0,0
+            return static_cast<uint32_t>(_mm_cvtsi128_si32(_mm256_castsi256_si128(_Rx7)));
+        }
+
+        static size_t _Reduce_sse(const __m128i _Val) noexcept {
+            const __m128i _Rx4 = _mm_hadd_epi32(_Val, _mm_setzero_si128()); // (0+1),(2+3),0,0
+            const __m128i _Rx5 = _mm_hadd_epi32(_Rx4, _mm_setzero_si128()); // (0+...+3),0,0,0
+            return static_cast<uint32_t>(_mm_cvtsi128_si32(_Rx5));
+        }
+#endif // !_M_ARM64EC
+    };
+
+    struct _Count_traits_2 : _Find_traits_2 {
+#ifndef _M_ARM64EC
+        // For both AVX2 and SSE4.2, we use hadd_epi16 once to combine pairs of 16-bit counters into 16-bit results.
+        // Therefore, _Max_count is 0x7FFF, which is 0xFFFE when doubled; any more would overflow.
+
+        static constexpr size_t _Max_count = 0x7FFF;
+
+        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_sub_epi16(_Lhs, _Rhs);
+        }
+
+        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_sub_epi16(_Lhs, _Rhs);
+        }
+
+        static size_t _Reduce_avx(const __m256i _Val) noexcept {
+            const __m256i _Rx2 = _mm256_hadd_epi16(_Val, _mm256_setzero_si256());
+            const __m256i _Rx3 = _mm256_unpacklo_epi16(_Rx2, _mm256_setzero_si256());
+            return _Count_traits_4::_Reduce_avx(_Rx3);
+        }
+
+        static size_t _Reduce_sse(const __m128i _Val) noexcept {
+            const __m128i _Rx2 = _mm_hadd_epi16(_Val, _mm_setzero_si128());
+            const __m128i _Rx3 = _mm_unpacklo_epi16(_Rx2, _mm_setzero_si128());
+            return _Count_traits_4::_Reduce_sse(_Rx3);
+        }
+#endif // !_M_ARM64EC
+    };
+
+    struct _Count_traits_1 : _Find_traits_1 {
+#ifndef _M_ARM64EC
+        // For AVX2, _Max_portion_size below is _Max_count * 32 bytes, and we have 1-byte elements.
+        // We're using packed 8-bit counters, and 32 of those fit in 256 bits.
+
+        // For SSE4.2, _Max_portion_size below is _Max_count * 16 bytes, and we have 1-byte elements.
+        // We're using packed 8-bit counters, and 16 of those fit in 128 bits.
+
+        // For both codepaths, this is why _Max_count is the maximum unsigned 8-bit integer.
+        // (The reduction steps aren't the limiting factor here.)
+
+        static constexpr size_t _Max_count = 0xFF;
+
+        static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_sub_epi8(_Lhs, _Rhs);
+        }
+
+        static __m128i _Sub_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_sub_epi8(_Lhs, _Rhs);
+        }
+
+        static size_t _Reduce_avx(const __m256i _Val) noexcept {
+            const __m256i _Rx1 = _mm256_sad_epu8(_Val, _mm256_setzero_si256());
+            return _Count_traits_8::_Reduce_avx(_Rx1);
+        }
+
+        static size_t _Reduce_sse(const __m128i _Val) noexcept {
+            const __m128i _Rx1 = _mm_sad_epu8(_Val, _mm_setzero_si128());
+            return _Count_traits_8::_Reduce_sse(_Rx1);
+        }
+#endif // !_M_ARM64EC
+    };
+
+    template <class _Traits, class _Ty>
+    __declspec(noalias) size_t __stdcall __std_count_trivial_impl(
+        const void* _First, const void* const _Last, const _Ty _Val) noexcept {
+        size_t _Result = 0;
+
+#ifndef _M_ARM64EC
+        const size_t _Size_bytes = _Byte_length(_First, _Last);
+
+        if (size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
+            const __m256i _Comparand = _Traits::_Set_avx(_Val);
+            const void* _Stop_at     = _First;
+
+            for (;;) {
+                if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
+                    _Advance_bytes(_Stop_at, _Avx_size);
+                } else {
+                    constexpr size_t _Max_portion_size = _Traits::_Max_count * 32;
+                    const size_t _Portion_size         = _Avx_size < _Max_portion_size ? _Avx_size : _Max_portion_size;
+                    _Advance_bytes(_Stop_at, _Portion_size);
+                    _Avx_size -= _Portion_size;
+                }
+
+                __m256i _Count_vector = _mm256_setzero_si256();
+
+                do {
+                    const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
+                    const __m256i _Mask = _Traits::_Cmp_avx(_Data, _Comparand);
+                    _Count_vector       = _Traits::_Sub_avx(_Count_vector, _Mask);
+                    _Advance_bytes(_First, 32);
+                } while (_First != _Stop_at);
+
+                _Result += _Traits::_Reduce_avx(_Count_vector);
+
+                if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
+                    break;
+                } else {
+                    if (_Avx_size == 0) {
+                        break;
+                    }
+                }
+            }
+
+            if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
+                const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
+                const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
+                const __m256i _Mask      = _mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask);
+                const int _Bingo         = _mm256_movemask_epi8(_Mask);
+                const size_t _Tail_count = __popcnt(_Bingo); // Assume available with SSE4.2
+                _Result += _Tail_count / sizeof(_Ty);
+                _Advance_bytes(_First, _Avx_tail_size);
+            }
+
+            _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+
+            if constexpr (sizeof(_Ty) >= 4) {
+                return _Result;
+            }
+        } else if (size_t _Sse_size = _Size_bytes & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
+            const __m128i _Comparand = _Traits::_Set_sse(_Val);
+            const void* _Stop_at     = _First;
+
+            for (;;) {
+                if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
+                    _Advance_bytes(_Stop_at, _Sse_size);
+                } else {
+                    constexpr size_t _Max_portion_size = _Traits::_Max_count * 16;
+                    const size_t _Portion_size         = _Sse_size < _Max_portion_size ? _Sse_size : _Max_portion_size;
+                    _Advance_bytes(_Stop_at, _Portion_size);
+                    _Sse_size -= _Portion_size;
+                }
+
+                __m128i _Count_vector = _mm_setzero_si128();
+
+                do {
+                    const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
+                    const __m128i _Mask = _Traits::_Cmp_sse(_Data, _Comparand);
+                    _Count_vector       = _Traits::_Sub_sse(_Count_vector, _Mask);
+                    _Advance_bytes(_First, 16);
+                } while (_First != _Stop_at);
+
+                _Result += _Traits::_Reduce_sse(_Count_vector);
+
+                if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
+                    break;
+                } else {
+                    if (_Sse_size == 0) {
+                        break;
+                    }
+                }
+            }
+        }
+#endif // !_M_ARM64EC
+
+        for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+            if (*_Ptr == _Val) {
+                ++_Result;
+            }
+        }
+        return _Result;
+    }
+} // unnamed namespace
+
+extern "C" {
+
+__declspec(noalias) size_t __stdcall __std_count_trivial_1(
+    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
+    return __std_count_trivial_impl<_Count_traits_1>(_First, _Last, _Val);
+}
+
+__declspec(noalias) size_t __stdcall __std_count_trivial_2(
+    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
+    return __std_count_trivial_impl<_Count_traits_2>(_First, _Last, _Val);
+}
+
+__declspec(noalias) size_t __stdcall __std_count_trivial_4(
+    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
+    return __std_count_trivial_impl<_Count_traits_4>(_First, _Last, _Val);
+}
+
+__declspec(noalias) size_t __stdcall __std_count_trivial_8(
+    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
+    return __std_count_trivial_impl<_Count_traits_8>(_First, _Last, _Val);
 }
 
 } // extern "C"
