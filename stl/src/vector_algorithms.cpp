@@ -4610,7 +4610,255 @@ namespace {
             }
         }
     } // namespace __std_find_last_of
+} // unnamed namespace
 
+extern "C" {
+
+// TRANSITION, ABI: preserved for binary compatibility
+const void* __stdcall __std_find_trivial_unsized_1(const void* const _First, const uint8_t _Val) noexcept {
+    // C23 7.27.5.2 "The memchr generic function"/2 says "The implementation shall behave as if
+    // it reads the characters sequentially and stops as soon as a matching character is found."
+    return memchr(_First, _Val, SIZE_MAX);
+}
+
+// TRANSITION, ABI: preserved for binary compatibility
+const void* __stdcall __std_find_trivial_unsized_2(const void* const _First, const uint16_t _Val) noexcept {
+    // C23 7.27.5.2 "The memchr generic function"/2 says "The implementation shall behave as if
+    // it reads the characters sequentially and stops as soon as a matching character is found."
+    // C23 7.32.4.6.9 "The wmemchr generic function"/2 lacks such wording,
+    // so we don't use wmemchr(), avoiding issues with unreachable_sentinel_t.
+    return __std_find_trivial_unsized_impl(_First, _Val);
+}
+
+// TRANSITION, ABI: preserved for binary compatibility
+const void* __stdcall __std_find_trivial_unsized_4(const void* const _First, const uint32_t _Val) noexcept {
+    return __std_find_trivial_unsized_impl(_First, _Val);
+}
+
+// TRANSITION, ABI: preserved for binary compatibility
+const void* __stdcall __std_find_trivial_unsized_8(const void* const _First, const uint64_t _Val) noexcept {
+    return __std_find_trivial_unsized_impl(_First, _Val);
+}
+
+const void* __stdcall __std_find_trivial_1(
+    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
+    return __std_find_trivial_impl<_Find_traits_1, _Find_one_predicate::_Equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_trivial_2(
+    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
+    return __std_find_trivial_impl<_Find_traits_2, _Find_one_predicate::_Equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_trivial_4(
+    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
+    return __std_find_trivial_impl<_Find_traits_4, _Find_one_predicate::_Equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_trivial_8(
+    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
+    return __std_find_trivial_impl<_Find_traits_8, _Find_one_predicate::_Equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_last_trivial_1(
+    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
+    return __std_find_last_trivial_impl<_Find_traits_1, _Find_one_predicate::_Equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_last_trivial_2(
+    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
+    return __std_find_last_trivial_impl<_Find_traits_2, _Find_one_predicate::_Equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_last_trivial_4(
+    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
+    return __std_find_last_trivial_impl<_Find_traits_4, _Find_one_predicate::_Equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_last_trivial_8(
+    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
+    return __std_find_last_trivial_impl<_Find_traits_8, _Find_one_predicate::_Equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_not_ch_1(
+    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
+    return __std_find_trivial_impl<_Find_traits_1, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_not_ch_2(
+    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
+    return __std_find_trivial_impl<_Find_traits_2, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_not_ch_4(
+    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
+    return __std_find_trivial_impl<_Find_traits_4, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_find_not_ch_8(
+    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
+    return __std_find_trivial_impl<_Find_traits_8, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_1(
+    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
+    return __std_find_last_pos<_Find_traits_1, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_2(
+    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
+    return __std_find_last_pos<_Find_traits_2, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_4(
+    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
+    return __std_find_last_pos<_Find_traits_4, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_8(
+    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
+    return __std_find_last_pos<_Find_traits_8, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_adjacent_find_1(const void* const _First, const void* const _Last) noexcept {
+    return __std_adjacent_find_impl<_Find_traits_1, uint8_t>(_First, _Last);
+}
+
+const void* __stdcall __std_adjacent_find_2(const void* const _First, const void* const _Last) noexcept {
+    return __std_adjacent_find_impl<_Find_traits_2, uint16_t>(_First, _Last);
+}
+
+const void* __stdcall __std_adjacent_find_4(const void* const _First, const void* const _Last) noexcept {
+    return __std_adjacent_find_impl<_Find_traits_4, uint32_t>(_First, _Last);
+}
+
+const void* __stdcall __std_adjacent_find_8(const void* const _First, const void* const _Last) noexcept {
+    return __std_adjacent_find_impl<_Find_traits_8, uint64_t>(_First, _Last);
+}
+
+__declspec(noalias) size_t __stdcall __std_count_trivial_1(
+    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
+    return __std_count_trivial_impl<_Count_traits_1>(_First, _Last, _Val);
+}
+
+__declspec(noalias) size_t __stdcall __std_count_trivial_2(
+    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
+    return __std_count_trivial_impl<_Count_traits_2>(_First, _Last, _Val);
+}
+
+__declspec(noalias) size_t __stdcall __std_count_trivial_4(
+    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
+    return __std_count_trivial_impl<_Count_traits_4>(_First, _Last, _Val);
+}
+
+__declspec(noalias) size_t __stdcall __std_count_trivial_8(
+    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
+    return __std_count_trivial_impl<_Count_traits_8>(_First, _Last, _Val);
+}
+
+const void* __stdcall __std_search_n_1(
+    const void* const _First, const void* const _Last, const size_t _Count, const uint8_t _Value) noexcept {
+    return __std_search_n_impl<_Find_traits_1>(_First, _Last, _Count, _Value);
+}
+
+const void* __stdcall __std_search_n_2(
+    const void* const _First, const void* const _Last, const size_t _Count, const uint16_t _Value) noexcept {
+    return __std_search_n_impl<_Find_traits_2>(_First, _Last, _Count, _Value);
+}
+
+const void* __stdcall __std_search_n_4(
+    const void* const _First, const void* const _Last, const size_t _Count, const uint32_t _Value) noexcept {
+    return __std_search_n_impl<_Find_traits_4>(_First, _Last, _Count, _Value);
+}
+
+const void* __stdcall __std_search_n_8(
+    const void* const _First, const void* const _Last, const size_t _Count, const uint64_t _Value) noexcept {
+    return __std_search_n_impl<_Find_traits_8>(_First, _Last, _Count, _Value);
+}
+
+const void* __stdcall __std_find_first_of_trivial_1(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    return __std_find_first_of::_Dispatch_ptr<uint8_t>(_First1, _Last1, _First2, _Last2);
+}
+
+const void* __stdcall __std_find_first_of_trivial_2(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    return __std_find_first_of::_Dispatch_ptr<uint16_t>(_First1, _Last1, _First2, _Last2);
+}
+
+const void* __stdcall __std_find_first_of_trivial_4(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    return __std_find_first_of::_Dispatch_ptr<uint32_t>(_First1, _Last1, _First2, _Last2);
+}
+
+const void* __stdcall __std_find_first_of_trivial_8(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    return __std_find_first_of::_Dispatch_ptr<uint64_t>(_First1, _Last1, _First2, _Last2);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_1(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
+    return __std_find_first_of::_Dispatch_pos<uint8_t, _Find_meow_of_predicate::_Any_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_2(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
+    return __std_find_first_of::_Dispatch_pos<uint16_t, _Find_meow_of_predicate::_Any_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_4(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
+    return __std_find_first_of::_Dispatch_pos<uint32_t, _Find_meow_of_predicate::_Any_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_8(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
+    return __std_find_first_of::_Dispatch_pos<uint64_t, _Find_meow_of_predicate::_Any_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_1(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
+    return __std_find_last_of::_Dispatch_pos<uint8_t, _Find_meow_of_predicate::_Any_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_2(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
+    return __std_find_last_of::_Dispatch_pos<uint16_t, _Find_meow_of_predicate::_Any_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_first_not_of_trivial_pos_1(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
+    return __std_find_first_of::_Dispatch_pos<uint8_t, _Find_meow_of_predicate::_None_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_first_not_of_trivial_pos_2(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
+    return __std_find_first_of::_Dispatch_pos<uint16_t, _Find_meow_of_predicate::_None_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_last_not_of_trivial_pos_1(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
+    return __std_find_last_of::_Dispatch_pos<uint8_t, _Find_meow_of_predicate::_None_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+__declspec(noalias) size_t __stdcall __std_find_last_not_of_trivial_pos_2(const void* const _Haystack,
+    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
+    return __std_find_last_of::_Dispatch_pos<uint16_t, _Find_meow_of_predicate::_None_of>(
+        _Haystack, _Haystack_length, _Needle, _Needle_length);
+}
+
+} // extern "C"
+
+namespace {
     template <class _Traits, class _Ty>
     const void* __stdcall __std_search_impl(
         const void* _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
@@ -5010,248 +5258,6 @@ namespace {
 } // unnamed namespace
 
 extern "C" {
-
-// TRANSITION, ABI: preserved for binary compatibility
-const void* __stdcall __std_find_trivial_unsized_1(const void* const _First, const uint8_t _Val) noexcept {
-    // C23 7.27.5.2 "The memchr generic function"/2 says "The implementation shall behave as if
-    // it reads the characters sequentially and stops as soon as a matching character is found."
-    return memchr(_First, _Val, SIZE_MAX);
-}
-
-// TRANSITION, ABI: preserved for binary compatibility
-const void* __stdcall __std_find_trivial_unsized_2(const void* const _First, const uint16_t _Val) noexcept {
-    // C23 7.27.5.2 "The memchr generic function"/2 says "The implementation shall behave as if
-    // it reads the characters sequentially and stops as soon as a matching character is found."
-    // C23 7.32.4.6.9 "The wmemchr generic function"/2 lacks such wording,
-    // so we don't use wmemchr(), avoiding issues with unreachable_sentinel_t.
-    return __std_find_trivial_unsized_impl(_First, _Val);
-}
-
-// TRANSITION, ABI: preserved for binary compatibility
-const void* __stdcall __std_find_trivial_unsized_4(const void* const _First, const uint32_t _Val) noexcept {
-    return __std_find_trivial_unsized_impl(_First, _Val);
-}
-
-// TRANSITION, ABI: preserved for binary compatibility
-const void* __stdcall __std_find_trivial_unsized_8(const void* const _First, const uint64_t _Val) noexcept {
-    return __std_find_trivial_unsized_impl(_First, _Val);
-}
-
-const void* __stdcall __std_find_trivial_1(
-    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return __std_find_trivial_impl<_Find_traits_1, _Find_one_predicate::_Equal>(_First, _Last, _Val);
-}
-
-const void* __stdcall __std_find_trivial_2(
-    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return __std_find_trivial_impl<_Find_traits_2, _Find_one_predicate::_Equal>(_First, _Last, _Val);
-}
-
-const void* __stdcall __std_find_trivial_4(
-    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return __std_find_trivial_impl<_Find_traits_4, _Find_one_predicate::_Equal>(_First, _Last, _Val);
-}
-
-const void* __stdcall __std_find_trivial_8(
-    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return __std_find_trivial_impl<_Find_traits_8, _Find_one_predicate::_Equal>(_First, _Last, _Val);
-}
-
-const void* __stdcall __std_find_last_trivial_1(
-    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return __std_find_last_trivial_impl<_Find_traits_1, _Find_one_predicate::_Equal>(_First, _Last, _Val);
-}
-
-const void* __stdcall __std_find_last_trivial_2(
-    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return __std_find_last_trivial_impl<_Find_traits_2, _Find_one_predicate::_Equal>(_First, _Last, _Val);
-}
-
-const void* __stdcall __std_find_last_trivial_4(
-    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return __std_find_last_trivial_impl<_Find_traits_4, _Find_one_predicate::_Equal>(_First, _Last, _Val);
-}
-
-const void* __stdcall __std_find_last_trivial_8(
-    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return __std_find_last_trivial_impl<_Find_traits_8, _Find_one_predicate::_Equal>(_First, _Last, _Val);
-}
-
-const void* __stdcall __std_find_not_ch_1(
-    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return __std_find_trivial_impl<_Find_traits_1, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
-}
-
-const void* __stdcall __std_find_not_ch_2(
-    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return __std_find_trivial_impl<_Find_traits_2, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
-}
-
-const void* __stdcall __std_find_not_ch_4(
-    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return __std_find_trivial_impl<_Find_traits_4, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
-}
-
-const void* __stdcall __std_find_not_ch_8(
-    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return __std_find_trivial_impl<_Find_traits_8, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
-}
-
-__declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_1(
-    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return __std_find_last_pos<_Find_traits_1, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
-}
-
-__declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_2(
-    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return __std_find_last_pos<_Find_traits_2, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
-}
-
-__declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_4(
-    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return __std_find_last_pos<_Find_traits_4, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
-}
-
-__declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_8(
-    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return __std_find_last_pos<_Find_traits_8, _Find_one_predicate::_Not_equal>(_First, _Last, _Val);
-}
-
-const void* __stdcall __std_adjacent_find_1(const void* const _First, const void* const _Last) noexcept {
-    return __std_adjacent_find_impl<_Find_traits_1, uint8_t>(_First, _Last);
-}
-
-const void* __stdcall __std_adjacent_find_2(const void* const _First, const void* const _Last) noexcept {
-    return __std_adjacent_find_impl<_Find_traits_2, uint16_t>(_First, _Last);
-}
-
-const void* __stdcall __std_adjacent_find_4(const void* const _First, const void* const _Last) noexcept {
-    return __std_adjacent_find_impl<_Find_traits_4, uint32_t>(_First, _Last);
-}
-
-const void* __stdcall __std_adjacent_find_8(const void* const _First, const void* const _Last) noexcept {
-    return __std_adjacent_find_impl<_Find_traits_8, uint64_t>(_First, _Last);
-}
-
-__declspec(noalias) size_t __stdcall __std_count_trivial_1(
-    const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return __std_count_trivial_impl<_Count_traits_1>(_First, _Last, _Val);
-}
-
-__declspec(noalias) size_t __stdcall __std_count_trivial_2(
-    const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return __std_count_trivial_impl<_Count_traits_2>(_First, _Last, _Val);
-}
-
-__declspec(noalias) size_t __stdcall __std_count_trivial_4(
-    const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return __std_count_trivial_impl<_Count_traits_4>(_First, _Last, _Val);
-}
-
-__declspec(noalias) size_t __stdcall __std_count_trivial_8(
-    const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return __std_count_trivial_impl<_Count_traits_8>(_First, _Last, _Val);
-}
-
-const void* __stdcall __std_search_n_1(
-    const void* const _First, const void* const _Last, const size_t _Count, const uint8_t _Value) noexcept {
-    return __std_search_n_impl<_Find_traits_1>(_First, _Last, _Count, _Value);
-}
-
-const void* __stdcall __std_search_n_2(
-    const void* const _First, const void* const _Last, const size_t _Count, const uint16_t _Value) noexcept {
-    return __std_search_n_impl<_Find_traits_2>(_First, _Last, _Count, _Value);
-}
-
-const void* __stdcall __std_search_n_4(
-    const void* const _First, const void* const _Last, const size_t _Count, const uint32_t _Value) noexcept {
-    return __std_search_n_impl<_Find_traits_4>(_First, _Last, _Count, _Value);
-}
-
-const void* __stdcall __std_search_n_8(
-    const void* const _First, const void* const _Last, const size_t _Count, const uint64_t _Value) noexcept {
-    return __std_search_n_impl<_Find_traits_8>(_First, _Last, _Count, _Value);
-}
-
-const void* __stdcall __std_find_first_of_trivial_1(
-    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return __std_find_first_of::_Dispatch_ptr<uint8_t>(_First1, _Last1, _First2, _Last2);
-}
-
-const void* __stdcall __std_find_first_of_trivial_2(
-    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return __std_find_first_of::_Dispatch_ptr<uint16_t>(_First1, _Last1, _First2, _Last2);
-}
-
-const void* __stdcall __std_find_first_of_trivial_4(
-    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return __std_find_first_of::_Dispatch_ptr<uint32_t>(_First1, _Last1, _First2, _Last2);
-}
-
-const void* __stdcall __std_find_first_of_trivial_8(
-    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return __std_find_first_of::_Dispatch_ptr<uint64_t>(_First1, _Last1, _First2, _Last2);
-}
-
-__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_1(const void* const _Haystack,
-    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
-    return __std_find_first_of::_Dispatch_pos<uint8_t, _Find_meow_of_predicate::_Any_of>(
-        _Haystack, _Haystack_length, _Needle, _Needle_length);
-}
-
-__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_2(const void* const _Haystack,
-    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
-    return __std_find_first_of::_Dispatch_pos<uint16_t, _Find_meow_of_predicate::_Any_of>(
-        _Haystack, _Haystack_length, _Needle, _Needle_length);
-}
-
-__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_4(const void* const _Haystack,
-    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
-    return __std_find_first_of::_Dispatch_pos<uint32_t, _Find_meow_of_predicate::_Any_of>(
-        _Haystack, _Haystack_length, _Needle, _Needle_length);
-}
-
-__declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_8(const void* const _Haystack,
-    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
-    return __std_find_first_of::_Dispatch_pos<uint64_t, _Find_meow_of_predicate::_Any_of>(
-        _Haystack, _Haystack_length, _Needle, _Needle_length);
-}
-
-__declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_1(const void* const _Haystack,
-    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
-    return __std_find_last_of::_Dispatch_pos<uint8_t, _Find_meow_of_predicate::_Any_of>(
-        _Haystack, _Haystack_length, _Needle, _Needle_length);
-}
-
-__declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_2(const void* const _Haystack,
-    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
-    return __std_find_last_of::_Dispatch_pos<uint16_t, _Find_meow_of_predicate::_Any_of>(
-        _Haystack, _Haystack_length, _Needle, _Needle_length);
-}
-
-__declspec(noalias) size_t __stdcall __std_find_first_not_of_trivial_pos_1(const void* const _Haystack,
-    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
-    return __std_find_first_of::_Dispatch_pos<uint8_t, _Find_meow_of_predicate::_None_of>(
-        _Haystack, _Haystack_length, _Needle, _Needle_length);
-}
-
-__declspec(noalias) size_t __stdcall __std_find_first_not_of_trivial_pos_2(const void* const _Haystack,
-    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
-    return __std_find_first_of::_Dispatch_pos<uint16_t, _Find_meow_of_predicate::_None_of>(
-        _Haystack, _Haystack_length, _Needle, _Needle_length);
-}
-
-__declspec(noalias) size_t __stdcall __std_find_last_not_of_trivial_pos_1(const void* const _Haystack,
-    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
-    return __std_find_last_of::_Dispatch_pos<uint8_t, _Find_meow_of_predicate::_None_of>(
-        _Haystack, _Haystack_length, _Needle, _Needle_length);
-}
-
-__declspec(noalias) size_t __stdcall __std_find_last_not_of_trivial_pos_2(const void* const _Haystack,
-    const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
-    return __std_find_last_of::_Dispatch_pos<uint16_t, _Find_meow_of_predicate::_None_of>(
-        _Haystack, _Haystack_length, _Needle, _Needle_length);
-}
 
 const void* __stdcall __std_search_1(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
