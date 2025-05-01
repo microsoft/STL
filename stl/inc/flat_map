@@ -442,17 +442,13 @@ public:
         : _Flat_map_base(_Tag, _Ilist, key_compare(), _Alloc) {}
 
     // Copy constructors
-    _Flat_map_base(const _Flat_map_base& _Other)
-        : _Key_compare(static_cast<const _Flat_map_base&>(_Other)._Key_compare),
-          _Data(static_cast<const _Flat_map_base&>(_Other)._Data) {}
+    _Flat_map_base(const _Flat_map_base& _Other) : _Key_compare(_Other._Key_compare), _Data(_Other._Data) {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
-    _Flat_map_base(const _Derived& _Other, const _Allocator& _Alloc)
-        : _Key_compare(static_cast<const _Flat_map_base&>(_Other)._Key_compare),
-          _Data{.keys = _STD make_obj_using_allocator<key_container_type>(
-                    _Alloc, static_cast<const _Flat_map_base&>(_Other)._Data.keys),
-              .values = _STD make_obj_using_allocator<mapped_container_type>(
-                  _Alloc, static_cast<const _Flat_map_base&>(_Other)._Data.values)} {}
+    _Flat_map_base(const _Flat_map_base& _Other, const _Allocator& _Alloc)
+        : _Key_compare(_Other._Key_compare),
+          _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Other._Data.keys),
+              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Other._Data.values)} {}
 
     // Move constructors
     _Flat_map_base(_Flat_map_base&& _Other)
@@ -462,12 +458,11 @@ public:
         : _Key_compare(_Other._Key_compare), _Data(_STD move(_Other).extract()) {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
-    _Flat_map_base(_Derived&& _Other, const _Allocator& _Alloc)
+    _Flat_map_base(_Flat_map_base&& _Other, const _Allocator& _Alloc)
         noexcept(is_nothrow_copy_constructible_v<key_compare> && is_nothrow_move_constructible_v<key_compare>
                  && is_nothrow_move_constructible_v<key_container_type>
                  && is_nothrow_move_constructible_v<mapped_container_type>)
-        : _Key_compare(static_cast<_Flat_map_base&>(_Other)._Key_compare),
-          _Data{static_cast<_Flat_map_base&>(_Other)._Extract_using_allocator(_Alloc)} {}
+        : _Key_compare(_Other._Key_compare), _Data{_Other._Extract_using_allocator(_Alloc)} {}
 
     // Assignment
     _Flat_map_base& operator=(const _Flat_map_base& _Other)
