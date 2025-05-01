@@ -3937,7 +3937,7 @@ _BidIt _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Skip(_BidIt _First_arg, _BidIt 
                 // Thus, we only continue if this node has a single branch only.
                 _Node_if* _Node = static_cast<_Node_if*>(_Nx);
 
-                if (_Node->_Child != nullptr) {
+                if (_Node->_Child) {
                     return _First_arg;
                 }
                 break;
