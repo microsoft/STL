@@ -1604,7 +1604,7 @@ class _Matcher2 { // provides ways to match a regular expression to a text seque
 public:
     _Matcher2(_It _Pfirst, _It _Plast, const _RxTraits& _Tr, _Root_node* _Re, unsigned int _Nx,
         regex_constants::syntax_option_type _Sf, regex_constants::match_flag_type _Mf)
-        : _End(_Plast), _First(_Pfirst), _Rep(_Re), _Sflags(_Sf), _Mflags(_Mf), _Ncap(static_cast<int>(_Nx)),
+        : _End(_Plast), _First(_Pfirst), _Rep(_Re), _Sflags(_Sf), _Mflags(_Mf), _Ncap(_Nx),
           _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)), _Traits(_Tr) {
         _Loop_vals.resize(_Re->_Loops);
         _Adl_verify_range(_Pfirst, _Plast);
@@ -1705,7 +1705,7 @@ private:
     regex_constants::match_flag_type _Mflags;
     bool _Matched = false;
     bool _Cap;
-    int _Ncap; // Do not use. Use _Get_ncap instead.
+    unsigned int _Ncap;
     bool _Longest;
     const _RxTraits& _Traits;
     bool _Full;
@@ -3594,7 +3594,7 @@ typename _RxTraits::char_class_type _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Al
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 unsigned int _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Get_ncap() const {
-    return static_cast<unsigned int>(_Ncap);
+    return _Ncap;
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
