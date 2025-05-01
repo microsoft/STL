@@ -601,15 +601,6 @@ std/depr/depr.c.headers/stddef_h.compile.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_alloc.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_alloc.pass.cpp FAIL
 
-# A moved-from flat_map is not meeting the first invariant, but this seems to also be a specification issue:
-# [flat.map.defn] doesn't declare a move constructor, which seems to imply that moving from a flat_map should behave
-# as if the move constructor were implicitly defined, i.e. it can't restore the invariants
-# P3567R0 adds a move constructor that moves the comparator
-std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_clears.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/move_exceptions.pass.cpp FAIL
-std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_assign_clears.pass.cpp FAIL
-std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_exceptions.pass.cpp FAIL
-
 # Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.pass.cpp FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.runtime.pass.cpp FAIL
