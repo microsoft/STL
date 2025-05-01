@@ -37,7 +37,6 @@
 // N4389 bool_constant
 // N4508 shared_mutex (Untimed)
 // N4510 Supporting Incomplete Types In vector/list/forward_list
-// P2674R1 A trait for implicit lifetime types
 // P0006R0 Variable Templates For Type Traits (is_same_v, etc.)
 // P0007R1 as_const()
 // P0013R1 Logical Operator Type Traits (conjunction, etc.)
@@ -394,8 +393,9 @@
 // P2585R1 Improve Default Container Formatting
 // P2599R2 mdspan: index_type, size_type
 // P2604R0 mdspan: data_handle_type, data_handle(), exhaustive
-// P2613R1 mdspan: empty()
+// P2613R1 mdspan: empty()     
 // P2652R2 Disallowing User Specialization Of allocator_traits
+// P2674R1 A trait for implicit lifetime types
 // P2693R1 Formatting thread::id And stacktrace
 // P2713R1 Escaping Improvements In std::format
 // P2763R1 Fixing layout_stride's Default Constructor For Fully Static Extents
