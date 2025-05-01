@@ -577,10 +577,6 @@ std/depr/depr.c.headers/stddef_h.compile.pass.cpp:1 FAIL
 
 # *** LIKELY BOGUS TESTS ***
 
-# A moved-from flat_map is not empty, which doesn't seem to be required
-std/containers/container.adaptors/flat.map/flat.map.cons/move_alloc.pass.cpp FAIL
-std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_alloc.pass.cpp FAIL
-
 # Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.pass.cpp FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.runtime.pass.cpp FAIL
