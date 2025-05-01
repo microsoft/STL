@@ -1559,6 +1559,27 @@ void test_gh_5364() {
     g_regexTester.should_match("c", "[^]", ECMAScript);
 }
 
+void test_gh_5365() {
+    // GH-5365: <regex>: Implementation divergence for capture group behavior:
+    // Capture groups were not correctly cleared at the beginning of repetitions in ECMAScript mode.
+    {
+        test_regex captures_in_repeated_noncapturing_group(&g_regexTester, "^(?:(a)|(b)|(c)|(d))+$");
+        captures_in_repeated_noncapturing_group.should_search_match_capture_groups(
+            "acbd", "acbd", match_default, {{-1, -1}, {-1, -1}, {-1, -1}, {3, 4}});
+        captures_in_repeated_noncapturing_group.should_search_match_capture_groups(
+            "adcba", "adcba", match_default, {{4, 5}, {-1, -1}, {-1, -1}, {-1, -1}});
+    }
+    {
+        test_regex captures_in_questionmark_quantifiers(&g_regexTester, "(z)((a+)?(b+)?(c))*");
+        captures_in_questionmark_quantifiers.should_search_match_capture_groups(
+            "zaacbbbcac", "zaacbbbcac", match_default, {{0, 1}, {8, 10}, {8, 9}, {-1, -1}, {9, 10}});
+        captures_in_questionmark_quantifiers.should_search_match_capture_groups(
+            "zaacbbbcbbc", "zaacbbbcbbc", match_default, {{0, 1}, {8, 11}, {-1, -1}, {8, 10}, {10, 11}});
+        captures_in_questionmark_quantifiers.should_search_match_capture_groups(
+            "zaacbbbcabbc", "zaacbbbcabbc", match_default, {{0, 1}, {8, 12}, {8, 9}, {9, 11}, {11, 12}});
+    }
+}
+
 void test_gh_5371() {
     // GH-5371 <regex>: \b and \B are backwards on empty strings
     g_regexTester.should_not_match("", R"(\b)");
@@ -1664,6 +1685,7 @@ int main() {
     test_gh_5253();
     test_gh_5362();
     test_gh_5364();
+    test_gh_5365();
     test_gh_5371();
     test_gh_5374();
     test_gh_5377();
