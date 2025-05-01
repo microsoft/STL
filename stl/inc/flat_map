@@ -655,7 +655,7 @@ public:
         is_nothrow_move_constructible_v<key_container_type> && is_nothrow_move_constructible_v<mapped_container_type>) {
         _Clear_guard _Guard{this};
         return containers{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _STD move(_Data.keys)),
-            .values             = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, STD move(_Data.values))};
+            .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _STD move(_Data.values))};
     }
 
     void replace(key_container_type&& _Key_cont, mapped_container_type&& _Mapped_cont) {
