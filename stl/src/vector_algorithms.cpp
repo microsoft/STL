@@ -3104,29 +3104,18 @@ namespace {
 
                     uint64_t _MskX = uint64_t{_Carry} | (uint64_t{_Mask} << 32);
 
-                    if constexpr (sizeof(_Ty) == 1) {
-                        _MskX = (_MskX >> 1) & _MskX;
-                        _MskX = __ull_rshift(_MskX, _Sh1) & _MskX;
-                    }
+                    _MskX = (_MskX >> sizeof(_Ty)) & _MskX;
 
-                    if constexpr (sizeof(_Ty) == 2) {
-                        _MskX = (_MskX >> 2) & _MskX;
+                    if constexpr (sizeof(_Ty) == 1) {
+                        _MskX = __ull_rshift(_MskX, _Sh1) & _MskX;
                     }
 
                     if constexpr (sizeof(_Ty) < 4) {
                         _MskX = __ull_rshift(_MskX, _Sh2) & _MskX;
                     }
 
-                    if constexpr (sizeof(_Ty) == 4) {
-                        _MskX = (_MskX >> 4) & _MskX;
-                    }
-
                     if constexpr (sizeof(_Ty) < 8) {
                         _MskX = __ull_rshift(_MskX, _Sh3) & _MskX;
-                    }
-
-                    if constexpr (sizeof(_Ty) == 8) {
-                        _MskX = (_MskX >> 8) & _MskX;
                     }
 
                     if (_MskX != 0) {
