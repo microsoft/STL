@@ -5,6 +5,12 @@
 
 enum UnscopedEnum { Enumerator };
 enum struct ScopedEnum { Enumerator };
+class Class {};
+class IncompleteClass;
+class UserProvidedDestructorClass
+{
+	~UserProvidedDestructorClass() {}
+};
 
 using namespace std;
 
@@ -17,14 +23,21 @@ int main()
 
 	// Basics
 	static_assert(std::is_implcit_lifetime_v<int>);
+	static_assert(std::is_implcit_lifetime_v<int*>);
 	static_assert(std::is_implcit_lifetime_v<std::nullptr_t>);
 	static_assert(std::is_implcit_lifetime_v<UnscopedEnum>);
 	static_assert(std::is_implcit_lifetime_v<ScopedEnum>);
 	static_assert(std::is_implcit_lifetime_v<void(*)()>);
+	static_assert(std::is_implcit_lifetime_v<Class>);
+	static_assert(!std::is_implcit_lifetime_v<UserProvidedDestructorClass>);
+	static_assert(!std::is_implcit_lifetime_v<IncompleteClass[]>);
+	static_assert(!std::is_implcit_lifetime_v<IncompleteClass[20]>);
 
 	// Arrays
 	static_assert(std::is_implcit_lifetime_v<int[]>);
 	static_assert(std::is_implcit_lifetime_v<int[2]>);
+	static_assert(std::is_implcit_lifetime_v<Class[10]>);
+	static_assert(!std::is_implcit_lifetime_v<UserProvidedDestructorClass[12]>);
 
 	static_assert(!std::is_implcit_lifetime_v<void>);
 	static_assert(!std::is_implcit_lifetime_v<const volatile void>);
@@ -32,3 +45,5 @@ int main()
 	static_assert(!std::is_implcit_lifetime_v<long&&>);
 #endif
 }
+
+class IncompleteClass {};
