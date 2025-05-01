@@ -467,7 +467,7 @@ public:
                  && is_nothrow_move_constructible_v<key_container_type>
                  && is_nothrow_move_constructible_v<mapped_container_type>)
         : _Key_compare(static_cast<_Flat_map_base&>(_Other)._Key_compare),
-          _Data{static_cast<_Flat_map_base&>(_Other)._Exract_using_allocator(_Alloc)} {}
+          _Data{static_cast<_Flat_map_base&>(_Other)._Extract_using_allocator(_Alloc)} {}
 
     // Assignment
     _Flat_map_base& operator=(const _Flat_map_base& _Other)
@@ -651,7 +651,7 @@ public:
     }
 
     template <class _Allocator>
-    containers _Exract_using_allocator(const _Allocator& _Alloc) noexcept(
+    containers _Extract_using_allocator(const _Allocator& _Alloc) noexcept(
         is_nothrow_move_constructible_v<key_container_type> && is_nothrow_move_constructible_v<mapped_container_type>) {
         _Clear_guard _Guard{this};
         return containers{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _STD move(_Data.keys)),
