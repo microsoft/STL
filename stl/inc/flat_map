@@ -466,11 +466,7 @@ public:
         noexcept(is_nothrow_move_constructible_v<key_compare> && is_nothrow_move_constructible_v<key_container_type>
                  && is_nothrow_move_constructible_v<mapped_container_type>)
         : _Key_compare(static_cast<_Flat_map_base&>(_Other)._Key_compare),
-          _Data{.keys = _STD make_obj_using_allocator<key_container_type>(
-                    _Alloc, _STD move(static_cast<_Flat_map_base&>(_Other)._Data.keys)),
-              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc,
-                  _STD move(static_cast<_Flat_map_base&>(_Other)._Data.values))} { // FIXME: Keep invariant on exception
-    }
+          _Data{static_cast<_Flat_map_base&>(_Other)._Exract_using_allocator(_Alloc)} {}
 
     // Assignment
     _Flat_map_base& operator=(const _Flat_map_base& _Other)
@@ -643,6 +639,14 @@ public:
     containers extract() && {
         _Clear_guard _Guard{this};
         return _STD move(_Data);
+    }
+
+    template <class _Allocator>
+    containers _Exract_using_allocator(const _Allocator& _Alloc) noexcept(
+        is_nothrow_move_constructible_v<key_container_type> && is_nothrow_move_constructible_v<mapped_container_type>) {
+        _Clear_guard _Guard{this};
+        return containers{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Data.keys),
+            .values             = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Data.values)};
     }
 
     void replace(key_container_type&& _Key_cont, mapped_container_type&& _Mapped_cont) {
