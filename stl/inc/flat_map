@@ -442,7 +442,7 @@ public:
         : _Flat_map_base(_Tag, _Ilist, key_compare(), _Alloc) {}
 
     // Copy constructors
-    _Flat_map_base(const _Derived& _Other)
+    _Flat_map_base(const _Flat_map_base& _Other)
         : _Key_compare(static_cast<const _Flat_map_base&>(_Other)._Key_compare),
           _Data(static_cast<const _Flat_map_base&>(_Other)._Data) {}
 
@@ -455,21 +455,35 @@ public:
                   _Alloc, static_cast<const _Flat_map_base&>(_Other)._Data.values)} {}
 
     // Move constructors
-    _Flat_map_base(_Derived&& _Other)
-        noexcept(is_nothrow_move_constructible_v<key_compare> && is_nothrow_move_constructible_v<key_container_type>
+    _Flat_map_base(_Flat_map_base&& _Other)
+        noexcept(is_nothrow_copy_constructible_v<key_compare> && is_nothrow_move_constructible_v<key_compare>
+                 && is_nothrow_move_constructible_v<key_container_type>
                  && is_nothrow_move_constructible_v<mapped_container_type>)
-        : _Key_compare(_STD move(static_cast<_Flat_map_base&>(_Other)._Key_compare)),
-          _Data(_STD move(static_cast<_Flat_map_base&>(_Other).extract())) {}
+        : _Key_compare(_Other._Key_compare), _Data(_STD move(_Other).extract()) {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(_Derived&& _Other, const _Allocator& _Alloc)
         noexcept(is_nothrow_move_constructible_v<key_compare> && is_nothrow_move_constructible_v<key_container_type>
                  && is_nothrow_move_constructible_v<mapped_container_type>)
-        : _Key_compare(_STD move(static_cast<_Flat_map_base&>(_Other)._Key_compare)),
+        : _Key_compare(static_cast<_Flat_map_base&>(_Other)._Key_compare),
           _Data{.keys = _STD make_obj_using_allocator<key_container_type>(
                     _Alloc, _STD move(static_cast<_Flat_map_base&>(_Other)._Data.keys)),
-              .values = _STD make_obj_using_allocator<mapped_container_type>(
-                  _Alloc, _STD move(static_cast<_Flat_map_base&>(_Other)._Data.values))} {}
+              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc,
+                  _STD move(static_cast<_Flat_map_base&>(_Other)._Data.values))} { // FIXME: Keep invariant on exception
+    }
+
+    // Assignment
+    _Flat_map_base& operator=(const _Flat_map_base& _Other)
+        noexcept(is_nothrow_copy_assignable_v<key_compare> && is_nothrow_copy_assignable_v<key_container_type>
+                 && is_nothrow_copy_assignable_v<mapped_container_type>) = default;
+
+    _Flat_map_base& operator=(_Flat_map_base&& _Other)
+        noexcept(is_nothrow_copy_assignable_v<key_compare> && is_nothrow_move_assignable_v<key_container_type>
+                 && is_nothrow_move_assignable_v<mapped_container_type>) {
+        _Key_compare = _Other._Key_compare;
+        _Data        = _STD move(_Other).extract();
+        return *this;
+    }
 
     // [container.reqmts] iterators
     _NODISCARD iterator begin() noexcept {
