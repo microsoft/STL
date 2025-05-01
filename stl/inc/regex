@@ -1635,8 +1635,8 @@ public:
 
         _Begin          = _First;
         _Tgt_state._Cur = _First;
-        _Tgt_state._Grp_valid.resize(_Get_ncap());
-        _Tgt_state._Grps.resize(_Get_ncap());
+        _Tgt_state._Grp_valid.resize(_Ncap);
+        _Tgt_state._Grps.resize(_Ncap);
         _Cap                  = static_cast<bool>(_Matches);
         _Full                 = _Full_match;
         _Max_complexity_count = _REGEX_MAX_COMPLEXITY_COUNT;
@@ -1649,9 +1649,9 @@ public:
         }
 
         if (_Matches) { // copy results to _Matches
-            _Matches->_Resize(_Get_ncap());
+            _Matches->_Resize(_Ncap);
             const auto& _Result = _Longest ? _Res : _Tgt_state;
-            for (unsigned int _Idx = 0; _Idx < _Get_ncap(); ++_Idx) { // copy submatch _Idx
+            for (unsigned int _Idx = 0; _Idx < _Ncap; ++_Idx) { // copy submatch _Idx
                 if (_Result._Grp_valid[_Idx]) { // copy successful match
                     _Matches->_At(_Idx).matched = true;
                     _Matches->_At(_Idx).first   = _Result._Grps[_Idx]._Begin;
@@ -1694,8 +1694,6 @@ private:
     bool _Better_match();
     bool _Is_wbound() const;
     typename _RxTraits::char_class_type _Lookup_char_class(_Elem) const;
-
-    unsigned int _Get_ncap() const;
 
     _It _Begin;
     _It _End;
@@ -3543,7 +3541,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Better_match() {
     // check for better match under leftmost-longest rule
-    for (unsigned int _Ix = 0; _Ix < _Get_ncap(); ++_Ix) { // check each capture group
+    for (unsigned int _Ix = 0; _Ix < _Ncap; ++_Ix) { // check each capture group
         // any match (even an empty one) is better than no match at all
         if (_Res._Grp_valid[_Ix] != _Tgt_state._Grp_valid[_Ix]) {
             return _Tgt_state._Grp_valid[_Ix];
@@ -3590,11 +3588,6 @@ typename _RxTraits::char_class_type _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Al
     // look up character class with single-character name
     auto _Ptr = _STD addressof(_Class_name);
     return _Traits.lookup_classname(_Ptr, _Ptr + 1, (_Sflags & regex_constants::icase) != 0);
-}
-
-template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-unsigned int _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Get_ncap() const {
-    return _Ncap;
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
