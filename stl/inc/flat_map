@@ -29,8 +29,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 template <class _Compare, class _Key_container>
-concept _Valid_compare_for_container = is_invocable_v<const _Compare&, const typename _Key_container::value_type&,
-    const typename _Key_container::value_type&>;
+concept _Valid_compare_for_container = _Not_allocator_for_container<_Compare>
+                                    && is_invocable_v<const _Compare&, const typename _Key_container::value_type&,
+                                        const typename _Key_container::value_type&>;
 
 template <class _Key, class _Mapped, class _KeyCompare>
 struct _Flat_map_value_compare_provider {
@@ -1400,8 +1401,9 @@ flat_map(sorted_unique_t, _InputIterator, _InputIterator, _Compare = _Compare())
     -> flat_map<_Guide_key_t<_InputIterator>, _Guide_val_t<_InputIterator>, _Compare>;
 
 #ifdef __cpp_lib_byte
+// TRANSITION, CWG-2369, should just use constrained template parameters.
 template <_RANGES input_range _Rng, _Not_allocator_for_container _Compare = less<_Range_key_type<_Rng>>,
-    _Allocator_for_container _Allocator = allocator<byte>>
+    class _Allocator = allocator<byte>, enable_if_t<_Allocator_for_container<_Allocator>, int> = 0>
 flat_map(from_range_t, _Rng&&, _Compare = _Compare(), _Allocator = _Allocator())
     -> flat_map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Compare,
         vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_key_type<_Rng>>>,
@@ -1411,13 +1413,16 @@ template <_RANGES input_range _Rng, _Not_allocator_for_container _Compare = less
 flat_map(from_range_t, _Rng&&, _Compare = _Compare()) -> flat_map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>,
     _Compare, vector<_Range_key_type<_Rng>>, vector<_Range_mapped_type<_Rng>>>;
 
-template <_RANGES input_range _Rng, _Not_allocator_for_container _Compare, _Allocator_for_container _Allocator>
+// TRANSITION, CWG-2369, should just use constrained template parameters.
+template <_RANGES input_range _Rng, _Not_allocator_for_container _Compare, class _Allocator,
+    enable_if_t<_Allocator_for_container<_Allocator>, int> = 0>
 flat_map(from_range_t, _Rng&&, _Compare, _Allocator) -> flat_map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>,
     _Compare, vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_key_type<_Rng>>>,
     vector<_Range_mapped_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_mapped_type<_Rng>>>>;
 #endif // ^^^ !defined(__cpp_lib_byte) ^^^
 
-template <_RANGES input_range _Rng, _Allocator_for_container _Allocator>
+// TRANSITION, CWG-2369, should just use constrained template parameters.
+template <_RANGES input_range _Rng, class _Allocator, enable_if_t<_Allocator_for_container<_Allocator>, int> = 0>
 flat_map(from_range_t, _Rng&&, _Allocator) -> flat_map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>,
     less<_Range_key_type<_Rng>>, vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_key_type<_Rng>>>,
     vector<_Range_mapped_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_mapped_type<_Rng>>>>;
@@ -1565,8 +1570,9 @@ flat_multimap(sorted_equivalent_t, _InputIterator, _InputIterator, _Compare = _C
     -> flat_multimap<_Guide_key_t<_InputIterator>, _Guide_val_t<_InputIterator>, _Compare>;
 
 #ifdef __cpp_lib_byte
+// TRANSITION, CWG-2369, should just use constrained template parameters.
 template <_RANGES input_range _Rng, _Not_allocator_for_container _Compare = less<_Range_key_type<_Rng>>,
-    _Allocator_for_container _Allocator = allocator<byte>>
+    class _Allocator = allocator<byte>, enable_if_t<_Allocator_for_container<_Allocator>, int> = 0>
 flat_multimap(from_range_t, _Rng&&, _Compare = _Compare(), _Allocator = _Allocator())
     -> flat_multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Compare,
         vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_key_type<_Rng>>>,
@@ -1576,14 +1582,17 @@ template <_RANGES input_range _Rng, _Not_allocator_for_container _Compare = less
 flat_multimap(from_range_t, _Rng&&, _Compare = _Compare()) -> flat_multimap<_Range_key_type<_Rng>,
     _Range_mapped_type<_Rng>, _Compare, vector<_Range_key_type<_Rng>>, vector<_Range_mapped_type<_Rng>>>;
 
-template <_RANGES input_range _Rng, _Not_allocator_for_container _Compare, _Allocator_for_container _Allocator>
+// TRANSITION, CWG-2369, should just use constrained template parameters.
+template <_RANGES input_range _Rng, _Not_allocator_for_container _Compare, class _Allocator,
+    enable_if_t<_Allocator_for_container<_Allocator>, int> = 0>
 flat_multimap(from_range_t, _Rng&&, _Compare, _Allocator)
     -> flat_multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Compare,
         vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_key_type<_Rng>>>,
         vector<_Range_mapped_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_mapped_type<_Rng>>>>;
 #endif // ^^^ !defined(__cpp_lib_byte) ^^^
 
-template <_RANGES input_range _Rng, _Allocator_for_container _Allocator>
+// TRANSITION, CWG-2369, should just use constrained template parameters.
+template <_RANGES input_range _Rng, class _Allocator, enable_if_t<_Allocator_for_container<_Allocator>, int> = 0>
 flat_multimap(from_range_t, _Rng&&, _Allocator) -> flat_multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>,
     less<_Range_key_type<_Rng>>, vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_key_type<_Rng>>>,
     vector<_Range_mapped_type<_Rng>, _Rebind_alloc_t<_Allocator, _Range_mapped_type<_Rng>>>>;
