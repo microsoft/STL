@@ -1604,7 +1604,7 @@ class _Matcher2 { // provides ways to match a regular expression to a text seque
 public:
     _Matcher2(_It _Pfirst, _It _Plast, const _RxTraits& _Tr, _Root_node* _Re, unsigned int _Nx,
         regex_constants::syntax_option_type _Sf, regex_constants::match_flag_type _Mf)
-        : _End(_Plast), _First(_Pfirst), _Rep(_Re), _Sflags(_Sf), _Mflags(_Mf), _Ncap(_Nx),
+        : _Begin(_Pfirst), _End(_Plast), _Rep(_Re), _Sflags(_Sf), _Mflags(_Mf), _Ncap(_Nx),
           _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)), _Traits(_Tr) {
         _Loop_vals.resize(_Re->_Loops);
         _Adl_verify_range(_Pfirst, _Plast);
@@ -1621,7 +1621,7 @@ public:
     template <class _Alsubmatch>
     bool _Match(_It _Pfirst, match_results<_BidIt, _Alsubmatch>* _Matches, bool _Full_match) {
         // try to match
-        _First = _Pfirst;
+        _Begin = _Pfirst;
         return _Match(_Matches, _Full_match);
     }
 
@@ -1633,8 +1633,7 @@ public:
             _Matches->_Resize(0);
         }
 
-        _Begin          = _First;
-        _Tgt_state._Cur = _First;
+        _Tgt_state._Cur = _Begin;
         _Tgt_state._Grp_valid.resize(_Ncap);
         _Tgt_state._Grps.resize(_Ncap);
         _Cap                  = static_cast<bool>(_Matches);
@@ -1697,7 +1696,6 @@ private:
 
     _It _Begin;
     _It _End;
-    _It _First;
     _Node_base* _Rep;
     regex_constants::syntax_option_type _Sflags;
     regex_constants::match_flag_type _Mflags;
