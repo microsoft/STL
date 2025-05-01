@@ -3299,9 +3299,8 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node,
     _Loop_vals_t* _Psav   = &_Loop_vals[_Node->_Loop_number];
     int _Loop_idx_sav     = _Psav->_Loop_idx;
     _It* _Loop_iter_sav   = static_cast<_It*>(_Psav->_Loop_iter);
-    _It _Cur_iter         = _Tgt_state._Cur;
 
-    bool _Progress = _Init_idx == 0 || *_Loop_iter_sav != _Cur_iter;
+    bool _Progress = _Init_idx == 0 || *_Loop_iter_sav != _St._Cur;
 
     if (0 <= _Node->_Max && _Node->_Max <= _Init_idx) {
         _Matched0 = _Match_pat(_Node->_End_rep->_Next); // reps done, try tail
@@ -3310,7 +3309,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node,
             _Matched0 = _Match_pat(_Node->_End_rep->_Next); // empty, try tail
         } else { // try another required match
             _Psav->_Loop_idx  = _Init_idx + 1;
-            _Psav->_Loop_iter = _STD addressof(_Cur_iter);
+            _Psav->_Loop_iter = _STD addressof(_St._Cur);
             _Matched0         = _Match_pat(_Node->_Next);
         }
     } else if (_Longest) { // longest, try any number of repetitions
@@ -3321,7 +3320,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node,
         if (_Progress) {
             _Tgt_state        = _St;
             _Psav->_Loop_idx  = _Init_idx + 1;
-            _Psav->_Loop_iter = _STD addressof(_Cur_iter);
+            _Psav->_Loop_iter = _STD addressof(_St._Cur);
 
             if (_Match_pat(_Node->_Next)) { // always call _Match_pat, even when _Matched0 is already true
                 _Matched0 = true;
@@ -3332,13 +3331,13 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node,
         if (!_Matched0 && _Progress) { // tail failed, try another rep
             _Tgt_state        = _St;
             _Psav->_Loop_idx  = _Init_idx + 1;
-            _Psav->_Loop_iter = _STD addressof(_Cur_iter);
+            _Psav->_Loop_iter = _STD addressof(_St._Cur);
             _Matched0         = _Match_pat(_Node->_Next);
         }
     } else { // greedy, favor maximum number of reps
         if (_Progress) { // try another rep
             _Psav->_Loop_idx  = _Init_idx + 1;
-            _Psav->_Loop_iter = _STD addressof(_Cur_iter);
+            _Psav->_Loop_iter = _STD addressof(_St._Cur);
             _Matched0         = _Match_pat(_Node->_Next);
         }
 
