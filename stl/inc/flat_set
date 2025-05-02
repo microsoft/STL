@@ -208,10 +208,10 @@ public:
     }
 
     _NODISCARD const_iterator cbegin() const noexcept {
-        return _Mycont.cbegin();
+        return _Mycont.begin();
     }
     _NODISCARD const_iterator cend() const noexcept {
-        return _Mycont.cend();
+        return _Mycont.end();
     }
     _NODISCARD const_reverse_iterator crbegin() const noexcept {
         return rbegin();
@@ -447,7 +447,7 @@ private:
     }
 
     _NODISCARD bool _Is_sorted(const container_type& _Cont) const {
-        return _Is_sorted(_Cont.cbegin(), _Cont.cend());
+        return _Is_sorted(_Cont.begin(), _Cont.end());
     }
 
     static constexpr const char* _Msg_not_sorted = _Multi ? "Input was not sorted!" : "Input was not sorted-unique!";
