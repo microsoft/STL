@@ -142,7 +142,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
 #else
 #error Unsupported architecture
 #endif
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     auto _First1c      = static_cast<unsigned char*>(_First1);
     const auto _Last1c = static_cast<unsigned char*>(_Last1);
@@ -226,7 +226,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
     }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     _Reversing::_Reverse_tail(static_cast<unsigned char*>(_First), static_cast<unsigned char*>(_Last));
 }
@@ -270,7 +270,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
     }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     _Reversing::_Reverse_tail(static_cast<unsigned short*>(_First), static_cast<unsigned short*>(_Last));
 }
@@ -309,7 +309,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
     }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     _Reversing::_Reverse_tail(static_cast<unsigned long*>(_First), static_cast<unsigned long*>(_Last));
 }
@@ -347,7 +347,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
     }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     _Reversing::_Reverse_tail(static_cast<unsigned long long*>(_First), static_cast<unsigned long long*>(_Last));
 }
@@ -385,7 +385,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
     }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     _Reversing::_Reverse_copy_tail(static_cast<const unsigned char*>(_First), static_cast<const unsigned char*>(_Last),
         static_cast<unsigned char*>(_Dest));
@@ -424,7 +424,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
     }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     _Reversing::_Reverse_copy_tail(static_cast<const unsigned short*>(_First),
         static_cast<const unsigned short*>(_Last), static_cast<unsigned short*>(_Dest));
@@ -459,7 +459,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
     }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     _Reversing::_Reverse_copy_tail(static_cast<const unsigned long*>(_First), static_cast<const unsigned long*>(_Last),
         static_cast<unsigned long*>(_Dest));
@@ -493,7 +493,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
     }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     _Reversing::_Reverse_copy_tail(static_cast<const unsigned long long*>(_First),
         static_cast<const unsigned long long*>(_Last), static_cast<unsigned long long*>(_Dest));
@@ -2766,7 +2766,7 @@ namespace {
                 return _mm_cmpeq_epi64(_Lhs, _Rhs);
             }
         };
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         // TRANSITION, ABI: used only in functions preserved for binary compatibility
         template <class _Ty>
@@ -2859,7 +2859,7 @@ namespace {
                     _Advance_bytes(_First, 16);
                 } while (_First != _Stop_at);
             }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
             auto _Ptr = static_cast<const _Ty*>(_First);
             if constexpr (_Pred == _Predicate::_Not_equal) {
                 while (_Ptr != _Last && *_Ptr == _Val) {
@@ -2946,7 +2946,7 @@ namespace {
                     }
                 } while (_Last != _Stop_at);
             }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
             auto _Ptr = static_cast<const _Ty*>(_Last);
             for (;;) {
                 if (_Ptr == _First) {
@@ -3053,7 +3053,7 @@ namespace {
                     _Advance_bytes(_First, 16);
                 } while (_First != _Stop_at);
             }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
             auto _Ptr  = static_cast<const _Ty*>(_First);
             auto _Next = _Ptr + 1;
@@ -3152,7 +3152,7 @@ namespace {
                 _Mid1 = static_cast<const _Ty*>(_First);
                 _Rewind_bytes(_First, _lzcnt_u32(~_Carry));
             }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
             auto _Match_start    = static_cast<const _Ty*>(_First);
             const auto _Last_ptr = static_cast<const _Ty*>(_Last);
 
@@ -3461,7 +3461,7 @@ namespace {
                 return _Count_traits_8::_Reduce_sse(_Rx1);
             }
         };
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         template <class _Traits, class _Ty>
         __declspec(noalias) size_t __stdcall _Count_impl(
@@ -3554,7 +3554,7 @@ namespace {
                     }
                 }
             }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
             for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
                 if (*_Ptr == _Val) {
@@ -3708,7 +3708,7 @@ namespace {
                 }
             }
         } // namespace _Bitmap_details
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         namespace _Bitmap_impl {
 #ifndef _M_ARM64EC
@@ -3958,7 +3958,7 @@ namespace {
 
                 return static_cast<size_t>(-1);
             }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
             using _Scalar_table_t = bool[256];
 
@@ -3994,7 +3994,7 @@ namespace {
                     _Table[*_Ptr] = true;
                 }
             }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
             template <class _Ty, _Predicate _Pred>
             size_t _Impl_first_scalar(
@@ -4469,7 +4469,7 @@ namespace {
                         _First1, _Haystack_length, _First2, _First2, _Last_needle_length_el);
                 }
             }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
             template <class _Ty>
             const void* _Dispatch_ptr(const void* const _First1, const void* const _Last1, const void* const _First2,
@@ -4486,7 +4486,7 @@ namespace {
                             _First1, _Byte_length(_First1, _Last1), _First2, _Byte_length(_First2, _Last2));
                     }
                 }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
                 return _Fallback<_Ty, _Predicate::_Any_of>(_First1, _Last1, _First2, _Last2);
             }
@@ -4555,7 +4555,7 @@ namespace {
                 return _Pos_from_ptr<_Ty>(
                     _Impl_4_8<_Ty>(_First1, _Size_bytes_1, _First2, _Size_bytes_2), _First1, _Last1);
             }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
             template <class _Ty, _Predicate _Pred>
             size_t _Dispatch_pos_fallback(const void* const _First1, const size_t _Count1, const void* const _First2,
@@ -4588,7 +4588,7 @@ namespace {
                         return _Dispatch_pos_avx_4_8<_Ty>(_First1, _Count1, _First2, _Count2);
                     }
                 }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
                 return _Dispatch_pos_fallback<_Ty, _Pred>(_First1, _Count1, _First2, _Count2);
             }
         } // namespace _First_of
@@ -4796,7 +4796,7 @@ namespace {
                     return static_cast<size_t>(_Not_found);
                 }
             }
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
             template <class _Ty, _Predicate _Pred>
             size_t _Dispatch_pos(const void* const _First1, const size_t _Count1, const void* const _First2,
@@ -4821,7 +4821,7 @@ namespace {
 
                     return _Impl<_Ty, _Pred>(_First1, _Count1, _First2, _Count2);
                 } else
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
                 {
                     alignas(32) _Scalar_table_t _Table = {};
                     if (_Build_scalar_table<_Ty>(_First2, _Count2, _Table)) {
@@ -5391,7 +5391,7 @@ namespace {
                 return _mm_cmpeq_epi64(_Lhs, _Rhs);
             }
         };
-#endif // !_M_ARM64EC
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         template <class _Traits, class _Ty>
         __declspec(noalias) size_t __stdcall _Mismatch_impl(
