@@ -503,50 +503,6 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 
 namespace {
     namespace _Sorting {
-        template <class _Ty>
-        const void* _Min_tail(const void* const _First, const void* const _Last, const void* _Res, _Ty _Cur) noexcept {
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-                if (*_Ptr < _Cur) {
-                    _Res = _Ptr;
-                    _Cur = *_Ptr;
-                }
-            }
-
-            return _Res;
-        }
-
-        template <class _Ty>
-        const void* _Max_tail(const void* const _First, const void* const _Last, const void* _Res, _Ty _Cur) noexcept {
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-                if (_Cur < *_Ptr) {
-                    _Res = _Ptr;
-                    _Cur = *_Ptr;
-                }
-            }
-
-            return _Res;
-        }
-
-        template <class _Ty>
-        _Min_max_element_t _Both_tail(const void* const _First, const void* const _Last, _Min_max_element_t& _Res,
-            _Ty _Cur_min, _Ty _Cur_max) noexcept {
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-                if (*_Ptr < _Cur_min) {
-                    _Res._Min = _Ptr;
-                    _Cur_min  = *_Ptr;
-                }
-                // Not else!
-                // * Needed for correctness if start with maximum, as we don't handle specially the first element.
-                // * Promote branchless code generation.
-                if (_Cur_max <= *_Ptr) {
-                    _Res._Max = _Ptr;
-                    _Cur_max  = *_Ptr;
-                }
-            }
-
-            return _Res;
-        }
-
         enum _Min_max_mode {
             _Mode_min  = 1 << 0,
             _Mode_max  = 1 << 1,
@@ -1836,6 +1792,50 @@ namespace {
             using _Avx = _Traits_d_avx;
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
+
+        template <class _Ty>
+        const void* _Min_tail(const void* const _First, const void* const _Last, const void* _Res, _Ty _Cur) noexcept {
+            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                if (*_Ptr < _Cur) {
+                    _Res = _Ptr;
+                    _Cur = *_Ptr;
+                }
+            }
+
+            return _Res;
+        }
+
+        template <class _Ty>
+        const void* _Max_tail(const void* const _First, const void* const _Last, const void* _Res, _Ty _Cur) noexcept {
+            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                if (_Cur < *_Ptr) {
+                    _Res = _Ptr;
+                    _Cur = *_Ptr;
+                }
+            }
+
+            return _Res;
+        }
+
+        template <class _Ty>
+        _Min_max_element_t _Both_tail(const void* const _First, const void* const _Last, _Min_max_element_t& _Res,
+            _Ty _Cur_min, _Ty _Cur_max) noexcept {
+            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                if (*_Ptr < _Cur_min) {
+                    _Res._Min = _Ptr;
+                    _Cur_min  = *_Ptr;
+                }
+                // Not else!
+                // * Needed for correctness if start with maximum, as we don't handle specially the first element.
+                // * Promote branchless code generation.
+                if (_Cur_max <= *_Ptr) {
+                    _Res._Max = _Ptr;
+                    _Cur_max  = *_Ptr;
+                }
+            }
+
+            return _Res;
+        }
 
         template <_Min_max_mode _Mode, class _Traits>
         auto _Minmax_element_impl(const void* _First, const void* const _Last, const bool _Sign) noexcept {
