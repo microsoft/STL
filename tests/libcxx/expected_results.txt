@@ -232,26 +232,6 @@ std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 
 # P0429R9 <flat_map>
 
-# FIXME! Assertion failed: m.keys().size() == m.values().size()
-# [flat.map.defn] doesn't declare a move constructor, which seems to imply that moving from a flat_map should behave
-# as if the move constructor were implicitly defined, i.e. it can't restore the invariants
-# P2767R2 does not specify move constructor, which is broken
-# P3567R0 adds a move constructor that asks to restore invariants
-# P3567R0 constructor also moves comparator, which we should veto if it makes into the Standard
-std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_clears.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/move_exceptions.pass.cpp FAIL
-std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_assign_clears.pass.cpp FAIL
-std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_exceptions.pass.cpp FAIL
-
-# FIXME! abort() has been called
-# caused by insert failing when called on a moved-from flat_map due to its comparator being moved from,
-# but this seems to be in line with the specification: flat_map::insert transitively requires that the comparator
-# "induce a strict weak ordering on the values"
-# P2767R2 does not specify move constructor, which is broken
-# P3567R0 constructor is still asked to move comparator, which is also broken
-std/containers/container.adaptors/flat.map/flat.map.cons/move.pass.cpp FAIL
-std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move.pass.cpp FAIL
-
 # FIXME! warning C4242: 'initializing': conversion from '_Ty' to '_Ty2', possible loss of data
 std/containers/container.adaptors/flat.map/flat.map.cons/copy_assign.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/copy_assign.pass.cpp:1 FAIL
@@ -596,10 +576,6 @@ std/depr/depr.c.headers/stddef_h.compile.pass.cpp:1 FAIL
 
 
 # *** LIKELY BOGUS TESTS ***
-
-# A moved-from flat_map is not empty, which doesn't seem to be required
-std/containers/container.adaptors/flat.map/flat.map.cons/move_alloc.pass.cpp FAIL
-std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_alloc.pass.cpp FAIL
 
 # Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.pass.cpp FAIL
