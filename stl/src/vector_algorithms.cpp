@@ -2874,7 +2874,7 @@ namespace {
         }
 
         template <class _Traits, _Predicate _Pred, class _Ty>
-        const void* __stdcall _Find_last(const void* _First, const void* _Last, const _Ty _Val) noexcept {
+        const void* __stdcall _Find_last_impl(const void* _First, const void* _Last, const _Ty _Val) noexcept {
             const void* const _Real_last = _Last;
 #ifndef _M_ARM64EC
             const size_t _Size_bytes = _Byte_length(_First, _Last);
@@ -2968,7 +2968,7 @@ namespace {
         template <class _Traits, _Predicate _Pred, class _Ty>
         size_t __stdcall _Find_last_pos_impl(
             const void* const _First, const void* const _Last, const _Ty _Val) noexcept {
-            const void* const _Result = _Find_last<_Traits, _Pred>(_First, _Last, _Val);
+            const void* const _Result = _Find_last_impl<_Traits, _Pred>(_First, _Last, _Val);
             if (_Result == _Last) {
                 return static_cast<size_t>(-1);
             } else {
@@ -3240,22 +3240,22 @@ const void* __stdcall __std_find_trivial_8(
 
 const void* __stdcall __std_find_last_trivial_1(
     const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return _Find::_Find_last<_Find::_Find_traits_1, _Find::_Predicate::_Equal>(_First, _Last, _Val);
+    return _Find::_Find_last_impl<_Find::_Find_traits_1, _Find::_Predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_last_trivial_2(
     const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return _Find::_Find_last<_Find::_Find_traits_2, _Find::_Predicate::_Equal>(_First, _Last, _Val);
+    return _Find::_Find_last_impl<_Find::_Find_traits_2, _Find::_Predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_last_trivial_4(
     const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return _Find::_Find_last<_Find::_Find_traits_4, _Find::_Predicate::_Equal>(_First, _Last, _Val);
+    return _Find::_Find_last_impl<_Find::_Find_traits_4, _Find::_Predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_last_trivial_8(
     const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return _Find::_Find_last<_Find::_Find_traits_8, _Find::_Predicate::_Equal>(_First, _Last, _Val);
+    return _Find::_Find_last_impl<_Find::_Find_traits_8, _Find::_Predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_not_ch_1(
@@ -5079,7 +5079,7 @@ namespace {
             }
 
             if (_Count2 == 1) {
-                return _Find::_Find_last<_Traits, _Find::_Predicate::_Equal>(
+                return _Find::_Find_last_impl<_Traits, _Find::_Predicate::_Equal>(
                     _First1, _Last1, *static_cast<const _Ty*>(_First2));
             }
 
