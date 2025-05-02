@@ -3343,7 +3343,7 @@ const void* __stdcall __std_search_n_8(
 } // extern "C"
 
 namespace {
-    namespace _Count {
+    namespace _Counting {
 #ifdef _M_ARM64EC
         using _Count_traits_8 = void;
         using _Count_traits_4 = void;
@@ -3569,29 +3569,29 @@ namespace {
             }
             return _Result;
         }
-    } // namespace _Count
+    } // namespace _Counting
 } // unnamed namespace
 
 extern "C" {
 
 __declspec(noalias) size_t __stdcall __std_count_trivial_1(
     const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return _Count::_Count_impl<_Count::_Count_traits_1>(_First, _Last, _Val);
+    return _Counting::_Count_impl<_Counting::_Count_traits_1>(_First, _Last, _Val);
 }
 
 __declspec(noalias) size_t __stdcall __std_count_trivial_2(
     const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return _Count::_Count_impl<_Count::_Count_traits_2>(_First, _Last, _Val);
+    return _Counting::_Count_impl<_Counting::_Count_traits_2>(_First, _Last, _Val);
 }
 
 __declspec(noalias) size_t __stdcall __std_count_trivial_4(
     const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return _Count::_Count_impl<_Count::_Count_traits_4>(_First, _Last, _Val);
+    return _Counting::_Count_impl<_Counting::_Count_traits_4>(_First, _Last, _Val);
 }
 
 __declspec(noalias) size_t __stdcall __std_count_trivial_8(
     const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return _Count::_Count_impl<_Count::_Count_traits_8>(_First, _Last, _Val);
+    return _Counting::_Count_impl<_Counting::_Count_traits_8>(_First, _Last, _Val);
 }
 
 } // extern "C"
