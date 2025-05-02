@@ -4022,6 +4022,11 @@ constexpr bool _Has_guaranteed_push_back<vector<_Ty, _Alloc>> = !is_same_v<_Ty, 
 template <class _Alloc, class... _Containers>
 concept _Usable_allocator_for = (uses_allocator_v<_Containers, _Alloc> && ...);
 
+template <class _Compare, class _KeyContainer>
+concept _Valid_compare_for_container = _Not_allocator_for_container<_Compare>
+                                    && is_invocable_v<const _Compare&, const typename _KeyContainer::value_type&,
+                                        const typename _KeyContainer::value_type&>;
+
 template <class _Ty>
 struct _NODISCARD _Clear_guard {
     _Ty* _Target;
