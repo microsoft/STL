@@ -103,9 +103,7 @@ _CRTIMP2_PURE _Thrd_id_t __cdecl _Thrd_id() noexcept { // return unique id for c
 }
 
 _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() noexcept { // return number of processors
-    SYSTEM_INFO info;
-    GetNativeSystemInfo(&info);
-    return info.dwNumberOfProcessors;
+    return GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
 }
 
 // TRANSITION, ABI: _Thrd_create() is preserved for binary compatibility
