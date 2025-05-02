@@ -2690,7 +2690,7 @@ const void* __stdcall __std_is_sorted_until_d(
 } // extern "C"
 
 namespace {
-    namespace _Find {
+    namespace _Finding {
 #ifdef _M_ARM64EC
         using _Find_traits_1 = void;
         using _Find_traits_2 = void;
@@ -3189,7 +3189,7 @@ namespace {
                 }
             }
         }
-    } // namespace _Find
+    } // namespace _Finding
 } // unnamed namespace
 
 extern "C" {
@@ -3207,133 +3207,137 @@ const void* __stdcall __std_find_trivial_unsized_2(const void* const _First, con
     // it reads the characters sequentially and stops as soon as a matching character is found."
     // C23 7.32.4.6.9 "The wmemchr generic function"/2 lacks such wording,
     // so we don't use wmemchr(), avoiding issues with unreachable_sentinel_t.
-    return _Find::_Find_unsized_impl(_First, _Val);
+    return _Finding::_Find_unsized_impl(_First, _Val);
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
 const void* __stdcall __std_find_trivial_unsized_4(const void* const _First, const uint32_t _Val) noexcept {
-    return _Find::_Find_unsized_impl(_First, _Val);
+    return _Finding::_Find_unsized_impl(_First, _Val);
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
 const void* __stdcall __std_find_trivial_unsized_8(const void* const _First, const uint64_t _Val) noexcept {
-    return _Find::_Find_unsized_impl(_First, _Val);
+    return _Finding::_Find_unsized_impl(_First, _Val);
 }
 
 const void* __stdcall __std_find_trivial_1(
     const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return _Find::_Find_impl<_Find::_Find_traits_1, _Find::_Predicate::_Equal>(_First, _Last, _Val);
+    return _Finding::_Find_impl<_Finding::_Find_traits_1, _Finding::_Predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_trivial_2(
     const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return _Find::_Find_impl<_Find::_Find_traits_2, _Find::_Predicate::_Equal>(_First, _Last, _Val);
+    return _Finding::_Find_impl<_Finding::_Find_traits_2, _Finding::_Predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_trivial_4(
     const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return _Find::_Find_impl<_Find::_Find_traits_4, _Find::_Predicate::_Equal>(_First, _Last, _Val);
+    return _Finding::_Find_impl<_Finding::_Find_traits_4, _Finding::_Predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_trivial_8(
     const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return _Find::_Find_impl<_Find::_Find_traits_8, _Find::_Predicate::_Equal>(_First, _Last, _Val);
+    return _Finding::_Find_impl<_Finding::_Find_traits_8, _Finding::_Predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_last_trivial_1(
     const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return _Find::_Find_last_impl<_Find::_Find_traits_1, _Find::_Predicate::_Equal>(_First, _Last, _Val);
+    return _Finding::_Find_last_impl<_Finding::_Find_traits_1, _Finding::_Predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_last_trivial_2(
     const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return _Find::_Find_last_impl<_Find::_Find_traits_2, _Find::_Predicate::_Equal>(_First, _Last, _Val);
+    return _Finding::_Find_last_impl<_Finding::_Find_traits_2, _Finding::_Predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_last_trivial_4(
     const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return _Find::_Find_last_impl<_Find::_Find_traits_4, _Find::_Predicate::_Equal>(_First, _Last, _Val);
+    return _Finding::_Find_last_impl<_Finding::_Find_traits_4, _Finding::_Predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_last_trivial_8(
     const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return _Find::_Find_last_impl<_Find::_Find_traits_8, _Find::_Predicate::_Equal>(_First, _Last, _Val);
+    return _Finding::_Find_last_impl<_Finding::_Find_traits_8, _Finding::_Predicate::_Equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_not_ch_1(
     const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return _Find::_Find_impl<_Find::_Find_traits_1, _Find::_Predicate::_Not_equal>(_First, _Last, _Val);
+    return _Finding::_Find_impl<_Finding::_Find_traits_1, _Finding::_Predicate::_Not_equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_not_ch_2(
     const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return _Find::_Find_impl<_Find::_Find_traits_2, _Find::_Predicate::_Not_equal>(_First, _Last, _Val);
+    return _Finding::_Find_impl<_Finding::_Find_traits_2, _Finding::_Predicate::_Not_equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_not_ch_4(
     const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return _Find::_Find_impl<_Find::_Find_traits_4, _Find::_Predicate::_Not_equal>(_First, _Last, _Val);
+    return _Finding::_Find_impl<_Finding::_Find_traits_4, _Finding::_Predicate::_Not_equal>(_First, _Last, _Val);
 }
 
 const void* __stdcall __std_find_not_ch_8(
     const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return _Find::_Find_impl<_Find::_Find_traits_8, _Find::_Predicate::_Not_equal>(_First, _Last, _Val);
+    return _Finding::_Find_impl<_Finding::_Find_traits_8, _Finding::_Predicate::_Not_equal>(_First, _Last, _Val);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_1(
     const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
-    return _Find::_Find_last_pos_impl<_Find::_Find_traits_1, _Find::_Predicate::_Not_equal>(_First, _Last, _Val);
+    return _Finding::_Find_last_pos_impl<_Finding::_Find_traits_1, _Finding::_Predicate::_Not_equal>(
+        _First, _Last, _Val);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_2(
     const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-    return _Find::_Find_last_pos_impl<_Find::_Find_traits_2, _Find::_Predicate::_Not_equal>(_First, _Last, _Val);
+    return _Finding::_Find_last_pos_impl<_Finding::_Find_traits_2, _Finding::_Predicate::_Not_equal>(
+        _First, _Last, _Val);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_4(
     const void* const _First, const void* const _Last, const uint32_t _Val) noexcept {
-    return _Find::_Find_last_pos_impl<_Find::_Find_traits_4, _Find::_Predicate::_Not_equal>(_First, _Last, _Val);
+    return _Finding::_Find_last_pos_impl<_Finding::_Find_traits_4, _Finding::_Predicate::_Not_equal>(
+        _First, _Last, _Val);
 }
 
 __declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_8(
     const void* const _First, const void* const _Last, const uint64_t _Val) noexcept {
-    return _Find::_Find_last_pos_impl<_Find::_Find_traits_8, _Find::_Predicate::_Not_equal>(_First, _Last, _Val);
+    return _Finding::_Find_last_pos_impl<_Finding::_Find_traits_8, _Finding::_Predicate::_Not_equal>(
+        _First, _Last, _Val);
 }
 
 const void* __stdcall __std_adjacent_find_1(const void* const _First, const void* const _Last) noexcept {
-    return _Find::_Adjacent_find_impl<_Find::_Find_traits_1, uint8_t>(_First, _Last);
+    return _Finding::_Adjacent_find_impl<_Finding::_Find_traits_1, uint8_t>(_First, _Last);
 }
 
 const void* __stdcall __std_adjacent_find_2(const void* const _First, const void* const _Last) noexcept {
-    return _Find::_Adjacent_find_impl<_Find::_Find_traits_2, uint16_t>(_First, _Last);
+    return _Finding::_Adjacent_find_impl<_Finding::_Find_traits_2, uint16_t>(_First, _Last);
 }
 
 const void* __stdcall __std_adjacent_find_4(const void* const _First, const void* const _Last) noexcept {
-    return _Find::_Adjacent_find_impl<_Find::_Find_traits_4, uint32_t>(_First, _Last);
+    return _Finding::_Adjacent_find_impl<_Finding::_Find_traits_4, uint32_t>(_First, _Last);
 }
 
 const void* __stdcall __std_adjacent_find_8(const void* const _First, const void* const _Last) noexcept {
-    return _Find::_Adjacent_find_impl<_Find::_Find_traits_8, uint64_t>(_First, _Last);
+    return _Finding::_Adjacent_find_impl<_Finding::_Find_traits_8, uint64_t>(_First, _Last);
 }
 
 const void* __stdcall __std_search_n_1(
     const void* const _First, const void* const _Last, const size_t _Count, const uint8_t _Value) noexcept {
-    return _Find::_Search_n_impl<_Find::_Find_traits_1>(_First, _Last, _Count, _Value);
+    return _Finding::_Search_n_impl<_Finding::_Find_traits_1>(_First, _Last, _Count, _Value);
 }
 
 const void* __stdcall __std_search_n_2(
     const void* const _First, const void* const _Last, const size_t _Count, const uint16_t _Value) noexcept {
-    return _Find::_Search_n_impl<_Find::_Find_traits_2>(_First, _Last, _Count, _Value);
+    return _Finding::_Search_n_impl<_Finding::_Find_traits_2>(_First, _Last, _Count, _Value);
 }
 
 const void* __stdcall __std_search_n_4(
     const void* const _First, const void* const _Last, const size_t _Count, const uint32_t _Value) noexcept {
-    return _Find::_Search_n_impl<_Find::_Find_traits_4>(_First, _Last, _Count, _Value);
+    return _Finding::_Search_n_impl<_Finding::_Find_traits_4>(_First, _Last, _Count, _Value);
 }
 
 const void* __stdcall __std_search_n_8(
     const void* const _First, const void* const _Last, const size_t _Count, const uint64_t _Value) noexcept {
-    return _Find::_Search_n_impl<_Find::_Find_traits_8>(_First, _Last, _Count, _Value);
+    return _Finding::_Search_n_impl<_Finding::_Find_traits_8>(_First, _Last, _Count, _Value);
 }
 
 } // extern "C"
@@ -3346,7 +3350,7 @@ namespace {
         using _Count_traits_2 = void;
         using _Count_traits_1 = void;
 #else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
-        struct _Count_traits_8 : _Find::_Find_traits_8 {
+        struct _Count_traits_8 : _Finding::_Find_traits_8 {
             static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
                 return _mm256_sub_epi64(_Lhs, _Rhs);
             }
@@ -3372,7 +3376,7 @@ namespace {
             }
         };
 
-        struct _Count_traits_4 : _Find::_Find_traits_4 {
+        struct _Count_traits_4 : _Finding::_Find_traits_4 {
             // For AVX2, we use hadd_epi32 three times to combine pairs of 32-bit counters into 32-bit results.
             // Therefore, _Max_count is 0x1FFF'FFFF, which is 0xFFFF'FFF8 when doubled three times; any more would
             // overflow.
@@ -3406,7 +3410,7 @@ namespace {
             }
         };
 
-        struct _Count_traits_2 : _Find::_Find_traits_2 {
+        struct _Count_traits_2 : _Finding::_Find_traits_2 {
             // For both AVX2 and SSE4.2, we use hadd_epi16 once to combine pairs of 16-bit counters into 16-bit results.
             // Therefore, _Max_count is 0x7FFF, which is 0xFFFE when doubled; any more would overflow.
 
@@ -3433,7 +3437,7 @@ namespace {
             }
         };
 
-        struct _Count_traits_1 : _Find::_Find_traits_1 {
+        struct _Count_traits_1 : _Finding::_Find_traits_1 {
             // For AVX2, _Max_portion_size below is _Max_count * 32 bytes, and we have 1-byte elements.
             // We're using packed 8-bit counters, and 32 of those fit in 256 bits.
 
@@ -4931,7 +4935,7 @@ namespace {
             }
 
             if (_Count2 == 1) {
-                return _Find::_Find_impl<_Traits, _Find::_Predicate::_Equal>(
+                return _Finding::_Find_impl<_Traits, _Finding::_Predicate::_Equal>(
                     _First1, _Last1, *static_cast<const _Ty*>(_First2));
             }
 
@@ -5081,7 +5085,7 @@ namespace {
             }
 
             if (_Count2 == 1) {
-                return _Find::_Find_last_impl<_Traits, _Find::_Predicate::_Equal>(
+                return _Finding::_Find_last_impl<_Traits, _Finding::_Predicate::_Equal>(
                     _First1, _Last1, *static_cast<const _Ty*>(_First2));
             }
 
@@ -5326,22 +5330,22 @@ extern "C" {
 
 const void* __stdcall __std_search_1(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Search_impl<_Find::_Find_traits_1, uint8_t>(_First1, _Last1, _First2, _Count2);
+    return _Find_seq::_Search_impl<_Finding::_Find_traits_1, uint8_t>(_First1, _Last1, _First2, _Count2);
 }
 
 const void* __stdcall __std_search_2(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Search_impl<_Find::_Find_traits_2, uint16_t>(_First1, _Last1, _First2, _Count2);
+    return _Find_seq::_Search_impl<_Finding::_Find_traits_2, uint16_t>(_First1, _Last1, _First2, _Count2);
 }
 
 const void* __stdcall __std_find_end_1(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Find_end_impl<_Find::_Find_traits_1, uint8_t>(_First1, _Last1, _First2, _Count2);
+    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_1, uint8_t>(_First1, _Last1, _First2, _Count2);
 }
 
 const void* __stdcall __std_find_end_2(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Find_end_impl<_Find::_Find_traits_2, uint16_t>(_First1, _Last1, _First2, _Count2);
+    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_2, uint16_t>(_First1, _Last1, _First2, _Count2);
 }
 
 } // extern "C"
