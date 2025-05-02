@@ -28,11 +28,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-template <class _Compare, class _Key_container>
-concept _Valid_compare_for_container = _Not_allocator_for_container<_Compare>
-                                    && is_invocable_v<const _Compare&, const typename _Key_container::value_type&,
-                                        const typename _Key_container::value_type&>;
-
 template <class _Key, class _Mapped, class _KeyCompare>
 struct _Flat_map_value_compare_provider {
     struct value_compare {
