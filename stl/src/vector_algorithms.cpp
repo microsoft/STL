@@ -21,7 +21,7 @@ extern "C" long __isa_enabled;
 #ifndef _DEBUG
 #pragma optimize("t", on) // Override /Os with /Ot for this TU
 #endif // !defined(_DEBUG)
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
 namespace {
 #ifndef _M_ARM64EC
@@ -51,7 +51,7 @@ namespace {
         return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(
             reinterpret_cast<const unsigned char*>(_Tail_masks) + (32 - _Count_in_bytes)));
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     size_t _Byte_length(const void* const _First, const void* const _Last) noexcept {
         return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
@@ -622,7 +622,7 @@ namespace {
                 return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Mask);
             }
         };
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         struct _Traits_1_base {
             static constexpr bool _Is_floating = false;
@@ -639,7 +639,7 @@ namespace {
 #ifndef _M_ARM64EC
             static constexpr bool _Has_portion_max = true;
             static constexpr size_t _Portion_max   = 256;
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
 #ifndef _M_ARM64EC
@@ -829,7 +829,7 @@ namespace {
                 return _Mask;
             }
         };
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         struct _Traits_2_base {
             static constexpr bool _Is_floating = false;
@@ -846,7 +846,7 @@ namespace {
 #ifndef _M_ARM64EC
             static constexpr bool _Has_portion_max = true;
             static constexpr size_t _Portion_max   = 65536;
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
 #ifndef _M_ARM64EC
@@ -1032,7 +1032,7 @@ namespace {
                 return _Mask;
             }
         };
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         struct _Traits_4_base {
             static constexpr bool _Is_floating = false;
@@ -1053,7 +1053,7 @@ namespace {
             static constexpr bool _Has_portion_max = true;
             static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
 #endif // ^^^ 64-bit ^^^
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
 #ifndef _M_ARM64EC
@@ -1231,7 +1231,7 @@ namespace {
                 return _Mask;
             }
         };
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         struct _Traits_8_base {
             static constexpr bool _Is_floating = false;
@@ -1247,7 +1247,7 @@ namespace {
 
 #ifndef _M_ARM64EC
             static constexpr bool _Has_portion_max = false;
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
 #ifndef _M_ARM64EC
@@ -1437,7 +1437,7 @@ namespace {
                 return _Mask;
             }
         };
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         struct _Traits_f_base {
             static constexpr bool _Is_floating = true;
@@ -1458,7 +1458,7 @@ namespace {
             static constexpr bool _Has_portion_max = true;
             static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
 #endif // ^^^ 64-bit ^^^
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
 #ifndef _M_ARM64EC
@@ -1616,7 +1616,7 @@ namespace {
                 return _mm256_castps_si256(_Mask);
             }
         };
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         struct _Traits_d_base {
             static constexpr bool _Is_floating = true;
@@ -1632,7 +1632,7 @@ namespace {
 
 #ifndef _M_ARM64EC
             static constexpr bool _Has_portion_max = false;
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
 #ifndef _M_ARM64EC
@@ -1787,14 +1787,14 @@ namespace {
                 return _mm256_castpd_si256(_Mask);
             }
         };
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         struct _Traits_1 {
             using _Scalar = _Traits_scalar<_Traits_1_base>;
 #ifndef _M_ARM64EC
             using _Sse = _Traits_1_sse;
             using _Avx = _Traits_1_avx;
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
         struct _Traits_2 {
@@ -1802,7 +1802,7 @@ namespace {
 #ifndef _M_ARM64EC
             using _Sse = _Traits_2_sse;
             using _Avx = _Traits_2_avx;
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
         struct _Traits_4 {
@@ -1810,7 +1810,7 @@ namespace {
 #ifndef _M_ARM64EC
             using _Sse = _Traits_4_sse;
             using _Avx = _Traits_4_avx;
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
         struct _Traits_8 {
@@ -1818,7 +1818,7 @@ namespace {
 #ifndef _M_ARM64EC
             using _Sse = _Traits_8_sse;
             using _Avx = _Traits_8_avx;
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
         struct _Traits_f {
@@ -1826,7 +1826,7 @@ namespace {
 #ifndef _M_ARM64EC
             using _Sse = _Traits_f_sse;
             using _Avx = _Traits_f_avx;
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
         struct _Traits_d {
@@ -1834,7 +1834,7 @@ namespace {
 #ifndef _M_ARM64EC
             using _Sse = _Traits_d_sse;
             using _Avx = _Traits_d_avx;
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
         template <_Min_max_mode _Mode, class _Traits>
@@ -5039,7 +5039,7 @@ namespace {
 
                 return _Last1;
             } else
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
             {
                 const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2 + sizeof(_Ty);
 
@@ -5288,7 +5288,7 @@ namespace {
                     return _Last1;
                 }
             } else
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
             {
                 auto _Ptr1       = static_cast<const _Ty*>(_Last1) - _Count2;
                 const auto _Ptr2 = static_cast<const _Ty*>(_First2);
@@ -5458,7 +5458,7 @@ namespace {
 
                 _Result /= sizeof(_Ty);
             }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
             const auto _First1_el = static_cast<const _Ty*>(_First1);
             const auto _First2_el = static_cast<const _Ty*>(_First2);
 
@@ -5523,7 +5523,7 @@ __declspec(noalias) void __stdcall __std_replace_4(
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     } else
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
     {
         for (auto _Cur = reinterpret_cast<uint32_t*>(_First); _Cur != _Last; ++_Cur) {
             if (*_Cur == _Old_val) {
@@ -5566,7 +5566,7 @@ __declspec(noalias) void __stdcall __std_replace_8(
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
     } else
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
     {
         for (auto _Cur = reinterpret_cast<uint64_t*>(_First); _Cur != _Last; ++_Cur) {
             if (*_Cur == _Old_val) {
@@ -5949,7 +5949,7 @@ namespace {
             return _Out;
         }
 
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
     } // namespace _Removing
 } // unnamed namespace
 
@@ -5965,7 +5965,7 @@ void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _V
         _Out   = _Removing::_Remove_impl<_Removing::_Sse_1>(_First, _Stop, _Val);
         _First = _Stop;
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
@@ -5980,7 +5980,7 @@ void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _
         _Out   = _Removing::_Remove_impl<_Removing::_Sse_2>(_First, _Stop, _Val);
         _First = _Stop;
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
@@ -6002,7 +6002,7 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
         _Out   = _Removing::_Remove_impl<_Removing::_Sse_4>(_First, _Stop, _Val);
         _First = _Stop;
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
@@ -6024,7 +6024,7 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
         _Out   = _Removing::_Remove_impl<_Removing::_Sse_8>(_First, _Stop, _Val);
         _First = _Stop;
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
@@ -6038,7 +6038,7 @@ void* __stdcall __std_remove_copy_1(
         _Out   = _Removing::_Remove_copy_impl<_Removing::_Sse_1>(_First, _Stop, _Out, _Val);
         _First = _Stop;
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
@@ -6052,7 +6052,7 @@ void* __stdcall __std_remove_copy_2(
         _Out   = _Removing::_Remove_copy_impl<_Removing::_Sse_2>(_First, _Stop, _Out, _Val);
         _First = _Stop;
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
@@ -6073,7 +6073,7 @@ void* __stdcall __std_remove_copy_4(
         _Out   = _Removing::_Remove_copy_impl<_Removing::_Sse_4>(_First, _Stop, _Out, _Val);
         _First = _Stop;
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
@@ -6094,7 +6094,7 @@ void* __stdcall __std_remove_copy_8(
         _Out   = _Removing::_Remove_copy_impl<_Removing::_Sse_8>(_First, _Stop, _Out, _Val);
         _First = _Stop;
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
@@ -6116,7 +6116,7 @@ void* __stdcall __std_unique_1(void* _First, void* const _Last) noexcept {
         _Dest  = _Removing::_Unique_impl<_Removing::_Sse_1>(_First, _Stop);
         _First = _Stop;
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Unique_fallback<uint8_t>(_First, _Last, _Dest);
 }
@@ -6138,7 +6138,7 @@ void* __stdcall __std_unique_2(void* _First, void* const _Last) noexcept {
         _Dest  = _Removing::_Unique_impl<_Removing::_Sse_2>(_First, _Stop);
         _First = _Stop;
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Unique_fallback<uint16_t>(_First, _Last, _Dest);
 }
@@ -6167,7 +6167,7 @@ void* __stdcall __std_unique_4(void* _First, void* const _Last) noexcept {
         _Dest  = _Removing::_Unique_impl<_Removing::_Sse_4>(_First, _Stop);
         _First = _Stop;
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Unique_fallback<uint32_t>(_First, _Last, _Dest);
 }
@@ -6196,7 +6196,7 @@ void* __stdcall __std_unique_8(void* _First, void* const _Last) noexcept {
         _Dest  = _Removing::_Unique_impl<_Removing::_Sse_8>(_First, _Stop);
         _First = _Stop;
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Unique_fallback<uint64_t>(_First, _Last, _Dest);
 }
@@ -6216,7 +6216,7 @@ void* __stdcall __std_unique_copy_1(const void* _First, const void* const _Last,
         _Dest  = _Removing::_Unique_copy_impl<_Removing::_Sse_1>(_First, _Stop, _Dest);
         _First = _Stop;
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Unique_fallback<uint8_t>(_First, _Last, _Dest);
 }
@@ -6236,7 +6236,7 @@ void* __stdcall __std_unique_copy_2(const void* _First, const void* const _Last,
         _Dest  = _Removing::_Unique_copy_impl<_Removing::_Sse_2>(_First, _Stop, _Dest);
         _First = _Stop;
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Unique_fallback<uint16_t>(_First, _Last, _Dest);
 }
@@ -6263,7 +6263,7 @@ void* __stdcall __std_unique_copy_4(const void* _First, const void* const _Last,
         _Dest  = _Removing::_Unique_copy_impl<_Removing::_Sse_4>(_First, _Stop, _Dest);
         _First = _Stop;
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Unique_fallback<uint32_t>(_First, _Last, _Dest);
 }
@@ -6290,7 +6290,7 @@ void* __stdcall __std_unique_copy_8(const void* _First, const void* const _Last,
         _Dest  = _Removing::_Unique_copy_impl<_Removing::_Sse_8>(_First, _Stop, _Dest);
         _First = _Stop;
     }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Unique_fallback<uint64_t>(_First, _Last, _Dest);
 }
@@ -6440,7 +6440,7 @@ namespace {
             } else if (_Use_sse42()) {
                 _Impl<_Sse_traits>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
             } else
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
             {
                 const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
                 for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
@@ -6651,7 +6651,7 @@ namespace {
 
             return true;
         }
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         template <class _Elem>
         bool _Fallback(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_bits,
@@ -6695,7 +6695,7 @@ namespace {
             } else if (_Use_sse42()) {
                 return _Impl<_Sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
             } else
-#endif // !defined(_M_ARM64EC)
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
             {
                 return _Fallback(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
             }
