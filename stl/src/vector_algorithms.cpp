@@ -2315,7 +2315,6 @@ namespace {
             return _Minmax_impl<_Mode, typename _Traits::_Scalar, _Sign>(_First, _Last);
         }
 
-
         template <class _Traits, class _Ty>
         const void* _Is_sorted_until_impl(const void* _First, const void* const _Last, const bool _Greater) noexcept {
             const ptrdiff_t _Left_off  = 0 - static_cast<ptrdiff_t>(_Greater);
@@ -3913,7 +3912,6 @@ namespace {
 
                 return static_cast<size_t>(-1);
             }
-
 
             template <class _Ty, _Predicate _Pred>
             size_t _Impl_last_avx(const void* const _Haystack, size_t _Haystack_length, const void* const _Needle,
