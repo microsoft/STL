@@ -5351,7 +5351,7 @@ const void* __stdcall __std_find_end_2(
 } // extern "C"
 
 namespace {
-    namespace _Mismatch {
+    namespace _Mismatching {
 #ifdef _M_ARM64EC
         using _Traits_1 = void;
         using _Traits_2 = void;
@@ -5476,29 +5476,29 @@ namespace {
 
             return _Result;
         }
-    } // namespace _Mismatch
+    } // namespace _Mismatching
 } // unnamed namespace
 
 extern "C" {
 
 __declspec(noalias) size_t __stdcall __std_mismatch_1(
     const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
-    return _Mismatch::_Mismatch_impl<_Mismatch::_Traits_1, uint8_t>(_First1, _First2, _Count);
+    return _Mismatching::_Mismatch_impl<_Mismatching::_Traits_1, uint8_t>(_First1, _First2, _Count);
 }
 
 __declspec(noalias) size_t __stdcall __std_mismatch_2(
     const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
-    return _Mismatch::_Mismatch_impl<_Mismatch::_Traits_2, uint16_t>(_First1, _First2, _Count);
+    return _Mismatching::_Mismatch_impl<_Mismatching::_Traits_2, uint16_t>(_First1, _First2, _Count);
 }
 
 __declspec(noalias) size_t __stdcall __std_mismatch_4(
     const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
-    return _Mismatch::_Mismatch_impl<_Mismatch::_Traits_4, uint32_t>(_First1, _First2, _Count);
+    return _Mismatching::_Mismatch_impl<_Mismatching::_Traits_4, uint32_t>(_First1, _First2, _Count);
 }
 
 __declspec(noalias) size_t __stdcall __std_mismatch_8(
     const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
-    return _Mismatch::_Mismatch_impl<_Mismatch::_Traits_8, uint64_t>(_First1, _First2, _Count);
+    return _Mismatching::_Mismatch_impl<_Mismatching::_Traits_8, uint64_t>(_First1, _First2, _Count);
 }
 
 __declspec(noalias) void __stdcall __std_replace_4(
