@@ -2115,7 +2115,8 @@ namespace {
         }
 
         template <_Min_max_mode _Mode, class _Traits>
-        auto _Minmax_element_disp(const void* const _First, const void* const _Last, const bool _Sign) noexcept {
+        auto __stdcall _Minmax_element_disp(
+            const void* const _First, const void* const _Last, const bool _Sign) noexcept {
 #ifndef _M_ARM64EC
             if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
                 return _Minmax_element_impl<_Mode, typename _Traits::_Avx>(_First, _Last, _Sign);
@@ -2298,7 +2299,7 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         template <_Min_max_mode _Mode, class _Traits, bool _Sign>
-        auto _Minmax_disp(const void* const _First, const void* const _Last) noexcept {
+        auto __stdcall _Minmax_disp(const void* const _First, const void* const _Last) noexcept {
 #ifndef _M_ARM64EC
             if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
                 if constexpr (_Traits::_Avx::_Is_floating) {
@@ -2402,7 +2403,8 @@ namespace {
         }
 
         template <class _Traits, class _Ty>
-        const void* _Is_sorted_until_disp(const void* _First, const void* const _Last, const bool _Greater) noexcept {
+        const void* __stdcall _Is_sorted_until_disp(
+            const void* _First, const void* const _Last, const bool _Greater) noexcept {
             if (_First == _Last) {
                 return _First;
             }
@@ -2770,7 +2772,7 @@ namespace {
 
         // TRANSITION, ABI: used only in functions preserved for binary compatibility
         template <class _Ty>
-        const void* _Find_unsized_impl(const void* const _First, const _Ty _Val) noexcept {
+        const void* __stdcall _Find_unsized_impl(const void* const _First, const _Ty _Val) noexcept {
             auto _Ptr = static_cast<const _Ty*>(_First);
             while (*_Ptr != _Val) {
                 ++_Ptr;
@@ -4472,8 +4474,8 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
 
             template <class _Ty>
-            const void* _Dispatch_ptr(const void* const _First1, const void* const _Last1, const void* const _First2,
-                const void* const _Last2) noexcept {
+            const void* __stdcall _Dispatch_ptr(const void* const _First1, const void* const _Last1,
+                const void* const _First2, const void* const _Last2) noexcept {
 #ifndef _M_ARM64EC
                 if constexpr (sizeof(_Ty) <= 2) {
                     if (_Use_sse42()) {
@@ -4574,7 +4576,7 @@ namespace {
             }
 
             template <class _Ty, _Predicate _Pred>
-            size_t _Dispatch_pos(const void* const _First1, const size_t _Count1, const void* const _First2,
+            size_t __stdcall _Dispatch_pos(const void* const _First1, const size_t _Count1, const void* const _First2,
                 const size_t _Count2) noexcept {
 #ifndef _M_ARM64EC
                 if constexpr (sizeof(_Ty) <= 2) {
@@ -4799,7 +4801,7 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
 
             template <class _Ty, _Predicate _Pred>
-            size_t _Dispatch_pos(const void* const _First1, const size_t _Count1, const void* const _First2,
+            size_t __stdcall _Dispatch_pos(const void* const _First1, const size_t _Count1, const void* const _First2,
                 const size_t _Count2) noexcept {
                 using namespace _Bitmap_impl;
 
