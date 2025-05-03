@@ -40,7 +40,7 @@ struct forward_iter_adaptor {
         ++ptr;
         return *this;
     }
-    forward_iter_adaptor operator++(int) {
+    constexpr forward_iter_adaptor operator++(int) {
         forward_iter_adaptor old;
         ++ptr;
         return old;
