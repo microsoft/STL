@@ -103,7 +103,45 @@ _CRTIMP2_PURE _Thrd_id_t __cdecl _Thrd_id() noexcept { // return unique id for c
 }
 
 _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() noexcept { // return number of processors
-    return GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
+    // Most devices have only one processor group and thus have the same buffer_size
+#if defined(_M_X64) || defined(_M_ARM64) // 16 bytes per group
+    constexpr int stack_buffer_size = 48;
+#elif defined(_M_IX86) || defined(_M_ARM) // 12 bytes per group
+    constexpr int stack_buffer_size = 44;
+#else
+    constexpr int stack_buffer_size = 0;
+#endif
+    unsigned char buffer[stack_buffer_size];
+    using buffer_ptr_t = PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX;
+    DWORD buffer_size  = stack_buffer_size;
+
+    const auto try_query = [](buffer_ptr_t buffer_ptr, PDWORD buffer_size) _STATIC_CALL_OPERATOR {
+        unsigned int count = 0;
+        _ASSERT(buffer_ptr != nullptr);
+
+        if (GetLogicalProcessorInformationEx(RelationProcessorPackage, buffer_ptr, buffer_size) == TRUE) {
+            for (WORD i = 0; i != buffer_ptr->Processor.GroupCount; ++i) {
+                // Mask is 8 bytes on ARM64 and X64, and 4 bytes on X86 and ARM32.
+                count += std::popcount(buffer_ptr->Processor.GroupMask[i].Mask);
+            }
+        }
+
+        return count;
+    };
+
+    if (auto count = try_query(reinterpret_cast<buffer_ptr_t>(&buffer), &buffer_size); count != 0) {
+        return count;
+    }
+
+    if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+        _STD unique_ptr<unsigned char[]> new_buffer(::new (_STD nothrow) unsigned char[buffer_size]);
+
+        if (new_buffer != nullptr) {
+            return try_query(reinterpret_cast<buffer_ptr_t>(new_buffer.get()), &buffer_size);
+        }
+    }
+
+    return 0;
 }
 
 // TRANSITION, ABI: _Thrd_create() is preserved for binary compatibility
