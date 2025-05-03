@@ -583,7 +583,7 @@ static_assert(!CanDestroyN<const char*>);
 static_assert(!CanDestroyN<volatile char*>);
 static_assert(!CanDestroyN<const volatile char*>);
 
-#if defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-10642767 (MSVC), DevCom-10896316 (EDG)
+#ifdef __clang__ // TRANSITION, DevCom-10642767 (MSVC), DevCom-10896316 (EDG)
 // Test that destroy, destroy_at, and destroy_n properly destroy trivially destructible objects
 // during constant evaluation.
 // After such destruction, further access will cause core language undefined behavior,
@@ -617,7 +617,7 @@ static_assert(!CanWellDefinedlyAccessAfterOperation<[](auto& arr) { ranges::dest
 static_assert(!CanWellDefinedlyAccessAfterOperation<[](auto& arr) { ranges::destroy_at(arr + 0); }>);
 static_assert(!CanWellDefinedlyAccessAfterOperation<[](auto& arr) { ranges::destroy_at(&arr); }>);
 static_assert(!CanWellDefinedlyAccessAfterOperation<[](auto& arr) { ranges::destroy_n(arr + 0, 1); }>);
-#endif // defined(__clang__) && !defined(__EDG__)
+#endif // ^^^ no workaround ^^^
 
 int main() {
     test_runtime(1234);
