@@ -175,6 +175,7 @@ tests\GH_000625_vector_bool_optimization
 tests\GH_000685_condition_variable_any
 tests\GH_000690_overaligned_function
 tests\GH_000732_hash_reserve
+tests\GH_000856_nth_element_linear
 tests\GH_000890_pow_template
 tests\GH_000935_complex_numerical_accuracy
 tests\GH_000940_missing_valarray_copy
@@ -541,7 +542,6 @@ tests\P1032R1_miscellaneous_constexpr
 tests\P1132R7_out_ptr
 tests\P1135R6_atomic_flag_test
 tests\P1135R6_atomic_wait
-tests\P1135R6_atomic_wait_win7
 tests\P1135R6_barrier
 tests\P1135R6_latch
 tests\P1135R6_semaphore

@@ -5,14 +5,15 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <memory>
 #include <random>
 #include <vector>
 
-template <class Contained>
-std::vector<Contained> random_vector(size_t n) {
+template <class Contained, template <class> class Alloc = std::allocator>
+std::vector<Contained, Alloc<Contained>> random_vector(size_t n) {
     std::mt19937_64 prng;
 
-    std::vector<Contained> res(n);
+    std::vector<Contained, Alloc<Contained>> res(n);
 
 // Here, the type Contained can be char, int, aggregate<Data>, or non_trivial<Data> where Data is char or int.
 // (aggregate<Data> and non_trivial<Data> are defined in udt.hpp.)
