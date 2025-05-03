@@ -581,6 +581,9 @@ std/thread/futures/futures.promise/set_value_at_thread_exit_const.pass.cpp FAIL
 std/thread/futures/futures.promise/set_value_at_thread_exit_void.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.pass.cpp FAIL
 
+# LWG-3120 Unclear behavior of monotonic_buffer_resource::release()
+std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/release_reset_initial_status.pass.cpp FAIL
+
 # LWG-3343 "Ordering of calls to unlock() and notify_all() in Effects element of notify_all_at_thread_exit() should be reversed" (Open)
 # libc++ speculatively implements LWG-3343. If we wanted to do the same thing,
 # we'd need to reverse the order of the _Mtx_unlock() and _Cnd_broadcast() calls in xnotify.cpp.
@@ -1536,6 +1539,12 @@ std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:1 
 
 # Not analyzed. Emitting easily-suppressed truncation warnings for MSVC, but also compiler errors for MSVC and Clang.
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.pass.cpp FAIL
+
+# Not analyzed. MSVC emits "warning C4242: 'initializing': conversion from 'nasty_char_traits::int_type' to 'char', possible loss of data".
+std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:1 FAIL
 
 
 # *** XFAILS WHICH PASS ***
