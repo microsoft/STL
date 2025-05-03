@@ -45,6 +45,12 @@ std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
 # LLVM-122638: [libc++][test] re.regex.construct/bad_backref.pass.cpp assumes non-standard extension to extended regular expressions
 std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
 
+# LLVM-138375: [libc++][test] Make narrowing in nasty_char_traits::to_char_type more explicit
+std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:1 FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -1538,12 +1544,6 @@ std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:1 
 
 # Not analyzed. Emitting easily-suppressed truncation warnings for MSVC, but also compiler errors for MSVC and Clang.
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.pass.cpp FAIL
-
-# Not analyzed. MSVC emits "warning C4242: 'initializing': conversion from 'nasty_char_traits::int_type' to 'char', possible loss of data".
-std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:1 FAIL
 
 
 # *** XFAILS WHICH PASS ***
