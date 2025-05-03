@@ -111,7 +111,7 @@ _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() noexcept { // re
 #elif defined(_M_IX86) || defined(_M_ARM) // 12 bytes per group
     constexpr int stack_buffer_size = 44;
 #else
-    constexpr int stack_buffer_size = 0;
+#error Unknown architecture
 #endif
     alignas(SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX) unsigned char buffer[stack_buffer_size];
     using buffer_ptr_t = PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX;
