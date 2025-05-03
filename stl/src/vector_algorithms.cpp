@@ -6253,7 +6253,25 @@ namespace {
         using _Traits_2_avx = void;
         using _Traits_2_sse = void;
 #else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
-        struct _Traits_1_avx {
+        struct _Traits_avx {
+            static void _Out(void* const _Dest, const __m256i _Elems) noexcept {
+                _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Elems);
+            }
+
+            static void _Exit_vectorized() noexcept {
+                _mm256_zeroupper();
+            }
+        };
+
+        struct _Traits_sse {
+            static void _Out(void* const _Dest, const __m128i _Elems) noexcept {
+                _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Elems);
+            }
+
+            static void _Exit_vectorized() noexcept {}
+        };
+
+        struct _Traits_1_avx : _Traits_avx {
             using _Value_type = uint32_t;
 
             static __m256i _Set(const char _Val) noexcept {
@@ -6271,13 +6289,9 @@ namespace {
                 const __m256i _Ex1 = _mm256_blendv_epi8(_Px1, _Px0, _Ex0);
                 return _Ex1;
             }
-
-            static void _Out(void* const _Dest, const __m256i _Elems) noexcept {
-                _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Elems);
-            }
         };
 
-        struct _Traits_1_sse {
+        struct _Traits_1_sse : _Traits_sse {
             using _Value_type = uint16_t;
 
             static __m128i _Set(const char _Val) noexcept {
@@ -6293,13 +6307,9 @@ namespace {
                 const __m128i _Ex1 = _mm_blendv_epi8(_Px1, _Px0, _Ex0);
                 return _Ex1;
             }
-
-            static void _Out(void* const _Dest, const __m128i _Elems) noexcept {
-                _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Elems);
-            }
         };
 
-        struct _Traits_2_avx {
+        struct _Traits_2_avx : _Traits_avx {
             using _Value_type = uint16_t;
 
             static __m256i _Set(const wchar_t _Val) noexcept {
@@ -6318,13 +6328,9 @@ namespace {
                 const __m256i _Ex1 = _mm256_blendv_epi8(_Px1, _Px0, _Ex0);
                 return _Ex1;
             }
-
-            static void _Out(void* const _Dest, const __m256i _Elems) noexcept {
-                _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Elems);
-            }
         };
 
-        struct _Traits_2_sse {
+        struct _Traits_2_sse : _Traits_sse {
             using _Value_type = uint8_t;
 
             static __m128i _Set(const wchar_t _Val) noexcept {
@@ -6337,10 +6343,6 @@ namespace {
                 const __m128i _Ex0 = _mm_cmpeq_epi16(_Msk, _mm_setzero_si128());
                 const __m128i _Ex1 = _mm_blendv_epi8(_Px1, _Px0, _Ex0);
                 return _Ex1;
-            }
-
-            static void _Out(void* const _Dest, const __m128i _Elems) noexcept {
-                _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Elems);
             }
         };
 
@@ -6375,6 +6377,8 @@ namespace {
                 const _Elem* const _Tmpd = _Tmp + (_Step_size_bits - _Size_bits);
                 memcpy(_Dest, _Tmpd, _Size_bits * sizeof(_Elem));
             }
+
+            _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
         }
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
 
@@ -6384,7 +6388,6 @@ namespace {
 #ifndef _M_ARM64EC
             if (_Use_avx2() && _Size_bits >= 256) {
                 _Impl<_Avx_traits>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
-                _mm256_zeroupper(); // TRANSITION, DevCom-10331414
             } else if (_Use_sse42()) {
                 _Impl<_Sse_traits>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
             } else
