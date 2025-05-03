@@ -568,12 +568,16 @@ void test_gh_5437_ECMAScript_or_collate(syntax_option_type ECMAScript_or_collate
         for (wchar_t ch = L'\u0001'; ch <= L'\u0200'; ++ch) {
             char_range.should_search_match(wstring(1, ch), wstring(1, ch));
         }
+        char_range.should_search_fail(wstring(1, L'\u0000'));
+        char_range.should_search_fail(wstring(1, L'\u0201'));
     }
     {
         test_wregex char_range(&g_regexTester, L"^[\u00FE-\u0100]$", ECMAScript_or_collate);
         for (wchar_t ch = L'\u00FE'; ch <= L'\u0100'; ++ch) {
             char_range.should_search_match(wstring(1, ch), wstring(1, ch));
         }
+        char_range.should_search_fail(wstring(1, L'\u00FD'));
+        char_range.should_search_fail(wstring(1, L'\u0101'));
     }
 }
 
