@@ -96,7 +96,7 @@ void test_gh_5210() {
 #endif // !defined(SKIP_COLLATE_TRANSFORM_TESTS)
 }
 
-void test_gh_5212_compare_hash(const collate<wchar_t>& coll, wstring string1, wstring string2) {
+void test_gh_5212_compare_hash(const collate<wchar_t>& coll, const wstring& string1, const wstring& string2) {
     assert(coll.hash(string1.data(), string1.data() + string1.size())
            == coll.hash(string2.data(), string2.data() + string2.size()));
 }
