@@ -190,21 +190,31 @@ BENCHMARK(c_strstr)->Apply(common_args);
 
 BENCHMARK(classic_search<std::uint8_t>)->Apply(common_args);
 BENCHMARK(classic_search<std::uint16_t>)->Apply(common_args);
+BENCHMARK(classic_search<std::uint32_t>)->Apply(common_args);
+BENCHMARK(classic_search<std::uint64_t>)->Apply(common_args);
 
 BENCHMARK(ranges_search<std::uint8_t>)->Apply(common_args);
 BENCHMARK(ranges_search<std::uint16_t>)->Apply(common_args);
+BENCHMARK(ranges_search<std::uint32_t>)->Apply(common_args);
+BENCHMARK(ranges_search<std::uint64_t>)->Apply(common_args);
 
 BENCHMARK(search_default_searcher<std::uint8_t>)->Apply(common_args);
 BENCHMARK(search_default_searcher<std::uint16_t>)->Apply(common_args);
+BENCHMARK(search_default_searcher<std::uint32_t>)->Apply(common_args);
+BENCHMARK(search_default_searcher<std::uint64_t>)->Apply(common_args);
 
 BENCHMARK(member_find<not_highly_aligned_string>)->Apply(common_args);
 BENCHMARK(member_find<not_highly_aligned_wstring>)->Apply(common_args);
 
 BENCHMARK(classic_find_end<std::uint8_t>)->Apply(common_args);
 BENCHMARK(classic_find_end<std::uint16_t>)->Apply(common_args);
+BENCHMARK(classic_find_end<std::uint32_t>)->Apply(common_args);
+BENCHMARK(classic_find_end<std::uint64_t>)->Apply(common_args);
 
 BENCHMARK(ranges_find_end<std::uint8_t>)->Apply(common_args);
 BENCHMARK(ranges_find_end<std::uint16_t>)->Apply(common_args);
+BENCHMARK(ranges_find_end<std::uint32_t>)->Apply(common_args);
+BENCHMARK(ranges_find_end<std::uint64_t>)->Apply(common_args);
 
 BENCHMARK(member_rfind<not_highly_aligned_string>)->Apply(common_args);
 BENCHMARK(member_rfind<not_highly_aligned_wstring>)->Apply(common_args);
