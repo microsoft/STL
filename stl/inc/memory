@@ -584,7 +584,7 @@ namespace ranges {
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
     _NODISCARD constexpr _It _Destroy_unchecked(_It _First, _Se _Last) noexcept {
-        if _STL_CONSTEVAL_CONDITION {
+        if consteval {
             for (; _First != _Last; ++_First) {
                 _RANGES destroy_at(_STD addressof(*_First));
             }
@@ -637,7 +637,7 @@ _CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_ra
 
     auto _UFirst = _STD _Get_unwrapped_n(_First, _Count);
 #if _HAS_CXX20
-    if _STL_CONSTEVAL_CONDITION {
+    if consteval {
         for (; _Count > 0; --_Count, (void) ++_UFirst) {
             _STD _Destroy_in_place(*_UFirst);
         }
@@ -673,7 +673,7 @@ namespace ranges {
             }
 
             auto _UFirst = _STD _Get_unwrapped_n(_STD move(_First), _Count);
-            if _STL_CONSTEVAL_CONDITION {
+            if consteval {
                 do {
                     _RANGES destroy_at(_STD addressof(*_UFirst));
                     ++_UFirst;

@@ -765,13 +765,6 @@
 #define _STL_DISABLED_WARNING_C4984
 #endif
 
-// warning C5282: 'if consteval' requires at least '/std:c++23preview'
-#if !_HAS_CXX23
-#define _STL_DISABLED_WARNING_C5282 5282
-#else
-#define _STL_DISABLED_WARNING_C5282
-#endif
-
 // warning C5053: support for 'explicit(<expr>)' in C++17 and earlier is a vendor extension
 #if !_HAS_CXX20
 #define _STL_DISABLED_WARNING_C5053 5053
@@ -827,7 +820,6 @@
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
-    _STL_DISABLED_WARNING_C5282                       \
     _STL_EXTRA_DISABLED_WARNINGS
 // clang-format on
 #endif // !defined(_STL_DISABLED_WARNINGS)
@@ -836,7 +828,6 @@
 // warning: explicit(bool) is a C++20 extension [-Wc++20-extensions]
 // warning: declaring overloaded 'operator()' as 'static' is a C++23 extension [-Wc++23-extensions]
 // warning: static lambdas are a C++23 extension [-Wc++23-extensions]
-// warning: consteval if is a C++23 extension [-Wc++23-extensions]
 // warning: ignoring __declspec(allocator) because the function return type '%s' is not a pointer or reference type
 //     [-Wignored-attributes]
 // warning: '#pragma float_control' is not supported on this target - ignored [-Wignored-pragmas]
@@ -2042,25 +2033,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #else // ^^^ defined(__CUDACC__) / !defined(__CUDACC__) vvv
 #define _RESTRICT __restrict
 #endif // ^^^ !defined(__CUDACC__) ^^^
-
-#if _HAS_CXX20 // see GH-5225
-#if defined(__EDG__)
-#define _HAS_IF_CONSTEVAL _HAS_CXX23
-#elif defined(__clang__) || !defined(__CUDACC__) // ^^^ EDG / Clang or MSVC vvv
-#define _HAS_IF_CONSTEVAL 1
-#else // ^^^ Clang or MSVC / others vvv
-#define _HAS_IF_CONSTEVAL defined(__cpp_if_consteval)
-#endif // ^^^ others ^^^
-
-#if _HAS_IF_CONSTEVAL
-#define _STL_CONSTEVAL_CONDITION consteval
-#else // ^^^ no workaround / workaround vvv
-#define _STL_CONSTEVAL_CONDITION (_STD is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-
-#undef _HAS_IF_CONSTEVAL
-
-#endif // _HAS_CXX20
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_
