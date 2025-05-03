@@ -542,7 +542,6 @@ tests\P1032R1_miscellaneous_constexpr
 tests\P1132R7_out_ptr
 tests\P1135R6_atomic_flag_test
 tests\P1135R6_atomic_wait
-tests\P1135R6_atomic_wait_win7
 tests\P1135R6_barrier
 tests\P1135R6_latch
 tests\P1135R6_semaphore

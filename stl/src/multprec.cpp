@@ -3,15 +3,18 @@
 
 // implements multiprecision math for random number generators
 
-#include <limits>
-#include <random>
+#include <yvals.h>
 
 _STD_BEGIN
-constexpr int shift                 = _STD numeric_limits<unsigned long long>::digits / 2;
+constexpr int _MP_len = 5;
+using _MP_arr         = unsigned long long[_MP_len];
+
+constexpr int shift                 = 64 / 2;
 constexpr unsigned long long mask   = ~(~0ULL << shift);
 constexpr unsigned long long maxVal = mask + 1;
 
-[[nodiscard]] unsigned long long __CLRCALL_PURE_OR_CDECL _MP_Get(
+// TRANSITION, ABI: preserved for binary compatibility
+[[nodiscard]] _CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _MP_Get(
     _MP_arr u) noexcept { // convert multi-word value to scalar value
     return (u[1] << shift) + u[0];
 }
@@ -32,7 +35,8 @@ static void add(unsigned long long* u, int ulen, unsigned long long* v,
     }
 }
 
-void __CLRCALL_PURE_OR_CDECL _MP_Add(
+// TRANSITION, ABI: preserved for binary compatibility
+_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Add(
     _MP_arr u, unsigned long long v0) noexcept { // add scalar value to multi-word value
     unsigned long long v[2];
     v[0] = v0 & mask;
@@ -50,7 +54,8 @@ static void mul(
     }
 }
 
-void __CLRCALL_PURE_OR_CDECL _MP_Mul(
+// TRANSITION, ABI: preserved for binary compatibility
+_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Mul(
     _MP_arr w, unsigned long long u0, unsigned long long v0) noexcept { // multiply multi-word value by multi-word value
     constexpr int m = 2;
     constexpr int n = 2;
@@ -106,7 +111,8 @@ static void div(_MP_arr u,
     return ulen;
 }
 
-void __CLRCALL_PURE_OR_CDECL _MP_Rem(
+// TRANSITION, ABI: preserved for binary compatibility
+_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Rem(
     _MP_arr u, unsigned long long v0) noexcept { // divide multi-word value by value, leaving remainder in u
     unsigned long long v[2];
     v[0]        = v0 & mask;
