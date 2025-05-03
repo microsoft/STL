@@ -113,17 +113,17 @@ _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() noexcept { // re
 #else
     constexpr int stack_buffer_size = 0;
 #endif
-    unsigned char buffer[stack_buffer_size];
+    alignas(SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX) unsigned char buffer[stack_buffer_size];
     using buffer_ptr_t = PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX;
     DWORD buffer_size  = stack_buffer_size;
 
-    const auto try_query = [](buffer_ptr_t buffer_ptr, PDWORD buffer_size) _STATIC_CALL_OPERATOR {
+    const auto try_query = [](buffer_ptr_t buffer_ptr, PDWORD buffer_size) _STATIC_CALL_OPERATOR noexcept {
         unsigned int count = 0;
         _ASSERT(buffer_ptr != nullptr);
 
         if (GetLogicalProcessorInformationEx(RelationProcessorPackage, buffer_ptr, buffer_size) == TRUE) {
             for (WORD i = 0; i != buffer_ptr->Processor.GroupCount; ++i) {
-                // Mask is 8 bytes on ARM64 and X64, and 4 bytes on X86 and ARM32.
+                // Mask is 8 bytes on ARM64 and X64, and 4 bytes on X86 and ARM32
                 count += std::popcount(buffer_ptr->Processor.GroupMask[i].Mask);
             }
         }
