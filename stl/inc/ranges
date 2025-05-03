@@ -1160,16 +1160,20 @@ namespace ranges {
 
             constexpr _Iterator& operator+=(difference_type _Off) noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                if constexpr (sizeof(difference_type) > sizeof(_Index_type)) {
-                    _STL_VERIFY(static_cast<_Index_type>(_Off) == _Off,
-                        _Off > 0 ? "cannot advance repeat_view iterator past end (integer overflow)"
-                                 : "cannot advance repeat_view iterator before begin (integer overflow)");
-                }
-
                 if (_Off > 0) {
+                    if constexpr (sizeof(difference_type) > sizeof(_Index_type)) {
+                        _STL_VERIFY(static_cast<_Index_type>(_Off) == _Off,
+                            "cannot advance repeat_view iterator past end (integer overflow)");
+                    }
+
                     _STL_VERIFY(_Current <= (numeric_limits<_Index_type>::max)() - static_cast<_Index_type>(_Off),
                         "cannot advance repeat_view iterator past end (integer overflow)");
                 } else {
+                    if constexpr (sizeof(difference_type) > sizeof(_Index_type)) {
+                        _STL_VERIFY(static_cast<_Index_type>(_Off) == _Off,
+                            "cannot advance repeat_view iterator before begin (integer overflow)");
+                    }
+
                     _STL_VERIFY(_Current >= (numeric_limits<_Index_type>::min)() - static_cast<_Index_type>(_Off),
                         "cannot advance repeat_view iterator before begin (integer overflow)");
                 }
@@ -1183,16 +1187,20 @@ namespace ranges {
             }
             constexpr _Iterator& operator-=(difference_type _Off) noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                if constexpr (sizeof(difference_type) > sizeof(_Index_type)) {
-                    _STL_VERIFY(static_cast<_Index_type>(_Off) == _Off,
-                        _Off < 0 ? "cannot advance repeat_view iterator past end (integer overflow)"
-                                 : "cannot advance repeat_view iterator before begin (integer overflow)");
-                }
-
                 if (_Off < 0) {
+                    if constexpr (sizeof(difference_type) > sizeof(_Index_type)) {
+                        _STL_VERIFY(static_cast<_Index_type>(_Off) == _Off,
+                            "cannot advance repeat_view iterator past end (integer overflow)");
+                    }
+
                     _STL_VERIFY(_Current <= (numeric_limits<_Index_type>::max)() + static_cast<_Index_type>(_Off),
                         "cannot advance repeat_view iterator past end (integer overflow)");
                 } else {
+                    if constexpr (sizeof(difference_type) > sizeof(_Index_type)) {
+                        _STL_VERIFY(static_cast<_Index_type>(_Off) == _Off,
+                            "cannot advance repeat_view iterator before begin (integer overflow)");
+                    }
+
                     _STL_VERIFY(_Current >= (numeric_limits<_Index_type>::min)() + static_cast<_Index_type>(_Off),
                         "cannot advance repeat_view iterator before begin (integer overflow)");
                 }
