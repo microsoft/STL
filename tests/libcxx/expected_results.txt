@@ -45,10 +45,6 @@ std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
 # LLVM-122638: [libc++][test] re.regex.construct/bad_backref.pass.cpp assumes non-standard extension to extended regular expressions
 std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
 
-# LLVM-132532: [libc++][test] Small fixes for time tests
-std/time/time.clock/time.clock.gps/types.compile.pass.cpp:2 FAIL
-std/time/time.clock/time.clock.tai/types.compile.pass.cpp:2 FAIL
-
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -788,9 +784,6 @@ std/containers/sequences/vector/addressof.compile.pass.cpp:2 FAIL
 # throwing_allocator appears to be totally non-Standard.
 std/containers/sequences/vector.bool/ctor_exceptions.pass.cpp FAIL
 
-# The test is checking _LIBCPP_HAS_THREADS, which we don't have.
-std/language.support/support.limits/support.limits.general/shared_mutex.version.compile.pass.cpp FAIL
-
 # x64 truncation warnings caused by allocators.
 std/containers/sequences/vector/vector.capacity/reserve_exceptions.pass.cpp:0 SKIPPED
 std/containers/sequences/vector/vector.capacity/reserve_exceptions.pass.cpp:1 SKIPPED
@@ -941,10 +934,6 @@ std/thread/futures/futures.promise/move_ctor.pass.cpp FAIL
 std/thread/futures/futures.promise/swap.pass.cpp FAIL
 std/thread/futures/futures.shared_future/dtor.pass.cpp FAIL
 std/thread/futures/futures.unique_future/dtor.pass.cpp FAIL
-
-# Not analyzed. libc++ seems to have a different opinion about what tuple_size<const void> should do.
-std/utilities/tuple/tuple.tuple/tuple.helper/tuple_size_incomplete.pass.cpp FAIL
-std/utilities/tuple/tuple.tuple/tuple.helper/tuple_size_structured_bindings.pass.cpp FAIL
 
 # Not analyzed. Expects implicit deduction guides to SFINAE away when allocators are passed where comparators should be.
 std/containers/associative/map/map.cons/deduct.pass.cpp FAIL
