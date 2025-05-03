@@ -160,8 +160,8 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_search_n<long long>(gen);
     test_search_n<unsigned long long>(gen);
 
-    // Test only one case with forward iteators.  It is different complex enough code path, hence worth testing,
-    // but it is not vectorized, so no point in trying different types.
+    // Test only one case with forward iterators. It is a different and complex code path, hence it's worth testing,
+    // but it is not vectorized, so there's no point in trying different types.
     test_search_n<short, true>(gen);
 }
 
