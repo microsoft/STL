@@ -5548,10 +5548,11 @@ namespace {
 
                         // The first part, fit and unfit needle, mask out already processed positions
                         if (const size_t _Tail_bytes_1 = _Size_bytes_1 & 0xF; _Tail_bytes_1 != 0) {
-                            _Mid1                = _First1;
-                            const __m128i _Data1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
-                            const auto _Match    = _mm_cmpestrm(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
-                            const unsigned int _Match_val = _mm_cvtsi128_si32(_Match) & ((1 << _Tail_bytes_1) - 1);
+                            _Mid1                   = _First1;
+                            const __m128i _Data1    = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                            const auto _Match       = _mm_cmpestrm(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
+                            const size_t _Tail_el_1 = _Tail_bytes_1 / sizeof(_Ty);
+                            const unsigned int _Match_val = _mm_cvtsi128_si32(_Match) & ((1 << _Tail_el_1) - 1);
                             if (_Match_val != 0 && (_Check_unfit(_Match_val) || _Check_fit(_Match_val))) {
                                 return _Mid1;
                             }
@@ -5641,10 +5642,11 @@ namespace {
 
                         // The first part, mask out already processed positions
                         if (const size_t _Tail_bytes_1 = _Size_diff_bytes & 0xF; _Tail_bytes_1 != 0) {
-                            _Mid1                = _First1;
-                            const __m128i _Data1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
-                            const auto _Match    = _mm_cmpestrm(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
-                            const unsigned int _Match_val = _mm_cvtsi128_si32(_Match) & ((1 << _Tail_bytes_1) - 1);
+                            _Mid1                   = _First1;
+                            const __m128i _Data1    = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                            const auto _Match       = _mm_cmpestrm(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
+                            const size_t _Tail_el_1 = _Tail_bytes_1 / sizeof(_Ty);
+                            const unsigned int _Match_val = _mm_cvtsi128_si32(_Match) & ((1 << _Tail_el_1) - 1);
                             if (_Match_val != 0 && _Check(_Match_val)) {
                                 return _Mid1;
                             }
