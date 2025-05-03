@@ -6437,6 +6437,10 @@ namespace {
             static bool _Check(const __m256i _Val, const __m256i _Ex1, const __m256i _Dx0) noexcept {
                 return _mm256_testc_si256(_Ex1, _mm256_xor_si256(_Val, _Dx0));
             }
+
+            static void _Exit_vectorized() noexcept {
+                _mm256_zeroupper();
+            }
         };
 
         struct _Traits_sse {
@@ -6453,6 +6457,8 @@ namespace {
             static bool _Check(const __m128i _Val, const __m128i _Ex1, const __m128i _Dx0) noexcept {
                 return _mm_testc_si128(_Ex1, _mm_xor_si128(_Val, _Dx0));
             }
+
+            static void _Exit_vectorized() noexcept {}
         };
 
         struct _Traits_1_avx : _Traits_avx {
@@ -6583,12 +6589,14 @@ namespace {
 
             // Convert characters to bits
             if (!_Loop<_Traits>(_Src, _Src + _Size_convert, _Dx0, _Dx1, _Out)) {
+                _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
                 return false;
             }
 
             // Verify remaining characters, if any
             if (_Size_convert != _Size_chars
                 && !_Loop<_Traits>(_Src + _Size_convert, _Src + _Size_chars, _Dx0, _Dx1, [](_Traits::_Vec) {})) {
+                _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
                 return false;
             }
 
@@ -6596,6 +6604,8 @@ namespace {
             if (_Dst_words != _Dst_words_end) {
                 memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
             }
+
+            _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
 
             return true;
         }
@@ -6637,8 +6647,6 @@ namespace {
             _Elem _Elem0, _Elem _Elem1) noexcept {
 #ifndef _M_ARM64EC
             if (_Use_avx2() && _Size_bits >= 256) {
-                _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
-
                 return _Impl<_Avx>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
             } else if (_Use_sse42()) {
                 return _Impl<_Sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
