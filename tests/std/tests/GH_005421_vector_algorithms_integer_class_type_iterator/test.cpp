@@ -7,122 +7,21 @@
 #include <compare>
 #include <iterator>
 
+#include "range_algorithm_support.hpp"
+
 using namespace std;
 
-// prevents vectorization paths from (accidentally) constructing iterator from pointer
-enum class magic_word : unsigned short;
+template <class T>
+using picky_contiguous_iterator = test::redifference_iterator<_Signed128, T*>;
 
-template <class UnderlyingPtr>
-class picky_contiguous_iterator {
-public:
-    using iterator_category    = contiguous_iterator_tag;
-    using reference            = typename iterator_traits<UnderlyingPtr>::reference;
-    using value_type           = typename iterator_traits<UnderlyingPtr>::value_type;
-    using pointer              = typename iterator_traits<UnderlyingPtr>::pointer;
-    using underlying_diff_type = typename iterator_traits<UnderlyingPtr>::difference_type;
-    using difference_type      = _Signed128;
-
-    picky_contiguous_iterator() : ptr{} {}
-    picky_contiguous_iterator(const UnderlyingPtr ptr_, magic_word) : ptr(ptr_) {}
-
-    decltype(auto) operator*() const {
-        return *ptr;
-    }
-
-    auto operator->() const {
-        return ptr;
-    }
-
-    decltype(auto) operator++() {
-        ++ptr;
-        return *this;
-    }
-
-    auto operator++(int) {
-        picky_contiguous_iterator old(*this);
-        ++ptr;
-        return old;
-    }
-
-    decltype(auto) operator--() {
-        --ptr;
-        return *this;
-    }
-
-    auto operator--(int) {
-        picky_contiguous_iterator old(*this);
-        --ptr;
-        return old;
-    }
-
-    auto operator<=>(const picky_contiguous_iterator o) const {
-        return ptr <=> o.ptr;
-    }
-
-    auto operator==(const picky_contiguous_iterator o) const {
-        return ptr == o.ptr;
-    }
-
-    friend auto operator+(const difference_type diff, const picky_contiguous_iterator it) {
-        return picky_contiguous_iterator{static_cast<underlying_diff_type>(diff) + it.ptr, magic_word{}};
-    }
-
-    friend auto operator+(const picky_contiguous_iterator it, const difference_type diff) {
-        return picky_contiguous_iterator{it.ptr + static_cast<underlying_diff_type>(diff), magic_word{}};
-    }
-
-    friend auto operator-(const picky_contiguous_iterator it, const difference_type diff) {
-        return picky_contiguous_iterator{it.ptr - static_cast<underlying_diff_type>(diff), magic_word{}};
-    }
-
-    friend auto operator-(const picky_contiguous_iterator it, picky_contiguous_iterator it_other) {
-        return difference_type{it.ptr - it_other.ptr};
-    }
-
-    decltype(auto) operator+=(const difference_type diff) {
-        ptr += static_cast<underlying_diff_type>(diff);
-        return *this;
-    }
-
-    decltype(auto) operator-=(const difference_type diff) {
-        ptr -= static_cast<underlying_diff_type>(diff);
-        return *this;
-    }
-
-    decltype(auto) operator[](const difference_type diff) const {
-        return ptr[static_cast<underlying_diff_type>(diff)];
-    }
-
-    template <class T>
-    friend void operator+(const T, const picky_contiguous_iterator it) = delete;
-
-    template <class T>
-    friend auto operator+(const picky_contiguous_iterator it, const T) = delete;
-
-    template <class T>
-    friend auto operator-(const picky_contiguous_iterator it, const T) = delete;
-
-    template <class T>
-    void operator+=(const T) = delete;
-
-    template <class T>
-    void operator-=(const T) = delete;
-
-    template <class T>
-    void operator[](const T) const = delete;
-
-private:
-    UnderlyingPtr ptr;
-};
-
-static_assert(contiguous_iterator<picky_contiguous_iterator<int*>>);
+static_assert(contiguous_iterator<picky_contiguous_iterator<int>>);
 
 int main() {
     int arr[] = {200, 210, 220, 250, 240, 250, 250, 270, 280, 290, 300, 310, 320, 250, 340, 250, 250, 370, 380, 390};
     constexpr auto arr_size = size(arr);
 
-    picky_contiguous_iterator arr_begin(begin(arr), magic_word{});
-    picky_contiguous_iterator arr_end(end(arr), magic_word{});
+    picky_contiguous_iterator arr_begin(begin(arr));
+    picky_contiguous_iterator arr_end(end(arr));
 
     assert(find(arr_begin, arr_end, 250) == arr_begin + _Signed128{3});
     assert(ranges::find(arr_begin, arr_end, 250) == arr_begin + _Signed128{3});
@@ -134,8 +33,8 @@ int main() {
 
     {
         int needle[] = {100, 300, 500, 700, 900};
-        picky_contiguous_iterator needle_begin(begin(needle), magic_word{});
-        picky_contiguous_iterator needle_end(end(needle), magic_word{});
+        picky_contiguous_iterator needle_begin(begin(needle));
+        picky_contiguous_iterator needle_end(end(needle));
 
         assert(find_first_of(arr_begin, arr_end, needle_begin, needle_end) == arr_begin + _Signed128{10});
         assert(ranges::find_first_of(arr_begin, arr_end, needle_begin, needle_end) == arr_begin + _Signed128{10});
@@ -147,15 +46,15 @@ int main() {
     {
         // We're short of 32 and 64 bit elements 'search' and 'find_end' for now
         short short_arr[arr_size];
-        picky_contiguous_iterator short_arr_begin(begin(short_arr), magic_word{});
-        picky_contiguous_iterator short_arr_end(end(short_arr), magic_word{});
+        picky_contiguous_iterator short_arr_begin(begin(short_arr));
+        picky_contiguous_iterator short_arr_end(end(short_arr));
 
         transform(arr_begin, arr_end, short_arr_begin, [](int v) { return static_cast<short>(v); });
 
         short short_needle[] = {300, 310, 320};
 
-        picky_contiguous_iterator short_needle_begin(begin(short_needle), magic_word{});
-        picky_contiguous_iterator short_needle_end(end(short_needle), magic_word{});
+        picky_contiguous_iterator short_needle_begin(begin(short_needle));
+        picky_contiguous_iterator short_needle_end(end(short_needle));
 
         assert(search(short_arr_begin, short_arr_end, short_needle_begin, short_needle_end)
                == short_arr_begin + _Signed128{10});
@@ -174,8 +73,8 @@ int main() {
     {
         int arr_cmp[] = {200, 210, 220, 230, 240, 250};
 
-        picky_contiguous_iterator arr_cmp_begin(begin(arr_cmp), magic_word{});
-        picky_contiguous_iterator arr_cmp_end(end(arr_cmp), magic_word{});
+        picky_contiguous_iterator arr_cmp_begin(begin(arr_cmp));
+        picky_contiguous_iterator arr_cmp_end(end(arr_cmp));
 
         assert(!equal(arr_cmp_begin, arr_cmp_end, arr_begin));
         assert(!equal(arr_cmp_begin, arr_cmp_end, arr_begin, arr_end));
@@ -203,8 +102,8 @@ int main() {
     {
         // floating minmax is distinct codepath unless /fp:fast
         float float_arr[arr_size];
-        picky_contiguous_iterator float_arr_begin(begin(float_arr), magic_word{});
-        picky_contiguous_iterator float_arr_end(end(float_arr), magic_word{});
+        picky_contiguous_iterator float_arr_begin(begin(float_arr));
+        picky_contiguous_iterator float_arr_end(end(float_arr));
 
         transform(arr_begin, arr_end, float_arr_begin, [](int v) { return static_cast<float>(v); });
 
@@ -218,8 +117,8 @@ int main() {
 
     {
         int arr_copy[arr_size];
-        picky_contiguous_iterator arr_copy_begin(begin(arr_copy), magic_word{});
-        picky_contiguous_iterator arr_copy_end(end(arr_copy), magic_word{});
+        picky_contiguous_iterator arr_copy_begin(begin(arr_copy));
+        picky_contiguous_iterator arr_copy_end(end(arr_copy));
 
         copy(arr_begin, arr_end, arr_copy_begin);
         assert(equal(arr_begin, arr_end, arr_copy_begin, arr_copy_end));
@@ -244,12 +143,12 @@ int main() {
 
     {
         int arr_src[arr_size];
-        picky_contiguous_iterator arr_src_begin(begin(arr_src), magic_word{});
-        picky_contiguous_iterator arr_src_end(end(arr_src), magic_word{});
+        picky_contiguous_iterator arr_src_begin(begin(arr_src));
+        picky_contiguous_iterator arr_src_end(end(arr_src));
 
         int arr_dest[arr_size] = {};
-        picky_contiguous_iterator arr_dest_begin(begin(arr_dest), magic_word{});
-        picky_contiguous_iterator arr_dest_end(end(arr_dest), magic_word{});
+        picky_contiguous_iterator arr_dest_begin(begin(arr_dest));
+        picky_contiguous_iterator arr_dest_end(end(arr_dest));
 
         int remove_expected[] = {200, 210, 220, 240, 270, 280, 290, 300, 310, 320, 340, 370, 380, 390};
 
