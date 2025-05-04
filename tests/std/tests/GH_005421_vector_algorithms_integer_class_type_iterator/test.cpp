@@ -110,6 +110,7 @@ public:
     template <class T>
     void operator[](const T) const = delete;
 
+private:
     UnderlyingPtr ptr;
 };
 
