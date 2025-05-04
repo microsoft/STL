@@ -2328,7 +2328,7 @@ _NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHays
                     if constexpr (is_pointer_v<decltype(_UFirst1)>) {
                         _UFirst1 = _Ptr_res1;
                     } else {
-                        _UFirst1 += _Ptr_res1 - _Ptr1;
+                        _UFirst1 += static_cast<_Iter_diff_t<decltype(_UFirst1)>>(_Ptr_res1 - _Ptr1);
                     }
 
                     _STD _Seek_wrapped(_Last1, _UFirst1);
@@ -2440,7 +2440,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
                 if constexpr (is_pointer_v<decltype(_UFirst)>) {
                     _UFirst = _Result;
                 } else {
-                    _UFirst += _Result - _First_ptr;
+                    _UFirst += static_cast<_Iter_diff_t<decltype(_UFirst)>>(_Result - _First_ptr);
                 }
 
                 _STD _Seek_wrapped(_Last, _UFirst);
@@ -3483,7 +3483,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
                     if constexpr (is_pointer_v<decltype(_UFirst1)>) {
                         _UFirst1 = _Ptr_res1;
                     } else {
-                        _UFirst1 += _Ptr_res1 - _Ptr1;
+                        _UFirst1 += static_cast<_Iter_diff_t<decltype(_UFirst1)>>(_Ptr_res1 - _Ptr1);
                     }
 
                     _STD _Seek_wrapped(_First1, _UFirst1);
@@ -3805,7 +3805,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
             if constexpr (is_pointer_v<decltype(_UFirst1)>) {
                 _UFirst1 = _Result;
             } else {
-                _UFirst1 += _Result - _First1_ptr;
+                _UFirst1 += static_cast<_Iter_diff_t<decltype(_UFirst1)>>(_Result - _First1_ptr);
             }
             _STD _Seek_wrapped(_First1, _UFirst1);
             return _First1;
@@ -4841,7 +4841,7 @@ _CONSTEXPR20 _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _
             if constexpr (is_pointer_v<decltype(_UDest)>) {
                 _UDest = _Result;
             } else {
-                _UDest += _Result - _Dest_ptr;
+                _UDest += static_cast<_Iter_diff_t<decltype(_UDest)>>(_Result - _Dest_ptr);
             }
 
             _STD _Seek_wrapped(_Dest, _UDest);
@@ -5190,7 +5190,7 @@ _NODISCARD_UNIQUE_ALG _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last, _P
             if constexpr (is_pointer_v<decltype(_UFirst)>) {
                 _UFirst = _Result;
             } else {
-                _UFirst += _Result - _First_ptr;
+                _UFirst += static_cast<_Iter_diff_t<decltype(_UFirst)>>(_Result - _First_ptr);
             }
 
             _STD _Seek_wrapped(_Last, _UFirst);
@@ -5358,7 +5358,7 @@ _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pr
             if constexpr (is_pointer_v<decltype(_UDest)>) {
                 _UDest = _Result;
             } else {
-                _UDest += _Result - _Dest_ptr;
+                _UDest += static_cast<_Iter_diff_t<decltype(_UDest)>>(_Result - _Dest_ptr);
             }
 
             _STD _Seek_wrapped(_Dest, _UDest);

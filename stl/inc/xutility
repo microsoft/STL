@@ -6927,7 +6927,7 @@ namespace ranges {
                             return {_Ptr_res1, _Ptr_res1};
                         }
                     } else {
-                        _First1 += _Ptr_res1 - _Ptr1;
+                        _First1 += static_cast<iter_difference_t<_It1>>(_Ptr_res1 - _Ptr1);
                         if (_First1 != _Last1) {
                             return {_First1, _First1 + static_cast<iter_difference_t<_It1>>(_Count2)};
                         } else {
