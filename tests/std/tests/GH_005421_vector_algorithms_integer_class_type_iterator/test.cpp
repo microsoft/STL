@@ -24,11 +24,11 @@ public:
     picky_contiguous_iterator() : ptr{} {}
     picky_contiguous_iterator(const UnderlyingPtr ptr_, magic_word) : ptr(ptr_) {}
 
-    reference operator*() const {
+    decltype(auto) operator*() const {
         return *ptr;
     }
 
-    pointer operator->() const {
+    auto operator->() const {
         return ptr;
     }
 
@@ -205,7 +205,7 @@ int main() {
         picky_contiguous_iterator float_arr_begin(begin(float_arr), magic_word{});
         picky_contiguous_iterator float_arr_end(end(float_arr), magic_word{});
 
-        transform(arr_begin, arr_end, float_arr_begin, [](int v) { return static_cast<short>(v); });
+        transform(arr_begin, arr_end, float_arr_begin, [](int v) { return static_cast<float>(v); });
 
         assert(ranges::min(ranges::subrange(float_arr_begin, float_arr_end)) == 200.0);
         assert(ranges::max(ranges::subrange(float_arr_begin, float_arr_end)) == 390.0);
