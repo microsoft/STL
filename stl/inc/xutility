@@ -5357,7 +5357,7 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
                 } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UDest), _Ty>) {
                     if (_STD _Is_all_bits_zero(_Val)) {
                         _STD _Fill_zero_memset(_UDest, static_cast<size_t>(_Count));
-                        _STD _Seek_wrapped(_Dest, _UDest + _Count);
+                        _STD _Seek_wrapped(_Dest, _UDest + static_cast<_Iter_diff_t<decltype(_UDest)>>(_Count));
                         return _Dest;
                     }
                 }
@@ -6141,7 +6141,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
             if constexpr (is_pointer_v<_InIt>) {
                 return _Result;
             } else {
-                return _First + (_Result - _First_ptr);
+                return _First + static_cast<_Iter_diff_t<_InIt>>(_Result - _First_ptr);
             }
 #else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
             if constexpr (sizeof(_Iter_value_t<_InIt>) <= 2) {
@@ -6810,7 +6810,7 @@ namespace ranges {
                     if constexpr (is_pointer_v<_It>) {
                         return _Result;
                     } else {
-                        return _First + (_Result - _First_ptr);
+                        return _First + static_cast<iter_difference_t<_It>>(_Result - _First_ptr);
                     }
                 }
             }
@@ -7041,7 +7041,7 @@ constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
             if constexpr (is_pointer_v<_FwdIt>) {
                 return _Result;
             } else {
-                return _First + (_Result - _First_ptr);
+                return _First + static_cast<_Iter_diff_t<_FwdIt>>(_Result - _First_ptr);
             }
         }
     }
@@ -7265,7 +7265,7 @@ constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
             if constexpr (is_pointer_v<_FwdIt>) {
                 return _Result;
             } else {
-                return _First + (_Result - _First_ptr);
+                return _First + static_cast<_Iter_diff_t<_FwdIt>>(_Result - _First_ptr);
             }
         }
     }
