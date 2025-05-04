@@ -2642,7 +2642,7 @@ namespace ranges {
                             }
                         } else {
                             if (_Result != _Last_ptr) {
-                                _First += static_cast<_Iter_diff_t<_It>>(_Result - _First_ptr);
+                                _First += static_cast<iter_difference_t<_It>>(_Result - _First_ptr);
                                 return {_First, _First + _Count};
                             } else {
                                 _First += _Dist;
@@ -3613,7 +3613,7 @@ namespace ranges {
                                 return {_Ptr_res1, _Ptr_res1};
                             }
                         } else {
-                            _First1 += static_cast<_Iter_diff_t<_It1>>(_Ptr_res1 - _Ptr1);
+                            _First1 += static_cast<iter_difference_t<_It1>>(_Ptr_res1 - _Ptr1);
                             if (_Ptr_res1 != _Ptr_last1) {
                                 return {_First1, _First1 + _Count2_as1};
                             } else {
@@ -10939,8 +10939,8 @@ namespace ranges {
                     if constexpr (is_pointer_v<_It>) {
                         return {_Result.first, _Result.second};
                     } else {
-                        return {_First + static_cast<_Iter_diff_t<_It>>(_Result.first - _First_ptr),
-                            _First + static_cast<_Iter_diff_t<_It>>(_Result.second - _First_ptr)};
+                        return {_First + static_cast<iter_difference_t<_It>>(_Result.first - _First_ptr),
+                            _First + static_cast<iter_difference_t<_It>>(_Result.second - _First_ptr)};
                     }
                 }
             }

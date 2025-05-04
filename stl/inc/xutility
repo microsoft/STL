@@ -7107,7 +7107,7 @@ namespace ranges {
                 if constexpr (is_pointer_v<_It>) {
                     return _Result;
                 } else {
-                    return _First + static_cast<_Iter_diff_t<_It>>(_Result - _First_ptr);
+                    return _First + static_cast<iter_difference_t<_It>>(_Result - _First_ptr);
                 }
             }
         }
@@ -7331,7 +7331,7 @@ namespace ranges {
                 if constexpr (is_pointer_v<_It>) {
                     return _Result;
                 } else {
-                    return _First + static_cast<_Iter_diff_t<_It>>(_Result - _First_ptr);
+                    return _First + static_cast<iter_difference_t<_It>>(_Result - _First_ptr);
                 }
             }
         }
