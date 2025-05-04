@@ -93,6 +93,15 @@ public:
     }
 
     template <class T>
+    friend void operator+(const T, const angry_contiguous_iterator it) = delete;
+
+    template <class T>
+    friend auto operator+(const angry_contiguous_iterator it, const T) = delete;
+
+    template <class T>
+    friend auto operator-(const angry_contiguous_iterator it, const T) = delete;
+
+    template <class T>
     void operator+=(const T) = delete;
 
     template <class T>
