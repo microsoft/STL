@@ -85,6 +85,8 @@ int main() {
 
         assert(lexicographical_compare(arr_cmp_begin, arr_cmp_end, arr_begin, arr_end));
         assert(ranges::lexicographical_compare(arr_cmp_begin, arr_cmp_end, arr_begin, arr_end));
+        assert(
+            lexicographical_compare_three_way(arr_cmp_begin, arr_cmp_end, arr_begin, arr_end) == strong_ordering::less);
     }
 
     assert(min_element(arr_begin, arr_end) == arr_begin);
