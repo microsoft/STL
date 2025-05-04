@@ -9,7 +9,7 @@
 
 using namespace std;
 
-struct magic_word {}; // prevent vectorization paths from construction iterator from pointer
+enum class magic_word : unsigned short {}; // prevent vectorization paths from construction iterator from pointer
 
 template <class UnderlyingPtr>
 class angry_contiguous_iterator {
