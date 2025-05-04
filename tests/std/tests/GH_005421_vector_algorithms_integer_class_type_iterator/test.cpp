@@ -92,6 +92,15 @@ public:
         return ptr[static_cast<underlying_diff_type>(diff)];
     }
 
+    template <class T>
+    void operator+=(const T) = delete;
+
+    template <class T>
+    void operator-=(const T) = delete;
+
+    template <class T>
+    void operator[](const T) const = delete;
+
     UnderlyingPtr ptr;
 };
 
