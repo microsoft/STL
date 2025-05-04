@@ -9,7 +9,8 @@
 
 using namespace std;
 
-enum class magic_word : unsigned short; // prevent vectorization paths from construction iterator from pointer
+// prevents vectorization paths from (accidentally) constructing iterator from pointer
+enum class magic_word : unsigned short;
 
 template <class UnderlyingPtr>
 class picky_contiguous_iterator {
