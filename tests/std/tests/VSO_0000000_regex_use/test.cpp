@@ -1562,13 +1562,21 @@ void test_gh_5364() {
 void test_gh_5365() {
     // GH-5365: <regex>: Implementation divergence for capture group behavior:
     // Capture groups were not correctly cleared at the beginning of repetitions in ECMAScript mode.
-    {
-        test_regex captures_in_repeated_noncapturing_group(&g_regexTester, "^(?:(a)|(b)|(c)|(d))+$");
+    for (string pattern : {"^(?:(a)|(b)|(c)|(d))+$", "^(?:(a)|(b)|(c)|(d))+?$", "^(?:(a)|(b)|(c)|(d)){4,}$"}) {
+        test_regex captures_in_repeated_noncapturing_group(&g_regexTester, pattern);
         captures_in_repeated_noncapturing_group.should_search_match_capture_groups(
             "acbd", "acbd", match_default, {{-1, -1}, {-1, -1}, {-1, -1}, {3, 4}});
         captures_in_repeated_noncapturing_group.should_search_match_capture_groups(
             "adcba", "adcba", match_default, {{4, 5}, {-1, -1}, {-1, -1}, {-1, -1}});
     }
+
+    {
+        test_regex captures_in_repeated_noncapturing_group(&g_regexTester, "^(?:(a)|(b)|(c)|(d)){5}$");
+        captures_in_repeated_noncapturing_group.should_search_fail("acbd");
+        captures_in_repeated_noncapturing_group.should_search_match_capture_groups(
+            "adcba", "adcba", match_default, {{4, 5}, {-1, -1}, {-1, -1}, {-1, -1}});
+    }
+
     {
         test_regex captures_in_questionmark_quantifiers(&g_regexTester, "(z)((a+)?(b+)?(c))*");
         captures_in_questionmark_quantifiers.should_search_match_capture_groups(
