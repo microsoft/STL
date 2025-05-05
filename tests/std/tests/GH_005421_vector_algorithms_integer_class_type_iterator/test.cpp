@@ -17,7 +17,8 @@ using picky_contiguous_iterator = test::redifference_iterator<_Signed128, T*>;
 static_assert(contiguous_iterator<picky_contiguous_iterator<int>>);
 
 int main() {
-    int arr[] = {200, 210, 220, 250, 240, 250, 250, 270, 280, 290, 300, 310, 320, 250, 340, 250, 250, 370, 380, 390};
+    const int arr[] = {
+        200, 210, 220, 250, 240, 250, 250, 270, 280, 290, 300, 310, 320, 250, 340, 250, 250, 370, 380, 390};
     constexpr auto arr_size = size(arr);
 
     picky_contiguous_iterator arr_begin(begin(arr));
@@ -32,7 +33,7 @@ int main() {
     assert(begin(ranges::search_n(arr_begin, arr_end, 2, 250)) == arr_begin + _Signed128{5});
 
     {
-        int needle[] = {100, 300, 500, 700, 900};
+        const int needle[] = {100, 300, 500, 700, 900};
         picky_contiguous_iterator needle_begin(begin(needle));
         picky_contiguous_iterator needle_end(end(needle));
 
@@ -51,7 +52,7 @@ int main() {
 
         transform(arr_begin, arr_end, short_arr_begin, [](int v) { return static_cast<short>(v); });
 
-        short short_needle[] = {300, 310, 320};
+        const short short_needle[] = {300, 310, 320};
 
         picky_contiguous_iterator short_needle_begin(begin(short_needle));
         picky_contiguous_iterator short_needle_end(end(short_needle));
@@ -71,7 +72,7 @@ int main() {
     assert(ranges::count(arr_begin, arr_end, 250) == 6);
 
     {
-        int arr_cmp[] = {200, 210, 220, 230, 240, 250};
+        const int arr_cmp[] = {200, 210, 220, 230, 240, 250};
 
         picky_contiguous_iterator arr_cmp_begin(begin(arr_cmp));
         picky_contiguous_iterator arr_cmp_end(end(arr_cmp));
@@ -152,72 +153,79 @@ int main() {
         picky_contiguous_iterator arr_dest_begin(begin(arr_dest));
         picky_contiguous_iterator arr_dest_end(end(arr_dest));
 
-        int remove_expected[] = {200, 210, 220, 240, 270, 280, 290, 300, 310, 320, 340, 370, 380, 390};
+        {
+            const int remove_expected[] = {200, 210, 220, 240, 270, 280, 290, 300, 310, 320, 340, 370, 380, 390};
 
-        copy(arr_begin, arr_end, arr_src_begin);
-        auto rem_copy_it = remove_copy(arr_src_begin, arr_src_end, arr_dest_begin, 250);
-        assert(equal(arr_dest_begin, rem_copy_it, begin(remove_expected), end(remove_expected)));
-        auto rem_it = remove(arr_src_begin, arr_src_end, 250);
-        assert(equal(arr_src_begin, rem_it, begin(remove_expected), end(remove_expected)));
+            copy(arr_begin, arr_end, arr_src_begin);
+            auto rem_copy_it = remove_copy(arr_src_begin, arr_src_end, arr_dest_begin, 250);
+            assert(equal(arr_dest_begin, rem_copy_it, begin(remove_expected), end(remove_expected)));
+            auto rem_it = remove(arr_src_begin, arr_src_end, 250);
+            assert(equal(arr_src_begin, rem_it, begin(remove_expected), end(remove_expected)));
 
-        ranges::copy(arr_begin, arr_end, arr_src_begin);
-        auto r_rem_copy_it = ranges::remove_copy(arr_src_begin, arr_src_end, arr_dest_begin, 250);
-        assert(ranges::equal(arr_dest_begin, r_rem_copy_it.out, begin(remove_expected), end(remove_expected)));
-        auto r_rem_it = ranges::remove(arr_src_begin, arr_src_end, 250);
-        assert(ranges::equal(arr_src_begin, begin(r_rem_it), begin(remove_expected), end(remove_expected)));
+            ranges::copy(arr_begin, arr_end, arr_src_begin);
+            auto r_rem_copy_it = ranges::remove_copy(arr_src_begin, arr_src_end, arr_dest_begin, 250);
+            assert(ranges::equal(arr_dest_begin, r_rem_copy_it.out, begin(remove_expected), end(remove_expected)));
+            auto r_rem_it = ranges::remove(arr_src_begin, arr_src_end, 250);
+            assert(ranges::equal(arr_src_begin, begin(r_rem_it), begin(remove_expected), end(remove_expected)));
+        }
+        {
+            const int unique_expected[] = {
+                200, 210, 220, 250, 240, 250, 270, 280, 290, 300, 310, 320, 250, 340, 250, 370, 380, 390};
 
-        int unique_expected[] = {
-            200, 210, 220, 250, 240, 250, 270, 280, 290, 300, 310, 320, 250, 340, 250, 370, 380, 390};
+            copy(arr_begin, arr_end, arr_src_begin);
+            auto un_copy_it = unique_copy(arr_src_begin, arr_src_end, arr_dest_begin);
+            assert(equal(arr_dest_begin, un_copy_it, begin(unique_expected), end(unique_expected)));
+            auto un_it = unique(arr_src_begin, arr_src_end);
+            assert(equal(arr_src_begin, un_it, begin(unique_expected), end(unique_expected)));
 
-        copy(arr_begin, arr_end, arr_src_begin);
-        auto un_copy_it = unique_copy(arr_src_begin, arr_src_end, arr_dest_begin);
-        assert(equal(arr_dest_begin, un_copy_it, begin(unique_expected), end(unique_expected)));
-        auto un_it = unique(arr_src_begin, arr_src_end);
-        assert(equal(arr_src_begin, un_it, begin(unique_expected), end(unique_expected)));
+            ranges::copy(arr_begin, arr_end, arr_src_begin);
+            auto r_un_copy_it = ranges::unique_copy(arr_src_begin, arr_src_end, arr_dest_begin);
+            assert(ranges::equal(arr_dest_begin, r_un_copy_it.out, begin(unique_expected), end(unique_expected)));
+            auto r_un_it = ranges::unique(arr_src_begin, arr_src_end);
+            assert(ranges::equal(arr_src_begin, begin(r_un_it), begin(unique_expected), end(unique_expected)));
+        }
+        {
+            const int reverse_expected[] = {
+                390, 380, 370, 250, 250, 340, 250, 320, 310, 300, 290, 280, 270, 250, 250, 240, 250, 220, 210, 200};
 
-        ranges::copy(arr_begin, arr_end, arr_src_begin);
-        auto r_un_copy_it = ranges::unique_copy(arr_src_begin, arr_src_end, arr_dest_begin);
-        assert(ranges::equal(arr_dest_begin, r_un_copy_it.out, begin(unique_expected), end(unique_expected)));
-        auto r_un_it = ranges::unique(arr_src_begin, arr_src_end);
-        assert(ranges::equal(arr_src_begin, begin(r_un_it), begin(unique_expected), end(unique_expected)));
+            copy(arr_begin, arr_end, arr_src_begin);
+            reverse_copy(arr_src_begin, arr_src_end, arr_dest_begin);
+            assert(equal(arr_dest_begin, arr_dest_end, begin(reverse_expected), end(reverse_expected)));
+            reverse(arr_src_begin, arr_src_end);
+            assert(equal(arr_src_begin, arr_src_end, begin(reverse_expected), end(reverse_expected)));
 
-        int reverse_expected[] = {
-            390, 380, 370, 250, 250, 340, 250, 320, 310, 300, 290, 280, 270, 250, 250, 240, 250, 220, 210, 200};
+            ranges::copy(arr_begin, arr_end, arr_src_begin);
+            ranges::reverse_copy(arr_src_begin, arr_src_end, arr_dest_begin);
+            assert(ranges::equal(arr_dest_begin, arr_dest_end, begin(reverse_expected), end(reverse_expected)));
+            ranges::reverse(arr_src_begin, arr_src_end);
+            assert(ranges::equal(arr_src_begin, arr_src_end, begin(reverse_expected), end(reverse_expected)));
+        }
+        {
+            // Out of replace family, only replace for 32 and 64 bytes elements is manually vectorized,
+            // replace_copy is auto vectorized (along with replace_copy_if)
+            const int replace_expected[] = {
+                200, 210, 220, 333, 240, 333, 333, 270, 280, 290, 300, 310, 320, 333, 340, 333, 333, 370, 380, 390};
 
-        copy(arr_begin, arr_end, arr_src_begin);
-        reverse_copy(arr_src_begin, arr_src_end, arr_dest_begin);
-        assert(equal(arr_dest_begin, arr_dest_end, begin(reverse_expected), end(reverse_expected)));
-        reverse(arr_src_begin, arr_src_end);
-        assert(equal(arr_src_begin, arr_src_end, begin(reverse_expected), end(reverse_expected)));
+            copy(arr_begin, arr_end, arr_src_begin);
+            replace(arr_src_begin, arr_src_end, 250, 333);
+            assert(equal(arr_src_begin, arr_src_end, begin(replace_expected), end(replace_expected)));
 
-        ranges::copy(arr_begin, arr_end, arr_src_begin);
-        ranges::reverse_copy(arr_src_begin, arr_src_end, arr_dest_begin);
-        assert(ranges::equal(arr_dest_begin, arr_dest_end, begin(reverse_expected), end(reverse_expected)));
-        ranges::reverse(arr_src_begin, arr_src_end);
-        assert(ranges::equal(arr_src_begin, arr_src_end, begin(reverse_expected), end(reverse_expected)));
+            ranges::copy(arr_begin, arr_end, arr_src_begin);
+            ranges::replace(arr_src_begin, arr_src_end, 250, 333);
+            assert(ranges::equal(arr_src_begin, arr_src_end, begin(replace_expected), end(replace_expected)));
+        }
+        {
+            const int swap_ranges_expected[] = {
+                300, 310, 320, 250, 340, 250, 250, 370, 380, 390, 200, 210, 220, 250, 240, 250, 250, 270, 280, 290};
 
-        // Out of replace family, only replace for 32 and 64 bytes elements is manually vectorized,
-        // replace_copy is auto vectorized (along with replace_copy_if)
-        int replace_expected[] = {
-            200, 210, 220, 333, 240, 333, 333, 270, 280, 290, 300, 310, 320, 333, 340, 333, 333, 370, 380, 390};
+            copy(arr_begin, arr_end, arr_src_begin);
+            swap_ranges(arr_src_begin, arr_src_begin + _Signed128{10}, arr_src_begin + _Signed128{10});
+            assert(equal(arr_src_begin, arr_src_end, begin(swap_ranges_expected), end(swap_ranges_expected)));
 
-        copy(arr_begin, arr_end, arr_src_begin);
-        replace(arr_src_begin, arr_src_end, 250, 333);
-        assert(equal(arr_src_begin, arr_src_end, begin(replace_expected), end(replace_expected)));
-
-        ranges::copy(arr_begin, arr_end, arr_src_begin);
-        ranges::replace(arr_src_begin, arr_src_end, 250, 333);
-        assert(ranges::equal(arr_src_begin, arr_src_end, begin(replace_expected), end(replace_expected)));
-
-        int swap_ranges_expected[] = {
-            300, 310, 320, 250, 340, 250, 250, 370, 380, 390, 200, 210, 220, 250, 240, 250, 250, 270, 280, 290};
-
-        copy(arr_begin, arr_end, arr_src_begin);
-        swap_ranges(arr_src_begin, arr_src_begin + _Signed128{10}, arr_src_begin + _Signed128{10});
-        assert(equal(arr_src_begin, arr_src_end, begin(swap_ranges_expected), end(swap_ranges_expected)));
-
-        ranges::copy(arr_begin, arr_end, arr_src_begin);
-        ranges::swap_ranges(arr_src_begin, arr_src_begin + _Signed128{10}, arr_src_begin + _Signed128{10}, arr_end);
-        assert(ranges::equal(arr_src_begin, arr_src_end, begin(swap_ranges_expected), end(swap_ranges_expected)));
+            ranges::copy(arr_begin, arr_end, arr_src_begin);
+            ranges::swap_ranges(
+                arr_src_begin, arr_src_begin + _Signed128{10}, arr_src_begin + _Signed128{10}, arr_src_end);
+            assert(ranges::equal(arr_src_begin, arr_src_end, begin(swap_ranges_expected), end(swap_ranges_expected)));
+        }
     }
 }
