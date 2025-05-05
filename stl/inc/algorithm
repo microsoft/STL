@@ -720,7 +720,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, 
                 if constexpr (is_pointer_v<decltype(_ULast)>) {
                     _ULast = _Result;
                 } else {
-                    _ULast = _UFirst + static_cast<_Iter_diff_t<_FwdIt>>(_Result - _First_ptr);
+                    _ULast = _UFirst + static_cast<_Iter_diff_t<decltype(_ULast)>>(_Result - _First_ptr);
                 }
 
                 _STD _Seek_wrapped(_Last, _ULast);
