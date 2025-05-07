@@ -824,7 +824,7 @@ private:
     }
 
     void _Construct_n(_CRT_GUARDOVERFLOW size_type _Count) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
+        auto _Alproxy = _STD _Get_proxy_allocator(_Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _List_node_insert_op2<_Alnode> _Appended(_Getal());
         _Appended._Append_n(_Count);
@@ -845,7 +845,7 @@ public:
 
 private:
     void _Construct_n(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
+        auto _Alproxy = _STD _Get_proxy_allocator(_Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _List_node_insert_op2<_Alnode> _Appended(_Getal());
         _Appended._Append_n(_Count, _Val);
@@ -870,7 +870,7 @@ public:
 private:
     template <class _Iter, class _Sent>
     void _Construct_range_unchecked(_Iter _First, const _Sent _Last) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
+        auto _Alproxy = _STD _Get_proxy_allocator(_Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _List_node_insert_op2<_Alnode> _Appended(_Getal());
         _Appended._Append_range_unchecked(_STD move(_First), _Last);
@@ -940,8 +940,8 @@ public:
         constexpr auto _Pocma_val = _Choose_pocma_v<_Alnode>;
         if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
             if (_Al != _Right_al) {
-                auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Al);
-                auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right_al);
+                auto _Alproxy       = _STD _Get_proxy_allocator(_Al);
+                auto _Right_alproxy = _STD _Get_proxy_allocator(_Right_al);
                 _Container_proxy_ptr<_Alty> _Proxy(_Right_alproxy, _Leave_proxy_unbound{});
                 auto& _My_data      = _Mypair._Myval2;
                 auto& _Right_data   = _Right._Mypair._Myval2;
@@ -1060,17 +1060,17 @@ public:
     ~list() noexcept {
         _Tidy();
 #if _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, ABI
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
+        auto _Alproxy = _STD _Get_proxy_allocator(_Getal());
         _Delete_plain_internal(_Alproxy, _Mypair._Myval2._Myproxy);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
     }
 
 private:
     void _Reload_sentinel_and_proxy(const list& _Right) { // reload sentinel / proxy from unequal POCCA _Right
-        auto& _Al             = _Getal();
-        auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Al);
-        auto& _Right_al       = _Right._Getal();
-        auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right_al);
+        auto& _Al           = _Getal();
+        auto _Alproxy       = _STD _Get_proxy_allocator(_Al);
+        auto& _Right_al     = _Right._Getal();
+        auto _Right_alproxy = _STD _Get_proxy_allocator(_Right_al);
         _Container_proxy_ptr<_Alty> _Proxy(_Right_alproxy, _Leave_proxy_unbound{});
         auto _Right_al_non_const = _Right_al;
         auto _Newhead            = _Node::_Buyheadnode(_Right_al_non_const);
@@ -1845,7 +1845,7 @@ private:
     }
 
     void _Alloc_sentinel_and_proxy() {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
+        auto _Alproxy = _STD _Get_proxy_allocator(_Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         auto& _Al     = _Getal();
         auto _Newhead = _Al.allocate(1);

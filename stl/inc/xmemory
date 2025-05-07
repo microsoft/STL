@@ -1504,12 +1504,20 @@ struct _Container_proxy_ptr12 : _Basic_container_proxy_ptr12 {
 };
 
 #if _ITERATOR_DEBUG_LEVEL == 0
-#define _GET_PROXY_ALLOCATOR(_Alty, _Al) \
-    _Fake_allocator {}
+template <class _Alloc>
+_CONSTEXPR20 _Fake_allocator _Get_proxy_allocator(const _Alloc&) noexcept {
+    return {};
+}
+
 template <class _Alloc>
 using _Container_proxy_ptr = _Fake_proxy_ptr_impl;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL > 0 vvv
-#define _GET_PROXY_ALLOCATOR(_Alty, _Al) static_cast<_Rebind_alloc_t<_Alty, _Container_proxy>>(_Al)
+template <class _Alloc>
+_CONSTEXPR20 _Rebind_alloc_t<_Alloc, _Container_proxy> _Get_proxy_allocator(const _Alloc& _Al)
+    noexcept(noexcept(static_cast<_Rebind_alloc_t<_Alloc, _Container_proxy>>(_Al))) {
+    return static_cast<_Rebind_alloc_t<_Alloc, _Container_proxy>>(_Al);
+}
+
 template <class _Alloc>
 using _Container_proxy_ptr = _Container_proxy_ptr12<_Rebind_alloc_t<_Alloc, _Container_proxy>>;
 #endif // ^^^ _ITERATOR_DEBUG_LEVEL > 0 ^^^
