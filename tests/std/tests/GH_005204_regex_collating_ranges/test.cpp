@@ -592,7 +592,7 @@ void test_gh_994() {
 }
 
 void test_gh_5435() {
-    // GH-5345: <regex>: Equivalence classes have unexpected behavior with std::wregex
+    // GH-5435: <regex>: Equivalence classes have unexpected behavior with std::wregex
     {
         test_wregex_locale eq_a_regex(&g_regexTester, L"^[[=a=]]*b$", "en-US");
         eq_a_regex.should_search_match(L"A\u00c0ab", L"A\u00c0ab"); // U+00C0 LATIN CAPITAL LETTER A WITH GRAVE
