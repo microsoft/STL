@@ -337,9 +337,9 @@ public:
         if (_First != _Last) {
             const collate<_Elem>* _Coll = _Getcoll();
             const auto& _Coll_type      = typeid(*_Coll);
-            // TRANSITION, ABI: GH-5394: locale creates collate objects of type collate, not collate_byname
+            // TRANSITION, ABI: GH-5394: locale creates collate objects of type collate, not collate_byname.
             // Depending on the resolution of LWG-2338, comparison to typeid(collate) might also become
-            // required by the standard
+            // required by the standard.
             if (_Coll_type == typeid(collate_byname<_Elem>) || _Coll_type == typeid(collate<_Elem>)) {
                 // non-empty string with known collate facet, transform it
                 size_t _Count;
@@ -364,7 +364,7 @@ public:
 #else // ^^^ defined(_CPPRTTI) / !defined(_CPPRTTI) vvv
         (void) _First;
         (void) _Last;
-#endif // !defined(_CPPRTTI)
+#endif // ^^^ !defined(_CPPRTTI) ^^^
         return _Res;
     }
 
