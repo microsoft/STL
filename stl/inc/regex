@@ -342,12 +342,12 @@ public:
             // required by the standard.
             if (_Coll_type == typeid(collate_byname<_Elem>) || _Coll_type == typeid(collate<_Elem>)) {
                 // non-empty string with known collate facet, transform it
-                size_t _Count;
                 const string_type _Src(_First, _Last);
                 const auto _Src_first = _Src.data();
                 const auto _Src_last  = _Src_first + _Src.size();
 
-                for (_Count = _Src.size(); _Res.size() < _Count;) {
+                size_t _Count = _Src.size();
+                while (_Res.size() < _Count) {
                     _Res.resize(_Count);
                     _Count = _STD _Regex_transform_primary(
                         &_Res[0], &_Res[0] + _Count, _Src_first, _Src_last, &_Coll->_Coll);
