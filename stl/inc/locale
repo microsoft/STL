@@ -193,7 +193,7 @@ protected:
 private:
     _Locinfo::_Collvec _Coll; // used by _LStrcoll and _XStrxfrm
 
-    friend class _Regex_traits<_Elem>;
+    friend _Regex_traits<_Elem>;
 };
 
 #ifdef __clang__
