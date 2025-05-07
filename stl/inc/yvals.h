@@ -243,12 +243,16 @@ _EMIT_STL_ERROR(STL1008, "_STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER has been 
 //     a non-void function, etc.), but it will not attempt to replace undefined behavior with implementation-defined
 //     behavior. (For example, we will not transform `pop_back()` of an empty `vector` to be a no-op.)
 #ifndef _MSVC_STL_DOOM_FUNCTION
-#ifdef _MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION
+#ifdef _MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION // The user wants to use abort():
 #define _MSVC_STL_DOOM_FUNCTION(mesg) _CSTD abort()
-#else // ^^^ defined(_MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION) / !defined(_MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION) vvv
-// TRANSITION, GH-4858: after dropping Win7 support, we can directly call __fastfail(FAST_FAIL_INVALID_ARG).
+#elif defined(__clang__) // Use the Clang intrinsic:
+#define _MSVC_STL_DOOM_FUNCTION(mesg) __builtin_verbose_trap("MSVC STL error", mesg)
+#elif defined(_M_CEE) // TRANSITION, VSO-2457624 (/clr silent bad codegen for __fastfail); /clr:pure lacks __fastfail
 #define _MSVC_STL_DOOM_FUNCTION(mesg) ::_invoke_watson(nullptr, nullptr, nullptr, 0, 0)
-#endif // ^^^ !defined(_MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION) ^^^
+#else // Use the MSVC __fastfail intrinsic:
+extern "C" __declspec(noreturn) void __fastfail(unsigned int); // declared by <intrin.h>
+#define _MSVC_STL_DOOM_FUNCTION(mesg) __fastfail(5) // __fastfail(FAST_FAIL_INVALID_ARG), value defined by <winnt.h>
+#endif // choose "doom function"
 #endif // ^^^ !defined(_MSVC_STL_DOOM_FUNCTION) ^^^
 
 #define _STL_REPORT_ERROR(mesg) \
@@ -495,7 +499,7 @@ private:
     }              \
     }
 
-#define _RAISE(x) ::_invoke_watson(nullptr, nullptr, nullptr, 0, 0)
+#define _RAISE(x) _MSVC_STL_DOOM_FUNCTION("_RAISE was called with !_HAS_EXCEPTIONS")
 
 #define _RERAISE
 #define _THROW(...) (__VA_ARGS__)._Raise()

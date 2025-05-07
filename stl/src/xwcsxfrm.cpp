@@ -43,7 +43,7 @@ _EXTERN_C_UNLESS_PURE
 //     string1 array are indeterminate.
 //
 // Exceptions:
-//     Non-standard: if OM/API error, return INT_MAX.
+//     Non-standard: if OM/API error, return SIZE_MAX.
 _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(end1 - string1) _Post_readable_size_(return)
                                                           wchar_t* string1,
     _In_z_ wchar_t* end1, const wchar_t* string2, const wchar_t* end2, const _Collvec* ploc) noexcept {
@@ -84,7 +84,7 @@ _CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(end1 - string
                 size = __crtLCMapStringW(locale_name, LCMAP_SORTKEY, string2, static_cast<int>(n2), nullptr, 0);
 
                 if (size == 0) {
-                    size = INT_MAX; // default error
+                    size = static_cast<size_t>(-1); // default error
                 }
             } else {
                 // string successfully mapped, convert to wide char
