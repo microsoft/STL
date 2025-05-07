@@ -111,7 +111,7 @@ size_t __stdcall __std_regex_transform_primary_wchar_t(
                     string2, static_cast<int>(n2), nullptr, 0);
 
                 if (size == 0) {
-                    size = INT_MAX; // default error
+                    size = static_cast<size_t>(-1); // default error
                 }
             } else {
                 // string successfully mapped, convert to wide char
