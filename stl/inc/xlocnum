@@ -373,15 +373,11 @@ protected:
                 char* _Ep;
                 int _Errno;
                 const long _Ans = _CSTD _Stolx(_Ac, &_Ep, _Parse_result._Base, &_Errno); // convert
-                if (_Ep == _Ac || _Errno != 0 // N4950 [facet.num.get.virtuals]/3
-                    || _Parse_result._Bad_grouping) { // N4950 [facet.num.get.virtuals]/4
-                    _Val   = true;
+                _Val            = _Ans != 0;
+                if (_Ep == _Ac || _Errno != 0 // N5008 [facet.num.get.virtuals]/3
+                    || _Parse_result._Bad_grouping // N5008 [facet.num.get.virtuals]/4
+                    || (_Ans != 0 && _Ans != 1)) { // N5008 [facet.num.get.virtuals]/6
                     _State = ios_base::failbit;
-                } else {
-                    _Val = _Ans != 0;
-                    if (_Ans != 0 && _Ans != 1) {
-                        _State = ios_base::failbit;
-                    }
                 }
             }
         }
