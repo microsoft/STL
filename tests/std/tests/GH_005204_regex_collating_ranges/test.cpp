@@ -617,9 +617,9 @@ void test_gh_5435() {
         eq_e_regex.should_search_match(L"e\u00c9Eb", L"e\u00c9Eb"); // U+00C9 LATIN CAPITAL LETTER E WITH ACUTE
         eq_e_regex.should_search_match(L"e\u00e9Eb", L"e\u00e9Eb"); // U+00E9 LATIN SMALL LETTER E WITH ACUTE
         eq_e_regex.should_search_match(L"e\u00caEb", L"e\u00caEb"); // U+00CA LATIN CAPITAL LETTER E WITH CIRCUMFLEX
-        eq_e_regex.should_search_match(L"e\u00eaEb", L"e\u00eaEb"); // U+00EA LATIN SMALL LETTER A WITH CIRCUMFLEX
+        eq_e_regex.should_search_match(L"e\u00eaEb", L"e\u00eaEb"); // U+00EA LATIN SMALL LETTER E WITH CIRCUMFLEX
         eq_e_regex.should_search_match(L"e\u00cbEb", L"e\u00cbEb"); // U+00CB LATIN CAPITAL LETTER E WITH DIAERESIS
-        eq_e_regex.should_search_match(L"e\u00ebEb", L"e\u00ebEb"); // U+00EB LATIN SMALL LETTER A WITH DIAERESIS
+        eq_e_regex.should_search_match(L"e\u00ebEb", L"e\u00ebEb"); // U+00EB LATIN SMALL LETTER E WITH DIAERESIS
         eq_e_regex.should_search_fail(L"e\u00ccEb"); // U+00CC LATIN CAPITAL LETTER I WITH GRAVE
         eq_e_regex.should_search_fail(L"e\u00ecEb"); // U+00EC LATIN SMALL LETTER I WITH GRAVE
     }
