@@ -24,10 +24,21 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-template <class _Kty, class _Keylt, class _Container, bool _Multi, class _Deriv, class _Tsorted>
-class _Base_flat_set {
+_EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
+class flat_set;
+
+_EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
+class flat_multiset;
+
+template <bool _IsUnique, class _Kty, class _Keylt, class _Container>
+class _Flat_set_base {
 private:
-    static constexpr bool _Keylt_transparent = _Is_transparent_v<_Keylt>;
+    using _Sorted_t = conditional_t<_IsUnique, sorted_unique_t, sorted_equivalent_t>;
+    using _Derived =
+        conditional_t<_IsUnique, flat_set<_Kty, _Keylt, _Container>, flat_multiset<_Kty, _Keylt, _Container>>;
+
+    static constexpr bool _Keylt_transparent     = _Is_transparent_v<_Keylt>;
+    static constexpr const char* _Msg_not_sorted = _IsUnique ? "Input was not sorted-unique!" : "Input was not sorted!";
 
 public:
     static_assert(same_as<_Kty, typename _Container::value_type>,
@@ -53,124 +64,124 @@ public:
     static_assert(random_access_iterator<iterator>, "The C++ Standard forbids containers without random "
                                                     "access iterators from being adapted. See [flatset.overview].");
 
-    _Base_flat_set() : _Mycont(), _Mycomp() {}
+    _Flat_set_base() : _Mycont(), _Mycomp() {}
 
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(const _Deriv& _Set, const _Alloc& _Al)
+    _Flat_set_base(const _Derived& _Set, const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _Set._Mycont)), _Mycomp(_Set._Mycomp) {}
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(_Deriv&& _Set, const _Alloc& _Al)
+    _Flat_set_base(_Derived&& _Set, const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _STD move(_Set).extract())),
           _Mycomp(_Set._Mycomp) // intentionally copy comparator, see LWG-2227
     {}
 
-    explicit _Base_flat_set(container_type _Cont, const key_compare& _Comp = key_compare())
+    explicit _Flat_set_base(container_type _Cont, const key_compare& _Comp = key_compare())
         : _Mycont(_STD move(_Cont)), _Mycomp(_Comp) {
         _Make_invariants_fulfilled();
     }
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(const container_type& _Cont, const _Alloc& _Al)
-        : _Base_flat_set(_STD make_obj_using_allocator<container_type>(_Al, _Cont)) {}
+    _Flat_set_base(const container_type& _Cont, const _Alloc& _Al)
+        : _Flat_set_base(_STD make_obj_using_allocator<container_type>(_Al, _Cont)) {}
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(const container_type& _Cont, const key_compare& _Comp, const _Alloc& _Al)
-        : _Base_flat_set(_STD make_obj_using_allocator<container_type>(_Al, _Cont), _Comp) {}
+    _Flat_set_base(const container_type& _Cont, const key_compare& _Comp, const _Alloc& _Al)
+        : _Flat_set_base(_STD make_obj_using_allocator<container_type>(_Al, _Cont), _Comp) {}
 
-    _Base_flat_set(_Tsorted, container_type _Cont, const key_compare& _Comp = key_compare())
+    _Flat_set_base(_Sorted_t, container_type _Cont, const key_compare& _Comp = key_compare())
         : _Mycont(_STD move(_Cont)), _Mycomp(_Comp) {
         _STL_ASSERT(_Is_sorted(_Mycont), _Msg_not_sorted);
     }
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(_Tsorted _Tsort, const container_type& _Cont, const _Alloc& _Al)
-        : _Base_flat_set(_Tsort, _STD make_obj_using_allocator<container_type>(_Al, _Cont)) {}
+    _Flat_set_base(_Sorted_t _Tag, const container_type& _Cont, const _Alloc& _Al)
+        : _Flat_set_base(_Tag, _STD make_obj_using_allocator<container_type>(_Al, _Cont)) {}
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(_Tsorted _Tsort, const container_type& _Cont, const key_compare& _Comp, const _Alloc& _Al)
-        : _Base_flat_set(_Tsort, _STD make_obj_using_allocator<container_type>(_Al, _Cont), _Comp) {}
+    _Flat_set_base(_Sorted_t _Tag, const container_type& _Cont, const key_compare& _Comp, const _Alloc& _Al)
+        : _Flat_set_base(_Tag, _STD make_obj_using_allocator<container_type>(_Al, _Cont), _Comp) {}
 
-    explicit _Base_flat_set(const key_compare& _Comp) : _Mycont(), _Mycomp(_Comp) {}
+    explicit _Flat_set_base(const key_compare& _Comp) : _Mycont(), _Mycomp(_Comp) {}
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(const key_compare& _Comp, const _Alloc& _Al)
+    _Flat_set_base(const key_compare& _Comp, const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp(_Comp) {}
     template <_Usable_allocator_for<container_type> _Alloc>
-    explicit _Base_flat_set(const _Alloc& _Al)
+    explicit _Flat_set_base(const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp() {}
 
     template <_Iterator_for_container _Iter>
-    _Base_flat_set(_Iter _First, _Iter _Last, const key_compare& _Comp = key_compare())
-        : _Base_flat_set(container_type(_First, _Last), _Comp) {}
+    _Flat_set_base(_Iter _First, _Iter _Last, const key_compare& _Comp = key_compare())
+        : _Flat_set_base(container_type(_First, _Last), _Comp) {}
     template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(_Iter _First, _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
+    _Flat_set_base(_Iter _First, _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp(_Comp) {
         _Mycont.assign(_First, _Last);
         _Make_invariants_fulfilled();
     }
     template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(_Iter _First, _Iter _Last, const _Alloc& _Al)
+    _Flat_set_base(_Iter _First, _Iter _Last, const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp() {
         _Mycont.assign(_First, _Last);
         _Make_invariants_fulfilled();
     }
 
     template <_Container_compatible_range<_Kty> _Rng>
-    _Base_flat_set(from_range_t, _Rng&& _Range)
-        : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range))) {}
+    _Flat_set_base(from_range_t, _Rng&& _Range)
+        : _Flat_set_base(container_type(from_range, _STD forward<_Rng>(_Range))) {}
     template <_Container_compatible_range<_Kty> _Rng, _Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(from_range_t, _Rng&& _Range, const _Alloc& _Al)
+    _Flat_set_base(from_range_t, _Rng&& _Range, const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp() {
         _Mycont.assign_range(_STD forward<_Rng>(_Range));
         _Make_invariants_fulfilled();
     }
     template <_Container_compatible_range<_Kty> _Rng>
-    _Base_flat_set(from_range_t, _Rng&& _Range, const key_compare& _Comp)
-        : _Base_flat_set(container_type(from_range, _STD forward<_Rng>(_Range)), _Comp) {}
+    _Flat_set_base(from_range_t, _Rng&& _Range, const key_compare& _Comp)
+        : _Flat_set_base(container_type(from_range, _STD forward<_Rng>(_Range)), _Comp) {}
     template <_Container_compatible_range<_Kty> _Rng, _Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(from_range_t, _Rng&& _Range, const key_compare& _Comp, const _Alloc& _Al)
+    _Flat_set_base(from_range_t, _Rng&& _Range, const key_compare& _Comp, const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp(_Comp) {
         _Mycont.assign_range(_STD forward<_Rng>(_Range));
         _Make_invariants_fulfilled();
     }
 
     template <_Iterator_for_container _Iter>
-    _Base_flat_set(_Tsorted _Tsort, _Iter _First, _Iter _Last, const key_compare& _Comp = key_compare())
-        : _Base_flat_set(_Tsort, container_type(_First, _Last), _Comp) {}
+    _Flat_set_base(_Sorted_t _Tag, _Iter _First, _Iter _Last, const key_compare& _Comp = key_compare())
+        : _Flat_set_base(_Tag, container_type(_First, _Last), _Comp) {}
     template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(_Tsorted _Tsort, _Iter _First, _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
-        : _Base_flat_set(_Tsort, _STD make_obj_using_allocator<container_type>(_Al, _First, _Last), _Comp) {}
+    _Flat_set_base(_Sorted_t _Tag, _Iter _First, _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
+        : _Flat_set_base(_Tag, _STD make_obj_using_allocator<container_type>(_Al, _First, _Last), _Comp) {}
     template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(_Tsorted _Tsort, _Iter _First, _Iter _Last, const _Alloc& _Al)
-        : _Base_flat_set(_Tsort, _STD make_obj_using_allocator<container_type>(_Al, _First, _Last)) {}
+    _Flat_set_base(_Sorted_t _Tag, _Iter _First, _Iter _Last, const _Alloc& _Al)
+        : _Flat_set_base(_Tag, _STD make_obj_using_allocator<container_type>(_Al, _First, _Last)) {}
 
-    _Base_flat_set(initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
-        : _Base_flat_set(container_type(_Ilist), _Comp) {}
+    _Flat_set_base(initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
+        : _Flat_set_base(container_type(_Ilist), _Comp) {}
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
-        : _Base_flat_set(_Ilist.begin(), _Ilist.end(), _Comp, _Al) {}
+    _Flat_set_base(initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
+        : _Flat_set_base(_Ilist.begin(), _Ilist.end(), _Comp, _Al) {}
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(initializer_list<_Kty> _Ilist, const _Alloc& _Al)
-        : _Base_flat_set(_Ilist.begin(), _Ilist.end(), _Al) {}
+    _Flat_set_base(initializer_list<_Kty> _Ilist, const _Alloc& _Al)
+        : _Flat_set_base(_Ilist.begin(), _Ilist.end(), _Al) {}
 
-    _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
-        : _Base_flat_set(_Tsort, container_type(_Ilist), _Comp) {}
+    _Flat_set_base(_Sorted_t _Tag, initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
+        : _Flat_set_base(_Tag, container_type(_Ilist), _Comp) {}
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
-        : _Base_flat_set(_Tsort, _Ilist.begin(), _Ilist.end(), _Comp, _Al) {}
+    _Flat_set_base(_Sorted_t _Tag, initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
+        : _Flat_set_base(_Tag, _Ilist.begin(), _Ilist.end(), _Comp, _Al) {}
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Base_flat_set(_Tsorted _Tsort, initializer_list<_Kty> _Ilist, const _Alloc& _Al)
-        : _Base_flat_set(_Tsort, _Ilist.begin(), _Ilist.end(), _Al) {}
+    _Flat_set_base(_Sorted_t _Tag, initializer_list<_Kty> _Ilist, const _Alloc& _Al)
+        : _Flat_set_base(_Tag, _Ilist.begin(), _Ilist.end(), _Al) {}
 
-    _Base_flat_set(const _Base_flat_set&) = default;
-    _Base_flat_set(_Base_flat_set&& _Other) noexcept(
+    _Flat_set_base(const _Flat_set_base&) = default;
+    _Flat_set_base(_Flat_set_base&& _Other) noexcept(
         is_nothrow_move_constructible_v<container_type> && is_nothrow_copy_constructible_v<key_compare>) // strengthened
         : _Mycont(_STD move(_Other).extract()), _Mycomp(_Other._Mycomp) // intentionally copy comparator, see LWG-2227
     {}
 
-    _Base_flat_set& operator=(const _Base_flat_set& _Other) {
+    _Flat_set_base& operator=(const _Flat_set_base& _Other) {
         _Clear_guard<container_type> _Guard{_STD addressof(_Mycont)};
         _Mycont        = _Other._Mycont;
         _Mycomp        = _Other._Mycomp;
         _Guard._Target = nullptr;
         return *this;
     }
-    _Base_flat_set& operator=(_Base_flat_set&& _Other) noexcept(
+    _Flat_set_base& operator=(_Flat_set_base&& _Other) noexcept(
         is_nothrow_move_assignable_v<container_type> && is_nothrow_copy_assignable_v<key_compare>) // strengthened
     {
         if (this != _STD addressof(_Other)) {
@@ -183,12 +194,12 @@ public:
         return *this;
     }
 
-    _Deriv& operator=(initializer_list<_Kty> _Ilist) {
+    _Derived& operator=(initializer_list<_Kty> _Ilist) {
         _Clear_guard<container_type> _Guard{_STD addressof(_Mycont)};
         _Mycont.assign(_Ilist);
         _Make_invariants_fulfilled();
         _Guard._Target = nullptr;
-        return static_cast<_Deriv&>(*this);
+        return static_cast<_Derived&>(*this);
     }
 
     // iterators
@@ -260,7 +271,7 @@ public:
         return _Emplace(_STD move(_Val));
     }
     template <_Different_from<_Kty> _Other>
-        requires (!_Multi && _Keylt_transparent && is_constructible_v<_Kty, _Other>)
+        requires _IsUnique && _Keylt_transparent && is_constructible_v<_Kty, _Other>
     auto insert(_Other&& _Val) {
         return _Emplace(_STD forward<_Other>(_Val));
     }
@@ -272,18 +283,18 @@ public:
         return _Emplace_hint(_Hint, _STD move(_Val));
     }
     template <_Different_from<_Kty> _Other>
-        requires (!_Multi && _Keylt_transparent && is_constructible_v<_Kty, _Other>)
+        requires _IsUnique && _Keylt_transparent && is_constructible_v<_Kty, _Other>
     iterator insert(const_iterator _Hint, _Other&& _Val) {
         return _Emplace_hint(_Hint, _STD forward<_Other>(_Val));
     }
 
     template <_Iterator_for_container _Iter>
     void insert(_Iter _First, _Iter _Last) {
-        _Insert_range<false>(_First, _Last);
+        _Insert_range<true>(_First, _Last);
     }
     template <_Iterator_for_container _Iter>
-    void insert(_Tsorted, _Iter _First, _Iter _Last) {
-        _Insert_range<true>(_First, _Last);
+    void insert(_Sorted_t, _Iter _First, _Iter _Last) {
+        _Insert_range<false>(_First, _Last);
     }
     template <_Container_compatible_range<_Kty> _Rng>
     void insert_range(_Rng&& _Range) {
@@ -294,14 +305,14 @@ public:
         } else {
             _Mycont.insert_range(_Mycont.end(), _STD forward<_Rng>(_Range));
         }
-        _Restore_invariants_after_insert<false>(_Old_size);
+        _Restore_invariants_after_insert<true>(_Old_size);
     }
 
     void insert(initializer_list<_Kty> _Ilist) {
-        _Insert_range<false>(_Ilist.begin(), _Ilist.end());
-    }
-    void insert(_Tsorted, initializer_list<_Kty> _Ilist) {
         _Insert_range<true>(_Ilist.begin(), _Ilist.end());
+    }
+    void insert(_Sorted_t, initializer_list<_Kty> _Ilist) {
+        _Insert_range<false>(_Ilist.begin(), _Ilist.end());
     }
 
     _NODISCARD container_type extract() && noexcept(
@@ -333,7 +344,7 @@ public:
         return _Mycont.erase(_First, _Last);
     }
 
-    void swap(_Deriv& _Other) noexcept {
+    void swap(_Derived& _Other) noexcept {
         _RANGES swap(_Mycomp, _Other._Mycomp);
         _RANGES swap(_Mycont, _Other._Mycont);
     }
@@ -365,11 +376,11 @@ public:
     }
 
     _NODISCARD size_type count(const _Kty& _Val) const {
-        if constexpr (_Multi) {
+        if constexpr (_IsUnique) {
+            return contains(_Val);
+        } else {
             const auto [_First, _Last] = equal_range(_Val);
             return static_cast<size_type>(_Last - _First);
-        } else {
-            return contains(_Val);
         }
     }
     template <class _Other>
@@ -415,24 +426,22 @@ public:
         return _STD equal_range(cbegin(), cend(), _Val, _Pass_comp());
     }
 
-    _NODISCARD friend bool operator==(const _Deriv& _Lhs, const _Deriv& _Rhs) {
+    _NODISCARD friend bool operator==(const _Derived& _Lhs, const _Derived& _Rhs) {
         return _RANGES equal(_Lhs._Mycont, _Rhs._Mycont);
     }
 
-    _NODISCARD friend auto operator<=>(const _Deriv& _Lhs, const _Deriv& _Rhs) {
+    _NODISCARD friend auto operator<=>(const _Derived& _Lhs, const _Derived& _Rhs) {
         return _STD lexicographical_compare_three_way(
             _Lhs.cbegin(), _Lhs.cend(), _Rhs.cbegin(), _Rhs.cend(), _Synth_three_way{});
     }
 
-    friend void swap(_Deriv& _Lhs, _Deriv& _Rhs) noexcept {
+    friend void swap(_Derived& _Lhs, _Derived& _Rhs) noexcept {
         _Lhs.swap(_Rhs);
     }
 
 private:
     _NODISCARD bool _Is_sorted(const_iterator _It, const const_iterator _End) const {
-        if constexpr (_Multi) {
-            return _STD is_sorted(_It, _End, _Pass_comp());
-        } else {
+        if constexpr (_IsUnique) {
             // sorted-unique
             if (_It == _End) {
                 return true;
@@ -443,6 +452,8 @@ private:
                 }
             }
             return true;
+        } else {
+            return _STD is_sorted(_It, _End, _Pass_comp());
         }
     }
 
@@ -450,133 +461,124 @@ private:
         return _Is_sorted(_Cont.begin(), _Cont.end());
     }
 
-    static constexpr const char* _Msg_not_sorted = _Multi ? "Input was not sorted!" : "Input was not sorted-unique!";
-
     template <class _Ty>
     _NODISCARD bool _Can_insert(const const_iterator _Where, const _Ty& _Val) const {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Ty, _Kty>); // only accepts _Kty
 
         // check that _Val can be inserted before _Where
-        if constexpr (_Multi) {
-            // check that _Where is the upper_bound for _Val
-            // equivalent to checking *(_Where-1) <= _Val < *_Where
-            return (_Where == cend() || _Compare(_Val, *_Where))
-                && (_Where == cbegin() || !_Compare(_Val, *(_Where - 1)));
-        } else {
+        if constexpr (_IsUnique) {
             // check that _Where is the lower_bound for _Val, and *_Where is not equivalent to _Val
             // equivalent to checking *(_Where-1) < _Val < *_Where
             return (_Where == cend() || _Compare(_Val, *_Where))
                 && (_Where == cbegin() || _Compare(*(_Where - 1), _Val));
-        }
-    }
-
-    template <class _Ty>
-        requires _Multi // flat_multiset
-    _NODISCARD iterator _Emplace(_Ty&& _Val) {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
-        return _Mycont.emplace(upper_bound(_Val), _STD forward<_Ty>(_Val));
-    }
-
-    template <class _Ty>
-        requires (!_Multi) // flat_set
-    _NODISCARD pair<iterator, bool> _Emplace(_Ty&& _Val) {
-        const const_iterator _Where = lower_bound(_Val);
-        if (_Where != cend() && !_Compare(_Val, *_Where)) {
-            return pair{_Where, false};
-        }
-
-        if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
-            _STL_INTERNAL_CHECK(_Can_insert(_Where, _Val));
-            return pair{_Mycont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
         } else {
-            // heterogeneous insertion
-            // FIXME: The standard only requires `find(_Val) == find(_Keyval)` (per N4958 [flat.set.modifiers]/2),
-            // which cannot guarantee `_Can_insert(_Where, _Keyval)`.
-            _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
-            _Kty _Keyval(_STD forward<_Ty>(_Val));
-            _STL_ASSERT(_Can_insert(_Where, _Keyval), "The conversion from the heterogeneous key to key_type should "
-                                                      "be consistent with the heterogeneous lookup!");
-            return pair{_Mycont.emplace(_Where, _STD move(_Keyval)), true};
+            // check that _Where is the upper_bound for _Val
+            // equivalent to checking *(_Where-1) <= _Val < *_Where
+            return (_Where == cend() || _Compare(_Val, *_Where))
+                && (_Where == cbegin() || !_Compare(_Val, *(_Where - 1)));
         }
     }
 
     template <class _Ty>
-        requires _Multi // flat_multiset
-    _NODISCARD iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
+    _NODISCARD conditional_t<_IsUnique, pair<iterator, bool>, iterator> _Emplace(_Ty&& _Val) {
+        if constexpr (_IsUnique) {
+            const const_iterator _Where = lower_bound(_Val);
+            if (_Where != cend() && !_Compare(_Val, *_Where)) {
+                return pair{_Where, false};
+            }
 
-        const const_iterator _Begin = cbegin();
-        const const_iterator _End   = cend();
-
-        // look for upper_bound(_Val)
-        if (_Where == _End || _Compare(_Val, *_Where)) {
-            // _Val < *_Where
-            if (_Where == _Begin || !_Compare(_Val, *(_Where - 1))) {
-                // _Val >= *(_Where-1) ~ upper_bound is _Where
+            if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
+                _STL_INTERNAL_CHECK(_Can_insert(_Where, _Val));
+                return pair{_Mycont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
             } else {
-                // _Val < *(_Where-1) ~ upper_bound is in [_Begin,_Where-1]
-                _Where = _STD upper_bound(_Begin, _Where - 1, _Val, _Pass_comp());
+                // heterogeneous insertion
+                // FIXME: The standard only requires `find(_Val) == find(_Keyval)` (per N4958 [flat.set.modifiers]/2),
+                // which cannot guarantee `_Can_insert(_Where, _Keyval)`.
+                _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
+                _Kty _Keyval(_STD forward<_Ty>(_Val));
+                _STL_ASSERT(_Can_insert(_Where, _Keyval),
+                    "The conversion from the heterogeneous key to key_type should "
+                    "be consistent with the heterogeneous lookup!");
+                return pair{_Mycont.emplace(_Where, _STD move(_Keyval)), true};
             }
         } else {
-            // _Val >= *_Where ~ upper_bound is in [_Where+1,_End]
-            _Where = _STD upper_bound(_Where + 1, _End, _Val, _Pass_comp());
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
+            return _Mycont.emplace(upper_bound(_Val), _STD forward<_Ty>(_Val));
         }
-
-        _STL_INTERNAL_CHECK(_Can_insert(_Where, _Val));
-        return _Mycont.emplace(_Where, _STD forward<_Ty>(_Val));
     }
 
     template <class _Ty>
-        requires (!_Multi) // flat_set
     _NODISCARD iterator _Emplace_hint(const_iterator _Where, _Ty&& _Val) {
         const const_iterator _Begin = cbegin();
         const const_iterator _End   = cend();
 
-        // look for lower_bound(_Val)
-        if (_Where == _End || !_Compare(*_Where, _Val)) {
-            // _Val <= *_Where
-            if (_Where == _Begin || _Compare(*(_Where - 1), _Val)) {
-                // _Val > *(_Where-1) ~ lower_bound is _Where
+        if constexpr (_IsUnique) {
+            // look for lower_bound(_Val)
+            if (_Where == _End || !_Compare(*_Where, _Val)) {
+                // _Val <= *_Where
+                if (_Where == _Begin || _Compare(*(_Where - 1), _Val)) {
+                    // _Val > *(_Where-1) ~ lower_bound is _Where
+                } else {
+                    // _Val <= *(_Where-1) ~ lower_bound is in [_Begin,_Where-1]
+                    _Where = _STD lower_bound(_Begin, _Where - 1, _Val, _Pass_comp());
+                }
             } else {
-                // _Val <= *(_Where-1) ~ lower_bound is in [_Begin,_Where-1]
-                _Where = _STD lower_bound(_Begin, _Where - 1, _Val, _Pass_comp());
+                // _Val > *_Where ~ lower_bound is in [_Where+1,_End]
+                _Where = _STD lower_bound(_Where + 1, _End, _Val, _Pass_comp());
+            }
+
+            if (_Where != _End && !_Compare(_Val, *_Where)) {
+                return _Where;
+            }
+
+            if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
+                _STL_INTERNAL_CHECK(_Can_insert(_Where, _Val));
+                return _Mycont.emplace(_Where, _STD forward<_Ty>(_Val));
+            } else {
+                // heterogeneous insertion
+                // FIXME: The standard only requires `find(_Val) == find(_Keyval)` (per N4958 [flat.set.modifiers]/2),
+                // which cannot guarantee `_Can_insert(_Where, _Keyval)`.
+                _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
+                _Kty _Keyval(_STD forward<_Ty>(_Val));
+                _STL_ASSERT(_Can_insert(_Where, _Keyval),
+                    "The conversion from the heterogeneous key to key_type should "
+                    "be consistent with the heterogeneous lookup!");
+                return _Mycont.emplace(_Where, _STD move(_Keyval));
             }
         } else {
-            // _Val > *_Where ~ lower_bound is in [_Where+1,_End]
-            _Where = _STD lower_bound(_Where + 1, _End, _Val, _Pass_comp());
-        }
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
 
-        if (_Where != _End && !_Compare(_Val, *_Where)) {
-            return _Where;
-        }
+            // look for upper_bound(_Val)
+            if (_Where == _End || _Compare(_Val, *_Where)) {
+                // _Val < *_Where
+                if (_Where == _Begin || !_Compare(_Val, *(_Where - 1))) {
+                    // _Val >= *(_Where-1) ~ upper_bound is _Where
+                } else {
+                    // _Val < *(_Where-1) ~ upper_bound is in [_Begin,_Where-1]
+                    _Where = _STD upper_bound(_Begin, _Where - 1, _Val, _Pass_comp());
+                }
+            } else {
+                // _Val >= *_Where ~ upper_bound is in [_Where+1,_End]
+                _Where = _STD upper_bound(_Where + 1, _End, _Val, _Pass_comp());
+            }
 
-        if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
             _STL_INTERNAL_CHECK(_Can_insert(_Where, _Val));
             return _Mycont.emplace(_Where, _STD forward<_Ty>(_Val));
-        } else {
-            // heterogeneous insertion
-            // FIXME: The standard only requires `find(_Val) == find(_Keyval)` (per N4958 [flat.set.modifiers]/2),
-            // which cannot guarantee `_Can_insert(_Where, _Keyval)`.
-            _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent && is_constructible_v<_Kty, _Ty>);
-            _Kty _Keyval(_STD forward<_Ty>(_Val));
-            _STL_ASSERT(_Can_insert(_Where, _Keyval), "The conversion from the heterogeneous key to key_type should "
-                                                      "be consistent with the heterogeneous lookup!");
-            return _Mycont.emplace(_Where, _STD move(_Keyval));
         }
     }
 
-    template <bool _Presorted, class _Iter>
+    template <bool _NeedSorting, class _Iter>
     void _Insert_range(const _Iter _First, const _Iter _Last) {
         const size_type _Old_size = size();
         _Mycont.insert(_Mycont.end(), _First, _Last);
-        _Restore_invariants_after_insert<_Presorted>(_Old_size);
+        _Restore_invariants_after_insert<_NeedSorting>(_Old_size);
     }
 
     template <class _Ty>
     _NODISCARD size_type _Erase(const _Ty& _Val) {
         _STL_INTERNAL_STATIC_ASSERT(_Keylt_transparent || is_same_v<_Ty, _Kty>);
 
-        if constexpr (!_Multi && is_same_v<_Ty, _Kty>) {
+        if constexpr (_IsUnique && is_same_v<_Ty, _Kty>) {
             const const_iterator _Where = lower_bound(_Val);
             if (_Where != cend() && !_Compare(_Val, *_Where)) {
                 _Mycont.erase(_Where);
@@ -606,7 +608,7 @@ private:
     }
 
     void _Erase_dupes_if_not_multi() {
-        if constexpr (!_Multi) {
+        if constexpr (_IsUnique) {
             const auto _Equivalent = [this](const _Kty& _Lhs, const _Kty& _Rhs) {
                 return !_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs);
             };
@@ -615,13 +617,13 @@ private:
         }
     }
 
-    template <bool _Presorted>
+    template <bool _NeedSorting>
     void _Restore_invariants_after_insert(const size_type _Old_size) {
         const auto _Begin   = _Mycont.begin();
         const auto _Old_end = _Begin + static_cast<difference_type>(_Old_size);
         const auto _End     = _Mycont.end();
 
-        if constexpr (!_Presorted) {
+        if constexpr (_NeedSorting) {
             _STD sort(_Old_end, _End, _Pass_comp());
         } else {
             _STL_ASSERT(_Is_sorted(_Old_end, _End), _Msg_not_sorted);
@@ -667,11 +669,10 @@ private:
     /* [[no_unique_address]] */ key_compare _Mycomp;
 };
 
-_EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
-class flat_set
-    : public _Base_flat_set<_Kty, _Keylt, _Container, false, flat_set<_Kty, _Keylt, _Container>, sorted_unique_t> {
+_EXPORT_STD template <class _Kty, class _Keylt, class _Container>
+class flat_set : public _Flat_set_base<true, _Kty, _Keylt, _Container> {
 private:
-    using _Mybase = _Base_flat_set<_Kty, _Keylt, _Container, false, flat_set, sorted_unique_t>;
+    using _Mybase = _Flat_set_base<true, _Kty, _Keylt, _Container>;
 
 public:
     using _Mybase::_Mybase;
@@ -691,11 +692,10 @@ public:
     flat_set& operator=(flat_set&&)      = default;
 };
 
-_EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
-class flat_multiset : public _Base_flat_set<_Kty, _Keylt, _Container, true, flat_multiset<_Kty, _Keylt, _Container>,
-                          sorted_equivalent_t> {
+_EXPORT_STD template <class _Kty, class _Keylt, class _Container>
+class flat_multiset : public _Flat_set_base<false, _Kty, _Keylt, _Container> {
 private:
-    using _Mybase = _Base_flat_set<_Kty, _Keylt, _Container, true, flat_multiset, sorted_equivalent_t>;
+    using _Mybase = _Flat_set_base<false, _Kty, _Keylt, _Container>;
 
 public:
     using _Mybase::_Mybase;

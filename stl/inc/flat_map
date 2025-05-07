@@ -319,7 +319,7 @@ public:
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(
         const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont, const _Allocator& _Alloc)
-        : _Flat_map_base(_Sorted_t(), _Key_cont, _Mapped_cont, _Alloc) {
+        : _Flat_map_base(_Sorted_t{}, _Key_cont, _Mapped_cont, _Alloc) {
         _Sort();
         if constexpr (_IsUnique) {
             _Dedup();
@@ -329,7 +329,7 @@ public:
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
         const key_compare& _Comp, const _Allocator& _Alloc)
-        : _Flat_map_base(_Sorted_t(), _Key_cont, _Mapped_cont, _Comp, _Alloc) {
+        : _Flat_map_base(_Sorted_t{}, _Key_cont, _Mapped_cont, _Comp, _Alloc) {
         _Sort();
         if constexpr (_IsUnique) {
             _Dedup();
@@ -395,18 +395,17 @@ public:
     }
 
     template <_Iterator_for_container _InputIterator>
-    _Flat_map_base(
-        _Sorted_t _Tag, _InputIterator _First, _InputIterator _Last, const key_compare& _Comp = key_compare())
+    _Flat_map_base(_Sorted_t, _InputIterator _First, _InputIterator _Last, const key_compare& _Comp = key_compare())
         : _Flat_map_base(_Comp) {
-        insert(_Tag, _First, _Last);
+        _Insert_range<false>(_First, _Last);
     }
 
     template <_Iterator_for_container _InputIterator,
         _Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(
-        _Sorted_t _Tag, _InputIterator _First, _InputIterator _Last, const key_compare& _Comp, const _Allocator& _Alloc)
+        _Sorted_t, _InputIterator _First, _InputIterator _Last, const key_compare& _Comp, const _Allocator& _Alloc)
         : _Flat_map_base(_Comp, _Alloc) {
-        insert(_Tag, _First, _Last);
+        _Insert_range<false>(_First, _Last);
     }
 
     template <_Iterator_for_container _InputIterator,
@@ -579,25 +578,25 @@ public:
 
     template <_Iterator_for_container _InputIterator>
     void insert(_InputIterator _First, _InputIterator _Last) {
-        _Insert_range<true, _IsUnique>(_First, _Last);
+        _Insert_range<true>(_First, _Last);
     }
 
     template <_Iterator_for_container _InputIterator>
     void insert(_Sorted_t, _InputIterator _First, _InputIterator _Last) {
-        _Insert_range<false, _IsUnique>(_First, _Last);
+        _Insert_range<false>(_First, _Last);
     }
 
     template <_Container_compatible_range<value_type> _Rng>
     void insert_range(_Rng&& _Range) {
-        _Insert_range<true, _IsUnique>(_RANGES begin(_Range), _RANGES end(_Range));
+        _Insert_range<true>(_RANGES begin(_Range), _RANGES end(_Range));
     }
 
     void insert(initializer_list<value_type> _Ilist) {
-        insert(_Ilist.begin(), _Ilist.end());
+        _Insert_range<true>(_Ilist.begin(), _Ilist.end());
     }
 
-    void insert(_Sorted_t _Tag, initializer_list<value_type> _Ilist) {
-        insert(_Tag, _Ilist.begin(), _Ilist.end());
+    void insert(_Sorted_t, initializer_list<value_type> _Ilist) {
+        _Insert_range<false>(_Ilist.begin(), _Ilist.end());
     }
 
     iterator erase(iterator _Position) {
@@ -943,7 +942,7 @@ private:
         _Guard._Target = nullptr;
     }
 
-    template <bool _NeedSorting, bool _NeedDeduping, class _InputIterator, class _Sentinel>
+    template <bool _NeedSorting, class _InputIterator, class _Sentinel>
     void _Insert_range(_InputIterator _First, _Sentinel _Last) {
         _Clear_guard _Guard{this};
 
@@ -976,7 +975,7 @@ private:
         // Merge the newly inserted elements with the existing elements
         _RANGES inplace_merge(_Sorted_view, _Sorted_view.begin() + _Old_distance, value_compare(_Key_compare));
 
-        if constexpr (_NeedDeduping) {
+        if constexpr (_IsUnique) {
             _Dedup();
         }
 
