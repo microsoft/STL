@@ -39,10 +39,8 @@ def getDefaultFeatures(config, litConfig):
       'cs_CZ.ISO8859-2': ['cs_CZ.ISO8859-2', 'Czech_Czechia.1250']
     }
     for loc, alts in locales.items():
-      # Note: Using alts directly in the lambda body here will bind it to the value at the
-      # end of the loop. Assigning it to a default argument works around this issue.
-      DEFAULT_FEATURES.append(Feature(name='locale.{}'.format(loc),
-                                      when=lambda cfg, alts=alts: any(hasLocale(alt) for alt in alts)))
+      if any(hasLocale(alt) for alt in alts):
+        DEFAULT_FEATURES.append(Feature(name=f'locale.{loc}'))
     env_var = 'STL_EDG_DROP'
     litConfig.edg_drop = None
     if env_var in os.environ and os.environ[env_var] is not None:
