@@ -106,13 +106,12 @@ _CRTIMP2_PURE _Thrd_id_t __cdecl _Thrd_id() noexcept { // return unique id for c
 
 _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() noexcept { // return number of processors
     // Most devices have only one processor group and thus have the same buffer_size
-#if defined(_M_X64) || defined(_M_ARM64) // 16 bytes per group
-    constexpr int stack_buffer_size = 48;
-#elif defined(_M_IX86) || defined(_M_ARM) // 12 bytes per group
-    constexpr int stack_buffer_size = 44;
-#else
-#error Unknown architecture
-#endif
+#ifdef _WIN64
+    constexpr int stack_buffer_size = 48; // 16 bytes per group
+#else // ^^^ 64-bit / 32-bit vvv
+    constexpr int stack_buffer_size = 44; // 12 bytes per group
+#endif // ^^^ 32-bit ^^^
+
     alignas(SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX) unsigned char buffer[stack_buffer_size];
     using buffer_ptr_t = PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX;
     DWORD buffer_size  = stack_buffer_size;
