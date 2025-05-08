@@ -119,11 +119,11 @@ _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() noexcept { // re
 
     for (;;) {
         if (GetLogicalProcessorInformationEx(RelationProcessorPackage, buffer_ptr, &buffer_size)) {
-            unsigned int count = 0;
+            unsigned int logical_processors = 0;
             for (WORD i = 0; i != buffer_ptr->Processor.GroupCount; ++i) {
-                count += _STD popcount(buffer_ptr->Processor.GroupMask[i].Mask);
+                logical_processors += _STD popcount(buffer_ptr->Processor.GroupMask[i].Mask);
             }
-            return count;
+            return logical_processors;
         }
 
         if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
