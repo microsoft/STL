@@ -1494,9 +1494,9 @@ public:
 };
 
 struct _Loop_vals_v2_t { // storage for loop administration
-    void* _Loop_iter;
-    int _Loop_idx;
-    unsigned int _Group_first;
+    void* _Loop_iter          = nullptr;
+    int _Loop_idx             = 0;
+    unsigned int _Group_first = 0;
 };
 
 class _Node_rep : public _Node_base { // node that marks the beginning of a repetition
