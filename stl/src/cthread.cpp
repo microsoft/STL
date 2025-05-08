@@ -113,35 +113,31 @@ _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() noexcept { // re
 #endif // ^^^ 32-bit ^^^
 
     alignas(SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX) unsigned char buffer[stack_buffer_size];
-    using buffer_ptr_t = PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX;
-    DWORD buffer_size  = stack_buffer_size;
+    auto buffer_ptr   = reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(&buffer);
+    DWORD buffer_size = stack_buffer_size;
+    _STD unique_ptr<unsigned char[]> new_buffer;
 
-    const auto try_query = [](buffer_ptr_t buffer_ptr, PDWORD buffer_size) _STATIC_CALL_OPERATOR noexcept {
-        unsigned int count = 0;
-        _ASSERT(buffer_ptr != nullptr);
-
-        if (GetLogicalProcessorInformationEx(RelationProcessorPackage, buffer_ptr, buffer_size)) {
+    for (;;) {
+        if (GetLogicalProcessorInformationEx(RelationProcessorPackage, buffer_ptr, &buffer_size)) {
+            unsigned int count = 0;
             for (WORD i = 0; i != buffer_ptr->Processor.GroupCount; ++i) {
                 count += _STD popcount(buffer_ptr->Processor.GroupMask[i].Mask);
             }
+            return count;
         }
 
-        return count;
-    };
-
-    if (auto count = try_query(reinterpret_cast<buffer_ptr_t>(&buffer), &buffer_size); count != 0) {
-        return count;
-    }
-
-    if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-        _STD unique_ptr<unsigned char[]> new_buffer(::new (_STD nothrow) unsigned char[buffer_size]);
-
-        if (new_buffer != nullptr) {
-            return try_query(reinterpret_cast<buffer_ptr_t>(new_buffer.get()), &buffer_size);
+        if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+            return 0;
         }
-    }
 
-    return 0;
+        new_buffer.reset(::new (_STD nothrow) unsigned char[buffer_size]);
+
+        if (!new_buffer) {
+            return 0;
+        }
+
+        buffer_ptr = reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(new_buffer.get());
+    }
 }
 
 // TRANSITION, ABI: _Thrd_create() is preserved for binary compatibility
