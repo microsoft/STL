@@ -124,7 +124,7 @@ _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() noexcept { // re
         if (GetLogicalProcessorInformationEx(RelationProcessorPackage, buffer_ptr, buffer_size) == TRUE) {
             for (WORD i = 0; i != buffer_ptr->Processor.GroupCount; ++i) {
                 // Mask is 8 bytes on ARM64 and X64, and 4 bytes on X86 and ARM32
-                count += std::popcount(buffer_ptr->Processor.GroupMask[i].Mask);
+                count += _STD popcount(buffer_ptr->Processor.GroupMask[i].Mask);
             }
         }
 
