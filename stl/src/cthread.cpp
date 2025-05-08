@@ -112,8 +112,8 @@ _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() noexcept { // re
     constexpr int stack_buffer_size = 44; // 12 bytes per group
 #endif // ^^^ 32-bit ^^^
 
-    alignas(SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX) unsigned char buffer[stack_buffer_size];
-    auto buffer_ptr   = reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(&buffer);
+    alignas(SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX) unsigned char stack_buffer[stack_buffer_size];
+    auto buffer_ptr   = reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(&stack_buffer);
     DWORD buffer_size = stack_buffer_size;
     _STD unique_ptr<unsigned char[]> new_buffer;
 
