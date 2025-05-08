@@ -113,16 +113,27 @@ _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() noexcept { // re
 #endif // ^^^ 32-bit ^^^
 
     alignas(SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX) unsigned char stack_buffer[stack_buffer_size];
-    auto buffer_ptr   = reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(&stack_buffer);
-    DWORD buffer_size = stack_buffer_size;
+    unsigned char* buffer_ptr = stack_buffer;
+    DWORD buffer_size         = stack_buffer_size;
     _STD unique_ptr<unsigned char[]> new_buffer;
 
     for (;;) {
-        if (GetLogicalProcessorInformationEx(RelationProcessorPackage, buffer_ptr, &buffer_size)) {
+        if (GetLogicalProcessorInformationEx(RelationProcessorPackage,
+                reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(buffer_ptr), &buffer_size)) {
             unsigned int logical_processors = 0;
-            for (WORD i = 0; i != buffer_ptr->Processor.GroupCount; ++i) {
-                logical_processors += _STD popcount(buffer_ptr->Processor.GroupMask[i].Mask);
+
+            while (buffer_size > 0) {
+                const auto structure_ptr  = reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(buffer_ptr);
+                const auto structure_size = structure_ptr->Size;
+
+                for (WORD i = 0; i != structure_ptr->Processor.GroupCount; ++i) {
+                    logical_processors += _STD popcount(structure_ptr->Processor.GroupMask[i].Mask);
+                }
+
+                buffer_ptr += structure_size;
+                buffer_size -= structure_size;
             }
+
             return logical_processors;
         }
 
@@ -136,7 +147,7 @@ _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() noexcept { // re
             return 0;
         }
 
-        buffer_ptr = reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(new_buffer.get());
+        buffer_ptr = new_buffer.get();
     }
 }
 
