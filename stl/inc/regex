@@ -3382,10 +3382,9 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep_first(_Node_rep* 
     // No capture group reset is performed for POSIX regexes,
     // so we prevent any reset by setting the first capture group to the number of capture groups _Ncap.
     if (_Psav->_Group_first == 0) {
-        if ((_Sflags
-                & (regex_constants::basic | regex_constants::extended | regex_constants::grep | regex_constants::egrep
-                    | regex_constants::awk))
-            || !_Find_first_inner_capture_group(_Node->_Next, _Psav)) {
+        constexpr auto _Any_posix = regex_constants::basic | regex_constants::extended | regex_constants::grep
+                                  | regex_constants::egrep | regex_constants::awk;
+        if ((_Sflags & _Any_posix) || !_Find_first_inner_capture_group(_Node->_Next, _Psav)) {
             _Psav->_Group_first = _Ncap;
         }
     }
@@ -3762,10 +3761,10 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
             if (_Tgt_state._Cur == _End) {
                 _Failed = true;
             } else {
+                constexpr auto _Any_posix = regex_constants::basic | regex_constants::extended | regex_constants::grep
+                                          | regex_constants::egrep | regex_constants::awk;
                 const _Elem _Ch = *_Tgt_state._Cur;
-                if (_Sflags
-                    & (regex_constants::basic | regex_constants::extended | regex_constants::grep
-                        | regex_constants::egrep | regex_constants::awk)) {
+                if (_Sflags & _Any_posix) {
                     if (_Ch == _Elem()) {
                         _Failed = true;
                     }
