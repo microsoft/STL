@@ -3437,8 +3437,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Find_first_inner_capture
 
         case _N_if:
             {
-                _Node_if* _Node = static_cast<_Node_if*>(_Nx);
-                for (; _Node; _Node = _Node->_Child) {
+                for (_Node_if* _Node = static_cast<_Node_if*>(_Nx); _Node; _Node = _Node->_Child) {
                     if (_Find_first_inner_capture_group(_Node->_Next, _Loop_state)) {
                         _Found_group = true;
                         _Nx          = nullptr;
