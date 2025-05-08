@@ -36,7 +36,7 @@ def getDefaultFeatures(config, litConfig):
       'ru_RU.UTF-8':     ['ru_RU.UTF-8', 'ru_RU.utf8', 'Russian_Russia.1251'],
       'zh_CN.UTF-8':     ['zh_CN.UTF-8', 'zh_CN.utf8', 'Chinese_China.936'],
       'fr_CA.ISO8859-1': ['fr_CA.ISO8859-1', 'French_Canada.1252'],
-      'cs_CZ.ISO8859-2': ['cs_CZ.ISO8859-2', 'Czech_Czech Republic.1250']
+      'cs_CZ.ISO8859-2': ['cs_CZ.ISO8859-2', 'Czech_Czechia.1250']
     }
     for loc, alts in locales.items():
       # Note: Using alts directly in the lambda body here will bind it to the value at the
