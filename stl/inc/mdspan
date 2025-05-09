@@ -1030,11 +1030,13 @@ public:
                 if (_All_zero_or_one_extents == 0) {
                     return _Is_exhaustive_common_case();
                 }
+
+                return _Is_exhaustive_special_case();
             } else if constexpr (_Static_zero_or_one_extents == 0) {
                 return _Is_exhaustive_common_case();
+            } else {
+                return _Is_exhaustive_special_case();
             }
-
-            return _Is_exhaustive_special_case();
         }
     }
 
