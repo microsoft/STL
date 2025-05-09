@@ -46,7 +46,7 @@ int main() {
     assert(ranges::adjacent_find(arr_begin, arr_end) == arr_begin + _Signed128{5});
 
     {
-        // We're short of 32 and 64 bit elements 'search' and 'find_end' for now
+        // As of 2025-05-09, 'search' and 'find_end' are manually vectorized for 8-bit and 16-bit elements only.
         short short_arr[arr_size];
         picky_contiguous_iterator short_arr_begin(begin(short_arr));
         picky_contiguous_iterator short_arr_end(end(short_arr));
