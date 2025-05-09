@@ -426,6 +426,7 @@ constexpr void check_is_exhaustive() {
     check(extents<int, dynamic_extent, 7>{5}, array{1, 8}, false);
     check(dextents<int, 2>{6, 5}, array{1, 10}, false);
     check(extents<int, 0, 3>{}, array{3, 1}, true);
+    check(extents<int, 0, 3>{}, array{6, 2}, false);
     check(extents<int, dynamic_extent, 3>{0}, array{6, 1}, false);
     check(extents<int, 0, dynamic_extent>{3}, array{6, 2}, false);
     check(dextents<int, 2>{0, 3}, array{7, 2}, false);
@@ -456,7 +457,6 @@ constexpr void check_is_exhaustive() {
     check(dextents<int, 3>{5, 0, 0}, array{2, 1, 10}, false);
     check(extents<int, 0, 0, 0>{}, array{1, 1, 1}, false);
     check(extents<int, 0, 1, 1>{}, array{1, 1, 1}, true);
-    check(std::extents<int, 0, 3>{}, std::array{6, 2}, false);
 
     // rank() is greater than 2 - one extent is equal to 0 while others are equal to each other
     check(extents<int, 3, 0, 3>{}, array{1, 9, 3}, true);
