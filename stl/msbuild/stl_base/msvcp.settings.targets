@@ -71,6 +71,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <TargetLib Include="$(CrtLibPath)\msvcrt$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(CrtLibPath)\vcruntime$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(UniversalCRTLib)"/>
+        <TargetLib Condition="'$(BuildArchitecture)' == 'arm64' or '$(BuildArchitecture)' == 'arm64ec'" Include="$(SdkLibPath)\softintrin.lib"/>
     </ItemGroup>
 
     <!-- Copy the output dll and pdb to various destinations -->
