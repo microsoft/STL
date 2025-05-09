@@ -1202,16 +1202,17 @@ _INLINE_VAR constexpr unsigned int _Bmp_size  = (_Bmp_max + _Bmp_chrs - 1U) / _B
 _INLINE_VAR constexpr unsigned int _ARRAY_THRESHOLD = 4U;
 
 enum _Node_flags : int { // flags for nfa nodes with special properties
-    _Fl_none            = 0x000,
-    _Fl_negate          = 0x001,
-    _Fl_greedy          = 0x002,
-    _Fl_longest         = 0x008, // TRANSITION, ABI: 0x004 is unused; the parser previously marked some nodes with it
-    _Fl_class_negated_w = 0x100,
-    _Fl_class_negated_s = 0x200,
-    _Fl_class_negated_d = 0x400,
-    _Fl_begin_needs_w   = 0x100,
-    _Fl_begin_needs_s   = 0x200,
-    _Fl_begin_needs_d   = 0x400
+    _Fl_none              = 0x000,
+    _Fl_negate            = 0x001,
+    _Fl_greedy            = 0x002,
+    _Fl_longest           = 0x008, // TRANSITION, ABI: 0x004 is unused; the parser previously marked some nodes with it
+    _Fl_class_negated_w   = 0x100,
+    _Fl_class_negated_s   = 0x200,
+    _Fl_class_negated_d   = 0x400,
+    _Fl_class_cl_all_bits = 0x800, // TRANSITION, ABI: GH-5242
+    _Fl_begin_needs_w     = 0x100,
+    _Fl_begin_needs_s     = 0x200,
+    _Fl_begin_needs_d     = 0x400
 };
 
 _BITMASK_OPS(_EMPTY_ARGUMENT, _Node_flags)
@@ -2986,11 +2987,19 @@ template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_named_class(
     typename _RxTraits::char_class_type _Cl, const _Rx_char_class_kind _Kind) {
     // add contents of named class to bracket expression
+    using _Char_class_type               = typename _RxTraits::char_class_type;
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
     _Add_elts(_Node, _Cl, _Kind != _Rx_char_class_kind::_Positive);
     if (_Bmp_max <= _STD _Max_limit<typename _RxTraits::_Uelem>()) {
         if (_Kind == _Rx_char_class_kind::_Positive) {
-            _Node->_Classes = static_cast<typename _RxTraits::char_class_type>(_Node->_Classes | _Cl);
+            auto _Cl_all_bits_set = static_cast<_Char_class_type>(-1);
+            if ((_Node->_Classes != _Cl_all_bits_set && _Cl != _Cl_all_bits_set)
+                || _Node->_Classes == _Char_class_type{}) {
+                _Node->_Classes = static_cast<_Char_class_type>(_Node->_Classes | _Cl);
+            } else if (_Node->_Classes != _Cl) {
+                _Node->_Classes = static_cast<_Char_class_type>(_Node->_Classes & _Cl);
+                _Node->_Flags |= _Fl_class_cl_all_bits;
+            }
         } else {
             auto _Node_flag = static_cast<_Node_flags>(_Kind);
             _Node->_Flags |= _Node_flag;
@@ -3529,6 +3538,9 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_class(_Node_base* _Nx) { // ap
         _Found = true;
     } else if (_Node->_Classes != typename _RxTraits::char_class_type{} && _Traits.isctype(_Ch, _Node->_Classes)) {
         _Found = true;
+    } else if ((_Node->_Flags & _Fl_class_cl_all_bits)
+               && _Traits.isctype(_Ch, static_cast<typename _RxTraits::char_class_type>(-1))) {
+        _Found = true;
     } else if (_Node->_Equiv && _STD _Lookup_equiv2(_Ch, _Node->_Equiv, _Traits)) {
         _Found = true;
     } else if ((_Node->_Flags & _Fl_class_negated_w)
@@ -3904,6 +3916,9 @@ _BidIt _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Skip(_BidIt _First_arg, _BidIt 
                         _Found = true;
                     } else if (_Node->_Classes != typename _RxTraits::char_class_type{}
                                && _Traits.isctype(_Ch, _Node->_Classes)) {
+                        _Found = true;
+                    } else if ((_Node->_Flags & _Fl_class_cl_all_bits)
+                               && _Traits.isctype(_Ch, static_cast<typename _RxTraits::char_class_type>(-1))) {
                         _Found = true;
                     } else if (_Node->_Equiv && _STD _Lookup_equiv2(_Ch, _Node->_Equiv, _Traits)) {
                         _Found = true;
