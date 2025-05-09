@@ -158,12 +158,14 @@ int main() {
             const int remove_expected[] = {200, 210, 220, 240, 270, 280, 290, 300, 310, 320, 340, 370, 380, 390};
 
             copy(arr_begin, arr_end, arr_src_begin);
+            fill(arr_dest_begin, arr_dest_end, 0);
             auto rem_copy_it = remove_copy(arr_src_begin, arr_src_end, arr_dest_begin, 250);
             assert(equal(arr_dest_begin, rem_copy_it, begin(remove_expected), end(remove_expected)));
             auto rem_it = remove(arr_src_begin, arr_src_end, 250);
             assert(equal(arr_src_begin, rem_it, begin(remove_expected), end(remove_expected)));
 
             ranges::copy(arr_begin, arr_end, arr_src_begin);
+            ranges::fill(arr_dest_begin, arr_dest_end, 0);
             auto r_rem_copy_it = ranges::remove_copy(arr_src_begin, arr_src_end, arr_dest_begin, 250);
             assert(ranges::equal(arr_dest_begin, r_rem_copy_it.out, begin(remove_expected), end(remove_expected)));
             auto r_rem_it = ranges::remove(arr_src_begin, arr_src_end, 250);
@@ -174,12 +176,14 @@ int main() {
                 200, 210, 220, 250, 240, 250, 270, 280, 290, 300, 310, 320, 250, 340, 250, 370, 380, 390};
 
             copy(arr_begin, arr_end, arr_src_begin);
+            fill(arr_dest_begin, arr_dest_end, 0);
             auto un_copy_it = unique_copy(arr_src_begin, arr_src_end, arr_dest_begin);
             assert(equal(arr_dest_begin, un_copy_it, begin(unique_expected), end(unique_expected)));
             auto un_it = unique(arr_src_begin, arr_src_end);
             assert(equal(arr_src_begin, un_it, begin(unique_expected), end(unique_expected)));
 
             ranges::copy(arr_begin, arr_end, arr_src_begin);
+            ranges::fill(arr_dest_begin, arr_dest_end, 0);
             auto r_un_copy_it = ranges::unique_copy(arr_src_begin, arr_src_end, arr_dest_begin);
             assert(ranges::equal(arr_dest_begin, r_un_copy_it.out, begin(unique_expected), end(unique_expected)));
             auto r_un_it = ranges::unique(arr_src_begin, arr_src_end);
