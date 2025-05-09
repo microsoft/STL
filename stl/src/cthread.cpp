@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <bit>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <process.h>
 #include <xthreads.h>
 
@@ -103,9 +105,55 @@ _CRTIMP2_PURE _Thrd_id_t __cdecl _Thrd_id() noexcept { // return unique id for c
 }
 
 _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() noexcept { // return number of processors
-    SYSTEM_INFO info;
-    GetNativeSystemInfo(&info);
-    return info.dwNumberOfProcessors;
+    // Most devices have only one processor group and thus have the same buffer_size.
+#ifdef _WIN64
+    constexpr int stack_buffer_size = 48; // 16 bytes per group
+#else // ^^^ 64-bit / 32-bit vvv
+    constexpr int stack_buffer_size = 44; // 12 bytes per group
+#endif // ^^^ 32-bit ^^^
+
+    alignas(SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX) unsigned char stack_buffer[stack_buffer_size];
+    unsigned char* buffer_ptr = stack_buffer;
+    DWORD buffer_size         = stack_buffer_size;
+    _STD unique_ptr<unsigned char[]> new_buffer;
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getlogicalprocessorinformationex
+    // The buffer "receives a sequence of variable-sized SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX structures".
+    for (;;) {
+        if (GetLogicalProcessorInformationEx(RelationProcessorPackage,
+                reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(buffer_ptr), &buffer_size)) {
+            unsigned int logical_processors = 0;
+
+            while (buffer_size > 0) {
+                // Each structure in the buffer describes a processor package (aka socket)...
+                const auto structure_ptr  = reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX>(buffer_ptr);
+                const auto structure_size = structure_ptr->Size;
+
+                // ... which contains one or more processor groups.
+                for (WORD i = 0; i != structure_ptr->Processor.GroupCount; ++i) {
+                    logical_processors += _STD popcount(structure_ptr->Processor.GroupMask[i].Mask);
+                }
+
+                // Step forward to the next structure in the buffer.
+                buffer_ptr += structure_size;
+                buffer_size -= structure_size;
+            }
+
+            return logical_processors;
+        }
+
+        if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+            return 0; // API failure
+        }
+
+        new_buffer.reset(::new (_STD nothrow) unsigned char[buffer_size]);
+
+        if (!new_buffer) {
+            return 0; // allocation failure
+        }
+
+        buffer_ptr = new_buffer.get();
+    }
 }
 
 // TRANSITION, ABI: _Thrd_create() is preserved for binary compatibility
