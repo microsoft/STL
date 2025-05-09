@@ -53,7 +53,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ !defined(_DEBUG) ^^^
 #endif // !defined(_ENHANCED_REGEX_VISUALIZER)
 
-#ifdef _CPPRTTI
+#if defined(_CPPRTTI) && !defined(_M_CEE_PURE)
 extern "C" {
 _STD size_t __stdcall __std_regex_transform_primary_char(
     _Out_writes_(_Last1 - _First1) _Post_readable_size_(return) char* _First1, char* _Last1,
@@ -62,7 +62,7 @@ _STD size_t __stdcall __std_regex_transform_primary_wchar_t(
     _Out_writes_(_Last1 - _First1) _Post_readable_size_(return) wchar_t* _First1, wchar_t* _Last1,
     _In_reads_(_Last2 - _First2) const wchar_t* _First2, const wchar_t* _Last2, _In_opt_ const _Collvec*) noexcept;
 } // extern "C"
-#endif // ^^^ defined(_CPPRTTI) ^^^
+#endif // ^^^ defined(_CPPRTTI) && !defined(_M_CEE_PURE) ^^^
 
 _STD_BEGIN
 
@@ -278,7 +278,7 @@ struct _Regex_traits_base { // base of all regular expression traits
     using char_class_type = ctype_base::mask;
 };
 
-#ifdef _CPPRTTI
+#if defined(_CPPRTTI) && !defined(_M_CEE_PURE)
 inline size_t _Regex_transform_primary(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return) char* _First1,
     char* _Last1, _In_reads_(_Last2 - _First2) const char* _First2, const char* _Last2,
     _In_opt_ const _Locinfo::_Collvec* _Vector) noexcept {
@@ -290,7 +290,7 @@ inline size_t _Regex_transform_primary(_Out_writes_(_Last1 - _First1) _Post_read
     _In_opt_ const _Locinfo::_Collvec* _Vector) noexcept {
     return __std_regex_transform_primary_wchar_t(_First1, _Last1, _First2, _Last2, _Vector);
 }
-#endif // ^^^ defined(_CPPRTTI) ^^^
+#endif // ^^^ defined(_CPPRTTI) && !defined(_M_CEE_PURE) ^^^
 
 template <class _Elem>
 class _Regex_traits : public _Regex_traits_base { // base class for regular expression traits
@@ -337,7 +337,7 @@ public:
     string_type transform_primary(_FwdIt _First, _FwdIt _Last) const {
         // apply locale-specific case-insensitive transformation
         string_type _Res;
-#ifdef _CPPRTTI
+#if defined(_CPPRTTI) && !defined(_M_CEE_PURE)
         if (_First != _Last) {
             const collate<_Elem>* _Coll = _Getcoll();
             const auto& _Coll_type      = typeid(*_Coll);
@@ -365,10 +365,10 @@ public:
                 _Res.resize(_Count);
             }
         }
-#else // ^^^ defined(_CPPRTTI) / !defined(_CPPRTTI) vvv
+#else // ^^^ defined(_CPPRTTI) && !defined(_M_CEE_PURE) / !defined(_CPPRTTI) || defined(_M_CEE_PURE) vvv
         (void) _First;
         (void) _Last;
-#endif // ^^^ !defined(_CPPRTTI) ^^^
+#endif // ^^^ !defined(_CPPRTTI) || defined(_M_CEE_PURE) ^^^
         return _Res;
     }
 

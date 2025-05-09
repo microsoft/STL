@@ -173,9 +173,11 @@ static void test_traits() { // test template regex_traits
     CHECKSTRING(v0.transform(carr, carr + xlen(carr)), v0.transform(carr, carr + xlen(carr)));
     CHECK(v0.transform(carr, carr + xlen(carr)) != v0.transform(carr0, carr0 + xlen(carr0)));
     CHECK(v0.transform(carr, carr + xlen(carr)) < v0.transform(carr1, carr1 + xlen(carr1)));
+#ifndef _M_CEE_PURE
     CHECK(v0.transform_primary(carr, carr + xlen(carr)) == v0.transform_primary(carr, carr + xlen(carr)));
     CHECK(v0.transform_primary(carr, carr + xlen(carr)) != v0.transform_primary(carr0, carr0 + xlen(carr0)));
     CHECK(v0.transform_primary(carr0, carr0 + xlen(carr0)) < v0.transform_primary(carr1, carr1 + xlen(carr1)));
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
     for (size_t i = 0; i < sizeof(class_names) / sizeof(*class_names); ++i) {
         CHECK(v0.lookup_classname(class_names[i], class_names[i] + xlen(class_names[i])) != 0);

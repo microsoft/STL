@@ -535,6 +535,7 @@ void test_gh_994() {
     gh_994_should_throw("[a-[.cs.]]", error_range);
     gh_994_should_throw("[[.cs.]-[.dzs.]]", error_range);
 
+#ifndef _M_CEE_PURE
     g_regexTester.should_throw("[[=a=]-c]", error_range);
     g_regexTester.should_throw("[c-[=z=]]", error_range);
     g_regexTester.should_throw("[[=a=]-[=z=]]", error_range);
@@ -589,10 +590,12 @@ void test_gh_994() {
     g_regexTester.should_match("AaAaaAaab", "[[=a=]]*b", icase);
     g_regexTester.should_not_match("AaAaaAaab", "[[=a=]]*c", icase);
     g_regexTester.should_match("AaAabcaAaad", "[[=a=]bc]*d", icase);
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 }
 
 void test_gh_5435() {
     // GH-5435: <regex>: Equivalence classes have unexpected behavior with std::wregex
+#ifndef _M_CEE_PURE
     {
         test_wregex_locale eq_a_regex(&g_regexTester, L"^[[=a=]]*b$", "en-US");
         eq_a_regex.should_search_match(L"A\u00c0ab", L"A\u00c0ab"); // U+00C0 LATIN CAPITAL LETTER A WITH GRAVE
@@ -623,6 +626,7 @@ void test_gh_5435() {
         eq_e_regex.should_search_fail(L"e\u00ccEb"); // U+00CC LATIN CAPITAL LETTER I WITH GRAVE
         eq_e_regex.should_search_fail(L"e\u00ecEb"); // U+00EC LATIN SMALL LETTER I WITH GRAVE
     }
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 }
 
 int main() {
