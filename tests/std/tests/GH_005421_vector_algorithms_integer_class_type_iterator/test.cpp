@@ -6,6 +6,7 @@
 #include <cassert>
 #include <compare>
 #include <iterator>
+#include <utility>
 
 #include "range_algorithm_support.hpp"
 
