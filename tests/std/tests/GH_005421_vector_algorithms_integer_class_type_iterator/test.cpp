@@ -206,7 +206,7 @@ int main() {
             assert(ranges::equal(arr_src_begin, arr_src_end, begin(reverse_expected), end(reverse_expected)));
         }
         {
-            // Out of replace family, only replace for 32 and 64 bytes elements is manually vectorized,
+            // Out of replace family, only replace for 32-bit and 64-bit elements is manually vectorized,
             // replace_copy is auto vectorized (along with replace_copy_if)
             const int replace_expected[] = {
                 200, 210, 220, 333, 240, 333, 333, 270, 280, 290, 300, 310, 320, 333, 340, 333, 333, 370, 380, 390};
