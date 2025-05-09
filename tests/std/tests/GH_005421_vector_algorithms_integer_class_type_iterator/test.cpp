@@ -225,12 +225,14 @@ int main() {
             const int swap_ranges_expected[] = {
                 300, 310, 320, 250, 340, 250, 250, 370, 380, 390, 200, 210, 220, 250, 240, 250, 250, 270, 280, 290};
 
+            const auto temp_mid = temp_begin + _Signed128{10};
+
             copy(arr_begin, arr_end, temp_begin);
-            swap_ranges(temp_begin, temp_begin + _Signed128{10}, temp_begin + _Signed128{10});
+            swap_ranges(temp_begin, temp_mid, temp_mid);
             assert(equal(temp_begin, temp_end, begin(swap_ranges_expected), end(swap_ranges_expected)));
 
             ranges::copy(arr_begin, arr_end, temp_begin);
-            ranges::swap_ranges(temp_begin, temp_begin + _Signed128{10}, temp_begin + _Signed128{10}, temp_end);
+            ranges::swap_ranges(temp_begin, temp_mid, temp_mid, temp_end);
             assert(ranges::equal(temp_begin, temp_end, begin(swap_ranges_expected), end(swap_ranges_expected)));
         }
     }
