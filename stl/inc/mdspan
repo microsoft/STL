@@ -798,7 +798,7 @@ constexpr size_t _Count_static_extents_equal_to = 0;
 
 template <class _IndexType, size_t... _Extents, size_t _Val>
 constexpr size_t _Count_static_extents_equal_to<extents<_IndexType, _Extents...>, _Val> =
-    ((_Extents == _Val) + ... + 0);
+    (static_cast<size_t>(_Extents == _Val) + ... + 0);
 
 template <class _Extents>
 _NODISCARD constexpr pair<size_t, size_t> _Count_dynamic_extents_equal_to_zero_or_one(const _Extents& _Exts) noexcept {
