@@ -805,7 +805,7 @@ _NODISCARD constexpr pair<size_t, size_t> _Count_dynamic_extents_equal_to_zero_o
     _STL_INTERNAL_STATIC_ASSERT(_Is_extents<_Extents> && _Extents::rank_dynamic() != 0);
     size_t _Zero_extents = 0;
     size_t _One_extents  = 0;
-    for (const auto _Ext : _Exts._Array) {
+    for (const auto& _Ext : _Exts._Array) {
         if (_Ext == 0) {
             ++_Zero_extents;
         } else if (_Ext == 1) {
