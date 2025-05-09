@@ -174,7 +174,7 @@ static void test_traits() { // test template regex_traits
     CHECK(v0.transform(carr, carr + xlen(carr)) != v0.transform(carr0, carr0 + xlen(carr0)));
     CHECK(v0.transform(carr, carr + xlen(carr)) < v0.transform(carr1, carr1 + xlen(carr1)));
     CHECK(v0.transform_primary(carr, carr + xlen(carr)) == v0.transform_primary(carr, carr + xlen(carr)));
-    CHECK(v0.transform_primary(carr, carr + xlen(carr)) == v0.transform_primary(carr0, carr0 + xlen(carr0)));
+    CHECK(v0.transform_primary(carr, carr + xlen(carr)) != v0.transform_primary(carr0, carr0 + xlen(carr0)));
     CHECK(v0.transform_primary(carr0, carr0 + xlen(carr0)) < v0.transform_primary(carr1, carr1 + xlen(carr1)));
 
     for (size_t i = 0; i < sizeof(class_names) / sizeof(*class_names); ++i) {

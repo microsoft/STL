@@ -94,6 +94,9 @@ inline size_t __CRTDECL _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_
 }
 #endif // defined(_CRTBLD)
 
+template <class _Elem>
+class _Regex_traits;
+
 _EXPORT_STD template <class _Elem>
 class collate : public locale::facet { // facet for ordering sequences of elements
 public:
@@ -189,6 +192,8 @@ protected:
 
 private:
     _Locinfo::_Collvec _Coll; // used by _LStrcoll and _XStrxfrm
+
+    friend _Regex_traits<_Elem>;
 };
 
 #ifdef __clang__

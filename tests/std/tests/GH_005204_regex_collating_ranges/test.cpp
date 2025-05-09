@@ -535,31 +535,94 @@ void test_gh_994() {
     gh_994_should_throw("[a-[.cs.]]", error_range);
     gh_994_should_throw("[[.cs.]-[.dzs.]]", error_range);
 
-#ifndef SKIP_COLLATE_TESTS
     g_regexTester.should_throw("[[=a=]-c]", error_range);
     g_regexTester.should_throw("[c-[=z=]]", error_range);
     g_regexTester.should_throw("[[=a=]-[=z=]]", error_range);
 
     g_regexTester.should_match("a", "[[=a=]]");
-    g_regexTester.should_match("A", "[[=a=]]");
+    g_regexTester.should_not_match("A", "[[=a=]]");
     g_regexTester.should_not_match("b", "[[=a=]]");
     g_regexTester.should_not_match("B", "[[=a=]]");
-    g_regexTester.should_match("z", "[[=Z=]]");
+    g_regexTester.should_not_match("z", "[[=Z=]]");
     g_regexTester.should_match("Z", "[[=Z=]]");
     g_regexTester.should_not_match("b", "[[=Z=]]");
     g_regexTester.should_not_match("B", "[[=Z=]]");
 
+    g_regexTester.should_match("a", "[[=a=]]", icase);
+    g_regexTester.should_match("A", "[[=a=]]", icase);
+    g_regexTester.should_not_match("b", "[[=a=]]", icase);
+    g_regexTester.should_not_match("B", "[[=a=]]", icase);
+    g_regexTester.should_match("z", "[[=Z=]]", icase);
+    g_regexTester.should_match("Z", "[[=Z=]]", icase);
+    g_regexTester.should_not_match("b", "[[=Z=]]", icase);
+    g_regexTester.should_not_match("B", "[[=Z=]]", icase);
+
     g_regexTester.should_match("ab", "[[=a=]]b");
-    g_regexTester.should_match("Ab", "[[=a=]]b");
+    g_regexTester.should_not_match("Ab", "[[=a=]]b");
     g_regexTester.should_not_match("Ab", "[[=a=]]B");
     g_regexTester.should_not_match("b", "[[=a=]]b");
     g_regexTester.should_not_match("aab", "[[=a=]]b");
     g_regexTester.should_not_match("B", "[[=a=]]b");
+    g_regexTester.should_not_match("ab", "[[=A=]]b");
+    g_regexTester.should_match("Ab", "[[=A=]]b");
+    g_regexTester.should_not_match("Ab", "[[=A=]]B");
+    g_regexTester.should_not_match("b", "[[=A=]]b");
+    g_regexTester.should_not_match("AAb", "[[=A=]]b");
+    g_regexTester.should_not_match("B", "[[=A=]]b");
 
-    g_regexTester.should_match("AaAaaAaab", "[[=a=]]*b");
+    g_regexTester.should_match("ab", "[[=a=]]b", icase);
+    g_regexTester.should_match("Ab", "[[=a=]]b", icase);
+    g_regexTester.should_match("Ab", "[[=a=]]B", icase);
+    g_regexTester.should_not_match("b", "[[=a=]]b", icase);
+    g_regexTester.should_not_match("aab", "[[=a=]]b", icase);
+    g_regexTester.should_not_match("B", "[[=a=]]b", icase);
+    g_regexTester.should_match("ab", "[[=A=]]b", icase);
+    g_regexTester.should_match("Ab", "[[=A=]]b", icase);
+    g_regexTester.should_match("Ab", "[[=A=]]B", icase);
+    g_regexTester.should_not_match("b", "[[=A=]]b", icase);
+    g_regexTester.should_not_match("AAb", "[[=A=]]b", icase);
+    g_regexTester.should_not_match("B", "[[=A=]]b", icase);
+
+    g_regexTester.should_not_match("AaAaaAaab", "[[=a=]]*b");
     g_regexTester.should_not_match("AaAaaAaab", "[[=a=]]*c");
-    g_regexTester.should_match("AaAabcaAaad", "[[=a=]bc]*d");
-#endif // !defined(SKIP_COLLATE_TESTS)
+    g_regexTester.should_not_match("AaAabcaAaad", "[[=a=]bc]*d");
+    g_regexTester.should_match("AaAaaAaab", "[[=a=]]*b", icase);
+    g_regexTester.should_not_match("AaAaaAaab", "[[=a=]]*c", icase);
+    g_regexTester.should_match("AaAabcaAaad", "[[=a=]bc]*d", icase);
+}
+
+void test_gh_5435() {
+    // GH-5435: <regex>: Equivalence classes have unexpected behavior with std::wregex
+    {
+        test_wregex_locale eq_a_regex(&g_regexTester, L"^[[=a=]]*b$", "en-US");
+        eq_a_regex.should_search_match(L"A\u00c0ab", L"A\u00c0ab"); // U+00C0 LATIN CAPITAL LETTER A WITH GRAVE
+        eq_a_regex.should_search_fail(L"Ab\u00c0ab"); // U+00C0 LATIN CAPITAL LETTER A WITH GRAVE
+        eq_a_regex.should_search_match(L"A\u00e0ab", L"A\u00e0ab"); // U+00E0 LATIN SMALL LETTER A WITH GRAVE
+        eq_a_regex.should_search_match(L"A\u00c1ab", L"A\u00c1ab"); // U+00C1 LATIN CAPITAL LETTER A WITH ACUTE
+        eq_a_regex.should_search_match(L"A\u00e1ab", L"A\u00e1ab"); // U+00E1 LATIN SMALL LETTER A WITH ACUTE
+        eq_a_regex.should_search_match(L"A\u00c2ab", L"A\u00c2ab"); // U+00C2 LATIN CAPITAL LETTER A WITH CIRCUMFLEX
+        eq_a_regex.should_search_match(L"A\u00e2ab", L"A\u00e2ab"); // U+00E2 LATIN SMALL LETTER A WITH CIRCUMFLEX
+        eq_a_regex.should_search_match(L"A\u00c3ab", L"A\u00c3ab"); // U+00C3 LATIN CAPITAL LETTER A WITH TILDE
+        eq_a_regex.should_search_match(L"A\u00e3ab", L"A\u00e3ab"); // U+00E3 LATIN SMALL LETTER A WITH TILDE
+        eq_a_regex.should_search_match(L"A\u00c4ab", L"A\u00c4ab"); // U+00C4 LATIN CAPITAL LETTER A WITH DIAERESIS
+        eq_a_regex.should_search_match(L"A\u00e4ab", L"A\u00e4ab"); // U+00E4 LATIN SMALL LETTER A WITH DIAERESIS
+        eq_a_regex.should_search_match(L"A\u00c5ab", L"A\u00c5ab"); // U+00C5 LATIN CAPITAL LETTER A WITH RING ABOVE
+        eq_a_regex.should_search_match(L"A\u00e5ab", L"A\u00e5ab"); // U+00E5 LATIN SMALL LETTER A WITH RING ABOVE
+    }
+    {
+        test_wregex_locale eq_e_regex(&g_regexTester, L"^[[=e=]]*b$", "en-US");
+        eq_e_regex.should_search_match(L"e\u00c8Eb", L"e\u00c8Eb"); // U+00C8 LATIN CAPITAL LETTER E WITH GRAVE
+        eq_e_regex.should_search_fail(L"eb\u00c8Eb"); // U+00C8 LATIN CAPITAL LETTER E WITH GRAVE
+        eq_e_regex.should_search_match(L"e\u00e8Eb", L"e\u00e8Eb"); // U+00E8 LATIN SMALL LETTER E WITH GRAVE
+        eq_e_regex.should_search_match(L"e\u00c9Eb", L"e\u00c9Eb"); // U+00C9 LATIN CAPITAL LETTER E WITH ACUTE
+        eq_e_regex.should_search_match(L"e\u00e9Eb", L"e\u00e9Eb"); // U+00E9 LATIN SMALL LETTER E WITH ACUTE
+        eq_e_regex.should_search_match(L"e\u00caEb", L"e\u00caEb"); // U+00CA LATIN CAPITAL LETTER E WITH CIRCUMFLEX
+        eq_e_regex.should_search_match(L"e\u00eaEb", L"e\u00eaEb"); // U+00EA LATIN SMALL LETTER E WITH CIRCUMFLEX
+        eq_e_regex.should_search_match(L"e\u00cbEb", L"e\u00cbEb"); // U+00CB LATIN CAPITAL LETTER E WITH DIAERESIS
+        eq_e_regex.should_search_match(L"e\u00ebEb", L"e\u00ebEb"); // U+00EB LATIN SMALL LETTER E WITH DIAERESIS
+        eq_e_regex.should_search_fail(L"e\u00ccEb"); // U+00CC LATIN CAPITAL LETTER I WITH GRAVE
+        eq_e_regex.should_search_fail(L"e\u00ecEb"); // U+00EC LATIN SMALL LETTER I WITH GRAVE
+    }
 }
 
 void test_gh_5437_ECMAScript_or_collate(syntax_option_type ECMAScript_or_collate) {
@@ -592,6 +655,7 @@ void test_gh_5437() {
 int main() {
     test_collating_ranges_german();
     test_gh_994();
+    test_gh_5435();
     test_gh_5437();
 
     return g_regexTester.result();
