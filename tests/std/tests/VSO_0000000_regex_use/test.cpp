@@ -764,9 +764,11 @@ void test_gh_4995() {
     g_regexTester.should_throw("[[:digit:]-e]", error_range);
     g_regexTester.should_throw("[e-[:digit:]]", error_range);
     g_regexTester.should_throw("[[:alpha:]-[:digit:]]", error_range);
+#ifndef _M_CEE_PURE
     g_regexTester.should_throw("[[=a=]-e]", error_range, ECMAScript | regex::collate);
     g_regexTester.should_throw("[e-[=a=]]", error_range, ECMAScript | regex::collate);
     g_regexTester.should_throw("[[=a=]-[=b=]]", error_range, ECMAScript | regex::collate);
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
     // Test valid cases:
     g_regexTester.should_not_match("b", R"([\d-])");

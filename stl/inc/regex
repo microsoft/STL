@@ -53,6 +53,17 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ !defined(_DEBUG) ^^^
 #endif // !defined(_ENHANCED_REGEX_VISUALIZER)
 
+#if defined(_CPPRTTI) && !defined(_M_CEE_PURE)
+extern "C" {
+_STD size_t __stdcall __std_regex_transform_primary_char(
+    _Out_writes_(_Last1 - _First1) _Post_readable_size_(return) char* _First1, char* _Last1,
+    _In_reads_(_Last2 - _First2) const char* _First2, const char* _Last2, _In_opt_ const _Collvec*) noexcept;
+_STD size_t __stdcall __std_regex_transform_primary_wchar_t(
+    _Out_writes_(_Last1 - _First1) _Post_readable_size_(return) wchar_t* _First1, wchar_t* _Last1,
+    _In_reads_(_Last2 - _First2) const wchar_t* _First2, const wchar_t* _Last2, _In_opt_ const _Collvec*) noexcept;
+} // extern "C"
+#endif // ^^^ defined(_CPPRTTI) && !defined(_M_CEE_PURE) ^^^
+
 _STD_BEGIN
 
 enum _Meta_type : int { // meta character representations for parser
@@ -267,6 +278,20 @@ struct _Regex_traits_base { // base of all regular expression traits
     using char_class_type = ctype_base::mask;
 };
 
+#if defined(_CPPRTTI) && !defined(_M_CEE_PURE)
+inline size_t _Regex_transform_primary(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return) char* _First1,
+    char* _Last1, _In_reads_(_Last2 - _First2) const char* _First2, const char* _Last2,
+    _In_opt_ const _Locinfo::_Collvec* _Vector) noexcept {
+    return __std_regex_transform_primary_char(_First1, _Last1, _First2, _Last2, _Vector);
+}
+
+inline size_t _Regex_transform_primary(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return) wchar_t* _First1,
+    wchar_t* _Last1, _In_reads_(_Last2 - _First2) const wchar_t* _First2, const wchar_t* _Last2,
+    _In_opt_ const _Locinfo::_Collvec* _Vector) noexcept {
+    return __std_regex_transform_primary_wchar_t(_First1, _Last1, _First2, _Last2, _Vector);
+}
+#endif // ^^^ defined(_CPPRTTI) && !defined(_M_CEE_PURE) ^^^
+
 template <class _Elem>
 class _Regex_traits : public _Regex_traits_base { // base class for regular expression traits
 public:
@@ -312,13 +337,38 @@ public:
     string_type transform_primary(_FwdIt _First, _FwdIt _Last) const {
         // apply locale-specific case-insensitive transformation
         string_type _Res;
+#if defined(_CPPRTTI) && !defined(_M_CEE_PURE)
+        if (_First != _Last) {
+            const collate<_Elem>* _Coll = _Getcoll();
+            const auto& _Coll_type      = typeid(*_Coll);
+            // TRANSITION, ABI: GH-5394: locale creates collate objects of type collate, not collate_byname.
+            // Depending on the resolution of LWG-2338, comparison to typeid(collate) might also become
+            // required by the standard.
+            if (_Coll_type == typeid(collate_byname<_Elem>) || _Coll_type == typeid(collate<_Elem>)) {
+                // non-empty string with known collate facet, transform it
+                const string_type _Src(_First, _Last);
+                const auto _Src_first = _Src.data();
+                const auto _Src_last  = _Src_first + _Src.size();
 
-        if (_First != _Last) { // non-empty string, transform it
-            vector<_Elem> _Temp(_First, _Last);
+                size_t _Count = _Src.size();
+                while (_Res.size() < _Count) {
+                    _Res.resize(_Count);
+                    _Count = _STD _Regex_transform_primary(
+                        &_Res[0], &_Res[0] + _Count, _Src_first, _Src_last, &_Coll->_Coll);
 
-            _Getctype()->tolower(_Temp.data(), _Temp.data() + _Temp.size());
-            _Res = _Getcoll()->transform(_Temp.data(), _Temp.data() + _Temp.size());
+                    if (_Count == static_cast<size_t>(-1)) {
+                        // return empty string in case of error
+                        _Count = 0;
+                        break;
+                    }
+                }
+                _Res.resize(_Count);
+            }
         }
+#else // ^^^ defined(_CPPRTTI) && !defined(_M_CEE_PURE) / !defined(_CPPRTTI) || defined(_M_CEE_PURE) vvv
+        (void) _First;
+        (void) _Last;
+#endif // ^^^ !defined(_CPPRTTI) || defined(_M_CEE_PURE) ^^^
         return _Res;
     }
 
@@ -4211,26 +4261,30 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ex_class2(
 
         _Elem* const _Coll_elem_first      = &_Coll_elem.front();
         const _Elem* const _Coll_elem_last = _Coll_elem_first + _Size;
+
+        if (_Size == 1 && _End_arg == _Meta_dot) {
+            // process single-element collating elements like individual characters
+            _Val = *_Coll_elem_first;
+            return _Prs_chr;
+        }
+
+        if (_Flags & regex_constants::icase) {
+            for (auto _Current = _Coll_elem_first; _Current != _Coll_elem_last; ++_Current) {
+                *_Current = _Traits.translate_nocase(*_Current);
+            }
+        } else if (_Flags & regex_constants::collate) {
+            for (auto _Current = _Coll_elem_first; _Current != _Coll_elem_last; ++_Current) {
+                *_Current = _Traits.translate(*_Current);
+            }
+        }
+
         if (_End_arg == _Meta_equal) { // process equivalence
             _Nfa._Add_equiv2(_Coll_elem_first, _Coll_elem_last);
             return _Prs_set;
         } else { // process collating element
-            if (_Size == 1) {
-                _Val = *_Coll_elem_first;
-                return _Prs_chr;
-            }
 
             // Character ranges with multi-character bounds cannot be represented in NFA nodes yet (see GH-5391).
             // Provisionally treat multi-character collating elements as character sets.
-            if (_Flags & regex_constants::icase) {
-                for (auto _Current = _Coll_elem_first; _Current != _Coll_elem_last; ++_Current) {
-                    *_Current = _Traits.translate_nocase(*_Current);
-                }
-            } else if (_Flags & regex_constants::collate) {
-                for (auto _Current = _Coll_elem_first; _Current != _Coll_elem_last; ++_Current) {
-                    *_Current = _Traits.translate(*_Current);
-                }
-            }
             _Nfa._Add_coll2(_Coll_elem_first, _Coll_elem_last);
             return _Prs_set;
         }
