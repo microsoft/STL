@@ -186,8 +186,8 @@ protected:
 
     _NODISCARD virtual long __CLR_OR_THIS_CALL do_hash(const _Elem* _First, const _Elem* _Last) const {
         // compute hash code for [_First, _Last)
-        _Adl_verify_range(_First, _Last);
-        return static_cast<long>(_Hash_array_representation(_First, static_cast<size_t>(_Last - _First)));
+        const auto _Sortkey = collate::do_transform(_First, _Last);
+        return static_cast<long>(_Hash_array_representation(_Sortkey.data(), _Sortkey.size()));
     }
 
 private:
