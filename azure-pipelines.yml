@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# Build STL targeting x86, x64, arm, arm64
+# Build STL targeting x86, x64, arm, arm64, arm64ec
 
 variables:
   - template: azure-devops/config.yml
@@ -82,6 +82,22 @@ stages:
           targetPlatform: arm64
           analyzeBuild: true
           buildBenchmarks: true
+          numShards: 1
+          skipTesting: true
+
+  - stage: Early_Build_ARM64EC
+    dependsOn: []
+    displayName: 'Early Build ARM64EC'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
+    jobs:
+      - template: azure-devops/build-and-test.yml
+        parameters:
+          hostArch: x64
+          targetArch: arm64
+          targetPlatform: arm64ec
+          analyzeBuild: true
           numShards: 1
           skipTesting: true
 
