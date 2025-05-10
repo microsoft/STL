@@ -46,27 +46,16 @@ int main() {
     assert(ranges::adjacent_find(arr_begin, arr_end) == arr_begin + _Signed128{5});
 
     {
-        // As of 2025-05-09, 'search' and 'find_end' are manually vectorized for 8-bit and 16-bit elements only.
-        short short_arr[arr_size];
-        picky_contiguous_iterator short_arr_begin(begin(short_arr));
-        picky_contiguous_iterator short_arr_end(end(short_arr));
+        const int needle[] = {300, 310, 320};
 
-        transform(arr_begin, arr_end, short_arr_begin, [](int v) { return static_cast<short>(v); });
+        picky_contiguous_iterator needle_begin(begin(needle));
+        picky_contiguous_iterator needle_end(end(needle));
 
-        const short short_needle[] = {300, 310, 320};
+        assert(search(arr_begin, arr_end, needle_begin, needle_end) == arr_begin + _Signed128{10});
+        assert(begin(ranges::search(arr_begin, arr_end, needle_begin, needle_end)) == arr_begin + _Signed128{10});
 
-        picky_contiguous_iterator short_needle_begin(begin(short_needle));
-        picky_contiguous_iterator short_needle_end(end(short_needle));
-
-        assert(search(short_arr_begin, short_arr_end, short_needle_begin, short_needle_end)
-               == short_arr_begin + _Signed128{10});
-        assert(begin(ranges::search(short_arr_begin, short_arr_end, short_needle_begin, short_needle_end))
-               == short_arr_begin + _Signed128{10});
-
-        assert(find_end(short_arr_begin, short_arr_end, short_needle_begin, short_needle_end)
-               == short_arr_begin + _Signed128{10});
-        assert(begin(ranges::find_end(short_arr_begin, short_arr_end, short_needle_begin, short_needle_end))
-               == short_arr_begin + _Signed128{10});
+        assert(find_end(arr_begin, arr_end, needle_begin, needle_end) == arr_begin + _Signed128{10});
+        assert(begin(ranges::find_end(arr_begin, arr_end, needle_begin, needle_end)) == arr_begin + _Signed128{10});
     }
 
     assert(count(arr_begin, arr_end, 250) == 6);

@@ -1112,7 +1112,10 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_search<unsigned char>(gen);
     test_search<short>(gen);
     test_search<unsigned short>(gen);
-    // search() and find_end() are vectorized for 1 and 2 bytes only.
+    test_search<int>(gen);
+    test_search<unsigned int>(gen);
+    test_search<long long>(gen);
+    test_search<unsigned long long>(gen);
 
     test_min_max_element<char>(gen);
     test_min_max_element<signed char>(gen);
