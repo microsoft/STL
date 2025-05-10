@@ -2329,7 +2329,7 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
                 if constexpr (is_pointer_v<decltype(_UNext)>) {
                     _UNext = _Result;
                 } else {
-                    _UNext += _Result - _First_ptr;
+                    _UNext += static_cast<_Iter_diff_t<decltype(_UNext)>>(_Result - _First_ptr);
                 }
 
                 _STD _Seek_wrapped(_First, _UNext);

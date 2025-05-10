@@ -720,7 +720,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, 
                 if constexpr (is_pointer_v<decltype(_ULast)>) {
                     _ULast = _Result;
                 } else {
-                    _ULast = _UFirst + (_Result - _First_ptr);
+                    _ULast = _UFirst + static_cast<_Iter_diff_t<decltype(_UFirst)>>(_Result - _First_ptr);
                 }
 
                 _STD _Seek_wrapped(_Last, _ULast);
@@ -794,7 +794,7 @@ namespace ranges {
                     }
 
                     const auto _First_ptr = _STD _To_address(_First);
-                    const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                    const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_Last - _First);
 
                     return static_cast<iter_difference_t<_It>>(_STD _Count_vectorized(_First_ptr, _Last_ptr, _Val));
                 }
@@ -2328,7 +2328,7 @@ _NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHays
                     if constexpr (is_pointer_v<decltype(_UFirst1)>) {
                         _UFirst1 = _Ptr_res1;
                     } else {
-                        _UFirst1 += _Ptr_res1 - _Ptr1;
+                        _UFirst1 += static_cast<_Iter_diff_t<decltype(_UFirst1)>>(_Ptr_res1 - _Ptr1);
                     }
 
                     _STD _Seek_wrapped(_Last1, _UFirst1);
@@ -2440,7 +2440,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
                 if constexpr (is_pointer_v<decltype(_UFirst)>) {
                     _UFirst = _Result;
                 } else {
-                    _UFirst += _Result - _First_ptr;
+                    _UFirst += static_cast<_Iter_diff_t<decltype(_UFirst)>>(_Result - _First_ptr);
                 }
 
                 _STD _Seek_wrapped(_Last, _UFirst);
@@ -2630,7 +2630,7 @@ namespace ranges {
                         }
 
                         const auto _First_ptr = _STD _To_address(_First);
-                        const auto _Last_ptr  = _First_ptr + _Dist;
+                        const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_Dist);
                         const auto _Result =
                             _STD _Search_n_vectorized(_First_ptr, _Last_ptr, static_cast<size_t>(_Count), _Val);
 
@@ -2642,7 +2642,7 @@ namespace ranges {
                             }
                         } else {
                             if (_Result != _Last_ptr) {
-                                _First += _Result - _First_ptr;
+                                _First += static_cast<iter_difference_t<_It>>(_Result - _First_ptr);
                                 return {_First, _First + _Count};
                             } else {
                                 _First += _Dist;
@@ -3322,13 +3322,13 @@ namespace ranges {
                     }
 
                     const auto _First_ptr = _STD _To_address(_First);
-                    const auto _Last_ptr  = _First_ptr + _Count;
+                    const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_Count);
 
                     const auto _Result = _STD _Find_last_vectorized(_First_ptr, _Last_ptr, _Value);
                     if constexpr (is_pointer_v<_It>) {
                         return {_Result, _Last_ptr};
                     } else {
-                        return {_First + (_Result - _First_ptr), _First + _Count};
+                        return {_First + static_cast<iter_difference_t<_It>>(_Result - _First_ptr), _First + _Count};
                     }
                 }
             }
@@ -3483,7 +3483,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
                     if constexpr (is_pointer_v<decltype(_UFirst1)>) {
                         _UFirst1 = _Ptr_res1;
                     } else {
-                        _UFirst1 += _Ptr_res1 - _Ptr1;
+                        _UFirst1 += static_cast<_Iter_diff_t<decltype(_UFirst1)>>(_Ptr_res1 - _Ptr1);
                     }
 
                     _STD _Seek_wrapped(_First1, _UFirst1);
@@ -3601,7 +3601,7 @@ namespace ranges {
                     if (!_STD is_constant_evaluated()) {
                         const auto _Ptr1      = _STD to_address(_First1);
                         const auto _Ptr2      = _STD to_address(_First2);
-                        const auto _Ptr_last1 = _Ptr1 + _Count1;
+                        const auto _Ptr_last1 = _Ptr1 + static_cast<ptrdiff_t>(_Count1);
 
                         const auto _Ptr_res1 =
                             _STD _Find_end_vectorized(_Ptr1, _Ptr_last1, _Ptr2, static_cast<size_t>(_Count2));
@@ -3613,7 +3613,7 @@ namespace ranges {
                                 return {_Ptr_res1, _Ptr_res1};
                             }
                         } else {
-                            _First1 += _Ptr_res1 - _Ptr1;
+                            _First1 += static_cast<iter_difference_t<_It1>>(_Ptr_res1 - _Ptr1);
                             if (_Ptr_res1 != _Ptr_last1) {
                                 return {_First1, _First1 + _Count2_as1};
                             } else {
@@ -3805,7 +3805,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
             if constexpr (is_pointer_v<decltype(_UFirst1)>) {
                 _UFirst1 = _Result;
             } else {
-                _UFirst1 += _Result - _First1_ptr;
+                _UFirst1 += static_cast<_Iter_diff_t<decltype(_UFirst1)>>(_Result - _First1_ptr);
             }
             _STD _Seek_wrapped(_First1, _UFirst1);
             return _First1;
@@ -3903,11 +3903,11 @@ namespace ranges {
             if constexpr (_Vector_alg_in_find_first_of_is_safe<_It1, _It2, _Pr> && sized_sentinel_for<_Se1, _It1>
                           && sized_sentinel_for<_Se2, _It2> && is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>) {
                 if (!_STD is_constant_evaluated() && _Last1 - _First1 >= _Threshold_find_first_of) {
-                    const auto _Count1     = _Last1 - _First1;
+                    const auto _Count1     = static_cast<ptrdiff_t>(_Last1 - _First1);
                     const auto _First1_ptr = _STD _To_address(_First1);
                     const auto _Last1_ptr  = _First1_ptr + _Count1;
 
-                    const auto _Count2     = _Last2 - _First2;
+                    const auto _Count2     = static_cast<ptrdiff_t>(_Last2 - _First2);
                     const auto _First2_ptr = _STD _To_address(_First2);
                     const auto _Last2_ptr  = _First2_ptr + _Count2;
 
@@ -3917,7 +3917,7 @@ namespace ranges {
                     if constexpr (is_pointer_v<_It1>) {
                         return _Result;
                     } else {
-                        return _First1 + (_Result - _First1_ptr);
+                        return _First1 + static_cast<iter_difference_t<_It1>>(_Result - _First1_ptr);
                     }
                 }
             }
@@ -3974,17 +3974,18 @@ namespace ranges {
                         (_STD min)(static_cast<size_t>(_Last1 - _First1), static_cast<size_t>(_Last2 - _First2));
                     const auto _Last1_addr = _First1_addr + _Count;
                     ::__std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
-                    return {_First1 + _Count, _First2 + _Count};
+                    return {_First1 + static_cast<iter_difference_t<_It1>>(_Count),
+                        _First2 + static_cast<iter_difference_t<_It2>>(_Count)};
                 } else if constexpr (_Is_sized1) {
                     const auto _Final1     = _RANGES next(_First1, _Last1);
                     const auto _Last1_addr = _STD to_address(_Final1);
                     ::__std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
-                    return {_Final1, _First2 + (_Last1 - _First1)};
+                    return {_Final1, _First2 + static_cast<iter_difference_t<_It2>>(_Last1 - _First1)};
                 } else if constexpr (_Is_sized2) {
                     const auto _Final2     = _RANGES next(_First2, _Last2);
                     const auto _Last2_addr = _STD to_address(_Final2);
                     ::__std_swap_ranges_trivially_swappable_noalias(_First2_addr, _Last2_addr, _First1_addr);
-                    return {_First1 + (_Last2 - _First2), _Final2};
+                    return {_First1 + static_cast<iter_difference_t<_It1>>(_Last2 - _First2), _Final2};
                 } else {
                     _STL_ASSERT(false, "Tried to swap_ranges with two unreachable sentinels");
                 }
@@ -4343,7 +4344,7 @@ namespace ranges {
 
                     if (_STD _Could_compare_equal_to_value_type<_It>(_Oldval)) {
                         const auto _First_ptr = _STD to_address(_First);
-                        const auto _Last_ptr  = _First_ptr + _Count;
+                        const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_Count);
                         _STD _Replace_vectorized(_First_ptr, _Last_ptr, _Oldval, _Newval);
                     }
 
@@ -4841,7 +4842,7 @@ _CONSTEXPR20 _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _
             if constexpr (is_pointer_v<decltype(_UDest)>) {
                 _UDest = _Result;
             } else {
-                _UDest += _Result - _Dest_ptr;
+                _UDest += static_cast<_Iter_diff_t<decltype(_UDest)>>(_Result - _Dest_ptr);
             }
 
             _STD _Seek_wrapped(_Dest, _UDest);
@@ -4959,7 +4960,7 @@ namespace ranges {
                     if constexpr (is_pointer_v<_It>) {
                         return {_Result, _Last_ptr};
                     } else {
-                        return {_First + (_Result - _First_ptr), _First + _Size};
+                        return {_First + static_cast<iter_difference_t<_It>>(_Result - _First_ptr), _First + _Size};
                     }
                 }
             }
@@ -5094,7 +5095,8 @@ namespace ranges {
                     if constexpr (is_pointer_v<_Out>) {
                         return {_STD move(_End), _Result};
                     } else {
-                        return {_STD move(_End), _STD move(_Output) + (_Result - _Dest_ptr)};
+                        return {_STD move(_End),
+                            _STD move(_Output) + static_cast<iter_difference_t<_Out>>(_Result - _Dest_ptr)};
                     }
                 }
             }
@@ -5190,7 +5192,7 @@ _NODISCARD_UNIQUE_ALG _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last, _P
             if constexpr (is_pointer_v<decltype(_UFirst)>) {
                 _UFirst = _Result;
             } else {
-                _UFirst += _Result - _First_ptr;
+                _UFirst += static_cast<_Iter_diff_t<decltype(_UFirst)>>(_Result - _First_ptr);
             }
 
             _STD _Seek_wrapped(_Last, _UFirst);
@@ -5287,7 +5289,7 @@ namespace ranges {
                     if constexpr (is_pointer_v<_It>) {
                         return {_Result, _Last_ptr};
                     } else {
-                        return {_First + (_Result - _First_ptr), _First + _Size};
+                        return {_First + static_cast<iter_difference_t<_It>>(_Result - _First_ptr), _First + _Size};
                     }
                 }
             }
@@ -5358,7 +5360,7 @@ _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pr
             if constexpr (is_pointer_v<decltype(_UDest)>) {
                 _UDest = _Result;
             } else {
-                _UDest += _Result - _Dest_ptr;
+                _UDest += static_cast<_Iter_diff_t<decltype(_UDest)>>(_Result - _Dest_ptr);
             }
 
             _STD _Seek_wrapped(_Dest, _UDest);
@@ -5508,7 +5510,8 @@ namespace ranges {
                     if constexpr (is_pointer_v<_It> && is_pointer_v<_Out>) {
                         return {_Last_ptr, _Result};
                     } else {
-                        return {_STD move(_First) + _Size, _STD move(_Output) + (_Result - _Output_ptr)};
+                        return {_STD move(_First) + _Size,
+                            _STD move(_Output) + static_cast<iter_difference_t<_Out>>(_Result - _Output_ptr)};
                     }
                 }
             }
@@ -10812,7 +10815,8 @@ constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _
             if constexpr (is_pointer_v<_FwdIt>) {
                 return _Result;
             } else {
-                return {_First + (_Result.first - _First_ptr), _First + (_Result.second - _First_ptr)};
+                return {_First + static_cast<_Iter_diff_t<_FwdIt>>(_Result.first - _First_ptr),
+                    _First + static_cast<_Iter_diff_t<_FwdIt>>(_Result.second - _First_ptr)};
             }
         }
     }
@@ -10934,12 +10938,13 @@ namespace ranges {
                           && sized_sentinel_for<_Se, _It>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _First_ptr = _STD to_address(_First);
-                    const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                    const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_Last - _First);
                     const auto _Result    = _STD _Minmax_element_vectorized(_First_ptr, _Last_ptr);
                     if constexpr (is_pointer_v<_It>) {
                         return {_Result.first, _Result.second};
                     } else {
-                        return {_First + (_Result.first - _First_ptr), _First + (_Result.second - _First_ptr)};
+                        return {_First + static_cast<iter_difference_t<_It>>(_Result.first - _First_ptr),
+                            _First + static_cast<iter_difference_t<_It>>(_Result.second - _First_ptr)};
                     }
                 }
             }
@@ -11101,14 +11106,14 @@ namespace ranges {
                 if constexpr (_Is_min_max_value_optimization_safe<decltype(_UFirst), _Pr>) {
                     if (!_STD is_constant_evaluated()) {
                         const auto _First_ptr = _STD to_address(_UFirst);
-                        const auto _Last_ptr  = _First_ptr + (_ULast - _UFirst);
+                        const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_ULast - _UFirst);
                         const auto _Result    = _STD _Minmax_vectorized(_First_ptr, _Last_ptr);
                         return {static_cast<_Vty>(_Result._Min), static_cast<_Vty>(_Result._Max)};
                     }
                 } else if constexpr (_Is_min_max_optimization_safe<decltype(_UFirst), _Pr>) {
                     if (!_STD is_constant_evaluated()) {
                         const auto _First_ptr = _STD to_address(_UFirst);
-                        const auto _Last_ptr  = _First_ptr + (_ULast - _UFirst);
+                        const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_ULast - _UFirst);
                         const auto _Result    = _STD _Minmax_element_vectorized(_First_ptr, _Last_ptr);
                         return {*static_cast<const _Vty*>(_Result.first), *static_cast<const _Vty*>(_Result.second)};
                     }
