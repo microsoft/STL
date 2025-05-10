@@ -7,13 +7,14 @@
 #include <vector>
 
 #include "lorem.hpp"
+#include "skewed_allocator.hpp"
 
 enum class alg_type { std_fn, rng };
 
 template <alg_type Type, class T>
 void r(benchmark::State& state) {
-    const std::vector<T> src(lorem_ipsum.begin(), lorem_ipsum.end());
-    std::vector<T> v;
+    const std::vector<T, not_highly_aligned_allocator<T>> src(lorem_ipsum.begin(), lorem_ipsum.end());
+    std::vector<T, not_highly_aligned_allocator<T>> v;
     v.reserve(lorem_ipsum.size());
     for (auto _ : state) {
         v = src;
@@ -28,8 +29,8 @@ void r(benchmark::State& state) {
 
 template <alg_type Type, class T>
 void rc(benchmark::State& state) {
-    std::vector<T> src(lorem_ipsum.begin(), lorem_ipsum.end());
-    std::vector<T> v(lorem_ipsum.size());
+    std::vector<T, not_highly_aligned_allocator<T>> src(lorem_ipsum.begin(), lorem_ipsum.end());
+    std::vector<T, not_highly_aligned_allocator<T>> v(lorem_ipsum.size());
     for (auto _ : state) {
         benchmark::DoNotOptimize(src);
         benchmark::DoNotOptimize(v);
