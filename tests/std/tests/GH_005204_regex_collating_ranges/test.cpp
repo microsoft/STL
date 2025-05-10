@@ -629,10 +629,38 @@ void test_gh_5435() {
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
 }
 
+void test_gh_5437_ECMAScript_or_collate(syntax_option_type ECMAScript_or_collate) {
+    {
+        test_wregex char_range(&g_regexTester, L"^[\u0001-\u0200]$", ECMAScript_or_collate);
+        for (wchar_t ch = L'\u0001'; ch <= L'\u0200'; ++ch) {
+            char_range.should_search_match(wstring(1, ch), wstring(1, ch));
+        }
+        char_range.should_search_fail(wstring(1, L'\u0000'));
+        char_range.should_search_fail(wstring(1, L'\u0201'));
+    }
+    {
+        test_wregex char_range(&g_regexTester, L"^[\u00FE-\u0100]$", ECMAScript_or_collate);
+        for (wchar_t ch = L'\u00FE'; ch <= L'\u0100'; ++ch) {
+            char_range.should_search_match(wstring(1, ch), wstring(1, ch));
+        }
+        char_range.should_search_fail(wstring(1, L'\u00FD'));
+        char_range.should_search_fail(wstring(1, L'\u0101'));
+    }
+}
+
+void test_gh_5437() {
+    // GH-5437: make `wregex` handle small character ranges containing U+00FF and U+0100 correctly
+    test_gh_5437_ECMAScript_or_collate(ECMAScript);
+#ifndef SKIP_COLLATE_TESTS
+    test_gh_5437_ECMAScript_or_collate(regex_constants::collate);
+#endif // !defined(SKIP_COLLATE_TESTS)
+}
+
 int main() {
     test_collating_ranges_german();
     test_gh_994();
     test_gh_5435();
+    test_gh_5437();
 
     return g_regexTester.result();
 }

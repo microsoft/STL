@@ -1252,16 +1252,17 @@ _INLINE_VAR constexpr unsigned int _Bmp_size  = (_Bmp_max + _Bmp_chrs - 1U) / _B
 _INLINE_VAR constexpr unsigned int _ARRAY_THRESHOLD = 4U;
 
 enum _Node_flags : int { // flags for nfa nodes with special properties
-    _Fl_none            = 0x000,
-    _Fl_negate          = 0x001,
-    _Fl_greedy          = 0x002,
-    _Fl_longest         = 0x008, // TRANSITION, ABI: 0x004 is unused; the parser previously marked some nodes with it
-    _Fl_class_negated_w = 0x100,
-    _Fl_class_negated_s = 0x200,
-    _Fl_class_negated_d = 0x400,
-    _Fl_begin_needs_w   = 0x100,
-    _Fl_begin_needs_s   = 0x200,
-    _Fl_begin_needs_d   = 0x400
+    _Fl_none              = 0x000,
+    _Fl_negate            = 0x001,
+    _Fl_greedy            = 0x002,
+    _Fl_longest           = 0x008, // TRANSITION, ABI: 0x004 is unused; the parser previously marked some nodes with it
+    _Fl_class_negated_w   = 0x100,
+    _Fl_class_negated_s   = 0x200,
+    _Fl_class_negated_d   = 0x400,
+    _Fl_class_cl_all_bits = 0x800, // TRANSITION, ABI: GH-5242
+    _Fl_begin_needs_w     = 0x100,
+    _Fl_begin_needs_s     = 0x200,
+    _Fl_begin_needs_d     = 0x400
 };
 
 _BITMASK_OPS(_EMPTY_ARGUMENT, _Node_flags)
@@ -1587,7 +1588,7 @@ public:
     void _Add_char2(_Elem _Ch);
     void _Add_class();
     void _Add_char_to_class(_Elem _Ch);
-    void _Add_range2(_Elem, _Elem);
+    void _Add_range3(_Elem, _Elem);
     void _Add_named_class(typename _RxTraits::char_class_type, _Rx_char_class_kind);
     void _Add_equiv2(const _Elem*, const _Elem*);
     void _Add_coll2(const _Elem*, const _Elem*);
@@ -1617,11 +1618,8 @@ private:
     _Node_base* _Current;
     regex_constants::syntax_option_type _Flags;
     const _RxTraits& _Traits;
-    const int _Bmax; // Do not use; use _Get_bmax instead.
-    const int _Tmax; // Do not use; use _Get_tmax instead.
-
-    unsigned int _Get_bmax() const;
-    unsigned int _Get_tmax() const;
+    const int _Bmax; // TRANSITION, ABI: preserved for binary compatibility
+    const int _Tmax; // TRANSITION, ABI: preserved for binary compatibility
 
 public:
     _Builder& operator=(const _Builder&) = delete;
@@ -2961,33 +2959,61 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_class(_Elem _Ch) { // add 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range2(const _Elem _Arg0, const _Elem _Arg1) {
+void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range3(const _Elem _Arg0, const _Elem _Arg1) {
     // add character range to set
+    using string_type                    = typename _RxTraits::string_type;
     unsigned int _Ex0                    = static_cast<typename _RxTraits::_Uelem>(_Arg0);
     const unsigned int _Ex1              = static_cast<typename _RxTraits::_Uelem>(_Arg1);
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
 
-    for (; _Ex0 <= _Ex1 && _Ex1 < _Get_bmax(); ++_Ex0) { // set a bit
-        if (!_Node->_Small) {
+    // set bits and check that the range is non-empty
+    if (_Flags & regex_constants::collate) {
+        _Elem _Ch;
+        const auto _Ch_ptr          = _STD addressof(_Ch);
+        const auto _Arg0_ptr        = _STD addressof(_Arg0);
+        const auto _Arg1_ptr        = _STD addressof(_Arg1);
+        const string_type _Arg0_key = _Traits.transform(_Arg0_ptr, _Arg0_ptr + 1);
+        const string_type _Arg1_key = _Traits.transform(_Arg1_ptr, _Arg1_ptr + 1);
+
+        if (_Arg0_key > _Arg1_key) {
+            _Xregex_error(regex_constants::error_range);
+        }
+
+        for (unsigned int _UCh = 0; _UCh < _Bmp_max; ++_UCh) {
+            _Ch                       = static_cast<_Elem>(_UCh);
+            const string_type _Ch_key = _Traits.transform(_Ch_ptr, _Ch_ptr + 1);
+            if (_Arg0_key <= _Ch_key && _Ch_key <= _Arg1_key) {
+                if (!_Node->_Small) {
+                    _Node->_Small = new _Bitmap;
+                }
+                _Node->_Small->_Mark(_UCh);
+            }
+        }
+    } else if (_Ex0 > _Ex1) {
+        _Xregex_error(regex_constants::error_range);
+    } else {
+        if (!_Node->_Small && _Ex0 < _Bmp_max) {
             _Node->_Small = new _Bitmap;
         }
 
-        _Node->_Small->_Mark(_Ex0);
-    }
+        for (; _Ex0 <= _Ex1 && _Ex0 < _Bmp_max; ++_Ex0) {
+            _Node->_Small->_Mark(_Ex0);
+        }
 
-    if ((_Flags & regex_constants::collate) || _Ex1 >= _Ex0) {
-        if (_Ex1 - _Ex0 < _Get_tmax()) {
+        if (_Ex1 - _Ex0 < _ARRAY_THRESHOLD) {
             for (; _Ex0 <= _Ex1; ++_Ex0) {
                 _Add_char_to_array(static_cast<_Elem>(_Ex0));
             }
-        } else { // store remaining range as pair
-            if (!_Node->_Ranges) {
-                _Node->_Ranges = new _Buf<_Elem>;
-            }
-
-            _Node->_Ranges->_Insert2(static_cast<_Elem>(_Ex0));
-            _Node->_Ranges->_Insert2(_Arg1);
         }
+    }
+
+    if ((_Flags & regex_constants::collate) || _Ex1 >= _Ex0) { // store remaining range as pair
+        if (!_Node->_Ranges) {
+            _Node->_Ranges = new _Buf<_Elem>;
+        }
+
+        _Node->_Ranges->_Insert2(static_cast<_Elem>(_Ex0));
+        _Node->_Ranges->_Insert2(_Arg1);
     }
 }
 
@@ -3011,11 +3037,19 @@ template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_named_class(
     typename _RxTraits::char_class_type _Cl, const _Rx_char_class_kind _Kind) {
     // add contents of named class to bracket expression
+    using _Char_class_type               = typename _RxTraits::char_class_type;
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
     _Add_elts(_Node, _Cl, _Kind != _Rx_char_class_kind::_Positive);
     if (_Bmp_max <= _STD _Max_limit<typename _RxTraits::_Uelem>()) {
         if (_Kind == _Rx_char_class_kind::_Positive) {
-            _Node->_Classes = static_cast<typename _RxTraits::char_class_type>(_Node->_Classes | _Cl);
+            auto _Cl_all_bits_set = static_cast<_Char_class_type>(-1);
+            if ((_Node->_Classes != _Cl_all_bits_set && _Cl != _Cl_all_bits_set)
+                || _Node->_Classes == _Char_class_type{}) {
+                _Node->_Classes = static_cast<_Char_class_type>(_Node->_Classes | _Cl);
+            } else if (_Node->_Classes != _Cl) {
+                _Node->_Classes = static_cast<_Char_class_type>(_Node->_Classes & _Cl);
+                _Node->_Flags |= _Fl_class_cl_all_bits;
+            }
         } else {
             auto _Node_flag = static_cast<_Node_flags>(_Kind);
             _Node->_Flags |= _Node_flag;
@@ -3039,16 +3073,6 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Char_to_elts2(const _Elem* const _Firs
         (*_Cur)->_Next          = _Node;
     }
     (*_Cur)->_Data._Insert2(_First, _Last);
-}
-
-template <class _FwdIt, class _Elem, class _RxTraits>
-unsigned int _Builder<_FwdIt, _Elem, _RxTraits>::_Get_bmax() const {
-    return static_cast<unsigned int>(_Bmax);
-}
-
-template <class _FwdIt, class _Elem, class _RxTraits>
-unsigned int _Builder<_FwdIt, _Elem, _RxTraits>::_Get_tmax() const {
-    return static_cast<unsigned int>(_Tmax);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -3564,6 +3588,9 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_class(_Node_base* _Nx) { // ap
         _Found = true;
     } else if (_Node->_Classes != typename _RxTraits::char_class_type{} && _Traits.isctype(_Ch, _Node->_Classes)) {
         _Found = true;
+    } else if ((_Node->_Flags & _Fl_class_cl_all_bits)
+               && _Traits.isctype(_Ch, static_cast<typename _RxTraits::char_class_type>(-1))) {
+        _Found = true;
     } else if (_Node->_Equiv && _STD _Lookup_equiv2(_Ch, _Node->_Equiv, _Traits)) {
         _Found = true;
     } else if ((_Node->_Flags & _Fl_class_negated_w)
@@ -3939,6 +3966,9 @@ _BidIt _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Skip(_BidIt _First_arg, _BidIt 
                         _Found = true;
                     } else if (_Node->_Classes != typename _RxTraits::char_class_type{}
                                && _Traits.isctype(_Ch, _Node->_Classes)) {
+                        _Found = true;
+                    } else if ((_Node->_Flags & _Fl_class_cl_all_bits)
+                               && _Traits.isctype(_Ch, static_cast<typename _RxTraits::char_class_type>(-1))) {
                         _Found = true;
                     } else if (_Node->_Equiv && _STD _Lookup_equiv2(_Ch, _Node->_Equiv, _Traits)) {
                         _Found = true;
@@ -4382,18 +4412,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid clas
                 _Chr2 = _Traits.translate(_Chr2);
             }
 
-            if (_Flags & regex_constants::collate) {
-                const _Elem* const _Chr1_ptr = _STD addressof(_Chr1);
-                const _Elem* const _Chr2_ptr = _STD addressof(_Chr2);
-                if (_Traits.transform(_Chr2_ptr, _Chr2_ptr + 1) < _Traits.transform(_Chr1_ptr, _Chr1_ptr + 1)) {
-                    _Error(regex_constants::error_range);
-                }
-            } else if (static_cast<typename _RxTraits::_Uelem>(_Chr2)
-                       < static_cast<typename _RxTraits::_Uelem>(_Chr1)) {
-                _Error(regex_constants::error_range);
-            }
-
-            _Nfa._Add_range2(_Chr1, _Chr2);
+            _Nfa._Add_range3(_Chr1, _Chr2);
         } else if (_Ret == _Prs_chr) {
             _Nfa._Add_char_to_class(static_cast<_Elem>(_Val));
         }
