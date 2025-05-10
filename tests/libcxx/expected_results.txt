@@ -314,144 +314,56 @@ std/numerics/numeric.ops/numeric.ops.sat/sub_sat.compile.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/sub_sat.pass.cpp FAIL
 
 # P1222R4 <flat_set>
+
+# FIXME! error: no member named 'assign' in 'MinSequenceContainer<int>'
 std/containers/container.adaptors/flat.multiset/flat.multiset.capacity/empty.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.capacity/max_size.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.capacity/size.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/alloc.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.cons/assign_initializer_list.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/compare.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/containers.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/copy_alloc.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/copy_assign.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/copy.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/deduct_pmr.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/deduct.compile.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/deduct.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/default.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/dtor_noexcept.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/initializer_list.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/iter_iter.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move_alloc.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move_assign.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/pmr.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/range.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_container.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_initializer_list.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_iter_iter.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.erasure/erase_if_exceptions.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.erasure/erase_if.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.iterators/iterator_comparison.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.iterators/iterator_concept_conformance.compile.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.iterators/iterator.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.iterators/range_concept_conformance.compile.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.iterators/reverse_iterator.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/clear.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/emplace_hint.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/emplace.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/erase_iter_iter.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/erase_iter.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/erase_key_transparent.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/erase_key.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/extract.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_cv.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_initializer_list.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_cv.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_iter.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_rv.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.capacity/empty.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/assign_initializer_list.pass.cpp FAIL
+
+# FIXME! error: no member named 'insert_range' in 'MinSequenceContainer<int>'
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_rv.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp FAIL
+
+# FIXME! error: static assertion failed due to requirement '!std::is_nothrow_move_constructible_v<std::flat_MEOW<int, ThrowingMoveComp, std::vector<int, std::allocator<int>>>>'
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/move.pass.cpp FAIL
+
+# FIXME! error: call to implicitly-deleted copy constructor of 'container_type' (aka 'MoveAssignThrows')
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move_assign.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/move_assign.pass.cpp FAIL
+
+# FIXME! Assertion failed: std::is_sorted(m.begin(), m.end(), m.key_comp())
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_iter.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_sorted_initializer_list.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_sorted_iter_iter.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/replace.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/swap_free.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/swap_member.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.observers/comp.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.operations/contains_transparent.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.operations/contains.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.operations/count_transparent.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.operations/count.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.operations/equal_range_transparent.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.operations/equal_range.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.operations/find_transparent.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.operations/find.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.operations/lower_bound_transparent.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.operations/lower_bound.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.operations/upper_bound_transparent.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.operations/upper_bound.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/incomplete_type.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/op_compare.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/types.compile.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.capacity/empty.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.capacity/max_size.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.capacity/size.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/alloc.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/assign_initializer_list.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/compare.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/containers.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/copy_alloc.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/copy_assign.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/copy.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/deduct_pmr.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/deduct.compile.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/deduct.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/default.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/dtor_noexcept.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/initializer_list.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/iter_iter.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/move_alloc.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/move_assign.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/move.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/pmr.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/range.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/sorted_container.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/sorted_initializer_list.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/sorted_iter_iter.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.erasure/erase_if_exceptions.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.erasure/erase_if.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.iterators/iterator_comparison.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.iterators/iterator_concept_conformance.compile.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.iterators/iterator.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.iterators/range_concept_conformance.compile.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.iterators/reverse_iterator.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/clear.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/emplace_hint.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/emplace.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/erase_iter_iter.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/erase_iter.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/erase_key_transparent.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/erase_key.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/extract.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_cv.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_initializer_list.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_cv.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_iter.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_rv.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_rv.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_sorted_initializer_list.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_sorted_iter_iter.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_transparent.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/replace.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/swap_free.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/swap_member.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.observers/comp.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.operations/contains_transparent.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.operations/contains.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.operations/count_transparent.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.operations/count.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.operations/equal_range_transparent.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.operations/equal_range.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.operations/find_transparent.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.operations/find.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.operations/lower_bound_transparent.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.operations/lower_bound.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.operations/upper_bound_transparent.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.operations/upper_bound.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/incomplete_type.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/op_compare.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/types.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/flat_set.version.compile.pass.cpp FAIL
+
+# FIXME! Assertion failed: r == m.begin() + 2
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/emplace_hint.pass.cpp FAIL
+
+# FIXME! Assertion failed: r == m.begin() + 1
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_rv.pass.cpp FAIL
+
+# FIXME! warning C4242: 'initializing': conversion from 'int' to '_Ty', possible loss of data
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_iter_iter.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_iter_iter.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/sorted_iter_iter.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/sorted_iter_iter.pass.cpp:1 FAIL
+
+# FIXME! error: unused variable 'expected' [-Werror,-Wunused-variable]
+std/containers/container.adaptors/flat.set/flat.set.erasure/erase_if_exceptions.pass.cpp:2 FAIL
 
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
