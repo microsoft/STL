@@ -38,6 +38,7 @@ steps:
     -DSTL_USE_ANALYZE=${{ parameters.analyzeBuild }} ^
     -DSTL_ASAN_BUILD=${{ parameters.asanBuild }} ^
     -DTESTS_BUILD_ONLY=${{ parameters.testsBuildOnly }} ^
+    -DVCLIBS_TARGET_ARCHITECTURE=${{ parameters.targetPlatform }} ^
     -S $(Build.SourcesDirectory) -B "$(buildOutputLocation)"
   displayName: 'Configure the STL'
   timeoutInMinutes: 2
@@ -59,6 +60,7 @@ steps:
     -DCMAKE_CXX_COMPILER=cl ^
     -DCMAKE_BUILD_TYPE=Release ^
     -DSTL_BINARY_DIR="$(buildOutputLocation)" ^
+    -DVCLIBS_TARGET_ARCHITECTURE=${{ parameters.targetPlatform }} ^
     -S $(Build.SourcesDirectory)/benchmarks -B "$(benchmarkBuildOutputLocation)"
   displayName: 'Configure the benchmarks'
   timeoutInMinutes: 2
