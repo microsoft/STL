@@ -1,190 +1,63 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// implements multiprecision math for random number generators
+// Once upon a time, this implemented multiprecision math for linear_congruential_engine.
 
 #include <yvals.h>
 
+#include <__msvc_int128.hpp>
+#include <cstdint>
+
+namespace {
+    using _STD _Unsigned128;
+
+    using _MP_arr = uint64_t[5]; // Stores a 128-bit value in four 32-bit parts.
+    // Each part was uint64_t for intermediate computations (now unused) and the fifth part was always unused.
+
+    [[nodiscard]] _Unsigned128 _Get_u128_from_mp(_MP_arr _Wx) noexcept {
+        const uint64_t _Lo = (_Wx[1] << 32) + _Wx[0];
+        const uint64_t _Hi = (_Wx[3] << 32) + _Wx[2];
+
+        return _Unsigned128{_Lo, _Hi};
+    }
+
+    void _Assign_mp_from_u128(_MP_arr _Wx, const _Unsigned128 _Result) noexcept {
+        const uint64_t _Lo = _Result._Word[0];
+        const uint64_t _Hi = _Result._Word[1];
+
+        _Wx[0] = static_cast<uint32_t>(_Lo);
+        _Wx[1] = _Lo >> 32;
+        _Wx[2] = static_cast<uint32_t>(_Hi);
+        _Wx[3] = _Hi >> 32;
+        _Wx[4] = 0; // unused, but zeroed out to preserve behavior exactly
+    }
+} // unnamed namespace
+
 _STD_BEGIN
-constexpr int _MP_len = 5;
-using _MP_arr         = unsigned long long[_MP_len];
-
-constexpr int shift                 = 64 / 2;
-constexpr unsigned long long mask   = ~(~0ULL << shift);
-constexpr unsigned long long maxVal = mask + 1;
-
 // TRANSITION, ABI: preserved for binary compatibility
-[[nodiscard]] _CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _MP_Get(
-    _MP_arr u) noexcept { // convert multi-word value to scalar value
-    return (u[1] << shift) + u[0];
-}
-
-static void add(unsigned long long* u, int ulen, unsigned long long* v,
-    int vlen) noexcept { // add multi-word value to multi-word value
-    int i;
-    unsigned long long k = 0;
-    for (i = 0; i < vlen; ++i) { // add multi-word values
-        u[i] += v[i] + k;
-        k = u[i] >> shift;
-        u[i] &= mask;
-    }
-    for (; k != 0 && i < ulen; ++i) { // propagate carry
-        u[i] += k;
-        k = u[i] >> shift;
-        u[i] &= mask;
-    }
+[[nodiscard]] _CRTIMP2_PURE uint64_t __CLRCALL_PURE_OR_CDECL _MP_Get(_MP_arr _Wx) noexcept {
+    // convert multi-word value to scalar value; always called with a value that won't exceed 64 bits
+    return (_Wx[1] << 32) + _Wx[0];
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Add(
-    _MP_arr u, unsigned long long v0) noexcept { // add scalar value to multi-word value
-    unsigned long long v[2];
-    v[0] = v0 & mask;
-    v[1] = v0 >> shift;
-    add(u, _MP_len, v, 2);
-}
-
-static void mul(
-    unsigned long long* u, int ulen, unsigned long long v0) noexcept { // multiply multi-word value by single-word value
-    unsigned long long k = 0;
-    for (int i = 0; i < ulen; ++i) { // multiply and propagate carry
-        u[i] = u[i] * v0 + k;
-        k    = u[i] >> shift;
-        u[i] &= mask;
-    }
+_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Add(_MP_arr _Wx, const uint64_t _Cx) noexcept {
+    // perform "_Wx += _Cx"; always called with values that won't overflow 128 bits
+    const auto _Result = _Get_u128_from_mp(_Wx) + _Cx;
+    _Assign_mp_from_u128(_Wx, _Result);
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Mul(
-    _MP_arr w, unsigned long long u0, unsigned long long v0) noexcept { // multiply multi-word value by multi-word value
-    constexpr int m = 2;
-    constexpr int n = 2;
-    unsigned long long u[2];
-    unsigned long long v[2];
-    u[0] = u0 & mask;
-    u[1] = u0 >> shift;
-    v[0] = v0 & mask;
-    v[1] = v0 >> shift;
-
-    // Knuth, vol. 2, p. 268, Algorithm M
-    // M1: [Initialize.]
-    for (int i = 0; i < m + n + 1; ++i) {
-        w[i] = 0;
-    }
-
-    for (int j = 0; j < n; ++j) { // M2: [Zero multiplier?]
-        if (v[j] == 0) {
-            w[j + m] = 0;
-        } else { // multiply by non-zero value
-            unsigned long long k = 0;
-            int i;
-            // M3: [Initialize i.]
-            for (i = 0; i < m; ++i) { // M4: [Multiply and add.]
-                w[i + j] = u[i] * v[j] + w[i + j] + k;
-                k        = w[i + j] >> shift;
-                w[i + j] &= mask;
-                // M5: [Loop on i.]
-            }
-            w[i + j] = k;
-        }
-        // M6: [Loop on j.]
-    }
-}
-
-static void div(_MP_arr u,
-    unsigned long long
-        v0) noexcept { // divide multi-word value by scalar value (fits in lower half of unsigned long long)
-    unsigned long long k = 0;
-    int ulen             = _MP_len;
-    while (0 <= --ulen) { // propagate remainder and divide
-        unsigned long long tmp = (k << shift) + u[ulen];
-        u[ulen]                = tmp / v0;
-        k                      = tmp % v0;
-    }
-}
-
-[[nodiscard]] static int limit(const unsigned long long* u, int ulen) noexcept { // get index of last non-zero value
-    while (u[ulen - 1] == 0) {
-        --ulen;
-    }
-
-    return ulen;
+_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Mul(_MP_arr _Wx, const uint64_t _Prev, const uint64_t _Ax) noexcept {
+    // set _Wx to the 128-bit product of _Prev and _Ax
+    const auto _Result = _Unsigned128{_Prev} * _Ax;
+    _Assign_mp_from_u128(_Wx, _Result);
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Rem(
-    _MP_arr u, unsigned long long v0) noexcept { // divide multi-word value by value, leaving remainder in u
-    unsigned long long v[2];
-    v[0]        = v0 & mask;
-    v[1]        = v0 >> shift;
-    const int n = limit(v, 2);
-    _Analysis_assume_(n > 0);
-    _Analysis_assume_(n <= 2);
-    const int m = limit(u, _MP_len) - n;
-    _Analysis_assume_(m > 0);
-    _Analysis_assume_(m <= _MP_len - n);
-
-    // Knuth, vol. 2, p. 272, Algorithm D
-    // D1: [Normalize.]
-    unsigned long long d = maxVal / (v[n - 1] + 1);
-    if (d != 1) { // scale numerator and divisor
-        mul(u, _MP_len, d);
-        mul(v, n, d);
-    }
-    // D2: [Initialize j.]
-    for (int j = m; 0 <= j; --j) { // D3: [Calculate qh.]
-        unsigned long long qh = ((u[j + n] << shift) + u[j + n - 1]) / v[n - 1];
-        if (qh == 0) {
-            continue;
-        }
-
-        unsigned long long rh = ((u[j + n] << shift) + u[j + n - 1]) % v[n - 1];
-        for (;;) {
-#pragma warning(push)
-#pragma warning(disable : 6385) // TRANSITION, GH-1008
-            if (qh < maxVal && qh * v[n - 2] <= (rh << shift) + u[j + n - 2]) {
-#pragma warning(pop)
-                break;
-            } else { // reduce tentative value and retry
-                --qh;
-                rh += v[n - 1];
-                if (maxVal <= rh) {
-                    break;
-                }
-            }
-        }
-
-        // D4: [Multiply and subtract.]
-        unsigned long long k = 0;
-        int i;
-        for (i = 0; i < n; ++i) { // multiply and subtract
-            u[j + i] -= qh * v[i] + k;
-            k = u[j + i] >> shift;
-            if (k) {
-                k = maxVal - k;
-            }
-
-            u[j + i] &= mask;
-        }
-        for (; k != 0 && j + i < _MP_len; ++i) { // propagate borrow
-            u[j + i] -= k;
-            k = u[j + i] >> shift;
-            if (k) {
-                k = maxVal - k;
-            }
-
-            u[j + i] &= mask;
-        }
-        // D5: [Test remainder.]
-        if (k != 0) { // D6: [Add back.]
-            --qh;
-            add(u + j, n + 1, v, n);
-        }
-        // D7: [Loop on j.]
-    }
-    // D8: [Unnormalize.]
-    if (d != 1) {
-        div(u, d);
-    }
+_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Rem(_MP_arr _Wx, const uint64_t _Mx) noexcept {
+    // perform "_Wx %= _Mx"
+    const auto _Result = _Get_u128_from_mp(_Wx) % _Mx;
+    _Assign_mp_from_u128(_Wx, _Result);
 }
 _STD_END
