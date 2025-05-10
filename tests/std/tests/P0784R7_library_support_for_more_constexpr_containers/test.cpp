@@ -583,6 +583,42 @@ static_assert(!CanDestroyN<const char*>);
 static_assert(!CanDestroyN<volatile char*>);
 static_assert(!CanDestroyN<const volatile char*>);
 
+#ifdef __clang__ // TRANSITION, DevCom-10642767 (MSVC), DevCom-10896316 (EDG)
+// Test that destroy, destroy_at, and destroy_n properly destroy trivially destructible objects
+// during constant evaluation.
+// After such destruction, further access will cause core language undefined behavior,
+// which will in turn cause constant evaluation failure.
+
+template <auto>
+struct require_valid_constant;
+
+template <class Fn>
+constexpr int consteval_validate_destruction(Fn op) {
+    struct S {
+        int n;
+    };
+
+    S arr[1]{{42}};
+    op(arr);
+    return arr[0].n;
+}
+
+template <auto Fn>
+constexpr bool CanWellDefinedlyAccessAfterOperation =
+    requires { typename require_valid_constant<consteval_validate_destruction(Fn)>; };
+
+static_assert(CanWellDefinedlyAccessAfterOperation<[](auto&) {}>);
+static_assert(!CanWellDefinedlyAccessAfterOperation<[](auto& arr) { destroy(arr + 0, arr + 1); }>);
+static_assert(!CanWellDefinedlyAccessAfterOperation<[](auto& arr) { destroy_at(arr + 0); }>);
+static_assert(!CanWellDefinedlyAccessAfterOperation<[](auto& arr) { destroy_at(&arr); }>);
+static_assert(!CanWellDefinedlyAccessAfterOperation<[](auto& arr) { destroy_n(arr + 0, 1); }>);
+static_assert(!CanWellDefinedlyAccessAfterOperation<[](auto& arr) { ranges::destroy(arr + 0, arr + 1); }>);
+static_assert(!CanWellDefinedlyAccessAfterOperation<[](auto& arr) { ranges::destroy(arr); }>);
+static_assert(!CanWellDefinedlyAccessAfterOperation<[](auto& arr) { ranges::destroy_at(arr + 0); }>);
+static_assert(!CanWellDefinedlyAccessAfterOperation<[](auto& arr) { ranges::destroy_at(&arr); }>);
+static_assert(!CanWellDefinedlyAccessAfterOperation<[](auto& arr) { ranges::destroy_n(arr + 0, 1); }>);
+#endif // ^^^ no workaround ^^^
+
 int main() {
     test_runtime(1234);
     test_runtime(string("hello world"));
