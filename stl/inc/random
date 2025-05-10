@@ -461,14 +461,6 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
     }
 }
 
-_INLINE_VAR constexpr int _MP_len = 5;
-using _MP_arr                     = uint64_t[_MP_len];
-
-extern "C++" _NODISCARD _CRTIMP2_PURE uint64_t __CLRCALL_PURE_OR_CDECL _MP_Get(_MP_arr) noexcept;
-extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Add(_MP_arr, uint64_t) noexcept;
-extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Mul(_MP_arr, uint64_t, uint64_t) noexcept;
-extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Rem(_MP_arr, uint64_t) noexcept;
-
 template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
 _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
     // Choose intermediate type:
@@ -500,16 +492,13 @@ _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
         const auto _Mul =
             static_cast<unsigned int>(_Prev) * static_cast<unsigned int>(_Ax) + static_cast<unsigned int>(_Cx);
         return static_cast<_Uint>(_Mul % _Mx);
-    } else if constexpr (_Cx <= ULLONG_MAX && static_cast<_Uint>(_Mx - 1) <= (ULLONG_MAX - _Cx) / _Ax) {
+    } else if constexpr (static_cast<_Uint>(_Mx - 1) <= (ULLONG_MAX - _Cx) / _Ax) {
         // unsigned long long is sufficient to store intermediate calculation
         const auto _Mul = static_cast<unsigned long long>(_Prev) * _Ax + _Cx;
         return static_cast<_Uint>(_Mul % _Mx);
     } else { // no intermediate integral type fits; fall back to multiprecision
-        _MP_arr _Wx;
-        _MP_Mul(_Wx, _Prev, _Ax);
-        _MP_Add(_Wx, _Cx);
-        _MP_Rem(_Wx, _Mx);
-        return static_cast<_Uint>(_MP_Get(_Wx));
+        const auto _Mul = _Unsigned128{_Prev} * _Ax + _Cx;
+        return static_cast<_Uint>(_Mul % _Mx);
     }
 }
 

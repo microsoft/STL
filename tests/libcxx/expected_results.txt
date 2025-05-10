@@ -45,9 +45,11 @@ std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
 # LLVM-122638: [libc++][test] re.regex.construct/bad_backref.pass.cpp assumes non-standard extension to extended regular expressions
 std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
 
-# LLVM-132532: [libc++][test] Small fixes for time tests
-std/time/time.clock/time.clock.gps/types.compile.pass.cpp:2 FAIL
-std/time/time.clock/time.clock.tai/types.compile.pass.cpp:2 FAIL
+# LLVM-138375: [libc++][test] Make narrowing in nasty_char_traits::to_char_type more explicit
+std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:1 FAIL
 
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
@@ -176,6 +178,9 @@ std/ranges/range.adaptors/range.join/range.join.iterator/arrow.pass.cpp FAIL
 
 # If any feature-test macro test is failing, this consolidated test will also fail.
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
+
+# libc++ incorrectly implements `layout_stride::mapping<E>::is_exhaustive()`
+std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
 
 
 # *** INTERACTIONS WITH MSVC THAT UPSTREAM LIKELY WON'T FIX ***
@@ -308,6 +313,58 @@ std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/sub_sat.compile.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/sub_sat.pass.cpp FAIL
 
+# P1222R4 <flat_set>
+
+# FIXME! error: no member named 'assign' in 'MinSequenceContainer<int>'
+std/containers/container.adaptors/flat.multiset/flat.multiset.capacity/empty.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/assign_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.capacity/empty.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/assign_initializer_list.pass.cpp FAIL
+
+# FIXME! error: no member named 'insert_range' in 'MinSequenceContainer<int>'
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp FAIL
+
+# FIXME! error: static assertion failed due to requirement '!std::is_nothrow_move_constructible_v<std::flat_MEOW<int, ThrowingMoveComp, std::vector<int, std::allocator<int>>>>'
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/move.pass.cpp FAIL
+
+# FIXME! error: call to implicitly-deleted copy constructor of 'container_type' (aka 'MoveAssignThrows')
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move_assign.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/move_assign.pass.cpp FAIL
+
+# FIXME! Assertion failed: std::is_sorted(m.begin(), m.end(), m.key_comp())
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_sorted_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_sorted_iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/emplace_hint.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/emplace.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_cv.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_cv.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_rv.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_rv.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_sorted_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_sorted_iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_transparent.pass.cpp FAIL
+
+# FIXME! Assertion failed: r == m.begin() + 2
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/emplace_hint.pass.cpp FAIL
+
+# FIXME! Assertion failed: r == m.begin() + 1
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_rv.pass.cpp FAIL
+
+# FIXME! warning C4242: 'initializing': conversion from 'int' to '_Ty', possible loss of data
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_iter_iter.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_iter_iter.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/sorted_iter_iter.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/sorted_iter_iter.pass.cpp:1 FAIL
+
+# FIXME! error: unused variable 'expected' [-Werror,-Wunused-variable]
+std/containers/container.adaptors/flat.set/flat.set.erasure/erase_if_exceptions.pass.cpp:2 FAIL
+
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp FAIL
@@ -330,13 +387,15 @@ std/re/re.const/re.matchflag/match_not_eol.pass.cpp FAIL
 std/re/re.const/re.synopt/syntax_option_type.pass.cpp FAIL
 
 # LWG-2532 "Satisfying a promise at thread exit" (Open)
-# WCFB02 implements the proposed resolution for this issue
 std/thread/futures/futures.promise/set_exception_at_thread_exit.pass.cpp FAIL
 std/thread/futures/futures.promise/set_lvalue_at_thread_exit.pass.cpp FAIL
 std/thread/futures/futures.promise/set_rvalue_at_thread_exit.pass.cpp FAIL
 std/thread/futures/futures.promise/set_value_at_thread_exit_const.pass.cpp FAIL
 std/thread/futures/futures.promise/set_value_at_thread_exit_void.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.pass.cpp FAIL
+
+# LWG-3120 Unclear behavior of monotonic_buffer_resource::release()
+std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/release_reset_initial_status.pass.cpp FAIL
 
 # LWG-3343 "Ordering of calls to unlock() and notify_all() in Effects element of notify_all_at_thread_exit() should be reversed" (Open)
 # libc++ speculatively implements LWG-3343. If we wanted to do the same thing,
@@ -681,9 +740,6 @@ std/containers/sequences/vector/addressof.compile.pass.cpp:2 FAIL
 # throwing_allocator appears to be totally non-Standard.
 std/containers/sequences/vector.bool/ctor_exceptions.pass.cpp FAIL
 
-# The test is checking _LIBCPP_HAS_THREADS, which we don't have.
-std/language.support/support.limits/support.limits.general/shared_mutex.version.compile.pass.cpp FAIL
-
 # x64 truncation warnings caused by allocators.
 std/containers/sequences/vector/vector.capacity/reserve_exceptions.pass.cpp:0 SKIPPED
 std/containers/sequences/vector/vector.capacity/reserve_exceptions.pass.cpp:1 SKIPPED
@@ -723,7 +779,6 @@ std/re/re.alg/re.alg.search/basic.pass.cpp FAIL
 std/re/re.alg/re.alg.search/ecma.pass.cpp FAIL
 std/re/re.alg/re.alg.search/extended.pass.cpp FAIL
 std/re/re.traits/lookup_collatename.pass.cpp FAIL
-std/re/re.traits/transform_primary.pass.cpp FAIL
 
 # Not analyzed, likely STL bugs. Various assertions.
 std/numerics/complex.number/complex.ops/complex_divide_complex.pass.cpp FAIL
@@ -812,9 +867,6 @@ std/time/time.syn/formatter.month_day_last.pass.cpp FAIL
 # Our monotonic_buffer_resource takes "user" space for metadata, which it probably should not do.
 std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/allocate_with_initial_size.pass.cpp FAIL
 
-# Likely STL bug in layout_stride::mapping::is_exhaustive().
-std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
-
 
 # *** NOT YET ANALYZED ***
 # Not analyzed. Clang instantiates BoomOnAnything during template argument substitution.
@@ -834,10 +886,6 @@ std/thread/futures/futures.promise/move_ctor.pass.cpp FAIL
 std/thread/futures/futures.promise/swap.pass.cpp FAIL
 std/thread/futures/futures.shared_future/dtor.pass.cpp FAIL
 std/thread/futures/futures.unique_future/dtor.pass.cpp FAIL
-
-# Not analyzed. libc++ seems to have a different opinion about what tuple_size<const void> should do.
-std/utilities/tuple/tuple.tuple/tuple.helper/tuple_size_incomplete.pass.cpp FAIL
-std/utilities/tuple/tuple.tuple/tuple.helper/tuple_size_structured_bindings.pass.cpp FAIL
 
 # Not analyzed. Expects implicit deduction guides to SFINAE away when allocators are passed where comparators should be.
 std/containers/associative/map/map.cons/deduct.pass.cpp FAIL

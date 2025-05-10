@@ -4740,7 +4740,7 @@ _CONSTEXPR20 void _Verify_ranges_do_not_overlap(const _Iter1& _First1, const _Se
         }
 #endif // _HAS_CXX20
 
-        const auto _Offset     = _Last1 - _First1;
+        const auto _Offset     = static_cast<ptrdiff_t>(_Last1 - _First1);
         const auto _Ptr1Offset = _Offset * sizeof(*_STD _To_address(_First1));
         const auto _Ptr2Offset = _Offset * sizeof(*_STD _To_address(_First2));
         // This cast to `cv char*` allows us to compare pointers to distinct types,
@@ -5360,7 +5360,7 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
                 } else if constexpr (_Fill_zero_memset_is_safe<decltype(_UDest), _Ty>) {
                     if (_STD _Is_all_bits_zero(_Val)) {
                         _STD _Fill_zero_memset(_UDest, static_cast<size_t>(_Count));
-                        _STD _Seek_wrapped(_Dest, _UDest + _Count);
+                        _STD _Seek_wrapped(_Dest, _UDest + static_cast<_Iter_diff_t<decltype(_UDest)>>(_Count));
                         return _Dest;
                     }
                 }
@@ -6144,7 +6144,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
             if constexpr (is_pointer_v<_InIt>) {
                 return _Result;
             } else {
-                return _First + (_Result - _First_ptr);
+                return _First + static_cast<_Iter_diff_t<_InIt>>(_Result - _First_ptr);
             }
 #else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
             if constexpr (sizeof(_Iter_value_t<_InIt>) <= 2) {
@@ -6234,7 +6234,7 @@ namespace ranges {
 #if _USE_STD_VECTOR_ALGORITHMS
                 if constexpr (_Is_sized) {
                     // When _Is_sized && _Elements_are_1_byte, prefer this over memchr() for performance
-                    const auto _Last_ptr = _First_ptr + (_Last - _First);
+                    const auto _Last_ptr = _First_ptr + static_cast<ptrdiff_t>(_Last - _First);
                     _Result              = _STD _Find_vectorized(_First_ptr, _Last_ptr, _Val);
                 } else
 #endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
@@ -6807,13 +6807,13 @@ namespace ranges {
                           && is_same_v<_Pj, identity>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _First_ptr = _STD _To_address(_First);
-                    const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                    const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_Last - _First);
 
                     const auto _Result = _STD _Adjacent_find_vectorized(_First_ptr, _Last_ptr);
                     if constexpr (is_pointer_v<_It>) {
                         return _Result;
                     } else {
-                        return _First + (_Result - _First_ptr);
+                        return _First + static_cast<iter_difference_t<_It>>(_Result - _First_ptr);
                     }
                 }
             }
@@ -6930,7 +6930,7 @@ namespace ranges {
                             return {_Ptr_res1, _Ptr_res1};
                         }
                     } else {
-                        _First1 += _Ptr_res1 - _Ptr1;
+                        _First1 += static_cast<iter_difference_t<_It1>>(_Ptr_res1 - _Ptr1);
                         if (_First1 != _Last1) {
                             return {_First1, _First1 + static_cast<iter_difference_t<_It1>>(_Count2)};
                         } else {
@@ -6984,24 +6984,37 @@ namespace ranges {
 } // namespace ranges
 #endif // _HAS_CXX20
 
-template <class _Iter, class _Pr, class _Elem = _Iter_value_t<_Iter>>
-constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms for min_/max_element?
+template <class _Iter, class _Elem = _Iter_value_t<_Iter>>
+constexpr bool _Is_min_max_iterators_safe =
     _Iterator_is_contiguous<_Iter> // The iterator must be contiguous so we can get raw pointers.
     && !_Iterator_is_volatile<_Iter> // The iterator must not be volatile.
-    && conjunction_v<disjunction<
+    && disjunction_v<
 #if _USE_STD_VECTOR_FLOATING_ALGORITHMS
 #if defined(__LDBL_DIG__) && __LDBL_DIG__ == 18
-                         is_same<_Elem, float>, is_same<_Elem, double>,
+        is_same<_Elem, float>, is_same<_Elem, double>,
 #else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
-                         is_floating_point<_Elem>, // Element is floating-point or...
+        is_floating_point<_Elem>, // Element is floating-point or...
 #endif // ^^^ 64-bit long double ^^^
 #endif // _USE_STD_VECTOR_FLOATING_ALGORITHMS
-                         is_integral<_Elem>, is_pointer<_Elem>>, // ... integral or pointer type.
-        disjunction< // And either of the following:
+        is_integral<_Elem>, is_pointer<_Elem>>; // ... integral or pointer type.
+
+template <class _Iter, class _Pr>
+constexpr bool _Is_predicate_less = _Is_any_of_v<_Pr,
 #if _HAS_CXX20
-            is_same<_Pr, _RANGES less>, // predicate is ranges::less
+    _RANGES less,
 #endif // _HAS_CXX20
-            is_same<_Pr, less<>>, is_same<_Pr, less<_Elem>>>>; // predicate is less
+    less<>, less<_Iter_value_t<_Iter>>>;
+
+template <class _Iter, class _Pr>
+constexpr bool _Is_predicate_greater = _Is_any_of_v<_Pr,
+#if _HAS_CXX20
+    _RANGES greater,
+#endif // _HAS_CXX20
+    greater<>, greater<_Iter_value_t<_Iter>>>;
+
+template <class _Iter, class _Pr>
+constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms for min_/max_element?
+    _Is_min_max_iterators_safe<_Iter> && _Is_predicate_less<_Iter, _Pr>;
 
 // Unlike the position-based vectorized implementation, the value-based vectorized implementation
 // does not always produce the expected results for floating-point types.
@@ -7019,7 +7032,7 @@ constexpr bool _Is_min_max_value_optimization_safe = // Activate the vector algo
 #ifndef _M_FP_FAST
     !is_floating_point_v<_Elem> &&
 #endif // ^^^ !defined(_M_FP_FAST) ^^^
-    _Is_min_max_optimization_safe<_Iter, _Pr, _Elem>;
+    _Is_min_max_optimization_safe<_Iter, _Pr>;
 
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
@@ -7031,7 +7044,7 @@ constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
             if constexpr (is_pointer_v<_FwdIt>) {
                 return _Result;
             } else {
-                return _First + (_Result - _First_ptr);
+                return _First + static_cast<_Iter_diff_t<_FwdIt>>(_Result - _First_ptr);
             }
         }
     }
@@ -7092,12 +7105,12 @@ namespace ranges {
                       && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _STD to_address(_First);
-                const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_Last - _First);
                 const auto _Result    = _STD _Max_element_vectorized(_First_ptr, _Last_ptr);
                 if constexpr (is_pointer_v<_It>) {
                     return _Result;
                 } else {
-                    return _First + (_Result - _First_ptr);
+                    return _First + static_cast<iter_difference_t<_It>>(_Result - _First_ptr);
                 }
             }
         }
@@ -7220,7 +7233,7 @@ namespace ranges {
                           && sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _First_ptr = _STD to_address(_UFirst);
-                    const auto _Last_ptr  = _First_ptr + (_ULast - _UFirst);
+                    const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_ULast - _UFirst);
                     return static_cast<range_value_t<_Rng>>(_STD _Max_vectorized(_First_ptr, _Last_ptr));
                 }
             }
@@ -7255,7 +7268,7 @@ constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
             if constexpr (is_pointer_v<_FwdIt>) {
                 return _Result;
             } else {
-                return _First + (_Result - _First_ptr);
+                return _First + static_cast<_Iter_diff_t<_FwdIt>>(_Result - _First_ptr);
             }
         }
     }
@@ -7316,12 +7329,12 @@ namespace ranges {
                       && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _STD to_address(_First);
-                const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_Last - _First);
                 const auto _Result    = _STD _Min_element_vectorized(_First_ptr, _Last_ptr);
                 if constexpr (is_pointer_v<_It>) {
                     return _Result;
                 } else {
-                    return _First + (_Result - _First_ptr);
+                    return _First + static_cast<iter_difference_t<_It>>(_Result - _First_ptr);
                 }
             }
         }
@@ -7438,7 +7451,7 @@ namespace ranges {
                           && sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _First_ptr = _STD to_address(_UFirst);
-                    const auto _Last_ptr  = _First_ptr + (_ULast - _UFirst);
+                    const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_ULast - _UFirst);
                     return static_cast<range_value_t<_Rng>>(_STD _Min_vectorized(_First_ptr, _Last_ptr));
                 }
             }

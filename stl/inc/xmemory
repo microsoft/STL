@@ -1111,10 +1111,18 @@ _CONSTEXPR20 void _Destroy_range(_Alloc_ptr_t<_Alloc> _First, const _Alloc_ptr_t
 
 template <class _NoThrowFwdIt, class _NoThrowSentinel>
 _CONSTEXPR20 void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _Last) noexcept {
-    // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
-    if constexpr (!is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
+#if _HAS_CXX20
+    if (_STD is_constant_evaluated()) {
         for (; _First != _Last; ++_First) {
             _STD _Destroy_in_place(*_First);
+        }
+    } else
+#endif // _HAS_CXX20
+    { // note that this is an optimization for debug mode codegen; in release mode the BE removes all of this
+        if constexpr (!is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
+            for (; _First != _Last; ++_First) {
+                _STD _Destroy_in_place(*_First);
+            }
         }
     }
 }
@@ -1504,12 +1512,20 @@ struct _Container_proxy_ptr12 : _Basic_container_proxy_ptr12 {
 };
 
 #if _ITERATOR_DEBUG_LEVEL == 0
-#define _GET_PROXY_ALLOCATOR(_Alty, _Al) \
-    _Fake_allocator {}
+template <class _Alloc>
+_CONSTEXPR20 _Fake_allocator _Get_proxy_allocator(const _Alloc&) noexcept {
+    return {};
+}
+
 template <class _Alloc>
 using _Container_proxy_ptr = _Fake_proxy_ptr_impl;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL > 0 vvv
-#define _GET_PROXY_ALLOCATOR(_Alty, _Al) static_cast<_Rebind_alloc_t<_Alty, _Container_proxy>>(_Al)
+template <class _Alloc>
+_CONSTEXPR20 _Rebind_alloc_t<_Alloc, _Container_proxy> _Get_proxy_allocator(const _Alloc& _Al)
+    noexcept(noexcept(static_cast<_Rebind_alloc_t<_Alloc, _Container_proxy>>(_Al))) {
+    return static_cast<_Rebind_alloc_t<_Alloc, _Container_proxy>>(_Al);
+}
+
 template <class _Alloc>
 using _Container_proxy_ptr = _Container_proxy_ptr12<_Rebind_alloc_t<_Alloc, _Container_proxy>>;
 #endif // ^^^ _ITERATOR_DEBUG_LEVEL > 0 ^^^
@@ -2329,7 +2345,7 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
                 if constexpr (is_pointer_v<decltype(_UNext)>) {
                     _UNext = _Result;
                 } else {
-                    _UNext += _Result - _First_ptr;
+                    _UNext += static_cast<_Iter_diff_t<decltype(_UNext)>>(_Result - _First_ptr);
                 }
 
                 _STD _Seek_wrapped(_First, _UNext);

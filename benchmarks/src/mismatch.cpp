@@ -8,6 +8,8 @@
 #include <ranges>
 #include <vector>
 
+#include "skewed_allocator.hpp"
+
 using namespace std;
 
 constexpr int64_t no_pos = -1;
@@ -19,8 +21,8 @@ enum class op {
 
 template <class T, op Op>
 void bm(benchmark::State& state) {
-    vector<T> a(static_cast<size_t>(state.range(0)), T{'.'});
-    vector<T> b(static_cast<size_t>(state.range(0)), T{'.'});
+    vector<T, not_highly_aligned_allocator<T>> a(static_cast<size_t>(state.range(0)), T{'.'});
+    vector<T, not_highly_aligned_allocator<T>> b(static_cast<size_t>(state.range(0)), T{'.'});
 
     if (state.range(1) != no_pos) {
         b.at(static_cast<size_t>(state.range(1))) = 'x';

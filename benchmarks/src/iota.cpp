@@ -7,6 +7,8 @@
 #include <numeric>
 #include <vector>
 
+#include "skewed_allocator.hpp"
+
 enum class Alg {
     Std,
     Rng,
@@ -16,7 +18,7 @@ template <class T, Alg Algorithm>
 void bm(benchmark::State& state) {
     const auto size = static_cast<std::size_t>(state.range(0));
 
-    std::vector<T> a(size);
+    std::vector<T, not_highly_aligned_allocator<T>> a(size);
 
     for (auto _ : state) {
         if constexpr (Algorithm == Alg::Std) {
