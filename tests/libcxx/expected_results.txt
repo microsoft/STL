@@ -45,9 +45,11 @@ std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
 # LLVM-122638: [libc++][test] re.regex.construct/bad_backref.pass.cpp assumes non-standard extension to extended regular expressions
 std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
 
-# LLVM-132532: [libc++][test] Small fixes for time tests
-std/time/time.clock/time.clock.gps/types.compile.pass.cpp:2 FAIL
-std/time/time.clock/time.clock.tai/types.compile.pass.cpp:2 FAIL
+# LLVM-138375: [libc++][test] Make narrowing in nasty_char_traits::to_char_type more explicit
+std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:1 FAIL
+std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:0 FAIL
+std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:1 FAIL
 
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
@@ -176,6 +178,9 @@ std/ranges/range.adaptors/range.join/range.join.iterator/arrow.pass.cpp FAIL
 
 # If any feature-test macro test is failing, this consolidated test will also fail.
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
+
+# libc++ incorrectly implements `layout_stride::mapping<E>::is_exhaustive()`
+std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
 
 
 # *** INTERACTIONS WITH MSVC THAT UPSTREAM LIKELY WON'T FIX ***
@@ -308,6 +313,146 @@ std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/sub_sat.compile.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/sub_sat.pass.cpp FAIL
 
+# P1222R4 <flat_set>
+std/containers/container.adaptors/flat.multiset/flat.multiset.capacity/empty.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.capacity/max_size.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.capacity/size.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/alloc.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/assign_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/compare.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/containers.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/copy_alloc.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/copy_assign.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/copy.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/deduct_pmr.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/deduct.compile.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/deduct.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/default.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/dtor_noexcept.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move_alloc.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move_assign.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/pmr.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/range.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_container.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.erasure/erase_if_exceptions.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.erasure/erase_if.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.iterators/iterator_comparison.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.iterators/iterator_concept_conformance.compile.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.iterators/iterator.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.iterators/range_concept_conformance.compile.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.iterators/reverse_iterator.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/clear.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/emplace_hint.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/emplace.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/erase_iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/erase_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/erase_key_transparent.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/erase_key.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/extract.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_cv.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_cv.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_rv.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_rv.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_sorted_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_sorted_iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/replace.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/swap_free.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/swap_member.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.observers/comp.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/contains_transparent.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/contains.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/count_transparent.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/count.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/equal_range_transparent.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/equal_range.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/find_transparent.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/find.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/lower_bound_transparent.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/lower_bound.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/upper_bound_transparent.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/upper_bound.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/incomplete_type.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/op_compare.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/types.compile.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.capacity/empty.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.capacity/max_size.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.capacity/size.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/alloc.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/assign_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/compare.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/containers.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/copy_alloc.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/copy_assign.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/copy.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/deduct_pmr.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/deduct.compile.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/deduct.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/default.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/dtor_noexcept.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/move_alloc.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/move_assign.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/move.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/pmr.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/range.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/sorted_container.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/sorted_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/sorted_iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.erasure/erase_if_exceptions.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.erasure/erase_if.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.iterators/iterator_comparison.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.iterators/iterator_concept_conformance.compile.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.iterators/iterator.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.iterators/range_concept_conformance.compile.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.iterators/reverse_iterator.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/clear.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/emplace_hint.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/emplace.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/erase_iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/erase_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/erase_key_transparent.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/erase_key.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/extract.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_cv.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_cv.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_rv.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_rv.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_sorted_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_sorted_iter_iter.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_transparent.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/replace.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/swap_free.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/swap_member.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.observers/comp.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/contains_transparent.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/contains.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/count_transparent.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/count.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/equal_range_transparent.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/equal_range.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/find_transparent.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/find.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/lower_bound_transparent.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/lower_bound.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/upper_bound_transparent.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/upper_bound.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/incomplete_type.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/op_compare.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/types.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/flat_set.version.compile.pass.cpp FAIL
+
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp FAIL
@@ -330,13 +475,15 @@ std/re/re.const/re.matchflag/match_not_eol.pass.cpp FAIL
 std/re/re.const/re.synopt/syntax_option_type.pass.cpp FAIL
 
 # LWG-2532 "Satisfying a promise at thread exit" (Open)
-# WCFB02 implements the proposed resolution for this issue
 std/thread/futures/futures.promise/set_exception_at_thread_exit.pass.cpp FAIL
 std/thread/futures/futures.promise/set_lvalue_at_thread_exit.pass.cpp FAIL
 std/thread/futures/futures.promise/set_rvalue_at_thread_exit.pass.cpp FAIL
 std/thread/futures/futures.promise/set_value_at_thread_exit_const.pass.cpp FAIL
 std/thread/futures/futures.promise/set_value_at_thread_exit_void.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.pass.cpp FAIL
+
+# LWG-3120 Unclear behavior of monotonic_buffer_resource::release()
+std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/release_reset_initial_status.pass.cpp FAIL
 
 # LWG-3343 "Ordering of calls to unlock() and notify_all() in Effects element of notify_all_at_thread_exit() should be reversed" (Open)
 # libc++ speculatively implements LWG-3343. If we wanted to do the same thing,
@@ -681,9 +828,6 @@ std/containers/sequences/vector/addressof.compile.pass.cpp:2 FAIL
 # throwing_allocator appears to be totally non-Standard.
 std/containers/sequences/vector.bool/ctor_exceptions.pass.cpp FAIL
 
-# The test is checking _LIBCPP_HAS_THREADS, which we don't have.
-std/language.support/support.limits/support.limits.general/shared_mutex.version.compile.pass.cpp FAIL
-
 # x64 truncation warnings caused by allocators.
 std/containers/sequences/vector/vector.capacity/reserve_exceptions.pass.cpp:0 SKIPPED
 std/containers/sequences/vector/vector.capacity/reserve_exceptions.pass.cpp:1 SKIPPED
@@ -723,7 +867,6 @@ std/re/re.alg/re.alg.search/basic.pass.cpp FAIL
 std/re/re.alg/re.alg.search/ecma.pass.cpp FAIL
 std/re/re.alg/re.alg.search/extended.pass.cpp FAIL
 std/re/re.traits/lookup_collatename.pass.cpp FAIL
-std/re/re.traits/transform_primary.pass.cpp FAIL
 
 # Not analyzed, likely STL bugs. Various assertions.
 std/numerics/complex.number/complex.ops/complex_divide_complex.pass.cpp FAIL
@@ -812,9 +955,6 @@ std/time/time.syn/formatter.month_day_last.pass.cpp FAIL
 # Our monotonic_buffer_resource takes "user" space for metadata, which it probably should not do.
 std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/allocate_with_initial_size.pass.cpp FAIL
 
-# Likely STL bug in layout_stride::mapping::is_exhaustive().
-std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
-
 
 # *** NOT YET ANALYZED ***
 # Not analyzed. Clang instantiates BoomOnAnything during template argument substitution.
@@ -834,10 +974,6 @@ std/thread/futures/futures.promise/move_ctor.pass.cpp FAIL
 std/thread/futures/futures.promise/swap.pass.cpp FAIL
 std/thread/futures/futures.shared_future/dtor.pass.cpp FAIL
 std/thread/futures/futures.unique_future/dtor.pass.cpp FAIL
-
-# Not analyzed. libc++ seems to have a different opinion about what tuple_size<const void> should do.
-std/utilities/tuple/tuple.tuple/tuple.helper/tuple_size_incomplete.pass.cpp FAIL
-std/utilities/tuple/tuple.tuple/tuple.helper/tuple_size_structured_bindings.pass.cpp FAIL
 
 # Not analyzed. Expects implicit deduction guides to SFINAE away when allocators are passed where comparators should be.
 std/containers/associative/map/map.cons/deduct.pass.cpp FAIL

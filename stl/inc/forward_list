@@ -675,7 +675,7 @@ public:
             if (_Al != _Right_al) {
                 _Mypair._Myval2._Orphan_all();
                 clear();
-                _Mypair._Myval2._Reload_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right_al));
+                _Mypair._Myval2._Reload_proxy(_STD _Get_proxy_allocator(_Al), _STD _Get_proxy_allocator(_Right_al));
                 _Pocma(_Al, _Right_al);
                 _Take_head(_Right);
                 return *this;
@@ -741,7 +741,7 @@ private:
 public:
     forward_list(initializer_list<_Ty> _Ilist, const _Alloc& _Al = allocator_type())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
+        auto _Alproxy = _STD _Get_proxy_allocator(_Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         insert_after(before_begin(), _Ilist.begin(), _Ilist.end());
         _Proxy._Release();
@@ -764,7 +764,7 @@ public:
     ~forward_list() noexcept {
         clear();
 #if _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, ABI
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
+        auto _Alproxy = _STD _Get_proxy_allocator(_Getal());
         _Delete_plain_internal(_Alproxy, _Mypair._Myval2._Myproxy);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
     }
@@ -780,8 +780,7 @@ public:
             if (_Al != _Right_al) {
                 _Mypair._Myval2._Orphan_all();
                 clear();
-                _Mypair._Myval2._Reload_proxy(
-                    _GET_PROXY_ALLOCATOR(_Alnode, _Al), _GET_PROXY_ALLOCATOR(_Alnode, _Right_al));
+                _Mypair._Myval2._Reload_proxy(_STD _Get_proxy_allocator(_Al), _STD _Get_proxy_allocator(_Right_al));
             }
         }
 
@@ -1551,7 +1550,7 @@ private:
     }
 
     void _Alloc_proxy() {
-        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alnode, _Getal()));
+        _Mypair._Myval2._Alloc_proxy(_STD _Get_proxy_allocator(_Getal()));
     }
 
     void _Swap_proxy_and_iterators(forward_list& _Right) noexcept {

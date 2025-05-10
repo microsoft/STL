@@ -764,9 +764,11 @@ void test_gh_4995() {
     g_regexTester.should_throw("[[:digit:]-e]", error_range);
     g_regexTester.should_throw("[e-[:digit:]]", error_range);
     g_regexTester.should_throw("[[:alpha:]-[:digit:]]", error_range);
+#ifndef _M_CEE_PURE
     g_regexTester.should_throw("[[=a=]-e]", error_range, ECMAScript | regex::collate);
     g_regexTester.should_throw("[e-[=a=]]", error_range, ECMAScript | regex::collate);
     g_regexTester.should_throw("[[=a=]-[=b=]]", error_range, ECMAScript | regex::collate);
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
     // Test valid cases:
     g_regexTester.should_not_match("b", R"([\d-])");
@@ -1275,6 +1277,50 @@ void test_gh_5214() {
     }
 }
 
+void test_gh_5243() {
+    // GH-5243: <regex>: wregex with regular expression [\w\s] fails to match some spaces
+    for (wstring pattern : {LR"([\w])", LR"([\w\w])"}) {
+        const test_wregex word_regex(&g_regexTester, pattern);
+        word_regex.should_search_match(L"a", L"a");
+        word_regex.should_search_match(L"2", L"2");
+        word_regex.should_search_match(L"_", L"_");
+        word_regex.should_search_match(L"\u00e4", L"\u00e4"); // U+00E4 LATIN SMALL LETTER A WITH DIAERESIS
+        word_regex.should_search_match(L"\u0662", L"\u0662"); // U+0662 ARABIC-INDIC DIGIT TWO
+        word_regex.should_search_fail(L" ");
+        word_regex.should_search_fail(L"\u2028"); // U+2028 LINE SEPARATOR
+        word_regex.should_search_fail(L".");
+        word_regex.should_search_fail(L"-");
+        word_regex.should_search_fail(L"\u203d"); // U+203D INTERROBANG
+    }
+    {
+        const test_wregex space_regex(&g_regexTester, LR"([\s])");
+        space_regex.should_search_fail(L"a");
+        space_regex.should_search_fail(L"2");
+        space_regex.should_search_fail(L"_");
+        space_regex.should_search_fail(L"\u00e4"); // U+00E4 LATIN SMALL LETTER A WITH DIAERESIS
+        space_regex.should_search_fail(L"\u0662"); // U+0662 ARABIC-INDIC DIGIT TWO
+        space_regex.should_search_match(L" ", L" ");
+        space_regex.should_search_match(L"\u2028", L"\u2028"); // U+2028 LINE SEPARATOR
+        space_regex.should_search_fail(L".");
+        space_regex.should_search_fail(L"-");
+        space_regex.should_search_fail(L"\u203d"); // U+203D INTERROBANG
+    }
+    for (wstring pattern : {LR"([\w\s])", LR"([\s\w])"}) {
+        const test_wregex word_or_space_regex(&g_regexTester, pattern);
+        word_or_space_regex.should_search_match(L"a", L"a");
+        word_or_space_regex.should_search_match(L"2", L"2");
+        word_or_space_regex.should_search_match(L"_", L"_");
+        word_or_space_regex.should_search_match(L"\u00e4", L"\u00e4"); // U+00E4 LATIN SMALL LETTER A WITH DIAERESIS
+        word_or_space_regex.should_search_match(L"\u0662", L"\u0662"); // U+0662 ARABIC-INDIC DIGIT TWO
+        word_or_space_regex.should_search_match(L" ", L" ");
+        word_or_space_regex.should_search_match(L"\u2028", L"\u2028"); // U+2028 LINE SEPARATOR
+        word_or_space_regex.should_search_fail(L".");
+        word_or_space_regex.should_search_fail(L"-");
+        word_or_space_regex.should_search_fail(L"\u203d"); // U+203D INTERROBANG
+    }
+}
+
+
 void test_gh_5245() {
     // GH-5245: <regex>: Successful negative lookahead assertions
     // sometimes mistakenly assign matches to capture groups
@@ -1559,6 +1605,35 @@ void test_gh_5364() {
     g_regexTester.should_match("c", "[^]", ECMAScript);
 }
 
+void test_gh_5365() {
+    // GH-5365: <regex>: Implementation divergence for capture group behavior:
+    // Capture groups were not correctly cleared at the beginning of repetitions in ECMAScript mode.
+    for (string pattern : {"^(?:(a)|(b)|(c)|(d))+$", "^(?:(a)|(b)|(c)|(d))+?$", "^(?:(a)|(b)|(c)|(d)){4,}$"}) {
+        test_regex captures_in_repeated_noncapturing_group(&g_regexTester, pattern);
+        captures_in_repeated_noncapturing_group.should_search_match_capture_groups(
+            "acbd", "acbd", match_default, {{-1, -1}, {-1, -1}, {-1, -1}, {3, 4}});
+        captures_in_repeated_noncapturing_group.should_search_match_capture_groups(
+            "adcba", "adcba", match_default, {{4, 5}, {-1, -1}, {-1, -1}, {-1, -1}});
+    }
+
+    {
+        test_regex captures_in_repeated_noncapturing_group(&g_regexTester, "^(?:(a)|(b)|(c)|(d)){5}$");
+        captures_in_repeated_noncapturing_group.should_search_fail("acbd");
+        captures_in_repeated_noncapturing_group.should_search_match_capture_groups(
+            "adcba", "adcba", match_default, {{4, 5}, {-1, -1}, {-1, -1}, {-1, -1}});
+    }
+
+    {
+        test_regex captures_in_questionmark_quantifiers(&g_regexTester, "(z)((a+)?(b+)?(c))*");
+        captures_in_questionmark_quantifiers.should_search_match_capture_groups(
+            "zaacbbbcac", "zaacbbbcac", match_default, {{0, 1}, {8, 10}, {8, 9}, {-1, -1}, {9, 10}});
+        captures_in_questionmark_quantifiers.should_search_match_capture_groups(
+            "zaacbbbcbbc", "zaacbbbcbbc", match_default, {{0, 1}, {8, 11}, {-1, -1}, {8, 10}, {10, 11}});
+        captures_in_questionmark_quantifiers.should_search_match_capture_groups(
+            "zaacbbbcabbc", "zaacbbbcabbc", match_default, {{0, 1}, {8, 12}, {8, 9}, {9, 11}, {11, 12}});
+    }
+}
+
 void test_gh_5371() {
     // GH-5371 <regex>: \b and \B are backwards on empty strings
     g_regexTester.should_not_match("", R"(\b)");
@@ -1660,10 +1735,12 @@ int main() {
     test_gh_5167();
     test_gh_5192();
     test_gh_5214();
+    test_gh_5243();
     test_gh_5245();
     test_gh_5253();
     test_gh_5362();
     test_gh_5364();
+    test_gh_5365();
     test_gh_5371();
     test_gh_5374();
     test_gh_5377();
