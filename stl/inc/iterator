@@ -18,6 +18,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+_EXPORT_STD extern "C++" _NODISCARD _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL uncaught_exceptions() noexcept;
+
 _EXPORT_STD template <class _Container>
 class back_insert_iterator { // wrap pushes to back of container as output iterator
 public:
@@ -1229,18 +1231,30 @@ public:
     }
 
     constexpr decltype(auto) operator++(int) {
+        class _Length_guard {
+        public:
+            explicit _Length_guard(counted_iterator* _Target_) noexcept : _Target(_Target_) {}
+
+            _Length_guard(const _Length_guard&)            = delete;
+            _Length_guard& operator=(const _Length_guard&) = delete;
+
+            ~_Length_guard() {
+                if (_STD uncaught_exceptions() > _Exceptions) {
+                    ++_Target->_Length;
+                }
+            }
+
+        private:
+            counted_iterator* const _Target;
+            const int _Exceptions = _STD uncaught_exceptions();
+        };
+
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Length > 0, "counted_iterator increment beyond end of range");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         --_Length;
-        _TRY_BEGIN
+        _Length_guard _Guard{this};
         return _Current++;
-
-        _CATCH_ALL
-        ++_Length;
-
-        _RERAISE;
-        _CATCH_END
     }
 
     constexpr counted_iterator operator++(int)

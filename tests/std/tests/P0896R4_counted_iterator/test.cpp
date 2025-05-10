@@ -340,6 +340,32 @@ void test_P2259() {
     assert(ri->m == 1);
 }
 
+struct throwing_iterator_value_type; // not defined
+
+struct throwing_iterator_exception : exception {};
+
+struct throwing_iterator {
+    using difference_type = ptrdiff_t;
+
+    throwing_iterator_value_type& operator*(); // not defined
+    throwing_iterator& operator++(); // not defined
+
+    void operator++(int) {
+        throw throwing_iterator_exception{};
+    }
+};
+
+static_assert(input_or_output_iterator<throwing_iterator>);
+
+void test_postfix_increment_exception() {
+    counted_iterator ci{throwing_iterator{}, 3};
+    try {
+        ci++;
+    } catch (throwing_iterator_exception&) {
+    }
+    assert(ci.count() == 3);
+}
+
 int main() {
     static_assert(with_writable_iterators<instantiator, int>::call());
     with_writable_iterators<instantiator, int>::call();
@@ -354,4 +380,5 @@ int main() {
     }
 
     test_P2259();
+    test_postfix_increment_exception();
 }
