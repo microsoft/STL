@@ -6,6 +6,8 @@ parameters:
   type: string
 - name: targetArch
   type: string
+- name: targetPlatform
+  type: string
 - name: analyzeBuild
   type: boolean
 - name: asanBuild
