@@ -442,9 +442,6 @@ if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(x86|x64)$")
     add_library(stl_alias_objects OBJECT ${ALIAS_SOURCES_X86_X64})
 else()
     add_library(stl_alias_objects INTERFACE)
-
-    # on ARM64 and ARM, we can unconditionally expect Synchronization.lib to exist
-    string(APPEND CMAKE_CXX_STANDARD_LIBRARIES " Synchronization.lib")
 endif()
 
 if(STL_ASAN_BUILD)
