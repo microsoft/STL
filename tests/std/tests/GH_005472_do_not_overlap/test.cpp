@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// env.lst defines _MSVC_STL_HARDENING to 1.
-
 #include <algorithm>
 
 #include <test_death.hpp>
