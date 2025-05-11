@@ -234,12 +234,22 @@ namespace {
             }
         }
 
+#ifndef _M_ARM64EC
+        __m256i _Avx2_rev_tail_mask_32(const size_t _Count_in_bytes) noexcept {
+            // _Count_in_bytes must be within [0, 32].
+            static constexpr unsigned int _Tail_masks[16] = {
+                0, 0, 0, 0, 0, 0, 0, 0, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u};
+            return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(
+                reinterpret_cast<const unsigned char*>(_Tail_masks) + _Count_in_bytes));
+        }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+
         template <class _Traits, class _Ty>
         __declspec(noalias) void __cdecl _Reverse_impl(void* _First, void* _Last) noexcept {
 #ifndef _M_ARM64EC
-            if (_Byte_length(_First, _Last) >= 64 && _Use_avx2()) {
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 64 && _Use_avx2()) {
                 const void* _Stop_at = _First;
-                _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0x1F});
+                _Advance_bytes(_Stop_at, (_Length >> 1) & ~size_t{0x1F});
                 do {
                     _Advance_bytes(_Last, -32);
                     const __m256i _Left           = _mm256_loadu_si256(static_cast<__m256i*>(_First));
@@ -251,12 +261,32 @@ namespace {
                     _Advance_bytes(_First, 32);
                 } while (_First != _Stop_at);
 
-                _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-            }
+                constexpr size_t _Tail_elem_mask = 0x1C & ~size_t{sizeof(_Ty) - 1};
 
-            if (_Byte_length(_First, _Last) >= 32 && _Use_sse42()) {
+                if (const size_t _Avx_tail = (_Length >> 1) & _Tail_elem_mask; _Avx_tail != 0) {
+                    _Advance_bytes(_Last, -32);
+                    const __m256i _Mask           = _Avx2_tail_mask_32(_Avx_tail);
+                    const __m256i _Rev_mask       = _Avx2_rev_tail_mask_32(_Avx_tail);
+                    const __m256i _Left           = _mm256_maskload_epi32(static_cast<const int*>(_First), _Mask);
+                    const __m256i _Right          = _mm256_maskload_epi32(static_cast<const int*>(_Last), _Rev_mask);
+                    const __m256i _Left_reversed  = _Traits::_Rev_avx(_Left);
+                    const __m256i _Right_reversed = _Traits::_Rev_avx(_Right);
+                    _mm256_maskstore_epi32(static_cast<int*>(_First), _Mask, _Right_reversed);
+                    _mm256_maskstore_epi32(static_cast<int*>(_Last), _Rev_mask, _Left_reversed);
+                    if constexpr (sizeof(_Ty) < 4) {
+                        _Advance_bytes(_First, _Avx_tail);
+                        _Advance_bytes(_Last, 32 - _Avx_tail);
+                    }
+                }
+
+                _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+
+                if constexpr (sizeof(_Ty) >= 4) {
+                    return;
+                }
+            } else if (_Length >= 32 && _Use_sse42()) {
                 const void* _Stop_at = _First;
-                _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0xF});
+                _Advance_bytes(_Stop_at, (_Length >> 1) & ~size_t{0xF});
                 do {
                     _Advance_bytes(_Last, -16);
                     const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
@@ -277,9 +307,9 @@ namespace {
         __declspec(noalias) void __cdecl _Reverse_copy_impl(
             const void* _First, const void* _Last, void* _Dest) noexcept {
 #ifndef _M_ARM64EC
-            if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 32 && _Use_avx2()) {
                 const void* _Stop_at = _Dest;
-                _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0x1F});
+                _Advance_bytes(_Stop_at, _Length & ~size_t{0x1F});
                 do {
                     _Advance_bytes(_Last, -32);
                     const __m256i _Block          = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
@@ -288,12 +318,27 @@ namespace {
                     _Advance_bytes(_Dest, 32);
                 } while (_Dest != _Stop_at);
 
-                _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-            }
+                if (const size_t _Avx_tail = _Length & 0x1C; _Avx_tail != 0) {
+                    _Advance_bytes(_Last, -32);
+                    const __m256i _Mask           = _Avx2_tail_mask_32(_Avx_tail);
+                    const __m256i _Rev_mask       = _Avx2_rev_tail_mask_32(_Avx_tail);
+                    const __m256i _Block          = _mm256_maskload_epi32(static_cast<const int*>(_Last), _Rev_mask);
+                    const __m256i _Block_reversed = _Traits::_Rev_avx(_Block);
+                    _mm256_maskstore_epi32(static_cast<int*>(_Dest), _Mask, _Block_reversed);
+                    if constexpr (sizeof(_Ty) < 4) {
+                        _Advance_bytes(_Dest, _Avx_tail);
+                        _Advance_bytes(_Last, 32 - _Avx_tail);
+                    }
+                }
 
-            if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
+                _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+
+                if constexpr (sizeof(_Ty) >= 4) {
+                    return;
+                }
+            } else if (_Length >= 16 && _Use_sse42()) {
                 const void* _Stop_at = _Dest;
-                _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0xF});
+                _Advance_bytes(_Stop_at, _Length & ~size_t{0xF});
                 do {
                     _Advance_bytes(_Last, -16);
                     const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
