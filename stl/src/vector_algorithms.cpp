@@ -219,7 +219,7 @@ namespace {
         };
 
         template <class _BidIt>
-        void __stdcall _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
+        void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
             for (; _First != _Last && _First != --_Last; ++_First) {
                 const auto _Temp = *_First;
                 *_First          = *_Last;
