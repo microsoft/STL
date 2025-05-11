@@ -4607,11 +4607,10 @@ namespace ranges {
         _STATIC_CALL_OPERATOR constexpr replace_copy_if_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Output, _Pr _Pred, const _Ty& _Newval, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
+            _STD _Verify_ranges_do_not_overlap(_First, _Last, _Output);
             auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
             auto _ULast       = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
             const auto _Count = _RANGES _Idl_distance<_It>(_UFirst, _ULast);
-
-            _STD _Verify_ranges_do_not_overlap(_First, _Last, _Output);
 
             auto _UResult = _Replace_copy_if_unchecked(_STD move(_UFirst), _STD move(_ULast),
                 _STD _Get_unwrapped_n(_STD move(_Output), _Count), _STD _Pass_fn(_Pred), _Newval, _STD _Pass_fn(_Proj));
