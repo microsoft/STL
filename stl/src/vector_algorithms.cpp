@@ -261,30 +261,10 @@ namespace {
                     _Advance_bytes(_First, 32);
                 } while (_First != _Stop_at);
 
-                constexpr size_t _Tail_elem_mask = 0x1C & ~size_t{sizeof(_Ty) - 1};
-
-                if (const size_t _Avx_tail = (_Length >> 1) & _Tail_elem_mask; _Avx_tail != 0) {
-                    _Advance_bytes(_Last, -32);
-                    const __m256i _Mask           = _Avx2_tail_mask_32(_Avx_tail);
-                    const __m256i _Rev_mask       = _Avx2_rev_tail_mask_32(_Avx_tail);
-                    const __m256i _Left           = _mm256_maskload_epi32(static_cast<const int*>(_First), _Mask);
-                    const __m256i _Right          = _mm256_maskload_epi32(static_cast<const int*>(_Last), _Rev_mask);
-                    const __m256i _Left_reversed  = _Traits::_Rev_avx(_Left);
-                    const __m256i _Right_reversed = _Traits::_Rev_avx(_Right);
-                    _mm256_maskstore_epi32(static_cast<int*>(_First), _Mask, _Right_reversed);
-                    _mm256_maskstore_epi32(static_cast<int*>(_Last), _Rev_mask, _Left_reversed);
-                    if constexpr (sizeof(_Ty) < 4) {
-                        _Advance_bytes(_First, _Avx_tail);
-                        _Advance_bytes(_Last, 32 - _Avx_tail);
-                    }
-                }
-
                 _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+            }
 
-                if constexpr (sizeof(_Ty) >= 4) {
-                    return;
-                }
-            } else if (_Length >= 32 && _Use_sse42()) {
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 32 && _Use_sse42()) {
                 const void* _Stop_at = _First;
                 _Advance_bytes(_Stop_at, (_Length >> 1) & ~size_t{0xF});
                 do {
