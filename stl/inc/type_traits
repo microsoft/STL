@@ -2516,6 +2516,8 @@ void _Swap_trivial_arrays(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept {
                 unsigned char _Data[_Part_size_bytes];
             };
 
+            _STL_INTERNAL_STATIC_ASSERT(sizeof(_Buffer_type) == _Part_size_bytes); // assume no padding
+
 #ifdef __clang__
             using _Buffer_ptr       = __attribute__((may_alias)) _Buffer_type*;
             using _Const_buffer_ptr = const __attribute__((may_alias)) _Buffer_type*;
@@ -2537,6 +2539,8 @@ void _Swap_trivial_arrays(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept {
         struct _Last_buffer_type {
             unsigned char _Data[_Size_tail];
         };
+
+        _STL_INTERNAL_STATIC_ASSERT(sizeof(_Last_buffer_type) == _Size_tail); // assume no padding
 
         const _Last_buffer_type _Last_buffer              = *reinterpret_cast<const _Last_buffer_type*>(_Left_ptr);
         *reinterpret_cast<_Last_buffer_type*>(_Left_ptr)  = *reinterpret_cast<const _Last_buffer_type*>(_Right_ptr);
