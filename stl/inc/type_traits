@@ -2527,7 +2527,7 @@ void _Swap_trivial_arrays(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept {
 
     if constexpr (_Size_tail != 0) {
         struct _Last_buffer_type {
-            unsigned char _Data[_Part_size_bytes];
+            unsigned char _Data[_Size_tail];
         };
 
         _Last_buffer_type _Last_buffer                    = *reinterpret_cast<_Last_buffer_type*>(_Left_ptr);
