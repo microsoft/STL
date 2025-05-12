@@ -826,8 +826,9 @@ public:
     using layout_type  = layout_stride;
 
 private:
-    using _Extents_base = _Maybe_fully_static_extents<extents_type>;
-    using _Strides_base = _Maybe_empty_array<index_type, _Extents::rank()>;
+    using _Extents_base       = _Maybe_fully_static_extents<extents_type>;
+    using _Strides_base       = _Maybe_empty_array<index_type, _Extents::rank()>;
+    using _Stride_extent_pair = pair<rank_type, rank_type>;
 
     static_assert(_Is_extents<extents_type>,
         "Extents must be a specialization of std::extents (N4950 [mdspan.layout.stride.overview]/2).");
@@ -1111,7 +1112,6 @@ private:
     }
 
     _NODISCARD constexpr bool _Is_exhaustive_special_case() const noexcept {
-        using _Stride_extent_pair = pair<rank_type, rank_type>;
         array<_Stride_extent_pair, extents_type::rank()> _Pairs;
         for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
             rank_type _Ext = static_cast<rank_type>(this->_Exts.extent(_Idx));
