@@ -2516,9 +2516,17 @@ void _Swap_trivial_arrays(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept {
                 unsigned char _Data[_Part_size_bytes];
             };
 
-            const _Buffer_type _Buffer                   = *reinterpret_cast<const _Buffer_type*>(_Left_ptr);
-            *reinterpret_cast<_Buffer_type*>(_Left_ptr)  = *reinterpret_cast<const _Buffer_type*>(_Right_ptr);
-            *reinterpret_cast<_Buffer_type*>(_Right_ptr) = _Buffer;
+#ifdef __clang__
+            using _Buffer_ptr       = __attribute__((may_alias)) _Buffer_type*;
+            using _Const_buffer_ptr = const __attribute__((may_alias)) _Buffer_type*;
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+            using _Buffer_ptr       = _Buffer_type*;
+            using _Const_buffer_ptr = const _Buffer_type*;
+#endif // ^^^ !defined(__clang__) ^^^
+
+            const _Buffer_type _Buffer                 = *reinterpret_cast<_Const_buffer_ptr>(_Left_ptr);
+            *reinterpret_cast<_Buffer_ptr>(_Left_ptr)  = *reinterpret_cast<_Const_buffer_ptr>(_Right_ptr);
+            *reinterpret_cast<_Buffer_ptr>(_Right_ptr) = _Buffer;
             _Left_ptr += _Part_size_bytes;
             _Right_ptr += _Part_size_bytes;
 
