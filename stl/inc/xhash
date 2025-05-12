@@ -100,8 +100,7 @@ struct _Uhash_choose_transparency {
 };
 
 #if _HAS_CXX20
-template <class _Kty, class _Hasher, class _Keyeq>
-    requires _Is_transparent_v<_Hasher> && _Is_transparent_v<_Keyeq>
+template <class _Kty, _Transparent _Hasher, _Transparent _Keyeq>
 struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq> {
     // transparency selector for transparent hashed containers
     static constexpr bool _Has_transparent_overloads = true;
