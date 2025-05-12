@@ -624,7 +624,7 @@ public:
     }
 
     template <class _OtherKey>
-        requires _Is_transparent_v<key_compare> && (!is_convertible_v<_OtherKey, iterator>)
+        requires _Transparent<key_compare> && (!is_convertible_v<_OtherKey, iterator>)
               && (!is_convertible_v<_OtherKey, const_iterator>)
     size_type erase(_OtherKey&& _Key_val) {
         return _Erase_key(_STD forward<_OtherKey>(_Key_val));
@@ -673,7 +673,7 @@ public:
 
     template <class _OtherKey>
     _NODISCARD iterator find(const _OtherKey& _Key_val)
-        requires _Is_transparent_v<key_compare>
+        requires _Transparent<key_compare>
     {
         return _Find(_Key_val);
     }
@@ -684,7 +684,7 @@ public:
 
     template <class _OtherKey>
     _NODISCARD const_iterator find(const _OtherKey& _Key_val) const
-        requires _Is_transparent_v<key_compare>
+        requires _Transparent<key_compare>
     {
         return _Find(_Key_val);
     }
@@ -695,7 +695,7 @@ public:
 
     template <class _OtherKey>
     _NODISCARD size_type count(const _OtherKey& _Key_val) const
-        requires _Is_transparent_v<key_compare>
+        requires _Transparent<key_compare>
     {
         return _Count(_Key_val);
     }
@@ -706,7 +706,7 @@ public:
 
     template <class _OtherKey>
     _NODISCARD bool contains(const _OtherKey& _Key_val) const
-        requires _Is_transparent_v<key_compare>
+        requires _Transparent<key_compare>
     {
         return _Contains(_Key_val);
     }
@@ -717,7 +717,7 @@ public:
 
     template <class _OtherKey>
     _NODISCARD iterator lower_bound(const _OtherKey& _Key_val)
-        requires _Is_transparent_v<key_compare>
+        requires _Transparent<key_compare>
     {
         return _Lower_bound(_Key_val);
     }
@@ -728,7 +728,7 @@ public:
 
     template <class _OtherKey>
     _NODISCARD const_iterator lower_bound(const _OtherKey& _Key_val) const
-        requires _Is_transparent_v<key_compare>
+        requires _Transparent<key_compare>
     {
         return _Lower_bound(_Key_val);
     }
@@ -739,7 +739,7 @@ public:
 
     template <class _OtherKey>
     _NODISCARD iterator upper_bound(const _OtherKey& _Key_val)
-        requires _Is_transparent_v<key_compare>
+        requires _Transparent<key_compare>
     {
         return _Upper_bound(_Key_val);
     }
@@ -750,7 +750,7 @@ public:
 
     template <class _OtherKey>
     _NODISCARD const_iterator upper_bound(const _OtherKey& _Key_val) const
-        requires _Is_transparent_v<key_compare>
+        requires _Transparent<key_compare>
     {
         return _Upper_bound(_Key_val);
     }
@@ -761,7 +761,7 @@ public:
 
     template <class _OtherKey>
     _NODISCARD pair<iterator, iterator> equal_range(const _OtherKey& _Key_val)
-        requires _Is_transparent_v<key_compare>
+        requires _Transparent<key_compare>
     {
         return _Equal_range(_Key_val);
     }
@@ -772,7 +772,7 @@ public:
 
     template <class _OtherKey>
     _NODISCARD pair<const_iterator, const_iterator> equal_range(const _OtherKey& _Key_val) const
-        requires _Is_transparent_v<key_compare>
+        requires _Transparent<key_compare>
     {
         return _Equal_range(_Key_val);
     }
@@ -818,10 +818,9 @@ protected:
 
     template <bool _OverwriteIfExists, class _OtherKey, class... _MappedArgTypes>
     iterator _Emplace_hint(const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Args) {
-        _STL_INTERNAL_STATIC_ASSERT(
-            is_constructible_v<mapped_type, _MappedArgTypes...>
-            && (is_same_v<remove_cvref_t<_OtherKey>, key_type>
-                || (is_constructible_v<key_type, _OtherKey> && _Is_transparent_v<key_compare>) ));
+        _STL_INTERNAL_STATIC_ASSERT(is_constructible_v<mapped_type, _MappedArgTypes...>
+                                    && (is_same_v<remove_cvref_t<_OtherKey>, key_type>
+                                        || (is_constructible_v<key_type, _OtherKey> && _Transparent<key_compare>) ));
         static_assert(_IsUnique || !_OverwriteIfExists,
             "Overwriting is not supported when the container allows multiple copies of a key.");
         const const_iterator _Begin = cbegin();
@@ -908,7 +907,7 @@ protected:
         _STL_INTERNAL_STATIC_ASSERT(
             (is_same_v<remove_cvref_t<_KeyTy1>, key_type> && is_same_v<remove_cvref_t<_KeyTy2>, key_type>)
             || (is_constructible_v<key_type, _KeyTy1> && is_constructible_v<key_type, _KeyTy2>
-                && _Is_transparent_v<key_compare>) );
+                && _Transparent<key_compare>) );
         return !_Key_compare(_STD forward<_KeyTy1>(_Left), _STD forward<_KeyTy2>(_Right))
             && !_Key_compare(_STD forward<_KeyTy2>(_Right), _STD forward<_KeyTy1>(_Left));
     }
@@ -992,7 +991,7 @@ private:
 
     template <class _KeyTy>
     _NODISCARD iterator _Find(const _KeyTy& _Key_val) {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         iterator _Position = lower_bound(_Key_val);
         if (_Position != end() && !_Key_compare(_Key_val, _Position->first)) {
             return _Position;
@@ -1003,7 +1002,7 @@ private:
 
     template <class _KeyTy>
     _NODISCARD const_iterator _Find(const _KeyTy& _Key_val) const {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         const_iterator _Position = lower_bound(_Key_val);
         if (_Position != cend() && !_Key_compare(_Key_val, _Position->first)) {
             return _Position;
@@ -1014,19 +1013,19 @@ private:
 
     template <class _KeyTy>
     _NODISCARD size_type _Count(const _KeyTy& _Key_val) const {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         return upper_bound(_Key_val) - lower_bound(_Key_val);
     }
 
     template <class _KeyTy>
     _NODISCARD bool _Contains(const _KeyTy& _Key_val) const {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         return find(_Key_val) != cend();
     }
 
     template <class _KeyTy>
     _NODISCARD iterator _Lower_bound(const _KeyTy& _Key_val) {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         const auto _Key_unchecked_begin = _STD _Get_unwrapped(_STD cbegin(_Data.keys));
         const auto _Key_unchecked_it =
             _STD lower_bound(_Key_unchecked_begin, _STD _Get_unwrapped(_STD cend(_Data.keys)), _Key_val, _Key_compare);
@@ -1040,7 +1039,7 @@ private:
 
     template <class _KeyTy>
     _NODISCARD const_iterator _Lower_bound(const _KeyTy& _Key_val) const {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         const auto _Key_unchecked_begin = _STD _Get_unwrapped(_STD cbegin(_Data.keys));
         const auto _Key_unchecked_it =
             _STD lower_bound(_Key_unchecked_begin, _STD _Get_unwrapped(_STD cend(_Data.keys)), _Key_val, _Key_compare);
@@ -1055,7 +1054,7 @@ private:
 
     template <class _KeyTy>
     _NODISCARD iterator _Upper_bound(const _KeyTy& _Key_val) {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         const auto _Key_unchecked_begin = _STD _Get_unwrapped(_STD cbegin(_Data.keys));
         const auto _Key_unchecked_it =
             _STD upper_bound(_Key_unchecked_begin, _STD _Get_unwrapped(_STD cend(_Data.keys)), _Key_val, _Key_compare);
@@ -1069,7 +1068,7 @@ private:
 
     template <class _KeyTy>
     _NODISCARD const_iterator _Upper_bound(const _KeyTy& _Key_val) const {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         const auto _Key_unchecked_begin = _STD _Get_unwrapped(_STD cbegin(_Data.keys));
         const auto _Key_unchecked_it =
             _STD upper_bound(_Key_unchecked_begin, _STD _Get_unwrapped(_STD cend(_Data.keys)), _Key_val, _Key_compare);
@@ -1084,13 +1083,13 @@ private:
 
     template <class _KeyTy>
     _NODISCARD pair<iterator, iterator> _Equal_range(const _KeyTy& _Key_val) {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         return {lower_bound(_Key_val), upper_bound(_Key_val)};
     }
 
     template <class _KeyTy>
     _NODISCARD pair<const_iterator, const_iterator> _Equal_range(const _KeyTy& _Key_val) const {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         return {lower_bound(_Key_val), upper_bound(_Key_val)};
     }
 };
@@ -1143,7 +1142,7 @@ public:
 
     template <class _OtherKey>
     mapped_type& operator[](_OtherKey&& _Key_val)
-        requires _Is_transparent_v<key_compare> && is_constructible_v<key_type, _OtherKey>
+        requires _Transparent<key_compare> && is_constructible_v<key_type, _OtherKey>
               && is_default_constructible_v<mapped_type>
     {
         return this->try_emplace(_STD forward<_OtherKey>(_Key_val)).first->second;
@@ -1159,14 +1158,14 @@ public:
 
     template <class _OtherKey>
     _NODISCARD mapped_type& at(const _OtherKey& _Key_val)
-        requires _Is_transparent_v<key_compare>
+        requires _Transparent<key_compare>
     {
         return _At(_Key_val);
     }
 
     template <class _OtherKey>
     _NODISCARD const mapped_type& at(const _OtherKey& _Key_val) const
-        requires _Is_transparent_v<key_compare>
+        requires _Transparent<key_compare>
     {
         return _At(_Key_val);
     }
@@ -1208,7 +1207,7 @@ public:
     }
 
     template <class _OtherKey, class... _MappedArgTypes>
-        requires _Is_transparent_v<key_compare> && is_constructible_v<key_type, _OtherKey>
+        requires _Transparent<key_compare> && is_constructible_v<key_type, _OtherKey>
               && is_constructible_v<mapped_type, _MappedArgTypes...> && (!is_convertible_v<_OtherKey, const_iterator>)
               && (!is_convertible_v<_OtherKey, iterator>)
     pair<iterator, bool> try_emplace(_OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
@@ -1232,7 +1231,7 @@ public:
 
     template <class _OtherKey, class... _MappedArgTypes>
     iterator try_emplace(const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args)
-        requires _Is_transparent_v<key_compare> && is_constructible_v<key_type, _OtherKey>
+        requires _Transparent<key_compare> && is_constructible_v<key_type, _OtherKey>
               && is_constructible_v<mapped_type, _MappedArgTypes&&...>
     {
         return this->template _Emplace_hint<false>(
@@ -1255,7 +1254,7 @@ public:
 
     template <class _OtherKey, class _MappedTy>
     pair<iterator, bool> insert_or_assign(_OtherKey&& _Key_val, _MappedTy&& _Mapped_val)
-        requires _Is_transparent_v<key_compare> && is_constructible_v<key_type, _OtherKey>
+        requires _Transparent<key_compare> && is_constructible_v<key_type, _OtherKey>
               && is_assignable_v<mapped_type&, _MappedTy> && is_constructible_v<mapped_type, _MappedTy>
     {
         return _Insert_or_assign(_STD forward<_OtherKey>(_Key_val), _STD forward<_MappedTy>(_Mapped_val));
@@ -1277,7 +1276,7 @@ public:
 
     template <class _OtherKey, class _MappedTy>
     iterator insert_or_assign(const_iterator _Position, _OtherKey&& _Key_val, _MappedTy&& _Mapped_val)
-        requires _Is_transparent_v<key_compare> && is_constructible_v<key_type, _OtherKey>
+        requires _Transparent<key_compare> && is_constructible_v<key_type, _OtherKey>
               && is_assignable_v<mapped_type&, _MappedTy> && is_constructible_v<mapped_type, _MappedTy>
     {
         return this->template _Emplace_hint<true>(
@@ -1296,7 +1295,7 @@ private:
 
     template <class _KeyTy>
     _NODISCARD mapped_type& _At(const _KeyTy& _Key_val) {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         const auto _Position = this->find(_Key_val);
         if (_Position == this->end()) {
             _Xout_of_range("std::flat_map::at: the specified key does not exist.");
@@ -1307,7 +1306,7 @@ private:
 
     template <class _KeyTy>
     _NODISCARD const mapped_type& _At(const _KeyTy& _Key_val) const {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Is_transparent_v<key_compare>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         const auto _Position = this->find(_Key_val);
         if (_Position == this->end()) {
             _Xout_of_range("std::flat_map::at: the specified key does not exist.");
