@@ -743,6 +743,50 @@ void test_reverse_copy(mt19937_64& gen) {
     }
 }
 
+template <class RanIt>
+void last_known_good_rotate(
+    RanIt first, RanIt mid, RanIt last, vector<typename iterator_traits<RanIt>::value_type>& tmp) {
+    const auto size_left  = mid - first;
+    const auto size_right = last - mid;
+    if (size_left <= size_right) {
+        tmp.assign(first, mid);
+        move_backward(mid, last, last - size_left);
+        move(tmp.begin(), tmp.end(), last - size_left);
+    } else {
+        tmp.assign(mid, last);
+        move(first, mid, first + size_right);
+        move(tmp.begin(), tmp.end(), first);
+    }
+}
+
+template <class T>
+void test_case_rotate(vector<T>& actual, vector<T>& expected, const ptrdiff_t pos, vector<T>& tmp) {
+    last_known_good_rotate(expected.begin(), expected.begin() + pos, expected.end(), tmp);
+    rotate(actual.begin(), actual.begin() + pos, actual.end());
+    assert(expected == actual);
+}
+
+template <class T>
+void test_rotate(mt19937_64& gen) {
+    vector<T> actual;
+    vector<T> expected;
+    vector<T> tmp;
+    actual.reserve(dataCount);
+    expected.reserve(dataCount);
+    tmp.reserve(dataCount);
+    test_case_rotate(actual, expected, 0, tmp);
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        actual.push_back(static_cast<T>(gen())); // intentionally narrows
+        expected = actual;
+
+        uniform_int_distribution<ptrdiff_t> dis_pos(0, static_cast<ptrdiff_t>(attempts));
+
+        for (size_t pos_count = 0; pos_count != 5; ++pos_count) {
+            test_case_rotate(actual, expected, dis_pos(gen), tmp);
+        }
+    }
+}
+
 template <class FwdIt1, class FwdIt2>
 FwdIt2 last_known_good_swap_ranges(FwdIt1 first1, const FwdIt1 last1, FwdIt2 dest) {
     for (; first1 != last1; ++first1, ++dest) {
@@ -1178,6 +1222,19 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_reverse_copy<float>(gen);
     test_reverse_copy<double>(gen);
     test_reverse_copy<long double>(gen);
+
+    test_rotate<char>(gen);
+    test_rotate<signed char>(gen);
+    test_rotate<unsigned char>(gen);
+    test_rotate<short>(gen);
+    test_rotate<unsigned short>(gen);
+    test_rotate<int>(gen);
+    test_rotate<unsigned int>(gen);
+    test_rotate<long long>(gen);
+    test_rotate<unsigned long long>(gen);
+    test_rotate<float>(gen);
+    test_rotate<double>(gen);
+    test_rotate<long double>(gen);
 
     test_remove<char>(gen);
     test_remove<signed char>(gen);
