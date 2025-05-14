@@ -97,6 +97,7 @@ stages:
           hostArch: x64
           targetArch: arm64
           targetPlatform: arm64ec
+          analyzeBuild: true
           numShards: 1
           skipTesting: true
 
