@@ -507,7 +507,7 @@ function(add_stl_dlls D_SUFFIX REL_OR_DBG)
 
     add_library(msvcp${D_SUFFIX} SHARED)
     target_link_libraries(msvcp${D_SUFFIX} PRIVATE msvcp${D_SUFFIX}_eha_objects msvcp${D_SUFFIX}_objects msvcp${D_SUFFIX}_init_objects "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib")
-    if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^arm64(ec)?$")
+    if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(arm64|arm64ec)$")
         target_link_libraries(msvcp${D_SUFFIX} PRIVATE "softintrin.lib")
     endif()
     set_target_properties(msvcp${D_SUFFIX} PROPERTIES ARCHIVE_OUTPUT_NAME "msvcp140_base${D_SUFFIX}${VCLIBS_SUFFIX}")
