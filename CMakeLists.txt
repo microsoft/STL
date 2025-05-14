@@ -108,6 +108,12 @@ if(STL_USE_ANALYZE)
     # LPARAM is a LONG_PTR (intptr_t), and it's invalid to apply _In_opt_ to a non-pointer.
     # As of the Windows 11 SDK (10.0.22621.0), there are 5 total occurrences of warning C6553 affecting the STL's build.
     add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553>")
+
+    if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64ec")
+        # TRANSITION, the Windows SDK emits "warning C28301: No annotations for first declaration of 'meow'"
+        # for various intrinsics when building for ARM64EC.
+        add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/wd28301>")
+    endif()
 endif()
 
 set(VCLIBS_DEBUG_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/Od>")
