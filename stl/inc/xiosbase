@@ -249,9 +249,10 @@ public:
         const ios_base::fmtflags _Oldfmtflags = _Fmtfl;
         _Fmtfl |= _Newfmtflags & _Fmtmask;
 
-        _STL_ASSERT(__popcnt(_Fmtfl & basefield) < 2, "Multiple basefield flags set. Try setf(flags, mask) instead.");
-        _STL_ASSERT(__popcnt(_Fmtfl & floatfield) < 2, "Multiple floatfield flags set. Try setf(flags, mask) instead.");
-        _STL_ASSERT(__popcnt(_Fmtfl & adjustfield) < 2, "Multiple adjustfield flags set. Try setf(flags, mask) instead.");
+        _STL_ASSERT(
+            _Checked_popcount(_Fmtfl & basefield) < 2, "Multiple basefield flags set. Try setf(flags, mask) instead.");
+        _STL_ASSERT(_Checked_popcount(_Fmtfl & adjustfield) < 2,
+            "Multiple adjustfield flags set. Try setf(flags, mask) instead.");
 
         return _Oldfmtflags;
     }
