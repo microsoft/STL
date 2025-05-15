@@ -1974,18 +1974,12 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
 
 #define _STL_WIN32_WINNT_VISTA 0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
-#define _STL_WIN32_WINNT_WIN8  0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
 #define _STL_WIN32_WINNT_WIN10 0x0A00 // _WIN32_WINNT_WIN10 from sdkddkver.h
 
 // Note that the STL DLL builds will set this to XP for ABI compatibility with VS2015 which supported XP.
 #ifndef _STL_WIN32_WINNT
-#if defined(_M_ARM64)
-// The first ARM64 Windows was Windows 10
+// The earliest Windows supported by this implementation is Windows 10
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN10
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
-// The earliest Windows supported by this implementation is Windows 8
-#define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN8
-#endif // ^^^ !defined(_M_ARM64) ^^^
 #endif // !defined(_STL_WIN32_WINNT)
 
 #ifdef __cpp_noexcept_function_type
