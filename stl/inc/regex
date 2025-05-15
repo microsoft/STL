@@ -4131,6 +4131,15 @@ _BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(_BidIt _First_arg
                 break;
             }
 
+        case _N_rep:
+            {
+                _Node_rep* _Node = static_cast<_Node_rep*>(_Nx);
+                if (_Node->_Min == 0) {
+                    return _First_arg;
+                }
+                break;
+            }
+
         case _N_begin:
             break;
 
@@ -4142,7 +4151,6 @@ _BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(_BidIt _First_arg
         case _N_neg_assert:
         case _N_back:
         case _N_endif:
-        case _N_rep:
         case _N_end_rep:
         default:
             return _First_arg;

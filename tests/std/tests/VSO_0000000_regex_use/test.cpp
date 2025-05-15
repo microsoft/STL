@@ -1698,6 +1698,54 @@ void test_gh_5377() {
     }
 }
 
+void test_gh_5509() {
+    // GH-5507 extended the matcher's skip optimization
+    // to regexes starting with a loop with at least one repetition,
+    // speeding up searches for such regexes
+
+    {
+        test_regex char_plus_regex(&g_regexTester, "(a+)");
+        char_plus_regex.should_search_match_capture_groups("blwerofaaweraf", "aa", match_default, {{7, 9}});
+        char_plus_regex.should_search_fail("blwerofwerf");
+    }
+
+    {
+        test_regex charclass_plus_regex(&g_regexTester, "([fa]+)");
+        charclass_plus_regex.should_search_match_capture_groups("blwerofaaweraf", "faa", match_default, {{6, 9}});
+        charclass_plus_regex.should_search_fail("blwerower");
+    }
+
+    {
+        test_regex string_plus_regex(&g_regexTester, "((?:aw)+)");
+        string_plus_regex.should_search_match_capture_groups("blwerofaawaweraf", "awaw", match_default, {{8, 12}});
+        string_plus_regex.should_search_fail("blwerofaerwaf");
+    }
+
+    {
+        test_regex anchored_string_plus_regex(&g_regexTester, "((?:^aw)+)");
+        anchored_string_plus_regex.should_search_match_capture_groups(
+            "blwerofa\nawaweraf", "aw", match_default, {{9, 11}});
+        anchored_string_plus_regex.should_search_fail("blwerof\naerwaf");
+    }
+
+    {
+        test_regex anchored_string_plus_regex(&g_regexTester, "((?:$\naw)+)");
+        anchored_string_plus_regex.should_search_match_capture_groups(
+            "blwerofa\nawaweraf", "\naw", match_default, {{8, 11}});
+        anchored_string_plus_regex.should_search_fail("blwerof\naerwaf");
+    }
+
+    {
+        test_regex string_star_string_regex(&g_regexTester, "((?:aw)*fa)");
+        string_star_string_regex.should_search_match_capture_groups(
+            "blwerofaawawfaeraf", "fa", match_default, {{6, 8}});
+        string_star_string_regex.should_search_match_capture_groups(
+            "blweroawawfaeraf", "awawfa", match_default, {{6, 12}});
+        string_star_string_regex.should_search_match("blwerofaerwaf", "fa");
+        string_star_string_regex.should_search_fail("blweroerwaf");
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -1744,6 +1792,7 @@ int main() {
     test_gh_5371();
     test_gh_5374();
     test_gh_5377();
+    test_gh_5509();
 
     return g_regexTester.result();
 }
