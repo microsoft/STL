@@ -3465,7 +3465,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node,
         }
     } else if (_Init_idx == 1 && (_Sflags & regex_constants::_Any_posix)) {
         // POSIX allows an empty repetition if the subexpression is matched only once,
-        // so try trail
+        // so try tail
         _Matched0 = _Match_pat(_Node->_End_rep->_Next);
     }
 
@@ -4951,7 +4951,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
             break;
         case _N_rep:
             // _Node_rep inside another _Node_rep makes both not simple if _Outer_rep can be repeated more than once
-            // because _Matcher::_Do_rep0() does not reset capture group boundaries when control is returned to it.
+            // because _Matcher2::_Do_rep0() does not reset capture group boundaries when control is returned to it.
             // If _Outer_rep can repeat at most once, we have to analyze the structure of the inner loop.
             if (_Outer_rep) {
                 _Outer_rep->_Simple_loop = 0;

@@ -1730,7 +1730,6 @@ void test_gh_5490() {
         quantified_empty_regex_bre.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
     }
 
-
     for (auto option : {ECMAScript, extended, egrep, awk}) {
         test_regex simple_sequence_regex_ecma_or_ere(&g_regexTester, "(ab)*", option);
         simple_sequence_regex_ecma_or_ere.should_search_match_capture_groups("", "", match_default, {{-1, -1}});
