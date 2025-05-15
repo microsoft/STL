@@ -1800,7 +1800,7 @@ void test_gh_5490() {
 
     for (string pattern : {R"(\(a*\)\{1\})", R"(\(a\{0,1\}\)\{1\})"}) {
         for (auto option : {basic, grep}) {
-            test_regex repeat_once_regex_bre(&g_regexTester, R"(\(a*\)\{1\})", option);
+            test_regex repeat_once_regex_bre(&g_regexTester, pattern, option);
             repeat_once_regex_bre.should_search_match_capture_groups("", "", match_default, {{0, 0}});
             repeat_once_regex_bre.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
             // leftmost-longest rule according to Boost semantics
