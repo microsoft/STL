@@ -79,7 +79,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* _Last1, void* _First2) noexcept;
 
-__declspec(noalias) void __std_rotate(void* _First, void* _Mid, void* _Last) noexcept;
+__declspec(noalias) void __stdcall __std_rotate(void* _First, void* _Mid, void* _Last) noexcept;
 
 __declspec(noalias) size_t __stdcall __std_count_trivial_1(
     const void* _First, const void* _Last, uint8_t _Val) noexcept;

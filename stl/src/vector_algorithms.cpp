@@ -560,7 +560,7 @@ namespace {
 
 extern "C" {
 
-__declspec(noalias) void __std_rotate(void* _First, void* const _Mid, void* _Last) noexcept {
+__declspec(noalias) void __stdcall __std_rotate(void* _First, void* const _Mid, void* _Last) noexcept {
     unsigned char _Buf[_Rotating::_Buf_size];
 
     for (;;) {
