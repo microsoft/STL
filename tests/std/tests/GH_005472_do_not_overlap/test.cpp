@@ -21,9 +21,13 @@ int main(int argc, char* argv[]) {
         +[] { rotate_copy(arr, arr + 1, arr + 2, arr + 1); },
 #if _HAS_CXX20
         +[] { ranges::reverse_copy(arr, arr + 2, arr + 1); },
+        +[] { ranges::reverse_copy(ranges::subrange(arr, arr + 2), arr + 1); },
         +[] { ranges::replace_copy(arr, arr + 2, arr + 1, 1, 2); },
+        +[] { ranges::replace_copy(ranges::subrange(arr, arr + 2), arr + 1, 1, 2); },
         +[] { ranges::replace_copy_if(arr, arr + 2, arr + 1, [](int) { return false; }, 2); },
+        +[] { ranges::replace_copy_if(ranges::subrange(arr, arr + 2), arr + 1, [](int) { return false; }, 2); },
         +[] { ranges::rotate_copy(arr, arr + 1, arr + 2, arr + 1); },
+        +[] { ranges::rotate_copy(ranges::subrange(arr, arr + 2), arr + 1, arr + 1); },
 #endif // _HAS_CXX20
     });
 
