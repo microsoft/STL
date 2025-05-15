@@ -503,11 +503,8 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 
 namespace {
     namespace _Rotating {
-        // There's performance anomaly observed for memmove larger than 8192 elements
-        // It is CPU specific, appraently at least Intel Alder Lake is affected
-        // Re-implementing memmove here as a workaround
-        // We know whether we move to upper or lower address, so we can have
-        // two separate functions and no runtime branch
+        // TRANSITION, GH-5506 "VCRuntime: memmove() is surprisingly slow for more than 8 KB on certain CPUs":
+        // As a workaround, the following code calls memmove() for 8 KB portions.
         constexpr size_t _Portion_size = 8192;
         constexpr size_t _Portion_mask = _Portion_size - 1;
         static_assert((_Portion_size & _Portion_mask) == 0);
