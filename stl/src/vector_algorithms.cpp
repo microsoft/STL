@@ -528,7 +528,7 @@ namespace {
             }
         }
 
-        void _Move_to_upper_address(void* const _Dest, void* const _Src, const size_t _Size) noexcept {
+        void _Move_to_higher_address(void* const _Dest, void* const _Src, const size_t _Size) noexcept {
             const size_t _Whole_portions_size = _Size & ~_Portion_mask;
 
             void* _Dest_end = _Dest;
@@ -591,7 +591,7 @@ __declspec(noalias) void __stdcall __std_rotate(void* _First, void* const _Mid, 
                 memcpy(_Buf, _Last, _Right);
                 void* _Mid2 = _First;
                 _Advance_bytes(_Mid2, _Right);
-                _Rotating::_Move_to_upper_address(_Mid2, _First, _Left);
+                _Rotating::_Move_to_higher_address(_Mid2, _First, _Left);
                 memcpy(_First, _Buf, _Right);
                 break;
             }
