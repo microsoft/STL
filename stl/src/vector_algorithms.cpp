@@ -509,7 +509,7 @@ namespace {
         constexpr size_t _Portion_mask = _Portion_size - 1;
         static_assert((_Portion_size & _Portion_mask) == 0);
 
-        void _Move_to_lower_address(void* _Dest, void* _Src, const size_t _Size) noexcept {
+        void _Move_to_lower_address(void* _Dest, const void* _Src, const size_t _Size) noexcept {
             const size_t _Whole_portions_size = _Size & ~_Portion_mask;
 
             void* _Dest_end = _Dest;
@@ -526,12 +526,12 @@ namespace {
             }
         }
 
-        void _Move_to_higher_address(void* const _Dest, void* const _Src, const size_t _Size) noexcept {
+        void _Move_to_higher_address(void* const _Dest, const void* const _Src, const size_t _Size) noexcept {
             const size_t _Whole_portions_size = _Size & ~_Portion_mask;
 
             void* _Dest_end = _Dest;
             _Advance_bytes(_Dest_end, _Whole_portions_size);
-            void* _Src_end = _Src;
+            const void* _Src_end = _Src;
             _Advance_bytes(_Src_end, _Whole_portions_size);
 
             if (const size_t _Tail = _Size - _Whole_portions_size; _Tail != 0) {
