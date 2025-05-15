@@ -315,16 +315,6 @@ std/numerics/numeric.ops/numeric.ops.sat/sub_sat.pass.cpp FAIL
 
 # P1222R4 <flat_set>
 
-# FIXME! error: no member named 'assign' in 'MinSequenceContainer<int>'
-std/containers/container.adaptors/flat.multiset/flat.multiset.capacity/empty.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/assign_initializer_list.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.capacity/empty.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/assign_initializer_list.pass.cpp FAIL
-
-# FIXME! error: no member named 'insert_range' in 'MinSequenceContainer<int>'
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp FAIL
-
 # FIXME! error: static assertion failed due to requirement '!std::is_nothrow_move_constructible_v<std::flat_MEOW<int, ThrowingMoveComp, std::vector<int, std::allocator<int>>>>'
 std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.cons/move.pass.cpp FAIL
@@ -635,6 +625,20 @@ std/depr/depr.c.headers/stddef_h.compile.pass.cpp:1 FAIL
 
 
 # *** LIKELY BOGUS TESTS ***
+
+# P1222R4 <flat_set>;
+# error: no member named 'assign' in 'MinSequenceContainer<int>';
+# it is mandatory according to [sequence.reqmts]/104
+std/containers/container.adaptors/flat.multiset/flat.multiset.capacity/empty.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/assign_initializer_list.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.capacity/empty.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/assign_initializer_list.pass.cpp FAIL
+
+# P1222R4 <flat_set>;
+# error: no member named 'insert_range' in 'MinSequenceContainer<int>';
+# it is mandatory according to [sequence.reqmts]/40
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp FAIL
 
 # Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.asgn/move_convert.pass.cpp FAIL
