@@ -1708,7 +1708,7 @@ void test_gh_5490() {
     // Similarly, POSIX 9.3.6 and 9.4.6 state that a null expression can only be matched if this is the only match or it
     // is necessary to satisfy the minimum number of repetitions.
     // Note the subtle difference that the empty match is allowed if it is the only match.
-    for (string pattern : {"()*", "()?", "()??", "()*?", "(){0,}"}) {
+    for (string pattern : {"()*", "()?", "()??", "()*?", "(){0,}", "(){0,}?", "(){0,1}", "(){0,1}?"}) {
         test_regex quantified_empty_regex_ecma(&g_regexTester, pattern, ECMAScript);
         quantified_empty_regex_ecma.should_search_match_capture_groups("", "", match_default, {{-1, -1}});
         quantified_empty_regex_ecma.should_search_match_capture_groups("b", "", match_default, {{-1, -1}});
@@ -1766,11 +1766,13 @@ void test_gh_5490() {
         }
     }
 
-    for (auto option : {basic, grep}) {
-        test_regex doublestar_regex_bre(&g_regexTester, R"(\(a*\)*)", option);
-        doublestar_regex_bre.should_search_match_capture_groups("", "", match_default, {{0, 0}});
-        doublestar_regex_bre.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
-        doublestar_regex_bre.should_search_match_capture_groups("a", "a", match_default, {{0, 1}});
+    for (string pattern : {R"(\(a*\)*)", R"(\(a\{0,1\}\)*)", R"(\(a\{0,1\}\)\{0,1\})"}) {
+        for (auto option : {basic, grep}) {
+            test_regex nested_quantifier_regex_bre(&g_regexTester, pattern, option);
+            nested_quantifier_regex_bre.should_search_match_capture_groups("", "", match_default, {{0, 0}});
+            nested_quantifier_regex_bre.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
+            nested_quantifier_regex_bre.should_search_match_capture_groups("a", "a", match_default, {{0, 1}});
+        }
     }
 
     for (string pattern : {"(a*)+", "(a?)+"}) {
@@ -1782,11 +1784,13 @@ void test_gh_5490() {
         }
     }
 
-    for (auto option : {basic, grep}) {
-        test_regex plus_quantifier_regex_bre(&g_regexTester, R"(\(a*\)\{1,\})", option);
-        plus_quantifier_regex_bre.should_search_match_capture_groups("", "", match_default, {{0, 0}});
-        plus_quantifier_regex_bre.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
-        plus_quantifier_regex_bre.should_search_match_capture_groups("a", "a", match_default, {{0, 1}});
+    for (string pattern : {R"(\(a*\)\{1,\})", R"(\(a\{0,1\}\)\{1,\})"}) {
+        for (auto option : {basic, grep}) {
+            test_regex plus_quantifier_regex_bre(&g_regexTester, pattern, option);
+            plus_quantifier_regex_bre.should_search_match_capture_groups("", "", match_default, {{0, 0}});
+            plus_quantifier_regex_bre.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
+            plus_quantifier_regex_bre.should_search_match_capture_groups("a", "a", match_default, {{0, 1}});
+        }
     }
 
     for (string pattern : {"(a*){1}", "(a?){1}"}) {
