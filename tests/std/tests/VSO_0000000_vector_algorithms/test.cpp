@@ -776,8 +776,9 @@ void test_rotate(mt19937_64& gen) {
     tmp.reserve(dataCount);
     test_case_rotate(actual, expected, 0, tmp);
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
-        actual.push_back(static_cast<T>(gen())); // intentionally narrows
-        expected = actual;
+        const T val = static_cast<T>(gen()); // intentionally narrows
+        actual.push_back(val);
+        expected.push_back(val);
 
         uniform_int_distribution<ptrdiff_t> dis_pos(0, static_cast<ptrdiff_t>(attempts));
 
