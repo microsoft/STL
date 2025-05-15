@@ -1708,7 +1708,7 @@ void test_gh_5490() {
     // Similarly, POSIX 9.3.6 and 9.4.6 state that a null expression can only be matched if this is the only match or it
     // is necessary to satisfy the minimum number of repetitions.
     // Note the subtle difference that the empty match is allowed if it is the only match.
-    for (string pattern : {"()*", "()?", "()??", "()*?", "(){0,}", "(){0,}?", "(){0,1}", "(){0,1}?"}) {
+    for (string pattern : {"()*", "()?", "()*?", "()??", "(){0,}", "(){0,}?", "(){0,1}", "(){0,1}?"}) {
         test_regex quantified_empty_regex_ecma(&g_regexTester, pattern, ECMAScript);
         quantified_empty_regex_ecma.should_search_match_capture_groups("", "", match_default, {{-1, -1}});
         quantified_empty_regex_ecma.should_search_match_capture_groups("b", "", match_default, {{-1, -1}});
@@ -1827,7 +1827,7 @@ void test_gh_5490() {
         }
     }
 
-    for (string pattern : {R"(\(a\{0,1\}\)\{2\})", R"(\(a*\)\{2\})"}) {
+    for (string pattern : {R"(\(a*\)\{2\})", R"(\(a\{0,1\}\)\{2\})"}) {
         for (auto option : {basic, grep}) {
             test_regex repeat_twice_regex_bre(&g_regexTester, pattern, option);
             repeat_twice_regex_bre.should_search_match_capture_groups("", "", match_default, {{0, 0}});
