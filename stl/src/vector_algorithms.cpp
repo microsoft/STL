@@ -165,6 +165,12 @@ void* __cdecl __std_swap_ranges_trivially_swappable(
 
 namespace {
     namespace _Reversing {
+#ifdef _M_ARM64EC
+        using _Traits_1 = void;
+        using _Traits_2 = void;
+        using _Traits_4 = void;
+        using _Traits_8 = void;
+#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
         struct _Traits_1 {
             static __m256i _Rev_avx(const __m256i _Val) noexcept {
                 const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
@@ -217,6 +223,7 @@ namespace {
                 return _mm_shuffle_epi32(_Val, _MM_SHUFFLE(1, 0, 3, 2));
             }
         };
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         template <class _BidIt>
         void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
