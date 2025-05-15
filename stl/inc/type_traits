@@ -2493,7 +2493,6 @@ _NODISCARD constexpr bool _Is_finite(const _Ty _Xx) noexcept { // constexpr isfi
 template <bool _IsConst, class _Ty>
 using _Maybe_const = conditional_t<_IsConst, const _Ty, _Ty>;
 
-#ifndef __clang__
 template <class _Ty, size_t _Size>
 void _Swap_trivial_arrays(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept {
     // Swap arrays using temporary buffers of 64 bytes, followed by the tail.
@@ -2540,7 +2539,6 @@ void _Swap_trivial_arrays(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept {
         *reinterpret_cast<_Last_buffer_type*>(_Right_ptr) = _Last_buffer;
     }
 }
-#endif // !defined(__clang__)
 
 #if _HAS_TR1_NAMESPACE
 _STL_DISABLE_DEPRECATED_WARNING

@@ -114,14 +114,12 @@ _CONSTEXPR20 void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_n
         return; // Handle self-swap as a no-op; see LWG-4165
     }
 
-#ifndef __clang__
     if constexpr (_Is_trivially_swappable_v<_Ty>) {
         if (!_STD _Is_constant_evaluated()) {
             _STD _Swap_trivial_arrays(_Left, _Right);
             return;
         }
     }
-#endif // !defined(__clang__)
 
     _Ty* _First1 = _Left;
     _Ty* _Last1  = _First1 + _Size;
