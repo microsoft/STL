@@ -1867,11 +1867,15 @@ void test_gh_5490() {
     {
         test_regex backref_ecma(&g_regexTester, R"(a(b?)+c\1d)", ECMAScript);
         backref_ecma.should_search_fail("abcd");
+        backref_ecma.should_search_match_capture_groups("acd", "acd", match_default, {{1, 1}});
+        backref_ecma.should_search_match_capture_groups("abcbd", "abcbd", match_default, {{1, 2}});
     }
 
     for (auto option : {basic, grep}) {
-        test_regex backref_bre(&g_regexTester, R"(a\(b?\)\{1,\}c\1d)", option);
+        test_regex backref_bre(&g_regexTester, R"(a\(b\{0,1\}\)\{1,\}c\1d)", option);
         backref_bre.should_search_fail("abcd");
+        backref_bre.should_search_match_capture_groups("acd", "acd", match_default, {{1, 1}});
+        backref_bre.should_search_match_capture_groups("abcbd", "abcbd", match_default, {{1, 2}});
     }
 
     {
