@@ -36,10 +36,10 @@ struct color {
     uint16_t l;
 };
 
-BENCHMARK(bm_rotate<std::uint8_t>)->Apply(common_args);
-BENCHMARK(bm_rotate<std::uint16_t>)->Apply(common_args);
-BENCHMARK(bm_rotate<std::uint32_t>)->Apply(common_args);
-BENCHMARK(bm_rotate<std::uint64_t>)->Apply(common_args);
+BENCHMARK(bm_rotate<uint8_t>)->Apply(common_args);
+BENCHMARK(bm_rotate<uint16_t>)->Apply(common_args);
+BENCHMARK(bm_rotate<uint32_t>)->Apply(common_args);
+BENCHMARK(bm_rotate<uint64_t>)->Apply(common_args);
 
 BENCHMARK(bm_rotate<color>)->Apply(common_args);
 
