@@ -4501,7 +4501,7 @@ namespace ranges {
             auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
             auto _ULast       = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
             const auto _Count = _RANGES _Idl_distance<_It>(_UFirst, _ULast);
-            auto _UResult     = _Replace_copy_unchecked(_STD move(_UFirst), _STD move(_ULast),
+            auto _UResult     = _Replace_copy_common(_STD move(_UFirst), _STD move(_ULast),
                     _STD _Get_unwrapped_n(_STD move(_Output), _Count), _Oldval, _Newval, _STD _Pass_fn(_Proj));
 
             _STD _Seek_wrapped(_First, _STD move(_UResult.in));
@@ -4516,8 +4516,8 @@ namespace ranges {
             _Out _Output, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             const auto _Count = _RANGES _Idl_distance(_Range);
             auto _First       = _RANGES begin(_Range);
-            auto _UResult = _Replace_copy_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
-                _STD _Get_unwrapped_n(_STD move(_Output), _Count), _Oldval, _Newval, _STD _Pass_fn(_Proj));
+            auto _UResult     = _Replace_copy_common(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
+                    _STD _Get_unwrapped_n(_STD move(_Output), _Count), _Oldval, _Newval, _STD _Pass_fn(_Proj));
 
             _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
@@ -4526,7 +4526,7 @@ namespace ranges {
 
     private:
         template <class _It, class _Se, class _Ty1, class _Ty2, class _Out, class _Pj>
-        _NODISCARD static constexpr replace_copy_result<_It, _Out> _Replace_copy_unchecked(
+        _NODISCARD static constexpr replace_copy_result<_It, _Out> _Replace_copy_common(
             _It _First, const _Se _Last, _Out _Output, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj) {
             // copy [_First, _Last) to _Output while replacing projected _Oldval with _Newval
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
@@ -4607,12 +4607,11 @@ namespace ranges {
         _STATIC_CALL_OPERATOR constexpr replace_copy_if_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Output, _Pr _Pred, const _Ty& _Newval, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
-            _STD _Verify_ranges_do_not_overlap(_First, _Last, _Output);
             auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
             auto _ULast       = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
             const auto _Count = _RANGES _Idl_distance<_It>(_UFirst, _ULast);
 
-            auto _UResult = _Replace_copy_if_unchecked(_STD move(_UFirst), _STD move(_ULast),
+            auto _UResult = _Replace_copy_if_common(_STD move(_UFirst), _STD move(_ULast),
                 _STD _Get_unwrapped_n(_STD move(_Output), _Count), _STD _Pass_fn(_Pred), _Newval, _STD _Pass_fn(_Proj));
 
             _STD _Seek_wrapped(_First, _STD move(_UResult.in));
@@ -4627,9 +4626,8 @@ namespace ranges {
             _Rng&& _Range, _Out _Output, _Pr _Pred, const _Ty& _Newval, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
             const auto _Count = _RANGES _Idl_distance(_Range);
             auto _First       = _RANGES begin(_Range);
-            auto _UResult     = _Replace_copy_if_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)),
-                    _Uend(_Range), _STD _Get_unwrapped_n(_STD move(_Output), _Count), _STD _Pass_fn(_Pred), _Newval,
-                    _STD _Pass_fn(_Proj));
+            auto _UResult = _Replace_copy_if_common(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
+                _STD _Get_unwrapped_n(_STD move(_Output), _Count), _STD _Pass_fn(_Pred), _Newval, _STD _Pass_fn(_Proj));
 
             _STD _Seek_wrapped(_First, _STD move(_UResult.in));
             _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
@@ -4638,7 +4636,7 @@ namespace ranges {
 
     private:
         template <class _It, class _Se, class _Ty, class _Out, class _Pj, class _Pr>
-        _NODISCARD static constexpr replace_copy_if_result<_It, _Out> _Replace_copy_if_unchecked(
+        _NODISCARD static constexpr replace_copy_if_result<_It, _Out> _Replace_copy_if_common(
             _It _First, const _Se _Last, _Out _Output, _Pr _Pred, const _Ty& _Newval, _Pj _Proj) {
             // copy [_First, _Last) to _Output while replacing _Oldval with _Newval if projected _Oldval fulfills _Pred
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It>);
@@ -4646,6 +4644,8 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(output_iterator<_Out, const _Ty&>);
             _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
+
+            _STD _Verify_ranges_do_not_overlap(_First, _Last, _Output);
 
             for (; _First != _Last; ++_First, (void) ++_Output) {
                 if constexpr (_Can_vectorize_replace_copy<_Out, iter_value_t<_It>, _Ty>) {
@@ -5895,7 +5895,7 @@ namespace ranges {
             auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
             auto _ULast       = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
             const auto _Count = _RANGES _Idl_distance<_It>(_UFirst, _ULast);
-            auto _UResult     = _Rotate_copy_unchecked(_STD move(_UFirst), _RANGES _Unwrap_iter<_Se>(_STD move(_Mid)),
+            auto _UResult     = _Rotate_copy_common(_STD move(_UFirst), _RANGES _Unwrap_iter<_Se>(_STD move(_Mid)),
                     _STD move(_ULast), _STD _Get_unwrapped_n(_STD move(_Output), _Count));
 
             _STD _Seek_wrapped(_First, _STD move(_UResult.in));
@@ -5910,15 +5910,15 @@ namespace ranges {
             _STD _Adl_verify_range(_RANGES begin(_Range), _Mid);
             _STD _Adl_verify_range(_Mid, _RANGES end(_Range));
             const auto _Count = _RANGES _Idl_distance(_Range);
-            auto _UResult = _Rotate_copy_unchecked(_Ubegin(_Range), _RANGES _Unwrap_range_iter<_Rng>(_STD move(_Mid)),
-                _Uend(_Range), _STD _Get_unwrapped_n(_STD move(_Output), _Count));
+            auto _UResult     = _Rotate_copy_common(_Ubegin(_Range), _RANGES _Unwrap_range_iter<_Rng>(_STD move(_Mid)),
+                    _Uend(_Range), _STD _Get_unwrapped_n(_STD move(_Output), _Count));
             _STD _Seek_wrapped(_Output, _STD move(_UResult.out));
             return {_RANGES _Rewrap_iterator(_Range, _STD move(_UResult.in)), _STD move(_Output)};
         }
 
     private:
         template <class _It, class _Se, class _Out>
-        _NODISCARD static constexpr rotate_copy_result<_It, _Out> _Rotate_copy_unchecked(
+        _NODISCARD static constexpr rotate_copy_result<_It, _Out> _Rotate_copy_common(
             _It _First, _It _Mid, _Se _Last, _Out _Output) {
             // Copy the content of [_Mid, _Last) and [_First, _Mid) to _Output
             _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
