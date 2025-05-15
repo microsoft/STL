@@ -514,8 +514,6 @@ namespace {
 
             void* _Dest_end = _Dest;
             _Advance_bytes(_Dest_end, _Whole_portions_size);
-            void* _Src_end = _Src;
-            _Advance_bytes(_Src_end, _Whole_portions_size);
 
             while (_Dest != _Dest_end) {
                 memmove(_Dest, _Src, _Portion_size);
