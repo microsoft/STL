@@ -6,8 +6,8 @@ cmake_minimum_required(VERSION 3.30.0)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
-if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.44.35109.1")
-    message(FATAL_ERROR "The STL must be built with VS 2022 17.14 Preview 3 or later.")
+if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.44.35207.1")
+    message(FATAL_ERROR "The STL must be built with VS 2022 17.14 Preview 7 or later.")
 endif()
 
 include(CheckCXXSourceCompiles)
