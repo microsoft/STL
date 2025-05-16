@@ -1699,7 +1699,7 @@ void test_gh_5377() {
 }
 
 void test_gh_5509() {
-    // GH-5507 extended the matcher's skip optimization
+    // GH-5509 extended the matcher's skip optimization
     // to regexes starting with a loop with at least one repetition,
     // speeding up searches for such regexes
 
