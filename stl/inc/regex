@@ -1657,6 +1657,17 @@ public:
           _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)), _Traits(_Tr) {
         _Loop_vals.resize(_Re->_Loops);
         _Adl_verify_range(_Pfirst, _Plast);
+        if (_Re->_Flags & _Fl_begin_needs_w) {
+            _Char_class_w = _Lookup_char_class(static_cast<_Elem>('W'));
+        }
+
+        if (_Re->_Flags & _Fl_begin_needs_s) {
+            _Char_class_s = _Lookup_char_class(static_cast<_Elem>('S'));
+        }
+
+        if (_Re->_Flags & _Fl_begin_needs_d) {
+            _Char_class_d = _Lookup_char_class(static_cast<_Elem>('D'));
+        }
     }
 
     void _Setf(regex_constants::match_flag_type _Mf) { // set specified flags
@@ -1739,7 +1750,7 @@ private:
     bool _Do_rep(_Node_rep*, bool, int);
     bool _Do_rep_first(_Node_rep*);
     bool _Find_first_inner_capture_group(_Node_base*, _Loop_vals_v2_t*);
-    bool _Do_class(_Node_base*);
+    _It _Do_class(_Node_base*, _It);
     bool _Match_pat(_Node_base*);
     bool _Better_match();
     bool _Is_wbound() const;
@@ -1758,6 +1769,9 @@ private:
     bool _Full;
     long _Max_complexity_count;
     long _Max_stack_count;
+    typename _RxTraits::char_class_type _Char_class_w{};
+    typename _RxTraits::char_class_type _Char_class_s{};
+    typename _RxTraits::char_class_type _Char_class_d{};
 
 public:
     _Matcher2& operator=(const _Matcher2&) = delete;
@@ -3679,9 +3693,10 @@ _BidIt _Lookup_coll2(_Elem _First_ch, _BidIt _First, const _BidIt _Last, const _
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx) { // apply bracket expression
+_It _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx, _It _First) {
+    // apply bracket expression
     bool _Found;
-    _Elem _Ch = *_Tgt_state._Cur;
+    _Elem _Ch = *_First;
     if (_Sflags & regex_constants::icase) {
         _Ch = _Traits.translate_nocase(_Ch);
     } else if (_Sflags & regex_constants::collate) {
@@ -3689,13 +3704,13 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx
     }
     const auto _UCh = static_cast<typename _RxTraits::_Uelem>(_Ch);
 
-    _It _Res0 = _Tgt_state._Cur;
+    _It _Res0 = _First;
     ++_Res0;
     _It _Resx;
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
     if (_Node->_Coll
-        && (_Resx = _STD _Lookup_coll2(_Ch, _Tgt_state._Cur, _End, _Node->_Coll, _Traits, _Sflags))
-               != _Tgt_state._Cur) { // check for collation element
+        && (_Resx = _STD _Lookup_coll2(_Ch, _First, _End, _Node->_Coll, _Traits, _Sflags))
+               != _First) { // check for collation element
         _Res0  = _Resx;
         _Found = true;
     } else if (_Node->_Ranges
@@ -3715,14 +3730,11 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx
         _Found = true;
     } else if (_Node->_Equiv && _STD _Lookup_equiv2(_Ch, _Node->_Equiv, _Traits)) {
         _Found = true;
-    } else if ((_Node->_Flags & _Fl_class_negated_w)
-               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('W')))) {
+    } else if ((_Node->_Flags & _Fl_class_negated_w) && !_Traits.isctype(_Ch, _Char_class_w)) {
         _Found = true;
-    } else if ((_Node->_Flags & _Fl_class_negated_s)
-               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('S')))) {
+    } else if ((_Node->_Flags & _Fl_class_negated_s) && !_Traits.isctype(_Ch, _Char_class_s)) {
         _Found = true;
-    } else if ((_Node->_Flags & _Fl_class_negated_d)
-               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('D')))) {
+    } else if ((_Node->_Flags & _Fl_class_negated_d) && !_Traits.isctype(_Ch, _Char_class_d)) {
         _Found = true;
     } else {
         _Found = false;
@@ -3731,10 +3743,9 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx
     const bool _Negated = (_Node->_Flags & _Fl_negate) != 0;
 
     if (_Found == _Negated) {
-        return false;
-    } else { // record result
-        _Tgt_state._Cur = _Res0;
-        return true;
+        return _First;
+    } else {
+        return _Res0;
     }
 }
 
@@ -3868,7 +3879,12 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 
         case _N_class:
             { // check for bracket expression match
-                _Failed = _Tgt_state._Cur == _End || !_Do_class(_Nx);
+                _It _Res;
+                if (_Tgt_state._Cur != _End && (_Res = _Do_class(_Nx, _Tgt_state._Cur)) != _Tgt_state._Cur) {
+                    _Tgt_state._Cur = _Res;
+                } else {
+                    _Failed = true;
+                }
                 break;
             }
 
@@ -4046,56 +4062,10 @@ _BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(_BidIt _First_arg
 
         case _N_class:
             { // check for string match
+                _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
+
                 for (; _First_arg != _Last; ++_First_arg) { // look for starting match
-                    bool _Found;
-                    _Elem _Ch = *_First_arg;
-                    if (_Sflags & regex_constants::icase) {
-                        _Ch = _Traits.translate_nocase(_Ch);
-                    } else if (_Sflags & regex_constants::collate) {
-                        _Ch = _Traits.translate(_Ch);
-                    }
-                    const auto _UCh = static_cast<typename _RxTraits::_Uelem>(_Ch);
-
-                    _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
-
-                    if (_Node->_Coll
-                        && _STD _Lookup_coll2(_Ch, _First_arg, _Last, _Node->_Coll, _Traits, _Sflags) != _First_arg) {
-                        _Found = true;
-                    } else if (_Node->_Ranges
-                               && (_Sflags & regex_constants::collate
-                                       ? _STD _Lookup_collating_range(_Ch, _Node->_Ranges, _Traits)
-                                       : _STD _Lookup_range(_UCh, _Node->_Ranges))) {
-                        _Found = true;
-                    } else if (_UCh < _Bmp_max) {
-                        _Found = _Node->_Small && _Node->_Small->_Find(_UCh);
-                    } else if (_Node->_Large
-                               && _STD find(_Node->_Large->_Str(), _Node->_Large->_Str() + _Node->_Large->_Size(), _Ch)
-                                      != _Node->_Large->_Str() + _Node->_Large->_Size()) {
-                        _Found = true;
-                    } else if (_Node->_Classes != typename _RxTraits::char_class_type{}
-                               && _Traits.isctype(_Ch, _Node->_Classes)) {
-                        _Found = true;
-                    } else if ((_Node->_Flags & _Fl_class_cl_all_bits)
-                               && _Traits.isctype(_Ch, static_cast<typename _RxTraits::char_class_type>(-1))) {
-                        _Found = true;
-                    } else if (_Node->_Equiv && _STD _Lookup_equiv2(_Ch, _Node->_Equiv, _Traits)) {
-                        _Found = true;
-                    } else if ((_Node->_Flags & _Fl_class_negated_w)
-                               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('W')))) {
-                        _Found = true;
-                    } else if ((_Node->_Flags & _Fl_class_negated_s)
-                               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('S')))) {
-                        _Found = true;
-                    } else if ((_Node->_Flags & _Fl_class_negated_d)
-                               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('D')))) {
-                        _Found = true;
-                    } else {
-                        _Found = false;
-                    }
-
-                    const bool _Negated = (_Node->_Flags & _Fl_negate) != 0;
-
-                    if (_Found != _Negated) {
+                    if (_Do_class(_Node, _First_arg) != _First_arg) {
                         return _First_arg;
                     }
                 }
