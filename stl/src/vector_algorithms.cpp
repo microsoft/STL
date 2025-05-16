@@ -5052,7 +5052,7 @@ namespace {
                                 return _Match;
                             }
 
-                            _Bingo ^= (1 << _Pos);
+                            _Bingo ^= 1 << _Pos;
                         }
 
                         _Advance_bytes(_First1, 32);
@@ -5081,7 +5081,7 @@ namespace {
                                 return _Match;
                             }
 
-                            _Bingo ^= (1 << _Pos);
+                            _Bingo ^= 1 << _Pos;
                         }
                     }
 
@@ -5124,7 +5124,7 @@ namespace {
                                 }
                             }
 
-                            _Bingo ^= (1 << _Pos);
+                            _Bingo ^= 1 << _Pos;
                         }
 
                         _Advance_bytes(_First1, 32);
@@ -5322,7 +5322,7 @@ namespace {
                                 return true;
                             }
 
-                            _Match ^= (1 << _Pos);
+                            _Match ^= 1 << _Pos;
                         }
 
                         return false;
@@ -5343,7 +5343,7 @@ namespace {
                                 return true;
                             }
 
-                            _Match ^= (1 << _Pos);
+                            _Match ^= 1 << _Pos;
                         }
 
                         return false;
@@ -5414,7 +5414,7 @@ namespace {
                                 }
                             }
 
-                            _Match ^= (1 << _Pos);
+                            _Match ^= 1 << _Pos;
                         }
 
                         return false;
