@@ -4927,7 +4927,12 @@ __declspec(noalias) size_t __stdcall __std_find_last_not_of_trivial_pos_2(const 
 
 namespace {
     namespace _Find_seq {
-#ifndef _M_ARM64EC
+#ifdef _M_ARM64EC
+        using _Find_seq_traits_1 = void;
+        using _Find_seq_traits_2 = void;
+        using _Find_seq_traits_4 = void;
+        using _Find_seq_traits_8 = void;
+#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
         struct _Find_seq_traits_1 {
             static __m256i _Broadcast_avx(const __m128i _Data) noexcept {
                 return _mm256_broadcastb_epi8(_Data);
@@ -4967,7 +4972,6 @@ namespace {
                 return _mm256_movemask_epi8(_mm256_cmpeq_epi64(_Lhs, _Rhs)) & 0x01010101;
             }
         };
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         template <class _Ty>
         __m256i _Avx2_load_tail(const void* const _Src, size_t _Size_bytes, __m256i _Mask) noexcept {
@@ -4991,6 +4995,7 @@ namespace {
                 return _mm256_loadu_si256(reinterpret_cast<__m256i*>(_Tmp));
             }
         }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         template <class _FindTraits, class _Traits, class _Ty>
         const void* __stdcall _Search_impl(
