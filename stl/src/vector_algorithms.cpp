@@ -503,50 +503,6 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 
 namespace {
     namespace _Sorting {
-        template <class _Ty>
-        const void* _Min_tail(const void* const _First, const void* const _Last, const void* _Res, _Ty _Cur) noexcept {
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-                if (*_Ptr < _Cur) {
-                    _Res = _Ptr;
-                    _Cur = *_Ptr;
-                }
-            }
-
-            return _Res;
-        }
-
-        template <class _Ty>
-        const void* _Max_tail(const void* const _First, const void* const _Last, const void* _Res, _Ty _Cur) noexcept {
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-                if (_Cur < *_Ptr) {
-                    _Res = _Ptr;
-                    _Cur = *_Ptr;
-                }
-            }
-
-            return _Res;
-        }
-
-        template <class _Ty>
-        _Min_max_element_t _Both_tail(const void* const _First, const void* const _Last, _Min_max_element_t& _Res,
-            _Ty _Cur_min, _Ty _Cur_max) noexcept {
-            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
-                if (*_Ptr < _Cur_min) {
-                    _Res._Min = _Ptr;
-                    _Cur_min  = *_Ptr;
-                }
-                // Not else!
-                // * Needed for correctness if start with maximum, as we don't handle specially the first element.
-                // * Promote branchless code generation.
-                if (_Cur_max <= *_Ptr) {
-                    _Res._Max = _Ptr;
-                    _Cur_max  = *_Ptr;
-                }
-            }
-
-            return _Res;
-        }
-
         enum _Min_max_mode {
             _Mode_min  = 1 << 0,
             _Mode_max  = 1 << 1,
@@ -1837,6 +1793,50 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
+        template <class _Ty>
+        const void* _Min_tail(const void* const _First, const void* const _Last, const void* _Res, _Ty _Cur) noexcept {
+            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                if (*_Ptr < _Cur) {
+                    _Res = _Ptr;
+                    _Cur = *_Ptr;
+                }
+            }
+
+            return _Res;
+        }
+
+        template <class _Ty>
+        const void* _Max_tail(const void* const _First, const void* const _Last, const void* _Res, _Ty _Cur) noexcept {
+            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                if (_Cur < *_Ptr) {
+                    _Res = _Ptr;
+                    _Cur = *_Ptr;
+                }
+            }
+
+            return _Res;
+        }
+
+        template <class _Ty>
+        _Min_max_element_t _Both_tail(const void* const _First, const void* const _Last, _Min_max_element_t& _Res,
+            _Ty _Cur_min, _Ty _Cur_max) noexcept {
+            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                if (*_Ptr < _Cur_min) {
+                    _Res._Min = _Ptr;
+                    _Cur_min  = *_Ptr;
+                }
+                // Not else!
+                // * Needed for correctness if start with maximum, as we don't handle specially the first element.
+                // * Promote branchless code generation.
+                if (_Cur_max <= *_Ptr) {
+                    _Res._Max = _Ptr;
+                    _Cur_max  = *_Ptr;
+                }
+            }
+
+            return _Res;
+        }
+
         template <_Min_max_mode _Mode, class _Traits>
         auto _Minmax_element_impl(const void* _First, const void* const _Last, const bool _Sign) noexcept {
             _Min_max_element_t _Res = {_First, _First};
@@ -3104,29 +3104,18 @@ namespace {
 
                     uint64_t _MskX = uint64_t{_Carry} | (uint64_t{_Mask} << 32);
 
-                    if constexpr (sizeof(_Ty) == 1) {
-                        _MskX = (_MskX >> 1) & _MskX;
-                        _MskX = __ull_rshift(_MskX, _Sh1) & _MskX;
-                    }
+                    _MskX = (_MskX >> sizeof(_Ty)) & _MskX;
 
-                    if constexpr (sizeof(_Ty) == 2) {
-                        _MskX = (_MskX >> 2) & _MskX;
+                    if constexpr (sizeof(_Ty) == 1) {
+                        _MskX = __ull_rshift(_MskX, _Sh1) & _MskX;
                     }
 
                     if constexpr (sizeof(_Ty) < 4) {
                         _MskX = __ull_rshift(_MskX, _Sh2) & _MskX;
                     }
 
-                    if constexpr (sizeof(_Ty) == 4) {
-                        _MskX = (_MskX >> 4) & _MskX;
-                    }
-
                     if constexpr (sizeof(_Ty) < 8) {
                         _MskX = __ull_rshift(_MskX, _Sh3) & _MskX;
-                    }
-
-                    if constexpr (sizeof(_Ty) == 8) {
-                        _MskX = (_MskX >> 8) & _MskX;
                     }
 
                     if (_MskX != 0) {
@@ -5746,54 +5735,7 @@ const void* __stdcall __std_find_end_8(
 
 namespace {
     namespace _Mismatching {
-#ifdef _M_ARM64EC
-        using _Traits_1 = void;
-        using _Traits_2 = void;
-        using _Traits_4 = void;
-        using _Traits_8 = void;
-#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
-        struct _Traits_1 {
-            static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-                return _mm256_cmpeq_epi8(_Lhs, _Rhs);
-            }
-
-            static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-                return _mm_cmpeq_epi8(_Lhs, _Rhs);
-            }
-        };
-
-        struct _Traits_2 {
-            static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-                return _mm256_cmpeq_epi16(_Lhs, _Rhs);
-            }
-
-            static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-                return _mm_cmpeq_epi16(_Lhs, _Rhs);
-            }
-        };
-
-        struct _Traits_4 {
-            static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-                return _mm256_cmpeq_epi32(_Lhs, _Rhs);
-            }
-
-            static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-                return _mm_cmpeq_epi32(_Lhs, _Rhs);
-            }
-        };
-
-        struct _Traits_8 {
-            static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-                return _mm256_cmpeq_epi64(_Lhs, _Rhs);
-            }
-
-            static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-                return _mm_cmpeq_epi64(_Lhs, _Rhs);
-            }
-        };
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-
-        template <class _Traits, class _Ty>
+        template <class _Ty>
         __declspec(noalias) size_t __stdcall _Mismatch_impl(
             const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
             size_t _Result = 0;
@@ -5810,7 +5752,7 @@ namespace {
                 for (; _Result != _Count_bytes_avx_full; _Result += 0x20) {
                     const __m256i _Elem1 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First1_ch + _Result));
                     const __m256i _Elem2 = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First2_ch + _Result));
-                    const __m256i _Cmp   = _Traits::_Cmp_avx(_Elem1, _Elem2);
+                    const __m256i _Cmp   = _mm256_cmpeq_epi8(_Elem1, _Elem2);
                     const auto _Bingo    = ~static_cast<unsigned int>(_mm256_movemask_epi8(_Cmp));
                     if (_Bingo != 0) {
                         return (_Result + _tzcnt_u32(_Bingo)) / sizeof(_Ty);
@@ -5826,7 +5768,7 @@ namespace {
                     const __m256i _Elem2 =
                         _mm256_maskload_epi32(reinterpret_cast<const int*>(_First2_ch + _Result), _Tail_mask);
 
-                    const __m256i _Cmp = _Traits::_Cmp_avx(_Elem1, _Elem2);
+                    const __m256i _Cmp = _mm256_cmpeq_epi8(_Elem1, _Elem2);
                     const auto _Bingo  = ~static_cast<unsigned int>(_mm256_movemask_epi8(_Cmp));
                     if (_Bingo != 0) {
                         return (_Result + _tzcnt_u32(_Bingo)) / sizeof(_Ty);
@@ -5846,7 +5788,7 @@ namespace {
                 for (; _Result != _Count_bytes_sse; _Result += 0x10) {
                     const __m128i _Elem1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First1_ch + _Result));
                     const __m128i _Elem2 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First2_ch + _Result));
-                    const __m128i _Cmp   = _Traits::_Cmp_sse(_Elem1, _Elem2);
+                    const __m128i _Cmp   = _mm_cmpeq_epi8(_Elem1, _Elem2);
                     const auto _Bingo    = static_cast<unsigned int>(_mm_movemask_epi8(_Cmp)) ^ 0xFFFF;
                     if (_Bingo != 0) {
                         unsigned long _Offset;
@@ -5877,22 +5819,22 @@ extern "C" {
 
 __declspec(noalias) size_t __stdcall __std_mismatch_1(
     const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
-    return _Mismatching::_Mismatch_impl<_Mismatching::_Traits_1, uint8_t>(_First1, _First2, _Count);
+    return _Mismatching::_Mismatch_impl<uint8_t>(_First1, _First2, _Count);
 }
 
 __declspec(noalias) size_t __stdcall __std_mismatch_2(
     const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
-    return _Mismatching::_Mismatch_impl<_Mismatching::_Traits_2, uint16_t>(_First1, _First2, _Count);
+    return _Mismatching::_Mismatch_impl<uint16_t>(_First1, _First2, _Count);
 }
 
 __declspec(noalias) size_t __stdcall __std_mismatch_4(
     const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
-    return _Mismatching::_Mismatch_impl<_Mismatching::_Traits_4, uint32_t>(_First1, _First2, _Count);
+    return _Mismatching::_Mismatch_impl<uint32_t>(_First1, _First2, _Count);
 }
 
 __declspec(noalias) size_t __stdcall __std_mismatch_8(
     const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
-    return _Mismatching::_Mismatch_impl<_Mismatching::_Traits_8, uint64_t>(_First1, _First2, _Count);
+    return _Mismatching::_Mismatch_impl<uint64_t>(_First1, _First2, _Count);
 }
 
 __declspec(noalias) void __stdcall __std_replace_4(
@@ -6705,7 +6647,25 @@ namespace {
         using _Traits_2_avx = void;
         using _Traits_2_sse = void;
 #else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
-        struct _Traits_1_avx {
+        struct _Traits_avx {
+            static void _Out(void* const _Dest, const __m256i _Elems) noexcept {
+                _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Elems);
+            }
+
+            static void _Exit_vectorized() noexcept {
+                _mm256_zeroupper();
+            }
+        };
+
+        struct _Traits_sse {
+            static void _Out(void* const _Dest, const __m128i _Elems) noexcept {
+                _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Elems);
+            }
+
+            static void _Exit_vectorized() noexcept {}
+        };
+
+        struct _Traits_1_avx : _Traits_avx {
             using _Value_type = uint32_t;
 
             static __m256i _Set(const char _Val) noexcept {
@@ -6723,13 +6683,9 @@ namespace {
                 const __m256i _Ex1 = _mm256_blendv_epi8(_Px1, _Px0, _Ex0);
                 return _Ex1;
             }
-
-            static void _Out(void* const _Dest, const __m256i _Elems) noexcept {
-                _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Elems);
-            }
         };
 
-        struct _Traits_1_sse {
+        struct _Traits_1_sse : _Traits_sse {
             using _Value_type = uint16_t;
 
             static __m128i _Set(const char _Val) noexcept {
@@ -6745,13 +6701,9 @@ namespace {
                 const __m128i _Ex1 = _mm_blendv_epi8(_Px1, _Px0, _Ex0);
                 return _Ex1;
             }
-
-            static void _Out(void* const _Dest, const __m128i _Elems) noexcept {
-                _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Elems);
-            }
         };
 
-        struct _Traits_2_avx {
+        struct _Traits_2_avx : _Traits_avx {
             using _Value_type = uint16_t;
 
             static __m256i _Set(const wchar_t _Val) noexcept {
@@ -6770,13 +6722,9 @@ namespace {
                 const __m256i _Ex1 = _mm256_blendv_epi8(_Px1, _Px0, _Ex0);
                 return _Ex1;
             }
-
-            static void _Out(void* const _Dest, const __m256i _Elems) noexcept {
-                _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Elems);
-            }
         };
 
-        struct _Traits_2_sse {
+        struct _Traits_2_sse : _Traits_sse {
             using _Value_type = uint8_t;
 
             static __m128i _Set(const wchar_t _Val) noexcept {
@@ -6789,10 +6737,6 @@ namespace {
                 const __m128i _Ex0 = _mm_cmpeq_epi16(_Msk, _mm_setzero_si128());
                 const __m128i _Ex1 = _mm_blendv_epi8(_Px1, _Px0, _Ex0);
                 return _Ex1;
-            }
-
-            static void _Out(void* const _Dest, const __m128i _Elems) noexcept {
-                _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Elems);
             }
         };
 
@@ -6827,6 +6771,8 @@ namespace {
                 const _Elem* const _Tmpd = _Tmp + (_Step_size_bits - _Size_bits);
                 memcpy(_Dest, _Tmpd, _Size_bits * sizeof(_Elem));
             }
+
+            _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
         }
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
 
@@ -6836,7 +6782,6 @@ namespace {
 #ifndef _M_ARM64EC
             if (_Use_avx2() && _Size_bits >= 256) {
                 _Impl<_Avx_traits>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
-                _mm256_zeroupper(); // TRANSITION, DevCom-10331414
             } else if (_Use_sse42()) {
                 _Impl<_Sse_traits>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
             } else
@@ -6889,6 +6834,10 @@ namespace {
             static bool _Check(const __m256i _Val, const __m256i _Ex1, const __m256i _Dx0) noexcept {
                 return _mm256_testc_si256(_Ex1, _mm256_xor_si256(_Val, _Dx0));
             }
+
+            static void _Exit_vectorized() noexcept {
+                _mm256_zeroupper();
+            }
         };
 
         struct _Traits_sse {
@@ -6905,6 +6854,8 @@ namespace {
             static bool _Check(const __m128i _Val, const __m128i _Ex1, const __m128i _Dx0) noexcept {
                 return _mm_testc_si128(_Ex1, _mm_xor_si128(_Val, _Dx0));
             }
+
+            static void _Exit_vectorized() noexcept {}
         };
 
         struct _Traits_1_avx : _Traits_avx {
@@ -7035,12 +6986,14 @@ namespace {
 
             // Convert characters to bits
             if (!_Loop<_Traits>(_Src, _Src + _Size_convert, _Dx0, _Dx1, _Out)) {
+                _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
                 return false;
             }
 
             // Verify remaining characters, if any
             if (_Size_convert != _Size_chars
                 && !_Loop<_Traits>(_Src + _Size_convert, _Src + _Size_chars, _Dx0, _Dx1, [](_Traits::_Vec) {})) {
+                _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
                 return false;
             }
 
@@ -7048,6 +7001,8 @@ namespace {
             if (_Dst_words != _Dst_words_end) {
                 memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
             }
+
+            _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
 
             return true;
         }
@@ -7089,8 +7044,6 @@ namespace {
             _Elem _Elem0, _Elem _Elem1) noexcept {
 #ifndef _M_ARM64EC
             if (_Use_avx2() && _Size_bits >= 256) {
-                _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
-
                 return _Impl<_Avx>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
             } else if (_Use_sse42()) {
                 return _Impl<_Sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
