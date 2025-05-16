@@ -5769,7 +5769,7 @@ namespace ranges {
 
         if constexpr (bidirectional_iterator<_It>) {
 #if _USE_STD_VECTOR_ALGORITHMS
-            using _Elem = iter_value_t<_It>;
+            using _Elem = remove_reference_t<iter_reference_t<_It>>;
 
             if constexpr (_Iterator_is_contiguous<_It> && sized_sentinel_for<_Se, _It>
                           && conjunction_v<_Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>) {

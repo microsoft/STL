@@ -6584,7 +6584,7 @@ _CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
 
     if constexpr (_Is_cpp17_random_iter_v<_FwdIt>) {
 #if _USE_STD_VECTOR_ALGORITHMS
-        using _Elem = _Iter_value_t<decltype(_UFirst)>;
+        using _Elem = remove_reference_t<_Iter_ref_t<decltype(_UFirst)>>;
 
         if constexpr (conjunction_v<bool_constant<_Iterator_is_contiguous<decltype(_UFirst)>>,
                           _Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>) {
