@@ -5768,6 +5768,19 @@ namespace ranges {
         }
 
         if constexpr (bidirectional_iterator<_It>) {
+#if _USE_STD_VECTOR_ALGORITHMS
+            using _Elem = iter_value_t<_It>;
+
+            if constexpr (_Iterator_is_contiguous<_It> && sized_sentinel_for<_Se, _It>
+                          && conjunction_v<_Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>) {
+                if (!_STD is_constant_evaluated()) {
+                    const _It _Last_it = _First + (_Last - _First);
+                    ::__std_rotate(_STD to_address(_First), _STD to_address(_Mid), _STD to_address(_Last_it));
+                    return {_First + (_Last - _Mid), _Last};
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
             _RANGES _Reverse_common(_First, _Mid);
             auto _Final = _RANGES _Get_final_iterator_unwrapped<_It>(_Mid, _STD move(_Last));
             _RANGES _Reverse_common(_Mid, _Final);
