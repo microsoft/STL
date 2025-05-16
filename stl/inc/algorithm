@@ -5771,7 +5771,7 @@ namespace ranges {
 #if _USE_STD_VECTOR_ALGORITHMS
             using _Elem = remove_reference_t<iter_reference_t<_It>>;
 
-            if constexpr (_Iterator_is_contiguous<_It> && sized_sentinel_for<_Se, _It>
+            if constexpr (contiguous_iterator<_It> && sized_sentinel_for<_Se, _It>
                           && conjunction_v<_Is_trivially_ranges_swappable<_Elem>, negation<is_volatile<_Elem>>>) {
                 if (!_STD is_constant_evaluated()) {
                     const _It _Last_it = _First + (_Last - _First);
