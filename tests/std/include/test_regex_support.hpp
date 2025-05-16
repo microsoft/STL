@@ -282,8 +282,9 @@ public:
                             submatches_success = false;
                             break;
                         }
-                    } else if (!actual_capture.matched || actual_capture.first != (mr[0].first + expected_capture.first)
-                               || actual_capture.second != (mr[0].first + expected_capture.second)) {
+                    } else if (!actual_capture.matched
+                               || actual_capture.first != (subject.begin() + expected_capture.first)
+                               || actual_capture.second != (subject.begin() + expected_capture.second)) {
                         submatches_success = false;
                         break;
                     }
@@ -297,7 +298,8 @@ public:
                     for (const auto& expected_capture : capture_groups) {
                         std::string capture = "(unmatched)";
                         if (expected_capture.first != -1) {
-                            capture.assign(mr[0].first + expected_capture.first, mr[0].first + expected_capture.second);
+                            capture.assign(
+                                subject.begin() + expected_capture.first, subject.begin() + expected_capture.second);
                         }
                         printf(R"(%s"%s" [%td %td])", initial ? "" : ", ", capture.c_str(), expected_capture.first,
                             expected_capture.second);
@@ -313,8 +315,8 @@ public:
                         std::ptrdiff_t last        = -1;
                         if (actual_capture.matched) {
                             capture = actual_capture.str();
-                            first   = actual_capture.first - mr[0].first;
-                            last    = actual_capture.second - mr[0].first;
+                            first   = actual_capture.first - subject.begin();
+                            last    = actual_capture.second - subject.begin();
                         }
                         printf(R"(%s"%s" [%td %td])", initial ? "" : ", ", capture.c_str(), first, last);
                         initial = false;
