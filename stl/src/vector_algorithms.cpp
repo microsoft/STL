@@ -165,6 +165,66 @@ void* __cdecl __std_swap_ranges_trivially_swappable(
 
 namespace {
     namespace _Reversing {
+#ifdef _M_ARM64EC
+        using _Traits_1 = void;
+        using _Traits_2 = void;
+        using _Traits_4 = void;
+        using _Traits_8 = void;
+#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+        struct _Traits_1 {
+            static __m256i _Rev_avx(const __m256i _Val) noexcept {
+                const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
+                    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
+                    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+
+                const __m256i _Perm = _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(1, 0, 3, 2));
+                return _mm256_shuffle_epi8(_Perm, _Reverse_char_lanes_avx);
+            }
+
+            static __m128i _Rev_sse(const __m128i _Val) noexcept {
+                const __m128i _Reverse_char_sse = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+                return _mm_shuffle_epi8(_Val, _Reverse_char_sse);
+            }
+        };
+
+        struct _Traits_2 {
+            static __m256i _Rev_avx(const __m256i _Val) noexcept {
+                const __m256i _Reverse_short_lanes_avx = _mm256_set_epi8( //
+                    1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, //
+                    1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
+
+                const __m256i _Perm = _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(1, 0, 3, 2));
+                return _mm256_shuffle_epi8(_Perm, _Reverse_short_lanes_avx);
+            }
+
+            static __m128i _Rev_sse(const __m128i _Val) noexcept {
+                const __m128i _Reverse_short_sse = _mm_set_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
+                return _mm_shuffle_epi8(_Val, _Reverse_short_sse);
+            }
+        };
+
+        struct _Traits_4 {
+            static __m256i _Rev_avx(const __m256i _Val) noexcept {
+                const __m256i _Shuf = _mm256_set_epi32(0, 1, 2, 3, 4, 5, 6, 7);
+                return _mm256_permutevar8x32_epi32(_Val, _Shuf);
+            }
+
+            static __m128i _Rev_sse(const __m128i _Val) noexcept {
+                return _mm_shuffle_epi32(_Val, _MM_SHUFFLE(0, 1, 2, 3));
+            }
+        };
+
+        struct _Traits_8 {
+            static __m256i _Rev_avx(const __m256i _Val) noexcept {
+                return _mm256_permute4x64_epi64(_Val, _MM_SHUFFLE(0, 1, 2, 3));
+            }
+
+            static __m128i _Rev_sse(const __m128i _Val) noexcept {
+                return _mm_shuffle_epi32(_Val, _MM_SHUFFLE(1, 0, 3, 2));
+            }
+        };
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+
         template <class _BidIt>
         void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
             for (; _First != _Last && _First != --_Last; ++_First) {
@@ -180,323 +240,144 @@ namespace {
                 *_Dest++ = *--_Last;
             }
         }
+
+#ifndef _M_ARM64EC
+        __m256i _Avx2_rev_tail_mask_32(const size_t _Count_in_bytes) noexcept {
+            // _Count_in_bytes must be within [0, 32].
+            static constexpr unsigned int _Tail_masks[16] = {
+                0, 0, 0, 0, 0, 0, 0, 0, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u};
+            return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(
+                reinterpret_cast<const unsigned char*>(_Tail_masks) + _Count_in_bytes));
+        }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+
+        template <class _Traits, class _Ty>
+        __declspec(noalias) void __cdecl _Reverse_impl(void* _First, void* _Last) noexcept {
+#ifndef _M_ARM64EC
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 64 && _Use_avx2()) {
+                const void* _Stop_at = _First;
+                _Advance_bytes(_Stop_at, (_Length >> 1) & ~size_t{0x1F});
+                do {
+                    _Advance_bytes(_Last, -32);
+                    const __m256i _Left           = _mm256_loadu_si256(static_cast<__m256i*>(_First));
+                    const __m256i _Right          = _mm256_loadu_si256(static_cast<__m256i*>(_Last));
+                    const __m256i _Left_reversed  = _Traits::_Rev_avx(_Left);
+                    const __m256i _Right_reversed = _Traits::_Rev_avx(_Right);
+                    _mm256_storeu_si256(static_cast<__m256i*>(_First), _Right_reversed);
+                    _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
+                    _Advance_bytes(_First, 32);
+                } while (_First != _Stop_at);
+
+                _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+            }
+
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 32 && _Use_sse42()) {
+                const void* _Stop_at = _First;
+                _Advance_bytes(_Stop_at, (_Length >> 1) & ~size_t{0xF});
+                do {
+                    _Advance_bytes(_Last, -16);
+                    const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
+                    const __m128i _Right          = _mm_loadu_si128(static_cast<__m128i*>(_Last));
+                    const __m128i _Left_reversed  = _Traits::_Rev_sse(_Left);
+                    const __m128i _Right_reversed = _Traits::_Rev_sse(_Right);
+                    _mm_storeu_si128(static_cast<__m128i*>(_First), _Right_reversed);
+                    _mm_storeu_si128(static_cast<__m128i*>(_Last), _Left_reversed);
+                    _Advance_bytes(_First, 16);
+                } while (_First != _Stop_at);
+            }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+
+            _Reverse_tail(static_cast<_Ty*>(_First), static_cast<_Ty*>(_Last));
+        }
+
+        template <class _Traits, class _Ty>
+        __declspec(noalias) void __cdecl _Reverse_copy_impl(
+            const void* _First, const void* _Last, void* _Dest) noexcept {
+#ifndef _M_ARM64EC
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 32 && _Use_avx2()) {
+                const void* _Stop_at = _Dest;
+                _Advance_bytes(_Stop_at, _Length & ~size_t{0x1F});
+                do {
+                    _Advance_bytes(_Last, -32);
+                    const __m256i _Block          = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
+                    const __m256i _Block_reversed = _Traits::_Rev_avx(_Block);
+                    _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Block_reversed);
+                    _Advance_bytes(_Dest, 32);
+                } while (_Dest != _Stop_at);
+
+                if (const size_t _Avx_tail = _Length & 0x1C; _Avx_tail != 0) {
+                    _Advance_bytes(_Last, -32);
+                    const __m256i _Mask           = _Avx2_tail_mask_32(_Avx_tail);
+                    const __m256i _Rev_mask       = _Avx2_rev_tail_mask_32(_Avx_tail);
+                    const __m256i _Block          = _mm256_maskload_epi32(static_cast<const int*>(_Last), _Rev_mask);
+                    const __m256i _Block_reversed = _Traits::_Rev_avx(_Block);
+                    _mm256_maskstore_epi32(static_cast<int*>(_Dest), _Mask, _Block_reversed);
+                    if constexpr (sizeof(_Ty) < 4) {
+                        _Advance_bytes(_Dest, _Avx_tail);
+                        _Advance_bytes(_Last, 32 - _Avx_tail);
+                    }
+                }
+
+                _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+
+                if constexpr (sizeof(_Ty) >= 4) {
+                    return;
+                }
+            } else if (_Length >= 16 && _Use_sse42()) {
+                const void* _Stop_at = _Dest;
+                _Advance_bytes(_Stop_at, _Length & ~size_t{0xF});
+                do {
+                    _Advance_bytes(_Last, -16);
+                    const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
+                    const __m128i _Block_reversed = _Traits::_Rev_sse(_Block);
+                    _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Block_reversed);
+                    _Advance_bytes(_Dest, 16);
+                } while (_Dest != _Stop_at);
+            }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+
+            _Reverse_copy_tail(
+                static_cast<const _Ty*>(_First), static_cast<const _Ty*>(_Last), static_cast<_Ty*>(_Dest));
+        }
     } // namespace _Reversing
 } // unnamed namespace
 
 extern "C" {
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _First, void* _Last) noexcept {
-#ifndef _M_ARM64EC
-    if (_Byte_length(_First, _Last) >= 64 && _Use_avx2()) {
-        const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-        const void* _Stop_at                  = _First;
-        _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0x1F});
-        do {
-            _Advance_bytes(_Last, -32);
-            // vpermq to load left and right, and transpose the lanes
-            const __m256i _Left       = _mm256_loadu_si256(static_cast<__m256i*>(_First));
-            const __m256i _Right      = _mm256_loadu_si256(static_cast<__m256i*>(_Last));
-            const __m256i _Left_perm  = _mm256_permute4x64_epi64(_Left, _MM_SHUFFLE(1, 0, 3, 2));
-            const __m256i _Right_perm = _mm256_permute4x64_epi64(_Right, _MM_SHUFFLE(1, 0, 3, 2));
-            // transpose all the chars in the lanes
-            const __m256i _Left_reversed  = _mm256_shuffle_epi8(_Left_perm, _Reverse_char_lanes_avx);
-            const __m256i _Right_reversed = _mm256_shuffle_epi8(_Right_perm, _Reverse_char_lanes_avx);
-            _mm256_storeu_si256(static_cast<__m256i*>(_First), _Right_reversed);
-            _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
-            _Advance_bytes(_First, 32);
-        } while (_First != _Stop_at);
-
-        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-    }
-
-    if (_Byte_length(_First, _Last) >= 32 && _Use_sse42()) {
-        const __m128i _Reverse_char_sse = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-        const void* _Stop_at            = _First;
-        _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0xF});
-        do {
-            _Advance_bytes(_Last, -16);
-            const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
-            const __m128i _Right          = _mm_loadu_si128(static_cast<__m128i*>(_Last));
-            const __m128i _Left_reversed  = _mm_shuffle_epi8(_Left, _Reverse_char_sse);
-            const __m128i _Right_reversed = _mm_shuffle_epi8(_Right, _Reverse_char_sse);
-            _mm_storeu_si128(static_cast<__m128i*>(_First), _Right_reversed);
-            _mm_storeu_si128(static_cast<__m128i*>(_Last), _Left_reversed);
-            _Advance_bytes(_First, 16);
-        } while (_First != _Stop_at);
-    }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-
-    _Reversing::_Reverse_tail(static_cast<unsigned char*>(_First), static_cast<unsigned char*>(_Last));
+    _Reversing::_Reverse_impl<_Reversing::_Traits_1, uint8_t>(_First, _Last);
 }
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _First, void* _Last) noexcept {
-#ifndef _M_ARM64EC
-    if (_Byte_length(_First, _Last) >= 64 && _Use_avx2()) {
-        const __m256i _Reverse_short_lanes_avx = _mm256_set_epi8( //
-            1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, //
-            1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
-        const void* _Stop_at                   = _First;
-        _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0x1F});
-        do {
-            _Advance_bytes(_Last, -32);
-            const __m256i _Left           = _mm256_loadu_si256(static_cast<__m256i*>(_First));
-            const __m256i _Right          = _mm256_loadu_si256(static_cast<__m256i*>(_Last));
-            const __m256i _Left_perm      = _mm256_permute4x64_epi64(_Left, _MM_SHUFFLE(1, 0, 3, 2));
-            const __m256i _Right_perm     = _mm256_permute4x64_epi64(_Right, _MM_SHUFFLE(1, 0, 3, 2));
-            const __m256i _Left_reversed  = _mm256_shuffle_epi8(_Left_perm, _Reverse_short_lanes_avx);
-            const __m256i _Right_reversed = _mm256_shuffle_epi8(_Right_perm, _Reverse_short_lanes_avx);
-            _mm256_storeu_si256(static_cast<__m256i*>(_First), _Right_reversed);
-            _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
-            _Advance_bytes(_First, 32);
-        } while (_First != _Stop_at);
-
-        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-    }
-
-    if (_Byte_length(_First, _Last) >= 32 && _Use_sse42()) {
-        const __m128i _Reverse_short_sse = _mm_set_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
-        const void* _Stop_at             = _First;
-        _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0xF});
-        do {
-            _Advance_bytes(_Last, -16);
-            const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
-            const __m128i _Right          = _mm_loadu_si128(static_cast<__m128i*>(_Last));
-            const __m128i _Left_reversed  = _mm_shuffle_epi8(_Left, _Reverse_short_sse);
-            const __m128i _Right_reversed = _mm_shuffle_epi8(_Right, _Reverse_short_sse);
-            _mm_storeu_si128(static_cast<__m128i*>(_First), _Right_reversed);
-            _mm_storeu_si128(static_cast<__m128i*>(_Last), _Left_reversed);
-            _Advance_bytes(_First, 16);
-        } while (_First != _Stop_at);
-    }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-
-    _Reversing::_Reverse_tail(static_cast<unsigned short*>(_First), static_cast<unsigned short*>(_Last));
+    _Reversing::_Reverse_impl<_Reversing::_Traits_2, uint16_t>(_First, _Last);
 }
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _First, void* _Last) noexcept {
-#ifndef _M_ARM64EC
-    if (_Byte_length(_First, _Last) >= 64 && _Use_avx2()) {
-        const void* _Stop_at = _First;
-        _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0x1F});
-        const __m256i _Shuf = _mm256_set_epi32(0, 1, 2, 3, 4, 5, 6, 7);
-        do {
-            _Advance_bytes(_Last, -32);
-            const __m256i _Left           = _mm256_loadu_si256(static_cast<__m256i*>(_First));
-            const __m256i _Right          = _mm256_loadu_si256(static_cast<__m256i*>(_Last));
-            const __m256i _Left_reversed  = _mm256_permutevar8x32_epi32(_Left, _Shuf);
-            const __m256i _Right_reversed = _mm256_permutevar8x32_epi32(_Right, _Shuf);
-            _mm256_storeu_si256(static_cast<__m256i*>(_First), _Right_reversed);
-            _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
-            _Advance_bytes(_First, 32);
-        } while (_First != _Stop_at);
-
-        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-    }
-
-    if (_Byte_length(_First, _Last) >= 32 && _Use_sse42()) {
-        const void* _Stop_at = _First;
-        _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0xF});
-        do {
-            _Advance_bytes(_Last, -16);
-            const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
-            const __m128i _Right          = _mm_loadu_si128(static_cast<__m128i*>(_Last));
-            const __m128i _Left_reversed  = _mm_shuffle_epi32(_Left, _MM_SHUFFLE(0, 1, 2, 3));
-            const __m128i _Right_reversed = _mm_shuffle_epi32(_Right, _MM_SHUFFLE(0, 1, 2, 3));
-            _mm_storeu_si128(static_cast<__m128i*>(_First), _Right_reversed);
-            _mm_storeu_si128(static_cast<__m128i*>(_Last), _Left_reversed);
-            _Advance_bytes(_First, 16);
-        } while (_First != _Stop_at);
-    }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-
-    _Reversing::_Reverse_tail(static_cast<unsigned long*>(_First), static_cast<unsigned long*>(_Last));
+    _Reversing::_Reverse_impl<_Reversing::_Traits_4, uint32_t>(_First, _Last);
 }
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _First, void* _Last) noexcept {
-#ifndef _M_ARM64EC
-    if (_Byte_length(_First, _Last) >= 64 && _Use_avx2()) {
-        const void* _Stop_at = _First;
-        _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0x1F});
-        do {
-            _Advance_bytes(_Last, -32);
-            const __m256i _Left           = _mm256_loadu_si256(static_cast<__m256i*>(_First));
-            const __m256i _Right          = _mm256_loadu_si256(static_cast<__m256i*>(_Last));
-            const __m256i _Left_reversed  = _mm256_permute4x64_epi64(_Left, _MM_SHUFFLE(0, 1, 2, 3));
-            const __m256i _Right_reversed = _mm256_permute4x64_epi64(_Right, _MM_SHUFFLE(0, 1, 2, 3));
-            _mm256_storeu_si256(static_cast<__m256i*>(_First), _Right_reversed);
-            _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
-            _Advance_bytes(_First, 32);
-        } while (_First != _Stop_at);
-
-        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-    }
-
-    if (_Byte_length(_First, _Last) >= 32 && _Use_sse42()) {
-        const void* _Stop_at = _First;
-        _Advance_bytes(_Stop_at, (_Byte_length(_First, _Last) >> 1) & ~size_t{0xF});
-        do {
-            _Advance_bytes(_Last, -16);
-            const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
-            const __m128i _Right          = _mm_loadu_si128(static_cast<__m128i*>(_Last));
-            const __m128i _Left_reversed  = _mm_shuffle_epi32(_Left, _MM_SHUFFLE(1, 0, 3, 2));
-            const __m128i _Right_reversed = _mm_shuffle_epi32(_Right, _MM_SHUFFLE(1, 0, 3, 2));
-            _mm_storeu_si128(static_cast<__m128i*>(_First), _Right_reversed);
-            _mm_storeu_si128(static_cast<__m128i*>(_Last), _Left_reversed);
-            _Advance_bytes(_First, 16);
-        } while (_First != _Stop_at);
-    }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-
-    _Reversing::_Reverse_tail(static_cast<unsigned long long*>(_First), static_cast<unsigned long long*>(_Last));
+    _Reversing::_Reverse_impl<_Reversing::_Traits_8, uint64_t>(_First, _Last);
 }
 
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
     const void* _First, const void* _Last, void* _Dest) noexcept {
-#ifndef _M_ARM64EC
-    if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
-        const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-        const void* _Stop_at                  = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0x1F});
-        do {
-            _Advance_bytes(_Last, -32);
-            const __m256i _Block          = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
-            const __m256i _Block_permuted = _mm256_permute4x64_epi64(_Block, _MM_SHUFFLE(1, 0, 3, 2));
-            const __m256i _Block_reversed = _mm256_shuffle_epi8(_Block_permuted, _Reverse_char_lanes_avx);
-            _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Block_reversed);
-            _Advance_bytes(_Dest, 32);
-        } while (_Dest != _Stop_at);
-
-        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-    }
-
-    if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
-        const __m128i _Reverse_char_sse = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-        const void* _Stop_at            = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0xF});
-        do {
-            _Advance_bytes(_Last, -16);
-            const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
-            const __m128i _Block_reversed = _mm_shuffle_epi8(_Block, _Reverse_char_sse);
-            _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Block_reversed);
-            _Advance_bytes(_Dest, 16);
-        } while (_Dest != _Stop_at);
-    }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-
-    _Reversing::_Reverse_copy_tail(static_cast<const unsigned char*>(_First), static_cast<const unsigned char*>(_Last),
-        static_cast<unsigned char*>(_Dest));
+    _Reversing::_Reverse_copy_impl<_Reversing::_Traits_1, uint8_t>(_First, _Last, _Dest);
 }
 
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
     const void* _First, const void* _Last, void* _Dest) noexcept {
-#ifndef _M_ARM64EC
-    if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
-        const __m256i _Reverse_short_lanes_avx = _mm256_set_epi8( //
-            1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, //
-            1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
-        const void* _Stop_at                   = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0x1F});
-        do {
-            _Advance_bytes(_Last, -32);
-            const __m256i _Block          = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
-            const __m256i _Block_permuted = _mm256_permute4x64_epi64(_Block, _MM_SHUFFLE(1, 0, 3, 2));
-            const __m256i _Block_reversed = _mm256_shuffle_epi8(_Block_permuted, _Reverse_short_lanes_avx);
-            _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Block_reversed);
-            _Advance_bytes(_Dest, 32);
-        } while (_Dest != _Stop_at);
-
-        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-    }
-
-    if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
-        const __m128i _Reverse_short_sse = _mm_set_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
-        const void* _Stop_at             = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0xF});
-        do {
-            _Advance_bytes(_Last, -16);
-            const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
-            const __m128i _Block_reversed = _mm_shuffle_epi8(_Block, _Reverse_short_sse);
-            _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Block_reversed);
-            _Advance_bytes(_Dest, 16);
-        } while (_Dest != _Stop_at);
-    }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-
-    _Reversing::_Reverse_copy_tail(static_cast<const unsigned short*>(_First),
-        static_cast<const unsigned short*>(_Last), static_cast<unsigned short*>(_Dest));
+    _Reversing::_Reverse_copy_impl<_Reversing::_Traits_2, uint16_t>(_First, _Last, _Dest);
 }
 
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
     const void* _First, const void* _Last, void* _Dest) noexcept {
-#ifndef _M_ARM64EC
-    if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
-        const void* _Stop_at = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0x1F});
-        const __m256i _Shuf = _mm256_set_epi32(0, 1, 2, 3, 4, 5, 6, 7);
-        do {
-            _Advance_bytes(_Last, -32);
-            const __m256i _Block          = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
-            const __m256i _Block_reversed = _mm256_permutevar8x32_epi32(_Block, _Shuf);
-            _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Block_reversed);
-            _Advance_bytes(_Dest, 32);
-        } while (_Dest != _Stop_at);
-
-        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-    }
-
-    if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
-        const void* _Stop_at = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0xF});
-        do {
-            _Advance_bytes(_Last, -16);
-            const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
-            const __m128i _Block_reversed = _mm_shuffle_epi32(_Block, _MM_SHUFFLE(0, 1, 2, 3));
-            _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Block_reversed);
-            _Advance_bytes(_Dest, 16);
-        } while (_Dest != _Stop_at);
-    }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-
-    _Reversing::_Reverse_copy_tail(static_cast<const unsigned long*>(_First), static_cast<const unsigned long*>(_Last),
-        static_cast<unsigned long*>(_Dest));
+    _Reversing::_Reverse_copy_impl<_Reversing::_Traits_4, uint32_t>(_First, _Last, _Dest);
 }
 
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
     const void* _First, const void* _Last, void* _Dest) noexcept {
-#ifndef _M_ARM64EC
-    if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
-        const void* _Stop_at = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0x1F});
-        do {
-            _Advance_bytes(_Last, -32);
-            const __m256i _Block          = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
-            const __m256i _Block_reversed = _mm256_permute4x64_epi64(_Block, _MM_SHUFFLE(0, 1, 2, 3));
-            _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Block_reversed);
-            _Advance_bytes(_Dest, 32);
-        } while (_Dest != _Stop_at);
-
-        _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-    }
-
-    if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
-        const void* _Stop_at = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) & ~size_t{0xF});
-        do {
-            _Advance_bytes(_Last, -16);
-            const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
-            const __m128i _Block_reversed = _mm_shuffle_epi32(_Block, _MM_SHUFFLE(1, 0, 3, 2));
-            _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Block_reversed);
-            _Advance_bytes(_Dest, 16);
-        } while (_Dest != _Stop_at);
-    }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-
-    _Reversing::_Reverse_copy_tail(static_cast<const unsigned long long*>(_First),
-        static_cast<const unsigned long long*>(_Last), static_cast<unsigned long long*>(_Dest));
+    _Reversing::_Reverse_copy_impl<_Reversing::_Traits_8, uint64_t>(_First, _Last, _Dest);
 }
 
 } // extern "C"
