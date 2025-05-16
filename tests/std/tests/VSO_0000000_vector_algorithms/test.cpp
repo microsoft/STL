@@ -767,14 +767,14 @@ void test_case_rotate(
     const auto it = rotate(actual.begin(), actual.begin() + pos, actual.end());
     assert(expected == actual);
     assert(it == actual.begin() + shift);
-#if !_HAS_CXX20
-    (void) actual_r;
-#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
+#if _HAS_CXX20
     const auto rng = ranges::rotate(actual_r.begin(), actual_r.begin() + pos, actual_r.end());
     assert(expected == actual_r);
     assert(begin(rng) == actual_r.begin() + shift);
     assert(end(rng) == actual_r.end());
-#endif // ^^^ _HAS_CXX20 ^^^
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    (void) actual_r;
+#endif // ^^^ !_HAS_CXX20 ^^^
 }
 
 template <class T>
