@@ -5233,9 +5233,9 @@ namespace {
                                 _Advance_bytes(_First1, sizeof(_Ty));
                             }
                         } while (_First1 <= _Stop1);
-                    }
 
-                    return _Last1;
+                        return _Last1;
+                    }
                 }
             }
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
