@@ -347,6 +347,15 @@ void test_ranges_algorithms() {
     // sort(iarr, validating_less{}); // need to check ADL-found swap
     sort(iarr, iarr, {}, validating_identity{});
 
+    stable_sort(varr, varr);
+    stable_sort(varr);
+    stable_sort(varr, varr, less{});
+    // stable_sort(varr, less{}); // need to check ADL-found operator==
+    stable_sort(varr, &less_function<validator>);
+    stable_sort(iarr, iarr, validating_less{});
+    // stable_sort(iarr, validating_less{}); // need to check ADL-found swap
+    stable_sort(iarr, iarr, {}, validating_identity{});
+
     partial_sort(varr, varr, varr);
     partial_sort(varr, varr, static_cast<holder<incomplete>* const*>(varr)); // non-common
     partial_sort(varr, varr);
@@ -420,6 +429,11 @@ void test_ranges_algorithms() {
     (void) partition(iarr, iarr, validating_zero_equality{});
     (void) partition(iarr, validating_zero_equality{});
 
+    (void) stable_partition(varr, varr, simple_zero_equality{});
+    (void) stable_partition(varr, simple_zero_equality{});
+    (void) stable_partition(iarr, iarr, validating_zero_equality{});
+    (void) stable_partition(iarr, validating_zero_equality{});
+
     int iarr3[2]{};
     validator varr3[2]{};
 
@@ -438,6 +452,11 @@ void test_ranges_algorithms() {
     (void) merge(varr, varr2, varr3);
     (void) merge(iarr, iarr, iarr2, iarr2, iarr3, validating_less{});
     (void) merge(iarr, iarr2, iarr3, validating_less{});
+
+    (void) inplace_merge(varr, varr, varr);
+    (void) inplace_merge(varr, varr);
+    (void) inplace_merge(iarr, iarr, iarr, validating_less{});
+    (void) inplace_merge(iarr, iarr, {}, validating_identity{});
 
     (void) includes(varr, varr, varr, varr);
     (void) includes(varr, varr);
