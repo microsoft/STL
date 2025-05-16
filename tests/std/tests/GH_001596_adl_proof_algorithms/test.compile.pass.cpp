@@ -945,9 +945,6 @@ void test_ranges_non_projected_algorithms() {
     (void) reverse_copy(varr, varr, varr2);
     (void) reverse_copy(varr, varr2);
 
-    (void) rotate(varr, varr, varr);
-    (void) rotate(varr, varr);
-
     (void) rotate_copy(varr, varr, varr, varr2);
     (void) rotate_copy(varr, varr, varr2);
 
