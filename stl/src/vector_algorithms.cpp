@@ -4927,7 +4927,77 @@ __declspec(noalias) size_t __stdcall __std_find_last_not_of_trivial_pos_2(const 
 
 namespace {
     namespace _Find_seq {
-        template <class _Traits, class _Ty>
+#ifdef _M_ARM64EC
+        using _Find_seq_traits_1 = void;
+        using _Find_seq_traits_2 = void;
+        using _Find_seq_traits_4 = void;
+        using _Find_seq_traits_8 = void;
+#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+        struct _Find_seq_traits_1 {
+            static __m256i _Broadcast_avx(const __m128i _Data) noexcept {
+                return _mm256_broadcastb_epi8(_Data);
+            }
+
+            static unsigned long _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+                return _mm256_movemask_epi8(_mm256_cmpeq_epi8(_Lhs, _Rhs));
+            }
+        };
+
+        struct _Find_seq_traits_2 {
+            static __m256i _Broadcast_avx(const __m128i _Data) noexcept {
+                return _mm256_broadcastw_epi16(_Data);
+            }
+
+            static unsigned long _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+                return _mm256_movemask_epi8(_mm256_cmpeq_epi16(_Lhs, _Rhs)) & 0x55555555;
+            }
+        };
+
+        struct _Find_seq_traits_4 {
+            static __m256i _Broadcast_avx(const __m128i _Data) noexcept {
+                return _mm256_broadcastd_epi32(_Data);
+            }
+
+            static unsigned long _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+                return _mm256_movemask_epi8(_mm256_cmpeq_epi32(_Lhs, _Rhs)) & 0x11111111;
+            }
+        };
+
+        struct _Find_seq_traits_8 {
+            static __m256i _Broadcast_avx(const __m128i _Data) noexcept {
+                return _mm256_broadcastq_epi64(_Data);
+            }
+
+            static unsigned long _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+                return _mm256_movemask_epi8(_mm256_cmpeq_epi64(_Lhs, _Rhs)) & 0x01010101;
+            }
+        };
+
+        template <class _Ty>
+        __m256i _Avx2_load_tail(const void* const _Src, const size_t _Size_bytes, const __m256i _Mask) noexcept {
+            if constexpr (sizeof(_Ty) >= 4) {
+                return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Mask);
+            } else {
+                unsigned char _Tmp[32];
+                memcpy(_Tmp, _Src, _Size_bytes);
+                return _mm256_loadu_si256(reinterpret_cast<__m256i*>(_Tmp));
+            }
+        }
+
+        template <class _Ty>
+        __m256i _Avx2_load_tail(const void* const _Src, const size_t _Size_bytes) noexcept {
+            if constexpr (sizeof(_Ty) >= 4) {
+                const __m256i _Mask = _Avx2_tail_mask_32(_Size_bytes);
+                return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Mask);
+            } else {
+                unsigned char _Tmp[32];
+                memcpy(_Tmp, _Src, _Size_bytes);
+                return _mm256_loadu_si256(reinterpret_cast<__m256i*>(_Tmp));
+            }
+        }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+
+        template <class _FindTraits, class _Traits, class _Ty>
         const void* __stdcall _Search_impl(
             const void* _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
             if (_Count2 == 0) {
@@ -4935,7 +5005,7 @@ namespace {
             }
 
             if (_Count2 == 1) {
-                return _Finding::_Find_impl<_Traits, _Finding::_Predicate::_Equal>(
+                return _Finding::_Find_impl<_FindTraits, _Finding::_Predicate::_Equal>(
                     _First1, _Last1, *static_cast<const _Ty*>(_First2));
             }
 
@@ -4947,118 +5017,656 @@ namespace {
             }
 
 #ifndef _M_ARM64EC
-            if (_Use_sse42() && _Size_bytes_1 >= 16) {
-                constexpr int _Op = (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ORDERED;
-                constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
+            if (_Use_avx2() && _Size_bytes_1 >= 32) {
+                _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
 
-                if (_Size_bytes_2 <= 16) {
-                    const int _Size_el_2 = static_cast<int>(_Size_bytes_2 / sizeof(_Ty));
-
-                    const int _Max_full_match_pos = _Part_size_el - _Size_el_2;
-
-                    alignas(16) uint8_t _Tmp2[16];
-                    memcpy(_Tmp2, _First2, _Size_bytes_2);
-                    const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+                if (_Size_bytes_2 <= 32) {
+                    const __m256i _Mask2  = _Avx2_tail_mask_32(_Size_bytes_2);
+                    const __m256i _Data2  = _Avx2_load_tail<_Ty>(_First2, _Size_bytes_2, _Mask2);
+                    const __m256i _Start2 = _Traits::_Broadcast_avx(_mm256_castsi256_si128(_Data2));
 
                     const void* _Stop1 = _First1;
-                    _Advance_bytes(_Stop1, _Size_bytes_1 - 16);
-
+                    _Advance_bytes(_Stop1, _Size_bytes_1 & ~size_t{0x1F});
                     do {
-                        const __m128i _Data1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+                        const __m256i _Data1 = _mm256_loadu_si256(static_cast<const __m256i*>(_First1));
+                        unsigned long _Bingo = _Traits::_Cmp_avx(_Data1, _Start2);
 
-                        if (!_mm_cmpestrc(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op)) {
-                            _Advance_bytes(_First1, 16); // No matches, next.
-                        } else {
-                            const int _Pos = _mm_cmpestri(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
-                            _Advance_bytes(_First1, _Pos * sizeof(_Ty));
-                            if (_Pos <= _Max_full_match_pos) {
-                                // Full match. Return this match.
-                                return _First1;
+                        while (_Bingo != 0) {
+                            const unsigned int _Pos = _tzcnt_u32(_Bingo);
+
+                            const void* _Match = _First1;
+                            _Advance_bytes(_Match, _Pos);
+
+                            __m256i _Cmp;
+                            if (const size_t _Left_match = _Byte_length(_Match, _Last1); _Left_match >= 32) {
+                                const __m256i _Match_val = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Match));
+                                _Cmp                     = _mm256_xor_si256(_Data2, _Match_val);
+                            } else if (_Left_match >= _Size_bytes_2) {
+                                const __m256i _Match_val = _Avx2_load_tail<_Ty>(_Match, _Left_match);
+                                _Cmp                     = _mm256_xor_si256(_Data2, _Match_val);
+                            } else {
+                                break;
                             }
-                            // Partial match. Search again from the match start. Will return it if it is full.
+
+                            if (_mm256_testz_si256(_Cmp, _Mask2)) {
+                                return _Match;
+                            }
+
+                            _Bingo ^= 1 << _Pos;
                         }
-                    } while (_First1 <= _Stop1);
 
-                    const size_t _Size_bytes_1_tail = _Byte_length(_First1, _Last1);
-                    if (_Size_bytes_1_tail != 0) {
-                        const int _Size_el_1_tail = static_cast<int>(_Size_bytes_1_tail / sizeof(_Ty));
+                        _Advance_bytes(_First1, 32);
 
-                        alignas(16) uint8_t _Tmp1[16];
-                        memcpy(_Tmp1, _First1, _Size_bytes_1_tail);
-                        const __m128i _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                    } while (_First1 != _Stop1);
 
-                        if (_mm_cmpestrc(_Data2, _Size_el_2, _Data1, _Size_el_1_tail, _Op)) {
-                            const int _Pos = _mm_cmpestri(_Data2, _Size_el_2, _Data1, _Size_el_1_tail, _Op);
-                            _Advance_bytes(_First1, _Pos * sizeof(_Ty));
-                            // Full match because size is less than 16. Return this match.
-                            return _First1;
+                    if (const size_t _Left1 = _Byte_length(_First1, _Last1); _Left1 >= _Size_bytes_2) {
+                        const __m256i _Data1 = _Avx2_load_tail<_Ty>(_First1, _Left1);
+                        unsigned long _Bingo = _Traits::_Cmp_avx(_Data1, _Start2);
+
+                        while (_Bingo != 0) {
+                            const unsigned int _Pos = _tzcnt_u32(_Bingo);
+
+                            if (_Pos > _Left1 - _Size_bytes_2) {
+                                break;
+                            }
+
+                            const void* _Match = _First1;
+                            _Advance_bytes(_Match, _Pos);
+
+                            const size_t _Left_match = _Byte_length(_Match, _Last1);
+                            const __m256i _Match_val = _Avx2_load_tail<_Ty>(_Match, _Left_match);
+                            const __m256i _Cmp       = _mm256_xor_si256(_Data2, _Match_val);
+
+                            if (_mm256_testz_si256(_Cmp, _Mask2)) {
+                                return _Match;
+                            }
+
+                            _Bingo ^= 1 << _Pos;
                         }
                     }
-                } else {
-                    const __m128i _Data2  = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First2));
+
+                    return _Last1;
+                } else { // _Size_bytes_2 is greater than 32 bytes
+                    const __m256i _Data2  = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First2));
+                    const __m256i _Start2 = _Traits::_Broadcast_avx(_mm256_castsi256_si128(_Data2));
+
                     const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2;
 
                     const void* _Stop1 = _First1;
                     _Advance_bytes(_Stop1, _Max_pos);
 
                     const void* _Tail2 = _First2;
-                    _Advance_bytes(_Tail2, 16);
+                    _Advance_bytes(_Tail2, 32);
 
                     do {
-                        const __m128i _Data1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
-                        if (!_mm_cmpestrc(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op)) {
-                            _Advance_bytes(_First1, 16); // No matches, next.
-                        } else {
-                            const int _Pos = _mm_cmpestri(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
+                        const __m256i _Data1 = _mm256_loadu_si256(static_cast<const __m256i*>(_First1));
+                        unsigned long _Bingo = _Traits::_Cmp_avx(_Data1, _Start2);
 
-                            bool _Match_1st_16 = true;
+                        while (_Bingo != 0) {
+                            const unsigned int _Pos = _tzcnt_u32(_Bingo);
 
-                            if (_Pos != 0) {
-                                _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                            const void* _Match = _First1;
+                            _Advance_bytes(_Match, _Pos);
 
-                                if (_First1 > _Stop1) {
-                                    break; // Oops, doesn't fit
-                                }
+                            if (_Match > _Stop1) {
+                                break; // Oops, doesn't fit
+                            }
 
-                                // Match not from the first byte, check 16 symbols
-                                const __m128i _Match1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
-                                const __m128i _Cmp    = _mm_xor_si128(_Data2, _Match1);
-                                if (!_mm_testz_si128(_Cmp, _Cmp)) {
-                                    _Match_1st_16 = false;
+                            const __m256i _Match_val = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Match));
+                            const __m256i _Cmp       = _mm256_xor_si256(_Data2, _Match_val);
+
+                            if (_mm256_testz_si256(_Cmp, _Cmp)) {
+                                const void* _Tail1 = _Match;
+                                _Advance_bytes(_Tail1, 32);
+
+                                if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - 32) == 0) {
+                                    return _Match;
                                 }
                             }
 
-                            if (_Match_1st_16) {
-                                const void* _Tail1 = _First1;
-                                _Advance_bytes(_Tail1, 16);
+                            _Bingo ^= 1 << _Pos;
+                        }
 
-                                if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - 16) == 0) {
+                        _Advance_bytes(_First1, 32);
+
+                    } while (_First1 <= _Stop1);
+
+                    return _Last1;
+                }
+            }
+
+            if constexpr (sizeof(_Ty) <= 2) {
+                if (_Use_sse42() && _Size_bytes_1 >= 16) {
+                    constexpr int _Op =
+                        (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ORDERED;
+                    constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
+
+                    if (_Size_bytes_2 <= 16) {
+                        const int _Size_el_2 = static_cast<int>(_Size_bytes_2 / sizeof(_Ty));
+
+                        const int _Max_full_match_pos = _Part_size_el - _Size_el_2;
+
+                        alignas(16) uint8_t _Tmp2[16];
+                        memcpy(_Tmp2, _First2, _Size_bytes_2);
+                        const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+
+                        const void* _Stop1 = _First1;
+                        _Advance_bytes(_Stop1, _Size_bytes_1 - 16);
+
+                        do {
+                            const __m128i _Data1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+
+                            if (!_mm_cmpestrc(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op)) {
+                                _Advance_bytes(_First1, 16); // No matches, next.
+                            } else {
+                                const int _Pos = _mm_cmpestri(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
+                                _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                                if (_Pos <= _Max_full_match_pos) {
+                                    // Full match. Return this match.
                                     return _First1;
                                 }
+                                // Partial match. Search again from the match start. Will return it if it is full.
                             }
+                        } while (_First1 <= _Stop1);
 
-                            // Start from the next element
-                            _Advance_bytes(_First1, sizeof(_Ty));
+                        const size_t _Size_bytes_1_tail = _Byte_length(_First1, _Last1);
+                        if (_Size_bytes_1_tail != 0) {
+                            const int _Size_el_1_tail = static_cast<int>(_Size_bytes_1_tail / sizeof(_Ty));
+
+                            alignas(16) uint8_t _Tmp1[16];
+                            memcpy(_Tmp1, _First1, _Size_bytes_1_tail);
+                            const __m128i _Data1 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+
+                            if (_mm_cmpestrc(_Data2, _Size_el_2, _Data1, _Size_el_1_tail, _Op)) {
+                                const int _Pos = _mm_cmpestri(_Data2, _Size_el_2, _Data1, _Size_el_1_tail, _Op);
+                                _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+                                // Full match because size is less than 16. Return this match.
+                                return _First1;
+                            }
                         }
-                    } while (_First1 <= _Stop1);
+
+                        return _Last1;
+                    } else { // _Size_bytes_2 is greater than 16 bytes
+                        const __m128i _Data2  = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First2));
+                        const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2;
+
+                        const void* _Stop1 = _First1;
+                        _Advance_bytes(_Stop1, _Max_pos);
+
+                        const void* _Tail2 = _First2;
+                        _Advance_bytes(_Tail2, 16);
+
+                        do {
+                            const __m128i _Data1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+                            if (!_mm_cmpestrc(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op)) {
+                                _Advance_bytes(_First1, 16); // No matches, next.
+                            } else {
+                                const int _Pos = _mm_cmpestri(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
+
+                                bool _Match_1st_16 = true;
+
+                                if (_Pos != 0) {
+                                    _Advance_bytes(_First1, _Pos * sizeof(_Ty));
+
+                                    if (_First1 > _Stop1) {
+                                        break; // Oops, doesn't fit
+                                    }
+
+                                    // Match not from the first byte, check 16 symbols
+                                    const __m128i _Match1 = _mm_loadu_si128(static_cast<const __m128i*>(_First1));
+                                    const __m128i _Cmp    = _mm_xor_si128(_Data2, _Match1);
+                                    if (!_mm_testz_si128(_Cmp, _Cmp)) {
+                                        _Match_1st_16 = false;
+                                    }
+                                }
+
+                                if (_Match_1st_16) {
+                                    const void* _Tail1 = _First1;
+                                    _Advance_bytes(_Tail1, 16);
+
+                                    if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - 16) == 0) {
+                                        return _First1;
+                                    }
+                                }
+
+                                // Start from the next element
+                                _Advance_bytes(_First1, sizeof(_Ty));
+                            }
+                        } while (_First1 <= _Stop1);
+
+                        return _Last1;
+                    }
+                }
+            }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+
+            const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2 + sizeof(_Ty);
+
+            auto _Ptr1         = static_cast<const _Ty*>(_First1);
+            const auto _Ptr2   = static_cast<const _Ty*>(_First2);
+            const void* _Stop1 = _Ptr1;
+            _Advance_bytes(_Stop1, _Max_pos);
+
+            for (; _Ptr1 != _Stop1; ++_Ptr1) {
+                if (*_Ptr1 != *_Ptr2) {
+                    continue;
                 }
 
+                bool _Equal = true;
+
+                for (size_t _Idx = 1; _Idx != _Count2; ++_Idx) {
+                    if (_Ptr1[_Idx] != _Ptr2[_Idx]) {
+                        _Equal = false;
+                        break;
+                    }
+                }
+
+                if (_Equal) {
+                    return _Ptr1;
+                }
+            }
+
+            return _Last1;
+        }
+
+        template <class _FindTraits, class _Traits, class _Ty>
+        const void* __stdcall _Find_end_impl(const void* const _First1, const void* const _Last1,
+            const void* const _First2, const size_t _Count2) noexcept {
+            if (_Count2 == 0) {
                 return _Last1;
-            } else
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-            {
-                const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2 + sizeof(_Ty);
+            }
 
-                auto _Ptr1         = static_cast<const _Ty*>(_First1);
-                const auto _Ptr2   = static_cast<const _Ty*>(_First2);
-                const void* _Stop1 = _Ptr1;
-                _Advance_bytes(_Stop1, _Max_pos);
+            if (_Count2 == 1) {
+                return _Finding::_Find_last_impl<_FindTraits, _Finding::_Predicate::_Equal>(
+                    _First1, _Last1, *static_cast<const _Ty*>(_First2));
+            }
 
-                for (; _Ptr1 != _Stop1; ++_Ptr1) {
-                    if (*_Ptr1 != *_Ptr2) {
-                        continue;
+            const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
+            const size_t _Size_bytes_2 = _Count2 * sizeof(_Ty);
+
+            if (_Size_bytes_1 < _Size_bytes_2) {
+                return _Last1;
+            }
+
+#ifndef _M_ARM64EC
+            if (_Use_avx2() && _Size_bytes_1 >= 32) {
+                _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
+
+                if (_Size_bytes_2 <= 32) {
+                    const unsigned int _Needle_fit_mask = (1 << (32 - _Size_bytes_2 + sizeof(_Ty))) - 1;
+
+                    const void* _Stop1 = _First1;
+                    _Advance_bytes(_Stop1, _Size_bytes_1 & 0x1F);
+
+                    const __m256i _Mask2  = _Avx2_tail_mask_32(_Size_bytes_2);
+                    const __m256i _Data2  = _Avx2_load_tail<_Ty>(_First2, _Size_bytes_2, _Mask2);
+                    const __m256i _Start2 = _Traits::_Broadcast_avx(_mm256_castsi256_si128(_Data2));
+
+                    const void* _Mid1 = _Last1;
+                    _Rewind_bytes(_Mid1, 32);
+
+#pragma warning(push)
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier
+                    const auto _Check_first = [=, &_Mid1](long _Match) noexcept {
+                        while (_Match != 0) {
+                            const unsigned int _Pos = 31 - _lzcnt_u32(_Match);
+
+                            const void* _Tmp1 = _Mid1;
+                            _Advance_bytes(_Tmp1, _Pos);
+
+                            const __m256i _Match_data = _Avx2_load_tail<_Ty>(_Tmp1, _Byte_length(_Tmp1, _Last1));
+                            const __m256i _Cmp_result = _mm256_xor_si256(_Data2, _Match_data);
+
+                            if (_mm256_testz_si256(_Cmp_result, _Mask2)) {
+                                _Mid1 = _Tmp1;
+                                return true;
+                            }
+
+                            _Match ^= 1 << _Pos;
+                        }
+
+                        return false;
+                    };
+
+                    const auto _Check = [=, &_Mid1](long _Match) noexcept {
+                        while (_Match != 0) {
+                            const unsigned int _Pos = 31 - _lzcnt_u32(_Match);
+
+                            const void* _Tmp1 = _Mid1;
+                            _Advance_bytes(_Tmp1, _Pos);
+
+                            const __m256i _Match_data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Tmp1));
+                            const __m256i _Cmp_result = _mm256_xor_si256(_Data2, _Match_data);
+
+                            if (_mm256_testz_si256(_Cmp_result, _Mask2)) {
+                                _Mid1 = _Tmp1;
+                                return true;
+                            }
+
+                            _Match ^= 1 << _Pos;
+                        }
+
+                        return false;
+                    };
+#pragma warning(pop)
+
+                    // The very last part, for any match needle should fit, otherwise false match
+                    const __m256i _Data1_last           = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Mid1));
+                    const unsigned long _Match_last_val = _Traits::_Cmp_avx(_Data1_last, _Start2);
+                    if (_Check_first(_Match_last_val & _Needle_fit_mask)) {
+                        return _Mid1;
                     }
 
+                    // The middle part, fit and unfit needle
+                    while (_Mid1 != _Stop1) {
+                        _Rewind_bytes(_Mid1, 32);
+                        const __m256i _Data1           = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Mid1));
+                        const unsigned long _Match_val = _Traits::_Cmp_avx(_Data1, _Start2);
+                        if (_Check(_Match_val)) {
+                            return _Mid1;
+                        }
+                    }
+
+                    // The first part, fit and unfit needle, mask out already processed positions
+                    if (const size_t _Tail_bytes_1 = _Size_bytes_1 & 0x1F; _Tail_bytes_1 != 0) {
+                        _Mid1                          = _First1;
+                        const __m256i _Data1           = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Mid1));
+                        const unsigned long _Match_val = _Traits::_Cmp_avx(_Data1, _Start2);
+                        if (_Match_val != 0 && _Check(_Match_val & ((1 << _Tail_bytes_1) - 1))) {
+                            return _Mid1;
+                        }
+                    }
+
+                    return _Last1;
+                } else { // _Size_bytes_2 is greater than 32 bytes
+                    const __m256i _Data2  = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First2));
+                    const __m256i _Start2 = _Traits::_Broadcast_avx(_mm256_castsi256_si128(_Data2));
+
+                    const void* _Tail2 = _First2;
+                    _Advance_bytes(_Tail2, 32);
+
+                    const void* _Mid1 = _Last1;
+                    _Rewind_bytes(_Mid1, _Size_bytes_2);
+
+                    const size_t _Size_diff_bytes = _Size_bytes_1 - _Size_bytes_2;
+                    const void* _Stop1            = _First1;
+                    _Advance_bytes(_Stop1, _Size_diff_bytes & 0x1F);
+
+#pragma warning(push)
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier
+                    const auto _Check = [=, &_Mid1](long _Match) noexcept {
+                        while (_Match != 0) {
+                            const unsigned int _Pos = 31 - _lzcnt_u32(_Match);
+
+                            const void* _Tmp1 = _Mid1;
+                            _Advance_bytes(_Tmp1, _Pos);
+
+                            const __m256i _Match_data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Tmp1));
+                            const __m256i _Cmp_result = _mm256_xor_si256(_Data2, _Match_data);
+
+                            if (_mm256_testz_si256(_Cmp_result, _Cmp_result)) {
+                                const void* _Tail1 = _Tmp1;
+                                _Advance_bytes(_Tail1, 32);
+
+                                if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - 32) == 0) {
+                                    _Mid1 = _Tmp1;
+                                    return true;
+                                }
+                            }
+
+                            _Match ^= 1 << _Pos;
+                        }
+
+                        return false;
+                    };
+#pragma warning(pop)
+                    // The very last part, just compare, as true match must start with first symbol
+                    const __m256i _Data1_last = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Mid1));
+                    const __m256i _Match_last = _mm256_xor_si256(_Data2, _Data1_last);
+                    if (_mm256_testz_si256(_Match_last, _Match_last)) {
+                        // Matched 32 bytes, check the rest
+                        const void* _Tail1 = _Mid1;
+                        _Advance_bytes(_Tail1, 32);
+
+                        if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - 32) == 0) {
+                            return _Mid1;
+                        }
+                    }
+
+                    // The main part, match all characters
+                    while (_Mid1 != _Stop1) {
+                        _Rewind_bytes(_Mid1, 32);
+
+                        const __m256i _Data1           = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Mid1));
+                        const unsigned long _Match_val = _Traits::_Cmp_avx(_Data1, _Start2);
+                        if (_Check(_Match_val)) {
+                            return _Mid1;
+                        }
+                    }
+
+                    // The first part, mask out already processed positions
+                    if (const size_t _Tail_bytes_1 = _Size_diff_bytes & 0x1F; _Tail_bytes_1 != 0) {
+                        _Mid1                          = _First1;
+                        const __m256i _Data1           = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Mid1));
+                        const unsigned long _Match_val = _Traits::_Cmp_avx(_Data1, _Start2);
+                        if (_Match_val != 0 && _Check(_Match_val & ((1 << _Tail_bytes_1) - 1))) {
+                            return _Mid1;
+                        }
+                    }
+
+                    return _Last1;
+                }
+            }
+
+            if constexpr (sizeof(_Ty) <= 2) {
+                if (_Use_sse42() && _Size_bytes_1 >= 16) {
+                    constexpr int _Op =
+                        (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ORDERED;
+                    constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
+
+                    static constexpr int8_t _Low_part_mask[] = {//
+                        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, //
+                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+                    if (_Size_bytes_2 <= 16) {
+                        const int _Size_el_2                  = static_cast<int>(_Count2);
+                        constexpr unsigned int _Whole_mask    = (1 << _Part_size_el) - 1;
+                        const unsigned int _Needle_fit_mask   = (1 << (_Part_size_el - _Size_el_2 + 1)) - 1;
+                        const unsigned int _Needle_unfit_mask = _Whole_mask ^ _Needle_fit_mask;
+
+                        const void* _Stop1 = _First1;
+                        _Advance_bytes(_Stop1, _Size_bytes_1 & 0xF);
+
+                        alignas(16) uint8_t _Tmp2[16];
+                        memcpy(_Tmp2, _First2, _Size_bytes_2);
+                        const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
+
+                        const void* _Mid1 = _Last1;
+                        _Rewind_bytes(_Mid1, 16);
+
+                        const auto _Check_fit = [&_Mid1, _Needle_fit_mask](const unsigned int _Match) noexcept {
+                            const unsigned int _Fit_match = _Match & _Needle_fit_mask;
+                            if (_Fit_match != 0) {
+                                unsigned long _Match_last_pos;
+
+                                // CodeQL [SM02313] Result is always initialized: we just tested that _Fit_match != 0.
+                                _BitScanReverse(&_Match_last_pos, _Fit_match);
+
+                                _Advance_bytes(_Mid1, _Match_last_pos * sizeof(_Ty));
+                                return true;
+                            }
+
+                            return false;
+                        };
+
+#pragma warning(push)
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier
+                        const auto _Check_unfit = [=, &_Mid1](const unsigned int _Match) noexcept {
+                            long _Unfit_match = _Match & _Needle_unfit_mask;
+                            while (_Unfit_match != 0) {
+                                const void* _Tmp1 = _Mid1;
+                                unsigned long _Match_last_pos;
+
+                                // CodeQL [SM02313] Result is always initialized: we just tested that _Unfit_match != 0.
+                                _BitScanReverse(&_Match_last_pos, _Unfit_match);
+
+                                _Advance_bytes(_Tmp1, _Match_last_pos * sizeof(_Ty));
+
+                                const __m128i _Match_data = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                                const __m128i _Cmp_result = _mm_xor_si128(_Data2, _Match_data);
+                                const __m128i _Data_mask  = _mm_loadu_si128(
+                                    reinterpret_cast<const __m128i*>(_Low_part_mask + 16 - _Size_bytes_2));
+
+                                if (_mm_testz_si128(_Cmp_result, _Data_mask)) {
+                                    _Mid1 = _Tmp1;
+                                    return true;
+                                }
+
+                                _bittestandreset(&_Unfit_match, _Match_last_pos);
+                            }
+
+                            return false;
+                        };
+#pragma warning(pop)
+
+                        // TRANSITION, DevCom-10689455, the code below could test with _mm_cmpestrc,
+                        // if it has been fused with _mm_cmpestrm.
+
+                        // The very last part, for any match needle should fit, otherwise false match
+                        const __m128i _Data1_last = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                        const auto _Match_last    = _mm_cmpestrm(_Data2, _Size_el_2, _Data1_last, _Part_size_el, _Op);
+                        const unsigned int _Match_last_val = _mm_cvtsi128_si32(_Match_last);
+                        if (_Check_fit(_Match_last_val)) {
+                            return _Mid1;
+                        }
+
+                        // The middle part, fit and unfit needle
+                        while (_Mid1 != _Stop1) {
+                            _Rewind_bytes(_Mid1, 16);
+                            const __m128i _Data1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                            const auto _Match    = _mm_cmpestrm(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
+                            const unsigned int _Match_val = _mm_cvtsi128_si32(_Match);
+                            if (_Match_val != 0 && (_Check_unfit(_Match_val) || _Check_fit(_Match_val))) {
+                                return _Mid1;
+                            }
+                        }
+
+                        // The first part, fit and unfit needle, mask out already processed positions
+                        if (const size_t _Tail_bytes_1 = _Size_bytes_1 & 0xF; _Tail_bytes_1 != 0) {
+                            _Mid1                   = _First1;
+                            const __m128i _Data1    = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                            const auto _Match       = _mm_cmpestrm(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
+                            const size_t _Tail_el_1 = _Tail_bytes_1 / sizeof(_Ty);
+                            const unsigned int _Match_val = _mm_cvtsi128_si32(_Match) & ((1 << _Tail_el_1) - 1);
+                            if (_Match_val != 0 && (_Check_unfit(_Match_val) || _Check_fit(_Match_val))) {
+                                return _Mid1;
+                            }
+                        }
+
+                        return _Last1;
+                    } else { // _Size_bytes_2 is greater than 16 bytes
+                        const __m128i _Data2 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First2));
+
+                        const void* _Tail2 = _First2;
+                        _Advance_bytes(_Tail2, 16);
+
+                        const void* _Mid1 = _Last1;
+                        _Rewind_bytes(_Mid1, _Size_bytes_2);
+
+                        const size_t _Size_diff_bytes = _Size_bytes_1 - _Size_bytes_2;
+                        const void* _Stop1            = _First1;
+                        _Advance_bytes(_Stop1, _Size_diff_bytes & 0xF);
+
+#pragma warning(push)
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier
+                        const auto _Check = [=, &_Mid1](long _Match) noexcept {
+                            while (_Match != 0) {
+                                const void* _Tmp1 = _Mid1;
+                                unsigned long _Match_last_pos;
+
+                                // CodeQL [SM02313] Result is always initialized: we just tested that _Match != 0.
+                                _BitScanReverse(&_Match_last_pos, _Match);
+
+                                bool _Match_1st_16 = true;
+
+                                if (_Match_last_pos != 0) {
+                                    _Advance_bytes(_Tmp1, _Match_last_pos * sizeof(_Ty));
+
+                                    const __m128i _Match_data =
+                                        _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Tmp1));
+                                    const __m128i _Cmp_result = _mm_xor_si128(_Data2, _Match_data);
+
+                                    if (!_mm_testz_si128(_Cmp_result, _Cmp_result)) {
+                                        _Match_1st_16 = false;
+                                    }
+                                }
+
+                                if (_Match_1st_16) {
+                                    const void* _Tail1 = _Tmp1;
+                                    _Advance_bytes(_Tail1, 16);
+
+                                    if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - 16) == 0) {
+                                        _Mid1 = _Tmp1;
+                                        return true;
+                                    }
+                                }
+
+                                _bittestandreset(&_Match, _Match_last_pos);
+                            }
+
+                            return false;
+                        };
+#pragma warning(pop)
+                        // The very last part, just compare, as true match must start with first symbol
+                        const __m128i _Data1_last = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                        const __m128i _Match_last = _mm_xor_si128(_Data2, _Data1_last);
+                        if (_mm_testz_si128(_Match_last, _Match_last)) {
+                            // Matched 16 bytes, check the rest
+                            const void* _Tail1 = _Mid1;
+                            _Advance_bytes(_Tail1, 16);
+
+                            if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - 16) == 0) {
+                                return _Mid1;
+                            }
+                        }
+
+                        // TRANSITION, DevCom-10689455, the code below could test with _mm_cmpestrc,
+                        // if it has been fused with _mm_cmpestrm.
+
+                        // The main part, match all characters
+                        while (_Mid1 != _Stop1) {
+                            _Rewind_bytes(_Mid1, 16);
+
+                            const __m128i _Data1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                            const auto _Match    = _mm_cmpestrm(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
+                            const unsigned int _Match_val = _mm_cvtsi128_si32(_Match);
+                            if (_Match_val != 0 && _Check(_Match_val)) {
+                                return _Mid1;
+                            }
+                        }
+
+                        // The first part, mask out already processed positions
+                        if (const size_t _Tail_bytes_1 = _Size_diff_bytes & 0xF; _Tail_bytes_1 != 0) {
+                            _Mid1                   = _First1;
+                            const __m128i _Data1    = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
+                            const auto _Match       = _mm_cmpestrm(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
+                            const size_t _Tail_el_1 = _Tail_bytes_1 / sizeof(_Ty);
+                            const unsigned int _Match_val = _mm_cvtsi128_si32(_Match) & ((1 << _Tail_el_1) - 1);
+                            if (_Match_val != 0 && _Check(_Match_val)) {
+                                return _Mid1;
+                            }
+                        }
+
+                        return _Last1;
+                    }
+                }
+            }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+            auto _Ptr1       = static_cast<const _Ty*>(_Last1) - _Count2;
+            const auto _Ptr2 = static_cast<const _Ty*>(_First2);
+
+            for (;;) {
+                if (*_Ptr1 == *_Ptr2) {
                     bool _Equal = true;
 
                     for (size_t _Idx = 1; _Idx != _Count2; ++_Idx) {
@@ -5073,254 +5681,11 @@ namespace {
                     }
                 }
 
-                return _Last1;
-            }
-        }
-
-        template <class _Traits, class _Ty>
-        const void* __stdcall _Find_end_impl(const void* const _First1, const void* const _Last1,
-            const void* const _First2, const size_t _Count2) noexcept {
-            if (_Count2 == 0) {
-                return _Last1;
-            }
-
-            if (_Count2 == 1) {
-                return _Finding::_Find_last_impl<_Traits, _Finding::_Predicate::_Equal>(
-                    _First1, _Last1, *static_cast<const _Ty*>(_First2));
-            }
-
-            const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
-            const size_t _Size_bytes_2 = _Count2 * sizeof(_Ty);
-
-            if (_Size_bytes_1 < _Size_bytes_2) {
-                return _Last1;
-            }
-
-#ifndef _M_ARM64EC
-            if (_Use_sse42() && _Size_bytes_1 >= 16) {
-                constexpr int _Op = (sizeof(_Ty) == 1 ? _SIDD_UBYTE_OPS : _SIDD_UWORD_OPS) | _SIDD_CMP_EQUAL_ORDERED;
-                constexpr int _Part_size_el = sizeof(_Ty) == 1 ? 16 : 8;
-
-                static constexpr int8_t _Low_part_mask[] = {//
-                    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, //
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-                if (_Size_bytes_2 <= 16) {
-                    const int _Size_el_2                  = static_cast<int>(_Count2);
-                    constexpr unsigned int _Whole_mask    = (1 << _Part_size_el) - 1;
-                    const unsigned int _Needle_fit_mask   = (1 << (_Part_size_el - _Size_el_2 + 1)) - 1;
-                    const unsigned int _Needle_unfit_mask = _Whole_mask ^ _Needle_fit_mask;
-
-                    const void* _Stop1 = _First1;
-                    _Advance_bytes(_Stop1, _Size_bytes_1 & 0xF);
-
-                    alignas(16) uint8_t _Tmp2[16];
-                    memcpy(_Tmp2, _First2, _Size_bytes_2);
-                    const __m128i _Data2 = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
-
-                    const void* _Mid1 = _Last1;
-                    _Rewind_bytes(_Mid1, 16);
-
-                    const auto _Check_fit = [&_Mid1, _Needle_fit_mask](const unsigned int _Match) noexcept {
-                        const unsigned int _Fit_match = _Match & _Needle_fit_mask;
-                        if (_Fit_match != 0) {
-                            unsigned long _Match_last_pos;
-
-                            // CodeQL [SM02313] Result is always initialized: we just tested that _Fit_match != 0.
-                            _BitScanReverse(&_Match_last_pos, _Fit_match);
-
-                            _Advance_bytes(_Mid1, _Match_last_pos * sizeof(_Ty));
-                            return true;
-                        }
-
-                        return false;
-                    };
-
-#pragma warning(push)
-#pragma warning(disable : 4324) // structure was padded due to alignment specifier
-                    const auto _Check_unfit = [=, &_Mid1](const unsigned int _Match) noexcept {
-                        long _Unfit_match = _Match & _Needle_unfit_mask;
-                        while (_Unfit_match != 0) {
-                            const void* _Tmp1 = _Mid1;
-                            unsigned long _Match_last_pos;
-
-                            // CodeQL [SM02313] Result is always initialized: we just tested that _Unfit_match != 0.
-                            _BitScanReverse(&_Match_last_pos, _Unfit_match);
-
-                            _Advance_bytes(_Tmp1, _Match_last_pos * sizeof(_Ty));
-
-                            const __m128i _Match_data = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Tmp1));
-                            const __m128i _Cmp_result = _mm_xor_si128(_Data2, _Match_data);
-                            const __m128i _Data_mask =
-                                _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Low_part_mask + 16 - _Size_bytes_2));
-
-                            if (_mm_testz_si128(_Cmp_result, _Data_mask)) {
-                                _Mid1 = _Tmp1;
-                                return true;
-                            }
-
-                            _bittestandreset(&_Unfit_match, _Match_last_pos);
-                        }
-
-                        return false;
-                    };
-#pragma warning(pop)
-
-                    // TRANSITION, DevCom-10689455, the code below could test with _mm_cmpestrc,
-                    // if it has been fused with _mm_cmpestrm.
-
-                    // The very last part, for any match needle should fit, otherwise false match
-                    const __m128i _Data1_last = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
-                    const auto _Match_last    = _mm_cmpestrm(_Data2, _Size_el_2, _Data1_last, _Part_size_el, _Op);
-                    const unsigned int _Match_last_val = _mm_cvtsi128_si32(_Match_last);
-                    if (_Check_fit(_Match_last_val)) {
-                        return _Mid1;
-                    }
-
-                    // The middle part, fit and unfit needle
-                    while (_Mid1 != _Stop1) {
-                        _Rewind_bytes(_Mid1, 16);
-                        const __m128i _Data1          = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
-                        const auto _Match             = _mm_cmpestrm(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
-                        const unsigned int _Match_val = _mm_cvtsi128_si32(_Match);
-                        if (_Match_val != 0 && (_Check_unfit(_Match_val) || _Check_fit(_Match_val))) {
-                            return _Mid1;
-                        }
-                    }
-
-                    // The first part, fit and unfit needle, mask out already processed positions
-                    if (const size_t _Tail_bytes_1 = _Size_bytes_1 & 0xF; _Tail_bytes_1 != 0) {
-                        _Mid1                         = _First1;
-                        const __m128i _Data1          = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
-                        const auto _Match             = _mm_cmpestrm(_Data2, _Size_el_2, _Data1, _Part_size_el, _Op);
-                        const unsigned int _Match_val = _mm_cvtsi128_si32(_Match) & ((1 << _Tail_bytes_1) - 1);
-                        if (_Match_val != 0 && (_Check_unfit(_Match_val) || _Check_fit(_Match_val))) {
-                            return _Mid1;
-                        }
-                    }
-
-                    return _Last1;
-                } else {
-                    const __m128i _Data2 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First2));
-
-                    const void* _Tail2 = _First2;
-                    _Advance_bytes(_Tail2, 16);
-
-                    const void* _Mid1 = _Last1;
-                    _Rewind_bytes(_Mid1, _Size_bytes_2);
-
-                    const size_t _Size_diff_bytes = _Size_bytes_1 - _Size_bytes_2;
-                    const void* _Stop1            = _First1;
-                    _Advance_bytes(_Stop1, _Size_diff_bytes & 0xF);
-
-#pragma warning(push)
-#pragma warning(disable : 4324) // structure was padded due to alignment specifier
-                    const auto _Check = [=, &_Mid1](long _Match) noexcept {
-                        while (_Match != 0) {
-                            const void* _Tmp1 = _Mid1;
-                            unsigned long _Match_last_pos;
-
-                            // CodeQL [SM02313] Result is always initialized: we just tested that _Match != 0.
-                            _BitScanReverse(&_Match_last_pos, _Match);
-
-                            bool _Match_1st_16 = true;
-
-                            if (_Match_last_pos != 0) {
-                                _Advance_bytes(_Tmp1, _Match_last_pos * sizeof(_Ty));
-
-                                const __m128i _Match_data = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Tmp1));
-                                const __m128i _Cmp_result = _mm_xor_si128(_Data2, _Match_data);
-
-                                if (!_mm_testz_si128(_Cmp_result, _Cmp_result)) {
-                                    _Match_1st_16 = false;
-                                }
-                            }
-
-                            if (_Match_1st_16) {
-                                const void* _Tail1 = _Tmp1;
-                                _Advance_bytes(_Tail1, 16);
-
-                                if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - 16) == 0) {
-                                    _Mid1 = _Tmp1;
-                                    return true;
-                                }
-                            }
-
-                            _bittestandreset(&_Match, _Match_last_pos);
-                        }
-
-                        return false;
-                    };
-#pragma warning(pop)
-                    // The very last part, just compare, as true match must start with first symbol
-                    const __m128i _Data1_last = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
-                    const __m128i _Match_last = _mm_xor_si128(_Data2, _Data1_last);
-                    if (_mm_testz_si128(_Match_last, _Match_last)) {
-                        // Matched 16 bytes, check the rest
-                        const void* _Tail1 = _Mid1;
-                        _Advance_bytes(_Tail1, 16);
-
-                        if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - 16) == 0) {
-                            return _Mid1;
-                        }
-                    }
-
-                    // TRANSITION, DevCom-10689455, the code below could test with _mm_cmpestrc,
-                    // if it has been fused with _mm_cmpestrm.
-
-                    // The main part, match all characters
-                    while (_Mid1 != _Stop1) {
-                        _Rewind_bytes(_Mid1, 16);
-
-                        const __m128i _Data1          = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
-                        const auto _Match             = _mm_cmpestrm(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
-                        const unsigned int _Match_val = _mm_cvtsi128_si32(_Match);
-                        if (_Match_val != 0 && _Check(_Match_val)) {
-                            return _Mid1;
-                        }
-                    }
-
-                    // The first part, mask out already processed positions
-                    if (const size_t _Tail_bytes_1 = _Size_diff_bytes & 0xF; _Tail_bytes_1 != 0) {
-                        _Mid1                         = _First1;
-                        const __m128i _Data1          = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Mid1));
-                        const auto _Match             = _mm_cmpestrm(_Data2, _Part_size_el, _Data1, _Part_size_el, _Op);
-                        const unsigned int _Match_val = _mm_cvtsi128_si32(_Match) & ((1 << _Tail_bytes_1) - 1);
-                        if (_Match_val != 0 && _Check(_Match_val)) {
-                            return _Mid1;
-                        }
-                    }
-
+                if (_Ptr1 == _First1) {
                     return _Last1;
                 }
-            } else
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-            {
-                auto _Ptr1       = static_cast<const _Ty*>(_Last1) - _Count2;
-                const auto _Ptr2 = static_cast<const _Ty*>(_First2);
 
-                for (;;) {
-                    if (*_Ptr1 == *_Ptr2) {
-                        bool _Equal = true;
-
-                        for (size_t _Idx = 1; _Idx != _Count2; ++_Idx) {
-                            if (_Ptr1[_Idx] != _Ptr2[_Idx]) {
-                                _Equal = false;
-                                break;
-                            }
-                        }
-
-                        if (_Equal) {
-                            return _Ptr1;
-                        }
-                    }
-
-                    if (_Ptr1 == _First1) {
-                        return _Last1;
-                    }
-
-                    --_Ptr1;
-                }
+                --_Ptr1;
             }
         }
     } // namespace _Find_seq
@@ -5330,22 +5695,51 @@ extern "C" {
 
 const void* __stdcall __std_search_1(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Search_impl<_Finding::_Find_traits_1, uint8_t>(_First1, _Last1, _First2, _Count2);
+    return _Find_seq::_Search_impl<_Finding::_Find_traits_1, _Find_seq::_Find_seq_traits_1, uint8_t>(
+        _First1, _Last1, _First2, _Count2);
 }
 
 const void* __stdcall __std_search_2(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Search_impl<_Finding::_Find_traits_2, uint16_t>(_First1, _Last1, _First2, _Count2);
+    return _Find_seq::_Search_impl<_Finding::_Find_traits_2, _Find_seq::_Find_seq_traits_2, uint16_t>(
+        _First1, _Last1, _First2, _Count2);
 }
+
+const void* __stdcall __std_search_4(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+    return _Find_seq::_Search_impl<_Finding::_Find_traits_4, _Find_seq::_Find_seq_traits_4, uint32_t>(
+        _First1, _Last1, _First2, _Count2);
+}
+
+const void* __stdcall __std_search_8(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+    return _Find_seq::_Search_impl<_Finding::_Find_traits_8, _Find_seq::_Find_seq_traits_8, uint64_t>(
+        _First1, _Last1, _First2, _Count2);
+}
+
 
 const void* __stdcall __std_find_end_1(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_1, uint8_t>(_First1, _Last1, _First2, _Count2);
+    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_1, _Find_seq::_Find_seq_traits_1, uint8_t>(
+        _First1, _Last1, _First2, _Count2);
 }
 
 const void* __stdcall __std_find_end_2(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_2, uint16_t>(_First1, _Last1, _First2, _Count2);
+    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_2, _Find_seq::_Find_seq_traits_2, uint16_t>(
+        _First1, _Last1, _First2, _Count2);
+}
+
+const void* __stdcall __std_find_end_4(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_4, _Find_seq::_Find_seq_traits_4, uint32_t>(
+        _First1, _Last1, _First2, _Count2);
+}
+
+const void* __stdcall __std_find_end_8(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_8, _Find_seq::_Find_seq_traits_8, uint64_t>(
+        _First1, _Last1, _First2, _Count2);
 }
 
 } // extern "C"
