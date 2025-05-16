@@ -149,7 +149,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
     if you would like to build the ARM target.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.30.0 or later, and [Ninja][] 1.12.1 or later.
+    * Otherwise, install [CMake][] 3.31.0 or later, and [Ninja][] 1.12.1 or later.
     * Make sure [Python][] 3.13 or later is available to CMake.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
@@ -168,7 +168,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
     if you would like to build the ARM target.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.30.0 or later, and [Ninja][] 1.12.1 or later.
+    * Otherwise, install [CMake][] 3.31.0 or later, and [Ninja][] 1.12.1 or later.
     * Make sure [Python][] 3.13 or later is available to CMake.
 2. Open a command prompt.
 3. Change directories to a location where you'd like a clone of this STL repository.
