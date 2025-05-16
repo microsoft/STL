@@ -760,30 +760,44 @@ void last_known_good_rotate(
 }
 
 template <class T>
-void test_case_rotate(vector<T>& actual, vector<T>& expected, const ptrdiff_t pos, vector<T>& tmp) {
+void test_case_rotate(
+    vector<T>& actual, vector<T>& actual_r, vector<T>& expected, const ptrdiff_t pos, vector<T>& tmp) {
+    const ptrdiff_t shift = static_cast<ptrdiff_t>(expected.size()) - pos;
     last_known_good_rotate(expected.begin(), expected.begin() + pos, expected.end(), tmp);
-    rotate(actual.begin(), actual.begin() + pos, actual.end());
+    const auto it = rotate(actual.begin(), actual.begin() + pos, actual.end());
     assert(expected == actual);
+    assert(it == actual.begin() + shift);
+#if !_HAS_CXX20
+    (void) actual_r;
+#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
+    const auto rng = ranges::rotate(actual_r.begin(), actual_r.begin() + pos, actual_r.end());
+    assert(expected == actual_r);
+    assert(begin(rng) == actual_r.begin() + shift);
+    assert(end(rng) == actual_r.end());
+#endif // ^^^ _HAS_CXX20 ^^^
 }
 
 template <class T>
 void test_rotate(mt19937_64& gen) {
     vector<T> actual;
+    vector<T> actual_r;
     vector<T> expected;
     vector<T> tmp;
     actual.reserve(dataCount);
+    actual_r.reserve(dataCount);
     expected.reserve(dataCount);
     tmp.reserve(dataCount);
-    test_case_rotate(actual, expected, 0, tmp);
+    test_case_rotate(actual, actual_r, expected, 0, tmp);
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
         const T val = static_cast<T>(gen()); // intentionally narrows
         actual.push_back(val);
+        actual_r.push_back(val);
         expected.push_back(val);
 
-        uniform_int_distribution<ptrdiff_t> dis_pos(0, static_cast<ptrdiff_t>(attempts));
+        uniform_int_distribution<ptrdiff_t> dis_pos(0, static_cast<ptrdiff_t>(attempts) + 1);
 
         for (size_t pos_count = 0; pos_count != 5; ++pos_count) {
-            test_case_rotate(actual, expected, dis_pos(gen), tmp);
+            test_case_rotate(actual, actual_r, expected, dis_pos(gen), tmp);
         }
     }
 }
