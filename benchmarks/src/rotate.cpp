@@ -11,7 +11,9 @@
 
 using namespace std;
 
-template <class T>
+enum class AlgType { Std, Rng };
+
+template <class T, AlgType Alg>
 void bm_rotate(benchmark::State& state) {
     const auto size = static_cast<size_t>(state.range(0));
     const auto n    = static_cast<size_t>(state.range(1));
@@ -20,7 +22,11 @@ void bm_rotate(benchmark::State& state) {
     benchmark::DoNotOptimize(v);
 
     for (auto _ : state) {
-        rotate(v.begin(), v.begin() + n, v.end());
+        if constexpr (Alg == AlgType::Std) {
+            rotate(v.begin(), v.begin() + n, v.end());
+        } else {
+            ranges::rotate(v, v.begin() + n);
+        }
         benchmark::DoNotOptimize(v);
     }
 }
@@ -36,11 +42,16 @@ struct color {
     uint16_t l;
 };
 
-BENCHMARK(bm_rotate<uint8_t>)->Apply(common_args);
-BENCHMARK(bm_rotate<uint16_t>)->Apply(common_args);
-BENCHMARK(bm_rotate<uint32_t>)->Apply(common_args);
-BENCHMARK(bm_rotate<uint64_t>)->Apply(common_args);
+BENCHMARK(bm_rotate<uint8_t, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm_rotate<uint8_t, AlgType::Rng>)->Apply(common_args);
+BENCHMARK(bm_rotate<uint16_t, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm_rotate<uint16_t, AlgType::Rng>)->Apply(common_args);
+BENCHMARK(bm_rotate<uint32_t, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm_rotate<uint32_t, AlgType::Rng>)->Apply(common_args);
+BENCHMARK(bm_rotate<uint64_t, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm_rotate<uint64_t, AlgType::Rng>)->Apply(common_args);
 
-BENCHMARK(bm_rotate<color>)->Apply(common_args);
+BENCHMARK(bm_rotate<color, AlgType::Std>)->Apply(common_args);
+BENCHMARK(bm_rotate<color, AlgType::Rng>)->Apply(common_args);
 
 BENCHMARK_MAIN();
