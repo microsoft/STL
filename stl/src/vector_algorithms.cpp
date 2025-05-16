@@ -4974,7 +4974,7 @@ namespace {
         };
 
         template <class _Ty>
-        __m256i _Avx2_load_tail(const void* const _Src, size_t _Size_bytes, __m256i _Mask) noexcept {
+        __m256i _Avx2_load_tail(const void* const _Src, const size_t _Size_bytes, const __m256i _Mask) noexcept {
             if constexpr (sizeof(_Ty) >= 4) {
                 return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Mask);
             } else {
@@ -4985,7 +4985,7 @@ namespace {
         }
 
         template <class _Ty>
-        __m256i _Avx2_load_tail(const void* const _Src, size_t _Size_bytes) noexcept {
+        __m256i _Avx2_load_tail(const void* const _Src, const size_t _Size_bytes) noexcept {
             if constexpr (sizeof(_Ty) >= 4) {
                 const __m256i _Mask = _Avx2_tail_mask_32(_Size_bytes);
                 return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Mask);
@@ -5032,7 +5032,7 @@ namespace {
                         unsigned long _Bingo = _Traits::_Cmp_avx(_Data1, _Start2);
 
                         while (_Bingo != 0) {
-                            unsigned int _Pos = _tzcnt_u32(_Bingo);
+                            const unsigned int _Pos = _tzcnt_u32(_Bingo);
 
                             const void* _Match = _First1;
                             _Advance_bytes(_Match, _Pos);
@@ -5064,7 +5064,7 @@ namespace {
                         unsigned long _Bingo = _Traits::_Cmp_avx(_Data1, _Start2);
 
                         while (_Bingo != 0) {
-                            unsigned int _Pos = _tzcnt_u32(_Bingo);
+                            const unsigned int _Pos = _tzcnt_u32(_Bingo);
 
                             if (_Pos > _Left1 - _Size_bytes_2) {
                                 break;
@@ -5103,7 +5103,7 @@ namespace {
                         unsigned long _Bingo = _Traits::_Cmp_avx(_Data1, _Start2);
 
                         while (_Bingo != 0) {
-                            unsigned int _Pos = _tzcnt_u32(_Bingo);
+                            const unsigned int _Pos = _tzcnt_u32(_Bingo);
 
                             const void* _Match = _First1;
                             _Advance_bytes(_Match, _Pos);
