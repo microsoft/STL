@@ -569,8 +569,10 @@ private:
     template <bool _NeedSorting, class _Iter>
     void _Insert_range(const _Iter _First, const _Iter _Last) {
         const size_type _Old_size = size();
+        _Clear_guard _Guard{this};
         _Mycont.insert(_Mycont.end(), _First, _Last);
         _Restore_invariants_after_insert<_NeedSorting>(_Old_size);
+        _Guard._Target = nullptr;
     }
 
     template <class _Ty>
