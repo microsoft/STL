@@ -418,11 +418,6 @@ public:
     }
 
     static _CONSTEXPR17 void assign(_Elem& _Left, const _Elem& _Right) noexcept {
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            return _Primary_char_traits::assign(_Left, _Right);
-        }
-#endif // _HAS_CXX20
         _Left = _Right;
     }
 
@@ -573,11 +568,6 @@ public:
     }
 
     static _CONSTEXPR17 void assign(_Elem& _Left, const _Elem& _Right) noexcept {
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            return _Primary_char_traits::assign(_Left, _Right);
-        }
-#endif // _HAS_CXX20
         _Left = _Right;
     }
 
