@@ -5381,8 +5381,11 @@ namespace {
             }
 
 #ifndef _M_ARM64EC
-            if (_Use_avx2() && _Size_bytes_1 >= 32) {
-                return _Search_cmpeq<_Traits_avx, _Ty>(_First1, _Last1, _First2, _Size_bytes_2);
+            // The AVX2 path for 8-bit elements is not neccessarily more effecient than SSE4.2 cmpestri path
+            if constexpr (sizeof(_Ty) != 1) {
+                if (_Use_avx2() && _Size_bytes_1 >= 32) {
+                    return _Search_cmpeq<_Traits_avx, _Ty>(_First1, _Last1, _First2, _Size_bytes_2);
+                }
             }
 
             if (_Use_sse42() && _Size_bytes_1 >= 16) {
