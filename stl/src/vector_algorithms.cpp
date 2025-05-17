@@ -4904,7 +4904,29 @@ namespace {
         using _Find_seq_traits_avx_4 = void;
         using _Find_seq_traits_avx_8 = void;
 #else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
-        struct _Find_seq_traits_avx_1 {
+        struct _Find_seq_traits_avx {};
+
+        struct _Find_seq_traits_avx_1_2 : _Find_seq_traits_avx {
+            static __m256i _Load_tail(
+                const void* const _Src, const size_t _Size_bytes, __m256i = _mm256_undefined_si256()) noexcept {
+                unsigned char _Tmp[32];
+                memcpy(_Tmp, _Src, _Size_bytes);
+                return _mm256_loadu_si256(reinterpret_cast<__m256i*>(_Tmp));
+            }
+        };
+
+        struct _Find_seq_traits_avx_4_8 : _Find_seq_traits_avx {
+            static __m256i _Load_tail(const void* const _Src, size_t, const __m256i _Mask) noexcept {
+                return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Mask);
+            }
+
+            static __m256i _Load_tail(const void* const _Src, const size_t _Size_bytes) noexcept {
+                const __m256i _Mask = _Avx2_tail_mask_32(_Size_bytes);
+                return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Mask);
+            }
+        };
+
+        struct _Find_seq_traits_avx_1 : _Find_seq_traits_avx_1_2 {
             static __m256i _Broadcast(const __m128i _Data) noexcept {
                 return _mm256_broadcastb_epi8(_Data);
             }
@@ -4914,7 +4936,7 @@ namespace {
             }
         };
 
-        struct _Find_seq_traits_avx_2 {
+        struct _Find_seq_traits_avx_2 : _Find_seq_traits_avx_1_2 {
             static __m256i _Broadcast(const __m128i _Data) noexcept {
                 return _mm256_broadcastw_epi16(_Data);
             }
@@ -4924,7 +4946,7 @@ namespace {
             }
         };
 
-        struct _Find_seq_traits_avx_4 {
+        struct _Find_seq_traits_avx_4 : _Find_seq_traits_avx_4_8 {
             static __m256i _Broadcast(const __m128i _Data) noexcept {
                 return _mm256_broadcastd_epi32(_Data);
             }
@@ -4934,7 +4956,7 @@ namespace {
             }
         };
 
-        struct _Find_seq_traits_avx_8 {
+        struct _Find_seq_traits_avx_8 : _Find_seq_traits_avx_4_8 {
             static __m256i _Broadcast(const __m128i _Data) noexcept {
                 return _mm256_broadcastq_epi64(_Data);
             }
@@ -4944,29 +4966,6 @@ namespace {
             }
         };
 
-        template <class _Ty>
-        __m256i _Avx2_load_tail(const void* const _Src, const size_t _Size_bytes, const __m256i _Mask) noexcept {
-            if constexpr (sizeof(_Ty) >= 4) {
-                return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Mask);
-            } else {
-                unsigned char _Tmp[32];
-                memcpy(_Tmp, _Src, _Size_bytes);
-                return _mm256_loadu_si256(reinterpret_cast<__m256i*>(_Tmp));
-            }
-        }
-
-        template <class _Ty>
-        __m256i _Avx2_load_tail(const void* const _Src, const size_t _Size_bytes) noexcept {
-            if constexpr (sizeof(_Ty) >= 4) {
-                const __m256i _Mask = _Avx2_tail_mask_32(_Size_bytes);
-                return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Mask);
-            } else {
-                unsigned char _Tmp[32];
-                memcpy(_Tmp, _Src, _Size_bytes);
-                return _mm256_loadu_si256(reinterpret_cast<__m256i*>(_Tmp));
-            }
-        }
-
         template <class _Traits, class _Ty>
         const void* _Search_cmpeq(const void* _First1, const void* const _Last1, const void* const _First2,
             const size_t _Size_bytes_2) noexcept {
@@ -4975,7 +4974,7 @@ namespace {
 
             if (_Size_bytes_2 <= 32) {
                 const __m256i _Mask2  = _Avx2_tail_mask_32(_Size_bytes_2);
-                const __m256i _Data2  = _Avx2_load_tail<_Ty>(_First2, _Size_bytes_2, _Mask2);
+                const __m256i _Data2  = _Traits::_Load_tail(_First2, _Size_bytes_2, _Mask2);
                 const __m256i _Start2 = _Traits::_Broadcast(_mm256_castsi256_si128(_Data2));
 
                 const void* _Stop1 = _First1;
@@ -4995,7 +4994,7 @@ namespace {
                             const __m256i _Match_val = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Match));
                             _Cmp                     = _mm256_xor_si256(_Data2, _Match_val);
                         } else if (_Left_match >= _Size_bytes_2) {
-                            const __m256i _Match_val = _Avx2_load_tail<_Ty>(_Match, _Left_match);
+                            const __m256i _Match_val = _Traits::_Load_tail(_Match, _Left_match);
                             _Cmp                     = _mm256_xor_si256(_Data2, _Match_val);
                         } else {
                             break;
@@ -5013,7 +5012,7 @@ namespace {
                 } while (_First1 != _Stop1);
 
                 if (const size_t _Left1 = _Byte_length(_First1, _Last1); _Left1 >= _Size_bytes_2) {
-                    const __m256i _Data1 = _Avx2_load_tail<_Ty>(_First1, _Left1);
+                    const __m256i _Data1 = _Traits::_Load_tail(_First1, _Left1);
                     unsigned long _Bingo = _Traits::_Cmp(_Data1, _Start2);
 
                     while (_Bingo != 0) {
@@ -5027,7 +5026,7 @@ namespace {
                         _Advance_bytes(_Match, _Pos);
 
                         const size_t _Left_match = _Byte_length(_Match, _Last1);
-                        const __m256i _Match_val = _Avx2_load_tail<_Ty>(_Match, _Left_match);
+                        const __m256i _Match_val = _Traits::_Load_tail(_Match, _Left_match);
                         const __m256i _Cmp       = _mm256_xor_si256(_Data2, _Match_val);
 
                         if (_mm256_testz_si256(_Cmp, _Mask2)) {
@@ -5101,7 +5100,7 @@ namespace {
                 _Advance_bytes(_Stop1, _Size_bytes_1 & 0x1F);
 
                 const __m256i _Mask2  = _Avx2_tail_mask_32(_Size_bytes_2);
-                const __m256i _Data2  = _Avx2_load_tail<_Ty>(_First2, _Size_bytes_2, _Mask2);
+                const __m256i _Data2  = _Traits::_Load_tail(_First2, _Size_bytes_2, _Mask2);
                 const __m256i _Start2 = _Traits::_Broadcast(_mm256_castsi256_si128(_Data2));
 
                 const void* _Mid1 = _Last1;
@@ -5116,7 +5115,7 @@ namespace {
                         const void* _Tmp1 = _Mid1;
                         _Advance_bytes(_Tmp1, _Pos);
 
-                        const __m256i _Match_data = _Avx2_load_tail<_Ty>(_Tmp1, _Byte_length(_Tmp1, _Last1));
+                        const __m256i _Match_data = _Traits::_Load_tail(_Tmp1, _Byte_length(_Tmp1, _Last1));
                         const __m256i _Cmp_result = _mm256_xor_si256(_Data2, _Match_data);
 
                         if (_mm256_testz_si256(_Cmp_result, _Mask2)) {
@@ -5281,9 +5280,9 @@ namespace {
             }
 
 #ifndef _M_ARM64EC
-            if (_Use_avx2() && _Size_bytes_1 >= 32) {
-                return _Search_cmpeq<_Traits, _Ty>(_First1, _Last1, _First2, _Size_bytes_2);
-            }
+                if (_Use_avx2() && _Size_bytes_1 >= 32) {
+                    return _Search_cmpeq<_Traits, _Ty>(_First1, _Last1, _First2, _Size_bytes_2);
+                }
 
             if constexpr (sizeof(_Ty) <= 2) {
                 if (_Use_sse42() && _Size_bytes_1 >= 16) {
