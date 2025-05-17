@@ -383,6 +383,107 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 } // extern "C"
 
 namespace {
+    namespace _Rotating {
+        // TRANSITION, GH-5506 "VCRuntime: memmove() is surprisingly slow for more than 8 KB on certain CPUs":
+        // As a workaround, the following code calls memmove() for 8 KB portions.
+        constexpr size_t _Portion_size = 8192;
+        constexpr size_t _Portion_mask = _Portion_size - 1;
+        static_assert((_Portion_size & _Portion_mask) == 0);
+
+        void _Move_to_lower_address(void* _Dest, const void* _Src, const size_t _Size) noexcept {
+            const size_t _Whole_portions_size = _Size & ~_Portion_mask;
+
+            void* _Dest_end = _Dest;
+            _Advance_bytes(_Dest_end, _Whole_portions_size);
+
+            while (_Dest != _Dest_end) {
+                memmove(_Dest, _Src, _Portion_size);
+                _Advance_bytes(_Dest, _Portion_size);
+                _Advance_bytes(_Src, _Portion_size);
+            }
+
+            if (const size_t _Tail = _Size - _Whole_portions_size; _Tail != 0) {
+                memmove(_Dest, _Src, _Tail);
+            }
+        }
+
+        void _Move_to_higher_address(void* const _Dest, const void* const _Src, const size_t _Size) noexcept {
+            const size_t _Whole_portions_size = _Size & ~_Portion_mask;
+
+            void* _Dest_end = _Dest;
+            _Advance_bytes(_Dest_end, _Whole_portions_size);
+            const void* _Src_end = _Src;
+            _Advance_bytes(_Src_end, _Whole_portions_size);
+
+            if (const size_t _Tail = _Size - _Whole_portions_size; _Tail != 0) {
+                memmove(_Dest_end, _Src_end, _Tail);
+            }
+
+            while (_Dest_end != _Dest) {
+                _Rewind_bytes(_Dest_end, _Portion_size);
+                _Rewind_bytes(_Src_end, _Portion_size);
+                memmove(_Dest_end, _Src_end, _Portion_size);
+            }
+        }
+
+        constexpr size_t _Buf_size = 512;
+
+        bool _Use_buffer(const size_t _Smaller, const size_t _Larger) noexcept {
+            return _Smaller <= _Buf_size && (_Smaller <= 128 || _Larger >= _Smaller * 2);
+        }
+    } // namespace _Rotating
+} // unnamed namespace
+
+extern "C" {
+
+__declspec(noalias) void __stdcall __std_rotate(void* _First, void* const _Mid, void* _Last) noexcept {
+    unsigned char _Buf[_Rotating::_Buf_size];
+
+    for (;;) {
+        const size_t _Left  = _Byte_length(_First, _Mid);
+        const size_t _Right = _Byte_length(_Mid, _Last);
+
+        if (_Left <= _Right) {
+            if (_Left == 0) {
+                break;
+            }
+
+            if (_Rotating::_Use_buffer(_Left, _Right)) {
+                memcpy(_Buf, _First, _Left);
+                _Rotating::_Move_to_lower_address(_First, _Mid, _Right);
+                _Advance_bytes(_First, _Right);
+                memcpy(_First, _Buf, _Left);
+                break;
+            }
+
+            void* _Mid2 = _Last;
+            _Rewind_bytes(_Mid2, _Left);
+            __std_swap_ranges_trivially_swappable_noalias(_Mid2, _Last, _First);
+            _Last = _Mid2;
+        } else {
+            if (_Right == 0) {
+                break;
+            }
+
+            if (_Rotating::_Use_buffer(_Right, _Left)) {
+                _Rewind_bytes(_Last, _Right);
+                memcpy(_Buf, _Last, _Right);
+                void* _Mid2 = _First;
+                _Advance_bytes(_Mid2, _Right);
+                _Rotating::_Move_to_higher_address(_Mid2, _First, _Left);
+                memcpy(_First, _Buf, _Right);
+                break;
+            }
+
+            __std_swap_ranges_trivially_swappable_noalias(_Mid, _Last, _First);
+            _Advance_bytes(_First, _Right);
+        }
+    }
+}
+
+} // extern "C"
+
+namespace {
     namespace _Sorting {
         enum _Min_max_mode {
             _Mode_min  = 1 << 0,

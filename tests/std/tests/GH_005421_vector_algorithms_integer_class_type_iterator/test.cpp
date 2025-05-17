@@ -98,7 +98,7 @@ int main() {
         picky_contiguous_iterator float_arr_begin(begin(float_arr));
         picky_contiguous_iterator float_arr_end(end(float_arr));
 
-        transform(arr_begin, arr_end, float_arr_begin, [](int v) { return static_cast<float>(v); });
+        transform(arr_begin, arr_end, float_arr_begin, [](const int v) { return static_cast<float>(v); });
 
         assert(ranges::min(ranges::subrange(float_arr_begin, float_arr_end)) == 200.0);
         assert(ranges::max(ranges::subrange(float_arr_begin, float_arr_end)) == 390.0);
@@ -195,6 +195,30 @@ int main() {
             ranges::copy(arr_begin, arr_end, temp_begin);
             ranges::reverse(temp_begin, temp_end);
             assert(ranges::equal(temp_begin, temp_end, begin(reverse_expected), end(reverse_expected)));
+        }
+        {
+            const int rotate_expected[] = {
+                250, 270, 280, 290, 300, 310, 320, 250, 340, 250, 250, 370, 380, 390, 200, 210, 220, 250, 240, 250};
+
+            const _Signed128 rotate_pos = 6;
+
+            auto rot_copy_it = rotate_copy(arr_begin, arr_begin + rotate_pos, arr_end, temp_begin);
+            assert(equal(temp_begin, temp_end, begin(rotate_expected), end(rotate_expected)));
+            assert(rot_copy_it == temp_end);
+
+            copy(arr_begin, arr_end, temp_begin);
+            auto rot_it = rotate(temp_begin, temp_begin + rotate_pos, temp_end);
+            assert(equal(temp_begin, temp_end, begin(rotate_expected), end(rotate_expected)));
+            assert(rot_it == temp_end - rotate_pos);
+
+            auto r_rot_copy_it = ranges::rotate_copy(arr_begin, arr_begin + rotate_pos, arr_end, temp_begin).out;
+            assert(ranges::equal(temp_begin, temp_end, begin(rotate_expected), end(rotate_expected)));
+            assert(r_rot_copy_it == temp_end);
+
+            ranges::copy(arr_begin, arr_end, temp_begin);
+            auto r_rot_it = begin(ranges::rotate(temp_begin, temp_begin + rotate_pos, temp_end));
+            assert(ranges::equal(temp_begin, temp_end, begin(rotate_expected), end(rotate_expected)));
+            assert(r_rot_it == temp_end - rotate_pos);
         }
         {
             // Out of replace family, only replace for 32-bit and 64-bit elements is manually vectorized,
