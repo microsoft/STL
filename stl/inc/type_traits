@@ -9,7 +9,6 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <xtr1common>
 
 #pragma pack(push, _CRT_PACKING)
@@ -2513,10 +2512,15 @@ void _Swap_trivial_arrays(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept {
     if constexpr (_Size_parts != 0) {
         const auto _Stop = _Left_ptr + _Size_parts;
         do {
-            unsigned char _Buf[_Part_size_bytes];
-            _CSTD memcpy(_Buf, _Left_ptr, _Part_size_bytes);
-            _CSTD memcpy(_Left_ptr, _Right_ptr, _Part_size_bytes);
-            _CSTD memcpy(_Right_ptr, _Buf, _Part_size_bytes);
+            struct _Buffer_type {
+                unsigned char _Data[_Part_size_bytes];
+            };
+
+            _STL_INTERNAL_STATIC_ASSERT(sizeof(_Buffer_type) == _Part_size_bytes); // assume no padding
+
+            const _Buffer_type _Buffer                   = *reinterpret_cast<const _Buffer_type*>(_Left_ptr);
+            *reinterpret_cast<_Buffer_type*>(_Left_ptr)  = *reinterpret_cast<const _Buffer_type*>(_Right_ptr);
+            *reinterpret_cast<_Buffer_type*>(_Right_ptr) = _Buffer;
             _Left_ptr += _Part_size_bytes;
             _Right_ptr += _Part_size_bytes;
 
@@ -2524,10 +2528,15 @@ void _Swap_trivial_arrays(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept {
     }
 
     if constexpr (_Size_tail != 0) {
-        unsigned char _Buf[_Size_tail];
-        _CSTD memcpy(_Buf, _Left_ptr, _Size_tail);
-        _CSTD memcpy(_Left_ptr, _Right_ptr, _Size_tail);
-        _CSTD memcpy(_Right_ptr, _Buf, _Size_tail);
+        struct _Last_buffer_type {
+            unsigned char _Data[_Size_tail];
+        };
+
+        _STL_INTERNAL_STATIC_ASSERT(sizeof(_Last_buffer_type) == _Size_tail); // assume no padding
+
+        const _Last_buffer_type _Last_buffer              = *reinterpret_cast<const _Last_buffer_type*>(_Left_ptr);
+        *reinterpret_cast<_Last_buffer_type*>(_Left_ptr)  = *reinterpret_cast<const _Last_buffer_type*>(_Right_ptr);
+        *reinterpret_cast<_Last_buffer_type*>(_Right_ptr) = _Last_buffer;
     }
 }
 
