@@ -1698,6 +1698,197 @@ void test_gh_5377() {
     }
 }
 
+void test_gh_5490() {
+    // GH-5490: Optional empty repetitions are illegal
+
+    // ECMA-262 15.10.2.5 "Term":
+    // "If min is zero and y's endIndex is equal to x's endIndex, then return failure."
+    // So if no additional repetition is required due to minimum requirements, the match should be rejected.
+
+    // Similarly, POSIX 9.3.6 and 9.4.6 state that a null expression can only be matched if this is the only match or it
+    // is necessary to satisfy the minimum number of repetitions.
+    // Note the subtle difference that the empty match is allowed if it is the only match.
+    for (string pattern : {"()*", "()?", "()*?", "()??", "(){0,}", "(){0,}?", "(){0,1}", "(){0,1}?"}) {
+        test_regex quantified_empty_regex_ecma(&g_regexTester, pattern, ECMAScript);
+        quantified_empty_regex_ecma.should_search_match_capture_groups("", "", match_default, {{-1, -1}});
+        quantified_empty_regex_ecma.should_search_match_capture_groups("b", "", match_default, {{-1, -1}});
+
+        // empty groups are not allowed in EREs
+    }
+
+    for (string pattern : {"()+", "()+?", "(){2,}?", "(){1}"}) {
+        test_regex quantified_empty_regex_ecma(&g_regexTester, pattern, ECMAScript);
+        quantified_empty_regex_ecma.should_search_match_capture_groups("", "", match_default, {{0, 0}});
+        quantified_empty_regex_ecma.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
+
+        // empty groups are not allowed in EREs
+    }
+
+    for (auto option : {basic, grep}) {
+        test_regex quantified_empty_regex_bre(&g_regexTester, R"(\(\)*)", option);
+        quantified_empty_regex_bre.should_search_match_capture_groups("", "", match_default, {{0, 0}});
+        quantified_empty_regex_bre.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
+    }
+
+    for (auto option : {ECMAScript, extended, egrep, awk}) {
+        test_regex simple_sequence_regex_ecma_or_ere(&g_regexTester, "(ab)*", option);
+        simple_sequence_regex_ecma_or_ere.should_search_match_capture_groups("", "", match_default, {{-1, -1}});
+        simple_sequence_regex_ecma_or_ere.should_search_match_capture_groups("b", "", match_default, {{-1, -1}});
+        simple_sequence_regex_ecma_or_ere.should_search_match_capture_groups("ababcc", "abab", match_default, {{2, 4}});
+    }
+
+    for (auto option : {basic, grep}) {
+        test_regex simple_sequence_regex_bre(&g_regexTester, R"(\(ab\)*)", option);
+        simple_sequence_regex_bre.should_search_match_capture_groups("", "", match_default, {{-1, -1}});
+        simple_sequence_regex_bre.should_search_match_capture_groups("b", "", match_default, {{-1, -1}});
+        simple_sequence_regex_bre.should_search_match_capture_groups("ababcc", "abab", match_default, {{2, 4}});
+    }
+
+    for (string pattern : {"(ab(?=ab))*", "(ab(?!cc))*"}) {
+        test_regex nested_assertion_regex_ecma(&g_regexTester, pattern, ECMAScript);
+        nested_assertion_regex_ecma.should_search_match_capture_groups("", "", match_default, {{-1, -1}});
+        nested_assertion_regex_ecma.should_search_match_capture_groups("b", "", match_default, {{-1, -1}});
+        nested_assertion_regex_ecma.should_search_match_capture_groups("ababcc", "ab", match_default, {{0, 2}});
+        nested_assertion_regex_ecma.should_search_match_capture_groups("abababcc", "abab", match_default, {{2, 4}});
+    }
+
+    for (string pattern : {"(a*)*", "(a?)*", "(a?)?"}) {
+        test_regex nested_quantifier_regex_ecma(&g_regexTester, pattern, ECMAScript);
+        nested_quantifier_regex_ecma.should_search_match_capture_groups("", "", match_default, {{-1, -1}});
+        nested_quantifier_regex_ecma.should_search_match_capture_groups("b", "", match_default, {{-1, -1}});
+        nested_quantifier_regex_ecma.should_search_match_capture_groups("a", "a", match_default, {{0, 1}});
+
+        for (auto option : {extended, egrep, awk}) {
+            test_regex nested_quantifier_regex_ere(&g_regexTester, pattern, option);
+            nested_quantifier_regex_ere.should_search_match_capture_groups("", "", match_default, {{0, 0}});
+            nested_quantifier_regex_ere.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
+            nested_quantifier_regex_ere.should_search_match_capture_groups("a", "a", match_default, {{0, 1}});
+        }
+    }
+
+    for (string pattern : {R"(\(a*\)*)", R"(\(a\{0,1\}\)*)", R"(\(a\{0,1\}\)\{0,1\})"}) {
+        for (auto option : {basic, grep}) {
+            test_regex nested_quantifier_regex_bre(&g_regexTester, pattern, option);
+            nested_quantifier_regex_bre.should_search_match_capture_groups("", "", match_default, {{0, 0}});
+            nested_quantifier_regex_bre.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
+            nested_quantifier_regex_bre.should_search_match_capture_groups("a", "a", match_default, {{0, 1}});
+        }
+    }
+
+    for (string pattern : {"(a*)+", "(a?)+"}) {
+        for (auto option : {ECMAScript, extended, egrep, awk}) {
+            test_regex plus_quantifier_regex_ecma_or_ere(&g_regexTester, pattern, option);
+            plus_quantifier_regex_ecma_or_ere.should_search_match_capture_groups("", "", match_default, {{0, 0}});
+            plus_quantifier_regex_ecma_or_ere.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
+            plus_quantifier_regex_ecma_or_ere.should_search_match_capture_groups("a", "a", match_default, {{0, 1}});
+        }
+    }
+
+    for (string pattern : {R"(\(a*\)\{1,\})", R"(\(a\{0,1\}\)\{1,\})"}) {
+        for (auto option : {basic, grep}) {
+            test_regex plus_quantifier_regex_bre(&g_regexTester, pattern, option);
+            plus_quantifier_regex_bre.should_search_match_capture_groups("", "", match_default, {{0, 0}});
+            plus_quantifier_regex_bre.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
+            plus_quantifier_regex_bre.should_search_match_capture_groups("a", "a", match_default, {{0, 1}});
+        }
+    }
+
+    for (string pattern : {"(a*){1}", "(a?){1}"}) {
+        for (auto option : {ECMAScript, extended, egrep, awk}) {
+            test_regex repeat_once_regex_ecma_or_ere(&g_regexTester, pattern, option);
+            repeat_once_regex_ecma_or_ere.should_search_match_capture_groups("", "", match_default, {{0, 0}});
+            repeat_once_regex_ecma_or_ere.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
+            repeat_once_regex_ecma_or_ere.should_search_match_capture_groups("a", "a", match_default, {{0, 1}});
+        }
+    }
+
+    for (string pattern : {R"(\(a*\)\{1\})", R"(\(a\{0,1\}\)\{1\})"}) {
+        for (auto option : {basic, grep}) {
+            test_regex repeat_once_regex_bre(&g_regexTester, pattern, option);
+            repeat_once_regex_bre.should_search_match_capture_groups("", "", match_default, {{0, 0}});
+            repeat_once_regex_bre.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
+            // leftmost-longest rule according to Boost semantics
+            repeat_once_regex_bre.should_search_match_capture_groups("a", "a", match_default, {{0, 1}});
+        }
+    }
+
+    for (string pattern : {"(a*){2}", "(a?){2}"}) {
+        test_regex repeat_twice_regex_ecma(&g_regexTester, pattern, ECMAScript);
+        repeat_twice_regex_ecma.should_search_match_capture_groups("", "", match_default, {{0, 0}});
+        repeat_twice_regex_ecma.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
+        repeat_twice_regex_ecma.should_search_match_capture_groups("a", "a", match_default, {{1, 1}});
+
+        for (auto option : {extended, egrep, awk}) {
+            test_regex repeat_twice_regex_ere(&g_regexTester, pattern, option);
+            repeat_twice_regex_ere.should_search_match_capture_groups("", "", match_default, {{0, 0}});
+            repeat_twice_regex_ere.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
+            // leftmost-longest rule according to Boost semantics
+            repeat_twice_regex_ere.should_search_match_capture_groups("a", "a", match_default, {{0, 1}});
+        }
+    }
+
+    for (string pattern : {R"(\(a*\)\{2\})", R"(\(a\{0,1\}\)\{2\})"}) {
+        for (auto option : {basic, grep}) {
+            test_regex repeat_twice_regex_bre(&g_regexTester, pattern, option);
+            repeat_twice_regex_bre.should_search_match_capture_groups("", "", match_default, {{0, 0}});
+            repeat_twice_regex_bre.should_search_match_capture_groups("b", "", match_default, {{0, 0}});
+            // leftmost-longest rule according to Boost semantics
+            repeat_twice_regex_bre.should_search_match_capture_groups("a", "a", match_default, {{0, 1}});
+        }
+    }
+
+    for (string pattern : {"(a?a?){2}", "(a?a?)+"}) {
+        test_regex repeated_double_question_regex_ecma(&g_regexTester, pattern, ECMAScript);
+        repeated_double_question_regex_ecma.should_search_match_capture_groups("", "", match_default, {{0, 0}});
+        repeated_double_question_regex_ecma.should_search_match_capture_groups("bbb", "", match_default, {{0, 0}});
+        repeated_double_question_regex_ecma.should_search_match_capture_groups("aaa", "aaa", match_default, {{2, 3}});
+
+        for (auto option : {extended, egrep, awk}) {
+            test_regex repeated_double_question_regex_ere(&g_regexTester, pattern, option);
+            repeated_double_question_regex_ere.should_search_match_capture_groups("", "", match_default, {{0, 0}});
+            repeated_double_question_regex_ere.should_search_match_capture_groups("bbb", "", match_default, {{0, 0}});
+            // leftmost-longest rule according to Boost semantics
+            repeated_double_question_regex_ere.should_search_match_capture_groups(
+                "aaa", "aaa", match_default, {{1, 3}});
+        }
+    }
+
+    for (string pattern : {R"(\(a\{0,1\}a\{0,1\}\)\{2\})", R"(\(a\{0,1\}a\{0,1\}\)\{1,\})"}) {
+        for (auto option : {basic, grep}) {
+            test_regex repeated_double_question_regex_bre(&g_regexTester, pattern, option);
+            repeated_double_question_regex_bre.should_search_match_capture_groups("", "", match_default, {{0, 0}});
+            repeated_double_question_regex_bre.should_search_match_capture_groups("bbb", "", match_default, {{0, 0}});
+            // leftmost-longest rule according to Boost semantics
+            repeated_double_question_regex_bre.should_search_match_capture_groups(
+                "aaa", "aaa", match_default, {{1, 3}});
+        }
+    }
+
+    {
+        test_regex backref_ecma(&g_regexTester, R"(a(b?)+c\1d)", ECMAScript);
+        backref_ecma.should_search_fail("abcd");
+        backref_ecma.should_search_match_capture_groups("acd", "acd", match_default, {{1, 1}});
+        backref_ecma.should_search_match_capture_groups("abcbd", "abcbd", match_default, {{1, 2}});
+    }
+
+    for (auto option : {basic, grep}) {
+        test_regex backref_bre(&g_regexTester, R"(a\(b\{0,1\}\)\{1,\}c\1d)", option);
+        backref_bre.should_search_fail("abcd");
+        backref_bre.should_search_match_capture_groups("acd", "acd", match_default, {{1, 1}});
+        backref_bre.should_search_match_capture_groups("abcbd", "abcbd", match_default, {{1, 2}});
+    }
+
+    {
+        test_regex backref_min_repeat_ecma(&g_regexTester, R"((a?){3,4}b\1c)", ECMAScript);
+        backref_min_repeat_ecma.should_search_match_capture_groups("aabc", "aabc", match_default, {{2, 2}});
+    }
+
+    for (auto option : {basic, grep}) {
+        test_regex backref_min_repeat_bre(&g_regexTester, R"(\(a\{0,1\}\)\{3,4\}b\1c)", option);
+        backref_min_repeat_bre.should_search_match_capture_groups("aabc", "aabc", match_default, {{2, 2}});
+    }
+}
+
 void test_gh_5509() {
     // GH-5509 extended the matcher's skip optimization
     // to regexes starting with a loop with at least one repetition,
@@ -1792,6 +1983,7 @@ int main() {
     test_gh_5371();
     test_gh_5374();
     test_gh_5377();
+    test_gh_5490();
     test_gh_5509();
 
     return g_regexTester.result();

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.30.0)
+cmake_minimum_required(VERSION 3.31.0)
 project(msvc_standard_libraries_benchmarks LANGUAGES CXX)
 
 if(DEFINED STL_BINARY_DIR)
@@ -23,7 +23,7 @@ if(DEFINED STL_BINARY_DIR)
         set(VCLIBS_I386_OR_AMD64 "i386")
     elseif(VCLIBS_TARGET_ARCHITECTURE STREQUAL "x64")
         set(VCLIBS_I386_OR_AMD64 "amd64")
-    elseif(VCLIBS_TARGET_ARCHITECTURE STREQUAL "armv7")
+    elseif(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(arm|armv7)$")
         set(VCLIBS_I386_OR_AMD64 "arm")
     elseif(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64")
         set(VCLIBS_I386_OR_AMD64 "arm64")
@@ -119,6 +119,7 @@ add_benchmark(random_integer_generation src/random_integer_generation.cpp)
 add_benchmark(regex_search src/regex_search.cpp)
 add_benchmark(remove src/remove.cpp)
 add_benchmark(replace src/replace.cpp)
+add_benchmark(reverse src/reverse.cpp)
 add_benchmark(search src/search.cpp)
 add_benchmark(search_n src/search_n.cpp)
 add_benchmark(std_copy src/std_copy.cpp)

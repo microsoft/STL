@@ -119,6 +119,7 @@ namespace regex_constants {
         grep       = 0x10,
         egrep      = 0x20,
         _Gmask     = 0x3F,
+        _Any_posix = basic | extended | grep | egrep | awk,
 
         icase    = 0x0100,
         nosubs   = 0x0200,
@@ -1657,6 +1658,17 @@ public:
           _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)), _Traits(_Tr) {
         _Loop_vals.resize(_Re->_Loops);
         _Adl_verify_range(_Pfirst, _Plast);
+        if (_Re->_Flags & _Fl_begin_needs_w) {
+            _Char_class_w = _Lookup_char_class(static_cast<_Elem>('W'));
+        }
+
+        if (_Re->_Flags & _Fl_begin_needs_s) {
+            _Char_class_s = _Lookup_char_class(static_cast<_Elem>('S'));
+        }
+
+        if (_Re->_Flags & _Fl_begin_needs_d) {
+            _Char_class_d = _Lookup_char_class(static_cast<_Elem>('D'));
+        }
     }
 
     void _Setf(regex_constants::match_flag_type _Mf) { // set specified flags
@@ -1739,7 +1751,7 @@ private:
     bool _Do_rep(_Node_rep*, bool, int);
     bool _Do_rep_first(_Node_rep*);
     bool _Find_first_inner_capture_group(_Node_base*, _Loop_vals_v2_t*);
-    bool _Do_class(_Node_base*);
+    _It _Do_class(_Node_base*, _It);
     bool _Match_pat(_Node_base*);
     bool _Better_match();
     bool _Is_wbound() const;
@@ -1758,6 +1770,9 @@ private:
     bool _Full;
     long _Max_complexity_count;
     long _Max_stack_count;
+    typename _RxTraits::char_class_type _Char_class_w{};
+    typename _RxTraits::char_class_type _Char_class_s{};
+    typename _RxTraits::char_class_type _Char_class_d{};
 
 public:
     _Matcher2& operator=(const _Matcher2&) = delete;
@@ -3199,10 +3214,14 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_rep2(int _Min, int _Max, bool _Gre
     _Node_base* _Pos = _Current;
     if (_Pos->_Kind == _N_end_group || _Pos->_Kind == _N_end_capture) {
         _Pos = static_cast<_Node_end_group*>(_Pos)->_Back;
-    }
-
-    if (_Min == 0 && _Max == 1) { // rewrite zero-or-one quantifiers as alternations to make the
-                                  // "simple loop" optimization more likely to engage
+    } else if (_Min == 0 && _Max == 1) {
+        // Rewrite zero-or-one quantifiers as alternations to make the
+        // "simple loop" optimization more likely to engage.
+        //
+        // GH-5490: This rewrite becomes observably incorrect
+        // if the subexpression contains capture groups,
+        // so we don't apply it if the subexpression is surrounded
+        // by a capturing or non-capturing group.
         _Node_endif* _End       = new _Node_endif;
         _Node_if* _If_expr      = new _Node_if(_End);
         _Node_if* _If_empty_str = new _Node_if(_End);
@@ -3226,13 +3245,14 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_rep2(int _Min, int _Max, bool _Gre
             swap(_If_expr->_Next->_Prev, _If_empty_str->_Next->_Prev); // intentional ADL
             swap(_If_expr->_Next, _If_empty_str->_Next); // intentional ADL
         }
-    } else {
-        _Node_end_rep* _Node0 = new _Node_end_rep();
-        _Node_rep* _Nx        = new _Node_rep(_Greedy, _Min, _Max, _Node0, _Root->_Loops++);
-        _Node0->_Begin_rep    = _Nx;
-        _Link_node(_Node0);
-        _Insert_node(_Pos, _Nx);
+        return;
     }
+
+    _Node_end_rep* _Node0 = new _Node_end_rep();
+    _Node_rep* _Nx        = new _Node_rep(_Greedy, _Min, _Max, _Node0, _Root->_Loops++);
+    _Node0->_Begin_rep    = _Nx;
+    _Link_node(_Node0);
+    _Insert_node(_Pos, _Nx);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -3311,26 +3331,30 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
     int _Ix               = 0;
     _Tgt_state_t<_It> _St = _Tgt_state;
 
-    for (; _Ix < _Node->_Min; ++_Ix) { // do minimum number of reps
-        // GH-5365: We have to reset the capture groups from the second iteration on.
-        // We can avoid the reset for the first iteration
-        // because we know that a simple repetition was not encountered before.
-        if (_Ix > 0) {
-            _Tgt_state._Grp_valid = _St._Grp_valid;
-        }
-
-        _It _Cur = _Tgt_state._Cur;
+    if (0 < _Node->_Min) {
+        // GH-5365: We can avoid resetting capture groups for the first iteration
+        // because we know that a simple repetition of this loop was not encountered before.
         if (!_Match_pat(_Node->_Next)) { // didn't match minimum number of reps, fail
-            _Tgt_state = _St;
             return false;
-        } else if (_Cur == _Tgt_state._Cur) {
-            _Ix = _Node->_Min - 1; // skip matches that don't change state
+        } else if (_Tgt_state._Cur == _St._Cur) { // matches empty string
+            // loop is branchless, so it will only ever match empty strings
+            // -> skip all other matches as they don't change state and immediately try tail
+            return _Match_pat(_Node->_End_rep->_Next);
+        } else { // loop never matches the empty string
+            for (_Ix = 1; _Ix < _Node->_Min; ++_Ix) { // do minimum number of reps
+                // GH-5365: We have to reset the capture groups from the second iteration on.
+                _Tgt_state._Grp_valid = _St._Grp_valid;
+                if (!_Match_pat(_Node->_Next)) { // didn't match minimum number of reps, fail
+                    return false;
+                }
+            }
         }
     }
 
-    _Tgt_state_t<_It> _Final = _Tgt_state;
-    bool _Matched0           = false;
-    _It _Saved_pos           = _Tgt_state._Cur;
+    _Tgt_state_t<_It> _Final;
+    bool _Matched0 = false;
+    _It _Saved_pos = _Tgt_state._Cur;
+    bool _Done     = false;
 
     if (_Match_pat(_Node->_End_rep->_Next)) {
         if (!_Greedy) {
@@ -3342,32 +3366,58 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
         _Matched0 = true;
     }
 
-    while (_Node->_Max == -1 || _Ix++ < _Node->_Max) { // try another rep/tail match
+    if (_Ix == 0 && _Node->_Max != 0) {
         _Tgt_state._Cur       = _Saved_pos;
         _Tgt_state._Grp_valid = _St._Grp_valid;
-        if (!_Match_pat(_Node->_Next)) {
-            break; // rep match failed, quit loop
-        }
 
-        _It _Mid = _Tgt_state._Cur;
-        if (_Match_pat(_Node->_End_rep->_Next)) {
-            if (!_Greedy) {
+        if (!_Match_pat(_Node->_Next)) { // rep match failed, we are done
+            _Done = true;
+        } else if (_Saved_pos == _Tgt_state._Cur) { // match empty, try no more repetitions
+            _Done = true;
+            // we only potentially accept/try tail for POSIX
+            if ((_Sflags & regex_constants::_Any_posix) && _Match_pat(_Node->_End_rep->_Next)) {
                 return true; // go with current match
             }
+        } else {
+            _Saved_pos = _Tgt_state._Cur;
+            if (_Match_pat(_Node->_End_rep->_Next)) {
+                if (!_Greedy) {
+                    return true; // go with current match
+                }
 
-            // record match and continue
-            _Final    = _Tgt_state;
-            _Matched0 = true;
+                // record match and continue
+                _Final    = _Tgt_state;
+                _Matched0 = true;
+            }
         }
-
-        if (_Saved_pos == _Mid) {
-            break; // rep match ate no additional elements, quit loop
-        }
-
-        _Saved_pos = _Mid;
+        _Ix = 1;
     }
 
-    _Tgt_state = _Matched0 ? _Final : _St;
+    if (!_Done) {
+        while (_Node->_Max == -1 || _Ix++ < _Node->_Max) { // try another rep/tail match
+            _Tgt_state._Cur       = _Saved_pos;
+            _Tgt_state._Grp_valid = _St._Grp_valid;
+            if (!_Match_pat(_Node->_Next) || _Tgt_state._Cur == _Saved_pos) {
+                break; // rep match failed, quit loop
+            }
+
+            // since loop is branchless, empty rep match is not possible at this point
+            _Saved_pos = _Tgt_state._Cur;
+            if (_Match_pat(_Node->_End_rep->_Next)) {
+                if (!_Greedy) {
+                    return true; // go with current match
+                }
+
+                // record match and continue
+                _Final    = _Tgt_state;
+                _Matched0 = true;
+            }
+        }
+    }
+
+    if (_Matched0) { // record final match
+        _Tgt_state = _Final;
+    }
     return _Matched0;
 }
 
@@ -3381,61 +3431,56 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node,
     _It* _Loop_iter_sav    = static_cast<_It*>(_Psav->_Loop_iter);
     bool _Progress         = _Init_idx == 0 || *_Loop_iter_sav != _St._Cur;
 
-    if (0 <= _Node->_Max && _Node->_Max <= _Init_idx) {
-        _Matched0 = _Match_pat(_Node->_End_rep->_Next); // reps done, try tail
-    } else if (_Init_idx < _Node->_Min) { // try a required rep
-        if (!_Progress) {
-            _Matched0 = _Match_pat(_Node->_End_rep->_Next); // empty, try tail
-        } else { // try another required match
-            _Psav->_Loop_idx  = _Init_idx + 1;
-            _Psav->_Loop_iter = _STD addressof(_St._Cur);
-            _STD fill(_Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Psav->_Group_first),
-                _Tgt_state._Grp_valid.end(), false);
-            _Matched0 = _Match_pat(_Node->_Next);
-        }
-    } else if (_Longest) { // longest, try any number of repetitions
+    if (_Init_idx < _Node->_Min) { // try another required match
+        _Psav->_Loop_iter = _STD addressof(_St._Cur);
+        _Psav->_Loop_idx  = _Progress ? _Init_idx + 1 : _Node->_Min; // try only one more match after an empty match
+        _STD fill(_Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Psav->_Group_first),
+            _Tgt_state._Grp_valid.end(), false);
+        _Matched0 = _Match_pat(_Node->_Next);
+    } else if (_Init_idx == _Node->_Min || _Progress) {
+        if (0 <= _Node->_Max && _Node->_Max <= _Init_idx) {
+            _Matched0 = _Match_pat(_Node->_End_rep->_Next); // reps done, try tail
+        } else if (_Longest) { // longest, try any number of repetitions
 
-        // match with no further repetition
-        _Matched0 = _Match_pat(_Node->_End_rep->_Next);
-        // match with at least one more repetition if last repetition made progress
-        if (_Progress) {
+            // match with no further repetition
+            _Matched0 = _Match_pat(_Node->_End_rep->_Next);
+
+            // try to match with one more repetition
             _Tgt_state        = _St;
             _Psav->_Loop_idx  = _Init_idx + 1;
             _Psav->_Loop_iter = _STD addressof(_St._Cur);
-
             if (_Match_pat(_Node->_Next)) { // always call _Match_pat, even when _Matched0 is already true
                 _Matched0 = true;
             }
+        } else if (!_Greedy) { // not greedy, favor minimum number of reps
+            _Matched0 = _Match_pat(_Node->_End_rep->_Next);
+            if (!_Matched0) { // tail failed, try another rep
+                _Tgt_state        = _St;
+                _Psav->_Loop_idx  = _Init_idx + 1;
+                _Psav->_Loop_iter = _STD addressof(_St._Cur);
+                _STD fill(_Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Psav->_Group_first),
+                    _Tgt_state._Grp_valid.end(), false);
+                _Matched0 = _Match_pat(_Node->_Next);
+            }
+        } else { // greedy, favor maximum number of reps,
+            // so try another rep
+            _Psav->_Loop_idx  = _Init_idx + 1;
+            _Psav->_Loop_iter = _STD addressof(_St._Cur);
+            _STD fill(_Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Psav->_Group_first),
+                _Tgt_state._Grp_valid.end(), false);
+            _Matched0 = _Match_pat(_Node->_Next);
+
+            if (!_Matched0) { // rep failed, try tail
+                _Psav->_Loop_idx  = _Loop_idx_sav;
+                _Psav->_Loop_iter = _Loop_iter_sav;
+                _Tgt_state        = _St;
+                _Matched0         = _Match_pat(_Node->_End_rep->_Next);
+            }
         }
-    } else if (!_Greedy) { // not greedy, favor minimum number of reps
+    } else if (_Init_idx == 1 && (_Sflags & regex_constants::_Any_posix)) {
+        // POSIX allows an empty repetition if the subexpression is matched only once,
+        // so try tail
         _Matched0 = _Match_pat(_Node->_End_rep->_Next);
-        if (!_Matched0 && _Progress) { // tail failed, try another rep
-            _Tgt_state        = _St;
-            _Psav->_Loop_idx  = _Init_idx + 1;
-            _Psav->_Loop_iter = _STD addressof(_St._Cur);
-            _STD fill(_Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Psav->_Group_first),
-                _Tgt_state._Grp_valid.end(), false);
-            _Matched0 = _Match_pat(_Node->_Next);
-        }
-    } else { // greedy, favor maximum number of reps
-        if (_Progress) { // try another rep
-            _Psav->_Loop_idx  = _Init_idx + 1;
-            _Psav->_Loop_iter = _STD addressof(_St._Cur);
-            _STD fill(_Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Psav->_Group_first),
-                _Tgt_state._Grp_valid.end(), false);
-            _Matched0 = _Match_pat(_Node->_Next);
-        }
-
-        if ((_Progress || 1 >= _Init_idx) && !_Matched0) { // rep failed, try tail
-            _Psav->_Loop_idx  = _Loop_idx_sav;
-            _Psav->_Loop_iter = _Loop_iter_sav;
-            _Tgt_state        = _St;
-            _Matched0         = _Match_pat(_Node->_End_rep->_Next);
-        }
-    }
-
-    if (!_Matched0) {
-        _Tgt_state = _St;
     }
 
     _Psav->_Loop_idx  = _Loop_idx_sav;
@@ -3456,9 +3501,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep_first(_Node_rep* 
     // No capture group reset is performed for POSIX regexes,
     // so we prevent any reset by setting the first capture group to the number of capture groups _Ncap.
     if (_Psav->_Group_first == 0) {
-        constexpr auto _Any_posix = regex_constants::basic | regex_constants::extended | regex_constants::grep
-                                  | regex_constants::egrep | regex_constants::awk;
-        if ((_Sflags & _Any_posix) || !_Find_first_inner_capture_group(_Node->_Next, _Psav)) {
+        if ((_Sflags & regex_constants::_Any_posix) || !_Find_first_inner_capture_group(_Node->_Next, _Psav)) {
             _Psav->_Group_first = _Ncap;
         }
     }
@@ -3679,9 +3722,10 @@ _BidIt _Lookup_coll2(_Elem _First_ch, _BidIt _First, const _BidIt _Last, const _
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx) { // apply bracket expression
+_It _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx, _It _First) {
+    // apply bracket expression
     bool _Found;
-    _Elem _Ch = *_Tgt_state._Cur;
+    _Elem _Ch = *_First;
     if (_Sflags & regex_constants::icase) {
         _Ch = _Traits.translate_nocase(_Ch);
     } else if (_Sflags & regex_constants::collate) {
@@ -3689,13 +3733,13 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx
     }
     const auto _UCh = static_cast<typename _RxTraits::_Uelem>(_Ch);
 
-    _It _Res0 = _Tgt_state._Cur;
+    _It _Res0 = _First;
     ++_Res0;
     _It _Resx;
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
     if (_Node->_Coll
-        && (_Resx = _STD _Lookup_coll2(_Ch, _Tgt_state._Cur, _End, _Node->_Coll, _Traits, _Sflags))
-               != _Tgt_state._Cur) { // check for collation element
+        && (_Resx = _STD _Lookup_coll2(_Ch, _First, _End, _Node->_Coll, _Traits, _Sflags))
+               != _First) { // check for collation element
         _Res0  = _Resx;
         _Found = true;
     } else if (_Node->_Ranges
@@ -3715,14 +3759,11 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx
         _Found = true;
     } else if (_Node->_Equiv && _STD _Lookup_equiv2(_Ch, _Node->_Equiv, _Traits)) {
         _Found = true;
-    } else if ((_Node->_Flags & _Fl_class_negated_w)
-               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('W')))) {
+    } else if ((_Node->_Flags & _Fl_class_negated_w) && !_Traits.isctype(_Ch, _Char_class_w)) {
         _Found = true;
-    } else if ((_Node->_Flags & _Fl_class_negated_s)
-               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('S')))) {
+    } else if ((_Node->_Flags & _Fl_class_negated_s) && !_Traits.isctype(_Ch, _Char_class_s)) {
         _Found = true;
-    } else if ((_Node->_Flags & _Fl_class_negated_d)
-               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('D')))) {
+    } else if ((_Node->_Flags & _Fl_class_negated_d) && !_Traits.isctype(_Ch, _Char_class_d)) {
         _Found = true;
     } else {
         _Found = false;
@@ -3731,10 +3772,9 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx
     const bool _Negated = (_Node->_Flags & _Fl_negate) != 0;
 
     if (_Found == _Negated) {
-        return false;
-    } else { // record result
-        _Tgt_state._Cur = _Res0;
-        return true;
+        return _First;
+    } else {
+        return _Res0;
     }
 }
 
@@ -3833,10 +3873,8 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
             if (_Tgt_state._Cur == _End) {
                 _Failed = true;
             } else {
-                constexpr auto _Any_posix = regex_constants::basic | regex_constants::extended | regex_constants::grep
-                                          | regex_constants::egrep | regex_constants::awk;
                 const _Elem _Ch = *_Tgt_state._Cur;
-                if (_Sflags & _Any_posix) {
+                if (_Sflags & regex_constants::_Any_posix) {
                     if (_Ch == _Elem()) {
                         _Failed = true;
                     }
@@ -3868,7 +3906,12 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 
         case _N_class:
             { // check for bracket expression match
-                _Failed = _Tgt_state._Cur == _End || !_Do_class(_Nx);
+                _It _Res;
+                if (_Tgt_state._Cur != _End && (_Res = _Do_class(_Nx, _Tgt_state._Cur)) != _Tgt_state._Cur) {
+                    _Tgt_state._Cur = _Res;
+                } else {
+                    _Failed = true;
+                }
                 break;
             }
 
@@ -4046,56 +4089,10 @@ _BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(_BidIt _First_arg
 
         case _N_class:
             { // check for string match
+                _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
+
                 for (; _First_arg != _Last; ++_First_arg) { // look for starting match
-                    bool _Found;
-                    _Elem _Ch = *_First_arg;
-                    if (_Sflags & regex_constants::icase) {
-                        _Ch = _Traits.translate_nocase(_Ch);
-                    } else if (_Sflags & regex_constants::collate) {
-                        _Ch = _Traits.translate(_Ch);
-                    }
-                    const auto _UCh = static_cast<typename _RxTraits::_Uelem>(_Ch);
-
-                    _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
-
-                    if (_Node->_Coll
-                        && _STD _Lookup_coll2(_Ch, _First_arg, _Last, _Node->_Coll, _Traits, _Sflags) != _First_arg) {
-                        _Found = true;
-                    } else if (_Node->_Ranges
-                               && (_Sflags & regex_constants::collate
-                                       ? _STD _Lookup_collating_range(_Ch, _Node->_Ranges, _Traits)
-                                       : _STD _Lookup_range(_UCh, _Node->_Ranges))) {
-                        _Found = true;
-                    } else if (_UCh < _Bmp_max) {
-                        _Found = _Node->_Small && _Node->_Small->_Find(_UCh);
-                    } else if (_Node->_Large
-                               && _STD find(_Node->_Large->_Str(), _Node->_Large->_Str() + _Node->_Large->_Size(), _Ch)
-                                      != _Node->_Large->_Str() + _Node->_Large->_Size()) {
-                        _Found = true;
-                    } else if (_Node->_Classes != typename _RxTraits::char_class_type{}
-                               && _Traits.isctype(_Ch, _Node->_Classes)) {
-                        _Found = true;
-                    } else if ((_Node->_Flags & _Fl_class_cl_all_bits)
-                               && _Traits.isctype(_Ch, static_cast<typename _RxTraits::char_class_type>(-1))) {
-                        _Found = true;
-                    } else if (_Node->_Equiv && _STD _Lookup_equiv2(_Ch, _Node->_Equiv, _Traits)) {
-                        _Found = true;
-                    } else if ((_Node->_Flags & _Fl_class_negated_w)
-                               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('W')))) {
-                        _Found = true;
-                    } else if ((_Node->_Flags & _Fl_class_negated_s)
-                               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('S')))) {
-                        _Found = true;
-                    } else if ((_Node->_Flags & _Fl_class_negated_d)
-                               && !_Traits.isctype(_Ch, _Lookup_char_class(static_cast<_Elem>('D')))) {
-                        _Found = true;
-                    } else {
-                        _Found = false;
-                    }
-
-                    const bool _Negated = (_Node->_Flags & _Fl_negate) != 0;
-
-                    if (_Found != _Negated) {
+                    if (_Do_class(_Node, _First_arg) != _First_arg) {
                         return _First_arg;
                     }
                 }
@@ -4931,10 +4928,18 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
             _Calculate_loop_simplicity(static_cast<_Node_assert*>(_Nx)->_Child, nullptr, nullptr);
             break;
         case _N_rep:
-            // _Node_rep inside another _Node_rep makes both not simple
+            // _Node_rep inside another _Node_rep makes both not simple if _Outer_rep can be repeated more than once
+            // because _Matcher2::_Do_rep0() does not reset capture group boundaries when control is returned to it.
+            // If _Outer_rep can repeat at most once, we have to analyze the structure of the inner loop.
             if (_Outer_rep) {
-                _Outer_rep->_Simple_loop                   = 0;
-                static_cast<_Node_rep*>(_Nx)->_Simple_loop = 0;
+                _Outer_rep->_Simple_loop = 0;
+                auto _Inner_rep          = static_cast<_Node_rep*>(_Nx);
+                if (_Outer_rep->_Max >= 0 && _Outer_rep->_Max <= 1) {
+                    _Calculate_loop_simplicity(_Inner_rep->_Next, _Inner_rep->_End_rep->_Next, _Inner_rep);
+                    _Nx = _Inner_rep->_End_rep;
+                } else {
+                    _Inner_rep->_Simple_loop = 0;
+                }
             } else {
                 _Outer_rep = static_cast<_Node_rep*>(_Nx);
             }
