@@ -4899,47 +4899,47 @@ __declspec(noalias) size_t __stdcall __std_find_last_not_of_trivial_pos_2(const 
 namespace {
     namespace _Find_seq {
 #ifdef _M_ARM64EC
-        using _Find_seq_traits_1 = void;
-        using _Find_seq_traits_2 = void;
-        using _Find_seq_traits_4 = void;
-        using _Find_seq_traits_8 = void;
+        using _Find_seq_traits_avx_1 = void;
+        using _Find_seq_traits_avx_2 = void;
+        using _Find_seq_traits_avx_4 = void;
+        using _Find_seq_traits_avx_8 = void;
 #else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
-        struct _Find_seq_traits_1 {
-            static __m256i _Broadcast_avx(const __m128i _Data) noexcept {
+        struct _Find_seq_traits_avx_1 {
+            static __m256i _Broadcast(const __m128i _Data) noexcept {
                 return _mm256_broadcastb_epi8(_Data);
             }
 
-            static unsigned long _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            static unsigned long _Cmp(const __m256i _Lhs, const __m256i _Rhs) noexcept {
                 return _mm256_movemask_epi8(_mm256_cmpeq_epi8(_Lhs, _Rhs));
             }
         };
 
-        struct _Find_seq_traits_2 {
-            static __m256i _Broadcast_avx(const __m128i _Data) noexcept {
+        struct _Find_seq_traits_avx_2 {
+            static __m256i _Broadcast(const __m128i _Data) noexcept {
                 return _mm256_broadcastw_epi16(_Data);
             }
 
-            static unsigned long _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            static unsigned long _Cmp(const __m256i _Lhs, const __m256i _Rhs) noexcept {
                 return _mm256_movemask_epi8(_mm256_cmpeq_epi16(_Lhs, _Rhs)) & 0x55555555;
             }
         };
 
-        struct _Find_seq_traits_4 {
-            static __m256i _Broadcast_avx(const __m128i _Data) noexcept {
+        struct _Find_seq_traits_avx_4 {
+            static __m256i _Broadcast(const __m128i _Data) noexcept {
                 return _mm256_broadcastd_epi32(_Data);
             }
 
-            static unsigned long _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            static unsigned long _Cmp(const __m256i _Lhs, const __m256i _Rhs) noexcept {
                 return _mm256_movemask_epi8(_mm256_cmpeq_epi32(_Lhs, _Rhs)) & 0x11111111;
             }
         };
 
-        struct _Find_seq_traits_8 {
-            static __m256i _Broadcast_avx(const __m128i _Data) noexcept {
+        struct _Find_seq_traits_avx_8 {
+            static __m256i _Broadcast(const __m128i _Data) noexcept {
                 return _mm256_broadcastq_epi64(_Data);
             }
 
-            static unsigned long _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            static unsigned long _Cmp(const __m256i _Lhs, const __m256i _Rhs) noexcept {
                 return _mm256_movemask_epi8(_mm256_cmpeq_epi64(_Lhs, _Rhs)) & 0x01010101;
             }
         };
@@ -4994,13 +4994,13 @@ namespace {
                 if (_Size_bytes_2 <= 32) {
                     const __m256i _Mask2  = _Avx2_tail_mask_32(_Size_bytes_2);
                     const __m256i _Data2  = _Avx2_load_tail<_Ty>(_First2, _Size_bytes_2, _Mask2);
-                    const __m256i _Start2 = _Traits::_Broadcast_avx(_mm256_castsi256_si128(_Data2));
+                    const __m256i _Start2 = _Traits::_Broadcast(_mm256_castsi256_si128(_Data2));
 
                     const void* _Stop1 = _First1;
                     _Advance_bytes(_Stop1, _Size_bytes_1 & ~size_t{0x1F});
                     do {
                         const __m256i _Data1 = _mm256_loadu_si256(static_cast<const __m256i*>(_First1));
-                        unsigned long _Bingo = _Traits::_Cmp_avx(_Data1, _Start2);
+                        unsigned long _Bingo = _Traits::_Cmp(_Data1, _Start2);
 
                         while (_Bingo != 0) {
                             const unsigned int _Pos = _tzcnt_u32(_Bingo);
@@ -5032,7 +5032,7 @@ namespace {
 
                     if (const size_t _Left1 = _Byte_length(_First1, _Last1); _Left1 >= _Size_bytes_2) {
                         const __m256i _Data1 = _Avx2_load_tail<_Ty>(_First1, _Left1);
-                        unsigned long _Bingo = _Traits::_Cmp_avx(_Data1, _Start2);
+                        unsigned long _Bingo = _Traits::_Cmp(_Data1, _Start2);
 
                         while (_Bingo != 0) {
                             const unsigned int _Pos = _tzcnt_u32(_Bingo);
@@ -5059,7 +5059,7 @@ namespace {
                     return _Last1;
                 } else { // _Size_bytes_2 is greater than 32 bytes
                     const __m256i _Data2  = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First2));
-                    const __m256i _Start2 = _Traits::_Broadcast_avx(_mm256_castsi256_si128(_Data2));
+                    const __m256i _Start2 = _Traits::_Broadcast(_mm256_castsi256_si128(_Data2));
 
                     const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2;
 
@@ -5071,7 +5071,7 @@ namespace {
 
                     do {
                         const __m256i _Data1 = _mm256_loadu_si256(static_cast<const __m256i*>(_First1));
-                        unsigned long _Bingo = _Traits::_Cmp_avx(_Data1, _Start2);
+                        unsigned long _Bingo = _Traits::_Cmp(_Data1, _Start2);
 
                         while (_Bingo != 0) {
                             const unsigned int _Pos = _tzcnt_u32(_Bingo);
@@ -5271,7 +5271,7 @@ namespace {
 
                     const __m256i _Mask2  = _Avx2_tail_mask_32(_Size_bytes_2);
                     const __m256i _Data2  = _Avx2_load_tail<_Ty>(_First2, _Size_bytes_2, _Mask2);
-                    const __m256i _Start2 = _Traits::_Broadcast_avx(_mm256_castsi256_si128(_Data2));
+                    const __m256i _Start2 = _Traits::_Broadcast(_mm256_castsi256_si128(_Data2));
 
                     const void* _Mid1 = _Last1;
                     _Rewind_bytes(_Mid1, 32);
@@ -5323,7 +5323,7 @@ namespace {
 
                     // The very last part, for any match needle should fit, otherwise false match
                     const __m256i _Data1_last           = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Mid1));
-                    const unsigned long _Match_last_val = _Traits::_Cmp_avx(_Data1_last, _Start2);
+                    const unsigned long _Match_last_val = _Traits::_Cmp(_Data1_last, _Start2);
                     if (_Check_first(_Match_last_val & _Needle_fit_mask)) {
                         return _Mid1;
                     }
@@ -5332,7 +5332,7 @@ namespace {
                     while (_Mid1 != _Stop1) {
                         _Rewind_bytes(_Mid1, 32);
                         const __m256i _Data1           = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Mid1));
-                        const unsigned long _Match_val = _Traits::_Cmp_avx(_Data1, _Start2);
+                        const unsigned long _Match_val = _Traits::_Cmp(_Data1, _Start2);
                         if (_Check(_Match_val)) {
                             return _Mid1;
                         }
@@ -5342,7 +5342,7 @@ namespace {
                     if (const size_t _Tail_bytes_1 = _Size_bytes_1 & 0x1F; _Tail_bytes_1 != 0) {
                         _Mid1                          = _First1;
                         const __m256i _Data1           = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Mid1));
-                        const unsigned long _Match_val = _Traits::_Cmp_avx(_Data1, _Start2);
+                        const unsigned long _Match_val = _Traits::_Cmp(_Data1, _Start2);
                         if (_Match_val != 0 && _Check(_Match_val & ((1 << _Tail_bytes_1) - 1))) {
                             return _Mid1;
                         }
@@ -5351,7 +5351,7 @@ namespace {
                     return _Last1;
                 } else { // _Size_bytes_2 is greater than 32 bytes
                     const __m256i _Data2  = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First2));
-                    const __m256i _Start2 = _Traits::_Broadcast_avx(_mm256_castsi256_si128(_Data2));
+                    const __m256i _Start2 = _Traits::_Broadcast(_mm256_castsi256_si128(_Data2));
 
                     const void* _Tail2 = _First2;
                     _Advance_bytes(_Tail2, 32);
@@ -5409,7 +5409,7 @@ namespace {
                         _Rewind_bytes(_Mid1, 32);
 
                         const __m256i _Data1           = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Mid1));
-                        const unsigned long _Match_val = _Traits::_Cmp_avx(_Data1, _Start2);
+                        const unsigned long _Match_val = _Traits::_Cmp(_Data1, _Start2);
                         if (_Check(_Match_val)) {
                             return _Mid1;
                         }
@@ -5419,7 +5419,7 @@ namespace {
                     if (const size_t _Tail_bytes_1 = _Size_diff_bytes & 0x1F; _Tail_bytes_1 != 0) {
                         _Mid1                          = _First1;
                         const __m256i _Data1           = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Mid1));
-                        const unsigned long _Match_val = _Traits::_Cmp_avx(_Data1, _Start2);
+                        const unsigned long _Match_val = _Traits::_Cmp(_Data1, _Start2);
                         if (_Match_val != 0 && _Check(_Match_val & ((1 << _Tail_bytes_1) - 1))) {
                             return _Mid1;
                         }
@@ -5666,50 +5666,50 @@ extern "C" {
 
 const void* __stdcall __std_search_1(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Search_impl<_Finding::_Find_traits_1, _Find_seq::_Find_seq_traits_1, uint8_t>(
+    return _Find_seq::_Search_impl<_Finding::_Find_traits_1, _Find_seq::_Find_seq_traits_avx_1, uint8_t>(
         _First1, _Last1, _First2, _Count2);
 }
 
 const void* __stdcall __std_search_2(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Search_impl<_Finding::_Find_traits_2, _Find_seq::_Find_seq_traits_2, uint16_t>(
+    return _Find_seq::_Search_impl<_Finding::_Find_traits_2, _Find_seq::_Find_seq_traits_avx_2, uint16_t>(
         _First1, _Last1, _First2, _Count2);
 }
 
 const void* __stdcall __std_search_4(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Search_impl<_Finding::_Find_traits_4, _Find_seq::_Find_seq_traits_4, uint32_t>(
+    return _Find_seq::_Search_impl<_Finding::_Find_traits_4, _Find_seq::_Find_seq_traits_avx_4, uint32_t>(
         _First1, _Last1, _First2, _Count2);
 }
 
 const void* __stdcall __std_search_8(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Search_impl<_Finding::_Find_traits_8, _Find_seq::_Find_seq_traits_8, uint64_t>(
+    return _Find_seq::_Search_impl<_Finding::_Find_traits_8, _Find_seq::_Find_seq_traits_avx_8, uint64_t>(
         _First1, _Last1, _First2, _Count2);
 }
 
 
 const void* __stdcall __std_find_end_1(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_1, _Find_seq::_Find_seq_traits_1, uint8_t>(
+    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_1, _Find_seq::_Find_seq_traits_avx_1, uint8_t>(
         _First1, _Last1, _First2, _Count2);
 }
 
 const void* __stdcall __std_find_end_2(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_2, _Find_seq::_Find_seq_traits_2, uint16_t>(
+    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_2, _Find_seq::_Find_seq_traits_avx_2, uint16_t>(
         _First1, _Last1, _First2, _Count2);
 }
 
 const void* __stdcall __std_find_end_4(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_4, _Find_seq::_Find_seq_traits_4, uint32_t>(
+    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_4, _Find_seq::_Find_seq_traits_avx_4, uint32_t>(
         _First1, _Last1, _First2, _Count2);
 }
 
 const void* __stdcall __std_find_end_8(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_8, _Find_seq::_Find_seq_traits_8, uint64_t>(
+    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_8, _Find_seq::_Find_seq_traits_avx_8, uint64_t>(
         _First1, _Last1, _First2, _Count2);
 }
 
