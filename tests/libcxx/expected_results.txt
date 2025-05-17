@@ -323,15 +323,6 @@ std/containers/container.adaptors/flat.set/flat.set.cons/move.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move_assign.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.cons/move_assign.pass.cpp FAIL
 
-# FIXME! Assertion failed: std::is_sorted(m.begin(), m.end(), m.key_comp())
-std/containers/container.adaptors/flat.set/flat.set.modifiers/emplace_hint.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/emplace.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_cv.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_cv.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_rv.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_rv.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_transparent.pass.cpp FAIL
-
 # FIXME! Assertion failed: r == m.begin() + 2
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/emplace_hint.pass.cpp FAIL
 
