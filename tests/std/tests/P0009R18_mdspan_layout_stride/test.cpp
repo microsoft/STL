@@ -386,7 +386,7 @@ constexpr void check_required_span_size() {
         using M1 = layout_stride::mapping<extents<int, 3, 3, 0, 3>>;
         static_assert(M1{}.required_span_size() == 0);
 
-        layout_stride::mapping<dextents<int, 4>> m2{dextents<int, 4>{3, 0, 3, 3}, array{1, 3, 1, 1}};
+        layout_stride::mapping<dextents<int, 4>> m2{dextents<int, 4>{3, 0, 3, 3}, array{1, 3, 1, 3}};
         assert(m2.required_span_size() == 0);
     }
 
@@ -800,37 +800,37 @@ constexpr void check_correctness() {
 
     { // 3x2x2 tensor
         using E = extents<int, 3, 2, 2>;
-        const array vals{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
-        layout_stride::mapping<E> m{E{}, array{8, 1, 6}}; // non-exhaustive mapping
+        const array vals{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+        layout_stride::mapping<E> m{E{}, array{7, 1, 3}}; // non-exhaustive mapping
         assert(!m.is_exhaustive());
         mdspan<const int, E, layout_stride> tensor{vals.data(), m};
 
 #ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
         assert((tensor[0, 0, 0] == 0));
-        assert((tensor[0, 0, 1] == 6));
+        assert((tensor[0, 0, 1] == 3));
         assert((tensor[0, 1, 0] == 1));
-        assert((tensor[0, 1, 1] == 7));
-        assert((tensor[1, 0, 0] == 8));
-        assert((tensor[1, 0, 1] == 14));
-        assert((tensor[1, 1, 0] == 9));
-        assert((tensor[1, 1, 1] == 15));
-        assert((tensor[2, 0, 0] == 16));
-        assert((tensor[2, 0, 1] == 22));
-        assert((tensor[2, 1, 0] == 17));
-        assert((tensor[2, 1, 1] == 23));
+        assert((tensor[0, 1, 1] == 4));
+        assert((tensor[1, 0, 0] == 7));
+        assert((tensor[1, 0, 1] == 10));
+        assert((tensor[1, 1, 0] == 8));
+        assert((tensor[1, 1, 1] == 11));
+        assert((tensor[2, 0, 0] == 14));
+        assert((tensor[2, 0, 1] == 17));
+        assert((tensor[2, 1, 0] == 15));
+        assert((tensor[2, 1, 1] == 18));
 #else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
         assert((tensor[array{0, 0, 0}] == 0));
-        assert((tensor[array{0, 0, 1}] == 6));
+        assert((tensor[array{0, 0, 1}] == 3));
         assert((tensor[array{0, 1, 0}] == 1));
-        assert((tensor[array{0, 1, 1}] == 7));
-        assert((tensor[array{1, 0, 0}] == 8));
-        assert((tensor[array{1, 0, 1}] == 14));
-        assert((tensor[array{1, 1, 0}] == 9));
-        assert((tensor[array{1, 1, 1}] == 15));
-        assert((tensor[array{2, 0, 0}] == 16));
-        assert((tensor[array{2, 0, 1}] == 22));
-        assert((tensor[array{2, 1, 0}] == 17));
-        assert((tensor[array{2, 1, 1}] == 23));
+        assert((tensor[array{0, 1, 1}] == 4));
+        assert((tensor[array{1, 0, 0}] == 7));
+        assert((tensor[array{1, 0, 1}] == 10));
+        assert((tensor[array{1, 1, 0}] == 8));
+        assert((tensor[array{1, 1, 1}] == 11));
+        assert((tensor[array{2, 0, 0}] == 14));
+        assert((tensor[array{2, 0, 1}] == 17));
+        assert((tensor[array{2, 1, 0}] == 15));
+        assert((tensor[array{2, 1, 1}] == 18));
 #endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
     }
 
