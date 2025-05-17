@@ -27,7 +27,7 @@ endif()
 
 string(TOLOWER "${VCLIBS_TARGET_ARCHITECTURE}" VCLIBS_TARGET_ARCHITECTURE)
 
-if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^x64$|^x86$")
+if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(x86|x64)$")
     enable_language(ASM_MASM)
 endif()
 
@@ -67,7 +67,7 @@ elseif(VCLIBS_TARGET_ARCHITECTURE STREQUAL "x64")
     set(VCLIBS_I386_OR_AMD64 "amd64")
     set(VCLIBS_X86_OR_X64 "x64")
     add_compile_definitions(_AMD64_ _VCRT_WIN32_WINNT=0x0501 _STL_WIN32_WINNT=0x0501)
-elseif(VCLIBS_TARGET_ARCHITECTURE STREQUAL "armv7")
+elseif(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(arm|armv7)$")
     set(VCLIBS_TARGET_ARCHITECTURE "arm")
     set(VCLIBS_I386_OR_AMD64 "arm")
     set(VCLIBS_X86_OR_X64 "arm")
@@ -108,6 +108,12 @@ if(STL_USE_ANALYZE)
     # LPARAM is a LONG_PTR (intptr_t), and it's invalid to apply _In_opt_ to a non-pointer.
     # As of the Windows 11 SDK (10.0.22621.0), there are 5 total occurrences of warning C6553 affecting the STL's build.
     add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553>")
+
+    if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64ec")
+        # TRANSITION, the Windows SDK emits "warning C28301: No annotations for first declaration of 'meow'"
+        # for various intrinsics when building for ARM64EC.
+        add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/wd28301>")
+    endif()
 endif()
 
 set(VCLIBS_DEBUG_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/Od>")
