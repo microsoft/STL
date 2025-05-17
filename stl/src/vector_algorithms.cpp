@@ -5787,8 +5787,7 @@ extern "C" {
 
 const void* __stdcall __std_search_1(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-    return _Find_seq::_Search_impl<_Finding::_Find_traits_1, _Find_seq::_Find_seq_traits_avx_1, void, uint8_t>(
-        _First1, _Last1, _First2, _Count2);
+    return _Find_seq::_Search_impl<_Finding::_Find_traits_1, void, void, uint8_t>(_First1, _Last1, _First2, _Count2);
 }
 
 const void* __stdcall __std_search_2(
