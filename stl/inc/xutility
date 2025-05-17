@@ -79,6 +79,8 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* _Last1, void* _First2) noexcept;
 
+__declspec(noalias) void __stdcall __std_rotate(void* _First, void* _Mid, void* _Last) noexcept;
+
 __declspec(noalias) size_t __stdcall __std_count_trivial_1(
     const void* _First, const void* _Last, uint8_t _Val) noexcept;
 __declspec(noalias) size_t __stdcall __std_count_trivial_2(
@@ -107,11 +109,20 @@ const void* __stdcall __std_search_1(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
 const void* __stdcall __std_search_2(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
+const void* __stdcall __std_search_4(
+    const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
+const void* __stdcall __std_search_8(
+    const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
 
 const void* __stdcall __std_find_end_1(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
 const void* __stdcall __std_find_end_2(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
+const void* __stdcall __std_find_end_4(
+    const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
+const void* __stdcall __std_find_end_8(
+    const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
+
 
 const void* __stdcall __std_min_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_min_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
@@ -270,6 +281,10 @@ _Ty1* _Search_vectorized(_Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _F
         return const_cast<_Ty1*>(static_cast<const _Ty1*>(::__std_search_1(_First1, _Last1, _First2, _Count2)));
     } else if constexpr (sizeof(_Ty1) == 2) {
         return const_cast<_Ty1*>(static_cast<const _Ty1*>(::__std_search_2(_First1, _Last1, _First2, _Count2)));
+    } else if constexpr (sizeof(_Ty1) == 4) {
+        return const_cast<_Ty1*>(static_cast<const _Ty1*>(::__std_search_4(_First1, _Last1, _First2, _Count2)));
+    } else if constexpr (sizeof(_Ty1) == 8) {
+        return const_cast<_Ty1*>(static_cast<const _Ty1*>(::__std_search_8(_First1, _Last1, _First2, _Count2)));
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
@@ -283,6 +298,10 @@ _Ty1* _Find_end_vectorized(
         return const_cast<_Ty1*>(static_cast<const _Ty1*>(::__std_find_end_1(_First1, _Last1, _First2, _Count2)));
     } else if constexpr (sizeof(_Ty1) == 2) {
         return const_cast<_Ty1*>(static_cast<const _Ty1*>(::__std_find_end_2(_First1, _Last1, _First2, _Count2)));
+    } else if constexpr (sizeof(_Ty1) == 4) {
+        return const_cast<_Ty1*>(static_cast<const _Ty1*>(::__std_find_end_4(_First1, _Last1, _First2, _Count2)));
+    } else if constexpr (sizeof(_Ty1) == 8) {
+        return const_cast<_Ty1*>(static_cast<const _Ty1*>(::__std_find_end_8(_First1, _Last1, _First2, _Count2)));
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
@@ -5505,8 +5524,7 @@ constexpr bool _Equal_memcmp_is_safe =
 
 // Can we activate the vector algorithms for std::search?
 template <class _It1, class _It2, class _Pr>
-constexpr bool _Vector_alg_in_search_is_safe = _Equal_memcmp_is_safe<_It1, _It2, _Pr> // can search bitwise
-                                            && sizeof(_Iter_value_t<_It1>) <= 2; // pcmpestri compatible element size
+constexpr bool _Vector_alg_in_search_is_safe = _Equal_memcmp_is_safe<_It1, _It2, _Pr>;
 
 template <class _CtgIt1, class _CtgIt2>
 _NODISCARD int _Memcmp_count(_CtgIt1 _First1, _CtgIt2 _First2, const size_t _Count) {
@@ -6584,6 +6602,17 @@ _CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
     }
 
     if constexpr (_Is_cpp17_random_iter_v<_FwdIt>) {
+#if _USE_STD_VECTOR_ALGORITHMS
+        using _Elem = remove_reference_t<_Iter_ref_t<decltype(_UFirst)>>;
+
+        if constexpr (conjunction_v<bool_constant<_Iterator_is_contiguous<decltype(_UFirst)>>,
+                          _Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>) {
+            if (!_STD _Is_constant_evaluated()) {
+                ::__std_rotate(_STD _To_address(_UFirst), _STD _To_address(_UMid), _STD _To_address(_ULast));
+                return _First + (_Last - _Mid);
+            }
+        }
+#endif // _USE_STD_VECTOR_ALGORITHMS
         _STD reverse(_UFirst, _UMid);
         _STD reverse(_UMid, _ULast);
         _STD reverse(_UFirst, _ULast);

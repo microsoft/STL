@@ -2734,18 +2734,9 @@ _EXPORT_STD inline void* align(size_t _Bound, size_t _Size, void*& _Ptr, size_t&
     return _Ptr;
 }
 
-template <class _Ty, class = void>
-constexpr bool _Is_transparent_v = false;
-
-template <class _Ty>
-constexpr bool _Is_transparent_v<_Ty, void_t<typename _Ty::is_transparent>> = true;
-
-template <class _Ty>
-struct _Is_transparent : bool_constant<_Is_transparent_v<_Ty>> {};
-
 #if _HAS_CXX20
 template <class _Ty>
-concept _Transparent = _Is_transparent_v<_Ty>;
+concept _Transparent = requires { typename _Ty::is_transparent; };
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23

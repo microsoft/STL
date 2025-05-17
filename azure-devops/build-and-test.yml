@@ -6,6 +6,8 @@ parameters:
   type: string
 - name: targetArch
   type: string
+- name: targetPlatform
+  type: string
 - name: analyzeBuild
   type: boolean
   default: false
@@ -28,7 +30,7 @@ parameters:
   type: boolean
   default: false
 jobs:
-- job: '${{ parameters.targetArch }}'
+- job: '${{ parameters.targetPlatform }}'
   strategy:
     parallel: ${{ parameters.numShards }}
   timeoutInMinutes: 30
@@ -53,6 +55,7 @@ jobs:
     parameters:
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.targetArch }}
+      targetPlatform: ${{ parameters.targetPlatform }}
       analyzeBuild: ${{ parameters.analyzeBuild }}
       asanBuild: ${{ parameters.asanBuild }}
       buildBenchmarks: ${{ parameters.buildBenchmarks }}
@@ -61,5 +64,6 @@ jobs:
     parameters:
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.targetArch }}
+      targetPlatform: ${{ parameters.targetPlatform }}
       testTargets: ${{ parameters.testTargets }}
       skipTesting: ${{ parameters.skipTesting }}

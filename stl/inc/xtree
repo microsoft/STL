@@ -21,6 +21,17 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+#if _HAS_CXX20
+template <class _Ty>
+constexpr bool _Is_transparent_v = _Transparent<_Ty>;
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+template <class _Ty, class = void>
+constexpr bool _Is_transparent_v = false;
+
+template <class _Ty>
+constexpr bool _Is_transparent_v<_Ty, void_t<typename _Ty::is_transparent>> = true;
+#endif // ^^^ !_HAS_CXX20 ^^^
+
 template <class _Mytree, class _Base = _Iterator_base0>
 class _Tree_unchecked_const_iterator : public _Base {
 public:
@@ -1360,7 +1371,7 @@ public:
 
 #if _HAS_CXX23
     template <class _Kx>
-        requires _Is_transparent_v<key_compare> && (!is_convertible_v<_Kx, const_iterator>)
+        requires _Transparent<key_compare> && (!is_convertible_v<_Kx, const_iterator>)
               && (!is_convertible_v<_Kx, iterator>)
     size_type erase(_Kx&& _Keyval) noexcept(noexcept(_Eqrange(_Keyval))) /* strengthened */ {
         return _Erase(_Eqrange(_Keyval));
@@ -1414,7 +1425,7 @@ public:
     }
 
     template <class _Other>
-        requires _Is_transparent_v<key_compare>
+        requires _Transparent<key_compare>
     _NODISCARD bool contains(const _Other& _Keyval) const {
         return _Lower_bound_duplicate(_Find_lower_bound(_Keyval)._Bound, _Keyval);
     }
@@ -1764,7 +1775,7 @@ public:
 
 #if _HAS_CXX23
     template <class _Kx>
-        requires _Is_transparent_v<key_compare> && (!is_convertible_v<_Kx, const_iterator>)
+        requires _Transparent<key_compare> && (!is_convertible_v<_Kx, const_iterator>)
               && (!is_convertible_v<_Kx, iterator>)
     node_type extract(_Kx&& _Keyval) {
         const const_iterator _Where = find(_Keyval);
