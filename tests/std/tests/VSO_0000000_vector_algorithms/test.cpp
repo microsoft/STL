@@ -778,17 +778,17 @@ void test_case_rotate(
 }
 
 template <class T>
-void test_rotate(mt19937_64& gen) {
+void test_rotate(mt19937_64& gen, size_t data_count = dataCount) {
     vector<T> actual;
     vector<T> actual_r;
     vector<T> expected;
     vector<T> tmp;
-    actual.reserve(dataCount);
-    actual_r.reserve(dataCount);
-    expected.reserve(dataCount);
-    tmp.reserve(dataCount);
+    actual.reserve(data_count);
+    actual_r.reserve(data_count);
+    expected.reserve(data_count);
+    tmp.reserve(data_count);
     test_case_rotate(actual, actual_r, expected, 0, tmp);
-    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+    for (size_t attempts = 0; attempts < data_count; ++attempts) {
         const T val = static_cast<T>(gen()); // intentionally narrows
         actual.push_back(val);
         actual_r.push_back(val);
@@ -1241,7 +1241,7 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_reverse_copy<double>(gen);
     test_reverse_copy<long double>(gen);
 
-    test_rotate<char>(gen);
+    test_rotate<char>(gen, 20000); // one real long rotate run, as for smaller arrays some strategies aren't executed
     test_rotate<signed char>(gen);
     test_rotate<unsigned char>(gen);
     test_rotate<short>(gen);
