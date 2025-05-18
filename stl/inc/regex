@@ -1620,8 +1620,6 @@ private:
     _Node_base* _Current;
     regex_constants::syntax_option_type _Flags;
     const _RxTraits& _Traits;
-    const int _Bmax; // TRANSITION, ABI: preserved for binary compatibility
-    const int _Tmax; // TRANSITION, ABI: preserved for binary compatibility
 
 public:
     _Builder2& operator=(const _Builder2&) = delete;
@@ -2838,9 +2836,7 @@ _EXPORT_STD using wsregex_token_iterator = regex_token_iterator<wstring::const_i
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 _Builder2<_FwdIt, _Elem, _RxTraits>::_Builder2(const _RxTraits& _Tr, regex_constants::syntax_option_type _Fx)
-    : _Root(new _Root_node), _Current(_Root), _Flags(_Fx), _Traits(_Tr),
-      _Bmax(static_cast<int>(_Fx & regex_constants::collate ? 0U : _Bmp_max)),
-      _Tmax(static_cast<int>(_Fx & regex_constants::collate ? 0U : _ARRAY_THRESHOLD)) {}
+    : _Root(new _Root_node), _Current(_Root), _Flags(_Fx), _Traits(_Tr) {}
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder2<_FwdIt, _Elem, _RxTraits>::_Setlong() { // set flag
