@@ -849,11 +849,6 @@ protected:
 
         if (_Hint_order == weak_ordering::equivalent) {
             const auto _Dist = _Position._Key_it - _Begin._Key_it;
-            if constexpr (_IsUnique) {
-                if (_Position != _Begin && !_Key_compare(*_STD prev(_Position._Key_it), _Key_val)) {
-                    return begin() + _Dist;
-                }
-            }
             {
                 key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
                 mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Args)...);
