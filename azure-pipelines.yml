@@ -160,3 +160,17 @@ stages:
           targetArch: arm64
           targetPlatform: arm64
           testsBuildOnly: true
+
+  - stage: Build_And_Test_ARM64EC
+    dependsOn: Build_And_Test_x64
+    displayName: 'Build and Test ARM64EC'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
+    jobs:
+      - template: azure-devops/build-and-test.yml
+        parameters:
+          hostArch: x64
+          targetArch: arm64
+          targetPlatform: arm64ec
+          testsBuildOnly: true
