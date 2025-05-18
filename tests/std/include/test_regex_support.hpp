@@ -181,6 +181,25 @@ public:
             }
         }
     }
+
+    void should_throw(const std::wstring& pattern, const std::regex_constants::error_type expectedCode,
+        const std::regex_constants::syntax_option_type syntax = std::regex_constants::ECMAScript) {
+        try {
+            const std::wregex r(pattern, syntax);
+            wprintf(LR"(wregex r("%s", 0x%X) succeeded (which is bad).)"
+                    L"\n",
+                pattern.c_str(), static_cast<unsigned int>(syntax));
+            fail_regex();
+        } catch (const std::regex_error& e) {
+            if (e.code() != expectedCode) {
+                wprintf(LR"(wregex r("%s", 0x%X) threw 0x%X; expected 0x%X)"
+                        "\n",
+                    pattern.c_str(), static_cast<unsigned int>(syntax), static_cast<unsigned int>(e.code()),
+                    static_cast<unsigned int>(expectedCode));
+                fail_regex();
+            }
+        }
+    }
 };
 
 class test_regex {

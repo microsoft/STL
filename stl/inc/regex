@@ -4707,7 +4707,11 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape(bool _In_character_clas
         _Next();
     } else if (_Char == _Esc_ctrl && (_L_flags & _L_esc_ctrl)) { // handle control escape sequence
         _Next();
-        if (!_Traits.isctype(_Char, _RxTraits::_Ch_alpha)) {
+
+        using _Uelem = typename _RxTraits::_Uelem;
+        _Uelem _UCh  = static_cast<_Uelem>(_Char);
+        if ((static_cast<_Uelem>('a') > _UCh || static_cast<_Uelem>('z') < _UCh)
+            && (static_cast<_Uelem>('A') > _UCh || static_cast<_Uelem>('Z') < _UCh)) {
             _Error(regex_constants::error_escape);
         }
 

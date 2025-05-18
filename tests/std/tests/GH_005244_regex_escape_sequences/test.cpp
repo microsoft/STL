@@ -25,9 +25,7 @@ public:
     using char_class_type = typename rx_traits::char_class_type;
 
     // TRANSITION, GH-995
-    using _Uelem                    = typename rx_traits::_Uelem;
-    static constexpr auto _Ch_upper = rx_traits::_Ch_upper;
-    static constexpr auto _Ch_alpha = rx_traits::_Ch_alpha;
+    using _Uelem = typename rx_traits::_Uelem;
 
     test_regex_traits() = default;
 
@@ -192,7 +190,11 @@ void test_gh_5244_atomescape_ecmascript() {
     g_regexTester.should_not_match("c", R"(\ca)", ECMAScript);
     g_regexTester.should_not_match("ca", R"(\ca)", ECMAScript);
     g_regexTester.should_throw(R"(\c0)", error_escape, ECMAScript);
-    g_regexTester.should_throw(R"(\c)", error_escape, ECMAScript);
+    g_regexTester.should_throw(R"(\c@)", error_escape, ECMAScript);
+    g_regexTester.should_throw(R"(\c[)", error_escape, ECMAScript);
+    g_regexTester.should_throw(R"(\c`)", error_escape, ECMAScript);
+    g_regexTester.should_throw(R"(\c{)", error_escape, ECMAScript);
+    g_regexTester.should_throw(L"\\c\u00C0", error_escape, ECMAScript); // U+00C0 LATIN CAPITAL LETTER A WITH GRAVE
 
     // AtomEscape :: CharacterEscape :: HexEscapeSequence
     g_regexTester.should_match("\x00"s, R"(\x00)", ECMAScript);
