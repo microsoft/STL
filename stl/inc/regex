@@ -1782,6 +1782,8 @@ enum _Prs_ret { // indicate class element type
     _Prs_set
 };
 
+enum class _Lex_mode : unsigned char { _Default, _Character_class };
+
 template <class _FwdIt, class _Elem, class _RxTraits>
 class _Parser2 { // parse a regular expression
 public:
@@ -1840,6 +1842,7 @@ private:
     regex_constants::syntax_option_type _Flags;
     int _Val;
     _Meta_type _Mchar;
+    _Lex_mode _Mode;
     _Elem _Char;
 };
 
@@ -4162,7 +4165,7 @@ template <class _FwdIt, class _Elem, class _RxTraits>
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Is_esc(_FwdIt _Ch0) const { // assumes _Ch0 != _End
-    return ++_Ch0 != _End
+    return _Mode == _Lex_mode::_Default && ++_Ch0 != _End
         && ((!(_L_flags & _L_nex_grp) && (*_Ch0 == _Meta_lpar || *_Ch0 == _Meta_rpar))
             || (!(_L_flags & _L_nex_rep) && (*_Ch0 == _Meta_lbr || *_Ch0 == _Meta_rbr)));
 }
@@ -4835,8 +4838,10 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alt
                 _AtomEscape();
             }
         } else if (_Mchar == _Meta_lsq) { // add bracket expression
+            _Mode = _Lex_mode::_Character_class;
             _Next();
             _CharacterClass();
+            _Mode = _Lex_mode::_Default;
             _Expect(_Meta_rsq, regex_constants::error_brack);
         } else if (_Mchar == _Meta_lpar) { // check for valid group
             _Next();
@@ -5008,7 +5013,7 @@ _Root_node* _Parser2<_FwdIt, _Elem, _RxTraits>::_Compile() { // compile regular 
 template <class _FwdIt, class _Elem, class _RxTraits>
 _Parser2<_FwdIt, _Elem, _RxTraits>::_Parser2(
     const _RxTraits& _Tr, _FwdIt _Pfirst, _FwdIt _Plast, regex_constants::syntax_option_type _Fx)
-    : _Pat(_Pfirst), _End(_Plast), _Nfa(_Tr, _Fx), _Traits(_Tr), _Flags(_Fx) {
+    : _Pat(_Pfirst), _End(_Plast), _Nfa(_Tr, _Fx), _Traits(_Tr), _Flags(_Fx), _Mode(_Lex_mode::_Default) {
 
     constexpr unsigned long long _ECMA_flags = _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_nc_grp
                                              | _L_asrt_gen | _L_asrt_wrd | _L_bckr | _L_ngr_rep | _L_esc_uni
