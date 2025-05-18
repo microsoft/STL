@@ -1590,10 +1590,10 @@ public:
     void _Add_char2(_Elem _Ch);
     void _Add_class();
     void _Add_char_to_class(_Elem _Ch);
-    void _Add_range3(_Elem, _Elem);
+    void _Add_range(_Elem, _Elem);
     void _Add_named_class(typename _RxTraits::char_class_type, _Rx_char_class_kind);
-    void _Add_equiv2(const _Elem*, const _Elem*);
-    void _Add_coll2(const _Elem*, const _Elem*);
+    void _Add_equiv(const _Elem*, const _Elem*);
+    void _Add_coll(const _Elem*, const _Elem*);
     _Node_base* _Begin_group();
     void _End_group(_Node_base* _Back);
     _Node_base* _Begin_assert_group(bool);
@@ -1602,7 +1602,7 @@ public:
     void _Add_backreference(unsigned int _Idx);
     _Node_base* _Begin_if(_Node_base* _Start);
     void _Else_if(_Node_base*, _Node_base*);
-    void _Add_rep2(int _Min, int _Max, bool _Greedy);
+    void _Add_rep(int _Min, int _Max, bool _Greedy);
     void _Negate();
     _Root_node* _End_pattern();
 
@@ -1614,7 +1614,7 @@ private:
     void _Add_char_to_bitmap(_Elem _Ch);
     void _Add_char_to_array(_Elem _Ch);
     void _Add_elts(_Node_class<_Elem, _RxTraits>*, typename _RxTraits::char_class_type, bool);
-    void _Char_to_elts2(const _Elem*, const _Elem*, _Sequence<_Elem>**);
+    void _Char_to_elts(const _Elem*, const _Elem*, _Sequence<_Elem>**);
 
     _Root_node* _Root;
     _Node_base* _Current;
@@ -2973,7 +2973,7 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_char_to_class(_Elem _Ch) { // add
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_range3(const _Elem _Arg0, const _Elem _Arg1) {
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_range(const _Elem _Arg0, const _Elem _Arg1) {
     // add character range to set
     using string_type                    = typename _RxTraits::string_type;
     unsigned int _Ex0                    = static_cast<typename _RxTraits::_Uelem>(_Arg0);
@@ -3073,7 +3073,7 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_named_class(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder2<_FwdIt, _Elem, _RxTraits>::_Char_to_elts2(const _Elem* const _First, const _Elem* const _Last,
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Char_to_elts(const _Elem* const _First, const _Elem* const _Last,
     _Sequence<_Elem>** _Cur) { // add collation element to element sequence
     auto _Diff = static_cast<unsigned int>(_Last - _First);
     while (*_Cur && _Diff < (*_Cur)->_Sz) {
@@ -3090,7 +3090,7 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Char_to_elts2(const _Elem* const _Fir
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_equiv2(const _Elem* const _First, const _Elem* const _Last) {
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_equiv(const _Elem* const _First, const _Elem* const _Last) {
     // add elements of equivalence class to bracket expression
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
     typename _RxTraits::string_type _Str = _Traits.transform_primary(_First, _Last);
@@ -3112,16 +3112,16 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_equiv2(const _Elem* const _First,
     }
     if (_Bmp_max < static_cast<unsigned int>(_STD _Max_limit<_Elem>())) { // map range
         _Sequence<_Elem>** _Cur = _STD addressof(_Node->_Equiv);
-        _Char_to_elts2(_First, _Last, _Cur);
+        _Char_to_elts(_First, _Last, _Cur);
     }
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_coll2(const _Elem* const _First, const _Elem* const _Last) {
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_coll(const _Elem* const _First, const _Elem* const _Last) {
     // add collation element to bracket expression
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
     _Sequence<_Elem>** _Cur              = _STD addressof(_Node->_Coll);
-    _Char_to_elts2(_First, _Last, _Cur);
+    _Char_to_elts(_First, _Last, _Cur);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -3203,7 +3203,7 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Else_if(_Node_base* _Start, _Node_bas
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_rep2(int _Min, int _Max, bool _Greedy) { // add repeat node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_rep(int _Min, int _Max, bool _Greedy) { // add repeat node
     if (_Current->_Kind == _N_str
         && static_cast<_Node_str<_Elem>*>(_Current)->_Data._Size() != 1) { // move final character to new string node
         _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Current);
@@ -4391,13 +4391,13 @@ _Prs_ret _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_ex_class(
         }
 
         if (_End_arg == _Meta_equal) { // process equivalence
-            _Nfa._Add_equiv2(_Coll_elem_first, _Coll_elem_last);
+            _Nfa._Add_equiv(_Coll_elem_first, _Coll_elem_last);
             return _Prs_set;
         } else { // process collating element
 
             // Character ranges with multi-character bounds cannot be represented in NFA nodes yet (see GH-5391).
             // Provisionally treat multi-character collating elements as character sets.
-            _Nfa._Add_coll2(_Coll_elem_first, _Coll_elem_last);
+            _Nfa._Add_coll(_Coll_elem_first, _Coll_elem_last);
             return _Prs_set;
         }
     }
@@ -4524,7 +4524,7 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid cla
                 _Chr2 = _Traits.translate(_Chr2);
             }
 
-            _Nfa._Add_range3(_Chr1, _Chr2);
+            _Nfa._Add_range(_Chr1, _Chr2);
         } else if (_Ret == _Prs_chr) {
             _Nfa._Add_char_to_class(static_cast<_Elem>(_Val));
         }
@@ -4809,7 +4809,7 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier
         _Next();
     }
 
-    _Nfa._Add_rep2(_Min, _Max, _Greedy);
+    _Nfa._Add_rep(_Min, _Max, _Greedy);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
