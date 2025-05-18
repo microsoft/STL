@@ -1838,11 +1838,11 @@ private:
     vector<bool> _Finished_grps;
     _Builder<_FwdIt, _Elem, _RxTraits> _Nfa;
     const _RxTraits& _Traits;
+    unsigned long long _L_flags;
     regex_constants::syntax_option_type _Flags;
     int _Val;
-    _Elem _Char;
     _Meta_type _Mchar;
-    unsigned long long _L_flags;
+    _Elem _Char;
 };
 
 enum _Lang_flags2 : unsigned long long { // describe language properties
