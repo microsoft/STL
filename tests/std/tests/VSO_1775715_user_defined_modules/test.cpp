@@ -3,6 +3,10 @@
 
 // Note: To properly test the fix for VSO-1775715, don't include any headers here.
 
+// TRANSITION, this test fails for ARM64EC when built with Windows SDK 10.0.22621.0.
+// "error LNK2019: unresolved external symbol fabsf referenced in function #fabsf$exit_thunk (EC Symbol)"
+// UNSUPPORTED: arm64ec
+
 import User;
 
 int main() {
