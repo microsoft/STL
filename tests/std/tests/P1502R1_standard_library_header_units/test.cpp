@@ -9,6 +9,11 @@
 // This EXCLUDES the <cmeow> headers in:
 // [tab:headers.cpp.c]: "Table 22: C++ headers for C library facilities"
 
+// TRANSITION, this test fails for ARM64EC when built with Windows SDK 10.0.22621.0.
+// "error LNK2019: unresolved external symbol fabsf referenced in function #fabsf$exit_thunk (EC Symbol)"
+// It passes when built with Windows SDK 10.0.26100.0.
+// UNSUPPORTED: arm64ec
+
 import <algorithm>;
 import <any>;
 import <array>;
