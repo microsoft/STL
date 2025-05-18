@@ -165,7 +165,7 @@ void* __cdecl __std_swap_ranges_trivially_swappable(
 
 namespace {
     namespace _Rotating {
-        void __cdecl _Swap_ranges_3_way(void* _First1, void* const _Last1, void* _First2, void* _First3) noexcept {
+        void __cdecl _Swap_3_ranges(void* _First1, void* const _Last1, void* _First2, void* _First3) noexcept {
 #ifndef _M_ARM64EC
             constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
             if (_Byte_length(_First1, _Last1) >= 32 && _Use_avx2()) {
@@ -334,7 +334,7 @@ __declspec(noalias) void __stdcall __std_rotate(void* _First, void* const _Mid, 
             } else {
                 void* _Mid3 = _Mid2;
                 _Rewind_bytes(_Mid3, _Left);
-                _Rotating::_Swap_ranges_3_way(_Mid2, _Last, _First, _Mid3);
+                _Rotating::_Swap_3_ranges(_Mid2, _Last, _First, _Mid3);
                 _Last = _Mid3;
             }
         } else {
@@ -358,7 +358,7 @@ __declspec(noalias) void __stdcall __std_rotate(void* _First, void* const _Mid, 
             } else {
                 void* _Mid2 = _First;
                 _Advance_bytes(_Mid2, _Right);
-                _Rotating::_Swap_ranges_3_way(_Mid, _Last, _Mid2, _First);
+                _Rotating::_Swap_3_ranges(_Mid, _Last, _Mid2, _First);
                 _Advance_bytes(_First, _Right * 2);
             }
         }
