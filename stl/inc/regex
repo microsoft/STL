@@ -1574,9 +1574,9 @@ enum class _Rx_char_class_kind : int { // must be aligned with corresponding _No
 };
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-class _Builder { // provides operations used by _Parser2 to build the nfa
+class _Builder2 { // provides operations used by _Parser2 to build the nfa
 public:
-    _Builder(const _RxTraits& _Tr, regex_constants::syntax_option_type);
+    _Builder2(const _RxTraits& _Tr, regex_constants::syntax_option_type);
     void _Setlong();
     // _Discard_pattern is an ABI zombie name
     void _Tidy() noexcept;
@@ -1624,7 +1624,7 @@ private:
     const int _Tmax; // TRANSITION, ABI: preserved for binary compatibility
 
 public:
-    _Builder& operator=(const _Builder&) = delete;
+    _Builder2& operator=(const _Builder2&) = delete;
 };
 
 template <class _BidIt>
@@ -1836,7 +1836,7 @@ private:
     unsigned int _Grp_idx = 0;
     int _Disj_count       = 0;
     vector<bool> _Finished_grps;
-    _Builder<_FwdIt, _Elem, _RxTraits> _Nfa;
+    _Builder2<_FwdIt, _Elem, _RxTraits> _Nfa;
     const _RxTraits& _Traits;
     unsigned long long _L_flags;
     regex_constants::syntax_option_type _Flags;
@@ -2837,28 +2837,28 @@ _EXPORT_STD using sregex_token_iterator  = regex_token_iterator<string::const_it
 _EXPORT_STD using wsregex_token_iterator = regex_token_iterator<wstring::const_iterator>;
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Builder<_FwdIt, _Elem, _RxTraits>::_Builder(const _RxTraits& _Tr, regex_constants::syntax_option_type _Fx)
+_Builder2<_FwdIt, _Elem, _RxTraits>::_Builder2(const _RxTraits& _Tr, regex_constants::syntax_option_type _Fx)
     : _Root(new _Root_node), _Current(_Root), _Flags(_Fx), _Traits(_Tr),
       _Bmax(static_cast<int>(_Fx & regex_constants::collate ? 0U : _Bmp_max)),
       _Tmax(static_cast<int>(_Fx & regex_constants::collate ? 0U : _ARRAY_THRESHOLD)) {}
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Setlong() { // set flag
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Setlong() { // set flag
     _Root->_Flags |= _Fl_longest;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Negate() { // set flag
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Negate() { // set flag
     _Current->_Flags ^= _Fl_negate;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Getmark() const {
+_Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_Getmark() const {
     return _Current;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Link_node(_Node_base* _Nx) { // insert _Nx at current location
+_Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_Link_node(_Node_base* _Nx) { // insert _Nx at current location
     _Nx->_Prev = _Current;
     if (_Current->_Next) { // set back pointer
         _Nx->_Next             = _Current->_Next;
@@ -2870,7 +2870,7 @@ _Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Link_node(_Node_base* _Nx) { //
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Insert_node(_Node_base* _Insert_before, _Node_base* _To_insert) {
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Insert_node(_Node_base* _Insert_before, _Node_base* _To_insert) {
     // insert _To_insert into the graph before the node _Insert_before
     _Insert_before->_Prev->_Next = _To_insert;
     _To_insert->_Prev            = _Insert_before->_Prev;
@@ -2879,42 +2879,42 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Insert_node(_Node_base* _Insert_before
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_New_node(_Node_type _Kind) { // allocate and link simple node
+_Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_New_node(_Node_type _Kind) { // allocate and link simple node
     return _Link_node(new _Node_base(_Kind));
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_nop() { // add nop node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_nop() { // add nop node
     _New_node(_N_nop);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_bol() { // add bol node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_bol() { // add bol node
     _New_node(_N_bol);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_eol() { // add eol node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_eol() { // add eol node
     _New_node(_N_eol);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_wbound() { // add wbound node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_wbound() { // add wbound node
     _New_node(_N_wbound);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_dot() { // add dot node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_dot() { // add dot node
     _New_node(_N_dot);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_str_node() { // add string node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_str_node() { // add string node
     _Link_node(new _Node_str<_Elem>);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char2(_Elem _Ch) { // append character
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_char2(_Elem _Ch) { // append character
     if (_Current->_Kind != _N_str) {
         _Add_str_node();
     }
@@ -2930,12 +2930,12 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char2(_Elem _Ch) { // append chara
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_class() { // add bracket expression node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_class() { // add bracket expression node
     _Link_node(new _Node_class<_Elem, _RxTraits>);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_bitmap(_Elem _Ch) { // add character to accelerator table
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_char_to_bitmap(_Elem _Ch) { // add character to accelerator table
     if (_Flags & regex_constants::icase) {
         _Ch = _Traits.translate_nocase(_Ch);
     }
@@ -2950,7 +2950,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_bitmap(_Elem _Ch) { // add
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_array(_Elem _Ch) { // append character to character array
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_char_to_array(_Elem _Ch) { // append character to character array
     if (_Flags & regex_constants::icase) {
         _Ch = _Traits.translate_nocase(_Ch);
     }
@@ -2964,7 +2964,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_array(_Elem _Ch) { // appe
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_class(_Elem _Ch) { // add character to bracket expression
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_char_to_class(_Elem _Ch) { // add character to bracket expression
     if (static_cast<typename _RxTraits::_Uelem>(_Ch) < _Bmp_max) {
         _Add_char_to_bitmap(_Ch);
     } else {
@@ -2973,7 +2973,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_class(_Elem _Ch) { // add 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range3(const _Elem _Arg0, const _Elem _Arg1) {
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_range3(const _Elem _Arg0, const _Elem _Arg1) {
     // add character range to set
     using string_type                    = typename _RxTraits::string_type;
     unsigned int _Ex0                    = static_cast<typename _RxTraits::_Uelem>(_Arg0);
@@ -3032,7 +3032,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range3(const _Elem _Arg0, const _E
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_elts(
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_elts(
     _Node_class<_Elem, _RxTraits>* _Node, typename _RxTraits::char_class_type _Cl, bool _Negate) {
     // add characters in named class to set
     for (unsigned int _Ch = 0; _Ch < _Bmp_max; ++_Ch) { // add elements or their inverse
@@ -3048,7 +3048,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_elts(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_named_class(
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_named_class(
     typename _RxTraits::char_class_type _Cl, const _Rx_char_class_kind _Kind) {
     // add contents of named class to bracket expression
     using _Char_class_type               = typename _RxTraits::char_class_type;
@@ -3073,7 +3073,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_named_class(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Char_to_elts2(const _Elem* const _First, const _Elem* const _Last,
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Char_to_elts2(const _Elem* const _First, const _Elem* const _Last,
     _Sequence<_Elem>** _Cur) { // add collation element to element sequence
     auto _Diff = static_cast<unsigned int>(_Last - _First);
     while (*_Cur && _Diff < (*_Cur)->_Sz) {
@@ -3090,7 +3090,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Char_to_elts2(const _Elem* const _Firs
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_equiv2(const _Elem* const _First, const _Elem* const _Last) {
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_equiv2(const _Elem* const _First, const _Elem* const _Last) {
     // add elements of equivalence class to bracket expression
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
     typename _RxTraits::string_type _Str = _Traits.transform_primary(_First, _Last);
@@ -3117,7 +3117,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_equiv2(const _Elem* const _First, 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_coll2(const _Elem* const _First, const _Elem* const _Last) {
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_coll2(const _Elem* const _First, const _Elem* const _Last) {
     // add collation element to bracket expression
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
     _Sequence<_Elem>** _Cur              = _STD addressof(_Node->_Coll);
@@ -3125,12 +3125,12 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_coll2(const _Elem* const _First, c
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Begin_group() { // add group node
+_Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_Begin_group() { // add group node
     return _New_node(_N_group);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_End_group(_Node_base* _Back) { // add end of group node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_End_group(_Node_base* _Back) { // add end of group node
     _Node_type _Elt;
     if (_Back->_Kind == _N_group) {
         _Elt = _N_end_group;
@@ -3144,7 +3144,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_End_group(_Node_base* _Back) { // add 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Begin_assert_group(const bool _Neg) { // add assert node
+_Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_Begin_assert_group(const bool _Neg) { // add assert node
     auto _Node1_unique   = _STD make_unique<_Node_assert>(_Neg ? _N_neg_assert : _N_assert);
     _Node_base* _Node2   = new _Node_base(_N_nop);
     _Node_assert* _Node1 = _Node1_unique.release();
@@ -3156,23 +3156,23 @@ _Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Begin_assert_group(const bool _
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_End_assert_group(_Node_base* _Nx) { // add end of assert node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_End_assert_group(_Node_base* _Nx) { // add end of assert node
     _End_group(_Nx);
     _Current = _Nx;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Begin_capture_group(unsigned int _Idx) { // add capture group node
+_Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_Begin_capture_group(unsigned int _Idx) { // add capture group node
     return _Link_node(new _Node_capture(_Idx));
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_backreference(unsigned int _Idx) { // add back reference node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_backreference(unsigned int _Idx) { // add back reference node
     _Link_node(new _Node_back(_Idx));
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Begin_if(_Node_base* _Start) { // add if node
+_Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_Begin_if(_Node_base* _Start) { // add if node
     // append endif node
     _Node_base* _Res = new _Node_endif;
     _Link_node(_Res);
@@ -3185,7 +3185,7 @@ _Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Begin_if(_Node_base* _Start) { 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Else_if(_Node_base* _Start, _Node_base* _End) { // add else node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Else_if(_Node_base* _Start, _Node_base* _End) { // add else node
     _Node_if* _Parent  = static_cast<_Node_if*>(_Start->_Next);
     _Node_base* _First = _End->_Next;
     _End->_Next        = nullptr;
@@ -3203,7 +3203,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Else_if(_Node_base* _Start, _Node_base
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_rep2(int _Min, int _Max, bool _Greedy) { // add repeat node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_rep2(int _Min, int _Max, bool _Greedy) { // add repeat node
     if (_Current->_Kind == _N_str
         && static_cast<_Node_str<_Elem>*>(_Current)->_Data._Size() != 1) { // move final character to new string node
         _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Current);
@@ -3256,13 +3256,13 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_rep2(int _Min, int _Max, bool _Gre
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Root_node* _Builder<_FwdIt, _Elem, _RxTraits>::_End_pattern() { // wrap up
+_Root_node* _Builder2<_FwdIt, _Elem, _RxTraits>::_End_pattern() { // wrap up
     _New_node(_N_end);
     return _Root;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Tidy() noexcept { // free memory
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Tidy() noexcept { // free memory
     _Destroy_node(_Root);
     _Root = nullptr;
 }
