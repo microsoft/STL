@@ -12,7 +12,7 @@ using namespace std;
 
 int main() {
     // This test is applicable only to x86 and x64 platforms
-#if defined(_M_IX86) || defined(_M_X64)
+#if (defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))
     assert(_Countl_zero_bsr(static_cast<unsigned char>(0x00)) == 8);
     assert(_Countl_zero_bsr(static_cast<unsigned char>(0x13)) == 3);
     assert(_Countl_zero_bsr(static_cast<unsigned char>(0x83)) == 0);
@@ -67,5 +67,5 @@ int main() {
     assert(_Countr_zero_bsf(static_cast<unsigned long long>(0x8000'0000'0000'0002)) == 1);
     assert(_Countr_zero_bsf(static_cast<unsigned long long>(0x8000'0000'0000'0000)) == 63);
     assert(_Countr_zero_bsf(static_cast<unsigned long long>(0xF000'0000'0000'0008)) == 3);
-#endif // ^^^ defined(_M_IX86) || defined(_M_X64) ^^^
+#endif // ^^^ (defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC)) ^^^
 }
