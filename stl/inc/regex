@@ -1574,7 +1574,7 @@ enum class _Rx_char_class_kind : int { // must be aligned with corresponding _No
 };
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-class _Builder { // provides operations used by _Parser to build the nfa
+class _Builder { // provides operations used by _Parser2 to build the nfa
 public:
     _Builder(const _RxTraits& _Tr, regex_constants::syntax_option_type);
     void _Setlong();
@@ -1785,11 +1785,11 @@ enum _Prs_ret { // indicate class element type
 };
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-class _Parser { // parse a regular expression
+class _Parser2 { // parse a regular expression
 public:
     using char_class_type = typename _RxTraits::char_class_type;
 
-    _Parser(const _RxTraits& _Tr, _FwdIt _Pfirst, _FwdIt _Plast, regex_constants::syntax_option_type _Fx);
+    _Parser2(const _RxTraits& _Tr, _FwdIt _Pfirst, _FwdIt _Plast, regex_constants::syntax_option_type _Fx);
     _Root_node* _Compile();
 
     unsigned int _Mark_count() const noexcept {
@@ -2121,7 +2121,7 @@ private:
             _Visualization.assign(_First, _Last);
 #endif // _ENHANCED_REGEX_VISUALIZER
 
-            _Parser<_InIt, _Elem, _RxTraits> _Prs(_Traits, _First, _Last, _Flags);
+            _Parser2<_InIt, _Elem, _RxTraits> _Prs(_Traits, _First, _Last, _Flags);
             _Root_node* _Rx = _Prs._Compile();
             _Reset(_Rx);
         } else {
@@ -4160,19 +4160,19 @@ _BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(_BidIt _First_arg
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-[[noreturn]] void _Parser<_FwdIt, _Elem, _RxTraits>::_Error(regex_constants::error_type _Code) { // handle error
+[[noreturn]] void _Parser2<_FwdIt, _Elem, _RxTraits>::_Error(regex_constants::error_type _Code) { // handle error
     _Xregex_error(_Code);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_Is_esc(_FwdIt _Ch0) const { // assumes _Ch0 != _End
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Is_esc(_FwdIt _Ch0) const { // assumes _Ch0 != _End
     return ++_Ch0 != _End
         && ((!(_L_flags & _L_nex_grp) && (*_Ch0 == _Meta_lpar || *_Ch0 == _Meta_rpar))
             || (!(_L_flags & _L_nex_rep) && (*_Ch0 == _Meta_lbr || *_Ch0 == _Meta_rbr)));
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-character
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-character
     static constexpr char _Meta_map[] = {_Meta_lpar, _Meta_rpar, _Meta_dlr, _Meta_caret, _Meta_dot, _Meta_star,
         _Meta_plus, _Meta_query, _Meta_lsq, _Meta_rsq, _Meta_bar, _Meta_esc, _Meta_dash, _Meta_lbr, _Meta_rbr,
         _Meta_comma, _Meta_colon, _Meta_equal, _Meta_exc, _Meta_nl, _Meta_cr, _Meta_bsp, 0}; // array of meta chars
@@ -4278,7 +4278,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Next() { // advance to next input character
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Next() { // advance to next input character
     if (_Pat != _End) { // advance
         if (*_Pat == _Meta_esc && _Is_esc(_Pat)) {
             ++_Pat;
@@ -4290,7 +4290,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Next() { // advance to next input chara
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Expect(_Meta_type _St, regex_constants::error_type _Code) {
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Expect(_Meta_type _St, regex_constants::error_type _Code) {
     // check whether current meta-character is _St
     if (_Mchar != _St) {
         _Error(_Code);
@@ -4300,7 +4300,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Expect(_Meta_type _St, regex_constants:
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-int _Parser<_FwdIt, _Elem, _RxTraits>::_Do_digits(
+int _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_digits(
     int _Base, int _Initial, int _Count, regex_constants::error_type _Error_type) { // translate digits to numeric value
     int _Chv;
     _Val = _Initial;
@@ -4317,25 +4317,25 @@ int _Parser<_FwdIt, _Elem, _RxTraits>::_Do_digits(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_DecimalDigits3(
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_DecimalDigits3(
     const regex_constants::error_type _Error_type, const int _Initial /* = 0 */) { // check for decimal value
     return _Do_digits(10, _Initial, INT_MAX, _Error_type) != INT_MAX;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_HexDigits(int _Count) { // check for _Count hex digits
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_HexDigits(int _Count) { // check for _Count hex digits
     if (_Do_digits(16, 0, _Count, regex_constants::error_escape) != 0) {
         _Error(regex_constants::error_escape);
     }
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_OctalDigits() { // check for up to 3 octal digits
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_OctalDigits() { // check for up to 3 octal digits
     return _Do_digits(8, 0, 3, regex_constants::error_escape) != 3;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ex_class2(
+_Prs_ret _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_ex_class2(
     _Meta_type _End_arg) { // handle delimited expressions within bracket expression
     const regex_constants::error_type _Errtype =
         _End_arg == _Meta_colon ? regex_constants::error_ctype : regex_constants::error_collate;
@@ -4404,7 +4404,7 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ex_class2(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { // check for character class escape
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { // check for character class escape
     typename _RxTraits::char_class_type _Cls;
     _FwdIt _Ch0 = _Pat;
     if (_Ch0 == _End || (_Cls = _Traits.lookup_classname(_Pat, ++_Ch0, (_Flags & regex_constants::icase) != 0)) == 0) {
@@ -4433,7 +4433,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { // 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassEscape3() { // check for class escape
+_Prs_ret _Parser2<_FwdIt, _Elem, _RxTraits>::_ClassEscape3() { // check for class escape
     if ((_L_flags & _L_esc_bsp) && _Char == _Esc_ctrl_b) { // handle backspace escape
         _Next();
         _Val = _Meta_bsp;
@@ -4456,7 +4456,7 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassEscape3() { // check for class
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassAtom(const bool _Initial) { // check for class atom
+_Prs_ret _Parser2<_FwdIt, _Elem, _RxTraits>::_ClassAtom(const bool _Initial) { // check for class atom
     if (_Mchar == _Meta_esc && (_L_flags & (_L_grp_esc | _L_ident_awk))) { // check for valid escape sequence
         _Next();
         return _ClassEscape3();
@@ -4483,7 +4483,7 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassAtom(const bool _Initial) { //
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid class ranges
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid class ranges
     _Prs_ret _Ret;
 
     bool _Initial = true;
@@ -4532,7 +4532,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid clas
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClass() { // add bracket expression
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_CharacterClass() { // add bracket expression
     _Nfa._Add_class();
     if (_Mchar == _Meta_caret) { // negate bracket expression
         _Nfa._Negate();
@@ -4543,7 +4543,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClass() { // add bracket expre
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Do_capture_group() { // add capture group
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_capture_group() { // add capture group
     ++_Grp_idx;
 
     if (_Grp_idx >= 1000) { // hardcoded limit
@@ -4558,21 +4558,21 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Do_capture_group() { // add capture gro
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Do_noncapture_group() { // add non-capture group
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_noncapture_group() { // add non-capture group
     _Node_base* _Pos1 = _Nfa._Begin_group();
     _Disjunction();
     _Nfa._End_group(_Pos1);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Do_assert_group(bool _Neg) { // add assert group
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_assert_group(bool _Neg) { // add assert group
     _Node_base* _Pos1 = _Nfa._Begin_assert_group(_Neg);
     _Disjunction();
     _Nfa._End_assert_group(_Pos1);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_Wrapped_disjunction() { // add disjunction inside group
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Wrapped_disjunction() { // add disjunction inside group
     ++_Disj_count;
     if (!(_L_flags & _L_empty_grp) && _Mchar == _Meta_rpar) {
         _Error(regex_constants::error_paren);
@@ -4604,7 +4604,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Wrapped_disjunction() { // add disjunct
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_IsIdentityEscape(bool _In_character_class) const {
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_IsIdentityEscape(bool _In_character_class) const {
     // check for valid identity escape
 
     if (_L_flags & _L_ident_ECMA) {
@@ -4654,7 +4654,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_IsIdentityEscape(bool _In_character_cla
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_IdentityEscape(bool _In_character_class) {
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_IdentityEscape(bool _In_character_class) {
     // check whether an escape is valid, and process it if so
     if (_IsIdentityEscape(_In_character_class)) {
         _Val = _Char;
@@ -4666,7 +4666,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_IdentityEscape(bool _In_character_class
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ffn(_Elem _Ch) { // check for limited file format escape characters
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_ffn(_Elem _Ch) { // check for limited file format escape characters
     if (_Ch == _Esc_ctrl_f) {
         _Val = '\f';
     } else if (_Ch == _Esc_ctrl_n) {
@@ -4685,7 +4685,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ffn(_Elem _Ch) { // check for limite
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ffnx(_Elem _Ch) { // check for the remaining file format escape characters
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_ffnx(_Elem _Ch) { // check for the remaining file format escape characters
     if (_Ch == _Esc_ctrl_a) {
         _Val = '\a';
     } else if (_Ch == _Esc_ctrl_b) {
@@ -4698,7 +4698,8 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ffnx(_Elem _Ch) { // check for the r
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape(bool _In_character_class) { // check for valid character escape
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_CharacterEscape(bool _In_character_class) {
+    // check for valid character escape
     if (_Mchar == _Meta_eos) {
         _Error(regex_constants::error_escape);
     }
@@ -4736,7 +4737,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape(bool _In_character_clas
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom escape
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom escape
     if ((_L_flags & (_L_bzr_chr | _L_bckr)) && (_Val = _Traits.value(_Char, 10)) != -1) { // escaped decimal sequence
         _Next();
         if ((_L_flags & _L_bzr_chr) && _Val == 0) { // handle \0
@@ -4766,7 +4767,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier following atom
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier following atom
     int _Min = 0;
     int _Max = -1;
     if (_Mchar != _Meta_star) {
@@ -4812,7 +4813,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alternative
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alternative
     bool _Found = false;
     for (;;) { // concatenate valid elements
         bool _Quant = true;
@@ -4879,7 +4880,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alte
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Disjunction() { // check for valid disjunction
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Disjunction() { // check for valid disjunction
     _Node_base* _Pos1 = _Nfa._Getmark();
     if (!_Alternative()) {
         if (_Mchar != _Meta_bar) {
@@ -4904,7 +4905,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Disjunction() { // check for valid disj
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
     _Node_base* _Nx, _Node_base* _Ne, _Node_rep* _Outer_rep) {
     // walks regex NFA, calculates values of _Node_rep::_Simple_loop
     for (; _Nx != _Ne && _Nx; _Nx = _Nx->_Next) {
@@ -4990,7 +4991,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Root_node* _Parser<_FwdIt, _Elem, _RxTraits>::_Compile() { // compile regular expression
+_Root_node* _Parser2<_FwdIt, _Elem, _RxTraits>::_Compile() { // compile regular expression
     _Root_node* _Res = nullptr;
     _Tidy_guard<decltype(_Nfa)> _Guard{_STD addressof(_Nfa)};
     _Node_base* _Pos1 = _Nfa._Begin_capture_group(0);
@@ -5009,7 +5010,7 @@ _Root_node* _Parser<_FwdIt, _Elem, _RxTraits>::_Compile() { // compile regular e
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Parser<_FwdIt, _Elem, _RxTraits>::_Parser(
+_Parser2<_FwdIt, _Elem, _RxTraits>::_Parser2(
     const _RxTraits& _Tr, _FwdIt _Pfirst, _FwdIt _Plast, regex_constants::syntax_option_type _Fx)
     : _Pat(_Pfirst), _Begin(_Pfirst), _End(_Plast), _Nfa(_Tr, _Fx), _Traits(_Tr), _Flags(_Fx) {
 
