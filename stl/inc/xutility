@@ -5679,7 +5679,7 @@ namespace ranges {
         _It1 _First1, _It2 _First2, iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
         _STL_INTERNAL_CHECK(_Count >= 0);
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (_Equal_memcmp_is_safe<_It1, _It2, _Pr> && is_same_v<_Pj1, identity>
+        if constexpr (_Vector_alg_in_search_is_safe<_It1, _It2, _Pr> && is_same_v<_Pj1, identity>
                       && is_same_v<_Pj2, identity>) {
             if (!_STD is_constant_evaluated()) {
                 constexpr size_t _Elem_size = sizeof(iter_value_t<_It1>);
@@ -6829,7 +6829,7 @@ namespace ranges {
             }
 
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (_Equal_memcmp_is_safe<_It, _It, _Pr> && sized_sentinel_for<_Se, _It>
+            if constexpr (_Vector_alg_in_search_is_safe<_It, _It, _Pr> && sized_sentinel_for<_Se, _It>
                           && is_same_v<_Pj, identity>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _First_ptr = _STD _To_address(_First);
