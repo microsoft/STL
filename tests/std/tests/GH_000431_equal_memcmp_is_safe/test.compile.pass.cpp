@@ -12,6 +12,12 @@
 #include <type_traits>
 #include <vector>
 
+#ifdef __clang__
+constexpr bool magic = true;
+#else
+constexpr bool magic = false;
+#endif
+
 using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
@@ -136,6 +142,22 @@ struct StatefulPrivatelyDerived : private StatefulBase, private EmptyBase {};
 struct StatefulDerived2 : EmptyBase, StatefulBase {};
 
 struct StatefulPrivatelyDerived2 : private EmptyBase, private StatefulBase {};
+
+#if _HAS_CXX20
+struct DefailtComparison {
+    int i;
+
+    bool operator==(const DefailtComparison&) const noexcept = default;
+};
+
+struct DefailtComparisonOddSize {
+    int i;
+    int j;
+    int k;
+
+    bool operator==(const DefailtComparisonOddSize&) const noexcept = default;
+};
+#endif // _HAS_CXX20
 
 #ifdef __cpp_lib_is_pointer_interconvertible
 STATIC_ASSERT(is_pointer_interconvertible_base_of_v<EmptyBase, EmptyDerived>);
@@ -485,20 +507,33 @@ STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<false, void (*)(), void (*)(in
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<is_convertible_v<void (*)(int), void*>, void (*)(int), void*>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<is_convertible_v<void (*)(int), void*>, void*, void (*)(int)>());
 
-// Don't allow member object pointers
-STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<false, int EmptyBase::*, int EmptyBase::*>());
-STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<false, int EmptyDerived::*, int EmptyDerived::*>());
+// Don't allow member object pointers, unless magic happens
+STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<magic, int EmptyBase::*, int EmptyBase::*>());
+STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<magic, int EmptyDerived::*, int EmptyDerived::*>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<false, int EmptyBase::*, int EmptyDerived::*>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<false, int EmptyDerived::*, int EmptyBase::*>());
 
-// Don't allow member function pointers
-STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<false, int (EmptyBase::*)(), int (EmptyBase::*)()>());
-STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<false, int (EmptyDerived::*)(), int (EmptyDerived::*)()>());
+// Don't allow member function pointers, unless magic happens
+STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<magic, int (EmptyBase::*)(), int (EmptyBase::*)()>());
+STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<magic, int (EmptyDerived::*)(), int (EmptyDerived::*)()>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<false, int (EmptyBase::*)(), int (EmptyDerived::*)()>());
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<false, int (EmptyDerived::*)(), int (EmptyBase::*)()>());
 
 // Don't allow user-defined types
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<false, StatefulBase, StatefulBase>());
+
+#if _HAS_CXX20
+// Don't allow user-defined types with default comparison, unless magic happens
+STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<magic, DefailtComparison, DefailtComparison>());
+STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<magic, DefailtComparisonOddSize, DefailtComparisonOddSize>());
+// The only difference between _Equal_memcmp_is_safe and _Vector_alg_in_search_is_safe is how the magic works
+STATIC_ASSERT(_Equal_memcmp_is_safe<DefailtComparison*, DefailtComparison*, equal_to<>> == magic);
+STATIC_ASSERT(_Equal_memcmp_is_safe<DefailtComparisonOddSize*, DefailtComparisonOddSize*, equal_to<>> == magic);
+#if _USE_STD_VECTOR_ALGORITHMS
+STATIC_ASSERT(_Vector_alg_in_search_is_safe<DefailtComparison*, DefailtComparison*, equal_to<>> == magic);
+STATIC_ASSERT(!_Vector_alg_in_search_is_safe<DefailtComparisonOddSize*, DefailtComparisonOddSize*, equal_to<>>);
+#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // _HAS_CXX20
 
 // Test _Std_char_traits_eq
 STATIC_ASSERT(test_equal_memcmp_is_safe_for_pred<true, char, char, _Std_char_traits_eq<char>>());
