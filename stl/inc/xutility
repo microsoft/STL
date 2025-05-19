@@ -4683,6 +4683,15 @@ constexpr bool _Is_pointer_address_convertible = is_void_v<_Source>
 #endif // defined(__cpp_lib_is_pointer_interconvertible)
     ;
 
+// Determines whether _DestRef is trivially assignable from _SourceRef, and if _Remove_cvref_t<_DestRef> is a class, the
+// assignment uses _Remove_cvref_t<_DestRef>::operator=.
+// Not pedantically reliable for vectorization, but working due to bugs of MSVC, Clang, and EDG. See LLVM-37038.
+template <class _DestRef, class _SourceRef, bool = is_trivially_assignable_v<_DestRef, _SourceRef>>
+constexpr bool _Is_trivially_assignable_returning_same_reference_v =
+    is_same_v<_DestRef, decltype(_STD declval<_DestRef>() = _STD declval<_SourceRef>())>;
+template <class _DestRef, class _SourceRef>
+constexpr bool _Is_trivially_assignable_returning_same_reference_v<_DestRef, _SourceRef, false> = false;
+
 template <class _Source, class _Dest, class _SourceRef, class _DestRef>
 struct _Trivial_cat {
     using _USource = _Unwrap_enum_t<_Source>;
@@ -4701,7 +4710,7 @@ struct _Trivial_cat {
         _Same_size_and_compatible && is_trivially_constructible_v<_Dest, _SourceRef>;
 
     static constexpr bool _Bitcopy_assignable =
-        _Same_size_and_compatible && is_trivially_assignable_v<_DestRef, _SourceRef>;
+        _Same_size_and_compatible && _Is_trivially_assignable_returning_same_reference_v<_DestRef, _SourceRef>;
 };
 
 template <class _Source, class _Dest, class _SourceRef, class _DestRef>
@@ -4710,7 +4719,8 @@ struct _Trivial_cat<_Source*, _Dest*, _SourceRef, _DestRef> {
         _Is_pointer_address_convertible<_Source, _Dest> && is_trivially_constructible_v<_Dest*, _SourceRef>;
 
     static constexpr bool _Bitcopy_assignable =
-        _Is_pointer_address_convertible<_Source, _Dest> && is_trivially_assignable_v<_DestRef, _SourceRef>;
+        _Is_pointer_address_convertible<_Source, _Dest>
+        && _Is_trivially_assignable_returning_same_reference_v<_DestRef, _SourceRef>;
 };
 
 struct _False_trivial_cat {

@@ -5616,6 +5616,10 @@ namespace ranges {
 } // namespace ranges
 #endif // _HAS_CXX20
 
+template <class _Ty>
+struct _Is_trivially_copy_assignable_returning_same_reference
+    : bool_constant<_Is_trivially_assignable_returning_same_reference_v<_Ty&, const _Ty&>> {};
+
 _EXPORT_STD template <class _BidIt, class _OutIt>
 _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     // copy reversing elements in [_First, _Last)
@@ -5629,8 +5633,8 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     using _Elem                         = remove_reference_t<_Iter_ref_t<remove_const_t<decltype(_UFirst)>>>;
     using _DestElem                     = remove_reference_t<_Iter_ref_t<decltype(_UDest)>>;
     constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
-        bool_constant<_Iterators_are_contiguous<decltype(_ULast), decltype(_UDest)>>, is_trivially_copyable<_Elem>,
-        negation<is_volatile<_Elem>>>;
+        bool_constant<_Iterators_are_contiguous<decltype(_ULast), decltype(_UDest)>>,
+        _Is_trivially_copy_assignable_returning_same_reference<_Elem>, negation<is_volatile<_Elem>>>;
     constexpr size_t _Nx                = sizeof(_Elem);
 
     if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
@@ -5719,7 +5723,7 @@ namespace ranges {
                 using _Elem                         = remove_reference_t<iter_reference_t<_It>>;
                 using _DestElem                     = remove_reference_t<iter_reference_t<_Out>>;
                 constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
-                    is_trivially_copyable<_Elem>, negation<is_volatile<_Elem>>>;
+                    _Is_trivially_copy_assignable_returning_same_reference<_Elem>, negation<is_volatile<_Elem>>>;
                 constexpr size_t _Nx                = sizeof(_Elem);
 
                 if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
