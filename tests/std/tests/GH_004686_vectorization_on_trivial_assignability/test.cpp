@@ -160,7 +160,7 @@ CONSTEXPR20 void test_copy_move_leopards() {
 // As a result, we keep the this as a regression test.
 CONSTEXPR20 void test_llvm_37038() {
     struct DerivedLeopard : Leopard {};
-    static_assert(is_trivially_move_assignable_v<DerivedLeopard>);
+    static_assert(is_trivially_move_assignable_v<DerivedLeopard>, "");
 
     auto make_derived_leopard = [](int n) {
         DerivedLeopard ret{};
@@ -206,7 +206,7 @@ CONSTEXPR20 void test_llvm_37038() {
     struct LeopardHouse {
         Leopard bigcat_;
     };
-    static_assert(is_trivially_move_assignable_v<LeopardHouse>);
+    static_assert(is_trivially_move_assignable_v<LeopardHouse>, "");
 
     auto make_leopard_house = [](int n) {
         LeopardHouse ret{};
