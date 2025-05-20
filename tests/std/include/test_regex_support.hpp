@@ -193,7 +193,7 @@ public:
         } catch (const std::regex_error& e) {
             if (e.code() != expectedCode) {
                 wprintf(LR"(wregex r("%s", 0x%X) threw 0x%X; expected 0x%X)"
-                        "\n",
+                        L"\n",
                     pattern.c_str(), static_cast<unsigned int>(syntax), static_cast<unsigned int>(e.code()),
                     static_cast<unsigned int>(expectedCode));
                 fail_regex();
