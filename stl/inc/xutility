@@ -4688,6 +4688,8 @@ constexpr bool _Is_pointer_address_convertible = is_void_v<_Source>
 #pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data (Yes, duplicated message.)
 #pragma warning(disable : 4267) // '%s': conversion from '%s' to '%s', possible loss of data (Yes, duplicated message!)
 #pragma warning(disable : 4365) // '%s': conversion from '%s' to '%s', signed/unsigned mismatch
+#pragma warning(disable : 5267) // definition of implicit assignment operator for '%s' is deprecated because it has a
+                                // user-provided copy constructor
 
 // Determines whether _DestRef is trivially assignable from _SourceRef, and if _Remove_cvref_t<_DestRef> is a class, the
 // assignment uses _Remove_cvref_t<_DestRef>::operator=.
