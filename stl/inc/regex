@@ -4710,8 +4710,8 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape(bool _In_character_clas
 
         using _Uelem = typename _RxTraits::_Uelem;
         _Uelem _UCh  = static_cast<_Uelem>(_Char);
-        if ((static_cast<_Uelem>('a') > _UCh || static_cast<_Uelem>('z') < _UCh)
-            && (static_cast<_Uelem>('A') > _UCh || static_cast<_Uelem>('Z') < _UCh)) {
+        if (!((static_cast<_Uelem>('a') <= _UCh && _UCh <= static_cast<_Uelem>('z'))
+                || (static_cast<_Uelem>('A') <= _UCh && _UCh <= static_cast<_Uelem>('Z')))) {
             _Error(regex_constants::error_escape);
         }
 
