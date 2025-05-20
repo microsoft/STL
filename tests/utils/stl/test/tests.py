@@ -259,6 +259,7 @@ class STLTest(Test):
             if (targetArch == 'arm64ec'.casefold()):
                 self.compileFlags.append('/arm64EC')
                 self.linkFlags.append('/machine:arm64ec')
+
                 # TRANSITION, Windows SDK 10.0.22621.0 emits
                 # "warning C28301: No annotations for first declaration of 'meow'"
                 # for various intrinsics when building for ARM64EC.

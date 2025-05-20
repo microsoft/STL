@@ -5,7 +5,9 @@
 
 // TRANSITION, Windows SDK 10.0.22621.0 causes this test to fail for ARM64EC with:
 // "error LNK2019: unresolved external symbol fabsf referenced in function #fabsf$exit_thunk (EC Symbol)"
-// It passes when built with Windows SDK 10.0.26100.0.
+// Windows SDK 10.0.26100.0 will avoid that error, but we'll need to investigate why user.ixx emits:
+// "error C2678: binary '==': no operator found which takes a left-hand operand of type 'const std::string'
+// (or there is no acceptable conversion)"
 // UNSUPPORTED: arm64ec
 
 import User;
