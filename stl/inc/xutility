@@ -4683,6 +4683,7 @@ constexpr bool _Is_pointer_address_convertible = is_void_v<_Source>
 #endif // defined(__cpp_lib_is_pointer_interconvertible)
     ;
 
+#pragma warning(push)
 #pragma warning(disable : 4365) // '%s': conversion from '%s' to '%s', signed/unsigned mismatch (/Wall)
 
 // Determines whether _DestRef is trivially assignable from _SourceRef, and if _Remove_cvref_t<_DestRef> is a class, the
