@@ -144,18 +144,18 @@ struct StatefulDerived2 : EmptyBase, StatefulBase {};
 struct StatefulPrivatelyDerived2 : private EmptyBase, private StatefulBase {};
 
 #if _HAS_CXX20
-struct DefailtComparison {
+struct DefaultComparison {
     int i;
 
-    bool operator==(const DefailtComparison&) const noexcept = default;
+    bool operator==(const DefaultComparison&) const noexcept = default;
 };
 
-struct DefailtComparisonOddSize {
+struct DefaultComparisonOddSize {
     int i;
     int j;
     int k;
 
-    bool operator==(const DefailtComparisonOddSize&) const noexcept = default;
+    bool operator==(const DefaultComparisonOddSize&) const noexcept = default;
 };
 #endif // _HAS_CXX20
 
@@ -524,14 +524,14 @@ STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<false, StatefulBase, StatefulB
 
 #if _HAS_CXX20
 // Don't allow user-defined types with default comparison, unless magic happens
-STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<magic, DefailtComparison, DefailtComparison>());
-STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<magic, DefailtComparisonOddSize, DefailtComparisonOddSize>());
+STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<magic, DefaultComparison, DefaultComparison>());
+STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<magic, DefaultComparisonOddSize, DefaultComparisonOddSize>());
 // The only difference between _Equal_memcmp_is_safe and _Vector_alg_in_search_is_safe is how the magic works
-STATIC_ASSERT(_Equal_memcmp_is_safe<DefailtComparison*, DefailtComparison*, equal_to<>> == magic);
-STATIC_ASSERT(_Equal_memcmp_is_safe<DefailtComparisonOddSize*, DefailtComparisonOddSize*, equal_to<>> == magic);
+STATIC_ASSERT(_Equal_memcmp_is_safe<DefaultComparison*, DefaultComparison*, equal_to<>> == magic);
+STATIC_ASSERT(_Equal_memcmp_is_safe<DefaultComparisonOddSize*, DefaultComparisonOddSize*, equal_to<>> == magic);
 #if _USE_STD_VECTOR_ALGORITHMS
-STATIC_ASSERT(_Vector_alg_in_search_is_safe<DefailtComparison*, DefailtComparison*, equal_to<>> == magic);
-STATIC_ASSERT(!_Vector_alg_in_search_is_safe<DefailtComparisonOddSize*, DefailtComparisonOddSize*, equal_to<>>);
+STATIC_ASSERT(_Vector_alg_in_search_is_safe<DefaultComparison*, DefaultComparison*, equal_to<>> == magic);
+STATIC_ASSERT(!_Vector_alg_in_search_is_safe<DefaultComparisonOddSize*, DefaultComparisonOddSize*, equal_to<>>);
 #endif // _USE_STD_VECTOR_ALGORITHMS
 #endif // _HAS_CXX20
 
