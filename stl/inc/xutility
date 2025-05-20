@@ -5493,7 +5493,7 @@ constexpr bool _Can_memcmp_elements<_Ty1*, _Ty2*, false> = _Is_pointer_address_c
 template <class _Elem1, class _Elem2>
 constexpr bool _Can_memcmp_elements<_Elem1, _Elem2, false> =
     is_same_v<_Elem1, _Elem2> && __is_trivially_equality_comparable(_Elem1);
-#else // ^^^_USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE / !_USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE vvv
+#else // ^^^ _USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE / !_USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE vvv
 template <class _Elem1, class _Elem2>
 constexpr bool _Can_memcmp_elements<_Elem1, _Elem2, false> = false;
 #endif // ^^^ !_USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE ^^^
