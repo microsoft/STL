@@ -32,16 +32,16 @@
 // Also test GH-2645: <yvals_core.h>: Conformance issue on [[msvc::known_semantics]]
 #define msvc            1
 #define known_semantics 2
-#define intrinsic       3
-#define lifetimebound   4
-#define noop_dtor       5
-#define empty_bases     6
 
-#ifdef _M_ARM64EC
+#ifndef _M_ARM64EC
 // TRANSITION, Windows SDK 10.0.22621.0 uses '#pragma intrinsic(fabsf)' in corecrt_math.h when _M_ARM64EC is defined.
 // This use is no longer present in Windows SDK 10.0.26100.0.
-#undef intrinsic
-#endif // ^^^ workaround ^^^
+#define intrinsic 3
+#endif // ^^^ no workaround ^^^
+
+#define lifetimebound 4
+#define noop_dtor     5
+#define empty_bases   6
 
 #include <__msvc_all_public_headers.hpp>
 
