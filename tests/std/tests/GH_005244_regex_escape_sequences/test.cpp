@@ -190,6 +190,7 @@ void test_gh_5244_atomescape_ecmascript() {
     g_regexTester.should_not_match("c", R"(\ca)", ECMAScript);
     g_regexTester.should_not_match("ca", R"(\ca)", ECMAScript);
     g_regexTester.should_throw(R"(\c0)", error_escape, ECMAScript);
+    g_regexTester.should_throw(R"(\c)", error_escape, ECMAScript);
     g_regexTester.should_throw(R"(\c@)", error_escape, ECMAScript);
     g_regexTester.should_throw(R"(\c[)", error_escape, ECMAScript);
     g_regexTester.should_throw(R"(\c`)", error_escape, ECMAScript);
