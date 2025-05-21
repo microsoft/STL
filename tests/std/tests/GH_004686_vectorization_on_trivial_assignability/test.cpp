@@ -95,7 +95,7 @@ CONSTEXPR20 void test_copy_move_leopards() {
     {
         Leopard dst[]{
             make_leopard(3), make_leopard(1), make_leopard(4), make_leopard(1), make_leopard(5), make_leopard(9)};
-        copy_n(begin(zero_leopards), end(zero_leopards) - begin(zero_leopards), begin(dst));
+        copy_n(begin(zero_leopards), size(zero_leopards), begin(dst));
         assert(equal(begin(dst), end(dst), begin(expected_leopards), end(expected_leopards), equal_leopard));
     }
     {
