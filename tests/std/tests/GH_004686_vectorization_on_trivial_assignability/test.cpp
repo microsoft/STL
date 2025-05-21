@@ -85,40 +85,36 @@ CONSTEXPR20 void test_copy_move_leopards() {
     constexpr Leopard expected_leopards[]{
         make_leopard(3), make_leopard(1), make_leopard(4), make_leopard(1), make_leopard(5), make_leopard(9)};
     constexpr Leopard zero_leopards[6]{};
+    auto equal_leopard = [](const Leopard& lhs, const Leopard& rhs) { return lhs.spots_ == rhs.spots_; };
     {
         Leopard dst[]{
             make_leopard(3), make_leopard(1), make_leopard(4), make_leopard(1), make_leopard(5), make_leopard(9)};
         copy(begin(zero_leopards), end(zero_leopards), begin(dst));
-        assert(equal(begin(dst), end(dst), begin(expected_leopards), end(expected_leopards),
-            [](const Leopard& lhs, const Leopard& rhs) { return lhs.spots_ == rhs.spots_; }));
+        assert(equal(begin(dst), end(dst), begin(expected_leopards), end(expected_leopards), equal_leopard));
     }
     {
         Leopard dst[]{
             make_leopard(3), make_leopard(1), make_leopard(4), make_leopard(1), make_leopard(5), make_leopard(9)};
         copy_n(begin(zero_leopards), end(zero_leopards) - begin(zero_leopards), begin(dst));
-        assert(equal(begin(dst), end(dst), begin(expected_leopards), end(expected_leopards),
-            [](const Leopard& lhs, const Leopard& rhs) { return lhs.spots_ == rhs.spots_; }));
+        assert(equal(begin(dst), end(dst), begin(expected_leopards), end(expected_leopards), equal_leopard));
     }
     {
         Leopard dst[]{
             make_leopard(3), make_leopard(1), make_leopard(4), make_leopard(1), make_leopard(5), make_leopard(9)};
         copy_backward(begin(zero_leopards), end(zero_leopards), end(dst));
-        assert(equal(begin(dst), end(dst), begin(expected_leopards), end(expected_leopards),
-            [](const Leopard& lhs, const Leopard& rhs) { return lhs.spots_ == rhs.spots_; }));
+        assert(equal(begin(dst), end(dst), begin(expected_leopards), end(expected_leopards), equal_leopard));
     }
     {
         Leopard dst[]{
             make_leopard(3), make_leopard(1), make_leopard(4), make_leopard(1), make_leopard(5), make_leopard(9)};
         move(begin(zero_leopards), end(zero_leopards), begin(dst));
-        assert(equal(begin(dst), end(dst), begin(expected_leopards), end(expected_leopards),
-            [](const Leopard& lhs, const Leopard& rhs) { return lhs.spots_ == rhs.spots_; }));
+        assert(equal(begin(dst), end(dst), begin(expected_leopards), end(expected_leopards), equal_leopard));
     }
     {
         Leopard dst[]{
             make_leopard(3), make_leopard(1), make_leopard(4), make_leopard(1), make_leopard(5), make_leopard(9)};
         move_backward(begin(zero_leopards), end(zero_leopards), end(dst));
-        assert(equal(begin(dst), end(dst), begin(expected_leopards), end(expected_leopards),
-            [](const Leopard& lhs, const Leopard& rhs) { return lhs.spots_ == rhs.spots_; }));
+        assert(equal(begin(dst), end(dst), begin(expected_leopards), end(expected_leopards), equal_leopard));
     }
 #if _HAS_CXX20
     {
@@ -168,21 +164,21 @@ CONSTEXPR20 void test_llvm_37038() {
         return ret;
     };
 
+    auto equal_derived = [](const DerivedLeopard& lhs, const DerivedLeopard& rhs) { return lhs.spots_ == rhs.spots_; };
+
     {
         DerivedLeopard src[]{
             make_derived_leopard(1), make_derived_leopard(7), make_derived_leopard(2), make_derived_leopard(9)};
         DerivedLeopard dst[4]{};
         move(begin(src), end(src), dst);
-        assert(equal(begin(dst), end(dst), begin(src), end(src),
-            [](const DerivedLeopard& lhs, const DerivedLeopard& rhs) { return lhs.spots_ == rhs.spots_; }));
+        assert(equal(begin(dst), end(dst), begin(src), end(src), equal_derived));
     }
     {
         DerivedLeopard src[]{
             make_derived_leopard(1), make_derived_leopard(7), make_derived_leopard(2), make_derived_leopard(9)};
         DerivedLeopard dst[4]{};
         move_backward(begin(src), end(src), end(dst));
-        assert(equal(begin(dst), end(dst), begin(src), end(src),
-            [](const DerivedLeopard& lhs, const DerivedLeopard& rhs) { return lhs.spots_ == rhs.spots_; }));
+        assert(equal(begin(dst), end(dst), begin(src), end(src), equal_derived));
     }
 #if _HAS_CXX20
     {
@@ -190,16 +186,14 @@ CONSTEXPR20 void test_llvm_37038() {
             make_derived_leopard(1), make_derived_leopard(7), make_derived_leopard(2), make_derived_leopard(9)};
         DerivedLeopard dst[4]{};
         ranges::move(src, dst);
-        assert(ranges::equal(
-            src, dst, [](const DerivedLeopard& lhs, const DerivedLeopard& rhs) { return lhs.spots_ == rhs.spots_; }));
+        assert(ranges::equal(src, dst, equal_derived));
     }
     {
         DerivedLeopard src[]{
             make_derived_leopard(1), make_derived_leopard(7), make_derived_leopard(2), make_derived_leopard(9)};
         DerivedLeopard dst[4]{};
         ranges::move_backward(src, ranges::end(dst));
-        assert(ranges::equal(
-            src, dst, [](const DerivedLeopard& lhs, const DerivedLeopard& rhs) { return lhs.spots_ == rhs.spots_; }));
+        assert(ranges::equal(src, dst, equal_derived));
     }
 #endif // _HAS_CXX20
 
@@ -214,34 +208,34 @@ CONSTEXPR20 void test_llvm_37038() {
         return ret;
     };
 
+    auto equal_house = [](const LeopardHouse& lhs, const LeopardHouse& rhs) {
+        return lhs.bigcat_.spots_ == rhs.bigcat_.spots_;
+    };
+
     {
         LeopardHouse src[]{make_leopard_house(1), make_leopard_house(7), make_leopard_house(2), make_leopard_house(9)};
         LeopardHouse dst[4]{};
         move(begin(src), end(src), dst);
-        assert(equal(begin(dst), end(dst), begin(src), end(src),
-            [](const LeopardHouse& lhs, const LeopardHouse& rhs) { return lhs.bigcat_.spots_ == rhs.bigcat_.spots_; }));
+        assert(equal(begin(dst), end(dst), begin(src), end(src), equal_house));
     }
     {
         LeopardHouse src[]{make_leopard_house(1), make_leopard_house(7), make_leopard_house(2), make_leopard_house(9)};
         LeopardHouse dst[4]{};
         move_backward(begin(src), end(src), end(dst));
-        assert(equal(begin(dst), end(dst), begin(src), end(src),
-            [](const LeopardHouse& lhs, const LeopardHouse& rhs) { return lhs.bigcat_.spots_ == rhs.bigcat_.spots_; }));
+        assert(equal(begin(dst), end(dst), begin(src), end(src), equal_house));
     }
 #if _HAS_CXX20
     {
         LeopardHouse src[]{make_leopard_house(1), make_leopard_house(7), make_leopard_house(2), make_leopard_house(9)};
         LeopardHouse dst[4]{};
         ranges::move(src, dst);
-        assert(ranges::equal(src, dst,
-            [](const LeopardHouse& lhs, const LeopardHouse& rhs) { return lhs.bigcat_.spots_ == rhs.bigcat_.spots_; }));
+        assert(ranges::equal(src, dst, equal_house));
     }
     {
         LeopardHouse src[]{make_leopard_house(1), make_leopard_house(7), make_leopard_house(2), make_leopard_house(9)};
         LeopardHouse dst[4]{};
         ranges::move_backward(src, ranges::end(dst));
-        assert(ranges::equal(src, dst,
-            [](const LeopardHouse& lhs, const LeopardHouse& rhs) { return lhs.bigcat_.spots_ == rhs.bigcat_.spots_; }));
+        assert(ranges::equal(src, dst, equal_house));
     }
 #endif // _HAS_CXX20
 }
