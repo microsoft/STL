@@ -5326,7 +5326,7 @@ namespace {
                 const auto _Match_last = _Traits::_Xor(_Data2, _Data1_last);
 
                 if (_Traits::_TestZ(_Match_last, _Match_last)) {
-                    // Matched 32 bytes, check the rest
+                    // Matched _Vec_size bytes, check the rest
                     const void* _Tail1 = _Mid1;
                     _Advance_bytes(_Tail1, _Vec_size);
 
@@ -5381,7 +5381,7 @@ namespace {
             }
 
 #ifndef _M_ARM64EC
-            // The AVX2 path for 8-bit elements is not neccessarily more effecient than SSE4.2 cmpestri path
+            // The AVX2 path for 8-bit elements is not necessarily more efficient than the SSE4.2 cmpestri path
             if constexpr (sizeof(_Ty) != 1) {
                 if (_Use_avx2() && _Size_bytes_1 >= 32) {
                     return _Search_cmpeq<_Traits_avx, _Ty>(_First1, _Last1, _First2, _Size_bytes_2);
