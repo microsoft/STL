@@ -153,7 +153,7 @@ CONSTEXPR20 void test_copy_move_leopards() {
 // Pedantically, all of MSVC, Clang, and EDG are currently wrong on this, see LLVM-37038.
 // However, if compilers get corrected, the assignment operators of `DerivedLeopard` and `LeopardHouse` will be trivial
 // but no-op, and the library side can't correctly conclude that assignments for them shouldn't be vectorized.
-// As a result, we keep the this as a regression test.
+// As a result, we keep this as a regression test.
 CONSTEXPR20 void test_llvm_37038() {
     struct DerivedLeopard : Leopard {};
     static_assert(is_trivially_move_assignable_v<DerivedLeopard>, "");
