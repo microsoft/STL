@@ -5186,7 +5186,7 @@ namespace {
         }
 
         template <class _Traits, class _Ty>
-        const void* _Find_end_cmpeq(const void* _First1, const void* const _Last1, const void* const _First2,
+        const void* _Find_end_cmpeq(const void* const _First1, const void* const _Last1, const void* const _First2,
             const size_t _Size_bytes_2) noexcept {
             [[maybe_unused]] typename _Traits::_Guard _Guard; // TRANSITION, DevCom-10331414
             const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
