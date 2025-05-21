@@ -37,7 +37,7 @@ CONSTEXPR20 void test_reverse_copy() {
         pair<int&, int&> dstref[] = {
             {dst[0].first, dst[0].second}, {dst[1].first, dst[1].second}, {dst[2].first, dst[2].second}};
 
-        reverse_copy(srcref, srcref + 3, dstref);
+        reverse_copy(begin(srcref), end(srcref), dstref);
         assert(equal(begin(dst), end(dst), begin(expected_results), end(expected_results)));
     }
 #if _HAS_CXX20
@@ -60,7 +60,7 @@ CONSTEXPR20 void test_reverse_copy() {
         pair<int&, int&> srcref[] = {src[0], src[1], src[2]};
         pair<int&, int&> dstref[] = {dst[0], dst[1], dst[2]};
 
-        reverse_copy(srcref, srcref + 3, dstref);
+        reverse_copy(begin(srcref), end(srcref), dstref);
         assert(equal(begin(dst), end(dst), begin(expected_results), end(expected_results)));
     }
     {
