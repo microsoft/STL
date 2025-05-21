@@ -136,7 +136,7 @@ CONSTEXPR20 void test_copy_move_leopards() {
     {
         Leopard dst[]{
             make_leopard(3), make_leopard(1), make_leopard(4), make_leopard(1), make_leopard(5), make_leopard(9)};
-        ranges::copy_backward(zero_leopards, dst + ranges::distance(dst));
+        ranges::copy_backward(zero_leopards, ranges::end(dst));
         assert(ranges::equal(dst, expected_leopards, ranges::equal_to{}, &Leopard::spots_, &Leopard::spots_));
     }
     {
@@ -148,7 +148,7 @@ CONSTEXPR20 void test_copy_move_leopards() {
     {
         Leopard dst[]{
             make_leopard(3), make_leopard(1), make_leopard(4), make_leopard(1), make_leopard(5), make_leopard(9)};
-        ranges::move_backward(zero_leopards, dst + ranges::distance(dst));
+        ranges::move_backward(zero_leopards, ranges::end(dst));
         assert(ranges::equal(dst, expected_leopards, ranges::equal_to{}, &Leopard::spots_, &Leopard::spots_));
     }
 #endif // _HAS_CXX20
