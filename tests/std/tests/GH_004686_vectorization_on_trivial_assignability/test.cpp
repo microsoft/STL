@@ -49,7 +49,7 @@ CONSTEXPR20 void test_reverse_copy() {
         pair<int&, int&> dstref[] = {
             {dst[0].first, dst[0].second}, {dst[1].first, dst[1].second}, {dst[2].first, dst[2].second}};
 
-        ranges::reverse_copy(srcref, srcref + 3, dstref);
+        ranges::reverse_copy(srcref, dstref);
         assert(ranges::equal(dst, expected_results));
     }
 #endif // _HAS_CXX20
