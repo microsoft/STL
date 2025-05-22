@@ -5310,7 +5310,7 @@ namespace {
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
-                const auto _Check_first = [=, &_Mid1](long _Match) noexcept {
+                const auto _Check_first = [=, &_Mid1](unsigned long _Match) noexcept {
                     while (_Match != 0) {
                         const unsigned int _Pos = _Traits::_Bsr(_Match);
 
@@ -5331,7 +5331,7 @@ namespace {
                     return false;
                 };
 
-                const auto _Check = [=, &_Mid1](long _Match) noexcept {
+                const auto _Check = [=, &_Mid1](unsigned long _Match) noexcept {
                     while (_Match != 0) {
                         const unsigned int _Pos = _Traits::_Bsr(_Match);
 
@@ -5397,7 +5397,7 @@ namespace {
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
-                const auto _Check = [=, &_Mid1](long _Match) noexcept {
+                const auto _Check = [=, &_Mid1](unsigned long _Match) noexcept {
                     while (_Match != 0) {
                         const unsigned int _Pos = _Traits::_Bsr(_Match);
 
@@ -5773,7 +5773,7 @@ namespace {
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
-                        const auto _Check = [=, &_Mid1](long _Match) noexcept {
+                        const auto _Check = [=, &_Mid1](unsigned long _Match) noexcept {
                             while (_Match != 0) {
                                 const void* _Tmp1 = _Mid1;
                                 unsigned long _Match_last_pos;
