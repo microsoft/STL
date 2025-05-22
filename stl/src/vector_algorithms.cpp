@@ -165,7 +165,7 @@ void* __cdecl __std_swap_ranges_trivially_swappable(
 
 namespace {
     namespace _Rotating {
-        void __cdecl _Swap_3_ranges(void* _First1, void* const _Last1, void* _First2, void* _First3) noexcept {
+        void _Swap_3_ranges(void* _First1, void* const _Last1, void* _First2, void* _First3) noexcept {
 #ifndef _M_ARM64EC
             constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
             if (_Byte_length(_First1, _Last1) >= 32 && _Use_avx2()) {
