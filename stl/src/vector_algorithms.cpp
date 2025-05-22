@@ -5716,7 +5716,7 @@ namespace {
                                     return true;
                                 }
 
-                                _bittestandreset(&_Unfit_match, _Match_last_pos);
+                                _Unfit_match ^= 1 << _Match_last_pos;
                             }
 
                             return false;
@@ -5805,7 +5805,7 @@ namespace {
                                     }
                                 }
 
-                                _bittestandreset(&_Match, _Match_last_pos);
+                                _Match ^= 1 << _Match_last_pos;
                             }
 
                             return false;
