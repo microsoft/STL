@@ -1621,6 +1621,7 @@ private:
     const _RxTraits& _Traits;
 
 public:
+    _Builder2(const _Builder2&)            = delete;
     _Builder2& operator=(const _Builder2&) = delete;
 };
 
@@ -1772,6 +1773,7 @@ private:
     typename _RxTraits::char_class_type _Char_class_d{};
 
 public:
+    _Matcher2(const _Matcher2&)            = delete;
     _Matcher2& operator=(const _Matcher2&) = delete;
 };
 
