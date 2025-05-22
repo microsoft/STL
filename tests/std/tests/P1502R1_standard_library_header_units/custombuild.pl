@@ -173,6 +173,7 @@ sub CustomBuildHook()
     # For convenience, create a library file containing all of the object files that were produced.
     my $libFilename = "stl_header_units.lib";
     Run::ExecuteCommand(join(" ", "lib.exe", "/nologo", "/out:$libFilename", @objFilenames));
+    # TRANSITION, when we test ARM64EC internally, add "/machine:arm64ec" here to match custom_format.py.
 
     Run::ExecuteCL(join(" ", "test.cpp", "/Fe$cwd.exe", @consumeBuiltHeaderUnits, $libFilename));
 }

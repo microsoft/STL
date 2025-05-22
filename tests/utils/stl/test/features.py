@@ -65,4 +65,7 @@ def getDefaultFeatures(config, litConfig):
     elif litConfig.target_arch.casefold() == 'arm64'.casefold():
         DEFAULT_FEATURES.append(Feature(name='arm64'))
 
+    elif litConfig.target_arch.casefold() == 'arm64ec'.casefold():
+        DEFAULT_FEATURES.append(Feature(name='arm64ec'))
+
     return DEFAULT_FEATURES

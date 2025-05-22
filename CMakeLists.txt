@@ -101,16 +101,14 @@ add_compile_definitions(
     _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN10_NI)
 
 if(STL_USE_ANALYZE)
-    # TRANSITION OS-40109504: Windows SDK: incorrect SAL annotations on functions the STL uses
-    # warning C6553: The annotation for function 'LCMapStringEx' on _Param_(9)
-    # does not apply to a value type.
-    # There's a bug in the declaration for LCMapStringEx - it applies _In_opt_ to an LPARAM.
-    # LPARAM is a LONG_PTR (intptr_t), and it's invalid to apply _In_opt_ to a non-pointer.
-    # As of the Windows 11 SDK (10.0.22621.0), there are 5 total occurrences of warning C6553 affecting the STL's build.
+    # TRANSITION, Windows SDK 10.0.22621.0 emits
+    # "warning C6553: The annotation for function 'LCMapStringEx' on _Param_(9) does not apply to a value type."
+    # Reported as OS-40109504 "Windows SDK: incorrect SAL annotations on functions the STL uses".
     add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553>")
 
     if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64ec")
-        # TRANSITION, the Windows SDK emits "warning C28301: No annotations for first declaration of 'meow'"
+        # TRANSITION, Windows SDK 10.0.22621.0 emits
+        # "warning C28301: No annotations for first declaration of 'meow'"
         # for various intrinsics when building for ARM64EC.
         add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/wd28301>")
     endif()

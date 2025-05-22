@@ -1,6 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// TRANSITION, Windows SDK 10.0.22621.0 causes this test to fail for ARM64EC with:
+// "error LNK2019: unresolved external symbol fabsf referenced in function #fabsf$exit_thunk (EC Symbol)"
+// It passes when built with Windows SDK 10.0.26100.0.
+// UNSUPPORTED: arm64ec
+
 import std;
 
 #include <assert.h> // intentionally not <cassert>
