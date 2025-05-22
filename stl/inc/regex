@@ -1850,8 +1850,7 @@ enum _Lang_flags2 : unsigned long long { // describe language properties
     _L_alt_nl     = 0x000000004ULL, // uses '\n' for alternation (grep, egrep)
     _L_nex_grp    = 0x000000008ULL, // has non-escaped capture groups
     _L_nex_rep    = 0x000000010ULL, // has non-escaped repeats
-    _L_nc_grp     = 0x000000020ULL, // has non-capture groups (?:xxx)
-    _L_asrt_gen   = 0x000000040ULL, // has generalized assertions (?=xxx), (?!xxx)
+    _L_nc_asrt    = 0x000000020ULL, // has non-capture groups (?:xxx) and generalized assertions (?=xxx), (?!xxx)
     _L_asrt_wrd   = 0x000000080ULL, // has word boundary assertions (\b, \B)
     _L_bckr       = 0x000000100ULL, // has backreferences (ERE doesn't)
     _L_lim_bckr   = 0x000000200ULL, // has limited backreferences (BRE \1-\9)
@@ -4568,17 +4567,17 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Wrapped_disjunction() { // add disjunc
     ++_Disj_count;
     if (!(_L_flags & _L_empty_grp) && _Mchar == _Meta_rpar) {
         _Error(regex_constants::error_paren);
-    } else if ((_L_flags & _L_nc_grp) && _Mchar == _Meta_query) { // check for valid ECMAScript (?x ... ) group
+    } else if ((_L_flags & _L_nc_asrt) && _Mchar == _Meta_query) { // check for valid ECMAScript (?x ... ) group
         _Next();
         _Meta_type _Ch = _Mchar;
         _Next();
-        if (_Ch == _Meta_colon) {
+        if (_Ch == _Meta_colon) { // process non-capture group (?:meow)
             _Do_noncapture_group();
-        } else if (_Ch == _Meta_exc) { // process assert group, negating
+        } else if (_Ch == _Meta_exc) { // process negative lookahead assertion (?!meow)
             _Do_assert_group(true);
             --_Disj_count;
             return false;
-        } else if (_Ch == _Meta_equal) { // process assert group
+        } else if (_Ch == _Meta_equal) { // process positive lookahead assertion (?=meow)
             _Do_assert_group(false);
             --_Disj_count;
             return false;
@@ -5008,10 +5007,10 @@ _Parser2<_FwdIt, _Elem, _RxTraits>::_Parser2(
     const _RxTraits& _Tr, _FwdIt _Pfirst, _FwdIt _Plast, regex_constants::syntax_option_type _Fx)
     : _Pat(_Pfirst), _End(_Plast), _Nfa(_Tr, _Fx), _Traits(_Tr), _Flags(_Fx) {
 
-    constexpr unsigned long long _ECMA_flags = _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_nc_grp
-                                             | _L_asrt_gen | _L_asrt_wrd | _L_bckr | _L_ngr_rep | _L_esc_uni
-                                             | _L_esc_hex | _L_esc_bsp | _L_esc_ffn | _L_esc_wsd | _L_esc_ctrl
-                                             | _L_bzr_chr | _L_grp_esc | _L_ident_ECMA | _L_empty_grp;
+    constexpr unsigned long long _ECMA_flags = _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_nc_asrt
+                                             | _L_asrt_wrd | _L_bckr | _L_ngr_rep | _L_esc_uni | _L_esc_hex | _L_esc_bsp
+                                             | _L_esc_ffn | _L_esc_wsd | _L_esc_ctrl | _L_bzr_chr | _L_grp_esc
+                                             | _L_ident_ECMA | _L_empty_grp;
 
     constexpr unsigned long long _Basic_flags = _L_bckr | _L_lim_bckr | _L_anch_rstr | _L_star_beg | _L_empty_grp
                                               | _L_brk_bal | _L_brk_rstr | _L_dsh_rstr | _L_mtch_long;
