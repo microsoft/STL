@@ -144,13 +144,12 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
 #endif
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
 
-    auto _First1c      = static_cast<unsigned char*>(_First1);
-    const auto _Last1c = static_cast<unsigned char*>(_Last1);
-    auto _First2c      = static_cast<unsigned char*>(_First2);
-    for (; _First1c != _Last1c; ++_First1c, ++_First2c) {
-        unsigned char _Ch = *_First1c;
-        *_First1c         = *_First2c;
-        *_First2c         = _Ch;
+    auto _First1c = static_cast<unsigned char*>(_First1);
+    auto _First2c = static_cast<unsigned char*>(_First2);
+    for (; _First1c != _Last1; ++_First1c, ++_First2c) {
+        const unsigned char _Ch = *_First1c;
+        *_First1c               = *_First2c;
+        *_First2c               = _Ch;
     }
 }
 
@@ -159,6 +158,210 @@ void* __cdecl __std_swap_ranges_trivially_swappable(
     void* const _First1, void* const _Last1, void* const _First2) noexcept {
     __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
     return static_cast<char*>(_First2) + (static_cast<char*>(_Last1) - static_cast<char*>(_First1));
+}
+
+} // extern "C"
+
+namespace {
+    namespace _Rotating {
+        void _Swap_3_ranges(void* _First1, void* const _Last1, void* _First2, void* _First3) noexcept {
+#ifndef _M_ARM64EC
+            constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
+            if (_Byte_length(_First1, _Last1) >= 32 && _Use_avx2()) {
+                const void* _Stop_at = _First1;
+                _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_32);
+                do {
+                    const __m256i _Val1 = _mm256_loadu_si256(static_cast<__m256i*>(_First1));
+                    const __m256i _Val2 = _mm256_loadu_si256(static_cast<__m256i*>(_First2));
+                    const __m256i _Val3 = _mm256_loadu_si256(static_cast<__m256i*>(_First3));
+                    _mm256_storeu_si256(static_cast<__m256i*>(_First1), _Val2);
+                    _mm256_storeu_si256(static_cast<__m256i*>(_First2), _Val3);
+                    _mm256_storeu_si256(static_cast<__m256i*>(_First3), _Val1);
+                    _Advance_bytes(_First1, 32);
+                    _Advance_bytes(_First2, 32);
+                    _Advance_bytes(_First3, 32);
+                } while (_First1 != _Stop_at);
+
+                _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+            }
+
+            constexpr size_t _Mask_16 = ~((static_cast<size_t>(1) << 4) - 1);
+            if (_Byte_length(_First1, _Last1) >= 16 && _Use_sse42()) {
+                const void* _Stop_at = _First1;
+                _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_16);
+                do {
+                    const __m128i _Val1 = _mm_loadu_si128(static_cast<__m128i*>(_First1));
+                    const __m128i _Val2 = _mm_loadu_si128(static_cast<__m128i*>(_First2));
+                    const __m128i _Val3 = _mm_loadu_si128(static_cast<__m128i*>(_First3));
+                    _mm_storeu_si128(static_cast<__m128i*>(_First1), _Val2);
+                    _mm_storeu_si128(static_cast<__m128i*>(_First2), _Val3);
+                    _mm_storeu_si128(static_cast<__m128i*>(_First3), _Val1);
+                    _Advance_bytes(_First1, 16);
+                    _Advance_bytes(_First2, 16);
+                    _Advance_bytes(_First3, 16);
+                } while (_First1 != _Stop_at);
+            }
+
+#if defined(_M_X64) // NOTE: UNALIGNED MEMORY ACCESSES
+            constexpr size_t _Mask_8 = ~((static_cast<size_t>(1) << 3) - 1);
+            if (_Byte_length(_First1, _Last1) >= 8) {
+                const void* _Stop_at = _First1;
+                _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_8);
+                do {
+                    const unsigned long long _Val1             = *static_cast<unsigned long long*>(_First1);
+                    const unsigned long long _Val2             = *static_cast<unsigned long long*>(_First2);
+                    const unsigned long long _Val3             = *static_cast<unsigned long long*>(_First3);
+                    *static_cast<unsigned long long*>(_First1) = _Val2;
+                    *static_cast<unsigned long long*>(_First2) = _Val3;
+                    *static_cast<unsigned long long*>(_First3) = _Val1;
+                    _Advance_bytes(_First1, 8);
+                    _Advance_bytes(_First2, 8);
+                    _Advance_bytes(_First3, 8);
+                } while (_First1 != _Stop_at);
+            }
+#elif defined(_M_IX86) // NOTE: UNALIGNED MEMORY ACCESSES
+            constexpr size_t _Mask_4 = ~((static_cast<size_t>(1) << 2) - 1);
+            if (_Byte_length(_First1, _Last1) >= 4) {
+                const void* _Stop_at = _First1;
+                _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_4);
+                do {
+                    const unsigned long _Val1             = *static_cast<unsigned long*>(_First1);
+                    const unsigned long _Val2             = *static_cast<unsigned long*>(_First2);
+                    const unsigned long _Val3             = *static_cast<unsigned long*>(_First3);
+                    *static_cast<unsigned long*>(_First1) = _Val2;
+                    *static_cast<unsigned long*>(_First2) = _Val3;
+                    *static_cast<unsigned long*>(_First3) = _Val1;
+                    _Advance_bytes(_First1, 4);
+                    _Advance_bytes(_First2, 4);
+                    _Advance_bytes(_First3, 4);
+                } while (_First1 != _Stop_at);
+            }
+#else
+#error Unsupported architecture
+#endif
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+
+            auto _First1c = static_cast<unsigned char*>(_First1);
+            auto _First2c = static_cast<unsigned char*>(_First2);
+            auto _First3c = static_cast<unsigned char*>(_First3);
+            for (; _First1c != _Last1; ++_First1c, ++_First2c, ++_First3c) {
+                const unsigned char _Ch = *_First1c;
+                *_First1c               = *_First2c;
+                *_First2c               = *_First3c;
+                *_First3c               = _Ch;
+            }
+        }
+
+
+        // TRANSITION, GH-5506 "VCRuntime: memmove() is surprisingly slow for more than 8 KB on certain CPUs":
+        // As a workaround, the following code calls memmove() for 8 KB portions.
+        constexpr size_t _Portion_size = 8192;
+        constexpr size_t _Portion_mask = _Portion_size - 1;
+        static_assert((_Portion_size & _Portion_mask) == 0);
+
+        void _Move_to_lower_address(void* _Dest, const void* _Src, const size_t _Size) noexcept {
+            const size_t _Whole_portions_size = _Size & ~_Portion_mask;
+
+            void* _Dest_end = _Dest;
+            _Advance_bytes(_Dest_end, _Whole_portions_size);
+
+            while (_Dest != _Dest_end) {
+                memmove(_Dest, _Src, _Portion_size);
+                _Advance_bytes(_Dest, _Portion_size);
+                _Advance_bytes(_Src, _Portion_size);
+            }
+
+            if (const size_t _Tail = _Size - _Whole_portions_size; _Tail != 0) {
+                memmove(_Dest, _Src, _Tail);
+            }
+        }
+
+        void _Move_to_higher_address(void* const _Dest, const void* const _Src, const size_t _Size) noexcept {
+            const size_t _Whole_portions_size = _Size & ~_Portion_mask;
+
+            void* _Dest_end = _Dest;
+            _Advance_bytes(_Dest_end, _Whole_portions_size);
+            const void* _Src_end = _Src;
+            _Advance_bytes(_Src_end, _Whole_portions_size);
+
+            if (const size_t _Tail = _Size - _Whole_portions_size; _Tail != 0) {
+                memmove(_Dest_end, _Src_end, _Tail);
+            }
+
+            while (_Dest_end != _Dest) {
+                _Rewind_bytes(_Dest_end, _Portion_size);
+                _Rewind_bytes(_Src_end, _Portion_size);
+                memmove(_Dest_end, _Src_end, _Portion_size);
+            }
+        }
+
+        constexpr size_t _Buf_size = 512;
+
+        bool _Use_buffer(const size_t _Smaller, const size_t _Larger) noexcept {
+            return _Smaller <= _Buf_size && (_Smaller <= 128 || _Larger >= _Smaller * 2);
+        }
+    } // namespace _Rotating
+} // unnamed namespace
+
+extern "C" {
+
+__declspec(noalias) void __stdcall __std_rotate(void* _First, void* const _Mid, void* _Last) noexcept {
+    unsigned char _Buf[_Rotating::_Buf_size];
+
+    for (;;) {
+        const size_t _Left  = _Byte_length(_First, _Mid);
+        const size_t _Right = _Byte_length(_Mid, _Last);
+
+        if (_Left <= _Right) {
+            if (_Left == 0) {
+                break;
+            }
+
+            if (_Rotating::_Use_buffer(_Left, _Right)) {
+                memcpy(_Buf, _First, _Left);
+                _Rotating::_Move_to_lower_address(_First, _Mid, _Right);
+                _Advance_bytes(_First, _Right);
+                memcpy(_First, _Buf, _Left);
+                break;
+            }
+
+            void* _Mid2 = _Last;
+            _Rewind_bytes(_Mid2, _Left);
+            if (_Left * 2 > _Right) {
+                __std_swap_ranges_trivially_swappable_noalias(_Mid2, _Last, _First);
+                _Last = _Mid2;
+            } else {
+                void* _Mid3 = _Mid2;
+                _Rewind_bytes(_Mid3, _Left);
+                _Rotating::_Swap_3_ranges(_Mid2, _Last, _First, _Mid3);
+                _Last = _Mid3;
+            }
+        } else {
+            if (_Right == 0) {
+                break;
+            }
+
+            if (_Rotating::_Use_buffer(_Right, _Left)) {
+                _Rewind_bytes(_Last, _Right);
+                memcpy(_Buf, _Last, _Right);
+                void* _Mid2 = _First;
+                _Advance_bytes(_Mid2, _Right);
+                _Rotating::_Move_to_higher_address(_Mid2, _First, _Left);
+                memcpy(_First, _Buf, _Right);
+                break;
+            }
+
+            if (_Right * 2 > _Left) {
+                __std_swap_ranges_trivially_swappable_noalias(_Mid, _Last, _First);
+                _Advance_bytes(_First, _Right);
+            } else {
+                void* _Mid2 = _First;
+                _Advance_bytes(_Mid2, _Right);
+                _Rotating::_Swap_3_ranges(_Mid, _Last, _Mid2, _First);
+                _Advance_bytes(_First, _Right * 2);
+            }
+        }
+    }
 }
 
 } // extern "C"
@@ -378,107 +581,6 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
     const void* _First, const void* _Last, void* _Dest) noexcept {
     _Reversing::_Reverse_copy_impl<_Reversing::_Traits_8, uint64_t>(_First, _Last, _Dest);
-}
-
-} // extern "C"
-
-namespace {
-    namespace _Rotating {
-        // TRANSITION, GH-5506 "VCRuntime: memmove() is surprisingly slow for more than 8 KB on certain CPUs":
-        // As a workaround, the following code calls memmove() for 8 KB portions.
-        constexpr size_t _Portion_size = 8192;
-        constexpr size_t _Portion_mask = _Portion_size - 1;
-        static_assert((_Portion_size & _Portion_mask) == 0);
-
-        void _Move_to_lower_address(void* _Dest, const void* _Src, const size_t _Size) noexcept {
-            const size_t _Whole_portions_size = _Size & ~_Portion_mask;
-
-            void* _Dest_end = _Dest;
-            _Advance_bytes(_Dest_end, _Whole_portions_size);
-
-            while (_Dest != _Dest_end) {
-                memmove(_Dest, _Src, _Portion_size);
-                _Advance_bytes(_Dest, _Portion_size);
-                _Advance_bytes(_Src, _Portion_size);
-            }
-
-            if (const size_t _Tail = _Size - _Whole_portions_size; _Tail != 0) {
-                memmove(_Dest, _Src, _Tail);
-            }
-        }
-
-        void _Move_to_higher_address(void* const _Dest, const void* const _Src, const size_t _Size) noexcept {
-            const size_t _Whole_portions_size = _Size & ~_Portion_mask;
-
-            void* _Dest_end = _Dest;
-            _Advance_bytes(_Dest_end, _Whole_portions_size);
-            const void* _Src_end = _Src;
-            _Advance_bytes(_Src_end, _Whole_portions_size);
-
-            if (const size_t _Tail = _Size - _Whole_portions_size; _Tail != 0) {
-                memmove(_Dest_end, _Src_end, _Tail);
-            }
-
-            while (_Dest_end != _Dest) {
-                _Rewind_bytes(_Dest_end, _Portion_size);
-                _Rewind_bytes(_Src_end, _Portion_size);
-                memmove(_Dest_end, _Src_end, _Portion_size);
-            }
-        }
-
-        constexpr size_t _Buf_size = 512;
-
-        bool _Use_buffer(const size_t _Smaller, const size_t _Larger) noexcept {
-            return _Smaller <= _Buf_size && (_Smaller <= 128 || _Larger >= _Smaller * 2);
-        }
-    } // namespace _Rotating
-} // unnamed namespace
-
-extern "C" {
-
-__declspec(noalias) void __stdcall __std_rotate(void* _First, void* const _Mid, void* _Last) noexcept {
-    unsigned char _Buf[_Rotating::_Buf_size];
-
-    for (;;) {
-        const size_t _Left  = _Byte_length(_First, _Mid);
-        const size_t _Right = _Byte_length(_Mid, _Last);
-
-        if (_Left <= _Right) {
-            if (_Left == 0) {
-                break;
-            }
-
-            if (_Rotating::_Use_buffer(_Left, _Right)) {
-                memcpy(_Buf, _First, _Left);
-                _Rotating::_Move_to_lower_address(_First, _Mid, _Right);
-                _Advance_bytes(_First, _Right);
-                memcpy(_First, _Buf, _Left);
-                break;
-            }
-
-            void* _Mid2 = _Last;
-            _Rewind_bytes(_Mid2, _Left);
-            __std_swap_ranges_trivially_swappable_noalias(_Mid2, _Last, _First);
-            _Last = _Mid2;
-        } else {
-            if (_Right == 0) {
-                break;
-            }
-
-            if (_Rotating::_Use_buffer(_Right, _Left)) {
-                _Rewind_bytes(_Last, _Right);
-                memcpy(_Buf, _Last, _Right);
-                void* _Mid2 = _First;
-                _Advance_bytes(_Mid2, _Right);
-                _Rotating::_Move_to_higher_address(_Mid2, _First, _Left);
-                memcpy(_First, _Buf, _Right);
-                break;
-            }
-
-            __std_swap_ranges_trivially_swappable_noalias(_Mid, _Last, _First);
-            _Advance_bytes(_First, _Right);
-        }
-    }
 }
 
 } // extern "C"
