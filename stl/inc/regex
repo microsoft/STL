@@ -1695,9 +1695,10 @@ public:
         }
 
         _Tgt_state._Cur = _Begin;
-        _Tgt_state._Grp_valid.resize(_Ncap);
-        _Tgt_state._Grps.resize(_Ncap);
-        _Cap                  = static_cast<bool>(_Matches);
+        if (_Ncap > 1U) {
+            _Tgt_state._Grp_valid.resize(_Ncap);
+            _Tgt_state._Grps.resize(_Ncap);
+        }
         _Full                 = _Full_match;
         _Max_complexity_count = _REGEX_MAX_COMPLEXITY_COUNT;
         _Max_stack_count      = _REGEX_MAX_STACK_COUNT;
@@ -1711,7 +1712,13 @@ public:
         if (_Matches) { // copy results to _Matches
             _Matches->_Resize(_Ncap);
             const auto& _Result = _Longest ? _Res : _Tgt_state;
-            for (unsigned int _Idx = 0; _Idx < _Ncap; ++_Idx) { // copy submatch _Idx
+
+            auto& _Submatch0   = _Matches->_At(0U);
+            _Submatch0.matched = true;
+            _Submatch0.first   = _Begin;
+            _Submatch0.second  = _Result._Cur;
+
+            for (unsigned int _Idx = 1U; _Idx < _Ncap; ++_Idx) { // copy submatch _Idx
                 if (_Result._Grp_valid[_Idx]) { // copy successful match
                     _Matches->_At(_Idx).matched = true;
                     _Matches->_At(_Idx).first   = _Result._Grps[_Idx]._Begin;
@@ -1763,7 +1770,6 @@ private:
     regex_constants::syntax_option_type _Sflags;
     regex_constants::match_flag_type _Mflags;
     bool _Matched = false;
-    bool _Cap;
     unsigned int _Ncap;
     bool _Longest;
     const _RxTraits& _Traits;
@@ -3499,10 +3505,10 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep_first(_Node_rep* 
 
     // Determine first capture group in repetition for later capture group reset, if not done so previously.
     // No capture group reset is performed for POSIX regexes,
-    // so we prevent any reset by setting the first capture group to the number of capture groups _Ncap.
-    if (_Psav->_Group_first == 0) {
+    // so we prevent any reset by setting the first capture group to the size of the capture group vector.
+    if (_Psav->_Group_first == 0U) {
         if ((_Sflags & regex_constants::_Any_posix) || !_Find_first_inner_capture_group(_Node->_Next, _Psav)) {
-            _Psav->_Group_first = _Ncap;
+            _Psav->_Group_first = static_cast<unsigned int>(_Tgt_state._Grp_valid.size());
         }
     }
 
@@ -3573,7 +3579,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Find_first_inner_capture
                     _Found_group              = true;
                     _Nx                       = nullptr;
                 } else {
-                    _Inner_loop_state->_Group_first = _Ncap;
+                    _Inner_loop_state->_Group_first = static_cast<unsigned int>(_Tgt_state._Grp_valid.size());
                     _Nx                             = _Inner_rep->_End_rep;
                 }
                 break;
@@ -3781,7 +3787,13 @@ _It _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx,
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Better_match() {
     // check for better match under leftmost-longest rule
-    for (unsigned int _Ix = 0; _Ix < _Ncap; ++_Ix) { // check each capture group
+
+    // a longer match is better than a shorter one
+    if (_Res._Cur != _Tgt_state._Cur) {
+        return _STD distance(_Begin, _Res._Cur) < _STD distance(_Begin, _Tgt_state._Cur);
+    }
+
+    for (unsigned int _Ix = 1U; _Ix < _Ncap; ++_Ix) { // check each capture group
         // any match (even an empty one) is better than no match at all
         if (_Res._Grp_valid[_Ix] != _Tgt_state._Grp_valid[_Ix]) {
             return _Tgt_state._Grp_valid[_Ix];
@@ -3939,8 +3951,10 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 
         case _N_capture:
             { // record current position
-                _Node_capture* _Node                 = static_cast<_Node_capture*>(_Nx);
-                _Tgt_state._Grps[_Node->_Idx]._Begin = _Tgt_state._Cur;
+                _Node_capture* _Node = static_cast<_Node_capture*>(_Nx);
+                if (_Node->_Idx != 0U) {
+                    _Tgt_state._Grps[_Node->_Idx]._Begin = _Tgt_state._Cur;
+                }
                 break;
             }
 
@@ -3948,7 +3962,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
             { // record successful capture
                 _Node_end_group* _Node = static_cast<_Node_end_group*>(_Nx);
                 _Node_capture* _Node0  = static_cast<_Node_capture*>(_Node->_Back);
-                if (_Cap || _Node0->_Idx != 0) { // update capture data
+                if (_Node0->_Idx != 0U) { // update capture data
                     _Tgt_state._Grp_valid[_Node0->_Idx] = true;
                     _Tgt_state._Grps[_Node0->_Idx]._End = _Tgt_state._Cur;
                 }
