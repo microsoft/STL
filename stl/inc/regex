@@ -1587,7 +1587,7 @@ public:
     void _Add_eol();
     void _Add_wbound();
     void _Add_dot();
-    void _Add_char2(_Elem _Ch);
+    void _Add_char(_Elem _Ch);
     void _Add_class();
     void _Add_char_to_class(_Elem _Ch);
     void _Add_range(_Elem, _Elem);
@@ -2913,7 +2913,7 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_str_node() { // add string node
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_char2(_Elem _Ch) { // append character
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_char(_Elem _Ch) { // append character
     if (_Current->_Kind != _N_str) {
         _Add_str_node();
     }
@@ -3207,7 +3207,7 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_rep(int _Min, int _Max, bool _Gre
         && static_cast<_Node_str<_Elem>*>(_Current)->_Data._Size() != 1) { // move final character to new string node
         _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Current);
         _Add_str_node();
-        _Add_char2(_Node->_Data._Del());
+        _Add_char(_Node->_Data._Del());
     }
 
     _Node_base* _Pos = _Current;
@@ -4743,7 +4743,7 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom
             if (_Traits.value(_Char, 10) != -1) {
                 _Error(regex_constants::error_escape);
             }
-            _Nfa._Add_char2(_Elem{});
+            _Nfa._Add_char(_Elem{});
         } else if (_L_flags & _L_bckr) { // check for valid backreference
             if (!(_L_flags & _L_lim_bckr)) {
                 (void) _DecimalDigits(regex_constants::error_backref, _Val);
@@ -4759,7 +4759,7 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom
             }
         }
     } else if (_CharacterEscape(false)) {
-        _Nfa._Add_char2(static_cast<_Elem>(_Val));
+        _Nfa._Add_char(static_cast<_Elem>(_Val));
     } else if (!(_L_flags & _L_esc_wsd) || !_CharacterClassEscape(true)) {
         _Error(regex_constants::error_escape);
     }
@@ -4851,7 +4851,7 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alt
             _Nfa._Add_bol();
             _Next();
             if ((_L_flags & _L_star_beg) && _Mchar == _Meta_star && !_Found) {
-                _Nfa._Add_char2(_Char);
+                _Nfa._Add_char(_Char);
                 _Next();
             } else {
                 _Quant = false;
@@ -4868,7 +4868,7 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alt
         } else if (_Mchar == _Meta_rsq && !(_L_flags & _L_brk_bal)) {
             _Error(regex_constants::error_brack);
         } else { // add character
-            _Nfa._Add_char2(_Char);
+            _Nfa._Add_char(_Char);
             _Next();
         }
 
