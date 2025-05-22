@@ -1581,7 +1581,6 @@ public:
     void _Tidy() noexcept;
     _Node_base* _Getmark() const;
 
-    void _Add_nop();
     void _Add_bol();
     void _Add_eol();
     void _Add_wbound();
@@ -2881,11 +2880,6 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Insert_node(_Node_base* _Insert_befor
 template <class _FwdIt, class _Elem, class _RxTraits>
 _Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_New_node(_Node_type _Kind) { // allocate and link simple node
     return _Link_node(new _Node_base(_Kind));
-}
-
-template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_nop() { // add nop node
-    _New_node(_N_nop);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
