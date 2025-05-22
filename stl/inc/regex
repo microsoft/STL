@@ -1854,7 +1854,7 @@ enum _Lang_flags2 : unsigned long long { // describe language properties
     _L_asrt_wrd   = 0x000000040ULL, // has word boundary assertions (\b, \B)
     _L_bckr       = 0x000000080ULL, // has backreferences (ERE doesn't)
     _L_lim_bckr   = 0x000000100ULL, // has limited backreferences (BRE \1-\9)
-    _L_ngr_rep    = 0x000000200ULL, // has non-greedy repeats
+    _L_non_greedy = 0x000000200ULL, // has non-greedy repeats
     _L_esc_uni    = 0x000000400ULL, // has Unicode escape sequences
     _L_esc_hex    = 0x000000800ULL, // has hexadecimal escape sequences
     _L_esc_oct    = 0x000001000ULL, // has octal escape sequences (awk)
@@ -4795,7 +4795,7 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier
     }
 
     _Next();
-    const bool _Greedy = !(_L_flags & _L_ngr_rep) || _Mchar != _Meta_query;
+    const bool _Greedy = !(_L_flags & _L_non_greedy) || _Mchar != _Meta_query;
     if (!_Greedy) { // add non-greedy repeat node
         _Next();
     }
@@ -5008,9 +5008,9 @@ _Parser2<_FwdIt, _Elem, _RxTraits>::_Parser2(
     : _Pat(_Pfirst), _End(_Plast), _Nfa(_Tr, _Fx), _Traits(_Tr), _Flags(_Fx) {
 
     constexpr unsigned long long _ECMA_flags = _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_nc_asrt
-                                             | _L_asrt_wrd | _L_bckr | _L_ngr_rep | _L_esc_uni | _L_esc_hex | _L_esc_bsp
-                                             | _L_esc_ffn | _L_esc_wsd | _L_esc_ctrl | _L_bzr_chr | _L_grp_esc
-                                             | _L_ident_ECMA | _L_empty_grp;
+                                             | _L_asrt_wrd | _L_bckr | _L_non_greedy | _L_esc_uni | _L_esc_hex
+                                             | _L_esc_bsp | _L_esc_ffn | _L_esc_wsd | _L_esc_ctrl | _L_bzr_chr
+                                             | _L_grp_esc | _L_ident_ECMA | _L_empty_grp;
 
     constexpr unsigned long long _Basic_flags = _L_bckr | _L_lim_bckr | _L_anch_rstr | _L_star_beg | _L_empty_grp
                                               | _L_brk_bal | _L_brk_rstr | _L_dsh_rstr | _L_mtch_long;
