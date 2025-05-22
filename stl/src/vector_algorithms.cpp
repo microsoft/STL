@@ -144,10 +144,9 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
 #endif
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
 
-    auto _First1c      = static_cast<unsigned char*>(_First1);
-    const auto _Last1c = static_cast<unsigned char*>(_Last1);
-    auto _First2c      = static_cast<unsigned char*>(_First2);
-    for (; _First1c != _Last1c; ++_First1c, ++_First2c) {
+    auto _First1c = static_cast<unsigned char*>(_First1);
+    auto _First2c = static_cast<unsigned char*>(_First2);
+    for (; _First1c != _Last1; ++_First1c, ++_First2c) {
         const unsigned char _Ch = *_First1c;
         *_First1c               = *_First2c;
         *_First2c               = _Ch;
