@@ -1787,8 +1787,6 @@ enum class _Lex_mode : unsigned char { _Default, _Character_class };
 template <class _FwdIt, class _Elem, class _RxTraits>
 class _Parser2 { // parse a regular expression
 public:
-    using char_class_type = typename _RxTraits::char_class_type;
-
     _Parser2(const _RxTraits& _Tr, _FwdIt _Pfirst, _FwdIt _Plast, regex_constants::syntax_option_type _Fx);
     _Root_node* _Compile();
 
