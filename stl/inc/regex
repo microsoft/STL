@@ -1578,7 +1578,6 @@ class _Builder2 { // provides operations used by _Parser2 to build the nfa
 public:
     _Builder2(const _RxTraits& _Tr, regex_constants::syntax_option_type);
     void _Setlong();
-    // _Discard_pattern is an ABI zombie name
     void _Tidy() noexcept;
     _Node_base* _Getmark() const;
 
