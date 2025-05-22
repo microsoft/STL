@@ -7025,7 +7025,8 @@ namespace {
         using _Traits_2_sse = void;
 #else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
         struct _Traits_avx {
-            using _Vec = __m256i;
+            using _Guard = _Zeroupper_on_exit;
+            using _Vec   = __m256i;
 
             static __m256i _Load(const void* _Src) noexcept {
                 return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
@@ -7045,7 +7046,8 @@ namespace {
         };
 
         struct _Traits_sse {
-            using _Vec = __m128i;
+            using _Guard = char;
+            using _Vec   = __m128i;
 
             static __m128i _Load(const void* _Src) noexcept {
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
@@ -7174,6 +7176,7 @@ namespace {
         template <class _Traits, class _Elem>
         bool _Impl(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_bits,
             const size_t _Size_chars, const _Elem _Elem0, const _Elem _Elem1) noexcept {
+            [[maybe_unused]] typename _Traits::_Guard _Guard; // TRANSITION, DevCom-10331414
             const auto _Dx0 = _Traits::_Set(_Elem0);
             const auto _Dx1 = _Traits::_Set(_Elem1);
 
@@ -7190,14 +7193,12 @@ namespace {
 
             // Convert characters to bits
             if (!_Loop<_Traits>(_Src, _Src + _Size_convert, _Dx0, _Dx1, _Out)) {
-                _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
                 return false;
             }
 
             // Verify remaining characters, if any
             if (_Size_convert != _Size_chars
                 && !_Loop<_Traits>(_Src + _Size_convert, _Src + _Size_chars, _Dx0, _Dx1, [](_Traits::_Vec) {})) {
-                _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
                 return false;
             }
 
@@ -7205,8 +7206,6 @@ namespace {
             if (_Dst_words != _Dst_words_end) {
                 memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
             }
-
-            _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
 
             return true;
         }
