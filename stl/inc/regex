@@ -1790,11 +1790,11 @@ public:
     _Parser2(const _RxTraits& _Tr, _FwdIt _Pfirst, _FwdIt _Plast, regex_constants::syntax_option_type _Fx);
     _Root_node* _Compile();
 
+private:
     unsigned int _Mark_count() const noexcept {
         return _Grp_idx + 1;
     }
 
-private:
     // lexing
     [[noreturn]] void _Error(regex_constants::error_type);
 
