@@ -3027,11 +3027,11 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_range(const _Elem _Arg0, const _E
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_elts(
-    _Node_class<_Elem, _RxTraits>* _Node, typename _RxTraits::char_class_type _Cl, bool _Negate) {
+    _Node_class<_Elem, _RxTraits>* _Node, typename _RxTraits::char_class_type _Cl, bool _Negative) {
     // add characters in named class to set
     for (unsigned int _Ch = 0; _Ch < _Bmp_max; ++_Ch) { // add elements or their inverse
         bool _Matches = _Traits.isctype(static_cast<_Elem>(_Ch), _Cl);
-        if (_Matches != _Negate) { // add contents of named class to accelerator table
+        if (_Matches != _Negative) { // add contents of named class to accelerator table
             if (!_Node->_Small) {
                 _Node->_Small = new _Bitmap;
             }
