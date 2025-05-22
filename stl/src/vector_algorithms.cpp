@@ -2884,7 +2884,7 @@ namespace {
 
                 do {
                     const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
-                    int _Bingo          = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+                    unsigned int _Bingo = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
 
                     if constexpr (_Pred == _Predicate::_Not_equal) {
                         _Bingo ^= 0xFFFF'FFFF;
@@ -2903,7 +2903,7 @@ namespace {
                     const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
                     const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
                     const __m256i _Cmp       = _Traits::_Cmp_avx(_Data, _Comparand);
-                    int _Bingo               = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
+                    unsigned int _Bingo      = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
 
                     if constexpr (_Pred == _Predicate::_Not_equal) {
                         _Bingo ^= (1 << _Avx_tail_size) - 1;
@@ -2928,7 +2928,7 @@ namespace {
 
                 do {
                     const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
-                    int _Bingo          = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
+                    unsigned int _Bingo = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
 
                     if constexpr (_Pred == _Predicate::_Not_equal) {
                         _Bingo ^= 0xFFFF;
@@ -2975,7 +2975,7 @@ namespace {
                 do {
                     _Rewind_bytes(_Last, 32);
                     const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
-                    int _Bingo          = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+                    unsigned int _Bingo = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
 
                     if constexpr (_Pred == _Predicate::_Not_equal) {
                         _Bingo ^= 0xFFFF'FFFF;
@@ -2993,7 +2993,7 @@ namespace {
                     const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
                     const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_Last), _Tail_mask);
                     const __m256i _Cmp       = _Traits::_Cmp_avx(_Data, _Comparand);
-                    int _Bingo               = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
+                    unsigned int _Bingo      = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
 
                     if constexpr (_Pred == _Predicate::_Not_equal) {
                         _Bingo ^= (1 << _Avx_tail_size) - 1;
@@ -3017,7 +3017,7 @@ namespace {
                 do {
                     _Rewind_bytes(_Last, 16);
                     const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
-                    int _Bingo          = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
+                    unsigned int _Bingo = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
 
                     if constexpr (_Pred == _Predicate::_Not_equal) {
                         _Bingo ^= 0xFFFF;
@@ -3081,9 +3081,9 @@ namespace {
                     const void* _Next = _First;
                     _Advance_bytes(_Next, sizeof(_Ty));
 
-                    const __m256i _Data      = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
-                    const __m256i _Comparand = _mm256_loadu_si256(static_cast<const __m256i*>(_Next));
-                    const int _Bingo         = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+                    const __m256i _Data       = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
+                    const __m256i _Comparand  = _mm256_loadu_si256(static_cast<const __m256i*>(_Next));
+                    const unsigned int _Bingo = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
 
                     if (_Bingo != 0) {
                         const unsigned long _Offset = _tzcnt_u32(_Bingo);
@@ -3098,11 +3098,11 @@ namespace {
                     const void* _Next = _First;
                     _Advance_bytes(_Next, sizeof(_Ty));
 
-                    const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
-                    const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
-                    const __m256i _Comparand = _mm256_maskload_epi32(static_cast<const int*>(_Next), _Tail_mask);
-                    const __m256i _Cmp       = _Traits::_Cmp_avx(_Data, _Comparand);
-                    const int _Bingo         = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
+                    const __m256i _Tail_mask  = _Avx2_tail_mask_32(_Avx_tail_size);
+                    const __m256i _Data       = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
+                    const __m256i _Comparand  = _mm256_maskload_epi32(static_cast<const int*>(_Next), _Tail_mask);
+                    const __m256i _Cmp        = _Traits::_Cmp_avx(_Data, _Comparand);
+                    const unsigned int _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
 
                     if (_Bingo != 0) {
                         const unsigned long _Offset = _tzcnt_u32(_Bingo);
@@ -3124,9 +3124,9 @@ namespace {
                     const void* _Next = _First;
                     _Advance_bytes(_Next, sizeof(_Ty));
 
-                    const __m128i _Data      = _mm_loadu_si128(static_cast<const __m128i*>(_First));
-                    const __m128i _Comparand = _mm_loadu_si128(static_cast<const __m128i*>(_Next));
-                    const int _Bingo         = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
+                    const __m128i _Data       = _mm_loadu_si128(static_cast<const __m128i*>(_First));
+                    const __m128i _Comparand  = _mm_loadu_si128(static_cast<const __m128i*>(_Next));
+                    const unsigned int _Bingo = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
 
                     if (_Bingo != 0) {
                         unsigned long _Offset;
@@ -3183,8 +3183,8 @@ namespace {
                 do {
                     const __m256i _Data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
 
-                    const __m256i _Cmp = _Traits::_Cmp_avx(_Comparand, _Data);
-                    const auto _Mask   = static_cast<uint32_t>(_mm256_movemask_epi8(_Cmp));
+                    const __m256i _Cmp   = _Traits::_Cmp_avx(_Comparand, _Data);
+                    const uint32_t _Mask = _mm256_movemask_epi8(_Cmp);
 
                     uint64_t _MskX = uint64_t{_Carry} | (uint64_t{_Mask} << 32);
 
@@ -3585,11 +3585,11 @@ namespace {
                 }
 
                 if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
-                    const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
-                    const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
-                    const __m256i _Mask      = _mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask);
-                    const int _Bingo         = _mm256_movemask_epi8(_Mask);
-                    const size_t _Tail_count = __popcnt(_Bingo); // Assume available with SSE4.2
+                    const __m256i _Tail_mask  = _Avx2_tail_mask_32(_Avx_tail_size);
+                    const __m256i _Data       = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
+                    const __m256i _Mask       = _mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask);
+                    const unsigned int _Bingo = _mm256_movemask_epi8(_Mask);
+                    const size_t _Tail_count  = __popcnt(_Bingo); // Assume available with SSE4.2
                     _Result += _Tail_count / sizeof(_Ty);
                     _Advance_bytes(_First, _Avx_tail_size);
                 }
@@ -4292,8 +4292,8 @@ namespace {
                                 _Found = _mm_and_si128(_Found, _Found_part);
                             }
 
-                            const int _Bingo = _mm_cvtsi128_si32(_Found);
-                            int _Found_pos   = _Found_pos_init;
+                            const unsigned int _Bingo = _mm_cvtsi128_si32(_Found);
+                            int _Found_pos            = _Found_pos_init;
 
                             if (_Bingo != 0) {
                                 unsigned long _Tmp;
@@ -4478,7 +4478,7 @@ namespace {
                         }
                     }
 
-                    if (const int _Bingo = _mm256_movemask_epi8(_Eq); _Bingo != 0) {
+                    if (const uint32_t _Bingo = _mm256_movemask_epi8(_Eq); _Bingo != 0) {
                         const unsigned long _Offset = _tzcnt_u32(_Bingo);
                         _Advance_bytes(_First1, _Offset);
                         return _First1;
@@ -4497,7 +4497,7 @@ namespace {
                         }
                     }
 
-                    if (const int _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Eq, _Tail_mask)); _Bingo != 0) {
+                    if (const uint32_t _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Eq, _Tail_mask)); _Bingo != 0) {
                         const unsigned long _Offset = _tzcnt_u32(_Bingo);
                         _Advance_bytes(_First1, _Offset);
                         return _First1;
@@ -4832,8 +4832,8 @@ namespace {
                                 _Advance_bytes(_Cur_needle, 16);
                             }
 
-                            const int _Bingo = _mm_cvtsi128_si32(_Found);
-                            int _Found_pos   = _Not_found;
+                            const unsigned int _Bingo = _mm_cvtsi128_si32(_Found);
+                            int _Found_pos            = _Not_found;
 
                             if (_Bingo != 0) {
                                 unsigned long _Tmp;
@@ -5696,7 +5696,7 @@ namespace {
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
                         const auto _Check_unfit = [=, &_Mid1](const unsigned int _Match) noexcept {
-                            long _Unfit_match = _Match & _Needle_unfit_mask;
+                            unsigned long _Unfit_match = _Match & _Needle_unfit_mask;
                             while (_Unfit_match != 0) {
                                 const void* _Tmp1 = _Mid1;
                                 unsigned long _Match_last_pos;
