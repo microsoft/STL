@@ -778,7 +778,7 @@ void test_case_rotate(
 }
 
 template <class T>
-void test_rotate(mt19937_64& gen, size_t data_count = dataCount) {
+void test_rotate(mt19937_64& gen, const size_t data_count = dataCount) {
     vector<T> actual;
     vector<T> actual_r;
     vector<T> expected;
