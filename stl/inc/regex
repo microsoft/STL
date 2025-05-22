@@ -1840,7 +1840,7 @@ private:
     regex_constants::syntax_option_type _Flags;
     int _Val;
     _Meta_type _Mchar;
-    _Lex_mode _Mode;
+    _Lex_mode _Mode = _Lex_mode::_Default;
     _Elem _Char;
 };
 
@@ -5006,7 +5006,7 @@ _Root_node* _Parser2<_FwdIt, _Elem, _RxTraits>::_Compile() { // compile regular 
 template <class _FwdIt, class _Elem, class _RxTraits>
 _Parser2<_FwdIt, _Elem, _RxTraits>::_Parser2(
     const _RxTraits& _Tr, _FwdIt _Pfirst, _FwdIt _Plast, regex_constants::syntax_option_type _Fx)
-    : _Pat(_Pfirst), _End(_Plast), _Nfa(_Tr, _Fx), _Traits(_Tr), _Flags(_Fx), _Mode(_Lex_mode::_Default) {
+    : _Pat(_Pfirst), _End(_Plast), _Nfa(_Tr, _Fx), _Traits(_Tr), _Flags(_Fx) {
 
     constexpr unsigned long long _ECMA_flags = _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_nc_grp
                                              | _L_asrt_gen | _L_asrt_wrd | _L_bckr | _L_ngr_rep | _L_esc_uni
