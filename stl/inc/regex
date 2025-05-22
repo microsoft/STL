@@ -1574,26 +1574,24 @@ enum class _Rx_char_class_kind : int { // must be aligned with corresponding _No
 };
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-class _Builder { // provides operations used by _Parser to build the nfa
+class _Builder2 { // provides operations used by _Parser2 to build the nfa
 public:
-    _Builder(const _RxTraits& _Tr, regex_constants::syntax_option_type);
+    _Builder2(const _RxTraits& _Tr, regex_constants::syntax_option_type);
     void _Setlong();
-    // _Discard_pattern is an ABI zombie name
     void _Tidy() noexcept;
     _Node_base* _Getmark() const;
 
-    void _Add_nop();
     void _Add_bol();
     void _Add_eol();
     void _Add_wbound();
     void _Add_dot();
-    void _Add_char2(_Elem _Ch);
+    void _Add_char(_Elem _Ch);
     void _Add_class();
     void _Add_char_to_class(_Elem _Ch);
-    void _Add_range3(_Elem, _Elem);
+    void _Add_range(_Elem, _Elem);
     void _Add_named_class(typename _RxTraits::char_class_type, _Rx_char_class_kind);
-    void _Add_equiv2(const _Elem*, const _Elem*);
-    void _Add_coll2(const _Elem*, const _Elem*);
+    void _Add_equiv(const _Elem*, const _Elem*);
+    void _Add_coll(const _Elem*, const _Elem*);
     _Node_base* _Begin_group();
     void _End_group(_Node_base* _Back);
     _Node_base* _Begin_assert_group(bool);
@@ -1602,7 +1600,7 @@ public:
     void _Add_backreference(unsigned int _Idx);
     _Node_base* _Begin_if(_Node_base* _Start);
     void _Else_if(_Node_base*, _Node_base*);
-    void _Add_rep2(int _Min, int _Max, bool _Greedy);
+    void _Add_rep(int _Min, int _Max, bool _Greedy);
     void _Negate();
     _Root_node* _End_pattern();
 
@@ -1614,17 +1612,16 @@ private:
     void _Add_char_to_bitmap(_Elem _Ch);
     void _Add_char_to_array(_Elem _Ch);
     void _Add_elts(_Node_class<_Elem, _RxTraits>*, typename _RxTraits::char_class_type, bool);
-    void _Char_to_elts2(const _Elem*, const _Elem*, _Sequence<_Elem>**);
+    void _Char_to_elts(const _Elem*, const _Elem*, _Sequence<_Elem>**);
 
     _Root_node* _Root;
     _Node_base* _Current;
     regex_constants::syntax_option_type _Flags;
     const _RxTraits& _Traits;
-    const int _Bmax; // TRANSITION, ABI: preserved for binary compatibility
-    const int _Tmax; // TRANSITION, ABI: preserved for binary compatibility
 
 public:
-    _Builder& operator=(const _Builder&) = delete;
+    _Builder2(const _Builder2&)            = delete;
+    _Builder2& operator=(const _Builder2&) = delete;
 };
 
 template <class _BidIt>
@@ -1781,6 +1778,7 @@ private:
     typename _RxTraits::char_class_type _Char_class_d{};
 
 public:
+    _Matcher2(const _Matcher2&)            = delete;
     _Matcher2& operator=(const _Matcher2&) = delete;
 };
 
@@ -1790,19 +1788,19 @@ enum _Prs_ret { // indicate class element type
     _Prs_set
 };
 
-template <class _FwdIt, class _Elem, class _RxTraits>
-class _Parser { // parse a regular expression
-public:
-    using char_class_type = typename _RxTraits::char_class_type;
+enum class _Lex_mode : unsigned char { _Default, _Character_class };
 
-    _Parser(const _RxTraits& _Tr, _FwdIt _Pfirst, _FwdIt _Plast, regex_constants::syntax_option_type _Fx);
+template <class _FwdIt, class _Elem, class _RxTraits>
+class _Parser2 { // parse a regular expression
+public:
+    _Parser2(const _RxTraits& _Tr, _FwdIt _Pfirst, _FwdIt _Plast, regex_constants::syntax_option_type _Fx);
     _Root_node* _Compile();
 
+private:
     unsigned int _Mark_count() const noexcept {
         return _Grp_idx + 1;
     }
 
-private:
     // lexing
     [[noreturn]] void _Error(regex_constants::error_type);
 
@@ -1813,12 +1811,12 @@ private:
 
     // parsing
     int _Do_digits(int _Base, int _Initial, int _Count, regex_constants::error_type _Error_type);
-    bool _DecimalDigits3(regex_constants::error_type _Error_type, int _Initial = 0);
+    bool _DecimalDigits(regex_constants::error_type _Error_type, int _Initial = 0);
     void _HexDigits(int);
     bool _OctalDigits();
-    _Prs_ret _Do_ex_class2(_Meta_type);
+    _Prs_ret _Do_ex_class(_Meta_type);
     bool _CharacterClassEscape(bool);
-    _Prs_ret _ClassEscape3();
+    _Prs_ret _ClassEscape();
     _Prs_ret _ClassAtom(bool);
     void _ClassRanges();
     void _CharacterClass();
@@ -1838,53 +1836,53 @@ private:
     void _Calculate_loop_simplicity(_Node_base* _Nx, _Node_base* _Ne, _Node_rep* _Outer_rep);
 
     _FwdIt _Pat;
-    _FwdIt _Begin;
     _FwdIt _End;
     unsigned int _Grp_idx = 0;
     int _Disj_count       = 0;
     vector<bool> _Finished_grps;
-    _Builder<_FwdIt, _Elem, _RxTraits> _Nfa;
+    _Builder2<_FwdIt, _Elem, _RxTraits> _Nfa;
     const _RxTraits& _Traits;
+    unsigned long long _L_flags;
     regex_constants::syntax_option_type _Flags;
     int _Val;
-    _Elem _Char;
     _Meta_type _Mchar;
-    unsigned int _L_flags;
+    _Lex_mode _Mode = _Lex_mode::_Default;
+    _Elem _Char;
 };
 
-enum _Lang_flags { // describe language properties
-    _L_ext_rep    = 0x00000001, // + and ? repetitions
-    _L_alt_pipe   = 0x00000002, // uses '|' for alternation
-    _L_alt_nl     = 0x00000004, // uses '\n' for alternation (grep, egrep)
-    _L_nex_grp    = 0x00000008, // has non-escaped capture groups
-    _L_nex_rep    = 0x00000010, // has non-escaped repeats
-    _L_nc_grp     = 0x00000020, // has non-capture groups (?:xxx)
-    _L_asrt_gen   = 0x00000040, // has generalized assertions (?=xxx), (?!xxx)
-    _L_asrt_wrd   = 0x00000080, // has word boundary assertions (\b, \B)
-    _L_bckr       = 0x00000100, // has backreferences (ERE doesn't)
-    _L_lim_bckr   = 0x00000200, // has limited backreferences (BRE \1-\9)
-    _L_ngr_rep    = 0x00000400, // has non-greedy repeats
-    _L_esc_uni    = 0x00000800, // has Unicode escape sequences
-    _L_esc_hex    = 0x00001000, // has hexadecimal escape sequences
-    _L_esc_oct    = 0x00002000, // has octal escape sequences
-    _L_esc_bsp    = 0x00004000, // has backspace escape in character classes
-    _L_esc_ffnx   = 0x00008000, // has extra file escapes (\a and \b)
-    _L_esc_ffn    = 0x00010000, // has limited file escapes (\[fnrtv])
-    _L_esc_wsd    = 0x00020000, // has w, s, and d character set escapes
-    _L_esc_ctrl   = 0x00040000, // has control escape
-    _L_no_nl      = 0x00080000, // no newline in pattern or matching text
-    _L_bzr_chr    = 0x00100000, // \0 is a valid character constant
-    _L_grp_esc    = 0x00200000, // \ is special character in group
-    _L_ident_ECMA = 0x00400000, // ECMA identity escape (not identifierpart)
-    _L_ident_ERE  = 0x00800000, // ERE identity escape (.[\*^$, plus {+?}()
-    _L_ident_awk  = 0x01000000, // awk identity escape ( ERE plus "/)
-    _L_anch_rstr  = 0x02000000, // anchor restricted to beginning/end
-    _L_star_beg   = 0x04000000, // star okay at beginning of RE/expr (BRE)
-    _L_empty_grp  = 0x08000000, // empty group allowed (ERE prohibits "()")
-    _L_paren_bal  = 0x10000000, // ')'/'}' special only after '('/'{'
-    _L_brk_bal    = 0x20000000, // ']' special only after '[' (ERE, BRE); TRANSITION, ABI: same value as _L_brk_rstr
-    _L_brk_rstr   = 0x20000000, // ']' not special when first character in set
-    _L_mtch_long  = 0x40000000, // find longest match (ERE, BRE)
+enum _Lang_flags2 : unsigned long long { // describe language properties
+    _L_ext_rep    = 0x000000001ULL, // + and ? repetitions
+    _L_alt_pipe   = 0x000000002ULL, // uses '|' for alternation
+    _L_alt_nl     = 0x000000004ULL, // newlines outside parentheses/brackets represent alternations (grep, egrep)
+    _L_nex_grp    = 0x000000008ULL, // has non-escaped capture groups
+    _L_nex_rep    = 0x000000010ULL, // has non-escaped repeats
+    _L_nc_asrt    = 0x000000020ULL, // has non-capture groups (?:xxx) and generalized assertions (?=xxx), (?!xxx)
+    _L_asrt_wrd   = 0x000000040ULL, // has word boundary assertions (\b, \B)
+    _L_bckr       = 0x000000080ULL, // has backreferences (ERE doesn't)
+    _L_lim_bckr   = 0x000000100ULL, // has limited backreferences (BRE \1-\9)
+    _L_non_greedy = 0x000000200ULL, // has non-greedy repeats
+    _L_esc_uni    = 0x000000400ULL, // has Unicode escape sequences
+    _L_esc_hex    = 0x000000800ULL, // has hexadecimal escape sequences
+    _L_esc_oct    = 0x000001000ULL, // has octal escape sequences (awk)
+    _L_esc_bsp    = 0x000002000ULL, // has backspace escape in character classes
+    _L_esc_ffnx   = 0x000004000ULL, // has extra file escapes (\a and \b) (awk)
+    _L_esc_ffn    = 0x000008000ULL, // has limited file escapes (\f \n \r \t \v)
+    _L_esc_wsd    = 0x000010000ULL, // has w, s, and d character set escapes
+    _L_esc_ctrl   = 0x000020000ULL, // has control escape
+    _L_no_nl      = 0x000040000ULL, // newlines within parentheses/brackets are syntax errors (grep, egrep)
+    _L_bzr_chr    = 0x000080000ULL, // \0 is a valid character constant
+    _L_grp_esc    = 0x000100000ULL, // \ is special character in group
+    _L_ident_ECMA = 0x000200000ULL, // ECMA identity escape (not identifierpart)
+    _L_ident_ERE  = 0x000400000ULL, // ERE identity escape (.[\*^$, plus {+?}()
+    _L_ident_awk  = 0x000800000ULL, // awk identity escape (awk additionally supports " and / characters)
+    _L_anch_rstr  = 0x001000000ULL, // anchor restricted to beginning/end (BRE)
+    _L_star_beg   = 0x002000000ULL, // star okay at beginning of RE/expr (BRE)
+    _L_empty_grp  = 0x004000000ULL, // empty group allowed (ERE prohibits "()")
+    _L_paren_bal  = 0x008000000ULL, // ')'/'}' special only after '('/'{' (ERE)
+    _L_brk_bal    = 0x010000000ULL, // ']' special only after '[' (ERE, BRE)
+    _L_brk_rstr   = 0x020000000ULL, // ']' not special when first character in set (ERE, BRE)
+    _L_dsh_rstr   = 0x040000000ULL, // '-' forbidden at range start in set except when first character (ERE, BRE)
+    _L_mtch_long  = 0x080000000ULL, // find longest match (ERE, BRE)
 };
 
 class _Regex_base : public _Container_base { // base class for basic_regex to construct and destroy proxy
@@ -2127,7 +2125,7 @@ private:
             _Visualization.assign(_First, _Last);
 #endif // _ENHANCED_REGEX_VISUALIZER
 
-            _Parser<_InIt, _Elem, _RxTraits> _Prs(_Traits, _First, _Last, _Flags);
+            _Parser2<_InIt, _Elem, _RxTraits> _Prs(_Traits, _First, _Last, _Flags);
             _Root_node* _Rx = _Prs._Compile();
             _Reset(_Rx);
         } else {
@@ -2843,28 +2841,26 @@ _EXPORT_STD using sregex_token_iterator  = regex_token_iterator<string::const_it
 _EXPORT_STD using wsregex_token_iterator = regex_token_iterator<wstring::const_iterator>;
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Builder<_FwdIt, _Elem, _RxTraits>::_Builder(const _RxTraits& _Tr, regex_constants::syntax_option_type _Fx)
-    : _Root(new _Root_node), _Current(_Root), _Flags(_Fx), _Traits(_Tr),
-      _Bmax(static_cast<int>(_Fx & regex_constants::collate ? 0U : _Bmp_max)),
-      _Tmax(static_cast<int>(_Fx & regex_constants::collate ? 0U : _ARRAY_THRESHOLD)) {}
+_Builder2<_FwdIt, _Elem, _RxTraits>::_Builder2(const _RxTraits& _Tr, regex_constants::syntax_option_type _Fx)
+    : _Root(new _Root_node), _Current(_Root), _Flags(_Fx), _Traits(_Tr) {}
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Setlong() { // set flag
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Setlong() { // set flag
     _Root->_Flags |= _Fl_longest;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Negate() { // set flag
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Negate() { // set flag
     _Current->_Flags ^= _Fl_negate;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Getmark() const {
+_Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_Getmark() const {
     return _Current;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Link_node(_Node_base* _Nx) { // insert _Nx at current location
+_Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_Link_node(_Node_base* _Nx) { // insert _Nx at current location
     _Nx->_Prev = _Current;
     if (_Current->_Next) { // set back pointer
         _Nx->_Next             = _Current->_Next;
@@ -2876,7 +2872,7 @@ _Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Link_node(_Node_base* _Nx) { //
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Insert_node(_Node_base* _Insert_before, _Node_base* _To_insert) {
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Insert_node(_Node_base* _Insert_before, _Node_base* _To_insert) {
     // insert _To_insert into the graph before the node _Insert_before
     _Insert_before->_Prev->_Next = _To_insert;
     _To_insert->_Prev            = _Insert_before->_Prev;
@@ -2885,42 +2881,37 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Insert_node(_Node_base* _Insert_before
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_New_node(_Node_type _Kind) { // allocate and link simple node
+_Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_New_node(_Node_type _Kind) { // allocate and link simple node
     return _Link_node(new _Node_base(_Kind));
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_nop() { // add nop node
-    _New_node(_N_nop);
-}
-
-template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_bol() { // add bol node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_bol() { // add bol node
     _New_node(_N_bol);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_eol() { // add eol node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_eol() { // add eol node
     _New_node(_N_eol);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_wbound() { // add wbound node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_wbound() { // add wbound node
     _New_node(_N_wbound);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_dot() { // add dot node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_dot() { // add dot node
     _New_node(_N_dot);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_str_node() { // add string node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_str_node() { // add string node
     _Link_node(new _Node_str<_Elem>);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char2(_Elem _Ch) { // append character
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_char(_Elem _Ch) { // append character
     if (_Current->_Kind != _N_str) {
         _Add_str_node();
     }
@@ -2936,12 +2927,12 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char2(_Elem _Ch) { // append chara
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_class() { // add bracket expression node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_class() { // add bracket expression node
     _Link_node(new _Node_class<_Elem, _RxTraits>);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_bitmap(_Elem _Ch) { // add character to accelerator table
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_char_to_bitmap(_Elem _Ch) { // add character to accelerator table
     if (_Flags & regex_constants::icase) {
         _Ch = _Traits.translate_nocase(_Ch);
     }
@@ -2956,7 +2947,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_bitmap(_Elem _Ch) { // add
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_array(_Elem _Ch) { // append character to character array
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_char_to_array(_Elem _Ch) { // append character to character array
     if (_Flags & regex_constants::icase) {
         _Ch = _Traits.translate_nocase(_Ch);
     }
@@ -2970,7 +2961,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_array(_Elem _Ch) { // appe
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_class(_Elem _Ch) { // add character to bracket expression
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_char_to_class(_Elem _Ch) { // add character to bracket expression
     if (static_cast<typename _RxTraits::_Uelem>(_Ch) < _Bmp_max) {
         _Add_char_to_bitmap(_Ch);
     } else {
@@ -2979,7 +2970,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_char_to_class(_Elem _Ch) { // add 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range3(const _Elem _Arg0, const _Elem _Arg1) {
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_range(const _Elem _Arg0, const _Elem _Arg1) {
     // add character range to set
     using string_type                    = typename _RxTraits::string_type;
     unsigned int _Ex0                    = static_cast<typename _RxTraits::_Uelem>(_Arg0);
@@ -3038,12 +3029,12 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_range3(const _Elem _Arg0, const _E
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_elts(
-    _Node_class<_Elem, _RxTraits>* _Node, typename _RxTraits::char_class_type _Cl, bool _Negate) {
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_elts(
+    _Node_class<_Elem, _RxTraits>* _Node, typename _RxTraits::char_class_type _Cl, bool _Negative) {
     // add characters in named class to set
     for (unsigned int _Ch = 0; _Ch < _Bmp_max; ++_Ch) { // add elements or their inverse
         bool _Matches = _Traits.isctype(static_cast<_Elem>(_Ch), _Cl);
-        if (_Matches != _Negate) { // add contents of named class to accelerator table
+        if (_Matches != _Negative) { // add contents of named class to accelerator table
             if (!_Node->_Small) {
                 _Node->_Small = new _Bitmap;
             }
@@ -3054,7 +3045,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_elts(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_named_class(
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_named_class(
     typename _RxTraits::char_class_type _Cl, const _Rx_char_class_kind _Kind) {
     // add contents of named class to bracket expression
     using _Char_class_type               = typename _RxTraits::char_class_type;
@@ -3079,7 +3070,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_named_class(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Char_to_elts2(const _Elem* const _First, const _Elem* const _Last,
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Char_to_elts(const _Elem* const _First, const _Elem* const _Last,
     _Sequence<_Elem>** _Cur) { // add collation element to element sequence
     auto _Diff = static_cast<unsigned int>(_Last - _First);
     while (*_Cur && _Diff < (*_Cur)->_Sz) {
@@ -3096,7 +3087,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Char_to_elts2(const _Elem* const _Firs
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_equiv2(const _Elem* const _First, const _Elem* const _Last) {
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_equiv(const _Elem* const _First, const _Elem* const _Last) {
     // add elements of equivalence class to bracket expression
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
     typename _RxTraits::string_type _Str = _Traits.transform_primary(_First, _Last);
@@ -3118,25 +3109,25 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_equiv2(const _Elem* const _First, 
     }
     if (_Bmp_max < static_cast<unsigned int>(_STD _Max_limit<_Elem>())) { // map range
         _Sequence<_Elem>** _Cur = _STD addressof(_Node->_Equiv);
-        _Char_to_elts2(_First, _Last, _Cur);
+        _Char_to_elts(_First, _Last, _Cur);
     }
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_coll2(const _Elem* const _First, const _Elem* const _Last) {
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_coll(const _Elem* const _First, const _Elem* const _Last) {
     // add collation element to bracket expression
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
     _Sequence<_Elem>** _Cur              = _STD addressof(_Node->_Coll);
-    _Char_to_elts2(_First, _Last, _Cur);
+    _Char_to_elts(_First, _Last, _Cur);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Begin_group() { // add group node
+_Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_Begin_group() { // add group node
     return _New_node(_N_group);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_End_group(_Node_base* _Back) { // add end of group node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_End_group(_Node_base* _Back) { // add end of group node
     _Node_type _Elt;
     if (_Back->_Kind == _N_group) {
         _Elt = _N_end_group;
@@ -3150,7 +3141,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_End_group(_Node_base* _Back) { // add 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Begin_assert_group(const bool _Neg) { // add assert node
+_Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_Begin_assert_group(const bool _Neg) { // add assert node
     auto _Node1_unique   = _STD make_unique<_Node_assert>(_Neg ? _N_neg_assert : _N_assert);
     _Node_base* _Node2   = new _Node_base(_N_nop);
     _Node_assert* _Node1 = _Node1_unique.release();
@@ -3162,23 +3153,23 @@ _Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Begin_assert_group(const bool _
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_End_assert_group(_Node_base* _Nx) { // add end of assert node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_End_assert_group(_Node_base* _Nx) { // add end of assert node
     _End_group(_Nx);
     _Current = _Nx;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Begin_capture_group(unsigned int _Idx) { // add capture group node
+_Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_Begin_capture_group(unsigned int _Idx) { // add capture group node
     return _Link_node(new _Node_capture(_Idx));
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_backreference(unsigned int _Idx) { // add back reference node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_backreference(unsigned int _Idx) { // add back reference node
     _Link_node(new _Node_back(_Idx));
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Begin_if(_Node_base* _Start) { // add if node
+_Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_Begin_if(_Node_base* _Start) { // add if node
     // append endif node
     _Node_base* _Res = new _Node_endif;
     _Link_node(_Res);
@@ -3191,7 +3182,7 @@ _Node_base* _Builder<_FwdIt, _Elem, _RxTraits>::_Begin_if(_Node_base* _Start) { 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Else_if(_Node_base* _Start, _Node_base* _End) { // add else node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Else_if(_Node_base* _Start, _Node_base* _End) { // add else node
     _Node_if* _Parent  = static_cast<_Node_if*>(_Start->_Next);
     _Node_base* _First = _End->_Next;
     _End->_Next        = nullptr;
@@ -3209,12 +3200,12 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Else_if(_Node_base* _Start, _Node_base
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_rep2(int _Min, int _Max, bool _Greedy) { // add repeat node
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_rep(int _Min, int _Max, bool _Greedy) { // add repeat node
     if (_Current->_Kind == _N_str
         && static_cast<_Node_str<_Elem>*>(_Current)->_Data._Size() != 1) { // move final character to new string node
         _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Current);
         _Add_str_node();
-        _Add_char2(_Node->_Data._Del());
+        _Add_char(_Node->_Data._Del());
     }
 
     _Node_base* _Pos = _Current;
@@ -3262,13 +3253,13 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_rep2(int _Min, int _Max, bool _Gre
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Root_node* _Builder<_FwdIt, _Elem, _RxTraits>::_End_pattern() { // wrap up
+_Root_node* _Builder2<_FwdIt, _Elem, _RxTraits>::_End_pattern() { // wrap up
     _New_node(_N_end);
     return _Root;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder<_FwdIt, _Elem, _RxTraits>::_Tidy() noexcept { // free memory
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Tidy() noexcept { // free memory
     _Destroy_node(_Root);
     _Root = nullptr;
 }
@@ -4174,19 +4165,19 @@ _BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(_BidIt _First_arg
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-[[noreturn]] void _Parser<_FwdIt, _Elem, _RxTraits>::_Error(regex_constants::error_type _Code) { // handle error
+[[noreturn]] void _Parser2<_FwdIt, _Elem, _RxTraits>::_Error(regex_constants::error_type _Code) { // handle error
     _Xregex_error(_Code);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_Is_esc(_FwdIt _Ch0) const { // assumes _Ch0 != _End
-    return ++_Ch0 != _End
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Is_esc(_FwdIt _Ch0) const { // assumes _Ch0 != _End
+    return _Mode == _Lex_mode::_Default && ++_Ch0 != _End
         && ((!(_L_flags & _L_nex_grp) && (*_Ch0 == _Meta_lpar || *_Ch0 == _Meta_rpar))
             || (!(_L_flags & _L_nex_rep) && (*_Ch0 == _Meta_lbr || *_Ch0 == _Meta_rbr)));
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-character
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-character
     static constexpr char _Meta_map[] = {_Meta_lpar, _Meta_rpar, _Meta_dlr, _Meta_caret, _Meta_dot, _Meta_star,
         _Meta_plus, _Meta_query, _Meta_lsq, _Meta_rsq, _Meta_bar, _Meta_esc, _Meta_dash, _Meta_lbr, _Meta_rbr,
         _Meta_comma, _Meta_colon, _Meta_equal, _Meta_exc, _Meta_nl, _Meta_cr, _Meta_bsp, 0}; // array of meta chars
@@ -4292,7 +4283,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-char
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Next() { // advance to next input character
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Next() { // advance to next input character
     if (_Pat != _End) { // advance
         if (*_Pat == _Meta_esc && _Is_esc(_Pat)) {
             ++_Pat;
@@ -4304,7 +4295,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Next() { // advance to next input chara
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Expect(_Meta_type _St, regex_constants::error_type _Code) {
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Expect(_Meta_type _St, regex_constants::error_type _Code) {
     // check whether current meta-character is _St
     if (_Mchar != _St) {
         _Error(_Code);
@@ -4314,7 +4305,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Expect(_Meta_type _St, regex_constants:
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-int _Parser<_FwdIt, _Elem, _RxTraits>::_Do_digits(
+int _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_digits(
     int _Base, int _Initial, int _Count, regex_constants::error_type _Error_type) { // translate digits to numeric value
     int _Chv;
     _Val = _Initial;
@@ -4331,25 +4322,25 @@ int _Parser<_FwdIt, _Elem, _RxTraits>::_Do_digits(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_DecimalDigits3(
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_DecimalDigits(
     const regex_constants::error_type _Error_type, const int _Initial /* = 0 */) { // check for decimal value
     return _Do_digits(10, _Initial, INT_MAX, _Error_type) != INT_MAX;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_HexDigits(int _Count) { // check for _Count hex digits
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_HexDigits(int _Count) { // check for _Count hex digits
     if (_Do_digits(16, 0, _Count, regex_constants::error_escape) != 0) {
         _Error(regex_constants::error_escape);
     }
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_OctalDigits() { // check for up to 3 octal digits
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_OctalDigits() { // check for up to 3 octal digits
     return _Do_digits(8, 0, 3, regex_constants::error_escape) != 3;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ex_class2(
+_Prs_ret _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_ex_class(
     _Meta_type _End_arg) { // handle delimited expressions within bracket expression
     const regex_constants::error_type _Errtype =
         _End_arg == _Meta_colon ? regex_constants::error_ctype : regex_constants::error_collate;
@@ -4405,20 +4396,20 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ex_class2(
         }
 
         if (_End_arg == _Meta_equal) { // process equivalence
-            _Nfa._Add_equiv2(_Coll_elem_first, _Coll_elem_last);
+            _Nfa._Add_equiv(_Coll_elem_first, _Coll_elem_last);
             return _Prs_set;
         } else { // process collating element
 
             // Character ranges with multi-character bounds cannot be represented in NFA nodes yet (see GH-5391).
             // Provisionally treat multi-character collating elements as character sets.
-            _Nfa._Add_coll2(_Coll_elem_first, _Coll_elem_last);
+            _Nfa._Add_coll(_Coll_elem_first, _Coll_elem_last);
             return _Prs_set;
         }
     }
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { // check for character class escape
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { // check for character class escape
     typename _RxTraits::char_class_type _Cls;
     _FwdIt _Ch0 = _Pat;
     if (_Ch0 == _End || (_Cls = _Traits.lookup_classname(_Pat, ++_Ch0, (_Flags & regex_constants::icase) != 0)) == 0) {
@@ -4447,7 +4438,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { // 
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassEscape3() { // check for class escape
+_Prs_ret _Parser2<_FwdIt, _Elem, _RxTraits>::_ClassEscape() { // check for class escape
     if ((_L_flags & _L_esc_bsp) && _Char == _Esc_ctrl_b) { // handle backspace escape
         _Next();
         _Val = _Meta_bsp;
@@ -4470,16 +4461,16 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassEscape3() { // check for class
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassAtom(const bool _Initial) { // check for class atom
-    if (_Mchar == _Meta_esc && (_L_flags & (_L_grp_esc | _L_ident_awk))) { // check for valid escape sequence
+_Prs_ret _Parser2<_FwdIt, _Elem, _RxTraits>::_ClassAtom(const bool _Initial) { // check for class atom
+    if (_Mchar == _Meta_esc && (_L_flags & _L_grp_esc)) { // check for valid escape sequence
         _Next();
-        return _ClassEscape3();
+        return _ClassEscape();
     } else if (_Mchar == _Meta_lsq) { // check for valid delimited expression
         _Next();
         if (_Mchar == _Meta_colon || _Mchar == _Meta_equal || _Mchar == _Meta_dot) { // handle delimited expression
             _Meta_type _St = _Mchar;
             _Next();
-            return _Do_ex_class2(_St);
+            return _Do_ex_class(_St);
         } else { // handle ordinary [
             _Val = _Meta_lsq;
             return _Prs_chr;
@@ -4497,7 +4488,7 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassAtom(const bool _Initial) { //
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid class ranges
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid class ranges
     _Prs_ret _Ret;
 
     bool _Initial = true;
@@ -4538,7 +4529,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid clas
                 _Chr2 = _Traits.translate(_Chr2);
             }
 
-            _Nfa._Add_range3(_Chr1, _Chr2);
+            _Nfa._Add_range(_Chr1, _Chr2);
         } else if (_Ret == _Prs_chr) {
             _Nfa._Add_char_to_class(static_cast<_Elem>(_Val));
         }
@@ -4546,7 +4537,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_ClassRanges() { // check for valid clas
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClass() { // add bracket expression
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_CharacterClass() { // add bracket expression
     _Nfa._Add_class();
     if (_Mchar == _Meta_caret) { // negate bracket expression
         _Nfa._Negate();
@@ -4557,7 +4548,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClass() { // add bracket expre
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Do_capture_group() { // add capture group
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_capture_group() { // add capture group
     ++_Grp_idx;
 
     if (_Grp_idx >= 1000) { // hardcoded limit
@@ -4572,35 +4563,35 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Do_capture_group() { // add capture gro
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Do_noncapture_group() { // add non-capture group
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_noncapture_group() { // add non-capture group
     _Node_base* _Pos1 = _Nfa._Begin_group();
     _Disjunction();
     _Nfa._End_group(_Pos1);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Do_assert_group(bool _Neg) { // add assert group
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_assert_group(bool _Neg) { // add assert group
     _Node_base* _Pos1 = _Nfa._Begin_assert_group(_Neg);
     _Disjunction();
     _Nfa._End_assert_group(_Pos1);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_Wrapped_disjunction() { // add disjunction inside group
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Wrapped_disjunction() { // add disjunction inside group
     ++_Disj_count;
     if (!(_L_flags & _L_empty_grp) && _Mchar == _Meta_rpar) {
         _Error(regex_constants::error_paren);
-    } else if ((_L_flags & _L_nc_grp) && _Mchar == _Meta_query) { // check for valid ECMAScript (?x ... ) group
+    } else if ((_L_flags & _L_nc_asrt) && _Mchar == _Meta_query) { // check for valid ECMAScript (?x ... ) group
         _Next();
         _Meta_type _Ch = _Mchar;
         _Next();
-        if (_Ch == _Meta_colon) {
+        if (_Ch == _Meta_colon) { // process non-capture group (?:meow)
             _Do_noncapture_group();
-        } else if (_Ch == _Meta_exc) { // process assert group, negating
+        } else if (_Ch == _Meta_exc) { // process negative lookahead assertion (?!meow)
             _Do_assert_group(true);
             --_Disj_count;
             return false;
-        } else if (_Ch == _Meta_equal) { // process assert group
+        } else if (_Ch == _Meta_equal) { // process positive lookahead assertion (?=meow)
             _Do_assert_group(false);
             --_Disj_count;
             return false;
@@ -4618,7 +4609,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Wrapped_disjunction() { // add disjunct
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_IsIdentityEscape(bool _In_character_class) const {
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_IsIdentityEscape(bool _In_character_class) const {
     // check for valid identity escape
 
     if (_L_flags & _L_ident_ECMA) {
@@ -4668,7 +4659,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_IsIdentityEscape(bool _In_character_cla
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_IdentityEscape(bool _In_character_class) {
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_IdentityEscape(bool _In_character_class) {
     // check whether an escape is valid, and process it if so
     if (_IsIdentityEscape(_In_character_class)) {
         _Val = _Char;
@@ -4680,7 +4671,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_IdentityEscape(bool _In_character_class
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ffn(_Elem _Ch) { // check for limited file format escape characters
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_ffn(_Elem _Ch) { // check for limited file format escape characters
     if (_Ch == _Esc_ctrl_f) {
         _Val = '\f';
     } else if (_Ch == _Esc_ctrl_n) {
@@ -4699,7 +4690,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ffn(_Elem _Ch) { // check for limite
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ffnx(_Elem _Ch) { // check for the remaining file format escape characters
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_ffnx(_Elem _Ch) { // check for the remaining file format escape characters
     if (_Ch == _Esc_ctrl_a) {
         _Val = '\a';
     } else if (_Ch == _Esc_ctrl_b) {
@@ -4712,7 +4703,8 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Do_ffnx(_Elem _Ch) { // check for the r
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape(bool _In_character_class) { // check for valid character escape
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_CharacterEscape(bool _In_character_class) {
+    // check for valid character escape
     if (_Mchar == _Meta_eos) {
         _Error(regex_constants::error_escape);
     }
@@ -4750,17 +4742,17 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape(bool _In_character_clas
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom escape
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom escape
     if ((_L_flags & (_L_bzr_chr | _L_bckr)) && (_Val = _Traits.value(_Char, 10)) != -1) { // escaped decimal sequence
         _Next();
         if ((_L_flags & _L_bzr_chr) && _Val == 0) { // handle \0
             if (_Traits.value(_Char, 10) != -1) {
                 _Error(regex_constants::error_escape);
             }
-            _Nfa._Add_char2(_Elem{});
+            _Nfa._Add_char(_Elem{});
         } else if (_L_flags & _L_bckr) { // check for valid backreference
             if (!(_L_flags & _L_lim_bckr)) {
-                (void) _DecimalDigits3(regex_constants::error_backref, _Val);
+                (void) _DecimalDigits(regex_constants::error_backref, _Val);
             }
 
             if (_Val == 0) {
@@ -4773,14 +4765,14 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom 
             }
         }
     } else if (_CharacterEscape(false)) {
-        _Nfa._Add_char2(static_cast<_Elem>(_Val));
+        _Nfa._Add_char(static_cast<_Elem>(_Val));
     } else if (!(_L_flags & _L_esc_wsd) || !_CharacterClassEscape(true)) {
         _Error(regex_constants::error_escape);
     }
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier following atom
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier following atom
     int _Min = 0;
     int _Max = -1;
     if (_Mchar != _Meta_star) {
@@ -4790,7 +4782,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier 
             _Max = 1;
         } else if (_Mchar == _Meta_lbr) { // check for valid bracketed value
             _Next();
-            if (!_DecimalDigits3(regex_constants::error_badbrace)) {
+            if (!_DecimalDigits(regex_constants::error_badbrace)) {
                 _Error(regex_constants::error_badbrace);
             }
 
@@ -4800,7 +4792,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier 
             } else { // check for decimal constant following comma
                 _Next();
                 if (_Mchar != _Meta_rbr) {
-                    if (!_DecimalDigits3(regex_constants::error_badbrace)) {
+                    if (!_DecimalDigits(regex_constants::error_badbrace)) {
                         _Error(regex_constants::error_badbrace);
                     }
 
@@ -4817,16 +4809,16 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier 
     }
 
     _Next();
-    const bool _Greedy = !(_L_flags & _L_ngr_rep) || _Mchar != _Meta_query;
+    const bool _Greedy = !(_L_flags & _L_non_greedy) || _Mchar != _Meta_query;
     if (!_Greedy) { // add non-greedy repeat node
         _Next();
     }
 
-    _Nfa._Add_rep2(_Min, _Max, _Greedy);
+    _Nfa._Add_rep(_Min, _Max, _Greedy);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alternative
+bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alternative
     bool _Found = false;
     for (;;) { // concatenate valid elements
         bool _Quant = true;
@@ -4852,8 +4844,10 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alte
                 _AtomEscape();
             }
         } else if (_Mchar == _Meta_lsq) { // add bracket expression
+            _Mode = _Lex_mode::_Character_class;
             _Next();
             _CharacterClass();
+            _Mode = _Lex_mode::_Default;
             _Expect(_Meta_rsq, regex_constants::error_brack);
         } else if (_Mchar == _Meta_lpar) { // check for valid group
             _Next();
@@ -4863,7 +4857,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alte
             _Nfa._Add_bol();
             _Next();
             if ((_L_flags & _L_star_beg) && _Mchar == _Meta_star && !_Found) {
-                _Nfa._Add_char2(_Char);
+                _Nfa._Add_char(_Char);
                 _Next();
             } else {
                 _Quant = false;
@@ -4880,7 +4874,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alte
         } else if (_Mchar == _Meta_rsq && !(_L_flags & _L_brk_bal)) {
             _Error(regex_constants::error_brack);
         } else { // add character
-            _Nfa._Add_char2(_Char);
+            _Nfa._Add_char(_Char);
             _Next();
         }
 
@@ -4893,7 +4887,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alte
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Disjunction() { // check for valid disjunction
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Disjunction() { // check for valid disjunction
     _Node_base* _Pos1 = _Nfa._Getmark();
     if (!_Alternative()) {
         if (_Mchar != _Meta_bar) {
@@ -4918,7 +4912,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Disjunction() { // check for valid disj
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
     _Node_base* _Nx, _Node_base* _Ne, _Node_rep* _Outer_rep) {
     // walks regex NFA, calculates values of _Node_rep::_Simple_loop
     for (; _Nx != _Ne && _Nx; _Nx = _Nx->_Next) {
@@ -5004,7 +4998,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Root_node* _Parser<_FwdIt, _Elem, _RxTraits>::_Compile() { // compile regular expression
+_Root_node* _Parser2<_FwdIt, _Elem, _RxTraits>::_Compile() { // compile regular expression
     _Root_node* _Res = nullptr;
     _Tidy_guard<decltype(_Nfa)> _Guard{_STD addressof(_Nfa)};
     _Node_base* _Pos1 = _Nfa._Begin_capture_group(0);
@@ -5023,26 +5017,27 @@ _Root_node* _Parser<_FwdIt, _Elem, _RxTraits>::_Compile() { // compile regular e
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Parser<_FwdIt, _Elem, _RxTraits>::_Parser(
+_Parser2<_FwdIt, _Elem, _RxTraits>::_Parser2(
     const _RxTraits& _Tr, _FwdIt _Pfirst, _FwdIt _Plast, regex_constants::syntax_option_type _Fx)
-    : _Pat(_Pfirst), _Begin(_Pfirst), _End(_Plast), _Nfa(_Tr, _Fx), _Traits(_Tr), _Flags(_Fx) {
+    : _Pat(_Pfirst), _End(_Plast), _Nfa(_Tr, _Fx), _Traits(_Tr), _Flags(_Fx) {
 
-    constexpr unsigned int _ECMA_flags = _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_nc_grp | _L_asrt_gen
-                                       | _L_asrt_wrd | _L_bckr | _L_ngr_rep | _L_esc_uni | _L_esc_hex | _L_esc_bsp
-                                       | _L_esc_ffn | _L_esc_wsd | _L_esc_ctrl | _L_bzr_chr | _L_grp_esc | _L_ident_ECMA
-                                       | _L_empty_grp;
+    constexpr unsigned long long _ECMA_flags = _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_nc_asrt
+                                             | _L_asrt_wrd | _L_bckr | _L_non_greedy | _L_esc_uni | _L_esc_hex
+                                             | _L_esc_bsp | _L_esc_ffn | _L_esc_wsd | _L_esc_ctrl | _L_bzr_chr
+                                             | _L_grp_esc | _L_ident_ECMA | _L_empty_grp;
 
-    constexpr unsigned int _Basic_flags =
-        _L_bckr | _L_lim_bckr | _L_anch_rstr | _L_star_beg | _L_empty_grp | _L_brk_bal | _L_brk_rstr | _L_mtch_long;
+    constexpr unsigned long long _Basic_flags = _L_bckr | _L_lim_bckr | _L_anch_rstr | _L_star_beg | _L_empty_grp
+                                              | _L_brk_bal | _L_brk_rstr | _L_dsh_rstr | _L_mtch_long;
 
-    constexpr unsigned int _Grep_flags = _Basic_flags | _L_alt_nl | _L_no_nl;
+    constexpr unsigned long long _Grep_flags = _Basic_flags | _L_alt_nl | _L_no_nl;
 
-    constexpr unsigned int _Extended_flags = _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_ident_ERE
-                                           | _L_paren_bal | _L_brk_bal | _L_brk_rstr | _L_mtch_long;
+    constexpr unsigned long long _Extended_flags = _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_ident_ERE
+                                                 | _L_paren_bal | _L_brk_bal | _L_brk_rstr | _L_dsh_rstr | _L_mtch_long;
 
-    constexpr unsigned int _Awk_flags = _Extended_flags | _L_esc_oct | _L_esc_ffn | _L_esc_ffnx | _L_ident_awk;
+    constexpr unsigned long long _Awk_flags =
+        _Extended_flags | _L_esc_oct | _L_esc_ffn | _L_esc_ffnx | _L_grp_esc | _L_ident_awk;
 
-    constexpr unsigned int _Egrep_flags = _Extended_flags | _L_alt_nl | _L_no_nl;
+    constexpr unsigned long long _Egrep_flags = _Extended_flags | _L_alt_nl | _L_no_nl;
 
     const regex_constants::syntax_option_type _Masked = _Flags & regex_constants::_Gmask;
 
