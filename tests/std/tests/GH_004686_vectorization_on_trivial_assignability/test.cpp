@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <functional>
 #include <iterator>
 #include <utility>
 
@@ -121,31 +120,31 @@ CONSTEXPR20 void test_copy_move_leopards() {
         Leopard dst[]{
             make_leopard(3), make_leopard(1), make_leopard(4), make_leopard(1), make_leopard(5), make_leopard(9)};
         ranges::copy(zero_leopards, dst);
-        assert(ranges::equal(dst, expected_leopards, ranges::equal_to{}, &Leopard::spots_, &Leopard::spots_));
+        assert(ranges::equal(dst, expected_leopards, equal_leopard));
     }
     {
         Leopard dst[]{
             make_leopard(3), make_leopard(1), make_leopard(4), make_leopard(1), make_leopard(5), make_leopard(9)};
         ranges::copy_n(ranges::begin(zero_leopards), ranges::distance(zero_leopards), dst);
-        assert(ranges::equal(dst, expected_leopards, ranges::equal_to{}, &Leopard::spots_, &Leopard::spots_));
+        assert(ranges::equal(dst, expected_leopards, equal_leopard));
     }
     {
         Leopard dst[]{
             make_leopard(3), make_leopard(1), make_leopard(4), make_leopard(1), make_leopard(5), make_leopard(9)};
         ranges::copy_backward(zero_leopards, ranges::end(dst));
-        assert(ranges::equal(dst, expected_leopards, ranges::equal_to{}, &Leopard::spots_, &Leopard::spots_));
+        assert(ranges::equal(dst, expected_leopards, equal_leopard));
     }
     {
         Leopard dst[]{
             make_leopard(3), make_leopard(1), make_leopard(4), make_leopard(1), make_leopard(5), make_leopard(9)};
         ranges::move(zero_leopards, dst);
-        assert(ranges::equal(dst, expected_leopards, ranges::equal_to{}, &Leopard::spots_, &Leopard::spots_));
+        assert(ranges::equal(dst, expected_leopards, equal_leopard));
     }
     {
         Leopard dst[]{
             make_leopard(3), make_leopard(1), make_leopard(4), make_leopard(1), make_leopard(5), make_leopard(9)};
         ranges::move_backward(zero_leopards, ranges::end(dst));
-        assert(ranges::equal(dst, expected_leopards, ranges::equal_to{}, &Leopard::spots_, &Leopard::spots_));
+        assert(ranges::equal(dst, expected_leopards, equal_leopard));
     }
 #endif // _HAS_CXX20
 }
