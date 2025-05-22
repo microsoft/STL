@@ -1847,7 +1847,7 @@ private:
 enum _Lang_flags2 : unsigned long long { // describe language properties
     _L_ext_rep    = 0x000000001ULL, // + and ? repetitions
     _L_alt_pipe   = 0x000000002ULL, // uses '|' for alternation
-    _L_alt_nl     = 0x000000004ULL, // uses '\n' for alternation (grep, egrep)
+    _L_alt_nl     = 0x000000004ULL, // newlines outside parentheses/brackets represent alternations (grep, egrep)
     _L_nex_grp    = 0x000000008ULL, // has non-escaped capture groups
     _L_nex_rep    = 0x000000010ULL, // has non-escaped repeats
     _L_nc_asrt    = 0x000000020ULL, // has non-capture groups (?:xxx) and generalized assertions (?=xxx), (?!xxx)
@@ -1857,24 +1857,24 @@ enum _Lang_flags2 : unsigned long long { // describe language properties
     _L_ngr_rep    = 0x000000200ULL, // has non-greedy repeats
     _L_esc_uni    = 0x000000400ULL, // has Unicode escape sequences
     _L_esc_hex    = 0x000000800ULL, // has hexadecimal escape sequences
-    _L_esc_oct    = 0x000001000ULL, // has octal escape sequences
+    _L_esc_oct    = 0x000001000ULL, // has octal escape sequences (awk)
     _L_esc_bsp    = 0x000002000ULL, // has backspace escape in character classes
-    _L_esc_ffnx   = 0x000004000ULL, // has extra file escapes (\a and \b)
-    _L_esc_ffn    = 0x000008000ULL, // has limited file escapes (\[fnrtv])
+    _L_esc_ffnx   = 0x000004000ULL, // has extra file escapes (\a and \b) (awk)
+    _L_esc_ffn    = 0x000008000ULL, // has limited file escapes (\f \n \r \t \v)
     _L_esc_wsd    = 0x000010000ULL, // has w, s, and d character set escapes
     _L_esc_ctrl   = 0x000020000ULL, // has control escape
-    _L_no_nl      = 0x000040000ULL, // no newline in pattern or matching text
+    _L_no_nl      = 0x000040000ULL, // newlines within parentheses/brackets are syntax errors (grep, egrep)
     _L_bzr_chr    = 0x000080000ULL, // \0 is a valid character constant
     _L_grp_esc    = 0x000100000ULL, // \ is special character in group
     _L_ident_ECMA = 0x000200000ULL, // ECMA identity escape (not identifierpart)
     _L_ident_ERE  = 0x000400000ULL, // ERE identity escape (.[\*^$, plus {+?}()
-    _L_ident_awk  = 0x000800000ULL, // awk identity escape ( ERE plus "/)
-    _L_anch_rstr  = 0x001000000ULL, // anchor restricted to beginning/end
+    _L_ident_awk  = 0x000800000ULL, // awk identity escape (awk additionally supports " and / characters)
+    _L_anch_rstr  = 0x001000000ULL, // anchor restricted to beginning/end (BRE)
     _L_star_beg   = 0x002000000ULL, // star okay at beginning of RE/expr (BRE)
     _L_empty_grp  = 0x004000000ULL, // empty group allowed (ERE prohibits "()")
-    _L_paren_bal  = 0x008000000ULL, // ')'/'}' special only after '('/'{'
+    _L_paren_bal  = 0x008000000ULL, // ')'/'}' special only after '('/'{' (ERE)
     _L_brk_bal    = 0x010000000ULL, // ']' special only after '[' (ERE, BRE)
-    _L_brk_rstr   = 0x020000000ULL, // ']' not special when first character in set
+    _L_brk_rstr   = 0x020000000ULL, // ']' not special when first character in set (ERE, BRE)
     _L_dsh_rstr   = 0x040000000ULL, // '-' forbidden at range start in set except when first character (ERE, BRE)
     _L_mtch_long  = 0x080000000ULL, // find longest match (ERE, BRE)
 };
