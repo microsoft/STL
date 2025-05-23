@@ -386,7 +386,6 @@ _CONSTEXPR20 decltype(auto) _Select_popcount_impl(_Fn _Callback) {
 
 #undef _HAS_POPCNT_INTRINSICS
 #undef _HAS_TZCNT_BSF_INTRINSICS
-#undef _POPCNT_INTRINSICS_ALWAYS_AVAILABLE
 
 _STD_END
 
