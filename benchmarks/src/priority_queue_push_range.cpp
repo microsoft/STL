@@ -59,10 +59,8 @@ void BM_push_range(benchmark::State& state) {
 
 template <size_t L>
 void putln(const benchmark::State&) {
-    static bool b = [] {
-        puts("");
-        return true;
-    }();
+    static once_flag f;
+    call_once(f, [] { puts(""); });
 }
 
 #define TEST_PUSH_RANGE(T, source)      \

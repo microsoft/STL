@@ -42,7 +42,7 @@ const auto random_digits = random_digits_init<N, charT, 2048>();
 
 template <length_type Length, size_t N, class charT>
 void bitset_from_string(benchmark::State& state) {
-    const auto& digit_array = random_digits<N, charT>;
+    auto digit_array = random_digits<N, charT>;
     for (auto _ : state) {
         benchmark::DoNotOptimize(digit_array);
         const auto arr_data = digit_array.data();
