@@ -229,7 +229,7 @@ struct _Format_handler;
 _FMT_P2286_END
 
 _EXPORT_STD template <class _Context>
-class basic_format_arg {
+class _NO_SPECIALIZATIONS basic_format_arg {
 public:
     using _CharType = _Context::char_type;
 

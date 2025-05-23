@@ -321,7 +321,7 @@ using compare_three_way_result_t =
     decltype(_STD declval<const remove_reference_t<_Ty1>&>() <=> _STD declval<const remove_reference_t<_Ty2>&>());
 
 _EXPORT_STD template <class _Ty1, class _Ty2 = _Ty1>
-struct compare_three_way_result {};
+struct _NO_SPECIALIZATIONS compare_three_way_result {};
 
 template <class _Ty1, class _Ty2>
     requires requires { typename compare_three_way_result_t<_Ty1, _Ty2>; }

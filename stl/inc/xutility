@@ -1569,10 +1569,10 @@ using _Guide_pair_t =
 #endif // ^^^ !_HAS_CXX23 ^^^
 
 _EXPORT_STD template <class _Ty>
-struct is_execution_policy : false_type {};
+struct _NO_SPECIALIZATIONS is_execution_policy : false_type {};
 
 _EXPORT_STD template <class _Ty>
-constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
+_NO_SPECIALIZATIONS constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
 
 // Note: The noexcept specifiers on all parallel algorithm overloads enforce termination as per
 // N4950 [execpol.seq]/2, [execpol.par]/2, [execpol.parunseq]/2, and [execpol.unseq]/2

@@ -158,7 +158,7 @@ struct _Ignore { // struct that ignores assignments
 _EXPORT_STD _INLINE_VAR constexpr _Ignore ignore{};
 
 _EXPORT_STD template <class... _Types>
-class tuple;
+class _NO_SPECIALIZATIONS tuple;
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 struct pair;
@@ -170,7 +170,7 @@ _EXPORT_STD template <class _Tuple>
 struct tuple_size;
 
 _EXPORT_STD template <class _Ty>
-constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
+_NO_SPECIALIZATIONS constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
 
 _EXPORT_STD template <size_t _Index, class _Tuple>
 struct tuple_element;

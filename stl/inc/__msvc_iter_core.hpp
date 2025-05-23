@@ -34,7 +34,7 @@ _EXPORT_STD template <class _Ty, class _Alloc>
 struct uses_allocator : _Has_allocator_type<_Ty, _Alloc>::type {};
 
 _EXPORT_STD template <class _Ty, class _Alloc>
-constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value;
+_NO_SPECIALIZATIONS constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value;
 
 // from <iterator>
 _EXPORT_STD struct input_iterator_tag {};

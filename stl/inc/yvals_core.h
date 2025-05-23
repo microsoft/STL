@@ -684,11 +684,13 @@
 #pragma push_macro("noop_dtor")
 #pragma push_macro("intrinsic")
 #pragma push_macro("lifetimebound")
+#pragma push_macro("no_specializations")
 #undef msvc
 #undef known_semantics
 #undef noop_dtor
 #undef intrinsic
 #undef lifetimebound
+#undef no_specializations
 
 #ifndef __has_cpp_attribute
 #define _HAS_MSVC_ATTRIBUTE(x) 0
@@ -731,6 +733,19 @@
 #define _MSVC_LIFETIMEBOUND
 #endif
 
+// Should we mark templates users shouldn't specialize with [[msvc::no_specializations]]
+// or [[clang::no_specializations]]?
+#if _HAS_MSVC_ATTRIBUTE(no_specializations)
+#define _NO_SPECIALIZATIONS_MSG(_Msg) [[msvc::no_specializations(_Msg)]]
+#elif defined(__has_cpp_attribute) && __has_cpp_attribute(_Clang::__no_specializations__)
+#define _NO_SPECIALIZATIONS_MSG(_Msg) [[_Clang::__no_specializations__(_Msg)]]
+#else
+#define _NO_SPECIALIZATIONS_MSG(_Msg)
+#endif
+
+#define _NO_SPECIALIZATIONS \
+    _NO_SPECIALIZATIONS_MSG("Users are not allowed to specialize this standard library template.")
+
 #if _HAS_CXX23 // TRANSITION, ABI, should just use [[no_unique_address]] when _HAS_CXX20.
 // Should we enable use of [[msvc::no_unique_address]] or [[no_unique_address]] to allow potentially-overlapping member
 // subobjects?
@@ -749,6 +764,7 @@
 #pragma pop_macro("noop_dtor")
 #pragma pop_macro("known_semantics")
 #pragma pop_macro("msvc")
+#pragma pop_macro("no_specializations")
 
 // warning C4577: 'noexcept' used with no exception handling mode specified;
 // termination on exception is not guaranteed. Specify /EHsc (/Wall)
@@ -808,6 +824,7 @@
 // warning C5278: adding a specialization for 'type trait' has undefined behavior
 // warning C5280: a static operator '()' requires at least '/std:c++23preview'
 // warning C5281: a static lambda requires at least '/std:c++23preview'
+// warning C5285: cannot declare a specialization for 'meow'
 // warning C6294: Ill-defined for-loop: initial condition does not satisfy test. Loop body not executed
 
 #ifndef _STL_DISABLED_WARNINGS
@@ -816,7 +833,7 @@
     4180 4324 4412 4455 4494 4514 4574 4582 4583 4587 \
     4588 4619 4623 4625 4626 4643 4648 4702 4793 4820 \
     4868 4988 5026 5027 5045 5220 5246 5278 5280 5281 \
-    6294                                              \
+    5285 6294                                         \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
@@ -833,18 +850,20 @@
 // warning: '#pragma float_control' is not supported on this target - ignored [-Wignored-pragmas]
 // warning: user-defined literal suffixes not starting with '_' are reserved [-Wuser-defined-literals]
 // warning: unknown pragma ignored [-Wunknown-pragmas]
+// warning: '%s' cannot be specialized [-Winvalid-specialization]
 #ifndef _STL_DISABLE_CLANG_WARNINGS
 #ifdef __clang__
 // clang-format off
-#define _STL_DISABLE_CLANG_WARNINGS                                 \
-    _Pragma("clang diagnostic push")                                \
-    _Pragma("clang diagnostic ignored \"-Wc++17-extensions\"")      \
-    _Pragma("clang diagnostic ignored \"-Wc++20-extensions\"")      \
-    _Pragma("clang diagnostic ignored \"-Wc++23-extensions\"")      \
-    _Pragma("clang diagnostic ignored \"-Wignored-attributes\"")    \
-    _Pragma("clang diagnostic ignored \"-Wignored-pragmas\"")       \
-    _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"") \
-    _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")
+#define _STL_DISABLE_CLANG_WARNINGS                                  \
+    _Pragma("clang diagnostic push")                                 \
+    _Pragma("clang diagnostic ignored \"-Wc++17-extensions\"")       \
+    _Pragma("clang diagnostic ignored \"-Wc++20-extensions\"")       \
+    _Pragma("clang diagnostic ignored \"-Wc++23-extensions\"")       \
+    _Pragma("clang diagnostic ignored \"-Wignored-attributes\"")     \
+    _Pragma("clang diagnostic ignored \"-Wignored-pragmas\"")        \
+    _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"")  \
+    _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")        \
+    _Pragma("clang diagnostic ignored \"-Winvalid-specialization\"")
 // clang-format on
 #else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #define _STL_DISABLE_CLANG_WARNINGS

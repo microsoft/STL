@@ -31,7 +31,7 @@ namespace chrono {
     struct treat_as_floating_point : is_floating_point<_Rep> {}; // tests for floating-point type
 
     _EXPORT_STD template <class _Rep>
-    constexpr bool treat_as_floating_point_v = treat_as_floating_point<_Rep>::value;
+    _NO_SPECIALIZATIONS constexpr bool treat_as_floating_point_v = treat_as_floating_point<_Rep>::value;
 
     _EXPORT_STD template <class _Rep>
     struct duration_values { // gets arithmetic properties of a type
@@ -53,7 +53,7 @@ namespace chrono {
 
 #if _HAS_CXX20
     _EXPORT_STD template <class _Clock>
-    constexpr bool is_clock_v = requires {
+    _NO_SPECIALIZATIONS constexpr bool is_clock_v = requires {
         typename _Clock::rep;
         typename _Clock::period;
         typename _Clock::duration;
@@ -62,7 +62,7 @@ namespace chrono {
         _Clock::now();
     };
     _EXPORT_STD template <class _Clock>
-    struct is_clock : bool_constant<is_clock_v<_Clock>> {};
+    struct _NO_SPECIALIZATIONS is_clock : bool_constant<is_clock_v<_Clock>> {};
 
     template <class _Clock>
     constexpr bool _Is_clock_v = is_clock_v<_Clock>;

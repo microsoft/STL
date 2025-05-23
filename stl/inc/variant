@@ -294,7 +294,7 @@ struct _CXX20_DEPRECATE_VOLATILE variant_size<volatile _Ty> : variant_size<_Ty>:
 template <class _Ty>
 struct _CXX20_DEPRECATE_VOLATILE variant_size<const volatile _Ty> : variant_size<_Ty>::type {};
 _EXPORT_STD template <class _Ty>
-constexpr size_t variant_size_v = variant_size<_Ty>::value;
+_NO_SPECIALIZATIONS constexpr size_t variant_size_v = variant_size<_Ty>::value;
 
 template <class... _Types>
 struct variant_size<variant<_Types...>> : integral_constant<size_t, sizeof...(_Types)> {};
@@ -928,7 +928,8 @@ template <size_t _Idx>
 constexpr bool _Is_in_place_index_specialization<in_place_index_t<_Idx>> = true;
 
 _EXPORT_STD template <class... _Types>
-class variant : private _SMF_control<_Variant_destroy_layer<_Types...>, _Types...> { // discriminated union
+class _NO_SPECIALIZATIONS variant
+    : private _SMF_control<_Variant_destroy_layer<_Types...>, _Types...> { // discriminated union
 public:
     static_assert(conjunction_v<is_object<_Types>..., negation<is_array<_Types>>..., is_destructible<_Types>...>,
         "variant<Types...> requires all of the Types to meet the Cpp17Destructible requirements "
