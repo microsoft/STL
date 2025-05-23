@@ -89,9 +89,9 @@ _NODISCARD constexpr bool has_single_bit(const _Ty _Val) noexcept {
         return (_Val ^ (_Val - 1)) > _Val - 1;
     }
     return _Unchecked_popcount(_Val) == 1;
-#else
+#else // ^^^ popcnt intrinsic always available / popcnt intrinsic not always available vvv
     return (_Val ^ (_Val - 1)) > _Val - 1;
-#endif // ! _POPCNT_INTRINSICS_ALWAYS_AVAILABLE
+#endif // ^^^ popcnt intrinsic not always available ^^^
 }
 
 inline void _Precondition_violation_in_bit_ceil() noexcept {}
