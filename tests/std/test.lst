@@ -154,6 +154,7 @@ tests\Dev11_1140665_unique_ptr_array_conversions
 tests\Dev11_1150223_shared_mutex
 tests\Dev11_1158803_regex_thread_safety
 tests\Dev11_1180290_filesystem_error_code
+tests\GH_000073_regex_multiline_escape_hatch
 tests\GH_000140_adl_proof_comparison
 tests\GH_000140_adl_proof_construction
 tests\GH_000140_adl_proof_views
