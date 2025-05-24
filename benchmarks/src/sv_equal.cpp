@@ -31,7 +31,7 @@ constexpr std::array<std::string_view, Count> make_svs() {
 
 template <std::size_t Length>
 void sv_equal(benchmark::State& state) {
-    constexpr auto arr = make_svs<Length>();
+    auto arr = make_svs<Length>();
     benchmark::DoNotOptimize(arr);
 
     for (auto _ : state) {

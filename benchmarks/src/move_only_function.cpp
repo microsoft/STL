@@ -5,6 +5,10 @@
 #include <functional>
 #include <utility>
 
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wunqualified-std-cast-call"
+#endif // defined(__clang__)
+
 using namespace std;
 
 void mof_none(benchmark::State& state) {
