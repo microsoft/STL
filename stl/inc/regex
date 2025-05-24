@@ -164,7 +164,7 @@ namespace regex_constants {
         error_complexity,
         error_stack,
         _Error_parse, // TRANSITION, was error_parse, keeping behavior
-        error_syntax
+        _Error_syntax // TRANSITION, was error_syntax, keeping behavior
     };
 } // namespace regex_constants
 
@@ -574,7 +574,7 @@ private:
                    "could match the specified character sequence.";
         case regex_constants::_Error_parse: // TRANSITION, keeping behavior
             return "regex_error(error_parse)";
-        case regex_constants::error_syntax:
+        case regex_constants::_Error_syntax:
             return "regex_error(error_syntax)";
         default:
             return "regex_error";
@@ -4596,7 +4596,7 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Wrapped_disjunction() { // add disjunc
             --_Disj_count;
             return false;
         } else {
-            _Error(regex_constants::error_syntax);
+            _Error(regex_constants::error_badrepeat);
         }
     } else if (_Flags & regex_constants::nosubs) {
         _Do_noncapture_group();
@@ -5007,9 +5007,7 @@ _Root_node* _Parser2<_FwdIt, _Elem, _RxTraits>::_Compile() { // compile regular 
     _Tidy_guard<decltype(_Nfa)> _Guard{_STD addressof(_Nfa)};
     _Node_base* _Pos1 = _Nfa._Begin_capture_group(0);
     _Disjunction();
-    if (_Pat != _End) {
-        _Error(regex_constants::error_syntax);
-    }
+    _STL_INTERNAL_CHECK(_Pat == _End);
 
     _Nfa._End_group(_Pos1);
     _Res         = _Nfa._End_pattern();
