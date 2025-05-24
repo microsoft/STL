@@ -10158,17 +10158,31 @@ _NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _Fir
     const auto _ULast2 = _STD _Get_unwrapped(_Last2);
     _DEBUG_ORDER_SET_UNWRAPPED(_InIt2, _UFirst1, _ULast1, _Pred);
     _DEBUG_ORDER_SET_UNWRAPPED(_InIt1, _UFirst2, _ULast2, _Pred);
-    for (; _UFirst1 != _ULast1 && _UFirst2 != _ULast2; ++_UFirst1) {
-        if (_DEBUG_LT_PRED(_Pred, *_UFirst2, *_UFirst1)) {
-            return false;
-        }
 
-        if (!_Pred(*_UFirst1, *_UFirst2)) {
-            ++_UFirst2;
-        }
+    if (_UFirst2 == _ULast2) {
+        return true;
+    } else if (_UFirst1 == _ULast1) {
+        return false;
     }
 
-    return _UFirst2 == _ULast2;
+    for (;;) {
+        if (_DEBUG_LT_PRED(_Pred, *_UFirst1, *_UFirst2)) {
+            ++_UFirst1;
+            if (_UFirst1 == _ULast1) {
+                return false;
+            }
+        } else if (_Pred(*_UFirst2, *_UFirst1)) {
+            return false;
+        } else {
+            ++_UFirst1;
+            ++_UFirst2;
+            if (_UFirst2 == _ULast2) {
+                return true;
+            } else if (_UFirst1 == _ULast1) {
+                return false;
+            }
+        }
+    }
 }
 
 _EXPORT_STD template <class _InIt1, class _InIt2>
