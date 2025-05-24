@@ -759,12 +759,12 @@
 #endif // _HAS_CXX23
 
 #undef _HAS_MSVC_ATTRIBUTE
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("lifetimebound")
 #pragma pop_macro("intrinsic")
 #pragma pop_macro("noop_dtor")
 #pragma pop_macro("known_semantics")
 #pragma pop_macro("msvc")
-#pragma pop_macro("no_specializations")
 
 // warning C4577: 'noexcept' used with no exception handling mode specified;
 // termination on exception is not guaranteed. Specify /EHsc (/Wall)

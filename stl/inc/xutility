@@ -25,9 +25,11 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("msvc")
 #pragma push_macro("intrinsic")
 #pragma push_macro("lifetimebound")
+#pragma push_macro("no_specializations")
 #undef msvc
 #undef intrinsic
 #undef lifetimebound
+#undef no_specializations
 
 #if defined(_CRTBLD) && defined(CRTDLL2)
 // TRANSITION, ABI: The vector algorithms are compiled into the import lib, so we disable their usage when building
@@ -7726,6 +7728,7 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("lifetimebound")
 #pragma pop_macro("intrinsic")
 #pragma pop_macro("msvc")

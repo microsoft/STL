@@ -61,6 +61,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 _STD_BEGIN
 _EXPORT_STD template <class, class>
 class vector;
@@ -1255,6 +1261,10 @@ template <_Format_supported_charT _CharT, class... _Types>
 struct formatter<tuple<_Types...>, _CharT> : _Tuple_formatter_base<tuple<_Types...>, _CharT> {};
 #endif // _HAS_CXX23
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

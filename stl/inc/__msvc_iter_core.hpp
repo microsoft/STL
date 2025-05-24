@@ -16,6 +16,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 _STD_BEGIN
 template <class _Ty, class _Alloc, class = void>
 struct _Has_allocator_type : false_type {}; // tests for suitable _Ty::allocator_type
@@ -541,6 +547,10 @@ struct _Meta_find_unique_index_<_List<_First, _Rest...>, _Ty> {
     using type = integral_constant<size_t, _STD _Meta_find_unique_index_i_(_Bools, 1 + sizeof...(_Rest))>;
 };
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

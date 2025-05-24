@@ -18,8 +18,10 @@ _STL_DISABLE_CLANG_WARNINGS
 // TRANSITION, non-_Ugly attribute tokens
 #pragma push_macro("msvc")
 #pragma push_macro("known_semantics")
+#pragma push_macro("no_specializations")
 #undef msvc
 #undef known_semantics
+#undef no_specializations
 
 _STD_BEGIN
 _EXPORT_STD template <class _Ty, _Ty _Val>
@@ -248,6 +250,7 @@ struct _NO_SPECIALIZATIONS remove_cvref {
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("known_semantics")
 #pragma pop_macro("msvc")
 

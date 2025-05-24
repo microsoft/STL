@@ -27,7 +27,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 // TRANSITION, non-_Ugly attribute tokens
 #pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
 #undef msvc
+#undef no_specializations
 
 #if _USE_STD_VECTOR_ALGORITHMS
 extern "C" {
@@ -2814,6 +2816,7 @@ _STD_END
 #endif // ^^^ !_HAS_CXX20 ^^^
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("msvc")
 
 #pragma pop_macro("new")

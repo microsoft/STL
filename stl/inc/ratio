@@ -17,6 +17,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 _STD_BEGIN
 _NODISCARD constexpr intmax_t _Abs(const intmax_t _Val) noexcept {
     return _Val < 0 ? -_Val : _Val;
@@ -276,6 +282,11 @@ _EXPORT_STD using tera  = ratio<1000000000000LL, 1>;
 _EXPORT_STD using peta  = ratio<1000000000000000LL, 1>;
 _EXPORT_STD using exa   = ratio<1000000000000000000LL, 1>;
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)

@@ -27,7 +27,11 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
 #pragma push_macro("empty_bases")
+#undef msvc
+#undef no_specializations
 #undef empty_bases
 
 _STD_BEGIN
@@ -603,6 +607,8 @@ _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
 #pragma pop_macro("empty_bases")
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
