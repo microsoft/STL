@@ -601,6 +601,7 @@ namespace {
 
 #ifndef _M_ARM64EC
         struct _Traits_sse_base {
+            using _Guard                       = char;
             static constexpr bool _Vectorized  = true;
             static constexpr size_t _Vec_size  = 16;
             static constexpr size_t _Vec_mask  = 0xF;
@@ -626,6 +627,7 @@ namespace {
         };
 
         struct _Traits_avx_base {
+            using _Guard                      = _Zeroupper_on_exit;
             static constexpr bool _Vectorized = true;
             static constexpr size_t _Vec_size = 32;
             static constexpr size_t _Vec_mask = 0x1F;
@@ -2409,6 +2411,8 @@ namespace {
 #ifdef _M_ARM64EC
                 static_assert(false, "No vectorization for _M_ARM64EC yet");
 #else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+                [[maybe_unused]] typename _Traits::_Guard _Guard; // TRANSITION, DevCom-10331414
+
                 constexpr bool _Sign_cor = static_cast<_Ty>(-1) > _Ty{0};
 
                 const size_t _Total_size_bytes = _Byte_length(_First, _Last);
@@ -2470,8 +2474,6 @@ namespace {
                         _Advance_bytes(_First, _Tail_byte_size);
                     }
                 }
-
-                _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
             }
 
