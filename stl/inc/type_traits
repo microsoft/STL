@@ -699,6 +699,47 @@ struct has_unique_object_representations : bool_constant<__has_unique_object_rep
 _EXPORT_STD template <class _Ty>
 constexpr bool has_unique_object_representations_v = __has_unique_object_representations(_Ty);
 
+#if _HAS_CXX23 && _HAS_REFERENCE_BINDING_TRAITS_INTRINSICS
+#ifdef __clang__ // TRANSITION, LLVM-114344
+template <class _Ty>
+struct _Adjust_ref_binding_source {
+    using type = _Ty;
+};
+template <class _Ty>
+    requires is_scalar_v<_Ty> || is_void_v<_Ty>
+struct _Adjust_ref_binding_source<_Ty> {
+    using type = remove_cv_t<_Ty>;
+};
+template <class _Ty>
+    requires is_function_v<_Ty> && requires { typename void_t<_Ty&>; }
+struct _Adjust_ref_binding_source<_Ty> {
+    using type = _Ty&;
+};
+
+template <class _Ty>
+using _Adjust_ref_binding_source_t = _Adjust_ref_binding_source<_Ty>::type;
+#else // ^^^ workaround / no workaround vvv
+template <class _Ty>
+using _Adjust_ref_binding_source_t = _Ty;
+#endif // ^^^ no workaround ^^^
+
+_EXPORT_STD template <class _Ty, class _Uty>
+struct reference_constructs_from_temporary
+    : bool_constant<__reference_constructs_from_temporary(_Ty, _Adjust_ref_binding_source_t<_Uty>)> {};
+
+_EXPORT_STD template <class _Ty, class _Uty>
+constexpr bool reference_constructs_from_temporary_v =
+    __reference_constructs_from_temporary(_Ty, _Adjust_ref_binding_source_t<_Uty>);
+
+_EXPORT_STD template <class _Ty, class _Uty>
+struct reference_converts_from_temporary
+    : bool_constant<__reference_converts_from_temporary(_Ty, _Adjust_ref_binding_source_t<_Uty>)> {};
+
+_EXPORT_STD template <class _Ty, class _Uty>
+constexpr bool reference_converts_from_temporary_v =
+    __reference_converts_from_temporary(_Ty, _Adjust_ref_binding_source_t<_Uty>);
+#endif // _HAS_CXX23 && _HAS_REFERENCE_BINDING_TRAITS_INTRINSICS
+
 #ifdef __EDG__ // TRANSITION, VSO-1690654
 template <class _Ty>
 struct _Is_aggregate_impl : bool_constant<__is_aggregate(_Ty)> {};
@@ -1739,9 +1780,18 @@ struct is_nothrow_convertible : bool_constant<_Is_nothrow_convertible_v<_From, _
 template <class _From, class _To, class = void>
 struct _Invoke_convertible : false_type {};
 
+#if _HAS_CXX23 && _HAS_REFERENCE_BINDING_TRAITS_INTRINSICS
+template <class _From, class _To>
+using _Not_reference_converts_from_temporary = bool_constant<!reference_converts_from_temporary_v<_To, _From>>;
+#else // ^^^ _HAS_CXX23 && _HAS_REFERENCE_BINDING_TRAITS_INTRINSICS / !_HAS_CXX23 ||
+      // !_HAS_REFERENCE_BINDING_TRAITS_INTRINSICS vvv
+template <class _From, class _To>
+using _Not_reference_converts_from_temporary = true_type;
+#endif // ^^^ !_HAS_CXX23 || !_HAS_REFERENCE_BINDING_TRAITS_INTRINSICS ^^^
+
 template <class _From, class _To>
 struct _Invoke_convertible<_From, _To, void_t<decltype(_STD _Fake_copy_init<_To>(_STD _Returns_exactly<_From>()))>>
-    : true_type {};
+    : _Not_reference_converts_from_temporary<_From, _To> {};
 
 template <class _From, class _To>
 struct _Invoke_nothrow_convertible

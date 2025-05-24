@@ -363,6 +363,8 @@
 // P2165R4 Compatibility Between tuple, pair, And tuple-like Objects
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
+// P2255R2 Type Traits To Detect References Binding To Temporaries
+//     (for Clang only)
 // P2273R3 constexpr unique_ptr
 // P2278R4 cbegin Should Always Return A Constant Iterator
 // P2286R8 Formatting Ranges
@@ -936,6 +938,13 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.44 or ne
 #if defined(_CPPRTTI) && !_HAS_STATIC_RTTI
 #error /GR implies _HAS_STATIC_RTTI.
 #endif // defined(_CPPRTTI) && !_HAS_STATIC_RTTI
+
+// TRANSITION, MSVC and EDG haven't implemented intrinsics needed for P2255R2.
+#if defined(__clang__) && !defined(__EDG__)
+#define _HAS_REFERENCE_BINDING_TRAITS_INTRINSICS (__clang_major__ >= 19)
+#else // ^^^ defined(__clang__) && !defined(__EDG__) / !defined(__clang__) || defined(__EDG__) vvv
+#define _HAS_REFERENCE_BINDING_TRAITS_INTRINSICS 0
+#endif // !defined(__clang__) || defined(__EDG__)
 
 // N4950 [dcl.constexpr]/1: "A function or static data member declared with the
 // constexpr or consteval specifier is implicitly an inline function or variable"
@@ -1819,14 +1828,20 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_ranges_stride                     202207L
 #define __cpp_lib_ranges_to_container               202202L
 #define __cpp_lib_ranges_zip                        202110L
-#define __cpp_lib_spanstream                        202106L
-#define __cpp_lib_stacktrace                        202011L
-#define __cpp_lib_stdatomic_h                       202011L
-#define __cpp_lib_string_contains                   202011L
-#define __cpp_lib_string_resize_and_overwrite       202110L
-#define __cpp_lib_to_underlying                     202102L
-#define __cpp_lib_tuple_like                        202207L
-#define __cpp_lib_unreachable                       202202L
+
+// TRANSITION, MSVC and EDG haven't implemented intrinsics needed for P2255R2.
+#if _HAS_REFERENCE_BINDING_TRAITS_INTRINSICS
+#define __cpp_lib_reference_from_temporary 202202L
+#endif // ^^^ no workaround ^^^
+
+#define __cpp_lib_spanstream                  202106L
+#define __cpp_lib_stacktrace                  202011L
+#define __cpp_lib_stdatomic_h                 202011L
+#define __cpp_lib_string_contains             202011L
+#define __cpp_lib_string_resize_and_overwrite 202110L
+#define __cpp_lib_to_underlying               202102L
+#define __cpp_lib_tuple_like                  202207L
+#define __cpp_lib_unreachable                 202202L
 #endif // _HAS_CXX23
 
 // macros with language mode sensitivity
