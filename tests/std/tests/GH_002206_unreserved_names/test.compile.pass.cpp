@@ -38,9 +38,10 @@
 #define intrinsic 3
 #endif // ^^^ no workaround ^^^
 
-#define lifetimebound 4
-#define noop_dtor     5
-#define empty_bases   6
+#define lifetimebound      4
+#define noop_dtor          5
+#define empty_bases        6
+#define no_specializations 7
 
 #include <__msvc_all_public_headers.hpp>
 
@@ -69,6 +70,10 @@
 #if empty_bases != 6
 #error bad macro expansion
 #endif // empty_bases != 6
+
+#if no_specializations != 7
+#error bad macro expansion
+#endif // no_specializations != 7
 
 #if raw_name != 1001
 #error bad macro expansion
