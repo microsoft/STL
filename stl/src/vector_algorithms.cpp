@@ -3232,8 +3232,8 @@ namespace {
                     const __m256i _Cmp   = _Traits::_Cmp_avx(_Comparand, _Data);
                     const uint32_t _Mask = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
 
-                    uint64_t _Msk_with_carry = uint64_t{_Carry} | (uint64_t{_Mask} << 32);
-                    uint64_t _MskX           = _Msk_with_carry;
+                    const uint64_t _Msk_with_carry = uint64_t{_Carry} | (uint64_t{_Mask} << 32);
+                    uint64_t _MskX                 = _Msk_with_carry;
 
                     _MskX = (_MskX >> sizeof(_Ty)) & _MskX;
 
