@@ -14,7 +14,7 @@ using namespace std;
 
 enum class alg_type { std_fn, rng };
 
-enum needle_spread { dense, sparse, random_pick };
+enum needle_spread { dense, dense_random, sparse, sparse_random };
 
 template <class T, alg_type Alg>
 void bm_includes(benchmark::State& state) {
@@ -32,14 +32,36 @@ void bm_includes(benchmark::State& state) {
         needle.assign(hay.begin() + hay_size / 2 - needle_size / 2, hay.begin() + hay_size / 2 + (needle_size + 1) / 2);
         break;
 
+    case needle_spread::dense_random:
+        {
+            mt19937 gen{};
+            geometric_distribution<size_t> dis_dis{};
+            vector<size_t> idx(needle_size);
+            const size_t mid = needle_size / 2;
+            idx[mid]         = hay_size / 2;
+
+            const size_t max_shift = hay_size / needle_size;
+
+            for (size_t i = mid; i != 0; --i) {
+                idx[i - 1] = idx[i] - min(dis_dis(gen) + 1, max_shift);
+            }
+
+            for (size_t i = mid; i != needle_size - 1; ++i) {
+                idx[i + 1] = idx[i] + min(dis_dis(gen) + 1, max_shift);
+            }
+
+            transform(idx.begin(), idx.end(), needle.begin(), [&hay](const size_t i) { return hay[i]; });
+        }
+        break;
+
     case needle_spread::sparse:
         for (size_t i = 0; i != needle_size; ++i) {
             needle[i] = hay[hay_size * i / needle_size + hay_size / (needle_size * 2)];
         }
         break;
 
-    case needle_spread::random_pick:
-        ranges::sample(hay, needle.begin(), needle_size, std::mt19937{});
+    case needle_spread::sparse_random:
+        ranges::sample(hay, needle.begin(), needle_size, mt19937{});
         break;
     }
 
@@ -67,12 +89,15 @@ void bm_includes(benchmark::State& state) {
 }
 
 void common_args(auto bm) {
-    for (const auto& hay_size : {300, 3000}) {
-        for (const auto& needle_size : {3, 22, 105, 290}) {
-            for (const auto& s : {needle_spread::dense, needle_spread::sparse, needle_spread::random_pick}) {
-                for (const auto& m : {true, false}) {
-                    bm->Args({hay_size, needle_size, s, m});
-                }
+    for (const auto& s :
+        {needle_spread::dense, needle_spread::dense_random, needle_spread::sparse, needle_spread::sparse_random}) {
+        for (const auto& m : {true, false}) {
+            for (const auto& needle_size : {3, 22, 105, 1504, 2750}) {
+                bm->Args({3000, needle_size, s, m});
+            }
+
+            for (const auto& needle_size : {3, 22, 105, 290}) {
+                bm->Args({300, needle_size, s, m});
             }
         }
     }
