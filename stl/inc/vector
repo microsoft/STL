@@ -3193,8 +3193,11 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 size_type max_size() const noexcept {
-        constexpr auto _Diff_max  = static_cast<size_type>(_STD _Max_limit<difference_type>());
-        const size_type _Ints_max = this->_Myvec.max_size();
+        constexpr auto _Diff_max = static_cast<size_type>(_STD _Max_limit<difference_type>());
+
+        // _Ints_max is non-const to avoid warning C4127 "conditional expression is constant" with Defect Report P2280R4
+        size_type _Ints_max = this->_Myvec.max_size();
+
         if (_Ints_max > _Diff_max / _VBITS) { // max_size bound by difference_type limits
             return _Diff_max;
         }
