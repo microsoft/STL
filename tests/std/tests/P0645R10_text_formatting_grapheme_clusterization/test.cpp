@@ -1584,6 +1584,35 @@ constexpr bool test_unicode_properties() {
     assert(
         _Grapheme_Break_property_data._Get_property_for_codepoint(0xA0) == _Grapheme_Break_property_values::_No_value);
 
+    // Indic_Conjunct_Break = Linker
+    assert(_Indic_Conjunct_Break_property_data._Get_property_for_codepoint(0x094D)
+           == _Indic_Conjunct_Break_property_values::_Linker_value);
+    assert(_Indic_Conjunct_Break_property_data._Get_property_for_codepoint(0x09CD)
+           == _Indic_Conjunct_Break_property_values::_Linker_value);
+    assert(_Indic_Conjunct_Break_property_data._Get_property_for_codepoint(0x0ACD)
+           == _Indic_Conjunct_Break_property_values::_Linker_value);
+    assert(_Indic_Conjunct_Break_property_data._Get_property_for_codepoint(0x0B4D)
+           == _Indic_Conjunct_Break_property_values::_Linker_value);
+    assert(_Indic_Conjunct_Break_property_data._Get_property_for_codepoint(0x0C4D)
+           == _Indic_Conjunct_Break_property_values::_Linker_value);
+    assert(_Indic_Conjunct_Break_property_data._Get_property_for_codepoint(0x0D4D)
+           == _Indic_Conjunct_Break_property_values::_Linker_value);
+
+    // Indic_Conjunct_Break = Consonant
+    assert(_Indic_Conjunct_Break_property_data._Get_property_for_codepoint(0x0915)
+           == _Indic_Conjunct_Break_property_values::_Consonant_value);
+    assert(_Indic_Conjunct_Break_property_data._Get_property_for_codepoint(0x09DF)
+           == _Indic_Conjunct_Break_property_values::_Consonant_value);
+    assert(_Indic_Conjunct_Break_property_data._Get_property_for_codepoint(0x0C39)
+           == _Indic_Conjunct_Break_property_values::_Consonant_value);
+
+    // Indic_Conjunct_Break = Extend
+    assert(_Indic_Conjunct_Break_property_data._Get_property_for_codepoint(0x0B3F)
+           == _Indic_Conjunct_Break_property_values::_Extend_value);
+    assert(_Indic_Conjunct_Break_property_data._Get_property_for_codepoint(0x0CC7)
+           == _Indic_Conjunct_Break_property_values::_Extend_value);
+    assert(_Indic_Conjunct_Break_property_data._Get_property_for_codepoint(0x0CD6)
+           == _Indic_Conjunct_Break_property_values::_Extend_value);
 
     // emoji-data
     assert(_Extended_Pictographic_property_data._Get_property_for_codepoint(0x2194)
