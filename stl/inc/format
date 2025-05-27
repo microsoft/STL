@@ -345,6 +345,68 @@ public:
     }
 };
 
+// Implements a DFA matching the regex of the rule GB9c. The DFA is:
+//
+//                             Consonant
+//                       +-------------------+
+//                       |                   |
+// +---+   Consonant   +-v-+    Linker     +-+-+
+// | 1 +---------------> 2 +---------------> 3 |
+// +---+               ++-^+               ++-^+
+//                      | |                 | |
+//                      +-+                 +-+
+//                      Extend       Linker or Extend
+//
+// State '3' is the accepting state.
+class _GB9c_regex {
+private:
+    enum _State_t : uint8_t { _Consonant, _Linker, _Rest };
+
+    _State_t _State = _Consonant;
+
+public:
+    _NODISCARD constexpr bool operator==(const _GB9c_regex&) const noexcept = default;
+
+    _NODISCARD constexpr bool _Match(const _Indic_Conjunct_Break_property_values _Left_InCB) noexcept {
+        switch (_State) {
+        case _Consonant:
+            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Consonant_value) {
+                _State = _Linker;
+            }
+            return false;
+
+        case _Linker:
+            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Extend_value) {
+                return false;
+            }
+
+            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Linker_value) {
+                _State = _Rest;
+                return true;
+            }
+            break;
+
+        case _Rest:
+            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Consonant_value) {
+                _State = _Linker;
+                return false;
+            }
+
+            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Extend_value
+                || _Left_InCB == _Indic_Conjunct_Break_property_values::_Linker_value) {
+                return true;
+            }
+            break;
+
+        default:
+            _STL_INTERNAL_CHECK(false);
+        }
+
+        _State = _Consonant;
+        return false;
+    }
+};
+
 // Implements a DFA matching the regex on the left side of rule GB11. The DFA is:
 //
 // +---+   ExtPic      +---+    ZWJ        +---+
@@ -395,6 +457,7 @@ private:
     using _Wrapped_iter_type = _Unicode_codepoint_iterator<_CharT>;
 
     _Wrapped_iter_type _WrappedIter;
+    _GB9c_regex _GB9c_rx;
     _GB11_LeftHand_regex _GB11_rx;
 
 public:
@@ -414,19 +477,23 @@ public:
 
     constexpr _Grapheme_break_property_iterator& operator++() noexcept {
         auto _Left_gbp     = _Grapheme_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
+        auto _Left_InCB    = _Indic_Conjunct_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
         auto _Left_ExtPic  = _Extended_Pictographic_property_data._Get_property_for_codepoint(*_WrappedIter);
         auto _Right_gbp    = _Grapheme_Break_property_values::_No_value;
         auto _Right_ExtPic = _Extended_Pictographic_property_values::_No_value;
         size_t _Num_RIs    = 0;
-        for (;; _Left_gbp = _Right_gbp, _Left_ExtPic = _Right_ExtPic) {
+        for (;; _Left_gbp    = _Right_gbp,
+                _Left_InCB   = _Indic_Conjunct_Break_property_data._Get_property_for_codepoint(*_WrappedIter),
+                _Left_ExtPic = _Right_ExtPic) {
             ++_WrappedIter;
             if (_WrappedIter == default_sentinel) {
                 return *this; // GB2 Any % eot
             }
             _Right_gbp    = _Grapheme_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
             _Right_ExtPic = _Extended_Pictographic_property_data._Get_property_for_codepoint(*_WrappedIter);
-            // match GB11 now, so that we're sure to update it for every character, not just ones where
-            // the GB11 rule is considered
+            // match GB9c and GB11 now, so that we're sure to update it for every character, not just ones where
+            // the rules are considered
+            const bool _GB9c_Match = _GB9c_rx._Match(_Left_InCB);
             const bool _GB11_Match = _GB11_rx._Match(_Left_gbp, _Left_ExtPic);
             // Also update the number of sequential RIs immediately
             if (_Left_gbp == _Grapheme_Break_property_values::_Regional_Indicator_value) {
@@ -484,6 +551,13 @@ public:
 
             if (_Left_gbp == _Grapheme_Break_property_values::_Prepend_value) {
                 continue; // GB9b Prepend x
+            }
+
+            if (_GB9c_Match) {
+                // GB9c (since Unicode 15.1)
+                // \p{InCB=Consonant}[ \p{InCB=Extend} \p{InCB=Linker} ]* \p{InCB=Linker} [ \p{InCB=Extend}
+                // \p{InCB=Linker} ]* x \p{InCB=Consonant}
+                continue;
             }
 
             if (_GB11_Match && _Right_ExtPic == _Extended_Pictographic_property_values::_Extended_Pictographic_value) {
