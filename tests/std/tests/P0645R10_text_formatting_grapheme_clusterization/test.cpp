@@ -1547,6 +1547,8 @@ constexpr bool test_unicode_properties() {
            == _Grapheme_Break_property_values::_Extend_value);
     assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0xE01EF)
            == _Grapheme_Break_property_values::_Extend_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x1D16D)
+           == _Grapheme_Break_property_values::_Extend_value);
     assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x1F1E6)
            == _Grapheme_Break_property_values::_Regional_Indicator_value);
     assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x1F1FF)
@@ -1554,8 +1556,6 @@ constexpr bool test_unicode_properties() {
     assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x0903)
            == _Grapheme_Break_property_values::_SpacingMark_value);
     assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x1934)
-           == _Grapheme_Break_property_values::_SpacingMark_value);
-    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x1D16D)
            == _Grapheme_Break_property_values::_SpacingMark_value);
     assert(
         _Grapheme_Break_property_data._Get_property_for_codepoint(0x1100) == _Grapheme_Break_property_values::_L_value);
