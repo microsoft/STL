@@ -2105,6 +2105,7 @@ namespace chrono {
 
     template <class _Ty>
     _NODISCARD const _Ty* _Locate_zone_impl(const vector<_Ty>& _Vec, string_view _Name) {
+        // N5008 [time.zone.db.tzdb]/1: "Each vector in a tzdb object is sorted to enable fast lookup."
         const auto _Result = _STD lower_bound(
             _Vec.begin(), _Vec.end(), _Name, [](const auto& _Tz, const auto& _Sv) { return _Tz.name() < _Sv; });
         if (_Result != _Vec.end() && _Result->name() == _Name) {
