@@ -7,8 +7,8 @@
 void locate_zone(benchmark::State& state) {
     auto&& tzdb = std::chrono::get_tzdb();
     for (auto _ : state) {
-        for (std::size_t i = 0; i != tzdb.zones.size(); ++i) {
-            auto res = tzdb.locate_zone(tzdb.zones[i].name());
+        for (const auto& z : tzdb.zones) {
+            auto res = tzdb.locate_zone(z.name());
             benchmark::DoNotOptimize(res);
         }
     }
