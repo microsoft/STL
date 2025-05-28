@@ -281,7 +281,8 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 #define _POPCNT_INTRINSICS_ALWAYS_AVAILABLE 0
 #endif // ^^^ intrinsics not always available ^^^
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
-#define _HAS_POPCNT_INTRINSICS 0
+#define _HAS_POPCNT_INTRINSICS              0
+#define _POPCNT_INTRINSICS_ALWAYS_AVAILABLE 0
 #endif // ^^^ intrinsics unavailable ^^^
 
 #if _HAS_POPCNT_INTRINSICS
@@ -384,7 +385,6 @@ _CONSTEXPR20 decltype(auto) _Select_popcount_impl(_Fn _Callback) {
     return _Callback([](_Ty _Val) _STATIC_LAMBDA { return _Popcount_fallback(_Val); });
 }
 
-#undef _HAS_POPCNT_INTRINSICS
 #undef _HAS_TZCNT_BSF_INTRINSICS
 
 _STD_END
