@@ -5,10 +5,10 @@
 #include <chrono>
 
 void locate_zone(benchmark::State& state) {
-    auto&& tzdb = std::chrono::get_tzdb();
+    const auto& db = std::chrono::get_tzdb();
     for (auto _ : state) {
-        for (const auto& z : tzdb.zones) {
-            auto res = tzdb.locate_zone(z.name());
+        for (const auto& z : db.zones) {
+            auto res = db.locate_zone(z.name());
             benchmark::DoNotOptimize(res);
         }
     }
