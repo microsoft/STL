@@ -132,7 +132,7 @@ static const regex_test tests[] = {
     {__LINE__, T("a$"), T("ba"), "1 1 2", ALL},
     {__LINE__, T("a$"), T("ab"), "0", ALL},
 
-    {__LINE__, T("^a$"), T("b\na"), "1 2 3", ALL},
+    {__LINE__, T("^a$"), T("b\na"), "0", ALL},
 
     {__LINE__, T("\\b"), T("a"), "1 0 0", ECMA},
     {__LINE__, T("\\b"), T(""), "-1", BASIC | GREP | EXTENDED | EGREP},
