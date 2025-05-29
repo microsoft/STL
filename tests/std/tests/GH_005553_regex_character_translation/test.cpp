@@ -70,6 +70,26 @@ void check_no_match(const string& subject, const string& pattern, const Rx& re, 
 }
 
 template <class Rx>
+void check_match(const wstring& subject, const wstring& pattern, const Rx& re, match_flag_type flags, bool matches) {
+    if (regex_match(subject, re, flags) != matches) {
+        wprintf(LR"(Expected regex_match("%s", regex("%s", 0x%X)) to be %s.)", subject.c_str(), pattern.c_str(),
+            re.flags(), matches ? L"true" : L"false");
+        g_regexTester.fail_regex();
+    }
+}
+
+template <class Rx>
+void check_match(const wstring& subject, const wstring& pattern, const Rx& re, match_flag_type flags = match_default) {
+    check_match(subject, pattern, re, flags, true);
+}
+
+template <class Rx>
+void check_no_match(
+    const wstring& subject, const wstring& pattern, const Rx& re, match_flag_type flags = match_default) {
+    check_match(subject, pattern, re, flags, false);
+}
+
+template <class Rx>
 void check_search_match(const string& subject, const string& expected, const string& pattern, const Rx& re,
     match_flag_type flags = match_default) {
     smatch match;
@@ -200,6 +220,46 @@ void test_gh_5553() {
         check_no_match("E", pattern, charrangecompare_collate_pattern);
         check_no_match("j", pattern, charrangecompare_collate_pattern);
         check_no_match("J", pattern, charrangecompare_collate_pattern);
+    }
+
+    {
+        wstring pattern = L"[\u022d-\u022f]"; // U+022D LATIN SMALL LETTER O WITH TILDE AND MACRON
+                                              // U+022F LATIN SMALL LETTER O WITH DOT ABOVE
+
+        basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> small_unicode_charrange_pattern{
+            pattern, regex_constants::icase};
+        // U+022D LATIN SMALL LETTER O WITH TILDE AND MACRON
+        check_match(L"\u022d", pattern, small_unicode_charrange_pattern);
+        // U+022C LATIN CAPITAL LETTER O WITH TILDE AND MACRON
+        check_match(L"\u022c", pattern, small_unicode_charrange_pattern);
+        // U+022F LATIN SMALL LETTER O WITH DOT ABOVE
+        check_match(L"\u022f", pattern, small_unicode_charrange_pattern);
+        // U+022E LATIN CAPITAL LETTER O WITH DOT ABOVE
+        check_match(L"\u022e", pattern, small_unicode_charrange_pattern);
+        // U+022B LATIN SMALL LETTER O WITH DIAERESIS AND MACRON
+        check_no_match(L"\u022b", pattern, small_unicode_charrange_pattern);
+        // U+0230 LATIN CAPITAL LETTER O WITH DOT ABOVE AND MACRON
+        check_no_match(L"\u0230", pattern, small_unicode_charrange_pattern);
+    }
+
+    {
+        wstring pattern = L"[\u022b-\u0230]"; // U+022B LATIN SMALL LETTER O WITH DIAERESIS AND MACRON
+                                              // U+0230 LATIN CAPITAL LETTER O WITH DOT ABOVE AND MACRON
+
+        basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> small_unicode_charrange_pattern{
+            pattern, regex_constants::icase};
+        // U+022B LATIN SMALL LETTER O WITH DIAERESIS AND MACRON
+        check_match(L"\u022b", pattern, small_unicode_charrange_pattern);
+        // U+022A LATIN CAPITAL LETTER O WITH DIAERESIS AND MACRON
+        check_match(L"\u022a", pattern, small_unicode_charrange_pattern);
+        // U+0230 LATIN CAPITAL LETTER O WITH DOT ABOVE AND MACRON
+        check_match(L"\u0230", pattern, small_unicode_charrange_pattern);
+        // U+0231 LATIN SMALL LETTER O WITH DOT ABOVE AND MACRON
+        check_match(L"\u0231", pattern, small_unicode_charrange_pattern);
+        // U+0229 LATIN SMALL LETTER E WITH CEDILLA
+        check_no_match(L"\u0229", pattern, small_unicode_charrange_pattern);
+        // U+0232 LATIN CAPITAL LETTER Y WITH MACRON
+        check_no_match(L"\u0232", pattern, small_unicode_charrange_pattern);
     }
 }
 
