@@ -10,29 +10,31 @@ parameters:
   type: string
 - name: buildBenchmarks
   type: boolean
+- name: compiler
+  type: string
 
 steps:
 - script: |
-    if exist "$(benchmarkBuildOutputLocation)" (
-      rmdir /S /Q "$(benchmarkBuildOutputLocation)"
+    if exist "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}" (
+      rmdir /S /Q "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
     )
     call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     cmake -G Ninja ^
-    -DCMAKE_CXX_COMPILER=cl ^
+    -DCMAKE_CXX_COMPILER=${{ parameters.compiler }} ^
     -DCMAKE_BUILD_TYPE=Release ^
     -DSTL_BINARY_DIR="$(buildOutputLocation)" ^
     -DVCLIBS_TARGET_ARCHITECTURE=${{ parameters.targetPlatform }} ^
-    -S $(Build.SourcesDirectory)/benchmarks -B "$(benchmarkBuildOutputLocation)"
-  displayName: 'Configure the benchmarks'
+    -S $(Build.SourcesDirectory)/benchmarks -B "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
+  displayName: 'Configure the benchmarks for ${{ parameters.compiler }}'
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
   condition: and(succeeded(), ${{ parameters.buildBenchmarks }})
 - script: |
     call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-    cmake --build "$(benchmarkBuildOutputLocation)"
-  displayName: 'Build the benchmarks'
+    cmake --build "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
+  displayName: 'Build the benchmarks for ${{ parameters.compiler }}'
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
   condition: and(succeeded(), ${{ parameters.buildBenchmarks }})
