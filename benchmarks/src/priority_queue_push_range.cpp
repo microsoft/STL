@@ -5,7 +5,6 @@
 #include <benchmark/benchmark.h>
 #include <cstddef>
 #include <cstdint>
-#include <cstdio>
 #include <queue>
 #include <random>
 #include <span>
@@ -57,29 +56,20 @@ void BM_push_range(benchmark::State& state) {
     }
 }
 
-template <size_t L>
-void putln(const benchmark::State&) {
-    static once_flag f;
-    call_once(f, [] { puts(""); });
+void common_args(auto bm) {
+    bm->RangeMultiplier(100)->Range(1, vec_size)->Arg(vec_size / 2 + 1);
 }
 
-#define TEST_PUSH_RANGE(T, source)      \
-    BENCHMARK(BM_push_range<T, source>) \
-        ->Setup(putln<__LINE__>)        \
-        ->RangeMultiplier(100)          \
-        ->Range(1, vec_size)            \
-        ->Arg(vec_size / 2 + 1);
+BENCHMARK(BM_push_range<uint8_t, vec_u8>)->Apply(common_args);
+BENCHMARK(BM_push_range<uint16_t, vec_u16>)->Apply(common_args);
+BENCHMARK(BM_push_range<uint32_t, vec_u32>)->Apply(common_args);
+BENCHMARK(BM_push_range<uint64_t, vec_u64>)->Apply(common_args);
+BENCHMARK(BM_push_range<float, vec_float>)->Apply(common_args);
+BENCHMARK(BM_push_range<double, vec_double>)->Apply(common_args);
 
-TEST_PUSH_RANGE(uint8_t, vec_u8);
-TEST_PUSH_RANGE(uint16_t, vec_u16);
-TEST_PUSH_RANGE(uint32_t, vec_u32);
-TEST_PUSH_RANGE(uint64_t, vec_u64);
-TEST_PUSH_RANGE(float, vec_float);
-TEST_PUSH_RANGE(double, vec_double);
-
-TEST_PUSH_RANGE(string_view, vec_str);
-TEST_PUSH_RANGE(string, vec_str);
-TEST_PUSH_RANGE(wstring_view, vec_wstr);
-TEST_PUSH_RANGE(wstring, vec_wstr);
+BENCHMARK(BM_push_range<string_view, vec_str>)->Apply(common_args);
+BENCHMARK(BM_push_range<string, vec_str>)->Apply(common_args);
+BENCHMARK(BM_push_range<wstring_view, vec_wstr>)->Apply(common_args);
+BENCHMARK(BM_push_range<wstring, vec_wstr>)->Apply(common_args);
 
 BENCHMARK_MAIN();
