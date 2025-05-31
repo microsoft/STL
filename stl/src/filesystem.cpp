@@ -807,26 +807,27 @@ namespace {
 [[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error
     __stdcall __std_fs_get_temp_path(_Out_writes_z_(__std_fs_temp_path_max) wchar_t* const _Target) noexcept {
     // calls GetTempPath2W if available (Win11+), else calls GetTempPathW
-    // When there is an error, returns 0 size (N5008 [fs.op.temp.dir.path]/3); otherwise,
-    // returns the size of the expected directory.
-    const auto _Size = _Stl_GetTempPath2W(__std_fs_temp_path_max, _Target);
-    if (_Size == 0) {
-        return {0, __std_win_error{GetLastError()}};
+    // If getting the path failed, returns 0 size; otherwise, returns the size of the
+    // expected directory. If the path could be resolved to an existing directory,
+    // returns __std_win_error::_Success; otherwise, returns __std_win_error::_Max.
+    __std_ulong_and_error _Result{_Stl_GetTempPath2W(__std_fs_temp_path_max, _Target), __std_win_error{GetLastError()}};
+    if (_Result._Size == 0) {
+        return _Result;
     }
 
     // Effects: If exists(p) is false or is_directory(p) is false, an error is reported
     __std_fs_file_handle _Handle;
-    __std_ulong_and_error _Result{};
+
     // Following symlinks
     _Result._Error = __std_fs_open_handle(
         &_Handle, _Target, __std_access_rights::_File_read_attributes, __std_fs_file_flags::_Backup_semantics);
     if (_Handle != __std_fs_file_handle::_Invalid) {
         FILE_BASIC_INFO _Ex_info;
-        if (GetFileInformationByHandleEx(reinterpret_cast<HANDLE>(_Handle), FileBasicInfo, &_Ex_info, sizeof(_Ex_info))
-            && _Ex_info.FileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-            _Result._Size = _Size;
-        } else {
+        if (!GetFileInformationByHandleEx(
+                reinterpret_cast<HANDLE>(_Handle), FileBasicInfo, &_Ex_info, sizeof(_Ex_info))) {
             _Result._Error = __std_win_error{GetLastError()};
+        } else if (!(_Ex_info.FileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+            _Result._Error = __std_win_error::_Max;
         }
 
         __std_fs_close_handle(_Handle);

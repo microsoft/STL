@@ -618,6 +618,7 @@ namespace filesystem {
         friend inline path absolute(const path& _Input, error_code& _Ec);
         friend inline __std_win_error _Canonical(path& _Result, const wstring& _Text);
         friend inline path temp_directory_path(error_code& _Ec);
+        friend inline path temp_directory_path();
         friend inline path current_path(error_code& _Ec);
         friend inline void current_path(const path& _To);
         friend inline void current_path(const path& _To, error_code& _Ec) noexcept;
@@ -3945,7 +3946,7 @@ namespace filesystem {
         if (_Error == __std_win_error::_Success) {
             _Result = file_time_type{file_time_type::duration{_Stats._Last_write_time}};
         } else {
-            _Result = (file_time_type::min)();
+            _Result = (file_time_type::min) ();
         }
 
         return _Error;
@@ -4045,11 +4046,12 @@ namespace filesystem {
         path _Result;
         _Result._Text.resize(__std_fs_temp_path_max);
         const auto _Temp_result = __std_fs_get_temp_path(_Result._Text.data());
-        _Result._Text.resize(_Temp_result._Size);
-        if (_Temp_result._Error == __std_win_error::_Max) { // path could be retrieved, but was not a directory
-            _Ec = _STD make_error_code(errc::not_a_directory);
-        } else {
+        if (_Temp_result._Error != __std_win_error::_Success) {
+            // When there is an error, returns path() (N5008 [fs.op.temp.dir.path]/3)
+            _Result._Text.clear();
             _Ec = _Make_ec(_Temp_result._Error);
+        } else {
+            _Result._Text.resize(_Temp_result._Size);
         }
 
         return _Result;
@@ -4057,11 +4059,15 @@ namespace filesystem {
 
     _EXPORT_STD _NODISCARD inline path temp_directory_path() {
         // get a location suitable for temporary storage, and verify that it is a directory
-        error_code _Ec; // unusual arrangement to allow thrown error_code to have generic_category()
-        path _Result(_STD filesystem::temp_directory_path(_Ec));
-        if (_Ec) {
-            _Throw_fs_error("temp_directory_path", _Ec, _Result);
+        error_code _Ec;
+        path _Result;
+        _Result._Text.resize(__std_fs_temp_path_max);
+        const auto _Temp_result = __std_fs_get_temp_path(_Result._Text.data());
+        _Result._Text.resize(_Temp_result._Size);
+        if (_Temp_result._Error != __std_win_error::_Success) {
+            _Throw_fs_error("temp_directory_path", _Make_ec(_Temp_result._Error), _Result);
         }
+
         return _Result;
     }
 
