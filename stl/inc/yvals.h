@@ -254,7 +254,7 @@ _EMIT_STL_ERROR(STL1008, "_STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER has been 
 #else // Use the MSVC __fastfail intrinsic:
 extern "C" __declspec(noreturn) void __fastfail(unsigned int); // declared by <intrin.h>
 #define _MSVC_STL_DOOM_FUNCTION(mesg)                                                 \
-    __fastfail(5); /* __fastfail(FAST_FAIL_INVALID_ARG), value defined by<winnt.h> */ \
+    __fastfail(5); /* __fastfail(FAST_FAIL_INVALID_ARG), value defined by <winnt.h> */ \
     _STL_UNREACHABLE /* TRANSITION, DevCom-10914110 */
 #endif // choose "doom function"
 #endif // ^^^ !defined(_MSVC_STL_DOOM_FUNCTION) ^^^
