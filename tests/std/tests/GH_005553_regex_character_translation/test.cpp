@@ -51,25 +51,6 @@ public:
 };
 
 template <class Rx>
-void check_match(const string& subject, const string& pattern, const Rx& re, match_flag_type flags, bool matches) {
-    if (regex_match(subject, re, flags) != matches) {
-        printf(R"(Expected regex_match("%s", regex("%s", 0x%X)) to be %s.)", subject.c_str(), pattern.c_str(),
-            re.flags(), matches ? "true" : "false");
-        g_regexTester.fail_regex();
-    }
-}
-
-template <class Rx>
-void check_match(const string& subject, const string& pattern, const Rx& re, match_flag_type flags = match_default) {
-    check_match(subject, pattern, re, flags, true);
-}
-
-template <class Rx>
-void check_no_match(const string& subject, const string& pattern, const Rx& re, match_flag_type flags = match_default) {
-    check_match(subject, pattern, re, flags, false);
-}
-
-template <class Rx>
 void check_match(const wstring& subject, const wstring& pattern, const Rx& re, match_flag_type flags, bool matches) {
     if (regex_match(subject, re, flags) != matches) {
         wprintf(LR"(Expected regex_match("%s", regex("%s", 0x%X)) to be %s.)", subject.c_str(), pattern.c_str(),
@@ -90,16 +71,16 @@ void check_no_match(
 }
 
 template <class Rx>
-void check_search_match(const string& subject, const string& expected, const string& pattern, const Rx& re,
+void check_search_match(const wstring& subject, const wstring& expected, const wstring& pattern, const Rx& re,
     match_flag_type flags = match_default) {
-    smatch match;
+    wsmatch match;
     const bool search_result = regex_search(subject, match, re, flags);
     if (!search_result || match[0] != expected) {
-        printf(R"(Expected regex_search("%s", regex("%s", 0x%X), 0x%X) to find "%s", )", subject.c_str(),
+        wprintf(LR"(Expected regex_search("%s", regex("%s", 0x%X), 0x%X) to find "%s", )", subject.c_str(),
             pattern.c_str(), static_cast<unsigned int>(re.flags()), static_cast<unsigned int>(flags), expected.c_str());
         if (search_result) {
-            printf(R"(but it matched "%s")"
-                   "\n",
+            wprintf(LR"(but it matched "%s")"
+                    L"\n",
                 match.str().c_str());
         } else {
             puts("but it failed to match");
@@ -110,12 +91,12 @@ void check_search_match(const string& subject, const string& expected, const str
 
 template <class Rx>
 void check_search_fail(
-    const string& subject, const string& pattern, const Rx& re, match_flag_type flags = match_default) {
-    smatch match;
+    const wstring& subject, const wstring& pattern, const Rx& re, match_flag_type flags = match_default) {
+    wsmatch match;
     const bool search_result = regex_search(subject, match, re, flags);
     if (search_result) {
-        printf(R"(Expected regex_search("%s", regex("%s", 0x%X), 0x%X) to not match, but it found "%s")"
-               "\n",
+        wprintf(LR"(Expected regex_search("%s", regex("%s", 0x%X), 0x%X) to not match, but it found "%s")"
+                L"\n",
             subject.c_str(), pattern.c_str(), static_cast<unsigned int>(re.flags()), static_cast<unsigned int>(flags),
             match.str().c_str());
         g_regexTester.fail_regex();
@@ -125,101 +106,103 @@ void check_search_fail(
 void test_gh_5553() {
     // GH-5553 `<regex>`: Correct character translation in `icase` and `collate` mode
     {
-        string pattern = "g";
-        basic_regex<char, nonidempotent_translate_regex_traits<char>> charcompare_icase_pattern{pattern, icase};
-        check_match("f", pattern, charcompare_icase_pattern);
-        check_match("F", pattern, charcompare_icase_pattern);
-        check_match("g", pattern, charcompare_icase_pattern);
-        check_match("G", pattern, charcompare_icase_pattern);
-        check_no_match("e", pattern, charcompare_icase_pattern);
-        check_no_match("E", pattern, charcompare_icase_pattern);
-        check_no_match("h", pattern, charcompare_icase_pattern);
-        check_no_match("H", pattern, charcompare_icase_pattern);
+        wstring pattern = L"g";
+        basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> charcompare_icase_pattern{pattern, icase};
+        check_match(L"f", pattern, charcompare_icase_pattern);
+        check_match(L"F", pattern, charcompare_icase_pattern);
+        check_match(L"g", pattern, charcompare_icase_pattern);
+        check_match(L"G", pattern, charcompare_icase_pattern);
+        check_no_match(L"e", pattern, charcompare_icase_pattern);
+        check_no_match(L"E", pattern, charcompare_icase_pattern);
+        check_no_match(L"h", pattern, charcompare_icase_pattern);
+        check_no_match(L"H", pattern, charcompare_icase_pattern);
 
-        check_search_match("abcdefghijklmnopqrstuvwxyz", "f", pattern, charcompare_icase_pattern);
-        check_search_match("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "F", pattern, charcompare_icase_pattern);
-        check_search_match("zyxwvutsrqponmlkjihgfedcba", "g", pattern, charcompare_icase_pattern);
-        check_search_match("ZYXWVUTSRQPONMLKJIHGFEDCBA", "G", pattern, charcompare_icase_pattern);
-        check_search_fail("zyxwvutsrqponmlkjihedcba", pattern, charcompare_icase_pattern);
-        check_search_fail("ABCDEHIJKLMNOPQRSTUVWXYZ", pattern, charcompare_icase_pattern);
+        check_search_match(L"abcdefghijklmnopqrstuvwxyz", L"f", pattern, charcompare_icase_pattern);
+        check_search_match(L"ABCDEFGHIJKLMNOPQRSTUVWXYZ", L"F", pattern, charcompare_icase_pattern);
+        check_search_match(L"zyxwvutsrqponmlkjihgfedcba", L"g", pattern, charcompare_icase_pattern);
+        check_search_match(L"ZYXWVUTSRQPONMLKJIHGFEDCBA", L"G", pattern, charcompare_icase_pattern);
+        check_search_fail(L"zyxwvutsrqponmlkjihedcba", pattern, charcompare_icase_pattern);
+        check_search_fail(L"ABCDEHIJKLMNOPQRSTUVWXYZ", pattern, charcompare_icase_pattern);
     }
 
     {
-        string pattern = "g";
-        basic_regex<char, nonidempotent_translate_regex_traits<char>> charcompare_collate_pattern{
+        wstring pattern = L"g";
+        basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> charcompare_collate_pattern{
             pattern, regex_constants::collate};
-        check_match("f", pattern, charcompare_collate_pattern);
-        check_no_match("F", pattern, charcompare_collate_pattern);
-        check_match("g", pattern, charcompare_collate_pattern);
-        check_no_match("G", pattern, charcompare_collate_pattern);
-        check_no_match("e", pattern, charcompare_collate_pattern);
-        check_no_match("E", pattern, charcompare_collate_pattern);
-        check_no_match("h", pattern, charcompare_collate_pattern);
-        check_no_match("H", pattern, charcompare_collate_pattern);
+        check_match(L"f", pattern, charcompare_collate_pattern);
+        check_no_match(L"F", pattern, charcompare_collate_pattern);
+        check_match(L"g", pattern, charcompare_collate_pattern);
+        check_no_match(L"G", pattern, charcompare_collate_pattern);
+        check_no_match(L"e", pattern, charcompare_collate_pattern);
+        check_no_match(L"E", pattern, charcompare_collate_pattern);
+        check_no_match(L"h", pattern, charcompare_collate_pattern);
+        check_no_match(L"H", pattern, charcompare_collate_pattern);
 
-        check_search_match("abcdefghijklmnopqrstuvwxyz", "f", pattern, charcompare_collate_pattern);
-        check_search_fail("ABCDEFGHIJKLMNOPQRSTUVWXYZ", pattern, charcompare_collate_pattern);
-        check_search_match("zyxwvutsrqponmlkjihgfedcba", "g", pattern, charcompare_collate_pattern);
-        check_search_fail("ZYXWVUTSRQPONMLKJIHGFEDCBA", pattern, charcompare_collate_pattern);
-        check_search_fail("zyxwvutsrqponmlkjihedcba", pattern, charcompare_collate_pattern);
+        check_search_match(L"abcdefghijklmnopqrstuvwxyz", L"f", pattern, charcompare_collate_pattern);
+        check_search_fail(L"ABCDEFGHIJKLMNOPQRSTUVWXYZ", pattern, charcompare_collate_pattern);
+        check_search_match(L"zyxwvutsrqponmlkjihgfedcba", L"g", pattern, charcompare_collate_pattern);
+        check_search_fail(L"ZYXWVUTSRQPONMLKJIHGFEDCBA", pattern, charcompare_collate_pattern);
+        check_search_fail(L"zyxwvutsrqponmlkjihedcba", pattern, charcompare_collate_pattern);
     }
 
     {
-        string pattern = "[g]";
-        basic_regex<char, nonidempotent_translate_regex_traits<char>> charclasscompare_icase_pattern{pattern, icase};
-        check_match("f", pattern, charclasscompare_icase_pattern);
-        check_match("F", pattern, charclasscompare_icase_pattern);
-        check_match("g", pattern, charclasscompare_icase_pattern);
-        check_match("G", pattern, charclasscompare_icase_pattern);
-        check_no_match("e", pattern, charclasscompare_icase_pattern);
-        check_no_match("E", pattern, charclasscompare_icase_pattern);
-        check_no_match("h", pattern, charclasscompare_icase_pattern);
-        check_no_match("H", pattern, charclasscompare_icase_pattern);
+        wstring pattern = L"[g]";
+        basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> charclasscompare_icase_pattern{
+            pattern, icase};
+        check_match(L"f", pattern, charclasscompare_icase_pattern);
+        check_match(L"F", pattern, charclasscompare_icase_pattern);
+        check_match(L"g", pattern, charclasscompare_icase_pattern);
+        check_match(L"G", pattern, charclasscompare_icase_pattern);
+        check_no_match(L"e", pattern, charclasscompare_icase_pattern);
+        check_no_match(L"E", pattern, charclasscompare_icase_pattern);
+        check_no_match(L"h", pattern, charclasscompare_icase_pattern);
+        check_no_match(L"H", pattern, charclasscompare_icase_pattern);
     }
 
     {
-        string pattern = "[g]";
-        basic_regex<char, nonidempotent_translate_regex_traits<char>> charclasscompare_collate_pattern{
+        wstring pattern = L"[g]";
+        basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> charclasscompare_collate_pattern{
             pattern, regex_constants::collate};
-        check_match("f", pattern, charclasscompare_collate_pattern);
-        check_no_match("F", pattern, charclasscompare_collate_pattern);
-        check_match("g", pattern, charclasscompare_collate_pattern);
-        check_no_match("G", pattern, charclasscompare_collate_pattern);
-        check_no_match("e", pattern, charclasscompare_collate_pattern);
-        check_no_match("E", pattern, charclasscompare_collate_pattern);
-        check_no_match("h", pattern, charclasscompare_collate_pattern);
-        check_no_match("H", pattern, charclasscompare_collate_pattern);
+        check_match(L"f", pattern, charclasscompare_collate_pattern);
+        check_no_match(L"F", pattern, charclasscompare_collate_pattern);
+        check_match(L"g", pattern, charclasscompare_collate_pattern);
+        check_no_match(L"G", pattern, charclasscompare_collate_pattern);
+        check_no_match(L"e", pattern, charclasscompare_collate_pattern);
+        check_no_match(L"E", pattern, charclasscompare_collate_pattern);
+        check_no_match(L"h", pattern, charclasscompare_collate_pattern);
+        check_no_match(L"H", pattern, charclasscompare_collate_pattern);
     }
 
     {
-        string pattern = "[g-i]";
-        basic_regex<char, nonidempotent_translate_regex_traits<char>> charrangecompare_icase_pattern{pattern, icase};
-        check_match("f", pattern, charrangecompare_icase_pattern);
-        check_match("F", pattern, charrangecompare_icase_pattern);
-        check_match("g", pattern, charrangecompare_icase_pattern);
-        check_match("G", pattern, charrangecompare_icase_pattern);
-        check_match("i", pattern, charrangecompare_icase_pattern);
-        check_match("I", pattern, charrangecompare_icase_pattern);
-        check_no_match("e", pattern, charrangecompare_icase_pattern);
-        check_no_match("E", pattern, charrangecompare_icase_pattern);
-        check_no_match("j", pattern, charrangecompare_icase_pattern);
-        check_no_match("J", pattern, charrangecompare_icase_pattern);
+        wstring pattern = L"[g-i]";
+        basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> charrangecompare_icase_pattern{
+            pattern, icase};
+        check_match(L"f", pattern, charrangecompare_icase_pattern);
+        check_match(L"F", pattern, charrangecompare_icase_pattern);
+        check_match(L"g", pattern, charrangecompare_icase_pattern);
+        check_match(L"G", pattern, charrangecompare_icase_pattern);
+        check_match(L"i", pattern, charrangecompare_icase_pattern);
+        check_match(L"I", pattern, charrangecompare_icase_pattern);
+        check_no_match(L"e", pattern, charrangecompare_icase_pattern);
+        check_no_match(L"E", pattern, charrangecompare_icase_pattern);
+        check_no_match(L"j", pattern, charrangecompare_icase_pattern);
+        check_no_match(L"J", pattern, charrangecompare_icase_pattern);
     }
 
     {
-        string pattern = "[g-i]";
-        basic_regex<char, nonidempotent_translate_regex_traits<char>> charrangecompare_collate_pattern{
+        wstring pattern = L"[g-i]";
+        basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> charrangecompare_collate_pattern{
             pattern, regex_constants::collate};
-        check_match("f", pattern, charrangecompare_collate_pattern);
-        check_no_match("F", pattern, charrangecompare_collate_pattern);
-        check_match("g", pattern, charrangecompare_collate_pattern);
-        check_no_match("G", pattern, charrangecompare_collate_pattern);
-        check_match("i", pattern, charrangecompare_collate_pattern);
-        check_no_match("I", pattern, charrangecompare_collate_pattern);
-        check_no_match("e", pattern, charrangecompare_collate_pattern);
-        check_no_match("E", pattern, charrangecompare_collate_pattern);
-        check_no_match("j", pattern, charrangecompare_collate_pattern);
-        check_no_match("J", pattern, charrangecompare_collate_pattern);
+        check_match(L"f", pattern, charrangecompare_collate_pattern);
+        check_no_match(L"F", pattern, charrangecompare_collate_pattern);
+        check_match(L"g", pattern, charrangecompare_collate_pattern);
+        check_no_match(L"G", pattern, charrangecompare_collate_pattern);
+        check_match(L"i", pattern, charrangecompare_collate_pattern);
+        check_no_match(L"I", pattern, charrangecompare_collate_pattern);
+        check_no_match(L"e", pattern, charrangecompare_collate_pattern);
+        check_no_match(L"E", pattern, charrangecompare_collate_pattern);
+        check_no_match(L"j", pattern, charrangecompare_collate_pattern);
+        check_no_match(L"J", pattern, charrangecompare_collate_pattern);
     }
 
     {
@@ -228,14 +211,14 @@ void test_gh_5553() {
 
         basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> small_unicode_charrange_pattern{
             pattern, regex_constants::icase};
-        // U+022D LATIN SMALL LETTER O WITH TILDE AND MACRON
-        check_match(L"\u022d", pattern, small_unicode_charrange_pattern);
         // U+022C LATIN CAPITAL LETTER O WITH TILDE AND MACRON
         check_match(L"\u022c", pattern, small_unicode_charrange_pattern);
-        // U+022F LATIN SMALL LETTER O WITH DOT ABOVE
-        check_match(L"\u022f", pattern, small_unicode_charrange_pattern);
+        // U+022D LATIN SMALL LETTER O WITH TILDE AND MACRON
+        check_match(L"\u022d", pattern, small_unicode_charrange_pattern);
         // U+022E LATIN CAPITAL LETTER O WITH DOT ABOVE
         check_match(L"\u022e", pattern, small_unicode_charrange_pattern);
+        // U+022F LATIN SMALL LETTER O WITH DOT ABOVE
+        check_match(L"\u022f", pattern, small_unicode_charrange_pattern);
         // U+022B LATIN SMALL LETTER O WITH DIAERESIS AND MACRON
         check_no_match(L"\u022b", pattern, small_unicode_charrange_pattern);
         // U+0230 LATIN CAPITAL LETTER O WITH DOT ABOVE AND MACRON
@@ -246,20 +229,20 @@ void test_gh_5553() {
         wstring pattern = L"[\u022b-\u0230]"; // U+022B LATIN SMALL LETTER O WITH DIAERESIS AND MACRON
                                               // U+0230 LATIN CAPITAL LETTER O WITH DOT ABOVE AND MACRON
 
-        basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> small_unicode_charrange_pattern{
+        basic_regex<wchar_t, nonidempotent_translate_regex_traits<wchar_t>> big_unicode_charrange_pattern{
             pattern, regex_constants::icase};
-        // U+022B LATIN SMALL LETTER O WITH DIAERESIS AND MACRON
-        check_match(L"\u022b", pattern, small_unicode_charrange_pattern);
         // U+022A LATIN CAPITAL LETTER O WITH DIAERESIS AND MACRON
-        check_match(L"\u022a", pattern, small_unicode_charrange_pattern);
+        check_match(L"\u022a", pattern, big_unicode_charrange_pattern);
+        // U+022B LATIN SMALL LETTER O WITH DIAERESIS AND MACRON
+        check_match(L"\u022b", pattern, big_unicode_charrange_pattern);
         // U+0230 LATIN CAPITAL LETTER O WITH DOT ABOVE AND MACRON
-        check_match(L"\u0230", pattern, small_unicode_charrange_pattern);
+        check_match(L"\u0230", pattern, big_unicode_charrange_pattern);
         // U+0231 LATIN SMALL LETTER O WITH DOT ABOVE AND MACRON
-        check_match(L"\u0231", pattern, small_unicode_charrange_pattern);
+        check_match(L"\u0231", pattern, big_unicode_charrange_pattern);
         // U+0229 LATIN SMALL LETTER E WITH CEDILLA
-        check_no_match(L"\u0229", pattern, small_unicode_charrange_pattern);
+        check_no_match(L"\u0229", pattern, big_unicode_charrange_pattern);
         // U+0232 LATIN CAPITAL LETTER Y WITH MACRON
-        check_no_match(L"\u0232", pattern, small_unicode_charrange_pattern);
+        check_no_match(L"\u0232", pattern, big_unicode_charrange_pattern);
     }
 }
 
