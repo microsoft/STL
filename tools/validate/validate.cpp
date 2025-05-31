@@ -55,12 +55,32 @@ private:
     FILE* m_file{nullptr};
 };
 
+
+struct line_and_column_type {
+    size_t line;
+    size_t column;
+};
+
+constexpr line_and_column_type unspecified_line_and_column{1, 1};
+
+template <>
+struct std::formatter<line_and_column_type> {
+    constexpr auto parse(std::format_parse_context& ctx) {
+        return ctx.begin();
+    }
+
+    template <typename FormatContext>
+    auto format(const line_and_column_type& lc, FormatContext& ctx) const {
+        return std::format_to(ctx.out(), "{}:{}", lc.line, lc.column);
+    }
+};
+
 template <class... Args>
-void validation_failure(
-    bool& any_errors, const filesystem::path& filepath, format_string<type_identity_t<Args>...> fmt, Args&&... args) {
+void validation_failure(bool& any_errors, const filesystem::path& filepath, format_string<type_identity_t<Args>...> fmt,
+    line_and_column_type line_and_column, Args&&... args) {
     any_errors = true;
-    print(stderr, "##vso[task.logissue type=error;sourcepath={};linenumber=1;columnnumber=1]Validation failed: ",
-        filepath.string());
+    print(stderr, "##vso[task.logissue type=error;sourcepath={};linenumber={};columnnumber={}]Validation failed: ",
+        filepath.string(), line_and_column.line, line_and_column.column);
     println(stderr, fmt, forward<Args>(args)...);
 }
 
@@ -83,9 +103,9 @@ void scan_file(
 
     constexpr size_t max_error_lines_per_file = 8;
 
-    array<size_t, max_error_lines_per_file> overlength_line_numbers{};
-    array<size_t, max_error_lines_per_file> tab_characters_line_numbers{};
-    array<size_t, max_error_lines_per_file> trailing_whitespace_line_numbers{};
+    array<line_and_column_type, max_error_lines_per_file> overlength_line_numbers{};
+    array<line_and_column_type, max_error_lines_per_file> tab_characters_line_numbers{};
+    array<line_and_column_type, max_error_lines_per_file> trailing_whitespace_line_numbers{};
 
     unsigned char prev      = '@';
     unsigned char previous2 = '@';
@@ -112,7 +132,7 @@ void scan_file(
 
             if (ch == '\t') {
                 if (tab_characters < max_error_lines_per_file) {
-                    tab_characters_line_numbers[disallowed_characters] = line;
+                    tab_characters_line_numbers[tab_characters] = {line, columns};
                 }
                 ++tab_characters;
             } else if (ch == 0xEF || ch == 0xBB || ch == 0xBF) {
@@ -125,23 +145,22 @@ void scan_file(
                 ++disallowed_characters;
                 constexpr size_t MaxErrorsForDisallowedCharacters = 10;
                 if (disallowed_characters <= MaxErrorsForDisallowedCharacters) {
-                    validation_failure(any_errors, filepath,
-                        "file contains disallowed character 0x{:02X}. error line {}", static_cast<unsigned int>(ch),
-                        line);
+                    validation_failure(any_errors, filepath, "file contains disallowed character 0x{:02X}.",
+                        {line, columns}, static_cast<unsigned int>(ch));
                 }
             }
 
             if (ch == CR || ch == LF) {
                 if (prev == ' ' || prev == '\t') {
                     if (trailing_whitespace_lines < max_error_lines_per_file) {
-                        trailing_whitespace_line_numbers[trailing_whitespace_lines] = line;
+                        trailing_whitespace_line_numbers[trailing_whitespace_lines] = {line, columns};
                     }
                     ++trailing_whitespace_lines;
                 }
 
                 if (columns > max_line_length) {
                     if (overlength_lines < max_error_lines_per_file) {
-                        overlength_line_numbers[overlength_lines] = line;
+                        overlength_line_numbers[overlength_lines] = {line, columns};
                     }
                     ++overlength_lines;
                 }
@@ -158,40 +177,44 @@ void scan_file(
     }
 
     if (has_cr) {
-        validation_failure(any_errors, filepath, "file contains CR line endings (possibly damaged CRLF).");
+        validation_failure(any_errors, filepath, "file contains CR line endings (possibly damaged CRLF).",
+            unspecified_line_and_column);
     } else if (has_lf && has_crlf) {
-        validation_failure(any_errors, filepath, "file contains mixed line endings (both LF and CRLF).");
+        validation_failure(
+            any_errors, filepath, "file contains mixed line endings (both LF and CRLF).", unspecified_line_and_column);
     } else if (has_lf) {
-        validation_failure(any_errors, filepath, "file contains LF line endings.");
+        validation_failure(any_errors, filepath, "file contains LF line endings.", unspecified_line_and_column);
 
         if (prev != LF) {
-            validation_failure(any_errors, filepath, "file doesn't end with a newline.");
+            validation_failure(any_errors, filepath, "file doesn't end with a newline.", unspecified_line_and_column);
         } else if (previous2 == LF) {
-            validation_failure(any_errors, filepath, "file ends with multiple newlines.");
+            validation_failure(any_errors, filepath, "file ends with multiple newlines.", unspecified_line_and_column);
         }
     } else if (has_crlf) {
         if (previous2 != CR || prev != LF) {
-            validation_failure(any_errors, filepath, "file doesn't end with a newline.");
+            validation_failure(any_errors, filepath, "file doesn't end with a newline.", unspecified_line_and_column);
         } else if (previous3 == LF) {
-            validation_failure(any_errors, filepath, "file ends with multiple newlines.");
+            validation_failure(any_errors, filepath, "file ends with multiple newlines.", unspecified_line_and_column);
         }
     } else {
-        validation_failure(any_errors, filepath, "file doesn't contain any newlines.");
+        validation_failure(any_errors, filepath, "file doesn't contain any newlines.", unspecified_line_and_column);
     }
 
     if (has_utf8_bom) {
-        validation_failure(any_errors, filepath, "file contains UTF-8 BOM characters.");
+        validation_failure(any_errors, filepath, "file contains UTF-8 BOM characters.", unspecified_line_and_column);
     }
 
     if (tab_policy == TabPolicy::Forbidden && tab_characters != 0) {
-        validation_failure(any_errors, filepath, "file contains {} tab characters. Lines (up to {}): {}.",
-            tab_characters, max_error_lines_per_file, tab_characters_line_numbers | views::take(tab_characters));
+        validation_failure(any_errors, filepath, "file contains {} tab characters. Lines (up to {}):     {}.",
+            tab_characters_line_numbers[0], tab_characters, max_error_lines_per_file,
+            tab_characters_line_numbers | views::take(tab_characters));
     }
 
     if (trailing_whitespace_lines != 0) {
         validation_failure(any_errors, filepath,
-            "file contains {} lines with trailing whitespace. Lines (up to {}): {}.", trailing_whitespace_lines,
-            max_error_lines_per_file, trailing_whitespace_line_numbers | views::take(trailing_whitespace_lines));
+            "file contains {} lines with trailing whitespace. Lines (up to {}): {}.",
+            trailing_whitespace_line_numbers[0], trailing_whitespace_lines, max_error_lines_per_file,
+            trailing_whitespace_line_numbers | views::take(trailing_whitespace_lines));
     }
 
     if (overlength_lines != 0) {
@@ -211,8 +234,9 @@ void scan_file(
 
         if (ranges::binary_search(checked_extensions, filepath.extension().wstring())) {
             validation_failure(any_errors, filepath,
-                "file contains {} lines with more than {} columns. Lines (up to {}): {}.", overlength_lines,
-                max_line_length, max_error_lines_per_file, overlength_line_numbers | views::take(overlength_lines));
+                "file contains {} lines with more than {} columns. Lines and columns (up to {}): {}.",
+                overlength_line_numbers[0], overlength_lines, max_line_length, max_error_lines_per_file,
+                overlength_line_numbers | views::take(overlength_lines));
         }
     }
 }
@@ -290,11 +314,11 @@ int main() {
         constexpr size_t maximum_relative_path_length = 120;
         if (relative_path.size() > maximum_relative_path_length) {
             validation_failure(any_errors, filepath, "filepath is too long ({} characters; the limit is {}).",
-                relative_path.size(), maximum_relative_path_length);
+                unspecified_line_and_column, relative_path.size(), maximum_relative_path_length);
         }
 
         if (relative_path.find(L' ') != wstring::npos) {
-            validation_failure(any_errors, filepath, "filepath contains spaces.");
+            validation_failure(any_errors, filepath, "filepath contains spaces.", unspecified_line_and_column);
         }
 
         const wstring extension = filepath.extension().wstring();
@@ -304,7 +328,7 @@ int main() {
         }
 
         if (ranges::binary_search(bad_extensions, extension)) {
-            validation_failure(any_errors, filepath, "file should not be checked in.");
+            validation_failure(any_errors, filepath, "file should not be checked in.", unspecified_line_and_column);
             continue;
         }
 
