@@ -205,14 +205,14 @@ void scan_file(
     }
 
     if (tab_policy == TabPolicy::Forbidden && tab_characters != 0) {
-        validation_failure(any_errors, filepath, "file contains {} tab characters. Lines (up to {}):     {}.",
+        validation_failure(any_errors, filepath, "file contains {} tab characters. Lines and columns (up to {}): {}.",
             tab_characters_line_numbers[0], tab_characters, max_error_lines_per_file,
             tab_characters_line_numbers | views::take(tab_characters));
     }
 
     if (trailing_whitespace_lines != 0) {
         validation_failure(any_errors, filepath,
-            "file contains {} lines with trailing whitespace. Lines (up to {}): {}.",
+            "file contains {} lines with trailing whitespace. Lines and columns (up to {}): {}.",
             trailing_whitespace_line_numbers[0], trailing_whitespace_lines, max_error_lines_per_file,
             trailing_whitespace_line_numbers | views::take(trailing_whitespace_lines));
     }
