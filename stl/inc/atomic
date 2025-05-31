@@ -2990,7 +2990,7 @@ public:
                 break;
 
             default: // Unrecognized bit pattern
-                _CSTD abort();
+                _MSVC_STL_DOOM_FUNCTION("atomic shared_ptr invariant broken");
             }
         }
     }

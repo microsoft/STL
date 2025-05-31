@@ -1121,7 +1121,7 @@ struct _Projected_impl {
 
         using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
         [[noreturn]] indirect_result_t<_Proj&, _It> operator*() const {
-            _CSTD abort(); // shouldn't be called, see GH-3888
+            _MSVC_STL_DOOM_FUNCTION("");
         }
     };
 };
