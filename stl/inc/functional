@@ -808,7 +808,7 @@ private:
     }
 #else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
     [[noreturn]] const type_info& _Target_type() const noexcept override {
-        _MSVC_STL_DOOM_FUNCTION("this callable object should not be queried for target typeid");
+        _MSVC_STL_DOOM_FUNCTION("type info is disabled");
     }
 #endif // ^^^ !_HAS_STATIC_RTTI ^^^
 
@@ -860,7 +860,6 @@ private:
     _Mybase* _Copy(void* _Where) const override {
         if constexpr (!is_copy_constructible_v<_Callable>) { // used exclusively for packaged_task
             _MSVC_STL_DOOM_FUNCTION("this callable object should not be copied");
-
         } else if constexpr (_Is_large<_Func_impl_no_alloc>) {
             return _STD _Global_new<_Func_impl_no_alloc>(_Callee);
         } else {
@@ -890,7 +889,7 @@ private:
     }
 #else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
     [[noreturn]] const type_info& _Target_type() const noexcept override {
-        _MSVC_STL_DOOM_FUNCTION("this callable object should not be queried for target typeid");
+        _MSVC_STL_DOOM_FUNCTION("type info is disabled");
     }
 #endif // ^^^ !_HAS_STATIC_RTTI ^^^
 
