@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <format>
 #include <print>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -80,11 +81,18 @@ void scan_file(
     size_t tab_characters            = 0;
     size_t trailing_whitespace_lines = 0;
 
+    constexpr size_t max_error_lines_per_file = 8;
+
+    array<size_t, max_error_lines_per_file> overlength_line_numbers{};
+    array<size_t, max_error_lines_per_file> tab_characters_line_numbers{};
+    array<size_t, max_error_lines_per_file> trailing_whitespace_line_numbers{};
+
     unsigned char prev      = '@';
     unsigned char previous2 = '@';
     unsigned char previous3 = '@';
 
     size_t columns = 0;
+    size_t line    = 1;
 
     for (BinaryFile binary_file{filepath}; binary_file.read_next_block(buffer);) {
         for (const auto& ch : buffer) {
@@ -94,13 +102,18 @@ void scan_file(
                 } else {
                     has_cr = true;
                 }
+                ++line;
             } else {
                 if (ch == LF) {
                     has_lf = true;
+                    ++line;
                 }
             }
 
             if (ch == '\t') {
+                if (tab_characters < max_error_lines_per_file) {
+                    tab_characters_line_numbers[disallowed_characters] = line;
+                }
                 ++tab_characters;
             } else if (ch == 0xEF || ch == 0xBB || ch == 0xBF) {
                 // 0xEF, 0xBB, and 0xBF are the UTF-8 BOM characters.
@@ -112,17 +125,24 @@ void scan_file(
                 ++disallowed_characters;
                 constexpr size_t MaxErrorsForDisallowedCharacters = 10;
                 if (disallowed_characters <= MaxErrorsForDisallowedCharacters) {
-                    validation_failure(any_errors, filepath, "file contains disallowed character 0x{:02X}.",
-                        static_cast<unsigned int>(ch));
+                    validation_failure(any_errors, filepath,
+                        "file contains disallowed character 0x{:02X}. error line {}", static_cast<unsigned int>(ch),
+                        line);
                 }
             }
 
             if (ch == CR || ch == LF) {
                 if (prev == ' ' || prev == '\t') {
+                    if (trailing_whitespace_lines < max_error_lines_per_file) {
+                        trailing_whitespace_line_numbers[trailing_whitespace_lines] = line;
+                    }
                     ++trailing_whitespace_lines;
                 }
 
                 if (columns > max_line_length) {
+                    if (overlength_lines < max_error_lines_per_file) {
+                        overlength_line_numbers[overlength_lines] = line;
+                    }
                     ++overlength_lines;
                 }
                 columns = 0;
@@ -164,12 +184,14 @@ void scan_file(
     }
 
     if (tab_policy == TabPolicy::Forbidden && tab_characters != 0) {
-        validation_failure(any_errors, filepath, "file contains {} tab characters.", tab_characters);
+        validation_failure(any_errors, filepath, "file contains {} tab characters. Lines (up to {}): {}.",
+            tab_characters, max_error_lines_per_file, tab_characters_line_numbers | views::take(tab_characters));
     }
 
     if (trailing_whitespace_lines != 0) {
-        validation_failure(
-            any_errors, filepath, "file contains {} lines with trailing whitespace.", trailing_whitespace_lines);
+        validation_failure(any_errors, filepath,
+            "file contains {} lines with trailing whitespace. Lines (up to {}): {}.", trailing_whitespace_lines,
+            max_error_lines_per_file, trailing_whitespace_line_numbers | views::take(trailing_whitespace_lines));
     }
 
     if (overlength_lines != 0) {
@@ -188,8 +210,9 @@ void scan_file(
         static_assert(ranges::is_sorted(checked_extensions));
 
         if (ranges::binary_search(checked_extensions, filepath.extension().wstring())) {
-            validation_failure(any_errors, filepath, "file contains {} lines with more than {} columns.",
-                overlength_lines, max_line_length);
+            validation_failure(any_errors, filepath,
+                "file contains {} lines with more than {} columns. Lines (up to {}): {}.", overlength_lines,
+                max_line_length, max_error_lines_per_file, overlength_line_numbers | views::take(overlength_lines));
         }
     }
 }
