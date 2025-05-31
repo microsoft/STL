@@ -2532,11 +2532,11 @@ void test_conversions() {
 
     static_assert(!is_constructible_v<path, basic_string<signed char>>);
     static_assert(!is_constructible_v<path, basic_string_view<signed char>>);
-    static_assert(!is_constructible_v<path, const signed char (&)[5]>);
+    static_assert(!is_constructible_v<path, const signed char(&)[5]>);
     static_assert(!is_constructible_v<path, const signed char*>);
     static_assert(!is_constructible_v<path, basic_string<unsigned char>>);
     static_assert(!is_constructible_v<path, basic_string_view<unsigned char>>);
-    static_assert(!is_constructible_v<path, const unsigned char (&)[5]>);
+    static_assert(!is_constructible_v<path, const unsigned char(&)[5]>);
     static_assert(!is_constructible_v<path, const unsigned char*>);
     static_assert(!is_constructible_v<path, char>);
     static_assert(!is_constructible_v<path, double>);
