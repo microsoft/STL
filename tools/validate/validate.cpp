@@ -148,7 +148,7 @@ void scan_file(
                 ++disallowed_characters;
                 constexpr size_t MaxErrorsForDisallowedCharacters = 10;
                 if (disallowed_characters <= MaxErrorsForDisallowedCharacters) {
-                    validation_failure(any_errors, filepath, {line, columns},
+                    validation_failure(any_errors, filepath, {line, columns + 1},
                         "file contains disallowed character 0x{:02X}.", static_cast<unsigned int>(ch));
                 }
             }
