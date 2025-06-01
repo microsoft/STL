@@ -55,7 +55,6 @@ private:
     FILE* m_file{nullptr};
 };
 
-
 struct line_and_column_type {
     size_t line;
     size_t column;
