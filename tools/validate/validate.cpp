@@ -136,7 +136,7 @@ void scan_file(
 
             if (ch == '\t') {
                 if (tab_characters < max_error_lines_per_file) {
-                    tab_characters_line_numbers[tab_characters] = {line, columns};
+                    tab_characters_line_numbers[tab_characters] = {line, columns + 1};
                 }
                 ++tab_characters;
             } else if (ch == 0xEF || ch == 0xBB || ch == 0xBF) {
@@ -157,14 +157,14 @@ void scan_file(
             if (ch == CR || ch == LF) {
                 if (prev == ' ' || prev == '\t') {
                     if (trailing_whitespace_lines < max_error_lines_per_file) {
-                        trailing_whitespace_line_numbers[trailing_whitespace_lines] = {line, columns};
+                        trailing_whitespace_line_numbers[trailing_whitespace_lines] = {line, columns + 1};
                     }
                     ++trailing_whitespace_lines;
                 }
 
                 if (columns > max_line_length) {
                     if (overlength_lines < max_error_lines_per_file) {
-                        overlength_line_numbers[overlength_lines] = {line, columns};
+                        overlength_line_numbers[overlength_lines] = {line, columns + 1};
                     }
                     ++overlength_lines;
                 }
