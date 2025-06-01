@@ -5,6 +5,7 @@
 #include <benchmark/benchmark.h>
 #include <cstdint>
 #include <iostream>
+#include <ranges>
 #include <vector>
 
 #include "skewed_allocator.hpp"
@@ -26,7 +27,7 @@ void bm_includes(benchmark::State& state) {
     auto hay = random_vector<T, not_highly_aligned_allocator>(hay_size);
     ranges::sort(hay);
 
-    vector<T, not_highly_aligned_allocator<T>> needle(needle_size);
+    vector<T, not_highly_aligned_allocator<T>> needle;
     switch (s) {
     case needle_spread::dense:
         needle.assign(hay.begin() + hay_size / 2 - needle_size / 2, hay.begin() + hay_size / 2 + (needle_size + 1) / 2);
@@ -50,17 +51,19 @@ void bm_includes(benchmark::State& state) {
                 idx[i + 1] = idx[i] + min(dis_dis(gen) + 1, max_shift);
             }
 
-            transform(idx.begin(), idx.end(), needle.begin(), [&hay](const size_t i) { return hay[i]; });
+            needle.assign_range(idx | views::transform([&hay](const size_t i) { return hay[i]; }));
         }
         break;
 
     case needle_spread::sparse:
+        needle.resize(needle_size);
         for (size_t i = 0; i != needle_size; ++i) {
             needle[i] = hay[hay_size * i / needle_size + hay_size / (needle_size * 2)];
         }
         break;
 
     case needle_spread::sparse_random:
+        needle.resize(needle_size);
         ranges::sample(hay, needle.begin(), needle_size, mt19937{});
         break;
     }
