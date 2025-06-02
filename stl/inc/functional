@@ -1356,8 +1356,7 @@ inline constexpr size_t _Minimum_function_size = 2 * sizeof(void*);
 
 template <class _Rx, class... _Types>
 [[noreturn]] _Rx __stdcall _Function_not_callable(const _Move_only_function_data&, _Types&&...) noexcept {
-    _MSVC_STL_DOOM_FUNCTION("empty move_only_function call"); // Unlike std::function, move_only_function doesn't throw
-                                                              // bad_function_call (N4950 [func.wrap.move.inv]/2)
+    _MSVC_STL_DOOM_FUNCTION("empty move_only_function call (N5008 [func.wrap.move.inv]/2)");
     _STL_UNREACHABLE; // no return value available for "continue on error"
 }
 
