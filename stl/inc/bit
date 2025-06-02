@@ -84,6 +84,12 @@ _NODISCARD constexpr int countl_zero(_Ty _Val) noexcept;
 
 _EXPORT_STD template <_Standard_unsigned_integral _Ty>
 _NODISCARD constexpr bool has_single_bit(const _Ty _Val) noexcept {
+#if _POPCNT_INTRINSICS_ALWAYS_AVAILABLE
+    if (!_STD is_constant_evaluated()) {
+        return _Unchecked_popcount(_Val) == 1;
+    }
+#endif // ^^^ _POPCNT_INTRINSICS_ALWAYS_AVAILABLE ^^^
+
     return (_Val ^ (_Val - 1)) > _Val - 1;
 }
 
