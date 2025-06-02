@@ -1122,6 +1122,7 @@ struct _Projected_impl {
         using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
         [[noreturn]] indirect_result_t<_Proj&, _It> operator*() const {
             _MSVC_STL_DOOM_FUNCTION("");
+            _STL_UNREACHABLE; // no return value available for "continue on error"
         }
     };
 };
