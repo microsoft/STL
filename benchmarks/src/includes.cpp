@@ -15,7 +15,7 @@ using namespace std;
 
 enum class alg_type { std_fn, rng };
 
-enum needle_spread { dense, dense_random, sparse, sparse_random };
+enum class needle_spread { dense, dense_random, sparse, sparse_random };
 
 template <class T, alg_type Alg>
 void bm_includes(benchmark::State& state) {
