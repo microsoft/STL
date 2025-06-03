@@ -100,11 +100,11 @@ void common_args(auto bm) {
         {needle_spread::dense, needle_spread::dense_random, needle_spread::sparse, needle_spread::sparse_random}) {
         for (const auto& expected_match : {true, false}) {
             for (const auto& needle_size : {3, 22, 105, 1504, 2750}) {
-                bm->Args({3000, needle_size, spread, expected_match});
+                bm->Args({3000, needle_size, static_cast<underlying_type_t<needle_spread>>(spread), expected_match});
             }
 
             for (const auto& needle_size : {3, 22, 105, 290}) {
-                bm->Args({300, needle_size, spread, expected_match});
+                bm->Args({300, needle_size, static_cast<underlying_type_t<needle_spread>>(spread), expected_match});
             }
         }
     }
