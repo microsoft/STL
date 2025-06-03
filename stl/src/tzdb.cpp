@@ -567,16 +567,16 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
 
     _Info->_Abbrev = _Allocate_wide_to_narrow(_Abbrev.get(), _Abbrev_len, _Info->_Err);
     if (_Info->_Abbrev == nullptr) {
-        _STD unique_ptr<char[]> _Fallback_abbrev{new (_STD nothrow) char[]{"+0000"}};
-
-        if (_Fallback_abbrev == nullptr) {
-            return nullptr;
-        }
-
         const auto _Abs_offset        = _Info->_Offset < 0 ? -_Info->_Offset : _Info->_Offset;
         const auto _Offset_in_minutes = _Abs_offset / (60 * 1000);
         const auto _Hours             = _Offset_in_minutes / 60;
         const auto _Mins              = _Offset_in_minutes % 60;
+
+        _STD unique_ptr<char[]> _Fallback_abbrev{new (_STD nothrow) char[_Mins == 0 ? 4 : 6]};
+
+        if (_Fallback_abbrev == nullptr) {
+            return nullptr;
+        }
 
         _Fallback_abbrev[0] = _Info->_Offset < 0 ? '-' : '+';
         _Fallback_abbrev[1] = static_cast<char>('0' + _Hours / 10);
@@ -587,6 +587,7 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
         } else {
             _Fallback_abbrev[3] = static_cast<char>('0' + _Mins / 10);
             _Fallback_abbrev[4] = static_cast<char>('0' + _Mins % 10);
+            _Fallback_abbrev[5] = '\0';
         }
 
         _Info->_Err    = __std_tzdb_error::_Success;
