@@ -567,7 +567,7 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
 
     _Info->_Abbrev = _Allocate_wide_to_narrow(_Abbrev.get(), _Abbrev_len, _Info->_Err);
     if (_Info->_Abbrev == nullptr) {
-        const auto _Fallback_abbrev = new (_STD nothrow) char[]{"+0000"};
+        _STD unique_ptr<char[]> _Fallback_abbrev{new (_STD nothrow) char[]{"+0000"}};
 
         if (_Fallback_abbrev == nullptr) {
             return nullptr;
@@ -590,7 +590,7 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
         }
 
         _Info->_Err    = __std_tzdb_error::_Success;
-        _Info->_Abbrev = _Fallback_abbrev;
+        _Info->_Abbrev = _Fallback_abbrev.release();
     }
 
     return _Info.release();
