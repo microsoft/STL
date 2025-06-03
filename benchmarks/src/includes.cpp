@@ -74,7 +74,7 @@ void bm_includes(benchmark::State& state) {
 
     if (!expected_match) {
         const T v = needle[needle_size / 2];
-        const T r = static_cast<T>(static_cast<make_unsigned_t<T>>(v + 1));
+        const T r = static_cast<T>(static_cast<make_unsigned_t<T>>(v) + 1);
         ranges::replace(hay, v, r);
     }
 
