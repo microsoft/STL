@@ -827,7 +827,7 @@ namespace {
                 reinterpret_cast<HANDLE>(_Handle), FileBasicInfo, &_Ex_info, sizeof(_Ex_info))) {
             _Result._Error = __std_win_error{GetLastError()};
         } else if (!(_Ex_info.FileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-            _Result._Error = __std_win_error::_Max;
+            _Result._Error = __std_win_error::_Directory_name_is_invalid;
         }
 
         __std_fs_close_handle(_Handle);
