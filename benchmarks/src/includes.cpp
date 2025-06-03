@@ -23,16 +23,16 @@ enum class needle_spread { dense, dense_random, sparse, sparse_random };
 
 template <class T, alg_type Alg>
 void bm_includes(benchmark::State& state) {
-    const auto hay_size    = static_cast<size_t>(state.range(0));
-    const auto needle_size = static_cast<size_t>(state.range(1));
-    const auto s           = static_cast<needle_spread>(state.range(2));
-    const auto m           = static_cast<bool>(state.range(3));
+    const auto hay_size       = static_cast<size_t>(state.range(0));
+    const auto needle_size    = static_cast<size_t>(state.range(1));
+    const auto spread         = static_cast<needle_spread>(state.range(2));
+    const auto expected_match = static_cast<bool>(state.range(3));
 
     auto hay = random_vector<T, not_highly_aligned_allocator>(hay_size);
     ranges::sort(hay);
 
     vector<T, not_highly_aligned_allocator<T>> needle;
-    switch (s) {
+    switch (spread) {
     case needle_spread::dense:
         needle.assign(hay.begin() + hay_size / 2 - needle_size / 2, hay.begin() + hay_size / 2 + (needle_size + 1) / 2);
         break;
@@ -72,7 +72,7 @@ void bm_includes(benchmark::State& state) {
         break;
     }
 
-    if (!m) {
+    if (!expected_match) {
         const T v = needle[needle_size / 2];
         const T r = static_cast<T>(static_cast<make_unsigned_t<T>>(v + 1));
         ranges::replace(hay, v, r);
@@ -88,7 +88,7 @@ void bm_includes(benchmark::State& state) {
             found = includes(hay.begin(), hay.end(), needle.begin(), needle.end());
         }
         benchmark::DoNotOptimize(found);
-        if (found != m) {
+        if (found != expected_match) {
             cerr << "Unexpected 'includes' result: " << found << '\n';
             abort();
         }
@@ -96,15 +96,15 @@ void bm_includes(benchmark::State& state) {
 }
 
 void common_args(auto bm) {
-    for (const auto& s :
+    for (const auto& spread :
         {needle_spread::dense, needle_spread::dense_random, needle_spread::sparse, needle_spread::sparse_random}) {
-        for (const auto& m : {true, false}) {
+        for (const auto& expected_match : {true, false}) {
             for (const auto& needle_size : {3, 22, 105, 1504, 2750}) {
-                bm->Args({3000, needle_size, s, m});
+                bm->Args({3000, needle_size, spread, expected_match});
             }
 
             for (const auto& needle_size : {3, 22, 105, 290}) {
-                bm->Args({300, needle_size, s, m});
+                bm->Args({300, needle_size, spread, expected_match});
             }
         }
     }
