@@ -10260,20 +10260,16 @@ namespace ranges {
                     if (_First1 == _Last1) {
                         return false;
                     }
-
-                    continue;
-                }
-
-                if (_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
+                } else if (_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
                     return false;
-                }
-
-                ++_First1;
-                ++_First2;
-                if (_First2 == _Last2) {
-                    return true;
-                } else if (_First1 == _Last1) {
-                    return false;
+                } else {
+                    ++_First1;
+                    ++_First2;
+                    if (_First2 == _Last2) {
+                        return true;
+                    } else if (_First1 == _Last1) {
+                        return false;
+                    }
                 }
             }
         }
