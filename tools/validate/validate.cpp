@@ -116,8 +116,8 @@ void scan_file(
     unsigned char previous2 = '@';
     unsigned char previous3 = '@';
 
-    size_t columns = 0;
     size_t lines   = 0;
+    size_t columns = 0;
 
     for (BinaryFile binary_file{filepath}; binary_file.read_next_block(buffer);) {
         for (const auto& ch : buffer) {
