@@ -67,7 +67,7 @@ namespace std {
             return ctx.begin();
         }
 
-        template <typename FormatContext>
+        template <class FormatContext>
         auto format(const line_and_column& lc, FormatContext& ctx) const {
             return format_to(ctx.out(), "{}:{}", lc.line, lc.column);
         }
