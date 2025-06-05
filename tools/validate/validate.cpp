@@ -178,6 +178,7 @@ void scan_file(
 
     if (prev == CR) { // file ends with CR
         has_cr = true;
+        ++lines;
     }
 
     if (has_cr) {
