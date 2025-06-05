@@ -75,11 +75,11 @@ namespace std {
 } // namespace std
 
 template <class... Args>
-void validation_failure(bool& any_errors, const filesystem::path& filepath, line_and_column_type line_and_column,
+void validation_failure(bool& any_errors, const filesystem::path& filepath, const line_and_column_type& lc,
     format_string<type_identity_t<Args>...> fmt, Args&&... args) {
     any_errors = true;
     print(stderr, "##vso[task.logissue type=error;sourcepath={};linenumber={};columnnumber={}]Validation failed: ",
-        filepath.string(), line_and_column.line, line_and_column.column);
+        filepath.string(), lc.line, lc.column);
     println(stderr, fmt, forward<Args>(args)...);
 }
 
