@@ -109,7 +109,7 @@ void scan_file(
     constexpr size_t max_error_lines_per_file = 8;
 
     array<line_and_column, max_error_lines_per_file> overlength_line_numbers{};
-    array<line_and_column, max_error_lines_per_file> tab_characters_line_numbers{};
+    array<line_and_column, max_error_lines_per_file> tab_character_line_numbers{};
     array<line_and_column, max_error_lines_per_file> trailing_whitespace_line_numbers{};
 
     unsigned char prev      = '@';
@@ -137,7 +137,7 @@ void scan_file(
 
             if (ch == '\t') {
                 if (tab_characters < max_error_lines_per_file) {
-                    tab_characters_line_numbers[tab_characters] = {lines + 1, columns + 1};
+                    tab_character_line_numbers[tab_characters] = {lines + 1, columns + 1};
                 }
                 ++tab_characters;
             } else if (ch == 0xEF || ch == 0xBB || ch == 0xBF) {
@@ -208,9 +208,9 @@ void scan_file(
     }
 
     if (tab_policy == TabPolicy::Forbidden && tab_characters != 0) {
-        validation_failure(any_errors, filepath, tab_characters_line_numbers[0],
+        validation_failure(any_errors, filepath, tab_character_line_numbers[0],
             "file contains {} tab characters. Lines and columns (up to {}): {}.", tab_characters,
-            max_error_lines_per_file, tab_characters_line_numbers | views::take(tab_characters));
+            max_error_lines_per_file, tab_character_line_numbers | views::take(tab_characters));
     }
 
     if (trailing_whitespace_lines != 0) {
