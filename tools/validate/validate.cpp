@@ -60,17 +60,19 @@ struct line_and_column_type {
     size_t column;
 };
 
-template <>
-struct std::formatter<line_and_column_type> {
-    constexpr auto parse(std::format_parse_context& ctx) {
-        return ctx.begin();
-    }
+namespace std {
+    template <>
+    struct formatter<line_and_column_type> {
+        constexpr auto parse(format_parse_context& ctx) {
+            return ctx.begin();
+        }
 
-    template <typename FormatContext>
-    auto format(const line_and_column_type& lc, FormatContext& ctx) const {
-        return std::format_to(ctx.out(), "{}:{}", lc.line, lc.column);
-    }
-};
+        template <typename FormatContext>
+        auto format(const line_and_column_type& lc, FormatContext& ctx) const {
+            return format_to(ctx.out(), "{}:{}", lc.line, lc.column);
+        }
+    };
+} // namespace std
 
 template <class... Args>
 void validation_failure(bool& any_errors, const filesystem::path& filepath, line_and_column_type line_and_column,
