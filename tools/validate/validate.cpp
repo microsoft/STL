@@ -147,12 +147,11 @@ void scan_file(
             } else if (ch != CR && ch != LF && !(ch >= 0x20 && ch <= 0x7E)) {
                 // [0x20, 0x7E] are the printable characters, including the space character.
                 // https://en.wikipedia.org/wiki/ASCII#Printable_characters
-                ++disallowed_characters;
-                constexpr size_t MaxErrorsForDisallowedCharacters = 10;
-                if (disallowed_characters <= MaxErrorsForDisallowedCharacters) {
+                if (disallowed_characters < max_error_lines_per_file) {
                     validation_failure(any_errors, filepath, {lines + 1, columns + 1},
                         "file contains disallowed character 0x{:02X}.", static_cast<unsigned int>(ch));
                 }
+                ++disallowed_characters;
             }
 
             if (ch == CR || ch == LF) {
