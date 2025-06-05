@@ -117,7 +117,7 @@ void scan_file(
     unsigned char previous3 = '@';
 
     size_t columns = 0;
-    size_t line    = 1;
+    size_t lines   = 0;
 
     for (BinaryFile binary_file{filepath}; binary_file.read_next_block(buffer);) {
         for (const auto& ch : buffer) {
@@ -127,17 +127,17 @@ void scan_file(
                 } else {
                     has_cr = true;
                 }
-                ++line;
+                ++lines;
             } else {
                 if (ch == LF) {
                     has_lf = true;
-                    ++line;
+                    ++lines;
                 }
             }
 
             if (ch == '\t') {
                 if (tab_characters < max_error_lines_per_file) {
-                    tab_characters_line_numbers[tab_characters] = {line, columns + 1};
+                    tab_characters_line_numbers[tab_characters] = {lines + 1, columns + 1};
                 }
                 ++tab_characters;
             } else if (ch == 0xEF || ch == 0xBB || ch == 0xBF) {
@@ -150,7 +150,7 @@ void scan_file(
                 ++disallowed_characters;
                 constexpr size_t MaxErrorsForDisallowedCharacters = 10;
                 if (disallowed_characters <= MaxErrorsForDisallowedCharacters) {
-                    validation_failure(any_errors, filepath, {line, columns + 1},
+                    validation_failure(any_errors, filepath, {lines + 1, columns + 1},
                         "file contains disallowed character 0x{:02X}.", static_cast<unsigned int>(ch));
                 }
             }
@@ -158,14 +158,14 @@ void scan_file(
             if (ch == CR || ch == LF) {
                 if (prev == ' ' || prev == '\t') {
                     if (trailing_whitespace_lines < max_error_lines_per_file) {
-                        trailing_whitespace_line_numbers[trailing_whitespace_lines] = {line, columns + 1};
+                        trailing_whitespace_line_numbers[trailing_whitespace_lines] = {lines + 1, columns + 1};
                     }
                     ++trailing_whitespace_lines;
                 }
 
                 if (columns > max_line_length) {
                     if (overlength_lines < max_error_lines_per_file) {
-                        overlength_line_numbers[overlength_lines] = {line, columns + 1};
+                        overlength_line_numbers[overlength_lines] = {lines + 1, columns + 1};
                     }
                     ++overlength_lines;
                 }
