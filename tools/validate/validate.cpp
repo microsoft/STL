@@ -56,8 +56,8 @@ private:
 };
 
 struct line_and_column {
-    size_t line;
-    size_t column;
+    size_t line   = 1;
+    size_t column = 1;
 };
 
 namespace std {
