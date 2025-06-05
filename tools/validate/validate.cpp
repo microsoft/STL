@@ -55,27 +55,27 @@ private:
     FILE* m_file{nullptr};
 };
 
-struct line_and_column_type {
+struct line_and_column {
     size_t line;
     size_t column;
 };
 
 namespace std {
     template <>
-    struct formatter<line_and_column_type> {
+    struct formatter<line_and_column> {
         constexpr auto parse(format_parse_context& ctx) {
             return ctx.begin();
         }
 
         template <typename FormatContext>
-        auto format(const line_and_column_type& lc, FormatContext& ctx) const {
+        auto format(const line_and_column& lc, FormatContext& ctx) const {
             return format_to(ctx.out(), "{}:{}", lc.line, lc.column);
         }
     };
 } // namespace std
 
 template <class... Args>
-void validation_failure(bool& any_errors, const filesystem::path& filepath, const line_and_column_type& lc,
+void validation_failure(bool& any_errors, const filesystem::path& filepath, const line_and_column& lc,
     format_string<type_identity_t<Args>...> fmt, Args&&... args) {
     any_errors = true;
     print(stderr, "##vso[task.logissue type=error;sourcepath={};linenumber={};columnnumber={}]Validation failed: ",
@@ -108,9 +108,9 @@ void scan_file(
 
     constexpr size_t max_error_lines_per_file = 8;
 
-    array<line_and_column_type, max_error_lines_per_file> overlength_line_numbers{};
-    array<line_and_column_type, max_error_lines_per_file> tab_characters_line_numbers{};
-    array<line_and_column_type, max_error_lines_per_file> trailing_whitespace_line_numbers{};
+    array<line_and_column, max_error_lines_per_file> overlength_line_numbers{};
+    array<line_and_column, max_error_lines_per_file> tab_characters_line_numbers{};
+    array<line_and_column, max_error_lines_per_file> trailing_whitespace_line_numbers{};
 
     unsigned char prev      = '@';
     unsigned char previous2 = '@';
