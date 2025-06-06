@@ -60,6 +60,11 @@ struct line_and_column {
     size_t column = 1;
 };
 
+struct character_line_column {
+    unsigned char ch = '?';
+    line_and_column lc;
+};
+
 namespace std {
     template <>
     struct formatter<line_and_column> {
@@ -70,6 +75,18 @@ namespace std {
         template <class FormatContext>
         auto format(const line_and_column& lc, FormatContext& ctx) const {
             return format_to(ctx.out(), "{}:{}", lc.line, lc.column);
+        }
+    };
+
+    template <>
+    struct formatter<character_line_column> {
+        constexpr auto parse(format_parse_context& ctx) {
+            return ctx.begin();
+        }
+
+        template <class FormatContext>
+        auto format(const character_line_column& clc, FormatContext& ctx) const {
+            return format_to(ctx.out(), "0x{:02X}@{}", static_cast<unsigned int>(clc.ch), clc.lc);
         }
     };
 } // namespace std
@@ -111,6 +128,7 @@ void scan_file(
     array<line_and_column, max_error_lines_per_file> overlength_locations{};
     array<line_and_column, max_error_lines_per_file> tab_character_locations{};
     array<line_and_column, max_error_lines_per_file> trailing_whitespace_locations{};
+    array<character_line_column, max_error_lines_per_file> disallowed_character_locations{};
 
     unsigned char prev      = '@';
     unsigned char previous2 = '@';
@@ -148,8 +166,7 @@ void scan_file(
                 // [0x20, 0x7E] are the printable characters, including the space character.
                 // https://en.wikipedia.org/wiki/ASCII#Printable_characters
                 if (disallowed_characters < max_error_lines_per_file) {
-                    validation_failure(any_errors, filepath, {lines + 1, columns + 1},
-                        "file contains disallowed character 0x{:02X}.", static_cast<unsigned int>(ch));
+                    disallowed_character_locations[disallowed_characters] = {ch, {lines + 1, columns + 1}};
                 }
                 ++disallowed_characters;
             }
@@ -240,6 +257,12 @@ void scan_file(
                 "file contains {} lines with more than {} columns. Lines and columns (up to {}): {}.", overlength_lines,
                 max_line_length, max_error_lines_per_file, overlength_locations | views::take(overlength_lines));
         }
+    }
+
+    if (disallowed_characters != 0) {
+        validation_failure(any_errors, filepath, disallowed_character_locations[0].lc,
+            "file contains {} disallowed characters. Locations (up to {}): {}.", disallowed_characters,
+            max_error_lines_per_file, disallowed_character_locations | views::take(disallowed_characters));
     }
 }
 
