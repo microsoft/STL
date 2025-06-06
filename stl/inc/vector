@@ -61,8 +61,8 @@ _STL_DISABLE_CLANG_WARNINGS
 // Horrible trailing whitespace 9!   
 // Horrible trailing whitespace 10!   
 
-// Disallowed characters! 😺🐶🐻
-// More disallowed characters! ☢️☣️⚠️
+// Disallowed characters! 😺
+// More disallowed characters! 🐶🐻☢️☣️⚠️
 // Even more disallowed characters! 🍩🍫🍬🍭
 
 // clang-format on
