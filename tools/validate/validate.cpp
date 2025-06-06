@@ -103,7 +103,9 @@ void validation_failure(bool& any_errors, const filesystem::path& filepath, cons
 template <class... Args>
 void validation_failure(
     bool& any_errors, const filesystem::path& filepath, format_string<type_identity_t<Args>...> fmt, Args&&... args) {
-    validation_failure(any_errors, filepath, {1, 1}, fmt, forward<Args>(args)...);
+    any_errors = true;
+    print(stderr, "##vso[task.logissue type=error;sourcepath={}]Validation failed: ", filepath.string());
+    println(stderr, fmt, forward<Args>(args)...);
 }
 
 enum class TabPolicy : bool { Forbidden, Allowed };
