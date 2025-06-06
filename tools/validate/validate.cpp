@@ -86,7 +86,7 @@ namespace std {
 
         template <class FormatContext>
         auto format(const character_line_column& clc, FormatContext& ctx) const {
-            return format_to(ctx.out(), "0x{:02X}@{}", static_cast<unsigned int>(clc.ch), clc.lc);
+            return format_to(ctx.out(), "0x{:02X} @ {}", static_cast<unsigned int>(clc.ch), clc.lc);
         }
     };
 } // namespace std
