@@ -29,12 +29,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-template <class _Rep, class _Period>
-_NODISCARD unsigned long long _Semaphore_deadline(const chrono::duration<_Rep, _Period>& _Rel_time) {
-    return __std_atomic_wait_get_deadline(
-        chrono::duration_cast<chrono::duration<unsigned long long, milli>>(_Rel_time).count());
-}
-
 template <class _Clock, class _Duration>
 _NODISCARD unsigned long _Semaphore_remaining_timeout(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
     const auto _Now = _Clock::now();
@@ -145,11 +139,11 @@ public:
 
     template <class _Rep, class _Period>
     _NODISCARD_TRY_CHANGE_STATE bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
-        auto _Deadline     = _Semaphore_deadline(_Rel_time);
+        auto _Deadline     = _STD chrono::steady_clock::now() + _Rel_time;
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
             while (_Current == 0) {
-                const auto _Remaining_timeout = __std_atomic_wait_get_remaining_timeout(_Deadline);
+                const auto _Remaining_timeout = _Semaphore_remaining_timeout(_Deadline);
                 if (_Remaining_timeout == 0) {
                     return false;
                 }
@@ -257,7 +251,7 @@ public:
 
     template <class _Rep, class _Period>
     _NODISCARD_TRY_CHANGE_STATE bool try_acquire_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
-        auto _Deadline = _Semaphore_deadline(_Rel_time);
+        auto _Deadline = _STD chrono::steady_clock::now() + _Rel_time;
         for (;;) {
             // "happens after release" ordering is provided by this exchange, so loads and waits can be relaxed
             // TRANSITION, GH-1133: should be memory_order_acquire
@@ -267,7 +261,7 @@ public:
             }
             _STL_VERIFY(_Prev == 0, "Invariant: semaphore counter is non-negative and doesn't exceed max(), "
                                     "possibly caused by memory corruption");
-            const auto _Remaining_timeout = __std_atomic_wait_get_remaining_timeout(_Deadline);
+            const auto _Remaining_timeout = _Semaphore_remaining_timeout(_Deadline);
             if (_Remaining_timeout == 0) {
                 return false;
             }
