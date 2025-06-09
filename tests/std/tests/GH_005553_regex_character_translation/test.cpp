@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cstddef>
+#include <cstdio>
 #include <regex>
 #include <string>
+#include <type_traits>
 
 #include <test_regex_support.hpp>
 
