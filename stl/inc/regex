@@ -4071,10 +4071,10 @@ template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 _BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(_BidIt _First_arg, _BidIt _Last, _Node_base* _Node_arg) {
     // skip until possible match
     // assumes --_First_arg is valid
-    constexpr char _Line_terminators_char[]       = {static_cast<char>(_Meta_cr), static_cast<char>(_Meta_nl)};
-    constexpr wchar_t _Line_terminators_wchar_t[] = {static_cast<wchar_t>(_Meta_cr), static_cast<wchar_t>(_Meta_nl),
-        static_cast<wchar_t>(_Meta_ls), static_cast<wchar_t>(_Meta_ps)};
-    _Node_base* _Nx                               = _Node_arg ? _Node_arg : _Rep;
+    static constexpr char _Line_terminators_char[]       = {static_cast<char>(_Meta_cr), static_cast<char>(_Meta_nl)};
+    static constexpr wchar_t _Line_terminators_wchar_t[] = {static_cast<wchar_t>(_Meta_cr),
+        static_cast<wchar_t>(_Meta_nl), static_cast<wchar_t>(_Meta_ls), static_cast<wchar_t>(_Meta_ps)};
+    _Node_base* _Nx                                      = _Node_arg ? _Node_arg : _Rep;
 
     while (_First_arg != _Last && _Nx) { // check current node
         switch (_Nx->_Kind) { // handle current node's type
