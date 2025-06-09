@@ -477,7 +477,8 @@ void test_VSO_225160_match_bol_flag() {
             beginCd.should_search_fail("ab" + line_terminator + "xcdefg", match_not_bol);
         }
 
-        for (wstring line_terminator : {L"\u2028", L"\u2029"}) { // U+2028 LINE SEPARATOR, U+2029 PARAGRAPH SEPARATOR
+        for (wstring line_terminator :
+            {L"\n", L"\r", L"\u2028", L"\u2029"}) { // U+2028 LINE SEPARATOR, U+2029 PARAGRAPH SEPARATOR
             const test_wregex emptyAnchor(&g_regexTester, LR"(^)", syntax);
             emptyAnchor.should_search_match(L"", L"");
             emptyAnchor.should_search_fail(L"", match_not_bol);
@@ -522,7 +523,8 @@ void test_VSO_225160_match_eol_flag() {
             cdEnd.should_search_fail("abcdx" + line_terminator + "efg", match_not_eol);
         }
 
-        for (wstring line_terminator : {L"\u2028", L"\u2029"}) { // U+2028 LINE SEPARATOR, U+2029 PARAGRAPH SEPARATOR
+        for (wstring line_terminator :
+            {L"\n", L"\r", L"\u2028", L"\u2029"}) { // U+2028 LINE SEPARATOR, U+2029 PARAGRAPH SEPARATOR
             const test_wregex emptyAnchor(&g_regexTester, LR"($)", syntax);
             emptyAnchor.should_search_match(L"", L"");
             emptyAnchor.should_search_fail(L"", match_not_eol);
