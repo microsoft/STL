@@ -39,8 +39,8 @@ _STL_DISABLE_CLANG_WARNINGS
 // * For POSIX grammars, matching is non-multiline, and regex_constants::multiline is ignored (N5008 [tab:re.synopt]).
 // Defining this to 1 requests legacy behavior:
 // * For all grammars, matching is multiline, and regex_constants::multiline is redundant.
-#ifndef _REGEX_MAKE_MULTILINE_MODE_DEFAULT
-#define _REGEX_MAKE_MULTILINE_MODE_DEFAULT 0
+#ifndef _REGEX_LEGACY_MULTILINE_MODE
+#define _REGEX_LEGACY_MULTILINE_MODE 0
 #endif
 
 #ifndef _REGEX_MAX_COMPLEXITY_COUNT
@@ -1679,13 +1679,13 @@ public:
         }
 
 // sanitize multiline mode setting
-#if _REGEX_MAKE_MULTILINE_MODE_DEFAULT
+#if _REGEX_LEGACY_MULTILINE_MODE
         _Sflags |= regex_constants::multiline; // old matcher applied multiline mode for all grammars
-#else // ^^^ _REGEX_MAKE_MULTILINE_MODE_DEFAULT / !_REGEX_MAKE_MULTILINE_MODE_DEFAULT vvv
+#else // ^^^ _REGEX_LEGACY_MULTILINE_MODE / !_REGEX_LEGACY_MULTILINE_MODE vvv
         if (_Sflags & regex_constants::_Any_posix) { // multiline mode is ECMAScript-only
             _Sflags &= ~regex_constants::multiline;
         }
-#endif // ^^^ !_REGEX_MAKE_MULTILINE_MODE_DEFAULT ^^^
+#endif // ^^^ !_REGEX_LEGACY_MULTILINE_MODE ^^^
     }
 
     void _Setf(regex_constants::match_flag_type _Mf) { // set specified flags
