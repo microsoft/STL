@@ -4113,7 +4113,7 @@ _BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(_BidIt _First_arg
                 _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
                 for (; _First_arg != _Last; ++_First_arg) { // look for starting match
                     _BidIt _Next = _First_arg;
-                    if (_Compare_translate_left(
+                    if (_STD _Compare_translate_left(
                             _First_arg, ++_Next, _Node->_Data._Str(), _Node->_Data._Str() + 1, _Traits, _Sflags)
                         != _First_arg) {
                         break;
