@@ -387,7 +387,7 @@ void test_VSO_180466_regex_search_missing_Unchecked_call() {
 }
 
 void test_VSO_226914_match_prev_avail() {
-    // test assumes multiline mode
+    // test exercises multiline mode
     const char bol_haystack[] = {'\n', 'a'};
     const regex bol_anchor(R"(^a)", regex_constants::multiline);
     assert(regex_match(bol_haystack + 1, end(bol_haystack), bol_anchor));

@@ -454,7 +454,7 @@ void test_VSO_208146_regex_smoke_test_rewritten_explicit_quantifier() {
 
 void test_VSO_225160_match_bol_flag() {
     // After implementation of LWG-2503/GH-73: These tests make sure that
-    // we consistently implement "multiline" option for ECMAScript
+    // we consistently implement the "multiline" option for ECMAScript
     // (whether the ECMAScript flag is included or not)
     for (syntax_option_type syntax : {multiline, ECMAScript | multiline}) {
         for (string line_terminator : {"\n", "\r"}) {
