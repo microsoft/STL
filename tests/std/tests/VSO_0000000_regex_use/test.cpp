@@ -307,8 +307,8 @@ void test_dev10_897466_regex_should_support_more_than_31_capture_groups() {
 }
 
 void test_regex_should_throw_for_lookbehind() {
-    g_regexTester.should_throw(R"((?<=abc))", error_syntax);
-    g_regexTester.should_throw(R"((?<!abc))", error_syntax);
+    g_regexTester.should_throw(R"((?<=abc))", error_badrepeat);
+    g_regexTester.should_throw(R"((?<!abc))", error_badrepeat);
 }
 
 void test_regex_simple_loop_detection_enters_alternations_and_assertions() {

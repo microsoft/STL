@@ -165,7 +165,7 @@ namespace regex_constants {
         error_complexity,
         error_stack,
         _Error_parse, // TRANSITION, was error_parse, keeping behavior
-        error_syntax
+        _Error_syntax // TRANSITION, was error_syntax, keeping behavior
     };
 } // namespace regex_constants
 
@@ -575,7 +575,7 @@ private:
                    "could match the specified character sequence.";
         case regex_constants::_Error_parse: // TRANSITION, keeping behavior
             return "regex_error(error_parse)";
-        case regex_constants::error_syntax:
+        case regex_constants::_Error_syntax:
             return "regex_error(error_syntax)";
         default:
             return "regex_error";
@@ -4167,6 +4167,9 @@ _BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(_BidIt _First_arg
                 // GH-5452: If this node has two or more branches,
                 // examining all these branches has quadratic worst-case complexity.
                 // Thus, we only continue if this node has a single branch only.
+                // TRANSITION, ABI: After GH-5539, the parser no longer generates single-branch _N_if nodes.
+                // But we have to retain this special handling to avoid performance regression
+                // when an old parser gets mixed with a new matcher.
                 _Node_if* _Node = static_cast<_Node_if*>(_Nx);
 
                 if (_Node->_Child) {
@@ -4638,7 +4641,7 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Wrapped_disjunction() { // add disjunc
             --_Disj_count;
             return false;
         } else {
-            _Error(regex_constants::error_syntax);
+            _Error(regex_constants::error_badrepeat);
         }
     } else if (_Flags & regex_constants::nosubs) {
         _Do_noncapture_group();
@@ -4945,15 +4948,17 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Disjunction() { // check for valid dis
         _Nfa._End_group(_Pos3);
     }
 
-    _Node_base* _Pos2 = _Nfa._Begin_if(_Pos1);
-    while (_Mchar == _Meta_bar) { // append terms as long as we keep finding | characters
-        _Next();
-        if (!_Alternative()) { // zero-length trailing alternative
-            _Node_base* _Pos3 = _Nfa._Begin_group();
-            _Nfa._End_group(_Pos3);
-        }
+    if (_Mchar == _Meta_bar) {
+        _Node_base* _Pos2 = _Nfa._Begin_if(_Pos1);
+        do { // append terms as long as we keep finding | characters
+            _Next();
+            if (!_Alternative()) { // zero-length trailing alternative
+                _Node_base* _Pos3 = _Nfa._Begin_group();
+                _Nfa._End_group(_Pos3);
+            }
 
-        _Nfa._Else_if(_Pos1, _Pos2);
+            _Nfa._Else_if(_Pos1, _Pos2);
+        } while (_Mchar == _Meta_bar);
     }
 }
 
@@ -5021,6 +5026,17 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
                 }
             }
             break;
+
+        case _N_group:
+        case _N_capture:
+            // TRANSITION, requires more research to decide on the subset of loops that we can make simple:
+            // - Simple mode can square the running time when matching a regex to an input string in the current matcher
+            // - The optimal subset of simple loops for a non-recursive rewrite of the matcher aren't clear yet
+            if (_Outer_rep) {
+                _Outer_rep->_Simple_loop = 0;
+            }
+            break;
+
         case _N_none:
         case _N_nop:
         case _N_bol:
@@ -5028,10 +5044,8 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
         case _N_wbound:
         case _N_dot:
         case _N_str:
-        case _N_group:
         case _N_end_group:
         case _N_end_assert:
-        case _N_capture:
         case _N_end_capture:
         case _N_back:
         case _N_endif:
@@ -5049,9 +5063,7 @@ _Root_node* _Parser2<_FwdIt, _Elem, _RxTraits>::_Compile() { // compile regular 
     _Tidy_guard<decltype(_Nfa)> _Guard{_STD addressof(_Nfa)};
     _Node_base* _Pos1 = _Nfa._Begin_capture_group(0);
     _Disjunction();
-    if (_Pat != _End) {
-        _Error(regex_constants::error_syntax);
-    }
+    _STL_INTERNAL_CHECK(_Pat == _End);
 
     _Nfa._End_group(_Pos1);
     _Res         = _Nfa._End_pattern();
