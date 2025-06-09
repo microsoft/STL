@@ -15,7 +15,7 @@ using namespace std::regex_constants;
 regex_fixture g_regexTester;
 
 template <class charT>
-class nonidempotent_translate_regex_traits : regex_traits<charT> {
+class nonidempotent_translate_regex_traits : private regex_traits<charT> {
 private:
     using rx_traits = regex_traits<charT>;
 
