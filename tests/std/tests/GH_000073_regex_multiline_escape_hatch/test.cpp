@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _REGEX_MAKE_MULTILINE_MODE_DEFAULT
+#define _REGEX_MAKE_MULTILINE_MODE_DEFAULT 1
 
 #include <cstddef>
 #include <cstdio>

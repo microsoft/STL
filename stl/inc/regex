@@ -33,6 +33,16 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// Controls whether LWG-2503 "multiline option should be added to syntax_option_type" is implemented.
+// Defining this to 0 requests Standard behavior:
+// * For ECMAScript, matching is non-multiline by default, but regex_constants::multiline can be requested.
+// * For POSIX grammars, matching is non-multiline, and regex_constants::multiline is ignored (N5008 [tab:re.synopt]).
+// Defining this to 1 requests legacy behavior:
+// * For all grammars, matching is multiline, and regex_constants::multiline is redundant.
+#ifndef _REGEX_MAKE_MULTILINE_MODE_DEFAULT
+#define _REGEX_MAKE_MULTILINE_MODE_DEFAULT 0
+#endif
+
 #ifndef _REGEX_MAX_COMPLEXITY_COUNT
 #define _REGEX_MAX_COMPLEXITY_COUNT 10000000L // set to 0 to disable
 #endif // !defined(_REGEX_MAX_COMPLEXITY_COUNT)
@@ -1669,13 +1679,13 @@ public:
         }
 
 // sanitize multiline mode setting
-#ifdef _REGEX_MAKE_MULTILINE_MODE_DEFAULT
+#if _REGEX_MAKE_MULTILINE_MODE_DEFAULT
         _Sflags |= regex_constants::multiline; // old matcher applied multiline mode for all grammars
-#else // ^^^ defined(_REGEX_MAKE_MULTILINE_MODE_DEFAULT) / !defined(_REGEX_MAKE_MULTILINE_MODE_DEFAULT) vvv
+#else // ^^^ _REGEX_MAKE_MULTILINE_MODE_DEFAULT / !_REGEX_MAKE_MULTILINE_MODE_DEFAULT vvv
         if (_Sflags & regex_constants::_Any_posix) { // multiline mode is ECMAScript-only
             _Sflags &= ~regex_constants::multiline;
         }
-#endif // ^^^ !defined(_REGEX_MAKE_MULTILINE_MODE_DEFAULT) ^^^
+#endif // ^^^ !_REGEX_MAKE_MULTILINE_MODE_DEFAULT ^^^
     }
 
     void _Setf(regex_constants::match_flag_type _Mf) { // set specified flags
