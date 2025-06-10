@@ -53,17 +53,13 @@ public:
 };
 
 template <class Rx>
-void check_match(const wstring& subject, const wstring& pattern, const Rx& re, match_flag_type flags, bool matches) {
+void check_match(const wstring& subject, const wstring& pattern, const Rx& re, match_flag_type flags = match_default,
+    bool matches = true) {
     if (regex_match(subject, re, flags) != matches) {
         wprintf(LR"(Expected regex_match("%s", regex("%s", 0x%X)) to be %s.)", subject.c_str(), pattern.c_str(),
             static_cast<unsigned int>(re.flags()), matches ? L"true" : L"false");
         g_regexTester.fail_regex();
     }
-}
-
-template <class Rx>
-void check_match(const wstring& subject, const wstring& pattern, const Rx& re, match_flag_type flags = match_default) {
-    check_match(subject, pattern, re, flags, true);
 }
 
 template <class Rx>
