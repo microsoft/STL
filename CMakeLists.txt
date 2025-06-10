@@ -104,13 +104,13 @@ add_compile_definitions(
     _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN11_GE)
 
 if(STL_USE_ANALYZE)
-    # TRANSITION, Windows SDK 10.0.22621.0 emits
+    # TRANSITION, Windows SDK 10.0.26100.3916 emits
     # "warning C6553: The annotation for function 'LCMapStringEx' on _Param_(9) does not apply to a value type."
     # Reported as OS-40109504 "Windows SDK: incorrect SAL annotations on functions the STL uses".
     add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553>")
 
     if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64ec")
-        # TRANSITION, Windows SDK 10.0.22621.0 emits
+        # TRANSITION, Windows SDK 10.0.26100.3916 emits
         # "warning C28301: No annotations for first declaration of 'meow'"
         # for various intrinsics when building for ARM64EC.
         add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/wd28301>")
