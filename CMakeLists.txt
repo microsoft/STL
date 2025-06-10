@@ -13,12 +13,12 @@ endif()
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles([=[
 #include <sdkddkver.h>
-static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN10_NI, "Inspecting WDK_NTDDI_VERSION, the Windows SDK version.");
+static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN11_GE, "Inspecting WDK_NTDDI_VERSION, the Windows SDK version.");
 int main() {}
 ]=] WINDOWS_SDK_VERSION_CHECK)
 
 if(NOT WINDOWS_SDK_VERSION_CHECK)
-    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.22621.0) or later. Make sure it's available by selecting it in the Individual Components tab of the VS Installer.")
+    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.26100.3916) or later. Make sure it's available by selecting it in the Individual Components tab of the VS Installer.")
 endif()
 
 if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)
@@ -96,9 +96,12 @@ set(TOOLSET_LIB "${TOOLSET_ROOT_DIR}/lib/${VCLIBS_X86_OR_X64}")
 set(STL_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
 set(STL_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
 set(STL_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/bin/${VCLIBS_I386_OR_AMD64}")
+
+# TRANSITION, update internal crt-common.settings.targets, atlmfc.settings.targets, and fe-components.settings.targets
+# from NTDDI_WIN10_NI to NTDDI_WIN11_GE when the internal WinSDK is updated.
 add_compile_definitions(
     _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH WIN32_LEAN_AND_MEAN STRICT _CRT_STDIO_ARBITRARY_WIDE_SPECIFIERS
-    _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN10_NI)
+    _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN11_GE)
 
 if(STL_USE_ANALYZE)
     # TRANSITION, Windows SDK 10.0.22621.0 emits
