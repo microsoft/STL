@@ -234,8 +234,8 @@ void test_VSO_167760_nested_quantifiers_should_not_infinite_loop() {
 void test_DDB_153116_replacements() {
     g_regexTester.should_replace_to("abc def def ghi", "^", "X", format_default, "Xabc def def ghi");
     g_regexTester.should_replace_to("abc def def ghi", "$", "X", format_default, "abc def def ghiX");
-    g_regexTester.should_replace_to("abc def def ghi", "\\b", "X", format_default, "XabcX XdefX XdefX XghiX");
-    g_regexTester.should_replace_to("abc def def ghi", "\\B", "X", format_default, "aXbXc dXeXf dXeXf gXhXi");
+    g_regexTester.should_replace_to("abc  def def  ghi", "\\b", "X", format_default, "XabcX  XdefX XdefX  XghiX");
+    g_regexTester.should_replace_to("abc  def def  ghi", "\\B", "X", format_default, "aXbXc X dXeXf dXeXf X gXhXi");
     g_regexTester.should_replace_to("abc def def ghi", "(?=ef)", "X", format_default, "abc dXef dXef ghi");
     g_regexTester.should_replace_to("abc def def ghi", "(?!ef)", "X", format_default, "XaXbXcX XdeXfX XdeXfX XgXhXiX");
 }
@@ -2092,6 +2092,17 @@ void test_gh_5509() {
     }
 }
 
+void test_gh_5576() {
+    // GH-5576 sped up searches for regexes that start with assertions
+    // by extending the skip heuristic in the matcher.
+    // We test here that the skip heuristic is correct
+    // for positive and negative lookahead assertions.
+    g_regexTester.should_replace_to("AbGweEfFllLLlffflElF", "(?=[[:lower:]][[:upper:]])[fFlL]{2}", R"(X$&)",
+        match_default, "AbGweEXfFlXlLLlffflEXlF");
+    g_regexTester.should_replace_to("AbGweEfFllLLlffflElF", "(?![[:upper:]]|[[:lower:]]{2})[fFlL]{2}", R"(X$&)",
+        match_default, "AbGweEXfFlXlLLlffflEXlF");
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2141,6 +2152,7 @@ int main() {
     test_gh_5377();
     test_gh_5490();
     test_gh_5509();
+    test_gh_5576();
 
     return g_regexTester.result();
 }
