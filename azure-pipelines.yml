@@ -107,7 +107,7 @@ stages:
       - Code_Format
       - Early_Build_x64
       - Early_Build_x86
-      - Early_Build_ARM
+#      - Early_Build_ARM
       - Early_Build_ARM64
       - Early_Build_ARM64EC
     displayName: 'Build and Test x64'
