@@ -446,7 +446,7 @@ const _Facet& __CRTDECL use_facet(const locale& _Loc) { // get facet reference f
 #if _HAS_EXCEPTIONS
             _Throw_bad_cast(); // lazy disallowed
 #else
-            _CSTD abort(); // lazy disallowed
+            _STL_REPORT_ERROR("lazy facet disallowed");
 #endif
         } else { // queue up lazy facet for destruction
             auto _Pfmod = const_cast<locale::facet*>(_Psave);
