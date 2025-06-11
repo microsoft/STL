@@ -33,6 +33,16 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// Controls whether LWG-2503 "multiline option should be added to syntax_option_type" is implemented.
+// Defining this to 0 requests Standard behavior:
+// * For ECMAScript, matching is non-multiline by default, but regex_constants::multiline can be requested.
+// * For POSIX grammars, matching is non-multiline, and regex_constants::multiline is ignored (N5008 [tab:re.synopt]).
+// Defining this to 1 requests legacy behavior:
+// * For all grammars, matching is multiline, and regex_constants::multiline is redundant.
+#ifndef _REGEX_LEGACY_MULTILINE_MODE
+#define _REGEX_LEGACY_MULTILINE_MODE 0
+#endif
+
 #ifndef _REGEX_MAX_COMPLEXITY_COUNT
 #define _REGEX_MAX_COMPLEXITY_COUNT 10000000L // set to 0 to disable
 #endif // !defined(_REGEX_MAX_COMPLEXITY_COUNT)
@@ -121,10 +131,11 @@ namespace regex_constants {
         _Gmask     = 0x3F,
         _Any_posix = basic | extended | grep | egrep | awk,
 
-        icase    = 0x0100,
-        nosubs   = 0x0200,
-        optimize = 0x0400,
-        collate  = 0x0800
+        icase     = 0x0100,
+        nosubs    = 0x0200,
+        optimize  = 0x0400,
+        collate   = 0x0800,
+        multiline = 0x1000
     };
 
     _BITMASK_OPS(_EXPORT_STD, syntax_option_type)
@@ -1666,6 +1677,15 @@ public:
         if (_Re->_Flags & _Fl_begin_needs_d) {
             _Char_class_d = _Lookup_char_class(static_cast<_Elem>('D'));
         }
+
+// sanitize multiline mode setting
+#if _REGEX_LEGACY_MULTILINE_MODE
+        _Sflags |= regex_constants::multiline; // old matcher applied multiline mode for all grammars
+#else // ^^^ _REGEX_LEGACY_MULTILINE_MODE / !_REGEX_LEGACY_MULTILINE_MODE vvv
+        if (_Sflags & regex_constants::_Any_posix) { // multiline mode is ECMAScript-only
+            _Sflags &= ~regex_constants::multiline;
+        }
+#endif // ^^^ !_REGEX_LEGACY_MULTILINE_MODE ^^^
     }
 
     void _Setf(regex_constants::match_flag_type _Mf) { // set specified flags
@@ -1920,6 +1940,7 @@ public:
     static constexpr flag_type awk        = regex_constants::awk;
     static constexpr flag_type grep       = regex_constants::grep;
     static constexpr flag_type egrep      = regex_constants::egrep;
+    static constexpr flag_type multiline  = regex_constants::multiline;
 
     basic_regex() = default; // construct empty object
 
@@ -3833,6 +3854,11 @@ typename _RxTraits::char_class_type _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Al
     return _Traits.lookup_classname(_Ptr, _Ptr + 1, (_Sflags & regex_constants::icase) != 0);
 }
 
+template <class _Elem>
+bool _Is_ecmascript_line_terminator(_Elem _Ch) {
+    return _Ch == _Meta_nl || _Ch == _Meta_cr || _Ch == _Meta_ls || _Ch == _Meta_ps;
+}
+
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // check for match
     if (0 < _Max_stack_count && --_Max_stack_count <= 0) {
@@ -3852,18 +3878,19 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
         case _N_bol:
             if ((_Mflags & regex_constants::match_prev_avail)
                 || _Tgt_state._Cur != _Begin) { // if --_Cur is valid, check for preceding newline
-                _Failed = *_Prev_iter(_Tgt_state._Cur) != _Meta_nl;
+                _Failed = !(_Sflags & regex_constants::multiline)
+                       || !_STD _Is_ecmascript_line_terminator(*_STD _Prev_iter(_Tgt_state._Cur));
             } else {
                 _Failed = (_Mflags & regex_constants::match_not_bol) != 0;
             }
-
             break;
 
         case _N_eol:
             if (_Tgt_state._Cur == _End) {
                 _Failed = (_Mflags & regex_constants::match_not_eol) != 0;
             } else {
-                _Failed = *_Tgt_state._Cur != _Meta_nl;
+                _Failed =
+                    !(_Sflags & regex_constants::multiline) || !_STD _Is_ecmascript_line_terminator(*_Tgt_state._Cur);
             }
 
             break;
@@ -3881,7 +3908,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     if (_Ch == _Elem()) {
                         _Failed = true;
                     }
-                } else if (_Ch == _Meta_nl || _Ch == _Meta_cr || _Ch == _Meta_ls || _Ch == _Meta_ps) { // ECMAScript
+                } else if (_STD _Is_ecmascript_line_terminator(_Ch)) {
                     _Failed = true;
                 }
 
@@ -4054,30 +4081,55 @@ template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 _BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(_BidIt _First_arg, _BidIt _Last, _Node_base* _Node_arg) {
     // skip until possible match
     // assumes --_First_arg is valid
-    _Node_base* _Nx = _Node_arg ? _Node_arg : _Rep;
+    static constexpr char _Line_terminators_char[]       = {static_cast<char>(_Meta_cr), static_cast<char>(_Meta_nl)};
+    static constexpr wchar_t _Line_terminators_wchar_t[] = {static_cast<wchar_t>(_Meta_cr),
+        static_cast<wchar_t>(_Meta_nl), static_cast<wchar_t>(_Meta_ls), static_cast<wchar_t>(_Meta_ps)};
+    _Node_base* _Nx                                      = _Node_arg ? _Node_arg : _Rep;
 
     while (_First_arg != _Last && _Nx) { // check current node
         switch (_Nx->_Kind) { // handle current node's type
         case _N_nop:
             break;
 
-        case _N_bol:
-            { // check for embedded newline
-              // return iterator to character just after the newline; for input like "\nabc"
-              // matching "^abc", _First_arg could be pointing at 'a', so we need to check
-              // --_First_arg for '\n'
-                if (*_Prev_iter(_First_arg) != _Meta_nl) {
-                    _First_arg = _STD find(_First_arg, _Last, _Meta_nl);
+        case _N_bol: // check for beginning anchor
+            if (_Sflags & regex_constants::multiline) {
+                // multiline mode: check for embedded line terminator
+                // return iterator to character just after the newline; for input like "\nabc"
+                // matching "^abc", _First_arg could be pointing at 'a', so we need to check
+                // --_First_arg for '\n'
+                if (!_STD _Is_ecmascript_line_terminator(*_STD _Prev_iter(_First_arg))) {
+                    if constexpr (sizeof(_Elem) == 1) {
+                        _First_arg = _STD find_first_of(
+                            _First_arg, _Last, _Line_terminators_char, _STD end(_Line_terminators_char));
+                    } else {
+                        _First_arg = _STD find_first_of(
+                            _First_arg, _Last, _Line_terminators_wchar_t, _STD end(_Line_terminators_wchar_t));
+                    }
+
                     if (_First_arg != _Last) {
                         ++_First_arg;
                     }
                 }
 
                 return _First_arg;
+            } else {
+                // non-multiline mode: never matches because --_First_arg is valid
+                return _Last;
             }
 
         case _N_eol:
-            return _STD find(_First_arg, _Last, _Meta_nl);
+            if (_Sflags & regex_constants::multiline) {
+                // multiline mode: matches at next line terminator or end of input
+                if constexpr (sizeof(_Elem) == 1) {
+                    return _STD find_first_of(
+                        _First_arg, _Last, _Line_terminators_char, _STD end(_Line_terminators_char));
+                } else {
+                    return _STD find_first_of(
+                        _First_arg, _Last, _Line_terminators_wchar_t, _STD end(_Line_terminators_wchar_t));
+                }
+            } else {
+                return _Last; // non-multiline mode: matches at end of input or not at all
+            }
 
         case _N_str:
             { // check for string match
