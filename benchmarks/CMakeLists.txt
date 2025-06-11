@@ -57,7 +57,8 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "${STL_BENCHMARK_MSVC_RUNTIME_LIBRARY}")
 set(CMAKE_BUILD_TYPE Release)
 
 # /utf-8 affects <format>.
-add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/Zi;/nologo;/diagnostics:caret;/W4;/WX;/w14265;/w15038;/w15262;/utf-8;/Zc:preprocessor>")
+add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/Zi;/nologo;/diagnostics:caret;/W4;/WX;/w14265;/w15038;/w15262;/utf-8>")
+add_compile_options("$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/Zc:preprocessor>") # TRANSITION, LLVM-48220 clang-cl: ignore /Zc:preprocessor
 
 add_link_options("/DEBUG")
 
