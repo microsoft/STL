@@ -2990,7 +2990,7 @@ public:
                 break;
 
             default: // Unrecognized bit pattern
-                _MSVC_STL_DOOM_FUNCTION("atomic shared_ptr invariant broken");
+                _STL_REPORT_ERROR("atomic shared_ptr invariant broken");
                 break;
             }
         }
