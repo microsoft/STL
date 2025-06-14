@@ -52,21 +52,21 @@ stages:
           numShards: 1
           skipTesting: true
 
-  - stage: Early_Build_ARM
-    dependsOn: []
-    displayName: 'Early Build ARM'
-    pool:
-      name: ${{ variables.poolName }}
-      demands: ${{ variables.poolDemands }}
-    jobs:
-      - template: azure-devops/build-and-test.yml
-        parameters:
-          hostArch: x64
-          targetArch: arm
-          targetPlatform: arm
-          analyzeBuild: true
-          numShards: 1
-          skipTesting: true
+#  - stage: Early_Build_ARM
+#    dependsOn: []
+#    displayName: 'Early Build ARM'
+#    pool:
+#      name: ${{ variables.poolName }}
+#      demands: ${{ variables.poolDemands }}
+#    jobs:
+#      - template: azure-devops/build-and-test.yml
+#        parameters:
+#          hostArch: x64
+#          targetArch: arm
+#          targetPlatform: arm
+#          analyzeBuild: true
+#          numShards: 1
+#          skipTesting: true
 
   - stage: Early_Build_ARM64
     dependsOn: []
@@ -107,7 +107,7 @@ stages:
       - Code_Format
       - Early_Build_x64
       - Early_Build_x86
-      - Early_Build_ARM
+#      - Early_Build_ARM
       - Early_Build_ARM64
       - Early_Build_ARM64EC
     displayName: 'Build and Test x64'
@@ -134,19 +134,19 @@ stages:
           targetArch: x86
           targetPlatform: x86
 
-  - stage: Build_And_Test_ARM
-    dependsOn: Build_And_Test_x64
-    displayName: 'Build and Test ARM'
-    pool:
-      name: ${{ variables.poolName }}
-      demands: ${{ variables.poolDemands }}
-    jobs:
-      - template: azure-devops/build-and-test.yml
-        parameters:
-          hostArch: x64
-          targetArch: arm
-          targetPlatform: arm
-          testsBuildOnly: true
+#  - stage: Build_And_Test_ARM
+#    dependsOn: Build_And_Test_x64
+#    displayName: 'Build and Test ARM'
+#    pool:
+#      name: ${{ variables.poolName }}
+#      demands: ${{ variables.poolDemands }}
+#    jobs:
+#      - template: azure-devops/build-and-test.yml
+#        parameters:
+#          hostArch: x64
+#          targetArch: arm
+#          targetPlatform: arm
+#          testsBuildOnly: true
 
   - stage: Build_And_Test_ARM64
     dependsOn: Build_And_Test_x64
