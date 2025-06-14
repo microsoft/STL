@@ -266,7 +266,7 @@ struct _Cmp_collate { // functor to compare for equality following collating tra
 
 template <class _RxTraits>
 struct _Cmp_icase_translateleft {
-    // functor to compare for equality following collating translation of the left character
+    // functor to compare for equality following case-insensitive translation of the left character
     using _Elem = typename _RxTraits::char_type;
 
     explicit _Cmp_icase_translateleft(const _RxTraits& _Tr) noexcept : _Traits(_Tr) {}
@@ -3675,6 +3675,20 @@ _BidIt1 _Compare_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2,
     }
 }
 
+template <class _BidIt1, class _BidIt2, class _RxTraits>
+_BidIt1 _Search_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, _BidIt2 _End2, const _RxTraits& _Traits,
+    regex_constants::syntax_option_type _Sflags) {
+    // searching the right character sequence in the left sequence,
+    // after translating characters in the left sequence according to syntax options
+    if (_Sflags & regex_constants::icase) {
+        return _STD search(_Begin1, _End1, _Begin2, _End2, _Cmp_icase_translateleft<_RxTraits>{_Traits});
+    } else if (_Sflags & regex_constants::collate) {
+        return _STD search(_Begin1, _End1, _Begin2, _End2, _Cmp_collate_translateleft<_RxTraits>{_Traits});
+    } else {
+        return _STD search(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
+    }
+}
+
 template <class _Elem>
 bool _Lookup_range(unsigned int _Ch, const _Buf<_Elem>* _Bufptr) { // check whether _Ch is in _Buf
     using _Uelem = make_unsigned_t<_Elem>;
@@ -4165,15 +4179,9 @@ _BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
         case _N_str:
             { // check for string match
                 _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
-                for (; _First_arg != _Last; ++_First_arg) { // look for starting match
-                    _BidIt _Next = _First_arg;
-                    if (_STD _Compare_translate_left(
-                            _First_arg, ++_Next, _Node->_Data._Str(), _Node->_Data._Str() + 1, _Traits, _Sflags)
-                        != _First_arg) {
-                        break;
-                    }
-                }
-                return _First_arg;
+                auto _Str               = _Node->_Data._Str();
+                return _STD _Search_translate_left(
+                    _First_arg, _Last, _Str, _Str + _Node->_Data._Size(), _Traits, _Sflags);
             }
 
         case _N_class:
