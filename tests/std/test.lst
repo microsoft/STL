@@ -154,6 +154,7 @@ tests\Dev11_1140665_unique_ptr_array_conversions
 tests\Dev11_1150223_shared_mutex
 tests\Dev11_1158803_regex_thread_safety
 tests\Dev11_1180290_filesystem_error_code
+tests\GH_000073_regex_multiline_escape_hatch
 tests\GH_000140_adl_proof_comparison
 tests\GH_000140_adl_proof_construction
 tests\GH_000140_adl_proof_views
@@ -266,6 +267,7 @@ tests\GH_005402_string_with_volatile_range
 tests\GH_005421_vector_algorithms_integer_class_type_iterator
 tests\GH_005472_do_not_overlap
 tests\GH_005546_containers_size_type_cast
+tests\GH_005553_regex_character_translation
 tests\LWG2381_num_get_floating_point
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function

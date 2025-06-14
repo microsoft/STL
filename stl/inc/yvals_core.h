@@ -907,7 +907,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 145
-#define _MSVC_STL_UPDATE  202505L
+#define _MSVC_STL_UPDATE  202506L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -2008,15 +2008,11 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #define _STATIC_CALL_OPERATOR
 #define _CONST_CALL_OPERATOR const
 #define _STATIC_LAMBDA
-#elif defined(__clang__) || defined(__EDG__) // no workaround
+#else // ^^^ workaround / no workaround vvv
 #define _STATIC_CALL_OPERATOR static
 #define _CONST_CALL_OPERATOR
 #define _STATIC_LAMBDA static
-#else // TRANSITION, VSO-2383148, fixed in VS 2022 17.14 Preview 3
-#define _STATIC_CALL_OPERATOR static
-#define _CONST_CALL_OPERATOR
-#define _STATIC_LAMBDA
-#endif // ^^^ workaround ^^^
+#endif // ^^^ no workaround ^^^
 
 #ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't recognize MSVC __restrict; CUDA __restrict__ is not usable in C++
 #define _RESTRICT
