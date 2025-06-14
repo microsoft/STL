@@ -149,13 +149,11 @@ void test_width_estimation() {
         {TYPED_LITERAL(CharT, "\u2e9a\x58"), 2},
         {TYPED_LITERAL(CharT, "\u2ef4\u2eff\x58"), 3},
         {TYPED_LITERAL(CharT, "\u2fd6\u2fef\x58"), 3},
-        {TYPED_LITERAL(CharT, "\u2ffc\u2fff\x58"), 3},
         {TYPED_LITERAL(CharT, "\u3040\x58"), 2},
         {TYPED_LITERAL(CharT, "\u3097\u3098\x58"), 3},
         {TYPED_LITERAL(CharT, "\u3100\u3104\x58"), 3},
         {TYPED_LITERAL(CharT, "\u3130\x58"), 2},
         {TYPED_LITERAL(CharT, "\u318f\x58"), 2},
-        {TYPED_LITERAL(CharT, "\u31e4\u31ef\x58"), 3},
         {TYPED_LITERAL(CharT, "\u321f\x58"), 2},
         {TYPED_LITERAL(CharT, "\u3248\u324f\x58"), 3},
         {TYPED_LITERAL(CharT, "\ua48d\ua48f\x58"), 3},
@@ -192,6 +190,8 @@ void test_width_estimation() {
         {TYPED_LITERAL(CharT, "\U0001f18e\x58"), 3},
         {TYPED_LITERAL(CharT, "\U0001f6cc\x58"), 3},
         {TYPED_LITERAL(CharT, "\U0001f7f0\x58"), 3},
+        {TYPED_LITERAL(CharT, "\u2ffc\u2fff\x58"), 5},
+        {TYPED_LITERAL(CharT, "\u31e4\u31ef\x58"), 5},
     };
 
     for (const auto& test : test_cases) {
