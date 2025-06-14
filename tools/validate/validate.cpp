@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <format>
 #include <print>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -54,13 +55,55 @@ private:
     FILE* m_file{nullptr};
 };
 
+struct line_and_column {
+    size_t line   = 1;
+    size_t column = 1;
+};
+
+struct character_line_column {
+    unsigned char ch = '?';
+    line_and_column lc;
+};
+
+namespace std {
+    template <>
+    struct formatter<line_and_column> {
+        constexpr auto parse(format_parse_context& ctx) {
+            return ctx.begin();
+        }
+
+        template <class FormatContext>
+        auto format(const line_and_column& lc, FormatContext& ctx) const {
+            return format_to(ctx.out(), "{}:{}", lc.line, lc.column);
+        }
+    };
+
+    template <>
+    struct formatter<character_line_column> {
+        constexpr auto parse(format_parse_context& ctx) {
+            return ctx.begin();
+        }
+
+        template <class FormatContext>
+        auto format(const character_line_column& clc, FormatContext& ctx) const {
+            return format_to(ctx.out(), "0x{:02X} @ {}", static_cast<unsigned int>(clc.ch), clc.lc);
+        }
+    };
+} // namespace std
+
+template <class... Args>
+void validation_failure(bool& any_errors, const filesystem::path& filepath, const line_and_column& lc,
+    format_string<type_identity_t<Args>...> fmt, Args&&... args) {
+    any_errors = true;
+    print(stderr, "##vso[task.logissue type=error;sourcepath={};linenumber={};columnnumber={}]Validation failed: ",
+        filepath.string(), lc.line, lc.column);
+    println(stderr, fmt, forward<Args>(args)...);
+}
+
 template <class... Args>
 void validation_failure(
     bool& any_errors, const filesystem::path& filepath, format_string<type_identity_t<Args>...> fmt, Args&&... args) {
-    any_errors = true;
-    print(stderr, "##vso[task.logissue type=error;sourcepath={};linenumber=1;columnnumber=1]Validation failed: ",
-        filepath.string());
-    println(stderr, fmt, forward<Args>(args)...);
+    validation_failure(any_errors, filepath, {1, 1}, fmt, forward<Args>(args)...);
 }
 
 enum class TabPolicy : bool { Forbidden, Allowed };
@@ -80,10 +123,18 @@ void scan_file(
     size_t tab_characters            = 0;
     size_t trailing_whitespace_lines = 0;
 
+    constexpr size_t max_error_lines_per_file = 8;
+
+    array<line_and_column, max_error_lines_per_file> overlength_locations{};
+    array<line_and_column, max_error_lines_per_file> tab_character_locations{};
+    array<line_and_column, max_error_lines_per_file> trailing_whitespace_locations{};
+    array<character_line_column, max_error_lines_per_file> disallowed_character_locations{};
+
     unsigned char prev      = '@';
     unsigned char previous2 = '@';
     unsigned char previous3 = '@';
 
+    size_t lines   = 0;
     size_t columns = 0;
 
     for (BinaryFile binary_file{filepath}; binary_file.read_next_block(buffer);) {
@@ -94,13 +145,18 @@ void scan_file(
                 } else {
                     has_cr = true;
                 }
+                ++lines;
             } else {
                 if (ch == LF) {
                     has_lf = true;
+                    ++lines;
                 }
             }
 
             if (ch == '\t') {
+                if (tab_characters < max_error_lines_per_file) {
+                    tab_character_locations[tab_characters] = {lines + 1, columns + 1};
+                }
                 ++tab_characters;
             } else if (ch == 0xEF || ch == 0xBB || ch == 0xBF) {
                 // 0xEF, 0xBB, and 0xBF are the UTF-8 BOM characters.
@@ -109,20 +165,24 @@ void scan_file(
             } else if (ch != CR && ch != LF && !(ch >= 0x20 && ch <= 0x7E)) {
                 // [0x20, 0x7E] are the printable characters, including the space character.
                 // https://en.wikipedia.org/wiki/ASCII#Printable_characters
-                ++disallowed_characters;
-                constexpr size_t MaxErrorsForDisallowedCharacters = 10;
-                if (disallowed_characters <= MaxErrorsForDisallowedCharacters) {
-                    validation_failure(any_errors, filepath, "file contains disallowed character 0x{:02X}.",
-                        static_cast<unsigned int>(ch));
+                if (disallowed_characters < max_error_lines_per_file) {
+                    disallowed_character_locations[disallowed_characters] = {ch, {lines + 1, columns + 1}};
                 }
+                ++disallowed_characters;
             }
 
             if (ch == CR || ch == LF) {
                 if (prev == ' ' || prev == '\t') {
+                    if (trailing_whitespace_lines < max_error_lines_per_file) {
+                        trailing_whitespace_locations[trailing_whitespace_lines] = {lines + 1, columns + 1};
+                    }
                     ++trailing_whitespace_lines;
                 }
 
                 if (columns > max_line_length) {
+                    if (overlength_lines < max_error_lines_per_file) {
+                        overlength_locations[overlength_lines] = {lines + 1, columns + 1};
+                    }
                     ++overlength_lines;
                 }
                 columns = 0;
@@ -135,6 +195,7 @@ void scan_file(
 
     if (prev == CR) { // file ends with CR
         has_cr = true;
+        ++lines;
     }
 
     if (has_cr) {
@@ -164,12 +225,16 @@ void scan_file(
     }
 
     if (tab_policy == TabPolicy::Forbidden && tab_characters != 0) {
-        validation_failure(any_errors, filepath, "file contains {} tab characters.", tab_characters);
+        validation_failure(any_errors, filepath, tab_character_locations[0],
+            "file contains {} tab characters. Lines and columns (up to {}): {}.", tab_characters,
+            max_error_lines_per_file, tab_character_locations | views::take(tab_characters));
     }
 
     if (trailing_whitespace_lines != 0) {
-        validation_failure(
-            any_errors, filepath, "file contains {} lines with trailing whitespace.", trailing_whitespace_lines);
+        validation_failure(any_errors, filepath, trailing_whitespace_locations[0],
+            "file contains {} lines with trailing whitespace. Lines and columns (up to {}): {}.",
+            trailing_whitespace_lines, max_error_lines_per_file,
+            trailing_whitespace_locations | views::take(trailing_whitespace_lines));
     }
 
     if (overlength_lines != 0) {
@@ -188,9 +253,16 @@ void scan_file(
         static_assert(ranges::is_sorted(checked_extensions));
 
         if (ranges::binary_search(checked_extensions, filepath.extension().wstring())) {
-            validation_failure(any_errors, filepath, "file contains {} lines with more than {} columns.",
-                overlength_lines, max_line_length);
+            validation_failure(any_errors, filepath, overlength_locations[0],
+                "file contains {} lines with more than {} columns. Lines and columns (up to {}): {}.", overlength_lines,
+                max_line_length, max_error_lines_per_file, overlength_locations | views::take(overlength_lines));
         }
+    }
+
+    if (disallowed_characters != 0) {
+        validation_failure(any_errors, filepath, disallowed_character_locations[0].lc,
+            "file contains {} disallowed characters. Locations (up to {}): {}.", disallowed_characters,
+            max_error_lines_per_file, disallowed_character_locations | views::take(disallowed_characters));
     }
 }
 

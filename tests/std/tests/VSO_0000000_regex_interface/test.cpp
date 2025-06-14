@@ -387,9 +387,9 @@ void test_VSO_180466_regex_search_missing_Unchecked_call() {
 }
 
 void test_VSO_226914_match_prev_avail() {
-    // N.B. assumes our nonstandard multiline behavior. See also: LWG-2343, LWG-2503
+    // test exercises multiline mode
     const char bol_haystack[] = {'\n', 'a'};
-    const regex bol_anchor(R"(^a)");
+    const regex bol_anchor(R"(^a)", regex_constants::multiline);
     assert(regex_match(bol_haystack + 1, end(bol_haystack), bol_anchor));
     assert(!regex_match(bol_haystack + 1, end(bol_haystack), bol_anchor, match_not_bol));
     assert(regex_match(bol_haystack + 1, end(bol_haystack), bol_anchor, match_prev_avail));
