@@ -582,12 +582,6 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp FAIL
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
-# LWG-2503 "multiline option should be added to syntax_option_type"
-std/re/re.alg/re.alg.search/no_update_pos.pass.cpp FAIL
-std/re/re.const/re.matchflag/match_multiline.pass.cpp FAIL
-std/re/re.const/re.matchflag/match_not_eol.pass.cpp FAIL
-std/re/re.const/re.synopt/syntax_option_type.pass.cpp FAIL
-
 # LWG-2532 "Satisfying a promise at thread exit" (Open)
 std/thread/futures/futures.promise/set_exception_at_thread_exit.pass.cpp FAIL
 std/thread/futures/futures.promise/set_lvalue_at_thread_exit.pass.cpp FAIL

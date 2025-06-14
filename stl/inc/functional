@@ -770,7 +770,8 @@ private:
         auto& _Myax = _Mypair._Get_first();
         if constexpr (!is_copy_constructible_v<_Callable>) { // used exclusively for packaged_task
             (void) _Myax;
-            _CSTD abort(); // shouldn't be called, see GH-3888
+            _STL_REPORT_ERROR("this callable object should not be copied");
+            return nullptr;
         } else if constexpr (_Is_large<_Func_impl>) {
             _Myalty _Rebound(_Myax);
             _Alloc_construct_ptr<_Myalty> _Constructor{_Rebound};
@@ -808,7 +809,8 @@ private:
     }
 #else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
     [[noreturn]] const type_info& _Target_type() const noexcept override {
-        _CSTD abort(); // shouldn't be called, see GH-3888
+        _STL_REPORT_ERROR("type info is disabled");
+        _STL_UNREACHABLE; // no return value available for "continue on error"
     }
 #endif // ^^^ !_HAS_STATIC_RTTI ^^^
 
@@ -859,7 +861,8 @@ public:
 private:
     _Mybase* _Copy(void* _Where) const override {
         if constexpr (!is_copy_constructible_v<_Callable>) { // used exclusively for packaged_task
-            _CSTD abort(); // shouldn't be called, see GH-3888
+            _STL_REPORT_ERROR("this callable object should not be copied");
+            return nullptr;
         } else if constexpr (_Is_large<_Func_impl_no_alloc>) {
             return _STD _Global_new<_Func_impl_no_alloc>(_Callee);
         } else {
@@ -889,7 +892,8 @@ private:
     }
 #else // ^^^ _HAS_STATIC_RTTI / !_HAS_STATIC_RTTI vvv
     [[noreturn]] const type_info& _Target_type() const noexcept override {
-        _CSTD abort(); // shouldn't be called, see GH-3888
+        _STL_REPORT_ERROR("type info is disabled");
+        _STL_UNREACHABLE; // no return value available for "continue on error"
     }
 #endif // ^^^ !_HAS_STATIC_RTTI ^^^
 
@@ -1352,8 +1356,8 @@ inline constexpr size_t _Minimum_function_size = 2 * sizeof(void*);
 
 template <class _Rx, class... _Types>
 [[noreturn]] _Rx __stdcall _Function_not_callable(const _Move_only_function_data&, _Types&&...) noexcept {
-    _CSTD abort(); // Unlike std::function, move_only_function doesn't throw bad_function_call
-                   // (N4950 [func.wrap.move.inv]/2)
+    _STL_REPORT_ERROR("empty move_only_function call (N5008 [func.wrap.move.inv]/2)");
+    _STL_UNREACHABLE; // no return value available for "continue on error"
 }
 
 template <class _Vt, class _VtInvQuals, class _Rx, bool _Noex, class... _Types>

@@ -141,8 +141,8 @@ constexpr void different_constructor_test() {
     assert(x.loc.column() == 5);
 #endif // ^^^ C1XX ^^^
 #if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
-#ifdef __EDG__ // TRANSITION, EDG is changing to match C1XX's output
-    assert(x.loc.function_name() == THISCALL_OR_CDECL " s::s(int)"sv || x.loc.function_name() == "s::s(int)"sv);
+#ifdef __EDG__ // TRANSITION, EDG is changing to almost match C1XX's output
+    assert(x.loc.function_name() == "__cdecl s::s(int)"sv || x.loc.function_name() == "s::s(int)"sv);
 #else // ^^^ workaround / no workaround vvv
     assert(x.loc.function_name() == THISCALL_OR_CDECL " s::s(int)"sv);
 #endif // ^^^ no workaround ^^^
