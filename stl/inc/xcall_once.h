@@ -95,7 +95,7 @@ void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax)
     // parentheses against common "#define call_once(flag,func) pthread_once(flag,func)"
     int _Pending;
     if (!_RENAME_WINDOWS_API(__std_init_once_begin_initialize)(&_Once._Opaque, 0, &_Pending, nullptr)) {
-        _CSTD abort();
+        _STL_REPORT_ERROR("InitOnceBeginInitialize() failed");
     }
 
     if (_Pending != 0) {

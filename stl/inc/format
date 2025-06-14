@@ -3540,7 +3540,7 @@ _NODISCARD _FormatContext::iterator _Tuple_formatter_format(const tuple<formatte
         _STD _Tuple_formatter_format_to_context(
             _Underlying, _Separator, _Opening_bracket, _Closing_bracket, _Tmp_ctx, _Args...);
     } else {
-        _CSTD abort(); // no basic_format_context object other than _Default_format_context can be created
+        _STL_REPORT_ERROR("no basic_format_context object other than _Default_format_context can be created");
     }
 
     const int _Width = _STD _Measure_display_width<_CharT>(_Tmp_str);

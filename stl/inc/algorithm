@@ -351,11 +351,6 @@ _Ty* _Unique_copy_vectorized(const _Ty* const _First, const _Ty* const _Last, _T
         _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
     }
 }
-
-// Can we activate the vector algorithms for find_first_of?
-template <class _It1, class _It2, class _Pr>
-constexpr bool _Vector_alg_in_find_first_of_is_safe = _Equal_memcmp_is_safe<_It1, _It2, _Pr>;
-
 // Can we activate the vector algorithms for replace?
 template <class _Iter, class _Ty1>
 constexpr bool _Vector_alg_in_replace_is_safe = _Vector_alg_in_find_is_safe<_Iter, _Ty1> // can search for the value
@@ -376,7 +371,7 @@ constexpr bool _Vector_alg_in_search_n_is_safe = _Vector_alg_in_find_is_safe<_It
                                                   equal_to<>>;
 // Can we activate the vector algorithms for unique?
 template <class _Iter, class _Pr>
-constexpr bool _Vector_alg_in_unique_is_safe = _Equal_memcmp_is_safe<_Iter, _Iter, _Pr>;
+constexpr bool _Vector_alg_in_unique_is_safe = _Vector_alg_in_search_is_safe<_Iter, _Iter, _Pr>;
 
 // Can we use this output iterator for remove_copy or unique_copy?
 template <class _Out, class _In>
@@ -712,7 +707,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, 
     auto _ULast  = _STD _Get_unwrapped(_Last);
     if (_UFirst != _ULast) {
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst), decltype(_UFirst), _Pr>) {
+        if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst), decltype(_UFirst), _Pr>) {
             if (!_STD _Is_constant_evaluated()) {
                 const auto _First_ptr = _STD _To_address(_UFirst);
                 const auto _Result    = _STD _Adjacent_find_vectorized(_First_ptr, _STD _To_address(_ULast));
@@ -888,7 +883,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InI
     const auto _ULast1 = _STD _Get_unwrapped(_Last1);
     auto _UFirst2      = _STD _Get_unwrapped_n(_First2, _STD _Idl_distance<_InIt1>(_UFirst1, _ULast1));
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
+    if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
         if (!_STD _Is_constant_evaluated()) {
             constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
 
@@ -952,7 +947,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
         const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min)(_Count1, _Count2));
         _ULast1           = _UFirst1 + _Count;
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
+        if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
             if (!_STD _Is_constant_evaluated()) {
                 constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
 
@@ -3796,7 +3791,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
     }
 
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Vector_alg_in_find_first_of_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
+    if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
         if (!_STD _Is_constant_evaluated() && _ULast1 - _UFirst1 >= _Threshold_find_first_of) {
             const auto _First1_ptr = _STD _To_address(_UFirst1);
             const auto _Result     = _STD _Find_first_of_vectorized(
@@ -3900,7 +3895,7 @@ namespace ranges {
             }
 
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (_Vector_alg_in_find_first_of_is_safe<_It1, _It2, _Pr> && sized_sentinel_for<_Se1, _It1>
+            if constexpr (_Vector_alg_in_search_is_safe<_It1, _It2, _Pr> && sized_sentinel_for<_Se1, _It1>
                           && sized_sentinel_for<_Se2, _It2> && is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>) {
                 if (!_STD is_constant_evaluated() && _Last1 - _First1 >= _Threshold_find_first_of) {
                     const auto _Count1     = static_cast<ptrdiff_t>(_Last1 - _First1);
@@ -5616,6 +5611,10 @@ namespace ranges {
 } // namespace ranges
 #endif // _HAS_CXX20
 
+template <class _Ty>
+struct _Is_trivially_copy_assignable_returning_same_reference
+    : bool_constant<_Is_trivially_assignable_returning_same_reference_v<_Ty&, const _Ty&>> {};
+
 _EXPORT_STD template <class _BidIt, class _OutIt>
 _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     // copy reversing elements in [_First, _Last)
@@ -5629,8 +5628,8 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     using _Elem                         = remove_reference_t<_Iter_ref_t<remove_const_t<decltype(_UFirst)>>>;
     using _DestElem                     = remove_reference_t<_Iter_ref_t<decltype(_UDest)>>;
     constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
-        bool_constant<_Iterators_are_contiguous<decltype(_ULast), decltype(_UDest)>>, is_trivially_copyable<_Elem>,
-        negation<is_volatile<_Elem>>>;
+        bool_constant<_Iterators_are_contiguous<decltype(_ULast), decltype(_UDest)>>,
+        _Is_trivially_copy_assignable_returning_same_reference<_Elem>, negation<is_volatile<_Elem>>>;
     constexpr size_t _Nx                = sizeof(_Elem);
 
     if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
@@ -5719,7 +5718,7 @@ namespace ranges {
                 using _Elem                         = remove_reference_t<iter_reference_t<_It>>;
                 using _DestElem                     = remove_reference_t<iter_reference_t<_Out>>;
                 constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
-                    is_trivially_copyable<_Elem>, negation<is_volatile<_Elem>>>;
+                    _Is_trivially_copy_assignable_returning_same_reference<_Elem>, negation<is_volatile<_Elem>>>;
                 constexpr size_t _Nx                = sizeof(_Elem);
 
                 if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
@@ -10158,17 +10157,31 @@ _NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _Fir
     const auto _ULast2 = _STD _Get_unwrapped(_Last2);
     _DEBUG_ORDER_SET_UNWRAPPED(_InIt2, _UFirst1, _ULast1, _Pred);
     _DEBUG_ORDER_SET_UNWRAPPED(_InIt1, _UFirst2, _ULast2, _Pred);
-    for (; _UFirst1 != _ULast1 && _UFirst2 != _ULast2; ++_UFirst1) {
-        if (_DEBUG_LT_PRED(_Pred, *_UFirst2, *_UFirst1)) {
-            return false;
-        }
 
-        if (!_Pred(*_UFirst1, *_UFirst2)) {
-            ++_UFirst2;
-        }
+    if (_UFirst2 == _ULast2) {
+        return true;
+    } else if (_UFirst1 == _ULast1) {
+        return false;
     }
 
-    return _UFirst2 == _ULast2;
+    for (;;) {
+        if (_DEBUG_LT_PRED(_Pred, *_UFirst1, *_UFirst2)) {
+            ++_UFirst1;
+            if (_UFirst1 == _ULast1) {
+                return false;
+            }
+        } else if (_Pred(*_UFirst2, *_UFirst1)) {
+            return false;
+        } else {
+            ++_UFirst1;
+            ++_UFirst2;
+            if (_UFirst2 == _ULast2) {
+                return true;
+            } else if (_UFirst1 == _ULast1) {
+                return false;
+            }
+        }
+    }
 }
 
 _EXPORT_STD template <class _InIt1, class _InIt2>
@@ -10246,20 +10259,16 @@ namespace ranges {
                     if (_First1 == _Last1) {
                         return false;
                     }
-
-                    continue;
-                }
-
-                if (_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
+                } else if (_STD invoke(_Pred, _STD invoke(_Proj2, *_First2), _STD invoke(_Proj1, *_First1))) {
                     return false;
-                }
-
-                ++_First1;
-                ++_First2;
-                if (_First2 == _Last2) {
-                    return true;
-                } else if (_First1 == _Last1) {
-                    return false;
+                } else {
+                    ++_First1;
+                    ++_First2;
+                    if (_First2 == _Last2) {
+                        return true;
+                    } else if (_First1 == _Last1) {
+                        return false;
+                    }
                 }
             }
         }

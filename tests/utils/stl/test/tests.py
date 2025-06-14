@@ -232,11 +232,11 @@ class STLTest(Test):
         self.compileFlags.extend(self.envlstEntry.getEnvVal('PM_CL', '').split())
         self.linkFlags.extend(self.envlstEntry.getEnvVal('PM_LINK', '').split())
 
+        targetArch = litConfig.target_arch.casefold()
         if ('clang'.casefold() in os.path.basename(cxx).casefold()):
             self._addCustomFeature('clang')
             self._addCustomFeature('gcc-style-warnings')
 
-            targetArch = litConfig.target_arch.casefold()
             if (targetArch == 'x64'.casefold()):
                 self.compileFlags.append('-m64')
             elif (targetArch == 'x86'.casefold()):
@@ -245,6 +245,9 @@ class STLTest(Test):
                 return Result(UNSUPPORTED, 'clang targeting arm is not supported')
             elif (targetArch == 'arm64'.casefold()):
                 self.compileFlags.append('--target=arm64-pc-windows-msvc')
+            elif (targetArch == 'arm64ec'.casefold()):
+                # TRANSITION, LLVM-116256 (fixed in Clang 20)
+                return Result(UNSUPPORTED, 'clang targeting arm64ec is not supported')
         elif ('nvcc'.casefold() in os.path.basename(cxx).casefold()):
             self._addCustomFeature('nvcc')
 
@@ -252,6 +255,15 @@ class STLTest(Test):
             self.requires.append('x64')
         else:
             self._addCustomFeature('cl-style-warnings')
+
+            if (targetArch == 'arm64ec'.casefold()):
+                self.compileFlags.append('/arm64EC')
+                self.linkFlags.append('/machine:arm64ec')
+
+                # TRANSITION, Windows SDK 10.0.26100.3916 emits
+                # "warning C28301: No annotations for first declaration of 'meow'"
+                # for various intrinsics when building for ARM64EC.
+                self.compileFlags.append('/wd28301')
 
         self.cxx = os.path.normpath(cxx)
         return None
