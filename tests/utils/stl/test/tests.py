@@ -260,7 +260,7 @@ class STLTest(Test):
                 self.compileFlags.append('/arm64EC')
                 self.linkFlags.append('/machine:arm64ec')
 
-                # TRANSITION, Windows SDK 10.0.22621.0 emits
+                # TRANSITION, Windows SDK 10.0.26100.3916 emits
                 # "warning C28301: No annotations for first declaration of 'meow'"
                 # for various intrinsics when building for ARM64EC.
                 self.compileFlags.append('/wd28301')
