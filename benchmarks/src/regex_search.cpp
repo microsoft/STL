@@ -31,8 +31,15 @@ void bm_lorem_search(benchmark::State& state, const char* pattern) {
     }
 }
 
+BENCHMARK_CAPTURE(bm_lorem_search, "^bibe", "^bibe")->Arg(2)->Arg(3)->Arg(4);
 BENCHMARK_CAPTURE(bm_lorem_search, "bibe", "bibe")->Arg(2)->Arg(3)->Arg(4);
+BENCHMARK_CAPTURE(bm_lorem_search, "(bibe)", "(bibe)")->Arg(2)->Arg(3)->Arg(4);
 BENCHMARK_CAPTURE(bm_lorem_search, "(bibe)+", "(bibe)+")->Arg(2)->Arg(3)->Arg(4);
 BENCHMARK_CAPTURE(bm_lorem_search, "(?:bibe)+", "(?:bibe)+")->Arg(2)->Arg(3)->Arg(4);
+BENCHMARK_CAPTURE(bm_lorem_search, R"(\bbibe)", R"(\bbibe)")->Arg(2)->Arg(3)->Arg(4);
+BENCHMARK_CAPTURE(bm_lorem_search, R"(\Bibe)", R"(\Bibe)")->Arg(2)->Arg(3)->Arg(4);
+BENCHMARK_CAPTURE(bm_lorem_search, R"((?=....)bibe)", R"((?=....)bibe)")->Arg(2)->Arg(3)->Arg(4);
+BENCHMARK_CAPTURE(bm_lorem_search, R"((?=bibe)....)", R"((?=bibe)....)")->Arg(2)->Arg(3)->Arg(4);
+BENCHMARK_CAPTURE(bm_lorem_search, R"((?!lorem)bibe)", R"((?!lorem)bibe)")->Arg(2)->Arg(3)->Arg(4);
 
 BENCHMARK_MAIN();

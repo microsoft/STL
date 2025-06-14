@@ -393,6 +393,15 @@ void timezone_precision_test() {
     }
 }
 
+void timezone_sorted_vectors_test() {
+    // N5008 [time.zone.db.tzdb]/1: "Each vector in a tzdb object is sorted to enable fast lookup."
+    const auto& my_tzdb = get_tzdb();
+
+    assert(ranges::is_sorted(my_tzdb.zones));
+    assert(ranges::is_sorted(my_tzdb.links));
+    assert(ranges::is_sorted(my_tzdb.leap_seconds));
+}
+
 void test() {
     timezone_tzdb_list_test();
     timezone_version_test();
@@ -401,6 +410,7 @@ void test() {
     timezone_to_local_test();
     timezone_local_info_test();
     timezone_precision_test();
+    timezone_sorted_vectors_test();
 }
 
 int main() {

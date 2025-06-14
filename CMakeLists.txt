@@ -6,19 +6,19 @@ cmake_minimum_required(VERSION 3.31.0)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
-if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.44.35207.1")
-    message(FATAL_ERROR "The STL must be built with VS 2022 17.14 Preview 7 or later.")
+if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.44.35209")
+    message(FATAL_ERROR "The STL must be built with VS 2022 17.14.5 Preview 1 or later.")
 endif()
 
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles([=[
 #include <sdkddkver.h>
-static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN10_NI, "Inspecting WDK_NTDDI_VERSION, the Windows SDK version.");
+static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN11_GE, "Inspecting WDK_NTDDI_VERSION, the Windows SDK version.");
 int main() {}
 ]=] WINDOWS_SDK_VERSION_CHECK)
 
 if(NOT WINDOWS_SDK_VERSION_CHECK)
-    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.22621.0) or later. Make sure it's available by selecting it in the Individual Components tab of the VS Installer.")
+    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.26100.3916) or later. Make sure it's available by selecting it in the Individual Components tab of the VS Installer.")
 endif()
 
 if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)
@@ -96,21 +96,22 @@ set(TOOLSET_LIB "${TOOLSET_ROOT_DIR}/lib/${VCLIBS_X86_OR_X64}")
 set(STL_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
 set(STL_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
 set(STL_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/bin/${VCLIBS_I386_OR_AMD64}")
+
+# TRANSITION, update internal crt-common.settings.targets, atlmfc.settings.targets, and fe-components.settings.targets
+# from NTDDI_WIN10_NI to NTDDI_WIN11_GE when the internal WinSDK is updated.
 add_compile_definitions(
     _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH WIN32_LEAN_AND_MEAN STRICT _CRT_STDIO_ARBITRARY_WIDE_SPECIFIERS
-    _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN10_NI)
+    _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN11_GE)
 
 if(STL_USE_ANALYZE)
-    # TRANSITION OS-40109504: Windows SDK: incorrect SAL annotations on functions the STL uses
-    # warning C6553: The annotation for function 'LCMapStringEx' on _Param_(9)
-    # does not apply to a value type.
-    # There's a bug in the declaration for LCMapStringEx - it applies _In_opt_ to an LPARAM.
-    # LPARAM is a LONG_PTR (intptr_t), and it's invalid to apply _In_opt_ to a non-pointer.
-    # As of the Windows 11 SDK (10.0.22621.0), there are 5 total occurrences of warning C6553 affecting the STL's build.
+    # TRANSITION, Windows SDK 10.0.26100.3916 emits
+    # "warning C6553: The annotation for function 'LCMapStringEx' on _Param_(9) does not apply to a value type."
+    # Reported as OS-40109504 "Windows SDK: incorrect SAL annotations on functions the STL uses".
     add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553>")
 
     if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64ec")
-        # TRANSITION, the Windows SDK emits "warning C28301: No annotations for first declaration of 'meow'"
+        # TRANSITION, Windows SDK 10.0.26100.3916 emits
+        # "warning C28301: No annotations for first declaration of 'meow'"
         # for various intrinsics when building for ARM64EC.
         add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/wd28301>")
     endif()

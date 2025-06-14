@@ -239,19 +239,20 @@ public:
         void(__cdecl* _Format)(basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx, const void*);
 
         template <class _Ty>
-        explicit handle(_Ty& _Val) noexcept
-            : _Ptr(_STD addressof(_Val)), _Format([](basic_format_parse_context<_CharType>& _Parse_ctx,
-                                                      _Context& _Format_ctx, const void* _Ptr) _STATIC_LAMBDA {
-                  using _Td = remove_const_t<_Ty>;
-                  // doesn't drop const-qualifier per an unnumbered LWG issue
-                  using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
-                  _STL_INTERNAL_STATIC_ASSERT(_Formattable_with<_Tq, _Context>);
+        static void __cdecl _Handle_format(
+            basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx, const void* _Ptr) {
+            using _Td = remove_const_t<_Ty>;
+            // doesn't drop const-qualifier per an unnumbered LWG issue
+            using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
+            _STL_INTERNAL_STATIC_ASSERT(_Formattable_with<_Tq, _Context>);
 
-                  typename _Context::template formatter_type<_Td> _Formatter;
-                  _Parse_ctx.advance_to(_Formatter.parse(_Parse_ctx));
-                  _Format_ctx.advance_to(
-                      _Formatter.format(*const_cast<_Tq*>(static_cast<const _Td*>(_Ptr)), _Format_ctx));
-              }) {}
+            typename _Context::template formatter_type<_Td> _Formatter;
+            _Parse_ctx.advance_to(_Formatter.parse(_Parse_ctx));
+            _Format_ctx.advance_to(_Formatter.format(*const_cast<_Tq*>(static_cast<const _Td*>(_Ptr)), _Format_ctx));
+        }
+
+        template <class _Ty>
+        explicit handle(_Ty& _Val) noexcept : _Ptr(_STD addressof(_Val)), _Format(_Handle_format<_Ty>) {}
 
     public:
         void format(basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx) const {

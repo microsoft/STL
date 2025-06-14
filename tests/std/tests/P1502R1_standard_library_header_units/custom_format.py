@@ -124,6 +124,8 @@ class CustomTestFormat(STLTestFormat):
         if noisyProgress:
             print('Creating library...')
         cmd = ['lib.exe', '/nologo', f'/out:{libFilename}', *objFilenames]
+        if litConfig.target_arch.casefold() == 'arm64ec'.casefold():
+            cmd.append('/machine:arm64ec')
         yield TestStep(cmd, shared.execDir, shared.env, False)
 
         if compileTestCppWithEdg:

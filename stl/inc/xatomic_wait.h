@@ -40,12 +40,6 @@ int __stdcall __std_atomic_wait_indirect(const void* _Storage, void* _Comparand,
 void __stdcall __std_atomic_notify_one_indirect(const void* _Storage) noexcept;
 void __stdcall __std_atomic_notify_all_indirect(const void* _Storage) noexcept;
 
-// These functions convert a duration into a time point in order to tolerate spurious wakes in atomic wait, and then
-// convert back from the time point to individual wait attempts (which are limited by DWORD milliseconds to a length of
-// ~49 days)
-unsigned long long __stdcall __std_atomic_wait_get_deadline(unsigned long long _Timeout) noexcept;
-unsigned long __stdcall __std_atomic_wait_get_remaining_timeout(unsigned long long _Deadline) noexcept;
-
 } // extern "C"
 
 #pragma pop_macro("new")

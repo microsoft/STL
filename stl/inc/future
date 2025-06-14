@@ -1319,7 +1319,7 @@ template <class... _Types>
 class _Fake_no_copy_callable_adapter {
     // async() is built on packaged_task internals which incorrectly use
     // std::function, which requires that things be copyable. We can't fix this in an
-    // update, so this adapter turns copies into abort(). When VSO-153581 is
+    // update, so this adapter turns copies into _STL_REPORT_ERROR(). When VSO-153581 is
     // fixed, remove this adapter.
 private:
     using _Storaget = tuple<decay_t<_Types>...>;
@@ -1331,7 +1331,7 @@ public:
 
     [[noreturn]] _Fake_no_copy_callable_adapter(const _Fake_no_copy_callable_adapter& _Other)
         : _Storage(_STD move(_Other._Storage)) {
-        _CSTD abort(); // shouldn't be called
+        _STL_REPORT_ERROR("this callable object should not be copied"); // shouldn't be called
     }
 
     _Fake_no_copy_callable_adapter(_Fake_no_copy_callable_adapter&& _Other)          = default;

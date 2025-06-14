@@ -63,6 +63,14 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _USE_STD_VECTOR_FLOATING_ALGORITHMS && !_USE_STD_VECTOR_ALGORITHMS
 #endif // ^^^ defined(_USE_STD_VECTOR_FLOATING_ALGORITHMS) ^^^
 
+#ifndef _USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE
+#if defined(__clang__) && __clang_major__ >= 19
+#define _USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE 1
+#else // ^^^ defined(__clang__) && __clang_major__ >= 19 / !defined(__clang__) || __clang_major__ < 19 vvv
+#define _USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE 0
+#endif // ^^^ !defined(__clang__) || __clang_major__ < 19 ^^^
+#endif // ^^^ !defined(_USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE) ^^^
+
 #if _USE_STD_VECTOR_ALGORITHMS
 extern "C" {
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
@@ -1113,7 +1121,8 @@ struct _Projected_impl {
 
         using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
         [[noreturn]] indirect_result_t<_Proj&, _It> operator*() const {
-            _CSTD abort(); // shouldn't be called, see GH-3888
+            _STL_REPORT_ERROR("std::projected::operator*() can't be called (N5008 [projected]/1)");
+            _STL_UNREACHABLE; // no return value available for "continue on error"
         }
     };
 };
@@ -4686,6 +4695,25 @@ constexpr bool _Is_pointer_address_convertible = is_void_v<_Source>
 #endif // defined(__cpp_lib_is_pointer_interconvertible)
     ;
 
+#pragma warning(push)
+#pragma warning(disable : 4242) // '%s': conversion from '%s' to '%s', possible loss of data
+#pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data (Yes, duplicated message.)
+#pragma warning(disable : 4267) // '%s': conversion from '%s' to '%s', possible loss of data (Yes, duplicated message!)
+#pragma warning(disable : 4365) // '%s': conversion from '%s' to '%s', signed/unsigned mismatch
+#pragma warning(disable : 5267) // definition of implicit assignment operator for '%s' is deprecated because it has a
+                                // user-provided copy constructor
+
+// Determines whether _DestRef is trivially assignable from _SourceRef, and if _Remove_cvref_t<_DestRef> is a class, the
+// assignment uses _Remove_cvref_t<_DestRef>::operator=.
+// Not pedantically reliable for vectorization, but working due to bugs of MSVC, Clang, and EDG. See LLVM-37038.
+template <class _DestRef, class _SourceRef, bool = is_trivially_assignable_v<_DestRef, _SourceRef>>
+constexpr bool _Is_trivially_assignable_returning_same_reference_v =
+    is_same_v<_DestRef, decltype(_STD declval<_DestRef>() = _STD declval<_SourceRef>())>;
+template <class _DestRef, class _SourceRef>
+constexpr bool _Is_trivially_assignable_returning_same_reference_v<_DestRef, _SourceRef, false> = false;
+
+#pragma warning(pop)
+
 template <class _Source, class _Dest, class _SourceRef, class _DestRef>
 struct _Trivial_cat {
     using _USource = _Unwrap_enum_t<_Source>;
@@ -4704,7 +4732,7 @@ struct _Trivial_cat {
         _Same_size_and_compatible && is_trivially_constructible_v<_Dest, _SourceRef>;
 
     static constexpr bool _Bitcopy_assignable =
-        _Same_size_and_compatible && is_trivially_assignable_v<_DestRef, _SourceRef>;
+        _Same_size_and_compatible && _Is_trivially_assignable_returning_same_reference_v<_DestRef, _SourceRef>;
 };
 
 template <class _Source, class _Dest, class _SourceRef, class _DestRef>
@@ -4713,7 +4741,8 @@ struct _Trivial_cat<_Source*, _Dest*, _SourceRef, _DestRef> {
         _Is_pointer_address_convertible<_Source, _Dest> && is_trivially_constructible_v<_Dest*, _SourceRef>;
 
     static constexpr bool _Bitcopy_assignable =
-        _Is_pointer_address_convertible<_Source, _Dest> && is_trivially_assignable_v<_DestRef, _SourceRef>;
+        _Is_pointer_address_convertible<_Source, _Dest>
+        && _Is_trivially_assignable_returning_same_reference_v<_DestRef, _SourceRef>;
 };
 
 struct _False_trivial_cat {
@@ -5484,8 +5513,14 @@ inline constexpr bool _Can_memcmp_elements<byte, byte, false> = true;
 template <class _Ty1, class _Ty2>
 constexpr bool _Can_memcmp_elements<_Ty1*, _Ty2*, false> = _Is_pointer_address_comparable<_Ty1, _Ty2>;
 
+#if _USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE
+template <class _Elem1, class _Elem2>
+constexpr bool _Can_memcmp_elements<_Elem1, _Elem2, false> =
+    is_same_v<_Elem1, _Elem2> && __is_trivially_equality_comparable(_Elem1);
+#else // ^^^ _USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE / !_USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE vvv
 template <class _Elem1, class _Elem2>
 constexpr bool _Can_memcmp_elements<_Elem1, _Elem2, false> = false;
+#endif // ^^^ !_USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE ^^^
 
 // _Can_memcmp_elements_with_pred<_Elem1, _Elem2, _Pr> reports whether the memcmp optimization is applicable,
 // given contiguously stored elements. (This avoids having to repeat the metaprogramming that finds the element types.)
@@ -5522,9 +5557,15 @@ template <class _Iter1, class _Iter2, class _Pr>
 constexpr bool _Equal_memcmp_is_safe =
     _Equal_memcmp_is_safe_helper<remove_const_t<_Iter1>, remove_const_t<_Iter2>, remove_const_t<_Pr>>;
 
+#if _USE_STD_VECTOR_ALGORITHMS
+template <size_t _Size>
+constexpr bool _Is_vector_element_size = _Size == 1 || _Size == 2 || _Size == 4 || _Size == 8;
+
 // Can we activate the vector algorithms for std::search?
 template <class _It1, class _It2, class _Pr>
-constexpr bool _Vector_alg_in_search_is_safe = _Equal_memcmp_is_safe<_It1, _It2, _Pr>;
+constexpr bool _Vector_alg_in_search_is_safe =
+    _Equal_memcmp_is_safe<_It1, _It2, _Pr> && _Is_vector_element_size<sizeof(_Iter_value_t<_It1>)>;
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
 template <class _CtgIt1, class _CtgIt2>
 _NODISCARD int _Memcmp_count(_CtgIt1 _First1, _CtgIt2 _First2, const size_t _Count) {
@@ -5682,7 +5723,7 @@ namespace ranges {
         _It1 _First1, _It2 _First2, iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
         _STL_INTERNAL_CHECK(_Count >= 0);
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (_Equal_memcmp_is_safe<_It1, _It2, _Pr> && is_same_v<_Pj1, identity>
+        if constexpr (_Vector_alg_in_search_is_safe<_It1, _It2, _Pr> && is_same_v<_Pj1, identity>
                       && is_same_v<_Pj2, identity>) {
             if (!_STD is_constant_evaluated()) {
                 constexpr size_t _Elem_size = sizeof(iter_value_t<_It1>);
@@ -6832,7 +6873,7 @@ namespace ranges {
             }
 
 #if _USE_STD_VECTOR_ALGORITHMS
-            if constexpr (_Equal_memcmp_is_safe<_It, _It, _Pr> && sized_sentinel_for<_Se, _It>
+            if constexpr (_Vector_alg_in_search_is_safe<_It, _It, _Pr> && sized_sentinel_for<_Se, _It>
                           && is_same_v<_Pj, identity>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _First_ptr = _STD _To_address(_First);

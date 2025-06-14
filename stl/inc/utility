@@ -958,9 +958,6 @@ _NODISCARD constexpr underlying_type_t<_Ty> to_underlying(_Ty _Value) noexcept {
 
 _EXPORT_STD [[noreturn]] __forceinline void unreachable() noexcept /* strengthened */ {
     _STL_UNREACHABLE;
-#ifdef _DEBUG
-    _CSTD abort(); // likely to be called in debug mode, but can't be relied upon - already entered the UB territory
-#endif // defined(_DEBUG)
 }
 
 template <class _Ty, class _Uty,

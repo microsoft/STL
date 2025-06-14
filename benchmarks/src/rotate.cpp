@@ -55,4 +55,6 @@ BENCHMARK(bm_rotate<uint64_t, AlgType::Rng>)->Apply(common_args);
 BENCHMARK(bm_rotate<color, AlgType::Std>)->Apply(common_args);
 BENCHMARK(bm_rotate<color, AlgType::Rng>)->Apply(common_args);
 
+BENCHMARK(bm_rotate<uint8_t, AlgType::Std>)->Args({35000, 520})->Args({35000, 3000});
+
 BENCHMARK_MAIN();

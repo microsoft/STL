@@ -3,6 +3,7 @@
 
 #define ISA_AVAILABILITY delete
 #define error_parse      delete
+#define error_syntax     delete
 #define nsec             delete
 #define sec              delete
 #define xtime            delete
