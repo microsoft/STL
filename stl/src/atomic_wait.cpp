@@ -177,6 +177,7 @@ int __stdcall __std_atomic_wait_indirect(const void* _Storage, void* _Comparand,
     }
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 unsigned long long __stdcall __std_atomic_wait_get_deadline(const unsigned long long _Timeout) noexcept {
     if (_Timeout == _Atomic_wait_no_deadline) {
         return _Atomic_wait_no_deadline;
@@ -185,6 +186,7 @@ unsigned long long __stdcall __std_atomic_wait_get_deadline(const unsigned long 
     }
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 unsigned long __stdcall __std_atomic_wait_get_remaining_timeout(unsigned long long _Deadline) noexcept {
     static_assert(__std_atomic_wait_no_timeout == INFINITE,
         "__std_atomic_wait_no_timeout is passed directly to underlying API, so should match it");

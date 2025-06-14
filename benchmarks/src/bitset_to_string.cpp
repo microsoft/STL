@@ -30,10 +30,11 @@ void BM_bitset_to_string(benchmark::State& state) {
     static_assert(N <= 64);
 
     for (auto _ : state) {
-        for (const auto& bits : random_bits<>) {
+        // make a copy, so that it can be potentially modified by DoNotOptimize
+        for (auto bits : random_bits<>) {
             benchmark::DoNotOptimize(bits);
             bitset<N> bs{bits};
-            benchmark::DoNotOptimize(bs.to_string<charT>());
+            benchmark::DoNotOptimize(bs.template to_string<charT>());
         }
     }
 }
@@ -43,10 +44,10 @@ void BM_bitset_to_string_large_single(benchmark::State& state) {
     static_assert(N % 64 == 0 && N >= 64);
     const auto& bitset_data = random_bits<N / 64>;
 
-    const auto large_bitset = bit_cast<bitset<N>>(bitset_data);
+    auto large_bitset = bit_cast<bitset<N>>(bitset_data);
     for (auto _ : state) {
         benchmark::DoNotOptimize(large_bitset);
-        benchmark::DoNotOptimize(large_bitset.to_string<charT>());
+        benchmark::DoNotOptimize(large_bitset.template to_string<charT>());
     }
 }
 
