@@ -3203,7 +3203,7 @@ public:
         }
 
         // max_size bound by underlying storage limits
-        return _Ints_max * _VBITS;
+        return static_cast<size_type>(_Ints_max * _VBITS);
     }
 
     _NODISCARD_EMPTY_MEMBER _CONSTEXPR20 bool empty() const noexcept {
