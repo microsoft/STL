@@ -3576,7 +3576,8 @@ void test_temp_directory_path() {
     }
 
     const auto nonexistentTemp = temp_directory_path(ec).native();
-    EXPECT(nonexistentTemp.find(LR"(\nonexistent.dir\)") == nonexistentTemp.size() - 17);
+    // returns path() if an error occurs. (N5008 [fs.op.temp.dir.path]/3)
+    EXPECT(nonexistentTemp.empty());
     EXPECT(ec == make_error_code(errc::not_a_directory));
 
     // TODO: automated test is_directory(p) is false, symlinks, after other filesystem components are implemented
