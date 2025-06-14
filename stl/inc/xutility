@@ -866,8 +866,33 @@ namespace ranges {
         template <class _Ty>
         concept _Can_deref = requires(_Ty&& __t) { *static_cast<_Ty&&>(__t); };
 
+        struct _Must_have_ADL_found_iter_move_or_be_dereferenceable {};
+
         class _Cpo {
         private:
+            template <class _Ty>
+            _NODISCARD static auto _Choose_return_type() {
+                if constexpr (_Has_ADL<_Ty>) {
+                    return type_identity<decltype(iter_move(_STD declval<_Ty>()))>{}; // intentional ADL
+                } else if constexpr (_Can_deref<_Ty>) {
+                    using _Ref = decltype(*_STD declval<_Ty>());
+                    if constexpr (is_function_v<remove_reference_t<_Ref>>) {
+                        // TRANSITION, VSO-1008447, VSO-2066340
+                        // Fuse this into the type_identity<_Ref>{} branch once MSVC is fixed.
+                        return type_identity<_Ref&>{};
+                    } else if constexpr (is_lvalue_reference_v<_Ref>) {
+                        return type_identity<remove_reference_t<_Ref>&&>{};
+                    } else {
+                        return type_identity<_Ref>{};
+                    }
+                } else {
+                    return _Must_have_ADL_found_iter_move_or_be_dereferenceable{};
+                }
+            }
+
+            template <class _Ty>
+            using _Return_type = decltype(_Choose_return_type<_Ty>())::type;
+
             enum class _St { _None, _Custom, _Fallback };
 
             template <class _Ty>
@@ -886,8 +911,7 @@ namespace ranges {
 
         public:
             template <class _Ty>
-                requires (_Choice<_Ty>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr decltype(auto) operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr _Return_type<_Ty> operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
                 noexcept(_Choice<_Ty>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty>._Strategy;
 
@@ -1121,7 +1145,8 @@ struct _Projected_impl {
 
         using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
         [[noreturn]] indirect_result_t<_Proj&, _It> operator*() const {
-            _CSTD abort(); // shouldn't be called, see GH-3888
+            static_assert(
+                false, "std::projected::operator*() can't be instantiated (N5008 [projected] as modified by LWG-4270)");
         }
     };
 };
