@@ -150,11 +150,6 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
         _Compiler_or_memory_barrier();                  \
     }
 
-#define _ATOMIC_STORE_SEQ_CST_ARM(_Width, _Ptr, _Desired) \
-    _Memory_barrier();                                    \
-    __iso_volatile_store##_Width((_Ptr), (_Desired));     \
-    _Memory_barrier();
-
 #define _ATOMIC_STORE_SEQ_CST_ARM64(_Width, _Ptr, _Desired) \
     __STORE_RELEASE(_Width, _Ptr, _Desired);                \
     _Memory_barrier();
@@ -168,12 +163,7 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     __iso_volatile_store64((_Ptr), (_Desired));       \
     _Atomic_thread_fence(_Atomic_memory_order_seq_cst);
 
-#if defined(_M_ARM)
-#define _ATOMIC_STORE_SEQ_CST(_Width, _Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_ARM(_Width, (_Ptr), (_Desired))
-#define _ATOMIC_STORE_32_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM(32, (_Ptr), (_Desired))
-#define _ATOMIC_STORE_64_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM(64, (_Ptr), (_Desired))
-#elif defined(_M_ARM64) || defined(_M_ARM64EC) \
-    || defined(_M_HYBRID_X86_ARM64) // ^^^ ARM32 / ARM64/ARM64EC/HYBRID_X86_ARM64 vvv
+#if defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 #define _ATOMIC_STORE_SEQ_CST(_Width, _Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_ARM64(_Width, (_Ptr), (_Desired))
 #define _ATOMIC_STORE_32_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM64(32, (_Ptr), (_Desired))
 #define _ATOMIC_STORE_64_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM64(64, (_Ptr), (_Desired))
@@ -3019,7 +3009,6 @@ _STD_END
 
 #undef _ATOMIC_CHOOSE_INTRINSIC
 #undef _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED
-#undef _ATOMIC_STORE_SEQ_CST_ARM
 #undef _ATOMIC_STORE_SEQ_CST_X86_X64
 #undef _ATOMIC_STORE_32_SEQ_CST_X86_X64
 #undef _ATOMIC_STORE_SEQ_CST
