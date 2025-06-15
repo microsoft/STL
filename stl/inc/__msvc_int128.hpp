@@ -66,11 +66,7 @@ _NODISCARD constexpr int _Countl_zero_internal(const _Ty _Val) noexcept {
     return _Countl_zero_fallback(_Val);
 }
 
-struct
-#ifndef _M_ARM
-    alignas(16)
-#endif
-        _Base128 {
+struct alignas(16) _Base128 {
     uint64_t _Word[2];
 
     constexpr void _Left_shift(const unsigned char _Count) noexcept {
