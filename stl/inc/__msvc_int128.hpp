@@ -58,7 +58,7 @@ _NODISCARD constexpr int _Countl_zero_internal(const _Ty _Val) noexcept {
     }
 #elif defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
     if (!_Is_constant_evaluated()) {
-        return _Checked_arm_arm64_countl_zero(_Val);
+        return _Checked_arm64_countl_zero(_Val);
     }
 #endif // defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 #endif // _HAS_COUNTL_ZERO_INTRINSICS

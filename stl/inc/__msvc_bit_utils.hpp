@@ -128,7 +128,7 @@ _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 template <class _Ty>
-_NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
+_NODISCARD int _Checked_arm64_countl_zero(const _Ty _Val) noexcept {
     constexpr int _Digits = _Unsigned_integer_digits<_Ty>;
     if (_Val == 0) {
         return _Digits;
