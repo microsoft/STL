@@ -55,14 +55,10 @@ _STL_DISABLE_CLANG_WARNINGS
 // Also: if any macros are added they should be #undefed in vcruntime as well.
 #define _Compiler_barrier() _STL_DISABLE_DEPRECATED_WARNING _ReadWriteBarrier() _STL_RESTORE_DEPRECATED_WARNING
 
-#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
-#define _Memory_barrier()             __dmb(0xB) // inner shared data memory barrier
-#define _Compiler_or_memory_barrier() _Memory_barrier()
 #if defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
+#define _Memory_barrier()              __dmb(0xB) // inner shared data memory barrier
+#define _Compiler_or_memory_barrier()  _Memory_barrier()
 #define _Memory_load_acquire_barrier() __dmb(0x9) // inner shared data memory load barrier
-#else // ^^^ ARM64/ARM64EC/HYBRID_X86_ARM64 / ARM32 vvv
-#define _Memory_load_acquire_barrier() _Memory_barrier()
-#endif // ^^^ ARM32 ^^^
 #elif defined(_M_IX86) || defined(_M_X64)
 // x86/x64 hardware only emits memory barriers inside _Interlocked intrinsics
 #define _Compiler_or_memory_barrier() _Compiler_barrier()
