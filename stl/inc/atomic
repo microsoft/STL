@@ -1025,13 +1025,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
         _ATOMIC_LOAD_ARM64(_As_bytes, 64, _Mem, _Order)
 #else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR != 1 vvv
-
-#ifdef _M_ARM
-        _As_bytes = __ldrexd(_Mem);
-#else
         _As_bytes = __iso_volatile_load64(_Mem);
-#endif
-
         _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(_Order)
 #endif // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR != 1 ^^^
         return reinterpret_cast<_TVal&>(_As_bytes);
