@@ -2220,7 +2220,7 @@ public:
     }
 
     bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired) volatile noexcept {
-        // we have no weak CAS intrinsics, even on ARM32/ARM64, so fall back to strong
+        // we have no weak CAS intrinsics, even on ARM64, so fall back to strong
         static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return this->compare_exchange_strong(_Expected, _Desired);
     }
