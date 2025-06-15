@@ -6848,7 +6848,14 @@ void* __stdcall __std_unique_copy_8(const void* _First, const void* const _Last,
 namespace {
     namespace _Sorted_ranges {
 #ifdef _M_ARM64EC
-        static_assert(false, "No vectorization for _M_ARM64EC yet");
+        using _Traits_1_avx = void;
+        using _Traits_2_avx = void;
+        using _Traits_4_avx = void;
+        using _Traits_8_avx = void;
+        using _Traits_1_sse = void;
+        using _Traits_2_sse = void;
+        using _Traits_4_sse = void;
+        using _Traits_8_sse = void;
 #else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
         struct _Traits_avx {
             using _Guard                       = _Zeroupper_on_exit;
