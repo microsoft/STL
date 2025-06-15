@@ -354,10 +354,8 @@ inline void test_atomic_wait() {
     test_pad_bits<with_padding_bits<2>>(waiting_duration);
     test_pad_bits<with_padding_bits<4>>(waiting_duration);
     test_pad_bits<with_padding_bits<8>>(waiting_duration);
-#ifndef _M_ARM
     test_pad_bits<with_padding_bits<16>>(waiting_duration);
     test_pad_bits<with_padding_bits<32>>(waiting_duration);
-#endif // ^^^ !ARM ^^^
 #endif // ^^^ no workaround ^^^
 
     test_gh_3602();

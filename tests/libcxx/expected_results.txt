@@ -1118,8 +1118,8 @@ std/utilities/memory/unique.ptr/iterator_concept_conformance.compile.pass.cpp:2 
 # Not analyzed. Runs forever
 std/numerics/rand/rand.dist/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp SKIPPED
 
-# Not analyzed. This test seemingly fails for ARM/ARM64 platforms because MSVC STL considers `tinyness_before` to be
-# always `false` even for ARM, but libc++ considers it to be `true` for floating-point types on ARM.
+# Not analyzed. This test seemingly fails for ARM64 because MSVC STL considers `tinyness_before` to be
+# always `false` even for ARM64, but libc++ considers it to be `true` for floating-point types on ARM64.
 # I don't know which is right.
 std/language.support/support.limits/limits/numeric.limits.members/tinyness_before.pass.cpp SKIPPED
 
@@ -1541,16 +1541,16 @@ std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.pass.cpp FAIL
 
 # *** XFAILS WHICH PASS ***
 # These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
-# However, for ARM and ARM64, they successfully compile, then we don't run them.
+# However, for ARM64, they successfully compile, then we don't run them.
 # Our test harness properly handles the ambiguity of whether a FAIL line in this file means "fails to compile"
-# or "fails to run", combined with the `build_only` setting that we use for ARM and ARM64.
+# or "fails to run", combined with the `build_only` setting that we use for ARM64.
 # The upstream logic that parses `// XFAIL: msvc` bypasses this, so it's interpreted as "this always fails",
-# so compilation success for ARM and ARM64 is reported as unexpectedly passing.
+# so compilation success for ARM64 is reported as unexpectedly passing.
 # The test harness should be fixed to treat `// XFAIL: msvc` the same way that FAIL lines here are treated.
 # In the meantime, because this is platform-dependent and we don't have a way to express that in this file,
 # we need to mark these tests as SKIPPED.
 # Finally, note that only :0 (MSVC) and :2 (Clang) configurations are mentioned here,
-# because we don't run :1 (ASan) for ARM and ARM64.
+# because we don't run :1 (ASan) for ARM64.
 std/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/ostream.pass.cpp:0 SKIPPED
 std/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/ostream.pass.cpp:2 SKIPPED
 std/time/time.clock/time.clock.system/sys_date.ostream.pass.cpp:0 SKIPPED

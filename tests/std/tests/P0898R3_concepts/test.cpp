@@ -2868,12 +2868,12 @@ namespace test_invocable_concepts {
 #include "invocable_cc.hpp"
 
 #ifndef _M_CEE // avoid warning C4575: '__vectorcall' incompatible with the '/clr' option: converting to '__stdcall'
-#if !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_M_ARM64EC)
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
 #define NAME      test_vector_vector
 #define CALLCONV  __vectorcall
 #define MCALLCONV __vectorcall
 #include "invocable_cc.hpp"
-#endif // ^^^ !ARM && !ARM64 && !ARM64EC ^^^
+#endif // ^^^ !ARM64 && !ARM64EC ^^^
 #endif // _M_CEE
 
 } // namespace test_invocable_concepts

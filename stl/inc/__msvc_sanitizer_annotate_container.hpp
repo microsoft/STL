@@ -28,7 +28,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #if !defined(_DISABLE_STL_ANNOTATION) && !defined(_ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORMS)
 
-#if defined(_M_ARM64EC) || defined(_M_ARM64) || defined(_M_ARM) || defined(_M_CEE_PURE)
+#if defined(_M_ARM64EC) || defined(_M_ARM64) || defined(_M_CEE_PURE)
 #define _DISABLE_STL_ANNOTATION
 #endif // ^^^ unsupported platform ^^^
 
@@ -157,7 +157,7 @@ void __cdecl __sanitizer_annotate_contiguous_container(
     "/alternatename:___sanitizer_annotate_contiguous_container=___sanitizer_annotate_contiguous_container_default")
 #pragma comment(linker, "/alternatename:__Asan_vector_should_annotate=__Asan_vector_should_annotate_default")
 #pragma comment(linker, "/alternatename:__Asan_string_should_annotate=__Asan_string_should_annotate_default")
-#elif defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)
+#elif defined(_M_X64) || defined(_M_ARM64)
 #pragma comment(linker, \
     "/alternatename:__sanitizer_annotate_contiguous_container=__sanitizer_annotate_contiguous_container_default")
 #pragma comment(linker, "/alternatename:_Asan_vector_should_annotate=_Asan_vector_should_annotate_default")
