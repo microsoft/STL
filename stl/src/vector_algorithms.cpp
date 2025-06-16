@@ -3297,12 +3297,20 @@ const void* __stdcall __std_find_trivial_unsized_8(const void* const _First, con
 
 const void* __stdcall __std_find_trivial_1(
     const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
+#ifdef _M_ARM64EC
+    return memchr(_First, _Val, _Byte_length(_First, _Last));
+#else
     return _Finding::_Find_impl<_Finding::_Find_traits_1, _Finding::_Predicate::_Equal>(_First, _Last, _Val);
+#endif
 }
 
 const void* __stdcall __std_find_trivial_2(
     const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
+#ifdef _M_ARM64EC
+    return wmemchr(static_cast<const wchar_t*>(_First), static_cast<wchar_t>(_Val), _Byte_length(_First, _Last) * 2);
+#else
     return _Finding::_Find_impl<_Finding::_Find_traits_2, _Finding::_Predicate::_Equal>(_First, _Last, _Val);
+#endif
 }
 
 const void* __stdcall __std_find_trivial_4(
