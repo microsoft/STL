@@ -2509,6 +2509,21 @@ static_assert(!is_assignable_v<expected<void, move_only>&, ambiguating_expected_
 
 static_assert(test_lwg_3886());
 
+// Test LWG-4222 "expected constructor from a single value missing a constraint"
+
+struct ConstructibleFromEverything {
+    explicit ConstructibleFromEverything(auto);
+};
+
+struct ConvertibleFromInt {
+    ConvertibleFromInt(int);
+};
+
+static_assert(!is_constructible_v<expected<ConstructibleFromEverything, ConvertibleFromInt>, unexpect_t&>);
+static_assert(!is_constructible_v<expected<ConstructibleFromEverything, ConvertibleFromInt>, const unexpect_t&>);
+static_assert(!is_constructible_v<expected<ConstructibleFromEverything, ConvertibleFromInt>, unexpect_t>);
+static_assert(!is_constructible_v<expected<ConstructibleFromEverything, ConvertibleFromInt>, const unexpect_t>);
+
 int main() {
     test_unexpected::test_all();
     static_assert(test_unexpected::test_all());
