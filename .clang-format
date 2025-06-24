@@ -103,8 +103,8 @@ AllowShortFunctionsOnASingleLine: Empty
 # AllowShortLoopsOnASingleLine: false
 # AlwaysBreakAfterDefinitionReturnType: None
 # AlwaysBreakBeforeMultilineStrings: false
-# AttributeMacros:
-#   - __capability
+AttributeMacros:
+  - _NO_SPECIALIZATIONS
 # BinPackArguments: true
 # BinPackParameters: true
 # BitFieldColonSpacing: Both
