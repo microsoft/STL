@@ -57,7 +57,8 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "${STL_BENCHMARK_MSVC_RUNTIME_LIBRARY}")
 set(CMAKE_BUILD_TYPE Release)
 
 # /utf-8 affects <format>.
-add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/Zi;/nologo;/diagnostics:caret;/W4;/WX;/w14265;/w15038;/w15262;/utf-8;/Zc:preprocessor>")
+add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/Zi;/nologo;/diagnostics:caret;/W4;/WX;/w14265;/w15038;/w15262;/utf-8>")
+add_compile_options("$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/Zc:preprocessor>") # TRANSITION, LLVM-48220 clang-cl: ignore /Zc:preprocessor
 
 add_link_options("/DEBUG")
 
@@ -111,9 +112,11 @@ add_benchmark(fill src/fill.cpp)
 add_benchmark(find_and_count src/find_and_count.cpp)
 add_benchmark(find_first_of src/find_first_of.cpp)
 add_benchmark(has_single_bit src/has_single_bit.cpp)
+add_benchmark(includes src/includes.cpp)
 add_benchmark(iota src/iota.cpp)
 add_benchmark(is_sorted_until src/is_sorted_until.cpp)
 add_benchmark(locale_classic src/locale_classic.cpp)
+add_benchmark(locate_zone src/locate_zone.cpp)
 add_benchmark(minmax_element src/minmax_element.cpp)
 add_benchmark(mismatch src/mismatch.cpp)
 add_benchmark(move_only_function src/move_only_function.cpp)

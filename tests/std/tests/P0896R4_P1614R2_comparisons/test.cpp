@@ -425,13 +425,8 @@ constexpr void ordering_test_cases() {
 
     derived const some_deriveds[2] = {};
     test_strongly_ordered(&some_deriveds[0], &some_deriveds[1]);
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1168721
-    if (!std::is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-    {
-        test_strongly_ordered(static_cast<base const*>(&some_deriveds[0]), &some_deriveds[1]);
-        test_strongly_ordered(&some_deriveds[0], static_cast<base const*>(&some_deriveds[1]));
-    }
+    test_strongly_ordered(static_cast<base const*>(&some_deriveds[0]), &some_deriveds[1]);
+    test_strongly_ordered(&some_deriveds[0], static_cast<base const*>(&some_deriveds[1]));
 
     if (!std::is_constant_evaluated()) {
         test_strongly_ordered(&some_ints[0], static_cast<void const*>(&some_ints[1]));

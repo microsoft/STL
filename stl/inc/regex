@@ -33,6 +33,16 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// Controls whether LWG-2503 "multiline option should be added to syntax_option_type" is implemented.
+// Defining this to 0 requests Standard behavior:
+// * For ECMAScript, matching is non-multiline by default, but regex_constants::multiline can be requested.
+// * For POSIX grammars, matching is non-multiline, and regex_constants::multiline is ignored (N5008 [tab:re.synopt]).
+// Defining this to 1 requests legacy behavior:
+// * For all grammars, matching is multiline, and regex_constants::multiline is redundant.
+#ifndef _REGEX_LEGACY_MULTILINE_MODE
+#define _REGEX_LEGACY_MULTILINE_MODE 0
+#endif
+
 #ifndef _REGEX_MAX_COMPLEXITY_COUNT
 #define _REGEX_MAX_COMPLEXITY_COUNT 10000000L // set to 0 to disable
 #endif // !defined(_REGEX_MAX_COMPLEXITY_COUNT)
@@ -121,10 +131,11 @@ namespace regex_constants {
         _Gmask     = 0x3F,
         _Any_posix = basic | extended | grep | egrep | awk,
 
-        icase    = 0x0100,
-        nosubs   = 0x0200,
-        optimize = 0x0400,
-        collate  = 0x0800
+        icase     = 0x0100,
+        nosubs    = 0x0200,
+        optimize  = 0x0400,
+        collate   = 0x0800,
+        multiline = 0x1000
     };
 
     _BITMASK_OPS(_EXPORT_STD, syntax_option_type)
@@ -164,7 +175,7 @@ namespace regex_constants {
         error_complexity,
         error_stack,
         _Error_parse, // TRANSITION, was error_parse, keeping behavior
-        error_syntax
+        _Error_syntax // TRANSITION, was error_syntax, keeping behavior
     };
 } // namespace regex_constants
 
@@ -228,15 +239,7 @@ struct _Lex_compare_memcmp_classify_pred<_Elem, _Elem, _Std_char_traits_lt<_Elem
     : _Lex_compare_memcmp_classify_pred_for_std_char_traits_lt<_Elem> {};
 
 template <class _RxTraits>
-struct _Cmp_cs { // functor to compare two character values for equality
-    using _Elem = typename _RxTraits::char_type;
-    _STATIC_CALL_OPERATOR bool operator()(_Elem _Ex1, _Elem _Ex2) _CONST_CALL_OPERATOR {
-        return _Ex1 == _Ex2;
-    }
-};
-
-template <class _RxTraits>
-struct _Cmp_icase { // functor to compare for case-insensitive equality
+struct _Cmp_icase { // functor to compare for equality following case-insensitive translation of both characters
     using _Elem = typename _RxTraits::char_type;
 
     explicit _Cmp_icase(const _RxTraits& _Tr) noexcept : _Traits(_Tr) {}
@@ -249,13 +252,41 @@ struct _Cmp_icase { // functor to compare for case-insensitive equality
 };
 
 template <class _RxTraits>
-struct _Cmp_collate { // functor to compare for locale-specific equality
+struct _Cmp_collate { // functor to compare for equality following collating translation of both characters
     using _Elem = typename _RxTraits::char_type;
 
     explicit _Cmp_collate(const _RxTraits& _Tr) noexcept : _Traits(_Tr) {}
 
     bool operator()(_Elem _Ex1, _Elem _Ex2) const {
         return _Traits.translate(_Ex1) == _Traits.translate(_Ex2);
+    }
+
+    const _RxTraits& _Traits;
+};
+
+template <class _RxTraits>
+struct _Cmp_icase_translateleft {
+    // functor to compare for equality following collating translation of the left character
+    using _Elem = typename _RxTraits::char_type;
+
+    explicit _Cmp_icase_translateleft(const _RxTraits& _Tr) noexcept : _Traits(_Tr) {}
+
+    bool operator()(_Elem _Ex1, _Elem _Ex2) const {
+        return _Traits.translate_nocase(_Ex1) == _Ex2;
+    }
+
+    const _RxTraits& _Traits;
+};
+
+template <class _RxTraits>
+struct _Cmp_collate_translateleft {
+    // functor to compare for equality following collating translation of the left character
+    using _Elem = typename _RxTraits::char_type;
+
+    explicit _Cmp_collate_translateleft(const _RxTraits& _Tr) noexcept : _Traits(_Tr) {}
+
+    bool operator()(_Elem _Ex1, _Elem _Ex2) const {
+        return _Traits.translate(_Ex1) == _Ex2;
     }
 
     const _RxTraits& _Traits;
@@ -574,7 +605,7 @@ private:
                    "could match the specified character sequence.";
         case regex_constants::_Error_parse: // TRANSITION, keeping behavior
             return "regex_error(error_parse)";
-        case regex_constants::error_syntax:
+        case regex_constants::_Error_syntax:
             return "regex_error(error_syntax)";
         default:
             return "regex_error";
@@ -1666,6 +1697,15 @@ public:
         if (_Re->_Flags & _Fl_begin_needs_d) {
             _Char_class_d = _Lookup_char_class(static_cast<_Elem>('D'));
         }
+
+// sanitize multiline mode setting
+#if _REGEX_LEGACY_MULTILINE_MODE
+        _Sflags |= regex_constants::multiline; // old matcher applied multiline mode for all grammars
+#else // ^^^ _REGEX_LEGACY_MULTILINE_MODE / !_REGEX_LEGACY_MULTILINE_MODE vvv
+        if (_Sflags & regex_constants::_Any_posix) { // multiline mode is ECMAScript-only
+            _Sflags &= ~regex_constants::multiline;
+        }
+#endif // ^^^ !_REGEX_LEGACY_MULTILINE_MODE ^^^
     }
 
     void _Setf(regex_constants::match_flag_type _Mf) { // set specified flags
@@ -1741,7 +1781,7 @@ public:
         return true;
     }
 
-    _BidIt _Skip(_BidIt, _BidIt, _Node_base* = nullptr);
+    _BidIt _Skip(_BidIt, _BidIt, _Node_base* = nullptr, unsigned int _Recursion_depth = 0U);
 
 private:
     _Tgt_state_t<_It> _Tgt_state;
@@ -1920,6 +1960,7 @@ public:
     static constexpr flag_type awk        = regex_constants::awk;
     static constexpr flag_type grep       = regex_constants::grep;
     static constexpr flag_type egrep      = regex_constants::egrep;
+    static constexpr flag_type multiline  = regex_constants::multiline;
 
     basic_regex() = default; // construct empty object
 
@@ -2933,10 +2974,6 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_class() { // add bracket expressi
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_char_to_bitmap(_Elem _Ch) { // add character to accelerator table
-    if (_Flags & regex_constants::icase) {
-        _Ch = _Traits.translate_nocase(_Ch);
-    }
-
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
 
     if (!_Node->_Small) {
@@ -2948,10 +2985,6 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_char_to_bitmap(_Elem _Ch) { // ad
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_char_to_array(_Elem _Ch) { // append character to character array
-    if (_Flags & regex_constants::icase) {
-        _Ch = _Traits.translate_nocase(_Ch);
-    }
-
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
     if (!_Node->_Large) {
         _Node->_Large = new _Buf<_Elem>;
@@ -2962,6 +2995,12 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_char_to_array(_Elem _Ch) { // app
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_char_to_class(_Elem _Ch) { // add character to bracket expression
+    if (_Flags & regex_constants::icase) {
+        _Ch = _Traits.translate_nocase(_Ch);
+    } else if (_Flags & regex_constants::collate) {
+        _Ch = _Traits.translate(_Ch);
+    }
+
     if (static_cast<typename _RxTraits::_Uelem>(_Ch) < _Bmp_max) {
         _Add_char_to_bitmap(_Ch);
     } else {
@@ -3607,23 +3646,33 @@ _BidIt1 _Cmp_chrange(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, _BidIt2 _E
             return _Res;
         }
     }
-
     return _Begin2 == _End2 ? _Begin1 : _Res;
 }
 
 template <class _BidIt1, class _BidIt2, class _RxTraits>
-_BidIt1 _Compare(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, _BidIt2 _End2, const _RxTraits& _Traits,
-    regex_constants::syntax_option_type _Sflags) { // compare character ranges
-    _BidIt1 _Res = _End1;
+_BidIt1 _Compare_translate_both(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, _BidIt2 _End2,
+    const _RxTraits& _Traits, regex_constants::syntax_option_type _Sflags) {
+    // compare character ranges, translating characters in both ranges according to syntax options
     if (_Sflags & regex_constants::icase) {
-        _Res = _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_icase<_RxTraits>{_Traits});
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_icase<_RxTraits>{_Traits});
     } else if (_Sflags & regex_constants::collate) {
-        _Res = _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_collate<_RxTraits>{_Traits});
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_collate<_RxTraits>{_Traits});
     } else {
-        _Res = _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_cs<_RxTraits>{});
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
     }
+}
 
-    return _Res;
+template <class _BidIt1, class _BidIt2, class _RxTraits>
+_BidIt1 _Compare_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, _BidIt2 _End2,
+    const _RxTraits& _Traits, regex_constants::syntax_option_type _Sflags) {
+    // compare character ranges, translating characters in the left range according to syntax options
+    if (_Sflags & regex_constants::icase) {
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_icase_translateleft<_RxTraits>{_Traits});
+    } else if (_Sflags & regex_constants::collate) {
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_collate_translateleft<_RxTraits>{_Traits});
+    } else {
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
+    }
 }
 
 template <class _Elem>
@@ -3833,6 +3882,11 @@ typename _RxTraits::char_class_type _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Al
     return _Traits.lookup_classname(_Ptr, _Ptr + 1, (_Sflags & regex_constants::icase) != 0);
 }
 
+template <class _Elem>
+bool _Is_ecmascript_line_terminator(_Elem _Ch) {
+    return _Ch == _Meta_nl || _Ch == _Meta_cr || _Ch == _Meta_ls || _Ch == _Meta_ps;
+}
+
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // check for match
     if (0 < _Max_stack_count && --_Max_stack_count <= 0) {
@@ -3852,18 +3906,19 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
         case _N_bol:
             if ((_Mflags & regex_constants::match_prev_avail)
                 || _Tgt_state._Cur != _Begin) { // if --_Cur is valid, check for preceding newline
-                _Failed = *_Prev_iter(_Tgt_state._Cur) != _Meta_nl;
+                _Failed = !(_Sflags & regex_constants::multiline)
+                       || !_STD _Is_ecmascript_line_terminator(*_STD _Prev_iter(_Tgt_state._Cur));
             } else {
                 _Failed = (_Mflags & regex_constants::match_not_bol) != 0;
             }
-
             break;
 
         case _N_eol:
             if (_Tgt_state._Cur == _End) {
                 _Failed = (_Mflags & regex_constants::match_not_eol) != 0;
             } else {
-                _Failed = *_Tgt_state._Cur != _Meta_nl;
+                _Failed =
+                    !(_Sflags & regex_constants::multiline) || !_STD _Is_ecmascript_line_terminator(*_Tgt_state._Cur);
             }
 
             break;
@@ -3881,7 +3936,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     if (_Ch == _Elem()) {
                         _Failed = true;
                     }
-                } else if (_Ch == _Meta_nl || _Ch == _Meta_cr || _Ch == _Meta_ls || _Ch == _Meta_ps) { // ECMAScript
+                } else if (_STD _Is_ecmascript_line_terminator(_Ch)) {
                     _Failed = true;
                 }
 
@@ -3896,7 +3951,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
             { // check for string match
                 _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
                 _It _Res0;
-                if ((_Res0 = _Compare(_Tgt_state._Cur, _End, _Node->_Data._Str(),
+                if ((_Res0 = _STD _Compare_translate_left(_Tgt_state._Cur, _End, _Node->_Data._Str(),
                          _Node->_Data._Str() + _Node->_Data._Size(), _Traits, _Sflags))
                     != _Tgt_state._Cur) {
                     _Tgt_state._Cur = _Res0;
@@ -3971,7 +4026,8 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     _It _Bx   = _Tgt_state._Grps[_Node->_Idx]._Begin;
                     _It _Ex   = _Tgt_state._Grps[_Node->_Idx]._End;
                     if (_Bx != _Ex // _Bx == _Ex for zero-length match
-                        && (_Res0 = _Compare(_Tgt_state._Cur, _End, _Bx, _Ex, _Traits, _Sflags)) == _Tgt_state._Cur) {
+                        && (_Res0 = _STD _Compare_translate_both(_Tgt_state._Cur, _End, _Bx, _Ex, _Traits, _Sflags))
+                               == _Tgt_state._Cur) {
                         _Failed = true;
                     } else {
                         _Tgt_state._Cur = _Res0;
@@ -4051,40 +4107,68 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-_BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(_BidIt _First_arg, _BidIt _Last, _Node_base* _Node_arg) {
+_BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
+    _BidIt _First_arg, _BidIt _Last, _Node_base* _Node_arg, unsigned int _Recursion_depth) {
     // skip until possible match
     // assumes --_First_arg is valid
-    _Node_base* _Nx = _Node_arg ? _Node_arg : _Rep;
+    static constexpr char _Line_terminators_char[]       = {static_cast<char>(_Meta_cr), static_cast<char>(_Meta_nl)};
+    static constexpr wchar_t _Line_terminators_wchar_t[] = {static_cast<wchar_t>(_Meta_cr),
+        static_cast<wchar_t>(_Meta_nl), static_cast<wchar_t>(_Meta_ls), static_cast<wchar_t>(_Meta_ps)};
+    constexpr unsigned int _Max_recursion_depth          = 50U;
+    _Node_base* _Nx                                      = _Node_arg ? _Node_arg : _Rep;
 
     while (_First_arg != _Last && _Nx) { // check current node
         switch (_Nx->_Kind) { // handle current node's type
         case _N_nop:
             break;
 
-        case _N_bol:
-            { // check for embedded newline
-              // return iterator to character just after the newline; for input like "\nabc"
-              // matching "^abc", _First_arg could be pointing at 'a', so we need to check
-              // --_First_arg for '\n'
-                if (*_Prev_iter(_First_arg) != _Meta_nl) {
-                    _First_arg = _STD find(_First_arg, _Last, _Meta_nl);
+        case _N_bol: // check for beginning anchor
+            if (_Sflags & regex_constants::multiline) {
+                // multiline mode: check for embedded line terminator
+                // return iterator to character just after the newline; for input like "\nabc"
+                // matching "^abc", _First_arg could be pointing at 'a', so we need to check
+                // --_First_arg for '\n'
+                if (!_STD _Is_ecmascript_line_terminator(*_STD _Prev_iter(_First_arg))) {
+                    if constexpr (sizeof(_Elem) == 1) {
+                        _First_arg = _STD find_first_of(
+                            _First_arg, _Last, _Line_terminators_char, _STD end(_Line_terminators_char));
+                    } else {
+                        _First_arg = _STD find_first_of(
+                            _First_arg, _Last, _Line_terminators_wchar_t, _STD end(_Line_terminators_wchar_t));
+                    }
+
                     if (_First_arg != _Last) {
                         ++_First_arg;
                     }
                 }
 
                 return _First_arg;
+            } else {
+                // non-multiline mode: never matches because --_First_arg is valid
+                return _Last;
             }
 
         case _N_eol:
-            return _STD find(_First_arg, _Last, _Meta_nl);
+            if (_Sflags & regex_constants::multiline) {
+                // multiline mode: matches at next line terminator or end of input
+                if constexpr (sizeof(_Elem) == 1) {
+                    return _STD find_first_of(
+                        _First_arg, _Last, _Line_terminators_char, _STD end(_Line_terminators_char));
+                } else {
+                    return _STD find_first_of(
+                        _First_arg, _Last, _Line_terminators_wchar_t, _STD end(_Line_terminators_wchar_t));
+                }
+            } else {
+                return _Last; // non-multiline mode: matches at end of input or not at all
+            }
 
         case _N_str:
             { // check for string match
                 _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
                 for (; _First_arg != _Last; ++_First_arg) { // look for starting match
                     _BidIt _Next = _First_arg;
-                    if (_Compare(_First_arg, ++_Next, _Node->_Data._Str(), _Node->_Data._Str() + 1, _Traits, _Sflags)
+                    if (_STD _Compare_translate_left(
+                            _First_arg, ++_Next, _Node->_Data._Str(), _Node->_Data._Str() + 1, _Traits, _Sflags)
                         != _First_arg) {
                         break;
                     }
@@ -4125,6 +4209,9 @@ _BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(_BidIt _First_arg
                 // GH-5452: If this node has two or more branches,
                 // examining all these branches has quadratic worst-case complexity.
                 // Thus, we only continue if this node has a single branch only.
+                // TRANSITION, ABI: After GH-5539, the parser no longer generates single-branch _N_if nodes.
+                // But we have to retain this special handling to avoid performance regression
+                // when an old parser gets mixed with a new matcher.
                 _Node_if* _Node = static_cast<_Node_if*>(_Nx);
 
                 if (_Node->_Child) {
@@ -4142,17 +4229,54 @@ _BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(_BidIt _First_arg
                 break;
             }
 
+        case _N_assert:
+            {
+                if (_Recursion_depth >= _Max_recursion_depth) {
+                    return _First_arg;
+                }
+
+                _Node_assert* _Node = static_cast<_Node_assert*>(_Nx);
+                _First_arg          = _Skip(_First_arg, _Last, _Node->_Child);
+                _BidIt _Next;
+                for (;;) {
+                    _Next = _Skip(_First_arg, _Last, _Node->_Next, _Recursion_depth + 1U);
+                    if (_Next == _First_arg) {
+                        return _First_arg;
+                    }
+
+                    _First_arg = _Skip(_Next, _Last, _Node->_Child, _Recursion_depth + 1U);
+                    if (_Next == _First_arg) {
+                        return _First_arg;
+                    }
+                }
+            }
+
+        case _N_neg_assert:
+            // we skip the negated assertion body and continue examining the rest of the regex
+            break;
+
+        case _N_wbound:
+            {
+                bool _Negated   = (_Nx->_Flags & _Fl_negate) != 0;
+                bool _Prev_word = _STD _Is_word(*_STD _Prev_iter(_First_arg));
+                for (; _First_arg != _Last; ++_First_arg) {
+                    bool _Next_word = _STD _Is_word(*_First_arg);
+                    if (_Negated == (_Next_word == _Prev_word)) {
+                        break;
+                    }
+                    _Prev_word = _Next_word;
+                }
+                return _First_arg;
+            }
+
         case _N_begin:
+        case _N_endif:
             break;
 
         case _N_end:
         case _N_none:
-        case _N_wbound:
         case _N_dot:
-        case _N_assert:
-        case _N_neg_assert:
         case _N_back:
-        case _N_endif:
         case _N_end_rep:
         default:
             return _First_arg;
@@ -4596,7 +4720,7 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Wrapped_disjunction() { // add disjunc
             --_Disj_count;
             return false;
         } else {
-            _Error(regex_constants::error_syntax);
+            _Error(regex_constants::error_badrepeat);
         }
     } else if (_Flags & regex_constants::nosubs) {
         _Do_noncapture_group();
@@ -4903,15 +5027,17 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Disjunction() { // check for valid dis
         _Nfa._End_group(_Pos3);
     }
 
-    _Node_base* _Pos2 = _Nfa._Begin_if(_Pos1);
-    while (_Mchar == _Meta_bar) { // append terms as long as we keep finding | characters
-        _Next();
-        if (!_Alternative()) { // zero-length trailing alternative
-            _Node_base* _Pos3 = _Nfa._Begin_group();
-            _Nfa._End_group(_Pos3);
-        }
+    if (_Mchar == _Meta_bar) {
+        _Node_base* _Pos2 = _Nfa._Begin_if(_Pos1);
+        do { // append terms as long as we keep finding | characters
+            _Next();
+            if (!_Alternative()) { // zero-length trailing alternative
+                _Node_base* _Pos3 = _Nfa._Begin_group();
+                _Nfa._End_group(_Pos3);
+            }
 
-        _Nfa._Else_if(_Pos1, _Pos2);
+            _Nfa._Else_if(_Pos1, _Pos2);
+        } while (_Mchar == _Meta_bar);
     }
 }
 
@@ -4979,6 +5105,17 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
                 }
             }
             break;
+
+        case _N_group:
+        case _N_capture:
+            // TRANSITION, requires more research to decide on the subset of loops that we can make simple:
+            // - Simple mode can square the running time when matching a regex to an input string in the current matcher
+            // - The optimal subset of simple loops for a non-recursive rewrite of the matcher aren't clear yet
+            if (_Outer_rep) {
+                _Outer_rep->_Simple_loop = 0;
+            }
+            break;
+
         case _N_none:
         case _N_nop:
         case _N_bol:
@@ -4986,10 +5123,8 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
         case _N_wbound:
         case _N_dot:
         case _N_str:
-        case _N_group:
         case _N_end_group:
         case _N_end_assert:
-        case _N_capture:
         case _N_end_capture:
         case _N_back:
         case _N_endif:
@@ -5007,9 +5142,7 @@ _Root_node* _Parser2<_FwdIt, _Elem, _RxTraits>::_Compile() { // compile regular 
     _Tidy_guard<decltype(_Nfa)> _Guard{_STD addressof(_Nfa)};
     _Node_base* _Pos1 = _Nfa._Begin_capture_group(0);
     _Disjunction();
-    if (_Pat != _End) {
-        _Error(regex_constants::error_syntax);
-    }
+    _STL_INTERNAL_CHECK(_Pat == _End);
 
     _Nfa._End_group(_Pos1);
     _Res         = _Nfa._End_pattern();

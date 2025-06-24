@@ -3195,12 +3195,15 @@ public:
     _NODISCARD _CONSTEXPR20 size_type max_size() const noexcept {
         constexpr auto _Diff_max  = static_cast<size_type>(_STD _Max_limit<difference_type>());
         const size_type _Ints_max = this->_Myvec.max_size();
-        if (_Ints_max > _Diff_max / _VBITS) { // max_size bound by difference_type limits
+
+        // Use a const bool to avoid warning C4127 "conditional expression is constant" with Defect Report P2280R4
+        const bool _Would_overflow = _Ints_max > _Diff_max / _VBITS;
+        if (_Would_overflow) { // max_size bound by difference_type limits
             return _Diff_max;
         }
 
         // max_size bound by underlying storage limits
-        return _Ints_max * _VBITS;
+        return static_cast<size_type>(_Ints_max * _VBITS);
     }
 
     _NODISCARD_EMPTY_MEMBER _CONSTEXPR20 bool empty() const noexcept {
