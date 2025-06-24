@@ -187,9 +187,6 @@ std/ranges/range.adaptors/range.join/range.join.iterator/arrow.pass.cpp FAIL
 # If any feature-test macro test is failing, this consolidated test will also fail.
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
 
-# libc++ incorrectly implements `layout_stride::mapping<E>::is_exhaustive()`
-std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
-
 
 # *** INTERACTIONS WITH MSVC THAT UPSTREAM LIKELY WON'T FIX ***
 # These tests set an allocator with a max_size() too small to default construct an unordered container
@@ -615,6 +612,10 @@ std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.
 # libc++ speculatively implements LWG-3343. If we wanted to do the same thing,
 # we'd need to reverse the order of the _Mtx_unlock() and _Cnd_broadcast() calls in xnotify.cpp.
 std/thread/thread.condition/notify_all_at_thread_exit_lwg3343.pass.cpp SKIPPED
+
+# LWG-4266 "`layout_stride::mapping` should treat empty mappings as exhaustive"
+std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
+std/containers/views/mdspan/layout_stride/properties.pass.cpp FAIL
 
 
 # *** C1XX COMPILER BUGS ***
