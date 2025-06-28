@@ -6887,6 +6887,9 @@ namespace {
             static __m256i _Cmp_gt(const __m256i _First, const __m256i _Second) noexcept {
                 return _mm256_cmpgt_epi8(_First, _Second);
             }
+            static __m256i _Sign_correction(const __m256i _Data) noexcept {
+                return _mm256_sub_epi8(_Data, _mm256_set1_epi8(static_cast<char>(0x80)));
+            }
         };
 
         struct _Traits_2_avx : _Traits_avx {
@@ -6896,6 +6899,10 @@ namespace {
 
             static __m256i _Cmp_gt(const __m256i _First, const __m256i _Second) noexcept {
                 return _mm256_cmpgt_epi16(_First, _Second);
+            }
+
+            static __m256i _Sign_correction(const __m256i _Data) noexcept {
+                return _mm256_sub_epi16(_Data, _mm256_set1_epi16(static_cast<short>(0x8000)));
             }
         };
 
@@ -6907,6 +6914,10 @@ namespace {
             static __m256i _Cmp_gt(const __m256i _First, const __m256i _Second) noexcept {
                 return _mm256_cmpgt_epi32(_First, _Second);
             }
+
+            static __m256i _Sign_correction(const __m256i _Data) noexcept {
+                return _mm256_sub_epi32(_Data, _mm256_set1_epi32(static_cast<long>(0x8000'0000)));
+            }
         };
 
         struct _Traits_8_avx : _Traits_avx {
@@ -6916,6 +6927,10 @@ namespace {
 
             static __m256i _Cmp_gt(const __m256i _First, const __m256i _Second) noexcept {
                 return _mm256_cmpgt_epi64(_First, _Second);
+            }
+
+            static __m256i _Sign_correction(const __m256i _Data) noexcept {
+                return _mm256_sub_epi64(_Data, _mm256_set1_epi64x(static_cast<long long>(0x8000'0000'0000'0000)));
             }
         };
 
@@ -6948,6 +6963,10 @@ namespace {
             static __m128i _Cmp_gt(const __m128i _First, const __m128i _Second) noexcept {
                 return _mm_cmpgt_epi8(_First, _Second);
             }
+
+            static __m128i _Sign_correction(const __m128i _Data) noexcept {
+                return _mm_sub_epi8(_Data, _mm_set1_epi8(static_cast<char>(0x80)));
+            }
         };
 
         struct _Traits_2_sse : _Traits_sse {
@@ -6957,6 +6976,10 @@ namespace {
 
             static __m128i _Cmp_gt(const __m128i _First, const __m128i _Second) noexcept {
                 return _mm_cmpgt_epi16(_First, _Second);
+            }
+
+            static __m128i _Sign_correction(const __m128i _Data) noexcept {
+                return _mm_sub_epi16(_Data, _mm_set1_epi16(static_cast<short>(0x8000)));
             }
         };
 
@@ -6968,6 +6991,10 @@ namespace {
             static __m128i _Cmp_gt(const __m128i _First, const __m128i _Second) noexcept {
                 return _mm_cmpgt_epi32(_First, _Second);
             }
+
+            static __m128i _Sign_correction(const __m128i _Data) noexcept {
+                return _mm_sub_epi32(_Data, _mm_set1_epi32(static_cast<long>(0x8000'0000)));
+            }
         };
 
         struct _Traits_8_sse : _Traits_sse {
@@ -6977,6 +7004,10 @@ namespace {
 
             static __m128i _Cmp_gt(const __m128i _First, const __m128i _Second) noexcept {
                 return _mm_cmpgt_epi64(_First, _Second);
+            }
+
+            static __m128i _Sign_correction(const __m128i _Data) noexcept {
+                return _mm_sub_epi64(_Data, _mm_set1_epi64x(static_cast<long long>(0x8000'0000'0000'0000)));
             }
         };
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
@@ -6992,6 +7023,7 @@ namespace {
                 // Only skipping some parts of haystack that are less than current needle element is vectorzied.
                 // Otherwise this is scalar algorithm.
 
+                constexpr bool _Is_signed            = static_cast<_Ty>(-1) < _Ty{0};
                 constexpr uint32_t _All_ones_mask    = uint32_t{(uint64_t{1} << _Traits::_Vec_size) - 1};
                 constexpr uint32_t _Highest_one_mask = 1u << (_Traits::_Vec_size - 1);
                 [[maybe_unused]] typename _Traits::_Guard _Guard; // TRANSITION, DevCom-10331414
@@ -7002,9 +7034,16 @@ namespace {
 
                 _Ty _Val2    = *reinterpret_cast<const _Ty*>(_First2);
                 auto _Start2 = _Traits::_Broadcast(_Val2);
+                if constexpr (!_Is_signed) {
+                    _Start2 = _Traits::_Sign_correction(_Start2);
+                }
 
                 do {
-                    const auto _Data1  = _Traits::_Load(_First1);
+                    auto _Data1 = _Traits::_Load(_First1);
+                    if constexpr (!_Is_signed) {
+                        _Data1 = _Traits::_Sign_correction(_Data1);
+                    }
+
                     const void* _Next1 = _First1;
                     _Advance_bytes(_Next1, _Traits::_Vec_size);
 
@@ -7046,6 +7085,9 @@ namespace {
                         } while (_First1 != _Next1);
 
                         _Start2 = _Traits::_Broadcast(_Val2);
+                        if constexpr (!_Is_signed) {
+                            _Start2 = _Traits::_Sign_correction(_Start2);
+                        }
                     }
                 } while (_First1 != _Stop1);
 
@@ -7054,8 +7096,12 @@ namespace {
                     if (_Tail_bytes_size_1 != 0) {
                         // Just try to advance pass less one omre time.
                         // Don't neet to repeat the scalar part here -- falling to scalar loop anyway.
-                        const auto _Tail_mask           = _Avx2_tail_mask_32(_Tail_bytes_size_1);
-                        const auto _Data1               = _Traits::_Load_mask(_First1, _Tail_mask);
+                        const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_bytes_size_1);
+                        auto _Data1           = _Traits::_Load_mask(_First1, _Tail_mask);
+                        if constexpr (!_Is_signed) {
+                            _Data1 = _Traits::_Sign_correction(_Data1);
+                        }
+
                         const auto _Cmp                 = _Traits::_Cmp_gt(_Start2, _Data1);
                         const uint32_t _Greater_start_2 = _Traits::_Mask(_mm256_and_si256(_Cmp, _Tail_mask));
                         if (_Greater_start_2 != 0) {
@@ -7109,14 +7155,12 @@ namespace {
             }
 
 #ifndef _M_ARM64EC
-            if constexpr (std::_Is_any_of_v<_Ty, int8_t, int16_t, int32_t, int64_t>) {
-                if (_Size_bytes_1 >= 32 && _Use_avx2()) {
-                    return _Includes_impl<_Traits_avx, _Ty>(_First1, _Last1, _First2, _Last2);
-                }
+            if (_Size_bytes_1 >= 32 && _Use_avx2()) {
+                return _Includes_impl<_Traits_avx, _Ty>(_First1, _Last1, _First2, _Last2);
+            }
 
-                if (_Size_bytes_1 >= 16 && _Use_sse42()) {
-                    return _Includes_impl<_Traits_sse, _Ty>(_First1, _Last1, _First2, _Last2);
-                }
+            if (_Size_bytes_1 >= 16 && _Use_sse42()) {
+                return _Includes_impl<_Traits_sse, _Ty>(_First1, _Last1, _First2, _Last2);
             }
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
             return _Includes_impl<void, _Ty>(_First1, _Last1, _First2, _Last2);
