@@ -649,6 +649,66 @@ void test_is_sorted_until(mt19937_64& gen) {
     }
 }
 
+#if _HAS_CXX17
+template <class InIt1, class InIt2>
+bool last_known_good_includes(InIt1 first1, InIt1 last1, InIt2 first2, InIt2 last2) {
+    for (; first2 != last2; ++first1) {
+        if (first1 == last1 || *first2 < *first1) {
+            return false;
+        }
+        if (!(*first1 < *first2)) {
+            ++first2;
+        }
+    }
+    return true;
+}
+
+template <class T>
+void test_case_includes(const vector<T>& hay, const vector<T>& needle) {
+    const bool expected = last_known_good_includes(hay.begin(), hay.end(), needle.begin(), needle.end());
+    const bool actual   = includes(hay.begin(), hay.end(), needle.begin(), needle.end());
+    assert(expected == actual);
+#if _HAS_CXX20
+    const bool actual_r = ranges::includes(hay, needle);
+    assert(expected == actual_r);
+#endif // _HAS_CXX20
+}
+
+template <class T>
+void test_includes(mt19937_64& gen) {
+    using Limits = numeric_limits<T>;
+
+    uniform_int_distribution<conditional_t<sizeof(T) == 1, int, T>> dis(Limits::min(), Limits::max());
+
+    vector<T> sorted_random_data;
+    vector<T> hay;
+    vector<T> needle;
+
+    sorted_random_data.resize(dataCount);
+    generate_n(sorted_random_data.data(), dataCount, [&dis, &gen] { return static_cast<T>(dis(gen)); });
+    sort(sorted_random_data.begin(), sorted_random_data.end());
+
+    hay.reserve(dataCount);
+    needle.reserve(dataCount);
+
+    test_case_includes(hay, needle);
+
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        hay.push_back(sorted_random_data[attempts]);
+
+        uniform_int_distribution<size_t> len_dis(0, hay.size());
+
+        for (size_t needle_length = 0; needle_length < 4; ++needle_length) {
+            needle.clear();
+            needle.resize(len_dis(gen));
+            sample(hay.begin(), hay.end(), needle.data(), needle.size(), gen);
+
+            test_case_includes(hay, needle);
+        }
+    }
+}
+#endif // _HAS_CXX17
+
 template <class FwdIt, class T>
 void last_known_good_replace(FwdIt first, FwdIt last, const T old_val, const T new_val) {
     for (; first != last; ++first) {
@@ -1208,6 +1268,19 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_is_sorted_until<unsigned int>(gen);
     test_is_sorted_until<long long>(gen);
     test_is_sorted_until<unsigned long long>(gen);
+
+    // std::includes has been there forever, but we use std::sample in the test, and that one is C++17
+#if _HAS_CXX17
+    test_includes<char>(gen);
+    test_includes<signed char>(gen);
+    test_includes<unsigned char>(gen);
+    test_includes<short>(gen);
+    test_includes<unsigned short>(gen);
+    test_includes<int>(gen);
+    test_includes<unsigned int>(gen);
+    test_includes<long long>(gen);
+    test_includes<unsigned long long>(gen);
+#endif // _HAS_CXX17
 
     // replace() is vectorized for 4 and 8 bytes only.
     test_replace<int>(gen);
