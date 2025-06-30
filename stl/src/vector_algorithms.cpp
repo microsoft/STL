@@ -6922,7 +6922,11 @@ namespace {
 
         struct _Traits_8_avx : _Traits_avx {
             static __m256i _Broadcast(const uint64_t _Data) noexcept {
+#ifdef _WIN64
                 return _mm256_broadcastq_epi64(_mm_cvtsi64x_si128(_Data));
+#else // ^^^ defined(_WIN64) / !defined(_WIN64), workaround, _mm_cvtsi64x_si128 does not compile vvv
+                return _mm256_set1_epi64x(_Data);
+#endif // ^^^ !defined(_WIN64) ^^^
             }
 
             static __m256i _Cmp_gt(const __m256i _First, const __m256i _Second) noexcept {
@@ -6999,7 +7003,11 @@ namespace {
 
         struct _Traits_8_sse : _Traits_sse {
             static __m128i _Broadcast(const uint64_t _Data) noexcept {
+#ifdef _WIN64
                 return _mm_shuffle_epi32(_mm_cvtsi64x_si128(_Data), _MM_SHUFFLE(1, 0, 1, 0));
+#else // ^^^ defined(_WIN64) / !defined(_WIN64), workaround, _mm_cvtsi64x_si128 does not compile vvv
+                return _mm_set1_epi64x(_Data);
+#endif // ^^^ !defined(_WIN64) ^^^
             }
 
             static __m128i _Cmp_gt(const __m128i _First, const __m128i _Second) noexcept {
