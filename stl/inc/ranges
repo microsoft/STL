@@ -5476,11 +5476,15 @@ namespace ranges {
         _STL_INTERNAL_CHECK(_Num >= 0);
         _STL_INTERNAL_CHECK(_Denom >= 0);
 
-        _Int _Result = _Num / _Denom;
-        if (_Num % _Denom != 0) {
-            ++_Result;
+        if constexpr (same_as<_Int, _Signed128>) {
+            return _Int::_Div_ceil(_Num, _Denom);
+        } else {
+            _Int _Result = _Num / _Denom;
+            if (_Num % _Denom != 0) {
+                ++_Result;
+            }
+            return _Result;
         }
-        return _Result;
     }
 
     _EXPORT_STD template <view _Vw>
