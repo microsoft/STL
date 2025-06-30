@@ -557,11 +557,9 @@ void future_test() {
     // GH-321: "<future>: packaged_task can't be constructed from a move-only lambda"
     packaged_task<void()> pt2([uptr = unique_ptr<int>{}]() { (void) uptr; });
 
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     packaged_task<void()> pta(allocator_arg, allocator<double>{}, []() {});
     // GH-321: "<future>: packaged_task can't be constructed from a move-only lambda"
     packaged_task<void()> pta2(allocator_arg, allocator<double>{}, [uptr = unique_ptr<int>{}]() { (void) uptr; });
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     swap_test(pt);
 
@@ -570,9 +568,7 @@ void future_test() {
 
     TRAIT_V(uses_allocator, promise<int>, allocator<double>);
 
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     TRAIT_V(uses_allocator, packaged_task<void()>, allocator<double>);
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 }
 #endif // _M_CEE_PURE
 

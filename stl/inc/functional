@@ -713,7 +713,7 @@ constexpr bool _Testable_callable_v =
 template <class _Ty>
 bool _Test_callable(const _Ty& _Arg) noexcept { // determine whether std::function must store _Arg
     if constexpr (_Testable_callable_v<_Ty>) {
-        return !!_Arg;
+        return static_cast<bool>(_Arg);
     } else {
         return true;
     }
@@ -749,7 +749,6 @@ template <class _Impl> // determine whether _Impl must be dynamically allocated
 constexpr bool _Is_large = sizeof(_Impl) > _Space_size || alignof(_Impl) > alignof(max_align_t)
                         || !_Impl::_Nothrow_move::value;
 
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
 template <class _Callable, class _Alloc, class _Rx, class... _Types>
 class _Func_impl final : public _Func_base<_Rx, _Types...> {
     // derived class for specific implementation types that use allocators
@@ -828,7 +827,6 @@ private:
 
     _Compressed_pair<_Alloc, _Callable> _Mypair;
 };
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
 template <class _Ty, class... _Types>
 _Ty* _Global_new(_Types&&... _Args) { // acts as "new" while disallowing user overload selection
@@ -983,7 +981,6 @@ protected:
         }
     }
 
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     template <class _Fx, class _Alloc>
     void _Reset_alloc(_Fx&& _Val, const _Alloc& _Ax) { // store copy of _Val with allocator
         if (!_STD _Test_callable(_Val)) { // null member pointer/function pointer/std::function
@@ -1006,7 +1003,6 @@ protected:
             _Set(_Ptr);
         }
     }
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     void _Tidy() noexcept {
         if (!_Empty()) { // destroy callable object and maybe delete it
@@ -1135,6 +1131,7 @@ public:
             "The target function object type must be copy constructible (N4140 [func.wrap.func.con]/7).");
         this->_Reset_alloc(_STD forward<_Fx>(_Func), _Ax);
     }
+#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     template <class _SecretTag, class _Fx, class _Alloc,
         enable_if_t<is_same_v<_SecretTag, _Secret_copyability_ignoring_tag>, int> = 0,
@@ -1143,7 +1140,6 @@ public:
         // used exclusively for packaged_task
         this->_Reset_alloc(_STD forward<_Fx>(_Func), _Ax);
     }
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     function& operator=(const function& _Right) {
         function(_Right).swap(*this);
@@ -1154,11 +1150,16 @@ public:
         this->_Reset_move(_STD move(_Right));
     }
 
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
-    template <class _Alloc>
-    function(allocator_arg_t, const _Alloc& _Al, function&& _Right) {
+    template <class _SecretTag, class _Alloc,
+        enable_if_t<is_same_v<_SecretTag, _Secret_copyability_ignoring_tag>, int> = 0>
+    explicit function(_SecretTag, allocator_arg_t, const _Alloc& _Al, function&& _Right) {
         this->_Reset_alloc(_STD move(_Right), _Al);
     }
+
+#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
+    template <class _Alloc>
+    function(allocator_arg_t, const _Alloc& _Al, function&& _Right)
+        : function(_Secret_copyability_ignoring_tag{}, allocator_arg, _Al, _STD move(_Right)) {}
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     function& operator=(function&& _Right) noexcept /* strengthened */ {
