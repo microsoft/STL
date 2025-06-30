@@ -6887,6 +6887,7 @@ namespace {
             static __m256i _Cmp_gt(const __m256i _First, const __m256i _Second) noexcept {
                 return _mm256_cmpgt_epi8(_First, _Second);
             }
+
             static __m256i _Sign_correction(const __m256i _Data) noexcept {
                 return _mm256_sub_epi8(_Data, _mm256_set1_epi8(static_cast<char>(0x80)));
             }

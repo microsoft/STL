@@ -656,6 +656,7 @@ bool last_known_good_includes(InIt1 first1, InIt1 last1, InIt2 first2, InIt2 las
         if (first1 == last1 || *first2 < *first1) {
             return false;
         }
+
         if (!(*first1 < *first2)) {
             ++first2;
         }
