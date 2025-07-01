@@ -245,7 +245,7 @@ constexpr void lambda_test() {
 #elif defined(__EDG__) // ^^^ detailed Clang / detailed __EDG__ vvv
     // TRANSITION, EDG is changing to resemble C1XX's output somewhat more closely
     assert(fun2 == "__cdecl lambda [](void)->auto::operator()(void)->auto"sv
-        || fun2 == "lambda []()->auto::operator()()->auto"sv);
+           || fun2 == "lambda []()->auto::operator()()->auto"sv);
 #else // ^^^ detailed __EDG__ / detailed C1XX vvv
     assert(fun2.starts_with("struct std::source_location " THISCALL_OR_CDECL " lambda_test::<lambda_"sv));
     assert(fun2.ends_with("::operator ()(void) const"sv));
@@ -276,7 +276,7 @@ constexpr void function_template_test() {
 #elif defined(__EDG__) // ^^^ detailed Clang / detailed __EDG__ vvv
     // TRANSITION, EDG is changing to almost match C1XX's output
     assert(x1.function_name() == "std::source_location __cdecl function_template<void>(void)"sv
-        || x1.function_name() == "std::source_location function_template<void>()"sv);
+           || x1.function_name() == "std::source_location function_template<void>()"sv);
 #else // ^^^ detailed __EDG__ / detailed C1XX vvv
     assert(x1.function_name() == "struct std::source_location __cdecl function_template<void>(void)"sv);
 #endif // ^^^ detailed C1XX ^^^
