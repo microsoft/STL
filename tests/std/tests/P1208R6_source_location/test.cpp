@@ -196,9 +196,8 @@ constexpr void sub_member_test() {
     assert(s_i.x.loc.column() == 5);
 #endif // ^^^ C1XX ^^^
 #if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
-#ifdef __EDG__ // TRANSITION, EDG is changing to match C1XX's output
-    assert(s_i.x.loc.function_name() == THISCALL_OR_CDECL " s2::s2(int)"sv
-           || s_i.x.loc.function_name() == "s2::s2(int)"sv);
+#ifdef __EDG__ // TRANSITION, EDG is changing to almost match C1XX's output
+    assert(s_i.x.loc.function_name() == "__cdecl s2::s2(int)"sv || s_i.x.loc.function_name() == "s2::s2(int)"sv);
 #else // ^^^ workaround / no workaround vvv
     assert(s_i.x.loc.function_name() == THISCALL_OR_CDECL " s2::s2(int)"sv);
 #endif // ^^^ no workaround ^^^
@@ -245,8 +244,8 @@ constexpr void lambda_test() {
     assert(fun2 == "auto " THISCALL_OR_CDECL " lambda_test()::(anonymous class)::operator()(void) const"sv);
 #elif defined(__EDG__) // ^^^ detailed Clang / detailed __EDG__ vvv
     // TRANSITION, EDG is changing to resemble C1XX's output somewhat more closely
-    assert(fun2 == THISCALL_OR_CDECL " lambda [](void)->auto::operator()(void)->auto"sv
-           || fun2 == "lambda []()->auto::operator()()->auto"sv);
+    assert(fun2 == "__cdecl lambda [](void)->auto::operator()(void)->auto"sv
+        || fun2 == "lambda []()->auto::operator()()->auto"sv);
 #else // ^^^ detailed __EDG__ / detailed C1XX vvv
     assert(fun2.starts_with("struct std::source_location " THISCALL_OR_CDECL " lambda_test::<lambda_"sv));
     assert(fun2.ends_with("::operator ()(void) const"sv));
@@ -277,7 +276,7 @@ constexpr void function_template_test() {
 #elif defined(__EDG__) // ^^^ detailed Clang / detailed __EDG__ vvv
     // TRANSITION, EDG is changing to almost match C1XX's output
     assert(x1.function_name() == "std::source_location __cdecl function_template<void>(void)"sv
-           || x1.function_name() == "std::source_location function_template<void>()"sv);
+        || x1.function_name() == "std::source_location function_template<void>()"sv);
 #else // ^^^ detailed __EDG__ / detailed C1XX vvv
     assert(x1.function_name() == "struct std::source_location __cdecl function_template<void>(void)"sv);
 #endif // ^^^ detailed C1XX ^^^
