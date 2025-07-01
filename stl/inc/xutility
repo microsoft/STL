@@ -6298,8 +6298,9 @@ namespace ranges {
                 {
                     if constexpr (_Elements_are_2_bytes) {
                         _STL_INTERNAL_STATIC_ASSERT(_Is_sized);
-                        _Result =
-                            _CSTD wmemchr(_First_ptr, static_cast<wchar_t>(_Val), static_cast<size_t>(_Last - _First));
+                        _Result = reinterpret_cast<_Ptr_t>(
+                            const_cast<wchar_t*>(_CSTD wmemchr(reinterpret_cast<const wchar_t*>(_First_ptr),
+                                static_cast<wchar_t>(_Val), static_cast<size_t>(_Last - _First))));
                     } else {
                         _STL_INTERNAL_STATIC_ASSERT(_Elements_are_1_byte);
                         size_t _Count;
