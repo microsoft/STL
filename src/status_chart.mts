@@ -252,6 +252,10 @@ function load_charts() {
         },
         {
             min: '2023-01-01',
+            time: { unit: 'year' },
+        },
+        {
+            min: '2024-01-01',
             time: { unit: 'quarter' },
         },
     ];
@@ -388,7 +392,7 @@ function load_charts() {
         ...make_common_options(),
         scales: {
             x: make_xAxis(timeframes[timeframe_idx]),
-            smallAxis: make_yAxis('right', 'Features, LWG, PRs', 0, 80, 10),
+            smallAxis: make_yAxis('right', 'Features, LWG, PRs', 0, 90, 10),
         },
     };
 
