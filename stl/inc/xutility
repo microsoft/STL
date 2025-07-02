@@ -6301,6 +6301,10 @@ namespace ranges {
                         _Result = reinterpret_cast<_Ptr_t>(
                             const_cast<wchar_t*>(_CSTD wmemchr(reinterpret_cast<const wchar_t*>(_First_ptr),
                                 static_cast<wchar_t>(_Val), static_cast<size_t>(_Last - _First))));
+
+                        if (_Result == nullptr) {
+                            return _RANGES next(_STD move(_First), _Last);
+                        }
                     } else {
                         _STL_INTERNAL_STATIC_ASSERT(_Elements_are_1_byte);
                         size_t _Count;
