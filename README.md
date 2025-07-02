@@ -492,6 +492,12 @@ cmake -B out\bench -S benchmarks -G Ninja -DSTL_BINARY_DIR=out\x64 -DCMAKE_CXX_C
 cmake --build out\bench
 ```
 
+To run a benchmark on specific cores (for example to run on P cores or on E cores) and with higher priority
+(to avoid interference), use `start` command with parameters:
+
+```
+start /b /wait /high /affinity 0F out\bench\benchmark-std_copy
+```
 
 # Editing And Testing The Debugger Visualizer
 
