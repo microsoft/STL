@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#ifndef _VCRT_ALLOW_INTERNALS
+#define _VCRT_ALLOW_INTERNALS
+#endif
+
 #include <ppltasks.h>
 
 #if defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
