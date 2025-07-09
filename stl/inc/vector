@@ -3790,7 +3790,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _Vb
             _Iter_diff_t<_VbIt> _Count = _Popcount_impl(_FirstVal);
             ++_VbFirst;
 
-            const _Iter_diff_t<_VbIt> _Bits = (_VbLast - _VbFirst) * _VBITS;
+            const auto _Bits                = static_cast<_Iter_diff_t<_VbIt>>(_VbLast - _VbFirst) * _VBITS;
             _Iter_diff_t<_VbIt> _Count_ones = 0;
 
             for (; _VbFirst != _VbLast; ++_VbFirst) {
