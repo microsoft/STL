@@ -39,7 +39,7 @@ foreach ($workload in $VisualStudioWorkloads) {
 }
 
 # https://github.com/PowerShell/PowerShell/releases/latest
-$PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.1/PowerShell-7.5.1-win-x64.msi'
+$PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.2/PowerShell-7.5.2-win-x64.msi'
 $PowerShellArgs = @('/quiet', '/norestart')
 
 $PythonUrl = 'https://www.python.org/ftp/python/3.13.4/python-3.13.4-amd64.exe'
