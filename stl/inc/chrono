@@ -5733,110 +5733,111 @@ namespace chrono {
                           || _Is_specialization_v<_Ty, time_point> || _Is_specialization_v<_Ty, _Local_time_format_t>
                           || _Is_specialization_v<_Ty, hh_mm_ss>) {
                 return;
-            }
+            } else {
+                const auto _Validate = [&] {
+                    constexpr bool _Is_ymd = _Is_any_of_v<_Ty, year_month_day, year_month_day_last, year_month_weekday,
+                        year_month_weekday_last>;
 
-            const auto _Validate = [&] {
-                constexpr bool _Is_ymd =
-                    _Is_any_of_v<_Ty, year_month_day, year_month_day_last, year_month_weekday, year_month_weekday_last>;
+                    switch (_Spec._Type) {
+                    case 'a':
+                    case 'A':
+                    case 'u':
+                    case 'w':
+                        if constexpr (_Is_any_of_v<_Ty, weekday, weekday_last>) {
+                            return _Val.ok();
+                        } else if constexpr (_Is_any_of_v<_Ty, weekday_indexed, year_month_weekday,
+                                                 year_month_weekday_last>) {
+                            return _Val.weekday().ok();
+                        } else if constexpr (is_same_v<_Ty, month_weekday>) {
+                            return _Val.weekday_indexed().weekday().ok();
+                        } else if constexpr (is_same_v<_Ty, month_weekday_last>) {
+                            return _Val.weekday_last().ok();
+                        } else if constexpr (_Is_any_of_v<_Ty, year_month_day, year_month_day_last>) {
+                            return _Val.ok();
+                        }
+                        break;
 
-                switch (_Spec._Type) {
-                case 'a':
-                case 'A':
-                case 'u':
-                case 'w':
-                    if constexpr (_Is_any_of_v<_Ty, weekday, weekday_last>) {
-                        return _Val.ok();
-                    } else if constexpr (_Is_any_of_v<_Ty, weekday_indexed, year_month_weekday,
-                                             year_month_weekday_last>) {
-                        return _Val.weekday().ok();
-                    } else if constexpr (is_same_v<_Ty, month_weekday>) {
-                        return _Val.weekday_indexed().weekday().ok();
-                    } else if constexpr (is_same_v<_Ty, month_weekday_last>) {
-                        return _Val.weekday_last().ok();
-                    } else if constexpr (_Is_any_of_v<_Ty, year_month_day, year_month_day_last>) {
-                        return _Val.ok();
-                    }
-                    break;
+                    case 'b':
+                    case 'B':
+                    case 'h':
+                    case 'm':
+                        if constexpr (is_same_v<_Ty, month>) {
+                            return _Val.ok();
+                        } else if constexpr (_Is_any_of_v<_Ty, month_day, month_day_last, month_weekday,
+                                                 month_weekday_last, year_month>
+                                             || _Is_ymd) {
+                            return _Val.month().ok();
+                        }
+                        break;
 
-                case 'b':
-                case 'B':
-                case 'h':
-                case 'm':
-                    if constexpr (is_same_v<_Ty, month>) {
-                        return _Val.ok();
-                    } else if constexpr (_Is_any_of_v<_Ty, month_day, month_day_last, month_weekday, month_weekday_last,
-                                             year_month>
-                                         || _Is_ymd) {
-                        return _Val.month().ok();
-                    }
-                    break;
+                    case 'C':
+                    case 'y':
+                    case 'Y':
+                        if constexpr (is_same_v<_Ty, year>) {
+                            return _Val.ok();
+                        } else if constexpr (is_same_v<_Ty, year_month> || _Is_ymd) {
+                            return _Val.year().ok();
+                        }
+                        break;
 
-                case 'C':
-                case 'y':
-                case 'Y':
-                    if constexpr (is_same_v<_Ty, year>) {
-                        return _Val.ok();
-                    } else if constexpr (is_same_v<_Ty, year_month> || _Is_ymd) {
-                        return _Val.year().ok();
-                    }
-                    break;
+                    case 'd':
+                    case 'e':
+                        if constexpr (_Is_any_of_v<_Ty, day, month_day_last>) {
+                            return _Val.ok();
+                        } else if constexpr (is_same_v<_Ty, month_day>) {
+                            return _Val.day().ok();
+                        } else if constexpr (_Is_ymd) {
+                            const year_month_day& _Ymd{_Val};
+                            return _Ymd.day().ok();
+                        }
+                        break;
 
-                case 'd':
-                case 'e':
-                    if constexpr (_Is_any_of_v<_Ty, day, month_day_last>) {
-                        return _Val.ok();
-                    } else if constexpr (is_same_v<_Ty, month_day>) {
-                        return _Val.day().ok();
-                    } else if constexpr (_Is_ymd) {
-                        const year_month_day& _Ymd{_Val};
-                        return _Ymd.day().ok();
-                    }
-                    break;
+                    case 'D':
+                    case 'F':
+                        if constexpr (_Has_ok<_Ty>) {
+                            return _Val.ok();
+                        }
+                        break;
 
-                case 'D':
-                case 'F':
-                    if constexpr (_Has_ok<_Ty>) {
-                        return _Val.ok();
-                    }
-                    break;
+                    case 'j':
+                        if constexpr (is_same_v<_Ty, month_day>) {
+                            if (_Val.month() > February) {
+                                _Throw_format_error("The day of year for a month_day past February is ambiguous.");
+                            }
+                            return true;
+                        } else if constexpr (is_same_v<_Ty, month_day_last>) {
+                            if (_Val.month() >= February) {
+                                _Throw_format_error(
+                                    "The day of year for a month_day_last other than January is ambiguous");
+                            }
+                            return true;
+                        } else if constexpr (_Is_ymd) {
+                            return _Val.ok();
+                        }
+                        break;
 
-                case 'j':
-                    if constexpr (is_same_v<_Ty, month_day>) {
-                        if (_Val.month() > February) {
-                            _Throw_format_error("The day of year for a month_day past February is ambiguous.");
+                    case 'g':
+                    case 'G':
+                    case 'U':
+                    case 'V':
+                    case 'W':
+                        if constexpr (_Is_ymd) {
+                            return _Val.ok();
+                        }
+                        break;
+
+                    default:
+                        if constexpr (_Has_ok<_Ty>) {
+                            return _Val.ok();
                         }
                         return true;
-                    } else if constexpr (is_same_v<_Ty, month_day_last>) {
-                        if (_Val.month() >= February) {
-                            _Throw_format_error("The day of year for a month_day_last other than January is ambiguous");
-                        }
-                        return true;
-                    } else if constexpr (_Is_ymd) {
-                        return _Val.ok();
                     }
-                    break;
-
-                case 'g':
-                case 'G':
-                case 'U':
-                case 'V':
-                case 'W':
-                    if constexpr (_Is_ymd) {
-                        return _Val.ok();
-                    }
-                    break;
-
-                default:
-                    if constexpr (_Has_ok<_Ty>) {
-                        return _Val.ok();
-                    }
-                    return true;
+                    _STL_INTERNAL_CHECK(false);
+                    return false;
+                };
+                if (!_Validate()) {
+                    _Throw_format_error("Cannot localize out-of-bounds time point.");
                 }
-                _STL_INTERNAL_CHECK(false);
-                return false;
-            };
-            if (!_Validate()) {
-                _Throw_format_error("Cannot localize out-of-bounds time point.");
             }
         }
 
