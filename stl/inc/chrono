@@ -5054,6 +5054,18 @@ namespace chrono {
             auto _Tm    = _Fill_tm(year_month_day{_Val});
             _Tm.tm_wday = static_cast<int>(_Val.weekday().c_encoding());
             return _Tm;
+        } else if constexpr (_Is_any_of_v<_Ty, sys_info, local_info>) {
+            return {}; // none of the valid conversion specifiers need tm fields
+        } else if constexpr (_Is_specialization_v<_Ty, time_point>) {
+            const auto _Dp = _CHRONO floor<days>(_Val);
+            const year_month_day _Ymd{_Dp};
+            const hh_mm_ss _Time{_Val - _Dp};
+            const auto _Hms = _Fill_tm(_Time);
+            auto _Tm        = _Fill_tm(_Ymd);
+            _Tm.tm_sec      = _Hms.tm_sec;
+            _Tm.tm_min      = _Hms.tm_min;
+            _Tm.tm_hour     = _Hms.tm_hour;
+            return _Tm;
         } else if constexpr (is_same_v<_Ty, day>) {
             _Day = static_cast<unsigned int>(_Val);
         } else if constexpr (is_same_v<_Ty, month>) {
@@ -5100,18 +5112,6 @@ namespace chrono {
             _Hours   = _Val.hours().count();
             _Minutes = _Val.minutes().count();
             _Seconds = static_cast<int>(_Val.seconds().count());
-        } else if constexpr (_Is_any_of_v<_Ty, sys_info, local_info>) {
-            return {}; // none of the valid conversion specifiers need tm fields
-        } else if constexpr (_Is_specialization_v<_Ty, time_point>) {
-            const auto _Dp = _CHRONO floor<days>(_Val);
-            const year_month_day _Ymd{_Dp};
-            const hh_mm_ss _Time{_Val - _Dp};
-            const auto _Hms = _Fill_tm(_Time);
-            auto _Tm        = _Fill_tm(_Ymd);
-            _Tm.tm_sec      = _Hms.tm_sec;
-            _Tm.tm_min      = _Hms.tm_min;
-            _Tm.tm_hour     = _Hms.tm_hour;
-            return _Tm;
         }
 
         tm _Time;
