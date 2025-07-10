@@ -6290,7 +6290,7 @@ namespace ranges {
                 _Ptr_t _Result;
 #if _USE_STD_VECTOR_ALGORITHMS
                 if constexpr (_Is_sized) {
-                    // When _Is_sized && _Elements_are_1_byte, prefer this over memchr() for performance
+                    // Prefer this over memchr()/wmemchr() below for performance
                     const auto _Last_ptr = _First_ptr + static_cast<ptrdiff_t>(_Last - _First);
                     _Result              = _STD _Find_vectorized(_First_ptr, _Last_ptr, _Val);
                 } else
