@@ -6270,10 +6270,10 @@ namespace ranges {
         constexpr bool _Elements_are_2_bytes = sizeof(_Iter_value_t<_It>) == 2;
         constexpr bool _Is_sized             = sized_sentinel_for<_Se, _It>;
 
-        if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty>
-                      && (_Elements_are_1_byte ? _Is_sized || same_as<_Se, unreachable_sentinel_t>
-                                               : _Is_sized && (_Elements_are_2_bytes || _USE_STD_VECTOR_ALGORITHMS))
-                      && same_as<_Pj, identity>) {
+        if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && same_as<_Pj, identity>
+                      && (_Elements_are_1_byte    ? _Is_sized || same_as<_Se, unreachable_sentinel_t>
+                          : _Elements_are_2_bytes ? _Is_sized
+                                                  : _Is_sized && _USE_STD_VECTOR_ALGORITHMS)) {
             if (!_STD is_constant_evaluated()) {
                 if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
                     if constexpr (_Is_sized) {
