@@ -5050,6 +5050,10 @@ namespace chrono {
             return _Fill_tm(hh_mm_ss{_Val});
         } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
             return _Fill_tm(_Val._Time);
+        } else if constexpr (_Is_any_of_v<_Ty, year_month_weekday, year_month_weekday_last>) {
+            auto _Tm    = _Fill_tm(year_month_day{_Val});
+            _Tm.tm_wday = static_cast<int>(_Val.weekday().c_encoding());
+            return _Tm;
         } else if constexpr (is_same_v<_Ty, day>) {
             _Day = static_cast<unsigned int>(_Val);
         } else if constexpr (is_same_v<_Ty, month>) {
@@ -5092,10 +5096,6 @@ namespace chrono {
                 _Weekday                   = _Ymd._Calculate_weekday();
                 _Yearday = (static_cast<sys_days>(_Val) - static_cast<sys_days>(_Val.year() / January / 1)).count();
             }
-        } else if constexpr (_Is_any_of_v<_Ty, year_month_weekday, year_month_weekday_last>) {
-            auto _Tm    = _Fill_tm(year_month_day{_Val});
-            _Tm.tm_wday = static_cast<int>(_Val.weekday().c_encoding());
-            return _Tm;
         } else if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
             _Hours   = _Val.hours().count();
             _Minutes = _Val.minutes().count();
