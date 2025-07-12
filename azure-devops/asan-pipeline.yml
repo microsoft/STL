@@ -45,4 +45,4 @@ stages:
           asanBuild: true
           testTargets: STL-ASan-CI
 
-  # no coverage for ARM and ARM64
+  # no coverage for ARM64
