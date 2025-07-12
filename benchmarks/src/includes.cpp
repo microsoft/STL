@@ -111,6 +111,16 @@ void common_args(auto bm) {
     }
 }
 
+BENCHMARK(bm_includes<uint8_t, alg_type::std_fn>)->Apply(common_args);
+BENCHMARK(bm_includes<uint16_t, alg_type::std_fn>)->Apply(common_args);
+BENCHMARK(bm_includes<uint32_t, alg_type::std_fn>)->Apply(common_args);
+BENCHMARK(bm_includes<uint64_t, alg_type::std_fn>)->Apply(common_args);
+
+BENCHMARK(bm_includes<uint8_t, alg_type::rng>)->Apply(common_args);
+BENCHMARK(bm_includes<uint16_t, alg_type::rng>)->Apply(common_args);
+BENCHMARK(bm_includes<uint32_t, alg_type::rng>)->Apply(common_args);
+BENCHMARK(bm_includes<uint64_t, alg_type::rng>)->Apply(common_args);
+
 BENCHMARK(bm_includes<int8_t, alg_type::std_fn>)->Apply(common_args);
 BENCHMARK(bm_includes<int16_t, alg_type::std_fn>)->Apply(common_args);
 BENCHMARK(bm_includes<int32_t, alg_type::std_fn>)->Apply(common_args);
