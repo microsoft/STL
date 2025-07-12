@@ -138,6 +138,10 @@ std/language.support/support.limits/support.limits.general/cstring.version.compi
 # libc++ has not implemented P3323R1: "Forbid atomic<cv T>, Specify atomic_ref<cv T>"
 std/atomics/atomics.ref/member_types.compile.pass.cpp FAIL
 
+# libc++ has not implemented P3503R3 "Make Type-Erased Allocator Use In promise And packaged_task Consistent"
+std/thread/futures/futures.promise/uses_allocator.pass.cpp FAIL
+std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
+
 # Various bogosity (LLVM-D141004), warning C6011: Dereferencing NULL pointer
 # Note: The :1 (ASan) configuration doesn't run static analysis.
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_const_lvalue_pair.pass.cpp:0 FAIL
