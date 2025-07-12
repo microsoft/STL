@@ -2107,6 +2107,10 @@ struct std::common_type<std::default_sentinel_t, ::iter_ops::trace_iterator<Cate
 namespace iter_ops {
     using ranges::advance, ranges::distance, ranges::next, ranges::prev;
 
+    template <class I, class S>
+    concept can_call_ranges_difference =
+        requires(I&& it, S&& se) { distance(std::forward<I>(it), std::forward<S>(se)); };
+
     constexpr bool test_iter_forms() {
         {
             // Call next(i), validating that ++i is called once
@@ -3098,7 +3102,6 @@ namespace iter_ops {
         }
 
         {
-#ifndef __EDG__ // TRANSITION, VSO-1898890
             // Call distance(i, s) with arrays which must be decayed to pointers.
             // (This behavior was regressed by LWG-3392.)
             int some_ints[] = {1, 2, 3};
@@ -3116,7 +3119,23 @@ namespace iter_ops {
             static_assert(noexcept(distance(const_ints + 1, const_ints)));
             assert(distance(const_ints, const_ints) == 0);
             static_assert(noexcept(distance(const_ints, const_ints)));
-#endif // ^^^ no workaround ^^^
+        }
+
+        { // Test LWG-4242 "ranges::distance does not work with volatile iterators"
+            static_assert(can_call_ranges_difference<int* volatile, int[3]>);
+            static_assert(can_call_ranges_difference<int* volatile&, int[3]>);
+
+            // ranges::distance should be well-constrained for non-pointer volatile iterators.
+            static_assert(
+                !can_call_ranges_difference<std::reverse_iterator<int*> volatile, std::reverse_iterator<int*>>);
+            static_assert(
+                !can_call_ranges_difference<std::reverse_iterator<int*> volatile&, std::reverse_iterator<int*>>);
+
+            if (!std::is_constant_evaluated()) {
+                int arr[]{1, 2, 3};
+                int* volatile ptr = arr;
+                assert(distance(ptr, arr + 3) == 3);
+            }
         }
 
         return true;
