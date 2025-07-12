@@ -2048,9 +2048,8 @@ _NODISCARD bool _Hash_equal(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _
                 return false;
             }
         }
+        return true;
     }
-
-    return true;
 }
 _STD_END
 
