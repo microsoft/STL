@@ -681,6 +681,7 @@ tests\P2440R1_ranges_alg_shift_left
 tests\P2440R1_ranges_alg_shift_right
 tests\P2440R1_ranges_numeric_iota
 tests\P2441R2_views_join_with
+tests\P2442R1_signed128_div_ceil
 tests\P2442R1_views_chunk
 tests\P2442R1_views_chunk_death
 tests\P2442R1_views_slide
