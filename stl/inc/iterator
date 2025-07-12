@@ -1312,12 +1312,12 @@ public:
     }
 
     _NODISCARD friend constexpr iter_difference_t<_Iter> operator-(
-        const counted_iterator& _Left, default_sentinel_t) noexcept /* strengthened */ {
+        const counted_iterator& _Left, default_sentinel_t) noexcept {
         return -_Left._Length;
     }
 
     _NODISCARD friend constexpr iter_difference_t<_Iter> operator-(
-        default_sentinel_t, const counted_iterator& _Right) noexcept /* strengthened */ {
+        default_sentinel_t, const counted_iterator& _Right) noexcept {
         return _Right._Length;
     }
 
@@ -1342,8 +1342,7 @@ public:
         return _Left._Length == _Right.count();
     }
 
-    _NODISCARD friend constexpr bool operator==(const counted_iterator& _Left, default_sentinel_t) noexcept
-    /* strengthened */ {
+    _NODISCARD friend constexpr bool operator==(const counted_iterator& _Left, default_sentinel_t) noexcept {
         return _Left._Length == 0;
     }
 
