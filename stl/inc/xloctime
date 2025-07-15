@@ -418,11 +418,13 @@ protected:
         if (!(_Res & ios_base::failbit)) {
             if (_Digits_read <= 2) {
                 if (_Ans < 69) {
+                    // CodeQL [SM03231] This is parsing tm_year (years since 1900); leap years are irrelevant.
                     _Pt->tm_year = _Ans + 100; // [00, 68] parsed as [2000, 2068]
                 } else if (_Ans < 100) {
                     _Pt->tm_year = _Ans; // [69, 99] parsed as [1969, 1999]
                 }
             } else {
+                // CodeQL [SM03231] This is parsing tm_year (years since 1900); leap years are irrelevant.
                 _Pt->tm_year = _Ans - 1900; // parsed literally
             }
         }
@@ -456,6 +458,7 @@ protected:
         case 'C':
             _State |= _Getint(_First, _Last, 0, 99, _Ans, _Ctype_fac);
             if (!(_State & ios_base::failbit)) {
+                // CodeQL [SM03231] This is parsing tm_year (years since 1900); leap years are irrelevant.
                 _Pt->tm_year = _Ans * 100 - 1900; // convert to century
             }
 
@@ -549,7 +552,12 @@ protected:
         case 'y':
             _State |= _Getint(_First, _Last, 0, 99, _Ans, _Ctype_fac);
             if (!(_State & ios_base::failbit)) {
-                _Pt->tm_year = _Ans < 69 ? _Ans + 100 : _Ans;
+                if (_Ans < 69) {
+                    // CodeQL [SM03231] This is parsing tm_year (years since 1900); leap years are irrelevant.
+                    _Pt->tm_year = _Ans + 100; // [00, 68] parsed as [2000, 2068]
+                } else {
+                    _Pt->tm_year = _Ans; // [69, 99] parsed as [1969, 1999]
+                }
             }
 
             break;
@@ -557,7 +565,8 @@ protected:
         case 'Y':
             _State |= _Getint(_First, _Last, 0, 9999, _Ans, _Ctype_fac);
             if (!(_State & ios_base::failbit)) {
-                _Pt->tm_year = _Ans - 1900;
+                // CodeQL [SM03231] This is parsing tm_year (years since 1900); leap years are irrelevant.
+                _Pt->tm_year = _Ans - 1900; // parsed literally
             }
             break;
 

@@ -224,11 +224,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
           </Otherwise>
         </Choose>
       </When>
-      <When Condition="'$(BuildArchitecture)' == 'arm'">
-        <PropertyGroup>
-          <ExpectedExportsList>$(MSBuildThisFileDirectory)\arm.exports</ExpectedExportsList>
-        </PropertyGroup>
-      </When>
       <When Condition="'$(BuildArchitecture)' == 'arm64'">
         <PropertyGroup>
           <ExpectedExportsList>$(MSBuildThisFileDirectory)\arm64.exports</ExpectedExportsList>

@@ -30,6 +30,9 @@ std/time/time.syn/formatter.year_month_weekday.pass.cpp:1 FAIL
 std/time/time.syn/formatter.zoned_time.pass.cpp:0 FAIL
 std/time/time.syn/formatter.zoned_time.pass.cpp:1 FAIL
 
+# LLVM-74838: [libc++] std::regex match_prev_avail implementation is regressed
+std/re/re.const/re.matchflag/match_prev_avail.pass.cpp FAIL
+
 # LLVM-90196: [libc++][format] Formatting range with m range-type is incorrect
 std/utilities/format/format.range/format.range.formatter/format.functions.format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.formatter/format.functions.vformat.pass.cpp FAIL
@@ -592,6 +595,25 @@ std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
 
+# GH-5393: <regex>: What names can and should regex_traits::lookup_collatename() recognize?
+std/re/re.alg/re.alg.match/awk.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.match/awk.pass.cpp FAIL
+std/re/re.alg/re.alg.match/basic.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.match/basic.pass.cpp FAIL
+std/re/re.alg/re.alg.match/ecma.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.match/ecma.pass.cpp FAIL
+std/re/re.alg/re.alg.match/extended.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.match/extended.pass.cpp FAIL
+std/re/re.alg/re.alg.search/awk.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.search/awk.pass.cpp FAIL
+std/re/re.alg/re.alg.search/basic.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.search/basic.pass.cpp FAIL
+std/re/re.alg/re.alg.search/ecma.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.search/ecma.pass.cpp FAIL
+std/re/re.alg/re.alg.search/extended.locale.pass.cpp FAIL
+std/re/re.alg/re.alg.search/extended.pass.cpp FAIL
+std/re/re.traits/lookup_collatename.pass.cpp FAIL
+
 
 # *** VCRUNTIME BUGS ***
 
@@ -754,17 +776,6 @@ std/utilities/format/format.functions/fill.unicode.pass.cpp:1 FAIL
 
 # *** LIKELY STL BUGS ***
 # Not analyzed, likely STL bugs. Various assertions.
-std/re/re.alg/re.alg.match/awk.pass.cpp FAIL
-std/re/re.alg/re.alg.match/basic.pass.cpp FAIL
-std/re/re.alg/re.alg.match/ecma.pass.cpp FAIL
-std/re/re.alg/re.alg.match/extended.pass.cpp FAIL
-std/re/re.alg/re.alg.search/awk.pass.cpp FAIL
-std/re/re.alg/re.alg.search/basic.pass.cpp FAIL
-std/re/re.alg/re.alg.search/ecma.pass.cpp FAIL
-std/re/re.alg/re.alg.search/extended.pass.cpp FAIL
-std/re/re.traits/lookup_collatename.pass.cpp FAIL
-
-# Not analyzed, likely STL bugs. Various assertions.
 std/numerics/complex.number/complex.ops/complex_divide_complex.pass.cpp FAIL
 std/numerics/complex.number/complex.ops/complex_times_complex.pass.cpp FAIL
 std/numerics/complex.number/complex.ops/scalar_divide_complex.pass.cpp FAIL
@@ -891,19 +902,6 @@ std/utilities/tuple/tuple.tuple/tuple.cnstr/deduct.pass.cpp:1 FAIL
 # Not analyzed. Frequent timeouts
 std/containers/sequences/deque/deque.modifiers/insert_iter_iter.pass.cpp SKIPPED
 
-# Not analyzed. Failing after LLVM-D75622.
-std/re/re.const/re.matchflag/match_prev_avail.pass.cpp FAIL
-
-# Not analyzed. Failing for "[a[.ch.]z]".
-std/re/re.alg/re.alg.match/awk.locale.pass.cpp FAIL
-std/re/re.alg/re.alg.match/basic.locale.pass.cpp FAIL
-std/re/re.alg/re.alg.match/ecma.locale.pass.cpp FAIL
-std/re/re.alg/re.alg.match/extended.locale.pass.cpp FAIL
-std/re/re.alg/re.alg.search/awk.locale.pass.cpp FAIL
-std/re/re.alg/re.alg.search/basic.locale.pass.cpp FAIL
-std/re/re.alg/re.alg.search/ecma.locale.pass.cpp FAIL
-std/re/re.alg/re.alg.search/extended.locale.pass.cpp FAIL
-
 # Not analyzed. Seems to force a sign conversion error?
 std/iterators/iterator.primitives/iterator.operations/advance.pass.cpp SKIPPED
 
@@ -913,8 +911,8 @@ std/utilities/memory/unique.ptr/iterator_concept_conformance.compile.pass.cpp:2 
 # Not analyzed. Runs forever
 std/numerics/rand/rand.dist/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp SKIPPED
 
-# Not analyzed. This test seemingly fails for ARM/ARM64 platforms because MSVC STL considers `tinyness_before` to be
-# always `false` even for ARM, but libc++ considers it to be `true` for floating-point types on ARM.
+# Not analyzed. This test seemingly fails for ARM64 because MSVC STL considers `tinyness_before` to be
+# always `false` even for ARM64, but libc++ considers it to be `true` for floating-point types on ARM64.
 # I don't know which is right.
 std/language.support/support.limits/limits/numeric.limits.members/tinyness_before.pass.cpp SKIPPED
 
@@ -1336,16 +1334,16 @@ std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.pass.cpp FAIL
 
 # *** XFAILS WHICH PASS ***
 # These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
-# However, for ARM and ARM64, they successfully compile, then we don't run them.
+# However, for ARM64, they successfully compile, then we don't run them.
 # Our test harness properly handles the ambiguity of whether a FAIL line in this file means "fails to compile"
-# or "fails to run", combined with the `build_only` setting that we use for ARM and ARM64.
+# or "fails to run", combined with the `build_only` setting that we use for ARM64.
 # The upstream logic that parses `// XFAIL: msvc` bypasses this, so it's interpreted as "this always fails",
-# so compilation success for ARM and ARM64 is reported as unexpectedly passing.
+# so compilation success for ARM64 is reported as unexpectedly passing.
 # The test harness should be fixed to treat `// XFAIL: msvc` the same way that FAIL lines here are treated.
 # In the meantime, because this is platform-dependent and we don't have a way to express that in this file,
 # we need to mark these tests as SKIPPED.
 # Finally, note that only :0 (MSVC) and :2 (Clang) configurations are mentioned here,
-# because we don't run :1 (ASan) for ARM and ARM64.
+# because we don't run :1 (ASan) for ARM64.
 std/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/ostream.pass.cpp:0 SKIPPED
 std/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/ostream.pass.cpp:2 SKIPPED
 std/time/time.clock/time.clock.system/sys_date.ostream.pass.cpp:0 SKIPPED
