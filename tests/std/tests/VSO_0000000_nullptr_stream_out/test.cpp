@@ -64,4 +64,17 @@ int main() {
     STATIC_ASSERT(OstreamInsertable<PublicOstream, int>);
     STATIC_ASSERT(OstreamInsertable<PrivateOstream&, int>);
     STATIC_ASSERT(!OstreamInsertable<PrivateOstream, int>);
+
+    { // Test P3223R2 "Making std::istream::ignore Less Surprising"
+        istringstream in{"\xF0\x9F\xA4\xA1 Clown Face"};
+        decltype(auto) ret = in.ignore(100, '\xA1');
+
+        STATIC_ASSERT(is_same_v<decltype(ret), istream&>);
+        assert(&ret == &static_cast<istream&>(in));
+        assert(in.gcount() == 4);
+
+        string s;
+        in >> s;
+        assert(s == "Clown");
+    }
 }
