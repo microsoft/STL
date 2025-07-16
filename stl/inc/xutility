@@ -3568,6 +3568,26 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Advance_fn advance;
 
+    // ranges::distance should be well-constrained when volatile iterators are involved.
+    template <class _Sent, class _IterOrArr>
+    concept _Additionally_subtractable_for_distance =
+        is_array_v<remove_reference_t<_IterOrArr>> || requires(_IterOrArr& __it, _Sent& __se) {
+            _STD _Fake_copy_init<iter_difference_t<decay_t<_IterOrArr>>>(__se - __it);
+        };
+
+    template <class _Iter>
+    struct _Distance_subtract_source {
+        using type = _Iter&;
+    };
+    template <class _Arr>
+        requires is_array_v<remove_reference_t<_Arr>>
+    struct _Distance_subtract_source<_Arr> {
+        using type = decay_t<_Arr>;
+    };
+
+    template <class _IterOrArr>
+    using _Distance_subtract_source_t = _Distance_subtract_source<_IterOrArr>::type;
+
     class _Distance_fn {
     public:
         template <class _It, sentinel_for<_It> _Se>
@@ -3582,10 +3602,11 @@ namespace ranges {
         }
 
         template <class _It, sized_sentinel_for<decay_t<_It>> _Se>
+            requires _Additionally_subtractable_for_distance<const _Se, _It>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr iter_difference_t<decay_t<_It>> operator()(
             _It&& _First, const _Se _Last) _CONST_CALL_OPERATOR
-            noexcept(noexcept(_Last - static_cast<const decay_t<_It>&>(_First))) /* strengthened */ {
-            return _Last - static_cast<const decay_t<_It>&>(_First);
+            noexcept(noexcept(_Last - static_cast<_Distance_subtract_source_t<_It>>(_First))) /* strengthened */ {
+            return _Last - static_cast<_Distance_subtract_source_t<_It>>(_First);
         }
 
         template <range _Rng>
