@@ -47,26 +47,6 @@
       }
     },
     {
-      "name": "ARM",
-      "inherits": "base",
-      "description": "ARM Ninja Config",
-      "architecture": {
-        "strategy": "external",
-        "value": "ARM"
-      },
-      "condition": {
-        "type": "inList",
-        "string": "$env{Platform}",
-        "list": [
-          "arm",
-          ""
-        ]
-      },
-      "cacheVariables": {
-        "TESTS_BUILD_ONLY": true
-      }
-    },
-    {
       "name": "ARM64",
       "inherits": "base",
       "description": "ARM64 Ninja Config",
@@ -118,11 +98,6 @@
       "name": "x64",
       "configurePreset": "x64",
       "description": "Build x64 STL"
-    },
-    {
-      "name": "ARM",
-      "configurePreset": "ARM",
-      "description": "Build ARM STL"
     },
     {
       "name": "ARM64",
