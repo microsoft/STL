@@ -5474,7 +5474,7 @@ namespace ranges {
     _NODISCARD constexpr _Int _Div_ceil(const _Int _Num, const _Int _Denom) noexcept {
         _STL_INTERNAL_STATIC_ASSERT(_Signed_integer_like<_Int>);
         _STL_INTERNAL_CHECK(_Num >= 0);
-        _STL_INTERNAL_CHECK(_Denom >= 0);
+        _STL_INTERNAL_CHECK(_Denom > 0);
 
         if constexpr (same_as<_Int, _Signed128>) {
             return _Int::_Div_ceil(_Num, _Denom);

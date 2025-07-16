@@ -1496,7 +1496,7 @@ struct _Signed128 : _Base128 {
 #if _HAS_CXX23
     _NODISCARD static constexpr _Signed128 _Div_ceil(_Signed128 _Num, _Signed128 _Den) noexcept {
         // _STL_INTERNAL_CHECK(_Num >= 0);
-        // _STL_INTERNAL_CHECK(_Den >= 0);
+        // _STL_INTERNAL_CHECK(_Den > 0);
         return _Signed128{_Base128::_Div_ceil(_Num, _Den)};
     }
 #endif // _HAS_CXX23
