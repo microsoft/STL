@@ -306,6 +306,7 @@ public:
 
     template <class _Uty = remove_cv_t<_Ty>>
         requires (!is_same_v<remove_cvref_t<_Uty>, in_place_t> && !is_same_v<remove_cvref_t<_Uty>, expected>
+                     && !is_same_v<remove_cvref_t<_Uty>, unexpect_t>
                      && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected>
                      && (!is_same_v<remove_cv_t<_Ty>, bool>
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10655311
