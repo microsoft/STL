@@ -715,18 +715,20 @@ struct
         // establish _Den < _Num and _Num._Word[1] > 0
         if (_Den._Word[1] >= _Num._Word[1]) {
             if (_Den._Word[1] > _Num._Word[1]) {
-                return _Num != 0 ? 1 : 0;
+                return static_cast<_Base128>(_Num != 0);
             }
 
-            _Base128 _Rem;
-            if (_Den._Word[0] <= _Num._Word[0]) {
-                _Rem = _Num._Word[1] == 0 ? _Num._Word[0] % _Den._Word[0] : _Num._Word[0] - _Den._Word[0];
-            } else {
-                _Rem = _Num;
+            if (_Num._Word[1] == 0) {
+                _Base128 _Result = _Num._Word[0] / _Den._Word[0];
+                if (_Num._Word[0] % _Den._Word[0] != 0) {
+                    ++_Result;
+                }
+
+                return _Result;
             }
 
-            _Base128 _Result = _Num._Word[1] == 0 ? _Num._Word[0] / _Den._Word[0] : _Num._Word[0] >= _Den._Word[0];
-            if (_Rem != 0) {
+            _Base128 _Result = _Num._Word[0] >= _Den._Word[0];
+            if (_Num._Word[0] - _Den._Word[0] != 0) {
                 ++_Result;
             }
 
