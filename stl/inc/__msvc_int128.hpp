@@ -837,7 +837,6 @@ struct
         _Num._Word[1] = (static_cast<uint64_t>(__u[3]) << 32) | __u[2];
 #endif // _STL_128_INTRINSICS
 
-        _Num >>= __d;
         if (_Num != 0) {
             ++_Result;
         }
