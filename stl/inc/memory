@@ -3938,7 +3938,7 @@ _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() noexcept;
 } // extern "C"
 
 struct _Shared_ptr_spin_lock { // class to manage a spin lock for shared_ptr atomic operations
-    _Shared_ptr_spin_lock() { // lock the spin lock
+    _Shared_ptr_spin_lock() noexcept { // lock the spin lock
         _Lock_shared_ptr_spin_lock();
     }
 
