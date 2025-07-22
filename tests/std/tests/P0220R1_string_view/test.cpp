@@ -1229,14 +1229,20 @@ static_assert(!is_constructible_v<string, nullptr_t>);
 static_assert(!is_assignable_v<string&, nullptr_t>);
 #endif // _HAS_CXX23
 
-// Also test that no C6510 warning
+// Also test that basic_string_view produces no C6510 warning
+// when instantiated with custom character types.
+// GH-5563: Extend coverage to basic_string
 struct char_wrapper {
     char c;
 };
 
 template <>
 struct std::char_traits<char_wrapper> {
-    using char_type = char_wrapper;
+    using char_type  = char_wrapper;
+    using int_type   = int;
+    using pos_type   = char_traits<char>::pos_type;
+    using off_type   = char_traits<char>::off_type;
+    using state_type = char_traits<char>::state_type;
 
     static bool eq(char_wrapper lhs, char_wrapper rhs) {
         return lhs.c == rhs.c;
@@ -1247,18 +1253,76 @@ struct std::char_traits<char_wrapper> {
         return strlen(reinterpret_cast<const char*>(a));
     }
 
+    static char_wrapper* copy(char_wrapper* const first1, const char_wrapper* const first2, const size_t count) {
+        copy_n(first2, count, first1);
+        return first1;
+    }
+
+    static char_wrapper* move(char_wrapper* const first1, const char_wrapper* const first2, const size_t count) {
+        memmove(first1, first2, count * sizeof(char_wrapper));
+        return first1;
+    }
+
     static int compare(const char_wrapper* lhs, const char_wrapper* rhs, size_t count) {
         return char_traits<char>::compare(
             reinterpret_cast<const char*>(lhs), reinterpret_cast<const char*>(rhs), count);
     }
-};
 
-using WrappedSV = basic_string_view<char_wrapper, char_traits<char_wrapper>>;
+    static const char_wrapper* find(const char_wrapper* first, size_t count, const char_wrapper& ch) {
+        for (; 0 < count; --count, ++first) {
+            if (eq(*first, ch)) {
+                return first;
+            }
+        }
+
+        return nullptr;
+    }
+
+    static char_wrapper* assign(char_wrapper* const first, size_t count, const char_wrapper ch) {
+        for (char_wrapper* next = first; count > 0; --count, ++next) {
+            *next = ch;
+        }
+
+        return first;
+    }
+
+    static void assign(char_wrapper& left, const char_wrapper& right) {
+        left = right;
+    }
+
+    static bool lt(const char_wrapper left, const char_wrapper right) {
+        return char_traits<char>::lt(left.c, right.c);
+    }
+
+    static char_wrapper to_char_type(const int_type meta) {
+        return {char_traits<char>::to_char_type(meta)};
+    }
+
+    static int_type to_int_type(const char_wrapper ch) {
+        return char_traits<char>::to_int_type(ch.c);
+    }
+
+    static bool eq_int_type(const int_type left, const int_type right) {
+        return char_traits<char>::eq_int_type(left, right);
+    }
+
+    static int_type not_eof(const int_type meta) {
+        return char_traits<char>::not_eof(meta);
+    }
+
+    static int_type eof() {
+        return char_traits<char>::eof();
+    }
+};
 
 void test_C6510_warning() { // compile-only
     char_wrapper a[] = {{'a'}, {'b'}, {'c'}, {'\0'}};
-    WrappedSV sv(a);
+    basic_string_view<char_wrapper> sv(a);
     (void) sv;
+
+    // GH-5563: Extend test coverage to basic_string
+    basic_string<char_wrapper> s(a);
+    (void) s;
 }
 
 #if _HAS_CXX20

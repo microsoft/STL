@@ -580,6 +580,11 @@ concept _Contiguous_range_of =
     (_RANGES contiguous_range<_Rng>) && same_as<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _Ty>;
 #endif // _HAS_CXX23
 
+#pragma warning(push)
+// Invalid annotation: 'NullTerminated' property may only be used on buffers whose elements are of integral or pointer
+// type
+#pragma warning(disable : 6510)
+
 _EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_string { // null-terminated transparent array of elements
 private:
@@ -3194,6 +3199,8 @@ private:
 
     _Compressed_pair<_Alty, _Scary_val> _Mypair;
 };
+
+#pragma warning(pop)
 
 #if _HAS_CXX17
 template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
