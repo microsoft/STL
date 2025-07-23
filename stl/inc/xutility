@@ -876,14 +876,17 @@ namespace ranges {
                     return type_identity<decltype(iter_move(_STD declval<_Ty>()))>{}; // intentional ADL
                 } else if constexpr (_Can_deref<_Ty>) {
                     using _Ref = decltype(*_STD declval<_Ty>());
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1008447, VSO-2066340
                     if constexpr (is_function_v<remove_reference_t<_Ref>>) {
-                        // TRANSITION, VSO-1008447, VSO-2066340
-                        // Fuse this into the type_identity<_Ref>{} branch once MSVC is fixed.
                         return type_identity<_Ref&>{};
-                    } else if constexpr (is_lvalue_reference_v<_Ref>) {
-                        return type_identity<remove_reference_t<_Ref>&&>{};
-                    } else {
-                        return type_identity<_Ref>{};
+                    } else
+#endif // ^^^ workaround ^^^
+                    {
+                        if constexpr (is_lvalue_reference_v<_Ref>) {
+                            return type_identity<remove_reference_t<_Ref>&&>{};
+                        } else {
+                            return type_identity<_Ref>{};
+                        }
                     }
                 } else {
                     return _Must_have_ADL_found_iter_move_or_be_dereferenceable{};
