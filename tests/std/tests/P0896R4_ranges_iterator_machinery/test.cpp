@@ -3125,11 +3125,12 @@ namespace iter_ops {
             static_assert(can_call_ranges_difference<int* volatile, int[3]>);
             static_assert(can_call_ranges_difference<int* volatile&, int[3]>);
 
-            // ranges::distance should be well-constrained for non-pointer volatile iterators.
+            // Per an unnumbered LWG issue filed on 2025-07-24, ranges::distance should be well-constrained for
+            // non-pointer volatile iterators.
             static_assert(
-                !can_call_ranges_difference<std::reverse_iterator<int*> volatile, std::reverse_iterator<int*>>);
+                !can_call_ranges_difference<volatile std::reverse_iterator<int*>, std::reverse_iterator<int*>>);
             static_assert(
-                !can_call_ranges_difference<std::reverse_iterator<int*> volatile&, std::reverse_iterator<int*>>);
+                !can_call_ranges_difference<volatile std::reverse_iterator<int*>&, std::reverse_iterator<int*>>);
 
             if (!std::is_constant_evaluated()) {
                 int arr[]{1, 2, 3};
