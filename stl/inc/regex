@@ -4236,7 +4236,7 @@ _BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
                 }
 
                 _Node_assert* _Node = static_cast<_Node_assert*>(_Nx);
-                _First_arg          = _Skip(_First_arg, _Last, _Node->_Child);
+                _First_arg          = _Skip(_First_arg, _Last, _Node->_Child, _Recursion_depth + 1U);
                 _BidIt _Next;
                 for (;;) {
                     _Next = _Skip(_First_arg, _Last, _Node->_Next, _Recursion_depth + 1U);
@@ -4703,6 +4703,10 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_assert_group(bool _Neg) { // add as
 template <class _FwdIt, class _Elem, class _RxTraits>
 bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Wrapped_disjunction() { // add disjunction inside group
     ++_Disj_count;
+    if (_Disj_count >= 1000) { // hardcoded limit
+        _Error(regex_constants::error_stack);
+    }
+
     if (!(_L_flags & _L_empty_grp) && _Mchar == _Meta_rpar) {
         _Error(regex_constants::error_paren);
     } else if ((_L_flags & _L_nc_asrt) && _Mchar == _Meta_query) { // check for valid ECMAScript (?x ... ) group
