@@ -12,6 +12,10 @@
 #include <unordered_set>
 #include <utility>
 
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wnontrivial-memcall"
+#endif // __clang__
+
 using namespace std;
 
 #ifdef _WIN64
