@@ -7,6 +7,7 @@
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wsign-compare"
+#pragma clang diagnostic ignored "-Wcharacter-conversion"
 #endif // __clang__
 
 #include <algorithm>
