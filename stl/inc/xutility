@@ -3569,7 +3569,7 @@ namespace ranges {
     _EXPORT_STD inline constexpr _Advance_fn advance;
 
     template <class _Ty>
-    using _Distance_iterator_t = // per an unnumbered LWG issue filed on 2025-07-24
+    using _Distance_iterator_t = // per LWG-4303
         conditional_t<is_array_v<remove_reference_t<_Ty>>, decay_t<_Ty>, remove_const_t<remove_reference_t<_Ty>>>;
 
     class _Distance_fn {
