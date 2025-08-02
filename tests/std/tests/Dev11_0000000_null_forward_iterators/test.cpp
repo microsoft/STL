@@ -10,9 +10,6 @@
 #include <cstring>
 #include <deque>
 #include <experimental/filesystem>
-#if _HAS_CXX17
-#include <filesystem>
-#endif // _HAS_CXX17
 #include <forward_list>
 #include <iterator>
 #include <list>
@@ -20,14 +17,20 @@
 #include <new>
 #include <regex>
 #include <set>
-#if _HAS_CXX20
-#include <span>
-#endif // _HAS_CXX20
 #include <string>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+#if _HAS_CXX17
+#include <filesystem>
+#include <string_view>
+#endif // _HAS_CXX17
+
+#if _HAS_CXX20
+#include <span>
+#endif // _HAS_CXX20
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wnontrivial-memcall"
