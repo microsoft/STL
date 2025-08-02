@@ -528,6 +528,11 @@ public:
         return *this;
     }
 
+    template <class _CharType = _Elem, enable_if_t<is_same_v<_CharType, char>, int> = 0>
+    basic_istream& ignore(const streamsize _Count, const _Elem _Delim) {
+        return ignore(_Count, _Traits::to_int_type(_Delim));
+    }
+
     basic_istream& __CLR_OR_THIS_CALL read(_Elem* _Str, streamsize _Count) { // read up to _Count characters into buffer
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
