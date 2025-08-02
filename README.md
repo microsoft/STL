@@ -142,7 +142,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 # How To Build With The Visual Studio IDE
 
 1. Install Visual Studio 2022 17.14.8 Preview 1 or later.
-    * Select "Windows 11 SDK (10.0.26100.3916)" in the VS Installer.
+    * Select "Windows 11 SDK (10.0.26100.4188)" in the VS Installer.
     * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
     if you would like to build the ARM64/ARM64EC target.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
@@ -159,7 +159,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 # How To Build With A Native Tools Command Prompt
 
 1. Install Visual Studio 2022 17.14.8 Preview 1 or later.
-    * Select "Windows 11 SDK (10.0.26100.3916)" in the VS Installer.
+    * Select "Windows 11 SDK (10.0.26100.4188)" in the VS Installer.
     * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
     if you would like to build the ARM64/ARM64EC target.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
