@@ -53,30 +53,26 @@ inline bool operator!=(const stateful_allocator<T>& lhs, const stateful_allocato
     return lhs.state != rhs.state;
 }
 
-// warning C4582: 'garbage_data<std::weak_ptr<_Ty>>::data': constructor is not implicitly called
-// warning C4583: 'garbage_data<std::weak_ptr<_Ty>>::data': destructor is not implicitly called
-#pragma warning(push)
-#pragma warning(disable : 4582 4583)
 template <typename T>
-struct garbage_data {
-    union {
-        T data;
-    };
-
+class garbage_data {
+private:
+    alignas(T) unsigned char buf[sizeof(T)];
     bool constructed;
+
+public:
     garbage_data() : constructed(false) {
-        memset(&data, 0xCC, sizeof(data));
+        memset(buf, 0xCC, sizeof(T));
     }
 
     garbage_data(const garbage_data&)            = delete;
     garbage_data& operator=(const garbage_data&) = delete;
 
     T& get() {
-        return data;
+        return *ptr();
     }
 
     T* ptr() {
-        return &data;
+        return reinterpret_cast<T*>(buf);
     }
 
     T* operator->() {
@@ -92,11 +88,10 @@ struct garbage_data {
     template <typename... Args>
     void construct(Args&&... args) {
         assert(!constructed);
-        ::new (static_cast<void*>(&data)) T(forward<Args>(args)...);
+        ::new (static_cast<void*>(buf)) T(forward<Args>(args)...);
         constructed = true;
     }
 };
-#pragma warning(pop)
 
 template <typename Alloc>
 void assert_string_invariants(basic_string<char, char_traits<char>, Alloc>& target, const char* const expected) {
