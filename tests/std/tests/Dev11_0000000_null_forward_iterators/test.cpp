@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
 
@@ -31,10 +30,6 @@
 #if _HAS_CXX20
 #include <span>
 #endif // _HAS_CXX20
-
-#ifdef __clang__
-#pragma clang diagnostic ignored "-Wnontrivial-memcall"
-#endif // __clang__
 
 using namespace std;
 
@@ -102,14 +97,14 @@ void test_iterator() {
     }
 
     {
-        aligned_union_t<0, FwdIt> au3;
-        aligned_union_t<0, FwdIt> au4;
+        alignas(FwdIt) unsigned char buf3[sizeof(FwdIt)];
+        alignas(FwdIt) unsigned char buf4[sizeof(FwdIt)];
 
-        FwdIt* p3 = reinterpret_cast<FwdIt*>(&au3);
-        FwdIt* p4 = reinterpret_cast<FwdIt*>(&au4);
+        memset(buf3, 0xCC, sizeof(FwdIt));
+        memset(buf4, 0xDD, sizeof(FwdIt));
 
-        memset(p3, 0xCC, sizeof(FwdIt));
-        memset(p4, 0xDD, sizeof(FwdIt));
+        FwdIt* p3 = reinterpret_cast<FwdIt*>(buf3);
+        FwdIt* p4 = reinterpret_cast<FwdIt*>(buf4);
 
         new (p3) FwdIt{};
         new (p4) FwdIt{};
