@@ -5124,7 +5124,7 @@ namespace chrono {
                 .tm_year = _Year - 1900,
                 .tm_wday = _Weekday,
                 .tm_yday = _Yearday,
-                .tm_isdst{}
+                .tm_isdst{},
             };
         }
     }
@@ -6272,4 +6272,3 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma pack(pop)
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _CHRONO_
-
