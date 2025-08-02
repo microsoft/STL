@@ -6,8 +6,10 @@
 #pragma warning(disable : 4389) // signed/unsigned mismatch in arithmetic
 
 #ifdef __clang__
-#pragma clang diagnostic ignored "-Wsign-compare"
+#if __clang_major__ >= 21 // TRANSITION, unconditionally silence this warning when Clang 21 is available
 #pragma clang diagnostic ignored "-Wcharacter-conversion"
+#endif // __clang_major__ >= 21
+#pragma clang diagnostic ignored "-Wsign-compare"
 #endif // __clang__
 
 #include <algorithm>
