@@ -580,7 +580,7 @@ private:
 template <int = 0>
 #endif // ^^^ workaround ^^^
 constexpr bool _Are_bools_all_true(const initializer_list<bool> _Il) noexcept {
-    for (const auto _Elem : _Il) {
+    for (const auto& _Elem : _Il) {
         if (!_Elem) {
             return false;
         }
