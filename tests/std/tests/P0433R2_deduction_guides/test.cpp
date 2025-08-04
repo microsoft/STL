@@ -539,6 +539,34 @@ void test_array() {
     static_assert(is_same_v<decltype(a3), array<long, 3>>);
     static_assert(is_same_v<decltype(b), array<long, 3>>);
 
+    // GH-5665 "<array>: CTAD and element count limit" (stress test)
+    // TRANSITION, LLVM-119600, DevCom-10946374, test longer arrays when compiler bugs are fixed
+#if defined(_WIN64) || !defined(__clang__) // TRANSITION, unknown LLD failure
+#define MAKE10    0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+#define MAKE100   MAKE10, MAKE10, MAKE10, MAKE10, MAKE10, MAKE10, MAKE10, MAKE10, MAKE10, MAKE10
+#define MAKE1000  MAKE100, MAKE100, MAKE100, MAKE100, MAKE100, MAKE100, MAKE100, MAKE100, MAKE100, MAKE100
+#define MAKE10000 MAKE1000, MAKE1000, MAKE1000, MAKE1000, MAKE1000, MAKE1000, MAKE1000, MAKE1000, MAKE1000, MAKE1000
+    // clang-format off
+#define MAKEALL   MAKE10000, MAKE10000, MAKE10000, MAKE10000, MAKE10000, MAKE10000, \
+    MAKE1000, MAKE1000, MAKE1000, MAKE1000,                                         \
+    MAKE1000, MAKE100, MAKE100, MAKE100, MAKE100, MAKE100,                          \
+    MAKE10, MAKE10, MAKE10,                                                         \
+    0, 1, 2, 3, 4
+    // clang-format on
+
+    static constexpr array stress_test{MAKEALL};
+    static_assert(is_same_v<decltype(stress_test), const array<int, 65535>>);
+    for (size_t i = 0; i != stress_test.size(); ++i) {
+        assert(stress_test[i] == static_cast<int>(i) % 10);
+    }
+
+#undef MAKEALL
+#undef MAKE10000
+#undef MAKE1000
+#undef MAKE100
+#undef MAKE10
+#endif // ^^^ no workaround ^^^
+
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif // __clang__
