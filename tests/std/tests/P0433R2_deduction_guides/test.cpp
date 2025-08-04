@@ -547,8 +547,8 @@ void test_array() {
 #define MAKE10000 MAKE1000, MAKE1000, MAKE1000, MAKE1000, MAKE1000, MAKE1000, MAKE1000, MAKE1000, MAKE1000, MAKE1000
     // clang-format off
 #define MAKEALL   MAKE10000, MAKE10000, MAKE10000, MAKE10000, MAKE10000, MAKE10000, \
-    MAKE1000, MAKE1000, MAKE1000, MAKE1000,                                         \
-    MAKE1000, MAKE100, MAKE100, MAKE100, MAKE100, MAKE100,                          \
+    MAKE1000, MAKE1000, MAKE1000, MAKE1000, MAKE1000,                               \
+    MAKE100, MAKE100, MAKE100, MAKE100, MAKE100,                                    \
     MAKE10, MAKE10, MAKE10,                                                         \
     0, 1, 2, 3, 4
     // clang-format on
