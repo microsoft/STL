@@ -577,6 +577,8 @@ private:
 
 #if _HAS_CXX17
 #if defined(_WIN64) || !defined(__clang__) // TRANSITION, unknown LLD failure
+template <int = 0>
+#endif // ^^^ workaround ^^^
 constexpr bool _Are_bools_all_true(const initializer_list<bool> _Il) noexcept {
     for (const auto _Elem : _Il) {
         if (!_Elem) {
@@ -592,14 +594,6 @@ struct _Enforce_same {
         "N4950 [array.cons]/2: Mandates: (is_same_v<T, U> && ...) is true.");
     using type = _First;
 };
-#else // ^^^ no workaround / workaround vvv
-template <class _First, class... _Rest>
-struct _Enforce_same {
-    static_assert(
-        conjunction_v<is_same<_First, _Rest>...>, "N4950 [array.cons]/2: Mandates: (is_same_v<T, U> && ...) is true.");
-    using type = _First;
-};
-#endif // ^^^ workaround ^^^
 
 template <class _First, class... _Rest>
 array(_First, _Rest...) -> array<typename _Enforce_same<_First, _Rest...>::type, 1 + sizeof...(_Rest)>;
