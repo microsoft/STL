@@ -26,7 +26,7 @@ basic_string<UnderlyingChar> convert_to_underlying_string(FwdIt first, FwdIt las
 template <class StringType, class UnderlyingChar>
 StringType convert_from_underlying_string(const basic_string<UnderlyingChar>& str) {
     StringType result;
-    for (auto ch : str) {
+    for (const auto& ch : str) {
         result.push_back(static_cast<typename StringType::value_type>(ch));
     }
     return result;
