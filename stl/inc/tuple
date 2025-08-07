@@ -126,23 +126,26 @@ struct _Tuple_perfect_val<tuple<_Ty0, _Ty1, _Ty2>, _Uty0, _Uty1, _Uty2>
 
 template <class _Ty>
 struct _Tuple_val { // stores each value in a tuple
+    // Use of remove_cv_t corresponds to N5008 [allocator.uses.construction]/5.
+    using _Dty = remove_cv_t<_Ty>;
+
     constexpr _Tuple_val() : _Val() {}
 
     template <class _Other>
     constexpr _Tuple_val(_Other&& _Arg) : _Val(_STD forward<_Other>(_Arg)) {}
 
-    template <class _Alloc, class... _Other, enable_if_t<!uses_allocator_v<_Ty, _Alloc>, int> = 0>
+    template <class _Alloc, class... _Other, enable_if_t<!uses_allocator_v<_Dty, _Alloc>, int> = 0>
     constexpr _Tuple_val(const _Alloc&, allocator_arg_t, _Other&&... _Arg) : _Val(_STD forward<_Other>(_Arg)...) {}
 
     template <class _Alloc, class... _Other,
-        enable_if_t<conjunction_v<_STD uses_allocator<_Ty, _Alloc>,
+        enable_if_t<conjunction_v<_STD uses_allocator<_Dty, _Alloc>,
                         _STD is_constructible<_Ty, _STD allocator_arg_t, const _Alloc&, _Other...>>,
             int> = 0>
     constexpr _Tuple_val(const _Alloc& _Al, allocator_arg_t, _Other&&... _Arg)
         : _Val(allocator_arg, _Al, _STD forward<_Other>(_Arg)...) {}
 
     template <class _Alloc, class... _Other,
-        enable_if_t<conjunction_v<_STD uses_allocator<_Ty, _Alloc>,
+        enable_if_t<conjunction_v<_STD uses_allocator<_Dty, _Alloc>,
                         _STD negation<_STD is_constructible<_Ty, _STD allocator_arg_t, const _Alloc&, _Other...>>>,
             int> = 0>
     constexpr _Tuple_val(const _Alloc& _Al, allocator_arg_t, _Other&&... _Arg)
