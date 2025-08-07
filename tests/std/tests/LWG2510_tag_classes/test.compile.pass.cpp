@@ -119,7 +119,7 @@ void check_tag_class() { // COMPILE-ONLY
     STATIC_ASSERT(sizeof(T) == 1);
 }
 
-void check_tag_classes() { // COMPILE-ONLY
+void check_standard_tags() { // COMPILE-ONLY
     check_tag_class<nothrow_t>();
     check_tag_class<allocator_arg_t>();
     check_tag_class<piecewise_construct_t>();
