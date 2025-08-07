@@ -153,9 +153,16 @@ struct custom_char_traits {
         return first1;
     }
 
-    static Elem* move(Elem* const first1, const Elem* const first2, const size_t count) noexcept /* strengthened */ {
-        copy_n(first2, count, first1);
-        return first1;
+    static Elem* move(Elem* const result, const Elem* const first2, const size_t count) noexcept /* strengthened */ {
+        if (result == first2) {
+            // nothing to do
+        } else if (first2 <= result && result < first2 + count) {
+            copy_backward(first2, first2 + count, result + count);
+        } else {
+            copy_n(first2, count, result);
+        }
+
+        return result;
     }
 
     static int compare(const Elem* first1, const Elem* first2, size_t count) noexcept {
