@@ -5037,69 +5037,14 @@ namespace chrono {
 
     template <class _Ty>
     _NODISCARD tm _Fill_tm(const _Ty& _Val) {
-        unsigned int _Day   = 0;
-        unsigned int _Month = 0;
-        int _Year           = 0;
-        int _Yearday        = 0;
-        int _Weekday        = 0;
-        int _Hours          = 0;
-        int _Minutes        = 0;
-        int _Seconds        = 0;
-
         if constexpr (_Is_specialization_v<_Ty, duration>) {
             return _Fill_tm(hh_mm_ss{_Val});
         } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
             return _Fill_tm(_Val._Time);
-        } else if constexpr (is_same_v<_Ty, day>) {
-            _Day = static_cast<unsigned int>(_Val);
-        } else if constexpr (is_same_v<_Ty, month>) {
-            _Month = static_cast<unsigned int>(_Val);
-        } else if constexpr (is_same_v<_Ty, year>) {
-            _Year = static_cast<int>(_Val);
-        } else if constexpr (is_same_v<_Ty, weekday>) {
-            _Weekday = static_cast<int>(_Val.c_encoding());
-        } else if constexpr (_Is_any_of_v<_Ty, weekday_indexed, weekday_last>) {
-            _Weekday = static_cast<int>(_Val.weekday().c_encoding());
-        } else if constexpr (is_same_v<_Ty, month_day>) {
-            _Day   = static_cast<unsigned int>(_Val.day());
-            _Month = static_cast<unsigned int>(_Val.month());
-            if (_Val.month() == January) {
-                _Yearday = static_cast<int>(_Day) - 1;
-            } else if (_Val.month() == February) {
-                _Yearday = 31 + static_cast<int>(_Day) - 1;
-            }
-        } else if constexpr (is_same_v<_Ty, month_day_last>) {
-            _Month = static_cast<unsigned int>(_Val.month());
-            _Day   = static_cast<unsigned int>(_Last_day_table[(_Month - 1) & 0xF]);
-            if (_Val.month() == January) {
-                _Yearday = 30;
-            }
-        } else if constexpr (is_same_v<_Ty, month_weekday>) {
-            _Month   = static_cast<unsigned int>(_Val.month());
-            _Weekday = static_cast<int>(_Val.weekday_indexed().weekday().c_encoding());
-        } else if constexpr (is_same_v<_Ty, month_weekday_last>) {
-            _Month   = static_cast<unsigned int>(_Val.month());
-            _Weekday = static_cast<int>(_Val.weekday_last().weekday().c_encoding());
-        } else if constexpr (is_same_v<_Ty, year_month>) {
-            _Month = static_cast<unsigned int>(_Val.month());
-            _Year  = static_cast<int>(_Val.year());
-        } else if constexpr (_Is_any_of_v<_Ty, year_month_day, year_month_day_last>) {
-            _Day   = static_cast<unsigned int>(_Val.day());
-            _Month = static_cast<unsigned int>(_Val.month());
-            _Year  = static_cast<int>(_Val.year());
-            if (_Val.ok()) {
-                const year_month_day& _Ymd = _Val;
-                _Weekday                   = _Ymd._Calculate_weekday();
-                _Yearday = (static_cast<sys_days>(_Val) - static_cast<sys_days>(_Val.year() / January / 1)).count();
-            }
         } else if constexpr (_Is_any_of_v<_Ty, year_month_weekday, year_month_weekday_last>) {
             auto _Tm    = _Fill_tm(year_month_day{_Val});
             _Tm.tm_wday = static_cast<int>(_Val.weekday().c_encoding());
             return _Tm;
-        } else if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
-            _Hours   = _Val.hours().count();
-            _Minutes = _Val.minutes().count();
-            _Seconds = static_cast<int>(_Val.seconds().count());
         } else if constexpr (_Is_any_of_v<_Ty, sys_info, local_info>) {
             return {}; // none of the valid conversion specifiers need tm fields
         } else if constexpr (_Is_specialization_v<_Ty, time_point>) {
@@ -5112,18 +5057,75 @@ namespace chrono {
             _Tm.tm_min      = _Hms.tm_min;
             _Tm.tm_hour     = _Hms.tm_hour;
             return _Tm;
-        }
+        } else {
+            unsigned int _Day   = 0;
+            unsigned int _Month = 0;
+            int _Year           = 0;
+            int _Yearday        = 0;
+            int _Weekday        = 0;
+            int _Hours          = 0;
+            int _Minutes        = 0;
+            int _Seconds        = 0;
 
-        tm _Time;
-        _Time.tm_sec  = _Seconds;
-        _Time.tm_min  = _Minutes;
-        _Time.tm_hour = _Hours;
-        _Time.tm_mday = static_cast<int>(_Day);
-        _Time.tm_mon  = static_cast<int>(_Month) - 1;
-        _Time.tm_year = _Year - 1900;
-        _Time.tm_yday = _Yearday;
-        _Time.tm_wday = _Weekday;
-        return _Time;
+            if constexpr (is_same_v<_Ty, day>) {
+                _Day = static_cast<unsigned int>(_Val);
+            } else if constexpr (is_same_v<_Ty, month>) {
+                _Month = static_cast<unsigned int>(_Val);
+            } else if constexpr (is_same_v<_Ty, year>) {
+                _Year = static_cast<int>(_Val);
+            } else if constexpr (is_same_v<_Ty, weekday>) {
+                _Weekday = static_cast<int>(_Val.c_encoding());
+            } else if constexpr (_Is_any_of_v<_Ty, weekday_indexed, weekday_last>) {
+                _Weekday = static_cast<int>(_Val.weekday().c_encoding());
+            } else if constexpr (is_same_v<_Ty, month_day>) {
+                _Day   = static_cast<unsigned int>(_Val.day());
+                _Month = static_cast<unsigned int>(_Val.month());
+                if (_Val.month() == January) {
+                    _Yearday = static_cast<int>(_Day) - 1;
+                } else if (_Val.month() == February) {
+                    _Yearday = 31 + static_cast<int>(_Day) - 1;
+                }
+            } else if constexpr (is_same_v<_Ty, month_day_last>) {
+                _Month = static_cast<unsigned int>(_Val.month());
+                _Day   = static_cast<unsigned int>(_Last_day_table[(_Month - 1) & 0xF]);
+                if (_Val.month() == January) {
+                    _Yearday = 30;
+                }
+            } else if constexpr (is_same_v<_Ty, month_weekday>) {
+                _Month   = static_cast<unsigned int>(_Val.month());
+                _Weekday = static_cast<int>(_Val.weekday_indexed().weekday().c_encoding());
+            } else if constexpr (is_same_v<_Ty, month_weekday_last>) {
+                _Month   = static_cast<unsigned int>(_Val.month());
+                _Weekday = static_cast<int>(_Val.weekday_last().weekday().c_encoding());
+            } else if constexpr (is_same_v<_Ty, year_month>) {
+                _Month = static_cast<unsigned int>(_Val.month());
+                _Year  = static_cast<int>(_Val.year());
+            } else if constexpr (_Is_any_of_v<_Ty, year_month_day, year_month_day_last>) {
+                _Day   = static_cast<unsigned int>(_Val.day());
+                _Month = static_cast<unsigned int>(_Val.month());
+                _Year  = static_cast<int>(_Val.year());
+                if (_Val.ok()) {
+                    const year_month_day& _Ymd = _Val;
+                    _Weekday                   = _Ymd._Calculate_weekday();
+                    _Yearday = (static_cast<sys_days>(_Val) - static_cast<sys_days>(_Val.year() / January / 1)).count();
+                }
+            } else if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
+                _Hours   = _Val.hours().count();
+                _Minutes = _Val.minutes().count();
+                _Seconds = static_cast<int>(_Val.seconds().count());
+            }
+
+            tm _Time;
+            _Time.tm_sec  = _Seconds;
+            _Time.tm_min  = _Minutes;
+            _Time.tm_hour = _Hours;
+            _Time.tm_mday = static_cast<int>(_Day);
+            _Time.tm_mon  = static_cast<int>(_Month) - 1;
+            _Time.tm_year = _Year - 1900;
+            _Time.tm_yday = _Yearday;
+            _Time.tm_wday = _Weekday;
+            return _Time;
+        }
     }
 
     _EXPORT_STD template <class _CharT, class _Traits>
@@ -5731,110 +5733,111 @@ namespace chrono {
                           || _Is_specialization_v<_Ty, time_point> || _Is_specialization_v<_Ty, _Local_time_format_t>
                           || _Is_specialization_v<_Ty, hh_mm_ss>) {
                 return;
-            }
+            } else {
+                const auto _Validate = [&] {
+                    constexpr bool _Is_ymd = _Is_any_of_v<_Ty, year_month_day, year_month_day_last, year_month_weekday,
+                        year_month_weekday_last>;
 
-            const auto _Validate = [&] {
-                constexpr bool _Is_ymd =
-                    _Is_any_of_v<_Ty, year_month_day, year_month_day_last, year_month_weekday, year_month_weekday_last>;
+                    switch (_Spec._Type) {
+                    case 'a':
+                    case 'A':
+                    case 'u':
+                    case 'w':
+                        if constexpr (_Is_any_of_v<_Ty, weekday, weekday_last>) {
+                            return _Val.ok();
+                        } else if constexpr (_Is_any_of_v<_Ty, weekday_indexed, year_month_weekday,
+                                                 year_month_weekday_last>) {
+                            return _Val.weekday().ok();
+                        } else if constexpr (is_same_v<_Ty, month_weekday>) {
+                            return _Val.weekday_indexed().weekday().ok();
+                        } else if constexpr (is_same_v<_Ty, month_weekday_last>) {
+                            return _Val.weekday_last().ok();
+                        } else if constexpr (_Is_any_of_v<_Ty, year_month_day, year_month_day_last>) {
+                            return _Val.ok();
+                        }
+                        break;
 
-                switch (_Spec._Type) {
-                case 'a':
-                case 'A':
-                case 'u':
-                case 'w':
-                    if constexpr (_Is_any_of_v<_Ty, weekday, weekday_last>) {
-                        return _Val.ok();
-                    } else if constexpr (_Is_any_of_v<_Ty, weekday_indexed, year_month_weekday,
-                                             year_month_weekday_last>) {
-                        return _Val.weekday().ok();
-                    } else if constexpr (is_same_v<_Ty, month_weekday>) {
-                        return _Val.weekday_indexed().weekday().ok();
-                    } else if constexpr (is_same_v<_Ty, month_weekday_last>) {
-                        return _Val.weekday_last().ok();
-                    } else if constexpr (_Is_any_of_v<_Ty, year_month_day, year_month_day_last>) {
-                        return _Val.ok();
-                    }
-                    break;
+                    case 'b':
+                    case 'B':
+                    case 'h':
+                    case 'm':
+                        if constexpr (is_same_v<_Ty, month>) {
+                            return _Val.ok();
+                        } else if constexpr (_Is_any_of_v<_Ty, month_day, month_day_last, month_weekday,
+                                                 month_weekday_last, year_month>
+                                             || _Is_ymd) {
+                            return _Val.month().ok();
+                        }
+                        break;
 
-                case 'b':
-                case 'B':
-                case 'h':
-                case 'm':
-                    if constexpr (is_same_v<_Ty, month>) {
-                        return _Val.ok();
-                    } else if constexpr (_Is_any_of_v<_Ty, month_day, month_day_last, month_weekday, month_weekday_last,
-                                             year_month>
-                                         || _Is_ymd) {
-                        return _Val.month().ok();
-                    }
-                    break;
+                    case 'C':
+                    case 'y':
+                    case 'Y':
+                        if constexpr (is_same_v<_Ty, year>) {
+                            return _Val.ok();
+                        } else if constexpr (is_same_v<_Ty, year_month> || _Is_ymd) {
+                            return _Val.year().ok();
+                        }
+                        break;
 
-                case 'C':
-                case 'y':
-                case 'Y':
-                    if constexpr (is_same_v<_Ty, year>) {
-                        return _Val.ok();
-                    } else if constexpr (is_same_v<_Ty, year_month> || _Is_ymd) {
-                        return _Val.year().ok();
-                    }
-                    break;
+                    case 'd':
+                    case 'e':
+                        if constexpr (_Is_any_of_v<_Ty, day, month_day_last>) {
+                            return _Val.ok();
+                        } else if constexpr (is_same_v<_Ty, month_day>) {
+                            return _Val.day().ok();
+                        } else if constexpr (_Is_ymd) {
+                            const year_month_day& _Ymd{_Val};
+                            return _Ymd.day().ok();
+                        }
+                        break;
 
-                case 'd':
-                case 'e':
-                    if constexpr (_Is_any_of_v<_Ty, day, month_day_last>) {
-                        return _Val.ok();
-                    } else if constexpr (is_same_v<_Ty, month_day>) {
-                        return _Val.day().ok();
-                    } else if constexpr (_Is_ymd) {
-                        const year_month_day& _Ymd{_Val};
-                        return _Ymd.day().ok();
-                    }
-                    break;
+                    case 'D':
+                    case 'F':
+                        if constexpr (_Has_ok<_Ty>) {
+                            return _Val.ok();
+                        }
+                        break;
 
-                case 'D':
-                case 'F':
-                    if constexpr (_Has_ok<_Ty>) {
-                        return _Val.ok();
-                    }
-                    break;
+                    case 'j':
+                        if constexpr (is_same_v<_Ty, month_day>) {
+                            if (_Val.month() > February) {
+                                _Throw_format_error("The day of year for a month_day past February is ambiguous.");
+                            }
+                            return true;
+                        } else if constexpr (is_same_v<_Ty, month_day_last>) {
+                            if (_Val.month() >= February) {
+                                _Throw_format_error(
+                                    "The day of year for a month_day_last other than January is ambiguous");
+                            }
+                            return true;
+                        } else if constexpr (_Is_ymd) {
+                            return _Val.ok();
+                        }
+                        break;
 
-                case 'j':
-                    if constexpr (is_same_v<_Ty, month_day>) {
-                        if (_Val.month() > February) {
-                            _Throw_format_error("The day of year for a month_day past February is ambiguous.");
+                    case 'g':
+                    case 'G':
+                    case 'U':
+                    case 'V':
+                    case 'W':
+                        if constexpr (_Is_ymd) {
+                            return _Val.ok();
+                        }
+                        break;
+
+                    default:
+                        if constexpr (_Has_ok<_Ty>) {
+                            return _Val.ok();
                         }
                         return true;
-                    } else if constexpr (is_same_v<_Ty, month_day_last>) {
-                        if (_Val.month() >= February) {
-                            _Throw_format_error("The day of year for a month_day_last other than January is ambiguous");
-                        }
-                        return true;
-                    } else if constexpr (_Is_ymd) {
-                        return _Val.ok();
                     }
-                    break;
-
-                case 'g':
-                case 'G':
-                case 'U':
-                case 'V':
-                case 'W':
-                    if constexpr (_Is_ymd) {
-                        return _Val.ok();
-                    }
-                    break;
-
-                default:
-                    if constexpr (_Has_ok<_Ty>) {
-                        return _Val.ok();
-                    }
-                    return true;
+                    _STL_INTERNAL_CHECK(false);
+                    return false;
+                };
+                if (!_Validate()) {
+                    _Throw_format_error("Cannot localize out-of-bounds time point.");
                 }
-                _STL_INTERNAL_CHECK(false);
-                return false;
-            };
-            if (!_Validate()) {
-                _Throw_format_error("Cannot localize out-of-bounds time point.");
             }
         }
 

@@ -11,7 +11,7 @@ using namespace std;
 
 template <typename T>
 void bm_has_single_bit_if(benchmark::State& state) {
-    const auto random_v = random_vector<T>(8);
+    auto random_v = random_vector<T>(8);
     for (auto _ : state) {
         benchmark::DoNotOptimize(random_v);
         unsigned int count_true  = 0;
@@ -28,7 +28,7 @@ void bm_has_single_bit_if(benchmark::State& state) {
 
 template <typename T>
 void bm_has_single_bit(benchmark::State& state) {
-    const auto random_v = random_vector<T>(8);
+    auto random_v = random_vector<T>(8);
     for (auto _ : state) {
         benchmark::DoNotOptimize(random_v);
         unsigned int r = 0;

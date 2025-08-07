@@ -789,18 +789,21 @@ struct __std_fs_file_id { // typedef struct _FILE_ID_INFO {
 namespace {
     _Success_(return > 0 && return < nBufferLength) DWORD WINAPI _Stl_GetTempPath2W(
         _In_ DWORD nBufferLength, _Out_writes_to_opt_(nBufferLength, return +1) LPWSTR lpBuffer) noexcept {
+#if !defined(_ONECORE)
         // See GH-3011: This is intentionally not attempting to cache the function pointer.
         // TRANSITION, ABI: This should use __crtGetTempPath2W after this code is moved into the STL's DLL.
-        using _Fun_ptr = decltype(&::GetTempPath2W);
 
+        // use GetTempPath2W if it is available (only on Windows 11+)...
         const auto _Kernel32 = ::GetModuleHandleW(L"kernel32.dll");
         _Analysis_assume_(_Kernel32);
-        _Fun_ptr _PfGetTempPath2W = reinterpret_cast<_Fun_ptr>(::GetProcAddress(_Kernel32, "GetTempPath2W"));
-        if (!_PfGetTempPath2W) {
-            _PfGetTempPath2W = &::GetTempPathW;
+        const auto _Pf = reinterpret_cast<decltype(&::GetTempPath2W)>(::GetProcAddress(_Kernel32, "GetTempPath2W"));
+        if (_Pf) {
+            return _Pf(nBufferLength, lpBuffer);
         }
+#endif // ^^^ !defined(_ONECORE) ^^^
 
-        return _PfGetTempPath2W(nBufferLength, lpBuffer);
+        // ...otherwise use GetTempPathW.
+        return GetTempPathW(nBufferLength, lpBuffer);
     }
 } // unnamed namespace
 

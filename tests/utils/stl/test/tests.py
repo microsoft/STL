@@ -241,8 +241,6 @@ class STLTest(Test):
                 self.compileFlags.append('-m64')
             elif (targetArch == 'x86'.casefold()):
                 self.compileFlags.append('-m32')
-            elif (targetArch == 'arm'.casefold()):
-                return Result(UNSUPPORTED, 'clang targeting arm is not supported')
             elif (targetArch == 'arm64'.casefold()):
                 self.compileFlags.append('--target=arm64-pc-windows-msvc')
             elif (targetArch == 'arm64ec'.casefold()):
@@ -260,7 +258,7 @@ class STLTest(Test):
                 self.compileFlags.append('/arm64EC')
                 self.linkFlags.append('/machine:arm64ec')
 
-                # TRANSITION, Windows SDK 10.0.22621.0 emits
+                # TRANSITION, Windows SDK 10.0.26100.4188 emits
                 # "warning C28301: No annotations for first declaration of 'meow'"
                 # for various intrinsics when building for ARM64EC.
                 self.compileFlags.append('/wd28301')
@@ -315,8 +313,6 @@ class STLTest(Test):
                 self.requires.append('edg') # available for x64, see features.py
             elif flag[1:] == 'arch:AVX2':
                 self.requires.append('arch_avx2') # available for x86 and x64, see features.py
-            elif flag[1:] == 'arch:VFPv4':
-                self.requires.append('arch_vfpv4') # available for arm, see features.py
             elif flag[1:] == 'MDd':
                 self._addCustomFeature('MDd')
                 self._addCustomFeature('debug_CRT')
