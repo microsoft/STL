@@ -149,12 +149,12 @@ struct custom_char_traits {
     using state_type = char_traits<wchar_t>::state_type;
 
     static Elem* copy(Elem* const first1, const Elem* const first2, const size_t count) noexcept {
-        std::copy_n(first2, count, first1);
+        copy_n(first2, count, first1);
         return first1;
     }
 
     static Elem* move(Elem* const first1, const Elem* const first2, const size_t count) noexcept /* strengthened */ {
-        std::copy_n(first2, count, first1);
+        copy_n(first2, count, first1);
         return first1;
     }
 
