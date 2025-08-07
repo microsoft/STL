@@ -66,7 +66,7 @@ public:
     template <class FwdIt>
     string_type transform_primary(FwdIt first, FwdIt last) const {
         auto str = convert_to_underlying_string<UnderlyingChar>(first, last);
-        return convert_from_underlying_string<string_type>(inner.transform(str.begin(), str.end()));
+        return convert_from_underlying_string<string_type>(inner.transform_primary(str.begin(), str.end()));
     }
 
     template <class FwdIt>
