@@ -142,7 +142,6 @@ bool operator!=(const wrapped_wchar& lhs, const wrapped_wchar& rhs) {
 
 template <class Elem>
 struct custom_char_traits {
-
     using char_type  = Elem;
     using int_type   = int;
     using pos_type   = streampos;
