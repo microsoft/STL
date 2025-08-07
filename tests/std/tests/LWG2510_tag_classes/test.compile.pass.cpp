@@ -157,7 +157,7 @@ void check_tag_classes() { // COMPILE-ONLY
 #if _HAS_CXX23
     check_tag_class<from_range_t>();
     check_tag_class<unexpect_t>();
-    // TODO: Cover sorted_{equivalent,unique}_t once flat_meow are implemented.
+    // TODO: Cover sorted_equivalent_t and sorted_unique_t once flat_meow are implemented.
 #endif // _HAS_CXX23
 
     // TODO: Update to cover newly introduced tag class types.
