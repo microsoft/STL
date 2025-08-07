@@ -179,7 +179,7 @@ struct custom_char_traits {
     }
 
     static const Elem* find(const Elem* first, size_t count, const Elem& ch) noexcept /* strengthened */ {
-        // look for _Ch in [_First, _First + _Count)
+        // look for ch in [first, first + count)
         for (; 0 < count; --count, ++first) {
             if (*first == ch) {
                 return first;
