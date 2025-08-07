@@ -97,7 +97,8 @@ public:
         return inner.getloc();
     }
 
-    regex_traits<UnderlyingChar> inner;
+private:
+    rx_traits inner;
 };
 
 enum class signed_wchar_enum : short {};
