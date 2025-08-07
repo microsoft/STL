@@ -23,34 +23,35 @@ _STD_BEGIN
 
 #if !_HAS_CXX20
 template <class _Ty, class _Outer_alloc, class _Inner_alloc, class... _Types>
-void _Uses_alloc_construct_non_pair(_Ty* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, _Types&&... _Args) {
+void _Uses_alloc_construct_non_pair(
+    _Ty* const _Ptr, _Outer_alloc& _Outer, const _Inner_alloc& _Inner, _Types&&... _Args) {
     // uses-allocator construction of *_Ptr by alloc _Outer propagating alloc _Inner, non-pair case
     if constexpr (uses_allocator_v<remove_cv_t<_Ty>, _Inner_alloc>) {
-        if constexpr (is_constructible_v<_Ty, allocator_arg_t, _Inner_alloc&, _Types...>) {
+        if constexpr (is_constructible_v<_Ty, allocator_arg_t, const _Inner_alloc&, _Types...>) {
             allocator_traits<_Outer_alloc>::construct(
                 _Outer, _Ptr, allocator_arg_t{}, _Inner, _STD forward<_Types>(_Args)...);
         } else {
-            static_assert(is_constructible_v<_Ty, _Types..., _Inner_alloc&>,
-                "N4950 [allocator.uses.trait]/1 requires "
-                "is_constructible_v<T, Args..., Alloc&> when uses_allocator_v<remove_cv_t<T>, Alloc> is true and "
-                "is_constructible_v<T, allocator_arg_t, Alloc&, Args...> is false");
+            static_assert(is_constructible_v<_Ty, _Types..., const _Inner_alloc&>,
+                "N4659 [allocator.uses.construction]/1 (as modified by LWG-3187 and LWG-3677) requires "
+                "is_constructible_v<T, Args..., const Alloc&> when uses_allocator_v<remove_cv_t<T>, Alloc> is true and "
+                "is_constructible_v<T, allocator_arg_t, const Alloc&, Args...> is false");
             allocator_traits<_Outer_alloc>::construct(_Outer, _Ptr, _STD forward<_Types>(_Args)..., _Inner);
         }
     } else {
         static_assert(is_constructible_v<_Ty, _Types...>,
-            "N4950 [allocator.uses.trait]/1 requires "
-            "is_constructible_v<T, Args...> when uses_allocator_v<remove_cv_t<T>, Alloc> is false");
+            "N4659 [allocator.uses.construction]/1.1 (as modified by LWG-3677) requires is_constructible_v<T, Args...> "
+            "when uses_allocator_v<remove_cv_t<T>, Alloc> is false");
         allocator_traits<_Outer_alloc>::construct(_Outer, _Ptr, _STD forward<_Types>(_Args)...);
     }
 }
 
 template <class _Ty, class _Alloc, class... _Types>
-decltype(auto) _Uses_alloc_piecewise(_Alloc& _Al, tuple<_Types...>&& _Tuple) {
+decltype(auto) _Uses_alloc_piecewise(const _Alloc& _Al, tuple<_Types...>&& _Tuple) {
     if constexpr (uses_allocator_v<remove_cv_t<_Ty>, _Alloc>) {
-        if constexpr (is_constructible_v<_Ty, allocator_arg_t, _Alloc&, _Types...>) {
-            return _STD tuple_cat(tuple<allocator_arg_t, _Alloc&>(allocator_arg, _Al), _STD move(_Tuple));
+        if constexpr (is_constructible_v<_Ty, allocator_arg_t, const _Alloc&, _Types...>) {
+            return _STD tuple_cat(tuple<allocator_arg_t, const _Alloc&>(allocator_arg, _Al), _STD move(_Tuple));
         } else {
-            return _STD tuple_cat(_STD move(_Tuple), tuple<_Alloc&>(_Al));
+            return _STD tuple_cat(_STD move(_Tuple), tuple<const _Alloc&>(_Al));
         }
     } else {
         return _STD move(_Tuple);
@@ -58,7 +59,7 @@ decltype(auto) _Uses_alloc_piecewise(_Alloc& _Al, tuple<_Types...>&& _Tuple) {
 }
 
 template <class _CvPair, class _Outer_alloc, class _Inner_alloc, class... _Types1, class... _Types2>
-void _Uses_alloc_construct_pair_piecewise(_CvPair* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner,
+void _Uses_alloc_construct_pair_piecewise(_CvPair* const _Ptr, _Outer_alloc& _Outer, const _Inner_alloc& _Inner,
     tuple<_Types1...>&& _Val1, tuple<_Types2...>&& _Val2) {
     // uses-allocator construction of pair from _Val1 and _Val2 by alloc _Outer propagating alloc _Inner
     allocator_traits<_Outer_alloc>::construct(_Outer, _Ptr, piecewise_construct,
@@ -67,21 +68,21 @@ void _Uses_alloc_construct_pair_piecewise(_CvPair* const _Ptr, _Outer_alloc& _Ou
 }
 
 template <class _CvPair, class _Outer_alloc, class _Inner_alloc, class... _Types1, class... _Types2>
-void _Uses_alloc_construct_pair(_CvPair* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, piecewise_construct_t,
-    tuple<_Types1...> _Val1, tuple<_Types2...> _Val2) {
+void _Uses_alloc_construct_pair(_CvPair* const _Ptr, _Outer_alloc& _Outer, const _Inner_alloc& _Inner,
+    piecewise_construct_t, tuple<_Types1...> _Val1, tuple<_Types2...> _Val2) {
     // uses-allocator construction of pair by alloc _Outer propagating alloc _Inner, piecewise case
     _STD _Uses_alloc_construct_pair_piecewise(_Ptr, _Outer, _Inner, _STD move(_Val1), _STD move(_Val2));
 }
 
 template <class _CvPair, class _Outer_alloc, class _Inner_alloc>
-void _Uses_alloc_construct_pair(_CvPair* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner) {
+void _Uses_alloc_construct_pair(_CvPair* const _Ptr, _Outer_alloc& _Outer, const _Inner_alloc& _Inner) {
     // uses-allocator construction of pair by alloc _Outer propagating alloc _Inner, zero-argument case
     _STD _Uses_alloc_construct_pair_piecewise(_Ptr, _Outer, _Inner, tuple<>{}, tuple<>{});
 }
 
 template <class _CvPair, class _Outer_alloc, class _Inner_alloc, class _Uty, class _Vty>
 void _Uses_alloc_construct_pair(
-    _CvPair* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, _Uty&& _Arg1, _Vty&& _Arg2) {
+    _CvPair* const _Ptr, _Outer_alloc& _Outer, const _Inner_alloc& _Inner, _Uty&& _Arg1, _Vty&& _Arg2) {
     // uses-allocator construction of pair by alloc _Outer propagating alloc _Inner, two-argument case
     _STD _Uses_alloc_construct_pair_piecewise(_Ptr, _Outer, _Inner, _STD forward_as_tuple(_STD forward<_Uty>(_Arg1)),
         _STD forward_as_tuple(_STD forward<_Vty>(_Arg2)));
@@ -89,7 +90,7 @@ void _Uses_alloc_construct_pair(
 
 template <class _CvPair, class _Outer_alloc, class _Inner_alloc, class _Uty, class _Vty>
 void _Uses_alloc_construct_pair(
-    _CvPair* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, const pair<_Uty, _Vty>& _Pair) {
+    _CvPair* const _Ptr, _Outer_alloc& _Outer, const _Inner_alloc& _Inner, const pair<_Uty, _Vty>& _Pair) {
     // uses-allocator construction of pair by alloc _Outer propagating alloc _Inner, lvalue pair argument
     _STD _Uses_alloc_construct_pair_piecewise(
         _Ptr, _Outer, _Inner, _STD forward_as_tuple(_Pair.first), _STD forward_as_tuple(_Pair.second));
@@ -97,7 +98,7 @@ void _Uses_alloc_construct_pair(
 
 template <class _CvPair, class _Outer_alloc, class _Inner_alloc, class _Uty, class _Vty>
 void _Uses_alloc_construct_pair(
-    _CvPair* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, pair<_Uty, _Vty>&& _Pair) {
+    _CvPair* const _Ptr, _Outer_alloc& _Outer, const _Inner_alloc& _Inner, pair<_Uty, _Vty>&& _Pair) {
     // uses-allocator construction of pair by alloc _Outer propagating alloc _Inner, rvalue pair argument
     _STD _Uses_alloc_construct_pair_piecewise(_Ptr, _Outer, _Inner,
         _STD forward_as_tuple(_STD forward<_Uty>(_Pair.first)),
@@ -106,7 +107,7 @@ void _Uses_alloc_construct_pair(
 
 template <class _CvPair, class _Outer_alloc, class _Inner_alloc, class _Uty,
     enable_if_t<!_Is_deducible_as_pair<_Uty>, int> = 0>
-void _Uses_alloc_construct_pair(_CvPair* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, _Uty&& _Ux) {
+void _Uses_alloc_construct_pair(_CvPair* const _Ptr, _Outer_alloc& _Outer, const _Inner_alloc& _Inner, _Uty&& _Ux) {
     // uses-allocator construction of pair by alloc _Outer propagating alloc _Inner, non-pair argument
     static_assert(_Is_normally_bindable<remove_cv_t<_CvPair>, _Uty>,
         "The argument must be bindable to a reference to the std::pair type.");
