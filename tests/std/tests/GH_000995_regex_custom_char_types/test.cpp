@@ -7,7 +7,9 @@
 #include <string>
 #pragma warning(pop)
 
+#include <algorithm>
 #include <cstddef>
+#include <ios>
 #include <regex>
 
 using namespace std;
