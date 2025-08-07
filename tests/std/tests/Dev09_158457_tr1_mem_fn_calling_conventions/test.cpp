@@ -149,14 +149,14 @@ const int free_correct   = 433343; // x64 pure
 #endif
 #else
 #if !defined(_M_CEE)
-const int member_correct = 2211111; // arm/arm64 native
-const int free_correct   = 433333; // arm/arm64 native
+const int member_correct = 2211111; // arm64 native
+const int free_correct   = 433333; // arm64 native
 #elif !defined(_M_CEE_PURE)
-const int member_correct = 2211121; // arm/arm64 ijw
-const int free_correct   = 433343; // arm/arm64 ijw
+const int member_correct = 2211121; // arm64 ijw
+const int free_correct   = 433343; // arm64 ijw
 #else
-const int member_correct = 2111121; // arm/arm64 pure
-const int free_correct   = 433343; // arm/arm64 pure
+const int member_correct = 2111121; // arm64 pure
+const int free_correct   = 433343; // arm64 pure
 #endif
 #endif
 

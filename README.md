@@ -39,7 +39,7 @@ soon as possible.)
 and fully ported libcxx to run under [lit][] using the various configurations/compilers we test internally.
 
 * Continuous Integration: **In progress.** We've set up Azure Pipelines to validate changes to the repository.
-Currently, it builds the STL (native desktop for x86, x64, ARM, and ARM64). Also, it strictly verifies that all of our
+Currently, it builds the STL (native desktop for x86, x64, and ARM64). Also, it strictly verifies that all of our
 files have been formatted with [clang-format][] and follow our other whitespace conventions.
 
 * Contribution Guidelines: **Coming soon.** Working on the STL's code involves following many rules. We have codebase
@@ -141,12 +141,10 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.14.5 Preview 1 or later.
-    * Select "Windows 11 SDK (10.0.26100.3916)" in the VS Installer.
+1. Install Visual Studio 2022 17.14.8 Preview 1 or later.
+    * Select "Windows 11 SDK (10.0.26100.4188)" in the VS Installer.
     * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
     if you would like to build the ARM64/ARM64EC target.
-    * Select "MSVC v143 - VS 2022 C++ ARM build tools (Latest)" in the VS Installer
-    if you would like to build the ARM target.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.31.0 or later, and [Ninja][] 1.12.1 or later.
@@ -160,12 +158,10 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.14.5 Preview 1 or later.
-    * Select "Windows 11 SDK (10.0.26100.3916)" in the VS Installer.
+1. Install Visual Studio 2022 17.14.8 Preview 1 or later.
+    * Select "Windows 11 SDK (10.0.26100.4188)" in the VS Installer.
     * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
     if you would like to build the ARM64/ARM64EC target.
-    * Select "MSVC v143 - VS 2022 C++ ARM build tools (Latest)" in the VS Installer
-    if you would like to build the ARM target.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.31.0 or later, and [Ninja][] 1.12.1 or later.
@@ -187,14 +183,6 @@ To build the x64 target (recommended):
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake --preset x64`
 4. `cmake --build --preset x64`
-
-To build the ARM target:
-
-1. `"C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" x64_arm`
-    * If you installed VS to a non-default location, change this path accordingly.
-2. Change directories to the previously cloned `STL` directory.
-3. `cmake --preset ARM`
-4. `cmake --build --preset ARM`
 
 To build the ARM64 target:
 
