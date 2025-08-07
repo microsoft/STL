@@ -98,9 +98,7 @@ public:
     regex_traits<UnderlyingChar> inner;
 };
 
-enum class signed_wchar_enum : signed short {
-
-};
+enum class signed_wchar_enum : short {};
 
 class wrapped_wchar {
 public:
