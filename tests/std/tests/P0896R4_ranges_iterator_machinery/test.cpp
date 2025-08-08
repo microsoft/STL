@@ -1073,9 +1073,7 @@ namespace iterator_cust_move_test {
     static_assert(noexcept(ranges::iter_move(static_cast<int const*>(&some_ints[2]))));
 
     static_assert(same_as<iter_rvalue_reference_t<int[]>, int&&>);
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1008447, VSO-2066340
     static_assert(same_as<iter_rvalue_reference_t<int(int)>, int (&)(int)>);
-#endif // ^^^ no workaround ^^^
 
     static_assert(same_as<iter_rvalue_reference_t<int[4]>, int&&>);
     static_assert(ranges::iter_move(some_ints) == 0);
@@ -1084,9 +1082,7 @@ namespace iterator_cust_move_test {
     constexpr int f(int i) noexcept {
         return i + 1;
     }
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1008447
     static_assert(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&)(int)>);
-#endif // ^^^ no workaround ^^^
     static_assert(ranges::iter_move(&f)(42) == 43);
     static_assert(noexcept(ranges::iter_move(&f)));
 
