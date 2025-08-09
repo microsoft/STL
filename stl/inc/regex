@@ -327,7 +327,6 @@ inline size_t _Regex_transform_primary(_Out_writes_(_Last1 - _First1) _Post_read
 template <class _Elem>
 class _Regex_traits : public _Regex_traits_base { // base class for regular expression traits
 public:
-    using _Uelem      = make_unsigned_t<_Elem>;
     using char_type   = _Elem;
     using size_type   = size_t;
     using string_type = basic_string<_Elem>;
@@ -638,11 +637,9 @@ inline bool _Is_word(char _Ch) {
 
 template <class _Elem>
 bool _Is_word(_Elem _Ch) {
-    // assumes 'x' == L'x' for the ASCII range
-    using _UElem = make_unsigned_t<_Elem>;
-
-    const auto _UCh = static_cast<_UElem>(_Ch);
-    return _UCh <= static_cast<_UElem>('z') && _Is_word(static_cast<unsigned char>(_UCh));
+    // assumes that ASCII characters are represented at ASCII code points
+    const auto _Uchar = static_cast<unsigned char>(_Ch);
+    return static_cast<_Elem>(_Uchar) == _Ch && _Uchar <= 'z' && _Is_word(_Uchar);
 }
 
 _EXPORT_STD template <class _BidIt>
@@ -3727,11 +3724,34 @@ _BidIt1 _Search_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, 
     }
 }
 
-template <class _Elem>
-bool _Lookup_range(unsigned int _Ch, const _Buf<_Elem>* _Bufptr) { // check whether _Ch is in _Buf
-    using _Uelem = make_unsigned_t<_Elem>;
+template <class _Char_traits, enable_if_t<is_same_v<_Char_traits, char_traits<char>>, int> = 0>
+bool _Lookup_range(char _Ch, const _Buf<char>* _Bufptr) {
+    const auto _Uchar = static_cast<unsigned char>(_Ch);
     for (unsigned int _Ix = 0; _Ix < _Bufptr->_Size(); _Ix += 2) { // check current position
-        if (static_cast<_Uelem>(_Bufptr->_At(_Ix)) <= _Ch && _Ch <= static_cast<_Uelem>(_Bufptr->_At(_Ix + 1))) {
+        if (static_cast<unsigned char>(_Bufptr->_At(_Ix)) <= _Uchar
+            && _Uchar <= static_cast<unsigned char>(_Bufptr->_At(_Ix + 1))) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+template <class _Char_traits, enable_if_t<is_same_v<_Char_traits, char_traits<wchar_t>>, int> = 0>
+bool _Lookup_range(wchar_t _Ch, const _Buf<wchar_t>* _Bufptr) {
+    for (unsigned int _Ix = 0; _Ix < _Bufptr->_Size(); _Ix += 2) { // check current position
+        if (_Bufptr->_At(_Ix) <= _Ch && _Ch <= _Bufptr->_At(_Ix + 1)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+template <class _Char_traits, class _Elem>
+bool _Lookup_range(_Elem _Ch, const _Buf<_Elem>* _Bufptr) { // check whether _Ch is in _Buf
+    for (unsigned int _Ix = 0; _Ix < _Bufptr->_Size(); _Ix += 2) { // check current position
+        if (!_Char_traits::lt(_Ch, _Bufptr->_At(_Ix)) && !_Char_traits::lt(_Bufptr->_At(_Ix + 1), _Ch)) {
             return true;
         }
     }
@@ -3829,7 +3849,7 @@ _It _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx,
     } else if (_Sflags & regex_constants::collate) {
         _Ch = _Traits.translate(_Ch);
     }
-    const auto _UCh = static_cast<typename _RxTraits::_Uelem>(_Ch);
+    const auto _Uchar = static_cast<unsigned char>(_Ch);
 
     _It _Res0 = _First;
     ++_Res0;
@@ -3841,11 +3861,12 @@ _It _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx,
         _Res0  = _Resx;
         _Found = true;
     } else if (_Node->_Ranges
-               && (_Sflags & regex_constants::collate ? _STD _Lookup_collating_range(_Ch, _Node->_Ranges, _Traits)
-                                                      : _STD _Lookup_range(_UCh, _Node->_Ranges))) {
+               && (_Sflags & regex_constants::collate
+                       ? _STD _Lookup_collating_range(_Ch, _Node->_Ranges, _Traits)
+                       : _STD _Lookup_range<typename _RxTraits::string_type::traits_type>(_Ch, _Node->_Ranges))) {
         _Found = true;
-    } else if (_UCh < _Bmp_max) {
-        _Found = _Node->_Small && _Node->_Small->_Find(_UCh);
+    } else if (static_cast<_Elem>(_Uchar) == _Ch) {
+        _Found = _Node->_Small && _Node->_Small->_Find(_Uchar);
     } else if (_Node->_Large
                && _STD find(_Node->_Large->_Str(), _Node->_Large->_Str() + _Node->_Large->_Size(), _Ch)
                       != _Node->_Large->_Str() + _Node->_Large->_Size()) {
@@ -3913,15 +3934,15 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Is_wbound() const {
     if ((_Mflags & regex_constants::match_prev_avail)
         || _Tgt_state._Cur != _Begin) { // if --_Cur is valid, check for preceding word character
         if (_Tgt_state._Cur == _End) {
-            return (_Mflags & regex_constants::match_not_eow) == 0 && _Is_word(*_Prev_iter(_Tgt_state._Cur));
+            return (_Mflags & regex_constants::match_not_eow) == 0 && _STD _Is_word(*_Prev_iter(_Tgt_state._Cur));
         } else {
-            return _Is_word(*_Prev_iter(_Tgt_state._Cur)) != _Is_word(*_Tgt_state._Cur);
+            return _STD _Is_word(*_Prev_iter(_Tgt_state._Cur)) != _STD _Is_word(*_Tgt_state._Cur);
         }
     } else { // --_Cur is not valid
         if (_Tgt_state._Cur == _End) {
             return false;
         } else {
-            return (_Mflags & regex_constants::match_not_bow) == 0 && _Is_word(*_Tgt_state._Cur);
+            return (_Mflags & regex_constants::match_not_bow) == 0 && _STD _Is_word(*_Tgt_state._Cur);
         }
     }
 }
@@ -3934,9 +3955,19 @@ typename _RxTraits::char_class_type _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Al
     return _Traits.lookup_classname(_Ptr, _Ptr + 1, (_Sflags & regex_constants::icase) != 0);
 }
 
+inline bool _Is_ecmascript_line_terminator(char _Ch) {
+    return _Ch == _Meta_nl || _Ch == _Meta_cr;
+}
+
+inline bool _Is_ecmascript_line_terminator(wchar_t _Ch) {
+    return _Ch == _Meta_nl || _Ch == _Meta_cr || _Ch == _Meta_ls || _Ch == _Meta_ps;
+}
+
 template <class _Elem>
 bool _Is_ecmascript_line_terminator(_Elem _Ch) {
-    return _Ch == _Meta_nl || _Ch == _Meta_cr || _Ch == _Meta_ls || _Ch == _Meta_ps;
+    auto _UCh = static_cast<unsigned int>(_Ch);
+    return static_cast<_Elem>(_UCh) == _Ch
+        && (_UCh == _Meta_nl || _UCh == _Meta_cr || _UCh == _Meta_ls || _UCh == _Meta_ps);
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
