@@ -26,9 +26,6 @@ public:
     using char_class_type = typename rx_traits::char_class_type;
     using uchar_type      = make_unsigned_t<charT>;
 
-    // TRANSITION, GH-995
-    using _Uelem = typename rx_traits::_Uelem;
-
     nonidempotent_translate_regex_traits() = default;
 
     using rx_traits::length;
