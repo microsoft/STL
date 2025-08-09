@@ -621,6 +621,14 @@ tests\P1645R1_constexpr_numeric
 tests\P1659R3_ranges_alg_ends_with
 tests\P1659R3_ranges_alg_starts_with
 tests\P1682R3_to_underlying
+tests\P1831R1_cpp20_volatile
+tests\P1831R1_cpp20_volatile1
+tests\P1831R1_cpp20_volatile2
+tests\P1831R1_cpp20_volatile3
+tests\P1831R1_cpp20_volatile4
+tests\P1831R1_cpp20_volatile5
+tests\P1831R1_cpp20_volatile6
+tests\P1831R1_cpp20_volatile7
 tests\P1899R3_views_stride
 tests\P1899R3_views_stride_death
 tests\P1951R1_default_arguments_pair_forward_ctor

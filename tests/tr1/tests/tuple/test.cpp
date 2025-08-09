@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#define _SILENCE_CXX20_VOLATILE_DEPRECATION_WARNING
+
 // test <tuple> header
 #define TEST_NAME "<tuple>"
 
