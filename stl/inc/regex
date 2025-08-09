@@ -3693,6 +3693,8 @@ _BidIt1 _Compare_translate_both(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2,
     // compare character ranges, translating characters in both ranges according to syntax options
     if (_Sflags & regex_constants::icase) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_icase<_RxTraits>{_Traits});
+    } else if constexpr (is_same_v<_RxTraits, regex_traits<char>> || is_same_v<_RxTraits, regex_traits<wchar_t>>) {
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_collate<_RxTraits>{_Traits});
     } else {
@@ -3706,6 +3708,8 @@ _BidIt1 _Compare_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2,
     // compare character ranges, translating characters in the left range according to syntax options
     if (_Sflags & regex_constants::icase) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_icase_translateleft<_RxTraits>{_Traits});
+    } else if constexpr (is_same_v<_RxTraits, regex_traits<char>> || is_same_v<_RxTraits, regex_traits<wchar_t>>) {
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_collate_translateleft<_RxTraits>{_Traits});
     } else {
@@ -3720,6 +3724,8 @@ _BidIt1 _Search_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, 
     // after translating characters in the left sequence according to syntax options
     if (_Sflags & regex_constants::icase) {
         return _STD search(_Begin1, _End1, _Begin2, _End2, _Cmp_icase_translateleft<_RxTraits>{_Traits});
+    } else if constexpr (is_same_v<_RxTraits, regex_traits<char>> || is_same_v<_RxTraits, regex_traits<wchar_t>>) {
+        return _STD search(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
         return _STD search(_Begin1, _End1, _Begin2, _End2, _Cmp_collate_translateleft<_RxTraits>{_Traits});
     } else {
