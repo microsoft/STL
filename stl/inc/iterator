@@ -886,7 +886,7 @@ public:
     constexpr common_iterator(const common_iterator<_OIter, _OSe>& _Right)
         noexcept(is_nothrow_constructible_v<_Iter, const _OIter&>
                  && is_nothrow_constructible_v<_Se, const _OSe&>) // strengthened
-        : _Val{_Right._Get_val()} {}
+        : _Val{_Right._Get_val_for_hardened_construction()} {}
 
     template <class _OIter, class _OSe>
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
@@ -895,25 +895,30 @@ public:
         noexcept(is_nothrow_constructible_v<_Iter, const _OIter&> && is_nothrow_constructible_v<_Se, const _OSe&>
                  && is_nothrow_assignable_v<_Iter&, const _OIter&>
                  && is_nothrow_assignable_v<_Se&, const _OSe&>) /* strengthened */ {
-        _Val = _Right._Get_val();
+        auto& _Right_val = _Right._Get_val();
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Right_val._Contains != _Variantish_state::_Nothing,
+            "common_iterator can only be assigned from if it holds a value");
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
+        _Val = _Right_val;
         return *this;
     }
 
     _NODISCARD constexpr decltype(auto) operator*() {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be dereferenced if it holds an iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return *_Val._Get_first();
     }
 
     _NODISCARD constexpr decltype(auto) operator*() const
         requires _Dereferenceable<const _Iter>
     {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be dereferenced if it holds an iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return *_Val._Get_first();
     }
 
@@ -922,10 +927,10 @@ public:
               && (_Has_member_arrow<const _Iter&> || is_reference_v<iter_reference_t<_Iter>>
                   || constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>)
     {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be dereferenced if it holds an iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         if constexpr (_Has_member_arrow<const _Iter&> || is_pointer_v<_Iter>) {
             return _Val._Get_first();
         } else if constexpr (is_reference_v<iter_reference_t<_Iter>>) {
@@ -948,19 +953,19 @@ public:
     }
 
     constexpr common_iterator& operator++() {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be incremented if it holds an iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         ++_Val._Get_first();
         return *this;
     }
 
     constexpr decltype(auto) operator++(int) {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be incremented if it holds an iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         if constexpr (forward_iterator<_Iter>) {
             common_iterator _Tmp = *this;
             ++_Val._Get_first();
@@ -990,11 +995,11 @@ public:
     _NODISCARD friend constexpr bool operator==(
         const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         auto& _Right_val = _Right._Get_val();
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(
             _Left._Val._Contains != _Variantish_state::_Nothing && _Right_val._Contains != _Variantish_state::_Nothing,
             "common_iterators can only be compared if both hold a value");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
 
         if (_Left._Val._Contains == _Variantish_state::_Holds_first) {
             if (_Right_val._Contains == _Variantish_state::_Holds_first) {
@@ -1020,11 +1025,11 @@ public:
     _NODISCARD friend constexpr iter_difference_t<_OIter> operator-(
         const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         auto& _Right_val = _Right._Get_val();
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(
             _Left._Val._Contains != _Variantish_state::_Nothing && _Right_val._Contains != _Variantish_state::_Nothing,
             "Cannot take difference of valueless common_iterators");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
 
         if (_Left._Val._Contains == _Variantish_state::_Holds_first) {
             if (_Right_val._Contains == _Variantish_state::_Holds_first) {
@@ -1045,10 +1050,10 @@ public:
         noexcept(noexcept(_RANGES iter_move(_Right._Val._Get_first())))
         requires input_iterator<_Iter>
     {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Right._Val._Contains == _Variantish_state::_Holds_first,
             "can only iter_move from common_iterator if it holds an iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return _RANGES iter_move(_Right._Val._Get_first());
     }
 
@@ -1056,11 +1061,11 @@ public:
     friend constexpr void iter_swap(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right)
         noexcept(noexcept(_RANGES iter_swap(_Left._Val._Get_first(), _Right._Get_val()._Get_first()))) {
         auto& _Right_val = _Right._Get_val();
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Left._Val._Contains == _Variantish_state::_Holds_first
                         && _Right_val._Contains == _Variantish_state::_Holds_first,
             "can only iter_swap common_iterators if both hold iterators");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return _RANGES iter_swap(_Left._Val._Get_first(), _Right_val._Get_first());
     }
 
@@ -1068,6 +1073,14 @@ public:
         return _Val;
     }
     _NODISCARD constexpr const _Variantish<_Iter, _Se>& _Get_val() const noexcept {
+        return _Val;
+    }
+
+    _NODISCARD constexpr const _Variantish<_Iter, _Se>& _Get_val_for_hardened_construction() const noexcept {
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Val._Contains != _Variantish_state::_Nothing,
+            "common_iterator can only be constructed from if it holds a value");
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return _Val;
     }
 
@@ -1153,9 +1166,9 @@ public:
     constexpr counted_iterator(_Iter _Right, const iter_difference_t<_Iter> _Diff)
         noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
         : _Current(_STD move(_Right)), _Length(_Diff) {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Diff >= 0, "counted_iterator requires non-negative length n");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
     }
 
     template <class _Other>
@@ -1188,18 +1201,18 @@ public:
 
     // [counted.iter.elem]
     _NODISCARD constexpr decltype(auto) operator*() noexcept(noexcept(*_Current)) /* strengthened */ {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Length > 0, "counted_iterator dereference beyond end of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return *_Current;
     }
 
     _NODISCARD constexpr decltype(auto) operator*() const noexcept(noexcept(*_Current)) /* strengthened */
         requires _Dereferenceable<const _Iter>
     {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Length > 0, "counted_iterator dereference beyond end of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return *_Current;
     }
 
@@ -1212,26 +1225,26 @@ public:
     _NODISCARD constexpr decltype(auto) operator[](const iter_difference_t<_Iter> _Diff) const
         requires random_access_iterator<_Iter>
     {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Diff < _Length, "counted_iterator index out of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return _Current[_Diff];
     }
 
     // [counted.iter.nav]
     constexpr counted_iterator& operator++() {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Length > 0, "counted_iterator increment beyond end of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         ++_Current;
         --_Length;
         return *this;
     }
 
     constexpr decltype(auto) operator++(int) {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Length > 0, "counted_iterator increment beyond end of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         --_Length;
         _TRY_BEGIN
         return _Current++;
@@ -1246,9 +1259,9 @@ public:
     constexpr counted_iterator operator++(int)
         requires forward_iterator<_Iter>
     {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Length > 0, "counted_iterator increment beyond end of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         counted_iterator _Tmp = *this;
         ++_Current;
         --_Length;
@@ -1288,9 +1301,9 @@ public:
     constexpr counted_iterator& operator+=(const iter_difference_t<_Iter> _Diff)
         requires random_access_iterator<_Iter>
     {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Diff <= _Length, "counted_iterator seek beyond end of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _Current += _Diff;
         _Length -= _Diff;
         return *this;
@@ -1324,9 +1337,9 @@ public:
     constexpr counted_iterator& operator-=(const iter_difference_t<_Iter> _Diff)
         requires random_access_iterator<_Iter>
     {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(-_Diff <= _Length, "counted_iterator decrement beyond end of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _Current -= _Diff;
         _Length += _Diff;
         return *this;
@@ -1360,12 +1373,18 @@ public:
         noexcept(noexcept(_RANGES iter_move(_Right._Current)))
         requires input_iterator<_Iter>
     {
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Right._Length > 0, "iter_move on a counted_iterator beyond end of range");
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return _RANGES iter_move(_Right._Current);
     }
 
     template <indirectly_swappable<_Iter> _Other>
     friend constexpr void iter_swap(const counted_iterator& _Left, const counted_iterator<_Other>& _Right)
         noexcept(noexcept(_RANGES iter_swap(_Left._Current, _Right.base()))) {
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Left._Length > 0 && _Right.count() > 0, "iter_swap on a counted_iterator beyond end of range");
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _RANGES iter_swap(_Left._Current, _Right.base());
     }
 
