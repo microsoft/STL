@@ -293,7 +293,7 @@ template <class _Ty>
 struct _CXX20_DEPRECATE_VOLATILE variant_size<volatile _Ty> : variant_size<_Ty>::type {
     // TRANSITION, DevCom-10948908, Clang fixed in 21: the [[deprecated]] attribute of a class template specialization
     // has no effect
-#if 1 // vvv workaround vvv
+#if _HAS_CXX20 // vvv workaround vvv
     _CXX20_DEPRECATE_VOLATILE static constexpr size_t value = variant_size<_Ty>::type::value;
 #endif // ^^^ no workaround ^^^
 };
@@ -301,7 +301,7 @@ template <class _Ty>
 struct _CXX20_DEPRECATE_VOLATILE variant_size<const volatile _Ty> : variant_size<_Ty>::type {
     // TRANSITION, DevCom-10948908, Clang fixed in 21: the [[deprecated]] attribute of a class template specialization
     // has no effect
-#if 1 // vvv workaround vvv
+#if _HAS_CXX20 // vvv workaround vvv
     _CXX20_DEPRECATE_VOLATILE static constexpr size_t value = variant_size<_Ty>::type::value;
 #endif // ^^^ no workaround ^^^
 };
@@ -323,7 +323,7 @@ template <size_t _Idx, class _Ty>
 struct _CXX20_DEPRECATE_VOLATILE variant_alternative<_Idx, volatile _Ty> {
     // TRANSITION, DevCom-10948908, Clang fixed in 21: the [[deprecated]] attribute of a class template specialization
     // has no effect
-#if 1 // vvv workaround vvv
+#if _HAS_CXX20 // vvv workaround vvv
     using _Mybase _CXX20_DEPRECATE_VOLATILE = variant_alternative<_Idx, _Ty>;
     using type                              = add_volatile_t<typename _Mybase::type>;
 #else // ^^^ workaround / no workaround vvv
@@ -334,7 +334,7 @@ template <size_t _Idx, class _Ty>
 struct _CXX20_DEPRECATE_VOLATILE variant_alternative<_Idx, const volatile _Ty> {
     // TRANSITION, DevCom-10948908, Clang fixed in 21: the [[deprecated]] attribute of a class template specialization
     // has no effect
-#if 1 // vvv workaround vvv
+#if _HAS_CXX20 // vvv workaround vvv
     using _Mybase _CXX20_DEPRECATE_VOLATILE = variant_alternative<_Idx, _Ty>;
     using type                              = add_cv_t<typename _Mybase::type>;
 #else // ^^^ workaround / no workaround vvv
