@@ -364,7 +364,6 @@ void test_gh_5671_line_terminators() {
     test_regex_on_custom_wchars(L".", L"\n", false);
     test_regex_on_custom_wchars(L".", L"\u2028", false); // U+2028 LINE SEPARATOR
     test_regex_on_custom_wchars(L".", L"\u2029", false); // U+2029 PARAGRAPH SEPARATOR
-    test_regex_on_custom_wchars(L".", L"\u2029", false); // U+2029 PARAGRAPH SEPARATOR
     test_regex_on_custom_wchars(L".", L"\u2c60", true); // U+2C60 LATIN CAPITAL LETTER L WITH DOUBLE BAR
 
     {
