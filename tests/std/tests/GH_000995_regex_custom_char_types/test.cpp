@@ -32,7 +32,7 @@ public:
     explicit wrapped_character(char ch) : character(static_cast<wchar_t>(ch)) {}
     explicit wrapped_character(unsigned char ch) : character(ch) {}
     explicit wrapped_character(Elem w) : character(w) {}
-    template <class T = wchar_t, enable_if_t<!is_same_v<T, Elem> && is_same_v<T, wchar_t>, int> = 0>
+    template <class T = wchar_t, enable_if_t<!is_same_v<T, Elem>, int> = 0>
     explicit wrapped_character(wchar_t w) : character(w) {}
     explicit wrapped_character(int w) = delete;
     explicit wrapped_character(unsigned int w) : character(static_cast<wchar_t>(w)) {}
