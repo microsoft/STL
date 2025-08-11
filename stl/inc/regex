@@ -3724,34 +3724,23 @@ _BidIt1 _Search_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, 
     }
 }
 
-template <class _Char_traits, enable_if_t<is_same_v<_Char_traits, char_traits<char>>, int> = 0>
-bool _Lookup_range(char _Ch, const _Buf<char>* _Bufptr) {
-    const auto _Uchar = static_cast<unsigned char>(_Ch);
-    for (unsigned int _Ix = 0; _Ix < _Bufptr->_Size(); _Ix += 2) { // check current position
-        if (static_cast<unsigned char>(_Bufptr->_At(_Ix)) <= _Uchar
-            && _Uchar <= static_cast<unsigned char>(_Bufptr->_At(_Ix + 1))) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-template <class _Char_traits, enable_if_t<is_same_v<_Char_traits, char_traits<wchar_t>>, int> = 0>
-bool _Lookup_range(wchar_t _Ch, const _Buf<wchar_t>* _Bufptr) {
-    for (unsigned int _Ix = 0; _Ix < _Bufptr->_Size(); _Ix += 2) { // check current position
-        if (_Bufptr->_At(_Ix) <= _Ch && _Ch <= _Bufptr->_At(_Ix + 1)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 template <class _Char_traits, class _Elem>
-bool _Lookup_range(_Elem _Ch, const _Buf<_Elem>* _Bufptr) { // check whether _Ch is in _Buf
+bool _Lookup_range(const _Elem _Ch, const _Buf<_Elem>* const _Bufptr) { // check whether _Ch is in _Buf
     for (unsigned int _Ix = 0; _Ix < _Bufptr->_Size(); _Ix += 2) { // check current position
-        if (!_Char_traits::lt(_Ch, _Bufptr->_At(_Ix)) && !_Char_traits::lt(_Bufptr->_At(_Ix + 1), _Ch)) {
+        const _Elem _Left  = _Bufptr->_At(_Ix);
+        const _Elem _Right = _Bufptr->_At(_Ix + 1);
+
+        bool _Within_range;
+        if constexpr (is_same_v<_Char_traits, char_traits<char>>) {
+            const auto _Uchar = static_cast<unsigned char>(_Ch);
+            _Within_range = static_cast<unsigned char>(_Left) <= _Uchar && _Uchar <= static_cast<unsigned char>(_Right);
+        } else if constexpr (is_same_v<_Char_traits, char_traits<wchar_t>>) {
+            _Within_range = _Left <= _Ch && _Ch <= _Right;
+        } else {
+            _Within_range = !_Char_traits::lt(_Ch, _Left) && !_Char_traits::lt(_Right, _Ch);
+        }
+
+        if (_Within_range) {
             return true;
         }
     }
