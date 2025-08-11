@@ -346,11 +346,11 @@ void test_gh_5671_single_character_patterns() {
 
     // matching for very large values
     {
-        unsigned long long pattern = 0xabababababULL;
+        const unsigned long long pattern = 0xabababababULL;
 
         test_regex_on_custom_ullongs(&pattern, &pattern + 1, &pattern, &pattern + 1, true);
 
-        for (unsigned long long unmatched : {0xabULL, 0xababULL, 0xababababULL, 0xababababaaULL, 0xababababacULL,
+        for (const unsigned long long unmatched : {0xabULL, 0xababULL, 0xababababULL, 0xababababaaULL, 0xababababacULL,
                  0x9bababababULL, 0xbbababababULL, 0xffffffababababULL}) {
             test_regex_on_custom_ullongs(&pattern, &pattern + 1, &unmatched, &unmatched + 1, false);
         }
@@ -368,12 +368,12 @@ void test_gh_5671_line_terminators() {
     test_regex_on_custom_wchars(L".", L"\u2c60", true); // U+2C60 LATIN CAPITAL LETTER L WITH DOUBLE BAR
 
     {
-        unsigned long long dot = L'.';
+        const unsigned long long dot = L'.';
 
-        for (unsigned long long line_terminator : {L'\r', L'\n', L'\u2028', L'\u2029'}) {
+        for (const unsigned long long line_terminator : {L'\r', L'\n', L'\u2028', L'\u2029'}) {
             test_regex_on_custom_ullongs(&dot, &dot + 1, &line_terminator, &line_terminator + 1, false);
 
-            unsigned long long shifted_line_terminator = 0x100000000ULL + line_terminator;
+            const unsigned long long shifted_line_terminator = 0x100000000ULL + line_terminator;
             test_regex_on_custom_ullongs(&dot, &dot + 1, &shifted_line_terminator, &shifted_line_terminator + 1, true);
         }
     }
@@ -408,12 +408,12 @@ void test_gh_5671_character_ranges() {
 
     // test ranges with boundaries exceeding UINT_MAX for small and large ranges
     for (unsigned long long upper_bound : {0x100000006ULL, 0x100000036ULL}) {
-        unsigned long long pattern[] = {L'[', 0x100000004ULL, L'-', upper_bound, L']'};
+        const unsigned long long pattern[] = {L'[', 0x100000004ULL, L'-', upper_bound, L']'};
         for (unsigned long long matched = 0x100000004ULL; matched <= upper_bound; ++matched) {
             test_regex_on_custom_ullongs(begin(pattern), end(pattern), &matched, &matched + 1, true);
         }
 
-        for (unsigned long long unmatched :
+        for (const unsigned long long unmatched :
             {0x00000004ULL, upper_bound & 0xffffffffULL, 0x100000003ULL, upper_bound + 1ULL}) {
             test_regex_on_custom_ullongs(begin(pattern), end(pattern), &unmatched, &unmatched + 1, false);
         }
