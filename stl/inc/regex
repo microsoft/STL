@@ -3944,19 +3944,17 @@ typename _RxTraits::char_class_type _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Al
     return _Traits.lookup_classname(_Ptr, _Ptr + 1, (_Sflags & regex_constants::icase) != 0);
 }
 
-inline bool _Is_ecmascript_line_terminator(char _Ch) {
-    return _Ch == _Meta_nl || _Ch == _Meta_cr;
-}
-
-inline bool _Is_ecmascript_line_terminator(wchar_t _Ch) {
-    return _Ch == _Meta_nl || _Ch == _Meta_cr || _Ch == _Meta_ls || _Ch == _Meta_ps;
-}
-
 template <class _Elem>
 bool _Is_ecmascript_line_terminator(_Elem _Ch) {
-    auto _UCh = static_cast<unsigned int>(_Ch);
-    return static_cast<_Elem>(_UCh) == _Ch
-        && (_UCh == _Meta_nl || _UCh == _Meta_cr || _UCh == _Meta_ls || _UCh == _Meta_ps);
+    if constexpr (is_same_v<_Elem, char>) {
+        return _Ch == _Meta_nl || _Ch == _Meta_cr;
+    } else if constexpr (is_same_v<_Elem, wchar_t>) {
+        return _Ch == _Meta_nl || _Ch == _Meta_cr || _Ch == _Meta_ls || _Ch == _Meta_ps;
+    } else {
+        auto _UCh = static_cast<unsigned int>(_Ch);
+        return static_cast<_Elem>(_UCh) == _Ch
+            && (_UCh == _Meta_nl || _UCh == _Meta_cr || _UCh == _Meta_ls || _UCh == _Meta_ps);
+    }
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
