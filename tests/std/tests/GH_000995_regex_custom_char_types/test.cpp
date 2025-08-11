@@ -125,7 +125,7 @@ public:
 
     template <class FwdIt>
     string_type transform_primary(FwdIt first, FwdIt last) const {
-        if (_STD distance(first, last) == 1) {
+        if (distance(first, last) == 1) {
             return string_type{first, last};
         }
         return string_type{};
