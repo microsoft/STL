@@ -4595,10 +4595,10 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { //
         return false;
     }
 
-    auto _Kind = (_Char == static_cast<_Elem>('W')   ? _Rx_char_class_kind::_Negated_w
-                  : _Char == static_cast<_Elem>('S') ? _Rx_char_class_kind::_Negated_s
-                  : _Char == static_cast<_Elem>('D') ? _Rx_char_class_kind::_Negated_d
-                                                     : _Rx_char_class_kind::_Positive);
+    auto _Kind = (_Char == 'W'   ? _Rx_char_class_kind::_Negated_w
+                  : _Char == 'S' ? _Rx_char_class_kind::_Negated_s
+                  : _Char == 'D' ? _Rx_char_class_kind::_Negated_d
+                                 : _Rx_char_class_kind::_Positive);
 
     if (_Addit) {
         _Nfa._Add_class();
