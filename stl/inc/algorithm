@@ -9223,10 +9223,14 @@ void _Buffered_merge_sort_unchecked(const _BidIt _First, const _BidIt _Last, con
         _Chunk <<= 1;
         _STD _Chunked_merge_unchecked(_Temp_ptr, _Temp_ptr + _Count, _First, static_cast<ptrdiff_t>(_Chunk),
             static_cast<ptrdiff_t>(_Count), _Pred);
-        _Chunk <<= 1;
-        if (_Count <= _Chunk) { // if the input would be a single chunk, it's already sorted and we're done
-            return;
+
+        // In general, this is equivalent to `_Chunk <<= 1;` followed by testing `_Count <= _Chunk`,
+        // except that it doesn't risk overflowing. `(_Count - 1) / 2` correctly handles even/odd _Count.
+        // We have an early return for small _Count above, so `_Count - 1` is safe to form.
+        if ((_Count - 1) / 2 < _Chunk) {
+            return; // if the input would be a single chunk, it's already sorted and we're done
         }
+        _Chunk <<= 1;
 
         // more merges necessary; merge to temporary buffer
         _STD _Chunked_merge_unchecked(_First, _Last, _Temp_ptr, _Chunk, _Count, _Pred);
@@ -9394,10 +9398,14 @@ namespace ranges {
                 // unconditionally merge elements back into the source buffer
                 _Chunk_size <<= 1;
                 _Chunked_merge_common(_Temp_ptr, _Temp_ptr + _Count, _First, _Chunk_size, _Count, _Pred, _Proj);
-                _Chunk_size <<= 1;
-                if (_Count <= _Chunk_size) { // if the input would be a single chunk, it's already sorted and we're done
-                    return;
+
+                // In general, this is equivalent to `_Chunk_size <<= 1;` followed by testing `_Count <= _Chunk_size`,
+                // except that it doesn't risk overflowing. `(_Count - 1) / 2` correctly handles even/odd _Count.
+                // We have an early return for small _Count above, so `_Count - 1` is safe to form.
+                if ((_Count - 1) / 2 < _Chunk_size) {
+                    return; // if the input would be a single chunk, it's already sorted and we're done
                 }
+                _Chunk_size <<= 1;
 
                 // more merges necessary; merge to temporary buffer
                 _Chunked_merge_common(_First, _Last, _Temp_ptr, _Chunk_size, _Count, _Pred, _Proj);
