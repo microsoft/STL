@@ -104,21 +104,21 @@ private:
 namespace signed_wchar_ns {
     enum class signed_wchar_enum : short {};
 
-    bool operator==(const signed_wchar_enum left, const char right) {
-        return static_cast<short>(left) == right;
+    bool operator==(const signed_wchar_enum swe, const char ch) {
+        return static_cast<unsigned short>(swe) == static_cast<unsigned char>(ch);
     }
 
 #if !_HAS_CXX20
-    bool operator!=(const signed_wchar_enum left, const char right) {
-        return static_cast<short>(left) != right;
+    bool operator!=(const signed_wchar_enum swe, const char ch) {
+        return !(swe == ch);
     }
 
-    bool operator==(const char left, const signed_wchar_enum right) {
-        return left == static_cast<short>(right);
+    bool operator==(const char ch, const signed_wchar_enum swe) {
+        return swe == ch;
     }
 
-    bool operator!=(const char left, const signed_wchar_enum right) {
-        return left != static_cast<short>(right);
+    bool operator!=(const char ch, const signed_wchar_enum swe) {
+        return !(swe == ch);
     }
 #endif // !_HAS_CXX20
 } // namespace signed_wchar_ns
