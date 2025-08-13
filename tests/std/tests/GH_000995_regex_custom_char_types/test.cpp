@@ -101,7 +101,29 @@ private:
     rx_traits inner;
 };
 
-enum class signed_wchar_enum : short {};
+namespace signed_wchar_ns {
+    enum class signed_wchar_enum : short {};
+
+    bool operator==(const signed_wchar_enum left, const char right) {
+        return static_cast<short>(left) == right;
+    }
+
+#if !_HAS_CXX20
+    bool operator!=(const signed_wchar_enum left, const char right) {
+        return static_cast<short>(left) != right;
+    }
+
+    bool operator==(const char left, const signed_wchar_enum right) {
+        return left == static_cast<short>(right);
+    }
+
+    bool operator!=(const char left, const signed_wchar_enum right) {
+        return left != static_cast<short>(right);
+    }
+#endif // !_HAS_CXX20
+} // namespace signed_wchar_ns
+
+using signed_wchar_ns::signed_wchar_enum;
 
 class wrapped_wchar {
 public:
@@ -132,13 +154,31 @@ public:
         return lhs.character == rhs.character;
     }
 
+    friend bool operator==(const wrapped_wchar& lhs, const char rhs) {
+        return lhs.character == static_cast<wchar_t>(rhs);
+    }
+
+#if !_HAS_CXX20
+    friend bool operator!=(const wrapped_wchar& lhs, const wrapped_wchar& rhs) {
+        return lhs.character != rhs.character;
+    }
+
+    friend bool operator!=(const wrapped_wchar& lhs, const char rhs) {
+        return lhs.character != static_cast<wchar_t>(rhs);
+    }
+
+    friend bool operator==(const char lhs, const wrapped_wchar& rhs) {
+        return static_cast<wchar_t>(lhs) == rhs.character;
+    }
+
+    friend bool operator!=(const char lhs, const wrapped_wchar& rhs) {
+        return static_cast<wchar_t>(lhs) != rhs.character;
+    }
+#endif // !_HAS_CXX20
+
 private:
     wchar_t character;
 };
-
-bool operator!=(const wrapped_wchar& lhs, const wrapped_wchar& rhs) {
-    return !(lhs == rhs);
-}
 
 template <class Elem>
 struct custom_char_traits {
