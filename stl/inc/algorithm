@@ -395,6 +395,7 @@ _STD_BEGIN
     static_assert(_Is_ranges_bidi_iter_v<_Iter>, "This algorithm requires bidirectional iterators or stronger.")
 
 _INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
+// If _ISORT_MAX is ever changed from 32 == 2^5, re-analyze the implementation of stable_sort for integer overflow.
 
 template <class _It>
 constexpr _Iter_diff_t<_It> _Isort_max{_ISORT_MAX};
@@ -9220,12 +9221,19 @@ void _Buffered_merge_sort_unchecked(const _BidIt _First, const _BidIt _Last, con
     auto _Chunk = _Isort_max<_BidIt>;
     for (;;) {
         // unconditionally merge elements back into the source buffer
+
+        // _Chunk starts at 2^5 and is doubled twice in this loop.
+        // The first doubling (to 2^6, 2^8, 2^10, ...) doesn't check for overflow as it doesn't pose a risk.
+        // The second doubling (to 2^7, 2^9, 2^11, ..., 2^15, ..., 2^31, ...) defends against overflow below.
         _Chunk <<= 1;
         _STD _Chunked_merge_unchecked(_Temp_ptr, _Temp_ptr + _Count, _First, static_cast<ptrdiff_t>(_Chunk),
             static_cast<ptrdiff_t>(_Count), _Pred);
 
-        // In general, this is equivalent to `_Chunk <<= 1;` followed by testing `_Count <= _Chunk`,
-        // except that it doesn't risk overflowing. `(_Count - 1) / 2` correctly handles even/odd _Count.
+        // This is equivalent to doubling _Chunk followed by returning when `_Count <= _Chunk`,
+        // except that it doesn't risk overflowing.
+        // Note that returning when `_Count / 2 <= _Chunk` before doubling _Chunk
+        // would behave differently for odd _Count due to truncating integer division.
+        // Returning when `(_Count - 1) / 2 < _Chunk` correctly handles both even and odd _Count.
         // We have an early return for small _Count above, so `_Count - 1` is safe to form.
         if ((_Count - 1) / 2 < _Chunk) {
             return; // if the input would be a single chunk, it's already sorted and we're done
@@ -9396,11 +9404,18 @@ namespace ranges {
             ptrdiff_t _Chunk_size = _ISORT_MAX;
             for (;;) {
                 // unconditionally merge elements back into the source buffer
+
+                // _Chunk_size starts at 2^5 and is doubled twice in this loop.
+                // The first doubling (to 2^6, 2^8, 2^10, ...) doesn't check for overflow as it doesn't pose a risk.
+                // The second doubling (to 2^7, 2^9, 2^11, ..., 2^15, ..., 2^31, ...) defends against overflow below.
                 _Chunk_size <<= 1;
                 _Chunked_merge_common(_Temp_ptr, _Temp_ptr + _Count, _First, _Chunk_size, _Count, _Pred, _Proj);
 
-                // In general, this is equivalent to `_Chunk_size <<= 1;` followed by testing `_Count <= _Chunk_size`,
-                // except that it doesn't risk overflowing. `(_Count - 1) / 2` correctly handles even/odd _Count.
+                // This is equivalent to doubling _Chunk_size followed by returning when `_Count <= _Chunk_size`,
+                // except that it doesn't risk overflowing.
+                // Note that returning when `_Count / 2 <= _Chunk_size` before doubling _Chunk_size
+                // would behave differently for odd _Count due to truncating integer division.
+                // Returning when `(_Count - 1) / 2 < _Chunk_size` correctly handles both even and odd _Count.
                 // We have an early return for small _Count above, so `_Count - 1` is safe to form.
                 if ((_Count - 1) / 2 < _Chunk_size) {
                     return; // if the input would be a single chunk, it's already sorted and we're done
