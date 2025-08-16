@@ -306,19 +306,13 @@ public:
 
     template <class _Uty = remove_cv_t<_Ty>>
         requires (!is_same_v<remove_cvref_t<_Uty>, in_place_t> && !is_same_v<remove_cvref_t<_Uty>, expected>
+                     && !is_same_v<remove_cvref_t<_Uty>, unexpect_t>
                      && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected>
-                     && (!is_same_v<remove_cv_t<_Ty>, bool>
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10655311
-                         || !_Is_specialization_v<remove_cvref_t<_Uty>, expected>
-#else // ^^^ no workaround / workaround vvv
-                         || !_Is_specialization_v<remove_cvref_t<_Uty>, _STD expected>
-#endif // ^^^ workaround ^^^
-                         )
+                     && (!is_same_v<remove_cv_t<_Ty>, bool> || !_Is_specialization_v<remove_cvref_t<_Uty>, expected>)
                      && is_constructible_v<_Ty, _Uty>)
     constexpr explicit(!is_convertible_v<_Uty, _Ty>) expected(_Uty&& _Other)
         noexcept(is_nothrow_constructible_v<_Ty, _Uty>) // strengthened
-        : _Value(_STD forward<_Uty>(_Other)), _Has_value(true) {
-    }
+        : _Value(_STD forward<_Uty>(_Other)), _Has_value(true) {}
 
     template <class _UErr>
         requires is_constructible_v<_Err, const _UErr&>

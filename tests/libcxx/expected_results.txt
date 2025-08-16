@@ -959,12 +959,6 @@ std/containers/sequences/vector.bool/vector_bool.pass.cpp FAIL
 # Not analyzed. Inspecting shift operators for quoted().
 std/input.output/iostream.format/quoted.manip/quoted_traits.compile.pass.cpp FAIL
 
-# Not analyzed.
-# MSVC warning C5046: 'test_undefined_internal::A::operator *': Symbol involving type with internal linkage not defined
-# Clang error: function 'test_undefined_internal()::A::operator*' has internal linkage but is not defined [-Werror,-Wundefined-internal]
-std/iterators/iterator.requirements/iterator.cust/iterator.cust.move/iter_rvalue_reference_t.compile.pass.cpp FAIL
-std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_spaceship.pass.cpp FAIL
-
 # Not analyzed. Failing assert(arr[0].moves() == 1 && arr[1].moves() == 3).
 std/iterators/iterator.requirements/iterator.cust/iterator.cust.swap/iter_swap.pass.cpp FAIL
 
@@ -1312,9 +1306,6 @@ std/algorithms/alg.sorting/alg.set.operations/set.intersection/set_intersection_
 # MSVC truncation warnings.
 # Clang assertion: std::hermite(n, +inf) == inf
 std/numerics/c.math/hermite.pass.cpp FAIL
-
-# Not analyzed. Test coverage for LLVM-104496 uses span<Incomplete>.
-std/containers/views/views.span/span.cons/copy.pass.cpp FAIL
 
 # Not analyzed. These tests disable or limit allocations, which interferes with our proxy objects.
 std/algorithms/alg.sorting/alg.sort/stable.sort/stable_sort.pass.cpp FAIL
