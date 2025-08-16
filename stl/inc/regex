@@ -4367,11 +4367,9 @@ template <class _FwdIt, class _Elem, class _RxTraits>
 bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Is_esc(_FwdIt _Ch0) const { // assumes _Ch0 != _End
     return _Mode == _Lex_mode::_Default && ++_Ch0 != _End
         && ((!(_L_flags & _L_nex_grp)
-                && (*_Ch0 == static_cast<_Elem>(static_cast<char>(_Meta_lpar))
-                    || *_Ch0 == static_cast<_Elem>(static_cast<char>(_Meta_rpar))))
+                && (*_Ch0 == static_cast<char>(_Meta_lpar) || *_Ch0 == static_cast<char>(_Meta_rpar)))
             || (!(_L_flags & _L_nex_rep)
-                && (*_Ch0 == static_cast<_Elem>(static_cast<char>(_Meta_lbr))
-                    || *_Ch0 == static_cast<_Elem>(static_cast<char>(_Meta_rbr)))));
+                && (*_Ch0 == static_cast<char>(_Meta_lbr) || *_Ch0 == static_cast<char>(_Meta_rbr))));
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -4442,7 +4440,7 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-cha
         { // check if $ is special
             _FwdIt _Next = _Pat;
             if ((_L_flags & _L_anch_rstr) && ++_Next != _End) {
-                const bool _Escaped = *_Next == static_cast<_Elem>(static_cast<char>(_Meta_esc)) && _Is_esc(_Next);
+                const bool _Escaped = *_Next == static_cast<char>(_Meta_esc) && _Is_esc(_Next);
                 if (_Escaped) {
                     ++_Next;
                 }
@@ -4454,9 +4452,9 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-cha
 
                 const _Elem _Ch = *_Next;
                 const bool _Is_end_of_alternative =
-                    ((_L_flags & _L_alt_nl) && _Ch == static_cast<_Elem>(static_cast<char>(_Meta_nl))
+                    ((_L_flags & _L_alt_nl) && _Ch == static_cast<char>(_Meta_nl)
                         && _Disj_count == 0) // dollar followed by newline '\n' for alternation
-                    || (_Escaped && _Ch == static_cast<_Elem>(static_cast<char>(_Meta_rpar))
+                    || (_Escaped && _Ch == static_cast<char>(_Meta_rpar)
                         && _Disj_count != 0); // dollar followed by (escaped) right parenthesis ')' closing a group
 
                 if (!_Is_end_of_alternative) {
@@ -4490,7 +4488,7 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-cha
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser2<_FwdIt, _Elem, _RxTraits>::_Next() { // advance to next input character
     if (_Pat != _End) { // advance
-        if (*_Pat == static_cast<_Elem>(static_cast<char>(_Meta_esc)) && _Is_esc(_Pat)) {
+        if (*_Pat == static_cast<char>(_Meta_esc) && _Is_esc(_Pat)) {
             ++_Pat;
         }
 
@@ -4621,10 +4619,10 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { //
         return false;
     }
 
-    auto _Kind = (_Char == static_cast<_Elem>('W')   ? _Rx_char_class_kind::_Negated_w
-                  : _Char == static_cast<_Elem>('S') ? _Rx_char_class_kind::_Negated_s
-                  : _Char == static_cast<_Elem>('D') ? _Rx_char_class_kind::_Negated_d
-                                                     : _Rx_char_class_kind::_Positive);
+    auto _Kind = (_Char == 'W'   ? _Rx_char_class_kind::_Negated_w
+                  : _Char == 'S' ? _Rx_char_class_kind::_Negated_s
+                  : _Char == 'D' ? _Rx_char_class_kind::_Negated_d
+                                 : _Rx_char_class_kind::_Positive);
 
     if (_Addit) {
         _Nfa._Add_class();
@@ -4644,8 +4642,7 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { //
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 _Prs_ret _Parser2<_FwdIt, _Elem, _RxTraits>::_ClassEscape() { // check for class escape
-    if ((_L_flags & _L_esc_bsp)
-        && _Char == static_cast<_Elem>(static_cast<char>(_Esc_ctrl_b))) { // handle backspace escape
+    if ((_L_flags & _L_esc_bsp) && _Char == static_cast<char>(_Esc_ctrl_b)) { // handle backspace escape
         _Next();
         _Unescaped_char = static_cast<_Elem>(static_cast<char>(_Meta_bsp));
         return _Prs_chr;
@@ -4894,15 +4891,15 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_IdentityEscape(bool _In_character_clas
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_ffn(_Elem _Ch) { // check for limited file format escape characters
-    if (_Ch == static_cast<_Elem>(static_cast<char>(_Esc_ctrl_f))) {
+    if (_Ch == static_cast<char>(_Esc_ctrl_f)) {
         _Val = '\f';
-    } else if (_Ch == static_cast<_Elem>(static_cast<char>(_Esc_ctrl_n))) {
+    } else if (_Ch == static_cast<char>(_Esc_ctrl_n)) {
         _Val = '\n';
-    } else if (_Ch == static_cast<_Elem>(static_cast<char>(_Esc_ctrl_r))) {
+    } else if (_Ch == static_cast<char>(_Esc_ctrl_r)) {
         _Val = '\r';
-    } else if (_Ch == static_cast<_Elem>(static_cast<char>(_Esc_ctrl_t))) {
+    } else if (_Ch == static_cast<char>(_Esc_ctrl_t)) {
         _Val = '\t';
-    } else if (_Ch == static_cast<_Elem>(static_cast<char>(_Esc_ctrl_v))) {
+    } else if (_Ch == static_cast<char>(_Esc_ctrl_v)) {
         _Val = '\v';
     } else {
         return false;
@@ -4913,9 +4910,9 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_ffn(_Elem _Ch) { // check for limit
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_ffnx(_Elem _Ch) { // check for the remaining file format escape characters
-    if (_Ch == static_cast<_Elem>(static_cast<char>(_Esc_ctrl_a))) {
+    if (_Ch == static_cast<char>(_Esc_ctrl_a)) {
         _Val = '\a';
-    } else if (_Ch == static_cast<_Elem>(static_cast<char>(_Esc_ctrl_b))) {
+    } else if (_Ch == static_cast<char>(_Esc_ctrl_b)) {
         _Val = '\b';
     } else {
         return false;
@@ -4933,8 +4930,7 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_CharacterEscape(bool _In_character_cla
 
     if ((_L_flags & _L_esc_ffn && _Do_ffn(_Char)) || (_L_flags & _L_esc_ffnx && _Do_ffnx(_Char))) {
         _Next();
-    } else if (_Char == static_cast<_Elem>(static_cast<char>(_Esc_ctrl))
-               && (_L_flags & _L_esc_ctrl)) { // handle control escape sequence
+    } else if (_Char == static_cast<char>(_Esc_ctrl) && (_L_flags & _L_esc_ctrl)) { // handle control escape sequence
         _Next();
 
         using _Char_traits_type = typename _RxTraits::string_type::traits_type;
@@ -4947,12 +4943,10 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_CharacterEscape(bool _In_character_cla
 
         _Val = static_cast<unsigned char>(_Char) % 32;
         _Next();
-    } else if (_Char == static_cast<_Elem>(static_cast<char>(_Esc_hex))
-               && (_L_flags & _L_esc_hex)) { // handle hexadecimal escape sequence
+    } else if (_Char == static_cast<char>(_Esc_hex) && (_L_flags & _L_esc_hex)) { // handle hexadecimal escape sequence
         _Next();
         _HexDigits(2);
-    } else if (_Char == static_cast<_Elem>(static_cast<char>(_Esc_uni))
-               && (_L_flags & _L_esc_uni)) { // handle Unicode escape sequence
+    } else if (_Char == static_cast<char>(_Esc_uni) && (_L_flags & _L_esc_uni)) { // handle Unicode escape sequence
         _Next();
         _HexDigits(4);
     } else if ((_L_flags & _L_esc_oct) && _OctalDigits()) { // handle octal escape sequence
@@ -5068,13 +5062,11 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alt
             _Next();
         } else if (_Mchar == _Meta_esc) { // check for valid escape sequence
             _Next();
-            if ((_L_flags & _L_asrt_wrd)
-                && _Char == static_cast<_Elem>(static_cast<char>(_Esc_word))) { // add word assert
+            if ((_L_flags & _L_asrt_wrd) && _Char == static_cast<char>(_Esc_word)) { // add word assert
                 _Nfa._Add_wbound();
                 _Next();
                 _Quant = false;
-            } else if ((_L_flags & _L_asrt_wrd)
-                       && _Char == static_cast<_Elem>(static_cast<char>(_Esc_not_word))) { // add not-word assert
+            } else if ((_L_flags & _L_asrt_wrd) && _Char == static_cast<char>(_Esc_not_word)) { // add not-word assert
                 _Nfa._Add_wbound();
                 _Nfa._Negate();
                 _Next();

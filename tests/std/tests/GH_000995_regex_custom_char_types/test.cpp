@@ -13,8 +13,53 @@
 
 using namespace std;
 
-enum class signed_wchar_enum : short {};
-enum class ullong_enum : unsigned long long {};
+namespace signed_wchar_ns {
+    enum class signed_wchar_enum : short {};
+
+    bool operator==(const signed_wchar_enum swe, const char ch) {
+        return static_cast<unsigned short>(swe) == static_cast<unsigned char>(ch);
+    }
+
+#if !_HAS_CXX20
+    bool operator!=(const signed_wchar_enum swe, const char ch) {
+        return !(swe == ch);
+    }
+
+    bool operator==(const char ch, const signed_wchar_enum swe) {
+        return swe == ch;
+    }
+
+    bool operator!=(const char ch, const signed_wchar_enum swe) {
+        return !(swe == ch);
+    }
+#endif // !_HAS_CXX20
+} // namespace signed_wchar_ns
+
+using signed_wchar_ns::signed_wchar_enum;
+
+namespace ullong_ns {
+    enum class ullong_enum : unsigned long long {};
+
+    bool operator==(const ullong_enum ull, const char ch) {
+        return static_cast<unsigned long long>(ull) == static_cast<unsigned char>(ch);
+    }
+
+#if !_HAS_CXX20
+    bool operator!=(const ullong_enum ull, const char ch) {
+        return !(ull == ch);
+    }
+
+    bool operator==(const char ch, const ullong_enum ull) {
+        return ull == ch;
+    }
+
+    bool operator!=(const char ch, const ullong_enum ull) {
+        return !(ull == ch);
+    }
+#endif // !_HAS_CXX20
+} // namespace ullong_ns
+
+using ullong_ns::ullong_enum;
 
 template <class T>
 T convert_to(const signed_wchar_enum& char_enum) {
@@ -55,6 +100,28 @@ public:
         return lhs.character == rhs.character;
     }
 
+    friend bool operator==(const wrapped_character& wc, const char ch) {
+        return wc.character == static_cast<Elem>(ch);
+    }
+
+#if !_HAS_CXX20
+    friend bool operator!=(const wrapped_character& lhs, const wrapped_character& rhs) {
+        return !(lhs == rhs);
+    }
+
+    friend bool operator!=(const wrapped_character& wc, const char ch) {
+        return !(wc == ch);
+    }
+
+    friend bool operator==(const char ch, const wrapped_character& wc) {
+        return wc == ch;
+    }
+
+    friend bool operator!=(const char ch, const wrapped_character& wc) {
+        return !(wc == ch);
+    }
+#endif // !_HAS_CXX20
+
     template <class T>
     friend T convert_to(const wrapped_character<Elem>& wrapped_char) {
         return static_cast<T>(wrapped_char.character);
@@ -66,11 +133,6 @@ private:
 
 template <class T, class Elem>
 T convert_to(const wrapped_character<Elem>& wrapped_char);
-
-template <class Elem>
-bool operator!=(const wrapped_character<Elem>& lhs, const wrapped_character<Elem>& rhs) {
-    return !(lhs == rhs);
-}
 
 using wrapped_wchar  = wrapped_character<wchar_t>;
 using wrapped_ullong = wrapped_character<unsigned long long>;
