@@ -327,7 +327,6 @@ inline size_t _Regex_transform_primary(_Out_writes_(_Last1 - _First1) _Post_read
 template <class _Elem>
 class _Regex_traits : public _Regex_traits_base { // base class for regular expression traits
 public:
-    using _Uelem      = make_unsigned_t<_Elem>;
     using char_type   = _Elem;
     using size_type   = size_t;
     using string_type = basic_string<_Elem>;
@@ -638,11 +637,9 @@ inline bool _Is_word(char _Ch) {
 
 template <class _Elem>
 bool _Is_word(_Elem _Ch) {
-    // assumes 'x' == L'x' for the ASCII range
-    using _UElem = make_unsigned_t<_Elem>;
-
-    const auto _UCh = static_cast<_UElem>(_Ch);
-    return _UCh <= static_cast<_UElem>('z') && _Is_word(static_cast<unsigned char>(_UCh));
+    // assumes that ASCII characters are represented at ASCII code points
+    const auto _Uchar = static_cast<unsigned char>(_Ch);
+    return static_cast<_Elem>(_Uchar) == _Ch && _Uchar <= 'z' && _Is_word(_Uchar);
 }
 
 _EXPORT_STD template <class _BidIt>
@@ -3693,6 +3690,8 @@ _BidIt1 _Compare_translate_both(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2,
     // compare character ranges, translating characters in both ranges according to syntax options
     if (_Sflags & regex_constants::icase) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_icase<_RxTraits>{_Traits});
+    } else if constexpr (_Is_any_of_v<_RxTraits, regex_traits<char>, regex_traits<wchar_t>>) {
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_collate<_RxTraits>{_Traits});
     } else {
@@ -3706,6 +3705,8 @@ _BidIt1 _Compare_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2,
     // compare character ranges, translating characters in the left range according to syntax options
     if (_Sflags & regex_constants::icase) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_icase_translateleft<_RxTraits>{_Traits});
+    } else if constexpr (_Is_any_of_v<_RxTraits, regex_traits<char>, regex_traits<wchar_t>>) {
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_collate_translateleft<_RxTraits>{_Traits});
     } else {
@@ -3720,6 +3721,8 @@ _BidIt1 _Search_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, 
     // after translating characters in the left sequence according to syntax options
     if (_Sflags & regex_constants::icase) {
         return _STD search(_Begin1, _End1, _Begin2, _End2, _Cmp_icase_translateleft<_RxTraits>{_Traits});
+    } else if constexpr (_Is_any_of_v<_RxTraits, regex_traits<char>, regex_traits<wchar_t>>) {
+        return _STD search(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
         return _STD search(_Begin1, _End1, _Begin2, _End2, _Cmp_collate_translateleft<_RxTraits>{_Traits});
     } else {
@@ -3727,11 +3730,23 @@ _BidIt1 _Search_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, 
     }
 }
 
-template <class _Elem>
-bool _Lookup_range(unsigned int _Ch, const _Buf<_Elem>* _Bufptr) { // check whether _Ch is in _Buf
-    using _Uelem = make_unsigned_t<_Elem>;
+template <class _Char_traits, class _Elem>
+bool _Lookup_range(const _Elem _Ch, const _Buf<_Elem>* const _Bufptr) { // check whether _Ch is in _Buf
     for (unsigned int _Ix = 0; _Ix < _Bufptr->_Size(); _Ix += 2) { // check current position
-        if (static_cast<_Uelem>(_Bufptr->_At(_Ix)) <= _Ch && _Ch <= static_cast<_Uelem>(_Bufptr->_At(_Ix + 1))) {
+        const _Elem _Left  = _Bufptr->_At(_Ix);
+        const _Elem _Right = _Bufptr->_At(_Ix + 1);
+
+        bool _Within_range;
+        if constexpr (is_same_v<_Char_traits, char_traits<char>>) {
+            const auto _Uchar = static_cast<unsigned char>(_Ch);
+            _Within_range = static_cast<unsigned char>(_Left) <= _Uchar && _Uchar <= static_cast<unsigned char>(_Right);
+        } else if constexpr (is_same_v<_Char_traits, char_traits<wchar_t>>) {
+            _Within_range = _Left <= _Ch && _Ch <= _Right;
+        } else {
+            _Within_range = !_Char_traits::lt(_Ch, _Left) && !_Char_traits::lt(_Right, _Ch);
+        }
+
+        if (_Within_range) {
             return true;
         }
     }
@@ -3829,7 +3844,7 @@ _It _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx,
     } else if (_Sflags & regex_constants::collate) {
         _Ch = _Traits.translate(_Ch);
     }
-    const auto _UCh = static_cast<typename _RxTraits::_Uelem>(_Ch);
+    const auto _Uchar = static_cast<unsigned char>(_Ch);
 
     _It _Res0 = _First;
     ++_Res0;
@@ -3841,11 +3856,12 @@ _It _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx,
         _Res0  = _Resx;
         _Found = true;
     } else if (_Node->_Ranges
-               && (_Sflags & regex_constants::collate ? _STD _Lookup_collating_range(_Ch, _Node->_Ranges, _Traits)
-                                                      : _STD _Lookup_range(_UCh, _Node->_Ranges))) {
+               && (_Sflags & regex_constants::collate
+                       ? _STD _Lookup_collating_range(_Ch, _Node->_Ranges, _Traits)
+                       : _STD _Lookup_range<typename _RxTraits::string_type::traits_type>(_Ch, _Node->_Ranges))) {
         _Found = true;
-    } else if (_UCh < _Bmp_max) {
-        _Found = _Node->_Small && _Node->_Small->_Find(_UCh);
+    } else if (static_cast<_Elem>(_Uchar) == _Ch) {
+        _Found = _Node->_Small && _Node->_Small->_Find(_Uchar);
     } else if (_Node->_Large
                && _STD find(_Node->_Large->_Str(), _Node->_Large->_Str() + _Node->_Large->_Size(), _Ch)
                       != _Node->_Large->_Str() + _Node->_Large->_Size()) {
@@ -3913,15 +3929,15 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Is_wbound() const {
     if ((_Mflags & regex_constants::match_prev_avail)
         || _Tgt_state._Cur != _Begin) { // if --_Cur is valid, check for preceding word character
         if (_Tgt_state._Cur == _End) {
-            return (_Mflags & regex_constants::match_not_eow) == 0 && _Is_word(*_Prev_iter(_Tgt_state._Cur));
+            return (_Mflags & regex_constants::match_not_eow) == 0 && _STD _Is_word(*_Prev_iter(_Tgt_state._Cur));
         } else {
-            return _Is_word(*_Prev_iter(_Tgt_state._Cur)) != _Is_word(*_Tgt_state._Cur);
+            return _STD _Is_word(*_Prev_iter(_Tgt_state._Cur)) != _STD _Is_word(*_Tgt_state._Cur);
         }
     } else { // --_Cur is not valid
         if (_Tgt_state._Cur == _End) {
             return false;
         } else {
-            return (_Mflags & regex_constants::match_not_bow) == 0 && _Is_word(*_Tgt_state._Cur);
+            return (_Mflags & regex_constants::match_not_bow) == 0 && _STD _Is_word(*_Tgt_state._Cur);
         }
     }
 }
@@ -3936,7 +3952,15 @@ typename _RxTraits::char_class_type _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Al
 
 template <class _Elem>
 bool _Is_ecmascript_line_terminator(_Elem _Ch) {
-    return _Ch == _Meta_nl || _Ch == _Meta_cr || _Ch == _Meta_ls || _Ch == _Meta_ps;
+    if constexpr (is_same_v<_Elem, char>) {
+        return _Ch == _Meta_nl || _Ch == _Meta_cr;
+    } else if constexpr (is_same_v<_Elem, wchar_t>) {
+        return _Ch == _Meta_nl || _Ch == _Meta_cr || _Ch == _Meta_ls || _Ch == _Meta_ps;
+    } else {
+        auto _UCh = static_cast<unsigned int>(_Ch);
+        return static_cast<_Elem>(_UCh) == _Ch
+            && (_UCh == _Meta_nl || _UCh == _Meta_cr || _UCh == _Meta_ls || _UCh == _Meta_ps);
+    }
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
