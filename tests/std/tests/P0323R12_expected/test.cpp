@@ -2445,7 +2445,7 @@ void test_lwg_3886_volatile() {
 static_assert(copyable<expected<any, int>>);
 static_assert(copyable<expected<void, any>>);
 
-// Test workaround for DevCom-10655311: Class derived from std::expected can't be constructed with bool value type
+// Test DevCom-10655311: Class derived from std::expected can't be constructed with bool value type
 template <class T, class E>
 class DerivedFromExpected : private expected<T, E> {
 public:
@@ -2508,6 +2508,21 @@ static_assert(!is_assignable_v<expected<void, move_only>&, ambiguating_expected_
 #endif // ^^^ no workaround ^^^
 
 static_assert(test_lwg_3886());
+
+// Test LWG-4222 "expected constructor from a single value missing a constraint"
+
+struct ConstructibleFromEverything {
+    explicit ConstructibleFromEverything(auto);
+};
+
+struct ConvertibleFromInt {
+    ConvertibleFromInt(int);
+};
+
+static_assert(!is_constructible_v<expected<ConstructibleFromEverything, ConvertibleFromInt>, unexpect_t&>);
+static_assert(!is_constructible_v<expected<ConstructibleFromEverything, ConvertibleFromInt>, const unexpect_t&>);
+static_assert(!is_constructible_v<expected<ConstructibleFromEverything, ConvertibleFromInt>, unexpect_t>);
+static_assert(!is_constructible_v<expected<ConstructibleFromEverything, ConvertibleFromInt>, const unexpect_t>);
 
 int main() {
     test_unexpected::test_all();
