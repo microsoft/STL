@@ -108,7 +108,7 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
 #define _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _Intrinsic, ...) \
     _Check_memory_order(_Order);                                   \
     _Result = _Intrinsic(__VA_ARGS__)
-#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
+#elif defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 #define _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _Intrinsic, ...) \
     switch (_Order) {                                              \
     case _Atomic_memory_order_relaxed:                             \
@@ -150,11 +150,6 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
         _Compiler_or_memory_barrier();                  \
     }
 
-#define _ATOMIC_STORE_SEQ_CST_ARM(_Width, _Ptr, _Desired) \
-    _Memory_barrier();                                    \
-    __iso_volatile_store##_Width((_Ptr), (_Desired));     \
-    _Memory_barrier();
-
 #define _ATOMIC_STORE_SEQ_CST_ARM64(_Width, _Ptr, _Desired) \
     __STORE_RELEASE(_Width, _Ptr, _Desired);                \
     _Memory_barrier();
@@ -168,12 +163,7 @@ extern "C" inline void _Check_memory_order(const unsigned int _Order) noexcept {
     __iso_volatile_store64((_Ptr), (_Desired));       \
     _Atomic_thread_fence(_Atomic_memory_order_seq_cst);
 
-#if defined(_M_ARM)
-#define _ATOMIC_STORE_SEQ_CST(_Width, _Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_ARM(_Width, (_Ptr), (_Desired))
-#define _ATOMIC_STORE_32_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM(32, (_Ptr), (_Desired))
-#define _ATOMIC_STORE_64_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM(64, (_Ptr), (_Desired))
-#elif defined(_M_ARM64) || defined(_M_ARM64EC) \
-    || defined(_M_HYBRID_X86_ARM64) // ^^^ ARM32 / ARM64/ARM64EC/HYBRID_X86_ARM64 vvv
+#if defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 #define _ATOMIC_STORE_SEQ_CST(_Width, _Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_ARM64(_Width, (_Ptr), (_Desired))
 #define _ATOMIC_STORE_32_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM64(32, (_Ptr), (_Desired))
 #define _ATOMIC_STORE_64_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM64(64, (_Ptr), (_Desired))
@@ -209,13 +199,13 @@ extern "C" inline void _Atomic_thread_fence(const unsigned int _Order) noexcept 
         (void) _InterlockedIncrement(&_Guard);
         _Compiler_barrier();
     }
-#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
+#elif defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
     if (_Order == _Atomic_memory_order_acquire || _Order == _Atomic_memory_order_consume) {
         _Memory_load_acquire_barrier();
     } else {
         _Memory_barrier();
     }
-#else // ^^^ ARM32/ARM64/ARM64EC/HYBRID_X86_ARM64 / unsupported hardware vvv
+#else // ^^^ ARM64/ARM64EC/HYBRID_X86_ARM64 / unsupported hardware vvv
 #error Unsupported hardware
 #endif // ^^^ unsupported hardware ^^^
 }
@@ -476,13 +466,13 @@ inline void _Atomic_lock_acquire(long& _Spinlock) noexcept {
             _Current_backoff = _Current_backoff < _Max_backoff ? _Current_backoff << 1 : _Max_backoff;
         }
     }
-#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
+#elif defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
     while (_InterlockedExchange_acq(&_Spinlock, 1) != 0) {
         while (__iso_volatile_load32(&reinterpret_cast<int&>(_Spinlock)) != 0) {
             __yield();
         }
     }
-#else // ^^^ defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64) ^^^
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64) ^^^
 #error Unsupported hardware
 #endif
 }
@@ -1035,13 +1025,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
         _ATOMIC_LOAD_ARM64(_As_bytes, 64, _Mem, _Order)
 #else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR != 1 vvv
-
-#ifdef _M_ARM
-        _As_bytes = __ldrexd(_Mem);
-#else
         _As_bytes = __iso_volatile_load64(_Mem);
-#endif
-
         _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(_Order)
 #endif // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR != 1 ^^^
         return reinterpret_cast<_TVal&>(_As_bytes);
@@ -1949,7 +1933,7 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
         const ptrdiff_t _Shift_bytes =
             static_cast<ptrdiff_t>(static_cast<size_t>(_Diff) * sizeof(remove_pointer_t<_Ty>));
         ptrdiff_t _Result;
-#if defined(_M_IX86) || defined(_M_ARM)
+#if defined(_M_IX86)
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedExchangeAdd,
             _STD _Atomic_address_as<long>(this->_Storage), _Shift_bytes);
 #else // ^^^ 32 bits / 64 bits vvv
@@ -2047,7 +2031,7 @@ struct _Atomic_pointer<_Ty&> : _Atomic_storage<_Ty&> {
         const ptrdiff_t _Shift_bytes =
             static_cast<ptrdiff_t>(static_cast<size_t>(_Diff) * sizeof(remove_pointer_t<_Ty>));
         ptrdiff_t _Result;
-#if defined(_M_IX86) || defined(_M_ARM)
+#if defined(_M_IX86)
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedExchangeAdd,
             _STD _Atomic_address_as<long>(this->_Storage), _Shift_bytes);
 #else // ^^^ 32 bits / 64 bits vvv
@@ -2236,7 +2220,7 @@ public:
     }
 
     bool compare_exchange_weak(_Ty& _Expected, const _Ty _Desired) volatile noexcept {
-        // we have no weak CAS intrinsics, even on ARM32/ARM64, so fall back to strong
+        // we have no weak CAS intrinsics, even on ARM64, so fall back to strong
         static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return this->compare_exchange_strong(_Expected, _Desired);
     }
@@ -3019,7 +3003,6 @@ _STD_END
 
 #undef _ATOMIC_CHOOSE_INTRINSIC
 #undef _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED
-#undef _ATOMIC_STORE_SEQ_CST_ARM
 #undef _ATOMIC_STORE_SEQ_CST_X86_X64
 #undef _ATOMIC_STORE_32_SEQ_CST_X86_X64
 #undef _ATOMIC_STORE_SEQ_CST
