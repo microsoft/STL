@@ -83,6 +83,7 @@
 // P3223R2 Making istream::ignore() Less Surprising
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic<cv T>)
+// P3349R1 Converting Contiguous Iterators To Pointers
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()

@@ -102,12 +102,14 @@ namespace ranges {
                     return _RANGES _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
                         _RANGES next(_OFirst, _STD move(_OLast)));
                 } else if constexpr (_Is_sized1) {
-                    return _RANGES _Copy_memcpy_distance(
-                        _IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
+                    const auto _Dist = _ILast - _IFirst;
+                    _STD _Contiguous_iter_verify(_OFirst, static_cast<iter_difference_t<_Out>>(_Dist));
+                    return _RANGES _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _IFirst + _Dist);
                 } else {
                     _STL_INTERNAL_STATIC_ASSERT(_Is_sized2);
-                    return _RANGES _Copy_memcpy_distance(
-                        _IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                    const auto _Dist = _OLast - _OFirst;
+                    _STD _Contiguous_iter_verify(_IFirst, static_cast<iter_difference_t<_It>>(_Dist));
+                    return _RANGES _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _OFirst + _Dist);
                 }
             } else {
                 if constexpr (_Can_memcpy) {
@@ -200,6 +202,8 @@ namespace ranges {
                     _IFirst = _STD move(_UResult.in);
                     _OFirst = _STD move(_UResult.out);
                 } else {
+                    _STD _Contiguous_iter_verify(_IFirst, _Count);
+                    _STD _Contiguous_iter_verify(_OFirst, static_cast<iter_difference_t<_Out>>(_Count));
                     auto _UResult = _RANGES _Copy_memcpy_count(_IFirst, _OFirst, static_cast<size_t>(_Count));
                     _IFirst       = _STD move(_UResult.in);
                     _OFirst       = _STD move(_UResult.out);
@@ -363,6 +367,8 @@ namespace ranges {
                     _IFirst = _STD move(_UResult.in);
                     _OFirst = _STD move(_UResult.out);
                 } else {
+                    _STD _Contiguous_iter_verify(_IFirst, _Count);
+                    _STD _Contiguous_iter_verify(_OFirst, static_cast<iter_difference_t<_Out>>(_Count));
                     auto _UResult = _RANGES _Copy_memcpy_count(_IFirst, _OFirst, static_cast<size_t>(_Count));
                     _IFirst       = _STD move(_UResult.in);
                     _OFirst       = _STD move(_UResult.out);
