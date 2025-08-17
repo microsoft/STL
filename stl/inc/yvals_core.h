@@ -80,6 +80,7 @@
 //     (__cpp_lib_freestanding_algorithm and __cpp_lib_freestanding_array only)
 // P2937R0 Freestanding Library: Remove strtok
 // P2968R2 Make std::ignore A First-Class Object
+// P3223R2 Making istream::ignore() Less Surprising
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic<cv T>)
 
@@ -910,7 +911,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 145
-#define _MSVC_STL_UPDATE  202507L
+#define _MSVC_STL_UPDATE  202508L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
