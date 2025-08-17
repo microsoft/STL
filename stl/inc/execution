@@ -73,23 +73,27 @@ namespace execution {
     _EXPORT_STD class sequenced_policy {
         // indicates support for only sequential execution, and requests termination on exceptions
     public:
+        explicit sequenced_policy() = default; // per LWG-4273
+
         using _Standard_execution_policy   = int;
         static constexpr bool _Parallelize = false;
         static constexpr bool _Ivdep       = false;
     };
 
-    _EXPORT_STD inline constexpr sequenced_policy seq{/* unspecified */};
+    _EXPORT_STD inline constexpr sequenced_policy seq{};
 
     _EXPORT_STD class parallel_policy {
         // indicates support by element access functions for parallel execution with parallel forward progress
         // guarantees, and requests termination on exceptions
     public:
+        explicit parallel_policy() = default; // per LWG-4273
+
         using _Standard_execution_policy   = int;
         static constexpr bool _Parallelize = true;
         static constexpr bool _Ivdep       = true;
     };
 
-    _EXPORT_STD inline constexpr parallel_policy par{/* unspecified */};
+    _EXPORT_STD inline constexpr parallel_policy par{};
 
     _EXPORT_STD class parallel_unsequenced_policy {
         // indicates support by element access functions for parallel execution with weakly parallel forward progress
@@ -97,12 +101,14 @@ namespace execution {
         //
         // (at this time, equivalent to parallel_policy)
     public:
+        explicit parallel_unsequenced_policy() = default; // per LWG-4273
+
         using _Standard_execution_policy   = int;
         static constexpr bool _Parallelize = true;
         static constexpr bool _Ivdep       = true;
     };
 
-    _EXPORT_STD inline constexpr parallel_unsequenced_policy par_unseq{/* unspecified */};
+    _EXPORT_STD inline constexpr parallel_unsequenced_policy par_unseq{};
 
 #if _HAS_CXX20
     _EXPORT_STD class unsequenced_policy {
@@ -112,12 +118,14 @@ namespace execution {
         // (at this time, equivalent to sequenced_policy except for for_each(_n), destroy(_n),
         // uninitialized_default_construct(_n), and uninitialized_value_construct(_n))
     public:
+        explicit unsequenced_policy() = default; // per LWG-4273
+
         using _Standard_execution_policy   = int;
         static constexpr bool _Parallelize = false;
         static constexpr bool _Ivdep       = true;
     };
 
-    _EXPORT_STD inline constexpr unsequenced_policy unseq{/* unspecified */};
+    _EXPORT_STD inline constexpr unsequenced_policy unseq{};
 #endif // _HAS_CXX20
 
 } // namespace execution
