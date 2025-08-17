@@ -1031,6 +1031,8 @@ bool test_lerp() {
     return true;
 }
 
+#pragma warning(push)
+#pragma warning(disable : 4756) // ignore constant arithmetic overflow warning
 void test_gh_1917() {
     // GH-1917 <cmath>: lerp(1e+308, 5e+307, 4.0) spuriously overflows
     using bit_type       = unsigned long long;
@@ -1110,6 +1112,7 @@ void test_gh_1917() {
     }
 #endif // _M_FP_STRICT
 }
+#pragma warning(pop)
 
 constexpr bool test_gh_2112() {
     // GH-2112 <cmath>: std::lerp is missing Arithmetic overloads
