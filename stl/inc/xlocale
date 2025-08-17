@@ -1505,7 +1505,7 @@ protected:
             }
 
             const char8_t* _Peek = _First1;
-            char32_t _Code_point = _Lead_byte;
+            char32_t _Code_point = static_cast<char32_t>(_Lead_byte);
             do {
                 const char8_t _By = *++_Peek;
                 if ((_By & 0b1100'0000u) != 0b1000'0000u) { // out-of-sequence lead byte
@@ -1551,7 +1551,7 @@ protected:
                 return partial;
             }
 
-            char32_t _Code_point = *_First1;
+            char32_t _Code_point = static_cast<char32_t>(*_First1);
             if (_Code_point < 0x80u) { // encode 1-byte sequence
                 *_First2 = static_cast<char8_t>(_Code_point);
                 continue;
@@ -1613,7 +1613,7 @@ protected:
         const auto _Old_first1 = _First1;
 
         for (; _First1 != _Last1 && _Count > 0u; ++_First1, --_Count) {
-            char32_t _Code_point = *_First1;
+            char32_t _Code_point = static_cast<char32_t>(*_First1);
             if (_Code_point < 0b1000'0000u) { // single-byte sequence
                 continue;
             }
@@ -1755,7 +1755,7 @@ protected:
 
             char8_t _Lead_byte = *_First1;
             if (_Lead_byte < 0b1000'0000u) { // single-byte sequence
-                *_First2 = _Lead_byte;
+                *_First2 = static_cast<char32_t>(_Lead_byte);
                 continue;
             }
 
@@ -1782,7 +1782,7 @@ protected:
             }
 
             const char8_t* _Peek = _First1;
-            char32_t _Code_point = _Lead_byte;
+            char32_t _Code_point = static_cast<char32_t>(_Lead_byte);
             do {
                 const char8_t _By = *++_Peek;
                 if ((_By & 0b1100'0000u) != 0b1000'0000u) { // out-of-sequence lead byte
@@ -1868,7 +1868,7 @@ protected:
         const auto _Old_first1 = _First1;
 
         for (; _First1 != _Last1 && _Count > 0u; ++_First1, --_Count) {
-            char32_t _Code_point = *_First1;
+            char32_t _Code_point = static_cast<char32_t>(*_First1);
             if (_Code_point < 0b1000'0000u) { // single-byte sequence
                 continue;
             }
