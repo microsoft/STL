@@ -172,18 +172,18 @@ void single_test_fail(Func&& func) noexcept {
     }
 }
 
-#define PASS(expr) single_test_pass<nothrow>([&] { (void) (expr); })
-#define FAIL(expr) single_test_fail<nothrow>([&] { (void) (expr); })
+#define PASS(expr) single_test_pass<nothrow>([&]() { (void) (expr); })
+#define FAIL(expr) single_test_fail<nothrow>([&]() { (void) (expr); })
 
 #define EXPR_WRAP_IS(expr)       ([&](auto&& i, auto&& s) { (void) (expr); })
 #define EXPR_WRAP_IN(expr)       ([&](auto&& i, auto&& n) { (void) (expr); })
 #define EXPR_WRAP_ISD(expr)      ([&](auto&& i, auto&& s, auto&& dst) { (void) (expr); })
 #define EXPR_WRAP_IS_DI_DS(expr) ([&](auto&& i, auto&& s, auto&& dst_i, auto&& dst_s) { (void) (expr); })
 
-template <ranges::contiguous_range ContainerT, ranges::range_size_t<ContainerT> range_size, bool nothrow>
+template <class T, size_t range_size, bool nothrow>
 void test() {
-    using iter       = safe_iter<ranges::range_value_t<ContainerT>, nothrow>;
-    using const_iter = safe_iter<const ranges::range_value_t<ContainerT>, nothrow>;
+    using iter       = safe_iter<T, nothrow>;
+    using const_iter = safe_iter<const T, nothrow>;
     static_assert(contiguous_iterator<iter>);
     static_assert(contiguous_iterator<const_iter>);
 
@@ -192,23 +192,17 @@ void test() {
     static_assert(sized_sentinel_for<typename const_iter::pointer, const_iter>);
 
     // Allows trivial container reuse for uninitialized memory algorithms
-    static_assert(is_trivially_destructible_v<iter_value_t<iter>>);
+    static_assert(is_trivially_destructible_v<T>);
 
-    const auto container_read =
-        views::iota(static_cast<iter_value_t<iter>>(0), static_cast<iter_value_t<iter>>(range_size))
-        | ranges::to<ContainerT>();
-    assert(ranges::size(container_read) == range_size);
+    vector<T> container_read(range_size);
+    iota(container_read.begin(), container_read.end(), static_cast<T>(0));
 
-    const auto container_read_unique =
-        views::iota(static_cast<iter_value_t<iter>>(range_size), static_cast<iter_value_t<iter>>(range_size) * 2)
-        | ranges::to<ContainerT>();
-    assert(ranges::size(container_read_unique) == range_size);
+    vector<T> container_read_unique(range_size);
+    iota(container_read_unique.begin(), container_read_unique.end(), static_cast<T>(range_size));
     assert(ranges::find_first_of(container_read, container_read_unique) == ranges::end(container_read));
 
-    ContainerT container_write   = container_read;
-    ContainerT container_write_2 = container_read;
-    assert(ranges::size(container_write) == range_size);
-    assert(ranges::size(container_write_2) == range_size);
+    auto container_write   = container_read;
+    auto container_write_2 = container_read;
 
 #define GEN_RANGE_ITER(prefix, suffix, type, range, iter_type)                      \
     [[maybe_unused]] const auto [prefix##_first_##suffix, prefix##_last_##suffix] = \
@@ -261,11 +255,7 @@ void test() {
 
         // Ensures full range traversal (worst-case)
         TESTR(adjacent_find(i, s));
-        TESTR(contains(i, s, container_read_unique[0]));
-        TESTR(contains_subrange(i, s, r2_first_s, r2_last_s));
-        TESTR(contains_subrange(r2_first_l, r2_last_l, i, s));
         TESTR(count(i, s, container_read_unique[0]));
-        TESTR(ends_with(i, s, i, s));
         TESTR(equal(i, s, i, s));
         TESTR(find(i, s, container_read_unique[0]));
         TESTR(find_end(i, s, r2_first_s, r2_last_s));
@@ -285,20 +275,28 @@ void test() {
         TESTR(search(i, s, r2_first_s, r2_last_s));
         TESTR(search(r2_first_l, r2_last_l, i, s));
         TESTR(search_n(i, s, (s - i) / 2, container_read_unique[0]));
-        TESTR(starts_with(i, s, i, s));
 
         TESTW(fill(i, s, container_read[0]));
-        TESTW(iota(i, s, container_read[0]));
         TESTW(nth_element(i, i + (s - i) / 2, s));
         TESTW(remove(i, s, container_read[0]));
         TESTW(replace(i, s, container_read[0], container_read[1]));
         TESTW(reverse(i, s));
-        TESTW(shift_left(i, s, (s - i) / 2));
-        TESTW(shift_right(i, s, (s - i) / 2));
         TESTW(sort(i, s));
         TESTW(stable_sort(i, s));
         TESTW(uninitialized_fill(i, s, container_read[0]));
         TESTW(unique(i, s));
+
+#if _HAS_CXX23
+        TESTR(contains(i, s, container_read_unique[0]));
+        TESTR(contains_subrange(i, s, r2_first_s, r2_last_s));
+        TESTR(contains_subrange(r2_first_l, r2_last_l, i, s));
+        TESTR(ends_with(i, s, i, s));
+        TESTR(starts_with(i, s, i, s));
+
+        TESTW(iota(i, s, container_read[0]));
+        TESTW(shift_left(i, s, (s - i) / 2));
+        TESTW(shift_right(i, s, (s - i) / 2));
+#endif // _HAS_CXX23
 
         // [i, s) -> [dst, ...) / [..., dst)
         {
@@ -352,9 +350,9 @@ void test() {
 #undef TEST2WB
 #undef TEST2W
 
-            tests_base(EXPR_WRAP_IS(adjacent_difference(i, s, w_first_m, minus<iter_value_t<iter>>{})), r_first_m,
+            tests_base(EXPR_WRAP_IS(adjacent_difference(i, s, w_first_m, minus<T>{})), r_first_m,
                 r_last_m); // no ranges:: version
-            FAIL(adjacent_difference(r_first_m, r_last_m, w_first_s, minus<iter_value_t<iter>>{}));
+            FAIL(adjacent_difference(r_first_m, r_last_m, w_first_s, minus<T>{}));
         }
 
 #undef TESTW
@@ -392,10 +390,10 @@ void test() {
 template <bool nothrow>
 void test_matrix() {
     // Ensures vectorization (and iterator-to-pointer conversion)
-    test<vector<int8_t>, 63, nothrow>();
-    test<vector<int16_t>, 256, nothrow>();
-    test<vector<int32_t>, 256, nothrow>();
-    test<vector<int64_t>, 256, nothrow>();
+    test<int8_t, 63, nothrow>();
+    test<int16_t, 256, nothrow>();
+    test<int32_t, 256, nothrow>();
+    test<int64_t, 256, nothrow>();
 
     // remove_copy & unique_copy
     {
@@ -423,6 +421,7 @@ void test_matrix() {
         FAIL(ranges::unique_copy(src_first, src_last_ptr, dst_first + 1));
     }
 
+#if _HAS_CXX23
     // format {:s} & {:?s}
     {
         const vector chars = ranges::to<vector<char>>("\"Hello, world!\"");
@@ -451,6 +450,7 @@ void test_matrix() {
         FAIL(format("{:?s}", bad_range));
         FAIL(format("{:?s}", bad_range_2));
     }
+#endif // _HAS_CXX23
 }
 
 int main() {
