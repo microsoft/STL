@@ -83,7 +83,6 @@
 // P3223R2 Making istream::ignore() Less Surprising
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic<cv T>)
-// P3349R1 Converting Contiguous Iterators To Pointers
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()
@@ -322,6 +321,7 @@
 // P3136R1 Retiring Niebloids
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic_ref<cv T>)
+// P3349R1 Converting Contiguous Iterators To Pointers
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
