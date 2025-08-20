@@ -42,9 +42,6 @@ std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.p
 # LLVM-100506: [libc++][test] Precondition violation in rand.dist.uni.real/param_ctor.pass.cpp
 std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
 
-# LLVM-113609: [libc++][test] Non-rebindable test_alloc in string.capacity/deallocate_size.pass.cpp
-std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
-
 # LLVM-122638: [libc++][test] re.regex.construct/bad_backref.pass.cpp assumes non-standard extension to extended regular expressions
 std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
 
@@ -1536,6 +1533,11 @@ std/utilities/function.objects/refwrap/common_reference.compile.pass.cpp:0 FAIL
 std/utilities/function.objects/refwrap/common_reference.compile.pass.cpp:1 FAIL
 std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp:0 FAIL
 std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp:1 FAIL
+
+# Not analyzed.
+# MSVC warning C4242: '+=': conversion from 'unsigned __int64' to 'int', possible loss of data
+# Clang asserts: allocated_ == 0 || allocated_ >= i
+std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
 
 
 # *** XFAILS WHICH PASS ***
