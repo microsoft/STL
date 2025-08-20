@@ -75,12 +75,6 @@ std/thread/futures/futures.task/futures.task.members/dtor.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_until.pass.cpp SKIPPED
 std/thread/thread.jthread/detach.pass.cpp SKIPPED
 
-# libcxx is incorrect on what the type passed to allocator::construct should be (LLVM-D61364)
-std/containers/associative/map/map.modifiers/insert_and_emplace_allocator_requirements.pass.cpp FAIL
-std/containers/associative/set/insert_and_emplace_allocator_requirements.pass.cpp FAIL
-std/containers/unord/unord.map/unord.map.modifiers/insert_and_emplace_allocator_requirements.pass.cpp FAIL
-std/containers/unord/unord.set/insert_and_emplace_allocator_requirements.pass.cpp FAIL
-
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
 
@@ -147,8 +141,6 @@ std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/co
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_values.pass.cpp:0 FAIL
 
 # Various bogosity (LLVM-D141004)
-std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/resource.pass.cpp FAIL
-std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/select_on_container_copy_construction.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/ctor_does_not_allocate.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/sync_with_default_resource.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/unsync_with_default_resource.pass.cpp FAIL
@@ -969,15 +961,6 @@ std/iterators/iterator.requirements/iterator.assoc.types/readable.traits/indirec
 std/containers/sequences/vector/trivial_relocation.pass.cpp:0 FAIL
 std/containers/sequences/vector/trivial_relocation.pass.cpp:1 FAIL
 
-# These tests emit C5321, which warns when the resolution to CWG-1656 affects a u8 string literal.
-# The conformant behavior is opt-in because it can silently change behavior.
-# warning C5321: nonstandard extension used: encoding '\x80' as a multi-byte utf-8 character. Use \u instead
-# for cross platform compatibility or '/Zc:u8EscapeEncoding' to disable the extension.
-std/utilities/format/format.functions/escaped_output.unicode.pass.cpp:0 FAIL
-std/utilities/format/format.functions/escaped_output.unicode.pass.cpp:1 FAIL
-std/utilities/format/format.functions/fill.unicode.pass.cpp:0 FAIL
-std/utilities/format/format.functions/fill.unicode.pass.cpp:1 FAIL
-
 
 # *** LIKELY STL BUGS ***
 # Not analyzed, likely STL bugs. Various assertions.
@@ -1156,10 +1139,6 @@ std/algorithms/algorithms.results/min_max_result.pass.cpp:1 FAIL
 
 # Not analyzed.
 std/algorithms/robust_against_proxy_iterators_lifetime_bugs.pass.cpp FAIL
-
-# Not analyzed. Looks like a test bug, assuming that hash<vector<bool>> is constexpr.
-std/containers/sequences/vector.bool/enabled_hash.pass.cpp FAIL
-std/containers/sequences/vector.bool/vector_bool.pass.cpp FAIL
 
 # Not analyzed. Inspecting shift operators for quoted().
 std/input.output/iostream.format/quoted.manip/quoted_traits.compile.pass.cpp FAIL
