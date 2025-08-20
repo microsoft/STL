@@ -259,7 +259,7 @@ std/containers/container.adaptors/flat.map/flat.map.cons/initializer_list.pass.c
 std/containers/container.adaptors/flat.map/flat.map.cons/iter_iter.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_alloc.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_clears.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_noexcept.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_noexcept.compile.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_assign.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_exceptions.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_noexcept.pass.cpp FAIL
@@ -339,7 +339,7 @@ std/containers/container.adaptors/flat.multimap/flat.multimap.cons/initializer_l
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/iter_iter.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_alloc.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_assign_clears.pass.cpp FAIL
-std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_assign_noexcept.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_assign_noexcept.compile.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_assign.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_exceptions.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_noexcept.pass.cpp FAIL
@@ -1566,7 +1566,7 @@ std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.pointer.pass.cpp:9 SKIPPE
 std/ranges/range.adaptors/range.lazy.split/constraints.compile.pass.cpp:9 SKIPPED
 std/ranges/range.utility/range.utility.conv/to.pass.cpp:9 SKIPPED
 std/thread/thread.jthread/assign.move.pass.cpp:9 SKIPPED
-std/utilities/meta/meta.unary/dependent_return_type.compile.pass.cpp:9 SKIPPED
+std/utilities/meta/meta.unary/dependent_return_type.pass.cpp:9 SKIPPED
 
 # These tests are marked as `XFAIL: msvc`, but the MSVC-internal test harness doesn't yet parse XFAIL.
 std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp:9 SKIPPED
