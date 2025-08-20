@@ -963,6 +963,9 @@ std/iterators/iterator.requirements/iterator.assoc.types/readable.traits/indirec
 std/containers/sequences/vector/trivial_relocation.pass.cpp:0 FAIL
 std/containers/sequences/vector/trivial_relocation.pass.cpp:1 FAIL
 
+# Not analyzed, likely bogus test. constexpr fails with "vector iterators incompatible".
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.default.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not analyzed, likely STL bugs. Various assertions.
@@ -1298,6 +1301,18 @@ std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:1 FA
 # Not analyzed. Likely MSVC constexpr bug, "note: failure was caused by a read of a variable outside its lifetime"
 std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
 std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/types.compile.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/types.compile.pass.cpp:1 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.view/begin.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.view/begin.pass.cpp:1 FAIL
+
+# Not analyzed. Likely MSVC constexpr bug, "note: failure was caused by a read of an uninitialized symbol"
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_deleter.pass.cpp:0 FAIL
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_deleter.pass.cpp:1 FAIL
+
+# Not analyzed. Likely MSVC constexpr bug, "note: failure was caused by unevaluable pointer value"
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:1 FAIL
 
 # Not analyzed. Likely MSVC constexpr bug, "note: a non-constant (sub-)expression was encountered" in swap()
 std/utilities/utility/utility.swap/swap_array.pass.cpp:0 FAIL
