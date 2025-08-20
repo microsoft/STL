@@ -54,6 +54,11 @@ std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cp
 std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:1 FAIL
 
+# LLVM-154622: [libcxx][test] Silence nodiscard warnings
+std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.create/shared_ptr_array.pass.cpp FAIL
+std/utilities/template.bitset/bitset.members/to_ullong.pass.cpp FAIL
+std/utilities/template.bitset/bitset.members/to_ulong.pass.cpp FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
