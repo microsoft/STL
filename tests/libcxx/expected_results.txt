@@ -1172,6 +1172,7 @@ std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/co
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:2 FAIL
 std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:2 FAIL
 std/algorithms/alg.modifying.operations/alg.rotate/rotate.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.swap/ranges.swap_ranges.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.contains/ranges.contains_subrange.pass.cpp:2 FAIL
 std/algorithms/alg.nonmodifying/alg.count/count.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.count/ranges.count.pass.cpp FAIL
@@ -1180,7 +1181,9 @@ std/containers/sequences/vector.bool/assign_range.pass.cpp FAIL
 std/containers/sequences/vector.bool/flip.pass.cpp FAIL
 std/containers/sequences/vector.bool/insert_range.pass.cpp FAIL
 std/containers/sequences/vector/vector.modifiers/destroy_elements.pass.cpp FAIL
+std/containers/sequences/vector/vector.modifiers/emplace.pass.cpp FAIL
 std/containers/sequences/vector/vector.modifiers/insert_range.pass.cpp FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.view/end.pass.cpp FAIL
 std/strings/basic.string/string.modifiers/string_replace/replace_with_range.pass.cpp FAIL
 std/utilities/charconv/charconv.to.chars/integral.pass.cpp FAIL
 
