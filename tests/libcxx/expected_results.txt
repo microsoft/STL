@@ -559,6 +559,8 @@ std/language.support/support.limits/support.limits.general/flat_set.version.comp
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/PR20855_tuple_ref_binding_diagnostics.pass.cpp:0 FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/PR20855_tuple_ref_binding_diagnostics.pass.cpp:1 FAIL
 
 # P2674R1 is_implicit_lifetime
 std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp FAIL
