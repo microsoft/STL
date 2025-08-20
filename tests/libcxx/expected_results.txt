@@ -1526,6 +1526,12 @@ std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:1 
 # Not analyzed. Emitting easily-suppressed truncation warnings for MSVC, but also compiler errors for MSVC and Clang.
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.pass.cpp FAIL
 
+# Not analyzed, likely MSVC compiler bugs.
+std/utilities/function.objects/refwrap/common_reference.compile.pass.cpp:0 FAIL
+std/utilities/function.objects/refwrap/common_reference.compile.pass.cpp:1 FAIL
+std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp:0 FAIL
+std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp:1 FAIL
+
 
 # *** XFAILS WHICH PASS ***
 # These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
