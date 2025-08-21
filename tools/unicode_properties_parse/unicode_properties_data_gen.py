@@ -24,9 +24,12 @@ class PropertyTable:
 LINE_REGEX = re.compile(
     r"^(?P<lower>[0-9A-F]{4,5})(?:\.\.(?P<upper>[0-9A-F]{4,5}))?\s*;\s*(?P<prop>\w+)")
 
-def parse_property_line(inputLine: str) -> Optional[PropertyRange]:
+INCB_LINE_REGEX = re.compile(
+    r"^(?P<lower>[0-9A-F]{4,5})(?:\.\.(?P<upper>[0-9A-F]{4,5}))?\s*;\s*InCB;\s*(?P<prop>\w+)")
+
+def parse_property_line(inputLine: str, line_regex: re.Pattern[str]) -> Optional[PropertyRange]:
     result = PropertyRange()
-    if m := LINE_REGEX.match(inputLine):
+    if m := line_regex.match(inputLine):
         lower_str, upper_str, result.prop = m.group("lower", "upper", "prop")
         result.lower = int(lower_str, base=16)
         result.upper = result.lower
@@ -191,6 +194,8 @@ struct _Unicode_property_data {{
 // The following static data tables are generated from the Unicode character database.
 // _Grapheme_Break_property_data comes from ucd/auxiliary/GraphemeBreakProperty.txt.
 //
+// _Indic_Conjunct_Break_property_data comes from ucd/DerivedCoreProperties.txt.
+//
 // _Extended_Pictographic_property_data comes from ucd/emoji/emoji-data.txt.
 //
 // __printable_property_data comes from ucd/extracted/DerivedGeneralCategory.txt.
@@ -264,12 +269,12 @@ def generate_cpp_data(filename: str, timestamp: str, prop_name: str, ranges: lis
     return result.getvalue()
 
 
-def read_file(filename: str) -> list[PropertyRange]:
+def read_file(filename: str, line_regex: re.Pattern[str] = LINE_REGEX) -> list[PropertyRange]:
     data_path = Path(__file__).absolute().with_name(filename)
     with data_path.open(encoding='utf-8') as f:
         filename = f.readline().replace("#", "//").rstrip()
         timestamp = f.readline().replace("#", "//").rstrip()
-        ranges = compact_property_ranges([x for line in f if (x := parse_property_line(line))])
+        ranges = compact_property_ranges([x for line in f if (x := parse_property_line(line, line_regex))])
         return filename, timestamp, ranges
 
 
@@ -309,6 +314,7 @@ def generate_data_tables() -> str:
     """
     gbp_filename, gbp_timestamp, gbp_ranges = read_file("GraphemeBreakProperty.txt")
     emoji_filename, emoji_timestamp, emoji_ranges = read_file("emoji-data.txt")
+    incb_filename, incb_timestamp, incb_ranges = read_file("DerivedCoreProperties.txt", INCB_LINE_REGEX)
     cat_filename, cat_timestamp, cat_ranges = read_file("DerivedGeneralCategory.txt")
     derived_filename, derived_timestamp, derived_ranges = read_file("DerivedCoreProperties.txt")
     eaw_filename, eaw_timestamp, eaw_ranges = read_file("EastAsianWidth.txt")
@@ -347,14 +353,21 @@ def generate_data_tables() -> str:
     gpb_cpp_data = generate_cpp_data(gbp_filename, gbp_timestamp, "Grapheme_Break", gbp_ranges)
     emoji_cpp_data = generate_cpp_data(emoji_filename, emoji_timestamp, "Extended_Pictographic", [
         x for x in emoji_ranges if x.prop == "Extended_Pictographic"])
+    incb_cpp_data = generate_cpp_data(incb_filename, incb_timestamp, "Indic_Conjunct_Break", incb_ranges)
     # _printable follows a different naming scheme, to indicate that it is a fake Unicode property.
     printable_cpp_data = generate_cpp_data(cat_filename, cat_timestamp, "_printable", printable_ranges)
     grapheme_extend_cpp_data = generate_cpp_data(derived_filename, derived_timestamp, "Grapheme_Extend", [
         x for x in derived_ranges if x.prop == "Grapheme_Extend"])
     width_estimate_intervals = generate_width_estimate_intervals(eaw_filename, eaw_timestamp, width_2_ranges)
 
-    return "\n".join(
-        [gpb_cpp_data, emoji_cpp_data, printable_cpp_data, grapheme_extend_cpp_data, width_estimate_intervals])
+    return "\n".join([
+        gpb_cpp_data,
+        incb_cpp_data,
+        emoji_cpp_data,
+        printable_cpp_data,
+        grapheme_extend_cpp_data,
+        width_estimate_intervals
+    ])
 
 
 if __name__ == "__main__":
