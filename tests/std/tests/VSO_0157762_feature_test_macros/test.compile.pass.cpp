@@ -831,6 +831,12 @@ STATIC_ASSERT(__cpp_lib_raw_memory_algorithms == 201606L);
 #error __cpp_lib_raw_memory_algorithms is defined
 #endif
 
+#if _HAS_CXX23 && defined(__clang__) // TRANSITION, MSVC and EDG haven't implemented intrinsics needed for P2255R2.
+STATIC_ASSERT(__cpp_lib_reference_from_temporary == 202202L);
+#elif defined(__cpp_lib_reference_from_temporary)
+#error __cpp_lib_reference_from_temporary is defined
+#endif
+
 #if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_remove_cvref == 201711L);
 #elif defined(__cpp_lib_remove_cvref)
