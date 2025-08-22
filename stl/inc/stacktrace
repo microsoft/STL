@@ -249,11 +249,10 @@ public:
     }
 
     _NODISCARD const_reference operator[](const size_type _Sx) const noexcept /* strengthened */ {
-        // Bound check is otherwise performed in vector::operator[].
-#if _MSVC_STL_HARDENING_BASIC_STACKTRACE && !_MSVC_STL_HARDENING_VECTOR && _ITERATOR_DEBUG_LEVEL == 0
+#if _MSVC_STL_HARDENING_BASIC_STACKTRACE || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Sx < _Frames.size(), "basic_stacktrace subscript out of range");
-#endif // _MSVC_STL_HARDENING_BASIC_STACKTRACE && !_MSVC_STL_HARDENING_VECTOR && _ITERATOR_DEBUG_LEVEL == 0
-        return _Frames[_Sx];
+#endif // _MSVC_STL_HARDENING_BASIC_STACKTRACE || _ITERATOR_DEBUG_LEVEL != 0
+        return _Frames.data()[_Sx]; // avoid redundant checking
     }
 
     _NODISCARD const_reference at(const size_type _Sx) const {
