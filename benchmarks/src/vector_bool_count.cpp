@@ -12,8 +12,9 @@ using namespace std;
 
 vector<bool> createRandomVector(const size_t size) {
     static mt19937 gen;
+    static bernoulli_distribution dist{0.5};
     vector<bool> result(size);
-    generate_n(result.begin(), size, [] { return bernoulli_distribution{0.5}(gen); });
+    generate(result.begin(), result.end(), [] { return dist(gen); });
     return result;
 }
 
