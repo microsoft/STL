@@ -607,6 +607,12 @@ void test_mdspan_subscript_span() {
 }
 
 // <stacktrace>
+void test_stacktrace_current() {
+    constexpr auto MaxSize = static_cast<stacktrace::size_type>(-1);
+    static_assert(MaxSize > 10);
+    (void) stacktrace::current(20, MaxSize - 10);
+}
+
 void test_stacktrace_subscript() {
     const auto st = stacktrace::current();
     (void) st[st.size()];
@@ -731,6 +737,7 @@ int main(int argc, char* argv[]) {
 #endif // ^^^ defined(__cpp_multidimensional_subscript) ^^^
         test_mdspan_subscript_array,
         test_mdspan_subscript_span,
+        test_stacktrace_current,
         test_stacktrace_subscript,
 #endif // _HAS_CXX23
     });
