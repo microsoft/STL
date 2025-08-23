@@ -20,7 +20,6 @@
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
-#include <iterator>
 #include <ranges>
 #include <span>
 #endif // _HAS_CXX20
