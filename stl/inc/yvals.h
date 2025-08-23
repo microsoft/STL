@@ -259,9 +259,13 @@ extern "C" __declspec(noreturn) void __fastfail(unsigned int); // declared by <i
 #endif // choose "doom function"
 #endif // ^^^ !defined(_MSVC_STL_DOOM_FUNCTION) ^^^
 
-#define _STL_REPORT_ERROR(mesg) \
-    _RPTF0(_CRT_ASSERT, mesg);  \
-    _MSVC_STL_DOOM_FUNCTION(mesg)
+#define _STL_REPORT_ERROR(mesg)        \
+    if (_Is_constant_evaluated()) {    \
+        static_assert(false, mesg);    \
+    } else {                           \
+        _RPTF0(_CRT_ASSERT, mesg);     \
+        _MSVC_STL_DOOM_FUNCTION(mesg); \
+    }
 
 #define _STL_VERIFY(cond, mesg)  \
     if (!(cond)) {               \
