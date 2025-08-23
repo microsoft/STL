@@ -7,6 +7,7 @@
 #include <istream>
 #include <iterator>
 #include <utility>
+#include <variant>
 
 #include <test_death.hpp>
 
