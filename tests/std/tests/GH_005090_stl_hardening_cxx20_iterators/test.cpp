@@ -211,6 +211,12 @@ void test_counted_iterator_deref() {
     (void) *it;
 }
 
+void test_counted_iterator_deref_const() {
+    int arr[1]{};
+    const auto it = counted_iterator<int*>{arr, 1} + 1;
+    (void) *it;
+}
+
 void test_counted_iterator_subscript() {
     int arr[1]{};
     counted_iterator<int*> it{arr, 1};
@@ -333,6 +339,7 @@ int main(int argc, char* argv[]) {
 
     exec.add_death_tests({
         test_counted_iterator_deref,
+        test_counted_iterator_deref_const,
         test_counted_iterator_subscript,
         test_counted_iterator_iter_move,
         test_counted_iterator_iter_swap,
