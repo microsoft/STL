@@ -270,6 +270,18 @@ concept _Span_compatible_range =
     && _RANGES contiguous_range<_Rng> && _RANGES sized_range<_Rng> && (_RANGES borrowed_range<_Rng> || is_const_v<_Ty>)
     && is_convertible_v<remove_reference_t<_RANGES range_reference_t<_Rng>> (*)[], _Ty (*)[]>;
 
+template <class T>
+concept _Integral_constant_like =
+    is_integral_v<remove_cvref_t<decltype(T::value)>> && !is_same_v<bool, remove_const_t<decltype(T::value)>>
+    && convertible_to<T, decltype(T::value)> && equality_comparable_with<T, decltype(T::value)>
+    && bool_constant<T() == T::value>::value && bool_constant<static_cast<decltype(T::value)>(T()) == T::value>::value;
+
+template <class _Ty>
+constexpr size_t _Maybe_static_ext = dynamic_extent;
+
+template <_Integral_constant_like _Ty>
+constexpr size_t _Maybe_static_ext<_Ty> = {_Ty::value};
+
 // [views.span]
 _EXPORT_STD template <class _Ty, size_t _Extent = dynamic_extent>
 class span : private _Span_extent_type<_Ty, _Extent> {
@@ -543,6 +555,9 @@ public:
     }
 };
 
+template <class _It, class _EndOrSize>
+span(_It, _EndOrSize) -> span<remove_reference_t<iter_reference_t<_It>>, _Maybe_static_ext<_EndOrSize>>;
+
 template <class _Ty, size_t _Extent>
 span(_Ty (&)[_Extent]) -> span<_Ty, _Extent>;
 
@@ -551,9 +566,6 @@ span(array<_Ty, _Size>&) -> span<_Ty, _Size>;
 
 template <class _Ty, size_t _Size>
 span(const array<_Ty, _Size>&) -> span<const _Ty, _Size>;
-
-template <contiguous_iterator _It, class _End>
-span(_It, _End) -> span<remove_reference_t<iter_reference_t<_It>>>;
 
 template <_RANGES contiguous_range _Rng>
 span(_Rng&&) -> span<remove_reference_t<_RANGES range_reference_t<_Rng>>>;
