@@ -56,6 +56,10 @@ _STD_BEGIN
 
 // vvvvvvvvvv DERIVED FROM digit_table.h vvvvvvvvvv
 
+#if !_HAS_CXX17
+namespace { // work around Clang link issues
+#endif // !_HAS_CXX17
+
 // A table of all two-digit numbers. This is used to speed up decimal digit
 // generation by copying pairs of digits into the final output.
 template <class _CharT> constexpr _CharT __DIGIT_TABLE[] = {_CharT{}};
@@ -85,6 +89,10 @@ template <> _INLINE_VAR constexpr wchar_t __DIGIT_TABLE<wchar_t>[200] = {
   L'8',L'0',L'8',L'1',L'8',L'2',L'8',L'3',L'8',L'4',L'8',L'5',L'8',L'6',L'8',L'7',L'8',L'8',L'8',L'9',
   L'9',L'0',L'9',L'1',L'9',L'2',L'9',L'3',L'9',L'4',L'9',L'5',L'9',L'6',L'9',L'7',L'9',L'8',L'9',L'9'
 };
+
+#if !_HAS_CXX17
+} // unnamed namespace
+#endif // !_HAS_CXX17
 
 // ^^^^^^^^^^ DERIVED FROM digit_table.h ^^^^^^^^^^
 
