@@ -330,7 +330,8 @@ void test_common_iterator_iter_swap() {
     using CI = counted_iterator<int*>;
 
     int arr[1]{};
-    common_iterator<CI, default_sentinel_t> it{default_sentinel}, jt{CI{arr, 1}};
+    common_iterator<CI, default_sentinel_t> it{default_sentinel};
+    common_iterator<CI, default_sentinel_t> jt{CI{arr, 1}};
     (void) ranges::iter_swap(it, jt);
 }
 
