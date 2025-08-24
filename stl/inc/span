@@ -270,11 +270,12 @@ concept _Span_compatible_range =
     && _RANGES contiguous_range<_Rng> && _RANGES sized_range<_Rng> && (_RANGES borrowed_range<_Rng> || is_const_v<_Ty>)
     && is_convertible_v<remove_reference_t<_RANGES range_reference_t<_Rng>> (*)[], _Ty (*)[]>;
 
-template <class T>
+template <class _Ty>
 concept _Integral_constant_like =
-    is_integral_v<remove_cvref_t<decltype(T::value)>> && !is_same_v<bool, remove_const_t<decltype(T::value)>>
-    && convertible_to<T, decltype(T::value)> && equality_comparable_with<T, decltype(T::value)>
-    && bool_constant<T() == T::value>::value && bool_constant<static_cast<decltype(T::value)>(T()) == T::value>::value;
+    is_integral_v<remove_cvref_t<decltype(_Ty::value)>> && !is_same_v<bool, remove_const_t<decltype(_Ty::value)>>
+    && convertible_to<_Ty, decltype(_Ty::value)> && equality_comparable_with<_Ty, decltype(_Ty::value)>
+    && bool_constant<_Ty() == _Ty::value>::value
+    && bool_constant<static_cast<decltype(_Ty::value)>(_Ty()) == _Ty::value>::value;
 
 template <class _Ty>
 constexpr size_t _Maybe_static_ext = dynamic_extent;
