@@ -27,7 +27,7 @@ struct int_writer {
     int_writer& operator++() {
         return *this;
     }
-    int_writer& operator++(int) {
+    int_writer operator++(int) {
         return *this;
     }
 
