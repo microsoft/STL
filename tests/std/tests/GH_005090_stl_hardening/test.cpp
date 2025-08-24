@@ -8,6 +8,7 @@
 #include <deque>
 #include <forward_list>
 #include <list>
+#include <memory>
 #include <string>
 #include <utility>
 #include <valarray>
@@ -26,6 +27,7 @@
 #if _HAS_CXX23
 #include <expected>
 #include <mdspan>
+#include <stacktrace>
 #endif // _HAS_CXX23
 
 #include <test_death.hpp>
@@ -176,6 +178,22 @@ void test_list_pop_front() {
 void test_list_pop_back() {
     list<int> l{};
     l.pop_back();
+}
+
+// <memory>
+void test_shared_ptr_bounded_array_subscript_underflow() {
+    shared_ptr<int[42]> sp{new int[42]{}};
+    (void) sp[-1];
+}
+
+void test_shared_ptr_bounded_array_subscript_overflow() {
+    shared_ptr<int[42]> sp{new int[42]{}};
+    (void) sp[84];
+}
+
+void test_shared_ptr_unbounded_array_subscript_underflow() {
+    shared_ptr<int[]> sp{new int[42]{}};
+    (void) sp[-1];
 }
 
 // <string>
@@ -587,6 +605,18 @@ void test_mdspan_subscript_span() {
     const span<const int, 2> sp_idx{a_idx};
     (void) md[sp_idx];
 }
+
+// <stacktrace>
+void test_stacktrace_current() {
+    constexpr auto MaxSize = static_cast<stacktrace::size_type>(-1);
+    static_assert(MaxSize > 10);
+    (void) stacktrace::current(20, MaxSize - 10);
+}
+
+void test_stacktrace_subscript() {
+    const auto st = stacktrace::current();
+    (void) st[st.size()];
+}
 #endif // _HAS_CXX23
 
 int main(int argc, char* argv[]) {
@@ -620,6 +650,9 @@ int main(int argc, char* argv[]) {
         test_list_back_const,
         test_list_pop_front,
         test_list_pop_back,
+        test_shared_ptr_bounded_array_subscript_underflow,
+        test_shared_ptr_bounded_array_subscript_overflow,
+        test_shared_ptr_unbounded_array_subscript_underflow,
         test_string_subscript,
         test_string_subscript_const,
         test_string_front,
@@ -704,6 +737,8 @@ int main(int argc, char* argv[]) {
 #endif // ^^^ defined(__cpp_multidimensional_subscript) ^^^
         test_mdspan_subscript_array,
         test_mdspan_subscript_span,
+        test_stacktrace_current,
+        test_stacktrace_subscript,
 #endif // _HAS_CXX23
     });
 
