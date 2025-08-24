@@ -350,10 +350,10 @@ int main(int argc, char* argv[]) {
         test_common_iterator_arrow,
         test_common_iterator_pre_inc,
         test_common_iterator_post_inc,
-        test_common_iterator_iter_move,
-        test_common_iterator_iter_swap,
         test_common_iterator_equality,
         test_common_iterator_difference,
+        test_common_iterator_iter_move,
+        test_common_iterator_iter_swap,
     });
 
     return exec.run(argc, argv);
