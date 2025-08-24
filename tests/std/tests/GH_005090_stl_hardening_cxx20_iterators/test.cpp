@@ -258,7 +258,7 @@ void test_counted_iterator_advance() {
     it += 2;
 }
 
-void test_counted_iterator_retract() {
+void test_counted_iterator_retreat() {
     int arr[1]{};
     counted_iterator<int*> it{arr, 1};
     it -= -2;
@@ -341,7 +341,7 @@ int main(int argc, char* argv[]) {
         test_counted_iterator_post_inc_input,
         test_counted_iterator_post_inc_forward,
         test_counted_iterator_advance,
-        test_counted_iterator_retract,
+        test_counted_iterator_retreat,
         test_common_iterator_construct,
         test_common_iterator_assign,
         test_common_iterator_deref,
