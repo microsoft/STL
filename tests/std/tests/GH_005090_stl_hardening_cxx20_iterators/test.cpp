@@ -83,14 +83,12 @@ public:
     exceptional_iterator(const exceptional_iterator& other) : ptr_{other.ptr_} {
         check_throwing();
     }
-    exceptional_iterator(exceptional_iterator&) = default;
 
     exceptional_iterator& operator=(const exceptional_iterator& other) {
         ptr_ = other.ptr_;
         check_throwing();
         return *this;
     }
-    exceptional_iterator& operator=(exceptional_iterator&&) = default;
 
     operator lowered_iterator() const {
         return lowered_iterator{ptr_};
