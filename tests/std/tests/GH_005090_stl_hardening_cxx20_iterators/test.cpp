@@ -287,7 +287,7 @@ void test_common_iterator_deref() {
 }
 
 void test_common_iterator_deref_const() {
-    common_iterator<counted_iterator<int*>, default_sentinel_t> it{default_sentinel};
+    const common_iterator<counted_iterator<int*>, default_sentinel_t> it{default_sentinel};
     (void) *it;
 }
 
@@ -306,7 +306,7 @@ void test_common_iterator_pre_inc() {
 
 void test_common_iterator_post_inc() {
     common_iterator<counted_iterator<int*>, default_sentinel_t> it{default_sentinel};
-    (void) ++it;
+    (void) it++;
 }
 
 void test_common_iterator_equality() {
