@@ -318,12 +318,9 @@ public:
         const _ExtentsT&) noexcept; // NB: used by 'layout_stride::mapping<E>::is_exhaustive'
 };
 
-template <class>
-constexpr size_t _Repeat_dynamic_extent = dynamic_extent;
-
 template <class... _Integrals>
     requires conjunction_v<is_convertible<_Integrals, size_t>...>
-explicit extents(_Integrals...) -> extents<size_t, _Repeat_dynamic_extent<_Integrals>...>;
+explicit extents(_Integrals...) -> extents<size_t, _Maybe_static_ext<_Integrals>...>;
 
 template <class _IndexType, class _Indices>
 struct _Dextents_impl;
