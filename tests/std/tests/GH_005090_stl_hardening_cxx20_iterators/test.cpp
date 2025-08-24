@@ -178,12 +178,11 @@ public:
     }
 
 private:
-    static bool check_throwing() {
+    static void check_throwing() {
         if (throwing_) {
             throw bad_variant_access{};
         }
         throwing_ = true;
-        return false;
     }
 
     int* ptr_ = nullptr;
