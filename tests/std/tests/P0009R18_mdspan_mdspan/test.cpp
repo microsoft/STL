@@ -1285,6 +1285,12 @@ constexpr void check_deduction_guides() {
         static_assert(same_as<decltype(mds1), mdspan<byte, dextents<size_t, 2>>>);
         mdspan mds2{ptr, 2, 3, 5};
         static_assert(same_as<decltype(mds2), mdspan<byte, dextents<size_t, 3>>>);
+
+        mdspan mds3{ptr, integral_constant<size_t, 6>{}, integral_constant<size_t, 5>{}};
+        static_assert(same_as<decltype(mds3), mdspan<byte, extents<size_t, 6, 5>>>);
+        mdspan mds4{
+            ptr, integral_constant<size_t, 2>{}, integral_constant<size_t, 3>{}, integral_constant<size_t, 5>{}};
+        static_assert(same_as<decltype(mds4), mdspan<byte, extents<size_t, 2, 3, 5>>>);
     }
 
     { // ElementType*, span<OtherIndexType, N>

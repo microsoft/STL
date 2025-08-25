@@ -1568,7 +1568,8 @@ mdspan(_Pointer&&) -> mdspan<remove_pointer_t<remove_reference_t<_Pointer>>, ext
 
 template <class _ElementType, class... _Integrals>
     requires conjunction_v<is_convertible<_Integrals, size_t>...> && (sizeof...(_Integrals) > 0)
-explicit mdspan(_ElementType*, _Integrals...) -> mdspan<_ElementType, dextents<size_t, sizeof...(_Integrals)>>;
+explicit mdspan(_ElementType*, _Integrals...)
+    -> mdspan<_ElementType, extents<size_t, _Maybe_static_ext<_Integrals>...>>;
 
 template <class _ElementType, class _OtherIndexType, size_t _Nx>
 mdspan(_ElementType*, span<_OtherIndexType, _Nx>) -> mdspan<_ElementType, dextents<size_t, _Nx>>;

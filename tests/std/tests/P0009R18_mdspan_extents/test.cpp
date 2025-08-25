@@ -516,6 +516,11 @@ constexpr void check_deduction_guide() {
 
         static_assert(all_extents_dynamic<decltype(ext), 5>);
         static_assert(same_as<decltype(ext)::index_type, size_t>);
+
+        extents ext_2{integral_constant<char, '1'>{}, integral_constant<int, 2>{}, integral_constant<unsigned int, 3>{},
+            integral_constant<long long, 4>{}, integral_constant<size_t, 5>{}};
+
+        static_assert(same_as<decltype(ext_2), extents<size_t, 49, 2, 3, 4, 5>>);
     }
 }
 
