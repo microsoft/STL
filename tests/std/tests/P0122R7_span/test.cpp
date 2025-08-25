@@ -235,10 +235,16 @@ constexpr bool test() {
         FunctionTakingSpan<const int>({cbegin(arr), 3});
 
         static_assert(is_same_v<decltype(span{arr, 3}), span<int>>);
+        static_assert(is_same_v<decltype(span{arr, std::integral_constant<std::size_t, 3>{}}), span<int, 3>>);
         static_assert(is_same_v<decltype(span{begin(arr), 3}), span<int>>);
+        static_assert(is_same_v<decltype(span{begin(arr), std::integral_constant<std::size_t, 3>{}}), span<int, 3>>);
 
         static_assert(is_same_v<decltype(span{as_const(arr), 3}), span<const int>>);
+        static_assert(
+            is_same_v<decltype(span{as_const(arr), std::integral_constant<std::size_t, 3>{}}), span<const int, 3>>);
         static_assert(is_same_v<decltype(span{cbegin(arr), 3}), span<const int>>);
+        static_assert(
+            is_same_v<decltype(span{cbegin(arr), std::integral_constant<std::size_t, 3>{}}), span<const int, 3>>);
 
         static_assert(is_nothrow_constructible_v<span<int>, array<int, 3>::iterator, size_t>); // strengthened
         static_assert(!is_constructible_v<span<int>, array<int, 3>::const_iterator, size_t>);
