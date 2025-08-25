@@ -12,6 +12,7 @@
 #include <limits> // TRANSITION, see GH-4634: Lots of user code assumes that <xmemory> drags in <limits>
 #include <new>
 #include <xatomic.h>
+#include <xcharconv_ryu_tables.h>
 #include <xutility>
 
 #if _HAS_CXX20
@@ -2785,6 +2786,15 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
 
     auto _UVal_trunc = static_cast<unsigned long>(_UVal);
 #endif // ^^^ !defined(_WIN64) ^^^
+
+    if constexpr (_Is_any_of_v<_Elem, char, wchar_t>) {
+        while (_UVal_trunc >= 100) {
+            const unsigned long _UVal_trunc_part = _UVal_trunc % 100;
+            _UVal_trunc /= 100;
+            *--_RNext = static_cast<_Elem>(__DIGIT_TABLE<_Elem>[_UVal_trunc_part * 2 + 1]);
+            *--_RNext = static_cast<_Elem>(__DIGIT_TABLE<_Elem>[_UVal_trunc_part * 2]);
+        }
+    }
 
     do {
         *--_RNext = static_cast<_Elem>('0' + _UVal_trunc % 10);
