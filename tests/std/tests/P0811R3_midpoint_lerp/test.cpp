@@ -1049,7 +1049,9 @@ void test_gh_1917() {
         ExceptGuard except;
 
         assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+#ifndef _M_ARM64 // TRANSITION, GH-5685
         assert(check_feexcept(0));
+#endif // ^^^ no workaround ^^^
     }
 #ifdef _M_FP_STRICT
     {
@@ -1064,7 +1066,9 @@ void test_gh_1917() {
         RoundGuard round{FE_UPWARD};
 
         assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+#ifndef _M_ARM64 // TRANSITION, GH-5685
         assert(check_feexcept(0));
+#endif // ^^^ no workaround ^^^
     }
     {
         ExceptGuard except;
@@ -1078,7 +1082,9 @@ void test_gh_1917() {
         RoundGuard round{FE_DOWNWARD};
 
         assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+#ifndef _M_ARM64 // TRANSITION, GH-5685
         assert(check_feexcept(0));
+#endif // ^^^ no workaround ^^^
     }
     {
         ExceptGuard except;
@@ -1092,7 +1098,9 @@ void test_gh_1917() {
         RoundGuard round{FE_TOWARDZERO};
 
         assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+#ifndef _M_ARM64 // TRANSITION, GH-5685
         assert(check_feexcept(0));
+#endif // ^^^ no workaround ^^^
     }
     {
         ExceptGuard except;
