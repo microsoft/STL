@@ -42,9 +42,6 @@ std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.p
 # LLVM-100506: [libc++][test] Precondition violation in rand.dist.uni.real/param_ctor.pass.cpp
 std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
 
-# LLVM-113609: [libc++][test] Non-rebindable test_alloc in string.capacity/deallocate_size.pass.cpp
-std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
-
 # LLVM-122638: [libc++][test] re.regex.construct/bad_backref.pass.cpp assumes non-standard extension to extended regular expressions
 std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
 
@@ -53,14 +50,6 @@ std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cp
 std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:1 FAIL
 std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:1 FAIL
-
-# LLVM-140287: libc++ test: update MinSequenceContainer.h to make some tests pass on MSVC STL #140287
-std/containers/container.adaptors/flat.multiset/flat.multiset.capacity/empty.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/assign_initializer_list.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.capacity/empty.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/assign_initializer_list.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp FAIL
 
 # LLVM-140448: [libc++][test] flat_set std test uses EmplaceUnsafeContainer which is non-standard
 std/containers/container.adaptors/flat.set/flat.set.modifiers/emplace_hint.pass.cpp FAIL
@@ -91,12 +80,6 @@ std/utilities/template.bitset/bitset.cons/string_ctor.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/dtor.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_until.pass.cpp SKIPPED
 std/thread/thread.jthread/detach.pass.cpp SKIPPED
-
-# libcxx is incorrect on what the type passed to allocator::construct should be (LLVM-D61364)
-std/containers/associative/map/map.modifiers/insert_and_emplace_allocator_requirements.pass.cpp FAIL
-std/containers/associative/set/insert_and_emplace_allocator_requirements.pass.cpp FAIL
-std/containers/unord/unord.map/unord.map.modifiers/insert_and_emplace_allocator_requirements.pass.cpp FAIL
-std/containers/unord/unord.set/insert_and_emplace_allocator_requirements.pass.cpp FAIL
 
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
@@ -164,8 +147,6 @@ std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/co
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_values.pass.cpp:0 FAIL
 
 # Various bogosity (LLVM-D141004)
-std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/resource.pass.cpp FAIL
-std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/select_on_container_copy_construction.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/ctor_does_not_allocate.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/sync_with_default_resource.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/unsync_with_default_resource.pass.cpp FAIL
@@ -282,8 +263,6 @@ std/containers/container.adaptors/flat.map/flat.map.cons/sorted_iter_iter.pass.c
 std/containers/container.adaptors/flat.map/flat.map.cons/sorted_iter_iter.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/erase_key.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/erase_key.pass.cpp:1 FAIL
-std/containers/container.adaptors/flat.multimap/flat.multimap.cons/containers.pass.cpp:0 FAIL
-std/containers/container.adaptors/flat.multimap/flat.multimap.cons/containers.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/copy_assign.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/copy_assign.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/deduct.pass.cpp:0 FAIL
@@ -310,18 +289,91 @@ std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/erase_ke
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/erase_key.pass.cpp:1 FAIL
 
 # FIXME! error: unused type alias 'C' [-Werror,-Wunused-local-typedef]
-std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_noexcept.pass.cpp:2 FAIL
-std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_assign_noexcept.pass.cpp:2 FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_noexcept.compile.pass.cpp:2 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_assign_noexcept.compile.pass.cpp:2 FAIL
 
 # FIXME! error: unused variable 'expected' [-Werror,-Wunused-variable]
 std/containers/container.adaptors/flat.map/flat.map.erasure/erase_if_exceptions.pass.cpp:2 FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.erasure/erase_if_exceptions.pass.cpp:2 FAIL
+
+# FIXME! C++26 "P3372R3 constexpr Containers And Adaptors" isn't completely guarded with `TEST_STD_VER >= 26`.
+std/containers/container.adaptors/flat.map/flat.map.access/at_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.access/at_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.access/index_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.access/index_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.capacity/max_size.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.capacity/max_size.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.iterators/iterator.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.iterators/iterator.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/erase_key_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/erase_key_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/extract.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/extract.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_iter_iter.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_iter_iter.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_or_assign_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_or_assign_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_range.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_range.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_rv.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_rv.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/try_emplace_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/try_emplace_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.observers/comp.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.observers/comp.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.operations/contains_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.operations/contains_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.operations/count_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.operations/count_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.operations/equal_range_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.operations/equal_range_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.operations/find_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.operations/find_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.operations/lower_bound_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.operations/lower_bound_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.operations/upper_bound_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.operations/upper_bound_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/op_compare.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/op_compare.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.capacity/max_size.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.capacity/max_size.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.iterators/iterator.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.iterators/iterator.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/erase_key_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/erase_key_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/extract.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/extract.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_iter_iter.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_iter_iter.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_range.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_range.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_rv.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_rv.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.observers/comp.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.observers/comp.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.operations/contains_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.operations/contains_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.operations/count_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.operations/count_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.operations/equal_range_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.operations/equal_range_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.operations/find_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.operations/find_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.operations/lower_bound_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.operations/lower_bound_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.operations/upper_bound_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.operations/upper_bound_transparent.pass.cpp:1 FAIL
 
 # P0533R9 constexpr For <cmath> And <cstdlib>
 std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
 
 # P0543R3 Saturation Arithmetic
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/numerics/numeric.ops/numeric.ops.sat/add_sat.compile.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/add_sat.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/div_sat.compile.pass.cpp FAIL
@@ -358,13 +410,62 @@ std/containers/container.adaptors/flat.set/flat.set.cons/sorted_iter_iter.pass.c
 # FIXME! error: unused variable 'expected' [-Werror,-Wunused-variable]
 std/containers/container.adaptors/flat.set/flat.set.erasure/erase_if_exceptions.pass.cpp:2 FAIL
 
+# FIXME! Asserts while testing insert_range's exception guarantee.
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp FAIL
+
+# FIXME! Possibly related to LLVM-140287.
+# MSVC error C2440: '<function-style-cast>': cannot convert from 'initializer list' to 'MinSequenceContainer<int,three_way_random_access_iterator<T *>,three_way_random_access_iterator<const T *>>'
+# Clang error: no matching constructor for initialization of 'container_type' (aka 'MinSequenceContainer<int>')
+std/containers/container.adaptors/flat.set/flat.set.cons/range.pass.cpp FAIL
+
+# FIXME! C++26 "P3372R3 constexpr Containers And Adaptors" isn't completely guarded with `TEST_STD_VER >= 26`.
+std/containers/container.adaptors/flat.set/flat.set.capacity/max_size.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.capacity/max_size.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/erase_key_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/erase_key_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/extract.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/extract.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_iter.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_iter.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/flat.set.observers/comp.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.observers/comp.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/contains_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/contains_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/count_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/count_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/equal_range_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/equal_range_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/find_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/find_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/lower_bound_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/lower_bound_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/upper_bound_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.operations/upper_bound_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/op_compare.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/op_compare.pass.cpp:1 FAIL
+
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/PR20855_tuple_ref_binding_diagnostics.pass.cpp:0 FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/PR20855_tuple_ref_binding_diagnostics.pass.cpp:1 FAIL
 
 # P2674R1 is_implicit_lifetime
 std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp FAIL
+
+# P2944R3 Comparisons For reference_wrapper
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.const_ref.pass.cpp FAIL
+std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.refwrap_const.pass.cpp FAIL
+std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.refwrap.pass.cpp FAIL
+
+# P3168R2 std::optional Range Support
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/optional/optional.iterator/begin.pass.cpp FAIL
+std/utilities/optional/optional.iterator/end.pass.cpp FAIL
+std/utilities/optional/optional.iterator/iterator.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -764,14 +865,8 @@ std/iterators/iterator.requirements/iterator.assoc.types/readable.traits/indirec
 std/containers/sequences/vector/trivial_relocation.pass.cpp:0 FAIL
 std/containers/sequences/vector/trivial_relocation.pass.cpp:1 FAIL
 
-# These tests emit C5321, which warns when the resolution to CWG-1656 affects a u8 string literal.
-# The conformant behavior is opt-in because it can silently change behavior.
-# warning C5321: nonstandard extension used: encoding '\x80' as a multi-byte utf-8 character. Use \u instead
-# for cross platform compatibility or '/Zc:u8EscapeEncoding' to disable the extension.
-std/utilities/format/format.functions/escaped_output.unicode.pass.cpp:0 FAIL
-std/utilities/format/format.functions/escaped_output.unicode.pass.cpp:1 FAIL
-std/utilities/format/format.functions/fill.unicode.pass.cpp:0 FAIL
-std/utilities/format/format.functions/fill.unicode.pass.cpp:1 FAIL
+# Not analyzed, likely bogus test. constexpr fails with "vector iterators incompatible".
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.default.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***
@@ -952,10 +1047,6 @@ std/algorithms/algorithms.results/min_max_result.pass.cpp:1 FAIL
 # Not analyzed.
 std/algorithms/robust_against_proxy_iterators_lifetime_bugs.pass.cpp FAIL
 
-# Not analyzed. Looks like a test bug, assuming that hash<vector<bool>> is constexpr.
-std/containers/sequences/vector.bool/enabled_hash.pass.cpp FAIL
-std/containers/sequences/vector.bool/vector_bool.pass.cpp FAIL
-
 # Not analyzed. Inspecting shift operators for quoted().
 std/input.output/iostream.format/quoted.manip/quoted_traits.compile.pass.cpp FAIL
 
@@ -988,6 +1079,7 @@ std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/co
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:2 FAIL
 std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:2 FAIL
 std/algorithms/alg.modifying.operations/alg.rotate/rotate.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.swap/ranges.swap_ranges.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.contains/ranges.contains_subrange.pass.cpp:2 FAIL
 std/algorithms/alg.nonmodifying/alg.count/count.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.count/ranges.count.pass.cpp FAIL
@@ -996,7 +1088,9 @@ std/containers/sequences/vector.bool/assign_range.pass.cpp FAIL
 std/containers/sequences/vector.bool/flip.pass.cpp FAIL
 std/containers/sequences/vector.bool/insert_range.pass.cpp FAIL
 std/containers/sequences/vector/vector.modifiers/destroy_elements.pass.cpp FAIL
+std/containers/sequences/vector/vector.modifiers/emplace.pass.cpp FAIL
 std/containers/sequences/vector/vector.modifiers/insert_range.pass.cpp FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.view/end.pass.cpp FAIL
 std/strings/basic.string/string.modifiers/string_replace/replace_with_range.pass.cpp FAIL
 std/utilities/charconv/charconv.to.chars/integral.pass.cpp FAIL
 
@@ -1109,6 +1203,18 @@ std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:1 FA
 # Not analyzed. Likely MSVC constexpr bug, "note: failure was caused by a read of a variable outside its lifetime"
 std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
 std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/types.compile.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/types.compile.pass.cpp:1 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.view/begin.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.view/begin.pass.cpp:1 FAIL
+
+# Not analyzed. Likely MSVC constexpr bug, "note: failure was caused by a read of an uninitialized symbol"
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_deleter.pass.cpp:0 FAIL
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_deleter.pass.cpp:1 FAIL
+
+# Not analyzed. Likely MSVC constexpr bug, "note: failure was caused by unevaluable pointer value"
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:1 FAIL
 
 # Not analyzed. Likely MSVC constexpr bug, "note: a non-constant (sub-)expression was encountered" in swap()
 std/utilities/utility/utility.swap/swap_array.pass.cpp:0 FAIL
@@ -1322,6 +1428,17 @@ std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:1 
 # Not analyzed. Emitting easily-suppressed truncation warnings for MSVC, but also compiler errors for MSVC and Clang.
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.pass.cpp FAIL
 
+# Not analyzed, likely MSVC compiler bugs.
+std/utilities/function.objects/refwrap/common_reference.compile.pass.cpp:0 FAIL
+std/utilities/function.objects/refwrap/common_reference.compile.pass.cpp:1 FAIL
+std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp:0 FAIL
+std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp:1 FAIL
+
+# Not analyzed.
+# MSVC emits truncation warnings, which will be partially addressed by GH-5562.
+# Clang asserts `allocated_ == 0 || allocated_ >= i` due to the container proxy object.
+std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
+
 
 # *** XFAILS WHICH PASS ***
 # These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
@@ -1382,7 +1499,7 @@ std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.pointer.pass.cpp:9 SKIPPE
 std/ranges/range.adaptors/range.lazy.split/constraints.compile.pass.cpp:9 SKIPPED
 std/ranges/range.utility/range.utility.conv/to.pass.cpp:9 SKIPPED
 std/thread/thread.jthread/assign.move.pass.cpp:9 SKIPPED
-std/utilities/meta/meta.unary/dependent_return_type.compile.pass.cpp:9 SKIPPED
+std/utilities/meta/meta.unary/dependent_return_type.pass.cpp:9 SKIPPED
 
 # These tests are marked as `XFAIL: msvc`, but the MSVC-internal test harness doesn't yet parse XFAIL.
 std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp:9 SKIPPED
@@ -1395,3 +1512,6 @@ std/input.output/string.streams/stringstream/stringstream.members/gcount.pass.cp
 
 # Similarly, this test is marked as `REQUIRES: 32-bit-pointer`.
 std/iterators/iterator.container/ssize.LWG3207.compile.pass.cpp:9 SKIPPED
+
+# This test is marked as `REQUIRES: target={{.+}}-apple-{{.+}}`.
+std/input.output/file.streams/fstreams/filebuf.virtuals/overflow.writefail.pass.cpp:9 SKIPPED

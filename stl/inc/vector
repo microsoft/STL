@@ -3791,10 +3791,14 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _Vb
             _Iter_diff_t<_VbIt> _Count = _Popcount_impl(_FirstVal);
             ++_VbFirst;
 
+            const auto _Bits                = static_cast<_Iter_diff_t<_VbIt>>(_VbLast - _VbFirst) * _VBITS;
+            _Iter_diff_t<_VbIt> _Count_ones = 0;
+
             for (; _VbFirst != _VbLast; ++_VbFirst) {
-                const auto _SelectVal = _Val ? *_VbFirst : ~*_VbFirst;
-                _Count += _Popcount_impl(_SelectVal);
+                _Count_ones += _Popcount_impl(*_VbFirst);
             }
+
+            _Count += _Val ? _Count_ones : _Bits - _Count_ones;
 
             if (_Last._Myoff != 0) {
                 const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
