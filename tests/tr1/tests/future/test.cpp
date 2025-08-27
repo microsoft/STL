@@ -330,7 +330,7 @@ static void do_test_promise_allocator() { // check that allocator is managed cor
 
 static void test_promise_allocator() { // test promise with allocator
     typedef STD uses_allocator<STD promise<int>, STD allocator<int>> promise_uses_allocator;
-    CHECK_INT(promise_uses_allocator::value, true);
+    CHECK_INT(promise_uses_allocator::value, false);
 
     do_test_promise_allocator<int>();
     do_test_promise_allocator<int&>();
@@ -836,10 +836,8 @@ static void test_packaged_task_core_v() { // test core of packaged_task for func
 }
 
 static void test_packaged_task_allocator() { // test packaged_task with allocator
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     typedef STD uses_allocator<STD packaged_task<Func_type>, STD allocator<Func_type>> packaged_task_uses_allocator;
-    CHECK_INT(packaged_task_uses_allocator::value, true);
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
+    CHECK_INT(packaged_task_uses_allocator::value, false);
 }
 
 static void test_packaged_task() { // do basic tests for packaged_task

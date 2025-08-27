@@ -254,7 +254,6 @@ int main() {
         f.get();
     }
 
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     {
         packaged_task<int()> pt(allocator_arg, alloc, [] { return 1234; });
         future<int> f = pt.get_future();
@@ -276,7 +275,6 @@ int main() {
         pt();
         f.get();
     }
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 #endif // _M_CEE_PURE
 
     test_DevDiv_1119194();
