@@ -1798,6 +1798,14 @@ public:
 
     template <class _Ty2 = _Ty, class _Elem = element_type, enable_if_t<is_array_v<_Ty2>, int> = 0>
     _NODISCARD _Elem& operator[](ptrdiff_t _Idx) const noexcept /* strengthened */ {
+#if _MSVC_STL_HARDENING_SHARED_PTR_ARRAY || _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (extent_v<_Ty> != 0) {
+            _STL_VERIFY(
+                _Idx >= 0 && static_cast<size_t>(_Idx) < extent_v<_Ty>, "shared_ptr<T[N]> subscript out of range");
+        } else {
+            _STL_VERIFY(_Idx >= 0, "shared_ptr<T[]> subscript out of range");
+        }
+#endif // _MSVC_STL_HARDENING_SHARED_PTR_ARRAY || _ITERATOR_DEBUG_LEVEL != 0
         return get()[_Idx];
     }
 
