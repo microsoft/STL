@@ -1574,7 +1574,7 @@ public:
 };
 
 struct _Loop_vals_v2_t { // storage for loop administration
-    void* _Loop_iter          = nullptr;
+    size_t _Loop_frame_idx    = 0;
     int _Loop_idx             = 0;
     unsigned int _Group_first = 0;
 };
@@ -1736,10 +1736,14 @@ public:
         _Full                 = _Full_match;
         _Max_complexity_count = _REGEX_MAX_COMPLEXITY_COUNT;
         _Max_stack_count      = _REGEX_MAX_STACK_COUNT;
+        _Frames_count         = 0;
 
         _Matched = false;
 
-        if (!_Match_pat(_Rep)) {
+        bool _Succeeded = _Match_pat(_Rep);
+        _STL_INTERNAL_CHECK(_Frames_count == 0);
+
+        if (!_Succeeded) {
             return false;
         }
 
@@ -1784,6 +1788,11 @@ private:
     _Tgt_state_t<_It> _Tgt_state;
     _Tgt_state_t<_It> _Res;
     vector<_Loop_vals_v2_t> _Loop_vals;
+    vector<_Tgt_state_t<_It>> _Frames;
+    size_t _Frames_count;
+
+    size_t _Push_frame();
+    void _Pop_frame(size_t);
 
     bool _Do_assert(_Node_assert*);
     bool _Do_neg_assert(_Node_assert*);
@@ -3339,6 +3348,22 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Tidy() noexcept { // free memory
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
+size_t _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Push_frame() {
+    if (_Frames_count >= _Frames.size()) {
+        _Frames.push_back(_Tgt_state);
+    } else {
+        _Frames[_Frames_count] = _Tgt_state;
+    }
+    return _Frames_count++;
+}
+
+template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
+void _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Pop_frame(size_t _Idx) {
+    _STL_INTERNAL_CHECK(_Idx + 1 == _Frames_count);
+    _Frames_count = _Idx;
+}
+
+template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_assert(_Node_assert* _Node) { // apply assert node
     _It _Ch = _Tgt_state._Cur;
     if (_Match_pat(_Node->_Child)) {
@@ -3352,22 +3377,23 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_assert(_Node_assert* 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_neg_assert(_Node_assert* _Node) {
     // apply negative assert node
-    _Bt_state_t<_It> _St = _Tgt_state;
-    if (!_Match_pat(_Node->_Child)) {
-        _Tgt_state = _St;
-        return true;
-    } else {
-        return false;
+    const size_t _Frame_idx = _Push_frame();
+    bool _Succeeded         = !_Match_pat(_Node->_Child);
+    if (_Succeeded) {
+        const _Bt_state_t<_It>& _St = _Frames[_Frame_idx];
+        _Tgt_state                  = _St;
     }
+    _Pop_frame(_Frame_idx);
+    return _Succeeded;
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_if(_Node_if* _Node) { // apply if node
-    _Tgt_state_t<_It> _St = _Tgt_state;
+    const size_t _Frame_idx = _Push_frame();
 
     // look for the first match
     for (; _Node; _Node = _Node->_Child) { // process one branch of if
-        _Tgt_state = _St; // rewind to where the alternation starts in input
+        _Tgt_state = _Frames[_Frame_idx]; // rewind to where the alternation starts in input
         if (_Match_pat(_Node->_Next)) { // try to match this branch
             break;
         }
@@ -3375,11 +3401,13 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_if(_Node_if* _Node) {
 
     // if none of the if branches matched, fail to match
     if (!_Node) {
+        _Pop_frame(_Frame_idx);
         return false;
     }
 
     // if we aren't looking for the longest match, that's it
     if (!_Longest) {
+        _Pop_frame(_Frame_idx);
         return true;
     }
 
@@ -3390,32 +3418,36 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_if(_Node_if* _Node) {
             break;
         }
 
-        _Tgt_state = _St;
+        _Tgt_state = _Frames[_Frame_idx];
         (void) _Match_pat(_Node->_Next);
     }
+    _Pop_frame(_Frame_idx);
     return true;
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node, bool _Greedy) {
     // apply repetition to loop with no nested if/do
-    int _Ix               = 0;
-    _Tgt_state_t<_It> _St = _Tgt_state;
+    int _Ix                 = 0;
+    const size_t _Frame_idx = _Push_frame();
 
     if (0 < _Node->_Min) {
         // GH-5365: We can avoid resetting capture groups for the first iteration
         // because we know that a simple repetition of this loop was not encountered before.
         if (!_Match_pat(_Node->_Next)) { // didn't match minimum number of reps, fail
+            _Pop_frame(_Frame_idx);
             return false;
-        } else if (_Tgt_state._Cur == _St._Cur) { // matches empty string
+        } else if (_Tgt_state._Cur == _Frames[_Frame_idx]._Cur) { // matches empty string
             // loop is branchless, so it will only ever match empty strings
             // -> skip all other matches as they don't change state and immediately try tail
+            _Pop_frame(_Frame_idx);
             return _Match_pat(_Node->_End_rep->_Next);
         } else { // loop never matches the empty string
             for (_Ix = 1; _Ix < _Node->_Min; ++_Ix) { // do minimum number of reps
                 // GH-5365: We have to reset the capture groups from the second iteration on.
-                _Tgt_state._Grp_valid = _St._Grp_valid;
+                _Tgt_state._Grp_valid = _Frames[_Frame_idx]._Grp_valid;
                 if (!_Match_pat(_Node->_Next)) { // didn't match minimum number of reps, fail
+                    _Pop_frame(_Frame_idx);
                     return false;
                 }
             }
@@ -3429,6 +3461,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
 
     if (_Match_pat(_Node->_End_rep->_Next)) {
         if (!_Greedy) {
+            _Pop_frame(_Frame_idx);
             return true; // go with current match
         }
 
@@ -3439,7 +3472,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
 
     if (_Ix == 0 && _Node->_Max != 0) {
         _Tgt_state._Cur       = _Saved_pos;
-        _Tgt_state._Grp_valid = _St._Grp_valid;
+        _Tgt_state._Grp_valid = _Frames[_Frame_idx]._Grp_valid;
 
         if (!_Match_pat(_Node->_Next)) { // rep match failed, we are done
             _Done = true;
@@ -3447,12 +3480,14 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
             _Done = true;
             // we only potentially accept/try tail for POSIX
             if ((_Sflags & regex_constants::_Any_posix) && _Match_pat(_Node->_End_rep->_Next)) {
+                _Pop_frame(_Frame_idx);
                 return true; // go with current match
             }
         } else {
             _Saved_pos = _Tgt_state._Cur;
             if (_Match_pat(_Node->_End_rep->_Next)) {
                 if (!_Greedy) {
+                    _Pop_frame(_Frame_idx);
                     return true; // go with current match
                 }
 
@@ -3467,7 +3502,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
     if (!_Done) {
         while (_Node->_Max == -1 || _Ix++ < _Node->_Max) { // try another rep/tail match
             _Tgt_state._Cur       = _Saved_pos;
-            _Tgt_state._Grp_valid = _St._Grp_valid;
+            _Tgt_state._Grp_valid = _Frames[_Frame_idx]._Grp_valid;
             if (!_Match_pat(_Node->_Next) || _Tgt_state._Cur == _Saved_pos) {
                 break; // rep match failed, quit loop
             }
@@ -3476,6 +3511,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
             _Saved_pos = _Tgt_state._Cur;
             if (_Match_pat(_Node->_End_rep->_Next)) {
                 if (!_Greedy) {
+                    _Pop_frame(_Frame_idx);
                     return true; // go with current match
                 }
 
@@ -3489,22 +3525,24 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
     if (_Matched0) { // record final match
         _Tgt_state = _Final;
     }
+
+    _Pop_frame(_Frame_idx);
     return _Matched0;
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node, bool _Greedy, int _Init_idx) {
     // apply repetition
-    bool _Matched0         = false;
-    _Tgt_state_t<_It> _St  = _Tgt_state;
-    _Loop_vals_v2_t* _Psav = &_Loop_vals[_Node->_Loop_number];
-    int _Loop_idx_sav      = _Psav->_Loop_idx;
-    _It* _Loop_iter_sav    = static_cast<_It*>(_Psav->_Loop_iter);
-    bool _Progress         = _Init_idx == 0 || *_Loop_iter_sav != _St._Cur;
+    bool _Matched0                   = false;
+    _Loop_vals_v2_t* _Psav           = &_Loop_vals[_Node->_Loop_number];
+    const int _Loop_idx_sav          = _Psav->_Loop_idx;
+    const size_t _Loop_frame_idx_sav = _Psav->_Loop_frame_idx;
+    const size_t _Frame_idx          = _Push_frame();
+    const bool _Progress             = _Init_idx == 0 || _Frames[_Loop_frame_idx_sav]._Cur != _Tgt_state._Cur;
 
     if (_Init_idx < _Node->_Min) { // try another required match
-        _Psav->_Loop_iter = _STD addressof(_St._Cur);
-        _Psav->_Loop_idx  = _Progress ? _Init_idx + 1 : _Node->_Min; // try only one more match after an empty match
+        _Psav->_Loop_frame_idx = _Frame_idx;
+        _Psav->_Loop_idx = _Progress ? _Init_idx + 1 : _Node->_Min; // try only one more match after an empty match
         _STD fill(_Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Psav->_Group_first),
             _Tgt_state._Grp_valid.end(), false);
         _Matched0 = _Match_pat(_Node->_Next);
@@ -3517,35 +3555,35 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node,
             _Matched0 = _Match_pat(_Node->_End_rep->_Next);
 
             // try to match with one more repetition
-            _Tgt_state        = _St;
-            _Psav->_Loop_idx  = _Init_idx + 1;
-            _Psav->_Loop_iter = _STD addressof(_St._Cur);
+            _Tgt_state             = _Frames[_Frame_idx];
+            _Psav->_Loop_idx       = _Init_idx + 1;
+            _Psav->_Loop_frame_idx = _Frame_idx;
             if (_Match_pat(_Node->_Next)) { // always call _Match_pat, even when _Matched0 is already true
                 _Matched0 = true;
             }
         } else if (!_Greedy) { // not greedy, favor minimum number of reps
             _Matched0 = _Match_pat(_Node->_End_rep->_Next);
             if (!_Matched0) { // tail failed, try another rep
-                _Tgt_state        = _St;
-                _Psav->_Loop_idx  = _Init_idx + 1;
-                _Psav->_Loop_iter = _STD addressof(_St._Cur);
+                _Tgt_state             = _Frames[_Frame_idx];
+                _Psav->_Loop_idx       = _Init_idx + 1;
+                _Psav->_Loop_frame_idx = _Frame_idx;
                 _STD fill(_Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Psav->_Group_first),
                     _Tgt_state._Grp_valid.end(), false);
                 _Matched0 = _Match_pat(_Node->_Next);
             }
         } else { // greedy, favor maximum number of reps,
             // so try another rep
-            _Psav->_Loop_idx  = _Init_idx + 1;
-            _Psav->_Loop_iter = _STD addressof(_St._Cur);
+            _Psav->_Loop_idx       = _Init_idx + 1;
+            _Psav->_Loop_frame_idx = _Frame_idx;
             _STD fill(_Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Psav->_Group_first),
                 _Tgt_state._Grp_valid.end(), false);
             _Matched0 = _Match_pat(_Node->_Next);
 
             if (!_Matched0) { // rep failed, try tail
-                _Psav->_Loop_idx  = _Loop_idx_sav;
-                _Psav->_Loop_iter = _Loop_iter_sav;
-                _Tgt_state        = _St;
-                _Matched0         = _Match_pat(_Node->_End_rep->_Next);
+                _Psav->_Loop_idx       = _Loop_idx_sav;
+                _Psav->_Loop_frame_idx = _Loop_frame_idx_sav;
+                _Tgt_state             = _Frames[_Frame_idx];
+                _Matched0              = _Match_pat(_Node->_End_rep->_Next);
             }
         }
     } else if (_Init_idx == 1 && (_Sflags & regex_constants::_Any_posix)) {
@@ -3554,8 +3592,9 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node,
         _Matched0 = _Match_pat(_Node->_End_rep->_Next);
     }
 
-    _Psav->_Loop_idx  = _Loop_idx_sav;
-    _Psav->_Loop_iter = _Loop_iter_sav;
+    _Psav->_Loop_idx       = _Loop_idx_sav;
+    _Psav->_Loop_frame_idx = _Loop_frame_idx_sav;
+    _Pop_frame(_Frame_idx);
     return _Matched0;
 }
 
