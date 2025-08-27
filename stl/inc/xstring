@@ -2317,9 +2317,11 @@ public:
             _Mypair._Myval2._Mysize = _New_size;
         }
 
-        auto _Arg_ptr                   = _Mypair._Myval2._Myptr();
-        auto _Arg_size                  = _New_size;
-        const auto _Result_size         = _STD move(_Op)(_Arg_ptr, _Arg_size);
+        auto _Arg_ptr           = _Mypair._Myval2._Myptr();
+        auto _Arg_size          = _New_size;
+        const auto _Result_size = _STD move(_Op)(_Arg_ptr, _Arg_size);
+        static_assert(_Integer_like<decltype(_Result_size)>, "the return type of the operation must be integer-like");
+
         const auto _Result_as_size_type = static_cast<size_type>(_Result_size);
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0");

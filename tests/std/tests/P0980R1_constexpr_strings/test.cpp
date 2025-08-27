@@ -17,6 +17,10 @@
 #include <type_traits>
 #include <utility>
 
+#if _HAS_CXX20
+#include <ranges> // for integer-class types
+#endif // _HAS_CXX20
+
 using namespace std;
 
 constexpr auto literal_input     = "Hello fluffy kittens";
@@ -2226,14 +2230,40 @@ constexpr void test_all() {
 }
 
 #if _HAS_CXX23
+template <class I>
 void test_gh_2524() { // COMPILE-ONLY
     // GH-2524 resize_and_overwrite generates warning C4018 when Operation returns int
     string s;
     s.resize_and_overwrite(1, [](char* buffer, size_t) {
         *buffer = 'x';
-        int i   = 1;
+        I i     = 1;
         return i;
     });
+}
+
+void test_gh_2524_all() { // COMPILE-ONLY
+    test_gh_2524<signed char>();
+    test_gh_2524<short>();
+    test_gh_2524<int>();
+    test_gh_2524<long>();
+    test_gh_2524<long long>();
+
+    test_gh_2524<unsigned char>();
+    test_gh_2524<unsigned short>();
+    test_gh_2524<unsigned int>();
+    test_gh_2524<unsigned long>();
+    test_gh_2524<unsigned long long>();
+
+    test_gh_2524<char>();
+#ifdef __cpp_char8_t
+    test_gh_2524<char8_t>();
+#endif // defined(__cpp_char8_t)
+    test_gh_2524<char16_t>();
+    test_gh_2524<char32_t>();
+    test_gh_2524<wchar_t>();
+
+    test_gh_2524<_Signed128>();
+    test_gh_2524<_Unsigned128>();
 }
 #endif // _HAS_CXX23
 
