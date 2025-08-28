@@ -21,7 +21,7 @@ _STD_BEGIN
 #pragma warning(push)
 #pragma warning(disable : 4995) // name was marked as #pragma deprecated
 
-_EXPORT_STD using _CSTD size_t;
+_EXPORT_STD using size_t = decltype(sizeof(0));
 _EXPORT_STD using _CSTD memchr;
 _EXPORT_STD using _CSTD memcmp;
 _EXPORT_STD using _CSTD memcpy;

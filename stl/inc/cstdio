@@ -32,7 +32,7 @@ _STD_BEGIN
 
 using _CSTD _Mbstatet;
 
-_EXPORT_STD using _CSTD size_t;
+_EXPORT_STD using size_t = decltype(sizeof(0));
 _EXPORT_STD using _CSTD fpos_t;
 _EXPORT_STD using _CSTD FILE;
 _EXPORT_STD using _CSTD clearerr;

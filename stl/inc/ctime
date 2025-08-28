@@ -19,7 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 _EXPORT_STD using _CSTD clock_t;
-_EXPORT_STD using _CSTD size_t;
+_EXPORT_STD using size_t = decltype(sizeof(0));
 _EXPORT_STD using _CSTD time_t;
 _EXPORT_STD using _CSTD tm;
 _EXPORT_STD using _CSTD asctime;

@@ -25,8 +25,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef intrinsic
 
 _STD_BEGIN
-_EXPORT_STD using _CSTD ptrdiff_t;
-_EXPORT_STD using _CSTD size_t;
+// using deduction to define size_t and ptrdiff_t for better diagnostics, see GH-5699
+_EXPORT_STD using ptrdiff_t   = decltype((int*) (nullptr) - (int*) (nullptr));
+_EXPORT_STD using size_t      = decltype(sizeof(0));
 _EXPORT_STD using max_align_t = double; // most aligned type
 _EXPORT_STD using nullptr_t   = decltype(nullptr);
 

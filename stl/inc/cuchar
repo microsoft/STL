@@ -19,7 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 _EXPORT_STD using _CSTD mbstate_t;
-_EXPORT_STD using _CSTD size_t;
+_EXPORT_STD using size_t = decltype(sizeof(0));
 _EXPORT_STD using _CSTD mbrtoc16;
 _EXPORT_STD using _CSTD c16rtomb;
 _EXPORT_STD using _CSTD mbrtoc32;

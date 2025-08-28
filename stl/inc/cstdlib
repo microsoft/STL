@@ -34,7 +34,7 @@ _NODISCARD _Check_return_ inline long double abs(_In_ long double _Xx) noexcept 
 _END_EXTERN_CXX_WORKAROUND
 
 _STD_BEGIN
-_EXPORT_STD using _CSTD size_t;
+_EXPORT_STD using size_t = decltype(sizeof(0));
 _EXPORT_STD using _CSTD div_t;
 _EXPORT_STD using _CSTD ldiv_t;
 _EXPORT_STD using _CSTD abort;
