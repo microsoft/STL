@@ -53,7 +53,7 @@ void test_to_chars(benchmark::State& state, const Args&... args) {
     vector<Floating> vec;
 
     vec.reserve(n);
-    for (size_t i = 0; i != n; ++i) {
+    while (vec.size() < n) {
         using Integral             = conditional_t<sizeof(Floating) == 4, uint32_t, uint64_t>;
         const Integral val         = static_cast<Integral>(mt64());
         constexpr Integral inf_nan = sizeof(Floating) == 4 ? 0x7F800000U : 0x7FF0000000000000ULL;
