@@ -3,7 +3,6 @@
 
 #include <benchmark/benchmark.h>
 #include <charconv>
-#include <chrono>
 #include <random>
 #include <stdint.h>
 #include <stdio.h>
@@ -14,7 +13,6 @@
 #include <vector>
 
 using namespace std;
-using namespace std::chrono;
 
 void verify(const bool b) {
     if (!b) {
