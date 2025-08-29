@@ -32,7 +32,8 @@ steps:
   # TRANSITION, we currently only build the benchmarks with Clang for x64
   condition: >
     and(succeeded(), ${{ parameters.buildBenchmarks }},
-      not(and(eq('${{ parameters.compiler }}', 'clang-cl'), not(startsWith('${{ parameters.targetPlatform }}', 'x64')))))
+      not(and(eq('${{ parameters.compiler }}', 'clang-cl'),
+        not(startsWith('${{ parameters.targetPlatform }}', 'x64')))))
 - script: |
     call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
@@ -43,4 +44,5 @@ steps:
   # TRANSITION, we currently only build the benchmarks with Clang for x64
   condition: >
     and(succeeded(), ${{ parameters.buildBenchmarks }},
-      not(and(eq('${{ parameters.compiler }}', 'clang-cl'), not(startsWith('${{ parameters.targetPlatform }}', 'x64')))))
+      not(and(eq('${{ parameters.compiler }}', 'clang-cl'),
+        not(startsWith('${{ parameters.targetPlatform }}', 'x64')))))
