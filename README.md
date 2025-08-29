@@ -462,6 +462,31 @@ If you want to see all the other flags you can pass, run:
 out\bench\benchmark-<benchmark-name> --help
 ```
 
+## Other useful incantations
+
+To compile benchmark with some additional compiler options, use `_CL_` environment variable.
+You'll need to clean to make sure you obtain new binaries instead of the old ones.
+For example, here's how to add `/arch:AVX2` option (which may affect auto vectorization and bit algoritms intrinsics):
+
+```
+set _CL_=/arch:AVX2
+cmake --build out\bench --clean-first
+```
+
+To compile with clang-cl you need to pass `-DCMAKE_CXX_COMPILER=clang-cl` option:
+
+```
+cmake -B out\bench -S benchmarks -G Ninja -DSTL_BINARY_DIR=out\x64 -DCMAKE_CXX_COMPILER=clang-cl
+cmake --build out\bench
+```
+
+To run a benchmark on specific cores (for example to run on P cores or on E cores) and with higher priority
+(to avoid interference), use `start` command with parameters:
+
+```
+start /b /wait /high /affinity 0F out\bench\benchmark-std_copy
+```
+
 # Editing And Testing The Debugger Visualizer
 
 ### Modify The Visualizer
