@@ -33,7 +33,7 @@ steps:
   condition: >
     and(succeeded(), ${{ parameters.buildBenchmarks }},
       not(and(eq('${{ parameters.compiler }}', 'clang-cl'),
-        not(startsWith('${{ parameters.targetPlatform }}', 'x64')))))
+        not(eq('${{ parameters.targetPlatform }}', 'x64')))))
 - script: |
     call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
@@ -45,4 +45,4 @@ steps:
   condition: >
     and(succeeded(), ${{ parameters.buildBenchmarks }},
       not(and(eq('${{ parameters.compiler }}', 'clang-cl'),
-        not(startsWith('${{ parameters.targetPlatform }}', 'x64')))))
+        not(eq('${{ parameters.targetPlatform }}', 'x64')))))
