@@ -230,9 +230,10 @@ public:
     }
 
     void swap(any& _That) noexcept {
-        std::any _Old_val = _STD move(*this);
-        *this             = _STD move(_That);
-        _That             = _STD move(_Old_val);
+        any _Old = _STD move(*this);
+        *this    = _STD move(_That);
+        _That.reset();
+        _That._Move_from(_Old);
     }
 
     // Observers [any.observers]
