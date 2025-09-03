@@ -3202,8 +3202,11 @@ public:
             return _Diff_max;
         }
 
+#pragma warning(push)
+#pragma warning(disable : 26450) // TRANSITION, VSO-2565428
         // max_size bound by underlying storage limits
         return static_cast<size_type>(_Ints_max * _VBITS);
+#pragma warning(pop)
     }
 
     _NODISCARD_EMPTY_MEMBER _CONSTEXPR20 bool empty() const noexcept {
