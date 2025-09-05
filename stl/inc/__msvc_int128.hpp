@@ -715,7 +715,7 @@ struct alignas(16) _Base128 {
             }
 
             if (_Num._Word[1] == 0) {
-                _Base128 _Result = _Num._Word[0] / _Den._Word[0];
+                uint64_t _Result = _Num._Word[0] / _Den._Word[0]; // with 64-bit inputs, the ceiling is also 64-bit
                 if (_Num._Word[0] % _Den._Word[0] != 0) {
                     ++_Result;
                 }
