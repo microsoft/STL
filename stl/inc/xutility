@@ -866,8 +866,36 @@ namespace ranges {
         template <class _Ty>
         concept _Can_deref = requires(_Ty&& __t) { *static_cast<_Ty&&>(__t); };
 
+        struct _Must_have_ADL_found_iter_move_or_be_dereferenceable {};
+
         class _Cpo {
         private:
+            template <class _Ty>
+            _NODISCARD static auto _Choose_return_type() {
+                if constexpr (_Has_ADL<_Ty>) {
+                    return type_identity<decltype(iter_move(_STD declval<_Ty>()))>{}; // intentional ADL
+                } else if constexpr (_Can_deref<_Ty>) {
+                    using _Ref = decltype(*_STD declval<_Ty>());
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1008447, VSO-2066340
+                    if constexpr (is_function_v<remove_reference_t<_Ref>>) {
+                        return type_identity<_Ref&>{};
+                    } else
+#endif // ^^^ workaround ^^^
+                    {
+                        if constexpr (is_lvalue_reference_v<_Ref>) {
+                            return type_identity<remove_reference_t<_Ref>&&>{};
+                        } else {
+                            return type_identity<_Ref>{};
+                        }
+                    }
+                } else {
+                    return _Must_have_ADL_found_iter_move_or_be_dereferenceable{};
+                }
+            }
+
+            template <class _Ty>
+            using _Return_type = decltype(_Choose_return_type<_Ty>())::type;
+
             enum class _St { _None, _Custom, _Fallback };
 
             template <class _Ty>
@@ -886,8 +914,7 @@ namespace ranges {
 
         public:
             template <class _Ty>
-                requires (_Choice<_Ty>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr decltype(auto) operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+            _NODISCARD _STATIC_CALL_OPERATOR constexpr _Return_type<_Ty> operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
                 noexcept(_Choice<_Ty>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty>._Strategy;
 
@@ -1121,8 +1148,8 @@ struct _Projected_impl {
 
         using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
         [[noreturn]] indirect_result_t<_Proj&, _It> operator*() const {
-            _STL_REPORT_ERROR("std::projected::operator*() can't be called (N5008 [projected]/1)");
-            _STL_UNREACHABLE; // no return value available for "continue on error"
+            static_assert(
+                false, "std::projected::operator*() can't be instantiated (N5008 [projected] as modified by LWG-4270)");
         }
     };
 };
@@ -3568,29 +3595,34 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Advance_fn advance;
 
+    template <class _Ty>
+    using _Distance_iterator_t = // per LWG-4303
+        conditional_t<is_array_v<remove_reference_t<_Ty>>, decay_t<_Ty>, remove_const_t<remove_reference_t<_Ty>>>;
+
     class _Distance_fn {
     public:
         template <class _It, sentinel_for<_It> _Se>
             requires (!sized_sentinel_for<_Se, _It>)
         _NODISCARD _STATIC_CALL_OPERATOR constexpr iter_difference_t<_It> operator()(
-            _It _First, _Se _Last) _CONST_CALL_OPERATOR
-            noexcept(noexcept(_Distance_unchecked(
-                _STD _Get_unwrapped(_STD move(_First)), _STD _Get_unwrapped(_STD move(_Last))))) /* strengthened */ {
+            _It _First, _Se _Last) _CONST_CALL_OPERATOR noexcept(_Calculate_noexcept<_It, _Se>()) /* strengthened */ {
             _STD _Adl_verify_range(_First, _Last);
             return _Distance_unchecked(
                 _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
         }
 
-        template <class _It, sized_sentinel_for<decay_t<_It>> _Se>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr iter_difference_t<decay_t<_It>> operator()(
-            _It&& _First, const _Se _Last) _CONST_CALL_OPERATOR
-            noexcept(noexcept(_Last - static_cast<const decay_t<_It>&>(_First))) /* strengthened */ {
-            return _Last - static_cast<const decay_t<_It>&>(_First);
+        template <class _It, sized_sentinel_for<_Distance_iterator_t<_It>> _Se>
+        _NODISCARD _STATIC_CALL_OPERATOR constexpr iter_difference_t<_Distance_iterator_t<_It>> operator()(_It&& _First,
+            const _Se _Last) _CONST_CALL_OPERATOR noexcept(_Calculate_noexcept<_It, _Se>()) /* strengthened */ {
+            if constexpr (!is_array_v<remove_reference_t<_It>>) {
+                return _Last - _First;
+            } else {
+                return _Last - static_cast<decay_t<_It>>(_First);
+            }
         }
 
         template <range _Rng>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr range_difference_t<_Rng> operator()(
-            _Rng&& _Range) _CONST_CALL_OPERATOR noexcept(_Nothrow_size<_Rng>) /* strengthened */ {
+            _Rng&& _Range) _CONST_CALL_OPERATOR noexcept(_Calculate_noexcept<_Rng>()) /* strengthened */ {
             if constexpr (sized_range<_Rng>) {
                 return static_cast<range_difference_t<_Rng>>(_RANGES size(_Range));
             } else {
@@ -3612,12 +3644,30 @@ namespace ranges {
             return _Count;
         }
 
-        template <class _Rng>
-        static constexpr bool _Nothrow_size =
-            noexcept(_Distance_unchecked(_Ubegin(_STD declval<_Rng&>()), _Uend(_STD declval<_Rng&>())));
+        template <class _It, class _Se>
+        _NODISCARD static consteval bool _Calculate_noexcept() noexcept {
+            if constexpr (sized_sentinel_for<_Se, _Distance_iterator_t<_It>>) {
+                if constexpr (!is_array_v<remove_reference_t<_It>>) {
+                    return noexcept(_STD declval<const _Se&>() - _STD declval<_It&>());
+                } else {
+                    return noexcept(_STD declval<const _Se&>() - _STD declval<decay_t<_It>>());
+                }
+            } else if constexpr (sentinel_for<_Se, _It> && !sized_sentinel_for<_Se, _It>) {
+                return noexcept(_Distance_unchecked(
+                    _STD _Get_unwrapped(_STD declval<_It>()), _STD _Get_unwrapped(_STD declval<_Se>())));
+            } else {
+                return false;
+            }
+        }
 
-        template <sized_range _Rng>
-        static constexpr bool _Nothrow_size<_Rng> = noexcept(_RANGES size(_STD declval<_Rng&>()));
+        template <class _Rng>
+        _NODISCARD static consteval bool _Calculate_noexcept() noexcept {
+            if constexpr (sized_range<_Rng>) {
+                return noexcept(_RANGES size(_STD declval<_Rng&>()));
+            } else {
+                return noexcept(_Distance_unchecked(_Ubegin(_STD declval<_Rng&>()), _Uend(_STD declval<_Rng&>())));
+            }
+        }
     };
 
     _EXPORT_STD inline constexpr _Distance_fn distance;
