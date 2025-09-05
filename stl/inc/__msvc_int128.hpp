@@ -723,12 +723,11 @@ struct alignas(16) _Base128 {
                 return _Result;
             }
 
-            _Base128 _Result = _Num._Word[0] >= _Den._Word[0];
-            if (_Num._Word[0] - _Den._Word[0] != 0) {
-                ++_Result;
+            if (_Num._Word[0] > _Den._Word[0]) {
+                return 2u;
             }
 
-            return _Result;
+            return 1u;
         }
 
         // establish _Den has more than 1 non-zero "digit"
