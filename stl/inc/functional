@@ -2497,6 +2497,7 @@ _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
         if constexpr (_Vector_alg_in_search_is_safe<_FwdItHaystack, _FwdItPat, _Pred_eq>) {
             if (!_STD _Is_constant_evaluated()) {
                 const auto _Ptr1 = _STD _To_address(_First1);
+                (void) _STD _To_address(_Last2);
 
                 const auto _Ptr_res1 = _STD _Search_vectorized(
                     _Ptr1, _STD _To_address(_Last1), _STD _To_address(_First2), static_cast<size_t>(_Count2));
