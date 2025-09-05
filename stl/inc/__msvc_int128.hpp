@@ -435,8 +435,8 @@ struct alignas(16) _Base128 {
     _NODISCARD static constexpr _Base128 _Divide(const _Base128& _Num, const uint64_t _Den) noexcept {
         _Base128 _Result;
         _Result._Word[1] = _Num._Word[1] / _Den;
-        uint64_t _Rem    = _Num._Word[1] % _Den;
-        _Result._Word[0] = _UDiv128(_Rem, _Num._Word[0], _Den, _Rem);
+        uint64_t _Rem _ZERO_OR_NO_INIT;
+        _Result._Word[0] = _UDiv128(_Num._Word[1] % _Den, _Num._Word[0], _Den, _Rem);
         return _Result;
     }
     _NODISCARD static constexpr _Base128 _Divide(_Base128 _Num, _Base128 _Den) noexcept {
