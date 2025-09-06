@@ -2320,12 +2320,14 @@ public:
         auto _Arg_ptr           = _Mypair._Myval2._Myptr();
         auto _Arg_size          = _New_size;
         const auto _Result_size = _STD move(_Op)(_Arg_ptr, _Arg_size);
-        static_assert(_Integer_like<decltype(_Result_size)>, "the return type of the operation must be integer-like");
+        static_assert(_Integer_like<decltype(_Result_size)>,
+            "the return type of the operation must be integer-like, N5014 [string.capacity]/8");
 
         const auto _Result_as_size_type = static_cast<size_type>(_Result_size);
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0");
-        _STL_VERIFY(_Result_as_size_type <= _New_size, "the returned size can't be greater than the passed size");
+        _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0, N5014 [string.capacity]/9.2");
+        _STL_VERIFY(_Result_as_size_type <= _New_size,
+            "the returned size can't be greater than the passed size, N5014 [string.capacity]/9.3");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         _Eos(_Result_as_size_type);
     }
