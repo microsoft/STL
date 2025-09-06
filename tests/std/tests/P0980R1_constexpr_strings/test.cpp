@@ -17,9 +17,9 @@
 #include <type_traits>
 #include <utility>
 
-#if _HAS_CXX20
-#include <ranges> // for integer-class types
-#endif // _HAS_CXX20
+#if _HAS_CXX23
+#include <ranges> // for integer-class types in test_gh_2524_all()
+#endif // _HAS_CXX23
 
 using namespace std;
 
