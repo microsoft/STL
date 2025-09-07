@@ -4,8 +4,6 @@
 // test <random> header, part 2
 #define TEST_NAME "<random>, part 2"
 
-#define _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
-
 #include "tdefs.h"
 #include <math.h>
 #include <random>

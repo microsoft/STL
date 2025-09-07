@@ -4,8 +4,6 @@
 // test <random> C++11 header, part 5
 #define TEST_NAME "<random>, part 5"
 
-#define _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
-
 #include "tdefs.h"
 #include <cmath>
 #include <random>

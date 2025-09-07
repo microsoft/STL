@@ -1040,19 +1040,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // STL4000 is "_STATIC_CPPLIB is deprecated", currently in yvals.h
 // STL4001 is "/clr:pure is deprecated", currently in yvals.h
-
-#if _HAS_TR1_NAMESPACE
-#ifdef _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
-#define _DEPRECATE_TR1_NAMESPACE
-#else // ^^^ warning disabled / warning enabled vvv
-#define _DEPRECATE_TR1_NAMESPACE                                                                                  \
-    [[deprecated(                                                                                                 \
-        "warning STL4002: "                                                                                       \
-        "The non-Standard std::tr1 namespace and TR1-only machinery are deprecated and will be REMOVED. You can " \
-        "define _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING to suppress this warning.")]]
-#endif // ^^^ warning enabled ^^^
-#endif // _HAS_TR1_NAMESPACE
-
+// STL4002 was "The non-Standard std::tr1 namespace and TR1-only machinery are deprecated and will be REMOVED."
 // STL4003 was "The non-Standard std::identity struct is deprecated and will be REMOVED."
 
 // Enforcement of matching allocator value_types
