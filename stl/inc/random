@@ -1819,55 +1819,66 @@ private:
     size_t _Nx;
 };
 
-_STL_DISABLE_DEPRECATED_WARNING
 _EXPORT_STD template <class _Engine, size_t _Px, size_t _Rx>
-class discard_block_engine // discard_block_engine compound engine
-    : private conditional_t<_Px <= INT_MAX, discard_block<_Engine, static_cast<int>(_Px), static_cast<int>(_Rx)>,
-          _Discard_block_base<_Engine, _Px, _Rx>> {
+class discard_block_engine {
+private:
+    using _Block_type = conditional_t<_Px <= INT_MAX, int, size_t>; // TRANSITION, ABI: Should always be size_t
+
 public:
     static_assert(0 < _Rx && _Rx <= _Px, "invalid template argument for discard_block_engine");
 
-    using _Mybase = conditional_t<_Px <= INT_MAX, discard_block<_Engine, static_cast<int>(_Px), static_cast<int>(_Rx)>,
-        _Discard_block_base<_Engine, _Px, _Rx>>;
     using result_type = typename _Engine::result_type;
 
     static constexpr size_t block_size = _Px;
     static constexpr size_t used_block = _Rx;
 
-    discard_block_engine() : _Mybase() {}
+    discard_block_engine() : _Eng(), _Nx(0) {}
 
-    explicit discard_block_engine(const _Engine& _Ex) : _Mybase(_Ex) {}
+    explicit discard_block_engine(const _Engine& _Ex) : _Eng(_Ex), _Nx(0) {}
 
-    explicit discard_block_engine(_Engine&& _Ex) : _Mybase(_STD move(_Ex)) {}
+    explicit discard_block_engine(_Engine&& _Ex) : _Eng(_STD move(_Ex)), _Nx(0) {}
 
-    explicit discard_block_engine(result_type _Xx0) : _Mybase(_Xx0) {}
+    explicit discard_block_engine(result_type _Xx0) : _Eng(_Xx0), _Nx(0) {}
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, discard_block_engine, _Engine> = 0>
-    explicit discard_block_engine(_Seed_seq& _Seq) : _Mybase(_Seq) {}
+    explicit discard_block_engine(_Seed_seq& _Seq) : _Eng(_Seq), _Nx(0) {}
 
     void seed() {
-        _Mybase::seed();
+        _Eng.seed();
+        _Nx = 0;
     }
 
     void seed(result_type _Xx0) {
-        _Mybase::seed(_Xx0);
+        _Eng.seed(_Xx0);
+        _Nx = 0;
     }
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, discard_block_engine> = 0>
     void seed(_Seed_seq& _Seq) {
-        _Mybase::seed(_Seq);
+        _Eng.seed(_Seq);
+        _Nx = 0;
     }
 
     _NODISCARD const _Engine& base() const noexcept {
-        return _Mybase::base();
+        return _Eng;
     }
 
     _NODISCARD result_type operator()() {
-        return _Mybase::operator()();
+        if (static_cast<_Block_type>(_Rx) <= _Nx) { // discard values
+            while (_Nx++ < static_cast<_Block_type>(_Px)) {
+                (void) _Eng();
+            }
+
+            _Nx = 0;
+        }
+        ++_Nx;
+        return _Eng();
     }
 
     void discard(unsigned long long _Nskip) {
-        _Mybase::discard(_Nskip);
+        for (; 0 < _Nskip; --_Nskip) {
+            (void) (*this)();
+        }
     }
 
     _NODISCARD static constexpr result_type(min)() noexcept /* strengthened */ {
@@ -1879,27 +1890,30 @@ public:
     }
 
     _NODISCARD friend bool operator==(const discard_block_engine& _Left, const discard_block_engine& _Right) {
-        return static_cast<const _Mybase&>(_Left) == static_cast<const _Mybase&>(_Right);
+        return _Left._Eng == _Right._Eng && _Left._Nx == _Right._Nx;
     }
 
 #if !_HAS_CXX20
     _NODISCARD friend bool operator!=(const discard_block_engine& _Left, const discard_block_engine& _Right) {
-        return static_cast<const _Mybase&>(_Left) != static_cast<const _Mybase&>(_Right);
+        return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
 
     template <class _Elem, class _Traits>
     friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, discard_block_engine& _Eng) {
-        return _Istr >> static_cast<_Mybase&>(_Eng);
+        return _Istr >> _Eng._Eng >> _Eng._Nx;
     }
 
     template <class _Elem, class _Traits>
     friend basic_ostream<_Elem, _Traits>& operator<<(
         basic_ostream<_Elem, _Traits>& _Ostr, const discard_block_engine& _Eng) {
-        return _Ostr << static_cast<const _Mybase&>(_Eng);
+        return _Ostr << _Eng._Eng << ' ' << _Eng._Nx;
     }
+
+private:
+    _Engine _Eng;
+    _Block_type _Nx;
 };
-_STL_RESTORE_DEPRECATED_WARNING
 
 _EXPORT_STD template <class _Engine, size_t _Wx, class _UIntType>
 class independent_bits_engine { // independent_bits_engine compound engine
