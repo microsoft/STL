@@ -1052,19 +1052,22 @@ public:
 _EXPORT_STD template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
 class subtract_with_carry_engine
     : private _Swc_base<_Ty, _Sx, _Rx, _Swc_traits<_Ty, static_cast<_Ty>((_Ty{1} << (_Wx - 1)) << 1), _Rx>> {
+private:
+    static constexpr _Ty _Mx = static_cast<_Ty>((_Ty{1} << (_Wx - 1)) << 1);
+
+    using _Traits = _Swc_traits<_Ty, _Mx, _Rx>;
+    using _Mybase = _Swc_base<_Ty, _Sx, _Rx, _Traits>;
+
 public:
     _RNG_REQUIRE_UINTTYPE(subtract_with_carry_engine, _Ty);
 
     static_assert(0U < _Sx && _Sx < _Rx && 0 < _Wx && _Wx <= numeric_limits<_Ty>::digits,
         "invalid template argument for subtract_with_carry_engine");
 
-    static constexpr _Ty _Mx          = static_cast<_Ty>((_Ty{1} << (_Wx - 1)) << 1);
     static constexpr size_t word_size = _Wx;
     static constexpr size_t short_lag = _Sx;
     static constexpr size_t long_lag  = _Rx;
 
-    using _Traits     = _Swc_traits<_Ty, _Mx, _Rx>;
-    using _Mybase     = _Swc_base<_Ty, _Sx, _Rx, _Traits>;
     using result_type = _Ty;
 
     using _Mybase::default_seed;
