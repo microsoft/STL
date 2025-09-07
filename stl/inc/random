@@ -2372,89 +2372,119 @@ private:
     param_type _Par;
 };
 
-_STL_DISABLE_DEPRECATED_WARNING
 _EXPORT_STD template <class _Ty = int>
-class uniform_int_distribution : private uniform_int<_Ty> { // uniform integer distribution
+class uniform_int_distribution { // uniform integer distribution
 public:
     _RNG_REQUIRE_INTTYPE(uniform_int_distribution, _Ty);
 
-    using _Mybase     = uniform_int<_Ty>;
-    using _Mypbase    = typename _Mybase::param_type;
-    using result_type = typename _Mybase::result_type;
+    using result_type = _Ty;
 
-    struct param_type : _Mypbase { // parameter package
+    struct param_type { // parameter package
         using distribution_type = uniform_int_distribution;
 
-        param_type() noexcept // strengthened
-            : _Mypbase(0, (numeric_limits<_Ty>::max)()) {}
+        param_type() noexcept /* strengthened */ {
+            _Init(0, (numeric_limits<_Ty>::max)());
+        }
 
-        explicit param_type(
-            result_type _Min0, result_type _Max0 = (numeric_limits<_Ty>::max)()) noexcept // strengthened
-            : _Mypbase(_Min0, _Max0) {}
+        explicit param_type(result_type _Min0, result_type _Max0 = (numeric_limits<_Ty>::max)()) noexcept
+        /* strengthened */ {
+            _Init(_Min0, _Max0);
+        }
 
-        param_type(const _Mypbase& _Right) noexcept : _Mypbase(_Right) {}
+        _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
+            return _Left._Min == _Right._Min && _Left._Max == _Right._Max;
+        }
+
+#if !_HAS_CXX20
+        _NODISCARD friend bool operator!=(const param_type& _Left, const param_type& _Right) noexcept
+        /* strengthened */ {
+            return !(_Left == _Right);
+        }
+#endif // !_HAS_CXX20
+
+        _NODISCARD result_type a() const noexcept /* strengthened */ {
+            return _Min;
+        }
+
+        _NODISCARD result_type b() const noexcept /* strengthened */ {
+            return _Max;
+        }
+
+        void _Init(_Ty _Min0, _Ty _Max0) noexcept { // set internal state
+            _STL_ASSERT(_Min0 <= _Max0, "invalid min and max arguments for uniform_int_distribution");
+            _Min = _Min0;
+            _Max = _Max0;
+        }
+
+        result_type _Min;
+        result_type _Max;
     };
 
     uniform_int_distribution() noexcept // strengthened
-        : _Mybase(0, (numeric_limits<_Ty>::max)()) {}
+        : _Par(0, (numeric_limits<_Ty>::max)()) {}
 
     explicit uniform_int_distribution(_Ty _Min0, _Ty _Max0 = (numeric_limits<_Ty>::max)()) noexcept // strengthened
-        : _Mybase(_Min0, _Max0) {}
+        : _Par(_Min0, _Max0) {}
 
     explicit uniform_int_distribution(const param_type& _Par0) noexcept // strengthened
-        : _Mybase(_Par0) {}
+        : _Par(_Par0) {}
 
     _NODISCARD result_type a() const noexcept /* strengthened */ {
-        return _Mybase::a();
+        return _Par.a();
     }
 
     _NODISCARD result_type b() const noexcept /* strengthened */ {
-        return _Mybase::b();
+        return _Par.b();
     }
 
     _NODISCARD param_type param() const noexcept /* strengthened */ {
-        return _Mybase::param();
+        return _Par;
     }
 
     void param(const param_type& _Par0) noexcept /* strengthened */ {
-        _Mybase::param(_Par0);
+        _Par = _Par0;
     }
 
     _NODISCARD result_type(min)() const noexcept /* strengthened */ {
-        return (_Mybase::min)();
+        return _Par._Min;
     }
 
     _NODISCARD result_type(max)() const noexcept /* strengthened */ {
-        return (_Mybase::max)();
+        return _Par._Max;
     }
 
     void reset() noexcept /* strengthened */ {}
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
-        return _Mybase::operator()(_Eng);
+        return _Eval(_Eng, _Par._Min, _Par._Max);
     }
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
-        return _Mybase::operator()(_Eng, _Par0);
+        return _Eval(_Eng, _Par0._Min, _Par0._Max);
     }
 
     template <class _Elem, class _Traits>
     friend basic_istream<_Elem, _Traits>& operator>>(
         basic_istream<_Elem, _Traits>& _Istr, uniform_int_distribution& _Dist) {
-        return _Istr >> static_cast<_Mybase&>(_Dist);
+        uniform_int_distribution::result_type _Min0;
+        uniform_int_distribution::result_type _Max0;
+        _Istr >> _Min0 >> _Max0;
+        _Dist._Par._Init(_Min0, _Max0);
+        return _Istr;
     }
 
     template <class _Elem, class _Traits>
     friend basic_ostream<_Elem, _Traits>& operator<<(
         basic_ostream<_Elem, _Traits>& _Ostr, const uniform_int_distribution& _Dist) {
-        return _Ostr << static_cast<const _Mybase&>(_Dist);
+        return _Ostr << _Dist._Par._Min << ' ' << _Dist._Par._Max;
     }
 
     _NODISCARD friend bool operator==(
         const uniform_int_distribution& _Left, const uniform_int_distribution& _Right) noexcept /* strengthened */ {
-        return _Left.param() == _Right.param();
+        return _Left._Par == _Right._Par;
     }
 
 #if !_HAS_CXX20
@@ -2463,8 +2493,39 @@ public:
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
+
+private:
+    using _Uty = make_unsigned_t<_Ty>;
+
+    template <class _Engine>
+    result_type _Eval(_Engine& _Eng, _Ty _Min, _Ty _Max) const { // compute next value in range [_Min, _Max]
+        _Rng_from_urng_v2<_Uty, _Engine> _Generator(_Eng);
+
+        const _Uty _Umin = _Adjust(static_cast<_Uty>(_Min));
+        const _Uty _Umax = _Adjust(static_cast<_Uty>(_Max));
+
+        _Uty _Uret;
+
+        if (_Umax - _Umin == static_cast<_Uty>(-1)) {
+            _Uret = static_cast<_Uty>(_Generator._Get_all_bits());
+        } else {
+            _Uret = static_cast<_Uty>(_Generator(static_cast<_Uty>(_Umax - _Umin + 1)));
+        }
+
+        return static_cast<_Ty>(_Adjust(static_cast<_Uty>(_Uret + _Umin)));
+    }
+
+    static _Uty _Adjust(_Uty _Uval) noexcept { // convert signed ranges to unsigned ranges and vice versa
+        if constexpr (is_signed_v<_Ty>) {
+            constexpr _Uty _Adjuster = (static_cast<_Uty>(-1) >> 1) + 1; // 2^(N-1)
+            return static_cast<_Uty>(_Uval ^ _Adjuster);
+        } else { // _Ty is already unsigned, do nothing
+            return _Uval;
+        }
+    }
+
+    param_type _Par;
 };
-_STL_RESTORE_DEPRECATED_WARNING
 
 _EXPORT_STD class bernoulli_distribution { // class for bernoulli distribution
 public:
