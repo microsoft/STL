@@ -1092,7 +1092,7 @@ public:
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, subtract_with_carry_engine> = 0>
     void seed(_Seed_seq& _Seq) { // reset sequence from seed sequence
         unsigned long _Arr[_Kx * _Rx];
-        _Seq.generate(&_Arr[0], &_Arr[_Kx * _Rx]);
+        _Seq.generate(_STD begin(_Arr), _STD end(_Arr));
 
         size_t _Idx0 = 0;
         for (size_t _Ix = 0; _Ix < _Rx; ++_Ix, _Idx0 += _Kx) { // pack _Kx words
@@ -1487,7 +1487,7 @@ public:
     void seed(_Seed_seq& _Seq) { // reset sequence from seed sequence
         constexpr int _Kx = (_Wx + 31) / 32;
         unsigned long _Arr[_Kx * _Nx];
-        _Seq.generate(&_Arr[0], &_Arr[_Kx * _Nx]);
+        _Seq.generate(_STD begin(_Arr), _STD end(_Arr));
 
         int _Idx0 = 0;
         _Ty _Sum  = 0;
