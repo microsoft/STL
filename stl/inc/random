@@ -1087,10 +1087,9 @@ public:
         _Mybase::seed(_Value);
     }
 
-    static constexpr int _Kx = (8 * sizeof(_Ty) + 31) / 32;
-
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, subtract_with_carry_engine> = 0>
     void seed(_Seed_seq& _Seq) { // reset sequence from seed sequence
+        constexpr int _Kx = (8 * sizeof(_Ty) + 31) / 32;
         unsigned long _Arr[_Kx * _Rx];
         _Seq.generate(_STD begin(_Arr), _STD end(_Arr));
 
