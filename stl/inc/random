@@ -1465,16 +1465,16 @@ public:
 
     static constexpr result_type default_seed = 5489U;
 
-    mersenne_twister_engine() : _Dxval(_Dx) {
+    mersenne_twister_engine() {
         seed(default_seed);
     }
 
-    explicit mersenne_twister_engine(result_type _Xx0) : _Dxval(_Dx) {
+    explicit mersenne_twister_engine(result_type _Xx0) {
         seed(_Xx0);
     }
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, mersenne_twister_engine> = 0>
-    explicit mersenne_twister_engine(_Seed_seq& _Seq) : _Dxval(_Dx) {
+    explicit mersenne_twister_engine(_Seed_seq& _Seq) {
         seed(_Seq);
     }
 
@@ -1571,7 +1571,7 @@ public:
         }
 
         _Ty _Res = this->_Ax[this->_Idx++] & _WMSK;
-        _Res ^= (_Res >> _Ux) & _Dxval;
+        _Res ^= (_Res >> _Ux) & _Dx;
         _Res ^= (_Res << _Sx) & _Bx;
         _Res ^= (_Res << _Tx) & _Cx;
         _Res ^= (_Res & _WMSK) >> _Lx;
@@ -1632,7 +1632,7 @@ private:
         }
     }
 
-    _Ty _Dxval;
+    _Ty _Dxval{_Dx}; // TRANSITION, ABI: _Dxval must be initialized to _Dx but is unused by the current implementation
 
     static constexpr _Ty _WMSK = ~((~_Ty{0} << (_Wx - 1)) << 1);
     static constexpr _Ty _HMSK = (_WMSK << _Rx) & _WMSK;
