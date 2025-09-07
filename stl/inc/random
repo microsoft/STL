@@ -24,6 +24,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#if _HAS_TR1_NAMESPACE
 // TRANSITION, GH-183
 #pragma push_macro("discard_block")
 #pragma push_macro("linear_congruential")
@@ -37,6 +38,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef subtract_with_carry
 #undef uniform_int
 #undef uniform_real
+#endif // _HAS_TR1_NAMESPACE
 
 #ifdef _ALLOW_RANDOM_DISTRIBUTION_CONST_OPERATOR
 #define _DISTRIBUTION_CONST const
@@ -670,6 +672,7 @@ private:
     result_type _Prev;
 };
 
+#if _HAS_TR1_NAMESPACE
 template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
 class _DEPRECATE_TR1_RANDOM linear_congruential { // linear congruential random engine
 public:
@@ -757,6 +760,7 @@ public:
 private:
     _Uint _Prev;
 };
+#endif // _HAS_TR1_NAMESPACE
 
 template <class _Ty, size_t _Nw>
 struct _Circ_buf { // holds historical values for generators
@@ -1031,6 +1035,7 @@ public:
     }
 };
 
+#if _HAS_TR1_NAMESPACE
 template <class _Ty, _Ty _Mx, size_t _Sx, size_t _Rx>
 class _DEPRECATE_TR1_RANDOM subtract_with_carry
     : public _Swc_base<_Ty, _Sx, _Rx, _Swc_traits<_Ty, _Mx, _Rx>> { // subtract_with_carry generator
@@ -1048,6 +1053,7 @@ public:
     template <class _Gen, _Enable_if_seed_seq_t<_Gen, subtract_with_carry> = 0>
     subtract_with_carry(_Gen& _Gx) : _Mybase(_Gx) {}
 };
+#endif // _HAS_TR1_NAMESPACE
 
 _EXPORT_STD template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
 class subtract_with_carry_engine
@@ -1260,7 +1266,6 @@ public:
     template <class _Gen, _Enable_if_seed_seq_t<_Gen, subtract_with_carry_01> = 0>
     subtract_with_carry_01(_Gen& _Gx) : _Mybase(_Gx) {}
 };
-#endif // _HAS_TR1_NAMESPACE
 
 template <class _Ty, int _Wx, int _Nx, int _Mx, int _Rx, _Ty _Px, int _Ux, int _Sx, _Ty _Bx, int _Tx, _Ty _Cx, int _Lx>
 class _DEPRECATE_TR1_RANDOM mersenne_twister : public _Circ_buf<_Ty, _Nx> { // mersenne twister generator
@@ -1432,6 +1437,7 @@ protected:
     static constexpr int _One_mod_n = 1 % _Nx; // either 0 or 1
     static constexpr int _M_mod_n   = _Mx % _Nx;
 };
+#endif // _HAS_TR1_NAMESPACE
 
 _EXPORT_STD template <class _Ty, size_t _Wx, size_t _Nx, size_t _Mx, size_t _Rx, _Ty _Px, size_t _Ux, _Ty _Dx,
     size_t _Sx, _Ty _Bx, size_t _Tx, _Ty _Cx, size_t _Lx, _Ty _Fx>
@@ -1642,6 +1648,7 @@ private:
     static constexpr int _M_mod_n   = _Mx % _Nx;
 };
 
+#if _HAS_TR1_NAMESPACE
 template <class _Engine, int _Px, int _Rx>
 class _DEPRECATE_TR1_RANDOM discard_block { // discard_block compound engine
 public:
@@ -1737,6 +1744,7 @@ private:
     _Engine _Eng;
     int _Nx;
 };
+#endif // _HAS_TR1_NAMESPACE
 
 _EXPORT_STD template <class _Engine, size_t _Px, size_t _Rx>
 class discard_block_engine {
@@ -2229,6 +2237,7 @@ private:
     static constexpr _Udiff _Bmask = static_cast<_Udiff>(-1) >> (_Udiff_bits - _Bits); // 2^_Bits - 1
 };
 
+#if _HAS_TR1_NAMESPACE
 template <class _Ty = int>
 class _DEPRECATE_TR1_RANDOM uniform_int { // uniform integer distribution
 public:
@@ -2371,6 +2380,7 @@ private:
 
     param_type _Par;
 };
+#endif // _HAS_TR1_NAMESPACE
 
 _EXPORT_STD template <class _Ty = int>
 class uniform_int_distribution { // uniform integer distribution
@@ -3203,6 +3213,7 @@ private:
     param_type _Par;
 };
 
+#if _HAS_TR1_NAMESPACE
 template <class _Ty = double>
 class _DEPRECATE_TR1_RANDOM uniform_real { // uniform real distribution
 public:
@@ -3329,6 +3340,7 @@ private:
 
     param_type _Par;
 };
+#endif // _HAS_TR1_NAMESPACE
 
 _EXPORT_STD template <class _Ty = double>
 class uniform_real_distribution { // uniform real distribution
@@ -5857,6 +5869,7 @@ _STD_END
 
 #undef _DISTRIBUTION_CONST
 
+#if _HAS_TR1_NAMESPACE
 // TRANSITION, GH-183
 #pragma pop_macro("uniform_real")
 #pragma pop_macro("uniform_int")
@@ -5864,6 +5877,7 @@ _STD_END
 #pragma pop_macro("mersenne_twister")
 #pragma pop_macro("linear_congruential")
 #pragma pop_macro("discard_block")
+#endif // _HAS_TR1_NAMESPACE
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
