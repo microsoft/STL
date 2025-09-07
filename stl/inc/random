@@ -1049,11 +1049,9 @@ public:
     subtract_with_carry(_Gen& _Gx) : _Mybase(_Gx) {}
 };
 
-_STL_DISABLE_DEPRECATED_WARNING
 _EXPORT_STD template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
 class subtract_with_carry_engine
-    : private subtract_with_carry<_Ty, static_cast<_Ty>((_Ty{1} << (_Wx - 1)) << 1), _Sx, _Rx> {
-    // subtract_with_carry generator
+    : private _Swc_base<_Ty, _Sx, _Rx, _Swc_traits<_Ty, static_cast<_Ty>((_Ty{1} << (_Wx - 1)) << 1), _Rx>> {
 public:
     _RNG_REQUIRE_UINTTYPE(subtract_with_carry_engine, _Ty);
 
@@ -1065,8 +1063,8 @@ public:
     static constexpr size_t short_lag = _Sx;
     static constexpr size_t long_lag  = _Rx;
 
-    using _Mybase     = subtract_with_carry<_Ty, _Mx, _Sx, _Rx>;
-    using _Traits     = typename _Mybase::_Traits;
+    using _Traits     = _Swc_traits<_Ty, _Mx, _Rx>;
+    using _Mybase     = _Swc_base<_Ty, _Sx, _Rx, _Traits>;
     using result_type = _Ty;
 
     using _Mybase::default_seed;
@@ -1076,7 +1074,7 @@ public:
     explicit subtract_with_carry_engine(_Ty _Xx0) : _Mybase(_Xx0) {}
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, subtract_with_carry_engine> = 0>
-    explicit subtract_with_carry_engine(_Seed_seq& _Seq) : _Mybase() {
+    explicit subtract_with_carry_engine(_Seed_seq& _Seq) : _Mybase(0u) {
         seed(_Seq);
     }
 
@@ -1123,7 +1121,7 @@ public:
 #if !_HAS_CXX20
     _NODISCARD friend bool operator!=(
         const subtract_with_carry_engine& _Left, const subtract_with_carry_engine& _Right) noexcept /* strengthened */ {
-        return static_cast<const _Mybase&>(_Left) != static_cast<const _Mybase&>(_Right);
+        return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
 
@@ -1173,7 +1171,6 @@ public:
         return _Istr;
     }
 };
-_STL_RESTORE_DEPRECATED_WARNING
 
 #if _HAS_TR1_NAMESPACE
 constexpr double _Cx_exp2(const int _Exp) noexcept {
