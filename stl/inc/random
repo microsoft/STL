@@ -959,26 +959,23 @@ struct _Swc_traits { // traits for subtract_with_carry generator
     static constexpr _Mod_t _Mod = _Mx;
     static constexpr _Ty _Max    = static_cast<_Ty>(_Mx - 1);
 
-    static int _Get_wc() noexcept { // compute number of 32-bit words per element
-        int _Kx;
-
+private:
+    static constexpr int _Get_wc() noexcept { // compute number of 32-bit words per element
         if constexpr (_Mx == 0) {
-            _Kx = (8 * sizeof(_Ty) + 31) / 32;
-        } else { // compute number of 32-bit words required
-            unsigned long long _Val = 1ULL << 32;
-            for (_Kx = 1; 0 < _Val && _Val < _Mx; ++_Kx) {
-                _Val = _Val << 32;
-            }
+            return (8 * sizeof(_Ty) + 31) / 32;
+        } else if constexpr (_Mx > (1ULL << 32)) {
+            return 2;
+        } else {
+            return 1;
         }
-
-        return _Kx;
     }
 
+public:
     template <class _Gen>
     static _Cy_t _Reset(_Gen& _Gx, _Ty* _Ax, bool _Readcy) { // set initial values of _Ax from generator _Gx
                                                              // return value of _Cy from range if _Readcy is true,
                                                              // otherwise compute from last value
-        int _Kx = _Get_wc();
+        constexpr int _Kx = _Get_wc();
 
         for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) { // pack _Kx words
             _Ax[_Ix] = _Gx();
@@ -1011,7 +1008,7 @@ struct _Swc_traits { // traits for subtract_with_carry generator
     template <class _Elem, class _Traits>
     static void _Write(
         basic_ostream<_Elem, _Traits>& _Ostr, const _Circ_buf<_Ty, _Nw>& _Buf, _Cy_t _Cy) { // write state to _Ostr
-        int _Kx = _Get_wc();
+        constexpr int _Kx = _Get_wc();
 
         for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
             for (int _Jx = 0; _Jx < _Kx; ++_Jx) { // unpack into _Kx words
