@@ -1436,9 +1436,10 @@ protected:
 _EXPORT_STD template <class _Ty, size_t _Wx, size_t _Nx, size_t _Mx, size_t _Rx, _Ty _Px, size_t _Ux, _Ty _Dx,
     size_t _Sx, _Ty _Bx, size_t _Tx, _Ty _Cx, size_t _Lx, _Ty _Fx>
 class mersenne_twister_engine : private _Circ_buf<_Ty, _Nx> {
-public:
+private:
     static constexpr unsigned long long _Max = (((1ULL << (_Wx - 1)) - 1) << 1) + 1;
 
+public:
     _RNG_REQUIRE_UINTTYPE(mersenne_twister_engine, _Ty);
 
     static_assert(0 < _Mx && _Mx <= _Nx && 2U < _Wx && _Rx <= _Wx && _Ux <= _Wx && _Sx <= _Wx && _Tx <= _Wx
