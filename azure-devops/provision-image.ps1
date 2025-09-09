@@ -31,7 +31,7 @@ $VisualStudioWorkloads = @(
   'Microsoft.VisualStudio.Component.Windows11SDK.26100'
 )
 
-$VisualStudioUrl = 'https://aka.ms/vs/17/pre/vs_enterprise.exe'
+$VisualStudioUrl = 'https://aka.ms/vs/18/insiders/vs_Community.exe'
 $VisualStudioArgs = @('--quiet', '--norestart', '--wait', '--nocache')
 foreach ($workload in $VisualStudioWorkloads) {
   $VisualStudioArgs += '--add'
