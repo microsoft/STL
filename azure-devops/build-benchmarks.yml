@@ -29,10 +29,11 @@ steps:
   displayName: 'Configure the benchmarks for ${{ parameters.compiler }}'
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-  # TRANSITION, we currently don't build the benchmarks with Clang for ARM64 or ARM64EC
+  # TRANSITION, we currently only build the benchmarks with Clang for x64
   condition: >
     and(succeeded(), ${{ parameters.buildBenchmarks }},
-      not(and(eq('${{ parameters.compiler }}', 'clang-cl'), startsWith('${{ parameters.targetPlatform }}', 'arm64'))))
+      not(and(eq('${{ parameters.compiler }}', 'clang-cl'),
+        not(eq('${{ parameters.targetPlatform }}', 'x64')))))
 - script: |
     call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
@@ -40,7 +41,8 @@ steps:
   displayName: 'Build the benchmarks for ${{ parameters.compiler }}'
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-  # TRANSITION, we currently don't build the benchmarks with Clang for ARM64 or ARM64EC
+  # TRANSITION, we currently only build the benchmarks with Clang for x64
   condition: >
     and(succeeded(), ${{ parameters.buildBenchmarks }},
-      not(and(eq('${{ parameters.compiler }}', 'clang-cl'), startsWith('${{ parameters.targetPlatform }}', 'arm64'))))
+      not(and(eq('${{ parameters.compiler }}', 'clang-cl'),
+        not(eq('${{ parameters.targetPlatform }}', 'x64')))))
