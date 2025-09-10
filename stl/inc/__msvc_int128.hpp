@@ -730,7 +730,7 @@ struct alignas(16) _Base128 {
         // _STL_INTERNAL_CHECK(_Den._Word[1] != 0);
         // _STL_INTERNAL_CHECK(_Num._Word[1] > _Den._Word[1]);
         // Normalize by shifting both left until _Den's high bit is set (So _Den's high digit is >= b / 2)
-        const auto __d = _STD _Countl_zero_internal(_Den._Word[1]);
+        const auto __d = _STD _Countl_zero(_Den._Word[1]);
         _Den <<= __d;
         auto _High_digit = __d == 0 ? 0 : _Num._Word[1] >> (64 - __d); // This creates a third digit for _Num
         _Num <<= __d;
@@ -777,7 +777,7 @@ struct alignas(16) _Base128 {
         }
         _Result = __qhat;
 #else // ^^^ 128-bit intrinsics / no such intrinsics vvv
-        auto __d                   = _Countl_zero_internal(_Den._Word[1]);
+        auto __d                   = _Countl_zero(_Den._Word[1]);
         const bool _Three_word_den = __d >= 32;
         __d &= 31;
         uint32_t __u[5]{
