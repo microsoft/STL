@@ -2395,7 +2395,7 @@ _CONSTEXPR20 typename _Container::size_type _Erase_remove(_Container& _Cont, con
     const auto _Old_size = _Cont.size();
     _STD _Seek_wrapped(_First, _STD remove(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _Val));
     _Cont.erase(_First, _Last);
-    return _Old_size - _Cont.size();
+    return static_cast<typename _Container::size_type>(_Old_size - _Cont.size());
 }
 
 template <class _Container, class _Pr>
@@ -2406,7 +2406,7 @@ _CONSTEXPR20 typename _Container::size_type _Erase_remove_if(_Container& _Cont, 
     const auto _Old_size = _Cont.size();
     _STD _Seek_wrapped(_First, _STD remove_if(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _Pred));
     _Cont.erase(_First, _Last);
-    return _Old_size - _Cont.size();
+    return static_cast<typename _Container::size_type>(_Old_size - _Cont.size());
 }
 
 template <class _Container, class _Pr>
