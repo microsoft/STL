@@ -1,9 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <cassert>
+#include <cstddef>
 #include <memory>
 #include <tuple>
+#include <type_traits>
 #include <utility>
+#include <vector>
+
+#if _HAS_CXX20
+#define CONSTEXPR20 constexpr
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#define CONSTEXPR20 inline
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 using namespace std;
 
@@ -49,6 +59,111 @@ void takes_tuple(tuple<Neutron, Proton>) {}
 void takes_tuple(tuple<Neutron, Neutron>) {}
 
 void test_alloc();
+
+template <class T>
+class payloaded_allocator {
+private:
+    int payload = 0;
+
+public:
+    payloaded_allocator() = default;
+
+    constexpr explicit payloaded_allocator(int n) noexcept : payload{n} {}
+
+    template <class U>
+    constexpr explicit payloaded_allocator(payloaded_allocator<U> a) noexcept : payload{a.get_payload()} {}
+
+    template <class U>
+    friend constexpr bool operator==(payloaded_allocator x, payloaded_allocator<U> y) noexcept {
+        return x.payload == y.payload;
+    }
+
+#if !_HAS_CXX20
+    template <class U>
+    friend constexpr bool operator!=(payloaded_allocator x, payloaded_allocator<U> y) noexcept {
+        return !(x == y);
+    }
+#endif // !_HAS_CXX20
+
+    using value_type = T;
+
+    CONSTEXPR20 T* allocate(size_t n) {
+        return allocator<T>{}.allocate(n);
+    }
+
+    CONSTEXPR20 void deallocate(T* p, size_t n) {
+        return allocator<T>{}.deallocate(p, n);
+    }
+
+    constexpr int get_payload() const noexcept {
+        return payload;
+    }
+};
+
+template <class T, class A>
+class vector_holder {
+public:
+    vector_holder() = default;
+    template <class... Args>
+    CONSTEXPR20 explicit vector_holder(Args&&... args, const A& alloc) : vec_(args..., alloc) {}
+
+    CONSTEXPR20 A get_allocator() const noexcept {
+        return vec_.get_allocator();
+    }
+
+private:
+    vector<T, A> vec_;
+};
+
+template <class T, class A>
+struct std::uses_allocator<vector_holder<T, A>, A> : true_type {};
+
+class payload_taker {
+public:
+    payload_taker() = default;
+
+    template <class T>
+    constexpr explicit payload_taker(const payloaded_allocator<T>& alloc) noexcept : payload{alloc.get_payload()} {}
+
+    constexpr int get_payload() const noexcept {
+        return payload;
+    }
+    int get_payload() const volatile noexcept {
+        return payload;
+    }
+
+private:
+    int payload = 0;
+};
+
+template <class T>
+struct std::uses_allocator<payload_taker, payloaded_allocator<T>> : true_type {};
+
+// LWG-3677 "Is a cv-qualified pair specially handled in uses-allocator construction?"
+CONSTEXPR20 bool test_lwg3677() {
+    using my_allocator = payloaded_allocator<int>;
+
+    tuple<payload_taker> t1{allocator_arg, my_allocator{42}};
+    assert(get<0>(t1).get_payload() == 42);
+    tuple<const payload_taker> t2{allocator_arg, my_allocator{84}};
+    assert(get<0>(t2).get_payload() == 84);
+
+    tuple<vector_holder<int, my_allocator>> t3{allocator_arg, my_allocator{126}};
+    assert(get<0>(t3).get_allocator().get_payload() == 126);
+    tuple<const vector_holder<int, my_allocator>> t4{allocator_arg, my_allocator{168}};
+    assert(get<0>(t4).get_allocator().get_payload() == 168);
+
+    return true;
+}
+
+void test_lwg3677_volatile() {
+    using my_allocator = payloaded_allocator<int>;
+
+    tuple<volatile payload_taker> t5{allocator_arg, my_allocator{210}};
+    assert(get<0>(t5).get_payload() == 210);
+    tuple<const volatile payload_taker> t6{allocator_arg, my_allocator{252}};
+    assert(get<0>(t6).get_payload() == 252);
+}
 
 int main() {
     B* b = nullptr;
@@ -129,6 +244,12 @@ int main() {
 
 
     test_alloc();
+
+    test_lwg3677();
+#if _HAS_CXX20
+    static_assert(test_lwg3677());
+#endif // _HAS_CXX20
+    test_lwg3677_volatile();
 }
 
 struct Meow {
