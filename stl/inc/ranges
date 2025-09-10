@@ -5470,13 +5470,21 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Enumerate_fn enumerate;
     } // namespace views
 
-    template <class _Size>
-    _NODISCARD constexpr _Size _Div_ceil(const _Size _Num, const _Size _Denom) noexcept {
-        _Size _Result = _Num / _Denom;
-        if (_Num % _Denom != 0) {
-            ++_Result;
+    template <class _Int>
+    _NODISCARD constexpr _Int _Div_ceil(const _Int _Num, const _Int _Denom) noexcept {
+        _STL_INTERNAL_STATIC_ASSERT(_Signed_integer_like<_Int>);
+        _STL_INTERNAL_CHECK(_Num >= 0);
+        _STL_INTERNAL_CHECK(_Denom > 0);
+
+        if constexpr (same_as<_Int, _Signed128>) {
+            return _Int::_Div_ceil(_Num, _Denom);
+        } else {
+            _Int _Result = _Num / _Denom;
+            if (_Num % _Denom != 0) {
+                ++_Result;
+            }
+            return _Result;
         }
-        return _Result;
     }
 
     _EXPORT_STD template <view _Vw>
