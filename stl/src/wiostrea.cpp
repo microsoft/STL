@@ -30,5 +30,6 @@ _CRTIMP2_PURE __thiscall _Winit::~_Winit() noexcept { // flush standard wide str
             _Ptr_wclog->flush();
         }
     }
-    _STD_END
 }
+
+_STD_END
