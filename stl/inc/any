@@ -231,8 +231,9 @@ public:
 
     void swap(any& _That) noexcept {
         any _Old = _STD move(*this);
-        *this    = _STD move(_That);
-        _That    = _STD move(_Old);
+        _Assign(_STD move(_That));
+        _That.reset();
+        _That._Move_from(_Old);
     }
 
     // Observers [any.observers]
