@@ -640,10 +640,6 @@ std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:
 std/language.support/cmp/cmp.result/compare_three_way_result.compile.pass.cpp:0 FAIL
 std/language.support/cmp/cmp.result/compare_three_way_result.compile.pass.cpp:1 FAIL
 
-# VSO-1513409: Bogus `warning C4100: '<_Args_0>': unreferenced formal parameter` when `if constexpr` selects another branch
-std/containers/views/mdspan/mdspan/ctor.dh_integers.pass.cpp:0 FAIL
-std/containers/views/mdspan/mdspan/ctor.dh_integers.pass.cpp:1 FAIL
-
 # DevCom-10026599 VSO-1532879: conditional expression has two different types
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:1 FAIL
