@@ -13,23 +13,20 @@ jobs:
         if exist "$(validationBuildOutputLocation)" (
           rmdir /S /Q "$(validationBuildOutputLocation)"
         )
-        call "$(vsDevCmdBat)" ^
-          -host_arch=x64 -arch=x64 -no_logo
+        call "$(vsDevCmdBat)" -host_arch=x64 -arch=x64 -no_logo
         cmake -G Ninja -S $(Build.SourcesDirectory)/tools -B "$(validationBuildOutputLocation)"
         cmake --build "$(validationBuildOutputLocation)"
       displayName: 'Build format and validation'
       timeoutInMinutes: 5
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - script: |
-        call "$(vsDevCmdBat)" ^
-          -host_arch=x64 -arch=x64 -no_logo
+        call "$(vsDevCmdBat)" -host_arch=x64 -arch=x64 -no_logo
         cmake --build "$(validationBuildOutputLocation)" --target run-format
       displayName: 'clang-format Files'
       timeoutInMinutes: 5
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - script: |
-        call "$(vsDevCmdBat)" ^
-          -host_arch=x64 -arch=x64 -no_logo
+        call "$(vsDevCmdBat)" -host_arch=x64 -arch=x64 -no_logo
         cmake --build "$(validationBuildOutputLocation)" --target run-validate
       displayName: 'Validate Files'
       timeoutInMinutes: 2

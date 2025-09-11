@@ -27,8 +27,7 @@ steps:
     if exist "$(buildOutputLocation)" (
       rmdir /S /Q "$(buildOutputLocation)"
     )
-    call "$(vsDevCmdBat)" ^
-    -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
+    call "$(vsDevCmdBat)" -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     cmake -G Ninja ^
     -DCMAKE_CXX_COMPILER=cl ^
     -DCMAKE_BUILD_TYPE=Release ^
@@ -42,8 +41,7 @@ steps:
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - script: |
-    call "$(vsDevCmdBat)" ^
-    -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
+    call "$(vsDevCmdBat)" -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     cmake --build "$(buildOutputLocation)"
   displayName: 'Build the STL'
   timeoutInMinutes: 5
