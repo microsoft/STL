@@ -652,18 +652,6 @@ std/containers/sequences/array/array.cons/initialization.pass.cpp:1 FAIL
 std/algorithms/robust_against_adl.compile.pass.cpp:0 FAIL
 std/algorithms/robust_against_adl.compile.pass.cpp:1 FAIL
 
-# VSO-1923988: constexpr evaluation performs an assignment with a derived type when it should use a base type
-std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/copy_n.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/copy_n.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.move/move_backward.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.move/move_backward.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:1 FAIL
-
 # VSO-1948221 x86chk ICE with constexpr type_info: Assertion failed: isIndirection()
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:0 FAIL
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:1 FAIL
@@ -1542,6 +1530,12 @@ std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp
 # MSVC emits truncation warnings, which will be partially addressed by GH-5562.
 # Clang asserts `allocated_ == 0 || allocated_ >= i` due to the container proxy object.
 std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
+
+# Not analyzed. MSVC emits warning C4267: 'argument': conversion from 'size_t' to 'unsigned char', possible loss of data
+std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:1 FAIL
 
 
 # *** XFAILS WHICH PASS ***
