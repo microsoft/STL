@@ -80,8 +80,8 @@ significantly more complicated and fragile. That is, there's a "complexity budge
 debugging checks. For example, we've extensively marked the STL with `[[nodiscard]]` attributes because this helps
 programmers avoid bugs.
 
-* Compatibility: This includes binary compatibility and source compatibility. We're keeping VS 2022 binary-compatible
-with VS 2015/2017/2019, which restricts what we can change in VS 2022 updates. (We've found that significant changes
+* Compatibility: This includes binary compatibility and source compatibility. We're keeping VS 2026 binary-compatible
+with VS 2015-2022, which restricts what we can change in VS 2026 updates. (We've found that significant changes
 are possible even though other changes are impossible, which we'll be documenting in our Contribution Guidelines soon.)
 While there are a few exceptions to this rule (e.g. if a feature is added to the Working Paper, we implement it, and
 then the feature is significantly changed before the International Standard is finalized, we reserve the right to break
