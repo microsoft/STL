@@ -244,8 +244,7 @@ class STLTest(Test):
             elif (targetArch == 'arm64'.casefold()):
                 self.compileFlags.append('--target=arm64-pc-windows-msvc')
             elif (targetArch == 'arm64ec'.casefold()):
-                # TRANSITION, LLVM-116256 (fixed in Clang 20)
-                return Result(UNSUPPORTED, 'clang targeting arm64ec is not supported')
+                self.compileFlags.append('--target=arm64ec-pc-windows-msvc')
         elif ('nvcc'.casefold() in os.path.basename(cxx).casefold()):
             self._addCustomFeature('nvcc')
 
