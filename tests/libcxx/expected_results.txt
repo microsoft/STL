@@ -1268,24 +1268,6 @@ std/time/time.syn/formatter.tai_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.utc_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.zoned_time.pass.cpp:2 FAIL
 
-# Not analyzed. constexpr evaluation fails with note: failure was caused by out of range index MEOW; allowed range is 0 <= index < 2
-std/ranges/range.adaptors/range.join/adaptor.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join/adaptor.pass.cpp:1 FAIL
-std/ranges/range.adaptors/range.join/range.join.iterator/increment.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join/range.join.iterator/increment.pass.cpp:1 FAIL
-
-# Not analyzed. constexpr evaluation fails in assert(*--iter == i).
-std/ranges/range.adaptors/range.join/range.join.iterator/decrement.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join/range.join.iterator/decrement.pass.cpp:1 FAIL
-
-# Not analyzed. constexpr evaluation fails in assert(*iter++ == i).
-std/ranges/range.adaptors/range.join/range.join.iterator/star.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join/range.join.iterator/star.pass.cpp:1 FAIL
-
-# Not analyzed. constexpr evaluation fails in ranges::swap.
-std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:1 FAIL
-
 # Not analyzed. Likely MSVC constexpr bug, "note: failure was caused by a read of a variable outside its lifetime"
 std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
 std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
@@ -1301,10 +1283,6 @@ std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_delet
 # Not analyzed. Likely MSVC constexpr bug, "note: failure was caused by unevaluable pointer value"
 std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:1 FAIL
-
-# Not analyzed. Likely MSVC constexpr bug, "note: a non-constant (sub-)expression was encountered" in swap()
-std/utilities/utility/utility.swap/swap_array.pass.cpp:0 FAIL
-std/utilities/utility/utility.swap/swap_array.pass.cpp:1 FAIL
 
 # Not analyzed. MSVC constexpr ICE.
 std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:0 FAIL
