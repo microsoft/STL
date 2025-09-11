@@ -139,36 +139,37 @@ mention `std::` or C++. For example, "`<type_traits>`: `is_cute` should be true 
 It's okay if you report an apparent STL bug that turns out to be a compiler bug or surprising-yet-Standard behavior.
 Just try to follow these rules, so we can spend more time fixing bugs and implementing features.
 
+# Visual Studio Installer Prerequisites
+
+1. Install [VS 2026 Insiders][] and keep it up to date.
+    + **You must install Insiders for STL development.** The STL and the compiler ship together, and we frequently
+    need the latest compiler fixes and features, so the last production release of the compiler is too old.
+2. Select the "Desktop development with C++" workload.
+3. Select the following components at a minimum:
+    + "MSVC v145 - C++ x64/x86 build tools (Latest)"
+    + "C++ CMake tools for Windows"
+    + "C++ AddressSanitizer"
+    + "Windows 11 SDK (10.0.26100)" or later
+    + "C++ Clang tools for Windows (20.1.8 - x64/x86)"
+    + *Optional:* "MSVC v145 - C++ ARM64/ARM64EC build tools (Latest)"
+4. Install [Python][] 3.13 or later.
+    + Select "Add python.exe to PATH" if you want to follow the instructions below that invoke `python`.
+    Otherwise, you should be familiar with alternative methods.
+
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.14.12 Preview 1 or later.
-    * Select "Windows 11 SDK (10.0.26100)" or later in the VS Installer.
-    * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
-    if you would like to build the ARM64/ARM64EC target.
-    * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
-    This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.31.0 or later, and [Ninja][] 1.12.1 or later.
-    * Make sure [Python][] 3.13 or later is available to CMake.
-2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
+1. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
-3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
-4. In the terminal, invoke `git submodule update --init --progress`
-5. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
+2. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
+3. In the terminal, invoke `git submodule update --init --progress`
+4. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
    settings are set by `CMakePresets.json`.
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.14.12 Preview 1 or later.
-    * Select "Windows 11 SDK (10.0.26100)" or later in the VS Installer.
-    * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
-    if you would like to build the ARM64/ARM64EC target.
-    * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
-    This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.31.0 or later, and [Ninja][] 1.12.1 or later.
-    * Make sure [Python][] 3.13 or later is available to CMake.
-2. Open a command prompt.
-3. Change directories to a location where you'd like a clone of this STL repository.
-4. `git clone https://github.com/microsoft/STL.git --recurse-submodules`
+1. Open a command prompt.
+2. Change directories to a location where you'd like a clone of this STL repository.
+3. `git clone https://github.com/microsoft/STL.git --recurse-submodules`
 
 To build the x64 target (recommended):
 
@@ -248,16 +249,6 @@ C:\Users\username\Desktop>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
 ```
 
 # How To Run The Tests With A Native Tools Command Prompt
-
-1. Follow either [How To Build With A Native Tools Command Prompt][] or [How To Build With The Visual Studio IDE][].
-2. Acquire [Python][] 3.13 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
-3. Have LLVM's `bin` directory on the `PATH` (so `clang-cl.exe` is available).
-    * We recommend selecting "C++ Clang tools for Windows" in the VS Installer. This will automatically add LLVM to the
-    `PATH` of the x64 and x86 Native Tools Command Prompts, and will ensure that you're using a supported version.
-    * Otherwise, use [LLVM's installer][] and choose to add LLVM to your `PATH` during installation.
-4. Follow the instructions below.
-
-## Running The Tests
 
 Our tests are currently split across three test suites that are located at `tests\std`, `tests\tr1`, and
 `llvm-project\libcxx\test\std`. The test runner `${PROJECT_BINARY_DIR}\tests\utils\stl-lit\stl-lit.py` accepts paths to
@@ -578,3 +569,4 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [natvis documentation]: https://learn.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects
 [ASan]: https://learn.microsoft.com/en-us/cpp/sanitizers/asan
 [Import Library]: /docs/import_library.md
+[VS 2026 Insiders]: https://visualstudio.microsoft.com/insiders/
