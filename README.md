@@ -39,7 +39,7 @@ soon as possible.)
 and fully ported libcxx to run under [lit][] using the various configurations/compilers we test internally.
 
 * Continuous Integration: **In progress.** We've set up Azure Pipelines to validate changes to the repository.
-Currently, it builds the STL (native desktop for x86, x64, and ARM64). Also, it strictly verifies that all of our
+Currently, it builds the STL for x64, x86, ARM64, and ARM64EC. Also, it strictly verifies that all of our
 files have been formatted with [clang-format][] and follow our other whitespace conventions.
 
 * Contribution Guidelines: **Coming soon.** Working on the STL's code involves following many rules. We have codebase
@@ -170,19 +170,19 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 3. Change directories to a location where you'd like a clone of this STL repository.
 4. `git clone https://github.com/microsoft/STL.git --recurse-submodules`
 
-To build the x86 target:
-
-1. Open an "x86 Native Tools Command Prompt for VS 2022 Preview".
-2. Change directories to the previously cloned `STL` directory.
-3. `cmake --preset x86`
-4. `cmake --build --preset x86`
-
 To build the x64 target (recommended):
 
 1. Open an "x64 Native Tools Command Prompt for VS 2022 Preview".
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake --preset x64`
 4. `cmake --build --preset x64`
+
+To build the x86 target:
+
+1. Open an "x86 Native Tools Command Prompt for VS 2022 Preview".
+2. Change directories to the previously cloned `STL` directory.
+3. `cmake --preset x86`
+4. `cmake --build --preset x86`
 
 To build the ARM64 target:
 
@@ -253,7 +253,7 @@ C:\Users\username\Desktop>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
 2. Acquire [Python][] 3.13 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
 3. Have LLVM's `bin` directory on the `PATH` (so `clang-cl.exe` is available).
     * We recommend selecting "C++ Clang tools for Windows" in the VS Installer. This will automatically add LLVM to the
-    `PATH` of the x86 and x64 Native Tools Command Prompts, and will ensure that you're using a supported version.
+    `PATH` of the x64 and x86 Native Tools Command Prompts, and will ensure that you're using a supported version.
     * Otherwise, use [LLVM's installer][] and choose to add LLVM to your `PATH` during installation.
 4. Follow the instructions below.
 
