@@ -2770,8 +2770,7 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
     auto _UVal_trunc = _UVal;
 #else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
 
-    constexpr bool _Big_uty = sizeof(_UTy) > 4;
-    if constexpr (_Big_uty) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
+    if constexpr (sizeof(_UTy) > 4) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
         while (_UVal > 0xFFFFFFFFU) {
             auto _UVal_chunk = static_cast<unsigned long>(_UVal % 1000000000);
             _UVal /= 1000000000;

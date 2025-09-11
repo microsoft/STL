@@ -1104,8 +1104,7 @@ public:
                 this->_Ax[_Ix] |= static_cast<_Ty>(_Arr[_Idx0 + _Jx]) << (32 * _Jx);
             }
 
-            constexpr bool _Mod_non_zero = _Traits::_Mod != 0;
-            if constexpr (_Mod_non_zero) {
+            if constexpr (_Traits::_Mod != 0) {
                 this->_Ax[_Ix] %= _Traits::_Mod;
             }
         }
