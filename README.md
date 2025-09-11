@@ -422,7 +422,7 @@ python tests\utils\stl-lit\stl-lit.py ..\..\tests\std\tests\VSO_0000000_vector_a
 
 # Benchmarking
 
-For performance-sensitive code &ndash; containers, algorithms, and the like &ndash;
+For performance-sensitive code (e.g. containers and algorithms)
 you may wish to write and/or run benchmarks, and the STL team will likely
 run any benchmarks we do have in our PR process. Additionally,
 if you are writing a "performance improvement" PR, please add and run benchmarks
