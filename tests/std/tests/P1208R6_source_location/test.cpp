@@ -127,15 +127,13 @@ constexpr void different_constructor_test() {
 #else // ^^^ EDG / C1XX vvv
     assert(x.loc.column() == 5);
 #endif // ^^^ C1XX ^^^
-#if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
-#ifdef __EDG__
-    assert(x.loc.function_name() == "__cdecl s::s(int)"sv);
-#else // ^^^ EDG / Other vvv
-    assert(x.loc.function_name() == THISCALL_OR_CDECL " s::s(int)"sv);
-#endif // ^^^ Other ^^^
-#else // ^^^ detailed / basic vvv
+#if !_USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
     assert(x.loc.function_name() == "s"sv);
-#endif // ^^^ basic ^^^
+#elif defined(__EDG__) // ^^^ basic / detailed EDG vvv
+    assert(x.loc.function_name() == "__cdecl s::s(int)"sv);
+#else // ^^^ detailed EDG / detailed Other vvv
+    assert(x.loc.function_name() == THISCALL_OR_CDECL " s::s(int)"sv);
+#endif // ^^^ detailed Other ^^^
     assert(string_view{x.loc.file_name()}.ends_with(test_cpp));
 }
 
@@ -177,15 +175,13 @@ constexpr void sub_member_test() {
 #else // ^^^ EDG / C1XX vvv
     assert(s_i.x.loc.column() == 5);
 #endif // ^^^ C1XX ^^^
-#if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
-#ifdef __EDG__
-    assert(s_i.x.loc.function_name() == "__cdecl s2::s2(int)"sv);
-#else // ^^^ EDG / Other vvv
-    assert(s_i.x.loc.function_name() == THISCALL_OR_CDECL " s2::s2(int)"sv);
-#endif // ^^^ Other ^^^
-#else // ^^^ detailed / basic vvv
+#if !_USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
     assert(s_i.x.loc.function_name() == "s2"sv);
-#endif // ^^^ basic ^^^
+#elif defined(__EDG__) // ^^^ basic / detailed EDG vvv
+    assert(s_i.x.loc.function_name() == "__cdecl s2::s2(int)"sv);
+#else // ^^^ detailed EDG / detailed Other vvv
+    assert(s_i.x.loc.function_name() == THISCALL_OR_CDECL " s2::s2(int)"sv);
+#endif // ^^^ detailed Other ^^^
     assert(string_view{s_i.x.loc.file_name()}.ends_with(test_cpp));
 }
 
