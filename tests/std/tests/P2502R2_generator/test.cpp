@@ -1,10 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#if defined(__clang__) && defined(_M_IX86) // TRANSITION, LLVM-56507
-int main() {}
-#else // ^^^ workaround / no workaround vvv
-
 #include <algorithm>
 #include <array>
 #include <atomic>
@@ -414,4 +410,3 @@ int main() {
     dynamic_allocator_test();
     pmr_generator_test();
 }
-#endif // ^^^ no workaround ^^^

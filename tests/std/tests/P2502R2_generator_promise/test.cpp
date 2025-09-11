@@ -227,14 +227,12 @@ struct Holder {
 struct Incomplete;
 #endif // ^^^ no workaround ^^^
 
-#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
 // Also test LWG-4119:
 // "generator::promise_type::yield_value(ranges::elements_of<R, Alloc>)'s nested generator may be ill-formed"
 generator<span<int>> test_lwg_4119() { // COMPILE-ONLY
     vector<vector<int>> v;
     co_yield ranges::elements_of(v);
 }
-#endif // ^^^ no workaround ^^^
 
 int main() {
     test_with_type<int>();
