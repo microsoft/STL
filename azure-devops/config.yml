@@ -10,6 +10,9 @@ variables:
 - name: poolDemands
   value: 'EnableSpotVM -equals false'
   readonly: true
+- name: vsDevCmdBat
+  value: '%ProgramFiles%\Microsoft Visual Studio\18\Insiders\Common7\Tools\VsDevCmd.bat'
+  readonly: true
 - name: tmpDir
   value: 'C:\stlTemp'
   readonly: true

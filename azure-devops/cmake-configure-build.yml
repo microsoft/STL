@@ -27,7 +27,7 @@ steps:
     if exist "$(buildOutputLocation)" (
       rmdir /S /Q "$(buildOutputLocation)"
     )
-    call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
+    call "$(vsDevCmdBat)" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     cmake -G Ninja ^
     -DCMAKE_CXX_COMPILER=cl ^
@@ -42,7 +42,7 @@ steps:
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - script: |
-    call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
+    call "$(vsDevCmdBat)" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     cmake --build "$(buildOutputLocation)"
   displayName: 'Build the STL'
