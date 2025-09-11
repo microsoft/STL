@@ -228,25 +228,34 @@ variables to ensure that the built headers and libraries are used.
 
 ## Complete Example Using x64 DLL Flavor
 
-From an "x64 Native Tools Command Prompt for VS 2022 Preview":
+From an "x64 Native Tools Command Prompt for VS 18 Insiders":
 
 ```
-C:\Users\username\Desktop>C:\Dev\STL\out\x64\set_environment.bat
+D:\GitHub\STL>cmake --preset x64
+[...]
+-- Build files have been written to: D:/GitHub/STL/out/x64
 
-C:\Users\username\Desktop>type example.cpp
-#include <iostream>
+D:\GitHub\STL>cmake --build --preset x64
+[1028/1028] Linking CXX static library out\lib\amd64\libcpmtd0.lib
+
+D:\GitHub\STL>out\x64\set_environment.bat
+
+D:\GitHub\STL>pushd C:\Temp
+
+C:\Temp>type .\example.cpp
+#include <print>
 
 int main() {
-    std::cout << "Hello STL OSS world!\n";
+    std::println("Hello STL OSS world!");
 }
 
-C:\Users\username\Desktop>cl /nologo /EHsc /W4 /WX /MDd /std:c++latest .\example.cpp
+C:\Temp>cl /EHsc /nologo /W4 /WX /MDd /std:c++latest .\example.cpp
 example.cpp
 
-C:\Users\username\Desktop>.\example.exe
+C:\Temp>.\example.exe
 Hello STL OSS world!
 
-C:\Users\username\Desktop>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
+C:\Temp>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
     msvcp140d_oss.dll
 ```
 
