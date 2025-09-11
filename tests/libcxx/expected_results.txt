@@ -634,12 +634,6 @@ std/algorithms/robust_re_difference_type.compile.pass.cpp:1 FAIL
 # Note: The :1 (ASan) configuration doesn't run static analysis.
 std/language.support/support.coroutines/end.to.end/go.pass.cpp:0 FAIL
 
-# DevCom-1638496 VSO-1462745: C1XX doesn't properly reject int <=> unsigned
-std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:0 FAIL
-std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:1 FAIL
-std/language.support/cmp/cmp.result/compare_three_way_result.compile.pass.cpp:0 FAIL
-std/language.support/cmp/cmp.result/compare_three_way_result.compile.pass.cpp:1 FAIL
-
 # DevCom-10026599 VSO-1532879: conditional expression has two different types
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:1 FAIL
