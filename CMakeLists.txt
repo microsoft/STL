@@ -18,7 +18,7 @@ int main() {}
 ]=] WINDOWS_SDK_VERSION_CHECK)
 
 if(NOT WINDOWS_SDK_VERSION_CHECK)
-    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.26100.4188) or later. Make sure it's available by selecting it in the Individual Components tab of the VS Installer.")
+    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.26100) or later. Make sure it's available by selecting it in the Individual Components tab of the VS Installer.")
 endif()
 
 if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)
@@ -97,13 +97,13 @@ add_compile_definitions(
     _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN11_GE)
 
 if(STL_USE_ANALYZE)
-    # TRANSITION, Windows SDK 10.0.26100.4188 emits
+    # TRANSITION, Windows SDK 10.0.26100 emits
     # "warning C6553: The annotation for function 'LCMapStringEx' on _Param_(9) does not apply to a value type."
     # Reported as OS-40109504 "Windows SDK: incorrect SAL annotations on functions the STL uses".
     add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553>")
 
     if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64ec")
-        # TRANSITION, Windows SDK 10.0.26100.4188 emits
+        # TRANSITION, Windows SDK 10.0.26100 emits
         # "warning C28301: No annotations for first declaration of 'meow'"
         # for various intrinsics when building for ARM64EC.
         add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/wd28301>")
