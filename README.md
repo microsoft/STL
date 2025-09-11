@@ -171,32 +171,34 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 2. Change directories to a location where you'd like a clone of this STL repository.
 3. `git clone https://github.com/microsoft/STL.git --recurse-submodules`
 
+If you installed VS to a non-default location, change the `vcvarsall.bat` paths below accordingly.
+
 To build the x64 target (recommended):
 
-1. Open an "x64 Native Tools Command Prompt for VS 2022 Preview".
+1. `"C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" x64`
+    * Or open an "x64 Native Tools Command Prompt for VS 18 Insiders".
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake --preset x64`
 4. `cmake --build --preset x64`
 
 To build the x86 target:
 
-1. Open an "x86 Native Tools Command Prompt for VS 2022 Preview".
+1. `"C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" x86`
+    * Or open an "x86 Native Tools Command Prompt for VS 18 Insiders".
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake --preset x86`
 4. `cmake --build --preset x86`
 
 To build the ARM64 target:
 
-1. `"C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
-    * If you installed VS to a non-default location, change this path accordingly.
+1. `"C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake --preset ARM64`
 4. `cmake --build --preset ARM64`
 
 To build the ARM64EC target:
 
-1. `"C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
-    * If you installed VS to a non-default location, change this path accordingly.
+1. `"C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake --preset ARM64EC`
 4. `cmake --build --preset ARM64EC`
