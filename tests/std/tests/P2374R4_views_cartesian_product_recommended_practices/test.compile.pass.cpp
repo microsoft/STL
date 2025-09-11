@@ -175,11 +175,7 @@ constexpr void check_single_view() {
 
 enum class CheckConstAdaptor : bool { no, yes };
 
-#ifdef __clang__ // TRANSITION, LLVM-104189
-template <template <class...> class SimpleRangeAdaptor, CheckConstAdaptor CCA, class... Args>
-#else // ^^^ workaround / no workaround vvv
 template <template <class, class...> class SimpleRangeAdaptor, CheckConstAdaptor CCA, class... Args>
-#endif // ^^^ no workaround ^^^
 constexpr void check_simple_range_adaptor() {
     using ValTy = tuple<int>; // for ranges::elements_view
     using V1    = SimpleRangeAdaptor<all_t<array<ValTy, 100>>, Args...>; // owning_view
