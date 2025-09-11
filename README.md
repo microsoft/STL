@@ -544,22 +544,17 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 [Changelog]: https://github.com/microsoft/STL/wiki/Changelog
 [clang-format]: https://clang.llvm.org/docs/ClangFormat.html
-[CMake]: https://cmake.org/download
 [CODE_OF_CONDUCT.md]: CODE_OF_CONDUCT.md
 [Compiler Explorer]: https://godbolt.org
 [CONTRIBUTING.md]: CONTRIBUTING.md
 [Developer Community]: https://aka.ms/feedback/report?space=62
 [Discord server]: https://discord.gg/XWanNww
-[How To Build With A Native Tools Command Prompt]: #how-to-build-with-a-native-tools-command-prompt
-[How To Build With The Visual Studio IDE]: #how-to-build-with-the-visual-studio-ide
 [LICENSE.txt]: LICENSE.txt
-[LLVM's installer]: https://releases.llvm.org/download.html
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
 [N5014]: https://wg21.link/N5014
 [NOTICE.txt]: NOTICE.txt
-[Ninja]: https://ninja-build.org
 [STL-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-CI?branchName=main "STL-CI"
 [STL-CI-link]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main
 [STL-ASan-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-ASan-CI?branchName=main "STL-ASan-CI"
