@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#if defined(__clang__) && defined(_M_ARM64EC) // TRANSITION, LLVM-158341
+int main() {}
+#else // ^^^ workaround / no workaround vvv
+
 #include <cassert>
 #include <concepts>
 #include <cstddef>
@@ -168,3 +172,5 @@ int main() {
     test_with_type<string>();
     test_with_type<MoveOnly>();
 }
+
+#endif // ^^^ no workaround ^^^

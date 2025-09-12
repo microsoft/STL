@@ -57,6 +57,10 @@ std/language.support/support.exception/except.nested/assign.pass.cpp:2 SKIPPED
 std/language.support/support.exception/except.nested/ctor_copy.pass.cpp:2 SKIPPED
 std/language.support/support.exception/except.nested/ctor_default.pass.cpp:2 SKIPPED
 
+# LLVM-158341: Coroutines on arm64ec-pc-windows-msvc emit error LNK2001: unresolved external symbol #__NoopCoro_ResumeDestroy (EC Symbol)
+# SKIPPED because this is ARM64EC-specific.
+std/language.support/support.coroutines/coroutine.handle/coroutine.handle.noop/noop_coroutine.pass.cpp:2 SKIPPED
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
