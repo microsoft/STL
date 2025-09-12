@@ -51,6 +51,12 @@ std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cp
 std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:1 FAIL
 
+# LLVM-158302: Clang 20 i686-pc-windows-msvc regression, silent bad codegen for std::current_exception()
+# SKIPPED because this is x86-specific.
+std/language.support/support.exception/except.nested/assign.pass.cpp:2 SKIPPED
+std/language.support/support.exception/except.nested/ctor_copy.pass.cpp:2 SKIPPED
+std/language.support/support.exception/except.nested/ctor_default.pass.cpp:2 SKIPPED
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
