@@ -700,6 +700,34 @@ std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.
 std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:0 FAIL
 std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:1 FAIL
 
+# VSO-2574451 constexpr error with designated initializers: failure was caused by a read of a variable outside its lifetime
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/types.compile.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/types.compile.pass.cpp:1 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.view/begin.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.view/begin.pass.cpp:1 FAIL
+
+# VSO-2574465 constexpr error with a static_assert accessing a local variable: failure was caused by a read of a variable outside its lifetime
+std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
+std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
+
+# VSO-2574469 constexpr error in unique_ptr with a reference-to-function deleter: failure was caused by a read of an uninitialized symbol
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_deleter.pass.cpp:0 FAIL
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_deleter.pass.cpp:1 FAIL
+
+# VSO-2574473 constexpr error in ranges::join_with_view: failure was caused by unevaluable pointer value
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:1 FAIL
+
+# VSO-2574489 constexpr ICE-on-valid with vector<bool>
+std/algorithms/alg.modifying.operations/alg.copy/copy_n.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/copy_n.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:1 FAIL
+std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:0 FAIL
+std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:1 FAIL
+std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:0 FAIL
+std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:1 FAIL
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
@@ -1277,28 +1305,6 @@ std/time/time.syn/formatter.sys_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.tai_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.utc_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.zoned_time.pass.cpp:2 FAIL
-
-# Not analyzed. Likely MSVC constexpr bug, "note: failure was caused by a read of a variable outside its lifetime"
-std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
-std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
-std/ranges/range.adaptors/range.join.with/range.join.with.iterator/types.compile.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join.with/range.join.with.iterator/types.compile.pass.cpp:1 FAIL
-std/ranges/range.adaptors/range.join.with/range.join.with.view/begin.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join.with/range.join.with.view/begin.pass.cpp:1 FAIL
-
-# Not analyzed. Likely MSVC constexpr bug, "note: failure was caused by a read of an uninitialized symbol"
-std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_deleter.pass.cpp:0 FAIL
-std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_deleter.pass.cpp:1 FAIL
-
-# Not analyzed. Likely MSVC constexpr bug, "note: failure was caused by unevaluable pointer value"
-std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:1 FAIL
-
-# Not analyzed. MSVC constexpr ICE.
-std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:0 FAIL
-std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:1 FAIL
-std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:0 FAIL
-std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:1 FAIL
 
 # Not analyzed. Possible Clang constexpr bug involving the test's sized_allocator and our check for transposed ranges.
 std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:2 FAIL
