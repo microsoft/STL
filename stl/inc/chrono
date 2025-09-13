@@ -1625,7 +1625,7 @@ namespace chrono {
             if (_Den != 1) {
                 return 6u;
             }
-            const auto _Result = (_STD max)(_Power_of_2_in_den, _Power_of_5_in_den);
+            const auto _Result = (_STD max) (_Power_of_2_in_den, _Power_of_5_in_den);
             return _Result > 18u ? 6u : _Result;
         }();
         using precision =
@@ -1850,8 +1850,8 @@ namespace chrono {
             return local_time<common_type_t<_Duration, seconds>>{_Sys.time_since_epoch() + _Info.offset};
         }
 
-        static constexpr sys_seconds _Min_seconds{sys_days{(year::min)() / January / 1}};
-        static constexpr sys_seconds _Max_seconds{sys_seconds{sys_days{(year::max)() / December / 32}} - seconds{1}};
+        static constexpr sys_seconds _Min_seconds{sys_days{(year::min) () / January / 1}};
+        static constexpr sys_seconds _Max_seconds{sys_seconds{sys_days{(year::max) () / December / 32}} - seconds{1}};
 
     private:
         template <class _Duration>
@@ -2204,7 +2204,7 @@ namespace chrono {
         // caller knows (_Current_size, 0 on first call) and the _Known_leap_seconds entries.
         constexpr size_t _Pre_2018_count = 27;
         const size_t _Known_post_2018_ls_size =
-            (_STD max)(_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count;
+            (_STD max) (_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count;
 
         size_t _Reg_post_2018_ls_size; // number of post-2018 LSs found in the registry
         unique_ptr<__std_tzdb_leap_info[], _Tzdb_deleter<__std_tzdb_leap_info[]>> _Reg_ls_data{

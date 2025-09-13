@@ -533,7 +533,7 @@ namespace ranges {
     public:
         template <class _Ty, class... _Types>
             requires requires(_Ty* _Ptr, _Types&&... _Args) {
-                ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types&&>(_Args)...); // per LWG-3888
+                ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types &&>(_Args)...); // per LWG-3888
             }
         _STATIC_CALL_OPERATOR constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) _CONST_CALL_OPERATOR
             noexcept(noexcept(
@@ -4066,7 +4066,7 @@ protected:
             }
             ::__std_atomic_wait_direct(
                 _STD addressof(_Ptr), _STD addressof(_Old_ptr), sizeof(_Old_ptr), _Remaining_timeout);
-            _Remaining_timeout = (_STD min)(_Max_timeout, _Remaining_timeout * 2);
+            _Remaining_timeout = (_STD min) (_Max_timeout, _Remaining_timeout * 2);
         }
     }
 

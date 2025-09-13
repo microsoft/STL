@@ -449,35 +449,35 @@ constexpr bool test() {
     }
 
     {
-        static_assert(is_nothrow_constructible_v<span<int>, int(&)[3]>);
-        static_assert(!is_constructible_v<span<int>, const int(&)[3]>);
-        static_assert(!is_constructible_v<span<int>, double(&)[3]>);
+        static_assert(is_nothrow_constructible_v<span<int>, int (&)[3]>);
+        static_assert(!is_constructible_v<span<int>, const int (&)[3]>);
+        static_assert(!is_constructible_v<span<int>, double (&)[3]>);
         static_assert(is_nothrow_constructible_v<span<int>, array<int, 3>&>);
         static_assert(!is_constructible_v<span<int>, const array<int, 3>&>);
         static_assert(!is_constructible_v<span<int>, array<double, 3>&>);
 
-        static_assert(is_nothrow_constructible_v<span<int, 3>, int(&)[3]>);
-        static_assert(!is_constructible_v<span<int, 3>, const int(&)[3]>);
-        static_assert(!is_constructible_v<span<int, 3>, double(&)[3]>);
+        static_assert(is_nothrow_constructible_v<span<int, 3>, int (&)[3]>);
+        static_assert(!is_constructible_v<span<int, 3>, const int (&)[3]>);
+        static_assert(!is_constructible_v<span<int, 3>, double (&)[3]>);
         static_assert(is_nothrow_constructible_v<span<int, 3>, array<int, 3>&>);
         static_assert(!is_constructible_v<span<int, 3>, const array<int, 3>&>);
         static_assert(!is_constructible_v<span<int, 3>, array<double, 3>&>);
-        static_assert(!is_constructible_v<span<int, 3>, int(&)[500]>);
+        static_assert(!is_constructible_v<span<int, 3>, int (&)[500]>);
         static_assert(!is_constructible_v<span<int, 3>, array<int, 500>&>);
 
-        static_assert(is_nothrow_constructible_v<span<const int>, int(&)[3]>);
-        static_assert(is_nothrow_constructible_v<span<const int>, const int(&)[3]>);
-        static_assert(!is_constructible_v<span<const int>, double(&)[3]>);
+        static_assert(is_nothrow_constructible_v<span<const int>, int (&)[3]>);
+        static_assert(is_nothrow_constructible_v<span<const int>, const int (&)[3]>);
+        static_assert(!is_constructible_v<span<const int>, double (&)[3]>);
         static_assert(is_nothrow_constructible_v<span<const int>, array<int, 3>&>);
         static_assert(is_nothrow_constructible_v<span<const int>, const array<int, 3>&>);
         static_assert(!is_constructible_v<span<const int>, array<double, 3>&>);
 
-        static_assert(is_nothrow_convertible_v<int(&)[3], span<int>>);
+        static_assert(is_nothrow_convertible_v<int (&)[3], span<int>>);
         static_assert(is_nothrow_convertible_v<array<int, 3>&, span<int>>);
-        static_assert(is_nothrow_convertible_v<int(&)[3], span<int, 3>>);
+        static_assert(is_nothrow_convertible_v<int (&)[3], span<int, 3>>);
         static_assert(is_nothrow_convertible_v<array<int, 3>&, span<int, 3>>);
-        static_assert(is_nothrow_convertible_v<int(&)[3], span<const int>>);
-        static_assert(is_nothrow_convertible_v<const int(&)[3], span<const int>>);
+        static_assert(is_nothrow_convertible_v<int (&)[3], span<const int>>);
+        static_assert(is_nothrow_convertible_v<const int (&)[3], span<const int>>);
         static_assert(is_nothrow_convertible_v<array<int, 3>&, span<const int>>);
         static_assert(is_nothrow_convertible_v<const array<int, 3>&, span<const int>>);
 

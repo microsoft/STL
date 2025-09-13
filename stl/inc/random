@@ -308,8 +308,8 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     } else {
         using _Result_uint_type = conditional_t<_Minbits <= 32, uint32_t, uint64_t>;
 
-        constexpr auto _Gxmin  = (_Gen::min)();
-        constexpr auto _Gxmax  = (_Gen::max)();
+        constexpr auto _Gxmin  = (_Gen::min) ();
+        constexpr auto _Gxmax  = (_Gen::max) ();
         constexpr auto _Params = _Generate_canonical_params(_Minbits, _Gxmax - _Gxmin);
 
         _STL_INTERNAL_STATIC_ASSERT(_Params._Kx >= 1);
@@ -409,7 +409,8 @@ constexpr bool _Has_static_min_max = false;
 // This checks a requirement of N4981 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
 // to implement the whole concept - we just need to distinguish Standard machinery from tr1 machinery.
 template <class _Gen>
-constexpr bool _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min)() < (_Gen::max)()>::value)>> = true;
+constexpr bool _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min) () < (_Gen::max) ()>::value)>> =
+    true;
 
 template <class _Real, class _Gen>
 _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from random sequence
@@ -1808,11 +1809,11 @@ public:
     }
 
     _NODISCARD static constexpr result_type(min)() noexcept /* strengthened */ {
-        return (_Engine::min)();
+        return (_Engine::min) ();
     }
 
     _NODISCARD static constexpr result_type(max)() noexcept /* strengthened */ {
-        return (_Engine::max)();
+        return (_Engine::max) ();
     }
 
     _NODISCARD friend bool operator==(const discard_block_engine& _Left, const discard_block_engine& _Right) {
@@ -1906,7 +1907,7 @@ public:
 
         for (; _Idx < _Nx0; ++_Idx) { // pack _Wx0-bit values
             for (;;) { // get a small enough value
-                _Val = _Eng() - (_Engine::min)();
+                _Val = _Eng() - (_Engine::min) ();
                 if (_Val <= _Yx0) {
                     break;
                 }
@@ -1917,7 +1918,7 @@ public:
         _Mask = _Mask << 1 | 1;
         for (; _Idx < _Nx; ++_Idx) { // pack _Wx0+1-bit values
             for (;;) { // get a small enough value
-                _Val = _Eng() - (_Engine::min)();
+                _Val = _Eng() - (_Engine::min) ();
                 if (_Val <= _Yx1) {
                     break;
                 }
@@ -1958,7 +1959,7 @@ public:
 private:
     void _Init() { // compute values for operator()
         size_t _Mx = 0;
-        _Eres _Rx  = (_Engine::max)() - (_Engine::min)() + 1;
+        _Eres _Rx  = (_Engine::max) () - (_Engine::min) () + 1;
 
         _Eres _Tmp = _Rx;
         if (_Tmp == 0) { // all bits used, make _Rx finite
@@ -2042,11 +2043,11 @@ public:
     }
 
     _NODISCARD static constexpr result_type(min)() noexcept /* strengthened */ {
-        return (_Engine::min)();
+        return (_Engine::min) ();
     }
 
     _NODISCARD static constexpr result_type(max)() noexcept /* strengthened */ {
-        return (_Engine::max)();
+        return (_Engine::max) ();
     }
 
     _NODISCARD result_type operator()() {
@@ -2193,7 +2194,7 @@ public:
 
 private:
     _Udiff _Get_bits() { // return a random value within [0, _Bmask]
-        static constexpr auto _Urng_min = (_Urng::min)();
+        static constexpr auto _Urng_min = (_Urng::min) ();
         for (;;) { // repeat until random value is in range
             const _Udiff _Val = _Ref() - _Urng_min;
 
@@ -2206,7 +2207,7 @@ private:
     static constexpr size_t _Calc_bits() {
         auto _Bits_local  = _Udiff_bits;
         auto _Bmask_local = static_cast<_Udiff>(-1);
-        for (; (_Urng::max)() - (_Urng::min)() < _Bmask_local; _Bmask_local >>= 1) {
+        for (; (_Urng::max) () - (_Urng::min) () < _Bmask_local; _Bmask_local >>= 1) {
             --_Bits_local;
         }
 
@@ -3173,7 +3174,7 @@ private:
             // inequality gives -1+p*t >= -(1-p)^t, so 1 - (1-p)^t <= p*t = mean. For the other bound, 1-(1-p)^t =
             // 1-(1-p)(1-mean/t)^(t-1) <= 1-(1-p)(1-1/t)^(t-1) <= 1-(1-p)/e.
             const _Ty1 _Ub =
-                (_STD min)(_Par0._Mean, _Ty1{3.678794411714423216e-1} * _Par0._Pp + _Ty1{6.32120558828557678e-1});
+                (_STD min) (_Par0._Mean, _Ty1{3.678794411714423216e-1} * _Par0._Pp + _Ty1{6.32120558828557678e-1});
             if (_Rand > _Ub) {
                 _Res = _Ty{0};
             } else {
@@ -3776,7 +3777,7 @@ private:
                 // Bad _Sx value! Very small values will overflow log(_Sx) / _Sx.
                 // Generate a new value based on scaling method.
                 const _Ty _Ln2{_Ty{0.69314718055994530941723212145818}};
-                const _Ty _Maxabs{(_STD max)(_STD abs(_Vx1), _STD abs(_Vx2))};
+                const _Ty _Maxabs{(_STD max) (_STD abs(_Vx1), _STD abs(_Vx2))};
                 const int _ExpMax{_STD ilogb(_Maxabs)};
                 _Vx1   = _STD scalbn(_Vx1, -_ExpMax);
                 _Vx2   = _STD scalbn(_Vx2, -_ExpMax);
