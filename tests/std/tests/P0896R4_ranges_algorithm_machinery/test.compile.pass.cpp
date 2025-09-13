@@ -41,9 +41,8 @@ template <int I, class T = int>
 struct simple_iter_archetype {
     using value_type = T;
 
-    // clang-format off
-    simple_reference<T> operator*() const requires (I != 0); // 0: not indirectly_readable
-    // clang-format on
+    simple_reference<T> operator*() const
+        requires (I != 0); // 0: not indirectly_readable
     friend void iter_swap(simple_iter_archetype const&, simple_iter_archetype const&) {}
 };
 static_assert(!std::indirectly_readable<simple_iter_archetype<0>>);
@@ -73,25 +72,34 @@ namespace indirectly_unary_invocable_test {
 
     template <int I>
     struct Fn : base<I> {
-        // clang-format off
         // 1: not invocable<Fn&, iter_value_t<simple_iter_archetype>&>
-        void operator()(int&) const requires (I == 1) = delete;
+        void operator()(int&) const
+            requires (I == 1)
+        = delete;
         // 2: not invocable<Fn&, iter_reference_t<simple_iter_archetype>>
-        void operator()(simple_reference<int>) const requires (I == 2) = delete;
+        void operator()(simple_reference<int>) const
+            requires (I == 2)
+        = delete;
         // 3: not invocable<Fn&, iter_common_reference_t<simple_iter_archetype>>
         // This case is made valid by P2997R1
         // "Removing The Common Reference Requirement From The Indirectly Invocable Concepts".
-        void operator()(simple_common_reference<int>) const requires (I == 3) = delete;
+        void operator()(simple_common_reference<int>) const
+            requires (I == 3)
+        = delete;
 
         // 4 : not common_reference_with<invoke_result_t<Fn&, iter_value_t<simple_iter_archetype>&>,
         //                               invoke_result_t<Fn&, iter_reference_t<simple_iter_archetype>>>;
-        void operator()(int&) const requires (I == 4);
-        int operator()(simple_reference<int>) const requires (I == 4);
+        void operator()(int&) const
+            requires (I == 4);
+        int operator()(simple_reference<int>) const
+            requires (I == 4);
 
-        int operator()(int&) const requires (I != 1 && I != 4);
-        int operator()(simple_reference<int>) const requires (I != 2 && I != 4);
-        int operator()(simple_common_reference<int>) const requires (I != 3 && I != 4);
-        // clang-format on
+        int operator()(int&) const
+            requires (I != 1 && I != 4);
+        int operator()(simple_reference<int>) const
+            requires (I != 2 && I != 4);
+        int operator()(simple_common_reference<int>) const
+            requires (I != 3 && I != 4);
     };
 
     template <class F, class I>
@@ -126,21 +134,27 @@ namespace indirect_unary_predicate_test {
 
     template <int I>
     struct Fn : base<I> {
-        // clang-format off
         // 1: not predicate<Fn&, iter_value_t<simple_iter_archetype>&>
-        void operator()(int&) const requires (I == 1);
+        void operator()(int&) const
+            requires (I == 1);
         // 2: not predicate<Fn&, iter_reference_t<simple_iter_archetype>>
-        void operator()(simple_reference<int>) const requires (I == 2) = delete;
+        void operator()(simple_reference<int>) const
+            requires (I == 2)
+        = delete;
         // 3: not predicate<Fn&, iter_common_reference_t<simple_iter_archetype>>
         // This case is made valid by P2997R1
         // "Removing The Common Reference Requirement From The Indirectly Invocable Concepts".
-        void operator()(simple_common_reference<int>) const requires (I == 3) = delete;
+        void operator()(simple_common_reference<int>) const
+            requires (I == 3)
+        = delete;
 
         // 4: all of the above
-        int operator()(int&) const requires (I != 1 && I != 4);
-        int operator()(simple_reference<int>) const requires (I != 2 && I != 4);
-        int operator()(simple_common_reference<int>) const requires (I != 3 && I != 4);
-        // clang-format on
+        int operator()(int&) const
+            requires (I != 1 && I != 4);
+        int operator()(simple_reference<int>) const
+            requires (I != 2 && I != 4);
+        int operator()(simple_common_reference<int>) const
+            requires (I != 3 && I != 4);
     };
 
     static_assert(!indirect_unary_predicate<Fn<0>, simple_iter_archetype<1>>);
@@ -168,26 +182,34 @@ namespace indirect_binary_predicate_test {
 
     template <int I>
     struct Fn : base<I> {
-        // clang-format off
         // 1: not predicate<Fn&, iter_value_t<simple_iter_archetype>&, iter_value_t<simple_iter_archetype>&>
-        void operator()(int&, int&) const requires (I == 1);
+        void operator()(int&, int&) const
+            requires (I == 1);
         // 2: not predicate<Fn&, iter_value_t<simple_iter_archetype>&, iter_reference_t<simple_iter_archetype>>
-        void operator()(int&, simple_reference<int>) const requires (I == 2);
+        void operator()(int&, simple_reference<int>) const
+            requires (I == 2);
         // 3: not predicate<Fn&, iter_reference_t<simple_iter_archetype>, iter_value_t<simple_iter_archetype>&>
-        void operator()(simple_reference<int>, int&) const requires (I == 3);
+        void operator()(simple_reference<int>, int&) const
+            requires (I == 3);
         // 4: not predicate<Fn&, iter_reference_t<simple_iter_archetype>, iter_reference_t<simple_iter_archetype>>
-        void operator()(simple_reference<int>, simple_reference<int>) const requires (I == 4);
+        void operator()(simple_reference<int>, simple_reference<int>) const
+            requires (I == 4);
         // 5: not predicate<Fn&, iter_common_reference_t</**/>, iter_common_reference_t</**/>>
         // This case is made valid by P2997R1
         // "Removing The Common Reference Requirement From The Indirectly Invocable Concepts".
-        void operator()(simple_common_reference<int>, simple_common_reference<int>) const requires (I == 5);
+        void operator()(simple_common_reference<int>, simple_common_reference<int>) const
+            requires (I == 5);
 
-        bool operator()(int&, int&) const requires (I != 1);
-        int operator()(int&, simple_reference<int>) const requires (I != 2);
-        int* operator()(simple_reference<int>, int&) const requires (I != 3);
-        std::true_type operator()(simple_reference<int>, simple_reference<int>) const requires (I != 4);
-        std::false_type operator()(simple_common_reference<int>, simple_common_reference<int>) const requires (I != 5);
-        // clang-format on
+        bool operator()(int&, int&) const
+            requires (I != 1);
+        int operator()(int&, simple_reference<int>) const
+            requires (I != 2);
+        int* operator()(simple_reference<int>, int&) const
+            requires (I != 3);
+        std::true_type operator()(simple_reference<int>, simple_reference<int>) const
+            requires (I != 4);
+        std::false_type operator()(simple_common_reference<int>, simple_common_reference<int>) const
+            requires (I != 5);
     };
 
     template <int FuncSelector, int IterSelector1, int IterSelector2>
@@ -253,19 +275,24 @@ namespace indirectly_movable_test { // also covers indirectly_movable_storable
 
     template <int I>
     struct value_type {
-        // clang-format off
         value_type()             = default;
         value_type(value_type&&) = default;
-        value_type& operator=(value_type&&) requires (I != 0) = default; // 0: not movable
+        value_type& operator=(value_type&&)
+            requires (I != 0)
+        = default; // 0: not movable
         // 1: not constructible_from<iter_rvalue_reference_t<In>>:
         template <class T>
-        value_type(simple_reference<T>) requires (I == 1) = delete;
+        value_type(simple_reference<T>)
+            requires (I == 1)
+        = delete;
         // 2: not assignable_from<iter_rvalue_reference_t<In>>:
         template <class T>
-        value_type& operator=(simple_reference<T>) requires (I != 2);
+        value_type& operator=(simple_reference<T>)
+            requires (I != 2);
         template <class T>
-        void operator=(simple_reference<T>) requires (I == 2) = delete;
-        // clang-format on
+        void operator=(simple_reference<T>)
+            requires (I == 2)
+        = delete;
     };
     // Ensure specializations of value_type have the intended properties
     static_assert(!movable<value_type<0>>);
@@ -283,15 +310,19 @@ namespace indirectly_movable_test { // also covers indirectly_movable_storable
 
     template <int I, int J>
     struct out_archetype {
-        // clang-format off
         out_archetype& operator*() const;
         // 0: not indirectly_writable<simple_reference>
-        void operator=(simple_reference<value_type<J>>&&) const requires (I == 0) = delete;
-        void operator=(simple_reference<value_type<J>>&&) const requires (I != 0);
+        void operator=(simple_reference<value_type<J>>&&) const
+            requires (I == 0)
+        = delete;
+        void operator=(simple_reference<value_type<J>>&&) const
+            requires (I != 0);
         // 1: not indirectly_writable<value_type>
-        void operator=(value_type<J>&&) const requires (I == 1) = delete;
-        void operator=(value_type<J>&&) const requires (I != 1);
-        // clang-format on
+        void operator=(value_type<J>&&) const
+            requires (I == 1)
+        = delete;
+        void operator=(value_type<J>&&) const
+            requires (I != 1);
     };
     // Ensure specializations of out_archetype have the intended properties
     static_assert(!indirectly_writable<out_archetype<0, 3>, simple_reference<value_type<3>>>);
@@ -323,17 +354,22 @@ namespace indirectly_copyable_test { // also covers indirectly_copyable_storable
     struct value_type {
         value_type()                  = default;
         value_type(value_type const&) = default;
-        // clang-format off
-        value_type& operator=(value_type const&) requires (I != 0) = default; // 0: not copyable
+        value_type& operator=(value_type const&)
+            requires (I != 0)
+        = default; // 0: not copyable
         // 1: not constructible_from<iter_reference_t<In>>:
         template <class T>
-        value_type(simple_reference<T>) requires (I == 1) = delete;
+        value_type(simple_reference<T>)
+            requires (I == 1)
+        = delete;
         // 2: not assignable_from<iter_reference_t<In>>:
         template <class T>
-        value_type& operator=(simple_reference<T>) requires (I != 2);
+        value_type& operator=(simple_reference<T>)
+            requires (I != 2);
         template <class T>
-        void operator=(simple_reference<T>) requires (I == 2) = delete;
-        // clang-format on
+        void operator=(simple_reference<T>)
+            requires (I == 2)
+        = delete;
     };
     // Ensure specializations of value_type have the intended properties
     static_assert(!copyable<value_type<0>>);
@@ -351,24 +387,37 @@ namespace indirectly_copyable_test { // also covers indirectly_copyable_storable
 
     template <int I, int J>
     struct out_archetype {
-        // clang-format off
         out_archetype& operator*() const;
         // 0: not indirectly_writable<simple_reference>
-        void operator=(simple_reference<value_type<J>>&&) const requires (I == 0) = delete;
-        void operator=(simple_reference<value_type<J>>&&) const requires (I != 0);
+        void operator=(simple_reference<value_type<J>>&&) const
+            requires (I == 0)
+        = delete;
+        void operator=(simple_reference<value_type<J>>&&) const
+            requires (I != 0);
         // 1: not indirectly_writable<value_type&>
-        void operator=(value_type<J>&) const requires (I == 1) = delete;
-        void operator=(value_type<J>&) const requires (I != 1);
+        void operator=(value_type<J>&) const
+            requires (I == 1)
+        = delete;
+        void operator=(value_type<J>&) const
+            requires (I != 1);
         // 2: not indirectly_writable<value_type&&>
-        void operator=(value_type<J>&&) const requires (I == 2) = delete;
-        void operator=(value_type<J>&&) const requires (I != 2);
+        void operator=(value_type<J>&&) const
+            requires (I == 2)
+        = delete;
+        void operator=(value_type<J>&&) const
+            requires (I != 2);
         // 3: not indirectly_writable<const value_type&&>
-        void operator=(value_type<J> const&&) const requires (I == 3) = delete;
-        void operator=(value_type<J> const&&) const requires (I != 3);
+        void operator=(value_type<J> const&&) const
+            requires (I == 3)
+        = delete;
+        void operator=(value_type<J> const&&) const
+            requires (I != 3);
         // 4: not indirectly_writable<const value_type&>
-        void operator=(value_type<J> const&) const requires (I == 4) = delete;
-        void operator=(value_type<J> const&) const requires (I != 4);
-        // clang-format on
+        void operator=(value_type<J> const&) const
+            requires (I == 4)
+        = delete;
+        void operator=(value_type<J> const&) const
+            requires (I != 4);
     };
     // Ensure specializations of out_archetype have the intended properties
     static_assert(!indirectly_writable<out_archetype<0, 3>, simple_reference<value_type<3>>>);
@@ -436,15 +485,16 @@ namespace indirectly_swappable_test {
             operator int() const;
         };
 
-        // clang-format off
-        reference operator*() const noexcept requires (I != 0);
+        reference operator*() const noexcept
+            requires (I != 0);
 
-        friend constexpr void iter_swap(archetype const&, archetype const&) requires (I != 1) {}
+        friend constexpr void iter_swap(archetype const&, archetype const&)
+            requires (I != 1)
+        {}
 
         template <int J>
             requires (I != J && I != 2 && J != 2)
         friend constexpr void iter_swap(archetype const&, archetype<J> const&) {}
-        // clang-format on
     };
 
     // We have to be careful to avoid checking some !indirectly_swappable cases that fail when the Evil Extension is
@@ -500,11 +550,11 @@ namespace indirectly_comparable_test {
 
     template <int I>
     struct Fn : base<I> {
-        // clang-format off
         // 1: not predicate
-        void operator()(int, int) const requires (I == 1);
-        void* operator()(int, int) const requires (I != 1);
-        // clang-format on
+        void operator()(int, int) const
+            requires (I == 1);
+        void* operator()(int, int) const
+            requires (I != 1);
     };
 
     static_assert(!indirectly_comparable<simple_iter_archetype<1>, simple_iter_archetype<1>, Fn<0>, Proj, Proj>);
@@ -720,9 +770,8 @@ namespace permutable_test {
 
             operator int() const;
             // 1: not indirectly_movable_storable<archetype, archetype>
-            // clang-format off
-            void operator=(int) const requires (I != 1);
-            // clang-format on
+            void operator=(int) const
+                requires (I != 1);
         };
 
         proxy operator*() const;
@@ -730,10 +779,10 @@ namespace permutable_test {
         archetype& operator++();
         archetype operator++(int);
 
-        // clang-format off
         // 0: not forward_iterator (input only)
-        bool operator==(archetype const&) const requires (I != 0) = default;
-        // clang-format on
+        bool operator==(archetype const&) const
+            requires (I != 0)
+        = default;
 
         friend int iter_move(archetype const&) {
             return 42;
@@ -777,10 +826,9 @@ namespace mergeable_test {
         T const& operator*() const;
         readable_archetype& operator++();
 
-        // clang-format off
         // 0: not input_iterator
-        void operator++(int) requires (RS != readable_status::not_input_iter);
-        // clang-format on
+        void operator++(int)
+            requires (RS != readable_status::not_input_iter);
     };
 
     enum class writable_status { not_weakly_incrementable, not_ind_copy_int, not_ind_copy_long, good };
@@ -792,17 +840,22 @@ namespace mergeable_test {
         writable_archetype& operator*();
         writable_archetype& operator++();
 
-        // clang-format off
-        writable_archetype operator++(int) requires (WS != writable_status::not_weakly_incrementable);
+        writable_archetype operator++(int)
+            requires (WS != writable_status::not_weakly_incrementable);
 
         // 1: not indirectly_copyable<const int*, writable_archetype>
-        void operator=(int) requires (WS == writable_status::not_ind_copy_int) = delete;
-        writable_archetype& operator=(int) requires (WS != writable_status::not_ind_copy_int);
+        void operator=(int)
+            requires (WS == writable_status::not_ind_copy_int)
+        = delete;
+        writable_archetype& operator=(int)
+            requires (WS != writable_status::not_ind_copy_int);
 
         // 2: not indirectly_copyable<const long*, writable_archetype>
-        void operator=(long) requires (WS == writable_status::not_ind_copy_long) = delete;
-        writable_archetype& operator=(long) requires (WS != writable_status::not_ind_copy_long);
-        // clang-format on
+        void operator=(long)
+            requires (WS == writable_status::not_ind_copy_long)
+        = delete;
+        writable_archetype& operator=(long)
+            requires (WS != writable_status::not_ind_copy_long);
     };
 
     void test() {
@@ -1008,17 +1061,20 @@ namespace special_memory_concepts {
         using difference_type  = int;
         using value_type       = std::conditional_t<I == iterator_status::different_reference_and_value, long, int>;
 
-        // clang-format off
-        int operator*() const requires (I == iterator_status::not_lvalue_reference);
-        int& operator*() const requires (I != iterator_status::not_lvalue_reference);
+        int operator*() const
+            requires (I == iterator_status::not_lvalue_reference);
+        int& operator*() const
+            requires (I != iterator_status::not_lvalue_reference);
 
         iterator_archetype& operator++();
-        void operator++(int) requires (I != iterator_status::forward);
-        iterator_archetype operator++(int) requires (I == iterator_status::forward);
+        void operator++(int)
+            requires (I != iterator_status::forward);
+        iterator_archetype operator++(int)
+            requires (I == iterator_status::forward);
 
         bool operator==(std::default_sentinel_t) const;
-        bool operator==(iterator_archetype const&) const requires (I == iterator_status::forward);
-        // clang-format on
+        bool operator==(iterator_archetype const&) const
+            requires (I == iterator_status::forward);
     };
     // Verify iterator_archetype
     static_assert(!input_iterator<iterator_archetype<iterator_status::not_input>>);
@@ -1056,10 +1112,9 @@ namespace special_memory_concepts {
 
     template <sentinel_status I>
     struct sentinel_archetype {
-        // clang-format off
         template <iterator_status S>
-        bool operator==(iterator_archetype<S> const&) const requires (I != sentinel_status::no);
-        // clang-format on
+        bool operator==(iterator_archetype<S> const&) const
+            requires (I != sentinel_status::no);
     };
     // Verify sentinel_archetype
     static_assert(!sentinel_for<sentinel_archetype<sentinel_status::no>, iterator_archetype<iterator_status::input>>);
