@@ -815,7 +815,7 @@
 // warning C6294: Ill-defined for-loop: initial condition does not satisfy test. Loop body not executed
 
 #ifndef _STL_DISABLED_WARNINGS
-// clang-format off
+// clang-format off: make macros readable
 #define _STL_DISABLED_WARNINGS                        \
     4180 4324 4412 4455 4494 4514 4574 4582 4583 4587 \
     4588 4619 4623 4625 4626 4643 4648 4702 4793 4820 \
@@ -839,7 +839,7 @@
 // warning: unknown pragma ignored [-Wunknown-pragmas]
 #ifndef _STL_DISABLE_CLANG_WARNINGS
 #ifdef __clang__
-// clang-format off
+// clang-format off: make macros readable
 #define _STL_DISABLE_CLANG_WARNINGS                                 \
     _Pragma("clang diagnostic push")                                \
     _Pragma("clang diagnostic ignored \"-Wc++17-extensions\"")      \
@@ -869,7 +869,7 @@
 //     floating-point options [-Wnan-infinity-disabled]
 #ifndef _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED
 #ifdef __clang__
-// clang-format off
+// clang-format off: make macros readable
 #define _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED \
     _Pragma("clang diagnostic push")                \
     _Pragma("clang diagnostic ignored \"-Wnan-infinity-disabled\"")
@@ -887,7 +887,7 @@
 #endif // ^^^ !defined(__clang__) ^^^
 #endif // !defined(_STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED)
 
-// clang-format off
+// clang-format off: make macros readable
 #ifndef _STL_DISABLE_DEPRECATED_WARNING
 #ifdef __clang__
 #define _STL_DISABLE_DEPRECATED_WARNING \

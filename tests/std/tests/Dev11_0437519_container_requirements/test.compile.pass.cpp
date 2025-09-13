@@ -322,7 +322,7 @@ struct emplace_argument {
     emplace_argument(key) {}
 };
 
-// clang-format off
+// clang-format off: make macros readable
 
 #define DEFINE_TYPE(name, dtor, def_ctor, copy_ctor, move_ctor, emp_ctor, copy_assign, move_assign, emp_assign) \
     class name {                                                                                                \
