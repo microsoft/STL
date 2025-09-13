@@ -870,15 +870,13 @@ namespace iterator_traits_test {
         auto operator<=>(with_pointer const&) const = default;
     };
 
-    // clang-format off
     template <class T>
-    concept has_empty_traits = !(requires { typename iterator_traits<T>::iterator_concept; }
-        || requires { typename iterator_traits<T>::iterator_category; }
-        || requires { typename iterator_traits<T>::value_type; }
-        || requires { typename iterator_traits<T>::difference_type; }
-        || requires { typename iterator_traits<T>::pointer; }
-        || requires { typename iterator_traits<T>::reference; });
-    // clang-format on
+    concept has_empty_traits = !requires { typename iterator_traits<T>::iterator_concept; } //
+                            && !requires { typename iterator_traits<T>::iterator_category; } //
+                            && !requires { typename iterator_traits<T>::value_type; } //
+                            && !requires { typename iterator_traits<T>::difference_type; } //
+                            && !requires { typename iterator_traits<T>::pointer; } //
+                            && !requires { typename iterator_traits<T>::reference; };
 
     // Verify that iterator_traits pulls from nested member typedefs when the four key names are defined
     using four_members =
