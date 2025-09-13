@@ -2470,11 +2470,8 @@ namespace chrono {
 
         explicit zoned_time(_TimeZonePtr _Tz) noexcept /* strengthened */ : _Zone{_STD move(_Tz)} {}
 
-        // clang-format off
-        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
-            zoned_time, decltype(_Traits2::locate_zone(string_view{}))>,
-            int> = 0>
-        // clang-format on
+        template <class _Traits2                                                                             = _Traits,
+            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{}))>, int> = 0>
         explicit zoned_time(string_view _Name) : _Zone{_Traits::locate_zone(_Name)} {}
 
         template <class _Duration2, enable_if_t<is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>, int> = 0>
@@ -2483,11 +2480,10 @@ namespace chrono {
 
         zoned_time(_TimeZonePtr _Tz, const sys_time<_Duration>& _Sys) : _Zone{_STD move(_Tz)}, _Tp{_Sys} {}
 
-        // clang-format off
-        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
-            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const sys_time<_Duration>&>,
-            int> = 0>
-        // clang-format on
+        template <class _Traits2 = _Traits,
+            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
+                            const sys_time<_Duration>&>,
+                int>             = 0>
         zoned_time(string_view _Name, type_identity_t<const sys_time<_Duration>&> _Sys)
             : zoned_time{_Traits::locate_zone(_Name), _Sys} {}
 
@@ -2498,11 +2494,10 @@ namespace chrono {
         zoned_time(_TimeZonePtr _Tz, const local_time<_Duration>& _Local)
             : _Zone{_STD move(_Tz)}, _Tp{_Zone->to_sys(_Local)} {}
 
-        // clang-format off
-        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
-            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&>,
-            int> = 0>
-        // clang-format on
+        template <class _Traits2 = _Traits,
+            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
+                            const local_time<_Duration>&>,
+                int>             = 0>
         zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>>& _Local)
             : zoned_time{_Traits::locate_zone(_Name), _Local} {}
 
@@ -2514,11 +2509,10 @@ namespace chrono {
         zoned_time(_TimeZonePtr _Tz, const local_time<_Duration>& _Local, choose _Choose)
             : _Zone{_STD move(_Tz)}, _Tp{_Zone->to_sys(_Local, _Choose)} {}
 
-        // clang-format off
-        template <class _Traits2 = _Traits, enable_if_t<is_constructible_v<
-            zoned_time, decltype(_Traits2::locate_zone(string_view{})), const local_time<_Duration>&, choose>,
-            int> = 0>
-        // clang-format on
+        template <class _Traits2 = _Traits,
+            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
+                            const local_time<_Duration>&, choose>,
+                int>             = 0>
         zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>&> _Local, choose _Choose)
             : zoned_time{_Traits::locate_zone(_Name), _Local, _Choose} {}
 
@@ -2533,23 +2527,17 @@ namespace chrono {
             _TimeZonePtr _Tz, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt, choose) noexcept /* strengthened */
             : zoned_time{_Tz, _Zt} {}
 
-        // clang-format off
-        template <class _Duration2, class _TimeZonePtr2,
-            class _Traits2 = _Traits, enable_if_t<is_constructible_v<
-            zoned_time, decltype(_Traits2::locate_zone(string_view{})),
-            const zoned_time<_Duration2, _TimeZonePtr2>&>,
-            int> = 0>
-        // clang-format on
+        template <class _Duration2, class _TimeZonePtr2, class _Traits2 = _Traits,
+            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
+                            const zoned_time<_Duration2, _TimeZonePtr2>&>,
+                int> = 0>
         zoned_time(string_view _Name, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt)
             : zoned_time{_Traits::locate_zone(_Name), _Zt} {}
 
-        // clang-format off
-        template <class _Duration2, class _TimeZonePtr2,
-            class _Traits2 = _Traits, enable_if_t<is_constructible_v<
-            zoned_time, decltype(_Traits2::locate_zone(string_view{})),
-            const zoned_time<_Duration2, _TimeZonePtr2>&, choose>,
-            int> = 0>
-        // clang-format on
+        template <class _Duration2, class _TimeZonePtr2, class _Traits2 = _Traits,
+            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
+                            const zoned_time<_Duration2, _TimeZonePtr2>&, choose>,
+                int> = 0>
         zoned_time(string_view _Name, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt, choose _Choose)
             : zoned_time{_Traits::locate_zone(_Name), _Zt, _Choose} {}
 
