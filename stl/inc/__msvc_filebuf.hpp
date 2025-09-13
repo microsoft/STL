@@ -49,17 +49,17 @@ namespace experimental {
 } // namespace experimental
 #endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
 
-// clang-format off
 template <class _Ty>
 constexpr bool _Is_any_path = _Is_any_of_v<_Ty
 #if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-    , experimental::filesystem::path
+    ,
+    experimental::filesystem::path
 #endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
 #if _HAS_CXX17
-    , filesystem::path
+    ,
+    filesystem::path
 #endif // _HAS_CXX17
     >;
-// clang-format on
 
 extern "C++" _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const char*, ios_base::openmode, int);
 extern "C++" _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const wchar_t*, ios_base::openmode, int);
