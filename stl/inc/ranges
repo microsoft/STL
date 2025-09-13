@@ -7124,12 +7124,13 @@ namespace ranges {
         requires (sizeof...(_LHSTupleTypes) == sizeof...(_RHSTupleTypes))
     _NODISCARD constexpr _ResultType _Zip_get_smallest_distance(
         const tuple<_LHSTupleTypes...>& _Lhs_tuple, const tuple<_RHSTupleTypes...>& _Rhs_tuple)
-        // clang-format off
         noexcept((noexcept(static_cast<_ResultType>(
-            _STD declval<const _LHSTupleTypes&>() - _STD declval<const _RHSTupleTypes&>())) && ...)) {
-        constexpr bool _Is_noexcept = (noexcept(static_cast<_ResultType>(
-            _STD declval<const _LHSTupleTypes&>() - _STD declval<const _RHSTupleTypes&>())) && ...);
-        // clang-format on
+                      _STD declval<const _LHSTupleTypes&>() - _STD declval<const _RHSTupleTypes&>()))
+                  && ...)) {
+        constexpr bool _Is_noexcept =
+            (noexcept(static_cast<_ResultType>( //
+                 _STD declval<const _LHSTupleTypes&>() - _STD declval<const _RHSTupleTypes&>()))
+                && ...);
         const auto _Get_smallest_distance_closure = [&_Lhs_tuple,
                                                         &_Rhs_tuple]<size_t _FirstIdx /* = 0 */, size_t... _Idxs>(
                                                         index_sequence<_FirstIdx, _Idxs...>) noexcept(_Is_noexcept) {
