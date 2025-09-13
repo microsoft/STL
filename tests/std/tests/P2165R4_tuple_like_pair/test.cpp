@@ -173,17 +173,17 @@ using BinaryArray = array<T, 2>;
 
 int main() {
     static_assert(test_pair_like_constructor<BinaryArray>());
-    assert((test_pair_like_constructor<BinaryArray>()));
+    assert(test_pair_like_constructor<BinaryArray>());
     static_assert(test_pair_like_constructor<BinaryTuple>());
-    assert((test_pair_like_constructor<BinaryTuple>()));
+    assert(test_pair_like_constructor<BinaryTuple>());
 
     static_assert(test_pair_like_assignment<BinaryArray>());
-    assert((test_pair_like_assignment<BinaryArray>()));
+    assert(test_pair_like_assignment<BinaryArray>());
     static_assert(test_pair_like_assignment<BinaryTuple>());
-    assert((test_pair_like_assignment<BinaryTuple>()));
+    assert(test_pair_like_assignment<BinaryTuple>());
 
     static_assert(test_pair_like_const_assignment<BinaryArray>());
-    assert((test_pair_like_const_assignment<BinaryArray>()));
+    assert(test_pair_like_const_assignment<BinaryArray>());
     static_assert(test_pair_like_const_assignment<BinaryTuple>());
-    assert((test_pair_like_const_assignment<BinaryTuple>()));
+    assert(test_pair_like_const_assignment<BinaryTuple>());
 }

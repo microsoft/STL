@@ -119,7 +119,7 @@ namespace ranges {
             requires (_Range_adaptor_closure_object<_Right> && range<_Left>)
         _NODISCARD constexpr decltype(auto) operator|(_Left&& __l, _Right&& __r)
             noexcept(noexcept(_STD forward<_Right>(__r)(_STD forward<_Left>(__l))))
-            requires requires { static_cast<_Right&&>(__r)(static_cast<_Left&&>(__l)); }
+            requires requires { static_cast<_Right &&>(__r)(static_cast<_Left &&>(__l)); }
         {
             return _STD forward<_Right>(__r)(_STD forward<_Left>(__l));
         }
@@ -461,7 +461,7 @@ namespace ranges {
         template <_Different_from<ref_view> _OtherRng>
         constexpr ref_view(_OtherRng&& _Other)
             noexcept(noexcept(static_cast<_Rng&>(_STD forward<_OtherRng>(_Other)))) // strengthened
-            requires convertible_to<_OtherRng, _Rng&> && requires { _Rvalue_poison(static_cast<_OtherRng&&>(_Other)); }
+            requires convertible_to<_OtherRng, _Rng&> && requires { _Rvalue_poison(static_cast<_OtherRng &&>(_Other)); }
             : _Range{_STD addressof(static_cast<_Rng&>(_STD forward<_OtherRng>(_Other)))} {}
 
         _NODISCARD constexpr _Rng& base() const noexcept /* strengthened */ {
@@ -591,10 +591,10 @@ namespace ranges {
 
     namespace views {
         template <class _Rng>
-        concept _Can_ref_view = requires(_Rng&& __r) { ref_view{static_cast<_Rng&&>(__r)}; };
+        concept _Can_ref_view = requires(_Rng&& __r) { ref_view{static_cast<_Rng &&>(__r)}; };
 
         template <class _Rng>
-        concept _Ownable = requires(_Rng&& __r) { owning_view{static_cast<_Rng&&>(__r)}; };
+        concept _Ownable = requires(_Rng&& __r) { owning_view{static_cast<_Rng &&>(__r)}; };
 
         class _All_fn : public _Pipe::_Base<_All_fn> {
         private:
@@ -1048,7 +1048,7 @@ namespace ranges {
             template <viewable_range _Rng, class _Fn>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range, _Fn _Fun) _CONST_CALL_OPERATOR
                 noexcept(noexcept(transform_view(_STD forward<_Rng>(_Range), _STD move(_Fun))))
-                requires requires { transform_view(static_cast<_Rng&&>(_Range), _STD move(_Fun)); }
+                requires requires { transform_view(static_cast<_Rng &&>(_Range), _STD move(_Fun)); }
             {
                 return transform_view(_STD forward<_Rng>(_Range), _STD move(_Fun));
             }

@@ -18,8 +18,7 @@ steps:
     if exist "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}" (
       rmdir /S /Q "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
     )
-    call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
-    -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
+    call "$(vsDevCmdBat)" -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     cmake -G Ninja ^
     -DCMAKE_CXX_COMPILER=${{ parameters.compiler }} ^
     -DCMAKE_BUILD_TYPE=Release ^
@@ -35,8 +34,7 @@ steps:
       not(and(eq('${{ parameters.compiler }}', 'clang-cl'),
         not(eq('${{ parameters.targetPlatform }}', 'x64')))))
 - script: |
-    call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
-    -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
+    call "$(vsDevCmdBat)" -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     cmake --build "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
   displayName: 'Build the benchmarks for ${{ parameters.compiler }}'
   timeoutInMinutes: 2

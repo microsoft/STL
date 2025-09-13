@@ -249,11 +249,11 @@ namespace chrono {
         }
 
         _NODISCARD static constexpr time_point(min)() noexcept {
-            return time_point((_Duration::min)());
+            return time_point((_Duration::min) ());
         }
 
         _NODISCARD static constexpr time_point(max)() noexcept {
-            return time_point((_Duration::max)());
+            return time_point((_Duration::max) ());
         }
 
     private:

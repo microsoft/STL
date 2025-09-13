@@ -198,7 +198,7 @@ public:
             // writable, make string view from write buffer
             const auto _Base = _Mysb::pbase();
             _Result._Ptr     = _Base;
-            _Result._Size    = static_cast<_Mysize_type>((_STD max)(_Mysb::pptr(), _Seekhigh) - _Base);
+            _Result._Size    = static_cast<_Mysize_type>((_STD max) (_Mysb::pptr(), _Seekhigh) - _Base);
             _Result._Res     = static_cast<_Mysize_type>(_Mysb::epptr() - _Base);
         } else if (!(_Mystate & _Noread) && _Mysb::gptr()) {
             // readable, make string view from read buffer
@@ -380,7 +380,7 @@ protected:
             return _Traits::eof();
         }
 
-        const auto _Local_highwater = (_STD max)(_Seekhigh, _Pptr);
+        const auto _Local_highwater = (_STD max) (_Seekhigh, _Pptr);
         if (_Local_highwater <= _Gptr) { // nothing in the put area to take
             return _Traits::eof();
         }

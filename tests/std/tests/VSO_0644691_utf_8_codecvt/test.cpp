@@ -21,36 +21,34 @@ struct encoding_test_char {
     const wchar_t* wide;
 };
 
-// clang-format off
 const encoding_test_char utf_test_cases[] = {
-    {"\x61",         L"\u0061"}, // LATIN SMALL LETTER A
-    {"\x7F",         L"\u007F"}, // DELETE, highest single encoding unit UTF-8
-    {"\xC2\x80",     L"\u0080"}, // unspecified control character, lowest 2 encoding unit UTF-8
-    {"\xC2\xA9",     L"\u00A9"}, // COPYRIGHT SIGN
-    {"\xDF\xBF",     L"\u07FF"}, // unencoded from the nko block, highest 2 encoding unit UTF-8
-    {"\xE0\xA0\x80", L"\u0800"}, // SAMARITAN LETTER ALAF, lowest 3 encoding unit UTF-8
-    {"\xE2\x80\xB1", L"\u2031"}, // PER TEN THOUSAND SIGN
-    {"\xED\x9F\xBF", L"\uD7FF"},
-        // unencoded from the Hangul Jamo Extended-B block, last character before UTF-16 illegal region
+    {"\x61", L"\u0061"}, // U+0061 LATIN SMALL LETTER A
+    {"\x7F", L"\u007F"}, // U+007F DELETE, highest single encoding unit UTF-8
+    {"\xC2\x80", L"\u0080"}, // U+0080 unspecified control character, lowest 2 encoding unit UTF-8
+    {"\xC2\xA9", L"\u00A9"}, // U+00A9 COPYRIGHT SIGN
+    {"\xDF\xBF", L"\u07FF"}, // U+07FF NKO TAMAN SIGN, highest 2 encoding unit UTF-8
+    {"\xE0\xA0\x80", L"\u0800"}, // U+0800 SAMARITAN LETTER ALAF, lowest 3 encoding unit UTF-8
+    {"\xE2\x80\xB1", L"\u2031"}, // U+2031 PER TEN THOUSAND SIGN
+    {"\xED\x9F\xBF", L"\uD7FF"}, // U+D7FF unencoded from the Hangul Jamo Extended-B block,
+                                 // last character before UTF-16 illegal region
     {"\xED\xA0\x80", nullptr}, // U+D800 beginning of surrogate range
-    {nullptr,        L"\xD800"},
+    {nullptr, L"\xD800"},
     {"\xED\xBF\xBF", nullptr}, // U+DFFF end of surrogate range
-    {nullptr,        L"\xDFFF"},
-    {"\xEE\x80\x80", L"\uE000"}, // unencoded from the private use area, first codepoint after surrogate range
-    {"\xEF\xBF\xBD", L"\uFFFD"}, // REPLACEMENT CHARACTER
-    // {"\xEF\xBF\xBF", L"\uFFFF"}, // TRANSITION, VSO-653129
-        // NOT A CHARACTER, highest 3 encoding unit UTF-8 and highest non-surrogate UTF-16
-    // ========================================
+    {nullptr, L"\xDFFF"},
+    {"\xEE\x80\x80", L"\uE000"}, // U+E000 unencoded from the private use area, first codepoint after surrogate range
+    {"\xEF\xBF\xBD", L"\uFFFD"}, // U+FFFD REPLACEMENT CHARACTER
+#if 0 // TRANSITION, VSO-653129
+    {"\xEF\xBF\xBF", L"\uFFFF"}, // U+FFFF NOT A CHARACTER, highest 3 encoding unit UTF-8, highest non-surrogate UTF-16
+#endif
+    // vvv TRANSITION, VSO-653059 vvv
     // The following do not work today due to basic_filebuf's single wchar_t assumption, but should.
-    // TRANSITION, VSO-653059
-    {"\xF0\x90\x80\x80", nullptr}, // L"\U00010000"
-        // U+10000 LINEAR B SYLLABLE B008 A, lowest 4 encoding unit UTF-8 and UTF-16 with surrogate pair
-    {"\xF0\x90\x8D\x88", nullptr}, // L"\U00010348" HWAIR
-    // ========================================
+    {"\xF0\x90\x80\x80", nullptr /* L"\U00010000" */}, // U+10000 LINEAR B SYLLABLE B008 A,
+                                                       // lowest 4 encoding unit UTF-8 and UTF-16 with surrogate pair
+    {"\xF0\x90\x8D\x88", nullptr /* L"\U00010348" */}, // U+10348 GOTHIC LETTER HWAIR
+    // ^^^ TRANSITION, VSO-653059 ^^^
     {"\xC2\x61", nullptr}, // Wrong number of trailing bytes
     {"\xE0\xA0\x61", nullptr},
 };
-// clang-format on
 
 void assert_empty_file(const wchar_t* const fileName) {
     ifstream emptyTest(fileName, ios::in | ios::binary);

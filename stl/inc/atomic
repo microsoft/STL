@@ -29,9 +29,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 // Allow _InterlockedCompareExchange128 to be used:
-#if defined(__clang__) && defined(_M_X64)
+#if defined(__clang__) && defined(_M_X64) && !defined(_M_ARM64EC)
 #pragma clang attribute _STD_ATOMIC_HEADER.push([[gnu::target("cx16")]], apply_to = function)
-#endif // ^^^ defined(__clang__) && defined(_M_X64) ^^^
+#endif // ^^^ defined(__clang__) && defined(_M_X64) && !defined(_M_ARM64EC) ^^^
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 #define _STD_ATOMIC_USE_ARM64_LDAR_STLR 1
@@ -3035,9 +3035,9 @@ _STD_END
 
 #undef _INVALID_MEMORY_ORDER
 
-#if defined(__clang__) && defined(_M_X64)
+#if defined(__clang__) && defined(_M_X64) && !defined(_M_ARM64EC)
 #pragma clang attribute _STD_ATOMIC_HEADER.pop
-#endif // ^^^ defined(__clang__) && defined(_M_X64) ^^^
+#endif // ^^^ defined(__clang__) && defined(_M_X64) && !defined(_M_ARM64EC) ^^^
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

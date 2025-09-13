@@ -854,7 +854,7 @@ public:
         _Orphan_all();
         auto _Myfirst       = _Unchecked_begin();
         const auto _Oldsize = _Mysize();
-        auto _Assign_count  = (_STD min)(_Count, _Oldsize);
+        auto _Assign_count  = (_STD min) (_Count, _Oldsize);
         for (; _Assign_count > 0; --_Assign_count) {
             *_Myfirst = _Val;
             ++_Myfirst;
@@ -976,7 +976,8 @@ public:
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return (_STD min)(static_cast<size_type>(_STD _Max_limit<difference_type>()), _Alty_traits::max_size(_Getal()));
+        return (_STD min) (static_cast<size_type>(_STD _Max_limit<difference_type>()), //
+            _Alty_traits::max_size(_Getal()));
     }
 
     void resize(_CRT_GUARDOVERFLOW size_type _Newsize) {

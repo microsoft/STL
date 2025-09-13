@@ -860,11 +860,11 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty&& __t) {
-            iter_move(static_cast<_Ty&&>(__t)); // intentional ADL
+            iter_move(static_cast<_Ty &&>(__t)); // intentional ADL
         };
 
         template <class _Ty>
-        concept _Can_deref = requires(_Ty&& __t) { *static_cast<_Ty&&>(__t); };
+        concept _Can_deref = requires(_Ty&& __t) { *static_cast<_Ty &&>(__t); };
 
         struct _Must_have_ADL_found_iter_move_or_be_dereferenceable {};
 
@@ -975,10 +975,10 @@ using iter_common_reference_t = common_reference_t<iter_reference_t<_Ty>, _Indir
 
 _EXPORT_STD template <class _It, class _Ty>
 concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
-    *__i                                                                = static_cast<_Ty&&>(__t);
-    *static_cast<_It&&>(__i)                                            = static_cast<_Ty&&>(__t);
-    const_cast<const iter_reference_t<_It>&&>(*__i)                     = static_cast<_Ty&&>(__t);
-    const_cast<const iter_reference_t<_It>&&>(*static_cast<_It&&>(__i)) = static_cast<_Ty&&>(__t);
+    *__i                                                                  = static_cast<_Ty &&>(__t);
+    *static_cast<_It &&>(__i)                                             = static_cast<_Ty &&>(__t);
+    const_cast<const iter_reference_t<_It> &&>(*__i)                      = static_cast<_Ty &&>(__t);
+    const_cast<const iter_reference_t<_It> &&>(*static_cast<_It &&>(__i)) = static_cast<_Ty &&>(__t);
 };
 
 template <bool _Is_integer_class>
@@ -1052,7 +1052,7 @@ concept input_iterator = input_or_output_iterator<_It> && indirectly_readable<_I
 
 _EXPORT_STD template <class _It, class _Ty>
 concept output_iterator = input_or_output_iterator<_It> && indirectly_writable<_It, _Ty>
-                       && requires(_It __i, _Ty&& __t) { *__i++ = static_cast<_Ty&&>(__t); };
+                       && requires(_It __i, _Ty&& __t) { *__i++ = static_cast<_Ty &&>(__t); };
 
 _EXPORT_STD template <class _It>
 concept forward_iterator = input_iterator<_It> && derived_from<_Iter_concept<_It>, forward_iterator_tag>
@@ -1193,7 +1193,7 @@ namespace ranges {
         template <class _Ty1, class _Ty2>
         concept _Has_ADL =
             (_Has_class_or_enum_type<_Ty1> || _Has_class_or_enum_type<_Ty2>) && requires(_Ty1&& __t1, _Ty2&& __t2) {
-                iter_swap(static_cast<_Ty1&&>(__t1), static_cast<_Ty2&&>(__t2)); // intentional ADL
+                iter_swap(static_cast<_Ty1 &&>(__t1), static_cast<_Ty2 &&>(__t2)); // intentional ADL
             };
 
         template <class _Ty1, class _Ty2>
@@ -2994,7 +2994,7 @@ namespace ranges {
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES begin(static_cast<_CTy&&>(_Val))))
-            requires requires { _RANGES begin(static_cast<_CTy&&>(_Val)); }
+            requires requires { _RANGES begin(static_cast<_CTy &&>(_Val)); }
         {
             return _RANGES begin(static_cast<_CTy&&>(_Val));
         }
@@ -3024,7 +3024,7 @@ namespace ranges {
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES end(static_cast<_CTy&&>(_Val))))
-            requires requires { _RANGES end(static_cast<_CTy&&>(_Val)); }
+            requires requires { _RANGES end(static_cast<_CTy &&>(_Val)); }
         {
             return _RANGES end(static_cast<_CTy&&>(_Val));
         }
@@ -3194,7 +3194,7 @@ namespace ranges {
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES rbegin(static_cast<_CTy&&>(_Val))))
-            requires requires { _RANGES rbegin(static_cast<_CTy&&>(_Val)); }
+            requires requires { _RANGES rbegin(static_cast<_CTy &&>(_Val)); }
         {
             return _RANGES rbegin(static_cast<_CTy&&>(_Val));
         }
@@ -3224,7 +3224,7 @@ namespace ranges {
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES rend(static_cast<_CTy&&>(_Val))))
-            requires requires { _RANGES rend(static_cast<_CTy&&>(_Val)); }
+            requires requires { _RANGES rend(static_cast<_CTy &&>(_Val)); }
         {
             return _RANGES rend(static_cast<_CTy&&>(_Val));
         }
@@ -3451,7 +3451,7 @@ namespace ranges {
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES data(static_cast<_CTy&&>(_Val))))
-            requires requires { _RANGES data(static_cast<_CTy&&>(_Val)); }
+            requires requires { _RANGES data(static_cast<_CTy &&>(_Val)); }
         {
             return _RANGES data(static_cast<_CTy&&>(_Val));
         }
@@ -4550,7 +4550,7 @@ _NODISCARD _CONSTEXPR17 bool operator==(const move_iterator<_Iter1>& _Left, cons
     noexcept(noexcept(_STD _Fake_copy_init<bool>(_Left.base() == _Right.base()))) /* strengthened */
 #if _HAS_CXX20
     requires requires {
-        { _Left.base() == _Right.base() } -> _Implicitly_convertible_to<bool>;
+        { _Left.base() == _Right.base() }->_Implicitly_convertible_to<bool>;
     }
 #endif // _HAS_CXX20
 {
@@ -4570,7 +4570,7 @@ _NODISCARD _CONSTEXPR17 bool operator<(const move_iterator<_Iter1>& _Left, const
     noexcept(noexcept(_STD _Fake_copy_init<bool>(_Left.base() < _Right.base()))) /* strengthened */
 #if _HAS_CXX20
     requires requires {
-        { _Left.base() < _Right.base() } -> _Implicitly_convertible_to<bool>;
+        { _Left.base() < _Right.base() }->_Implicitly_convertible_to<bool>;
     }
 #endif // _HAS_CXX20
 {
@@ -4628,7 +4628,7 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter> operator+(
     noexcept(noexcept(move_iterator<_Iter>(_Right.base() + _Off))) /* strengthened */
 #if _HAS_CXX20
     requires requires {
-        { _Right.base() + _Off } -> same_as<_Iter>;
+        { _Right.base() + _Off }->same_as<_Iter>;
     }
 #endif // _HAS_CXX20
 {
@@ -5961,7 +5961,7 @@ _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
         {
             const auto _Num1  = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2  = static_cast<size_t>(_ULast2 - _UFirst2);
-            const size_t _Num = (_STD min)(_Num1, _Num2);
+            const size_t _Num = (_STD min) (_Num1, _Num2);
 #if _USE_STD_VECTOR_ALGORITHMS
             const auto _First1_ptr = _STD _To_address(_UFirst1);
             const auto _First2_ptr = _STD _To_address(_UFirst2);
@@ -6086,7 +6086,7 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(const _InIt1 _First1
         if (!_STD is_constant_evaluated()) {
             const auto _Num1  = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2  = static_cast<size_t>(_ULast2 - _UFirst2);
-            const size_t _Num = (_STD min)(_Num1, _Num2);
+            const size_t _Num = (_STD min) (_Num1, _Num2);
 #if _USE_STD_VECTOR_ALGORITHMS
             const auto _First1_ptr = _STD to_address(_UFirst1);
             const auto _First2_ptr = _STD to_address(_UFirst2);
@@ -7303,7 +7303,7 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
 _EXPORT_STD template <class _Ty>
 _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist) {
     // return leftmost/largest
-    return (_STD max)(_Ilist, less<>{});
+    return (_STD max) (_Ilist, less<>{});
 }
 
 #if _HAS_CXX20
@@ -7527,7 +7527,7 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
 _EXPORT_STD template <class _Ty>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist) {
     // return leftmost/smallest
-    return (_STD min)(_Ilist, less<>{});
+    return (_STD min) (_Ilist, less<>{});
 }
 
 #if _HAS_CXX20

@@ -45,7 +45,9 @@ void test_atomic_ref_constraints_single() { // COMPILE-ONLY
 
     static_assert(std::is_same_v<typename AR::value_type, TD>);
     static_assert(requires(const AR& r, TD v, std::memory_order ord) {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2574432
         r.operator TD();
+#endif // ^^^ no workaround ^^^
         { r.load() } -> std::same_as<TD>;
         { r.load(ord) } -> std::same_as<TD>;
         { r.wait(v) } -> std::same_as<void>;

@@ -74,7 +74,7 @@ _STD_BEGIN
 // https://github.com/ulfjack/ryu/tree/59661c3/ryu
 // (Keep the cgmanifest.json commitHash in sync.)
 
-// clang-format off
+// clang-format off: avoid diverging from external code
 
 // vvvvvvvvvv DERIVED FROM common.h vvvvvvvvvv
 

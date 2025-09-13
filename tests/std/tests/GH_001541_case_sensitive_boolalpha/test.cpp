@@ -15,19 +15,17 @@ struct TestCase {
     bool result;
 };
 
-// clang-format off
 constexpr TestCase test_cases[] = {
-    {"0",     ios_base::fmtflags{}, Parse::Success, false},
-    {"1",     ios_base::fmtflags{}, Parse::Success, true },
-    {"2",     ios_base::fmtflags{}, Parse::Failure, true }, // N4868 [facet.num.get.virtuals]/6
-    {"WOOF",  ios_base::fmtflags{}, Parse::Failure, false}, // N4868 [facet.num.get.virtuals]/3.6
-    {"false", ios_base::boolalpha,  Parse::Success, false},
-    {"true",  ios_base::boolalpha,  Parse::Success, true },
-    {"WOOF",  ios_base::boolalpha,  Parse::Failure, false}, // N4868 [facet.num.get.virtuals]/7
-    {"FALSE", ios_base::boolalpha,  Parse::Failure, false}, // GH-1541
-    {"TRUE",  ios_base::boolalpha,  Parse::Failure, false}, // GH-1541
+    {"0", ios_base::fmtflags{}, Parse::Success, false}, //
+    {"1", ios_base::fmtflags{}, Parse::Success, true}, //
+    {"2", ios_base::fmtflags{}, Parse::Failure, true}, // N4868 [facet.num.get.virtuals]/6
+    {"WOOF", ios_base::fmtflags{}, Parse::Failure, false}, // N4868 [facet.num.get.virtuals]/3.6
+    {"false", ios_base::boolalpha, Parse::Success, false}, //
+    {"true", ios_base::boolalpha, Parse::Success, true}, //
+    {"WOOF", ios_base::boolalpha, Parse::Failure, false}, // N4868 [facet.num.get.virtuals]/7
+    {"FALSE", ios_base::boolalpha, Parse::Failure, false}, // GH-1541
+    {"TRUE", ios_base::boolalpha, Parse::Failure, false}, // GH-1541
 };
-// clang-format on
 
 int main() {
     for (const auto& test : test_cases) {

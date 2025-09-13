@@ -34,7 +34,7 @@
 
 namespace std {
 
-    // clang-format off
+    // clang-format off: avoid diverging from external code
 
 // vvvvvvvvvv DERIVED FROM d2s_full_table.h vvvvvvvvvv
 

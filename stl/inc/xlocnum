@@ -1067,7 +1067,7 @@ private:
                 const ptrdiff_t _Exponent_part_preadjustment_round_up =
                     _Parse_hex ? (_STD abs(_Exponent_part) - 1) / 4 + 1 : _STD abs(_Exponent_part);
                 const ptrdiff_t _Exp_rep_adjustment =
-                    (_STD min)(_Exponent_part_preadjustment_round_up, _STD abs(_Power_of_rep_base));
+                    (_STD min) (_Exponent_part_preadjustment_round_up, _STD abs(_Power_of_rep_base));
 
                 if (_Exponent_part >= 0) {
                     _Exponent_part -= _Parse_hex ? _Exp_rep_adjustment * 4 : _Exp_rep_adjustment;
@@ -1362,7 +1362,7 @@ protected:
         }
 
         _Buf.resize(_Bufsize + 50); // add fudge factor
-        const bool _Is_finite      = (_STD isfinite)(_Val);
+        const bool _Is_finite      = (_STD isfinite) (_Val);
         const auto _Adjusted_flags = // TRANSITION, DevCom-10519861
             _Is_finite ? _Iosbase.flags() : _Iosbase.flags() & ~ios_base::showpoint;
         const auto _Ngen = static_cast<size_t>(_CSTD sprintf_s(
@@ -1389,7 +1389,7 @@ protected:
         }
 
         _Buf.resize(_Bufsize + 50); // add fudge factor
-        const bool _Is_finite      = (_STD isfinite)(_Val);
+        const bool _Is_finite      = (_STD isfinite) (_Val);
         const auto _Adjusted_flags = // TRANSITION, DevCom-10519861
             _Is_finite ? _Iosbase.flags() : _Iosbase.flags() & ~ios_base::showpoint;
         const auto _Ngen = static_cast<size_t>(_CSTD sprintf_s(

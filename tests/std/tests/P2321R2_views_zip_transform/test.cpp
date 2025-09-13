@@ -498,13 +498,10 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
             // Validate contents of zip-transformed range
             assert(ranges::equal(zipped_transformed_range, transformed_elements));
 
-#pragma warning(push)
-#pragma warning(disable : 4127) // Conditional Expression is Constant
             if (!(ranges::forward_range<AllView<RangeTypes>> && ...)) // intentionally not if constexpr
             {
                 return true;
             }
-#pragma warning(pop)
 
             // Validate view_interface::data()
             //

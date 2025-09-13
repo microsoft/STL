@@ -244,8 +244,7 @@ class STLTest(Test):
             elif (targetArch == 'arm64'.casefold()):
                 self.compileFlags.append('--target=arm64-pc-windows-msvc')
             elif (targetArch == 'arm64ec'.casefold()):
-                # TRANSITION, LLVM-116256 (fixed in Clang 20)
-                return Result(UNSUPPORTED, 'clang targeting arm64ec is not supported')
+                self.compileFlags.append('--target=arm64ec-pc-windows-msvc')
         elif ('nvcc'.casefold() in os.path.basename(cxx).casefold()):
             self._addCustomFeature('nvcc')
 
@@ -258,7 +257,7 @@ class STLTest(Test):
                 self.compileFlags.append('/arm64EC')
                 self.linkFlags.append('/machine:arm64ec')
 
-                # TRANSITION, Windows SDK 10.0.26100.4188 emits
+                # TRANSITION, Windows SDK 10.0.26100 emits
                 # "warning C28301: No annotations for first declaration of 'meow'"
                 # for various intrinsics when building for ARM64EC.
                 self.compileFlags.append('/wd28301')

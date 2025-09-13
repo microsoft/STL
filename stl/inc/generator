@@ -68,7 +68,7 @@ namespace _Gen_detail {
                 return (_Size + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
             } else {
                 // allocator is stateful, we need storage for it
-                constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
+                constexpr size_t _Align = (_STD max) (alignof(_Alloc), sizeof(_Aligned_block));
                 return (_Size + sizeof(_Alloc) + _Align - 1) / sizeof(_Aligned_block);
             }
         }
@@ -143,7 +143,7 @@ namespace _Gen_detail {
             if constexpr (_Stateless_allocator<_Alloc>) {
                 _Bytes += sizeof(_Aligned_block) - 1;
             } else {
-                constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
+                constexpr size_t _Align = (_STD max) (alignof(_Alloc), sizeof(_Aligned_block));
                 _Bytes += sizeof(_Alloc) + _Align - 1;
             }
             return _Bytes / sizeof(_Aligned_block);

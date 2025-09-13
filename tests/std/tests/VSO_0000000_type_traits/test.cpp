@@ -669,7 +669,7 @@ void test_all_function_types() {
     test_weird_function_type<int(int) const>();
     test_weird_function_type<int(int) volatile>();
     test_weird_function_type<int(int) const volatile>();
-    test_weird_function_type<int(int)&>();
+    test_weird_function_type<int(int) &>();
     test_weird_function_type<int(int) const&>();
     test_weird_function_type<int(int) volatile&>();
     test_weird_function_type<int(int) const volatile&>();
@@ -682,7 +682,7 @@ void test_all_function_types() {
     test_weird_function_type<int(int, ...) const>();
     test_weird_function_type<int(int, ...) volatile>();
     test_weird_function_type<int(int, ...) const volatile>();
-    test_weird_function_type<int(int, ...)&>();
+    test_weird_function_type<int(int, ...) &>();
     test_weird_function_type<int(int, ...) const&>();
     test_weird_function_type<int(int, ...) volatile&>();
     test_weird_function_type<int(int, ...) const volatile&>();

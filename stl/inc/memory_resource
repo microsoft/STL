@@ -324,7 +324,7 @@ namespace pmr {
 
         static constexpr bool _Prepare_oversized(size_t& _Bytes, size_t& _Align) noexcept {
             // adjust size and alignment to allow for an _Oversized_header
-            _Align = (_STD max)(_Align, alignof(_Oversized_header));
+            _Align = (_STD max) (_Align, alignof(_Oversized_header));
 
             if (_Bytes > SIZE_MAX - sizeof(_Oversized_header) - alignof(_Oversized_header) + 1) {
                 // no room for header + alignment padding
@@ -523,8 +523,8 @@ namespace pmr {
 
                 // scale _Next_capacity by 2, saturating so that _Size_for_capacity(_Next_capacity) cannot overflow
                 _Next_capacity =
-                    (_STD min)(_Next_capacity << 1, (_STD min)((PTRDIFF_MAX - sizeof(_Chunk)) >> _Log_of_size,
-                                                        _Pool_resource._Options.max_blocks_per_chunk));
+                    (_STD min) (_Next_capacity << 1, (_STD min) ((PTRDIFF_MAX - sizeof(_Chunk)) >> _Log_of_size,
+                                                         _Pool_resource._Options.max_blocks_per_chunk));
             }
         };
 
@@ -551,7 +551,7 @@ namespace pmr {
         pair<pmr::vector<_Pool>::iterator, unsigned char> _Find_pool(
             const size_t _Bytes, const size_t _Align) noexcept {
             // find the pool from which to allocate a block with size _Bytes and alignment _Align
-            const size_t _Size      = (_STD max)(_Bytes + sizeof(void*), _Align);
+            const size_t _Size      = (_STD max) (_Bytes + sizeof(void*), _Align);
             const auto _Log_of_size = static_cast<unsigned char>(_Ceiling_of_log_2(_Size));
             return {
                 _STD lower_bound(_Pools.begin(), _Pools.end(), _Log_of_size,
@@ -637,7 +637,7 @@ namespace pmr {
             // unscale _Next_buffer_size so the next allocation will be the same size as the most recent allocation
             // (keep synchronized with monotonic_buffer_resource::_Scale)
             const size_t _Unscaled = (_Next_buffer_size / 3 * 2 + alignof(_Header) - 1) & _Max_allocation;
-            _Next_buffer_size      = (_STD max)(_Unscaled, _Min_allocation);
+            _Next_buffer_size      = (_STD max) (_Unscaled, _Min_allocation);
 
             _Intrusive_stack<_Header> _Tmp{};
             _STD swap(_Tmp, _Chunks);
@@ -722,7 +722,7 @@ namespace pmr {
                 _New_size = (_Bytes + sizeof(_Header) + alignof(_Header) - 1) & _Max_allocation;
             }
 
-            const size_t _New_align = (_STD max)(alignof(_Header), _Align);
+            const size_t _New_align = (_STD max) (alignof(_Header), _Align);
 
             void* _New_buffer = _Resource->allocate(_New_size, _New_align);
             _Check_alignment(_New_buffer, _New_align);

@@ -95,8 +95,7 @@ protected:
             if (*_Pstate == 0) { // first time, maybe look for and consume header
                 *_Pstate = 1;
 
-                constexpr bool _Consuming = (_Mymode & consume_header) != 0;
-                if constexpr (_Consuming) {
+                if constexpr ((_Mymode & consume_header) != 0) {
                     if (_Ch == 0xfeff) { // drop header and retry
                         const result _Ans = do_in(_State, _Mid1, _Last1, _Mid1, _First2, _Last2, _Mid2);
 
@@ -157,9 +156,9 @@ protected:
             }
 
             if (*_Pstate == 0) { // first time, maybe generate header
-                *_Pstate                   = 1;
-                constexpr bool _Generating = (_Mymode & generate_header) != 0;
-                if constexpr (_Generating) {
+                *_Pstate = 1;
+
+                if constexpr ((_Mymode & generate_header) != 0) {
                     if (_Last2 - _Mid2 < 3 + 1 + _Nextra) {
                         return _Mybase::partial; // not enough room for both
                     }
@@ -267,9 +266,9 @@ protected:
                     _Ch0 = static_cast<unsigned short>(_Ptr[0] << 8 | _Ptr[1]);
                 }
 
-                *_Pstate                  = _Default_endian;
-                constexpr bool _Consuming = (_Mymode & consume_header) != 0;
-                if constexpr (_Consuming) {
+                *_Pstate = _Default_endian;
+
+                if constexpr ((_Mymode & consume_header) != 0) {
                     if (_Ch0 == 0xfffeu) {
                         *_Pstate = 3 - _Default_endian;
                     }
@@ -332,8 +331,7 @@ protected:
                 *_Pstate = _Big_first;
             }
 
-            constexpr bool _Generating = (_Mymode & generate_header) != 0;
-            if constexpr (_Generating) {
+            if constexpr ((_Mymode & generate_header) != 0) {
                 if (_Last2 - _Mid2 < 3 * _Bytes_per_word) {
                     return _Mybase::partial; // not enough room for all
                 }
@@ -550,8 +548,7 @@ protected:
             if (*_Pstate == 0u) { // first time, maybe look for and consume header
                 *_Pstate = 1;
 
-                constexpr bool _Consuming = (_Mymode & consume_header) != 0;
-                if constexpr (_Consuming) {
+                if constexpr ((_Mymode & consume_header) != 0) {
                     if (_Ch == 0xfeffu) { // drop header and retry
                         result _Ans = do_in(_State, _Mid1, _Last1, _Mid1, _First2, _Last2, _Mid2);
 

@@ -2906,7 +2906,7 @@ namespace test_predicate {
     void test() {
         {
             using Fn  = Bool (tag::*)(int);
-            using RFn = Bool (tag::*)(int)&&;
+            using RFn = Bool (tag::*)(int) &&;
             {
                 // N4849 [func.require]/1.1: "... f is a pointer to member function of a class T and
                 // is_base_of_v<T, remove_reference_t<decltype(t_1)>> is true"
@@ -3318,7 +3318,7 @@ namespace test_relation {
     struct Equivalent {
         template <class T, class U>
         constexpr decltype(auto) operator()(T&& t, U&& u) const
-            requires requires { static_cast<T&&>(t) == static_cast<U&&>(u); }
+            requires requires { static_cast<T &&>(t) == static_cast<U &&>(u); }
         {
             return static_cast<T&&>(t) == static_cast<U&&>(u);
         }

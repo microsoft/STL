@@ -484,7 +484,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 size_type _Clamp_suffix_size(const size_type _Off, const size_type _Size) const noexcept {
         // trims _Size to the longest it can be assuming a string at/after _Off
-        return (_STD min)(_Size, _Mysize - _Off);
+        return (_STD min) (_Size, _Mysize - _Off);
     }
 
     union _Bxty { // storage for small buffer or pointer to larger one
@@ -2145,7 +2145,7 @@ public:
             return;
         }
 
-        size_type _Target_capacity = (_STD min)(_My_data._Mysize | _Alloc_mask, max_size());
+        size_type _Target_capacity = (_STD min) (_My_data._Mysize | _Alloc_mask, max_size());
         if (_Target_capacity < _My_data._Myres) { // worth shrinking, do it
             auto& _Al = _Getal();
             const pointer _New_ptr =
@@ -2284,8 +2284,8 @@ public:
     _NODISCARD _CONSTEXPR20 size_type max_size() const noexcept {
         const size_type _Alloc_max   = _Alty_traits::max_size(_Getal());
         const size_type _Storage_max = // can always store small string
-            (_STD max)(_Alloc_max, static_cast<size_type>(_BUF_SIZE));
-        return (_STD min)(static_cast<size_type>(_STD _Max_limit<difference_type>()),
+            (_STD max) (_Alloc_max, static_cast<size_type>(_BUF_SIZE));
+        return (_STD min) (static_cast<size_type>(_STD _Max_limit<difference_type>()),
             _Storage_max - 1 // -1 is for null terminator and/or npos
         );
     }
@@ -2895,7 +2895,7 @@ private:
             return _Max;
         }
 
-        return (_STD max)(_Masked, _Old + _Old / 2);
+        return (_STD max) (_Masked, _Old + _Old / 2);
     }
 
     _NODISCARD _CONSTEXPR20 size_type _Calculate_growth(const size_type _Requested) const noexcept {

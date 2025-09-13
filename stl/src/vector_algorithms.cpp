@@ -252,49 +252,6 @@ namespace {
             }
         }
 
-
-        // TRANSITION, GH-5506 "VCRuntime: memmove() is surprisingly slow for more than 8 KB on certain CPUs":
-        // As a workaround, the following code calls memmove() for 8 KB portions.
-        constexpr size_t _Portion_size = 8192;
-        constexpr size_t _Portion_mask = _Portion_size - 1;
-        static_assert((_Portion_size & _Portion_mask) == 0);
-
-        void _Move_to_lower_address(void* _Dest, const void* _Src, const size_t _Size) noexcept {
-            const size_t _Whole_portions_size = _Size & ~_Portion_mask;
-
-            void* _Dest_end = _Dest;
-            _Advance_bytes(_Dest_end, _Whole_portions_size);
-
-            while (_Dest != _Dest_end) {
-                memmove(_Dest, _Src, _Portion_size);
-                _Advance_bytes(_Dest, _Portion_size);
-                _Advance_bytes(_Src, _Portion_size);
-            }
-
-            if (const size_t _Tail = _Size - _Whole_portions_size; _Tail != 0) {
-                memmove(_Dest, _Src, _Tail);
-            }
-        }
-
-        void _Move_to_higher_address(void* const _Dest, const void* const _Src, const size_t _Size) noexcept {
-            const size_t _Whole_portions_size = _Size & ~_Portion_mask;
-
-            void* _Dest_end = _Dest;
-            _Advance_bytes(_Dest_end, _Whole_portions_size);
-            const void* _Src_end = _Src;
-            _Advance_bytes(_Src_end, _Whole_portions_size);
-
-            if (const size_t _Tail = _Size - _Whole_portions_size; _Tail != 0) {
-                memmove(_Dest_end, _Src_end, _Tail);
-            }
-
-            while (_Dest_end != _Dest) {
-                _Rewind_bytes(_Dest_end, _Portion_size);
-                _Rewind_bytes(_Src_end, _Portion_size);
-                memmove(_Dest_end, _Src_end, _Portion_size);
-            }
-        }
-
         constexpr size_t _Buf_size = 512;
 
         bool _Use_buffer(const size_t _Smaller, const size_t _Larger) noexcept {
@@ -319,7 +276,7 @@ __declspec(noalias) void __stdcall __std_rotate(void* _First, void* const _Mid, 
 
             if (_Rotating::_Use_buffer(_Left, _Right)) {
                 memcpy(_Buf, _First, _Left);
-                _Rotating::_Move_to_lower_address(_First, _Mid, _Right);
+                memmove(_First, _Mid, _Right);
                 _Advance_bytes(_First, _Right);
                 memcpy(_First, _Buf, _Left);
                 break;
@@ -346,7 +303,7 @@ __declspec(noalias) void __stdcall __std_rotate(void* _First, void* const _Mid, 
                 memcpy(_Buf, _Last, _Right);
                 void* _Mid2 = _First;
                 _Advance_bytes(_Mid2, _Right);
-                _Rotating::_Move_to_higher_address(_Mid2, _First, _Left);
+                memmove(_Mid2, _First, _Left);
                 memcpy(_First, _Buf, _Right);
                 break;
             }
