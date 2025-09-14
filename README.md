@@ -164,12 +164,11 @@ For example, `<atomic>` has conditionally compiled code for the `_M_ARM64` and `
 
 # How To Build With The Visual Studio IDE
 
-1. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
-   `https://github.com/microsoft/STL`.
-2. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
-3. In the terminal, invoke `git submodule update --init --progress`
-4. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
-   settings are set by `CMakePresets.json`.
+1. Open Visual Studio and select "Clone a repository".
+2. Enter `https://github.com/microsoft/STL.git` as the repository location. Choose a local path. Click "Clone".
+3. File > Open > Folder... > Select the folder that you just cloned the repository into.
+4. Use the IDE's dropdown menu to choose the architecture you want to build. We recommend x64 for general development.
+5. Build > Build All.
 
 # How To Build With A Native Tools Command Prompt
 
