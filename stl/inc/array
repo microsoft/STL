@@ -115,8 +115,6 @@ public:
         return _Ptr;
     }
 
-    static constexpr bool _Unwrap_when_unverified = true;
-
     constexpr void _Seek_to(pointer _It) noexcept {
         _Ptr = _It;
     }
