@@ -141,20 +141,26 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # Visual Studio Installer Prerequisites
 
-1. Install [VS 2026 Insiders][] and keep it up to date.
-    + **You must install Insiders for STL development.** The STL and the compiler ship together, and we frequently
-    need the latest compiler fixes and features, so the last production release of the compiler is too old.
-2. Select the "Desktop development with C++" workload.
-3. Select the following components at a minimum:
-    + "MSVC v145 - C++ x64/x86 build tools (Latest)"
-    + "C++ CMake tools for Windows"
-    + "C++ AddressSanitizer"
-    + "Windows 11 SDK (10.0.26100)" or later
-    + "C++ Clang tools for Windows (20.1.8 - x64/x86)"
-    + *Optional:* "MSVC v145 - C++ ARM64/ARM64EC build tools (Latest)"
-4. Install [Python][] 3.13 or later.
-    + Select "Add python.exe to PATH" if you want to follow the instructions below that invoke `python`.
+* Install [VS 2026 Insiders][] and keep it up to date.
+  + **You must install Insiders for STL development.** *See Note 1 below.*
+  + Select the "Desktop development with C++" workload.
+  + Select the following components at a minimum:
+    - "MSVC v145 - C++ x64/x86 build tools (Latest)"
+    - "C++ CMake tools for Windows"
+    - "C++ AddressSanitizer"
+    - "Windows 11 SDK (10.0.26100)" or later
+    - "C++ Clang tools for Windows (20.1.8 - x64/x86)"
+    - *Optional, see Note 2 below:* "MSVC v145 - C++ ARM64/ARM64EC build tools (Latest)"
+* Install [Python][] 3.13 or later.
+  + Select "Add python.exe to PATH" if you want to follow the instructions below that invoke `python`.
     Otherwise, you should be familiar with alternative methods.
+
+*Note 1:* The STL and the compiler ship together, and we frequently need the latest
+compiler fixes and features, so the last production release of the compiler is too old.
+
+*Note 2:* The x64/x86 build tools are usually sufficient.
+You'll need the ARM64/ARM64EC build tools if you're working with architecture-sensitive code.
+For example, `<atomic>` has conditionally compiled code for the `_M_ARM64` and `_M_ARM64EC` predefined macros.
 
 # How To Build With The Visual Studio IDE
 
