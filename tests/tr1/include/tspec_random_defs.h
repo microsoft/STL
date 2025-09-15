@@ -129,6 +129,7 @@ One_arg poisson_distribution_vals[] = {
     {FLIT(99.0), FLIT(0.03986496337366227799), FLIT(0.0)},
 };
 
+#if _HAS_TR1_NAMESPACE
 typedef unsigned int uniform_int_type;
 uniform_int<uniform_int_type> uniform_int_dist(10, 90);
 int uniform_int_smaller_ok = 0;
@@ -164,6 +165,43 @@ One_arg uniform_real_vals[] = {
     {FLIT(88.0), FLIT(0.0), FLIT(0.0)},
     {FLIT(99.0), FLIT(0.0), FLIT(0.0)},
 };
+#else // ^^^ _HAS_TR1_NAMESPACE / !_HAS_TR1_NAMESPACE vvv
+typedef unsigned int uniform_int_distribution_type;
+uniform_int_distribution<uniform_int_distribution_type> uniform_int_distribution_dist(10, 90);
+int uniform_int_distribution_smaller_ok = 0;
+int uniform_int_distribution_larger_ok  = 0;
+
+One_arg uniform_int_distribution_vals[] = {
+    {FLIT(0.0), FLIT(0.0), FLIT(0.0)},
+    {FLIT(11.0), FLIT(0.012345679012345678328), FLIT(0.0)},
+    {FLIT(22.0), FLIT(0.012345679012345678328), FLIT(0.0)},
+    {FLIT(33.0), FLIT(0.012345679012345678328), FLIT(0.0)},
+    {FLIT(44.0), FLIT(0.012345679012345678328), FLIT(0.0)},
+    {FLIT(55.0), FLIT(0.012345679012345678328), FLIT(0.0)},
+    {FLIT(66.0), FLIT(0.012345679012345678328), FLIT(0.0)},
+    {FLIT(77.0), FLIT(0.012345679012345678328), FLIT(0.0)},
+    {FLIT(88.0), FLIT(0.012345679012345678328), FLIT(0.0)},
+    {FLIT(99.0), FLIT(0.0), FLIT(0.0)},
+};
+
+typedef double uniform_real_distribution_type;
+uniform_real_distribution<uniform_real_distribution_type> uniform_real_distribution_dist(40.2, 60.5);
+int uniform_real_distribution_smaller_ok = 0;
+int uniform_real_distribution_larger_ok  = 0;
+
+One_arg uniform_real_distribution_vals[] = {
+    {FLIT(0.0), FLIT(0.0), FLIT(0.0)},
+    {FLIT(11.0), FLIT(0.0), FLIT(0.0)},
+    {FLIT(22.0), FLIT(0.0), FLIT(0.0)},
+    {FLIT(33.0), FLIT(0.0), FLIT(0.0)},
+    {FLIT(44.0), FLIT(0.049261083743842366821), FLIT(0.0)},
+    {FLIT(55.0), FLIT(0.049261083743842366821), FLIT(0.0)},
+    {FLIT(66.0), FLIT(0.0), FLIT(0.0)},
+    {FLIT(77.0), FLIT(0.0), FLIT(0.0)},
+    {FLIT(88.0), FLIT(0.0), FLIT(0.0)},
+    {FLIT(99.0), FLIT(0.0), FLIT(0.0)},
+};
+#endif // ^^^ !_HAS_TR1_NAMESPACE ^^^
 
 typedef double cauchy_distribution_type;
 cauchy_distribution<cauchy_distribution_type> cauchy_distribution_dist(50.0, 20.0);

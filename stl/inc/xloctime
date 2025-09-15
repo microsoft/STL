@@ -421,6 +421,7 @@ protected:
                     // CodeQL [SM03231] This is parsing tm_year (years since 1900); leap years are irrelevant.
                     _Pt->tm_year = _Ans + 100; // [00, 68] parsed as [2000, 2068]
                 } else if (_Ans < 100) {
+                    // CodeQL [SM03231] This is parsing tm_year (years since 1900); leap years are irrelevant.
                     _Pt->tm_year = _Ans; // [69, 99] parsed as [1969, 1999]
                 }
             } else {
@@ -556,6 +557,7 @@ protected:
                     // CodeQL [SM03231] This is parsing tm_year (years since 1900); leap years are irrelevant.
                     _Pt->tm_year = _Ans + 100; // [00, 68] parsed as [2000, 2068]
                 } else {
+                    // CodeQL [SM03231] This is parsing tm_year (years since 1900); leap years are irrelevant.
                     _Pt->tm_year = _Ans; // [69, 99] parsed as [1969, 1999]
                 }
             }

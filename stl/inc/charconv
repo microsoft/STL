@@ -717,7 +717,7 @@ _NODISCARD inline bool _Multiply_by_power_of_ten(_Big_integer_flt& _Xval, const 
 
     for (uint32_t _Large_power = _Power / 10; _Large_power != 0;) {
         const uint32_t _Current_power =
-            (_STD min)(_Large_power, static_cast<uint32_t>(_STD size(_Large_power_indices)));
+            (_STD min) (_Large_power, static_cast<uint32_t>(_STD size(_Large_power_indices)));
 
         const _Unpack_index& _Index = _Large_power_indices[_Current_power - 1];
         _Big_integer_flt _Multiplier{};
@@ -1355,8 +1355,8 @@ _NODISCARD errc _Convert_decimal_string_to_floating_type(
     // fractional part. If the exponent is positive, then the integer part consists of the first 'exponent' digits,
     // or all present digits if there are fewer digits. If the exponent is zero or negative, then the integer part
     // is empty. In either case, the remaining digits form the fractional part of the mantissa.
-    const uint32_t _Positive_exponent      = static_cast<uint32_t>((_STD max)(0, _Data._Myexponent));
-    const uint32_t _Integer_digits_present = (_STD min)(_Positive_exponent, _Data._Mymantissa_count);
+    const uint32_t _Positive_exponent      = static_cast<uint32_t>((_STD max) (0, _Data._Myexponent));
+    const uint32_t _Integer_digits_present = (_STD min) (_Positive_exponent, _Data._Mymantissa_count);
     const uint32_t _Integer_digits_missing = _Positive_exponent - _Integer_digits_present;
     const uint8_t* const _Integer_first    = _Data._Mymantissa;
     const uint8_t* const _Integer_last     = _Data._Mymantissa + _Integer_digits_present;
@@ -1738,21 +1738,21 @@ _NODISCARD from_chars_result _Ordinary_floating_from_chars(const char* const _Fi
     // Adjust _Exponent and _Exponent_adjustment when they have different signedness to avoid overflow.
     if (_Exponent > 0 && _Exponent_adjustment < 0) {
         if (_Is_hexadecimal) {
-            const ptrdiff_t _Further_adjustment = (_STD max)(-((_Exponent - 1) / 4 + 1), _Exponent_adjustment);
+            const ptrdiff_t _Further_adjustment = (_STD max) (-((_Exponent - 1) / 4 + 1), _Exponent_adjustment);
             _Exponent += _Further_adjustment * 4;
             _Exponent_adjustment -= _Further_adjustment;
         } else {
-            const ptrdiff_t _Further_adjustment = (_STD max)(-_Exponent, _Exponent_adjustment);
+            const ptrdiff_t _Further_adjustment = (_STD max) (-_Exponent, _Exponent_adjustment);
             _Exponent += _Further_adjustment;
             _Exponent_adjustment -= _Further_adjustment;
         }
     } else if (_Exponent < 0 && _Exponent_adjustment > 0) {
         if (_Is_hexadecimal) {
-            const ptrdiff_t _Further_adjustment = (_STD min)((-_Exponent - 1) / 4 + 1, _Exponent_adjustment);
+            const ptrdiff_t _Further_adjustment = (_STD min) ((-_Exponent - 1) / 4 + 1, _Exponent_adjustment);
             _Exponent += _Further_adjustment * 4;
             _Exponent_adjustment -= _Further_adjustment;
         } else {
-            const ptrdiff_t _Further_adjustment = (_STD min)(-_Exponent, _Exponent_adjustment);
+            const ptrdiff_t _Further_adjustment = (_STD min) (-_Exponent, _Exponent_adjustment);
             _Exponent += _Further_adjustment;
             _Exponent_adjustment -= _Further_adjustment;
         }
@@ -2382,7 +2382,7 @@ _NODISCARD inline to_chars_result _Floating_to_chars_general_precision(
         _Table_end   = _Table_begin + _Precision + 5;
     } else {
         _Table_begin = _Tables::_Ordinary_X_table;
-        _Table_end   = _Table_begin + (_STD min)(_Precision, _Tables::_Max_P) + 5;
+        _Table_end   = _Table_begin + (_STD min) (_Precision, _Tables::_Max_P) + 5;
     }
 
     // Profiling indicates that linear search is faster than binary search for small tables.
@@ -2429,13 +2429,13 @@ _NODISCARD inline to_chars_result _Floating_to_chars_general_precision(
     // Write into the local buffer.
     // Clamping _Effective_precision allows _Buffer to be as small as possible, and increases efficiency.
     if (_Use_fixed_notation) {
-        _Effective_precision = (_STD min)(_Precision - (_Scientific_exponent_X + 1), _Max_fixed_precision);
+        _Effective_precision = (_STD min) (_Precision - (_Scientific_exponent_X + 1), _Max_fixed_precision);
         const to_chars_result _Buf_result =
             _Floating_to_chars_fixed_precision(_Buffer, _STD end(_Buffer), _Value, _Effective_precision);
         _STL_INTERNAL_CHECK(_Buf_result.ec == errc{});
         _Significand_last = _Buf_result.ptr;
     } else {
-        _Effective_precision = (_STD min)(_Precision - 1, _Max_scientific_precision);
+        _Effective_precision = (_STD min) (_Precision - 1, _Max_scientific_precision);
         const to_chars_result _Buf_result =
             _Floating_to_chars_scientific_precision(_Buffer, _STD end(_Buffer), _Value, _Effective_precision);
         _STL_INTERNAL_CHECK(_Buf_result.ec == errc{});

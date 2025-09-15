@@ -45,17 +45,23 @@ struct test_globals {
 };
 
 static void tuniform_int() {
+#if _HAS_TR1_NAMESPACE
     typedef STD uniform_int<int> dist_t;
+    constexpr int default_max = 9;
+#else // ^^^ _HAS_TR1_NAMESPACE / !_HAS_TR1_NAMESPACE vvv
+    typedef STD uniform_int_distribution<int> dist_t;
+    constexpr int default_max = STD numeric_limits<int>::max();
+#endif // ^^^ !_HAS_TR1_NAMESPACE ^^^
     bool st = STD is_same<dist_t::result_type, int>::value;
     CHECK(st);
 
     dist_t dist0;
     CHECK_INT(dist0.min(), 0);
-    CHECK_INT(dist0.max(), 9);
+    CHECK_INT(dist0.max(), default_max);
     dist0.reset();
     dist_t dist1(1);
     CHECK_INT(dist1.min(), 1);
-    CHECK_INT(dist1.max(), 9);
+    CHECK_INT(dist1.max(), default_max);
     dist_t dist2(2, 8);
     CHECK_INT(dist2.min(), 2);
     CHECK_INT(dist2.max(), 8);
@@ -63,7 +69,7 @@ static void tuniform_int() {
     str << dist0;
     str >> dist2;
     CHECK_INT(dist2.min(), 0);
-    CHECK_INT(dist2.max(), 9);
+    CHECK_INT(dist2.max(), default_max);
 
     test_globals<dist_t>::test();
 }
@@ -206,7 +212,11 @@ static void tbinomial_distribution() {
 }
 
 static void tuniform_real() {
+#if _HAS_TR1_NAMESPACE
     typedef STD uniform_real<double> dist_t;
+#else // ^^^ _HAS_TR1_NAMESPACE / !_HAS_TR1_NAMESPACE vvv
+    typedef STD uniform_real_distribution<double> dist_t;
+#endif // ^^^ !_HAS_TR1_NAMESPACE ^^^
     bool st = STD is_same<dist_t::result_type, double>::value;
     CHECK(st);
 

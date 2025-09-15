@@ -1917,7 +1917,8 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 size_type max_size() const noexcept {
-        return (_STD min)(static_cast<size_type>(_STD _Max_limit<difference_type>()), _Alty_traits::max_size(_Getal()));
+        return (_STD min) (static_cast<size_type>(_STD _Max_limit<difference_type>()), //
+            _Alty_traits::max_size(_Getal()));
     }
 
     _NODISCARD _CONSTEXPR20 size_type capacity() const noexcept {
@@ -2333,7 +2334,7 @@ _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
     const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     if constexpr (is_same_v<_Ty, bool>) {
         // This optimization works because vector<bool> "trims" its underlying storage by zeroing out unused bits.
-        const auto _Min_word_size = (_STD min)(_Left._Myvec.size(), _Right._Myvec.size());
+        const auto _Min_word_size = (_STD min) (_Left._Myvec.size(), _Right._Myvec.size());
         const auto _Left_words    = _Left._Myvec._Unchecked_begin();
         const auto _Right_words   = _Right._Myvec._Unchecked_begin();
 
@@ -2360,7 +2361,7 @@ _NODISCARD _CONSTEXPR20 bool operator<(const vector<_Ty, _Alloc>& _Left, const v
         auto _First = _Left._Myvec._Unchecked_begin();
         auto _Other = _Right._Myvec._Unchecked_begin();
 
-        const auto _Last = _First + (_STD min)(_Left._Myvec.size(), _Right._Myvec.size());
+        const auto _Last = _First + (_STD min) (_Left._Myvec.size(), _Right._Myvec.size());
 
         for (; _First != _Last; ++_First, (void) ++_Other) {
             using _Comp        = _Vbase_compare_three_way<signed char>;
@@ -3203,8 +3204,11 @@ public:
             return _Diff_max;
         }
 
+#pragma warning(push)
+#pragma warning(disable : 26450) // TRANSITION, VSO-2565428
         // max_size bound by underlying storage limits
         return static_cast<size_type>(_Ints_max * _VBITS);
+#pragma warning(pop)
     }
 
     _NODISCARD_EMPTY_MEMBER _CONSTEXPR20 bool empty() const noexcept {

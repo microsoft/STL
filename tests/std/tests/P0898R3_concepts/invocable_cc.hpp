@@ -16,7 +16,7 @@ void NAME() {
 
     {
         using Fn  = int (MCALLCONV tag::*)(int);
-        using RFn = int (MCALLCONV tag::*)(int)&&;
+        using RFn = int (MCALLCONV tag::*)(int) &&;
         {
             // N4849 [func.require]/1.1: "... f is a pointer to member function of a class T and
             // is_base_of_v<T, remove_reference_t<decltype(t_1)>> is true"
@@ -355,10 +355,10 @@ void NAME() {
         static_assert(test<PMF1PCV, S&, int>());
         static_assert(test<PMF1PCV, S&, int, long>());
 
-        using PMF0R  = int (MCALLCONV S::*)()&;
+        using PMF0R  = int (MCALLCONV S::*)() &;
         using PMF1R  = int* (MCALLCONV S::*) (long) &;
         using PMF2R  = int& (MCALLCONV S::*) (long, int) &;
-        using PMF1PR = int const& (S::*) (int, ...)&;
+        using PMF1PR = int const& (S::*) (int, ...) &;
         static_assert(!test<PMF0R, S>());
         static_assert(test<PMF0R, S&>());
         static_assert(test<PMF0R, S*>());
@@ -553,10 +553,10 @@ void NAME() {
         static_assert(test<PMF1PCVR, S&, int>());
         static_assert(test<PMF1PCVR, S&, int, long>());
 
-        using PMF0RR  = int (MCALLCONV S::*)()&&;
+        using PMF0RR  = int (MCALLCONV S::*)() &&;
         using PMF1RR  = int* (MCALLCONV S::*) (long) &&;
         using PMF2RR  = int& (MCALLCONV S::*) (long, int) &&;
-        using PMF1PRR = int const& (S::*) (int, ...)&&;
+        using PMF1PRR = int const& (S::*) (int, ...) &&;
         static_assert(test<PMF0RR, S>());
         static_assert(!test<PMF0RR, S&>());
         static_assert(!test<PMF0RR, S*>());

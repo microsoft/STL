@@ -366,7 +366,7 @@ static void test_regex() { // test template basic_regex
     CHECK_INT(r3.mark_count(), 1);
 
     STDString arg(T("((d(e))f)"));
-    MyRgx r4(arg, (MyRgx::flag_type)(MyRgx::icase | MyRgx::extended));
+    MyRgx r4(arg, (MyRgx::flag_type) (MyRgx::icase | MyRgx::extended));
     CHECK_INT(r4.flags(), MyRgx::icase | MyRgx::extended);
     CHECK_INT(r4.mark_count(), 3);
 
@@ -447,7 +447,7 @@ static void test_regex() { // test template basic_regex
 
     {
         STD initializer_list<CHR> init{'(', '(', 'd', '(', 'e', ')', ')', 'f', ')'};
-        MyRgx r11(init, (MyRgx::flag_type)(MyRgx::icase | MyRgx::extended));
+        MyRgx r11(init, (MyRgx::flag_type) (MyRgx::icase | MyRgx::extended));
         CHECK_INT(r11.flags(), MyRgx::icase | MyRgx::extended);
         CHECK_INT(r11.mark_count(), 3);
 
