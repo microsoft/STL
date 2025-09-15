@@ -213,7 +213,7 @@ struct emplace_argument {
     emplace_argument(key) {}
 };
 
-// clang-format off
+// clang-format off: make macros readable
 
 #define DEFINE_TYPE(name, def_ctor, copy_ctor, move_ctor, emp_ctor, swappable, copy_assign, move_assign, emp_assign) \
     class name {                                                                                                     \
@@ -468,39 +468,37 @@ struct container_traits<tag_unordered_set> : unordered_set_associative_container
 //
 //
 
-// clang-format off
-
 #ifdef __clang__
-    #pragma clang diagnostic ignored "-Wunused-local-typedef"
+#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #endif // __clang__
 
-#define GENERATE_CONTAINER_TYPEDEFS(name, opt_typename)                             \
-    typedef opt_typename Traits::template bind_container<name>::type c_of_ ## name; \
-    typedef opt_typename Traits::template bind_value    <name>::type v_of_ ## name;
+#define GENERATE_CONTAINER_TYPEDEFS(opt_typename, name)                           \
+    typedef opt_typename Traits::template bind_container<name>::type c_of_##name; \
+    typedef opt_typename Traits::template bind_value<name>::type v_of_##name;
 
 #define GENERATE_ALL_CONTAINER_TYPEDEFS(unused, opt_typename)        \
-    GENERATE_CONTAINER_TYPEDEFS(erasable,              opt_typename) \
-    GENERATE_CONTAINER_TYPEDEFS(default_constructible, opt_typename) \
-    GENERATE_CONTAINER_TYPEDEFS(copy_insertable,       opt_typename) \
-    GENERATE_CONTAINER_TYPEDEFS(move_insertable,       opt_typename) \
-    GENERATE_CONTAINER_TYPEDEFS(emplace_constructible, opt_typename) \
-    GENERATE_CONTAINER_TYPEDEFS(copy_assignable,       opt_typename) \
-    GENERATE_CONTAINER_TYPEDEFS(move_assignable,       opt_typename) \
-    GENERATE_CONTAINER_TYPEDEFS(equality_comparable,   opt_typename) \
-    GENERATE_CONTAINER_TYPEDEFS(less_comparable,       opt_typename) \
-    GENERATE_CONTAINER_TYPEDEFS(ca_ci,                 opt_typename) \
-    GENERATE_CONTAINER_TYPEDEFS(ci_ma,                 opt_typename) \
-    GENERATE_CONTAINER_TYPEDEFS(dc_mi,                 opt_typename) \
-    GENERATE_CONTAINER_TYPEDEFS(ec_ma_mi,              opt_typename) \
-    GENERATE_CONTAINER_TYPEDEFS(ec_mi,                 opt_typename) \
-    GENERATE_CONTAINER_TYPEDEFS(ma_mi,                 opt_typename) \
-    GENERATE_CONTAINER_TYPEDEFS(ec_ea,                 opt_typename) \
-    GENERATE_CONTAINER_TYPEDEFS(ec_ea_mi,              opt_typename)
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, erasable)              \
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, default_constructible) \
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, copy_insertable)       \
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, move_insertable)       \
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, emplace_constructible) \
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, copy_assignable)       \
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, move_assignable)       \
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, equality_comparable)   \
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, less_comparable)       \
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, ca_ci)                 \
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, ci_ma)                 \
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, dc_mi)                 \
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, ec_ma_mi)              \
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, ec_mi)                 \
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, ma_mi)                 \
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, ec_ea)                 \
+    GENERATE_CONTAINER_TYPEDEFS(opt_typename, ec_ea_mi)
 
 #define DEFINE_TEST_IMPL(name, opt_typename, template_parameters, specialization, preface_text, ...) \
     template <template_parameters>                                                                   \
     struct name specialization {                                                                     \
-        preface_text                                                                                 \
+        preface_text;                                                                                \
         typedef container_traits<Tag> Traits;                                                        \
                                                                                                      \
         name() {                                                                                     \
@@ -509,32 +507,17 @@ struct container_traits<tag_unordered_set> : unordered_set_associative_container
         }                                                                                            \
     }
 
-#define DEFINE_TEST(name, ...)                                                       \
-    DEFINE_TEST_IMPL(                                                                \
-        /* name                */ name,                                              \
-        /* opt_typename        */ typename,                                          \
-        /* template_parameters */ container_tag Tag,                                 \
-        /* specialization      */ /* empty */,                                       \
-        /* preface_text        */ /* empty */,                                       \
-        /* ...                 */ __VA_ARGS__)
+#define DEFINE_TEST(name, ...) \
+    DEFINE_TEST_IMPL(name, typename, container_tag Tag, /* empty */, /* empty */, __VA_ARGS__)
 
-#define DEFINE_TEST_SPECIALIZATION(name, specialized_tag, ...)                       \
-    DEFINE_TEST_IMPL(                                                                \
-        /* name                */ name,                                              \
-        /* opt_typename        */ /* empty */,                                       \
-        /* template_parameters */ /* empty */,                                       \
-        /* specialization      */ <specialized_tag>,                                 \
-        /* preface_text        */ static container_tag const Tag = specialized_tag;, \
-        /* ...                 */ __VA_ARGS__)
+#define DEFINE_TEST_SPECIALIZATION(name, my_tag, ...) \
+    DEFINE_TEST_IMPL(name, /* empty */, /* empty */, <my_tag>, static container_tag const Tag = my_tag;, __VA_ARGS__)
 
 // These macros prevent the test named 'name' from being run for the container specified by the
 // 'specialized_tag'.  The NOT_SUPPORTED_SPECIALIZATION macro should be used for tests that do not
 // pass because the container is specified as not supporting the operation being tested.
 
-#define NOT_SUPPORTED_SPECIALIZATION(name, specialized_tag) \
-    DEFINE_TEST_SPECIALIZATION(name, specialized_tag, { })
-
-// clang-format on
+#define NOT_SUPPORTED_SPECIALIZATION(name, specialized_tag) DEFINE_TEST_SPECIALIZATION(name, specialized_tag, {})
 
 
 //
