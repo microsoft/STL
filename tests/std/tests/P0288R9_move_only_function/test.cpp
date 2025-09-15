@@ -458,7 +458,7 @@ void test_const() {
 void test_qual() {
     move_only_function<int(int)> f1([](auto i) { return i + 1; });
     assert(f1(1) == 2);
-    move_only_function<int(int)&> f2([](auto i) { return i + 1; });
+    move_only_function<int(int) &> f2([](auto i) { return i + 1; });
     assert(f2(2) == 3);
     move_only_function<int(int) &&> f3([](auto i) { return i + 1; });
     assert(move(f3)(3) == 4);

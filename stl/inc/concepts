@@ -48,22 +48,20 @@ concept common_reference_with =
     } && same_as<common_reference_t<_Ty1, _Ty2>, common_reference_t<_Ty2, _Ty1>>
     && convertible_to<_Ty1, common_reference_t<_Ty1, _Ty2>> && convertible_to<_Ty2, common_reference_t<_Ty1, _Ty2>>;
 
-// clang-format off
 _EXPORT_STD template <class _Ty1, class _Ty2>
 concept common_with =
     requires {
         typename common_type_t<_Ty1, _Ty2>;
         typename common_type_t<_Ty2, _Ty1>;
-    }
-    && same_as<common_type_t<_Ty1, _Ty2>, common_type_t<_Ty2, _Ty1>>
+    } //
+    && same_as<common_type_t<_Ty1, _Ty2>, common_type_t<_Ty2, _Ty1>> //
     && requires {
         static_cast<common_type_t<_Ty1, _Ty2>>(_STD declval<_Ty1>());
         static_cast<common_type_t<_Ty1, _Ty2>>(_STD declval<_Ty2>());
-    }
-    && common_reference_with<add_lvalue_reference_t<const _Ty1>, add_lvalue_reference_t<const _Ty2>>
+    } //
+    && common_reference_with<add_lvalue_reference_t<const _Ty1>, add_lvalue_reference_t<const _Ty2>> //
     && common_reference_with<add_lvalue_reference_t<common_type_t<_Ty1, _Ty2>>,
         common_reference_t<add_lvalue_reference_t<const _Ty1>, add_lvalue_reference_t<const _Ty2>>>;
-// clang-format on
 
 _EXPORT_STD template <class _Ty>
 concept integral = is_integral_v<_Ty>;
@@ -81,7 +79,7 @@ _EXPORT_STD template <class _LTy, class _RTy>
 concept assignable_from = is_lvalue_reference_v<_LTy>
                        && common_reference_with<const remove_reference_t<_LTy>&, const remove_reference_t<_RTy>&>
                        && requires(_LTy _Left, _RTy&& _Right) {
-                              { _Left = static_cast<_RTy&&>(_Right) } -> same_as<_LTy>;
+                              { _Left = static_cast<_RTy &&>(_Right) } -> same_as<_LTy>;
                           };
 
 // swappable and swappable_with are defined below, since they depend on move_constructible.
@@ -113,7 +111,7 @@ namespace ranges {
         template <class _Ty1, class _Ty2>
         concept _Use_ADL_swap =
             (_Has_class_or_enum_type<_Ty1> || _Has_class_or_enum_type<_Ty2>) && requires(_Ty1&& __t, _Ty2&& __u) {
-                swap(static_cast<_Ty1&&>(__t), static_cast<_Ty2&&>(__u)); // intentional ADL
+                swap(static_cast<_Ty1 &&>(__t), static_cast<_Ty2 &&>(__u)); // intentional ADL
             };
 
         struct _Cpo {
@@ -162,10 +160,10 @@ concept swappable = requires(_Ty& __x, _Ty& __y) { _RANGES swap(__x, __y); };
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 concept swappable_with = common_reference_with<_Ty1, _Ty2> && requires(_Ty1&& __t, _Ty2&& __u) {
-    _RANGES swap(static_cast<_Ty1&&>(__t), static_cast<_Ty1&&>(__t));
-    _RANGES swap(static_cast<_Ty2&&>(__u), static_cast<_Ty2&&>(__u));
-    _RANGES swap(static_cast<_Ty1&&>(__t), static_cast<_Ty2&&>(__u));
-    _RANGES swap(static_cast<_Ty2&&>(__u), static_cast<_Ty1&&>(__t));
+    _RANGES swap(static_cast<_Ty1 &&>(__t), static_cast<_Ty1 &&>(__t));
+    _RANGES swap(static_cast<_Ty2 &&>(__u), static_cast<_Ty2 &&>(__u));
+    _RANGES swap(static_cast<_Ty1 &&>(__t), static_cast<_Ty2 &&>(__u));
+    _RANGES swap(static_cast<_Ty2 &&>(__u), static_cast<_Ty1 &&>(__t));
 };
 
 _EXPORT_STD template <class _Ty>
@@ -178,7 +176,7 @@ concept _Boolean_testable_impl = convertible_to<_Ty, bool>;
 
 template <class _Ty>
 concept _Boolean_testable = _Boolean_testable_impl<_Ty> && requires(_Ty&& __t) {
-    { !static_cast<_Ty&&>(__t) } -> _Boolean_testable_impl;
+    { !static_cast<_Ty &&>(__t) } -> _Boolean_testable_impl;
 };
 
 template <class _Ty1, class _Ty2>
@@ -251,7 +249,7 @@ concept regular = semiregular<_Ty> && equality_comparable<_Ty>;
 
 _EXPORT_STD template <class _FTy, class... _ArgTys>
 concept invocable = requires(
-    _FTy&& _Fn, _ArgTys&&... _Args) { _STD invoke(static_cast<_FTy&&>(_Fn), static_cast<_ArgTys&&>(_Args)...); };
+    _FTy&& _Fn, _ArgTys&&... _Args) { _STD invoke(static_cast<_FTy &&>(_Fn), static_cast<_ArgTys &&>(_Args)...); };
 
 _EXPORT_STD template <class _FTy, class... _ArgTys>
 concept regular_invocable = invocable<_FTy, _ArgTys...>;
