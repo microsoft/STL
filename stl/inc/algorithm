@@ -404,13 +404,13 @@ template <class _Diff>
 constexpr ptrdiff_t _Temporary_buffer_size(const _Diff _Value) noexcept {
     // convert an iterator difference_type to a ptrdiff_t for use in temporary buffers
     using _CT = common_type_t<ptrdiff_t, _Diff>;
-    return static_cast<ptrdiff_t>((_STD min)(static_cast<_CT>(PTRDIFF_MAX), static_cast<_CT>(_Value)));
+    return static_cast<ptrdiff_t>((_STD min) (static_cast<_CT>(PTRDIFF_MAX), static_cast<_CT>(_Value)));
 }
 
 template <class _Ty>
 struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like attempt
     static constexpr size_t _Optimistic_size  = 4096; // default to ~1 page
-    static constexpr size_t _Optimistic_count = (_STD max)(static_cast<size_t>(1), _Optimistic_size / sizeof(_Ty));
+    static constexpr size_t _Optimistic_count = (_STD max) (static_cast<size_t>(1), _Optimistic_size / sizeof(_Ty));
 
     template <class _Diff>
     explicit _Optimistic_temporary_buffer(const _Diff _Requested_size) noexcept { // get temporary storage
@@ -945,7 +945,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
         using _CT         = _Common_diff_t<_InIt1, _InIt2>;
         const _CT _Count1 = _ULast1 - _UFirst1;
         const _CT _Count2 = _ULast2 - _UFirst2;
-        const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min)(_Count1, _Count2));
+        const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min) (_Count1, _Count2));
         _ULast1           = _UFirst1 + _Count;
 #if _USE_STD_VECTOR_ALGORITHMS
         if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
@@ -3967,7 +3967,7 @@ namespace ranges {
                 const auto _First2_addr   = _STD to_address(_First2);
                 if constexpr (_Is_sized1 && _Is_sized2) {
                     const size_t _Count =
-                        (_STD min)(static_cast<size_t>(_Last1 - _First1), static_cast<size_t>(_Last2 - _First2));
+                        (_STD min) (static_cast<size_t>(_Last1 - _First1), static_cast<size_t>(_Last2 - _First2));
                     const auto _Last1_addr = _First1_addr + _Count;
                     ::__std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
                     return {_First1 + static_cast<iter_difference_t<_It1>>(_Count),
@@ -5962,7 +5962,7 @@ public:
 
     explicit _Rng_from_urng(_Urng& _Func)
         : _Ref(_Func), _Bits(CHAR_BIT * sizeof(_Udiff)), _Bmask(static_cast<_Udiff>(-1)) {
-        for (; static_cast<_Udiff>((_Urng::max)() - (_Urng::min)()) < _Bmask; _Bmask >>= 1) {
+        for (; static_cast<_Udiff>((_Urng::max) () - (_Urng::min) ()) < _Bmask; _Bmask >>= 1) {
             --_Bits;
         }
     }
@@ -6006,7 +6006,7 @@ public:
 private:
     _Udiff _Get_bits() { // return a random value within [0, _Bmask]
         for (;;) { // repeat until random value is in range
-            const _Udiff _Val = static_cast<_Udiff>(_Ref() - (_Urng::min)());
+            const _Udiff _Val = static_cast<_Udiff>(_Ref() - (_Urng::min) ());
 
             if (_Val <= _Bmask) {
                 return _Val;
@@ -6103,7 +6103,7 @@ _EXPORT_STD template <class _Ty>
 concept uniform_random_bit_generator = invocable<_Ty&> && unsigned_integral<invoke_result_t<_Ty&>> && requires {
     { (_Ty::min)() } -> same_as<invoke_result_t<_Ty&>>;
     { (_Ty::max)() } -> same_as<invoke_result_t<_Ty&>>;
-    requires bool_constant<(_Ty::min)() < (_Ty::max)()>::value;
+    requires bool_constant<(_Ty::min) () < (_Ty::max) ()>::value;
 };
 
 namespace ranges {
@@ -8320,7 +8320,7 @@ void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred) {
     }
 
     const _Diff _Count2 = _STD distance(_UMid, _ULast);
-    _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{(_STD min)(_Count1, _Count2)};
+    _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{(_STD min) (_Count1, _Count2)};
     _STD _Buffered_inplace_merge_unchecked_impl(
         _UFirst, _UMid, _ULast, _Count1, _Count2, _Temp_buf._Data, _Temp_buf._Capacity, _STD _Pass_fn(_Pred));
 }
@@ -8671,7 +8671,7 @@ namespace ranges {
             }
 
             const iter_difference_t<_It> _Count2 = _RANGES distance(_Mid, _Last);
-            _Optimistic_temporary_buffer<iter_value_t<_It>> _Temp_buf{(_STD min)(_Count1, _Count2)};
+            _Optimistic_temporary_buffer<iter_value_t<_It>> _Temp_buf{(_STD min) (_Count1, _Count2)};
             if (_Count1 <= _Count2 && _Count1 <= _Temp_buf._Capacity) {
                 _RANGES _Inplace_merge_buffer_left(_STD move(_First), _STD move(_Mid), _STD move(_Last),
                     _Temp_buf._Data, _Temp_buf._Capacity, _Pred, _Proj);
@@ -9162,7 +9162,7 @@ void _Uninitialized_chunked_merge_unchecked2(
     while (_Count > _Isort_max<_BidIt>) {
         _Count -= _Isort_max<_BidIt>;
         const _BidIt _Mid1 = _STD next(_First, _Isort_max<_BidIt>);
-        const auto _Chunk2 = (_STD min)(_Isort_max<_BidIt>, _Count);
+        const auto _Chunk2 = (_STD min) (_Isort_max<_BidIt>, _Count);
         _Count -= _Chunk2;
         const _BidIt _Mid2 = _STD next(_Mid1, _Chunk2);
         _Backout._Last     = _STD _Uninitialized_merge_move(_First, _Mid1, _Mid2, _Backout._Last, _Pred);
@@ -9182,7 +9182,7 @@ void _Chunked_merge_unchecked(_BidIt _First, const _BidIt _Last, _OutIt _Dest, c
     while (_Chunk < _Count) {
         _Count -= _Chunk;
         const _BidIt _Mid1 = _STD next(_First, _Chunk);
-        const auto _Chunk2 = (_STD min)(_Chunk, _Count);
+        const auto _Chunk2 = (_STD min) (_Chunk, _Count);
         _Count -= _Chunk2;
         const _BidIt _Mid2 = _STD next(_Mid1, _Chunk2);
         _Dest              = _STD _Merge_move_unchecked(_First, _Mid1, _Mid2, _Dest, _Pred);
@@ -9455,7 +9455,7 @@ namespace ranges {
             const auto _Backout_end = _Dest + _Count;
             while (_ISORT_MAX < _Count) {
                 _Count -= _ISORT_MAX;
-                const auto _Chunk2 = (_STD min)(static_cast<ptrdiff_t>(_ISORT_MAX), _Count);
+                const auto _Chunk2 = (_STD min) (static_cast<ptrdiff_t>(_ISORT_MAX), _Count);
                 _Count -= _Chunk2;
 
                 auto _Mid1     = _First + _Isort_max<_It>;
@@ -9551,7 +9551,7 @@ namespace ranges {
 
             while (_Chunk_size < _Count) {
                 _Count -= _Chunk_size;
-                const auto _Right_chunk_size = (_STD min)(_Chunk_size, _Count);
+                const auto _Right_chunk_size = (_STD min) (_Chunk_size, _Count);
                 _Count -= _Right_chunk_size;
 
                 auto _Mid1  = _First + static_cast<iter_difference_t<_It1>>(_Chunk_size);
@@ -11755,7 +11755,7 @@ namespace ranges {
                         _Num2 = SIZE_MAX;
                     }
 
-                    const size_t _Num = (_STD min)(_Num1, _Num2);
+                    const size_t _Num = (_STD min) (_Num1, _Num2);
 #if _USE_STD_VECTOR_ALGORITHMS
                     const auto _First1_ptr = _STD to_address(_First1);
                     const auto _First2_ptr = _STD to_address(_First2);

@@ -430,7 +430,7 @@ public:
     }
 
     static bool _Signbit(_Ty _Left) {
-        return (_STD signbit)(static_cast<double>(_Left));
+        return (_STD signbit) (static_cast<double>(_Left));
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -574,7 +574,7 @@ public:
 
     static bool _Signbit(_Ty _Left) noexcept {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return (_STD signbit)(_Left);
+        return (_STD signbit) (_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) noexcept { // return sinh(_Left) * _Right
@@ -710,7 +710,7 @@ public:
 
     static bool _Signbit(_Ty _Left) noexcept {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return (_STD signbit)(_Left);
+        return (_STD signbit) (_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) noexcept { // return sinh(_Left) * _Right
@@ -849,7 +849,7 @@ public:
 
     static bool _Signbit(_Ty _Left) noexcept {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return (_STD signbit)(_Left);
+        return (_STD signbit) (_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) noexcept { // return sinh(_Left) * _Right

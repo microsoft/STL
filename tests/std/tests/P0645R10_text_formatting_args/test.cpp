@@ -268,7 +268,7 @@ void test_lvalue_only_visitation() {
 }
 
 template <class Context, class... Args>
-concept CanMakeFormatArgs = requires(Args&&... args) { make_format_args<Context>(static_cast<Args&&>(args)...); };
+concept CanMakeFormatArgs = requires(Args&&... args) { make_format_args<Context>(static_cast<Args &&>(args)...); };
 
 // P2905R2 Runtime format strings (make make_(w)format_args only take lvalue references)
 template <class Context>
