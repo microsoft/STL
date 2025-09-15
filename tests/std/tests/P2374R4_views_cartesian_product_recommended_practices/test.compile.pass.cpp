@@ -43,7 +43,7 @@ constexpr void check_array() {
     static_assert(_Compile_time_max_size<const int[9]> == 9);
 
     // Computing cartesian product for small arrays does not require big range_size_t
-    using A1 = all_t<int(&)[4]>;
+    using A1 = all_t<int (&)[4]>;
     static_assert(sizeof(cpv_size_t<A1>) <= sizeof(size_t));
     static_assert(sizeof(cpv_size_t<A1, A1>) <= sizeof(size_t));
     static_assert(sizeof(cpv_size_t<A1, A1, A1>) <= sizeof(size_t));
@@ -54,7 +54,7 @@ constexpr void check_array() {
     static_assert(sizeof(cpv_difference_t<A1, A1, A1>) <= sizeof(ptrdiff_t));
 
     // Computing cartesian product for big arrays requires bigger types
-    using A2 = all_t<int(&)[500'000'000]>;
+    using A2 = all_t<int (&)[500'000'000]>;
     static_assert(sizeof(cpv_size_t<A2, A2, A2>) > sizeof(size_t));
     static_assert(sizeof(cpv_difference_t<A2, A2, A2>) > sizeof(ptrdiff_t));
 }
@@ -175,11 +175,7 @@ constexpr void check_single_view() {
 
 enum class CheckConstAdaptor : bool { no, yes };
 
-#ifdef __clang__ // TRANSITION, LLVM-104189
-template <template <class...> class SimpleRangeAdaptor, CheckConstAdaptor CCA, class... Args>
-#else // ^^^ workaround / no workaround vvv
 template <template <class, class...> class SimpleRangeAdaptor, CheckConstAdaptor CCA, class... Args>
-#endif // ^^^ no workaround ^^^
 constexpr void check_simple_range_adaptor() {
     using ValTy = tuple<int>; // for ranges::elements_view
     using V1    = SimpleRangeAdaptor<all_t<array<ValTy, 100>>, Args...>; // owning_view

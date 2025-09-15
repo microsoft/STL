@@ -617,7 +617,7 @@ namespace filesystem {
         friend class _Path_iterator;
         friend inline path absolute(const path& _Input, error_code& _Ec);
         friend inline __std_win_error _Canonical(path& _Result, const wstring& _Text);
-        friend inline path temp_directory_path(error_code& _Ec);
+        friend inline path _Temp_directory_path_impl(error_code& _Ec);
         friend inline path current_path(error_code& _Ec);
         friend inline void current_path(const path& _To);
         friend inline void current_path(const path& _To, error_code& _Ec) noexcept;
@@ -3945,7 +3945,7 @@ namespace filesystem {
         if (_Error == __std_win_error::_Success) {
             _Result = file_time_type{file_time_type::duration{_Stats._Last_write_time}};
         } else {
-            _Result = (file_time_type::min)();
+            _Result = (file_time_type::min) ();
         }
 
         return _Error;
@@ -4039,9 +4039,8 @@ namespace filesystem {
         _STD filesystem::permissions(_Target, _Perms, perm_options::replace, _Ec);
     }
 
-    _EXPORT_STD _NODISCARD inline path temp_directory_path(error_code& _Ec) {
+    _NODISCARD inline path _Temp_directory_path_impl(error_code& _Ec) {
         // get a location suitable for temporary storage, and verify that it is a directory
-        _Ec.clear(); // for exception safety
         path _Result;
         _Result._Text.resize(__std_fs_temp_path_max);
         const auto _Temp_result = __std_fs_get_temp_path(_Result._Text.data());
@@ -4055,13 +4054,25 @@ namespace filesystem {
         return _Result;
     }
 
+    _EXPORT_STD _NODISCARD inline path temp_directory_path(error_code& _Ec) {
+        _Ec.clear(); // for exception safety
+        path _Result(_STD filesystem::_Temp_directory_path_impl(_Ec));
+        if (_Ec) {
+            // returns path() if an error occurs. (N5008 [fs.op.temp.dir.path]/3)
+            return {};
+        }
+
+        return _Result;
+    }
+
     _EXPORT_STD _NODISCARD inline path temp_directory_path() {
         // get a location suitable for temporary storage, and verify that it is a directory
         error_code _Ec; // unusual arrangement to allow thrown error_code to have generic_category()
-        path _Result(_STD filesystem::temp_directory_path(_Ec));
+        path _Result(_STD filesystem::_Temp_directory_path_impl(_Ec));
         if (_Ec) {
             _Throw_fs_error("temp_directory_path", _Ec, _Result);
         }
+
         return _Result;
     }
 
