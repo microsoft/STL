@@ -166,7 +166,7 @@ namespace _Float_multi_prec {
 
 #ifdef _FMP_USING_X86_X64_INTRINSICS
 #ifdef __clang__
-    [[gnu::target("fma")]]
+    [[__gnu__::__target__("fma")]]
 #endif // defined(__clang__)
     _NODISCARD inline double
         _Sqr_error_x86_x64_fma(const double _Xval, const double _Prod0) noexcept {
