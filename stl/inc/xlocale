@@ -28,7 +28,6 @@ class _Locbase {}; // TRANSITION, ABI, affects sizeof(locale)
 _EXPORT_STD template <class _Elem>
 class collate;
 
-// clang-format off: clang-format 19 doesn't understand _CRTIMP2_PURE_IMPORT and will poorly format the following code
 extern "C++" struct _CRTIMP2_PURE_IMPORT _Crt_new_delete { // base class for marking allocations as CRT blocks
 #ifdef _DEBUG
     void* __CLRCALL_OR_CDECL operator new(size_t _Size) { // replace operator new
@@ -59,7 +58,6 @@ extern "C++" struct _CRTIMP2_PURE_IMPORT _Crt_new_delete { // base class for mar
     void __CLRCALL_OR_CDECL operator delete(void*, void*) noexcept {} // imitate True Placement Delete
 #endif // _DEBUG
 };
-// clang-format on
 
 _EXPORT_STD extern "C++" class locale : public _Locbase<int>, public _Crt_new_delete {
 public:
@@ -798,8 +796,8 @@ protected:
         // return p - _First1, for the largest value p in [_First1, _Last1] such that [_First1, p) successfully
         // converts to at most _Count _Elems
         // assumes 1:1 conversion
-        const auto _Dist = static_cast<size_t>((_STD min)(_Last1 - _First1, ptrdiff_t{INT_MAX}));
-        return static_cast<int>((_STD min)(_Count, _Dist));
+        const auto _Dist = static_cast<size_t>((_STD min) (_Last1 - _First1, ptrdiff_t{INT_MAX}));
+        return static_cast<int>((_STD min) (_Count, _Dist));
     }
 };
 
@@ -841,7 +839,7 @@ _NODISCARD int _Codecvt_do_length(
 
         if (_Result != codecvt_base::ok) {
             if (_Result == codecvt_base::noconv) {
-                _First1 += (_STD min)(static_cast<size_t>(_Last1 - _First1), _Count);
+                _First1 += (_STD min) (static_cast<size_t>(_Last1 - _First1), _Count);
             }
 
             break; // error, noconv, or partial
@@ -854,7 +852,7 @@ _NODISCARD int _Codecvt_do_length(
         _First1 = _Mid1;
     }
 
-    return static_cast<int>((_STD min)(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
+    return static_cast<int>((_STD min) (_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
 }
 
 enum _Codecvt_mode { _Consume_header = 4, _Generate_header = 2 };
@@ -1505,7 +1503,7 @@ protected:
             }
 
             const char8_t* _Peek = _First1;
-            char32_t _Code_point = _Lead_byte;
+            char32_t _Code_point = static_cast<char32_t>(_Lead_byte);
             do {
                 const char8_t _By = *++_Peek;
                 if ((_By & 0b1100'0000u) != 0b1000'0000u) { // out-of-sequence lead byte
@@ -1551,7 +1549,7 @@ protected:
                 return partial;
             }
 
-            char32_t _Code_point = *_First1;
+            char32_t _Code_point = static_cast<char32_t>(*_First1);
             if (_Code_point < 0x80u) { // encode 1-byte sequence
                 *_First2 = static_cast<char8_t>(_Code_point);
                 continue;
@@ -1613,7 +1611,7 @@ protected:
         const auto _Old_first1 = _First1;
 
         for (; _First1 != _Last1 && _Count > 0u; ++_First1, --_Count) {
-            char32_t _Code_point = *_First1;
+            char32_t _Code_point = static_cast<char32_t>(*_First1);
             if (_Code_point < 0b1000'0000u) { // single-byte sequence
                 continue;
             }
@@ -1673,7 +1671,7 @@ protected:
             _First1 = _Peek;
         }
 
-        return static_cast<int>((_STD min)(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
+        return static_cast<int>((_STD min) (_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
     }
 
     bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
@@ -1755,7 +1753,7 @@ protected:
 
             char8_t _Lead_byte = *_First1;
             if (_Lead_byte < 0b1000'0000u) { // single-byte sequence
-                *_First2 = _Lead_byte;
+                *_First2 = static_cast<char32_t>(_Lead_byte);
                 continue;
             }
 
@@ -1782,7 +1780,7 @@ protected:
             }
 
             const char8_t* _Peek = _First1;
-            char32_t _Code_point = _Lead_byte;
+            char32_t _Code_point = static_cast<char32_t>(_Lead_byte);
             do {
                 const char8_t _By = *++_Peek;
                 if ((_By & 0b1100'0000u) != 0b1000'0000u) { // out-of-sequence lead byte
@@ -1868,7 +1866,7 @@ protected:
         const auto _Old_first1 = _First1;
 
         for (; _First1 != _Last1 && _Count > 0u; ++_First1, --_Count) {
-            char32_t _Code_point = *_First1;
+            char32_t _Code_point = static_cast<char32_t>(*_First1);
             if (_Code_point < 0b1000'0000u) { // single-byte sequence
                 continue;
             }
@@ -1915,7 +1913,7 @@ protected:
             _First1 = _Peek;
         }
 
-        return static_cast<int>((_STD min)(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
+        return static_cast<int>((_STD min) (_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
     }
 
     bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
@@ -2111,7 +2109,7 @@ protected:
             _First1 += _Bytes;
         }
 
-        return static_cast<int>((_STD min)(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
+        return static_cast<int>((_STD min) (_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
     }
 
     bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
@@ -2312,7 +2310,7 @@ protected:
             _First1 += _Bytes;
         }
 
-        return static_cast<int>((_STD min)(_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
+        return static_cast<int>((_STD min) (_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
     }
 
     bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
@@ -2356,8 +2354,8 @@ protected:
 _STL_DISABLE_DEPRECATED_WARNING
 
 template <>
-class _CXX20_DEPRECATE_CODECVT_FACETS codecvt_byname<char16_t, char, mbstate_t>
-    : public codecvt<char16_t, char, mbstate_t> {
+class _CXX20_DEPRECATE_CODECVT_FACETS
+    codecvt_byname<char16_t, char, mbstate_t> : public codecvt<char16_t, char, mbstate_t> {
 public:
     explicit __CLR_OR_THIS_CALL codecvt_byname(const char* _Locname, size_t _Refs = 0)
         : codecvt(_Locinfo(_Locname), _Refs) {}
@@ -2370,8 +2368,8 @@ protected:
 };
 
 template <>
-class _CXX20_DEPRECATE_CODECVT_FACETS codecvt_byname<char32_t, char, mbstate_t>
-    : public codecvt<char32_t, char, mbstate_t> {
+class _CXX20_DEPRECATE_CODECVT_FACETS
+    codecvt_byname<char32_t, char, mbstate_t> : public codecvt<char32_t, char, mbstate_t> {
 public:
     explicit __CLR_OR_THIS_CALL codecvt_byname(const char* _Locname, size_t _Refs = 0)
         : codecvt(_Locinfo(_Locname), _Refs) {}
@@ -2385,8 +2383,8 @@ protected:
 
 #ifdef __cpp_char8_t
 template <>
-class _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS codecvt_byname<char16_t, char8_t, mbstate_t>
-    : public codecvt<char16_t, char8_t, mbstate_t> {
+class _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS
+    codecvt_byname<char16_t, char8_t, mbstate_t> : public codecvt<char16_t, char8_t, mbstate_t> {
 public:
     explicit __CLR_OR_THIS_CALL codecvt_byname(const char* _Locname, size_t _Refs = 0)
         : codecvt(_Locinfo(_Locname), _Refs) {}
@@ -2399,8 +2397,8 @@ protected:
 };
 
 template <>
-class _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS codecvt_byname<char32_t, char8_t, mbstate_t>
-    : public codecvt<char32_t, char8_t, mbstate_t> {
+class _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS
+    codecvt_byname<char32_t, char8_t, mbstate_t> : public codecvt<char32_t, char8_t, mbstate_t> {
 public:
     explicit __CLR_OR_THIS_CALL codecvt_byname(const char* _Locname, size_t _Refs = 0)
         : codecvt(_Locinfo(_Locname), _Refs) {}
@@ -2884,8 +2882,8 @@ private:
 };
 
 extern "C++" template <>
-class _CRTIMP2_PURE_IMPORT ctype<wchar_t>
-    : public ctype_base { // facet for classifying wchar_t elements, converting cases
+class _CRTIMP2_PURE_IMPORT
+    ctype<wchar_t> : public ctype_base { // facet for classifying wchar_t elements, converting cases
 public:
     using _Elem     = wchar_t;
     using char_type = _Elem;
@@ -3085,8 +3083,8 @@ private:
 
 #if defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
 extern "C++" template <>
-class _CRTIMP2_PURE_IMPORT ctype<unsigned short>
-    : public ctype_base { // facet for classifying unsigned short elements, converting cases
+class _CRTIMP2_PURE_IMPORT
+    ctype<unsigned short> : public ctype_base { // facet for classifying unsigned short elements, converting cases
 public:
     using _Elem     = unsigned short;
     using char_type = _Elem;

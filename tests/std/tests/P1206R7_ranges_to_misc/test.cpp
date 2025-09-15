@@ -368,9 +368,7 @@ int main() {
     static_assert(test_common_constructible());
 
     test_nested_range();
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1588614
     static_assert(test_nested_range());
-#endif // ^^^ no workaround ^^^
 
     test_lwg3733();
     static_assert(test_lwg3733());

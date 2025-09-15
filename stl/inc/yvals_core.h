@@ -80,6 +80,7 @@
 //     (__cpp_lib_freestanding_algorithm and __cpp_lib_freestanding_array only)
 // P2937R0 Freestanding Library: Remove strtok
 // P2968R2 Make std::ignore A First-Class Object
+// P3223R2 Making istream::ignore() Less Surprising
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic<cv T>)
 
@@ -808,15 +809,18 @@
 // warning C5278: adding a specialization for 'type trait' has undefined behavior
 // warning C5280: a static operator '()' requires at least '/std:c++23preview'
 // warning C5281: a static lambda requires at least '/std:c++23preview'
+// warning C5291: 'DERIVED': deriving from the base class 'BASE' can cause potential runtime issues
+//                due to an ABI bug. Recommend adding a 4-byte data member to the base class
+//                for the padding at the end of it to work around this bug. (TRANSITION, ABI)
 // warning C6294: Ill-defined for-loop: initial condition does not satisfy test. Loop body not executed
 
 #ifndef _STL_DISABLED_WARNINGS
-// clang-format off
+// clang-format off: make macros readable
 #define _STL_DISABLED_WARNINGS                        \
     4180 4324 4412 4455 4494 4514 4574 4582 4583 4587 \
     4588 4619 4623 4625 4626 4643 4648 4702 4793 4820 \
     4868 4988 5026 5027 5045 5220 5246 5278 5280 5281 \
-    6294                                              \
+    5291 6294                                         \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
@@ -835,7 +839,7 @@
 // warning: unknown pragma ignored [-Wunknown-pragmas]
 #ifndef _STL_DISABLE_CLANG_WARNINGS
 #ifdef __clang__
-// clang-format off
+// clang-format off: make macros readable
 #define _STL_DISABLE_CLANG_WARNINGS                                 \
     _Pragma("clang diagnostic push")                                \
     _Pragma("clang diagnostic ignored \"-Wc++17-extensions\"")      \
@@ -865,7 +869,7 @@
 //     floating-point options [-Wnan-infinity-disabled]
 #ifndef _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED
 #ifdef __clang__
-// clang-format off
+// clang-format off: make macros readable
 #define _STL_DISABLE_CLANG_WARNING_NAN_INF_DISABLED \
     _Pragma("clang diagnostic push")                \
     _Pragma("clang diagnostic ignored \"-Wnan-infinity-disabled\"")
@@ -883,7 +887,7 @@
 #endif // ^^^ !defined(__clang__) ^^^
 #endif // !defined(_STL_RESTORE_CLANG_WARNING_NAN_INF_DISABLED)
 
-// clang-format off
+// clang-format off: make macros readable
 #ifndef _STL_DISABLE_DEPRECATED_WARNING
 #ifdef __clang__
 #define _STL_DISABLE_DEPRECATED_WARNING \
@@ -907,7 +911,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 145
-#define _MSVC_STL_UPDATE  202506L
+#define _MSVC_STL_UPDATE  202509L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -917,12 +921,12 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 12.4 or new
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 19
-_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 19.0.0 or newer.");
+#if __clang_major__ < 20
+_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 20 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1944 // Coarse-grained, not inspecting _MSC_FULL_VER
-_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.44 or newer.");
+#if _MSC_VER < 1950 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19.50 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers

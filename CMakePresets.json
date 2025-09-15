@@ -13,23 +13,6 @@
       "binaryDir": "${sourceDir}/out/${presetName}"
     },
     {
-      "name": "x86",
-      "inherits": "base",
-      "description": "x86 Ninja Config",
-      "architecture": {
-        "strategy": "external",
-        "value": "x86"
-      },
-      "condition": {
-        "type": "inList",
-        "string": "$env{Platform}",
-        "list": [
-          "x86",
-          ""
-        ]
-      }
-    },
-    {
       "name": "x64",
       "inherits": "base",
       "description": "x64 Ninja Config",
@@ -47,23 +30,20 @@
       }
     },
     {
-      "name": "ARM",
+      "name": "x86",
       "inherits": "base",
-      "description": "ARM Ninja Config",
+      "description": "x86 Ninja Config",
       "architecture": {
         "strategy": "external",
-        "value": "ARM"
+        "value": "x86"
       },
       "condition": {
         "type": "inList",
         "string": "$env{Platform}",
         "list": [
-          "arm",
+          "x86",
           ""
         ]
-      },
-      "cacheVariables": {
-        "TESTS_BUILD_ONLY": true
       }
     },
     {
@@ -110,19 +90,14 @@
   ],
   "buildPresets": [
     {
-      "name": "x86",
-      "configurePreset": "x86",
-      "description": "Build x86 STL"
-    },
-    {
       "name": "x64",
       "configurePreset": "x64",
       "description": "Build x64 STL"
     },
     {
-      "name": "ARM",
-      "configurePreset": "ARM",
-      "description": "Build ARM STL"
+      "name": "x86",
+      "configurePreset": "x86",
+      "description": "Build x86 STL"
     },
     {
       "name": "ARM64",
