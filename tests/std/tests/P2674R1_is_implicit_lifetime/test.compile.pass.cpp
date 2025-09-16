@@ -7,8 +7,7 @@ enum UnscopedEnum { Enumerator };
 enum struct ScopedEnum { Enumerator };
 class IncompleteClass;
 struct TrivialClass {};
-struct AggregateClassWithUserProvidedDestructor
-{
+struct AggregateClassWithUserProvidedDestructor {
 	~AggregateClassWithUserProvidedDestructor() {}
 };
 
@@ -45,4 +44,5 @@ static_assert(!test_implicit_lifetime<const volatile void>);
 static_assert(!test_implicit_lifetime<long&>);
 static_assert(!test_implicit_lifetime<long&&>);
 #endif
+
 
