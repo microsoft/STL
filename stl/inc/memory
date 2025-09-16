@@ -533,7 +533,7 @@ namespace ranges {
     public:
         template <class _Ty, class... _Types>
             requires requires(_Ty* _Ptr, _Types&&... _Args) {
-                ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types&&>(_Args)...); // per LWG-3888
+                ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types &&>(_Args)...); // per LWG-3888
             }
         _STATIC_CALL_OPERATOR constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) _CONST_CALL_OPERATOR
             noexcept(noexcept(
@@ -584,11 +584,17 @@ namespace ranges {
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
     _NODISCARD constexpr _It _Destroy_unchecked(_It _First, _Se _Last) noexcept {
-        if constexpr (is_trivially_destructible_v<iter_value_t<_It>>) {
-            _RANGES advance(_First, _STD move(_Last));
-        } else {
+        if (_STD is_constant_evaluated()) {
             for (; _First != _Last; ++_First) {
                 _RANGES destroy_at(_STD addressof(*_First));
+            }
+        } else {
+            if constexpr (is_trivially_destructible_v<iter_value_t<_It>>) {
+                _RANGES advance(_First, _STD move(_Last));
+            } else {
+                for (; _First != _Last; ++_First) {
+                    _RANGES destroy_at(_STD addressof(*_First));
+                }
             }
         }
 
@@ -630,11 +636,20 @@ _CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_ra
     }
 
     auto _UFirst = _STD _Get_unwrapped_n(_First, _Count);
-    if constexpr (is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
-        _STD advance(_UFirst, _Count);
-    } else {
+#if _HAS_CXX20
+    if (_STD is_constant_evaluated()) {
         for (; _Count > 0; --_Count, (void) ++_UFirst) {
             _STD _Destroy_in_place(*_UFirst);
+        }
+    } else
+#endif // _HAS_CXX20
+    {
+        if constexpr (is_trivially_destructible_v<_Iter_value_t<_NoThrowFwdIt>>) {
+            _STD advance(_UFirst, _Count);
+        } else {
+            for (; _Count > 0; --_Count, (void) ++_UFirst) {
+                _STD _Destroy_in_place(*_UFirst);
+            }
         }
     }
 
@@ -658,14 +673,22 @@ namespace ranges {
             }
 
             auto _UFirst = _STD _Get_unwrapped_n(_STD move(_First), _Count);
-            if constexpr (is_trivially_destructible_v<iter_value_t<_It>>) {
-                _RANGES advance(_UFirst, _Count);
-            } else {
+            if (_STD is_constant_evaluated()) {
                 do {
                     _RANGES destroy_at(_STD addressof(*_UFirst));
                     ++_UFirst;
                     --_Count;
                 } while (_Count > 0);
+            } else {
+                if constexpr (is_trivially_destructible_v<iter_value_t<_It>>) {
+                    _RANGES advance(_UFirst, _Count);
+                } else {
+                    do {
+                        _RANGES destroy_at(_STD addressof(*_UFirst));
+                        ++_UFirst;
+                        --_Count;
+                    } while (_Count > 0);
+                }
             }
 
             _STD _Seek_wrapped(_First, _STD move(_UFirst));
@@ -1105,11 +1128,11 @@ private:
 #ifdef _M_CEE_PURE
     // permanent workaround to avoid mentioning _purecall in msvcurt.lib, ptrustu.lib, or other support libs
     virtual void _Destroy() noexcept {
-        _CSTD abort();
+        _STL_REPORT_ERROR("_Ref_count_base base class member functions should not be called");
     }
 
     virtual void _Delete_this() noexcept {
-        _CSTD abort();
+        _STL_REPORT_ERROR("_Ref_count_base base class member functions should not be called");
     }
 #else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
     virtual void _Destroy() noexcept     = 0; // destroy managed resource
@@ -1775,6 +1798,14 @@ public:
 
     template <class _Ty2 = _Ty, class _Elem = element_type, enable_if_t<is_array_v<_Ty2>, int> = 0>
     _NODISCARD _Elem& operator[](ptrdiff_t _Idx) const noexcept /* strengthened */ {
+#if _MSVC_STL_HARDENING_SHARED_PTR_ARRAY || _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (extent_v<_Ty> != 0) {
+            _STL_VERIFY(
+                _Idx >= 0 && static_cast<size_t>(_Idx) < extent_v<_Ty>, "shared_ptr<T[N]> subscript out of range");
+        } else {
+            _STL_VERIFY(_Idx >= 0, "shared_ptr<T[]> subscript out of range");
+        }
+#endif // _MSVC_STL_HARDENING_SHARED_PTR_ARRAY || _ITERATOR_DEBUG_LEVEL != 0
         return get()[_Idx];
     }
 
@@ -3915,7 +3946,7 @@ _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() noexcept;
 } // extern "C"
 
 struct _Shared_ptr_spin_lock { // class to manage a spin lock for shared_ptr atomic operations
-    _Shared_ptr_spin_lock() { // lock the spin lock
+    _Shared_ptr_spin_lock() noexcept { // lock the spin lock
         _Lock_shared_ptr_spin_lock();
     }
 
@@ -4035,7 +4066,7 @@ protected:
             }
             ::__std_atomic_wait_direct(
                 _STD addressof(_Ptr), _STD addressof(_Old_ptr), sizeof(_Old_ptr), _Remaining_timeout);
-            _Remaining_timeout = (_STD min)(_Max_timeout, _Remaining_timeout * 2);
+            _Remaining_timeout = (_STD min) (_Max_timeout, _Remaining_timeout * 2);
         }
     }
 
@@ -4346,8 +4377,7 @@ public:
         noexcept(is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>) /* strengthened */
         : _Smart_ptr(_Smart_ptr_),
           _Mypair(_One_then_variadic_args_t{}, tuple<_ArgsT...>{_STD forward<_ArgsT>(_Args_)...}) {
-        constexpr bool _Is_resettable = requires { _Smart_ptr.reset(); }; // TRANSITION, DevCom-10291456
-        if constexpr (_Is_resettable) {
+        if constexpr (requires { _Smart_ptr.reset(); }) {
             _Smart_ptr.reset();
         } else {
             static_assert(is_constructible_v<_SmartPtr>, "the adapted pointer type must be default constructible.");

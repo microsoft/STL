@@ -158,6 +158,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             $(CrtRoot)\github\stl\src\locale0_implib.cpp;
             $(CrtRoot)\github\stl\src\nothrow.cpp;
             $(CrtRoot)\github\stl\src\print.cpp;
+            $(CrtRoot)\github\stl\src\regex.cpp;
             $(CrtRoot)\github\stl\src\sharedmutex.cpp;
             $(CrtRoot)\github\stl\src\stacktrace.cpp;
             $(CrtRoot)\github\stl\src\syserror_import_lib.cpp;
@@ -222,11 +223,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             </PropertyGroup>
           </Otherwise>
         </Choose>
-      </When>
-      <When Condition="'$(BuildArchitecture)' == 'arm'">
-        <PropertyGroup>
-          <ExpectedExportsList>$(MSBuildThisFileDirectory)\arm.exports</ExpectedExportsList>
-        </PropertyGroup>
       </When>
       <When Condition="'$(BuildArchitecture)' == 'arm64'">
         <PropertyGroup>

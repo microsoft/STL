@@ -126,9 +126,9 @@ _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
 }
 #endif // (defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))
 
-#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
+#if defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 template <class _Ty>
-_NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
+_NODISCARD int _Checked_arm64_countl_zero(const _Ty _Val) noexcept {
     constexpr int _Digits = _Unsigned_integer_digits<_Ty>;
     if (_Val == 0) {
         return _Digits;
@@ -140,7 +140,7 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
         return static_cast<int>(_CountLeadingZeros64(_Val));
     }
 }
-#endif // defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
+#endif // defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 #endif // _HAS_COUNTL_ZERO_INTRINSICS
 
 // Implementation of countr_zero without using specialized CPU instructions.
@@ -157,14 +157,14 @@ _NODISCARD constexpr int _Countr_zero_fallback(const _Ty _Val) noexcept {
 template <class _Ty>
 _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
     constexpr int _Digits = _Unsigned_integer_digits<_Ty>;
-#if (defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || defined(_M_ARM)
+#if defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)
     if constexpr (_Digits == 64) {
         // 64-bit bit operations on architectures without 64-bit registers are less efficient,
         // hence we split the value so that it fits in 32-bit registers
         return _Popcount_fallback(static_cast<unsigned long>(_Val))
              + _Popcount_fallback(static_cast<unsigned long>(_Val >> 32));
     } else
-#endif // (defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || defined(_M_ARM)
+#endif // defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)
     {
         // we static_cast these bit patterns in order to truncate them to the correct size
         _Val = static_cast<_Ty>(_Val - ((_Val >> 1) & static_cast<_Ty>(0x5555'5555'5555'5555ull)));
@@ -281,7 +281,8 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 #define _POPCNT_INTRINSICS_ALWAYS_AVAILABLE 0
 #endif // ^^^ intrinsics not always available ^^^
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
-#define _HAS_POPCNT_INTRINSICS 0
+#define _HAS_POPCNT_INTRINSICS              0
+#define _POPCNT_INTRINSICS_ALWAYS_AVAILABLE 0
 #endif // ^^^ intrinsics unavailable ^^^
 
 #if _HAS_POPCNT_INTRINSICS
@@ -351,6 +352,24 @@ constexpr decltype(auto) _Select_countr_zero_impl(_Fn _Callback) {
     return _Callback([](_Ty _Val) _STATIC_LAMBDA { return _Countr_zero_fallback(_Val); });
 }
 
+template <class _Ty>
+_NODISCARD constexpr int _Countl_zero(const _Ty _Val) noexcept {
+    _STL_INTERNAL_STATIC_ASSERT(_Is_standard_unsigned_integer<_Ty>);
+#if _HAS_COUNTL_ZERO_INTRINSICS
+#if (defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))
+    if (!_Is_constant_evaluated()) {
+        return _Checked_x86_x64_countl_zero(_Val);
+    }
+#elif defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
+    if (!_Is_constant_evaluated()) {
+        return _Checked_arm64_countl_zero(_Val);
+    }
+#endif // defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
+#endif // _HAS_COUNTL_ZERO_INTRINSICS
+
+    return _Countl_zero_fallback(_Val);
+}
+
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
 #if _HAS_POPCNT_INTRINSICS
@@ -384,9 +403,7 @@ _CONSTEXPR20 decltype(auto) _Select_popcount_impl(_Fn _Callback) {
     return _Callback([](_Ty _Val) _STATIC_LAMBDA { return _Popcount_fallback(_Val); });
 }
 
-#undef _HAS_POPCNT_INTRINSICS
 #undef _HAS_TZCNT_BSF_INTRINSICS
-#undef _POPCNT_INTRINSICS_ALWAYS_AVAILABLE
 
 _STD_END
 

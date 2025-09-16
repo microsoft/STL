@@ -132,7 +132,7 @@ static const regex_test tests[] = {
     {__LINE__, T("a$"), T("ba"), "1 1 2", ALL},
     {__LINE__, T("a$"), T("ab"), "0", ALL},
 
-    {__LINE__, T("^a$"), T("b\na"), "1 2 3", ALL},
+    {__LINE__, T("^a$"), T("b\na"), "0", ALL},
 
     {__LINE__, T("\\b"), T("a"), "1 0 0", ECMA},
     {__LINE__, T("\\b"), T(""), "-1", BASIC | GREP | EXTENDED | EGREP},
@@ -588,8 +588,10 @@ static const regex_test tests[] = {
     {__LINE__, T("[[:xdigit:]]"), T("g"), "0", ALL},
     {__LINE__, T("[[:xdigit:]]"), T("1"), "1 0 1", ALL},
     {__LINE__, T("[[:xdigit:]]"), T(" "), "0", ALL},
-    {__LINE__, T("[[=x=]]"), T("X"), "1 0 1", ALL},
+#ifndef _M_CEE_PURE
+    {__LINE__, T("[[=x=]]"), T("X"), "0", ALL},
     {__LINE__, T("[[=x=]]"), T("x"), "1 0 1", ALL},
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
     // character class ranges
     {__LINE__, T("[-]"), T("-"), "1 0 1", ALL},
@@ -739,7 +741,8 @@ static const regex_test tests[] = {
     {__LINE__, T("a(bbb+|bb+|b)b"), T("abbb"), "2 0 4 1 3", NOT_BG},
     {__LINE__, T("a(bbb+|bb+|b)bb"), T("abbb"), "2 0 4 1 2", NOT_BG},
     {__LINE__, T("(.*).*"), T("abcdef"), "2 0 6 0 6", NOT_BG},
-    {__LINE__, T("(a*)*"), T("bc"), "2 0 0 0 0", NOT_BG},
+    {__LINE__, T("(a*)*"), T("bc"), "2 0 0 -1 -1", ECMA},
+    {__LINE__, T("(a*)*"), T("bc"), "2 0 0 0 0", EEA},
     {__LINE__, T("a(b|c)*d"), T("ad"), "2 0 2 -1 -1", NOT_BG},
     {__LINE__, T("a(b|c)*d"), T("abcd"), "2 0 4 2 3", NOT_BG},
     {__LINE__, T("a(b|c)+d"), T("abd"), "2 0 3 1 2", NOT_BG},

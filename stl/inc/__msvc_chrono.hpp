@@ -249,11 +249,11 @@ namespace chrono {
         }
 
         _NODISCARD static constexpr time_point(min)() noexcept {
-            return time_point((_Duration::min)());
+            return time_point((_Duration::min) ());
         }
 
         _NODISCARD static constexpr time_point(max)() noexcept {
-            return time_point((_Duration::max)());
+            return time_point((_Duration::max) ());
         }
 
     private:
@@ -669,7 +669,7 @@ namespace chrono {
                 constexpr long long _Multiplier = period::den / _TenMHz;
                 return time_point(duration(_Ctr * _Multiplier));
             } else if (_Freq == _TwentyFourMHz) {
-                // 24 MHz is a common frequency on ARM/ARM64, including cases where it emulates x86/x64.
+                // 24 MHz is a common frequency on ARM64, including cases where it emulates x86/x64.
                 const long long _Whole = (_Ctr / _TwentyFourMHz) * period::den;
                 const long long _Part  = (_Ctr % _TwentyFourMHz) * period::den / _TwentyFourMHz;
                 return time_point(duration(_Whole + _Part));

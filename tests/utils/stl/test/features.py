@@ -36,13 +36,11 @@ def getDefaultFeatures(config, litConfig):
       'ru_RU.UTF-8':     ['ru_RU.UTF-8', 'ru_RU.utf8', 'Russian_Russia.1251'],
       'zh_CN.UTF-8':     ['zh_CN.UTF-8', 'zh_CN.utf8', 'Chinese_China.936'],
       'fr_CA.ISO8859-1': ['fr_CA.ISO8859-1', 'French_Canada.1252'],
-      'cs_CZ.ISO8859-2': ['cs_CZ.ISO8859-2', 'Czech_Czech Republic.1250']
+      'cs_CZ.ISO8859-2': ['cs_CZ.ISO8859-2', 'Czech_Czechia.1250']
     }
     for loc, alts in locales.items():
-      # Note: Using alts directly in the lambda body here will bind it to the value at the
-      # end of the loop. Assigning it to a default argument works around this issue.
-      DEFAULT_FEATURES.append(Feature(name='locale.{}'.format(loc),
-                                      when=lambda cfg, alts=alts: any(hasLocale(alt) for alt in alts)))
+      if any(hasLocale(alt) for alt in alts):
+        DEFAULT_FEATURES.append(Feature(name=f'locale.{loc}'))
     env_var = 'STL_EDG_DROP'
     litConfig.edg_drop = None
     if env_var in os.environ and os.environ[env_var] is not None:
@@ -60,11 +58,10 @@ def getDefaultFeatures(config, litConfig):
         DEFAULT_FEATURES.append(Feature(name='arch_avx2'))
         DEFAULT_FEATURES.append(Feature(name='x64'))
 
-    elif litConfig.target_arch.casefold() == 'arm'.casefold():
-        DEFAULT_FEATURES.append(Feature(name='arch_vfpv4'))
-        DEFAULT_FEATURES.append(Feature(name='arm'))
-
     elif litConfig.target_arch.casefold() == 'arm64'.casefold():
         DEFAULT_FEATURES.append(Feature(name='arm64'))
+
+    elif litConfig.target_arch.casefold() == 'arm64ec'.casefold():
+        DEFAULT_FEATURES.append(Feature(name='arm64ec'))
 
     return DEFAULT_FEATURES

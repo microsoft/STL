@@ -100,8 +100,7 @@ struct _Uhash_choose_transparency {
 };
 
 #if _HAS_CXX20
-template <class _Kty, class _Hasher, class _Keyeq>
-    requires _Is_transparent_v<_Hasher> && _Is_transparent_v<_Keyeq>
+template <class _Kty, _Transparent _Hasher, _Transparent _Keyeq>
 struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq> {
     // transparency selector for transparent hashed containers
     static constexpr bool _Has_transparent_overloads = true;
@@ -252,13 +251,13 @@ struct _Hash_vec {
         _Vec_iter_types<value_type, size_type, difference_type, pointer, typename _Aliter_traits::const_pointer>>>;
 
     _Hash_vec() : _Mypair(_Zero_then_variadic_args_t{}) {
-        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Aliter, _Mypair._Get_first()));
+        _Mypair._Myval2._Alloc_proxy(_STD _Get_proxy_allocator(_Mypair._Get_first()));
     }
 
     template <class _Any_alloc, enable_if_t<!is_same_v<_Remove_cvref_t<_Any_alloc>, _Hash_vec>, int> = 0>
     explicit _Hash_vec(_Any_alloc&& _Al) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Any_alloc>(_Al)) { // construct empty vector, allocator
-        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Aliter, _Mypair._Get_first()));
+        _Mypair._Myval2._Alloc_proxy(_STD _Get_proxy_allocator(_Mypair._Get_first()));
     }
 
     _Hash_vec(const _Hash_vec&)            = delete;
@@ -269,8 +268,8 @@ struct _Hash_vec {
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return (_STD min)(
-            static_cast<size_type>(_STD _Max_limit<difference_type>()), _Aliter_traits::max_size(_Mypair._Get_first()));
+        return (_STD min) (static_cast<size_type>(_STD _Max_limit<difference_type>()),
+            _Aliter_traits::max_size(_Mypair._Get_first()));
     }
 
     _NODISCARD size_type capacity() const noexcept {
@@ -316,7 +315,7 @@ struct _Hash_vec {
     ~_Hash_vec() {
         _Tidy();
 #if _ITERATOR_DEBUG_LEVEL != 0
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Aliter, _Mypair._Get_first());
+        auto _Alproxy = _STD _Get_proxy_allocator(_Mypair._Get_first());
         _Delete_plain_internal(_Alproxy, _STD exchange(_Mypair._Myval2._Myproxy, nullptr));
 #endif // _ITERATOR_DEBUG_LEVEL != 0
     }
@@ -523,8 +522,8 @@ public:
         if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
             if (_Al != _Right_al) {
                 // allocate all the parts necessary to maintain _Hash invariants using _Right's allocator
-                auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Al);
-                auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right_al);
+                auto _Alproxy       = _STD _Get_proxy_allocator(_Al);
+                auto _Right_alproxy = _STD _Get_proxy_allocator(_Right_al);
                 _Container_proxy_ptr<_Alnode> _List_proxy(_Right_alproxy, _Leave_proxy_unbound{});
                 _Container_proxy_ptr<_Alnode> _Vec_proxy(_Right_alproxy, _Leave_proxy_unbound{});
                 _List_head_construct_ptr<_Alnode> _Newhead(_Right_al);
@@ -758,8 +757,8 @@ public:
             auto& _Al             = _Getal();
             const auto& _Right_al = _Right._Getal();
             if (_Al != _Right_al) {
-                auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Al);
-                auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right_al);
+                auto _Alproxy       = _STD _Get_proxy_allocator(_Al);
+                auto _Right_alproxy = _STD _Get_proxy_allocator(_Right_al);
                 _Container_proxy_ptr<_Alnode> _Vec_proxy(_Right_alproxy, _Leave_proxy_unbound{});
                 _List._Reload_sentinel_and_proxy(_Right._List);
                 _Vec._Tidy();
@@ -917,13 +916,13 @@ public:
     }
 
     void max_load_factor(float _Newmax) noexcept /* strengthened */ {
-        _STL_ASSERT(!(_CSTD isnan)(_Newmax) && _Newmax > 0, "invalid hash load factor");
+        _STL_ASSERT(!(_CSTD isnan) (_Newmax) && _Newmax > 0, "invalid hash load factor");
         _Max_bucket_size() = _Newmax;
     }
 
     void rehash(size_type _Buckets) { // rebuild table with at least _Buckets buckets
         // don't violate a.bucket_count() >= a.size() / a.max_load_factor() invariant:
-        _Buckets = (_STD max)(_Min_load_factor_buckets(_List.size()), _Buckets);
+        _Buckets = (_STD max) (_Min_load_factor_buckets(_List.size()), _Buckets);
         if (_Buckets <= _Maxidx) { // we already have enough buckets; nothing to do
             return;
         }
@@ -1705,7 +1704,7 @@ protected:
 
     _NODISCARD size_type _Desired_grow_bucket_count(const size_type _For_size) const noexcept {
         const size_type _Old_buckets = bucket_count();
-        const size_type _Req_buckets = (_STD max)(_Min_buckets, _Min_load_factor_buckets(_For_size));
+        const size_type _Req_buckets = (_STD max) (_Min_buckets, _Min_load_factor_buckets(_For_size));
         if (_Old_buckets >= _Req_buckets) {
             // we already have enough buckets so there's no need to change the count
             return _Old_buckets;
@@ -2049,9 +2048,8 @@ _NODISCARD bool _Hash_equal(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _
                 return false;
             }
         }
+        return true;
     }
-
-    return true;
 }
 _STD_END
 

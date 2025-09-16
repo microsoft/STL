@@ -418,11 +418,6 @@ public:
     }
 
     static _CONSTEXPR17 void assign(_Elem& _Left, const _Elem& _Right) noexcept {
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            return _Primary_char_traits::assign(_Left, _Right);
-        }
-#endif // _HAS_CXX20
         _Left = _Right;
     }
 
@@ -573,11 +568,6 @@ public:
     }
 
     static _CONSTEXPR17 void assign(_Elem& _Left, const _Elem& _Right) noexcept {
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            return _Primary_char_traits::assign(_Left, _Right);
-        }
-#endif // _HAS_CXX20
         _Left = _Right;
     }
 
@@ -695,7 +685,7 @@ template <class _Traits>
 constexpr int _Traits_compare(_In_reads_(_Left_size) const _Traits_ptr_t<_Traits> _Left, const size_t _Left_size,
     _In_reads_(_Right_size) const _Traits_ptr_t<_Traits> _Right, const size_t _Right_size) noexcept {
     // compare [_Left, _Left + _Left_size) to [_Right, _Right + _Right_size) using _Traits
-    const int _Ans = _Traits::compare(_Left, _Right, (_STD min)(_Left_size, _Right_size));
+    const int _Ans = _Traits::compare(_Left, _Right, (_STD min) (_Left_size, _Right_size));
 
     if (_Ans != 0) {
         return _Ans;
@@ -734,7 +724,7 @@ constexpr size_t _Traits_find(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits>
     }
 
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Is_implementation_handled_char_traits<_Traits> && sizeof(typename _Traits::char_type) <= 2) {
+    if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         if (!_STD _Is_constant_evaluated()) {
             const auto _End = _Haystack + _Hay_size;
             const auto _Ptr = _STD _Search_vectorized(_Haystack + _Start_at, _End, _Needle, _Needle_size);
@@ -798,17 +788,17 @@ constexpr size_t _Traits_rfind(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits
     const size_t _Needle_size) noexcept {
     // search [_Haystack, _Haystack + _Hay_size) for [_Needle, _Needle + _Needle_size) beginning before _Start_at
     if (_Needle_size == 0) {
-        return (_STD min)(_Start_at, _Hay_size); // empty string always matches
+        return (_STD min) (_Start_at, _Hay_size); // empty string always matches
     }
 
     if (_Needle_size > _Hay_size) { // no room for match
         return static_cast<size_t>(-1);
     }
 
-    const size_t _Actual_start_at = (_STD min)(_Start_at, _Hay_size - _Needle_size);
+    const size_t _Actual_start_at = (_STD min) (_Start_at, _Hay_size - _Needle_size);
 
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Is_implementation_handled_char_traits<_Traits> && sizeof(typename _Traits::char_type) <= 2) {
+    if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         if (!_STD _Is_constant_evaluated()) {
             // _Find_end_vectorized takes into account the needle length when locating the search start.
             // As a potentially earlier start position can be specified, we need to take it into account,
@@ -846,7 +836,7 @@ constexpr size_t _Traits_rfind_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Tra
         return static_cast<size_t>(-1);
     }
 
-    const size_t _Actual_start_at = (_STD min)(_Start_at, _Hay_size - 1);
+    const size_t _Actual_start_at = (_STD min) (_Start_at, _Hay_size - 1);
 
 #if _USE_STD_VECTOR_ALGORITHMS
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
@@ -984,7 +974,7 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
         return static_cast<size_t>(-1);
     }
 
-    const auto _Hay_start = (_STD min)(_Start_at, _Hay_size - 1);
+    const auto _Hay_start = (_STD min) (_Start_at, _Hay_size - 1);
 
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         using _Elem = typename _Traits::char_type;
@@ -1118,7 +1108,7 @@ constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_pt
         return static_cast<size_t>(-1);
     }
 
-    const auto _Hay_start = (_STD min)(_Start_at, _Hay_size - 1);
+    const auto _Hay_start = (_STD min) (_Start_at, _Hay_size - 1);
 
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         using _Elem = typename _Traits::char_type;
@@ -1168,7 +1158,7 @@ constexpr size_t _Traits_rfind_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<
         return static_cast<size_t>(-1);
     }
 
-    const size_t _Actual_start_at = (_STD min)(_Start_at, _Hay_size - 1);
+    const size_t _Actual_start_at = (_STD min) (_Start_at, _Hay_size - 1);
 
 #if _USE_STD_VECTOR_ALGORITHMS
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
@@ -1601,7 +1591,7 @@ public:
     _NODISCARD constexpr size_type max_size() const noexcept {
         // bound to PTRDIFF_MAX to make end() - begin() well defined (also makes room for npos)
         // bound to static_cast<size_t>(-1) / sizeof(_Elem) by address space limits
-        return (_STD min)(static_cast<size_t>(PTRDIFF_MAX), static_cast<size_t>(-1) / sizeof(_Elem));
+        return (_STD min) (static_cast<size_t>(PTRDIFF_MAX), static_cast<size_t>(-1) / sizeof(_Elem));
     }
 
     _NODISCARD constexpr const_reference operator[](const size_type _Off) const noexcept /* strengthened */ {
@@ -1919,7 +1909,7 @@ private:
 
     constexpr size_type _Clamp_suffix_size(const size_type _Off, const size_type _Size) const noexcept {
         // trims _Size to the longest it can be assuming a string at/after _Off
-        return (_STD min)(_Size, _Mysize - _Off);
+        return (_STD min) (_Size, _Mysize - _Off);
     }
 
     [[noreturn]] static void _Xran() {

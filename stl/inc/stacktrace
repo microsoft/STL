@@ -164,6 +164,10 @@ public:
 
     _NODISCARD __declspec(noinline) static basic_stacktrace current(
         const size_type _Skip, size_type _Max_depth, const allocator_type& _Al = allocator_type()) noexcept {
+#if _MSVC_STL_HARDENING_BASIC_STACKTRACE || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Skip <= _Skip + _Max_depth, "Mathematical result of (_Skip + _Max_depth) must be representable in "
+                                                 "size_t (N5008 [stacktrace.basic.cons]/5).");
+#endif // _MSVC_STL_HARDENING_BASIC_STACKTRACE || _ITERATOR_DEBUG_LEVEL != 0
         _TRY_BEGIN
         if (_Max_depth > _Max_frames) {
             _Max_depth = _Max_frames;
@@ -245,7 +249,10 @@ public:
     }
 
     _NODISCARD const_reference operator[](const size_type _Sx) const noexcept /* strengthened */ {
-        return _Frames[_Sx];
+#if _MSVC_STL_HARDENING_BASIC_STACKTRACE || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Sx < _Frames.size(), "basic_stacktrace subscript out of range");
+#endif // _MSVC_STL_HARDENING_BASIC_STACKTRACE || _ITERATOR_DEBUG_LEVEL != 0
+        return _Frames.data()[_Sx]; // avoid redundant checking
     }
 
     _NODISCARD const_reference at(const size_type _Sx) const {

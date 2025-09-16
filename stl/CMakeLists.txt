@@ -213,6 +213,7 @@ set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/locale0_implib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/nothrow.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/print.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/regex.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/sharedmutex.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/stacktrace.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/syserror_import_lib.cpp
@@ -414,17 +415,28 @@ set(CMAKE_STATIC_LINKER_FLAGS "/WX")
 set(CMAKE_STATIC_LINKER_FLAGS_DEBUG "")
 set(CMAKE_STATIC_LINKER_FLAGS_RELEASE "")
 set(CMAKE_SHARED_LINKER_FLAGS "/DEBUG:FULL /WX /RELEASE /SUBSYSTEM:Console /NODEFAULTLIB /INCREMENTAL:NO /MANIFEST:NO /DLL /profile /guard:cf /DEBUGTYPE:cv,fixup /LARGEADDRESSAWARE")
+if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /CETCOMPAT")
+endif()
+if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(x64|arm64|arm64ec)$")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /guard:ehcont")
+endif()
+if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(arm64|arm64ec)$")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /guard:delayloadsignret")
+endif()
 set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "")
 
 # Toolset options must appear before add_library() for the options to take effect.
-add_compile_definitions(_CRTBLD _VCRT_ALLOW_INTERNALS _HAS_OLD_IOSTREAMS_MEMBERS=1)
+add_compile_definitions(_CRTBLD _HAS_OLD_IOSTREAMS_MEMBERS=1)
 
 # /Z7 for MSVC, /Zi for MASM
 set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
 
 add_compile_options(/nologo /WX /Gy
     "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Zp8;/std:c++latest;/permissive-;/Zc:preprocessor;/Zc:threadSafeInit-;/Zl>"
+    "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<IN_LIST:${VCLIBS_TARGET_ARCHITECTURE},x64;arm64;arm64ec>>:/guard:ehcont>"
+    "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<IN_LIST:${VCLIBS_TARGET_ARCHITECTURE},arm64;arm64ec>>:/guard:signret>"
     "$<$<COMPILE_LANGUAGE:ASM_MASM>:/W3;/quiet>"
 )
 
@@ -441,9 +453,6 @@ if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(x86|x64)$")
     add_library(stl_alias_objects OBJECT ${ALIAS_SOURCES_X86_X64})
 else()
     add_library(stl_alias_objects INTERFACE)
-
-    # on ARM64 and ARM, we can unconditionally expect Synchronization.lib to exist
-    string(APPEND CMAKE_CXX_STANDARD_LIBRARIES " Synchronization.lib")
 endif()
 
 if(STL_ASAN_BUILD)
@@ -506,6 +515,9 @@ function(add_stl_dlls D_SUFFIX REL_OR_DBG)
 
     add_library(msvcp${D_SUFFIX} SHARED)
     target_link_libraries(msvcp${D_SUFFIX} PRIVATE msvcp${D_SUFFIX}_eha_objects msvcp${D_SUFFIX}_objects msvcp${D_SUFFIX}_init_objects "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib")
+    if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(arm64|arm64ec)$")
+        target_link_libraries(msvcp${D_SUFFIX} PRIVATE "softintrin.lib")
+    endif()
     set_target_properties(msvcp${D_SUFFIX} PROPERTIES ARCHIVE_OUTPUT_NAME "msvcp140_base${D_SUFFIX}${VCLIBS_SUFFIX}")
     set_target_properties(msvcp${D_SUFFIX} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     set_target_properties(msvcp${D_SUFFIX} PROPERTIES OUTPUT_NAME "msvcp140${D_SUFFIX}${VCLIBS_SUFFIX}")
@@ -559,7 +571,7 @@ function(add_stl_dlls D_SUFFIX REL_OR_DBG)
     generate_satellite_def("atomic_wait" "${D_SUFFIX}")
 
     add_library(msvcp${D_SUFFIX}_atomic_wait SHARED "${CMAKE_BINARY_DIR}/msvcp_atomic_wait${D_SUFFIX}.def")
-    target_link_libraries(msvcp${D_SUFFIX}_atomic_wait PRIVATE msvcp${D_SUFFIX}_atomic_wait_objects msvcp${D_SUFFIX}_satellite_objects msvcp${D_SUFFIX}_implib_objects "msvcp${D_SUFFIX}" "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib" "advapi32.lib")
+    target_link_libraries(msvcp${D_SUFFIX}_atomic_wait PRIVATE msvcp${D_SUFFIX}_atomic_wait_objects msvcp${D_SUFFIX}_satellite_objects msvcp${D_SUFFIX}_implib_objects "msvcp${D_SUFFIX}" "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib" "advapi32.lib" "synchronization.lib")
     set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES ARCHIVE_OUTPUT_NAME "msvcp140_atomic_wait${D_SUFFIX}${VCLIBS_SUFFIX}")
     set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     set_target_properties(msvcp${D_SUFFIX}_atomic_wait PROPERTIES OUTPUT_NAME "msvcp140${D_SUFFIX}_atomic_wait${VCLIBS_SUFFIX}")

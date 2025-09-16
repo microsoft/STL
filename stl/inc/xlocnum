@@ -373,15 +373,11 @@ protected:
                 char* _Ep;
                 int _Errno;
                 const long _Ans = _CSTD _Stolx(_Ac, &_Ep, _Parse_result._Base, &_Errno); // convert
-                if (_Ep == _Ac || _Errno != 0 // N4950 [facet.num.get.virtuals]/3
-                    || _Parse_result._Bad_grouping) { // N4950 [facet.num.get.virtuals]/4
-                    _Val   = true;
+                _Val            = _Ans != 0;
+                if (_Ep == _Ac || _Errno != 0 // N5008 [facet.num.get.virtuals]/3
+                    || _Parse_result._Bad_grouping // N5008 [facet.num.get.virtuals]/4
+                    || (_Ans != 0 && _Ans != 1)) { // N5008 [facet.num.get.virtuals]/6
                     _State = ios_base::failbit;
-                } else {
-                    _Val = _Ans != 0;
-                    if (_Ans != 0 && _Ans != 1) {
-                        _State = ios_base::failbit;
-                    }
                 }
             }
         }
@@ -1071,7 +1067,7 @@ private:
                 const ptrdiff_t _Exponent_part_preadjustment_round_up =
                     _Parse_hex ? (_STD abs(_Exponent_part) - 1) / 4 + 1 : _STD abs(_Exponent_part);
                 const ptrdiff_t _Exp_rep_adjustment =
-                    (_STD min)(_Exponent_part_preadjustment_round_up, _STD abs(_Power_of_rep_base));
+                    (_STD min) (_Exponent_part_preadjustment_round_up, _STD abs(_Power_of_rep_base));
 
                 if (_Exponent_part >= 0) {
                     _Exponent_part -= _Parse_hex ? _Exp_rep_adjustment * 4 : _Exp_rep_adjustment;
@@ -1366,7 +1362,7 @@ protected:
         }
 
         _Buf.resize(_Bufsize + 50); // add fudge factor
-        const bool _Is_finite      = (_STD isfinite)(_Val);
+        const bool _Is_finite      = (_STD isfinite) (_Val);
         const auto _Adjusted_flags = // TRANSITION, DevCom-10519861
             _Is_finite ? _Iosbase.flags() : _Iosbase.flags() & ~ios_base::showpoint;
         const auto _Ngen = static_cast<size_t>(_CSTD sprintf_s(
@@ -1393,7 +1389,7 @@ protected:
         }
 
         _Buf.resize(_Bufsize + 50); // add fudge factor
-        const bool _Is_finite      = (_STD isfinite)(_Val);
+        const bool _Is_finite      = (_STD isfinite) (_Val);
         const auto _Adjusted_flags = // TRANSITION, DevCom-10519861
             _Is_finite ? _Iosbase.flags() : _Iosbase.flags() & ~ios_base::showpoint;
         const auto _Ngen = static_cast<size_t>(_CSTD sprintf_s(

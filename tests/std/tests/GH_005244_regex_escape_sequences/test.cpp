@@ -24,11 +24,6 @@ public:
     using locale_type     = typename rx_traits::locale_type;
     using char_class_type = typename rx_traits::char_class_type;
 
-    // TRANSITION, GH-995
-    using _Uelem                    = typename rx_traits::_Uelem;
-    static constexpr auto _Ch_upper = rx_traits::_Ch_upper;
-    static constexpr auto _Ch_alpha = rx_traits::_Ch_alpha;
-
     test_regex_traits() = default;
 
     static size_t length(const charT* p) {
@@ -193,6 +188,11 @@ void test_gh_5244_atomescape_ecmascript() {
     g_regexTester.should_not_match("ca", R"(\ca)", ECMAScript);
     g_regexTester.should_throw(R"(\c0)", error_escape, ECMAScript);
     g_regexTester.should_throw(R"(\c)", error_escape, ECMAScript);
+    g_regexTester.should_throw(R"(\c@)", error_escape, ECMAScript);
+    g_regexTester.should_throw(R"(\c[)", error_escape, ECMAScript);
+    g_regexTester.should_throw(R"(\c`)", error_escape, ECMAScript);
+    g_regexTester.should_throw(R"(\c{)", error_escape, ECMAScript);
+    g_regexTester.should_throw(L"\\c\u00C0", error_escape, ECMAScript); // U+00C0 LATIN CAPITAL LETTER A WITH GRAVE
 
     // AtomEscape :: CharacterEscape :: HexEscapeSequence
     g_regexTester.should_match("\x00"s, R"(\x00)", ECMAScript);
@@ -632,22 +632,15 @@ void test_gh_5244_classescape_posix_not_awk(syntax_option_type option) {
     check_classescape_noescape("?", option);
     check_classescape_noescape("|", option);
 
-    // TRANSITION, GH-5379
-    if (option & (extended | egrep)) {
-        check_classescape_noescape("(", option);
-        check_classescape_noescape(")", option);
-        check_classescape_noescape("{", option);
-    }
+    check_classescape_noescape("(", option);
+    check_classescape_noescape(")", option);
+    check_classescape_noescape("{", option);
 
     // closing characters that are not considered special
     g_regexTester.should_match("\\]", R"([\]])", option);
     g_regexTester.should_not_match("]", R"([\]])", option);
     g_regexTester.should_not_match("\\", R"([\]])", option);
-
-    // TRANSITION, GH-5379
-    if (option & (extended | egrep)) {
-        check_classescape_noescape("}", option);
-    }
+    check_classescape_noescape("}", option);
 
     // awk escape sequences
     check_classescape_noescape("a", option);
@@ -882,8 +875,28 @@ void test_gh_5244() {
     test_gh_5244_classescape_awk();
 }
 
+void test_gh_5379() {
+    // GH-5379: Backslashes in character classes are sometimes not matched in basic regular expressions
+
+    // Correct handling of these backslashes at the beginning of a character class is already covered by GH-5244 tests.
+    // The following tests check that backslashes are handled correctly immediately after a bracketed character class.
+    for (syntax_option_type syntax : {basic, grep}) {
+        g_regexTester.should_throw(R"([a]\b)", error_escape, syntax);
+        g_regexTester.should_match("a[b]", R"([a]\[b])", syntax);
+        g_regexTester.should_match("a", R"(\([a]\))", syntax);
+        g_regexTester.should_match("ab", R"([a]\(b\))", syntax);
+        g_regexTester.should_match("a", R"([a]\{1\})", syntax);
+        g_regexTester.should_throw(R"([a]\})", error_brace, syntax);
+
+        // also check handling of identity escape "\]",
+        // which is supported as an extension following more recent POSIX standards
+        g_regexTester.should_match("a]", R"([a]\])", syntax);
+    }
+}
+
 int main() {
     test_gh_5244();
+    test_gh_5379();
 
     return g_regexTester.result();
 }

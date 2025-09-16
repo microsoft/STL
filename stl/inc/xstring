@@ -484,7 +484,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 size_type _Clamp_suffix_size(const size_type _Off, const size_type _Size) const noexcept {
         // trims _Size to the longest it can be assuming a string at/after _Off
-        return (_STD min)(_Size, _Mysize - _Off);
+        return (_STD min) (_Size, _Mysize - _Off);
     }
 
     union _Bxty { // storage for small buffer or pointer to larger one
@@ -579,6 +579,11 @@ template <class _Rng, class _Ty>
 concept _Contiguous_range_of =
     (_RANGES contiguous_range<_Rng>) && same_as<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _Ty>;
 #endif // _HAS_CXX23
+
+#pragma warning(push)
+// Invalid annotation: 'NullTerminated' property may only be used on buffers whose elements are of integral or pointer
+// type
+#pragma warning(disable : 6510)
 
 _EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_string { // null-terminated transparent array of elements
@@ -899,7 +904,7 @@ private:
 
     _CONSTEXPR20 void _Construct_empty() {
         auto& _My_data = _Mypair._Myval2;
-        _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
+        _My_data._Alloc_proxy(_STD _Get_proxy_allocator(_Getal()));
 
         // initialize basic_string data members
         _My_data._Mysize = 0;
@@ -927,8 +932,8 @@ private:
             _Xlen_string(); // result too long
         }
 
-        auto& _Al       = _Getal();
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Al);
+        auto& _Al     = _Getal();
+        auto _Alproxy = _STD _Get_proxy_allocator(_Al);
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
 
         if (_Count <= _Small_string_capacity) {
@@ -982,9 +987,9 @@ private:
         // Pre: if is_same_v<_Size, size_type>, _Count is the length of [_First, _Last).
         // Pre: *this is in small mode; the lifetime of the SSO elements has already begun.
 
-        auto& _My_data  = _Mypair._Myval2;
-        auto& _Al       = _Getal();
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Al);
+        auto& _My_data = _Mypair._Myval2;
+        auto& _Al      = _Getal();
+        auto _Alproxy  = _STD _Get_proxy_allocator(_Al);
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
 
         _My_data._Mysize = 0;
@@ -1071,7 +1076,7 @@ public:
 
     _CONSTEXPR20 basic_string(basic_string&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
-        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
+        _Mypair._Myval2._Alloc_proxy(_STD _Get_proxy_allocator(_Getal()));
         _Take_contents(_Right);
     }
 
@@ -1086,7 +1091,7 @@ public:
             }
         }
 
-        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
+        _Mypair._Myval2._Alloc_proxy(_STD _Get_proxy_allocator(_Getal()));
         _Take_contents(_Right);
     }
 
@@ -1102,7 +1107,7 @@ public:
         size_type _New_capacity = _Small_string_capacity;
         auto& _My_data          = _Mypair._Myval2;
         _Elem* _Ptr             = _My_data._Bx._Buf;
-        auto&& _Alproxy         = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
+        auto _Alproxy           = _STD _Get_proxy_allocator(_Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
 
         if (_New_capacity < _New_size) {
@@ -1138,7 +1143,7 @@ public:
         const bool _Fits_in_left = _Right_size <= _Left_capacity - _Left_size;
         if (_Fits_in_left && _Right_capacity <= _Left_capacity) {
             // take _Left's buffer, max_size() is OK because _Fits_in_left
-            _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
+            _My_data._Alloc_proxy(_STD _Get_proxy_allocator(_Getal())); // throws, hereafter nothrow in this block
             _Take_contents(_Left);
             const auto _Ptr = _My_data._Myptr();
             _ASAN_STRING_MODIFY(*this, _Left_size, _New_size);
@@ -1159,7 +1164,7 @@ public:
             //     || (_Right_capacity > _Left_capacity && _Fits_in_right)  // tests that _Right has more capacity
             // therefore: _Right must have more than the minimum capacity, so it must be _Large_mode_engaged()
             _STL_INTERNAL_CHECK(_Right_data._Large_mode_engaged());
-            _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
+            _My_data._Alloc_proxy(_STD _Get_proxy_allocator(_Getal())); // throws, hereafter nothrow in this block
             _Take_contents(_Right);
             const auto _Ptr = _Unfancy(_My_data._Bx._Ptr);
             _ASAN_STRING_MODIFY(*this, _Right_size, _New_size);
@@ -1176,7 +1181,7 @@ public:
         }
 
         size_type _New_capacity = _Calculate_growth(_New_size, _Small_string_capacity, _Max);
-        auto&& _Alproxy         = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
+        auto _Alproxy           = _STD _Get_proxy_allocator(_Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
         const pointer _Fancyptr = _Allocate_for_capacity(_Getal(), _New_capacity); // throws
         // nothrow hereafter
@@ -1279,7 +1284,7 @@ public:
             if (_Al != _Right_al) {
                 // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
                 _Mypair._Myval2._Orphan_all();
-                _Mypair._Myval2._Reload_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right_al));
+                _Mypair._Myval2._Reload_proxy(_STD _Get_proxy_allocator(_Al), _STD _Get_proxy_allocator(_Right_al));
             }
         } else if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
             if (_Al != _Right_al) {
@@ -1368,7 +1373,7 @@ private:
         const auto _Right_ptr   = _Right_data._Myptr();
         auto& _Al               = _Getal();
         if (_Allocators_equal(_Al, _Right._Getal()) && _Result_size > _Small_string_capacity) {
-            _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al));
+            _Mypair._Myval2._Alloc_proxy(_STD _Get_proxy_allocator(_Al));
 
             if (_Roff != 0) {
                 _Traits::move(_Right_ptr, _Right_ptr + _Roff, _Result_size);
@@ -1427,7 +1432,7 @@ public:
     _CONSTEXPR20 ~basic_string() noexcept {
         _Tidy_deallocate();
 #if _ITERATOR_DEBUG_LEVEL != 0
-        auto&& _Alproxy          = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
+        auto _Alproxy            = _STD _Get_proxy_allocator(_Getal());
         const auto _To_delete    = _Mypair._Myval2._Myproxy;
         _Mypair._Myval2._Myproxy = nullptr;
         _Delete_plain_internal(_Alproxy, _To_delete);
@@ -1445,8 +1450,8 @@ public:
         const auto& _Right_al = _Right._Getal();
         if constexpr (_Choose_pocca_v<_Alty>) {
             if (_Al != _Right_al) {
-                auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alty, _Al);
-                auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Right_al);
+                auto _Alproxy       = _STD _Get_proxy_allocator(_Al);
+                auto _Right_alproxy = _STD _Get_proxy_allocator(_Right_al);
                 _Container_proxy_ptr<_Alty> _New_proxy(_Right_alproxy, _Leave_proxy_unbound{}); // throws
 
                 const size_type _Right_size   = _Right._Mypair._Myval2._Mysize;
@@ -2140,7 +2145,7 @@ public:
             return;
         }
 
-        size_type _Target_capacity = (_STD min)(_My_data._Mysize | _Alloc_mask, max_size());
+        size_type _Target_capacity = (_STD min) (_My_data._Mysize | _Alloc_mask, max_size());
         if (_Target_capacity < _My_data._Myres) { // worth shrinking, do it
             auto& _Al = _Getal();
             const pointer _New_ptr =
@@ -2279,8 +2284,8 @@ public:
     _NODISCARD _CONSTEXPR20 size_type max_size() const noexcept {
         const size_type _Alloc_max   = _Alty_traits::max_size(_Getal());
         const size_type _Storage_max = // can always store small string
-            (_STD max)(_Alloc_max, static_cast<size_type>(_BUF_SIZE));
-        return (_STD min)(static_cast<size_type>(_STD _Max_limit<difference_type>()),
+            (_STD max) (_Alloc_max, static_cast<size_type>(_BUF_SIZE));
+        return (_STD min) (static_cast<size_type>(_STD _Max_limit<difference_type>()),
             _Storage_max - 1 // -1 is for null terminator and/or npos
         );
     }
@@ -2312,13 +2317,17 @@ public:
             _Mypair._Myval2._Mysize = _New_size;
         }
 
-        auto _Arg_ptr                   = _Mypair._Myval2._Myptr();
-        auto _Arg_size                  = _New_size;
-        const auto _Result_size         = _STD move(_Op)(_Arg_ptr, _Arg_size);
+        auto _Arg_ptr           = _Mypair._Myval2._Myptr();
+        auto _Arg_size          = _New_size;
+        const auto _Result_size = _STD move(_Op)(_Arg_ptr, _Arg_size);
+        static_assert(_Integer_like<decltype(_Result_size)>,
+            "the return type of the operation must be integer-like, N5014 [string.capacity]/8");
+
         const auto _Result_as_size_type = static_cast<size_type>(_Result_size);
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0");
-        _STL_VERIFY(_Result_as_size_type <= _New_size, "the returned size can't be greater than the passed size");
+        _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0, N5014 [string.capacity]/9.2");
+        _STL_VERIFY(_Result_as_size_type <= _New_size,
+            "the returned size can't be greater than the passed size, N5014 [string.capacity]/9.3");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         _Eos(_Result_as_size_type);
     }
@@ -2886,7 +2895,7 @@ private:
             return _Max;
         }
 
-        return (_STD max)(_Masked, _Old + _Old / 2);
+        return (_STD max) (_Masked, _Old + _Old / 2);
     }
 
     _NODISCARD _CONSTEXPR20 size_type _Calculate_growth(const size_type _Requested) const noexcept {
@@ -3194,6 +3203,8 @@ private:
 
     _Compressed_pair<_Alty, _Scary_val> _Mypair;
 };
+
+#pragma warning(pop)
 
 #if _HAS_CXX17
 template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,

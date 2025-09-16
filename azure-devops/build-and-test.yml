@@ -6,6 +6,8 @@ parameters:
   type: string
 - name: targetArch
   type: string
+- name: targetPlatform
+  type: string
 - name: analyzeBuild
   type: boolean
   default: false
@@ -28,7 +30,7 @@ parameters:
   type: boolean
   default: false
 jobs:
-- job: '${{ parameters.targetArch }}'
+- job: '${{ parameters.targetPlatform }}'
   strategy:
     parallel: ${{ parameters.numShards }}
   timeoutInMinutes: 30
@@ -53,13 +55,28 @@ jobs:
     parameters:
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.targetArch }}
+      targetPlatform: ${{ parameters.targetPlatform }}
       analyzeBuild: ${{ parameters.analyzeBuild }}
       asanBuild: ${{ parameters.asanBuild }}
-      buildBenchmarks: ${{ parameters.buildBenchmarks }}
       testsBuildOnly: ${{ parameters.testsBuildOnly }}
+  - template: build-benchmarks.yml
+    parameters:
+      hostArch: ${{ parameters.hostArch }}
+      targetArch: ${{ parameters.targetArch }}
+      targetPlatform: ${{ parameters.targetPlatform }}
+      buildBenchmarks: ${{ parameters.buildBenchmarks }}
+      compiler: cl
+  - template: build-benchmarks.yml
+    parameters:
+      hostArch: ${{ parameters.hostArch }}
+      targetArch: ${{ parameters.targetArch }}
+      targetPlatform: ${{ parameters.targetPlatform }}
+      buildBenchmarks: ${{ parameters.buildBenchmarks }}
+      compiler: clang-cl
   - template: run-tests.yml
     parameters:
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.targetArch }}
+      targetPlatform: ${{ parameters.targetPlatform }}
       testTargets: ${{ parameters.testTargets }}
       skipTesting: ${{ parameters.skipTesting }}

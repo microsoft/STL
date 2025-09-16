@@ -26,6 +26,7 @@ stages:
         parameters:
           hostArch: x64
           targetArch: x64
+          targetPlatform: x64
           asanBuild: true
           testTargets: STL-ASan-CI
 
@@ -40,7 +41,8 @@ stages:
         parameters:
           hostArch: x86
           targetArch: x86
+          targetPlatform: x86
           asanBuild: true
           testTargets: STL-ASan-CI
 
-  # no coverage for ARM and ARM64
+  # no coverage for ARM64

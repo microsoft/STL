@@ -10,6 +10,7 @@
 #if !_HAS_CXX23
 _EMIT_STL_WARNING(STL4038, "The contents of <mdspan> are available only with C++23 or later.");
 #else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
+#include <algorithm>
 #include <array>
 #include <span>
 #include <tuple>
@@ -311,6 +312,10 @@ public:
             return ((0 <= _Indices && _Indices < extent(_Seq)) && ...);
         }
     }
+
+    template <class _ExtentsT>
+    friend constexpr pair<size_t, size_t> _Count_dynamic_extents_equal_to_zero_or_one(
+        const _ExtentsT&) noexcept; // NB: used by 'layout_stride::mapping<E>::is_exhaustive'
 };
 
 template <class>
@@ -788,6 +793,28 @@ concept _Layout_mapping_alike = requires {
     bool_constant<_Mp::is_always_unique()>::value;
 };
 
+template <class _Extents, size_t _Val>
+constexpr size_t _Count_static_extents_equal_to = 0;
+
+template <class _IndexType, size_t... _Extents, size_t _Val>
+constexpr size_t _Count_static_extents_equal_to<extents<_IndexType, _Extents...>, _Val> =
+    (static_cast<size_t>(_Extents == _Val) + ... + 0);
+
+template <class _Extents>
+_NODISCARD constexpr pair<size_t, size_t> _Count_dynamic_extents_equal_to_zero_or_one(const _Extents& _Exts) noexcept {
+    _STL_INTERNAL_STATIC_ASSERT(_Is_extents<_Extents> && _Extents::rank_dynamic() != 0);
+    size_t _Zero_extents = 0;
+    size_t _One_extents  = 0;
+    for (const auto& _Ext : _Exts._Array) {
+        if (_Ext == 0) {
+            ++_Zero_extents;
+        } else if (_Ext == 1) {
+            ++_One_extents;
+        }
+    }
+    return {_Zero_extents, _One_extents};
+}
+
 template <class _Extents>
 class layout_stride::mapping : private _Maybe_fully_static_extents<_Extents>,
                                private _Maybe_empty_array<typename _Extents::index_type, _Extents::rank()> {
@@ -799,8 +826,9 @@ public:
     using layout_type  = layout_stride;
 
 private:
-    using _Extents_base = _Maybe_fully_static_extents<extents_type>;
-    using _Strides_base = _Maybe_empty_array<index_type, _Extents::rank()>;
+    using _Extents_base       = _Maybe_fully_static_extents<extents_type>;
+    using _Strides_base       = _Maybe_empty_array<index_type, _Extents::rank()>;
+    using _Stride_extent_pair = pair<rank_type, rank_type>;
 
     static_assert(_Is_extents<extents_type>,
         "Extents must be a specialization of std::extents (N4950 [mdspan.layout.stride.overview]/2).");
@@ -820,6 +848,7 @@ private:
             bool _Found_zero          = false;
             bool _Overflow            = false;
             index_type _Req_span_size = 0;
+            array<_Stride_extent_pair, extents_type::rank()> _Pairs;
             for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
                 const index_type _Stride = this->_Array[_Idx];
                 _STL_VERIFY(_Stride > 0, "Value of s[i] must be greater than 0 for all i in the range [0, rank_) "
@@ -834,9 +863,22 @@ private:
                     _Overflow = _Mul_overflow(static_cast<index_type>(_Ext - 1), _Stride, _Prod)
                              || _Add_overflow(_Req_span_size, _Prod, _Req_span_size);
                 }
+
+                _Pairs[_Idx] = {static_cast<rank_type>(_Stride), static_cast<rank_type>(_Ext)};
             }
             _STL_VERIFY(_Found_zero || !_Overflow, "REQUIRED-SPAN-SIZE(e, s) must be representable as a value of type "
                                                    "index_type (N4950 [mdspan.layout.stride.cons]/4.2).");
+
+            if (!_Found_zero) {
+                _RANGES sort(_Pairs);
+                for (rank_type _Idx = 1; _Idx < extents_type::_Rank; ++_Idx) {
+                    _STL_VERIFY(_Pairs[_Idx].first >= _Pairs[_Idx - 1].first * _Pairs[_Idx - 1].second,
+                        "If rank_ is greater than 0, then there must exist a permutation P of the integers in the "
+                        "range [0, rank_), such that 's[p(i)] >= s[p(i-1)] * e.extent(p(i-1))' is true for all i in "
+                        "the range [1, rank_), where p(i) is the i-th element of P (N5008 "
+                        "[mdspan.layout.stride.cons]/4.3).");
+                }
+            }
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
     }
@@ -963,11 +1005,53 @@ public:
     }
 
     _NODISCARD constexpr bool is_exhaustive() const noexcept {
+        constexpr size_t _Static_zero_extents = _Count_static_extents_equal_to<extents_type, 0>;
         if constexpr (extents_type::rank() == 0) {
             return true;
+        } else if constexpr (extents_type::rank() == 1) {
+            return this->_Array[0] == 1;
+        } else if constexpr (_Static_zero_extents >= 2) {
+            // Per N5008 [mdspan.layout.stride.obs]/5.2, we are looking for a permutation P of integers in the range
+            // '[0, rank)' such that 'stride(p[i]) == stride(p[i-1])*extent(p[i-1])' is true for 'i' in the range
+            // '[1, rank)'. Knowing that at least two extents are equal to zero, we can deduce that such a permutation
+            // does not exist:
+            // - Some 'stride(p[j])' would have to be equal to 'stride(p[j-1])*extents(p[j-1]) = stride(p[j-1])*0 = 0'
+            //   which is not possible.
+            // - Only 'extent(p[rank-1])' can be equal to 0, because it's not required to satisfy the condition above.
+            //   Since we have two or more extents equal to 0 this is not possible either.
+            return false;
+        } else if constexpr (extents_type::rank() == 2) {
+            return (this->_Array[0] == 1 && this->_Array[1] == this->_Exts.extent(0))
+                || (this->_Array[1] == 1 && this->_Array[0] == this->_Exts.extent(1));
         } else {
-            return required_span_size()
-                == _Fwd_prod_of_extents<extents_type>::_Calculate(this->_Exts, extents_type::_Rank);
+            // NB: Extents equal to 1 are problematic too - sometimes in such cases even when the mapping is exhaustive
+            // this function should return false.
+            // For example, when the extents are [2, 1, 2] and the strides are [1, 5, 2], the mapping is exhaustive
+            // per N5008 [mdspan.layout.reqmts]/16 but not per N5008 [mdspan.layout.stride.obs]/5.2.
+            constexpr size_t _Static_zero_or_one_extents =
+                _Static_zero_extents + _Count_static_extents_equal_to<extents_type, 1>;
+
+            if constexpr (extents_type::rank_dynamic() != 0) {
+                const auto [_Dynamic_zero_extents, _Dynamic_one_extents] =
+                    _Count_dynamic_extents_equal_to_zero_or_one(this->_Exts);
+
+                const size_t _All_zero_extents = _Static_zero_extents + _Dynamic_zero_extents;
+                if (_All_zero_extents >= 2) {
+                    return false;
+                }
+
+                const size_t _All_zero_or_one_extents =
+                    _Static_zero_or_one_extents + _Dynamic_zero_extents + _Dynamic_one_extents;
+                if (_All_zero_or_one_extents == 0) {
+                    return _Is_exhaustive_common_case();
+                }
+
+                return _Is_exhaustive_special_case();
+            } else if constexpr (_Static_zero_or_one_extents == 0) {
+                return _Is_exhaustive_common_case();
+            } else {
+                return _Is_exhaustive_special_case();
+            }
         }
     }
 
@@ -1035,6 +1119,37 @@ private:
 #endif
 
         return static_cast<index_type>(((_Indices * this->_Array[_Seq]) + ... + 0));
+    }
+
+    _NODISCARD constexpr bool _Is_exhaustive_common_case() const noexcept {
+        return required_span_size() == _Fwd_prod_of_extents<extents_type>::_Calculate(this->_Exts, extents_type::_Rank);
+    }
+
+    _NODISCARD constexpr bool _Is_exhaustive_special_case() const noexcept {
+        array<_Stride_extent_pair, extents_type::rank()> _Pairs;
+        for (rank_type _Idx = 0; _Idx < extents_type::_Rank; ++_Idx) {
+            rank_type _Ext = static_cast<rank_type>(this->_Exts.extent(_Idx));
+            if (_Ext == 0) {
+                // NB: _Ext equal to zero is special - we want it to end up as close to the end of the sorted range as
+                // possible, so we assign max value of rank_type to it.
+                _Ext = static_cast<rank_type>(-1);
+            }
+
+            _Pairs[_Idx] = {static_cast<rank_type>(this->_Array[_Idx]), _Ext};
+        }
+
+        _RANGES sort(_Pairs);
+        if (_Pairs[0].first != 1) {
+            return false;
+        }
+
+        for (rank_type _Idx = 1; _Idx < extents_type::_Rank; ++_Idx) {
+            if (_Pairs[_Idx].first != _Pairs[_Idx - 1].first * _Pairs[_Idx - 1].second) {
+                return false;
+            }
+        }
+
+        return true;
     }
 };
 

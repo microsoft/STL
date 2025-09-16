@@ -11,6 +11,8 @@
 
 #include <Windows.h>
 
+#pragma comment(lib, "synchronization")
+
 namespace {
     constexpr unsigned long long _Atomic_wait_no_deadline = 0xFFFF'FFFF'FFFF'FFFF;
 
@@ -89,134 +91,13 @@ namespace {
         }
 #endif // defined(_DEBUG)
     }
-
-#ifndef _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
-#if _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WIN8
-#define _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE 1
-#else // ^^^ _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WIN8 / _STL_WIN32_WINNT < _STL_WIN32_WINNT_WIN8 vvv
-#define _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE 0
-#endif // ^^^ _STL_WIN32_WINNT < _STL_WIN32_WINNT_WIN8 ^^^
-#endif // !defined(_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE)
-
-#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
-
-#pragma comment(lib, "synchronization")
-
-#define __crtWaitOnAddress       WaitOnAddress
-#define __crtWakeByAddressSingle WakeByAddressSingle
-#define __crtWakeByAddressAll    WakeByAddressAll
-
-#else // ^^^ _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE / !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE vvv
-
-    struct _Wait_functions_table {
-        _STD atomic<decltype(&::WaitOnAddress)> _Pfn_WaitOnAddress{nullptr};
-        _STD atomic<decltype(&::WakeByAddressSingle)> _Pfn_WakeByAddressSingle{nullptr};
-        _STD atomic<decltype(&::WakeByAddressAll)> _Pfn_WakeByAddressAll{nullptr};
-        _STD atomic<__std_atomic_api_level> _Api_level{__std_atomic_api_level::__not_set};
-    };
-
-    _Wait_functions_table _Wait_functions;
-
-    void _Force_wait_functions_srwlock_only() noexcept {
-        auto _Local = _Wait_functions._Api_level.load(_STD memory_order_acquire);
-        if (_Local <= __std_atomic_api_level::__detecting) {
-            while (!_Wait_functions._Api_level.compare_exchange_weak(
-                _Local, __std_atomic_api_level::__has_srwlock, _STD memory_order_acq_rel)) {
-                if (_Local > __std_atomic_api_level::__detecting) {
-                    return;
-                }
-            }
-        }
-    }
-
-    [[nodiscard]] __std_atomic_api_level _Init_wait_functions(__std_atomic_api_level _Level) {
-        while (!_Wait_functions._Api_level.compare_exchange_weak(
-            _Level, __std_atomic_api_level::__detecting, _STD memory_order_acq_rel)) {
-            if (_Level > __std_atomic_api_level::__detecting) {
-                return _Level;
-            }
-        }
-
-        _Level = __std_atomic_api_level::__has_srwlock;
-
-        const HMODULE _Sync_module = GetModuleHandleW(L"api-ms-win-core-synch-l1-2-0.dll");
-        if (_Sync_module != nullptr) {
-            const auto _Wait_on_address =
-                reinterpret_cast<decltype(&::WaitOnAddress)>(GetProcAddress(_Sync_module, "WaitOnAddress"));
-            const auto _Wake_by_address_single =
-                reinterpret_cast<decltype(&::WakeByAddressSingle)>(GetProcAddress(_Sync_module, "WakeByAddressSingle"));
-            const auto _Wake_by_address_all =
-                reinterpret_cast<decltype(&::WakeByAddressAll)>(GetProcAddress(_Sync_module, "WakeByAddressAll"));
-
-            if (_Wait_on_address != nullptr && _Wake_by_address_single != nullptr && _Wake_by_address_all != nullptr) {
-                _Wait_functions._Pfn_WaitOnAddress.store(_Wait_on_address, _STD memory_order_relaxed);
-                _Wait_functions._Pfn_WakeByAddressSingle.store(_Wake_by_address_single, _STD memory_order_relaxed);
-                _Wait_functions._Pfn_WakeByAddressAll.store(_Wake_by_address_all, _STD memory_order_relaxed);
-                _Level = __std_atomic_api_level::__has_wait_on_address;
-            }
-        }
-
-        // for __has_srwlock, relaxed would have been enough, not distinguishing for consistency
-        _Wait_functions._Api_level.store(_Level, _STD memory_order_release);
-        return _Level;
-    }
-
-    [[nodiscard]] __std_atomic_api_level _Acquire_wait_functions() noexcept {
-        auto _Level = _Wait_functions._Api_level.load(_STD memory_order_acquire);
-        if (_Level <= __std_atomic_api_level::__detecting) {
-            _Level = _Init_wait_functions(_Level);
-        }
-
-        return _Level;
-    }
-
-    [[nodiscard]] BOOL __crtWaitOnAddress(
-        volatile VOID* Address, PVOID CompareAddress, SIZE_T AddressSize, DWORD dwMilliseconds) {
-        const auto _Wait_on_address = _Wait_functions._Pfn_WaitOnAddress.load(_STD memory_order_relaxed);
-        return _Wait_on_address(Address, CompareAddress, AddressSize, dwMilliseconds);
-    }
-
-    VOID __crtWakeByAddressSingle(PVOID Address) {
-        const auto _Wake_by_address_single = _Wait_functions._Pfn_WakeByAddressSingle.load(_STD memory_order_relaxed);
-        _Wake_by_address_single(Address);
-    }
-
-    VOID __crtWakeByAddressAll(PVOID Address) {
-        const auto _Wake_by_address_all = _Wait_functions._Pfn_WakeByAddressAll.load(_STD memory_order_relaxed);
-        _Wake_by_address_all(Address);
-    }
-
-    bool __stdcall _Atomic_wait_are_equal_direct_fallback(
-        const void* _Storage, void* _Comparand, size_t _Size, void*) noexcept {
-        switch (_Size) {
-        case 1:
-            return __iso_volatile_load8(static_cast<const char*>(_Storage)) == *static_cast<const char*>(_Comparand);
-        case 2:
-            return __iso_volatile_load16(static_cast<const short*>(_Storage)) == *static_cast<const short*>(_Comparand);
-        case 4:
-            return __iso_volatile_load32(static_cast<const int*>(_Storage)) == *static_cast<const int*>(_Comparand);
-        case 8:
-            return __iso_volatile_load64(static_cast<const long long*>(_Storage))
-                == *static_cast<const long long*>(_Comparand);
-        default:
-            _CSTD abort();
-        }
-    }
-#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 } // unnamed namespace
 
 extern "C" {
 int __stdcall __std_atomic_wait_direct(const void* const _Storage, void* const _Comparand, const size_t _Size,
     const unsigned long _Remaining_timeout) noexcept {
-#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-    if (_Acquire_wait_functions() < __std_atomic_api_level::__has_wait_on_address) {
-        return __std_atomic_wait_indirect(
-            _Storage, _Comparand, _Size, nullptr, &_Atomic_wait_are_equal_direct_fallback, _Remaining_timeout);
-    }
-#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-
-    const auto _Result = __crtWaitOnAddress(
-        const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, _Remaining_timeout);
+    const auto _Result =
+        WaitOnAddress(const_cast<volatile void*>(_Storage), const_cast<void*>(_Comparand), _Size, _Remaining_timeout);
 
     if (!_Result) {
         _Assume_timeout();
@@ -225,25 +106,11 @@ int __stdcall __std_atomic_wait_direct(const void* const _Storage, void* const _
 }
 
 void __stdcall __std_atomic_notify_one_direct(const void* const _Storage) noexcept {
-#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-    if (_Acquire_wait_functions() < __std_atomic_api_level::__has_wait_on_address) {
-        __std_atomic_notify_one_indirect(_Storage);
-        return;
-    }
-#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE = 0
-
-    __crtWakeByAddressSingle(const_cast<void*>(_Storage));
+    WakeByAddressSingle(const_cast<void*>(_Storage));
 }
 
 void __stdcall __std_atomic_notify_all_direct(const void* const _Storage) noexcept {
-#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-    if (_Acquire_wait_functions() < __std_atomic_api_level::__has_wait_on_address) {
-        __std_atomic_notify_all_indirect(_Storage);
-        return;
-    }
-#endif // _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE == 0
-
-    __crtWakeByAddressAll(const_cast<void*>(_Storage));
+    WakeByAddressAll(const_cast<void*>(_Storage));
 }
 
 void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noexcept {
@@ -310,6 +177,7 @@ int __stdcall __std_atomic_wait_indirect(const void* _Storage, void* _Comparand,
     }
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 unsigned long long __stdcall __std_atomic_wait_get_deadline(const unsigned long long _Timeout) noexcept {
     if (_Timeout == _Atomic_wait_no_deadline) {
         return _Atomic_wait_no_deadline;
@@ -318,6 +186,7 @@ unsigned long long __stdcall __std_atomic_wait_get_deadline(const unsigned long 
     }
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 unsigned long __stdcall __std_atomic_wait_get_remaining_timeout(unsigned long long _Deadline) noexcept {
     static_assert(__std_atomic_wait_no_timeout == INFINITE,
         "__std_atomic_wait_no_timeout is passed directly to underlying API, so should match it");
@@ -339,25 +208,10 @@ unsigned long __stdcall __std_atomic_wait_get_remaining_timeout(unsigned long lo
     return static_cast<unsigned long>(_Remaining);
 }
 
-__std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_level _Requested_api_level) noexcept {
-#if _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
-    (void) _Requested_api_level;
+// TRANSITION, ABI: preserved for binary compatibility
+enum class __std_atomic_api_level : unsigned long { __not_set, __detecting, __has_srwlock, __has_wait_on_address };
+__std_atomic_api_level __stdcall __std_atomic_set_api_level(__std_atomic_api_level) noexcept {
     return __std_atomic_api_level::__has_wait_on_address;
-#else // ^^^ _ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE / !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE vvv
-    switch (_Requested_api_level) {
-    case __std_atomic_api_level::__not_set:
-    case __std_atomic_api_level::__detecting:
-        _CSTD abort();
-    case __std_atomic_api_level::__has_srwlock:
-        _Force_wait_functions_srwlock_only();
-        break;
-    case __std_atomic_api_level::__has_wait_on_address:
-    default: // future compat: new header using an old DLL will get the highest requested level supported
-        break;
-    }
-
-    return _Acquire_wait_functions();
-#endif // !_ATOMIC_WAIT_ON_ADDRESS_STATICALLY_AVAILABLE
 }
 
 #pragma warning(push)

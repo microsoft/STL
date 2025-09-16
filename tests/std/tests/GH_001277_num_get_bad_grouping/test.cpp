@@ -325,6 +325,177 @@ void test_good_and_bad_grouping_pointer() {
     }
 }
 
+// Also test GH-5470 "<xlocnum>: num_get::do_get for bool stores true in the result when the input has bad grouping,
+// even if the input is zero"
+void test_good_and_bad_grouping_bool() {
+    const my_facet f(1);
+    ios instr(nullptr);
+    instr.imbue(locale(locale(), new special_numpunct));
+
+    instr.setf(ios_base::fmtflags{}, ios_base::basefield);
+
+    {
+        bool v                = true;
+        const char sep_str[]  = "0";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.goodbit);
+        assert(!v);
+    }
+    {
+        bool v                = true;
+        const char sep_str[]  = "-0";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.goodbit);
+        assert(!v);
+    }
+    {
+        bool v                = true;
+        const char sep_str[]  = "1";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.goodbit);
+        assert(v);
+    }
+    {
+        bool v                = true;
+        const char sep_str[]  = "1,72,9";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.failbit);
+        assert(v);
+    }
+    {
+        bool v                = true;
+        const char sep_str[]  = "0,17,7";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.failbit);
+        assert(v);
+    }
+    {
+        bool v                = true;
+        const char sep_str[]  = "0,00,1";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.goodbit);
+        assert(v);
+    }
+    {
+        bool v                = true;
+        const char sep_str[]  = "0,00,0";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.goodbit);
+        assert(!v);
+    }
+    {
+        bool v                = true;
+        const char sep_str[]  = "01,77";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.failbit);
+        assert(v);
+    }
+    {
+        bool v                = true;
+        const char sep_str[]  = "00,01";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.failbit);
+        assert(v);
+    }
+    {
+        bool v                = true;
+        const char sep_str[]  = "00,00";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.failbit);
+        assert(!v);
+    }
+    {
+        bool v                = true;
+        const char sep_str[]  = "0x1,72,9";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.failbit);
+        assert(v);
+    }
+    {
+        bool v                = true;
+        const char sep_str[]  = "0x0,00,1";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.goodbit);
+        assert(v);
+    }
+    {
+        bool v                = true;
+        const char sep_str[]  = "0x0,00,0";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.goodbit);
+        assert(!v);
+    }
+    {
+        bool v                = true;
+        const char sep_str[]  = "0x1,729";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.failbit);
+        assert(v);
+    }
+    {
+        bool v                = true;
+        const char sep_str[]  = "0x0,001";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.failbit);
+        assert(v);
+    }
+    {
+        bool v                = true;
+        const char sep_str[]  = "0x0,000";
+        const size_t len      = sizeof(sep_str) - 1;
+        ios_base::iostate err = instr.goodbit;
+        const char* iter      = f.get(sep_str, sep_str + len + 1, instr, err, v);
+        assert(iter == sep_str + len);
+        assert(err == instr.failbit);
+        assert(!v);
+    }
+}
+
 class mid_zero_numpunct : public numpunct<char> {
 public:
     mid_zero_numpunct() : numpunct<char>() {}
@@ -449,6 +620,7 @@ int main() {
     test_good_and_bad_grouping<double>();
     test_good_and_bad_grouping<long double>();
     test_good_and_bad_grouping_pointer();
+    test_good_and_bad_grouping_bool();
 
     test_nonending_unlimited_grouping<unsigned int>();
     test_nonending_unlimited_grouping<long>();

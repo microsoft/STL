@@ -94,6 +94,9 @@ inline size_t __CRTDECL _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_
 }
 #endif // defined(_CRTBLD)
 
+template <class _Elem>
+class _Regex_traits;
+
 _EXPORT_STD template <class _Elem>
 class collate : public locale::facet { // facet for ordering sequences of elements
 public:
@@ -166,10 +169,14 @@ protected:
         size_t _Count;
         string_type _Str;
 
-        for (_Count = static_cast<size_t>(_Last - _First); 0 < _Count;) {
+        for (_Count = static_cast<size_t>(_Last - _First); _Str.size() < _Count;) {
             // grow string if locale-specific strxfrm fails
             _Str.resize(_Count);
-            if ((_Count = _LStrxfrm(&_Str[0], &_Str[0] + _Str.size(), _First, _Last, &_Coll)) <= _Str.size()) {
+            _Count = _LStrxfrm(&_Str[0], &_Str[0] + _Str.size(), _First, _Last, &_Coll);
+
+            if (_Count == static_cast<size_t>(-1)) {
+                // return empty string in case of error
+                _Count = 0;
                 break;
             }
         }
@@ -179,12 +186,14 @@ protected:
 
     _NODISCARD virtual long __CLR_OR_THIS_CALL do_hash(const _Elem* _First, const _Elem* _Last) const {
         // compute hash code for [_First, _Last)
-        _Adl_verify_range(_First, _Last);
-        return static_cast<long>(_Hash_array_representation(_First, static_cast<size_t>(_Last - _First)));
+        const auto _Sortkey = collate::do_transform(_First, _Last);
+        return static_cast<long>(_Hash_array_representation(_Sortkey.data(), _Sortkey.size()));
     }
 
 private:
     _Locinfo::_Collvec _Coll; // used by _LStrcoll and _XStrxfrm
+
+    friend _Regex_traits<_Elem>;
 };
 
 #ifdef __clang__

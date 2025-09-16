@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# Build STL targeting x86, x64, arm, arm64
+# Build STL targeting x86, x64, arm64, arm64ec
 
 variables:
   - template: azure-devops/config.yml
@@ -29,6 +29,7 @@ stages:
         parameters:
           hostArch: x64
           targetArch: x64
+          targetPlatform: x64
           analyzeBuild: true
           buildBenchmarks: true
           numShards: 1
@@ -45,23 +46,9 @@ stages:
         parameters:
           hostArch: x86
           targetArch: x86
+          targetPlatform: x86
           analyzeBuild: true
           buildBenchmarks: true
-          numShards: 1
-          skipTesting: true
-
-  - stage: Early_Build_ARM
-    dependsOn: []
-    displayName: 'Early Build ARM'
-    pool:
-      name: ${{ variables.poolName }}
-      demands: ${{ variables.poolDemands }}
-    jobs:
-      - template: azure-devops/build-and-test.yml
-        parameters:
-          hostArch: x64
-          targetArch: arm
-          analyzeBuild: true
           numShards: 1
           skipTesting: true
 
@@ -76,6 +63,24 @@ stages:
         parameters:
           hostArch: x64
           targetArch: arm64
+          targetPlatform: arm64
+          analyzeBuild: true
+          buildBenchmarks: true
+          numShards: 1
+          skipTesting: true
+
+  - stage: Early_Build_ARM64EC
+    dependsOn: []
+    displayName: 'Early Build ARM64EC'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
+    jobs:
+      - template: azure-devops/build-and-test.yml
+        parameters:
+          hostArch: x64
+          targetArch: arm64
+          targetPlatform: arm64ec
           analyzeBuild: true
           buildBenchmarks: true
           numShards: 1
@@ -86,8 +91,8 @@ stages:
       - Code_Format
       - Early_Build_x64
       - Early_Build_x86
-      - Early_Build_ARM
       - Early_Build_ARM64
+      - Early_Build_ARM64EC
     displayName: 'Build and Test x64'
     pool:
       name: ${{ variables.poolName }}
@@ -97,6 +102,7 @@ stages:
         parameters:
           hostArch: x64
           targetArch: x64
+          targetPlatform: x64
 
   - stage: Build_And_Test_x86
     dependsOn: Build_And_Test_x64
@@ -109,19 +115,7 @@ stages:
         parameters:
           hostArch: x86
           targetArch: x86
-
-  - stage: Build_And_Test_ARM
-    dependsOn: Build_And_Test_x64
-    displayName: 'Build and Test ARM'
-    pool:
-      name: ${{ variables.poolName }}
-      demands: ${{ variables.poolDemands }}
-    jobs:
-      - template: azure-devops/build-and-test.yml
-        parameters:
-          hostArch: x64
-          targetArch: arm
-          testsBuildOnly: true
+          targetPlatform: x86
 
   - stage: Build_And_Test_ARM64
     dependsOn: Build_And_Test_x64
@@ -134,4 +128,19 @@ stages:
         parameters:
           hostArch: x64
           targetArch: arm64
+          targetPlatform: arm64
+          testsBuildOnly: true
+
+  - stage: Build_And_Test_ARM64EC
+    dependsOn: Build_And_Test_x64
+    displayName: 'Build and Test ARM64EC'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
+    jobs:
+      - template: azure-devops/build-and-test.yml
+        parameters:
+          hostArch: x64
+          targetArch: arm64
+          targetPlatform: arm64ec
           testsBuildOnly: true

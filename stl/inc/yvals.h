@@ -3,7 +3,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// This header is used to compile the import library (via locale0_implib.cpp => locale0.cpp => xfacet => yvals.h).
+// This header is used to compile the import library
+// (via locale0_implib.cpp => locale0.cpp => xfacet => yvals.h and regex.cpp => awint.hpp => yvals.h).
 // MAJOR LIMITATIONS apply to what can be included here!
 // Before editing this file, read: /docs/import_library.md
 
@@ -169,6 +170,10 @@ _EMIT_STL_ERROR(STL1006, "_CONTAINER_DEBUG_LEVEL has been removed. It was supers
 #define _MSVC_STL_HARDENING_ARRAY _MSVC_STL_HARDENING
 #endif
 
+#ifndef _MSVC_STL_HARDENING_BASIC_STACKTRACE
+#define _MSVC_STL_HARDENING_BASIC_STACKTRACE _MSVC_STL_HARDENING
+#endif
+
 #ifndef _MSVC_STL_HARDENING_BASIC_STRING
 #define _MSVC_STL_HARDENING_BASIC_STRING _MSVC_STL_HARDENING
 #endif
@@ -179,6 +184,14 @@ _EMIT_STL_ERROR(STL1006, "_CONTAINER_DEBUG_LEVEL has been removed. It was supers
 
 #ifndef _MSVC_STL_HARDENING_BITSET
 #define _MSVC_STL_HARDENING_BITSET _MSVC_STL_HARDENING
+#endif
+
+#ifndef _MSVC_STL_HARDENING_COMMON_ITERATOR
+#define _MSVC_STL_HARDENING_COMMON_ITERATOR _MSVC_STL_HARDENING
+#endif
+
+#ifndef _MSVC_STL_HARDENING_COUNTED_ITERATOR
+#define _MSVC_STL_HARDENING_COUNTED_ITERATOR _MSVC_STL_HARDENING
 #endif
 
 #ifndef _MSVC_STL_HARDENING_DEQUE
@@ -207,6 +220,10 @@ _EMIT_STL_ERROR(STL1006, "_CONTAINER_DEBUG_LEVEL has been removed. It was supers
 
 #ifndef _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE
 #define _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE _MSVC_STL_HARDENING
+#endif
+
+#ifndef _MSVC_STL_HARDENING_SHARED_PTR_ARRAY
+#define _MSVC_STL_HARDENING_SHARED_PTR_ARRAY _MSVC_STL_HARDENING
 #endif
 
 #ifndef _MSVC_STL_HARDENING_SPAN
@@ -242,12 +259,20 @@ _EMIT_STL_ERROR(STL1008, "_STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER has been 
 //     a non-void function, etc.), but it will not attempt to replace undefined behavior with implementation-defined
 //     behavior. (For example, we will not transform `pop_back()` of an empty `vector` to be a no-op.)
 #ifndef _MSVC_STL_DOOM_FUNCTION
-#ifdef _MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION
+#ifdef _MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION // The user wants to use abort():
 #define _MSVC_STL_DOOM_FUNCTION(mesg) _CSTD abort()
-#else // ^^^ defined(_MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION) / !defined(_MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION) vvv
-// TRANSITION, GH-4858: after dropping Win7 support, we can directly call __fastfail(FAST_FAIL_INVALID_ARG).
+#elif defined(__clang__) && __clang_major__ < 19 // TRANSITION, VSO-2397560, Real World Code relying on ancient Clang
+#define _MSVC_STL_DOOM_FUNCTION(mesg) __builtin_trap()
+#elif defined(__clang__) // Use the Clang intrinsic:
+#define _MSVC_STL_DOOM_FUNCTION(mesg) __builtin_verbose_trap("MSVC STL error", mesg)
+#elif defined(_M_CEE) // TRANSITION, VSO-2457624 (/clr silent bad codegen for __fastfail); /clr:pure lacks __fastfail
 #define _MSVC_STL_DOOM_FUNCTION(mesg) ::_invoke_watson(nullptr, nullptr, nullptr, 0, 0)
-#endif // ^^^ !defined(_MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION) ^^^
+#else // Use the MSVC __fastfail intrinsic:
+extern "C" __declspec(noreturn) void __fastfail(unsigned int); // declared by <intrin.h>
+#define _MSVC_STL_DOOM_FUNCTION(mesg)                                                  \
+    __fastfail(5); /* __fastfail(FAST_FAIL_INVALID_ARG), value defined by <winnt.h> */ \
+    _STL_UNREACHABLE /* TRANSITION, DevCom-10914110 */
+#endif // choose "doom function"
 #endif // ^^^ !defined(_MSVC_STL_DOOM_FUNCTION) ^^^
 
 #define _STL_REPORT_ERROR(mesg) \
@@ -494,7 +519,7 @@ private:
     }              \
     }
 
-#define _RAISE(x) ::_invoke_watson(nullptr, nullptr, nullptr, 0, 0)
+#define _RAISE(x) _MSVC_STL_DOOM_FUNCTION("_RAISE was called with !_HAS_EXCEPTIONS")
 
 #define _RERAISE
 #define _THROW(...) (__VA_ARGS__)._Raise()

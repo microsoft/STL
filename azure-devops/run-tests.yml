@@ -6,14 +6,15 @@ parameters:
   type: string
 - name: targetArch
   type: string
+- name: targetPlatform
+  type: string
 - name: testTargets
   type: string
 - name: skipTesting
   type: boolean
 steps:
 - script: |
-    call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
-    -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
+    call "$(vsDevCmdBat)" -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     ninja --verbose -k 0 ${{ parameters.testTargets }}
   displayName: 'Build and Run Tests'
   timeoutInMinutes: 30
@@ -28,8 +29,8 @@ steps:
     searchFolder: $(buildOutputLocation)
     testResultsFormat: JUnit
     testResultsFiles: '**/test-results.xml'
-    testRunTitle: 'test-${{ parameters.targetArch }}-$(System.JobPositionInPhase)'
+    testRunTitle: 'test-${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)'
 - publish: $(buildOutputLocation)/test-results.xml
-  artifact: '${{ parameters.targetArch }}-$(System.JobPositionInPhase)-xml-$(System.JobId)'
+  artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-xml-$(System.JobId)'
   condition: and(failed(), not(${{ parameters.skipTesting }}))
   displayName: 'Publish XML Artifact'

@@ -743,6 +743,65 @@ void test_reverse_copy(mt19937_64& gen) {
     }
 }
 
+template <class RanIt>
+void last_known_good_rotate(
+    RanIt first, RanIt mid, RanIt last, vector<typename iterator_traits<RanIt>::value_type>& tmp) {
+    const auto size_left  = mid - first;
+    const auto size_right = last - mid;
+    if (size_left <= size_right) {
+        tmp.assign(first, mid);
+        move_backward(mid, last, last - size_left);
+        move(tmp.begin(), tmp.end(), last - size_left);
+    } else {
+        tmp.assign(mid, last);
+        move(first, mid, first + size_right);
+        move(tmp.begin(), tmp.end(), first);
+    }
+}
+
+template <class T>
+void test_case_rotate(
+    vector<T>& actual, vector<T>& actual_r, vector<T>& expected, const ptrdiff_t pos, vector<T>& tmp) {
+    const ptrdiff_t shift = static_cast<ptrdiff_t>(expected.size()) - pos;
+    last_known_good_rotate(expected.begin(), expected.begin() + pos, expected.end(), tmp);
+    const auto it = rotate(actual.begin(), actual.begin() + pos, actual.end());
+    assert(expected == actual);
+    assert(it == actual.begin() + shift);
+#if _HAS_CXX20
+    const auto rng = ranges::rotate(actual_r.begin(), actual_r.begin() + pos, actual_r.end());
+    assert(expected == actual_r);
+    assert(begin(rng) == actual_r.begin() + shift);
+    assert(end(rng) == actual_r.end());
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    (void) actual_r;
+#endif // ^^^ !_HAS_CXX20 ^^^
+}
+
+template <class T>
+void test_rotate(mt19937_64& gen, const size_t data_count = dataCount) {
+    vector<T> actual;
+    vector<T> actual_r;
+    vector<T> expected;
+    vector<T> tmp;
+    actual.reserve(data_count);
+    actual_r.reserve(data_count);
+    expected.reserve(data_count);
+    tmp.reserve(data_count);
+    test_case_rotate(actual, actual_r, expected, 0, tmp);
+    for (size_t attempts = 0; attempts < data_count; ++attempts) {
+        const T val = static_cast<T>(gen()); // intentionally narrows
+        actual.push_back(val);
+        actual_r.push_back(val);
+        expected.push_back(val);
+
+        uniform_int_distribution<ptrdiff_t> dis_pos(0, static_cast<ptrdiff_t>(attempts) + 1);
+
+        for (size_t pos_count = 0; pos_count != 5; ++pos_count) {
+            test_case_rotate(actual, actual_r, expected, dis_pos(gen), tmp);
+        }
+    }
+}
+
 template <class FwdIt1, class FwdIt2>
 FwdIt2 last_known_good_swap_ranges(FwdIt1 first1, const FwdIt1 last1, FwdIt2 dest) {
     for (; first1 != last1; ++first1, ++dest) {
@@ -1112,7 +1171,10 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_search<unsigned char>(gen);
     test_search<short>(gen);
     test_search<unsigned short>(gen);
-    // search() and find_end() are vectorized for 1 and 2 bytes only.
+    test_search<int>(gen);
+    test_search<unsigned int>(gen);
+    test_search<long long>(gen);
+    test_search<unsigned long long>(gen);
 
     test_min_max_element<char>(gen);
     test_min_max_element<signed char>(gen);
@@ -1178,6 +1240,19 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_reverse_copy<float>(gen);
     test_reverse_copy<double>(gen);
     test_reverse_copy<long double>(gen);
+
+    test_rotate<char>(gen, 20000); // one real long rotate run, as for smaller arrays some strategies aren't executed
+    test_rotate<signed char>(gen);
+    test_rotate<unsigned char>(gen);
+    test_rotate<short>(gen);
+    test_rotate<unsigned short>(gen);
+    test_rotate<int>(gen);
+    test_rotate<unsigned int>(gen);
+    test_rotate<long long>(gen);
+    test_rotate<unsigned long long>(gen);
+    test_rotate<float>(gen);
+    test_rotate<double>(gen);
+    test_rotate<long double>(gen);
 
     test_remove<char>(gen);
     test_remove<signed char>(gen);

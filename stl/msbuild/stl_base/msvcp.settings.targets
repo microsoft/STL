@@ -32,7 +32,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <LibOutputFileName>msvcprt_base$(BuildSuffix)$(ClrLibSuffix)</LibOutputFileName>
         <LibOutputFile>$(LibOutputFileName).lib</LibOutputFile>
 
-        <ClDefines>_VCRT_ALLOW_INTERNALS;$(ClDefines)</ClDefines>
         <ClDefines Condition="'$(MsvcpFlavor)' == 'app'">$(ClDefines);_CRT_APP</ClDefines>
 
         <UseMsvcrt>false</UseMsvcrt>
@@ -71,6 +70,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <TargetLib Include="$(CrtLibPath)\msvcrt$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(CrtLibPath)\vcruntime$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(UniversalCRTLib)"/>
+        <TargetLib Condition="'$(BuildArchitecture)' == 'arm64' or '$(BuildArchitecture)' == 'arm64ec'" Include="$(SdkLibPath)\softintrin.lib"/>
     </ItemGroup>
 
     <!-- Copy the output dll and pdb to various destinations -->
