@@ -32,7 +32,7 @@
 #include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers
 #include <stdlib.h>
 
-// clang-format off
+// clang-format off: avoid diverging from external code
 // LLVM SOURCES BEGIN
 // -- BEGIN: test/std/utilities/utility/utility.inplace/inplace.pass.cpp
 //===----------------------------------------------------------------------===//

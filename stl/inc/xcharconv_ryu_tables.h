@@ -56,7 +56,7 @@ _STD_BEGIN
 // See xcharconv_ryu.h for the exact commit.
 // (Keep the cgmanifest.json commitHash in sync.)
 
-// clang-format off
+// clang-format off: avoid diverging from external code
 
 // vvvvvvvvvv DERIVED FROM digit_table.h vvvvvvvvvv
 

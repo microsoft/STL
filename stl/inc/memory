@@ -533,7 +533,7 @@ namespace ranges {
     public:
         template <class _Ty, class... _Types>
             requires requires(_Ty* _Ptr, _Types&&... _Args) {
-                ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types&&>(_Args)...); // per LWG-3888
+                ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types &&>(_Args)...); // per LWG-3888
             }
         _STATIC_CALL_OPERATOR constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) _CONST_CALL_OPERATOR
             noexcept(noexcept(
@@ -1798,6 +1798,14 @@ public:
 
     template <class _Ty2 = _Ty, class _Elem = element_type, enable_if_t<is_array_v<_Ty2>, int> = 0>
     _NODISCARD _Elem& operator[](ptrdiff_t _Idx) const noexcept /* strengthened */ {
+#if _MSVC_STL_HARDENING_SHARED_PTR_ARRAY || _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (extent_v<_Ty> != 0) {
+            _STL_VERIFY(
+                _Idx >= 0 && static_cast<size_t>(_Idx) < extent_v<_Ty>, "shared_ptr<T[N]> subscript out of range");
+        } else {
+            _STL_VERIFY(_Idx >= 0, "shared_ptr<T[]> subscript out of range");
+        }
+#endif // _MSVC_STL_HARDENING_SHARED_PTR_ARRAY || _ITERATOR_DEBUG_LEVEL != 0
         return get()[_Idx];
     }
 
@@ -3938,7 +3946,7 @@ _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock() noexcept;
 } // extern "C"
 
 struct _Shared_ptr_spin_lock { // class to manage a spin lock for shared_ptr atomic operations
-    _Shared_ptr_spin_lock() { // lock the spin lock
+    _Shared_ptr_spin_lock() noexcept { // lock the spin lock
         _Lock_shared_ptr_spin_lock();
     }
 
@@ -4058,7 +4066,7 @@ protected:
             }
             ::__std_atomic_wait_direct(
                 _STD addressof(_Ptr), _STD addressof(_Old_ptr), sizeof(_Old_ptr), _Remaining_timeout);
-            _Remaining_timeout = (_STD min)(_Max_timeout, _Remaining_timeout * 2);
+            _Remaining_timeout = (_STD min) (_Max_timeout, _Remaining_timeout * 2);
         }
     }
 
@@ -4369,8 +4377,7 @@ public:
         noexcept(is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>) /* strengthened */
         : _Smart_ptr(_Smart_ptr_),
           _Mypair(_One_then_variadic_args_t{}, tuple<_ArgsT...>{_STD forward<_ArgsT>(_Args_)...}) {
-        constexpr bool _Is_resettable = requires { _Smart_ptr.reset(); }; // TRANSITION, DevCom-10291456
-        if constexpr (_Is_resettable) {
+        if constexpr (requires { _Smart_ptr.reset(); }) {
             _Smart_ptr.reset();
         } else {
             static_assert(is_constructible_v<_SmartPtr>, "the adapted pointer type must be default constructible.");

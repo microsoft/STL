@@ -24,9 +24,6 @@ public:
     using locale_type     = typename rx_traits::locale_type;
     using char_class_type = typename rx_traits::char_class_type;
 
-    // TRANSITION, GH-995
-    using _Uelem = typename rx_traits::_Uelem;
-
     test_regex_traits() = default;
 
     static size_t length(const charT* p) {

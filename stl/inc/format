@@ -1685,8 +1685,8 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _Arithmetic _Value) {
     char* _End = _Buffer;
 
     if constexpr (is_floating_point_v<_Arithmetic>) {
-        if ((_STD isnan)(_Value)) {
-            if ((_STD signbit)(_Value)) {
+        if ((_STD isnan) (_Value)) {
+            if ((_STD signbit) (_Value)) {
                 *_End++ = '-';
             }
 
@@ -2181,9 +2181,9 @@ _NODISCARD _OutputIt _Fmt_write(
         _Precision       = _Max_precision;
     }
 
-    const auto _Is_negative = (_STD signbit)(_Value);
+    const auto _Is_negative = (_STD signbit) (_Value);
 
-    if ((_STD isnan)(_Value)) {
+    if ((_STD isnan) (_Value)) {
         _Result.ptr = _Buffer;
         if (_Is_negative) {
             ++_Result.ptr; // pretend to skip over a '-' that to_chars would put in _Buffer[0]
@@ -2223,7 +2223,7 @@ _NODISCARD _OutputIt _Fmt_write(
         _Exponent -= 'a' - 'A';
     }
 
-    const auto _Is_finite = (_STD isfinite)(_Value);
+    const auto _Is_finite = (_STD isfinite) (_Value);
 
     auto _Append_decimal   = false;
     auto _Exponent_start   = _Result.ptr;
@@ -2242,7 +2242,7 @@ _NODISCARD _OutputIt _Fmt_write(
                     _Exponent_start = _It;
                 }
             }
-            _Integral_end = (_STD min)(_Radix_point, _Exponent_start);
+            _Integral_end = (_STD min) (_Radix_point, _Exponent_start);
 
             if (_Specs._Alt && _Radix_point == _Result.ptr) {
                 // TRANSITION, decimal point may be wider
