@@ -483,8 +483,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR23 bool all() const noexcept {
-        constexpr bool _Zero_length = _Bits == 0;
-        if constexpr (_Zero_length) { // must test for this, otherwise would count one full word
+        if constexpr (_Bits == 0) { // must test for this, otherwise would count one full word
             return true;
         }
 

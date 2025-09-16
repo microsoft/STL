@@ -48,24 +48,6 @@ _STD_BEGIN
 #define _STL_128_DIV_INTRINSICS 0
 #endif // ^^^ intrinsics unavailable ^^^
 
-template <class _Ty>
-_NODISCARD constexpr int _Countl_zero_internal(const _Ty _Val) noexcept {
-    _STL_INTERNAL_STATIC_ASSERT(_Is_standard_unsigned_integer<_Ty>);
-#if _HAS_COUNTL_ZERO_INTRINSICS
-#if (defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))
-    if (!_Is_constant_evaluated()) {
-        return _Checked_x86_x64_countl_zero(_Val);
-    }
-#elif defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
-    if (!_Is_constant_evaluated()) {
-        return _Checked_arm64_countl_zero(_Val);
-    }
-#endif // defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
-#endif // _HAS_COUNTL_ZERO_INTRINSICS
-
-    return _Countl_zero_fallback(_Val);
-}
-
 struct alignas(16) _Base128 {
     uint64_t _Word[2];
 
@@ -258,7 +240,7 @@ struct alignas(16) _Base128 {
         }
 #endif // _STL_128_DIV_INTRINSICS
 
-        const auto __d = _Countl_zero_internal(static_cast<uint32_t>(_Div >> 32));
+        const auto __d = _Countl_zero(static_cast<uint32_t>(_Div >> 32));
         if (__d >= 32) { // _Div < 2^32
             auto _Rem    = (_High << 32) | (_Low >> 32);
             auto _Result = _Rem / static_cast<uint32_t>(_Div);
@@ -435,8 +417,8 @@ struct alignas(16) _Base128 {
     _NODISCARD static constexpr _Base128 _Divide(const _Base128& _Num, const uint64_t _Den) noexcept {
         _Base128 _Result;
         _Result._Word[1] = _Num._Word[1] / _Den;
-        uint64_t _Rem    = _Num._Word[1] % _Den;
-        _Result._Word[0] = _UDiv128(_Rem, _Num._Word[0], _Den, _Rem);
+        uint64_t _Rem _ZERO_OR_NO_INIT;
+        _Result._Word[0] = _UDiv128(_Num._Word[1] % _Den, _Num._Word[0], _Den, _Rem);
         return _Result;
     }
     _NODISCARD static constexpr _Base128 _Divide(_Base128 _Num, _Base128 _Den) noexcept {
@@ -466,7 +448,7 @@ struct alignas(16) _Base128 {
         // _STL_INTERNAL_CHECK(_Den._Word[1] != 0);
         // _STL_INTERNAL_CHECK(_Num._Word[1] > _Den._Word[1]);
         // Normalize by shifting both left until _Den's high bit is set (So _Den's high digit is >= b / 2)
-        const auto __d = _Countl_zero_internal(_Den._Word[1]);
+        const auto __d = _Countl_zero(_Den._Word[1]);
         _Den <<= __d;
         auto _High_digit = __d == 0 ? 0 : _Num._Word[1] >> (64 - __d); // This creates a third digit for _Num
         _Num <<= __d;
@@ -511,7 +493,7 @@ struct alignas(16) _Base128 {
         }
         return __qhat;
 #else // ^^^ 128-bit intrinsics / no such intrinsics vvv
-        auto __d                   = _Countl_zero_internal(_Den._Word[1]);
+        auto __d                   = _Countl_zero(_Den._Word[1]);
         const bool _Three_word_den = __d >= 32;
         __d &= 31;
         uint32_t __u[5]{
@@ -591,7 +573,7 @@ struct alignas(16) _Base128 {
         // _STL_INTERNAL_CHECK(_Den._Word[1] != 0);
         // _STL_INTERNAL_CHECK(_Num._Word[1] > _Den._Word[1]);
         // Normalize by shifting both left until _Den's high bit is set (So _Den's high digit is >= b / 2)
-        const auto __d = _Countl_zero_internal(_Den._Word[1]);
+        const auto __d = _Countl_zero(_Den._Word[1]);
         _Den <<= __d;
         auto _High_digit = __d == 0 ? 0 : _Num._Word[1] >> (64 - __d); // This creates a third digit for _Num
         _Num <<= __d;
@@ -638,7 +620,7 @@ struct alignas(16) _Base128 {
             (void) _AddCarry64(_Carry, _Num._Word[1], _Den._Word[1], _Num._Word[1]);
         }
 #else // ^^^ 128-bit intrinsics / no such intrinsics vvv
-        auto __d                   = _Countl_zero_internal(_Den._Word[1]);
+        auto __d                   = _Countl_zero(_Den._Word[1]);
         const bool _Three_word_den = __d >= 32;
         __d &= 31;
         uint32_t __u[5]{
@@ -677,6 +659,168 @@ struct alignas(16) _Base128 {
         _Num >>= __d;
         return _Num;
     }
+
+#if _HAS_CXX23
+#if !_STL_128_DIV_INTRINSICS
+    _NODISCARD static constexpr _Base128 _Div_ceil(const _Base128& _Num, const uint32_t _Den) noexcept {
+        _Base128 _Result;
+        _Result._Word[1] = _Num._Word[1] / _Den;
+        uint64_t _Rem    = ((_Num._Word[1] % _Den) << 32) | (_Num._Word[0] >> 32);
+        _Result._Word[0] = (_Rem / _Den) << 32;
+        _Rem             = ((_Rem % _Den) << 32) | static_cast<uint32_t>(_Num._Word[0]);
+        _Result._Word[0] |= static_cast<uint32_t>(_Rem / _Den);
+        if (_Rem % _Den != 0) {
+            ++_Result;
+        }
+
+        return _Result;
+    }
+#endif // !_STL_128_DIV_INTRINSICS
+
+    _NODISCARD static constexpr _Base128 _Div_ceil(const _Base128& _Num, const uint64_t _Den) noexcept {
+        _Base128 _Result;
+        _Result._Word[1] = _Num._Word[1] / _Den;
+        uint64_t _Rem;
+        _Result._Word[0] = _UDiv128(_Num._Word[1] % _Den, _Num._Word[0], _Den, _Rem);
+        if (_Rem != 0) {
+            ++_Result;
+        }
+
+        return _Result;
+    }
+
+    _NODISCARD static constexpr _Base128 _Div_ceil(_Base128 _Num, _Base128 _Den) noexcept {
+        // establish _Den < _Num and _Num._Word[1] > 0
+        if (_Den._Word[1] >= _Num._Word[1]) {
+            if (_Den._Word[1] > _Num._Word[1]) {
+                return static_cast<_Base128>(_Num != 0);
+            }
+
+            if (_Num._Word[1] == 0) {
+                uint64_t _Result = _Num._Word[0] / _Den._Word[0]; // with 64-bit inputs, the ceiling is also 64-bit
+                if (_Num._Word[0] % _Den._Word[0] != 0) {
+                    ++_Result;
+                }
+
+                return _Result;
+            }
+
+            if (_Num._Word[0] > _Den._Word[0]) {
+                return 2u;
+            }
+
+            return 1u;
+        }
+
+        // establish _Den has more than 1 non-zero "digit"
+        if (_Den._Word[1] == 0) {
+#if !_STL_128_DIV_INTRINSICS
+            if (_Den._Word[0] < (1ull << 32)) {
+                return _Div_ceil(_Num, static_cast<uint32_t>(_Den._Word[0]));
+            } else
+#endif // !_STL_128_DIV_INTRINSICS
+            {
+                return _Div_ceil(_Num, _Den._Word[0]);
+            }
+        }
+
+        _Base128 _Result;
+#if _STL_128_INTRINSICS
+        // Knuth 4.3.1D, 2-digit by 2-digit divide in base 2^64
+        // _STL_INTERNAL_CHECK(_Den._Word[1] != 0);
+        // _STL_INTERNAL_CHECK(_Num._Word[1] > _Den._Word[1]);
+        // Normalize by shifting both left until _Den's high bit is set (So _Den's high digit is >= b / 2)
+        const auto __d = _STD _Countl_zero(_Den._Word[1]);
+        _Den <<= __d;
+        auto _High_digit = __d == 0 ? 0 : _Num._Word[1] >> (64 - __d); // This creates a third digit for _Num
+        _Num <<= __d;
+
+        _Base128 __qhat;
+        __qhat._Word[1] = _High_digit >= _Den._Word[1];
+        uint64_t __rhat;
+        __qhat._Word[0] = _UDiv128(_High_digit >= _Den._Word[1] ? _High_digit - _Den._Word[1] : _High_digit,
+            _Num._Word[1], _Den._Word[1], __rhat);
+
+        for (;;) {
+            if (__qhat._Word[1] > 0) {
+                --__qhat;
+            } else {
+                _Base128 _Prod;
+                _Prod._Word[0] = _UMul128(__qhat._Word[0], _Den._Word[0], _Prod._Word[1]);
+                if (_Prod <= _Base128{_Num._Word[0], __rhat}) {
+                    break;
+                }
+                --__qhat._Word[0];
+            }
+
+            const auto _Sum = __rhat + _Den._Word[1];
+            if (__rhat > _Sum) {
+                break;
+            }
+            __rhat = _Sum;
+        }
+        // _STL_INTERNAL_CHECK(__qhat._Word[1] == 0);
+
+        // [_High_digit | _Num] -= __qhat * _Den [Since __qhat < b, this is 3-digit - 1-digit * 2-digit]
+        uint64_t _Prod0_hi;
+        uint64_t _Prod_lo = _UMul128(__qhat._Word[0], _Den._Word[0], _Prod0_hi);
+        auto _Borrow      = _SubBorrow64(0, _Num._Word[0], _Prod_lo, _Num._Word[0]);
+        uint64_t _Prod1_hi;
+        _Prod_lo = _UMul128(__qhat._Word[0], _Den._Word[1], _Prod1_hi);
+        _Prod1_hi += _AddCarry64(0, _Prod_lo, _Prod0_hi, _Prod_lo);
+        _Borrow = _SubBorrow64(_Borrow, _Num._Word[1], _Prod_lo, _Num._Word[1]);
+        _Borrow = _SubBorrow64(_Borrow, _High_digit, _Prod1_hi, _High_digit);
+        if (_Borrow) {
+            --__qhat._Word[0];
+            auto _Carry = _AddCarry64(0, _Num._Word[0], _Den._Word[0], _Num._Word[0]);
+            (void) _AddCarry64(_Carry, _Num._Word[1], _Den._Word[1], _Num._Word[1]);
+        }
+        _Result = __qhat;
+#else // ^^^ 128-bit intrinsics / no such intrinsics vvv
+        auto __d                   = _Countl_zero(_Den._Word[1]);
+        const bool _Three_word_den = __d >= 32;
+        __d &= 31;
+        uint32_t __u[5]{
+            static_cast<uint32_t>(_Num._Word[0] << __d),
+            static_cast<uint32_t>(_Num._Word[0] >> (32 - __d)),
+            static_cast<uint32_t>(_Num._Word[1] << __d),
+            static_cast<uint32_t>(_Num._Word[1] >> (32 - __d)),
+            0,
+        };
+        uint32_t __v[4] = {
+            static_cast<uint32_t>(_Den._Word[0] << __d),
+            static_cast<uint32_t>(_Den._Word[0] >> (32 - __d)),
+            static_cast<uint32_t>(_Den._Word[1] << __d),
+            static_cast<uint32_t>(_Den._Word[1] >> (32 - __d)),
+        };
+        if (__d != 0) {
+            __u[2] |= _Num._Word[0] >> (64 - __d);
+            __u[4] |= _Num._Word[1] >> (64 - __d);
+            __v[2] |= _Den._Word[0] >> (64 - __d);
+        }
+
+        uint32_t __q[2] = {};
+        if (_Three_word_den) {
+            // 4-digit by 3-digit base 2^32 division
+            _Knuth_4_3_1_D(__u, 5, __v, 3, __q);
+            // _STL_INTERNAL_CHECK(__u[3] == 0);
+        } else {
+            // 4-digit by 4-digit base 2^32 division
+            _Knuth_4_3_1_D(__u, 5, __v, 4, __q);
+        }
+
+        _Result       = (static_cast<uint64_t>(__q[1]) << 32) | __q[0];
+        _Num._Word[0] = (static_cast<uint64_t>(__u[1]) << 32) | __u[0];
+        _Num._Word[1] = (static_cast<uint64_t>(__u[3]) << 32) | __u[2];
+#endif // _STL_128_INTRINSICS
+
+        if (_Num != 0) {
+            ++_Result;
+        }
+
+        return _Result;
+    }
+#endif // _HAS_CXX23
 
     _TEMPLATE_CLASS_INTEGRAL(_Ty)
     friend constexpr _Ty& operator&=(_Ty& _Left, const _Base128& _Right) noexcept {
@@ -1326,6 +1470,14 @@ struct _Signed128 : _Base128 {
         _Left = static_cast<_Ty>(_Signed128{_Left} % _Right);
         return _Left;
     }
+
+#if _HAS_CXX23
+    _NODISCARD static constexpr _Signed128 _Div_ceil(_Signed128 _Num, _Signed128 _Den) noexcept {
+        // _STL_INTERNAL_CHECK(_Num >= 0);
+        // _STL_INTERNAL_CHECK(_Den > 0);
+        return _Signed128{_Base128::_Div_ceil(_Num, _Den)};
+    }
+#endif // _HAS_CXX23
 
     _NODISCARD friend constexpr _Signed128 operator&(const _Signed128& _Left, const _Signed128& _Right) noexcept {
         return _Signed128{_Left._Word[0] & _Right._Word[0], _Left._Word[1] & _Right._Word[1]};

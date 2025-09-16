@@ -628,7 +628,7 @@ using move_only_view = test::range<Category, const int, test::Sized{is_random}, 
     test::CanView::yes, test::Copyability::move_only>;
 
 int main() {
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, LLVM-62096 and VSO-1901430
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, LLVM-62096 (fixed in Clang 21) and VSO-1901430
     { // Validate views
         // ... copyable
         constexpr span<const int> s{some_ints};
@@ -694,7 +694,7 @@ int main() {
         test_one(as_const(views::empty<const volatile int>), empty_arr);
     }
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, LLVM-62096 and VSO-1901430
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, LLVM-62096 (fixed in Clang 21) and VSO-1901430
     { // empty range
         using Span = span<int>;
         static_assert(test_one(Span{}, Span{}));

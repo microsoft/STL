@@ -484,7 +484,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 size_type _Clamp_suffix_size(const size_type _Off, const size_type _Size) const noexcept {
         // trims _Size to the longest it can be assuming a string at/after _Off
-        return (_STD min)(_Size, _Mysize - _Off);
+        return (_STD min) (_Size, _Mysize - _Off);
     }
 
     union _Bxty { // storage for small buffer or pointer to larger one
@@ -2145,7 +2145,7 @@ public:
             return;
         }
 
-        size_type _Target_capacity = (_STD min)(_My_data._Mysize | _Alloc_mask, max_size());
+        size_type _Target_capacity = (_STD min) (_My_data._Mysize | _Alloc_mask, max_size());
         if (_Target_capacity < _My_data._Myres) { // worth shrinking, do it
             auto& _Al = _Getal();
             const pointer _New_ptr =
@@ -2284,8 +2284,8 @@ public:
     _NODISCARD _CONSTEXPR20 size_type max_size() const noexcept {
         const size_type _Alloc_max   = _Alty_traits::max_size(_Getal());
         const size_type _Storage_max = // can always store small string
-            (_STD max)(_Alloc_max, static_cast<size_type>(_BUF_SIZE));
-        return (_STD min)(static_cast<size_type>(_STD _Max_limit<difference_type>()),
+            (_STD max) (_Alloc_max, static_cast<size_type>(_BUF_SIZE));
+        return (_STD min) (static_cast<size_type>(_STD _Max_limit<difference_type>()),
             _Storage_max - 1 // -1 is for null terminator and/or npos
         );
     }
@@ -2317,13 +2317,17 @@ public:
             _Mypair._Myval2._Mysize = _New_size;
         }
 
-        auto _Arg_ptr                   = _Mypair._Myval2._Myptr();
-        auto _Arg_size                  = _New_size;
-        const auto _Result_size         = _STD move(_Op)(_Arg_ptr, _Arg_size);
+        auto _Arg_ptr           = _Mypair._Myval2._Myptr();
+        auto _Arg_size          = _New_size;
+        const auto _Result_size = _STD move(_Op)(_Arg_ptr, _Arg_size);
+        static_assert(_Integer_like<decltype(_Result_size)>,
+            "the return type of the operation must be integer-like, N5014 [string.capacity]/8");
+
         const auto _Result_as_size_type = static_cast<size_type>(_Result_size);
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0");
-        _STL_VERIFY(_Result_as_size_type <= _New_size, "the returned size can't be greater than the passed size");
+        _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0, N5014 [string.capacity]/9.2");
+        _STL_VERIFY(_Result_as_size_type <= _New_size,
+            "the returned size can't be greater than the passed size, N5014 [string.capacity]/9.3");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         _Eos(_Result_as_size_type);
     }
@@ -2891,7 +2895,7 @@ private:
             return _Max;
         }
 
-        return (_STD max)(_Masked, _Old + _Old / 2);
+        return (_STD max) (_Masked, _Old + _Old / 2);
     }
 
     _NODISCARD _CONSTEXPR20 size_type _Calculate_growth(const size_type _Requested) const noexcept {

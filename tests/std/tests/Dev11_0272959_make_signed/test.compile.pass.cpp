@@ -218,6 +218,6 @@ void example() {
     STATIC_ASSERT(is_assignable_v<string&, const string&&>);
 
     STATIC_ASSERT(is_assignable_v<string&, const char*>);
-    STATIC_ASSERT(is_assignable_v<string&, const char(&)[5]>);
+    STATIC_ASSERT(is_assignable_v<string&, const char (&)[5]>);
     STATIC_ASSERT(!is_assignable_v<string&, double*>);
 }
