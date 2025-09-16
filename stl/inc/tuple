@@ -929,7 +929,7 @@ public:
     template <class _Other, size_t... _Indices>
     static constexpr bool _Can_equal_compare_with_tuple_like_v<_Other, index_sequence<_Indices...>> =
         (requires(const tuple& _Left, const _Other& _Right) {
-            { _STD get<_Indices>(_Left) == _STD get<_Indices>(_Right) } -> _Boolean_testable;
+            { _STD get<_Indices>(_Left) == _STD get<_Indices>(_Right) }->_Boolean_testable;
         } && ...);
 
     template <class _Other, size_t... _Indices>

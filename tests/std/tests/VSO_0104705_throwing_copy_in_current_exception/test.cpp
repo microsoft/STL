@@ -58,6 +58,7 @@ struct EvilException<0> : LifetimeTracker<EvilException<0>> {};
 // and rethrow_exception (unclear compliance with the standard; P1675 looks to make it allowed)
 
 int main() {
+#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-158302
     try {
         throw EvilException<0>(); // copy 1
     } catch (...) {
@@ -117,4 +118,5 @@ int main() {
         }
     }
     assert(BasicLifetimeTracker::allAlive == 0);
+#endif // ^^^ no workaround ^^^
 }
