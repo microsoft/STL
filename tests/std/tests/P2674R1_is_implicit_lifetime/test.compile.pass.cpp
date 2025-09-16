@@ -44,4 +44,3 @@ static_assert(!test_implicit_lifetime<const volatile void>);
 static_assert(!test_implicit_lifetime<long&>);
 static_assert(!test_implicit_lifetime<long&&>);
 #endif
-
