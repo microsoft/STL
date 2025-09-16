@@ -75,10 +75,12 @@ void meow() {
 }
 
 int main() {
+#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-158302
     try {
         meow();
     } catch (...) {
         assert(uncaught_exceptions() == 0);
         assert(current_exception());
     }
+#endif // ^^^ no workaround ^^^
 }
