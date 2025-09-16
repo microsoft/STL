@@ -29,9 +29,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 // Allow _InterlockedCompareExchange128 to be used:
-#if defined(__clang__) && defined(_M_X64)
+#if defined(__clang__) && defined(_M_X64) && !defined(_M_ARM64EC)
 #pragma clang attribute _STD_ATOMIC_HEADER.push([[gnu::target("cx16")]], apply_to = function)
-#endif // ^^^ defined(__clang__) && defined(_M_X64) ^^^
+#endif // ^^^ defined(__clang__) && defined(_M_X64) && !defined(_M_ARM64EC) ^^^
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 #define _STD_ATOMIC_USE_ARM64_LDAR_STLR 1
@@ -1000,7 +1000,12 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     void store(const _TVal _Value) noexcept { // store with sequential consistency
         const auto _Mem           = _STD _Atomic_address_as<long long>(_Storage);
         const long long _As_bytes = _STD _Atomic_reinterpret_as<long long>(_Value);
+#if defined(__clang__) && defined(_M_IX86) // TRANSITION, LLVM-126516
+        static_assert(_M_IX86_FP != 0, "8 byte atomic store is not supported on clang-cl with /arch:IA32");
+        __atomic_store_n(_Mem, _As_bytes, __ATOMIC_SEQ_CST);
+#else // ^^^ workaround / no workaround vvv
         _ATOMIC_STORE_64_SEQ_CST(_Mem, _As_bytes);
+#endif // ^^^ no workaround ^^^
     }
 
     void store(const _TVal _Value, const memory_order _Order) noexcept { // store with given memory order
@@ -1010,9 +1015,17 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         _Check_store_memory_order(_Order);
 
         if (_Order == memory_order_relaxed) {
+#if defined(__clang__) && defined(_M_IX86) // TRANSITION, LLVM-126516
+            __atomic_store_n(_Mem, _As_bytes, __ATOMIC_RELAXED);
+#else // ^^^ workaround / no workaround vvv
             __iso_volatile_store64(_Mem, _As_bytes);
+#endif // ^^^ no workaround ^^^
         } else if (_Order == memory_order_release) {
+#if defined(__clang__) && defined(_M_IX86) // TRANSITION, LLVM-126516
+            __atomic_store_n(_Mem, _As_bytes, __ATOMIC_RELEASE);
+#else // ^^^ workaround / no workaround vvv
             __STORE_RELEASE(64, _Mem, _As_bytes);
+#endif // ^^^ no workaround ^^^
         } else {
             store(_Value);
         }
@@ -1025,7 +1038,12 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 #if _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1
         _ATOMIC_LOAD_ARM64(_As_bytes, 64, _Mem, _Order)
 #else // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR == 1 / _STD_ATOMIC_USE_ARM64_LDAR_STLR != 1 vvv
+#if defined(__clang__) && defined(_M_IX86) // TRANSITION, LLVM-126516
+        static_assert(_M_IX86_FP != 0, "8 byte atomic load is not supported on clang-cl with /arch:IA32");
+        _As_bytes = __atomic_load_n(_Mem, __ATOMIC_RELAXED);
+#else // ^^^ workaround / no workaround vvv
         _As_bytes = __iso_volatile_load64(_Mem);
+#endif // ^^^ no workaround ^^^
         _ATOMIC_POST_LOAD_BARRIER_AS_NEEDED(_Order)
 #endif // ^^^ _STD_ATOMIC_USE_ARM64_LDAR_STLR != 1 ^^^
         return reinterpret_cast<_TVal&>(_As_bytes);
@@ -3017,9 +3035,9 @@ _STD_END
 
 #undef _INVALID_MEMORY_ORDER
 
-#if defined(__clang__) && defined(_M_X64)
+#if defined(__clang__) && defined(_M_X64) && !defined(_M_ARM64EC)
 #pragma clang attribute _STD_ATOMIC_HEADER.pop
-#endif // ^^^ defined(__clang__) && defined(_M_X64) ^^^
+#endif // ^^^ defined(__clang__) && defined(_M_X64) && !defined(_M_ARM64EC) ^^^
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

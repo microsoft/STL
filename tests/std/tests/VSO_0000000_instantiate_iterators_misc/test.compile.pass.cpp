@@ -1069,12 +1069,14 @@ void engine_test_impl() {
     common_engine_test_impl<Engine>(ss);
 }
 
+#if _HAS_TR1_NAMESPACE
 template <typename Engine>
 void tr1_engine_test_impl() {
     random_device rd{};
     mt19937 gen(rd());
     common_engine_test_impl<Engine>(gen);
 }
+#endif // _HAS_TR1_NAMESPACE
 
 void random_test() {
     seed_seq ss0({1, 2, 3, 4, 5, 6});
@@ -1087,22 +1089,21 @@ void random_test() {
     mt19937 gen(rd());
     (void) generate_canonical<double, 10>(gen);
 
-    engine_test_impl<minstd_rand0>(); // linear congruential engine
-    engine_test_impl<mt19937>(); // mersenne twister engine
+    engine_test_impl<minstd_rand0>(); // linear_congruential_engine
+    engine_test_impl<mt19937>(); // mersenne_twister_engine
     engine_test_impl<ranlux24_base>(); // subtract_with_carry_engine
-    engine_test_impl<ranlux24>(); // discard block engine
+    engine_test_impl<ranlux24>(); // discard_block_engine
     engine_test_impl<knuth_b>(); // shuffle_order_engine
     engine_test_impl<independent_bits_engine<minstd_rand0, 2, uint32_t>>();
     engine_test_impl<mt19937_64>();
     engine_test_impl<ranlux48_base>();
     engine_test_impl<ranlux48>();
 
+#if _HAS_TR1_NAMESPACE
     linear_congruential<uint_fast32_t, 16807, 0, 2147483647> minstd_rand_eng(gen);
     minstd_rand_eng.seed(gen);
 
     tr1_engine_test_impl<linear_congruential<uint_fast32_t, 16807, 0, 2147483647>>();
-
-#if _HAS_TR1_NAMESPACE
     tr1_engine_test_impl<ranlux3>();
     tr1_engine_test_impl<ranlux4>();
     tr1_engine_test_impl<ranlux3_01>();
