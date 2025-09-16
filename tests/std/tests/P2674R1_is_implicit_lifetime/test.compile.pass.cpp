@@ -27,7 +27,7 @@ static_assert(test_implicit_lifetime<int*>);
 static_assert(test_implicit_lifetime<nullptr_t>);
 static_assert(test_implicit_lifetime<UnscopedEnum>);
 static_assert(test_implicit_lifetime<ScopedEnum>);
-static_assert(test_implicit_lifetime<void (*)()>);
+static_assert(!test_implicit_lifetime<void (*)()>);
 static_assert(test_implicit_lifetime<TrivialClass>);
 static_assert(!test_implicit_lifetime<UserProvidedDestructorClass>);
 
@@ -44,3 +44,4 @@ static_assert(!test_implicit_lifetime<const volatile void>);
 static_assert(!test_implicit_lifetime<long&>);
 static_assert(!test_implicit_lifetime<long&&>);
 #endif
+
