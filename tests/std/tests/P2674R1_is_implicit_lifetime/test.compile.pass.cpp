@@ -20,7 +20,7 @@ using namespace std;
 // compiles under std namespace
 
 template <typename T>
-using test_implicit_lifetime = is_implicit_lifetime_v<T> && is_implicit_lifetime<T>::value;
+constexpr bool test_implicit_lifetime = is_implicit_lifetime_v<T> && is_implicit_lifetime<T>::value;
 
 // Basics (arrays thereof included in Arrays section)
 static_assert(test_implicit_lifetime<int>);
@@ -45,3 +45,4 @@ static_assert(!test_implicit_lifetime<const volatile void>);
 static_assert(!test_implicit_lifetime<long&>);
 static_assert(!test_implicit_lifetime<long&&>);
 #endif
+
