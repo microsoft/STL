@@ -3,6 +3,7 @@
 
 #define ISA_AVAILABILITY delete
 #define error_parse      delete
+#define error_syntax     delete
 #define nsec             delete
 #define sec              delete
 #define xtime            delete
@@ -32,15 +33,10 @@
 // Also test GH-2645: <yvals_core.h>: Conformance issue on [[msvc::known_semantics]]
 #define msvc            1
 #define known_semantics 2
-
-#ifndef _M_ARM64EC // TRANSITION, Windows SDK 10.0.22621.0 uses '#pragma intrinsic(fabsf)' for ARM64EC.
-                   // This use is no longer present in Windows SDK 10.0.26100.0.
-#define intrinsic 3
-#endif // ^^^ no workaround ^^^
-
-#define lifetimebound 4
-#define noop_dtor     5
-#define empty_bases   6
+#define intrinsic       3
+#define lifetimebound   4
+#define noop_dtor       5
+#define empty_bases     6
 
 #include <__msvc_all_public_headers.hpp>
 
@@ -52,11 +48,9 @@
 #error bad macro expansion
 #endif // known_semantics != 2
 
-#ifndef _M_ARM64EC // TRANSITION, Windows SDK 10.0.22621.0
 #if intrinsic != 3
 #error bad macro expansion
 #endif // intrinsic != 3
-#endif // ^^^ no workaround ^^^
 
 #if lifetimebound != 4
 #error bad macro expansion

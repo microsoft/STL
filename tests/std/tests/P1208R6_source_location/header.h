@@ -18,11 +18,7 @@ constexpr void header_test() {
     assert(x.column() == 37);
 #endif // ^^^ C1XX ^^^
 #if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
-#ifdef __EDG__
-    assert(x.function_name() == "void header_test()"sv);
-#else // ^^^ EDG / Other vvv
     assert(x.function_name() == "void __cdecl header_test(void)"sv);
-#endif // ^^^ Other ^^^
 #else // ^^^ detailed / basic vvv
     assert(x.function_name() == "header_test"sv);
 #endif // ^^^ basic ^^^

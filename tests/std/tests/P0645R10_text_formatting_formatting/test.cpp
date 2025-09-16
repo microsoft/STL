@@ -1364,9 +1364,9 @@ void libfmt_formatter_test_runtime_width() {
     throw_helper(STR("{0:{1}}"), 0);
     throw_helper(STR("{0:{0:}}"), 0);
     throw_helper(STR("{0:{1}}"), 0, -1);
-    throw_helper(STR("{0:{1}}"), 0, (int_max + 1u));
+    throw_helper(STR("{0:{1}}"), 0, int_max + 1u);
     throw_helper(STR("{0:{1}}"), 0, -1l);
-    throw_helper(STR("{0:{1}}"), 0, (int_max + 1ul));
+    throw_helper(STR("{0:{1}}"), 0, int_max + 1ul);
     throw_helper(STR("{0:{1}}"), 0, 0.0);
 
     // LWG-3720: Restrict the valid types of arg-id for width and precision in std-format-spec
@@ -1402,9 +1402,9 @@ void libfmt_formatter_test_runtime_precision() {
     throw_helper(STR("{0:.{1}}"), 0);
     throw_helper(STR("{0:.{0:}}"), 0);
     throw_helper(STR("{0:.{1}}"), 0, -1);
-    throw_helper(STR("{0:.{1}}"), 0, (int_max + 1u));
+    throw_helper(STR("{0:.{1}}"), 0, int_max + 1u);
     throw_helper(STR("{0:.{1}}"), 0, -1l);
-    throw_helper(STR("{0:.{1}}"), 0, (int_max + 1ul));
+    throw_helper(STR("{0:.{1}}"), 0, int_max + 1ul);
     throw_helper(STR("{0:.{1}}"), 0, '0');
     throw_helper(STR("{0:.{1}}"), 0, 0.0);
     throw_helper(STR("{0:.{1}}"), 42, 2);

@@ -252,49 +252,6 @@ namespace {
             }
         }
 
-
-        // TRANSITION, GH-5506 "VCRuntime: memmove() is surprisingly slow for more than 8 KB on certain CPUs":
-        // As a workaround, the following code calls memmove() for 8 KB portions.
-        constexpr size_t _Portion_size = 8192;
-        constexpr size_t _Portion_mask = _Portion_size - 1;
-        static_assert((_Portion_size & _Portion_mask) == 0);
-
-        void _Move_to_lower_address(void* _Dest, const void* _Src, const size_t _Size) noexcept {
-            const size_t _Whole_portions_size = _Size & ~_Portion_mask;
-
-            void* _Dest_end = _Dest;
-            _Advance_bytes(_Dest_end, _Whole_portions_size);
-
-            while (_Dest != _Dest_end) {
-                memmove(_Dest, _Src, _Portion_size);
-                _Advance_bytes(_Dest, _Portion_size);
-                _Advance_bytes(_Src, _Portion_size);
-            }
-
-            if (const size_t _Tail = _Size - _Whole_portions_size; _Tail != 0) {
-                memmove(_Dest, _Src, _Tail);
-            }
-        }
-
-        void _Move_to_higher_address(void* const _Dest, const void* const _Src, const size_t _Size) noexcept {
-            const size_t _Whole_portions_size = _Size & ~_Portion_mask;
-
-            void* _Dest_end = _Dest;
-            _Advance_bytes(_Dest_end, _Whole_portions_size);
-            const void* _Src_end = _Src;
-            _Advance_bytes(_Src_end, _Whole_portions_size);
-
-            if (const size_t _Tail = _Size - _Whole_portions_size; _Tail != 0) {
-                memmove(_Dest_end, _Src_end, _Tail);
-            }
-
-            while (_Dest_end != _Dest) {
-                _Rewind_bytes(_Dest_end, _Portion_size);
-                _Rewind_bytes(_Src_end, _Portion_size);
-                memmove(_Dest_end, _Src_end, _Portion_size);
-            }
-        }
-
         constexpr size_t _Buf_size = 512;
 
         bool _Use_buffer(const size_t _Smaller, const size_t _Larger) noexcept {
@@ -319,7 +276,7 @@ __declspec(noalias) void __stdcall __std_rotate(void* _First, void* const _Mid, 
 
             if (_Rotating::_Use_buffer(_Left, _Right)) {
                 memcpy(_Buf, _First, _Left);
-                _Rotating::_Move_to_lower_address(_First, _Mid, _Right);
+                memmove(_First, _Mid, _Right);
                 _Advance_bytes(_First, _Right);
                 memcpy(_First, _Buf, _Left);
                 break;
@@ -346,7 +303,7 @@ __declspec(noalias) void __stdcall __std_rotate(void* _First, void* const _Mid, 
                 memcpy(_Buf, _Last, _Right);
                 void* _Mid2 = _First;
                 _Advance_bytes(_Mid2, _Right);
-                _Rotating::_Move_to_higher_address(_Mid2, _First, _Left);
+                memmove(_Mid2, _First, _Left);
                 memcpy(_First, _Buf, _Right);
                 break;
             }
@@ -601,6 +558,7 @@ namespace {
 
 #ifndef _M_ARM64EC
         struct _Traits_sse_base {
+            using _Guard                       = char;
             static constexpr bool _Vectorized  = true;
             static constexpr size_t _Vec_size  = 16;
             static constexpr size_t _Vec_mask  = 0xF;
@@ -626,6 +584,7 @@ namespace {
         };
 
         struct _Traits_avx_base {
+            using _Guard                      = _Zeroupper_on_exit;
             static constexpr bool _Vectorized = true;
             static constexpr size_t _Vec_size = 32;
             static constexpr size_t _Vec_mask = 0x1F;
@@ -2409,6 +2368,8 @@ namespace {
 #ifdef _M_ARM64EC
                 static_assert(false, "No vectorization for _M_ARM64EC yet");
 #else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+                [[maybe_unused]] typename _Traits::_Guard _Guard; // TRANSITION, DevCom-10331414
+
                 constexpr bool _Sign_cor = static_cast<_Ty>(-1) > _Ty{0};
 
                 const size_t _Total_size_bytes = _Byte_length(_First, _Last);
@@ -2470,8 +2431,6 @@ namespace {
                         _Advance_bytes(_First, _Tail_byte_size);
                     }
                 }
-
-                _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
             }
 
@@ -2884,7 +2843,7 @@ namespace {
 
                 do {
                     const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
-                    int _Bingo          = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+                    unsigned int _Bingo = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
 
                     if constexpr (_Pred == _Predicate::_Not_equal) {
                         _Bingo ^= 0xFFFF'FFFF;
@@ -2903,7 +2862,7 @@ namespace {
                     const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
                     const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
                     const __m256i _Cmp       = _Traits::_Cmp_avx(_Data, _Comparand);
-                    int _Bingo               = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
+                    unsigned int _Bingo      = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
 
                     if constexpr (_Pred == _Predicate::_Not_equal) {
                         _Bingo ^= (1 << _Avx_tail_size) - 1;
@@ -2928,7 +2887,7 @@ namespace {
 
                 do {
                     const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
-                    int _Bingo          = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
+                    unsigned int _Bingo = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
 
                     if constexpr (_Pred == _Predicate::_Not_equal) {
                         _Bingo ^= 0xFFFF;
@@ -2975,7 +2934,7 @@ namespace {
                 do {
                     _Rewind_bytes(_Last, 32);
                     const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
-                    int _Bingo          = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+                    unsigned int _Bingo = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
 
                     if constexpr (_Pred == _Predicate::_Not_equal) {
                         _Bingo ^= 0xFFFF'FFFF;
@@ -2993,7 +2952,7 @@ namespace {
                     const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
                     const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_Last), _Tail_mask);
                     const __m256i _Cmp       = _Traits::_Cmp_avx(_Data, _Comparand);
-                    int _Bingo               = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
+                    unsigned int _Bingo      = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
 
                     if constexpr (_Pred == _Predicate::_Not_equal) {
                         _Bingo ^= (1 << _Avx_tail_size) - 1;
@@ -3017,7 +2976,7 @@ namespace {
                 do {
                     _Rewind_bytes(_Last, 16);
                     const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
-                    int _Bingo          = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
+                    unsigned int _Bingo = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
 
                     if constexpr (_Pred == _Predicate::_Not_equal) {
                         _Bingo ^= 0xFFFF;
@@ -3081,9 +3040,9 @@ namespace {
                     const void* _Next = _First;
                     _Advance_bytes(_Next, sizeof(_Ty));
 
-                    const __m256i _Data      = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
-                    const __m256i _Comparand = _mm256_loadu_si256(static_cast<const __m256i*>(_Next));
-                    const int _Bingo         = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+                    const __m256i _Data       = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
+                    const __m256i _Comparand  = _mm256_loadu_si256(static_cast<const __m256i*>(_Next));
+                    const unsigned int _Bingo = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
 
                     if (_Bingo != 0) {
                         const unsigned long _Offset = _tzcnt_u32(_Bingo);
@@ -3098,11 +3057,11 @@ namespace {
                     const void* _Next = _First;
                     _Advance_bytes(_Next, sizeof(_Ty));
 
-                    const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
-                    const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
-                    const __m256i _Comparand = _mm256_maskload_epi32(static_cast<const int*>(_Next), _Tail_mask);
-                    const __m256i _Cmp       = _Traits::_Cmp_avx(_Data, _Comparand);
-                    const int _Bingo         = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
+                    const __m256i _Tail_mask  = _Avx2_tail_mask_32(_Avx_tail_size);
+                    const __m256i _Data       = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
+                    const __m256i _Comparand  = _mm256_maskload_epi32(static_cast<const int*>(_Next), _Tail_mask);
+                    const __m256i _Cmp        = _Traits::_Cmp_avx(_Data, _Comparand);
+                    const unsigned int _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
 
                     if (_Bingo != 0) {
                         const unsigned long _Offset = _tzcnt_u32(_Bingo);
@@ -3124,9 +3083,9 @@ namespace {
                     const void* _Next = _First;
                     _Advance_bytes(_Next, sizeof(_Ty));
 
-                    const __m128i _Data      = _mm_loadu_si128(static_cast<const __m128i*>(_First));
-                    const __m128i _Comparand = _mm_loadu_si128(static_cast<const __m128i*>(_Next));
-                    const int _Bingo         = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
+                    const __m128i _Data       = _mm_loadu_si128(static_cast<const __m128i*>(_First));
+                    const __m128i _Comparand  = _mm_loadu_si128(static_cast<const __m128i*>(_Next));
+                    const unsigned int _Bingo = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
 
                     if (_Bingo != 0) {
                         unsigned long _Offset;
@@ -3183,8 +3142,8 @@ namespace {
                 do {
                     const __m256i _Data = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_First));
 
-                    const __m256i _Cmp = _Traits::_Cmp_avx(_Comparand, _Data);
-                    const auto _Mask   = static_cast<uint32_t>(_mm256_movemask_epi8(_Cmp));
+                    const __m256i _Cmp   = _Traits::_Cmp_avx(_Comparand, _Data);
+                    const uint32_t _Mask = _mm256_movemask_epi8(_Cmp);
 
                     uint64_t _MskX = uint64_t{_Carry} | (uint64_t{_Mask} << 32);
 
@@ -3395,12 +3354,20 @@ const void* __stdcall __std_find_trivial_unsized_8(const void* const _First, con
 
 const void* __stdcall __std_find_trivial_1(
     const void* const _First, const void* const _Last, const uint8_t _Val) noexcept {
+#ifdef _M_ARM64EC
+    return memchr(_First, _Val, _Byte_length(_First, _Last));
+#else
     return _Finding::_Find_impl<_Finding::_Find_traits_1, _Finding::_Predicate::_Equal>(_First, _Last, _Val);
+#endif
 }
 
 const void* __stdcall __std_find_trivial_2(
     const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
+#ifdef _M_ARM64EC
+    return wmemchr(static_cast<const wchar_t*>(_First), _Val, _Byte_length(_First, _Last) / sizeof(wchar_t));
+#else
     return _Finding::_Find_impl<_Finding::_Find_traits_2, _Finding::_Predicate::_Equal>(_First, _Last, _Val);
+#endif
 }
 
 const void* __stdcall __std_find_trivial_4(
@@ -3685,11 +3652,11 @@ namespace {
                 }
 
                 if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
-                    const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
-                    const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
-                    const __m256i _Mask      = _mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask);
-                    const int _Bingo         = _mm256_movemask_epi8(_Mask);
-                    const size_t _Tail_count = __popcnt(_Bingo); // Assume available with SSE4.2
+                    const __m256i _Tail_mask  = _Avx2_tail_mask_32(_Avx_tail_size);
+                    const __m256i _Data       = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
+                    const __m256i _Mask       = _mm256_and_si256(_Traits::_Cmp_avx(_Data, _Comparand), _Tail_mask);
+                    const unsigned int _Bingo = _mm256_movemask_epi8(_Mask);
+                    const size_t _Tail_count  = __popcnt(_Bingo); // Assume available with SSE4.2
                     _Result += _Tail_count / sizeof(_Ty);
                     _Advance_bytes(_First, _Avx_tail_size);
                 }
@@ -4392,8 +4359,8 @@ namespace {
                                 _Found = _mm_and_si128(_Found, _Found_part);
                             }
 
-                            const int _Bingo = _mm_cvtsi128_si32(_Found);
-                            int _Found_pos   = _Found_pos_init;
+                            const unsigned int _Bingo = _mm_cvtsi128_si32(_Found);
+                            int _Found_pos            = _Found_pos_init;
 
                             if (_Bingo != 0) {
                                 unsigned long _Tmp;
@@ -4578,7 +4545,7 @@ namespace {
                         }
                     }
 
-                    if (const int _Bingo = _mm256_movemask_epi8(_Eq); _Bingo != 0) {
+                    if (const uint32_t _Bingo = _mm256_movemask_epi8(_Eq); _Bingo != 0) {
                         const unsigned long _Offset = _tzcnt_u32(_Bingo);
                         _Advance_bytes(_First1, _Offset);
                         return _First1;
@@ -4597,7 +4564,7 @@ namespace {
                         }
                     }
 
-                    if (const int _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Eq, _Tail_mask)); _Bingo != 0) {
+                    if (const uint32_t _Bingo = _mm256_movemask_epi8(_mm256_and_si256(_Eq, _Tail_mask)); _Bingo != 0) {
                         const unsigned long _Offset = _tzcnt_u32(_Bingo);
                         _Advance_bytes(_First1, _Offset);
                         return _First1;
@@ -4932,8 +4899,8 @@ namespace {
                                 _Advance_bytes(_Cur_needle, 16);
                             }
 
-                            const int _Bingo = _mm_cvtsi128_si32(_Found);
-                            int _Found_pos   = _Not_found;
+                            const unsigned int _Bingo = _mm_cvtsi128_si32(_Found);
+                            int _Found_pos            = _Not_found;
 
                             if (_Bingo != 0) {
                                 unsigned long _Tmp;
@@ -5410,7 +5377,7 @@ namespace {
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
-                const auto _Check_first = [=, &_Mid1](long _Match) noexcept {
+                const auto _Check_first = [=, &_Mid1](unsigned long _Match) noexcept {
                     while (_Match != 0) {
                         const unsigned int _Pos = _Traits::_Bsr(_Match);
 
@@ -5431,7 +5398,7 @@ namespace {
                     return false;
                 };
 
-                const auto _Check = [=, &_Mid1](long _Match) noexcept {
+                const auto _Check = [=, &_Mid1](unsigned long _Match) noexcept {
                     while (_Match != 0) {
                         const unsigned int _Pos = _Traits::_Bsr(_Match);
 
@@ -5497,7 +5464,7 @@ namespace {
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
-                const auto _Check = [=, &_Mid1](long _Match) noexcept {
+                const auto _Check = [=, &_Mid1](unsigned long _Match) noexcept {
                     while (_Match != 0) {
                         const unsigned int _Pos = _Traits::_Bsr(_Match);
 
@@ -5796,7 +5763,7 @@ namespace {
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
                         const auto _Check_unfit = [=, &_Mid1](const unsigned int _Match) noexcept {
-                            long _Unfit_match = _Match & _Needle_unfit_mask;
+                            unsigned long _Unfit_match = _Match & _Needle_unfit_mask;
                             while (_Unfit_match != 0) {
                                 const void* _Tmp1 = _Mid1;
                                 unsigned long _Match_last_pos;
@@ -5816,7 +5783,7 @@ namespace {
                                     return true;
                                 }
 
-                                _bittestandreset(&_Unfit_match, _Match_last_pos);
+                                _Unfit_match ^= 1 << _Match_last_pos;
                             }
 
                             return false;
@@ -5873,7 +5840,7 @@ namespace {
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
-                        const auto _Check = [=, &_Mid1](long _Match) noexcept {
+                        const auto _Check = [=, &_Mid1](unsigned long _Match) noexcept {
                             while (_Match != 0) {
                                 const void* _Tmp1 = _Mid1;
                                 unsigned long _Match_last_pos;
@@ -5905,7 +5872,7 @@ namespace {
                                     }
                                 }
 
-                                _bittestandreset(&_Match, _Match_last_pos);
+                                _Match ^= 1 << _Match_last_pos;
                             }
 
                             return false;
@@ -7125,7 +7092,8 @@ namespace {
         using _Traits_2_sse = void;
 #else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
         struct _Traits_avx {
-            using _Vec = __m256i;
+            using _Guard = _Zeroupper_on_exit;
+            using _Vec   = __m256i;
 
             static __m256i _Load(const void* _Src) noexcept {
                 return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
@@ -7145,7 +7113,8 @@ namespace {
         };
 
         struct _Traits_sse {
-            using _Vec = __m128i;
+            using _Guard = char;
+            using _Vec   = __m128i;
 
             static __m128i _Load(const void* _Src) noexcept {
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
@@ -7274,6 +7243,7 @@ namespace {
         template <class _Traits, class _Elem>
         bool _Impl(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_bits,
             const size_t _Size_chars, const _Elem _Elem0, const _Elem _Elem1) noexcept {
+            [[maybe_unused]] typename _Traits::_Guard _Guard; // TRANSITION, DevCom-10331414
             const auto _Dx0 = _Traits::_Set(_Elem0);
             const auto _Dx1 = _Traits::_Set(_Elem1);
 
@@ -7290,14 +7260,12 @@ namespace {
 
             // Convert characters to bits
             if (!_Loop<_Traits>(_Src, _Src + _Size_convert, _Dx0, _Dx1, _Out)) {
-                _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
                 return false;
             }
 
             // Verify remaining characters, if any
             if (_Size_convert != _Size_chars
                 && !_Loop<_Traits>(_Src + _Size_convert, _Src + _Size_chars, _Dx0, _Dx1, [](_Traits::_Vec) {})) {
-                _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
                 return false;
             }
 
@@ -7305,8 +7273,6 @@ namespace {
             if (_Dst_words != _Dst_words_end) {
                 memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
             }
-
-            _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
 
             return true;
         }

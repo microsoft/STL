@@ -39,7 +39,7 @@ soon as possible.)
 and fully ported libcxx to run under [lit][] using the various configurations/compilers we test internally.
 
 * Continuous Integration: **In progress.** We've set up Azure Pipelines to validate changes to the repository.
-Currently, it builds the STL (native desktop for x86, x64, ARM, and ARM64). Also, it strictly verifies that all of our
+Currently, it builds the STL for x64, x86, ARM64, and ARM64EC. Also, it strictly verifies that all of our
 files have been formatted with [clang-format][] and follow our other whitespace conventions.
 
 * Contribution Guidelines: **Coming soon.** Working on the STL's code involves following many rules. We have codebase
@@ -58,7 +58,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N5008][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N5014][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
@@ -80,8 +80,8 @@ significantly more complicated and fragile. That is, there's a "complexity budge
 debugging checks. For example, we've extensively marked the STL with `[[nodiscard]]` attributes because this helps
 programmers avoid bugs.
 
-* Compatibility: This includes binary compatibility and source compatibility. We're keeping VS 2022 binary-compatible
-with VS 2015/2017/2019, which restricts what we can change in VS 2022 updates. (We've found that significant changes
+* Compatibility: This includes binary compatibility and source compatibility. We're keeping VS 2026 binary-compatible
+with VS 2015-2022, which restricts what we can change in VS 2026 updates. (We've found that significant changes
 are possible even though other changes are impossible, which we'll be documenting in our Contribution Guidelines soon.)
 While there are a few exceptions to this rule (e.g. if a feature is added to the Working Paper, we implement it, and
 then the feature is significantly changed before the International Standard is finalized, we reserve the right to break
@@ -139,75 +139,71 @@ mention `std::` or C++. For example, "`<type_traits>`: `is_cute` should be true 
 It's okay if you report an apparent STL bug that turns out to be a compiler bug or surprising-yet-Standard behavior.
 Just try to follow these rules, so we can spend more time fixing bugs and implementing features.
 
+# Visual Studio Installer Prerequisites
+
+* Install [VS 2026 Insiders][] and keep it up to date.
+  + **You must install Insiders for STL development.** *See Note 1 below.*
+  + Select the "Desktop development with C++" workload.
+  + Select the following components at a minimum:
+    - "MSVC v145 - C++ x64/x86 build tools (Latest)"
+    - "C++ CMake tools for Windows"
+    - "C++ AddressSanitizer"
+    - "Windows 11 SDK (10.0.26100)" or later
+    - "C++ Clang tools for Windows (20.1.8 - x64/x86)"
+    - *Optional, see Note 2 below:* "MSVC v145 - C++ ARM64/ARM64EC build tools (Latest)"
+* Install [Python][] 3.13 or later.
+  + Select "Add python.exe to PATH" if you want to follow the instructions below that invoke `python`.
+    Otherwise, you should be familiar with alternative methods.
+
+*Note 1:* The STL and the compiler ship together, and we frequently need the latest
+compiler fixes and features, so the last production release of the compiler is too old.
+
+*Note 2:* The x64/x86 build tools are usually sufficient.
+You'll need the ARM64/ARM64EC build tools if you're working with architecture-sensitive code.
+For example, `<atomic>` has conditionally compiled code for the `_M_ARM64` and `_M_ARM64EC` predefined macros.
+
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.14 Preview 7 or later.
-    * Select "Windows 11 SDK (10.0.22621.0)" in the VS Installer.
-    * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
-    if you would like to build the ARM64/ARM64EC target.
-    * Select "MSVC v143 - VS 2022 C++ ARM build tools (Latest)" in the VS Installer
-    if you would like to build the ARM target.
-    * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
-    This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.31.0 or later, and [Ninja][] 1.12.1 or later.
-    * Make sure [Python][] 3.13 or later is available to CMake.
-2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
-   `https://github.com/microsoft/STL`.
-3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
-4. In the terminal, invoke `git submodule update --init --progress`
-5. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
-   settings are set by `CMakePresets.json`.
+1. Open Visual Studio and select "Clone a repository".
+2. Enter `https://github.com/microsoft/STL.git` as the repository location. Choose a local path. Click "Clone".
+3. File > Open > Folder... > Select the folder that you just cloned the repository into.
+4. Use the IDE's dropdown menu to choose the architecture you want to build. We recommend x64 for general development.
+5. Build > Build All.
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.14 Preview 7 or later.
-    * Select "Windows 11 SDK (10.0.22621.0)" in the VS Installer.
-    * Select "MSVC v143 - VS 2022 C++ ARM64/ARM64EC build tools (Latest)" in the VS Installer
-    if you would like to build the ARM64/ARM64EC target.
-    * Select "MSVC v143 - VS 2022 C++ ARM build tools (Latest)" in the VS Installer
-    if you would like to build the ARM target.
-    * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
-    This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.31.0 or later, and [Ninja][] 1.12.1 or later.
-    * Make sure [Python][] 3.13 or later is available to CMake.
-2. Open a command prompt.
-3. Change directories to a location where you'd like a clone of this STL repository.
-4. `git clone https://github.com/microsoft/STL.git --recurse-submodules`
+1. Open a command prompt.
+2. Change directories to a location where you'd like a clone of this STL repository.
+3. `git clone https://github.com/microsoft/STL.git --recurse-submodules`
 
-To build the x86 target:
-
-1. Open an "x86 Native Tools Command Prompt for VS 2022 Preview".
-2. Change directories to the previously cloned `STL` directory.
-3. `cmake --preset x86`
-4. `cmake --build --preset x86`
+If you installed VS to a non-default location, change the `vcvarsall.bat` paths below accordingly.
 
 To build the x64 target (recommended):
 
-1. Open an "x64 Native Tools Command Prompt for VS 2022 Preview".
+1. `"C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" x64`
+    * Or open an "x64 Native Tools Command Prompt for VS 18 Insiders".
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake --preset x64`
 4. `cmake --build --preset x64`
 
-To build the ARM target:
+To build the x86 target:
 
-1. `"C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" x64_arm`
-    * If you installed VS to a non-default location, change this path accordingly.
+1. `"C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" x86`
+    * Or open an "x86 Native Tools Command Prompt for VS 18 Insiders".
 2. Change directories to the previously cloned `STL` directory.
-3. `cmake --preset ARM`
-4. `cmake --build --preset ARM`
+3. `cmake --preset x86`
+4. `cmake --build --preset x86`
 
 To build the ARM64 target:
 
-1. `"C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
-    * If you installed VS to a non-default location, change this path accordingly.
+1. `"C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake --preset ARM64`
 4. `cmake --build --preset ARM64`
 
 To build the ARM64EC target:
 
-1. `"C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
-    * If you installed VS to a non-default location, change this path accordingly.
+1. `"C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake --preset ARM64EC`
 4. `cmake --build --preset ARM64EC`
@@ -237,39 +233,38 @@ variables to ensure that the built headers and libraries are used.
 
 ## Complete Example Using x64 DLL Flavor
 
-From an "x64 Native Tools Command Prompt for VS 2022 Preview":
+From an "x64 Native Tools Command Prompt for VS 18 Insiders":
 
 ```
-C:\Users\username\Desktop>C:\Dev\STL\out\x64\set_environment.bat
+D:\GitHub\STL>cmake --preset x64
+[...]
+-- Build files have been written to: D:/GitHub/STL/out/x64
 
-C:\Users\username\Desktop>type example.cpp
-#include <iostream>
+D:\GitHub\STL>cmake --build --preset x64
+[1028/1028] Linking CXX static library out\lib\amd64\libcpmtd0.lib
+
+D:\GitHub\STL>out\x64\set_environment.bat
+
+D:\GitHub\STL>pushd C:\Temp
+
+C:\Temp>type .\example.cpp
+#include <print>
 
 int main() {
-    std::cout << "Hello STL OSS world!\n";
+    std::println("Hello STL OSS world!");
 }
 
-C:\Users\username\Desktop>cl /nologo /EHsc /W4 /WX /MDd /std:c++latest .\example.cpp
+C:\Temp>cl /EHsc /nologo /W4 /WX /MDd /std:c++latest .\example.cpp
 example.cpp
 
-C:\Users\username\Desktop>.\example.exe
+C:\Temp>.\example.exe
 Hello STL OSS world!
 
-C:\Users\username\Desktop>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
+C:\Temp>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
     msvcp140d_oss.dll
 ```
 
 # How To Run The Tests With A Native Tools Command Prompt
-
-1. Follow either [How To Build With A Native Tools Command Prompt][] or [How To Build With The Visual Studio IDE][].
-2. Acquire [Python][] 3.13 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
-3. Have LLVM's `bin` directory on the `PATH` (so `clang-cl.exe` is available).
-    * We recommend selecting "C++ Clang tools for Windows" in the VS Installer. This will automatically add LLVM to the
-    `PATH` of the x86 and x64 Native Tools Command Prompts, and will ensure that you're using a supported version.
-    * Otherwise, use [LLVM's installer][] and choose to add LLVM to your `PATH` during installation.
-4. Follow the instructions below.
-
-## Running The Tests
 
 Our tests are currently split across three test suites that are located at `tests\std`, `tests\tr1`, and
 `llvm-project\libcxx\test\std`. The test runner `${PROJECT_BINARY_DIR}\tests\utils\stl-lit\stl-lit.py` accepts paths to
@@ -434,7 +429,7 @@ python tests\utils\stl-lit\stl-lit.py ..\..\tests\std\tests\VSO_0000000_vector_a
 
 # Benchmarking
 
-For performance-sensitive code &ndash; containers, algorithms, and the like &ndash;
+For performance-sensitive code (e.g. containers and algorithms)
 you may wish to write and/or run benchmarks, and the STL team will likely
 run any benchmarks we do have in our PR process. Additionally,
 if you are writing a "performance improvement" PR, please add and run benchmarks
@@ -554,22 +549,17 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 [Changelog]: https://github.com/microsoft/STL/wiki/Changelog
 [clang-format]: https://clang.llvm.org/docs/ClangFormat.html
-[CMake]: https://cmake.org/download
 [CODE_OF_CONDUCT.md]: CODE_OF_CONDUCT.md
 [Compiler Explorer]: https://godbolt.org
 [CONTRIBUTING.md]: CONTRIBUTING.md
 [Developer Community]: https://aka.ms/feedback/report?space=62
 [Discord server]: https://discord.gg/XWanNww
-[How To Build With A Native Tools Command Prompt]: #how-to-build-with-a-native-tools-command-prompt
-[How To Build With The Visual Studio IDE]: #how-to-build-with-the-visual-studio-ide
 [LICENSE.txt]: LICENSE.txt
-[LLVM's installer]: https://releases.llvm.org/download.html
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N5008]: https://wg21.link/N5008
+[N5014]: https://wg21.link/N5014
 [NOTICE.txt]: NOTICE.txt
-[Ninja]: https://ninja-build.org
 [STL-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-CI?branchName=main "STL-CI"
 [STL-CI-link]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main
 [STL-ASan-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-ASan-CI?branchName=main "STL-ASan-CI"
@@ -590,3 +580,4 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [natvis documentation]: https://learn.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects
 [ASan]: https://learn.microsoft.com/en-us/cpp/sanitizers/asan
 [Import Library]: /docs/import_library.md
+[VS 2026 Insiders]: https://visualstudio.microsoft.com/insiders/
