@@ -55,7 +55,7 @@ STATIC_ASSERT(__cpp_lib_associative_heterogeneous_erasure == 202110L);
 #error __cpp_lib_associative_heterogeneous_erasure is defined
 #endif
 
-#if _HAS_CXX23	&& defined(__clang__)
+#if _HAS_CXX23 && defined(__clang__
 STATIC_ASSERT(__cpp_lib_is_implicit_lifetime == 202302L);
 #elif defined(__cpp_lib_is_implicit_lifetime)
 #error __cpp_lib_is_implicit_lifetime is defined
@@ -1044,3 +1044,4 @@ STATIC_ASSERT(__cpp_lib_variant == 202102L);
 #endif
 
 STATIC_ASSERT(__cpp_lib_void_t == 201411L);
+
