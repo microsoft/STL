@@ -8,12 +8,12 @@ enum struct ScopedEnum { Enumerator };
 class IncompleteClass;
 struct TrivialClass {};
 struct AggregateClassWithUserProvidedDestructor {
-	~AggregateClassWithUserProvidedDestructor() {}
+    ~AggregateClassWithUserProvidedDestructor() {}
 };
 
 using namespace std;
 
-#ifdef __cpp_lib_is_implicit_lifetime 
+#ifdef __cpp_lib_is_implicit_lifetime
 // this is a test to test whether
 // is_implicit_lifetime_v produces desired results
 // compiles under std namespace
@@ -27,7 +27,7 @@ static_assert(test_implicit_lifetime<int*>);
 static_assert(test_implicit_lifetime<nullptr_t>);
 static_assert(test_implicit_lifetime<UnscopedEnum>);
 static_assert(test_implicit_lifetime<ScopedEnum>);
-static_assert(test_implicit_lifetime<void(*)()>);
+static_assert(test_implicit_lifetime<void (*)()>);
 static_assert(test_implicit_lifetime<TrivialClass>);
 static_assert(!test_implicit_lifetime<UserProvidedDestructorClass>);
 
@@ -44,5 +44,6 @@ static_assert(!test_implicit_lifetime<const volatile void>);
 static_assert(!test_implicit_lifetime<long&>);
 static_assert(!test_implicit_lifetime<long&&>);
 #endif
+
 
 
