@@ -394,7 +394,7 @@
 // P2585R1 Improve Default Container Formatting
 // P2599R2 mdspan: index_type, size_type
 // P2604R0 mdspan: data_handle_type, data_handle(), exhaustive
-// P2613R1 mdspan: empty()     
+// P2613R1 mdspan: empty()
 // P2652R2 Disallowing User Specialization Of allocator_traits
 // P2674R1 A trait for implicit lifetime types
 // P2693R1 Formatting thread::id And stacktrace
