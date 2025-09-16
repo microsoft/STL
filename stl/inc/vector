@@ -3859,8 +3859,8 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
 
         const auto _DestMask = _FirstDestMask | (_DestEnd._Myoff == 0 ? 0 : _LastDestMask);
         if (_Last._Myoff != 0) {
-            const auto _LastShift     = _DestEnd._Myoff - _Last._Myoff;
-            const auto _LastSourceVal = (*_VbLast & _LastSourceMask) << _LastShift;
+            const int _LastRotate     = static_cast<int>(_DestEnd._Myoff) - static_cast<int>(_Last._Myoff);
+            const auto _LastSourceVal = _rotl(*_VbLast & _LastSourceMask, _LastRotate);
             *_VbDest                  = (*_VbDest & _DestMask) | _SourceVal | _LastSourceVal;
         } else {
             *_VbDest = (*_VbDest & _DestMask) | _SourceVal;
