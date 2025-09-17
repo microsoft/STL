@@ -469,26 +469,27 @@ If you want to see all the other flags you can pass, run:
 out\bench\benchmark-<benchmark-name> --help
 ```
 
-## Other useful incantations
+## Other Useful Incantations
 
-To compile benchmark with some additional compiler options, use `_CL_` environment variable.
-You'll need to clean to make sure you obtain new binaries instead of the old ones.
-For example, here's how to add `/arch:AVX2` option (which may affect auto vectorization and bit algoritms intrinsics):
+To compile the benchmarks with additional compiler options, use the [`CXXFLAGS` environment variable][CXXFLAGS].
+Set it after configuring and building the STL, but before configuring and building the benchmarks.
+For example, to examine how the `/arch:AVX2` option affects auto-vectorization and bit algorithm intrinsics:
 
 ```
-set _CL_=/arch:AVX2
-cmake --build out\bench --clean-first
+set CXXFLAGS=/arch:AVX2
+cmake -B out\bench -S benchmarks -G Ninja -DSTL_BINARY_DIR=out\x64
+cmake --build out\bench
 ```
 
-To compile with clang-cl you need to pass `-DCMAKE_CXX_COMPILER=clang-cl` option:
+To compile the benchmarks with Clang, use `-DCMAKE_CXX_COMPILER=clang-cl`:
 
 ```
 cmake -B out\bench -S benchmarks -G Ninja -DSTL_BINARY_DIR=out\x64 -DCMAKE_CXX_COMPILER=clang-cl
 cmake --build out\bench
 ```
 
-To run a benchmark on specific cores (for example to run on P cores or on E cores) and with higher priority
-(to avoid interference), use `start` command with parameters:
+To run a benchmark on specific cores (e.g. P-cores vs. E-cores) and with higher priority
+(to avoid interference), use the [`start` command][start-command]:
 
 ```
 start /b /wait /high /affinity 0F out\bench\benchmark-std_copy
@@ -606,3 +607,5 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [ASan]: https://learn.microsoft.com/en-us/cpp/sanitizers/asan
 [Import Library]: /docs/import_library.md
 [VS 2026 Insiders]: https://visualstudio.microsoft.com/insiders/
+[CXXFLAGS]: https://cmake.org/cmake/help/latest/envvar/CXXFLAGS.html
+[start-command]: https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/start
