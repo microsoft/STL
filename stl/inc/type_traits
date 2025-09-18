@@ -1458,9 +1458,8 @@ using _Cond_res = // N4950 [meta.trans.other]/2.4
     decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
 
 _EXPORT_STD template <class...>
-struct _NO_SPECIALIZATIONS_MSG("Users are not allowed to specialize std::common_reference directly. "
-                               "You should instead specialize std::basic_common_reference, "
-                               "which std::common_reference will dispatch to.") common_reference;
+struct _NO_SPECIALIZATIONS_CITING("N5014 [meta.rqmts]/4; instead, you should specialize std::basic_common_reference "
+                                  "as allowed by N5014 [meta.trans.other]/7") common_reference;
 
 _EXPORT_STD template <class... _Types>
 using common_reference_t = common_reference<_Types...>::type;
