@@ -396,6 +396,7 @@
 // P2604R0 mdspan: data_handle_type, data_handle(), exhaustive
 // P2613R1 mdspan: empty()
 // P2652R2 Disallowing User Specialization Of allocator_traits
+// P2674R1 A trait for implicit lifetime types
 // P2693R1 Formatting thread::id And stacktrace
 // P2713R1 Escaping Improvements In std::format
 // P2763R1 Fixing layout_stride's Default Constructor For Fully Static Extents
@@ -1783,6 +1784,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // C++23
 #if _HAS_CXX23
+#ifdef __clang__ // Clang only for now
+#define __cpp_lib_is_implicit_lifetime 202302L
+#endif
 #define __cpp_lib_adaptor_iterator_pair_constructor 202106L
 #define __cpp_lib_allocate_at_least                 202302L
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
