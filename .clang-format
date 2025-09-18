@@ -111,8 +111,8 @@ AllowShortFunctionsOnASingleLine: Empty
 # AllowShortNamespacesOnASingleLine: false
 # AlwaysBreakAfterDefinitionReturnType: None
 # AlwaysBreakBeforeMultilineStrings: false
-AttributeMacros:
-  - _NO_SPECIALIZATIONS
+# AttributeMacros:
+#   - __capability
 # BinPackArguments: true
 # BinPackParameters: BinPack
 # BitFieldColonSpacing: Both
