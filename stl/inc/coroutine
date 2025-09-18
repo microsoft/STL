@@ -52,7 +52,7 @@ _EXPORT_STD template <class _Ret, class...>
 struct coroutine_traits : _Coroutine_traits<_Ret> {};
 
 _EXPORT_STD template <class = void>
-struct _NO_SPECIALIZATIONS coroutine_handle;
+struct _NO_SPECIALIZATIONS_CITING("N5014 [coroutine.handle.general]/2") coroutine_handle;
 
 template <>
 struct coroutine_handle<void> {

@@ -934,7 +934,7 @@ template <size_t _Idx>
 constexpr bool _Is_in_place_index_specialization<in_place_index_t<_Idx>> = true;
 
 _EXPORT_STD template <class... _Types>
-class _NO_SPECIALIZATIONS variant
+class _NO_SPECIALIZATIONS_CITING("N5014 [variant.variant.general]/4") variant
     : private _SMF_control<_Variant_destroy_layer<_Types...>, _Types...> { // discriminated union
 public:
     static_assert(conjunction_v<is_object<_Types>..., negation<is_array<_Types>>..., is_destructible<_Types>...>,

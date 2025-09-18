@@ -160,7 +160,7 @@ struct _Ignore { // struct that ignores assignments
 _EXPORT_STD _INLINE_VAR constexpr _Ignore ignore{};
 
 _EXPORT_STD template <class... _Types>
-class _NO_SPECIALIZATIONS tuple;
+class _NO_SPECIALIZATIONS_CITING("N5014 [tuple.tuple.general]/1") tuple;
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 struct pair;

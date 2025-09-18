@@ -758,9 +758,9 @@ struct _Default_allocator_traits { // traits for std::allocator
 };
 
 _EXPORT_STD template <class _Alloc>
-struct _NO_SPECIALIZATIONS allocator_traits : conditional_t<_Is_default_allocator<_Alloc>::value,
-                                                  _Default_allocator_traits<_Alloc>, _Normal_allocator_traits<_Alloc>> {
-};
+struct _NO_SPECIALIZATIONS_CITING("N5014 [allocator.traits.general]/1") allocator_traits
+    : conditional_t<_Is_default_allocator<_Alloc>::value, _Default_allocator_traits<_Alloc>,
+          _Normal_allocator_traits<_Alloc>> {};
 
 // _Choose_pocca_v returns whether an attempt to propagate allocators is necessary in copy assignment operations.
 // Note that even when false_type, callers should call _Pocca as we want to assign allocators even when equal.

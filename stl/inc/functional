@@ -307,13 +307,13 @@ _STL_RESTORE_DEPRECATED_WARNING
 
 #if _HAS_AUTO_PTR_ETC
 _EXPORT_STD template <class _Arg, class _Result>
-struct _NO_SPECIALIZATIONS unary_function { // base class for unary functions
+struct _NO_SPECIALIZATIONS_CITING("N4140 [depr.base]/1") unary_function { // base class for unary functions
     using argument_type = _Arg;
     using result_type   = _Result;
 };
 
 _EXPORT_STD template <class _Arg1, class _Arg2, class _Result>
-struct _NO_SPECIALIZATIONS binary_function { // base class for binary functions
+struct _NO_SPECIALIZATIONS_CITING("N4140 [depr.base]/1") binary_function { // base class for binary functions
     using first_argument_type  = _Arg1;
     using second_argument_type = _Arg2;
     using result_type          = _Result;

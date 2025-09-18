@@ -1599,7 +1599,7 @@ using _Guide_pair_t =
 #endif // ^^^ !_HAS_CXX23 ^^^
 
 _EXPORT_STD template <class _Ty>
-struct _NO_SPECIALIZATIONS is_execution_policy : false_type {};
+struct _NO_SPECIALIZATIONS_CITING("N5014 [execpol.type]/3") is_execution_policy : false_type {};
 
 _EXPORT_STD template <class _Ty>
 _NO_SPECIALIZATIONS constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;

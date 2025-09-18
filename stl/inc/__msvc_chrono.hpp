@@ -68,7 +68,7 @@ namespace chrono {
         _Clock::now();
     };
     _EXPORT_STD template <class _Clock>
-    struct _NO_SPECIALIZATIONS is_clock : bool_constant<is_clock_v<_Clock>> {};
+    struct _NO_SPECIALIZATIONS_CITING("N5014 [time.traits.is.clock]/2") is_clock : bool_constant<is_clock_v<_Clock>> {};
 
     template <class _Clock>
     constexpr bool _Is_clock_v = is_clock_v<_Clock>;
