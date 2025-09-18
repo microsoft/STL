@@ -24,11 +24,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 _EXPORT_STD template <class _Elem>
-class
-#ifdef __clang__
-    _NO_SPECIALIZATIONS
-#endif
-    initializer_list {
+class _NO_SPECIALIZATIONS_CITING("N5014 [initializer.list.syn]/2") initializer_list {
 public:
     using value_type      = _Elem;
     using reference       = const _Elem&;
