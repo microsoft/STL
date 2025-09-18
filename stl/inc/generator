@@ -44,7 +44,7 @@ template <class _Alloc>
 constexpr bool _Stateless_allocator = default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value;
 
 _EXPORT_STD template <class _Rty, class _Vty = void, class _Alloc = void>
-class generator;
+class _NO_SPECIALIZATIONS_CITING("N5014 [coro.generator.class]/4") generator;
 
 namespace _Gen_detail {
     template <class _Alloc>

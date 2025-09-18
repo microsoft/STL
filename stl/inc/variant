@@ -289,7 +289,7 @@ struct _Meta_cartesian_product_<_List1<_List2<_Items...>, _Lists...>> {
 #define _STL_STAMP(n, x) x(_STL_STAMP##n, n)
 
 _EXPORT_STD template <class... _Types>
-class variant;
+class _NO_SPECIALIZATIONS_CITING("N5014 [variant.variant.general]/4") variant;
 
 _EXPORT_STD template <class _Ty>
 struct variant_size; // undefined

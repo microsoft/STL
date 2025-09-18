@@ -557,7 +557,7 @@ struct allocation_result {
 #endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Alloc>
-struct allocator_traits;
+struct _NO_SPECIALIZATIONS_CITING("N5014 [allocator.traits.general]/1") allocator_traits;
 
 _STL_DISABLE_DEPRECATED_WARNING
 template <class _Alloc>

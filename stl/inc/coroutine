@@ -99,7 +99,7 @@ private:
 };
 
 _EXPORT_STD template <class _CoroPromise>
-struct coroutine_handle {
+struct _NO_SPECIALIZATIONS_CITING("N5014 [coroutine.handle.general]/2") coroutine_handle {
     constexpr coroutine_handle() noexcept = default;
     constexpr coroutine_handle(nullptr_t) noexcept {}
 
