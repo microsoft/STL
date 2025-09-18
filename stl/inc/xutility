@@ -1602,7 +1602,7 @@ _EXPORT_STD template <class _Ty>
 struct _NO_SPECIALIZATIONS_CITING("N5014 [execpol.type]/3") is_execution_policy : false_type {};
 
 _EXPORT_STD template <class _Ty>
-_NO_SPECIALIZATIONS constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
 
 // Note: The noexcept specifiers on all parallel algorithm overloads enforce termination as per
 // N4950 [execpol.seq]/2, [execpol.par]/2, [execpol.parunseq]/2, and [execpol.unseq]/2

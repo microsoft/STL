@@ -172,7 +172,7 @@ _EXPORT_STD template <class _Tuple>
 struct tuple_size;
 
 _EXPORT_STD template <class _Ty>
-_NO_SPECIALIZATIONS constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
 
 _EXPORT_STD template <size_t _Index, class _Tuple>
 struct tuple_element;

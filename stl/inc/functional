@@ -2014,7 +2014,7 @@ template <class _Tx>
 struct is_placeholder<const volatile _Tx> : is_placeholder<_Tx>::type {}; // ignore cv-qualifiers
 
 _EXPORT_STD template <class _Ty>
-_NO_SPECIALIZATIONS constexpr int is_placeholder_v = is_placeholder<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr int is_placeholder_v = is_placeholder<_Ty>::value;
 
 template <class _Ret, class _Fx, class... _Types>
 class _Binder;
@@ -2035,7 +2035,7 @@ template <class _Tx>
 struct is_bind_expression<const volatile _Tx> : is_bind_expression<_Tx>::type {}; // ignore cv-qualifiers
 
 _EXPORT_STD template <class _Ty>
-_NO_SPECIALIZATIONS constexpr bool is_bind_expression_v = is_bind_expression<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool is_bind_expression_v = is_bind_expression<_Ty>::value;
 
 template <class _Cv_TiD, bool = _Is_specialization_v<remove_cv_t<_Cv_TiD>, reference_wrapper>,
     bool = is_bind_expression_v<_Cv_TiD>, int = is_placeholder_v<_Cv_TiD>>
