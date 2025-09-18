@@ -2868,12 +2868,12 @@ namespace test_invocable_concepts {
 #include "invocable_cc.hpp"
 
 #ifndef _M_CEE // avoid warning C4575: '__vectorcall' incompatible with the '/clr' option: converting to '__stdcall'
-#if !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_M_ARM64EC)
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
 #define NAME      test_vector_vector
 #define CALLCONV  __vectorcall
 #define MCALLCONV __vectorcall
 #include "invocable_cc.hpp"
-#endif // ^^^ !ARM && !ARM64 && !ARM64EC ^^^
+#endif // ^^^ !ARM64 && !ARM64EC ^^^
 #endif // _M_CEE
 
 } // namespace test_invocable_concepts
@@ -2906,7 +2906,7 @@ namespace test_predicate {
     void test() {
         {
             using Fn  = Bool (tag::*)(int);
-            using RFn = Bool (tag::*)(int)&&;
+            using RFn = Bool (tag::*)(int) &&;
             {
                 // N4849 [func.require]/1.1: "... f is a pointer to member function of a class T and
                 // is_base_of_v<T, remove_reference_t<decltype(t_1)>> is true"
@@ -3318,7 +3318,7 @@ namespace test_relation {
     struct Equivalent {
         template <class T, class U>
         constexpr decltype(auto) operator()(T&& t, U&& u) const
-            requires requires { static_cast<T&&>(t) == static_cast<U&&>(u); }
+            requires requires { static_cast<T &&>(t) == static_cast<U &&>(u); }
         {
             return static_cast<T&&>(t) == static_cast<U&&>(u);
         }

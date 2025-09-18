@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#if defined(__clang__) && defined(_M_ARM64EC) // TRANSITION, LLVM-158341
+int main() {}
+#else // ^^^ workaround / no workaround vvv
+
 #include <cassert>
 #include <coroutine>
 #include <exception>
@@ -89,7 +93,6 @@ struct Task {
     coroutine_handle<Promise> coro;
 };
 
-#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
 Task triangular_number(const int n) {
     if (n == 0) {
         co_return 0;
@@ -97,7 +100,6 @@ Task triangular_number(const int n) {
 
     co_return n + co_await triangular_number(n - 1);
 }
-#endif // ^^^ no workaround ^^^
 
 void test_noop_handle() { // Validate noop_coroutine_handle
     const noop_coroutine_handle noop = noop_coroutine();
@@ -157,7 +159,6 @@ void test_noop_handle() { // Validate noop_coroutine_handle
 }
 
 int main() {
-#if !(defined(__clang__) && defined(_M_IX86)) // TRANSITION, LLVM-56507
     assert(g_tasks_destroyed == 0);
 
     {
@@ -182,7 +183,6 @@ int main() {
     }
 
     assert(g_tasks_destroyed == 11); // triangular_number() called for [0, 10]
-#endif // ^^^ no workaround ^^^
 
     {
         // Also test GH-1422: hash<coroutine_handle<>>::operator() must be const
@@ -192,3 +192,5 @@ int main() {
 
     test_noop_handle();
 }
+
+#endif // ^^^ no workaround ^^^

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# https://releases.llvm.org/19.1.0/tools/clang/docs/ClangFormatStyleOptions.html
+# https://releases.llvm.org/20.1.0/tools/clang/docs/ClangFormatStyleOptions.html
 
 # To update this .clang-format file for a new clang-format version:
 # 1. Update the documentation link above.
@@ -26,6 +26,7 @@ AlignAfterOpenBracket: DontAlign
 #   AcrossEmptyLines: false
 #   AcrossComments:  false
 #   AlignCompound:   false
+#   AlignFunctionDeclarations: false
 #   AlignFunctionPointers: false
 #   PadOperators:    true
 AlignConsecutiveAssignments: Consecutive
@@ -34,6 +35,7 @@ AlignConsecutiveAssignments: Consecutive
 #   AcrossEmptyLines: false
 #   AcrossComments:  false
 #   AlignCompound:   false
+#   AlignFunctionDeclarations: false
 #   AlignFunctionPointers: false
 #   PadOperators:    false
 # AlignConsecutiveDeclarations:
@@ -41,6 +43,7 @@ AlignConsecutiveAssignments: Consecutive
 #   AcrossEmptyLines: false
 #   AcrossComments:  false
 #   AlignCompound:   false
+#   AlignFunctionDeclarations: true
 #   AlignFunctionPointers: false
 #   PadOperators:    false
 # AlignConsecutiveMacros:
@@ -48,6 +51,7 @@ AlignConsecutiveAssignments: Consecutive
 #   AcrossEmptyLines: false
 #   AcrossComments:  false
 #   AlignCompound:   false
+#   AlignFunctionDeclarations: false
 #   AlignFunctionPointers: false
 #   PadOperators:    false
 AlignConsecutiveMacros: Consecutive
@@ -62,6 +66,7 @@ AlignConsecutiveMacros: Consecutive
 #   AcrossEmptyLines: false
 #   AcrossComments:  false
 #   AlignCompound:   false
+#   AlignFunctionDeclarations: false
 #   AlignFunctionPointers: false
 #   PadOperators:    false
 # AlignConsecutiveTableGenCondOperatorColons:
@@ -69,6 +74,7 @@ AlignConsecutiveMacros: Consecutive
 #   AcrossEmptyLines: false
 #   AcrossComments:  false
 #   AlignCompound:   false
+#   AlignFunctionDeclarations: false
 #   AlignFunctionPointers: false
 #   PadOperators:    false
 # AlignConsecutiveTableGenDefinitionColons:
@@ -76,6 +82,7 @@ AlignConsecutiveMacros: Consecutive
 #   AcrossEmptyLines: false
 #   AcrossComments:  false
 #   AlignCompound:   false
+#   AlignFunctionDeclarations: false
 #   AlignFunctionPointers: false
 #   PadOperators:    false
 # AlignEscapedNewlines: Right
@@ -101,12 +108,13 @@ AllowShortFunctionsOnASingleLine: Empty
 # AllowShortIfStatementsOnASingleLine: Never
 # AllowShortLambdasOnASingleLine: All
 # AllowShortLoopsOnASingleLine: false
+# AllowShortNamespacesOnASingleLine: false
 # AlwaysBreakAfterDefinitionReturnType: None
 # AlwaysBreakBeforeMultilineStrings: false
 AttributeMacros:
   - _NO_SPECIALIZATIONS
 # BinPackArguments: true
-# BinPackParameters: true
+# BinPackParameters: BinPack
 # BitFieldColonSpacing: Both
 # BraceWrapping:
 #   AfterCaseLabel:  false
@@ -139,6 +147,7 @@ BreakBeforeBinaryOperators: NonAssignment
 # BreakBeforeBraces: Attach
 # BreakBeforeInlineASMColon: OnlyMultiline
 # BreakBeforeTernaryOperators: true
+# BreakBinaryOperations: Never
 # BreakConstructorInitializers: BeforeColon
 # BreakFunctionDefinitionParameters: false
 # BreakInheritanceList: BeforeColon
@@ -203,6 +212,7 @@ IncludeCategories:
 # IndentCaseBlocks: false
 IndentCaseBlocks: true
 # IndentCaseLabels: false
+# IndentExportBlock: true
 # IndentExternBlock: AfterExternBlock
 # IndentGotoLabels: true
 # IndentPPDirectives: None
@@ -231,6 +241,7 @@ InsertNewlineAtEOF: true
 #   AtStartOfFile:   true
 KeepEmptyLines:
   AtStartOfFile:   false
+# KeepFormFeed:    false
 # LambdaBodyIndentation: Signature
 # LineEnding:      DeriveLF
 LineEnding:      CRLF
@@ -250,6 +261,7 @@ NamespaceIndentation: All
 # PackConstructorInitializers: BinPack
 # PenaltyBreakAssignment: 2
 # PenaltyBreakBeforeFirstCallParameter: 19
+# PenaltyBreakBeforeMemberAccess: 150
 # PenaltyBreakComment: 300
 # PenaltyBreakFirstLessLess: 120
 # PenaltyBreakOpenParenthesis: 0
@@ -264,8 +276,9 @@ PointerAlignment: Left
 # PPIndentWidth:   -1
 # QualifierAlignment: Leave
 # ReferenceAlignment: Pointer
-# ReflowComments:  true
+# ReflowComments:  Always
 # RemoveBracesLLVM: false
+# RemoveEmptyLinesInUnwrappedLines: false
 # RemoveParentheses: Leave
 # RemoveSemicolon: false
 RemoveSemicolon: true
@@ -349,4 +362,5 @@ StatementMacros:
 #   - NS_SWIFT_NAME
 #   - PP_STRINGIZE
 #   - STRINGIZE
+# WrapNamespaceBodyWithEmptyLines: Leave
 ...

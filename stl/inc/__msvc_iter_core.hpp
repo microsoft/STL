@@ -263,7 +263,7 @@ struct _Iter_traits_pointer<_Itraits_pointer_strategy::_Use_decltype> {
 };
 
 template <class _Ty>
-concept _Has_member_arrow = requires(_Ty&& __t) { static_cast<_Ty&&>(__t).operator->(); };
+concept _Has_member_arrow = requires(_Ty&& __t) { static_cast<_Ty &&>(__t).operator->(); };
 
 template <bool _Has_member_typedef>
 struct _Iter_traits_reference {

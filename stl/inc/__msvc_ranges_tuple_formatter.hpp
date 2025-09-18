@@ -271,8 +271,7 @@ public:
         }
     };
 
-#if defined(__clang__) || defined(__EDG__) \
-    || defined(__CUDACC__) // TRANSITION, LLVM-81774 (Clang), VSO-1956558 (EDG), VSO-2411436 (needed by CUDA 12.8.1)
+#if defined(__clang__) || defined(__CUDACC__) // TRANSITION, LLVM-81774 (Clang), VSO-2411436 (needed by CUDA 12.8.1)
     basic_format_arg() noexcept : _Active_state(_Basic_format_arg_type::_None), _No_state() {}
 #else // ^^^ workaround / no workaround vvv
     basic_format_arg() noexcept = default;
@@ -643,7 +642,7 @@ public:
 private:
     template <class _Ty>
     _NODISCARD static auto _Get_value_from_memory(const unsigned char* const _Val) noexcept {
-        auto& _Temp = *reinterpret_cast<const unsigned char(*)[sizeof(_Ty)]>(_Val);
+        auto& _Temp = *reinterpret_cast<const unsigned char (*)[sizeof(_Ty)]>(_Val);
         return _STD bit_cast<_Ty>(_Temp);
     }
 

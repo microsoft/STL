@@ -20,6 +20,7 @@ void test_lwg2524() {
     assert((generate_canonical<float, 32>) (mt2) < 1.0f);
 }
 
+#if _HAS_TR1_NAMESPACE
 void test_tr1_16() {
     using E_std = linear_congruential_engine<uint32_t, 75, 74, 65537>;
     using E_tr1 = linear_congruential<uint32_t, 75, 74, 65537>;
@@ -98,6 +99,7 @@ void test_tr1_64() {
         assert(dist_64(std_eng) == dist_64(tr1_eng));
     }
 }
+#endif // _HAS_TR1_NAMESPACE
 
 template <class Real, size_t Bits, class Engine>
 Real generate_with_ibe() {
@@ -197,9 +199,12 @@ int main() {
         assert((generate_canonical<double, 64, Engine>) (eng) == expected);
     }
 
+#if _HAS_TR1_NAMESPACE
     test_tr1_16();
     test_tr1_32();
     test_tr1_64();
+#endif // _HAS_TR1_NAMESPACE
+
     test_lwg2524();
 
     return 0;

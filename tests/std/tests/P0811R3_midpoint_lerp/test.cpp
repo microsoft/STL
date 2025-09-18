@@ -1031,6 +1031,8 @@ bool test_lerp() {
     return true;
 }
 
+#pragma warning(push)
+#pragma warning(disable : 4756) // ignore constant arithmetic overflow warning
 void test_gh_1917() {
     // GH-1917 <cmath>: lerp(1e+308, 5e+307, 4.0) spuriously overflows
     using bit_type       = unsigned long long;
@@ -1047,7 +1049,9 @@ void test_gh_1917() {
         ExceptGuard except;
 
         assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+#ifndef _M_ARM64 // TRANSITION, GH-5685
         assert(check_feexcept(0));
+#endif // ^^^ no workaround ^^^
     }
 #ifdef _M_FP_STRICT
     {
@@ -1062,7 +1066,9 @@ void test_gh_1917() {
         RoundGuard round{FE_UPWARD};
 
         assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+#ifndef _M_ARM64 // TRANSITION, GH-5685
         assert(check_feexcept(0));
+#endif // ^^^ no workaround ^^^
     }
     {
         ExceptGuard except;
@@ -1076,7 +1082,9 @@ void test_gh_1917() {
         RoundGuard round{FE_DOWNWARD};
 
         assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+#ifndef _M_ARM64 // TRANSITION, GH-5685
         assert(check_feexcept(0));
+#endif // ^^^ no workaround ^^^
     }
     {
         ExceptGuard except;
@@ -1090,7 +1098,9 @@ void test_gh_1917() {
         RoundGuard round{FE_TOWARDZERO};
 
         assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+#ifndef _M_ARM64 // TRANSITION, GH-5685
         assert(check_feexcept(0));
+#endif // ^^^ no workaround ^^^
     }
     {
         ExceptGuard except;
@@ -1110,6 +1120,7 @@ void test_gh_1917() {
     }
 #endif // _M_FP_STRICT
 }
+#pragma warning(pop)
 
 constexpr bool test_gh_2112() {
     // GH-2112 <cmath>: std::lerp is missing Arithmetic overloads

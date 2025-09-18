@@ -379,7 +379,7 @@ _NODISCARD binder2nd<_Fn> bind2nd(const _Fn& _Func, const _Ty& _Right) {
 }
 _STL_RESTORE_DEPRECATED_WARNING
 
-_EXPORT_STD template <class _Arg, class _Result, class _Fn = _Result(*)(_Arg)>
+_EXPORT_STD template <class _Arg, class _Result, class _Fn = _Result (*)(_Arg)>
 class pointer_to_unary_function : public unary_function<_Arg, _Result> { // functor adapter (*pfunc)(left)
 public:
     explicit pointer_to_unary_function(_Fn _Left) : _Pfun(_Left) {}
@@ -392,7 +392,7 @@ protected:
     _Fn _Pfun; // the function pointer
 };
 
-_EXPORT_STD template <class _Arg1, class _Arg2, class _Result, class _Fn = _Result(*)(_Arg1, _Arg2)>
+_EXPORT_STD template <class _Arg1, class _Arg2, class _Result, class _Fn = _Result (*)(_Arg1, _Arg2)>
 class pointer_to_binary_function
     : public binary_function<_Arg1, _Arg2, _Result> { // functor adapter (*pfunc)(left, right)
 public:
@@ -1688,7 +1688,7 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...)&> : public _Move_only_function_base<_Rx, false, _Types...> {
+class _Move_only_function_call<_Rx(_Types...) &> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
     using result_type = _Rx;
 
@@ -2721,7 +2721,7 @@ void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, co
     for (size_t _Jx = _Mx; _Jx > 0; --_Jx, --_Tx) {
         _Fx[_Jx - 1] = _Tx;
         while (_Tx <= _Mx && !_Eq(_Pat_first[_Jx - 1], _Pat_first[_Tx - 1])) {
-            _Shifts[_Tx - 1] = (_STD min)(_Shifts[_Tx - 1], static_cast<_Diff>(_Mx - _Jx));
+            _Shifts[_Tx - 1] = (_STD min) (_Shifts[_Tx - 1], static_cast<_Diff>(_Mx - _Jx));
             _Tx              = _Fx[_Tx - 1];
         }
     }
@@ -2741,7 +2741,7 @@ void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, co
     size_t _Qx1 = 1;
     while (_Qx < _Mx) {
         for (size_t _Kx = _Qx1; _Kx <= _Qx; ++_Kx) {
-            _Shifts[_Kx - 1] = (_STD min)(_Shifts[_Kx - 1], static_cast<_Diff>(_Mx + _Qx - _Kx));
+            _Shifts[_Kx - 1] = (_STD min) (_Shifts[_Kx - 1], static_cast<_Diff>(_Mx + _Qx - _Kx));
         }
         _Qx1 = _Qx + 1;
 
@@ -2784,7 +2784,7 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_search(
                 --_Idx;
                 --_UFirst;
             } while (_Eq(*_UFirst, _UPat_first[_Idx]));
-            _Shift = (_STD max)(_Delta1._Lookup(*_UFirst), _Delta2[_Idx]);
+            _Shift = (_STD max) (_Delta1._Lookup(*_UFirst), _Delta2[_Idx]);
         }
     }
 

@@ -8,13 +8,14 @@
 #include "lorem.hpp"
 
 using namespace std;
+using namespace regex_constants;
 
-void bm_lorem_search(benchmark::State& state, const char* pattern) {
+void bm_lorem_search(benchmark::State& state, const char* pattern, syntax_option_type syntax = ECMAScript) {
     string repeated_lorem{lorem_ipsum};
     for (long long i = 0; i < state.range(); ++i) {
         repeated_lorem += repeated_lorem;
     }
-    regex re{pattern};
+    regex re{pattern, syntax};
 
     for (auto _ : state) {
         benchmark::DoNotOptimize(repeated_lorem);
@@ -33,6 +34,7 @@ void bm_lorem_search(benchmark::State& state, const char* pattern) {
 
 BENCHMARK_CAPTURE(bm_lorem_search, "^bibe", "^bibe")->Arg(2)->Arg(3)->Arg(4);
 BENCHMARK_CAPTURE(bm_lorem_search, "bibe", "bibe")->Arg(2)->Arg(3)->Arg(4);
+BENCHMARK_CAPTURE(bm_lorem_search, "bibe".collate, "bibe", regex_constants::collate)->Arg(2)->Arg(3)->Arg(4);
 BENCHMARK_CAPTURE(bm_lorem_search, "(bibe)", "(bibe)")->Arg(2)->Arg(3)->Arg(4);
 BENCHMARK_CAPTURE(bm_lorem_search, "(bibe)+", "(bibe)+")->Arg(2)->Arg(3)->Arg(4);
 BENCHMARK_CAPTURE(bm_lorem_search, "(?:bibe)+", "(?:bibe)+")->Arg(2)->Arg(3)->Arg(4);
