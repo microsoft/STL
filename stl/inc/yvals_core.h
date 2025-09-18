@@ -852,9 +852,9 @@
 // warning: ignoring __declspec(allocator) because the function return type '%s' is not a pointer or reference type
 //     [-Wignored-attributes]
 // warning: '#pragma float_control' is not supported on this target - ignored [-Wignored-pragmas]
-// warning: user-defined literal suffixes not starting with '_' are reserved [-Wuser-defined-literals]
-// warning: unknown pragma ignored [-Wunknown-pragmas]
 // warning: '%s' cannot be specialized [-Winvalid-specialization]
+// warning: unknown pragma ignored [-Wunknown-pragmas]
+// warning: user-defined literal suffixes not starting with '_' are reserved [-Wuser-defined-literals]
 #ifndef _STL_DISABLE_CLANG_WARNINGS
 #ifdef __clang__
 // clang-format off: make macros readable
@@ -865,9 +865,9 @@
     _Pragma("clang diagnostic ignored \"-Wc++23-extensions\"")       \
     _Pragma("clang diagnostic ignored \"-Wignored-attributes\"")     \
     _Pragma("clang diagnostic ignored \"-Wignored-pragmas\"")        \
-    _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"")  \
+    _Pragma("clang diagnostic ignored \"-Winvalid-specialization\"") \
     _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")        \
-    _Pragma("clang diagnostic ignored \"-Winvalid-specialization\"")
+    _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"")
 // clang-format on
 #else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #define _STL_DISABLE_CLANG_WARNINGS
