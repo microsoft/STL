@@ -1376,7 +1376,7 @@ struct _Decayed_cond_oper<_Ty1, _Ty2, void_t<_Conditional_type<_Ty1, _Ty2>>> {
 };
 
 _EXPORT_STD template <class... _Ty>
-struct common_type;
+struct common_type; // specializations allowed by N5014 [meta.trans.other]/5
 
 _EXPORT_STD template <class... _Ty>
 using common_type_t = typename common_type<_Ty...>::type;
@@ -1411,7 +1411,7 @@ _Ty _Returns_exactly() noexcept; // not defined
 
 #if _HAS_CXX20
 _EXPORT_STD template <class, class, template <class> class, template <class> class>
-struct basic_common_reference {};
+struct basic_common_reference {}; // specializations allowed by N5014 [meta.trans.other]/7
 
 template <class _From>
 struct _Copy_cv_impl {

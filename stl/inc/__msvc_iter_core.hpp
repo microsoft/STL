@@ -412,7 +412,7 @@ concept input_or_output_iterator = requires(_It __i) {
 _EXPORT_STD template <class _Se, class _It>
 concept sentinel_for = semiregular<_Se> && input_or_output_iterator<_It> && _Weakly_equality_comparable_with<_Se, _It>;
 
-_EXPORT_STD template <class _Se, class _It>
+_EXPORT_STD template <class _Se, class _It> // specializations allowed by N5014 [iterator.concept.sizedsentinel]/3
 constexpr bool disable_sized_sentinel_for = false;
 
 _EXPORT_STD template <class _Se, class _It>

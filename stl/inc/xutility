@@ -2604,7 +2604,7 @@ namespace ranges {
     constexpr bool _Has_complete_elements<_Ty> = true;
 
     _EXPORT_STD template <class>
-    constexpr bool enable_borrowed_range = false;
+    constexpr bool enable_borrowed_range = false; // specializations allowed by N5014 [range.range]/6
 
     template <class _Rng>
     concept _Should_range_access = is_lvalue_reference_v<_Rng> || enable_borrowed_range<remove_cvref_t<_Rng>>;
@@ -3238,7 +3238,7 @@ namespace ranges {
     }
 
     _EXPORT_STD template <class>
-    constexpr bool disable_sized_range = false;
+    constexpr bool disable_sized_range = false; // specializations allowed by N5014 [range.sized]/3
 
     namespace _Size {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
@@ -3480,7 +3480,7 @@ namespace ranges {
         requires (!is_same_v<_Ty, view_interface<_Uty>>)
     void _Strictly_derived_from_view_interface_impl(view_interface<_Uty>*);
 
-    _EXPORT_STD template <class _Ty>
+    _EXPORT_STD template <class _Ty> // specializations allowed by N5014 [range.view]/7
     constexpr bool enable_view = derived_from<_Ty, view_base> || requires {
         _RANGES _Strictly_derived_from_view_interface_impl<remove_cv_t<_Ty>>(
             static_cast<remove_cv_t<_Ty>*>(nullptr)); // qualified: avoid ADL, handle incomplete types

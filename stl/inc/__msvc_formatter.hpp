@@ -96,7 +96,7 @@ enum class _Basic_format_arg_type : uint8_t {
 static_assert(static_cast<int>(_Basic_format_arg_type::_Custom_type) < 16, "must fit in 4-bit bitfield");
 
 #if _HAS_CXX23
-_EXPORT_STD template <class _Ty>
+_EXPORT_STD template <class _Ty> // specializations allowed by N5014 [format.formatter.locking]/1
 constexpr bool enable_nonlocking_formatter_optimization = false;
 
 _NODISCARD consteval bool _Is_debug_enabled_fmt_type(_Basic_format_arg_type _Ty) {
@@ -334,7 +334,7 @@ struct _Invalid_format_kind {
 };
 
 _EXPORT_STD template <class _Ty>
-constexpr _Invalid_format_kind<_Ty> format_kind;
+constexpr _Invalid_format_kind<_Ty> format_kind; // specializations allowed by N5014 [format.range.fmtkind]/3
 
 template <class _Ty>
 constexpr bool _Is_two_tuple = false;
