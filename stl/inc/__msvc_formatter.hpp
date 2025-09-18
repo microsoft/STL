@@ -58,6 +58,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 _STD_BEGIN
 #if _HAS_CXX23
 #define _FMT_P2286_BEGIN inline namespace __p2286 {
@@ -441,6 +447,10 @@ private:
 };
 #endif // _HAS_CXX23
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
