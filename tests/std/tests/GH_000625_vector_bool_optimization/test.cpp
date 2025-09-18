@@ -1381,13 +1381,13 @@ static_assert(test_fill());
 
 #if !defined(__EDG__) || !defined(_DEBUG) // TRANSITION: bogus(?) EDG error
 static_assert(test_find());
-#endif // !defined(__EDG__) || !defined(__DEBUG__)
+#endif // !defined(__EDG__) || !defined(_DEBUG)
 
 static_assert(test_count());
 
 #if 0 // TRANSITION: ICE
 static_assert(test_copy());
-#endif
+#endif // 0
 #endif // _HAS_CXX20
 
 int main() {
