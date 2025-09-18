@@ -854,7 +854,6 @@
 // warning: '#pragma float_control' is not supported on this target - ignored [-Wignored-pragmas]
 // warning: user-defined literal suffixes not starting with '_' are reserved [-Wuser-defined-literals]
 // warning: unknown pragma ignored [-Wunknown-pragmas]
-// warning: unknown warning group '%s', ignored [-Wunknown-warning-option]
 // warning: '%s' cannot be specialized [-Winvalid-specialization]
 #ifndef _STL_DISABLE_CLANG_WARNINGS
 #ifdef __clang__
@@ -868,7 +867,6 @@
     _Pragma("clang diagnostic ignored \"-Wignored-pragmas\"")        \
     _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"")  \
     _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")        \
-    _Pragma("clang diagnostic ignored \"-Wunknown-warning-option\"") \
     _Pragma("clang diagnostic ignored \"-Winvalid-specialization\"")
 // clang-format on
 #else // ^^^ defined(__clang__) / !defined(__clang__) vvv
