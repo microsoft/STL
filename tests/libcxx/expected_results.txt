@@ -184,6 +184,7 @@ std/language.support/support.limits/support.limits.general/version.version.compi
 # libc++ incorrectly implements `layout_stride::mapping<E>::is_exhaustive()`
 std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
 
+
 # *** INTERACTIONS WITH MSVC THAT UPSTREAM LIKELY WON'T FIX ***
 # These tests set an allocator with a max_size() too small to default construct an unordered container
 # (due to our minimum bucket size).
@@ -990,10 +991,6 @@ std/containers/sequences/vector/trivial_relocation.pass.cpp:1 FAIL
 
 # Not analyzed, likely bogus test. constexpr fails with "vector iterators incompatible".
 std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.default.pass.cpp FAIL
-
-# libc++ triggers UB in its tests by specializing `common_reference`
-std/iterators/iterator.requirements/iterator.concepts/iterator.concept.readable/indirectly_readable.compile.pass.cpp:0 FAIL
-std/iterators/iterator.requirements/iterator.concepts/iterator.concept.readable/indirectly_readable.compile.pass.cpp:1 FAIL
 
 
 # *** LIKELY STL BUGS ***
