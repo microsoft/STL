@@ -1385,7 +1385,7 @@ static_assert(test_find());
 
 static_assert(test_count());
 
-#if 0 // TRANSITION: ICE
+#if 0 // TRANSITION: GH-5720 and VSO-2574489
 static_assert(test_copy());
 #endif // 0
 #endif // _HAS_CXX20
