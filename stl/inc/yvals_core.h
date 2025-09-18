@@ -734,7 +734,7 @@
 #define _MSVC_LIFETIMEBOUND
 #endif
 
-// Should we mark templates users shouldn't specialize with [[msvc::no_specializations]]
+// Should we mark templates that users shouldn't specialize with [[msvc::no_specializations]]
 // or [[clang::no_specializations]]?
 #if _HAS_MSVC_ATTRIBUTE(no_specializations)
 #define _NO_SPECIALIZATIONS_MSG(_Msg) [[msvc::no_specializations(_Msg)]]
