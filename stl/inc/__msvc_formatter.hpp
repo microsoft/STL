@@ -126,7 +126,7 @@ struct _Dynamic_format_specs : _Basic_format_specs<_CharT> {
 [[noreturn]] inline void _Throw_format_error(const char* _Message);
 
 _EXPORT_STD template <class _CharT>
-class basic_format_parse_context;
+class _NO_SPECIALIZATIONS_CITING("N5014 [format.parse.ctx]/2") basic_format_parse_context;
 
 template <class _CharT>
 concept _Format_supported_charT = _Is_any_of_v<_CharT, char, wchar_t>;

@@ -99,7 +99,7 @@ template <class _CharT>
 class _Compile_time_parse_context;
 
 _EXPORT_STD template <class _CharT>
-class basic_format_parse_context {
+class _NO_SPECIALIZATIONS_CITING("N5014 [format.parse.ctx]/2") basic_format_parse_context {
 public:
     using char_type      = _CharT;
     using const_iterator = basic_string_view<_CharT>::const_iterator;
@@ -680,7 +680,7 @@ public:
 
 _EXPORT_STD template <class _Out, class _CharT>
     requires output_iterator<_Out, const _CharT&>
-class basic_format_context {
+class _NO_SPECIALIZATIONS_CITING("N5014 [format.context]/2") basic_format_context {
 private:
     _Out _OutputIt;
     basic_format_args<basic_format_context> _Args;
