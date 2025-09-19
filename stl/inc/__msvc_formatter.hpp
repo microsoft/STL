@@ -58,6 +58,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 _STD_BEGIN
 #if _HAS_CXX23
 #define _FMT_P2286_BEGIN inline namespace __p2286 {
@@ -90,7 +96,7 @@ enum class _Basic_format_arg_type : uint8_t {
 static_assert(static_cast<int>(_Basic_format_arg_type::_Custom_type) < 16, "must fit in 4-bit bitfield");
 
 #if _HAS_CXX23
-_EXPORT_STD template <class _Ty>
+_EXPORT_STD template <class _Ty> // specializations allowed by N5014 [format.formatter.locking]/1
 constexpr bool enable_nonlocking_formatter_optimization = false;
 
 _NODISCARD consteval bool _Is_debug_enabled_fmt_type(_Basic_format_arg_type _Ty) {
@@ -126,7 +132,7 @@ struct _Dynamic_format_specs : _Basic_format_specs<_CharT> {
 [[noreturn]] inline void _Throw_format_error(const char* _Message);
 
 _EXPORT_STD template <class _CharT>
-class basic_format_parse_context;
+class _NO_SPECIALIZATIONS_CITING("N5014 [format.parse.ctx]/2") basic_format_parse_context;
 
 template <class _CharT>
 concept _Format_supported_charT = _Is_any_of_v<_CharT, char, wchar_t>;
@@ -328,7 +334,7 @@ struct _Invalid_format_kind {
 };
 
 _EXPORT_STD template <class _Ty>
-constexpr _Invalid_format_kind<_Ty> format_kind;
+constexpr _Invalid_format_kind<_Ty> format_kind; // specializations allowed by N5014 [format.range.fmtkind]/3
 
 template <class _Ty>
 constexpr bool _Is_two_tuple = false;
@@ -441,6 +447,10 @@ private:
 };
 #endif // _HAS_CXX23
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

@@ -27,6 +27,7 @@ namespace numbers {
                                           "variable template is ill-formed. (N4950 [math.constants]/3)");
     };
 
+    // specializations allowed by N5014 [math.constants]/2 for all of these variable templates:
     _EXPORT_STD template <class _Ty>
     constexpr _Ty e_v = _Invalid<_Ty>{};
     _EXPORT_STD template <class _Ty>

@@ -32,6 +32,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 _STD_BEGIN
 
 template <class _Ret, class = void>
@@ -46,7 +52,7 @@ _EXPORT_STD template <class _Ret, class...>
 struct coroutine_traits : _Coroutine_traits<_Ret> {};
 
 _EXPORT_STD template <class = void>
-struct coroutine_handle;
+struct _NO_SPECIALIZATIONS_CITING("N5014 [coroutine.handle.general]/2") coroutine_handle;
 
 template <>
 struct coroutine_handle<void> {
@@ -93,7 +99,7 @@ private:
 };
 
 _EXPORT_STD template <class _CoroPromise>
-struct coroutine_handle {
+struct _NO_SPECIALIZATIONS_CITING("N5014 [coroutine.handle.general]/2") coroutine_handle {
     constexpr coroutine_handle() noexcept = default;
     constexpr coroutine_handle(nullptr_t) noexcept {}
 
@@ -254,6 +260,10 @@ _EXPORT_STD struct suspend_always {
 };
 
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

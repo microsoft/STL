@@ -28,6 +28,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 _STD_BEGIN
 
 template <class...>
@@ -283,7 +289,7 @@ struct _Meta_cartesian_product_<_List1<_List2<_Items...>, _Lists...>> {
 #define _STL_STAMP(n, x) x(_STL_STAMP##n, n)
 
 _EXPORT_STD template <class... _Types>
-class variant;
+class _NO_SPECIALIZATIONS_CITING("N5014 [variant.variant.general]/4") variant;
 
 _EXPORT_STD template <class _Ty>
 struct variant_size; // undefined
@@ -294,7 +300,7 @@ struct _CXX20_DEPRECATE_VOLATILE variant_size<volatile _Ty> : variant_size<_Ty>:
 template <class _Ty>
 struct _CXX20_DEPRECATE_VOLATILE variant_size<const volatile _Ty> : variant_size<_Ty>::type {};
 _EXPORT_STD template <class _Ty>
-constexpr size_t variant_size_v = variant_size<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr size_t variant_size_v = variant_size<_Ty>::value;
 
 template <class... _Types>
 struct variant_size<variant<_Types...>> : integral_constant<size_t, sizeof...(_Types)> {};
@@ -928,7 +934,8 @@ template <size_t _Idx>
 constexpr bool _Is_in_place_index_specialization<in_place_index_t<_Idx>> = true;
 
 _EXPORT_STD template <class... _Types>
-class variant : private _SMF_control<_Variant_destroy_layer<_Types...>, _Types...> { // discriminated union
+class _NO_SPECIALIZATIONS_CITING("N5014 [variant.variant.general]/4") variant
+    : private _SMF_control<_Variant_destroy_layer<_Types...>, _Types...> { // discriminated union
 public:
     static_assert(conjunction_v<is_object<_Types>..., negation<is_array<_Types>>..., is_destructible<_Types>...>,
         "variant<Types...> requires all of the Types to meet the Cpp17Destructible requirements "
@@ -1683,6 +1690,10 @@ _STD_END
 #undef _STL_STAMP64
 #undef _STL_STAMP16
 #undef _STL_STAMP4
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

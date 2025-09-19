@@ -16,9 +16,15 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 _STD_BEGIN
 _EXPORT_STD template <class _Elem>
-class initializer_list {
+class _NO_SPECIALIZATIONS_CITING("N5014 [initializer.list.syn]/2") initializer_list {
 public:
     using value_type      = _Elem;
     using reference       = const _Elem&;
@@ -60,6 +66,11 @@ _NODISCARD constexpr const _Elem* end(initializer_list<_Elem> _Ilist) noexcept {
     return _Ilist.end();
 }
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)

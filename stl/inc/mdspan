@@ -25,7 +25,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 // TRANSITION, non-_Ugly attribute tokens
 #pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
 #undef msvc
+#undef no_specializations
 
 _STD_BEGIN
 template <class _IndexType, size_t _Size>
@@ -434,17 +436,17 @@ constexpr bool _Is_mapping_of =
 
 _EXPORT_STD struct layout_left {
     template <class _Extents>
-    class mapping;
+    class _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES mapping;
 };
 
 _EXPORT_STD struct layout_right {
     template <class _Extents>
-    class mapping;
+    class _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES mapping;
 };
 
 _EXPORT_STD struct layout_stride {
     template <class _Extents>
-    class mapping;
+    class _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES mapping;
 };
 
 template <class _Extents>
@@ -477,7 +479,8 @@ struct _Maybe_fully_static_extents<_Extents> {
 };
 
 template <class _Extents>
-class layout_left::mapping : private _Maybe_fully_static_extents<_Extents> {
+class _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES layout_left::mapping
+    : private _Maybe_fully_static_extents<_Extents> {
 public:
     using extents_type = _Extents;
     using index_type   = extents_type::index_type;
@@ -631,7 +634,8 @@ private:
 };
 
 template <class _Extents>
-class layout_right::mapping : private _Maybe_fully_static_extents<_Extents> {
+class _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES layout_right::mapping
+    : private _Maybe_fully_static_extents<_Extents> {
 public:
     using extents_type = _Extents;
     using index_type   = extents_type::index_type;
@@ -816,8 +820,9 @@ _NODISCARD constexpr pair<size_t, size_t> _Count_dynamic_extents_equal_to_zero_o
 }
 
 template <class _Extents>
-class layout_stride::mapping : private _Maybe_fully_static_extents<_Extents>,
-                               private _Maybe_empty_array<typename _Extents::index_type, _Extents::rank()> {
+class _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES layout_stride::mapping
+    : private _Maybe_fully_static_extents<_Extents>,
+      private _Maybe_empty_array<typename _Extents::index_type, _Extents::rank()> {
 public:
     using extents_type = _Extents;
     using index_type   = extents_type::index_type;
@@ -1595,6 +1600,7 @@ mdspan(const typename _AccessorType::data_handle_type&, const _MappingType&, con
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("msvc")
 
 #pragma pop_macro("new")

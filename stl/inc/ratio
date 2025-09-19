@@ -17,6 +17,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 _STD_BEGIN
 _NODISCARD constexpr intmax_t _Abs(const intmax_t _Val) noexcept {
     return _Val < 0 ? -_Val : _Val;
@@ -167,7 +173,7 @@ struct ratio_equal : bool_constant<_Rx1::num == _Rx2::num && _Rx1::den == _Rx2::
 };
 
 _EXPORT_STD template <class _Rx1, class _Rx2>
-constexpr bool ratio_equal_v = ratio_equal<_Rx1, _Rx2>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool ratio_equal_v = ratio_equal<_Rx1, _Rx2>::value;
 
 _EXPORT_STD template <class _Rx1, class _Rx2>
 struct ratio_not_equal : bool_constant<!ratio_equal_v<_Rx1, _Rx2>> { // tests if ratio != ratio
@@ -175,7 +181,7 @@ struct ratio_not_equal : bool_constant<!ratio_equal_v<_Rx1, _Rx2>> { // tests if
 };
 
 _EXPORT_STD template <class _Rx1, class _Rx2>
-constexpr bool ratio_not_equal_v = ratio_not_equal<_Rx1, _Rx2>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool ratio_not_equal_v = ratio_not_equal<_Rx1, _Rx2>::value;
 
 struct _Big_uint128 {
     uint64_t _Upper;
@@ -231,7 +237,7 @@ struct ratio_less : bool_constant<_Ratio_less(_Rx1::num, _Rx1::den, _Rx2::num, _
 };
 
 _EXPORT_STD template <class _Rx1, class _Rx2>
-constexpr bool ratio_less_v = ratio_less<_Rx1, _Rx2>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool ratio_less_v = ratio_less<_Rx1, _Rx2>::value;
 
 _EXPORT_STD template <class _Rx1, class _Rx2>
 struct ratio_less_equal : bool_constant<!ratio_less_v<_Rx2, _Rx1>> { // tests if ratio <= ratio
@@ -240,7 +246,7 @@ struct ratio_less_equal : bool_constant<!ratio_less_v<_Rx2, _Rx1>> { // tests if
 };
 
 _EXPORT_STD template <class _Rx1, class _Rx2>
-constexpr bool ratio_less_equal_v = ratio_less_equal<_Rx1, _Rx2>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool ratio_less_equal_v = ratio_less_equal<_Rx1, _Rx2>::value;
 
 _EXPORT_STD template <class _Rx1, class _Rx2>
 struct ratio_greater : ratio_less<_Rx2, _Rx1>::type { // tests if ratio > ratio
@@ -248,7 +254,7 @@ struct ratio_greater : ratio_less<_Rx2, _Rx1>::type { // tests if ratio > ratio
 };
 
 _EXPORT_STD template <class _Rx1, class _Rx2>
-constexpr bool ratio_greater_v = ratio_greater<_Rx1, _Rx2>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool ratio_greater_v = ratio_greater<_Rx1, _Rx2>::value;
 
 _EXPORT_STD template <class _Rx1, class _Rx2>
 struct ratio_greater_equal : bool_constant<!ratio_less_v<_Rx1, _Rx2>> { // tests if ratio >= ratio
@@ -257,7 +263,7 @@ struct ratio_greater_equal : bool_constant<!ratio_less_v<_Rx1, _Rx2>> { // tests
 };
 
 _EXPORT_STD template <class _Rx1, class _Rx2>
-constexpr bool ratio_greater_equal_v = ratio_greater_equal<_Rx1, _Rx2>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool ratio_greater_equal_v = ratio_greater_equal<_Rx1, _Rx2>::value;
 
 _EXPORT_STD using atto  = ratio<1, 1000000000000000000LL>;
 _EXPORT_STD using femto = ratio<1, 1000000000000000LL>;
@@ -276,6 +282,11 @@ _EXPORT_STD using tera  = ratio<1000000000000LL, 1>;
 _EXPORT_STD using peta  = ratio<1000000000000000LL, 1>;
 _EXPORT_STD using exa   = ratio<1000000000000000000LL, 1>;
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)

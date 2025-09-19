@@ -33,7 +33,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 // TRANSITION, non-_Ugly attribute tokens
 #pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
 #undef msvc
+#undef no_specializations
 
 _STD_BEGIN
 namespace ranges {
@@ -546,7 +548,8 @@ namespace ranges {
 #if _HAS_CXX23
     _EXPORT_STD template <class _Derived>
         requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
-    class range_adaptor_closure : public _Pipe::_Base<_Derived> {};
+    class _NO_SPECIALIZATIONS_CITING("N5014 [range.adaptor.object]/5") range_adaptor_closure
+        : public _Pipe::_Base<_Derived> {};
 #endif // _HAS_CXX23
 
     _EXPORT_STD template <class _Ty>
@@ -9275,6 +9278,7 @@ _EXPORT_STD namespace views = ranges::views;
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
