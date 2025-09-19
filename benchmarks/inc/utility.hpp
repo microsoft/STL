@@ -26,3 +26,11 @@ std::vector<Contained, Alloc<Contained>> random_vector(size_t n) {
 
     return res;
 }
+
+std::vector<bool> random_bool_vector(const size_t size) {
+    std::mt19937 gen;
+    std::bernoulli_distribution dist{0.5};
+    std::vector<bool> result(size);
+    std::generate(result.begin(), result.end(), [&] { return dist(gen); });
+    return result;
+}

@@ -8,19 +8,13 @@
 #include <random>
 #include <vector>
 
-using namespace std;
+#include "utility.hpp"
 
-vector<bool> createRandomVector(const size_t size) {
-    mt19937 gen;
-    bernoulli_distribution dist{0.5};
-    vector<bool> result(size);
-    generate(result.begin(), result.end(), [&] { return dist(gen); });
-    return result;
-}
+using namespace std;
 
 void count_aligned(benchmark::State& state) {
     const auto size = static_cast<size_t>(state.range(0));
-    vector<bool> v  = createRandomVector(size);
+    vector<bool> v  = random_bool_vector(size);
 
     bool b = false;
 
@@ -32,7 +26,6 @@ void count_aligned(benchmark::State& state) {
         b = !b;
     }
 }
-
 
 BENCHMARK(count_aligned)->RangeMultiplier(64)->Range(64, 64 << 10);
 
