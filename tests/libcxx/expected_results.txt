@@ -1543,6 +1543,7 @@ std/containers/unord/unord.map/unord.map.modifiers/insert_range.pass.cpp:9 SKIPP
 std/containers/unord/unord.multimap/unord.multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
 std/containers/unord/unord.multiset/insert_range.pass.cpp:9 SKIPPED
 std/containers/unord/unord.set/insert_range.pass.cpp:9 SKIPPED
+std/containers/views/mdspan/mdspan/conversion.pass.cpp:9 SKIPPED
 std/depr/depr.c.headers/setjmp_h.compile.pass.cpp:9 SKIPPED
 std/input.output/file.streams/fstreams/ifstream.members/buffered_reads.pass.cpp:9 SKIPPED
 std/input.output/file.streams/fstreams/ofstream.members/buffered_writes.pass.cpp:9 SKIPPED
