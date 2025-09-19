@@ -746,8 +746,9 @@
 
 #define _NO_SPECIALIZATIONS_CITING(_Standardese) \
     _NO_SPECIALIZATIONS_MSG("Specializing this standard library template is forbidden by " _Standardese)
-#define _NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES _NO_SPECIALIZATIONS_CITING("N5014 [namespace.std]/3")
-#define _NO_SPECIALIZATIONS_OF_TYPE_TRAITS        _NO_SPECIALIZATIONS_CITING("N5014 [meta.rqmts]/4")
+#define _NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES     _NO_SPECIALIZATIONS_CITING("N5014 [namespace.std]/3")
+#define _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES _NO_SPECIALIZATIONS_CITING("N5014 [namespace.std]/4.3")
+#define _NO_SPECIALIZATIONS_OF_TYPE_TRAITS            _NO_SPECIALIZATIONS_CITING("N5014 [meta.rqmts]/4")
 
 #if _HAS_CXX23 // TRANSITION, ABI, should just use [[no_unique_address]] when _HAS_CXX20.
 // Should we enable use of [[msvc::no_unique_address]] or [[no_unique_address]] to allow potentially-overlapping member

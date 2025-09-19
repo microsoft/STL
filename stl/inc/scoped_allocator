@@ -140,7 +140,7 @@ public:
     using difference_type = typename _Outer_traits::difference_type;
 
     template <class _Other>
-    struct rebind { // converts X<value_type> to X<_Other>
+    struct _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES rebind { // converts X<value_type> to X<_Other>
         using _Other_alloc = typename _Get_rebind_type<_Outer, _Other>::type;
         using other        = scoped_allocator_adaptor<_Other_alloc, _Inner...>;
     };
