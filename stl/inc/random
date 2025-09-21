@@ -623,58 +623,13 @@ struct _Circ_buf { // holds historical values for generators
     _Ty _Ax[2 * _Nw];
 };
 
-template <class _Ty, _Ty _Mx, size_t _Nw>
-struct _Swc_traits { // traits for subtract_with_carry generator
-    using _Cy_t  = int;
-    using _UCy_t = unsigned int;
-
-private:
-    static constexpr int _Get_wc() noexcept { // compute number of 32-bit words per element
-        if constexpr (_Mx == 0) {
-            return (8 * sizeof(_Ty) + 31) / 32;
-        } else if constexpr (_Mx > (1ULL << 32)) {
-            return 2;
-        } else {
-            return 1;
-        }
-    }
-
-public:
-    template <class _Gen>
-    static _Cy_t _Reset(_Gen& _Gx, _Ty* _Ax) { // set initial values of _Ax from generator _Gx,
-                                               // return carry value computed from last value
-        constexpr int _Kx = _Get_wc();
-
-        for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) { // pack _Kx words
-            _Ax[_Ix] = _Gx();
-            for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
-                _Ax[_Ix] |= static_cast<_Ty>(_Gx()) << (32 * _Jx);
-            }
-        }
-
-        return _Reduce(_Ax);
-    }
-
-#pragma warning(push)
-#pragma warning(disable : 4724) // potential mod by 0
-    static _Cy_t _Reduce(_Ty* _Ax) noexcept { // reduce values to allowed range
-        if constexpr (_Mx != 0) {
-            for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
-                _Ax[_Ix] = _Ax[_Ix] % _Mx;
-            }
-        }
-
-        return _Ax[_Nw - 1] == 0;
-    }
-#pragma warning(pop)
-};
-
 _EXPORT_STD template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
 class subtract_with_carry_engine : private _Circ_buf<_Ty, _Rx> {
 private:
     static constexpr _Ty _Mx = static_cast<_Ty>((_Ty{1} << (_Wx - 1)) << 1);
 
-    using _Mytraits = _Swc_traits<_Ty, _Mx, _Rx>;
+    using _Cy_t  = int;
+    using _UCy_t = unsigned int;
 
 public:
     _RNG_REQUIRE_UINTTYPE(subtract_with_carry_engine, _Ty);
@@ -706,7 +661,7 @@ public:
     void seed(_Ty _Value = 0u) { // set initial values from specified seed value
         linear_congruential_engine<uint_least32_t, 40014U, 0U, 2147483563U> _Lc{
             _Value == 0U ? default_seed : static_cast<uint_least32_t>(_Value % 2147483563U)};
-        _Carry     = _Mytraits::_Reset(_Lc, this->_Ax);
+        _Carry     = _Reset(_Lc);
         this->_Idx = _Rx;
     }
 
@@ -728,7 +683,7 @@ public:
             }
         }
 
-        _Carry     = _Mytraits::_Reduce(this->_Ax);
+        _Carry     = _Reduce();
         this->_Idx = _Rx;
     }
 
@@ -794,7 +749,7 @@ public:
         basic_istream<_Elem, _Traits>& _Istr, subtract_with_carry_engine& _Eng) {
         constexpr auto _Nx = long_lag;
         result_type _Buffer[_Nx];
-        typename _Mytraits::_Cy_t _Carry_buf;
+        _Cy_t _Carry_buf;
         const auto _Save_flags = _Istr.flags(ios_base::dec | ios_base::skipws);
         for (auto& _Val : _Buffer) {
             _Istr >> _Val;
@@ -825,7 +780,7 @@ private:
         }
 
         _Newx -= _Xir;
-        if (_Newx < static_cast<typename _Mytraits::_UCy_t>(_Carry)) {
+        if (_Newx < static_cast<_UCy_t>(_Carry)) {
             _Underflowed = true;
         }
 
@@ -840,7 +795,45 @@ private:
         this->_Ax[_Ix] = _Newx;
     }
 
-    typename _Mytraits::_Cy_t _Carry;
+    static constexpr int _Get_wc() noexcept { // compute number of 32-bit words per element
+        if constexpr (_Mx == 0) {
+            return (8 * sizeof(_Ty) + 31) / 32;
+        } else if constexpr (_Mx > (1ULL << 32)) {
+            return 2;
+        } else {
+            return 1;
+        }
+    }
+
+    template <class _Gen>
+    _Cy_t _Reset(_Gen& _Gx) { // set initial values of _Ax from generator _Gx,
+                              // return carry value computed from last value
+        constexpr int _Kx = _Get_wc();
+
+        for (size_t _Ix = 0; _Ix < _Rx; ++_Ix) { // pack _Kx words
+            this->_Ax[_Ix] = _Gx();
+            for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
+                this->_Ax[_Ix] |= static_cast<_Ty>(_Gx()) << (32 * _Jx);
+            }
+        }
+
+        return _Reduce();
+    }
+
+#pragma warning(push)
+#pragma warning(disable : 4724) // potential mod by 0
+    _Cy_t _Reduce() noexcept { // reduce values to allowed range
+        if constexpr (_Mx != 0) {
+            for (size_t _Ix = 0; _Ix < _Rx; ++_Ix) {
+                this->_Ax[_Ix] = this->_Ax[_Ix] % _Mx;
+            }
+        }
+
+        return this->_Ax[_Rx - 1] == 0;
+    }
+#pragma warning(pop)
+
+    _Cy_t _Carry;
 };
 
 _EXPORT_STD template <class _Ty, size_t _Wx, size_t _Nx, size_t _Mx, size_t _Rx, _Ty _Px, size_t _Ux, _Ty _Dx,
