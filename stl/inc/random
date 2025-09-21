@@ -625,13 +625,8 @@ struct _Circ_buf { // holds historical values for generators
 
 template <class _Ty, _Ty _Mx, size_t _Nw>
 struct _Swc_traits { // traits for subtract_with_carry generator
-    using _Cy_t   = int;
-    using _UCy_t  = unsigned int;
-    using _Mod_t  = _Ty;
-    using _Seed_t = _Ty;
-
-    static constexpr _Cy_t _Cy   = 1;
-    static constexpr _Mod_t _Mod = _Mx;
+    using _Cy_t  = int;
+    using _UCy_t = unsigned int;
 
 private:
     static constexpr int _Get_wc() noexcept { // compute number of 32-bit words per element
@@ -738,8 +733,8 @@ public:
                 this->_Ax[_Ix] |= static_cast<_Ty>(_Arr[_Idx0 + _Jx]) << (32 * _Jx);
             }
 
-            if constexpr (_Mytraits::_Mod != 0) {
-                this->_Ax[_Ix] %= _Mytraits::_Mod;
+            if constexpr (_Mx != 0) {
+                this->_Ax[_Ix] %= _Mx;
             }
         }
 
@@ -839,9 +834,9 @@ private:
         }
 
         _Newx -= _Carry;
-        if (_Underflowed) { // underflowed, so add _Mod
-            _Newx += _Mytraits::_Mod;
-            _Carry = _Mytraits::_Cy;
+        if (_Underflowed) { // underflowed, so add _Mx
+            _Newx += _Mx;
+            _Carry = 1;
         } else {
             _Carry = 0;
         }
