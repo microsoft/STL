@@ -659,12 +659,6 @@ public:
         _Reset(_Gx, _Readcy);
     }
 
-    void discard(unsigned long long _Nskip) { // discard _Nskip elements
-        for (; 0 < _Nskip; --_Nskip) {
-            (void) (*this)();
-        }
-    }
-
     _NODISCARD friend bool operator==(const _Swc_base& _Left, const _Swc_base& _Right) noexcept /* strengthened */ {
         return static_cast<const _Swc_base::_Mybase&>(_Left)._Equals(_Right) && _Left._Carry == _Right._Carry;
     }
@@ -874,7 +868,9 @@ public:
     }
 
     void discard(unsigned long long _Nskip) {
-        _Mybase::discard(_Nskip);
+        for (; 0 < _Nskip; --_Nskip) {
+            (void) (*this)();
+        }
     }
 
     template <class _Elem, class _Traits>
