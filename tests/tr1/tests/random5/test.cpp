@@ -116,10 +116,6 @@ static void tuniform_real() {
     typedef STD ranlux24 rng_t;
     rng_t rng;
     CHECK(dist0(rng) != dist0(rng, par0));
-
-#if _HAS_TR1_NAMESPACE
-    test_globals<dist_t, STD ranlux3_01>::test();
-#endif // _HAS_TR1_NAMESPACE
 }
 
 static void tnegative_binomial() {
