@@ -661,7 +661,17 @@ public:
     void seed(_Ty _Value = 0u) { // set initial values from specified seed value
         linear_congruential_engine<uint_least32_t, 40014U, 0U, 2147483563U> _Lc{
             _Value == 0U ? default_seed : static_cast<uint_least32_t>(_Value % 2147483563U)};
-        _Carry     = _Reset(_Lc);
+
+        constexpr int _Kx = _Get_wc();
+
+        for (size_t _Ix = 0; _Ix < _Rx; ++_Ix) { // pack _Kx words
+            this->_Ax[_Ix] = _Lc();
+            for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
+                this->_Ax[_Ix] |= static_cast<_Ty>(_Lc()) << (32 * _Jx);
+            }
+        }
+
+        _Carry     = _Reduce();
         this->_Idx = _Rx;
     }
 
@@ -803,21 +813,6 @@ private:
         } else {
             return 1;
         }
-    }
-
-    template <class _Gen>
-    _Cy_t _Reset(_Gen& _Gx) { // set initial values of _Ax from generator _Gx,
-                              // return carry value computed from last value
-        constexpr int _Kx = _Get_wc();
-
-        for (size_t _Ix = 0; _Ix < _Rx; ++_Ix) { // pack _Kx words
-            this->_Ax[_Ix] = _Gx();
-            for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
-                this->_Ax[_Ix] |= static_cast<_Ty>(_Gx()) << (32 * _Jx);
-            }
-        }
-
-        return _Reduce();
     }
 
 #pragma warning(push)
