@@ -698,21 +698,6 @@ public:
 #endif // !_HAS_CXX20
 
     template <class _Elem, class _Traits>
-    friend basic_istream<_Elem, _Traits>& operator>>(
-        basic_istream<_Elem, _Traits>& _Istr, _Swc_base& _Eng) { // read state from _Istr
-        _Wrap_istream<_Elem, _Traits, typename _Swc_Traits::_Seed_t> _Gen(_Istr);
-        _Eng.seed(_Gen, true);
-        return _Istr;
-    }
-
-    template <class _Elem, class _Traits>
-    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-        const _Swc_base& _Eng) { // write state to _Ostr
-        _Swc_base::_Traits::_Write(_Ostr, _Eng, _Eng._Carry);
-        return _Ostr;
-    }
-
-    template <class _Elem, class _Traits>
     basic_ostream<_Elem, _Traits>& _Write_full(basic_ostream<_Elem, _Traits>& _Ostr) const { // write state to _Ostr
         _Swc_Traits::_Write_full(_Ostr, *this, _Carry);
         return _Ostr;
@@ -807,21 +792,6 @@ public:
         return _Ax[_Nw - 1] == 0;
     }
 #pragma warning(pop)
-
-    template <class _Elem, class _Traits>
-    static void _Write(
-        basic_ostream<_Elem, _Traits>& _Ostr, const _Circ_buf<_Ty, _Nw>& _Buf, _Cy_t _Cy) { // write state to _Ostr
-        constexpr int _Kx = _Get_wc();
-
-        for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
-            for (int _Jx = 0; _Jx < _Kx; ++_Jx) { // unpack into _Kx words
-                const unsigned int _Word = static_cast<unsigned int>(_Buf._At(_Ix) >> (_Jx * 32));
-                _Ostr << _Word << ' ';
-            }
-        }
-
-        _Ostr << _Cy;
-    }
 
     template <class _Elem, class _Traits>
     static void _Write_full(
