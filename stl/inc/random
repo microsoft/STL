@@ -646,9 +646,8 @@ private:
 
 public:
     template <class _Gen>
-    static _Cy_t _Reset(_Gen& _Gx, _Ty* _Ax, bool _Readcy) { // set initial values of _Ax from generator _Gx
-                                                             // return value of _Cy from range if _Readcy is true,
-                                                             // otherwise compute from last value
+    static _Cy_t _Reset(_Gen& _Gx, _Ty* _Ax) { // set initial values of _Ax from generator _Gx,
+                                               // return carry value computed from last value
         constexpr int _Kx = _Get_wc();
 
         for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) { // pack _Kx words
@@ -658,12 +657,7 @@ public:
             }
         }
 
-        _Cy_t _Ans = _Reduce(_Ax);
-        if (!_Readcy) {
-            return _Ans;
-        } else {
-            return static_cast<_Cy_t>(_Gx()); // TRANSITION, investigate this conversion
-        }
+        return _Reduce(_Ax);
     }
 
 #pragma warning(push)
@@ -727,7 +721,7 @@ public:
     void seed(_Ty _Value = 0u) { // set initial values from specified seed value
         linear_congruential_engine<uint_least32_t, 40014U, 0U, 2147483563U> _Lc{
             _Value == 0U ? default_seed : static_cast<uint_least32_t>(_Value % 2147483563U)};
-        _Carry     = _Mytraits::_Reset(_Lc, this->_Ax, false);
+        _Carry     = _Mytraits::_Reset(_Lc, this->_Ax);
         this->_Idx = _Rx;
     }
 
