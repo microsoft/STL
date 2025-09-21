@@ -667,16 +667,6 @@ public:
         return _Ax[_Nw - 1] == 0;
     }
 #pragma warning(pop)
-
-    template <class _Elem, class _Traits>
-    static void _Write_full(
-        basic_ostream<_Elem, _Traits>& _Ostr, const _Circ_buf<_Ty, _Nw>& _Buf, _Cy_t _Cy) { // write state to _Ostr
-        for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
-            _Ostr << _Buf._At(_Ix) << ' ';
-        }
-
-        _Ostr << _Cy;
-    }
 };
 
 _EXPORT_STD template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
@@ -787,7 +777,13 @@ public:
         basic_ostream<_Elem, _Traits>& _Ostr, const subtract_with_carry_engine& _Eng) {
         const auto _Save_flags = _Ostr.flags(ios_base::dec | ios_base::left);
         const auto _Save_fill  = _Ostr.fill(' ');
-        _Mytraits::_Write_full(_Ostr, _Eng, _Eng._Carry);
+
+        for (size_t _Ix = 0; _Ix < _Rx; ++_Ix) {
+            _Ostr << _Eng._At(_Ix) << ' ';
+        }
+
+        _Ostr << _Eng._Carry;
+
         _Ostr.flags(_Save_flags);
         _Ostr.fill(_Save_fill);
         return _Ostr;
