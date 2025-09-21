@@ -634,19 +634,7 @@ public:
     static constexpr size_t short_lag = _Sx;
     static constexpr size_t long_lag  = _Rx;
 
-    void seed(_Seed_t _Value = 0u, bool _Readcy = false) { // set initial values from specified seed value
-        linear_congruential_engine<uint_least32_t, 40014U, 0U, 2147483563U> _Lc{
-            _Value == 0U ? default_seed : static_cast<uint_least32_t>(_Value % 2147483563U)};
-        _Reset(_Lc, _Readcy);
-    }
-
 protected:
-    template <class _Gen>
-    void _Reset(_Gen& _Gx, bool _Readcy) { // reset sequence
-        _Carry     = _Mytraits::_Reset(_Gx, this->_Ax, _Readcy);
-        this->_Idx = _Rx;
-    }
-
     void _Setx(size_t _Ix, _Ty _Xis, _Ty _Xir) noexcept { // update _Ax[_Ix] and _Carry
         bool _Underflowed = false;
         _Ty _Newx         = _Xis;
@@ -777,7 +765,10 @@ public:
     }
 
     void seed(_Ty _Value = 0u) { // set initial values from specified seed value
-        _Mybase::seed(_Value);
+        linear_congruential_engine<uint_least32_t, 40014U, 0U, 2147483563U> _Lc{
+            _Value == 0U ? default_seed : static_cast<uint_least32_t>(_Value % 2147483563U)};
+        _Carry     = _Mytraits::_Reset(_Lc, this->_Ax, false);
+        this->_Idx = _Rx;
     }
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, subtract_with_carry_engine> = 0>
