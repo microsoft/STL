@@ -659,14 +659,6 @@ public:
         _Reset(_Gx, _Readcy);
     }
 
-    _NODISCARD result_type(min)() const noexcept /* strengthened */ {
-        return 0;
-    }
-
-    _NODISCARD result_type(max)() const noexcept /* strengthened */ {
-        return _Swc_Traits::_Max;
-    }
-
     _NODISCARD result_type operator()() noexcept /* strengthened */ {
         const auto _Ix = 2 * _Rx <= this->_Idx ? 0 : this->_Idx;
         if (_Ix < _Sx) {
@@ -745,7 +737,6 @@ struct _Swc_traits { // traits for subtract_with_carry generator
 
     static constexpr _Cy_t _Cy   = 1;
     static constexpr _Mod_t _Mod = _Mx;
-    static constexpr _Ty _Max    = static_cast<_Ty>(_Mx - 1);
 
 private:
     static constexpr int _Get_wc() noexcept { // compute number of 32-bit words per element
