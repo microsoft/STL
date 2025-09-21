@@ -659,16 +659,6 @@ public:
         _Reset(_Gx, _Readcy);
     }
 
-    _NODISCARD friend bool operator==(const _Swc_base& _Left, const _Swc_base& _Right) noexcept /* strengthened */ {
-        return static_cast<const _Swc_base::_Mybase&>(_Left)._Equals(_Right) && _Left._Carry == _Right._Carry;
-    }
-
-#if !_HAS_CXX20
-    _NODISCARD friend bool operator!=(const _Swc_base& _Left, const _Swc_base& _Right) noexcept /* strengthened */ {
-        return !(_Left == _Right);
-    }
-#endif // !_HAS_CXX20
-
     template <class _Elem, class _Traits>
     basic_ostream<_Elem, _Traits>& _Write_full(basic_ostream<_Elem, _Traits>& _Ostr) const { // write state to _Ostr
         _Swc_Traits::_Write_full(_Ostr, *this, _Carry);
@@ -843,7 +833,7 @@ public:
 
     _NODISCARD friend bool operator==(
         const subtract_with_carry_engine& _Left, const subtract_with_carry_engine& _Right) noexcept /* strengthened */ {
-        return static_cast<const _Mybase&>(_Left) == static_cast<const _Mybase&>(_Right);
+        return _Left._Equals(_Right) && _Left._Carry == _Right._Carry;
     }
 
 #if !_HAS_CXX20
