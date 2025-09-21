@@ -634,10 +634,6 @@ public:
     static constexpr size_t short_lag = _Sx;
     static constexpr size_t long_lag  = _Rx;
 
-    _Swc_base(_Seed_t _Xx0) {
-        seed(_Xx0);
-    }
-
     void seed(_Seed_t _Value = 0u, bool _Readcy = false) { // set initial values from specified seed value
         linear_congruential_engine<uint_least32_t, 40014U, 0U, 2147483563U> _Lc{
             _Value == 0U ? default_seed : static_cast<uint_least32_t>(_Value % 2147483563U)};
@@ -767,12 +763,16 @@ public:
 
     static constexpr uint_least32_t default_seed = 19780503u;
 
-    subtract_with_carry_engine() : _Mybase(0u) {}
+    subtract_with_carry_engine() {
+        seed(0u);
+    }
 
-    explicit subtract_with_carry_engine(_Ty _Xx0) : _Mybase(_Xx0) {}
+    explicit subtract_with_carry_engine(_Ty _Xx0) {
+        seed(_Xx0);
+    }
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, subtract_with_carry_engine> = 0>
-    explicit subtract_with_carry_engine(_Seed_seq& _Seq) : _Mybase(0u) {
+    explicit subtract_with_carry_engine(_Seed_seq& _Seq) {
         seed(_Seq);
     }
 
