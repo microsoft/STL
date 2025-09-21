@@ -631,9 +631,8 @@ public:
     using _Mybase     = _Circ_buf<_Ty, _Rx>;
     using _Seed_t     = typename _Swc_Traits::_Seed_t;
 
-    static constexpr size_t short_lag            = _Sx;
-    static constexpr size_t long_lag             = _Rx;
-    static constexpr uint_least32_t default_seed = 19780503u;
+    static constexpr size_t short_lag = _Sx;
+    static constexpr size_t long_lag  = _Rx;
 
     _Swc_base() {
         seed();
@@ -786,7 +785,7 @@ public:
 
     using result_type = _Ty;
 
-    using _Mybase::default_seed;
+    static constexpr uint_least32_t default_seed = 19780503u;
 
     subtract_with_carry_engine() : _Mybase(0u) {}
 
