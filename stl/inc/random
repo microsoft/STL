@@ -627,9 +627,9 @@ template <class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
 class _Swc_base : public _Circ_buf<_Ty, _Rx> { // common bits of subtract_with_carry/_01
 public:
     using result_type = _Ty;
-    using _Traits     = _Swc_Traits;
+    using _Mytraits   = _Swc_Traits;
     using _Mybase     = _Circ_buf<_Ty, _Rx>;
-    using _Seed_t     = typename _Swc_Traits::_Seed_t;
+    using _Seed_t     = typename _Mytraits::_Seed_t;
 
     static constexpr size_t short_lag = _Sx;
     static constexpr size_t long_lag  = _Rx;
@@ -660,14 +660,14 @@ public:
 
     template <class _Elem, class _Traits>
     basic_ostream<_Elem, _Traits>& _Write_full(basic_ostream<_Elem, _Traits>& _Ostr) const { // write state to _Ostr
-        _Swc_Traits::_Write_full(_Ostr, *this, _Carry);
+        _Mytraits::_Write_full(_Ostr, *this, _Carry);
         return _Ostr;
     }
 
 protected:
     template <class _Gen>
     void _Reset(_Gen& _Gx, bool _Readcy) { // reset sequence
-        _Carry     = _Swc_Traits::_Reset(_Gx, this->_Ax, _Readcy);
+        _Carry     = _Mytraits::_Reset(_Gx, this->_Ax, _Readcy);
         this->_Idx = _Rx;
     }
 
@@ -679,14 +679,14 @@ protected:
         }
 
         _Newx -= _Xir;
-        if (_Newx < static_cast<typename _Swc_Traits::_UCy_t>(_Carry)) {
+        if (_Newx < static_cast<typename _Mytraits::_UCy_t>(_Carry)) {
             _Underflowed = true;
         }
 
         _Newx -= _Carry;
         if (_Underflowed) { // underflowed, so add _Mod
-            _Newx += _Swc_Traits::_Mod;
-            _Carry = _Swc_Traits::_Cy;
+            _Newx += _Mytraits::_Mod;
+            _Carry = _Mytraits::_Cy;
         } else {
             _Carry = 0;
         }
@@ -694,7 +694,7 @@ protected:
         this->_Ax[_Ix] = _Newx;
     }
 
-    typename _Swc_Traits::_Cy_t _Carry;
+    typename _Mytraits::_Cy_t _Carry;
 };
 
 template <class _Ty, _Ty _Mx, size_t _Nw>
@@ -770,8 +770,8 @@ class subtract_with_carry_engine
 private:
     static constexpr _Ty _Mx = static_cast<_Ty>((_Ty{1} << (_Wx - 1)) << 1);
 
-    using _Traits = _Swc_traits<_Ty, _Mx, _Rx>;
-    using _Mybase = _Swc_base<_Ty, _Sx, _Rx, _Traits>;
+    using _Mytraits = _Swc_traits<_Ty, _Mx, _Rx>;
+    using _Mybase   = _Swc_base<_Ty, _Sx, _Rx, _Mytraits>;
 
 public:
     _RNG_REQUIRE_UINTTYPE(subtract_with_carry_engine, _Ty);
@@ -813,12 +813,12 @@ public:
                 this->_Ax[_Ix] |= static_cast<_Ty>(_Arr[_Idx0 + _Jx]) << (32 * _Jx);
             }
 
-            if constexpr (_Traits::_Mod != 0) {
-                this->_Ax[_Ix] %= _Traits::_Mod;
+            if constexpr (_Mytraits::_Mod != 0) {
+                this->_Ax[_Ix] %= _Mytraits::_Mod;
             }
         }
 
-        this->_Carry = _Traits::_Reduce(this->_Ax);
+        this->_Carry = _Mytraits::_Reduce(this->_Ax);
         this->_Idx   = _Rx;
     }
 
@@ -878,7 +878,7 @@ public:
         basic_istream<_Elem, _Traits>& _Istr, subtract_with_carry_engine& _Eng) {
         constexpr auto _Nx = long_lag;
         result_type _Buffer[_Nx];
-        typename _Mybase::_Traits::_Cy_t _Carry_buf;
+        typename _Mytraits::_Cy_t _Carry_buf;
         const auto _Save_flags = _Istr.flags(ios_base::dec | ios_base::skipws);
         for (auto& _Val : _Buffer) {
             _Istr >> _Val;
