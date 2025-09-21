@@ -659,20 +659,6 @@ public:
         _Reset(_Gx, _Readcy);
     }
 
-    _NODISCARD result_type operator()() noexcept /* strengthened */ {
-        const auto _Ix = 2 * _Rx <= this->_Idx ? 0 : this->_Idx;
-        if (_Ix < _Sx) {
-            _Setx(_Ix, this->_Ax[_Ix + 2 * _Rx - _Sx], this->_Ax[_Ix + _Rx]);
-        } else if (_Ix < _Rx) {
-            _Setx(_Ix, this->_Ax[_Ix - _Sx], this->_Ax[_Ix + _Rx]);
-        } else {
-            _Setx(_Ix, this->_Ax[_Ix - _Sx], this->_Ax[_Ix - _Rx]);
-        }
-
-        this->_Idx = _Ix + 1;
-        return this->_Ax[_Ix];
-    }
-
     void discard(unsigned long long _Nskip) { // discard _Nskip elements
         for (; 0 < _Nskip; --_Nskip) {
             (void) (*this)();
@@ -873,8 +859,18 @@ public:
     }
 #endif // !_HAS_CXX20
 
-    _NODISCARD result_type operator()() {
-        return _Mybase::operator()();
+    _NODISCARD result_type operator()() noexcept /* strengthened */ {
+        const auto _Ix = 2 * _Rx <= this->_Idx ? 0 : this->_Idx;
+        if (_Ix < _Sx) {
+            _Setx(_Ix, this->_Ax[_Ix + 2 * _Rx - _Sx], this->_Ax[_Ix + _Rx]);
+        } else if (_Ix < _Rx) {
+            _Setx(_Ix, this->_Ax[_Ix - _Sx], this->_Ax[_Ix + _Rx]);
+        } else {
+            _Setx(_Ix, this->_Ax[_Ix - _Sx], this->_Ax[_Ix - _Rx]);
+        }
+
+        this->_Idx = _Ix + 1;
+        return this->_Ax[_Ix];
     }
 
     void discard(unsigned long long _Nskip) {
