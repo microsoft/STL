@@ -820,7 +820,7 @@ private:
     _Cy_t _Reduce() noexcept { // reduce values to allowed range
         if constexpr (_Mx != 0) {
             for (size_t _Ix = 0; _Ix < _Rx; ++_Ix) {
-                this->_Ax[_Ix] = this->_Ax[_Ix] % _Mx;
+                this->_Ax[_Ix] %= _Mx;
             }
         }
 
