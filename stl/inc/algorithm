@@ -6142,6 +6142,15 @@ private:
     static constexpr _Udiff _Bmask = static_cast<_Udiff>(-1) >> (_Udiff_bits - _Bits); // 2^_Bits - 1
 };
 
+template <class _Gen, class = void>
+constexpr bool _Has_static_min_max = false;
+
+// This checks a requirement of N4981 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
+// to implement the whole concept - we just need to distinguish Standard machinery from tr1 machinery.
+template <class _Gen>
+constexpr bool _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min) () < (_Gen::max) ()>::value)>> =
+    true;
+
 #if _HAS_CXX17
 template <class _PopIt, class _SampleIt, class _Diff, class _RngFn>
 _SampleIt _Sample_reservoir_unchecked(
