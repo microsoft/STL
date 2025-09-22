@@ -31,8 +31,10 @@ _STL_DISABLE_CLANG_WARNINGS
 // TRANSITION, non-_Ugly attribute tokens
 #pragma push_macro("msvc")
 #pragma push_macro("noop_dtor")
+#pragma push_macro("no_specializations")
 #undef msvc
 #undef noop_dtor
+#undef no_specializations
 
 _STD_BEGIN
 _EXPORT_STD enum class io_errc { // error codes for ios_base::failure
@@ -46,7 +48,7 @@ template <>
 struct is_error_code_enum<io_errc> : true_type {};
 
 _EXPORT_STD template <class _Ty>
-constexpr bool is_error_code_enum_v = is_error_code_enum<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool is_error_code_enum_v = is_error_code_enum<_Ty>::value;
 
 _EXPORT_STD template <class _Enum>
 struct is_error_condition_enum : false_type {};
@@ -55,7 +57,8 @@ template <>
 struct is_error_condition_enum<errc> : true_type {};
 
 _EXPORT_STD template <class _Ty>
-constexpr bool is_error_condition_enum_v = is_error_condition_enum<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool is_error_condition_enum_v =
+    is_error_condition_enum<_Ty>::value;
 
 _EXPORT_STD class error_code;
 _EXPORT_STD class error_condition;
@@ -733,6 +736,7 @@ _STD_END
 #endif // _HAS_CXX17
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("noop_dtor")
 #pragma pop_macro("msvc")
 
