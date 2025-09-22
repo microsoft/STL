@@ -1385,7 +1385,7 @@ static_assert(test_find());
 
 static_assert(test_count());
 
-#if defined(__clang__) && !defined(_DEBUG) || defined(__EDG__) // TRANSITION, VSO-2574489 and clang-cl running into conxtexpr limit
+#if defined(__clang__) && !defined(_DEBUG) || defined(__EDG__) // TRANSITION, VSO-2574489 and clang-cl conxtexpr limit
 static_assert(test_copy());
 #endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX20
