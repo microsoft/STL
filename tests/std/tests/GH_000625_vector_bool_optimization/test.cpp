@@ -1381,13 +1381,13 @@ static_assert(test_fill());
 
 #if !defined(__EDG__) || !defined(_DEBUG) // TRANSITION: bogus(?) EDG error
 static_assert(test_find());
-#endif // !defined(__EDG__) || !defined(_DEBUG)
+#endif // ^^^ no workaround ^^^
 
 static_assert(test_count());
 
-#if 0 // TRANSITION: GH-5720 and VSO-2574489
+#if defined(__clang__) && !defined(_DEBUG) || defined(__EDG__) // TRANSITION, VSO-2574489 and clang-cl running into conxtexpr limit
 static_assert(test_copy());
-#endif // 0
+#endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX20
 
 int main() {
