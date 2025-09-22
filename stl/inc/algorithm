@@ -6099,7 +6099,7 @@ public:
 
 private:
     _Udiff _Get_bits() { // return a random value within [0, _Bmask]
-        static constexpr auto _Urng_min = (_Urng::min) ();
+        constexpr auto _Urng_min = (_Urng::min) ();
         for (;;) { // repeat until random value is in range
             const _Udiff _Val = _Ref() - _Urng_min;
 
