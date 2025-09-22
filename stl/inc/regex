@@ -3340,10 +3340,14 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_rep(int _Min, int _Max, bool _Gre
         return;
     }
 
+    if (_Root->_Loops == static_cast<unsigned int>(-1)) {
+        _Xregex_error(regex_constants::error_space);
+    }
+
     _Node_end_rep* _Node0 = new _Node_end_rep();
-    _Node_rep* _Nx        = new _Node_rep(_Greedy, _Min, _Max, _Node0, _Root->_Loops++);
-    _Node0->_Begin_rep    = _Nx;
     _Link_node(_Node0);
+    _Node_rep* _Nx     = new _Node_rep(_Greedy, _Min, _Max, _Node0, _Root->_Loops++);
+    _Node0->_Begin_rep = _Nx;
     _Insert_node(_Pos, _Nx);
 }
 
