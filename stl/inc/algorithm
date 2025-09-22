@@ -6151,6 +6151,10 @@ template <class _Gen>
 constexpr bool _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min) () < (_Gen::max) ()>::value)>> =
     true;
 
+template <class _Diff, class _Urng>
+using _Rng_from_urng_v1_or_v2 =
+    conditional_t<_Has_static_min_max<_Urng>, _Rng_from_urng_v2<_Diff, _Urng>, _Rng_from_urng<_Diff, _Urng>>;
+
 #if _HAS_CXX17
 template <class _PopIt, class _SampleIt, class _Diff, class _RngFn>
 _SampleIt _Sample_reservoir_unchecked(
