@@ -359,100 +359,13 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     }
 }
 
-template <class _Uint_type, class _Gen, class _Real>
-bool _Nrand_for_tr1(
-    const uint64_t _Rd, const uint64_t _Rx, _Gen& _Gx, _Real& _Val, uint64_t& _Sx_init, uint64_t& _Factor_init) {
-    // Minimally-constexpr generate_canonical algorithm. Will save work and exit if _Factor would overflow.
-    _Uint_type _Sx             = _Sx_init;
-    _Uint_type _Factor         = _Factor_init;
-    const auto _Gxmin          = (_Gx.min)();
-    const auto _Overflow_limit = UINT64_MAX / _Rx;
-
-    _Uint_type _Xx    = 0;
-    _Uint_type _Limit = 0;
-    bool _Init        = false;
-    for (;;) {
-        while (_Factor < _Rd) {
-            if constexpr (is_same_v<_Uint_type, uint64_t>) {
-                if (_Factor > _Overflow_limit) {
-                    _Sx_init     = _Sx;
-                    _Factor_init = _Factor;
-                    return true;
-                }
-            }
-
-            _Sx += (_Gx() - _Gxmin) * _Factor;
-            _Factor *= _Rx;
-        }
-
-        if (!_Init) {
-            _Init  = true;
-            _Xx    = _Factor / _Rd;
-            _Limit = _Xx * _Rd;
-        }
-
-        if (_Sx < _Limit) {
-            break;
-        } else {
-            _Sx     = 0;
-            _Factor = 1;
-        }
-    }
-
-    _Val = static_cast<_Real>(static_cast<uint64_t>(_Sx / _Xx));
-    return false;
-}
-
 template <class _Real, class _Gen>
 _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from random sequence
     _RNG_REQUIRE_REALTYPE(_Nrand_impl, _Real);
 
     constexpr auto _Digits = static_cast<size_t>(numeric_limits<_Real>::digits);
 
-    if constexpr (_Has_static_min_max<_Gen>) {
-        return _STD generate_canonical<_Real, _Digits>(_Gx);
-    } else if constexpr (is_integral_v<typename _Gen::result_type>) {
-        // TRANSITION, for integral tr1 machinery only; Standard machinery can call generate_canonical directly
-        const auto _Gxmax = (_Gx.max)();
-        const auto _Gxmin = (_Gx.min)();
-        _Real _Val{0};
-
-        if (_Gxmax == UINT64_MAX && _Gxmin == 0) {
-            // special case when uint64_t can't hold the full URBG range
-            _Val = static_cast<_Real>(static_cast<uint64_t>(_Gx()) >> (64 - _Digits));
-        } else {
-            constexpr auto _Rd = 1ULL << _Digits;
-            const auto _Rx     = static_cast<uint64_t>(_Gxmax - _Gxmin) + 1;
-            uint64_t _Sx       = 0;
-            uint64_t _Factor   = 1;
-
-            // Try with 64 bits first, upgrade to 128 if necessary.
-            const bool _Would_overflow = _Nrand_for_tr1<uint64_t>(_Rd, _Rx, _Gx, _Val, _Sx, _Factor);
-            if (_Would_overflow) {
-                _Nrand_for_tr1<_Unsigned128>(_Rd, _Rx, _Gx, _Val, _Sx, _Factor);
-            }
-        }
-
-        return _STD ldexp(_Val, -static_cast<int>(_Digits));
-    } else {
-        // TRANSITION, the pre-P0952R2 algorithm, for non-integral tr1 machinery only (e.g. subtract_with_carry_01)
-        const _Real _Gxmin = static_cast<_Real>((_Gx.min)());
-        const _Real _Gxmax = static_cast<_Real>((_Gx.max)());
-        const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
-
-        const int _Ceil = static_cast<int>(_STD ceil(static_cast<_Real>(_Digits) / _STD log2(_Rx)));
-        const int _Kx   = _Ceil < 1 ? 1 : _Ceil;
-
-        _Real _Ans{0};
-        _Real _Factor{1};
-
-        for (int _Idx = 0; _Idx < _Kx; ++_Idx) { // add in another set of bits
-            _Ans += (static_cast<_Real>(_Gx()) - _Gxmin) * _Factor;
-            _Factor *= _Rx;
-        }
-
-        return _Ans / _Factor;
-    }
+    return _STD generate_canonical<_Real, _Digits>(_Gx);
 }
 
 template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
