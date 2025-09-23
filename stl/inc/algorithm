@@ -6112,7 +6112,7 @@ private:
     static constexpr size_t _Calc_bits() {
         auto _Bits_local  = _Udiff_bits;
         auto _Bmask_local = static_cast<_Udiff>(-1);
-        for (; (_Urng::max) () - (_Urng::min) () < _Bmask_local; _Bmask_local >>= 1) {
+        for (; static_cast<_Udiff>((_Urng::max) () - (_Urng::min) ()) < _Bmask_local; _Bmask_local >>= 1) {
             --_Bits_local;
         }
 
