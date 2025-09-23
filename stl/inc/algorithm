@@ -6061,7 +6061,7 @@ public:
         // l <- m mod 2^L
         auto _Rem = static_cast<_Udiff>(_Product) & _Mask;
 
-        if (_Rem < _Index) {
+        if (_Rem < static_cast<_Udiff>(_Index)) {
             // t <- (2^L - s) mod s
             const auto _Threshold = (_Mask - _Index + 1) % _Index;
             while (_Rem < _Threshold) {
