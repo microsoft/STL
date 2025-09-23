@@ -6133,7 +6133,7 @@ private:
             const auto _Low = _Base128::_UMul128(_Ret, static_cast<_Udiff>(_Index), _High);
             return _Uprod{_Low, _High};
         } else {
-            return _Uprod{_Ret} * _Uprod{_Index};
+            return _Uprod{_Ret} * static_cast<_Uprod>(_Index);
         }
     }
 
