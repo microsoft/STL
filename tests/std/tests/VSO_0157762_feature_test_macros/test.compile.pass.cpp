@@ -55,12 +55,6 @@ STATIC_ASSERT(__cpp_lib_associative_heterogeneous_erasure == 202110L);
 #error __cpp_lib_associative_heterogeneous_erasure is defined
 #endif
 
-#if _HAS_CXX23 && defined(__clang__)
-STATIC_ASSERT(__cpp_lib_is_implicit_lifetime == 202302L);
-#elif defined(__cpp_lib_is_implicit_lifetime)
-#error __cpp_lib_is_implicit_lifetime is defined
-#endif
-
 #if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_assume_aligned == 201811L);
 #elif defined(__cpp_lib_assume_aligned)
@@ -550,6 +544,12 @@ STATIC_ASSERT(__cpp_lib_is_constant_evaluated == 201811L);
 #endif
 
 STATIC_ASSERT(__cpp_lib_is_final == 201402L);
+
+#if _HAS_CXX23 && defined(__clang__) // TRANSITION, GH-5738 tracking VSO-2581622 (MSVC) and VSO-2581623 (EDG)
+STATIC_ASSERT(__cpp_lib_is_implicit_lifetime == 202302L);
+#elif defined(__cpp_lib_is_implicit_lifetime)
+#error __cpp_lib_is_implicit_lifetime is defined
+#endif
 
 #if _HAS_CXX17
 STATIC_ASSERT(__cpp_lib_is_invocable == 201703L);
