@@ -32,16 +32,6 @@ _STD_BEGIN
 template <class>
 constexpr bool _Always_false = false; // TRANSITION, needed by CUDA 12.4 in classes; see CWG-2518, VSO-2016422 (EDG)
 
-#if _HAS_CXX23 && defined(__clang__)
-
-_EXPORT_STD template <class _Ty>
-struct is_implicit_lifetime : bool_constant<__builtin_is_implicit_lifetime(_Ty)> {};
-
-_EXPORT_STD template <class _Ty>
-constexpr bool is_implicit_lifetime_v = __builtin_is_implicit_lifetime(_Ty);
-
-#endif // ^^^ _HAXCXX23 && __clang__
-
 template <bool _First_value, class _First, class... _Rest>
 struct _Conjunction { // handle false trait or last trait
     using type = _First;
@@ -730,6 +720,14 @@ struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_trivially_copyable : bool_constant<
 
 _EXPORT_STD template <class _Ty>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_trivially_copyable_v = __is_trivially_copyable(_Ty);
+
+#if _HAS_CXX23 && defined(__clang__) // TRANSITION, GH-5738 tracking VSO-2581622 (MSVC) and VSO-2581623 (EDG)
+_EXPORT_STD template <class _Ty>
+struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_implicit_lifetime : bool_constant<__builtin_is_implicit_lifetime(_Ty)> {};
+
+_EXPORT_STD template <class _Ty>
+_NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_implicit_lifetime_v = __builtin_is_implicit_lifetime(_Ty);
+#endif // ^^^ _HAS_CXX23 && defined(__clang__) ^^^
 
 _EXPORT_STD template <class _Ty>
 struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS has_virtual_destructor : bool_constant<__has_virtual_destructor(_Ty)> {
