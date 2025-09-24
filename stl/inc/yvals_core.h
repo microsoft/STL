@@ -1806,9 +1806,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // C++23
 #if _HAS_CXX23
-#ifdef __clang__ // Clang only for now
-#define __cpp_lib_is_implicit_lifetime 202302L
-#endif
 #define __cpp_lib_adaptor_iterator_pair_constructor 202106L
 #define __cpp_lib_allocate_at_least                 202302L
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
@@ -1827,36 +1824,41 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_generator                         202207L
 #define __cpp_lib_invoke_r                          202106L
 #define __cpp_lib_ios_noreplace                     202207L
-#define __cpp_lib_is_scoped_enum                    202011L
-#define __cpp_lib_mdspan                            202207L
-#define __cpp_lib_move_only_function                202110L
-#define __cpp_lib_out_ptr                           202311L
-#define __cpp_lib_print                             202406L
-#define __cpp_lib_ranges_as_const                   202311L
-#define __cpp_lib_ranges_as_rvalue                  202207L
-#define __cpp_lib_ranges_cartesian_product          202207L
-#define __cpp_lib_ranges_chunk                      202202L
-#define __cpp_lib_ranges_chunk_by                   202202L
-#define __cpp_lib_ranges_contains                   202207L
-#define __cpp_lib_ranges_enumerate                  202302L
-#define __cpp_lib_ranges_find_last                  202207L
-#define __cpp_lib_ranges_fold                       202207L
-#define __cpp_lib_ranges_iota                       202202L
-#define __cpp_lib_ranges_join_with                  202202L
-#define __cpp_lib_ranges_repeat                     202207L
-#define __cpp_lib_ranges_slide                      202202L
-#define __cpp_lib_ranges_starts_ends_with           202106L
-#define __cpp_lib_ranges_stride                     202207L
-#define __cpp_lib_ranges_to_container               202202L
-#define __cpp_lib_ranges_zip                        202110L
-#define __cpp_lib_spanstream                        202106L
-#define __cpp_lib_stacktrace                        202011L
-#define __cpp_lib_stdatomic_h                       202011L
-#define __cpp_lib_string_contains                   202011L
-#define __cpp_lib_string_resize_and_overwrite       202110L
-#define __cpp_lib_to_underlying                     202102L
-#define __cpp_lib_tuple_like                        202207L
-#define __cpp_lib_unreachable                       202202L
+
+#ifdef __clang__ // TRANSITION, GH-5738 tracking VSO-2581622 (MSVC) and VSO-2581623 (EDG)
+#define __cpp_lib_is_implicit_lifetime 202302L
+#endif // ^^^ no workaround ^^^
+
+#define __cpp_lib_is_scoped_enum              202011L
+#define __cpp_lib_mdspan                      202207L
+#define __cpp_lib_move_only_function          202110L
+#define __cpp_lib_out_ptr                     202311L
+#define __cpp_lib_print                       202406L
+#define __cpp_lib_ranges_as_const             202311L
+#define __cpp_lib_ranges_as_rvalue            202207L
+#define __cpp_lib_ranges_cartesian_product    202207L
+#define __cpp_lib_ranges_chunk                202202L
+#define __cpp_lib_ranges_chunk_by             202202L
+#define __cpp_lib_ranges_contains             202207L
+#define __cpp_lib_ranges_enumerate            202302L
+#define __cpp_lib_ranges_find_last            202207L
+#define __cpp_lib_ranges_fold                 202207L
+#define __cpp_lib_ranges_iota                 202202L
+#define __cpp_lib_ranges_join_with            202202L
+#define __cpp_lib_ranges_repeat               202207L
+#define __cpp_lib_ranges_slide                202202L
+#define __cpp_lib_ranges_starts_ends_with     202106L
+#define __cpp_lib_ranges_stride               202207L
+#define __cpp_lib_ranges_to_container         202202L
+#define __cpp_lib_ranges_zip                  202110L
+#define __cpp_lib_spanstream                  202106L
+#define __cpp_lib_stacktrace                  202011L
+#define __cpp_lib_stdatomic_h                 202011L
+#define __cpp_lib_string_contains             202011L
+#define __cpp_lib_string_resize_and_overwrite 202110L
+#define __cpp_lib_to_underlying               202102L
+#define __cpp_lib_tuple_like                  202207L
+#define __cpp_lib_unreachable                 202202L
 #endif // _HAS_CXX23
 
 // macros with language mode sensitivity
