@@ -396,7 +396,7 @@
 // P2604R0 mdspan: data_handle_type, data_handle(), exhaustive
 // P2613R1 mdspan: empty()
 // P2652R2 Disallowing User Specialization Of allocator_traits
-// P2674R1 A trait for implicit lifetime types
+// P2674R1 is_implicit_lifetime
 // P2693R1 Formatting thread::id And stacktrace
 // P2713R1 Escaping Improvements In std::format
 // P2763R1 Fixing layout_stride's Default Constructor For Fully Static Extents
