@@ -565,9 +565,6 @@ std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.
 std/utilities/tuple/tuple.tuple/tuple.cnstr/PR20855_tuple_ref_binding_diagnostics.pass.cpp:0 FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/PR20855_tuple_ref_binding_diagnostics.pass.cpp:1 FAIL
 
-# P2674R1 is_implicit_lifetime
-std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp FAIL
-
 # P2944R3 Comparisons For reference_wrapper
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.const_ref.pass.cpp FAIL
@@ -583,7 +580,9 @@ std/utilities/optional/optional.iterator/iterator.pass.cpp FAIL
 
 # *** MISSING COMPILER FEATURES ***
 
-# None!
+# VSO-2581622 C1XX should implement `__builtin_is_implicit_lifetime`
+std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:1 FAIL
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
@@ -976,6 +975,9 @@ std/containers/sequences/vector/trivial_relocation.pass.cpp:1 FAIL
 
 # Not analyzed, likely bogus test. constexpr fails with "vector iterators incompatible".
 std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.default.pass.cpp FAIL
+
+# Not analyzed, likely bogus test. Expects tuple<int, float> to be an implicit-lifetime class type.
+std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:2 FAIL
 
 
 # *** LIKELY STL BUGS ***
