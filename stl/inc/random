@@ -1979,6 +1979,7 @@ private:
                 _Yx0 = 0;
                 _Yx1 = 0;
             }
+
             if (_Nfix == 1 || _Rx - _Yx0 <= _Yx0 / _Nx) {
                 break; // also works if _Rx == 0 (_Mx == all bits)
             }
