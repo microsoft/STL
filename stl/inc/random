@@ -1891,29 +1891,27 @@ public:
     }
 
     _NODISCARD result_type operator()() {
-        size_t _Idx       = 0;
-        result_type _Res  = 0;
         result_type _Mask = ((result_type{1} << (_Wx0 - 1)) << 1) - 1;
         _Eres _Val;
 
+        do { // get a small enough value
+            _Val = _Eng() - (_Engine::min) ();
+        } while (_Val > _Yx0);
+        result_type _Res = static_cast<result_type>(_Val) & _Mask;
+
+        size_t _Idx = 1;
         for (; _Idx < _Nx0; ++_Idx) { // pack _Wx0-bit values
-            for (;;) { // get a small enough value
+            do {
                 _Val = _Eng() - (_Engine::min) ();
-                if (_Val <= _Yx0) {
-                    break;
-                }
-            }
+            } while (_Val > _Yx0);
             _Res = _Res << _Wx0 | (static_cast<result_type>(_Val) & _Mask);
         }
 
         _Mask = _Mask << 1 | 1;
         for (; _Idx < _Nx; ++_Idx) { // pack _Wx0+1-bit values
-            for (;;) { // get a small enough value
+            do {
                 _Val = _Eng() - (_Engine::min) ();
-                if (_Val <= _Yx1) {
-                    break;
-                }
-            }
+            } while (_Val > _Yx1);
             _Res = _Res << (_Wx0 + 1) | (static_cast<result_type>(_Val) & _Mask);
         }
         return _Res;
@@ -1965,8 +1963,14 @@ private:
             _Nx  = (_Wx + _Mx - 1) / _Mx + _Nfix; // trial _Nx
             _Wx0 = _Wx / _Nx;
             _Nx0 = _Nx - _Wx % _Nx;
-            _Yx0 = (_Rx >> _Wx0) << _Wx0;
-            _Yx1 = (((_Rx >> _Wx0) >> 1) << _Wx0) << 1;
+            if (_Wx0 < sizeof(_Eres) * CHAR_BIT) {
+                _Yx0 = (_Rx >> _Wx0) << _Wx0;
+                _Yx1 = (((_Rx >> _Wx0) >> 1) << _Wx0) << 1;
+            } else {
+                _Yx0 = 0;
+                _Yx1 = 0;
+            }
+
             if (_Nfix == 1 || _Rx - _Yx0 <= _Yx0 / _Nx) {
                 break; // also works if _Rx == 0 (_Mx == all bits)
             }
