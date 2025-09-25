@@ -31,6 +31,12 @@ struct StringAggregateWithUserProvidedDestructor {
 
 class NonAggregateWithTrivialCtorAndTrivialDtor {
 public:
+    NonAggregateWithTrivialCtorAndTrivialDtor()  = default;
+    ~NonAggregateWithTrivialCtorAndTrivialDtor() = default;
+
+    NonAggregateWithTrivialCtorAndTrivialDtor(const NonAggregateWithTrivialCtorAndTrivialDtor&)            = delete;
+    NonAggregateWithTrivialCtorAndTrivialDtor& operator=(const NonAggregateWithTrivialCtorAndTrivialDtor&) = delete;
+
     void set_num(int x) {
         num = x;
     }
@@ -44,6 +50,12 @@ private:
 
 class NonAggregateWithNonTrivialCtor {
 public:
+    NonAggregateWithNonTrivialCtor()  = default;
+    ~NonAggregateWithNonTrivialCtor() = default;
+
+    NonAggregateWithNonTrivialCtor(const NonAggregateWithNonTrivialCtor&)            = delete;
+    NonAggregateWithNonTrivialCtor& operator=(const NonAggregateWithNonTrivialCtor&) = delete;
+
     void set_num(int x) {
         num = x;
     }
@@ -58,6 +70,11 @@ private:
 class NonAggregateWithUserProvidedCtor {
 public:
     NonAggregateWithUserProvidedCtor() {}
+    ~NonAggregateWithUserProvidedCtor() = default;
+
+    NonAggregateWithUserProvidedCtor(const NonAggregateWithUserProvidedCtor&)            = delete;
+    NonAggregateWithUserProvidedCtor& operator=(const NonAggregateWithUserProvidedCtor&) = delete;
+
     void set_num(int x) {
         num = x;
     }
@@ -71,7 +88,12 @@ private:
 
 class NonAggregateWithDeletedDtor {
 public:
+    NonAggregateWithDeletedDtor()  = default;
     ~NonAggregateWithDeletedDtor() = delete;
+
+    NonAggregateWithDeletedDtor(const NonAggregateWithDeletedDtor&)            = delete;
+    NonAggregateWithDeletedDtor& operator=(const NonAggregateWithDeletedDtor&) = delete;
+
     void set_num(int x) {
         num = x;
     }
@@ -85,7 +107,12 @@ private:
 
 class NonAggregateWithUserProvidedDtor {
 public:
+    NonAggregateWithUserProvidedDtor() = default;
     ~NonAggregateWithUserProvidedDtor() {}
+
+    NonAggregateWithUserProvidedDtor(const NonAggregateWithUserProvidedDtor&)            = delete;
+    NonAggregateWithUserProvidedDtor& operator=(const NonAggregateWithUserProvidedDtor&) = delete;
+
     void set_num(int x) {
         num = x;
     }
