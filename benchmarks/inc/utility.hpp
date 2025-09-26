@@ -13,12 +13,11 @@
 template <class Contained, template <class> class Alloc = std::allocator>
 std::vector<Contained, Alloc<Contained>> random_vector(size_t n) {
     std::vector<Contained, Alloc<Contained>> res(n);
+    std::mt19937_64 prng;
 
     if constexpr (std::is_same_v<Contained, bool>) {
-        std::mt19937 prng;
         std::generate(res.begin(), res.end(), [&prng] { return static_cast<bool>(prng() & 1); });
     } else {
-        std::mt19937_64 prng;
 // Here, the type Contained can be char, int, aggregate<Data>, or non_trivial<Data> where Data is char or int.
 // (aggregate<Data> and non_trivial<Data> are defined in udt.hpp.)
 // static_cast<Contained> silences truncation warnings when Contained is directly char or int,
