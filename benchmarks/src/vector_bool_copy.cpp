@@ -14,7 +14,7 @@ using namespace std;
 
 void copy_block_aligned(benchmark::State& state) {
     const auto size     = static_cast<size_t>(state.range(0));
-    vector<bool> source = random_bool_vector(size);
+    vector<bool> source = random_vector<bool>(size);
     vector<bool> dest(size, false);
 
     for (auto _ : state) {
@@ -26,7 +26,7 @@ void copy_block_aligned(benchmark::State& state) {
 
 void copy_source_misaligned(benchmark::State& state) {
     const auto size     = static_cast<size_t>(state.range(0));
-    vector<bool> source = random_bool_vector(size);
+    vector<bool> source = random_vector<bool>(size);
     vector<bool> dest(size, false);
 
     for (auto _ : state) {
@@ -38,7 +38,7 @@ void copy_source_misaligned(benchmark::State& state) {
 
 void copy_dest_misaligned(benchmark::State& state) {
     const auto size     = static_cast<size_t>(state.range(0));
-    vector<bool> source = random_bool_vector(size);
+    vector<bool> source = random_vector<bool>(size);
     vector<bool> dest(size, false);
 
     for (auto _ : state) {
@@ -51,7 +51,7 @@ void copy_dest_misaligned(benchmark::State& state) {
 // Special benchmark for matching char alignment
 void copy_matching_alignment(benchmark::State& state) {
     const auto size     = static_cast<size_t>(state.range(0));
-    vector<bool> source = random_bool_vector(size);
+    vector<bool> source = random_vector<bool>(size);
     vector<bool> dest(size, false);
 
     for (auto _ : state) {
@@ -63,7 +63,7 @@ void copy_matching_alignment(benchmark::State& state) {
 
 // Special benchmarks for single block corner case
 void copy_both_single_blocks(benchmark::State& state) {
-    vector<bool> source = random_bool_vector(50);
+    vector<bool> source = random_vector<bool>(50);
     vector<bool> dest(50, false);
 
     const size_t length = 20;
@@ -75,7 +75,7 @@ void copy_both_single_blocks(benchmark::State& state) {
 }
 
 void copy_source_single_block(benchmark::State& state) {
-    vector<bool> source = random_bool_vector(50);
+    vector<bool> source = random_vector<bool>(50);
     vector<bool> dest(50, false);
 
     const size_t length = 20;
@@ -87,7 +87,7 @@ void copy_source_single_block(benchmark::State& state) {
 }
 
 void copy_dest_single_block(benchmark::State& state) {
-    vector<bool> source = random_bool_vector(50);
+    vector<bool> source = random_vector<bool>(50);
     vector<bool> dest(50, false);
 
     const size_t length = 20;
