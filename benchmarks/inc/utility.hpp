@@ -15,9 +15,8 @@ std::vector<Contained, Alloc<Contained>> random_vector(size_t n) {
     std::vector<Contained, Alloc<Contained>> res(n);
 
     if constexpr (std::is_same_v<Contained, bool>) {
-        std::mt19937 gen;
-        std::bernoulli_distribution dist{0.5};
-        std::generate(res.begin(), res.end(), [&] { return dist(gen); });
+        std::mt19937 prng;
+        std::generate(res.begin(), res.end(), [&prng] { return static_cast<bool>(prng() & 1); });
     } else {
         std::mt19937_64 prng;
 // Here, the type Contained can be char, int, aggregate<Data>, or non_trivial<Data> where Data is char or int.
