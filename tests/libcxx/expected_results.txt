@@ -61,6 +61,9 @@ std/language.support/support.exception/except.nested/ctor_default.pass.cpp:2 SKI
 # SKIPPED because this is ARM64EC-specific.
 std/language.support/support.coroutines/coroutine.handle/coroutine.handle.noop/noop_coroutine.pass.cpp:2 SKIPPED
 
+# LLVM-160627: [libc++][test] Guard non-guaranteed implicit-lifetime-ness cases with _LIBCPP_VERSION
+std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:2 FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -565,9 +568,6 @@ std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.
 std/utilities/tuple/tuple.tuple/tuple.cnstr/PR20855_tuple_ref_binding_diagnostics.pass.cpp:0 FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/PR20855_tuple_ref_binding_diagnostics.pass.cpp:1 FAIL
 
-# P2674R1 is_implicit_lifetime
-std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp FAIL
-
 # P2944R3 Comparisons For reference_wrapper
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.const_ref.pass.cpp FAIL
@@ -583,7 +583,9 @@ std/utilities/optional/optional.iterator/iterator.pass.cpp FAIL
 
 # *** MISSING COMPILER FEATURES ***
 
-# None!
+# VSO-2581622 C1XX should implement `__builtin_is_implicit_lifetime`
+std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:1 FAIL
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
