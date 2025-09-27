@@ -13,9 +13,9 @@
 #include <vector>
 
 #if _HAS_CXX20
-#define TEST_CONSTEXPR constexpr
+#define CONSTEXPR20 constexpr
 #else
-#define TEST_CONSTEXPR
+#define CONSTEXPR20
 #endif
 
 #pragma warning(disable : 4365) // conversion from 'unsigned __int64' to 'const __int64', signed/unsigned mismatch
@@ -45,7 +45,7 @@ constexpr bool source_raw[] = { //
     true, false, true, false, true, true, true, false, //
     true, false, true, false, true, true, true, false};
 
-TEST_CONSTEXPR void test_fill_helper(const size_t length) {
+CONSTEXPR20 void test_fill_helper(const size_t length) {
     // No offset
     {
         vector<bool> result_true(length, true);
@@ -107,7 +107,7 @@ TEST_CONSTEXPR void test_fill_helper(const size_t length) {
     }
 }
 
-TEST_CONSTEXPR bool test_fill() {
+CONSTEXPR20 bool test_fill() {
     // Empty
     test_fill_helper(0);
 
@@ -131,7 +131,7 @@ TEST_CONSTEXPR bool test_fill() {
     return true;
 }
 
-TEST_CONSTEXPR void test_find_helper(const size_t length) {
+CONSTEXPR20 void test_find_helper(const size_t length) {
     // No offset
     {
         vector<bool> input_true(length + 3, false);
@@ -165,7 +165,7 @@ TEST_CONSTEXPR void test_find_helper(const size_t length) {
     }
 }
 
-TEST_CONSTEXPR bool test_find() {
+CONSTEXPR20 bool test_find() {
     // Empty range
     test_find_helper(0);
 
@@ -183,7 +183,7 @@ TEST_CONSTEXPR bool test_find() {
     return true;
 }
 
-TEST_CONSTEXPR void test_count_helper(const ptrdiff_t length) {
+CONSTEXPR20 void test_count_helper(const ptrdiff_t length) {
     const vector<bool> source(begin(source_raw), end(source_raw));
     const int counts_true[]  = {0, 1, 1, 2, 2, 3, 4, 5};
     const int counts_false[] = {0, 0, 1, 1, 2, 2, 2, 2};
@@ -209,7 +209,7 @@ TEST_CONSTEXPR void test_count_helper(const ptrdiff_t length) {
     }
 }
 
-TEST_CONSTEXPR bool test_count() {
+CONSTEXPR20 bool test_count() {
     // Empty range
     test_count_helper(0);
 
@@ -265,7 +265,7 @@ void test_huge_vector_bool() {
     assert(count(v.begin(), v.end(), false) == large_bit_diff - 3);
 }
 
-TEST_CONSTEXPR void test_copy_no_offset(const size_t length) {
+CONSTEXPR20 void test_copy_no_offset(const size_t length) {
     vector<bool> result;
     switch (length) {
     case 3:
@@ -349,7 +349,7 @@ TEST_CONSTEXPR void test_copy_no_offset(const size_t length) {
     }
 }
 
-TEST_CONSTEXPR void test_copy_offset_source(const size_t length) {
+CONSTEXPR20 void test_copy_offset_source(const size_t length) {
     vector<bool> result;
     switch (length) {
     case 3:
@@ -437,7 +437,7 @@ TEST_CONSTEXPR void test_copy_offset_source(const size_t length) {
     }
 }
 
-TEST_CONSTEXPR void test_copy_offset_dest(const size_t length) {
+CONSTEXPR20 void test_copy_offset_dest(const size_t length) {
     vector<bool> result;
     switch (length) {
     case 3:
@@ -529,7 +529,7 @@ TEST_CONSTEXPR void test_copy_offset_dest(const size_t length) {
     }
 }
 
-TEST_CONSTEXPR void test_copy_offset_match(const size_t length) {
+CONSTEXPR20 void test_copy_offset_match(const size_t length) {
     vector<bool> result;
     switch (length) {
     case 3:
@@ -622,7 +622,7 @@ TEST_CONSTEXPR void test_copy_offset_match(const size_t length) {
     }
 }
 
-TEST_CONSTEXPR void test_copy_offset_mismatch_leftshift(const size_t length) {
+CONSTEXPR20 void test_copy_offset_mismatch_leftshift(const size_t length) {
     vector<bool> result;
     switch (length) {
     case 3:
@@ -715,7 +715,7 @@ TEST_CONSTEXPR void test_copy_offset_mismatch_leftshift(const size_t length) {
     }
 }
 
-TEST_CONSTEXPR void test_copy_offset_mismatch_rightshift(const size_t length) {
+CONSTEXPR20 void test_copy_offset_mismatch_rightshift(const size_t length) {
     vector<bool> result;
     switch (length) {
     case 3:
@@ -810,7 +810,7 @@ TEST_CONSTEXPR void test_copy_offset_mismatch_rightshift(const size_t length) {
     }
 }
 
-TEST_CONSTEXPR void test_copy_offset_aligned(const size_t length) {
+CONSTEXPR20 void test_copy_offset_aligned(const size_t length) {
     vector<bool> result;
     switch (length) {
     case 3:
@@ -903,7 +903,7 @@ TEST_CONSTEXPR void test_copy_offset_aligned(const size_t length) {
     }
 }
 
-TEST_CONSTEXPR void test_copy_sub_char() {
+CONSTEXPR20 void test_copy_sub_char() {
     const vector<bool> source(begin(source_raw), end(source_raw));
 
     { // sub char copy unaligned
@@ -1114,7 +1114,7 @@ TEST_CONSTEXPR void test_copy_sub_char() {
     }
 }
 
-TEST_CONSTEXPR void test_copy_regression() {
+CONSTEXPR20 void test_copy_regression() {
     // This specific case was found by the randomized coverage below.
     const vector<bool> src = {0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0,
         1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0,
@@ -1137,7 +1137,7 @@ TEST_CONSTEXPR void test_copy_regression() {
     assert(dst == correct);
 }
 
-TEST_CONSTEXPR bool test_copy() {
+CONSTEXPR20 bool test_copy() {
     test_copy_no_offset(3);
     test_copy_no_offset(8);
     test_copy_no_offset(22);
