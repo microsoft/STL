@@ -1137,7 +1137,8 @@ CONSTEXPR20 void test_copy_regression() {
     assert(dst == correct);
 }
 
-CONSTEXPR20 bool test_copy() {
+// Test copy() in multiple parts to stay within constexpr step limits.
+CONSTEXPR20 bool test_copy_part_1() {
     test_copy_no_offset(3);
     test_copy_no_offset(8);
     test_copy_no_offset(22);
@@ -1166,6 +1167,10 @@ CONSTEXPR20 bool test_copy() {
     test_copy_offset_match(32);
     test_copy_offset_match(67);
 
+    return true;
+}
+
+CONSTEXPR20 bool test_copy_part_2() {
     test_copy_offset_mismatch_leftshift(3);
     test_copy_offset_mismatch_leftshift(8);
     test_copy_offset_mismatch_leftshift(22);
@@ -1381,8 +1386,9 @@ static_assert(test_fill());
 static_assert(test_find());
 static_assert(test_count());
 
-#if defined(__clang__) && !defined(_DEBUG) || defined(__EDG__) // TRANSITION, VSO-2574489 and clang-cl constexpr limit
-static_assert(test_copy());
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2574489
+static_assert(test_copy_part_1());
+static_assert(test_copy_part_2());
 #endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX20
 
@@ -1390,7 +1396,8 @@ int main() {
     test_fill();
     test_find();
     test_count();
-    test_copy();
+    test_copy_part_1();
+    test_copy_part_2();
 
     test_huge_vector_bool();
 
