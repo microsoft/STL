@@ -15,7 +15,7 @@
 #if _HAS_CXX20
 #define CONSTEXPR20 constexpr
 #else
-#define CONSTEXPR20
+#define CONSTEXPR20 inline
 #endif
 
 #pragma warning(disable : 4365) // conversion from 'unsigned __int64' to 'const __int64', signed/unsigned mismatch
