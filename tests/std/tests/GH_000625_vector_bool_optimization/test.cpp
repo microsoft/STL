@@ -1378,11 +1378,7 @@ static_assert(test_gh_5345<120>());
 static_assert(test_gh_5345<120, 31>());
 
 static_assert(test_fill());
-
-#if !defined(__EDG__) || !defined(_DEBUG) // TRANSITION: bogus(?) EDG error
 static_assert(test_find());
-#endif // ^^^ no workaround ^^^
-
 static_assert(test_count());
 
 #if defined(__clang__) && !defined(_DEBUG) || defined(__EDG__) // TRANSITION, VSO-2574489 and clang-cl constexpr limit
