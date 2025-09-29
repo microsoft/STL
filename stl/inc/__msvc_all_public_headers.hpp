@@ -30,7 +30,6 @@
 
 #define _SILENCE_CXX20_CISO646_REMOVED_WARNING
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
-#define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
 // Core STL Headers
 #include <bit>
@@ -90,8 +89,6 @@
 #include <fstream>
 #include <functional>
 #include <generator>
-#include <hash_map>
-#include <hash_set>
 #include <iomanip>
 #include <ios>
 #include <iosfwd>
