@@ -13,11 +13,11 @@
 #include <vector>
 #include <xbit_ops.h>
 
-#ifdef _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
+#ifdef _LEGACY_CODE_ASSUMES_XHASH_INCLUDES_XSTRING
 #include <cstring>
 #include <cwchar>
 #include <xstring>
-#endif // _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
+#endif // _LEGACY_CODE_ASSUMES_XHASH_INCLUDES_XSTRING
 
 #if _HAS_CXX17
 #include <xnode_handle.h>
