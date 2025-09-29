@@ -172,7 +172,13 @@ namespace test_mismatch_sizes_and_alignments {
 
     template <class T, size_t Size, size_t PadSize>
     char stack_array_various_alignments_impl() {
-#if defined(__clang__) && __has_feature(undefined_behavior_sanitizer)
+#ifdef __clang__
+#if __has_feature(undefined_behavior_sanitizer)
+#define TESTING_UBSAN
+#endif
+#endif
+
+#ifdef TESTING_UBSAN
         // Avoid testing misaligned inputs, which UBSan would reject.
 #else // ^^^ UBSan / no UBSan vvv
         with_pad<T, Size + 1, PadSize + 1> a = {};
