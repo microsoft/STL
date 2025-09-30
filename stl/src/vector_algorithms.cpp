@@ -3183,7 +3183,6 @@ namespace {
                     _Advance_bytes(_First, 32);
                 } while (_First != _Stop_at);
 
-
                 if (const size_t _Tail = _Length & 0x1C; _Tail != 0) {
                     const __m256i _Tail_mask = _Avx2_tail_mask_32(_Tail);
                     const __m256i _Data      = _mm256_maskload_epi32(reinterpret_cast<const int*>(_First), _Tail_mask);
