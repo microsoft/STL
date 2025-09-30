@@ -270,9 +270,7 @@ protected:
     using _Node               = typename _Mylist::_Node;
     using _Nodeptr            = typename _Mylist::_Nodeptr;
     using _Mutable_value_type = typename _Traits::_Mutable_value_type;
-
-    using _Key_compare   = typename _Traits::key_compare;
-    using _Value_compare = typename _Traits::value_compare;
+    using _Key_compare        = typename _Traits::key_compare;
 
 public:
     using key_type = typename _Traits::key_type;
@@ -1132,12 +1130,6 @@ private:
         const _Nodeptr _Bucket_hi = _Vec._Mypair._Myval2._Myfirst[(_Bucket << 1) + 1]._Ptr;
         for (;;) {
             if (!_Traitsobj(_Traits::_Kfn(_Where->_Myval), _Keyval)) {
-                if constexpr (!_Traits::_Standard) {
-                    if (_Traitsobj(_Keyval, _Traits::_Kfn(_Where->_Myval))) {
-                        return _End;
-                    }
-                }
-
                 return _Where;
             }
 
@@ -1241,12 +1233,6 @@ private:
         const _Unchecked_const_iterator _Bucket_hi = _Vec._Mypair._Myval2._Myfirst[(_Bucket << 1) + 1];
         for (; _Traitsobj(_Traits::_Kfn(*_Where), _Keyval); ++_Where) {
             if (_Where == _Bucket_hi) {
-                return {_End, _End, 0};
-            }
-        }
-
-        if constexpr (!_Traits::_Standard) {
-            if (_Traitsobj(_Keyval, _Traits::_Kfn(*_Where))) {
                 return {_End, _End, 0};
             }
         }
@@ -1529,14 +1515,8 @@ protected:
 
         const _Nodeptr _Bucket_lo = _Vec._Mypair._Myval2._Myfirst[_Bucket << 1]._Ptr;
         for (;;) {
-            // Search backwards to maintain sorted [_Bucket_lo, _Bucket_hi] when !_Standard
+            // Search backwards for historical reasons
             if (!_Traitsobj(_Keyval, _Traits::_Kfn(_Where->_Myval))) {
-                if constexpr (!_Traits::_Standard) {
-                    if (_Traitsobj(_Traits::_Kfn(_Where->_Myval), _Keyval)) {
-                        return {_Where->_Next, _Nodeptr{}};
-                    }
-                }
-
                 return {_Where->_Next, _Where};
             }
 
@@ -1554,12 +1534,6 @@ protected:
         // if _Hint points to an element equivalent to _Keyval, returns _Hint; otherwise,
         // returns _Find_last(_Keyval, _Hashval)
         if (_Hint != _List._Mypair._Myval2._Myhead && !_Traitsobj(_Traits::_Kfn(_Hint->_Myval), _Keyval)) {
-            if constexpr (!_Traits::_Standard) {
-                if (_Traitsobj(_Keyval, _Traits::_Kfn(_Hint->_Myval))) {
-                    return _Find_last(_Keyval, _Hashval);
-                }
-            }
-
             return {_Hint->_Next, _Hint};
         }
 
@@ -1697,7 +1671,7 @@ protected:
             const size_type _Bucket = bucket(_Inserted_key);
 
             // _Bucket_lo and _Bucket_hi are the *inclusive* range of elements in the bucket, or _Unchecked_end() if
-            // the bucket is empty; if !_Standard then [_Bucket_lo, _Bucket_hi] is a sorted range.
+            // the bucket is empty.
             _Unchecked_iterator& _Bucket_lo = _Vec._Mypair._Myval2._Myfirst[_Bucket << 1];
             _Unchecked_iterator& _Bucket_hi = _Vec._Mypair._Myval2._Myfirst[(_Bucket << 1) + 1];
 
@@ -1723,13 +1697,11 @@ protected:
             }
 
             // The insertion point isn't *_Bucket_hi, so search [_Bucket_lo, _Bucket_hi) for insertion point; we
-            // go backwards to maintain sortedness when !_Standard.
+            // go backwards for historical reasons.
             for (;;) {
                 if (_Bucket_lo == _Insert_before) {
                     // There are no equivalent keys in the bucket, so insert it at the beginning.
-                    // Element can't be already in position here because:
-                    // * (for !_Standard) _Inserted_key < *_Insert_before or
-                    // * (for _Standard) _Inserted_key != *_Insert_before
+                    // Element can't be already in position here because _Inserted_key != *_Insert_before
                     _Mylist::_Scary_val::_Unchecked_splice(_Insert_before._Ptr, _Inserted._Ptr, _Next_inserted._Ptr);
                     _Bucket_lo = _Inserted;
                     break;
@@ -1796,21 +1768,7 @@ protected:
             }
         }
 
-        _Unchecked_const_iterator _Left_stop_at;
-        if constexpr (_Traits::_Standard) {
-            _Left_stop_at = _Unchecked_end();
-        } else {
-            // check the first elements for equivalence when !_Standard
-            if (_Right._Traitsobj(_Keyval, _Traits::_Kfn(*_First2))) {
-                return {};
-            }
-
-            const size_t _LHashval   = _Traitsobj(_Keyval);
-            const size_type _LBucket = _LHashval & _Mask;
-            const auto _LBucket_hi   = _Vec._Mypair._Myval2._Myfirst[(_LBucket << 1) + 1];
-            _Left_stop_at            = _LBucket_hi;
-            ++_Left_stop_at;
-        }
+        _Unchecked_const_iterator _Left_stop_at = _Unchecked_end();
 
         // trim matching prefixes
         while (*_First1 == *_First2) {
@@ -1905,27 +1863,6 @@ public:
             _Unchecked_const_iterator _Where           = _Vec._Mypair._Myval2._Myfirst[_Bucket << 1];
             const _Unchecked_const_iterator _Bucket_hi = _Vec._Mypair._Myval2._Myfirst[(_Bucket << 1) + 1];
             if (_Where != _End) {
-                // check that the bucket is sorted for legacy hash_meow:
-                if constexpr (!_Traits::_Standard) {
-                    if (_Where != _Bucket_hi) {
-                        auto _SFirst = _Where;
-                        auto _SNext  = _Where;
-                        for (;;) {
-                            ++_SNext;
-                            if constexpr (_Traits::_Multi) {
-                                _STL_INTERNAL_CHECK(!_Traitsobj(_Traits::_Kfn(*_SNext), _Traits::_Kfn(*_SFirst)));
-                            } else {
-                                _STL_INTERNAL_CHECK(_Traitsobj(_Traits::_Kfn(*_SFirst), _Traits::_Kfn(*_SNext)));
-                            }
-
-                            if (_SNext == _Bucket_hi) {
-                                break;
-                            }
-
-                            _SFirst = _SNext;
-                        }
-                    }
-                }
                 // check that all the elements in the bucket belong in the bucket:
                 for (;;) {
                     ++_Elements;
