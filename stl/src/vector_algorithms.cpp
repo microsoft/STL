@@ -3279,8 +3279,8 @@ namespace {
                     _Mid1 = static_cast<const _Ty*>(_First);
 
                     unsigned long _Carry_pos;
-                    // CodeQL [SM02313] _Carry_pos is always initialized: (_Carry ^ 0xFFFF) != 0 because if it was,
-                    // _Carry would have been 0xFFFF, which would be a match.
+                    // Here, _Carry can't be 0xFFFF, because that would have been a match. Therefore:
+                    // CodeQL [SM02313] _Carry_pos is always initialized: `(_Carry ^ 0xFFFF) != 0` is always true.
                     _BitScanReverse(&_Carry_pos, _Carry ^ 0xFFFF);
                     _Rewind_bytes(_First, 15 - static_cast<ptrdiff_t>(_Carry_pos));
                 }
