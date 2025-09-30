@@ -3278,11 +3278,11 @@ namespace {
 
                     _Mid1 = static_cast<const _Ty*>(_First);
 
-                    unsigned long _Cary_pos;
-                    // CodeQL [SM02313] _Cary_pos is always initialized: (_Carry ^ 0xFFFF) != 0 because if it was,
+                    unsigned long _Carry_pos;
+                    // CodeQL [SM02313] _Carry_pos is always initialized: (_Carry ^ 0xFFFF) != 0 because if it was,
                     // _Carry would have been 0xFFFF, which would be a match.
-                    _BitScanReverse(&_Cary_pos, _Carry ^ 0xFFFF);
-                    _Rewind_bytes(_First, 15 - static_cast<ptrdiff_t>(_Cary_pos));
+                    _BitScanReverse(&_Carry_pos, _Carry ^ 0xFFFF);
+                    _Rewind_bytes(_First, 15 - static_cast<ptrdiff_t>(_Carry_pos));
                 }
             }
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
