@@ -18,7 +18,7 @@ int main() {
     error_code ec;
 
     {
-        const auto testDir = get_experimental_test_directory("path_stream_parameter");
+        const auto testDir = fs::temp_directory_path() / get_test_directory_subname("path_stream_parameter");
         fs::create_directories(testDir, ec);
         assert(!ec);
 
