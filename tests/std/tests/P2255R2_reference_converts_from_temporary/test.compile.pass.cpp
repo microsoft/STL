@@ -7,24 +7,24 @@
 
 using namespace std;
 
-enum class conv_explicity : bool {
+enum class conv_explicitly : bool {
     no,
     yes,
 };
 
-template <conv_explicity Explicity>
+template <conv_explicitly Explicitly>
 struct to_int_lvalue {
-    explicit(static_cast<bool>(Explicity)) operator int&() const;
+    explicit(static_cast<bool>(Explicitly)) operator int&() const;
 };
 
-template <conv_explicity Explicity>
+template <conv_explicitly Explicitly>
 struct to_int_xvalue {
-    explicit(static_cast<bool>(Explicity)) operator int&&() const;
+    explicit(static_cast<bool>(Explicitly)) operator int&&() const;
 };
 
-template <conv_explicity Explicity>
+template <conv_explicitly Explicitly>
 struct to_int_prvalue {
-    explicit(static_cast<bool>(Explicity)) operator int() const;
+    explicit(static_cast<bool>(Explicitly)) operator int() const;
 };
 
 template <class NonTempBindable>
@@ -75,13 +75,13 @@ void test_non_temporary_bindable_types() {
     test_one_non_temporary_bindable_type<void() const&>();
 
     test_one_non_temporary_bindable_type<int>();
-    test_one_non_temporary_bindable_type<to_int_lvalue<conv_explicity::yes>>();
+    test_one_non_temporary_bindable_type<to_int_lvalue<conv_explicitly::yes>>();
 
     test_one_non_temporary_bindable_type<int&>();
-    test_one_non_temporary_bindable_type<to_int_lvalue<conv_explicity::yes>&>();
+    test_one_non_temporary_bindable_type<to_int_lvalue<conv_explicitly::yes>&>();
 
     test_one_non_temporary_bindable_type<const volatile int&>();
-    test_one_non_temporary_bindable_type<const volatile to_int_lvalue<conv_explicity::yes>&>();
+    test_one_non_temporary_bindable_type<const volatile to_int_lvalue<conv_explicitly::yes>&>();
 
     test_one_non_temporary_bindable_type<void (&)()>();
     test_one_non_temporary_bindable_type<void (&&)()>();
@@ -161,46 +161,46 @@ void test_one_cvref_to_object() {
 void test_object_types() {
     test_one_cvref_to_object<int>();
     test_one_cvref_to_object<int[1]>();
-    test_one_cvref_to_object<to_int_lvalue<conv_explicity::yes>>();
-    test_one_cvref_to_object<to_int_lvalue<conv_explicity::no>>();
-    test_one_cvref_to_object<to_int_xvalue<conv_explicity::yes>>();
-    test_one_cvref_to_object<to_int_xvalue<conv_explicity::no>>();
+    test_one_cvref_to_object<to_int_lvalue<conv_explicitly::yes>>();
+    test_one_cvref_to_object<to_int_lvalue<conv_explicitly::no>>();
+    test_one_cvref_to_object<to_int_xvalue<conv_explicitly::yes>>();
+    test_one_cvref_to_object<to_int_xvalue<conv_explicitly::no>>();
 }
 
-template <conv_explicity Explicity>
+template <conv_explicitly Explicitly>
 void test_to_int_ref() {
-    static_assert(!reference_converts_from_temporary<int&, to_int_lvalue<Explicity>>::value);
-    static_assert(!reference_converts_from_temporary<const int&, to_int_lvalue<Explicity>>::value);
-    static_assert(reference_converts_from_temporary<const long&, to_int_lvalue<Explicity>>::value
-                  == !static_cast<bool>(Explicity));
-    static_assert(!reference_converts_from_temporary<int&, to_int_xvalue<Explicity>>::value);
-    static_assert(!reference_converts_from_temporary<const int&, to_int_xvalue<Explicity>>::value);
-    static_assert(reference_converts_from_temporary<const long&, to_int_xvalue<Explicity>>::value
-                  == !static_cast<bool>(Explicity));
-    static_assert(!reference_converts_from_temporary<int&, to_int_prvalue<Explicity>>::value);
-    static_assert(reference_converts_from_temporary<const int&, to_int_prvalue<Explicity>>::value
-                  == !static_cast<bool>(Explicity));
-    static_assert(reference_converts_from_temporary<const long&, to_int_prvalue<Explicity>>::value
-                  == !static_cast<bool>(Explicity));
+    static_assert(!reference_converts_from_temporary<int&, to_int_lvalue<Explicitly>>::value);
+    static_assert(!reference_converts_from_temporary<const int&, to_int_lvalue<Explicitly>>::value);
+    static_assert(reference_converts_from_temporary<const long&, to_int_lvalue<Explicitly>>::value
+                  == !static_cast<bool>(Explicitly));
+    static_assert(!reference_converts_from_temporary<int&, to_int_xvalue<Explicitly>>::value);
+    static_assert(!reference_converts_from_temporary<const int&, to_int_xvalue<Explicitly>>::value);
+    static_assert(reference_converts_from_temporary<const long&, to_int_xvalue<Explicitly>>::value
+                  == !static_cast<bool>(Explicitly));
+    static_assert(!reference_converts_from_temporary<int&, to_int_prvalue<Explicitly>>::value);
+    static_assert(reference_converts_from_temporary<const int&, to_int_prvalue<Explicitly>>::value
+                  == !static_cast<bool>(Explicitly));
+    static_assert(reference_converts_from_temporary<const long&, to_int_prvalue<Explicitly>>::value
+                  == !static_cast<bool>(Explicitly));
 
-    static_assert(!reference_converts_from_temporary_v<int&, to_int_lvalue<Explicity>>);
-    static_assert(!reference_converts_from_temporary_v<const int&, to_int_lvalue<Explicity>>);
+    static_assert(!reference_converts_from_temporary_v<int&, to_int_lvalue<Explicitly>>);
+    static_assert(!reference_converts_from_temporary_v<const int&, to_int_lvalue<Explicitly>>);
     static_assert(
-        reference_converts_from_temporary_v<const long&, to_int_lvalue<Explicity>> == !static_cast<bool>(Explicity));
-    static_assert(!reference_converts_from_temporary_v<int&, to_int_xvalue<Explicity>>);
-    static_assert(!reference_converts_from_temporary_v<const int&, to_int_xvalue<Explicity>>);
+        reference_converts_from_temporary_v<const long&, to_int_lvalue<Explicitly>> == !static_cast<bool>(Explicitly));
+    static_assert(!reference_converts_from_temporary_v<int&, to_int_xvalue<Explicitly>>);
+    static_assert(!reference_converts_from_temporary_v<const int&, to_int_xvalue<Explicitly>>);
     static_assert(
-        reference_converts_from_temporary_v<const long&, to_int_xvalue<Explicity>> == !static_cast<bool>(Explicity));
+        reference_converts_from_temporary_v<const long&, to_int_xvalue<Explicitly>> == !static_cast<bool>(Explicitly));
 
-    static_assert(!reference_converts_from_temporary_v<int&, to_int_prvalue<Explicity>>);
+    static_assert(!reference_converts_from_temporary_v<int&, to_int_prvalue<Explicitly>>);
     static_assert(
-        reference_converts_from_temporary_v<const int&, to_int_prvalue<Explicity>> == !static_cast<bool>(Explicity));
+        reference_converts_from_temporary_v<const int&, to_int_prvalue<Explicitly>> == !static_cast<bool>(Explicitly));
     static_assert(
-        reference_converts_from_temporary_v<const long&, to_int_prvalue<Explicity>> == !static_cast<bool>(Explicity));
+        reference_converts_from_temporary_v<const long&, to_int_prvalue<Explicitly>> == !static_cast<bool>(Explicitly));
 }
 
 void test_to_int_ref_all() {
-    test_to_int_ref<conv_explicity::no>();
-    test_to_int_ref<conv_explicity::yes>();
+    test_to_int_ref<conv_explicitly::no>();
+    test_to_int_ref<conv_explicitly::yes>();
 }
 #endif // ^^^ no workaround ^^^
