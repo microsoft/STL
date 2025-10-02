@@ -966,13 +966,6 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19
 #error /GR implies _HAS_STATIC_RTTI.
 #endif // defined(_CPPRTTI) && !_HAS_STATIC_RTTI
 
-// TRANSITION, MSVC and EDG haven't implemented intrinsics needed for P2255R2.
-#if defined(__clang__) && !defined(__EDG__)
-#define _HAS_REFERENCE_BINDING_TRAITS_INTRINSICS (__clang_major__ >= 19)
-#else // ^^^ defined(__clang__) && !defined(__EDG__) / !defined(__clang__) || defined(__EDG__) vvv
-#define _HAS_REFERENCE_BINDING_TRAITS_INTRINSICS 0
-#endif // !defined(__clang__) || defined(__EDG__)
-
 // N4950 [dcl.constexpr]/1: "A function or static data member declared with the
 // constexpr or consteval specifier is implicitly an inline function or variable"
 
@@ -1862,7 +1855,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_ranges_zip               202110L
 
 // TRANSITION, MSVC and EDG haven't implemented intrinsics needed for P2255R2.
-#if _HAS_REFERENCE_BINDING_TRAITS_INTRINSICS
+#if defined(__clang__) && !defined(__EDG__)
 #define __cpp_lib_reference_from_temporary 202202L
 #endif // ^^^ no workaround ^^^
 
