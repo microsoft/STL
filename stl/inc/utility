@@ -31,10 +31,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("intrinsic")
 #pragma push_macro("known_semantics")
 #pragma push_macro("lifetimebound")
+#pragma push_macro("no_specializations")
 #undef msvc
 #undef intrinsic
 #undef known_semantics
 #undef lifetimebound
+#undef no_specializations
 
 _STD_BEGIN
 _EXPORT_STD template <class _Ty, _Ty... _Vals>
@@ -158,7 +160,7 @@ struct _Ignore { // struct that ignores assignments
 _EXPORT_STD _INLINE_VAR constexpr _Ignore ignore{};
 
 _EXPORT_STD template <class... _Types>
-class tuple;
+class _NO_SPECIALIZATIONS_CITING("N5014 [tuple.tuple.general]/1") tuple;
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 struct pair;
@@ -170,7 +172,7 @@ _EXPORT_STD template <class _Tuple>
 struct tuple_size;
 
 _EXPORT_STD template <class _Ty>
-constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
 
 _EXPORT_STD template <size_t _Index, class _Tuple>
 struct tuple_element;
@@ -1071,6 +1073,7 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("lifetimebound")
 #pragma pop_macro("known_semantics")
 #pragma pop_macro("intrinsic")
