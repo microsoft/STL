@@ -212,22 +212,13 @@ template <class... _TupleTypes, class... _Args>
 constexpr bool _Tuple_reference_constructs_from_temporary<tuple<_TupleTypes...>, _Args...> =
     (reference_constructs_from_temporary_v<_TupleTypes, _Args> || ...);
 
-template <class _Tuple, class _TupleLike, class _IdxSeq>
-constexpr bool _Tuple_reference_constructs_from_temporary_for_tuple_like_impl = false;
-template <class _Tuple, class _TupleLike, size_t... _Indices>
-constexpr bool
-    _Tuple_reference_constructs_from_temporary_for_tuple_like_impl<_Tuple, _TupleLike, index_sequence<_Indices...>> =
-        (reference_constructs_from_temporary_v<tuple_element_t<_Indices, _Tuple>,
-             decltype(_STD get<_Indices>(_STD declval<_TupleLike>()))>
-            || ...);
-
-template <class _Tuple, class _TupleLike>
+template <class _Tuple, class _TupleLike, class _IdxSeq = make_index_sequence<tuple_size_v<_Tuple>>>
 constexpr bool _Tuple_reference_constructs_from_temporary_for_tuple_like = false;
-template <class _Tuple, _Tuple_like _TupleLike>
+template <class _Tuple, _Tuple_like _TupleLike, size_t... _Indices>
     requires (tuple_size_v<_Tuple> == tuple_size_v<remove_reference_t<_TupleLike>>)
-constexpr bool _Tuple_reference_constructs_from_temporary_for_tuple_like<_Tuple, _TupleLike> =
-    _Tuple_reference_constructs_from_temporary_for_tuple_like_impl<_Tuple, _TupleLike,
-        make_index_sequence<tuple_size_v<_Tuple>>>;
+constexpr bool
+    _Tuple_reference_constructs_from_temporary_for_tuple_like<_Tuple, _TupleLike, index_sequence<_Indices...>> =
+        _Tuple_reference_constructs_from_temporary<_Tuple, decltype(_STD get<_Indices>(_STD declval<_TupleLike>()))...>;
 #endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 #endif // _HAS_CXX23
 
