@@ -1865,16 +1865,16 @@ template <class _From, class _To, class = void>
 struct _Invoke_convertible : false_type {};
 
 #ifdef __cpp_lib_reference_from_temporary
-template <class _From, class _To>
+template <class _To, class _From>
 using _Not_reference_converts_from_temporary = bool_constant<!reference_converts_from_temporary_v<_To, _From>>;
 #else // ^^^ defined(__cpp_lib_reference_from_temporary) / !defined(__cpp_lib_reference_from_temporary) vvv
-template <class _From, class _To>
+template <class _To, class _From>
 using _Not_reference_converts_from_temporary = true_type;
 #endif // ^^^ !defined(__cpp_lib_reference_from_temporary) ^^^
 
 template <class _From, class _To>
 struct _Invoke_convertible<_From, _To, void_t<decltype(_STD _Fake_copy_init<_To>(_STD _Returns_exactly<_From>()))>>
-    : _Not_reference_converts_from_temporary<_From, _To> {};
+    : _Not_reference_converts_from_temporary<_To, _From> {};
 
 template <class _From, class _To>
 struct _Invoke_nothrow_convertible
