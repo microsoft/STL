@@ -773,19 +773,19 @@ using _Adjust_ref_binding_source_t = _Ty;
 #endif // ^^^ no workaround ^^^
 
 _EXPORT_STD template <class _Ty, class _Uty>
-struct reference_constructs_from_temporary
+struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS reference_constructs_from_temporary
     : bool_constant<__reference_constructs_from_temporary(_Ty, _Adjust_ref_binding_source_t<_Uty>)> {};
 
 _EXPORT_STD template <class _Ty, class _Uty>
-constexpr bool reference_constructs_from_temporary_v =
+_NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool reference_constructs_from_temporary_v =
     __reference_constructs_from_temporary(_Ty, _Adjust_ref_binding_source_t<_Uty>);
 
 _EXPORT_STD template <class _Ty, class _Uty>
-struct reference_converts_from_temporary
+struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS reference_converts_from_temporary
     : bool_constant<__reference_converts_from_temporary(_Ty, _Adjust_ref_binding_source_t<_Uty>)> {};
 
 _EXPORT_STD template <class _Ty, class _Uty>
-constexpr bool reference_converts_from_temporary_v =
+_NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool reference_converts_from_temporary_v =
     __reference_converts_from_temporary(_Ty, _Adjust_ref_binding_source_t<_Uty>);
 #endif // _HAS_CXX23 && _HAS_REFERENCE_BINDING_TRAITS_INTRINSICS
 
