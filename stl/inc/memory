@@ -3475,11 +3475,11 @@ public:
     }
 
     _NODISCARD _CONSTEXPR23 add_lvalue_reference_t<_Ty> operator*() const noexcept(noexcept(*_STD declval<pointer>())) {
-#if _HAS_CXX23 && _HAS_REFERENCE_BINDING_TRAITS_INTRINSICS
+#ifdef __cpp_lib_reference_from_temporary
         static_assert(
             !reference_converts_from_temporary_v<add_lvalue_reference_t<_Ty>, decltype(*_STD declval<pointer>())>,
             "it is disallowed to bind a temporary object to the result of unique_ptr<T, D>::operator*");
-#endif // _HAS_CXX23 && _HAS_REFERENCE_BINDING_TRAITS_INTRINSICS
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
         return *_Mypair._Myval2;
     }
 
