@@ -9,7 +9,7 @@
 using namespace std;
 
 template <bool Expected, class TupleOrPair, class... Args>
-void assert_constref_constructible_single() { // COMPILE-ONLY
+void assert_constref_constructible_single() {
     static_assert(is_constructible_v<TupleOrPair, Args&...> == Expected);
     static_assert(is_constructible_v<TupleOrPair, Args...> == Expected);
     static_assert(is_constructible_v<TupleOrPair, const Args&...> == Expected);
@@ -27,7 +27,7 @@ void assert_constref_constructible_single() { // COMPILE-ONLY
 }
 
 template <bool Expected, class TupleOrPair, class... Args>
-void assert_mutref_constructible_single() { // COMPILE-ONLY
+void assert_mutref_constructible_single() {
     static_assert(is_constructible_v<TupleOrPair, Args...> == Expected);
     if constexpr (sizeof...(Args) == 2) {
         static_assert(is_constructible_v<TupleOrPair, pair<Args...>> == Expected);
@@ -35,7 +35,7 @@ void assert_mutref_constructible_single() { // COMPILE-ONLY
     static_assert(is_constructible_v<TupleOrPair, tuple<Args...>> == Expected);
 }
 
-void assert_normal_constructible() { // COMPILE-ONLY
+void assert_normal_constructible() {
     assert_constref_constructible_single<true, tuple<const int&>, int>();
     assert_constref_constructible_single<false, tuple<const int&>, long>();
 
@@ -66,7 +66,7 @@ struct LvalueTempConverter {
 };
 
 template <class TupleOrPair, class... Args>
-void assert_lvalue_temp_converter_single() { // COMPILE-ONLY
+void assert_lvalue_temp_converter_single() {
     static_assert(!is_constructible_v<TupleOrPair, Args&..., LvalueTempConverter&>);
     static_assert(is_constructible_v<TupleOrPair, Args..., LvalueTempConverter>);
     if constexpr (sizeof...(Args) == 1) {
@@ -77,7 +77,7 @@ void assert_lvalue_temp_converter_single() { // COMPILE-ONLY
     static_assert(is_constructible_v<TupleOrPair, tuple<Args..., LvalueTempConverter>>);
 }
 
-void assert_lvalue_temp_converter() { // COMPILE-ONLY
+void assert_lvalue_temp_converter() {
     assert_lvalue_temp_converter_single<tuple<const int&>>();
     assert_lvalue_temp_converter_single<tuple<int&&>>();
 

@@ -168,7 +168,7 @@ void test_object_types() {
 }
 
 template <conv_explicity Explicity>
-void test_to_int_ref() { // COMPILE-ONLY
+void test_to_int_ref() {
     static_assert(!reference_constructs_from_temporary<int&, to_int_lvalue<Explicity>>::value);
     static_assert(!reference_constructs_from_temporary<const int&, to_int_lvalue<Explicity>>::value);
     static_assert(reference_constructs_from_temporary<const long&, to_int_lvalue<Explicity>>::value
@@ -197,7 +197,7 @@ void test_to_int_ref() { // COMPILE-ONLY
         reference_constructs_from_temporary_v<const long&, to_int_prvalue<Explicity>> == !static_cast<bool>(Explicity));
 }
 
-void test_to_int_ref_all() { // COMPILE-ONLY
+void test_to_int_ref_all() {
     test_to_int_ref<conv_explicity::no>();
     test_to_int_ref<conv_explicity::yes>();
 }
