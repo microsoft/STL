@@ -1263,7 +1263,7 @@ _NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) noexcept(noexcept(_STD _
 #ifdef __cpp_lib_reference_from_temporary
     if constexpr (tuple_size_v<remove_reference_t<_Tuple>> == 1) {
         static_assert(!reference_constructs_from_temporary_v<_Ty, decltype(_STD get<0>(_STD forward<_Tuple>(_Tpl)))>,
-            "Cannot bind a temporary to the returned reference which will always be dangling (N4993 [tuple.apply]/3).");
+            "Cannot bind a temporary to the returned reference which will always be dangling (N5014 [tuple.apply]/2).");
     }
 #endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
     // construct _Ty from the elements of _Tpl
