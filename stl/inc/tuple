@@ -456,7 +456,7 @@ public:
         enable_if_t<_Tuple_constructible_v<tuple, const _First&, const _Second&>, int> = 0>
         requires _Tuple_reference_constructs_from_temporary<tuple, const _First&, const _Second&>
     explicit(_Tuple_conditional_explicit_v<tuple, const _First&, const _Second&>)
-        tuple(const pair<_First, _Second>& _Right) = delete;
+        tuple(const pair<_First, _Second>&) = delete;
 #endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
     template <class _First, class _Second, enable_if_t<_Tuple_constructible_v<tuple, _First, _Second>, int> = 0>
