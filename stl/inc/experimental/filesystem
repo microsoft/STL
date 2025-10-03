@@ -46,7 +46,6 @@ You can define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING to suppress 
 #define _FSPFX _STD experimental::filesystem::v1::
 
 _FS_BEGIN
-using _Pchar = wchar_t; // UTF16
 #define _FS_ISSEP(x) ((x) == L'/' || (x) == L'\\')
 #define _FS_PREF     L'\\'
 
@@ -721,7 +720,7 @@ private:
 
 class path { // stores a pathname
 public:
-    using value_type  = _Pchar;
+    using value_type  = wchar_t;
     using string_type = basic_string<value_type>;
 
     static constexpr value_type preferred_separator = _FS_PREF;
@@ -1262,7 +1261,7 @@ template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
 _NODISCARD path u8path(_InIt _First, _InIt _Last) { // make path from [_First, _Last) UTF8, given iterators
     string _Str(_First, _Last);
     path::string_type _Str_out;
-    return path{_Path_cvt<_Char8_t, _Pchar>::_Cvt(_Str_out, _Str.c_str(), _Str.size())};
+    return path{_Path_cvt<_Char8_t, wchar_t>::_Cvt(_Str_out, _Str.c_str(), _Str.size())};
 }
 
 template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
@@ -1273,13 +1272,13 @@ _NODISCARD path u8path(_InIt _First) { // make path from NTBS UTF8, given iterat
     }
 
     path::string_type _Str_out;
-    return path{_Path_cvt<_Char8_t, _Pchar>::_Cvt(_Str_out, _Str.c_str(), _Str.size())};
+    return path{_Path_cvt<_Char8_t, wchar_t>::_Cvt(_Str_out, _Str.c_str(), _Str.size())};
 }
 
 template <class _Traits, class _Alloc>
 _NODISCARD path u8path(const basic_string<char, _Traits, _Alloc>& _Str) { // make path from arbitrary char string UTF8
     path::string_type _Str_out;
-    return path{_Path_cvt<_Char8_t, _Pchar>::_Cvt(_Str_out, _Str.c_str(), _Str.size())};
+    return path{_Path_cvt<_Char8_t, wchar_t>::_Cvt(_Str_out, _Str.c_str(), _Str.size())};
 }
 
 class _NODISCARD filesystem_error : public system_error { // base of all filesystem-error exceptions
@@ -2148,7 +2147,7 @@ _NODISCARD inline path current_path() {
 
 _NODISCARD inline path current_path(error_code& _Code) {
     _Code.clear();
-    _Pchar _Dest[_MAX_FILESYS_NAME];
+    wchar_t _Dest[_MAX_FILESYS_NAME];
     if (!_Current_get(_Dest)) { // report error
         _Code = make_error_code(errc::operation_not_permitted);
         return {};
@@ -2454,7 +2453,7 @@ _NODISCARD inline path read_symlink(const path& _Path,
         _Code = make_error_code(errc::no_such_file_or_directory);
         return {};
     }
-    _Pchar _Dest[_MAX_FILESYS_NAME];
+    wchar_t _Dest[_MAX_FILESYS_NAME];
     return path{_Symlink_get(_Dest, _Path.c_str())};
 }
 
@@ -2673,7 +2672,7 @@ _NODISCARD inline path temp_directory_path() {
 }
 
 _NODISCARD inline path temp_directory_path(error_code& _Code) {
-    _Pchar _Dest[_MAX_FILESYS_NAME];
+    wchar_t _Dest[_MAX_FILESYS_NAME];
     _Temp_get(_Dest);
     path _Ans(_Dest);
 
