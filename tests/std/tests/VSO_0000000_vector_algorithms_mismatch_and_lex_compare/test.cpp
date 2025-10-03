@@ -145,7 +145,7 @@ struct triplet {
     T y;
     T z;
 
-    bool operator==(const triplet<T>&) const = default;
+    bool operator==(const triplet&) const = default;
 };
 
 template <class T>
