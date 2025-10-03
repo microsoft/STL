@@ -221,7 +221,7 @@ constexpr bool test() {
         ASSERT(!is_corresponding_member(&S5::v1, &S6::v2));
         ASSERT(!is_corresponding_member(&S5::v2, &S6::v1));
         ASSERT(!is_corresponding_member(&S5::v3, &S6::v3));
-        ASSERT(!is_corresponding_member<NS, NS>(&NS::v1, &NS::w1));
+        ASSERT(!is_corresponding_member<NS, NS, int, int>(&NS::v1, &NS::w1));
         ASSERT(!is_corresponding_member(&S7::f1, &S7::f1));
         ASSERT(!is_corresponding_member(static_cast<int S1::*>(nullptr), static_cast<int S2::*>(nullptr)));
         ASSERT(!is_corresponding_member(&S1::v1, static_cast<int S2::*>(nullptr)));
@@ -255,8 +255,8 @@ constexpr bool test() {
         ASSERT(is_pointer_interconvertible_with_class(&U::v1));
         ASSERT(is_pointer_interconvertible_with_class(&U::v2));
 
-        ASSERT(!is_pointer_interconvertible_with_class<NS>(&NS::a));
-        ASSERT(!is_pointer_interconvertible_with_class<NS>(&NS::b));
+        ASSERT(!is_pointer_interconvertible_with_class<NS, int>(&NS::a));
+        ASSERT(!is_pointer_interconvertible_with_class<NS, int>(&NS::b));
         ASSERT(!is_pointer_interconvertible_with_class(&C::f1));
         ASSERT(!is_pointer_interconvertible_with_class(static_cast<int A::*>(nullptr)));
     }
