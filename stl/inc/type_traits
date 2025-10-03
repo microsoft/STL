@@ -1969,7 +1969,7 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_nothrow_invocable_r_v =
 
 #if _HAS_CXX20
 #if !defined(__clang__) || defined(__EDG__) \
-    || (defined(__clang__) && __clang_major__ >= 19) // TRANSITION, VSO-2397560 (RWC relying on ancient Clang)
+    || __clang_major__ >= 19 // TRANSITION, VSO-2397560 (RWC relying on ancient Clang)
 _EXPORT_STD template <class _Ty1, class _Ty2>
 struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_layout_compatible : bool_constant<__is_layout_compatible(_Ty1, _Ty2)> {};
 
