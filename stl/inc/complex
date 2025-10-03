@@ -21,8 +21,6 @@
 // https://learn.microsoft.com/en-us/cpp/build/arm64-windows-abi-conventions?view=msvc-170#base-requirements
 // Both floating-point and NEON support are presumed to be present in hardware.
 #define _FMP_USING_STD_FMA
-#elif defined(__clang__) // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
-// TRANSITION, not using x86/x64 FMA intrinsics for Clang yet
 #elif defined(_M_IX86) || defined(_M_X64)
 #define _FMP_USING_X86_X64_INTRINSICS
 #include <__msvc_bit_utils.hpp>
@@ -167,7 +165,11 @@ namespace _Float_multi_prec {
     }
 
 #ifdef _FMP_USING_X86_X64_INTRINSICS
-    _NODISCARD inline double _Sqr_error_x86_x64_fma(const double _Xval, const double _Prod0) noexcept {
+#ifdef __clang__
+    [[__gnu__::__target__("fma")]]
+#endif // defined(__clang__)
+    _NODISCARD inline double
+        _Sqr_error_x86_x64_fma(const double _Xval, const double _Prod0) noexcept {
         const __m128d _Mx      = _mm_set_sd(_Xval);
         const __m128d _Mprod0  = _mm_set_sd(_Prod0);
         const __m128d _Mresult = _mm_fmsub_sd(_Mx, _Mx, _Mprod0);
@@ -428,7 +430,7 @@ public:
     }
 
     static bool _Signbit(_Ty _Left) {
-        return (_STD signbit)(static_cast<double>(_Left));
+        return (_STD signbit) (static_cast<double>(_Left));
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -572,7 +574,7 @@ public:
 
     static bool _Signbit(_Ty _Left) noexcept {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return (_STD signbit)(_Left);
+        return (_STD signbit) (_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) noexcept { // return sinh(_Left) * _Right
@@ -708,7 +710,7 @@ public:
 
     static bool _Signbit(_Ty _Left) noexcept {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return (_STD signbit)(_Left);
+        return (_STD signbit) (_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) noexcept { // return sinh(_Left) * _Right
@@ -847,7 +849,7 @@ public:
 
     static bool _Signbit(_Ty _Left) noexcept {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return (_STD signbit)(_Left);
+        return (_STD signbit) (_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) noexcept { // return sinh(_Left) * _Right

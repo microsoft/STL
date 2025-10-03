@@ -2494,14 +2494,14 @@ void test_conversions() {
     static_assert(is_constructible_v<path, basic_string_view<char16_t, MyTraits<char16_t>>>);
     static_assert(is_constructible_v<path, basic_string_view<char32_t, MyTraits<char32_t>>>);
 
-    static_assert(is_constructible_v<path, char(&)[5]>);
+    static_assert(is_constructible_v<path, char (&)[5]>);
     static_assert(is_constructible_v<path, wchar_t(&)[5]>);
-    static_assert(is_constructible_v<path, char16_t(&)[5]>);
-    static_assert(is_constructible_v<path, char32_t(&)[5]>);
-    static_assert(is_constructible_v<path, const char(&)[5]>);
+    static_assert(is_constructible_v<path, char16_t (&)[5]>);
+    static_assert(is_constructible_v<path, char32_t (&)[5]>);
+    static_assert(is_constructible_v<path, const char (&)[5]>);
     static_assert(is_constructible_v<path, const wchar_t(&)[5]>);
-    static_assert(is_constructible_v<path, const char16_t(&)[5]>);
-    static_assert(is_constructible_v<path, const char32_t(&)[5]>);
+    static_assert(is_constructible_v<path, const char16_t (&)[5]>);
+    static_assert(is_constructible_v<path, const char32_t (&)[5]>);
 
     static_assert(is_constructible_v<path, char*>);
     static_assert(is_constructible_v<path, wchar_t*>);
@@ -2532,11 +2532,11 @@ void test_conversions() {
 
     static_assert(!is_constructible_v<path, basic_string<signed char>>);
     static_assert(!is_constructible_v<path, basic_string_view<signed char>>);
-    static_assert(!is_constructible_v<path, const signed char(&)[5]>);
+    static_assert(!is_constructible_v<path, const signed char (&)[5]>);
     static_assert(!is_constructible_v<path, const signed char*>);
     static_assert(!is_constructible_v<path, basic_string<unsigned char>>);
     static_assert(!is_constructible_v<path, basic_string_view<unsigned char>>);
-    static_assert(!is_constructible_v<path, const unsigned char(&)[5]>);
+    static_assert(!is_constructible_v<path, const unsigned char (&)[5]>);
     static_assert(!is_constructible_v<path, const unsigned char*>);
     static_assert(!is_constructible_v<path, char>);
     static_assert(!is_constructible_v<path, double>);
@@ -3576,7 +3576,8 @@ void test_temp_directory_path() {
     }
 
     const auto nonexistentTemp = temp_directory_path(ec).native();
-    EXPECT(nonexistentTemp.find(LR"(\nonexistent.dir\)") == nonexistentTemp.size() - 17);
+    // returns path() if an error occurs. (N5008 [fs.op.temp.dir.path]/3)
+    EXPECT(nonexistentTemp.empty());
     EXPECT(ec == make_error_code(errc::not_a_directory));
 
     // TODO: automated test is_directory(p) is false, symlinks, after other filesystem components are implemented

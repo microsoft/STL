@@ -16,6 +16,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 _STD_BEGIN
 template <class _Ty, class _Alloc, class = void>
 struct _Has_allocator_type : false_type {}; // tests for suitable _Ty::allocator_type
@@ -34,7 +40,7 @@ _EXPORT_STD template <class _Ty, class _Alloc>
 struct uses_allocator : _Has_allocator_type<_Ty, _Alloc>::type {};
 
 _EXPORT_STD template <class _Ty, class _Alloc>
-constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value;
 
 // from <iterator>
 _EXPORT_STD struct input_iterator_tag {};
@@ -257,7 +263,7 @@ struct _Iter_traits_pointer<_Itraits_pointer_strategy::_Use_decltype> {
 };
 
 template <class _Ty>
-concept _Has_member_arrow = requires(_Ty&& __t) { static_cast<_Ty&&>(__t).operator->(); };
+concept _Has_member_arrow = requires(_Ty&& __t) { static_cast<_Ty &&>(__t).operator->(); };
 
 template <bool _Has_member_typedef>
 struct _Iter_traits_reference {
@@ -406,7 +412,7 @@ concept input_or_output_iterator = requires(_It __i) {
 _EXPORT_STD template <class _Se, class _It>
 concept sentinel_for = semiregular<_Se> && input_or_output_iterator<_It> && _Weakly_equality_comparable_with<_Se, _It>;
 
-_EXPORT_STD template <class _Se, class _It>
+_EXPORT_STD template <class _Se, class _It> // specializations allowed by N5014 [iterator.concept.sizedsentinel]/3
 constexpr bool disable_sized_sentinel_for = false;
 
 _EXPORT_STD template <class _Se, class _It>
@@ -541,6 +547,10 @@ struct _Meta_find_unique_index_<_List<_First, _Rest...>, _Ty> {
     using type = integral_constant<size_t, _STD _Meta_find_unique_index_i_(_Bools, 1 + sizeof...(_Rest))>;
 };
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

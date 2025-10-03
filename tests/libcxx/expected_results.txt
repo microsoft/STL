@@ -42,9 +42,6 @@ std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.p
 # LLVM-100506: [libc++][test] Precondition violation in rand.dist.uni.real/param_ctor.pass.cpp
 std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
 
-# LLVM-113609: [libc++][test] Non-rebindable test_alloc in string.capacity/deallocate_size.pass.cpp
-std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
-
 # LLVM-122638: [libc++][test] re.regex.construct/bad_backref.pass.cpp assumes non-standard extension to extended regular expressions
 std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
 
@@ -53,6 +50,19 @@ std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cp
 std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:1 FAIL
 std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:1 FAIL
+
+# LLVM-158302: Clang 20 i686-pc-windows-msvc regression, silent bad codegen for std::current_exception()
+# SKIPPED because this is x86-specific.
+std/language.support/support.exception/except.nested/assign.pass.cpp:2 SKIPPED
+std/language.support/support.exception/except.nested/ctor_copy.pass.cpp:2 SKIPPED
+std/language.support/support.exception/except.nested/ctor_default.pass.cpp:2 SKIPPED
+
+# LLVM-158341: Coroutines on arm64ec-pc-windows-msvc emit error LNK2001: unresolved external symbol #__NoopCoro_ResumeDestroy (EC Symbol)
+# SKIPPED because this is ARM64EC-specific.
+std/language.support/support.coroutines/coroutine.handle/coroutine.handle.noop/noop_coroutine.pass.cpp:2 SKIPPED
+
+# LLVM-160627: [libc++][test] Guard non-guaranteed implicit-lifetime-ness cases with _LIBCPP_VERSION
+std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:2 FAIL
 
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
@@ -74,12 +84,6 @@ std/utilities/template.bitset/bitset.cons/string_ctor.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/dtor.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_until.pass.cpp SKIPPED
 std/thread/thread.jthread/detach.pass.cpp SKIPPED
-
-# libcxx is incorrect on what the type passed to allocator::construct should be (LLVM-D61364)
-std/containers/associative/map/map.modifiers/insert_and_emplace_allocator_requirements.pass.cpp FAIL
-std/containers/associative/set/insert_and_emplace_allocator_requirements.pass.cpp FAIL
-std/containers/unord/unord.map/unord.map.modifiers/insert_and_emplace_allocator_requirements.pass.cpp FAIL
-std/containers/unord/unord.set/insert_and_emplace_allocator_requirements.pass.cpp FAIL
 
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
@@ -141,14 +145,7 @@ std/language.support/support.limits/support.limits.general/cstring.version.compi
 # libc++ has not implemented P3323R1: "Forbid atomic<cv T>, Specify atomic_ref<cv T>"
 std/atomics/atomics.ref/member_types.compile.pass.cpp FAIL
 
-# Various bogosity (LLVM-D141004), warning C6011: Dereferencing NULL pointer
-# Note: The :1 (ASan) configuration doesn't run static analysis.
-std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_const_lvalue_pair.pass.cpp:0 FAIL
-std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_values.pass.cpp:0 FAIL
-
 # Various bogosity (LLVM-D141004)
-std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/resource.pass.cpp FAIL
-std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/select_on_container_copy_construction.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/ctor_does_not_allocate.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/sync_with_default_resource.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/unsync_with_default_resource.pass.cpp FAIL
@@ -267,7 +264,7 @@ std/containers/container.adaptors/flat.map/flat.map.cons/initializer_list.pass.c
 std/containers/container.adaptors/flat.map/flat.map.cons/iter_iter.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_alloc.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_clears.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_noexcept.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/move_assign_noexcept.compile.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_assign.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_exceptions.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_noexcept.pass.cpp FAIL
@@ -347,7 +344,7 @@ std/containers/container.adaptors/flat.multimap/flat.multimap.cons/initializer_l
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/iter_iter.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_alloc.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_assign_clears.pass.cpp FAIL
-std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_assign_noexcept.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_assign_noexcept.compile.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_assign.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_exceptions.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_noexcept.pass.cpp FAIL
@@ -412,6 +409,7 @@ std/language.support/support.limits/support.limits.general/cmath.version.compile
 std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
 
 # P0543R3 Saturation Arithmetic
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/numerics/numeric.ops/numeric.ops.sat/add_sat.compile.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/add_sat.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/div_sat.compile.pass.cpp FAIL
@@ -567,14 +565,27 @@ std/language.support/support.limits/support.limits.general/flat_set.version.comp
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/PR20855_tuple_ref_binding_diagnostics.pass.cpp:0 FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/PR20855_tuple_ref_binding_diagnostics.pass.cpp:1 FAIL
 
-# P2674R1 is_implicit_lifetime
-std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp FAIL
+# P2944R3 Comparisons For reference_wrapper
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.const_ref.pass.cpp FAIL
+std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.refwrap_const.pass.cpp FAIL
+std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.refwrap.pass.cpp FAIL
+
+# P3168R2 std::optional Range Support
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/optional/optional.iterator/begin.pass.cpp FAIL
+std/utilities/optional/optional.iterator/end.pass.cpp FAIL
+std/utilities/optional/optional.iterator/iterator.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
 
-# None!
+# VSO-2581622 C1XX should implement `__builtin_is_implicit_lifetime`
+std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:1 FAIL
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
@@ -596,11 +607,6 @@ std/thread/thread.condition/notify_all_at_thread_exit_lwg3343.pass.cpp SKIPPED
 
 
 # *** C1XX COMPILER BUGS ***
-# VSO-1271673 "static analyzer doesn't know about short-circuiting"
-# Note: The :1 (ASan) configuration doesn't run static analysis.
-std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
-std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FAIL
-
 # DevCom-1436243 VSO-1335743 constexpr new initialized array
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:0 FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:1 FAIL
@@ -625,21 +631,6 @@ std/utilities/variant/variant.relops/three_way.pass.cpp:1 FAIL
 std/algorithms/robust_re_difference_type.compile.pass.cpp:0 FAIL
 std/algorithms/robust_re_difference_type.compile.pass.cpp:1 FAIL
 
-# DevCom-1638563 VSO-1457836: icky static analysis false positive
-# Resolved wontfix, need to report again.
-# Note: The :1 (ASan) configuration doesn't run static analysis.
-std/language.support/support.coroutines/end.to.end/go.pass.cpp:0 FAIL
-
-# DevCom-1638496 VSO-1462745: C1XX doesn't properly reject int <=> unsigned
-std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:0 FAIL
-std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:1 FAIL
-std/language.support/cmp/cmp.result/compare_three_way_result.compile.pass.cpp:0 FAIL
-std/language.support/cmp/cmp.result/compare_three_way_result.compile.pass.cpp:1 FAIL
-
-# VSO-1513409: Bogus `warning C4100: '<_Args_0>': unreferenced formal parameter` when `if constexpr` selects another branch
-std/containers/views/mdspan/mdspan/ctor.dh_integers.pass.cpp:0 FAIL
-std/containers/views/mdspan/mdspan/ctor.dh_integers.pass.cpp:1 FAIL
-
 # DevCom-10026599 VSO-1532879: conditional expression has two different types
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:1 FAIL
@@ -651,18 +642,6 @@ std/containers/sequences/array/array.cons/initialization.pass.cpp:1 FAIL
 # DevCom-10456523 VSO-1880569: MSVC incorrectly raises constant evaluation failure in pointer comparison
 std/algorithms/robust_against_adl.compile.pass.cpp:0 FAIL
 std/algorithms/robust_against_adl.compile.pass.cpp:1 FAIL
-
-# VSO-1923988: constexpr evaluation performs an assignment with a derived type when it should use a base type
-std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/copy_n.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/copy_n.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.move/move_backward.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.move/move_backward.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:1 FAIL
 
 # VSO-1948221 x86chk ICE with constexpr type_info: Assertion failed: isIndirection()
 std/language.support/support.rtti/type.info/type_info.equal.pass.cpp:0 FAIL
@@ -707,6 +686,34 @@ std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.
 std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.pass.cpp:1 FAIL
 std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:0 FAIL
 std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:1 FAIL
+
+# VSO-2574451 constexpr error with designated initializers: failure was caused by a read of a variable outside its lifetime
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/types.compile.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/types.compile.pass.cpp:1 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.view/begin.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.view/begin.pass.cpp:1 FAIL
+
+# VSO-2574465 constexpr error with a static_assert accessing a local variable: failure was caused by a read of a variable outside its lifetime
+std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
+std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
+
+# VSO-2574469 constexpr error in unique_ptr with a reference-to-function deleter: failure was caused by a read of an uninitialized symbol
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_deleter.pass.cpp:0 FAIL
+std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_deleter.pass.cpp:1 FAIL
+
+# VSO-2574473 constexpr error in ranges::join_with_view: failure was caused by unevaluable pointer value
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:1 FAIL
+
+# VSO-2574489 constexpr ICE-on-valid with vector<bool>
+std/algorithms/alg.modifying.operations/alg.copy/copy_n.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/copy_n.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:1 FAIL
+std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:0 FAIL
+std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:1 FAIL
+std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:0 FAIL
+std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:1 FAIL
 
 
 # *** CLANG COMPILER BUGS ***
@@ -969,14 +976,8 @@ std/iterators/iterator.requirements/iterator.assoc.types/readable.traits/indirec
 std/containers/sequences/vector/trivial_relocation.pass.cpp:0 FAIL
 std/containers/sequences/vector/trivial_relocation.pass.cpp:1 FAIL
 
-# These tests emit C5321, which warns when the resolution to CWG-1656 affects a u8 string literal.
-# The conformant behavior is opt-in because it can silently change behavior.
-# warning C5321: nonstandard extension used: encoding '\x80' as a multi-byte utf-8 character. Use \u instead
-# for cross platform compatibility or '/Zc:u8EscapeEncoding' to disable the extension.
-std/utilities/format/format.functions/escaped_output.unicode.pass.cpp:0 FAIL
-std/utilities/format/format.functions/escaped_output.unicode.pass.cpp:1 FAIL
-std/utilities/format/format.functions/fill.unicode.pass.cpp:0 FAIL
-std/utilities/format/format.functions/fill.unicode.pass.cpp:1 FAIL
+# Not analyzed, likely bogus test. constexpr fails with "vector iterators incompatible".
+std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.default.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***
@@ -1157,10 +1158,6 @@ std/algorithms/algorithms.results/min_max_result.pass.cpp:1 FAIL
 # Not analyzed.
 std/algorithms/robust_against_proxy_iterators_lifetime_bugs.pass.cpp FAIL
 
-# Not analyzed. Looks like a test bug, assuming that hash<vector<bool>> is constexpr.
-std/containers/sequences/vector.bool/enabled_hash.pass.cpp FAIL
-std/containers/sequences/vector.bool/vector_bool.pass.cpp FAIL
-
 # Not analyzed. Inspecting shift operators for quoted().
 std/input.output/iostream.format/quoted.manip/quoted_traits.compile.pass.cpp FAIL
 
@@ -1193,6 +1190,7 @@ std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/co
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:2 FAIL
 std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:2 FAIL
 std/algorithms/alg.modifying.operations/alg.rotate/rotate.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.swap/ranges.swap_ranges.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.contains/ranges.contains_subrange.pass.cpp:2 FAIL
 std/algorithms/alg.nonmodifying/alg.count/count.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.count/ranges.count.pass.cpp FAIL
@@ -1201,7 +1199,9 @@ std/containers/sequences/vector.bool/assign_range.pass.cpp FAIL
 std/containers/sequences/vector.bool/flip.pass.cpp FAIL
 std/containers/sequences/vector.bool/insert_range.pass.cpp FAIL
 std/containers/sequences/vector/vector.modifiers/destroy_elements.pass.cpp FAIL
+std/containers/sequences/vector/vector.modifiers/emplace.pass.cpp FAIL
 std/containers/sequences/vector/vector.modifiers/insert_range.pass.cpp FAIL
+std/ranges/range.adaptors/range.join.with/range.join.with.view/end.pass.cpp FAIL
 std/strings/basic.string/string.modifiers/string_replace/replace_with_range.pass.cpp FAIL
 std/utilities/charconv/charconv.to.chars/integral.pass.cpp FAIL
 
@@ -1251,25 +1251,6 @@ std/utilities/format/format.range/format.range.fmtset/format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.fmtstr/format.pass.cpp FAIL
 std/utilities/format/format.tuple/format.pass.cpp FAIL
 
-# Not analyzed. Static analysis thinks that array indexing is out of bounds because it can't prove otherwise.
-# warning C28020: The expression '_Param_(1)<1' is not true at this call.
-# Note: The :1 (ASan) configuration doesn't run static analysis.
-std/containers/views/mdspan/extents/ctor_default.pass.cpp:0 FAIL
-std/containers/views/mdspan/extents/ctor_from_array.pass.cpp:0 FAIL
-std/containers/views/mdspan/extents/ctor_from_integral.pass.cpp:0 FAIL
-std/containers/views/mdspan/extents/ctor_from_span.pass.cpp:0 FAIL
-std/containers/views/mdspan/layout_stride/comparison.pass.cpp:0 FAIL
-std/containers/views/mdspan/layout_stride/ctor.strided_mapping.pass.cpp:0 FAIL
-std/containers/views/mdspan/mdspan/conversion.pass.cpp:0 FAIL
-std/containers/views/mdspan/mdspan/ctor.dh_array.pass.cpp:0 FAIL
-std/containers/views/mdspan/mdspan/ctor.dh_span.pass.cpp:0 FAIL
-
-# Not analyzed. Apparent false positives from static analysis where it thinks `new (std::nothrow)` could return null, despite an assert().
-# warning C28182: Dereferencing NULL pointer.
-# Note: The :1 (ASan) configuration doesn't run static analysis.
-std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align_nothrow.pass.cpp:0 FAIL
-std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.pass.cpp:0 FAIL
-
 # Not analyzed, unexpected separators. Assertion failed: stream_fr_FR_locale<CharT>(-1'000'000s) == SV("-1 000 000s")
 std/time/time.duration/time.duration.nonmember/ostream.pass.cpp FAIL
 
@@ -1292,38 +1273,6 @@ std/time/time.syn/formatter.sys_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.tai_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.utc_time.pass.cpp:2 FAIL
 std/time/time.syn/formatter.zoned_time.pass.cpp:2 FAIL
-
-# Not analyzed. constexpr evaluation fails with note: failure was caused by out of range index MEOW; allowed range is 0 <= index < 2
-std/ranges/range.adaptors/range.join/adaptor.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join/adaptor.pass.cpp:1 FAIL
-std/ranges/range.adaptors/range.join/range.join.iterator/increment.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join/range.join.iterator/increment.pass.cpp:1 FAIL
-
-# Not analyzed. constexpr evaluation fails in assert(*--iter == i).
-std/ranges/range.adaptors/range.join/range.join.iterator/decrement.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join/range.join.iterator/decrement.pass.cpp:1 FAIL
-
-# Not analyzed. constexpr evaluation fails in assert(*iter++ == i).
-std/ranges/range.adaptors/range.join/range.join.iterator/star.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join/range.join.iterator/star.pass.cpp:1 FAIL
-
-# Not analyzed. constexpr evaluation fails in ranges::swap.
-std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join/range.join.iterator/iter.swap.pass.cpp:1 FAIL
-
-# Not analyzed. Likely MSVC constexpr bug, "note: failure was caused by a read of a variable outside its lifetime"
-std/containers/views/mdspan/mdspan/index_operator.pass.cpp:0 FAIL
-std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
-
-# Not analyzed. Likely MSVC constexpr bug, "note: a non-constant (sub-)expression was encountered" in swap()
-std/utilities/utility/utility.swap/swap_array.pass.cpp:0 FAIL
-std/utilities/utility/utility.swap/swap_array.pass.cpp:1 FAIL
-
-# Not analyzed. MSVC constexpr ICE.
-std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:0 FAIL
-std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:1 FAIL
-std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:0 FAIL
-std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:1 FAIL
 
 # Not analyzed. Possible Clang constexpr bug involving the test's sized_allocator and our check for transposed ranges.
 std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:2 FAIL
@@ -1527,6 +1476,23 @@ std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:1 
 # Not analyzed. Emitting easily-suppressed truncation warnings for MSVC, but also compiler errors for MSVC and Clang.
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.pass.cpp FAIL
 
+# Not analyzed, likely MSVC compiler bugs.
+std/utilities/function.objects/refwrap/common_reference.compile.pass.cpp:0 FAIL
+std/utilities/function.objects/refwrap/common_reference.compile.pass.cpp:1 FAIL
+std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp:0 FAIL
+std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp:1 FAIL
+
+# Not analyzed.
+# MSVC emits truncation warnings, which will be partially addressed by GH-5562.
+# Clang asserts `allocated_ == 0 || allocated_ >= i` due to the container proxy object.
+std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
+
+# Not analyzed. MSVC emits warning C4267: 'argument': conversion from 'size_t' to 'unsigned char', possible loss of data
+std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:1 FAIL
+
 
 # *** XFAILS WHICH PASS ***
 # These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
@@ -1579,6 +1545,7 @@ std/containers/unord/unord.map/unord.map.modifiers/insert_range.pass.cpp:9 SKIPP
 std/containers/unord/unord.multimap/unord.multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
 std/containers/unord/unord.multiset/insert_range.pass.cpp:9 SKIPPED
 std/containers/unord/unord.set/insert_range.pass.cpp:9 SKIPPED
+std/containers/views/mdspan/mdspan/conversion.pass.cpp:9 SKIPPED
 std/depr/depr.c.headers/setjmp_h.compile.pass.cpp:9 SKIPPED
 std/input.output/file.streams/fstreams/ifstream.members/buffered_reads.pass.cpp:9 SKIPPED
 std/input.output/file.streams/fstreams/ofstream.members/buffered_writes.pass.cpp:9 SKIPPED
@@ -1587,7 +1554,7 @@ std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.pointer.pass.cpp:9 SKIPPE
 std/ranges/range.adaptors/range.lazy.split/constraints.compile.pass.cpp:9 SKIPPED
 std/ranges/range.utility/range.utility.conv/to.pass.cpp:9 SKIPPED
 std/thread/thread.jthread/assign.move.pass.cpp:9 SKIPPED
-std/utilities/meta/meta.unary/dependent_return_type.compile.pass.cpp:9 SKIPPED
+std/utilities/meta/meta.unary/dependent_return_type.pass.cpp:9 SKIPPED
 
 # These tests are marked as `XFAIL: msvc`, but the MSVC-internal test harness doesn't yet parse XFAIL.
 std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp:9 SKIPPED
@@ -1600,3 +1567,6 @@ std/input.output/string.streams/stringstream/stringstream.members/gcount.pass.cp
 
 # Similarly, this test is marked as `REQUIRES: 32-bit-pointer`.
 std/iterators/iterator.container/ssize.LWG3207.compile.pass.cpp:9 SKIPPED
+
+# This test is marked as `REQUIRES: target={{.+}}-apple-{{.+}}`.
+std/input.output/file.streams/fstreams/filebuf.virtuals/overflow.writefail.pass.cpp:9 SKIPPED

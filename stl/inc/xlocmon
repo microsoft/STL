@@ -198,7 +198,7 @@ private:
             // international or bad parameters
             _Ptr = "$+xv";
         } else {
-            // clang-format off
+            // clang-format off: preserve column/row/group structure of the string literal
             _Ptr =
                 "+v$x" "+v$x" "v$+x" "v+$x" "v$+x"
                 "+$vx" "+$vx" "$v+x" "+$vx" "$+vx"

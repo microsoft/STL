@@ -2445,7 +2445,7 @@ void test_lwg_3886_volatile() {
 static_assert(copyable<expected<any, int>>);
 static_assert(copyable<expected<void, any>>);
 
-// Test workaround for DevCom-10655311: Class derived from std::expected can't be constructed with bool value type
+// Test DevCom-10655311: Class derived from std::expected can't be constructed with bool value type
 template <class T, class E>
 class DerivedFromExpected : private expected<T, E> {
 public:

@@ -2103,6 +2103,32 @@ void test_gh_5576() {
         match_default, "AbGweEXfFlXlLLlffflEXlF");
 }
 
+void test_gh_5672() {
+    // GH-5672: Speed up skip optimization for default `regex_traits` in `collate` mode
+    // The PR added a faster branch in the skip optimization when matching in collate mode
+    // for default `regex_traits<char>` and `regex_traits<wchar_t>`.
+    // The following tests check that searching still works correctly when the faster branch is engaged.
+    {
+        test_regex collating_re(&g_regexTester, "g", regex_constants::collate);
+
+        collating_re.should_search_match("abcdefghijklmnopqrstuvwxyz", "g");
+        collating_re.should_search_fail("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        collating_re.should_search_match("zyxwvutsrqponmlkjihgfedcba", "g");
+        collating_re.should_search_fail("ZYXWVUTSRQPONMLKJIHGFEDCBA");
+        collating_re.should_search_fail("zyxwvutsrqponmlkjihedcba");
+    }
+
+    {
+        test_wregex collating_re(&g_regexTester, L"g", regex_constants::collate);
+
+        collating_re.should_search_match(L"abcdefghijklmnopqrstuvwxyz", L"g");
+        collating_re.should_search_fail(L"ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        collating_re.should_search_match(L"zyxwvutsrqponmlkjihgfedcba", L"g");
+        collating_re.should_search_fail(L"ZYXWVUTSRQPONMLKJIHGFEDCBA");
+        collating_re.should_search_fail(L"zyxwvutsrqponmlkjihedcba");
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2153,6 +2179,7 @@ int main() {
     test_gh_5490();
     test_gh_5509();
     test_gh_5576();
+    test_gh_5672();
 
     return g_regexTester.result();
 }

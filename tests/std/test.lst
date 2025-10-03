@@ -259,6 +259,7 @@ tests\GH_004845_logical_operator_traits_with_non_bool_constant
 tests\GH_004929_internal_tag_constructors
 tests\GH_004930_char_traits_user_specialization
 tests\GH_005090_stl_hardening
+tests\GH_005090_stl_hardening_cxx20_iterators
 tests\GH_005204_regex_collating_ranges
 tests\GH_005236_collate_facet
 tests\GH_005244_regex_escape_sequences
@@ -683,6 +684,7 @@ tests\P2440R1_ranges_alg_shift_left
 tests\P2440R1_ranges_alg_shift_right
 tests\P2440R1_ranges_numeric_iota
 tests\P2441R2_views_join_with
+tests\P2442R1_signed128_div_ceil
 tests\P2442R1_views_chunk
 tests\P2442R1_views_chunk_death
 tests\P2442R1_views_slide
@@ -705,6 +707,7 @@ tests\P2510R3_text_formatting_pointers
 tests\P2517R1_apply_conditional_noexcept
 tests\P2538R1_adl_proof_std_projected
 tests\P2609R3_relaxing_ranges_just_a_smidge
+tests\P2674R1_is_implicit_lifetime
 tests\P2693R1_ostream_and_thread_id
 tests\P2693R1_text_formatting_header_stacktrace
 tests\P2693R1_text_formatting_header_thread

@@ -327,7 +327,6 @@ inline size_t _Regex_transform_primary(_Out_writes_(_Last1 - _First1) _Post_read
 template <class _Elem>
 class _Regex_traits : public _Regex_traits_base { // base class for regular expression traits
 public:
-    using _Uelem      = make_unsigned_t<_Elem>;
     using char_type   = _Elem;
     using size_type   = size_t;
     using string_type = basic_string<_Elem>;
@@ -638,11 +637,9 @@ inline bool _Is_word(char _Ch) {
 
 template <class _Elem>
 bool _Is_word(_Elem _Ch) {
-    // assumes 'x' == L'x' for the ASCII range
-    using _UElem = make_unsigned_t<_Elem>;
-
-    const auto _UCh = static_cast<_UElem>(_Ch);
-    return _UCh <= static_cast<_UElem>('z') && _Is_word(static_cast<unsigned char>(_UCh));
+    // assumes that ASCII characters are represented at ASCII code points
+    const auto _Uchar = static_cast<unsigned char>(_Ch);
+    return static_cast<_Elem>(_Uchar) == _Ch && _Uchar <= 'z' && _Is_word(_Uchar);
 }
 
 _EXPORT_STD template <class _BidIt>
@@ -1577,7 +1574,7 @@ public:
 };
 
 struct _Loop_vals_v2_t { // storage for loop administration
-    void* _Loop_iter          = nullptr;
+    size_t _Loop_frame_idx    = 0;
     int _Loop_idx             = 0;
     unsigned int _Group_first = 0;
 };
@@ -1677,10 +1674,23 @@ public:
     }
 };
 
-template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-class _Matcher2 { // provides ways to match a regular expression to a text sequence
+enum class _Rx_unwind_ops {
+    _After_assert = _N_end + 1,
+    _After_neg_assert,
+};
+
+template <class _BidIt>
+class _Rx_state_frame_t {
 public:
-    _Matcher2(_It _Pfirst, _It _Plast, const _RxTraits& _Tr, _Root_node* _Re, unsigned int _Nx,
+    _Rx_unwind_ops _Code;
+    _Node_base* _Node;
+    _Tgt_state_t<_BidIt> _Match_state;
+};
+
+template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
+class _Matcher3 { // provides ways to match a regular expression to a text sequence
+public:
+    _Matcher3(_It _Pfirst, _It _Plast, const _RxTraits& _Tr, _Root_node* _Re, unsigned int _Nx,
         regex_constants::syntax_option_type _Sf, regex_constants::match_flag_type _Mf)
         : _Begin(_Pfirst), _End(_Plast), _Rep(_Re), _Sflags(_Sf), _Mflags(_Mf), _Ncap(_Nx),
           _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)), _Traits(_Tr) {
@@ -1739,10 +1749,14 @@ public:
         _Full                 = _Full_match;
         _Max_complexity_count = _REGEX_MAX_COMPLEXITY_COUNT;
         _Max_stack_count      = _REGEX_MAX_STACK_COUNT;
+        _Frames_count         = 0;
 
         _Matched = false;
 
-        if (!_Match_pat(_Rep)) {
+        bool _Succeeded = _Match_pat(_Rep);
+        _STL_INTERNAL_CHECK(_Frames_count == 0);
+
+        if (!_Succeeded) {
             return false;
         }
 
@@ -1787,9 +1801,15 @@ private:
     _Tgt_state_t<_It> _Tgt_state;
     _Tgt_state_t<_It> _Res;
     vector<_Loop_vals_v2_t> _Loop_vals;
+    vector<_Rx_state_frame_t<_It>> _Frames;
+    size_t _Frames_count;
 
-    bool _Do_assert(_Node_assert*);
-    bool _Do_neg_assert(_Node_assert*);
+    size_t _Push_frame(_Rx_unwind_ops _Code = {}, _Node_base* _Node = nullptr);
+    void _Pop_frame(size_t);
+
+    void _Increase_stack_usage_count();
+    void _Decrease_stack_usage_count();
+
     bool _Do_if(_Node_if*);
     bool _Do_rep0(_Node_rep*, bool);
     bool _Do_rep(_Node_rep*, bool, int);
@@ -1818,8 +1838,8 @@ private:
     typename _RxTraits::char_class_type _Char_class_d{};
 
 public:
-    _Matcher2(const _Matcher2&)            = delete;
-    _Matcher2& operator=(const _Matcher2&) = delete;
+    _Matcher3(const _Matcher3&)            = delete;
+    _Matcher3& operator=(const _Matcher3&) = delete;
 };
 
 enum _Prs_ret { // indicate class element type
@@ -2294,7 +2314,7 @@ bool _Regex_match1(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matche
         return false;
     }
 
-    _Matcher2<_BidIt, _Elem, _RxTraits, _It, void> _Mx(
+    _Matcher3<_BidIt, _Elem, _RxTraits, _It, void> _Mx(
         _First, _Last, _Re._Get_traits(), _Re._Get(), _Re.mark_count() + 1, _Re.flags(), _Flgs);
     return _Mx._Match(_Matches, _Full);
 }
@@ -2369,7 +2389,7 @@ bool _Regex_search2(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Match
         ++_First;
     }
 
-    _Matcher2<_BidIt, _Elem, _RxTraits, _It, void> _Mx(
+    _Matcher3<_BidIt, _Elem, _RxTraits, _It, void> _Mx(
         _First, _Last, _Re._Get_traits(), _Re._Get(), _Re.mark_count() + 1, _Re.flags(), _Flgs);
 
     if (_Mx._Match(_Matches, false)) {
@@ -3322,10 +3342,14 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_rep(int _Min, int _Max, bool _Gre
         return;
     }
 
+    if (_Root->_Loops == static_cast<unsigned int>(-1)) {
+        _Xregex_error(regex_constants::error_space);
+    }
+
     _Node_end_rep* _Node0 = new _Node_end_rep();
-    _Node_rep* _Nx        = new _Node_rep(_Greedy, _Min, _Max, _Node0, _Root->_Loops++);
-    _Node0->_Begin_rep    = _Nx;
     _Link_node(_Node0);
+    _Node_rep* _Nx     = new _Node_rep(_Greedy, _Min, _Max, _Node0, _Root->_Loops++);
+    _Node0->_Begin_rep = _Nx;
     _Insert_node(_Pos, _Nx);
 }
 
@@ -3342,35 +3366,49 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Tidy() noexcept { // free memory
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_assert(_Node_assert* _Node) { // apply assert node
-    _It _Ch = _Tgt_state._Cur;
-    if (_Match_pat(_Node->_Child)) {
-        _Tgt_state._Cur = _Ch;
-        return true;
+size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Push_frame(_Rx_unwind_ops _Code, _Node_base* _Node) {
+    if (_Frames_count >= _Frames.size()) {
+        _Frames.push_back({_Code, _Node, _Tgt_state});
     } else {
-        return false;
+        auto& _Frame        = _Frames[_Frames_count];
+        _Frame._Code        = _Code;
+        _Frame._Node        = _Node;
+        _Frame._Match_state = _Tgt_state;
+    }
+    return _Frames_count++;
+}
+
+template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
+void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Pop_frame(size_t _Idx) {
+    _STL_INTERNAL_CHECK(_Idx + 1 == _Frames_count);
+    _Frames_count = _Idx;
+}
+
+template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
+void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Increase_stack_usage_count() {
+    if (0 < _Max_stack_count && --_Max_stack_count <= 0) {
+        _Xregex_error(regex_constants::error_stack);
+    }
+
+    if (0 < _Max_complexity_count && --_Max_complexity_count <= 0) {
+        _Xregex_error(regex_constants::error_complexity);
     }
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_neg_assert(_Node_assert* _Node) {
-    // apply negative assert node
-    _Bt_state_t<_It> _St = _Tgt_state;
-    if (!_Match_pat(_Node->_Child)) {
-        _Tgt_state = _St;
-        return true;
-    } else {
-        return false;
+void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Decrease_stack_usage_count() {
+    if (0 < _Max_stack_count) {
+        ++_Max_stack_count;
     }
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_if(_Node_if* _Node) { // apply if node
-    _Tgt_state_t<_It> _St = _Tgt_state;
+bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_if(_Node_if* _Node) { // apply if node
+    const size_t _Frame_idx = _Push_frame();
 
     // look for the first match
     for (; _Node; _Node = _Node->_Child) { // process one branch of if
-        _Tgt_state = _St; // rewind to where the alternation starts in input
+        _Tgt_state = _Frames[_Frame_idx]._Match_state; // rewind to where the alternation starts in input
         if (_Match_pat(_Node->_Next)) { // try to match this branch
             break;
         }
@@ -3378,11 +3416,13 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_if(_Node_if* _Node) {
 
     // if none of the if branches matched, fail to match
     if (!_Node) {
+        _Pop_frame(_Frame_idx);
         return false;
     }
 
     // if we aren't looking for the longest match, that's it
     if (!_Longest) {
+        _Pop_frame(_Frame_idx);
         return true;
     }
 
@@ -3393,32 +3433,36 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_if(_Node_if* _Node) {
             break;
         }
 
-        _Tgt_state = _St;
+        _Tgt_state = _Frames[_Frame_idx]._Match_state;
         (void) _Match_pat(_Node->_Next);
     }
+    _Pop_frame(_Frame_idx);
     return true;
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node, bool _Greedy) {
+bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node, bool _Greedy) {
     // apply repetition to loop with no nested if/do
-    int _Ix               = 0;
-    _Tgt_state_t<_It> _St = _Tgt_state;
+    int _Ix                 = 0;
+    const size_t _Frame_idx = _Push_frame();
 
     if (0 < _Node->_Min) {
         // GH-5365: We can avoid resetting capture groups for the first iteration
         // because we know that a simple repetition of this loop was not encountered before.
         if (!_Match_pat(_Node->_Next)) { // didn't match minimum number of reps, fail
+            _Pop_frame(_Frame_idx);
             return false;
-        } else if (_Tgt_state._Cur == _St._Cur) { // matches empty string
+        } else if (_Tgt_state._Cur == _Frames[_Frame_idx]._Match_state._Cur) { // matches empty string
             // loop is branchless, so it will only ever match empty strings
             // -> skip all other matches as they don't change state and immediately try tail
+            _Pop_frame(_Frame_idx);
             return _Match_pat(_Node->_End_rep->_Next);
         } else { // loop never matches the empty string
             for (_Ix = 1; _Ix < _Node->_Min; ++_Ix) { // do minimum number of reps
                 // GH-5365: We have to reset the capture groups from the second iteration on.
-                _Tgt_state._Grp_valid = _St._Grp_valid;
+                _Tgt_state._Grp_valid = _Frames[_Frame_idx]._Match_state._Grp_valid;
                 if (!_Match_pat(_Node->_Next)) { // didn't match minimum number of reps, fail
+                    _Pop_frame(_Frame_idx);
                     return false;
                 }
             }
@@ -3432,6 +3476,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
 
     if (_Match_pat(_Node->_End_rep->_Next)) {
         if (!_Greedy) {
+            _Pop_frame(_Frame_idx);
             return true; // go with current match
         }
 
@@ -3442,7 +3487,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
 
     if (_Ix == 0 && _Node->_Max != 0) {
         _Tgt_state._Cur       = _Saved_pos;
-        _Tgt_state._Grp_valid = _St._Grp_valid;
+        _Tgt_state._Grp_valid = _Frames[_Frame_idx]._Match_state._Grp_valid;
 
         if (!_Match_pat(_Node->_Next)) { // rep match failed, we are done
             _Done = true;
@@ -3450,12 +3495,14 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
             _Done = true;
             // we only potentially accept/try tail for POSIX
             if ((_Sflags & regex_constants::_Any_posix) && _Match_pat(_Node->_End_rep->_Next)) {
+                _Pop_frame(_Frame_idx);
                 return true; // go with current match
             }
         } else {
             _Saved_pos = _Tgt_state._Cur;
             if (_Match_pat(_Node->_End_rep->_Next)) {
                 if (!_Greedy) {
+                    _Pop_frame(_Frame_idx);
                     return true; // go with current match
                 }
 
@@ -3470,7 +3517,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
     if (!_Done) {
         while (_Node->_Max == -1 || _Ix++ < _Node->_Max) { // try another rep/tail match
             _Tgt_state._Cur       = _Saved_pos;
-            _Tgt_state._Grp_valid = _St._Grp_valid;
+            _Tgt_state._Grp_valid = _Frames[_Frame_idx]._Match_state._Grp_valid;
             if (!_Match_pat(_Node->_Next) || _Tgt_state._Cur == _Saved_pos) {
                 break; // rep match failed, quit loop
             }
@@ -3479,6 +3526,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
             _Saved_pos = _Tgt_state._Cur;
             if (_Match_pat(_Node->_End_rep->_Next)) {
                 if (!_Greedy) {
+                    _Pop_frame(_Frame_idx);
                     return true; // go with current match
                 }
 
@@ -3492,22 +3540,24 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
     if (_Matched0) { // record final match
         _Tgt_state = _Final;
     }
+
+    _Pop_frame(_Frame_idx);
     return _Matched0;
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node, bool _Greedy, int _Init_idx) {
+bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node, bool _Greedy, int _Init_idx) {
     // apply repetition
-    bool _Matched0         = false;
-    _Tgt_state_t<_It> _St  = _Tgt_state;
-    _Loop_vals_v2_t* _Psav = &_Loop_vals[_Node->_Loop_number];
-    int _Loop_idx_sav      = _Psav->_Loop_idx;
-    _It* _Loop_iter_sav    = static_cast<_It*>(_Psav->_Loop_iter);
-    bool _Progress         = _Init_idx == 0 || *_Loop_iter_sav != _St._Cur;
+    bool _Matched0                   = false;
+    _Loop_vals_v2_t* _Psav           = &_Loop_vals[_Node->_Loop_number];
+    const int _Loop_idx_sav          = _Psav->_Loop_idx;
+    const size_t _Loop_frame_idx_sav = _Psav->_Loop_frame_idx;
+    const size_t _Frame_idx          = _Push_frame();
+    const bool _Progress = _Init_idx == 0 || _Frames[_Loop_frame_idx_sav]._Match_state._Cur != _Tgt_state._Cur;
 
     if (_Init_idx < _Node->_Min) { // try another required match
-        _Psav->_Loop_iter = _STD addressof(_St._Cur);
-        _Psav->_Loop_idx  = _Progress ? _Init_idx + 1 : _Node->_Min; // try only one more match after an empty match
+        _Psav->_Loop_frame_idx = _Frame_idx;
+        _Psav->_Loop_idx = _Progress ? _Init_idx + 1 : _Node->_Min; // try only one more match after an empty match
         _STD fill(_Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Psav->_Group_first),
             _Tgt_state._Grp_valid.end(), false);
         _Matched0 = _Match_pat(_Node->_Next);
@@ -3520,35 +3570,35 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node,
             _Matched0 = _Match_pat(_Node->_End_rep->_Next);
 
             // try to match with one more repetition
-            _Tgt_state        = _St;
-            _Psav->_Loop_idx  = _Init_idx + 1;
-            _Psav->_Loop_iter = _STD addressof(_St._Cur);
+            _Tgt_state             = _Frames[_Frame_idx]._Match_state;
+            _Psav->_Loop_idx       = _Init_idx + 1;
+            _Psav->_Loop_frame_idx = _Frame_idx;
             if (_Match_pat(_Node->_Next)) { // always call _Match_pat, even when _Matched0 is already true
                 _Matched0 = true;
             }
         } else if (!_Greedy) { // not greedy, favor minimum number of reps
             _Matched0 = _Match_pat(_Node->_End_rep->_Next);
             if (!_Matched0) { // tail failed, try another rep
-                _Tgt_state        = _St;
-                _Psav->_Loop_idx  = _Init_idx + 1;
-                _Psav->_Loop_iter = _STD addressof(_St._Cur);
+                _Tgt_state             = _Frames[_Frame_idx]._Match_state;
+                _Psav->_Loop_idx       = _Init_idx + 1;
+                _Psav->_Loop_frame_idx = _Frame_idx;
                 _STD fill(_Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Psav->_Group_first),
                     _Tgt_state._Grp_valid.end(), false);
                 _Matched0 = _Match_pat(_Node->_Next);
             }
         } else { // greedy, favor maximum number of reps,
             // so try another rep
-            _Psav->_Loop_idx  = _Init_idx + 1;
-            _Psav->_Loop_iter = _STD addressof(_St._Cur);
+            _Psav->_Loop_idx       = _Init_idx + 1;
+            _Psav->_Loop_frame_idx = _Frame_idx;
             _STD fill(_Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Psav->_Group_first),
                 _Tgt_state._Grp_valid.end(), false);
             _Matched0 = _Match_pat(_Node->_Next);
 
             if (!_Matched0) { // rep failed, try tail
-                _Psav->_Loop_idx  = _Loop_idx_sav;
-                _Psav->_Loop_iter = _Loop_iter_sav;
-                _Tgt_state        = _St;
-                _Matched0         = _Match_pat(_Node->_End_rep->_Next);
+                _Psav->_Loop_idx       = _Loop_idx_sav;
+                _Psav->_Loop_frame_idx = _Loop_frame_idx_sav;
+                _Tgt_state             = _Frames[_Frame_idx]._Match_state;
+                _Matched0              = _Match_pat(_Node->_End_rep->_Next);
             }
         }
     } else if (_Init_idx == 1 && (_Sflags & regex_constants::_Any_posix)) {
@@ -3557,13 +3607,14 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node,
         _Matched0 = _Match_pat(_Node->_End_rep->_Next);
     }
 
-    _Psav->_Loop_idx  = _Loop_idx_sav;
-    _Psav->_Loop_iter = _Loop_iter_sav;
+    _Psav->_Loop_idx       = _Loop_idx_sav;
+    _Psav->_Loop_frame_idx = _Loop_frame_idx_sav;
+    _Pop_frame(_Frame_idx);
     return _Matched0;
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep_first(_Node_rep* _Node) {
+bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep_first(_Node_rep* _Node) {
     bool _Greedy = (_Node->_Flags & _Fl_greedy) != 0;
     // apply repetition
     if (_Node->_Simple_loop == 1) {
@@ -3584,7 +3635,7 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep_first(_Node_rep* 
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Find_first_inner_capture_group(
+bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Find_first_inner_capture_group(
     _Node_base* _Nx, _Loop_vals_v2_t* _Loop_state) {
     if (0 < _Max_stack_count && --_Max_stack_count <= 0) {
         _Xregex_error(regex_constants::error_stack);
@@ -3693,6 +3744,8 @@ _BidIt1 _Compare_translate_both(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2,
     // compare character ranges, translating characters in both ranges according to syntax options
     if (_Sflags & regex_constants::icase) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_icase<_RxTraits>{_Traits});
+    } else if constexpr (_Is_any_of_v<_RxTraits, regex_traits<char>, regex_traits<wchar_t>>) {
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_collate<_RxTraits>{_Traits});
     } else {
@@ -3706,6 +3759,8 @@ _BidIt1 _Compare_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2,
     // compare character ranges, translating characters in the left range according to syntax options
     if (_Sflags & regex_constants::icase) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_icase_translateleft<_RxTraits>{_Traits});
+    } else if constexpr (_Is_any_of_v<_RxTraits, regex_traits<char>, regex_traits<wchar_t>>) {
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
         return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_collate_translateleft<_RxTraits>{_Traits});
     } else {
@@ -3720,6 +3775,8 @@ _BidIt1 _Search_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, 
     // after translating characters in the left sequence according to syntax options
     if (_Sflags & regex_constants::icase) {
         return _STD search(_Begin1, _End1, _Begin2, _End2, _Cmp_icase_translateleft<_RxTraits>{_Traits});
+    } else if constexpr (_Is_any_of_v<_RxTraits, regex_traits<char>, regex_traits<wchar_t>>) {
+        return _STD search(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
         return _STD search(_Begin1, _End1, _Begin2, _End2, _Cmp_collate_translateleft<_RxTraits>{_Traits});
     } else {
@@ -3727,11 +3784,23 @@ _BidIt1 _Search_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, 
     }
 }
 
-template <class _Elem>
-bool _Lookup_range(unsigned int _Ch, const _Buf<_Elem>* _Bufptr) { // check whether _Ch is in _Buf
-    using _Uelem = make_unsigned_t<_Elem>;
+template <class _Char_traits, class _Elem>
+bool _Lookup_range(const _Elem _Ch, const _Buf<_Elem>* const _Bufptr) { // check whether _Ch is in _Buf
     for (unsigned int _Ix = 0; _Ix < _Bufptr->_Size(); _Ix += 2) { // check current position
-        if (static_cast<_Uelem>(_Bufptr->_At(_Ix)) <= _Ch && _Ch <= static_cast<_Uelem>(_Bufptr->_At(_Ix + 1))) {
+        const _Elem _Left  = _Bufptr->_At(_Ix);
+        const _Elem _Right = _Bufptr->_At(_Ix + 1);
+
+        bool _Within_range;
+        if constexpr (is_same_v<_Char_traits, char_traits<char>>) {
+            const auto _Uchar = static_cast<unsigned char>(_Ch);
+            _Within_range = static_cast<unsigned char>(_Left) <= _Uchar && _Uchar <= static_cast<unsigned char>(_Right);
+        } else if constexpr (is_same_v<_Char_traits, char_traits<wchar_t>>) {
+            _Within_range = _Left <= _Ch && _Ch <= _Right;
+        } else {
+            _Within_range = !_Char_traits::lt(_Ch, _Left) && !_Char_traits::lt(_Right, _Ch);
+        }
+
+        if (_Within_range) {
             return true;
         }
     }
@@ -3820,7 +3889,7 @@ _BidIt _Lookup_coll2(_Elem _First_ch, _BidIt _First, const _BidIt _Last, const _
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-_It _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx, _It _First) {
+_It _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx, _It _First) {
     // apply bracket expression
     bool _Found;
     _Elem _Ch = *_First;
@@ -3829,7 +3898,7 @@ _It _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx,
     } else if (_Sflags & regex_constants::collate) {
         _Ch = _Traits.translate(_Ch);
     }
-    const auto _UCh = static_cast<typename _RxTraits::_Uelem>(_Ch);
+    const auto _Uchar = static_cast<unsigned char>(_Ch);
 
     _It _Res0 = _First;
     ++_Res0;
@@ -3841,11 +3910,12 @@ _It _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx,
         _Res0  = _Resx;
         _Found = true;
     } else if (_Node->_Ranges
-               && (_Sflags & regex_constants::collate ? _STD _Lookup_collating_range(_Ch, _Node->_Ranges, _Traits)
-                                                      : _STD _Lookup_range(_UCh, _Node->_Ranges))) {
+               && (_Sflags & regex_constants::collate
+                       ? _STD _Lookup_collating_range(_Ch, _Node->_Ranges, _Traits)
+                       : _STD _Lookup_range<typename _RxTraits::string_type::traits_type>(_Ch, _Node->_Ranges))) {
         _Found = true;
-    } else if (_UCh < _Bmp_max) {
-        _Found = _Node->_Small && _Node->_Small->_Find(_UCh);
+    } else if (static_cast<_Elem>(_Uchar) == _Ch) {
+        _Found = _Node->_Small && _Node->_Small->_Find(_Uchar);
     } else if (_Node->_Large
                && _STD find(_Node->_Large->_Str(), _Node->_Large->_Str() + _Node->_Large->_Size(), _Ch)
                       != _Node->_Large->_Str() + _Node->_Large->_Size()) {
@@ -3877,7 +3947,7 @@ _It _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx,
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Better_match() {
+bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Better_match() {
     // check for better match under leftmost-longest rule
 
     // a longer match is better than a shorter one
@@ -3909,25 +3979,25 @@ bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Better_match() {
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Is_wbound() const {
+bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Is_wbound() const {
     if ((_Mflags & regex_constants::match_prev_avail)
         || _Tgt_state._Cur != _Begin) { // if --_Cur is valid, check for preceding word character
         if (_Tgt_state._Cur == _End) {
-            return (_Mflags & regex_constants::match_not_eow) == 0 && _Is_word(*_Prev_iter(_Tgt_state._Cur));
+            return (_Mflags & regex_constants::match_not_eow) == 0 && _STD _Is_word(*_Prev_iter(_Tgt_state._Cur));
         } else {
-            return _Is_word(*_Prev_iter(_Tgt_state._Cur)) != _Is_word(*_Tgt_state._Cur);
+            return _STD _Is_word(*_Prev_iter(_Tgt_state._Cur)) != _STD _Is_word(*_Tgt_state._Cur);
         }
     } else { // --_Cur is not valid
         if (_Tgt_state._Cur == _End) {
             return false;
         } else {
-            return (_Mflags & regex_constants::match_not_bow) == 0 && _Is_word(*_Tgt_state._Cur);
+            return (_Mflags & regex_constants::match_not_bow) == 0 && _STD _Is_word(*_Tgt_state._Cur);
         }
     }
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-typename _RxTraits::char_class_type _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Lookup_char_class(
+typename _RxTraits::char_class_type _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Lookup_char_class(
     const _Elem _Class_name) const {
     // look up character class with single-character name
     auto _Ptr = _STD addressof(_Class_name);
@@ -3936,230 +4006,277 @@ typename _RxTraits::char_class_type _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Al
 
 template <class _Elem>
 bool _Is_ecmascript_line_terminator(_Elem _Ch) {
-    return _Ch == _Meta_nl || _Ch == _Meta_cr || _Ch == _Meta_ls || _Ch == _Meta_ps;
+    if constexpr (is_same_v<_Elem, char>) {
+        return _Ch == _Meta_nl || _Ch == _Meta_cr;
+    } else if constexpr (is_same_v<_Elem, wchar_t>) {
+        return _Ch == _Meta_nl || _Ch == _Meta_cr || _Ch == _Meta_ls || _Ch == _Meta_ps;
+    } else {
+        auto _UCh = static_cast<unsigned int>(_Ch);
+        return static_cast<_Elem>(_UCh) == _Ch
+            && (_UCh == _Meta_nl || _UCh == _Meta_cr || _UCh == _Meta_ls || _UCh == _Meta_ps);
+    }
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-bool _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // check for match
-    if (0 < _Max_stack_count && --_Max_stack_count <= 0) {
-        _Xregex_error(regex_constants::error_stack);
-    }
+bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // check for match
+    _Increase_stack_usage_count();
 
-    if (0 < _Max_complexity_count && --_Max_complexity_count <= 0) {
-        _Xregex_error(regex_constants::error_complexity);
-    }
+    bool _Failed                       = false;
+    const size_t _Initial_frames_count = _Frames_count;
 
-    bool _Failed = false;
-    while (_Nx) { // match current node
-        switch (_Nx->_Kind) { // handle current node's type
-        case _N_nop:
-            break;
+    while (_Nx) {
+        do { // match current node
+            _Node_base* _Next = _Nx->_Next;
+            switch (_Nx->_Kind) { // handle current node's type
+            case _N_nop:
+                break;
 
-        case _N_bol:
-            if ((_Mflags & regex_constants::match_prev_avail)
-                || _Tgt_state._Cur != _Begin) { // if --_Cur is valid, check for preceding newline
-                _Failed = !(_Sflags & regex_constants::multiline)
-                       || !_STD _Is_ecmascript_line_terminator(*_STD _Prev_iter(_Tgt_state._Cur));
-            } else {
-                _Failed = (_Mflags & regex_constants::match_not_bol) != 0;
-            }
-            break;
+            case _N_bol:
+                if ((_Mflags & regex_constants::match_prev_avail)
+                    || _Tgt_state._Cur != _Begin) { // if --_Cur is valid, check for preceding newline
+                    _Failed = !(_Sflags & regex_constants::multiline)
+                           || !_STD _Is_ecmascript_line_terminator(*_STD _Prev_iter(_Tgt_state._Cur));
+                } else {
+                    _Failed = (_Mflags & regex_constants::match_not_bol) != 0;
+                }
+                break;
 
-        case _N_eol:
-            if (_Tgt_state._Cur == _End) {
-                _Failed = (_Mflags & regex_constants::match_not_eol) != 0;
-            } else {
-                _Failed =
-                    !(_Sflags & regex_constants::multiline) || !_STD _Is_ecmascript_line_terminator(*_Tgt_state._Cur);
-            }
+            case _N_eol:
+                if (_Tgt_state._Cur == _End) {
+                    _Failed = (_Mflags & regex_constants::match_not_eol) != 0;
+                } else {
+                    _Failed = !(_Sflags & regex_constants::multiline)
+                           || !_STD _Is_ecmascript_line_terminator(*_Tgt_state._Cur);
+                }
 
-            break;
+                break;
 
-        case _N_wbound:
-            _Failed = _Is_wbound() == ((_Nx->_Flags & _Fl_negate) != 0);
-            break;
+            case _N_wbound:
+                _Failed = _Is_wbound() == ((_Nx->_Flags & _Fl_negate) != 0);
+                break;
 
-        case _N_dot:
-            if (_Tgt_state._Cur == _End) {
-                _Failed = true;
-            } else {
-                const _Elem _Ch = *_Tgt_state._Cur;
-                if (_Sflags & regex_constants::_Any_posix) {
-                    if (_Ch == _Elem()) {
+            case _N_dot:
+                if (_Tgt_state._Cur == _End) {
+                    _Failed = true;
+                } else {
+                    const _Elem _Ch = *_Tgt_state._Cur;
+                    if (_Sflags & regex_constants::_Any_posix) {
+                        if (_Ch == _Elem()) {
+                            _Failed = true;
+                        }
+                    } else if (_STD _Is_ecmascript_line_terminator(_Ch)) {
                         _Failed = true;
                     }
-                } else if (_STD _Is_ecmascript_line_terminator(_Ch)) {
-                    _Failed = true;
-                }
 
-                if (!_Failed) {
-                    ++_Tgt_state._Cur;
-                }
-            }
-
-            break;
-
-        case _N_str:
-            { // check for string match
-                _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
-                _It _Res0;
-                if ((_Res0 = _STD _Compare_translate_left(_Tgt_state._Cur, _End, _Node->_Data._Str(),
-                         _Node->_Data._Str() + _Node->_Data._Size(), _Traits, _Sflags))
-                    != _Tgt_state._Cur) {
-                    _Tgt_state._Cur = _Res0;
-                } else {
-                    _Failed = true;
+                    if (!_Failed) {
+                        ++_Tgt_state._Cur;
+                    }
                 }
 
                 break;
-            }
 
-        case _N_class:
-            { // check for bracket expression match
-                _It _Res;
-                if (_Tgt_state._Cur != _End && (_Res = _Do_class(_Nx, _Tgt_state._Cur)) != _Tgt_state._Cur) {
-                    _Tgt_state._Cur = _Res;
-                } else {
-                    _Failed = true;
-                }
-                break;
-            }
-
-        case _N_group:
-            break;
-
-        case _N_end_group:
-            break;
-
-        case _N_assert:
-            { // check assert
-                _Failed = !_Do_assert(static_cast<_Node_assert*>(_Nx));
-                break;
-            }
-
-        case _N_neg_assert:
-            { // check negative assert
-                _Failed = !_Do_neg_assert(static_cast<_Node_assert*>(_Nx));
-                break;
-            }
-
-        case _N_end_assert:
-            _Nx = nullptr;
-            break;
-
-        case _N_capture:
-            { // record current position
-                _Node_capture* _Node = static_cast<_Node_capture*>(_Nx);
-                if (_Node->_Idx != 0U) {
-                    _Tgt_state._Grps[_Node->_Idx]._Begin = _Tgt_state._Cur;
-                }
-                break;
-            }
-
-        case _N_end_capture:
-            { // record successful capture
-                _Node_end_group* _Node = static_cast<_Node_end_group*>(_Nx);
-                _Node_capture* _Node0  = static_cast<_Node_capture*>(_Node->_Back);
-                if (_Node0->_Idx != 0U) { // update capture data
-                    _Tgt_state._Grp_valid[_Node0->_Idx] = true;
-                    _Tgt_state._Grps[_Node0->_Idx]._End = _Tgt_state._Cur;
-                }
-                break;
-            }
-
-        case _N_back:
-            { // check back reference
-                _STL_INTERNAL_CHECK(
-                    (_Sflags & (regex_constants::extended | regex_constants::egrep | regex_constants::awk))
-                    == 0); // these grammars don't have backreferences
-                _Node_back* _Node = static_cast<_Node_back*>(_Nx);
-                if (_Tgt_state._Grp_valid[_Node->_Idx]) { // check for match
-                    _It _Res0 = _Tgt_state._Cur;
-                    _It _Bx   = _Tgt_state._Grps[_Node->_Idx]._Begin;
-                    _It _Ex   = _Tgt_state._Grps[_Node->_Idx]._End;
-                    if (_Bx != _Ex // _Bx == _Ex for zero-length match
-                        && (_Res0 = _STD _Compare_translate_both(_Tgt_state._Cur, _End, _Bx, _Ex, _Traits, _Sflags))
-                               == _Tgt_state._Cur) {
-                        _Failed = true;
-                    } else {
+            case _N_str:
+                { // check for string match
+                    _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
+                    _It _Res0;
+                    if ((_Res0 = _STD _Compare_translate_left(_Tgt_state._Cur, _End, _Node->_Data._Str(),
+                             _Node->_Data._Str() + _Node->_Data._Size(), _Traits, _Sflags))
+                        != _Tgt_state._Cur) {
                         _Tgt_state._Cur = _Res0;
+                    } else {
+                        _Failed = true;
                     }
-                } else if (_Sflags & (regex_constants::basic | regex_constants::grep)) {
+
+                    break;
+                }
+
+            case _N_class:
+                { // check for bracket expression match
+                    _It _Res;
+                    if (_Tgt_state._Cur != _End && (_Res = _Do_class(_Nx, _Tgt_state._Cur)) != _Tgt_state._Cur) {
+                        _Tgt_state._Cur = _Res;
+                    } else {
+                        _Failed = true;
+                    }
+                    break;
+                }
+
+            case _N_group:
+                break;
+
+            case _N_end_group:
+                break;
+
+            case _N_assert:
+                { // check assert
+                    auto _Node = static_cast<_Node_assert*>(_Nx);
+                    _Push_frame(_Rx_unwind_ops::_After_assert, _Node);
+                    _Next = _Node->_Child;
+
+                    _Increase_stack_usage_count();
+                    break;
+                }
+
+            case _N_neg_assert:
+                { // check negative assert
+                    auto _Node = static_cast<_Node_assert*>(_Nx);
+                    _Push_frame(_Rx_unwind_ops::_After_neg_assert, _Node);
+                    _Next = _Node->_Child;
+
+                    _Increase_stack_usage_count();
+                    break;
+                }
+
+            case _N_end_assert:
+                _Next = nullptr;
+                break;
+
+            case _N_capture:
+                { // record current position
+                    _Node_capture* _Node = static_cast<_Node_capture*>(_Nx);
+                    if (_Node->_Idx != 0U) {
+                        _Tgt_state._Grps[_Node->_Idx]._Begin = _Tgt_state._Cur;
+                    }
+                    break;
+                }
+
+            case _N_end_capture:
+                { // record successful capture
+                    _Node_end_group* _Node = static_cast<_Node_end_group*>(_Nx);
+                    _Node_capture* _Node0  = static_cast<_Node_capture*>(_Node->_Back);
+                    if (_Node0->_Idx != 0U) { // update capture data
+                        _Tgt_state._Grp_valid[_Node0->_Idx] = true;
+                        _Tgt_state._Grps[_Node0->_Idx]._End = _Tgt_state._Cur;
+                    }
+                    break;
+                }
+
+            case _N_back:
+                { // check back reference
+                    _STL_INTERNAL_CHECK(
+                        (_Sflags & (regex_constants::extended | regex_constants::egrep | regex_constants::awk))
+                        == 0); // these grammars don't have backreferences
+                    _Node_back* _Node = static_cast<_Node_back*>(_Nx);
+                    if (_Tgt_state._Grp_valid[_Node->_Idx]) { // check for match
+                        _It _Res0 = _Tgt_state._Cur;
+                        _It _Bx   = _Tgt_state._Grps[_Node->_Idx]._Begin;
+                        _It _Ex   = _Tgt_state._Grps[_Node->_Idx]._End;
+                        if (_Bx != _Ex // _Bx == _Ex for zero-length match
+                            && (_Res0 = _STD _Compare_translate_both(_Tgt_state._Cur, _End, _Bx, _Ex, _Traits, _Sflags))
+                                   == _Tgt_state._Cur) {
+                            _Failed = true;
+                        } else {
+                            _Tgt_state._Cur = _Res0;
+                        }
+                    } else if (_Sflags & (regex_constants::basic | regex_constants::grep)) {
+                        _Failed = true;
+                    }
+                    break;
+                }
+
+            case _N_if:
+                if (!_Do_if(static_cast<_Node_if*>(_Nx))) {
                     _Failed = true;
                 }
+
+                _Next = nullptr;
                 break;
-            }
 
-        case _N_if:
-            if (!_Do_if(static_cast<_Node_if*>(_Nx))) {
-                _Failed = true;
-            }
+            case _N_endif:
+                break;
 
-            _Nx = nullptr;
-            break;
-
-        case _N_endif:
-            break;
-
-        case _N_rep:
-            if (!_Do_rep_first(static_cast<_Node_rep*>(_Nx))) {
-                _Failed = true;
-            }
-
-            _Nx = nullptr;
-            break;
-
-        case _N_end_rep:
-            {
-                _Node_rep* _Nr = static_cast<_Node_end_rep*>(_Nx)->_Begin_rep;
-                if (_Nr->_Simple_loop == 0
-                    && !_Do_rep(_Nr, (_Nr->_Flags & _Fl_greedy) != 0, _Loop_vals[_Nr->_Loop_number]._Loop_idx)) {
-                    _Failed = true; // recurse only if loop contains if/do
+            case _N_rep:
+                if (!_Do_rep_first(static_cast<_Node_rep*>(_Nx))) {
+                    _Failed = true;
                 }
 
-                _Nx = nullptr;
+                _Next = nullptr;
                 break;
-            }
 
-        case _N_begin:
-            break;
+            case _N_end_rep:
+                {
+                    _Node_rep* _Nr = static_cast<_Node_end_rep*>(_Nx)->_Begin_rep;
+                    if (_Nr->_Simple_loop == 0
+                        && !_Do_rep(_Nr, (_Nr->_Flags & _Fl_greedy) != 0, _Loop_vals[_Nr->_Loop_number]._Loop_idx)) {
+                        _Failed = true; // recurse only if loop contains if/do
+                    }
 
-        case _N_end:
-            if (((_Mflags & (regex_constants::match_not_null | regex_constants::_Match_not_null))
-                    && _Begin == _Tgt_state._Cur)
-                || (_Full && _Tgt_state._Cur != _End)) {
-                _Failed = true;
-            } else if (_Longest && (!_Matched || _Better_match())) { // record successful match
-                _Res     = _Tgt_state;
-                _Matched = true;
-            }
-            _Nx = nullptr;
-            break;
+                    _Next = nullptr;
+                    break;
+                }
 
-        case _N_none:
-        default:
+            case _N_begin:
+                break;
+
+            case _N_end:
+                if (((_Mflags & (regex_constants::match_not_null | regex_constants::_Match_not_null))
+                        && _Begin == _Tgt_state._Cur)
+                    || (_Full && _Tgt_state._Cur != _End)) {
+                    _Failed = true;
+                } else if (_Longest && (!_Matched || _Better_match())) { // record successful match
+                    _Res     = _Tgt_state;
+                    _Matched = true;
+                }
+                _Next = nullptr;
+                break;
+
+            case _N_none:
+            default:
 #if _ITERATOR_DEBUG_LEVEL != 0
-            _STL_REPORT_ERROR("internal data of regex node corrupted");
+                _STL_REPORT_ERROR("internal data of regex node corrupted");
 #endif
-            return false;
-        }
+                return false;
+            }
 
-        if (_Failed) {
-            _Nx = nullptr;
-        } else if (_Nx) {
-            _Nx = _Nx->_Next;
+            if (_Failed) {
+                _Nx = nullptr;
+            } else {
+                _Nx = _Next;
+            }
+        } while (_Nx);
+
+        while (_Frames_count > _Initial_frames_count && !_Nx) {
+            const auto& _Frame = _Frames[--_Frames_count];
+
+            switch (_Frame._Code) {
+            case _Rx_unwind_ops::_After_assert:
+                { // positive assert completed
+                    _Decrease_stack_usage_count();
+                    if (!_Failed) {
+                        _Tgt_state._Cur = _Frame._Match_state._Cur;
+                        _Nx             = _Frame._Node->_Next;
+                    }
+                    break;
+                }
+
+            case _Rx_unwind_ops::_After_neg_assert:
+                { // negative assert completed
+                    _Decrease_stack_usage_count();
+                    if (_Failed) {
+                        const _Bt_state_t<_It>& _St = _Frame._Match_state;
+                        _Tgt_state                  = _St;
+                        _Nx                         = _Frame._Node->_Next;
+                    }
+                    _Failed = !_Failed;
+                    break;
+                }
+
+            default:
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_REPORT_ERROR("internal stack of regex matcher corrupted");
+#endif
+                return false;
+            }
         }
     }
 
-    if (0 < _Max_stack_count) {
-        ++_Max_stack_count;
-    }
+    _Decrease_stack_usage_count();
 
     return !_Failed;
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-_BidIt _Matcher2<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
+_BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
     _BidIt _First_arg, _BidIt _Last, _Node_base* _Node_arg, unsigned int _Recursion_depth) {
     // skip until possible match
     // assumes --_First_arg is valid
@@ -4343,11 +4460,9 @@ template <class _FwdIt, class _Elem, class _RxTraits>
 bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Is_esc(_FwdIt _Ch0) const { // assumes _Ch0 != _End
     return _Mode == _Lex_mode::_Default && ++_Ch0 != _End
         && ((!(_L_flags & _L_nex_grp)
-                && (*_Ch0 == static_cast<_Elem>(static_cast<char>(_Meta_lpar))
-                    || *_Ch0 == static_cast<_Elem>(static_cast<char>(_Meta_rpar))))
+                && (*_Ch0 == static_cast<char>(_Meta_lpar) || *_Ch0 == static_cast<char>(_Meta_rpar)))
             || (!(_L_flags & _L_nex_rep)
-                && (*_Ch0 == static_cast<_Elem>(static_cast<char>(_Meta_lbr))
-                    || *_Ch0 == static_cast<_Elem>(static_cast<char>(_Meta_rbr)))));
+                && (*_Ch0 == static_cast<char>(_Meta_lbr) || *_Ch0 == static_cast<char>(_Meta_rbr))));
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -4418,7 +4533,7 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-cha
         { // check if $ is special
             _FwdIt _Next = _Pat;
             if ((_L_flags & _L_anch_rstr) && ++_Next != _End) {
-                const bool _Escaped = *_Next == static_cast<_Elem>(static_cast<char>(_Meta_esc)) && _Is_esc(_Next);
+                const bool _Escaped = *_Next == static_cast<char>(_Meta_esc) && _Is_esc(_Next);
                 if (_Escaped) {
                     ++_Next;
                 }
@@ -4430,9 +4545,9 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-cha
 
                 const _Elem _Ch = *_Next;
                 const bool _Is_end_of_alternative =
-                    ((_L_flags & _L_alt_nl) && _Ch == static_cast<_Elem>(static_cast<char>(_Meta_nl))
+                    ((_L_flags & _L_alt_nl) && _Ch == static_cast<char>(_Meta_nl)
                         && _Disj_count == 0) // dollar followed by newline '\n' for alternation
-                    || (_Escaped && _Ch == static_cast<_Elem>(static_cast<char>(_Meta_rpar))
+                    || (_Escaped && _Ch == static_cast<char>(_Meta_rpar)
                         && _Disj_count != 0); // dollar followed by (escaped) right parenthesis ')' closing a group
 
                 if (!_Is_end_of_alternative) {
@@ -4466,7 +4581,7 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Trans() { // map character to meta-cha
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser2<_FwdIt, _Elem, _RxTraits>::_Next() { // advance to next input character
     if (_Pat != _End) { // advance
-        if (*_Pat == static_cast<_Elem>(static_cast<char>(_Meta_esc)) && _Is_esc(_Pat)) {
+        if (*_Pat == static_cast<char>(_Meta_esc) && _Is_esc(_Pat)) {
             ++_Pat;
         }
 
@@ -4597,10 +4712,10 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { //
         return false;
     }
 
-    auto _Kind = (_Char == static_cast<_Elem>('W')   ? _Rx_char_class_kind::_Negated_w
-                  : _Char == static_cast<_Elem>('S') ? _Rx_char_class_kind::_Negated_s
-                  : _Char == static_cast<_Elem>('D') ? _Rx_char_class_kind::_Negated_d
-                                                     : _Rx_char_class_kind::_Positive);
+    auto _Kind = (_Char == 'W'   ? _Rx_char_class_kind::_Negated_w
+                  : _Char == 'S' ? _Rx_char_class_kind::_Negated_s
+                  : _Char == 'D' ? _Rx_char_class_kind::_Negated_d
+                                 : _Rx_char_class_kind::_Positive);
 
     if (_Addit) {
         _Nfa._Add_class();
@@ -4620,8 +4735,7 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { //
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 _Prs_ret _Parser2<_FwdIt, _Elem, _RxTraits>::_ClassEscape() { // check for class escape
-    if ((_L_flags & _L_esc_bsp)
-        && _Char == static_cast<_Elem>(static_cast<char>(_Esc_ctrl_b))) { // handle backspace escape
+    if ((_L_flags & _L_esc_bsp) && _Char == static_cast<char>(_Esc_ctrl_b)) { // handle backspace escape
         _Next();
         _Unescaped_char = static_cast<_Elem>(static_cast<char>(_Meta_bsp));
         return _Prs_chr;
@@ -4870,15 +4984,15 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_IdentityEscape(bool _In_character_clas
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_ffn(_Elem _Ch) { // check for limited file format escape characters
-    if (_Ch == static_cast<_Elem>(static_cast<char>(_Esc_ctrl_f))) {
+    if (_Ch == static_cast<char>(_Esc_ctrl_f)) {
         _Val = '\f';
-    } else if (_Ch == static_cast<_Elem>(static_cast<char>(_Esc_ctrl_n))) {
+    } else if (_Ch == static_cast<char>(_Esc_ctrl_n)) {
         _Val = '\n';
-    } else if (_Ch == static_cast<_Elem>(static_cast<char>(_Esc_ctrl_r))) {
+    } else if (_Ch == static_cast<char>(_Esc_ctrl_r)) {
         _Val = '\r';
-    } else if (_Ch == static_cast<_Elem>(static_cast<char>(_Esc_ctrl_t))) {
+    } else if (_Ch == static_cast<char>(_Esc_ctrl_t)) {
         _Val = '\t';
-    } else if (_Ch == static_cast<_Elem>(static_cast<char>(_Esc_ctrl_v))) {
+    } else if (_Ch == static_cast<char>(_Esc_ctrl_v)) {
         _Val = '\v';
     } else {
         return false;
@@ -4889,9 +5003,9 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_ffn(_Elem _Ch) { // check for limit
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_ffnx(_Elem _Ch) { // check for the remaining file format escape characters
-    if (_Ch == static_cast<_Elem>(static_cast<char>(_Esc_ctrl_a))) {
+    if (_Ch == static_cast<char>(_Esc_ctrl_a)) {
         _Val = '\a';
-    } else if (_Ch == static_cast<_Elem>(static_cast<char>(_Esc_ctrl_b))) {
+    } else if (_Ch == static_cast<char>(_Esc_ctrl_b)) {
         _Val = '\b';
     } else {
         return false;
@@ -4909,8 +5023,7 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_CharacterEscape(bool _In_character_cla
 
     if ((_L_flags & _L_esc_ffn && _Do_ffn(_Char)) || (_L_flags & _L_esc_ffnx && _Do_ffnx(_Char))) {
         _Next();
-    } else if (_Char == static_cast<_Elem>(static_cast<char>(_Esc_ctrl))
-               && (_L_flags & _L_esc_ctrl)) { // handle control escape sequence
+    } else if (_Char == static_cast<char>(_Esc_ctrl) && (_L_flags & _L_esc_ctrl)) { // handle control escape sequence
         _Next();
 
         using _Char_traits_type = typename _RxTraits::string_type::traits_type;
@@ -4923,12 +5036,10 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_CharacterEscape(bool _In_character_cla
 
         _Val = static_cast<unsigned char>(_Char) % 32;
         _Next();
-    } else if (_Char == static_cast<_Elem>(static_cast<char>(_Esc_hex))
-               && (_L_flags & _L_esc_hex)) { // handle hexadecimal escape sequence
+    } else if (_Char == static_cast<char>(_Esc_hex) && (_L_flags & _L_esc_hex)) { // handle hexadecimal escape sequence
         _Next();
         _HexDigits(2);
-    } else if (_Char == static_cast<_Elem>(static_cast<char>(_Esc_uni))
-               && (_L_flags & _L_esc_uni)) { // handle Unicode escape sequence
+    } else if (_Char == static_cast<char>(_Esc_uni) && (_L_flags & _L_esc_uni)) { // handle Unicode escape sequence
         _Next();
         _HexDigits(4);
     } else if ((_L_flags & _L_esc_oct) && _OctalDigits()) { // handle octal escape sequence
@@ -5044,13 +5155,11 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alt
             _Next();
         } else if (_Mchar == _Meta_esc) { // check for valid escape sequence
             _Next();
-            if ((_L_flags & _L_asrt_wrd)
-                && _Char == static_cast<_Elem>(static_cast<char>(_Esc_word))) { // add word assert
+            if ((_L_flags & _L_asrt_wrd) && _Char == static_cast<char>(_Esc_word)) { // add word assert
                 _Nfa._Add_wbound();
                 _Next();
                 _Quant = false;
-            } else if ((_L_flags & _L_asrt_wrd)
-                       && _Char == static_cast<_Elem>(static_cast<char>(_Esc_not_word))) { // add not-word assert
+            } else if ((_L_flags & _L_asrt_wrd) && _Char == static_cast<char>(_Esc_not_word)) { // add not-word assert
                 _Nfa._Add_wbound();
                 _Nfa._Negate();
                 _Next();
@@ -5154,7 +5263,7 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
             break;
         case _N_rep:
             // _Node_rep inside another _Node_rep makes both not simple if _Outer_rep can be repeated more than once
-            // because _Matcher2::_Do_rep0() does not reset capture group boundaries when control is returned to it.
+            // because _Matcher3::_Do_rep0() does not reset capture group boundaries when control is returned to it.
             // If _Outer_rep can repeat at most once, we have to analyze the structure of the inner loop.
             if (_Outer_rep) {
                 _Outer_rep->_Simple_loop = 0;
