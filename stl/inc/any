@@ -231,7 +231,8 @@ public:
 
     void swap(any& _That) noexcept {
         any _Old = _STD move(*this);
-        _Assign(_STD move(_That));
+        reset();
+        _Move_from(_That);
         _That.reset();
         _That._Move_from(_Old);
     }
