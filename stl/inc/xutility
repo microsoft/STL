@@ -25,9 +25,11 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("msvc")
 #pragma push_macro("intrinsic")
 #pragma push_macro("lifetimebound")
+#pragma push_macro("no_specializations")
 #undef msvc
 #undef intrinsic
 #undef lifetimebound
+#undef no_specializations
 
 #if defined(_CRTBLD) && defined(CRTDLL2)
 // TRANSITION, ABI: The vector algorithms are compiled into the import lib, so we disable their usage when building
@@ -1605,10 +1607,10 @@ using _Guide_pair_t =
 #endif // ^^^ !_HAS_CXX23 ^^^
 
 _EXPORT_STD template <class _Ty>
-struct is_execution_policy : false_type {};
+struct _NO_SPECIALIZATIONS_CITING("N5014 [execpol.type]/3") is_execution_policy : false_type {};
 
 _EXPORT_STD template <class _Ty>
-constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
 
 // Note: The noexcept specifiers on all parallel algorithm overloads enforce termination as per
 // N4950 [execpol.seq]/2, [execpol.par]/2, [execpol.parunseq]/2, and [execpol.unseq]/2
@@ -2610,7 +2612,7 @@ namespace ranges {
     constexpr bool _Has_complete_elements<_Ty> = true;
 
     _EXPORT_STD template <class>
-    constexpr bool enable_borrowed_range = false;
+    constexpr bool enable_borrowed_range = false; // specializations allowed by N5014 [range.range]/6
 
     template <class _Rng>
     concept _Should_range_access = is_lvalue_reference_v<_Rng> || enable_borrowed_range<remove_cvref_t<_Rng>>;
@@ -3244,7 +3246,7 @@ namespace ranges {
     }
 
     _EXPORT_STD template <class>
-    constexpr bool disable_sized_range = false;
+    constexpr bool disable_sized_range = false; // specializations allowed by N5014 [range.sized]/3
 
     namespace _Size {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
@@ -3486,7 +3488,7 @@ namespace ranges {
         requires (!is_same_v<_Ty, view_interface<_Uty>>)
     void _Strictly_derived_from_view_interface_impl(view_interface<_Uty>*);
 
-    _EXPORT_STD template <class _Ty>
+    _EXPORT_STD template <class _Ty> // specializations allowed by N5014 [range.view]/7
     constexpr bool enable_view = derived_from<_Ty, view_base> || requires {
         _RANGES _Strictly_derived_from_view_interface_impl<remove_cv_t<_Ty>>(
             static_cast<remove_cv_t<_Ty>*>(nullptr)); // qualified: avoid ADL, handle incomplete types
@@ -7794,6 +7796,7 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("lifetimebound")
 #pragma pop_macro("intrinsic")
 #pragma pop_macro("msvc")

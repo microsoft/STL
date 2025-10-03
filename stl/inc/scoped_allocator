@@ -16,6 +16,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 _STD_BEGIN
 template <class _Alloc, class = void>
 struct _Scoped_outermost_helper { // gets the outermost allocator
@@ -140,7 +146,7 @@ public:
     using difference_type = typename _Outer_traits::difference_type;
 
     template <class _Other>
-    struct rebind { // converts X<value_type> to X<_Other>
+    struct _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES rebind { // converts X<value_type> to X<_Other>
         using _Other_alloc = typename _Get_rebind_type<_Outer, _Other>::type;
         using other        = scoped_allocator_adaptor<_Other_alloc, _Inner...>;
     };
@@ -276,6 +282,11 @@ _NODISCARD bool operator!=(const scoped_allocator_adaptor<_Outer1, _Inner...>& _
 #endif // !_HAS_CXX20
 
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)

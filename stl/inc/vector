@@ -607,17 +607,17 @@ private:
     using _Scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Simple_types<_Ty>,
         _Vec_iter_types<_Ty, size_type, difference_type, pointer, const_pointer>>>;
 
-    struct _NODISCARD _Reallocation_guard {
-        _Alloc& _Al;
+    struct _NODISCARD _Reallocation_guard2 {
+        _Alty& _Al;
         pointer _New_begin;
         size_type _New_capacity;
         pointer _Constructed_first;
         pointer _Constructed_last;
 
-        _Reallocation_guard& operator=(const _Reallocation_guard&) = delete;
-        _Reallocation_guard& operator=(_Reallocation_guard&&)      = delete;
+        _Reallocation_guard2& operator=(const _Reallocation_guard2&) = delete;
+        _Reallocation_guard2& operator=(_Reallocation_guard2&&)      = delete;
 
-        _CONSTEXPR20 ~_Reallocation_guard() noexcept {
+        _CONSTEXPR20 ~_Reallocation_guard2() noexcept {
             if (_New_begin != nullptr) {
                 _STD _Destroy_range(_Constructed_first, _Constructed_last, _Al);
                 _Al.deallocate(_New_begin, _New_capacity);
@@ -625,15 +625,15 @@ private:
         }
     };
 
-    struct _NODISCARD _Simple_reallocation_guard {
-        _Alloc& _Al;
+    struct _NODISCARD _Simple_reallocation_guard2 {
+        _Alty& _Al;
         pointer _New_begin;
         size_type _New_capacity;
 
-        _Simple_reallocation_guard& operator=(const _Simple_reallocation_guard&) = delete;
-        _Simple_reallocation_guard& operator=(_Simple_reallocation_guard&&)      = delete;
+        _Simple_reallocation_guard2& operator=(const _Simple_reallocation_guard2&) = delete;
+        _Simple_reallocation_guard2& operator=(_Simple_reallocation_guard2&&)      = delete;
 
-        _CONSTEXPR20 ~_Simple_reallocation_guard() noexcept {
+        _CONSTEXPR20 ~_Simple_reallocation_guard2() noexcept {
             if (_New_begin != nullptr) {
                 _Al.deallocate(_New_begin, _New_capacity);
             }
@@ -894,7 +894,7 @@ private:
         const pointer _Newvec           = _STD _Allocate_at_least_helper(_Al, _Newcapacity);
         const pointer _Constructed_last = _Newvec + _Whereoff + 1;
 
-        _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
+        _Reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
         auto& _Constructed_first = _Guard._Constructed_first;
 
         _Alty_traits::construct(_Al, _STD _Unfancy(_Newvec + _Whereoff), _STD forward<_Valty>(_Val)...);
@@ -978,7 +978,7 @@ private:
             const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
             const pointer _Constructed_last = _Newvec + _Oldsize + _Count;
 
-            _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
+            _Reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
             auto& _Constructed_first = _Guard._Constructed_first;
 
             _Uninitialized_copy_n(_STD move(_First), _Count, _Newvec + _Oldsize, _Al);
@@ -1096,7 +1096,7 @@ public:
             const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
 
-            _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
+            _Reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
             auto& _Constructed_first = _Guard._Constructed_first;
 
             _Uninitialized_fill_n(_Newvec + _Whereoff, _Count, _Val, _Al);
@@ -1189,7 +1189,7 @@ private:
             const auto _Whereoff            = static_cast<size_type>(_Whereptr - _Oldfirst);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
 
-            _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
+            _Reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
             auto& _Constructed_first = _Guard._Constructed_first;
 
             _STD _Uninitialized_copy_n(_STD move(_First), _Count, _Newvec + _Whereoff, _Al);
@@ -1565,7 +1565,7 @@ private:
         const pointer _Newvec         = _Allocate_at_least_helper(_Al, _Newcapacity);
         const pointer _Appended_first = _Newvec + _Oldsize;
 
-        _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Appended_first, _Appended_first};
+        _Reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity, _Appended_first, _Appended_first};
         auto& _Appended_last = _Guard._Constructed_last;
 
         if constexpr (is_same_v<_Ty2, _Ty>) {
@@ -1656,7 +1656,7 @@ private:
             _Newvec = _Al.allocate(_Newcapacity);
         }
 
-        _Simple_reallocation_guard _Guard{_Al, _Newvec, _Newcapacity};
+        _Simple_reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity};
 
         if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
             _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
@@ -3859,7 +3859,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
 
         const auto _DestMask = _FirstDestMask | (_DestEnd._Myoff == 0 ? 0 : _LastDestMask);
         if (_Last._Myoff != 0) {
-            const auto _LastShift     = _DestEnd._Myoff - _Last._Myoff;
+            const auto _LastShift     = _DestEnd._Myoff != 0 ? _DestEnd._Myoff - _Last._Myoff : _VBITS - _Last._Myoff;
             const auto _LastSourceVal = (*_VbLast & _LastSourceMask) << _LastShift;
             *_VbDest                  = (*_VbDest & _DestMask) | _SourceVal | _LastSourceVal;
         } else {
