@@ -456,11 +456,11 @@ size_t _Mismatch_vectorized(const void* const _First1, const void* const _First2
     } else if constexpr (_Element_size == 8) {
         return __std_mismatch_8(_First1, _First2, _Count);
     } else {
-        if constexpr ((_Element_size % 8) == 0) {
+        if constexpr (_Element_size % 8 == 0) {
             return __std_mismatch_8(_First1, _First2, _Count * (_Element_size / 8)) / (_Element_size / 8);
-        } else if constexpr ((_Element_size % 4) == 0) {
+        } else if constexpr (_Element_size % 4 == 0) {
             return __std_mismatch_4(_First1, _First2, _Count * (_Element_size / 4)) / (_Element_size / 4);
-        } else if constexpr ((_Element_size % 2) == 0) {
+        } else if constexpr (_Element_size % 2 == 0) {
             return __std_mismatch_2(_First1, _First2, _Count * (_Element_size / 2)) / (_Element_size / 2);
         } else {
             return __std_mismatch_1(_First1, _First2, _Count * _Element_size) / _Element_size;
