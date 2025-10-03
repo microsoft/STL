@@ -2228,11 +2228,12 @@ export const daily_table: DailyRow[] = [
     { date: '2025-09-23', merged: 28.24, pr: 19, cxx20: null, cxx23: 6, cxx26: 85, lwg: 5, issue: 424, bug: 138, sum_age: 39.25, } as DailyRow,
     { date: '2025-09-24', merged: 27.43, pr: 20, cxx20: null, cxx23: 6, cxx26: 85, lwg: 5, issue: 425, bug: 138, sum_age: 39.89, } as DailyRow,
     { date: '2025-09-25', merged: 32.68, pr: 14, cxx20: null, cxx23: 5, cxx26: 85, lwg: 5, issue: 424, bug: 137, sum_age: 34.93, } as DailyRow,
-    { date: '2025-09-26', merged: 32.13, pr: 18, cxx20: null, cxx23: 5, cxx26: 85, lwg: 5, issue: 425, bug: 137, sum_age: 35.49, } as DailyRow,
-    { date: '2025-09-27', merged: 31.58, pr: 18, cxx20: null, cxx23: 5, cxx26: 85, lwg: 5, issue: 425, bug: 137, sum_age: 36.09, } as DailyRow,
-    { date: '2025-09-28', merged: 31.03, pr: 18, cxx20: null, cxx23: 5, cxx26: 85, lwg: 5, issue: 425, bug: 137, sum_age: 36.69, } as DailyRow,
-    { date: '2025-09-29', merged: 30.48, pr: 19, cxx20: null, cxx23: 5, cxx26: 85, lwg: 5, issue: 425, bug: 137, sum_age: 37.30, } as DailyRow,
-    { date: '2025-09-30', merged: 29.71, pr: 19, cxx20: null, cxx23: 5, cxx26: 85, lwg: 5, issue: 426, bug: 137, sum_age: 37.93, } as DailyRow,
-    { date: '2025-10-01', merged: 28.76, pr: 20, cxx20: null, cxx23: 5, cxx26: 85, lwg: 5, issue: 427, bug: 137, sum_age: 38.58, } as DailyRow,
+    { date: '2025-09-26', merged: 32.13, pr: 18, cxx20: null, cxx23: 5, cxx26: 85, lwg: 5, issue: 425, bug: 138, sum_age: 35.49, } as DailyRow,
+    { date: '2025-09-27', merged: 31.58, pr: 18, cxx20: null, cxx23: 5, cxx26: 85, lwg: 5, issue: 425, bug: 138, sum_age: 36.09, } as DailyRow,
+    { date: '2025-09-28', merged: 31.03, pr: 18, cxx20: null, cxx23: 5, cxx26: 85, lwg: 5, issue: 425, bug: 138, sum_age: 36.69, } as DailyRow,
+    { date: '2025-09-29', merged: 30.48, pr: 19, cxx20: null, cxx23: 5, cxx26: 85, lwg: 5, issue: 425, bug: 138, sum_age: 37.30, } as DailyRow,
+    { date: '2025-09-30', merged: 29.71, pr: 19, cxx20: null, cxx23: 5, cxx26: 85, lwg: 5, issue: 426, bug: 139, sum_age: 37.93, } as DailyRow,
+    { date: '2025-10-01', merged: 28.76, pr: 20, cxx20: null, cxx23: 5, cxx26: 85, lwg: 5, issue: 427, bug: 140, sum_age: 38.58, } as DailyRow,
+    { date: '2025-10-02', merged: 27.81, pr: 21, cxx20: null, cxx23: 5, cxx26: 85, lwg: 5, issue: 428, bug: 140, sum_age: 39.25, } as DailyRow,
 ];
 // Generated file - DO NOT EDIT manually!
