@@ -3475,6 +3475,11 @@ public:
     }
 
     _NODISCARD _CONSTEXPR23 add_lvalue_reference_t<_Ty> operator*() const noexcept(noexcept(*_STD declval<pointer>())) {
+#ifdef __cpp_lib_reference_from_temporary
+        static_assert(
+            !reference_converts_from_temporary_v<add_lvalue_reference_t<_Ty>, decltype(*_STD declval<pointer>())>,
+            "Can't return a temporary object from unique_ptr::operator*(). (N5014 [unique.ptr.single.observers]/1)");
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
         return *_Mypair._Myval2;
     }
 
