@@ -4,11 +4,11 @@
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 
 #include <cassert>
-#include <experimental/filesystem>
 #include <fstream>
 #include <ios>
 #include <system_error>
 
+#include "experimental_filesystem.hpp"
 #include <test_filesystem_support.hpp>
 
 using namespace std;
