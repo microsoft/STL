@@ -345,8 +345,6 @@ STATIC_ASSERT(__cpp_lib_expected == 202211L);
 #error __cpp_lib_expected is defined
 #endif
 
-STATIC_ASSERT(__cpp_lib_experimental_filesystem == 201406L);
-
 #if _HAS_CXX17
 STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #elif defined(__cpp_lib_filesystem)
