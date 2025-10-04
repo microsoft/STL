@@ -3,6 +3,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// ********************************************************************************************************************
+// * This was previously shipped in product code as <experimental/filesystem>.                                        *
+// * It's now preserved in cryostasis for test code to exercise functions that are retained for binary compatibility. *
+// * This file should generally not be changed, except to fix compiler warnings/errors and to update clang-format.    *
+// ********************************************************************************************************************
+
 #ifndef _EXPERIMENTAL_FILESYSTEM_
 #define _EXPERIMENTAL_FILESYSTEM_
 #include <yvals_core.h>
