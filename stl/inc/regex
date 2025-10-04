@@ -1677,6 +1677,8 @@ public:
 enum class _Rx_unwind_ops {
     _After_assert = _N_end + 1,
     _After_neg_assert,
+    _Disjunction_eval_alt_on_failure,
+    _Disjunction_eval_alt_always,
 };
 
 template <class _BidIt>
@@ -1753,7 +1755,7 @@ public:
 
         _Matched = false;
 
-        bool _Succeeded = _Match_pat(_Rep);
+        bool _Succeeded = _Match_pat(_Rep) || _Matched;
         _STL_INTERNAL_CHECK(_Frames_count == 0);
 
         if (!_Succeeded) {
@@ -1810,7 +1812,6 @@ private:
     void _Increase_stack_usage_count();
     void _Decrease_stack_usage_count();
 
-    bool _Do_if(_Node_if*);
     bool _Do_rep0(_Node_rep*, bool);
     bool _Do_rep(_Node_rep*, bool, int);
     bool _Do_rep_first(_Node_rep*);
@@ -3403,44 +3404,6 @@ void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Decrease_stack_usage_cou
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_if(_Node_if* _Node) { // apply if node
-    const size_t _Frame_idx = _Push_frame();
-
-    // look for the first match
-    for (; _Node; _Node = _Node->_Child) { // process one branch of if
-        _Tgt_state = _Frames[_Frame_idx]._Match_state; // rewind to where the alternation starts in input
-        if (_Match_pat(_Node->_Next)) { // try to match this branch
-            break;
-        }
-    }
-
-    // if none of the if branches matched, fail to match
-    if (!_Node) {
-        _Pop_frame(_Frame_idx);
-        return false;
-    }
-
-    // if we aren't looking for the longest match, that's it
-    if (!_Longest) {
-        _Pop_frame(_Frame_idx);
-        return true;
-    }
-
-    // see if there is a longer match
-    for (;;) { // process one branch of if
-        _Node = _Node->_Child;
-        if (!_Node) {
-            break;
-        }
-
-        _Tgt_state = _Frames[_Frame_idx]._Match_state;
-        (void) _Match_pat(_Node->_Next);
-    }
-    _Pop_frame(_Frame_idx);
-    return true;
-}
-
-template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node, bool _Greedy) {
     // apply repetition to loop with no nested if/do
     int _Ix                 = 0;
@@ -4175,12 +4138,16 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 }
 
             case _N_if:
-                if (!_Do_if(static_cast<_Node_if*>(_Nx))) {
-                    _Failed = true;
+                {
+                    auto _Node = static_cast<_Node_if*>(_Nx);
+                    if (_Node->_Child) {
+                        _Push_frame(_Longest ? _Rx_unwind_ops::_Disjunction_eval_alt_always
+                                             : _Rx_unwind_ops::_Disjunction_eval_alt_on_failure,
+                            _Node->_Child);
+                        _Increase_stack_usage_count();
+                    }
+                    break;
                 }
-
-                _Next = nullptr;
-                break;
 
             case _N_endif:
                 break;
@@ -4236,7 +4203,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
         } while (_Nx);
 
         while (_Frames_count > _Initial_frames_count && !_Nx) {
-            const auto& _Frame = _Frames[--_Frames_count];
+            auto& _Frame = _Frames[--_Frames_count];
 
             switch (_Frame._Code) {
             case _Rx_unwind_ops::_After_assert:
@@ -4258,6 +4225,30 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                         _Nx                         = _Frame._Node->_Next;
                     }
                     _Failed = !_Failed;
+                    break;
+                }
+
+            case _Rx_unwind_ops::_Disjunction_eval_alt_on_failure:
+                // evaluate next alternative if matching prior alternatives failed
+                if (!_Failed) {
+                    _Decrease_stack_usage_count();
+                    break;
+                }
+                _FALLTHROUGH;
+
+            case _Rx_unwind_ops::_Disjunction_eval_alt_always:
+                // evaluate next alternative no matter if matching prior alternatives succeeded
+                {
+                    auto _Node = static_cast<_Node_if*>(_Frame._Node);
+                    _Nx        = _Node->_Next;
+                    _Tgt_state = _Frame._Match_state;
+                    _Failed    = false;
+                    if (_Node->_Child) {
+                        _Frame._Node = _Node->_Child;
+                        ++_Frames_count;
+                    } else {
+                        _Decrease_stack_usage_count();
+                    }
                     break;
                 }
 
