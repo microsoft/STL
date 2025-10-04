@@ -1710,6 +1710,25 @@ void test_basic_string(mt19937_64& gen) {
     }
 }
 
+void test_gh_5757_find_first_of() {
+    const wstring hay(40, L'e');
+    wstring needle;
+    needle.resize(32);
+
+    for (unsigned int k = 0; k != 32; k += 16) {
+        for (int i = 0; i != 8; ++i) {
+            needle[i + k] = static_cast<wchar_t>(L'a' + i);
+        }
+
+        for (unsigned int i = 8; i != 16; ++i) {
+            needle[i + k] = static_cast<wchar_t>(0xFF00 + i);
+        }
+    }
+
+    const auto pos = hay.find_first_of(needle);
+    assert(pos == 0);
+}
+
 void test_string(mt19937_64& gen) {
     test_basic_string<char>(gen);
     test_basic_string<wchar_t>(gen);
@@ -1719,6 +1738,8 @@ void test_string(mt19937_64& gen) {
     test_basic_string<char16_t>(gen);
     test_basic_string<char32_t>(gen);
     test_basic_string<unsigned long long>(gen);
+
+    test_gh_5757_find_first_of();
 }
 
 void test_various_containers() {
