@@ -3183,8 +3183,107 @@ namespace {
                     _Advance_bytes(_First, 32);
                 } while (_First != _Stop_at);
 
+                if (const size_t _Tail = _Length & 0x1C; _Tail != 0) {
+                    const __m256i _Tail_mask = _Avx2_tail_mask_32(_Tail);
+                    const __m256i _Data      = _mm256_maskload_epi32(reinterpret_cast<const int*>(_First), _Tail_mask);
+
+                    const __m256i _Cmp   = _Traits::_Cmp_avx(_Comparand, _Data);
+                    const uint32_t _Mask = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
+
+                    const uint64_t _Msk_with_carry = uint64_t{_Carry} | (uint64_t{_Mask} << 32);
+                    uint64_t _MskX                 = _Msk_with_carry;
+
+                    _MskX = (_MskX >> sizeof(_Ty)) & _MskX;
+
+                    if constexpr (sizeof(_Ty) == 1) {
+                        _MskX = __ull_rshift(_MskX, _Sh1) & _MskX;
+                    }
+
+                    if constexpr (sizeof(_Ty) < 4) {
+                        _MskX = __ull_rshift(_MskX, _Sh2) & _MskX;
+                    }
+
+                    if constexpr (sizeof(_Ty) < 8) {
+                        _MskX = __ull_rshift(_MskX, _Sh3) & _MskX;
+                    }
+
+                    if (_MskX != 0) {
+#ifdef _M_IX86
+                        const uint32_t _MskLow = static_cast<uint32_t>(_MskX);
+
+                        const int _Shift = _MskLow != 0
+                                             ? static_cast<int>(_tzcnt_u32(_MskLow)) - 32
+                                             : static_cast<int>(_tzcnt_u32(static_cast<uint32_t>(_MskX >> 32)));
+
+#elifdef _M_X64
+                        const long long _Shift = static_cast<long long>(_tzcnt_u64(_MskX)) - 32;
+#else
+#error Unsupported architecture
+#endif
+                        _Advance_bytes(_First, _Shift);
+                        return _First;
+                    }
+
+                    _Carry = static_cast<uint32_t>(__ull_rshift(_Msk_with_carry, static_cast<int>(_Tail)));
+
+                    _Advance_bytes(_First, _Tail);
+                }
+
                 _Mid1 = static_cast<const _Ty*>(_First);
                 _Rewind_bytes(_First, _lzcnt_u32(~_Carry));
+            } else if constexpr (sizeof(_Ty) < 8) {
+                if (_Count <= 8 / sizeof(_Ty) && _Length >= 16 && _Use_sse42()) {
+                    const int _Bytes_count = static_cast<int>(_Count * sizeof(_Ty));
+                    const int _Sh1         = sizeof(_Ty) != 1 ? 0 : (_Bytes_count < 4 ? _Bytes_count - 2 : 2);
+                    const int _Sh2         = sizeof(_Ty) >= 4 ? 0
+                                           : _Bytes_count < 4 ? 0
+                                                              : (_Bytes_count < 8 ? _Bytes_count - 4 : 4);
+
+                    const __m128i _Comparand = _Traits::_Set_sse(_Val);
+
+                    const void* _Stop_at = _First;
+                    _Advance_bytes(_Stop_at, _Length & ~size_t{0xF});
+
+                    uint32_t _Carry = 0;
+                    do {
+                        const __m128i _Data = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First));
+
+                        const __m128i _Cmp   = _Traits::_Cmp_sse(_Comparand, _Data);
+                        const uint32_t _Mask = _mm_movemask_epi8(_Cmp);
+
+                        uint32_t _MskX = _Carry | (_Mask << 16);
+
+                        _MskX = (_MskX >> sizeof(_Ty)) & _MskX;
+
+                        if constexpr (sizeof(_Ty) == 1) {
+                            _MskX = (_MskX >> _Sh1) & _MskX;
+                        }
+
+                        if constexpr (sizeof(_Ty) < 4) {
+                            _MskX = (_MskX >> _Sh2) & _MskX;
+                        }
+
+                        if (_MskX != 0) {
+                            unsigned long _Pos;
+                            // CodeQL [SM02313] _Pos is always initialized: _MskX != 0 was checked right above.
+                            _BitScanForward(&_Pos, _MskX);
+                            _Advance_bytes(_First, static_cast<ptrdiff_t>(_Pos) - 16);
+                            return _First;
+                        }
+
+                        _Carry = _Mask;
+
+                        _Advance_bytes(_First, 16);
+                    } while (_First != _Stop_at);
+
+                    _Mid1 = static_cast<const _Ty*>(_First);
+
+                    unsigned long _Carry_pos;
+                    // Here, _Carry can't be 0xFFFF, because that would have been a match. Therefore:
+                    // CodeQL [SM02313] _Carry_pos is always initialized: `(_Carry ^ 0xFFFF) != 0` is always true.
+                    _BitScanReverse(&_Carry_pos, _Carry ^ 0xFFFF);
+                    _Rewind_bytes(_First, 15 - static_cast<ptrdiff_t>(_Carry_pos));
+                }
             }
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
             auto _Match_start    = static_cast<const _Ty*>(_First);
