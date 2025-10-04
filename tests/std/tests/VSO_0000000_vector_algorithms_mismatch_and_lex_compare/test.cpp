@@ -64,20 +64,28 @@ auto last_known_good_lex_compare_3way(pair<FwdIt, FwdIt> expected_mismatch, FwdI
 #endif // _HAS_CXX20
 
 template <class T>
-void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<T>& b) {
+auto test_case_mismatch_only(const vector<T>& a, const vector<T>& b) {
     auto expected_mismatch = last_known_good_mismatch(a.begin(), a.end(), b.begin(), b.end());
     auto actual_mismatch   = mismatch(a.begin(), a.end(), b.begin(), b.end());
     assert(expected_mismatch == actual_mismatch);
+
+#if _HAS_CXX20
+    auto ranges_actual_mismatch = ranges::mismatch(a, b);
+    assert(get<0>(expected_mismatch) == ranges_actual_mismatch.in1);
+    assert(get<1>(expected_mismatch) == ranges_actual_mismatch.in2);
+#endif // _HAS_CXX20
+    return expected_mismatch;
+}
+
+template <class T>
+void test_case_mismatch_and_lex_compare_family(const vector<T>& a, const vector<T>& b) {
+    auto expected_mismatch = test_case_mismatch_only(a, b);
 
     auto expected_lex = last_known_good_lex_compare(expected_mismatch, a.end(), b.end());
     auto actual_lex   = lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
     assert(expected_lex == actual_lex);
 
 #if _HAS_CXX20
-    auto ranges_actual_mismatch = ranges::mismatch(a, b);
-    assert(get<0>(expected_mismatch) == ranges_actual_mismatch.in1);
-    assert(get<1>(expected_mismatch) == ranges_actual_mismatch.in2);
-
     auto ranges_actual_lex = ranges::lexicographical_compare(a, b);
     assert(expected_lex == ranges_actual_lex);
 
@@ -129,6 +137,65 @@ void test_mismatch_and_lex_compare_family(mt19937_64& gen) {
         input_b = input_a;
     }
 }
+
+#if _HAS_CXX20
+template <class T>
+struct triplet {
+    T x;
+    T y;
+    T z;
+
+    bool operator==(const triplet&) const = default;
+};
+
+template <class T>
+void test_mismatch_only_triplets(mt19937_64& gen) {
+    constexpr size_t shrinkCount   = 4;
+    constexpr size_t mismatchCount = 10;
+    using TD                       = conditional_t<sizeof(T) == 1, int, T>;
+    uniform_int_distribution<TD> dis('a', 'z');
+    vector<triplet<T>> input_a;
+    vector<triplet<T>> input_b;
+    input_a.reserve(dataCount);
+    input_b.reserve(dataCount);
+
+    for (;;) {
+        // equal
+        test_case_mismatch_only(input_a, input_b);
+
+        // different sizes
+        for (size_t i = 0; i != shrinkCount && !input_b.empty(); ++i) {
+            input_b.pop_back();
+            test_case_mismatch_only(input_a, input_b);
+            test_case_mismatch_only(input_b, input_a);
+        }
+
+        // actual mismatch (or maybe not, depending on random)
+        if (!input_b.empty()) {
+            uniform_int_distribution<size_t> mismatch_dis(0, input_a.size() - 1);
+
+            for (size_t attempts = 0; attempts < mismatchCount; ++attempts) {
+                const size_t possible_mismatch_pos = mismatch_dis(gen);
+                input_a[possible_mismatch_pos].x   = static_cast<T>(dis(gen));
+                input_a[possible_mismatch_pos].y   = static_cast<T>(dis(gen));
+                input_a[possible_mismatch_pos].z   = static_cast<T>(dis(gen));
+                test_case_mismatch_only(input_a, input_b);
+                test_case_mismatch_only(input_b, input_a);
+            }
+        }
+
+        if (input_a.size() == dataCount) {
+            break;
+        }
+
+        input_a.emplace_back();
+        input_a.back().x = static_cast<T>(dis(gen));
+        input_a.back().y = static_cast<T>(dis(gen));
+        input_a.back().z = static_cast<T>(dis(gen));
+        input_b          = input_a;
+    }
+}
+#endif // _HAS_CXX20
 
 template <class C1, class C2>
 void test_mismatch_and_lex_compare_family_containers() {
@@ -244,6 +311,18 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_mismatch_and_lex_compare_family<unsigned int>(gen);
     test_mismatch_and_lex_compare_family<long long>(gen);
     test_mismatch_and_lex_compare_family<unsigned long long>(gen);
+
+#if _HAS_CXX20
+    test_mismatch_only_triplets<char>(gen);
+    test_mismatch_only_triplets<signed char>(gen);
+    test_mismatch_only_triplets<unsigned char>(gen);
+    test_mismatch_only_triplets<short>(gen);
+    test_mismatch_only_triplets<unsigned short>(gen);
+    test_mismatch_only_triplets<int>(gen);
+    test_mismatch_only_triplets<unsigned int>(gen);
+    test_mismatch_only_triplets<long long>(gen);
+    test_mismatch_only_triplets<unsigned long long>(gen);
+#endif // _HAS_CXX20
 
     test_mismatch_and_lex_compare_family_containers<vector<char>, vector<signed char>>();
     test_mismatch_and_lex_compare_family_containers<vector<char>, vector<unsigned char>>();

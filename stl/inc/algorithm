@@ -885,7 +885,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InI
     const auto _ULast1 = _STD _Get_unwrapped(_Last1);
     auto _UFirst2      = _STD _Get_unwrapped_n(_First2, _STD _Idl_distance<_InIt1>(_UFirst1, _ULast1));
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
+    if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
         if (!_STD _Is_constant_evaluated()) {
             constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
 
@@ -949,7 +949,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
         const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min) (_Count1, _Count2));
         _ULast1           = _UFirst1 + _Count;
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
+        if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
             if (!_STD _Is_constant_evaluated()) {
                 constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
 
