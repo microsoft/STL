@@ -29,7 +29,6 @@
 #endif // !defined(_SILENCE_CXX17_C_HEADER_DEPRECATION_WARNING)
 
 #define _SILENCE_CXX20_CISO646_REMOVED_WARNING
-#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
 // Core STL Headers
@@ -157,9 +156,6 @@
 #include <cstdalign>
 #include <cstdbool>
 #include <ctgmath>
-
-// Non-Core Experimental Headers
-#include <experimental/filesystem>
 
 #endif // !defined(_CORE_HEADERS_ONLY)
 
