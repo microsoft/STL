@@ -14,7 +14,7 @@ using namespace std;
 
 void count_aligned(benchmark::State& state) {
     const auto size = static_cast<size_t>(state.range(0));
-    vector<bool> v  = random_bool_vector(size);
+    vector<bool> v  = random_vector<bool>(size);
 
     bool b = false;
 
