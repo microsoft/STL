@@ -7092,8 +7092,6 @@ namespace {
         };
 
         struct _Traits_1_avx : _Traits_avx {
-            using _Word = uint32_t;
-
             static __m256i _Set(const char _Val) noexcept {
                 return _mm256_set1_epi8(_Val);
             }
@@ -7113,8 +7111,6 @@ namespace {
         };
 
         struct _Traits_1_sse : _Traits_sse {
-            using _Word = uint16_t;
-
             static __m128i _Set(const char _Val) noexcept {
                 return _mm_shuffle_epi8(_mm_cvtsi32_si128(_Val), _mm_setzero_si128());
             }
@@ -7131,8 +7127,6 @@ namespace {
         };
 
         struct _Traits_2_avx : _Traits_avx {
-            using _Word = uint16_t;
-
             static __m256i _Set(const wchar_t _Val) noexcept {
                 return _mm256_set1_epi16(_Val);
             }
@@ -7152,8 +7146,6 @@ namespace {
         };
 
         struct _Traits_2_sse : _Traits_sse {
-            using _Word = uint8_t;
-
             static __m128i _Set(const wchar_t _Val) noexcept {
                 return _mm_set1_epi16(_Val);
             }
@@ -7201,19 +7193,19 @@ namespace {
         }
 
         template <class _Traits, class _Elem>
-        bool _Impl(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_bits,
+        bool _Impl(void* _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_bits,
             const size_t _Size_chars, const _Elem _Elem0, const _Elem _Elem1) noexcept {
             [[maybe_unused]] typename _Traits::_Guard _Guard; // TRANSITION, DevCom-10331414
             const auto _Dx0 = _Traits::_Set(_Elem0);
             const auto _Dx1 = _Traits::_Set(_Elem1);
 
-            auto _Dst_words      = reinterpret_cast<_Traits::_Word*>(_Dest);
-            void* _Dst_words_end = _Dst_words;
-            _Advance_bytes(_Dst_words_end, _Size_bytes);
+            void* _Dest_end = _Dest;
+            _Advance_bytes(_Dest_end, _Size_bytes);
 
-            auto _Out = [&_Dst_words](const _Traits::_Vec _Ex1) {
-                *_Dst_words = _Traits::_To_bits(_Ex1);
-                ++_Dst_words;
+            auto _Out = [&_Dest](const _Traits::_Vec _Ex1) {
+                const auto _Val = _Traits::_To_bits(_Ex1);
+                memcpy(_Dest, &_Val, sizeof(_Val));
+                _Advance_bytes(_Dest, sizeof(_Val));
             };
 
             const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
@@ -7230,8 +7222,8 @@ namespace {
             }
 
             // Trim tail (may be padding tail, or too short string, or both)
-            if (_Dst_words != _Dst_words_end) {
-                memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
+            if (_Dest != _Dest_end) {
+                memset(_Dest, 0, _Byte_length(_Dest, _Dest_end));
             }
 
             return true;
