@@ -111,30 +111,34 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
         } while (_First1 != _Stop_at);
     }
 
-#if defined(_M_X64) // NOTE: UNALIGNED MEMORY ACCESSES
+#if defined(_M_X64)
     constexpr size_t _Mask_8 = ~((static_cast<size_t>(1) << 3) - 1);
     if (_Byte_length(_First1, _Last1) >= 8) {
         const void* _Stop_at = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_8);
         do {
-            const unsigned long long _Left             = *static_cast<unsigned long long*>(_First1);
-            const unsigned long long _Right            = *static_cast<unsigned long long*>(_First2);
-            *static_cast<unsigned long long*>(_First1) = _Right;
-            *static_cast<unsigned long long*>(_First2) = _Left;
+            unsigned long long _Left;
+            unsigned long long _Right;
+            memcpy(&_Left, _First1, 8);
+            memcpy(&_Right, _First2, 8);
+            memcpy(_First1, &_Right, 8);
+            memcpy(_First2, &_Left, 8);
             _Advance_bytes(_First1, 8);
             _Advance_bytes(_First2, 8);
         } while (_First1 != _Stop_at);
     }
-#elif defined(_M_IX86) // NOTE: UNALIGNED MEMORY ACCESSES
+#elif defined(_M_IX86)
     constexpr size_t _Mask_4 = ~((static_cast<size_t>(1) << 2) - 1);
     if (_Byte_length(_First1, _Last1) >= 4) {
         const void* _Stop_at = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_4);
         do {
-            const unsigned long _Left             = *static_cast<unsigned long*>(_First1);
-            const unsigned long _Right            = *static_cast<unsigned long*>(_First2);
-            *static_cast<unsigned long*>(_First1) = _Right;
-            *static_cast<unsigned long*>(_First2) = _Left;
+            unsigned long _Left;
+            unsigned long _Right;
+            memcpy(&_Left, _First1, 4);
+            memcpy(&_Right, _First2, 4);
+            memcpy(_First1, &_Right, 4);
+            memcpy(_First2, &_Left, 4);
             _Advance_bytes(_First1, 4);
             _Advance_bytes(_First2, 4);
         } while (_First1 != _Stop_at);
@@ -202,35 +206,41 @@ namespace {
                 } while (_First1 != _Stop_at);
             }
 
-#if defined(_M_X64) // NOTE: UNALIGNED MEMORY ACCESSES
+#if defined(_M_X64)
             constexpr size_t _Mask_8 = ~((static_cast<size_t>(1) << 3) - 1);
             if (_Byte_length(_First1, _Last1) >= 8) {
                 const void* _Stop_at = _First1;
                 _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_8);
                 do {
-                    const unsigned long long _Val1             = *static_cast<unsigned long long*>(_First1);
-                    const unsigned long long _Val2             = *static_cast<unsigned long long*>(_First2);
-                    const unsigned long long _Val3             = *static_cast<unsigned long long*>(_First3);
-                    *static_cast<unsigned long long*>(_First1) = _Val2;
-                    *static_cast<unsigned long long*>(_First2) = _Val3;
-                    *static_cast<unsigned long long*>(_First3) = _Val1;
+                    unsigned long long _Val1;
+                    unsigned long long _Val2;
+                    unsigned long long _Val3;
+                    memcpy(&_Val1, _First1, 8);
+                    memcpy(&_Val2, _First2, 8);
+                    memcpy(&_Val3, _First3, 8);
+                    memcpy(_First1, &_Val2, 8);
+                    memcpy(_First2, &_Val3, 8);
+                    memcpy(_First3, &_Val1, 8);
                     _Advance_bytes(_First1, 8);
                     _Advance_bytes(_First2, 8);
                     _Advance_bytes(_First3, 8);
                 } while (_First1 != _Stop_at);
             }
-#elif defined(_M_IX86) // NOTE: UNALIGNED MEMORY ACCESSES
+#elif defined(_M_IX86)
             constexpr size_t _Mask_4 = ~((static_cast<size_t>(1) << 2) - 1);
             if (_Byte_length(_First1, _Last1) >= 4) {
                 const void* _Stop_at = _First1;
                 _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_4);
                 do {
-                    const unsigned long _Val1             = *static_cast<unsigned long*>(_First1);
-                    const unsigned long _Val2             = *static_cast<unsigned long*>(_First2);
-                    const unsigned long _Val3             = *static_cast<unsigned long*>(_First3);
-                    *static_cast<unsigned long*>(_First1) = _Val2;
-                    *static_cast<unsigned long*>(_First2) = _Val3;
-                    *static_cast<unsigned long*>(_First3) = _Val1;
+                    unsigned long _Val1;
+                    unsigned long _Val2;
+                    unsigned long _Val3;
+                    memcpy(&_Val1, _First1, 4);
+                    memcpy(&_Val2, _First2, 4);
+                    memcpy(&_Val3, _First3, 4);
+                    memcpy(_First1, &_Val2, 4);
+                    memcpy(_First2, &_Val3, 4);
+                    memcpy(_First3, &_Val1, 4);
                     _Advance_bytes(_First1, 4);
                     _Advance_bytes(_First2, 4);
                     _Advance_bytes(_First3, 4);
