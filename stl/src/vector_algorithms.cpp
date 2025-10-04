@@ -6528,40 +6528,6 @@ namespace {
             _Advance_bytes(_Out, _Fill);
             return _Out;
         }
-
-        template <class _Traits, class _Ty>
-        void* _Remove_impl(void* _First, const void* const _Stop, const _Ty _Val) noexcept {
-            void* _Out        = _First;
-            const auto _Match = _Traits::_Set(_Val);
-
-            do {
-                const auto _Src       = _Traits::_Load(_First);
-                const uint32_t _Bingo = _Traits::_Mask(_Src, _Match);
-                _Out                  = _Traits::_Store_masked(_Out, _Src, _Bingo);
-                _Advance_bytes(_First, _Traits::_Step);
-            } while (_First != _Stop);
-
-            return _Out;
-        }
-
-        template <class _Traits>
-        void* _Unique_impl(void* _First, const void* const _Stop) noexcept {
-            void* _Out = _First;
-
-            do {
-                const auto _Src = _Traits::_Load(_First);
-                void* _First_d  = _First;
-                _Rewind_bytes(_First_d, _Traits::_Elem_size);
-                const auto _Match     = _Traits::_Load(_First_d);
-                const uint32_t _Bingo = _Traits::_Mask(_Src, _Match);
-                _Out                  = _Traits::_Store_masked(_Out, _Src, _Bingo);
-                _Advance_bytes(_First, _Traits::_Step);
-            } while (_First != _Stop);
-
-            _Rewind_bytes(_Out, _Traits::_Elem_size);
-            return _Out;
-        }
-
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
     } // namespace _Removing
 } // unnamed namespace
@@ -7106,10 +7072,6 @@ namespace {
             static bool _Check(const __m256i _Val, const __m256i _Ex1, const __m256i _Dx0) noexcept {
                 return _mm256_testc_si256(_Ex1, _mm256_xor_si256(_Val, _Dx0));
             }
-
-            static void _Exit_vectorized() noexcept {
-                _mm256_zeroupper();
-            }
         };
 
         struct _Traits_sse {
@@ -7127,8 +7089,6 @@ namespace {
             static bool _Check(const __m128i _Val, const __m128i _Ex1, const __m128i _Dx0) noexcept {
                 return _mm_testc_si128(_Ex1, _mm_xor_si128(_Val, _Dx0));
             }
-
-            static void _Exit_vectorized() noexcept {}
         };
 
         struct _Traits_1_avx : _Traits_avx {
