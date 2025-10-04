@@ -3991,16 +3991,20 @@ namespace {
 
                     const size_t _Byte_size = _Needle_length * sizeof(_Ty);
 
+                    constexpr size_t _Vec_size = sizeof(_Mask);
+                    constexpr size_t _Vec_mask = _Vec_size - 1;
+                    static_assert((_Vec_size & _Vec_mask) == 0);
+
                     const void* _Stop = _Needle_ptr;
-                    _Advance_bytes(_Stop, _Byte_size & ~size_t{0x1F});
-                    for (; _Needle_ptr != _Stop; _Needle_ptr += 32 / sizeof(_Ty)) {
+                    _Advance_bytes(_Stop, _Byte_size & ~_Vec_mask);
+                    for (; _Needle_ptr != _Stop; _Needle_ptr += _Vec_size / sizeof(_Ty)) {
                         const __m128i _Data = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Needle_ptr));
                         if (!_mm_testz_si128(_Mask, _Data)) {
                             return false;
                         }
                     }
 
-                    _Advance_bytes(_Stop, _Byte_size & 0x1E);
+                    _Advance_bytes(_Stop, _Byte_size & _Vec_mask);
                     for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
                         if ((*_Needle_ptr & ~_Ty{0xFF}) != 0) {
                             return false;
