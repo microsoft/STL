@@ -2017,13 +2017,15 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_nothrow_invocable_r_v =
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20
-#ifndef __clang__ // TRANSITION, LLVM-48860
+#if !defined(__clang__) || defined(__EDG__) \
+    || __clang_major__ >= 19 // TRANSITION, VSO-2397560 (RWC relying on ancient Clang)
 _EXPORT_STD template <class _Ty1, class _Ty2>
 struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_layout_compatible : bool_constant<__is_layout_compatible(_Ty1, _Ty2)> {};
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_layout_compatible_v = __is_layout_compatible(_Ty1, _Ty2);
 
+#if !defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-135273
 _EXPORT_STD template <class _Base, class _Derived>
 struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_pointer_interconvertible_base_of
     : bool_constant<__is_pointer_interconvertible_base_of(_Base, _Derived)> {};
@@ -2031,7 +2033,18 @@ struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_pointer_interconvertible_base_of
 _EXPORT_STD template <class _Base, class _Derived>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_pointer_interconvertible_base_of_v =
     __is_pointer_interconvertible_base_of(_Base, _Derived);
+#else // ^^^ no workaround / workaround vvv
+_EXPORT_STD template <class _Base, class _Derived>
+struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_pointer_interconvertible_base_of
+    : bool_constant<__is_pointer_interconvertible_base_of(remove_cv_t<_Base>, remove_cv_t<_Derived>)> {};
 
+_EXPORT_STD template <class _Base, class _Derived>
+_NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_pointer_interconvertible_base_of_v =
+    __is_pointer_interconvertible_base_of(remove_cv_t<_Base>, remove_cv_t<_Derived>);
+#endif // ^^^ workaround ^^^
+#endif // ^^^ no workaround ^^^
+
+#ifndef __clang__ // TRANSITION, LLVM-48860
 _EXPORT_STD template <class _ClassTy, class _MemberTy>
 _NODISCARD _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_pointer_interconvertible_with_class(
     _MemberTy _ClassTy::* _Pm) noexcept {
