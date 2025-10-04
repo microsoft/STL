@@ -4497,21 +4497,21 @@ namespace {
                 if constexpr (_Needle_length_el_magnitude >= 1) {
                     _Eq = _Traits::_Cmp_avx(_Data1, _Data2s0);
                     if constexpr (_Needle_length_el_magnitude >= 2) {
-                        const __m256i _Data2s1 = _Traits::_Shuffle_avx<1>(_Data2s0);
+                        const __m256i _Data2s1 = _Traits::template _Shuffle_avx<1>(_Data2s0);
                         _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s1));
                         if constexpr (_Needle_length_el_magnitude >= 4) {
-                            const __m256i _Data2s2 = _Traits::_Shuffle_avx<2>(_Data2s0);
+                            const __m256i _Data2s2 = _Traits::template _Shuffle_avx<2>(_Data2s0);
                             _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s2));
-                            const __m256i _Data2s3 = _Traits::_Shuffle_avx<1>(_Data2s2);
+                            const __m256i _Data2s3 = _Traits::template _Shuffle_avx<1>(_Data2s2);
                             _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s3));
                             if constexpr (_Needle_length_el_magnitude >= 8) {
-                                const __m256i _Data2s4 = _Traits::_Shuffle_avx<4>(_Data2s0);
+                                const __m256i _Data2s4 = _Traits::template _Shuffle_avx<4>(_Data2s0);
                                 _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s4));
-                                const __m256i _Data2s5 = _Traits::_Shuffle_avx<1>(_Data2s4);
+                                const __m256i _Data2s5 = _Traits::template _Shuffle_avx<1>(_Data2s4);
                                 _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s5));
-                                const __m256i _Data2s6 = _Traits::_Shuffle_avx<2>(_Data2s4);
+                                const __m256i _Data2s6 = _Traits::template _Shuffle_avx<2>(_Data2s4);
                                 _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s6));
-                                const __m256i _Data2s7 = _Traits::_Shuffle_avx<1>(_Data2s6);
+                                const __m256i _Data2s7 = _Traits::template _Shuffle_avx<1>(_Data2s6);
                                 _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s7));
                             }
                         }
@@ -4528,7 +4528,8 @@ namespace {
 
                 const __m256i _Last2val = _mm256_maskload_epi32(
                     reinterpret_cast<const int*>(_Stop2), _Avx2_tail_mask_32(_Last2_length_el * sizeof(_Ty)));
-                const __m256i _Last2s0 = _Traits::_Spread_avx<_Last2_length_el_magnitude>(_Last2val, _Last2_length_el);
+                const __m256i _Last2s0 =
+                    _Traits::template _Spread_avx<_Last2_length_el_magnitude>(_Last2val, _Last2_length_el);
 
                 const void* _Stop1 = _First1;
                 _Advance_bytes(_Stop1, _Haystack_length & ~size_t{0x1F});
@@ -7013,7 +7014,7 @@ namespace {
         template <class _Traits, class _Elem>
         void __stdcall _Impl(
             _Elem* const _Dest, const void* _Src, size_t _Size_bits, const _Elem _Elem0, const _Elem _Elem1) noexcept {
-            constexpr size_t _Step_size_bits = sizeof(_Traits::_Value_type) * 8;
+            constexpr size_t _Step_size_bits = sizeof(typename _Traits::_Value_type) * 8;
 
             const auto _Px0 = _Traits::_Set(_Elem0);
             const auto _Px1 = _Traits::_Set(_Elem1);
@@ -7032,7 +7033,7 @@ namespace {
             }
 
             if (_Size_bits > 0) {
-                __assume(_Size_bits < sizeof(_Traits::_Value_type));
+                __assume(_Size_bits < sizeof(typename _Traits::_Value_type));
                 typename _Traits::_Value_type _Val;
                 memcpy(&_Val, _Src, sizeof(_Val));
                 const auto _Elems = _Traits::_Step(_Val, _Px0, _Px1);
