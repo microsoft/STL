@@ -3738,7 +3738,11 @@ _NODISCARD _CONSTEXPR20 _VbIt _Find_vbool(_VbIt _First, const _VbIt _Last, const
         const auto _SourceMask     = _FirstSourceMask & _LastSourceMask;
         const auto _SelectVal      = (_Val ? *_VbFirst : ~*_VbFirst) & _SourceMask;
         const auto _Count          = _Countr_zero(_SelectVal);
-        return _Count == _VBITS ? _Last : _First + static_cast<_Iter_diff_t<_VbIt>>(_Count - _First._Myoff);
+        if (_Count == _VBITS) {
+            return _Last;
+        } else {
+            return _First + static_cast<_Iter_diff_t<_VbIt>>(_Count - _First._Myoff);
+        }
     }
 
     const auto _FirstVal   = (_Val ? *_VbFirst : ~*_VbFirst) & _FirstSourceMask;
