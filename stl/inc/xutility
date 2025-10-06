@@ -6256,7 +6256,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
 
                 if constexpr (sizeof(_Iter_value_t<_InIt>) == 1) {
                     _Result =
-                        static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, _Find_arg_cast<unsigned char>(_Val), _Count));
+                        static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, _STD _Find_arg_cast<unsigned char>(_Val), _Count));
                 } else {
                     _STL_INTERNAL_STATIC_ASSERT(sizeof(_Iter_value_t<_InIt>) == 2);
                     _Result = reinterpret_cast<_Ptr_t>(const_cast<wchar_t*>(_CSTD wmemchr(
