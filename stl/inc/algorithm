@@ -4085,7 +4085,7 @@ _CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Des
             }
 
             if (_ULast._Myoff != 0) {
-                const _Vbase_ _Mask = ((_Vbase_{1} << _ULast._Myoff) - 1);
+                const _Vbase_ _Mask = (_Vbase_{1} << _ULast._Myoff) - 1;
                 *_Dest_ptr          = (*_Dest_ptr & ~_Mask) | (_Mapped_fn(*_First_ptr) & _Mask);
                 _UDest._Myoff       = _ULast._Myoff;
             }
@@ -4136,7 +4136,7 @@ _CONSTEXPR20 _OutIt transform(
             }
 
             if (_ULast1._Myoff != 0) {
-                const _Vbase_ _Mask = ((_Vbase_{1} << _ULast1._Myoff) - 1);
+                const _Vbase_ _Mask = (_Vbase_{1} << _ULast1._Myoff) - 1;
                 *_Dest_ptr          = (*_Dest_ptr & ~_Mask) | (_Mapped_fn(*_First1_ptr, *_First2_ptr) & _Mask);
                 _UDest._Myoff       = _ULast1._Myoff;
             }
