@@ -1710,13 +1710,14 @@ void test_basic_string(mt19937_64& gen) {
     }
 }
 
+// GH-5757 <string>: wstring::find_first_of crashes on some inputs
 void test_gh_5757_find_first_of() {
     const wstring hay(40, L'e');
     wstring needle;
     needle.resize(32);
 
     for (unsigned int k = 0; k != 32; k += 16) {
-        for (int i = 0; i != 8; ++i) {
+        for (unsigned int i = 0; i != 8; ++i) {
             needle[i + k] = static_cast<wchar_t>(L'a' + i);
         }
 
