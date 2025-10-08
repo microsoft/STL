@@ -176,12 +176,16 @@ public:
 
     // Assignment [any.assign]
     any& operator=(const any& _That) {
-        _Assign(_That);
+        any _Tmp = _That;
+        reset();
+        _Move_from(_Tmp);
         return *this;
     }
 
     any& operator=(any&& _That) noexcept {
-        _Assign(_STD move(_That));
+        any _Tmp = _STD move(_That);
+        reset();
+        _Move_from(_Tmp);
         return *this;
     }
 
@@ -190,7 +194,9 @@ public:
                                     int> = 0>
     any& operator=(_ValueType&& _Value) {
         // replace contained value with an object of type decay_t<_ValueType> initialized from _Value
-        _Assign(_STD forward<_ValueType>(_Value));
+        any _Tmp = _STD forward<_ValueType>(_Value);
+        reset();
+        _Move_from(_Tmp);
         return *this;
     }
 
@@ -304,11 +310,6 @@ private:
             _CSTD memcpy(_Storage._TrivialData, _That._Storage._TrivialData, sizeof(_Storage._TrivialData));
             break;
         }
-    }
-
-    void _Assign(any _That) noexcept { // intentionally pass by value
-        reset();
-        _Move_from(_That);
     }
 
     template <class _Decayed, class... _Types>
