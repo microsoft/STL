@@ -8,6 +8,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <__msvc_heap_algorithms.hpp>
+#include <__msvc_int128.hpp>
 #include <__msvc_minmax.hpp>
 #include <xmemory>
 
@@ -884,7 +885,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InI
     const auto _ULast1 = _STD _Get_unwrapped(_Last1);
     auto _UFirst2      = _STD _Get_unwrapped_n(_First2, _STD _Idl_distance<_InIt1>(_UFirst1, _ULast1));
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
+    if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
         if (!_STD _Is_constant_evaluated()) {
             constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
 
@@ -948,7 +949,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
         const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min) (_Count1, _Count2));
         _ULast1           = _UFirst1 + _Count;
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
+        if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
             if (!_STD _Is_constant_evaluated()) {
                 constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
 
@@ -6019,6 +6020,141 @@ private:
     _Udiff _Bmask; // 2^_Bits - 1
 };
 
+template <class _Diff, class _Urng>
+class _Rng_from_urng_v2 { // wrap a URNG as an RNG
+public:
+    using _Ty0 = make_unsigned_t<_Diff>;
+    using _Ty1 = _Invoke_result_t<_Urng&>;
+
+    using _Udiff                              = conditional_t<sizeof(_Ty1) < sizeof(_Ty0), _Ty0, _Ty1>;
+    static constexpr unsigned int _Udiff_bits = sizeof(_Udiff) * CHAR_BIT;
+    using _Uprod = conditional_t<_Udiff_bits <= 16, uint32_t, conditional_t<_Udiff_bits <= 32, uint64_t, _Unsigned128>>;
+
+    explicit _Rng_from_urng_v2(_Urng& _Func) noexcept : _Ref(_Func) {}
+
+    _Diff operator()(_Diff _Index) { // adapt _Urng closed range to [0, _Index)
+        // From Daniel Lemire, "Fast Random Integer Generation in an Interval",
+        // ACM Trans. Model. Comput. Simul. 29 (1), 2019.
+        //
+        // Algorithm 5 <-> This Code:
+        //   m <-> _Product
+        //   l <-> _Rem
+        //   s <-> _Index
+        //   t <-> _Threshold
+        //   L <-> _Generated_bits
+        //   2^L - 1 <-> _Mask
+
+        _Udiff _Mask        = _Bmask;
+        unsigned int _Niter = 1;
+
+        if constexpr (_Bits < _Udiff_bits) {
+            while (_Mask < static_cast<_Udiff>(_Index - 1)) {
+                _Mask <<= _Bits;
+                _Mask |= _Bmask;
+                ++_Niter;
+            }
+        }
+
+        // x <- random integer in [0, 2^L)
+        // m <- x * s
+        auto _Product = _Get_random_product(_Index, _Niter);
+        // l <- m mod 2^L
+        auto _Rem = static_cast<_Udiff>(_Product) & _Mask;
+
+        if (_Rem < static_cast<_Udiff>(_Index)) {
+            // t <- (2^L - s) mod s
+            const auto _Threshold = (_Mask - _Index + 1) % _Index;
+            while (_Rem < _Threshold) {
+                _Product = _Get_random_product(_Index, _Niter);
+                _Rem     = static_cast<_Udiff>(_Product) & _Mask;
+            }
+        }
+
+        unsigned int _Generated_bits;
+        if constexpr (_Bits < _Udiff_bits) {
+            _Generated_bits = static_cast<unsigned int>(_Popcount(_Mask));
+        } else {
+            _Generated_bits = _Udiff_bits;
+        }
+
+        // m / 2^L
+        return static_cast<_Diff>(_Product >> _Generated_bits);
+    }
+
+    _Udiff _Get_all_bits() {
+        _Udiff _Ret = _Get_bits();
+
+        if constexpr (_Bits < _Udiff_bits) {
+            for (unsigned int _Num = _Bits; _Num < _Udiff_bits; _Num += _Bits) { // don't mask away any bits
+                _Ret <<= _Bits;
+                _Ret |= _Get_bits();
+            }
+        }
+
+        return _Ret;
+    }
+
+    _Rng_from_urng_v2(const _Rng_from_urng_v2&)            = delete;
+    _Rng_from_urng_v2& operator=(const _Rng_from_urng_v2&) = delete;
+
+private:
+    _Udiff _Get_bits() { // return a random value within [0, _Bmask]
+        constexpr auto _Urng_min = (_Urng::min) ();
+        for (;;) { // repeat until random value is in range
+            const _Udiff _Val = static_cast<_Udiff>(_Ref() - _Urng_min);
+
+            if (_Val <= _Bmask) {
+                return _Val;
+            }
+        }
+    }
+
+    static constexpr size_t _Calc_bits() {
+        auto _Bits_local  = _Udiff_bits;
+        auto _Bmask_local = static_cast<_Udiff>(-1);
+        for (; static_cast<_Udiff>((_Urng::max) () - (_Urng::min) ()) < _Bmask_local; _Bmask_local >>= 1) {
+            --_Bits_local;
+        }
+
+        return _Bits_local;
+    }
+
+    _Uprod _Get_random_product(const _Diff _Index, unsigned int _Niter) {
+        _Udiff _Ret = _Get_bits();
+        if constexpr (_Bits < _Udiff_bits) {
+            while (--_Niter > 0) {
+                _Ret <<= _Bits;
+                _Ret |= _Get_bits();
+            }
+        }
+
+        if constexpr (is_same_v<_Udiff, uint64_t>) {
+            uint64_t _High;
+            const auto _Low = _Base128::_UMul128(_Ret, static_cast<_Udiff>(_Index), _High);
+            return _Uprod{_Low, _High};
+        } else {
+            return _Uprod{_Ret} * static_cast<_Uprod>(_Index);
+        }
+    }
+
+    _Urng& _Ref; // reference to URNG
+    static constexpr size_t _Bits  = _Calc_bits(); // number of random bits generated by _Get_bits()
+    static constexpr _Udiff _Bmask = static_cast<_Udiff>(-1) >> (_Udiff_bits - _Bits); // 2^_Bits - 1
+};
+
+template <class _Gen, class = void>
+constexpr bool _Has_static_min_max = false;
+
+// This checks a requirement of N4981 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
+// to implement the whole concept - we just need to distinguish Standard machinery from tr1 machinery.
+template <class _Gen>
+constexpr bool _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min) () < (_Gen::max) ()>::value)>> =
+    true;
+
+template <class _Diff, class _Urng>
+using _Rng_from_urng_v1_or_v2 =
+    conditional_t<_Has_static_min_max<_Urng>, _Rng_from_urng_v2<_Diff, _Urng>, _Rng_from_urng<_Diff, _Urng>>;
+
 #if _HAS_CXX17
 template <class _PopIt, class _SampleIt, class _Diff, class _RngFn>
 _SampleIt _Sample_reservoir_unchecked(
@@ -6076,7 +6212,7 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _Ur
         auto _UFirst   = _STD _Get_unwrapped(_First);
         auto _ULast    = _STD _Get_unwrapped(_Last);
         using _PopDiff = _Iter_diff_t<_PopIt>;
-        _Rng_from_urng<_PopDiff, remove_reference_t<_Urng>> _RngFunc(_Func);
+        _Rng_from_urng_v1_or_v2<_PopDiff, remove_reference_t<_Urng>> _RngFunc(_Func);
         if constexpr (_Is_ranges_fwd_iter_v<_PopIt>) {
             // source is forward: use selection sampling (stable)
             using _CT            = common_type_t<_Diff, _PopDiff>;
@@ -6119,7 +6255,7 @@ namespace ranges {
                 return _Output;
             }
 
-            _Rng_from_urng<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            _Rng_from_urng_v1_or_v2<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
             if constexpr (forward_iterator<_It>) {
                 auto _UFirst   = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
                 auto _Pop_size = _RANGES distance(_UFirst, _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
@@ -6140,7 +6276,7 @@ namespace ranges {
                 return _Output;
             }
 
-            _Rng_from_urng<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            _Rng_from_urng_v1_or_v2<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
             if constexpr (forward_range<_Rng>) {
                 auto _UFirst   = _Ubegin(_Range);
                 auto _Pop_size = _RANGES distance(_UFirst, _Uend(_Range));
@@ -6243,7 +6379,7 @@ void _Random_shuffle1(_RanIt _First, _RanIt _Last, _RngFn& _RngFunc) {
 _EXPORT_STD template <class _RanIt, class _Urng>
 void shuffle(_RanIt _First, _RanIt _Last, _Urng&& _Func) { // shuffle [_First, _Last) using URNG _Func
     using _Urng0 = remove_reference_t<_Urng>;
-    _Rng_from_urng<_Iter_diff_t<_RanIt>, _Urng0> _RngFunc(_Func);
+    _Rng_from_urng_v1_or_v2<_Iter_diff_t<_RanIt>, _Urng0> _RngFunc(_Func);
     _STD _Random_shuffle1(_First, _Last, _RngFunc);
 }
 
@@ -6256,7 +6392,7 @@ namespace ranges {
         _STATIC_CALL_OPERATOR _It operator()(_It _First, _Se _Last, _Urng&& _Func) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
 
-            _Rng_from_urng<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            _Rng_from_urng_v1_or_v2<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
             auto _UResult = _Shuffle_unchecked(
                 _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _RngFunc);
 
@@ -6267,7 +6403,7 @@ namespace ranges {
         template <random_access_range _Rng, class _Urng>
             requires permutable<iterator_t<_Rng>> && uniform_random_bit_generator<remove_reference_t<_Urng>>
         _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Urng&& _Func) _CONST_CALL_OPERATOR {
-            _Rng_from_urng<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            _Rng_from_urng_v1_or_v2<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
 
             return _RANGES _Rewrap_iterator(_Range, _Shuffle_unchecked(_Ubegin(_Range), _Uend(_Range), _RngFunc));
         }
@@ -6313,11 +6449,11 @@ void random_shuffle(_RanIt _First, _RanIt _Last, _RngFn&& _RngFunc) {
 struct _Rand_urng_from_func { // wrap rand() as a URNG
     using result_type = unsigned int;
 
-    static result_type(min)() { // return minimum possible generated value
+    static constexpr result_type(min)() { // return minimum possible generated value
         return 0;
     }
 
-    static result_type(max)() { // return maximum possible generated value
+    static constexpr result_type(max)() { // return maximum possible generated value
         return RAND_MAX;
     }
 

@@ -12,13 +12,14 @@
 #include <test_filesystem_support.hpp>
 
 using namespace std;
-namespace fs = experimental::filesystem;
 
 int main() {
     error_code ec;
 
     {
-        const auto testDir = get_experimental_test_directory("path_stream_parameter");
+        namespace fs = experimental::filesystem;
+
+        const auto testDir = fs::temp_directory_path() / get_test_directory_subname("path_stream_parameter");
         fs::create_directories(testDir, ec);
         assert(!ec);
 
@@ -77,12 +78,13 @@ int main() {
         }
 
         fs::remove_all(testDir, ec);
+        assert(!ec);
     }
 
 #if _HAS_CXX17
     {
         const auto testDir = get_test_directory("path_stream_parameter");
-        fs::create_directories(testDir.native(), ec);
+        filesystem::create_directories(testDir, ec);
         assert(!ec);
 
         {
@@ -90,7 +92,7 @@ int main() {
             filebuf buf;
             buf.open(filebufPath, ios::out | ios::trunc);
             buf.close();
-            assert(fs::exists(filebufPath.native(), ec));
+            assert(filesystem::exists(filebufPath, ec));
             assert(!ec);
         }
 
@@ -100,7 +102,7 @@ int main() {
             ofstream ostr(ofstreamFile);
             assert(ostr);
             ostr << 1729;
-            assert(fs::exists(ofstreamFile.native(), ec));
+            assert(filesystem::exists(ofstreamFile, ec));
             assert(!ec);
             ostr.close();
             ostr.open(ofstreamOpenFile);
@@ -108,7 +110,7 @@ int main() {
             assert(ostr);
         }
 
-        assert(fs::exists(ofstreamOpenFile.native(), ec));
+        assert(filesystem::exists(ofstreamOpenFile, ec));
         assert(!ec);
 
         const auto fstreamFile     = testDir / L"fstream_file";
@@ -116,14 +118,14 @@ int main() {
         {
             fstream fstr(fstreamFile, ios::out | ios::trunc);
             assert(fstr);
-            assert(fs::exists(fstreamFile.native(), ec));
+            assert(filesystem::exists(fstreamFile, ec));
             assert(!ec);
             fstr.close();
             fstr.open(fstreamOpenFile, ios::out | ios::trunc);
             assert(fstr);
         }
 
-        assert(fs::exists(fstreamOpenFile.native(), ec));
+        assert(filesystem::exists(fstreamOpenFile, ec));
         assert(!ec);
 
         {
@@ -139,7 +141,7 @@ int main() {
             assert(temp == 42);
         }
 
-        fs::remove_all(testDir.native(), ec);
+        filesystem::remove_all(testDir, ec);
         assert(!ec);
     }
 #endif // _HAS_CXX17

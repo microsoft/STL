@@ -3183,8 +3183,107 @@ namespace {
                     _Advance_bytes(_First, 32);
                 } while (_First != _Stop_at);
 
+                if (const size_t _Tail = _Length & 0x1C; _Tail != 0) {
+                    const __m256i _Tail_mask = _Avx2_tail_mask_32(_Tail);
+                    const __m256i _Data      = _mm256_maskload_epi32(reinterpret_cast<const int*>(_First), _Tail_mask);
+
+                    const __m256i _Cmp   = _Traits::_Cmp_avx(_Comparand, _Data);
+                    const uint32_t _Mask = _mm256_movemask_epi8(_mm256_and_si256(_Cmp, _Tail_mask));
+
+                    const uint64_t _Msk_with_carry = uint64_t{_Carry} | (uint64_t{_Mask} << 32);
+                    uint64_t _MskX                 = _Msk_with_carry;
+
+                    _MskX = (_MskX >> sizeof(_Ty)) & _MskX;
+
+                    if constexpr (sizeof(_Ty) == 1) {
+                        _MskX = __ull_rshift(_MskX, _Sh1) & _MskX;
+                    }
+
+                    if constexpr (sizeof(_Ty) < 4) {
+                        _MskX = __ull_rshift(_MskX, _Sh2) & _MskX;
+                    }
+
+                    if constexpr (sizeof(_Ty) < 8) {
+                        _MskX = __ull_rshift(_MskX, _Sh3) & _MskX;
+                    }
+
+                    if (_MskX != 0) {
+#ifdef _M_IX86
+                        const uint32_t _MskLow = static_cast<uint32_t>(_MskX);
+
+                        const int _Shift = _MskLow != 0
+                                             ? static_cast<int>(_tzcnt_u32(_MskLow)) - 32
+                                             : static_cast<int>(_tzcnt_u32(static_cast<uint32_t>(_MskX >> 32)));
+
+#elifdef _M_X64
+                        const long long _Shift = static_cast<long long>(_tzcnt_u64(_MskX)) - 32;
+#else
+#error Unsupported architecture
+#endif
+                        _Advance_bytes(_First, _Shift);
+                        return _First;
+                    }
+
+                    _Carry = static_cast<uint32_t>(__ull_rshift(_Msk_with_carry, static_cast<int>(_Tail)));
+
+                    _Advance_bytes(_First, _Tail);
+                }
+
                 _Mid1 = static_cast<const _Ty*>(_First);
                 _Rewind_bytes(_First, _lzcnt_u32(~_Carry));
+            } else if constexpr (sizeof(_Ty) < 8) {
+                if (_Count <= 8 / sizeof(_Ty) && _Length >= 16 && _Use_sse42()) {
+                    const int _Bytes_count = static_cast<int>(_Count * sizeof(_Ty));
+                    const int _Sh1         = sizeof(_Ty) != 1 ? 0 : (_Bytes_count < 4 ? _Bytes_count - 2 : 2);
+                    const int _Sh2         = sizeof(_Ty) >= 4 ? 0
+                                           : _Bytes_count < 4 ? 0
+                                                              : (_Bytes_count < 8 ? _Bytes_count - 4 : 4);
+
+                    const __m128i _Comparand = _Traits::_Set_sse(_Val);
+
+                    const void* _Stop_at = _First;
+                    _Advance_bytes(_Stop_at, _Length & ~size_t{0xF});
+
+                    uint32_t _Carry = 0;
+                    do {
+                        const __m128i _Data = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_First));
+
+                        const __m128i _Cmp   = _Traits::_Cmp_sse(_Comparand, _Data);
+                        const uint32_t _Mask = _mm_movemask_epi8(_Cmp);
+
+                        uint32_t _MskX = _Carry | (_Mask << 16);
+
+                        _MskX = (_MskX >> sizeof(_Ty)) & _MskX;
+
+                        if constexpr (sizeof(_Ty) == 1) {
+                            _MskX = (_MskX >> _Sh1) & _MskX;
+                        }
+
+                        if constexpr (sizeof(_Ty) < 4) {
+                            _MskX = (_MskX >> _Sh2) & _MskX;
+                        }
+
+                        if (_MskX != 0) {
+                            unsigned long _Pos;
+                            // CodeQL [SM02313] _Pos is always initialized: _MskX != 0 was checked right above.
+                            _BitScanForward(&_Pos, _MskX);
+                            _Advance_bytes(_First, static_cast<ptrdiff_t>(_Pos) - 16);
+                            return _First;
+                        }
+
+                        _Carry = _Mask;
+
+                        _Advance_bytes(_First, 16);
+                    } while (_First != _Stop_at);
+
+                    _Mid1 = static_cast<const _Ty*>(_First);
+
+                    unsigned long _Carry_pos;
+                    // Here, _Carry can't be 0xFFFF, because that would have been a match. Therefore:
+                    // CodeQL [SM02313] _Carry_pos is always initialized: `(_Carry ^ 0xFFFF) != 0` is always true.
+                    _BitScanReverse(&_Carry_pos, _Carry ^ 0xFFFF);
+                    _Rewind_bytes(_First, 15 - static_cast<ptrdiff_t>(_Carry_pos));
+                }
             }
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
             auto _Match_start    = static_cast<const _Ty*>(_First);
@@ -4398,21 +4497,21 @@ namespace {
                 if constexpr (_Needle_length_el_magnitude >= 1) {
                     _Eq = _Traits::_Cmp_avx(_Data1, _Data2s0);
                     if constexpr (_Needle_length_el_magnitude >= 2) {
-                        const __m256i _Data2s1 = _Traits::_Shuffle_avx<1>(_Data2s0);
+                        const __m256i _Data2s1 = _Traits::template _Shuffle_avx<1>(_Data2s0);
                         _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s1));
                         if constexpr (_Needle_length_el_magnitude >= 4) {
-                            const __m256i _Data2s2 = _Traits::_Shuffle_avx<2>(_Data2s0);
+                            const __m256i _Data2s2 = _Traits::template _Shuffle_avx<2>(_Data2s0);
                             _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s2));
-                            const __m256i _Data2s3 = _Traits::_Shuffle_avx<1>(_Data2s2);
+                            const __m256i _Data2s3 = _Traits::template _Shuffle_avx<1>(_Data2s2);
                             _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s3));
                             if constexpr (_Needle_length_el_magnitude >= 8) {
-                                const __m256i _Data2s4 = _Traits::_Shuffle_avx<4>(_Data2s0);
+                                const __m256i _Data2s4 = _Traits::template _Shuffle_avx<4>(_Data2s0);
                                 _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s4));
-                                const __m256i _Data2s5 = _Traits::_Shuffle_avx<1>(_Data2s4);
+                                const __m256i _Data2s5 = _Traits::template _Shuffle_avx<1>(_Data2s4);
                                 _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s5));
-                                const __m256i _Data2s6 = _Traits::_Shuffle_avx<2>(_Data2s4);
+                                const __m256i _Data2s6 = _Traits::template _Shuffle_avx<2>(_Data2s4);
                                 _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s6));
-                                const __m256i _Data2s7 = _Traits::_Shuffle_avx<1>(_Data2s6);
+                                const __m256i _Data2s7 = _Traits::template _Shuffle_avx<1>(_Data2s6);
                                 _Eq                    = _mm256_or_si256(_Eq, _Traits::_Cmp_avx(_Data1, _Data2s7));
                             }
                         }
@@ -4429,7 +4528,8 @@ namespace {
 
                 const __m256i _Last2val = _mm256_maskload_epi32(
                     reinterpret_cast<const int*>(_Stop2), _Avx2_tail_mask_32(_Last2_length_el * sizeof(_Ty)));
-                const __m256i _Last2s0 = _Traits::_Spread_avx<_Last2_length_el_magnitude>(_Last2val, _Last2_length_el);
+                const __m256i _Last2s0 =
+                    _Traits::template _Spread_avx<_Last2_length_el_magnitude>(_Last2val, _Last2_length_el);
 
                 const void* _Stop1 = _First1;
                 _Advance_bytes(_Stop1, _Haystack_length & ~size_t{0x1F});
@@ -6428,40 +6528,6 @@ namespace {
             _Advance_bytes(_Out, _Fill);
             return _Out;
         }
-
-        template <class _Traits, class _Ty>
-        void* _Remove_impl(void* _First, const void* const _Stop, const _Ty _Val) noexcept {
-            void* _Out        = _First;
-            const auto _Match = _Traits::_Set(_Val);
-
-            do {
-                const auto _Src       = _Traits::_Load(_First);
-                const uint32_t _Bingo = _Traits::_Mask(_Src, _Match);
-                _Out                  = _Traits::_Store_masked(_Out, _Src, _Bingo);
-                _Advance_bytes(_First, _Traits::_Step);
-            } while (_First != _Stop);
-
-            return _Out;
-        }
-
-        template <class _Traits>
-        void* _Unique_impl(void* _First, const void* const _Stop) noexcept {
-            void* _Out = _First;
-
-            do {
-                const auto _Src = _Traits::_Load(_First);
-                void* _First_d  = _First;
-                _Rewind_bytes(_First_d, _Traits::_Elem_size);
-                const auto _Match     = _Traits::_Load(_First_d);
-                const uint32_t _Bingo = _Traits::_Mask(_Src, _Match);
-                _Out                  = _Traits::_Store_masked(_Out, _Src, _Bingo);
-                _Advance_bytes(_First, _Traits::_Step);
-            } while (_First != _Stop);
-
-            _Rewind_bytes(_Out, _Traits::_Elem_size);
-            return _Out;
-        }
-
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
     } // namespace _Removing
 } // unnamed namespace
@@ -6914,7 +6980,7 @@ namespace {
         template <class _Traits, class _Elem>
         void __stdcall _Impl(
             _Elem* const _Dest, const void* _Src, size_t _Size_bits, const _Elem _Elem0, const _Elem _Elem1) noexcept {
-            constexpr size_t _Step_size_bits = sizeof(_Traits::_Value_type) * 8;
+            constexpr size_t _Step_size_bits = sizeof(typename _Traits::_Value_type) * 8;
 
             const auto _Px0 = _Traits::_Set(_Elem0);
             const auto _Px1 = _Traits::_Set(_Elem1);
@@ -6933,7 +6999,7 @@ namespace {
             }
 
             if (_Size_bits > 0) {
-                __assume(_Size_bits < sizeof(_Traits::_Value_type));
+                __assume(_Size_bits < sizeof(typename _Traits::_Value_type));
                 typename _Traits::_Value_type _Val;
                 memcpy(&_Val, _Src, sizeof(_Val));
                 const auto _Elems = _Traits::_Step(_Val, _Px0, _Px1);
@@ -7006,10 +7072,6 @@ namespace {
             static bool _Check(const __m256i _Val, const __m256i _Ex1, const __m256i _Dx0) noexcept {
                 return _mm256_testc_si256(_Ex1, _mm256_xor_si256(_Val, _Dx0));
             }
-
-            static void _Exit_vectorized() noexcept {
-                _mm256_zeroupper();
-            }
         };
 
         struct _Traits_sse {
@@ -7027,8 +7089,6 @@ namespace {
             static bool _Check(const __m128i _Val, const __m128i _Ex1, const __m128i _Dx0) noexcept {
                 return _mm_testc_si128(_Ex1, _mm_xor_si128(_Val, _Dx0));
             }
-
-            static void _Exit_vectorized() noexcept {}
         };
 
         struct _Traits_1_avx : _Traits_avx {

@@ -1674,6 +1674,21 @@ public:
     }
 };
 
+enum class _Rx_unwind_ops {
+    _After_assert = _N_end + 1,
+    _After_neg_assert,
+    _Disjunction_eval_alt_on_failure,
+    _Disjunction_eval_alt_always,
+};
+
+template <class _BidIt>
+class _Rx_state_frame_t {
+public:
+    _Rx_unwind_ops _Code;
+    _Node_base* _Node;
+    _Tgt_state_t<_BidIt> _Match_state;
+};
+
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 class _Matcher3 { // provides ways to match a regular expression to a text sequence
 public:
@@ -1740,7 +1755,7 @@ public:
 
         _Matched = false;
 
-        bool _Succeeded = _Match_pat(_Rep);
+        bool _Succeeded = _Match_pat(_Rep) || _Matched;
         _STL_INTERNAL_CHECK(_Frames_count == 0);
 
         if (!_Succeeded) {
@@ -1788,15 +1803,15 @@ private:
     _Tgt_state_t<_It> _Tgt_state;
     _Tgt_state_t<_It> _Res;
     vector<_Loop_vals_v2_t> _Loop_vals;
-    vector<_Tgt_state_t<_It>> _Frames;
+    vector<_Rx_state_frame_t<_It>> _Frames;
     size_t _Frames_count;
 
-    size_t _Push_frame();
+    size_t _Push_frame(_Rx_unwind_ops _Code = {}, _Node_base* _Node = nullptr);
     void _Pop_frame(size_t);
 
-    bool _Do_assert(_Node_assert*);
-    bool _Do_neg_assert(_Node_assert*);
-    bool _Do_if(_Node_if*);
+    void _Increase_stack_usage_count();
+    void _Decrease_stack_usage_count();
+
     bool _Do_rep0(_Node_rep*, bool);
     bool _Do_rep(_Node_rep*, bool, int);
     bool _Do_rep_first(_Node_rep*);
@@ -3328,10 +3343,14 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_rep(int _Min, int _Max, bool _Gre
         return;
     }
 
+    if (_Root->_Loops == static_cast<unsigned int>(-1)) {
+        _Xregex_error(regex_constants::error_space);
+    }
+
     _Node_end_rep* _Node0 = new _Node_end_rep();
-    _Node_rep* _Nx        = new _Node_rep(_Greedy, _Min, _Max, _Node0, _Root->_Loops++);
-    _Node0->_Begin_rep    = _Nx;
     _Link_node(_Node0);
+    _Node_rep* _Nx     = new _Node_rep(_Greedy, _Min, _Max, _Node0, _Root->_Loops++);
+    _Node0->_Begin_rep = _Nx;
     _Insert_node(_Pos, _Nx);
 }
 
@@ -3348,11 +3367,14 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Tidy() noexcept { // free memory
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Push_frame() {
+size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Push_frame(_Rx_unwind_ops _Code, _Node_base* _Node) {
     if (_Frames_count >= _Frames.size()) {
-        _Frames.push_back(_Tgt_state);
+        _Frames.push_back({_Code, _Node, _Tgt_state});
     } else {
-        _Frames[_Frames_count] = _Tgt_state;
+        auto& _Frame        = _Frames[_Frames_count];
+        _Frame._Code        = _Code;
+        _Frame._Node        = _Node;
+        _Frame._Match_state = _Tgt_state;
     }
     return _Frames_count++;
 }
@@ -3364,65 +3386,21 @@ void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Pop_frame(size_t _Idx) {
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_assert(_Node_assert* _Node) { // apply assert node
-    _It _Ch = _Tgt_state._Cur;
-    if (_Match_pat(_Node->_Child)) {
-        _Tgt_state._Cur = _Ch;
-        return true;
-    } else {
-        return false;
+void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Increase_stack_usage_count() {
+    if (0 < _Max_stack_count && --_Max_stack_count <= 0) {
+        _Xregex_error(regex_constants::error_stack);
+    }
+
+    if (0 < _Max_complexity_count && --_Max_complexity_count <= 0) {
+        _Xregex_error(regex_constants::error_complexity);
     }
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_neg_assert(_Node_assert* _Node) {
-    // apply negative assert node
-    const size_t _Frame_idx = _Push_frame();
-    bool _Succeeded         = !_Match_pat(_Node->_Child);
-    if (_Succeeded) {
-        const _Bt_state_t<_It>& _St = _Frames[_Frame_idx];
-        _Tgt_state                  = _St;
+void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Decrease_stack_usage_count() {
+    if (0 < _Max_stack_count) {
+        ++_Max_stack_count;
     }
-    _Pop_frame(_Frame_idx);
-    return _Succeeded;
-}
-
-template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_if(_Node_if* _Node) { // apply if node
-    const size_t _Frame_idx = _Push_frame();
-
-    // look for the first match
-    for (; _Node; _Node = _Node->_Child) { // process one branch of if
-        _Tgt_state = _Frames[_Frame_idx]; // rewind to where the alternation starts in input
-        if (_Match_pat(_Node->_Next)) { // try to match this branch
-            break;
-        }
-    }
-
-    // if none of the if branches matched, fail to match
-    if (!_Node) {
-        _Pop_frame(_Frame_idx);
-        return false;
-    }
-
-    // if we aren't looking for the longest match, that's it
-    if (!_Longest) {
-        _Pop_frame(_Frame_idx);
-        return true;
-    }
-
-    // see if there is a longer match
-    for (;;) { // process one branch of if
-        _Node = _Node->_Child;
-        if (!_Node) {
-            break;
-        }
-
-        _Tgt_state = _Frames[_Frame_idx];
-        (void) _Match_pat(_Node->_Next);
-    }
-    _Pop_frame(_Frame_idx);
-    return true;
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
@@ -3437,7 +3415,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
         if (!_Match_pat(_Node->_Next)) { // didn't match minimum number of reps, fail
             _Pop_frame(_Frame_idx);
             return false;
-        } else if (_Tgt_state._Cur == _Frames[_Frame_idx]._Cur) { // matches empty string
+        } else if (_Tgt_state._Cur == _Frames[_Frame_idx]._Match_state._Cur) { // matches empty string
             // loop is branchless, so it will only ever match empty strings
             // -> skip all other matches as they don't change state and immediately try tail
             _Pop_frame(_Frame_idx);
@@ -3445,7 +3423,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
         } else { // loop never matches the empty string
             for (_Ix = 1; _Ix < _Node->_Min; ++_Ix) { // do minimum number of reps
                 // GH-5365: We have to reset the capture groups from the second iteration on.
-                _Tgt_state._Grp_valid = _Frames[_Frame_idx]._Grp_valid;
+                _Tgt_state._Grp_valid = _Frames[_Frame_idx]._Match_state._Grp_valid;
                 if (!_Match_pat(_Node->_Next)) { // didn't match minimum number of reps, fail
                     _Pop_frame(_Frame_idx);
                     return false;
@@ -3472,7 +3450,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
 
     if (_Ix == 0 && _Node->_Max != 0) {
         _Tgt_state._Cur       = _Saved_pos;
-        _Tgt_state._Grp_valid = _Frames[_Frame_idx]._Grp_valid;
+        _Tgt_state._Grp_valid = _Frames[_Frame_idx]._Match_state._Grp_valid;
 
         if (!_Match_pat(_Node->_Next)) { // rep match failed, we are done
             _Done = true;
@@ -3502,7 +3480,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep0(_Node_rep* _Node
     if (!_Done) {
         while (_Node->_Max == -1 || _Ix++ < _Node->_Max) { // try another rep/tail match
             _Tgt_state._Cur       = _Saved_pos;
-            _Tgt_state._Grp_valid = _Frames[_Frame_idx]._Grp_valid;
+            _Tgt_state._Grp_valid = _Frames[_Frame_idx]._Match_state._Grp_valid;
             if (!_Match_pat(_Node->_Next) || _Tgt_state._Cur == _Saved_pos) {
                 break; // rep match failed, quit loop
             }
@@ -3538,7 +3516,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node,
     const int _Loop_idx_sav          = _Psav->_Loop_idx;
     const size_t _Loop_frame_idx_sav = _Psav->_Loop_frame_idx;
     const size_t _Frame_idx          = _Push_frame();
-    const bool _Progress             = _Init_idx == 0 || _Frames[_Loop_frame_idx_sav]._Cur != _Tgt_state._Cur;
+    const bool _Progress = _Init_idx == 0 || _Frames[_Loop_frame_idx_sav]._Match_state._Cur != _Tgt_state._Cur;
 
     if (_Init_idx < _Node->_Min) { // try another required match
         _Psav->_Loop_frame_idx = _Frame_idx;
@@ -3555,7 +3533,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node,
             _Matched0 = _Match_pat(_Node->_End_rep->_Next);
 
             // try to match with one more repetition
-            _Tgt_state             = _Frames[_Frame_idx];
+            _Tgt_state             = _Frames[_Frame_idx]._Match_state;
             _Psav->_Loop_idx       = _Init_idx + 1;
             _Psav->_Loop_frame_idx = _Frame_idx;
             if (_Match_pat(_Node->_Next)) { // always call _Match_pat, even when _Matched0 is already true
@@ -3564,7 +3542,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node,
         } else if (!_Greedy) { // not greedy, favor minimum number of reps
             _Matched0 = _Match_pat(_Node->_End_rep->_Next);
             if (!_Matched0) { // tail failed, try another rep
-                _Tgt_state             = _Frames[_Frame_idx];
+                _Tgt_state             = _Frames[_Frame_idx]._Match_state;
                 _Psav->_Loop_idx       = _Init_idx + 1;
                 _Psav->_Loop_frame_idx = _Frame_idx;
                 _STD fill(_Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Psav->_Group_first),
@@ -3582,7 +3560,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_rep(_Node_rep* _Node,
             if (!_Matched0) { // rep failed, try tail
                 _Psav->_Loop_idx       = _Loop_idx_sav;
                 _Psav->_Loop_frame_idx = _Loop_frame_idx_sav;
-                _Tgt_state             = _Frames[_Frame_idx];
+                _Tgt_state             = _Frames[_Frame_idx]._Match_state;
                 _Matched0              = _Match_pat(_Node->_End_rep->_Next);
             }
         }
@@ -4004,219 +3982,286 @@ bool _Is_ecmascript_line_terminator(_Elem _Ch) {
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // check for match
-    if (0 < _Max_stack_count && --_Max_stack_count <= 0) {
-        _Xregex_error(regex_constants::error_stack);
-    }
+    _Increase_stack_usage_count();
 
-    if (0 < _Max_complexity_count && --_Max_complexity_count <= 0) {
-        _Xregex_error(regex_constants::error_complexity);
-    }
+    bool _Failed                       = false;
+    const size_t _Initial_frames_count = _Frames_count;
 
-    bool _Failed = false;
-    while (_Nx) { // match current node
-        switch (_Nx->_Kind) { // handle current node's type
-        case _N_nop:
-            break;
+    while (_Nx) {
+        do { // match current node
+            _Node_base* _Next = _Nx->_Next;
+            switch (_Nx->_Kind) { // handle current node's type
+            case _N_nop:
+                break;
 
-        case _N_bol:
-            if ((_Mflags & regex_constants::match_prev_avail)
-                || _Tgt_state._Cur != _Begin) { // if --_Cur is valid, check for preceding newline
-                _Failed = !(_Sflags & regex_constants::multiline)
-                       || !_STD _Is_ecmascript_line_terminator(*_STD _Prev_iter(_Tgt_state._Cur));
-            } else {
-                _Failed = (_Mflags & regex_constants::match_not_bol) != 0;
-            }
-            break;
+            case _N_bol:
+                if ((_Mflags & regex_constants::match_prev_avail)
+                    || _Tgt_state._Cur != _Begin) { // if --_Cur is valid, check for preceding newline
+                    _Failed = !(_Sflags & regex_constants::multiline)
+                           || !_STD _Is_ecmascript_line_terminator(*_STD _Prev_iter(_Tgt_state._Cur));
+                } else {
+                    _Failed = (_Mflags & regex_constants::match_not_bol) != 0;
+                }
+                break;
 
-        case _N_eol:
-            if (_Tgt_state._Cur == _End) {
-                _Failed = (_Mflags & regex_constants::match_not_eol) != 0;
-            } else {
-                _Failed =
-                    !(_Sflags & regex_constants::multiline) || !_STD _Is_ecmascript_line_terminator(*_Tgt_state._Cur);
-            }
+            case _N_eol:
+                if (_Tgt_state._Cur == _End) {
+                    _Failed = (_Mflags & regex_constants::match_not_eol) != 0;
+                } else {
+                    _Failed = !(_Sflags & regex_constants::multiline)
+                           || !_STD _Is_ecmascript_line_terminator(*_Tgt_state._Cur);
+                }
 
-            break;
+                break;
 
-        case _N_wbound:
-            _Failed = _Is_wbound() == ((_Nx->_Flags & _Fl_negate) != 0);
-            break;
+            case _N_wbound:
+                _Failed = _Is_wbound() == ((_Nx->_Flags & _Fl_negate) != 0);
+                break;
 
-        case _N_dot:
-            if (_Tgt_state._Cur == _End) {
-                _Failed = true;
-            } else {
-                const _Elem _Ch = *_Tgt_state._Cur;
-                if (_Sflags & regex_constants::_Any_posix) {
-                    if (_Ch == _Elem()) {
+            case _N_dot:
+                if (_Tgt_state._Cur == _End) {
+                    _Failed = true;
+                } else {
+                    const _Elem _Ch = *_Tgt_state._Cur;
+                    if (_Sflags & regex_constants::_Any_posix) {
+                        if (_Ch == _Elem()) {
+                            _Failed = true;
+                        }
+                    } else if (_STD _Is_ecmascript_line_terminator(_Ch)) {
                         _Failed = true;
                     }
-                } else if (_STD _Is_ecmascript_line_terminator(_Ch)) {
-                    _Failed = true;
-                }
 
-                if (!_Failed) {
-                    ++_Tgt_state._Cur;
-                }
-            }
-
-            break;
-
-        case _N_str:
-            { // check for string match
-                _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
-                _It _Res0;
-                if ((_Res0 = _STD _Compare_translate_left(_Tgt_state._Cur, _End, _Node->_Data._Str(),
-                         _Node->_Data._Str() + _Node->_Data._Size(), _Traits, _Sflags))
-                    != _Tgt_state._Cur) {
-                    _Tgt_state._Cur = _Res0;
-                } else {
-                    _Failed = true;
+                    if (!_Failed) {
+                        ++_Tgt_state._Cur;
+                    }
                 }
 
                 break;
-            }
 
-        case _N_class:
-            { // check for bracket expression match
-                _It _Res;
-                if (_Tgt_state._Cur != _End && (_Res = _Do_class(_Nx, _Tgt_state._Cur)) != _Tgt_state._Cur) {
-                    _Tgt_state._Cur = _Res;
-                } else {
-                    _Failed = true;
-                }
-                break;
-            }
-
-        case _N_group:
-            break;
-
-        case _N_end_group:
-            break;
-
-        case _N_assert:
-            { // check assert
-                _Failed = !_Do_assert(static_cast<_Node_assert*>(_Nx));
-                break;
-            }
-
-        case _N_neg_assert:
-            { // check negative assert
-                _Failed = !_Do_neg_assert(static_cast<_Node_assert*>(_Nx));
-                break;
-            }
-
-        case _N_end_assert:
-            _Nx = nullptr;
-            break;
-
-        case _N_capture:
-            { // record current position
-                _Node_capture* _Node = static_cast<_Node_capture*>(_Nx);
-                if (_Node->_Idx != 0U) {
-                    _Tgt_state._Grps[_Node->_Idx]._Begin = _Tgt_state._Cur;
-                }
-                break;
-            }
-
-        case _N_end_capture:
-            { // record successful capture
-                _Node_end_group* _Node = static_cast<_Node_end_group*>(_Nx);
-                _Node_capture* _Node0  = static_cast<_Node_capture*>(_Node->_Back);
-                if (_Node0->_Idx != 0U) { // update capture data
-                    _Tgt_state._Grp_valid[_Node0->_Idx] = true;
-                    _Tgt_state._Grps[_Node0->_Idx]._End = _Tgt_state._Cur;
-                }
-                break;
-            }
-
-        case _N_back:
-            { // check back reference
-                _STL_INTERNAL_CHECK(
-                    (_Sflags & (regex_constants::extended | regex_constants::egrep | regex_constants::awk))
-                    == 0); // these grammars don't have backreferences
-                _Node_back* _Node = static_cast<_Node_back*>(_Nx);
-                if (_Tgt_state._Grp_valid[_Node->_Idx]) { // check for match
-                    _It _Res0 = _Tgt_state._Cur;
-                    _It _Bx   = _Tgt_state._Grps[_Node->_Idx]._Begin;
-                    _It _Ex   = _Tgt_state._Grps[_Node->_Idx]._End;
-                    if (_Bx != _Ex // _Bx == _Ex for zero-length match
-                        && (_Res0 = _STD _Compare_translate_both(_Tgt_state._Cur, _End, _Bx, _Ex, _Traits, _Sflags))
-                               == _Tgt_state._Cur) {
-                        _Failed = true;
-                    } else {
+            case _N_str:
+                { // check for string match
+                    _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
+                    _It _Res0;
+                    if ((_Res0 = _STD _Compare_translate_left(_Tgt_state._Cur, _End, _Node->_Data._Str(),
+                             _Node->_Data._Str() + _Node->_Data._Size(), _Traits, _Sflags))
+                        != _Tgt_state._Cur) {
                         _Tgt_state._Cur = _Res0;
+                    } else {
+                        _Failed = true;
                     }
-                } else if (_Sflags & (regex_constants::basic | regex_constants::grep)) {
+
+                    break;
+                }
+
+            case _N_class:
+                { // check for bracket expression match
+                    _It _Res;
+                    if (_Tgt_state._Cur != _End && (_Res = _Do_class(_Nx, _Tgt_state._Cur)) != _Tgt_state._Cur) {
+                        _Tgt_state._Cur = _Res;
+                    } else {
+                        _Failed = true;
+                    }
+                    break;
+                }
+
+            case _N_group:
+                break;
+
+            case _N_end_group:
+                break;
+
+            case _N_assert:
+                { // check assert
+                    auto _Node = static_cast<_Node_assert*>(_Nx);
+                    _Push_frame(_Rx_unwind_ops::_After_assert, _Node);
+                    _Next = _Node->_Child;
+
+                    _Increase_stack_usage_count();
+                    break;
+                }
+
+            case _N_neg_assert:
+                { // check negative assert
+                    auto _Node = static_cast<_Node_assert*>(_Nx);
+                    _Push_frame(_Rx_unwind_ops::_After_neg_assert, _Node);
+                    _Next = _Node->_Child;
+
+                    _Increase_stack_usage_count();
+                    break;
+                }
+
+            case _N_end_assert:
+                _Next = nullptr;
+                break;
+
+            case _N_capture:
+                { // record current position
+                    _Node_capture* _Node = static_cast<_Node_capture*>(_Nx);
+                    if (_Node->_Idx != 0U) {
+                        _Tgt_state._Grps[_Node->_Idx]._Begin = _Tgt_state._Cur;
+                    }
+                    break;
+                }
+
+            case _N_end_capture:
+                { // record successful capture
+                    _Node_end_group* _Node = static_cast<_Node_end_group*>(_Nx);
+                    _Node_capture* _Node0  = static_cast<_Node_capture*>(_Node->_Back);
+                    if (_Node0->_Idx != 0U) { // update capture data
+                        _Tgt_state._Grp_valid[_Node0->_Idx] = true;
+                        _Tgt_state._Grps[_Node0->_Idx]._End = _Tgt_state._Cur;
+                    }
+                    break;
+                }
+
+            case _N_back:
+                { // check back reference
+                    _STL_INTERNAL_CHECK(
+                        (_Sflags & (regex_constants::extended | regex_constants::egrep | regex_constants::awk))
+                        == 0); // these grammars don't have backreferences
+                    _Node_back* _Node = static_cast<_Node_back*>(_Nx);
+                    if (_Tgt_state._Grp_valid[_Node->_Idx]) { // check for match
+                        _It _Res0 = _Tgt_state._Cur;
+                        _It _Bx   = _Tgt_state._Grps[_Node->_Idx]._Begin;
+                        _It _Ex   = _Tgt_state._Grps[_Node->_Idx]._End;
+                        if (_Bx != _Ex // _Bx == _Ex for zero-length match
+                            && (_Res0 = _STD _Compare_translate_both(_Tgt_state._Cur, _End, _Bx, _Ex, _Traits, _Sflags))
+                                   == _Tgt_state._Cur) {
+                            _Failed = true;
+                        } else {
+                            _Tgt_state._Cur = _Res0;
+                        }
+                    } else if (_Sflags & (regex_constants::basic | regex_constants::grep)) {
+                        _Failed = true;
+                    }
+                    break;
+                }
+
+            case _N_if:
+                {
+                    auto _Node = static_cast<_Node_if*>(_Nx);
+                    if (_Node->_Child) {
+                        _Push_frame(_Longest ? _Rx_unwind_ops::_Disjunction_eval_alt_always
+                                             : _Rx_unwind_ops::_Disjunction_eval_alt_on_failure,
+                            _Node->_Child);
+                        _Increase_stack_usage_count();
+                    }
+                    break;
+                }
+
+            case _N_endif:
+                break;
+
+            case _N_rep:
+                if (!_Do_rep_first(static_cast<_Node_rep*>(_Nx))) {
                     _Failed = true;
                 }
+
+                _Next = nullptr;
                 break;
-            }
 
-        case _N_if:
-            if (!_Do_if(static_cast<_Node_if*>(_Nx))) {
-                _Failed = true;
-            }
+            case _N_end_rep:
+                {
+                    _Node_rep* _Nr = static_cast<_Node_end_rep*>(_Nx)->_Begin_rep;
+                    if (_Nr->_Simple_loop == 0
+                        && !_Do_rep(_Nr, (_Nr->_Flags & _Fl_greedy) != 0, _Loop_vals[_Nr->_Loop_number]._Loop_idx)) {
+                        _Failed = true; // recurse only if loop contains if/do
+                    }
 
-            _Nx = nullptr;
-            break;
-
-        case _N_endif:
-            break;
-
-        case _N_rep:
-            if (!_Do_rep_first(static_cast<_Node_rep*>(_Nx))) {
-                _Failed = true;
-            }
-
-            _Nx = nullptr;
-            break;
-
-        case _N_end_rep:
-            {
-                _Node_rep* _Nr = static_cast<_Node_end_rep*>(_Nx)->_Begin_rep;
-                if (_Nr->_Simple_loop == 0
-                    && !_Do_rep(_Nr, (_Nr->_Flags & _Fl_greedy) != 0, _Loop_vals[_Nr->_Loop_number]._Loop_idx)) {
-                    _Failed = true; // recurse only if loop contains if/do
+                    _Next = nullptr;
+                    break;
                 }
 
-                _Nx = nullptr;
+            case _N_begin:
                 break;
-            }
 
-        case _N_begin:
-            break;
+            case _N_end:
+                if (((_Mflags & (regex_constants::match_not_null | regex_constants::_Match_not_null))
+                        && _Begin == _Tgt_state._Cur)
+                    || (_Full && _Tgt_state._Cur != _End)) {
+                    _Failed = true;
+                } else if (_Longest && (!_Matched || _Better_match())) { // record successful match
+                    _Res     = _Tgt_state;
+                    _Matched = true;
+                }
+                _Next = nullptr;
+                break;
 
-        case _N_end:
-            if (((_Mflags & (regex_constants::match_not_null | regex_constants::_Match_not_null))
-                    && _Begin == _Tgt_state._Cur)
-                || (_Full && _Tgt_state._Cur != _End)) {
-                _Failed = true;
-            } else if (_Longest && (!_Matched || _Better_match())) { // record successful match
-                _Res     = _Tgt_state;
-                _Matched = true;
-            }
-            _Nx = nullptr;
-            break;
-
-        case _N_none:
-        default:
+            case _N_none:
+            default:
 #if _ITERATOR_DEBUG_LEVEL != 0
-            _STL_REPORT_ERROR("internal data of regex node corrupted");
+                _STL_REPORT_ERROR("internal data of regex node corrupted");
 #endif
-            return false;
-        }
+                return false;
+            }
 
-        if (_Failed) {
-            _Nx = nullptr;
-        } else if (_Nx) {
-            _Nx = _Nx->_Next;
+            if (_Failed) {
+                _Nx = nullptr;
+            } else {
+                _Nx = _Next;
+            }
+        } while (_Nx);
+
+        while (_Frames_count > _Initial_frames_count && !_Nx) {
+            auto& _Frame = _Frames[--_Frames_count];
+
+            switch (_Frame._Code) {
+            case _Rx_unwind_ops::_After_assert:
+                { // positive assert completed
+                    _Decrease_stack_usage_count();
+                    if (!_Failed) {
+                        _Tgt_state._Cur = _Frame._Match_state._Cur;
+                        _Nx             = _Frame._Node->_Next;
+                    }
+                    break;
+                }
+
+            case _Rx_unwind_ops::_After_neg_assert:
+                { // negative assert completed
+                    _Decrease_stack_usage_count();
+                    if (_Failed) {
+                        const _Bt_state_t<_It>& _St = _Frame._Match_state;
+                        _Tgt_state                  = _St;
+                        _Nx                         = _Frame._Node->_Next;
+                    }
+                    _Failed = !_Failed;
+                    break;
+                }
+
+            case _Rx_unwind_ops::_Disjunction_eval_alt_on_failure:
+                // evaluate next alternative if matching prior alternatives failed
+                if (!_Failed) {
+                    _Decrease_stack_usage_count();
+                    break;
+                }
+                _FALLTHROUGH;
+
+            case _Rx_unwind_ops::_Disjunction_eval_alt_always:
+                // evaluate next alternative no matter if matching prior alternatives succeeded
+                {
+                    auto _Node = static_cast<_Node_if*>(_Frame._Node);
+                    _Nx        = _Node->_Next;
+                    _Tgt_state = _Frame._Match_state;
+                    _Failed    = false;
+                    if (_Node->_Child) {
+                        _Frame._Node = _Node->_Child;
+                        ++_Frames_count;
+                    } else {
+                        _Decrease_stack_usage_count();
+                    }
+                    break;
+                }
+
+            default:
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_REPORT_ERROR("internal stack of regex matcher corrupted");
+#endif
+                return false;
+            }
         }
     }
 
-    if (0 < _Max_stack_count) {
-        ++_Max_stack_count;
-    }
+    _Decrease_stack_usage_count();
 
     return !_Failed;
 }
