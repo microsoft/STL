@@ -27,7 +27,7 @@
 using namespace std;
 
 template <class UInt, enable_if_t<(sizeof(UInt) > sizeof(size_t)), int> = 0>
-CONSTEXPR20 void check_alloc_less_than_size_max(const UInt n) {
+CONSTEXPR20 void check_alloc_in_range_of_size_t(const UInt n) {
     static_assert(is_integral_v<UInt> && is_unsigned_v<UInt>, "must use unsigned integer type");
     if (n > static_cast<size_t>(-1)) {
         throw bad_alloc{};
@@ -35,7 +35,7 @@ CONSTEXPR20 void check_alloc_less_than_size_max(const UInt n) {
 }
 
 template <class UInt, enable_if_t<(sizeof(UInt) <= sizeof(size_t)), int> = 0>
-CONSTEXPR20 void check_alloc_less_than_size_max(UInt) noexcept {
+CONSTEXPR20 void check_alloc_in_range_of_size_t(UInt) noexcept {
     static_assert(is_integral_v<UInt> && is_unsigned_v<UInt>, "must use unsigned integer type");
 }
 
@@ -54,7 +54,7 @@ struct redifference_allocator {
     constexpr redifference_allocator(const redifference_allocator<U, Diff>&) noexcept {}
 
     CONSTEXPR20 T* allocate(const size_type n) {
-        check_alloc_less_than_size_max(n);
+        check_alloc_in_range_of_size_t(n);
         return allocator<T>{}.allocate(static_cast<size_t>(n));
     }
 
@@ -64,7 +64,7 @@ struct redifference_allocator {
 
 #if _HAS_CXX23
     constexpr allocation_result<T*, size_type> allocate_at_least(const size_type n) {
-        check_alloc_less_than_size_max(n);
+        check_alloc_in_range_of_size_t(n);
         const auto [ptr, cnt] = allocator<T>{}.allocate_at_least(static_cast<size_t>(n));
         return {ptr, static_cast<size_type>(cnt)};
     }
