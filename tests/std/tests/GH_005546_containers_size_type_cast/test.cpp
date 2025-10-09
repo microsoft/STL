@@ -2,14 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <cstddef>
 #include <memory>
+#include <new>
 #include <sstream>
 #include <string>
+#include <type_traits>
+#include <utility>
+
 #if _HAS_CXX17
 #include <string_view>
 #endif // _HAS_CXX17
-#include <type_traits>
-#include <utility>
+
+#if _HAS_CXX23
+#include <ranges>
+#endif // _HAS_CXX23
 
 #if _HAS_CXX20
 #define CONSTEXPR20 constexpr
