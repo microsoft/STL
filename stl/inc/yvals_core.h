@@ -1911,8 +1911,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_variant 202102L // P2162R2 Inheriting From variant
 #endif
 
-#define __cpp_lib_experimental_filesystem 201406L
-
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED
 #ifndef _ALLOW_RTCc_IN_STL
 #error /RTCc rejects conformant code, so it is not supported by the C++ Standard Library. Either remove this \
