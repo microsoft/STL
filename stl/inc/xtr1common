@@ -197,6 +197,9 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_integral_v = _Is_any_of_v<r
 _EXPORT_STD template <class _Ty>
 struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_integral : bool_constant<is_integral_v<_Ty>> {};
 
+template <class _Ty>
+constexpr bool _Is_nonbool_integral = is_integral_v<_Ty> && !is_same_v<remove_cv_t<_Ty>, bool>;
+
 _EXPORT_STD template <class _Ty>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_floating_point_v =
     _Is_any_of_v<remove_cv_t<_Ty>, float, double, long double>;
