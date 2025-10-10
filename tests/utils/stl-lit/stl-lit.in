@@ -30,8 +30,8 @@ builtin_parameters= {}
 builtin_parameters['config_map'] = config_map
 
 def assert_same_platform_for_build_and_test():
-    build_platform = '$ENV{Platform}'
-    test_platform = os.getenv('Platform', default='')
+    build_platform = '$ENV{VSCMD_ARG_TGT_ARCH}'
+    test_platform = os.getenv('VSCMD_ARG_TGT_ARCH', default='')
     if build_platform != '' and test_platform != '' and build_platform != test_platform:
         exit(f'Target platform mismatch: the STL was built for {build_platform} but tested for {test_platform}.')
 

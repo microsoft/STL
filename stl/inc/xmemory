@@ -27,7 +27,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 // TRANSITION, non-_Ugly attribute tokens
 #pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
 #undef msvc
+#undef no_specializations
 
 #if _USE_STD_VECTOR_ALGORITHMS
 extern "C" {
@@ -555,7 +557,7 @@ struct allocation_result {
 #endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Alloc>
-struct allocator_traits;
+struct _NO_SPECIALIZATIONS_CITING("N5014 [allocator.traits.general]/1") allocator_traits;
 
 _STL_DISABLE_DEPRECATED_WARNING
 template <class _Alloc>
@@ -756,8 +758,9 @@ struct _Default_allocator_traits { // traits for std::allocator
 };
 
 _EXPORT_STD template <class _Alloc>
-struct allocator_traits : conditional_t<_Is_default_allocator<_Alloc>::value, _Default_allocator_traits<_Alloc>,
-                              _Normal_allocator_traits<_Alloc>> {};
+struct _NO_SPECIALIZATIONS_CITING("N5014 [allocator.traits.general]/1") allocator_traits
+    : conditional_t<_Is_default_allocator<_Alloc>::value, _Default_allocator_traits<_Alloc>,
+          _Normal_allocator_traits<_Alloc>> {};
 
 // _Choose_pocca_v returns whether an attempt to propagate allocators is necessary in copy assignment operations.
 // Note that even when false_type, callers should call _Pocca as we want to assign allocators even when equal.
@@ -962,7 +965,7 @@ public:
 
 #if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     template <class _Other>
-    struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS rebind {
+    struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES rebind {
         using other = allocator<_Other>;
     };
 
@@ -1035,7 +1038,7 @@ public:
     using const_pointer _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = const void*;
 
     template <class _Other>
-    struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS rebind {
+    struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES rebind {
         using other = allocator<_Other>;
     };
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
@@ -2395,7 +2398,7 @@ _CONSTEXPR20 typename _Container::size_type _Erase_remove(_Container& _Cont, con
     const auto _Old_size = _Cont.size();
     _STD _Seek_wrapped(_First, _STD remove(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _Val));
     _Cont.erase(_First, _Last);
-    return _Old_size - _Cont.size();
+    return static_cast<typename _Container::size_type>(_Old_size - _Cont.size());
 }
 
 template <class _Container, class _Pr>
@@ -2406,7 +2409,7 @@ _CONSTEXPR20 typename _Container::size_type _Erase_remove_if(_Container& _Cont, 
     const auto _Old_size = _Cont.size();
     _STD _Seek_wrapped(_First, _STD remove_if(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _Pred));
     _Cont.erase(_First, _Last);
-    return _Old_size - _Cont.size();
+    return static_cast<typename _Container::size_type>(_Old_size - _Cont.size());
 }
 
 template <class _Container, class _Pr>
@@ -2812,6 +2815,7 @@ _STD_END
 #endif // ^^^ !_HAS_CXX20 ^^^
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("msvc")
 
 #pragma pop_macro("new")

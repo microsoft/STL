@@ -80,7 +80,7 @@ void test_map() { // test map
     CHECK_INT(v0b.size(), 0);
     CHECK(v0b.get_allocator() == al);
 
-    Mycont v1(xarr, xarr + 3); // differs from hash_map
+    Mycont v1(xarr, xarr + 3);
     CHECK_INT(v1.size(), 3);
     CHECK_INT((*v1.begin()).first, 'a');
 
@@ -207,11 +207,11 @@ void test_map() { // test map
     CHECK_INT(v4.count('x'), 0);
     CHECK_INT(v4.count('a'), 1);
     CHECK_INT((*v4.lower_bound('a')).first, 'a');
-    CHECK((*v4.upper_bound('a')).first == 'b'); // differs from hash_map
+    CHECK((*v4.upper_bound('a')).first == 'b');
 
     STD pair<typename Mycont::const_iterator, typename Mycont::const_iterator> pcc = v4.equal_range('a');
     CHECK_INT((*pcc.first).first, 'a');
-    CHECK_INT((*pcc.second).first, 'b'); // differs from hash_map
+    CHECK_INT((*pcc.second).first, 'b');
 
     {
         Mycont v6;
@@ -390,7 +390,7 @@ void test_multimap() { // test multimap
     CHECK_INT(v0b.size(), 0);
     CHECK(v0b.get_allocator() == al);
 
-    Mycont v1(xarr, xarr + 3); // differs from hash_multimap
+    Mycont v1(xarr, xarr + 3);
     CHECK_INT(v1.size(), 3);
     CHECK_INT((*v1.begin()).first, 'a');
 
@@ -508,11 +508,11 @@ void test_multimap() { // test multimap
     CHECK_INT(v4.count('x'), 0);
     CHECK_INT(v4.count('a'), 1);
     CHECK_INT((*v4.lower_bound('a')).first, 'a');
-    CHECK((*v4.upper_bound('a')).first == 'b'); // differs from hash_multimap
+    CHECK((*v4.upper_bound('a')).first == 'b');
 
     STD pair<typename Mycont::const_iterator, typename Mycont::const_iterator> pcc = v4.equal_range('a');
     CHECK_INT((*pcc.first).first, 'a');
-    CHECK_INT((*pcc.second).first, 'b'); // differs from hash_multimap
+    CHECK_INT((*pcc.second).first, 'b');
 
     {
         Mycont v6;

@@ -154,7 +154,6 @@
 // P0298R3 std::byte
 // P0302R1 Removing Allocator Support In std::function
 // LWG-2385 function::assign allocator argument doesn't make sense
-// The non-Standard std::tr1 namespace and TR1-only machinery
 // Enforcement of matching allocator value_types
 
 // _HAS_CXX17 and _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS control:
@@ -363,6 +362,8 @@
 // P2165R4 Compatibility Between tuple, pair, And tuple-like Objects
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
+// P2255R2 Type Traits To Detect References Binding To Temporaries
+//     (for Clang only)
 // P2273R3 constexpr unique_ptr
 // P2278R4 cbegin Should Always Return A Constant Iterator
 // P2286R8 Formatting Ranges
@@ -395,6 +396,7 @@
 // P2604R0 mdspan: data_handle_type, data_handle(), exhaustive
 // P2613R1 mdspan: empty()
 // P2652R2 Disallowing User Specialization Of allocator_traits
+// P2674R1 is_implicit_lifetime
 // P2693R1 Formatting thread::id And stacktrace
 // P2713R1 Escaping Improvements In std::format
 // P2763R1 Fixing layout_stride's Default Constructor For Fully Static Extents
@@ -684,11 +686,13 @@
 #pragma push_macro("noop_dtor")
 #pragma push_macro("intrinsic")
 #pragma push_macro("lifetimebound")
+#pragma push_macro("no_specializations")
 #undef msvc
 #undef known_semantics
 #undef noop_dtor
 #undef intrinsic
 #undef lifetimebound
+#undef no_specializations
 
 #ifndef __has_cpp_attribute
 #define _HAS_MSVC_ATTRIBUTE(x) 0
@@ -731,6 +735,22 @@
 #define _MSVC_LIFETIMEBOUND
 #endif
 
+// Should we mark templates that users shouldn't specialize with [[msvc::no_specializations]]
+// or [[clang::no_specializations]]?
+#if _HAS_MSVC_ATTRIBUTE(no_specializations)
+#define _NO_SPECIALIZATIONS_MSG(_Msg) [[msvc::no_specializations(_Msg)]]
+#elif defined(__has_cpp_attribute) && __has_cpp_attribute(_Clang::__no_specializations__)
+#define _NO_SPECIALIZATIONS_MSG(_Msg) [[_Clang::__no_specializations__(_Msg)]]
+#else
+#define _NO_SPECIALIZATIONS_MSG(_Msg)
+#endif
+
+#define _NO_SPECIALIZATIONS_CITING(_Standardese) \
+    _NO_SPECIALIZATIONS_MSG("Specializing this standard library template is forbidden by " _Standardese)
+#define _NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES     _NO_SPECIALIZATIONS_CITING("N5014 [namespace.std]/3")
+#define _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES _NO_SPECIALIZATIONS_CITING("N5014 [namespace.std]/4.3")
+#define _NO_SPECIALIZATIONS_OF_TYPE_TRAITS            _NO_SPECIALIZATIONS_CITING("N5014 [meta.rqmts]/4")
+
 #if _HAS_CXX23 // TRANSITION, ABI, should just use [[no_unique_address]] when _HAS_CXX20.
 // Should we enable use of [[msvc::no_unique_address]] or [[no_unique_address]] to allow potentially-overlapping member
 // subobjects?
@@ -744,6 +764,7 @@
 #endif // _HAS_CXX23
 
 #undef _HAS_MSVC_ATTRIBUTE
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("lifetimebound")
 #pragma pop_macro("intrinsic")
 #pragma pop_macro("noop_dtor")
@@ -808,6 +829,7 @@
 // warning C5278: adding a specialization for 'type trait' has undefined behavior
 // warning C5280: a static operator '()' requires at least '/std:c++23preview'
 // warning C5281: a static lambda requires at least '/std:c++23preview'
+// warning C5285: cannot declare a specialization for 'meow'
 // warning C5291: 'DERIVED': deriving from the base class 'BASE' can cause potential runtime issues
 //                due to an ABI bug. Recommend adding a 4-byte data member to the base class
 //                for the padding at the end of it to work around this bug. (TRANSITION, ABI)
@@ -819,7 +841,7 @@
     4180 4324 4412 4455 4494 4514 4574 4582 4583 4587 \
     4588 4619 4623 4625 4626 4643 4648 4702 4793 4820 \
     4868 4988 5026 5027 5045 5220 5246 5278 5280 5281 \
-    5291 6294                                         \
+    5285 5291 6294                                    \
     _STL_DISABLED_WARNING_C4577                       \
     _STL_DISABLED_WARNING_C4984                       \
     _STL_DISABLED_WARNING_C5053                       \
@@ -834,20 +856,22 @@
 // warning: ignoring __declspec(allocator) because the function return type '%s' is not a pointer or reference type
 //     [-Wignored-attributes]
 // warning: '#pragma float_control' is not supported on this target - ignored [-Wignored-pragmas]
-// warning: user-defined literal suffixes not starting with '_' are reserved [-Wuser-defined-literals]
+// warning: '%s' cannot be specialized [-Winvalid-specialization]
 // warning: unknown pragma ignored [-Wunknown-pragmas]
+// warning: user-defined literal suffixes not starting with '_' are reserved [-Wuser-defined-literals]
 #ifndef _STL_DISABLE_CLANG_WARNINGS
 #ifdef __clang__
 // clang-format off: make macros readable
-#define _STL_DISABLE_CLANG_WARNINGS                                 \
-    _Pragma("clang diagnostic push")                                \
-    _Pragma("clang diagnostic ignored \"-Wc++17-extensions\"")      \
-    _Pragma("clang diagnostic ignored \"-Wc++20-extensions\"")      \
-    _Pragma("clang diagnostic ignored \"-Wc++23-extensions\"")      \
-    _Pragma("clang diagnostic ignored \"-Wignored-attributes\"")    \
-    _Pragma("clang diagnostic ignored \"-Wignored-pragmas\"")       \
-    _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"") \
-    _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")
+#define _STL_DISABLE_CLANG_WARNINGS                                  \
+    _Pragma("clang diagnostic push")                                 \
+    _Pragma("clang diagnostic ignored \"-Wc++17-extensions\"")       \
+    _Pragma("clang diagnostic ignored \"-Wc++20-extensions\"")       \
+    _Pragma("clang diagnostic ignored \"-Wc++23-extensions\"")       \
+    _Pragma("clang diagnostic ignored \"-Wignored-attributes\"")     \
+    _Pragma("clang diagnostic ignored \"-Wignored-pragmas\"")        \
+    _Pragma("clang diagnostic ignored \"-Winvalid-specialization\"") \
+    _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")        \
+    _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"")
 // clang-format on
 #else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #define _STL_DISABLE_CLANG_WARNINGS
@@ -910,7 +934,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 145
-#define _MSVC_STL_UPDATE  202509L
+#define _MSVC_STL_UPDATE  202510L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1011,26 +1035,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _HAS_FUNCTION_ALLOCATOR_SUPPORT (!_HAS_CXX17)
 #endif // !defined(_HAS_FUNCTION_ALLOCATOR_SUPPORT)
 
-// The non-Standard std::tr1 namespace and TR1-only machinery
-#ifndef _HAS_TR1_NAMESPACE
-#define _HAS_TR1_NAMESPACE (!_HAS_CXX17)
-#endif // !defined(_HAS_TR1_NAMESPACE)
-
 // STL4000 is "_STATIC_CPPLIB is deprecated", currently in yvals.h
 // STL4001 is "/clr:pure is deprecated", currently in yvals.h
-
-#if _HAS_TR1_NAMESPACE
-#ifdef _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
-#define _DEPRECATE_TR1_NAMESPACE
-#else // ^^^ warning disabled / warning enabled vvv
-#define _DEPRECATE_TR1_NAMESPACE                                                                                  \
-    [[deprecated(                                                                                                 \
-        "warning STL4002: "                                                                                       \
-        "The non-Standard std::tr1 namespace and TR1-only machinery are deprecated and will be REMOVED. You can " \
-        "define _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING to suppress this warning.")]]
-#endif // ^^^ warning enabled ^^^
-#endif // _HAS_TR1_NAMESPACE
-
+// STL4002 was "The non-Standard std::tr1 namespace and TR1-only machinery are deprecated and will be REMOVED."
 // STL4003 was "The non-Standard std::identity struct is deprecated and will be REMOVED."
 
 // Enforcement of matching allocator value_types
@@ -1488,15 +1495,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _DEPRECATE_IO_PFX_SFX
 #endif // ^^^ warning disabled ^^^
 
-#if !defined(_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING) && !defined(_SILENCE_TR1_RANDOM_DEPRECATION_WARNING) \
-    && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
-#define _DEPRECATE_TR1_RANDOM                                                                                          \
-    [[deprecated("warning STL4046: Non-Standard TR1 components in <random> are deprecated and will be REMOVED. You "   \
-                 "can define _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING, _SILENCE_TR1_RANDOM_DEPRECATION_WARNING, or " \
-                 "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning.")]]
-#else // ^^^ warning enabled / warning disabled vvv
-#define _DEPRECATE_TR1_RANDOM
-#endif // ^^^ warning disabled ^^^
+// STL4046 was "Non-Standard TR1 components in <random> are deprecated and will be REMOVED."
 
 #if _HAS_CXX20 && defined(__cpp_char8_t) && !defined(_SILENCE_CXX20_CODECVT_CHAR8_T_FACETS_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
@@ -1798,36 +1797,47 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_generator                         202207L
 #define __cpp_lib_invoke_r                          202106L
 #define __cpp_lib_ios_noreplace                     202207L
-#define __cpp_lib_is_scoped_enum                    202011L
-#define __cpp_lib_mdspan                            202207L
-#define __cpp_lib_move_only_function                202110L
-#define __cpp_lib_out_ptr                           202311L
-#define __cpp_lib_print                             202406L
-#define __cpp_lib_ranges_as_const                   202311L
-#define __cpp_lib_ranges_as_rvalue                  202207L
-#define __cpp_lib_ranges_cartesian_product          202207L
-#define __cpp_lib_ranges_chunk                      202202L
-#define __cpp_lib_ranges_chunk_by                   202202L
-#define __cpp_lib_ranges_contains                   202207L
-#define __cpp_lib_ranges_enumerate                  202302L
-#define __cpp_lib_ranges_find_last                  202207L
-#define __cpp_lib_ranges_fold                       202207L
-#define __cpp_lib_ranges_iota                       202202L
-#define __cpp_lib_ranges_join_with                  202202L
-#define __cpp_lib_ranges_repeat                     202207L
-#define __cpp_lib_ranges_slide                      202202L
-#define __cpp_lib_ranges_starts_ends_with           202106L
-#define __cpp_lib_ranges_stride                     202207L
-#define __cpp_lib_ranges_to_container               202202L
-#define __cpp_lib_ranges_zip                        202110L
-#define __cpp_lib_spanstream                        202106L
-#define __cpp_lib_stacktrace                        202011L
-#define __cpp_lib_stdatomic_h                       202011L
-#define __cpp_lib_string_contains                   202011L
-#define __cpp_lib_string_resize_and_overwrite       202110L
-#define __cpp_lib_to_underlying                     202102L
-#define __cpp_lib_tuple_like                        202207L
-#define __cpp_lib_unreachable                       202202L
+
+#ifdef __clang__ // TRANSITION, GH-5738 tracking VSO-2581622 (MSVC) and VSO-2581623 (EDG)
+#define __cpp_lib_is_implicit_lifetime 202302L
+#endif // ^^^ no workaround ^^^
+
+#define __cpp_lib_is_scoped_enum           202011L
+#define __cpp_lib_mdspan                   202207L
+#define __cpp_lib_move_only_function       202110L
+#define __cpp_lib_out_ptr                  202311L
+#define __cpp_lib_print                    202406L
+#define __cpp_lib_ranges_as_const          202311L
+#define __cpp_lib_ranges_as_rvalue         202207L
+#define __cpp_lib_ranges_cartesian_product 202207L
+#define __cpp_lib_ranges_chunk             202202L
+#define __cpp_lib_ranges_chunk_by          202202L
+#define __cpp_lib_ranges_contains          202207L
+#define __cpp_lib_ranges_enumerate         202302L
+#define __cpp_lib_ranges_find_last         202207L
+#define __cpp_lib_ranges_fold              202207L
+#define __cpp_lib_ranges_iota              202202L
+#define __cpp_lib_ranges_join_with         202202L
+#define __cpp_lib_ranges_repeat            202207L
+#define __cpp_lib_ranges_slide             202202L
+#define __cpp_lib_ranges_starts_ends_with  202106L
+#define __cpp_lib_ranges_stride            202207L
+#define __cpp_lib_ranges_to_container      202202L
+#define __cpp_lib_ranges_zip               202110L
+
+// TRANSITION, MSVC and EDG haven't implemented intrinsics needed for P2255R2.
+#if defined(__clang__) && !defined(__EDG__)
+#define __cpp_lib_reference_from_temporary 202202L
+#endif // ^^^ no workaround ^^^
+
+#define __cpp_lib_spanstream                  202106L
+#define __cpp_lib_stacktrace                  202011L
+#define __cpp_lib_stdatomic_h                 202011L
+#define __cpp_lib_string_contains             202011L
+#define __cpp_lib_string_resize_and_overwrite 202110L
+#define __cpp_lib_to_underlying               202102L
+#define __cpp_lib_tuple_like                  202207L
+#define __cpp_lib_unreachable                 202202L
 #endif // _HAS_CXX23
 
 // macros with language mode sensitivity
@@ -1897,8 +1907,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #elif _HAS_CXX17
 #define __cpp_lib_variant 202102L // P2162R2 Inheriting From variant
 #endif
-
-#define __cpp_lib_experimental_filesystem 201406L
 
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED
 #ifndef _ALLOW_RTCc_IN_STL
