@@ -4063,6 +4063,14 @@ _CONSTEXPR20 void iter_swap(_FwdIt1 _Left, _FwdIt2 _Right) { // swap *_Left and 
     swap(*_Left, *_Right); // intentional ADL
 }
 
+template <class _VbIt, class _OutIt, class _Mapped_fn>
+_CONSTEXPR20 _OutIt _Transform_vbool_aligned(
+    const _VbIt _First, const _VbIt _Last, _OutIt _Dest, const _Mapped_fn _Mapped_func);
+
+template <class _VbIt, class _OutIt, class _Mapped_fn>
+_CONSTEXPR20 _OutIt _Transform_vbool_aligned(
+    const _VbIt _First1, const _VbIt _Last1, const _VbIt _First2, _OutIt _Dest, const _Mapped_fn _Mapped_func);
+
 _EXPORT_STD template <class _InIt, class _OutIt, class _Fn>
 _CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Dest, _Fn _Func) {
     // transform [_First, _Last) with _Func
@@ -4073,24 +4081,7 @@ _CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Des
 
     if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt, true> && !is_same_v<_Map_vb_functor_t<_Fn>, void>) {
         if (_UFirst._Myoff == 0 && _UDest._Myoff == 0) {
-            using _Vbase_ = decay_t<decltype(*_UDest._Myptr)>;
-
-            const _Map_vb_functor_t<_Fn> _Mapped_fn{};
-            auto _First_ptr      = _UFirst._Myptr;
-            const auto _Last_ptr = _ULast._Myptr;
-            auto _Dest_ptr       = const_cast<_Vbase_*>(_UDest._Myptr);
-
-            for (; _First_ptr != _Last_ptr; ++_First_ptr, ++_Dest_ptr) {
-                *_Dest_ptr = _Mapped_fn(*_First_ptr);
-            }
-
-            if (_ULast._Myoff != 0) {
-                const _Vbase_ _Mask = (_Vbase_{1} << _ULast._Myoff) - 1;
-                *_Dest_ptr          = (*_Dest_ptr & ~_Mask) | (_Mapped_fn(*_First_ptr) & _Mask);
-                _UDest._Myoff       = _ULast._Myoff;
-            }
-
-            _UDest._Myptr = _Dest_ptr;
+            _UDest = _Transform_vbool_aligned(_UFirst, _ULast, _UDest, _Map_vb_functor_t<_Fn>{});
             _STD _Seek_wrapped(_Dest, _UDest);
             return _Dest;
         }
@@ -4123,25 +4114,7 @@ _CONSTEXPR20 _OutIt transform(
     if constexpr (_Is_vb_iterator<_InIt1> && _Is_vb_iterator<_InIt2> && _Is_vb_iterator<_OutIt, true>
                   && !is_same_v<_Map_vb_functor_t<_Fn>, void>) {
         if (_UFirst1._Myoff == 0 && _UFirst2._Myoff == 0 && _UDest._Myoff == 0) {
-            using _Vbase_ = decay_t<decltype(*_UDest._Myptr)>;
-
-            const _Map_vb_functor_t<_Fn> _Mapped_fn{};
-            auto _First1_ptr      = _UFirst1._Myptr;
-            auto _First2_ptr      = _UFirst2._Myptr;
-            const auto _Last1_ptr = _ULast1._Myptr;
-            auto _Dest_ptr        = const_cast<_Vbase_*>(_UDest._Myptr);
-
-            for (; _First1_ptr != _Last1_ptr; ++_First1_ptr, ++_First2_ptr, ++_Dest_ptr) {
-                *_Dest_ptr = _Mapped_fn(*_First1_ptr, *_First2_ptr);
-            }
-
-            if (_ULast1._Myoff != 0) {
-                const _Vbase_ _Mask = (_Vbase_{1} << _ULast1._Myoff) - 1;
-                *_Dest_ptr          = (*_Dest_ptr & ~_Mask) | (_Mapped_fn(*_First1_ptr, *_First2_ptr) & _Mask);
-                _UDest._Myoff       = _ULast1._Myoff;
-            }
-
-            _UDest._Myptr = _Dest_ptr;
+            _UDest = _Transform_vbool_aligned(_UFirst1, _ULast1, _UFirst2, _UDest, _Map_vb_functor_t<_Fn>{});
             _STD _Seek_wrapped(_Dest, _UDest);
             return _Dest;
         }
