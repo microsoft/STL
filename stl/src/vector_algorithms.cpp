@@ -111,30 +111,34 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
         } while (_First1 != _Stop_at);
     }
 
-#if defined(_M_X64) // NOTE: UNALIGNED MEMORY ACCESSES
+#if defined(_M_X64)
     constexpr size_t _Mask_8 = ~((static_cast<size_t>(1) << 3) - 1);
     if (_Byte_length(_First1, _Last1) >= 8) {
         const void* _Stop_at = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_8);
         do {
-            const unsigned long long _Left             = *static_cast<unsigned long long*>(_First1);
-            const unsigned long long _Right            = *static_cast<unsigned long long*>(_First2);
-            *static_cast<unsigned long long*>(_First1) = _Right;
-            *static_cast<unsigned long long*>(_First2) = _Left;
+            unsigned long long _Left;
+            unsigned long long _Right;
+            memcpy(&_Left, _First1, 8);
+            memcpy(&_Right, _First2, 8);
+            memcpy(_First1, &_Right, 8);
+            memcpy(_First2, &_Left, 8);
             _Advance_bytes(_First1, 8);
             _Advance_bytes(_First2, 8);
         } while (_First1 != _Stop_at);
     }
-#elif defined(_M_IX86) // NOTE: UNALIGNED MEMORY ACCESSES
+#elif defined(_M_IX86)
     constexpr size_t _Mask_4 = ~((static_cast<size_t>(1) << 2) - 1);
     if (_Byte_length(_First1, _Last1) >= 4) {
         const void* _Stop_at = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_4);
         do {
-            const unsigned long _Left             = *static_cast<unsigned long*>(_First1);
-            const unsigned long _Right            = *static_cast<unsigned long*>(_First2);
-            *static_cast<unsigned long*>(_First1) = _Right;
-            *static_cast<unsigned long*>(_First2) = _Left;
+            unsigned long _Left;
+            unsigned long _Right;
+            memcpy(&_Left, _First1, 4);
+            memcpy(&_Right, _First2, 4);
+            memcpy(_First1, &_Right, 4);
+            memcpy(_First2, &_Left, 4);
             _Advance_bytes(_First1, 4);
             _Advance_bytes(_First2, 4);
         } while (_First1 != _Stop_at);
@@ -202,35 +206,41 @@ namespace {
                 } while (_First1 != _Stop_at);
             }
 
-#if defined(_M_X64) // NOTE: UNALIGNED MEMORY ACCESSES
+#if defined(_M_X64)
             constexpr size_t _Mask_8 = ~((static_cast<size_t>(1) << 3) - 1);
             if (_Byte_length(_First1, _Last1) >= 8) {
                 const void* _Stop_at = _First1;
                 _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_8);
                 do {
-                    const unsigned long long _Val1             = *static_cast<unsigned long long*>(_First1);
-                    const unsigned long long _Val2             = *static_cast<unsigned long long*>(_First2);
-                    const unsigned long long _Val3             = *static_cast<unsigned long long*>(_First3);
-                    *static_cast<unsigned long long*>(_First1) = _Val2;
-                    *static_cast<unsigned long long*>(_First2) = _Val3;
-                    *static_cast<unsigned long long*>(_First3) = _Val1;
+                    unsigned long long _Val1;
+                    unsigned long long _Val2;
+                    unsigned long long _Val3;
+                    memcpy(&_Val1, _First1, 8);
+                    memcpy(&_Val2, _First2, 8);
+                    memcpy(&_Val3, _First3, 8);
+                    memcpy(_First1, &_Val2, 8);
+                    memcpy(_First2, &_Val3, 8);
+                    memcpy(_First3, &_Val1, 8);
                     _Advance_bytes(_First1, 8);
                     _Advance_bytes(_First2, 8);
                     _Advance_bytes(_First3, 8);
                 } while (_First1 != _Stop_at);
             }
-#elif defined(_M_IX86) // NOTE: UNALIGNED MEMORY ACCESSES
+#elif defined(_M_IX86)
             constexpr size_t _Mask_4 = ~((static_cast<size_t>(1) << 2) - 1);
             if (_Byte_length(_First1, _Last1) >= 4) {
                 const void* _Stop_at = _First1;
                 _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_4);
                 do {
-                    const unsigned long _Val1             = *static_cast<unsigned long*>(_First1);
-                    const unsigned long _Val2             = *static_cast<unsigned long*>(_First2);
-                    const unsigned long _Val3             = *static_cast<unsigned long*>(_First3);
-                    *static_cast<unsigned long*>(_First1) = _Val2;
-                    *static_cast<unsigned long*>(_First2) = _Val3;
-                    *static_cast<unsigned long*>(_First3) = _Val1;
+                    unsigned long _Val1;
+                    unsigned long _Val2;
+                    unsigned long _Val3;
+                    memcpy(&_Val1, _First1, 4);
+                    memcpy(&_Val2, _First2, 4);
+                    memcpy(&_Val3, _First3, 4);
+                    memcpy(_First1, &_Val2, 4);
+                    memcpy(_First2, &_Val3, 4);
+                    memcpy(_First3, &_Val1, 4);
                     _Advance_bytes(_First1, 4);
                     _Advance_bytes(_First2, 4);
                     _Advance_bytes(_First3, 4);
@@ -3991,16 +4001,20 @@ namespace {
 
                     const size_t _Byte_size = _Needle_length * sizeof(_Ty);
 
+                    constexpr size_t _Vec_size = sizeof(_Mask);
+                    constexpr size_t _Vec_mask = _Vec_size - 1;
+                    static_assert((_Vec_size & _Vec_mask) == 0);
+
                     const void* _Stop = _Needle_ptr;
-                    _Advance_bytes(_Stop, _Byte_size & ~size_t{0x1F});
-                    for (; _Needle_ptr != _Stop; _Needle_ptr += 32 / sizeof(_Ty)) {
+                    _Advance_bytes(_Stop, _Byte_size & ~_Vec_mask);
+                    for (; _Needle_ptr != _Stop; _Needle_ptr += _Vec_size / sizeof(_Ty)) {
                         const __m128i _Data = _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Needle_ptr));
                         if (!_mm_testz_si128(_Mask, _Data)) {
                             return false;
                         }
                     }
 
-                    _Advance_bytes(_Stop, _Byte_size & 0x1E);
+                    _Advance_bytes(_Stop, _Byte_size & _Vec_mask);
                     for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
                         if ((*_Needle_ptr & ~_Ty{0xFF}) != 0) {
                             return false;
@@ -6999,7 +7013,6 @@ namespace {
             }
 
             if (_Size_bits > 0) {
-                __assume(_Size_bits < sizeof(typename _Traits::_Value_type));
                 typename _Traits::_Value_type _Val;
                 memcpy(&_Val, _Src, sizeof(_Val));
                 const auto _Elems = _Traits::_Step(_Val, _Px0, _Px1);
@@ -7092,8 +7105,6 @@ namespace {
         };
 
         struct _Traits_1_avx : _Traits_avx {
-            using _Word = uint32_t;
-
             static __m256i _Set(const char _Val) noexcept {
                 return _mm256_set1_epi8(_Val);
             }
@@ -7113,8 +7124,6 @@ namespace {
         };
 
         struct _Traits_1_sse : _Traits_sse {
-            using _Word = uint16_t;
-
             static __m128i _Set(const char _Val) noexcept {
                 return _mm_shuffle_epi8(_mm_cvtsi32_si128(_Val), _mm_setzero_si128());
             }
@@ -7131,8 +7140,6 @@ namespace {
         };
 
         struct _Traits_2_avx : _Traits_avx {
-            using _Word = uint16_t;
-
             static __m256i _Set(const wchar_t _Val) noexcept {
                 return _mm256_set1_epi16(_Val);
             }
@@ -7152,8 +7159,6 @@ namespace {
         };
 
         struct _Traits_2_sse : _Traits_sse {
-            using _Word = uint8_t;
-
             static __m128i _Set(const wchar_t _Val) noexcept {
                 return _mm_set1_epi16(_Val);
             }
@@ -7201,19 +7206,19 @@ namespace {
         }
 
         template <class _Traits, class _Elem>
-        bool _Impl(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_bits,
+        bool _Impl(void* _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_bits,
             const size_t _Size_chars, const _Elem _Elem0, const _Elem _Elem1) noexcept {
             [[maybe_unused]] typename _Traits::_Guard _Guard; // TRANSITION, DevCom-10331414
             const auto _Dx0 = _Traits::_Set(_Elem0);
             const auto _Dx1 = _Traits::_Set(_Elem1);
 
-            auto _Dst_words      = reinterpret_cast<_Traits::_Word*>(_Dest);
-            void* _Dst_words_end = _Dst_words;
-            _Advance_bytes(_Dst_words_end, _Size_bytes);
+            void* _Dest_end = _Dest;
+            _Advance_bytes(_Dest_end, _Size_bytes);
 
-            auto _Out = [&_Dst_words](const _Traits::_Vec _Ex1) {
-                *_Dst_words = _Traits::_To_bits(_Ex1);
-                ++_Dst_words;
+            auto _Out = [&_Dest](const _Traits::_Vec _Ex1) {
+                const auto _Val = _Traits::_To_bits(_Ex1);
+                memcpy(_Dest, &_Val, sizeof(_Val));
+                _Advance_bytes(_Dest, sizeof(_Val));
             };
 
             const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
@@ -7230,8 +7235,8 @@ namespace {
             }
 
             // Trim tail (may be padding tail, or too short string, or both)
-            if (_Dst_words != _Dst_words_end) {
-                memset(_Dst_words, 0, _Byte_length(_Dst_words, _Dst_words_end));
+            if (_Dest != _Dest_end) {
+                memset(_Dest, 0, _Byte_length(_Dest, _Dest_end));
             }
 
             return true;

@@ -1061,15 +1061,6 @@ struct hash<monostate> {
     }
 };
 #endif // _HAS_CXX17
-
-#if _HAS_TR1_NAMESPACE
-namespace _DEPRECATE_TR1_NAMESPACE tr1 {
-    using _STD get;
-    using _STD tuple_element;
-    using _STD tuple_size;
-} // namespace _DEPRECATE_TR1_NAMESPACE tr1
-#endif // _HAS_TR1_NAMESPACE
-
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
