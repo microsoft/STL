@@ -77,8 +77,6 @@
         "functional",
         "future",
         "generator",
-        // "hash_map", // non-Standard, will be removed soon
-        // "hash_set", // non-Standard, will be removed soon
         "initializer_list",
         "iomanip",
         "ios",
