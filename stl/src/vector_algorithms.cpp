@@ -7013,7 +7013,6 @@ namespace {
             }
 
             if (_Size_bits > 0) {
-                __assume(_Size_bits < sizeof(typename _Traits::_Value_type));
                 typename _Traits::_Value_type _Val;
                 memcpy(&_Val, _Src, sizeof(_Val));
                 const auto _Elems = _Traits::_Step(_Val, _Px0, _Px1);
