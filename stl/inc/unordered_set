@@ -746,13 +746,6 @@ _NODISCARD bool operator!=(const unordered_multiset<_Kty, _Hasher, _Keyeq, _Allo
 }
 #endif // !_HAS_CXX20
 
-#if _HAS_TR1_NAMESPACE
-namespace _DEPRECATE_TR1_NAMESPACE tr1 {
-    using _STD unordered_multiset;
-    using _STD unordered_set;
-} // namespace _DEPRECATE_TR1_NAMESPACE tr1
-#endif // _HAS_TR1_NAMESPACE
-
 #if _HAS_CXX17
 namespace pmr {
     _EXPORT_STD template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>>

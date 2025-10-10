@@ -155,7 +155,6 @@
 // LWG-2385 function::assign allocator argument doesn't make sense
 // LWG-2921 packaged_task and type-erased allocators
 // LWG-2976 Dangling uses_allocator specialization for packaged_task
-// The non-Standard std::tr1 namespace and TR1-only machinery
 // Enforcement of matching allocator value_types
 
 // _HAS_CXX17 and _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS control:
@@ -1039,26 +1038,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _HAS_FUNCTION_ALLOCATOR_SUPPORT (!_HAS_CXX17)
 #endif // !defined(_HAS_FUNCTION_ALLOCATOR_SUPPORT)
 
-// The non-Standard std::tr1 namespace and TR1-only machinery
-#ifndef _HAS_TR1_NAMESPACE
-#define _HAS_TR1_NAMESPACE (!_HAS_CXX17)
-#endif // !defined(_HAS_TR1_NAMESPACE)
-
 // STL4000 is "_STATIC_CPPLIB is deprecated", currently in yvals.h
 // STL4001 is "/clr:pure is deprecated", currently in yvals.h
-
-#if _HAS_TR1_NAMESPACE
-#ifdef _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
-#define _DEPRECATE_TR1_NAMESPACE
-#else // ^^^ warning disabled / warning enabled vvv
-#define _DEPRECATE_TR1_NAMESPACE                                                                                  \
-    [[deprecated(                                                                                                 \
-        "warning STL4002: "                                                                                       \
-        "The non-Standard std::tr1 namespace and TR1-only machinery are deprecated and will be REMOVED. You can " \
-        "define _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING to suppress this warning.")]]
-#endif // ^^^ warning enabled ^^^
-#endif // _HAS_TR1_NAMESPACE
-
+// STL4002 was "The non-Standard std::tr1 namespace and TR1-only machinery are deprecated and will be REMOVED."
 // STL4003 was "The non-Standard std::identity struct is deprecated and will be REMOVED."
 
 // Enforcement of matching allocator value_types
@@ -1516,15 +1498,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _DEPRECATE_IO_PFX_SFX
 #endif // ^^^ warning disabled ^^^
 
-#if !defined(_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING) && !defined(_SILENCE_TR1_RANDOM_DEPRECATION_WARNING) \
-    && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
-#define _DEPRECATE_TR1_RANDOM                                                                                          \
-    [[deprecated("warning STL4046: Non-Standard TR1 components in <random> are deprecated and will be REMOVED. You "   \
-                 "can define _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING, _SILENCE_TR1_RANDOM_DEPRECATION_WARNING, or " \
-                 "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning.")]]
-#else // ^^^ warning enabled / warning disabled vvv
-#define _DEPRECATE_TR1_RANDOM
-#endif // ^^^ warning disabled ^^^
+// STL4046 was "Non-Standard TR1 components in <random> are deprecated and will be REMOVED."
 
 #if _HAS_CXX20 && defined(__cpp_char8_t) && !defined(_SILENCE_CXX20_CODECVT_CHAR8_T_FACETS_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)

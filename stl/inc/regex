@@ -5403,43 +5403,6 @@ _Parser2<_FwdIt, _Elem, _RxTraits>::_Parser2(
     _Trans();
 }
 
-#if _HAS_TR1_NAMESPACE
-namespace _DEPRECATE_TR1_NAMESPACE tr1 {
-    using _STD basic_regex;
-    using _STD cmatch;
-    using _STD cregex_iterator;
-    using _STD cregex_token_iterator;
-    using _STD csub_match;
-    using _STD match_results;
-    using _STD regex;
-    using _STD regex_error;
-    using _STD regex_iterator;
-    using _STD regex_match;
-    using _STD regex_replace;
-    using _STD regex_search;
-    using _STD regex_token_iterator;
-    using _STD regex_traits;
-    using _STD smatch;
-    using _STD sregex_iterator;
-    using _STD sregex_token_iterator;
-    using _STD ssub_match;
-    using _STD sub_match;
-    using _STD swap;
-    using _STD wcmatch;
-    using _STD wcregex_iterator;
-    using _STD wcregex_token_iterator;
-    using _STD wcsub_match;
-    using _STD wregex;
-    using _STD wsmatch;
-    using _STD wsregex_iterator;
-    using _STD wsregex_token_iterator;
-    using _STD wssub_match;
-    namespace regex_constants {
-        using namespace _STD regex_constants;
-    }
-} // namespace _DEPRECATE_TR1_NAMESPACE tr1
-#endif // _HAS_TR1_NAMESPACE
-
 #if _HAS_CXX17
 namespace pmr {
     _EXPORT_STD template <class _BidIt>

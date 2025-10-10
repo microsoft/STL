@@ -1323,18 +1323,6 @@ struct common_type<_TTuple, _UTuple> {
     using type = _Tuple_like_common_type<_TTuple, _UTuple>::type;
 };
 #endif // _HAS_CXX23
-
-#if _HAS_TR1_NAMESPACE
-namespace _DEPRECATE_TR1_NAMESPACE tr1 {
-    using _STD get;
-    using _STD ignore;
-    using _STD make_tuple;
-    using _STD ref;
-    using _STD tie;
-    using _STD tuple;
-} // namespace _DEPRECATE_TR1_NAMESPACE tr1
-#endif // _HAS_TR1_NAMESPACE
-
 _STD_END
 
 #pragma pop_macro("new")
