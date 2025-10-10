@@ -948,7 +948,7 @@ private:
                 _Traits::assign(_My_data._Bx._Buf[_Count], _Elem());
             } else { // _Strat == _Construct_strategy::_From_string
 #ifdef _INSERT_STRING_ANNOTATION
-                _Traits::copy(_My_data._Bx._Buf, _Arg, _Count + 1);
+                _Traits::copy(_My_data._Bx._Buf, _Arg, static_cast<size_t>(_Count + 1));
 #else // ^^^ _INSERT_STRING_ANNOTATION / !_INSERT_STRING_ANNOTATION vvv
                 _Traits::copy(_My_data._Bx._Buf, _Arg, _BUF_SIZE);
 #endif // ^^^ !_INSERT_STRING_ANNOTATION ^^^
@@ -1570,7 +1570,7 @@ public:
         // append _Count * _Ch
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Count <= _Mypair._Myval2._Myres - _Old_size) {
-            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
+            _ASAN_STRING_MODIFY(*this, _Old_size, static_cast<size_type>(_Old_size + _Count));
             _Mypair._Myval2._Mysize = static_cast<size_type>(_Old_size + _Count);
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Traits::assign(_Old_ptr + _Old_size, static_cast<size_t>(_Count), _Ch);
@@ -1759,7 +1759,7 @@ public:
         _Mypair._Myval2._Check_offset(_Off);
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Count <= _Mypair._Myval2._Myres - _Old_size) {
-            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
+            _ASAN_STRING_MODIFY(*this, _Old_size, static_cast<size_type>(_Old_size + _Count));
             _Mypair._Myval2._Mysize = static_cast<size_type>(_Old_size + _Count);
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
@@ -2202,7 +2202,7 @@ public:
     _CONSTEXPR20 void push_back(const _Elem _Ch) { // insert element at end
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Old_size < _Mypair._Myval2._Myres) {
-            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + 1);
+            _ASAN_STRING_MODIFY(*this, _Old_size, static_cast<size_type>(_Old_size + 1));
             _Mypair._Myval2._Mysize = static_cast<size_type>(_Old_size + 1);
             _Elem* const _Ptr       = _Mypair._Myval2._Myptr();
             _Traits::assign(_Ptr[_Old_size], _Ch);
@@ -3026,7 +3026,7 @@ private:
 
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Count <= _Mypair._Myval2._Myres - _Old_size) {
-            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
+            _ASAN_STRING_MODIFY(*this, _Old_size, static_cast<size_type>(_Old_size + _Count));
             _Mypair._Myval2._Mysize = static_cast<size_type>(_Old_size + _Count);
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _STD _Traits_move_batch<_Traits>(_Old_ptr + _Old_size, _Ptr, static_cast<size_t>(_Count));
@@ -3088,7 +3088,7 @@ private:
 #endif // ^^^ !_HAS_CXX20 ^^^
 
         if (_Check_overlap) {
-            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
+            _ASAN_STRING_MODIFY(*this, _Old_size, static_cast<size_type>(_Old_size + _Count));
             _Mypair._Myval2._Mysize = static_cast<size_type>(_Old_size + _Count);
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
@@ -3159,7 +3159,7 @@ private:
 #endif // _HAS_CXX20
         {
             if (_Growth <= _Mypair._Myval2._Myres - _Old_size) { // growth fits
-                _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Growth);
+                _ASAN_STRING_MODIFY(*this, _Old_size, static_cast<size_type>(_Old_size + _Growth));
                 _Mypair._Myval2._Mysize = static_cast<size_type>(_Old_size + _Growth);
                 _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
                 _Elem* const _Insert_at = _Old_ptr + _Off;
