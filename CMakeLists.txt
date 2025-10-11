@@ -112,13 +112,7 @@ endif()
 
 set(VCLIBS_DEBUG_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/Od>")
 
-# TRANSITION: Potentially remove `/Os` if it results in speed improvements.
-# This requires benchmarking!
-# Note that in MSVC version 19.32.31328,
-# `/Os` results in a binary size difference of 102K
-# in the release DLL (a gain of 18.4%).
-# So, make certain that that tradeoff is considered when or if `/Os` is removed.
-# See GH-2108 for more info.
+# TRANSITION, GH-2108: Investigate building the STL with only /O2, not /Os.
 set(VCLIBS_RELEASE_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/O2;/Os>")
 
 if(BUILD_TESTING)
