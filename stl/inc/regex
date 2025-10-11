@@ -1586,7 +1586,7 @@ public:
           _Loop_number(_Number) {}
 
     const int _Min;
-    const int _Max;
+    const int _Max; // non-negative if bounded, -1 if unbounded
     _Node_end_rep* _End_rep;
     unsigned int _Loop_number;
     int _Simple_loop = -1; // -1 undetermined, 0 contains if/do, 1 simple
@@ -4137,7 +4137,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                             _Next          = _Node->_End_rep->_Next;
 
                             // set up stack unwinding for non-greedy matching if at least one rep is allowed
-                            if (_Node->_Max == -1 || 0 < _Node->_Max) {
+                            if (_Node->_Max != 0) {
                                 _Push_frame(_Rx_unwind_ops::_Loop_simple_nongreedy, _Node);
                             }
                         } else {
@@ -4179,7 +4179,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                         } else if (_Longest || !_Greedy) {
                             _Increase_complexity_count();
                             // set up stack unwinding for non-greedy matching if one more rep is allowed
-                            if (_Nr->_Max == -1 || _Sav._Loop_idx < _Nr->_Max) {
+                            if (_Sav._Loop_idx != _Nr->_Max) {
                                 _Push_frame(_Rx_unwind_ops::_Loop_simple_nongreedy, _Nr);
                             }
                             // _Next is already assigned correctly for matching tail
