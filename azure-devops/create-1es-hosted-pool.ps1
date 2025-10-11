@@ -14,8 +14,8 @@ $ErrorActionPreference = 'Stop'
 $CurrentDate = Get-Date
 
 $Location = 'eastus2'
-$VMSize = 'Standard_F32as_v6'
-$PoolSize = 64
+$VMSize = 'Standard_F64as_v6'
+$PoolSize = 32
 $ProtoVMName = 'PROTOTYPE'
 $ImagePublisher = 'MicrosoftWindowsServer'
 $ImageOffer = 'WindowsServer'
