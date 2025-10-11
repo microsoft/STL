@@ -5,7 +5,7 @@
 
 variables:
 - name: poolName
-  value: 'StlBuild-2025-09-09T1526-Pool'
+  value: 'StlBuild-2025-10-11T1257-Pool'
   readonly: true
 - name: poolDemands
   value: 'EnableSpotVM -equals false'
