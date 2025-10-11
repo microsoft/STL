@@ -15,6 +15,7 @@ $CurrentDate = Get-Date
 
 $Location = 'eastus2'
 $VMSize = 'Standard_F32as_v6'
+$PoolSize = 64
 $ProtoVMName = 'PROTOTYPE'
 $ImagePublisher = 'MicrosoftWindowsServer'
 $ImageOffer = 'WindowsServer'
@@ -373,7 +374,7 @@ $PoolProperties = @{
   'projects' = @('STL')
   'sku' = @{ 'name' = $VMSize; 'tier' = 'StandardSSD'; 'enableSpot' = $false; }
   'images' = @(@{ 'imageName' = $ImageName; 'poolBufferPercentage' = '100'; })
-  'maxPoolSize' = 64
+  'maxPoolSize' = $PoolSize
   'agentProfile' = @{ 'type' = 'Stateless'; }
 }
 
