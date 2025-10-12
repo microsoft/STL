@@ -148,6 +148,12 @@ Write-Host 'Setting environment variables...'
 # The STL's PR/CI builds are totally unrepresentative of customer usage.
 [Environment]::SetEnvironmentVariable('VSCMD_SKIP_SENDTELEMETRY', '1', 'Machine')
 
+Write-Host 'Enabling long paths...'
+
+# https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell
+New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' `
+  -Value 1 -PropertyType DWORD -Force | Out-Null
+
 # Tell create-1es-hosted-pool.ps1 that we succeeded.
 Write-Host 'PROVISION_IMAGE_SUCCEEDED'
 
