@@ -12,6 +12,8 @@ See https://github.com/microsoft/STL/wiki/Checklist-for-Toolset-Updates for more
 $ErrorActionPreference = 'Stop'
 
 $CurrentDate = Get-Date
+$Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
+$Arch = 'x64'
 
 $Location = 'eastus2'
 $VMSize = 'Standard_F32as_v6'
@@ -21,7 +23,7 @@ $ImagePublisher = 'MicrosoftWindowsServer'
 $ImageOffer = 'WindowsServer'
 $ImageSku = '2025-datacenter-azure-edition'
 
-$LogFile = '1es-hosted-pool.log'
+$LogFile = "1es-hosted-pool-$Timestamp-$Arch.log"
 $ProgressActivity = 'Preparing STL CI pool'
 $TotalProgress = 38
 $CurrentProgress = 1
@@ -91,7 +93,7 @@ Set-AzContext `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating resource group'
 
-$ResourceGroupName = "StlBuild-$($CurrentDate.ToString('yyyy-MM-ddTHHmm'))"
+$ResourceGroupName = "Stl-$Timestamp-$Arch"
 
 New-AzResourceGroup `
   -Name $ResourceGroupName `
