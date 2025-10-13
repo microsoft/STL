@@ -91,7 +91,7 @@ Set-AzContext `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating resource group'
 
-$ResourceGroupName = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-ddTHHmm')
+$ResourceGroupName = "StlBuild-$($CurrentDate.ToString('yyyy-MM-ddTHHmm'))"
 
 New-AzResourceGroup `
   -Name $ResourceGroupName `
@@ -106,7 +106,7 @@ $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser',
 ####################################################################################################
 Display-ProgressBar -Status 'Creating public IP address'
 
-$PublicIpAddressName = $ResourceGroupName + '-PublicIpAddress'
+$PublicIpAddressName = "$ResourceGroupName-PublicIpAddress"
 $PublicIpAddress = New-AzPublicIpAddress `
   -Name $PublicIpAddressName `
   -ResourceGroupName $ResourceGroupName `
@@ -117,7 +117,7 @@ $PublicIpAddress = New-AzPublicIpAddress `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating NAT gateway'
 
-$NatGatewayName = $ResourceGroupName + '-NatGateway'
+$NatGatewayName = "$ResourceGroupName-NatGateway"
 $NatGateway = New-AzNatGateway `
   -Name $NatGatewayName `
   -ResourceGroupName $ResourceGroupName `
@@ -129,7 +129,7 @@ $NatGateway = New-AzNatGateway `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating network security group'
 
-$NetworkSecurityGroupName = $ResourceGroupName + '-NetworkSecurity'
+$NetworkSecurityGroupName = "$ResourceGroupName-NetworkSecurity"
 $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
   -Name $NetworkSecurityGroupName `
   -ResourceGroupName $ResourceGroupName `
@@ -143,7 +143,7 @@ Display-ProgressBar -Status 'Creating virtual network subnet config'
 # and within Microsoft."
 # https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/default-outbound-access
 # We're using `-DefaultOutboundAccess $false` to opt-in early.
-$SubnetName = $ResourceGroupName + '-Subnet'
+$SubnetName = "$ResourceGroupName-Subnet"
 $Subnet = New-AzVirtualNetworkSubnetConfig `
   -Name $SubnetName `
   -AddressPrefix '10.0.0.0/16' `
@@ -154,7 +154,7 @@ $Subnet = New-AzVirtualNetworkSubnetConfig `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating virtual network'
 
-$VirtualNetworkName = $ResourceGroupName + '-Network'
+$VirtualNetworkName = "$ResourceGroupName-Network"
 $VirtualNetwork = New-AzVirtualNetwork `
   -Name $VirtualNetworkName `
   -ResourceGroupName $ResourceGroupName `
@@ -165,7 +165,7 @@ $VirtualNetwork = New-AzVirtualNetwork `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating network interface'
 
-$NicName = $ResourceGroupName + '-NIC'
+$NicName = "$ResourceGroupName-NIC"
 $Nic = New-AzNetworkInterface `
   -Name $NicName `
   -ResourceGroupName $ResourceGroupName `
@@ -298,7 +298,7 @@ Set-AzVM `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating gallery'
 
-$GalleryName = 'StlBuild_' + $CurrentDate.ToString('yyyy_MM_ddTHHmm') + '_Gallery'
+$GalleryName = "$ResourceGroupName-Gallery" -replace '-', '_'
 $Gallery = New-AzGallery `
   -Location $Location `
   -ResourceGroupName $ResourceGroupName `
@@ -317,7 +317,7 @@ New-AzRoleAssignment `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating image definition'
 
-$ImageDefinitionName = $ResourceGroupName + '-ImageDefinition'
+$ImageDefinitionName = "$ResourceGroupName-ImageDefinition"
 $FeatureTrustedLaunch = @{ Name = 'SecurityType'; Value = 'TrustedLaunch'; }
 $FeatureNVMe = @{ Name = 'DiskControllerTypes'; Value = 'SCSI, NVMe'; }
 $ImageDefinitionFeatures = @($FeatureTrustedLaunch, $FeatureNVMe)
@@ -355,7 +355,7 @@ Register-AzResourceProvider `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating 1ES image'
 
-$ImageName = $ResourceGroupName + '-Image'
+$ImageName = "$ResourceGroupName-Image"
 New-AzResource `
   -Location $Location `
   -ResourceGroupName $ResourceGroupName `
@@ -367,7 +367,7 @@ New-AzResource `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating 1ES Hosted Pool'
 
-$PoolName = $ResourceGroupName + '-Pool'
+$PoolName = "$ResourceGroupName-Pool"
 
 $PoolProperties = @{
   'organization' = 'https://dev.azure.com/vclibs'
