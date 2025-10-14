@@ -382,7 +382,7 @@ private:
     _Yarn<char> _Months; // month names
     _Yarn<wchar_t> _W_Days; // wide weekday names
     _Yarn<wchar_t> _W_Months; // wide month names
-    _Yarn<char> _Oldlocname; // old locale name to revert to on destruction
+    _Yarn<wchar_t> _Oldlocname; // old locale name to revert to on destruction
     _Yarn<char> _Newlocname; // new locale name for this object
 };
 _STD_END

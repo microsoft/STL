@@ -137,9 +137,7 @@ void __CLRCALL_PURE_OR_CDECL locale::_Locimp::_Locimp_Addfac(
 
 void __CLRCALL_PURE_OR_CDECL _Locinfo::_Locinfo_ctor(
     _Locinfo* pLocinfo, int cat, const char* locname) { // capture a named locale
-    const char* oldlocname = setlocale(LC_ALL, nullptr);
-
-    pLocinfo->_Oldlocname = oldlocname == nullptr ? "" : oldlocname;
+    pLocinfo->_Oldlocname = _wsetlocale(LC_ALL, nullptr);
     _Locinfo_Addcats(pLocinfo, cat, locname);
 }
 
