@@ -85,10 +85,11 @@ Update-AzConfig `
   -Scope 'Process' >> $LogFile
 
 ####################################################################################################
-Display-ProgressBar -Status 'Setting the subscription context'
+Display-ProgressBar -Status 'Getting the subscription context'
 
-Set-AzContext `
-  -SubscriptionName 'CPP_STL_GitHub' >> $LogFile
+if ((Get-AzContext).Subscription.Name -cne 'CPP_STL_GitHub') {
+  Write-Error 'Please sign in with `Connect-AzAccount -Subscription ''CPP_STL_GitHub''` before running this script.'
+}
 
 ####################################################################################################
 Display-ProgressBar -Status 'Creating resource group'
