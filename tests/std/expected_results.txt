@@ -1,2 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+# *** MSVC-INTERNAL TEST HARNESS ISSUES (note: configuration :9 restricts these skips to be MSVC-internal) ***
+
+# The MSVC-internal test harness doesn't support long paths.
+tests/GH_001923_filesystem_long_path_support/test.cpp:9 SKIPPED
