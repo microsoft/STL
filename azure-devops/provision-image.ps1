@@ -21,8 +21,10 @@ if ($Env:COMPUTERNAME -cne 'PROTOTYPE') {
 
 if ($Env:PROCESSOR_ARCHITECTURE -ceq 'AMD64') {
   Write-Host 'Provisioning x64.'
+  $Provisioning_x64 = $true
 } elseif ($Env:PROCESSOR_ARCHITECTURE -ceq 'ARM64') {
   Write-Host 'Provisioning ARM64.'
+  $Provisioning_x64 = $false
 } else {
   Write-Error "Unrecognized PROCESSOR_ARCHITECTURE: '$Env:PROCESSOR_ARCHITECTURE'"
 }
@@ -51,7 +53,7 @@ foreach ($workload in $VisualStudioWorkloads) {
 }
 
 # https://github.com/PowerShell/PowerShell/releases/latest
-if ($Env:PROCESSOR_ARCHITECTURE -ceq 'AMD64') {
+if ($Provisioning_x64) {
   $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.3/PowerShell-7.5.3-win-x64.msi'
 } else {
   $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.3/PowerShell-7.5.3-win-arm64.msi'
@@ -59,7 +61,7 @@ if ($Env:PROCESSOR_ARCHITECTURE -ceq 'AMD64') {
 $PowerShellArgs = @('/quiet', '/norestart')
 
 # https://www.python.org
-if ($Env:PROCESSOR_ARCHITECTURE -ceq 'AMD64') {
+if ($Provisioning_x64) {
   $PythonUrl = 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-amd64.exe'
 } else {
   $PythonUrl = 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-arm64.exe'
@@ -67,7 +69,7 @@ if ($Env:PROCESSOR_ARCHITECTURE -ceq 'AMD64') {
 $PythonArgs = @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1', 'Include_doc=0')
 
 # https://developer.nvidia.com/cuda-toolkit
-if ($Env:PROCESSOR_ARCHITECTURE -ceq 'AMD64') {
+if ($Provisioning_x64) {
   $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda_12.4.0_551.61_windows.exe'
 } else {
   $CudaUrl = 'CUDA is not installed for ARM64'
@@ -139,7 +141,7 @@ Write-Host "Old PowerShell version: $($PSVersionTable.PSVersion)"
 DownloadAndInstall   -Name 'PowerShell'    -Url $PowerShellUrl   -Args $PowerShellArgs
 DownloadAndInstall   -Name 'Python'        -Url $PythonUrl       -Args $PythonArgs
 DownloadAndInstall   -Name 'Visual Studio' -Url $VisualStudioUrl -Args $VisualStudioArgs
-if ($Env:PROCESSOR_ARCHITECTURE -ceq 'AMD64') {
+if ($Provisioning_x64) {
   DownloadAndInstall -Name 'CUDA'          -Url $CudaUrl         -Args $CudaArgs
 }
 
