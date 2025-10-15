@@ -4,8 +4,6 @@
 // test <random> C++11 header, part 5
 #define TEST_NAME "<random>, part 5"
 
-#define _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
-
 #include "tdefs.h"
 #include <cmath>
 #include <random>
@@ -116,10 +114,6 @@ static void tuniform_real() {
     typedef STD ranlux24 rng_t;
     rng_t rng;
     CHECK(dist0(rng) != dist0(rng, par0));
-
-#if _HAS_TR1_NAMESPACE
-    test_globals<dist_t, STD ranlux3_01>::test();
-#endif // _HAS_TR1_NAMESPACE
 }
 
 static void tnegative_binomial() {
