@@ -45,11 +45,6 @@ bool are_long_paths_enabled() {
 }
 
 int main() {
-    if (!are_long_paths_enabled()) {
-        cout << "Skipping test because long paths aren't enabled on this machine." << endl;
-        return 0;
-    }
-
     const test_temp_directory tempDir("filesystem_long_path_support");
 
     const filesystem::path long_path =
