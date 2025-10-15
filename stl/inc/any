@@ -289,6 +289,7 @@ private:
     }
 
     void _Move_from(any& _That) noexcept {
+        _STL_INTERNAL_CHECK(_Storage._TypeData == 0); // !has_value()
         _Storage._TypeData = _That._Storage._TypeData;
         switch (_Rep()) {
         case _Any_representation::_Small:
@@ -314,6 +315,7 @@ private:
 
     template <class _Decayed, class... _Types>
     _Decayed& _Emplace(_Types&&... _Args) { // emplace construct _Decayed
+        _STL_INTERNAL_CHECK(_Storage._TypeData == 0); // !has_value()
         if constexpr (_Any_is_trivial<_Decayed>) {
             // using the _Trivial representation
             auto& _Obj = reinterpret_cast<_Decayed&>(_Storage._TrivialData);
