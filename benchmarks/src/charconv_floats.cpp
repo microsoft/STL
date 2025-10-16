@@ -24,7 +24,7 @@ void verify(const bool b) {
 
 enum class RoundTrip { Sci, Fix, Gen, Hex, Lossy };
 
-constexpr chars_format chars_format_from_RoundTrip(const RoundTrip rt) {
+consteval chars_format chars_format_from_RoundTrip(const RoundTrip rt) {
     switch (rt) {
     case RoundTrip::Sci:
         return chars_format::scientific;
@@ -36,7 +36,6 @@ constexpr chars_format chars_format_from_RoundTrip(const RoundTrip rt) {
         return chars_format::hex;
     case RoundTrip::Lossy:
     default:
-        puts("FAIL");
         exit(EXIT_FAILURE);
     }
 }
