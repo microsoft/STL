@@ -287,6 +287,20 @@ void test_duration_formatter() {
     // GH-4247: <chrono>: format() should accept %X and %EX for duration and hh_mm_ss
     assert(format(STR("{:%X}"), 9h + 7min + 5s) == STR("09:07:05"));
     assert(format(STR("{:%EX}"), 9h + 7min + 5s) == STR("09:07:05"));
+
+    // N4950 [time.format]/4
+    // "The result of formatting a std::chrono::duration instance holding a negative value, or an hh_mm_ss object h for
+    // which h.is_negative() is true, is equivalent to the output of the corresponding positive value, with a
+    // STATICALLY-WIDEN <charT>("-") character sequence placed before the replacement of the initial conversion
+    // specifier."
+    const auto minus_1s = -1s;
+    assert(format(STR("{:%Q}"), minus_1s) == STR("-1"));
+    assert(format(STR("{:%q}"), minus_1s) == STR("-s"));
+    assert(format(STR("{:%Q%Q}"), minus_1s) == STR("-11"));
+    assert(format(STR("{:%Q%q}"), minus_1s) == STR("-1s"));
+    assert(format(STR("{:%q%Q}"), minus_1s) == STR("-s1"));
+    assert(format(STR("{:%q%q}"), minus_1s) == STR("-ss"));
+    assert(format(STR("{:%%%t%n%q%Q hello world}"), minus_1s) == STR("-%\t\ns1 hello world"));
 }
 
 template <typename CharT>
