@@ -41,8 +41,8 @@ constexpr chars_format chars_format_from_RoundTrip(const RoundTrip rt) {
     }
 }
 
-template <RoundTrip Rt, typename Floating, typename... Args>
-void test_to_chars(benchmark::State& state, const Args&... args) {
+template <RoundTrip Rt, typename Floating, auto... Args>
+void test_to_chars(benchmark::State& state) {
     constexpr size_t n = 2'000'000; // how many floating-point values to test
 
     constexpr size_t BufSize = 2'000; // more than enough
@@ -66,7 +66,7 @@ void test_to_chars(benchmark::State& state, const Args&... args) {
 
     auto it = vec.begin();
     for (auto _ : state) {
-        auto result = to_chars(buf, buf + BufSize, *it, args...);
+        auto result = to_chars(buf, buf + BufSize, *it, Args...);
 
         benchmark::DoNotOptimize(result.ptr);
         benchmark::DoNotOptimize(buf);
@@ -78,7 +78,7 @@ void test_to_chars(benchmark::State& state, const Args&... args) {
     }
 
     for (const auto& elem : vec) {
-        const auto result = to_chars(buf, buf + BufSize, elem, args...);
+        const auto result = to_chars(buf, buf + BufSize, elem, Args...);
         verify(result.ec == errc{});
 
         if constexpr (Rt == RoundTrip::Lossy) {
@@ -93,98 +93,23 @@ void test_to_chars(benchmark::State& state, const Args&... args) {
     }
 }
 
-constexpr auto STL_float_plain_shortest  = test_to_chars<RoundTrip::Gen, float>;
-constexpr auto STL_double_plain_shortest = test_to_chars<RoundTrip::Gen, double>;
-
-void STL_float_scientific_shortest(benchmark::State& state) {
-    test_to_chars<RoundTrip::Sci, float>(state, chars_format::scientific);
-}
-
-void STL_double_scientific_shortest(benchmark::State& state) {
-    test_to_chars<RoundTrip::Sci, double>(state, chars_format::scientific);
-}
-
-void STL_float_fixed_shortest(benchmark::State& state) {
-    test_to_chars<RoundTrip::Fix, float>(state, chars_format::fixed);
-}
-
-void STL_double_fixed_shortest(benchmark::State& state) {
-    test_to_chars<RoundTrip::Fix, double>(state, chars_format::fixed);
-}
-
-void STL_float_general_shortest(benchmark::State& state) {
-    test_to_chars<RoundTrip::Gen, float>(state, chars_format::general);
-}
-
-void STL_double_general_shortest(benchmark::State& state) {
-    test_to_chars<RoundTrip::Gen, double>(state, chars_format::general);
-}
-
-void STL_float_hex_shortest(benchmark::State& state) {
-    test_to_chars<RoundTrip::Hex, float>(state, chars_format::hex);
-}
-
-void STL_double_hex_shortest(benchmark::State& state) {
-    test_to_chars<RoundTrip::Hex, double>(state, chars_format::hex);
-}
-
-void STL_float_scientific_8(benchmark::State& state) {
-    test_to_chars<RoundTrip::Sci, float>(state, chars_format::scientific, 8);
-}
-
-void STL_double_scientific_16(benchmark::State& state) {
-    test_to_chars<RoundTrip::Sci, double>(state, chars_format::scientific, 16);
-}
-
-void STL_float_fixed_6_lossy(benchmark::State& state) {
-    test_to_chars<RoundTrip::Lossy, float>(state, chars_format::fixed, 6);
-}
-
-void STL_double_fixed_6_lossy(benchmark::State& state) {
-    test_to_chars<RoundTrip::Lossy, double>(state, chars_format::fixed, 6);
-}
-
-void STL_float_general_9(benchmark::State& state) {
-    test_to_chars<RoundTrip::Gen, float>(state, chars_format::general, 9);
-}
-
-void STL_double_general_17(benchmark::State& state) {
-    test_to_chars<RoundTrip::Gen, double>(state, chars_format::general, 17);
-}
-
-void STL_float_hex_6(benchmark::State& state) {
-    test_to_chars<RoundTrip::Hex, float>(state, chars_format::hex, 6);
-}
-
-void STL_double_hex_13(benchmark::State& state) {
-    test_to_chars<RoundTrip::Hex, double>(state, chars_format::hex, 13);
-}
-
-BENCHMARK(STL_float_plain_shortest);
-BENCHMARK(STL_double_plain_shortest);
-
-BENCHMARK(STL_float_scientific_shortest);
-BENCHMARK(STL_double_scientific_shortest);
-
-BENCHMARK(STL_float_fixed_shortest);
-BENCHMARK(STL_double_fixed_shortest);
-
-BENCHMARK(STL_float_general_shortest);
-BENCHMARK(STL_double_general_shortest);
-
-BENCHMARK(STL_float_hex_shortest);
-BENCHMARK(STL_double_hex_shortest);
-
-BENCHMARK(STL_float_scientific_8);
-BENCHMARK(STL_double_scientific_16);
-
-BENCHMARK(STL_float_fixed_6_lossy);
-BENCHMARK(STL_double_fixed_6_lossy);
-
-BENCHMARK(STL_float_general_9);
-BENCHMARK(STL_double_general_17);
-
-BENCHMARK(STL_float_hex_6);
-BENCHMARK(STL_double_hex_13);
+BENCHMARK(test_to_chars<RoundTrip::Gen, float>)->Name("STL_float_plain_shortest");
+BENCHMARK(test_to_chars<RoundTrip::Gen, double>)->Name("STL_double_plain_shortest");
+BENCHMARK(test_to_chars<RoundTrip::Sci, float, chars_format::scientific>)->Name("STL_float_scientific_shortest");
+BENCHMARK(test_to_chars<RoundTrip::Sci, double, chars_format::scientific>)->Name("STL_double_scientific_shortest");
+BENCHMARK(test_to_chars<RoundTrip::Fix, float, chars_format::fixed>)->Name("STL_float_fixed_shortest");
+BENCHMARK(test_to_chars<RoundTrip::Fix, double, chars_format::fixed>)->Name("STL_double_fixed_shortest");
+BENCHMARK(test_to_chars<RoundTrip::Gen, float, chars_format::general>)->Name("STL_float_general_shortest");
+BENCHMARK(test_to_chars<RoundTrip::Gen, double, chars_format::general>)->Name("STL_double_general_shortest");
+BENCHMARK(test_to_chars<RoundTrip::Hex, float, chars_format::hex>)->Name("STL_float_hex_shortest");
+BENCHMARK(test_to_chars<RoundTrip::Hex, double, chars_format::hex>)->Name("STL_double_hex_shortest");
+BENCHMARK(test_to_chars<RoundTrip::Sci, float, chars_format::scientific, 8>)->Name("STL_float_scientific_8");
+BENCHMARK(test_to_chars<RoundTrip::Sci, double, chars_format::scientific, 16>)->Name("STL_double_scientific_16");
+BENCHMARK(test_to_chars<RoundTrip::Lossy, float, chars_format::fixed, 6>)->Name("STL_float_fixed_6_lossy");
+BENCHMARK(test_to_chars<RoundTrip::Lossy, double, chars_format::fixed, 6>)->Name("STL_double_fixed_6_lossy");
+BENCHMARK(test_to_chars<RoundTrip::Gen, float, chars_format::general, 9>)->Name("STL_float_general_9");
+BENCHMARK(test_to_chars<RoundTrip::Gen, double, chars_format::general, 17>)->Name("STL_double_general_17");
+BENCHMARK(test_to_chars<RoundTrip::Hex, float, chars_format::hex, 6>)->Name("STL_float_hex_6");
+BENCHMARK(test_to_chars<RoundTrip::Hex, double, chars_format::hex, 13>)->Name("STL_double_hex_13");
 
 BENCHMARK_MAIN();
