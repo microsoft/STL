@@ -492,8 +492,8 @@ public:
             }
             _Right_gbp    = _Grapheme_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
             _Right_ExtPic = _Extended_Pictographic_property_data._Get_property_for_codepoint(*_WrappedIter);
-            // match GB9c and GB11 now, so that we're sure to update it for every character, not just ones where
-            // the rules are considered
+            // match GB9c and GB11 now, so that we're sure to update them for every character,
+            // not just ones where the rules are considered
             const bool _GB9c_Match = _GB9c_rx._Match(_Left_InCB);
             const bool _GB11_Match = _GB11_rx._Match(_Left_gbp, _Left_ExtPic);
             // Also update the number of sequential RIs immediately
