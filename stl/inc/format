@@ -453,7 +453,7 @@ public:
 };
 
 template <class _CharT>
-class _Grapheme_break_property_iterator {
+class _Grapheme_break_property_iterator2 {
 private:
     using _Wrapped_iter_type = _Unicode_codepoint_iterator<_CharT>;
 
@@ -469,14 +469,14 @@ public:
         return _WrappedIter == default_sentinel;
     }
 
-    _NODISCARD constexpr bool operator==(const _Grapheme_break_property_iterator&) const noexcept = default;
+    _NODISCARD constexpr bool operator==(const _Grapheme_break_property_iterator2&) const noexcept = default;
 
-    constexpr _Grapheme_break_property_iterator(const _CharT* _First, const _CharT* _Last)
+    constexpr _Grapheme_break_property_iterator2(const _CharT* _First, const _CharT* _Last)
         : _WrappedIter(_First, _Last) {}
 
-    constexpr _Grapheme_break_property_iterator() = default;
+    constexpr _Grapheme_break_property_iterator2() = default;
 
-    constexpr _Grapheme_break_property_iterator& operator++() noexcept {
+    constexpr _Grapheme_break_property_iterator2& operator++() noexcept {
         auto _Left_gbp     = _Grapheme_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
         auto _Left_InCB    = _Indic_Conjunct_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
         auto _Left_ExtPic  = _Extended_Pictographic_property_data._Get_property_for_codepoint(*_WrappedIter);
@@ -573,7 +573,7 @@ public:
             return *this;
         }
     }
-    constexpr _Grapheme_break_property_iterator operator++(int) noexcept {
+    constexpr _Grapheme_break_property_iterator2 operator++(int) noexcept {
         auto _Old = *this;
         ++*this;
         return _Old;
@@ -2462,7 +2462,7 @@ _NODISCARD _OutputIt _Fmt_write(
 template <class _CharT>
 class _Measure_string_prefix_iterator_utf {
 private:
-    _Grapheme_break_property_iterator<_CharT> _WrappedIter;
+    _Grapheme_break_property_iterator2<_CharT> _WrappedIter;
 
 public:
     using value_type      = int;

@@ -1500,7 +1500,7 @@ const test_case_data<char> test_data<char>[1093] = {{{'\x20', '\x20'}, {0, 1, 2}
 
 void run_unicode_test_data_utf32() {
     for (const auto& test_case : test_data<char32_t>) {
-        _Grapheme_break_property_iterator<char32_t> iter(
+        _Grapheme_break_property_iterator2<char32_t> iter(
             test_case.code_points.data(), test_case.code_points.data() + test_case.code_points.size());
         size_t i = 0;
         while (iter != default_sentinel) {
@@ -1516,10 +1516,10 @@ void run_unicode_test_data_utf32_utf8_comparison() {
     for (size_t i = 0; i < size(test_data<char>); ++i) {
         const auto& utf32_code_points = test_data<char32_t>[i].code_points;
         const auto& utf8_code_points  = test_data<char>[i].code_points;
-        assert(ranges::equal(_Grapheme_break_property_iterator<char32_t>{utf32_code_points.data(),
+        assert(ranges::equal(_Grapheme_break_property_iterator2<char32_t>{utf32_code_points.data(),
                                  utf32_code_points.data() + utf32_code_points.size()},
             default_sentinel,
-            _Grapheme_break_property_iterator<char>{
+            _Grapheme_break_property_iterator2<char>{
                 utf8_code_points.data(), utf8_code_points.data() + utf8_code_points.size()},
             default_sentinel));
     }
@@ -1691,6 +1691,6 @@ int main() {
 
     static_assert(forward_iterator<_Unicode_codepoint_iterator<char>>);
     static_assert(sentinel_for<default_sentinel_t, _Unicode_codepoint_iterator<char>>);
-    static_assert(forward_iterator<_Grapheme_break_property_iterator<char>>);
+    static_assert(forward_iterator<_Grapheme_break_property_iterator2<char>>);
     return 0;
 }
