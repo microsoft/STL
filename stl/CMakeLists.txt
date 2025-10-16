@@ -73,7 +73,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/execution
     ${CMAKE_CURRENT_LIST_DIR}/inc/expected
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/coroutine
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/filesystem
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/generator
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/resumable
     ${CMAKE_CURRENT_LIST_DIR}/inc/filesystem
@@ -83,8 +82,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/functional
     ${CMAKE_CURRENT_LIST_DIR}/inc/future
     ${CMAKE_CURRENT_LIST_DIR}/inc/generator
-    ${CMAKE_CURRENT_LIST_DIR}/inc/hash_map
-    ${CMAKE_CURRENT_LIST_DIR}/inc/hash_set
     ${CMAKE_CURRENT_LIST_DIR}/inc/header-units.json
     ${CMAKE_CURRENT_LIST_DIR}/inc/initializer_list
     ${CMAKE_CURRENT_LIST_DIR}/inc/iomanip

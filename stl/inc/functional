@@ -28,6 +28,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 _STD_BEGIN
 // plus, minus, and multiplies are defined in <xutility>
 
@@ -301,13 +307,13 @@ _STL_RESTORE_DEPRECATED_WARNING
 
 #if _HAS_AUTO_PTR_ETC
 _EXPORT_STD template <class _Arg, class _Result>
-struct unary_function { // base class for unary functions
+struct _NO_SPECIALIZATIONS_CITING("N4140 [depr.base]/1") unary_function { // base class for unary functions
     using argument_type = _Arg;
     using result_type   = _Result;
 };
 
 _EXPORT_STD template <class _Arg1, class _Arg2, class _Result>
-struct binary_function { // base class for binary functions
+struct _NO_SPECIALIZATIONS_CITING("N4140 [depr.base]/1") binary_function { // base class for binary functions
     using first_argument_type  = _Arg1;
     using second_argument_type = _Arg2;
     using result_type          = _Result;
@@ -2008,7 +2014,7 @@ template <class _Tx>
 struct is_placeholder<const volatile _Tx> : is_placeholder<_Tx>::type {}; // ignore cv-qualifiers
 
 _EXPORT_STD template <class _Ty>
-constexpr int is_placeholder_v = is_placeholder<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr int is_placeholder_v = is_placeholder<_Ty>::value;
 
 template <class _Ret, class _Fx, class... _Types>
 class _Binder;
@@ -2029,7 +2035,7 @@ template <class _Tx>
 struct is_bind_expression<const volatile _Tx> : is_bind_expression<_Tx>::type {}; // ignore cv-qualifiers
 
 _EXPORT_STD template <class _Ty>
-constexpr bool is_bind_expression_v = is_bind_expression<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool is_bind_expression_v = is_bind_expression<_Ty>::value;
 
 template <class _Cv_TiD, bool = _Is_specialization_v<remove_cv_t<_Cv_TiD>, reference_wrapper>,
     bool = is_bind_expression_v<_Cv_TiD>, int = is_placeholder_v<_Cv_TiD>>
@@ -3142,23 +3148,11 @@ namespace ranges {
     };
 } // namespace ranges
 #endif // _HAS_CXX20
-
-#if _HAS_TR1_NAMESPACE
-namespace _DEPRECATE_TR1_NAMESPACE tr1 {
-    using _STD bad_function_call;
-    using _STD bind;
-    using _STD function;
-    using _STD is_bind_expression;
-    using _STD is_placeholder;
-    using _STD mem_fn;
-    using _STD swap;
-    namespace placeholders {
-        using namespace _STD placeholders;
-    }
-} // namespace _DEPRECATE_TR1_NAMESPACE tr1
-#endif // _HAS_TR1_NAMESPACE
-
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

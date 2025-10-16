@@ -360,18 +360,23 @@ public:
     _NODISCARD static _CONSTEXPR17 int compare(_In_reads_(_Count) const _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
-#if _HAS_CXX17
-        if (_STD _Is_constant_evaluated()) {
-            if constexpr (is_same_v<_Elem, wchar_t>) {
-                return __builtin_wmemcmp(_First1, _First2, _Count);
+#if _USE_STD_VECTOR_ALGORITHMS
+        if (!_STD _Is_constant_evaluated()) {
+            // TRANSITION, GH-2289: Use vectorized algorithms for better performance than __builtin_wmemcmp.
+            const size_t _Pos = _Mismatch_vectorized<sizeof(_Elem)>(_First1, _First2, _Count);
+            if (_Pos == _Count) {
+                return 0;
             } else {
-                return _Primary_char_traits::compare(_First1, _First2, _Count);
+                return _First1[_Pos] < _First2[_Pos] ? -1 : +1;
             }
         }
-#endif // _HAS_CXX17
+#endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
 
-        return _CSTD wmemcmp(
-            reinterpret_cast<const wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count);
+        if constexpr (is_same_v<_Elem, wchar_t>) {
+            return __builtin_wmemcmp(_First1, _First2, _Count);
+        } else {
+            return _Primary_char_traits::compare(_First1, _First2, _Count);
+        }
     }
 
     _NODISCARD static _CONSTEXPR17 size_t length(_In_z_ const _Elem* _First) noexcept /* strengthened */ {

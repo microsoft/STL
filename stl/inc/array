@@ -420,12 +420,6 @@ public:
 
     using _Library_defined = array;
 
-#if _HAS_TR1_NAMESPACE
-    _DEPRECATE_TR1_NAMESPACE void assign(const _Ty& _Value) {
-        _STD fill_n(_Elems, _Size, _Value);
-    }
-#endif // _HAS_TR1_NAMESPACE
-
     _CONSTEXPR20 void fill(const _Ty& _Value) {
         _STD fill_n(_Elems, _Size, _Value);
     }
@@ -609,10 +603,6 @@ public:
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
     using _Library_defined = array;
-
-#if _HAS_TR1_NAMESPACE
-    _DEPRECATE_TR1_NAMESPACE void assign(const _Ty&) {}
-#endif // _HAS_TR1_NAMESPACE
 
     _CONSTEXPR20 void fill(const _Ty&) {}
 
@@ -896,13 +886,6 @@ _NODISCARD constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept {
         return _STD move(_Arr[_Idx]);
     }
 }
-
-#if _HAS_TR1_NAMESPACE
-namespace _DEPRECATE_TR1_NAMESPACE tr1 {
-    using _STD array;
-    using _STD get;
-} // namespace _DEPRECATE_TR1_NAMESPACE tr1
-#endif // _HAS_TR1_NAMESPACE
 _STD_END
 
 #pragma pop_macro("new")
