@@ -400,6 +400,7 @@ public:
 
         default:
             _STL_INTERNAL_CHECK(false);
+            break;
         }
 
         _State = _Consonant;
