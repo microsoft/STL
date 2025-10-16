@@ -18,6 +18,6 @@ class CustomTestFormat(STLTestFormat):
         elif TestType.RUN in test.testType:
             shared.execFile = outputBase + '.exe'
             cmd = [test.cxx, exeSource, *test.flags, *test.compileFlags, '/Fe' + shared.execFile,
-                   '/link', *test.linkFlags, 'Advapi32.lib', f'/MANIFESTINPUT:{manifestFile}']
+                   '/link', *test.linkFlags, f'/MANIFESTINPUT:{manifestFile}']
 
         yield TestStep(cmd, shared.execDir, shared.env, False)
