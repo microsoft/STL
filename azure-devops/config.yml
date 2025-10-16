@@ -5,10 +5,13 @@
 
 variables:
 - name: poolName
-  value: 'StlBuild-2025-05-16T0735-Pool'
+  value: 'StlBuild-2025-09-09T1526-Pool'
   readonly: true
 - name: poolDemands
   value: 'EnableSpotVM -equals false'
+  readonly: true
+- name: vsDevCmdBat
+  value: '%ProgramFiles%\Microsoft Visual Studio\18\Insiders\Common7\Tools\VsDevCmd.bat'
   readonly: true
 - name: tmpDir
   value: 'C:\stlTemp'

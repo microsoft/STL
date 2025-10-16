@@ -3,6 +3,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// ********************************************************************************************************************
+// * This was previously shipped in product code as <experimental/filesystem>.                                        *
+// * It's now preserved in cryostasis for test code to exercise functions that are retained for binary compatibility. *
+// * This file should generally not be changed, except to fix compiler warnings/errors and to update clang-format.    *
+// ********************************************************************************************************************
+
 #ifndef _EXPERIMENTAL_FILESYSTEM_
 #define _EXPERIMENTAL_FILESYSTEM_
 #include <yvals_core.h>
@@ -31,10 +37,6 @@ You can define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING to suppress 
 
 #pragma warning(disable : 4365) // conversion from 'type_1' to 'type_2', signed/unsigned mismatch (/Wall)
 
-#ifndef _FS_DLL
-#define _FS_DLL extern "C" _CRTIMP2_PURE
-#endif // !defined(_FS_DLL)
-
 #define _MAX_FILESYS_NAME 260 // longest Windows or Posix filename + 1
 
 #define _FS_BEGIN              \
@@ -50,7 +52,6 @@ You can define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING to suppress 
 #define _FSPFX _STD experimental::filesystem::v1::
 
 _FS_BEGIN
-using _Pchar = wchar_t; // UTF16
 #define _FS_ISSEP(x) ((x) == L'/' || (x) == L'\\')
 #define _FS_PREF     L'\\'
 
@@ -161,34 +162,36 @@ struct space_info { // space information for a file
 };
 
 // wide filenames
-_FS_DLL void* __CLRCALL_PURE_OR_CDECL _Open_dir(
+extern "C" _CRTIMP2_PURE void* __CLRCALL_PURE_OR_CDECL _Open_dir(
     wchar_t (&)[_MAX_FILESYS_NAME], const wchar_t*, int&, file_type&) noexcept;
-_FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(wchar_t (&)[_MAX_FILESYS_NAME], void*, file_type&) noexcept;
-_FS_DLL void __CLRCALL_PURE_OR_CDECL _Close_dir(void*) noexcept;
-_FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_get(wchar_t (&)[_MAX_FILESYS_NAME]) noexcept;
-_FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_set(const wchar_t*) noexcept;
-_FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Symlink_get(wchar_t (&)[_MAX_FILESYS_NAME], const wchar_t*) noexcept;
-_FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Temp_get(wchar_t (&)[_MAX_FILESYS_NAME]) noexcept;
+extern "C" _CRTIMP2_PURE wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(
+    wchar_t (&)[_MAX_FILESYS_NAME], void*, file_type&) noexcept;
+extern "C" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Close_dir(void*) noexcept;
+extern "C" _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL _Current_get(wchar_t (&)[_MAX_FILESYS_NAME]) noexcept;
+extern "C" _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL _Current_set(const wchar_t*) noexcept;
+extern "C" _CRTIMP2_PURE wchar_t* __CLRCALL_PURE_OR_CDECL _Symlink_get(
+    wchar_t (&)[_MAX_FILESYS_NAME], const wchar_t*) noexcept;
+extern "C" _CRTIMP2_PURE wchar_t* __CLRCALL_PURE_OR_CDECL _Temp_get(wchar_t (&)[_MAX_FILESYS_NAME]) noexcept;
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Make_dir(const wchar_t*, const wchar_t*) noexcept;
-_FS_DLL bool __CLRCALL_PURE_OR_CDECL _Remove_dir(const wchar_t*) noexcept;
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Make_dir(const wchar_t*, const wchar_t*) noexcept;
+extern "C" _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL _Remove_dir(const wchar_t*) noexcept;
 
-_FS_DLL file_type __CLRCALL_PURE_OR_CDECL _Stat(const wchar_t*, perms*) noexcept;
-_FS_DLL file_type __CLRCALL_PURE_OR_CDECL _Lstat(const wchar_t*, perms*) noexcept;
-_FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t*) noexcept;
-_FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _Hard_links(const wchar_t*) noexcept;
-_FS_DLL int64_t __CLRCALL_PURE_OR_CDECL _Last_write_time(const wchar_t*) noexcept;
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Set_last_write_time(const wchar_t*, int64_t) noexcept;
-_FS_DLL space_info __CLRCALL_PURE_OR_CDECL _Statvfs(const wchar_t*) noexcept;
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(const wchar_t*, const wchar_t*) noexcept;
+extern "C" _CRTIMP2_PURE file_type __CLRCALL_PURE_OR_CDECL _Stat(const wchar_t*, perms*) noexcept;
+extern "C" _CRTIMP2_PURE file_type __CLRCALL_PURE_OR_CDECL _Lstat(const wchar_t*, perms*) noexcept;
+extern "C" _CRTIMP2_PURE uintmax_t __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t*) noexcept;
+extern "C" _CRTIMP2_PURE uintmax_t __CLRCALL_PURE_OR_CDECL _Hard_links(const wchar_t*) noexcept;
+extern "C" _CRTIMP2_PURE int64_t __CLRCALL_PURE_OR_CDECL _Last_write_time(const wchar_t*) noexcept;
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Set_last_write_time(const wchar_t*, int64_t) noexcept;
+extern "C" _CRTIMP2_PURE space_info __CLRCALL_PURE_OR_CDECL _Statvfs(const wchar_t*) noexcept;
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Equivalent(const wchar_t*, const wchar_t*) noexcept;
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t*, const wchar_t*) noexcept;
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Symlink(const wchar_t*, const wchar_t*) noexcept;
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Rename(const wchar_t*, const wchar_t*) noexcept;
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Resize(const wchar_t*, uintmax_t) noexcept;
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Unlink(const wchar_t*) noexcept;
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t*, const wchar_t*) noexcept;
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Chmod(const wchar_t*, perms) noexcept;
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t*, const wchar_t*) noexcept;
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Symlink(const wchar_t*, const wchar_t*) noexcept;
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Rename(const wchar_t*, const wchar_t*) noexcept;
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Resize(const wchar_t*, uintmax_t) noexcept;
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Unlink(const wchar_t*) noexcept;
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t*, const wchar_t*) noexcept;
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Chmod(const wchar_t*, perms) noexcept;
 
 template <class _Inchar, class _Outchar, class _Outtraits = char_traits<_Outchar>,
     class _Outalloc = allocator<_Outchar>>
@@ -267,8 +270,8 @@ struct _Path_cvt<char32_t, char, _Outtraits,
     }
 };
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _To_byte(const wchar_t*, char*) noexcept;
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _To_wide(const char*, wchar_t*) noexcept;
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _To_byte(const wchar_t*, char*) noexcept;
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _To_wide(const char*, wchar_t*) noexcept;
 
 template <class _Outtraits, class _Outalloc>
 struct _Path_cvt<char, wchar_t, _Outtraits,
@@ -723,7 +726,7 @@ private:
 
 class path { // stores a pathname
 public:
-    using value_type  = _Pchar;
+    using value_type  = wchar_t;
     using string_type = basic_string<value_type>;
 
     static constexpr value_type preferred_separator = _FS_PREF;
@@ -1264,7 +1267,7 @@ template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
 _NODISCARD path u8path(_InIt _First, _InIt _Last) { // make path from [_First, _Last) UTF8, given iterators
     string _Str(_First, _Last);
     path::string_type _Str_out;
-    return path{_Path_cvt<_Char8_t, _Pchar>::_Cvt(_Str_out, _Str.c_str(), _Str.size())};
+    return path{_Path_cvt<_Char8_t, wchar_t>::_Cvt(_Str_out, _Str.c_str(), _Str.size())};
 }
 
 template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
@@ -1275,13 +1278,13 @@ _NODISCARD path u8path(_InIt _First) { // make path from NTBS UTF8, given iterat
     }
 
     path::string_type _Str_out;
-    return path{_Path_cvt<_Char8_t, _Pchar>::_Cvt(_Str_out, _Str.c_str(), _Str.size())};
+    return path{_Path_cvt<_Char8_t, wchar_t>::_Cvt(_Str_out, _Str.c_str(), _Str.size())};
 }
 
 template <class _Traits, class _Alloc>
 _NODISCARD path u8path(const basic_string<char, _Traits, _Alloc>& _Str) { // make path from arbitrary char string UTF8
     path::string_type _Str_out;
-    return path{_Path_cvt<_Char8_t, _Pchar>::_Cvt(_Str_out, _Str.c_str(), _Str.size())};
+    return path{_Path_cvt<_Char8_t, wchar_t>::_Cvt(_Str_out, _Str.c_str(), _Str.size())};
 }
 
 class _NODISCARD filesystem_error : public system_error { // base of all filesystem-error exceptions
@@ -2150,7 +2153,7 @@ _NODISCARD inline path current_path() {
 
 _NODISCARD inline path current_path(error_code& _Code) {
     _Code.clear();
-    _Pchar _Dest[_MAX_FILESYS_NAME];
+    wchar_t _Dest[_MAX_FILESYS_NAME];
     if (!_Current_get(_Dest)) { // report error
         _Code = make_error_code(errc::operation_not_permitted);
         return {};
@@ -2386,7 +2389,7 @@ _NODISCARD inline file_time_type last_write_time(const path& _Path, error_code& 
     _Code.clear();
     if (_Ticks == -1) { // report error
         _Code = make_error_code(errc::operation_not_permitted);
-        return (file_time_type::min)();
+        return (file_time_type::min) ();
     }
     return file_time_type(chrono::system_clock::duration(_Ticks));
 }
@@ -2456,7 +2459,7 @@ _NODISCARD inline path read_symlink(const path& _Path,
         _Code = make_error_code(errc::no_such_file_or_directory);
         return {};
     }
-    _Pchar _Dest[_MAX_FILESYS_NAME];
+    wchar_t _Dest[_MAX_FILESYS_NAME];
     return path{_Symlink_get(_Dest, _Path.c_str())};
 }
 
@@ -2675,7 +2678,7 @@ _NODISCARD inline path temp_directory_path() {
 }
 
 _NODISCARD inline path temp_directory_path(error_code& _Code) {
-    _Pchar _Dest[_MAX_FILESYS_NAME];
+    wchar_t _Dest[_MAX_FILESYS_NAME];
     _Temp_get(_Dest);
     path _Ans(_Dest);
 

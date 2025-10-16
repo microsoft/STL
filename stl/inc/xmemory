@@ -27,7 +27,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 // TRANSITION, non-_Ugly attribute tokens
 #pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
 #undef msvc
+#undef no_specializations
 
 #if _USE_STD_VECTOR_ALGORITHMS
 extern "C" {
@@ -127,7 +129,7 @@ _NODISCARD constexpr size_t _Get_size_of_n(const size_t _Count) {
 }
 
 template <class _Ty>
-constexpr size_t _New_alignof = (_STD max)(alignof(_Ty), __STDCPP_DEFAULT_NEW_ALIGNMENT__);
+constexpr size_t _New_alignof = (_STD max) (alignof(_Ty), __STDCPP_DEFAULT_NEW_ALIGNMENT__);
 
 #ifdef __clang__ // Clang and MSVC implement P0784R7 differently; see GH-1532
 #define _CLANG_CONSTEXPR20 _CONSTEXPR20
@@ -244,7 +246,7 @@ __declspec(allocator) _CONSTEXPR20 void* _Allocate(const size_t _Bytes) {
 #if defined(_M_IX86) || defined(_M_X64)
         if (_Bytes >= _Big_allocation_threshold) {
             // boost the alignment of big allocations to help autovectorization
-            _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
+            _Passed_align = (_STD max) (_Align, _Big_allocation_alignment);
         }
 #endif // defined(_M_IX86) || defined(_M_X64)
         return _Traits::_Allocate_aligned(_Bytes, _Passed_align);
@@ -277,7 +279,7 @@ _CONSTEXPR20 void _Deallocate(void* _Ptr, size_t _Bytes) noexcept {
 #if defined(_M_IX86) || defined(_M_X64)
         if (_Bytes >= _Big_allocation_threshold) {
             // boost the alignment of big allocations to help autovectorization
-            _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
+            _Passed_align = (_STD max) (_Align, _Big_allocation_alignment);
         }
 #endif // defined(_M_IX86) || defined(_M_X64)
         ::operator delete(_Ptr, _Bytes, align_val_t{_Passed_align});
@@ -555,7 +557,7 @@ struct allocation_result {
 #endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Alloc>
-struct allocator_traits;
+struct _NO_SPECIALIZATIONS_CITING("N5014 [allocator.traits.general]/1") allocator_traits;
 
 _STL_DISABLE_DEPRECATED_WARNING
 template <class _Alloc>
@@ -756,8 +758,9 @@ struct _Default_allocator_traits { // traits for std::allocator
 };
 
 _EXPORT_STD template <class _Alloc>
-struct allocator_traits : conditional_t<_Is_default_allocator<_Alloc>::value, _Default_allocator_traits<_Alloc>,
-                              _Normal_allocator_traits<_Alloc>> {};
+struct _NO_SPECIALIZATIONS_CITING("N5014 [allocator.traits.general]/1") allocator_traits
+    : conditional_t<_Is_default_allocator<_Alloc>::value, _Default_allocator_traits<_Alloc>,
+          _Normal_allocator_traits<_Alloc>> {};
 
 // _Choose_pocca_v returns whether an attempt to propagate allocators is necessary in copy assignment operations.
 // Note that even when false_type, callers should call _Pocca as we want to assign allocators even when equal.
@@ -929,8 +932,8 @@ constexpr size_t _Container_allocation_minimum_asan_alignment = alignof(typename
 template <class _Container>
 constexpr size_t _Container_allocation_minimum_asan_alignment<_Container,
     void_t<decltype(_Container::allocator_type::_Minimum_asan_allocation_alignment)>> =
-    (_STD max)(
-        alignof(typename _Container::value_type), _Container::allocator_type::_Minimum_asan_allocation_alignment);
+    (_STD max) (alignof(typename _Container::value_type),
+        _Container::allocator_type::_Minimum_asan_allocation_alignment);
 
 _EXPORT_STD template <class _Ty>
 class allocator {
@@ -962,7 +965,7 @@ public:
 
 #if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     template <class _Other>
-    struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS rebind {
+    struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES rebind {
         using other = allocator<_Other>;
     };
 
@@ -1035,7 +1038,7 @@ public:
     using const_pointer _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = const void*;
 
     template <class _Other>
-    struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS rebind {
+    struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES rebind {
         using other = allocator<_Other>;
     };
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
@@ -1782,7 +1785,7 @@ namespace ranges {
         const auto _ILast_ch    = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILastPtr));
         const auto _OFirst_ch   = const_cast<char*>(reinterpret_cast<const volatile char*>(_OFirstPtr));
         const auto _OLast_ch    = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLastPtr));
-        const auto _Count_bytes = static_cast<size_t>((_STD min)(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
+        const auto _Count_bytes = static_cast<size_t>((_STD min) (_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
         _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count_bytes);
         if constexpr (is_pointer_v<_InIt>) {
             _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count_bytes);
@@ -2395,7 +2398,7 @@ _CONSTEXPR20 typename _Container::size_type _Erase_remove(_Container& _Cont, con
     const auto _Old_size = _Cont.size();
     _STD _Seek_wrapped(_First, _STD remove(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _Val));
     _Cont.erase(_First, _Last);
-    return _Old_size - _Cont.size();
+    return static_cast<typename _Container::size_type>(_Old_size - _Cont.size());
 }
 
 template <class _Container, class _Pr>
@@ -2406,7 +2409,7 @@ _CONSTEXPR20 typename _Container::size_type _Erase_remove_if(_Container& _Cont, 
     const auto _Old_size = _Cont.size();
     _STD _Seek_wrapped(_First, _STD remove_if(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _Pred));
     _Cont.erase(_First, _Last);
-    return _Old_size - _Cont.size();
+    return static_cast<typename _Container::size_type>(_Old_size - _Cont.size());
 }
 
 template <class _Container, class _Pr>
@@ -2770,8 +2773,7 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
     auto _UVal_trunc = _UVal;
 #else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
 
-    constexpr bool _Big_uty = sizeof(_UTy) > 4;
-    if constexpr (_Big_uty) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
+    if constexpr (sizeof(_UTy) > 4) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
         while (_UVal > 0xFFFFFFFFU) {
             auto _UVal_chunk = static_cast<unsigned long>(_UVal % 1000000000);
             _UVal /= 1000000000;
@@ -2813,6 +2815,7 @@ _STD_END
 #endif // ^^^ !_HAS_CXX20 ^^^
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("msvc")
 
 #pragma pop_macro("new")

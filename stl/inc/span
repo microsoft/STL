@@ -465,8 +465,6 @@ public:
         return _Mydata[_Off];
     }
 
-#pragma warning(push)
-#pragma warning(disable : 4127) // conditional expression is constant
     _NODISCARD constexpr reference front() const noexcept /* strengthened */ {
 #if _MSVC_STL_HARDENING_SPAN || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mysize > 0, "front() called on empty span");
@@ -482,7 +480,6 @@ public:
 
         return _Mydata[_Mysize - 1];
     }
-#pragma warning(pop)
 
     _NODISCARD constexpr pointer data() const noexcept {
         return _Mydata;

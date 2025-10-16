@@ -73,7 +73,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/execution
     ${CMAKE_CURRENT_LIST_DIR}/inc/expected
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/coroutine
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/filesystem
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/generator
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/resumable
     ${CMAKE_CURRENT_LIST_DIR}/inc/filesystem
@@ -83,8 +82,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/functional
     ${CMAKE_CURRENT_LIST_DIR}/inc/future
     ${CMAKE_CURRENT_LIST_DIR}/inc/generator
-    ${CMAKE_CURRENT_LIST_DIR}/inc/hash_map
-    ${CMAKE_CURRENT_LIST_DIR}/inc/hash_set
     ${CMAKE_CURRENT_LIST_DIR}/inc/header-units.json
     ${CMAKE_CURRENT_LIST_DIR}/inc/initializer_list
     ${CMAKE_CURRENT_LIST_DIR}/inc/iomanip
@@ -415,17 +412,28 @@ set(CMAKE_STATIC_LINKER_FLAGS "/WX")
 set(CMAKE_STATIC_LINKER_FLAGS_DEBUG "")
 set(CMAKE_STATIC_LINKER_FLAGS_RELEASE "")
 set(CMAKE_SHARED_LINKER_FLAGS "/DEBUG:FULL /WX /RELEASE /SUBSYSTEM:Console /NODEFAULTLIB /INCREMENTAL:NO /MANIFEST:NO /DLL /profile /guard:cf /DEBUGTYPE:cv,fixup /LARGEADDRESSAWARE")
+if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /CETCOMPAT")
+endif()
+if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(x64|arm64|arm64ec)$")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /guard:ehcont")
+endif()
+if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(arm64|arm64ec)$")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /guard:delayloadsignret")
+endif()
 set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "")
 
 # Toolset options must appear before add_library() for the options to take effect.
-add_compile_definitions(_CRTBLD _VCRT_ALLOW_INTERNALS _HAS_OLD_IOSTREAMS_MEMBERS=1)
+add_compile_definitions(_CRTBLD _HAS_OLD_IOSTREAMS_MEMBERS=1)
 
 # /Z7 for MSVC, /Zi for MASM
 set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
 
 add_compile_options(/nologo /WX /Gy
     "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Zp8;/std:c++latest;/permissive-;/Zc:preprocessor;/Zc:threadSafeInit-;/Zl>"
+    "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<IN_LIST:${VCLIBS_TARGET_ARCHITECTURE},x64;arm64;arm64ec>>:/guard:ehcont>"
+    "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<IN_LIST:${VCLIBS_TARGET_ARCHITECTURE},arm64;arm64ec>>:/guard:signret>"
     "$<$<COMPILE_LANGUAGE:ASM_MASM>:/W3;/quiet>"
 )
 

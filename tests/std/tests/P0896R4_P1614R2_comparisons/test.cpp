@@ -84,21 +84,30 @@ struct three_way_archetype {
     three_way_archetype(three_way_archetype const&)            = delete;
     three_way_archetype& operator=(three_way_archetype const&) = delete;
     ~three_way_archetype()                                     = delete;
-    // clang-format off
     // 0: not equality_comparable
-    bool operator==(three_way_archetype const&) const requires (I == 0) = delete;
-    bool operator==(three_way_archetype const&) const requires (I != 0);
+    bool operator==(three_way_archetype const&) const
+        requires (I == 0)
+    = delete;
+    bool operator==(three_way_archetype const&) const
+        requires (I != 0);
     // 1: not totally_ordered
-    bool operator<(three_way_archetype const&) const requires (I == 1) = delete;
-    bool operator<(three_way_archetype const&) const requires (I != 1);
-    bool operator>(three_way_archetype const&) const requires (I != 1);
-    bool operator<=(three_way_archetype const&) const requires (I != 1);
-    bool operator>=(three_way_archetype const&) const requires (I != 1);
+    bool operator<(three_way_archetype const&) const
+        requires (I == 1)
+    = delete;
+    bool operator<(three_way_archetype const&) const
+        requires (I != 1);
+    bool operator>(three_way_archetype const&) const
+        requires (I != 1);
+    bool operator<=(three_way_archetype const&) const
+        requires (I != 1);
+    bool operator>=(three_way_archetype const&) const
+        requires (I != 1);
     // 2: <=> isn't defined
-    Category operator<=>(three_way_archetype const&) const requires (I != 2 && I != 3);
+    Category operator<=>(three_way_archetype const&) const
+        requires (I != 2 && I != 3);
     // 3: <=> doesn't return a comparison category type
-    int operator<=>(three_way_archetype const&) const requires (I == 3);
-    // clang-format on
+    int operator<=>(three_way_archetype const&) const
+        requires (I == 3);
 };
 constexpr int three_way_archetype_max = 4;
 
@@ -425,13 +434,8 @@ constexpr void ordering_test_cases() {
 
     derived const some_deriveds[2] = {};
     test_strongly_ordered(&some_deriveds[0], &some_deriveds[1]);
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1168721
-    if (!std::is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-    {
-        test_strongly_ordered(static_cast<base const*>(&some_deriveds[0]), &some_deriveds[1]);
-        test_strongly_ordered(&some_deriveds[0], static_cast<base const*>(&some_deriveds[1]));
-    }
+    test_strongly_ordered(static_cast<base const*>(&some_deriveds[0]), &some_deriveds[1]);
+    test_strongly_ordered(&some_deriveds[0], static_cast<base const*>(&some_deriveds[1]));
 
     if (!std::is_constant_evaluated()) {
         test_strongly_ordered(&some_ints[0], static_cast<void const*>(&some_ints[1]));

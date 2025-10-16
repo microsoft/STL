@@ -1,13 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 #include <array>
 #include <cassert>
 #include <deque>
 #include <forward_list>
-#include <hash_map>
-#include <hash_set>
 #include <list>
 #include <map>
 #include <memory>
@@ -151,15 +148,11 @@ int main() {
     vb.push_back(false);
     assert_range_for(vb);
 
-    test_case_set_container<hash_multiset>();
-    test_case_set_container<hash_set>();
     test_case_set_container<multiset>();
     test_case_set_container<set>();
     test_case_set_container<unordered_multiset>();
     test_case_set_container<unordered_set>();
 
-    test_case_map_container<hash_map>();
-    test_case_map_container<hash_multimap>();
     test_case_map_container<map>();
     test_case_map_container<multimap>();
     test_case_map_container<unordered_map>();

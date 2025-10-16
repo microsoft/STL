@@ -61,6 +61,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 _STD_BEGIN
 _EXPORT_STD template <class, class>
 class vector;
@@ -93,7 +99,7 @@ template <class _CharT>
 class _Compile_time_parse_context;
 
 _EXPORT_STD template <class _CharT>
-class basic_format_parse_context {
+class _NO_SPECIALIZATIONS_CITING("N5014 [format.parse.ctx]/2") basic_format_parse_context {
 public:
     using char_type      = _CharT;
     using const_iterator = basic_string_view<_CharT>::const_iterator;
@@ -229,7 +235,7 @@ struct _Format_handler;
 _FMT_P2286_END
 
 _EXPORT_STD template <class _Context>
-class basic_format_arg {
+class _NO_SPECIALIZATIONS_CITING("N5014 [format.arg]/2") basic_format_arg {
 public:
     using _CharType = _Context::char_type;
 
@@ -239,19 +245,20 @@ public:
         void(__cdecl* _Format)(basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx, const void*);
 
         template <class _Ty>
-        explicit handle(_Ty& _Val) noexcept
-            : _Ptr(_STD addressof(_Val)), _Format([](basic_format_parse_context<_CharType>& _Parse_ctx,
-                                                      _Context& _Format_ctx, const void* _Ptr) _STATIC_LAMBDA {
-                  using _Td = remove_const_t<_Ty>;
-                  // doesn't drop const-qualifier per an unnumbered LWG issue
-                  using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
-                  _STL_INTERNAL_STATIC_ASSERT(_Formattable_with<_Tq, _Context>);
+        static void __cdecl _Handle_format(
+            basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx, const void* _Ptr) {
+            using _Td = remove_const_t<_Ty>;
+            // doesn't drop const-qualifier per an unnumbered LWG issue
+            using _Tq = conditional_t<_Formattable_with<const _Ty, _Context>, const _Ty, _Ty>;
+            _STL_INTERNAL_STATIC_ASSERT(_Formattable_with<_Tq, _Context>);
 
-                  typename _Context::template formatter_type<_Td> _Formatter;
-                  _Parse_ctx.advance_to(_Formatter.parse(_Parse_ctx));
-                  _Format_ctx.advance_to(
-                      _Formatter.format(*const_cast<_Tq*>(static_cast<const _Td*>(_Ptr)), _Format_ctx));
-              }) {}
+            typename _Context::template formatter_type<_Td> _Formatter;
+            _Parse_ctx.advance_to(_Formatter.parse(_Parse_ctx));
+            _Format_ctx.advance_to(_Formatter.format(*const_cast<_Tq*>(static_cast<const _Td*>(_Ptr)), _Format_ctx));
+        }
+
+        template <class _Ty>
+        explicit handle(_Ty& _Val) noexcept : _Ptr(_STD addressof(_Val)), _Format(_Handle_format<_Ty>) {}
 
     public:
         void format(basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx) const {
@@ -264,8 +271,7 @@ public:
         }
     };
 
-#if defined(__clang__) || defined(__EDG__) \
-    || defined(__CUDACC__) // TRANSITION, LLVM-81774 (Clang), VSO-1956558 (EDG), VSO-2411436 (needed by CUDA 12.8.1)
+#if defined(__clang__) || defined(__CUDACC__) // TRANSITION, LLVM-81774 (Clang), VSO-2411436 (needed by CUDA 12.8.1)
     basic_format_arg() noexcept : _Active_state(_Basic_format_arg_type::_None), _No_state() {}
 #else // ^^^ workaround / no workaround vvv
     basic_format_arg() noexcept = default;
@@ -636,7 +642,7 @@ public:
 private:
     template <class _Ty>
     _NODISCARD static auto _Get_value_from_memory(const unsigned char* const _Val) noexcept {
-        auto& _Temp = *reinterpret_cast<const unsigned char(*)[sizeof(_Ty)]>(_Val);
+        auto& _Temp = *reinterpret_cast<const unsigned char (*)[sizeof(_Ty)]>(_Val);
         return _STD bit_cast<_Ty>(_Temp);
     }
 
@@ -674,7 +680,7 @@ public:
 
 _EXPORT_STD template <class _Out, class _CharT>
     requires output_iterator<_Out, const _CharT&>
-class basic_format_context {
+class _NO_SPECIALIZATIONS_CITING("N5014 [format.context]/2") basic_format_context {
 private:
     _Out _OutputIt;
     basic_format_args<basic_format_context> _Args;
@@ -1255,6 +1261,10 @@ template <_Format_supported_charT _CharT, class... _Types>
 struct formatter<tuple<_Types...>, _CharT> : _Tuple_formatter_base<tuple<_Types...>, _CharT> {};
 #endif // _HAS_CXX23
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

@@ -170,6 +170,10 @@ _EMIT_STL_ERROR(STL1006, "_CONTAINER_DEBUG_LEVEL has been removed. It was supers
 #define _MSVC_STL_HARDENING_ARRAY _MSVC_STL_HARDENING
 #endif
 
+#ifndef _MSVC_STL_HARDENING_BASIC_STACKTRACE
+#define _MSVC_STL_HARDENING_BASIC_STACKTRACE _MSVC_STL_HARDENING
+#endif
+
 #ifndef _MSVC_STL_HARDENING_BASIC_STRING
 #define _MSVC_STL_HARDENING_BASIC_STRING _MSVC_STL_HARDENING
 #endif
@@ -180,6 +184,14 @@ _EMIT_STL_ERROR(STL1006, "_CONTAINER_DEBUG_LEVEL has been removed. It was supers
 
 #ifndef _MSVC_STL_HARDENING_BITSET
 #define _MSVC_STL_HARDENING_BITSET _MSVC_STL_HARDENING
+#endif
+
+#ifndef _MSVC_STL_HARDENING_COMMON_ITERATOR
+#define _MSVC_STL_HARDENING_COMMON_ITERATOR _MSVC_STL_HARDENING
+#endif
+
+#ifndef _MSVC_STL_HARDENING_COUNTED_ITERATOR
+#define _MSVC_STL_HARDENING_COUNTED_ITERATOR _MSVC_STL_HARDENING
 #endif
 
 #ifndef _MSVC_STL_HARDENING_DEQUE
@@ -208,6 +220,10 @@ _EMIT_STL_ERROR(STL1006, "_CONTAINER_DEBUG_LEVEL has been removed. It was supers
 
 #ifndef _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE
 #define _MSVC_STL_HARDENING_RANGES_VIEW_INTERFACE _MSVC_STL_HARDENING
+#endif
+
+#ifndef _MSVC_STL_HARDENING_SHARED_PTR_ARRAY
+#define _MSVC_STL_HARDENING_SHARED_PTR_ARRAY _MSVC_STL_HARDENING
 #endif
 
 #ifndef _MSVC_STL_HARDENING_SPAN
@@ -253,7 +269,9 @@ _EMIT_STL_ERROR(STL1008, "_STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER has been 
 #define _MSVC_STL_DOOM_FUNCTION(mesg) ::_invoke_watson(nullptr, nullptr, nullptr, 0, 0)
 #else // Use the MSVC __fastfail intrinsic:
 extern "C" __declspec(noreturn) void __fastfail(unsigned int); // declared by <intrin.h>
-#define _MSVC_STL_DOOM_FUNCTION(mesg) __fastfail(5) // __fastfail(FAST_FAIL_INVALID_ARG), value defined by <winnt.h>
+#define _MSVC_STL_DOOM_FUNCTION(mesg)                                                  \
+    __fastfail(5); /* __fastfail(FAST_FAIL_INVALID_ARG), value defined by <winnt.h> */ \
+    _STL_UNREACHABLE /* TRANSITION, DevCom-10914110 */
 #endif // choose "doom function"
 #endif // ^^^ !defined(_MSVC_STL_DOOM_FUNCTION) ^^^
 

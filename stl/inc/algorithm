@@ -8,6 +8,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <__msvc_heap_algorithms.hpp>
+#include <__msvc_int128.hpp>
 #include <__msvc_minmax.hpp>
 #include <xmemory>
 
@@ -395,6 +396,7 @@ _STD_BEGIN
     static_assert(_Is_ranges_bidi_iter_v<_Iter>, "This algorithm requires bidirectional iterators or stronger.")
 
 _INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
+// If _ISORT_MAX is ever changed from 32 == 2^5, re-analyze the implementation of stable_sort for integer overflow.
 
 template <class _It>
 constexpr _Iter_diff_t<_It> _Isort_max{_ISORT_MAX};
@@ -403,13 +405,13 @@ template <class _Diff>
 constexpr ptrdiff_t _Temporary_buffer_size(const _Diff _Value) noexcept {
     // convert an iterator difference_type to a ptrdiff_t for use in temporary buffers
     using _CT = common_type_t<ptrdiff_t, _Diff>;
-    return static_cast<ptrdiff_t>((_STD min)(static_cast<_CT>(PTRDIFF_MAX), static_cast<_CT>(_Value)));
+    return static_cast<ptrdiff_t>((_STD min) (static_cast<_CT>(PTRDIFF_MAX), static_cast<_CT>(_Value)));
 }
 
 template <class _Ty>
 struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like attempt
     static constexpr size_t _Optimistic_size  = 4096; // default to ~1 page
-    static constexpr size_t _Optimistic_count = (_STD max)(static_cast<size_t>(1), _Optimistic_size / sizeof(_Ty));
+    static constexpr size_t _Optimistic_count = (_STD max) (static_cast<size_t>(1), _Optimistic_size / sizeof(_Ty));
 
     template <class _Diff>
     explicit _Optimistic_temporary_buffer(const _Diff _Requested_size) noexcept { // get temporary storage
@@ -883,7 +885,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InI
     const auto _ULast1 = _STD _Get_unwrapped(_Last1);
     auto _UFirst2      = _STD _Get_unwrapped_n(_First2, _STD _Idl_distance<_InIt1>(_UFirst1, _ULast1));
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
+    if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
         if (!_STD _Is_constant_evaluated()) {
             constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
 
@@ -944,10 +946,10 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
         using _CT         = _Common_diff_t<_InIt1, _InIt2>;
         const _CT _Count1 = _ULast1 - _UFirst1;
         const _CT _Count2 = _ULast2 - _UFirst2;
-        const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min)(_Count1, _Count2));
+        const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min) (_Count1, _Count2));
         _ULast1           = _UFirst1 + _Count;
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
+        if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
             if (!_STD _Is_constant_evaluated()) {
                 constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
 
@@ -2274,8 +2276,8 @@ namespace ranges {
                 _First = _STD move(_Mid);
                 ++_First;
 
-                using _Uty = _Make_unsigned_like_t<iter_difference_t<_It>>;
-                if (static_cast<_Uty>(_Skip) <= (static_cast<_Uty>(-1) >> 1)) {
+                constexpr auto _Half_max = (numeric_limits<iter_difference_t<_It>>::max)() / 2;
+                if (_Skip <= _Half_max) {
                     _Skip <<= 1;
                 }
             }
@@ -3966,7 +3968,7 @@ namespace ranges {
                 const auto _First2_addr   = _STD to_address(_First2);
                 if constexpr (_Is_sized1 && _Is_sized2) {
                     const size_t _Count =
-                        (_STD min)(static_cast<size_t>(_Last1 - _First1), static_cast<size_t>(_Last2 - _First2));
+                        (_STD min) (static_cast<size_t>(_Last1 - _First1), static_cast<size_t>(_Last2 - _First2));
                     const auto _Last1_addr = _First1_addr + _Count;
                     ::__std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
                     return {_First1 + static_cast<iter_difference_t<_It1>>(_Count),
@@ -5952,60 +5954,87 @@ namespace ranges {
 #endif // _HAS_CXX17
 
 template <class _Diff, class _Urng>
-class _Rng_from_urng { // wrap a URNG as an RNG
+class _Rng_from_urng_v2 { // wrap a URNG as an RNG
 public:
     using _Ty0 = make_unsigned_t<_Diff>;
     using _Ty1 = _Invoke_result_t<_Urng&>;
 
-    using _Udiff = conditional_t<sizeof(_Ty1) < sizeof(_Ty0), _Ty0, _Ty1>;
+    using _Udiff                              = conditional_t<sizeof(_Ty1) < sizeof(_Ty0), _Ty0, _Ty1>;
+    static constexpr unsigned int _Udiff_bits = sizeof(_Udiff) * CHAR_BIT;
+    using _Uprod = conditional_t<_Udiff_bits <= 16, uint32_t, conditional_t<_Udiff_bits <= 32, uint64_t, _Unsigned128>>;
 
-    explicit _Rng_from_urng(_Urng& _Func)
-        : _Ref(_Func), _Bits(CHAR_BIT * sizeof(_Udiff)), _Bmask(static_cast<_Udiff>(-1)) {
-        for (; static_cast<_Udiff>((_Urng::max)() - (_Urng::min)()) < _Bmask; _Bmask >>= 1) {
-            --_Bits;
-        }
-    }
+    explicit _Rng_from_urng_v2(_Urng& _Func) noexcept : _Ref(_Func) {}
 
     _Diff operator()(_Diff _Index) { // adapt _Urng closed range to [0, _Index)
-        for (;;) { // try a sample random value
-            _Udiff _Ret  = 0; // random bits
-            _Udiff _Mask = 0; // 2^N - 1, _Ret is within [0, _Mask]
+        // From Daniel Lemire, "Fast Random Integer Generation in an Interval",
+        // ACM Trans. Model. Comput. Simul. 29 (1), 2019.
+        //
+        // Algorithm 5 <-> This Code:
+        //   m <-> _Product
+        //   l <-> _Rem
+        //   s <-> _Index
+        //   t <-> _Threshold
+        //   L <-> _Generated_bits
+        //   2^L - 1 <-> _Mask
 
-            while (_Mask < static_cast<_Udiff>(_Index - 1)) { // need more random bits
-                _Ret <<= _Bits - 1; // avoid full shift
-                _Ret <<= 1;
-                _Ret |= _Get_bits();
-                _Mask <<= _Bits - 1; // avoid full shift
-                _Mask <<= 1;
+        _Udiff _Mask        = _Bmask;
+        unsigned int _Niter = 1;
+
+        if constexpr (_Bits < _Udiff_bits) {
+            while (_Mask < static_cast<_Udiff>(_Index - 1)) {
+                _Mask <<= _Bits;
                 _Mask |= _Bmask;
-            }
-
-            // _Ret is [0, _Mask], _Index - 1 <= _Mask, return if unbiased
-            if (_Ret / _Index < _Mask / _Index || _Mask % _Index == static_cast<_Udiff>(_Index - 1)) {
-                return static_cast<_Diff>(_Ret % _Index);
+                ++_Niter;
             }
         }
+
+        // x <- random integer in [0, 2^L)
+        // m <- x * s
+        auto _Product = _Get_random_product(_Index, _Niter);
+        // l <- m mod 2^L
+        auto _Rem = static_cast<_Udiff>(_Product) & _Mask;
+
+        if (_Rem < static_cast<_Udiff>(_Index)) {
+            // t <- (2^L - s) mod s
+            const auto _Threshold = (_Mask - _Index + 1) % _Index;
+            while (_Rem < _Threshold) {
+                _Product = _Get_random_product(_Index, _Niter);
+                _Rem     = static_cast<_Udiff>(_Product) & _Mask;
+            }
+        }
+
+        unsigned int _Generated_bits;
+        if constexpr (_Bits < _Udiff_bits) {
+            _Generated_bits = static_cast<unsigned int>(_Popcount(_Mask));
+        } else {
+            _Generated_bits = _Udiff_bits;
+        }
+
+        // m / 2^L
+        return static_cast<_Diff>(_Product >> _Generated_bits);
     }
 
     _Udiff _Get_all_bits() {
-        _Udiff _Ret = 0;
+        _Udiff _Ret = _Get_bits();
 
-        for (size_t _Num = 0; _Num < CHAR_BIT * sizeof(_Udiff); _Num += _Bits) { // don't mask away any bits
-            _Ret <<= _Bits - 1; // avoid full shift
-            _Ret <<= 1;
-            _Ret |= _Get_bits();
+        if constexpr (_Bits < _Udiff_bits) {
+            for (unsigned int _Num = _Bits; _Num < _Udiff_bits; _Num += _Bits) { // don't mask away any bits
+                _Ret <<= _Bits;
+                _Ret |= _Get_bits();
+            }
         }
 
         return _Ret;
     }
 
-    _Rng_from_urng(const _Rng_from_urng&)            = delete;
-    _Rng_from_urng& operator=(const _Rng_from_urng&) = delete;
+    _Rng_from_urng_v2(const _Rng_from_urng_v2&)            = delete;
+    _Rng_from_urng_v2& operator=(const _Rng_from_urng_v2&) = delete;
 
 private:
     _Udiff _Get_bits() { // return a random value within [0, _Bmask]
+        constexpr auto _Urng_min = (_Urng::min) ();
         for (;;) { // repeat until random value is in range
-            const _Udiff _Val = static_cast<_Udiff>(_Ref() - (_Urng::min)());
+            const _Udiff _Val = static_cast<_Udiff>(_Ref() - _Urng_min);
 
             if (_Val <= _Bmask) {
                 return _Val;
@@ -6013,9 +6042,37 @@ private:
         }
     }
 
+    static constexpr size_t _Calc_bits() {
+        auto _Bits_local  = _Udiff_bits;
+        auto _Bmask_local = static_cast<_Udiff>(-1);
+        for (; static_cast<_Udiff>((_Urng::max) () - (_Urng::min) ()) < _Bmask_local; _Bmask_local >>= 1) {
+            --_Bits_local;
+        }
+
+        return _Bits_local;
+    }
+
+    _Uprod _Get_random_product(const _Diff _Index, unsigned int _Niter) {
+        _Udiff _Ret = _Get_bits();
+        if constexpr (_Bits < _Udiff_bits) {
+            while (--_Niter > 0) {
+                _Ret <<= _Bits;
+                _Ret |= _Get_bits();
+            }
+        }
+
+        if constexpr (is_same_v<_Udiff, uint64_t>) {
+            uint64_t _High;
+            const auto _Low = _Base128::_UMul128(_Ret, static_cast<_Udiff>(_Index), _High);
+            return _Uprod{_Low, _High};
+        } else {
+            return _Uprod{_Ret} * static_cast<_Uprod>(_Index);
+        }
+    }
+
     _Urng& _Ref; // reference to URNG
-    size_t _Bits; // number of random bits generated by _Get_bits()
-    _Udiff _Bmask; // 2^_Bits - 1
+    static constexpr size_t _Bits  = _Calc_bits(); // number of random bits generated by _Get_bits()
+    static constexpr _Udiff _Bmask = static_cast<_Udiff>(-1) >> (_Udiff_bits - _Bits); // 2^_Bits - 1
 };
 
 #if _HAS_CXX17
@@ -6075,7 +6132,7 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _Ur
         auto _UFirst   = _STD _Get_unwrapped(_First);
         auto _ULast    = _STD _Get_unwrapped(_Last);
         using _PopDiff = _Iter_diff_t<_PopIt>;
-        _Rng_from_urng<_PopDiff, remove_reference_t<_Urng>> _RngFunc(_Func);
+        _Rng_from_urng_v2<_PopDiff, remove_reference_t<_Urng>> _RngFunc(_Func);
         if constexpr (_Is_ranges_fwd_iter_v<_PopIt>) {
             // source is forward: use selection sampling (stable)
             using _CT            = common_type_t<_Diff, _PopDiff>;
@@ -6102,7 +6159,7 @@ _EXPORT_STD template <class _Ty>
 concept uniform_random_bit_generator = invocable<_Ty&> && unsigned_integral<invoke_result_t<_Ty&>> && requires {
     { (_Ty::min)() } -> same_as<invoke_result_t<_Ty&>>;
     { (_Ty::max)() } -> same_as<invoke_result_t<_Ty&>>;
-    requires bool_constant<(_Ty::min)() < (_Ty::max)()>::value;
+    requires bool_constant<(_Ty::min) () < (_Ty::max) ()>::value;
 };
 
 namespace ranges {
@@ -6118,7 +6175,7 @@ namespace ranges {
                 return _Output;
             }
 
-            _Rng_from_urng<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            _Rng_from_urng_v2<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
             if constexpr (forward_iterator<_It>) {
                 auto _UFirst   = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
                 auto _Pop_size = _RANGES distance(_UFirst, _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
@@ -6139,7 +6196,7 @@ namespace ranges {
                 return _Output;
             }
 
-            _Rng_from_urng<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            _Rng_from_urng_v2<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
             if constexpr (forward_range<_Rng>) {
                 auto _UFirst   = _Ubegin(_Range);
                 auto _Pop_size = _RANGES distance(_UFirst, _Uend(_Range));
@@ -6242,7 +6299,7 @@ void _Random_shuffle1(_RanIt _First, _RanIt _Last, _RngFn& _RngFunc) {
 _EXPORT_STD template <class _RanIt, class _Urng>
 void shuffle(_RanIt _First, _RanIt _Last, _Urng&& _Func) { // shuffle [_First, _Last) using URNG _Func
     using _Urng0 = remove_reference_t<_Urng>;
-    _Rng_from_urng<_Iter_diff_t<_RanIt>, _Urng0> _RngFunc(_Func);
+    _Rng_from_urng_v2<_Iter_diff_t<_RanIt>, _Urng0> _RngFunc(_Func);
     _STD _Random_shuffle1(_First, _Last, _RngFunc);
 }
 
@@ -6255,7 +6312,7 @@ namespace ranges {
         _STATIC_CALL_OPERATOR _It operator()(_It _First, _Se _Last, _Urng&& _Func) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
 
-            _Rng_from_urng<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            _Rng_from_urng_v2<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
             auto _UResult = _Shuffle_unchecked(
                 _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _RngFunc);
 
@@ -6266,7 +6323,7 @@ namespace ranges {
         template <random_access_range _Rng, class _Urng>
             requires permutable<iterator_t<_Rng>> && uniform_random_bit_generator<remove_reference_t<_Urng>>
         _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Urng&& _Func) _CONST_CALL_OPERATOR {
-            _Rng_from_urng<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            _Rng_from_urng_v2<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
 
             return _RANGES _Rewrap_iterator(_Range, _Shuffle_unchecked(_Ubegin(_Range), _Uend(_Range), _RngFunc));
         }
@@ -6312,11 +6369,11 @@ void random_shuffle(_RanIt _First, _RanIt _Last, _RngFn&& _RngFunc) {
 struct _Rand_urng_from_func { // wrap rand() as a URNG
     using result_type = unsigned int;
 
-    static result_type(min)() { // return minimum possible generated value
+    static constexpr result_type(min)() { // return minimum possible generated value
         return 0;
     }
 
-    static result_type(max)() { // return maximum possible generated value
+    static constexpr result_type(max)() { // return maximum possible generated value
         return RAND_MAX;
     }
 
@@ -8319,7 +8376,7 @@ void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred) {
     }
 
     const _Diff _Count2 = _STD distance(_UMid, _ULast);
-    _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{(_STD min)(_Count1, _Count2)};
+    _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{(_STD min) (_Count1, _Count2)};
     _STD _Buffered_inplace_merge_unchecked_impl(
         _UFirst, _UMid, _ULast, _Count1, _Count2, _Temp_buf._Data, _Temp_buf._Capacity, _STD _Pass_fn(_Pred));
 }
@@ -8670,7 +8727,7 @@ namespace ranges {
             }
 
             const iter_difference_t<_It> _Count2 = _RANGES distance(_Mid, _Last);
-            _Optimistic_temporary_buffer<iter_value_t<_It>> _Temp_buf{(_STD min)(_Count1, _Count2)};
+            _Optimistic_temporary_buffer<iter_value_t<_It>> _Temp_buf{(_STD min) (_Count1, _Count2)};
             if (_Count1 <= _Count2 && _Count1 <= _Temp_buf._Capacity) {
                 _RANGES _Inplace_merge_buffer_left(_STD move(_First), _STD move(_Mid), _STD move(_Last),
                     _Temp_buf._Data, _Temp_buf._Capacity, _Pred, _Proj);
@@ -9161,7 +9218,7 @@ void _Uninitialized_chunked_merge_unchecked2(
     while (_Count > _Isort_max<_BidIt>) {
         _Count -= _Isort_max<_BidIt>;
         const _BidIt _Mid1 = _STD next(_First, _Isort_max<_BidIt>);
-        const auto _Chunk2 = (_STD min)(_Isort_max<_BidIt>, _Count);
+        const auto _Chunk2 = (_STD min) (_Isort_max<_BidIt>, _Count);
         _Count -= _Chunk2;
         const _BidIt _Mid2 = _STD next(_Mid1, _Chunk2);
         _Backout._Last     = _STD _Uninitialized_merge_move(_First, _Mid1, _Mid2, _Backout._Last, _Pred);
@@ -9181,7 +9238,7 @@ void _Chunked_merge_unchecked(_BidIt _First, const _BidIt _Last, _OutIt _Dest, c
     while (_Chunk < _Count) {
         _Count -= _Chunk;
         const _BidIt _Mid1 = _STD next(_First, _Chunk);
-        const auto _Chunk2 = (_STD min)(_Chunk, _Count);
+        const auto _Chunk2 = (_STD min) (_Chunk, _Count);
         _Count -= _Chunk2;
         const _BidIt _Mid2 = _STD next(_Mid1, _Chunk2);
         _Dest              = _STD _Merge_move_unchecked(_First, _Mid1, _Mid2, _Dest, _Pred);
@@ -9220,13 +9277,24 @@ void _Buffered_merge_sort_unchecked(const _BidIt _First, const _BidIt _Last, con
     auto _Chunk = _Isort_max<_BidIt>;
     for (;;) {
         // unconditionally merge elements back into the source buffer
+
+        // _Chunk starts at 2^5 and is doubled twice in this loop.
+        // The first doubling (to 2^6, 2^8, 2^10, ...) doesn't check for overflow as it doesn't pose a risk.
+        // The second doubling (to 2^7, 2^9, 2^11, ..., 2^15, ..., 2^31, ...) defends against overflow below.
         _Chunk <<= 1;
         _STD _Chunked_merge_unchecked(_Temp_ptr, _Temp_ptr + _Count, _First, static_cast<ptrdiff_t>(_Chunk),
             static_cast<ptrdiff_t>(_Count), _Pred);
-        _Chunk <<= 1;
-        if (_Count <= _Chunk) { // if the input would be a single chunk, it's already sorted and we're done
-            return;
+
+        // This is equivalent to doubling _Chunk followed by returning when `_Count <= _Chunk`,
+        // except that it doesn't risk overflowing.
+        // Note that returning when `_Count / 2 <= _Chunk` before doubling _Chunk
+        // would behave differently for odd _Count due to truncating integer division.
+        // Returning when `(_Count - 1) / 2 < _Chunk` correctly handles both even and odd _Count.
+        // We have an early return for small _Count above, so `_Count - 1` is safe to form.
+        if ((_Count - 1) / 2 < _Chunk) {
+            return; // if the input would be a single chunk, it's already sorted and we're done
         }
+        _Chunk <<= 1;
 
         // more merges necessary; merge to temporary buffer
         _STD _Chunked_merge_unchecked(_First, _Last, _Temp_ptr, _Chunk, _Count, _Pred);
@@ -9392,12 +9460,23 @@ namespace ranges {
             ptrdiff_t _Chunk_size = _ISORT_MAX;
             for (;;) {
                 // unconditionally merge elements back into the source buffer
+
+                // _Chunk_size starts at 2^5 and is doubled twice in this loop.
+                // The first doubling (to 2^6, 2^8, 2^10, ...) doesn't check for overflow as it doesn't pose a risk.
+                // The second doubling (to 2^7, 2^9, 2^11, ..., 2^15, ..., 2^31, ...) defends against overflow below.
                 _Chunk_size <<= 1;
                 _Chunked_merge_common(_Temp_ptr, _Temp_ptr + _Count, _First, _Chunk_size, _Count, _Pred, _Proj);
-                _Chunk_size <<= 1;
-                if (_Count <= _Chunk_size) { // if the input would be a single chunk, it's already sorted and we're done
-                    return;
+
+                // This is equivalent to doubling _Chunk_size followed by returning when `_Count <= _Chunk_size`,
+                // except that it doesn't risk overflowing.
+                // Note that returning when `_Count / 2 <= _Chunk_size` before doubling _Chunk_size
+                // would behave differently for odd _Count due to truncating integer division.
+                // Returning when `(_Count - 1) / 2 < _Chunk_size` correctly handles both even and odd _Count.
+                // We have an early return for small _Count above, so `_Count - 1` is safe to form.
+                if ((_Count - 1) / 2 < _Chunk_size) {
+                    return; // if the input would be a single chunk, it's already sorted and we're done
                 }
+                _Chunk_size <<= 1;
 
                 // more merges necessary; merge to temporary buffer
                 _Chunked_merge_common(_First, _Last, _Temp_ptr, _Chunk_size, _Count, _Pred, _Proj);
@@ -9432,7 +9511,7 @@ namespace ranges {
             const auto _Backout_end = _Dest + _Count;
             while (_ISORT_MAX < _Count) {
                 _Count -= _ISORT_MAX;
-                const auto _Chunk2 = (_STD min)(static_cast<ptrdiff_t>(_ISORT_MAX), _Count);
+                const auto _Chunk2 = (_STD min) (static_cast<ptrdiff_t>(_ISORT_MAX), _Count);
                 _Count -= _Chunk2;
 
                 auto _Mid1     = _First + _Isort_max<_It>;
@@ -9528,7 +9607,7 @@ namespace ranges {
 
             while (_Chunk_size < _Count) {
                 _Count -= _Chunk_size;
-                const auto _Right_chunk_size = (_STD min)(_Chunk_size, _Count);
+                const auto _Right_chunk_size = (_STD min) (_Chunk_size, _Count);
                 _Count -= _Right_chunk_size;
 
                 auto _Mid1  = _First + static_cast<iter_difference_t<_It1>>(_Chunk_size);
@@ -10158,17 +10237,31 @@ _NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _Fir
     const auto _ULast2 = _STD _Get_unwrapped(_Last2);
     _DEBUG_ORDER_SET_UNWRAPPED(_InIt2, _UFirst1, _ULast1, _Pred);
     _DEBUG_ORDER_SET_UNWRAPPED(_InIt1, _UFirst2, _ULast2, _Pred);
-    for (; _UFirst1 != _ULast1 && _UFirst2 != _ULast2; ++_UFirst1) {
-        if (_DEBUG_LT_PRED(_Pred, *_UFirst2, *_UFirst1)) {
-            return false;
-        }
 
-        if (!_Pred(*_UFirst1, *_UFirst2)) {
-            ++_UFirst2;
-        }
+    if (_UFirst2 == _ULast2) {
+        return true;
+    } else if (_UFirst1 == _ULast1) {
+        return false;
     }
 
-    return _UFirst2 == _ULast2;
+    for (;;) {
+        if (_DEBUG_LT_PRED(_Pred, *_UFirst1, *_UFirst2)) {
+            ++_UFirst1;
+            if (_UFirst1 == _ULast1) {
+                return false;
+            }
+        } else if (_Pred(*_UFirst2, *_UFirst1)) {
+            return false;
+        } else {
+            ++_UFirst1;
+            ++_UFirst2;
+            if (_UFirst2 == _ULast2) {
+                return true;
+            } else if (_UFirst1 == _ULast1) {
+                return false;
+            }
+        }
+    }
 }
 
 _EXPORT_STD template <class _InIt1, class _InIt2>
@@ -11718,7 +11811,7 @@ namespace ranges {
                         _Num2 = SIZE_MAX;
                     }
 
-                    const size_t _Num = (_STD min)(_Num1, _Num2);
+                    const size_t _Num = (_STD min) (_Num1, _Num2);
 #if _USE_STD_VECTOR_ALGORITHMS
                     const auto _First1_ptr = _STD to_address(_First1);
                     const auto _First2_ptr = _STD to_address(_First2);

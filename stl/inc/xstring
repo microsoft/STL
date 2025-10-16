@@ -484,7 +484,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 size_type _Clamp_suffix_size(const size_type _Off, const size_type _Size) const noexcept {
         // trims _Size to the longest it can be assuming a string at/after _Off
-        return (_STD min)(_Size, _Mysize - _Off);
+        return (_STD min) (_Size, static_cast<size_type>(_Mysize - _Off));
     }
 
     union _Bxty { // storage for small buffer or pointer to larger one
@@ -579,6 +579,11 @@ template <class _Rng, class _Ty>
 concept _Contiguous_range_of =
     (_RANGES contiguous_range<_Rng>) && same_as<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _Ty>;
 #endif // _HAS_CXX23
+
+#pragma warning(push)
+// Invalid annotation: 'NullTerminated' property may only be used on buffers whose elements are of integral or pointer
+// type
+#pragma warning(disable : 6510)
 
 _EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_string { // null-terminated transparent array of elements
@@ -894,7 +899,7 @@ private:
     static _CONSTEXPR20 void _Deallocate_for_capacity(
         _Alty& _Al, const pointer _Old_ptr, const size_type _Capacity) noexcept {
         _STL_INTERNAL_CHECK(_Capacity > _Small_string_capacity);
-        _Al.deallocate(_Old_ptr, _Capacity + 1); // +1 for null terminator
+        _Al.deallocate(_Old_ptr, static_cast<size_type>(_Capacity + 1)); // +1 for null terminator
     }
 
     _CONSTEXPR20 void _Construct_empty() {
@@ -936,14 +941,14 @@ private:
             _My_data._Myres  = _Small_string_capacity;
 
             if constexpr (_Strat == _Construct_strategy::_From_char) {
-                _Traits::assign(_My_data._Bx._Buf, _Count, _Arg);
+                _Traits::assign(_My_data._Bx._Buf, static_cast<size_t>(_Count), _Arg);
                 _Traits::assign(_My_data._Bx._Buf[_Count], _Elem());
             } else if constexpr (_Strat == _Construct_strategy::_From_ptr) {
-                _STD _Traits_copy_batch<_Traits>(_My_data._Bx._Buf, _Arg, _Count);
+                _STD _Traits_copy_batch<_Traits>(_My_data._Bx._Buf, _Arg, static_cast<size_t>(_Count));
                 _Traits::assign(_My_data._Bx._Buf[_Count], _Elem());
             } else { // _Strat == _Construct_strategy::_From_string
 #ifdef _INSERT_STRING_ANNOTATION
-                _Traits::copy(_My_data._Bx._Buf, _Arg, _Count + 1);
+                _Traits::copy(_My_data._Bx._Buf, _Arg, static_cast<size_t>(_Count + 1));
 #else // ^^^ _INSERT_STRING_ANNOTATION / !_INSERT_STRING_ANNOTATION vvv
                 _Traits::copy(_My_data._Bx._Buf, _Arg, _BUF_SIZE);
 #endif // ^^^ !_INSERT_STRING_ANNOTATION ^^^
@@ -960,13 +965,13 @@ private:
         _My_data._Mysize = _Count;
         _My_data._Myres  = _New_capacity;
         if constexpr (_Strat == _Construct_strategy::_From_char) {
-            _Traits::assign(_Unfancy(_New_ptr), _Count, _Arg);
+            _Traits::assign(_Unfancy(_New_ptr), static_cast<size_t>(_Count), _Arg);
             _Traits::assign(_Unfancy(_New_ptr)[_Count], _Elem());
         } else if constexpr (_Strat == _Construct_strategy::_From_ptr) {
-            _STD _Traits_copy_batch<_Traits>(_Unfancy(_New_ptr), _Arg, _Count);
+            _STD _Traits_copy_batch<_Traits>(_Unfancy(_New_ptr), _Arg, static_cast<size_t>(_Count));
             _Traits::assign(_Unfancy(_New_ptr)[_Count], _Elem());
         } else { // _Strat == _Construct_strategy::_From_string
-            _Traits::copy(_Unfancy(_New_ptr), _Arg, _Count + 1);
+            _Traits::copy(_Unfancy(_New_ptr), _Arg, static_cast<size_t>(_Count + 1));
         }
 
         _ASAN_STRING_CREATE(*this);
@@ -1114,8 +1119,8 @@ public:
 
         _My_data._Mysize = _New_size;
         _My_data._Myres  = _New_capacity;
-        _Traits::copy(_Ptr, _Left_ptr, _Left_size);
-        _Traits::copy(_Ptr + static_cast<ptrdiff_t>(_Left_size), _Right_ptr, _Right_size);
+        _Traits::copy(_Ptr, _Left_ptr, static_cast<size_t>(_Left_size));
+        _Traits::copy(_Ptr + static_cast<ptrdiff_t>(_Left_size), _Right_ptr, static_cast<size_t>(_Right_size));
         _Traits::assign(_Ptr[_New_size], _Elem());
         _ASAN_STRING_CREATE(*this);
         _Proxy._Release();
@@ -1142,7 +1147,7 @@ public:
             _Take_contents(_Left);
             const auto _Ptr = _My_data._Myptr();
             _ASAN_STRING_MODIFY(*this, _Left_size, _New_size);
-            _Traits::copy(_Ptr + _Left_size, _Right_data._Myptr(), _Right_size + 1);
+            _Traits::copy(_Ptr + _Left_size, _Right_data._Myptr(), static_cast<size_t>(_Right_size + 1));
             _My_data._Mysize = _New_size;
             return;
         }
@@ -1163,8 +1168,8 @@ public:
             _Take_contents(_Right);
             const auto _Ptr = _Unfancy(_My_data._Bx._Ptr);
             _ASAN_STRING_MODIFY(*this, _Right_size, _New_size);
-            _Traits::move(_Ptr + _Left_size, _Ptr, _Right_size + 1);
-            _Traits::copy(_Ptr, _Left_data._Myptr(), _Left_size);
+            _Traits::move(_Ptr + _Left_size, _Ptr, static_cast<size_t>(_Right_size + 1));
+            _Traits::copy(_Ptr, _Left_data._Myptr(), static_cast<size_t>(_Left_size));
             _My_data._Mysize = _New_size;
             return;
         }
@@ -1184,8 +1189,8 @@ public:
         _My_data._Mysize = _New_size;
         _My_data._Myres  = _New_capacity;
         const auto _Ptr  = _Unfancy(_Fancyptr);
-        _Traits::copy(_Ptr, _Left_data._Myptr(), _Left_size);
-        _Traits::copy(_Ptr + _Left_size, _Right_data._Myptr(), _Right_size + 1);
+        _Traits::copy(_Ptr, _Left_data._Myptr(), static_cast<size_t>(_Left_size));
+        _Traits::copy(_Ptr + _Left_size, _Right_data._Myptr(), static_cast<size_t>(_Right_size + 1));
         _ASAN_STRING_CREATE(*this);
         _Proxy._Release();
     }
@@ -1203,7 +1208,7 @@ public:
         const _Ty& _Right, const size_type _Roff, const size_type _Count, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Right [_Roff, _Roff + _Count) using _Al
         const basic_string_view<_Elem, _Traits> _As_view = _Right;
-        const auto _As_sub_view                          = _As_view.substr(_Roff, _Count);
+        const auto _As_sub_view = _As_view.substr(static_cast<size_t>(_Roff), static_cast<size_t>(_Count));
         _Construct<_Construct_strategy::_From_ptr>(_As_sub_view.data(), _Convert_size<size_type>(_As_sub_view.size()));
     }
 #endif // _HAS_CXX17
@@ -1348,7 +1353,7 @@ private:
             _Right_data._Orphan_all();
 
             _My_data._Activate_SSO_buffer();
-            _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
+            _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, static_cast<size_t>(_Right_data._Mysize + 1));
         }
 
         _My_data._Myres  = _Right_data._Myres;
@@ -1371,7 +1376,7 @@ private:
             _Mypair._Myval2._Alloc_proxy(_STD _Get_proxy_allocator(_Al));
 
             if (_Roff != 0) {
-                _Traits::move(_Right_ptr, _Right_ptr + _Roff, _Result_size);
+                _Traits::move(_Right_ptr, _Right_ptr + _Roff, static_cast<size_t>(_Result_size));
             }
             _Right._Eos(_Result_size);
             _Take_contents(_Right);
@@ -1547,7 +1552,7 @@ public:
         const _StringViewIsh& _Right, const size_type _Roff, const size_type _Count = npos) {
         // append _Right [_Roff, _Roff + _Count)
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return append(_As_view.substr(_Roff, _Count));
+        return append(_As_view.substr(static_cast<size_t>(_Roff), static_cast<size_t>(_Count)));
     }
 #endif // _HAS_CXX17
 
@@ -1565,10 +1570,11 @@ public:
         // append _Count * _Ch
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Count <= _Mypair._Myval2._Myres - _Old_size) {
-            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
-            _Mypair._Myval2._Mysize = _Old_size + _Count;
+            const auto _New_size = static_cast<size_type>(_Old_size + _Count);
+            _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
+            _Mypair._Myval2._Mysize = _New_size;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
-            _Traits::assign(_Old_ptr + _Old_size, _Count, _Ch);
+            _Traits::assign(_Old_ptr + _Old_size, static_cast<size_t>(_Count), _Ch);
             _Traits::assign(_Old_ptr[_Old_size + _Count], _Elem());
             return *this;
         }
@@ -1577,8 +1583,8 @@ public:
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Count,
                 const _Elem _Ch) _STATIC_LAMBDA {
-                _Traits::copy(_New_ptr, _Old_ptr, _Old_size);
-                _Traits::assign(_New_ptr + _Old_size, _Count, _Ch);
+                _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size));
+                _Traits::assign(_New_ptr + _Old_size, static_cast<size_t>(_Count), _Ch);
                 _Traits::assign(_New_ptr[_Old_size + _Count], _Elem());
             },
             _Count, _Ch);
@@ -1635,7 +1641,7 @@ public:
         const _StringViewIsh& _Right, const size_type _Roff, const size_type _Count = npos) {
         // assign _Right [_Roff, _Roff + _Count)
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return assign(_As_view.substr(_Roff, _Count));
+        return assign(_As_view.substr(static_cast<size_t>(_Roff), static_cast<size_t>(_Count)));
     }
 #endif // _HAS_CXX17
 
@@ -1733,7 +1739,7 @@ public:
         const size_type _Off, const _StringViewIsh& _Right, const size_type _Roff, const size_type _Count = npos) {
         // insert _Right [_Roff, _Roff + _Count) at _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return insert(_Off, _As_view.substr(_Roff, _Count));
+        return insert(_Off, _As_view.substr(static_cast<size_t>(_Roff), static_cast<size_t>(_Count)));
     }
 #endif // _HAS_CXX17
 
@@ -1754,12 +1760,14 @@ public:
         _Mypair._Myval2._Check_offset(_Off);
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Count <= _Mypair._Myval2._Myres - _Old_size) {
-            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
-            _Mypair._Myval2._Mysize = _Old_size + _Count;
+            const auto _New_size = static_cast<size_type>(_Old_size + _Count);
+            _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
+            _Mypair._Myval2._Mysize = _New_size;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
-            _Traits::move(_Insert_at + _Count, _Insert_at, _Old_size - _Off + 1); // move suffix + null down
-            _Traits::assign(_Insert_at, _Count, _Ch); // fill hole
+            _Traits::move(
+                _Insert_at + _Count, _Insert_at, static_cast<size_t>(_Old_size - _Off + 1)); // move suffix + null down
+            _Traits::assign(_Insert_at, static_cast<size_t>(_Count), _Ch); // fill hole
             return *this;
         }
 
@@ -1767,9 +1775,9 @@ public:
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
                 const size_type _Count, const _Elem _Ch) _STATIC_LAMBDA {
-                _Traits::copy(_New_ptr, _Old_ptr, _Off);
-                _Traits::assign(_New_ptr + _Off, _Count, _Ch);
-                _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off, _Old_size - _Off + 1);
+                _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Off));
+                _Traits::assign(_New_ptr + _Off, static_cast<size_t>(_Count), _Ch);
+                _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off, static_cast<size_t>(_Old_size - _Off + 1));
             },
             _Off, _Count, _Ch);
     }
@@ -1846,8 +1854,9 @@ private:
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         _Elem* const _My_ptr      = _Mypair._Myval2._Myptr();
         _Elem* const _Erase_at    = _My_ptr + _Off;
-        const size_type _New_size = _Old_size - _Count;
-        _Traits::move(_Erase_at, _Erase_at + _Count, _New_size - _Off + 1); // move suffix + null up
+        const auto _New_size      = static_cast<size_type>(_Old_size - _Count);
+        _Traits::move(
+            _Erase_at, _Erase_at + _Count, static_cast<size_t>(_New_size - _Off + 1)); // move suffix + null up
         _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
         _Mypair._Myval2._Mysize = _New_size;
         return *this;
@@ -1910,7 +1919,7 @@ public:
         const size_type _Roff, const size_type _Count = npos) {
         // replace [_Off, _Off + _Nx) with _Right [_Roff, _Roff + _Count)
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return replace(_Off, _Nx, _As_view.substr(_Roff, _Count));
+        return replace(_Off, _Nx, _As_view.substr(static_cast<size_t>(_Roff), static_cast<size_t>(_Count)));
     }
 #endif // _HAS_CXX17
 
@@ -1930,7 +1939,7 @@ public:
         _Mypair._Myval2._Check_offset(_Off);
         _Nx = _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx);
         if (_Count == _Nx) {
-            _Traits::assign(_Mypair._Myval2._Myptr() + _Off, _Count, _Ch);
+            _Traits::assign(_Mypair._Myval2._Myptr() + _Off, static_cast<size_t>(_Count), _Ch);
             return *this;
         }
 
@@ -1938,24 +1947,25 @@ public:
         if (_Count < _Nx || _Count - _Nx <= _Mypair._Myval2._Myres - _Old_size) {
             // either we are shrinking, or the growth fits
             // may temporarily overflow; OK because size_type must be unsigned
-            const auto _New_size = _Old_size + _Count - _Nx;
+            const auto _New_size = static_cast<size_type>(_Old_size + _Count - _Nx);
             _ASAN_STRING_REMOVE(*this);
             _Mypair._Myval2._Mysize = _New_size;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
-            _Traits::move(_Insert_at + _Count, _Insert_at + _Nx, _Old_size - _Nx - _Off + 1);
-            _Traits::assign(_Insert_at, _Count, _Ch);
+            _Traits::move(_Insert_at + _Count, _Insert_at + _Nx, static_cast<size_t>(_Old_size - _Nx - _Off + 1));
+            _Traits::assign(_Insert_at, static_cast<size_t>(_Count), _Ch);
             _ASAN_STRING_CREATE(*this);
             return *this;
         }
 
         return _Reallocate_grow_by(
-            _Count - _Nx,
+            static_cast<size_type>(_Count - _Nx),
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
                 const size_type _Nx, const size_type _Count, const _Elem _Ch) _STATIC_LAMBDA {
-                _Traits::copy(_New_ptr, _Old_ptr, _Off);
-                _Traits::assign(_New_ptr + _Off, _Count, _Ch);
-                _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off + _Nx, _Old_size - _Nx - _Off + 1);
+                _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Off));
+                _Traits::assign(_New_ptr + _Off, static_cast<size_t>(_Count), _Ch);
+                _Traits::copy(
+                    _New_ptr + _Off + _Count, _Old_ptr + _Off + _Nx, static_cast<size_t>(_Old_size - _Nx - _Off + 1));
             },
             _Off, _Nx, _Count, _Ch);
     }
@@ -2140,7 +2150,7 @@ public:
             return;
         }
 
-        size_type _Target_capacity = (_STD min)(_My_data._Mysize | _Alloc_mask, max_size());
+        size_type _Target_capacity = (_STD min) (static_cast<size_type>(_My_data._Mysize | _Alloc_mask), max_size());
         if (_Target_capacity < _My_data._Myres) { // worth shrinking, do it
             auto& _Al = _Getal();
             const pointer _New_ptr =
@@ -2148,7 +2158,7 @@ public:
             _ASAN_STRING_REMOVE(*this);
 
             _My_data._Orphan_all();
-            _Traits::copy(_Unfancy(_New_ptr), _Unfancy(_My_data._Bx._Ptr), _My_data._Mysize + 1);
+            _Traits::copy(_Unfancy(_New_ptr), _Unfancy(_My_data._Bx._Ptr), static_cast<size_t>(_My_data._Mysize + 1));
             _Deallocate_for_capacity(_Al, _My_data._Bx._Ptr, _My_data._Myres);
             _My_data._Bx._Ptr = _New_ptr;
             _My_data._Myres   = _Target_capacity;
@@ -2186,15 +2196,17 @@ public:
 #if _HAS_CXX17
     /* implicit */ _CONSTEXPR20 operator basic_string_view<_Elem, _Traits>() const noexcept {
         // return a string_view around *this's character-type sequence
-        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize};
+        return basic_string_view<_Elem, _Traits>{
+            _Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize)};
     }
 #endif // _HAS_CXX17
 
     _CONSTEXPR20 void push_back(const _Elem _Ch) { // insert element at end
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Old_size < _Mypair._Myval2._Myres) {
-            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + 1);
-            _Mypair._Myval2._Mysize = _Old_size + 1;
+            const auto _New_size = static_cast<size_type>(_Old_size + 1);
+            _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
+            _Mypair._Myval2._Mysize = _New_size;
             _Elem* const _Ptr       = _Mypair._Myval2._Myptr();
             _Traits::assign(_Ptr[_Old_size], _Ch);
             _Traits::assign(_Ptr[_Old_size + 1], _Elem());
@@ -2205,7 +2217,7 @@ public:
             1,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const _Elem _Ch)
                 _STATIC_LAMBDA {
-                    _Traits::copy(_New_ptr, _Old_ptr, _Old_size);
+                    _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size));
                     _Traits::assign(_New_ptr[_Old_size], _Ch);
                     _Traits::assign(_New_ptr[_Old_size + 1], _Elem());
                 },
@@ -2219,7 +2231,7 @@ public:
         _STL_VERIFY(_Old_size != 0, "pop_back() called on empty string");
 #endif
 
-        _Eos(_Old_size - 1);
+        _Eos(static_cast<size_type>(_Old_size - 1));
     }
 
     _NODISCARD _CONSTEXPR20 reference front() noexcept /* strengthened */ {
@@ -2279,9 +2291,9 @@ public:
     _NODISCARD _CONSTEXPR20 size_type max_size() const noexcept {
         const size_type _Alloc_max   = _Alty_traits::max_size(_Getal());
         const size_type _Storage_max = // can always store small string
-            (_STD max)(_Alloc_max, static_cast<size_type>(_BUF_SIZE));
-        return (_STD min)(static_cast<size_type>(_STD _Max_limit<difference_type>()),
-            _Storage_max - 1 // -1 is for null terminator and/or npos
+            (_STD max) (_Alloc_max, static_cast<size_type>(_BUF_SIZE));
+        return (_STD min) (static_cast<size_type>(_STD _Max_limit<difference_type>()),
+            static_cast<size_type>(_Storage_max - 1) // -1 is for null terminator and/or npos
         );
     }
 
@@ -2291,7 +2303,7 @@ public:
         if (_New_size <= _Old_size) {
             _Eos(_New_size);
         } else {
-            append(_New_size - _Old_size, _Ch);
+            append(static_cast<size_type>(_New_size - _Old_size), _Ch);
         }
     }
 
@@ -2304,21 +2316,25 @@ public:
 #endif // ^^^ !_HAS_CXX23 ^^^
         (_CRT_GUARDOVERFLOW const size_type _New_size, _Operation _Op) {
         if (_Mypair._Myval2._Myres < _New_size) {
-            _Reallocate_grow_by(_New_size - _Mypair._Myval2._Mysize,
+            _Reallocate_grow_by(static_cast<size_type>(_New_size - _Mypair._Myval2._Mysize),
                 [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
-                    _STATIC_LAMBDA { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
+                    _STATIC_LAMBDA { _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size + 1)); });
         } else {
             _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
             _Mypair._Myval2._Mysize = _New_size;
         }
 
-        auto _Arg_ptr                   = _Mypair._Myval2._Myptr();
-        auto _Arg_size                  = _New_size;
-        const auto _Result_size         = _STD move(_Op)(_Arg_ptr, _Arg_size);
+        auto _Arg_ptr           = _Mypair._Myval2._Myptr();
+        auto _Arg_size          = _New_size;
+        const auto _Result_size = _STD move(_Op)(_Arg_ptr, _Arg_size);
+        static_assert(_Integer_like<decltype(_Result_size)>,
+            "the return type of the operation must be integer-like, N5014 [string.capacity]/8");
+
         const auto _Result_as_size_type = static_cast<size_type>(_Result_size);
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0");
-        _STL_VERIFY(_Result_as_size_type <= _New_size, "the returned size can't be greater than the passed size");
+        _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0, N5014 [string.capacity]/9.2");
+        _STL_VERIFY(_Result_as_size_type <= _New_size,
+            "the returned size can't be greater than the passed size, N5014 [string.capacity]/9.3");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         _Eos(_Result_as_size_type);
     }
@@ -2342,9 +2358,9 @@ public:
         }
 
         const size_type _Old_size = _Mypair._Myval2._Mysize;
-        _Reallocate_grow_by(_Newcap - _Old_size,
+        _Reallocate_grow_by(static_cast<size_type>(_Newcap - _Old_size),
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
-                _STATIC_LAMBDA { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
+                _STATIC_LAMBDA { _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size + 1)); });
 
         // `_Reallocate_grow_by` calls `_ASAN_STRING_CREATE` assuming that the string
         // has size (initialized memory) equal to its new capacity (allocated memory).
@@ -2370,9 +2386,9 @@ public:
 
         if (_Mypair._Myval2._Myres < _Newcap) { // reallocate to grow
             const size_type _Old_size = _Mypair._Myval2._Mysize;
-            _Reallocate_grow_by(_Newcap - _Old_size,
+            _Reallocate_grow_by(static_cast<size_type>(_Newcap - _Old_size),
                 [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
-                    _STATIC_LAMBDA { _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1); });
+                    _STATIC_LAMBDA { _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size + 1)); });
 
             // `_Reallocate_grow_by` calls `_ASAN_STRING_CREATE` assuming that the string
             // has size (initialized memory) equal to its new capacity (allocated memory).
@@ -2401,7 +2417,7 @@ public:
         // copy [_Off, _Off + _Count) to [_Ptr, _Ptr + _Count)
         _Mypair._Myval2._Check_offset(_Off);
         _Count = _Mypair._Myval2._Clamp_suffix_size(_Off, _Count);
-        _Traits::copy(_Ptr, _Mypair._Myval2._Myptr() + _Off, _Count);
+        _Traits::copy(_Ptr, _Mypair._Myval2._Myptr() + _Off, static_cast<size_t>(_Count));
         return _Count;
     }
 
@@ -2461,9 +2477,9 @@ public:
             _Swap_bx_large_with_small(_Right_data, _My_data);
         } else {
             _Elem _Temp_buf[_BUF_SIZE];
-            _Traits::copy(_Temp_buf, _My_data._Bx._Buf, _My_data._Mysize + 1);
-            _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
-            _Traits::copy(_Right_data._Bx._Buf, _Temp_buf, _My_data._Mysize + 1);
+            _Traits::copy(_Temp_buf, _My_data._Bx._Buf, static_cast<size_t>(_My_data._Mysize + 1));
+            _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, static_cast<size_t>(_Right_data._Mysize + 1));
+            _Traits::copy(_Right_data._Bx._Buf, _Temp_buf, static_cast<size_t>(_My_data._Mysize + 1));
         }
 
         _STD swap(_My_data._Mysize, _Right_data._Mysize);
@@ -2499,35 +2515,37 @@ public:
         noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for _Right beginning at or after _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return static_cast<size_type>(_Traits_find<_Traits>(
-            _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _As_view.data(), _As_view.size()));
+        return static_cast<size_type>(_Traits_find<_Traits>(_Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _As_view.data(), _As_view.size()));
     }
 #endif // _HAS_CXX17
 
     _NODISCARD _CONSTEXPR20 size_type find(const basic_string& _Right, const size_type _Off = 0) const noexcept {
         // look for _Right beginning at or after _Off
-        return static_cast<size_type>(_Traits_find<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off,
-            _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize));
+        return static_cast<size_type>(_Traits_find<_Traits>(_Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Right._Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Right._Mypair._Myval2._Mysize)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find(_In_reads_(_Count) const _Elem* const _Ptr, const size_type _Off,
         const size_type _Count) const noexcept /* strengthened */ {
         // look for [_Ptr, _Ptr + _Count) beginning at or after _Off
         return static_cast<size_type>(
-            _Traits_find<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Count));
+            _Traits_find<_Traits>(_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize),
+                static_cast<size_t>(_Off), _Ptr, static_cast<size_t>(_Count)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find(_In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept
     /* strengthened */ {
         // look for [_Ptr, <null>) beginning at or after _Off
-        return static_cast<size_type>(_Traits_find<_Traits>(
-            _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
+        return static_cast<size_type>(_Traits_find<_Traits>(_Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ptr, _Traits::length(_Ptr)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find(const _Elem _Ch, const size_type _Off = 0) const noexcept {
         // look for _Ch at or after _Off
-        return static_cast<size_type>(
-            _Traits_find_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
+        return static_cast<size_type>(_Traits_find_ch<_Traits>(
+            _Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ch));
     }
 
 #if _HAS_CXX17
@@ -2536,35 +2554,37 @@ public:
         noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for _Right beginning before _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return static_cast<size_type>(_Traits_rfind<_Traits>(
-            _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _As_view.data(), _As_view.size()));
+        return static_cast<size_type>(_Traits_rfind<_Traits>(_Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _As_view.data(), _As_view.size()));
     }
 #endif // _HAS_CXX17
 
     _NODISCARD _CONSTEXPR20 size_type rfind(const basic_string& _Right, const size_type _Off = npos) const noexcept {
         // look for _Right beginning before _Off
-        return static_cast<size_type>(_Traits_rfind<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off,
-            _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize));
+        return static_cast<size_type>(_Traits_rfind<_Traits>(_Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Right._Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Right._Mypair._Myval2._Mysize)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type rfind(_In_reads_(_Count) const _Elem* const _Ptr, const size_type _Off,
         const size_type _Count) const noexcept /* strengthened */ {
         // look for [_Ptr, _Ptr + _Count) beginning before _Off
         return static_cast<size_type>(
-            _Traits_rfind<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Count));
+            _Traits_rfind<_Traits>(_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize),
+                static_cast<size_t>(_Off), _Ptr, static_cast<size_t>(_Count)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type rfind(_In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept
     /* strengthened */ {
         // look for [_Ptr, <null>) beginning before _Off
-        return static_cast<size_type>(_Traits_rfind<_Traits>(
-            _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
+        return static_cast<size_type>(_Traits_rfind<_Traits>(_Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ptr, _Traits::length(_Ptr)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type rfind(const _Elem _Ch, const size_type _Off = npos) const noexcept {
         // look for _Ch before _Off
-        return static_cast<size_type>(
-            _Traits_rfind_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
+        return static_cast<size_type>(_Traits_rfind_ch<_Traits>(
+            _Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ch));
     }
 
 #if _HAS_CXX17
@@ -2573,37 +2593,39 @@ public:
         noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for one of _Right at or after _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return static_cast<size_type>(_Traits_find_first_of<_Traits>(
-            _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _As_view.data(), _As_view.size()));
+        return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _As_view.data(), _As_view.size()));
     }
 #endif // _HAS_CXX17
 
     _NODISCARD _CONSTEXPR20 size_type find_first_of(
         const basic_string& _Right, const size_type _Off = 0) const noexcept {
         // look for one of _Right at or after _Off
-        return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize,
-            _Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize));
+        return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Right._Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Right._Mypair._Myval2._Mysize)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_of(_In_reads_(_Count) const _Elem* const _Ptr, const size_type _Off,
         const size_type _Count) const noexcept /* strengthened */ {
         // look for one of [_Ptr, _Ptr + _Count) at or after _Off
         return static_cast<size_type>(
-            _Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Count));
+            _Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize),
+                static_cast<size_t>(_Off), _Ptr, static_cast<size_t>(_Count)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_of(
         _In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept
     /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
-        return static_cast<size_type>(_Traits_find_first_of<_Traits>(
-            _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
+        return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ptr, _Traits::length(_Ptr)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_of(const _Elem _Ch, const size_type _Off = 0) const noexcept {
         // look for _Ch at or after _Off
-        return static_cast<size_type>(
-            _Traits_find_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
+        return static_cast<size_type>(_Traits_find_ch<_Traits>(
+            _Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ch));
     }
 
 #if _HAS_CXX17
@@ -2612,35 +2634,37 @@ public:
         noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for one of _Right before _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return static_cast<size_type>(_Traits_find_last_of<_Traits>(
-            _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _As_view.data(), _As_view.size()));
+        return static_cast<size_type>(_Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _As_view.data(), _As_view.size()));
     }
 #endif // _HAS_CXX17
 
     _NODISCARD _CONSTEXPR20 size_type find_last_of(const basic_string& _Right, size_type _Off = npos) const noexcept {
         // look for one of _Right before _Off
-        return static_cast<size_type>(_Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize,
-            _Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize));
+        return static_cast<size_type>(_Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Right._Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Right._Mypair._Myval2._Mysize)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_last_of(_In_reads_(_Count) const _Elem* const _Ptr, const size_type _Off,
         const size_type _Count) const noexcept /* strengthened */ {
         // look for one of [_Ptr, _Ptr + _Count) before _Off
         return static_cast<size_type>(
-            _Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Count));
+            _Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize),
+                static_cast<size_t>(_Off), _Ptr, static_cast<size_t>(_Count)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_last_of(
         _In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept /* strengthened */ {
         // look for one of [_Ptr, <null>) before _Off
-        return static_cast<size_type>(_Traits_find_last_of<_Traits>(
-            _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
+        return static_cast<size_type>(_Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ptr, _Traits::length(_Ptr)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_last_of(const _Elem _Ch, const size_type _Off = npos) const noexcept {
         // look for _Ch before _Off
-        return static_cast<size_type>(
-            _Traits_rfind_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
+        return static_cast<size_type>(_Traits_rfind_ch<_Traits>(
+            _Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ch));
     }
 
 #if _HAS_CXX17
@@ -2649,8 +2673,8 @@ public:
         noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for none of _Right at or after _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return static_cast<size_type>(_Traits_find_first_not_of<_Traits>(
-            _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _As_view.data(), _As_view.size()));
+        return static_cast<size_type>(_Traits_find_first_not_of<_Traits>(_Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _As_view.data(), _As_view.size()));
     }
 #endif // _HAS_CXX17
 
@@ -2658,28 +2682,30 @@ public:
         const basic_string& _Right, const size_type _Off = 0) const noexcept {
         // look for none of _Right at or after _Off
         return static_cast<size_type>(_Traits_find_first_not_of<_Traits>(_Mypair._Myval2._Myptr(),
-            _Mypair._Myval2._Mysize, _Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize));
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Right._Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Right._Mypair._Myval2._Mysize)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_not_of(_In_reads_(_Count) const _Elem* const _Ptr,
         const size_type _Off, const size_type _Count) const noexcept /* strengthened */ {
         // look for none of [_Ptr, _Ptr + _Count) at or after _Off
         return static_cast<size_type>(
-            _Traits_find_first_not_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Count));
+            _Traits_find_first_not_of<_Traits>(_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize),
+                static_cast<size_t>(_Off), _Ptr, static_cast<size_t>(_Count)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_not_of(
         _In_z_ const _Elem* const _Ptr, size_type _Off = 0) const noexcept
     /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
-        return static_cast<size_type>(_Traits_find_first_not_of<_Traits>(
-            _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
+        return static_cast<size_type>(_Traits_find_first_not_of<_Traits>(_Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ptr, _Traits::length(_Ptr)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_not_of(const _Elem _Ch, const size_type _Off = 0) const noexcept {
         // look for non-_Ch at or after _Off
-        return static_cast<size_type>(
-            _Traits_find_not_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
+        return static_cast<size_type>(_Traits_find_not_ch<_Traits>(
+            _Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ch));
     }
 
 #if _HAS_CXX17
@@ -2688,8 +2714,8 @@ public:
         noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for none of _Right before _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return static_cast<size_type>(_Traits_find_last_not_of<_Traits>(
-            _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _As_view.data(), _As_view.size()));
+        return static_cast<size_type>(_Traits_find_last_not_of<_Traits>(_Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _As_view.data(), _As_view.size()));
     }
 #endif // _HAS_CXX17
 
@@ -2697,27 +2723,29 @@ public:
         const basic_string& _Right, const size_type _Off = npos) const noexcept {
         // look for none of _Right before _Off
         return static_cast<size_type>(_Traits_find_last_not_of<_Traits>(_Mypair._Myval2._Myptr(),
-            _Mypair._Myval2._Mysize, _Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize));
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Right._Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Right._Mypair._Myval2._Mysize)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_last_not_of(_In_reads_(_Count) const _Elem* const _Ptr, const size_type _Off,
         const size_type _Count) const noexcept /* strengthened */ {
         // look for none of [_Ptr, _Ptr + _Count) before _Off
         return static_cast<size_type>(
-            _Traits_find_last_not_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Count));
+            _Traits_find_last_not_of<_Traits>(_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize),
+                static_cast<size_t>(_Off), _Ptr, static_cast<size_t>(_Count)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_last_not_of(
         _In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept /* strengthened */ {
         // look for none of [_Ptr, <null>) before _Off
-        return static_cast<size_type>(_Traits_find_last_not_of<_Traits>(
-            _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
+        return static_cast<size_type>(_Traits_find_last_not_of<_Traits>(_Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ptr, _Traits::length(_Ptr)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_last_not_of(const _Elem _Ch, const size_type _Off = npos) const noexcept {
         // look for non-_Ch before _Off
-        return static_cast<size_type>(
-            _Traits_rfind_not_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
+        return static_cast<size_type>(_Traits_rfind_not_ch<_Traits>(
+            _Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ch));
     }
 
 #if _HAS_CXX17
@@ -2747,13 +2775,14 @@ public:
 
     _CONSTEXPR20 bool _Equal(const basic_string& _Right) const noexcept {
         // compare [0, size()) with _Right for equality
-        return _Traits_equal<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize,
-            _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+        return _Traits_equal<_Traits>(_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize),
+            _Right._Mypair._Myval2._Myptr(), static_cast<size_t>(_Right._Mypair._Myval2._Mysize));
     }
 
     _CONSTEXPR20 bool _Equal(_In_z_ const _Elem* const _Ptr) const noexcept {
         // compare [0, size()) with _Ptr for equality
-        return _Traits_equal<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Ptr, _Traits::length(_Ptr));
+        return _Traits_equal<_Traits>(
+            _Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize), _Ptr, _Traits::length(_Ptr));
     }
 
 #if _HAS_CXX17
@@ -2763,7 +2792,7 @@ public:
         // compare [0, size()) with _Right
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return _Traits_compare<_Traits>(
-            _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _As_view.data(), _As_view.size());
+            _Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize), _As_view.data(), _As_view.size());
     }
 
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
@@ -2771,8 +2800,8 @@ public:
         // compare [_Off, _Off + _Nx) with _Right
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         _Mypair._Myval2._Check_offset(_Off);
-        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx),
-            _As_view.data(), _As_view.size());
+        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off,
+            static_cast<size_t>(_Mypair._Myval2._Clamp_suffix_size(_Off, _Nx)), _As_view.data(), _As_view.size());
     }
 
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
@@ -2781,23 +2810,25 @@ public:
         // compare [_Off, _Off + _Nx) with _Right [_Roff, _Roff + _Count)
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         _Mypair._Myval2._Check_offset(_Off);
-        const auto _With_substr = _As_view.substr(_Roff, _Count);
-        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx),
-            _With_substr.data(), _With_substr.size());
+        const auto _With_substr = _As_view.substr(static_cast<size_t>(_Roff), static_cast<size_t>(_Count));
+        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off,
+            static_cast<size_t>(_Mypair._Myval2._Clamp_suffix_size(_Off, _Nx)), _With_substr.data(),
+            _With_substr.size());
     }
 #endif // _HAS_CXX17
 
     _NODISCARD _CONSTEXPR20 int compare(const basic_string& _Right) const noexcept {
         // compare [0, size()) with _Right
-        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize,
-            _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize),
+            _Right._Mypair._Myval2._Myptr(), static_cast<size_t>(_Right._Mypair._Myval2._Mysize));
     }
 
     _NODISCARD _CONSTEXPR20 int compare(size_type _Off, size_type _Nx, const basic_string& _Right) const {
         // compare [_Off, _Off + _Nx) with _Right
         _Mypair._Myval2._Check_offset(_Off);
-        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx),
-            _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off,
+            static_cast<size_t>(_Mypair._Myval2._Clamp_suffix_size(_Off, _Nx)), _Right._Mypair._Myval2._Myptr(),
+            static_cast<size_t>(_Right._Mypair._Myval2._Mysize));
     }
 
     _NODISCARD _CONSTEXPR20 int compare(const size_type _Off, const size_type _Nx, const basic_string& _Right,
@@ -2805,68 +2836,79 @@ public:
         // compare [_Off, _Off + _Nx) with _Right [_Roff, _Roff + _Count)
         _Mypair._Myval2._Check_offset(_Off);
         _Right._Mypair._Myval2._Check_offset(_Roff);
-        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx),
-            _Right._Mypair._Myval2._Myptr() + _Roff, _Right._Mypair._Myval2._Clamp_suffix_size(_Roff, _Count));
+        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off,
+            static_cast<size_t>(_Mypair._Myval2._Clamp_suffix_size(_Off, _Nx)), _Right._Mypair._Myval2._Myptr() + _Roff,
+            static_cast<size_t>(_Right._Mypair._Myval2._Clamp_suffix_size(_Roff, _Count)));
     }
 
     _NODISCARD _CONSTEXPR20 int compare(_In_z_ const _Elem* const _Ptr) const noexcept /* strengthened */ {
         // compare [0, size()) with [_Ptr, <null>)
-        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Ptr, _Traits::length(_Ptr));
+        return _Traits_compare<_Traits>(
+            _Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize), _Ptr, _Traits::length(_Ptr));
     }
 
     _NODISCARD _CONSTEXPR20 int compare(
         const size_type _Off, const size_type _Nx, _In_z_ const _Elem* const _Ptr) const {
         // compare [_Off, _Off + _Nx) with [_Ptr, <null>)
         _Mypair._Myval2._Check_offset(_Off);
-        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx),
-            _Ptr, _Traits::length(_Ptr));
+        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off,
+            static_cast<size_t>(_Mypair._Myval2._Clamp_suffix_size(_Off, _Nx)), _Ptr, _Traits::length(_Ptr));
     }
 
     _NODISCARD _CONSTEXPR20 int compare(const size_type _Off, const size_type _Nx,
         _In_reads_(_Count) const _Elem* const _Ptr, const size_type _Count) const {
         // compare [_Off, _Off + _Nx) with [_Ptr, _Ptr + _Count)
         _Mypair._Myval2._Check_offset(_Off);
-        return _Traits_compare<_Traits>(
-            _Mypair._Myval2._Myptr() + _Off, _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx), _Ptr, _Count);
+        return _Traits_compare<_Traits>(_Mypair._Myval2._Myptr() + _Off,
+            static_cast<size_t>(_Mypair._Myval2._Clamp_suffix_size(_Off, _Nx)), _Ptr, static_cast<size_t>(_Count));
     }
 
 #if _HAS_CXX20
     _NODISCARD constexpr bool starts_with(const basic_string_view<_Elem, _Traits> _Right) const noexcept {
-        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.starts_with(_Right);
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize)}
+            .starts_with(_Right);
     }
 
     _NODISCARD constexpr bool starts_with(const _Elem _Right) const noexcept {
-        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.starts_with(_Right);
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize)}
+            .starts_with(_Right);
     }
 
     _NODISCARD constexpr bool starts_with(const _Elem* const _Right) const noexcept /* strengthened */ {
-        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.starts_with(_Right);
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize)}
+            .starts_with(_Right);
     }
 
     _NODISCARD constexpr bool ends_with(const basic_string_view<_Elem, _Traits> _Right) const noexcept {
-        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.ends_with(_Right);
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize)}
+            .ends_with(_Right);
     }
 
     _NODISCARD constexpr bool ends_with(const _Elem _Right) const noexcept {
-        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.ends_with(_Right);
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize)}
+            .ends_with(_Right);
     }
 
     _NODISCARD constexpr bool ends_with(const _Elem* const _Right) const noexcept /* strengthened */ {
-        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.ends_with(_Right);
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize)}
+            .ends_with(_Right);
     }
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23
     _NODISCARD constexpr bool contains(const basic_string_view<_Elem, _Traits> _Right) const noexcept {
-        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.contains(_Right);
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize)}
+            .contains(_Right);
     }
 
     _NODISCARD constexpr bool contains(const _Elem _Right) const noexcept {
-        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.contains(_Right);
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize)}
+            .contains(_Right);
     }
 
     _NODISCARD constexpr bool contains(const _Elem* const _Right) const noexcept /* strengthened */ {
-        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize}.contains(_Right);
+        return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize)}
+            .contains(_Right);
     }
 #endif // _HAS_CXX23
 
@@ -2877,7 +2919,7 @@ public:
 private:
     _NODISCARD static _CONSTEXPR20 size_type _Calculate_growth(
         const size_type _Requested, const size_type _Old, const size_type _Max) noexcept {
-        const size_type _Masked = _Requested | _Alloc_mask;
+        const auto _Masked = static_cast<size_type>(_Requested | _Alloc_mask);
         if (_Masked > _Max) { // the mask overflows, settle for max_size()
             return _Max;
         }
@@ -2886,7 +2928,7 @@ private:
             return _Max;
         }
 
-        return (_STD max)(_Masked, _Old + _Old / 2);
+        return (_STD max) (_Masked, static_cast<size_type>(_Old + _Old / 2));
     }
 
     _NODISCARD _CONSTEXPR20 size_type _Calculate_growth(const size_type _Requested) const noexcept {
@@ -2932,7 +2974,7 @@ private:
             _Xlen_string(); // result too long
         }
 
-        const size_type _New_size     = _Old_size + _Size_increase;
+        const auto _New_size          = static_cast<size_type>(_Old_size + _Size_increase);
         const size_type _Old_capacity = _My_data._Myres;
         size_type _New_capacity       = _Calculate_growth(_New_size);
         auto& _Al                     = _Getal();
@@ -2967,7 +3009,7 @@ private:
         _ASAN_STRING_REMOVE(*this);
         const pointer _Ptr = _My_data._Bx._Ptr;
         _My_data._Bx._Switch_to_buf();
-        _Traits::copy(_My_data._Bx._Buf, _Unfancy(_Ptr), _My_data._Mysize + 1);
+        _Traits::copy(_My_data._Bx._Buf, _Unfancy(_Ptr), static_cast<size_t>(_My_data._Mysize + 1));
         auto& _Al = _Getal();
         _Deallocate_for_capacity(_Al, _Ptr, _My_data._Myres);
         _My_data._Myres = _Small_string_capacity;
@@ -2987,10 +3029,11 @@ private:
 
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Count <= _Mypair._Myval2._Myres - _Old_size) {
-            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
-            _Mypair._Myval2._Mysize = _Old_size + _Count;
+            const auto _New_size = static_cast<size_type>(_Old_size + _Count);
+            _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
+            _Mypair._Myval2._Mysize = _New_size;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
-            _STD _Traits_move_batch<_Traits>(_Old_ptr + _Old_size, _Ptr, _Count);
+            _STD _Traits_move_batch<_Traits>(_Old_ptr + _Old_size, _Ptr, static_cast<size_t>(_Count));
             _Traits::assign(_Old_ptr[_Old_size + _Count], _Elem());
             return *this;
         }
@@ -2999,8 +3042,8 @@ private:
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const _UElem* const _Ptr,
                 const size_type _Count) _STATIC_LAMBDA {
-                _Traits::copy(_New_ptr, _Old_ptr, _Old_size);
-                _STD _Traits_copy_batch<_Traits>(_New_ptr + _Old_size, _Ptr, _Count);
+                _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size));
+                _STD _Traits_copy_batch<_Traits>(_New_ptr + _Old_size, _Ptr, static_cast<size_t>(_Count));
                 _Traits::assign(_New_ptr[_Old_size + _Count], _Elem());
             },
             _Ptr, _Count);
@@ -3016,7 +3059,7 @@ private:
             _ASAN_STRING_REMOVE(*this);
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Mypair._Myval2._Mysize = _Count;
-            _STD _Traits_move_batch<_Traits>(_Old_ptr, _Ptr, _Count);
+            _STD _Traits_move_batch<_Traits>(_Old_ptr, _Ptr, static_cast<size_t>(_Count));
             _Traits::assign(_Old_ptr[_Count], _Elem());
             _ASAN_STRING_CREATE(*this);
             return *this;
@@ -3025,7 +3068,7 @@ private:
         return _Reallocate_for(
             _Count,
             [](_Elem* const _New_ptr, const size_type _Count, const _UElem* const _Ptr) _STATIC_LAMBDA {
-                _STD _Traits_copy_batch<_Traits>(_New_ptr, _Ptr, _Count);
+                _STD _Traits_copy_batch<_Traits>(_New_ptr, _Ptr, static_cast<size_t>(_Count));
                 _Traits::assign(_New_ptr[_Count], _Elem());
             },
             _Ptr);
@@ -3049,8 +3092,9 @@ private:
 #endif // ^^^ !_HAS_CXX20 ^^^
 
         if (_Check_overlap) {
-            _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Count);
-            _Mypair._Myval2._Mysize = _Old_size + _Count;
+            const auto _New_size = static_cast<size_type>(_Old_size + _Count);
+            _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
+            _Mypair._Myval2._Mysize = _New_size;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
             // the range [_Ptr, _Ptr + _Ptr_shifted_after) is left alone by moving the suffix out,
@@ -3065,10 +3109,11 @@ private:
                 _Ptr_shifted_after = static_cast<size_type>(_Insert_at - _Ptr);
             }
 
-            _Traits::move(_Insert_at + _Count, _Insert_at, _Old_size - _Off + 1); // move suffix + null down
-            _STD _Traits_copy_batch<_Traits>(_Insert_at, _Ptr, _Ptr_shifted_after);
-            _STD _Traits_copy_batch<_Traits>(
-                _Insert_at + _Ptr_shifted_after, _Ptr + _Count + _Ptr_shifted_after, _Count - _Ptr_shifted_after);
+            _Traits::move(
+                _Insert_at + _Count, _Insert_at, static_cast<size_t>(_Old_size - _Off + 1)); // move suffix + null down
+            _STD _Traits_copy_batch<_Traits>(_Insert_at, _Ptr, static_cast<size_t>(_Ptr_shifted_after));
+            _STD _Traits_copy_batch<_Traits>(_Insert_at + _Ptr_shifted_after, _Ptr + _Count + _Ptr_shifted_after,
+                static_cast<size_t>(_Count - _Ptr_shifted_after));
             return *this;
         }
 
@@ -3076,9 +3121,9 @@ private:
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
                 const _UElem* const _Ptr, const size_type _Count) _STATIC_LAMBDA {
-                _Traits::copy(_New_ptr, _Old_ptr, _Off);
-                _STD _Traits_copy_batch<_Traits>(_New_ptr + _Off, _Ptr, _Count);
-                _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off, _Old_size - _Off + 1);
+                _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Off));
+                _STD _Traits_copy_batch<_Traits>(_New_ptr + _Off, _Ptr, static_cast<size_t>(_Count));
+                _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off, static_cast<size_t>(_Old_size - _Off + 1));
             },
             _Off, _Ptr, _Count);
     }
@@ -3092,19 +3137,19 @@ private:
         _Mypair._Myval2._Check_offset(_Off);
         _Nx = _Mypair._Myval2._Clamp_suffix_size(_Off, _Nx);
         if (_Nx == _Count) { // size doesn't change, so a single move does the trick
-            _STD _Traits_move_batch<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Ptr, _Count);
+            _STD _Traits_move_batch<_Traits>(_Mypair._Myval2._Myptr() + _Off, _Ptr, static_cast<size_t>(_Count));
             return *this;
         }
 
-        const size_type _Old_size    = _Mypair._Myval2._Mysize;
-        const size_type _Suffix_size = _Old_size - _Nx - _Off + 1;
+        const size_type _Old_size = _Mypair._Myval2._Mysize;
+        const auto _Suffix_size   = static_cast<size_type>(_Old_size - _Nx - _Off + 1);
         if (_Count < _Nx) { // suffix shifts backwards; we don't have to move anything out of the way
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
-            _STD _Traits_move_batch<_Traits>(_Insert_at, _Ptr, _Count);
-            _Traits::move(_Insert_at + _Count, _Insert_at + _Nx, _Suffix_size);
+            _STD _Traits_move_batch<_Traits>(_Insert_at, _Ptr, static_cast<size_t>(_Count));
+            _Traits::move(_Insert_at + _Count, _Insert_at + _Nx, static_cast<size_t>(_Suffix_size));
 
-            const auto _New_size = _Old_size - (_Nx - _Count);
+            const auto _New_size = static_cast<size_type>(_Old_size - (_Nx - _Count));
             _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
             _Mypair._Myval2._Mysize = _New_size;
             return *this;
@@ -3119,8 +3164,9 @@ private:
 #endif // _HAS_CXX20
         {
             if (_Growth <= _Mypair._Myval2._Myres - _Old_size) { // growth fits
-                _ASAN_STRING_MODIFY(*this, _Old_size, _Old_size + _Growth);
-                _Mypair._Myval2._Mysize = _Old_size + _Growth;
+                const auto _New_size = static_cast<size_type>(_Old_size + _Growth);
+                _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
+                _Mypair._Myval2._Mysize = _New_size;
                 _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
                 _Elem* const _Insert_at = _Old_ptr + _Off;
                 _Elem* const _Suffix_at = _Insert_at + _Nx;
@@ -3134,15 +3180,15 @@ private:
                     _Ptr_shifted_after = static_cast<size_type>(_Suffix_at - _Ptr);
                 }
 
-                _Traits::move(_Suffix_at + _Growth, _Suffix_at, _Suffix_size);
+                _Traits::move(_Suffix_at + _Growth, _Suffix_at, static_cast<size_t>(_Suffix_size));
                 // next case must be move, in case _Ptr begins before _Insert_at and contains part of the hole;
                 // this case doesn't occur in insert because the new content must come from outside the removed
                 // content there (because in insert there is no removed content)
-                _STD _Traits_move_batch<_Traits>(_Insert_at, _Ptr, _Ptr_shifted_after);
+                _STD _Traits_move_batch<_Traits>(_Insert_at, _Ptr, static_cast<size_t>(_Ptr_shifted_after));
                 // the next case can be copy, because it comes from the chunk moved out of the way in the
                 // first move, and the hole we're filling can't alias the chunk we moved out of the way
-                _STD _Traits_copy_batch<_Traits>(
-                    _Insert_at + _Ptr_shifted_after, _Ptr + _Growth + _Ptr_shifted_after, _Count - _Ptr_shifted_after);
+                _STD _Traits_copy_batch<_Traits>(_Insert_at + _Ptr_shifted_after, _Ptr + _Growth + _Ptr_shifted_after,
+                    static_cast<size_t>(_Count - _Ptr_shifted_after));
                 return *this;
             }
         }
@@ -3151,9 +3197,10 @@ private:
             _Growth,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
                 const size_type _Nx, const _UElem* const _Ptr, const size_type _Count) _STATIC_LAMBDA {
-                _Traits::copy(_New_ptr, _Old_ptr, _Off);
-                _STD _Traits_copy_batch<_Traits>(_New_ptr + _Off, _Ptr, _Count);
-                _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off + _Nx, _Old_size - _Nx - _Off + 1);
+                _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Off));
+                _STD _Traits_copy_batch<_Traits>(_New_ptr + _Off, _Ptr, static_cast<size_t>(_Count));
+                _Traits::copy(
+                    _New_ptr + _Off + _Count, _Old_ptr + _Off + _Nx, static_cast<size_t>(_Old_size - _Nx - _Off + 1));
             },
             _Off, _Nx, _Ptr, _Count);
     }
@@ -3194,6 +3241,8 @@ private:
 
     _Compressed_pair<_Alty, _Scary_val> _Mypair;
 };
+
+#pragma warning(pop)
 
 #if _HAS_CXX17
 template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
@@ -3468,7 +3517,7 @@ template <class _Elem, class _Alloc>
 struct hash<basic_string<_Elem, char_traits<_Elem>, _Alloc>>
     : _Conditionally_enabled_hash<basic_string<_Elem, char_traits<_Elem>, _Alloc>, _Is_EcharT<_Elem>> {
     _NODISCARD static size_t _Do_hash(const basic_string<_Elem, char_traits<_Elem>, _Alloc>& _Keyval) noexcept {
-        return _Hash_array_representation(_Keyval.c_str(), _Keyval.size());
+        return _Hash_array_representation(_Keyval.c_str(), static_cast<size_t>(_Keyval.size()));
     }
 };
 

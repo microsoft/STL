@@ -14,7 +14,6 @@ struct S { // Must be declared at namespace scope due to static data member
 };
 
 constexpr bool test() {
-#if defined(__cpp_lib_is_layout_compatible) && defined(__cpp_lib_is_pointer_interconvertible) // TRANSITION, LLVM-48860
     // is_layout_compatible tests
     {
         struct S0 {
@@ -42,14 +41,28 @@ constexpr bool test() {
             int v1;
 
         private:
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-private-field"
+#endif // defined(__clang__)
             int v2;
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // defined(__clang__)
         };
 
         struct S5 {
             int v1;
 
         private:
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-private-field"
+#endif // defined(__clang__)
             int v2;
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // defined(__clang__)
         };
 
         enum E1 { e1, e2, e3, e4 };
@@ -94,13 +107,21 @@ constexpr bool test() {
             int : 0;
         };
         class D : public C {};
-// Disable warning C4408: anonymous union did not declare any data members
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-declarations"
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #pragma warning(push)
-#pragma warning(disable : 4408)
+#pragma warning(disable : 4408) // C4408: anonymous union did not declare any data members
+#endif // ^^^ !defined(__clang__) ^^^
         class E : public A {
             union {};
         };
+#ifdef __clang__
+#pragma clang diagnostic pop
+#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 #pragma warning(pop)
+#endif // ^^^ !defined(__clang__) ^^^
         class F : private A {}; // Non-public inheritance
         class NS : public B, public C {}; // Non-standard layout
         class I; // Incomplete
@@ -134,6 +155,7 @@ constexpr bool test() {
         ASSERT(!is_pointer_interconvertible_base_of_v<U, I>);
     }
 
+#ifndef __clang__ // TRANSITION, LLVM-48860
     // is_corresponding_member tests
     {
         struct S1 {
@@ -199,9 +221,7 @@ constexpr bool test() {
         ASSERT(!is_corresponding_member(&S5::v1, &S6::v2));
         ASSERT(!is_corresponding_member(&S5::v2, &S6::v1));
         ASSERT(!is_corresponding_member(&S5::v3, &S6::v3));
-#ifndef _M_CEE // TRANSITION, VSO-2417635
-        ASSERT(!is_corresponding_member<NS, NS>(&NS::v1, &NS::w1));
-#endif // ^^^ no workaround ^^^
+        ASSERT(!is_corresponding_member<NS, NS, int, int>(&NS::v1, &NS::w1));
         ASSERT(!is_corresponding_member(&S7::f1, &S7::f1));
         ASSERT(!is_corresponding_member(static_cast<int S1::*>(nullptr), static_cast<int S2::*>(nullptr)));
         ASSERT(!is_corresponding_member(&S1::v1, static_cast<int S2::*>(nullptr)));
@@ -235,14 +255,12 @@ constexpr bool test() {
         ASSERT(is_pointer_interconvertible_with_class(&U::v1));
         ASSERT(is_pointer_interconvertible_with_class(&U::v2));
 
-        ASSERT(!is_pointer_interconvertible_with_class<NS>(&NS::a));
-#ifndef _M_CEE // TRANSITION, VSO-2417635
-        ASSERT(!is_pointer_interconvertible_with_class<NS>(&NS::b));
-#endif // ^^^ no workaround ^^^
+        ASSERT(!is_pointer_interconvertible_with_class<NS, int>(&NS::a));
+        ASSERT(!is_pointer_interconvertible_with_class<NS, int>(&NS::b));
         ASSERT(!is_pointer_interconvertible_with_class(&C::f1));
         ASSERT(!is_pointer_interconvertible_with_class(static_cast<int A::*>(nullptr)));
     }
-#endif // ^^^ defined(__cpp_lib_is_layout_compatible) && defined(__cpp_lib_is_pointer_interconvertible) ^^^
+#endif // ^^^ no workaround ^^^
     return true;
 }
 

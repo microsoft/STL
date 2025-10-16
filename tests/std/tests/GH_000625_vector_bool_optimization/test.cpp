@@ -12,6 +12,12 @@
 #include <random>
 #include <vector>
 
+#if _HAS_CXX20
+#define CONSTEXPR20 constexpr
+#else
+#define CONSTEXPR20 inline
+#endif
+
 #pragma warning(disable : 4365) // conversion from 'unsigned __int64' to 'const __int64', signed/unsigned mismatch
 
 using namespace std;
@@ -20,29 +26,26 @@ constexpr int blockSize = 32;
 static_assert(blockSize == _VBITS, "Invalid block size");
 
 // This test data is not random, but irregular enough to ensure confidence in the tests
-// clang-format off
-const vector<bool> source = { true, false, true, false, true, true, true, false,
-                              true, false, true, false, true, true, true, false,
-                              true, false, true, false, true, true, true, false,
-                              true, false, true, false, true, true, true, false,
-                              true, false, true, false, true, true, true, false,
-                              true, false, true, false, true, true, true, false,
-                              true, false, true, false, true, true, true, false,
-                              true, false, true, false, true, true, true, false,
-                              true, false, true, false, true, true, true, false,
-                              true, false, true, false, true, true, true, false,
-                              true, false, true, false, true, true, true, false,
-                              true, false, true, false, true, true, true, false,
-                              true, false, true, false, true, true, true, false,
-                              true, false, true, false, true, true, true, false,
-                              true, false, true, false, true, true, true, false,
-                              true, false, true, false, true, true, true, false,
-                              true, false, true, false, true, true, true, false
-                            };
-// clang-format on
+constexpr bool source_raw[] = { //
+    true, false, true, false, true, true, true, false, //
+    true, false, true, false, true, true, true, false, //
+    true, false, true, false, true, true, true, false, //
+    true, false, true, false, true, true, true, false, //
+    true, false, true, false, true, true, true, false, //
+    true, false, true, false, true, true, true, false, //
+    true, false, true, false, true, true, true, false, //
+    true, false, true, false, true, true, true, false, //
+    true, false, true, false, true, true, true, false, //
+    true, false, true, false, true, true, true, false, //
+    true, false, true, false, true, true, true, false, //
+    true, false, true, false, true, true, true, false, //
+    true, false, true, false, true, true, true, false, //
+    true, false, true, false, true, true, true, false, //
+    true, false, true, false, true, true, true, false, //
+    true, false, true, false, true, true, true, false, //
+    true, false, true, false, true, true, true, false};
 
-
-void test_fill_helper(const size_t length) {
+CONSTEXPR20 void test_fill_helper(const size_t length) {
     // No offset
     {
         vector<bool> result_true(length, true);
@@ -104,7 +107,7 @@ void test_fill_helper(const size_t length) {
     }
 }
 
-bool test_fill() {
+CONSTEXPR20 bool test_fill() {
     // Empty
     test_fill_helper(0);
 
@@ -128,7 +131,7 @@ bool test_fill() {
     return true;
 }
 
-void test_find_helper(const size_t length) {
+CONSTEXPR20 void test_find_helper(const size_t length) {
     // No offset
     {
         vector<bool> input_true(length + 3, false);
@@ -162,7 +165,7 @@ void test_find_helper(const size_t length) {
     }
 }
 
-bool test_find() {
+CONSTEXPR20 bool test_find() {
     // Empty range
     test_find_helper(0);
 
@@ -180,10 +183,11 @@ bool test_find() {
     return true;
 }
 
-void test_count_helper(const ptrdiff_t length) {
+CONSTEXPR20 void test_count_helper(const ptrdiff_t length) {
+    const vector<bool> source(begin(source_raw), end(source_raw));
     const int counts_true[]  = {0, 1, 1, 2, 2, 3, 4, 5};
     const int counts_false[] = {0, 0, 1, 1, 2, 2, 2, 2};
-    const auto expected      = div(static_cast<int>(length), 8);
+    const div_t expected     = {static_cast<int>(length) / 8, static_cast<int>(length) % 8};
     // No offset
     {
         const auto result_true = static_cast<int>(count(source.cbegin(), next(source.cbegin(), length), true));
@@ -205,7 +209,7 @@ void test_count_helper(const ptrdiff_t length) {
     }
 }
 
-bool test_count() {
+CONSTEXPR20 bool test_count() {
     // Empty range
     test_count_helper(0);
 
@@ -261,48 +265,52 @@ void test_huge_vector_bool() {
     assert(count(v.begin(), v.end(), false) == large_bit_diff - 3);
 }
 
-void test_copy_no_offset(const size_t length) {
+CONSTEXPR20 void test_copy_no_offset(const size_t length) {
     vector<bool> result;
-    // clang-format off
     switch (length) {
     case 3:
-        result = { true, false, true };
+        result = {true, false, true};
         break;
     case 8:
-        result = { true, false, true, false, true, true, true, false };
+        result = {true, false, true, false, true, true, true, false};
         break;
     case 22:
-        result = { true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true };
+        result = {//
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true};
         break;
     case 31:
-        result = { true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true };
+        result = {//
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true};
         break;
     case 32:
-        result = { true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false };
+        result = {//
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false};
         break;
     case 67:
-        result = { true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true };
+        result = {//
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true};
         break;
     default:
         assert(false);
     }
-    // clang-format on
+
+    const vector<bool> source(begin(source_raw), end(source_raw));
 
     {
         vector<bool> dest(length, false);
@@ -341,50 +349,55 @@ void test_copy_no_offset(const size_t length) {
     }
 }
 
-void test_copy_offset_source(const size_t length) {
+CONSTEXPR20 void test_copy_offset_source(const size_t length) {
     vector<bool> result;
-    // clang-format off
     switch (length) {
     case 3:
-        result = {       false, true, false};
+        result = {/***/ false, true, false};
         break;
     case 8:
-        result = {       false, true, false, true, true, true, false,
-                   true };
+        result = {//
+            /***/ false, true, false, true, true, true, false, //
+            true};
         break;
     case 22:
-        result = {       false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true };
+        result = {//
+            /***/ false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true};
         break;
     case 31:
-        result = {       false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false };
+        result = {//
+            /***/ false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false};
         break;
     case 32:
-        result = {       false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true};
+        result = {//
+            /***/ false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true};
         break;
     case 67:
-        result = {       false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false };
+        result = {//
+            /***/ false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false};
         break;
     default:
         assert(false);
     }
-    // clang-format on
+
+    const vector<bool> source(begin(source_raw), end(source_raw));
 
     {
         vector<bool> dest(length, false);
@@ -424,54 +437,60 @@ void test_copy_offset_source(const size_t length) {
     }
 }
 
-void test_copy_offset_dest(const size_t length) {
+CONSTEXPR20 void test_copy_offset_dest(const size_t length) {
     vector<bool> result;
-    // clang-format off
     switch (length) {
     case 3:
-        result = { false,
-                   true, false, true };
+        result = {//
+            false, //
+            true, false, true};
         break;
     case 8:
-        result = { false,
-                   true, false, true, false, true, true, true, false };
+        result = {//
+            false, //
+            true, false, true, false, true, true, true, false};
         break;
     case 22:
-        result = { false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true };
+        result = {//
+            false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true};
         break;
     case 31:
-        result = { false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true };
+        result = {//
+            false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true};
         break;
     case 32:
-        result = { false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false };
+        result = {//
+            false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false};
         break;
     case 67:
-        result = { false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true };
+        result = {//
+            false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true};
         break;
     default:
         assert(false);
     }
-    // clang-format on
+
+    const vector<bool> source(begin(source_raw), end(source_raw));
 
     {
         vector<bool> dest(length + 1, false);
@@ -510,54 +529,60 @@ void test_copy_offset_dest(const size_t length) {
     }
 }
 
-void test_copy_offset_match(const size_t length) {
+CONSTEXPR20 void test_copy_offset_match(const size_t length) {
     vector<bool> result;
-    // clang-format off
     switch (length) {
     case 3:
-        result = { false,
-                         false, true };
+        result = {//
+            false, //
+            /***/ false, true};
         break;
     case 8:
-        result = { false,
-                         false, true, false, true, true, true, false };
+        result = {//
+            false, //
+            /***/ false, true, false, true, true, true, false};
         break;
     case 22:
-        result = { false,
-                         false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true };
+        result = {//
+            false, //
+            /***/ false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true};
         break;
     case 31:
-        result = { false,
-                         false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true };
+        result = {//
+            false, //
+            /***/ false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true};
         break;
     case 32:
-        result = { false,
-                         false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false };
+        result = {//
+            false, //
+            /***/ false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false};
         break;
     case 67:
-        result = { false,
-                         false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true };
+        result = {//
+            false, //
+            /***/ false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true};
         break;
     default:
         assert(false);
     }
-    // clang-format on
+
+    const vector<bool> source(begin(source_raw), end(source_raw));
 
     {
         vector<bool> dest(length, false);
@@ -597,54 +622,60 @@ void test_copy_offset_match(const size_t length) {
     }
 }
 
-void test_copy_offset_mismatch_leftshift(const size_t length) {
+CONSTEXPR20 void test_copy_offset_mismatch_leftshift(const size_t length) {
     vector<bool> result;
-    // clang-format off
     switch (length) {
     case 3:
-        result = { false, false,
-                         false, true };
+        result = {//
+            false, false, //
+            /***/ false, true};
         break;
     case 8:
-        result = { false, false,
-                         false, true, false, true, true, true, false };
+        result = {//
+            false, false, //
+            /***/ false, true, false, true, true, true, false};
         break;
     case 22:
-        result = { false, false,
-                         false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true };
+        result = {//
+            false, false, //
+            /***/ false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true};
         break;
     case 31:
-        result = { false, false,
-                         false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true };
+        result = {//
+            false, false, //
+            /***/ false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true};
         break;
     case 32:
-        result = { false, false,
-                         false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false };
+        result = {//
+            false, false, //
+            /***/ false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false};
         break;
     case 67:
-        result = { false, false,
-                         false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true };
+        result = {//
+            false, false, //
+            /***/ false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true};
         break;
     default:
         assert(false);
     }
-    // clang-format on
+
+    const vector<bool> source(begin(source_raw), end(source_raw));
 
     {
         vector<bool> dest(length + 1, false);
@@ -684,56 +715,62 @@ void test_copy_offset_mismatch_leftshift(const size_t length) {
     }
 }
 
-void test_copy_offset_mismatch_rightshift(const size_t length) {
+CONSTEXPR20 void test_copy_offset_mismatch_rightshift(const size_t length) {
     vector<bool> result;
-    // clang-format off
     switch (length) {
     case 3:
-        result = { false,
-                                true, false };
+        result = {//
+            false, //
+            /**********/ true, false};
         break;
     case 8:
-        result = { false,
-                                true, false, true, true, true, false,
-                   true };
+        result = {//
+            false, //
+            /**********/ true, false, true, true, true, false, //
+            true};
         break;
     case 22:
-        result = { false,
-                                true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true };
+        result = {//
+            false, //
+            /**********/ true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true};
         break;
     case 31:
-        result = { false,
-                                true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false };
+        result = {//
+            false, //
+            /**********/ true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false};
         break;
     case 32:
-        result = { false,
-                                true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true };
+        result = {//
+            false, //
+            /**********/ true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true};
         break;
     case 67:
-        result = { false,
-                                true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false };
+        result = {//
+            false, //
+            /**********/ true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false};
         break;
     default:
         assert(false);
     }
-    // clang-format on
+
+    const vector<bool> source(begin(source_raw), end(source_raw));
 
     {
         vector<bool> dest(length, false);
@@ -773,54 +810,60 @@ void test_copy_offset_mismatch_rightshift(const size_t length) {
     }
 }
 
-void test_copy_offset_aligned(const size_t length) {
+CONSTEXPR20 void test_copy_offset_aligned(const size_t length) {
     vector<bool> result;
-    // clang-format off
     switch (length) {
     case 3:
-        result = { false,
-                         false, true };
+        result = {//
+            false, //
+            /***/ false, true};
         break;
     case 8:
-        result = { false,
-                         false, true, false, true, true, true, false };
+        result = {//
+            false, //
+            /***/ false, true, false, true, true, true, false};
         break;
     case 22:
-        result = { false,
-                         false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true };
+        result = {//
+            false, //
+            /***/ false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true};
         break;
     case 31:
-        result = { false,
-                         false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true };
+        result = {//
+            false, //
+            /***/ false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true};
         break;
     case 32:
-        result = { false,
-                         false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false };
+        result = {//
+            false, //
+            /***/ false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false};
         break;
     case 67:
-        result = { false,
-                         false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true, false, true, true, true, false,
-                   true, false, true };
+        result = {//
+            false, //
+            /***/ false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true, false, true, true, true, false, //
+            true, false, true};
         break;
     default:
         assert(false);
     }
-    // clang-format on
+
+    const vector<bool> source(begin(source_raw), end(source_raw));
 
     {
         vector<bool> dest(length, false);
@@ -860,7 +903,9 @@ void test_copy_offset_aligned(const size_t length) {
     }
 }
 
-void test_copy_sub_char() {
+CONSTEXPR20 void test_copy_sub_char() {
+    const vector<bool> source(begin(source_raw), end(source_raw));
+
     { // sub char copy unaligned
         const vector<bool> result = {false, false, true, false, true, false, false, false};
 
@@ -1069,7 +1114,7 @@ void test_copy_sub_char() {
     }
 }
 
-void test_copy_regression() {
+CONSTEXPR20 void test_copy_regression() {
     // This specific case was found by the randomized coverage below.
     const vector<bool> src = {0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0,
         1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0,
@@ -1092,7 +1137,8 @@ void test_copy_regression() {
     assert(dst == correct);
 }
 
-bool test_copy() {
+// Test copy() in multiple parts to stay within constexpr step limits.
+CONSTEXPR20 bool test_copy_part_1() {
     test_copy_no_offset(3);
     test_copy_no_offset(8);
     test_copy_no_offset(22);
@@ -1121,6 +1167,10 @@ bool test_copy() {
     test_copy_offset_match(32);
     test_copy_offset_match(67);
 
+    return true;
+}
+
+CONSTEXPR20 bool test_copy_part_2() {
     test_copy_offset_mismatch_leftshift(3);
     test_copy_offset_mismatch_leftshift(8);
     test_copy_offset_mismatch_leftshift(22);
@@ -1331,13 +1381,23 @@ static_assert(test_gh_5345<64>());
 static_assert(test_gh_5345<64, 16>());
 static_assert(test_gh_5345<120>());
 static_assert(test_gh_5345<120, 31>());
+
+static_assert(test_fill());
+static_assert(test_find());
+static_assert(test_count());
+
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2574489
+static_assert(test_copy_part_1());
+static_assert(test_copy_part_2());
+#endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX20
 
 int main() {
     test_fill();
     test_find();
     test_count();
-    test_copy();
+    test_copy_part_1();
+    test_copy_part_2();
 
     test_huge_vector_bool();
 
