@@ -61,16 +61,18 @@ void test_to_chars(benchmark::State& state) {
 
     char buf[2'000]; // more than enough
 
-    auto it = vec.begin();
-    for (auto _ : state) {
-        auto result = to_chars(buf, end(buf), *it, Args...);
+    {
+        auto it = vec.begin();
+        for (auto _ : state) {
+            auto result = to_chars(buf, end(buf), *it, Args...);
 
-        benchmark::DoNotOptimize(result.ptr);
-        benchmark::DoNotOptimize(buf);
+            benchmark::DoNotOptimize(result.ptr);
+            benchmark::DoNotOptimize(buf);
 
-        ++it;
-        if (it == vec.end()) {
-            it = vec.begin();
+            ++it;
+            if (it == vec.end()) {
+                it = vec.begin();
+            }
         }
     }
 
