@@ -59,10 +59,7 @@ void test_to_chars(benchmark::State& state, const Args&... args) {
         if ((val & inf_nan) == inf_nan) {
             continue; // skip INF/NAN
         }
-        Floating flt;
-        static_assert(sizeof(flt) == sizeof(val));
-        memcpy(&flt, &val, sizeof(flt));
-        vec.push_back(flt);
+        vec.push_back(bit_cast<Floating>(val));
     }
 
     char buf[BufSize];
