@@ -44,8 +44,6 @@ template <RoundTrip Rt, typename Floating, auto... Args>
 void test_to_chars(benchmark::State& state) {
     constexpr size_t n = 2'000'000; // how many floating-point values to test
 
-    constexpr size_t BufSize = 2'000; // more than enough
-
     mt19937_64 mt64;
 
     vector<Floating> vec;
@@ -61,11 +59,11 @@ void test_to_chars(benchmark::State& state) {
         vec.push_back(bit_cast<Floating>(val));
     }
 
-    char buf[BufSize];
+    char buf[2'000]; // more than enough
 
     auto it = vec.begin();
     for (auto _ : state) {
-        auto result = to_chars(buf, buf + BufSize, *it, Args...);
+        auto result = to_chars(buf, end(buf), *it, Args...);
 
         benchmark::DoNotOptimize(result.ptr);
         benchmark::DoNotOptimize(buf);
@@ -77,7 +75,7 @@ void test_to_chars(benchmark::State& state) {
     }
 
     for (const auto& elem : vec) {
-        const auto result = to_chars(buf, buf + BufSize, elem, Args...);
+        const auto result = to_chars(buf, end(buf), elem, Args...);
         verify(result.ec == errc{});
 
         if constexpr (Rt == RoundTrip::Lossy) {
