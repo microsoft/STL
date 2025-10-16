@@ -43,20 +43,20 @@ consteval chars_format chars_format_from_RoundTrip(const RoundTrip rt) {
 template <RoundTrip Rt, typename Floating, auto... Args>
 void test_to_chars(benchmark::State& state) {
     constexpr size_t n = 2'000'000; // how many floating-point values to test
-
-    mt19937_64 mt64;
-
     vector<Floating> vec;
-
     vec.reserve(n);
-    while (vec.size() < n) {
-        using Integral             = conditional_t<sizeof(Floating) == 4, uint32_t, uint64_t>;
-        const Integral val         = static_cast<Integral>(mt64());
-        constexpr Integral inf_nan = sizeof(Floating) == 4 ? 0x7F800000U : 0x7FF0000000000000ULL;
-        if ((val & inf_nan) == inf_nan) {
-            continue; // skip INF/NAN
+
+    {
+        mt19937_64 mt64;
+        while (vec.size() < n) {
+            using Integral             = conditional_t<sizeof(Floating) == 4, uint32_t, uint64_t>;
+            const Integral val         = static_cast<Integral>(mt64());
+            constexpr Integral inf_nan = sizeof(Floating) == 4 ? 0x7F800000U : 0x7FF0000000000000ULL;
+            if ((val & inf_nan) == inf_nan) {
+                continue; // skip INF/NAN
+            }
+            vec.push_back(bit_cast<Floating>(val));
         }
-        vec.push_back(bit_cast<Floating>(val));
     }
 
     char buf[2'000]; // more than enough
