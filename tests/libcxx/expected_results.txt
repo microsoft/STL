@@ -379,6 +379,10 @@ std/containers/container.adaptors/flat.multimap/flat.multimap.operations/lower_b
 std/containers/container.adaptors/flat.multimap/flat.multimap.operations/upper_bound_transparent.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.operations/upper_bound_transparent.pass.cpp:1 FAIL
 
+# FIXME! error: conversion function from 'pair<_Unrefwrap_t<int>, _Unrefwrap_t<int>>' to 'pair<const int &, const char &>' invokes a deleted function
+std/containers/container.adaptors/flat.map/flat.map.observers/comp.pass.cpp:2 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.observers/comp.pass.cpp:2 FAIL
+
 # P0533R9 constexpr For <cmath> And <cstdlib>
 std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
