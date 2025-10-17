@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // filesystem.cpp -- C++17 <filesystem> implementation
-// (see filesys.cpp for <experimental/filesystem> implementation)
 
 #include <clocale>
 #include <corecrt_terminate.h>

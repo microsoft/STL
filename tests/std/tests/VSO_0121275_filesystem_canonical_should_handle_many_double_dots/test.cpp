@@ -8,14 +8,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cwctype>
-#include <experimental/filesystem>
 #include <string>
 #include <system_error>
 
-#pragma warning(push) // TRANSITION, OS-23694920
-#pragma warning(disable : 4668) // 'MEOW' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
-#include <Windows.h>
-#pragma warning(pop)
+#include "experimental_filesystem.hpp"
 
 using namespace std;
 namespace fs = std::experimental::filesystem;
@@ -68,10 +64,7 @@ void exec_test_case(const fs::path& expectedAnswer, const fs::path& input) {
 }
 
 void exec_test_case_string(const fs::path& expectedAnswer, const fs::path& input) {
-    // This tests calling _Ugly stuff because we want to test the string based
-    // fallback which is used if GetFinalPathNameByHandleW cannot be called.
-    // Note that GetFinalPathNameByHandleW isn't being called at all until
-    // VSO-158882 gets fixed in Dev15 (or later).
+    // This tests calling _Ugly stuff because we want to test the string based fallback.
     fs::path canonicalPath;
     fs::path absPath = fs::absolute(input);
     _Canonicalize_string_only(canonicalPath, absPath);
@@ -95,42 +88,6 @@ void exec_test_input_path_too_long_behavior() {
     assert_canonical_path_too_long(input, "input 260");
     input.push_back(L'c');
     assert_canonical_path_too_long(input, "input 261");
-}
-
-STATIC_ASSERT(260 == MAX_PATH);
-
-void exec_test_output_path_too_long_behavior() {
-    // Make a long (> MAX_PATH) file, make a short (< MAX_PATH) symlink to it,
-    // and verify that canonical() fails with filename_too_long
-    wstring longName(LR"(\\?\)");
-    longName.append(fs::current_path().native());
-    longName.append(LR"(\path_longer_than_MAX_PATH)");
-    while (longName.size() < MAX_PATH) {
-        longName.append(L"_component");
-    }
-
-    longName.append(L".txt");
-
-    HANDLE hTouched = ::CreateFileW(longName.c_str(), FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
-        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_DELETE_ON_CLOSE, nullptr);
-
-    if (hTouched == INVALID_HANDLE_VALUE) {
-        const auto lastError = static_cast<unsigned int>(::GetLastError());
-        printf("Test failed because long target file could not be created. (Error 0x%08X)\n", lastError);
-        abort();
-    }
-
-    const wchar_t* const hardLinkFileName = L"Link_to_long_path.txt";
-    if (::CreateSymbolicLinkW(hardLinkFileName, longName.c_str(), 0) == 0) {
-        const auto lastError = static_cast<unsigned int>(::GetLastError());
-        printf("Test failed because symlink to long name could not be created. (Error 0x%08X)\n", lastError);
-        ::CloseHandle(hTouched);
-        abort();
-    }
-
-    assert_canonical_path_too_long(hardLinkFileName, "output");
-    assert(::DeleteFileW(hardLinkFileName) != 0);
-    ::CloseHandle(hTouched);
 }
 
 struct test_case_example {

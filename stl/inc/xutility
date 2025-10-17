@@ -25,9 +25,11 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("msvc")
 #pragma push_macro("intrinsic")
 #pragma push_macro("lifetimebound")
+#pragma push_macro("no_specializations")
 #undef msvc
 #undef intrinsic
 #undef lifetimebound
+#undef no_specializations
 
 #if defined(_CRTBLD) && defined(CRTDLL2)
 // TRANSITION, ABI: The vector algorithms are compiled into the import lib, so we disable their usage when building
@@ -445,16 +447,14 @@ auto _Max_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
 
 template <size_t _Element_size>
 size_t _Mismatch_vectorized(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
-    if constexpr (_Element_size == 1) {
-        return __std_mismatch_1(_First1, _First2, _Count);
-    } else if constexpr (_Element_size == 2) {
-        return __std_mismatch_2(_First1, _First2, _Count);
-    } else if constexpr (_Element_size == 4) {
-        return __std_mismatch_4(_First1, _First2, _Count);
-    } else if constexpr (_Element_size == 8) {
-        return __std_mismatch_8(_First1, _First2, _Count);
+    if constexpr (_Element_size % 8 == 0) {
+        return __std_mismatch_8(_First1, _First2, _Count * (_Element_size / 8)) / (_Element_size / 8);
+    } else if constexpr (_Element_size % 4 == 0) {
+        return __std_mismatch_4(_First1, _First2, _Count * (_Element_size / 4)) / (_Element_size / 4);
+    } else if constexpr (_Element_size % 2 == 0) {
+        return __std_mismatch_2(_First1, _First2, _Count * (_Element_size / 2)) / (_Element_size / 2);
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        return __std_mismatch_1(_First1, _First2, _Count * _Element_size) / _Element_size;
     }
 }
 _STD_END
@@ -876,17 +876,10 @@ namespace ranges {
                     return type_identity<decltype(iter_move(_STD declval<_Ty>()))>{}; // intentional ADL
                 } else if constexpr (_Can_deref<_Ty>) {
                     using _Ref = decltype(*_STD declval<_Ty>());
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1008447, VSO-2066340
-                    if constexpr (is_function_v<remove_reference_t<_Ref>>) {
-                        return type_identity<_Ref&>{};
-                    } else
-#endif // ^^^ workaround ^^^
-                    {
-                        if constexpr (is_lvalue_reference_v<_Ref>) {
-                            return type_identity<remove_reference_t<_Ref>&&>{};
-                        } else {
-                            return type_identity<_Ref>{};
-                        }
+                    if constexpr (is_lvalue_reference_v<_Ref>) {
+                        return type_identity<remove_reference_t<_Ref>&&>{};
+                    } else {
+                        return type_identity<_Ref>{};
                     }
                 } else {
                     return _Must_have_ADL_found_iter_move_or_be_dereferenceable{};
@@ -1600,10 +1593,10 @@ using _Guide_pair_t =
 #endif // ^^^ !_HAS_CXX23 ^^^
 
 _EXPORT_STD template <class _Ty>
-struct is_execution_policy : false_type {};
+struct _NO_SPECIALIZATIONS_CITING("N5014 [execpol.type]/3") is_execution_policy : false_type {};
 
 _EXPORT_STD template <class _Ty>
-constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
 
 // Note: The noexcept specifiers on all parallel algorithm overloads enforce termination as per
 // N4950 [execpol.seq]/2, [execpol.par]/2, [execpol.parunseq]/2, and [execpol.unseq]/2
@@ -2605,7 +2598,7 @@ namespace ranges {
     constexpr bool _Has_complete_elements<_Ty> = true;
 
     _EXPORT_STD template <class>
-    constexpr bool enable_borrowed_range = false;
+    constexpr bool enable_borrowed_range = false; // specializations allowed by N5014 [range.range]/6
 
     template <class _Rng>
     concept _Should_range_access = is_lvalue_reference_v<_Rng> || enable_borrowed_range<remove_cvref_t<_Rng>>;
@@ -3239,7 +3232,7 @@ namespace ranges {
     }
 
     _EXPORT_STD template <class>
-    constexpr bool disable_sized_range = false;
+    constexpr bool disable_sized_range = false; // specializations allowed by N5014 [range.sized]/3
 
     namespace _Size {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
@@ -3481,7 +3474,7 @@ namespace ranges {
         requires (!is_same_v<_Ty, view_interface<_Uty>>)
     void _Strictly_derived_from_view_interface_impl(view_interface<_Uty>*);
 
-    _EXPORT_STD template <class _Ty>
+    _EXPORT_STD template <class _Ty> // specializations allowed by N5014 [range.view]/7
     constexpr bool enable_view = derived_from<_Ty, view_base> || requires {
         _RANGES _Strictly_derived_from_view_interface_impl<remove_cv_t<_Ty>>(
             static_cast<remove_cv_t<_Ty>*>(nullptr)); // qualified: avoid ADL, handle incomplete types
@@ -5773,7 +5766,7 @@ namespace ranges {
         _It1 _First1, _It2 _First2, iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
         _STL_INTERNAL_CHECK(_Count >= 0);
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (_Vector_alg_in_search_is_safe<_It1, _It2, _Pr> && is_same_v<_Pj1, identity>
+        if constexpr (_Equal_memcmp_is_safe<_It1, _It2, _Pr> && is_same_v<_Pj1, identity>
                       && is_same_v<_Pj2, identity>) {
             if (!_STD is_constant_evaluated()) {
                 constexpr size_t _Elem_size = sizeof(iter_value_t<_It1>);
@@ -7789,6 +7782,7 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("lifetimebound")
 #pragma pop_macro("intrinsic")
 #pragma pop_macro("msvc")
