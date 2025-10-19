@@ -18,7 +18,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-// TRANSITION, ABI: The _Path_ish functions accepting filesystem::path or experimental::filesystem::path are templates
+// TRANSITION, ABI: The _Path_ish functions accepting filesystem::path are templates
 // which always use the same types as a workaround for user code deriving from iostreams types and
 // __declspec(dllexport)ing the derived types. Adding member functions to iostreams broke the ABI of such DLLs.
 // Deriving and __declspec(dllexport)ing standard library types is not supported, but in this particular case
@@ -30,36 +30,6 @@ namespace filesystem {
     _EXPORT_STD class path;
 }
 #endif // _HAS_CXX17
-
-#ifndef _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-#ifdef _M_CEE
-#define _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM 0
-#else // ^^^ defined(_M_CEE) / !defined(_M_CEE) vvv
-#define _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM 1
-#endif // ^^^ !defined(_M_CEE) ^^^
-#endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-
-#if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-namespace experimental {
-    namespace filesystem {
-        inline namespace v1 {
-            class path;
-        }
-    } // namespace filesystem
-} // namespace experimental
-#endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-
-// clang-format off
-template <class _Ty>
-constexpr bool _Is_any_path = _Is_any_of_v<_Ty
-#if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-    , experimental::filesystem::path
-#endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-#if _HAS_CXX17
-    , filesystem::path
-#endif // _HAS_CXX17
-    >;
-// clang-format on
 
 extern "C++" _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const char*, ios_base::openmode, int);
 extern "C++" _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const wchar_t*, ios_base::openmode, int);
@@ -325,15 +295,6 @@ public:
         return open(_Str.c_str(), _Mode, _Prot);
     }
 
-#if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-    template <class _Path_ish = experimental::filesystem::path>
-    basic_filebuf* open(
-        const _Identity_t<_Path_ish>& _Path, ios_base::openmode _Mode, int _Prot = ios_base::_Default_open_prot) {
-        // _Prot is an extension
-        return open(_Path.c_str(), _Mode, _Prot);
-    }
-#endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-
 #if _HAS_CXX17
     template <int = 0, class _Path_ish = filesystem::path>
     basic_filebuf* open(
@@ -548,7 +509,7 @@ protected:
             const auto _Start_count = _Count;
             const auto _Available   = static_cast<size_t>(_Mysb::_Gnavail());
             if (0 < _Available) { // copy from get area
-                const auto _Read_size = (_STD min)(_Count_s, _Available);
+                const auto _Read_size = (_STD min) (_Count_s, _Available);
                 _Traits::copy(_Ptr, _Mysb::gptr(), _Read_size);
                 _Ptr += _Read_size;
                 _Count_s -= _Read_size;

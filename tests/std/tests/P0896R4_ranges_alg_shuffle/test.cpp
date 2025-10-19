@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <concepts>
+#include <cstdint>
 #include <cstdio>
 #include <random>
 #include <ranges>
@@ -53,14 +54,15 @@ struct instantiator {
 
 void test_urbg() { // COMPILE-ONLY
     struct RandGen {
-        static constexpr bool min() {
-            return false;
+        using result_type = uint16_t; // N5014 [rand.req.urng]/3
+        static constexpr result_type min() {
+            return 3;
         }
-        static constexpr bool max() {
-            return true;
+        static constexpr result_type max() {
+            return 1729;
         }
-        bool operator()() & {
-            return false;
+        result_type operator()() & {
+            return 4;
         }
     };
 

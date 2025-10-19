@@ -126,23 +126,26 @@ struct _Tuple_perfect_val<tuple<_Ty0, _Ty1, _Ty2>, _Uty0, _Uty1, _Uty2>
 
 template <class _Ty>
 struct _Tuple_val { // stores each value in a tuple
+    // Use of remove_cv_t corresponds to N5008 [allocator.uses.construction]/5.
+    using _Dty = remove_cv_t<_Ty>;
+
     constexpr _Tuple_val() : _Val() {}
 
     template <class _Other>
     constexpr _Tuple_val(_Other&& _Arg) : _Val(_STD forward<_Other>(_Arg)) {}
 
-    template <class _Alloc, class... _Other, enable_if_t<!uses_allocator_v<_Ty, _Alloc>, int> = 0>
+    template <class _Alloc, class... _Other, enable_if_t<!uses_allocator_v<_Dty, _Alloc>, int> = 0>
     constexpr _Tuple_val(const _Alloc&, allocator_arg_t, _Other&&... _Arg) : _Val(_STD forward<_Other>(_Arg)...) {}
 
     template <class _Alloc, class... _Other,
-        enable_if_t<conjunction_v<_STD uses_allocator<_Ty, _Alloc>,
+        enable_if_t<conjunction_v<_STD uses_allocator<_Dty, _Alloc>,
                         _STD is_constructible<_Ty, _STD allocator_arg_t, const _Alloc&, _Other...>>,
             int> = 0>
     constexpr _Tuple_val(const _Alloc& _Al, allocator_arg_t, _Other&&... _Arg)
         : _Val(allocator_arg, _Al, _STD forward<_Other>(_Arg)...) {}
 
     template <class _Alloc, class... _Other,
-        enable_if_t<conjunction_v<_STD uses_allocator<_Ty, _Alloc>,
+        enable_if_t<conjunction_v<_STD uses_allocator<_Dty, _Alloc>,
                         _STD negation<_STD is_constructible<_Ty, _STD allocator_arg_t, const _Alloc&, _Other...>>>,
             int> = 0>
     constexpr _Tuple_val(const _Alloc& _Al, allocator_arg_t, _Other&&... _Arg)
@@ -204,6 +207,22 @@ using _Three_way_comparison_result_with_tuple_like_t =
 
 template <class _Ty>
 concept _Tuple_like_non_tuple = !_Is_specialization_v<_Ty, tuple> && _Tuple_like<_Ty>;
+
+#ifdef __cpp_lib_reference_from_temporary
+template <class _Tuple, class... _Args>
+constexpr bool _Tuple_reference_constructs_from_temporary = false;
+template <class... _TupleTypes, class... _Args>
+constexpr bool _Tuple_reference_constructs_from_temporary<tuple<_TupleTypes...>, _Args...> =
+    (reference_constructs_from_temporary_v<_TupleTypes, _Args> || ...);
+
+template <class _Tuple, class _TupleLike, class _IdxSeq = make_index_sequence<tuple_size_v<_Tuple>>>
+constexpr bool _Tuple_reference_constructs_from_temporary_for_tuple_like = false;
+template <class _Tuple, _Tuple_like _TupleLike, size_t... _Indices>
+    requires (tuple_size_v<_Tuple> == tuple_size_v<remove_reference_t<_TupleLike>>)
+constexpr bool
+    _Tuple_reference_constructs_from_temporary_for_tuple_like<_Tuple, _TupleLike, index_sequence<_Indices...>> =
+        _Tuple_reference_constructs_from_temporary<_Tuple, decltype(_STD get<_Indices>(_STD declval<_TupleLike>()))...>;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 #endif // _HAS_CXX23
 
 template <>
@@ -347,6 +366,14 @@ public:
         tuple(_This2&& _This_arg, _Rest2&&... _Rest_arg)
             noexcept(_Tuple_nothrow_constructible_v<tuple, _This2, _Rest2...>) // strengthened
         : tuple(_Exact_args_t{}, _STD forward<_This2>(_This_arg), _STD forward<_Rest2>(_Rest_arg)...) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _This2, class... _Rest2,
+        enable_if_t<conjunction_v<_STD _Tuple_perfect_val<tuple, _This2, _Rest2...>,
+                        _STD _Tuple_constructible_val<tuple, _This2, _Rest2...>>,
+            int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, _This2&&, _Rest2&&...>
+    explicit(_Tuple_conditional_explicit_v<tuple, _This2, _Rest2...>) tuple(_This2&&, _Rest2&&...) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
     tuple(const tuple&) = default;
     tuple(tuple&&)      = default;
@@ -358,6 +385,13 @@ public:
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, _Other&...>) tuple(tuple<_Other...>& _Right)
         noexcept(_Tuple_nothrow_constructible_v<tuple, _Other&...>) // strengthened
         : tuple(_Unpack_tuple_t{}, _Right) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, _Other&...>,
+                                               _STD _Tuple_convert_val<tuple, tuple<_Other...>&, _Other...>>,
+                                   int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, _Other&...>
+    explicit(_Tuple_conditional_explicit_v<tuple, _Other&...>) tuple(tuple<_Other...>&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 #endif // _HAS_CXX23
 
     template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, const _Other&...>,
@@ -366,6 +400,13 @@ public:
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, const _Other&...>) tuple(const tuple<_Other...>& _Right)
         noexcept(_Tuple_nothrow_constructible_v<tuple, const _Other&...>) // strengthened
         : tuple(_Unpack_tuple_t{}, _Right) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, const _Other&...>,
+                                               _STD _Tuple_convert_val<tuple, const tuple<_Other...>&, _Other...>>,
+                                   int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, const _Other&...>
+    explicit(_Tuple_conditional_explicit_v<tuple, const _Other&...>) tuple(const tuple<_Other...>&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
     template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, _Other...>,
                                                _STD _Tuple_convert_val<tuple, tuple<_Other...>, _Other...>>,
@@ -373,6 +414,13 @@ public:
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, _Other...>) tuple(tuple<_Other...>&& _Right)
         noexcept(_Tuple_nothrow_constructible_v<tuple, _Other...>) // strengthened
         : tuple(_Unpack_tuple_t{}, _STD move(_Right)) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, _Other...>,
+                                               _STD _Tuple_convert_val<tuple, tuple<_Other...>, _Other...>>,
+                                   int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, _Other&&...>
+    explicit(_Tuple_conditional_explicit_v<tuple, _Other...>) tuple(tuple<_Other...>&&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
 #if _HAS_CXX23
     template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, const _Other...>,
@@ -381,11 +429,23 @@ public:
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, const _Other...>) tuple(const tuple<_Other...>&& _Right)
         noexcept(_Tuple_nothrow_constructible_v<tuple, const _Other...>) // strengthened
         : tuple(_Unpack_tuple_t{}, _STD move(_Right)) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, const _Other...>,
+                                               _STD _Tuple_convert_val<tuple, const tuple<_Other...>, _Other...>>,
+                                   int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, const _Other&&...>
+    explicit(_Tuple_conditional_explicit_v<tuple, const _Other...>) tuple(const tuple<_Other...>&&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
     template <class _First, class _Second, enable_if_t<_Tuple_constructible_v<tuple, _First&, _Second&>, int> = 0>
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, _First&, _Second&>) tuple(pair<_First, _Second>& _Right)
         noexcept(_Tuple_nothrow_constructible_v<tuple, _First&, _Second&>) // strengthened
         : tuple(_Unpack_tuple_t{}, _Right) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _First, class _Second, enable_if_t<_Tuple_constructible_v<tuple, _First&, _Second&>, int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, _First&, _Second&>
+    explicit(_Tuple_conditional_explicit_v<tuple, _First&, _Second&>) tuple(pair<_First, _Second>&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 #endif // _HAS_CXX23
 
     template <class _First, class _Second,
@@ -394,11 +454,23 @@ public:
         tuple(const pair<_First, _Second>& _Right)
             noexcept(_Tuple_nothrow_constructible_v<tuple, const _First&, const _Second&>) // strengthened
         : tuple(_Unpack_tuple_t{}, _Right) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _First, class _Second,
+        enable_if_t<_Tuple_constructible_v<tuple, const _First&, const _Second&>, int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, const _First&, const _Second&>
+    explicit(_Tuple_conditional_explicit_v<tuple, const _First&, const _Second&>)
+        tuple(const pair<_First, _Second>&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
     template <class _First, class _Second, enable_if_t<_Tuple_constructible_v<tuple, _First, _Second>, int> = 0>
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, _First, _Second>) tuple(pair<_First, _Second>&& _Right)
         noexcept(_Tuple_nothrow_constructible_v<tuple, _First, _Second>) // strengthened
         : tuple(_Unpack_tuple_t{}, _STD move(_Right)) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _First, class _Second, enable_if_t<_Tuple_constructible_v<tuple, _First, _Second>, int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, _First&&, _Second&&>
+    explicit(_Tuple_conditional_explicit_v<tuple, _First, _Second>) tuple(pair<_First, _Second>&&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
 #if _HAS_CXX23
     template <class _First, class _Second,
@@ -407,6 +479,13 @@ public:
         tuple(const pair<_First, _Second>&& _Right)
             noexcept(_Tuple_nothrow_constructible_v<tuple, const _First, const _Second>) // strengthened
         : tuple(_Unpack_tuple_t{}, _STD move(_Right)) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _First, class _Second,
+        enable_if_t<_Tuple_constructible_v<tuple, const _First, const _Second>, int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, const _First&&, const _Second&&>
+    explicit(_Tuple_conditional_explicit_v<tuple, const _First, const _Second>)
+        tuple(const pair<_First, _Second>&&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
     template <class _Other, class _Indices = index_sequence_for<_Rest...>>
     static constexpr bool _Is_tuple_like_constructor_explicit_v = false;
@@ -427,6 +506,15 @@ public:
     constexpr explicit(_Is_tuple_like_constructor_explicit_v<_Other>) tuple(_Other&& _Right)
         : tuple(_Unpack_tuple_t{}, _STD forward<_Other>(_Right)) {
     }
+#ifdef __cpp_lib_reference_from_temporary
+    template <_Different_from<tuple> _Other>
+        requires _Tuple_like_non_subrange<_Other> && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
+                  && _Can_construct_values_from_tuple_like_v<tuple, _Other>
+                  && (sizeof...(_Rest) != 0
+                      || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
+                  && _Tuple_reference_constructs_from_temporary_for_tuple_like<tuple, _Other&&>
+    explicit(_Is_tuple_like_constructor_explicit_v<_Other>) tuple(_Other&&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 #endif // _HAS_CXX23
 
     template <class _Alloc, class _This2 = _This,
@@ -450,6 +538,15 @@ public:
     _CONSTEXPR20 explicit(_Tuple_conditional_explicit_v<tuple, _This2, _Rest2...>)
         tuple(allocator_arg_t, const _Alloc& _Al, _This2&& _This_arg, _Rest2&&... _Rest_arg)
         : tuple(_Alloc_exact_args_t{}, _Al, _STD forward<_This2>(_This_arg), _STD forward<_Rest2>(_Rest_arg)...) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _Alloc, class _This2, class... _Rest2,
+        enable_if_t<conjunction_v<_STD _Tuple_perfect_val<tuple, _This2, _Rest2...>,
+                        _STD _Tuple_constructible_val<tuple, _This2, _Rest2...>>,
+            int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, _This2&&, _Rest2&&...>
+    explicit(_Tuple_conditional_explicit_v<tuple, _This2, _Rest2...>)
+        tuple(allocator_arg_t, const _Alloc&, _This2&&, _Rest2&&...) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
     template <class _Alloc, class _This2 = _This,
         enable_if_t<_Tuple_constructible_v<tuple, const _This2&, const _Rest&...>, int> = 0>
@@ -468,6 +565,15 @@ public:
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, _Other&...>)
         tuple(allocator_arg_t, const _Alloc& _Al, tuple<_Other...>& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _Right) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _Alloc, class... _Other,
+        enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, _Other&...>,
+                        _STD _Tuple_convert_val<tuple, tuple<_Other...>&, _Other...>>,
+            int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, _Other&...>
+    explicit(_Tuple_conditional_explicit_v<tuple, _Other&...>)
+        tuple(allocator_arg_t, const _Alloc&, tuple<_Other...>&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 #endif // _HAS_CXX23
 
     template <class _Alloc, class... _Other,
@@ -477,6 +583,15 @@ public:
     _CONSTEXPR20 explicit(_Tuple_conditional_explicit_v<tuple, const _Other&...>)
         tuple(allocator_arg_t, const _Alloc& _Al, const tuple<_Other...>& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _Right) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _Alloc, class... _Other,
+        enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, const _Other&...>,
+                        _STD _Tuple_convert_val<tuple, const tuple<_Other...>&, _Other...>>,
+            int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, const _Other&...>
+    explicit(_Tuple_conditional_explicit_v<tuple, const _Other&...>)
+        tuple(allocator_arg_t, const _Alloc&, const tuple<_Other...>&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
     template <class _Alloc, class... _Other,
         enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, _Other...>,
@@ -485,6 +600,15 @@ public:
     _CONSTEXPR20 explicit(_Tuple_conditional_explicit_v<tuple, _Other...>)
         tuple(allocator_arg_t, const _Alloc& _Al, tuple<_Other...>&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD move(_Right)) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _Alloc, class... _Other,
+        enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, _Other...>,
+                        _STD _Tuple_convert_val<tuple, tuple<_Other...>, _Other...>>,
+            int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, _Other&&...>
+    explicit(_Tuple_conditional_explicit_v<tuple, _Other...>)
+        tuple(allocator_arg_t, const _Alloc&, tuple<_Other...>&&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
 #if _HAS_CXX23
     template <class _Alloc, class... _Other,
@@ -494,12 +618,28 @@ public:
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, const _Other...>)
         tuple(allocator_arg_t, const _Alloc& _Al, const tuple<_Other...>&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD move(_Right)) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _Alloc, class... _Other,
+        enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, const _Other...>,
+                        _STD _Tuple_convert_val<tuple, const tuple<_Other...>, _Other...>>,
+            int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, const _Other&&...>
+    explicit(_Tuple_conditional_explicit_v<tuple, const _Other...>)
+        tuple(allocator_arg_t, const _Alloc&, const tuple<_Other...>&&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
     template <class _Alloc, class _First, class _Second,
         enable_if_t<_Tuple_constructible_v<tuple, _First&, _Second&>, int> = 0>
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, _First&, _Second&>)
         tuple(allocator_arg_t, const _Alloc& _Al, pair<_First, _Second>& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _Right) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _Alloc, class _First, class _Second,
+        enable_if_t<_Tuple_constructible_v<tuple, _First&, _Second&>, int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, _First&, _Second&>
+    explicit(_Tuple_conditional_explicit_v<tuple, _First&, _Second&>)
+        tuple(allocator_arg_t, const _Alloc&, pair<_First, _Second>&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 #endif // _HAS_CXX23
 
     template <class _Alloc, class _First, class _Second,
@@ -507,12 +647,26 @@ public:
     _CONSTEXPR20 explicit(_Tuple_conditional_explicit_v<tuple, const _First&, const _Second&>)
         tuple(allocator_arg_t, const _Alloc& _Al, const pair<_First, _Second>& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _Right) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _Alloc, class _First, class _Second,
+        enable_if_t<_Tuple_constructible_v<tuple, const _First&, const _Second&>, int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, const _First&, const _Second&>
+    explicit(_Tuple_conditional_explicit_v<tuple, const _First&, const _Second&>)
+        tuple(allocator_arg_t, const _Alloc&, const pair<_First, _Second>&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
     template <class _Alloc, class _First, class _Second,
         enable_if_t<_Tuple_constructible_v<tuple, _First, _Second>, int> = 0>
     _CONSTEXPR20 explicit(_Tuple_conditional_explicit_v<tuple, _First, _Second>)
         tuple(allocator_arg_t, const _Alloc& _Al, pair<_First, _Second>&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD move(_Right)) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _Alloc, class _First, class _Second,
+        enable_if_t<_Tuple_constructible_v<tuple, _First, _Second>, int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, _First&&, _Second&&>
+    explicit(_Tuple_conditional_explicit_v<tuple, _First, _Second>)
+        tuple(allocator_arg_t, const _Alloc&, pair<_First, _Second>&&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
 #if _HAS_CXX23
     template <class _Alloc, class _First, class _Second,
@@ -520,6 +674,13 @@ public:
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, const _First, const _Second>)
         tuple(allocator_arg_t, const _Alloc& _Al, const pair<_First, _Second>&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD move(_Right)) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _Alloc, class _First, class _Second,
+        enable_if_t<_Tuple_constructible_v<tuple, const _First, const _Second>, int> = 0>
+        requires _Tuple_reference_constructs_from_temporary<tuple, const _First&&, const _Second&&>
+    explicit(_Tuple_conditional_explicit_v<tuple, const _First, const _Second>)
+        tuple(allocator_arg_t, const _Alloc&, const pair<_First, _Second>&&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
 #ifdef __EDG__ // TRANSITION, VSO-1900279
     template <class _Alloc, class _Other, enable_if_t<_Can_construct_from_tuple_like<_Other, tuple>, int> = 0>
@@ -533,6 +694,15 @@ public:
         tuple(allocator_arg_t, const _Alloc& _Al, _Other&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD forward<_Other>(_Right)) {
     }
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _Alloc, _Different_from<tuple> _Other>
+        requires _Tuple_like_non_subrange<_Other> && (1 + sizeof...(_Rest) == tuple_size_v<remove_cvref_t<_Other>>)
+                  && _Can_construct_values_from_tuple_like_v<tuple, _Other>
+                  && (sizeof...(_Rest) != 0
+                      || (!is_convertible_v<_Other, _This> && !is_constructible_v<_This, _Other>) )
+                  && _Tuple_reference_constructs_from_temporary_for_tuple_like<tuple, _Other&&>
+    explicit(_Is_tuple_like_constructor_explicit_v<_Other>) tuple(allocator_arg_t, const _Alloc&, _Other&&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 #endif // _HAS_CXX23
 
     tuple& operator=(const volatile tuple&) = delete;
@@ -753,7 +923,7 @@ public:
     template <class _Other, size_t... _Indices>
     static constexpr bool _Can_equal_compare_with_tuple_like_v<_Other, index_sequence<_Indices...>> =
         (requires(const tuple& _Left, const _Other& _Right) {
-            { _STD get<_Indices>(_Left) == _STD get<_Indices>(_Right) } -> _Boolean_testable;
+            { _STD get<_Indices>(_Left) == _STD get<_Indices>(_Right) }->_Boolean_testable;
         } && ...);
 
     template <class _Other, size_t... _Indices>
@@ -1093,6 +1263,12 @@ template <class _Ty, class _Tuple, enable_if_t<_Can_make_from_tuple<_Ty, _Tuple>
 #endif // ^^^ !_HAS_CXX20 ^^^
 _NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) noexcept(noexcept(_STD _Make_from_tuple_impl<_Ty>(
     _STD forward<_Tuple>(_Tpl), make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{}))) /* strengthened */ {
+#ifdef __cpp_lib_reference_from_temporary
+    if constexpr (tuple_size_v<remove_reference_t<_Tuple>> == 1) {
+        static_assert(!reference_constructs_from_temporary_v<_Ty, decltype(_STD get<0>(_STD forward<_Tuple>(_Tpl)))>,
+            "Cannot bind a temporary to the returned reference which will always be dangling (N5014 [tuple.apply]/2).");
+    }
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
     // construct _Ty from the elements of _Tpl
     return _STD _Make_from_tuple_impl<_Ty>(
         _STD forward<_Tuple>(_Tpl), make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
@@ -1147,18 +1323,6 @@ struct common_type<_TTuple, _UTuple> {
     using type = _Tuple_like_common_type<_TTuple, _UTuple>::type;
 };
 #endif // _HAS_CXX23
-
-#if _HAS_TR1_NAMESPACE
-namespace _DEPRECATE_TR1_NAMESPACE tr1 {
-    using _STD get;
-    using _STD ignore;
-    using _STD make_tuple;
-    using _STD ref;
-    using _STD tie;
-    using _STD tuple;
-} // namespace _DEPRECATE_TR1_NAMESPACE tr1
-#endif // _HAS_TR1_NAMESPACE
-
 _STD_END
 
 #pragma pop_macro("new")

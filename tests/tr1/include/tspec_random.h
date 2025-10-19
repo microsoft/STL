@@ -129,9 +129,8 @@ void test_random() { // test all of the distributions
     TESTR(geometric_distribution);
     TESTR(normal_distribution);
     TESTR(poisson_distribution);
-    TESTR(uniform_int);
-    TESTR(uniform_real);
-
+    TESTR(uniform_int_distribution);
+    TESTR(uniform_real_distribution);
     TESTR(cauchy_distribution);
     TESTR(chi_squared_distribution);
     TESTR(extreme_value_distribution);

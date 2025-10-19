@@ -360,18 +360,23 @@ public:
     _NODISCARD static _CONSTEXPR17 int compare(_In_reads_(_Count) const _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
-#if _HAS_CXX17
-        if (_STD _Is_constant_evaluated()) {
-            if constexpr (is_same_v<_Elem, wchar_t>) {
-                return __builtin_wmemcmp(_First1, _First2, _Count);
+#if _USE_STD_VECTOR_ALGORITHMS
+        if (!_STD _Is_constant_evaluated()) {
+            // TRANSITION, GH-2289: Use vectorized algorithms for better performance than __builtin_wmemcmp.
+            const size_t _Pos = _Mismatch_vectorized<sizeof(_Elem)>(_First1, _First2, _Count);
+            if (_Pos == _Count) {
+                return 0;
             } else {
-                return _Primary_char_traits::compare(_First1, _First2, _Count);
+                return _First1[_Pos] < _First2[_Pos] ? -1 : +1;
             }
         }
-#endif // _HAS_CXX17
+#endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
 
-        return _CSTD wmemcmp(
-            reinterpret_cast<const wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_First2), _Count);
+        if constexpr (is_same_v<_Elem, wchar_t>) {
+            return __builtin_wmemcmp(_First1, _First2, _Count);
+        } else {
+            return _Primary_char_traits::compare(_First1, _First2, _Count);
+        }
     }
 
     _NODISCARD static _CONSTEXPR17 size_t length(_In_z_ const _Elem* _First) noexcept /* strengthened */ {
@@ -685,7 +690,7 @@ template <class _Traits>
 constexpr int _Traits_compare(_In_reads_(_Left_size) const _Traits_ptr_t<_Traits> _Left, const size_t _Left_size,
     _In_reads_(_Right_size) const _Traits_ptr_t<_Traits> _Right, const size_t _Right_size) noexcept {
     // compare [_Left, _Left + _Left_size) to [_Right, _Right + _Right_size) using _Traits
-    const int _Ans = _Traits::compare(_Left, _Right, (_STD min)(_Left_size, _Right_size));
+    const int _Ans = _Traits::compare(_Left, _Right, (_STD min) (_Left_size, _Right_size));
 
     if (_Ans != 0) {
         return _Ans;
@@ -788,14 +793,14 @@ constexpr size_t _Traits_rfind(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits
     const size_t _Needle_size) noexcept {
     // search [_Haystack, _Haystack + _Hay_size) for [_Needle, _Needle + _Needle_size) beginning before _Start_at
     if (_Needle_size == 0) {
-        return (_STD min)(_Start_at, _Hay_size); // empty string always matches
+        return (_STD min) (_Start_at, _Hay_size); // empty string always matches
     }
 
     if (_Needle_size > _Hay_size) { // no room for match
         return static_cast<size_t>(-1);
     }
 
-    const size_t _Actual_start_at = (_STD min)(_Start_at, _Hay_size - _Needle_size);
+    const size_t _Actual_start_at = (_STD min) (_Start_at, _Hay_size - _Needle_size);
 
 #if _USE_STD_VECTOR_ALGORITHMS
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
@@ -836,7 +841,7 @@ constexpr size_t _Traits_rfind_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Tra
         return static_cast<size_t>(-1);
     }
 
-    const size_t _Actual_start_at = (_STD min)(_Start_at, _Hay_size - 1);
+    const size_t _Actual_start_at = (_STD min) (_Start_at, _Hay_size - 1);
 
 #if _USE_STD_VECTOR_ALGORITHMS
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
@@ -974,7 +979,7 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
         return static_cast<size_t>(-1);
     }
 
-    const auto _Hay_start = (_STD min)(_Start_at, _Hay_size - 1);
+    const auto _Hay_start = (_STD min) (_Start_at, _Hay_size - 1);
 
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         using _Elem = typename _Traits::char_type;
@@ -1108,7 +1113,7 @@ constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_pt
         return static_cast<size_t>(-1);
     }
 
-    const auto _Hay_start = (_STD min)(_Start_at, _Hay_size - 1);
+    const auto _Hay_start = (_STD min) (_Start_at, _Hay_size - 1);
 
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         using _Elem = typename _Traits::char_type;
@@ -1158,7 +1163,7 @@ constexpr size_t _Traits_rfind_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<
         return static_cast<size_t>(-1);
     }
 
-    const size_t _Actual_start_at = (_STD min)(_Start_at, _Hay_size - 1);
+    const size_t _Actual_start_at = (_STD min) (_Start_at, _Hay_size - 1);
 
 #if _USE_STD_VECTOR_ALGORITHMS
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
@@ -1591,7 +1596,7 @@ public:
     _NODISCARD constexpr size_type max_size() const noexcept {
         // bound to PTRDIFF_MAX to make end() - begin() well defined (also makes room for npos)
         // bound to static_cast<size_t>(-1) / sizeof(_Elem) by address space limits
-        return (_STD min)(static_cast<size_t>(PTRDIFF_MAX), static_cast<size_t>(-1) / sizeof(_Elem));
+        return (_STD min) (static_cast<size_t>(PTRDIFF_MAX), static_cast<size_t>(-1) / sizeof(_Elem));
     }
 
     _NODISCARD constexpr const_reference operator[](const size_type _Off) const noexcept /* strengthened */ {
@@ -1909,7 +1914,7 @@ private:
 
     constexpr size_type _Clamp_suffix_size(const size_type _Off, const size_type _Size) const noexcept {
         // trims _Size to the longest it can be assuming a string at/after _Off
-        return (_STD min)(_Size, _Mysize - _Off);
+        return (_STD min) (_Size, _Mysize - _Off);
     }
 
     [[noreturn]] static void _Xran() {

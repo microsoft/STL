@@ -24,20 +24,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-// TRANSITION, GH-183
-#pragma push_macro("discard_block")
-#pragma push_macro("linear_congruential")
-#pragma push_macro("mersenne_twister")
-#pragma push_macro("subtract_with_carry")
-#pragma push_macro("uniform_int")
-#pragma push_macro("uniform_real")
-#undef discard_block
-#undef linear_congruential
-#undef mersenne_twister
-#undef subtract_with_carry
-#undef uniform_int
-#undef uniform_real
-
 #ifdef _ALLOW_RANDOM_DISTRIBUTION_CONST_OPERATOR
 #define _DISTRIBUTION_CONST const
 #else
@@ -306,8 +292,8 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     } else {
         using _Result_uint_type = conditional_t<_Minbits <= 32, uint32_t, uint64_t>;
 
-        constexpr auto _Gxmin  = (_Gen::min)();
-        constexpr auto _Gxmax  = (_Gen::max)();
+        constexpr auto _Gxmin  = (_Gen::min) ();
+        constexpr auto _Gxmax  = (_Gen::max) ();
         constexpr auto _Params = _Generate_canonical_params(_Minbits, _Gxmax - _Gxmin);
 
         _STL_INTERNAL_STATIC_ASSERT(_Params._Kx >= 1);
@@ -357,108 +343,13 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     }
 }
 
-template <class _Uint_type, class _Gen, class _Real>
-bool _Nrand_for_tr1(
-    const uint64_t _Rd, const uint64_t _Rx, _Gen& _Gx, _Real& _Val, uint64_t& _Sx_init, uint64_t& _Factor_init) {
-    // Minimally-constexpr generate_canonical algorithm. Will save work and exit if _Factor would overflow.
-    _Uint_type _Sx             = _Sx_init;
-    _Uint_type _Factor         = _Factor_init;
-    const auto _Gxmin          = (_Gx.min)();
-    const auto _Overflow_limit = UINT64_MAX / _Rx;
-
-    _Uint_type _Xx    = 0;
-    _Uint_type _Limit = 0;
-    bool _Init        = false;
-    for (;;) {
-        while (_Factor < _Rd) {
-            if constexpr (is_same_v<_Uint_type, uint64_t>) {
-                if (_Factor > _Overflow_limit) {
-                    _Sx_init     = _Sx;
-                    _Factor_init = _Factor;
-                    return true;
-                }
-            }
-
-            _Sx += (_Gx() - _Gxmin) * _Factor;
-            _Factor *= _Rx;
-        }
-
-        if (!_Init) {
-            _Init  = true;
-            _Xx    = _Factor / _Rd;
-            _Limit = _Xx * _Rd;
-        }
-
-        if (_Sx < _Limit) {
-            break;
-        } else {
-            _Sx     = 0;
-            _Factor = 1;
-        }
-    }
-
-    _Val = static_cast<_Real>(static_cast<uint64_t>(_Sx / _Xx));
-    return false;
-}
-
-template <class _Gen, class = void>
-constexpr bool _Has_static_min_max = false;
-
-// This checks a requirement of N4981 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
-// to implement the whole concept - we just need to distinguish Standard machinery from tr1 machinery.
-template <class _Gen>
-constexpr bool _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min)() < (_Gen::max)()>::value)>> = true;
-
 template <class _Real, class _Gen>
 _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from random sequence
     _RNG_REQUIRE_REALTYPE(_Nrand_impl, _Real);
 
     constexpr auto _Digits = static_cast<size_t>(numeric_limits<_Real>::digits);
 
-    if constexpr (_Has_static_min_max<_Gen>) {
-        return _STD generate_canonical<_Real, _Digits>(_Gx);
-    } else if constexpr (is_integral_v<typename _Gen::result_type>) {
-        // TRANSITION, for integral tr1 machinery only; Standard machinery can call generate_canonical directly
-        const auto _Gxmax = (_Gx.max)();
-        const auto _Gxmin = (_Gx.min)();
-        _Real _Val{0};
-
-        if (_Gxmax == UINT64_MAX && _Gxmin == 0) {
-            // special case when uint64_t can't hold the full URBG range
-            _Val = static_cast<_Real>(static_cast<uint64_t>(_Gx()) >> (64 - _Digits));
-        } else {
-            constexpr auto _Rd = 1ULL << _Digits;
-            const auto _Rx     = static_cast<uint64_t>(_Gxmax - _Gxmin) + 1;
-            uint64_t _Sx       = 0;
-            uint64_t _Factor   = 1;
-
-            // Try with 64 bits first, upgrade to 128 if necessary.
-            const bool _Would_overflow = _Nrand_for_tr1<uint64_t>(_Rd, _Rx, _Gx, _Val, _Sx, _Factor);
-            if (_Would_overflow) {
-                _Nrand_for_tr1<_Unsigned128>(_Rd, _Rx, _Gx, _Val, _Sx, _Factor);
-            }
-        }
-
-        return _STD ldexp(_Val, -static_cast<int>(_Digits));
-    } else {
-        // TRANSITION, the pre-P0952R2 algorithm, for non-integral tr1 machinery only (e.g. subtract_with_carry_01)
-        const _Real _Gxmin = static_cast<_Real>((_Gx.min)());
-        const _Real _Gxmax = static_cast<_Real>((_Gx.max)());
-        const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
-
-        const int _Ceil = static_cast<int>(_STD ceil(static_cast<_Real>(_Digits) / _STD log2(_Rx)));
-        const int _Kx   = _Ceil < 1 ? 1 : _Ceil;
-
-        _Real _Ans{0};
-        _Real _Factor{1};
-
-        for (int _Idx = 0; _Idx < _Kx; ++_Idx) { // add in another set of bits
-            _Ans += (static_cast<_Real>(_Gx()) - _Gxmin) * _Factor;
-            _Factor *= _Rx;
-        }
-
-        return _Ans / _Factor;
-    }
+    return _STD generate_canonical<_Real, _Digits>(_Gx);
 }
 
 template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
@@ -670,94 +561,6 @@ private:
     result_type _Prev;
 };
 
-template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
-class _DEPRECATE_TR1_RANDOM linear_congruential { // linear congruential random engine
-public:
-    _RNG_REQUIRE_UINTTYPE(linear_congruential, _Uint);
-
-    static_assert(0 == _Mx || (_Ax < _Mx && _Cx < _Mx), "invalid template argument for linear_congruential");
-
-    using result_type = _Uint;
-
-    static constexpr _Uint multiplier = _Ax;
-    static constexpr _Uint increment  = _Cx;
-    static constexpr _Uint modulus    = _Mx;
-
-    linear_congruential() noexcept // strengthened
-        : _Prev(_Get_linear_congruential_seed<_Uint, _Cx, _Mx>(1u)) {}
-
-    explicit linear_congruential(_Uint _Xx0) noexcept // strengthened
-        : _Prev(_Get_linear_congruential_seed<_Uint, _Cx, _Mx>(_Xx0)) {}
-
-    template <class _Gen, _Enable_if_seed_seq_t<_Gen, linear_congruential> = 0>
-    linear_congruential(_Gen& _Seq) : _Prev(_Get_linear_congruential_seed<_Uint, _Cx, _Mx>(_Seq())) {}
-
-    void seed(_Uint _Xx0 = 1u) noexcept /* strengthened */ {
-        // reset sequence from numeric value
-        _Prev = _Get_linear_congruential_seed<_Uint, _Cx, _Mx>(_Xx0);
-    }
-
-    template <class _Gen, _Enable_if_seed_seq_t<_Gen, linear_congruential> = 0>
-    void seed(_Gen& _Seq) { // reset sequence from generator
-        _Prev = _Get_linear_congruential_seed<_Uint, _Cx, _Mx>(_Seq());
-    }
-
-    _NODISCARD _Uint(min)() const noexcept /* strengthened */ {
-        // return minimum possible generated value
-        return _Cx == 0;
-    }
-
-#pragma warning(push)
-#pragma warning(disable : 4309) // truncation of constant value
-    _NODISCARD _Uint(max)() const noexcept /* strengthened */ {
-        // return maximum possible generated value
-        return static_cast<_Uint>(_Mx - 1u); // note 0 wraps around to max
-    }
-#pragma warning(pop)
-
-    _NODISCARD _Uint operator()() noexcept /* strengthened */ {
-        // return next value
-        _Prev = _Next_linear_congruential_value<_Uint, _Ax, _Cx, _Mx>(_Prev);
-        return _Prev;
-    }
-
-    void discard(unsigned long long _Nskip) noexcept /* strengthened */ {
-        // discard _Nskip elements
-        auto _Temp = _Prev;
-        for (; 0 < _Nskip; --_Nskip) {
-            _Temp = _Next_linear_congruential_value<_Uint, _Ax, _Cx, _Mx>(_Temp);
-        }
-
-        _Prev = _Temp;
-    }
-
-    _NODISCARD friend bool operator==(const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept
-    /* strengthened */ {
-        return _Lhs._Prev == _Rhs._Prev;
-    }
-
-#if !_HAS_CXX20
-    _NODISCARD friend bool operator!=(const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept
-    /* strengthened */ {
-        return _Lhs._Prev != _Rhs._Prev;
-    }
-#endif // !_HAS_CXX20
-
-    template <class _Elem, class _Traits>
-    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, linear_congruential& _Eng) {
-        return _Istr >> _Eng._Prev;
-    }
-
-    template <class _Elem, class _Traits>
-    friend basic_ostream<_Elem, _Traits>& operator<<(
-        basic_ostream<_Elem, _Traits>& _Ostr, const linear_congruential& _Eng) {
-        return _Ostr << _Eng._Prev;
-    }
-
-private:
-    _Uint _Prev;
-};
-
 template <class _Ty, size_t _Nw>
 struct _Circ_buf { // holds historical values for generators
     _Ty _At(size_t _Ix) const noexcept {
@@ -820,49 +623,99 @@ struct _Circ_buf { // holds historical values for generators
     _Ty _Ax[2 * _Nw];
 };
 
-template <class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
-class _Swc_base : public _Circ_buf<_Ty, _Rx> { // common bits of subtract_with_carry/_01
-public:
-    using result_type = _Ty;
-    using _Traits     = _Swc_Traits;
-    using _Mybase     = _Circ_buf<_Ty, _Rx>;
-    using _Seed_t     = typename _Swc_Traits::_Seed_t;
+_EXPORT_STD template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
+class subtract_with_carry_engine : private _Circ_buf<_Ty, _Rx> {
+private:
+    static constexpr _Ty _Mx = static_cast<_Ty>((_Ty{1} << (_Wx - 1)) << 1);
 
-    static constexpr size_t short_lag            = _Sx;
-    static constexpr size_t long_lag             = _Rx;
+    using _Cy_t  = int;
+    using _UCy_t = unsigned int;
+
+public:
+    _RNG_REQUIRE_UINTTYPE(subtract_with_carry_engine, _Ty);
+
+    static_assert(0U < _Sx && _Sx < _Rx && 0 < _Wx && _Wx <= numeric_limits<_Ty>::digits,
+        "invalid template argument for subtract_with_carry_engine");
+
+    static constexpr size_t word_size = _Wx;
+    static constexpr size_t short_lag = _Sx;
+    static constexpr size_t long_lag  = _Rx;
+
+    using result_type = _Ty;
+
     static constexpr uint_least32_t default_seed = 19780503u;
 
-    _Swc_base() {
-        seed();
+    subtract_with_carry_engine() {
+        seed(0u);
     }
 
-    _Swc_base(_Seed_t _Xx0) {
+    explicit subtract_with_carry_engine(_Ty _Xx0) {
         seed(_Xx0);
     }
 
-    template <class _Gen, _Enable_if_seed_seq_t<_Gen, _Swc_base> = 0>
-    _Swc_base(_Gen& _Gx) {
-        seed(_Gx);
+    template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, subtract_with_carry_engine> = 0>
+    explicit subtract_with_carry_engine(_Seed_seq& _Seq) {
+        seed(_Seq);
     }
 
-    void seed(_Seed_t _Value = 0u, bool _Readcy = false) { // set initial values from specified seed value
+    void seed(_Ty _Value = 0u) { // set initial values from specified seed value
         linear_congruential_engine<uint_least32_t, 40014U, 0U, 2147483563U> _Lc{
             _Value == 0U ? default_seed : static_cast<uint_least32_t>(_Value % 2147483563U)};
-        _Reset(_Lc, _Readcy);
+
+        constexpr int _Kx = _Get_wc();
+
+        for (size_t _Ix = 0; _Ix < _Rx; ++_Ix) { // pack _Kx words
+            this->_Ax[_Ix] = _Lc();
+            for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
+                this->_Ax[_Ix] |= static_cast<_Ty>(_Lc()) << (32 * _Jx);
+            }
+        }
+
+        _Carry     = _Reduce();
+        this->_Idx = _Rx;
     }
 
-    template <class _Gen, enable_if_t<!is_arithmetic_v<_Gen>, int> = 0>
-    void seed(_Gen& _Gx, bool _Readcy = false) { // set initial values from range
-        _Reset(_Gx, _Readcy);
+    template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, subtract_with_carry_engine> = 0>
+    void seed(_Seed_seq& _Seq) { // reset sequence from seed sequence
+        constexpr int _Kx = (8 * sizeof(_Ty) + 31) / 32;
+        unsigned long _Arr[_Kx * _Rx];
+        _Seq.generate(_STD begin(_Arr), _STD end(_Arr));
+
+        size_t _Idx0 = 0;
+        for (size_t _Ix = 0; _Ix < _Rx; ++_Ix, _Idx0 += _Kx) { // pack _Kx words
+            this->_Ax[_Ix] = _Arr[_Idx0];
+            for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
+                this->_Ax[_Ix] |= static_cast<_Ty>(_Arr[_Idx0 + _Jx]) << (32 * _Jx);
+            }
+
+            if constexpr (_Mx != 0) {
+                this->_Ax[_Ix] %= _Mx;
+            }
+        }
+
+        _Carry     = _Reduce();
+        this->_Idx = _Rx;
     }
 
-    _NODISCARD result_type(min)() const noexcept /* strengthened */ {
+    _NODISCARD static constexpr _Ty(min)() noexcept /* strengthened */ {
         return 0;
     }
 
-    _NODISCARD result_type(max)() const noexcept /* strengthened */ {
-        return _Swc_Traits::_Max;
+    _NODISCARD static constexpr _Ty(max)() noexcept /* strengthened */ {
+        return _Mx - 1;
     }
+
+    _NODISCARD friend bool operator==(
+        const subtract_with_carry_engine& _Left, const subtract_with_carry_engine& _Right) noexcept /* strengthened */ {
+        return _Left._Equals(_Right) && _Left._Carry == _Right._Carry;
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD friend bool operator!=(
+        const subtract_with_carry_engine& _Left, const subtract_with_carry_engine& _Right) noexcept /* strengthened */ {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
 
     _NODISCARD result_type operator()() noexcept /* strengthened */ {
         const auto _Ix = 2 * _Rx <= this->_Idx ? 0 : this->_Idx;
@@ -878,265 +731,10 @@ public:
         return this->_Ax[_Ix];
     }
 
-    void discard(unsigned long long _Nskip) { // discard _Nskip elements
+    void discard(unsigned long long _Nskip) {
         for (; 0 < _Nskip; --_Nskip) {
             (void) (*this)();
         }
-    }
-
-    _NODISCARD friend bool operator==(const _Swc_base& _Left, const _Swc_base& _Right) noexcept /* strengthened */ {
-        return static_cast<const _Swc_base::_Mybase&>(_Left)._Equals(_Right) && _Left._Carry == _Right._Carry;
-    }
-
-#if !_HAS_CXX20
-    _NODISCARD friend bool operator!=(const _Swc_base& _Left, const _Swc_base& _Right) noexcept /* strengthened */ {
-        return !(_Left == _Right);
-    }
-#endif // !_HAS_CXX20
-
-    template <class _Elem, class _Traits>
-    friend basic_istream<_Elem, _Traits>& operator>>(
-        basic_istream<_Elem, _Traits>& _Istr, _Swc_base& _Eng) { // read state from _Istr
-        _Wrap_istream<_Elem, _Traits, typename _Swc_Traits::_Seed_t> _Gen(_Istr);
-        _Eng.seed(_Gen, true);
-        return _Istr;
-    }
-
-    template <class _Elem, class _Traits>
-    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-        const _Swc_base& _Eng) { // write state to _Ostr
-        _Swc_base::_Traits::_Write(_Ostr, _Eng, _Eng._Carry);
-        return _Ostr;
-    }
-
-    template <class _Elem, class _Traits>
-    basic_ostream<_Elem, _Traits>& _Write_full(basic_ostream<_Elem, _Traits>& _Ostr) const { // write state to _Ostr
-        _Swc_Traits::_Write_full(_Ostr, *this, _Carry);
-        return _Ostr;
-    }
-
-protected:
-    template <class _Gen>
-    void _Reset(_Gen& _Gx, bool _Readcy) { // reset sequence
-        _Carry     = _Swc_Traits::_Reset(_Gx, this->_Ax, _Readcy);
-        this->_Idx = _Rx;
-    }
-
-    void _Setx(size_t _Ix, _Ty _Xis, _Ty _Xir) noexcept { // update _Ax[_Ix] and _Carry
-        bool _Underflowed = false;
-        _Ty _Newx         = _Xis;
-        if (_Newx < _Xir) {
-            _Underflowed = true;
-        }
-
-        _Newx -= _Xir;
-        if (_Newx < static_cast<typename _Swc_Traits::_UCy_t>(_Carry)) {
-            _Underflowed = true;
-        }
-
-        _Newx -= _Carry;
-        if (_Underflowed) { // underflowed, so add _Mod
-            _Newx += _Swc_Traits::_Mod;
-            _Carry = _Swc_Traits::_Cy;
-        } else {
-            _Carry = 0;
-        }
-
-        this->_Ax[_Ix] = _Newx;
-    }
-
-    typename _Swc_Traits::_Cy_t _Carry;
-};
-
-template <class _Ty, _Ty _Mx, size_t _Nw>
-struct _Swc_traits { // traits for subtract_with_carry generator
-    using _Cy_t   = int;
-    using _UCy_t  = unsigned int;
-    using _Mod_t  = _Ty;
-    using _Seed_t = _Ty;
-
-    static constexpr _Cy_t _Cy   = 1;
-    static constexpr _Mod_t _Mod = _Mx;
-    static constexpr _Ty _Max    = static_cast<_Ty>(_Mx - 1);
-
-    static int _Get_wc() noexcept { // compute number of 32-bit words per element
-        int _Kx;
-
-        if constexpr (_Mx == 0) {
-            _Kx = (8 * sizeof(_Ty) + 31) / 32;
-        } else { // compute number of 32-bit words required
-            unsigned long long _Val = 1ULL << 32;
-            for (_Kx = 1; 0 < _Val && _Val < _Mx; ++_Kx) {
-                _Val = _Val << 32;
-            }
-        }
-
-        return _Kx;
-    }
-
-    template <class _Gen>
-    static _Cy_t _Reset(_Gen& _Gx, _Ty* _Ax, bool _Readcy) { // set initial values of _Ax from generator _Gx
-                                                             // return value of _Cy from range if _Readcy is true,
-                                                             // otherwise compute from last value
-        int _Kx = _Get_wc();
-
-        for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) { // pack _Kx words
-            _Ax[_Ix] = _Gx();
-            for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
-                _Ax[_Ix] |= static_cast<_Ty>(_Gx()) << (32 * _Jx);
-            }
-        }
-
-        _Cy_t _Ans = _Reduce(_Ax);
-        if (!_Readcy) {
-            return _Ans;
-        } else {
-            return static_cast<_Cy_t>(_Gx()); // TRANSITION, investigate this conversion
-        }
-    }
-
-#pragma warning(push)
-#pragma warning(disable : 4724) // potential mod by 0
-    static _Cy_t _Reduce(_Ty* _Ax) noexcept { // reduce values to allowed range
-        if constexpr (_Mx != 0) {
-            for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
-                _Ax[_Ix] = _Ax[_Ix] % _Mx;
-            }
-        }
-
-        return _Ax[_Nw - 1] == 0;
-    }
-#pragma warning(pop)
-
-    template <class _Elem, class _Traits>
-    static void _Write(
-        basic_ostream<_Elem, _Traits>& _Ostr, const _Circ_buf<_Ty, _Nw>& _Buf, _Cy_t _Cy) { // write state to _Ostr
-        int _Kx = _Get_wc();
-
-        for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
-            for (int _Jx = 0; _Jx < _Kx; ++_Jx) { // unpack into _Kx words
-                const unsigned int _Word = static_cast<unsigned int>(_Buf._At(_Ix) >> (_Jx * 32));
-                _Ostr << _Word << ' ';
-            }
-        }
-
-        _Ostr << _Cy;
-    }
-
-    template <class _Elem, class _Traits>
-    static void _Write_full(
-        basic_ostream<_Elem, _Traits>& _Ostr, const _Circ_buf<_Ty, _Nw>& _Buf, _Cy_t _Cy) { // write state to _Ostr
-        for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
-            _Ostr << _Buf._At(_Ix) << ' ';
-        }
-
-        _Ostr << _Cy;
-    }
-};
-
-template <class _Ty, _Ty _Mx, size_t _Sx, size_t _Rx>
-class _DEPRECATE_TR1_RANDOM subtract_with_carry
-    : public _Swc_base<_Ty, _Sx, _Rx, _Swc_traits<_Ty, _Mx, _Rx>> { // subtract_with_carry generator
-public:
-    using _Mybase = _Swc_base<_Ty, _Sx, _Rx, _Swc_traits<_Ty, _Mx, _Rx>>;
-
-    static constexpr _Ty modulus = _Mx;
-
-    using _Mybase::default_seed;
-
-    subtract_with_carry() : _Mybase(0u) {}
-
-    explicit subtract_with_carry(_Ty _Xx0) : _Mybase(_Xx0) {}
-
-    template <class _Gen, _Enable_if_seed_seq_t<_Gen, subtract_with_carry> = 0>
-    subtract_with_carry(_Gen& _Gx) : _Mybase(_Gx) {}
-};
-
-_STL_DISABLE_DEPRECATED_WARNING
-_EXPORT_STD template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
-class subtract_with_carry_engine
-    : private subtract_with_carry<_Ty, static_cast<_Ty>((_Ty{1} << (_Wx - 1)) << 1), _Sx, _Rx> {
-    // subtract_with_carry generator
-public:
-    _RNG_REQUIRE_UINTTYPE(subtract_with_carry_engine, _Ty);
-
-    static_assert(0U < _Sx && _Sx < _Rx && 0 < _Wx && _Wx <= numeric_limits<_Ty>::digits,
-        "invalid template argument for subtract_with_carry_engine");
-
-    static constexpr _Ty _Mx          = static_cast<_Ty>((_Ty{1} << (_Wx - 1)) << 1);
-    static constexpr size_t word_size = _Wx;
-    static constexpr size_t short_lag = _Sx;
-    static constexpr size_t long_lag  = _Rx;
-
-    using _Mybase     = subtract_with_carry<_Ty, _Mx, _Sx, _Rx>;
-    using _Traits     = typename _Mybase::_Traits;
-    using result_type = _Ty;
-
-    using _Mybase::default_seed;
-
-    subtract_with_carry_engine() : _Mybase(0u) {}
-
-    explicit subtract_with_carry_engine(_Ty _Xx0) : _Mybase(_Xx0) {}
-
-    template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, subtract_with_carry_engine> = 0>
-    explicit subtract_with_carry_engine(_Seed_seq& _Seq) : _Mybase() {
-        seed(_Seq);
-    }
-
-    void seed(_Ty _Value = 0u) { // set initial values from specified seed value
-        _Mybase::seed(_Value);
-    }
-
-    static constexpr int _Kx = (8 * sizeof(_Ty) + 31) / 32;
-
-    template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, subtract_with_carry_engine> = 0>
-    void seed(_Seed_seq& _Seq) { // reset sequence from seed sequence
-        unsigned long _Arr[_Kx * _Rx];
-        _Seq.generate(&_Arr[0], &_Arr[_Kx * _Rx]);
-
-        size_t _Idx0 = 0;
-        for (size_t _Ix = 0; _Ix < _Rx; ++_Ix, _Idx0 += _Kx) { // pack _Kx words
-            this->_Ax[_Ix] = _Arr[_Idx0];
-            for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
-                this->_Ax[_Ix] |= static_cast<_Ty>(_Arr[_Idx0 + _Jx]) << (32 * _Jx);
-            }
-
-            constexpr bool _Mod_non_zero = _Traits::_Mod != 0;
-            if constexpr (_Mod_non_zero) {
-                this->_Ax[_Ix] %= _Traits::_Mod;
-            }
-        }
-
-        this->_Carry = _Traits::_Reduce(this->_Ax);
-        this->_Idx   = _Rx;
-    }
-
-    _NODISCARD static constexpr _Ty(min)() noexcept /* strengthened */ {
-        return 0;
-    }
-
-    _NODISCARD static constexpr _Ty(max)() noexcept /* strengthened */ {
-        return _Mx - 1;
-    }
-
-    _NODISCARD friend bool operator==(
-        const subtract_with_carry_engine& _Left, const subtract_with_carry_engine& _Right) noexcept /* strengthened */ {
-        return static_cast<const _Mybase&>(_Left) == static_cast<const _Mybase&>(_Right);
-    }
-
-#if !_HAS_CXX20
-    _NODISCARD friend bool operator!=(
-        const subtract_with_carry_engine& _Left, const subtract_with_carry_engine& _Right) noexcept /* strengthened */ {
-        return static_cast<const _Mybase&>(_Left) != static_cast<const _Mybase&>(_Right);
-    }
-#endif // !_HAS_CXX20
-
-    _NODISCARD result_type operator()() {
-        return _Mybase::operator()();
-    }
-
-    void discard(unsigned long long _Nskip) {
-        _Mybase::discard(_Nskip);
     }
 
     template <class _Elem, class _Traits>
@@ -1144,7 +742,13 @@ public:
         basic_ostream<_Elem, _Traits>& _Ostr, const subtract_with_carry_engine& _Eng) {
         const auto _Save_flags = _Ostr.flags(ios_base::dec | ios_base::left);
         const auto _Save_fill  = _Ostr.fill(' ');
-        _Eng._Write_full(_Ostr);
+
+        for (size_t _Ix = 0; _Ix < _Rx; ++_Ix) {
+            _Ostr << _Eng._At(_Ix) << ' ';
+        }
+
+        _Ostr << _Eng._Carry;
+
         _Ostr.flags(_Save_flags);
         _Ostr.fill(_Save_fill);
         return _Ostr;
@@ -1155,7 +759,7 @@ public:
         basic_istream<_Elem, _Traits>& _Istr, subtract_with_carry_engine& _Eng) {
         constexpr auto _Nx = long_lag;
         result_type _Buffer[_Nx];
-        typename _Mybase::_Traits::_Cy_t _Carry_buf;
+        _Cy_t _Carry_buf;
         const auto _Save_flags = _Istr.flags(ios_base::dec | ios_base::skipws);
         for (auto& _Val : _Buffer) {
             _Istr >> _Val;
@@ -1176,131 +780,103 @@ public:
         _Istr.flags(_Save_flags);
         return _Istr;
     }
-};
-_STL_RESTORE_DEPRECATED_WARNING
-
-#if _HAS_TR1_NAMESPACE
-constexpr double _Cx_exp2(const int _Exp) noexcept {
-    double _Ret = 1.0;
-    for (int _Count = _Exp; _Count > 0; --_Count) {
-        _Ret *= 2.0;
-    }
-    for (int _Count = _Exp; _Count < 0; ++_Count) {
-        _Ret *= 0.5;
-    }
-
-    return _Ret;
-}
-
-template <class _Ty, size_t _Wx, size_t _Rx>
-struct _Swc_01_traits { // traits for subtract_with_carry_01 generator
-    using _Cy_t   = _Ty;
-    using _UCy_t  = _Ty;
-    using _Mod_t  = _Ty;
-    using _Seed_t = unsigned int;
-
-    static constexpr _Cy_t _Cy   = static_cast<_Cy_t>(_Cx_exp2(static_cast<int>(-static_cast<ptrdiff_t>(_Wx))));
-    static constexpr _Mod_t _Mod = 1;
-    static constexpr _Ty _Max    = 1;
-    static constexpr int _Nwords = (_Wx + 31) / 32;
-
-    template <class _Gen>
-    static _Cy_t _Reset(_Gen& _Gx, _Ty* _Ax, bool _Readcy) { // set initial values of _Ax from generator _Gx
-                                                             // return value of _Cy from range if _Readcy is true,
-                                                             // otherwise from last value
-        for (size_t _Ix = 0; _Ix < _Rx; ++_Ix) { // read values
-            _Ty _Factor = 1;
-            _Ty _Val    = 0;
-            for (int _Jx = 0; _Jx < _Nwords - 1; ++_Jx) { // read components of value
-                _Factor /= static_cast<_Ty>(_Two32);
-                _Val += _Gx() * _Factor;
-            }
-            _Ty _Temp = (static_cast<unsigned long>(_Gx()) & _Mask) / _Scale1;
-            _Val += (_Temp - static_cast<unsigned long>(_Temp)) * _Factor;
-            _Ax[_Ix] = _Val;
-        }
-        if (!_Readcy) {
-            return _Ax[_Rx - 1] != 0 ? 0 : _Cy;
-        } else {
-            return _Gx() == 0 ? 0 : _Cy;
-        }
-    }
-
-    template <class _Elem, class _Traits>
-    static void _Write(
-        basic_ostream<_Elem, _Traits>& _Ostr, const _Circ_buf<_Ty, _Rx>& _Buf, _Cy_t _Cy) { // write state to _Ostr
-        for (size_t _Ix = 0; _Ix < _Rx; ++_Ix) { // write values
-            _Ty _Val = _Buf._At(_Ix);
-            unsigned long _Temp;
-            for (int _Jx = 0; _Jx < _Nwords - 1; ++_Jx) { // write components of value
-                _Val *= static_cast<_Ty>(_Two32);
-                _Temp = static_cast<unsigned long>(_Val);
-                _Val -= _Temp;
-                _Ostr << _Temp << ' ';
-            }
-            _Temp = static_cast<unsigned long>(_Val * _Scale1);
-            _Ostr << _Temp << ' ';
-        }
-        _Ostr << (_Cy ? 1 : 0);
-    }
 
 private:
-    static constexpr _Ty _Scale1         = static_cast<_Ty>(_Cx_exp2(_Wx % 32));
-    static constexpr unsigned long _Mask = ~((~0UL) << (_Wx % 32));
+    void _Setx(size_t _Ix, _Ty _Xis, _Ty _Xir) noexcept { // update _Ax[_Ix] and _Carry
+        bool _Underflowed = false;
+        _Ty _Newx         = _Xis;
+        if (_Newx < _Xir) {
+            _Underflowed = true;
+        }
+
+        _Newx -= _Xir;
+        if (_Newx < static_cast<_UCy_t>(_Carry)) {
+            _Underflowed = true;
+        }
+
+        _Newx -= _Carry;
+        if (_Underflowed) { // underflowed, so add _Mx
+            _Newx += _Mx;
+            _Carry = 1;
+        } else {
+            _Carry = 0;
+        }
+
+        this->_Ax[_Ix] = _Newx;
+    }
+
+    static constexpr int _Get_wc() noexcept { // compute number of 32-bit words per element
+        if constexpr (_Mx == 0) {
+            return (8 * sizeof(_Ty) + 31) / 32;
+        } else if constexpr (_Mx > (1ULL << 32)) {
+            return 2;
+        } else {
+            return 1;
+        }
+    }
+
+#pragma warning(push)
+#pragma warning(disable : 4724) // potential mod by 0
+    _Cy_t _Reduce() noexcept { // reduce values to allowed range
+        if constexpr (_Mx != 0) {
+            for (size_t _Ix = 0; _Ix < _Rx; ++_Ix) {
+                this->_Ax[_Ix] %= _Mx;
+            }
+        }
+
+        return this->_Ax[_Rx - 1] == 0;
+    }
+#pragma warning(pop)
+
+    _Cy_t _Carry;
 };
 
-template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
-class _DEPRECATE_TR1_NAMESPACE subtract_with_carry_01
-    : public _Swc_base<_Ty, _Sx, _Rx, _Swc_01_traits<_Ty, _Wx, _Rx>> { // subtract_with_carry_01 generator
+_EXPORT_STD template <class _Ty, size_t _Wx, size_t _Nx, size_t _Mx, size_t _Rx, _Ty _Px, size_t _Ux, _Ty _Dx,
+    size_t _Sx, _Ty _Bx, size_t _Tx, _Ty _Cx, size_t _Lx, _Ty _Fx>
+class mersenne_twister_engine : private _Circ_buf<_Ty, _Nx> {
+private:
+    static constexpr unsigned long long _Max = (((1ULL << (_Wx - 1)) - 1) << 1) + 1;
+
 public:
-    static constexpr size_t word_size = _Wx;
+    _RNG_REQUIRE_UINTTYPE(mersenne_twister_engine, _Ty);
 
-    using _Mybase = _Swc_base<_Ty, _Sx, _Rx, _Swc_01_traits<_Ty, _Wx, _Rx>>;
+    static_assert(0 < _Mx && _Mx <= _Nx && 2U < _Wx && _Rx <= _Wx && _Ux <= _Wx && _Sx <= _Wx && _Tx <= _Wx
+                      && _Lx <= _Wx && _Wx <= numeric_limits<_Ty>::digits && _Px <= _Max && _Bx <= _Max && _Cx <= _Max
+                      && _Dx <= _Max && _Fx <= _Max,
+        "invalid template argument for mersenne_twister_engine");
 
-    subtract_with_carry_01() : _Mybase() {}
-
-    explicit subtract_with_carry_01(typename _Mybase::_Seed_t _Value) : _Mybase(_Value) {}
-
-    template <class _Gen, _Enable_if_seed_seq_t<_Gen, subtract_with_carry_01> = 0>
-    subtract_with_carry_01(_Gen& _Gx) : _Mybase(_Gx) {}
-};
-#endif // _HAS_TR1_NAMESPACE
-
-template <class _Ty, int _Wx, int _Nx, int _Mx, int _Rx, _Ty _Px, int _Ux, int _Sx, _Ty _Bx, int _Tx, _Ty _Cx, int _Lx>
-class _DEPRECATE_TR1_RANDOM mersenne_twister : public _Circ_buf<_Ty, _Nx> { // mersenne twister generator
-public:
     using result_type = _Ty;
 
-    static constexpr int word_size   = _Wx;
-    static constexpr int state_size  = _Nx;
-    static constexpr int shift_size  = _Mx;
-    static constexpr int mask_bits   = _Rx;
-    static constexpr _Ty parameter_a = _Px;
-    static constexpr int output_u    = _Ux;
-    static constexpr int output_s    = _Sx;
-    static constexpr _Ty output_b    = _Bx;
-    static constexpr int output_t    = _Tx;
-    static constexpr _Ty output_c    = _Cx;
-    static constexpr int output_l    = _Lx;
+    static constexpr size_t word_size              = _Wx;
+    static constexpr size_t state_size             = _Nx;
+    static constexpr size_t shift_size             = _Mx;
+    static constexpr size_t mask_bits              = _Rx;
+    static constexpr _Ty xor_mask                  = _Px;
+    static constexpr size_t tempering_u            = _Ux;
+    static constexpr _Ty tempering_d               = _Dx;
+    static constexpr size_t tempering_s            = _Sx;
+    static constexpr _Ty tempering_b               = _Bx;
+    static constexpr size_t tempering_t            = _Tx;
+    static constexpr _Ty tempering_c               = _Cx;
+    static constexpr size_t tempering_l            = _Lx;
+    static constexpr _Ty initialization_multiplier = _Fx;
 
-    static constexpr _Ty default_seed = 5489U;
+    static constexpr result_type default_seed = 5489U;
 
-    mersenne_twister() : _Dxval(_WMSK) {
-        seed(default_seed, static_cast<_Ty>(1812433253));
+    mersenne_twister_engine() {
+        seed(default_seed);
     }
 
-    explicit mersenne_twister(_Ty _Xx0, _Ty _Dxarg = _WMSK, _Ty _Fxarg = static_cast<_Ty>(1812433253))
-        : _Dxval(_Dxarg) {
-        seed(_Xx0, _Fxarg);
+    explicit mersenne_twister_engine(result_type _Xx0) {
+        seed(_Xx0);
     }
 
-    template <class _Gen, _Enable_if_seed_seq_t<_Gen, mersenne_twister> = 0>
-    explicit mersenne_twister(_Gen& _Gx) : _Dxval(_WMSK) {
-        seed(_Gx);
+    template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, mersenne_twister_engine> = 0>
+    explicit mersenne_twister_engine(_Seed_seq& _Seq) {
+        seed(_Seq);
     }
 
-    void seed(_Ty _Xx0 = default_seed, _Ty _Fx = static_cast<_Ty>(1812433253)) {
-        // set initial values from specified value
+    void seed(result_type _Xx0 = default_seed) { // set initial values from specified value
         _Ty _Prev = this->_Ax[0] = _Xx0 & _WMSK;
         for (size_t _Ix = 1; _Ix < _Nx; ++_Ix) {
             _Prev = this->_Ax[_Ix] = (_Ix + _Fx * (_Prev ^ (_Prev >> (_Wx - 2)))) & _WMSK;
@@ -1309,53 +885,80 @@ public:
         this->_Idx = _Nx;
     }
 
-    template <class _Gen, _Enable_if_seed_seq_t<_Gen, mersenne_twister> = 0>
-    void seed(_Gen& _Gx, bool = false) { // set initial values from range
-        for (size_t _Ix = 0; _Ix < _Nx; ++_Ix) {
-            this->_Ax[_Ix] = _Gx() & _WMSK;
+    template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, mersenne_twister_engine> = 0>
+    void seed(_Seed_seq& _Seq) { // reset sequence from seed sequence
+        constexpr int _Kx = (_Wx + 31) / 32;
+        unsigned long _Arr[_Kx * _Nx];
+        _Seq.generate(_STD begin(_Arr), _STD end(_Arr));
+
+        int _Idx0 = 0;
+        _Ty _Sum  = 0;
+        for (size_t _Ix = 0; _Ix < _Nx; ++_Ix, _Idx0 += _Kx) { // pack _Kx words
+            this->_Ax[_Ix] = static_cast<_Ty>(_Arr[_Idx0]);
+            for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
+                this->_Ax[_Ix] |= static_cast<_Ty>(_Arr[_Idx0 + _Jx]) << (32 * _Jx);
+            }
+
+            this->_Ax[_Ix] &= _WMSK;
+
+            if (_Ix == 0) {
+                _Sum = this->_Ax[_Ix] >> _Rx;
+            } else {
+                _Sum |= this->_Ax[_Ix];
+            }
+        }
+
+        if (_Sum == 0) {
+            this->_Ax[0] = _Ty{1} << (_Wx - 1);
         }
 
         this->_Idx = _Nx;
     }
 
-    _NODISCARD friend bool operator==(const mersenne_twister& _Left, const mersenne_twister& _Right) noexcept
-    /* strengthened */ {
+    _NODISCARD static constexpr result_type(min)() noexcept /* strengthened */ {
+        return 0;
+    }
+
+    _NODISCARD static constexpr result_type(max)() noexcept /* strengthened */ {
+        return _WMSK;
+    }
+
+    _NODISCARD friend bool operator==(
+        const mersenne_twister_engine& _Left, const mersenne_twister_engine& _Right) noexcept /* strengthened */ {
         return _Left._Equals(_Right);
     }
 
 #if !_HAS_CXX20
-    _NODISCARD friend bool operator!=(const mersenne_twister& _Left, const mersenne_twister& _Right) noexcept
-    /* strengthened */ {
-        return !_Left._Equals(_Right);
+    _NODISCARD friend bool operator!=(
+        const mersenne_twister_engine& _Left, const mersenne_twister_engine& _Right) noexcept /* strengthened */ {
+        return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
 
     template <class _Elem, class _S_Traits>
-    friend basic_istream<_Elem, _S_Traits>& operator>>(basic_istream<_Elem, _S_Traits>& _Istr,
-        mersenne_twister& _Eng) { // read state from _Istr
+    friend basic_istream<_Elem, _S_Traits>& operator>>(
+        basic_istream<_Elem, _S_Traits>& _Istr, mersenne_twister_engine& _Eng) {
         _Wrap_istream<_Elem, _S_Traits, _Ty> _Gen(_Istr);
-        _Eng.seed(_Gen);
+
+        for (size_t _Ix = 0; _Ix < _Nx; ++_Ix) {
+            _Eng._Ax[_Ix] = _Gen() & _WMSK;
+        }
+
+        _Eng._Idx = _Nx;
+
         return _Istr;
     }
 
     template <class _Elem, class _S_Traits>
-    friend basic_ostream<_Elem, _S_Traits>& operator<<(basic_ostream<_Elem, _S_Traits>& _Ostr,
-        const mersenne_twister& _Eng) { // write state to _Ostr
+    friend basic_ostream<_Elem, _S_Traits>& operator<<(
+        basic_ostream<_Elem, _S_Traits>& _Ostr, const mersenne_twister_engine& _Eng) {
         _Ostr << _Eng._At(0);
 
-        for (size_t _Ix = 1; _Ix < mersenne_twister::state_size; ++_Ix) {
+        for (size_t _Ix = 1; _Ix < _Nx; ++_Ix) {
             _Ostr << ' ' << _Eng._At(_Ix);
         }
 
         return _Ostr;
-    }
-
-    _NODISCARD result_type(min)() const noexcept {
-        return 0;
-    }
-
-    _NODISCARD result_type(max)() const noexcept {
-        return _WMSK;
     }
 
     _NODISCARD result_type operator()() {
@@ -1366,20 +969,20 @@ public:
         }
 
         _Ty _Res = this->_Ax[this->_Idx++] & _WMSK;
-        _Res ^= (_Res >> _Ux) & _Dxval;
+        _Res ^= (_Res >> _Ux) & _Dx;
         _Res ^= (_Res << _Sx) & _Bx;
         _Res ^= (_Res << _Tx) & _Cx;
         _Res ^= (_Res & _WMSK) >> _Lx;
         return _Res;
     }
 
-    void discard(unsigned long long _Nskip) { // discard _Nskip elements
+    void discard(unsigned long long _Nskip) {
         for (; 0 < _Nskip; --_Nskip) {
             (void) (*this)();
         }
     }
 
-protected:
+private:
     _Post_satisfies_(this->_Idx == 0) void _Refill_lower() {
         // compute values for the lower half of the history array
         constexpr size_t _Wrap_bound_one = _Nx - _One_mod_n;
@@ -1427,7 +1030,7 @@ protected:
         }
     }
 
-    _Ty _Dxval;
+    _Ty _Dxval{_Dx}; // TRANSITION, ABI: _Dxval must be initialized to _Dx but is unused by the current implementation
 
     static constexpr _Ty _WMSK = ~((~_Ty{0} << (_Wx - 1)) << 1);
     static constexpr _Ty _HMSK = (_WMSK << _Rx) & _WMSK;
@@ -1437,382 +1040,101 @@ protected:
     static constexpr int _M_mod_n   = _Mx % _Nx;
 };
 
-_STL_DISABLE_DEPRECATED_WARNING
-_EXPORT_STD template <class _Ty, size_t _Wx, size_t _Nx, size_t _Mx, size_t _Rx, _Ty _Px, size_t _Ux, _Ty _Dx,
-    size_t _Sx, _Ty _Bx, size_t _Tx, _Ty _Cx, size_t _Lx, _Ty _Fx>
-class mersenne_twister_engine : private mersenne_twister<_Ty, _Wx, _Nx, _Mx, _Rx, _Px, _Ux, _Sx, _Bx, _Tx, _Cx, _Lx> {
-public:
-    static constexpr unsigned long long _Max = (((1ULL << (_Wx - 1)) - 1) << 1) + 1;
-
-    _RNG_REQUIRE_UINTTYPE(mersenne_twister_engine, _Ty);
-
-    static_assert(0 < _Mx && _Mx <= _Nx && 2U < _Wx && _Rx <= _Wx && _Ux <= _Wx && _Sx <= _Wx && _Tx <= _Wx
-                      && _Lx <= _Wx && _Wx <= numeric_limits<_Ty>::digits && _Px <= _Max && _Bx <= _Max && _Cx <= _Max
-                      && _Dx <= _Max && _Fx <= _Max,
-        "invalid template argument for mersenne_twister_engine");
-
-    using _Mybase     = mersenne_twister<_Ty, _Wx, _Nx, _Mx, _Rx, _Px, _Ux, _Sx, _Bx, _Tx, _Cx, _Lx>;
-    using result_type = _Ty;
-
-    static constexpr size_t word_size              = _Wx;
-    static constexpr size_t state_size             = _Nx;
-    static constexpr size_t shift_size             = _Mx;
-    static constexpr size_t mask_bits              = _Rx;
-    static constexpr _Ty xor_mask                  = _Px;
-    static constexpr size_t tempering_u            = _Ux;
-    static constexpr _Ty tempering_d               = _Dx;
-    static constexpr size_t tempering_s            = _Sx;
-    static constexpr _Ty tempering_b               = _Bx;
-    static constexpr size_t tempering_t            = _Tx;
-    static constexpr _Ty tempering_c               = _Cx;
-    static constexpr size_t tempering_l            = _Lx;
-    static constexpr _Ty initialization_multiplier = _Fx;
-
-    static constexpr result_type default_seed = 5489U;
-
-    mersenne_twister_engine() : _Mybase(default_seed, _Dx, _Fx) {}
-
-    explicit mersenne_twister_engine(result_type _Xx0) : _Mybase(_Xx0, _Dx, _Fx) {}
-
-    template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, mersenne_twister_engine> = 0>
-    explicit mersenne_twister_engine(_Seed_seq& _Seq) : _Mybase(default_seed, _Dx, _Fx) {
-        seed(_Seq);
-    }
-
-    void seed(result_type _Xx0 = default_seed) { // set initial values from specified value
-        _Mybase::seed(_Xx0, _Fx);
-    }
-
-    template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, mersenne_twister_engine> = 0>
-    void seed(_Seed_seq& _Seq) { // reset sequence from seed sequence
-        constexpr int _Kx = (_Wx + 31) / 32;
-        unsigned long _Arr[_Kx * _Nx];
-        _Seq.generate(&_Arr[0], &_Arr[_Kx * _Nx]);
-
-        int _Idx0 = 0;
-        _Ty _Sum  = 0;
-        for (size_t _Ix = 0; _Ix < _Nx; ++_Ix, _Idx0 += _Kx) { // pack _Kx words
-            this->_Ax[_Ix] = static_cast<_Ty>(_Arr[_Idx0]);
-            for (int _Jx = 1; _Jx < _Kx; ++_Jx) {
-                this->_Ax[_Ix] |= static_cast<_Ty>(_Arr[_Idx0 + _Jx]) << (32 * _Jx);
-            }
-
-            this->_Ax[_Ix] &= this->_WMSK;
-
-            if (_Ix == 0) {
-                _Sum = this->_Ax[_Ix] >> _Rx;
-            } else {
-                _Sum |= this->_Ax[_Ix];
-            }
-        }
-
-        if (_Sum == 0) {
-            this->_Ax[0] = _Ty{1} << (_Wx - 1);
-        }
-
-        this->_Idx = _Nx;
-    }
-
-    _NODISCARD static constexpr result_type(min)() noexcept /* strengthened */ {
-        return 0;
-    }
-
-    _NODISCARD static constexpr result_type(max)() noexcept /* strengthened */ {
-        return _Mybase::_WMSK;
-    }
-
-    _NODISCARD friend bool operator==(
-        const mersenne_twister_engine& _Left, const mersenne_twister_engine& _Right) noexcept /* strengthened */ {
-        return static_cast<const _Mybase&>(_Left) == static_cast<const _Mybase&>(_Right);
-    }
-
-#if !_HAS_CXX20
-    _NODISCARD friend bool operator!=(
-        const mersenne_twister_engine& _Left, const mersenne_twister_engine& _Right) noexcept /* strengthened */ {
-        return static_cast<const _Mybase&>(_Left) != static_cast<const _Mybase&>(_Right);
-    }
-#endif // !_HAS_CXX20
-
-    template <class _Elem, class _S_Traits>
-    friend basic_istream<_Elem, _S_Traits>& operator>>(
-        basic_istream<_Elem, _S_Traits>& _Istr, mersenne_twister_engine& _Eng) {
-        return _Istr >> static_cast<_Mybase&>(_Eng);
-    }
-
-    template <class _Elem, class _S_Traits>
-    friend basic_ostream<_Elem, _S_Traits>& operator<<(
-        basic_ostream<_Elem, _S_Traits>& _Ostr, const mersenne_twister_engine& _Eng) {
-        return _Ostr << static_cast<const _Mybase&>(_Eng);
-    }
-
-    _NODISCARD result_type operator()() {
-        return _Mybase::operator()();
-    }
-
-    void discard(unsigned long long _Nskip) {
-        _Mybase::discard(_Nskip);
-    }
-};
-_STL_RESTORE_DEPRECATED_WARNING
-
-template <class _Engine, int _Px, int _Rx>
-class _DEPRECATE_TR1_RANDOM discard_block { // discard_block compound engine
-public:
-#if _HAS_TR1_NAMESPACE
-    using base_type _DEPRECATE_TR1_NAMESPACE = _Engine; // TR1-only typedef
-#endif // _HAS_TR1_NAMESPACE
-
-    using result_type = typename _Engine::result_type;
-
-    static constexpr int block_size = _Px;
-    static constexpr int used_block = _Rx;
-
-    discard_block() : _Eng(), _Nx(0) {}
-
-    explicit discard_block(const _Engine& _Ex) : _Eng(_Ex), _Nx(0) {}
-
-    explicit discard_block(_Engine&& _Ex) : _Eng(_STD move(_Ex)), _Nx(0) {}
-
-    explicit discard_block(result_type _Seed) : _Eng(_Seed), _Nx(0) {}
-
-    template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, discard_block, _Engine> = 0>
-    explicit discard_block(_Seed_seq& _Seq) : _Eng(_Seq), _Nx(0) {}
-
-    void seed() { // seed engine from default value
-        _Eng.seed();
-        _Nx = 0;
-    }
-
-    void seed(result_type _Xx0) { // seed engine from specified value
-        _Eng.seed(_Xx0);
-        _Nx = 0;
-    }
-
-    template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, discard_block> = 0>
-    void seed(_Seed_seq& _Seq) { // seed engine from seed sequence
-        _Eng.seed(_Seq);
-        _Nx = 0;
-    }
-
-    _NODISCARD const _Engine& base() const noexcept {
-        return _Eng;
-    }
-
-    _NODISCARD result_type(min)() const {
-        return (_Eng.min)();
-    }
-
-    _NODISCARD result_type(max)() const {
-        return (_Eng.max)();
-    }
-
-    _NODISCARD result_type operator()() {
-        if (_Rx <= _Nx) { // discard values
-            while (_Nx++ < _Px) {
-                (void) _Eng();
-            }
-
-            _Nx = 0;
-        }
-        ++_Nx;
-        return _Eng();
-    }
-
-    void discard(unsigned long long _Nskip) { // discard _Nskip elements
-        for (; 0 < _Nskip; --_Nskip) {
-            (void) (*this)();
-        }
-    }
-
-    _NODISCARD friend bool operator==(const discard_block& _Left, const discard_block& _Right) {
-        return _Left._Eng == _Right._Eng && _Left._Nx == _Right._Nx;
-    }
-
-#if !_HAS_CXX20
-    _NODISCARD friend bool operator!=(const discard_block& _Left, const discard_block& _Right) {
-        return !(_Left == _Right);
-    }
-#endif // !_HAS_CXX20
-
-    template <class _Elem, class _Traits>
-    friend basic_istream<_Elem, _Traits>& operator>>(
-        basic_istream<_Elem, _Traits>& _Istr, discard_block& _Eng) { // read state from _Istr
-        return _Istr >> _Eng._Eng >> _Eng._Nx;
-    }
-
-    template <class _Elem, class _Traits>
-    friend basic_ostream<_Elem, _Traits>& operator<<(
-        basic_ostream<_Elem, _Traits>& _Ostr, const discard_block& _Eng) { // write state to _Ostr
-        return _Ostr << _Eng._Eng << ' ' << _Eng._Nx;
-    }
-
-private:
-    _Engine _Eng;
-    int _Nx;
-};
-
-template <class _Engine, size_t _Px, size_t _Rx>
-class _Discard_block_base { // TRANSITION, ABI, should be merged into discard_block_engine
-public:
-    using result_type = typename _Engine::result_type;
-
-    _Discard_block_base() : _Eng(), _Nx(0) {}
-
-    explicit _Discard_block_base(const _Engine& _Ex) : _Eng(_Ex), _Nx(0) {}
-
-    explicit _Discard_block_base(_Engine&& _Ex) : _Eng(_STD move(_Ex)), _Nx(0) {}
-
-    explicit _Discard_block_base(result_type _Seed) : _Eng(_Seed), _Nx(0) {}
-
-    template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, _Discard_block_base, _Engine> = 0>
-    explicit _Discard_block_base(_Seed_seq& _Seq) : _Eng(_Seq), _Nx(0) {}
-
-    void seed() { // seed engine from default value
-        _Eng.seed();
-        _Nx = 0;
-    }
-
-    void seed(result_type _Xx0) { // seed engine from specified value
-        _Eng.seed(_Xx0);
-        _Nx = 0;
-    }
-
-    template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, _Discard_block_base> = 0>
-    void seed(_Seed_seq& _Seq) { // seed engine from seed sequence
-        _Eng.seed(_Seq);
-        _Nx = 0;
-    }
-
-    _NODISCARD const _Engine& base() const noexcept {
-        return _Eng;
-    }
-
-    _NODISCARD result_type operator()() {
-        if (_Rx <= _Nx) { // discard values
-            while (_Nx++ < _Px) {
-                (void) _Eng();
-            }
-
-            _Nx = 0;
-        }
-        ++_Nx;
-        return _Eng();
-    }
-
-    void discard(unsigned long long _Nskip) { // discard _Nskip elements
-        for (; 0 < _Nskip; --_Nskip) {
-            (void) (*this)();
-        }
-    }
-
-    _NODISCARD friend bool operator==(const _Discard_block_base& _Left, const _Discard_block_base& _Right) {
-        return _Left._Eng == _Right._Eng && _Left._Nx == _Right._Nx;
-    }
-
-#if !_HAS_CXX20
-    _NODISCARD friend bool operator!=(const _Discard_block_base& _Left, const _Discard_block_base& _Right) {
-        return !(_Left == _Right);
-    }
-#endif // !_HAS_CXX20
-
-    template <class _Elem, class _Traits>
-    friend basic_istream<_Elem, _Traits>& operator>>(
-        basic_istream<_Elem, _Traits>& _Istr, _Discard_block_base& _Eng) { // read state from _Istr
-        return _Istr >> _Eng._Eng >> _Eng._Nx;
-    }
-
-    template <class _Elem, class _Traits>
-    friend basic_ostream<_Elem, _Traits>& operator<<(
-        basic_ostream<_Elem, _Traits>& _Ostr, const _Discard_block_base& _Eng) { // write state to _Ostr
-        return _Ostr << _Eng._Eng << ' ' << _Eng._Nx;
-    }
-
-private:
-    _Engine _Eng;
-    size_t _Nx;
-};
-
-_STL_DISABLE_DEPRECATED_WARNING
 _EXPORT_STD template <class _Engine, size_t _Px, size_t _Rx>
-class discard_block_engine // discard_block_engine compound engine
-    : private conditional_t<_Px <= INT_MAX, discard_block<_Engine, static_cast<int>(_Px), static_cast<int>(_Rx)>,
-          _Discard_block_base<_Engine, _Px, _Rx>> {
+class discard_block_engine {
+private:
+    using _Block_type = conditional_t<_Px <= INT_MAX, int, size_t>; // TRANSITION, ABI: Should always be size_t
+
 public:
     static_assert(0 < _Rx && _Rx <= _Px, "invalid template argument for discard_block_engine");
 
-    using _Mybase = conditional_t<_Px <= INT_MAX, discard_block<_Engine, static_cast<int>(_Px), static_cast<int>(_Rx)>,
-        _Discard_block_base<_Engine, _Px, _Rx>>;
     using result_type = typename _Engine::result_type;
 
     static constexpr size_t block_size = _Px;
     static constexpr size_t used_block = _Rx;
 
-    discard_block_engine() : _Mybase() {}
+    discard_block_engine() : _Eng(), _Nx(0) {}
 
-    explicit discard_block_engine(const _Engine& _Ex) : _Mybase(_Ex) {}
+    explicit discard_block_engine(const _Engine& _Ex) : _Eng(_Ex), _Nx(0) {}
 
-    explicit discard_block_engine(_Engine&& _Ex) : _Mybase(_STD move(_Ex)) {}
+    explicit discard_block_engine(_Engine&& _Ex) : _Eng(_STD move(_Ex)), _Nx(0) {}
 
-    explicit discard_block_engine(result_type _Xx0) : _Mybase(_Xx0) {}
+    explicit discard_block_engine(result_type _Xx0) : _Eng(_Xx0), _Nx(0) {}
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, discard_block_engine, _Engine> = 0>
-    explicit discard_block_engine(_Seed_seq& _Seq) : _Mybase(_Seq) {}
+    explicit discard_block_engine(_Seed_seq& _Seq) : _Eng(_Seq), _Nx(0) {}
 
     void seed() {
-        _Mybase::seed();
+        _Eng.seed();
+        _Nx = 0;
     }
 
     void seed(result_type _Xx0) {
-        _Mybase::seed(_Xx0);
+        _Eng.seed(_Xx0);
+        _Nx = 0;
     }
 
     template <class _Seed_seq, _Enable_if_seed_seq_t<_Seed_seq, discard_block_engine> = 0>
     void seed(_Seed_seq& _Seq) {
-        _Mybase::seed(_Seq);
+        _Eng.seed(_Seq);
+        _Nx = 0;
     }
 
     _NODISCARD const _Engine& base() const noexcept {
-        return _Mybase::base();
+        return _Eng;
     }
 
     _NODISCARD result_type operator()() {
-        return _Mybase::operator()();
+        if (static_cast<_Block_type>(_Rx) <= _Nx) { // discard values
+            while (_Nx++ < static_cast<_Block_type>(_Px)) {
+                (void) _Eng();
+            }
+
+            _Nx = 0;
+        }
+        ++_Nx;
+        return _Eng();
     }
 
     void discard(unsigned long long _Nskip) {
-        _Mybase::discard(_Nskip);
+        for (; 0 < _Nskip; --_Nskip) {
+            (void) (*this)();
+        }
     }
 
     _NODISCARD static constexpr result_type(min)() noexcept /* strengthened */ {
-        return (_Engine::min)();
+        return (_Engine::min) ();
     }
 
     _NODISCARD static constexpr result_type(max)() noexcept /* strengthened */ {
-        return (_Engine::max)();
+        return (_Engine::max) ();
     }
 
     _NODISCARD friend bool operator==(const discard_block_engine& _Left, const discard_block_engine& _Right) {
-        return static_cast<const _Mybase&>(_Left) == static_cast<const _Mybase&>(_Right);
+        return _Left._Eng == _Right._Eng && _Left._Nx == _Right._Nx;
     }
 
 #if !_HAS_CXX20
     _NODISCARD friend bool operator!=(const discard_block_engine& _Left, const discard_block_engine& _Right) {
-        return static_cast<const _Mybase&>(_Left) != static_cast<const _Mybase&>(_Right);
+        return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
 
     template <class _Elem, class _Traits>
     friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, discard_block_engine& _Eng) {
-        return _Istr >> static_cast<_Mybase&>(_Eng);
+        return _Istr >> _Eng._Eng >> _Eng._Nx;
     }
 
     template <class _Elem, class _Traits>
     friend basic_ostream<_Elem, _Traits>& operator<<(
         basic_ostream<_Elem, _Traits>& _Ostr, const discard_block_engine& _Eng) {
-        return _Ostr << static_cast<const _Mybase&>(_Eng);
+        return _Ostr << _Eng._Eng << ' ' << _Eng._Nx;
     }
+
+private:
+    _Engine _Eng;
+    _Block_type _Nx;
 };
-_STL_RESTORE_DEPRECATED_WARNING
 
 _EXPORT_STD template <class _Engine, size_t _Wx, class _UIntType>
 class independent_bits_engine { // independent_bits_engine compound engine
@@ -1872,29 +1194,27 @@ public:
     }
 
     _NODISCARD result_type operator()() {
-        size_t _Idx       = 0;
-        result_type _Res  = 0;
         result_type _Mask = ((result_type{1} << (_Wx0 - 1)) << 1) - 1;
         _Eres _Val;
 
+        do { // get a small enough value
+            _Val = _Eng() - (_Engine::min) ();
+        } while (_Val > _Yx0);
+        result_type _Res = static_cast<result_type>(_Val) & _Mask;
+
+        size_t _Idx = 1;
         for (; _Idx < _Nx0; ++_Idx) { // pack _Wx0-bit values
-            for (;;) { // get a small enough value
-                _Val = _Eng() - (_Engine::min)();
-                if (_Val <= _Yx0) {
-                    break;
-                }
-            }
+            do {
+                _Val = _Eng() - (_Engine::min) ();
+            } while (_Val > _Yx0);
             _Res = _Res << _Wx0 | (static_cast<result_type>(_Val) & _Mask);
         }
 
         _Mask = _Mask << 1 | 1;
         for (; _Idx < _Nx; ++_Idx) { // pack _Wx0+1-bit values
-            for (;;) { // get a small enough value
-                _Val = _Eng() - (_Engine::min)();
-                if (_Val <= _Yx1) {
-                    break;
-                }
-            }
+            do {
+                _Val = _Eng() - (_Engine::min) ();
+            } while (_Val > _Yx1);
             _Res = _Res << (_Wx0 + 1) | (static_cast<result_type>(_Val) & _Mask);
         }
         return _Res;
@@ -1931,7 +1251,7 @@ public:
 private:
     void _Init() { // compute values for operator()
         size_t _Mx = 0;
-        _Eres _Rx  = (_Engine::max)() - (_Engine::min)() + 1;
+        _Eres _Rx  = (_Engine::max) () - (_Engine::min) () + 1;
 
         _Eres _Tmp = _Rx;
         if (_Tmp == 0) { // all bits used, make _Rx finite
@@ -1946,8 +1266,14 @@ private:
             _Nx  = (_Wx + _Mx - 1) / _Mx + _Nfix; // trial _Nx
             _Wx0 = _Wx / _Nx;
             _Nx0 = _Nx - _Wx % _Nx;
-            _Yx0 = (_Rx >> _Wx0) << _Wx0;
-            _Yx1 = (((_Rx >> _Wx0) >> 1) << _Wx0) << 1;
+            if (_Wx0 < sizeof(_Eres) * CHAR_BIT) {
+                _Yx0 = (_Rx >> _Wx0) << _Wx0;
+                _Yx1 = (((_Rx >> _Wx0) >> 1) << _Wx0) << 1;
+            } else {
+                _Yx0 = 0;
+                _Yx1 = 0;
+            }
+
             if (_Nfix == 1 || _Rx - _Yx0 <= _Yx0 / _Nx) {
                 break; // also works if _Rx == 0 (_Mx == all bits)
             }
@@ -2015,11 +1341,11 @@ public:
     }
 
     _NODISCARD static constexpr result_type(min)() noexcept /* strengthened */ {
-        return (_Engine::min)();
+        return (_Engine::min) ();
     }
 
     _NODISCARD static constexpr result_type(max)() noexcept /* strengthened */ {
-        return (_Engine::max)();
+        return (_Engine::max) ();
     }
 
     _NODISCARD result_type operator()() {
@@ -2087,141 +1413,22 @@ private:
     double _Scale;
 };
 
-template <class _Diff, class _Urng>
-class _Rng_from_urng_v2 { // wrap a URNG as an RNG
+_EXPORT_STD template <class _Ty = int>
+class uniform_int_distribution { // uniform integer distribution
 public:
-    using _Ty0 = make_unsigned_t<_Diff>;
-    using _Ty1 = _Invoke_result_t<_Urng&>;
+    _RNG_REQUIRE_INTTYPE(uniform_int_distribution, _Ty);
 
-    using _Udiff                              = conditional_t<sizeof(_Ty1) < sizeof(_Ty0), _Ty0, _Ty1>;
-    static constexpr unsigned int _Udiff_bits = sizeof(_Udiff) * CHAR_BIT;
-    using _Uprod = conditional_t<_Udiff_bits <= 16, uint32_t, conditional_t<_Udiff_bits <= 32, uint64_t, _Unsigned128>>;
-
-    explicit _Rng_from_urng_v2(_Urng& _Func) noexcept : _Ref(_Func) {}
-
-    _Diff operator()(_Diff _Index) { // adapt _Urng closed range to [0, _Index)
-        // From Daniel Lemire, "Fast Random Integer Generation in an Interval",
-        // ACM Trans. Model. Comput. Simul. 29 (1), 2019.
-        //
-        // Algorithm 5 <-> This Code:
-        //   m <-> _Product
-        //   l <-> _Rem
-        //   s <-> _Index
-        //   t <-> _Threshold
-        //   L <-> _Generated_bits
-        //   2^L - 1 <-> _Mask
-
-        _Udiff _Mask        = _Bmask;
-        unsigned int _Niter = 1;
-
-        if constexpr (_Bits < _Udiff_bits) {
-            while (_Mask < static_cast<_Udiff>(_Index - 1)) {
-                _Mask <<= _Bits;
-                _Mask |= _Bmask;
-                ++_Niter;
-            }
-        }
-
-        // x <- random integer in [0, 2^L)
-        // m <- x * s
-        auto _Product = _Get_random_product(_Index, _Niter);
-        // l <- m mod 2^L
-        auto _Rem = static_cast<_Udiff>(_Product) & _Mask;
-
-        if (_Rem < _Index) {
-            // t <- (2^L - s) mod s
-            const auto _Threshold = (_Mask - _Index + 1) % _Index;
-            while (_Rem < _Threshold) {
-                _Product = _Get_random_product(_Index, _Niter);
-                _Rem     = static_cast<_Udiff>(_Product) & _Mask;
-            }
-        }
-
-        unsigned int _Generated_bits;
-        if constexpr (_Bits < _Udiff_bits) {
-            _Generated_bits = static_cast<unsigned int>(_Popcount(_Mask));
-        } else {
-            _Generated_bits = _Udiff_bits;
-        }
-
-        // m / 2^L
-        return static_cast<_Diff>(_Product >> _Generated_bits);
-    }
-
-    _Udiff _Get_all_bits() {
-        _Udiff _Ret = _Get_bits();
-
-        if constexpr (_Bits < _Udiff_bits) {
-            for (unsigned int _Num = _Bits; _Num < _Udiff_bits; _Num += _Bits) { // don't mask away any bits
-                _Ret <<= _Bits;
-                _Ret |= _Get_bits();
-            }
-        }
-
-        return _Ret;
-    }
-
-    _Rng_from_urng_v2(const _Rng_from_urng_v2&)            = delete;
-    _Rng_from_urng_v2& operator=(const _Rng_from_urng_v2&) = delete;
-
-private:
-    _Udiff _Get_bits() { // return a random value within [0, _Bmask]
-        static constexpr auto _Urng_min = (_Urng::min)();
-        for (;;) { // repeat until random value is in range
-            const _Udiff _Val = _Ref() - _Urng_min;
-
-            if (_Val <= _Bmask) {
-                return _Val;
-            }
-        }
-    }
-
-    static constexpr size_t _Calc_bits() {
-        auto _Bits_local  = _Udiff_bits;
-        auto _Bmask_local = static_cast<_Udiff>(-1);
-        for (; (_Urng::max)() - (_Urng::min)() < _Bmask_local; _Bmask_local >>= 1) {
-            --_Bits_local;
-        }
-
-        return _Bits_local;
-    }
-
-    _Uprod _Get_random_product(const _Diff _Index, unsigned int _Niter) {
-        _Udiff _Ret = _Get_bits();
-        if constexpr (_Bits < _Udiff_bits) {
-            while (--_Niter > 0) {
-                _Ret <<= _Bits;
-                _Ret |= _Get_bits();
-            }
-        }
-
-        if constexpr (is_same_v<_Udiff, uint64_t>) {
-            uint64_t _High;
-            const auto _Low = _Base128::_UMul128(_Ret, static_cast<_Udiff>(_Index), _High);
-            return _Uprod{_Low, _High};
-        } else {
-            return _Uprod{_Ret} * _Uprod{_Index};
-        }
-    }
-
-    _Urng& _Ref; // reference to URNG
-    static constexpr size_t _Bits  = _Calc_bits(); // number of random bits generated by _Get_bits()
-    static constexpr _Udiff _Bmask = static_cast<_Udiff>(-1) >> (_Udiff_bits - _Bits); // 2^_Bits - 1
-};
-
-template <class _Ty = int>
-class _DEPRECATE_TR1_RANDOM uniform_int { // uniform integer distribution
-public:
     using result_type = _Ty;
 
     struct param_type { // parameter package
-        using distribution_type = uniform_int;
+        using distribution_type = uniform_int_distribution;
 
-        param_type() noexcept {
-            _Init(0, 9);
+        param_type() noexcept /* strengthened */ {
+            _Init(0, (numeric_limits<_Ty>::max)());
         }
 
-        explicit param_type(result_type _Min0, result_type _Max0 = 9) noexcept {
+        explicit param_type(result_type _Min0, result_type _Max0 = (numeric_limits<_Ty>::max)()) noexcept
+        /* strengthened */ {
             _Init(_Min0, _Max0);
         }
 
@@ -2246,7 +1453,7 @@ public:
         }
 
         void _Init(_Ty _Min0, _Ty _Max0) noexcept { // set internal state
-            _STL_ASSERT(_Min0 <= _Max0, "invalid min and max arguments for uniform_int");
+            _STL_ASSERT(_Min0 <= _Max0, "invalid min and max arguments for uniform_int_distribution");
             _Min = _Min0;
             _Max = _Max0;
         }
@@ -2255,11 +1462,14 @@ public:
         result_type _Max;
     };
 
-    uniform_int() noexcept : _Par(0, 9) {}
+    uniform_int_distribution() noexcept // strengthened
+        : _Par(0, (numeric_limits<_Ty>::max)()) {}
 
-    explicit uniform_int(_Ty _Min0, _Ty _Max0 = 9) noexcept : _Par(_Min0, _Max0) {}
+    explicit uniform_int_distribution(_Ty _Min0, _Ty _Max0 = (numeric_limits<_Ty>::max)()) noexcept // strengthened
+        : _Par(_Min0, _Max0) {}
 
-    explicit uniform_int(const param_type& _Par0) noexcept : _Par(_Par0) {}
+    explicit uniform_int_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0) {}
 
     _NODISCARD result_type a() const noexcept /* strengthened */ {
         return _Par.a();
@@ -2273,7 +1483,7 @@ public:
         return _Par;
     }
 
-    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ {
         _Par = _Par0;
     }
 
@@ -2285,7 +1495,7 @@ public:
         return _Par._Max;
     }
 
-    void reset() noexcept /* strengthened */ {} // clear internal state
+    void reset() noexcept /* strengthened */ {}
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -2297,34 +1507,40 @@ public:
         return _Eval(_Eng, _Par0._Min, _Par0._Max);
     }
 
-    template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, result_type _Nx) _DISTRIBUTION_CONST {
-        return _Eval(_Eng, 0, _Nx - 1);
-    }
-
     template <class _Elem, class _Traits>
-    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-        uniform_int& _Dist) { // read state from _Istr
-        uniform_int::result_type _Min0;
-        uniform_int::result_type _Max0;
+    friend basic_istream<_Elem, _Traits>& operator>>(
+        basic_istream<_Elem, _Traits>& _Istr, uniform_int_distribution& _Dist) {
+        uniform_int_distribution::result_type _Min0;
+        uniform_int_distribution::result_type _Max0;
         _Istr >> _Min0 >> _Max0;
         _Dist._Par._Init(_Min0, _Max0);
         return _Istr;
     }
 
     template <class _Elem, class _Traits>
-    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-        const uniform_int& _Dist) { // write state to _Ostr
+    friend basic_ostream<_Elem, _Traits>& operator<<(
+        basic_ostream<_Elem, _Traits>& _Ostr, const uniform_int_distribution& _Dist) {
         return _Ostr << _Dist._Par._Min << ' ' << _Dist._Par._Max;
     }
+
+    _NODISCARD friend bool operator==(
+        const uniform_int_distribution& _Left, const uniform_int_distribution& _Right) noexcept /* strengthened */ {
+        return _Left._Par == _Right._Par;
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD friend bool operator!=(
+        const uniform_int_distribution& _Left, const uniform_int_distribution& _Right) noexcept /* strengthened */ {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
 
 private:
     using _Uty = make_unsigned_t<_Ty>;
 
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, _Ty _Min, _Ty _Max) const { // compute next value in range [_Min, _Max]
-        conditional_t<_Has_static_min_max<_Engine>, _Rng_from_urng_v2<_Uty, _Engine>, _Rng_from_urng<_Uty, _Engine>>
-            _Generator(_Eng);
+        _Rng_from_urng_v2<_Uty, _Engine> _Generator(_Eng);
 
         const _Uty _Umin = _Adjust(static_cast<_Uty>(_Min));
         const _Uty _Umax = _Adjust(static_cast<_Uty>(_Max));
@@ -2351,100 +1567,6 @@ private:
 
     param_type _Par;
 };
-
-_STL_DISABLE_DEPRECATED_WARNING
-_EXPORT_STD template <class _Ty = int>
-class uniform_int_distribution : private uniform_int<_Ty> { // uniform integer distribution
-public:
-    _RNG_REQUIRE_INTTYPE(uniform_int_distribution, _Ty);
-
-    using _Mybase     = uniform_int<_Ty>;
-    using _Mypbase    = typename _Mybase::param_type;
-    using result_type = typename _Mybase::result_type;
-
-    struct param_type : _Mypbase { // parameter package
-        using distribution_type = uniform_int_distribution;
-
-        param_type() noexcept // strengthened
-            : _Mypbase(0, (numeric_limits<_Ty>::max)()) {}
-
-        explicit param_type(
-            result_type _Min0, result_type _Max0 = (numeric_limits<_Ty>::max)()) noexcept // strengthened
-            : _Mypbase(_Min0, _Max0) {}
-
-        param_type(const _Mypbase& _Right) noexcept : _Mypbase(_Right) {}
-    };
-
-    uniform_int_distribution() noexcept // strengthened
-        : _Mybase(0, (numeric_limits<_Ty>::max)()) {}
-
-    explicit uniform_int_distribution(_Ty _Min0, _Ty _Max0 = (numeric_limits<_Ty>::max)()) noexcept // strengthened
-        : _Mybase(_Min0, _Max0) {}
-
-    explicit uniform_int_distribution(const param_type& _Par0) noexcept // strengthened
-        : _Mybase(_Par0) {}
-
-    _NODISCARD result_type a() const noexcept /* strengthened */ {
-        return _Mybase::a();
-    }
-
-    _NODISCARD result_type b() const noexcept /* strengthened */ {
-        return _Mybase::b();
-    }
-
-    _NODISCARD param_type param() const noexcept /* strengthened */ {
-        return _Mybase::param();
-    }
-
-    void param(const param_type& _Par0) noexcept /* strengthened */ {
-        _Mybase::param(_Par0);
-    }
-
-    _NODISCARD result_type(min)() const noexcept /* strengthened */ {
-        return (_Mybase::min)();
-    }
-
-    _NODISCARD result_type(max)() const noexcept /* strengthened */ {
-        return (_Mybase::max)();
-    }
-
-    void reset() noexcept /* strengthened */ {}
-
-    template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
-        return _Mybase::operator()(_Eng);
-    }
-
-    template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
-        return _Mybase::operator()(_Eng, _Par0);
-    }
-
-    template <class _Elem, class _Traits>
-    friend basic_istream<_Elem, _Traits>& operator>>(
-        basic_istream<_Elem, _Traits>& _Istr, uniform_int_distribution& _Dist) {
-        return _Istr >> static_cast<_Mybase&>(_Dist);
-    }
-
-    template <class _Elem, class _Traits>
-    friend basic_ostream<_Elem, _Traits>& operator<<(
-        basic_ostream<_Elem, _Traits>& _Ostr, const uniform_int_distribution& _Dist) {
-        return _Ostr << static_cast<const _Mybase&>(_Dist);
-    }
-
-    _NODISCARD friend bool operator==(
-        const uniform_int_distribution& _Left, const uniform_int_distribution& _Right) noexcept /* strengthened */ {
-        return _Left.param() == _Right.param();
-    }
-
-#if !_HAS_CXX20
-    _NODISCARD friend bool operator!=(
-        const uniform_int_distribution& _Left, const uniform_int_distribution& _Right) noexcept /* strengthened */ {
-        return !(_Left == _Right);
-    }
-#endif // !_HAS_CXX20
-};
-_STL_RESTORE_DEPRECATED_WARNING
 
 _EXPORT_STD class bernoulli_distribution { // class for bernoulli distribution
 public:
@@ -2583,7 +1705,7 @@ _NODISCARD _Flt _Float_upper_bound(_Ty _Val) noexcept {
         constexpr auto _Mask = static_cast<_Ty>(-1) << (_Ty_digits - _Flt_digits);
 #ifdef _M_CEE_PURE
         constexpr auto _Ty_32or64_digits = numeric_limits<_Ty_32or64>::digits;
-        const auto _Log_plus1 = _Ty_32or64_digits - _Countl_zero_internal(static_cast<_Ty_32or64>(_Val | _Ty{1}));
+        const auto _Log_plus1            = _Ty_32or64_digits - _Countl_zero(static_cast<_Ty_32or64>(_Val | _Ty{1}));
 #else // ^^^ defined(_M_CEE_PURE) / !defined(_M_CEE_PURE) vvv
         const auto _Log_plus1 = _Bit_scan_reverse(static_cast<_Ty_32or64>(_Val | _Ty{1}));
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
@@ -3083,7 +2205,7 @@ private:
             // inequality gives -1+p*t >= -(1-p)^t, so 1 - (1-p)^t <= p*t = mean. For the other bound, 1-(1-p)^t =
             // 1-(1-p)(1-mean/t)^(t-1) <= 1-(1-p)(1-1/t)^(t-1) <= 1-(1-p)/e.
             const _Ty1 _Ub =
-                (_STD min)(_Par0._Mean, _Ty1{3.678794411714423216e-1} * _Par0._Pp + _Ty1{6.32120558828557678e-1});
+                (_STD min) (_Par0._Mean, _Ty1{3.678794411714423216e-1} * _Par0._Pp + _Ty1{6.32120558828557678e-1});
             if (_Rand > _Ub) {
                 _Res = _Ty{0};
             } else {
@@ -3122,19 +2244,21 @@ private:
     param_type _Par;
 };
 
-template <class _Ty = double>
-class _DEPRECATE_TR1_RANDOM uniform_real { // uniform real distribution
+_EXPORT_STD template <class _Ty = double>
+class uniform_real_distribution { // uniform real distribution
 public:
+    _RNG_REQUIRE_REALTYPE(uniform_real_distribution, _Ty);
+
     using result_type = _Ty;
 
     struct param_type { // parameter package
-        using distribution_type = uniform_real;
+        using distribution_type = uniform_real_distribution;
 
-        param_type() noexcept {
+        param_type() noexcept /* strengthened */ {
             _Init(_Ty{0}, _Ty{1});
         }
 
-        explicit param_type(_Ty _Min0, _Ty _Max0 = _Ty{1}) noexcept {
+        explicit param_type(_Ty _Min0, _Ty _Max0 = _Ty{1}) noexcept /* strengthened */ {
             _Init(_Min0, _Max0);
         }
 
@@ -3160,7 +2284,7 @@ public:
 
         void _Init(_Ty _Min0, _Ty _Max0) noexcept { // set internal state
             _STL_ASSERT(_Min0 <= _Max0 && (0 <= _Min0 || _Max0 <= _Min0 + (numeric_limits<_Ty>::max)()),
-                "invalid min and max arguments for uniform_real");
+                "invalid min and max arguments for uniform_real_distribution");
             _Min = _Min0;
             _Max = _Max0;
         }
@@ -3169,11 +2293,14 @@ public:
         result_type _Max;
     };
 
-    uniform_real() noexcept : _Par(_Ty{0}, _Ty{1}) {}
+    uniform_real_distribution() noexcept // strengthened
+        : _Par(_Ty{0}, _Ty{1}) {}
 
-    explicit uniform_real(_Ty _Min0, _Ty _Max0 = _Ty{1}) noexcept : _Par(_Min0, _Max0) {}
+    explicit uniform_real_distribution(_Ty _Min0, _Ty _Max0 = _Ty{1}) noexcept // strengthened
+        : _Par(_Min0, _Max0) {}
 
-    explicit uniform_real(const param_type& _Par0) noexcept : _Par(_Par0) {}
+    explicit uniform_real_distribution(const param_type& _Par0) noexcept // strengthened
+        : _Par(_Par0) {}
 
     _NODISCARD result_type a() const noexcept /* strengthened */ {
         return _Par.a();
@@ -3187,7 +2314,7 @@ public:
         return _Par;
     }
 
-    void param(const param_type& _Par0) noexcept /* strengthened */ { // set parameter package
+    void param(const param_type& _Par0) noexcept /* strengthened */ {
         _Par = _Par0;
     }
 
@@ -3199,7 +2326,7 @@ public:
         return _Par._Max;
     }
 
-    void reset() noexcept /* strengthened */ {} // clear internal state
+    void reset() noexcept /* strengthened */ {}
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
@@ -3212,17 +2339,30 @@ public:
     }
 
     template <class _Elem, class _Traits>
-    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-        uniform_real& _Dist) { // read state from _Istr
+    friend basic_istream<_Elem, _Traits>& operator>>(
+        basic_istream<_Elem, _Traits>& _Istr, uniform_real_distribution& _Dist) {
         return _Dist._Read(_Istr);
     }
 
     template <class _Elem, class _Traits>
-    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-        const uniform_real& _Dist) { // write state to _Ostr
+    friend basic_ostream<_Elem, _Traits>& operator<<(
+        basic_ostream<_Elem, _Traits>& _Ostr, const uniform_real_distribution& _Dist) {
         return _Dist._Write(_Ostr);
     }
 
+    _NODISCARD friend bool operator==(
+        const uniform_real_distribution& _Left, const uniform_real_distribution& _Right) noexcept /* strengthened */ {
+        return _Left._Par == _Right._Par;
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD friend bool operator!=(
+        const uniform_real_distribution& _Left, const uniform_real_distribution& _Right) noexcept /* strengthened */ {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+private:
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         _Ty _Min0;
@@ -3240,7 +2380,6 @@ public:
         return _Ostr;
     }
 
-private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
         return _Nrand_impl<_Ty>(_Eng) * (_Par0._Max - _Par0._Min) + _Par0._Min;
@@ -3248,99 +2387,6 @@ private:
 
     param_type _Par;
 };
-
-_STL_DISABLE_DEPRECATED_WARNING
-_EXPORT_STD template <class _Ty = double>
-class uniform_real_distribution : private uniform_real<_Ty> { // uniform real distribution
-public:
-    _RNG_REQUIRE_REALTYPE(uniform_real_distribution, _Ty);
-
-    using _Mybase     = uniform_real<_Ty>;
-    using _Mypbase    = typename _Mybase::param_type;
-    using result_type = typename _Mybase::result_type;
-
-    struct param_type : _Mypbase { // parameter package
-        using distribution_type = uniform_real_distribution;
-
-        param_type() noexcept // strengthened
-            : _Mypbase(_Ty{0}, _Ty{1}) {}
-
-        explicit param_type(_Ty _Min0, _Ty _Max0 = _Ty{1}) noexcept // strengthened
-            : _Mypbase(_Min0, _Max0) {}
-
-        param_type(const _Mypbase& _Right) noexcept : _Mypbase(_Right) {}
-    };
-
-    uniform_real_distribution() noexcept // strengthened
-        : _Mybase(_Ty{0}, _Ty{1}) {}
-
-    explicit uniform_real_distribution(_Ty _Min0, _Ty _Max0 = _Ty{1}) noexcept // strengthened
-        : _Mybase(_Min0, _Max0) {}
-
-    explicit uniform_real_distribution(const param_type& _Par0) noexcept // strengthened
-        : _Mybase(_Par0) {}
-
-    _NODISCARD result_type a() const noexcept /* strengthened */ {
-        return _Mybase::a();
-    }
-
-    _NODISCARD result_type b() const noexcept /* strengthened */ {
-        return _Mybase::b();
-    }
-
-    _NODISCARD param_type param() const noexcept /* strengthened */ {
-        return _Mybase::param();
-    }
-
-    void param(const param_type& _Par0) noexcept /* strengthened */ {
-        _Mybase::param(_Par0);
-    }
-
-    _NODISCARD result_type(min)() const noexcept /* strengthened */ {
-        return (_Mybase::min)();
-    }
-
-    _NODISCARD result_type(max)() const noexcept /* strengthened */ {
-        return (_Mybase::max)();
-    }
-
-    void reset() noexcept /* strengthened */ {}
-
-    template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
-        return _Mybase::operator()(_Eng);
-    }
-
-    template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
-        return _Mybase::operator()(_Eng, _Par0);
-    }
-
-    template <class _Elem, class _Traits>
-    friend basic_istream<_Elem, _Traits>& operator>>(
-        basic_istream<_Elem, _Traits>& _Istr, uniform_real_distribution& _Dist) {
-        return _Istr >> static_cast<_Mybase&>(_Dist);
-    }
-
-    template <class _Elem, class _Traits>
-    friend basic_ostream<_Elem, _Traits>& operator<<(
-        basic_ostream<_Elem, _Traits>& _Ostr, const uniform_real_distribution& _Dist) {
-        return _Ostr << static_cast<const _Mybase&>(_Dist);
-    }
-
-    _NODISCARD friend bool operator==(
-        const uniform_real_distribution& _Left, const uniform_real_distribution& _Right) noexcept /* strengthened */ {
-        return _Left.param() == _Right.param();
-    }
-
-#if !_HAS_CXX20
-    _NODISCARD friend bool operator!=(
-        const uniform_real_distribution& _Left, const uniform_real_distribution& _Right) noexcept /* strengthened */ {
-        return !(_Left == _Right);
-    }
-#endif // !_HAS_CXX20
-};
-_STL_RESTORE_DEPRECATED_WARNING
 
 _EXPORT_STD template <class _Ty = double>
 class exponential_distribution { // exponential distribution
@@ -3633,7 +2679,7 @@ private:
                 // Bad _Sx value! Very small values will overflow log(_Sx) / _Sx.
                 // Generate a new value based on scaling method.
                 const _Ty _Ln2{_Ty{0.69314718055994530941723212145818}};
-                const _Ty _Maxabs{(_STD max)(_STD abs(_Vx1), _STD abs(_Vx2))};
+                const _Ty _Maxabs{(_STD max) (_STD abs(_Vx1), _STD abs(_Vx2))};
                 const int _ExpMax{_STD ilogb(_Maxabs)};
                 _Vx1   = _STD scalbn(_Vx1, -_ExpMax);
                 _Vx2   = _STD scalbn(_Vx2, -_ExpMax);
@@ -5609,19 +4655,6 @@ _EXPORT_STD using minstd_rand  = linear_congruential_engine<unsigned int, 48271,
 _EXPORT_STD using mt19937 = mersenne_twister_engine<unsigned int, 32, 624, 397, 31, 0x9908b0df, 11, 0xffffffff, 7,
     0x9d2c5680, 15, 0xefc60000, 18, 1812433253>;
 
-#if _HAS_TR1_NAMESPACE
-_STL_DISABLE_DEPRECATED_WARNING
-using _Ranbase                         = subtract_with_carry<unsigned int, 1 << 24, 10, 24>;
-using ranlux3 _DEPRECATE_TR1_NAMESPACE = discard_block<_Ranbase, 223, 24>;
-using ranlux4 _DEPRECATE_TR1_NAMESPACE = discard_block<_Ranbase, 389, 24>;
-
-using ranlux_base_01 _DEPRECATE_TR1_NAMESPACE   = subtract_with_carry_01<float, 24, 10, 24>;
-using ranlux64_base_01 _DEPRECATE_TR1_NAMESPACE = subtract_with_carry_01<double, 48, 5, 12>;
-using ranlux3_01 _DEPRECATE_TR1_NAMESPACE       = discard_block<ranlux_base_01, 223, 24>;
-using ranlux4_01 _DEPRECATE_TR1_NAMESPACE       = discard_block<ranlux_base_01, 389, 24>;
-_STL_RESTORE_DEPRECATED_WARNING
-#endif // _HAS_TR1_NAMESPACE
-
 _EXPORT_STD using mt19937_64 = mersenne_twister_engine<unsigned long long, 64, 312, 156, 31, 0xb5026f5aa96619e9ULL, 29,
     0x5555555555555555ULL, 17, 0x71d67fffeda60000ULL, 37, 0xfff7eee000000000ULL, 43, 6364136223846793005ULL>;
 
@@ -5662,76 +4695,9 @@ public:
     random_device(const random_device&)            = delete;
     random_device& operator=(const random_device&) = delete;
 };
-
-#if _HAS_TR1_NAMESPACE
-_STL_DISABLE_DEPRECATED_WARNING
-namespace _DEPRECATE_TR1_NAMESPACE tr1 {
-    using _STD bernoulli_distribution;
-    using _STD binomial_distribution;
-    using _STD discard_block;
-    using _STD exponential_distribution;
-    using _STD gamma_distribution;
-    using _STD geometric_distribution;
-    using _STD linear_congruential;
-    using _STD mersenne_twister;
-    using _STD minstd_rand;
-    using _STD minstd_rand0;
-    using _STD mt19937;
-    using _STD normal_distribution;
-    using _STD poisson_distribution;
-    using _STD random_device;
-    using _STD ranlux3;
-    using _STD ranlux3_01;
-    using _STD ranlux4;
-    using _STD ranlux4_01;
-    using _STD ranlux64_base_01;
-    using _STD ranlux_base_01;
-    using _STD subtract_with_carry;
-    using _STD subtract_with_carry_01;
-    using _STD uniform_int;
-    using _STD uniform_real;
-    using _STD cauchy_distribution;
-    using _STD chi_squared_distribution;
-    using _STD default_random_engine;
-    using _STD discard_block_engine;
-    using _STD discrete_distribution;
-    using _STD extreme_value_distribution;
-    using _STD fisher_f_distribution;
-    using _STD generate_canonical;
-    using _STD independent_bits_engine;
-    using _STD knuth_b;
-    using _STD linear_congruential_engine;
-    using _STD lognormal_distribution;
-    using _STD mersenne_twister_engine;
-    using _STD mt19937_64;
-    using _STD negative_binomial_distribution;
-    using _STD piecewise_constant_distribution;
-    using _STD piecewise_linear_distribution;
-    using _STD ranlux24;
-    using _STD ranlux24_base;
-    using _STD ranlux48;
-    using _STD ranlux48_base;
-    using _STD seed_seq;
-    using _STD shuffle_order_engine;
-    using _STD student_t_distribution;
-    using _STD subtract_with_carry_engine;
-    using _STD uniform_int_distribution;
-    using _STD uniform_real_distribution;
-    using _STD weibull_distribution;
-} // namespace _DEPRECATE_TR1_NAMESPACE tr1
-_STL_RESTORE_DEPRECATED_WARNING
-#endif // _HAS_TR1_NAMESPACE
 _STD_END
 
 #undef _DISTRIBUTION_CONST
-
-// TRANSITION, GH-183
-#pragma pop_macro("uniform_real")
-#pragma pop_macro("uniform_int")
-#pragma pop_macro("subtract_with_carry")
-#pragma pop_macro("mersenne_twister")
-#pragma pop_macro("linear_congruential")
-#pragma pop_macro("discard_block")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

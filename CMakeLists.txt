@@ -1,13 +1,13 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.31.0)
+cmake_minimum_required(VERSION 4.1.1)
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
-if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.44.35214")
-    message(FATAL_ERROR "The STL must be built with VS 2022 17.14.12 Preview 1 or later.")
+if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.50.35702")
+    message(FATAL_ERROR "The STL must be built with MSVC Compiler 19.50.35702 or later.")
 endif()
 
 include(CheckCXXSourceCompiles)
@@ -18,7 +18,7 @@ int main() {}
 ]=] WINDOWS_SDK_VERSION_CHECK)
 
 if(NOT WINDOWS_SDK_VERSION_CHECK)
-    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.26100.4188) or later. Make sure it's available by selecting it in the Individual Components tab of the VS Installer.")
+    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.26100) or later. Make sure it's available by selecting it in the Individual Components tab of the VS Installer.")
 endif()
 
 if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)
@@ -97,13 +97,13 @@ add_compile_definitions(
     _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN11_GE)
 
 if(STL_USE_ANALYZE)
-    # TRANSITION, Windows SDK 10.0.26100.4188 emits
+    # TRANSITION, Windows SDK 10.0.26100 emits
     # "warning C6553: The annotation for function 'LCMapStringEx' on _Param_(9) does not apply to a value type."
     # Reported as OS-40109504 "Windows SDK: incorrect SAL annotations on functions the STL uses".
     add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553>")
 
     if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64ec")
-        # TRANSITION, Windows SDK 10.0.26100.4188 emits
+        # TRANSITION, Windows SDK 10.0.26100 emits
         # "warning C28301: No annotations for first declaration of 'meow'"
         # for various intrinsics when building for ARM64EC.
         add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/wd28301>")
@@ -112,13 +112,7 @@ endif()
 
 set(VCLIBS_DEBUG_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/Od>")
 
-# TRANSITION: Potentially remove `/Os` if it results in speed improvements.
-# This requires benchmarking!
-# Note that in MSVC version 19.32.31328,
-# `/Os` results in a binary size difference of 102K
-# in the release DLL (a gain of 18.4%).
-# So, make certain that that tradeoff is considered when or if `/Os` is removed.
-# See GH-2108 for more info.
+# TRANSITION, GH-2108: Investigate building the STL with only /O2, not /Os.
 set(VCLIBS_RELEASE_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/O2;/Os>")
 
 if(BUILD_TESTING)

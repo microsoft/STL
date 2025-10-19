@@ -13,11 +13,11 @@
 #include <vector>
 #include <xbit_ops.h>
 
-#ifdef _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
+#ifdef _LEGACY_CODE_ASSUMES_XHASH_INCLUDES_XSTRING
 #include <cstring>
 #include <cwchar>
 #include <xstring>
-#endif // _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
+#endif // _LEGACY_CODE_ASSUMES_XHASH_INCLUDES_XSTRING
 
 #if _HAS_CXX17
 #include <xnode_handle.h>
@@ -29,68 +29,6 @@
 _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
-
-#ifdef _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
-_STDEXT_BEGIN
-template <class _Kty>
-_NODISCARD size_t hash_value(const _Kty& _Keyval) noexcept {
-    if constexpr (_STD is_pointer_v<_Kty> || _STD is_null_pointer_v<_Kty>) {
-        return reinterpret_cast<size_t>(_Keyval) ^ 0xdeadbeefu;
-    } else {
-        return static_cast<size_t>(_Keyval) ^ 0xdeadbeefu;
-    }
-}
-
-template <class _Elem, class _Traits, class _Alloc>
-_NODISCARD size_t hash_value(const _STD basic_string<_Elem, _Traits, _Alloc>& _Str) noexcept {
-    return _STD _Hash_array_representation(_Str.c_str(), _Str.size());
-}
-
-_NODISCARD inline size_t hash_value(_In_z_ const char* _Str) noexcept {
-    return _STD _Hash_array_representation(_Str, _CSTD strlen(_Str));
-}
-
-_NODISCARD inline size_t hash_value(_In_z_ const wchar_t* _Str) noexcept {
-    return _STD _Hash_array_representation(_Str, _CSTD wcslen(_Str));
-}
-
-template <class _Kty, class _Pr = _STD less<_Kty>>
-class hash_compare { // traits class for hash containers
-public:
-    enum { // parameters for hash table
-        bucket_size = 1 // 0 < bucket_size
-    };
-
-    hash_compare() = default;
-    hash_compare(const _Pr& _Pred) noexcept(_STD is_nothrow_copy_constructible_v<_Pr>) : comp(_Pred) {}
-
-    _NODISCARD size_t operator()(const _Kty& _Keyval) const noexcept(noexcept(hash_value(_Keyval))) {
-        long _Quot   = static_cast<long>(hash_value(_Keyval) & LONG_MAX); // TRANSITION, ADL?
-        ldiv_t _Qrem = _CSTD ldiv(_Quot, 127773);
-
-        _Qrem.rem = 16807 * _Qrem.rem - 2836 * _Qrem.quot;
-        if (_Qrem.rem < 0) {
-            _Qrem.rem += LONG_MAX;
-        }
-
-        return static_cast<size_t>(_Qrem.rem);
-    }
-
-    _NODISCARD bool operator()(const _Kty& _Keyval1, const _Kty& _Keyval2) const
-        noexcept(noexcept(comp(_Keyval1, _Keyval2))) {
-        // test if _Keyval1 ordered before _Keyval2
-        return comp(_Keyval1, _Keyval2);
-    }
-
-    _Pr comp{}; // the comparator object
-};
-_STDEXT_END
-
-_STD_BEGIN
-using stdext::hash_compare; // Non-Standard, for legacy source compatibility
-_STD_END
-
-#endif // _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
 _STD_BEGIN
 template <class _Kty, class _Hasher, class _Keyeq>
@@ -268,8 +206,8 @@ struct _Hash_vec {
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return (_STD min)(
-            static_cast<size_type>(_STD _Max_limit<difference_type>()), _Aliter_traits::max_size(_Mypair._Get_first()));
+        return (_STD min) (static_cast<size_type>(_STD _Max_limit<difference_type>()),
+            _Aliter_traits::max_size(_Mypair._Get_first()));
     }
 
     _NODISCARD size_type capacity() const noexcept {
@@ -332,9 +270,7 @@ protected:
     using _Node               = typename _Mylist::_Node;
     using _Nodeptr            = typename _Mylist::_Nodeptr;
     using _Mutable_value_type = typename _Traits::_Mutable_value_type;
-
-    using _Key_compare   = typename _Traits::key_compare;
-    using _Value_compare = typename _Traits::value_compare;
+    using _Key_compare        = typename _Traits::key_compare;
 
 public:
     using key_type = typename _Traits::key_type;
@@ -916,13 +852,13 @@ public:
     }
 
     void max_load_factor(float _Newmax) noexcept /* strengthened */ {
-        _STL_ASSERT(!(_CSTD isnan)(_Newmax) && _Newmax > 0, "invalid hash load factor");
+        _STL_ASSERT(!(_CSTD isnan) (_Newmax) && _Newmax > 0, "invalid hash load factor");
         _Max_bucket_size() = _Newmax;
     }
 
     void rehash(size_type _Buckets) { // rebuild table with at least _Buckets buckets
         // don't violate a.bucket_count() >= a.size() / a.max_load_factor() invariant:
-        _Buckets = (_STD max)(_Min_load_factor_buckets(_List.size()), _Buckets);
+        _Buckets = (_STD max) (_Min_load_factor_buckets(_List.size()), _Buckets);
         if (_Buckets <= _Maxidx) { // we already have enough buckets; nothing to do
             return;
         }
@@ -1194,12 +1130,6 @@ private:
         const _Nodeptr _Bucket_hi = _Vec._Mypair._Myval2._Myfirst[(_Bucket << 1) + 1]._Ptr;
         for (;;) {
             if (!_Traitsobj(_Traits::_Kfn(_Where->_Myval), _Keyval)) {
-                if constexpr (!_Traits::_Standard) {
-                    if (_Traitsobj(_Keyval, _Traits::_Kfn(_Where->_Myval))) {
-                        return _End;
-                    }
-                }
-
                 return _Where;
             }
 
@@ -1303,12 +1233,6 @@ private:
         const _Unchecked_const_iterator _Bucket_hi = _Vec._Mypair._Myval2._Myfirst[(_Bucket << 1) + 1];
         for (; _Traitsobj(_Traits::_Kfn(*_Where), _Keyval); ++_Where) {
             if (_Where == _Bucket_hi) {
-                return {_End, _End, 0};
-            }
-        }
-
-        if constexpr (!_Traits::_Standard) {
-            if (_Traitsobj(_Keyval, _Traits::_Kfn(*_Where))) {
                 return {_End, _End, 0};
             }
         }
@@ -1591,14 +1515,8 @@ protected:
 
         const _Nodeptr _Bucket_lo = _Vec._Mypair._Myval2._Myfirst[_Bucket << 1]._Ptr;
         for (;;) {
-            // Search backwards to maintain sorted [_Bucket_lo, _Bucket_hi] when !_Standard
+            // Search backwards for historical reasons
             if (!_Traitsobj(_Keyval, _Traits::_Kfn(_Where->_Myval))) {
-                if constexpr (!_Traits::_Standard) {
-                    if (_Traitsobj(_Traits::_Kfn(_Where->_Myval), _Keyval)) {
-                        return {_Where->_Next, _Nodeptr{}};
-                    }
-                }
-
                 return {_Where->_Next, _Where};
             }
 
@@ -1616,12 +1534,6 @@ protected:
         // if _Hint points to an element equivalent to _Keyval, returns _Hint; otherwise,
         // returns _Find_last(_Keyval, _Hashval)
         if (_Hint != _List._Mypair._Myval2._Myhead && !_Traitsobj(_Traits::_Kfn(_Hint->_Myval), _Keyval)) {
-            if constexpr (!_Traits::_Standard) {
-                if (_Traitsobj(_Keyval, _Traits::_Kfn(_Hint->_Myval))) {
-                    return _Find_last(_Keyval, _Hashval);
-                }
-            }
-
             return {_Hint->_Next, _Hint};
         }
 
@@ -1704,7 +1616,7 @@ protected:
 
     _NODISCARD size_type _Desired_grow_bucket_count(const size_type _For_size) const noexcept {
         const size_type _Old_buckets = bucket_count();
-        const size_type _Req_buckets = (_STD max)(_Min_buckets, _Min_load_factor_buckets(_For_size));
+        const size_type _Req_buckets = (_STD max) (_Min_buckets, _Min_load_factor_buckets(_For_size));
         if (_Old_buckets >= _Req_buckets) {
             // we already have enough buckets so there's no need to change the count
             return _Old_buckets;
@@ -1759,7 +1671,7 @@ protected:
             const size_type _Bucket = bucket(_Inserted_key);
 
             // _Bucket_lo and _Bucket_hi are the *inclusive* range of elements in the bucket, or _Unchecked_end() if
-            // the bucket is empty; if !_Standard then [_Bucket_lo, _Bucket_hi] is a sorted range.
+            // the bucket is empty.
             _Unchecked_iterator& _Bucket_lo = _Vec._Mypair._Myval2._Myfirst[_Bucket << 1];
             _Unchecked_iterator& _Bucket_hi = _Vec._Mypair._Myval2._Myfirst[(_Bucket << 1) + 1];
 
@@ -1785,13 +1697,11 @@ protected:
             }
 
             // The insertion point isn't *_Bucket_hi, so search [_Bucket_lo, _Bucket_hi) for insertion point; we
-            // go backwards to maintain sortedness when !_Standard.
+            // go backwards for historical reasons.
             for (;;) {
                 if (_Bucket_lo == _Insert_before) {
                     // There are no equivalent keys in the bucket, so insert it at the beginning.
-                    // Element can't be already in position here because:
-                    // * (for !_Standard) _Inserted_key < *_Insert_before or
-                    // * (for _Standard) _Inserted_key != *_Insert_before
+                    // Element can't be already in position here because _Inserted_key != *_Insert_before
                     _Mylist::_Scary_val::_Unchecked_splice(_Insert_before._Ptr, _Inserted._Ptr, _Next_inserted._Ptr);
                     _Bucket_lo = _Inserted;
                     break;
@@ -1858,21 +1768,7 @@ protected:
             }
         }
 
-        _Unchecked_const_iterator _Left_stop_at;
-        if constexpr (_Traits::_Standard) {
-            _Left_stop_at = _Unchecked_end();
-        } else {
-            // check the first elements for equivalence when !_Standard
-            if (_Right._Traitsobj(_Keyval, _Traits::_Kfn(*_First2))) {
-                return {};
-            }
-
-            const size_t _LHashval   = _Traitsobj(_Keyval);
-            const size_type _LBucket = _LHashval & _Mask;
-            const auto _LBucket_hi   = _Vec._Mypair._Myval2._Myfirst[(_LBucket << 1) + 1];
-            _Left_stop_at            = _LBucket_hi;
-            ++_Left_stop_at;
-        }
+        _Unchecked_const_iterator _Left_stop_at = _Unchecked_end();
 
         // trim matching prefixes
         while (*_First1 == *_First2) {
@@ -1967,27 +1863,6 @@ public:
             _Unchecked_const_iterator _Where           = _Vec._Mypair._Myval2._Myfirst[_Bucket << 1];
             const _Unchecked_const_iterator _Bucket_hi = _Vec._Mypair._Myval2._Myfirst[(_Bucket << 1) + 1];
             if (_Where != _End) {
-                // check that the bucket is sorted for legacy hash_meow:
-                if constexpr (!_Traits::_Standard) {
-                    if (_Where != _Bucket_hi) {
-                        auto _SFirst = _Where;
-                        auto _SNext  = _Where;
-                        for (;;) {
-                            ++_SNext;
-                            if constexpr (_Traits::_Multi) {
-                                _STL_INTERNAL_CHECK(!_Traitsobj(_Traits::_Kfn(*_SNext), _Traits::_Kfn(*_SFirst)));
-                            } else {
-                                _STL_INTERNAL_CHECK(_Traitsobj(_Traits::_Kfn(*_SFirst), _Traits::_Kfn(*_SNext)));
-                            }
-
-                            if (_SNext == _Bucket_hi) {
-                                break;
-                            }
-
-                            _SFirst = _SNext;
-                        }
-                    }
-                }
                 // check that all the elements in the bucket belong in the bucket:
                 for (;;) {
                     ++_Elements;

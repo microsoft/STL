@@ -33,7 +33,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 // TRANSITION, non-_Ugly attribute tokens
 #pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
 #undef msvc
+#undef no_specializations
 
 _STD_BEGIN
 namespace ranges {
@@ -546,7 +548,8 @@ namespace ranges {
 #if _HAS_CXX23
     _EXPORT_STD template <class _Derived>
         requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
-    class range_adaptor_closure : public _Pipe::_Base<_Derived> {};
+    class _NO_SPECIALIZATIONS_CITING("N5014 [range.adaptor.object]/5") range_adaptor_closure
+        : public _Pipe::_Base<_Derived> {};
 #endif // _HAS_CXX23
 
     _EXPORT_STD template <class _Ty>
@@ -644,7 +647,7 @@ namespace ranges {
                 noexcept(noexcept(single_view<decay_t<_Ty>>(_STD forward<_Ty>(_Val))))
                 requires requires {
                     typename single_view<decay_t<_Ty>>;
-                    single_view<decay_t<_Ty>>(static_cast<_Ty&&>(_Val));
+                    single_view<decay_t<_Ty>>(static_cast<_Ty &&>(_Val));
                 }
             {
                 return single_view<decay_t<_Ty>>(_STD forward<_Ty>(_Val));
@@ -1041,7 +1044,7 @@ namespace ranges {
             template <class _Ty>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
                 noexcept(noexcept(iota_view<decay_t<_Ty>>(static_cast<_Ty&&>(_Val))))
-                requires requires { iota_view<decay_t<_Ty>>(static_cast<_Ty&&>(_Val)); }
+                requires requires { iota_view<decay_t<_Ty>>(static_cast<_Ty &&>(_Val)); }
             {
                 return iota_view<decay_t<_Ty>>(static_cast<_Ty&&>(_Val));
             }
@@ -1050,7 +1053,7 @@ namespace ranges {
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
                 _Ty1&& _Start, _Ty2&& _Bound) _CONST_CALL_OPERATOR
                 noexcept(noexcept(iota_view(static_cast<_Ty1&&>(_Start), static_cast<_Ty2&&>(_Bound))))
-                requires requires { iota_view(static_cast<_Ty1&&>(_Start), static_cast<_Ty2&&>(_Bound)); }
+                requires requires { iota_view(static_cast<_Ty1 &&>(_Start), static_cast<_Ty2 &&>(_Bound)); }
             {
                 return iota_view(static_cast<_Ty1&&>(_Start), static_cast<_Ty2&&>(_Bound));
             }
@@ -1543,7 +1546,7 @@ namespace ranges {
         // direct-non-list-initialization is specified in the Standard (N4981 [range.as.rvalue.overview]/2.2)
         // and needed for EDG, DevCom-10698021
         template <class _Rng>
-        concept _Can_as_rvalue = requires(_Rng&& __r) { as_rvalue_view(static_cast<_Rng&&>(__r)); };
+        concept _Can_as_rvalue = requires(_Rng&& __r) { as_rvalue_view(static_cast<_Rng &&>(__r)); };
 
         class _As_rvalue_fn : public _Pipe::_Base<_As_rvalue_fn> {
         private:
@@ -1828,7 +1831,7 @@ namespace ranges {
             template <viewable_range _Rng, class _Pr>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range, _Pr&& _Pred) _CONST_CALL_OPERATOR
                 noexcept(noexcept(filter_view(_STD forward<_Rng>(_Range), _STD forward<_Pr>(_Pred))))
-                requires requires { filter_view(static_cast<_Rng&&>(_Range), _STD forward<_Pr>(_Pred)); }
+                requires requires { filter_view(static_cast<_Rng &&>(_Range), _STD forward<_Pr>(_Pred)); }
             {
                 return filter_view(_STD forward<_Rng>(_Range), _STD forward<_Pr>(_Pred));
             }
@@ -1963,7 +1966,7 @@ namespace ranges {
                 }
             } else if constexpr (sized_sentinel_for<sentinel_t<_Vw>, iterator_t<_Vw>>) {
                 auto _Iter       = _RANGES begin(_Range);
-                const auto _Size = (_STD min)(_Count, _RANGES end(_Range) - _Iter);
+                const auto _Size = (_STD min) (_Count, _RANGES end(_Range) - _Iter);
                 return counted_iterator(_STD move(_Iter), _Size);
             } else {
                 return counted_iterator(_RANGES begin(_Range), _Count);
@@ -1982,7 +1985,7 @@ namespace ranges {
                 }
             } else if constexpr (sized_sentinel_for<sentinel_t<const _Vw>, iterator_t<const _Vw>>) {
                 auto _Iter       = _RANGES begin(_Range);
-                const auto _Size = (_STD min)(_Count, _RANGES end(_Range) - _Iter);
+                const auto _Size = (_STD min) (_Count, _RANGES end(_Range) - _Iter);
                 return counted_iterator(_STD move(_Iter), _Size);
             } else {
                 return counted_iterator(_RANGES begin(_Range), _Count);
@@ -2025,14 +2028,14 @@ namespace ranges {
             requires sized_range<_Vw>
         {
             const auto _Length = _RANGES size(_Range);
-            return (_STD min)(_Length, static_cast<decltype(_Length)>(_Count));
+            return (_STD min) (_Length, static_cast<decltype(_Length)>(_Count));
         }
 
         _NODISCARD constexpr auto size() const
             requires sized_range<const _Vw>
         {
             const auto _Length = _RANGES size(_Range);
-            return (_STD min)(_Length, static_cast<decltype(_Length)>(_Count));
+            return (_STD min) (_Length, static_cast<decltype(_Length)>(_Count));
         }
     };
 
@@ -2114,7 +2117,7 @@ namespace ranges {
 #endif // _HAS_CXX23
                 } else {
                     // it's a "reconstructible range"; return the same kind of range with a restricted extent
-                    _Count            = (_STD min)(_RANGES distance(_Range), _Count);
+                    _Count            = (_STD min) (_RANGES distance(_Range), _Count);
                     const auto _First = _RANGES begin(_Range);
 
                     if constexpr (_Strat == _St::_Reconstruct_span) {
@@ -2300,7 +2303,7 @@ namespace ranges {
             template <viewable_range _Rng, class _Pr>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range, _Pr _Pred) _CONST_CALL_OPERATOR
                 noexcept(noexcept(take_while_view(_STD forward<_Rng>(_Range), _STD move(_Pred))))
-                requires requires { take_while_view(static_cast<_Rng&&>(_Range), _STD move(_Pred)); }
+                requires requires { take_while_view(static_cast<_Rng &&>(_Range), _STD move(_Pred)); }
             {
                 return take_while_view(_STD forward<_Rng>(_Range), _STD move(_Pred));
             }
@@ -2375,7 +2378,7 @@ namespace ranges {
             requires (!(_Simple_view<_Vw> && random_access_range<const _Vw> && sized_range<const _Vw>) )
         {
             if constexpr (sized_range<_Vw> && random_access_range<_Vw>) {
-                const auto _Offset = (_STD min)(_RANGES distance(_Range), _Count);
+                const auto _Offset = (_STD min) (_RANGES distance(_Range), _Count);
                 return _RANGES begin(_Range) + _Offset;
             } else {
                 if constexpr (forward_range<_Vw>) {
@@ -2395,7 +2398,7 @@ namespace ranges {
         _NODISCARD constexpr auto begin() const
             requires random_access_range<const _Vw> && sized_range<const _Vw>
         {
-            const auto _Offset = (_STD min)(_RANGES distance(_Range), _Count);
+            const auto _Offset = (_STD min) (_RANGES distance(_Range), _Count);
             return _RANGES begin(_Range) + _Offset;
         }
 
@@ -2515,7 +2518,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Reconstruct_repeat) {
                     if constexpr (sized_range<_Rng>) {
                         const auto _Size = _RANGES distance(_Range);
-                        _Count           = _Size - (_STD min)(_Size, _Count);
+                        _Count           = _Size - (_STD min) (_Size, _Count);
                         return repeat_view(_STD forward_like<_Rng>(*_Range._Value), _Count);
                     } else {
                         return _Range;
@@ -2523,7 +2526,7 @@ namespace ranges {
 #endif // _HAS_CXX23
                 } else {
                     // it's a "reconstructible range"; return the same kind of range with a restricted extent
-                    _Count = (_STD min)(_RANGES distance(_Range), _Count);
+                    _Count = (_STD min) (_RANGES distance(_Range), _Count);
 
                     if constexpr (_Strat == _St::_Reconstruct_span) {
                         return span(_Ubegin(_Range) + _Count, _Uend(_Range));
@@ -2625,7 +2628,7 @@ namespace ranges {
             template <viewable_range _Rng, class _Pr>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range, _Pr _Pred) _CONST_CALL_OPERATOR
                 noexcept(noexcept(drop_while_view(_STD forward<_Rng>(_Range), _STD move(_Pred))))
-                requires requires { drop_while_view(static_cast<_Rng&&>(_Range), _STD move(_Pred)); }
+                requires requires { drop_while_view(static_cast<_Rng &&>(_Range), _STD move(_Pred)); }
             {
                 return drop_while_view(_STD forward<_Rng>(_Range), _STD move(_Pred));
             }
@@ -3056,7 +3059,7 @@ namespace ranges {
             template <viewable_range _Rng>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
                 noexcept(noexcept(join_view<views::all_t<_Rng>>{_STD forward<_Rng>(_Range)}))
-                requires requires { join_view<views::all_t<_Rng>>{static_cast<_Rng&&>(_Range)}; }
+                requires requires { join_view<views::all_t<_Rng>>{static_cast<_Rng &&>(_Range)}; }
             {
                 return join_view<views::all_t<_Rng>>{_STD forward<_Rng>(_Range)};
             }
@@ -3589,7 +3592,7 @@ namespace ranges {
         const bool _Overflow =
             _Mul_overflow(static_cast<_Size_type>(_Compile_time_max_size<_Rng>),
                 static_cast<_Size_type>(_Compile_time_max_size<_Inner>), _Joined_max_size)
-            || _Mul_overflow((_STD max)(static_cast<_Size_type>(_Compile_time_max_size<_Rng>), _Size_type{1}) - 1,
+            || _Mul_overflow((_STD max) (static_cast<_Size_type>(_Compile_time_max_size<_Rng>), _Size_type{1}) - 1,
                 static_cast<_Size_type>(_Compile_time_max_size<_Pat>), _Pattern_max_size)
             || _Add_overflow(_Joined_max_size, _Pattern_max_size, _Result);
         if (_Overflow) {
@@ -4028,7 +4031,7 @@ namespace ranges {
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
                 _Rng&& _Range, _Pat&& _Pattern) _CONST_CALL_OPERATOR
                 noexcept(noexcept(lazy_split_view(_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern))))
-                requires requires { lazy_split_view(static_cast<_Rng&&>(_Range), static_cast<_Pat&&>(_Pattern)); }
+                requires requires { lazy_split_view(static_cast<_Rng &&>(_Range), static_cast<_Pat &&>(_Pattern)); }
             {
                 return lazy_split_view(_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern));
             }
@@ -4214,7 +4217,7 @@ namespace ranges {
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
                 _Rng&& _Range, _Pat&& _Pattern) _CONST_CALL_OPERATOR
                 noexcept(noexcept(split_view(_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern))))
-                requires requires { split_view(static_cast<_Rng&&>(_Range), static_cast<_Pat&&>(_Pattern)); }
+                requires requires { split_view(static_cast<_Rng &&>(_Range), static_cast<_Pat &&>(_Pattern)); }
             {
                 return split_view(_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern));
             }
@@ -4498,10 +4501,10 @@ namespace ranges {
 
     namespace views {
         template <class _Rng>
-        concept _Can_extract_base = requires(_Rng&& __r) { static_cast<_Rng&&>(__r).base(); };
+        concept _Can_extract_base = requires(_Rng&& __r) { static_cast<_Rng &&>(__r).base(); };
 
         template <class _Rng>
-        concept _Can_reverse = requires(_Rng&& __r) { reverse_view{static_cast<_Rng&&>(__r)}; };
+        concept _Can_reverse = requires(_Rng&& __r) { reverse_view{static_cast<_Rng &&>(__r)}; };
 
         class _Reverse_fn : public _Pipe::_Base<_Reverse_fn> {
         private:
@@ -4642,7 +4645,7 @@ namespace ranges {
 
     namespace views {
         template <class _Rng>
-        concept _Can_as_const = requires(_Rng&& __r) { as_const_view{static_cast<_Rng&&>(__r)}; };
+        concept _Can_as_const = requires(_Rng&& __r) { as_const_view{static_cast<_Rng &&>(__r)}; };
 
         class _As_const_fn : public _Pipe::_Base<_As_const_fn> {
         private:
@@ -5119,7 +5122,7 @@ namespace ranges {
             template <viewable_range _Rng>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
                 noexcept(noexcept(elements_view<views::all_t<_Rng>, _Index>{_STD forward<_Rng>(_Range)}))
-                requires requires { elements_view<views::all_t<_Rng>, _Index>{static_cast<_Rng&&>(_Range)}; }
+                requires requires { elements_view<views::all_t<_Rng>, _Index>{static_cast<_Rng &&>(_Range)}; }
             {
                 return elements_view<views::all_t<_Rng>, _Index>{_STD forward<_Rng>(_Range)};
             }
@@ -5470,13 +5473,21 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Enumerate_fn enumerate;
     } // namespace views
 
-    template <class _Size>
-    _NODISCARD constexpr _Size _Div_ceil(const _Size _Num, const _Size _Denom) noexcept {
-        _Size _Result = _Num / _Denom;
-        if (_Num % _Denom != 0) {
-            ++_Result;
+    template <class _Int>
+    _NODISCARD constexpr _Int _Div_ceil(const _Int _Num, const _Int _Denom) noexcept {
+        _STL_INTERNAL_STATIC_ASSERT(_Signed_integer_like<_Int>);
+        _STL_INTERNAL_CHECK(_Num >= 0);
+        _STL_INTERNAL_CHECK(_Denom > 0);
+
+        if constexpr (same_as<_Int, _Signed128>) {
+            return _Int::_Div_ceil(_Num, _Denom);
+        } else {
+            _Int _Result = _Num / _Denom;
+            if (_Num % _Denom != 0) {
+                ++_Result;
+            }
+            return _Result;
         }
-        return _Result;
     }
 
     _EXPORT_STD template <view _Vw>
@@ -5501,7 +5512,7 @@ namespace ranges {
 
             _NODISCARD constexpr range_difference_t<_Vw> _Get_size() const
                 noexcept(noexcept(_RANGES end(_Parent->_Range) - *_Parent->_Current)) {
-                return (_STD min)(_Parent->_Remainder, _RANGES end(_Parent->_Range) - *_Parent->_Current);
+                return (_STD min) (_Parent->_Remainder, _RANGES end(_Parent->_Range) - *_Parent->_Current);
             }
 
             _NODISCARD constexpr const iterator_t<_Vw>& _Get_current() const noexcept {
@@ -5636,7 +5647,7 @@ namespace ranges {
                     requires sized_sentinel_for<sentinel_t<_Vw>, iterator_t<_Vw>>
                 {
                     return _To_unsigned_like(
-                        (_STD min)(_Parent->_Remainder, _RANGES end(_Parent->_Range) - *_Parent->_Current));
+                        (_STD min) (_Parent->_Remainder, _RANGES end(_Parent->_Range) - *_Parent->_Current));
                 }
             };
 
@@ -7116,12 +7127,13 @@ namespace ranges {
         requires (sizeof...(_LHSTupleTypes) == sizeof...(_RHSTupleTypes))
     _NODISCARD constexpr _ResultType _Zip_get_smallest_distance(
         const tuple<_LHSTupleTypes...>& _Lhs_tuple, const tuple<_RHSTupleTypes...>& _Rhs_tuple)
-        // clang-format off
         noexcept((noexcept(static_cast<_ResultType>(
-            _STD declval<const _LHSTupleTypes&>() - _STD declval<const _RHSTupleTypes&>())) && ...)) {
-        constexpr bool _Is_noexcept = (noexcept(static_cast<_ResultType>(
-            _STD declval<const _LHSTupleTypes&>() - _STD declval<const _RHSTupleTypes&>())) && ...);
-        // clang-format on
+                      _STD declval<const _LHSTupleTypes&>() - _STD declval<const _RHSTupleTypes&>()))
+                  && ...)) {
+        constexpr bool _Is_noexcept =
+            (noexcept(static_cast<_ResultType>( //
+                 _STD declval<const _LHSTupleTypes&>() - _STD declval<const _RHSTupleTypes&>()))
+                && ...);
         const auto _Get_smallest_distance_closure = [&_Lhs_tuple,
                                                         &_Rhs_tuple]<size_t _FirstIdx /* = 0 */, size_t... _Idxs>(
                                                         index_sequence<_FirstIdx, _Idxs...>) noexcept(_Is_noexcept) {
@@ -7132,8 +7144,8 @@ namespace ranges {
             }
             const initializer_list<_ResultType> _Sizes = {
                 _First_size, (_STD get<_Idxs>(_Lhs_tuple) - _STD get<_Idxs>(_Rhs_tuple))...};
-            return _First_size < 0 ? static_cast<_ResultType>((_RANGES max)(_Sizes))
-                                   : static_cast<_ResultType>((_RANGES min)(_Sizes));
+            return _First_size < 0 ? static_cast<_ResultType>((_RANGES max) (_Sizes))
+                                   : static_cast<_ResultType>((_RANGES min) (_Sizes));
         };
 
         return _Get_smallest_distance_closure(index_sequence_for<_LHSTupleTypes...>{});
@@ -7146,7 +7158,7 @@ namespace ranges {
         noexcept((noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>()) && ...)) {
         const auto _Evaluate_equality_closure =
             [&_Lhs_tuple, &_Rhs_tuple]<size_t... _Indices>(index_sequence<_Indices...>) noexcept(
-                (noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>())&&...)) {
+                (noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>()) &&...)) {
                 return ((_STD get<_Indices>(_Lhs_tuple) == _STD get<_Indices>(_Rhs_tuple)) || ... || false);
             };
 
@@ -7462,7 +7474,7 @@ namespace ranges {
 
         static constexpr auto _Size_closure = [](auto... _Sizes) _STATIC_LAMBDA noexcept {
             using _Common_unsigned_type = _Make_unsigned_like_t<common_type_t<decltype(_Sizes)...>>;
-            return (_RANGES min)({static_cast<_Common_unsigned_type>(_Sizes)...});
+            return (_RANGES min) ({static_cast<_Common_unsigned_type>(_Sizes)...});
         };
 
     public:
@@ -7534,7 +7546,7 @@ namespace ranges {
     template <class... _Rngs>
     _NODISCARD consteval auto _Zip_view_compile_time_max_size() {
         using _Size_type = common_type_t<decltype(_Compile_time_max_size<_Rngs>)...>;
-        return (_STD min)({static_cast<_Size_type>(_Compile_time_max_size<_Rngs>)...});
+        return (_STD min) ({static_cast<_Size_type>(_Compile_time_max_size<_Rngs>)...});
     }
 
     template <class... _Rngs>
@@ -7805,7 +7817,7 @@ namespace ranges {
             template <bool _IteratorConst>
                 requires sized_sentinel_for<_Zentinel<_IsConst>, _Ziperator<_IteratorConst>>
             _NODISCARD friend constexpr _Iter_sent_difference_type<_IteratorConst> // TRANSITION, DevCom-10253131
-                operator-(const _Iterator<_IteratorConst>& _Lhs, const _Sentinel & _Rhs)
+                operator-(const _Iterator<_IteratorConst>& _Lhs, const _Sentinel& _Rhs)
                     noexcept(noexcept(_Get_iterator_inner(_Lhs) - _Rhs._Inner)) /* strengthened */ {
                 return _Get_iterator_inner(_Lhs) - _Rhs._Inner;
             }
@@ -7813,7 +7825,7 @@ namespace ranges {
             template <bool _IteratorConst>
                 requires sized_sentinel_for<_Zentinel<_IsConst>, _Ziperator<_IteratorConst>>
             _NODISCARD friend constexpr _Iter_sent_difference_type<_IteratorConst> // TRANSITION, DevCom-10253131
-                operator-(const _Sentinel & _Lhs, const _Iterator<_IteratorConst>& _Rhs)
+                operator-(const _Sentinel& _Lhs, const _Iterator<_IteratorConst>& _Rhs)
                     noexcept(noexcept(_Lhs._Inner - _Get_iterator_inner(_Rhs))) /* strengthened */ {
                 return _Lhs._Inner - _Get_iterator_inner(_Rhs);
             }
@@ -8321,7 +8333,7 @@ namespace ranges {
             using _Size_type        = decltype(_RANGES size(_Range));
             using _Common_size_type = common_type_t<_Size_type, size_t>;
             auto _Size              = static_cast<_Common_size_type>(_RANGES size(_Range));
-            _Size -= (_STD min)(_Size, static_cast<_Common_size_type>(_Nx - 1));
+            _Size -= (_STD min) (_Size, static_cast<_Common_size_type>(_Nx - 1));
             return static_cast<_Size_type>(_Size);
         }
 
@@ -8331,7 +8343,7 @@ namespace ranges {
             using _Size_type        = decltype(_RANGES size(_Range));
             using _Common_size_type = common_type_t<_Size_type, size_t>;
             auto _Size              = static_cast<_Common_size_type>(_RANGES size(_Range));
-            _Size -= (_STD min)(_Size, static_cast<_Common_size_type>(_Nx - 1));
+            _Size -= (_STD min) (_Size, static_cast<_Common_size_type>(_Nx - 1));
             return static_cast<_Size_type>(_Size);
         }
     };
@@ -8343,7 +8355,7 @@ namespace ranges {
     _NODISCARD consteval auto _Adjacent_view_compile_time_max_size() {
         using _Size_type = common_type_t<decltype(_Compile_time_max_size<_Rng>), size_t>;
         auto _Size       = static_cast<_Size_type>(_Compile_time_max_size<_Rng>);
-        _Size -= (_STD min)(_Size, static_cast<_Size_type>(_Nx - 1));
+        _Size -= (_STD min) (_Size, static_cast<_Size_type>(_Nx - 1));
         return static_cast<_Size_type>(_Size);
     }
 
@@ -9266,6 +9278,7 @@ _EXPORT_STD namespace views = ranges::views;
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("msvc")
 
 #pragma pop_macro("new")

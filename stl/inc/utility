@@ -31,10 +31,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("intrinsic")
 #pragma push_macro("known_semantics")
 #pragma push_macro("lifetimebound")
+#pragma push_macro("no_specializations")
 #undef msvc
 #undef intrinsic
 #undef known_semantics
 #undef lifetimebound
+#undef no_specializations
 
 _STD_BEGIN
 _EXPORT_STD template <class _Ty, _Ty... _Vals>
@@ -158,7 +160,7 @@ struct _Ignore { // struct that ignores assignments
 _EXPORT_STD _INLINE_VAR constexpr _Ignore ignore{};
 
 _EXPORT_STD template <class... _Types>
-class tuple;
+class _NO_SPECIALIZATIONS_CITING("N5014 [tuple.tuple.general]/1") tuple;
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 struct pair;
@@ -170,7 +172,7 @@ _EXPORT_STD template <class _Tuple>
 struct tuple_size;
 
 _EXPORT_STD template <class _Ty>
-constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr size_t tuple_size_v = tuple_size<_Ty>::value;
 
 _EXPORT_STD template <size_t _Index, class _Tuple>
 struct tuple_element;
@@ -273,6 +275,14 @@ struct pair { // store a pair of values
             is_nothrow_constructible_v<_Ty1, _Other1> && is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
         : first(_STD forward<_Other1>(_Val1)), second(_STD forward<_Other2>(_Val2)) {
     }
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _Other1 = _Ty1, class _Other2 = _Ty2,
+        enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>>, int> = 0>
+        requires reference_constructs_from_temporary_v<_Ty1, _Other1&&>
+                  || reference_constructs_from_temporary_v<_Ty2, _Other2&&>
+    explicit(!conjunction_v<is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>)
+        pair(_Other1&&, _Other2&&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
     pair(const pair&) = default;
     pair(pair&&)      = default;
@@ -284,6 +294,14 @@ struct pair { // store a pair of values
         pair(pair<_Other1, _Other2>& _Right) noexcept(
             is_nothrow_constructible_v<_Ty1, _Other1&> && is_nothrow_constructible_v<_Ty2, _Other2&>) // strengthened
         : first(_Right.first), second(_Right.second) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _Other1, class _Other2>
+        requires is_constructible_v<_Ty1, _Other1&> && is_constructible_v<_Ty2, _Other2&>
+                  && (reference_constructs_from_temporary_v<_Ty1, _Other1&>
+                      || reference_constructs_from_temporary_v<_Ty2, _Other2&>)
+    explicit(!conjunction_v<is_convertible<_Other1&, _Ty1>, is_convertible<_Other2&, _Ty2>>)
+        pair(pair<_Other1, _Other2>&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 #endif // _HAS_CXX23
 
     template <class _Other1, class _Other2,
@@ -294,6 +312,15 @@ struct pair { // store a pair of values
             noexcept(is_nothrow_constructible_v<_Ty1, const _Other1&>
                      && is_nothrow_constructible_v<_Ty2, const _Other2&>) // strengthened
         : first(_Right.first), second(_Right.second) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _Other1, class _Other2,
+        enable_if_t<conjunction_v<is_constructible<_Ty1, const _Other1&>, is_constructible<_Ty2, const _Other2&>>,
+            int> = 0>
+        requires reference_constructs_from_temporary_v<_Ty1, const _Other1&>
+                  || reference_constructs_from_temporary_v<_Ty2, const _Other2&>
+    explicit(!conjunction_v<is_convertible<const _Other1&, _Ty1>, is_convertible<const _Other2&, _Ty2>>)
+        pair(const pair<_Other1, _Other2>&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
     template <class _Other1, class _Other2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>>, int> = 0>
@@ -301,6 +328,14 @@ struct pair { // store a pair of values
         pair(pair<_Other1, _Other2>&& _Right) noexcept(
             is_nothrow_constructible_v<_Ty1, _Other1> && is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
         : first(_STD forward<_Other1>(_Right.first)), second(_STD forward<_Other2>(_Right.second)) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _Other1, class _Other2,
+        enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>>, int> = 0>
+        requires reference_constructs_from_temporary_v<_Ty1, _Other1&&>
+                  || reference_constructs_from_temporary_v<_Ty2, _Other2&&>
+    explicit(!conjunction_v<is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>)
+        pair(pair<_Other1, _Other2>&&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
 #if _HAS_CXX23
     template <class _Other1, class _Other2>
@@ -310,6 +345,14 @@ struct pair { // store a pair of values
             noexcept(is_nothrow_constructible_v<_Ty1, const _Other1>
                      && is_nothrow_constructible_v<_Ty2, const _Other2>) // strengthened
         : first(_STD forward<const _Other1>(_Right.first)), second(_STD forward<const _Other2>(_Right.second)) {}
+#ifdef __cpp_lib_reference_from_temporary
+    template <class _Other1, class _Other2>
+        requires is_constructible_v<_Ty1, const _Other1> && is_constructible_v<_Ty2, const _Other2>
+                  && (reference_constructs_from_temporary_v<_Ty1, const _Other1 &&>
+                      || reference_constructs_from_temporary_v<_Ty2, const _Other2 &&>)
+    explicit(!conjunction_v<is_convertible<const _Other1, _Ty1>, is_convertible<const _Other2, _Ty2>>)
+        pair(const pair<_Other1, _Other2>&&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 
 #ifdef __EDG__ // TRANSITION, VSO-1900279
     template <class _Other, enable_if_t<_Can_construct_from_pair_like<_Other, _Ty1, _Ty2>, int> = 0>
@@ -324,6 +367,15 @@ struct pair { // store a pair of values
                  && is_nothrow_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>) // strengthened
         : first(_STD get<0>(_STD forward<_Other>(_Right))), second(_STD get<1>(_STD forward<_Other>(_Right))) {
     }
+#ifdef __cpp_lib_reference_from_temporary
+    template <_Pair_like_non_subrange _Other>
+        requires conjunction_v<is_constructible<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>,
+                     is_constructible<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>>
+                  && (reference_constructs_from_temporary_v<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>
+                      || reference_constructs_from_temporary_v<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>)
+    explicit(!conjunction_v<is_convertible<decltype(_STD get<0>(_STD declval<_Other>())), _Ty1>,
+        is_convertible<decltype(_STD get<1>(_STD declval<_Other>())), _Ty2>>) pair(_Other&&) = delete;
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
 #endif // _HAS_CXX23
 
     template <class... _Types1, class... _Types2>
@@ -626,15 +678,15 @@ struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, const _Tuple> : tuple_element
 };
 
 template <size_t _Index, class _Tuple>
-struct _CXX20_DEPRECATE_VOLATILE _MSVC_KNOWN_SEMANTICS tuple_element<_Index, volatile _Tuple>
-    : tuple_element<_Index, _Tuple> {
+struct _CXX20_DEPRECATE_VOLATILE _MSVC_KNOWN_SEMANTICS
+    tuple_element<_Index, volatile _Tuple> : tuple_element<_Index, _Tuple> {
     using _Mybase = tuple_element<_Index, _Tuple>;
     using type    = add_volatile_t<typename _Mybase::type>;
 };
 
 template <size_t _Index, class _Tuple>
-struct _CXX20_DEPRECATE_VOLATILE _MSVC_KNOWN_SEMANTICS tuple_element<_Index, const volatile _Tuple>
-    : tuple_element<_Index, _Tuple> {
+struct _CXX20_DEPRECATE_VOLATILE _MSVC_KNOWN_SEMANTICS
+    tuple_element<_Index, const volatile _Tuple> : tuple_element<_Index, _Tuple> {
     using _Mybase = tuple_element<_Index, _Tuple>;
     using type    = add_cv_t<typename _Mybase::type>;
 };
@@ -1009,18 +1061,10 @@ struct hash<monostate> {
     }
 };
 #endif // _HAS_CXX17
-
-#if _HAS_TR1_NAMESPACE
-namespace _DEPRECATE_TR1_NAMESPACE tr1 {
-    using _STD get;
-    using _STD tuple_element;
-    using _STD tuple_size;
-} // namespace _DEPRECATE_TR1_NAMESPACE tr1
-#endif // _HAS_TR1_NAMESPACE
-
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("lifetimebound")
 #pragma pop_macro("known_semantics")
 #pragma pop_macro("intrinsic")

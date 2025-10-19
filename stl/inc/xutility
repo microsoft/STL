@@ -25,9 +25,11 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("msvc")
 #pragma push_macro("intrinsic")
 #pragma push_macro("lifetimebound")
+#pragma push_macro("no_specializations")
 #undef msvc
 #undef intrinsic
 #undef lifetimebound
+#undef no_specializations
 
 #if defined(_CRTBLD) && defined(CRTDLL2)
 // TRANSITION, ABI: The vector algorithms are compiled into the import lib, so we disable their usage when building
@@ -445,16 +447,14 @@ auto _Max_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
 
 template <size_t _Element_size>
 size_t _Mismatch_vectorized(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
-    if constexpr (_Element_size == 1) {
-        return __std_mismatch_1(_First1, _First2, _Count);
-    } else if constexpr (_Element_size == 2) {
-        return __std_mismatch_2(_First1, _First2, _Count);
-    } else if constexpr (_Element_size == 4) {
-        return __std_mismatch_4(_First1, _First2, _Count);
-    } else if constexpr (_Element_size == 8) {
-        return __std_mismatch_8(_First1, _First2, _Count);
+    if constexpr (_Element_size % 8 == 0) {
+        return __std_mismatch_8(_First1, _First2, _Count * (_Element_size / 8)) / (_Element_size / 8);
+    } else if constexpr (_Element_size % 4 == 0) {
+        return __std_mismatch_4(_First1, _First2, _Count * (_Element_size / 4)) / (_Element_size / 4);
+    } else if constexpr (_Element_size % 2 == 0) {
+        return __std_mismatch_2(_First1, _First2, _Count * (_Element_size / 2)) / (_Element_size / 2);
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        return __std_mismatch_1(_First1, _First2, _Count * _Element_size) / _Element_size;
     }
 }
 _STD_END
@@ -860,11 +860,11 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty&& __t) {
-            iter_move(static_cast<_Ty&&>(__t)); // intentional ADL
+            iter_move(static_cast<_Ty &&>(__t)); // intentional ADL
         };
 
         template <class _Ty>
-        concept _Can_deref = requires(_Ty&& __t) { *static_cast<_Ty&&>(__t); };
+        concept _Can_deref = requires(_Ty&& __t) { *static_cast<_Ty &&>(__t); };
 
         struct _Must_have_ADL_found_iter_move_or_be_dereferenceable {};
 
@@ -876,17 +876,10 @@ namespace ranges {
                     return type_identity<decltype(iter_move(_STD declval<_Ty>()))>{}; // intentional ADL
                 } else if constexpr (_Can_deref<_Ty>) {
                     using _Ref = decltype(*_STD declval<_Ty>());
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1008447, VSO-2066340
-                    if constexpr (is_function_v<remove_reference_t<_Ref>>) {
-                        return type_identity<_Ref&>{};
-                    } else
-#endif // ^^^ workaround ^^^
-                    {
-                        if constexpr (is_lvalue_reference_v<_Ref>) {
-                            return type_identity<remove_reference_t<_Ref>&&>{};
-                        } else {
-                            return type_identity<_Ref>{};
-                        }
+                    if constexpr (is_lvalue_reference_v<_Ref>) {
+                        return type_identity<remove_reference_t<_Ref>&&>{};
+                    } else {
+                        return type_identity<_Ref>{};
                     }
                 } else {
                     return _Must_have_ADL_found_iter_move_or_be_dereferenceable{};
@@ -975,10 +968,10 @@ using iter_common_reference_t = common_reference_t<iter_reference_t<_Ty>, _Indir
 
 _EXPORT_STD template <class _It, class _Ty>
 concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
-    *__i                                                                = static_cast<_Ty&&>(__t);
-    *static_cast<_It&&>(__i)                                            = static_cast<_Ty&&>(__t);
-    const_cast<const iter_reference_t<_It>&&>(*__i)                     = static_cast<_Ty&&>(__t);
-    const_cast<const iter_reference_t<_It>&&>(*static_cast<_It&&>(__i)) = static_cast<_Ty&&>(__t);
+    *__i                                                                  = static_cast<_Ty &&>(__t);
+    *static_cast<_It &&>(__i)                                             = static_cast<_Ty &&>(__t);
+    const_cast<const iter_reference_t<_It> &&>(*__i)                      = static_cast<_Ty &&>(__t);
+    const_cast<const iter_reference_t<_It> &&>(*static_cast<_It &&>(__i)) = static_cast<_Ty &&>(__t);
 };
 
 template <bool _Is_integer_class>
@@ -1052,7 +1045,7 @@ concept input_iterator = input_or_output_iterator<_It> && indirectly_readable<_I
 
 _EXPORT_STD template <class _It, class _Ty>
 concept output_iterator = input_or_output_iterator<_It> && indirectly_writable<_It, _Ty>
-                       && requires(_It __i, _Ty&& __t) { *__i++ = static_cast<_Ty&&>(__t); };
+                       && requires(_It __i, _Ty&& __t) { *__i++ = static_cast<_Ty &&>(__t); };
 
 _EXPORT_STD template <class _It>
 concept forward_iterator = input_iterator<_It> && derived_from<_Iter_concept<_It>, forward_iterator_tag>
@@ -1193,7 +1186,7 @@ namespace ranges {
         template <class _Ty1, class _Ty2>
         concept _Has_ADL =
             (_Has_class_or_enum_type<_Ty1> || _Has_class_or_enum_type<_Ty2>) && requires(_Ty1&& __t1, _Ty2&& __t2) {
-                iter_swap(static_cast<_Ty1&&>(__t1), static_cast<_Ty2&&>(__t2)); // intentional ADL
+                iter_swap(static_cast<_Ty1 &&>(__t1), static_cast<_Ty2 &&>(__t2)); // intentional ADL
             };
 
         template <class _Ty1, class _Ty2>
@@ -1597,10 +1590,10 @@ using _Guide_pair_t =
 #endif // ^^^ !_HAS_CXX23 ^^^
 
 _EXPORT_STD template <class _Ty>
-struct is_execution_policy : false_type {};
+struct _NO_SPECIALIZATIONS_CITING("N5014 [execpol.type]/3") is_execution_policy : false_type {};
 
 _EXPORT_STD template <class _Ty>
-constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
 
 // Note: The noexcept specifiers on all parallel algorithm overloads enforce termination as per
 // N4950 [execpol.seq]/2, [execpol.par]/2, [execpol.parunseq]/2, and [execpol.unseq]/2
@@ -2602,7 +2595,7 @@ namespace ranges {
     constexpr bool _Has_complete_elements<_Ty> = true;
 
     _EXPORT_STD template <class>
-    constexpr bool enable_borrowed_range = false;
+    constexpr bool enable_borrowed_range = false; // specializations allowed by N5014 [range.range]/6
 
     template <class _Rng>
     concept _Should_range_access = is_lvalue_reference_v<_Rng> || enable_borrowed_range<remove_cvref_t<_Rng>>;
@@ -2994,7 +2987,7 @@ namespace ranges {
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES begin(static_cast<_CTy&&>(_Val))))
-            requires requires { _RANGES begin(static_cast<_CTy&&>(_Val)); }
+            requires requires { _RANGES begin(static_cast<_CTy &&>(_Val)); }
         {
             return _RANGES begin(static_cast<_CTy&&>(_Val));
         }
@@ -3024,7 +3017,7 @@ namespace ranges {
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES end(static_cast<_CTy&&>(_Val))))
-            requires requires { _RANGES end(static_cast<_CTy&&>(_Val)); }
+            requires requires { _RANGES end(static_cast<_CTy &&>(_Val)); }
         {
             return _RANGES end(static_cast<_CTy&&>(_Val));
         }
@@ -3194,7 +3187,7 @@ namespace ranges {
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES rbegin(static_cast<_CTy&&>(_Val))))
-            requires requires { _RANGES rbegin(static_cast<_CTy&&>(_Val)); }
+            requires requires { _RANGES rbegin(static_cast<_CTy &&>(_Val)); }
         {
             return _RANGES rbegin(static_cast<_CTy&&>(_Val));
         }
@@ -3224,7 +3217,7 @@ namespace ranges {
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES rend(static_cast<_CTy&&>(_Val))))
-            requires requires { _RANGES rend(static_cast<_CTy&&>(_Val)); }
+            requires requires { _RANGES rend(static_cast<_CTy &&>(_Val)); }
         {
             return _RANGES rend(static_cast<_CTy&&>(_Val));
         }
@@ -3236,7 +3229,7 @@ namespace ranges {
     }
 
     _EXPORT_STD template <class>
-    constexpr bool disable_sized_range = false;
+    constexpr bool disable_sized_range = false; // specializations allowed by N5014 [range.sized]/3
 
     namespace _Size {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1681199
@@ -3451,7 +3444,7 @@ namespace ranges {
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES data(static_cast<_CTy&&>(_Val))))
-            requires requires { _RANGES data(static_cast<_CTy&&>(_Val)); }
+            requires requires { _RANGES data(static_cast<_CTy &&>(_Val)); }
         {
             return _RANGES data(static_cast<_CTy&&>(_Val));
         }
@@ -3478,7 +3471,7 @@ namespace ranges {
         requires (!is_same_v<_Ty, view_interface<_Uty>>)
     void _Strictly_derived_from_view_interface_impl(view_interface<_Uty>*);
 
-    _EXPORT_STD template <class _Ty>
+    _EXPORT_STD template <class _Ty> // specializations allowed by N5014 [range.view]/7
     constexpr bool enable_view = derived_from<_Ty, view_base> || requires {
         _RANGES _Strictly_derived_from_view_interface_impl<remove_cv_t<_Ty>>(
             static_cast<remove_cv_t<_Ty>*>(nullptr)); // qualified: avoid ADL, handle incomplete types
@@ -4550,7 +4543,7 @@ _NODISCARD _CONSTEXPR17 bool operator==(const move_iterator<_Iter1>& _Left, cons
     noexcept(noexcept(_STD _Fake_copy_init<bool>(_Left.base() == _Right.base()))) /* strengthened */
 #if _HAS_CXX20
     requires requires {
-        { _Left.base() == _Right.base() } -> _Implicitly_convertible_to<bool>;
+        { _Left.base() == _Right.base() }->_Implicitly_convertible_to<bool>;
     }
 #endif // _HAS_CXX20
 {
@@ -4570,7 +4563,7 @@ _NODISCARD _CONSTEXPR17 bool operator<(const move_iterator<_Iter1>& _Left, const
     noexcept(noexcept(_STD _Fake_copy_init<bool>(_Left.base() < _Right.base()))) /* strengthened */
 #if _HAS_CXX20
     requires requires {
-        { _Left.base() < _Right.base() } -> _Implicitly_convertible_to<bool>;
+        { _Left.base() < _Right.base() }->_Implicitly_convertible_to<bool>;
     }
 #endif // _HAS_CXX20
 {
@@ -4628,7 +4621,7 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter> operator+(
     noexcept(noexcept(move_iterator<_Iter>(_Right.base() + _Off))) /* strengthened */
 #if _HAS_CXX20
     requires requires {
-        { _Right.base() + _Off } -> same_as<_Iter>;
+        { _Right.base() + _Off }->same_as<_Iter>;
     }
 #endif // _HAS_CXX20
 {
@@ -5813,7 +5806,7 @@ namespace ranges {
         _It1 _First1, _It2 _First2, iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
         _STL_INTERNAL_CHECK(_Count >= 0);
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (_Vector_alg_in_search_is_safe<_It1, _It2, _Pr> && is_same_v<_Pj1, identity>
+        if constexpr (_Equal_memcmp_is_safe<_It1, _It2, _Pr> && is_same_v<_Pj1, identity>
                       && is_same_v<_Pj2, identity>) {
             if (!_STD is_constant_evaluated()) {
                 _STL_INTERNAL_STATIC_ASSERT(sizeof(iter_value_t<_It1>) == sizeof(iter_value_t<_It2>));
@@ -6008,7 +6001,7 @@ _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
         {
             const auto _Num1  = static_cast<size_t>(_STD _Contiguous_iter_distance(_UFirst1, _ULast1));
             const auto _Num2  = static_cast<size_t>(_STD _Contiguous_iter_distance(_UFirst2, _ULast2));
-            const size_t _Num = (_STD min)(_Num1, _Num2);
+            const size_t _Num = (_STD min) (_Num1, _Num2);
 #if _USE_STD_VECTOR_ALGORITHMS
             const auto _First1_ptr = _STD _To_address(_UFirst1);
             const auto _First2_ptr = _STD _To_address(_UFirst2);
@@ -6133,7 +6126,7 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(const _InIt1 _First1
         if (!_STD is_constant_evaluated()) {
             const auto _Num1  = static_cast<size_t>(_STD _Contiguous_iter_distance(_UFirst1, _ULast1));
             const auto _Num2  = static_cast<size_t>(_STD _Contiguous_iter_distance(_UFirst2, _ULast2));
-            const size_t _Num = (_STD min)(_Num1, _Num2);
+            const size_t _Num = (_STD min) (_Num1, _Num2);
 #if _USE_STD_VECTOR_ALGORITHMS
             const auto _First1_ptr = _STD to_address(_UFirst1);
             const auto _First2_ptr = _STD to_address(_UFirst2);
@@ -7352,7 +7345,7 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
 _EXPORT_STD template <class _Ty>
 _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist) {
     // return leftmost/largest
-    return (_STD max)(_Ilist, less<>{});
+    return (_STD max) (_Ilist, less<>{});
 }
 
 #if _HAS_CXX20
@@ -7576,7 +7569,7 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
 _EXPORT_STD template <class _Ty>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist) {
     // return leftmost/smallest
-    return (_STD min)(_Ilist, less<>{});
+    return (_STD min) (_Ilist, less<>{});
 }
 
 #if _HAS_CXX20
@@ -7837,6 +7830,7 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("lifetimebound")
 #pragma pop_macro("intrinsic")
 #pragma pop_macro("msvc")

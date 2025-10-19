@@ -27,7 +27,11 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
 #pragma push_macro("empty_bases")
+#undef msvc
+#undef no_specializations
 #undef empty_bases
 
 _STD_BEGIN
@@ -40,7 +44,7 @@ template <class _Alloc>
 constexpr bool _Stateless_allocator = default_initializable<_Alloc> && allocator_traits<_Alloc>::is_always_equal::value;
 
 _EXPORT_STD template <class _Rty, class _Vty = void, class _Alloc = void>
-class generator;
+class _NO_SPECIALIZATIONS_CITING("N5014 [coro.generator.class]/4") generator;
 
 namespace _Gen_detail {
     template <class _Alloc>
@@ -68,7 +72,7 @@ namespace _Gen_detail {
                 return (_Size + sizeof(_Aligned_block) - 1) / sizeof(_Aligned_block);
             } else {
                 // allocator is stateful, we need storage for it
-                constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
+                constexpr size_t _Align = (_STD max) (alignof(_Alloc), sizeof(_Aligned_block));
                 return (_Size + sizeof(_Alloc) + _Align - 1) / sizeof(_Aligned_block);
             }
         }
@@ -143,7 +147,7 @@ namespace _Gen_detail {
             if constexpr (_Stateless_allocator<_Alloc>) {
                 _Bytes += sizeof(_Aligned_block) - 1;
             } else {
-                constexpr size_t _Align = (_STD max)(alignof(_Alloc), sizeof(_Aligned_block));
+                constexpr size_t _Align = (_STD max) (alignof(_Alloc), sizeof(_Aligned_block));
                 _Bytes += sizeof(_Alloc) + _Align - 1;
             }
             return _Bytes / sizeof(_Aligned_block);
@@ -518,7 +522,8 @@ namespace _Gen_detail {
 } // namespace _Gen_detail
 
 _EXPORT_STD template <class _Rty, class _Vty, class _Alloc>
-class generator : public _RANGES view_interface<generator<_Rty, _Vty, _Alloc>> {
+class _NO_SPECIALIZATIONS_CITING("N5014 [coro.generator.class]/4") generator
+    : public _RANGES view_interface<generator<_Rty, _Vty, _Alloc>> {
 private:
     static_assert(_Gen_detail::_Valid_allocator<_Alloc>,
         "generator allocators must use raw pointers (N4988 [coro.generator.class]/1.1)");
@@ -603,6 +608,8 @@ _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
 #pragma pop_macro("empty_bases")
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

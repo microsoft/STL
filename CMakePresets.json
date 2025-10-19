@@ -13,23 +13,6 @@
       "binaryDir": "${sourceDir}/out/${presetName}"
     },
     {
-      "name": "x86",
-      "inherits": "base",
-      "description": "x86 Ninja Config",
-      "architecture": {
-        "strategy": "external",
-        "value": "x86"
-      },
-      "condition": {
-        "type": "inList",
-        "string": "$env{Platform}",
-        "list": [
-          "x86",
-          ""
-        ]
-      }
-    },
-    {
       "name": "x64",
       "inherits": "base",
       "description": "x64 Ninja Config",
@@ -39,9 +22,26 @@
       },
       "condition": {
         "type": "inList",
-        "string": "$env{Platform}",
+        "string": "$env{VSCMD_ARG_TGT_ARCH}",
         "list": [
           "x64",
+          ""
+        ]
+      }
+    },
+    {
+      "name": "x86",
+      "inherits": "base",
+      "description": "x86 Ninja Config",
+      "architecture": {
+        "strategy": "external",
+        "value": "x86"
+      },
+      "condition": {
+        "type": "inList",
+        "string": "$env{VSCMD_ARG_TGT_ARCH}",
+        "list": [
+          "x86",
           ""
         ]
       }
@@ -56,7 +56,7 @@
       },
       "condition": {
         "type": "inList",
-        "string": "$env{Platform}",
+        "string": "$env{VSCMD_ARG_TGT_ARCH}",
         "list": [
           "arm64",
           ""
@@ -76,7 +76,7 @@
       },
       "condition": {
         "type": "inList",
-        "string": "$env{Platform}",
+        "string": "$env{VSCMD_ARG_TGT_ARCH}",
         "list": [
           "arm64",
           ""
@@ -90,14 +90,14 @@
   ],
   "buildPresets": [
     {
-      "name": "x86",
-      "configurePreset": "x86",
-      "description": "Build x86 STL"
-    },
-    {
       "name": "x64",
       "configurePreset": "x64",
       "description": "Build x64 STL"
+    },
+    {
+      "name": "x86",
+      "configurePreset": "x86",
+      "description": "Build x86 STL"
     },
     {
       "name": "ARM64",
