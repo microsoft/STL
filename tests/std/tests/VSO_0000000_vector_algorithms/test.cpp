@@ -701,7 +701,6 @@ void test_includes(mt19937_64& gen) {
         uniform_int_distribution<size_t> len_dis(0, hay.size());
 
         for (size_t needle_length = 0; needle_length < 4; ++needle_length) {
-            needle.clear();
             needle.resize(len_dis(gen));
             sample(hay.begin(), hay.end(), needle.begin(), needle.size(), gen);
 
