@@ -2190,7 +2190,7 @@ void test_gh_5790() {
         }
 
         {
-            test_regex too_large_min_greedy_a_rep(&g_regexTester, "a{11,1000}");
+            test_regex too_large_min_greedy_a_rep(&g_regexTester, "a{11,1000}", options);
             too_large_min_greedy_a_rep.should_search_fail("aaaaaaaaaa");
         }
     }
