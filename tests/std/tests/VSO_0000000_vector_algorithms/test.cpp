@@ -684,14 +684,12 @@ void test_includes(mt19937_64& gen) {
 
     uniform_int_distribution<conditional_t<sizeof(T) == 1, int, T>> dis(Limits::min(), Limits::max());
 
-    vector<T> sorted_random_data;
-    vector<T> hay;
-    vector<T> needle;
-
-    sorted_random_data.resize(dataCount);
+    vector<T> sorted_random_data(dataCount);
     generate_n(sorted_random_data.data(), dataCount, [&dis, &gen] { return static_cast<T>(dis(gen)); });
     sort(sorted_random_data.begin(), sorted_random_data.end());
 
+    vector<T> hay;
+    vector<T> needle;
     hay.reserve(dataCount);
     needle.reserve(dataCount);
 
