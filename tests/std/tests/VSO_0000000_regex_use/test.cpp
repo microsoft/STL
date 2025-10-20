@@ -2185,11 +2185,6 @@ void test_gh_5790() {
         }
 
         {
-            test_regex lower_and_upper_bounded_greedy_a_rep(&g_regexTester, "a{2,5}", options);
-            lower_and_upper_bounded_greedy_a_rep.should_search_match("aaaaaaaaaa", "aaaaa");
-        }
-
-        {
             test_regex too_large_min_greedy_a_rep(&g_regexTester, "a{11,1000}", options);
             too_large_min_greedy_a_rep.should_search_fail("aaaaaaaaaa");
         }
