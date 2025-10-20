@@ -440,7 +440,7 @@ template <class _Iter1, class _Iter2, class _Elem = _Iter_value_t<_Iter1>>
 constexpr bool _Vector_alg_includes_iterators_safe =
     _Iterators_are_contiguous<_Iter1, _Iter2> // Iterators must be contiguous so we can get raw pointers.
     && !_Iterator_is_volatile<_Iter1> && !_Iterator_is_volatile<_Iter2> // Iterators must not be volatile.
-    && is_same_v<_Elem, _Iter_value_t<_Iter2>> // Iterators value is same
+    && is_same_v<_Elem, _Iter_value_t<_Iter2>> // Iterators have the same value type.
     && disjunction_v<is_integral<_Elem>, is_pointer<_Elem>>; // Integral or pointer type.
 _STD_END
 #endif // _USE_STD_VECTOR_ALGORITHMS

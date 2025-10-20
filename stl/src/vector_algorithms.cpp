@@ -6999,7 +6999,7 @@ namespace {
 
             static uint32_t _Bsf(const uint32_t _Val) noexcept {
                 unsigned long _Index;
-                // CodeQL [SM02313] _Index is always initialized: _Val != 0; see explanastion at call sites.
+                // CodeQL [SM02313] _Index is always initialized: _Val != 0; see explanation at call sites.
                 _BitScanForward(&_Index, _Val);
                 return _Index;
             }
@@ -7074,7 +7074,7 @@ namespace {
                 static_assert(false, "No vectorization for _M_ARM64EC yet");
 #else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
 
-                // Only skipping some parts of haystack that are less than current needle element is vectorzied.
+                // Only skipping some parts of haystack that are less than current needle element is vectorized.
                 // Otherwise this is scalar algorithm.
 
                 constexpr bool _Is_signed            = static_cast<_Ty>(-1) < _Ty{0};
@@ -7102,11 +7102,11 @@ namespace {
                     _Advance_bytes(_Next1, _Traits::_Vec_size);
 
                     const uint32_t _Greater_start_2 = _Traits::_Mask(_Traits::_Cmp_gt(_Start2, _Data1));
-                    // Testing _Highest_one_mask can be a bit more effecient on AVX2 than comparing against
+                    // Testing _Highest_one_mask can be a bit more efficient on AVX2 than comparing against
                     // _All_ones_mask (will test sign, and can share comparison with != 0 below).
                     if ((_Greater_start_2 & _Highest_one_mask) != 0) {
                         // Needle first element is greater than each element of haystack vector.
-                        // Proceed to the next one, without updationg the needle comparand.
+                        // Proceed to the next one, without updating the needle comparand.
                         _First1 = _Next1;
                     } else {
                         if (_Greater_start_2 != 0) {
@@ -7117,7 +7117,7 @@ namespace {
                             _Advance_bytes(_First1, _Skip);
                         }
 
-                        // The rest is scalar loop that completes the remaining  vector-sized haystack part.
+                        // The rest is scalar loop that completes the remaining vector-sized haystack part.
                         // Except that it updates current needle value to compare against.
                         do {
                             const _Ty _Val1 = *static_cast<const _Ty*>(_First1);
@@ -7148,8 +7148,8 @@ namespace {
                 if constexpr (_Traits::_Tail_mask != 0) {
                     const size_t _Tail_bytes_size_1 = _Size_bytes_1 & _Traits::_Tail_mask;
                     if (_Tail_bytes_size_1 != 0) {
-                        // Just try to advance pass less one omre time.
-                        // Don't neet to repeat the scalar part here -- falling to scalar loop anyway.
+                        // Just try to advance past less one more time.
+                        // Don't need to repeat the scalar part here - falling to scalar loop anyway.
                         const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_bytes_size_1);
                         auto _Data1           = _Traits::_Load_mask(_First1, _Tail_mask);
                         if constexpr (!_Is_signed) {
@@ -7161,7 +7161,7 @@ namespace {
                         if (_Greater_start_2 != 0) {
                             // Needle first element is greater than some first elements of haystack part.
                             // Advance past these elements.
-                            // The input is nonzero because tail mask will have zeros for remaining enements.
+                            // The input is nonzero because tail mask will have zeros for remaining elements.
                             const uint32_t _Skip = _Traits::_Bsf(_Greater_start_2 ^ _All_ones_mask);
                             _Advance_bytes(_First1, _Skip);
                         }
