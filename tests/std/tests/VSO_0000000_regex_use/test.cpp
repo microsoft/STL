@@ -2133,6 +2133,7 @@ void test_gh_5774() {
     // GH-5774: Process non-greedy and longest-mode simple loops non-recursively.
     // This extends our test coverage on non-greedy simple loops with bounded number of repetitions.
     g_regexTester.should_not_match("", "a+?");
+    g_regexTester.should_match("b", "a{0}?b");
     g_regexTester.should_not_match("ab", "a{0}?b");
     g_regexTester.should_match("ab", "a{0,1}?b");
     g_regexTester.should_not_match("aab", "a{0,1}?b");
@@ -2147,6 +2148,7 @@ void test_gh_5790() {
     // GH-5790: Process greedy simple loops non-recursively.
     // This extends our test coverage on (mainly greedy) simple loops.
     g_regexTester.should_not_match("", "a+");
+    g_regexTester.should_match("b", "a{0}b");
     g_regexTester.should_not_match("ab", "a{0}b");
     g_regexTester.should_match("ab", "a{0,1}b");
     g_regexTester.should_not_match("aab", "a{0,1}b");
@@ -2208,6 +2210,11 @@ void test_gh_5790() {
     {
         test_regex lower_bounded_nongreedy_a_rep(&g_regexTester, "a{4,1000}?");
         lower_bounded_nongreedy_a_rep.should_search_match("aaaaaaaaaa", "aaaa");
+    }
+
+    {
+        test_regex lower_and_upper_bounded_nongreedy_a_rep(&g_regexTester, "a{2,5}?");
+        lower_and_upper_bounded_nongreedy_a_rep.should_search_match("aaaaaaaaaa", "aa");
     }
 
     {
