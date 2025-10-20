@@ -691,7 +691,7 @@ void test_includes(mt19937_64& gen) {
     vector<T> hay;
     vector<T> needle;
     hay.reserve(dataCount);
-    needle.reserve(dataCount);
+    needle.reserve(dataCount + 1);
 
     test_case_includes(hay, needle);
 
@@ -703,7 +703,11 @@ void test_includes(mt19937_64& gen) {
         for (size_t needle_length = 0; needle_length < 4; ++needle_length) {
             needle.resize(len_dis(gen));
             sample(hay.begin(), hay.end(), needle.begin(), needle.size(), gen);
+            test_case_includes(hay, needle);
 
+            // Look for an additional random element, typically (but not always) resulting in a negative test.
+            needle.push_back(static_cast<T>(dis(gen)));
+            sort(needle.begin(), needle.end());
             test_case_includes(hay, needle);
         }
     }
