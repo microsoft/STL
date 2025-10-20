@@ -23,8 +23,6 @@
 using namespace std;
 using namespace chrono;
 
-constexpr auto intmax_max = numeric_limits<intmax_t>::max();
-
 template <typename CharT>
 [[nodiscard]] constexpr const CharT* choose_literal(const char* const str, const wchar_t* const wstr) noexcept {
     if constexpr (is_same_v<CharT, char>) {
@@ -252,8 +250,6 @@ void empty_braces_helper(
 
 template <typename CharT>
 void test_duration_formatter() {
-    using LongRatio = ratio<intmax_max - 1, intmax_max>;
-
     empty_braces_helper(seconds{5}, STR("5s"));
     empty_braces_helper(minutes{7}, STR("7min"));
     empty_braces_helper(hours{9}, STR("9h"));
@@ -266,8 +262,13 @@ void test_duration_formatter() {
     empty_braces_helper(duration<int, ratio<22, 7>>{40}, STR("40[22/7]s"));
     empty_braces_helper(duration<int, ratio<53, 101>>{40}, STR("40[53/101]s"));
     empty_braces_helper(duration<int, ratio<201, 2147483647>>{40}, STR("40[201/2147483647]s"));
-    // TRANSITION, LWG-3921: duration_cast used in formatting may raise UB
+
+#if 0 // TRANSITION, LWG-3921: Our duration formatting constructs an hh_mm_ss, which calls duration_cast,
+      // which triggers signed integer overflow when a duration has a pathological ratio, like this:
+    constexpr auto intmax_max = numeric_limits<intmax_t>::max();
+    using LongRatio           = ratio<intmax_max - 1, intmax_max>;
     empty_braces_helper(duration<int, LongRatio>{1}, STR("1[9223372036854775806/9223372036854775807]s"));
+#endif // ^^^ disabled test due to undefined behavior ^^^
 
     // formatting small types needs to work as iostreams << VSO-1521926
     empty_braces_helper(duration<long long, atto>{123}, STR("123as"));

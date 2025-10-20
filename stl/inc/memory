@@ -3475,6 +3475,11 @@ public:
     }
 
     _NODISCARD _CONSTEXPR23 add_lvalue_reference_t<_Ty> operator*() const noexcept(noexcept(*_STD declval<pointer>())) {
+#ifdef __cpp_lib_reference_from_temporary
+        static_assert(
+            !reference_converts_from_temporary_v<add_lvalue_reference_t<_Ty>, decltype(*_STD declval<pointer>())>,
+            "Can't return a temporary object from unique_ptr::operator*(). (N5014 [unique.ptr.single.observers]/1)");
+#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
         return *_Mypair._Myval2;
     }
 
@@ -4523,23 +4528,6 @@ _NODISCARD auto inout_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
     }
 }
 #endif // _HAS_CXX23
-
-#if _HAS_TR1_NAMESPACE
-namespace _DEPRECATE_TR1_NAMESPACE tr1 {
-    using _STD allocate_shared;
-    using _STD bad_weak_ptr;
-    using _STD const_pointer_cast;
-    using _STD dynamic_pointer_cast;
-    using _STD enable_shared_from_this;
-    using _STD get_deleter;
-    using _STD make_shared;
-    using _STD shared_ptr;
-    using _STD static_pointer_cast;
-    using _STD swap;
-    using _STD weak_ptr;
-} // namespace _DEPRECATE_TR1_NAMESPACE tr1
-#endif // _HAS_TR1_NAMESPACE
-
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens

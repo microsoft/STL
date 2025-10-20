@@ -4,16 +4,31 @@
 // filesys.cpp -- <experimental/filesystem> implementation
 // (see filesystem.cpp for C++17 <filesystem> implementation)
 
-#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+// TRANSITION, ABI: Everything in this file is preserved for binary compatibility.
 
 #include <yvals.h>
 
+#include <cstdint>
 #include <cstring>
 #include <direct.h>
-#include <experimental/filesystem>
 #include <io.h>
+#include <string>
 
 #include <Windows.h>
+
+#define _MAX_FILESYS_NAME 260 // longest Windows or Posix filename + 1
+
+#define _FS_BEGIN              \
+    _STD_BEGIN                 \
+    namespace experimental {   \
+        namespace filesystem { \
+            inline namespace v1 {
+
+#define _FS_END \
+    }           \
+    }           \
+    }           \
+    _STD_END
 
 #ifdef _M_CEE_PURE
 #define __crtGetTempPath2W(BufferLength, Buffer) GetTempPathW(BufferLength, Buffer)
@@ -23,6 +38,53 @@ extern "C" _Success_(return > 0 && return < BufferLength) DWORD __stdcall __crtG
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
 _FS_BEGIN
+
+enum class file_type { // names for file types
+    not_found = -1,
+    none,
+    regular,
+    directory,
+    symlink,
+    block,
+    character,
+    fifo,
+    socket,
+    unknown
+};
+
+enum class perms { // names for permissions
+    none             = 0,
+    owner_read       = 0400, // S_IRUSR
+    owner_write      = 0200, // S_IWUSR
+    owner_exec       = 0100, // S_IXUSR
+    owner_all        = 0700, // S_IRWXU
+    group_read       = 040, // S_IRGRP
+    group_write      = 020, // S_IWGRP
+    group_exec       = 010, // S_IXGRP
+    group_all        = 070, // S_IRWXG
+    others_read      = 04, // S_IROTH
+    others_write     = 02, // S_IWOTH
+    others_exec      = 01, // S_IXOTH
+    others_all       = 07, // S_IRWXO
+    all              = 0777,
+    set_uid          = 04000, // S_ISUID
+    set_gid          = 02000, // S_ISGID
+    sticky_bit       = 01000, // S_ISVTX
+    mask             = 07777,
+    unknown          = 0xFFFF,
+    add_perms        = 0x10000,
+    remove_perms     = 0x20000,
+    resolve_symlinks = 0x40000
+};
+
+_BITMASK_OPS(_EMPTY_ARGUMENT, perms)
+
+struct space_info { // space information for a file
+    uintmax_t capacity;
+    uintmax_t free;
+    uintmax_t available;
+};
+
 static file_type _Map_mode(int _Mode) { // map Windows file attributes to file_status
     constexpr int _File_attribute_regular =
         FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_COMPRESSED | FILE_ATTRIBUTE_ENCRYPTED | FILE_ATTRIBUTE_HIDDEN
@@ -38,7 +100,7 @@ static file_type _Map_mode(int _Mode) { // map Windows file attributes to file_s
     }
 }
 
-_FS_DLL void __CLRCALL_PURE_OR_CDECL _Close_dir(void* _Handle) noexcept { // close a directory
+extern "C" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Close_dir(void* _Handle) noexcept { // close a directory
     FindClose(_Handle);
 }
 
@@ -56,7 +118,7 @@ static HANDLE _FilesysOpenFile(const wchar_t* _Fname, DWORD _Desired_access, DWO
         &_Create_file_parameters);
 }
 
-_FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(
+extern "C" _CRTIMP2_PURE wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(
     wchar_t (&_Dest)[_MAX_FILESYS_NAME], void* _Handle, file_type& _Ftype) noexcept { // read a directory entry
     WIN32_FIND_DATAW _Dentry;
 
@@ -86,17 +148,17 @@ static unsigned int _Filesys_code_page() { // determine appropriate code page
 #endif // ^^^ !defined(_ONECORE) ^^^
 }
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _To_wide(const char* _Bsrc, wchar_t* _Wdest) noexcept {
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _To_wide(const char* _Bsrc, wchar_t* _Wdest) noexcept {
     // return nonzero on success
     return MultiByteToWideChar(_Filesys_code_page(), 0, _Bsrc, -1, _Wdest, _MAX_FILESYS_NAME);
 }
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _To_byte(const wchar_t* _Wsrc, char* _Bdest) noexcept {
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _To_byte(const wchar_t* _Wsrc, char* _Bdest) noexcept {
     // return nonzero on success
     return WideCharToMultiByte(_Filesys_code_page(), 0, _Wsrc, -1, _Bdest, _MAX_FILESYS_NAME, nullptr, nullptr);
 }
 
-_FS_DLL void* __CLRCALL_PURE_OR_CDECL _Open_dir(
+extern "C" _CRTIMP2_PURE void* __CLRCALL_PURE_OR_CDECL _Open_dir(
     wchar_t (&_Dest)[_MAX_FILESYS_NAME], const wchar_t* _Dirname, int& _Errno, file_type& _Ftype) noexcept {
     // open a directory for reading
     WIN32_FIND_DATAW _Dentry;
@@ -133,7 +195,7 @@ _FS_DLL void* __CLRCALL_PURE_OR_CDECL _Open_dir(
     return _Handle;
 }
 
-_FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_get(wchar_t (&_Dest)[_MAX_FILESYS_NAME]) noexcept {
+extern "C" _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL _Current_get(wchar_t (&_Dest)[_MAX_FILESYS_NAME]) noexcept {
     // get current working directory
     _Strcpy(_Dest, L"");
 #ifdef _CRT_APP
@@ -143,7 +205,7 @@ _FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_get(wchar_t (&_Dest)[_MAX_FILESYS_
 #endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
-_FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_set(const wchar_t* _Dirname) noexcept {
+extern "C" _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL _Current_set(const wchar_t* _Dirname) noexcept {
     // set current working directory
 #ifdef _CRT_APP
     (void) _Dirname;
@@ -153,19 +215,20 @@ _FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_set(const wchar_t* _Dirname) noexc
 #endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
-_FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Symlink_get(wchar_t (&_Dest)[_MAX_FILESYS_NAME], const wchar_t*) noexcept {
+extern "C" _CRTIMP2_PURE wchar_t* __CLRCALL_PURE_OR_CDECL _Symlink_get(
+    wchar_t (&_Dest)[_MAX_FILESYS_NAME], const wchar_t*) noexcept {
     // get symlink -- DUMMY
     _Dest[0] = L'\0';
     return _Dest;
 }
 
-_FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Temp_get(wchar_t (&_Dest)[_MAX_FILESYS_NAME]) noexcept {
+extern "C" _CRTIMP2_PURE wchar_t* __CLRCALL_PURE_OR_CDECL _Temp_get(wchar_t (&_Dest)[_MAX_FILESYS_NAME]) noexcept {
     // get temp directory
     wchar_t _Dentry[MAX_PATH];
     return _Strcpy(_Dest, __crtGetTempPath2W(MAX_PATH, _Dentry) != 0 ? _Dentry : L".");
 }
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Make_dir(const wchar_t* _Fname, const wchar_t*) noexcept {
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Make_dir(const wchar_t* _Fname, const wchar_t*) noexcept {
     // make a new directory (ignore attributes)
     if (CreateDirectoryW(_Fname, nullptr)) {
         return 1;
@@ -176,11 +239,13 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Make_dir(const wchar_t* _Fname, const wchar
     }
 }
 
-_FS_DLL bool __CLRCALL_PURE_OR_CDECL _Remove_dir(const wchar_t* _Fname) noexcept { // remove a directory
+extern "C" _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL _Remove_dir(
+    const wchar_t* _Fname) noexcept { // remove a directory
     return _wrmdir(_Fname) != -1;
 }
 
-_FS_DLL file_type __CLRCALL_PURE_OR_CDECL _Stat(const wchar_t* _Fname, perms* _Pmode) noexcept { // get file status
+extern "C" _CRTIMP2_PURE file_type __CLRCALL_PURE_OR_CDECL _Stat(
+    const wchar_t* _Fname, perms* _Pmode) noexcept { // get file status
     WIN32_FILE_ATTRIBUTE_DATA _Data;
 
     if (GetFileAttributesExW(_Fname, GetFileExInfoStandard, &_Data)) {
@@ -210,12 +275,12 @@ _FS_DLL file_type __CLRCALL_PURE_OR_CDECL _Stat(const wchar_t* _Fname, perms* _P
     }
 }
 
-_FS_DLL file_type __CLRCALL_PURE_OR_CDECL _Lstat(const wchar_t* _Fname, perms* _Pmode) noexcept {
+extern "C" _CRTIMP2_PURE file_type __CLRCALL_PURE_OR_CDECL _Lstat(const wchar_t* _Fname, perms* _Pmode) noexcept {
     // get symlink file status
     return _Stat(_Fname, _Pmode); // symlink not supported
 }
 
-_FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _Hard_links(const wchar_t* _Fname) noexcept {
+extern "C" _CRTIMP2_PURE uintmax_t __CLRCALL_PURE_OR_CDECL _Hard_links(const wchar_t* _Fname) noexcept {
     // get hard link count
     HANDLE _Handle = _FilesysOpenFile(_Fname, FILE_READ_ATTRIBUTES, FILE_FLAG_BACKUP_SEMANTICS);
 
@@ -231,7 +296,7 @@ _FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _Hard_links(const wchar_t* _Fname) noe
     return _Ok ? _Info.NumberOfLinks : static_cast<uintmax_t>(-1);
 }
 
-_FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t* _Fname) noexcept { // get file size
+extern "C" _CRTIMP2_PURE uintmax_t __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t* _Fname) noexcept { // get file size
     WIN32_FILE_ATTRIBUTE_DATA _Data;
 
     if (GetFileAttributesExW(_Fname, GetFileExInfoStandard, &_Data)) {
@@ -252,7 +317,8 @@ _FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t* _Fname) noex
 constexpr uint64_t _Win_ticks_per_second = 10000000ULL;
 constexpr uint64_t _Win_ticks_from_epoch = ((1970 - 1601) * 365 + 3 * 24 + 17) * 86400ULL * _Win_ticks_per_second;
 
-_FS_DLL int64_t __CLRCALL_PURE_OR_CDECL _Last_write_time(const wchar_t* _Fname) noexcept { // get last write time
+extern "C" _CRTIMP2_PURE int64_t __CLRCALL_PURE_OR_CDECL _Last_write_time(
+    const wchar_t* _Fname) noexcept { // get last write time
     WIN32_FILE_ATTRIBUTE_DATA _Data;
 
     if (!GetFileAttributesExW(_Fname, GetFileExInfoStandard, &_Data)) {
@@ -265,7 +331,8 @@ _FS_DLL int64_t __CLRCALL_PURE_OR_CDECL _Last_write_time(const wchar_t* _Fname) 
     return static_cast<int64_t>(_Wtime - _Win_ticks_from_epoch);
 }
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Set_last_write_time(const wchar_t* _Fname, int64_t _When) noexcept {
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Set_last_write_time(
+    const wchar_t* _Fname, int64_t _When) noexcept {
     // set last write time
     HANDLE _Handle = _FilesysOpenFile(_Fname, FILE_WRITE_ATTRIBUTES, FILE_FLAG_BACKUP_SEMANTICS);
 
@@ -283,7 +350,7 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Set_last_write_time(const wchar_t* _Fname, 
     return _Result;
 }
 
-_FS_DLL space_info __CLRCALL_PURE_OR_CDECL _Statvfs(const wchar_t* _Fname) noexcept {
+extern "C" _CRTIMP2_PURE space_info __CLRCALL_PURE_OR_CDECL _Statvfs(const wchar_t* _Fname) noexcept {
     // get space information for volume
     space_info _Ans  = {static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1), static_cast<uintmax_t>(-1)};
     wstring _Devname = _Fname;
@@ -304,7 +371,7 @@ _FS_DLL space_info __CLRCALL_PURE_OR_CDECL _Statvfs(const wchar_t* _Fname) noexc
     return _Ans;
 }
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Equivalent(
     const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept { // test for equivalent file names
     // See GH-3571: File IDs are only guaranteed to be unique and stable while handles remain open
     _FILE_ID_INFO _Info1 = {0};
@@ -336,7 +403,7 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
     }
 }
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
     // link _Fname2 to _Fname1
 #ifdef _CRT_APP
     (void) _Fname1;
@@ -347,7 +414,7 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t* _Fname1, const wchar_t*
 #endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Symlink(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Symlink(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
     // link _Fname2 to _Fname1
 #ifdef _CRT_APP
     (void) _Fname1;
@@ -358,12 +425,13 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Symlink(const wchar_t* _Fname1, const wchar
 #endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Rename(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Rename(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
     // rename _Fname1 as _Fname2
     return _wrename(_Fname1, _Fname2) == 0 ? 0 : GetLastError();
 }
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Resize(const wchar_t* _Fname, uintmax_t _Newsize) noexcept { // change file size
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Resize(
+    const wchar_t* _Fname, uintmax_t _Newsize) noexcept { // change file size
 
     HANDLE _Handle = _FilesysOpenFile(_Fname, FILE_GENERIC_WRITE, 0);
 
@@ -380,11 +448,12 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Resize(const wchar_t* _Fname, uintmax_t _Ne
     return _Ok ? 0 : GetLastError();
 }
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Unlink(const wchar_t* _Fname) noexcept { // unlink _Fname
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Unlink(const wchar_t* _Fname) noexcept { // unlink _Fname
     return _wremove(_Fname) == 0 ? 0 : GetLastError();
 }
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Copy_file(
+    const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
     // copy _Fname1 to _Fname2
     COPYFILE2_EXTENDED_PARAMETERS _Params = {0};
     _Params.dwSize                        = sizeof(COPYFILE2_EXTENDED_PARAMETERS);
@@ -399,7 +468,7 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t* _Fname1, const wch
     return _Copy_result & 0x0000FFFFU;
 }
 
-_FS_DLL int __CLRCALL_PURE_OR_CDECL _Chmod(const wchar_t* _Fname, perms _Newmode) noexcept {
+extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Chmod(const wchar_t* _Fname, perms _Newmode) noexcept {
     // change file mode to _Newmode
     WIN32_FILE_ATTRIBUTE_DATA _Data;
 

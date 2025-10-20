@@ -304,11 +304,11 @@ struct rand_gen { // uniform random number generator
         return mt() & 0xfffff;
     }
 
-    static result_type(min)() { // get minimum value
+    static constexpr result_type(min)() { // get minimum value
         return 0;
     }
 
-    static result_type(max)() { // get maximum value
+    static constexpr result_type(max)() { // get maximum value
         return 0xfffff;
     }
 };

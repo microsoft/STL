@@ -7,9 +7,10 @@
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 
 #include "tdefs.h"
-#include <experimental/filesystem>
 #include <fstream>
 #include <sstream>
+
+#include "experimental_filesystem.hpp"
 
 #define TMP_NAME(suf)         "tmp_name" suf
 #define CHECK_TBL(str, field) CHECK_STRING(native_to_char(str), fix_bslash(STD string(field)))

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.31.0)
+cmake_minimum_required(VERSION 4.1.1)
 project(msvc_standard_libraries_benchmarks LANGUAGES CXX)
 
 if(DEFINED STL_BINARY_DIR)
@@ -102,8 +102,10 @@ endfunction()
 
 add_benchmark(adjacent_difference src/adjacent_difference.cpp)
 add_benchmark(adjacent_find src/adjacent_find.cpp)
+add_benchmark(any_swap src/any_swap.cpp)
 add_benchmark(bitset_from_string src/bitset_from_string.cpp)
 add_benchmark(bitset_to_string src/bitset_to_string.cpp)
+add_benchmark(charconv_floats src/charconv_floats.cpp)
 add_benchmark(efficient_nonlocking_print src/efficient_nonlocking_print.cpp)
 add_benchmark(filesystem src/filesystem.cpp)
 add_benchmark(fill src/fill.cpp)
@@ -128,8 +130,10 @@ add_benchmark(remove src/remove.cpp)
 add_benchmark(replace src/replace.cpp)
 add_benchmark(reverse src/reverse.cpp)
 add_benchmark(rotate src/rotate.cpp)
+add_benchmark(sample src/sample.cpp)
 add_benchmark(search src/search.cpp)
 add_benchmark(search_n src/search_n.cpp)
+add_benchmark(shuffle src/shuffle.cpp)
 add_benchmark(std_copy src/std_copy.cpp)
 add_benchmark(sv_equal src/sv_equal.cpp)
 add_benchmark(swap_ranges src/swap_ranges.cpp)
