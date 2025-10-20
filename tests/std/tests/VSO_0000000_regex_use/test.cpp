@@ -2143,6 +2143,15 @@ void test_gh_5774() {
     g_regexTester.should_match("aaab", "a{1,3}?b");
 }
 
+void test_gh_5792() {
+    // GH-5792: <regex>: regex_match() throws regex_error(error_stack)
+    // when a repeated pattern contains a lookahead assertion
+    g_regexTester.should_match("", "(?:(?=ab))*");
+    g_regexTester.should_match("", "(?:(?!ab))*");
+    g_regexTester.should_not_match("bc", "(?:(?=ab))+bc");
+    g_regexTester.should_match("bc", "(?:(?!ab))+bc");
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2195,6 +2204,7 @@ int main() {
     test_gh_5576();
     test_gh_5672();
     test_gh_5774();
+    test_gh_5792();
 
     return g_regexTester.result();
 }
