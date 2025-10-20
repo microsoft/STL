@@ -652,7 +652,7 @@ void test_is_sorted_until(mt19937_64& gen) {
 #if _HAS_CXX17
 template <class InIt1, class InIt2>
 bool last_known_good_includes(InIt1 first1, InIt1 last1, InIt2 first2, InIt2 last2) {
-    for (; first2 != last2; ++first1) {
+    while (first2 != last2) {
         if (first1 == last1 || *first2 < *first1) {
             return false;
         }
@@ -660,7 +660,10 @@ bool last_known_good_includes(InIt1 first1, InIt1 last1, InIt2 first2, InIt2 las
         if (!(*first1 < *first2)) {
             ++first2;
         }
+
+        ++first1;
     }
+
     return true;
 }
 
