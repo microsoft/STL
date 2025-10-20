@@ -4113,7 +4113,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                             _Next = _Nr->_Next;
                             // GH-5365: We have to reset the capture groups from the second iteration on.
                             _Tgt_state._Grp_valid = _Frames[_Sav._Loop_frame_idx]._Match_state._Grp_valid;
-                            if (_Sav._Loop_idx < INT_MAX) { // avoid overfloading _Loop_idx
+                            if (_Sav._Loop_idx < INT_MAX) { // avoid overflowing _Loop_idx
                                 ++_Sav._Loop_idx;
                             }
                         } else { // non-greedy matching or greedy matching with maximum reached

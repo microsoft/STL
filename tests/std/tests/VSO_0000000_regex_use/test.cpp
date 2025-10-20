@@ -2157,7 +2157,7 @@ void test_gh_5790() {
     g_regexTester.should_match("aaab", "a{1,3}b");
 
     // Check that greedy and non-greedy search find the appropriate match.
-    // for the following regexes, greedy and leftmost-longest search yield the same matches.
+    // For the following regexes, greedy and leftmost-longest search yield the same matches.
     for (syntax_option_type options : {ECMAScript, extended}) {
         {
             test_regex greedy_a_star(&g_regexTester, "a*", options);
