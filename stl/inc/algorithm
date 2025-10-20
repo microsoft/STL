@@ -10404,7 +10404,7 @@ namespace ranges {
             if constexpr (_Vector_alg_includes_iterators_safe<_It1, _It2> && _Is_predicate_less<_It1, _Pr>
                           && sized_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>
                           && is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>) {
-                if (!_STD _Is_constant_evaluated()) {
+                if (!_STD is_constant_evaluated()) {
                     const auto _First1_ptr = _STD to_address(_First1);
                     const auto _First2_ptr = _STD to_address(_First2);
                     const auto _Last1_ptr  = _First1_ptr + static_cast<ptrdiff_t>(_Last1 - _First1);
