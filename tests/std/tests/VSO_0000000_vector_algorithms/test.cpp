@@ -685,7 +685,7 @@ void test_includes(mt19937_64& gen) {
     uniform_int_distribution<conditional_t<sizeof(T) == 1, int, T>> dis(Limits::min(), Limits::max());
 
     vector<T> sorted_random_data(dataCount);
-    generate_n(sorted_random_data.data(), dataCount, [&dis, &gen] { return static_cast<T>(dis(gen)); });
+    generate(sorted_random_data.begin(), sorted_random_data.end(), [&dis, &gen] { return static_cast<T>(dis(gen)); });
     sort(sorted_random_data.begin(), sorted_random_data.end());
 
     vector<T> hay;
@@ -703,7 +703,7 @@ void test_includes(mt19937_64& gen) {
         for (size_t needle_length = 0; needle_length < 4; ++needle_length) {
             needle.clear();
             needle.resize(len_dis(gen));
-            sample(hay.begin(), hay.end(), needle.data(), needle.size(), gen);
+            sample(hay.begin(), hay.end(), needle.begin(), needle.size(), gen);
 
             test_case_includes(hay, needle);
         }
