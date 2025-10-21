@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <cstring>
 #include <cwchar>
-#include <xtr1common>
+#include <type_traits>
 
 #ifndef _M_ARM64EC
 #include <intrin.h>
