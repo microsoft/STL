@@ -311,6 +311,9 @@ struct _Map_vb_functor<logical_not<_Ty>> {
     using type = conditional_t<_Is_vbool_functor_arg<_Ty>, bit_not<>, void>;
 };
 
+// bit_not isn't mapped to itself because it emits MSVC warning C4804 "'~': unsafe use of type 'bool' in operation"
+// and Clang -Wbool-operation "bitwise negation of a boolean expression; did you mean logical negation?".
+
 #if _HAS_DEPRECATED_NEGATORS
 _STL_DISABLE_DEPRECATED_WARNING
 _EXPORT_STD template <class _Fn>
