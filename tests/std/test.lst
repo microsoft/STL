@@ -202,6 +202,7 @@ tests\GH_001850_clog_tied_to_cout
 tests\GH_001858_iostream_exception
 tests\GH_001912_random_distribution_operator_const
 tests\GH_001914_cached_position
+tests\GH_001923_filesystem_long_path_support
 tests\GH_002030_asan_annotate_string
 tests\GH_002030_asan_annotate_vector
 tests\GH_002039_byte_is_not_trivially_swappable

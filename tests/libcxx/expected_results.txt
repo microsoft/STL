@@ -891,6 +891,10 @@ std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.lockin
 std/thread/thread.threads/thread.thread.class/thread.thread.destr/dtor.pass.cpp SKIPPED
 std/thread/thread.threads/thread.thread.this/sleep_until.pass.cpp SKIPPED
 
+# Not analyzed, likely bogus tests. Appears to be timing assumptions.
+# These tests have failed in practice, see GH-5733.
+std/thread/thread.semaphore/timed.pass.cpp SKIPPED
+
 # "This is technically flaky" comments indicate tests with timing assumptions.
 # These tests have failed in practice, see VSO-2321213 and VSO-2416940.
 std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_for.pass.cpp SKIPPED

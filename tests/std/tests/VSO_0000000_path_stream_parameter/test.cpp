@@ -83,12 +83,10 @@ int main() {
 
 #if _HAS_CXX17
     {
-        const auto testDir = get_test_directory("path_stream_parameter");
-        filesystem::create_directories(testDir, ec);
-        assert(!ec);
+        const test_temp_directory testDir("path_stream_parameter");
 
         {
-            const auto filebufPath = testDir / L"filebuf_file";
+            const auto filebufPath = testDir.directoryPath / L"filebuf_file";
             filebuf buf;
             buf.open(filebufPath, ios::out | ios::trunc);
             buf.close();
@@ -96,8 +94,8 @@ int main() {
             assert(!ec);
         }
 
-        const auto ofstreamFile     = testDir / L"ofstream_file";
-        const auto ofstreamOpenFile = testDir / L"ofstream_open_file";
+        const auto ofstreamFile     = testDir.directoryPath / L"ofstream_file";
+        const auto ofstreamOpenFile = testDir.directoryPath / L"ofstream_open_file";
         {
             ofstream ostr(ofstreamFile);
             assert(ostr);
@@ -113,8 +111,8 @@ int main() {
         assert(filesystem::exists(ofstreamOpenFile, ec));
         assert(!ec);
 
-        const auto fstreamFile     = testDir / L"fstream_file";
-        const auto fstreamOpenFile = testDir / L"fstream_open_file";
+        const auto fstreamFile     = testDir.directoryPath / L"fstream_file";
+        const auto fstreamOpenFile = testDir.directoryPath / L"fstream_open_file";
         {
             fstream fstr(fstreamFile, ios::out | ios::trunc);
             assert(fstr);
@@ -140,9 +138,6 @@ int main() {
             assert(istr >> temp);
             assert(temp == 42);
         }
-
-        filesystem::remove_all(testDir, ec);
-        assert(!ec);
     }
 #endif // _HAS_CXX17
 }

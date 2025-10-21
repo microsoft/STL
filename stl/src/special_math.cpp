@@ -9,6 +9,7 @@
 
 #pragma warning(push)
 #pragma warning(disable : 4702) // unreachable code
+#pragma warning(disable : 4714) // function marked as __forceinline not inlined
 
 #define BOOST_MATH_DOMAIN_ERROR_POLICY   errno_on_error
 #define BOOST_MATH_OVERFLOW_ERROR_POLICY ignore_error
