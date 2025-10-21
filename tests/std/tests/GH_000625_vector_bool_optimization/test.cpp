@@ -106,34 +106,70 @@ CONSTEXPR20 void test_transform_helper(const size_t length) {
     vector<bool> not_actual(length + 3);
 
     // Also test combinations of vector<bool>::iterator and vector<bool>::const_iterator for the inputs.
+    const auto first1  = source1.begin();
+    const auto cfirst1 = source1.cbegin();
+    const auto first2  = source2.begin();
+    const auto cfirst2 = source2.cbegin();
+    const auto last1   = first1 + length;
+    const auto clast1  = cfirst1 + length;
 
-    // iterator, iterator
-    const auto and_ret =
-        transform(source1.begin(), source1.begin() + length, source2.begin(), and_actual.begin(), logical_and<>{});
-    assert(and_actual == and_expected);
-    assert(and_ret == and_actual.begin() + length);
+    {
+        auto and_ret = transform(first1, last1, first2, and_actual.begin(), logical_and<>{});
+        assert(and_actual == and_expected);
+        assert(and_ret == and_actual.begin() + length);
 
-    // iterator, const_iterator
-    const auto or_ret =
-        transform(source1.begin(), source1.begin() + length, source2.cbegin(), or_actual.begin(), logical_or<>{});
-    assert(or_actual == or_expected);
-    assert(or_ret == or_actual.begin() + length);
+        and_actual.assign(and_actual.size(), false);
 
-    // const_iterator, iterator
-    const auto xor_ret =
-        transform(source1.cbegin(), source1.cbegin() + length, source2.begin(), xor_actual.begin(), not_equal_to<>{});
-    assert(xor_actual == xor_expected);
-    assert(xor_ret == xor_actual.begin() + length);
+        and_ret = transform(first1, last1, first2, and_actual.begin(), bit_and<>{});
+        assert(and_actual == and_expected);
+        assert(and_ret == and_actual.begin() + length);
+    }
 
-    // const_iterator, const_iterator
-    const auto xnor_ret =
-        transform(source1.cbegin(), source1.cbegin() + length, source2.cbegin(), xnor_actual.begin(), equal_to<>{});
-    assert(xnor_actual == xnor_expected);
-    assert(xnor_ret == xnor_actual.begin() + length);
+    {
+        auto or_ret = transform(first1, last1, cfirst2, or_actual.begin(), logical_or<>{});
+        assert(or_actual == or_expected);
+        assert(or_ret == or_actual.begin() + length);
 
-    const auto not_ret = transform(source1.begin(), source1.begin() + length, not_actual.begin(), logical_not<>{});
-    assert(not_actual == not_expected);
-    assert(not_ret == not_actual.begin() + length);
+        or_actual.assign(or_actual.size(), false);
+
+        or_ret = transform(first1, last1, cfirst2, or_actual.begin(), bit_or<>{});
+        assert(or_actual == or_expected);
+        assert(or_ret == or_actual.begin() + length);
+    }
+
+    {
+        auto xor_ret = transform(cfirst1, clast1, first2, xor_actual.begin(), not_equal_to<>{});
+        assert(xor_actual == xor_expected);
+        assert(xor_ret == xor_actual.begin() + length);
+
+        xor_actual.assign(xor_actual.size(), false);
+
+        xor_ret = transform(cfirst1, clast1, first2, xor_actual.begin(), bit_xor<>{});
+        assert(xor_actual == xor_expected);
+        assert(xor_ret == xor_actual.begin() + length);
+    }
+
+    {
+        const auto xnor_ret = transform(cfirst1, clast1, cfirst2, xnor_actual.begin(), equal_to<>{});
+        assert(xnor_actual == xnor_expected);
+        assert(xnor_ret == xnor_actual.begin() + length);
+
+        // bit_xnor doesn't exist in the Standard
+    }
+
+    {
+        auto not_ret = transform(first1, last1, not_actual.begin(), logical_not<>{});
+        assert(not_actual == not_expected);
+        assert(not_ret == not_actual.begin() + length);
+
+        not_actual.assign(not_actual.size(), false);
+
+        // bit_not emits MSVC and Clang warnings, so it isn't optimized.
+        // Continue using logical_not to test vector<bool>::const_iterator:
+        not_ret = transform(cfirst1, clast1, not_actual.begin(), logical_not<>{});
+        assert(not_actual == not_expected);
+        assert(not_ret == not_actual.begin() + length);
+    }
 }
 
 CONSTEXPR20 bool test_transform() {
