@@ -4021,6 +4021,7 @@ _CONSTEXPR20 _OutIt _Transform_vbool_aligned(
         _Dest._Myoff       = _Last._Myoff;
     }
 
+    _Dest._Myptr = _Dest_ptr;
     return _Dest;
 }
 

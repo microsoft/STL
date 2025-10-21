@@ -108,23 +108,32 @@ CONSTEXPR20 void test_transform_helper(const size_t length) {
     // Also test combinations of vector<bool>::iterator and vector<bool>::const_iterator for the inputs.
 
     // iterator, iterator
-    transform(source1.begin(), source1.begin() + length, source2.begin(), and_actual.begin(), logical_and<>{});
+    const auto and_ret =
+        transform(source1.begin(), source1.begin() + length, source2.begin(), and_actual.begin(), logical_and<>{});
     assert(and_actual == and_expected);
+    assert(and_ret == and_actual.begin() + length);
 
     // iterator, const_iterator
-    transform(source1.begin(), source1.begin() + length, source2.cbegin(), or_actual.begin(), logical_or<>{});
+    const auto or_ret =
+        transform(source1.begin(), source1.begin() + length, source2.cbegin(), or_actual.begin(), logical_or<>{});
     assert(or_actual == or_expected);
+    assert(or_ret == or_actual.begin() + length);
 
     // const_iterator, iterator
-    transform(source1.cbegin(), source1.cbegin() + length, source2.begin(), xor_actual.begin(), not_equal_to<>{});
+    const auto xor_ret =
+        transform(source1.cbegin(), source1.cbegin() + length, source2.begin(), xor_actual.begin(), not_equal_to<>{});
     assert(xor_actual == xor_expected);
+    assert(xor_ret == xor_actual.begin() + length);
 
     // const_iterator, const_iterator
-    transform(source1.cbegin(), source1.cbegin() + length, source2.cbegin(), xnor_actual.begin(), equal_to<>{});
+    const auto xnor_ret =
+        transform(source1.cbegin(), source1.cbegin() + length, source2.cbegin(), xnor_actual.begin(), equal_to<>{});
     assert(xnor_actual == xnor_expected);
+    assert(xnor_ret == xnor_actual.begin() + length);
 
-    transform(source1.begin(), source1.begin() + length, not_actual.begin(), logical_not<>{});
+    const auto not_ret = transform(source1.begin(), source1.begin() + length, not_actual.begin(), logical_not<>{});
     assert(not_actual == not_expected);
+    assert(not_ret == not_actual.begin() + length);
 }
 
 CONSTEXPR20 bool test_transform() {
