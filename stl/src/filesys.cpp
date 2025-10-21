@@ -4,16 +4,31 @@
 // filesys.cpp -- <experimental/filesystem> implementation
 // (see filesystem.cpp for C++17 <filesystem> implementation)
 
-#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+// TRANSITION, ABI: Everything in this file is preserved for binary compatibility.
 
 #include <yvals.h>
 
+#include <cstdint>
 #include <cstring>
 #include <direct.h>
-#include <experimental/filesystem>
 #include <io.h>
+#include <string>
 
 #include <Windows.h>
+
+#define _MAX_FILESYS_NAME 260 // longest Windows or Posix filename + 1
+
+#define _FS_BEGIN              \
+    _STD_BEGIN                 \
+    namespace experimental {   \
+        namespace filesystem { \
+            inline namespace v1 {
+
+#define _FS_END \
+    }           \
+    }           \
+    }           \
+    _STD_END
 
 #ifdef _M_CEE_PURE
 #define __crtGetTempPath2W(BufferLength, Buffer) GetTempPathW(BufferLength, Buffer)
@@ -23,6 +38,53 @@ extern "C" _Success_(return > 0 && return < BufferLength) DWORD __stdcall __crtG
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
 _FS_BEGIN
+
+enum class file_type { // names for file types
+    not_found = -1,
+    none,
+    regular,
+    directory,
+    symlink,
+    block,
+    character,
+    fifo,
+    socket,
+    unknown
+};
+
+enum class perms { // names for permissions
+    none             = 0,
+    owner_read       = 0400, // S_IRUSR
+    owner_write      = 0200, // S_IWUSR
+    owner_exec       = 0100, // S_IXUSR
+    owner_all        = 0700, // S_IRWXU
+    group_read       = 040, // S_IRGRP
+    group_write      = 020, // S_IWGRP
+    group_exec       = 010, // S_IXGRP
+    group_all        = 070, // S_IRWXG
+    others_read      = 04, // S_IROTH
+    others_write     = 02, // S_IWOTH
+    others_exec      = 01, // S_IXOTH
+    others_all       = 07, // S_IRWXO
+    all              = 0777,
+    set_uid          = 04000, // S_ISUID
+    set_gid          = 02000, // S_ISGID
+    sticky_bit       = 01000, // S_ISVTX
+    mask             = 07777,
+    unknown          = 0xFFFF,
+    add_perms        = 0x10000,
+    remove_perms     = 0x20000,
+    resolve_symlinks = 0x40000
+};
+
+_BITMASK_OPS(_EMPTY_ARGUMENT, perms)
+
+struct space_info { // space information for a file
+    uintmax_t capacity;
+    uintmax_t free;
+    uintmax_t available;
+};
+
 static file_type _Map_mode(int _Mode) { // map Windows file attributes to file_status
     constexpr int _File_attribute_regular =
         FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_COMPRESSED | FILE_ATTRIBUTE_ENCRYPTED | FILE_ATTRIBUTE_HIDDEN

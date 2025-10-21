@@ -2129,6 +2129,20 @@ void test_gh_5672() {
     }
 }
 
+void test_gh_5774() {
+    // GH-5774: Process non-greedy and longest-mode simple loops non-recursively.
+    // This extends our test coverage on non-greedy simple loops with bounded number of repetitions.
+    g_regexTester.should_not_match("", "a+?");
+    g_regexTester.should_not_match("ab", "a{0}?b");
+    g_regexTester.should_match("ab", "a{0,1}?b");
+    g_regexTester.should_not_match("aab", "a{0,1}?b");
+    g_regexTester.should_match("aab", "a{0,2}?b");
+    g_regexTester.should_match("aab", "a{1,2}?b");
+    g_regexTester.should_not_match("aab", "a{1}?b");
+    g_regexTester.should_not_match("aaab", "a{1,2}?b");
+    g_regexTester.should_match("aaab", "a{1,3}?b");
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2180,6 +2194,7 @@ int main() {
     test_gh_5509();
     test_gh_5576();
     test_gh_5672();
+    test_gh_5774();
 
     return g_regexTester.result();
 }
