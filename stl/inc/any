@@ -176,12 +176,14 @@ public:
 
     // Assignment [any.assign]
     any& operator=(const any& _That) {
-        _Assign(_That);
+        any _Tmp = _That;
+        _Reset_and_move_from(_Tmp);
         return *this;
     }
 
     any& operator=(any&& _That) noexcept {
-        _Assign(_STD move(_That));
+        any _Tmp = _STD move(_That);
+        _Reset_and_move_from(_Tmp);
         return *this;
     }
 
@@ -190,7 +192,8 @@ public:
                                     int> = 0>
     any& operator=(_ValueType&& _Value) {
         // replace contained value with an object of type decay_t<_ValueType> initialized from _Value
-        _Assign(_STD forward<_ValueType>(_Value));
+        any _Tmp = _STD forward<_ValueType>(_Value);
+        _Reset_and_move_from(_Tmp);
         return *this;
     }
 
@@ -230,11 +233,9 @@ public:
     }
 
     void swap(any& _That) noexcept {
-        any _Old = _STD move(*this);
-        reset();
-        _Move_from(_That);
-        _That.reset();
-        _That._Move_from(_Old);
+        any _Tmp = _STD move(*this);
+        _Reset_and_move_from(_That);
+        _That._Reset_and_move_from(_Tmp);
     }
 
     // Observers [any.observers]
@@ -288,6 +289,7 @@ private:
     }
 
     void _Move_from(any& _That) noexcept {
+        _STL_INTERNAL_CHECK(_Storage._TypeData == 0); // !has_value()
         _Storage._TypeData = _That._Storage._TypeData;
         switch (_Rep()) {
         case _Any_representation::_Small:
@@ -306,13 +308,14 @@ private:
         }
     }
 
-    void _Assign(any _That) noexcept { // intentionally pass by value
+    void _Reset_and_move_from(any& _That) noexcept {
         reset();
         _Move_from(_That);
     }
 
     template <class _Decayed, class... _Types>
     _Decayed& _Emplace(_Types&&... _Args) { // emplace construct _Decayed
+        _STL_INTERNAL_CHECK(_Storage._TypeData == 0); // !has_value()
         if constexpr (_Any_is_trivial<_Decayed>) {
             // using the _Trivial representation
             auto& _Obj = reinterpret_cast<_Decayed&>(_Storage._TrivialData);

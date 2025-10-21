@@ -54,10 +54,12 @@ public:
         const wstring& _Str, ios_base::openmode _Mode = ios_base::in, int _Prot = ios_base::_Default_open_prot)
         : basic_ifstream(_Str.c_str(), _Mode, _Prot) {} // extension
 
-    template <class _Ty, enable_if_t<_Is_any_path<_Ty>, int> = 0>
+#if _HAS_CXX17
+    template <class _Ty, enable_if_t<is_same_v<_Ty, filesystem::path>, int> = 0>
     explicit basic_ifstream(
         const _Ty& _Path, ios_base::openmode _Mode = ios_base::in, int _Prot = ios_base::_Default_open_prot)
         : basic_ifstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
+#endif // _HAS_CXX17
 
     explicit basic_ifstream(FILE* _File) : _Mybase(_STD addressof(_Filebuffer)), _Filebuffer(_File) {} // extension
 
@@ -101,15 +103,6 @@ public:
         // extension
         open(_Str.c_str(), _Mode, _Prot);
     }
-
-#if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-    template <class _Path_ish = experimental::filesystem::path>
-    void open(const _Identity_t<_Path_ish>& _Path, ios_base::openmode _Mode = ios_base::in,
-        int _Prot = ios_base::_Default_open_prot) {
-        // _Prot is an extension
-        open(_Path.c_str(), _Mode, _Prot);
-    }
-#endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
 
 #if _HAS_CXX17
     template <int = 0, class _Path_ish = filesystem::path>
@@ -207,10 +200,12 @@ public:
         const wstring& _Str, ios_base::openmode _Mode = ios_base::out, int _Prot = ios_base::_Default_open_prot)
         : basic_ofstream(_Str.c_str(), _Mode, _Prot) {} // extension
 
-    template <class _Ty, enable_if_t<_Is_any_path<_Ty>, int> = 0>
+#if _HAS_CXX17
+    template <class _Ty, enable_if_t<is_same_v<_Ty, filesystem::path>, int> = 0>
     explicit basic_ofstream(
         const _Ty& _Path, ios_base::openmode _Mode = ios_base::out, int _Prot = ios_base::_Default_open_prot)
         : basic_ofstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
+#endif // _HAS_CXX17
 
     explicit basic_ofstream(FILE* _File) : _Mybase(_STD addressof(_Filebuffer)), _Filebuffer(_File) {} // extension
 
@@ -254,15 +249,6 @@ public:
         // extension
         open(_Str.c_str(), _Mode, _Prot);
     }
-
-#if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-    template <class _Path_ish = experimental::filesystem::path>
-    void open(const _Identity_t<_Path_ish>& _Path, ios_base::openmode _Mode = ios_base::out,
-        int _Prot = ios_base::_Default_open_prot) {
-        // _Prot is an extension
-        open(_Path.c_str(), _Mode, _Prot);
-    }
-#endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
 
 #if _HAS_CXX17
     template <int = 0, class _Path_ish = filesystem::path>
@@ -365,10 +351,12 @@ public:
         int _Prot = ios_base::_Default_open_prot)
         : basic_fstream(_Str.c_str(), _Mode, _Prot) {} // extension
 
-    template <class _Ty, enable_if_t<_Is_any_path<_Ty>, int> = 0>
+#if _HAS_CXX17
+    template <class _Ty, enable_if_t<is_same_v<_Ty, filesystem::path>, int> = 0>
     explicit basic_fstream(const _Ty& _Path, ios_base::openmode _Mode = ios_base::in | ios_base::out,
         int _Prot = ios_base::_Default_open_prot)
         : basic_fstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
+#endif // _HAS_CXX17
 
     explicit basic_fstream(FILE* _File) : _Mybase(_STD addressof(_Filebuffer)), _Filebuffer(_File) {} // extension
 
@@ -413,15 +401,6 @@ public:
         // extension
         open(_Str.c_str(), _Mode, _Prot);
     }
-
-#if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-    template <class _Path_ish = experimental::filesystem::path>
-    void open(const _Identity_t<_Path_ish>& _Path, ios_base::openmode _Mode = ios_base::in | ios_base::out,
-        int _Prot = ios_base::_Default_open_prot) {
-        // extension
-        open(_Path.c_str(), _Mode, _Prot);
-    }
-#endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
 
 #if _HAS_CXX17
     template <int = 0, class _Path_ish = filesystem::path>
@@ -486,8 +465,6 @@ void swap(basic_fstream<_Elem, _Traits>& _Left, basic_fstream<_Elem, _Traits>& _
     _Left.swap(_Right);
 }
 _STD_END
-
-#undef _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

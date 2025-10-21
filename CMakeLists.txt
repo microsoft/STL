@@ -1,13 +1,13 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.31.0)
+cmake_minimum_required(VERSION 4.1.1)
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
-if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.50.35503")
-    message(FATAL_ERROR "The STL must be built with MSVC Compiler 19.50 Preview 1 or later.")
+if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.50.35702")
+    message(FATAL_ERROR "The STL must be built with MSVC Compiler 19.50.35702 or later.")
 endif()
 
 include(CheckCXXSourceCompiles)
@@ -112,13 +112,7 @@ endif()
 
 set(VCLIBS_DEBUG_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/Od>")
 
-# TRANSITION: Potentially remove `/Os` if it results in speed improvements.
-# This requires benchmarking!
-# Note that in MSVC version 19.32.31328,
-# `/Os` results in a binary size difference of 102K
-# in the release DLL (a gain of 18.4%).
-# So, make certain that that tradeoff is considered when or if `/Os` is removed.
-# See GH-2108 for more info.
+# TRANSITION, GH-2108: Investigate building the STL with only /O2, not /Os.
 set(VCLIBS_RELEASE_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/O2;/Os>")
 
 if(BUILD_TESTING)

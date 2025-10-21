@@ -3198,22 +3198,6 @@ namespace ranges {
     };
 } // namespace ranges
 #endif // _HAS_CXX20
-
-#if _HAS_TR1_NAMESPACE
-namespace _DEPRECATE_TR1_NAMESPACE tr1 {
-    using _STD bad_function_call;
-    using _STD bind;
-    using _STD function;
-    using _STD is_bind_expression;
-    using _STD is_placeholder;
-    using _STD mem_fn;
-    using _STD swap;
-    namespace placeholders {
-        using namespace _STD placeholders;
-    }
-} // namespace _DEPRECATE_TR1_NAMESPACE tr1
-#endif // _HAS_TR1_NAMESPACE
-
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens

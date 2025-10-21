@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
-#define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
 #include <array>
 #include <cstddef>
@@ -15,8 +14,6 @@
 #include <exception>
 #include <forward_list>
 #include <functional>
-#include <hash_map>
-#include <hash_set>
 #include <istream>
 #include <iterator>
 #include <list>
@@ -87,11 +84,6 @@ namespace Meow {
     // If it's dragged in via ADL, this op&() will absorb anything.
     template <typename T>
     void operator&(const T&) = delete;
-
-    size_t hash_value(const Evil&) noexcept {
-        // provide an Evil hash value for stdext::hash_compare
-        return 0;
-    }
 } // namespace Meow
 
 using Meow::Evil;
@@ -120,11 +112,6 @@ template class std::map<Evil, Evil>;
 template class std::multimap<Evil, Evil>;
 template class std::set<Evil>;
 template class std::multiset<Evil>;
-
-template class stdext::hash_map<Evil, Evil>;
-template class stdext::hash_multimap<Evil, Evil>;
-template class stdext::hash_set<Evil>;
-template class stdext::hash_multiset<Evil>;
 
 template class std::unordered_map<Evil, Evil, Hash>;
 template class std::unordered_multimap<Evil, Evil, Hash>;

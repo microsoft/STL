@@ -20,7 +20,6 @@
 #define _SILENCE_CXX20_VOLATILE_DEPRECATION_WARNING
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
-#define _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
 #define _USE_NAMED_IDL_NAMESPACE 1
 
 #include <algorithm>
@@ -106,8 +105,7 @@
 #include <thread>
 #endif // _M_CEE_PURE
 
-#include <experimental/filesystem>
-
+#include "experimental_filesystem.hpp"
 #include <instantiate_containers_iterators_common.hpp>
 
 
@@ -1138,15 +1136,6 @@ void engine_test_impl() {
     common_engine_test_impl<Engine>(ss);
 }
 
-#if _HAS_TR1_NAMESPACE
-template <typename Engine>
-void tr1_engine_test_impl() {
-    random_device rd{};
-    mt19937 gen(rd());
-    common_engine_test_impl<Engine>(gen);
-}
-#endif // _HAS_TR1_NAMESPACE
-
 void random_test() {
     seed_seq ss0({1, 2, 3, 4, 5, 6});
     vector<uint32_t> v{1, 2, 3, 4};
@@ -1167,19 +1156,6 @@ void random_test() {
     engine_test_impl<mt19937_64>();
     engine_test_impl<ranlux48_base>();
     engine_test_impl<ranlux48>();
-
-#if _HAS_TR1_NAMESPACE
-    linear_congruential<uint_fast32_t, 16807, 0, 2147483647> minstd_rand_eng(gen);
-    minstd_rand_eng.seed(gen);
-
-    tr1_engine_test_impl<linear_congruential<uint_fast32_t, 16807, 0, 2147483647>>();
-    tr1_engine_test_impl<ranlux3>();
-    tr1_engine_test_impl<ranlux4>();
-    tr1_engine_test_impl<ranlux3_01>();
-    tr1_engine_test_impl<ranlux4_01>();
-    tr1_engine_test_impl<ranlux64_base_01>();
-    tr1_engine_test_impl<ranlux_base_01>();
-#endif // _HAS_TR1_NAMESPACE
 
     uniform_int_distribution<> uni_int_d{};
     bernoulli_distribution bern_d{};

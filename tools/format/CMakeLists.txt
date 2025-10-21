@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.31.0)
+cmake_minimum_required(VERSION 4.1.1)
 project(msvc_standard_libraries_format NONE)
 
 find_program(CLANG_FORMAT
