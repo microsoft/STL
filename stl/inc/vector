@@ -4024,9 +4024,9 @@ _CONSTEXPR20 _OutIt _Transform_vbool_aligned(
     return _Dest;
 }
 
-template <class _VbIt, class _OutIt, class _Mapped_fn>
+template <class _VbIt1, class _VbIt2, class _OutIt, class _Mapped_fn>
 _CONSTEXPR20 _OutIt _Transform_vbool_aligned(
-    const _VbIt _First1, const _VbIt _Last1, const _VbIt _First2, _OutIt _Dest, const _Mapped_fn _Mapped_func) {
+    const _VbIt1 _First1, const _VbIt1 _Last1, const _VbIt2 _First2, _OutIt _Dest, const _Mapped_fn _Mapped_func) {
     auto _First1_ptr      = _First1._Myptr;
     auto _First2_ptr      = _First2._Myptr;
     const auto _Last1_ptr = _Last1._Myptr;

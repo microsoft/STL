@@ -105,16 +105,22 @@ CONSTEXPR20 void test_transform_helper(const size_t length) {
     vector<bool> xnor_actual(length + 3);
     vector<bool> not_actual(length + 3);
 
+    // Also test combinations of vector<bool>::iterator and vector<bool>::const_iterator for the inputs.
+
+    // iterator, iterator
     transform(source1.begin(), source1.begin() + length, source2.begin(), and_actual.begin(), logical_and<>{});
     assert(and_actual == and_expected);
 
-    transform(source1.begin(), source1.begin() + length, source2.begin(), or_actual.begin(), logical_or<>{});
+    // iterator, const_iterator
+    transform(source1.begin(), source1.begin() + length, source2.cbegin(), or_actual.begin(), logical_or<>{});
     assert(or_actual == or_expected);
 
-    transform(source1.begin(), source1.begin() + length, source2.begin(), xor_actual.begin(), not_equal_to<>{});
+    // const_iterator, iterator
+    transform(source1.cbegin(), source1.cbegin() + length, source2.begin(), xor_actual.begin(), not_equal_to<>{});
     assert(xor_actual == xor_expected);
 
-    transform(source1.begin(), source1.begin() + length, source2.begin(), xnor_actual.begin(), equal_to<>{});
+    // const_iterator, const_iterator
+    transform(source1.cbegin(), source1.cbegin() + length, source2.cbegin(), xnor_actual.begin(), equal_to<>{});
     assert(xnor_actual == xnor_expected);
 
     transform(source1.begin(), source1.begin() + length, not_actual.begin(), logical_not<>{});
