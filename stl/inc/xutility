@@ -6172,9 +6172,8 @@ _NODISCARD constexpr bool _Could_compare_equal_to_value_type(const _Ty& _Val) {
 
     if constexpr (disjunction_v<is_same<_Ty, _Elem>, // If types are the same, _Val can compare equal to _Elem
                       is_same<_Ty, bool>, // true or false can be represented in any integer type
-                      is_pointer<_Ty>, // we only compare pointers vs other pointers with the same representation
-                      is_same<_Ty, nullptr_t> // we only compare nullptr_t against pointers; any pointer type can be
-                                              // nullptr
+                      is_pointer<_Ty>, // we only compare pointers vs. other pointers with the same representation
+                      is_same<_Ty, nullptr_t> // we only compare nullptr_t against pointers; any pointer can be null
                       >) {
         return true;
     } else {
