@@ -7069,7 +7069,7 @@ namespace {
         template <class _Traits, class _Ty>
         bool _Includes_impl(
             const void* _First1, const void* const _Last1, const void* _First2, const void* const _Last2) noexcept {
-            if constexpr (!std::is_same_v<_Traits, void>) {
+            if constexpr (!std::is_void_v<_Traits>) {
 #ifdef _M_ARM64EC
                 static_assert(false, "No vectorization for _M_ARM64EC yet");
 #else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
@@ -7077,7 +7077,7 @@ namespace {
                 // Only skipping some parts of haystack that are less than current needle element is vectorized.
                 // Otherwise this is scalar algorithm.
 
-                constexpr bool _Is_signed            = static_cast<_Ty>(-1) < _Ty{0};
+                constexpr bool _Is_signed            = std::is_signed_v<_Ty>;
                 constexpr uint32_t _All_ones_mask    = uint32_t{(uint64_t{1} << _Traits::_Vec_size) - 1};
                 constexpr uint32_t _Highest_one_mask = 1u << (_Traits::_Vec_size - 1);
                 [[maybe_unused]] typename _Traits::_Guard _Guard; // TRANSITION, DevCom-10331414
