@@ -1108,7 +1108,8 @@ namespace ranges {
     _NODISCARD constexpr _Container to(_Rng&& _Range, _Types&&... _Args) {
         static_assert(!is_const_v<_Container>, "C must not be const. ([range.utility.conv.to])");
         static_assert(!is_volatile_v<_Container>, "C must not be volatile. ([range.utility.conv.to])");
-        static_assert(is_class_v<_Container>, "C must be a class type. ([range.utility.conv.to])");
+        static_assert(is_class_v<_Container> || is_union_v<_Container>,
+            "C must be a class type (including union). ([range.utility.conv.to])");
         if constexpr (_Ref_converts<_Rng, _Container>) {
             if constexpr (constructible_from<_Container, _Rng, _Types...>) {
                 return _Container(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
@@ -1161,7 +1162,7 @@ namespace ranges {
     struct _To_class_fn {
         _STL_INTERNAL_STATIC_ASSERT(!is_const_v<_Container>);
         _STL_INTERNAL_STATIC_ASSERT(!is_volatile_v<_Container>);
-        _STL_INTERNAL_STATIC_ASSERT(is_class_v<_Container>);
+        _STL_INTERNAL_STATIC_ASSERT(is_class_v<_Container> || is_union_v<_Container>);
         _STL_INTERNAL_STATIC_ASSERT(!view<_Container>);
 
         template <input_range _Rng, class... _Types>
@@ -1178,7 +1179,8 @@ namespace ranges {
     _NODISCARD constexpr auto to(_Types&&... _Args) {
         static_assert(!is_const_v<_Container>, "C must not be const. ([range.utility.conv.adaptors])");
         static_assert(!is_volatile_v<_Container>, "C must not be volatile. ([range.utility.conv.adaptors])");
-        static_assert(is_class_v<_Container>, "C must be a class type. ([range.utility.conv.adaptors])");
+        static_assert(is_class_v<_Container> || is_union_v<_Container>,
+            "C must be a class type (including union). ([range.utility.conv.adaptors])");
         return _Range_closure<_To_class_fn<_Container>, decay_t<_Types>...>{_STD forward<_Types>(_Args)...};
     }
 
