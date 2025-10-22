@@ -103,8 +103,8 @@ STATIC_ASSERT(is_constructible_v<packaged_task<int()>, const allocator_arg_t&, c
 STATIC_ASSERT(is_copy_list_initializable<packaged_task<int()>>);
 STATIC_ASSERT(!is_copy_list_initializable<packaged_task<int()>, const allocator_arg_t&, const allocator<int>&,
     large_functor<int>>);
-STATIC_ASSERT(
-    !is_copy_list_initializable<packaged_task<int()>, const allocator_arg_t&, const global_counting_allocator<int>&>);
+STATIC_ASSERT(!is_copy_list_initializable<packaged_task<int()>, const allocator_arg_t&,
+    const global_counting_allocator<int>&, large_functor<int>>);
 
 STATIC_ASSERT(!uses_allocator_v<promise<int>, allocator<int>>);
 STATIC_ASSERT(!uses_allocator_v<promise<int&>, allocator<int>>);
