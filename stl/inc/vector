@@ -4004,6 +4004,49 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
     return _DestEnd;
 }
 
+template <class _VbIt, class _OutIt, class _Mapped_fn>
+_CONSTEXPR20 _OutIt _Transform_vbool_aligned(
+    const _VbIt _First, const _VbIt _Last, _OutIt _Dest, const _Mapped_fn _Mapped_func) {
+    auto _First_ptr      = _First._Myptr;
+    const auto _Last_ptr = _Last._Myptr;
+    auto _Dest_ptr       = const_cast<_Vbase*>(_Dest._Myptr);
+
+    for (; _First_ptr != _Last_ptr; ++_First_ptr, ++_Dest_ptr) {
+        *_Dest_ptr = _Mapped_func(*_First_ptr);
+    }
+
+    if (_Last._Myoff != 0) {
+        const _Vbase _Mask = (_Vbase{1} << _Last._Myoff) - 1;
+        *_Dest_ptr         = (*_Dest_ptr & ~_Mask) | (_Mapped_func(*_First_ptr) & _Mask);
+        _Dest._Myoff       = _Last._Myoff;
+    }
+
+    _Dest._Myptr = _Dest_ptr;
+    return _Dest;
+}
+
+template <class _VbIt1, class _VbIt2, class _OutIt, class _Mapped_fn>
+_CONSTEXPR20 _OutIt _Transform_vbool_aligned(
+    const _VbIt1 _First1, const _VbIt1 _Last1, const _VbIt2 _First2, _OutIt _Dest, const _Mapped_fn _Mapped_func) {
+    auto _First1_ptr      = _First1._Myptr;
+    auto _First2_ptr      = _First2._Myptr;
+    const auto _Last1_ptr = _Last1._Myptr;
+    auto _Dest_ptr        = const_cast<_Vbase*>(_Dest._Myptr);
+
+    for (; _First1_ptr != _Last1_ptr; ++_First1_ptr, ++_First2_ptr, ++_Dest_ptr) {
+        *_Dest_ptr = _Mapped_func(*_First1_ptr, *_First2_ptr);
+    }
+
+    if (_Last1._Myoff != 0) {
+        const _Vbase _Mask = (_Vbase{1} << _Last1._Myoff) - 1;
+        *_Dest_ptr         = (*_Dest_ptr & ~_Mask) | (_Mapped_func(*_First1_ptr, *_First2_ptr) & _Mask);
+        _Dest._Myoff       = _Last1._Myoff;
+    }
+
+    _Dest._Myptr = _Dest_ptr;
+    return _Dest;
+}
+
 #undef _ASAN_VECTOR_MODIFY
 #undef _ASAN_VECTOR_REMOVE
 #undef _ASAN_VECTOR_CREATE

@@ -4868,6 +4868,14 @@ _OutCtgIt _Copy_memmove_n(_CtgIt _First, const size_t _Object_count, _OutCtgIt _
     return _STD _Copy_memmove_tail(_First_ch, _STD move(_Dest), _Byte_count, _Object_count);
 }
 
+template <class _Fn>
+struct _Map_vb_functor {
+    using type = void;
+};
+
+template <class _Fn>
+using _Map_vb_functor_t = typename _Map_vb_functor<_Fn>::type;
+
 template <class _It, bool _RequiresMutable = false>
 constexpr bool _Is_vb_iterator = false;
 
