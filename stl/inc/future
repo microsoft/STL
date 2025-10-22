@@ -1244,7 +1244,7 @@ public:
     template <class _Fty2, enable_if_t<!is_same_v<_Remove_cvref_t<_Fty2>, packaged_task>, int> = 0>
     explicit packaged_task(_Fty2&& _Fnarg) : _MyPromise(new _MyStateType(_STD forward<_Fty2>(_Fnarg))) {
         static_assert(_Is_invocable_r<_Ret, decay_t<_Fty2>&, _ArgTypes...>::value,
-            "The function object must be callable with _ArgTypes... and return _Ret (N5014 [futures.task.members]/3).");
+            "The function object must be callable with _ArgTypes... and return _Ret (N5014 [futures.task.members]/4).");
     }
 
     packaged_task(packaged_task&&) noexcept = default;
@@ -1255,7 +1255,7 @@ public:
     explicit packaged_task(allocator_arg_t, const _Alloc& _Al, _Fty2&& _Fnarg)
         : _MyPromise(_STD _Make_packaged_state<_MyStateType>(_STD forward<_Fty2>(_Fnarg), _Al)) {
         static_assert(_Is_invocable_r<_Ret, decay_t<_Fty2>&, _ArgTypes...>::value,
-            "The function object must be callable with _ArgTypes... and return _Ret (N5014 [futures.task.members]/3).");
+            "The function object must be callable with _ArgTypes... and return _Ret (N5014 [futures.task.members]/4).");
     }
 
     ~packaged_task() noexcept {
