@@ -122,17 +122,15 @@ STATIC_ASSERT(!uses_allocator_v<packaged_task<void()>, global_counting_allocator
 
 template <class T>
 void test_construction_promise_in_tuple() {
-    using prom = promise<T>;
-
     {
-        tuple<prom> t{allocator_arg, allocator<int>{}};
+        tuple<promise<T>> t{allocator_arg, allocator<int>{}};
         (void) t;
     }
     {
         const auto old_alloc_cnt   = global_allocation_count;
         const auto old_dealloc_cnt = global_deallocation_count;
         {
-            tuple<prom> t{allocator_arg, global_counting_allocator<int>{}};
+            tuple<promise<T>> t{allocator_arg, global_counting_allocator<int>{}};
             (void) t;
 
             assert(global_allocation_count == old_alloc_cnt);
@@ -142,14 +140,14 @@ void test_construction_promise_in_tuple() {
         assert(global_deallocation_count == old_dealloc_cnt);
     }
     {
-        tuple<prom> t{allocator_arg, allocator<int>{}, prom{}};
+        tuple<promise<T>> t{allocator_arg, allocator<int>{}, promise<T>{}};
         (void) t;
     }
     {
         const auto old_alloc_cnt   = global_allocation_count;
         const auto old_dealloc_cnt = global_deallocation_count;
         {
-            tuple<prom> t{allocator_arg, global_counting_allocator<int>{}, prom{}};
+            tuple<promise<T>> t{allocator_arg, global_counting_allocator<int>{}, promise<T>{}};
             (void) t;
 
             assert(global_allocation_count == old_alloc_cnt);
@@ -162,17 +160,15 @@ void test_construction_promise_in_tuple() {
 
 template <class F>
 void test_construction_packaged_task_in_tuple() {
-    using pt = packaged_task<F>;
-
     {
-        tuple<pt> t{allocator_arg, allocator<int>{}};
+        tuple<packaged_task<F>> t{allocator_arg, allocator<int>{}};
         (void) t;
     }
     {
         const auto old_alloc_cnt   = global_allocation_count;
         const auto old_dealloc_cnt = global_deallocation_count;
         {
-            tuple<pt> t{allocator_arg, global_counting_allocator<int>{}};
+            tuple<packaged_task<F>> t{allocator_arg, global_counting_allocator<int>{}};
             (void) t;
 
             assert(global_allocation_count == old_alloc_cnt);
@@ -182,7 +178,7 @@ void test_construction_packaged_task_in_tuple() {
         assert(global_deallocation_count == old_dealloc_cnt);
     }
     {
-        tuple<pt> t{allocator_arg, allocator<int>{}, pt{}};
+        tuple<packaged_task<F>> t{allocator_arg, allocator<int>{}, packaged_task<F>{}};
         (void) t;
     }
     {
@@ -190,7 +186,7 @@ void test_construction_packaged_task_in_tuple() {
         const auto old_alloc_cnt   = global_allocation_count;
         const auto old_dealloc_cnt = global_deallocation_count;
         {
-            tuple<pt> t{allocator_arg, global_counting_allocator<int>{}, pt{}};
+            tuple<packaged_task<F>> t{allocator_arg, global_counting_allocator<int>{}, packaged_task<F>{}};
             (void) t;
 
             assert(global_allocation_count == old_alloc_cnt);
