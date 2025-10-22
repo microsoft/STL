@@ -269,7 +269,7 @@ struct _Bit_xnor {
 };
 
 template <class _Ty>
-constexpr bool _Is_vbool_functor_arg = is_same_v<_Ty, void> || is_integral_v<_Ty>;
+constexpr bool _Is_vbool_functor_arg = is_void_v<_Ty> || is_integral_v<_Ty>;
 
 template <class _Ty>
 struct _Map_vb_functor<logical_and<_Ty>> {
