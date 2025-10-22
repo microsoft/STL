@@ -190,6 +190,104 @@ CONSTEXPR20 bool test_transform() {
     return true;
 }
 
+CONSTEXPR20 bool test__meow_of_helper(const size_t length_before, const size_t length, const size_t length_after) {
+    const size_t total_length = length_before + length + length_after;
+
+    vector<bool> zeros(total_length);
+    vector<bool> ones(total_length);
+    vector<bool> mix(total_length);
+    fill(zeros.begin(), zeros.begin() + length_before, true);
+    fill(zeros.end() - length_after, zeros.end(), true);
+    fill(ones.begin() + length_before, ones.end() - length_after, true);
+    fill(mix.begin(), mix.begin() + length_before, true);
+    fill(mix.begin() + length_before + length / 2, mix.end() - length_after, true);
+
+    const auto first_0 = zeros.begin() + length_before;
+    const auto last_0  = zeros.end() - length_after;
+    const auto first_1 = ones.cbegin() + length_before;
+    const auto last_1  = ones.cend() - length_after;
+    const auto first_m = mix.cbegin() + length_before;
+    const auto last_m  = mix.cend() - length_after;
+
+    if (length == 0) {
+#if _HAS_CXX20
+        assert(all_of(first_0, last_0, identity{}) == true);
+        assert(all_of(first_1, last_1, identity{}) == true);
+        assert(all_of(first_m, last_m, identity{}) == true);
+
+        assert(any_of(first_0, last_0, identity{}) == false);
+        assert(any_of(first_1, last_1, identity{}) == false);
+        assert(any_of(first_m, last_m, identity{}) == false);
+
+        assert(none_of(first_0, last_0, identity{}) == true);
+        assert(none_of(first_1, last_1, identity{}) == true);
+        assert(none_of(first_m, last_m, identity{}) == true);
+#endif // _HAS_CXX20
+
+        assert(all_of(first_0, last_0, logical_not<>{}) == true);
+        assert(all_of(first_1, last_1, logical_not<>{}) == true);
+        assert(all_of(first_m, last_m, logical_not<>{}) == true);
+
+        assert(any_of(first_0, last_0, logical_not<>{}) == false);
+        assert(any_of(first_1, last_1, logical_not<>{}) == false);
+        assert(any_of(first_m, last_m, logical_not<>{}) == false);
+
+        assert(none_of(first_0, last_0, logical_not<>{}) == true);
+        assert(none_of(first_1, last_1, logical_not<>{}) == true);
+        assert(none_of(first_m, last_m, logical_not<>{}) == true);
+    } else {
+#if _HAS_CXX20
+        assert(all_of(first_0, last_0, identity{}) == false);
+        assert(all_of(first_1, last_1, identity{}) == true);
+        assert(all_of(first_m, last_m, identity{}) == false);
+
+        assert(any_of(first_0, last_0, identity{}) == false);
+        assert(any_of(first_1, last_1, identity{}) == true);
+        assert(any_of(first_m, last_m, identity{}) == true);
+
+        assert(none_of(first_0, last_0, identity{}) == true);
+        assert(none_of(first_1, last_1, identity{}) == false);
+        assert(none_of(first_m, last_m, identity{}) == false);
+#endif // _HAS_CXX20
+
+        assert(all_of(first_0, last_0, logical_not<>{}) == true);
+        assert(all_of(first_1, last_1, logical_not<>{}) == false);
+        assert(all_of(first_m, last_m, logical_not<>{}) == false);
+
+        assert(any_of(first_0, last_0, logical_not<>{}) == true);
+        assert(any_of(first_1, last_1, logical_not<>{}) == false);
+        assert(any_of(first_m, last_m, logical_not<>{}) == true);
+
+        assert(none_of(first_0, last_0, logical_not<>{}) == false);
+        assert(none_of(first_1, last_1, logical_not<>{}) == true);
+        assert(none_of(first_m, last_m, logical_not<>{}) == false);
+    }
+
+    return true;
+}
+
+CONSTEXPR20 bool test_meow_of() {
+    // Empty range
+    test__meow_of_helper(0, 0, 3);
+    test__meow_of_helper(3, 0, 3);
+
+    // One block, ends within block
+    test__meow_of_helper(0, 10, 3);
+    test__meow_of_helper(3, 10, 3);
+
+    // One block, exactly
+    test__meow_of_helper(0, blockSize, 0);
+
+    // Multiple blocks, spanning
+    test__meow_of_helper(3, blockSize - 2, 3);
+    test__meow_of_helper(3, blockSize + 2, 3);
+
+    // Many blocks, exaclty
+    test__meow_of_helper(blockSize, 4 * blockSize, blockSize);
+
+    return true;
+}
+
 CONSTEXPR20 void test_fill_helper(const size_t length) {
     // No offset
     {
@@ -1531,6 +1629,7 @@ static_assert(test_fill());
 static_assert(test_find());
 static_assert(test_count());
 static_assert(test_transform());
+static_assert(test_meow_of());
 
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2574489
 static_assert(test_copy_part_1());
@@ -1543,6 +1642,7 @@ int main() {
     test_find();
     test_count();
     test_transform();
+    test_meow_of();
     test_copy_part_1();
     test_copy_part_2();
 
