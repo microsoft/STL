@@ -586,7 +586,7 @@ _Associated_state<_Ty>* _Make_associated_state(const _Alloc& _Al) {
 template <class _Pack_state, class _Fty2, class _Alloc>
 _Pack_state* _Make_packaged_state(_Fty2&& _Fnarg, const _Alloc& _Al) {
     // construct a _Packaged_state object with an allocator from an rvalue function object
-#ifdef _CPPRTTI // TRANSITON, ABI, should not rely on RTTI
+#ifdef _CPPRTTI // TRANSITION, ABI, should not rely on RTTI
     using _Delty = _State_deleter_v2<typename _Pack_state::_Mybase::_State_type, _Pack_state, _Alloc>;
 #else // ^^^ defined(_CPPRTTI) / !defined(_CPPRTTI) vvv
     using _Delty = _State_deleter<typename _Pack_state::_Mybase::_State_type, _Pack_state, _Alloc>;

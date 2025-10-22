@@ -220,7 +220,7 @@ void test_construction_packaged_task_reset(F2&& functor) {
         const auto alloc_cnt2   = global_allocation_count;
         const auto dealloc_cnt2 = global_deallocation_count;
 
-#ifdef _CPPRTTI // TRNAISTION, ABI, correct behavior should not rely on RTTI
+#ifdef _CPPRTTI // TRANSITION, ABI, correct behavior should not rely on RTTI
         assert(alloc_cnt2 > alloc_cnt1);
 #else // ^^^ defined(_CPPRTTI) / !defined(_CPPRTTI) vvv
         assert(alloc_cnt2 == alloc_cnt1);
