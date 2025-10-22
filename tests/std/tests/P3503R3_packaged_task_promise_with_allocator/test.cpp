@@ -22,7 +22,7 @@ struct global_counting_allocator {
 
     global_counting_allocator() = default;
     template <class U>
-    constexpr global_counting_allocator(global_counting_allocator<U>) noexcept {}
+    constexpr global_counting_allocator(const global_counting_allocator<U>&) noexcept {}
 
     T* allocate(size_t n) {
         auto p = allocator<T>{}.allocate(n);
