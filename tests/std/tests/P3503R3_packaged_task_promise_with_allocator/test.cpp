@@ -182,7 +182,6 @@ void test_construction_packaged_task_in_tuple() {
         (void) t;
     }
     {
-
         const auto old_alloc_cnt   = global_allocation_count;
         const auto old_dealloc_cnt = global_deallocation_count;
         {
