@@ -2133,6 +2133,7 @@ void test_gh_5774() {
     // GH-5774: Process non-greedy and longest-mode simple loops non-recursively.
     // This extends our test coverage on non-greedy simple loops with bounded number of repetitions.
     g_regexTester.should_not_match("", "a+?");
+    g_regexTester.should_match("b", "a{0}?b");
     g_regexTester.should_not_match("ab", "a{0}?b");
     g_regexTester.should_match("ab", "a{0,1}?b");
     g_regexTester.should_not_match("aab", "a{0,1}?b");
@@ -2141,6 +2142,85 @@ void test_gh_5774() {
     g_regexTester.should_not_match("aab", "a{1}?b");
     g_regexTester.should_not_match("aaab", "a{1,2}?b");
     g_regexTester.should_match("aaab", "a{1,3}?b");
+}
+
+void test_gh_5790() {
+    // GH-5790: Process greedy simple loops non-recursively.
+    // This extends our test coverage on (mainly greedy) simple loops.
+    g_regexTester.should_not_match("", "a+");
+    g_regexTester.should_match("b", "a{0}b");
+    g_regexTester.should_not_match("ab", "a{0}b");
+    g_regexTester.should_match("ab", "a{0,1}b");
+    g_regexTester.should_not_match("aab", "a{0,1}b");
+    g_regexTester.should_match("aab", "a{0,2}b");
+    g_regexTester.should_match("aab", "a{1,2}b");
+    g_regexTester.should_not_match("aab", "a{1}b");
+    g_regexTester.should_not_match("aaab", "a{1,2}b");
+    g_regexTester.should_match("aaab", "a{1,3}b");
+
+    // Check that greedy and non-greedy search find the appropriate match.
+    // For the following regexes, greedy and leftmost-longest search yield the same matches.
+    for (syntax_option_type options : {ECMAScript, extended}) {
+        {
+            test_regex greedy_a_star(&g_regexTester, "a*", options);
+            greedy_a_star.should_search_match("aaaaaaaaaa", "aaaaaaaaaa");
+        }
+
+        {
+            test_regex bounded_greedy_a_rep(&g_regexTester, "a{5}", options);
+            bounded_greedy_a_rep.should_search_match("aaaaaaaaaa", "aaaaa");
+        }
+
+        {
+            test_regex upper_bounded_greedy_a_rep(&g_regexTester, "a{0,5}", options);
+            upper_bounded_greedy_a_rep.should_search_match("aaaaaaaaaa", "aaaaa");
+        }
+
+        {
+            test_regex lower_bounded_greedy_a_rep(&g_regexTester, "a{4,1000}", options);
+            lower_bounded_greedy_a_rep.should_search_match("aaaaaaaaaa", "aaaaaaaaaa");
+        }
+
+        {
+            test_regex lower_and_upper_bounded_greedy_a_rep(&g_regexTester, "a{2,5}", options);
+            lower_and_upper_bounded_greedy_a_rep.should_search_match("aaaaaaaaaa", "aaaaa");
+        }
+
+        {
+            test_regex too_large_min_greedy_a_rep(&g_regexTester, "a{11,1000}", options);
+            too_large_min_greedy_a_rep.should_search_fail("aaaaaaaaaa");
+        }
+    }
+
+    {
+        test_regex nongreedy_a_star(&g_regexTester, "a*?");
+        nongreedy_a_star.should_search_match("aaaaaaaaaa", "");
+    }
+
+    {
+        test_regex bounded_nongreedy_a_rep(&g_regexTester, "a{5}?");
+        bounded_nongreedy_a_rep.should_search_match("aaaaaaaaaa", "aaaaa");
+    }
+
+    {
+        test_regex upper_bounded_nongreedy_a_rep(&g_regexTester, "a{0,5}?");
+        upper_bounded_nongreedy_a_rep.should_search_match("aaaaaaaaaa", "");
+    }
+
+    {
+        test_regex lower_bounded_nongreedy_a_rep(&g_regexTester, "a{4,1000}?");
+        lower_bounded_nongreedy_a_rep.should_search_match("aaaaaaaaaa", "aaaa");
+    }
+
+    {
+        test_regex lower_and_upper_bounded_nongreedy_a_rep(&g_regexTester, "a{2,5}?");
+        lower_and_upper_bounded_nongreedy_a_rep.should_search_match("aaaaaaaaaa", "aa");
+    }
+
+    {
+        test_regex too_large_min_nongreedy_a_rep(&g_regexTester, "a{11,1000}?");
+        too_large_min_nongreedy_a_rep.should_search_fail("aaaaaaaaaa");
+    }
 }
 
 int main() {
@@ -2195,6 +2275,7 @@ int main() {
     test_gh_5576();
     test_gh_5672();
     test_gh_5774();
+    test_gh_5790();
 
     return g_regexTester.result();
 }
