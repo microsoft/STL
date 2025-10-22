@@ -157,7 +157,6 @@ int main() {
         f.get();
     }
 
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     {
         packaged_task<int()> pt(allocator_arg, Mallocator<int>(), [] { return 1234; });
 
@@ -200,7 +199,6 @@ int main() {
 
         f.get();
     }
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 #endif // _M_CEE_PURE
 
     assert(g_mallocs == 0);
