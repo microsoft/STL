@@ -174,8 +174,20 @@ __declspec(noalias) size_t __stdcall __std_mismatch_2(const void* _First1, const
 __declspec(noalias) size_t __stdcall __std_mismatch_4(const void* _First1, const void* _First2, size_t _Count) noexcept;
 __declspec(noalias) size_t __stdcall __std_mismatch_8(const void* _First1, const void* _First2, size_t _Count) noexcept;
 } // extern "C"
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
+
+template <class _Target, class _Source>
+_Target _Find_arg_cast(const _Source _Val) noexcept {
+    if constexpr (is_integral_v<_Source>) {
+        return static_cast<_Target>(_Val);
+    } else {
+        return _STD _Bit_cast<_Target>(_Val);
+    }
+}
+
+#if _USE_STD_VECTOR_ALGORITHMS
 template <size_t _Nx>
 __declspec(noalias) void _Reverse_vectorized(void* _First, void* _Last) noexcept {
     if constexpr (_Nx == 1) {
@@ -193,20 +205,14 @@ __declspec(noalias) void _Reverse_vectorized(void* _First, void* _Last) noexcept
 
 template <class _Ty, class _TVal>
 __declspec(noalias) size_t _Count_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
-    if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
-#ifdef _WIN64
-        return ::__std_count_trivial_8(_First, _Last, reinterpret_cast<uint64_t>(_Val));
-#else
-        return ::__std_count_trivial_4(_First, _Last, reinterpret_cast<uint32_t>(_Val));
-#endif
-    } else if constexpr (sizeof(_Ty) == 1) {
-        return ::__std_count_trivial_1(_First, _Last, static_cast<uint8_t>(_Val));
+    if constexpr (sizeof(_Ty) == 1) {
+        return ::__std_count_trivial_1(_First, _Last, _STD _Find_arg_cast<uint8_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 2) {
-        return ::__std_count_trivial_2(_First, _Last, static_cast<uint16_t>(_Val));
+        return ::__std_count_trivial_2(_First, _Last, _STD _Find_arg_cast<uint16_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 4) {
-        return ::__std_count_trivial_4(_First, _Last, static_cast<uint32_t>(_Val));
+        return ::__std_count_trivial_4(_First, _Last, _STD _Find_arg_cast<uint32_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 8) {
-        return ::__std_count_trivial_8(_First, _Last, static_cast<uint64_t>(_Val));
+        return ::__std_count_trivial_8(_First, _Last, _STD _Find_arg_cast<uint64_t>(_Val));
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
@@ -214,26 +220,18 @@ __declspec(noalias) size_t _Count_vectorized(_Ty* const _First, _Ty* const _Last
 
 template <class _Ty, class _TVal>
 _Ty* _Find_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
-    if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
-#ifdef _WIN64
+    if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_trivial_8(_First, _Last, reinterpret_cast<uint64_t>(_Val))));
-#else
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_trivial_4(_First, _Last, reinterpret_cast<uint32_t>(_Val))));
-#endif
-    } else if constexpr (sizeof(_Ty) == 1) {
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_trivial_1(_First, _Last, static_cast<uint8_t>(_Val))));
+            static_cast<const _Ty*>(::__std_find_trivial_1(_First, _Last, _STD _Find_arg_cast<uint8_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 2) {
         return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_trivial_2(_First, _Last, static_cast<uint16_t>(_Val))));
+            static_cast<const _Ty*>(::__std_find_trivial_2(_First, _Last, _STD _Find_arg_cast<uint16_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 4) {
         return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_trivial_4(_First, _Last, static_cast<uint32_t>(_Val))));
+            static_cast<const _Ty*>(::__std_find_trivial_4(_First, _Last, _STD _Find_arg_cast<uint32_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
+            static_cast<const _Ty*>(::__std_find_trivial_8(_First, _Last, _STD _Find_arg_cast<uint64_t>(_Val))));
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
@@ -241,26 +239,18 @@ _Ty* _Find_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noe
 
 template <class _Ty, class _TVal>
 _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
-    if constexpr (is_pointer_v<_TVal> || is_null_pointer_v<_TVal>) {
-#ifdef _WIN64
+    if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, reinterpret_cast<uint64_t>(_Val))));
-#else
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_last_trivial_4(_First, _Last, reinterpret_cast<uint32_t>(_Val))));
-#endif
-    } else if constexpr (sizeof(_Ty) == 1) {
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_last_trivial_1(_First, _Last, static_cast<uint8_t>(_Val))));
+            static_cast<const _Ty*>(::__std_find_last_trivial_1(_First, _Last, _STD _Find_arg_cast<uint8_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 2) {
         return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_last_trivial_2(_First, _Last, static_cast<uint16_t>(_Val))));
+            static_cast<const _Ty*>(::__std_find_last_trivial_2(_First, _Last, _STD _Find_arg_cast<uint16_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 4) {
         return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_last_trivial_4(_First, _Last, static_cast<uint32_t>(_Val))));
+            static_cast<const _Ty*>(::__std_find_last_trivial_4(_First, _Last, _STD _Find_arg_cast<uint32_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
+            static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, _STD _Find_arg_cast<uint64_t>(_Val))));
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
@@ -457,11 +447,7 @@ size_t _Mismatch_vectorized(const void* const _First1, const void* const _First2
         return __std_mismatch_1(_First1, _First2, _Count * _Element_size) / _Element_size;
     }
 }
-_STD_END
-
 #endif // _USE_STD_VECTOR_ALGORITHMS
-
-_STD_BEGIN
 
 template <class _Ty>
 struct _Get_first_parameter;
@@ -5555,12 +5541,16 @@ constexpr bool _Can_memcmp_elements<_Ty1*, _Ty2*, false> = _Is_pointer_address_c
 
 #if _USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE
 template <class _Elem1, class _Elem2>
-constexpr bool _Can_memcmp_elements<_Elem1, _Elem2, false> =
+constexpr bool _Is_same_and_builtin_trivially_equality_comparable =
     is_same_v<_Elem1, _Elem2> && __is_trivially_equality_comparable(_Elem1);
 #else // ^^^ _USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE / !_USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE vvv
 template <class _Elem1, class _Elem2>
-constexpr bool _Can_memcmp_elements<_Elem1, _Elem2, false> = false;
+constexpr bool _Is_same_and_builtin_trivially_equality_comparable = false;
 #endif // ^^^ !_USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE ^^^
+
+template <class _Elem1, class _Elem2>
+constexpr bool _Can_memcmp_elements<_Elem1, _Elem2, false> =
+    _Is_same_and_builtin_trivially_equality_comparable<_Elem1, _Elem2>;
 
 // _Can_memcmp_elements_with_pred<_Elem1, _Elem2, _Pr> reports whether the memcmp optimization is applicable,
 // given contiguously stored elements. (This avoids having to repeat the metaprogramming that finds the element types.)
@@ -6144,22 +6134,24 @@ struct _Vector_alg_in_find_is_safe_object_pointers<_Ty1*, _Ty2*>
 
 // Can we activate the vector algorithms to find a value in a range of elements?
 template <class _Ty, class _Elem>
-constexpr bool _Vector_alg_in_find_is_safe_elem = disjunction_v<
+constexpr bool _Vector_alg_in_find_is_safe_elem =
+    _Is_same_and_builtin_trivially_equality_comparable<_Ty, _Elem>
+    || disjunction_v<
 #ifdef __cpp_lib_byte
-    // We're finding a std::byte in a range of std::byte.
-    conjunction<is_same<_Ty, byte>, is_same<_Elem, byte>>,
+        // We're finding a std::byte in a range of std::byte.
+        conjunction<is_same<_Ty, byte>, is_same<_Elem, byte>>,
 #endif // defined(__cpp_lib_byte)
-    // We're finding an integer in a range of integers.
-    // This case is the one that requires careful runtime handling in _Could_compare_equal_to_value_type.
-    conjunction<is_integral<_Ty>, is_integral<_Elem>>,
-    // We're finding an (object or function) pointer in a range of pointers of the same type.
-    conjunction<is_pointer<_Ty>, is_same<_Ty, _Elem>>,
-    // We're finding a nullptr in a range of (object or function) pointers.
-    conjunction<is_same<_Ty, nullptr_t>, is_pointer<_Elem>>,
-    // We're finding an object pointer in a range of object pointers, and:
-    // - One of the pointer types is a cv void*.
-    // - One of the pointer types is a cv1 U* and the other is a cv2 U*.
-    _Vector_alg_in_find_is_safe_object_pointers<_Ty, _Elem>>;
+       // We're finding an integer in a range of integers.
+       // This case is the one that requires careful runtime handling in _Could_compare_equal_to_value_type.
+        conjunction<is_integral<_Ty>, is_integral<_Elem>>,
+        // We're finding an (object or function) pointer in a range of pointers of the same type.
+        conjunction<is_pointer<_Ty>, is_same<_Ty, _Elem>>,
+        // We're finding a nullptr in a range of (object or function) pointers.
+        conjunction<is_same<_Ty, nullptr_t>, is_pointer<_Elem>>,
+        // We're finding an object pointer in a range of object pointers, and:
+        // - One of the pointer types is a cv void*.
+        // - One of the pointer types is a cv1 U* and the other is a cv2 U*.
+        _Vector_alg_in_find_is_safe_object_pointers<_Ty, _Elem>>;
 
 // Can we activate the vector algorithms for find/count?
 template <class _Iter, class _Ty>
@@ -6176,14 +6168,15 @@ _NODISCARD constexpr bool _Could_compare_equal_to_value_type(const _Ty& _Val) {
     // check whether _Val is within the limits of _Elem
     _STL_INTERNAL_STATIC_ASSERT(_Vector_alg_in_find_is_safe<_InIt, _Ty>);
 
-    if constexpr (disjunction_v<
-#ifdef __cpp_lib_byte
-                      is_same<_Ty, byte>,
-#endif // defined(__cpp_lib_byte)
-                      is_same<_Ty, bool>, is_pointer<_Ty>, is_same<_Ty, nullptr_t>>) {
+    using _Elem = _Iter_value_t<_InIt>;
+
+    if constexpr (disjunction_v<is_same<_Ty, _Elem>, // If types are the same, _Val can compare equal to _Elem
+                      is_same<_Ty, bool>, // true or false can be represented in any integer type
+                      is_pointer<_Ty>, // we only compare pointers vs. other pointers with the same representation
+                      is_same<_Ty, nullptr_t> // we only compare nullptr_t against pointers; any pointer can be null
+                      >) {
         return true;
     } else {
-        using _Elem = _Iter_value_t<_InIt>;
         _STL_INTERNAL_STATIC_ASSERT(is_integral_v<_Elem> && is_integral_v<_Ty>);
 
         if constexpr (is_same_v<_Elem, bool>) {
@@ -6254,11 +6247,12 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
                 _Ptr_t _Result;
 
                 if constexpr (sizeof(_Iter_value_t<_InIt>) == 1) {
-                    _Result = static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
+                    _Result =
+                        static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, _STD _Find_arg_cast<unsigned char>(_Val), _Count));
                 } else {
                     _STL_INTERNAL_STATIC_ASSERT(sizeof(_Iter_value_t<_InIt>) == 2);
                     _Result = reinterpret_cast<_Ptr_t>(const_cast<wchar_t*>(_CSTD wmemchr(
-                        reinterpret_cast<const wchar_t*>(_First_ptr), static_cast<wchar_t>(_Val), _Count)));
+                        reinterpret_cast<const wchar_t*>(_First_ptr), _STD _Find_arg_cast<wchar_t>(_Val), _Count)));
                 }
 
                 if constexpr (is_pointer_v<_InIt>) {
@@ -6343,7 +6337,7 @@ namespace ranges {
                         _STL_INTERNAL_STATIC_ASSERT(_Is_sized);
                         _Result = reinterpret_cast<_Ptr_t>(
                             const_cast<wchar_t*>(_CSTD wmemchr(reinterpret_cast<const wchar_t*>(_First_ptr),
-                                static_cast<wchar_t>(_Val), static_cast<size_t>(_Last - _First))));
+                                _STD _Find_arg_cast<wchar_t>(_Val), static_cast<size_t>(_Last - _First))));
                     } else {
                         _STL_INTERNAL_STATIC_ASSERT(_Elements_are_1_byte);
                         size_t _Count;
@@ -6357,8 +6351,8 @@ namespace ranges {
                         // it reads the characters sequentially and stops as soon as a matching character is found."
                         // C23 7.32.4.6.9 "The wmemchr generic function"/2 lacks such wording,
                         // so we don't use wmemchr(), avoiding issues with unreachable_sentinel_t.
-                        _Result =
-                            static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
+                        _Result = static_cast<_Ptr_t>(
+                            _CSTD memchr(_First_ptr, _STD _Find_arg_cast<unsigned char>(_Val), _Count));
                     }
 
                     if constexpr (_Is_sized) {

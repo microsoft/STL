@@ -310,16 +310,12 @@ bool _Includes_vectorized(
 template <class _Ty, class _TVal1, class _TVal2>
 __declspec(noalias) void _Replace_vectorized(
     _Ty* const _First, _Ty* const _Last, const _TVal1 _Old_val, const _TVal2 _New_val) noexcept {
-    if constexpr (is_pointer_v<_Ty>) {
-#ifdef _WIN64
-        ::__std_replace_8(_First, _Last, reinterpret_cast<uint64_t>(_Old_val), reinterpret_cast<uint64_t>(_New_val));
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
-        ::__std_replace_4(_First, _Last, reinterpret_cast<uint32_t>(_Old_val), reinterpret_cast<uint32_t>(_New_val));
-#endif // ^^^ !defined(_WIN64) ^^^
-    } else if constexpr (sizeof(_Ty) == 4) {
-        ::__std_replace_4(_First, _Last, static_cast<uint32_t>(_Old_val), static_cast<uint32_t>(_New_val));
+    if constexpr (sizeof(_Ty) == 4) {
+        ::__std_replace_4(
+            _First, _Last, _STD _Find_arg_cast<uint32_t>(_Old_val), _STD _Find_arg_cast<uint32_t>(_New_val));
     } else if constexpr (sizeof(_Ty) == 8) {
-        ::__std_replace_8(_First, _Last, static_cast<uint64_t>(_Old_val), static_cast<uint64_t>(_New_val));
+        ::__std_replace_8(
+            _First, _Last, _STD _Find_arg_cast<uint64_t>(_Old_val), _STD _Find_arg_cast<uint64_t>(_New_val));
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
@@ -327,26 +323,18 @@ __declspec(noalias) void _Replace_vectorized(
 
 template <class _Ty, class _TVal>
 _Ty* _Search_n_vectorized(_Ty* const _First, _Ty* const _Last, const size_t _Count, const _TVal _Val) noexcept {
-    if constexpr (is_pointer_v<_Ty>) {
-#ifdef _WIN64
+    if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_search_n_8(_First, _Last, _Count, reinterpret_cast<uint64_t>(_Val))));
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_search_n_4(_First, _Last, _Count, reinterpret_cast<uint32_t>(_Val))));
-#endif // ^^^ !defined(_WIN64) ^^^
-    } else if constexpr (sizeof(_Ty) == 1) {
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_search_n_1(_First, _Last, _Count, static_cast<uint8_t>(_Val))));
+            static_cast<const _Ty*>(::__std_search_n_1(_First, _Last, _Count, _STD _Find_arg_cast<uint8_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 2) {
         return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_search_n_2(_First, _Last, _Count, static_cast<uint16_t>(_Val))));
+            static_cast<const _Ty*>(::__std_search_n_2(_First, _Last, _Count, _STD _Find_arg_cast<uint16_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 4) {
         return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_search_n_4(_First, _Last, _Count, static_cast<uint32_t>(_Val))));
+            static_cast<const _Ty*>(::__std_search_n_4(_First, _Last, _Count, _STD _Find_arg_cast<uint32_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_search_n_8(_First, _Last, _Count, static_cast<uint64_t>(_Val))));
+            static_cast<const _Ty*>(::__std_search_n_8(_First, _Last, _Count, _STD _Find_arg_cast<uint64_t>(_Val))));
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
@@ -370,20 +358,14 @@ _Ty* _Unique_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
 template <class _Ty, class _TVal>
 _Ty* _Remove_copy_vectorized(
     const _Ty* const _First, const _Ty* const _Last, _Ty* const _Dest, const _TVal _Val) noexcept {
-    if constexpr (is_pointer_v<_Ty>) {
-#ifdef _WIN64
-        return reinterpret_cast<_Ty*>(::__std_remove_copy_8(_First, _Last, _Dest, reinterpret_cast<uint64_t>(_Val)));
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
-        return reinterpret_cast<_Ty*>(::__std_remove_copy_4(_First, _Last, _Dest, reinterpret_cast<uint32_t>(_Val)));
-#endif // ^^^ !defined(_WIN64) ^^^
-    } else if constexpr (sizeof(_Ty) == 1) {
-        return reinterpret_cast<_Ty*>(::__std_remove_copy_1(_First, _Last, _Dest, static_cast<uint8_t>(_Val)));
+    if constexpr (sizeof(_Ty) == 1) {
+        return reinterpret_cast<_Ty*>(::__std_remove_copy_1(_First, _Last, _Dest, _STD _Find_arg_cast<uint8_t>(_Val)));
     } else if constexpr (sizeof(_Ty) == 2) {
-        return reinterpret_cast<_Ty*>(::__std_remove_copy_2(_First, _Last, _Dest, static_cast<uint16_t>(_Val)));
+        return reinterpret_cast<_Ty*>(::__std_remove_copy_2(_First, _Last, _Dest, _STD _Find_arg_cast<uint16_t>(_Val)));
     } else if constexpr (sizeof(_Ty) == 4) {
-        return reinterpret_cast<_Ty*>(::__std_remove_copy_4(_First, _Last, _Dest, static_cast<uint32_t>(_Val)));
+        return reinterpret_cast<_Ty*>(::__std_remove_copy_4(_First, _Last, _Dest, _STD _Find_arg_cast<uint32_t>(_Val)));
     } else if constexpr (sizeof(_Ty) == 8) {
-        return reinterpret_cast<_Ty*>(::__std_remove_copy_8(_First, _Last, _Dest, static_cast<uint64_t>(_Val)));
+        return reinterpret_cast<_Ty*>(::__std_remove_copy_8(_First, _Last, _Dest, _STD _Find_arg_cast<uint64_t>(_Val)));
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
     }
