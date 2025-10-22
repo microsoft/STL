@@ -904,7 +904,7 @@ void test_gh_997() {
     // GH-1528: <regex>: regex_match gets caught in recursive loop until stack overflow occurs
 
     try {
-        (void) regex_match(std::string(1000, 'a'), regex("(?:a)+"));
+        (void) regex_match(std::string(1025, 'a'), regex("(?:a)+"));
         assert(false); // adjust test when matching succeeds
     } catch (const regex_error& ex) {
         assert(ex.code() == error_stack);
@@ -912,7 +912,8 @@ void test_gh_997() {
 
     try {
         wregex rgx(L"^http[s]?\\:\\/\\/([^.]+\\.)*github\\.com\\/.*$", icase);
-        (void) regex_match(
+
+        assert(!regex_match(
             L"https://www.google.com/"
             L"search?client=firefox-b-1-d&q=tea%20box&tbs=lf:1,lf_ui:10&tbm=lcl&sxsrf=ALeKk03GLkevbpot_6JmlWw6_"
             L"IJKeKBKbw:1607540768824&rflfq=1&num=10&rldimm=11474290690396232776&lqi=Cgd0ZWEgYm94Gd9r-yQGeFTPSKvez_"
@@ -922,8 +923,7 @@ void test_gh_997() {
             L"5B%5B35.638039299999996%2C-117.9412485%5D%2C%5B34.634577799999995%2C-120.8545755%5D%5D%3Btbs%3Alrf%3A%"
             L"211m4%211u3%212m2%213m1%211e1%211m4%211u2%212m2%212m1%211e1%212m1%211e2%212m1%211e3%213sIAE%2Clf%3A1%"
             L"2Clf_ui%3A10",
-            rgx);
-        assert(false); // adjust test when matching succeeds
+            rgx));
     } catch (const regex_error& ex) {
         assert(ex.code() == error_stack);
     }
