@@ -7,6 +7,7 @@
 #include <memory>
 #include <optional>
 #include <ranges>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -156,6 +157,60 @@ constexpr bool test_nested_range() {
         assert(c0[2][1][0] == 10);
         assert(c0[2][1][1] == 11);
     }
+
+    return true;
+}
+
+template <class T, class A = std::allocator<T>>
+union union_vector {
+    std::vector<T, A> vec_;
+
+    constexpr union_vector() : vec_() {}
+    constexpr union_vector(const union_vector& other) : vec_(other.vec_) {}
+    constexpr union_vector(union_vector&& other) noexcept : vec_(std::move(other.vec_)) {}
+
+    template <class U>
+        requires (!std::same_as<std::remove_cvref_t<U>, union_vector>)
+              && (!std::same_as<std::remove_cvref_t<U>, std::vector<T, A>>)
+              && requires(U&& u) { std::vector<T, A>(std::forward<U>(u)); }
+    constexpr explicit union_vector(U&& u) : vec_(std::forward<U>(u)) {}
+
+    template <class T1, class T2, class... Ts>
+        requires requires(T1&& t1, T2&& t2, Ts&&... ts) {
+            std::vector<T, A>(std::forward<T1>(t1), std::forward<T2>(t2), std::forward<Ts>(ts)...);
+        }
+    constexpr union_vector(T1&& t1, T2&& t2, Ts&&... ts)
+        : vec_(std::forward<T1>(t1), std::forward<T2>(t2), std::forward<Ts>(ts)...) {}
+
+    constexpr union_vector& operator=(const union_vector& other) {
+        vec_ = other.vec_;
+        return *this;
+    }
+    constexpr union_vector& operator=(union_vector&& other)
+        noexcept(std::is_nothrow_move_assignable_v<std::vector<T, A>>) {
+        vec_ = std::move(other.vec_);
+        return *this;
+    }
+
+    constexpr ~union_vector() noexcept {
+        vec_.~vector();
+    }
+};
+
+template <ranges::input_range R, class A = std::allocator<ranges::range_value_t<R>>>
+union_vector(std::from_range_t, R&&, A = A()) -> union_vector<ranges::range_value_t<R>, A>;
+
+constexpr bool test_to_union() {
+    constexpr int src[]{42, 1729};
+
+    assert(ranges::equal(ranges::to<union_vector<long>>(src).vec_, src));
+    assert(ranges::equal((src | ranges::to<union_vector<long>>()).vec_, src));
+
+    static_assert(std::same_as<decltype(ranges::to<union_vector>(src)), union_vector<int>>);
+    assert(ranges::equal(ranges::to<union_vector>(src).vec_, src));
+
+    static_assert(std::same_as<decltype(src | ranges::to<union_vector>()), union_vector<int>>);
+    assert(ranges::equal((src | ranges::to<union_vector>()).vec_, src));
 
     return true;
 }
@@ -369,6 +424,9 @@ int main() {
 
     test_nested_range();
     static_assert(test_nested_range());
+
+    test_to_union();
+    static_assert(test_to_union());
 
     test_lwg3733();
     static_assert(test_lwg3733());
