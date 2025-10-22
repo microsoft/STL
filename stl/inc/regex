@@ -3521,7 +3521,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Find_first_inner_capture
 
         case _N_assert:
         case _N_neg_assert:
-            if (_Find_first_inner_capture_group(static_cast<_Node_assert*>(_Nx), _Loop_state)) {
+            if (_Find_first_inner_capture_group(static_cast<_Node_assert*>(_Nx)->_Child, _Loop_state)) {
                 _Found_group = true;
                 _Nx          = nullptr;
             }
