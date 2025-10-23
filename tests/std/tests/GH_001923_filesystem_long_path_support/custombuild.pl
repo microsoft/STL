@@ -10,6 +10,7 @@ sub CustomBuildHook()
 {
     my $cwd = Run::GetCWDName();
 
-    Run::ExecuteCL(join(" ", "test.cpp", "/Fe$cwd.exe", "/link", "/MANIFESTINPUT:long_path_aware.manifest"));
+    Run::ExecuteCL("/c test.cpp");
+    Run::ExecuteLink("/MANIFESTINPUT:long_path_aware.manifest /OUT:$cwd.exe test.obj");
 }
 1
