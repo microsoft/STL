@@ -17,9 +17,9 @@
 _EMIT_STL_ERROR(STL1009, "The <experimental/coroutine>, <experimental/generator>, and <experimental/resumable> "
                          "headers do not support Clang, but the C++20 <coroutine> and C++23 <generator> headers do.");
 #elif !defined(_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
-_EMIT_STL_ERROR(STL1011, "<experimental/generator> is deprecated and will be REMOVED IN THE NEAR FUTURE. Please use "
-                         "<generator>. You can define _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS "
-                         "to suppress this error BUT YOU HAVE BEEN WARNED.");
+_EMIT_STL_ERROR(STL1011, "<experimental/generator> is deprecated by Microsoft and will be REMOVED IN THE NEAR FUTURE. "
+                         "It is superseded by the C++23 <generator> header. You can define "
+                         "_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS to suppress this error for now.");
 #elif defined(__cpp_impl_coroutine)
 #include <coroutine>
 #elif defined(__cpp_coroutines)

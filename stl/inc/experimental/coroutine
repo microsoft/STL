@@ -34,9 +34,9 @@ _EMIT_STL_ERROR(STL1010, "You're compiling with support for standard C++20 corou
                          "instead of <experimental/coroutine> and <experimental/resumable>.");
 #elif !defined(_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
 _EMIT_STL_ERROR(STL1011, "The /await compiler option, <experimental/coroutine>, and <experimental/resumable> are "
-                         "deprecated and will be REMOVED IN THE NEAR FUTURE. Please use <coroutine>. You can define "
-                         "_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS to suppress this error "
-                         "BUT YOU HAVE BEEN WARNED.");
+                         "deprecated by Microsoft and will be REMOVED IN THE NEAR FUTURE. "
+                         "They are superseded by the C++20 <coroutine> header. You can define "
+                         "_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS to suppress this error for now.");
 #endif // _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS
 
 // intrinsics used in implementation of coroutine_handle
