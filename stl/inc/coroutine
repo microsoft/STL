@@ -10,8 +10,7 @@
 
 #ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
 _EMIT_STL_WARNING(STL4039, "The <coroutine> header is incompatible with the deprecated /await compiler option.");
-#else // ^^^ /await / no /await vvv
-#ifndef __cpp_lib_coroutine
+#elif !defined(__cpp_lib_coroutine)
 _EMIT_STL_WARNING(STL4038, "The contents of <coroutine> are available only with C++20 or later "
                            "(or /await:strict in C++14/17).");
 #else // ^^^ <coroutine> is not available / <coroutine> is available vvv
@@ -269,7 +268,6 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // ^^^ defined(__cpp_lib_coroutine) ^^^
-#endif // ^^^ !defined(_RESUMABLE_FUNCTIONS_SUPPORTED) ^^^
+#endif // ^^^ <coroutine> is available ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _COROUTINE_
