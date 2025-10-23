@@ -23,7 +23,10 @@ _EMIT_STL_ERROR(STL1009, "The <experimental/coroutine>, <experimental/generator>
 #elif defined(__cpp_coroutines)
 #include <experimental/resumable>
 #else // ^^^ legacy coroutines / no coroutine support vvv
-#error <experimental/generator> requires /std:c++latest or /await compiler options
+_EMIT_STL_ERROR(STL1011, "You've included the <experimental/generator> header without compiler support for "
+                         "legacy coroutines (available with the deprecated /await compiler option) or "
+                         "standard C++20 coroutines (also available with /await:strict in C++14/17). "
+                         "You should include C++23 <generator> instead of <experimental/generator>.");
 #endif // ^^^ no coroutine support ^^^
 
 #pragma pack(push, _CRT_PACKING)
