@@ -1521,7 +1521,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // next warning number: STL4049
 
-// next error number: STL1012
+// next error number: STL1013
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
