@@ -33,7 +33,7 @@ _EMIT_STL_ERROR(STL1010, "You're compiling with support for standard C++20 corou
                          "(also available with /await:strict in C++14/17), so you should include <coroutine> "
                          "instead of <experimental/coroutine> and <experimental/resumable>.");
 #elif !defined(_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
-_EMIT_STL_ERROR(STL1012, "The /await compiler option, <experimental/coroutine>, and <experimental/resumable> are "
+_EMIT_STL_ERROR(STL1011, "The /await compiler option, <experimental/coroutine>, and <experimental/resumable> are "
                          "deprecated and will be REMOVED IN THE NEAR FUTURE. Please use <coroutine>. You can define "
                          "_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS to suppress this error "
                          "BUT YOU HAVE BEEN WARNED.");

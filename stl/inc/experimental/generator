@@ -17,7 +17,7 @@
 _EMIT_STL_ERROR(STL1009, "The <experimental/coroutine>, <experimental/generator>, and <experimental/resumable> "
                          "headers do not support Clang, but the C++20 <coroutine> and C++23 <generator> headers do.");
 #elif !defined(_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
-_EMIT_STL_ERROR(STL1012, "<experimental/generator> is deprecated and will be REMOVED IN THE NEAR FUTURE. Please use "
+_EMIT_STL_ERROR(STL1011, "<experimental/generator> is deprecated and will be REMOVED IN THE NEAR FUTURE. Please use "
                          "<generator>. You can define _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS "
                          "to suppress this error BUT YOU HAVE BEEN WARNED.");
 #elif defined(__cpp_impl_coroutine)
@@ -25,7 +25,7 @@ _EMIT_STL_ERROR(STL1012, "<experimental/generator> is deprecated and will be REM
 #elif defined(__cpp_coroutines)
 #include <experimental/resumable>
 #else // ^^^ legacy coroutines / no coroutine support vvv
-_EMIT_STL_ERROR(STL1011, "You've included the <experimental/generator> header without compiler support for "
+_EMIT_STL_ERROR(STL1012, "You've included the <experimental/generator> header without compiler support for "
                          "legacy coroutines (available with the deprecated /await compiler option) or "
                          "standard C++20 coroutines (also available with /await:strict in C++14/17). "
                          "You should include C++23 <generator> instead of <experimental/generator>.");
