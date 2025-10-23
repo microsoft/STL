@@ -31,8 +31,9 @@ _EMIT_STL_ERROR(STL1009, "The <experimental/coroutine>, <experimental/generator>
 #endif // defined(__clang__)
 
 #ifdef __cpp_impl_coroutine
-#error The <experimental/coroutine> and <experimental/resumable> headers are only supported with \
-/await and implement pre-C++20 coroutine support. Use <coroutine> for standard C++20 coroutines.
+_EMIT_STL_ERROR(STL1010, "You're compiling with support for standard C++20 coroutines "
+                         "(also available with /await:strict in C++14/17), so you should include <coroutine> "
+                         "instead of <experimental/coroutine> and <experimental/resumable>.");
 #endif // defined(__cpp_impl_coroutine)
 
 // intrinsics used in implementation of coroutine_handle
