@@ -13,6 +13,11 @@
 #endif
 #include <memory>
 
+#ifdef __clang__
+_EMIT_STL_ERROR(STL1009, "The <experimental/coroutine>, <experimental/generator>, and <experimental/resumable> "
+                         "headers do not support Clang, but the C++20 <coroutine> and C++23 <generator> headers do.");
+#endif // defined(__clang__)
+
 #if defined(__cpp_impl_coroutine)
 #include <coroutine>
 #elif defined(__cpp_coroutines)

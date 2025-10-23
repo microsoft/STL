@@ -25,10 +25,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if defined(__clang__) && !defined(_SILENCE_CLANG_COROUTINE_MESSAGE)
-#error The <experimental/coroutine>, <experimental/generator>, and <experimental/resumable> \
-headers do not support Clang, but the C++20 <coroutine> header does.
-#endif // defined(__clang__) && !defined(_SILENCE_CLANG_COROUTINE_MESSAGE)
+#ifdef __clang__
+_EMIT_STL_ERROR(STL1009, "The <experimental/coroutine>, <experimental/generator>, and <experimental/resumable> "
+                         "headers do not support Clang, but the C++20 <coroutine> and C++23 <generator> headers do.");
+#endif // defined(__clang__)
 
 #ifdef __cpp_impl_coroutine
 #error The <experimental/coroutine> and <experimental/resumable> headers are only supported with \
