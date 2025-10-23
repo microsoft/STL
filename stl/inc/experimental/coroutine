@@ -28,15 +28,11 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifdef __clang__
 _EMIT_STL_ERROR(STL1009, "The <experimental/coroutine>, <experimental/generator>, and <experimental/resumable> "
                          "headers do not support Clang, but the C++20 <coroutine> and C++23 <generator> headers do.");
-#endif // defined(__clang__)
-
-#ifdef __cpp_impl_coroutine
+#elif defined(__cpp_impl_coroutine)
 _EMIT_STL_ERROR(STL1010, "You're compiling with support for standard C++20 coroutines "
                          "(also available with /await:strict in C++14/17), so you should include <coroutine> "
                          "instead of <experimental/coroutine> and <experimental/resumable>.");
-#endif // defined(__cpp_impl_coroutine)
-
-#ifndef _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS
+#elif !defined(_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
 _EMIT_STL_ERROR(STL1012, "The /await compiler option, <experimental/coroutine>, and <experimental/resumable> are "
                          "deprecated and will be REMOVED IN THE NEAR FUTURE. Please use <coroutine>. You can define "
                          "_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS to suppress this error "
