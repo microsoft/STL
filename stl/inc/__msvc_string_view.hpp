@@ -29,6 +29,7 @@ extern "C" {
 // compiler has to assume that the denoted arrays are "globally address taken", and that any later calls to
 // unanalyzable routines may modify those arrays.
 
+#if _VECTORIZED_FIND_FIRST_OF
 __declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_1(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept;
 __declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_2(
@@ -37,6 +38,7 @@ __declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_4(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept;
 __declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_8(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept;
+#endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
 
 __declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_1(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept;
@@ -57,10 +59,12 @@ __declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_4(
 __declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_8(
     const void* _First, const void* _Last, uint64_t _Val) noexcept;
 
+#if _VECTORIZED_FIND_FIRST_OF
 __declspec(noalias) size_t __stdcall __std_find_first_not_of_trivial_pos_1(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept;
 __declspec(noalias) size_t __stdcall __std_find_first_not_of_trivial_pos_2(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept;
+#endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
 
 __declspec(noalias) size_t __stdcall __std_find_last_not_of_trivial_pos_1(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept;
@@ -71,6 +75,7 @@ __declspec(noalias) size_t __stdcall __std_find_last_not_of_trivial_pos_2(
 
 _STD_BEGIN
 
+#if _VECTORIZED_FIND_FIRST_OF
 template <class _Ty1, class _Ty2>
 size_t _Find_first_of_pos_vectorized(const _Ty1* const _Haystack, const size_t _Haystack_length,
     const _Ty2* const _Needle, const size_t _Needle_length) noexcept {
@@ -87,6 +92,7 @@ size_t _Find_first_of_pos_vectorized(const _Ty1* const _Haystack, const size_t _
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
 
 template <class _Ty1, class _Ty2>
 size_t _Find_last_of_pos_vectorized(const _Ty1* const _Haystack, const size_t _Haystack_length,
@@ -130,6 +136,8 @@ size_t _Find_last_not_ch_pos_vectorized(const _Ty* const _First, const _Ty* cons
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+
+#if _VECTORIZED_FIND_FIRST_OF
 template <class _Ty1, class _Ty2>
 size_t _Find_first_not_of_pos_vectorized(const _Ty1* const _Haystack, const size_t _Haystack_length,
     const _Ty2* const _Needle, const size_t _Needle_length) noexcept {
@@ -142,6 +150,7 @@ size_t _Find_first_not_of_pos_vectorized(const _Ty1* const _Haystack, const size
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
 
 template <class _Ty1, class _Ty2>
 size_t _Find_last_not_of_pos_vectorized(const _Ty1* const _Haystack, const size_t _Haystack_length,
@@ -934,7 +943,7 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
     const auto _Hay_end   = _Haystack + _Hay_size;
 
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_FIND_FIRST_OF
         if (!_STD _Is_constant_evaluated()) {
             const size_t _Remaining_size = _Hay_size - _Start_at;
             if (_Remaining_size + _Needle_size >= _Threshold_find_first_of) {
@@ -945,7 +954,7 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
                 return _Pos;
             }
         }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
 
         _String_bitmap<typename _Traits::char_type> _Matches;
 
@@ -1035,7 +1044,7 @@ constexpr size_t _Traits_find_first_not_of(_In_reads_(_Hay_size) const _Traits_p
 
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         using _Elem = typename _Traits::char_type;
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_FIND_FIRST_OF
         if constexpr (sizeof(_Elem) <= 2) {
             if (!_STD _Is_constant_evaluated()) {
                 const size_t _Remaining_size = _Hay_size - _Start_at;
@@ -1048,7 +1057,7 @@ constexpr size_t _Traits_find_first_not_of(_In_reads_(_Hay_size) const _Traits_p
                 }
             }
         }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
 
         _String_bitmap<_Elem> _Matches;
         if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {

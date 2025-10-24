@@ -39,6 +39,8 @@ extern "C" {
 // functions are in native code objects that the compiler cannot analyze. In the absence of the noalias attribute, the
 // compiler has to assume that the denoted arrays are "globally address taken", and that any later calls to
 // unanalyzable routines may modify those arrays.
+
+#if _VECTORIZED_FIND_FIRST_OF
 const void* __stdcall __std_find_first_of_trivial_1(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
 const void* __stdcall __std_find_first_of_trivial_2(
@@ -47,6 +49,7 @@ const void* __stdcall __std_find_first_of_trivial_4(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
 const void* __stdcall __std_find_first_of_trivial_8(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
+#endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
 
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
     const void* _First, const void* _Last, void* _Dest) noexcept;
@@ -139,6 +142,8 @@ void* __stdcall __std_unique_copy_8(const void* _First, const void* _Last, void*
 } // extern "C"
 
 _STD_BEGIN
+
+#if _VECTORIZED_FIND_FIRST_OF
 template <class _Ty1, class _Ty2>
 _Ty1* _Find_first_of_vectorized(
     _Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _First2, _Ty2* const _Last2) noexcept {
@@ -159,6 +164,7 @@ _Ty1* _Find_first_of_vectorized(
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
 
 template <size_t _Nx>
 __declspec(noalias) void _Reverse_copy_vectorized(const void* _First, const void* _Last, void* _Dest) noexcept {
@@ -3851,7 +3857,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
         }
     }
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_FIND_FIRST_OF
     if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
         if (!_STD _Is_constant_evaluated() && _ULast1 - _UFirst1 >= _Threshold_find_first_of) {
             const auto _First1_ptr = _STD _To_address(_UFirst1);
@@ -3867,7 +3873,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
             return _First1;
         }
     }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
 
     for (; _UFirst1 != _ULast1; ++_UFirst1) {
         for (auto _UMid2 = _UFirst2; _UMid2 != _ULast2; ++_UMid2) {
@@ -3955,7 +3961,7 @@ namespace ranges {
                 }
             }
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_FIND_FIRST_OF
             if constexpr (_Vector_alg_in_search_is_safe<_It1, _It2, _Pr> && sized_sentinel_for<_Se1, _It1>
                           && sized_sentinel_for<_Se2, _It2> && is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>) {
                 if (!_STD is_constant_evaluated() && _Last1 - _First1 >= _Threshold_find_first_of) {
@@ -3977,7 +3983,8 @@ namespace ranges {
                     }
                 }
             }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
+
             for (; _First1 != _Last1; ++_First1) {
                 for (auto _Mid2 = _First2; _Mid2 != _Last2; ++_Mid2) {
                     if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_Mid2))) {
