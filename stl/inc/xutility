@@ -150,10 +150,12 @@ const void* __stdcall __std_find_last_trivial_2(const void* _First, const void* 
 const void* __stdcall __std_find_last_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
 
+#if _VECTORIZED_ADJACENT_FIND
 const void* __stdcall __std_adjacent_find_1(const void* _First, const void* _Last) noexcept;
 const void* __stdcall __std_adjacent_find_2(const void* _First, const void* _Last) noexcept;
 const void* __stdcall __std_adjacent_find_4(const void* _First, const void* _Last) noexcept;
 const void* __stdcall __std_adjacent_find_8(const void* _First, const void* _Last) noexcept;
+#endif // ^^^ _VECTORIZED_ADJACENT_FIND ^^^
 
 #if _VECTORIZED_SEARCH
 const void* __stdcall __std_search_1(
@@ -309,6 +311,7 @@ _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val
     }
 }
 
+#if _VECTORIZED_ADJACENT_FIND
 template <class _Ty>
 _Ty* _Adjacent_find_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -323,6 +326,7 @@ _Ty* _Adjacent_find_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_ADJACENT_FIND ^^^
 
 // find_first_of vectorization is likely to be a win after this size (in elements)
 // (Used with _Find_first_of_vectorized, _Find_first_of_pos_vectorized, _Find_first_not_of_pos_vectorized,
@@ -6988,7 +6992,7 @@ namespace ranges {
                 return _First;
             }
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_ADJACENT_FIND
             if constexpr (_Vector_alg_in_search_is_safe<_It, _It, _Pr> && sized_sentinel_for<_Se, _It>
                           && is_same_v<_Pj, identity>) {
                 if (!_STD is_constant_evaluated()) {
@@ -7003,7 +7007,7 @@ namespace ranges {
                     }
                 }
             }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_ADJACENT_FIND ^^^
 
             for (auto _Next = _First;; ++_First) {
                 if (++_Next == _Last) {

@@ -767,7 +767,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, 
     auto _UFirst = _STD _Get_unwrapped(_First);
     auto _ULast  = _STD _Get_unwrapped(_Last);
     if (_UFirst != _ULast) {
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_ADJACENT_FIND
         if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst), decltype(_UFirst), _Pr>) {
             if (!_STD _Is_constant_evaluated()) {
                 const auto _First_ptr = _STD _To_address(_UFirst);
@@ -783,7 +783,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, 
                 return _Last;
             }
         }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_ADJACENT_FIND ^^^
 
         for (auto _UNext = _UFirst; ++_UNext != _ULast; _UFirst = _UNext) {
             if (_Pred(*_UFirst, *_UNext)) {
