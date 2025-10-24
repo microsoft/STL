@@ -31,7 +31,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef msvc
 #undef no_specializations
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FOR_X64_X86
 extern "C" {
 void* __stdcall __std_remove_1(void* _First, void* _Last, uint8_t _Val) noexcept;
 void* __stdcall __std_remove_2(void* _First, void* _Last, uint16_t _Val) noexcept;
@@ -56,7 +56,7 @@ _Ty* _Remove_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) n
 }
 _STD_END
 
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
 _STD_BEGIN
 template <class _Ptrty>
@@ -2330,7 +2330,7 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
     _UFirst           = _STD _Find_unchecked(_UFirst, _ULast, _Val);
     auto _UNext       = _UFirst;
     if (_UFirst != _ULast) {
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FOR_X64_X86
         if constexpr (_Vector_alg_in_find_is_safe<decltype(_UFirst), _Ty>) {
 #if _HAS_CXX20
             if (!_STD is_constant_evaluated())
@@ -2349,7 +2349,7 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
                 return _First;
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
         while (++_UFirst != _ULast) {
             if (!(*_UFirst == _Val)) {

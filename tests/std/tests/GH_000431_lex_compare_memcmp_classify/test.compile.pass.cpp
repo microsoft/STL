@@ -178,7 +178,7 @@ void test_lex_compare_memcmp_classify_for_types() {
 #endif // _HAS_CXX20
 }
 
-constexpr bool vec_alg = _USE_STD_VECTOR_ALGORITHMS;
+constexpr bool vec_alg = _VECTORIZED_FOR_X64_X86;
 
 template <bool Expected, class Type1, class Type2>
 void test_lex_compare_memcmp_classify_for_1byte_integrals() {

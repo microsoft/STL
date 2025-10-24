@@ -19,7 +19,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FOR_X64_X86
 extern "C" {
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
 // won't be stored beyond the lifetime of the function, and that the function will only reference arrays denoted by
@@ -158,7 +158,7 @@ size_t _Find_last_not_of_pos_vectorized(const _Ty1* const _Haystack, const size_
 
 _STD_END
 
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
 _STD_BEGIN
 #ifdef __clang__
@@ -360,7 +360,7 @@ public:
     _NODISCARD static _CONSTEXPR17 int compare(_In_reads_(_Count) const _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FOR_X64_X86
         if (!_STD _Is_constant_evaluated()) {
             // TRANSITION, GH-2289: Use vectorized algorithms for better performance than __builtin_wmemcmp.
             const size_t _Pos = _Mismatch_vectorized<sizeof(_Elem)>(_First1, _First2, _Count);
@@ -370,7 +370,7 @@ public:
                 return _First1[_Pos] < _First2[_Pos] ? -1 : +1;
             }
         }
-#endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
+#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
         if constexpr (is_same_v<_Elem, wchar_t>) {
             return __builtin_wmemcmp(_First1, _First2, _Count);
@@ -728,7 +728,7 @@ constexpr size_t _Traits_find(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits>
         return _Start_at;
     }
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FOR_X64_X86
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         if (!_STD _Is_constant_evaluated()) {
             const auto _End = _Haystack + _Hay_size;
@@ -741,7 +741,7 @@ constexpr size_t _Traits_find(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits>
             }
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
     const auto _Possible_matches_end = _Haystack + (_Hay_size - _Needle_size) + 1;
     for (auto _Match_try = _Haystack + _Start_at;; ++_Match_try) {
@@ -764,7 +764,7 @@ constexpr size_t _Traits_find_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Trai
         return static_cast<size_t>(-1); // (npos) no room for match
     }
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FOR_X64_X86
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         if (!_STD _Is_constant_evaluated()) {
             const auto _End = _Haystack + _Hay_size;
@@ -777,7 +777,7 @@ constexpr size_t _Traits_find_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Trai
             }
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
     const auto _Found_at = _Traits::find(_Haystack + _Start_at, _Hay_size - _Start_at, _Ch);
     if (_Found_at) {
@@ -802,7 +802,7 @@ constexpr size_t _Traits_rfind(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits
 
     const size_t _Actual_start_at = (_STD min) (_Start_at, _Hay_size - _Needle_size);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FOR_X64_X86
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         if (!_STD _Is_constant_evaluated()) {
             // _Find_end_vectorized takes into account the needle length when locating the search start.
@@ -819,7 +819,7 @@ constexpr size_t _Traits_rfind(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits
             }
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
     for (auto _Match_try = _Haystack + _Actual_start_at;; --_Match_try) {
         if (_Traits::eq(*_Match_try, *_Needle) && _Traits::compare(_Match_try, _Needle, _Needle_size) == 0) {
@@ -843,7 +843,7 @@ constexpr size_t _Traits_rfind_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Tra
 
     const size_t _Actual_start_at = (_STD min) (_Start_at, _Hay_size - 1);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FOR_X64_X86
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         if (!_STD _Is_constant_evaluated()) {
             const auto _End = _Haystack + _Actual_start_at + 1;
@@ -856,7 +856,7 @@ constexpr size_t _Traits_rfind_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Tra
             }
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
     for (auto _Match_try = _Haystack + _Actual_start_at;; --_Match_try) {
         if (_Traits::eq(*_Match_try, _Ch)) {
@@ -934,7 +934,7 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
     const auto _Hay_end   = _Haystack + _Hay_size;
 
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FOR_X64_X86
         if (!_STD _Is_constant_evaluated()) {
             const size_t _Remaining_size = _Hay_size - _Start_at;
             if (_Remaining_size + _Needle_size >= _Threshold_find_first_of) {
@@ -945,7 +945,7 @@ constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t
                 return _Pos;
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
         _String_bitmap<typename _Traits::char_type> _Matches;
 
@@ -983,7 +983,7 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
 
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         using _Elem = typename _Traits::char_type;
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FOR_X64_X86
         if constexpr (sizeof(_Elem) <= 2) {
             if (!_STD _Is_constant_evaluated()) {
                 const size_t _Remaining_size = _Hay_start + 1;
@@ -992,7 +992,7 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
                 }
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
         _String_bitmap<_Elem> _Matches;
         if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
@@ -1035,7 +1035,7 @@ constexpr size_t _Traits_find_first_not_of(_In_reads_(_Hay_size) const _Traits_p
 
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         using _Elem = typename _Traits::char_type;
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FOR_X64_X86
         if constexpr (sizeof(_Elem) <= 2) {
             if (!_STD _Is_constant_evaluated()) {
                 const size_t _Remaining_size = _Hay_size - _Start_at;
@@ -1048,7 +1048,7 @@ constexpr size_t _Traits_find_first_not_of(_In_reads_(_Hay_size) const _Traits_p
                 }
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
         _String_bitmap<_Elem> _Matches;
         if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
@@ -1082,7 +1082,7 @@ constexpr size_t _Traits_find_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_
 
     const auto _End = _Haystack + _Hay_size;
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FOR_X64_X86
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         if (!_STD _Is_constant_evaluated()) {
             const auto _Result = _STD _Find_not_ch_vectorized(_Haystack + _Start_at, _End, _Ch);
@@ -1093,7 +1093,7 @@ constexpr size_t _Traits_find_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_
             }
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
     for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
         if (!_Traits::eq(*_Match_try, _Ch)) {
@@ -1117,7 +1117,7 @@ constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_pt
 
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         using _Elem = typename _Traits::char_type;
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FOR_X64_X86
         if constexpr (sizeof(_Elem) <= 2) {
             if (!_STD _Is_constant_evaluated()) {
                 const size_t _Remaining_size = _Hay_start + 1;
@@ -1126,7 +1126,7 @@ constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_pt
                 }
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
         _String_bitmap<_Elem> _Matches;
         if (_Matches._Mark(_Needle, _Needle + _Needle_size)) {
@@ -1165,13 +1165,13 @@ constexpr size_t _Traits_rfind_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<
 
     const size_t _Actual_start_at = (_STD min) (_Start_at, _Hay_size - 1);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FOR_X64_X86
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         if (!_STD _Is_constant_evaluated()) {
             return _STD _Find_last_not_ch_pos_vectorized(_Haystack, _Haystack + _Actual_start_at + 1, _Ch);
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
     for (auto _Match_try = _Haystack + _Actual_start_at;; --_Match_try) {
         if (!_Traits::eq(*_Match_try, _Ch)) {
