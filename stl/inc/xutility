@@ -119,7 +119,9 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* _Last1, void* _First2) noexcept;
 
+#if _VECTORIZED_ROTATE
 __declspec(noalias) void __stdcall __std_rotate(void* _First, void* _Mid, void* _Last) noexcept;
+#endif // ^^^ _VECTORIZED_ROTATE ^^^
 
 __declspec(noalias) size_t __stdcall __std_count_trivial_1(
     const void* _First, const void* _Last, uint8_t _Val) noexcept;
@@ -6733,7 +6735,7 @@ _CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
     }
 
     if constexpr (_Is_cpp17_random_iter_v<_FwdIt>) {
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_ROTATE
         using _Elem = remove_reference_t<_Iter_ref_t<decltype(_UFirst)>>;
 
         if constexpr (conjunction_v<bool_constant<_Iterator_is_contiguous<decltype(_UFirst)>>,
@@ -6743,7 +6745,7 @@ _CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
                 return _First + (_Last - _Mid);
             }
         }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_ROTATE ^^^
         _STD reverse(_UFirst, _UMid);
         _STD reverse(_UMid, _ULast);
         _STD reverse(_UFirst, _ULast);

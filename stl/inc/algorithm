@@ -5850,7 +5850,7 @@ namespace ranges {
         }
 
         if constexpr (bidirectional_iterator<_It>) {
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_ROTATE
             using _Elem = remove_reference_t<iter_reference_t<_It>>;
 
             if constexpr (contiguous_iterator<_It> && sized_sentinel_for<_Se, _It>
@@ -5861,7 +5861,7 @@ namespace ranges {
                     return {_First + (_Last - _Mid), _Last};
                 }
             }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_ROTATE ^^^
 
             _RANGES _Reverse_common(_First, _Mid);
             auto _Final = _RANGES _Get_final_iterator_unwrapped<_It>(_Mid, _STD move(_Last));
