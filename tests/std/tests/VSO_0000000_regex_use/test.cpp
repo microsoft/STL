@@ -910,9 +910,11 @@ void test_gh_997() {
         assert(ex.code() == error_stack);
     }
 
-    try {
-        wregex rgx(LR"(^http[s]?://([^.]+\.)*example\.com/.*$)", icase);
+    wregex rgx(LR"(^http[s]?://([^.]+\.)*example\.com/.*$)", icase);
 
+    assert(regex_match(L"https://www.example.com/meow", rgx));
+
+    try {
         assert(!regex_match(
             L"https://www.bogus.invalid/"
             L"123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-"
