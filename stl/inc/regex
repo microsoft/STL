@@ -4016,9 +4016,9 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     } else {
                         if (_Node->_Min > 0 || (_Greedy && !_Longest && _Node->_Max != 0)) { // try a rep first
                             // set up stack unwinding for greedy matching or loop val restoration
-                            auto _Frame_idx = _Push_frame(
-                                _Node->_Min == 0 ? _Rx_unwind_ops::_Loop_greedy : _Rx_unwind_ops::_Loop_restore_vals,
-                                _Node);
+                            const auto _Code =
+                                _Node->_Min == 0 ? _Rx_unwind_ops::_Loop_greedy : _Rx_unwind_ops::_Loop_restore_vals;
+                            auto _Frame_idx            = _Push_frame(_Code, _Node);
                             auto& _Frame               = _Frames[_Frame_idx];
                             _Frame._Loop_idx_sav       = _Sav._Loop_idx;
                             _Frame._Loop_frame_idx_sav = _Sav._Loop_frame_idx;
