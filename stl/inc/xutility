@@ -41,17 +41,47 @@ _STL_DISABLE_CLANG_WARNINGS
 #elif _USE_STD_VECTOR_ALGORITHMS
 #error Vector algorithms are not supported when building msvcp140.dll, but _USE_STD_VECTOR_ALGORITHMS is set.
 #endif // ^^^ _USE_STD_VECTOR_ALGORITHMS != 0 ^^^
-#elif (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID) && !defined(_M_ARM64EC)
-#ifndef _USE_STD_VECTOR_ALGORITHMS
-#define _USE_STD_VECTOR_ALGORITHMS 1
-#endif // !defined(_USE_STD_VECTOR_ALGORITHMS)
-#else // ^^^ arch supports vector algorithms / no support for vector algorithms vvv
+#elif defined(_M_CEE_PURE) || defined(_M_HYBRID)
 #ifndef _USE_STD_VECTOR_ALGORITHMS
 #define _USE_STD_VECTOR_ALGORITHMS 0
 #elif _USE_STD_VECTOR_ALGORITHMS
 #error Vector algorithms are not supported on this architecture, but _USE_STD_VECTOR_ALGORITHMS is set.
 #endif // ^^^ _USE_STD_VECTOR_ALGORITHMS != 0 ^^^
-#endif // ^^^ no support for vector algorithms ^^^
+#else // ^^^ vector algorithms unsupported for /clr:pure or CHPE / vector algorithms supported by default vvv
+#ifndef _USE_STD_VECTOR_ALGORITHMS
+#define _USE_STD_VECTOR_ALGORITHMS 1
+#endif // !defined(_USE_STD_VECTOR_ALGORITHMS)
+#endif // ^^^ vector algorithms supported by default ^^^
+
+// _USE_STD_VECTOR_ALGORITHMS is our documented control macro:
+// https://learn.microsoft.com/en-us/cpp/standard-library/vectorized-stl-algorithms?view=msvc-170
+// In the STL's implementation, we inspect the following architecture-specific detection macros,
+// because various algorithms are vectorized for various architectures:
+#if defined(_VECTORIZED_FOR_X64_X86)
+#error _VECTORIZED_FOR_X64_X86 is not a control macro; define _USE_STD_VECTOR_ALGORITHMS instead.
+#elif defined(_VECTORIZED_FOR_X64_X86_ARM64)
+#error _VECTORIZED_FOR_X64_X86_ARM64 is not a control macro; define _USE_STD_VECTOR_ALGORITHMS instead.
+#elif defined(_VECTORIZED_FOR_X64_X86_ARM64_ARM64EC)
+#error _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC is not a control macro; define _USE_STD_VECTOR_ALGORITHMS instead.
+#elif !_USE_STD_VECTOR_ALGORITHMS
+#define _VECTORIZED_FOR_X64_X86               0
+#define _VECTORIZED_FOR_X64_X86_ARM64         0
+#define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 0
+#elif defined(_M_ARM64EC)
+#define _VECTORIZED_FOR_X64_X86               0
+#define _VECTORIZED_FOR_X64_X86_ARM64         0
+#define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
+#elif defined(_M_X64) || defined(_M_IX86)
+#define _VECTORIZED_FOR_X64_X86               1
+#define _VECTORIZED_FOR_X64_X86_ARM64         1
+#define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
+#elif defined(_M_ARM64)
+#define _VECTORIZED_FOR_X64_X86               0
+#define _VECTORIZED_FOR_X64_X86_ARM64         1
+#define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
+#else // ^^^ known architecture / unknown architecture vvv
+#error Unknown architecture.
+#endif // ^^^ unknown architecture ^^^
 
 #ifndef _USE_STD_VECTOR_FLOATING_ALGORITHMS
 #if _USE_STD_VECTOR_ALGORITHMS && !defined(_M_FP_EXCEPT)
