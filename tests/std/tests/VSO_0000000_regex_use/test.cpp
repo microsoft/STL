@@ -2263,7 +2263,7 @@ void test_gh_5792() {
 }
 
 void test_gh_5798() {
-    // GH-5792: <regex>: Process generic loops non-recursively.
+    // GH-5798: <regex>: Process generic loops non-recursively.
     // This extends our test coverage on non-simple loops,
     // especially on bounds on the number of repetitions.
     for (string quantifier_suffix : {"", "?"}) {
