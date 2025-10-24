@@ -35,10 +35,13 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(
     wchar_t* _Dest, const void* _Src, size_t _Size_bits, wchar_t _Elem0, wchar_t _Elem1) noexcept;
 #endif // ^^^ _VECTORIZED_BITSET_TO_STRING ^^^
 
+#if _VECTORIZED_BITSET_FROM_STRING
 __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* _Dest, const char* _Src, size_t _Size_bytes,
     size_t _Size_bits, size_t _Size_chars, char _Elem0, char _Elem1) noexcept;
 __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* _Dest, const wchar_t* _Src, size_t _Size_bytes,
     size_t _Size_bits, size_t _Size_chars, wchar_t _Elem0, wchar_t _Elem1) noexcept;
+#endif // ^^^ _VECTORIZED_BITSET_FROM_STRING ^^^
+
 } // extern "C"
 #endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
@@ -150,7 +153,7 @@ public:
 private:
     template <class _Traits, class _Elem>
     _CONSTEXPR23 void _Construct(const _Elem* const _Ptr, size_t _Count, const _Elem _Elem0, const _Elem _Elem1) {
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_BITSET_FROM_STRING
         constexpr size_t _Bitset_from_string_vector_threshold = 16;
         if constexpr (_Bits >= _Bitset_from_string_vector_threshold
                       && _Is_implementation_handled_char_traits<_Traits> && sizeof(_Elem) <= 2) {
@@ -173,7 +176,8 @@ private:
                 return;
             }
         }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_BITSET_FROM_STRING ^^^
+
         if (_Count > _Bits) {
             for (size_t _Idx = _Bits; _Idx < _Count; ++_Idx) {
                 const auto _Ch = _Ptr[_Idx];
