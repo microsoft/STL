@@ -864,7 +864,7 @@ constexpr size_t _Traits_rfind_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Tra
 
     const size_t _Actual_start_at = (_STD min) (_Start_at, _Hay_size - 1);
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_FIND_LAST
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         if (!_STD _Is_constant_evaluated()) {
             const auto _End = _Haystack + _Actual_start_at + 1;
@@ -877,7 +877,7 @@ constexpr size_t _Traits_rfind_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Tra
             }
         }
     }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_FIND_LAST ^^^
 
     for (auto _Match_try = _Haystack + _Actual_start_at;; --_Match_try) {
         if (_Traits::eq(*_Match_try, _Ch)) {

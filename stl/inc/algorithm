@@ -3381,7 +3381,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>);
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_FIND_LAST
             if constexpr (is_same_v<_Pj, identity> && _Vector_alg_in_find_is_safe<_It, _Ty>
                           && sized_sentinel_for<_Se, _It>) {
                 if (!_STD is_constant_evaluated()) {
@@ -3402,7 +3402,7 @@ namespace ranges {
                     }
                 }
             }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_FIND_LAST ^^^
 
             if constexpr (_Bidi_common<_It, _Se>) {
                 for (auto _Result = _Last; _Result != _First;) {

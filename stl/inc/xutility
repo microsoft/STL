@@ -147,10 +147,12 @@ const void* __stdcall __std_find_trivial_4(const void* _First, const void* _Last
 const void* __stdcall __std_find_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
 #endif // ^^^ _VECTORIZED_FIND ^^^
 
+#if _VECTORIZED_FIND_LAST
 const void* __stdcall __std_find_last_trivial_1(const void* _First, const void* _Last, uint8_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
+#endif // ^^^ _VECTORIZED_FIND_LAST ^^^
 
 #if _VECTORIZED_ADJACENT_FIND
 const void* __stdcall __std_adjacent_find_1(const void* _First, const void* _Last) noexcept;
@@ -295,7 +297,7 @@ _Ty* _Find_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noe
 }
 #endif // ^^^ _VECTORIZED_FIND ^^^
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_FIND_LAST
 template <class _Ty, class _TVal>
 _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -314,6 +316,7 @@ _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_FIND_LAST ^^^
 
 #if _VECTORIZED_ADJACENT_FIND
 template <class _Ty>
@@ -331,6 +334,8 @@ _Ty* _Adjacent_find_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     }
 }
 #endif // ^^^ _VECTORIZED_ADJACENT_FIND ^^^
+
+#if _VECTORIZED_FOR_X64_X86
 
 // find_first_of vectorization is likely to be a win after this size (in elements)
 // (Used with _Find_first_of_vectorized, _Find_first_of_pos_vectorized, _Find_first_not_of_pos_vectorized,
