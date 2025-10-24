@@ -51,6 +51,7 @@ const void* __stdcall __std_find_first_of_trivial_8(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
 #endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
 
+#if _VECTORIZED_REVERSE_COPY
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
     const void* _First, const void* _Last, void* _Dest) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
@@ -59,6 +60,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
     const void* _First, const void* _Last, void* _Dest) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
     const void* _First, const void* _Last, void* _Dest) noexcept;
+#endif // ^^^ _VECTORIZED_REVERSE_COPY ^^^
 
 #if _VECTORIZED_MINMAX_ELEMENT
 _Min_max_element_t __stdcall __std_minmax_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
@@ -170,6 +172,7 @@ _Ty1* _Find_first_of_vectorized(
 }
 #endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
 
+#if _VECTORIZED_REVERSE_COPY
 template <size_t _Nx>
 __declspec(noalias) void _Reverse_copy_vectorized(const void* _First, const void* _Last, void* _Dest) noexcept {
     if constexpr (_Nx == 1) {
@@ -184,6 +187,7 @@ __declspec(noalias) void _Reverse_copy_vectorized(const void* _First, const void
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_REVERSE_COPY ^^^
 
 #if _VECTORIZED_MINMAX_ELEMENT
 template <class _Ty>
@@ -5726,7 +5730,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     auto _ULast        = _STD _Get_unwrapped(_Last);
     auto _UDest        = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_BidIt>(_UFirst, _ULast));
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_REVERSE_COPY
     using _Elem                         = remove_reference_t<_Iter_ref_t<remove_const_t<decltype(_UFirst)>>>;
     using _DestElem                     = remove_reference_t<_Iter_ref_t<decltype(_UDest)>>;
     constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
@@ -5746,7 +5750,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
             return _Dest;
         }
     }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_REVERSE_COPY ^^^
 
     for (; _UFirst != _ULast; ++_UDest) {
         *_UDest = *--_ULast;
@@ -5815,7 +5819,7 @@ namespace ranges {
 
             _STD _Verify_ranges_do_not_overlap(_First, _Last, _Output);
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_REVERSE_COPY
             if constexpr (contiguous_iterator<_It> && contiguous_iterator<_Out>) {
                 using _Elem                         = remove_reference_t<iter_reference_t<_It>>;
                 using _DestElem                     = remove_reference_t<iter_reference_t<_Out>>;
@@ -5832,7 +5836,7 @@ namespace ranges {
                     }
                 }
             }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_REVERSE_COPY ^^^
 
             for (; _First != _Last; ++_Output) {
                 *_Output = *--_Last;
