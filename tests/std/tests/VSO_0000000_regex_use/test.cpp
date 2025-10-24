@@ -904,7 +904,7 @@ void test_gh_997() {
     // GH-1528: <regex>: regex_match gets caught in recursive loop until stack overflow occurs
 
     try {
-        (void) regex_match(std::string(1025, 'a'), regex("(?:a)+"));
+        (void) regex_match(string(1025, 'a'), regex("(?:a)+"));
         assert(false); // adjust test when matching succeeds
     } catch (const regex_error& ex) {
         assert(ex.code() == error_stack);
