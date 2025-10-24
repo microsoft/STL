@@ -5639,7 +5639,7 @@ namespace ranges {
     template <bidirectional_iterator _It>
         requires permutable<_It>
     constexpr void _Reverse_common(_It _First, _It _Last) {
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_REVERSE
         if constexpr (contiguous_iterator<_It>) {
             using _Elem          = remove_reference_t<iter_reference_t<_It>>;
             constexpr size_t _Nx = sizeof(_Elem);
@@ -5653,7 +5653,7 @@ namespace ranges {
                 }
             }
         }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_REVERSE ^^^
 
         for (; _First != _Last && _First != --_Last; ++_First) {
             _RANGES iter_swap(_First, _Last);

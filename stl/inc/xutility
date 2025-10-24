@@ -112,10 +112,13 @@ extern "C" {
 // functions are in native code objects that the compiler cannot analyze. In the absence of the noalias attribute, the
 // compiler has to assume that the denoted arrays are "globally address taken", and that any later calls to
 // unanalyzable routines may modify those arrays.
+
+#if _VECTORIZED_REVERSE
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _First, void* _Last) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _First, void* _Last) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _First, void* _Last) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _First, void* _Last) noexcept;
+#endif // ^^^ _VECTORIZED_REVERSE ^^^
 
 #if _VECTORIZED_SWAP_RANGES
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
@@ -225,7 +228,7 @@ _Target _Find_arg_cast(const _Source _Val) noexcept {
     }
 }
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_REVERSE
 template <size_t _Nx>
 __declspec(noalias) void _Reverse_vectorized(void* _First, void* _Last) noexcept {
     if constexpr (_Nx == 1) {
@@ -240,7 +243,9 @@ __declspec(noalias) void _Reverse_vectorized(void* _First, void* _Last) noexcept
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_REVERSE ^^^
 
+#if _VECTORIZED_FOR_X64_X86
 template <class _Ty, class _TVal>
 __declspec(noalias) size_t _Count_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -6676,7 +6681,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
     _STD _Adl_verify_range(_First, _Last);
     auto _UFirst = _STD _Get_unwrapped(_First);
     auto _ULast  = _STD _Get_unwrapped(_Last);
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_REVERSE
     using _Elem                         = remove_reference_t<_Iter_ref_t<decltype(_UFirst)>>;
     constexpr bool _Allow_vectorization = conjunction_v<bool_constant<_Iterator_is_contiguous<decltype(_UFirst)>>,
         _Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
@@ -6691,7 +6696,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
             return;
         }
     }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_REVERSE ^^^
 
     for (; _UFirst != _ULast && _UFirst != --_ULast; ++_UFirst) {
         swap(*_UFirst, *_ULast); // intentional ADL
