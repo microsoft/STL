@@ -54,6 +54,7 @@ const void* __stdcall __std_find_not_ch_4(const void* _First, const void* _Last,
 const void* __stdcall __std_find_not_ch_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
 #endif // ^^^ _VECTORIZED_FIND ^^^
 
+#if _VECTORIZED_FIND_LAST_NOT_OF
 __declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_1(
     const void* _First, const void* _Last, uint8_t _Val) noexcept;
 __declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_2(
@@ -62,6 +63,7 @@ __declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_4(
     const void* _First, const void* _Last, uint32_t _Val) noexcept;
 __declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_8(
     const void* _First, const void* _Last, uint64_t _Val) noexcept;
+#endif // ^^^ _VECTORIZED_FIND_LAST_NOT_OF ^^^
 
 #if _VECTORIZED_FIND_FIRST_OF
 __declspec(noalias) size_t __stdcall __std_find_first_not_of_trivial_pos_1(
@@ -132,6 +134,7 @@ const _Ty* _Find_not_ch_vectorized(const _Ty* const _First, const _Ty* const _La
 }
 #endif // ^^^ _VECTORIZED_FIND ^^^
 
+#if _VECTORIZED_FIND_LAST_NOT_OF
 template <class _Ty>
 size_t _Find_last_not_ch_pos_vectorized(const _Ty* const _First, const _Ty* const _Last, const _Ty _Ch) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -146,6 +149,7 @@ size_t _Find_last_not_ch_pos_vectorized(const _Ty* const _First, const _Ty* cons
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_FIND_LAST_NOT_OF ^^^
 
 #if _VECTORIZED_FIND_FIRST_OF
 template <class _Ty1, class _Ty2>
@@ -1186,13 +1190,13 @@ constexpr size_t _Traits_rfind_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<
 
     const size_t _Actual_start_at = (_STD min) (_Start_at, _Hay_size - 1);
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_FIND_LAST_NOT_OF
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         if (!_STD _Is_constant_evaluated()) {
             return _STD _Find_last_not_ch_pos_vectorized(_Haystack, _Haystack + _Actual_start_at + 1, _Ch);
         }
     }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_FIND_LAST_NOT_OF ^^^
 
     for (auto _Match_try = _Haystack + _Actual_start_at;; --_Match_try) {
         if (!_Traits::eq(*_Match_try, _Ch)) {
