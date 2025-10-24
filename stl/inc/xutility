@@ -172,6 +172,7 @@ const void* __stdcall __std_search_8(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
 #endif // ^^^ _VECTORIZED_SEARCH ^^^
 
+#if _VECTORIZED_FIND_END
 const void* __stdcall __std_find_end_1(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
 const void* __stdcall __std_find_end_2(
@@ -180,6 +181,7 @@ const void* __stdcall __std_find_end_4(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
 const void* __stdcall __std_find_end_8(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
+#endif // ^^^ _VECTORIZED_FIND_END ^^^
 
 #if _VECTORIZED_MINMAX_ELEMENT
 const void* __stdcall __std_min_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
@@ -342,6 +344,8 @@ _Ty* _Adjacent_find_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
 // _Find_last_of_pos_vectorized, and _Find_last_not_of_pos_vectorized.)
 _INLINE_VAR constexpr ptrdiff_t _Threshold_find_first_of = 16;
 
+#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+
 #if _VECTORIZED_SEARCH
 template <class _Ty1, class _Ty2>
 _Ty1* _Search_vectorized(_Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _First2, const size_t _Count2) noexcept {
@@ -360,6 +364,7 @@ _Ty1* _Search_vectorized(_Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _F
 }
 #endif // ^^^ _VECTORIZED_SEARCH ^^^
 
+#if _VECTORIZED_FIND_END
 template <class _Ty1, class _Ty2>
 _Ty1* _Find_end_vectorized(
     _Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _First2, const size_t _Count2) noexcept {
@@ -376,7 +381,7 @@ _Ty1* _Find_end_vectorized(
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_FIND_END ^^^
 
 #if _VECTORIZED_MINMAX_ELEMENT
 template <class _Ty>

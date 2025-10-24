@@ -823,7 +823,7 @@ constexpr size_t _Traits_rfind(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits
 
     const size_t _Actual_start_at = (_STD min) (_Start_at, _Hay_size - _Needle_size);
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_FIND_END
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         if (!_STD _Is_constant_evaluated()) {
             // _Find_end_vectorized takes into account the needle length when locating the search start.
@@ -840,7 +840,7 @@ constexpr size_t _Traits_rfind(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits
             }
         }
     }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_FIND_END ^^^
 
     for (auto _Match_try = _Haystack + _Actual_start_at;; --_Match_try) {
         if (_Traits::eq(*_Match_try, *_Needle) && _Traits::compare(_Match_try, _Needle, _Needle_size) == 0) {
