@@ -302,6 +302,8 @@ _Ty* _Adjacent_find_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
 }
 
 // find_first_of vectorization is likely to be a win after this size (in elements)
+// (Used with _Find_first_of_vectorized, _Find_first_of_pos_vectorized, _Find_first_not_of_pos_vectorized,
+// _Find_last_of_pos_vectorized, and _Find_last_not_of_pos_vectorized.)
 _INLINE_VAR constexpr ptrdiff_t _Threshold_find_first_of = 16;
 
 template <class _Ty1, class _Ty2>
@@ -5629,7 +5631,8 @@ constexpr bool _Equal_memcmp_is_safe =
 template <size_t _Size>
 constexpr bool _Is_vector_element_size = _Size == 1 || _Size == 2 || _Size == 4 || _Size == 8;
 
-// Can we activate the vector algorithms for std::search?
+// Can we activate the vector algorithms for search, adjacent_find, find_end, find_first_of, and default_searcher?
+// (Also used indirectly for unique and unique_copy.)
 template <class _It1, class _It2, class _Pr>
 constexpr bool _Vector_alg_in_search_is_safe =
     _Equal_memcmp_is_safe<_It1, _It2, _Pr> && _Is_vector_element_size<sizeof(_Iter_value_t<_It1>)>;
@@ -6191,7 +6194,8 @@ constexpr bool _Vector_alg_in_find_is_safe_elem =
         // - One of the pointer types is a cv1 U* and the other is a cv2 U*.
         _Vector_alg_in_find_is_safe_object_pointers<_Ty, _Elem>>;
 
-// Can we activate the vector algorithms for find/count?
+// Can we activate the vector algorithms for find, count, remove, remove_copy, and ranges::find_last?
+// (Also used indirectly for replace and search_n.)
 template <class _Iter, class _Ty>
 constexpr bool _Vector_alg_in_find_is_safe =
     // The iterator must be contiguous so we can get raw pointers.

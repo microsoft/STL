@@ -385,6 +385,7 @@ _Ty* _Unique_copy_vectorized(const _Ty* const _First, const _Ty* const _Last, _T
         _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
     }
 }
+
 // Can we activate the vector algorithms for replace?
 template <class _Iter, class _Ty1>
 constexpr bool _Vector_alg_in_replace_is_safe = _Vector_alg_in_find_is_safe<_Iter, _Ty1> // can search for the value
@@ -396,6 +397,7 @@ constexpr bool _Vector_alg_in_ranges_replace_is_safe =
     _Vector_alg_in_replace_is_safe<_Iter, _Ty1> // can search and replace
     && _Vector_alg_in_find_is_safe_elem<_Ty2, _Iter_value_t<_Iter>>; // replacement fits
 
+// Can we activate the vector algorithms for search_n?
 template <class _Iter, class _Ty, class _Pr>
 constexpr bool _Vector_alg_in_search_n_is_safe = _Vector_alg_in_find_is_safe<_Iter, _Ty>
                                               && _Is_any_of_v<_Pr,
@@ -403,11 +405,12 @@ constexpr bool _Vector_alg_in_search_n_is_safe = _Vector_alg_in_find_is_safe<_It
                                                   ranges::equal_to,
 #endif
                                                   equal_to<>>;
-// Can we activate the vector algorithms for unique?
+
+// Can we activate the vector algorithms for unique and unique_copy?
 template <class _Iter, class _Pr>
 constexpr bool _Vector_alg_in_unique_is_safe = _Vector_alg_in_search_is_safe<_Iter, _Iter, _Pr>;
 
-// Can we use this output iterator for remove_copy or unique_copy?
+// Can we use this output iterator for remove_copy and unique_copy?
 template <class _Out, class _In>
 constexpr bool _Output_iterator_for_vector_alg_is_safe() {
     if constexpr (_Iterator_is_contiguous<_Out>) {
