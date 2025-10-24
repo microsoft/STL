@@ -728,7 +728,7 @@ constexpr size_t _Traits_find(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits>
         return _Start_at;
     }
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_SEARCH
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         if (!_STD _Is_constant_evaluated()) {
             const auto _End = _Haystack + _Hay_size;
@@ -741,7 +741,7 @@ constexpr size_t _Traits_find(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits>
             }
         }
     }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_SEARCH ^^^
 
     const auto _Possible_matches_end = _Haystack + (_Hay_size - _Needle_size) + 1;
     for (auto _Match_try = _Haystack + _Start_at;; ++_Match_try) {

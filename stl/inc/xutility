@@ -155,6 +155,7 @@ const void* __stdcall __std_adjacent_find_2(const void* _First, const void* _Las
 const void* __stdcall __std_adjacent_find_4(const void* _First, const void* _Last) noexcept;
 const void* __stdcall __std_adjacent_find_8(const void* _First, const void* _Last) noexcept;
 
+#if _VECTORIZED_SEARCH
 const void* __stdcall __std_search_1(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
 const void* __stdcall __std_search_2(
@@ -163,6 +164,7 @@ const void* __stdcall __std_search_4(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
 const void* __stdcall __std_search_8(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
+#endif // ^^^ _VECTORIZED_SEARCH ^^^
 
 const void* __stdcall __std_find_end_1(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
@@ -327,6 +329,7 @@ _Ty* _Adjacent_find_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
 // _Find_last_of_pos_vectorized, and _Find_last_not_of_pos_vectorized.)
 _INLINE_VAR constexpr ptrdiff_t _Threshold_find_first_of = 16;
 
+#if _VECTORIZED_SEARCH
 template <class _Ty1, class _Ty2>
 _Ty1* _Search_vectorized(_Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _First2, const size_t _Count2) noexcept {
     _STL_INTERNAL_STATIC_ASSERT(sizeof(_Ty1) == sizeof(_Ty2));
@@ -342,6 +345,7 @@ _Ty1* _Search_vectorized(_Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _F
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_SEARCH ^^^
 
 template <class _Ty1, class _Ty2>
 _Ty1* _Find_end_vectorized(
@@ -7088,7 +7092,7 @@ namespace ranges {
             _STL_INTERNAL_CHECK(_RANGES distance(_First1, _Last1) == _Count1);
             _STL_INTERNAL_CHECK(_RANGES distance(_First2, _Last2) == _Count2);
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_SEARCH
             if constexpr (_Vector_alg_in_search_is_safe<_It1, _It2, _Pr> && is_same_v<_Pj1, identity>
                           && is_same_v<_Pj2, identity>) {
                 if (!_STD is_constant_evaluated()) {
@@ -7121,7 +7125,7 @@ namespace ranges {
                     }
                 }
             }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_SEARCH ^^^
 
             for (; _Count1 >= _Count2; ++_First1, (void) --_Count1) {
                 auto _Match_and_mid1 = _RANGES _Equal_rev_pred(_First1, _First2, _Last2, _Pred, _Proj1, _Proj2);
