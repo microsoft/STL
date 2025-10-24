@@ -64,6 +64,7 @@ _Min_max_element_t __stdcall __std_minmax_element_8(const void* _First, const vo
 _Min_max_element_t __stdcall __std_minmax_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
 
+#if _VECTORIZED_MINMAX
 __declspec(noalias) _Min_max_1i __stdcall __std_minmax_1i(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_1u __stdcall __std_minmax_1u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_2i __stdcall __std_minmax_2i(const void* _First, const void* _Last) noexcept;
@@ -74,6 +75,7 @@ __declspec(noalias) _Min_max_8i __stdcall __std_minmax_8i(const void* _First, co
 __declspec(noalias) _Min_max_8u __stdcall __std_minmax_8u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_f __stdcall __std_minmax_f(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* _First, const void* _Last) noexcept;
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
 
 #if _VECTORIZED_IS_SORTED_UNTIL
 const void* __stdcall __std_is_sorted_until_1i(const void* _First, const void* _Last, bool _Greater) noexcept;
@@ -196,6 +198,7 @@ pair<_Ty*, _Ty*> _Minmax_element_vectorized(_Ty* const _First, _Ty* const _Last)
     return {const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
 }
 
+#if _VECTORIZED_MINMAX
 template <class _Ty>
 auto _Minmax_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = is_signed_v<_Ty>;
@@ -239,6 +242,7 @@ auto _Minmax_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
 
 #if _VECTORIZED_IS_SORTED_UNTIL
 template <class _Ty>
@@ -11227,14 +11231,14 @@ _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist, _Pr _Pr
     // return {leftmost/smallest, rightmost/largest}
     _STL_ASSERT(
         _Ilist.size() != 0, "An initializer_list passed to std::minmax must not be empty. (N4971 [alg.min.max]/21)");
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_MINMAX
     if constexpr (_Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
         if (!_STD _Is_constant_evaluated()) {
             const auto _Result = _STD _Minmax_vectorized(_Ilist.begin(), _Ilist.end());
             return {static_cast<_Ty>(_Result._Min), static_cast<_Ty>(_Result._Max)};
         }
     }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
     pair<const _Ty*, const _Ty*> _Res =
         _STD _Minmax_element_unchecked(_Ilist.begin(), _Ilist.end(), _STD _Pass_fn(_Pred));
     return pair<_Ty, _Ty>(*_Res.first, *_Res.second);
@@ -11287,15 +11291,20 @@ namespace ranges {
                 "An initializer_list passed to std::ranges::minmax must not be empty. (N4971 [alg.min.max]/21)");
 #if _VECTORIZED_FOR_X64_X86
             if constexpr (is_same_v<_Pj, identity>) {
+#if _VECTORIZED_MINMAX
                 if constexpr (_Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
                     if (!_STD is_constant_evaluated()) {
                         const auto _Result = _STD _Minmax_vectorized(_First, _Last);
                         return {static_cast<_Ty>(_Result._Min), static_cast<_Ty>(_Result._Max)};
                     }
-                } else if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
-                    if (!_STD is_constant_evaluated()) {
-                        const auto _Result = _STD _Minmax_element_vectorized(_First, _Last);
-                        return {*static_cast<const _Ty*>(_Result.first), *static_cast<const _Ty*>(_Result.second)};
+                } else
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
+                {
+                    if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
+                        if (!_STD is_constant_evaluated()) {
+                            const auto _Result = _STD _Minmax_element_vectorized(_First, _Last);
+                            return {*static_cast<const _Ty*>(_Result.first), *static_cast<const _Ty*>(_Result.second)};
+                        }
                     }
                 }
             }
@@ -11315,6 +11324,7 @@ namespace ranges {
             using _Vty = range_value_t<_Rng>;
 #if _VECTORIZED_FOR_X64_X86
             if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
+#if _VECTORIZED_MINMAX
                 if constexpr (_Is_min_max_value_optimization_safe<decltype(_UFirst), _Pr>) {
                     if (!_STD is_constant_evaluated()) {
                         const auto _First_ptr = _STD to_address(_UFirst);
@@ -11322,12 +11332,17 @@ namespace ranges {
                         const auto _Result    = _STD _Minmax_vectorized(_First_ptr, _Last_ptr);
                         return {static_cast<_Vty>(_Result._Min), static_cast<_Vty>(_Result._Max)};
                     }
-                } else if constexpr (_Is_min_max_optimization_safe<decltype(_UFirst), _Pr>) {
-                    if (!_STD is_constant_evaluated()) {
-                        const auto _First_ptr = _STD to_address(_UFirst);
-                        const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_ULast - _UFirst);
-                        const auto _Result    = _STD _Minmax_element_vectorized(_First_ptr, _Last_ptr);
-                        return {*static_cast<const _Vty*>(_Result.first), *static_cast<const _Vty*>(_Result.second)};
+                } else
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
+                {
+                    if constexpr (_Is_min_max_optimization_safe<decltype(_UFirst), _Pr>) {
+                        if (!_STD is_constant_evaluated()) {
+                            const auto _First_ptr = _STD to_address(_UFirst);
+                            const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_ULast - _UFirst);
+                            const auto _Result    = _STD _Minmax_element_vectorized(_First_ptr, _Last_ptr);
+                            return {
+                                *static_cast<const _Vty*>(_Result.first), *static_cast<const _Vty*>(_Result.second)};
+                        }
                     }
                 }
             }

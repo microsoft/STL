@@ -186,6 +186,7 @@ const void* __stdcall __std_max_element_8(const void* _First, const void* _Last,
 const void* __stdcall __std_max_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
 const void* __stdcall __std_max_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
 
+#if _VECTORIZED_MINMAX
 __declspec(noalias) int8_t __stdcall __std_min_1i(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) uint8_t __stdcall __std_min_1u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) int16_t __stdcall __std_min_2i(const void* _First, const void* _Last) noexcept;
@@ -196,6 +197,7 @@ __declspec(noalias) int64_t __stdcall __std_min_8i(const void* _First, const voi
 __declspec(noalias) uint64_t __stdcall __std_min_8u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) float __stdcall __std_min_f(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) double __stdcall __std_min_d(const void* _First, const void* _Last) noexcept;
+
 __declspec(noalias) int8_t __stdcall __std_max_1i(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) uint8_t __stdcall __std_max_1u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) int16_t __stdcall __std_max_2i(const void* _First, const void* _Last) noexcept;
@@ -206,6 +208,7 @@ __declspec(noalias) int64_t __stdcall __std_max_8i(const void* _First, const voi
 __declspec(noalias) uint64_t __stdcall __std_max_8u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) float __stdcall __std_max_f(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) double __stdcall __std_max_d(const void* _First, const void* _Last) noexcept;
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
 
 #if _VECTORIZED_MISMATCH
 __declspec(noalias) size_t __stdcall __std_mismatch_1(const void* _First1, const void* _First2, size_t _Count) noexcept;
@@ -393,7 +396,9 @@ _Ty* _Max_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
+#if _VECTORIZED_MINMAX
 template <class _Ty>
 auto _Min_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = is_signed_v<_Ty>;
@@ -479,7 +484,7 @@ auto _Max_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
 
 #if _VECTORIZED_MISMATCH
 template <size_t _Element_size>
@@ -7333,13 +7338,13 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return leftmost/largest
     _STL_ASSERT(
         _Ilist.size() != 0, "An initializer_list passed to std::max must not be empty. (N4971 [alg.min.max]/13)");
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_MINMAX
     if constexpr (_Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
         if (!_Is_constant_evaluated()) {
             return static_cast<_Ty>(_STD _Max_vectorized(_Ilist.begin(), _Ilist.end()));
         }
     }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
     const _Ty* _Res = _STD _Max_element_unchecked(_Ilist.begin(), _Ilist.end(), _STD _Pass_fn(_Pred));
     return *_Res;
 }
@@ -7379,13 +7384,13 @@ namespace ranges {
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
                 "An initializer_list passed to std::ranges::max must not be empty. (N4971 [alg.min.max]/13)");
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_MINMAX
             if constexpr (is_same_v<_Pj, identity> && _Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
                 if (!_STD is_constant_evaluated()) {
                     return static_cast<_Ty>(_STD _Max_vectorized(_First, _Last));
                 }
             }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
             return *_RANGES _Max_element_unchecked(_First, _Last, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
@@ -7398,7 +7403,7 @@ namespace ranges {
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
                 _UFirst != _ULast, "A range passed to std::ranges::max must not be empty. (N4971 [alg.min.max]/13)");
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_MINMAX
             if constexpr (is_same_v<_Pj, identity> && _Is_min_max_value_optimization_safe<decltype(_UFirst), _Pr>
                           && sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
                 if (!_STD is_constant_evaluated()) {
@@ -7407,7 +7412,7 @@ namespace ranges {
                     return static_cast<range_value_t<_Rng>>(_STD _Max_vectorized(_First_ptr, _Last_ptr));
                 }
             }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<decltype(_UFirst)>) {
                 return static_cast<range_value_t<_Rng>>(*_RANGES _Max_element_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj)));
@@ -7557,13 +7562,13 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return leftmost/smallest
     _STL_ASSERT(
         _Ilist.size() != 0, "An initializer_list passed to std::min must not be empty. (N4971 [alg.min.max]/5)");
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_MINMAX
     if constexpr (_Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
         if (!_Is_constant_evaluated()) {
             return static_cast<_Ty>(_STD _Min_vectorized(_Ilist.begin(), _Ilist.end()));
         }
     }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
     const _Ty* _Res = _STD _Min_element_unchecked(_Ilist.begin(), _Ilist.end(), _STD _Pass_fn(_Pred));
     return *_Res;
 }
@@ -7597,13 +7602,13 @@ namespace ranges {
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
                 "An initializer_list passed to std::ranges::min must not be empty. (N4971 [alg.min.max]/5)");
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_MINMAX
             if constexpr (is_same_v<_Pj, identity> && _Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
                 if (!_STD is_constant_evaluated()) {
                     return static_cast<_Ty>(_STD _Min_vectorized(_First, _Last));
                 }
             }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
             return *_RANGES _Min_element_unchecked(_First, _Last, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
@@ -7616,7 +7621,7 @@ namespace ranges {
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
                 _UFirst != _ULast, "A range passed to std::ranges::min must not be empty. (N4971 [alg.min.max]/5)");
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_MINMAX
             if constexpr (is_same_v<_Pj, identity> && _Is_min_max_value_optimization_safe<decltype(_UFirst), _Pr>
                           && sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
                 if (!_STD is_constant_evaluated()) {
@@ -7625,7 +7630,7 @@ namespace ranges {
                     return static_cast<range_value_t<_Rng>>(_STD _Min_vectorized(_First_ptr, _Last_ptr));
                 }
             }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<decltype(_UFirst)>) {
                 return static_cast<range_value_t<_Rng>>(*_RANGES _Min_element_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj)));
