@@ -29,8 +29,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef msvc
 #undef lifetimebound
 
-#if _VECTORIZED_FOR_X64_X86
-
 extern "C" {
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
 // won't be stored beyond the lifetime of the function, and that the function will only reference arrays denoted by
@@ -151,6 +149,7 @@ void* __stdcall __std_unique_copy_2(const void* _First, const void* _Last, void*
 void* __stdcall __std_unique_copy_4(const void* _First, const void* _Last, void* _Dest) noexcept;
 void* __stdcall __std_unique_copy_8(const void* _First, const void* _Last, void* _Dest) noexcept;
 #endif // ^^^ _VECTORIZED_UNIQUE_COPY ^^^
+
 } // extern "C"
 
 _STD_BEGIN
@@ -432,6 +431,8 @@ _Ty* _Unique_copy_vectorized(const _Ty* const _First, const _Ty* const _Last, _T
 }
 #endif // ^^^ _VECTORIZED_UNIQUE_COPY ^^^
 
+#if _VECTORIZED_FOR_X64_X86
+
 // Can we activate the vector algorithms for replace?
 template <class _Iter, class _Ty1>
 constexpr bool _Vector_alg_in_replace_is_safe = _Vector_alg_in_find_is_safe<_Iter, _Ty1> // can search for the value
@@ -473,10 +474,9 @@ constexpr bool _Vector_alg_includes_iterators_safe =
     && !_Iterator_is_volatile<_Iter1> && !_Iterator_is_volatile<_Iter2> // Iterators must not be volatile.
     && is_same_v<_Elem, _Iter_value_t<_Iter2>> // Iterators have the same value type.
     && disjunction_v<is_integral<_Elem>, is_pointer<_Elem>>; // Integral or pointer type.
-_STD_END
+
 #endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
-_STD_BEGIN
 #define _REQUIRE_CPP17_MUTABLE_RANDOM_ACCESS_ITERATOR(_Iter) \
     static_assert(_Is_cpp17_random_iter_v<_Iter>,            \
         "This algorithm requires that mutable iterators be Cpp17RandomAccessIterators or stronger.")

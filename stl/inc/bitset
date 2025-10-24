@@ -22,12 +22,11 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _STD_BITSET_TO_STREAM_STACK_RESERVATION 128
 #endif // !defined(_STD_BITSET_TO_STREAM_STACK_RESERVATION)
 
-#if _VECTORIZED_FOR_X64_X86
+extern "C" {
 // These bitset functions sometimes assume that the bit array has zero padding to a multiple of 2 or 4 bytes.
 // The assumptions hold true even for the vNext suggestion to use smaller types for small bitsets (see GH-1498)
 // due to vectorization thresholds.
 
-extern "C" {
 #if _VECTORIZED_BITSET_TO_STRING
 __declspec(noalias) void __stdcall __std_bitset_to_string_1(
     char* _Dest, const void* _Src, size_t _Size_bits, char _Elem0, char _Elem1) noexcept;
@@ -43,7 +42,6 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* _Dest, const
 #endif // ^^^ _VECTORIZED_BITSET_FROM_STRING ^^^
 
 } // extern "C"
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
 _STD_BEGIN
 template <class _Elem, size_t _Bits, bool _Dynamic = (_Bits * sizeof(_Elem) > _STD_BITSET_TO_STREAM_STACK_RESERVATION)>

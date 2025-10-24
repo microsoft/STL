@@ -19,7 +19,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if _VECTORIZED_FOR_X64_X86
 extern "C" {
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
 // won't be stored beyond the lifetime of the function, and that the function will only reference arrays denoted by
@@ -181,11 +180,6 @@ size_t _Find_last_not_of_pos_vectorized(const _Ty1* const _Haystack, const size_
 }
 #endif // ^^^ _VECTORIZED_FIND_LAST_OF ^^^
 
-_STD_END
-
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
-
-_STD_BEGIN
 #ifdef __clang__
 #define _HAS_MEMCPY_MEMMOVE_INTRINSICS 1
 #else // ^^^ use __builtin_memcpy and __builtin_memmove / use workaround vvv

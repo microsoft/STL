@@ -103,7 +103,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ !defined(__clang__) || __clang_major__ < 19 ^^^
 #endif // ^^^ !defined(_USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE) ^^^
 
-#if _VECTORIZED_FOR_X64_X86
 extern "C" {
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
 // won't be stored beyond the lifetime of the function, and that the function will only reference arrays denoted by
@@ -231,7 +230,6 @@ __declspec(noalias) size_t __stdcall __std_mismatch_8(const void* _First1, const
 #endif // ^^^ _VECTORIZED_MISMATCH ^^^
 
 } // extern "C"
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
 
 _STD_BEGIN
 
