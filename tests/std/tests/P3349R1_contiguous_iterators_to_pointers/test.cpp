@@ -262,6 +262,8 @@ void test() {
         TESTR(find_end(r2_first_l, r2_last_l, i, s));
         TESTR(find_first_of(i, s, r2_first_s, r2_last_s));
         TESTR(find_first_of(r2_first_l, r2_last_l, i, s));
+        TESTR(includes(i, s, r2_first_s, r2_last_s));
+        TESTR(includes(r2_first_l, r2_last_l, i, s));
         TESTR(is_sorted(i, s));
         TESTR(is_sorted_until(i, s));
         TESTR(lexicographical_compare(i, s, i, s));
