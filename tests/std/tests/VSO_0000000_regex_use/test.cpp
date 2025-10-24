@@ -911,7 +911,7 @@ void test_gh_997() {
     }
 
     try {
-        wregex rgx(LR"(^http[s]?\:\/\/([^.]+\.)*github\.com\/.*$)", icase);
+        wregex rgx(LR"(^http[s]?://([^.]+\.)*github\.com/.*$)", icase);
 
         assert(!regex_match(
             L"https://www.google.com/"
