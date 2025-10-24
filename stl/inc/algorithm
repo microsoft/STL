@@ -5023,7 +5023,7 @@ namespace ranges {
                 return {_STD move(_Next), _STD move(_First)};
             }
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_REMOVE
             if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && sized_sentinel_for<_Se, _It>
                           && is_same_v<_Pj, identity>) {
                 if (!_STD is_constant_evaluated()) {
@@ -5039,7 +5039,7 @@ namespace ranges {
                     }
                 }
             }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_REMOVE ^^^
 
             while (++_First != _Last) {
                 if (_STD invoke(_Proj, *_First) != _Val) {
