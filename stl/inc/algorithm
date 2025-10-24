@@ -57,12 +57,14 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
     const void* _First, const void* _Last, void* _Dest) noexcept;
 
+#if _VECTORIZED_MINMAX_ELEMENT
 _Min_max_element_t __stdcall __std_minmax_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
 #if _VECTORIZED_MINMAX
 __declspec(noalias) _Min_max_1i __stdcall __std_minmax_1i(const void* _First, const void* _Last) noexcept;
@@ -173,6 +175,7 @@ __declspec(noalias) void _Reverse_copy_vectorized(const void* _First, const void
     }
 }
 
+#if _VECTORIZED_MINMAX_ELEMENT
 template <class _Ty>
 pair<_Ty*, _Ty*> _Minmax_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = is_signed_v<_Ty>;
@@ -197,6 +200,7 @@ pair<_Ty*, _Ty*> _Minmax_element_vectorized(_Ty* const _First, _Ty* const _Last)
 
     return {const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
 }
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
 #if _VECTORIZED_MINMAX
 template <class _Ty>
@@ -11023,7 +11027,7 @@ namespace ranges {
 
 template <class _FwdIt, class _Pr>
 constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_MINMAX_ELEMENT
     if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
             const auto _First_ptr = _STD _To_address(_First);
@@ -11036,7 +11040,7 @@ constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _
             }
         }
     }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
     // find smallest and largest elements
     pair<_FwdIt, _FwdIt> _Found(_First, _First);
@@ -11149,7 +11153,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_MINMAX_ELEMENT
             if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
                           && sized_sentinel_for<_Se, _It>) {
                 if (!_STD is_constant_evaluated()) {
@@ -11164,7 +11168,7 @@ namespace ranges {
                     }
                 }
             }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
             min_max_result<_It> _Found{_First, _First};
 
@@ -11289,7 +11293,8 @@ namespace ranges {
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
                 "An initializer_list passed to std::ranges::minmax must not be empty. (N4971 [alg.min.max]/21)");
-#if _VECTORIZED_FOR_X64_X86
+
+#if _VECTORIZED_MINMAX || _VECTORIZED_MINMAX_ELEMENT
             if constexpr (is_same_v<_Pj, identity>) {
 #if _VECTORIZED_MINMAX
                 if constexpr (_Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
@@ -11300,15 +11305,18 @@ namespace ranges {
                 } else
 #endif // ^^^ _VECTORIZED_MINMAX ^^^
                 {
+#if _VECTORIZED_MINMAX_ELEMENT
                     if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
                         if (!_STD is_constant_evaluated()) {
                             const auto _Result = _STD _Minmax_element_vectorized(_First, _Last);
                             return {*static_cast<const _Ty*>(_Result.first), *static_cast<const _Ty*>(_Result.second)};
                         }
                     }
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
                 }
             }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_MINMAX || _VECTORIZED_MINMAX_ELEMENT ^^^
+
             return _Minmax_fwd_unchecked(_First, _Last, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
@@ -11322,7 +11330,8 @@ namespace ranges {
             _STL_ASSERT(
                 _UFirst != _ULast, "A range passed to std::ranges::minmax must not be empty. (N4971 [alg.min.max]/21)");
             using _Vty = range_value_t<_Rng>;
-#if _VECTORIZED_FOR_X64_X86
+
+#if _VECTORIZED_MINMAX || _VECTORIZED_MINMAX_ELEMENT
             if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
 #if _VECTORIZED_MINMAX
                 if constexpr (_Is_min_max_value_optimization_safe<decltype(_UFirst), _Pr>) {
@@ -11335,6 +11344,7 @@ namespace ranges {
                 } else
 #endif // ^^^ _VECTORIZED_MINMAX ^^^
                 {
+#if _VECTORIZED_MINMAX_ELEMENT
                     if constexpr (_Is_min_max_optimization_safe<decltype(_UFirst), _Pr>) {
                         if (!_STD is_constant_evaluated()) {
                             const auto _First_ptr = _STD to_address(_UFirst);
@@ -11344,9 +11354,11 @@ namespace ranges {
                                 *static_cast<const _Vty*>(_Result.first), *static_cast<const _Vty*>(_Result.second)};
                         }
                     }
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
                 }
             }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_MINMAX || _VECTORIZED_MINMAX_ELEMENT ^^^
+
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<decltype(_UFirst)>) {
                 return _Minmax_fwd_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
