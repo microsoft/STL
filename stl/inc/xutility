@@ -335,14 +335,12 @@ _Ty* _Adjacent_find_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
 }
 #endif // ^^^ _VECTORIZED_ADJACENT_FIND ^^^
 
-#if _VECTORIZED_FOR_X64_X86
-
+#if _VECTORIZED_FIND_FIRST_OF || _VECTORIZED_FIND_LAST_OF
 // find_first_of vectorization is likely to be a win after this size (in elements)
 // (Used with _Find_first_of_vectorized, _Find_first_of_pos_vectorized, _Find_first_not_of_pos_vectorized,
 // _Find_last_of_pos_vectorized, and _Find_last_not_of_pos_vectorized.)
 _INLINE_VAR constexpr ptrdiff_t _Threshold_find_first_of = 16;
-
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_FIND_FIRST_OF || _VECTORIZED_FIND_LAST_OF ^^^
 
 #if _VECTORIZED_SEARCH
 template <class _Ty1, class _Ty2>
@@ -5674,7 +5672,8 @@ template <class _Iter1, class _Iter2, class _Pr>
 constexpr bool _Equal_memcmp_is_safe =
     _Equal_memcmp_is_safe_helper<remove_const_t<_Iter1>, remove_const_t<_Iter2>, remove_const_t<_Pr>>;
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_SEARCH || _VECTORIZED_ADJACENT_FIND || _VECTORIZED_FIND_END || _VECTORIZED_FIND_FIRST_OF \
+    || _VECTORIZED_UNIQUE || _VECTORIZED_UNIQUE_COPY
 template <size_t _Size>
 constexpr bool _Is_vector_element_size = _Size == 1 || _Size == 2 || _Size == 4 || _Size == 8;
 
@@ -5683,7 +5682,7 @@ constexpr bool _Is_vector_element_size = _Size == 1 || _Size == 2 || _Size == 4 
 template <class _It1, class _It2, class _Pr>
 constexpr bool _Vector_alg_in_search_is_safe =
     _Equal_memcmp_is_safe<_It1, _It2, _Pr> && _Is_vector_element_size<sizeof(_Iter_value_t<_It1>)>;
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _Vector_alg_in_search_is_safe is available ^^^
 
 template <class _CtgIt1, class _CtgIt2>
 _NODISCARD int _Memcmp_count(_CtgIt1 _First1, _CtgIt2 _First2, const size_t _Count) {

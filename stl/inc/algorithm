@@ -431,8 +431,7 @@ _Ty* _Unique_copy_vectorized(const _Ty* const _First, const _Ty* const _Last, _T
 }
 #endif // ^^^ _VECTORIZED_UNIQUE_COPY ^^^
 
-#if _VECTORIZED_FOR_X64_X86
-
+#if _VECTORIZED_REPLACE
 // Can we activate the vector algorithms for replace?
 template <class _Iter, class _Ty1>
 constexpr bool _Vector_alg_in_replace_is_safe = _Vector_alg_in_find_is_safe<_Iter, _Ty1> // can search for the value
@@ -443,7 +442,9 @@ template <class _Iter, class _Ty1, class _Ty2>
 constexpr bool _Vector_alg_in_ranges_replace_is_safe =
     _Vector_alg_in_replace_is_safe<_Iter, _Ty1> // can search and replace
     && _Vector_alg_in_find_is_safe_elem<_Ty2, _Iter_value_t<_Iter>>; // replacement fits
+#endif // ^^^ _VECTORIZED_REPLACE ^^^
 
+#if _VECTORIZED_SEARCH_N
 // Can we activate the vector algorithms for search_n?
 template <class _Iter, class _Ty, class _Pr>
 constexpr bool _Vector_alg_in_search_n_is_safe = _Vector_alg_in_find_is_safe<_Iter, _Ty>
@@ -452,11 +453,15 @@ constexpr bool _Vector_alg_in_search_n_is_safe = _Vector_alg_in_find_is_safe<_It
                                                   ranges::equal_to,
 #endif
                                                   equal_to<>>;
+#endif // ^^^ _VECTORIZED_SEARCH_N ^^^
 
+#if _VECTORIZED_UNIQUE || _VECTORIZED_UNIQUE_COPY
 // Can we activate the vector algorithms for unique and unique_copy?
 template <class _Iter, class _Pr>
 constexpr bool _Vector_alg_in_unique_is_safe = _Vector_alg_in_search_is_safe<_Iter, _Iter, _Pr>;
+#endif // ^^^ _VECTORIZED_UNIQUE || _VECTORIZED_UNIQUE_COPY ^^^
 
+#if _VECTORIZED_REMOVE_COPY || _VECTORIZED_UNIQUE_COPY
 // Can we use this output iterator for remove_copy and unique_copy?
 template <class _Out, class _In>
 constexpr bool _Output_iterator_for_vector_alg_is_safe() {
@@ -466,7 +471,9 @@ constexpr bool _Output_iterator_for_vector_alg_is_safe() {
         return false;
     }
 }
+#endif // ^^^ _VECTORIZED_REMOVE_COPY || _VECTORIZED_UNIQUE_COPY ^^^
 
+#if _VECTORIZED_INCLUDES
 // Can we activate the vector algorithms for includes?
 template <class _Iter1, class _Iter2, class _Elem = _Iter_value_t<_Iter1>>
 constexpr bool _Vector_alg_includes_iterators_safe =
@@ -474,8 +481,7 @@ constexpr bool _Vector_alg_includes_iterators_safe =
     && !_Iterator_is_volatile<_Iter1> && !_Iterator_is_volatile<_Iter2> // Iterators must not be volatile.
     && is_same_v<_Elem, _Iter_value_t<_Iter2>> // Iterators have the same value type.
     && disjunction_v<is_integral<_Elem>, is_pointer<_Elem>>; // Integral or pointer type.
-
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_INCLUDES ^^^
 
 #define _REQUIRE_CPP17_MUTABLE_RANDOM_ACCESS_ITERATOR(_Iter) \
     static_assert(_Is_cpp17_random_iter_v<_Iter>,            \
