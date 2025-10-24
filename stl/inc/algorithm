@@ -75,6 +75,7 @@ __declspec(noalias) _Min_max_8u __stdcall __std_minmax_8u(const void* _First, co
 __declspec(noalias) _Min_max_f __stdcall __std_minmax_f(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* _First, const void* _Last) noexcept;
 
+#if _VECTORIZED_IS_SORTED_UNTIL
 const void* __stdcall __std_is_sorted_until_1i(const void* _First, const void* _Last, bool _Greater) noexcept;
 const void* __stdcall __std_is_sorted_until_1u(const void* _First, const void* _Last, bool _Greater) noexcept;
 const void* __stdcall __std_is_sorted_until_2i(const void* _First, const void* _Last, bool _Greater) noexcept;
@@ -85,6 +86,7 @@ const void* __stdcall __std_is_sorted_until_8i(const void* _First, const void* _
 const void* __stdcall __std_is_sorted_until_8u(const void* _First, const void* _Last, bool _Greater) noexcept;
 const void* __stdcall __std_is_sorted_until_f(const void* _First, const void* _Last, bool _Greater) noexcept;
 const void* __stdcall __std_is_sorted_until_d(const void* _First, const void* _Last, bool _Greater) noexcept;
+#endif // ^^^ _VECTORIZED_IS_SORTED_UNTIL ^^^
 
 __declspec(noalias) bool __stdcall __std_includes_less_1i(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
@@ -236,6 +238,7 @@ auto _Minmax_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     }
 }
 
+#if _VECTORIZED_IS_SORTED_UNTIL
 template <class _Ty>
 _Ty* _Is_sorted_until_vectorized(_Ty* const _First, _Ty* const _Last, const bool _Greater) noexcept {
     constexpr bool _Signed = is_signed_v<_Ty>;
@@ -272,6 +275,7 @@ _Ty* _Is_sorted_until_vectorized(_Ty* const _First, _Ty* const _Last, const bool
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_IS_SORTED_UNTIL ^^^
 
 template <class _Ty>
 bool _Includes_vectorized(
@@ -8483,7 +8487,7 @@ namespace ranges {
             return _First;
         }
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_IS_SORTED_UNTIL
         if constexpr (_Is_min_max_iterators_safe<_It> && sized_sentinel_for<_Se, _It> && is_same_v<_Pj, identity>) {
             constexpr bool _Is_greater = _Is_predicate_greater<_It, _Pr>;
             if constexpr (_Is_greater || _Is_predicate_less<_It, _Pr>) {
@@ -8500,7 +8504,7 @@ namespace ranges {
                 }
             }
         }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_IS_SORTED_UNTIL ^^^
 
         for (auto _Prev = _First; ++_First != _Last; ++_Prev) {
             if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Prev))) {
@@ -11651,7 +11655,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt is_sorted_until(const _FwdIt _First, _FwdIt _Last
     auto _UFirst = _STD _Get_unwrapped(_First);
     auto _ULast  = _STD _Get_unwrapped(_Last);
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_IS_SORTED_UNTIL
     if constexpr (_Is_min_max_iterators_safe<decltype(_UFirst)>) {
         constexpr bool _Is_greater = _Is_predicate_greater<decltype(_UFirst), _Pr>;
         if constexpr (_Is_greater || _Is_predicate_less<decltype(_UFirst), _Pr>) {
@@ -11671,7 +11675,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt is_sorted_until(const _FwdIt _First, _FwdIt _Last
             }
         }
     }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_IS_SORTED_UNTIL ^^^
 
     if (_UFirst != _ULast) {
         for (auto _UNext = _UFirst; ++_UNext != _ULast; ++_UFirst) {
