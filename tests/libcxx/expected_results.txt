@@ -61,6 +61,9 @@ std/language.support/support.exception/except.nested/ctor_default.pass.cpp:2 SKI
 # SKIPPED because this is ARM64EC-specific.
 std/language.support/support.coroutines/coroutine.handle/coroutine.handle.noop/noop_coroutine.pass.cpp:2 SKIPPED
 
+# LLVM-160627: [libc++][test] Guard non-guaranteed implicit-lifetime-ness cases with _LIBCPP_VERSION
+std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:2 FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -142,10 +145,9 @@ std/language.support/support.limits/support.limits.general/cstring.version.compi
 # libc++ has not implemented P3323R1: "Forbid atomic<cv T>, Specify atomic_ref<cv T>"
 std/atomics/atomics.ref/member_types.compile.pass.cpp FAIL
 
-# Various bogosity (LLVM-D141004), warning C6011: Dereferencing NULL pointer
-# Note: The :1 (ASan) configuration doesn't run static analysis.
-std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_const_lvalue_pair.pass.cpp:0 FAIL
-std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_pair_values.pass.cpp:0 FAIL
+# libc++ has not implemented P3503R3 "Make Type-Erased Allocator Use In promise And packaged_task Consistent"
+std/thread/futures/futures.promise/uses_allocator.pass.cpp FAIL
+std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
 
 # Various bogosity (LLVM-D141004)
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/ctor_does_not_allocate.pass.cpp FAIL
@@ -157,6 +159,10 @@ std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/sync_deallocate_matc
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_allocate.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_allocate_overaligned_request.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_deallocate_matches_allocate.pass.cpp FAIL
+
+# libc++ hasn't completely implemented P2255R2 "Type Traits To Detect References Binding To Temporaries"
+std/utilities/meta/meta.rel/is_invocable_r.compile.pass.cpp:2 FAIL
+std/utilities/meta/meta.rel/is_invocable_r_v.compile.pass.cpp:2 FAIL
 
 # libc++ is missing various Ranges DRs
 std/language.support/support.limits/support.limits.general/memory.version.compile.pass.cpp FAIL
@@ -564,14 +570,14 @@ std/containers/container.adaptors/flat.set/types.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/flat_set.version.compile.pass.cpp FAIL
 
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
+# (type_traits.version.compile.pass.cpp still fails for Clang due to LLVM-48860)
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:1 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:1 FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/PR20855_tuple_ref_binding_diagnostics.pass.cpp:0 FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/PR20855_tuple_ref_binding_diagnostics.pass.cpp:1 FAIL
-
-# P2674R1 is_implicit_lifetime
-std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp FAIL
 
 # P2944R3 Comparisons For reference_wrapper
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
@@ -588,7 +594,9 @@ std/utilities/optional/optional.iterator/iterator.pass.cpp FAIL
 
 # *** MISSING COMPILER FEATURES ***
 
-# None!
+# VSO-2581622 C1XX should implement `__builtin_is_implicit_lifetime`
+std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:1 FAIL
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
@@ -610,11 +618,6 @@ std/thread/thread.condition/notify_all_at_thread_exit_lwg3343.pass.cpp SKIPPED
 
 
 # *** C1XX COMPILER BUGS ***
-# VSO-1271673 "static analyzer doesn't know about short-circuiting"
-# Note: The :1 (ASan) configuration doesn't run static analysis.
-std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
-std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FAIL
-
 # DevCom-1436243 VSO-1335743 constexpr new initialized array
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:0 FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:1 FAIL
@@ -638,11 +641,6 @@ std/utilities/variant/variant.relops/three_way.pass.cpp:1 FAIL
 # VSO-2188243 constexpr ICE in C1XX adapt::to_prvalue
 std/algorithms/robust_re_difference_type.compile.pass.cpp:0 FAIL
 std/algorithms/robust_re_difference_type.compile.pass.cpp:1 FAIL
-
-# DevCom-1638563 VSO-1457836: icky static analysis false positive
-# Resolved wontfix, need to report again.
-# Note: The :1 (ASan) configuration doesn't run static analysis.
-std/language.support/support.coroutines/end.to.end/go.pass.cpp:0 FAIL
 
 # DevCom-10026599 VSO-1532879: conditional expression has two different types
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
@@ -892,6 +890,10 @@ std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/m
 std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.locking/lock.pass.cpp SKIPPED
 std/thread/thread.threads/thread.thread.class/thread.thread.destr/dtor.pass.cpp SKIPPED
 std/thread/thread.threads/thread.thread.this/sleep_until.pass.cpp SKIPPED
+
+# Not analyzed, likely bogus tests. Appears to be timing assumptions.
+# These tests have failed in practice, see GH-5733.
+std/thread/thread.semaphore/timed.pass.cpp SKIPPED
 
 # "This is technically flaky" comments indicate tests with timing assumptions.
 # These tests have failed in practice, see VSO-2321213 and VSO-2416940.
@@ -1264,25 +1266,6 @@ std/utilities/format/format.range/format.range.fmtset/format.pass.cpp FAIL
 std/utilities/format/format.range/format.range.fmtstr/format.pass.cpp FAIL
 std/utilities/format/format.tuple/format.pass.cpp FAIL
 
-# Not analyzed. Static analysis thinks that array indexing is out of bounds because it can't prove otherwise.
-# warning C28020: The expression '_Param_(1)<1' is not true at this call.
-# Note: The :1 (ASan) configuration doesn't run static analysis.
-std/containers/views/mdspan/extents/ctor_default.pass.cpp:0 FAIL
-std/containers/views/mdspan/extents/ctor_from_array.pass.cpp:0 FAIL
-std/containers/views/mdspan/extents/ctor_from_integral.pass.cpp:0 FAIL
-std/containers/views/mdspan/extents/ctor_from_span.pass.cpp:0 FAIL
-std/containers/views/mdspan/layout_stride/comparison.pass.cpp:0 FAIL
-std/containers/views/mdspan/layout_stride/ctor.strided_mapping.pass.cpp:0 FAIL
-std/containers/views/mdspan/mdspan/conversion.pass.cpp:0 FAIL
-std/containers/views/mdspan/mdspan/ctor.dh_array.pass.cpp:0 FAIL
-std/containers/views/mdspan/mdspan/ctor.dh_span.pass.cpp:0 FAIL
-
-# Not analyzed. Apparent false positives from static analysis where it thinks `new (std::nothrow)` could return null, despite an assert().
-# warning C28182: Dereferencing NULL pointer.
-# Note: The :1 (ASan) configuration doesn't run static analysis.
-std/language.support/support.dynamic/new.delete/new.delete.array/new.size_align_nothrow.pass.cpp:0 FAIL
-std/language.support/support.dynamic/new.delete/new.delete.array/new.size_nothrow.pass.cpp:0 FAIL
-
 # Not analyzed, unexpected separators. Assertion failed: stream_fr_FR_locale<CharT>(-1'000'000s) == SV("-1 000 000s")
 std/time/time.duration/time.duration.nonmember/ostream.pass.cpp FAIL
 
@@ -1577,6 +1560,7 @@ std/containers/unord/unord.map/unord.map.modifiers/insert_range.pass.cpp:9 SKIPP
 std/containers/unord/unord.multimap/unord.multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
 std/containers/unord/unord.multiset/insert_range.pass.cpp:9 SKIPPED
 std/containers/unord/unord.set/insert_range.pass.cpp:9 SKIPPED
+std/containers/views/mdspan/mdspan/conversion.pass.cpp:9 SKIPPED
 std/depr/depr.c.headers/setjmp_h.compile.pass.cpp:9 SKIPPED
 std/input.output/file.streams/fstreams/ifstream.members/buffered_reads.pass.cpp:9 SKIPPED
 std/input.output/file.streams/fstreams/ofstream.members/buffered_writes.pass.cpp:9 SKIPPED

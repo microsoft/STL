@@ -8,6 +8,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <__msvc_heap_algorithms.hpp>
+#include <__msvc_int128.hpp>
 #include <__msvc_minmax.hpp>
 #include <xmemory>
 
@@ -84,6 +85,23 @@ const void* __stdcall __std_is_sorted_until_8i(const void* _First, const void* _
 const void* __stdcall __std_is_sorted_until_8u(const void* _First, const void* _Last, bool _Greater) noexcept;
 const void* __stdcall __std_is_sorted_until_f(const void* _First, const void* _Last, bool _Greater) noexcept;
 const void* __stdcall __std_is_sorted_until_d(const void* _First, const void* _Last, bool _Greater) noexcept;
+
+__declspec(noalias) bool __stdcall __std_includes_less_1i(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
+__declspec(noalias) bool __stdcall __std_includes_less_1u(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
+__declspec(noalias) bool __stdcall __std_includes_less_2i(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
+__declspec(noalias) bool __stdcall __std_includes_less_2u(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
+__declspec(noalias) bool __stdcall __std_includes_less_4i(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
+__declspec(noalias) bool __stdcall __std_includes_less_4u(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
+__declspec(noalias) bool __stdcall __std_includes_less_8i(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
+__declspec(noalias) bool __stdcall __std_includes_less_8u(
+    const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
 
 // TRANSITION, DevCom-10610477
 __declspec(noalias) void __stdcall __std_replace_4(
@@ -255,19 +273,49 @@ _Ty* _Is_sorted_until_vectorized(_Ty* const _First, _Ty* const _Last, const bool
     }
 }
 
+template <class _Ty>
+bool _Includes_vectorized(
+    const _Ty* const _First1, const _Ty* const _Last1, const _Ty* const _First2, const _Ty* const _Last2) noexcept {
+    constexpr bool _Signed = is_signed_v<_Ty>;
+
+    if constexpr (sizeof(_Ty) == 1) {
+        if constexpr (_Signed) {
+            return ::__std_includes_less_1i(_First1, _Last1, _First2, _Last2);
+        } else {
+            return ::__std_includes_less_1u(_First1, _Last1, _First2, _Last2);
+        }
+    } else if constexpr (sizeof(_Ty) == 2) {
+        if constexpr (_Signed) {
+            return ::__std_includes_less_2i(_First1, _Last1, _First2, _Last2);
+        } else {
+            return ::__std_includes_less_2u(_First1, _Last1, _First2, _Last2);
+        }
+    } else if constexpr (sizeof(_Ty) == 4) {
+        if constexpr (_Signed) {
+            return ::__std_includes_less_4i(_First1, _Last1, _First2, _Last2);
+        } else {
+            return ::__std_includes_less_4u(_First1, _Last1, _First2, _Last2);
+        }
+    } else if constexpr (sizeof(_Ty) == 8) {
+        if constexpr (_Signed) {
+            return ::__std_includes_less_8i(_First1, _Last1, _First2, _Last2);
+        } else {
+            return ::__std_includes_less_8u(_First1, _Last1, _First2, _Last2);
+        }
+    } else {
+        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+    }
+}
+
 template <class _Ty, class _TVal1, class _TVal2>
 __declspec(noalias) void _Replace_vectorized(
     _Ty* const _First, _Ty* const _Last, const _TVal1 _Old_val, const _TVal2 _New_val) noexcept {
-    if constexpr (is_pointer_v<_Ty>) {
-#ifdef _WIN64
-        ::__std_replace_8(_First, _Last, reinterpret_cast<uint64_t>(_Old_val), reinterpret_cast<uint64_t>(_New_val));
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
-        ::__std_replace_4(_First, _Last, reinterpret_cast<uint32_t>(_Old_val), reinterpret_cast<uint32_t>(_New_val));
-#endif // ^^^ !defined(_WIN64) ^^^
-    } else if constexpr (sizeof(_Ty) == 4) {
-        ::__std_replace_4(_First, _Last, static_cast<uint32_t>(_Old_val), static_cast<uint32_t>(_New_val));
+    if constexpr (sizeof(_Ty) == 4) {
+        ::__std_replace_4(
+            _First, _Last, _STD _Find_arg_cast<uint32_t>(_Old_val), _STD _Find_arg_cast<uint32_t>(_New_val));
     } else if constexpr (sizeof(_Ty) == 8) {
-        ::__std_replace_8(_First, _Last, static_cast<uint64_t>(_Old_val), static_cast<uint64_t>(_New_val));
+        ::__std_replace_8(
+            _First, _Last, _STD _Find_arg_cast<uint64_t>(_Old_val), _STD _Find_arg_cast<uint64_t>(_New_val));
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
@@ -275,26 +323,18 @@ __declspec(noalias) void _Replace_vectorized(
 
 template <class _Ty, class _TVal>
 _Ty* _Search_n_vectorized(_Ty* const _First, _Ty* const _Last, const size_t _Count, const _TVal _Val) noexcept {
-    if constexpr (is_pointer_v<_Ty>) {
-#ifdef _WIN64
+    if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_search_n_8(_First, _Last, _Count, reinterpret_cast<uint64_t>(_Val))));
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_search_n_4(_First, _Last, _Count, reinterpret_cast<uint32_t>(_Val))));
-#endif // ^^^ !defined(_WIN64) ^^^
-    } else if constexpr (sizeof(_Ty) == 1) {
-        return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_search_n_1(_First, _Last, _Count, static_cast<uint8_t>(_Val))));
+            static_cast<const _Ty*>(::__std_search_n_1(_First, _Last, _Count, _STD _Find_arg_cast<uint8_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 2) {
         return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_search_n_2(_First, _Last, _Count, static_cast<uint16_t>(_Val))));
+            static_cast<const _Ty*>(::__std_search_n_2(_First, _Last, _Count, _STD _Find_arg_cast<uint16_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 4) {
         return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_search_n_4(_First, _Last, _Count, static_cast<uint32_t>(_Val))));
+            static_cast<const _Ty*>(::__std_search_n_4(_First, _Last, _Count, _STD _Find_arg_cast<uint32_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(
-            static_cast<const _Ty*>(::__std_search_n_8(_First, _Last, _Count, static_cast<uint64_t>(_Val))));
+            static_cast<const _Ty*>(::__std_search_n_8(_First, _Last, _Count, _STD _Find_arg_cast<uint64_t>(_Val))));
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
@@ -318,20 +358,14 @@ _Ty* _Unique_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
 template <class _Ty, class _TVal>
 _Ty* _Remove_copy_vectorized(
     const _Ty* const _First, const _Ty* const _Last, _Ty* const _Dest, const _TVal _Val) noexcept {
-    if constexpr (is_pointer_v<_Ty>) {
-#ifdef _WIN64
-        return reinterpret_cast<_Ty*>(::__std_remove_copy_8(_First, _Last, _Dest, reinterpret_cast<uint64_t>(_Val)));
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
-        return reinterpret_cast<_Ty*>(::__std_remove_copy_4(_First, _Last, _Dest, reinterpret_cast<uint32_t>(_Val)));
-#endif // ^^^ !defined(_WIN64) ^^^
-    } else if constexpr (sizeof(_Ty) == 1) {
-        return reinterpret_cast<_Ty*>(::__std_remove_copy_1(_First, _Last, _Dest, static_cast<uint8_t>(_Val)));
+    if constexpr (sizeof(_Ty) == 1) {
+        return reinterpret_cast<_Ty*>(::__std_remove_copy_1(_First, _Last, _Dest, _STD _Find_arg_cast<uint8_t>(_Val)));
     } else if constexpr (sizeof(_Ty) == 2) {
-        return reinterpret_cast<_Ty*>(::__std_remove_copy_2(_First, _Last, _Dest, static_cast<uint16_t>(_Val)));
+        return reinterpret_cast<_Ty*>(::__std_remove_copy_2(_First, _Last, _Dest, _STD _Find_arg_cast<uint16_t>(_Val)));
     } else if constexpr (sizeof(_Ty) == 4) {
-        return reinterpret_cast<_Ty*>(::__std_remove_copy_4(_First, _Last, _Dest, static_cast<uint32_t>(_Val)));
+        return reinterpret_cast<_Ty*>(::__std_remove_copy_4(_First, _Last, _Dest, _STD _Find_arg_cast<uint32_t>(_Val)));
     } else if constexpr (sizeof(_Ty) == 8) {
-        return reinterpret_cast<_Ty*>(::__std_remove_copy_8(_First, _Last, _Dest, static_cast<uint64_t>(_Val)));
+        return reinterpret_cast<_Ty*>(::__std_remove_copy_8(_First, _Last, _Dest, _STD _Find_arg_cast<uint64_t>(_Val)));
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
     }
@@ -383,6 +417,13 @@ constexpr bool _Output_iterator_for_vector_alg_is_safe() {
     }
 }
 
+// Can we activate the vector algorithms for includes?
+template <class _Iter1, class _Iter2, class _Elem = _Iter_value_t<_Iter1>>
+constexpr bool _Vector_alg_includes_iterators_safe =
+    _Iterators_are_contiguous<_Iter1, _Iter2> // Iterators must be contiguous so we can get raw pointers.
+    && !_Iterator_is_volatile<_Iter1> && !_Iterator_is_volatile<_Iter2> // Iterators must not be volatile.
+    && is_same_v<_Elem, _Iter_value_t<_Iter2>> // Iterators have the same value type.
+    && disjunction_v<is_integral<_Elem>, is_pointer<_Elem>>; // Integral or pointer type.
 _STD_END
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
@@ -884,7 +925,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InI
     const auto _ULast1 = _STD _Get_unwrapped(_Last1);
     auto _UFirst2      = _STD _Get_unwrapped_n(_First2, _STD _Idl_distance<_InIt1>(_UFirst1, _ULast1));
 #if _USE_STD_VECTOR_ALGORITHMS
-    if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
+    if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
         if (!_STD _Is_constant_evaluated()) {
             constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
 
@@ -948,7 +989,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
         const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min) (_Count1, _Count2));
         _ULast1           = _UFirst1 + _Count;
 #if _USE_STD_VECTOR_ALGORITHMS
-        if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
+        if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
             if (!_STD _Is_constant_evaluated()) {
                 constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
 
@@ -4062,6 +4103,13 @@ _CONSTEXPR20 void iter_swap(_FwdIt1 _Left, _FwdIt2 _Right) { // swap *_Left and 
     swap(*_Left, *_Right); // intentional ADL
 }
 
+template <class _VbIt, class _OutIt, class _Mapped_fn>
+_CONSTEXPR20 _OutIt _Transform_vbool_aligned(_VbIt _First, _VbIt _Last, _OutIt _Dest, _Mapped_fn _Mapped_func);
+
+template <class _VbIt1, class _VbIt2, class _OutIt, class _Mapped_fn>
+_CONSTEXPR20 _OutIt _Transform_vbool_aligned(
+    _VbIt1 _First1, _VbIt1 _Last1, _VbIt2 _First2, _OutIt _Dest, _Mapped_fn _Mapped_func);
+
 _EXPORT_STD template <class _InIt, class _OutIt, class _Fn>
 _CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Dest, _Fn _Func) {
     // transform [_First, _Last) with _Func
@@ -4069,6 +4117,15 @@ _CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Des
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
     auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
+
+    if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt, true> && !is_same_v<_Map_vb_functor_t<_Fn>, void>) {
+        if (_UFirst._Myoff == 0 && _UDest._Myoff == 0) {
+            _UDest = _Transform_vbool_aligned(_UFirst, _ULast, _UDest, _Map_vb_functor_t<_Fn>{});
+            _STD _Seek_wrapped(_Dest, _UDest);
+            return _Dest;
+        }
+    }
+
     for (; _UFirst != _ULast; ++_UFirst, (void) ++_UDest) {
         *_UDest = _Func(*_UFirst);
     }
@@ -4092,6 +4149,16 @@ _CONSTEXPR20 _OutIt transform(
     const auto _Count  = _STD _Idl_distance<_InIt1>(_UFirst1, _ULast1);
     auto _UFirst2      = _STD _Get_unwrapped_n(_First2, _Count);
     auto _UDest        = _STD _Get_unwrapped_n(_Dest, _Count);
+
+    if constexpr (_Is_vb_iterator<_InIt1> && _Is_vb_iterator<_InIt2> && _Is_vb_iterator<_OutIt, true>
+                  && !is_same_v<_Map_vb_functor_t<_Fn>, void>) {
+        if (_UFirst1._Myoff == 0 && _UFirst2._Myoff == 0 && _UDest._Myoff == 0) {
+            _UDest = _Transform_vbool_aligned(_UFirst1, _ULast1, _UFirst2, _UDest, _Map_vb_functor_t<_Fn>{});
+            _STD _Seek_wrapped(_Dest, _UDest);
+            return _Dest;
+        }
+    }
+
     for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2, ++_UDest) {
         *_UDest = _Func(*_UFirst1, *_UFirst2);
     }
@@ -5953,60 +6020,87 @@ namespace ranges {
 #endif // _HAS_CXX17
 
 template <class _Diff, class _Urng>
-class _Rng_from_urng { // wrap a URNG as an RNG
+class _Rng_from_urng_v2 { // wrap a URNG as an RNG
 public:
     using _Ty0 = make_unsigned_t<_Diff>;
     using _Ty1 = _Invoke_result_t<_Urng&>;
 
-    using _Udiff = conditional_t<sizeof(_Ty1) < sizeof(_Ty0), _Ty0, _Ty1>;
+    using _Udiff                              = conditional_t<sizeof(_Ty1) < sizeof(_Ty0), _Ty0, _Ty1>;
+    static constexpr unsigned int _Udiff_bits = sizeof(_Udiff) * CHAR_BIT;
+    using _Uprod = conditional_t<_Udiff_bits <= 16, uint32_t, conditional_t<_Udiff_bits <= 32, uint64_t, _Unsigned128>>;
 
-    explicit _Rng_from_urng(_Urng& _Func)
-        : _Ref(_Func), _Bits(CHAR_BIT * sizeof(_Udiff)), _Bmask(static_cast<_Udiff>(-1)) {
-        for (; static_cast<_Udiff>((_Urng::max) () - (_Urng::min) ()) < _Bmask; _Bmask >>= 1) {
-            --_Bits;
-        }
-    }
+    explicit _Rng_from_urng_v2(_Urng& _Func) noexcept : _Ref(_Func) {}
 
     _Diff operator()(_Diff _Index) { // adapt _Urng closed range to [0, _Index)
-        for (;;) { // try a sample random value
-            _Udiff _Ret  = 0; // random bits
-            _Udiff _Mask = 0; // 2^N - 1, _Ret is within [0, _Mask]
+        // From Daniel Lemire, "Fast Random Integer Generation in an Interval",
+        // ACM Trans. Model. Comput. Simul. 29 (1), 2019.
+        //
+        // Algorithm 5 <-> This Code:
+        //   m <-> _Product
+        //   l <-> _Rem
+        //   s <-> _Index
+        //   t <-> _Threshold
+        //   L <-> _Generated_bits
+        //   2^L - 1 <-> _Mask
 
-            while (_Mask < static_cast<_Udiff>(_Index - 1)) { // need more random bits
-                _Ret <<= _Bits - 1; // avoid full shift
-                _Ret <<= 1;
-                _Ret |= _Get_bits();
-                _Mask <<= _Bits - 1; // avoid full shift
-                _Mask <<= 1;
+        _Udiff _Mask        = _Bmask;
+        unsigned int _Niter = 1;
+
+        if constexpr (_Bits < _Udiff_bits) {
+            while (_Mask < static_cast<_Udiff>(_Index - 1)) {
+                _Mask <<= _Bits;
                 _Mask |= _Bmask;
-            }
-
-            // _Ret is [0, _Mask], _Index - 1 <= _Mask, return if unbiased
-            if (_Ret / _Index < _Mask / _Index || _Mask % _Index == static_cast<_Udiff>(_Index - 1)) {
-                return static_cast<_Diff>(_Ret % _Index);
+                ++_Niter;
             }
         }
+
+        // x <- random integer in [0, 2^L)
+        // m <- x * s
+        auto _Product = _Get_random_product(_Index, _Niter);
+        // l <- m mod 2^L
+        auto _Rem = static_cast<_Udiff>(_Product) & _Mask;
+
+        if (_Rem < static_cast<_Udiff>(_Index)) {
+            // t <- (2^L - s) mod s
+            const auto _Threshold = (_Mask - _Index + 1) % _Index;
+            while (_Rem < _Threshold) {
+                _Product = _Get_random_product(_Index, _Niter);
+                _Rem     = static_cast<_Udiff>(_Product) & _Mask;
+            }
+        }
+
+        unsigned int _Generated_bits;
+        if constexpr (_Bits < _Udiff_bits) {
+            _Generated_bits = static_cast<unsigned int>(_Popcount(_Mask));
+        } else {
+            _Generated_bits = _Udiff_bits;
+        }
+
+        // m / 2^L
+        return static_cast<_Diff>(_Product >> _Generated_bits);
     }
 
     _Udiff _Get_all_bits() {
-        _Udiff _Ret = 0;
+        _Udiff _Ret = _Get_bits();
 
-        for (size_t _Num = 0; _Num < CHAR_BIT * sizeof(_Udiff); _Num += _Bits) { // don't mask away any bits
-            _Ret <<= _Bits - 1; // avoid full shift
-            _Ret <<= 1;
-            _Ret |= _Get_bits();
+        if constexpr (_Bits < _Udiff_bits) {
+            for (unsigned int _Num = _Bits; _Num < _Udiff_bits; _Num += _Bits) { // don't mask away any bits
+                _Ret <<= _Bits;
+                _Ret |= _Get_bits();
+            }
         }
 
         return _Ret;
     }
 
-    _Rng_from_urng(const _Rng_from_urng&)            = delete;
-    _Rng_from_urng& operator=(const _Rng_from_urng&) = delete;
+    _Rng_from_urng_v2(const _Rng_from_urng_v2&)            = delete;
+    _Rng_from_urng_v2& operator=(const _Rng_from_urng_v2&) = delete;
 
 private:
     _Udiff _Get_bits() { // return a random value within [0, _Bmask]
+        constexpr auto _Urng_min = (_Urng::min) ();
         for (;;) { // repeat until random value is in range
-            const _Udiff _Val = static_cast<_Udiff>(_Ref() - (_Urng::min) ());
+            const _Udiff _Val = static_cast<_Udiff>(_Ref() - _Urng_min);
 
             if (_Val <= _Bmask) {
                 return _Val;
@@ -6014,9 +6108,37 @@ private:
         }
     }
 
+    static constexpr size_t _Calc_bits() {
+        auto _Bits_local  = _Udiff_bits;
+        auto _Bmask_local = static_cast<_Udiff>(-1);
+        for (; static_cast<_Udiff>((_Urng::max) () - (_Urng::min) ()) < _Bmask_local; _Bmask_local >>= 1) {
+            --_Bits_local;
+        }
+
+        return _Bits_local;
+    }
+
+    _Uprod _Get_random_product(const _Diff _Index, unsigned int _Niter) {
+        _Udiff _Ret = _Get_bits();
+        if constexpr (_Bits < _Udiff_bits) {
+            while (--_Niter > 0) {
+                _Ret <<= _Bits;
+                _Ret |= _Get_bits();
+            }
+        }
+
+        if constexpr (is_same_v<_Udiff, uint64_t>) {
+            uint64_t _High;
+            const auto _Low = _Base128::_UMul128(_Ret, static_cast<_Udiff>(_Index), _High);
+            return _Uprod{_Low, _High};
+        } else {
+            return _Uprod{_Ret} * static_cast<_Uprod>(_Index);
+        }
+    }
+
     _Urng& _Ref; // reference to URNG
-    size_t _Bits; // number of random bits generated by _Get_bits()
-    _Udiff _Bmask; // 2^_Bits - 1
+    static constexpr size_t _Bits  = _Calc_bits(); // number of random bits generated by _Get_bits()
+    static constexpr _Udiff _Bmask = static_cast<_Udiff>(-1) >> (_Udiff_bits - _Bits); // 2^_Bits - 1
 };
 
 #if _HAS_CXX17
@@ -6076,7 +6198,7 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _Ur
         auto _UFirst   = _STD _Get_unwrapped(_First);
         auto _ULast    = _STD _Get_unwrapped(_Last);
         using _PopDiff = _Iter_diff_t<_PopIt>;
-        _Rng_from_urng<_PopDiff, remove_reference_t<_Urng>> _RngFunc(_Func);
+        _Rng_from_urng_v2<_PopDiff, remove_reference_t<_Urng>> _RngFunc(_Func);
         if constexpr (_Is_ranges_fwd_iter_v<_PopIt>) {
             // source is forward: use selection sampling (stable)
             using _CT            = common_type_t<_Diff, _PopDiff>;
@@ -6119,7 +6241,7 @@ namespace ranges {
                 return _Output;
             }
 
-            _Rng_from_urng<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            _Rng_from_urng_v2<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
             if constexpr (forward_iterator<_It>) {
                 auto _UFirst   = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
                 auto _Pop_size = _RANGES distance(_UFirst, _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
@@ -6140,7 +6262,7 @@ namespace ranges {
                 return _Output;
             }
 
-            _Rng_from_urng<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            _Rng_from_urng_v2<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
             if constexpr (forward_range<_Rng>) {
                 auto _UFirst   = _Ubegin(_Range);
                 auto _Pop_size = _RANGES distance(_UFirst, _Uend(_Range));
@@ -6243,7 +6365,7 @@ void _Random_shuffle1(_RanIt _First, _RanIt _Last, _RngFn& _RngFunc) {
 _EXPORT_STD template <class _RanIt, class _Urng>
 void shuffle(_RanIt _First, _RanIt _Last, _Urng&& _Func) { // shuffle [_First, _Last) using URNG _Func
     using _Urng0 = remove_reference_t<_Urng>;
-    _Rng_from_urng<_Iter_diff_t<_RanIt>, _Urng0> _RngFunc(_Func);
+    _Rng_from_urng_v2<_Iter_diff_t<_RanIt>, _Urng0> _RngFunc(_Func);
     _STD _Random_shuffle1(_First, _Last, _RngFunc);
 }
 
@@ -6256,7 +6378,7 @@ namespace ranges {
         _STATIC_CALL_OPERATOR _It operator()(_It _First, _Se _Last, _Urng&& _Func) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
 
-            _Rng_from_urng<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            _Rng_from_urng_v2<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
             auto _UResult = _Shuffle_unchecked(
                 _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _RngFunc);
 
@@ -6267,7 +6389,7 @@ namespace ranges {
         template <random_access_range _Rng, class _Urng>
             requires permutable<iterator_t<_Rng>> && uniform_random_bit_generator<remove_reference_t<_Urng>>
         _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Urng&& _Func) _CONST_CALL_OPERATOR {
-            _Rng_from_urng<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            _Rng_from_urng_v2<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
 
             return _RANGES _Rewrap_iterator(_Range, _Shuffle_unchecked(_Ubegin(_Range), _Uend(_Range), _RngFunc));
         }
@@ -6313,11 +6435,11 @@ void random_shuffle(_RanIt _First, _RanIt _Last, _RngFn&& _RngFunc) {
 struct _Rand_urng_from_func { // wrap rand() as a URNG
     using result_type = unsigned int;
 
-    static result_type(min)() { // return minimum possible generated value
+    static constexpr result_type(min)() { // return minimum possible generated value
         return 0;
     }
 
-    static result_type(max)() { // return maximum possible generated value
+    static constexpr result_type(max)() { // return maximum possible generated value
         return RAND_MAX;
     }
 
@@ -10188,6 +10310,15 @@ _NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _Fir
         return false;
     }
 
+#if _USE_STD_VECTOR_ALGORITHMS
+    if constexpr (_Vector_alg_includes_iterators_safe<_InIt1, _InIt2> && _Is_predicate_less<_InIt1, _Pr>) {
+        if (!_STD _Is_constant_evaluated()) {
+            return _STD _Includes_vectorized(_STD _To_address(_First1), _STD _To_address(_Last1),
+                _STD _To_address(_First2), _STD _To_address(_Last2));
+        }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
     for (;;) {
         if (_DEBUG_LT_PRED(_Pred, *_UFirst1, *_UFirst2)) {
             ++_UFirst1;
@@ -10276,6 +10407,20 @@ namespace ranges {
             } else if (_First1 == _Last1) {
                 return false;
             }
+
+#if _USE_STD_VECTOR_ALGORITHMS
+            if constexpr (_Vector_alg_includes_iterators_safe<_It1, _It2> && _Is_predicate_less<_It1, _Pr>
+                          && sized_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>
+                          && is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>) {
+                if (!_STD is_constant_evaluated()) {
+                    const auto _First1_ptr = _STD to_address(_First1);
+                    const auto _First2_ptr = _STD to_address(_First2);
+                    const auto _Last1_ptr  = _First1_ptr + static_cast<ptrdiff_t>(_Last1 - _First1);
+                    const auto _Last2_ptr  = _First2_ptr + static_cast<ptrdiff_t>(_Last2 - _First2);
+                    return _STD _Includes_vectorized(_First1_ptr, _Last1_ptr, _First2_ptr, _Last2_ptr);
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
             for (;;) {
                 if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {

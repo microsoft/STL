@@ -12,6 +12,12 @@
 #include <random>
 #include <vector>
 
+#if _HAS_CXX20
+#define CONSTEXPR20 constexpr
+#else
+#define CONSTEXPR20 inline
+#endif
+
 #pragma warning(disable : 4365) // conversion from 'unsigned __int64' to 'const __int64', signed/unsigned mismatch
 
 using namespace std;
@@ -20,7 +26,7 @@ constexpr int blockSize = 32;
 static_assert(blockSize == _VBITS, "Invalid block size");
 
 // This test data is not random, but irregular enough to ensure confidence in the tests
-const vector<bool> source = { //
+constexpr bool source_raw[] = { //
     true, false, true, false, true, true, true, false, //
     true, false, true, false, true, true, true, false, //
     true, false, true, false, true, true, true, false, //
@@ -39,8 +45,152 @@ const vector<bool> source = { //
     true, false, true, false, true, true, true, false, //
     true, false, true, false, true, true, true, false};
 
+CONSTEXPR20 void test_transform_helper(const size_t length) {
+    // Only no offset case
 
-void test_fill_helper(const size_t length) {
+    // This test data is not random, but irregular enough to ensure confidence in the tests
+    constexpr bool source2_raw[] = {//
+        true, true, false, false, false, false, true, true, //
+        true, true, false, false, false, false, true, true, //
+        true, true, false, false, false, false, true, true, //
+        true, true, false, false, false, false, true, true, //
+        true, true, false, false, false, false, true, true, //
+        true, true, false, false, false, false, true, true, //
+        true, true, false, false, false, false, true, true, //
+        true, true, false, false, false, false, true, true, //
+        true, true, false, false, false, false, true, true, //
+        true, true, false, false, false, false, true, true, //
+        true, true, false, false, false, false, true, true, //
+        true, true, false, false, false, false, true, true, //
+        true, true, false, false, false, false, true, true, //
+        true, true, false, false, false, false, true, true, //
+        true, true, false, false, false, false, true, true, //
+        true, true, false, false, false, false, true, true, //
+        true, true, false, false, false, false, true, true};
+
+#if _HAS_CXX17
+    static_assert(size(source_raw) == size(source2_raw));
+#endif // _HAS_CXX17
+
+    bool and_expected_raw[size(source_raw)];
+    bool or_expected_raw[size(source_raw)];
+    bool xor_expected_raw[size(source_raw)];
+    bool xnor_expected_raw[size(source_raw)];
+    bool not_expected_raw[size(source_raw)];
+
+    transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(and_expected_raw), logical_and<>{});
+    transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(or_expected_raw), logical_or<>{});
+    transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(xor_expected_raw), not_equal_to<>{});
+    transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(xnor_expected_raw), equal_to<>{});
+    transform(begin(source_raw), end(source_raw), begin(not_expected_raw), logical_not<>{});
+
+    const vector<bool> source1(source_raw, source_raw + length);
+    const vector<bool> source2(source2_raw, source2_raw + length);
+
+    vector<bool> and_expected(and_expected_raw, and_expected_raw + length);
+    vector<bool> or_expected(or_expected_raw, or_expected_raw + length);
+    vector<bool> xor_expected(xor_expected_raw, xor_expected_raw + length);
+    vector<bool> xnor_expected(xnor_expected_raw, xnor_expected_raw + length);
+    vector<bool> not_expected(not_expected_raw, not_expected_raw + length);
+
+    and_expected.resize(length + 3, false);
+    or_expected.resize(length + 3, false);
+    xor_expected.resize(length + 3, false);
+    xnor_expected.resize(length + 3, false);
+    not_expected.resize(length + 3, false);
+
+    vector<bool> and_actual(length + 3);
+    vector<bool> or_actual(length + 3);
+    vector<bool> xor_actual(length + 3);
+    vector<bool> xnor_actual(length + 3);
+    vector<bool> not_actual(length + 3);
+
+    // Also test combinations of vector<bool>::iterator and vector<bool>::const_iterator for the inputs.
+    const auto first1  = source1.begin();
+    const auto cfirst1 = source1.cbegin();
+    const auto first2  = source2.begin();
+    const auto cfirst2 = source2.cbegin();
+    const auto last1   = first1 + length;
+    const auto clast1  = cfirst1 + length;
+
+    {
+        auto and_ret = transform(first1, last1, first2, and_actual.begin(), logical_and<>{});
+        assert(and_actual == and_expected);
+        assert(and_ret == and_actual.begin() + length);
+
+        and_actual.assign(and_actual.size(), false);
+
+        and_ret = transform(first1, last1, first2, and_actual.begin(), bit_and<>{});
+        assert(and_actual == and_expected);
+        assert(and_ret == and_actual.begin() + length);
+    }
+
+    {
+        auto or_ret = transform(first1, last1, cfirst2, or_actual.begin(), logical_or<>{});
+        assert(or_actual == or_expected);
+        assert(or_ret == or_actual.begin() + length);
+
+        or_actual.assign(or_actual.size(), false);
+
+        or_ret = transform(first1, last1, cfirst2, or_actual.begin(), bit_or<>{});
+        assert(or_actual == or_expected);
+        assert(or_ret == or_actual.begin() + length);
+    }
+
+    {
+        auto xor_ret = transform(cfirst1, clast1, first2, xor_actual.begin(), not_equal_to<>{});
+        assert(xor_actual == xor_expected);
+        assert(xor_ret == xor_actual.begin() + length);
+
+        xor_actual.assign(xor_actual.size(), false);
+
+        xor_ret = transform(cfirst1, clast1, first2, xor_actual.begin(), bit_xor<>{});
+        assert(xor_actual == xor_expected);
+        assert(xor_ret == xor_actual.begin() + length);
+    }
+
+    {
+        const auto xnor_ret = transform(cfirst1, clast1, cfirst2, xnor_actual.begin(), equal_to<>{});
+        assert(xnor_actual == xnor_expected);
+        assert(xnor_ret == xnor_actual.begin() + length);
+
+        // bit_xnor doesn't exist in the Standard
+    }
+
+    {
+        auto not_ret = transform(first1, last1, not_actual.begin(), logical_not<>{});
+        assert(not_actual == not_expected);
+        assert(not_ret == not_actual.begin() + length);
+
+        not_actual.assign(not_actual.size(), false);
+
+        // bit_not emits MSVC and Clang warnings, so it isn't optimized.
+        // Continue using logical_not to test vector<bool>::const_iterator:
+        not_ret = transform(cfirst1, clast1, not_actual.begin(), logical_not<>{});
+        assert(not_actual == not_expected);
+        assert(not_ret == not_actual.begin() + length);
+    }
+}
+
+CONSTEXPR20 bool test_transform() {
+    // Empty range
+    test_transform_helper(0);
+
+    // One block, ends within block
+    test_transform_helper(15);
+
+    // One block, ends at block boundary
+    test_transform_helper(blockSize);
+
+    // Multiple blocks, within block
+    test_transform_helper(3 * blockSize + 5);
+
+    // Multiple blocks, ends at block boundary
+    test_transform_helper(4 * blockSize);
+    return true;
+}
+
+CONSTEXPR20 void test_fill_helper(const size_t length) {
     // No offset
     {
         vector<bool> result_true(length, true);
@@ -102,7 +252,7 @@ void test_fill_helper(const size_t length) {
     }
 }
 
-bool test_fill() {
+CONSTEXPR20 bool test_fill() {
     // Empty
     test_fill_helper(0);
 
@@ -126,7 +276,7 @@ bool test_fill() {
     return true;
 }
 
-void test_find_helper(const size_t length) {
+CONSTEXPR20 void test_find_helper(const size_t length) {
     // No offset
     {
         vector<bool> input_true(length + 3, false);
@@ -160,7 +310,7 @@ void test_find_helper(const size_t length) {
     }
 }
 
-bool test_find() {
+CONSTEXPR20 bool test_find() {
     // Empty range
     test_find_helper(0);
 
@@ -178,10 +328,11 @@ bool test_find() {
     return true;
 }
 
-void test_count_helper(const ptrdiff_t length) {
+CONSTEXPR20 void test_count_helper(const ptrdiff_t length) {
+    const vector<bool> source(begin(source_raw), end(source_raw));
     const int counts_true[]  = {0, 1, 1, 2, 2, 3, 4, 5};
     const int counts_false[] = {0, 0, 1, 1, 2, 2, 2, 2};
-    const auto expected      = div(static_cast<int>(length), 8);
+    const div_t expected     = {static_cast<int>(length) / 8, static_cast<int>(length) % 8};
     // No offset
     {
         const auto result_true = static_cast<int>(count(source.cbegin(), next(source.cbegin(), length), true));
@@ -203,7 +354,7 @@ void test_count_helper(const ptrdiff_t length) {
     }
 }
 
-bool test_count() {
+CONSTEXPR20 bool test_count() {
     // Empty range
     test_count_helper(0);
 
@@ -259,7 +410,7 @@ void test_huge_vector_bool() {
     assert(count(v.begin(), v.end(), false) == large_bit_diff - 3);
 }
 
-void test_copy_no_offset(const size_t length) {
+CONSTEXPR20 void test_copy_no_offset(const size_t length) {
     vector<bool> result;
     switch (length) {
     case 3:
@@ -304,6 +455,8 @@ void test_copy_no_offset(const size_t length) {
         assert(false);
     }
 
+    const vector<bool> source(begin(source_raw), end(source_raw));
+
     {
         vector<bool> dest(length, false);
         const auto res_copy = copy(source.begin(), next(source.begin(), length), dest.begin());
@@ -341,7 +494,7 @@ void test_copy_no_offset(const size_t length) {
     }
 }
 
-void test_copy_offset_source(const size_t length) {
+CONSTEXPR20 void test_copy_offset_source(const size_t length) {
     vector<bool> result;
     switch (length) {
     case 3:
@@ -389,6 +542,8 @@ void test_copy_offset_source(const size_t length) {
         assert(false);
     }
 
+    const vector<bool> source(begin(source_raw), end(source_raw));
+
     {
         vector<bool> dest(length, false);
         const auto res_copy = copy(next(source.begin()), next(source.begin(), length + 1), dest.begin());
@@ -427,7 +582,7 @@ void test_copy_offset_source(const size_t length) {
     }
 }
 
-void test_copy_offset_dest(const size_t length) {
+CONSTEXPR20 void test_copy_offset_dest(const size_t length) {
     vector<bool> result;
     switch (length) {
     case 3:
@@ -480,6 +635,8 @@ void test_copy_offset_dest(const size_t length) {
         assert(false);
     }
 
+    const vector<bool> source(begin(source_raw), end(source_raw));
+
     {
         vector<bool> dest(length + 1, false);
         const auto res_copy = copy(source.begin(), next(source.begin(), length), next(dest.begin()));
@@ -517,7 +674,7 @@ void test_copy_offset_dest(const size_t length) {
     }
 }
 
-void test_copy_offset_match(const size_t length) {
+CONSTEXPR20 void test_copy_offset_match(const size_t length) {
     vector<bool> result;
     switch (length) {
     case 3:
@@ -569,6 +726,8 @@ void test_copy_offset_match(const size_t length) {
     default:
         assert(false);
     }
+
+    const vector<bool> source(begin(source_raw), end(source_raw));
 
     {
         vector<bool> dest(length, false);
@@ -608,7 +767,7 @@ void test_copy_offset_match(const size_t length) {
     }
 }
 
-void test_copy_offset_mismatch_leftshift(const size_t length) {
+CONSTEXPR20 void test_copy_offset_mismatch_leftshift(const size_t length) {
     vector<bool> result;
     switch (length) {
     case 3:
@@ -661,6 +820,8 @@ void test_copy_offset_mismatch_leftshift(const size_t length) {
         assert(false);
     }
 
+    const vector<bool> source(begin(source_raw), end(source_raw));
+
     {
         vector<bool> dest(length + 1, false);
         const auto res_copy = copy(next(source.begin()), next(source.begin(), length), next(dest.begin(), 2));
@@ -699,7 +860,7 @@ void test_copy_offset_mismatch_leftshift(const size_t length) {
     }
 }
 
-void test_copy_offset_mismatch_rightshift(const size_t length) {
+CONSTEXPR20 void test_copy_offset_mismatch_rightshift(const size_t length) {
     vector<bool> result;
     switch (length) {
     case 3:
@@ -754,6 +915,8 @@ void test_copy_offset_mismatch_rightshift(const size_t length) {
         assert(false);
     }
 
+    const vector<bool> source(begin(source_raw), end(source_raw));
+
     {
         vector<bool> dest(length, false);
         const auto res_copy = copy(next(source.begin(), 2), next(source.begin(), length + 1), next(dest.begin()));
@@ -792,7 +955,7 @@ void test_copy_offset_mismatch_rightshift(const size_t length) {
     }
 }
 
-void test_copy_offset_aligned(const size_t length) {
+CONSTEXPR20 void test_copy_offset_aligned(const size_t length) {
     vector<bool> result;
     switch (length) {
     case 3:
@@ -845,6 +1008,8 @@ void test_copy_offset_aligned(const size_t length) {
         assert(false);
     }
 
+    const vector<bool> source(begin(source_raw), end(source_raw));
+
     {
         vector<bool> dest(length, false);
         const auto res_copy = copy(next(source.begin(), 9), next(source.begin(), length + 8), next(dest.begin()));
@@ -883,7 +1048,9 @@ void test_copy_offset_aligned(const size_t length) {
     }
 }
 
-void test_copy_sub_char() {
+CONSTEXPR20 void test_copy_sub_char() {
+    const vector<bool> source(begin(source_raw), end(source_raw));
+
     { // sub char copy unaligned
         const vector<bool> result = {false, false, true, false, true, false, false, false};
 
@@ -1092,7 +1259,7 @@ void test_copy_sub_char() {
     }
 }
 
-void test_copy_regression() {
+CONSTEXPR20 void test_copy_regression() {
     // This specific case was found by the randomized coverage below.
     const vector<bool> src = {0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0,
         1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0,
@@ -1115,7 +1282,8 @@ void test_copy_regression() {
     assert(dst == correct);
 }
 
-bool test_copy() {
+// Test copy() in multiple parts to stay within constexpr step limits.
+CONSTEXPR20 bool test_copy_part_1() {
     test_copy_no_offset(3);
     test_copy_no_offset(8);
     test_copy_no_offset(22);
@@ -1144,6 +1312,10 @@ bool test_copy() {
     test_copy_offset_match(32);
     test_copy_offset_match(67);
 
+    return true;
+}
+
+CONSTEXPR20 bool test_copy_part_2() {
     test_copy_offset_mismatch_leftshift(3);
     test_copy_offset_mismatch_leftshift(8);
     test_copy_offset_mismatch_leftshift(22);
@@ -1354,13 +1526,25 @@ static_assert(test_gh_5345<64>());
 static_assert(test_gh_5345<64, 16>());
 static_assert(test_gh_5345<120>());
 static_assert(test_gh_5345<120, 31>());
+
+static_assert(test_fill());
+static_assert(test_find());
+static_assert(test_count());
+static_assert(test_transform());
+
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2574489
+static_assert(test_copy_part_1());
+static_assert(test_copy_part_2());
+#endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX20
 
 int main() {
     test_fill();
     test_find();
     test_count();
-    test_copy();
+    test_transform();
+    test_copy_part_1();
+    test_copy_part_2();
 
     test_huge_vector_bool();
 

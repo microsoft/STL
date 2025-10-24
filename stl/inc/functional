@@ -28,6 +28,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 _STD_BEGIN
 // plus, minus, and multiplies are defined in <xutility>
 
@@ -252,6 +258,62 @@ struct bit_not<void> {
     using is_transparent = int;
 };
 
+struct _Bit_xnor {
+    template <class _Ty1, class _Ty2>
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
+        -> decltype(~(_STD forward<_Ty1>(_Left) ^ _STD forward<_Ty2>(_Right))) {
+        return ~(_STD forward<_Ty1>(_Left) ^ _STD forward<_Ty2>(_Right));
+    }
+
+    using is_transparent = int;
+};
+
+template <class _Ty>
+constexpr bool _Is_vbool_functor_arg = is_same_v<_Ty, void> || is_integral_v<_Ty>;
+
+template <class _Ty>
+struct _Map_vb_functor<logical_and<_Ty>> {
+    using type = conditional_t<_Is_vbool_functor_arg<_Ty>, bit_and<>, void>;
+};
+
+template <class _Ty>
+struct _Map_vb_functor<bit_and<_Ty>> {
+    using type = conditional_t<_Is_vbool_functor_arg<_Ty>, bit_and<>, void>;
+};
+
+template <class _Ty>
+struct _Map_vb_functor<logical_or<_Ty>> {
+    using type = conditional_t<_Is_vbool_functor_arg<_Ty>, bit_or<>, void>;
+};
+
+template <class _Ty>
+struct _Map_vb_functor<bit_or<_Ty>> {
+    using type = conditional_t<_Is_vbool_functor_arg<_Ty>, bit_or<>, void>;
+};
+
+template <class _Ty>
+struct _Map_vb_functor<not_equal_to<_Ty>> {
+    using type = conditional_t<_Is_vbool_functor_arg<_Ty>, bit_xor<>, void>;
+};
+
+template <class _Ty>
+struct _Map_vb_functor<bit_xor<_Ty>> {
+    using type = conditional_t<_Is_vbool_functor_arg<_Ty>, bit_xor<>, void>;
+};
+
+template <class _Ty>
+struct _Map_vb_functor<equal_to<_Ty>> {
+    using type = conditional_t<_Is_vbool_functor_arg<_Ty>, _Bit_xnor, void>;
+};
+
+template <class _Ty>
+struct _Map_vb_functor<logical_not<_Ty>> {
+    using type = conditional_t<_Is_vbool_functor_arg<_Ty>, bit_not<>, void>;
+};
+
+// bit_not isn't mapped to itself because it emits MSVC warning C4804 "'~': unsafe use of type 'bool' in operation"
+// and Clang -Wbool-operation "bitwise negation of a boolean expression; did you mean logical negation?".
+
 #if _HAS_DEPRECATED_NEGATORS
 _STL_DISABLE_DEPRECATED_WARNING
 _EXPORT_STD template <class _Fn>
@@ -301,13 +363,13 @@ _STL_RESTORE_DEPRECATED_WARNING
 
 #if _HAS_AUTO_PTR_ETC
 _EXPORT_STD template <class _Arg, class _Result>
-struct unary_function { // base class for unary functions
+struct _NO_SPECIALIZATIONS_CITING("N4140 [depr.base]/1") unary_function { // base class for unary functions
     using argument_type = _Arg;
     using result_type   = _Result;
 };
 
 _EXPORT_STD template <class _Arg1, class _Arg2, class _Result>
-struct binary_function { // base class for binary functions
+struct _NO_SPECIALIZATIONS_CITING("N4140 [depr.base]/1") binary_function { // base class for binary functions
     using first_argument_type  = _Arg1;
     using second_argument_type = _Arg2;
     using result_type          = _Result;
@@ -713,7 +775,7 @@ constexpr bool _Testable_callable_v =
 template <class _Ty>
 bool _Test_callable(const _Ty& _Arg) noexcept { // determine whether std::function must store _Arg
     if constexpr (_Testable_callable_v<_Ty>) {
-        return !!_Arg;
+        return static_cast<bool>(_Arg);
     } else {
         return true;
     }
@@ -749,7 +811,6 @@ template <class _Impl> // determine whether _Impl must be dynamically allocated
 constexpr bool _Is_large = sizeof(_Impl) > _Space_size || alignof(_Impl) > alignof(max_align_t)
                         || !_Impl::_Nothrow_move::value;
 
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
 template <class _Callable, class _Alloc, class _Rx, class... _Types>
 class _Func_impl final : public _Func_base<_Rx, _Types...> {
     // derived class for specific implementation types that use allocators
@@ -828,7 +889,6 @@ private:
 
     _Compressed_pair<_Alloc, _Callable> _Mypair;
 };
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
 template <class _Ty, class... _Types>
 _Ty* _Global_new(_Types&&... _Args) { // acts as "new" while disallowing user overload selection
@@ -983,7 +1043,6 @@ protected:
         }
     }
 
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     template <class _Fx, class _Alloc>
     void _Reset_alloc(_Fx&& _Val, const _Alloc& _Ax) { // store copy of _Val with allocator
         if (!_STD _Test_callable(_Val)) { // null member pointer/function pointer/std::function
@@ -1006,7 +1065,6 @@ protected:
             _Set(_Ptr);
         }
     }
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     void _Tidy() noexcept {
         if (!_Empty()) { // destroy callable object and maybe delete it
@@ -1135,6 +1193,7 @@ public:
             "The target function object type must be copy constructible (N4140 [func.wrap.func.con]/7).");
         this->_Reset_alloc(_STD forward<_Fx>(_Func), _Ax);
     }
+#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     template <class _SecretTag, class _Fx, class _Alloc,
         enable_if_t<is_same_v<_SecretTag, _Secret_copyability_ignoring_tag>, int> = 0,
@@ -1143,7 +1202,6 @@ public:
         // used exclusively for packaged_task
         this->_Reset_alloc(_STD forward<_Fx>(_Func), _Ax);
     }
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     function& operator=(const function& _Right) {
         function(_Right).swap(*this);
@@ -1154,11 +1212,16 @@ public:
         this->_Reset_move(_STD move(_Right));
     }
 
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
-    template <class _Alloc>
-    function(allocator_arg_t, const _Alloc& _Al, function&& _Right) {
+    template <class _SecretTag, class _Alloc,
+        enable_if_t<is_same_v<_SecretTag, _Secret_copyability_ignoring_tag>, int> = 0>
+    explicit function(_SecretTag, allocator_arg_t, const _Alloc& _Al, function&& _Right) {
         this->_Reset_alloc(_STD move(_Right), _Al);
     }
+
+#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
+    template <class _Alloc>
+    function(allocator_arg_t, const _Alloc& _Al, function&& _Right)
+        : function(_Secret_copyability_ignoring_tag{}, allocator_arg, _Al, _STD move(_Right)) {}
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     function& operator=(function&& _Right) noexcept /* strengthened */ {
@@ -2008,7 +2071,7 @@ template <class _Tx>
 struct is_placeholder<const volatile _Tx> : is_placeholder<_Tx>::type {}; // ignore cv-qualifiers
 
 _EXPORT_STD template <class _Ty>
-constexpr int is_placeholder_v = is_placeholder<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr int is_placeholder_v = is_placeholder<_Ty>::value;
 
 template <class _Ret, class _Fx, class... _Types>
 class _Binder;
@@ -2029,7 +2092,7 @@ template <class _Tx>
 struct is_bind_expression<const volatile _Tx> : is_bind_expression<_Tx>::type {}; // ignore cv-qualifiers
 
 _EXPORT_STD template <class _Ty>
-constexpr bool is_bind_expression_v = is_bind_expression<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool is_bind_expression_v = is_bind_expression<_Ty>::value;
 
 template <class _Cv_TiD, bool = _Is_specialization_v<remove_cv_t<_Cv_TiD>, reference_wrapper>,
     bool = is_bind_expression_v<_Cv_TiD>, int = is_placeholder_v<_Cv_TiD>>
@@ -3142,23 +3205,11 @@ namespace ranges {
     };
 } // namespace ranges
 #endif // _HAS_CXX20
-
-#if _HAS_TR1_NAMESPACE
-namespace _DEPRECATE_TR1_NAMESPACE tr1 {
-    using _STD bad_function_call;
-    using _STD bind;
-    using _STD function;
-    using _STD is_bind_expression;
-    using _STD is_placeholder;
-    using _STD mem_fn;
-    using _STD swap;
-    namespace placeholders {
-        using namespace _STD placeholders;
-    }
-} // namespace _DEPRECATE_TR1_NAMESPACE tr1
-#endif // _HAS_TR1_NAMESPACE
-
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

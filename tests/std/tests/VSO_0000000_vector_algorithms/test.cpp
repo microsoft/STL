@@ -649,6 +649,71 @@ void test_is_sorted_until(mt19937_64& gen) {
     }
 }
 
+#if _HAS_CXX17
+template <class InIt1, class InIt2>
+bool last_known_good_includes(InIt1 first1, InIt1 last1, InIt2 first2, InIt2 last2) {
+    while (first2 != last2) {
+        if (first1 == last1 || *first2 < *first1) {
+            return false;
+        }
+
+        if (!(*first1 < *first2)) {
+            ++first2;
+        }
+
+        ++first1;
+    }
+
+    return true;
+}
+
+template <class T>
+void test_case_includes(const vector<T>& hay, const vector<T>& needle) {
+    const bool expected = last_known_good_includes(hay.begin(), hay.end(), needle.begin(), needle.end());
+    const bool actual   = includes(hay.begin(), hay.end(), needle.begin(), needle.end());
+    assert(expected == actual);
+#if _HAS_CXX20
+    const bool actual_r = ranges::includes(hay, needle);
+    assert(expected == actual_r);
+#endif // _HAS_CXX20
+}
+
+template <class T>
+void test_includes(mt19937_64& gen) {
+    using Limits = numeric_limits<T>;
+
+    uniform_int_distribution<conditional_t<sizeof(T) == 1, int, T>> dis(Limits::min(), Limits::max());
+
+    vector<T> sorted_random_data(dataCount);
+    generate(sorted_random_data.begin(), sorted_random_data.end(), [&dis, &gen] { return static_cast<T>(dis(gen)); });
+    sort(sorted_random_data.begin(), sorted_random_data.end());
+
+    vector<T> hay;
+    vector<T> needle;
+    hay.reserve(dataCount);
+    needle.reserve(dataCount + 1);
+
+    test_case_includes(hay, needle);
+
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        hay.push_back(sorted_random_data[attempts]);
+
+        uniform_int_distribution<size_t> len_dis(0, hay.size());
+
+        for (size_t needle_length = 0; needle_length < 4; ++needle_length) {
+            needle.resize(len_dis(gen));
+            sample(hay.begin(), hay.end(), needle.begin(), needle.size(), gen);
+            test_case_includes(hay, needle);
+
+            // Look for an additional random element, typically (but not always) resulting in a negative test.
+            needle.push_back(static_cast<T>(dis(gen)));
+            sort(needle.begin(), needle.end());
+            test_case_includes(hay, needle);
+        }
+    }
+}
+#endif // _HAS_CXX17
+
 template <class FwdIt, class T>
 void last_known_good_replace(FwdIt first, FwdIt last, const T old_val, const T new_val) {
     for (; first != last; ++first) {
@@ -1209,6 +1274,19 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_is_sorted_until<long long>(gen);
     test_is_sorted_until<unsigned long long>(gen);
 
+    // std::includes has been there forever, but we use std::sample in the test, and that one is C++17
+#if _HAS_CXX17
+    test_includes<char>(gen);
+    test_includes<signed char>(gen);
+    test_includes<unsigned char>(gen);
+    test_includes<short>(gen);
+    test_includes<unsigned short>(gen);
+    test_includes<int>(gen);
+    test_includes<unsigned int>(gen);
+    test_includes<long long>(gen);
+    test_includes<unsigned long long>(gen);
+#endif // _HAS_CXX17
+
     // replace() is vectorized for 4 and 8 bytes only.
     test_replace<int>(gen);
     test_replace<unsigned int>(gen);
@@ -1710,6 +1788,26 @@ void test_basic_string(mt19937_64& gen) {
     }
 }
 
+// GH-5757 <string>: wstring::find_first_of crashes on some inputs
+void test_gh_5757_find_first_of() {
+    const wstring hay(40, L'e');
+    wstring needle;
+    needle.resize(32);
+
+    for (unsigned int k = 0; k != 32; k += 16) {
+        for (unsigned int i = 0; i != 8; ++i) {
+            needle[i + k] = static_cast<wchar_t>(L'a' + i);
+        }
+
+        for (unsigned int i = 8; i != 16; ++i) {
+            needle[i + k] = static_cast<wchar_t>(0xFF00 + i);
+        }
+    }
+
+    const auto pos = hay.find_first_of(needle);
+    assert(pos == 0);
+}
+
 void test_string(mt19937_64& gen) {
     test_basic_string<char>(gen);
     test_basic_string<wchar_t>(gen);
@@ -1719,6 +1817,8 @@ void test_string(mt19937_64& gen) {
     test_basic_string<char16_t>(gen);
     test_basic_string<char32_t>(gen);
     test_basic_string<unsigned long long>(gen);
+
+    test_gh_5757_find_first_of();
 }
 
 void test_various_containers() {

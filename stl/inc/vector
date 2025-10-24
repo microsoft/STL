@@ -607,17 +607,17 @@ private:
     using _Scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Simple_types<_Ty>,
         _Vec_iter_types<_Ty, size_type, difference_type, pointer, const_pointer>>>;
 
-    struct _NODISCARD _Reallocation_guard {
-        _Alloc& _Al;
+    struct _NODISCARD _Reallocation_guard2 {
+        _Alty& _Al;
         pointer _New_begin;
         size_type _New_capacity;
         pointer _Constructed_first;
         pointer _Constructed_last;
 
-        _Reallocation_guard& operator=(const _Reallocation_guard&) = delete;
-        _Reallocation_guard& operator=(_Reallocation_guard&&)      = delete;
+        _Reallocation_guard2& operator=(const _Reallocation_guard2&) = delete;
+        _Reallocation_guard2& operator=(_Reallocation_guard2&&)      = delete;
 
-        _CONSTEXPR20 ~_Reallocation_guard() noexcept {
+        _CONSTEXPR20 ~_Reallocation_guard2() noexcept {
             if (_New_begin != nullptr) {
                 _STD _Destroy_range(_Constructed_first, _Constructed_last, _Al);
                 _Al.deallocate(_New_begin, _New_capacity);
@@ -625,15 +625,15 @@ private:
         }
     };
 
-    struct _NODISCARD _Simple_reallocation_guard {
-        _Alloc& _Al;
+    struct _NODISCARD _Simple_reallocation_guard2 {
+        _Alty& _Al;
         pointer _New_begin;
         size_type _New_capacity;
 
-        _Simple_reallocation_guard& operator=(const _Simple_reallocation_guard&) = delete;
-        _Simple_reallocation_guard& operator=(_Simple_reallocation_guard&&)      = delete;
+        _Simple_reallocation_guard2& operator=(const _Simple_reallocation_guard2&) = delete;
+        _Simple_reallocation_guard2& operator=(_Simple_reallocation_guard2&&)      = delete;
 
-        _CONSTEXPR20 ~_Simple_reallocation_guard() noexcept {
+        _CONSTEXPR20 ~_Simple_reallocation_guard2() noexcept {
             if (_New_begin != nullptr) {
                 _Al.deallocate(_New_begin, _New_capacity);
             }
@@ -894,7 +894,7 @@ private:
         const pointer _Newvec           = _STD _Allocate_at_least_helper(_Al, _Newcapacity);
         const pointer _Constructed_last = _Newvec + _Whereoff + 1;
 
-        _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
+        _Reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
         auto& _Constructed_first = _Guard._Constructed_first;
 
         _Alty_traits::construct(_Al, _STD _Unfancy(_Newvec + _Whereoff), _STD forward<_Valty>(_Val)...);
@@ -978,7 +978,7 @@ private:
             const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
             const pointer _Constructed_last = _Newvec + _Oldsize + _Count;
 
-            _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
+            _Reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
             auto& _Constructed_first = _Guard._Constructed_first;
 
             _Uninitialized_copy_n(_STD move(_First), _Count, _Newvec + _Oldsize, _Al);
@@ -1096,7 +1096,7 @@ public:
             const pointer _Newvec           = _Allocate_at_least_helper(_Al, _Newcapacity);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
 
-            _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
+            _Reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
             auto& _Constructed_first = _Guard._Constructed_first;
 
             _Uninitialized_fill_n(_Newvec + _Whereoff, _Count, _Val, _Al);
@@ -1189,7 +1189,7 @@ private:
             const auto _Whereoff            = static_cast<size_type>(_Whereptr - _Oldfirst);
             const pointer _Constructed_last = _Newvec + _Whereoff + _Count;
 
-            _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
+            _Reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
             auto& _Constructed_first = _Guard._Constructed_first;
 
             _STD _Uninitialized_copy_n(_STD move(_First), _Count, _Newvec + _Whereoff, _Al);
@@ -1565,7 +1565,7 @@ private:
         const pointer _Newvec         = _Allocate_at_least_helper(_Al, _Newcapacity);
         const pointer _Appended_first = _Newvec + _Oldsize;
 
-        _Reallocation_guard _Guard{_Al, _Newvec, _Newcapacity, _Appended_first, _Appended_first};
+        _Reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity, _Appended_first, _Appended_first};
         auto& _Appended_last = _Guard._Constructed_last;
 
         if constexpr (is_same_v<_Ty2, _Ty>) {
@@ -1656,7 +1656,7 @@ private:
             _Newvec = _Al.allocate(_Newcapacity);
         }
 
-        _Simple_reallocation_guard _Guard{_Al, _Newvec, _Newcapacity};
+        _Simple_reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity};
 
         if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
             _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
@@ -3738,7 +3738,11 @@ _NODISCARD _CONSTEXPR20 _VbIt _Find_vbool(_VbIt _First, const _VbIt _Last, const
         const auto _SourceMask     = _FirstSourceMask & _LastSourceMask;
         const auto _SelectVal      = (_Val ? *_VbFirst : ~*_VbFirst) & _SourceMask;
         const auto _Count          = _Countr_zero(_SelectVal);
-        return _Count == _VBITS ? _Last : _First + static_cast<_Iter_diff_t<_VbIt>>(_Count - _First._Myoff);
+        if (_Count == _VBITS) {
+            return _Last;
+        } else {
+            return _First + static_cast<_Iter_diff_t<_VbIt>>(_Count - _First._Myoff);
+        }
     }
 
     const auto _FirstVal   = (_Val ? *_VbFirst : ~*_VbFirst) & _FirstSourceMask;
@@ -3859,7 +3863,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
 
         const auto _DestMask = _FirstDestMask | (_DestEnd._Myoff == 0 ? 0 : _LastDestMask);
         if (_Last._Myoff != 0) {
-            const auto _LastShift     = _DestEnd._Myoff - _Last._Myoff;
+            const auto _LastShift     = _DestEnd._Myoff != 0 ? _DestEnd._Myoff - _Last._Myoff : _VBITS - _Last._Myoff;
             const auto _LastSourceVal = (*_VbLast & _LastSourceMask) << _LastShift;
             *_VbDest                  = (*_VbDest & _DestMask) | _SourceVal | _LastSourceVal;
         } else {
@@ -3998,6 +4002,49 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
     }
 
     return _DestEnd;
+}
+
+template <class _VbIt, class _OutIt, class _Mapped_fn>
+_CONSTEXPR20 _OutIt _Transform_vbool_aligned(
+    const _VbIt _First, const _VbIt _Last, _OutIt _Dest, const _Mapped_fn _Mapped_func) {
+    auto _First_ptr      = _First._Myptr;
+    const auto _Last_ptr = _Last._Myptr;
+    auto _Dest_ptr       = const_cast<_Vbase*>(_Dest._Myptr);
+
+    for (; _First_ptr != _Last_ptr; ++_First_ptr, ++_Dest_ptr) {
+        *_Dest_ptr = _Mapped_func(*_First_ptr);
+    }
+
+    if (_Last._Myoff != 0) {
+        const _Vbase _Mask = (_Vbase{1} << _Last._Myoff) - 1;
+        *_Dest_ptr         = (*_Dest_ptr & ~_Mask) | (_Mapped_func(*_First_ptr) & _Mask);
+        _Dest._Myoff       = _Last._Myoff;
+    }
+
+    _Dest._Myptr = _Dest_ptr;
+    return _Dest;
+}
+
+template <class _VbIt1, class _VbIt2, class _OutIt, class _Mapped_fn>
+_CONSTEXPR20 _OutIt _Transform_vbool_aligned(
+    const _VbIt1 _First1, const _VbIt1 _Last1, const _VbIt2 _First2, _OutIt _Dest, const _Mapped_fn _Mapped_func) {
+    auto _First1_ptr      = _First1._Myptr;
+    auto _First2_ptr      = _First2._Myptr;
+    const auto _Last1_ptr = _Last1._Myptr;
+    auto _Dest_ptr        = const_cast<_Vbase*>(_Dest._Myptr);
+
+    for (; _First1_ptr != _Last1_ptr; ++_First1_ptr, ++_First2_ptr, ++_Dest_ptr) {
+        *_Dest_ptr = _Mapped_func(*_First1_ptr, *_First2_ptr);
+    }
+
+    if (_Last1._Myoff != 0) {
+        const _Vbase _Mask = (_Vbase{1} << _Last1._Myoff) - 1;
+        *_Dest_ptr         = (*_Dest_ptr & ~_Mask) | (_Mapped_func(*_First1_ptr, *_First2_ptr) & _Mask);
+        _Dest._Myoff       = _Last1._Myoff;
+    }
+
+    _Dest._Myptr = _Dest_ptr;
+    return _Dest;
 }
 
 #undef _ASAN_VECTOR_MODIFY
