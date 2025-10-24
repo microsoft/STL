@@ -145,10 +145,12 @@ void* __stdcall __std_unique_4(void* _First, void* _Last) noexcept;
 void* __stdcall __std_unique_8(void* _First, void* _Last) noexcept;
 #endif // ^^^ _VECTORIZED_UNIQUE ^^^
 
+#if _VECTORIZED_UNIQUE_COPY
 void* __stdcall __std_unique_copy_1(const void* _First, const void* _Last, void* _Dest) noexcept;
 void* __stdcall __std_unique_copy_2(const void* _First, const void* _Last, void* _Dest) noexcept;
 void* __stdcall __std_unique_copy_4(const void* _First, const void* _Last, void* _Dest) noexcept;
 void* __stdcall __std_unique_copy_8(const void* _First, const void* _Last, void* _Dest) noexcept;
+#endif // ^^^ _VECTORIZED_UNIQUE_COPY ^^^
 } // extern "C"
 
 _STD_BEGIN
@@ -413,6 +415,7 @@ _Ty* _Remove_copy_vectorized(
 }
 #endif // ^^^ _VECTORIZED_REMOVE_COPY ^^^
 
+#if _VECTORIZED_UNIQUE_COPY
 template <class _Ty>
 _Ty* _Unique_copy_vectorized(const _Ty* const _First, const _Ty* const _Last, _Ty* const _Dest) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -427,6 +430,7 @@ _Ty* _Unique_copy_vectorized(const _Ty* const _First, const _Ty* const _Last, _T
         _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_UNIQUE_COPY ^^^
 
 // Can we activate the vector algorithms for replace?
 template <class _Iter, class _Ty1>
@@ -5463,7 +5467,7 @@ _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pr
 
     auto _UDest = _STD _Get_unwrapped_unverified(_Dest);
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_UNIQUE_COPY
     if constexpr (_Vector_alg_in_unique_is_safe<decltype(_UFirst), _Pr>
                   && _Output_iterator_for_vector_alg_is_safe<decltype(_UDest), decltype(_UFirst)>()) {
         if (!_STD _Is_constant_evaluated()) {
@@ -5481,7 +5485,7 @@ _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pr
             return _Dest;
         }
     }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_UNIQUE_COPY ^^^
 
     if constexpr (_Is_ranges_fwd_iter_v<_InIt>) { // can reread the source for comparison
         auto _Firstb = _UFirst;
@@ -5610,7 +5614,7 @@ namespace ranges {
                 return {_STD move(_First), _STD move(_Output)};
             }
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_UNIQUE_COPY
             if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<_Se, _It>
                           && _Vector_alg_in_unique_is_safe<_It, _Pr>
                           && _Output_iterator_for_vector_alg_is_safe<_Out, _It>()) {
@@ -5629,7 +5633,7 @@ namespace ranges {
                     }
                 }
             }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_UNIQUE_COPY ^^^
 
             if constexpr (_Is_input_with_value_type<_Out, iter_value_t<_It>>) {
                 // Can reread _Output
