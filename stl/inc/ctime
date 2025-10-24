@@ -29,7 +29,11 @@ _EXPORT_STD using _CSTD strftime;
 _EXPORT_STD using _CSTD timespec;
 #endif // _HAS_CXX17
 
-#ifdef _BUILD_STD_MODULE // TRANSITION, OS-33790456; `template <int = 0>` avoids ambiguity
+// `_STATIC_INLINE_UCRT_FUNCTIONS` is exposed by the UCRT starting on Windows SDK `10.0.26100.6901`.
+// When set to `1`, several UCRT functions are declared as `static inline` (for historical compatibility),
+// preventing them from being naively exported through modules.
+// In that case, we use templates to shadow their name, allowing us forcibly to export them.
+#if defined(_STATIC_INLINE_UCRT_FUNCTIONS) && _STATIC_INLINE_UCRT_FUNCTIONS == 1
 _STL_DISABLE_DEPRECATED_WARNING
 
 _EXPORT_STD template <int = 0>
@@ -75,7 +79,7 @@ _Check_return_ inline int __CRTDECL timespec_get(_Out_ timespec* const _Ts, _In_
 _STL_RESTORE_DEPRECATED_WARNING
 #else // ^^^ workaround / no workaround vvv
 
-// _EXPORT_STD has no effect while the workaround is present.
+// _EXPORT_STD has no effect when `_BUILD_STD_MODULE` is not defined.
 _EXPORT_STD using _CSTD ctime;
 _EXPORT_STD using _CSTD difftime;
 _EXPORT_STD using _CSTD gmtime;
