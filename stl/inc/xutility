@@ -129,6 +129,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
 __declspec(noalias) void __stdcall __std_rotate(void* _First, void* _Mid, void* _Last) noexcept;
 #endif // ^^^ _VECTORIZED_ROTATE ^^^
 
+#if _VECTORIZED_COUNT
 __declspec(noalias) size_t __stdcall __std_count_trivial_1(
     const void* _First, const void* _Last, uint8_t _Val) noexcept;
 __declspec(noalias) size_t __stdcall __std_count_trivial_2(
@@ -137,6 +138,7 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_4(
     const void* _First, const void* _Last, uint32_t _Val) noexcept;
 __declspec(noalias) size_t __stdcall __std_count_trivial_8(
     const void* _First, const void* _Last, uint64_t _Val) noexcept;
+#endif // ^^^ _VECTORIZED_COUNT ^^^
 
 const void* __stdcall __std_find_trivial_1(const void* _First, const void* _Last, uint8_t _Val) noexcept;
 const void* __stdcall __std_find_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
@@ -249,7 +251,7 @@ __declspec(noalias) void _Reverse_vectorized(void* _First, void* _Last) noexcept
 }
 #endif // ^^^ _VECTORIZED_REVERSE ^^^
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_COUNT
 template <class _Ty, class _TVal>
 __declspec(noalias) size_t _Count_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -264,7 +266,9 @@ __declspec(noalias) size_t _Count_vectorized(_Ty* const _First, _Ty* const _Last
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_COUNT ^^^
 
+#if _VECTORIZED_FOR_X64_X86
 template <class _Ty, class _TVal>
 _Ty* _Find_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -6485,7 +6489,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
         auto _UFirst      = _STD _Get_unwrapped(_First);
         const auto _ULast = _STD _Get_unwrapped(_Last);
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_COUNT
         if constexpr (_Vector_alg_in_find_is_safe<decltype(_UFirst), _Ty>) {
 #if _HAS_CXX20
             if (!_STD is_constant_evaluated())
@@ -6499,7 +6503,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
                     _STD _Count_vectorized(_STD _To_address(_UFirst), _STD _To_address(_ULast), _Val));
             }
         }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_COUNT ^^^
 
         _Iter_diff_t<_InIt> _Count = 0;
 
