@@ -28,10 +28,13 @@ _STL_DISABLE_CLANG_WARNINGS
 // due to vectorization thresholds.
 
 extern "C" {
+#if _VECTORIZED_BITSET_TO_STRING
 __declspec(noalias) void __stdcall __std_bitset_to_string_1(
     char* _Dest, const void* _Src, size_t _Size_bits, char _Elem0, char _Elem1) noexcept;
 __declspec(noalias) void __stdcall __std_bitset_to_string_2(
     wchar_t* _Dest, const void* _Src, size_t _Size_bits, wchar_t _Elem0, wchar_t _Elem1) noexcept;
+#endif // ^^^ _VECTORIZED_BITSET_TO_STRING ^^^
+
 __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* _Dest, const char* _Src, size_t _Size_bytes,
     size_t _Size_bits, size_t _Size_chars, char _Elem0, char _Elem1) noexcept;
 __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* _Dest, const wchar_t* _Src, size_t _Size_bytes,
@@ -516,7 +519,7 @@ public:
     template <class _Elem>
     _CONSTEXPR23 void _To_string(
         _Elem* const _Buf, const size_t _Len, const _Elem _Elem0, const _Elem _Elem1) const noexcept {
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_BITSET_TO_STRING
         constexpr size_t _Bitset_to_string_vector_threshold = 32;
         if constexpr (_Bits >= _Bitset_to_string_vector_threshold && is_integral_v<_Elem> && sizeof(_Elem) <= 2) {
             if (!_Is_constant_evaluated()) {
@@ -532,7 +535,7 @@ public:
                 return;
             }
         }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_BITSET_TO_STRING ^^^
 
         for (size_t _Pos = 0; _Pos < _Len; ++_Pos) {
             _Buf[_Pos] = _Subscript(_Len - 1 - _Pos) ? _Elem1 : _Elem0;
