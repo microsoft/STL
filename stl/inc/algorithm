@@ -120,10 +120,12 @@ __declspec(noalias) void __stdcall __std_replace_4(
 __declspec(noalias) void __stdcall __std_replace_8(
     void* _First, void* _Last, uint64_t _Old_val, uint64_t _New_val) noexcept;
 
+#if _VECTORIZED_SEARCH_N
 const void* __stdcall __std_search_n_1(const void* _First, const void* _Last, size_t _Count, uint8_t _Value) noexcept;
 const void* __stdcall __std_search_n_2(const void* _First, const void* _Last, size_t _Count, uint16_t _Value) noexcept;
 const void* __stdcall __std_search_n_4(const void* _First, const void* _Last, size_t _Count, uint32_t _Value) noexcept;
 const void* __stdcall __std_search_n_8(const void* _First, const void* _Last, size_t _Count, uint64_t _Value) noexcept;
+#endif // ^^^ _VECTORIZED_SEARCH_N ^^^
 
 void* __stdcall __std_remove_copy_1(const void* _First, const void* _Last, void* _Out, uint8_t _Val) noexcept;
 void* __stdcall __std_remove_copy_2(const void* _First, const void* _Last, void* _Out, uint16_t _Val) noexcept;
@@ -343,6 +345,7 @@ __declspec(noalias) void _Replace_vectorized(
     }
 }
 
+#if _VECTORIZED_SEARCH_N
 template <class _Ty, class _TVal>
 _Ty* _Search_n_vectorized(_Ty* const _First, _Ty* const _Last, const size_t _Count, const _TVal _Val) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -361,6 +364,7 @@ _Ty* _Search_n_vectorized(_Ty* const _First, _Ty* const _Last, const size_t _Cou
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_SEARCH_N ^^^
 
 template <class _Ty>
 _Ty* _Unique_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
@@ -2488,7 +2492,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (_Is_ranges_random_iter_v<_FwdIt>) {
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_SEARCH_N
         if constexpr (_Vector_alg_in_search_n_is_safe<decltype(_UFirst), _Ty, _Pr>) {
             if (!_STD _Is_constant_evaluated()) {
                 if (!_STD _Could_compare_equal_to_value_type<decltype(_UFirst)>(_Val)) {
@@ -2509,7 +2513,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
                 return _Last;
             }
         }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_SEARCH_N ^^^
 
         const auto _Count_diff = static_cast<_Iter_diff_t<_FwdIt>>(_Count);
         auto _UOld_first       = _UFirst;
@@ -2683,7 +2687,7 @@ namespace ranges {
                     return {_First, _First};
                 }
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_SEARCH_N
                 if constexpr (_Vector_alg_in_search_n_is_safe<_It, _Ty, _Pr> && is_same_v<_Pj, identity>) {
                     if (!_STD is_constant_evaluated()) {
                         if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
@@ -2713,7 +2717,7 @@ namespace ranges {
                         }
                     }
                 }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_SEARCH_N ^^^
 
                 auto _Last = _RANGES next(_First, _Count);
                 auto _Mid1 = _First;
