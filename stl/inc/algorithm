@@ -116,11 +116,13 @@ __declspec(noalias) bool __stdcall __std_includes_less_8u(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
 #endif // ^^^ _VECTORIZED_INCLUDES ^^^
 
+#if _VECTORIZED_REPLACE
 // TRANSITION, DevCom-10610477
 __declspec(noalias) void __stdcall __std_replace_4(
     void* _First, void* _Last, uint32_t _Old_val, uint32_t _New_val) noexcept;
 __declspec(noalias) void __stdcall __std_replace_8(
     void* _First, void* _Last, uint64_t _Old_val, uint64_t _New_val) noexcept;
+#endif // ^^^ _VECTORIZED_REPLACE ^^^
 
 #if _VECTORIZED_SEARCH_N
 const void* __stdcall __std_search_n_1(const void* _First, const void* _Last, size_t _Count, uint8_t _Value) noexcept;
@@ -337,6 +339,7 @@ bool _Includes_vectorized(
 }
 #endif // ^^^ _VECTORIZED_INCLUDES ^^^
 
+#if _VECTORIZED_REPLACE
 template <class _Ty, class _TVal1, class _TVal2>
 __declspec(noalias) void _Replace_vectorized(
     _Ty* const _First, _Ty* const _Last, const _TVal1 _Old_val, const _TVal2 _New_val) noexcept {
@@ -350,6 +353,7 @@ __declspec(noalias) void _Replace_vectorized(
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_REPLACE ^^^
 
 #if _VECTORIZED_SEARCH_N
 template <class _Ty, class _TVal>
@@ -4369,7 +4373,7 @@ _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _O
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_REPLACE
     if constexpr (_Vector_alg_in_replace_is_safe<decltype(_UFirst), _Ty>) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
@@ -4382,7 +4386,7 @@ _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _O
             return;
         }
     }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_REPLACE ^^^
 
     for (; _UFirst != _ULast; ++_UFirst) {
         if (*_UFirst == _Oldval) {
@@ -4437,7 +4441,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(indirectly_writable<_It, const _Ty2&>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty1*>);
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_REPLACE
             if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<_Se, _It>
                           && _Vector_alg_in_ranges_replace_is_safe<_It, _Ty1, _Ty2>) {
                 if (!_STD is_constant_evaluated()) {
@@ -4452,7 +4456,7 @@ namespace ranges {
                     return _First + _Count;
                 }
             }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_REPLACE ^^^
 
             for (; _First != _Last; ++_First) {
                 if (_STD invoke(_Proj, *_First) == _Oldval) {
