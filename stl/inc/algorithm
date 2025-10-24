@@ -4002,7 +4002,7 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
         _STL_INTERNAL_STATIC_ASSERT(indirectly_swappable<_It1, _It2>);
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_SWAP_RANGES
         using _Elem1 = remove_reference_t<iter_reference_t<_It1>>;
         using _Elem2 = remove_reference_t<iter_reference_t<_It2>>;
         if constexpr (same_as<_Elem1, _Elem2> && _Is_trivially_ranges_swappable_v<_Elem1> //
@@ -4035,7 +4035,7 @@ namespace ranges {
                 }
             }
         }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_SWAP_RANGES ^^^
 
         for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, (void) ++_First2) {
             _RANGES iter_swap(_First1, _First2);
