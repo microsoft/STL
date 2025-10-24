@@ -47,10 +47,12 @@ __declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_2(
     const void* _Haystack, size_t _Haystack_length, const void* _Needle, size_t _Needle_length) noexcept;
 #endif // ^^^ _VECTORIZED_FIND_LAST_OF ^^^
 
+#if _VECTORIZED_FIND
 const void* __stdcall __std_find_not_ch_1(const void* _First, const void* _Last, uint8_t _Val) noexcept;
 const void* __stdcall __std_find_not_ch_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
 const void* __stdcall __std_find_not_ch_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
 const void* __stdcall __std_find_not_ch_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
+#endif // ^^^ _VECTORIZED_FIND ^^^
 
 __declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_1(
     const void* _First, const void* _Last, uint8_t _Val) noexcept;
@@ -113,6 +115,7 @@ size_t _Find_last_of_pos_vectorized(const _Ty1* const _Haystack, const size_t _H
 }
 #endif // ^^^ _VECTORIZED_FIND_LAST_OF ^^^
 
+#if _VECTORIZED_FIND
 template <class _Ty>
 const _Ty* _Find_not_ch_vectorized(const _Ty* const _First, const _Ty* const _Last, const _Ty _Ch) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -127,6 +130,7 @@ const _Ty* _Find_not_ch_vectorized(const _Ty* const _First, const _Ty* const _La
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_FIND ^^^
 
 template <class _Ty>
 size_t _Find_last_not_ch_pos_vectorized(const _Ty* const _First, const _Ty* const _Last, const _Ty _Ch) noexcept {
@@ -781,7 +785,7 @@ constexpr size_t _Traits_find_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Trai
         return static_cast<size_t>(-1); // (npos) no room for match
     }
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_FIND
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         if (!_STD _Is_constant_evaluated()) {
             const auto _End = _Haystack + _Hay_size;
@@ -794,7 +798,7 @@ constexpr size_t _Traits_find_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Trai
             }
         }
     }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_FIND ^^^
 
     const auto _Found_at = _Traits::find(_Haystack + _Start_at, _Hay_size - _Start_at, _Ch);
     if (_Found_at) {
@@ -1099,7 +1103,7 @@ constexpr size_t _Traits_find_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_
 
     const auto _End = _Haystack + _Hay_size;
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_FIND
     if constexpr (_Is_implementation_handled_char_traits<_Traits>) {
         if (!_STD _Is_constant_evaluated()) {
             const auto _Result = _STD _Find_not_ch_vectorized(_Haystack + _Start_at, _End, _Ch);
@@ -1110,7 +1114,7 @@ constexpr size_t _Traits_find_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_
             }
         }
     }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_FIND ^^^
 
     for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
         if (!_Traits::eq(*_Match_try, _Ch)) {

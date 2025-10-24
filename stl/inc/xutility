@@ -140,10 +140,12 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_8(
     const void* _First, const void* _Last, uint64_t _Val) noexcept;
 #endif // ^^^ _VECTORIZED_COUNT ^^^
 
+#if _VECTORIZED_FIND
 const void* __stdcall __std_find_trivial_1(const void* _First, const void* _Last, uint8_t _Val) noexcept;
 const void* __stdcall __std_find_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
 const void* __stdcall __std_find_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
 const void* __stdcall __std_find_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
+#endif // ^^^ _VECTORIZED_FIND ^^^
 
 const void* __stdcall __std_find_last_trivial_1(const void* _First, const void* _Last, uint8_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
@@ -272,7 +274,7 @@ __declspec(noalias) size_t _Count_vectorized(_Ty* const _First, _Ty* const _Last
 }
 #endif // ^^^ _VECTORIZED_COUNT ^^^
 
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_FIND
 template <class _Ty, class _TVal>
 _Ty* _Find_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -291,7 +293,9 @@ _Ty* _Find_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noe
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_FIND ^^^
 
+#if _VECTORIZED_FOR_X64_X86
 template <class _Ty, class _TVal>
 _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -6307,7 +6311,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
             if (!_STD _Could_compare_equal_to_value_type<_InIt>(_Val)) {
                 return _Last;
             }
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_FIND
             const auto _First_ptr = _STD _To_address(_First);
             const auto _Result    = _STD _Find_vectorized(_First_ptr, _STD _To_address(_Last), _Val);
             if constexpr (is_pointer_v<_InIt>) {
@@ -6315,7 +6319,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
             } else {
                 return _First + static_cast<_Iter_diff_t<_InIt>>(_Result - _First_ptr);
             }
-#else // ^^^ _VECTORIZED_FOR_X64_X86 / !_VECTORIZED_FOR_X64_X86 vvv
+#else // ^^^ _VECTORIZED_FIND / !_VECTORIZED_FIND vvv
             if constexpr (sizeof(_Iter_value_t<_InIt>) <= 2) {
                 const auto _First_ptr = _STD _To_address(_First);
                 const auto _Count     = static_cast<size_t>(_Last - _First);
@@ -6338,7 +6342,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
                     return _Result ? _First + (_Result - _First_ptr) : _Last;
                 }
             }
-#endif // ^^^ !_VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ !_VECTORIZED_FIND ^^^
         }
     }
 
@@ -6387,7 +6391,7 @@ namespace ranges {
         if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && same_as<_Pj, identity>
                       && (_Elements_are_1_byte    ? _Is_sized || same_as<_Se, unreachable_sentinel_t>
                           : _Elements_are_2_bytes ? _Is_sized
-                                                  : _Is_sized && _VECTORIZED_FOR_X64_X86)) {
+                                                  : _Is_sized && _VECTORIZED_FIND)) {
             if (!_STD is_constant_evaluated()) {
                 if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
                     if constexpr (_Is_sized) {
@@ -6402,13 +6406,13 @@ namespace ranges {
                 const auto _First_ptr = _STD _To_address(_First);
 
                 _Ptr_t _Result;
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_FIND
                 if constexpr (_Is_sized) {
                     // Prefer this over memchr()/wmemchr() below for performance
                     const auto _Last_ptr = _First_ptr + static_cast<ptrdiff_t>(_Last - _First);
                     _Result              = _STD _Find_vectorized(_First_ptr, _Last_ptr, _Val);
                 } else
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_FIND ^^^
                 {
                     if constexpr (_Elements_are_2_bytes) {
                         _STL_INTERNAL_STATIC_ASSERT(_Is_sized);
