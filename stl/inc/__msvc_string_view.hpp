@@ -360,7 +360,7 @@ public:
     _NODISCARD static _CONSTEXPR17 int compare(_In_reads_(_Count) const _Elem* const _First1,
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
-#if _VECTORIZED_FOR_X64_X86
+#if _VECTORIZED_MISMATCH
         if (!_STD _Is_constant_evaluated()) {
             // TRANSITION, GH-2289: Use vectorized algorithms for better performance than __builtin_wmemcmp.
             const size_t _Pos = _Mismatch_vectorized<sizeof(_Elem)>(_First1, _First2, _Count);
@@ -370,7 +370,7 @@ public:
                 return _First1[_Pos] < _First2[_Pos] ? -1 : +1;
             }
         }
-#endif // ^^^ _VECTORIZED_FOR_X64_X86 ^^^
+#endif // ^^^ _VECTORIZED_MISMATCH ^^^
 
         if constexpr (is_same_v<_Elem, wchar_t>) {
             return __builtin_wmemcmp(_First1, _First2, _Count);
