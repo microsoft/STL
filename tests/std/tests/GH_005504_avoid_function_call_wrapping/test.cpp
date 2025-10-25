@@ -75,10 +75,10 @@ int main() {
     // Moves from function to move_only_function
     {
         move_only_function<function_type> fn{function<function_type>{small_callable{}}};
-        assert(fn(copy_counter{}) == 1);
+        assert(fn(copy_counter{}) == 0);
     }
     {
         move_only_function<function_type> fn{function<function_type>{large_callable{}}};
-        assert(fn(copy_counter{}) == 1);
+        assert(fn(copy_counter{}) == 0);
     }
 }
