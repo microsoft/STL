@@ -4118,7 +4118,8 @@ _CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Des
     const auto _ULast = _STD _Get_unwrapped(_Last);
     auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
 
-    if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt, true> && !is_void_v<_Map_vb_functor_t<_Fn>>) {
+    if constexpr (_Is_vb_iterator<decltype(_UFirst)> && _Is_vb_iterator<decltype(_UDest), true>
+                  && !is_void_v<_Map_vb_functor_t<_Fn>>) {
         if (_UFirst._Myoff == 0 && _UDest._Myoff == 0) {
             _UDest = _Transform_vbool_aligned(_UFirst, _ULast, _UDest, _Map_vb_functor_t<_Fn>{});
             _STD _Seek_wrapped(_Dest, _UDest);
@@ -4150,8 +4151,8 @@ _CONSTEXPR20 _OutIt transform(
     auto _UFirst2      = _STD _Get_unwrapped_n(_First2, _Count);
     auto _UDest        = _STD _Get_unwrapped_n(_Dest, _Count);
 
-    if constexpr (_Is_vb_iterator<_InIt1> && _Is_vb_iterator<_InIt2> && _Is_vb_iterator<_OutIt, true>
-                  && !is_void_v<_Map_vb_functor_t<_Fn>>) {
+    if constexpr (_Is_vb_iterator<decltype(_UFirst1)> && _Is_vb_iterator<decltype(_UFirst2)>
+                  && _Is_vb_iterator<decltype(_UDest), true> && !is_void_v<_Map_vb_functor_t<_Fn>>) {
         if (_UFirst1._Myoff == 0 && _UFirst2._Myoff == 0 && _UDest._Myoff == 0) {
             _UDest = _Transform_vbool_aligned(_UFirst1, _ULast1, _UFirst2, _UDest, _Map_vb_functor_t<_Fn>{});
             _STD _Seek_wrapped(_Dest, _UDest);
