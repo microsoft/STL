@@ -2785,14 +2785,14 @@ void sort(_ExPo&&, const _RanIt _First, const _RanIt _Last, _Pr _Pred) noexcept 
 }
 
 template <class _Ty>
-struct _Static_partitioned_temporary_buffer2 {
-    _Optimistic_temporary_buffer<_Ty>& _Temp_buf;
+struct _Static_partitioned_temporary_buffer3 {
+    _Optimistic_temporary_buffer2<_Ty>& _Temp_buf;
     ptrdiff_t _Chunk_size;
     ptrdiff_t _Unchunked_items;
 
     template <class _Diff>
-    explicit _Static_partitioned_temporary_buffer2(
-        _Optimistic_temporary_buffer<_Ty>& _Temp_buf_raw, _Static_partition_team<_Diff>& _Team)
+    explicit _Static_partitioned_temporary_buffer3(
+        _Optimistic_temporary_buffer2<_Ty>& _Temp_buf_raw, _Static_partition_team<_Diff>& _Team)
         : _Temp_buf(_Temp_buf_raw), _Chunk_size(static_cast<ptrdiff_t>(_Temp_buf._Capacity / _Team._Chunks)),
           _Unchunked_items(static_cast<ptrdiff_t>(_Temp_buf._Capacity % _Team._Chunks)) {}
 
@@ -2899,15 +2899,15 @@ struct _Bottom_up_tree_visitor {
 };
 
 template <class _BidIt, class _Pr>
-struct _Static_partitioned_stable_sort3 {
+struct _Static_partitioned_stable_sort4 {
     using _Diff = _Iter_diff_t<_BidIt>;
     _Static_partition_team<_Diff> _Team;
     _Static_partition_range<_BidIt> _Basis;
     _Bottom_up_merge_tree _Merge_tree;
-    _Static_partitioned_temporary_buffer2<_Iter_value_t<_BidIt>> _Temp_buf;
+    _Static_partitioned_temporary_buffer3<_Iter_value_t<_BidIt>> _Temp_buf;
     _Pr _Pred;
 
-    _Static_partitioned_stable_sort3(_Optimistic_temporary_buffer<_Iter_value_t<_BidIt>>& _Temp_buf_raw,
+    _Static_partitioned_stable_sort4(_Optimistic_temporary_buffer2<_Iter_value_t<_BidIt>>& _Temp_buf_raw,
         const _Diff _Count, const size_t _Merge_tree_height_, const _BidIt _First, _Pr _Pred_)
         : _Team(_Count, static_cast<size_t>(1) << _Merge_tree_height_), _Basis{}, _Merge_tree(_Merge_tree_height_),
           _Temp_buf(_Temp_buf_raw, _Team), _Pred{_Pred_} {
@@ -3001,7 +3001,7 @@ struct _Static_partitioned_stable_sort3 {
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, __std_PTP_WORK) noexcept /* terminates */ {
-        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_stable_sort3*>(_Context));
+        _STD _Run_available_chunked_work(*static_cast<_Static_partitioned_stable_sort4*>(_Context));
     }
 };
 
@@ -3027,14 +3027,14 @@ void stable_sort(_ExPo&&, const _BidIt _First, const _BidIt _Last, _Pr _Pred) no
         _Attempt_parallelism = false;
     }
 
-    _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{_Attempt_parallelism ? _Count : _Count - _Count / 2};
+    _Optimistic_temporary_buffer2<_Iter_value_t<_BidIt>> _Temp_buf{_Attempt_parallelism ? _Count : _Count - _Count / 2};
     if constexpr (remove_reference_t<_ExPo>::_Parallelize) {
         if (_Attempt_parallelism) {
             // forward+ iterator overflow assumption for size_t cast
             const auto _Tree_height = _Get_stable_sort_tree_height(static_cast<size_t>(_Count), _Hw_threads);
             if (_Tree_height != 0) {
                 _TRY_BEGIN
-                _Static_partitioned_stable_sort3 _Operation{
+                _Static_partitioned_stable_sort4 _Operation{
                     _Temp_buf, _Count, _Tree_height, _UFirst, _STD _Pass_fn(_Pred)};
                 _STD _Run_chunked_parallel_work(_Hw_threads, _Operation);
                 return;
