@@ -2066,7 +2066,7 @@ public:
                                                     "(N4950 [func.wrap.move.ctor]/6)");
         using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
 
-        if constexpr (_Is_specialization_v<_Vt, function>) {
+        if constexpr (is_same_v<_Vt, function<_Signature...>>) {
             this->template _Construct_with_old_fn<_Vt, _VtInvQuals>(_STD forward<_Fn>(_Callable));
         } else {
             if constexpr (is_member_pointer_v<_Vt> || is_pointer_v<_Vt>
