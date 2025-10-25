@@ -1535,17 +1535,6 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
 template <class _Rx, bool _Noexcept, class... _Types>
 class _Move_only_function_base {
 public:
-    // TRANSITION, DevCom-1208330: use noexcept(_Noexcept) instead
-    template <bool>
-    struct _Invoke_t {
-        using _Call = _Rx(__stdcall*)(const _Move_only_function_data&, _Types&&...);
-    };
-
-    template <>
-    struct _Invoke_t<true> {
-        using _Call = _Rx(__stdcall*)(const _Move_only_function_data&, _Types&&...) _NOEXCEPT_FNPTR;
-    };
-
     struct _Impl_t { // A per-callable-type structure acting as a virtual function table.
         // Using vtable emulations gives more flexibility for optimizations and reduces the amount of RTTI data.
         // (The RTTI savings may be significant as with lambdas and binds there may be many distinct callable types.
@@ -1555,7 +1544,7 @@ public:
         // empty function from a DLL that is unloaded later, and then safely moving/destroying that empty function.
 
         // Calls target
-        _Invoke_t<_Noexcept>::_Call _Invoke;
+        _Rx(__stdcall* _Invoke)(const _Move_only_function_data&, _Types&&...) _NOEXCEPT_FNPTR_COND(_Noexcept);
         // Moves the data, including pointer to "vtable", AND destroys old data (not resetting its "vtable").
         // nullptr if we can trivially move two pointers.
         void(__stdcall* _Move)(_Move_only_function_data&, _Move_only_function_data&) _NOEXCEPT_FNPTR;
