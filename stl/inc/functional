@@ -1495,18 +1495,18 @@ inline void __stdcall _Function_deallocate_large_default_aligned(_Move_only_func
 }
 
 template <class _Fn>
-inline void __stdcall _Function_destroy_old_large(_Move_only_function_data& _Self) noexcept {
+void __stdcall _Function_destroy_old_large(_Move_only_function_data& _Self) noexcept {
     _Self._Large_fn_ptr<_Fn>()->_Delete_this(true);
 }
 
 template <class _Fn>
-inline void __stdcall _Function_destroy_old_small_as_large(_Move_only_function_data& _Self) noexcept {
+void __stdcall _Function_destroy_old_small_as_large(_Move_only_function_data& _Self) noexcept {
     _Fn* const _Old_fn_impl = _Self._Large_fn_ptr<_Fn>();
     _Old_fn_impl->_Delete_this(false);
     ::operator delete(static_cast<void*>(_Old_fn_impl));
 }
 template <class _Fn>
-inline void __stdcall _Function_destroy_old_small(_Move_only_function_data& _Self) noexcept {
+void __stdcall _Function_destroy_old_small(_Move_only_function_data& _Self) noexcept {
     _Self._Small_fn_ptr<_Fn>()->_Delete_this(false);
 }
 
