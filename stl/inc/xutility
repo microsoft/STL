@@ -41,17 +41,68 @@ _STL_DISABLE_CLANG_WARNINGS
 #elif _USE_STD_VECTOR_ALGORITHMS
 #error Vector algorithms are not supported when building msvcp140.dll, but _USE_STD_VECTOR_ALGORITHMS is set.
 #endif // ^^^ _USE_STD_VECTOR_ALGORITHMS != 0 ^^^
-#elif (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID) && !defined(_M_ARM64EC)
-#ifndef _USE_STD_VECTOR_ALGORITHMS
-#define _USE_STD_VECTOR_ALGORITHMS 1
-#endif // !defined(_USE_STD_VECTOR_ALGORITHMS)
-#else // ^^^ arch supports vector algorithms / no support for vector algorithms vvv
+#elif defined(_M_CEE_PURE) || defined(_M_HYBRID)
 #ifndef _USE_STD_VECTOR_ALGORITHMS
 #define _USE_STD_VECTOR_ALGORITHMS 0
 #elif _USE_STD_VECTOR_ALGORITHMS
 #error Vector algorithms are not supported on this architecture, but _USE_STD_VECTOR_ALGORITHMS is set.
 #endif // ^^^ _USE_STD_VECTOR_ALGORITHMS != 0 ^^^
-#endif // ^^^ no support for vector algorithms ^^^
+#else // ^^^ vector algorithms unsupported for /clr:pure or CHPE / vector algorithms supported by default vvv
+#ifndef _USE_STD_VECTOR_ALGORITHMS
+#define _USE_STD_VECTOR_ALGORITHMS 1
+#endif // !defined(_USE_STD_VECTOR_ALGORITHMS)
+#endif // ^^^ vector algorithms supported by default ^^^
+
+// _USE_STD_VECTOR_ALGORITHMS is our documented control macro:
+// https://learn.microsoft.com/en-us/cpp/standard-library/vectorized-stl-algorithms?view=msvc-170
+// In the STL's implementation, we inspect the following detection macros,
+// because various algorithms are vectorized for various architectures.
+
+#if !_USE_STD_VECTOR_ALGORITHMS
+#define _VECTORIZED_FOR_X64_X86               0
+#define _VECTORIZED_FOR_X64_X86_ARM64         0
+#define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 0
+#elif defined(_M_ARM64EC)
+#define _VECTORIZED_FOR_X64_X86               0
+#define _VECTORIZED_FOR_X64_X86_ARM64         0
+#define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
+#elif defined(_M_ARM64)
+#define _VECTORIZED_FOR_X64_X86               0
+#define _VECTORIZED_FOR_X64_X86_ARM64         1
+#define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
+#elif defined(_M_X64) || defined(_M_IX86)
+#define _VECTORIZED_FOR_X64_X86               1
+#define _VECTORIZED_FOR_X64_X86_ARM64         1
+#define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
+#else // ^^^ known architecture / unknown architecture vvv
+#error Unknown architecture.
+#endif // ^^^ unknown architecture ^^^
+
+#define _VECTORIZED_ADJACENT_FIND      _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_BITSET_FROM_STRING _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_BITSET_TO_STRING   _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_COUNT              _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_FIND               _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_FIND_END           _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_FIND_FIRST_OF      _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_FIND_LAST          _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_FIND_LAST_OF       _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_INCLUDES           _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_IS_SORTED_UNTIL    _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_MINMAX             _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_MINMAX_ELEMENT     _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_MISMATCH           _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_REMOVE             _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_REMOVE_COPY        _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_REPLACE            _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_REVERSE            _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_REVERSE_COPY       _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_ROTATE             _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_SEARCH             _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_SEARCH_N           _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_SWAP_RANGES        _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_UNIQUE             _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_UNIQUE_COPY        _VECTORIZED_FOR_X64_X86
 
 #ifndef _USE_STD_VECTOR_FLOATING_ALGORITHMS
 #if _USE_STD_VECTOR_ALGORITHMS && !defined(_M_FP_EXCEPT)
@@ -73,7 +124,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ !defined(__clang__) || __clang_major__ < 19 ^^^
 #endif // ^^^ !defined(_USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE) ^^^
 
-#if _USE_STD_VECTOR_ALGORITHMS
 extern "C" {
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
 // won't be stored beyond the lifetime of the function, and that the function will only reference arrays denoted by
@@ -82,15 +132,24 @@ extern "C" {
 // functions are in native code objects that the compiler cannot analyze. In the absence of the noalias attribute, the
 // compiler has to assume that the denoted arrays are "globally address taken", and that any later calls to
 // unanalyzable routines may modify those arrays.
+
+#if _VECTORIZED_REVERSE
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _First, void* _Last) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _First, void* _Last) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _First, void* _Last) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _First, void* _Last) noexcept;
+#endif // ^^^ _VECTORIZED_REVERSE ^^^
+
+#if _VECTORIZED_SWAP_RANGES
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* _Last1, void* _First2) noexcept;
+#endif // ^^^ _VECTORIZED_SWAP_RANGES ^^^
 
+#if _VECTORIZED_ROTATE
 __declspec(noalias) void __stdcall __std_rotate(void* _First, void* _Mid, void* _Last) noexcept;
+#endif // ^^^ _VECTORIZED_ROTATE ^^^
 
+#if _VECTORIZED_COUNT
 __declspec(noalias) size_t __stdcall __std_count_trivial_1(
     const void* _First, const void* _Last, uint8_t _Val) noexcept;
 __declspec(noalias) size_t __stdcall __std_count_trivial_2(
@@ -99,22 +158,30 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_4(
     const void* _First, const void* _Last, uint32_t _Val) noexcept;
 __declspec(noalias) size_t __stdcall __std_count_trivial_8(
     const void* _First, const void* _Last, uint64_t _Val) noexcept;
+#endif // ^^^ _VECTORIZED_COUNT ^^^
 
+#if _VECTORIZED_FIND
 const void* __stdcall __std_find_trivial_1(const void* _First, const void* _Last, uint8_t _Val) noexcept;
 const void* __stdcall __std_find_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
 const void* __stdcall __std_find_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
 const void* __stdcall __std_find_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
+#endif // ^^^ _VECTORIZED_FIND ^^^
 
+#if _VECTORIZED_FIND_LAST
 const void* __stdcall __std_find_last_trivial_1(const void* _First, const void* _Last, uint8_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
 const void* __stdcall __std_find_last_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
+#endif // ^^^ _VECTORIZED_FIND_LAST ^^^
 
+#if _VECTORIZED_ADJACENT_FIND
 const void* __stdcall __std_adjacent_find_1(const void* _First, const void* _Last) noexcept;
 const void* __stdcall __std_adjacent_find_2(const void* _First, const void* _Last) noexcept;
 const void* __stdcall __std_adjacent_find_4(const void* _First, const void* _Last) noexcept;
 const void* __stdcall __std_adjacent_find_8(const void* _First, const void* _Last) noexcept;
+#endif // ^^^ _VECTORIZED_ADJACENT_FIND ^^^
 
+#if _VECTORIZED_SEARCH
 const void* __stdcall __std_search_1(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
 const void* __stdcall __std_search_2(
@@ -123,7 +190,9 @@ const void* __stdcall __std_search_4(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
 const void* __stdcall __std_search_8(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
+#endif // ^^^ _VECTORIZED_SEARCH ^^^
 
+#if _VECTORIZED_FIND_END
 const void* __stdcall __std_find_end_1(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
 const void* __stdcall __std_find_end_2(
@@ -132,8 +201,9 @@ const void* __stdcall __std_find_end_4(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
 const void* __stdcall __std_find_end_8(
     const void* _First1, const void* _Last1, const void* _First2, size_t _Count2) noexcept;
+#endif // ^^^ _VECTORIZED_FIND_END ^^^
 
-
+#if _VECTORIZED_MINMAX_ELEMENT
 const void* __stdcall __std_min_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_min_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_min_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
@@ -147,7 +217,9 @@ const void* __stdcall __std_max_element_4(const void* _First, const void* _Last,
 const void* __stdcall __std_max_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_max_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
 const void* __stdcall __std_max_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
+#if _VECTORIZED_MINMAX
 __declspec(noalias) int8_t __stdcall __std_min_1i(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) uint8_t __stdcall __std_min_1u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) int16_t __stdcall __std_min_2i(const void* _First, const void* _Last) noexcept;
@@ -158,6 +230,7 @@ __declspec(noalias) int64_t __stdcall __std_min_8i(const void* _First, const voi
 __declspec(noalias) uint64_t __stdcall __std_min_8u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) float __stdcall __std_min_f(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) double __stdcall __std_min_d(const void* _First, const void* _Last) noexcept;
+
 __declspec(noalias) int8_t __stdcall __std_max_1i(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) uint8_t __stdcall __std_max_1u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) int16_t __stdcall __std_max_2i(const void* _First, const void* _Last) noexcept;
@@ -168,13 +241,16 @@ __declspec(noalias) int64_t __stdcall __std_max_8i(const void* _First, const voi
 __declspec(noalias) uint64_t __stdcall __std_max_8u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) float __stdcall __std_max_f(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) double __stdcall __std_max_d(const void* _First, const void* _Last) noexcept;
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
 
+#if _VECTORIZED_MISMATCH
 __declspec(noalias) size_t __stdcall __std_mismatch_1(const void* _First1, const void* _First2, size_t _Count) noexcept;
 __declspec(noalias) size_t __stdcall __std_mismatch_2(const void* _First1, const void* _First2, size_t _Count) noexcept;
 __declspec(noalias) size_t __stdcall __std_mismatch_4(const void* _First1, const void* _First2, size_t _Count) noexcept;
 __declspec(noalias) size_t __stdcall __std_mismatch_8(const void* _First1, const void* _First2, size_t _Count) noexcept;
+#endif // ^^^ _VECTORIZED_MISMATCH ^^^
+
 } // extern "C"
-#endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
 
@@ -187,7 +263,7 @@ _Target _Find_arg_cast(const _Source _Val) noexcept {
     }
 }
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_REVERSE
 template <size_t _Nx>
 __declspec(noalias) void _Reverse_vectorized(void* _First, void* _Last) noexcept {
     if constexpr (_Nx == 1) {
@@ -202,7 +278,9 @@ __declspec(noalias) void _Reverse_vectorized(void* _First, void* _Last) noexcept
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_REVERSE ^^^
 
+#if _VECTORIZED_COUNT
 template <class _Ty, class _TVal>
 __declspec(noalias) size_t _Count_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -217,7 +295,9 @@ __declspec(noalias) size_t _Count_vectorized(_Ty* const _First, _Ty* const _Last
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_COUNT ^^^
 
+#if _VECTORIZED_FIND
 template <class _Ty, class _TVal>
 _Ty* _Find_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -236,7 +316,9 @@ _Ty* _Find_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noe
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_FIND ^^^
 
+#if _VECTORIZED_FIND_LAST
 template <class _Ty, class _TVal>
 _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -255,7 +337,9 @@ _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_FIND_LAST ^^^
 
+#if _VECTORIZED_ADJACENT_FIND
 template <class _Ty>
 _Ty* _Adjacent_find_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -270,10 +354,16 @@ _Ty* _Adjacent_find_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_ADJACENT_FIND ^^^
 
+#if _VECTORIZED_FIND_FIRST_OF || _VECTORIZED_FIND_LAST_OF
 // find_first_of vectorization is likely to be a win after this size (in elements)
+// (Used with _Find_first_of_vectorized, _Find_first_of_pos_vectorized, _Find_first_not_of_pos_vectorized,
+// _Find_last_of_pos_vectorized, and _Find_last_not_of_pos_vectorized.)
 _INLINE_VAR constexpr ptrdiff_t _Threshold_find_first_of = 16;
+#endif // ^^^ _VECTORIZED_FIND_FIRST_OF || _VECTORIZED_FIND_LAST_OF ^^^
 
+#if _VECTORIZED_SEARCH
 template <class _Ty1, class _Ty2>
 _Ty1* _Search_vectorized(_Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _First2, const size_t _Count2) noexcept {
     _STL_INTERNAL_STATIC_ASSERT(sizeof(_Ty1) == sizeof(_Ty2));
@@ -289,7 +379,9 @@ _Ty1* _Search_vectorized(_Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _F
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_SEARCH ^^^
 
+#if _VECTORIZED_FIND_END
 template <class _Ty1, class _Ty2>
 _Ty1* _Find_end_vectorized(
     _Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _First2, const size_t _Count2) noexcept {
@@ -306,7 +398,9 @@ _Ty1* _Find_end_vectorized(
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_FIND_END ^^^
 
+#if _VECTORIZED_MINMAX_ELEMENT
 template <class _Ty>
 _Ty* _Min_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = is_signed_v<_Ty>;
@@ -348,7 +442,9 @@ _Ty* _Max_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
+#if _VECTORIZED_MINMAX
 template <class _Ty>
 auto _Min_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = is_signed_v<_Ty>;
@@ -434,7 +530,9 @@ auto _Max_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
 
+#if _VECTORIZED_MISMATCH
 template <size_t _Element_size>
 size_t _Mismatch_vectorized(const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
     if constexpr (_Element_size % 8 == 0) {
@@ -447,7 +545,7 @@ size_t _Mismatch_vectorized(const void* const _First1, const void* const _First2
         return __std_mismatch_1(_First1, _First2, _Count * _Element_size) / _Element_size;
     }
 }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_MISMATCH ^^^
 
 template <class _Ty>
 struct _Get_first_parameter;
@@ -5595,15 +5693,17 @@ template <class _Iter1, class _Iter2, class _Pr>
 constexpr bool _Equal_memcmp_is_safe =
     _Equal_memcmp_is_safe_helper<remove_const_t<_Iter1>, remove_const_t<_Iter2>, remove_const_t<_Pr>>;
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_SEARCH || _VECTORIZED_ADJACENT_FIND || _VECTORIZED_FIND_END || _VECTORIZED_FIND_FIRST_OF \
+    || _VECTORIZED_UNIQUE || _VECTORIZED_UNIQUE_COPY
 template <size_t _Size>
 constexpr bool _Is_vector_element_size = _Size == 1 || _Size == 2 || _Size == 4 || _Size == 8;
 
-// Can we activate the vector algorithms for std::search?
+// Can we activate the vector algorithms for search, adjacent_find, find_end, find_first_of, and default_searcher?
+// (Also used indirectly for unique and unique_copy.)
 template <class _It1, class _It2, class _Pr>
 constexpr bool _Vector_alg_in_search_is_safe =
     _Equal_memcmp_is_safe<_It1, _It2, _Pr> && _Is_vector_element_size<sizeof(_Iter_value_t<_It1>)>;
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _Vector_alg_in_search_is_safe is available ^^^
 
 template <class _CtgIt1, class _CtgIt2>
 _NODISCARD int _Memcmp_count(_CtgIt1 _First1, _CtgIt2 _First2, const size_t _Count) {
@@ -5760,7 +5860,7 @@ namespace ranges {
     _NODISCARD constexpr mismatch_result<_It1, _It2> _Mismatch_n(
         _It1 _First1, _It2 _First2, iter_difference_t<_It1> _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
         _STL_INTERNAL_CHECK(_Count >= 0);
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MISMATCH
         if constexpr (_Equal_memcmp_is_safe<_It1, _It2, _Pr> && is_same_v<_Pj1, identity>
                       && is_same_v<_Pj2, identity>) {
             if (!_STD is_constant_evaluated()) {
@@ -5773,7 +5873,7 @@ namespace ranges {
                     _First2 + static_cast<iter_difference_t<_It2>>(_Pos)};
             }
         }
-#endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
+#endif // ^^^ _VECTORIZED_MISMATCH ^^^
         for (; _Count != 0; ++_First1, (void) ++_First2, --_Count) {
             if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
                 break;
@@ -5872,13 +5972,13 @@ namespace ranges {
 
 template <class _Elem1, class _Elem2>
 constexpr bool _Lex_compare_memcmp_classify_elements =
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MISMATCH
     is_integral_v<_Elem1> && is_integral_v<_Elem2> && sizeof(_Elem1) == sizeof(_Elem2)
     && is_unsigned_v<_Elem1> == is_unsigned_v<_Elem2>;
-#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
+#else // ^^^ _VECTORIZED_MISMATCH / !_VECTORIZED_MISMATCH vvv
     conjunction_v<_Is_character_or_bool<_Elem1>, _Is_character_or_bool<_Elem2>, is_unsigned<_Elem1>,
         is_unsigned<_Elem2>>;
-#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
+#endif // ^^^ !_VECTORIZED_MISMATCH ^^^
 
 #ifdef __cpp_lib_byte
 template <>
@@ -5953,7 +6053,7 @@ _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
             const auto _Num1  = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2  = static_cast<size_t>(_ULast2 - _UFirst2);
             const size_t _Num = (_STD min) (_Num1, _Num2);
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MISMATCH
             const auto _First1_ptr = _STD _To_address(_UFirst1);
             const auto _First2_ptr = _STD _To_address(_UFirst2);
             const size_t _Pos      = _Mismatch_vectorized<sizeof(*_First1_ptr)>(_First1_ptr, _First2_ptr, _Num);
@@ -5964,10 +6064,10 @@ _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
             } else {
                 return _Pred(_First1_ptr[_Pos], _First2_ptr[_Pos]);
             }
-#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
+#else // ^^^ _VECTORIZED_MISMATCH / !_VECTORIZED_MISMATCH vvv
             const int _Ans = _STD _Memcmp_count(_UFirst1, _UFirst2, _Num);
             return _Memcmp_pred{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
-#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
+#endif // ^^^ !_VECTORIZED_MISMATCH ^^^
         }
     }
 
@@ -6078,7 +6178,7 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(const _InIt1 _First1
             const auto _Num1  = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2  = static_cast<size_t>(_ULast2 - _UFirst2);
             const size_t _Num = (_STD min) (_Num1, _Num2);
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MISMATCH
             const auto _First1_ptr = _STD to_address(_UFirst1);
             const auto _First2_ptr = _STD to_address(_UFirst2);
             const size_t _Pos      = _Mismatch_vectorized<sizeof(*_First1_ptr)>(_First1_ptr, _First2_ptr, _Num);
@@ -6092,14 +6192,14 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(const _InIt1 _First1
                 __assume(_Val1 != _Val2); // avoid one comparison
                 return _Comp(_Val1, _Val2);
             }
-#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
+#else // ^^^ _VECTORIZED_MISMATCH / !_VECTORIZED_MISMATCH vvv
             const int _Ans = _STD _Memcmp_count(_UFirst1, _UFirst2, _Num);
             if (_Ans == 0) {
                 return _Num1 <=> _Num2;
             } else {
                 return _Memcmp_pred{}(_Ans, 0);
             }
-#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
+#endif // ^^^ !_VECTORIZED_MISMATCH ^^^
         }
     }
 
@@ -6161,7 +6261,8 @@ constexpr bool _Vector_alg_in_find_is_safe_elem =
         // - One of the pointer types is a cv1 U* and the other is a cv2 U*.
         _Vector_alg_in_find_is_safe_object_pointers<_Ty, _Elem>>;
 
-// Can we activate the vector algorithms for find/count?
+// Can we activate the vector algorithms for find, count, remove, remove_copy, and ranges::find_last?
+// (Also used indirectly for replace and search_n.)
 template <class _Iter, class _Ty>
 constexpr bool _Vector_alg_in_find_is_safe =
     // The iterator must be contiguous so we can get raw pointers.
@@ -6238,7 +6339,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
             if (!_STD _Could_compare_equal_to_value_type<_InIt>(_Val)) {
                 return _Last;
             }
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FIND
             const auto _First_ptr = _STD _To_address(_First);
             const auto _Result    = _STD _Find_vectorized(_First_ptr, _STD _To_address(_Last), _Val);
             if constexpr (is_pointer_v<_InIt>) {
@@ -6246,7 +6347,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
             } else {
                 return _First + static_cast<_Iter_diff_t<_InIt>>(_Result - _First_ptr);
             }
-#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
+#else // ^^^ _VECTORIZED_FIND / !_VECTORIZED_FIND vvv
             if constexpr (sizeof(_Iter_value_t<_InIt>) <= 2) {
                 const auto _First_ptr = _STD _To_address(_First);
                 const auto _Count     = static_cast<size_t>(_Last - _First);
@@ -6269,7 +6370,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
                     return _Result ? _First + (_Result - _First_ptr) : _Last;
                 }
             }
-#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
+#endif // ^^^ !_VECTORIZED_FIND ^^^
         }
     }
 
@@ -6318,7 +6419,7 @@ namespace ranges {
         if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && same_as<_Pj, identity>
                       && (_Elements_are_1_byte    ? _Is_sized || same_as<_Se, unreachable_sentinel_t>
                           : _Elements_are_2_bytes ? _Is_sized
-                                                  : _Is_sized && _USE_STD_VECTOR_ALGORITHMS)) {
+                                                  : _Is_sized && _VECTORIZED_FIND)) {
             if (!_STD is_constant_evaluated()) {
                 if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
                     if constexpr (_Is_sized) {
@@ -6333,13 +6434,13 @@ namespace ranges {
                 const auto _First_ptr = _STD _To_address(_First);
 
                 _Ptr_t _Result;
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FIND
                 if constexpr (_Is_sized) {
                     // Prefer this over memchr()/wmemchr() below for performance
                     const auto _Last_ptr = _First_ptr + static_cast<ptrdiff_t>(_Last - _First);
                     _Result              = _STD _Find_vectorized(_First_ptr, _Last_ptr, _Val);
                 } else
-#endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
+#endif // ^^^ _VECTORIZED_FIND ^^^
                 {
                     if constexpr (_Elements_are_2_bytes) {
                         _STL_INTERNAL_STATIC_ASSERT(_Is_sized);
@@ -6428,7 +6529,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
         auto _UFirst      = _STD _Get_unwrapped(_First);
         const auto _ULast = _STD _Get_unwrapped(_Last);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_COUNT
         if constexpr (_Vector_alg_in_find_is_safe<decltype(_UFirst), _Ty>) {
 #if _HAS_CXX20
             if (!_STD is_constant_evaluated())
@@ -6442,7 +6543,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
                     _STD _Count_vectorized(_STD _To_address(_UFirst), _STD _To_address(_ULast), _Val));
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_COUNT ^^^
 
         _Iter_diff_t<_InIt> _Count = 0;
 
@@ -6632,7 +6733,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
     _STD _Adl_verify_range(_First, _Last);
     auto _UFirst = _STD _Get_unwrapped(_First);
     auto _ULast  = _STD _Get_unwrapped(_Last);
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_REVERSE
     using _Elem                         = remove_reference_t<_Iter_ref_t<decltype(_UFirst)>>;
     constexpr bool _Allow_vectorization = conjunction_v<bool_constant<_Iterator_is_contiguous<decltype(_UFirst)>>,
         _Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
@@ -6647,7 +6748,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
             return;
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_REVERSE ^^^
 
     for (; _UFirst != _ULast && _UFirst != --_ULast; ++_UFirst) {
         swap(*_UFirst, *_ULast); // intentional ADL
@@ -6694,7 +6795,7 @@ _CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
     }
 
     if constexpr (_Is_cpp17_random_iter_v<_FwdIt>) {
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_ROTATE
         using _Elem = remove_reference_t<_Iter_ref_t<decltype(_UFirst)>>;
 
         if constexpr (conjunction_v<bool_constant<_Iterator_is_contiguous<decltype(_UFirst)>>,
@@ -6704,7 +6805,7 @@ _CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
                 return _First + (_Last - _Mid);
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_ROTATE ^^^
         _STD reverse(_UFirst, _UMid);
         _STD reverse(_UMid, _ULast);
         _STD reverse(_UFirst, _ULast);
@@ -6923,7 +7024,7 @@ namespace ranges {
                 return _First;
             }
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_ADJACENT_FIND
             if constexpr (_Vector_alg_in_search_is_safe<_It, _It, _Pr> && sized_sentinel_for<_Se, _It>
                           && is_same_v<_Pj, identity>) {
                 if (!_STD is_constant_evaluated()) {
@@ -6938,7 +7039,7 @@ namespace ranges {
                     }
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_ADJACENT_FIND ^^^
 
             for (auto _Next = _First;; ++_First) {
                 if (++_Next == _Last) {
@@ -7027,7 +7128,7 @@ namespace ranges {
             _STL_INTERNAL_CHECK(_RANGES distance(_First1, _Last1) == _Count1);
             _STL_INTERNAL_CHECK(_RANGES distance(_First2, _Last2) == _Count2);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_SEARCH
             if constexpr (_Vector_alg_in_search_is_safe<_It1, _It2, _Pr> && is_same_v<_Pj1, identity>
                           && is_same_v<_Pj2, identity>) {
                 if (!_STD is_constant_evaluated()) {
@@ -7060,7 +7161,7 @@ namespace ranges {
                     }
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_SEARCH ^^^
 
             for (; _Count1 >= _Count2; ++_First1, (void) --_Count1) {
                 auto _Match_and_mid1 = _RANGES _Equal_rev_pred(_First1, _First2, _Last2, _Pred, _Proj1, _Proj2);
@@ -7157,7 +7258,7 @@ constexpr bool _Is_min_max_value_optimization_safe = // Activate the vector algo
 
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MINMAX_ELEMENT
     if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
             const auto _First_ptr = _STD _To_address(_First);
@@ -7169,7 +7270,7 @@ constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
             }
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
     _FwdIt _Found = _First;
     if (_First != _Last) {
@@ -7221,7 +7322,7 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
         _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MINMAX_ELEMENT
         if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
                       && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
@@ -7235,7 +7336,7 @@ namespace ranges {
                 }
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
         auto _Found = _First;
         if (_First == _Last) {
@@ -7284,13 +7385,13 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return leftmost/largest
     _STL_ASSERT(
         _Ilist.size() != 0, "An initializer_list passed to std::max must not be empty. (N4971 [alg.min.max]/13)");
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MINMAX
     if constexpr (_Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
         if (!_Is_constant_evaluated()) {
             return static_cast<_Ty>(_STD _Max_vectorized(_Ilist.begin(), _Ilist.end()));
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
     const _Ty* _Res = _STD _Max_element_unchecked(_Ilist.begin(), _Ilist.end(), _STD _Pass_fn(_Pred));
     return *_Res;
 }
@@ -7330,13 +7431,13 @@ namespace ranges {
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
                 "An initializer_list passed to std::ranges::max must not be empty. (N4971 [alg.min.max]/13)");
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MINMAX
             if constexpr (is_same_v<_Pj, identity> && _Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
                 if (!_STD is_constant_evaluated()) {
                     return static_cast<_Ty>(_STD _Max_vectorized(_First, _Last));
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
             return *_RANGES _Max_element_unchecked(_First, _Last, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
@@ -7349,7 +7450,7 @@ namespace ranges {
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
                 _UFirst != _ULast, "A range passed to std::ranges::max must not be empty. (N4971 [alg.min.max]/13)");
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MINMAX
             if constexpr (is_same_v<_Pj, identity> && _Is_min_max_value_optimization_safe<decltype(_UFirst), _Pr>
                           && sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
                 if (!_STD is_constant_evaluated()) {
@@ -7358,7 +7459,7 @@ namespace ranges {
                     return static_cast<range_value_t<_Rng>>(_STD _Max_vectorized(_First_ptr, _Last_ptr));
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<decltype(_UFirst)>) {
                 return static_cast<range_value_t<_Rng>>(*_RANGES _Max_element_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj)));
@@ -7381,7 +7482,7 @@ namespace ranges {
 
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find smallest element
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MINMAX_ELEMENT
     if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
             const auto _First_ptr = _STD _To_address(_First);
@@ -7393,7 +7494,7 @@ constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
             }
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
     _FwdIt _Found = _First;
     if (_First != _Last) {
@@ -7445,7 +7546,7 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
         _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MINMAX_ELEMENT
         if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
                       && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
@@ -7459,7 +7560,7 @@ namespace ranges {
                 }
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
         auto _Found = _First;
         if (_First == _Last) {
@@ -7508,13 +7609,13 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return leftmost/smallest
     _STL_ASSERT(
         _Ilist.size() != 0, "An initializer_list passed to std::min must not be empty. (N4971 [alg.min.max]/5)");
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MINMAX
     if constexpr (_Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
         if (!_Is_constant_evaluated()) {
             return static_cast<_Ty>(_STD _Min_vectorized(_Ilist.begin(), _Ilist.end()));
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
     const _Ty* _Res = _STD _Min_element_unchecked(_Ilist.begin(), _Ilist.end(), _STD _Pass_fn(_Pred));
     return *_Res;
 }
@@ -7548,13 +7649,13 @@ namespace ranges {
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
                 "An initializer_list passed to std::ranges::min must not be empty. (N4971 [alg.min.max]/5)");
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MINMAX
             if constexpr (is_same_v<_Pj, identity> && _Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
                 if (!_STD is_constant_evaluated()) {
                     return static_cast<_Ty>(_STD _Min_vectorized(_First, _Last));
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
             return *_RANGES _Min_element_unchecked(_First, _Last, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
@@ -7567,7 +7668,7 @@ namespace ranges {
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
                 _UFirst != _ULast, "A range passed to std::ranges::min must not be empty. (N4971 [alg.min.max]/5)");
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MINMAX
             if constexpr (is_same_v<_Pj, identity> && _Is_min_max_value_optimization_safe<decltype(_UFirst), _Pr>
                           && sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
                 if (!_STD is_constant_evaluated()) {
@@ -7576,7 +7677,7 @@ namespace ranges {
                     return static_cast<range_value_t<_Rng>>(_STD _Min_vectorized(_First_ptr, _Last_ptr));
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<decltype(_UFirst)>) {
                 return static_cast<range_value_t<_Rng>>(*_RANGES _Min_element_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj)));
@@ -7657,7 +7758,7 @@ template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
     // swap [_First1, _Last1) with [_First2, ...)
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_SWAP_RANGES
     using _Elem1 = remove_reference_t<_Iter_ref_t<_FwdIt1>>;
     using _Elem2 = remove_reference_t<_Iter_ref_t<_FwdIt2>>;
     if constexpr (is_same_v<_Elem1, _Elem2> && _Is_trivially_swappable_v<_Elem1>
@@ -7671,7 +7772,7 @@ _CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last
             return _First2 + (_Last1 - _First1);
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_SWAP_RANGES ^^^
 
     for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
         swap(*_First1, *_First2); // intentional ADL

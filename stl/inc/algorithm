@@ -29,8 +29,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef msvc
 #undef lifetimebound
 
-#if _USE_STD_VECTOR_ALGORITHMS
-
 extern "C" {
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
 // won't be stored beyond the lifetime of the function, and that the function will only reference arrays denoted by
@@ -39,6 +37,8 @@ extern "C" {
 // functions are in native code objects that the compiler cannot analyze. In the absence of the noalias attribute, the
 // compiler has to assume that the denoted arrays are "globally address taken", and that any later calls to
 // unanalyzable routines may modify those arrays.
+
+#if _VECTORIZED_FIND_FIRST_OF
 const void* __stdcall __std_find_first_of_trivial_1(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
 const void* __stdcall __std_find_first_of_trivial_2(
@@ -47,7 +47,9 @@ const void* __stdcall __std_find_first_of_trivial_4(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
 const void* __stdcall __std_find_first_of_trivial_8(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
+#endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
 
+#if _VECTORIZED_REVERSE_COPY
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
     const void* _First, const void* _Last, void* _Dest) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
@@ -56,14 +58,18 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
     const void* _First, const void* _Last, void* _Dest) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
     const void* _First, const void* _Last, void* _Dest) noexcept;
+#endif // ^^^ _VECTORIZED_REVERSE_COPY ^^^
 
+#if _VECTORIZED_MINMAX_ELEMENT
 _Min_max_element_t __stdcall __std_minmax_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
+#if _VECTORIZED_MINMAX
 __declspec(noalias) _Min_max_1i __stdcall __std_minmax_1i(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_1u __stdcall __std_minmax_1u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_2i __stdcall __std_minmax_2i(const void* _First, const void* _Last) noexcept;
@@ -74,7 +80,9 @@ __declspec(noalias) _Min_max_8i __stdcall __std_minmax_8i(const void* _First, co
 __declspec(noalias) _Min_max_8u __stdcall __std_minmax_8u(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_f __stdcall __std_minmax_f(const void* _First, const void* _Last) noexcept;
 __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* _First, const void* _Last) noexcept;
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
 
+#if _VECTORIZED_IS_SORTED_UNTIL
 const void* __stdcall __std_is_sorted_until_1i(const void* _First, const void* _Last, bool _Greater) noexcept;
 const void* __stdcall __std_is_sorted_until_1u(const void* _First, const void* _Last, bool _Greater) noexcept;
 const void* __stdcall __std_is_sorted_until_2i(const void* _First, const void* _Last, bool _Greater) noexcept;
@@ -85,7 +93,9 @@ const void* __stdcall __std_is_sorted_until_8i(const void* _First, const void* _
 const void* __stdcall __std_is_sorted_until_8u(const void* _First, const void* _Last, bool _Greater) noexcept;
 const void* __stdcall __std_is_sorted_until_f(const void* _First, const void* _Last, bool _Greater) noexcept;
 const void* __stdcall __std_is_sorted_until_d(const void* _First, const void* _Last, bool _Greater) noexcept;
+#endif // ^^^ _VECTORIZED_IS_SORTED_UNTIL ^^^
 
+#if _VECTORIZED_INCLUDES
 __declspec(noalias) bool __stdcall __std_includes_less_1i(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
 __declspec(noalias) bool __stdcall __std_includes_less_1u(
@@ -102,35 +112,49 @@ __declspec(noalias) bool __stdcall __std_includes_less_8i(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
 __declspec(noalias) bool __stdcall __std_includes_less_8u(
     const void* _First1, const void* _Last1, const void* _First2, const void* _Last2) noexcept;
+#endif // ^^^ _VECTORIZED_INCLUDES ^^^
 
+#if _VECTORIZED_REPLACE
 // TRANSITION, DevCom-10610477
 __declspec(noalias) void __stdcall __std_replace_4(
     void* _First, void* _Last, uint32_t _Old_val, uint32_t _New_val) noexcept;
 __declspec(noalias) void __stdcall __std_replace_8(
     void* _First, void* _Last, uint64_t _Old_val, uint64_t _New_val) noexcept;
+#endif // ^^^ _VECTORIZED_REPLACE ^^^
 
+#if _VECTORIZED_SEARCH_N
 const void* __stdcall __std_search_n_1(const void* _First, const void* _Last, size_t _Count, uint8_t _Value) noexcept;
 const void* __stdcall __std_search_n_2(const void* _First, const void* _Last, size_t _Count, uint16_t _Value) noexcept;
 const void* __stdcall __std_search_n_4(const void* _First, const void* _Last, size_t _Count, uint32_t _Value) noexcept;
 const void* __stdcall __std_search_n_8(const void* _First, const void* _Last, size_t _Count, uint64_t _Value) noexcept;
+#endif // ^^^ _VECTORIZED_SEARCH_N ^^^
 
+#if _VECTORIZED_REMOVE_COPY
 void* __stdcall __std_remove_copy_1(const void* _First, const void* _Last, void* _Out, uint8_t _Val) noexcept;
 void* __stdcall __std_remove_copy_2(const void* _First, const void* _Last, void* _Out, uint16_t _Val) noexcept;
 void* __stdcall __std_remove_copy_4(const void* _First, const void* _Last, void* _Out, uint32_t _Val) noexcept;
 void* __stdcall __std_remove_copy_8(const void* _First, const void* _Last, void* _Out, uint64_t _Val) noexcept;
+#endif // ^^^ _VECTORIZED_REMOVE_COPY ^^^
 
+#if _VECTORIZED_UNIQUE
 void* __stdcall __std_unique_1(void* _First, void* _Last) noexcept;
 void* __stdcall __std_unique_2(void* _First, void* _Last) noexcept;
 void* __stdcall __std_unique_4(void* _First, void* _Last) noexcept;
 void* __stdcall __std_unique_8(void* _First, void* _Last) noexcept;
+#endif // ^^^ _VECTORIZED_UNIQUE ^^^
 
+#if _VECTORIZED_UNIQUE_COPY
 void* __stdcall __std_unique_copy_1(const void* _First, const void* _Last, void* _Dest) noexcept;
 void* __stdcall __std_unique_copy_2(const void* _First, const void* _Last, void* _Dest) noexcept;
 void* __stdcall __std_unique_copy_4(const void* _First, const void* _Last, void* _Dest) noexcept;
 void* __stdcall __std_unique_copy_8(const void* _First, const void* _Last, void* _Dest) noexcept;
+#endif // ^^^ _VECTORIZED_UNIQUE_COPY ^^^
+
 } // extern "C"
 
 _STD_BEGIN
+
+#if _VECTORIZED_FIND_FIRST_OF
 template <class _Ty1, class _Ty2>
 _Ty1* _Find_first_of_vectorized(
     _Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _First2, _Ty2* const _Last2) noexcept {
@@ -151,7 +175,9 @@ _Ty1* _Find_first_of_vectorized(
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
 
+#if _VECTORIZED_REVERSE_COPY
 template <size_t _Nx>
 __declspec(noalias) void _Reverse_copy_vectorized(const void* _First, const void* _Last, void* _Dest) noexcept {
     if constexpr (_Nx == 1) {
@@ -166,7 +192,9 @@ __declspec(noalias) void _Reverse_copy_vectorized(const void* _First, const void
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_REVERSE_COPY ^^^
 
+#if _VECTORIZED_MINMAX_ELEMENT
 template <class _Ty>
 pair<_Ty*, _Ty*> _Minmax_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = is_signed_v<_Ty>;
@@ -191,7 +219,9 @@ pair<_Ty*, _Ty*> _Minmax_element_vectorized(_Ty* const _First, _Ty* const _Last)
 
     return {const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
 }
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
+#if _VECTORIZED_MINMAX
 template <class _Ty>
 auto _Minmax_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = is_signed_v<_Ty>;
@@ -235,7 +265,9 @@ auto _Minmax_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
 
+#if _VECTORIZED_IS_SORTED_UNTIL
 template <class _Ty>
 _Ty* _Is_sorted_until_vectorized(_Ty* const _First, _Ty* const _Last, const bool _Greater) noexcept {
     constexpr bool _Signed = is_signed_v<_Ty>;
@@ -272,7 +304,9 @@ _Ty* _Is_sorted_until_vectorized(_Ty* const _First, _Ty* const _Last, const bool
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_IS_SORTED_UNTIL ^^^
 
+#if _VECTORIZED_INCLUDES
 template <class _Ty>
 bool _Includes_vectorized(
     const _Ty* const _First1, const _Ty* const _Last1, const _Ty* const _First2, const _Ty* const _Last2) noexcept {
@@ -306,7 +340,9 @@ bool _Includes_vectorized(
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_INCLUDES ^^^
 
+#if _VECTORIZED_REPLACE
 template <class _Ty, class _TVal1, class _TVal2>
 __declspec(noalias) void _Replace_vectorized(
     _Ty* const _First, _Ty* const _Last, const _TVal1 _Old_val, const _TVal2 _New_val) noexcept {
@@ -320,7 +356,9 @@ __declspec(noalias) void _Replace_vectorized(
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_REPLACE ^^^
 
+#if _VECTORIZED_SEARCH_N
 template <class _Ty, class _TVal>
 _Ty* _Search_n_vectorized(_Ty* const _First, _Ty* const _Last, const size_t _Count, const _TVal _Val) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -339,7 +377,9 @@ _Ty* _Search_n_vectorized(_Ty* const _First, _Ty* const _Last, const size_t _Cou
         _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_SEARCH_N ^^^
 
+#if _VECTORIZED_UNIQUE
 template <class _Ty>
 _Ty* _Unique_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -354,7 +394,9 @@ _Ty* _Unique_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
         _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_UNIQUE ^^^
 
+#if _VECTORIZED_REMOVE_COPY
 template <class _Ty, class _TVal>
 _Ty* _Remove_copy_vectorized(
     const _Ty* const _First, const _Ty* const _Last, _Ty* const _Dest, const _TVal _Val) noexcept {
@@ -370,7 +412,9 @@ _Ty* _Remove_copy_vectorized(
         _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_REMOVE_COPY ^^^
 
+#if _VECTORIZED_UNIQUE_COPY
 template <class _Ty>
 _Ty* _Unique_copy_vectorized(const _Ty* const _First, const _Ty* const _Last, _Ty* const _Dest) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
@@ -385,6 +429,9 @@ _Ty* _Unique_copy_vectorized(const _Ty* const _First, const _Ty* const _Last, _T
         _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
     }
 }
+#endif // ^^^ _VECTORIZED_UNIQUE_COPY ^^^
+
+#if _VECTORIZED_REPLACE
 // Can we activate the vector algorithms for replace?
 template <class _Iter, class _Ty1>
 constexpr bool _Vector_alg_in_replace_is_safe = _Vector_alg_in_find_is_safe<_Iter, _Ty1> // can search for the value
@@ -395,7 +442,10 @@ template <class _Iter, class _Ty1, class _Ty2>
 constexpr bool _Vector_alg_in_ranges_replace_is_safe =
     _Vector_alg_in_replace_is_safe<_Iter, _Ty1> // can search and replace
     && _Vector_alg_in_find_is_safe_elem<_Ty2, _Iter_value_t<_Iter>>; // replacement fits
+#endif // ^^^ _VECTORIZED_REPLACE ^^^
 
+#if _VECTORIZED_SEARCH_N
+// Can we activate the vector algorithms for search_n?
 template <class _Iter, class _Ty, class _Pr>
 constexpr bool _Vector_alg_in_search_n_is_safe = _Vector_alg_in_find_is_safe<_Iter, _Ty>
                                               && _Is_any_of_v<_Pr,
@@ -403,11 +453,16 @@ constexpr bool _Vector_alg_in_search_n_is_safe = _Vector_alg_in_find_is_safe<_It
                                                   ranges::equal_to,
 #endif
                                                   equal_to<>>;
-// Can we activate the vector algorithms for unique?
+#endif // ^^^ _VECTORIZED_SEARCH_N ^^^
+
+#if _VECTORIZED_UNIQUE || _VECTORIZED_UNIQUE_COPY
+// Can we activate the vector algorithms for unique and unique_copy?
 template <class _Iter, class _Pr>
 constexpr bool _Vector_alg_in_unique_is_safe = _Vector_alg_in_search_is_safe<_Iter, _Iter, _Pr>;
+#endif // ^^^ _VECTORIZED_UNIQUE || _VECTORIZED_UNIQUE_COPY ^^^
 
-// Can we use this output iterator for remove_copy or unique_copy?
+#if _VECTORIZED_REMOVE_COPY || _VECTORIZED_UNIQUE_COPY
+// Can we use this output iterator for remove_copy and unique_copy?
 template <class _Out, class _In>
 constexpr bool _Output_iterator_for_vector_alg_is_safe() {
     if constexpr (_Iterator_is_contiguous<_Out>) {
@@ -416,7 +471,9 @@ constexpr bool _Output_iterator_for_vector_alg_is_safe() {
         return false;
     }
 }
+#endif // ^^^ _VECTORIZED_REMOVE_COPY || _VECTORIZED_UNIQUE_COPY ^^^
 
+#if _VECTORIZED_INCLUDES
 // Can we activate the vector algorithms for includes?
 template <class _Iter1, class _Iter2, class _Elem = _Iter_value_t<_Iter1>>
 constexpr bool _Vector_alg_includes_iterators_safe =
@@ -424,10 +481,8 @@ constexpr bool _Vector_alg_includes_iterators_safe =
     && !_Iterator_is_volatile<_Iter1> && !_Iterator_is_volatile<_Iter2> // Iterators must not be volatile.
     && is_same_v<_Elem, _Iter_value_t<_Iter2>> // Iterators have the same value type.
     && disjunction_v<is_integral<_Elem>, is_pointer<_Elem>>; // Integral or pointer type.
-_STD_END
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_INCLUDES ^^^
 
-_STD_BEGIN
 #define _REQUIRE_CPP17_MUTABLE_RANDOM_ACCESS_ITERATOR(_Iter) \
     static_assert(_Is_cpp17_random_iter_v<_Iter>,            \
         "This algorithm requires that mutable iterators be Cpp17RandomAccessIterators or stronger.")
@@ -748,7 +803,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, 
     auto _UFirst = _STD _Get_unwrapped(_First);
     auto _ULast  = _STD _Get_unwrapped(_Last);
     if (_UFirst != _ULast) {
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_ADJACENT_FIND
         if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst), decltype(_UFirst), _Pr>) {
             if (!_STD _Is_constant_evaluated()) {
                 const auto _First_ptr = _STD _To_address(_UFirst);
@@ -764,7 +819,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, 
                 return _Last;
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_ADJACENT_FIND ^^^
 
         for (auto _UNext = _UFirst; ++_UNext != _ULast; _UFirst = _UNext) {
             if (_Pred(*_UFirst, *_UNext)) {
@@ -822,7 +877,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_COUNT
             if constexpr (is_same_v<_Pj, identity> && _Vector_alg_in_find_is_safe<_It, _Ty>
                           && sized_sentinel_for<_Se, _It>) {
                 if (!_STD is_constant_evaluated()) {
@@ -836,7 +891,7 @@ namespace ranges {
                     return static_cast<iter_difference_t<_It>>(_STD _Count_vectorized(_First_ptr, _Last_ptr, _Val));
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_COUNT ^^^
 
             iter_difference_t<_It> _Count = 0;
             for (; _First != _Last; ++_First) {
@@ -924,7 +979,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InI
     auto _UFirst1      = _STD _Get_unwrapped(_First1);
     const auto _ULast1 = _STD _Get_unwrapped(_Last1);
     auto _UFirst2      = _STD _Get_unwrapped_n(_First2, _STD _Idl_distance<_InIt1>(_UFirst1, _ULast1));
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MISMATCH
     if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
         if (!_STD _Is_constant_evaluated()) {
             constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
@@ -940,7 +995,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InI
             return {_First1, _First2};
         }
     }
-#endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
+#endif // ^^^ _VECTORIZED_MISMATCH ^^^
     while (_UFirst1 != _ULast1 && _Pred(*_UFirst1, *_UFirst2)) {
         ++_UFirst1;
         ++_UFirst2;
@@ -988,7 +1043,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
         const _CT _Count2 = _ULast2 - _UFirst2;
         const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min) (_Count1, _Count2));
         _ULast1           = _UFirst1 + _Count;
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MISMATCH
         if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
             if (!_STD _Is_constant_evaluated()) {
                 constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
@@ -1004,7 +1059,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
                 return {_First1, _First2};
             }
         }
-#endif // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^
+#endif // ^^^ _VECTORIZED_MISMATCH ^^^
         while (_UFirst1 != _ULast1 && _Pred(*_UFirst1, *_UFirst2)) {
             ++_UFirst1;
             ++_UFirst2;
@@ -2354,7 +2409,7 @@ _NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHays
     if constexpr (_Is_ranges_random_iter_v<_FwdItHaystack> && _Is_ranges_random_iter_v<_FwdItPat>) {
         const _Iter_diff_t<_FwdItPat> _Count2 = _ULast2 - _UFirst2;
         if (_ULast1 - _UFirst1 >= _Count2) {
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_SEARCH
             if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
                 if (!_STD _Is_constant_evaluated()) {
                     const auto _Ptr1 = _STD _To_address(_UFirst1);
@@ -2372,7 +2427,7 @@ _NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHays
                     return _Last1;
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_SEARCH ^^^
 
             const auto _Last_possible = _ULast1 - static_cast<_Iter_diff_t<_FwdItHaystack>>(_Count2);
             for (;; ++_UFirst1) {
@@ -2463,7 +2518,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
     if constexpr (_Is_ranges_random_iter_v<_FwdIt>) {
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_SEARCH_N
         if constexpr (_Vector_alg_in_search_n_is_safe<decltype(_UFirst), _Ty, _Pr>) {
             if (!_STD _Is_constant_evaluated()) {
                 if (!_STD _Could_compare_equal_to_value_type<decltype(_UFirst)>(_Val)) {
@@ -2484,7 +2539,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
                 return _Last;
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_SEARCH_N ^^^
 
         const auto _Count_diff = static_cast<_Iter_diff_t<_FwdIt>>(_Count);
         auto _UOld_first       = _UFirst;
@@ -2658,7 +2713,7 @@ namespace ranges {
                     return {_First, _First};
                 }
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_SEARCH_N
                 if constexpr (_Vector_alg_in_search_n_is_safe<_It, _Ty, _Pr> && is_same_v<_Pj, identity>) {
                     if (!_STD is_constant_evaluated()) {
                         if (!_STD _Could_compare_equal_to_value_type<_It>(_Val)) {
@@ -2688,7 +2743,7 @@ namespace ranges {
                         }
                     }
                 }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_SEARCH_N ^^^
 
                 auto _Last = _RANGES next(_First, _Count);
                 auto _Mid1 = _First;
@@ -3348,7 +3403,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FIND_LAST
             if constexpr (is_same_v<_Pj, identity> && _Vector_alg_in_find_is_safe<_It, _Ty>
                           && sized_sentinel_for<_Se, _It>) {
                 if (!_STD is_constant_evaluated()) {
@@ -3369,7 +3424,7 @@ namespace ranges {
                     }
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FIND_LAST ^^^
 
             if constexpr (_Bidi_common<_It, _Se>) {
                 for (auto _Result = _Last; _Result != _First;) {
@@ -3509,7 +3564,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
     if constexpr (_Is_ranges_random_iter_v<_FwdIt1> && _Is_ranges_random_iter_v<_FwdIt2>) {
         const _Iter_diff_t<_FwdIt2> _Count2 = _ULast2 - _UFirst2;
         if (_Count2 > 0 && _Count2 <= _ULast1 - _UFirst1) {
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FIND_END
             if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
                 if (!_STD _Is_constant_evaluated()) {
                     const auto _Ptr1 = _STD _To_address(_UFirst1);
@@ -3527,7 +3582,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
                     return _First1;
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FIND_END ^^^
 
             for (auto _UCandidate = _ULast1 - static_cast<_Iter_diff_t<_FwdIt1>>(_Count2);; --_UCandidate) {
                 if (_STD _Equal_rev_pred_unchecked(_UCandidate, _UFirst2, _ULast2, _STD _Pass_fn(_Pred))) {
@@ -3632,7 +3687,7 @@ namespace ranges {
 
             if (_Count2 > 0 && _Count2 <= _Count1) {
                 const auto _Count2_as1 = static_cast<iter_difference_t<_It1>>(_Count2);
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FIND_END
                 if constexpr (_Vector_alg_in_search_is_safe<_It1, _It2, _Pr> && is_same_v<_Pj1, identity>
                               && is_same_v<_Pj2, identity>) {
                     if (!_STD is_constant_evaluated()) {
@@ -3659,7 +3714,7 @@ namespace ranges {
                         }
                     }
                 }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FIND_END ^^^
 
                 for (auto _Candidate = _First1 + (_Count1 - _Count2_as1);; --_Candidate) {
                     auto _Match_and_mid1 =
@@ -3832,7 +3887,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
         }
     }
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FIND_FIRST_OF
     if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
         if (!_STD _Is_constant_evaluated() && _ULast1 - _UFirst1 >= _Threshold_find_first_of) {
             const auto _First1_ptr = _STD _To_address(_UFirst1);
@@ -3848,7 +3903,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
             return _First1;
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
 
     for (; _UFirst1 != _ULast1; ++_UFirst1) {
         for (auto _UMid2 = _UFirst2; _UMid2 != _ULast2; ++_UMid2) {
@@ -3936,7 +3991,7 @@ namespace ranges {
                 }
             }
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_FIND_FIRST_OF
             if constexpr (_Vector_alg_in_search_is_safe<_It1, _It2, _Pr> && sized_sentinel_for<_Se1, _It1>
                           && sized_sentinel_for<_Se2, _It2> && is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>) {
                 if (!_STD is_constant_evaluated() && _Last1 - _First1 >= _Threshold_find_first_of) {
@@ -3958,7 +4013,8 @@ namespace ranges {
                     }
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
+
             for (; _First1 != _Last1; ++_First1) {
                 for (auto _Mid2 = _First2; _Mid2 != _Last2; ++_Mid2) {
                     if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_Mid2))) {
@@ -3995,7 +4051,7 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
         _STL_INTERNAL_STATIC_ASSERT(indirectly_swappable<_It1, _It2>);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_SWAP_RANGES
         using _Elem1 = remove_reference_t<iter_reference_t<_It1>>;
         using _Elem2 = remove_reference_t<iter_reference_t<_It2>>;
         if constexpr (same_as<_Elem1, _Elem2> && _Is_trivially_ranges_swappable_v<_Elem1> //
@@ -4028,7 +4084,7 @@ namespace ranges {
                 }
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_SWAP_RANGES ^^^
 
         for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, (void) ++_First2) {
             _RANGES iter_swap(_First1, _First2);
@@ -4331,7 +4387,7 @@ _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _O
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_REPLACE
     if constexpr (_Vector_alg_in_replace_is_safe<decltype(_UFirst), _Ty>) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
@@ -4344,7 +4400,7 @@ _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _O
             return;
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_REPLACE ^^^
 
     for (; _UFirst != _ULast; ++_UFirst) {
         if (*_UFirst == _Oldval) {
@@ -4399,7 +4455,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(indirectly_writable<_It, const _Ty2&>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty1*>);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_REPLACE
             if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<_Se, _It>
                           && _Vector_alg_in_ranges_replace_is_safe<_It, _Ty1, _Ty2>) {
                 if (!_STD is_constant_evaluated()) {
@@ -4414,7 +4470,7 @@ namespace ranges {
                     return _First + _Count;
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_REPLACE ^^^
 
             for (; _First != _Last; ++_First) {
                 if (_STD invoke(_Proj, *_First) == _Oldval) {
@@ -4893,7 +4949,7 @@ _CONSTEXPR20 _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _
     const auto _ULast = _STD _Get_unwrapped(_Last);
     auto _UDest       = _STD _Get_unwrapped_unverified(_Dest);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_REMOVE_COPY
     if constexpr (_Vector_alg_in_find_is_safe<decltype(_UFirst), _Ty>
                   && _Output_iterator_for_vector_alg_is_safe<decltype(_UDest), decltype(_UFirst)>()) {
         if (!_STD _Is_constant_evaluated()) {
@@ -4917,7 +4973,7 @@ _CONSTEXPR20 _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _
             return _Dest;
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_REMOVE_COPY ^^^
 
     for (; _UFirst != _ULast; ++_UFirst) {
         if (!(*_UFirst == _Val)) {
@@ -5016,7 +5072,7 @@ namespace ranges {
                 return {_STD move(_Next), _STD move(_First)};
             }
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_REMOVE
             if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && sized_sentinel_for<_Se, _It>
                           && is_same_v<_Pj, identity>) {
                 if (!_STD is_constant_evaluated()) {
@@ -5032,7 +5088,7 @@ namespace ranges {
                     }
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_REMOVE ^^^
 
             while (++_First != _Last) {
                 if (_STD invoke(_Proj, *_First) != _Val) {
@@ -5144,7 +5200,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(indirectly_copyable<_It, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_REMOVE_COPY
             if constexpr (_Vector_alg_in_find_is_safe<_It, _Ty> && _Output_iterator_for_vector_alg_is_safe<_Out, _It>()
                           && sized_sentinel_for<_Se, _It> && is_same_v<_Pj, identity>) {
                 if (!_STD is_constant_evaluated()) {
@@ -5168,7 +5224,7 @@ namespace ranges {
                     }
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_REMOVE_COPY ^^^
 
             for (; _First != _Last; ++_First) {
                 if (_STD invoke(_Proj, *_First) != _Val) {
@@ -5251,7 +5307,7 @@ _NODISCARD_UNIQUE_ALG _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last, _P
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_UNIQUE
     if constexpr (_Vector_alg_in_unique_is_safe<decltype(_UFirst), _Pr>) {
         if (!_STD _Is_constant_evaluated()) {
             const auto _First_ptr = _STD _To_address(_UFirst);
@@ -5267,7 +5323,7 @@ _NODISCARD_UNIQUE_ALG _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last, _P
             return _Last;
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_UNIQUE ^^^
 
     if (_UFirst != _ULast) {
         for (auto _UFirstb = _UFirst; ++_UFirst != _ULast; _UFirstb = _UFirst) {
@@ -5345,7 +5401,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_equivalence_relation<_Pr, projected<_It, _Pj>>);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_UNIQUE
             if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<_Se, _It>
                           && _Vector_alg_in_unique_is_safe<_It, _Pr>) {
                 if (!_STD is_constant_evaluated()) {
@@ -5361,7 +5417,7 @@ namespace ranges {
                     }
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_UNIQUE ^^^
 
             auto _Current = _First;
             if (_First == _Last) {
@@ -5417,7 +5473,7 @@ _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pr
 
     auto _UDest = _STD _Get_unwrapped_unverified(_Dest);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_UNIQUE_COPY
     if constexpr (_Vector_alg_in_unique_is_safe<decltype(_UFirst), _Pr>
                   && _Output_iterator_for_vector_alg_is_safe<decltype(_UDest), decltype(_UFirst)>()) {
         if (!_STD _Is_constant_evaluated()) {
@@ -5435,7 +5491,7 @@ _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pr
             return _Dest;
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_UNIQUE_COPY ^^^
 
     if constexpr (_Is_ranges_fwd_iter_v<_InIt>) { // can reread the source for comparison
         auto _Firstb = _UFirst;
@@ -5564,7 +5620,7 @@ namespace ranges {
                 return {_STD move(_First), _STD move(_Output)};
             }
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_UNIQUE_COPY
             if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<_Se, _It>
                           && _Vector_alg_in_unique_is_safe<_It, _Pr>
                           && _Output_iterator_for_vector_alg_is_safe<_Out, _It>()) {
@@ -5583,7 +5639,7 @@ namespace ranges {
                     }
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_UNIQUE_COPY ^^^
 
             if constexpr (_Is_input_with_value_type<_Out, iter_value_t<_It>>) {
                 // Can reread _Output
@@ -5632,7 +5688,7 @@ namespace ranges {
     template <bidirectional_iterator _It>
         requires permutable<_It>
     constexpr void _Reverse_common(_It _First, _It _Last) {
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_REVERSE
         if constexpr (contiguous_iterator<_It>) {
             using _Elem          = remove_reference_t<iter_reference_t<_It>>;
             constexpr size_t _Nx = sizeof(_Elem);
@@ -5646,7 +5702,7 @@ namespace ranges {
                 }
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_REVERSE ^^^
 
         for (; _First != _Last && _First != --_Last; ++_First) {
             _RANGES iter_swap(_First, _Last);
@@ -5692,7 +5748,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     auto _ULast        = _STD _Get_unwrapped(_Last);
     auto _UDest        = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_BidIt>(_UFirst, _ULast));
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_REVERSE_COPY
     using _Elem                         = remove_reference_t<_Iter_ref_t<remove_const_t<decltype(_UFirst)>>>;
     using _DestElem                     = remove_reference_t<_Iter_ref_t<decltype(_UDest)>>;
     constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
@@ -5712,7 +5768,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
             return _Dest;
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_REVERSE_COPY ^^^
 
     for (; _UFirst != _ULast; ++_UDest) {
         *_UDest = *--_ULast;
@@ -5781,7 +5837,7 @@ namespace ranges {
 
             _STD _Verify_ranges_do_not_overlap(_First, _Last, _Output);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_REVERSE_COPY
             if constexpr (contiguous_iterator<_It> && contiguous_iterator<_Out>) {
                 using _Elem                         = remove_reference_t<iter_reference_t<_It>>;
                 using _DestElem                     = remove_reference_t<iter_reference_t<_Out>>;
@@ -5798,7 +5854,7 @@ namespace ranges {
                     }
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_REVERSE_COPY ^^^
 
             for (; _First != _Last; ++_Output) {
                 *_Output = *--_Last;
@@ -5843,7 +5899,7 @@ namespace ranges {
         }
 
         if constexpr (bidirectional_iterator<_It>) {
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_ROTATE
             using _Elem = remove_reference_t<iter_reference_t<_It>>;
 
             if constexpr (contiguous_iterator<_It> && sized_sentinel_for<_Se, _It>
@@ -5854,7 +5910,7 @@ namespace ranges {
                     return {_First + (_Last - _Mid), _Last};
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_ROTATE ^^^
 
             _RANGES _Reverse_common(_First, _Mid);
             auto _Final = _RANGES _Get_final_iterator_unwrapped<_It>(_Mid, _STD move(_Last));
@@ -8480,7 +8536,7 @@ namespace ranges {
             return _First;
         }
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_IS_SORTED_UNTIL
         if constexpr (_Is_min_max_iterators_safe<_It> && sized_sentinel_for<_Se, _It> && is_same_v<_Pj, identity>) {
             constexpr bool _Is_greater = _Is_predicate_greater<_It, _Pr>;
             if constexpr (_Is_greater || _Is_predicate_less<_It, _Pr>) {
@@ -8497,7 +8553,7 @@ namespace ranges {
                 }
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_IS_SORTED_UNTIL ^^^
 
         for (auto _Prev = _First; ++_First != _Last; ++_Prev) {
             if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Prev))) {
@@ -10310,14 +10366,14 @@ _NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _Fir
         return false;
     }
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_INCLUDES
     if constexpr (_Vector_alg_includes_iterators_safe<_InIt1, _InIt2> && _Is_predicate_less<_InIt1, _Pr>) {
         if (!_STD _Is_constant_evaluated()) {
             return _STD _Includes_vectorized(_STD _To_address(_First1), _STD _To_address(_Last1),
                 _STD _To_address(_First2), _STD _To_address(_Last2));
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_INCLUDES ^^^
 
     for (;;) {
         if (_DEBUG_LT_PRED(_Pred, *_UFirst1, *_UFirst2)) {
@@ -10408,7 +10464,7 @@ namespace ranges {
                 return false;
             }
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_INCLUDES
             if constexpr (_Vector_alg_includes_iterators_safe<_It1, _It2> && _Is_predicate_less<_It1, _Pr>
                           && sized_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>
                           && is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>) {
@@ -10420,7 +10476,7 @@ namespace ranges {
                     return _STD _Includes_vectorized(_First1_ptr, _Last1_ptr, _First2_ptr, _Last2_ptr);
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_INCLUDES ^^^
 
             for (;;) {
                 if (_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
@@ -11008,7 +11064,7 @@ namespace ranges {
 
 template <class _FwdIt, class _Pr>
 constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MINMAX_ELEMENT
     if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
             const auto _First_ptr = _STD _To_address(_First);
@@ -11021,7 +11077,7 @@ constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _
             }
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
     // find smallest and largest elements
     pair<_FwdIt, _FwdIt> _Found(_First, _First);
@@ -11134,7 +11190,7 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MINMAX_ELEMENT
             if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
                           && sized_sentinel_for<_Se, _It>) {
                 if (!_STD is_constant_evaluated()) {
@@ -11149,7 +11205,7 @@ namespace ranges {
                     }
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
             min_max_result<_It> _Found{_First, _First};
 
@@ -11216,14 +11272,14 @@ _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist, _Pr _Pr
     // return {leftmost/smallest, rightmost/largest}
     _STL_ASSERT(
         _Ilist.size() != 0, "An initializer_list passed to std::minmax must not be empty. (N4971 [alg.min.max]/21)");
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MINMAX
     if constexpr (_Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
         if (!_STD _Is_constant_evaluated()) {
             const auto _Result = _STD _Minmax_vectorized(_Ilist.begin(), _Ilist.end());
             return {static_cast<_Ty>(_Result._Min), static_cast<_Ty>(_Result._Max)};
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
     pair<const _Ty*, const _Ty*> _Res =
         _STD _Minmax_element_unchecked(_Ilist.begin(), _Ilist.end(), _STD _Pass_fn(_Pred));
     return pair<_Ty, _Ty>(*_Res.first, *_Res.second);
@@ -11274,21 +11330,30 @@ namespace ranges {
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
                 "An initializer_list passed to std::ranges::minmax must not be empty. (N4971 [alg.min.max]/21)");
-#if _USE_STD_VECTOR_ALGORITHMS
+
+#if _VECTORIZED_MINMAX || _VECTORIZED_MINMAX_ELEMENT
             if constexpr (is_same_v<_Pj, identity>) {
+#if _VECTORIZED_MINMAX
                 if constexpr (_Is_min_max_value_optimization_safe<const _Ty*, _Pr>) {
                     if (!_STD is_constant_evaluated()) {
                         const auto _Result = _STD _Minmax_vectorized(_First, _Last);
                         return {static_cast<_Ty>(_Result._Min), static_cast<_Ty>(_Result._Max)};
                     }
-                } else if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
-                    if (!_STD is_constant_evaluated()) {
-                        const auto _Result = _STD _Minmax_element_vectorized(_First, _Last);
-                        return {*static_cast<const _Ty*>(_Result.first), *static_cast<const _Ty*>(_Result.second)};
+                } else
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
+                {
+#if _VECTORIZED_MINMAX_ELEMENT
+                    if constexpr (_Is_min_max_optimization_safe<const _Ty*, _Pr>) {
+                        if (!_STD is_constant_evaluated()) {
+                            const auto _Result = _STD _Minmax_element_vectorized(_First, _Last);
+                            return {*static_cast<const _Ty*>(_Result.first), *static_cast<const _Ty*>(_Result.second)};
+                        }
                     }
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_MINMAX || _VECTORIZED_MINMAX_ELEMENT ^^^
+
             return _Minmax_fwd_unchecked(_First, _Last, _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
         }
 
@@ -11302,8 +11367,10 @@ namespace ranges {
             _STL_ASSERT(
                 _UFirst != _ULast, "A range passed to std::ranges::minmax must not be empty. (N4971 [alg.min.max]/21)");
             using _Vty = range_value_t<_Rng>;
-#if _USE_STD_VECTOR_ALGORITHMS
+
+#if _VECTORIZED_MINMAX || _VECTORIZED_MINMAX_ELEMENT
             if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<decltype(_ULast), decltype(_UFirst)>) {
+#if _VECTORIZED_MINMAX
                 if constexpr (_Is_min_max_value_optimization_safe<decltype(_UFirst), _Pr>) {
                     if (!_STD is_constant_evaluated()) {
                         const auto _First_ptr = _STD to_address(_UFirst);
@@ -11311,16 +11378,24 @@ namespace ranges {
                         const auto _Result    = _STD _Minmax_vectorized(_First_ptr, _Last_ptr);
                         return {static_cast<_Vty>(_Result._Min), static_cast<_Vty>(_Result._Max)};
                     }
-                } else if constexpr (_Is_min_max_optimization_safe<decltype(_UFirst), _Pr>) {
-                    if (!_STD is_constant_evaluated()) {
-                        const auto _First_ptr = _STD to_address(_UFirst);
-                        const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_ULast - _UFirst);
-                        const auto _Result    = _STD _Minmax_element_vectorized(_First_ptr, _Last_ptr);
-                        return {*static_cast<const _Vty*>(_Result.first), *static_cast<const _Vty*>(_Result.second)};
+                } else
+#endif // ^^^ _VECTORIZED_MINMAX ^^^
+                {
+#if _VECTORIZED_MINMAX_ELEMENT
+                    if constexpr (_Is_min_max_optimization_safe<decltype(_UFirst), _Pr>) {
+                        if (!_STD is_constant_evaluated()) {
+                            const auto _First_ptr = _STD to_address(_UFirst);
+                            const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_ULast - _UFirst);
+                            const auto _Result    = _STD _Minmax_element_vectorized(_First_ptr, _Last_ptr);
+                            return {
+                                *static_cast<const _Vty*>(_Result.first), *static_cast<const _Vty*>(_Result.second)};
+                        }
                     }
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
                 }
             }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_MINMAX || _VECTORIZED_MINMAX_ELEMENT ^^^
+
             if constexpr (forward_range<_Rng> && _Prefer_iterator_copies<decltype(_UFirst)>) {
                 return _Minmax_fwd_unchecked(
                     _STD move(_UFirst), _STD move(_ULast), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
@@ -11648,7 +11723,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt is_sorted_until(const _FwdIt _First, _FwdIt _Last
     auto _UFirst = _STD _Get_unwrapped(_First);
     auto _ULast  = _STD _Get_unwrapped(_Last);
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_IS_SORTED_UNTIL
     if constexpr (_Is_min_max_iterators_safe<decltype(_UFirst)>) {
         constexpr bool _Is_greater = _Is_predicate_greater<decltype(_UFirst), _Pr>;
         if constexpr (_Is_greater || _Is_predicate_less<decltype(_UFirst), _Pr>) {
@@ -11668,7 +11743,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt is_sorted_until(const _FwdIt _First, _FwdIt _Last
             }
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_IS_SORTED_UNTIL ^^^
 
     if (_UFirst != _ULast) {
         for (auto _UNext = _UFirst; ++_UNext != _ULast; ++_UFirst) {
@@ -11901,7 +11976,7 @@ namespace ranges {
                     }
 
                     const size_t _Num = (_STD min) (_Num1, _Num2);
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_MISMATCH
                     const auto _First1_ptr = _STD to_address(_First1);
                     const auto _First2_ptr = _STD to_address(_First2);
                     const size_t _Pos      = _Mismatch_vectorized<sizeof(*_First1_ptr)>(_First1_ptr, _First2_ptr, _Num);
@@ -11912,10 +11987,10 @@ namespace ranges {
                     } else {
                         return _STD invoke(_Pred, _First1_ptr[_Pos], _First2_ptr[_Pos]);
                     }
-#else // ^^^ _USE_STD_VECTOR_ALGORITHMS / !_USE_STD_VECTOR_ALGORITHMS vvv
+#else // ^^^ _VECTORIZED_MISMATCH / !_VECTORIZED_MISMATCH vvv
                     const int _Ans = _STD _Memcmp_count(_First1, _First2, _Num);
                     return _Memcmp_classification_pred{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
-#endif // ^^^ !_USE_STD_VECTOR_ALGORITHMS ^^^
+#endif // ^^^ !_VECTORIZED_MISMATCH ^^^
                 }
             }
 
