@@ -999,6 +999,25 @@ public:
 #endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
     }
 
+    bool _Local() const noexcept { // test for locally stored copy of object
+        return _Getimpl() == static_cast<const void*>(&_Mystorage);
+    }
+
+    _Ptrt* _Getimpl() const noexcept { // get pointer to object
+        return _Mystorage._Ptrs[_Small_object_num_ptrs - 1];
+    }
+
+    void _Set(_Ptrt* _Ptr) noexcept { // store pointer to object
+        _Mystorage._Ptrs[_Small_object_num_ptrs - 1] = _Ptr;
+    }
+
+    void _Tidy() noexcept {
+        if (!_Empty()) { // destroy callable object and maybe delete it
+            _Getimpl()->_Delete_this(!_Local());
+            _Set(nullptr);
+        }
+    }
+
 protected:
     template <class _Fx, class _Function>
     using _Enable_if_callable_t = enable_if_t<conjunction_v<negation<is_same<_Remove_cvref_t<_Fx>, _Function>>,
@@ -1066,13 +1085,6 @@ protected:
         }
     }
 
-    void _Tidy() noexcept {
-        if (!_Empty()) { // destroy callable object and maybe delete it
-            _Getimpl()->_Delete_this(!_Local());
-            _Set(nullptr);
-        }
-    }
-
     void _Swap(_Func_class& _Right) noexcept { // swap contents with contents of _Right
         if (!_Local() && !_Right._Local()) { // just swap pointers
             _Ptrt* _Temp = _Getimpl();
@@ -1097,10 +1109,6 @@ protected:
 #endif // _HAS_STATIC_RTTI
 
 private:
-    bool _Local() const noexcept { // test for locally stored copy of object
-        return _Getimpl() == static_cast<const void*>(&_Mystorage);
-    }
-
     union _Storage { // storage for small objects (basic_string is small)
         max_align_t _Dummy1; // for maximum alignment
         char _Dummy2[_Space_size]; // to permit aliasing
@@ -1109,13 +1117,6 @@ private:
 
     _Storage _Mystorage;
     enum { _EEN_IMPL = _Small_object_num_ptrs - 1 }; // helper for expression evaluator
-    _Ptrt* _Getimpl() const noexcept { // get pointer to object
-        return _Mystorage._Ptrs[_Small_object_num_ptrs - 1];
-    }
-
-    void _Set(_Ptrt* _Ptr) noexcept { // store pointer to object
-        _Mystorage._Ptrs[_Small_object_num_ptrs - 1] = _Ptr;
-    }
 };
 
 template <class _Tx>
@@ -1423,6 +1424,12 @@ template <class _Rx, class... _Types>
     _STL_UNREACHABLE; // no return value available for "continue on error"
 }
 
+template <class _Rx, bool _Noex, class... _Types>
+[[noreturn]] _Rx __stdcall _Function_old_not_callable(const _Move_only_function_data&, _Types&&...)
+    noexcept(_Noex) /* terminates if _Noex */ {
+    _Xbad_function_call();
+}
+
 template <class _Vt, class _VtInvQuals, class _Rx, bool _Noex, class... _Types>
 _NODISCARD _Rx __stdcall _Function_inv_small(const _Move_only_function_data& _Self, _Types&&... _Args) noexcept(_Noex) {
     if constexpr (is_void_v<_Rx>) {
@@ -1439,6 +1446,18 @@ _NODISCARD _Rx __stdcall _Function_inv_large(const _Move_only_function_data& _Se
     } else {
         return _STD invoke(static_cast<_VtInvQuals>(*_Self._Large_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
     }
+}
+
+template <class _Fn, class _Rx, bool _Noex, class... _Types>
+_NODISCARD _Rx __stdcall _Function_inv_old_large(const _Move_only_function_data& _Self, _Types&&... _Args)
+    noexcept(_Noex) {
+    return _Self._Large_fn_ptr<_Fn>()->_Do_call(_STD forward<_Types>(_Args)...);
+}
+
+template <class _Fn, class _Rx, bool _Noex, class... _Types>
+_NODISCARD _Rx __stdcall _Function_inv_old_small(const _Move_only_function_data& _Self, _Types&&... _Args)
+    noexcept(_Noex) {
+    return _Self._Small_fn_ptr<_Fn>()->_Do_call(_STD forward<_Types>(_Args)...);
 }
 
 template <class _Vt>
@@ -1458,6 +1477,14 @@ inline void __stdcall _Function_move_large(_Move_only_function_data& _Self, _Mov
     _CSTD memcpy(&_Self._Data, &_Src._Data, _Minimum_function_size); // Copy Impl* and functor data
 }
 
+template <class _Fn>
+void __stdcall _Function_move_old_small(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
+    _Fn* const _Old_fn_impl = _Src._Small_fn_ptr<_Fn>();
+    _Old_fn_impl->_Move(_Self._Buf_ptr<void*>());
+    _Old_fn_impl->_Delete_this(false);
+    _Self._Impl = _Src._Impl;
+}
+
 template <class _Vt>
 void __stdcall _Function_destroy_small(_Move_only_function_data& _Self) noexcept {
     _Self._Small_fn_ptr<_Vt>()->~_Vt();
@@ -1465,6 +1492,22 @@ void __stdcall _Function_destroy_small(_Move_only_function_data& _Self) noexcept
 
 inline void __stdcall _Function_deallocate_large_default_aligned(_Move_only_function_data& _Self) noexcept {
     ::operator delete(_Self._Large_fn_ptr<void>());
+}
+
+template <class _Fn>
+inline void __stdcall _Function_destroy_old_large(_Move_only_function_data& _Self) noexcept {
+    _Self._Large_fn_ptr<_Fn>()->_Delete_this(true);
+}
+
+template <class _Fn>
+inline void __stdcall _Function_destroy_old_small_as_large(_Move_only_function_data& _Self) noexcept {
+    _Fn* const _Old_fn_impl = _Self._Large_fn_ptr<_Fn>();
+    _Old_fn_impl->_Delete_this(false);
+    ::operator delete(static_cast<void*>(_Old_fn_impl));
+}
+template <class _Fn>
+inline void __stdcall _Function_destroy_old_small(_Move_only_function_data& _Self) noexcept {
+    _Self._Small_fn_ptr<_Fn>()->_Delete_this(false);
 }
 
 template <size_t _Align>
@@ -1564,6 +1607,14 @@ public:
         void(__stdcall* _Destroy)(_Move_only_function_data&) _NOEXCEPT_FNPTR;
     };
 
+    enum class _Impl_kind {
+        _Usual,
+        _Old_fn_null,
+        _Old_fn_large,
+        _Old_fn_small_as_large,
+        _Old_fn_small,
+    };
+
     _Move_only_function_data _Data;
 
     _Move_only_function_base() noexcept = default; // leaves fields uninitialized
@@ -1577,9 +1628,38 @@ public:
         _Data._Impl = nullptr;
     }
 
+    template <class _Vt, class _VtInvQuals, class _Fn>
+    void _Construct_with_old_fn(_Fn&& _Func) {
+        const auto _Old_fn_impl = _Func._Getimpl();
+        if (_Old_fn_impl == nullptr) {
+            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_null, _Vt, _VtInvQuals>();
+        } else if (_Func._Local()) {
+            if constexpr (alignof(max_align_t) == alignof(void*)) {
+                // 64-bit target, can put small function into small move_only_function directly
+                _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small, _Vt, _VtInvQuals>();
+                _Old_fn_impl->_Move(_Data._Buf_ptr<void*>());
+                _Func._Tidy();
+            } else {
+                // 32-bit target, cannot small function into small move_only_function directly
+                // due to potentially not enough alignment. Allocate large function
+                void* _Where = ::operator new((_Small_object_num_ptrs - 1) * sizeof(void*));
+                _Old_fn_impl->_Move(_Where);
+                _Func._Tidy();
+
+                _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small_as_large, _Vt, _VtInvQuals>();
+                _Data._Set_large_fn_ptr(_Where);
+            }
+        } else {
+            // Just take ownership of the inner impl pointer
+            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_large, _Vt, _VtInvQuals>();
+            _Data._Set_large_fn_ptr(_Old_fn_impl);
+            _Func._Set(nullptr);
+        }
+    }
+
     template <class _Vt, class _VtInvQuals, class... _CTypes>
     void _Construct_with_fn(_CTypes&&... _Args) {
-        _Data._Impl = _Create_impl_ptr<_Vt, _VtInvQuals>();
+        _Data._Impl = _Create_impl_ptr<_Impl_kind::_Usual, _Vt, _VtInvQuals>();
         if constexpr (_Large_function_engaged<_Vt>) {
             _Data._Set_large_fn_ptr(_STD _Function_new_large<_Vt>(_STD forward<_CTypes>(_Args)...));
         } else {
@@ -1670,10 +1750,29 @@ public:
         return _Ret ? _Ret : &_Null_move_only_function;
     }
 
-    template <class _Vt, class _VtInvQuals>
+    template <_Impl_kind _Kind, class _Vt, class _VtInvQuals>
     _NODISCARD static constexpr _Impl_t _Create_impl() noexcept {
         _Impl_t _Impl{};
-        if constexpr (_Large_function_engaged<_Vt>) {
+        if constexpr (_Kind != _Impl_kind::_Usual) {
+            using _Fn = remove_pointer_t<decltype(_STD declval<_Vt>()._Getimpl())>;
+            if constexpr (_Kind == _Impl_kind::_Old_fn_null) {
+                _Impl._Invoke  = _Function_old_not_callable<_Rx, _Noexcept, _Types...>;
+                _Impl._Move    = nullptr;
+                _Impl._Destroy = nullptr;
+            } else if constexpr (_Kind == _Impl_kind::_Old_fn_large) {
+                _Impl._Invoke  = _Function_inv_old_large<_Fn, _Rx, _Noexcept, _Types...>;
+                _Impl._Move    = nullptr;
+                _Impl._Destroy = _Function_destroy_old_large<_Fn>;
+            } else if constexpr (_Kind == _Impl_kind::_Old_fn_small_as_large) {
+                _Impl._Invoke  = _Function_inv_old_large<_Fn, _Rx, _Noexcept, _Types...>;
+                _Impl._Move    = nullptr;
+                _Impl._Destroy = _Function_destroy_old_small_as_large<_Fn>;
+            } else if constexpr (_Kind == _Impl_kind::_Old_fn_small) {
+                _Impl._Invoke  = _Function_inv_old_small<_Fn, _Rx, _Noexcept, _Types...>;
+                _Impl._Move    = _Function_move_old_small<_Fn>;
+                _Impl._Destroy = _Function_destroy_old_small<_Fn>;
+            }
+        } else if constexpr (_Large_function_engaged<_Vt>) {
             _Impl._Invoke = _Function_inv_large<_Vt, _VtInvQuals, _Rx, _Noexcept, _Types...>;
             _Impl._Move   = nullptr;
 
@@ -1708,9 +1807,9 @@ public:
         return _Impl;
     }
 
-    template <class _Vt, class _VtInvQuals>
+    template <_Impl_kind _Kind, class _Vt, class _VtInvQuals>
     _NODISCARD static const _Impl_t* _Create_impl_ptr() noexcept {
-        static constexpr _Impl_t _Impl = _Create_impl<_Vt, _VtInvQuals>();
+        static constexpr _Impl_t _Impl = _Create_impl<_Kind, _Vt, _VtInvQuals>();
         return &_Impl;
     }
 };
@@ -1965,16 +2064,20 @@ public:
         using _Vt = decay_t<_Fn>;
         static_assert(is_constructible_v<_Vt, _Fn>, "_Vt should be constructible from _Fn. "
                                                     "(N4950 [func.wrap.move.ctor]/6)");
-
-        if constexpr (is_member_pointer_v<_Vt> || is_pointer_v<_Vt> || _Is_specialization_v<_Vt, move_only_function>) {
-            if (_Callable == nullptr) {
-                this->_Reset_to_null();
-                return;
-            }
-        }
-
         using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
-        this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_Fn>(_Callable));
+
+        if constexpr (_Is_specialization_v<_Vt, function>) {
+            this->template _Construct_with_old_fn<_Vt, _VtInvQuals>(_STD forward<_Fn>(_Callable));
+        } else {
+            if constexpr (is_member_pointer_v<_Vt> || is_pointer_v<_Vt>
+                          || _Is_specialization_v<_Vt, move_only_function>) {
+                if (_Callable == nullptr) {
+                    this->_Reset_to_null();
+                    return;
+                }
+            }
+            this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_Fn>(_Callable));
+        }
     }
 
     template <class _Fn, class... _CTypes>
