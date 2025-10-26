@@ -178,7 +178,6 @@ $Nic = New-AzNetworkInterface `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating prototype VM config'
 
-# Previously: -Priority 'Spot'
 $VM = New-AzVMConfig `
   -VMName $ProtoVMName `
   -VMSize $VMSize `
