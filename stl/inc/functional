@@ -999,25 +999,6 @@ public:
 #endif // _MSVC_STL_DESTRUCTOR_TOMBSTONES
     }
 
-    bool _Local() const noexcept { // test for locally stored copy of object
-        return _Getimpl() == static_cast<const void*>(&_Mystorage);
-    }
-
-    _Ptrt* _Getimpl() const noexcept { // get pointer to object
-        return _Mystorage._Ptrs[_Small_object_num_ptrs - 1];
-    }
-
-    void _Set(_Ptrt* _Ptr) noexcept { // store pointer to object
-        _Mystorage._Ptrs[_Small_object_num_ptrs - 1] = _Ptr;
-    }
-
-    void _Tidy() noexcept {
-        if (!_Empty()) { // destroy callable object and maybe delete it
-            _Getimpl()->_Delete_this(!_Local());
-            _Set(nullptr);
-        }
-    }
-
 protected:
     template <class _Fx, class _Function>
     using _Enable_if_callable_t = enable_if_t<conjunction_v<negation<is_same<_Remove_cvref_t<_Fx>, _Function>>,
@@ -1085,6 +1066,13 @@ protected:
         }
     }
 
+    void _Tidy() noexcept {
+        if (!_Empty()) { // destroy callable object and maybe delete it
+            _Getimpl()->_Delete_this(!_Local());
+            _Set(nullptr);
+        }
+    }
+
     void _Swap(_Func_class& _Right) noexcept { // swap contents with contents of _Right
         if (!_Local() && !_Right._Local()) { // just swap pointers
             _Ptrt* _Temp = _Getimpl();
@@ -1109,6 +1097,15 @@ protected:
 #endif // _HAS_STATIC_RTTI
 
 private:
+#if _HAS_CXX23
+    template <class _Rx, bool _Noexcept, class... _Types_>
+    friend class _Move_only_function_base;
+#endif // _HAS_CXX23
+
+    bool _Local() const noexcept { // test for locally stored copy of object
+        return _Getimpl() == static_cast<const void*>(&_Mystorage);
+    }
+
     union _Storage { // storage for small objects (basic_string is small)
         max_align_t _Dummy1; // for maximum alignment
         char _Dummy2[_Space_size]; // to permit aliasing
@@ -1117,6 +1114,13 @@ private:
 
     _Storage _Mystorage;
     enum { _EEN_IMPL = _Small_object_num_ptrs - 1 }; // helper for expression evaluator
+    _Ptrt* _Getimpl() const noexcept { // get pointer to object
+        return _Mystorage._Ptrs[_Small_object_num_ptrs - 1];
+    }
+
+    void _Set(_Ptrt* _Ptr) noexcept { // store pointer to object
+        _Mystorage._Ptrs[_Small_object_num_ptrs - 1] = _Ptr;
+    }
 };
 
 template <class _Tx>
