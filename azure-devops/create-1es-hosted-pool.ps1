@@ -242,7 +242,8 @@ Display-ProgressBar -Status 'Running provision-image.ps1 in VM'
 $ProvisionImageResult = Invoke-AzVMRunCommand `
   -ResourceId $VM.ID `
   -CommandId 'RunPowerShellScript' `
-  -ScriptPath "$PSScriptRoot\provision-image.ps1"
+  -ScriptPath "$PSScriptRoot\provision-image.ps1" `
+  -Parameter @{ 'Arch' = $Arch; }
 
 Write-Host $ProvisionImageResult.value.Message
 
