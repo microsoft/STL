@@ -331,9 +331,9 @@ New-AzGalleryImageDefinition `
   -Name $ImageDefinitionName `
   -OsState 'Generalized' `
   -OsType 'Windows' `
-  -Publisher $ImagePublisher `
-  -Offer $ImageOffer `
-  -Sku $ImageSku `
+  -Publisher 'StlPublisher' `
+  -Offer 'StlOffer' `
+  -Sku 'StlSku' `
   -Feature $ImageDefinitionFeatures `
   -HyperVGeneration 'V2' >> $LogFile
 
