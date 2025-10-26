@@ -1505,6 +1505,7 @@ void __stdcall _Function_destroy_old_small_as_large(_Move_only_function_data& _S
     _Old_fn_impl->_Delete_this(false);
     ::operator delete(static_cast<void*>(_Old_fn_impl));
 }
+
 template <class _Fn>
 void __stdcall _Function_destroy_old_small(_Move_only_function_data& _Self) noexcept {
     _Self._Small_fn_ptr<_Fn>()->_Delete_this(false);
