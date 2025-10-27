@@ -7,6 +7,9 @@ variables:
 - name: poolName
   value: 'Stl-2025-10-14T1635-x64-Pool'
   readonly: true
+- name: arm64PoolName
+  value: 'Stl-2025-10-27T1519-arm64-Pool'
+  readonly: true
 - name: poolDemands
   value: 'EnableSpotVM -equals false'
   readonly: true
