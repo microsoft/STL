@@ -33,7 +33,7 @@ _EXPORT_STD using _CSTD timespec;
 // When set to `1`, several UCRT functions are declared as `static inline` (for historical compatibility),
 // preventing them from being naively exported through modules.
 // In that case, we use templates to shadow their name, allowing us forcibly to export them.
-#if defined(_STATIC_INLINE_UCRT_FUNCTIONS) && _STATIC_INLINE_UCRT_FUNCTIONS == 1
+#if defined(_BUILD_STD_MODULE) && (!defined(_STATIC_INLINE_UCRT_FUNCTIONS) || _STATIC_INLINE_UCRT_FUNCTIONS == 1)
 _STL_DISABLE_DEPRECATED_WARNING
 
 _EXPORT_STD template <int = 0>
