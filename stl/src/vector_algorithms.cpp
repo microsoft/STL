@@ -5,14 +5,14 @@
 #error _M_CEE_PURE should not be defined when compiling vector_algorithms.cpp.
 #endif
 
-#if defined(_M_IX86) || defined(_M_X64) // NB: includes _M_ARM64EC
+#if defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64) // NB: includes _M_ARM64EC
 #include <__msvc_minmax.hpp>
 #include <cstdint>
 #include <cstring>
 #include <cwchar>
 #include <type_traits>
 
-#ifndef _M_ARM64EC
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
 #include <intrin.h>
 #include <isa_availability.h>
 
@@ -21,10 +21,14 @@ extern "C" long __isa_enabled;
 #ifndef _DEBUG
 #pragma optimize("t", on) // Override /Os with /Ot for this TU
 #endif // !defined(_DEBUG)
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
+
+#ifdef _M_ARM64
+#include <arm64_neon.h>
+#endif
 
 namespace {
-#ifndef _M_ARM64EC
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
     bool _Use_avx2() noexcept {
         return __isa_enabled & (1 << __ISA_AVAILABLE_AVX2);
     }
@@ -51,7 +55,7 @@ namespace {
         return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(
             reinterpret_cast<const unsigned char*>(_Tail_masks) + (32 - _Count_in_bytes)));
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     size_t _Byte_length(const void* const _First, const void* const _Last) noexcept {
         return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
@@ -78,6 +82,107 @@ namespace {
 
 extern "C" {
 
+#ifdef _M_ARM64
+__declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
+    void* _First1, void* const _Last1, void* _First2) noexcept {
+
+    constexpr size_t _Mask_64 = ~((static_cast<size_t>(1) << 6) - 1);
+    if (_Byte_length(_First1, _Last1) >= 64) {
+        const void* _Stop_at = _First1;
+        _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_64);
+        do {
+            const uint8x16_t _Left1  = vld1q_u8(static_cast<uint8_t*>(_First1) + 0);
+            const uint8x16_t _Left2  = vld1q_u8(static_cast<uint8_t*>(_First1) + 16);
+            const uint8x16_t _Left3  = vld1q_u8(static_cast<uint8_t*>(_First1) + 32);
+            const uint8x16_t _Left4  = vld1q_u8(static_cast<uint8_t*>(_First1) + 48);
+            const uint8x16_t _Right1 = vld1q_u8(static_cast<uint8_t*>(_First2) + 0);
+            const uint8x16_t _Right2 = vld1q_u8(static_cast<uint8_t*>(_First2) + 16);
+            const uint8x16_t _Right3 = vld1q_u8(static_cast<uint8_t*>(_First2) + 32);
+            const uint8x16_t _Right4 = vld1q_u8(static_cast<uint8_t*>(_First2) + 48);
+            vst1q_u8(static_cast<uint8_t*>(_First1) + 0, _Right1);
+            vst1q_u8(static_cast<uint8_t*>(_First1) + 16, _Right2);
+            vst1q_u8(static_cast<uint8_t*>(_First1) + 32, _Right3);
+            vst1q_u8(static_cast<uint8_t*>(_First1) + 48, _Right4);
+            vst1q_u8(static_cast<uint8_t*>(_First2) + 0, _Left1);
+            vst1q_u8(static_cast<uint8_t*>(_First2) + 16, _Left2);
+            vst1q_u8(static_cast<uint8_t*>(_First2) + 32, _Left3);
+            vst1q_u8(static_cast<uint8_t*>(_First2) + 48, _Left4);
+            _Advance_bytes(_First1, 64);
+            _Advance_bytes(_First2, 64);
+        } while (_First1 != _Stop_at);
+    }
+
+    constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
+    if (_Byte_length(_First1, _Last1) >= 32) {
+        const void* _Stop_at = _First1;
+        _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_32);
+        do {
+            const uint8x16_t _Left1  = vld1q_u8(static_cast<uint8_t*>(_First1) + 0);
+            const uint8x16_t _Left2  = vld1q_u8(static_cast<uint8_t*>(_First1) + 16);
+            const uint8x16_t _Right1 = vld1q_u8(static_cast<uint8_t*>(_First2) + 0);
+            const uint8x16_t _Right2 = vld1q_u8(static_cast<uint8_t*>(_First2) + 16);
+            vst1q_u8(static_cast<uint8_t*>(_First1) + 0, _Right1);
+            vst1q_u8(static_cast<uint8_t*>(_First1) + 16, _Right2);
+            vst1q_u8(static_cast<uint8_t*>(_First2) + 0, _Left1);
+            vst1q_u8(static_cast<uint8_t*>(_First2) + 16, _Left2);
+            _Advance_bytes(_First1, 32);
+            _Advance_bytes(_First2, 32);
+        } while (_First1 != _Stop_at);
+    }
+
+    constexpr size_t _Mask_16 = ~((static_cast<size_t>(1) << 4) - 1);
+    if (_Byte_length(_First1, _Last1) >= 16) {
+        const void* _Stop_at = _First1;
+        _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_16);
+        do {
+            const uint8x16_t _Left  = vld1q_u8(static_cast<uint8_t*>(_First1));
+            const uint8x16_t _Right = vld1q_u8(static_cast<uint8_t*>(_First2));
+            vst1q_u8(static_cast<uint8_t*>(_First1), _Right);
+            vst1q_u8(static_cast<uint8_t*>(_First2), _Left);
+            _Advance_bytes(_First1, 16);
+            _Advance_bytes(_First2, 16);
+        } while (_First1 != _Stop_at);
+    }
+
+    constexpr size_t _Mask_8 = ~((static_cast<size_t>(1) << 3) - 1);
+    if (_Byte_length(_First1, _Last1) >= 8) {
+        const void* _Stop_at = _First1;
+        _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_8);
+        do {
+            const uint8x8_t _Left  = vld1_u8(static_cast<uint8_t*>(_First1));
+            const uint8x8_t _Right = vld1_u8(static_cast<uint8_t*>(_First2));
+            vst1_u8(static_cast<uint8_t*>(_First1), _Right);
+            vst1_u8(static_cast<uint8_t*>(_First2), _Left);
+            _Advance_bytes(_First1, 8);
+            _Advance_bytes(_First2, 8);
+        } while (_First1 != _Stop_at);
+    }
+
+    constexpr size_t _Mask_4 = ~((static_cast<size_t>(1) << 2) - 1);
+    if (_Byte_length(_First1, _Last1) >= 4) {
+        const void* _Stop_at = _First1;
+        _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_4);
+        do {
+            uint32x2_t _Left  = vdup_n_u32(0);
+            uint32x2_t _Right = vdup_n_u32(0);
+            _Left             = vld1_lane_u32(static_cast<uint32_t*>(_First1), _Left, 0);
+            _Right            = vld1_lane_u32(static_cast<uint32_t*>(_First2), _Right, 0);
+            vst1_lane_u32(static_cast<uint32_t*>(_First1), _Right, 0);
+            vst1_lane_u32(static_cast<uint32_t*>(_First2), _Left, 0);
+            _Advance_bytes(_First1, 4);
+            _Advance_bytes(_First2, 4);
+        } while (_First1 != _Stop_at);
+    }
+
+    auto _First1c = static_cast<unsigned char*>(_First1);
+    auto _First2c = static_cast<unsigned char*>(_First2);
+    for (; _First1c != _Last1; ++_First1c, ++_First2c) {
+        const unsigned char _Ch = *_First1c;
+        *_First1c               = *_First2c;
+        *_First2c               = _Ch;
+    }
+}
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* const _Last1, void* _First2) noexcept {
 #ifndef _M_ARM64EC
@@ -156,6 +261,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
         *_First2c               = _Ch;
     }
 }
+#endif // ^^^ !defined(_M_ARM64)
 
 // TRANSITION, ABI: __std_swap_ranges_trivially_swappable() is preserved for binary compatibility
 void* __cdecl __std_swap_ranges_trivially_swappable(
@@ -166,6 +272,7 @@ void* __cdecl __std_swap_ranges_trivially_swappable(
 
 } // extern "C"
 
+#if !defined(_M_ARM64)
 namespace {
     namespace _Rotating {
         void _Swap_3_ranges(void* _First1, void* const _Last1, void* _First2, void* _First3) noexcept {
@@ -7694,4 +7801,5 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest,
 }
 
 } // extern "C"
-#endif // defined(_M_IX86) || defined(_M_X64)
+#endif // ^^^ !defined(_M_ARM64)
+#endif // defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64)
