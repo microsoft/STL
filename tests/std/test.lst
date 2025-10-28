@@ -272,6 +272,7 @@ tests\GH_005472_do_not_overlap
 tests\GH_005546_containers_size_type_cast
 tests\GH_005553_regex_character_translation
 tests\GH_005768_pow_accuracy
+tests\GH_005816_numeric_limits_traps
 tests\LWG2381_num_get_floating_point
 tests\LWG2510_tag_classes
 tests\LWG2597_complex_branch_cut
