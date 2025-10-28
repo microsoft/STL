@@ -1432,9 +1432,8 @@ template <class _Rx, class... _Types>
     _STL_UNREACHABLE; // no return value available for "continue on error"
 }
 
-template <class _Rx, bool _Noex, class... _Types>
-[[noreturn]] _Rx __stdcall _Function_old_not_callable(const _Move_only_function_data&, _Types&&...)
-    noexcept(_Noex) /* terminates if _Noex */ {
+template <class _Rx, class... _Types>
+[[noreturn]] _Rx __stdcall _Function_old_not_callable(const _Move_only_function_data&, _Types&&...) {
     _Xbad_function_call();
 }
 
@@ -1456,15 +1455,13 @@ _NODISCARD _Rx __stdcall _Function_inv_large(const _Move_only_function_data& _Se
     }
 }
 
-template <class _Fn, class _Rx, bool _Noex, class... _Types>
-_NODISCARD _Rx __stdcall _Function_inv_old_large(const _Move_only_function_data& _Self, _Types&&... _Args)
-    noexcept(_Noex) {
+template <class _Fn, class _Rx, class... _Types>
+_NODISCARD _Rx __stdcall _Function_inv_old_large(const _Move_only_function_data& _Self, _Types&&... _Args) {
     return _Self._Large_fn_ptr<_Fn>()->_Do_call(_STD forward<_Types>(_Args)...);
 }
 
-template <class _Fn, class _Rx, bool _Noex, class... _Types>
-_NODISCARD _Rx __stdcall _Function_inv_old_small(const _Move_only_function_data& _Self, _Types&&... _Args)
-    noexcept(_Noex) {
+template <class _Fn, class _Rx, class... _Types>
+_NODISCARD _Rx __stdcall _Function_inv_old_small(const _Move_only_function_data& _Self, _Types&&... _Args) {
     return _Self._Small_fn_ptr<_Fn>()->_Do_call(_STD forward<_Types>(_Args)...);
 }
 
@@ -1763,21 +1760,22 @@ public:
     _NODISCARD static constexpr _Impl_t _Create_impl() noexcept {
         _Impl_t _Impl{};
         if constexpr (_Kind != _Impl_kind::_Usual) {
+            _STL_INTERNAL_STATIC_ASSERT(!_Noexcept);
             using _Fn = remove_pointer_t<decltype(_STD declval<_Vt>()._Getimpl())>;
             if constexpr (_Kind == _Impl_kind::_Old_fn_null) {
-                _Impl._Invoke  = _Function_old_not_callable<_Rx, _Noexcept, _Types...>;
+                _Impl._Invoke  = _Function_old_not_callable<_Rx, _Types...>;
                 _Impl._Move    = nullptr;
                 _Impl._Destroy = nullptr;
             } else if constexpr (_Kind == _Impl_kind::_Old_fn_large) {
-                _Impl._Invoke  = _Function_inv_old_large<_Fn, _Rx, _Noexcept, _Types...>;
+                _Impl._Invoke  = _Function_inv_old_large<_Fn, _Rx, _Types...>;
                 _Impl._Move    = nullptr;
                 _Impl._Destroy = _Function_destroy_old_large<_Fn>;
             } else if constexpr (_Kind == _Impl_kind::_Old_fn_small_as_large) {
-                _Impl._Invoke  = _Function_inv_old_large<_Fn, _Rx, _Noexcept, _Types...>;
+                _Impl._Invoke  = _Function_inv_old_large<_Fn, _Rx, _Types...>;
                 _Impl._Move    = nullptr;
                 _Impl._Destroy = _Function_destroy_old_small_as_large<_Fn>;
             } else if constexpr (_Kind == _Impl_kind::_Old_fn_small) {
-                _Impl._Invoke  = _Function_inv_old_small<_Fn, _Rx, _Noexcept, _Types...>;
+                _Impl._Invoke  = _Function_inv_old_small<_Fn, _Rx, _Types...>;
                 _Impl._Move    = _Function_move_old_small<_Fn>;
                 _Impl._Destroy = _Function_destroy_old_small<_Fn>;
             }
