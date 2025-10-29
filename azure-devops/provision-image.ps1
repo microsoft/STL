@@ -10,7 +10,14 @@ create-1es-hosted-pool.ps1 (running on an STL maintainer's machine) creates a "p
 then runs provision-image.ps1 on that VM. This gives us full control over what we install for building and testing
 the STL. After provision-image.ps1 is done, create-1es-hosted-pool.ps1 makes an image of the prototype VM,
 creates a 1ES Hosted Pool that will spin up copies of the image as worker VMs, and finally deletes the prototype VM.
+
+.PARAMETER Arch
+The architecture can be either x64 or arm64.
 #>
+[CmdletBinding(PositionalBinding=$false)]
+Param(
+  [Parameter(Mandatory)][ValidateSet('x64', 'arm64')][String]$Arch
+)
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -19,14 +26,12 @@ if ($Env:COMPUTERNAME -cne 'PROTOTYPE') {
   Write-Error 'You should not run provision-image.ps1 on your local machine.'
 }
 
-if ($Env:PROCESSOR_ARCHITECTURE -ceq 'AMD64') {
+if ($Arch -ieq 'x64') {
   Write-Host 'Provisioning x64.'
   $Provisioning_x64 = $true
-} elseif ($Env:PROCESSOR_ARCHITECTURE -ceq 'ARM64') {
+} else {
   Write-Host 'Provisioning ARM64.'
   $Provisioning_x64 = $false
-} else {
-  Write-Error "Unrecognized PROCESSOR_ARCHITECTURE: '$Env:PROCESSOR_ARCHITECTURE'"
 }
 
 $VisualStudioWorkloads = @(
@@ -54,9 +59,9 @@ foreach ($workload in $VisualStudioWorkloads) {
 
 # https://github.com/PowerShell/PowerShell/releases/latest
 if ($Provisioning_x64) {
-  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.3/PowerShell-7.5.3-win-x64.msi'
+  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.4/PowerShell-7.5.4-win-x64.msi'
 } else {
-  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.3/PowerShell-7.5.3-win-arm64.msi'
+  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.4/PowerShell-7.5.4-win-arm64.msi'
 }
 $PowerShellArgs = @('/quiet', '/norestart')
 
