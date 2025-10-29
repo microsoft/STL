@@ -1535,6 +1535,8 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
 template <class _Rx, bool _Noexcept, class... _Types>
 class _Move_only_function_base {
 public:
+    using result_type = _Rx;
+
     struct _Impl_t { // A per-callable-type structure acting as a virtual function table.
         // Using vtable emulations gives more flexibility for optimizations and reduces the amount of RTTI data.
         // (The RTTI savings may be significant as with lambdas and binds there may be many distinct callable types.
@@ -1719,8 +1721,6 @@ class _Move_only_function_call {
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...)> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = _Vt&;
 
@@ -1736,8 +1736,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) &> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = _Vt&;
 
@@ -1752,8 +1750,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) &&> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = _Vt&&;
 
@@ -1768,8 +1764,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) const> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
 
@@ -1785,8 +1779,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) const&> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
 
@@ -1801,8 +1793,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) const&&> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = const _Vt&&;
 
@@ -1818,8 +1808,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = _Vt&;
 
@@ -1835,8 +1823,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) & noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = _Vt&;
 
@@ -1851,8 +1837,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) && noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = _Vt&&;
 
@@ -1867,8 +1851,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) const noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
 
@@ -1885,8 +1867,6 @@ template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) const & noexcept>
     : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
 
@@ -1902,8 +1882,6 @@ template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) const && noexcept>
     : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = const _Vt&&;
 
