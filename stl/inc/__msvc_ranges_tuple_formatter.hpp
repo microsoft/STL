@@ -1086,13 +1086,15 @@ public:
     template <class _FormatContext>
     _FormatContext::iterator format(_Range_type& _Rx, _FormatContext& _Ctx) const {
         if constexpr (_RANGES contiguous_range<_Range_type>) {
-            const auto _Size = _STD _To_unsigned_like(_RANGES distance(_Rx));
+            const auto _Dist = _RANGES distance(_Rx);
+            const auto _Size = _STD _To_unsigned_like(_Dist);
 
             if (!_STD in_range<size_t>(_Size)) {
                 _Throw_format_error("Formatted range is too long.");
             }
 
-            const basic_string_view<_CharT> _Str(_STD to_address(_RANGES begin(_Rx)), static_cast<size_t>(_Size));
+            const auto _First = _RANGES begin(_Rx);
+            const basic_string_view<_CharT> _Str(_STD to_address(_First), _STD to_address(_First + _Dist));
             return _Underlying.format(_Str, _Ctx);
         } else {
             return _Underlying.format(basic_string<_CharT>{from_range, _Rx}, _Ctx);
