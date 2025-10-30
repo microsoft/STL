@@ -4047,6 +4047,91 @@ _CONSTEXPR20 _OutIt _Transform_vbool_aligned(
     return _Dest;
 }
 
+struct _All_of_vbool_traits {
+    static constexpr bool _Default_result = true;
+
+    static _CONSTEXPR20 bool _Check(const _Vbase _Value) {
+        return _Value != ~_Vbase{0};
+    }
+
+    static _CONSTEXPR20 bool _Check(const _Vbase _Value, const _Vbase _Mask) {
+        return (_Value & _Mask) != _Mask;
+    }
+};
+
+struct _Any_of_vbool_traits_base {
+    static _CONSTEXPR20 bool _Check(const _Vbase _Value) {
+        return _Value != 0;
+    }
+
+    static _CONSTEXPR20 bool _Check(const _Vbase _Value, const _Vbase _Mask) {
+        return (_Value & _Mask) != 0;
+    }
+};
+
+struct _Any_of_vbool_traits : _Any_of_vbool_traits_base {
+    static constexpr bool _Default_result = false;
+};
+
+struct _None_of_vbool_traits : _Any_of_vbool_traits_base {
+    static constexpr bool _Default_result = true;
+};
+
+template <class _Traits, class _VbIt, class _Mapped_fn>
+_NODISCARD _CONSTEXPR20 bool _Meow_of_vbool(const _VbIt _First, const _VbIt _Last, const _Mapped_fn _Mapped_func) {
+    constexpr bool _Early_result = !_Traits::_Default_result;
+    auto _First_ptr              = _First._Myptr;
+    const auto _Last_ptr         = _Last._Myptr;
+
+    if (_First_ptr == _Last_ptr) {
+        const _Vbase _Mask = (_Vbase{1} << _Last._Myoff) - (_Vbase{1} << _First._Myoff);
+        if (_Mask == 0) {
+            return _Traits::_Default_result;
+        } else {
+            return _Traits::_Check(_Mapped_func(*_First_ptr), _Mask) ? _Early_result : _Traits::_Default_result;
+        }
+    }
+
+    if (_First._Myoff != 0) {
+        const _Vbase _Mask = static_cast<_Vbase>(-1) << _First._Myoff;
+        if (_Traits::_Check(_Mapped_func(*_First_ptr), _Mask)) {
+            return _Early_result;
+        }
+
+        ++_First_ptr;
+    }
+
+    for (; _First_ptr != _Last_ptr; ++_First_ptr) {
+        if (_Traits::_Check(_Mapped_func(*_First_ptr))) {
+            return _Early_result;
+        }
+    }
+
+    if (_Last._Myoff != 0) {
+        const _Vbase _Mask = (_Vbase{1} << _Last._Myoff) - 1;
+        if (_Traits::_Check(_Mapped_func(*_First_ptr), _Mask)) {
+            return _Early_result;
+        }
+    }
+
+    return _Traits::_Default_result;
+}
+
+template <class _VbIt, class _Mapped_fn>
+_NODISCARD _CONSTEXPR20 bool _All_of_vbool(const _VbIt _First, const _VbIt _Last, const _Mapped_fn _Mapped_func) {
+    return _Meow_of_vbool<_All_of_vbool_traits>(_First, _Last, _Mapped_func);
+}
+
+template <class _VbIt, class _Mapped_fn>
+_NODISCARD _CONSTEXPR20 bool _Any_of_vbool(const _VbIt _First, const _VbIt _Last, const _Mapped_fn _Mapped_func) {
+    return _Meow_of_vbool<_Any_of_vbool_traits>(_First, _Last, _Mapped_func);
+}
+
+template <class _VbIt, class _Mapped_fn>
+_NODISCARD _CONSTEXPR20 bool _None_of_vbool(const _VbIt _First, const _VbIt _Last, const _Mapped_fn _Mapped_func) {
+    return _Meow_of_vbool<_None_of_vbool_traits>(_First, _Last, _Mapped_func);
+}
+
 #undef _ASAN_VECTOR_MODIFY
 #undef _ASAN_VECTOR_REMOVE
 #undef _ASAN_VECTOR_CREATE
