@@ -1671,7 +1671,7 @@ public:
 };
 
 enum class _Rx_unwind_ops {
-    _After_assert = _N_end + 1,
+    _After_assert = 1,
     _After_neg_assert,
     _Disjunction_eval_alt_on_failure,
     _Disjunction_eval_alt_always,
