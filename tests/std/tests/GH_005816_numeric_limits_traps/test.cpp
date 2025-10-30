@@ -12,9 +12,9 @@
 #endif // __clang__
 
 void trap_operation() {
-    volatile int op1{1};
-    volatile int op2{0};
-    volatile int res = op1 / op2;
+    const volatile int op1 = 1;
+    const volatile int op2 = 0;
+    const volatile int res = op1 / op2;
     (void) res;
 }
 
