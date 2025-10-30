@@ -3814,8 +3814,7 @@ template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // check for match
     _Increase_stack_usage_count();
 
-    bool _Failed                       = false;
-    const size_t _Initial_frames_count = _Frames_count;
+    bool _Failed = false;
 
     while (_Nx) {
         do { // match current node
@@ -4175,7 +4174,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
             }
         } while (_Nx);
 
-        while (_Frames_count > _Initial_frames_count && !_Nx) {
+        while (_Frames_count > 0 && !_Nx) {
             auto& _Frame = _Frames[--_Frames_count];
 
             switch (_Frame._Code) {
