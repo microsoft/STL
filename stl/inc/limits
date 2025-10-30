@@ -120,8 +120,12 @@ struct _Num_int_base : _Num_base { // base for integer types
     static constexpr bool is_exact       = true;
     static constexpr bool is_integer     = true;
     static constexpr bool is_specialized = true;
-    static constexpr bool traps          = true;
-    static constexpr int radix           = 2;
+#if !defined(__clang__) || defined(__x86_64__) || defined(__i386__)
+    static constexpr bool traps = true;
+#else // ^^^ not Clang or x64 or x86 / Clang and not x64 and not x86 vvv
+    static constexpr bool traps = false;
+#endif // ^^^ Clang and not x64 and not x86 ^^^
+    static constexpr int radix = 2;
 };
 
 struct _Num_float_base : _Num_base { // base for floating-point types
