@@ -190,7 +190,7 @@ CONSTEXPR20 bool test_transform() {
     return true;
 }
 
-CONSTEXPR20 bool test__meow_of_helper(const size_t length_before, const size_t length, const size_t length_after) {
+CONSTEXPR20 bool test_meow_of_helper(const size_t length_before, const size_t length, const size_t length_after) {
     const size_t total_length = length_before + length + length_after;
 
     vector<bool> zeros(total_length);
@@ -268,22 +268,22 @@ CONSTEXPR20 bool test__meow_of_helper(const size_t length_before, const size_t l
 
 CONSTEXPR20 bool test_meow_of() {
     // Empty range
-    test__meow_of_helper(0, 0, 3);
-    test__meow_of_helper(3, 0, 3);
+    test_meow_of_helper(0, 0, 3);
+    test_meow_of_helper(3, 0, 3);
 
     // One block, ends within block
-    test__meow_of_helper(0, 10, 3);
-    test__meow_of_helper(3, 10, 3);
+    test_meow_of_helper(0, 10, 3);
+    test_meow_of_helper(3, 10, 3);
 
     // One block, exactly
-    test__meow_of_helper(0, blockSize, 0);
+    test_meow_of_helper(0, blockSize, 0);
 
     // Multiple blocks, spanning
-    test__meow_of_helper(3, blockSize - 2, 3);
-    test__meow_of_helper(3, blockSize + 2, 3);
+    test_meow_of_helper(3, blockSize - 2, 3);
+    test_meow_of_helper(3, blockSize + 2, 3);
 
     // Many blocks, exaclty
-    test__meow_of_helper(blockSize, 4 * blockSize, blockSize);
+    test_meow_of_helper(blockSize, 4 * blockSize, blockSize);
 
     return true;
 }
