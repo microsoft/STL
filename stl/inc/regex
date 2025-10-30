@@ -1810,7 +1810,7 @@ private:
     vector<_Rx_state_frame_t<_It>> _Frames;
     size_t _Frames_count;
 
-    size_t _Push_frame(_Rx_unwind_ops _Code = {}, _Node_base* _Node = nullptr);
+    size_t _Push_frame(_Rx_unwind_ops _Code, _Node_base* _Node);
     void _Pop_frame(size_t);
 
     void _Increase_stack_usage_count();
@@ -3990,7 +3990,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     auto& _Sav   = _Loop_vals[_Node->_Loop_number];
 
                     if (_Node->_Simple_loop == 1) {
-                        _Sav._Loop_frame_idx = _Push_frame(_Rx_unwind_ops::_Do_nothing);
+                        _Sav._Loop_frame_idx = _Push_frame(_Rx_unwind_ops::_Do_nothing, nullptr);
                         _Increase_complexity_count();
                         if (_Node->_Min > 0 || (_Greedy && !_Longest && _Node->_Max != 0)) { // try a rep first
                             _Sav._Loop_idx = 1;
