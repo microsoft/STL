@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
-
 #include <algorithm>
 #include <cassert>
 #include <iterator>
@@ -79,10 +77,7 @@ void test_uninitialized_move() {
 
     assert(all_of(begin(ptrs), end(ptrs), booleanTestsTrue));
     uninitialized_storage<unique_ptr<int>, exampleCount> storage;
-    assert(
-        uninitialized_move(begin(ptrs), end(ptrs), stdext::make_checked_array_iterator(storage.begin(), exampleCount))
-            .base()
-        == storage.end());
+    assert(uninitialized_move(begin(ptrs), end(ptrs), storage.begin()) == storage.end());
 
     assert(none_of(begin(ptrs), end(ptrs), booleanTestsTrue));
     assert(all_of(storage.begin(), storage.end(), booleanTestsTrue));
@@ -98,11 +93,10 @@ void test_uninitialized_move_n() {
     assert(all_of(begin(ptrs), end(ptrs), booleanTestsTrue));
 
     uninitialized_storage<unique_ptr<int>, exampleCount> storage;
-    const auto result = uninitialized_move_n(
-        begin(ptrs), exampleCount, stdext::make_checked_array_iterator(storage.begin(), exampleCount));
+    const auto result = uninitialized_move_n(begin(ptrs), exampleCount, storage.begin());
 
     assert(result.first == end(ptrs));
-    assert(result.second.base() == storage.end());
+    assert(result.second == storage.end());
     assert(none_of(begin(ptrs), end(ptrs), booleanTestsTrue));
     assert(all_of(storage.begin(), storage.end(), booleanTestsTrue));
     destroy(storage.begin(), storage.end());

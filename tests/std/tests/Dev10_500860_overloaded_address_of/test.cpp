@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
-
 #include <array>
 #include <cstddef>
 #include <cstdlib>
@@ -30,7 +28,6 @@
 #include <vector>
 
 using namespace std;
-using namespace stdext;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
@@ -164,8 +161,6 @@ template class std::_List_unchecked_const_iterator<_List_val<_List_simple_types<
 template class std::reverse_iterator<Evil*>;
 template class std::move_iterator<Evil*>;
 template class std::istream_iterator<Evil>;
-template class stdext::checked_array_iterator<Evil*>;
-template class stdext::unchecked_array_iterator<Evil*>;
 
 
 template class std::shared_ptr<Evil>;

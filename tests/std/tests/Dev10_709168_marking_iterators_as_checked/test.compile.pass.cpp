@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
-
 #include <array>
 #include <cstddef>
 #include <deque>
@@ -111,9 +109,6 @@ STATIC_ASSERT(stl_checked == _Range_verifiable_v<span<int>::iterator>);
 STATIC_ASSERT(stl_checked == _Range_verifiable_v<span<int>::reverse_iterator>);
 #endif // _HAS_CXX20
 
-STATIC_ASSERT(_Range_verifiable_v<stdext::checked_array_iterator<int*>>);
-STATIC_ASSERT(stl_checked == _Range_verifiable_v<stdext::unchecked_array_iterator<int*>>);
-
 STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<string::iterator>>);
 STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<string::const_iterator>>);
 STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<string::reverse_iterator>>);
@@ -185,9 +180,6 @@ STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<std::filesystem::path::const_it
 STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<span<int>::iterator>>);
 STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<span<int>::reverse_iterator>>);
 #endif // _HAS_CXX20
-
-STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<stdext::checked_array_iterator<int*>>>);
-STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<stdext::unchecked_array_iterator<int*>>>);
 
 template <class I, bool Expected>
 constexpr bool test_unwrappable() {
@@ -402,9 +394,6 @@ STATIC_ASSERT(test_unwrappable_for_unverified<span<int>::iterator, !stl_checked>
 STATIC_ASSERT(test_unwrappable_for_unverified<span<int>::reverse_iterator, !stl_checked>());
 #endif // _HAS_CXX20
 
-STATIC_ASSERT(test_unwrappable_for_unverified<stdext::checked_array_iterator<int*>, false>());
-STATIC_ASSERT(test_unwrappable_for_unverified<stdext::unchecked_array_iterator<int*>, true>());
-
 STATIC_ASSERT(test_unwrappable<string::iterator, true>());
 STATIC_ASSERT(test_unwrappable<string::const_iterator, true>());
 STATIC_ASSERT(test_unwrappable<string::reverse_iterator, true>());
@@ -477,9 +466,6 @@ STATIC_ASSERT(test_unwrappable<std::filesystem::path::const_iterator, true>());
 STATIC_ASSERT(test_unwrappable<span<int>::iterator, true>());
 STATIC_ASSERT(test_unwrappable<span<int>::reverse_iterator, true>());
 #endif // _HAS_CXX20
-
-STATIC_ASSERT(test_unwrappable<stdext::checked_array_iterator<int*>, true>());
-STATIC_ASSERT(test_unwrappable<stdext::unchecked_array_iterator<int*>, true>());
 
 STATIC_ASSERT(test_unwrappable_for_offset<string::iterator, true>());
 STATIC_ASSERT(test_unwrappable_for_offset<string::const_iterator, true>());
@@ -554,9 +540,6 @@ STATIC_ASSERT(test_unwrappable_for_offset<span<int>::iterator, true>());
 STATIC_ASSERT(test_unwrappable_for_offset<span<int>::reverse_iterator, true>());
 #endif // _HAS_CXX20
 
-STATIC_ASSERT(test_unwrappable_for_offset<stdext::checked_array_iterator<int*>, true>());
-STATIC_ASSERT(test_unwrappable_for_offset<stdext::unchecked_array_iterator<int*>, false>());
-
 STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<string::iterator>, false>());
 STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<string::const_iterator>, false>());
 STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<string::reverse_iterator>, false>());
@@ -628,9 +611,6 @@ STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<std::filesystem::pat
 STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<span<int>::iterator>, false>());
 STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<span<int>::reverse_iterator>, false>());
 #endif // _HAS_CXX20
-
-STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<stdext::checked_array_iterator<int*>>, false>());
-STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<stdext::unchecked_array_iterator<int*>>, false>());
 
 STATIC_ASSERT(test_unwrappable<::DerivedFrom<string::iterator>, false>());
 STATIC_ASSERT(test_unwrappable<::DerivedFrom<string::const_iterator>, false>());
@@ -704,9 +684,6 @@ STATIC_ASSERT(test_unwrappable<::DerivedFrom<span<int>::iterator>, false>());
 STATIC_ASSERT(test_unwrappable<::DerivedFrom<span<int>::reverse_iterator>, false>());
 #endif // _HAS_CXX20
 
-STATIC_ASSERT(test_unwrappable<::DerivedFrom<stdext::checked_array_iterator<int*>>, false>());
-STATIC_ASSERT(test_unwrappable<::DerivedFrom<stdext::unchecked_array_iterator<int*>>, false>());
-
 STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<string::iterator>, false>());
 STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<string::const_iterator>, false>());
 STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<string::reverse_iterator>, false>());
@@ -778,6 +755,3 @@ STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<std::filesystem::path::c
 STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<span<int>::iterator>, false>());
 STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<span<int>::reverse_iterator>, false>());
 #endif // _HAS_CXX20
-
-STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<stdext::checked_array_iterator<int*>>, false>());
-STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<stdext::unchecked_array_iterator<int*>>, false>());
