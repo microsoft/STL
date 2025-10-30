@@ -994,10 +994,8 @@ std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.default.
 # Two problems in this test:
 # - Clang does not trap on Arm64, but MSVC does.
 # - The test inspects `__x86_64__` and `__i386__`, which MSVC doesn't define.
-# :2 SKIPPED because this fails for x64/x86 and passes for ARM64.
 std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:0 FAIL
 std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:1 FAIL
-std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:2 SKIPPED
 
 
 # *** LIKELY STL BUGS ***
