@@ -733,11 +733,6 @@ std/depr/depr.c.headers/tgmath_h.pass.cpp:2 FAIL
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
-# Not analyzed. Clang apparently defines platform macros differently from C1XX.
-# The test inspects `__x86_64__` and `__i386__`, which MSVC doesn't define.
-# SKIPPED because this fails for x64/x86 and passes for ARM64.
-std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp SKIPPED
-
 # Not analyzed. Possibly C++20 equality operator rewrite issues.
 std/utilities/expected/expected.expected/equality/equality.other_expected.pass.cpp:2 FAIL
 std/utilities/expected/expected.void/equality/equality.other_expected.pass.cpp:2 FAIL
@@ -995,6 +990,14 @@ std/containers/sequences/vector/trivial_relocation.pass.cpp:1 FAIL
 
 # Not analyzed, likely bogus test. constexpr fails with "vector iterators incompatible".
 std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.default.pass.cpp FAIL
+
+# Two problems in this test:
+# - Clang does not trap on Arm64, but MSVC does.
+# - The test inspects `__x86_64__` and `__i386__`, which MSVC doesn't define.
+# :2 SKIPPED because this fails for x64/x86 and passes for ARM64.
+std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:0 FAIL
+std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:1 FAIL
+std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:2 SKIPPED
 
 
 # *** LIKELY STL BUGS ***
