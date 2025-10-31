@@ -734,7 +734,9 @@ std/depr/depr.c.headers/tgmath_h.pass.cpp:2 FAIL
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
 # Not analyzed. Clang apparently defines platform macros differently from C1XX.
-std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:2 FAIL
+# The test inspects `__x86_64__` and `__i386__`, which MSVC doesn't define.
+# SKIPPED because this fails for x64/x86 and passes for ARM64.
+std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:2 SKIPPED
 
 # Not analyzed. Possibly C++20 equality operator rewrite issues.
 std/utilities/expected/expected.expected/equality/equality.other_expected.pass.cpp:2 FAIL

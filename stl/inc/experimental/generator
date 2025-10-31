@@ -13,12 +13,23 @@
 #endif
 #include <memory>
 
-#if defined(__cpp_impl_coroutine)
+#ifdef __clang__
+_EMIT_STL_ERROR(STL1009, "The <experimental/coroutine>, <experimental/generator>, and <experimental/resumable> "
+                         "headers do not support Clang, but the C++20 <coroutine> and C++23 <generator> headers do.");
+#elif !defined(_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
+_EMIT_STL_ERROR(STL1011, "The /await compiler option, <experimental/coroutine>, <experimental/generator>, and "
+                         "<experimental/resumable> are deprecated by Microsoft and will be REMOVED SOON. "
+                         "They are superseded by the C++20 <coroutine> and C++23 <generator> headers. You can define "
+                         "_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS to suppress this error for now.");
+#elif defined(__cpp_impl_coroutine)
 #include <coroutine>
 #elif defined(__cpp_coroutines)
 #include <experimental/resumable>
 #else // ^^^ legacy coroutines / no coroutine support vvv
-#error <experimental/generator> requires /std:c++latest or /await compiler options
+_EMIT_STL_ERROR(STL1012, "You've included the <experimental/generator> header without compiler support for "
+                         "legacy coroutines (available with the deprecated /await compiler option) or "
+                         "standard C++20 coroutines (also available with /await:strict in C++14/17). "
+                         "You should include C++23 <generator> instead of <experimental/generator>.");
 #endif // ^^^ no coroutine support ^^^
 
 #pragma pack(push, _CRT_PACKING)

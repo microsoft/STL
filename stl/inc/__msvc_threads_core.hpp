@@ -7,7 +7,7 @@
 #define __MSVC_THREADS_CORE_HPP
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <type_traits>
+#include <cstddef>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -43,7 +43,7 @@ struct _Mtx_internal_imp_t {
     int _Type{};
     union {
         _Stl_critical_section _Critical_section{};
-        _STD _Aligned_storage_t<_Critical_section_size, alignof(void*)> _Cs_storage;
+        alignas(void*) unsigned char _Cs_storage[_Critical_section_size];
     };
     long _Thread_id{};
     int _Count{};
@@ -68,7 +68,7 @@ struct _Cnd_internal_imp_t {
 
     union {
         _Stl_condition_variable _Stl_cv{};
-        _STD _Aligned_storage_t<_Cnd_internal_imp_size, alignof(void*)> _Cv_storage;
+        alignas(void*) unsigned char _Cv_storage[_Cnd_internal_imp_size];
     };
 };
 #pragma warning(pop)
