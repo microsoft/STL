@@ -5,7 +5,7 @@
 #error _M_CEE_PURE should not be defined when compiling vector_algorithms.cpp.
 #endif
 
-#if defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64) // NB: includes _M_ARM64EC
+#if defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64) // NB: _M_X64 includes _M_ARM64EC
 #include <__msvc_minmax.hpp>
 #include <cstdint>
 #include <cstring>
@@ -85,7 +85,6 @@ extern "C" {
 #ifdef _M_ARM64
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* const _Last1, void* _First2) noexcept {
-
     constexpr size_t _Mask_64 = ~((static_cast<size_t>(1) << 6) - 1);
     if (_Byte_length(_First1, _Last1) >= 64) {
         const void* _Stop_at = _First1;
@@ -261,7 +260,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
         *_First2c               = _Ch;
     }
 }
-#endif // ^^^ !defined(_M_ARM64)
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
 // TRANSITION, ABI: __std_swap_ranges_trivially_swappable() is preserved for binary compatibility
 void* __cdecl __std_swap_ranges_trivially_swappable(
@@ -272,7 +271,7 @@ void* __cdecl __std_swap_ranges_trivially_swappable(
 
 } // extern "C"
 
-#if !defined(_M_ARM64)
+#ifndef _M_ARM64
 namespace {
     namespace _Rotating {
         void _Swap_3_ranges(void* _First1, void* const _Last1, void* _First2, void* _First3) noexcept {
@@ -7801,5 +7800,5 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest,
 }
 
 } // extern "C"
-#endif // ^^^ !defined(_M_ARM64)
+#endif // ^^^ !defined(_M_ARM64) ^^^
 #endif // defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64)
