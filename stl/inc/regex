@@ -4096,11 +4096,15 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                             _Frame._Loop_idx_sav       = _Sav._Loop_idx;
                             _Frame._Loop_frame_idx_sav = _Sav._Loop_frame_idx;
                             _Sav._Loop_frame_idx       = _Frame_idx;
-                            if (_Progress) {
-                                ++_Sav._Loop_idx;
-                            } else { // try only one more match after an empty match
+
+                            // optimization: try only one more match after an empty match
+                            // if there is no maximum number of reps
+                            if (!_Progress && _Nr->_Max < 0) {
                                 _Sav._Loop_idx = _Nr->_Min;
+                            } else {
+                                ++_Sav._Loop_idx;
                             }
+
                             _STD fill(_Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Sav._Group_first),
                                 _Tgt_state._Grp_valid.end(), false);
                             _Next = _Nr->_Next;
