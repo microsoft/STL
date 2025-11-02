@@ -14,7 +14,7 @@ constexpr bool _Integer_zero_division_traps = true;
 constexpr bool _Integer_zero_division_traps = false;
 #else // ^^^ defined(__clang__) / !defined(__clang__) vvv
 // MSVC inserts check for zero to trap zero division.
-// It does not insert thecks for INT_MIN/-1 division overflow though.
+// It does not insert checks for INT_MIN/-1 division overflow though.
 constexpr bool _Integer_zero_division_traps = true;
 #endif // ^^^ !defined(__clang__) ^^^
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64) ^^^
