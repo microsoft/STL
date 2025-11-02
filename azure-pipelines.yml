@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# Build STL targeting x86, x64, arm64, arm64ec
+# Build STL targeting x64, x86, arm64, arm64ec
 
 variables:
   - template: azure-devops/config.yml
