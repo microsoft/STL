@@ -1535,16 +1535,7 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
 template <class _Rx, bool _Noexcept, class... _Types>
 class _Move_only_function_base {
 public:
-    // TRANSITION, DevCom-1208330: use noexcept(_Noexcept) instead
-    template <bool>
-    struct _Invoke_t {
-        using _Call = _Rx(__stdcall*)(const _Move_only_function_data&, _Types&&...);
-    };
-
-    template <>
-    struct _Invoke_t<true> {
-        using _Call = _Rx(__stdcall*)(const _Move_only_function_data&, _Types&&...) _NOEXCEPT_FNPTR;
-    };
+    using result_type = _Rx;
 
     struct _Impl_t { // A per-callable-type structure acting as a virtual function table.
         // Using vtable emulations gives more flexibility for optimizations and reduces the amount of RTTI data.
@@ -1555,7 +1546,7 @@ public:
         // empty function from a DLL that is unloaded later, and then safely moving/destroying that empty function.
 
         // Calls target
-        _Invoke_t<_Noexcept>::_Call _Invoke;
+        _Rx(__stdcall* _Invoke)(const _Move_only_function_data&, _Types&&...) _NOEXCEPT_FNPTR_COND(_Noexcept);
         // Moves the data, including pointer to "vtable", AND destroys old data (not resetting its "vtable").
         // nullptr if we can trivially move two pointers.
         void(__stdcall* _Move)(_Move_only_function_data&, _Move_only_function_data&) _NOEXCEPT_FNPTR;
@@ -1730,8 +1721,6 @@ class _Move_only_function_call {
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...)> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = _Vt&;
 
@@ -1747,8 +1736,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) &> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = _Vt&;
 
@@ -1763,8 +1750,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) &&> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = _Vt&&;
 
@@ -1779,8 +1764,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) const> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
 
@@ -1796,8 +1779,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) const&> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
 
@@ -1812,8 +1793,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) const&&> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = const _Vt&&;
 
@@ -1829,8 +1808,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = _Vt&;
 
@@ -1846,8 +1823,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) & noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = _Vt&;
 
@@ -1862,8 +1837,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) && noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = _Vt&&;
 
@@ -1878,8 +1851,6 @@ public:
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) const noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
 
@@ -1896,8 +1867,6 @@ template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) const & noexcept>
     : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
 
@@ -1913,8 +1882,6 @@ template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) const && noexcept>
     : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = const _Vt&&;
 
@@ -2556,7 +2523,7 @@ _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
         _Iter_diff_t<_FwdItHaystack> _Count1 = _Last1 - _First1;
         _Iter_diff_t<_FwdItPat> _Count2      = _Last2 - _First2;
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_SEARCH
         if constexpr (_Vector_alg_in_search_is_safe<_FwdItHaystack, _FwdItPat, _Pred_eq>) {
             if (!_STD _Is_constant_evaluated()) {
                 const auto _Ptr1 = _STD _To_address(_First1);
@@ -2577,7 +2544,7 @@ _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
                 }
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_SEARCH ^^^
 
         for (; _Count2 <= _Count1; ++_First1, (void) --_Count1) { // room for match, try it
             _FwdItHaystack _Mid1 = _First1;

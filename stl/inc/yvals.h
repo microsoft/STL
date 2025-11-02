@@ -440,6 +440,10 @@ private:
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
 #endif // !defined(_PREPARE_CONSTRAINED_REGIONS)
 
+// Note: PrepareConstrainedRegions is not supported in .NET versions 6.0 and later. /clr:pure is
+// also not supported in /clr:netcore mode (which targets .NET 8.0 and later), so
+// _PREPARE_CONSTRAINED_REGIONS == 0 in that case.
+
 #if _PREPARE_CONSTRAINED_REGIONS
 #define _BEGIN_LOCK(_Kind)                                                                  \
     {                                                                                       \

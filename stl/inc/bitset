@@ -22,22 +22,26 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _STD_BITSET_TO_STREAM_STACK_RESERVATION 128
 #endif // !defined(_STD_BITSET_TO_STREAM_STACK_RESERVATION)
 
-#if _USE_STD_VECTOR_ALGORITHMS
+extern "C" {
 // These bitset functions sometimes assume that the bit array has zero padding to a multiple of 2 or 4 bytes.
 // The assumptions hold true even for the vNext suggestion to use smaller types for small bitsets (see GH-1498)
 // due to vectorization thresholds.
 
-extern "C" {
+#if _VECTORIZED_BITSET_TO_STRING
 __declspec(noalias) void __stdcall __std_bitset_to_string_1(
     char* _Dest, const void* _Src, size_t _Size_bits, char _Elem0, char _Elem1) noexcept;
 __declspec(noalias) void __stdcall __std_bitset_to_string_2(
     wchar_t* _Dest, const void* _Src, size_t _Size_bits, wchar_t _Elem0, wchar_t _Elem1) noexcept;
+#endif // ^^^ _VECTORIZED_BITSET_TO_STRING ^^^
+
+#if _VECTORIZED_BITSET_FROM_STRING
 __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* _Dest, const char* _Src, size_t _Size_bytes,
     size_t _Size_bits, size_t _Size_chars, char _Elem0, char _Elem1) noexcept;
 __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* _Dest, const wchar_t* _Src, size_t _Size_bytes,
     size_t _Size_bits, size_t _Size_chars, wchar_t _Elem0, wchar_t _Elem1) noexcept;
+#endif // ^^^ _VECTORIZED_BITSET_FROM_STRING ^^^
+
 } // extern "C"
-#endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
 template <class _Elem, size_t _Bits, bool _Dynamic = (_Bits * sizeof(_Elem) > _STD_BITSET_TO_STREAM_STACK_RESERVATION)>
@@ -147,7 +151,7 @@ public:
 private:
     template <class _Traits, class _Elem>
     _CONSTEXPR23 void _Construct(const _Elem* const _Ptr, size_t _Count, const _Elem _Elem0, const _Elem _Elem1) {
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_BITSET_FROM_STRING
         constexpr size_t _Bitset_from_string_vector_threshold = 16;
         if constexpr (_Bits >= _Bitset_from_string_vector_threshold
                       && _Is_implementation_handled_char_traits<_Traits> && sizeof(_Elem) <= 2) {
@@ -170,7 +174,8 @@ private:
                 return;
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_BITSET_FROM_STRING ^^^
+
         if (_Count > _Bits) {
             for (size_t _Idx = _Bits; _Idx < _Count; ++_Idx) {
                 const auto _Ch = _Ptr[_Idx];
@@ -516,7 +521,7 @@ public:
     template <class _Elem>
     _CONSTEXPR23 void _To_string(
         _Elem* const _Buf, const size_t _Len, const _Elem _Elem0, const _Elem _Elem1) const noexcept {
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_BITSET_TO_STRING
         constexpr size_t _Bitset_to_string_vector_threshold = 32;
         if constexpr (_Bits >= _Bitset_to_string_vector_threshold && is_integral_v<_Elem> && sizeof(_Elem) <= 2) {
             if (!_Is_constant_evaluated()) {
@@ -532,7 +537,7 @@ public:
                 return;
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_BITSET_TO_STRING ^^^
 
         for (size_t _Pos = 0; _Pos < _Len; ++_Pos) {
             _Buf[_Pos] = _Subscript(_Len - 1 - _Pos) ? _Elem1 : _Elem0;
