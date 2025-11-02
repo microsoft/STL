@@ -4117,21 +4117,6 @@ _NODISCARD _CONSTEXPR20 bool _Meow_of_vbool(const _VbIt _First, const _VbIt _Las
     return _Traits::_Default_result;
 }
 
-template <class _VbIt, class _Mapped_fn>
-_NODISCARD _CONSTEXPR20 bool _All_of_vbool(const _VbIt _First, const _VbIt _Last, const _Mapped_fn _Mapped_func) {
-    return _Meow_of_vbool<_All_of_vbool_traits>(_First, _Last, _Mapped_func);
-}
-
-template <class _VbIt, class _Mapped_fn>
-_NODISCARD _CONSTEXPR20 bool _Any_of_vbool(const _VbIt _First, const _VbIt _Last, const _Mapped_fn _Mapped_func) {
-    return _Meow_of_vbool<_Any_of_vbool_traits>(_First, _Last, _Mapped_func);
-}
-
-template <class _VbIt, class _Mapped_fn>
-_NODISCARD _CONSTEXPR20 bool _None_of_vbool(const _VbIt _First, const _VbIt _Last, const _Mapped_fn _Mapped_func) {
-    return _Meow_of_vbool<_None_of_vbool_traits>(_First, _Last, _Mapped_func);
-}
-
 #undef _ASAN_VECTOR_MODIFY
 #undef _ASAN_VECTOR_REMOVE
 #undef _ASAN_VECTOR_CREATE
