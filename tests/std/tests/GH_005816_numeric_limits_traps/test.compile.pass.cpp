@@ -5,7 +5,7 @@
 
 #if defined(_M_IX86) || defined(_M_X64) && !defined(_M_ARM64EC)
 // The #ED hardware exception always happens for zero division and for division overflow INT_MIN/-1
-// It is translated to the corresponding SEH exxcptions
+// It is translated to the corresponding SEH exceptions
 constexpr bool _Integer_zero_division_traps = true;
 #elif defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 // The hardware does not trap.
