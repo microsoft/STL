@@ -184,7 +184,7 @@ void single_test_fail(Func&& func) noexcept {
 #define EXPR_WRAP_ISD(expr)      ([&](auto&& i, auto&& s, auto&& dst) { (void) (expr); })
 #define EXPR_WRAP_IS_DI_DS(expr) ([&](auto&& i, auto&& s, auto&& dst_i, auto&& dst_s) { (void) (expr); })
 
-template <class T, size_t range_size, bool Nothrow>
+template <class T, size_t RangeSize, bool Nothrow>
 void test() {
     using iter       = safe_iter<T, Nothrow>;
     using const_iter = safe_iter<const T, Nothrow>;
@@ -198,11 +198,11 @@ void test() {
     // Allows trivial container reuse for uninitialized memory algorithms
     static_assert(is_trivially_destructible_v<T>);
 
-    vector<T> container_read(range_size);
+    vector<T> container_read(RangeSize);
     iota(container_read.begin(), container_read.end(), static_cast<T>(0));
 
-    vector<T> container_read_unique(range_size);
-    iota(container_read_unique.begin(), container_read_unique.end(), static_cast<T>(range_size));
+    vector<T> container_read_unique(RangeSize);
+    iota(container_read_unique.begin(), container_read_unique.end(), static_cast<T>(RangeSize));
     assert(ranges::find_first_of(container_read, container_read_unique) == ranges::end(container_read));
 
     auto container_write   = container_read;
