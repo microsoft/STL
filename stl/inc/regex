@@ -1764,7 +1764,6 @@ public:
         _Matched = false;
 
         bool _Succeeded = _Match_pat(_Rep) || _Matched;
-        _STL_INTERNAL_CHECK(_Frames_count == 0);
 
         if (!_Succeeded) {
             return false;
@@ -4157,7 +4156,9 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                         && _Begin == _Tgt_state._Cur)
                     || (_Full && _Tgt_state._Cur != _End)) {
                     _Failed = true;
-                } else if (_Longest && (!_Matched || _Better_match())) { // record successful match
+                } else if (!_Longest) { // match result found, skip unwinding
+                    return true;
+                } else if (!_Matched || _Better_match()) { // record successful match
                     _Res     = _Tgt_state;
                     _Matched = true;
                 }
@@ -4319,6 +4320,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
     }
 
     _Decrease_stack_usage_count();
+    _STL_INTERNAL_CHECK(_Frames_count == 0);
 
     return !_Failed;
 }
