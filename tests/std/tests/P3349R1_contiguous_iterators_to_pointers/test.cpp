@@ -259,7 +259,7 @@ void test() {
 #define TESTR(expr) tests_i_s(EXPR_WRAP_IS_SMART(expr), EXPR_WRAP_IS(ranges::expr), r_first_m, r_last_m)
 #define TESTW(expr) tests_i_s(EXPR_WRAP_IS_SMART(expr), EXPR_WRAP_IS(ranges::expr), w_first_m, w_last_m)
 
-        // Tests ranges:: and std:: versions (when exist)
+        // Tests ranges:: and std:: versions (when they exist)
 
         // Ensures full range traversal (worst-case)
         TESTR(adjacent_find(i, s));
@@ -405,7 +405,7 @@ void test_matrix() {
     test<int32_t, 256, Nothrow>();
     test<int64_t, 256, Nothrow>();
 
-    // remove_copy & unique_copy
+    // remove_copy and unique_copy
     {
         using iter       = safe_iter<int, Nothrow>;
         using const_iter = safe_iter<const int, Nothrow>;
@@ -432,7 +432,7 @@ void test_matrix() {
     }
 
 #if _HAS_CXX23
-    // format {:s} & {:?s}
+    // format {:s} and {:?s}
     {
         const vector chars = ranges::to<vector<char>>("\"Hello, world!\"");
 
