@@ -126,9 +126,6 @@ public:
     constexpr bool operator==(pointer right) const noexcept {
         return current_ptr == right;
     }
-    friend constexpr bool operator==(pointer left, const safe_iter& right) noexcept {
-        return left == right.current_ptr;
-    }
 
     static constexpr safe_iter begin(ranges::contiguous_range auto&& rng) noexcept {
         return {to_address(ranges::begin(rng)), to_address(ranges::begin(rng)), to_address(ranges::end(rng))};
