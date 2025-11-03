@@ -6494,9 +6494,11 @@ namespace ranges {
                 {
                     if constexpr (_Elements_are_2_bytes) {
                         _STL_INTERNAL_STATIC_ASSERT(_Is_sized);
-                        _Result = reinterpret_cast<_Ptr_t>(const_cast<wchar_t*>(_CSTD wmemchr(
-                            reinterpret_cast<const wchar_t*>(_First_ptr), _STD _Find_arg_cast<wchar_t>(_Val),
-                            static_cast<size_t>(_STD _Contiguous_iter_distance(_First, _Last)))));
+                        const auto _Wchar_ptr    = reinterpret_cast<const wchar_t*>(_First_ptr);
+                        const auto _Wchar_val    = _STD _Find_arg_cast<wchar_t>(_Val);
+                        const auto _Dist         = static_cast<size_t>(_STD _Contiguous_iter_distance(_First, _Last));
+                        const auto _Const_result = _CSTD wmemchr(_Wchar_ptr, _Wchar_val, _Dist);
+                        _Result                  = reinterpret_cast<_Ptr_t>(const_cast<wchar_t*>(_Const_result));
                     } else {
                         _STL_INTERNAL_STATIC_ASSERT(_Elements_are_1_byte);
                         size_t _Count;
