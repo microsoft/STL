@@ -4811,11 +4811,13 @@ _NODISCARD constexpr _Iter_diff_t<_Iter> _Contiguous_iter_distance(const _Iter& 
         return static_cast<_Iter_diff_t<_Iter>>(_STD _To_address(_First + (_Last - _First)) - _STD _To_address(_First));
     }
 }
+
 template <class _Iter, class _Sent>
 _NODISCARD constexpr auto _Contiguous_iter_distance(const move_iterator<_Iter>& _First, const _Sent& _Last)
     noexcept(noexcept(_STD _Contiguous_iter_distance(_First.base(), _Last))) {
     return _STD _Contiguous_iter_distance(_First.base(), _Last);
 }
+
 template <class _Iter>
 constexpr void _Contiguous_iter_verify(const _Iter& _Val, const _Iter_diff_t<_Iter>& _Off)
     noexcept(noexcept(_Val + _Off)) {
@@ -4824,6 +4826,7 @@ constexpr void _Contiguous_iter_verify(const _Iter& _Val, const _Iter_diff_t<_It
         (void) _STD _To_address(_Val + _Off);
     }
 }
+
 template <class _Iter>
 constexpr void _Contiguous_iter_verify(const move_iterator<_Iter>& _Val, const _Iter_diff_t<_Iter>& _Off)
     noexcept(noexcept(_STD _Contiguous_iter_verify(_Val.base(), _Off))) {
