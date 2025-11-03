@@ -27,7 +27,7 @@ bool safe_iter_nothrow_OOB_sign = false;
 
 // When `Nothrow` is true, disables bounds checking during iterator increment/decrement (to verify `to_address` calls),
 // logging out-of-bounds accesses instead of throwing. When false, throws immediately on bounds violation.
-template <class T, bool Nothrow = false>
+template <class T, bool Nothrow>
 class safe_iter {
 public:
     using iterator_concept  = contiguous_iterator_tag;
