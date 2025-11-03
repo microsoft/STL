@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
 #include <format>
 #include <functional>
 #include <iterator>
@@ -11,6 +13,8 @@
 #include <numeric>
 #include <ranges>
 #include <string>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 using namespace std;
