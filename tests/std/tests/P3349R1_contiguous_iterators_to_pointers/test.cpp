@@ -39,7 +39,8 @@ public:
 
     constexpr safe_iter(pointer ptr, pointer range_first, pointer range_last) noexcept
         : current_ptr{ptr}, range_first_ptr{range_first}, range_last_ptr{range_last} {
-        assert(current_ptr >= range_first_ptr && current_ptr <= range_last_ptr);
+        assert(current_ptr >= range_first_ptr);
+        assert(current_ptr <= range_last_ptr);
     }
     constexpr safe_iter() noexcept = default;
 
@@ -224,7 +225,10 @@ void test() {
     GEN_RANGE_ITERS(w, container_write, iter)
     GEN_RANGE_ITERS(w2, container_write_2, iter)
 
-    assert(r_first_s < r_first_m && r_first_m < r_first_l && r_last_s < r_last_m && r_last_m < r_last_l);
+    assert(r_first_s < r_first_m);
+    assert(r_first_m < r_first_l);
+    assert(r_last_s < r_last_m);
+    assert(r_last_m < r_last_l);
 
 #undef GEN_RANGE_ITERS
 #undef GEN_RANGE_ITER
