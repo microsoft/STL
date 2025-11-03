@@ -54,7 +54,7 @@ public:
         }
         return *current_ptr;
     }
-    constexpr pointer operator->() const noexcept {
+    constexpr pointer operator->() const noexcept { // must always be noexcept, see N5014 [pointer.conversion]/3
         if constexpr (Nothrow) {
             if (current_ptr < range_first_ptr || current_ptr > range_last_ptr) {
                 safe_iter_nothrow_OOB_sign = true;
