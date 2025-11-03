@@ -2264,7 +2264,7 @@ void test_gh_5792() {
 }
 
 void test_gh_5797() {
-    // <regex>: Loops with bounded number of repetitions and context-dependent empty alternative are mishandled
+    // GH-5797: <regex>: Loops with bounded number of repetitions and context-dependent empty alternative are mishandled
     g_regexTester.should_match("bc", "(?:b|c|(?=bc)){3}");
     g_regexTester.should_match("bc", "(^|b|c){3}");
     g_regexTester.should_match("bc", "(^|b|c){3}", regex_constants::extended);
