@@ -17,7 +17,7 @@ using namespace std;
 
 struct safe_iter_out_of_bounds_err {};
 
-enum range_type { range_large = 3, range_medium = 4, range_small = 5 };
+enum class range_type { range_large = 3, range_medium = 4, range_small = 5 };
 
 bool safe_iter_nothrow_OOB_sign = false;
 
@@ -206,7 +206,7 @@ void test() {
 
 #define GEN_RANGE_ITER(prefix, suffix, type, range, iter_type)                      \
     [[maybe_unused]] const auto [prefix##_first_##suffix, prefix##_last_##suffix] = \
-        iter_type::get_iters(range, range_##type);                                  \
+        iter_type::get_iters(range, range_type::range_##type);                      \
     [[maybe_unused]] const auto prefix##_dist_##suffix =                            \
         ranges::distance(prefix##_first_##suffix, prefix##_last_##suffix);
 #define GEN_RANGE_ITERS(prefix, range, iter_type)       \
@@ -428,7 +428,8 @@ void test_matrix() {
     {
         const vector chars = ranges::to<vector<char>>("\"Hello, world!\"");
 
-        const auto [chars_first, chars_last] = safe_iter<const char, Nothrow>::get_iters(chars, range_medium);
+        const auto [chars_first, chars_last] =
+            safe_iter<const char, Nothrow>::get_iters(chars, range_type::range_medium);
 
         const ranges::subrange good_range{chars_first, to_address(chars_last)};
         const ranges::subrange bad_range{chars_first, to_address(chars_last) + 1};
