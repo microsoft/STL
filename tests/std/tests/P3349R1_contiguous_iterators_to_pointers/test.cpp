@@ -21,9 +21,9 @@ enum range_type { range_large = 3, range_medium = 4, range_small = 5 };
 
 bool safe_iter_nothrow_OOB_sign = false;
 
-// When `nothrow` is true, disables bounds checking during iterator increment/decrement (to verify `to_address` calls),
+// When `Nothrow` is true, disables bounds checking during iterator increment/decrement (to verify `to_address` calls),
 // logging out-of-bounds accesses instead of throwing. When false, throws immediately on bounds violation.
-template <class T, bool nothrow = false>
+template <class T, bool Nothrow = false>
 class safe_iter {
 public:
     using iterator_concept  = contiguous_iterator_tag;
@@ -39,9 +39,9 @@ public:
     }
     constexpr safe_iter() noexcept = default;
 
-    constexpr reference operator*() const noexcept(nothrow) {
+    constexpr reference operator*() const noexcept(Nothrow) {
         if (current_ptr < range_first_ptr || current_ptr >= range_last_ptr) {
-            if constexpr (nothrow) {
+            if constexpr (Nothrow) {
                 safe_iter_nothrow_OOB_sign = true;
             } else {
                 throw safe_iter_out_of_bounds_err{};
@@ -50,56 +50,56 @@ public:
         return *current_ptr;
     }
     constexpr pointer operator->() const noexcept {
-        if constexpr (nothrow) {
+        if constexpr (Nothrow) {
             if (current_ptr < range_first_ptr || current_ptr > range_last_ptr) {
                 safe_iter_nothrow_OOB_sign = true;
             }
         }
         return current_ptr;
     }
-    constexpr reference operator[](difference_type n) const noexcept(nothrow) {
+    constexpr reference operator[](difference_type n) const noexcept(Nothrow) {
         return *(*this + n);
     }
 
-    constexpr safe_iter& operator+=(difference_type offset) noexcept(nothrow) {
+    constexpr safe_iter& operator+=(difference_type offset) noexcept(Nothrow) {
         current_ptr += offset;
-        if constexpr (!nothrow) {
+        if constexpr (!Nothrow) {
             if (current_ptr < range_first_ptr || current_ptr > range_last_ptr) {
                 throw safe_iter_out_of_bounds_err{};
             }
         }
         return *this;
     }
-    constexpr safe_iter operator+(difference_type offset) const noexcept(nothrow) {
+    constexpr safe_iter operator+(difference_type offset) const noexcept(Nothrow) {
         auto tmp = *this;
         tmp += offset;
         return tmp;
     }
-    friend constexpr safe_iter operator+(difference_type offset, const safe_iter& right) noexcept(nothrow) {
+    friend constexpr safe_iter operator+(difference_type offset, const safe_iter& right) noexcept(Nothrow) {
         return right + offset;
     }
-    constexpr safe_iter& operator-=(difference_type offset) noexcept(nothrow) {
+    constexpr safe_iter& operator-=(difference_type offset) noexcept(Nothrow) {
         return *this += -offset;
     }
-    constexpr safe_iter operator-(difference_type offset) const noexcept(nothrow) {
+    constexpr safe_iter operator-(difference_type offset) const noexcept(Nothrow) {
         return *this + (-offset);
     }
     constexpr difference_type operator-(const safe_iter& right) const noexcept {
         return current_ptr - right.current_ptr;
     }
 
-    constexpr safe_iter& operator++() noexcept(nothrow) {
+    constexpr safe_iter& operator++() noexcept(Nothrow) {
         return *this += 1;
     }
-    constexpr safe_iter& operator--() noexcept(nothrow) {
+    constexpr safe_iter& operator--() noexcept(Nothrow) {
         return *this -= 1;
     }
-    constexpr safe_iter operator++(int) noexcept(nothrow) {
+    constexpr safe_iter operator++(int) noexcept(Nothrow) {
         auto temp = *this;
         ++*this;
         return temp;
     }
-    constexpr safe_iter operator--(int) noexcept(nothrow) {
+    constexpr safe_iter operator--(int) noexcept(Nothrow) {
         auto temp = *this;
         --*this;
         return temp;
@@ -151,16 +151,16 @@ private:
     pointer range_last_ptr  = nullptr;
 };
 
-template <bool nothrow, class Func>
+template <bool Nothrow, class Func>
 void single_test_pass(Func&& func) noexcept {
     func();
-    if constexpr (nothrow) {
+    if constexpr (Nothrow) {
         assert(!safe_iter_nothrow_OOB_sign);
     }
 }
-template <bool nothrow, class Func>
+template <bool Nothrow, class Func>
 void single_test_fail(Func&& func) noexcept {
-    if constexpr (nothrow) {
+    if constexpr (Nothrow) {
         func();
         assert(exchange(safe_iter_nothrow_OOB_sign, false));
     } else {
@@ -172,18 +172,18 @@ void single_test_fail(Func&& func) noexcept {
     }
 }
 
-#define PASS(expr) single_test_pass<nothrow>([&]() { (void) (expr); })
-#define FAIL(expr) single_test_fail<nothrow>([&]() { (void) (expr); })
+#define PASS(expr) single_test_pass<Nothrow>([&]() { (void) (expr); })
+#define FAIL(expr) single_test_fail<Nothrow>([&]() { (void) (expr); })
 
 #define EXPR_WRAP_IS(expr)       ([&](auto&& i, auto&& s) { (void) (expr); })
 #define EXPR_WRAP_IN(expr)       ([&](auto&& i, auto&& n) { (void) (expr); })
 #define EXPR_WRAP_ISD(expr)      ([&](auto&& i, auto&& s, auto&& dst) { (void) (expr); })
 #define EXPR_WRAP_IS_DI_DS(expr) ([&](auto&& i, auto&& s, auto&& dst_i, auto&& dst_s) { (void) (expr); })
 
-template <class T, size_t range_size, bool nothrow>
+template <class T, size_t range_size, bool Nothrow>
 void test() {
-    using iter       = safe_iter<T, nothrow>;
-    using const_iter = safe_iter<const T, nothrow>;
+    using iter       = safe_iter<T, Nothrow>;
+    using const_iter = safe_iter<const T, Nothrow>;
     static_assert(contiguous_iterator<iter>);
     static_assert(contiguous_iterator<const_iter>);
 
@@ -389,18 +389,18 @@ void test() {
     }
 }
 
-template <bool nothrow>
+template <bool Nothrow>
 void test_matrix() {
     // Ensures vectorization (and iterator-to-pointer conversion)
-    test<int8_t, 63, nothrow>();
-    test<int16_t, 256, nothrow>();
-    test<int32_t, 256, nothrow>();
-    test<int64_t, 256, nothrow>();
+    test<int8_t, 63, Nothrow>();
+    test<int16_t, 256, Nothrow>();
+    test<int32_t, 256, Nothrow>();
+    test<int64_t, 256, Nothrow>();
 
     // remove_copy & unique_copy
     {
-        using iter       = safe_iter<int, nothrow>;
-        using const_iter = safe_iter<const int, nothrow>;
+        using iter       = safe_iter<int, Nothrow>;
+        using const_iter = safe_iter<const int, Nothrow>;
 
         const auto src = {1, 2, 3, 4, 4, 5, 5};
 
@@ -428,12 +428,12 @@ void test_matrix() {
     {
         const vector chars = ranges::to<vector<char>>("\"Hello, world!\"");
 
-        const auto [chars_first, chars_last] = safe_iter<const char, nothrow>::get_iters(chars, range_medium);
+        const auto [chars_first, chars_last] = safe_iter<const char, Nothrow>::get_iters(chars, range_medium);
 
         const ranges::subrange good_range{chars_first, to_address(chars_last)};
         const ranges::subrange bad_range{chars_first, to_address(chars_last) + 1};
         const ranges::subrange bad_range_2 = [&] {
-            if constexpr (nothrow) {
+            if constexpr (Nothrow) {
                 return ranges::subrange{chars_first - 1, to_address(chars_last)};
             } else {
                 return bad_range;
