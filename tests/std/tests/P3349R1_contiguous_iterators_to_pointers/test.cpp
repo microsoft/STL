@@ -434,7 +434,7 @@ void test_matrix() {
 #if _HAS_CXX23
     // format {:s} and {:?s}
     {
-        const vector chars = ranges::to<vector<char>>("\"Hello, world!\"");
+        const vector chars = ranges::to<vector<char>>(R"("Hello, world!")");
 
         const auto [chars_first, chars_last] =
             safe_iter<const char, Nothrow>::get_iters(chars, range_type::range_medium);
