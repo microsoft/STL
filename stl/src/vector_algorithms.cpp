@@ -5,7 +5,6 @@
 #error _M_CEE_PURE should not be defined when compiling vector_algorithms.cpp.
 #endif
 
-#if defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64) // NB: _M_X64 includes _M_ARM64EC
 #include <__msvc_minmax.hpp>
 #include <cstdint>
 #include <cstring>
@@ -7801,4 +7800,3 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest,
 
 } // extern "C"
 #endif // ^^^ !defined(_M_ARM64) ^^^
-#endif // defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64)
