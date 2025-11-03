@@ -360,35 +360,39 @@ public:
 // State '3' is the accepting state.
 class _GB9c_regex {
 private:
-    enum _State_t : uint8_t { _Consonant, _Linker, _Rest };
+    enum _State_t : uint8_t { _Start, _Consonant, _Linker };
 
-    _State_t _State = _Consonant;
+    _State_t _State = _Start;
 
 public:
     _NODISCARD constexpr bool operator==(const _GB9c_regex&) const noexcept = default;
 
     _NODISCARD constexpr bool _Match(const _Indic_Conjunct_Break_property_values _Left_InCB) noexcept {
         switch (_State) {
-        case _Consonant:
+        case _Start:
             if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Consonant_value) {
-                _State = _Linker;
+                _State = _Consonant;
             }
             return false;
 
-        case _Linker:
+        case _Consonant:
+            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Consonant_value) {
+                return false;
+            }
+
             if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Extend_value) {
                 return false;
             }
 
             if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Linker_value) {
-                _State = _Rest;
+                _State = _Linker;
                 return true;
             }
             break;
 
-        case _Rest:
+        case _Linker:
             if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Consonant_value) {
-                _State = _Linker;
+                _State = _Consonant;
                 return false;
             }
 
@@ -403,7 +407,7 @@ public:
             break;
         }
 
-        _State = _Consonant;
+        _State = _Start;
         return false;
     }
 };

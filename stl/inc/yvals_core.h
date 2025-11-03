@@ -1522,7 +1522,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // next warning number: STL4049
 
-// next error number: STL1009
+// next error number: STL1013
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
@@ -1993,9 +1993,11 @@ compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #endif // !defined(_STL_WIN32_WINNT)
 
 #ifdef __cpp_noexcept_function_type
-#define _NOEXCEPT_FNPTR noexcept
+#define _NOEXCEPT_FNPTR           noexcept
+#define _NOEXCEPT_FNPTR_COND(...) noexcept(__VA_ARGS__)
 #else // ^^^ defined(__cpp_noexcept_function_type) / !defined(__cpp_noexcept_function_type) vvv
 #define _NOEXCEPT_FNPTR
+#define _NOEXCEPT_FNPTR_COND(...)
 #endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
 
 #ifdef __clang__

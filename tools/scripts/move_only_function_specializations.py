@@ -8,8 +8,6 @@ def specialization(cv: str, ref: str, ref_inv: str, noex: str, noex_val: str, ca
 class _Move_only_function_call<_Rx(_Types...) {cv} {ref} {noex}>
     : public _Move_only_function_base<_Rx, {noex_val}, _Types...> {{
 public:
-    using result_type = _Rx;
-
     template <class _Vt>
     using _VtInvQuals = {cv} _Vt {ref_inv};
 
@@ -39,4 +37,4 @@ if __name__ == "__main__":
     print(cvref_permutations("", "false", "is_invocable_r_v") + "\n" \
         + "#ifdef __cpp_noexcept_function_type" + "\n" \
         + cvref_permutations("noexcept", "true", "is_nothrow_invocable_r_v") \
-        + "#endif // __cpp_noexcept_function_type")
+        + "#endif // defined(__cpp_noexcept_function_type)")

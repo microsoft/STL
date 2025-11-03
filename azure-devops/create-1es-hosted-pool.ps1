@@ -7,21 +7,35 @@ Creates a 1ES Hosted Pool, set up for the STL's CI.
 
 .DESCRIPTION
 See https://github.com/microsoft/STL/wiki/Checklist-for-Toolset-Updates for more information.
+
+.PARAMETER Arch
+The architecture can be either x64 or arm64.
 #>
+[CmdletBinding(PositionalBinding=$false)]
+Param(
+  [Parameter(Mandatory)][ValidateSet('x64', 'arm64')][String]$Arch
+)
 
 $ErrorActionPreference = 'Stop'
 
 $CurrentDate = Get-Date
 $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
-$Arch = 'x64'
 
 $Location = 'eastus2'
-$VMSize = 'Standard_F32as_v6'
-$PoolSize = 64
+
+if ($Arch -ieq 'x64') {
+  $VMSize = 'Standard_F32as_v6'
+  $PoolSize = 64
+  $ImagePublisher = 'MicrosoftWindowsServer'
+  $ImageOffer = 'WindowsServer'
+  $ImageSku = '2025-datacenter-azure-edition'
+} else {
+  $VMSize = 'Standard_D32ps_v6'
+  $PoolSize = 32
+  $ImageId = '/SharedGalleries/WindowsServer.1P/Images/2025-datacenter-azure-edition-arm64/Versions/latest'
+}
+
 $ProtoVMName = 'PROTOTYPE'
-$ImagePublisher = 'MicrosoftWindowsServer'
-$ImageOffer = 'WindowsServer'
-$ImageSku = '2025-datacenter-azure-edition'
 
 $LogFile = "1es-hosted-pool-$Timestamp-$Arch.log"
 $ProgressActivity = 'Preparing STL CI pool'
@@ -178,12 +192,21 @@ $Nic = New-AzNetworkInterface `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating prototype VM config'
 
-# Previously: -Priority 'Spot'
-$VM = New-AzVMConfig `
-  -VMName $ProtoVMName `
-  -VMSize $VMSize `
-  -DiskControllerType 'NVMe' `
-  -Priority 'Regular'
+if ($Arch -ieq 'x64') {
+  $VM = New-AzVMConfig `
+    -VMName $ProtoVMName `
+    -VMSize $VMSize `
+    -DiskControllerType 'NVMe' `
+    -Priority 'Regular'
+} else {
+  $VM = New-AzVMConfig `
+    -VMName $ProtoVMName `
+    -VMSize $VMSize `
+    -DiskControllerType 'SCSI' `
+    -Priority 'Regular' `
+    -SecurityType 'TrustedLaunch' `
+    -SharedGalleryImageId $ImageId
+}
 
 ####################################################################################################
 Display-ProgressBar -Status 'Setting prototype VM OS'
@@ -205,12 +228,16 @@ $VM = Add-AzVMNetworkInterface `
 ####################################################################################################
 Display-ProgressBar -Status 'Setting prototype VM source image'
 
-$VM = Set-AzVMSourceImage `
-  -VM $VM `
-  -PublisherName $ImagePublisher `
-  -Offer $ImageOffer `
-  -Skus $ImageSku `
-  -Version 'latest'
+if ($Arch -ieq 'x64') {
+  $VM = Set-AzVMSourceImage `
+    -VM $VM `
+    -PublisherName $ImagePublisher `
+    -Offer $ImageOffer `
+    -Skus $ImageSku `
+    -Version 'latest'
+} else {
+  # We passed -SharedGalleryImageId to New-AzVMConfig above.
+}
 
 ####################################################################################################
 Display-ProgressBar -Status 'Setting prototype VM boot diagnostic'
@@ -242,7 +269,8 @@ Display-ProgressBar -Status 'Running provision-image.ps1 in VM'
 $ProvisionImageResult = Invoke-AzVMRunCommand `
   -ResourceId $VM.ID `
   -CommandId 'RunPowerShellScript' `
-  -ScriptPath "$PSScriptRoot\provision-image.ps1"
+  -ScriptPath "$PSScriptRoot\provision-image.ps1" `
+  -Parameter @{ 'Arch' = $Arch; }
 
 Write-Host $ProvisionImageResult.value.Message
 
@@ -322,7 +350,11 @@ Display-ProgressBar -Status 'Creating image definition'
 
 $ImageDefinitionName = "$ResourceGroupName-ImageDefinition"
 $FeatureTrustedLaunch = @{ Name = 'SecurityType'; Value = 'TrustedLaunch'; }
-$FeatureNVMe = @{ Name = 'DiskControllerTypes'; Value = 'SCSI, NVMe'; }
+if ($Arch -ieq 'x64') {
+  $FeatureNVMe = @{ Name = 'DiskControllerTypes'; Value = 'SCSI, NVMe'; }
+} else {
+  $FeatureNVMe = @{ Name = 'DiskControllerTypes'; Value = 'SCSI'; }
+}
 $ImageDefinitionFeatures = @($FeatureTrustedLaunch, $FeatureNVMe)
 New-AzGalleryImageDefinition `
   -Location $Location `
@@ -331,9 +363,10 @@ New-AzGalleryImageDefinition `
   -Name $ImageDefinitionName `
   -OsState 'Generalized' `
   -OsType 'Windows' `
-  -Publisher $ImagePublisher `
-  -Offer $ImageOffer `
-  -Sku $ImageSku `
+  -Publisher 'StlPublisher' `
+  -Offer 'StlOffer' `
+  -Sku 'StlSku' `
+  -Architecture $Arch `
   -Feature $ImageDefinitionFeatures `
   -HyperVGeneration 'V2' >> $LogFile
 
