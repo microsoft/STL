@@ -455,15 +455,14 @@ void test_matrix() {
 
         const const_iter rng_first{valid_first_ptr, valid_first_ptr, valid_last_ptr};
         const const_iter rng_last{valid_last_ptr, valid_first_ptr, valid_last_ptr};
-        const auto rng_last_ptr = to_address(rng_last);
 
         PASS(search_n(rng_first, rng_last, 2, 30));
         FAIL(search_n(rng_first, rng_last + 1, 3, 30));
         FAIL(search_n(rng_first - 1, rng_last, 2, 10));
 
-        PASS(ranges::search_n(rng_first, rng_last_ptr, 2, 30));
-        FAIL(ranges::search_n(rng_first, rng_last_ptr + 1, 3, 30));
-        FAIL(ranges::search_n(rng_first - 1, rng_last_ptr, 2, 10));
+        PASS(ranges::search_n(rng_first, valid_last_ptr, 2, 30));
+        FAIL(ranges::search_n(rng_first, valid_last_ptr + 1, 3, 30));
+        FAIL(ranges::search_n(rng_first - 1, valid_last_ptr, 2, 10));
     }
 
 #if _HAS_CXX23
