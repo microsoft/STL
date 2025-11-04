@@ -1460,10 +1460,12 @@ _NODISCARD _Rx __stdcall _Function_inv_old_large(const _Move_only_function_data&
     return _Self._Large_fn_ptr<_Fn>()->_Do_call(_STD forward<_Types>(_Args)...);
 }
 
+#ifdef _WIN64
 template <class _Fn, class _Rx, class... _Types>
 _NODISCARD _Rx __stdcall _Function_inv_old_small(const _Move_only_function_data& _Self, _Types&&... _Args) {
     return _Self._Small_fn_ptr<_Fn>()->_Do_call(_STD forward<_Types>(_Args)...);
 }
+#endif // ^^^ 64-bit ^^^
 
 template <class _Vt>
 void __stdcall _Function_move_small(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
@@ -1482,6 +1484,7 @@ inline void __stdcall _Function_move_large(_Move_only_function_data& _Self, _Mov
     _CSTD memcpy(&_Self._Data, &_Src._Data, _Minimum_function_size); // Copy Impl* and functor data
 }
 
+#ifdef _WIN64
 template <class _Fn>
 void __stdcall _Function_move_old_small(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
     _Fn* const _Old_fn_impl = _Src._Small_fn_ptr<_Fn>();
@@ -1489,6 +1492,7 @@ void __stdcall _Function_move_old_small(_Move_only_function_data& _Self, _Move_o
     _Old_fn_impl->_Delete_this(false);
     _Self._Impl = _Src._Impl;
 }
+#endif // ^^^ 64-bit ^^^
 
 template <class _Vt>
 void __stdcall _Function_destroy_small(_Move_only_function_data& _Self) noexcept {
@@ -1504,17 +1508,19 @@ void __stdcall _Function_destroy_old_large(_Move_only_function_data& _Self) noex
     _Self._Large_fn_ptr<_Fn>()->_Delete_this(true);
 }
 
+#ifdef _WIN64
+template <class _Fn>
+void __stdcall _Function_destroy_old_small(_Move_only_function_data& _Self) noexcept {
+    _Self._Small_fn_ptr<_Fn>()->_Delete_this(false);
+}
+#else // ^^^ 64-bit / 32-bit vvv
 template <class _Fn>
 void __stdcall _Function_destroy_old_small_as_large(_Move_only_function_data& _Self) noexcept {
     _Fn* const _Old_fn_impl = _Self._Large_fn_ptr<_Fn>();
     _Old_fn_impl->_Delete_this(false);
     ::operator delete(static_cast<void*>(_Old_fn_impl));
 }
-
-template <class _Fn>
-void __stdcall _Function_destroy_old_small(_Move_only_function_data& _Self) noexcept {
-    _Self._Small_fn_ptr<_Fn>()->_Delete_this(false);
-}
+#endif // ^^^ 32-bit ^^^
 
 template <size_t _Align>
 void __stdcall _Function_deallocate_large_overaligned(_Move_only_function_data& _Self) noexcept {
@@ -1605,11 +1611,14 @@ public:
     };
 
     enum class _Impl_kind {
-        _Usual,
-        _Old_fn_null,
-        _Old_fn_large,
-        _Old_fn_small_as_large,
-        _Old_fn_small,
+        _Usual        = 0,
+        _Old_fn_null  = 1,
+        _Old_fn_large = 2,
+#ifdef _WIN64
+        _Old_fn_small = 3,
+#else // ^^^ 64-bit / 32-bit vvv
+        _Old_fn_small_as_large = 4,
+#endif // ^^^ 32-bit ^^^
     };
 
     _Move_only_function_data _Data;
@@ -1631,21 +1640,23 @@ public:
         if (_Old_fn_impl == nullptr) {
             _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_null, _Vt, _VtInvQuals>();
         } else if (_Func._Local()) {
-            if constexpr (alignof(max_align_t) == alignof(void*)) {
-                // 64-bit target, can put small function into small move_only_function directly
-                _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small, _Vt, _VtInvQuals>();
-                _Old_fn_impl->_Move(_Data._Buf_ptr<void*>());
-                _Func._Tidy();
-            } else {
-                // 32-bit target, cannot put small function into small move_only_function directly
-                // due to potentially not enough alignment. Allocate large function
-                void* _Where = ::operator new((_Small_object_num_ptrs - 1) * sizeof(void*));
-                _Old_fn_impl->_Move(_Where);
-                _Func._Tidy();
+#ifdef _WIN64
+            _STL_INTERNAL_STATIC_ASSERT(alignof(max_align_t) == alignof(void*));
+            // 64-bit target, can put small function into small move_only_function directly
+            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small, _Vt, _VtInvQuals>();
+            _Old_fn_impl->_Move(_Data._Buf_ptr<void*>());
+            _Func._Tidy();
+#else // ^^^ 64-bit / 32-bit vvv
+            _STL_INTERNAL_STATIC_ASSERT(alignof(max_align_t) > alignof(void*));
+            // 32-bit target, cannot put small function into small move_only_function directly
+            // due to potentially not enough alignment. Allocate large function
+            void* _Where = ::operator new((_Small_object_num_ptrs - 1) * sizeof(void*));
+            _Old_fn_impl->_Move(_Where);
+            _Func._Tidy();
 
-                _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small_as_large, _Vt, _VtInvQuals>();
-                _Data._Set_large_fn_ptr(_Where);
-            }
+            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small_as_large, _Vt, _VtInvQuals>();
+            _Data._Set_large_fn_ptr(_Where);
+#endif // ^^^ 32-bit ^^^
         } else {
             // Just take ownership of the inner impl pointer
             _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_large, _Vt, _VtInvQuals>();
@@ -1761,14 +1772,18 @@ public:
                 _Impl._Invoke  = _Function_inv_old_large<_Fn, _Rx, _Types...>;
                 _Impl._Move    = nullptr;
                 _Impl._Destroy = _Function_destroy_old_large<_Fn>;
-            } else if constexpr (_Kind == _Impl_kind::_Old_fn_small_as_large) {
-                _Impl._Invoke  = _Function_inv_old_large<_Fn, _Rx, _Types...>;
-                _Impl._Move    = nullptr;
-                _Impl._Destroy = _Function_destroy_old_small_as_large<_Fn>;
-            } else if constexpr (_Kind == _Impl_kind::_Old_fn_small) {
+            } else {
+#ifdef _WIN64
+                static_assert(_Kind == _Impl_kind::_Old_fn_small);
                 _Impl._Invoke  = _Function_inv_old_small<_Fn, _Rx, _Types...>;
                 _Impl._Move    = _Function_move_old_small<_Fn>;
                 _Impl._Destroy = _Function_destroy_old_small<_Fn>;
+#else // ^^^ 64-bit / 32-bit vvv
+                static_assert(_Kind == _Impl_kind::_Old_fn_small_as_large);
+                _Impl._Invoke  = _Function_inv_old_large<_Fn, _Rx, _Types...>;
+                _Impl._Move    = nullptr;
+                _Impl._Destroy = _Function_destroy_old_small_as_large<_Fn>;
+#endif // ^^^ 32-bit ^^^
             }
         } else if constexpr (_Large_function_engaged<_Vt>) {
             _Impl._Invoke = _Function_inv_large<_Vt, _VtInvQuals, _Rx, _Noexcept, _Types...>;
