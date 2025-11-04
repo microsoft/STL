@@ -84,9 +84,9 @@ extern "C" {
 #ifdef _M_ARM64
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* const _Last1, void* _First2) noexcept {
-    constexpr size_t _Mask_64 = ~((static_cast<size_t>(1) << 6) - 1);
     if (_Byte_length(_First1, _Last1) >= 64) {
-        const void* _Stop_at = _First1;
+        constexpr size_t _Mask_64 = ~((static_cast<size_t>(1) << 6) - 1);
+        const void* _Stop_at      = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_64);
         do {
             const uint8x16_t _Left1  = vld1q_u8(static_cast<uint8_t*>(_First1) + 0);
