@@ -471,12 +471,13 @@ void test_matrix() {
 
         const auto [chars_first, chars_last] =
             safe_iter<const char, Nothrow>::get_iters(chars, range_type::range_medium);
+        const auto last_ptr = to_address(chars_last);
 
-        const ranges::subrange good_range{chars_first, to_address(chars_last)};
-        const ranges::subrange bad_range{chars_first, to_address(chars_last) + 1};
+        const ranges::subrange good_range{chars_first, last_ptr};
+        const ranges::subrange bad_range{chars_first, last_ptr + 1};
         const ranges::subrange bad_range_2 = [&] {
             if constexpr (Nothrow) {
-                return ranges::subrange{chars_first - 1, to_address(chars_last)};
+                return ranges::subrange{chars_first - 1, last_ptr};
             } else {
                 return bad_range;
             }
