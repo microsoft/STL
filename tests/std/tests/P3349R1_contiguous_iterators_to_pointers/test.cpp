@@ -236,6 +236,7 @@ void test() {
     // [ ( <  > ) ]
     assert(r_first_l < r_first_m);
     assert(r_first_m < r_first_s);
+    assert(r_first_s < r_last_s);
     assert(r_last_s < r_last_m);
     assert(r_last_m < r_last_l);
 
