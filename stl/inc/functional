@@ -1103,7 +1103,7 @@ protected:
 
 private:
 #if _HAS_CXX23
-    friend class _Move_only_function_base<_Ret, false, _Types...>;
+    friend _Move_only_function_base<_Ret, false, _Types...>;
 #endif // _HAS_CXX23
 
     bool _Local() const noexcept { // test for locally stored copy of object
