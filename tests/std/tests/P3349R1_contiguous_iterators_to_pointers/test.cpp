@@ -26,7 +26,7 @@ enum class range_type { range_large = 5, range_medium = 4, range_small = 3 };
 bool safe_iter_nothrow_OOB_sign = false;
 
 template <class T>
-constexpr T* unwrap(T* ptr) {
+constexpr T* unwrap(T* ptr) noexcept {
     return ptr;
 }
 
@@ -153,7 +153,7 @@ public:
         return {safe_iter{first_ptr, first_ptr, last_ptr}, safe_iter{last_ptr, first_ptr, last_ptr}};
     }
 
-    friend constexpr T* unwrap(const safe_iter& iter) {
+    friend constexpr T* unwrap(const safe_iter& iter) noexcept {
         return iter.current_ptr;
     }
 
