@@ -30,8 +30,6 @@ constexpr T* unwrap(T* ptr) {
     return ptr;
 }
 
-// When `Nothrow` is true, disables bounds checking during iterator increment/decrement (to verify `to_address` calls),
-// logging out-of-bounds accesses instead of throwing. When false, throws immediately on bounds violation.
 template <class T, bool Nothrow>
 class safe_iter {
 public:
@@ -71,6 +69,9 @@ public:
         return *(*this + n);
     }
 
+    // When `Nothrow` is true, disables bounds checking during iterator increment/decrement
+    // (to verify `to_address` calls), logging out-of-bounds accesses instead of throwing.
+    // When `Nothrow` is false, throws immediately on bounds violation.
     constexpr safe_iter& operator+=(difference_type offset) noexcept(Nothrow) {
         current_ptr += offset;
         if constexpr (!Nothrow) {
