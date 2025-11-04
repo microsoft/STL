@@ -259,14 +259,14 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
         *_First2c               = _Ch;
     }
 }
-#endif // ^^^ !defined(_M_ARM64) ^^^
 
-// TRANSITION, ABI: __std_swap_ranges_trivially_swappable() is preserved for binary compatibility
+// TRANSITION, ABI: __std_swap_ranges_trivially_swappable() is preserved for binary compatibility (x64/x86/ARM64EC)
 void* __cdecl __std_swap_ranges_trivially_swappable(
     void* const _First1, void* const _Last1, void* const _First2) noexcept {
     __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
     return static_cast<char*>(_First2) + (static_cast<char*>(_Last1) - static_cast<char*>(_First1));
 }
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
 } // extern "C"
 
