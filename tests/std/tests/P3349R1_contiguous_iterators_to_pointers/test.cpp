@@ -21,9 +21,14 @@ using namespace std;
 
 struct safe_iter_out_of_bounds_err {};
 
-enum class range_type { range_large = 3, range_medium = 4, range_small = 5 };
+enum class range_type { range_large = 5, range_medium = 4, range_small = 3 };
 
 bool safe_iter_nothrow_OOB_sign = false;
+
+template <class T>
+constexpr T* unwrap(T* ptr) {
+    return ptr;
+}
 
 // When `Nothrow` is true, disables bounds checking during iterator increment/decrement (to verify `to_address` calls),
 // logging out-of-bounds accesses instead of throwing. When false, throws immediately on bounds violation.
@@ -144,9 +149,13 @@ public:
 
         const auto range_dist = ranges::distance(rng);
         const auto first_ptr  = to_address(ranges::begin(rng) + range_dist / n);
-        const auto last_ptr   = to_address(ranges::begin(rng) + range_dist * 2 / n);
+        const auto last_ptr   = to_address(ranges::begin(rng) + range_dist * (n - 1) / n);
 
         return {safe_iter{first_ptr, first_ptr, last_ptr}, safe_iter{last_ptr, first_ptr, last_ptr}};
+    }
+
+    friend constexpr T* unwrap(const safe_iter& iter) {
+        return iter.current_ptr;
     }
 
 private:
@@ -224,8 +233,10 @@ void test() {
     GEN_RANGE_ITERS(w, container_write, iter)
     GEN_RANGE_ITERS(w2, container_write_2, iter)
 
-    assert(r_first_s < r_first_m);
-    assert(r_first_m < r_first_l);
+    // l m s  s m l
+    // [ ( <  > ) ]
+    assert(r_first_l < r_first_m);
+    assert(r_first_m < r_first_s);
     assert(r_last_s < r_last_m);
     assert(r_last_m < r_last_l);
 
@@ -265,12 +276,12 @@ void test() {
         TESTR(count(i, s, container_read_unique[0]));
         TESTR(equal(i, s, i, s));
         TESTR(find(i, s, container_read_unique[0]));
-        TESTR(find_end(i, s, r2_first_s, r2_last_s));
-        TESTR(find_end(r2_first_l, r2_last_l, i, s));
+        TESTR(find_end(i, s, unwrap(i), unwrap(s)));
+        TESTR(find_end(r_first_l, r_last_l, i, s));
         TESTR(find_first_of(i, s, r2_first_s, r2_last_s));
         TESTR(find_first_of(r2_first_l, r2_last_l, i, s));
         TESTR(includes(i, s, r2_first_s, r2_last_s));
-        TESTR(includes(r2_first_l, r2_last_l, i, s));
+        TESTR(includes(r_first_l, r_last_l, i, s));
         TESTR(is_sorted(i, s));
         TESTR(is_sorted_until(i, s));
         TESTR(lexicographical_compare(i, s, i, s));
@@ -281,9 +292,9 @@ void test() {
         TESTR(minmax(ranges::subrange{i, s}));
         TESTR(minmax_element(i, s));
         TESTR(mismatch(i, s, i, s));
-        TESTR(search(i, s, r2_first_s, r2_last_s));
-        TESTR(search(r2_first_l, r2_last_l, i, s));
-        TESTR(search_n(i, s, (s - i) / 2, container_read_unique[0]));
+        TESTR(search(i, s, unwrap(i), unwrap(s)));
+        TESTR(search(r_first_l, r_last_l, i, s));
+        TESTR(search_n(i, s, 1, *(unwrap(s) - 1)));
 
         TESTW(fill(i, s, container_read[0]));
         TESTW(nth_element(i, i + (s - i) / 2, s));
@@ -297,8 +308,8 @@ void test() {
 
 #if _HAS_CXX23
         TESTR(contains(i, s, container_read_unique[0]));
-        TESTR(contains_subrange(i, s, r2_first_s, r2_last_s));
-        TESTR(contains_subrange(r2_first_l, r2_last_l, i, s));
+        TESTR(contains_subrange(i, s, unwrap(i), unwrap(s)));
+        TESTR(contains_subrange(r_first_l, r_last_l, i, s));
         TESTR(ends_with(i, s, i, s));
         TESTR(starts_with(i, s, i, s));
 
