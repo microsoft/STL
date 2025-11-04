@@ -1637,7 +1637,7 @@ public:
                 _Old_fn_impl->_Move(_Data._Buf_ptr<void*>());
                 _Func._Tidy();
             } else {
-                // 32-bit target, cannot small function into small move_only_function directly
+                // 32-bit target, cannot put small function into small move_only_function directly
                 // due to potentially not enough alignment. Allocate large function
                 void* _Where = ::operator new((_Small_object_num_ptrs - 1) * sizeof(void*));
                 _Old_fn_impl->_Move(_Where);
