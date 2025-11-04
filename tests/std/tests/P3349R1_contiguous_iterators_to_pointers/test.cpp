@@ -297,7 +297,6 @@ void test() {
         TESTR(mismatch(unwrap(i), unwrap(s), i, s));
         TESTR(search(i, s, unwrap(i), unwrap(s)));
         TESTR(search(r_first_l, r_last_l, i, s));
-        TESTR(search_n(i, s, 1, *(unwrap(s) - 1)));
 
         TESTW(fill(i, s, container_read[0]));
         TESTW(nth_element(i, i + (s - i) / 2, s));
@@ -444,6 +443,27 @@ void test_matrix() {
         FAIL(unique_copy(src_first, src_last, dst_first + 1));
         PASS(ranges::unique_copy(src_first, src_last_ptr, dst_first));
         FAIL(ranges::unique_copy(src_first, src_last_ptr, dst_first + 1));
+    }
+
+    // search_n
+    {
+        using const_iter = safe_iter<const int, Nothrow>;
+
+        const auto rng = {1, 1, 2, 3, 3, 3};
+        const auto valid_first_ptr = rng.begin() + 1;
+        const auto valid_last_ptr  = rng.end() - 1;
+
+        const const_iter rng_first{valid_first_ptr, valid_first_ptr, valid_last_ptr};
+        const const_iter rng_last{valid_last_ptr, valid_first_ptr, valid_last_ptr};
+        const auto rng_last_ptr = to_address(rng_last);
+
+        PASS(search_n(rng_first, rng_last, 2, 3));
+        FAIL(search_n(rng_first, rng_last + 1, 3, 3));
+        FAIL(search_n(rng_first - 1, rng_last, 2, 1));
+
+        PASS(ranges::search_n(rng_first, rng_last_ptr, 2, 3));
+        FAIL(ranges::search_n(rng_first, rng_last_ptr + 1, 3, 3));
+        FAIL(ranges::search_n(rng_first - 1, rng_last_ptr, 2, 1));
     }
 
 #if _HAS_CXX23
