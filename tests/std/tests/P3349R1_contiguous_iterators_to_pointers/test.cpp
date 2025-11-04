@@ -424,7 +424,7 @@ void test_matrix() {
         using iter       = safe_iter<int, Nothrow>;
         using const_iter = safe_iter<const int, Nothrow>;
 
-        const auto src = {10, 20, 30, 40, 40, 50, 50};
+        const array src = {10, 20, 30, 40, 40, 50, 50};
 
         const auto src_first    = const_iter::begin(src);
         const auto src_last     = const_iter::end(src);
@@ -449,9 +449,9 @@ void test_matrix() {
     {
         using const_iter = safe_iter<const int, Nothrow>;
 
-        const auto rng             = {10, 10, 20, 30, 30, 30};
-        const auto valid_first_ptr = rng.begin() + 1;
-        const auto valid_last_ptr  = rng.end() - 1;
+        const array rng            = {10, 10, 20, 30, 30, 30};
+        const auto valid_first_ptr = to_address(rng.begin() + 1);
+        const auto valid_last_ptr  = to_address(rng.end() - 1);
 
         const const_iter rng_first{valid_first_ptr, valid_first_ptr, valid_last_ptr};
         const const_iter rng_last{valid_last_ptr, valid_first_ptr, valid_last_ptr};
