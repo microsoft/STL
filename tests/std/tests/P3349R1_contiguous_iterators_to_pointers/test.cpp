@@ -153,7 +153,7 @@ public:
         return {safe_iter{first_ptr, first_ptr, last_ptr}, safe_iter{last_ptr, first_ptr, last_ptr}};
     }
 
-    friend constexpr T* unwrap(const safe_iter& iter) noexcept {
+    friend constexpr pointer unwrap(const safe_iter& iter) noexcept {
         return iter.current_ptr;
     }
 
