@@ -110,66 +110,46 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
         } while (_First1 != _Stop_at);
     }
 
-    constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
     if (_Byte_length(_First1, _Last1) >= 32) {
-        const void* _Stop_at = _First1;
-        _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_32);
-        do {
-            const uint8x16_t _Left1  = vld1q_u8(static_cast<uint8_t*>(_First1) + 0);
-            const uint8x16_t _Left2  = vld1q_u8(static_cast<uint8_t*>(_First1) + 16);
-            const uint8x16_t _Right1 = vld1q_u8(static_cast<uint8_t*>(_First2) + 0);
-            const uint8x16_t _Right2 = vld1q_u8(static_cast<uint8_t*>(_First2) + 16);
-            vst1q_u8(static_cast<uint8_t*>(_First1) + 0, _Right1);
-            vst1q_u8(static_cast<uint8_t*>(_First1) + 16, _Right2);
-            vst1q_u8(static_cast<uint8_t*>(_First2) + 0, _Left1);
-            vst1q_u8(static_cast<uint8_t*>(_First2) + 16, _Left2);
-            _Advance_bytes(_First1, 32);
-            _Advance_bytes(_First2, 32);
-        } while (_First1 != _Stop_at);
+        const uint8x16_t _Left1  = vld1q_u8(static_cast<uint8_t*>(_First1) + 0);
+        const uint8x16_t _Left2  = vld1q_u8(static_cast<uint8_t*>(_First1) + 16);
+        const uint8x16_t _Right1 = vld1q_u8(static_cast<uint8_t*>(_First2) + 0);
+        const uint8x16_t _Right2 = vld1q_u8(static_cast<uint8_t*>(_First2) + 16);
+        vst1q_u8(static_cast<uint8_t*>(_First1) + 0, _Right1);
+        vst1q_u8(static_cast<uint8_t*>(_First1) + 16, _Right2);
+        vst1q_u8(static_cast<uint8_t*>(_First2) + 0, _Left1);
+        vst1q_u8(static_cast<uint8_t*>(_First2) + 16, _Left2);
+        _Advance_bytes(_First1, 32);
+        _Advance_bytes(_First2, 32);
     }
 
-    constexpr size_t _Mask_16 = ~((static_cast<size_t>(1) << 4) - 1);
     if (_Byte_length(_First1, _Last1) >= 16) {
-        const void* _Stop_at = _First1;
-        _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_16);
-        do {
-            const uint8x16_t _Left  = vld1q_u8(static_cast<uint8_t*>(_First1));
-            const uint8x16_t _Right = vld1q_u8(static_cast<uint8_t*>(_First2));
-            vst1q_u8(static_cast<uint8_t*>(_First1), _Right);
-            vst1q_u8(static_cast<uint8_t*>(_First2), _Left);
-            _Advance_bytes(_First1, 16);
-            _Advance_bytes(_First2, 16);
-        } while (_First1 != _Stop_at);
+        const uint8x16_t _Left  = vld1q_u8(static_cast<uint8_t*>(_First1));
+        const uint8x16_t _Right = vld1q_u8(static_cast<uint8_t*>(_First2));
+        vst1q_u8(static_cast<uint8_t*>(_First1), _Right);
+        vst1q_u8(static_cast<uint8_t*>(_First2), _Left);
+        _Advance_bytes(_First1, 16);
+        _Advance_bytes(_First2, 16);
     }
 
-    constexpr size_t _Mask_8 = ~((static_cast<size_t>(1) << 3) - 1);
     if (_Byte_length(_First1, _Last1) >= 8) {
-        const void* _Stop_at = _First1;
-        _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_8);
-        do {
-            const uint8x8_t _Left  = vld1_u8(static_cast<uint8_t*>(_First1));
-            const uint8x8_t _Right = vld1_u8(static_cast<uint8_t*>(_First2));
-            vst1_u8(static_cast<uint8_t*>(_First1), _Right);
-            vst1_u8(static_cast<uint8_t*>(_First2), _Left);
-            _Advance_bytes(_First1, 8);
-            _Advance_bytes(_First2, 8);
-        } while (_First1 != _Stop_at);
+        const uint8x8_t _Left  = vld1_u8(static_cast<uint8_t*>(_First1));
+        const uint8x8_t _Right = vld1_u8(static_cast<uint8_t*>(_First2));
+        vst1_u8(static_cast<uint8_t*>(_First1), _Right);
+        vst1_u8(static_cast<uint8_t*>(_First2), _Left);
+        _Advance_bytes(_First1, 8);
+        _Advance_bytes(_First2, 8);
     }
 
-    constexpr size_t _Mask_4 = ~((static_cast<size_t>(1) << 2) - 1);
     if (_Byte_length(_First1, _Last1) >= 4) {
-        const void* _Stop_at = _First1;
-        _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_4);
-        do {
-            uint32x2_t _Left  = vdup_n_u32(0);
-            uint32x2_t _Right = vdup_n_u32(0);
-            _Left             = vld1_lane_u32(static_cast<uint32_t*>(_First1), _Left, 0);
-            _Right            = vld1_lane_u32(static_cast<uint32_t*>(_First2), _Right, 0);
-            vst1_lane_u32(static_cast<uint32_t*>(_First1), _Right, 0);
-            vst1_lane_u32(static_cast<uint32_t*>(_First2), _Left, 0);
-            _Advance_bytes(_First1, 4);
-            _Advance_bytes(_First2, 4);
-        } while (_First1 != _Stop_at);
+        uint32x2_t _Left  = vdup_n_u32(0);
+        uint32x2_t _Right = vdup_n_u32(0);
+        _Left             = vld1_lane_u32(static_cast<uint32_t*>(_First1), _Left, 0);
+        _Right            = vld1_lane_u32(static_cast<uint32_t*>(_First2), _Right, 0);
+        vst1_lane_u32(static_cast<uint32_t*>(_First1), _Right, 0);
+        vst1_lane_u32(static_cast<uint32_t*>(_First2), _Left, 0);
+        _Advance_bytes(_First1, 4);
+        _Advance_bytes(_First2, 4);
     }
 
     auto _First1c = static_cast<unsigned char*>(_First1);
