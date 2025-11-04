@@ -424,7 +424,7 @@ void test_matrix() {
         using iter       = safe_iter<int, Nothrow>;
         using const_iter = safe_iter<const int, Nothrow>;
 
-        const auto src = {1, 2, 3, 4, 4, 5, 5};
+        const auto src = {10, 20, 30, 40, 40, 50, 50};
 
         const auto src_first    = const_iter::begin(src);
         const auto src_last     = const_iter::end(src);
@@ -434,10 +434,10 @@ void test_matrix() {
         const iter dst_first{
             to_address(ranges::begin(dst)), to_address(ranges::begin(dst)), to_address(ranges::begin(dst) + 5)};
 
-        PASS(remove_copy(src_first, src_last, dst_first, 5));
-        FAIL(remove_copy(src_first, src_last, dst_first, 1));
-        PASS(ranges::remove_copy(src_first, src_last_ptr, dst_first, 5));
-        FAIL(ranges::remove_copy(src_first, src_last_ptr, dst_first, 1));
+        PASS(remove_copy(src_first, src_last, dst_first, 50));
+        FAIL(remove_copy(src_first, src_last, dst_first, 10));
+        PASS(ranges::remove_copy(src_first, src_last_ptr, dst_first, 50));
+        FAIL(ranges::remove_copy(src_first, src_last_ptr, dst_first, 10));
 
         PASS(unique_copy(src_first, src_last, dst_first));
         FAIL(unique_copy(src_first, src_last, dst_first + 1));
@@ -449,7 +449,7 @@ void test_matrix() {
     {
         using const_iter = safe_iter<const int, Nothrow>;
 
-        const auto rng             = {1, 1, 2, 3, 3, 3};
+        const auto rng             = {10, 10, 20, 30, 30, 30};
         const auto valid_first_ptr = rng.begin() + 1;
         const auto valid_last_ptr  = rng.end() - 1;
 
@@ -457,13 +457,13 @@ void test_matrix() {
         const const_iter rng_last{valid_last_ptr, valid_first_ptr, valid_last_ptr};
         const auto rng_last_ptr = to_address(rng_last);
 
-        PASS(search_n(rng_first, rng_last, 2, 3));
-        FAIL(search_n(rng_first, rng_last + 1, 3, 3));
-        FAIL(search_n(rng_first - 1, rng_last, 2, 1));
+        PASS(search_n(rng_first, rng_last, 2, 30));
+        FAIL(search_n(rng_first, rng_last + 1, 3, 30));
+        FAIL(search_n(rng_first - 1, rng_last, 2, 10));
 
-        PASS(ranges::search_n(rng_first, rng_last_ptr, 2, 3));
-        FAIL(ranges::search_n(rng_first, rng_last_ptr + 1, 3, 3));
-        FAIL(ranges::search_n(rng_first - 1, rng_last_ptr, 2, 1));
+        PASS(ranges::search_n(rng_first, rng_last_ptr, 2, 30));
+        FAIL(ranges::search_n(rng_first, rng_last_ptr + 1, 3, 30));
+        FAIL(ranges::search_n(rng_first - 1, rng_last_ptr, 2, 10));
     }
 
 #if _HAS_CXX23
