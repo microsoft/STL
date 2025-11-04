@@ -73,10 +73,8 @@ public:
 
     constexpr safe_iter& operator+=(difference_type offset) noexcept(Nothrow) {
         current_ptr += offset;
-        if (current_ptr < range_first_ptr || current_ptr > range_last_ptr) {
-            if constexpr (Nothrow) {
-                safe_iter_nothrow_OOB_sign = true;
-            } else {
+        if constexpr (!Nothrow) {
+            if (current_ptr < range_first_ptr || current_ptr > range_last_ptr) {
                 throw safe_iter_out_of_bounds_err{};
             }
         }
