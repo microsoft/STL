@@ -447,7 +447,7 @@ void test_matrix() {
     {
         using const_iter = safe_iter<const int, Nothrow>;
 
-        const auto rng = {1, 1, 2, 3, 3, 3};
+        const auto rng             = {1, 1, 2, 3, 3, 3};
         const auto valid_first_ptr = rng.begin() + 1;
         const auto valid_last_ptr  = rng.end() - 1;
 
