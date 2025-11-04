@@ -274,7 +274,8 @@ void test() {
         // Ensures full range traversal (worst-case)
         TESTR(adjacent_find(i, s));
         TESTR(count(i, s, container_read_unique[0]));
-        TESTR(equal(i, s, i, s));
+        TESTR(equal(i, s, unwrap(i), unwrap(s)));
+        TESTR(equal(unwrap(i), unwrap(s), i, s));
         TESTR(find(i, s, container_read_unique[0]));
         TESTR(find_end(i, s, unwrap(i), unwrap(s)));
         TESTR(find_end(r_first_l, r_last_l, i, s));
@@ -284,14 +285,16 @@ void test() {
         TESTR(includes(r_first_l, r_last_l, i, s));
         TESTR(is_sorted(i, s));
         TESTR(is_sorted_until(i, s));
-        TESTR(lexicographical_compare(i, s, i, s));
+        TESTR(lexicographical_compare(i, s, unwrap(i), unwrap(s)));
+        TESTR(lexicographical_compare(unwrap(i), unwrap(s), i, s));
         TESTR(max(ranges::subrange{i, s}));
         TESTR(max_element(i, s));
         TESTR(min(ranges::subrange{i, s}));
         TESTR(min_element(i, s));
         TESTR(minmax(ranges::subrange{i, s}));
         TESTR(minmax_element(i, s));
-        TESTR(mismatch(i, s, i, s));
+        TESTR(mismatch(i, s, unwrap(i), unwrap(s)));
+        TESTR(mismatch(unwrap(i), unwrap(s), i, s));
         TESTR(search(i, s, unwrap(i), unwrap(s)));
         TESTR(search(r_first_l, r_last_l, i, s));
         TESTR(search_n(i, s, 1, *(unwrap(s) - 1)));
@@ -310,8 +313,10 @@ void test() {
         TESTR(contains(i, s, container_read_unique[0]));
         TESTR(contains_subrange(i, s, unwrap(i), unwrap(s)));
         TESTR(contains_subrange(r_first_l, r_last_l, i, s));
-        TESTR(ends_with(i, s, i, s));
-        TESTR(starts_with(i, s, i, s));
+        TESTR(ends_with(i, s, unwrap(i), unwrap(s)));
+        TESTR(ends_with(unwrap(i), unwrap(s), i, s));
+        TESTR(starts_with(i, s, unwrap(i), unwrap(s)));
+        TESTR(starts_with(unwrap(i), unwrap(s), i, s));
 
         TESTW(iota(i, s, container_read[0]));
         TESTW(shift_left(i, s, (s - i) / 2));
