@@ -465,8 +465,10 @@ constexpr bool _Vector_alg_in_unique_is_safe = _Vector_alg_in_search_is_safe<_It
 // Can we use this output iterator for remove_copy and unique_copy?
 template <class _Out, class _In>
 constexpr bool _Output_iterator_for_vector_alg_is_safe() {
-    if constexpr (is_pointer_v<_Out>) { // P3349R1: Non-pointer contiguous iterators prevent vectorization (unknown
-                                        // output size)
+    // Before running remove_copy and unique_copy, the output size is unknown. This limits vectorization
+    // to pointers (after unwrapping). N5014 [iterator.requirements.general]/13 allows us to convert
+    // a range of contiguous iterators to pointers if and only if we know the size of the range ahead of time.
+    if constexpr (is_pointer_v<_Out>) {
         return is_same_v<_Iter_value_t<_Out>, remove_const_t<_Iter_value_t<_In>>>;
     } else {
         return false;
