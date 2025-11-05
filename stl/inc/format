@@ -3367,9 +3367,10 @@ void _Range_formatter_format_as_sequence(const formatter<_Ty, _CharT>& _Underlyi
 template <class _CharT, _RANGES input_range _Range, class _FormatContext>
 void _Range_formatter_format_as_string(_Range&& _Rng, _FormatContext& _Ctx, const bool _Debug) {
     if constexpr (_RANGES contiguous_range<_Range>) {
-        const auto _Size = _STD _To_unsigned_like(_RANGES distance(_Rng));
+        const auto _Dist = _RANGES distance(_Rng);
 
 #ifdef _DEBUG
+        const auto _Size = _STD _To_unsigned_like(_Dist);
         if constexpr (sizeof(_Size) > sizeof(size_t)) {
             _STL_VERIFY(_Size <= size_t{PTRDIFF_MAX}, "contiguous range has impossible size.");
         }
@@ -3380,7 +3381,8 @@ void _Range_formatter_format_as_string(_Range&& _Rng, _FormatContext& _Ctx, cons
             _String_view_formatter.set_debug_format();
         }
 
-        const basic_string_view<_CharT> _Str(_STD to_address(_RANGES begin(_Rng)), static_cast<size_t>(_Size));
+        const auto _First = _RANGES begin(_Rng);
+        const basic_string_view<_CharT> _Str(_STD to_address(_First), _STD to_address(_First + _Dist));
         _String_view_formatter.format(_Str, _Ctx);
     } else {
         using _String = basic_string<_CharT>;

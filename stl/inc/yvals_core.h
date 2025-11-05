@@ -319,6 +319,7 @@
 // P3136R1 Retiring Niebloids
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic_ref<cv T>)
+// P3349R1 Converting Contiguous Iterators To Pointers
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features

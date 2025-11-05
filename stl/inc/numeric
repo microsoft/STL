@@ -489,21 +489,25 @@ _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, _
             if (!_STD is_constant_evaluated())
 #endif
             {
+                const auto _Dest_dist = static_cast<_Iter_diff_t<decltype(_UDest)>>(_ULast - _UFirst);
+                _STD _Contiguous_iter_verify(_UDest, _Dest_dist);
+
                 // Go with pointers and without loop-carried dependency to enable vectorization
                 const auto _First_ptr = _STD _To_address(_UFirst);
                 const auto _Last_ptr  = _STD _To_address(_ULast);
                 const auto _Dest_ptr  = _STD _To_address(_UDest);
-                const auto _Count     = _Last_ptr - _First_ptr;
 
                 // Need to perform aliasing analysis.
                 // The vectorizer is generally able to do that on its own, and would guard the vectorized code with
                 // that, but when we eliminate the loop-carried dependency we change the semantics of the unvectorized
                 // code too. So we need to perform this check manually, and after that we can tell the compiler that
                 // there's no aliasing, to avoid it checking for that again.
-                if (reinterpret_cast<uintptr_t>(_Dest_ptr + _Count) <= reinterpret_cast<uintptr_t>(_First_ptr)
+                if (reinterpret_cast<uintptr_t>(_Dest_ptr + static_cast<ptrdiff_t>(_Dest_dist))
+                        <= reinterpret_cast<uintptr_t>(_First_ptr)
                     || reinterpret_cast<uintptr_t>(_Last_ptr) <= reinterpret_cast<uintptr_t>(_Dest_ptr)) {
-                    _STD _Adjacent_difference_no_overlap(_Dest_ptr, _First_ptr, _Count, _STD _Pass_fn(_Func));
-                    _STD _Seek_wrapped(_Dest, _UDest + _Count);
+                    _STD _Adjacent_difference_no_overlap(
+                        _Dest_ptr, _First_ptr, static_cast<ptrdiff_t>(_Dest_dist), _STD _Pass_fn(_Func));
+                    _STD _Seek_wrapped(_Dest, _UDest + _Dest_dist);
                     return _Dest;
                 }
             }
@@ -556,7 +560,8 @@ _CONSTEXPR20 void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
 
     if constexpr (_Iterator_is_contiguous<decltype(_UFirst)> && is_integral_v<_Ty> && sizeof(_Ty) >= 4) {
         // TRANSITION, DevCom-10593477: help the compiler vectorize
-        const auto _Ptr  = _To_address(_UFirst);
+        const auto _Ptr = _To_address(_UFirst);
+        (void) _STD _To_address(_ULast);
         const auto _Size = static_cast<size_t>(_ULast - _UFirst);
 
         if (_STD _In_range<_Ty>(_Size)) {
@@ -611,7 +616,8 @@ namespace ranges {
                           && sizeof(_Ty) >= 4) {
                 // TRANSITION, DevCom-10593477: help the compiler vectorize
                 const auto _Ptr  = _To_address(_First);
-                const auto _Size = static_cast<size_t>(_Last - _First);
+                const auto _Dist = _STD _Contiguous_iter_distance(_First, _Last);
+                const auto _Size = static_cast<size_t>(_Dist);
 
                 if (_STD _In_range<_Ty>(_Size)) {
                     const auto _Size_typed = static_cast<_Ty>(_Size);
@@ -621,7 +627,7 @@ namespace ranges {
                     }
 
                     _Val += _Size_typed;
-                    return _First + _Size;
+                    return _First + _Dist;
                 }
             }
 
