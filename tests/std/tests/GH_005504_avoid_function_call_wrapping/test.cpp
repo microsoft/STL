@@ -35,50 +35,34 @@ struct alignas(128) large_callable {
     }
 };
 
+template<class Wrapper, class Callable>
+void test_plain_call(int expected_copies) {
+    Wrapper fn{Callable{}};
+    assert(fn(copy_counter{}) == expected_copies);
+}
+
+template <class OuterWrapper, class InnerWrapper, class Callable>
+void test_wrapped_call(int expected_copies) {
+    InnerWrapper inner{Callable{}};
+    OuterWrapper outer{std::move(inner)};
+    assert(!inner);
+    assert(outer(copy_counter{}) == expected_copies);
+}
+
 int main() {
     // Plain calls
-    {
-        function<function_type> fn{small_callable{}};
-        assert(fn(copy_counter{}) == 0);
-    }
-    {
-        function<function_type> fn{large_callable{}};
-        assert(fn(copy_counter{}) == 0);
-    }
-    {
-        move_only_function<function_type> fn{small_callable{}};
-        assert(fn(copy_counter{}) == 0);
-    }
-    {
-        move_only_function<function_type> fn{large_callable{}};
-        assert(fn(copy_counter{}) == 0);
-    }
+    test_plain_call<function<function_type>, small_callable>(0);
+    test_plain_call<function<function_type>, large_callable>(0);
+    test_plain_call<move_only_function<function_type>, small_callable>(0);
+    test_plain_call<move_only_function<function_type>, large_callable>(0);
 
     // Moves to the same
-    {
-        function<function_type> fn{function<function_type>{small_callable{}}};
-        assert(fn(copy_counter{}) == 0);
-    }
-    {
-        function<function_type> fn{function<function_type>{large_callable{}}};
-        assert(fn(copy_counter{}) == 0);
-    }
-    {
-        move_only_function<function_type> fn{move_only_function<function_type>{small_callable{}}};
-        assert(fn(copy_counter{}) == 0);
-    }
-    {
-        move_only_function<function_type> fn{move_only_function<function_type>{large_callable{}}};
-        assert(fn(copy_counter{}) == 0);
-    }
+    test_wrapped_call<function<function_type>, function<function_type>, small_callable>(0);
+    test_wrapped_call<function<function_type>, function<function_type>, large_callable>(0);
+    test_wrapped_call<move_only_function<function_type>, move_only_function<function_type>, small_callable>(0);
+    test_wrapped_call<move_only_function<function_type>, move_only_function<function_type>, large_callable>(0);
 
     // Moves from function to move_only_function
-    {
-        move_only_function<function_type> fn{function<function_type>{small_callable{}}};
-        assert(fn(copy_counter{}) == 0);
-    }
-    {
-        move_only_function<function_type> fn{function<function_type>{large_callable{}}};
-        assert(fn(copy_counter{}) == 0);
-    }
+    test_wrapped_call<move_only_function<function_type>, function<function_type>, small_callable>(0);
+    test_wrapped_call<move_only_function<function_type>, function<function_type>, large_callable>(0);
 }
