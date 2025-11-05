@@ -152,7 +152,12 @@ int main() {
     alloc_checker(1), test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>, large_callable>(0);
 
     // Moves from function to move_only_function
-    alloc_checker(0), test_wrapped_call<move_only_function<fn_type>, function<fn_type>, small_callable>(0);
+#ifdef _WIN64
+    alloc_checker(0),
+#else
+    alloc_checker(1),
+#endif
+        test_wrapped_call<move_only_function<fn_type>, function<fn_type>, small_callable>(0);
     alloc_checker(1), test_wrapped_call<move_only_function<fn_type>, function<fn_type>, large_callable>(0);
 
     // nulls
