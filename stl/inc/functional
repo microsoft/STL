@@ -1634,16 +1634,16 @@ public:
         _Data._Impl = nullptr;
     }
 
-    template <class _Vt, class _VtInvQuals, class _Fn>
+    template <class _Vt, class _Fn>
     void _Construct_with_old_fn(_Fn&& _Func) {
         const auto _Old_fn_impl = _Func._Getimpl();
         if (_Old_fn_impl == nullptr) {
-            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_null, _Vt, _VtInvQuals>();
+            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_null, _Vt, void>();
         } else if (_Func._Local()) {
 #ifdef _WIN64
             _STL_INTERNAL_STATIC_ASSERT(alignof(max_align_t) == alignof(void*));
             // 64-bit target, can put small function into small move_only_function directly
-            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small, _Vt, _VtInvQuals>();
+            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small, _Vt, void>();
             _Old_fn_impl->_Move(_Data._Buf_ptr<void*>());
             _Func._Tidy();
 #else // ^^^ 64-bit / 32-bit vvv
@@ -1654,12 +1654,12 @@ public:
             _Old_fn_impl->_Move(_Where);
             _Func._Tidy();
 
-            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small_as_large, _Vt, _VtInvQuals>();
+            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small_as_large, _Vt, void>();
             _Data._Set_large_fn_ptr(_Where);
 #endif // ^^^ 32-bit ^^^
         } else {
             // Just take ownership of the inner impl pointer
-            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_large, _Vt, _VtInvQuals>();
+            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_large, _Vt, void>();
             _Data._Set_large_fn_ptr(_Old_fn_impl);
             _Func._Set(nullptr);
         }
@@ -1763,6 +1763,7 @@ public:
         _Impl_t _Impl{};
         if constexpr (_Kind != _Impl_kind::_Usual) {
             _STL_INTERNAL_STATIC_ASSERT(!_Noexcept);
+            _STL_INTERNAL_STATIC_ASSERT(is_void_v<_VtInvQuals>);
             using _Fn = remove_pointer_t<decltype(_STD declval<_Vt>()._Getimpl())>;
             if constexpr (_Kind == _Impl_kind::_Old_fn_null) {
                 _Impl._Invoke  = _Function_old_not_callable<_Rx, _Types...>;
@@ -2053,10 +2054,8 @@ public:
         using _Vt = decay_t<_Fn>;
         static_assert(is_constructible_v<_Vt, _Fn>, "_Vt should be constructible from _Fn. "
                                                     "(N4950 [func.wrap.move.ctor]/6)");
-        using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
-
         if constexpr (is_same_v<_Vt, function<_Signature...>>) {
-            this->template _Construct_with_old_fn<_Vt, _VtInvQuals>(_STD forward<_Fn>(_Callable));
+            this->template _Construct_with_old_fn<_Vt>(_STD forward<_Fn>(_Callable));
         } else {
             if constexpr (is_member_pointer_v<_Vt> || is_pointer_v<_Vt>
                           || _Is_specialization_v<_Vt, move_only_function>) {
@@ -2065,6 +2064,8 @@ public:
                     return;
                 }
             }
+
+            using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
             this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_Fn>(_Callable));
         }
     }
