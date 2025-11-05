@@ -1379,6 +1379,8 @@ _NODISCARD bool operator!=(nullptr_t, const function<_Fty>& _Other) noexcept {
 #endif // !_HAS_CXX20
 
 #if _HAS_CXX23
+enum class _Function_storage_mode { _Small, _Large };
+
 // _Move_only_function_data is defined as an array of pointers.
 // The first element is always a pointer to _Move_only_function_base::_Impl_t; it emulates a vtable pointer.
 // The other pointers are used as storage for a small functor;
@@ -1401,16 +1403,15 @@ union alignas(max_align_t) _Move_only_function_data {
         return &_Data + _Buf_offset<_Fn>;
     }
 
-    template <class _Fn>
-    _NODISCARD _Fn* _Small_fn_ptr() const noexcept {
-        // cast away const to avoid complication of const propagation to here;
-        // const correctness is still enforced by _Move_only_function_call specializations.
-        return static_cast<_Fn*>(const_cast<_Move_only_function_data*>(this)->_Buf_ptr<_Fn>());
-    }
-
-    template <class _Fn>
-    _NODISCARD _Fn* _Large_fn_ptr() const noexcept {
-        return static_cast<_Fn*>(_Pointers[1]);
+    template <class _Fn, _Function_storage_mode _Mode>
+    _NODISCARD _Fn* _Fn_ptr() const noexcept {
+        if constexpr (_Mode == _Function_storage_mode::_Small) {
+            // cast away const to avoid complication of const propagation to here;
+            // const correctness is still enforced by _Move_only_function_call specializations.
+            return static_cast<_Fn*>(const_cast<_Move_only_function_data*>(this)->_Buf_ptr<_Fn>());
+        } else {
+            return static_cast<_Fn*>(_Pointers[1]);
+        }
     }
 
     void _Set_large_fn_ptr(void* const _Value) noexcept {
@@ -1437,39 +1438,23 @@ template <class _Rx, class... _Types>
     _Xbad_function_call();
 }
 
-template <class _Vt, class _VtInvQuals, class _Rx, bool _Noex, class... _Types>
-_NODISCARD _Rx __stdcall _Function_inv_small(const _Move_only_function_data& _Self, _Types&&... _Args) noexcept(_Noex) {
+template <class _Vt, class _VtInvQuals, _Function_storage_mode _Mode, class _Rx, bool _Noex, class... _Types>
+_NODISCARD _Rx __stdcall _Function_inv(const _Move_only_function_data& _Self, _Types&&... _Args) noexcept(_Noex) {
     if constexpr (is_void_v<_Rx>) {
-        (void) _STD invoke(static_cast<_VtInvQuals>(*_Self._Small_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
+        (void) _STD invoke(static_cast<_VtInvQuals>(*_Self._Fn_ptr<_Vt, _Mode>()), _STD forward<_Types>(_Args)...);
     } else {
-        return _STD invoke(static_cast<_VtInvQuals>(*_Self._Small_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
+        return _STD invoke(static_cast<_VtInvQuals>(*_Self._Fn_ptr<_Vt, _Mode>()), _STD forward<_Types>(_Args)...);
     }
 }
 
-template <class _Vt, class _VtInvQuals, class _Rx, bool _Noex, class... _Types>
-_NODISCARD _Rx __stdcall _Function_inv_large(const _Move_only_function_data& _Self, _Types&&... _Args) noexcept(_Noex) {
-    if constexpr (is_void_v<_Rx>) {
-        (void) _STD invoke(static_cast<_VtInvQuals>(*_Self._Large_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
-    } else {
-        return _STD invoke(static_cast<_VtInvQuals>(*_Self._Large_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
-    }
+template <class _Fn, _Function_storage_mode _Mode, class _Rx, class... _Types>
+_NODISCARD _Rx __stdcall _Function_inv_old(const _Move_only_function_data& _Self, _Types&&... _Args) {
+    return _Self._Fn_ptr<_Fn, _Mode>()->_Do_call(_STD forward<_Types>(_Args)...);
 }
-
-template <class _Fn, class _Rx, class... _Types>
-_NODISCARD _Rx __stdcall _Function_inv_old_large(const _Move_only_function_data& _Self, _Types&&... _Args) {
-    return _Self._Large_fn_ptr<_Fn>()->_Do_call(_STD forward<_Types>(_Args)...);
-}
-
-#ifdef _WIN64
-template <class _Fn, class _Rx, class... _Types>
-_NODISCARD _Rx __stdcall _Function_inv_old_small(const _Move_only_function_data& _Self, _Types&&... _Args) {
-    return _Self._Small_fn_ptr<_Fn>()->_Do_call(_STD forward<_Types>(_Args)...);
-}
-#endif // ^^^ 64-bit ^^^
 
 template <class _Vt>
 void __stdcall _Function_move_small(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
-    const auto _Src_fn_ptr = _Src._Small_fn_ptr<_Vt>();
+    const auto _Src_fn_ptr = _Src._Fn_ptr<_Vt, _Function_storage_mode::_Small>();
     ::new (_Self._Buf_ptr<_Vt>()) _Vt(_STD move(*_Src_fn_ptr));
     _Src_fn_ptr->~_Vt();
     _Self._Impl = _Src._Impl;
@@ -1487,7 +1472,7 @@ inline void __stdcall _Function_move_large(_Move_only_function_data& _Self, _Mov
 #ifdef _WIN64
 template <class _Fn>
 void __stdcall _Function_move_old_small(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
-    _Fn* const _Old_fn_impl = _Src._Small_fn_ptr<_Fn>();
+    _Fn* const _Old_fn_impl = _Src._Fn_ptr<_Fn, _Function_storage_mode::_Small>();
     _Old_fn_impl->_Move(_Self._Buf_ptr<void*>());
     _Old_fn_impl->_Delete_this(false);
     _Self._Impl = _Src._Impl;
@@ -1496,27 +1481,27 @@ void __stdcall _Function_move_old_small(_Move_only_function_data& _Self, _Move_o
 
 template <class _Vt>
 void __stdcall _Function_destroy_small(_Move_only_function_data& _Self) noexcept {
-    _Self._Small_fn_ptr<_Vt>()->~_Vt();
+    _Self._Fn_ptr<_Vt, _Function_storage_mode::_Small>()->~_Vt();
 }
 
 inline void __stdcall _Function_deallocate_large_default_aligned(_Move_only_function_data& _Self) noexcept {
-    ::operator delete(_Self._Large_fn_ptr<void>());
+    ::operator delete(_Self._Fn_ptr<void, _Function_storage_mode::_Large>());
 }
 
 template <class _Fn>
 void __stdcall _Function_destroy_old_large(_Move_only_function_data& _Self) noexcept {
-    _Self._Large_fn_ptr<_Fn>()->_Delete_this(true);
+    _Self._Fn_ptr<_Fn, _Function_storage_mode::_Large>()->_Delete_this(true);
 }
 
 #ifdef _WIN64
 template <class _Fn>
 void __stdcall _Function_destroy_old_small(_Move_only_function_data& _Self) noexcept {
-    _Self._Small_fn_ptr<_Fn>()->_Delete_this(false);
+    _Self._Fn_ptr<_Fn, _Function_storage_mode::_Small>()->_Delete_this(false);
 }
 #else // ^^^ 64-bit / 32-bit vvv
 template <class _Fn>
 void __stdcall _Function_destroy_old_small_as_large(_Move_only_function_data& _Self) noexcept {
-    _Fn* const _Old_fn_impl = _Self._Large_fn_ptr<_Fn>();
+    _Fn* const _Old_fn_impl = _Self._Fn_ptr<_Fn, _Function_storage_mode::_Large>();
     _Old_fn_impl->_Delete_this(false);
     ::operator delete(static_cast<void*>(_Old_fn_impl));
 }
@@ -1526,15 +1511,15 @@ template <size_t _Align>
 void __stdcall _Function_deallocate_large_overaligned(_Move_only_function_data& _Self) noexcept {
     _STL_INTERNAL_STATIC_ASSERT(_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__);
 #ifdef __cpp_aligned_new
-    ::operator delete(_Self._Large_fn_ptr<void>(), align_val_t{_Align});
+    ::operator delete(_Self._Fn_ptr<void, _Function_storage_mode::_Large>(), align_val_t{_Align});
 #else // ^^^ defined(__cpp_aligned_new) / !defined(__cpp_aligned_new) vvv
-    ::operator delete(_Self._Large_fn_ptr<void>());
+    ::operator delete(_Self._Fn_ptr<void, _Function_storage_mode::_Large>());
 #endif // ^^^ !defined(__cpp_aligned_new) ^^^
 }
 
 template <class _Vt>
 void __stdcall _Function_destroy_large(_Move_only_function_data& _Self) noexcept {
-    const auto _Pfn = _Self._Large_fn_ptr<_Vt>();
+    const auto _Pfn = _Self._Fn_ptr<_Vt, _Function_storage_mode::_Large>();
     _Pfn->~_Vt();
 #ifdef __cpp_aligned_new
     if constexpr (alignof(_Vt) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
@@ -1770,24 +1755,24 @@ public:
                 _Impl._Move    = nullptr;
                 _Impl._Destroy = nullptr;
             } else if constexpr (_Kind == _Impl_kind::_Old_fn_large) {
-                _Impl._Invoke  = _Function_inv_old_large<_Fn, _Rx, _Types...>;
+                _Impl._Invoke  = _Function_inv_old<_Fn, _Function_storage_mode::_Large, _Rx, _Types...>;
                 _Impl._Move    = nullptr;
                 _Impl._Destroy = _Function_destroy_old_large<_Fn>;
             } else {
 #ifdef _WIN64
                 static_assert(_Kind == _Impl_kind::_Old_fn_small);
-                _Impl._Invoke  = _Function_inv_old_small<_Fn, _Rx, _Types...>;
+                _Impl._Invoke  = _Function_inv_old<_Fn, _Function_storage_mode::_Small, _Rx, _Types...>;
                 _Impl._Move    = _Function_move_old_small<_Fn>;
                 _Impl._Destroy = _Function_destroy_old_small<_Fn>;
 #else // ^^^ 64-bit / 32-bit vvv
                 static_assert(_Kind == _Impl_kind::_Old_fn_small_as_large);
-                _Impl._Invoke  = _Function_inv_old_large<_Fn, _Rx, _Types...>;
+                _Impl._Invoke  = _Function_inv_old<_Fn, _Function_storage_mode::_Large, _Rx, _Types...>;
                 _Impl._Move    = nullptr;
                 _Impl._Destroy = _Function_destroy_old_small_as_large<_Fn>;
 #endif // ^^^ 32-bit ^^^
             }
         } else if constexpr (_Large_function_engaged<_Vt>) {
-            _Impl._Invoke = _Function_inv_large<_Vt, _VtInvQuals, _Rx, _Noexcept, _Types...>;
+            _Impl._Invoke = _Function_inv<_Vt, _VtInvQuals, _Function_storage_mode::_Large, _Rx, _Noexcept, _Types...>;
             _Impl._Move   = nullptr;
 
             if constexpr (is_trivially_destructible_v<_Vt>) {
@@ -1800,7 +1785,7 @@ public:
                 _Impl._Destroy = _Function_destroy_large<_Vt>;
             }
         } else {
-            _Impl._Invoke = _Function_inv_small<_Vt, _VtInvQuals, _Rx, _Noexcept, _Types...>;
+            _Impl._Invoke = _Function_inv<_Vt, _VtInvQuals, _Function_storage_mode::_Small, _Rx, _Noexcept, _Types...>;
 
             if constexpr (is_trivially_copyable_v<_Vt> && is_trivially_destructible_v<_Vt>) {
                 if constexpr ((_Function_small_copy_size<_Vt>) > _Minimum_function_size) {
