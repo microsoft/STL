@@ -30,6 +30,7 @@ struct alignas(128) large_callable {
     int context = 1729;
 
     int operator()(const copy_counter& counter) {
+        assert((reinterpret_cast<uintptr_t>(this) & 0x7f) == 0);
         assert(context == 1729);
         return counter.count;
     }
