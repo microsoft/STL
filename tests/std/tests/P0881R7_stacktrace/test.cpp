@@ -310,6 +310,10 @@ void test_impl() {
 
 int main() {
 #if !((defined(__clang__) && defined(_M_ARM64)) || defined(_M_ARM64EC)) // TRANSITION, LLVM-74530, GH-5830
+    // First, run the test on a single thread, so that if anything fails, the output isn't interleaved.
+    test_impl();
+
+    // Then, run the test on multiple threads, as <stacktrace> takes internal locks that should be exercised.
     jthread t{test_impl};
     test_impl();
 #endif // ^^^ no workaround ^^^
