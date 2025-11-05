@@ -19,7 +19,6 @@
 #define _SILENCE_CXX20_U8PATH_DEPRECATION_WARNING
 #define _SILENCE_CXX20_VOLATILE_DEPRECATION_WARNING
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
-#define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
 #define _USE_NAMED_IDL_NAMESPACE 1
 
 #include <algorithm>
@@ -715,22 +714,6 @@ void nonmember_iterator_functions_test() {
     (void) cend(c);
 }
 
-void msvc_array_iterators_test() {
-    using namespace stdext;
-    int arr[] = {1, 2, 3, 4};
-
-    auto unchecked = make_unchecked_array_iterator(arr);
-    auto checked   = make_checked_array_iterator(arr, size(arr));
-
-    random_access_iterator_test(unchecked);
-    random_access_iterator_test(checked);
-
-    swap_test(unchecked);
-    swap_test(checked);
-    comparable_test(unchecked);
-    comparable_test(checked);
-}
-
 void iterators_test() {
     fwd_iterators_test<forward_list<int>>();
     fwd_iterators_test<list<int>>();
@@ -749,8 +732,6 @@ void iterators_test() {
     nonmember_reverse_iterator_functions_test<initializer_list<int>>();
     nonmember_reverse_iterator_functions_test<list<int>>();
     nonmember_reverse_iterator_functions_test<vector<int>>();
-
-    msvc_array_iterators_test();
 
     int arr[]                = {1};
     initializer_list<int> il = {2};
