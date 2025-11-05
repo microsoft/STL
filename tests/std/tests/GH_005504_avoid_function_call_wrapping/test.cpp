@@ -10,7 +10,7 @@ using namespace std;
 #pragma warning(disable : 4324) // 'large_callable': structure was padded due to alignment specifier
 #pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
 
-int alloc_count = 0;
+int alloc_count   = 0;
 int dealloc_count = 0;
 
 void* operator new(size_t size) {
@@ -52,7 +52,7 @@ void operator delete(void* mem, align_val_t) noexcept {
 
 struct alloc_checker {
     explicit alloc_checker(int expected_delta_) : expected_delta(expected_delta_) {}
-    alloc_checker(const alloc_checker&) = delete;
+    alloc_checker(const alloc_checker&)            = delete;
     alloc_checker& operator=(const alloc_checker&) = delete;
 
     ~alloc_checker() {
@@ -115,7 +115,7 @@ void test_plain_null(bool throws) {
         try {
             fn(copy_counter{});
             abort(); // should not reach
-        } catch (bad_function_call&){
+        } catch (bad_function_call&) {
         }
     }
 }
@@ -126,7 +126,7 @@ void test_wrapped_call(bool outer_is_null, bool outer_throws) {
     OuterWrapper outer{std::move(inner)};
     assert(!inner);
     assert(!outer == outer_is_null);
-    
+
     if (outer_throws) {
         try {
             outer(copy_counter{});
