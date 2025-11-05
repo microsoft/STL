@@ -49,6 +49,38 @@ void test_wrapped_call(int expected_copies) {
     assert(outer(copy_counter{}) == expected_copies);
 }
 
+template <class Wrapper>
+void test_plain_null(bool throws) {
+    Wrapper fn{};
+    assert(!fn);
+
+    if (throws) {
+        try {
+            fn(copy_counter{});
+            abort(); // should not reach
+        } catch (bad_function_call&){
+        }
+    }
+}
+
+template <class OuterWrapper, class InnerWrapper>
+void test_wrapped_call(bool outer_is_null, bool outer_throws) {
+    InnerWrapper inner{};
+    OuterWrapper outer{std::move(inner)};
+    assert(!inner);
+    assert(!outer == outer_is_null);
+    
+    if (outer_throws) {
+        try {
+            outer(copy_counter{});
+            abort(); // should not reach
+        } catch (bad_function_call&) {
+        }
+    } else {
+        // UB that in our implementation tries to call doom function; we do not test that
+    }
+}
+
 int main() {
     // Plain calls
     test_plain_call<function<function_type>, small_callable>(0);
@@ -65,4 +97,13 @@ int main() {
     // Moves from function to move_only_function
     test_wrapped_call<move_only_function<function_type>, function<function_type>, small_callable>(0);
     test_wrapped_call<move_only_function<function_type>, function<function_type>, large_callable>(0);
+
+    // nulls
+    test_plain_null<function<function_type>>(true);
+    test_plain_null<move_only_function<function_type>>(false);
+
+    // wrapped nulls
+    test_wrapped_call<function<function_type>, function<function_type>>(true, true);
+    test_wrapped_call<move_only_function<function_type>, move_only_function<function_type>>(true, false);
+    test_wrapped_call<move_only_function<function_type>, function<function_type>>(false, true);
 }
