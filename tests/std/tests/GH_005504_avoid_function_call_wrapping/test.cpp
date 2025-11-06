@@ -13,33 +13,33 @@ using namespace std;
 int alloc_count   = 0;
 int dealloc_count = 0;
 
-size_t adjust_alloc_size(size_t size) {
+size_t adjust_alloc_size(const size_t size) {
     return size != 0 ? size : 1;
 }
 
-void* check_alloc(void* result) {
+void* check_alloc(void* const result) {
     if (!result) {
         throw std::bad_alloc{};
     }
     return result;
 }
 
-void* operator new(size_t size) {
+void* operator new(const size_t size) {
     ++alloc_count;
     return check_alloc(malloc(adjust_alloc_size(size)));
 }
 
-void operator delete(void* mem) noexcept {
+void operator delete(void* const mem) noexcept {
     ++dealloc_count;
     free(mem);
 }
 
-void* operator new(size_t size, align_val_t al) {
+void* operator new(const size_t size, const align_val_t al) {
     ++alloc_count;
     return check_alloc(_aligned_malloc(adjust_alloc_size(size), static_cast<size_t>(al)));
 }
 
-void operator delete(void* mem, align_val_t) noexcept {
+void operator delete(void* const mem, align_val_t) noexcept {
     ++dealloc_count;
     _aligned_free(mem);
 }
