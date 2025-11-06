@@ -25,15 +25,19 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if defined(__clang__) && !defined(_SILENCE_CLANG_COROUTINE_MESSAGE)
-#error The <experimental/coroutine>, <experimental/generator>, and <experimental/resumable> \
-headers do not support Clang, but the C++20 <coroutine> header does.
-#endif // defined(__clang__) && !defined(_SILENCE_CLANG_COROUTINE_MESSAGE)
-
-#ifdef __cpp_impl_coroutine
-#error The <experimental/coroutine> and <experimental/resumable> headers are only supported with \
-/await and implement pre-C++20 coroutine support. Use <coroutine> for standard C++20 coroutines.
-#endif // defined(__cpp_impl_coroutine)
+#ifdef __clang__
+_EMIT_STL_ERROR(STL1009, "The <experimental/coroutine>, <experimental/generator>, and <experimental/resumable> "
+                         "headers do not support Clang, but the C++20 <coroutine> and C++23 <generator> headers do.");
+#elif defined(__cpp_impl_coroutine)
+_EMIT_STL_ERROR(STL1010, "You're compiling with support for standard C++20 coroutines "
+                         "(also available with /await:strict in C++14/17), so you should include <coroutine> "
+                         "instead of <experimental/coroutine> and <experimental/resumable>.");
+#elif !defined(_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
+_EMIT_STL_ERROR(STL1011, "The /await compiler option, <experimental/coroutine>, <experimental/generator>, and "
+                         "<experimental/resumable> are deprecated by Microsoft and will be REMOVED SOON. "
+                         "They are superseded by the C++20 <coroutine> and C++23 <generator> headers. You can define "
+                         "_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS to suppress this error for now.");
+#endif // _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS
 
 // intrinsics used in implementation of coroutine_handle
 extern "C" size_t _coro_resume(void*) noexcept;

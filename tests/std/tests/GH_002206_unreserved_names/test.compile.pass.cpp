@@ -16,6 +16,11 @@
 #define uniform_int         delete
 #define uniform_real        delete
 
+#define checked_array_iterator        delete
+#define make_checked_array_iterator   delete
+#define make_unchecked_array_iterator delete
+#define unchecked_array_iterator      delete
+
 // Test workaround for extensions of non-reserved names that can't be removed at this moment.
 #define raw_name 1001
 
@@ -24,11 +29,6 @@
 
 #define opfx 1004
 #define osfx 1005
-
-#define checked_array_iterator        1006
-#define make_checked_array_iterator   1007
-#define make_unchecked_array_iterator 1008
-#define unchecked_array_iterator      1009
 
 // Also test GH-2645: <yvals_core.h>: Conformance issue on [[msvc::known_semantics]]
 #define msvc               1
@@ -88,19 +88,3 @@
 #if osfx != 1005
 #error bad macro expansion
 #endif // osfx != 1005
-
-#if checked_array_iterator != 1006
-#error bad macro expansion
-#endif // checked_array_iterator != 1006
-
-#if make_checked_array_iterator != 1007
-#error bad macro expansion
-#endif // make_checked_array_iterator != 1007
-
-#if make_unchecked_array_iterator != 1008
-#error bad macro expansion
-#endif // make_unchecked_array_iterator != 1008
-
-#if unchecked_array_iterator != 1009
-#error bad macro expansion
-#endif // unchecked_array_iterator != 1009

@@ -319,6 +319,7 @@
 // P3136R1 Retiring Niebloids
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic_ref<cv T>)
+// P3349R1 Converting Contiguous Iterators To Pointers
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -934,7 +935,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 145
-#define _MSVC_STL_UPDATE  202510L
+#define _MSVC_STL_UPDATE  202511L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1471,16 +1472,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _CXX23_DEPRECATE_DENORM
 #endif // ^^^ warning disabled ^^^
 
-#if !defined(_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING) && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
-#define _DEPRECATE_STDEXT_ARR_ITERS                                                                               \
-    [[deprecated(                                                                                                 \
-        "warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator, and related factory " \
-        "functions are non-Standard extensions and will be removed in the future. std::span (since C++20) and "   \
-        "gsl::span can be used instead. You can define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING or "         \
-        "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning.")]]
-#else // ^^^ warning enabled / warning disabled vvv
-#define _DEPRECATE_STDEXT_ARR_ITERS
-#endif // ^^^ warning disabled ^^^
+// STL4043 was "stdext::checked_array_iterator, stdext::unchecked_array_iterator,
+// and related factory functions are non-Standard extensions and will be removed"
 
 // STL4044 was "The contents of the stdext::cvt namespace are non-Standard extensions and will be removed"
 
@@ -1521,7 +1514,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // next warning number: STL4049
 
-// next error number: STL1009
+// next error number: STL1013
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
