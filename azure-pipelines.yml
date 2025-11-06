@@ -86,6 +86,25 @@ stages:
           numShards: 1
           skipTesting: true
 
+  # This ARM64-native build will detect problems with the ARM64 pool as early as possible.
+  # The stage dependencies are structured to optimize the critical path.
+  - stage: Build_ARM64_Native
+    dependsOn: []
+    displayName: 'Build ARM64 (Native)'
+    pool:
+      name: ${{ variables.arm64PoolName }}
+      demands: ${{ variables.poolDemands }}
+    jobs:
+      - template: azure-devops/build-and-test.yml
+        parameters:
+          hostArch: arm64
+          targetArch: arm64
+          targetPlatform: arm64
+          analyzeBuild: true
+          buildBenchmarks: true
+          numShards: 1
+          skipTesting: true
+
   - stage: Test_x64
     dependsOn:
       - Code_Format
@@ -118,7 +137,9 @@ stages:
           targetPlatform: x86
 
   - stage: Test_ARM64
-    dependsOn: Test_x64
+    dependsOn:
+      - Build_ARM64_Native
+      - Test_x64
     displayName: 'Test ARM64'
     pool:
       name: ${{ variables.arm64PoolName }}
@@ -132,7 +153,9 @@ stages:
           numShards: 10
 
   - stage: Test_ARM64EC
-    dependsOn: Test_x64
+    dependsOn:
+      - Build_ARM64_Native
+      - Test_x64
     displayName: 'Test ARM64EC'
     pool:
       name: ${{ variables.arm64PoolName }}
