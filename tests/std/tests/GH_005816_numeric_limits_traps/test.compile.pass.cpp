@@ -34,7 +34,7 @@ static_assert(traps_<char> == traps_<int> && traps_<signed char> == traps_<int> 
                   && traps_<long long> == traps_<int> && traps_<unsigned long long> == traps_<int>,
     "all integers should trap or not trap equally");
 
-static_assert(!traps_<bool>, "bool does not trap for a moot reason");
+static_assert(!traps_<bool>, "bool does not trap for a moot reason; see LWG-554 resolution");
 
 static_assert(!traps_<float> && !traps_<double> && !traps_<long double>,
     "floats don't trap because even if '/fp:except' is passed, it should be enabled at runtime");
