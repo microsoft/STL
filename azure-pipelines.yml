@@ -11,6 +11,7 @@ pr:
 
 stages:
   - stage: Code_Format
+    dependsOn: []
     displayName: 'Code Format'
     pool:
       name: ${{ variables.poolName }}
