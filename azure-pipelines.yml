@@ -18,9 +18,9 @@ stages:
     jobs:
       - template: azure-devops/format-validation.yml
 
-  - stage: Early_Build_x64
+  - stage: Build_x64
     dependsOn: []
-    displayName: 'Early Build x64'
+    displayName: 'Build x64'
     pool:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
@@ -35,9 +35,9 @@ stages:
           numShards: 1
           skipTesting: true
 
-  - stage: Early_Build_x86
+  - stage: Build_x86
     dependsOn: []
-    displayName: 'Early Build x86'
+    displayName: 'Build x86'
     pool:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
@@ -52,9 +52,9 @@ stages:
           numShards: 1
           skipTesting: true
 
-  - stage: Early_Build_ARM64
+  - stage: Build_ARM64
     dependsOn: []
-    displayName: 'Early Build ARM64'
+    displayName: 'Build ARM64'
     pool:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
@@ -69,9 +69,9 @@ stages:
           numShards: 1
           skipTesting: true
 
-  - stage: Early_Build_ARM64EC
+  - stage: Build_ARM64EC
     dependsOn: []
-    displayName: 'Early Build ARM64EC'
+    displayName: 'Build ARM64EC'
     pool:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
@@ -86,14 +86,14 @@ stages:
           numShards: 1
           skipTesting: true
 
-  - stage: Build_And_Test_x64
+  - stage: Test_x64
     dependsOn:
       - Code_Format
-      - Early_Build_x64
-      - Early_Build_x86
-      - Early_Build_ARM64
-      - Early_Build_ARM64EC
-    displayName: 'Build and Test x64'
+      - Build_x64
+      - Build_x86
+      - Build_ARM64
+      - Build_ARM64EC
+    displayName: 'Test x64'
     pool:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
@@ -104,9 +104,9 @@ stages:
           targetArch: x64
           targetPlatform: x64
 
-  - stage: Build_And_Test_x86
-    dependsOn: Build_And_Test_x64
-    displayName: 'Build and Test x86'
+  - stage: Test_x86
+    dependsOn: Test_x64
+    displayName: 'Test x86'
     pool:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
@@ -117,9 +117,9 @@ stages:
           targetArch: x86
           targetPlatform: x86
 
-  - stage: Build_And_Test_ARM64
-    dependsOn: Build_And_Test_x64
-    displayName: 'Build and Test ARM64'
+  - stage: Test_ARM64
+    dependsOn: Test_x64
+    displayName: 'Test ARM64'
     pool:
       name: ${{ variables.arm64PoolName }}
       demands: ${{ variables.poolDemands }}
@@ -131,9 +131,9 @@ stages:
           targetPlatform: arm64
           numShards: 10
 
-  - stage: Build_And_Test_ARM64EC
-    dependsOn: Build_And_Test_x64
-    displayName: 'Build and Test ARM64EC'
+  - stage: Test_ARM64EC
+    dependsOn: Test_x64
+    displayName: 'Test ARM64EC'
     pool:
       name: ${{ variables.arm64PoolName }}
       demands: ${{ variables.poolDemands }}
