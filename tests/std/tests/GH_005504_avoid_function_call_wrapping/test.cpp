@@ -13,17 +13,20 @@ using namespace std;
 int alloc_count   = 0;
 int dealloc_count = 0;
 
-void* operator new(size_t size) {
-    if (size == 0) {
-        size = 1;
-    }
+size_t adjust_alloc_size(size_t size) {
+    return size != 0 ? size : 1;
+}
 
-    ++alloc_count;
-    void* result = malloc(size);
+void* check_alloc(void* result) {
     if (!result) {
         throw std::bad_alloc{};
     }
     return result;
+}
+
+void* operator new(size_t size) {
+    ++alloc_count;
+    return check_alloc(malloc(adjust_alloc_size(size)));
 }
 
 void operator delete(void* mem) noexcept {
@@ -32,16 +35,8 @@ void operator delete(void* mem) noexcept {
 }
 
 void* operator new(size_t size, align_val_t al) {
-    if (size == 0) {
-        size = 1;
-    }
-
     ++alloc_count;
-    void* result = _aligned_malloc(size, static_cast<size_t>(al));
-    if (!result) {
-        throw std::bad_alloc{};
-    }
-    return result;
+    return check_alloc(_aligned_malloc(adjust_alloc_size(size), static_cast<size_t>(al)));
 }
 
 void operator delete(void* mem, align_val_t) noexcept {
@@ -49,9 +44,8 @@ void operator delete(void* mem, align_val_t) noexcept {
     _aligned_free(mem);
 }
 
-
 struct alloc_checker {
-    explicit alloc_checker(int expected_delta_) : expected_delta(expected_delta_) {}
+    explicit alloc_checker(const int expected_delta_) : expected_delta(expected_delta_) {}
     alloc_checker(const alloc_checker&)            = delete;
     alloc_checker& operator=(const alloc_checker&) = delete;
 
@@ -60,8 +54,8 @@ struct alloc_checker {
         assert(alloc_count == dealloc_count);
     }
 
-    int expected_delta;
-    int before = alloc_count;
+    const int expected_delta;
+    const int before = alloc_count;
 };
 
 struct copy_counter {
@@ -74,7 +68,7 @@ struct copy_counter {
 using fn_type = int(copy_counter);
 
 struct small_callable {
-    int context = 42;
+    const int context = 42;
 
     int operator()(const copy_counter& counter) {
         assert(context == 42);
@@ -83,7 +77,7 @@ struct small_callable {
 };
 
 struct alignas(128) large_callable {
-    int context = 1729;
+    const int context = 1729;
 
     int operator()(const copy_counter& counter) {
         assert((reinterpret_cast<uintptr_t>(this) & 0x7f) == 0);
@@ -93,13 +87,13 @@ struct alignas(128) large_callable {
 };
 
 template <class Wrapper, class Callable>
-void test_plain_call(int expected_copies) {
+void test_plain_call(const int expected_copies) {
     Wrapper fn{Callable{}};
     assert(fn(copy_counter{}) == expected_copies);
 }
 
 template <class OuterWrapper, class InnerWrapper, class Callable>
-void test_wrapped_call(int expected_copies) {
+void test_wrapped_call(const int expected_copies) {
     InnerWrapper inner{Callable{}};
     OuterWrapper outer{std::move(inner)};
     assert(!inner);
@@ -107,35 +101,32 @@ void test_wrapped_call(int expected_copies) {
 }
 
 template <class Wrapper>
-void test_plain_null(bool throws) {
-    Wrapper fn{};
-    assert(!fn);
-
+void check_call_null(Wrapper& wrapper, const bool throws) {
     if (throws) {
         try {
-            fn(copy_counter{});
-            abort(); // should not reach
-        } catch (bad_function_call&) {
-        }
-    }
-}
-
-template <class OuterWrapper, class InnerWrapper>
-void test_wrapped_call(bool outer_is_null, bool outer_throws) {
-    InnerWrapper inner{};
-    OuterWrapper outer{std::move(inner)};
-    assert(!inner);
-    assert(!outer == outer_is_null);
-
-    if (outer_throws) {
-        try {
-            outer(copy_counter{});
+            wrapper(copy_counter{});
             abort(); // should not reach
         } catch (bad_function_call&) {
         }
     } else {
         // UB that in our implementation tries to call doom function; we do not test that
     }
+}
+
+template <class Wrapper>
+void test_plain_null(const bool throws) {
+    Wrapper fn{};
+    assert(!fn);
+    check_call_null(fn, throws);
+}
+
+template <class OuterWrapper, class InnerWrapper>
+void test_wrapped_call(const bool outer_is_null, const bool outer_throws) {
+    InnerWrapper inner{};
+    OuterWrapper outer{std::move(inner)};
+    assert(!inner);
+    assert(!outer == outer_is_null);
+    check_call_null(outer, outer_throws);
 }
 
 int main() {
