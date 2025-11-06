@@ -19,7 +19,7 @@ size_t adjust_alloc_size(const size_t size) {
 
 void* check_alloc(void* const result) {
     if (!result) {
-        throw std::bad_alloc{};
+        throw bad_alloc{};
     }
     return result;
 }
@@ -95,7 +95,7 @@ void test_plain_call(const int expected_copies) {
 template <class OuterWrapper, class InnerWrapper, class Callable>
 void test_wrapped_call(const int expected_copies) {
     InnerWrapper inner{Callable{}};
-    OuterWrapper outer{std::move(inner)};
+    OuterWrapper outer{move(inner)};
     assert(!inner);
     assert(outer(copy_counter{}) == expected_copies);
 }
@@ -123,7 +123,7 @@ void test_plain_null(const bool throws) {
 template <class OuterWrapper, class InnerWrapper>
 void test_wrapped_call(const bool outer_is_null, const bool outer_throws) {
     InnerWrapper inner{};
-    OuterWrapper outer{std::move(inner)};
+    OuterWrapper outer{move(inner)};
     assert(!inner);
     assert(!outer == outer_is_null);
     check_call_null(outer, outer_throws);
