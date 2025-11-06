@@ -52,9 +52,9 @@ stages:
           numShards: 1
           skipTesting: true
 
-  - stage: Build_ARM64
+  - stage: Build_ARM64_Cross
     dependsOn: []
-    displayName: 'Build ARM64'
+    displayName: 'Build ARM64 (Cross)'
     pool:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
@@ -69,9 +69,9 @@ stages:
           numShards: 1
           skipTesting: true
 
-  - stage: Build_ARM64EC
+  - stage: Build_ARM64EC_Cross
     dependsOn: []
-    displayName: 'Build ARM64EC'
+    displayName: 'Build ARM64EC (Cross)'
     pool:
       name: ${{ variables.poolName }}
       demands: ${{ variables.poolDemands }}
@@ -91,8 +91,8 @@ stages:
       - Code_Format
       - Build_x64
       - Build_x86
-      - Build_ARM64
-      - Build_ARM64EC
+      - Build_ARM64_Cross
+      - Build_ARM64EC_Cross
     displayName: 'Test x64'
     pool:
       name: ${{ variables.poolName }}
