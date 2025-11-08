@@ -1493,15 +1493,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS
 #endif // ^^^ warning disabled ^^^
 
-#if !defined(_SILENCE_LOCALE_EMPTY_DEPRECATION_WARNING) && !defined(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
-#define _DEPRECATE_LOCALE_EMPTY                                                                                        \
-    [[deprecated(                                                                                                      \
-        "warning STL4048: locale::empty() is a non-Standard extension and will be removed in the future. A "           \
-        "default-constructed locale can be used instead. You can define _SILENCE_LOCALE_EMPTY_DEPRECATION_WARNING or " \
-        "_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS to suppress this warning.")]]
-#else // ^^^ warning enabled / warning disabled vvv
-#define _DEPRECATE_LOCALE_EMPTY
-#endif // ^^^ warning disabled ^^^
+// STL4048 was "locale::empty() is a non-Standard extension and will be removed in the future."
 
 // next warning number: STL4049
 
