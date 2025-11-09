@@ -29,4 +29,15 @@ _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _WStod(const wchar_t* s, wchar_t** 
     return _WStodx(s, endptr, pten, nullptr);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
+_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _WStoldx(
+    const wchar_t* s, wchar_t** endptr, long pten, int* perr) noexcept {
+    return _WStodx(s, endptr, pten, perr);
+}
+
+// TRANSITION, ABI: preserved for binary compatibility
+_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _WStold(const wchar_t* s, wchar_t** endptr, long pten) noexcept {
+    return _WStodx(s, endptr, pten, nullptr);
+}
+
 _END_EXTERN_C_UNLESS_PURE

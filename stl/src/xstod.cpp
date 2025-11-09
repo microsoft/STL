@@ -28,4 +28,14 @@ _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Stod(const char* s, char** endptr,
     return _Stodx(s, endptr, pten, nullptr);
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
+_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _Stoldx(const char* s, char** endptr, long pten, int* perr) noexcept {
+    return _Stodx(s, endptr, pten, perr);
+}
+
+// TRANSITION, ABI: preserved for binary compatibility
+_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _Stold(const char* s, char** endptr, long pten) noexcept {
+    return _Stodx(s, endptr, pten, nullptr);
+}
+
 _END_EXTERN_C_UNLESS_PURE
