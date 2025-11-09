@@ -41,14 +41,6 @@
 #define FSIGN(x) (reinterpret_cast<_Fval*>(&(x))->_Sh[_F0] & _FSIGN)
 #define LSIGN(x) (reinterpret_cast<_Lval*>(&(x))->_Sh[_L0] & _LSIGN)
 
-// return values for _Stopfx/_Stoflt
-#define FL_ERR 0
-#define FL_DEC 1
-#define FL_HEX 2
-#define FL_INF 3
-#define FL_NAN 4
-#define FL_NEG 8
-
 // macros for _Dtest return (0 => ZERO)
 #define _DENORM (-2) // C9X only
 #define _FINITE (-1)
@@ -84,29 +76,14 @@ extern _CRTIMP2_PURE _Dconst _LInf;
 extern _CRTIMP2_PURE _Dconst _LNan;
 extern _CRTIMP2_PURE _Dconst _LSnan;
 
-int _Stopfx(const char**, char**) noexcept;
-_In_range_(0, maxsig) int _Stoflt(
-    const char*, const char*, char**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig) noexcept;
-_In_range_(0, maxsig) int _Stoxflt(
-    const char*, const char*, char**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig) noexcept;
-int _WStopfx(const wchar_t**, wchar_t**) noexcept;
-_In_range_(0, maxsig) int _WStoflt(
-    const wchar_t*, const wchar_t*, wchar_t**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig) noexcept;
-_In_range_(0, maxsig) int _WStoxflt(
-    const wchar_t*, const wchar_t*, wchar_t**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig) noexcept;
-
 // double declarations
 union _Dval { // pun floating type as integer array
     unsigned short _Sh[8];
     double _Val;
 };
 
-unsigned short* _Pmsw(double*) noexcept;
-
-short _Dint(double*, short) noexcept;
 short _Dnorm(_Dval*) noexcept;
 short _Dscale(double*, long) noexcept;
-short _Dunscale(short*, double*) noexcept;
 
 double _Poly(double, const double*, int) noexcept;
 
@@ -114,42 +91,18 @@ extern const _Dconst _Eps;
 extern const _Dconst _Rteps;
 extern const double _Xbig;
 
-double _Xp_getw(const double*, int) noexcept;
-double* _Xp_setn(double*, int, long) noexcept;
-double* _Xp_setw(double*, int, double) noexcept;
-double* _Xp_addh(double*, int, double) noexcept;
-double* _Xp_mulh(double*, int, double) noexcept;
-double* _Xp_movx(double*, int, const double*) noexcept;
-double* _Xp_addx(double*, int, const double*, int) noexcept;
-double* _Xp_ldexpx(double*, int, int) noexcept;
-double* _Xp_mulx(double*, int, const double*, int, double*) noexcept;
-
 // float declarations
 union _Fval { // pun floating type as integer array
     unsigned short _Sh[8];
     float _Val;
 };
 
-unsigned short* _FPmsw(float*) noexcept;
-
-short _FDint(float*, short) noexcept;
 short _FDnorm(_Fval*) noexcept;
 short _FDscale(float*, long) noexcept;
-short _FDunscale(short*, float*) noexcept;
 
 extern const _Dconst _FEps;
 extern const _Dconst _FRteps;
 extern const float _FXbig;
-
-float _FXp_getw(const float*, int) noexcept;
-float* _FXp_setn(float*, int, long) noexcept;
-float* _FXp_setw(float*, int, float) noexcept;
-float* _FXp_addh(float*, int, float) noexcept;
-float* _FXp_mulh(float*, int, float) noexcept;
-float* _FXp_movx(float*, int, const float*) noexcept;
-float* _FXp_addx(float*, int, const float*, int) noexcept;
-float* _FXp_ldexpx(float*, int, int) noexcept;
-float* _FXp_mulx(float*, int, const float*, int, float*) noexcept;
 
 // long double declarations
 union _Lval { // pun floating type as integer array
@@ -157,26 +110,12 @@ union _Lval { // pun floating type as integer array
     long double _Val;
 };
 
-unsigned short* _LPmsw(long double*) noexcept;
-
-short _LDint(long double*, short) noexcept;
 short _LDscale(long double*, long) noexcept;
-short _LDunscale(short*, long double*) noexcept;
 long double _LPoly(long double, const long double*, int) noexcept;
 
 extern const _Dconst _LEps;
 extern const _Dconst _LRteps;
 extern const long double _LXbig;
-
-long double _LXp_getw(const long double*, int) noexcept;
-long double* _LXp_setn(long double*, int, long) noexcept;
-long double* _LXp_setw(long double*, int, long double) noexcept;
-long double* _LXp_addh(long double*, int, long double) noexcept;
-long double* _LXp_mulh(long double*, int, long double) noexcept;
-long double* _LXp_movx(long double*, int, const long double*) noexcept;
-long double* _LXp_addx(long double*, int, const long double*, int) noexcept;
-long double* _LXp_ldexpx(long double*, int, int) noexcept;
-long double* _LXp_mulx(long double*, int, const long double*, int, long double*) noexcept;
 
 _END_EXTERN_C_UNLESS_PURE
 
