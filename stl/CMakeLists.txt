@@ -316,7 +316,6 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/xstod.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstof.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstol.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xstold.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstoll.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstoul.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstoull.cpp
@@ -332,7 +331,6 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/xwctomb.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xwstod.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xwstof.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xwstold.cpp
 )
 
 set(ASAN_SOURCES
