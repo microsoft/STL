@@ -58,4 +58,8 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(double* px, double y, short eof
     }
 }
 
+_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LExp(long double* px, long double y, short eoff) noexcept {
+    return _Exp(reinterpret_cast<double*>(px), static_cast<double>(y), eoff);
+}
+
 _END_EXTERN_C_UNLESS_PURE

@@ -29,17 +29,8 @@
 #define _F0 1 // little-endian
 #define _F1 0
 
-// IEEE 754 long double properties
-#define LHUGE_EXP static_cast<int>(_LMAX * 900L / 1000)
-
-#define _L0 3 // little-endian, 64-bit long doubles
-#define _L1 2
-#define _L2 1
-#define _L3 0
-
 #define DSIGN(x) (reinterpret_cast<_Dval*>(&(x))->_Sh[_D0] & _DSIGN)
 #define FSIGN(x) (reinterpret_cast<_Fval*>(&(x))->_Sh[_F0] & _FSIGN)
-#define LSIGN(x) (reinterpret_cast<_Lval*>(&(x))->_Sh[_L0] & _LSIGN)
 
 // macros for _Dtest return (0 => ZERO)
 #define _DENORM (-2) // C9X only
@@ -103,19 +94,6 @@ short _FDscale(float*, long) noexcept;
 extern const _Dconst _FEps;
 extern const _Dconst _FRteps;
 extern const float _FXbig;
-
-// long double declarations
-union _Lval { // pun floating type as integer array
-    unsigned short _Sh[8];
-    long double _Val;
-};
-
-short _LDscale(long double*, long) noexcept;
-long double _LPoly(long double, const long double*, int) noexcept;
-
-extern const _Dconst _LEps;
-extern const _Dconst _LRteps;
-extern const long double _LXbig;
 
 _END_EXTERN_C_UNLESS_PURE
 
