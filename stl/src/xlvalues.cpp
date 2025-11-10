@@ -18,7 +18,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
-// static data
+// TRANSITION, ABI: preserved for binary compatibility
 extern /* const */ _Dconst _LDenorm = {INIT2(0, 1)};
 extern /* const */ _Dconst _LInf    = {INIT(_DMAX << _DOFF)};
 extern /* const */ _Dconst _LNan    = {INIT((_DMAX << _DOFF) | (1 << (_DOFF - 1)))};
