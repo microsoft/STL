@@ -30,7 +30,9 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(float* px, float y, short eoff
 
         g = xexp;
         g = static_cast<float>((*px - g * c1) - g * c2);
-        if (-_FEps._Float < g && g < _FEps._Float) {
+
+        constexpr float eps = 0x1p-25f;
+        if (-eps < g && g < eps) {
             *px = y;
         } else { // g * g worth computing
             const float z = g * g;

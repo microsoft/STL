@@ -124,7 +124,9 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(double* px, double y, short eof
 
         g = xexp;
         g = (*px - g * c1) - g * c2;
-        if (-_Eps._Double < g && g < _Eps._Double) {
+
+        constexpr double eps = 0x1p-54;
+        if (-eps < g && g < eps) {
             *px = y;
         } else { // g * g worth computing
             const double z = g * g;

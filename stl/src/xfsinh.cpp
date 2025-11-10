@@ -32,7 +32,8 @@ _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float x, float y) noexcept {
             neg = 0;
         }
 
-        if (x < _FRteps._Float) {
+        constexpr float rteps = 0x1p-12f;
+        if (x < rteps) {
             x *= y; // x tiny
         } else if (x < 1.0F) {
             float w = x * x;

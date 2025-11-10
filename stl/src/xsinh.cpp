@@ -48,7 +48,8 @@ _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double x, double y) noexcept 
             neg = 0;
         }
 
-        if (x < _Rteps._Double) {
+        constexpr double rteps = 0x1p-27;
+        if (x < rteps) {
             x *= y; // x tiny
         } else if (x < 1.0) {
             double w = x * x;
