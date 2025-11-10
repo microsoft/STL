@@ -295,15 +295,9 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/xfsinh.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xfvalues.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xgetwctype.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlcosh.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xldscale.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xldtest.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlexp.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlgamma.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlocale.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlock.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlpoly.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlsinh.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlvalues.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xmbtowc.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xmtx.cpp

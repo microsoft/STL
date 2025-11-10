@@ -89,15 +89,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <ClCompile Include="$(CrtRoot)\github\stl\src\xfsinh.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xfvalues.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xgetwctype.cpp" />
-        <ClCompile Include="$(CrtRoot)\github\stl\src\xlcosh.cpp" />
-        <ClCompile Include="$(CrtRoot)\github\stl\src\xldscale.cpp" />
-        <ClCompile Include="$(CrtRoot)\github\stl\src\xldtest.cpp" />
-        <ClCompile Include="$(CrtRoot)\github\stl\src\xlexp.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xlgamma.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xlocale.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xlock.cpp" />
-        <ClCompile Include="$(CrtRoot)\github\stl\src\xlpoly.cpp" />
-        <ClCompile Include="$(CrtRoot)\github\stl\src\xlsinh.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xlvalues.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xmbtowc.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xmtx.cpp" />
