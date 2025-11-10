@@ -46,7 +46,9 @@ namespace {
         }
 
         if (0 < lexp && _DMAX - xchar <= lexp) { // overflow, return +/-INF
-            *px = ps->_Sh[_D0] & _DSIGN ? -_Inf._Double : _Inf._Double;
+            constexpr double inf = _STD numeric_limits<double>::infinity();
+
+            *px = ps->_Sh[_D0] & _DSIGN ? -inf : inf;
             return _INFCODE;
         } else if (-xchar < lexp) { // finite result, repack
             ps->_Sh[_D0] = static_cast<unsigned short>(ps->_Sh[_D0] & ~_DMASK | (lexp + xchar) << _DOFF);
