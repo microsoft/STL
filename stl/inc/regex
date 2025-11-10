@@ -3934,7 +3934,8 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                         break;
                     } else if (_Code == _Rx_unwind_ops::_Disjunction_eval_alt_on_failure
                                || _Code == _Rx_unwind_ops::_Disjunction_eval_alt_always
-                               || _Code == _Rx_unwind_ops::_Loop_greedy || _Code == _Rx_unwind_ops::_Loop_nongreedy
+                               || _Code == _Rx_unwind_ops::_Loop_greedy //
+                               || _Code == _Rx_unwind_ops::_Loop_nongreedy
                                || _Code == _Rx_unwind_ops::_Loop_restore_vals) {
                         _Decrease_stack_usage_count();
                     }
