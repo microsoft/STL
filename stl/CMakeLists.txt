@@ -291,12 +291,10 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/xferaise.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xfexp.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xfsinh.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfvalues.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xgetwctype.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlgamma.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlocale.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlock.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlvalues.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xmbtowc.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xmtx.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xnotify.cpp

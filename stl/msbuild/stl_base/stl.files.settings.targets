@@ -85,12 +85,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <ClCompile Include="$(CrtRoot)\github\stl\src\xferaise.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xfexp.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xfsinh.cpp" />
-        <ClCompile Include="$(CrtRoot)\github\stl\src\xfvalues.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xgetwctype.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xlgamma.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xlocale.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xlock.cpp" />
-        <ClCompile Include="$(CrtRoot)\github\stl\src\xlvalues.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xmbtowc.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xmtx.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xonce.cpp" />
