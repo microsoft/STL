@@ -106,7 +106,7 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(double* px, double y, short eof
     static constexpr double q[] = {30.01511290683317, 3362.72154416553028, 30265.40189360949691};
     constexpr double c1         = 22713.0 / 32768.0;
     constexpr double c2         = 1.4286068203094172321214581765680755e-6;
-    constexpr double hugexp     = HUGE_EXP;
+    constexpr double hugexp     = static_cast<int>(_DMAX * 900L / 1000);
     constexpr double invln2     = 1.4426950408889634073599246810018921;
 
     if (y == 0.0) { // zero

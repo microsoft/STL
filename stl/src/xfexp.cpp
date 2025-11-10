@@ -12,7 +12,7 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(float* px, float y, short eoff
     static constexpr float q[] = {12.01517514F, 120.18228722F};
     constexpr float c1         = (22713.0F / 32768.0F);
     constexpr float c2         = 1.4286068203094172321214581765680755e-6F;
-    constexpr float hugexp     = FHUGE_EXP;
+    constexpr float hugexp     = static_cast<int>(_FMAX * 900L / 1000);
     constexpr float invln2     = 1.4426950408889634073599246810018921F;
 
     if (y == 0.0F) { // zero
