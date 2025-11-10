@@ -34,13 +34,6 @@ _EXTERN_C_UNLESS_PURE
 
 void __CLRCALL_PURE_OR_CDECL _Feraise(int) noexcept;
 
-union _Dconst { // pun float types as integer array
-    unsigned short _Word[8]; // TRANSITION, ABI: Twice as large as necessary.
-    float _Float;
-    double _Double;
-    long double _Long_double;
-};
-
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Dtest(double*) noexcept;
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FDtest(float*) noexcept;
 
