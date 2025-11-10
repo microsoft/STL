@@ -5,6 +5,18 @@
 
 #include "xmath.hpp"
 
+namespace {
+    double _Poly(double x, const double* tab, int n) noexcept { // compute polynomial
+        double y;
+
+        for (y = *tab; 0 <= --n;) {
+            y = y * x + *++tab;
+        }
+
+        return y;
+    }
+} // namespace
+
 _EXTERN_C_UNLESS_PURE
 
 // coefficients

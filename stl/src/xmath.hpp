@@ -73,11 +73,6 @@ union _Dval { // pun floating type as integer array
     double _Val;
 };
 
-short _Dnorm(_Dval*) noexcept;
-short _Dscale(double*, long) noexcept;
-
-double _Poly(double, const double*, int) noexcept;
-
 extern const _Dconst _Eps;
 extern const _Dconst _Rteps;
 extern const double _Xbig;
