@@ -22,10 +22,10 @@ _EXTERN_C_UNLESS_PURE
 extern const double _Xbig = (NBITS + 2) * 0.347;
 
 // TRANSITION, ABI: preserved for binary compatibility
-extern /* const */ _Dconst _Denorm  = {INIT2(0, 1)};
-extern /* const */ _Dconst _Hugeval = {INIT(_DMAX << _DOFF)};
-extern /* const */ _Dconst _Inf     = {INIT(_DMAX << _DOFF)};
-extern /* const */ _Dconst _Nan     = {INIT((_DMAX << _DOFF) | (1 << (_DOFF - 1)))};
-extern /* const */ _Dconst _Snan    = {INIT2(_DMAX << _DOFF, 1)};
+extern _CRTIMP2_PURE _Dconst _Denorm  = {INIT2(0, 1)};
+extern _CRTIMP2_PURE _Dconst _Hugeval = {INIT(_DMAX << _DOFF)};
+extern _CRTIMP2_PURE _Dconst _Inf     = {INIT(_DMAX << _DOFF)};
+extern _CRTIMP2_PURE _Dconst _Nan     = {INIT((_DMAX << _DOFF) | (1 << (_DOFF - 1)))};
+extern _CRTIMP2_PURE _Dconst _Snan    = {INIT2(_DMAX << _DOFF, 1)};
 
 _END_EXTERN_C_UNLESS_PURE

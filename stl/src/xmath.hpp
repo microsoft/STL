@@ -42,24 +42,7 @@ union _Dconst { // pun float types as integer array
 };
 
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Dtest(double*) noexcept;
-
-extern _CRTIMP2_PURE _Dconst _Denorm;
-extern _CRTIMP2_PURE _Dconst _Hugeval;
-extern _CRTIMP2_PURE _Dconst _Inf;
-extern _CRTIMP2_PURE _Dconst _Nan;
-extern _CRTIMP2_PURE _Dconst _Snan;
-
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FDtest(float*) noexcept;
-
-extern _CRTIMP2_PURE _Dconst _FDenorm;
-extern _CRTIMP2_PURE _Dconst _FInf;
-extern _CRTIMP2_PURE _Dconst _FNan;
-extern _CRTIMP2_PURE _Dconst _FSnan;
-
-extern _CRTIMP2_PURE _Dconst _LDenorm;
-extern _CRTIMP2_PURE _Dconst _LInf;
-extern _CRTIMP2_PURE _Dconst _LNan;
-extern _CRTIMP2_PURE _Dconst _LSnan;
 
 // double declarations
 union _Dval { // pun floating type as integer array

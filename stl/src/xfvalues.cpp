@@ -21,9 +21,9 @@ _EXTERN_C_UNLESS_PURE
 extern const float _FXbig = (NBITS + 2) * 0.347f;
 
 // TRANSITION, ABI: preserved for binary compatibility
-extern /* const */ _Dconst _FDenorm = {INIT2(0, 1)};
-extern /* const */ _Dconst _FInf    = {INIT(_FMAX << _FOFF)};
-extern /* const */ _Dconst _FNan    = {INIT((_FMAX << _FOFF) | (1 << (_FOFF - 1)))};
-extern /* const */ _Dconst _FSnan   = {INIT2(_FMAX << _FOFF, 1)};
+extern _CRTIMP2_PURE _Dconst _FDenorm = {INIT2(0, 1)};
+extern _CRTIMP2_PURE _Dconst _FInf    = {INIT(_FMAX << _FOFF)};
+extern _CRTIMP2_PURE _Dconst _FNan    = {INIT((_FMAX << _FOFF) | (1 << (_FOFF - 1)))};
+extern _CRTIMP2_PURE _Dconst _FSnan   = {INIT2(_FMAX << _FOFF, 1)};
 
 _END_EXTERN_C_UNLESS_PURE
