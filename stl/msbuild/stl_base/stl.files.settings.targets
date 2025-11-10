@@ -76,8 +76,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <ClCompile Include="$(CrtRoot)\github\stl\src\xalloc.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xcosh.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xdateord.cpp" />
-        <ClCompile Include="$(CrtRoot)\github\stl\src\xdnorm.cpp" />
-        <ClCompile Include="$(CrtRoot)\github\stl\src\xdscale.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xdtest.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xexp.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xfcosh.cpp" />
@@ -96,7 +94,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <ClCompile Include="$(CrtRoot)\github\stl\src\xmbtowc.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xmtx.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xonce.cpp" />
-        <ClCompile Include="$(CrtRoot)\github\stl\src\xpoly.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xrngabort.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xrngdev.cpp" />
         <ClCompile Include="$(CrtRoot)\github\stl\src\xsinh.cpp" />

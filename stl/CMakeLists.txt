@@ -282,8 +282,6 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/xalloc.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xcosh.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xdateord.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xdnorm.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xdscale.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xdtest.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xexp.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xfcosh.cpp
@@ -303,7 +301,6 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/xmtx.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xnotify.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xonce.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xpoly.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xrngabort.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xrngdev.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xsinh.cpp
