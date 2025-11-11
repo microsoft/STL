@@ -125,7 +125,7 @@ void test_plain_null(const bool throws) {
 }
 
 template <class OuterWrapper, class InnerWrapper>
-void test_wrapped_call(const bool outer_is_null, const bool outer_throws) {
+void test_wrapped_null(const bool outer_is_null, const bool outer_throws) {
     InnerWrapper inner{};
     OuterWrapper outer{move(inner)};
     assert(!inner);
@@ -160,7 +160,7 @@ int main() {
     alloc_checker{0}, test_plain_null<move_only_function<fn_type>>(false);
 
     // wrapped nulls
-    alloc_checker{0}, test_wrapped_call<function<fn_type>, function<fn_type>>(true, true);
-    alloc_checker{0}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>>(true, false);
-    alloc_checker{0}, test_wrapped_call<move_only_function<fn_type>, function<fn_type>>(false, true);
+    alloc_checker{0}, test_wrapped_null<function<fn_type>, function<fn_type>>(true, true);
+    alloc_checker{0}, test_wrapped_null<move_only_function<fn_type>, move_only_function<fn_type>>(true, false);
+    alloc_checker{0}, test_wrapped_null<move_only_function<fn_type>, function<fn_type>>(false, true);
 }
