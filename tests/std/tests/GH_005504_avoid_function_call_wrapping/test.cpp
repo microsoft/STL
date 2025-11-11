@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <cstdlib>
 #include <functional>
 #include <new>
+#include <utility>
 
 using namespace std;
 
