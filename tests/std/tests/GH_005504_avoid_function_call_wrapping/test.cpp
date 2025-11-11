@@ -135,32 +135,32 @@ void test_wrapped_call(const bool outer_is_null, const bool outer_throws) {
 
 int main() {
     // Plain calls
-    alloc_checker(0), test_plain_call<function<fn_type>, small_callable>(0);
-    alloc_checker(1), test_plain_call<function<fn_type>, large_callable>(0);
-    alloc_checker(0), test_plain_call<move_only_function<fn_type>, small_callable>(0);
-    alloc_checker(1), test_plain_call<move_only_function<fn_type>, large_callable>(0);
+    alloc_checker{0}, test_plain_call<function<fn_type>, small_callable>(0);
+    alloc_checker{1}, test_plain_call<function<fn_type>, large_callable>(0);
+    alloc_checker{0}, test_plain_call<move_only_function<fn_type>, small_callable>(0);
+    alloc_checker{1}, test_plain_call<move_only_function<fn_type>, large_callable>(0);
 
     // Moves to the same
-    alloc_checker(0), test_wrapped_call<function<fn_type>, function<fn_type>, small_callable>(0);
-    alloc_checker(1), test_wrapped_call<function<fn_type>, function<fn_type>, large_callable>(0);
-    alloc_checker(0), test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>, small_callable>(0);
-    alloc_checker(1), test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>, large_callable>(0);
+    alloc_checker{0}, test_wrapped_call<function<fn_type>, function<fn_type>, small_callable>(0);
+    alloc_checker{1}, test_wrapped_call<function<fn_type>, function<fn_type>, large_callable>(0);
+    alloc_checker{0}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>, small_callable>(0);
+    alloc_checker{1}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>, large_callable>(0);
 
     // Moves from function to move_only_function
 #ifdef _WIN64
-    alloc_checker(0),
+    alloc_checker{0},
 #else
-    alloc_checker(1),
+    alloc_checker{1},
 #endif
         test_wrapped_call<move_only_function<fn_type>, function<fn_type>, small_callable>(0);
-    alloc_checker(1), test_wrapped_call<move_only_function<fn_type>, function<fn_type>, large_callable>(0);
+    alloc_checker{1}, test_wrapped_call<move_only_function<fn_type>, function<fn_type>, large_callable>(0);
 
     // nulls
-    alloc_checker(0), test_plain_null<function<fn_type>>(true);
-    alloc_checker(0), test_plain_null<move_only_function<fn_type>>(false);
+    alloc_checker{0}, test_plain_null<function<fn_type>>(true);
+    alloc_checker{0}, test_plain_null<move_only_function<fn_type>>(false);
 
     // wrapped nulls
-    alloc_checker(0), test_wrapped_call<function<fn_type>, function<fn_type>>(true, true);
-    alloc_checker(0), test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>>(true, false);
-    alloc_checker(0), test_wrapped_call<move_only_function<fn_type>, function<fn_type>>(false, true);
+    alloc_checker{0}, test_wrapped_call<function<fn_type>, function<fn_type>>(true, true);
+    alloc_checker{0}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>>(true, false);
+    alloc_checker{0}, test_wrapped_call<move_only_function<fn_type>, function<fn_type>>(false, true);
 }
