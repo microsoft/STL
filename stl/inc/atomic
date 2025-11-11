@@ -533,6 +533,11 @@ inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* 
 #endif // _HAS_CXX20
 #endif // TRANSITION, ABI
 
+#if _HAS_CXX20
+_EXPORT_STD template <class>
+struct atomic_ref;
+#endif // _HAS_CXX20
+
 template <class _Ty, size_t /* = ... */>
 struct _Atomic_storage {
     // Provides operations common to all specializations of std::atomic, load, store, exchange, and CAS.
@@ -666,6 +671,11 @@ public:
     _Ty _Storage;
     mutable _Smtx_t _Mutex{};
 #endif // ^^^ break ABI ^^^
+
+#if _HAS_CXX20
+    template <class>
+    friend struct atomic_ref;
+#endif // _HAS_CXX20
 };
 
 template <class _Ty>
@@ -2319,7 +2329,21 @@ public:
         }
     }
 
+    explicit atomic_ref(_Ty&&) = delete; // per an unnumbered LWG-issue submitted at 2025-11-11
+
     atomic_ref(const atomic_ref&) noexcept = default;
+
+    template <class _Uty>
+        requires is_convertible_v<_Uty (*)[], _Ty (*)[]>
+    atomic_ref(const atomic_ref<_Uty>& _Ref) noexcept : _Base(_Ref._Storage) {
+        if constexpr (!is_always_lock_free) {
+#if 1 // TRANSITION, ABI
+            this->_Spinlock = _Ref._Spinlock;
+#else // ^^^ don't break ABI / break ABI vvv
+            this->_Mutex = _Ref._Mutex;
+#endif // ^^^ break ABI ^^^
+        }
+    }
 
     atomic_ref& operator=(const atomic_ref&) = delete;
 

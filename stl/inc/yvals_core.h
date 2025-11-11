@@ -320,6 +320,7 @@
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic_ref<cv T>)
 // P3349R1 Converting Contiguous Iterators To Pointers
+// P3860R1 Make atomic_ref<T> Convertible To atomic_ref<const T>
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
