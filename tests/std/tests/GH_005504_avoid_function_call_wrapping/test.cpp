@@ -109,8 +109,8 @@ void check_call_null(Wrapper& wrapper, const bool throws) {
     if (throws) {
         try {
             wrapper(copy_counter{});
-            abort(); // should not reach
-        } catch (bad_function_call&) {
+            assert(false); // should not reach
+        } catch (const bad_function_call&) {
         }
     } else {
         // UB that in our implementation tries to call doom function; we do not test that
