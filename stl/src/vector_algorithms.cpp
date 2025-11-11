@@ -256,7 +256,7 @@ namespace {
         void __forceinline _Swap_3_ranges(void* _First1, void* const _Last1, void* _First2, void* _First3) noexcept {
             if (_Byte_length(_First1, _Last1) >= 64) {
                 constexpr size_t _Mask_64 = ~((static_cast<size_t>(1) << 6) - 1);
-                const void* _Stop_at = _First1;
+                const void* _Stop_at      = _First1;
                 _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_64);
                 do {
                     const uint8x16_t _Val1Lo1 = vld1q_u8(static_cast<uint8_t*>(_First1) + 0);
@@ -332,12 +332,12 @@ namespace {
             }
 
             if (_Byte_length(_First1, _Last1) >= 4) {
-                uint32x2_t _Val1  = vdup_n_u32(0);
-                uint32x2_t _Val2  = vdup_n_u32(0);
-                uint32x2_t _Val3  = vdup_n_u32(0);
-                _Val1             = vld1_lane_u32(static_cast<uint32_t*>(_First1), _Val1, 0);
-                _Val2             = vld1_lane_u32(static_cast<uint32_t*>(_First2), _Val2, 0);
-                _Val3             = vld1_lane_u32(static_cast<uint32_t*>(_First3), _Val3, 0);
+                uint32x2_t _Val1 = vdup_n_u32(0);
+                uint32x2_t _Val2 = vdup_n_u32(0);
+                uint32x2_t _Val3 = vdup_n_u32(0);
+                _Val1            = vld1_lane_u32(static_cast<uint32_t*>(_First1), _Val1, 0);
+                _Val2            = vld1_lane_u32(static_cast<uint32_t*>(_First2), _Val2, 0);
+                _Val3            = vld1_lane_u32(static_cast<uint32_t*>(_First3), _Val3, 0);
                 vst1_lane_u32(static_cast<uint32_t*>(_First1), _Val2, 0);
                 vst1_lane_u32(static_cast<uint32_t*>(_First2), _Val3, 0);
                 vst1_lane_u32(static_cast<uint32_t*>(_First3), _Val1, 0);
