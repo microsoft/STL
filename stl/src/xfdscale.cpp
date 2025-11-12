@@ -18,7 +18,9 @@ short _FDscale(float* px, long lexp) noexcept { // scale *px by 2^xexp with chec
     }
 
     if (0 < lexp && _FMAX - xchar <= lexp) { // overflow, return +/-INF
-        *px = ps->_Sh[_F0] & _FSIGN ? -_FInf._Float : _FInf._Float;
+        constexpr float inf = _STD numeric_limits<float>::infinity();
+
+        *px = ps->_Sh[_F0] & _FSIGN ? -inf : inf;
         return _INFCODE;
     } else if (-xchar < lexp) { // finite result, repack
         ps->_Sh[_F0] = static_cast<unsigned short>(ps->_Sh[_F0] & ~_FMASK | (lexp + xchar) << _FOFF);
