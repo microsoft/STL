@@ -2283,11 +2283,6 @@ _NODISCARD_EMPTY_NON_MEMBER constexpr bool empty(const _Ty (&)[_Size]) noexcept 
     return false;
 }
 
-_EXPORT_STD template <class _Elem>
-_NODISCARD_EMPTY_NON_MEMBER constexpr bool empty(initializer_list<_Elem> _Ilist) noexcept {
-    return _Ilist.size() == 0;
-}
-
 _EXPORT_STD template <class _Container>
 _NODISCARD constexpr auto data(_Container& _Cont) noexcept(noexcept(_Cont.data())) /* strengthened */
     -> decltype(_Cont.data()) {
@@ -2303,11 +2298,6 @@ _NODISCARD constexpr auto data(const _Container& _Cont) noexcept(noexcept(_Cont.
 _EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD constexpr _Ty* data(_Ty (&_Array)[_Size]) noexcept {
     return _Array;
-}
-
-_EXPORT_STD template <class _Elem>
-_NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept {
-    return _Ilist.begin();
 }
 
 #if _HAS_CXX20
