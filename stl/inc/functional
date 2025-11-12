@@ -1608,7 +1608,7 @@ public:
 
     _Function_data _Data;
 
-    _Function_base() noexcept = default; // leaves fields uninitialized
+    _Function_base() noexcept = default; // leaves the data member uninitialized
 
     _Function_base(_Function_base&& _Other) noexcept {
         _Checked_move(_Data, _Other._Data);
