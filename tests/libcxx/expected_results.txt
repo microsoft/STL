@@ -149,6 +149,9 @@ std/atomics/atomics.ref/member_types.compile.pass.cpp FAIL
 std/thread/futures/futures.promise/uses_allocator.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
 
+# libc++ has not implemented P3612R1 "Harmonize Proxy-Reference Operations"
+std/containers/sequences/vector.bool/reference.swap.pass.cpp FAIL
+
 # Various bogosity (LLVM-D141004)
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/ctor_does_not_allocate.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/sync_with_default_resource.pass.cpp FAIL
