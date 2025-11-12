@@ -14,7 +14,7 @@ public:
     static constexpr bool _Is_callable_from = {callable};
 
     _Rx operator()(_Types... _Args) {cv} {ref} {noex} {{
-        return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
+        return this->_Get_invoke()(&this->_Data, _STD forward<_Types>(_Args)...);
     }}
 }};
 """
