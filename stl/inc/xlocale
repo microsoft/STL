@@ -400,8 +400,10 @@ public:
 
     static _MRTIMP2_PURE locale __CLRCALL_PURE_OR_CDECL global(const locale&); // current locale
 
-    // TRANSITION, ABI: non-Standard empty() is preserved for binary compatibility
-    _DEPRECATE_LOCALE_EMPTY static _MRTIMP2_PURE locale __CLRCALL_PURE_OR_CDECL empty(); // empty (transparent) locale
+#ifdef _CRTBLD
+    // TRANSITION, ABI: non-Standard locale::empty() is preserved for binary compatibility
+    static _MRTIMP2_PURE locale __CLRCALL_PURE_OR_CDECL empty();
+#endif // ^^^ defined(_CRTBLD) ^^^
 
 private:
     struct _Secret_locale_construct_tag {
