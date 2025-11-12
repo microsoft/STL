@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// This test was extended with functionality needed for
+// P3612R1: Harmonize Proxy-Reference Operations
+
 #include <algorithm>
 #include <bitset>
 #include <cassert>
