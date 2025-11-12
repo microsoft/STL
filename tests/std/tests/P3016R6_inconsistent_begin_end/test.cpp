@@ -1,25 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <iterator>
 #include <initializer_list>
+#include <iterator>
 #include <type_traits>
 #include <valarray>
 
 namespace my {
-    
-    template<typename T>
+
+    template <typename T>
     void begin(std::initializer_list<T>);
 
-    template<typename T>
+    template <typename T>
     void end(std::initializer_list<T>);
 
-    template<typename T>
+    template <typename T>
     void empty(std::initializer_list<T>);
 
-    template<typename T>
+    template <typename T>
     void data(std::initializer_list<T>);
-}
+} // namespace my
 
 
 int main() {
@@ -33,8 +33,8 @@ int main() {
         static_assert(std::is_same_v<decltype(empty({1, 2, 3})), void>);
         static_assert(std::is_same_v<decltype(data({1, 2, 3})), void>);
     }
-    
-    { 
+
+    {
         // Check that free functions in std still can be invoked on std::initializer_list
         std::initializer_list<int> il = {1, 2, 3};
 

@@ -59,8 +59,8 @@ class valarray { // store array with various indexing options
 public:
     friend _Tidy_deallocate_guard<valarray>;
 
-    using value_type = _Ty;
-    using iterator = _Ty*;
+    using value_type     = _Ty;
+    using iterator       = _Ty*;
     using const_iterator = const _Ty*;
 
     valarray() = default; // construct empty valarray
