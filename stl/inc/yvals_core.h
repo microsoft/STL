@@ -1512,7 +1512,16 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _DEPRECATE_LOCALE_EMPTY
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4049
+#if !defined(_SILENCE_VECTOR_BOOL_STATIC_REFERENCE_SWAP_DEPRECATION_WARNING)
+#define _DEPRECATE_VECTOR_BOOL_STATIC_REFERENCE_SWAP                                                     \
+    [[deprecated("warning STL4049: Static std::vector<bool>::swap(reference, reference) is deprecated. " \
+                 "Use non-member function swap(reference, reference) instead. You can define "           \
+                 "_SILENCE_VECTOR_BOOL_STATIC_REFERENCE_SWAP_DEPRECATION_WARNING to suppress this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _DEPRECATE_VECTOR_BOOL_STATIC_REFERENCE_SWAP
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4050
 
 // next error number: STL1013
 
