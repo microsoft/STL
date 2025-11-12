@@ -1,11 +1,11 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# This script generates the partial specializations of _Move_only_function_call in <functional>.
+# This script generates the partial specializations of _Function_call in <functional>.
 
 def specialization(cv: str, ref: str, ref_inv: str, noex: str, noex_val: str, callable: str) -> str:
     return f"""template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) {cv} {ref} {noex}>
+class _Function_call<_Rx(_Types...) {cv} {ref} {noex}>
     : public _Function_base<_Rx, {noex_val}, _Types...> {{
 public:
     template <class _Vt>

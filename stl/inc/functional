@@ -1407,7 +1407,7 @@ union alignas(max_align_t) _Move_only_function_data {
     _NODISCARD _Fn* _Fn_ptr() const noexcept {
         if constexpr (_Mode == _Function_storage_mode::_Small) {
             // cast away const to avoid complication of const propagation to here;
-            // const correctness is still enforced by _Move_only_function_call specializations.
+            // const correctness is still enforced by _Function_call specializations.
             return static_cast<_Fn*>(const_cast<_Move_only_function_data*>(this)->_Buf_ptr<_Fn>());
         } else {
             return static_cast<_Fn*>(_Pointers[1]);
@@ -1814,7 +1814,7 @@ public:
 };
 
 template <class... _Signature>
-class _Move_only_function_call {
+class _Function_call {
     static_assert(_Always_false<integral_constant<size_t, sizeof...(_Signature)>>,
         "std::move_only_function only accepts function types as template arguments, "
         "with possibly const/ref/noexcept qualifiers. Also, unlike std::function, "
@@ -1826,7 +1826,7 @@ class _Move_only_function_call {
 // (Avoiding C++ preprocessor for better IDE navigation and debugging experience)
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...)> : public _Function_base<_Rx, false, _Types...> {
+class _Function_call<_Rx(_Types...)> : public _Function_base<_Rx, false, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = _Vt&;
@@ -1841,7 +1841,7 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) &> : public _Function_base<_Rx, false, _Types...> {
+class _Function_call<_Rx(_Types...) &> : public _Function_base<_Rx, false, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = _Vt&;
@@ -1855,7 +1855,7 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) &&> : public _Function_base<_Rx, false, _Types...> {
+class _Function_call<_Rx(_Types...) &&> : public _Function_base<_Rx, false, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = _Vt&&;
@@ -1869,7 +1869,7 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) const> : public _Function_base<_Rx, false, _Types...> {
+class _Function_call<_Rx(_Types...) const> : public _Function_base<_Rx, false, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
@@ -1884,7 +1884,7 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) const&> : public _Function_base<_Rx, false, _Types...> {
+class _Function_call<_Rx(_Types...) const&> : public _Function_base<_Rx, false, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
@@ -1898,7 +1898,7 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) const&&> : public _Function_base<_Rx, false, _Types...> {
+class _Function_call<_Rx(_Types...) const&&> : public _Function_base<_Rx, false, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = const _Vt&&;
@@ -1913,7 +1913,7 @@ public:
 
 #ifdef __cpp_noexcept_function_type
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) noexcept> : public _Function_base<_Rx, true, _Types...> {
+class _Function_call<_Rx(_Types...) noexcept> : public _Function_base<_Rx, true, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = _Vt&;
@@ -1928,7 +1928,7 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) & noexcept> : public _Function_base<_Rx, true, _Types...> {
+class _Function_call<_Rx(_Types...) & noexcept> : public _Function_base<_Rx, true, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = _Vt&;
@@ -1942,7 +1942,7 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) && noexcept> : public _Function_base<_Rx, true, _Types...> {
+class _Function_call<_Rx(_Types...) && noexcept> : public _Function_base<_Rx, true, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = _Vt&&;
@@ -1956,7 +1956,7 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) const noexcept> : public _Function_base<_Rx, true, _Types...> {
+class _Function_call<_Rx(_Types...) const noexcept> : public _Function_base<_Rx, true, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
@@ -1971,7 +1971,7 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) const & noexcept> : public _Function_base<_Rx, true, _Types...> {
+class _Function_call<_Rx(_Types...) const & noexcept> : public _Function_base<_Rx, true, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
@@ -1985,7 +1985,7 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) const && noexcept> : public _Function_base<_Rx, true, _Types...> {
+class _Function_call<_Rx(_Types...) const && noexcept> : public _Function_base<_Rx, true, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = const _Vt&&;
@@ -2000,9 +2000,9 @@ public:
 #endif // defined(__cpp_noexcept_function_type)
 
 _EXPORT_STD template <class... _Signature>
-class move_only_function : private _Move_only_function_call<_Signature...> {
+class move_only_function : private _Function_call<_Signature...> {
 private:
-    using _Call = _Move_only_function_call<_Signature...>;
+    using _Call = _Function_call<_Signature...>;
 
     template <class _Fn>
     static constexpr bool _Enable_one_arg_constructor = !is_same_v<remove_cvref_t<_Fn>, move_only_function>
