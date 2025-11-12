@@ -3,7 +3,7 @@
 
 # This script generates the partial specializations of _Function_call in <functional>.
 
-def specialization(cv: str, ref: str, ref_inv: str, noex: str, noex_val: str, callable: str) -> str:
+def specialization(self: str, cv: str, ref: str, ref_inv: str, noex: str, noex_val: str, callable: str) -> str:
     return f"""template <class _Rx, class... _Types>
 class _Function_call<_Rx(_Types...) {cv} {ref} {noex}> : public _Function_base<_Rx, {noex_val}, _Types...> {{
 public:
@@ -14,22 +14,22 @@ public:
     static constexpr bool _Is_callable_from = {callable};
 
     _Rx operator()(_Types... _Args) {cv} {ref} {noex} {{
-        return this->_Get_invoke()(&this->_Data, _STD forward<_Types>(_Args)...);
+        return this->_Get_invoke()({self}, _STD forward<_Types>(_Args)...);
     }}
 }};
 """
 
 
-def ref_permutations(cv: str, noex: str, noex_val: str, trait: str) -> str:
-    return specialization(cv, "", "&", noex, noex_val, \
+def ref_permutations(self: str, cv: str, noex: str, noex_val: str, trait: str) -> str:
+    return specialization(self, cv, "", "&", noex, noex_val, \
         f"{trait}<_Rx, {cv} _Vt, _Types...> && {trait}<_Rx, {cv} _Vt&, _Types...>") + "\n" \
-        + specialization(cv, "&", "&", noex, noex_val, f"{trait}<_Rx, {cv} _Vt&, _Types...>") + "\n" \
-        + specialization(cv, "&&", "&&", noex, noex_val, f"{trait}<_Rx, {cv} _Vt, _Types...>")
+        + specialization(self, cv, "&", "&", noex, noex_val, f"{trait}<_Rx, {cv} _Vt&, _Types...>") + "\n" \
+        + specialization(self, cv, "&&", "&&", noex, noex_val, f"{trait}<_Rx, {cv} _Vt, _Types...>")
 
 
 def cvref_permutations(noex: str, noex_val: str, trait: str) -> str:
-    return ref_permutations("", noex, noex_val, trait) + "\n" \
-        + ref_permutations("const", noex, noex_val, trait)
+    return ref_permutations("&this->_Data", "", noex, noex_val, trait) + "\n" \
+        + ref_permutations("const_cast<_Function_data*>(&this->_Data)", "const", noex, noex_val, trait)
 
 
 if __name__ == "__main__":
