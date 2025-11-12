@@ -6,7 +6,7 @@
 def specialization(cv: str, ref: str, ref_inv: str, noex: str, noex_val: str, callable: str) -> str:
     return f"""template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) {cv} {ref} {noex}>
-    : public _Move_only_function_base<_Rx, {noex_val}, _Types...> {{
+    : public _Function_base<_Rx, {noex_val}, _Types...> {{
 public:
     template <class _Vt>
     using _VtInvQuals = {cv} _Vt {ref_inv};
