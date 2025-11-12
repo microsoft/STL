@@ -80,6 +80,7 @@
 //     (__cpp_lib_freestanding_algorithm and __cpp_lib_freestanding_array only)
 // P2937R0 Freestanding Library: Remove strtok
 // P2968R2 Make std::ignore A First-Class Object
+// P3016R6 Resolve Inconsistencies In begin/end For valarray And Braced Initializer Lists
 // P3223R2 Making istream::ignore() Less Surprising
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic<cv T>)
@@ -1832,6 +1833,11 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_tuple_like                  202207L
 #define __cpp_lib_unreachable                 202202L
 #endif // _HAS_CXX23
+
+// C++26
+#define __cpp_lib_initializer_list 202511L
+#define __cpp_lib_valarray         202511L
+
 
 // macros with language mode sensitivity
 #if _HAS_CXX20
