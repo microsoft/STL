@@ -1681,6 +1681,8 @@ enum class _Rx_unwind_ops {
     _Loop_nongreedy,
     _Loop_greedy,
     _Loop_restore_vals,
+    _Capture_restore_begin,
+    _Capture_restore_end
 };
 
 template <class _BidIt>
@@ -1689,7 +1691,7 @@ public:
     _Rx_unwind_ops _Code;
     int _Loop_idx_sav;
     _Node_base* _Node;
-    _Tgt_state_t<_BidIt> _Match_state;
+    _Bt_state_t<_BidIt> _Match_state;
     size_t _Loop_frame_idx_sav;
 };
 
@@ -3946,7 +3948,10 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 { // record current position
                     _Node_capture* _Node = static_cast<_Node_capture*>(_Nx);
                     if (_Node->_Idx != 0U) {
-                        _Tgt_state._Grps[_Node->_Idx]._Begin = _Tgt_state._Cur;
+                        auto& _Group    = _Tgt_state._Grps[_Node->_Idx];
+                        auto _Frame_idx = _Push_frame(_Rx_unwind_ops::_Capture_restore_begin, _Node);
+                        _Frames[_Frame_idx]._Match_state._Cur = _Group._Begin;
+                        _Group._Begin                         = _Tgt_state._Cur;
                     }
                     break;
                 }
@@ -3956,8 +3961,11 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     _Node_end_group* _Node = static_cast<_Node_end_group*>(_Nx);
                     _Node_capture* _Node0  = static_cast<_Node_capture*>(_Node->_Back);
                     if (_Node0->_Idx != 0U) { // update capture data
-                        _Tgt_state._Grp_valid[_Node0->_Idx] = true;
-                        _Tgt_state._Grps[_Node0->_Idx]._End = _Tgt_state._Cur;
+                        auto& _Group    = _Tgt_state._Grps[_Node0->_Idx];
+                        auto _Frame_idx = _Push_frame(_Rx_unwind_ops::_Capture_restore_end, _Node0);
+                        _Frames[_Frame_idx]._Match_state._Cur = _Group._End;
+                        _Tgt_state._Grp_valid[_Node0->_Idx]   = true;
+                        _Group._End                           = _Tgt_state._Cur;
                     }
                     break;
                 }
@@ -4322,6 +4330,20 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 
                     _Frame._Code = _Rx_unwind_ops::_Loop_restore_vals;
                     ++_Frames_count;
+                }
+                break;
+
+            case _Rx_unwind_ops::_Capture_restore_begin:
+                { // restore begin of capturing group
+                    auto _Node                           = static_cast<_Node_capture*>(_Frame._Node);
+                    _Tgt_state._Grps[_Node->_Idx]._Begin = _Frame._Match_state._Cur;
+                }
+                break;
+
+            case _Rx_unwind_ops::_Capture_restore_end:
+                { // restore end of capturing group
+                    auto _Node                         = static_cast<_Node_capture*>(_Frame._Node);
+                    _Tgt_state._Grps[_Node->_Idx]._End = _Frame._Match_state._Cur;
                 }
                 break;
 
