@@ -85,7 +85,7 @@ public:
         friend bitset;
 
     public:
-        _CONSTEXPR23 reference(const reference& _Bitref) noexcept = default;
+        _CONSTEXPR23 reference(const reference&) noexcept = default;
 
         _CONSTEXPR23 ~reference() noexcept {} // TRANSITION, ABI
 
