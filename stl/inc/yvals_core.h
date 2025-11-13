@@ -1609,6 +1609,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_freestanding_tuple               202306L
 #define __cpp_lib_freestanding_utility             202306L
 #define __cpp_lib_generic_associative_lookup       201304L
+#define __cpp_lib_initializer_list                 202511L
 #define __cpp_lib_integer_sequence                 201304L
 #define __cpp_lib_integral_constant_callable       201304L
 #define __cpp_lib_is_final                         201402L
@@ -1626,6 +1627,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_transformation_trait_aliases 201304L
 #define __cpp_lib_tuple_element_t              201402L
 #define __cpp_lib_tuples_by_type               201304L
+#define __cpp_lib_valarray                     202511L
 
 // C++17
 #define __cpp_lib_addressof_constexpr              201603L
@@ -1833,10 +1835,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_tuple_like                  202207L
 #define __cpp_lib_unreachable                 202202L
 #endif // _HAS_CXX23
-
-// C++26
-#define __cpp_lib_initializer_list 202511L
-#define __cpp_lib_valarray         202511L
 
 // macros with language mode sensitivity
 #if _HAS_CXX20

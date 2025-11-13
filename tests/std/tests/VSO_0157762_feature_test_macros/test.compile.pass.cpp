@@ -1048,3 +1048,7 @@ STATIC_ASSERT(__cpp_lib_variant == 202102L);
 #endif
 
 STATIC_ASSERT(__cpp_lib_void_t == 201411L);
+
+STATIC_ASSERT(__cpp_lib_initializer_list == 202511L);
+
+STATIC_ASSERT(__cpp_lib_valarray == 202511L);
