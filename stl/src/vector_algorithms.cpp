@@ -523,9 +523,199 @@ __declspec(noalias) void __stdcall __std_rotate(void* _First, void* const _Mid, 
 
 } // extern "C"
 
-#ifndef _M_ARM64
 namespace {
     namespace _Reversing {
+        template <class _BidIt>
+        void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
+            for (; _First != _Last && _First != --_Last; ++_First) {
+                const auto _Temp = *_First;
+                *_First          = *_Last;
+                *_Last           = _Temp;
+            }
+        }
+
+        template <class _BidIt, class _OutIt>
+        void _Reverse_copy_tail(const _BidIt _First, _BidIt _Last, _OutIt _Dest) noexcept {
+            while (_First != _Last) {
+                *_Dest++ = *--_Last;
+            }
+        }
+
+#ifdef _M_ARM64
+        struct _Traits_1 {
+            static uint8x8_t _Rev(const uint8x8_t _Val) noexcept {
+                return vrev64_u8(_Val);
+            }
+
+            static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
+                const uint8x16_t _Rev = vrev64q_u8(_Val);
+                return vextq_u8(_Rev, _Rev, 8);
+            }
+        };
+
+        struct _Traits_2 {
+            static uint8x8_t _Rev(const uint8x8_t _Val) noexcept {
+                return vreinterpret_u8_u16(vrev64_u16(vreinterpret_u16_u8(_Val)));
+            }
+
+            static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
+                const uint8x16_t _Rev = vreinterpretq_u8_u16(vrev64q_u16(vreinterpretq_u16_u8(_Val)));
+                return vextq_u8(_Rev, _Rev, 8);
+            }
+        };
+
+        struct _Traits_4 {
+            static uint8x8_t _Rev(const uint8x8_t _Val) noexcept {
+                return vreinterpret_u8_u32(vrev64_u32(vreinterpret_u32_u8(_Val)));
+            }
+
+            static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
+                const uint8x16_t _Rev = vreinterpretq_u8_u32(vrev64q_u32(vreinterpretq_u32_u8(_Val)));
+                return vextq_u8(_Rev, _Rev, 8);
+            }
+        };
+
+        struct _Traits_8 {
+            static uint8x8_t _Rev(const uint8x8_t _Val) noexcept {
+                return _Val;
+            }
+
+            static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
+                return vextq_u8(_Val, _Val, 8);
+            }
+        };
+
+        template <class _Traits, class _Ty>
+        __declspec(noalias) void __cdecl _Reverse_impl(void* _First, void* _Last) noexcept {
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 64) {
+                const void* _Stop_at      = _First;
+                constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
+                _Advance_bytes(_Stop_at, (_Length >> 1) & _Mask_32);
+                do {
+                    _Advance_bytes(_Last, -32);
+
+                    const uint8x16_t _Left1  = vld1q_u8(static_cast<uint8_t*>(_First) + 0);
+                    const uint8x16_t _Left2  = vld1q_u8(static_cast<uint8_t*>(_First) + 16);
+                    const uint8x16_t _Right1 = vld1q_u8(static_cast<uint8_t*>(_Last) + 0);
+                    const uint8x16_t _Right2 = vld1q_u8(static_cast<uint8_t*>(_Last) + 16);
+
+                    const uint8x16_t _Left1_reversed  = _Traits::_Rev(_Left1);
+                    const uint8x16_t _Left2_reversed  = _Traits::_Rev(_Left2);
+                    const uint8x16_t _Right1_reversed = _Traits::_Rev(_Right1);
+                    const uint8x16_t _Right2_reversed = _Traits::_Rev(_Right2);
+
+                    vst1q_u8(static_cast<uint8_t*>(_First) + 0, _Right2_reversed);
+                    vst1q_u8(static_cast<uint8_t*>(_First) + 16, _Right1_reversed);
+                    vst1q_u8(static_cast<uint8_t*>(_Last) + 0, _Left2_reversed);
+                    vst1q_u8(static_cast<uint8_t*>(_Last) + 16, _Left1_reversed);
+
+                    _Advance_bytes(_First, 32);
+                } while (_First != _Stop_at);
+            }
+
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 32) {
+                _Advance_bytes(_Last, -16);
+                const uint8x16_t _Left  = vld1q_u8(static_cast<uint8_t*>(_First));
+                const uint8x16_t _Right = vld1q_u8(static_cast<uint8_t*>(_Last));
+
+                const uint8x16_t _Left_reversed  = _Traits::_Rev(_Left);
+                const uint8x16_t _Right_reversed = _Traits::_Rev(_Right);
+
+                vst1q_u8(static_cast<uint8_t*>(_First), _Right_reversed);
+                vst1q_u8(static_cast<uint8_t*>(_Last), _Left_reversed);
+                _Advance_bytes(_First, 16);
+            }
+
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 16) {
+                _Advance_bytes(_Last, -8);
+                const uint8x8_t _Left  = vld1_u8(static_cast<uint8_t*>(_First));
+                const uint8x8_t _Right = vld1_u8(static_cast<uint8_t*>(_Last));
+
+                const uint8x8_t _Left_reversed  = _Traits::_Rev(_Left);
+                const uint8x8_t _Right_reversed = _Traits::_Rev(_Right);
+
+                vst1_u8(static_cast<uint8_t*>(_First), _Right_reversed);
+                vst1_u8(static_cast<uint8_t*>(_Last), _Left_reversed);
+                _Advance_bytes(_First, 8);
+            }
+
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 8) {
+                _Advance_bytes(_Last, -8);
+                const uint8x8_t _Left  = vld1_u8(static_cast<uint8_t*>(_First));
+                const uint8x8_t _Right = vld1_u8(static_cast<uint8_t*>(_Last));
+
+                const uint8x8_t _Left_reversed  = _Traits::_Rev(_Left);
+                const uint8x8_t _Right_reversed = _Traits::_Rev(_Right);
+
+                vst1_u8(static_cast<uint8_t*>(_First), _Right_reversed);
+                vst1_u8(static_cast<uint8_t*>(_Last), _Left_reversed);
+                _Advance_bytes(_First, 8);
+                return;
+            }
+
+            _Reverse_tail(static_cast<_Ty*>(_First), static_cast<_Ty*>(_Last));
+        }
+
+        template <class _Traits, class _Ty>
+        __declspec(noalias) void __cdecl _Reverse_copy_impl(
+            const void* _First, const void* _Last, void* _Dest) noexcept {
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 64) {
+                const void* _Stop_at      = _Dest;
+                constexpr size_t _Mask_64 = ~((static_cast<size_t>(1) << 6) - 1);
+                _Advance_bytes(_Stop_at, _Length & _Mask_64);
+                do {
+                    _Advance_bytes(_Last, -64);
+                    const uint8x16_t _Block1 = vld1q_u8(static_cast<const uint8_t*>(_Last) + 0);
+                    const uint8x16_t _Block2 = vld1q_u8(static_cast<const uint8_t*>(_Last) + 16);
+                    const uint8x16_t _Block3 = vld1q_u8(static_cast<const uint8_t*>(_Last) + 32);
+                    const uint8x16_t _Block4 = vld1q_u8(static_cast<const uint8_t*>(_Last) + 48);
+
+                    const uint8x16_t _Block1_reversed = _Traits::_Rev(_Block1);
+                    const uint8x16_t _Block2_reversed = _Traits::_Rev(_Block2);
+                    const uint8x16_t _Block3_reversed = _Traits::_Rev(_Block3);
+                    const uint8x16_t _Block4_reversed = _Traits::_Rev(_Block4);
+
+                    vst1q_u8(static_cast<uint8_t*>(_Dest) + 0, _Block4_reversed);
+                    vst1q_u8(static_cast<uint8_t*>(_Dest) + 16, _Block3_reversed);
+                    vst1q_u8(static_cast<uint8_t*>(_Dest) + 32, _Block2_reversed);
+                    vst1q_u8(static_cast<uint8_t*>(_Dest) + 48, _Block1_reversed);
+                    _Advance_bytes(_Dest, 64);
+                } while (_Dest != _Stop_at);
+            }
+
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 32) {
+                _Advance_bytes(_Last, -32);
+                const uint8x16_t _Block1 = vld1q_u8(static_cast<const uint8_t*>(_Last) + 0);
+                const uint8x16_t _Block2 = vld1q_u8(static_cast<const uint8_t*>(_Last) + 16);
+
+                const uint8x16_t _Block1_reversed = _Traits::_Rev(_Block1);
+                const uint8x16_t _Block2_reversed = _Traits::_Rev(_Block2);
+
+                vst1q_u8(static_cast<uint8_t*>(_Dest) + 0, _Block2_reversed);
+                vst1q_u8(static_cast<uint8_t*>(_Dest) + 16, _Block1_reversed);
+                _Advance_bytes(_Dest, 32);
+            }
+
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 16) {
+                _Advance_bytes(_Last, -16);
+                const uint8x16_t _Block          = vld1q_u8(static_cast<const uint8_t*>(_Last));
+                const uint8x16_t _Block_reversed = _Traits::_Rev(_Block);
+                vst1q_u8(static_cast<uint8_t*>(_Dest) + 0, _Block_reversed);
+                _Advance_bytes(_Dest, 16);
+            }
+
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 8) {
+                _Advance_bytes(_Last, -8);
+                const uint8x8_t _Block          = vld1_u8(static_cast<const uint8_t*>(_Last));
+                const uint8x8_t _Block_reversed = _Traits::_Rev(_Block);
+                vst1_u8(static_cast<uint8_t*>(_Dest) + 0, _Block_reversed);
+                _Advance_bytes(_Dest, 8);
+            }
+
+            _Reverse_copy_tail(
+                static_cast<const _Ty*>(_First), static_cast<const _Ty*>(_Last), static_cast<_Ty*>(_Dest));
+        }
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
 #ifdef _M_ARM64EC
         using _Traits_1 = void;
         using _Traits_2 = void;
@@ -585,22 +775,6 @@ namespace {
             }
         };
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
-
-        template <class _BidIt>
-        void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
-            for (; _First != _Last && _First != --_Last; ++_First) {
-                const auto _Temp = *_First;
-                *_First          = *_Last;
-                *_Last           = _Temp;
-            }
-        }
-
-        template <class _BidIt, class _OutIt>
-        void _Reverse_copy_tail(const _BidIt _First, _BidIt _Last, _OutIt _Dest) noexcept {
-            while (_First != _Last) {
-                *_Dest++ = *--_Last;
-            }
-        }
 
 #ifndef _M_ARM64EC
         __m256i _Avx2_rev_tail_mask_32(const size_t _Count_in_bytes) noexcept {
@@ -700,6 +874,7 @@ namespace {
             _Reverse_copy_tail(
                 static_cast<const _Ty*>(_First), static_cast<const _Ty*>(_Last), static_cast<_Ty*>(_Dest));
         }
+#endif // ^^^ !defined(_M_ARM64) ^^^
     } // namespace _Reversing
 } // unnamed namespace
 
@@ -743,6 +918,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 
 } // extern "C"
 
+#ifndef _M_ARM64
 namespace {
     namespace _Sorting {
         enum _Min_max_mode {
