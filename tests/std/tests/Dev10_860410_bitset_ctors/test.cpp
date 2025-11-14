@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 
 using namespace std;
 
@@ -30,6 +31,100 @@ namespace lwg_4140 {
         test_default_constructor({});
     }
 } // namespace lwg_4140
+
+// Also test LWG-4294 "bitset(const CharT*) constructor needs to be constrained".
+
+template <size_t Len, class Elem, bool Expected>
+void test_ntcts_constructibility_single() { // COMPILE-ONLY
+    STATIC_ASSERT(is_constructible_v<bitset<Len>, Elem*> == Expected);
+    STATIC_ASSERT(is_constructible_v<bitset<Len>, const Elem*> == Expected);
+    // the constructor is explicit
+    STATIC_ASSERT(!is_convertible_v<Elem*, bitset<Len>>);
+    STATIC_ASSERT(!is_convertible_v<const Elem*, bitset<Len>>);
+}
+
+template <class Elem, bool Expected>
+void test_ntcts_constructibility_for_lengths() { // COMPILE-ONLY
+    test_ntcts_constructibility_single<0, Elem, Expected>();
+    test_ntcts_constructibility_single<1, Elem, Expected>();
+    test_ntcts_constructibility_single<8, Elem, Expected>();
+    test_ntcts_constructibility_single<16, Elem, Expected>();
+    test_ntcts_constructibility_single<32, Elem, Expected>();
+    test_ntcts_constructibility_single<48, Elem, Expected>();
+    test_ntcts_constructibility_single<64, Elem, Expected>();
+    test_ntcts_constructibility_single<96, Elem, Expected>();
+}
+
+void test_ntcts_constructibility() { // COMPILE-ONLY
+    // test encoded character types (expected usages)
+    test_ntcts_constructibility_for_lengths<char, true>();
+#ifdef __cpp_char8_t
+    test_ntcts_constructibility_for_lengths<char8_t, true>();
+#endif // __cpp_char8_t
+    test_ntcts_constructibility_for_lengths<char16_t, true>();
+    test_ntcts_constructibility_for_lengths<char32_t, true>();
+    test_ntcts_constructibility_for_lengths<wchar_t, true>();
+
+    enum unscoped_enum {};
+    enum class scoped_enum {};
+
+    struct pod_class {
+        int n1;
+    };
+    struct missing_trivial_default_ctor {
+        int n2 = 42;
+    };
+    struct missing_standard_layout : pod_class {
+        int n3;
+    };
+    struct missing_trivially_copyable {
+        missing_trivially_copyable()                                             = default;
+        missing_trivially_copyable(const missing_trivially_copyable&)            = default;
+        missing_trivially_copyable(missing_trivially_copyable&&)                 = default;
+        missing_trivially_copyable& operator=(const missing_trivially_copyable&) = default;
+        constexpr missing_trivially_copyable& operator=(missing_trivially_copyable&&) noexcept {
+            return *this;
+        }
+        ~missing_trivially_copyable() = default;
+    };
+
+    // test scalar types
+    test_ntcts_constructibility_for_lengths<int, true>();
+    test_ntcts_constructibility_for_lengths<char*, true>();
+    test_ntcts_constructibility_for_lengths<void (*)(), true>();
+    test_ntcts_constructibility_for_lengths<unscoped_enum, true>();
+    test_ntcts_constructibility_for_lengths<scoped_enum, true>();
+    test_ntcts_constructibility_for_lengths<int missing_trivial_default_ctor::*, true>();
+    test_ntcts_constructibility_for_lengths<void (missing_standard_layout::*)() const&, true>();
+
+    // test POD array types
+    test_ntcts_constructibility_for_lengths<char[1], false>();
+    test_ntcts_constructibility_for_lengths<char[1][2], false>();
+#ifdef __cpp_char8_t
+    test_ntcts_constructibility_for_lengths<char8_t[2], false>();
+    test_ntcts_constructibility_for_lengths<char8_t[2][4], false>();
+#endif // __cpp_char8_t
+    test_ntcts_constructibility_for_lengths<char16_t[3], false>();
+    test_ntcts_constructibility_for_lengths<char16_t[3][6], false>();
+    test_ntcts_constructibility_for_lengths<char32_t[4], false>();
+    test_ntcts_constructibility_for_lengths<char32_t[4][8], false>();
+    test_ntcts_constructibility_for_lengths<wchar_t[5], false>();
+    test_ntcts_constructibility_for_lengths<wchar_t[5][10], false>();
+    test_ntcts_constructibility_for_lengths<int[6], false>();
+    test_ntcts_constructibility_for_lengths<int[6][12][3], false>();
+    test_ntcts_constructibility_for_lengths<char* [7], false>();
+    test_ntcts_constructibility_for_lengths<char* [7][1][2][14], false>();
+
+    // test class types
+    test_ntcts_constructibility_for_lengths<pod_class, true>();
+    test_ntcts_constructibility_for_lengths<missing_trivial_default_ctor, false>();
+    test_ntcts_constructibility_for_lengths<missing_standard_layout, false>();
+    test_ntcts_constructibility_for_lengths<missing_trivially_copyable, false>();
+
+    // test worse class types
+    test_ntcts_constructibility_for_lengths<string, false>();
+    test_ntcts_constructibility_for_lengths<invalid_argument, false>();
+}
 
 const char parsedStr[] = "1000110111110011110111111111111111010111110111100101010100001001"
                          "1111111111111111111111111111111111111111111111111111111111111111"
