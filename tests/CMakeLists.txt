@@ -15,9 +15,7 @@ set(LIBCXX_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/libcxx" CACHE PATH
 
 option(TESTS_BUILD_ONLY "Only run the build steps of tests" OFF)
 
-add_subdirectory(libcxx)
 add_subdirectory(std)
-add_subdirectory(tr1)
 
 # Add the stl-lit subdirectory last so all the test directories have had a
 # chance to add to the config map and test directory global properties.
