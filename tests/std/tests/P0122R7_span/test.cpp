@@ -153,11 +153,11 @@ using BorrowedContiguousSizedRange = BasicRange<int, true>;
 template <typename T, size_t Extent = dynamic_extent>
 constexpr void FunctionTakingSpan(type_identity_t<span<T, Extent>>) {}
 
-template <typename U, typename = void>
-constexpr bool AsWritableBytesCompilesFor = false;
+template <typename U>
+constexpr bool AsBytesCompilesFor = requires { as_bytes(declval<U>()); };
 
 template <typename U>
-constexpr bool AsWritableBytesCompilesFor<U, void_t<decltype(as_writable_bytes(declval<U>()))>> = true;
+constexpr bool AsWritableBytesCompilesFor = requires { as_writable_bytes(declval<U>()); };
 
 constexpr bool test() {
     {
@@ -1016,10 +1016,23 @@ void test_non_constexpr() {
     static_assert(noexcept(as_writable_bytes(sp_dyn)));
     static_assert(noexcept(as_writable_bytes(sp_nine)));
 
+    static_assert(AsBytesCompilesFor<span<int>>);
+    static_assert(AsBytesCompilesFor<span<int, 5>>);
+    static_assert(AsBytesCompilesFor<span<const int>>);
+    static_assert(AsBytesCompilesFor<span<const int, 6>>);
+    static_assert(!AsBytesCompilesFor<span<volatile int>>);
+    static_assert(!AsBytesCompilesFor<span<volatile int, 7>>);
+    static_assert(!AsBytesCompilesFor<span<const volatile int>>);
+    static_assert(!AsBytesCompilesFor<span<const volatile int, 8>>);
+
     static_assert(AsWritableBytesCompilesFor<span<int>>);
     static_assert(AsWritableBytesCompilesFor<span<int, 9>>);
     static_assert(!AsWritableBytesCompilesFor<span<const int>>);
-    static_assert(!AsWritableBytesCompilesFor<span<const int, 9>>);
+    static_assert(!AsWritableBytesCompilesFor<span<const int, 10>>);
+    static_assert(!AsWritableBytesCompilesFor<span<volatile int>>);
+    static_assert(!AsWritableBytesCompilesFor<span<volatile int, 11>>);
+    static_assert(!AsWritableBytesCompilesFor<span<const volatile int>>);
+    static_assert(!AsWritableBytesCompilesFor<span<const volatile int, 12>>);
 
     auto sp_1 = as_bytes(sp_dyn);
     auto sp_2 = as_bytes(sp_nine);
