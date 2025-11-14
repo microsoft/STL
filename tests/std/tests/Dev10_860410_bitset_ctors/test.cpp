@@ -36,8 +36,8 @@ namespace lwg_4140 {
 
 template <size_t Len, class Elem, bool Expected>
 void test_ntcts_constructibility_single() { // COMPILE-ONLY
-    STATIC_ASSERT(is_constructible_v<bitset<Len>, Elem*> == Expected);
-    STATIC_ASSERT(is_constructible_v<bitset<Len>, const Elem*> == Expected);
+    STATIC_ASSERT(is_constructible_v<bitset<Len>, Elem*, size_t, Elem, Elem> == Expected);
+    STATIC_ASSERT(is_constructible_v<bitset<Len>, const Elem*, size_t, Elem, Elem> == Expected);
     // the constructor is explicit
     STATIC_ASSERT(!is_convertible_v<Elem*, bitset<Len>>);
     STATIC_ASSERT(!is_convertible_v<const Elem*, bitset<Len>>);
