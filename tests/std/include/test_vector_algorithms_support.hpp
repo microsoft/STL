@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
 #include <functional>
 #include <isa_availability.h>
 #include <random>
