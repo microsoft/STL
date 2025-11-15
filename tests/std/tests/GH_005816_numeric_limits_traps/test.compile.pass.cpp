@@ -22,7 +22,7 @@ static_assert(traps_<int>, "MSVC inserts check for zero to trap zero division. "
 #error Unsupported hardware
 #endif
 
-static_assert(traps_<unsigned int> == traps_<int> && traps_<unsigned int> == traps_<char32_t>
+static_assert(traps_<unsigned int> == traps_<int> && traps_<char32_t> == traps_<int> //
                   && traps_<long> == traps_<int> && traps_<unsigned long> == traps_<int>
                   && traps_<long long> == traps_<int> && traps_<unsigned long long> == traps_<int>,
     "all non-promoted integers should trap or not trap equally");
