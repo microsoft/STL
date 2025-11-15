@@ -53,7 +53,7 @@ int main() {
     assert(p2 != nullptr);
 
     test_all_element_sizes(p, page);
-#if defined(_M_IX86) || defined(_M_X64)
+#if defined(_M_IX86) || defined(_M_X64) && !defined(_M_ARM64EC)
     disable_instructions(__ISA_AVAILABLE_AVX2);
     test_all_element_sizes(p, page);
     disable_instructions(__ISA_AVAILABLE_SSE42);

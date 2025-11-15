@@ -28,11 +28,13 @@ void test_gh_3617() {
 int main() {
     test_gh_3617();
 
+#ifndef _M_ARM64EC
     disable_instructions(__ISA_AVAILABLE_AVX2);
     test_gh_3617();
 
     disable_instructions(__ISA_AVAILABLE_SSE42);
     test_gh_3617();
+#endif // !defined(_M_ARM64EC)
 }
 #else // ^^^ x64 / other architectures vvv
 int main() {}

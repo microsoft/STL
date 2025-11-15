@@ -80,7 +80,7 @@ void run_randomized_tests_with_different_isa_levels(TestFunc tests) {
 
     tests(gen);
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
+#if (defined(_M_IX86) || defined(_M_X64) && !defined(_M_ARM64EC)) && !defined(_M_CEE_PURE)
     disable_instructions(__ISA_AVAILABLE_AVX2);
     tests(gen);
 
