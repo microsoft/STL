@@ -10,14 +10,9 @@
 #include <vector>
 
 #include "test_min_max_element_support.hpp"
+#include "test_vector_algorithms_support.hpp"
 
 using namespace std;
-
-extern "C" long __isa_enabled;
-
-void disable_instructions(ISA_AVAILABILITY isa) {
-    __isa_enabled &= ~(1UL << static_cast<unsigned long>(isa));
-}
 
 void test_gh_3617() {
     // Test GH-3617 "<algorithm>: Silent bad codegen for vectorized meow_element() above 4 GB".
