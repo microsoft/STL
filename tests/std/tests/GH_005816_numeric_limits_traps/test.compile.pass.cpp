@@ -11,12 +11,11 @@ static_assert(traps_<int>,
     "The #ED hardware exception always happens for zero division and for division overflow INT_MIN/-1. "
     "It is translated to the corresponding SEH exceptions");
 #elif defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
-// The hardware does not trap.
 #ifdef __clang__
-static_assert(!traps_<int>, "Clang compiles code as is, so there's no trap");
+static_assert(!traps_<int>, "The hardware does not trap. Clang compiles code as is, so there's no trap");
 #else // ^^^ defined(__clang__) / !defined(__clang__) vvv
-static_assert(traps_<int>, "MSVC inserts check for zero to trap zero division. "
-                           "It does not insert checks for INT_MIN/-1 division overflow though.");
+static_assert(traps_<int>, "The hardware does not trap. MSVC inserts check for zero to trap zero division. "
+                           "It does not insert checks for INT_MIN/-1 division overflow though");
 #endif // ^^^ !defined(__clang__) ^^^
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64) ^^^
 #error Unsupported hardware
