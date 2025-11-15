@@ -34,8 +34,8 @@ static_assert(traps_<unsigned int> == traps_<int> && traps_<unsigned int> == tra
 
 static_assert(!traps_<bool>, "bool does not trap for a moot reason; see LWG-554 resolution");
 
-static_assert(
-    !traps_<char> && !traps_<signed char> && !traps_<unsigned char> && !traps_<unsigned short> && !traps_<char16_t>,
+static_assert(!traps_<char> && !traps_<signed char> && !traps_<unsigned char> //
+                  && !traps_<unsigned short> && !traps_<wchar_t> && !traps_<char16_t>,
     "promoted integers do not trap for a moot reason; see LWG-554 resolution");
 
 #ifdef __cpp_char8_t
