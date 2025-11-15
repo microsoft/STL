@@ -12,6 +12,8 @@
 #include <Windows.h>
 #pragma warning(pop)
 
+#include "test_vector_algorithms_support.hpp"
+
 using namespace std;
 
 template <class T>
@@ -30,14 +32,6 @@ void test_impl(void* sv, void* ev) {
         assert(ranges::find(m + start, unreachable_sentinel, '3') == m + 2);
     }
 }
-
-#if defined(_M_IX86) || defined(_M_X64)
-extern "C" long __isa_enabled;
-
-void disable_instructions(ISA_AVAILABILITY isa) {
-    __isa_enabled &= ~(1UL << static_cast<unsigned long>(isa));
-}
-#endif // defined(_M_IX86) || defined(_M_X64)
 
 void test_all_element_sizes(void* p, size_t page) {
     test_impl<char>(p, reinterpret_cast<char*>(p) + page);
