@@ -639,21 +639,29 @@ namespace {
                 _Advance_bytes(_First, 8);
             }
 
-            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 8) {
-                _Advance_bytes(_Last, -8);
-                const uint8x8_t _Left  = vld1_u8(static_cast<uint8_t*>(_First));
-                const uint8x8_t _Right = vld1_u8(static_cast<uint8_t*>(_Last));
 
-                const uint8x8_t _Left_reversed  = _Traits::_Rev(_Left);
-                const uint8x8_t _Right_reversed = _Traits::_Rev(_Right);
+            if constexpr (sizeof(_Ty) < 8) {
+                if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 8) {
+                    _Advance_bytes(_Last, -8);
 
-                vst1_u8(static_cast<uint8_t*>(_First), _Right_reversed);
-                vst1_u8(static_cast<uint8_t*>(_Last), _Left_reversed);
-                _Advance_bytes(_First, 8);
-                return;
+                    // Intentional overlapped loads/stores: read both sides first, then write.
+                    const uint8x8_t _Left  = vld1_u8(static_cast<uint8_t*>(_First));
+                    const uint8x8_t _Right = vld1_u8(static_cast<uint8_t*>(_Last));
+
+                    const uint8x8_t _Left_reversed  = _Traits::_Rev(_Left);
+                    const uint8x8_t _Right_reversed = _Traits::_Rev(_Right);
+
+                    vst1_u8(static_cast<uint8_t*>(_First), _Right_reversed);
+                    vst1_u8(static_cast<uint8_t*>(_Last), _Left_reversed);
+
+                    // Overlapped stores cover any 8-15B remainder, so do not fall through to scalar tail.
+                    return;
+                }
             }
 
-            _Reverse_tail(static_cast<_Ty*>(_First), static_cast<_Ty*>(_Last));
+            if constexpr (sizeof(_Ty) < 4) {
+                _Reverse_tail(static_cast<_Ty*>(_First), static_cast<_Ty*>(_Last));
+            }
         }
 
         template <class _Traits, class _Ty>
@@ -712,8 +720,10 @@ namespace {
                 _Advance_bytes(_Dest, 8);
             }
 
-            _Reverse_copy_tail(
-                static_cast<const _Ty*>(_First), static_cast<const _Ty*>(_Last), static_cast<_Ty*>(_Dest));
+            if constexpr (sizeof(_Ty) < 8) {
+                _Reverse_copy_tail(
+                    static_cast<const _Ty*>(_First), static_cast<const _Ty*>(_Last), static_cast<_Ty*>(_Dest));
+            }
         }
 #else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
 #ifdef _M_ARM64EC
