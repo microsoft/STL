@@ -9,7 +9,7 @@ constexpr bool traps_ = std::numeric_limits<T>::traps;
 #if defined(_M_IX86) || defined(_M_X64) && !defined(_M_ARM64EC)
 static_assert(traps_<int>,
     "The #ED hardware exception always happens for zero division and for division overflow INT_MIN/-1. "
-    "It is translated to the corresponding SEH exceptions");
+    "These are translated to STATUS_INTEGER_DIVIDE_BY_ZERO and STATUS_INTEGER_OVERFLOW  SEH exceptions");
 #elif defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
 #ifdef __clang__
 static_assert(!traps_<int>, "The hardware does not trap. Clang compiles code as is, so there's no trap");
