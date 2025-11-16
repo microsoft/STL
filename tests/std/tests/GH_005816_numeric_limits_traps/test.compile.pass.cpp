@@ -21,15 +21,24 @@ static_assert(traps_<int>, "The hardware does not trap. MSVC inserts check for z
 #error Unsupported hardware
 #endif
 
-static_assert(traps_<unsigned int> == traps_<int> && traps_<char32_t> == traps_<int> //
-                  && traps_<long> == traps_<int> && traps_<unsigned long> == traps_<int>
-                  && traps_<long long> == traps_<int> && traps_<unsigned long long> == traps_<int>,
+template <class T>
+constexpr bool promoted_and_traps_if_int_does = std::is_same_v<decltype(~T{}), T> && traps_<T> == traps_<int>;
+
+static_assert(promoted_and_traps_if_int_does<unsigned int> //
+                  && promoted_and_traps_if_int_does<long> && promoted_and_traps_if_int_does<unsigned long>
+                  && promoted_and_traps_if_int_does<long long> && promoted_and_traps_if_int_does<unsigned long long>,
     "all non-promoted integers should trap or not trap equally");
+
+template <class T>
+constexpr bool not_promoted_and_does_not_trap = !std::is_same_v<decltype(~T{}), T> && !traps_<T>;
 
 static_assert(!traps_<bool>, "bool does not trap for a moot reason; see LWG-554 resolution");
 
-static_assert(!traps_<char> && !traps_<signed char> && !traps_<unsigned char> //
-                  && !traps_<short> && !traps_<unsigned short> && !traps_<wchar_t> && !traps_<char16_t>,
+static_assert(not_promoted_and_does_not_trap<char> && not_promoted_and_does_not_trap<signed char>
+                  && not_promoted_and_does_not_trap<unsigned char> //
+                  && not_promoted_and_does_not_trap<short> && not_promoted_and_does_not_trap<unsigned short>
+                  && not_promoted_and_does_not_trap<wchar_t> && not_promoted_and_does_not_trap<char16_t>
+                  && not_promoted_and_does_not_trap<char32_t>,
     "promoted integers do not trap for a moot reason; see LWG-554 resolution");
 
 #ifdef __cpp_char8_t

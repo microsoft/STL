@@ -453,6 +453,7 @@ public:
     }
 
     static constexpr bool is_modulo = true;
+    static constexpr bool traps     = false;
     static constexpr int digits     = 32;
     static constexpr int digits10   = 9;
 };
