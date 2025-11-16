@@ -3919,7 +3919,27 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 }
 
             case _N_end_assert:
-                _Next = nullptr;
+                for (;;) {
+                    --_Frames_count;
+                    const auto& _Frame = _Frames[_Frames_count];
+                    const auto _Code   = _Frame._Code;
+                    if (_Code == _Rx_unwind_ops::_After_assert || _Code == _Rx_unwind_ops::_After_neg_assert) {
+                        _Tgt_state._Cur = _Frame._Match_state._Cur;
+                        _Decrease_stack_usage_count();
+                        if (_Code == _Rx_unwind_ops::_After_assert) {
+                            _Next = _Frame._Node->_Next;
+                        } else {
+                            _Failed = true;
+                        }
+                        break;
+                    } else if (_Code == _Rx_unwind_ops::_Disjunction_eval_alt_on_failure
+                               || _Code == _Rx_unwind_ops::_Disjunction_eval_alt_always
+                               || _Code == _Rx_unwind_ops::_Loop_greedy //
+                               || _Code == _Rx_unwind_ops::_Loop_nongreedy
+                               || _Code == _Rx_unwind_ops::_Loop_restore_vals) {
+                        _Decrease_stack_usage_count();
+                    }
+                }
                 break;
 
             case _N_capture:
@@ -4184,24 +4204,20 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 
             switch (_Frame._Code) {
             case _Rx_unwind_ops::_After_assert:
-                { // positive assert completed
+                { // matching pattern of positive assert failed
+                    _STL_INTERNAL_CHECK(_Failed);
                     _Decrease_stack_usage_count();
-                    if (!_Failed) {
-                        _Tgt_state._Cur = _Frame._Match_state._Cur;
-                        _Nx             = _Frame._Node->_Next;
-                    }
                     break;
                 }
 
             case _Rx_unwind_ops::_After_neg_assert:
-                { // negative assert completed
+                { // matching pattern of negative assert failed
+                    _STL_INTERNAL_CHECK(_Failed);
                     _Decrease_stack_usage_count();
-                    if (_Failed) {
-                        const _Bt_state_t<_It>& _St = _Frame._Match_state;
-                        _Tgt_state                  = _St;
-                        _Nx                         = _Frame._Node->_Next;
-                    }
-                    _Failed = !_Failed;
+                    const _Bt_state_t<_It>& _St = _Frame._Match_state;
+                    _Tgt_state                  = _St;
+                    _Nx                         = _Frame._Node->_Next;
+                    _Failed                     = false;
                     break;
                 }
 

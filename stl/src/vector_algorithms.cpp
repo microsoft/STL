@@ -250,9 +250,113 @@ void* __cdecl __std_swap_ranges_trivially_swappable(
 
 } // extern "C"
 
-#ifndef _M_ARM64
 namespace {
     namespace _Rotating {
+#ifdef _M_ARM64
+        void __forceinline _Swap_3_ranges(void* _First1, void* const _Last1, void* _First2, void* _First3) noexcept {
+            if (_Byte_length(_First1, _Last1) >= 64) {
+                constexpr size_t _Mask_64 = ~((static_cast<size_t>(1) << 6) - 1);
+                const void* _Stop_at      = _First1;
+                _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_64);
+                do {
+                    const uint8x16_t _Val1Lo1 = vld1q_u8(static_cast<uint8_t*>(_First1) + 0);
+                    const uint8x16_t _Val1Lo2 = vld1q_u8(static_cast<uint8_t*>(_First1) + 16);
+                    const uint8x16_t _Val1Hi1 = vld1q_u8(static_cast<uint8_t*>(_First1) + 32);
+                    const uint8x16_t _Val1Hi2 = vld1q_u8(static_cast<uint8_t*>(_First1) + 48);
+                    const uint8x16_t _Val2Lo1 = vld1q_u8(static_cast<uint8_t*>(_First2) + 0);
+                    const uint8x16_t _Val2Lo2 = vld1q_u8(static_cast<uint8_t*>(_First2) + 16);
+                    const uint8x16_t _Val2Hi1 = vld1q_u8(static_cast<uint8_t*>(_First2) + 32);
+                    const uint8x16_t _Val2Hi2 = vld1q_u8(static_cast<uint8_t*>(_First2) + 48);
+                    const uint8x16_t _Val3Lo1 = vld1q_u8(static_cast<uint8_t*>(_First3) + 0);
+                    const uint8x16_t _Val3Lo2 = vld1q_u8(static_cast<uint8_t*>(_First3) + 16);
+                    const uint8x16_t _Val3Hi1 = vld1q_u8(static_cast<uint8_t*>(_First3) + 32);
+                    const uint8x16_t _Val3Hi2 = vld1q_u8(static_cast<uint8_t*>(_First3) + 48);
+                    vst1q_u8(static_cast<uint8_t*>(_First1) + 0, _Val2Lo1);
+                    vst1q_u8(static_cast<uint8_t*>(_First1) + 16, _Val2Lo2);
+                    vst1q_u8(static_cast<uint8_t*>(_First1) + 32, _Val2Hi1);
+                    vst1q_u8(static_cast<uint8_t*>(_First1) + 48, _Val2Hi2);
+                    vst1q_u8(static_cast<uint8_t*>(_First2) + 0, _Val3Lo1);
+                    vst1q_u8(static_cast<uint8_t*>(_First2) + 16, _Val3Lo2);
+                    vst1q_u8(static_cast<uint8_t*>(_First2) + 32, _Val3Hi1);
+                    vst1q_u8(static_cast<uint8_t*>(_First2) + 48, _Val3Hi2);
+                    vst1q_u8(static_cast<uint8_t*>(_First3) + 0, _Val1Lo1);
+                    vst1q_u8(static_cast<uint8_t*>(_First3) + 16, _Val1Lo2);
+                    vst1q_u8(static_cast<uint8_t*>(_First3) + 32, _Val1Hi1);
+                    vst1q_u8(static_cast<uint8_t*>(_First3) + 48, _Val1Hi2);
+                    _Advance_bytes(_First1, 64);
+                    _Advance_bytes(_First2, 64);
+                    _Advance_bytes(_First3, 64);
+                } while (_First1 != _Stop_at);
+            }
+
+            if (_Byte_length(_First1, _Last1) >= 32) {
+                const uint8x16_t _Val1Lo = vld1q_u8(static_cast<uint8_t*>(_First1) + 0);
+                const uint8x16_t _Val1Hi = vld1q_u8(static_cast<uint8_t*>(_First1) + 16);
+                const uint8x16_t _Val2Lo = vld1q_u8(static_cast<uint8_t*>(_First2) + 0);
+                const uint8x16_t _Val2Hi = vld1q_u8(static_cast<uint8_t*>(_First2) + 16);
+                const uint8x16_t _Val3Lo = vld1q_u8(static_cast<uint8_t*>(_First3) + 0);
+                const uint8x16_t _Val3Hi = vld1q_u8(static_cast<uint8_t*>(_First3) + 16);
+                vst1q_u8(static_cast<uint8_t*>(_First1) + 0, _Val2Lo);
+                vst1q_u8(static_cast<uint8_t*>(_First1) + 16, _Val2Hi);
+                vst1q_u8(static_cast<uint8_t*>(_First2) + 0, _Val3Lo);
+                vst1q_u8(static_cast<uint8_t*>(_First2) + 16, _Val3Hi);
+                vst1q_u8(static_cast<uint8_t*>(_First3) + 0, _Val1Lo);
+                vst1q_u8(static_cast<uint8_t*>(_First3) + 16, _Val1Hi);
+                _Advance_bytes(_First1, 32);
+                _Advance_bytes(_First2, 32);
+                _Advance_bytes(_First3, 32);
+            }
+
+            if (_Byte_length(_First1, _Last1) >= 16) {
+                const uint8x16_t _Val1 = vld1q_u8(static_cast<uint8_t*>(_First1));
+                const uint8x16_t _Val2 = vld1q_u8(static_cast<uint8_t*>(_First2));
+                const uint8x16_t _Val3 = vld1q_u8(static_cast<uint8_t*>(_First3));
+                vst1q_u8(static_cast<uint8_t*>(_First1), _Val2);
+                vst1q_u8(static_cast<uint8_t*>(_First2), _Val3);
+                vst1q_u8(static_cast<uint8_t*>(_First3), _Val1);
+                _Advance_bytes(_First1, 16);
+                _Advance_bytes(_First2, 16);
+                _Advance_bytes(_First3, 16);
+            }
+
+            if (_Byte_length(_First1, _Last1) >= 8) {
+                const uint8x8_t _Val1 = vld1_u8(static_cast<uint8_t*>(_First1));
+                const uint8x8_t _Val2 = vld1_u8(static_cast<uint8_t*>(_First2));
+                const uint8x8_t _Val3 = vld1_u8(static_cast<uint8_t*>(_First3));
+                vst1_u8(static_cast<uint8_t*>(_First1), _Val2);
+                vst1_u8(static_cast<uint8_t*>(_First2), _Val3);
+                vst1_u8(static_cast<uint8_t*>(_First3), _Val1);
+                _Advance_bytes(_First1, 8);
+                _Advance_bytes(_First2, 8);
+                _Advance_bytes(_First3, 8);
+            }
+
+            if (_Byte_length(_First1, _Last1) >= 4) {
+                uint32x2_t _Val1 = vdup_n_u32(0);
+                uint32x2_t _Val2 = vdup_n_u32(0);
+                uint32x2_t _Val3 = vdup_n_u32(0);
+                _Val1            = vld1_lane_u32(static_cast<uint32_t*>(_First1), _Val1, 0);
+                _Val2            = vld1_lane_u32(static_cast<uint32_t*>(_First2), _Val2, 0);
+                _Val3            = vld1_lane_u32(static_cast<uint32_t*>(_First3), _Val3, 0);
+                vst1_lane_u32(static_cast<uint32_t*>(_First1), _Val2, 0);
+                vst1_lane_u32(static_cast<uint32_t*>(_First2), _Val3, 0);
+                vst1_lane_u32(static_cast<uint32_t*>(_First3), _Val1, 0);
+                _Advance_bytes(_First1, 4);
+                _Advance_bytes(_First2, 4);
+                _Advance_bytes(_First3, 4);
+            }
+
+            auto _First1c = static_cast<unsigned char*>(_First1);
+            auto _First2c = static_cast<unsigned char*>(_First2);
+            auto _First3c = static_cast<unsigned char*>(_First3);
+            for (; _First1c != _Last1; ++_First1c, ++_First2c, ++_First3c) {
+                const unsigned char _Ch = *_First1c;
+                *_First1c               = *_First2c;
+                *_First2c               = *_First3c;
+                *_First3c               = _Ch;
+            }
+        }
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
         void _Swap_3_ranges(void* _First1, void* const _Last1, void* _First2, void* _First3) noexcept {
 #ifndef _M_ARM64EC
             constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
@@ -346,6 +450,7 @@ namespace {
                 *_First3c               = _Ch;
             }
         }
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
         constexpr size_t _Buf_size = 512;
 
@@ -418,6 +523,7 @@ __declspec(noalias) void __stdcall __std_rotate(void* _First, void* const _Mid, 
 
 } // extern "C"
 
+#ifndef _M_ARM64
 namespace {
     namespace _Reversing {
 #ifdef _M_ARM64EC
