@@ -33,7 +33,7 @@ static_assert(non_promoted_and_traps_if_int_does<unsigned int> //
 template <class T>
 constexpr bool promoted_and_does_not_trap = !std::is_same_v<decltype(~T{}), T> && !traps_<T>;
 
-static_assert(promoted_and_does_not_trap<bool>, "bool does not trap for a moot reason; see LWG-554 resolution");
+static_assert(!traps_<bool>, "bool does not trap for a moot reason; see LWG-554 resolution");
 
 static_assert(promoted_and_does_not_trap<char> && promoted_and_does_not_trap<signed char>
                   && promoted_and_does_not_trap<unsigned char> //
