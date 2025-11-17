@@ -26,7 +26,7 @@ add_subdirectory(utils/stl-lit)
 find_package(Python "3.14.0" REQUIRED COMPONENTS Interpreter)
 
 if(NOT DEFINED LIT_FLAGS)
-    set(LIT_FLAGS "-o" "${CMAKE_CURRENT_BINARY_DIR}/test_results.json")
+    set(LIT_FLAGS "-o" "${CMAKE_CURRENT_BINARY_DIR}/test_results.json" "--time-tests")
 endif()
 
 set(STL_LIT_COMMAND ${Python_EXECUTABLE} ${STL_LIT_OUTPUT} ${LIT_FLAGS})
