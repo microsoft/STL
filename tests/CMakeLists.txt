@@ -26,12 +26,12 @@ add_subdirectory(utils/stl-lit)
 find_package(Python "3.14.0" REQUIRED COMPONENTS Interpreter)
 
 if(NOT DEFINED LIT_FLAGS)
-    set(LIT_FLAGS "-o" "${CMAKE_CURRENT_BINARY_DIR}/test_results.json" "--time-tests")
+    set(LIT_FLAGS "-o" "${CMAKE_CURRENT_BINARY_DIR}/test_results.json")
 endif()
 
 set(STL_LIT_COMMAND ${Python_EXECUTABLE} ${STL_LIT_OUTPUT} ${LIT_FLAGS})
 get_property(STL_LIT_TEST_DIRS GLOBAL PROPERTY STL_LIT_TEST_DIRS)
 
-add_custom_target(STL-CI COMMAND ${STL_LIT_COMMAND} -Dnotags=ASAN ${STL_LIT_TEST_DIRS} USES_TERMINAL)
-add_custom_target(STL-ASan-CI COMMAND ${STL_LIT_COMMAND} -Dtags=ASAN ${STL_LIT_TEST_DIRS} USES_TERMINAL)
-add_custom_target(test-only-edg COMMAND ${STL_LIT_COMMAND} -Dnotags=ASAN -Dtest-only-edg=True --xunit-xml-output test-results.xml ${STL_LIT_TEST_DIRS} USES_TERMINAL)
+add_custom_target(STL-CI COMMAND ${STL_LIT_COMMAND} --time-tests -Dnotags=ASAN ${STL_LIT_TEST_DIRS} USES_TERMINAL)
+add_custom_target(STL-ASan-CI COMMAND ${STL_LIT_COMMAND} --time-tests -Dtags=ASAN ${STL_LIT_TEST_DIRS} USES_TERMINAL)
+add_custom_target(test-only-edg COMMAND ${STL_LIT_COMMAND} --time-tests -Dnotags=ASAN -Dtest-only-edg=True --xunit-xml-output test-results.xml ${STL_LIT_TEST_DIRS} USES_TERMINAL)
