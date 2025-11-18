@@ -998,7 +998,7 @@ public:
     }
 
     _NODISCARD static constexpr bool is_always_exhaustive() noexcept {
-        return false;
+        return extents_type::_Rank == 0 || extents_type::_Multidim_index_space_size_is_always_zero;
     }
 
     _NODISCARD static constexpr bool is_always_strided() noexcept {
