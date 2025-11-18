@@ -3937,11 +3937,11 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                                         return _Other_frame._Code != _Rx_unwind_ops::_Capture_restore_begin
                                             && _Other_frame._Code != _Rx_unwind_ops::_Capture_restore_end;
                                     };
-                                    _Frames_count = static_cast<size_t>(
+                                    const auto _Effective_frames_end =
                                         _STD remove_if(_Frames.begin() + static_cast<ptrdiff_t>(_Frames_count),
                                             _Frames.begin() + static_cast<ptrdiff_t>(_Last_capture_restore_frame) + 1,
-                                            _Not_capture_restore)
-                                        - _Frames.begin());
+                                            _Not_capture_restore);
+                                    _Frames_count = static_cast<size_t>(_Effective_frames_end - _Frames.begin());
                                 }
                             } else {
                                 _Failed = true;
