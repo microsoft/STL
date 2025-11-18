@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <benchmark/benchmark.h>
+#include <cstddef>
 #include <regex>
 #include <string>
-
 
 using namespace std;
 using namespace regex_constants;
