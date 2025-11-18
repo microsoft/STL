@@ -639,7 +639,6 @@ namespace {
                 _Advance_bytes(_First, 8);
             }
 
-
             if constexpr (sizeof(_Ty) < 8) {
                 if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 8) {
                     _Advance_bytes(_Last, -8);
