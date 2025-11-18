@@ -707,7 +707,7 @@ namespace {
                 _Advance_bytes(_Last, -16);
                 const uint8x16_t _Block          = vld1q_u8(static_cast<const uint8_t*>(_Last));
                 const uint8x16_t _Block_reversed = _Traits::_Rev(_Block);
-                vst1q_u8(static_cast<uint8_t*>(_Dest) + 0, _Block_reversed);
+                vst1q_u8(static_cast<uint8_t*>(_Dest), _Block_reversed);
                 _Advance_bytes(_Dest, 16);
             }
 
@@ -715,7 +715,7 @@ namespace {
                 _Advance_bytes(_Last, -8);
                 const uint8x8_t _Block          = vld1_u8(static_cast<const uint8_t*>(_Last));
                 const uint8x8_t _Block_reversed = _Traits::_Rev(_Block);
-                vst1_u8(static_cast<uint8_t*>(_Dest) + 0, _Block_reversed);
+                vst1_u8(static_cast<uint8_t*>(_Dest), _Block_reversed);
                 _Advance_bytes(_Dest, 8);
             }
 
