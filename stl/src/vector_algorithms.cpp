@@ -548,8 +548,8 @@ namespace {
             }
 
             static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
-                const uint8x16_t _Rev = vrev64q_u8(_Val);
-                return vextq_u8(_Rev, _Rev, 8);
+                const uint8x16_t _Rev_val = vrev64q_u8(_Val);
+                return vextq_u8(_Rev_val, _Rev_val, 8);
             }
         };
 
@@ -559,8 +559,8 @@ namespace {
             }
 
             static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
-                const uint8x16_t _Rev = vreinterpretq_u8_u16(vrev64q_u16(vreinterpretq_u16_u8(_Val)));
-                return vextq_u8(_Rev, _Rev, 8);
+                const uint8x16_t _Rev_val = vreinterpretq_u8_u16(vrev64q_u16(vreinterpretq_u16_u8(_Val)));
+                return vextq_u8(_Rev_val, _Rev_val, 8);
             }
         };
 
@@ -570,8 +570,8 @@ namespace {
             }
 
             static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
-                const uint8x16_t _Rev = vreinterpretq_u8_u32(vrev64q_u32(vreinterpretq_u32_u8(_Val)));
-                return vextq_u8(_Rev, _Rev, 8);
+                const uint8x16_t _Rev_val = vreinterpretq_u8_u32(vrev64q_u32(vreinterpretq_u32_u8(_Val)));
+                return vextq_u8(_Rev_val, _Rev_val, 8);
             }
         };
 
