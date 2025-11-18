@@ -1682,7 +1682,7 @@ enum class _Rx_unwind_ops {
     _Loop_greedy,
     _Loop_restore_vals,
     _Capture_restore_begin,
-    _Capture_restore_end
+    _Capture_restore_end,
 };
 
 template <class _BidIt>
