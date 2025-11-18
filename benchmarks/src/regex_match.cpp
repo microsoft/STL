@@ -22,14 +22,18 @@ void bm_match_sequence_of_as(benchmark::State& state, const char* pattern, synta
     }
 }
 
-BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*", "a*")->Arg(100)->Arg(200)->Arg(400);
-BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*?", "a*?")->Arg(100)->Arg(200)->Arg(400);
-BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:a)*", "(?:a)*")->Arg(100)->Arg(200)->Arg(400);
-BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)*", "(a)*")->Arg(100)->Arg(200)->Arg(400);
-BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:b|a)*", "(?:b|a)*")->Arg(100)->Arg(200)->Arg(400);
-BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(b|a)*", "(b|a)*")->Arg(100)->Arg(200)->Arg(400);
-BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)(?:b|a)*", "(a)(?:b|a)*")->Arg(100)->Arg(200)->Arg(400);
-BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)(b|a)*", "(a)(b|a)*")->Arg(100)->Arg(200)->Arg(400);
-BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)(?:b|a)*c", "(a)(?:b|a)*c")->Arg(100)->Arg(200)->Arg(400);
+void common_args(auto bm) {
+    bm->Arg(100)->Arg(200)->Arg(400);
+}
+
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*", "a*")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "a*?", "a*?")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:a)*", "(?:a)*")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)*", "(a)*")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(?:b|a)*", "(?:b|a)*")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(b|a)*", "(b|a)*")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)(?:b|a)*", "(a)(?:b|a)*")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)(b|a)*", "(a)(b|a)*")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)(?:b|a)*c", "(a)(?:b|a)*c")->Apply(common_args);
 
 BENCHMARK_MAIN();
