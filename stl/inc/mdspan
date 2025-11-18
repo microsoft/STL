@@ -797,13 +797,6 @@ concept _Layout_mapping_alike = requires {
     bool_constant<_Mp::is_always_unique()>::value;
 };
 
-template <class _Extents, size_t _Val>
-constexpr size_t _Count_static_extents_equal_to = 0;
-
-template <class _IndexType, size_t... _Extents, size_t _Val>
-constexpr size_t _Count_static_extents_equal_to<extents<_IndexType, _Extents...>, _Val> =
-    (static_cast<size_t>(_Extents == _Val) + ... + 0);
-
 template <class _Extents>
 _NODISCARD constexpr size_t _Count_dynamic_extents_equal_to_one(const _Extents& _Exts) noexcept {
     _STL_INTERNAL_STATIC_ASSERT(_Is_extents<_Extents> && _Extents::rank_dynamic() != 0);
