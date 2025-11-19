@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-#include <isa_availability.h>
 #include <ranges>
 
 #pragma warning(push) // TRANSITION, OS-23694920
@@ -52,13 +51,7 @@ int main() {
     void* p2 = VirtualAlloc(p, page, MEM_COMMIT, PAGE_READWRITE);
     assert(p2 != nullptr);
 
-    test_all_element_sizes(p, page);
-#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
-    disable_instructions(__ISA_AVAILABLE_AVX2);
-    test_all_element_sizes(p, page);
-    disable_instructions(__ISA_AVAILABLE_SSE42);
-    test_all_element_sizes(p, page);
-#endif // defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+    run_tests_with_different_isa_levels([&] { test_all_element_sizes(p, page); });
 
     VirtualFree(p, 0, MEM_RELEASE);
 }

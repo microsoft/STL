@@ -6,7 +6,6 @@
 #ifdef _M_X64
 
 #include <cstddef>
-#include <isa_availability.h>
 #include <vector>
 
 #include "test_min_max_element_support.hpp"
@@ -26,15 +25,7 @@ void test_gh_3617() {
 }
 
 int main() {
-    test_gh_3617();
-
-#ifndef _M_ARM64EC
-    disable_instructions(__ISA_AVAILABLE_AVX2);
-    test_gh_3617();
-
-    disable_instructions(__ISA_AVAILABLE_SSE42);
-    test_gh_3617();
-#endif // !defined(_M_ARM64EC)
+    run_tests_with_different_isa_levels([] { test_gh_3617(); });
 }
 #else // ^^^ x64 / other architectures vvv
 int main() {}
