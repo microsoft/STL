@@ -5,26 +5,29 @@
 #error _M_CEE_PURE should not be defined when compiling vector_algorithms.cpp.
 #endif
 
-#if defined(_M_IX86) || defined(_M_X64) // NB: includes _M_ARM64EC
+#ifndef _DEBUG
+#pragma optimize("t", on) // TRANSITION, GH-2108: Override /Os with /Ot for this TU before any function definitions
+#endif
+
 #include <__msvc_minmax.hpp>
 #include <cstdint>
 #include <cstring>
 #include <cwchar>
-#include <xtr1common>
+#include <type_traits>
 
-#ifndef _M_ARM64EC
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
 #include <intrin.h>
 #include <isa_availability.h>
 
 extern "C" long __isa_enabled;
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
-#ifndef _DEBUG
-#pragma optimize("t", on) // Override /Os with /Ot for this TU
-#endif // !defined(_DEBUG)
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#ifdef _M_ARM64
+#include <arm64_neon.h>
+#endif
 
 namespace {
-#ifndef _M_ARM64EC
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
     bool _Use_avx2() noexcept {
         return __isa_enabled & (1 << __ISA_AVAILABLE_AVX2);
     }
@@ -51,7 +54,7 @@ namespace {
         return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(
             reinterpret_cast<const unsigned char*>(_Tail_masks) + (32 - _Count_in_bytes)));
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     size_t _Byte_length(const void* const _First, const void* const _Last) noexcept {
         return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
@@ -78,6 +81,86 @@ namespace {
 
 extern "C" {
 
+#ifdef _M_ARM64
+__declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
+    void* _First1, void* const _Last1, void* _First2) noexcept {
+    if (_Byte_length(_First1, _Last1) >= 64) {
+        constexpr size_t _Mask_64 = ~((static_cast<size_t>(1) << 6) - 1);
+        const void* _Stop_at      = _First1;
+        _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_64);
+        do {
+            const uint8x16_t _Left1  = vld1q_u8(static_cast<uint8_t*>(_First1) + 0);
+            const uint8x16_t _Left2  = vld1q_u8(static_cast<uint8_t*>(_First1) + 16);
+            const uint8x16_t _Left3  = vld1q_u8(static_cast<uint8_t*>(_First1) + 32);
+            const uint8x16_t _Left4  = vld1q_u8(static_cast<uint8_t*>(_First1) + 48);
+            const uint8x16_t _Right1 = vld1q_u8(static_cast<uint8_t*>(_First2) + 0);
+            const uint8x16_t _Right2 = vld1q_u8(static_cast<uint8_t*>(_First2) + 16);
+            const uint8x16_t _Right3 = vld1q_u8(static_cast<uint8_t*>(_First2) + 32);
+            const uint8x16_t _Right4 = vld1q_u8(static_cast<uint8_t*>(_First2) + 48);
+            vst1q_u8(static_cast<uint8_t*>(_First1) + 0, _Right1);
+            vst1q_u8(static_cast<uint8_t*>(_First1) + 16, _Right2);
+            vst1q_u8(static_cast<uint8_t*>(_First1) + 32, _Right3);
+            vst1q_u8(static_cast<uint8_t*>(_First1) + 48, _Right4);
+            vst1q_u8(static_cast<uint8_t*>(_First2) + 0, _Left1);
+            vst1q_u8(static_cast<uint8_t*>(_First2) + 16, _Left2);
+            vst1q_u8(static_cast<uint8_t*>(_First2) + 32, _Left3);
+            vst1q_u8(static_cast<uint8_t*>(_First2) + 48, _Left4);
+            _Advance_bytes(_First1, 64);
+            _Advance_bytes(_First2, 64);
+        } while (_First1 != _Stop_at);
+    }
+
+    if (_Byte_length(_First1, _Last1) >= 32) {
+        const uint8x16_t _Left1  = vld1q_u8(static_cast<uint8_t*>(_First1) + 0);
+        const uint8x16_t _Left2  = vld1q_u8(static_cast<uint8_t*>(_First1) + 16);
+        const uint8x16_t _Right1 = vld1q_u8(static_cast<uint8_t*>(_First2) + 0);
+        const uint8x16_t _Right2 = vld1q_u8(static_cast<uint8_t*>(_First2) + 16);
+        vst1q_u8(static_cast<uint8_t*>(_First1) + 0, _Right1);
+        vst1q_u8(static_cast<uint8_t*>(_First1) + 16, _Right2);
+        vst1q_u8(static_cast<uint8_t*>(_First2) + 0, _Left1);
+        vst1q_u8(static_cast<uint8_t*>(_First2) + 16, _Left2);
+        _Advance_bytes(_First1, 32);
+        _Advance_bytes(_First2, 32);
+    }
+
+    if (_Byte_length(_First1, _Last1) >= 16) {
+        const uint8x16_t _Left  = vld1q_u8(static_cast<uint8_t*>(_First1));
+        const uint8x16_t _Right = vld1q_u8(static_cast<uint8_t*>(_First2));
+        vst1q_u8(static_cast<uint8_t*>(_First1), _Right);
+        vst1q_u8(static_cast<uint8_t*>(_First2), _Left);
+        _Advance_bytes(_First1, 16);
+        _Advance_bytes(_First2, 16);
+    }
+
+    if (_Byte_length(_First1, _Last1) >= 8) {
+        const uint8x8_t _Left  = vld1_u8(static_cast<uint8_t*>(_First1));
+        const uint8x8_t _Right = vld1_u8(static_cast<uint8_t*>(_First2));
+        vst1_u8(static_cast<uint8_t*>(_First1), _Right);
+        vst1_u8(static_cast<uint8_t*>(_First2), _Left);
+        _Advance_bytes(_First1, 8);
+        _Advance_bytes(_First2, 8);
+    }
+
+    if (_Byte_length(_First1, _Last1) >= 4) {
+        uint32x2_t _Left  = vdup_n_u32(0);
+        uint32x2_t _Right = vdup_n_u32(0);
+        _Left             = vld1_lane_u32(static_cast<uint32_t*>(_First1), _Left, 0);
+        _Right            = vld1_lane_u32(static_cast<uint32_t*>(_First2), _Right, 0);
+        vst1_lane_u32(static_cast<uint32_t*>(_First1), _Right, 0);
+        vst1_lane_u32(static_cast<uint32_t*>(_First2), _Left, 0);
+        _Advance_bytes(_First1, 4);
+        _Advance_bytes(_First2, 4);
+    }
+
+    auto _First1c = static_cast<unsigned char*>(_First1);
+    auto _First2c = static_cast<unsigned char*>(_First2);
+    for (; _First1c != _Last1; ++_First1c, ++_First2c) {
+        const unsigned char _Ch = *_First1c;
+        *_First1c               = *_First2c;
+        *_First2c               = _Ch;
+    }
+}
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* const _Last1, void* _First2) noexcept {
 #ifndef _M_ARM64EC
@@ -157,17 +240,123 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     }
 }
 
-// TRANSITION, ABI: __std_swap_ranges_trivially_swappable() is preserved for binary compatibility
+// TRANSITION, ABI: __std_swap_ranges_trivially_swappable() is preserved for binary compatibility (x64/x86/ARM64EC)
 void* __cdecl __std_swap_ranges_trivially_swappable(
     void* const _First1, void* const _Last1, void* const _First2) noexcept {
     __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
     return static_cast<char*>(_First2) + (static_cast<char*>(_Last1) - static_cast<char*>(_First1));
 }
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
 } // extern "C"
 
 namespace {
     namespace _Rotating {
+#ifdef _M_ARM64
+        void __forceinline _Swap_3_ranges(void* _First1, void* const _Last1, void* _First2, void* _First3) noexcept {
+            if (_Byte_length(_First1, _Last1) >= 64) {
+                constexpr size_t _Mask_64 = ~((static_cast<size_t>(1) << 6) - 1);
+                const void* _Stop_at      = _First1;
+                _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_64);
+                do {
+                    const uint8x16_t _Val1Lo1 = vld1q_u8(static_cast<uint8_t*>(_First1) + 0);
+                    const uint8x16_t _Val1Lo2 = vld1q_u8(static_cast<uint8_t*>(_First1) + 16);
+                    const uint8x16_t _Val1Hi1 = vld1q_u8(static_cast<uint8_t*>(_First1) + 32);
+                    const uint8x16_t _Val1Hi2 = vld1q_u8(static_cast<uint8_t*>(_First1) + 48);
+                    const uint8x16_t _Val2Lo1 = vld1q_u8(static_cast<uint8_t*>(_First2) + 0);
+                    const uint8x16_t _Val2Lo2 = vld1q_u8(static_cast<uint8_t*>(_First2) + 16);
+                    const uint8x16_t _Val2Hi1 = vld1q_u8(static_cast<uint8_t*>(_First2) + 32);
+                    const uint8x16_t _Val2Hi2 = vld1q_u8(static_cast<uint8_t*>(_First2) + 48);
+                    const uint8x16_t _Val3Lo1 = vld1q_u8(static_cast<uint8_t*>(_First3) + 0);
+                    const uint8x16_t _Val3Lo2 = vld1q_u8(static_cast<uint8_t*>(_First3) + 16);
+                    const uint8x16_t _Val3Hi1 = vld1q_u8(static_cast<uint8_t*>(_First3) + 32);
+                    const uint8x16_t _Val3Hi2 = vld1q_u8(static_cast<uint8_t*>(_First3) + 48);
+                    vst1q_u8(static_cast<uint8_t*>(_First1) + 0, _Val2Lo1);
+                    vst1q_u8(static_cast<uint8_t*>(_First1) + 16, _Val2Lo2);
+                    vst1q_u8(static_cast<uint8_t*>(_First1) + 32, _Val2Hi1);
+                    vst1q_u8(static_cast<uint8_t*>(_First1) + 48, _Val2Hi2);
+                    vst1q_u8(static_cast<uint8_t*>(_First2) + 0, _Val3Lo1);
+                    vst1q_u8(static_cast<uint8_t*>(_First2) + 16, _Val3Lo2);
+                    vst1q_u8(static_cast<uint8_t*>(_First2) + 32, _Val3Hi1);
+                    vst1q_u8(static_cast<uint8_t*>(_First2) + 48, _Val3Hi2);
+                    vst1q_u8(static_cast<uint8_t*>(_First3) + 0, _Val1Lo1);
+                    vst1q_u8(static_cast<uint8_t*>(_First3) + 16, _Val1Lo2);
+                    vst1q_u8(static_cast<uint8_t*>(_First3) + 32, _Val1Hi1);
+                    vst1q_u8(static_cast<uint8_t*>(_First3) + 48, _Val1Hi2);
+                    _Advance_bytes(_First1, 64);
+                    _Advance_bytes(_First2, 64);
+                    _Advance_bytes(_First3, 64);
+                } while (_First1 != _Stop_at);
+            }
+
+            if (_Byte_length(_First1, _Last1) >= 32) {
+                const uint8x16_t _Val1Lo = vld1q_u8(static_cast<uint8_t*>(_First1) + 0);
+                const uint8x16_t _Val1Hi = vld1q_u8(static_cast<uint8_t*>(_First1) + 16);
+                const uint8x16_t _Val2Lo = vld1q_u8(static_cast<uint8_t*>(_First2) + 0);
+                const uint8x16_t _Val2Hi = vld1q_u8(static_cast<uint8_t*>(_First2) + 16);
+                const uint8x16_t _Val3Lo = vld1q_u8(static_cast<uint8_t*>(_First3) + 0);
+                const uint8x16_t _Val3Hi = vld1q_u8(static_cast<uint8_t*>(_First3) + 16);
+                vst1q_u8(static_cast<uint8_t*>(_First1) + 0, _Val2Lo);
+                vst1q_u8(static_cast<uint8_t*>(_First1) + 16, _Val2Hi);
+                vst1q_u8(static_cast<uint8_t*>(_First2) + 0, _Val3Lo);
+                vst1q_u8(static_cast<uint8_t*>(_First2) + 16, _Val3Hi);
+                vst1q_u8(static_cast<uint8_t*>(_First3) + 0, _Val1Lo);
+                vst1q_u8(static_cast<uint8_t*>(_First3) + 16, _Val1Hi);
+                _Advance_bytes(_First1, 32);
+                _Advance_bytes(_First2, 32);
+                _Advance_bytes(_First3, 32);
+            }
+
+            if (_Byte_length(_First1, _Last1) >= 16) {
+                const uint8x16_t _Val1 = vld1q_u8(static_cast<uint8_t*>(_First1));
+                const uint8x16_t _Val2 = vld1q_u8(static_cast<uint8_t*>(_First2));
+                const uint8x16_t _Val3 = vld1q_u8(static_cast<uint8_t*>(_First3));
+                vst1q_u8(static_cast<uint8_t*>(_First1), _Val2);
+                vst1q_u8(static_cast<uint8_t*>(_First2), _Val3);
+                vst1q_u8(static_cast<uint8_t*>(_First3), _Val1);
+                _Advance_bytes(_First1, 16);
+                _Advance_bytes(_First2, 16);
+                _Advance_bytes(_First3, 16);
+            }
+
+            if (_Byte_length(_First1, _Last1) >= 8) {
+                const uint8x8_t _Val1 = vld1_u8(static_cast<uint8_t*>(_First1));
+                const uint8x8_t _Val2 = vld1_u8(static_cast<uint8_t*>(_First2));
+                const uint8x8_t _Val3 = vld1_u8(static_cast<uint8_t*>(_First3));
+                vst1_u8(static_cast<uint8_t*>(_First1), _Val2);
+                vst1_u8(static_cast<uint8_t*>(_First2), _Val3);
+                vst1_u8(static_cast<uint8_t*>(_First3), _Val1);
+                _Advance_bytes(_First1, 8);
+                _Advance_bytes(_First2, 8);
+                _Advance_bytes(_First3, 8);
+            }
+
+            if (_Byte_length(_First1, _Last1) >= 4) {
+                uint32x2_t _Val1 = vdup_n_u32(0);
+                uint32x2_t _Val2 = vdup_n_u32(0);
+                uint32x2_t _Val3 = vdup_n_u32(0);
+                _Val1            = vld1_lane_u32(static_cast<uint32_t*>(_First1), _Val1, 0);
+                _Val2            = vld1_lane_u32(static_cast<uint32_t*>(_First2), _Val2, 0);
+                _Val3            = vld1_lane_u32(static_cast<uint32_t*>(_First3), _Val3, 0);
+                vst1_lane_u32(static_cast<uint32_t*>(_First1), _Val2, 0);
+                vst1_lane_u32(static_cast<uint32_t*>(_First2), _Val3, 0);
+                vst1_lane_u32(static_cast<uint32_t*>(_First3), _Val1, 0);
+                _Advance_bytes(_First1, 4);
+                _Advance_bytes(_First2, 4);
+                _Advance_bytes(_First3, 4);
+            }
+
+            auto _First1c = static_cast<unsigned char*>(_First1);
+            auto _First2c = static_cast<unsigned char*>(_First2);
+            auto _First3c = static_cast<unsigned char*>(_First3);
+            for (; _First1c != _Last1; ++_First1c, ++_First2c, ++_First3c) {
+                const unsigned char _Ch = *_First1c;
+                *_First1c               = *_First2c;
+                *_First2c               = *_First3c;
+                *_First3c               = _Ch;
+            }
+        }
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
         void _Swap_3_ranges(void* _First1, void* const _Last1, void* _First2, void* _First3) noexcept {
 #ifndef _M_ARM64EC
             constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
@@ -261,6 +450,7 @@ namespace {
                 *_First3c               = _Ch;
             }
         }
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
         constexpr size_t _Buf_size = 512;
 
@@ -335,6 +525,206 @@ __declspec(noalias) void __stdcall __std_rotate(void* _First, void* const _Mid, 
 
 namespace {
     namespace _Reversing {
+        template <class _BidIt>
+        void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
+            for (; _First != _Last && _First != --_Last; ++_First) {
+                const auto _Temp = *_First;
+                *_First          = *_Last;
+                *_Last           = _Temp;
+            }
+        }
+
+        template <class _BidIt, class _OutIt>
+        void _Reverse_copy_tail(const _BidIt _First, _BidIt _Last, _OutIt _Dest) noexcept {
+            while (_First != _Last) {
+                *_Dest++ = *--_Last;
+            }
+        }
+
+#ifdef _M_ARM64
+        struct _Traits_1 {
+            static uint8x8_t _Rev(const uint8x8_t _Val) noexcept {
+                return vrev64_u8(_Val);
+            }
+
+            static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
+                const uint8x16_t _Rev_val = vrev64q_u8(_Val);
+                return vextq_u8(_Rev_val, _Rev_val, 8);
+            }
+        };
+
+        struct _Traits_2 {
+            static uint8x8_t _Rev(const uint8x8_t _Val) noexcept {
+                return vreinterpret_u8_u16(vrev64_u16(vreinterpret_u16_u8(_Val)));
+            }
+
+            static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
+                const uint8x16_t _Rev_val = vreinterpretq_u8_u16(vrev64q_u16(vreinterpretq_u16_u8(_Val)));
+                return vextq_u8(_Rev_val, _Rev_val, 8);
+            }
+        };
+
+        struct _Traits_4 {
+            static uint8x8_t _Rev(const uint8x8_t _Val) noexcept {
+                return vreinterpret_u8_u32(vrev64_u32(vreinterpret_u32_u8(_Val)));
+            }
+
+            static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
+                const uint8x16_t _Rev_val = vreinterpretq_u8_u32(vrev64q_u32(vreinterpretq_u32_u8(_Val)));
+                return vextq_u8(_Rev_val, _Rev_val, 8);
+            }
+        };
+
+        struct _Traits_8 {
+            static uint8x8_t _Rev(const uint8x8_t _Val) noexcept {
+                return _Val;
+            }
+
+            static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
+                return vextq_u8(_Val, _Val, 8);
+            }
+        };
+
+        template <class _Traits, class _Ty>
+        __declspec(noalias) void __cdecl _Reverse_impl(void* _First, void* _Last) noexcept {
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 64) {
+                const void* _Stop_at      = _First;
+                constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
+                _Advance_bytes(_Stop_at, (_Length >> 1) & _Mask_32);
+                do {
+                    _Advance_bytes(_Last, -32);
+
+                    const uint8x16_t _Left1  = vld1q_u8(static_cast<uint8_t*>(_First) + 0);
+                    const uint8x16_t _Left2  = vld1q_u8(static_cast<uint8_t*>(_First) + 16);
+                    const uint8x16_t _Right1 = vld1q_u8(static_cast<uint8_t*>(_Last) + 0);
+                    const uint8x16_t _Right2 = vld1q_u8(static_cast<uint8_t*>(_Last) + 16);
+
+                    const uint8x16_t _Left1_reversed  = _Traits::_Rev(_Left1);
+                    const uint8x16_t _Left2_reversed  = _Traits::_Rev(_Left2);
+                    const uint8x16_t _Right1_reversed = _Traits::_Rev(_Right1);
+                    const uint8x16_t _Right2_reversed = _Traits::_Rev(_Right2);
+
+                    vst1q_u8(static_cast<uint8_t*>(_First) + 0, _Right2_reversed);
+                    vst1q_u8(static_cast<uint8_t*>(_First) + 16, _Right1_reversed);
+                    vst1q_u8(static_cast<uint8_t*>(_Last) + 0, _Left2_reversed);
+                    vst1q_u8(static_cast<uint8_t*>(_Last) + 16, _Left1_reversed);
+
+                    _Advance_bytes(_First, 32);
+                } while (_First != _Stop_at);
+            }
+
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 32) {
+                _Advance_bytes(_Last, -16);
+                const uint8x16_t _Left  = vld1q_u8(static_cast<uint8_t*>(_First));
+                const uint8x16_t _Right = vld1q_u8(static_cast<uint8_t*>(_Last));
+
+                const uint8x16_t _Left_reversed  = _Traits::_Rev(_Left);
+                const uint8x16_t _Right_reversed = _Traits::_Rev(_Right);
+
+                vst1q_u8(static_cast<uint8_t*>(_First), _Right_reversed);
+                vst1q_u8(static_cast<uint8_t*>(_Last), _Left_reversed);
+                _Advance_bytes(_First, 16);
+            }
+
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 16) {
+                _Advance_bytes(_Last, -8);
+                const uint8x8_t _Left  = vld1_u8(static_cast<uint8_t*>(_First));
+                const uint8x8_t _Right = vld1_u8(static_cast<uint8_t*>(_Last));
+
+                const uint8x8_t _Left_reversed  = _Traits::_Rev(_Left);
+                const uint8x8_t _Right_reversed = _Traits::_Rev(_Right);
+
+                vst1_u8(static_cast<uint8_t*>(_First), _Right_reversed);
+                vst1_u8(static_cast<uint8_t*>(_Last), _Left_reversed);
+                _Advance_bytes(_First, 8);
+            }
+
+            if constexpr (sizeof(_Ty) < 8) {
+                if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 8) {
+                    _Advance_bytes(_Last, -8);
+
+                    // Intentional overlapped loads/stores: read both sides first, then write.
+                    const uint8x8_t _Left  = vld1_u8(static_cast<uint8_t*>(_First));
+                    const uint8x8_t _Right = vld1_u8(static_cast<uint8_t*>(_Last));
+
+                    const uint8x8_t _Left_reversed  = _Traits::_Rev(_Left);
+                    const uint8x8_t _Right_reversed = _Traits::_Rev(_Right);
+
+                    vst1_u8(static_cast<uint8_t*>(_First), _Right_reversed);
+                    vst1_u8(static_cast<uint8_t*>(_Last), _Left_reversed);
+
+                    // Overlapped stores cover any 8-15B remainder, so do not fall through to scalar tail.
+                    return;
+                }
+            }
+
+            if constexpr (sizeof(_Ty) < 4) {
+                _Reverse_tail(static_cast<_Ty*>(_First), static_cast<_Ty*>(_Last));
+            }
+        }
+
+        template <class _Traits, class _Ty>
+        __declspec(noalias) void __cdecl _Reverse_copy_impl(
+            const void* _First, const void* _Last, void* _Dest) noexcept {
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 64) {
+                const void* _Stop_at      = _Dest;
+                constexpr size_t _Mask_64 = ~((static_cast<size_t>(1) << 6) - 1);
+                _Advance_bytes(_Stop_at, _Length & _Mask_64);
+                do {
+                    _Advance_bytes(_Last, -64);
+                    const uint8x16_t _Block1 = vld1q_u8(static_cast<const uint8_t*>(_Last) + 0);
+                    const uint8x16_t _Block2 = vld1q_u8(static_cast<const uint8_t*>(_Last) + 16);
+                    const uint8x16_t _Block3 = vld1q_u8(static_cast<const uint8_t*>(_Last) + 32);
+                    const uint8x16_t _Block4 = vld1q_u8(static_cast<const uint8_t*>(_Last) + 48);
+
+                    const uint8x16_t _Block1_reversed = _Traits::_Rev(_Block1);
+                    const uint8x16_t _Block2_reversed = _Traits::_Rev(_Block2);
+                    const uint8x16_t _Block3_reversed = _Traits::_Rev(_Block3);
+                    const uint8x16_t _Block4_reversed = _Traits::_Rev(_Block4);
+
+                    vst1q_u8(static_cast<uint8_t*>(_Dest) + 0, _Block4_reversed);
+                    vst1q_u8(static_cast<uint8_t*>(_Dest) + 16, _Block3_reversed);
+                    vst1q_u8(static_cast<uint8_t*>(_Dest) + 32, _Block2_reversed);
+                    vst1q_u8(static_cast<uint8_t*>(_Dest) + 48, _Block1_reversed);
+                    _Advance_bytes(_Dest, 64);
+                } while (_Dest != _Stop_at);
+            }
+
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 32) {
+                _Advance_bytes(_Last, -32);
+                const uint8x16_t _Block1 = vld1q_u8(static_cast<const uint8_t*>(_Last) + 0);
+                const uint8x16_t _Block2 = vld1q_u8(static_cast<const uint8_t*>(_Last) + 16);
+
+                const uint8x16_t _Block1_reversed = _Traits::_Rev(_Block1);
+                const uint8x16_t _Block2_reversed = _Traits::_Rev(_Block2);
+
+                vst1q_u8(static_cast<uint8_t*>(_Dest) + 0, _Block2_reversed);
+                vst1q_u8(static_cast<uint8_t*>(_Dest) + 16, _Block1_reversed);
+                _Advance_bytes(_Dest, 32);
+            }
+
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 16) {
+                _Advance_bytes(_Last, -16);
+                const uint8x16_t _Block          = vld1q_u8(static_cast<const uint8_t*>(_Last));
+                const uint8x16_t _Block_reversed = _Traits::_Rev(_Block);
+                vst1q_u8(static_cast<uint8_t*>(_Dest), _Block_reversed);
+                _Advance_bytes(_Dest, 16);
+            }
+
+            if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 8) {
+                _Advance_bytes(_Last, -8);
+                const uint8x8_t _Block          = vld1_u8(static_cast<const uint8_t*>(_Last));
+                const uint8x8_t _Block_reversed = _Traits::_Rev(_Block);
+                vst1_u8(static_cast<uint8_t*>(_Dest), _Block_reversed);
+                _Advance_bytes(_Dest, 8);
+            }
+
+            if constexpr (sizeof(_Ty) < 8) {
+                _Reverse_copy_tail(
+                    static_cast<const _Ty*>(_First), static_cast<const _Ty*>(_Last), static_cast<_Ty*>(_Dest));
+            }
+        }
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
 #ifdef _M_ARM64EC
         using _Traits_1 = void;
         using _Traits_2 = void;
@@ -394,22 +784,6 @@ namespace {
             }
         };
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
-
-        template <class _BidIt>
-        void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
-            for (; _First != _Last && _First != --_Last; ++_First) {
-                const auto _Temp = *_First;
-                *_First          = *_Last;
-                *_Last           = _Temp;
-            }
-        }
-
-        template <class _BidIt, class _OutIt>
-        void _Reverse_copy_tail(const _BidIt _First, _BidIt _Last, _OutIt _Dest) noexcept {
-            while (_First != _Last) {
-                *_Dest++ = *--_Last;
-            }
-        }
 
 #ifndef _M_ARM64EC
         __m256i _Avx2_rev_tail_mask_32(const size_t _Count_in_bytes) noexcept {
@@ -509,6 +883,7 @@ namespace {
             _Reverse_copy_tail(
                 static_cast<const _Ty*>(_First), static_cast<const _Ty*>(_Last), static_cast<_Ty*>(_Dest));
         }
+#endif // ^^^ !defined(_M_ARM64) ^^^
     } // namespace _Reversing
 } // unnamed namespace
 
@@ -552,6 +927,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 
 } // extern "C"
 
+#ifndef _M_ARM64
 namespace {
     namespace _Sorting {
         enum _Min_max_mode {
@@ -6891,6 +7267,390 @@ void* __stdcall __std_unique_copy_8(const void* _First, const void* const _Last,
 } // extern "C"
 
 namespace {
+    namespace _Sorted_ranges {
+#ifdef _M_ARM64EC
+        using _Traits_1_avx = void;
+        using _Traits_2_avx = void;
+        using _Traits_4_avx = void;
+        using _Traits_8_avx = void;
+        using _Traits_1_sse = void;
+        using _Traits_2_sse = void;
+        using _Traits_4_sse = void;
+        using _Traits_8_sse = void;
+#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+        struct _Traits_avx {
+            using _Guard                       = _Zeroupper_on_exit;
+            static constexpr size_t _Vec_size  = 32;
+            static constexpr size_t _Tail_mask = 0x1C;
+
+            static __m256i _Load(const void* const _Src) noexcept {
+                return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
+            }
+
+            static __m256i _Load_mask(const void* const _Src, const __m256i _Mask) noexcept {
+                return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Mask);
+            }
+
+            static unsigned long _Mask(const __m256i _Val) noexcept {
+                return _mm256_movemask_epi8(_Val);
+            }
+
+            static uint32_t _Bsf(const uint32_t _Val) noexcept {
+                return _tzcnt_u32(_Val);
+            }
+        };
+
+        struct _Traits_1_avx : _Traits_avx {
+            static __m256i _Broadcast(const uint8_t _Data) noexcept {
+                return _mm256_broadcastb_epi8(_mm_cvtsi32_si128(static_cast<uint32_t>(_Data)));
+            }
+
+            static __m256i _Cmp_gt(const __m256i _First, const __m256i _Second) noexcept {
+                return _mm256_cmpgt_epi8(_First, _Second);
+            }
+
+            static __m256i _Sign_correction(const __m256i _Data) noexcept {
+                return _mm256_sub_epi8(_Data, _mm256_set1_epi8(static_cast<char>(0x80)));
+            }
+        };
+
+        struct _Traits_2_avx : _Traits_avx {
+            static __m256i _Broadcast(const uint16_t _Data) noexcept {
+                return _mm256_broadcastw_epi16(_mm_cvtsi32_si128(static_cast<uint32_t>(_Data)));
+            }
+
+            static __m256i _Cmp_gt(const __m256i _First, const __m256i _Second) noexcept {
+                return _mm256_cmpgt_epi16(_First, _Second);
+            }
+
+            static __m256i _Sign_correction(const __m256i _Data) noexcept {
+                return _mm256_sub_epi16(_Data, _mm256_set1_epi16(static_cast<short>(0x8000)));
+            }
+        };
+
+        struct _Traits_4_avx : _Traits_avx {
+            static __m256i _Broadcast(const uint32_t _Data) noexcept {
+                return _mm256_broadcastd_epi32(_mm_cvtsi32_si128(_Data));
+            }
+
+            static __m256i _Cmp_gt(const __m256i _First, const __m256i _Second) noexcept {
+                return _mm256_cmpgt_epi32(_First, _Second);
+            }
+
+            static __m256i _Sign_correction(const __m256i _Data) noexcept {
+                return _mm256_sub_epi32(_Data, _mm256_set1_epi32(static_cast<long>(0x8000'0000)));
+            }
+        };
+
+        struct _Traits_8_avx : _Traits_avx {
+            static __m256i _Broadcast(const uint64_t _Data) noexcept {
+#ifdef _WIN64
+                return _mm256_broadcastq_epi64(_mm_cvtsi64x_si128(_Data));
+#else // ^^^ defined(_WIN64) / !defined(_WIN64), workaround, _mm_cvtsi64x_si128 does not compile vvv
+                return _mm256_set1_epi64x(_Data);
+#endif // ^^^ !defined(_WIN64) ^^^
+            }
+
+            static __m256i _Cmp_gt(const __m256i _First, const __m256i _Second) noexcept {
+                return _mm256_cmpgt_epi64(_First, _Second);
+            }
+
+            static __m256i _Sign_correction(const __m256i _Data) noexcept {
+                return _mm256_sub_epi64(_Data, _mm256_set1_epi64x(static_cast<long long>(0x8000'0000'0000'0000)));
+            }
+        };
+
+        struct _Traits_sse {
+            using _Guard                       = char;
+            static constexpr size_t _Vec_size  = 16;
+            static constexpr size_t _Tail_mask = 0;
+
+            static __m128i _Load(const void* const _Src) noexcept {
+                return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
+            }
+
+            static unsigned long _Mask(const __m128i _Val) noexcept {
+                return _mm_movemask_epi8(_Val);
+            }
+
+            static uint32_t _Bsf(const uint32_t _Val) noexcept {
+                unsigned long _Index;
+                // CodeQL [SM02313] _Index is always initialized: _Val != 0; see explanation at call sites.
+                _BitScanForward(&_Index, _Val);
+                return _Index;
+            }
+        };
+
+        struct _Traits_1_sse : _Traits_sse {
+            static __m128i _Broadcast(const uint8_t _Data) noexcept {
+                return _mm_shuffle_epi8(_mm_cvtsi32_si128(static_cast<uint32_t>(_Data)), _mm_setzero_si128());
+            }
+
+            static __m128i _Cmp_gt(const __m128i _First, const __m128i _Second) noexcept {
+                return _mm_cmpgt_epi8(_First, _Second);
+            }
+
+            static __m128i _Sign_correction(const __m128i _Data) noexcept {
+                return _mm_sub_epi8(_Data, _mm_set1_epi8(static_cast<char>(0x80)));
+            }
+        };
+
+        struct _Traits_2_sse : _Traits_sse {
+            static __m128i _Broadcast(const uint16_t _Data) noexcept {
+                return _mm_shuffle_epi8(_mm_cvtsi32_si128(static_cast<uint32_t>(_Data)), _mm_set1_epi16(0x0100));
+            }
+
+            static __m128i _Cmp_gt(const __m128i _First, const __m128i _Second) noexcept {
+                return _mm_cmpgt_epi16(_First, _Second);
+            }
+
+            static __m128i _Sign_correction(const __m128i _Data) noexcept {
+                return _mm_sub_epi16(_Data, _mm_set1_epi16(static_cast<short>(0x8000)));
+            }
+        };
+
+        struct _Traits_4_sse : _Traits_sse {
+            static __m128i _Broadcast(const uint32_t _Data) noexcept {
+                return _mm_shuffle_epi32(_mm_cvtsi32_si128(_Data), _MM_SHUFFLE(0, 0, 0, 0));
+            }
+
+            static __m128i _Cmp_gt(const __m128i _First, const __m128i _Second) noexcept {
+                return _mm_cmpgt_epi32(_First, _Second);
+            }
+
+            static __m128i _Sign_correction(const __m128i _Data) noexcept {
+                return _mm_sub_epi32(_Data, _mm_set1_epi32(static_cast<long>(0x8000'0000)));
+            }
+        };
+
+        struct _Traits_8_sse : _Traits_sse {
+            static __m128i _Broadcast(const uint64_t _Data) noexcept {
+#ifdef _WIN64
+                return _mm_shuffle_epi32(_mm_cvtsi64x_si128(_Data), _MM_SHUFFLE(1, 0, 1, 0));
+#else // ^^^ defined(_WIN64) / !defined(_WIN64), workaround, _mm_cvtsi64x_si128 does not compile vvv
+                return _mm_set1_epi64x(_Data);
+#endif // ^^^ !defined(_WIN64) ^^^
+            }
+
+            static __m128i _Cmp_gt(const __m128i _First, const __m128i _Second) noexcept {
+                return _mm_cmpgt_epi64(_First, _Second);
+            }
+
+            static __m128i _Sign_correction(const __m128i _Data) noexcept {
+                return _mm_sub_epi64(_Data, _mm_set1_epi64x(static_cast<long long>(0x8000'0000'0000'0000)));
+            }
+        };
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+
+        template <class _Traits, class _Ty>
+        bool _Includes_impl(
+            const void* _First1, const void* const _Last1, const void* _First2, const void* const _Last2) noexcept {
+            if constexpr (!std::is_void_v<_Traits>) {
+#ifdef _M_ARM64EC
+                static_assert(false, "No vectorization for _M_ARM64EC yet");
+#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+
+                // Only skipping some parts of haystack that are less than current needle element is vectorized.
+                // Otherwise this is scalar algorithm.
+
+                constexpr bool _Is_signed            = std::is_signed_v<_Ty>;
+                constexpr uint32_t _All_ones_mask    = uint32_t{(uint64_t{1} << _Traits::_Vec_size) - 1};
+                constexpr uint32_t _Highest_one_mask = 1u << (_Traits::_Vec_size - 1);
+                [[maybe_unused]] typename _Traits::_Guard _Guard; // TRANSITION, DevCom-10331414
+
+                const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
+                const void* _Stop1         = _First1;
+                _Advance_bytes(_Stop1, _Size_bytes_1 & ~(_Traits::_Vec_size - 1));
+
+                _Ty _Val2    = *reinterpret_cast<const _Ty*>(_First2);
+                auto _Start2 = _Traits::_Broadcast(_Val2);
+                if constexpr (!_Is_signed) {
+                    _Start2 = _Traits::_Sign_correction(_Start2);
+                }
+
+                do {
+                    auto _Data1 = _Traits::_Load(_First1);
+                    if constexpr (!_Is_signed) {
+                        _Data1 = _Traits::_Sign_correction(_Data1);
+                    }
+
+                    const void* _Next1 = _First1;
+                    _Advance_bytes(_Next1, _Traits::_Vec_size);
+
+                    const uint32_t _Greater_start_2 = _Traits::_Mask(_Traits::_Cmp_gt(_Start2, _Data1));
+                    // Testing _Highest_one_mask can be a bit more efficient on AVX2 than comparing against
+                    // _All_ones_mask (will test sign, and can share comparison with != 0 below).
+                    if ((_Greater_start_2 & _Highest_one_mask) != 0) {
+                        // Needle first element is greater than each element of haystack vector.
+                        // Proceed to the next one, without updating the needle comparand.
+                        _First1 = _Next1;
+                    } else {
+                        if (_Greater_start_2 != 0) {
+                            // Needle first element is greater than some first elements of haystack part.
+                            // Advance past these elements.
+                            // The input is nonzero because we handled that case with _Highest_one_mask branch above.
+                            const uint32_t _Skip = _Traits::_Bsf(_Greater_start_2 ^ _All_ones_mask);
+                            _Advance_bytes(_First1, _Skip);
+                        }
+
+                        // The rest is scalar loop that completes the remaining vector-sized haystack part.
+                        // Except that it updates current needle value to compare against.
+                        do {
+                            const _Ty _Val1 = *static_cast<const _Ty*>(_First1);
+
+                            if (_Val2 < _Val1) {
+                                return false;
+                            }
+
+                            if (_Val2 == _Val1) {
+                                _Advance_bytes(_First2, sizeof(_Ty));
+                                if (_First2 == _Last2) {
+                                    return true;
+                                }
+
+                                _Val2 = *reinterpret_cast<const _Ty*>(_First2);
+                            }
+
+                            _Advance_bytes(_First1, sizeof(_Ty));
+                        } while (_First1 != _Next1);
+
+                        _Start2 = _Traits::_Broadcast(_Val2);
+                        if constexpr (!_Is_signed) {
+                            _Start2 = _Traits::_Sign_correction(_Start2);
+                        }
+                    }
+                } while (_First1 != _Stop1);
+
+                if constexpr (_Traits::_Tail_mask != 0) {
+                    const size_t _Tail_bytes_size_1 = _Size_bytes_1 & _Traits::_Tail_mask;
+                    if (_Tail_bytes_size_1 != 0) {
+                        // Just try to advance past less one more time.
+                        // Don't need to repeat the scalar part here - falling to scalar loop anyway.
+                        const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_bytes_size_1);
+                        auto _Data1           = _Traits::_Load_mask(_First1, _Tail_mask);
+                        if constexpr (!_Is_signed) {
+                            _Data1 = _Traits::_Sign_correction(_Data1);
+                        }
+
+                        const auto _Cmp                 = _Traits::_Cmp_gt(_Start2, _Data1);
+                        const uint32_t _Greater_start_2 = _Traits::_Mask(_mm256_and_si256(_Cmp, _Tail_mask));
+                        if (_Greater_start_2 != 0) {
+                            // Needle first element is greater than some first elements of haystack part.
+                            // Advance past these elements.
+                            // The input is nonzero because tail mask will have zeros for remaining elements.
+                            const uint32_t _Skip = _Traits::_Bsf(_Greater_start_2 ^ _All_ones_mask);
+                            _Advance_bytes(_First1, _Skip);
+                        }
+                    }
+                }
+
+                if (_First1 == _Last1) {
+                    return false;
+                }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+            }
+
+            auto _Ptr1 = static_cast<const _Ty*>(_First1);
+            auto _Ptr2 = static_cast<const _Ty*>(_First2);
+
+            for (;;) {
+                if (*_Ptr1 < *_Ptr2) {
+                    ++_Ptr1;
+                    if (_Ptr1 == _Last1) {
+                        return false;
+                    }
+                } else if (*_Ptr2 < *_Ptr1) {
+                    return false;
+                } else {
+                    ++_Ptr1;
+                    ++_Ptr2;
+                    if (_Ptr2 == _Last2) {
+                        return true;
+                    } else if (_Ptr1 == _Last1) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        template <class _Traits_avx, class _Traits_sse, class _Ty>
+        bool __stdcall _Includes_disp(const void* const _First1, const void* const _Last1, const void* const _First2,
+            const void* const _Last2) noexcept {
+            const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
+            const size_t _Size_bytes_2 = _Byte_length(_First2, _Last2);
+            if (_Size_bytes_2 == 0) {
+                return true;
+            } else if (_Size_bytes_1 < _Size_bytes_2) {
+                return false;
+            }
+
+#ifndef _M_ARM64EC
+            if (_Size_bytes_1 >= 32 && _Use_avx2()) {
+                return _Includes_impl<_Traits_avx, _Ty>(_First1, _Last1, _First2, _Last2);
+            }
+
+            if (_Size_bytes_1 >= 16 && _Use_sse42()) {
+                return _Includes_impl<_Traits_sse, _Ty>(_First1, _Last1, _First2, _Last2);
+            }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+            return _Includes_impl<void, _Ty>(_First1, _Last1, _First2, _Last2);
+        }
+    } // namespace _Sorted_ranges
+} // unnamed namespace
+
+extern "C" {
+
+__declspec(noalias) bool __stdcall __std_includes_less_1i(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_1_avx, _Sorted_ranges::_Traits_1_sse, int8_t>(
+        _First1, _Last1, _First2, _Last2);
+}
+
+__declspec(noalias) bool __stdcall __std_includes_less_1u(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_1_avx, _Sorted_ranges::_Traits_1_sse, uint8_t>(
+        _First1, _Last1, _First2, _Last2);
+}
+
+__declspec(noalias) bool __stdcall __std_includes_less_2i(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_2_avx, _Sorted_ranges::_Traits_2_sse, int16_t>(
+        _First1, _Last1, _First2, _Last2);
+}
+
+__declspec(noalias) bool __stdcall __std_includes_less_2u(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_2_avx, _Sorted_ranges::_Traits_2_sse, uint16_t>(
+        _First1, _Last1, _First2, _Last2);
+}
+
+__declspec(noalias) bool __stdcall __std_includes_less_4i(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_4_avx, _Sorted_ranges::_Traits_4_sse, int32_t>(
+        _First1, _Last1, _First2, _Last2);
+}
+
+__declspec(noalias) bool __stdcall __std_includes_less_4u(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_4_avx, _Sorted_ranges::_Traits_4_sse, uint32_t>(
+        _First1, _Last1, _First2, _Last2);
+}
+
+__declspec(noalias) bool __stdcall __std_includes_less_8i(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_8_avx, _Sorted_ranges::_Traits_8_sse, int64_t>(
+        _First1, _Last1, _First2, _Last2);
+}
+
+__declspec(noalias) bool __stdcall __std_includes_less_8u(
+    const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
+    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_8_avx, _Sorted_ranges::_Traits_8_sse, uint64_t>(
+        _First1, _Last1, _First2, _Last2);
+}
+
+} // extern "C"
+
+namespace {
     namespace _Bitset_to_string {
 #ifdef _M_ARM64EC
         using _Traits_1_avx = void;
@@ -7310,4 +8070,4 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest,
 }
 
 } // extern "C"
-#endif // defined(_M_IX86) || defined(_M_X64)
+#endif // ^^^ !defined(_M_ARM64) ^^^
