@@ -2350,6 +2350,15 @@ void test_gh_5798() {
     }
 }
 
+void test_gh_5865() {
+    // GH-5865: <regex>: Remove capture extent vectors from stack frames
+    // These tests check correct restoration of capturing groups
+    // when backtracking over positive lookahead assertions that matched successfully.
+    g_regexTester.should_capture("ab", "(?:(?=(.*))ab)*", "ab");
+    g_regexTester.should_capture("abcd", "(?:(?=(.*))ab)*cd", "abcd");
+    g_regexTester.should_capture("abab", "(?:(?=(.*))ab)*ab", "abab");
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2407,6 +2416,7 @@ int main() {
     test_gh_5792();
     test_gh_5797();
     test_gh_5798();
+    test_gh_5865();
 
     return g_regexTester.result();
 }
