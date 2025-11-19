@@ -84,7 +84,6 @@
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic<cv T>)
 // P3503R3 Make Type-Erased Allocator Use In promise And packaged_task Consistent
-// P3612R1 Harmonize Proxy-Reference Operations
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()
@@ -415,6 +414,10 @@
 // P1413R3 Deprecate aligned_storage And aligned_union
 // P2614R2 Deprecating float_denorm_style, numeric_limits::has_denorm, numeric_limits::has_denorm_loss
 // Other C++23 deprecation warnings
+
+// _HAS_CXX26 and _SILENCE_ALL_CXX26_DEPRECATION_WARNINGS control:
+// P3612R1 Harmonize Proxy-Reference Operations
+// Other C++26 deprecation warnings
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -1513,11 +1516,14 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _DEPRECATE_LOCALE_EMPTY
 #endif // ^^^ warning disabled ^^^
 
-#if !defined(_SILENCE_VECTOR_BOOL_STATIC_REFERENCE_SWAP_DEPRECATION_WARNING)
-#define _DEPRECATE_VECTOR_BOOL_STATIC_REFERENCE_SWAP                                                     \
-    [[deprecated("warning STL4049: Static std::vector<bool>::swap(reference, reference) is deprecated. " \
-                 "Use non-member function swap(reference, reference) instead. You can define "           \
-                 "_SILENCE_VECTOR_BOOL_STATIC_REFERENCE_SWAP_DEPRECATION_WARNING to suppress this warning.")]]
+
+#if _HAS_CXX26 && !defined(_SILENCE_VECTOR_BOOL_STATIC_REFERENCE_SWAP_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX26_DEPRECATION_WARNINGS)
+#define _DEPRECATE_VECTOR_BOOL_STATIC_REFERENCE_SWAP                                                                  \
+    [[deprecated("warning STL4049: Static std::vector<bool>::swap(reference, reference) is deprecated by C++26 (see " \
+                 "LWG-3638 and P3612R1). Use non-member function swap(reference, reference) instead. You can define " \
+                 "_SILENCE_VECTOR_BOOL_STATIC_REFERENCE_SWAP_DEPRECATION_WARNING or "                                 \
+                 "_SILENCE_ALL_CXX26_DEPRECATION_WARNINGS to suppress this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
 #define _DEPRECATE_VECTOR_BOOL_STATIC_REFERENCE_SWAP
 #endif // ^^^ warning disabled ^^^
