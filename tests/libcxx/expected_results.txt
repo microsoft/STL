@@ -161,6 +161,18 @@ std/language.support/support.limits/support.limits.general/cstring.version.compi
 # libc++ has not implemented P3323R1: "Forbid atomic<cv T>, Specify atomic_ref<cv T>"
 std/atomics/atomics.ref/member_types.compile.pass.cpp FAIL
 
+# libc++ has not implemented P3567R2: "flat_meow Fixes"
+std/containers/container.adaptors/flat.map/flat.map.modifiers/swap_free.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/swap_member.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/swap_free.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/swap_member.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/swap_free.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/swap_member.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/swap_free.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/swap_member.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/flat_map.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/flat_set.version.compile.pass.cpp FAIL
+
 # Various bogosity (LLVM-D141004)
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/ctor_does_not_allocate.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/sync_with_default_resource.pass.cpp FAIL
@@ -422,10 +434,6 @@ std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_iter_i
 std/containers/container.adaptors/flat.set/flat.set.cons/sorted_iter_iter.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.set/flat.set.cons/sorted_iter_iter.pass.cpp:1 FAIL
 
-# FIXME! Asserts while testing insert_range's exception guarantee.
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp FAIL
-
 # FIXME! Possibly related to LLVM-140287.
 # MSVC error C2440: '<function-style-cast>': cannot convert from 'initializer list' to 'MinSequenceContainer<int,three_way_random_access_iterator<T *>,three_way_random_access_iterator<const T *>>'
 # Clang error: no matching constructor for initialization of 'container_type' (aka 'MinSequenceContainer<int>')
@@ -485,6 +493,10 @@ std/utilities/optional/optional.iterator/iterator.pass.cpp FAIL
 # VSO-2581622 C1XX should implement `__builtin_is_implicit_lifetime`
 std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:1 FAIL
+
+# MSVC has not implemented P2448R2 "Relaxing some constexpr restrictions"
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp:1 FAIL
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***
