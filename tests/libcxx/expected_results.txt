@@ -181,11 +181,12 @@ std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer.value/ctor.ite
 # libc++ doesn't implement LWG-4112
 std/ranges/range.adaptors/range.join/range.join.iterator/arrow.pass.cpp FAIL
 
+# libc++ doesn't implement LWG-4266 "`layout_stride::mapping` should treat empty mappings as exhaustive"
+std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
+std/containers/views/mdspan/layout_stride/properties.pass.cpp FAIL
+
 # If any feature-test macro test is failing, this consolidated test will also fail.
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
-
-# libc++ incorrectly implements `layout_stride::mapping<E>::is_exhaustive()`
-std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
 
 
 # *** INTERACTIONS WITH MSVC THAT UPSTREAM LIKELY WON'T FIX ***
