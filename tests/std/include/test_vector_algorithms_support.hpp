@@ -4,6 +4,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -53,13 +54,14 @@ inline void disable_instructions(ISA_AVAILABILITY isa) {
     };
 
     if (!has_env_var_escape_hatch()) {
-        if ((__isa_enabled & (1UL << as_ulong)) == 0) {
+        const bool has_feature = (__isa_enabled & (1UL << as_ulong)) != 0;
+        if (!has_feature) {
             std::printf("The feature %lu is not available, the test does not have full coverage!\n"
                         "You can set the environment variable STL_TEST_DOWNLEVEL_MACHINE to 1,\n"
                         "if you intentionally test on a machine without all features available.\n",
                 as_ulong);
-            abort();
         }
+        assert(has_feature);
     }
 
     __isa_enabled &= ~(1UL << as_ulong);
