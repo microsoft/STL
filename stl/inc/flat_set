@@ -24,6 +24,37 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+template <bool _IsNoexcept, class _Container>
+struct _NODISCARD _Flat_set_swap_clear_guard {
+    // Invariant: (_Target1 == nullptr) == (_Target2 == nullptr)
+    _Container* _Target1;
+    _Container* _Target2;
+
+    _Flat_set_swap_clear_guard& operator=(const _Flat_set_swap_clear_guard&) = delete;
+    _Flat_set_swap_clear_guard& operator=(_Flat_set_swap_clear_guard&&)      = delete;
+
+    void _Abandon() noexcept {
+        _Target1 = nullptr;
+        _Target2 = nullptr;
+    }
+
+    ~_Flat_set_swap_clear_guard() {
+        if (_Target1) {
+            _Target1->clear();
+            _Target2->clear();
+        }
+    }
+};
+template <class _Container>
+struct _NODISCARD _Flat_set_swap_clear_guard<true, _Container> {
+    constexpr explicit _Flat_set_swap_clear_guard(_Container*, _Container*) noexcept {}
+
+    _Flat_set_swap_clear_guard& operator=(const _Flat_set_swap_clear_guard&) = delete;
+    _Flat_set_swap_clear_guard& operator=(_Flat_set_swap_clear_guard&&)      = delete;
+
+    void _Abandon() noexcept {}
+};
+
 _EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
 class flat_set;
 
@@ -343,9 +374,13 @@ public:
         return _Mycont.erase(_First, _Last);
     }
 
-    void swap(_Derived& _Other) noexcept {
+    void swap(_Derived& _Other) noexcept(is_nothrow_swappable_v<_Container> && is_nothrow_swappable_v<_Keylt>) {
+        constexpr bool _Is_noexcept = is_nothrow_swappable_v<_Container> && is_nothrow_swappable_v<_Keylt>;
+        _Flat_set_swap_clear_guard<_Is_noexcept, _Container> _Guard{
+            _STD addressof(_Mycont), _STD addressof(_Other._Mycont)};
         _RANGES swap(_Mycomp, _Other._Mycomp);
         _RANGES swap(_Mycont, _Other._Mycont);
+        _Guard._Abandon();
     }
     void clear() noexcept {
         _Mycont.clear();
@@ -434,7 +469,7 @@ public:
             _Lhs.cbegin(), _Lhs.cend(), _Rhs.cbegin(), _Rhs.cend(), _Synth_three_way{});
     }
 
-    friend void swap(_Derived& _Lhs, _Derived& _Rhs) noexcept {
+    friend void swap(_Derived& _Lhs, _Derived& _Rhs) noexcept(noexcept(_Lhs.swap(_Rhs))) {
         _Lhs.swap(_Rhs);
     }
 

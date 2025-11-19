@@ -655,6 +655,90 @@ void test_comparison() {
     }
 }
 
+namespace test_throwing_swap {
+    struct unique_exception {};
+
+    template <class T>
+    struct throwing_less {
+        static bool operator()(const T& left, const T& right) {
+            return left < right;
+        }
+
+        bool throws_;
+    };
+
+    template <class T>
+    void swap(throwing_less<T>& lhs, throwing_less<T>& rhs) {
+        if (lhs.throws_ || rhs.throws_) {
+            throw unique_exception{};
+        }
+    }
+} // namespace test_throwing_swap
+
+template <template <class...> class FlatMapCont, template <class...> class KeyCont,
+    template <class...> class MappedCont>
+void test_throwing_compare_swap_single() {
+    using test_throwing_swap::unique_exception;
+    using comparator = test_throwing_swap::throwing_less<int>;
+
+    using map_type =
+        FlatMapCont<int, char, comparator, KeyCont<int, allocator<int>>, MappedCont<char, allocator<char>>>;
+    using value_type = map_type::value_type;
+    static_assert(!is_nothrow_swappable_v<map_type>);
+    {
+        map_type m1{{{1, 'x'}, {2, 'y'}, {3, 'z'}}, comparator{false}};
+        map_type m2{{{4, 'A'}, {5, 'B'}, {6, 'C'}}, comparator{false}};
+        m1.swap(m2);
+        assert(ranges::equal(m1, initializer_list<value_type>{{4, 'A'}, {5, 'B'}, {6, 'C'}}));
+        assert(ranges::equal(m2, initializer_list<value_type>{{1, 'x'}, {2, 'y'}, {3, 'z'}}));
+    }
+    {
+        map_type m1{{{1, 'x'}, {2, 'y'}, {3, 'z'}}, comparator{false}};
+        map_type m2{{{4, 'A'}, {5, 'B'}, {6, 'C'}}, comparator{false}};
+        ranges::swap(m1, m2);
+        assert(ranges::equal(m1, initializer_list<value_type>{{4, 'A'}, {5, 'B'}, {6, 'C'}}));
+        assert(ranges::equal(m2, initializer_list<value_type>{{1, 'x'}, {2, 'y'}, {3, 'z'}}));
+    }
+    {
+        map_type m1{{{1, 'x'}, {2, 'y'}, {3, 'z'}}, comparator{false}};
+        map_type m2{{{4, 'A'}, {5, 'B'}, {6, 'C'}}, comparator{true}};
+        try {
+            m1.swap(m2);
+            assert(false);
+        } catch (const unique_exception&) {
+            assert(m1.empty());
+            assert(m2.empty());
+        } catch (...) {
+            assert(false);
+        }
+    }
+    {
+        map_type m1{{{1, 'x'}, {2, 'y'}, {3, 'z'}}, comparator{false}};
+        map_type m2{{{4, 'A'}, {5, 'B'}, {6, 'C'}}, comparator{true}};
+        try {
+            ranges::swap(m1, m2);
+            assert(false);
+        } catch (const unique_exception&) {
+            assert(m1.empty());
+            assert(m2.empty());
+        } catch (...) {
+            assert(false);
+        }
+    }
+}
+
+void test_throwing_compare_swap() {
+    test_throwing_compare_swap_single<flat_map, vector, vector>();
+    test_throwing_compare_swap_single<flat_map, vector, deque>();
+    test_throwing_compare_swap_single<flat_map, deque, vector>();
+    test_throwing_compare_swap_single<flat_map, deque, deque>();
+
+    test_throwing_compare_swap_single<flat_multimap, vector, vector>();
+    test_throwing_compare_swap_single<flat_multimap, vector, deque>();
+    test_throwing_compare_swap_single<flat_multimap, deque, vector>();
+    test_throwing_compare_swap_single<flat_multimap, deque, deque>();
+}
+
 int main() {
     test_construction();
     test_pointer_to_incomplete_type();
@@ -663,4 +747,5 @@ int main() {
     test_gh_4344();
     test_insert_or_assign();
     test_comparison();
+    test_throwing_compare_swap();
 }
