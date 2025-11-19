@@ -2377,6 +2377,7 @@ private:
     }
 
 public:
+    using iterator_type    = _Iter;
     using iterator_concept = decltype(_Get_iter_concept());
     using value_type       = iter_value_t<_Iter>;
     using difference_type  = iter_difference_t<_Iter>;
