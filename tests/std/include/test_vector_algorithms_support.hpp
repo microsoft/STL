@@ -48,15 +48,15 @@ inline void disable_instructions(ISA_AVAILABILITY isa) {
     auto has_env_var_escape_hatch = [] {
         size_t return_value = 0;
         char buffer[2]{};
-        const errno_t err = ::getenv_s(&return_value, buffer, std::size(buffer), "STL_TEST_DOWNLEVEL_HOST");
+        const errno_t err = ::getenv_s(&return_value, buffer, std::size(buffer), "STL_TEST_DOWNLEVEL_MACHINE");
         return err == 0 && buffer == std::string{"1"};
     };
 
     if (!has_env_var_escape_hatch()) {
         if ((__isa_enabled & (1UL << as_ulong)) == 0) {
             std::printf("The feature %lu is not available, the test does not have full coverage!\n", as_ulong);
-            std::printf("You can set environment variable STL_TEST_DOWNLEVEL_HOST to 1,\n"
-                        "if you intentionally test on a host with not all features available.");
+            std::printf("You can set environment variable STL_TEST_DOWNLEVEL_MACHINE to 1,\n"
+                        "if you intentionally test on a machine with not all features available.");
             abort();
         }
     }
