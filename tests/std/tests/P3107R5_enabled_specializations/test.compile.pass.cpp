@@ -3,9 +3,13 @@
 
 #include <chrono>
 #include <cstddef>
+#include <deque>
 #include <format>
+#include <functional>
 #include <list>
+#include <queue>
 #include <ranges>
+#include <stack>
 #include <stacktrace>
 #include <string>
 #include <string_view>
@@ -141,6 +145,18 @@ static_assert(!enable_nonlocking_formatter_optimization<vector<unoptimized>>);
 static_assert(!enable_nonlocking_formatter_optimization<vector<unoptimized, myalloc<unoptimized>>>);
 using R = decltype(vector<int>{} | views::take(3));
 static_assert(!enable_nonlocking_formatter_optimization<R>);
+
+// <queue> =====================================================================
+static_assert(!enable_nonlocking_formatter_optimization<queue<int>>);
+static_assert(!enable_nonlocking_formatter_optimization<queue<int, list<int>>>);
+static_assert(!enable_nonlocking_formatter_optimization<priority_queue<int>>);
+static_assert(!enable_nonlocking_formatter_optimization<priority_queue<int, deque<int>>>);
+static_assert(!enable_nonlocking_formatter_optimization<priority_queue<int, vector<int>, greater<int>>>);
+static_assert(!enable_nonlocking_formatter_optimization<priority_queue<int, deque<int>, greater<>>>);
+
+// <stack> =====================================================================
+static_assert(!enable_nonlocking_formatter_optimization<stack<int>>);
+static_assert(!enable_nonlocking_formatter_optimization<stack<int, vector<int>>>);
 
 // <stacktrace> ================================================================
 static_assert(enable_nonlocking_formatter_optimization<stacktrace_entry>);
