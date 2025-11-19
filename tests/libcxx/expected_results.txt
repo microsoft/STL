@@ -77,9 +77,6 @@ std/input.output/iostreams.base/ios.base/ios.base.storage/pword.pass.cpp SKIPPED
 # LWG-3197 "std::prev should not require BidirectionalIterator" (New)
 std/iterators/iterator.primitives/iterator.operations/prev.pass.cpp FAIL
 
-# Testing nonstandard behavior
-std/utilities/template.bitset/bitset.cons/string_ctor.pass.cpp FAIL
-
 # Tests with undefined behavior under N4842 [basic.start.term]/6 (detached threads)
 std/thread/futures/futures.task/futures.task.members/dtor.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_until.pass.cpp SKIPPED
