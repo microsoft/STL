@@ -54,9 +54,10 @@ inline void disable_instructions(ISA_AVAILABILITY isa) {
 
     if (!has_env_var_escape_hatch()) {
         if ((__isa_enabled & (1UL << as_ulong)) == 0) {
-            std::printf("The feature %lu is not available, the test does not have full coverage!\n", as_ulong);
-            std::printf("You can set environment variable STL_TEST_DOWNLEVEL_MACHINE to 1,\n"
-                        "if you intentionally test on a machine with not all features available.");
+            std::printf("The feature %lu is not available, the test does not have full coverage!\n"
+                        "You can set the environment variable STL_TEST_DOWNLEVEL_MACHINE to 1,\n"
+                        "if you intentionally test on a machine without all features available.\n",
+                as_ulong);
             abort();
         }
     }
