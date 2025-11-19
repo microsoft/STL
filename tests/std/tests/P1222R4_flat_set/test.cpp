@@ -417,10 +417,12 @@ void test_insert_1() {
         assert_all_requirements_and_equals(a, {0, 1, 2, 5});
         a.insert_range(vec);
         assert_all_requirements_and_equals(a, {0, 1, 2, 5});
+        a.insert_range(sorted_unique, vector<int>{2, 5, 8});
+        assert_all_requirements_and_equals(a, {0, 1, 2, 5, 8});
         a.insert({6, 2, 3});
-        assert_all_requirements_and_equals(a, {0, 1, 2, 3, 5, 6});
+        assert_all_requirements_and_equals(a, {0, 1, 2, 3, 5, 6, 8});
         a.insert(sorted_unique, {4, 5});
-        assert_all_requirements_and_equals(a, {0, 1, 2, 3, 4, 5, 6});
+        assert_all_requirements_and_equals(a, {0, 1, 2, 3, 4, 5, 6, 8});
     }
     {
         flat_multiset<int, lt, C> a{5, 5};
@@ -439,10 +441,12 @@ void test_insert_1() {
         assert_all_requirements_and_equals(a, {0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 5, 5});
         a.insert_range(vec);
         assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 5, 5});
+        a.insert_range(sorted_equivalent, vector<int>{2, 8, 8});
+        assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 5, 5, 8, 8});
         a.insert({6, 2, 3});
-        assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 5, 5, 6});
+        assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 5, 5, 6, 8, 8});
         a.insert(sorted_equivalent, {4, 5});
-        assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 4, 5, 5, 5, 6});
+        assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 4, 5, 5, 5, 6, 8, 8});
     }
 }
 

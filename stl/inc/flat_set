@@ -328,14 +328,11 @@ public:
     }
     template <_Container_compatible_range<_Kty> _Rng>
     void insert_range(_Rng&& _Range) {
-        const size_type _Old_size = size();
-
-        if constexpr (requires { _Mycont.append_range(_STD forward<_Rng>(_Range)); }) {
-            _Mycont.append_range(_STD forward<_Rng>(_Range));
-        } else {
-            _Mycont.insert_range(_Mycont.end(), _STD forward<_Rng>(_Range));
-        }
-        _Restore_invariants_after_insert<true>(_Old_size);
+        _Insert_range<true>(_STD forward<_Rng>(_Range));
+    }
+    template <_Container_compatible_range<_Kty> _Rng>
+    void insert_range(_Sorted_t, _Rng&& _Range) {
+        _Insert_range<false>(_STD forward<_Rng>(_Range));
     }
 
     void insert(initializer_list<_Kty> _Ilist) {
@@ -606,6 +603,18 @@ private:
         const size_type _Old_size = size();
         _Clear_guard _Guard{this};
         _Mycont.insert(_Mycont.end(), _First, _Last);
+        _Restore_invariants_after_insert<_NeedSorting>(_Old_size);
+        _Guard._Target = nullptr;
+    }
+    template <bool _NeedSorting, _Container_compatible_range<_Kty> _Rng>
+    void _Insert_range(_Rng&& _Range) {
+        const size_type _Old_size = size();
+        _Clear_guard _Guard{this};
+        if constexpr (_Has_guaranteed_append_range<_Container>) {
+            _Mycont.append_range(_STD forward<_Rng>(_Range));
+        } else {
+            _Mycont.insert_range(_Mycont.end(), _STD forward<_Rng>(_Range));
+        }
         _Restore_invariants_after_insert<_NeedSorting>(_Old_size);
         _Guard._Target = nullptr;
     }

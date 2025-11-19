@@ -1852,6 +1852,9 @@ namespace pmr {
 #if _HAS_CXX23
 template <class _Ty, class _Alloc>
 constexpr bool _Has_guaranteed_push_back<deque<_Ty, _Alloc>> = true;
+
+template <class _Ty, class _Alloc>
+constexpr bool _Has_guaranteed_append_range<deque<_Ty, _Alloc>> = true;
 #endif // _HAS_CXX23
 _STD_END
 

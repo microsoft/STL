@@ -475,6 +475,33 @@ void test_insert() {
     assert(check_value_content(fmm, {'m', 'n', 'p', 'q', 'w'}));
 }
 
+void test_insert_range() {
+    {
+        flat_map<int, char> fm{{1, 'p'}, {4, 'q'}, {9, 'r'}};
+        using char_type_array = flat_map<int, char>::value_type[];
+
+        fm.insert_range(char_type_array{{16, 'x'}, {9, 'y'}, {4, 'z'}});
+        assert(check_key_content(fm, {1, 4, 9, 16}));
+        assert(check_value_content(fm, {'p', 'q', 'r', 'x'}));
+
+        fm.insert_range(sorted_unique, char_type_array{{9, 'a'}, {16, 'b'}, {25, 'c'}});
+        assert(check_key_content(fm, {1, 4, 9, 16, 25}));
+        assert(check_value_content(fm, {'p', 'q', 'r', 'x', 'c'}));
+    }
+    {
+        flat_multimap<int, char> fmm{{1, 'p'}, {4, 'q'}, {9, 'r'}};
+        using char_type_array = flat_multimap<int, char>::value_type[];
+
+        fmm.insert_range(char_type_array{{16, 'x'}, {9, 'y'}, {4, 'z'}});
+        assert(check_key_content(fmm, {1, 4, 4, 9, 9, 16}));
+        assert(check_value_content(fmm, {'p', 'q', 'z', 'r', 'y', 'x'}));
+
+        fmm.insert_range(sorted_equivalent, char_type_array{{9, 'a'}, {16, 'b'}, {25, 'c'}});
+        assert(check_key_content(fmm, {1, 4, 4, 9, 9, 9, 16, 16, 25}));
+        assert(check_value_content(fmm, {'p', 'q', 'z', 'r', 'y', 'a', 'x', 'b', 'c'}));
+    }
+}
+
 // GH-4344 <flat_map> Fix compile errors
 void test_gh_4344() {
     flat_map<int, char> fm;
@@ -744,6 +771,7 @@ int main() {
     test_pointer_to_incomplete_type();
     test_erase_if();
     test_insert();
+    test_insert_range();
     test_gh_4344();
     test_insert_or_assign();
     test_comparison();

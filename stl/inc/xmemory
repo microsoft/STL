@@ -2764,7 +2764,10 @@ namespace ranges {
 } // namespace ranges
 
 template <class>
-constexpr bool _Has_guaranteed_push_back = false; // N5008 [sequence.reqmts]/104, /108; used by flat_(multi)map::insert.
+constexpr bool _Has_guaranteed_push_back = false; // N5014 [sequence.reqmts]/104, /108; used by flat_(multi)map::insert.
+
+template <class>
+constexpr bool _Has_guaranteed_append_range = false; // N5014 [sequence.reqmts]/112; used by flat_(multi)set::insert.
 #endif // _HAS_CXX23
 
 template <class _Elem, class _UTy>

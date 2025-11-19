@@ -631,6 +631,11 @@ public:
         _Insert_range<true>(_RANGES begin(_Range), _RANGES end(_Range));
     }
 
+    template <_Container_compatible_range<value_type> _Rng>
+    void insert_range(_Sorted_t, _Rng&& _Range) {
+        _Insert_range<false>(_RANGES begin(_Range), _RANGES end(_Range));
+    }
+
     void insert(initializer_list<value_type> _Ilist) {
         _Insert_range<true>(_Ilist.begin(), _Ilist.end());
     }
