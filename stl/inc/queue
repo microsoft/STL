@@ -230,6 +230,9 @@ struct uses_allocator<queue<_Ty, _Container>, _Alloc> : uses_allocator<_Containe
 template <_Format_supported_charT _CharT, class _Ty, formattable<_CharT> _Container>
 struct formatter<queue<_Ty, _Container>, _CharT>
     : _Adaptor_formatter_base<queue<_Ty, _Container>, _CharT, _RANGES ref_view> {};
+
+template <class _Ty, class _Container>
+constexpr bool enable_nonlocking_formatter_optimization<queue<_Ty, _Container>> = false;
 #endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Ty, class _Container = vector<_Ty>, class _Pr = less<typename _Container::value_type>>
@@ -505,6 +508,9 @@ struct uses_allocator<priority_queue<_Ty, _Container, _Pr>, _Alloc> : uses_alloc
 template <_Format_supported_charT _CharT, class _Ty, formattable<_CharT> _Container, class _Comp>
 struct formatter<priority_queue<_Ty, _Container, _Comp>, _CharT>
     : _Adaptor_formatter_base<priority_queue<_Ty, _Container, _Comp>, _CharT, _RANGES ref_view> {};
+
+template <class _Ty, class _Container, class _Compare>
+constexpr bool enable_nonlocking_formatter_optimization<priority_queue<_Ty, _Container, _Compare>> = false;
 #endif // _HAS_CXX23
 _STD_END
 
