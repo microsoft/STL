@@ -858,7 +858,9 @@ __declspec(dllexport) void test_stacktrace() { // export test_stacktrace to have
         desc.resize(pos);
     }
 
+#ifndef _M_ARM64EC // TRANSITION, GH-5830
     assert(desc == "test_stacktrace");
+#endif // ^^^ no workaround ^^^
 }
 #endif // TEST_STANDARD >= 23
 
