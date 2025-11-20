@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <climits>
+#include <concepts>
 #include <cstdlib>
 #include <deque>
 #include <flat_set>
@@ -213,8 +214,10 @@ void assert_noexcept_requirements(T& s) {
     static_assert(noexcept(s.max_size()));
 
     if constexpr (!is_const_v<T>) {
-        static_assert(noexcept(s.swap(s)));
-        static_assert(noexcept(ranges::swap(s, s))); // using ADL-swap
+        constexpr bool is_noexcept =
+            is_nothrow_swappable_v<typename T::container_type> && is_nothrow_swappable_v<typename T::key_compare>;
+        static_assert(noexcept(s.swap(s)) == is_noexcept);
+        static_assert(noexcept(ranges::swap(s, s)) == is_noexcept); // using ADL-swap
         static_assert(noexcept(s.clear()));
     }
 }
@@ -414,10 +417,12 @@ void test_insert_1() {
         assert_all_requirements_and_equals(a, {0, 1, 2, 5});
         a.insert_range(vec);
         assert_all_requirements_and_equals(a, {0, 1, 2, 5});
+        a.insert_range(sorted_unique, vector<int>{2, 5, 8});
+        assert_all_requirements_and_equals(a, {0, 1, 2, 5, 8});
         a.insert({6, 2, 3});
-        assert_all_requirements_and_equals(a, {0, 1, 2, 3, 5, 6});
+        assert_all_requirements_and_equals(a, {0, 1, 2, 3, 5, 6, 8});
         a.insert(sorted_unique, {4, 5});
-        assert_all_requirements_and_equals(a, {0, 1, 2, 3, 4, 5, 6});
+        assert_all_requirements_and_equals(a, {0, 1, 2, 3, 4, 5, 6, 8});
     }
     {
         flat_multiset<int, lt, C> a{5, 5};
@@ -436,10 +441,12 @@ void test_insert_1() {
         assert_all_requirements_and_equals(a, {0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 5, 5});
         a.insert_range(vec);
         assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 5, 5});
+        a.insert_range(sorted_equivalent, vector<int>{2, 8, 8});
+        assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 5, 5, 8, 8});
         a.insert({6, 2, 3});
-        assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 5, 5, 6});
+        assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 5, 5, 6, 8, 8});
         a.insert(sorted_equivalent, {4, 5});
-        assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 4, 5, 5, 5, 6});
+        assert_all_requirements_and_equals(a, {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 4, 5, 5, 5, 6, 8, 8});
     }
 }
 
@@ -1060,6 +1067,83 @@ void test_set_operations_transparent() {
     assert(first + 1 == last);
 }
 
+namespace test_throwing_swap {
+    struct unique_exception {};
+
+    template <class T>
+    struct throwing_less {
+        static bool operator()(const T& left, const T& right) {
+            return left < right;
+        }
+
+        bool throws_;
+    };
+
+    template <class T>
+    void swap(throwing_less<T>& lhs, throwing_less<T>& rhs) {
+        if (lhs.throws_ || rhs.throws_) {
+            throw unique_exception{};
+        }
+    }
+} // namespace test_throwing_swap
+
+template <template <class...> class FlatSetCont, template <class...> class AdaptedCont>
+void test_throwing_compare_single() {
+    using test_throwing_swap::unique_exception;
+    using comparator = test_throwing_swap::throwing_less<int>;
+
+    using set_type = FlatSetCont<int, comparator, AdaptedCont<int, allocator<int>>>;
+    static_assert(!is_nothrow_swappable_v<set_type>);
+    {
+        set_type s1{{1, 2, 3}, comparator{false}};
+        set_type s2{{4, 5, 6}, comparator{false}};
+        s1.swap(s2);
+        assert(ranges::equal(s1, initializer_list<int>{4, 5, 6}));
+        assert(ranges::equal(s2, initializer_list<int>{1, 2, 3}));
+    }
+    {
+        set_type s1{{1, 2, 3}, comparator{false}};
+        set_type s2{{4, 5, 6}, comparator{false}};
+        ranges::swap(s1, s2);
+        assert(ranges::equal(s1, initializer_list<int>{4, 5, 6}));
+        assert(ranges::equal(s2, initializer_list<int>{1, 2, 3}));
+    }
+    {
+        set_type s1{{1, 2, 3}, comparator{true}};
+        set_type s2{{4, 5, 6}, comparator{false}};
+        try {
+            s1.swap(s2);
+            assert(false);
+        } catch (const unique_exception&) {
+            assert(s1.empty());
+            assert(s2.empty());
+        } catch (...) {
+            assert(false);
+        }
+    }
+    {
+        set_type s1{{1, 2, 3}, comparator{true}};
+        set_type s2{{4, 5, 6}, comparator{false}};
+        try {
+            ranges::swap(s1, s2);
+            assert(false);
+        } catch (const unique_exception&) {
+            assert(s1.empty());
+            assert(s2.empty());
+        } catch (...) {
+            assert(false);
+        }
+    }
+}
+
+void test_throwing_compare_swap() {
+    test_throwing_compare_single<flat_set, vector>();
+    test_throwing_compare_single<flat_set, deque>();
+
+    test_throwing_compare_single<flat_multiset, vector>();
+    test_throwing_compare_single<flat_multiset, deque>();
+}
+
 int main() {
     test_spaceship_operator<flat_set<int>>();
     test_spaceship_operator<flat_multiset<int>>();
@@ -1108,4 +1192,6 @@ int main() {
     test_set_operations<flat_multiset>();
     test_set_operations_transparent<flat_set>();
     test_set_operations_transparent<flat_multiset>();
+
+    test_throwing_compare_swap();
 }
