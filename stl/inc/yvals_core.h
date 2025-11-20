@@ -84,7 +84,6 @@
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic<cv T>)
 // P3503R3 Make Type-Erased Allocator Use In promise And packaged_task Consistent
-// LWG-4301 condition_variable{_any}::wait_{for, until} should take timeout by value
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()

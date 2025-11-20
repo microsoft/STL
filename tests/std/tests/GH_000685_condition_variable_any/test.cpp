@@ -85,7 +85,7 @@ namespace {
     // Minimal example inspired by LWG-4301, modified due to missing latch in C++11 to 20
     // and generalized to test all overloads of condition_variable{_any}::wait_{for, until}
     template <typename CV>
-    void test_timeout_immutable(int test_index) {
+    void test_timeout_immutable(int test_number) {
 
         mutex m;
         CV cv;
@@ -111,7 +111,7 @@ namespace {
         const auto wait_start = steady_clock::now();
 #define CHECK_TIMEOUT_NOT_CHANGED() assert(steady_clock::now() - wait_start < long_timeout / 2);
 
-        switch (test_index) {
+        switch (test_number) {
         case 0:
             assert(cv.wait_until(lock, timeout) == cv_status::timeout);
             CHECK_TIMEOUT_NOT_CHANGED();
@@ -166,11 +166,17 @@ int main() {
     test_condition_variable_any();
     test_condition_variable_any_already_timed_out();
 
-    for (int i = 0; i < 4; i++) {
-        test_timeout_immutable<std::condition_variable>(i);
-    }
+    test_timeout_immutable<std::condition_variable>(0);
+    test_timeout_immutable<std::condition_variable>(1);
+    test_timeout_immutable<std::condition_variable>(2);
+    test_timeout_immutable<std::condition_variable>(3);
 
-    for (int i = 0; i < (_HAS_CXX20 ? 6 : 4); i++) {
-        test_timeout_immutable<std::condition_variable_any>(i);
-    }
+    test_timeout_immutable<std::condition_variable_any>(0);
+    test_timeout_immutable<std::condition_variable_any>(1);
+    test_timeout_immutable<std::condition_variable_any>(2);
+    test_timeout_immutable<std::condition_variable_any>(3);
+#if _HAS_CXX20
+    test_timeout_immutable<std::condition_variable_any>(4);
+    test_timeout_immutable<std::condition_variable_any>(5);
+#endif // _HAS_CXX20
 }
