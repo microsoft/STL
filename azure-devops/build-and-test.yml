@@ -38,7 +38,7 @@ jobs:
   - template: checkout-self.yml
   - template: checkout-submodule.yml
     parameters:
-      enabled: ${{ not(parameters.skipTesting) }}
+      enabled: true
       path: 'llvm-project'
       url: 'https://github.com/llvm/llvm-project.git'
   - template: checkout-submodule.yml

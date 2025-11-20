@@ -14,11 +14,13 @@ if __name__ == "__main__":
     # Use the location of this script to find the base of the repo.
     absolute_repo_path = Path(sys.argv[0]).absolute().parents[2]
 
+    expected_results_txt = "tests/libcxx/expected_results.txt"
+
     # Tests can be mentioned multiple times for different configurations.
     # Build up a unique set before checking for existence.
     unique_tests = set()
 
-    with open(absolute_repo_path / "tests/libcxx/expected_results.txt") as file:
+    with open(absolute_repo_path / expected_results_txt) as file:
         for line in map(lambda x: x.strip(), file):
             if line and not line.startswith("#"): # Ignore empty lines and comments.
                 unique_tests.add(re.sub(r"(:\d+)? (FAIL|SKIPPED)$", "", line))
@@ -31,10 +33,8 @@ if __name__ == "__main__":
             nonexistent_tests.append(str)
 
     if nonexistent_tests:
-        print(f"Failure, found {len(nonexistent_tests)} nonexistent test paths:")
+        print(f"Failure: {expected_results_txt} contains {len(nonexistent_tests)} nonexistent tests:", file=sys.stderr)
         nonexistent_tests.sort()
         for str in nonexistent_tests:
-            print(f"{str}")
+            print(f"{str}", file=sys.stderr)
         sys.exit(1)
-
-    print("Success, all test paths exist.")
