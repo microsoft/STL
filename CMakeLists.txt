@@ -46,7 +46,7 @@ if(TARGET run-validate)
     add_dependencies(validate run-validate)
 endif()
 
-option(BUILD_TESTING "Enable testing" ON)
+option(CONFIGURE_TESTING "Enable testing" ON)
 set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid conflicts with distributed DLLs")
 
 option(STL_USE_ANALYZE "Pass the /analyze flag to MSVC" OFF)
@@ -115,7 +115,7 @@ set(VCLIBS_DEBUG_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/Od>")
 # TRANSITION, GH-2108: Investigate building the STL with only /O2, not /Os.
 set(VCLIBS_RELEASE_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/O2;/Os>")
 
-if(BUILD_TESTING)
+if(CONFIGURE_TESTING)
     add_subdirectory(tests)
 endif()
 
