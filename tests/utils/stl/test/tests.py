@@ -245,6 +245,10 @@ class STLTest(Test):
                 self.compileFlags.append('--target=arm64-pc-windows-msvc')
             elif (targetArch == 'arm64ec'.casefold()):
                 self.compileFlags.append('--target=arm64ec-pc-windows-msvc')
+                # TRANSITION, GH-5825: As of Clang 20, compiling with `-fuse-ld=link` (avoiding lld-link)
+                # appears to be critically necessary for unknown reasons.
+                self.compileFlags.append('-fuse-ld=link')
+                self.linkFlags.append('/machine:arm64ec')
         elif ('nvcc'.casefold() in os.path.basename(cxx).casefold()):
             self._addCustomFeature('nvcc')
 

@@ -677,8 +677,14 @@ namespace chrono {
                 return time_point(duration(_Ctr * _Multiplier));
             } else if (_Freq == _TwentyFourMHz) {
                 // 24 MHz is a common frequency on ARM64, including cases where it emulates x86/x64.
-                const long long _Whole = (_Ctr / _TwentyFourMHz) * period::den;
-                const long long _Part  = (_Ctr % _TwentyFourMHz) * period::den / _TwentyFourMHz;
+                constexpr long long _Multiplier_whole = period::den / _TwentyFourMHz;
+                using _Multiplier_part                = ratio<period::den % _TwentyFourMHz, _TwentyFourMHz>;
+                constexpr long long _Multiplier_num   = _Multiplier_part::num;
+                constexpr long long _Multiplier_den   = _Multiplier_part::den;
+                static_assert(
+                    _Multiplier_num <= _Multiplier_whole, "This assumes that _Ctr * _Multiplier_num doesn't overflow.");
+                const long long _Whole = _Ctr * _Multiplier_whole;
+                const long long _Part  = _Ctr * _Multiplier_num / _Multiplier_den;
                 return time_point(duration(_Whole + _Part));
             } else {
                 // Instead of just having "(_Ctr * period::den) / _Freq",
