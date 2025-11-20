@@ -6986,11 +6986,12 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
 
-            if constexpr (_Bidi_common<_It, _Se>) {
-                auto _Saved_last = _Last;
+            if constexpr (bidirectional_iterator<_It>) {
+                auto _Saved_last = _RANGES next(_First, _Last);
+                auto _Tail       = _Saved_last;
                 for (;; ++_First) { // find any out-of-order pair
                     for (;; ++_First) { // skip in-place elements at beginning
-                        if (_First == _Last) {
+                        if (_First == _Tail) {
                             return {_STD move(_First), _STD move(_Saved_last)};
                         }
 
@@ -7000,13 +7001,13 @@ namespace ranges {
                     }
 
                     do { // skip in-place elements at end
-                        --_Last;
-                        if (_First == _Last) {
+                        --_Tail;
+                        if (_First == _Tail) {
                             return {_STD move(_First), _STD move(_Saved_last)};
                         }
-                    } while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Last)));
+                    } while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Tail)));
 
-                    _RANGES iter_swap(_First, _Last); // out of place, swap and loop
+                    _RANGES iter_swap(_First, _Tail); // out of place, swap and loop
                 }
 
                 return {_STD move(_First), _STD move(_Saved_last)};
