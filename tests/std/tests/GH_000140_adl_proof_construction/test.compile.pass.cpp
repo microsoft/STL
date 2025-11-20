@@ -130,13 +130,11 @@ void test_packaged_task() {
     packaged_task<void(int)>{validating_identity{}};
     packaged_task<void(int)>{validating_large_identity{}};
 
-#if !_HAS_CXX17
     packaged_task<void(validator)>{allocator_arg, adl_proof_allocator<unsigned char>{}, simple_identity{}};
     packaged_task<void(validator)>{allocator_arg, adl_proof_allocator<unsigned char>{}, simple_large_identity{}};
 
     packaged_task<void(int)>{allocator_arg, adl_proof_allocator<unsigned char>{}, validating_identity{}};
     packaged_task<void(int)>{allocator_arg, adl_proof_allocator<unsigned char>{}, validating_large_identity{}};
-#endif // !_HAS_CXX17
 }
 
 void test_promise() {

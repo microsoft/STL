@@ -5,10 +5,12 @@
 
 _EXTERN_C_UNLESS_PURE
 
-// coefficients
-static const float p[] = {0.00020400F, 0.00832983F, 0.16666737F, 0.99999998F};
+_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float x, float y) noexcept {
+    // compute y * sinh(x), |y| <= 1
 
-_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float x, float y) noexcept { // compute y * sinh(x), |y| <= 1
+    // coefficients
+    static constexpr float p[] = {0.00020400F, 0.00832983F, 0.16666737F, 0.99999998F};
+
     short neg;
 
     switch (_FDtest(&x)) { // test for special codes
@@ -30,7 +32,8 @@ _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float x, float y) noexcept { 
             neg = 0;
         }
 
-        if (x < _FRteps._Float) {
+        constexpr float rteps = 0x1p-12f;
+        if (x < rteps) {
             x *= y; // x tiny
         } else if (x < 1.0F) {
             float w = x * x;

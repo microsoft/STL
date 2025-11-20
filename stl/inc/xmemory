@@ -31,7 +31,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef msvc
 #undef no_specializations
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_REMOVE
 extern "C" {
 void* __stdcall __std_remove_1(void* _First, void* _Last, uint8_t _Val) noexcept;
 void* __stdcall __std_remove_2(void* _First, void* _Last, uint16_t _Val) noexcept;
@@ -42,27 +42,21 @@ void* __stdcall __std_remove_8(void* _First, void* _Last, uint64_t _Val) noexcep
 _STD_BEGIN
 template <class _Ty, class _TVal>
 _Ty* _Remove_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
-    if constexpr (is_pointer_v<_Ty>) {
-#ifdef _WIN64
-        return reinterpret_cast<_Ty*>(::__std_remove_8(_First, _Last, reinterpret_cast<uint64_t>(_Val)));
-#else
-        return reinterpret_cast<_Ty*>(::__std_remove_4(_First, _Last, reinterpret_cast<uint32_t>(_Val)));
-#endif
-    } else if constexpr (sizeof(_Ty) == 1) {
-        return reinterpret_cast<_Ty*>(::__std_remove_1(_First, _Last, static_cast<uint8_t>(_Val)));
+    if constexpr (sizeof(_Ty) == 1) {
+        return reinterpret_cast<_Ty*>(::__std_remove_1(_First, _Last, _STD _Find_arg_cast<uint8_t>(_Val)));
     } else if constexpr (sizeof(_Ty) == 2) {
-        return reinterpret_cast<_Ty*>(::__std_remove_2(_First, _Last, static_cast<uint16_t>(_Val)));
+        return reinterpret_cast<_Ty*>(::__std_remove_2(_First, _Last, _STD _Find_arg_cast<uint16_t>(_Val)));
     } else if constexpr (sizeof(_Ty) == 4) {
-        return reinterpret_cast<_Ty*>(::__std_remove_4(_First, _Last, static_cast<uint32_t>(_Val)));
+        return reinterpret_cast<_Ty*>(::__std_remove_4(_First, _Last, _STD _Find_arg_cast<uint32_t>(_Val)));
     } else if constexpr (sizeof(_Ty) == 8) {
-        return reinterpret_cast<_Ty*>(::__std_remove_8(_First, _Last, static_cast<uint64_t>(_Val)));
+        return reinterpret_cast<_Ty*>(::__std_remove_8(_First, _Last, _STD _Find_arg_cast<uint64_t>(_Val)));
     } else {
         _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
     }
 }
 _STD_END
 
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_REMOVE ^^^
 
 _STD_BEGIN
 template <class _Ptrty>
@@ -1726,6 +1720,7 @@ namespace ranges {
 
     template <class _InIt, class _OutIt>
     in_out_result<_InIt, _OutIt> _Copy_memcpy_count(_InIt _IFirst, _OutIt _OFirst, const size_t _Count) noexcept {
+        // (pre-verified contiguous iterator)
         const auto _IFirstPtr     = _STD _To_address(_IFirst);
         const auto _OFirstPtr     = _STD _To_address(_OFirst);
         const auto _IFirst_ch     = const_cast<char*>(reinterpret_cast<const volatile char*>(_IFirstPtr));
@@ -1749,6 +1744,7 @@ namespace ranges {
     template <class _InIt, class _OutIt, class _DistIt>
     in_out_result<_InIt, _OutIt> _Copy_memcpy_distance(
         _InIt _IFirst, _OutIt _OFirst, const _DistIt _DFirst, const _DistIt _DLast) noexcept {
+        // (pre-verified contiguous iterator)
         // equivalent to _Copy_memcpy_count(_IFirst, _OFirst, _DLast - _DFirst) but computes distance more efficiently
         const auto _IFirstPtr   = _STD _To_address(_IFirst);
         const auto _OFirstPtr   = _STD _To_address(_OFirst);
@@ -1763,13 +1759,13 @@ namespace ranges {
         if constexpr (is_pointer_v<_InIt>) {
             _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count_bytes);
         } else {
-            _IFirst += _Count_bytes / sizeof(iter_value_t<_InIt>);
+            _IFirst += static_cast<iter_difference_t<_InIt>>(_Count_bytes / sizeof(iter_value_t<_InIt>));
         }
 
         if constexpr (is_pointer_v<_OutIt>) {
             _OFirst = reinterpret_cast<_OutIt>(_OFirst_ch + _Count_bytes);
         } else {
-            _OFirst += _Count_bytes / sizeof(iter_value_t<_OutIt>);
+            _OFirst += static_cast<iter_difference_t<_OutIt>>(_Count_bytes / sizeof(iter_value_t<_OutIt>));
         }
         return {_STD move(_IFirst), _STD move(_OFirst)};
     }
@@ -1819,12 +1815,14 @@ namespace ranges {
                 return _RANGES _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
                     _RANGES next(_OFirst, _STD move(_OLast)));
             } else if constexpr (_Is_sized1) {
-                return _RANGES _Copy_memcpy_distance(
-                    _IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
+                const auto _Dist = _ILast - _IFirst;
+                _STD _Contiguous_iter_verify(_OFirst, static_cast<iter_difference_t<_Out>>(_Dist));
+                return _RANGES _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _IFirst + _Dist);
             } else {
                 _STL_INTERNAL_STATIC_ASSERT(_Is_sized2);
-                return _RANGES _Copy_memcpy_distance(
-                    _IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                const auto _Dist = _OLast - _OFirst;
+                _STD _Contiguous_iter_verify(_IFirst, static_cast<iter_difference_t<_It>>(_Dist));
+                return _RANGES _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _OFirst + _Dist);
             }
         } else {
             if constexpr (_Can_memcpy) {
@@ -1912,7 +1910,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
                 _STD _Copy_memmove(_STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _Unfancy(_Dest));
                 _Dest += _ULast - _UFirst;
             } else {
-                const auto _Count = static_cast<size_t>(_ULast - _UFirst);
+                const auto _Count = static_cast<size_t>(_STD _Contiguous_iter_distance(_UFirst, _ULast));
                 _STD _Copy_memmove_n(_STD _To_address(_UFirst), _Count, _STD _Unfancy(_Dest));
                 _Dest += _Count;
             }
@@ -2336,7 +2334,7 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
     _UFirst           = _STD _Find_unchecked(_UFirst, _ULast, _Val);
     auto _UNext       = _UFirst;
     if (_UFirst != _ULast) {
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_REMOVE
         if constexpr (_Vector_alg_in_find_is_safe<decltype(_UFirst), _Ty>) {
 #if _HAS_CXX20
             if (!_STD is_constant_evaluated())
@@ -2355,7 +2353,7 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
                 return _First;
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_REMOVE ^^^
 
         while (++_UFirst != _ULast) {
             if (!(*_UFirst == _Val)) {
