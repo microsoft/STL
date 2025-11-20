@@ -635,10 +635,6 @@ std/utilities/variant/variant.relops/three_way.pass.cpp:1 FAIL
 std/algorithms/robust_re_difference_type.compile.pass.cpp:0 FAIL
 std/algorithms/robust_re_difference_type.compile.pass.cpp:1 FAIL
 
-# DevCom-10026599 VSO-1532879: conditional expression has two different types
-std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
-std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:1 FAIL
-
 # DevCom-10439137 VSO-1869865: Discarded id-expression causes unnecessary reading
 std/containers/sequences/array/array.cons/initialization.pass.cpp:0 FAIL
 std/containers/sequences/array/array.cons/initialization.pass.cpp:1 FAIL
