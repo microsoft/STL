@@ -1489,11 +1489,6 @@ std/utilities/function.objects/refwrap/common_reference.compile.pass.cpp:1 FAIL
 std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp:0 FAIL
 std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp:1 FAIL
 
-# Not analyzed.
-# MSVC emits truncation warnings, which will be partially addressed by GH-5562.
-# Clang asserts `allocated_ == 0 || allocated_ >= i` due to the container proxy object.
-std/strings/basic.string/string.capacity/deallocate_size.pass.cpp FAIL
-
 # Not analyzed. MSVC emits warning C4267: 'argument': conversion from 'size_t' to 'unsigned char', possible loss of data
 std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:0 FAIL
 std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:1 FAIL
