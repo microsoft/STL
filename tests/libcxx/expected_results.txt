@@ -61,9 +61,6 @@ std/language.support/support.exception/except.nested/ctor_default.pass.cpp:2 SKI
 # SKIPPED because this is ARM64EC-specific.
 std/language.support/support.coroutines/coroutine.handle/coroutine.handle.noop/noop_coroutine.pass.cpp:2 SKIPPED
 
-# LLVM-160627: [libc++][test] Guard non-guaranteed implicit-lifetime-ness cases with _LIBCPP_VERSION
-std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:2 FAIL
-
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
