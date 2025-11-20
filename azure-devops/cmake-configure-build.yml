@@ -12,6 +12,10 @@ parameters:
   type: boolean
 - name: asanBuild
   type: boolean
+- name: configureTesting
+  type: boolean
+- name: buildStl
+  type: boolean
 - name: testsBuildOnly
   type: boolean
 - name: litFlags
@@ -34,6 +38,7 @@ steps:
     -DLIT_FLAGS=${{ join(';', parameters.litFlags) }} ^
     -DSTL_USE_ANALYZE=${{ parameters.analyzeBuild }} ^
     -DSTL_ASAN_BUILD=${{ parameters.asanBuild }} ^
+    -DCONFIGURE_TESTING=${{ parameters.configureTesting }} ^
     -DTESTS_BUILD_ONLY=${{ parameters.testsBuildOnly }} ^
     -DVCLIBS_TARGET_ARCHITECTURE=${{ parameters.targetPlatform }} ^
     -S $(Build.SourcesDirectory) -B "$(buildOutputLocation)"
@@ -45,4 +50,5 @@ steps:
     cmake --build "$(buildOutputLocation)"
   displayName: 'Build STL'
   timeoutInMinutes: 5
+  condition: and(succeeded(), ${{ parameters.buildStl }})
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
