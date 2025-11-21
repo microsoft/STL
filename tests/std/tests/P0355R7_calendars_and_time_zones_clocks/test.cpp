@@ -15,86 +15,278 @@
 #include <is_permissive.hpp>
 #include <timezone_data.hpp>
 
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__);
+
 using namespace std;
 using namespace std::chrono;
 
-struct not_a_clock {
-    bool rep();
-    static char period;
-    int duration();
-    static float time_point;
-    using is_steady = long;
-    static int now;
-};
-
 struct real_fake_clock {
-    using rep        = bool;
-    using period     = char;
-    using duration   = float;
-    using time_point = int;
-    static long is_steady;
-    static short now();
+    using rep                       = long long;
+    using period                    = micro;
+    using duration                  = microseconds;
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+    static time_point now();
 };
 
-struct no_rep {
-    using period     = char;
-    using duration   = float;
-    using time_point = int;
-    static long is_steady;
-    static short now();
+struct rep_missing {
+
+    using period                    = micro;
+    using duration                  = microseconds;
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+    static time_point now();
 };
 
-struct no_period {
-    using rep        = bool;
-    using duration   = float;
-    using time_point = int;
-    static long is_steady;
-    static short now();
+struct rep_not_type {
+    char rep;
+    using period                    = micro;
+    using duration                  = microseconds;
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+    static time_point now();
 };
 
-struct no_duration {
-    using rep        = bool;
-    using period     = char;
-    using time_point = int;
-    static long is_steady;
-    static short now();
+struct rep_wrong_type {
+    using rep                       = real_fake_clock;
+    using period                    = micro;
+    using duration                  = microseconds;
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+    static time_point now();
 };
 
-struct no_time_point {
-    using rep      = bool;
-    using period   = char;
-    using duration = float;
-    static long is_steady;
-    static short now();
+struct period_missing {
+    using rep = long long;
+
+    using duration                  = microseconds;
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+    static time_point now();
 };
 
-struct no_steady {
-    using rep        = bool;
-    using period     = char;
-    using duration   = float;
-    using time_point = int;
-    static short now();
+struct period_not_type {
+    using rep = long long;
+    char period;
+    using duration                  = microseconds;
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+    static time_point now();
 };
 
-struct no_now {
-    using rep        = bool;
-    using period     = char;
-    using duration   = float;
-    using time_point = int;
-    static long is_steady;
+struct period_wrong_type {
+    using rep                       = long long;
+    using period                    = char;
+    using duration                  = microseconds;
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+    static time_point now();
 };
 
-static_assert(is_clock<steady_clock>::value, "steady_clock is not a clock");
-static_assert(is_clock_v<steady_clock>, "steady_clock is not a clock");
-static_assert(is_clock_v<real_fake_clock>, "real_fake_clock is not a clock");
-static_assert(!is_clock_v<not_a_clock>, "not_a_clock is a clock");
+struct duration_missing {
+    using rep    = long long;
+    using period = micro;
 
-static_assert(!is_clock_v<no_rep>, "no_rep is a clock");
-static_assert(!is_clock_v<no_period>, "no_period is a clock");
-static_assert(!is_clock_v<no_duration>, "no_duration is a clock");
-static_assert(!is_clock_v<no_time_point>, "no_time_point is a clock");
-static_assert(!is_clock_v<no_steady>, "no_steady is a clock");
-static_assert(!is_clock_v<no_now>, "no_now is a clock");
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+    static time_point now();
+};
+
+struct duration_not_type {
+    using rep    = long long;
+    using period = micro;
+    char duration;
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+    static time_point now();
+};
+
+struct duration_wrong_type {
+    using rep                       = long long;
+    using period                    = micro;
+    using duration                  = int;
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+    static time_point now();
+};
+
+struct duration_slightly_wrong_type {
+    using rep                       = long long;
+    using period                    = micro;
+    using duration                  = milliseconds;
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+    static time_point now();
+};
+
+struct duration_slightly_wrong_type2 {
+    using rep                       = long long;
+    using period                    = micro;
+    using duration                  = duration<int, micro>;
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+    static time_point now();
+};
+
+struct time_point_missing {
+    using rep      = long long;
+    using period   = micro;
+    using duration = microseconds;
+
+    constexpr static bool is_steady = false;
+    static time_point<time_point_missing> now();
+};
+
+struct time_point_not_type {
+    using rep      = long long;
+    using period   = micro;
+    using duration = microseconds;
+    char time_point;
+    constexpr static bool is_steady = false;
+    static chrono::time_point<time_point_not_type> now();
+};
+
+struct time_point_wrong_type {
+    using rep                       = long long;
+    using period                    = micro;
+    using duration                  = microseconds;
+    using time_point                = int;
+    constexpr static bool is_steady = false;
+    static time_point now();
+};
+
+struct time_point_wrong_type2 {
+    using rep                       = long long;
+    using period                    = micro;
+    using duration                  = microseconds;
+    using time_point                = time_point<real_fake_clock, nanoseconds>;
+    constexpr static bool is_steady = false;
+    static time_point now();
+};
+
+struct time_point_different_clock_ok {
+    using rep                       = long long;
+    using period                    = milli;
+    using duration                  = milliseconds;
+    using time_point                = time_point<real_fake_clock, milliseconds>;
+    constexpr static bool is_steady = false;
+    static time_point now();
+};
+
+struct is_steady_missing {
+    using rep        = long long;
+    using period     = micro;
+    using duration   = microseconds;
+    using time_point = time_point<real_fake_clock>;
+
+    static time_point now();
+};
+
+struct is_steady_type {
+    using rep        = long long;
+    using period     = micro;
+    using duration   = microseconds;
+    using time_point = time_point<real_fake_clock>;
+    using is_steady  = bool;
+    static time_point now();
+};
+
+struct is_steady_member {
+    using rep        = long long;
+    using period     = micro;
+    using duration   = microseconds;
+    using time_point = time_point<real_fake_clock>;
+    bool is_steady;
+    static time_point now();
+};
+
+struct now_missing {
+    using rep                       = long long;
+    using period                    = micro;
+    using duration                  = microseconds;
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+};
+
+struct now_type {
+    using rep                       = long long;
+    using period                    = micro;
+    using duration                  = microseconds;
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+    using now                       = time_point;
+};
+
+struct now_not_fun {
+    using rep                       = long long;
+    using period                    = micro;
+    using duration                  = microseconds;
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+    static time_point now;
+};
+
+struct now_not_static {
+    using rep                       = long long;
+    using period                    = micro;
+    using duration                  = microseconds;
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+    time_point now();
+};
+
+struct now_wrong_type {
+    using rep                       = long long;
+    using period                    = micro;
+    using duration                  = microseconds;
+    using time_point                = time_point<real_fake_clock>;
+    constexpr static bool is_steady = false;
+    static duration now();
+};
+
+// Check standard clocks
+STATIC_ASSERT(is_clock<steady_clock>::value);
+STATIC_ASSERT(is_clock_v<system_clock>);
+STATIC_ASSERT(is_clock_v<steady_clock>);
+STATIC_ASSERT(is_clock_v<high_resolution_clock>);
+STATIC_ASSERT(is_clock_v<utc_clock>);
+STATIC_ASSERT(is_clock_v<tai_clock>);
+STATIC_ASSERT(is_clock_v<gps_clock>);
+STATIC_ASSERT(is_clock_v<file_clock>);
+
+// Check custom clocks
+STATIC_ASSERT(is_clock_v<real_fake_clock>);
+
+STATIC_ASSERT(!is_clock_v<rep_missing>);
+STATIC_ASSERT(!is_clock_v<rep_not_type>);
+STATIC_ASSERT(!is_clock_v<rep_wrong_type>);
+
+STATIC_ASSERT(!is_clock_v<period_missing>);
+STATIC_ASSERT(!is_clock_v<period_not_type>);
+STATIC_ASSERT(!is_clock_v<period_wrong_type>);
+
+STATIC_ASSERT(!is_clock_v<duration_missing>);
+STATIC_ASSERT(!is_clock_v<duration_not_type>);
+STATIC_ASSERT(!is_clock_v<duration_wrong_type>);
+STATIC_ASSERT(!is_clock_v<duration_slightly_wrong_type>);
+STATIC_ASSERT(!is_clock_v<duration_slightly_wrong_type2>);
+
+STATIC_ASSERT(!is_clock_v<time_point_missing>);
+STATIC_ASSERT(!is_clock_v<time_point_not_type>);
+STATIC_ASSERT(!is_clock_v<time_point_wrong_type>);
+STATIC_ASSERT(!is_clock_v<time_point_wrong_type2>);
+STATIC_ASSERT(is_clock_v<time_point_different_clock_ok>);
+
+STATIC_ASSERT(!is_clock_v<is_steady_missing>);
+STATIC_ASSERT(!is_clock_v<is_steady_type>);
+STATIC_ASSERT(!is_clock_v<is_steady_member>);
+
+STATIC_ASSERT(!is_clock_v<now_missing>);
+STATIC_ASSERT(!is_clock_v<now_type>);
+STATIC_ASSERT(!is_clock_v<now_not_fun>);
+STATIC_ASSERT(!is_clock_v<now_not_static>);
+STATIC_ASSERT(!is_clock_v<now_wrong_type>);
+
 
 void test_is_leap_second(const year_month_day& ymd) {
     const sys_days ls{ymd};
@@ -375,11 +567,6 @@ void test_clock_cast() {
     assert(clock_cast<utc_clock>(sys_seconds{sys_days{1970y / January / 1}}).time_since_epoch() == 0s);
     assert(clock_cast<utc_clock>(sys_seconds{sys_days{2000y / January / 1}}).time_since_epoch() == 946'684'822s);
 }
-
-static_assert(is_clock_v<utc_clock>);
-static_assert(is_clock_v<tai_clock>);
-static_assert(is_clock_v<gps_clock>);
-static_assert(is_clock_v<file_clock>);
 
 tzdb copy_tzdb() {
     const auto& my_tzdb = get_tzdb_list().front();
