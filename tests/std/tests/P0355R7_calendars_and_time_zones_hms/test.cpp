@@ -7,6 +7,8 @@
 #include <ratio>
 #include <type_traits>
 
+// Extended to test LWG-4274 "The chrono::hh_mm_ss constructor is ill-formed for unsigned durations"
+
 using namespace std;
 using namespace std::chrono;
 
@@ -103,6 +105,18 @@ constexpr void constructor() {
     assert(f_hms_hours{}.minutes() == f_hms_hours{hours::zero()}.minutes());
     assert(f_hms_hours{}.seconds() == f_hms_hours{hours::zero()}.seconds());
     assert(f_hms_hours{}.subseconds() == f_hms_hours{hours::zero()}.subseconds());
+
+}
+
+// Test LWG-4274 "The chrono::hh_mm_ss constructor is ill-formed for unsigned durations"
+constexpr void constructor_unsigned_durations() {
+    duration<unsigned long long, milli> unsigned_duration{37 + 1000 * (7 + 4 * 60 + 3 * 3600)};
+    hh_mm_ss a{unsigned_duration};
+    assert(!a.is_negative());
+    assert(a.hours() == 3h);
+    assert(a.minutes() == 4min);
+    assert(a.seconds() == 7s);
+    assert(a.subseconds() == 37ms);
 }
 
 constexpr void is_negative() {
@@ -210,6 +224,7 @@ constexpr bool test() {
     make12_24();
     fractional_width();
     constructor();
+    constructor_unsigned_durations();
     is_negative();
     hour();
     mins();
