@@ -58,15 +58,32 @@ namespace chrono {
         }
     };
 
+    _EXPORT_STD template <class _Rep, class _Period = ratio<1>>
+    class duration;
+
+    _EXPORT_STD template <class _Clock, class _Duration = typename _Clock::duration>
+    class time_point;
+
 #if _HAS_CXX20
     _EXPORT_STD template <class _Clock>
     _NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool is_clock_v = requires {
+        // Basic checks from https://eel.is/c++draft/time.traits.is.clock#1
         typename _Clock::rep;
         typename _Clock::period;
         typename _Clock::duration;
         typename _Clock::time_point;
         _Clock::is_steady;
         _Clock::now();
+
+        // Complete checks from https://eel.is/c++draft/tab:time.clock
+        // "An arithmetic type or a class emulating an arithmetic type" is not checked
+        requires _Is_ratio_v<typename _Clock::period>;
+        requires same_as<typename _Clock::duration, duration<typename _Clock::rep, typename _Clock::period>>;
+        requires same_as<typename _Clock::time_point, time_point<_Clock>>
+                     || same_as<typename _Clock::time_point,
+                         time_point<typename _Clock::time_point::clock, typename _Clock::duration>>;
+        { _Clock::is_steady } -> std::same_as<const bool&>;
+        { _Clock::now() } -> std::same_as<typename _Clock::time_point>;
     };
     _EXPORT_STD template <class _Clock>
     struct _NO_SPECIALIZATIONS_CITING("N5014 [time.traits.is.clock]/2") is_clock : bool_constant<is_clock_v<_Clock>> {};
@@ -83,9 +100,6 @@ namespace chrono {
                                 typename _Clock::time_point, decltype(_Clock::is_steady), decltype(_Clock::now())>> =
             true;
 #endif // ^^^ !_HAS_CXX20 ^^^
-
-    _EXPORT_STD template <class _Rep, class _Period = ratio<1>>
-    class duration;
 
     template <class _Ty>
     constexpr bool _Is_duration_v = _Is_specialization_v<_Ty, duration>;
@@ -203,7 +217,7 @@ namespace chrono {
         _Rep _MyRep; // the stored rep
     };
 
-    _EXPORT_STD template <class _Clock, class _Duration = typename _Clock::duration>
+    _EXPORT_STD template <class _Clock, class _Duration>
     class time_point { // represents a point in time
     public:
         using clock    = _Clock;
