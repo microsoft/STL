@@ -185,6 +185,10 @@ std/ranges/range.adaptors/range.join/range.join.iterator/arrow.pass.cpp FAIL
 std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
 std/containers/views/mdspan/layout_stride/properties.pass.cpp FAIL
 
+# libc++ doesn't implement LWG-4272 "For `rank == 0`, `layout_stride` is atypically convertible"
+std/containers/views/mdspan/layout_left/ctor.layout_stride.pass.cpp FAIL
+std/containers/views/mdspan/layout_right/ctor.layout_stride.pass.cpp FAIL
+
 # If any feature-test macro test is failing, this consolidated test will also fail.
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
 
