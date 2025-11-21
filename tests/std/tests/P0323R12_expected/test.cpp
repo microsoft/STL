@@ -2545,11 +2545,11 @@ namespace test_lwg_4366 {
     constexpr void test() {
         unexpected e1{E1{}};
         unexpected e2{E2{}};
-        (void)(expected<int, E1>{e1} == e2);
-        (void)(expected<void, E1>{e1} == e2);
-        (void)(e1 == e2);
-        (void)(expected<int, E1>{e1} == expected<int, E2>{e2});
-        (void)(expected<void, E1>{e1} == expected<void, E2>{e2});
+        (void) (expected<int, E1>{e1} == e2);
+        (void) (expected<void, E1>{e1} == e2);
+        (void) (e1 == e2);
+        (void) (expected<int, E1>{e1} == expected<int, E2>{e2});
+        (void) (expected<void, E1>{e1} == expected<void, E2>{e2});
     }
 } // namespace test_lwg_4366
 
