@@ -1634,18 +1634,18 @@ namespace chrono {
         constexpr hh_mm_ss() noexcept : hh_mm_ss{_Duration::zero()} {}
         constexpr explicit hh_mm_ss(_Duration _Dur)
             : _Is_neg{_Dur < _Duration::zero()},
-              _Hours{_CHRONO _Duration_cast_underflow_to_zero<_CHRONO hours>(_CHRONO abs(_Dur))},
+              _Hours{_CHRONO _Duration_cast_underflow_to_zero<_CHRONO hours>(_ABS_D(_Dur, _Is_neg))},
               _Mins{_CHRONO _Duration_cast_underflow_to_zero<_CHRONO minutes>(
-                  _CHRONO _Remove_duration_part<_CHRONO hours>(_CHRONO abs(_Dur)))},
+                  _CHRONO _Remove_duration_part<_CHRONO hours>(_ABS_D(_Dur, _Is_neg)))},
               _Secs{_CHRONO _Duration_cast_underflow_to_zero<_CHRONO seconds>(
                   _CHRONO _Remove_duration_part<_CHRONO minutes>(
-                      _CHRONO _Remove_duration_part<_CHRONO hours>(_CHRONO abs(_Dur))))} {
+                      _CHRONO _Remove_duration_part<_CHRONO hours>(_ABS_D(_Dur, _Is_neg))))} {
             if constexpr (treat_as_floating_point_v<typename precision::rep>) {
                 // no need to deal with underflow here, because floating durations allow it
-                _Sub_secs = _CHRONO abs(_Dur) - hours() - minutes() - seconds();
+                _Sub_secs = _ABS_D(_Dur, _Is_neg) - hours() - minutes() - seconds();
             } else {
-                _Sub_secs =
-                    _CHRONO duration_cast<precision>(_CHRONO _Remove_duration_part<_CHRONO seconds>(_CHRONO abs(_Dur)));
+                _Sub_secs = _CHRONO duration_cast<precision>(
+                    _CHRONO _Remove_duration_part<_CHRONO seconds>(_ABS_D(_Dur, _Is_neg)));
             }
         }
 
@@ -1674,6 +1674,14 @@ namespace chrono {
         }
 
     private:
+        _NODISCARD constexpr static _Duration _ABS_D(_Duration _Dur, bool _Is_neg) {
+            if constexpr (is_unsigned_v<typename _Duration::rep>) {
+                return _Dur;
+            } else {
+                return _Is_neg ? -_Dur : _Dur;
+            }
+        }
+
         bool _Is_neg;
         _CHRONO hours _Hours;
         _CHRONO minutes _Mins;

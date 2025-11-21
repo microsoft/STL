@@ -105,7 +105,6 @@ constexpr void constructor() {
     assert(f_hms_hours{}.minutes() == f_hms_hours{hours::zero()}.minutes());
     assert(f_hms_hours{}.seconds() == f_hms_hours{hours::zero()}.seconds());
     assert(f_hms_hours{}.subseconds() == f_hms_hours{hours::zero()}.subseconds());
-
 }
 
 // Test LWG-4274 "The chrono::hh_mm_ss constructor is ill-formed for unsigned durations"
