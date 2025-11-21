@@ -2524,6 +2524,34 @@ static_assert(!is_constructible_v<expected<ConstructibleFromEverything, Converti
 static_assert(!is_constructible_v<expected<ConstructibleFromEverything, ConvertibleFromInt>, unexpect_t>);
 static_assert(!is_constructible_v<expected<ConstructibleFromEverything, ConvertibleFromInt>, const unexpect_t>);
 
+// Test LWG-4366 "Heterogeneous comparison of expected may be ill-formed"
+// Test taken from an example in the issue text
+namespace test_lwg_4366 {
+
+    struct E1 {};
+    struct E2 {};
+
+    struct Bool {
+        constexpr operator bool() const {
+            return false;
+        }
+        constexpr explicit operator bool() = delete;
+    };
+
+    constexpr Bool operator==(E1, E2) {
+        return {};
+    }
+
+    constexpr void test() {
+        unexpected e1{E1{}};
+        unexpected e2{E2{}};
+        (void)(expected<int, E1>{e1} == e2);
+        (void)(expected<void, E1>{e1} == e2);
+        (void)(e1 == e2);
+        (void)(expected<int, E1>{e1} == expected<int, E2>{e2});
+    }
+} // namespace test_lwg_4366
+
 int main() {
     test_unexpected::test_all();
     static_assert(test_unexpected::test_all());
