@@ -20,6 +20,8 @@
 
 #include <timezone_data.hpp>
 
+// Extended to test LWG-4257 "Stream insertion for chrono::local_time should be constrained"
+
 using namespace std;
 using namespace chrono;
 
@@ -1061,7 +1063,39 @@ void test_locale() {
     assert(stream(year_month_weekday_last{2021y / May / Tuesday[last]}) == STR("2021/Mai/Di[last]"));
 }
 
+template <typename T>
+concept ostream_insertable = requires(std::ostream& o, const T& t) { o << t; };
+
+template <typename Dur>
+void check_stream_insertion_operator_for_duration() {
+    if constexpr (ostream_insertable<sys_time<Dur>>) {
+        std::cout << sys_time<Dur>{};
+    }
+    if constexpr (ostream_insertable<local_time<Dur>>) {
+        std::cout << local_time<Dur>{};
+    }
+}
+
+// Test based on example in LWG-4257 (https://cplusplus.github.io/LWG/issue4257)
+void check_stream_insertion_operator() {
+
+    // operator<< is constrained such that it does not participate when underlying duration has floating point rep
+    using ok_dur  = duration<long long>;
+    using bad_dur = duration<double>;
+
+    static_assert(ostream_insertable<sys_time<ok_dur>>);
+    static_assert(ostream_insertable<local_time<ok_dur>>);
+    check_stream_insertion_operator_for_duration<ok_dur>();
+
+    static_assert(!ostream_insertable<sys_time<bad_dur>>);
+    static_assert(!ostream_insertable<local_time<bad_dur>>);
+    check_stream_insertion_operator_for_duration<bad_dur>();
+}
+
 void test() {
+
+    check_stream_insertion_operator();
+
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
 
