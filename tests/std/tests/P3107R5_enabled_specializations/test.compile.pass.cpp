@@ -14,6 +14,8 @@
 #include <utility>
 #include <vector>
 
+// Extended to test LWG-4399 "enable_nonlocking_formatter_optimization for pair and tuple needs remove_cvref_t"
+
 using namespace std;
 
 struct unoptimized {};
