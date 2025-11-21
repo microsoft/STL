@@ -67,7 +67,7 @@ namespace chrono {
 #if _HAS_CXX20
     _EXPORT_STD template <class _Clock>
     _NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool is_clock_v = requires {
-        // Basic checks from N5014 [time.traits.is.clock] / 1 
+        // Basic checks from N5014 [time.traits.is.clock]/1
         typename _Clock::rep;
         typename _Clock::period;
         typename _Clock::duration;
@@ -75,7 +75,7 @@ namespace chrono {
         _Clock::is_steady;
         _Clock::now;
 
-        // Additional stricter checks from N5014 [time.clock.req] / 2
+        // Additional stricter checks from N5014 [time.clock.req]/2
         // "An arithmetic type or a class emulating an arithmetic type" is not checked
         requires _Is_ratio_v<typename _Clock::period>;
         requires same_as<typename _Clock::duration, duration<typename _Clock::rep, typename _Clock::period>>;
