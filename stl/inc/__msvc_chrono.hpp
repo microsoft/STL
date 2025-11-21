@@ -73,7 +73,7 @@ namespace chrono {
         typename _Clock::duration;
         typename _Clock::time_point;
         _Clock::is_steady;
-        _Clock::now();
+        _Clock::now;
 
         // Complete checks from https://eel.is/c++draft/tab:time.clock
         // "An arithmetic type or a class emulating an arithmetic type" is not checked
