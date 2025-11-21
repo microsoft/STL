@@ -122,11 +122,23 @@ static_assert(enable_nonlocking_formatter_optimization<nullptr_t>);
 static_assert(enable_nonlocking_formatter_optimization<void*>);
 static_assert(enable_nonlocking_formatter_optimization<const void*>);
 static_assert(enable_nonlocking_formatter_optimization<pair<int, int>>);
+static_assert(enable_nonlocking_formatter_optimization<pair<int&, int>>);
+static_assert(enable_nonlocking_formatter_optimization<pair<int, int&>>);
 static_assert(!enable_nonlocking_formatter_optimization<pair<unoptimized, int>>);
+static_assert(!enable_nonlocking_formatter_optimization<pair<unoptimized&, int>>);
+static_assert(!enable_nonlocking_formatter_optimization<pair<unoptimized, int&>>);
 static_assert(!enable_nonlocking_formatter_optimization<pair<int, unoptimized>>);
+static_assert(!enable_nonlocking_formatter_optimization<pair<int&, unoptimized>>);
+static_assert(!enable_nonlocking_formatter_optimization<pair<int, unoptimized&>>);
 static_assert(enable_nonlocking_formatter_optimization<tuple<int, int>>);
+static_assert(enable_nonlocking_formatter_optimization<tuple<int&, int>>);
+static_assert(enable_nonlocking_formatter_optimization<tuple<int, int&>>);
 static_assert(!enable_nonlocking_formatter_optimization<tuple<unoptimized, int>>);
+static_assert(!enable_nonlocking_formatter_optimization<tuple<unoptimized&, int>>);
+static_assert(!enable_nonlocking_formatter_optimization<tuple<unoptimized, int&>>);
 static_assert(!enable_nonlocking_formatter_optimization<tuple<int, unoptimized>>);
+static_assert(!enable_nonlocking_formatter_optimization<tuple<int&, unoptimized>>);
+static_assert(!enable_nonlocking_formatter_optimization<tuple<int, unoptimized&>>);
 
 // Validate that various ranges are unoptimized
 static_assert(!enable_nonlocking_formatter_optimization<list<int>>);
