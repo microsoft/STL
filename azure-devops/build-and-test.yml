@@ -23,9 +23,9 @@ parameters:
 - name: numShards
   type: number
   default: 8
-- name: skipTesting
+- name: runTesting
   type: boolean
-  default: false
+  default: true
 - name: testsBuildOnly
   type: boolean
   default: false
@@ -79,4 +79,4 @@ jobs:
       targetArch: ${{ parameters.targetArch }}
       targetPlatform: ${{ parameters.targetPlatform }}
       testTargets: ${{ parameters.testTargets }}
-      skipTesting: ${{ parameters.skipTesting }}
+      runTesting: ${{ parameters.runTesting }}

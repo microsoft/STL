@@ -10,7 +10,7 @@ parameters:
   type: string
 - name: testTargets
   type: string
-- name: skipTesting
+- name: runTesting
   type: boolean
 steps:
 - script: |
@@ -18,13 +18,13 @@ steps:
     ninja --verbose -k 0 ${{ parameters.testTargets }}
   displayName: 'Run Tests'
   timeoutInMinutes: 30
-  condition: and(succeeded(), not(${{ parameters.skipTesting }}))
+  condition: and(succeeded(), ${{ parameters.runTesting }})
   workingDirectory: $(buildOutputLocation)
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - task: PublishTestResults@2
   displayName: 'Publish Tests'
   timeoutInMinutes: 5
-  condition: and(succeededOrFailed(), not(${{ parameters.skipTesting }}))
+  condition: and(succeededOrFailed(), ${{ parameters.runTesting }})
   inputs:
     searchFolder: $(buildOutputLocation)
     testResultsFormat: JUnit
@@ -32,5 +32,5 @@ steps:
     testRunTitle: 'test-${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)'
 - publish: $(buildOutputLocation)/test-results.xml
   artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-xml-$(System.JobId)'
-  condition: and(failed(), not(${{ parameters.skipTesting }}))
+  condition: and(failed(), ${{ parameters.runTesting }})
   displayName: 'Publish XML Artifact'

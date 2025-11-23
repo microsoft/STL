@@ -34,7 +34,7 @@ stages:
           analyzeBuild: true
           buildBenchmarks: true
           numShards: 1
-          skipTesting: true
+          runTesting: false
 
   - stage: Build_x86
     dependsOn: []
@@ -51,7 +51,7 @@ stages:
           analyzeBuild: true
           buildBenchmarks: true
           numShards: 1
-          skipTesting: true
+          runTesting: false
 
   - stage: Build_ARM64_Cross
     dependsOn: []
@@ -68,7 +68,7 @@ stages:
           analyzeBuild: true
           buildBenchmarks: true
           numShards: 1
-          skipTesting: true
+          runTesting: false
 
   - stage: Build_ARM64EC_Cross
     dependsOn: []
@@ -85,7 +85,7 @@ stages:
           analyzeBuild: true
           buildBenchmarks: true
           numShards: 1
-          skipTesting: true
+          runTesting: false
 
   # This ARM64-native build will detect problems with the ARM64 pool as early as possible.
   # The stage dependencies are structured to optimize the critical path.
@@ -104,7 +104,7 @@ stages:
           analyzeBuild: true
           buildBenchmarks: true
           numShards: 1
-          skipTesting: true
+          runTesting: false
 
   - stage: Test_x64
     dependsOn:
