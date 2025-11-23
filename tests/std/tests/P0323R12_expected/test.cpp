@@ -2551,6 +2551,44 @@ namespace test_lwg_4366 {
         (void) (expected<int, E1>{e1} == expected<int, E2>{e2});
         (void) (expected<void, E1>{e1} == expected<void, E2>{e2});
     }
+
+    template <bool has_noexcept_operator_bool>
+    struct bool_with_noexcept {
+        constexpr operator bool() const noexcept(has_noexcept_operator_bool) {
+            return false;
+        }
+    };
+
+    // Test that operator== has correct noexcept specification (based on noexcept specs of underlying expressions)
+
+    struct E3 {};
+    template <bool has_noexcept_operator_bool>
+    struct E4 {};
+
+    template <bool X>
+    constexpr bool_with_noexcept<X> operator==(const E3, const E4<X>) noexcept {
+        return {};
+    }
+
+    template <bool has_noexcept_operator_bool>
+    constexpr void test2() {
+        unexpected e3{E3{}};
+        unexpected e4{E4<has_noexcept_operator_bool>{}};
+
+        (void) (expected<int, E3>{e3} == e4);
+        (void) (expected<void, E3>{e3} == e4);
+        (void) (e3 == e4);
+        (void) (expected<int, E3>{e3} == expected<int, E4<has_noexcept_operator_bool>>{e4});
+        (void) (expected<void, E3>{e3} == expected<void, E4<has_noexcept_operator_bool>>{e4});
+
+        static_assert(has_noexcept_operator_bool == noexcept(expected<int, E3>{e3} == e4));
+        static_assert(has_noexcept_operator_bool == noexcept(expected<void, E3>{e3} == e4));
+        static_assert(has_noexcept_operator_bool == noexcept(e3 == e4));
+        static_assert(has_noexcept_operator_bool
+                      == noexcept(expected<int, E3>{e3} == expected<int, E4<has_noexcept_operator_bool>>{e4}));
+        static_assert(has_noexcept_operator_bool
+                      == noexcept(expected<void, E3>{e3} == expected<void, E4<has_noexcept_operator_bool>>{e4}));
+    }
 } // namespace test_lwg_4366
 
 int main() {
@@ -2572,4 +2610,8 @@ int main() {
     test_lwg_3886();
     test_lwg_3886_volatile();
     test_inherited_constructors();
+
+    test_lwg_4366::test();
+    test_lwg_4366::test2<true>();
+    test_lwg_4366::test2<false>();
 }
