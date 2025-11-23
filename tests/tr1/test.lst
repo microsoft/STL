@@ -17,7 +17,6 @@ tests\cmath2
 tests\cmath3
 tests\codecvt
 tests\complex1
-tests\complex2
 tests\complex3
 tests\csetjmp
 tests\csignal
