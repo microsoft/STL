@@ -16,7 +16,7 @@ steps:
 - script: |
     call "$(vsDevCmdBat)" -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     ninja --verbose -k 0 ${{ parameters.testTargets }}
-  displayName: 'Build and Run Tests'
+  displayName: 'Run Tests'
   timeoutInMinutes: 30
   condition: and(succeeded(), not(${{ parameters.skipTesting }}))
   workingDirectory: $(buildOutputLocation)
