@@ -14,4 +14,4 @@ steps:
   retryCountOnTaskFailure: 4
 - script: |
     git clean --quiet -x -d -f -f
-  displayName: 'Clean after checkout'
+  displayName: 'Clean After Checkout'
