@@ -42,7 +42,7 @@ namespace {
         }
         return diff;
     }
-} // namespace
+} // unnamed namespace
 
 extern "C" {
 
