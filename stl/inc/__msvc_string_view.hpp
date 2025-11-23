@@ -1961,9 +1961,7 @@ namespace ranges {
     template <class _Elem, class _Traits>
     constexpr bool enable_borrowed_range<basic_string_view<_Elem, _Traits>> = true;
 } // namespace ranges
-#endif // _HAS_CXX20
 
-#if _HAS_CXX20
 _EXPORT_STD template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator==(const basic_string_view<_Elem, _Traits> _Lhs,
     const type_identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
