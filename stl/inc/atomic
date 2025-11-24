@@ -228,7 +228,7 @@ _Smtx_t* __stdcall __std_atomic_get_mutex(const void* _Key) noexcept;
 _STD_BEGIN
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
 struct _Form_mask_t {};
-_INLINE_VAR constexpr _Form_mask_t _Form_mask{};
+inline constexpr _Form_mask_t _Form_mask{};
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
 
 template <class _Ty>
