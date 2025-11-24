@@ -118,8 +118,8 @@ constexpr void constructor_unsigned_durations() {
     assert(a.subseconds() == 37ms);
 
     // Reproducing example from issue #5569
-    std::chrono::duration<std::uint32_t> dur{1};
-    [[maybe_unused]] auto hms = std::chrono::hh_mm_ss(dur);
+    duration<uint32_t> dur{1};
+    [[maybe_unused]] auto hms = hh_mm_ss(dur);
 }
 
 constexpr void is_negative() {
