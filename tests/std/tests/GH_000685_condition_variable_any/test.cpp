@@ -137,12 +137,12 @@ namespace {
         printf("main resumed after %lld ms\n", duration_cast<milliseconds>(steady_clock::now() - wait_start).count());
         set_timeout(short_timeout);
 
-
         puts("main waiting");
         const bool cv_wait_timed_out = [&] {
             switch (test_number) {
             case 0:
                 return cv.wait_until(lock, timeout) == cv_status::timeout;
+
             case 1:
                 return cv.wait_until(lock, timeout, [] { return false; }) == false;
 
@@ -192,7 +192,6 @@ namespace {
             printf("wait end after %lld ms\n", duration_cast<milliseconds>(steady_clock::now() - wait_start).count());
         }
 
-
         // Make sure the child thread has indeed finished (so the next join does not block)
         assert(timeout_duration == long_timeout);
         other_thread.join();
@@ -210,7 +209,6 @@ int main() {
     test_timeout_immutable<condition_variable>(3);
 
     puts("condition_variable_any");
-
     test_timeout_immutable<condition_variable_any>(0);
     test_timeout_immutable<condition_variable_any>(1);
     test_timeout_immutable<condition_variable_any>(2);
