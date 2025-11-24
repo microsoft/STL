@@ -119,7 +119,7 @@ constexpr void constructor_unsigned_durations() {
 
     // Reproducing example from issue #5569
     duration<uint32_t> dur{1};
-    [[maybe_unused]] auto hms = hh_mm_ss(dur);
+    hh_mm_ss hms{dur};
 }
 
 constexpr void is_negative() {
