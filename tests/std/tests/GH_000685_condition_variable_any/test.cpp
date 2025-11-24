@@ -98,7 +98,7 @@ namespace {
 
         mutex m;
         CV cv;
-        unique_lock<mutex> lock(m); // Prevent other thread from modifying timeout too early
+        unique_lock<mutex> main_lock(m); // Prevent other thread from modifying timeout too early
 
         // Start with very short timeout and let other_thread change it to very large while main thread is waiting
         constexpr auto short_timeout = 1s;
@@ -121,8 +121,8 @@ namespace {
             printf(
                 "thread start after %lld ms\n", duration_cast<milliseconds>(steady_clock::now() - wait_start).count());
             waiting_for_other_thread.clear();
-            // Immediately blocks since the main thread owns lock.
-            lock_guard<mutex> lock(m);
+            // Immediately blocks since the main thread owns the mutex m.
+            lock_guard<mutex> other_lock(m);
             puts("thread lock");
 
             // If the timeout provided to condition_variable{_any}::wait_{for, until} was mutable,
@@ -141,22 +141,22 @@ namespace {
         const bool cv_wait_timed_out = [&] {
             switch (test_number) {
             case 0:
-                return cv.wait_until(lock, timeout) == cv_status::timeout;
+                return cv.wait_until(main_lock, timeout) == cv_status::timeout;
 
             case 1:
-                return cv.wait_until(lock, timeout, [] { return false; }) == false;
+                return cv.wait_until(main_lock, timeout, [] { return false; }) == false;
 
             case 2:
-                return cv.wait_for(lock, timeout_duration) == cv_status::timeout;
+                return cv.wait_for(main_lock, timeout_duration) == cv_status::timeout;
 
             case 3:
-                return cv.wait_for(lock, timeout_duration, [] { return false; }) == false;
+                return cv.wait_for(main_lock, timeout_duration, [] { return false; }) == false;
 
 #if _HAS_CXX20 // because of stop_token
             case 4:
                 if constexpr (is_same_v<CV, condition_variable_any>) {
                     stop_source source;
-                    return cv.wait_until(lock, source.get_token(), timeout, [] { return false; }) == false;
+                    return cv.wait_until(main_lock, source.get_token(), timeout, [] { return false; }) == false;
                 } else {
                     assert(false); // test not supported for std::condition_variable
                     return false;
@@ -165,7 +165,7 @@ namespace {
             case 5:
                 if constexpr (is_same_v<CV, condition_variable_any>) {
                     stop_source source;
-                    return cv.wait_for(lock, source.get_token(), timeout_duration, [] { return false; }) == false;
+                    return cv.wait_for(main_lock, source.get_token(), timeout_duration, [] { return false; }) == false;
                 } else {
                     assert(false); // test not supported for std::condition_variable
                     return false;
