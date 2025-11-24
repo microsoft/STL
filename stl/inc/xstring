@@ -1878,8 +1878,7 @@ public:
         return begin() + static_cast<difference_type>(_Off);
     }
 
-    _CONSTEXPR20 iterator erase(const const_iterator _First, const const_iterator _Last) noexcept
-    /* strengthened */ {
+    _CONSTEXPR20 iterator erase(const const_iterator _First, const const_iterator _Last) noexcept /* strengthened */ {
         _STD _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
@@ -2184,8 +2183,7 @@ public:
         return _Mypair._Myval2._Myptr()[_Off];
     }
 
-    _NODISCARD _CONSTEXPR20 const_reference operator[](const size_type _Off) const noexcept
-    /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 const_reference operator[](const size_type _Off) const noexcept /* strengthened */ {
 #if _MSVC_STL_HARDENING_BASIC_STRING || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Off <= _Mypair._Myval2._Mysize, "string subscript out of range");
 #endif
@@ -2615,8 +2613,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_of(
-        _In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept
-    /* strengthened */ {
+        _In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
         return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ptr, _Traits::length(_Ptr)));
@@ -2695,8 +2692,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_not_of(
-        _In_z_ const _Elem* const _Ptr, size_type _Off = 0) const noexcept
-    /* strengthened */ {
+        _In_z_ const _Elem* const _Ptr, size_type _Off = 0) const noexcept /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
         return static_cast<size_type>(_Traits_find_first_not_of<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ptr, _Traits::length(_Ptr)));

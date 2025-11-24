@@ -528,15 +528,13 @@ public:
     }
 
     _NODISCARD friend bool operator==(
-        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
-    /* strengthened */ {
+        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept /* strengthened */ {
         return _Lhs._Prev == _Rhs._Prev;
     }
 
 #if !_HAS_CXX20
     _NODISCARD friend bool operator!=(
-        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
-    /* strengthened */ {
+        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept /* strengthened */ {
         return _Lhs._Prev != _Rhs._Prev;
     }
 #endif // !_HAS_CXX20

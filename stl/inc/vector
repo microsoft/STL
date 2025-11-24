@@ -3464,8 +3464,7 @@ public:
         return begin() + _Off;
     }
 
-    _CONSTEXPR20 iterator erase(const_iterator _First_arg, const_iterator _Last_arg) noexcept
-    /* strengthened */ {
+    _CONSTEXPR20 iterator erase(const_iterator _First_arg, const_iterator _Last_arg) noexcept /* strengthened */ {
         iterator _First      = _Make_iter(_First_arg);
         iterator _Last       = _Make_iter(_Last_arg);
         difference_type _Off = _First - begin();
