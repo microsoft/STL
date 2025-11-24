@@ -1674,7 +1674,7 @@ namespace chrono {
         }
 
     private:
-        _NODISCARD constexpr static _Duration _Abs_if_needed(_Duration _Dur, bool _Is_neg) {
+        _NODISCARD static constexpr _Duration _Abs_if_needed(_Duration _Dur, bool _Is_neg) {
             if constexpr (is_unsigned_v<typename _Duration::rep>) {
                 return _Dur;
             } else {
