@@ -2498,7 +2498,7 @@ namespace chrono {
             enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
                             const local_time<_Duration>&>,
                 int>             = 0>
-        zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>>& _Local)
+        zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>&> _Local)
             : zoned_time{_Traits::locate_zone(_Name), _Local} {}
 
         template <class _Ptr = _TimeZonePtr,
