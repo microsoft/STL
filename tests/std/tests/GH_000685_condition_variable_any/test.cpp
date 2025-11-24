@@ -110,7 +110,7 @@ namespace {
         auto timeout_duration = short_timeout;
         auto timeout          = steady_clock::now() + timeout_duration;
 
-        auto const set_timeout = [&](auto const new_timeout) {
+        const auto set_timeout = [&](const auto new_timeout) {
             timeout_duration = new_timeout;
             timeout          = steady_clock::now() + new_timeout;
         };
