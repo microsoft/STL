@@ -1064,22 +1064,26 @@ void test_locale() {
 }
 
 template <typename T>
-concept ostream_insertable = requires(std::ostream& o, const T& t) { o << t; };
+concept ostream_insertable = requires(ostream& o, const T& t) { o << t; };
 
 template <typename Dur>
 void check_stream_insertion_operator_for_duration() {
     if constexpr (ostream_insertable<sys_time<Dur>>) {
-        std::cout << sys_time<Dur>{};
+        ostringstream oss;
+        oss << sys_time<Dur>{};
+        assert(oss.str() == "1970-01-01 00:00:00");
     }
+
     if constexpr (ostream_insertable<local_time<Dur>>) {
-        std::cout << local_time<Dur>{};
+        ostringstream oss;
+        oss << local_time<Dur>{};
+        assert(oss.str() == "1970-01-01 00:00:00");
     }
 }
 
-// Test based on example in LWG-4257 (https://cplusplus.github.io/LWG/issue4257)
+// Test based on example in LWG-4257
 void check_stream_insertion_operator() {
-
-    // operator<< is constrained such that it does not participate when underlying duration has floating point rep
+    // operator<< is constrained such that it does not participate when underlying duration has floating-point rep
     using ok_dur  = duration<long long>;
     using bad_dur = duration<double>;
 
@@ -1093,7 +1097,6 @@ void check_stream_insertion_operator() {
 }
 
 void test() {
-
     check_stream_insertion_operator();
 
     test_parse_conversion_spec<char>();
