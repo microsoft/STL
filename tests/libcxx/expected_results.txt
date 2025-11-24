@@ -77,9 +77,6 @@ std/input.output/iostreams.base/ios.base/ios.base.storage/pword.pass.cpp SKIPPED
 # LWG-3197 "std::prev should not require BidirectionalIterator" (New)
 std/iterators/iterator.primitives/iterator.operations/prev.pass.cpp FAIL
 
-# Testing nonstandard behavior
-std/utilities/template.bitset/bitset.cons/string_ctor.pass.cpp FAIL
-
 # Tests with undefined behavior under N4842 [basic.start.term]/6 (detached threads)
 std/thread/futures/futures.task/futures.task.members/dtor.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_until.pass.cpp SKIPPED
@@ -184,11 +181,12 @@ std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer.value/ctor.ite
 # libc++ doesn't implement LWG-4112
 std/ranges/range.adaptors/range.join/range.join.iterator/arrow.pass.cpp FAIL
 
+# libc++ doesn't implement LWG-4266 "`layout_stride::mapping` should treat empty mappings as exhaustive"
+std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
+std/containers/views/mdspan/layout_stride/properties.pass.cpp FAIL
+
 # If any feature-test macro test is failing, this consolidated test will also fail.
 std/language.support/support.limits/support.limits.general/version.version.compile.pass.cpp FAIL
-
-# libc++ incorrectly implements `layout_stride::mapping<E>::is_exhaustive()`
-std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
 
 
 # *** INTERACTIONS WITH MSVC THAT UPSTREAM LIKELY WON'T FIX ***

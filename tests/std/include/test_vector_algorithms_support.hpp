@@ -4,12 +4,15 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <functional>
 #include <isa_availability.h>
 #include <random>
+#include <string>
 #include <vector>
 
 inline void initialize_randomness(std::mt19937_64& gen) {
@@ -41,24 +44,53 @@ inline void initialize_randomness(std::mt19937_64& gen) {
 extern "C" long __isa_enabled;
 
 inline void disable_instructions(ISA_AVAILABILITY isa) {
-    __isa_enabled &= ~(1UL << static_cast<unsigned long>(isa));
+    const unsigned long as_ulong = static_cast<unsigned long>(isa);
+
+    auto has_env_var_escape_hatch = [] {
+        size_t return_value = 0;
+        char buffer[2]{};
+        const errno_t err = ::getenv_s(&return_value, buffer, std::size(buffer), "STL_TEST_DOWNLEVEL_MACHINE");
+        return err == 0 && buffer == std::string{"1"};
+    };
+
+    if (!has_env_var_escape_hatch()) {
+        const bool has_feature = (__isa_enabled & (1UL << as_ulong)) != 0;
+        if (!has_feature) {
+            std::printf("The feature %lu is not available, the test does not have full coverage!\n"
+                        "You can set the environment variable STL_TEST_DOWNLEVEL_MACHINE to 1,\n"
+                        "if you intentionally test on a machine without all features available.\n",
+                as_ulong);
+        }
+        assert(has_feature);
+    }
+
+    __isa_enabled &= ~(1UL << as_ulong);
 }
 #endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
 
 constexpr std::size_t dataCount = 1024;
 
 template <class TestFunc>
+void run_tests_with_different_isa_levels(TestFunc tests) {
+    tests();
+
+#if (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE_PURE)
+    const auto original_isa = __isa_enabled;
+
+    disable_instructions(__ISA_AVAILABLE_AVX2);
+    tests();
+
+    disable_instructions(__ISA_AVAILABLE_SSE42);
+    tests();
+
+    __isa_enabled = original_isa;
+#endif // (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE_PURE)
+}
+
+template <class TestFunc>
 void run_randomized_tests_with_different_isa_levels(TestFunc tests) {
     std::mt19937_64 gen;
     initialize_randomness(gen);
 
-    tests(gen);
-
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
-    disable_instructions(__ISA_AVAILABLE_AVX2);
-    tests(gen);
-
-    disable_instructions(__ISA_AVAILABLE_SSE42);
-    tests(gen);
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
+    run_tests_with_different_isa_levels([&] { tests(gen); });
 }

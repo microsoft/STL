@@ -32,16 +32,20 @@ void bm_lorem_search(benchmark::State& state, const char* pattern, syntax_option
     }
 }
 
-BENCHMARK_CAPTURE(bm_lorem_search, "^bibe", "^bibe")->Arg(2)->Arg(3)->Arg(4);
-BENCHMARK_CAPTURE(bm_lorem_search, "bibe", "bibe")->Arg(2)->Arg(3)->Arg(4);
-BENCHMARK_CAPTURE(bm_lorem_search, "bibe".collate, "bibe", regex_constants::collate)->Arg(2)->Arg(3)->Arg(4);
-BENCHMARK_CAPTURE(bm_lorem_search, "(bibe)", "(bibe)")->Arg(2)->Arg(3)->Arg(4);
-BENCHMARK_CAPTURE(bm_lorem_search, "(bibe)+", "(bibe)+")->Arg(2)->Arg(3)->Arg(4);
-BENCHMARK_CAPTURE(bm_lorem_search, "(?:bibe)+", "(?:bibe)+")->Arg(2)->Arg(3)->Arg(4);
-BENCHMARK_CAPTURE(bm_lorem_search, R"(\bbibe)", R"(\bbibe)")->Arg(2)->Arg(3)->Arg(4);
-BENCHMARK_CAPTURE(bm_lorem_search, R"(\Bibe)", R"(\Bibe)")->Arg(2)->Arg(3)->Arg(4);
-BENCHMARK_CAPTURE(bm_lorem_search, R"((?=....)bibe)", R"((?=....)bibe)")->Arg(2)->Arg(3)->Arg(4);
-BENCHMARK_CAPTURE(bm_lorem_search, R"((?=bibe)....)", R"((?=bibe)....)")->Arg(2)->Arg(3)->Arg(4);
-BENCHMARK_CAPTURE(bm_lorem_search, R"((?!lorem)bibe)", R"((?!lorem)bibe)")->Arg(2)->Arg(3)->Arg(4);
+void common_args(auto bm) {
+    bm->Arg(2)->Arg(3)->Arg(4);
+}
+
+BENCHMARK_CAPTURE(bm_lorem_search, "^bibe", "^bibe")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_lorem_search, "bibe", "bibe")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_lorem_search, "bibe".collate, "bibe", regex_constants::collate)->Apply(common_args);
+BENCHMARK_CAPTURE(bm_lorem_search, "(bibe)", "(bibe)")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_lorem_search, "(bibe)+", "(bibe)+")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_lorem_search, "(?:bibe)+", "(?:bibe)+")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_lorem_search, R"(\bbibe)", R"(\bbibe)")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_lorem_search, R"(\Bibe)", R"(\Bibe)")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_lorem_search, R"((?=....)bibe)", R"((?=....)bibe)")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_lorem_search, R"((?=bibe)....)", R"((?=bibe)....)")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_lorem_search, R"((?!lorem)bibe)", R"((?!lorem)bibe)")->Apply(common_args);
 
 BENCHMARK_MAIN();
