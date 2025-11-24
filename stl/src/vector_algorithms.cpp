@@ -5665,7 +5665,6 @@ namespace {
                     }
 
                     _Advance_bytes(_First1, _Vec_size);
-
                 } while (_First1 != _Stop1);
 
                 if (const size_t _Left1 = _Byte_length(_First1, _Last1); _Left1 >= _Size_bytes_2) {
@@ -5737,7 +5736,6 @@ namespace {
                     }
 
                     _Advance_bytes(_First1, _Vec_size);
-
                 } while (_First1 <= _Stop1);
 
                 return _Last1;
