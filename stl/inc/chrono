@@ -2174,7 +2174,7 @@ namespace chrono {
         return {_Info->_Version, _STD move(_Time_zones), _STD move(_Time_zone_links)};
     }
 
-    _NODISCARD inline pair<decltype(tzdb::leap_seconds), bool> _Tzdb_generate_leap_seconds(const size_t _Current_size) {
+    _NODISCARD inline pair<vector<leap_second>, bool> _Tzdb_generate_leap_seconds(const size_t _Current_size) {
         // Returns empty vector if no new leap seconds are found.
         static constexpr leap_second _Known_leap_seconds[]{
             {sys_seconds{seconds{78796800}}, true, seconds{0}},
@@ -2225,7 +2225,7 @@ namespace chrono {
         }
 
         const size_t _New_size = _Pre_2018_count + _Reg_post_2018_ls_size; // total size with registry data
-        decltype(tzdb::leap_seconds) _Leap_sec_info;
+        vector<leap_second> _Leap_sec_info;
         bool _All_ls_positive = true;
 
         if (_New_size > _Current_size) {
