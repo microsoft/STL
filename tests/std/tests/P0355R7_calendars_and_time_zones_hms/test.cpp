@@ -117,7 +117,7 @@ constexpr void constructor_unsigned_durations() {
     assert(a.seconds() == 7s);
     assert(a.subseconds() == 37ms);
 
-    // Reproducing example from issue #5569
+    // Reproducing example from GH-5569 "<chrono>: Cannot construct an hh_mm_ss object from an unsigned duration"
     duration<uint32_t> dur{1};
     hh_mm_ss hms{dur};
 }
