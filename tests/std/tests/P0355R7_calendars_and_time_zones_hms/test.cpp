@@ -120,6 +120,8 @@ constexpr void constructor_unsigned_durations() {
     // Reproducing example from GH-5569 "<chrono>: Cannot construct an hh_mm_ss object from an unsigned duration"
     duration<uint32_t> dur{1};
     hh_mm_ss hms{dur};
+    assert(!hms.is_negative());
+    assert(hms.seconds() == 1s);
 }
 
 constexpr void is_negative() {
