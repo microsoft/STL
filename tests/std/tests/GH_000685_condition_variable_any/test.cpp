@@ -154,7 +154,7 @@ namespace {
 
 #if _HAS_CXX20 // because of stop_token
             case 4:
-                if constexpr (std::is_same_v<CV, condition_variable_any>) {
+                if constexpr (is_same_v<CV, condition_variable_any>) {
                     stop_source source;
                     return cv.wait_until(lock, source.get_token(), timeout, [] { return false; }) == false;
                 } else {
@@ -163,7 +163,7 @@ namespace {
                 }
 
             case 5:
-                if constexpr (std::is_same_v<CV, condition_variable_any>) {
+                if constexpr (is_same_v<CV, condition_variable_any>) {
                     stop_source source;
                     return cv.wait_for(lock, source.get_token(), timeout_duration, [] { return false; }) == false;
                 } else {
@@ -204,19 +204,19 @@ int main() {
     test_condition_variable_any_already_timed_out();
 
     puts("condition_variable");
-    test_timeout_immutable<std::condition_variable>(0);
-    test_timeout_immutable<std::condition_variable>(1);
-    test_timeout_immutable<std::condition_variable>(2);
-    test_timeout_immutable<std::condition_variable>(3);
+    test_timeout_immutable<condition_variable>(0);
+    test_timeout_immutable<condition_variable>(1);
+    test_timeout_immutable<condition_variable>(2);
+    test_timeout_immutable<condition_variable>(3);
 
     puts("condition_variable_any");
 
-    test_timeout_immutable<std::condition_variable_any>(0);
-    test_timeout_immutable<std::condition_variable_any>(1);
-    test_timeout_immutable<std::condition_variable_any>(2);
-    test_timeout_immutable<std::condition_variable_any>(3);
+    test_timeout_immutable<condition_variable_any>(0);
+    test_timeout_immutable<condition_variable_any>(1);
+    test_timeout_immutable<condition_variable_any>(2);
+    test_timeout_immutable<condition_variable_any>(3);
 #if _HAS_CXX20
-    test_timeout_immutable<std::condition_variable_any>(4);
-    test_timeout_immutable<std::condition_variable_any>(5);
+    test_timeout_immutable<condition_variable_any>(4);
+    test_timeout_immutable<condition_variable_any>(5);
 #endif // _HAS_CXX20
 }
