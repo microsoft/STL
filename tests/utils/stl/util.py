@@ -125,25 +125,14 @@ def killProcessAndChildren(pid):
     using the psutil module which provides a simple platform
     neutral implementation.
     """
-    if platform.system() == 'AIX':
-        subprocess.call('kill -kill $(ps -o pid= -L{})'.format(pid),
-                        shell=True)
-    else:
-        import psutil
-        try:
-            psutilProc = psutil.Process(pid)
-            # Handle the different psutil API versions
+    import psutil
+    try:
+        psutilProc = psutil.Process(pid)
+        for child in psutilProc.children(recursive=True):
             try:
-                # psutil >= 2.x
-                children_iterator = psutilProc.children(recursive=True)
-            except AttributeError:
-                # psutil 1.x
-                children_iterator = psutilProc.get_children(recursive=True)
-            for child in children_iterator:
-                try:
-                    child.kill()
-                except psutil.NoSuchProcess:
-                    pass
-            psutilProc.kill()
-        except psutil.NoSuchProcess:
-            pass
+                child.kill()
+            except psutil.NoSuchProcess:
+                pass
+        psutilProc.kill()
+    except psutil.NoSuchProcess:
+        pass
