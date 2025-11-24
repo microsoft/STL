@@ -83,10 +83,10 @@ namespace {
 #endif // _HAS_CXX20
     }
 
-    // Minimal example inspired by LWG-4301, modified due to missing latch in C++11 to 20
-    // and generalized to test all overloads of condition_variable{_any}::wait_{for, until}
+    // Minimal example inspired by LWG-4301, modified due to missing std::latch before C++20
+    // and generalized to test all overloads of condition_variable{_any}::wait_{for, until}.
     // Idea: Make the main thread wait for a CV with a short timeout and modify it from another thread in the meantime.
-    // If the main thread wait times out after short time, the modification did not influence the ongoing wait
+    // If the main thread wait times out after a short time, the modification did not influence the ongoing wait.
     template <typename CV>
     void test_timeout_immutable(int test_number, int retries_remaining = 5) {
         printf("\ntest %d\n", test_number);
@@ -116,7 +116,7 @@ namespace {
             printf(
                 "thread start after %lld ms\n", duration_cast<milliseconds>(steady_clock::now() - wait_start).count());
             waiting_for_other_thread.clear();
-            // Immediatelly blocks since the main thread owns lock.
+            // Immediately blocks since the main thread owns lock.
             lock_guard<mutex> lock(m);
             puts("thread lock");
 
@@ -177,7 +177,7 @@ namespace {
             if (retries_remaining > 0) {
                 printf("unexpected wakeup after %lld ms, retry %d...\n",
                     duration_cast<milliseconds>(steady_clock::now() - wait_start).count(), retries_remaining);
-                test_timeout_immutable<CV>(test_number, retries_remaining - 1); /* recurse to try the test again */
+                test_timeout_immutable<CV>(test_number, retries_remaining - 1); // recurse to try the test again
             } else {
                 puts("Too many unexpected wakeups");
                 assert(false);
@@ -188,7 +188,7 @@ namespace {
         }
 
 
-        // Make sure the child thread has indeed finished (so the next join does not block
+        // Make sure the child thread has indeed finished (so the next join does not block)
         assert(timeout_duration == long_timeout);
         other_thread.join();
     }
