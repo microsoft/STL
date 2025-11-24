@@ -104,7 +104,7 @@ namespace {
         constexpr auto short_timeout = 1s;
         constexpr auto long_timeout  = 10s;
 
-        atomic_flag waiting_for_other_thread = ATOMIC_FLAG_INIT;
+        atomic_flag waiting_for_other_thread{};
         waiting_for_other_thread.test_and_set();
 
         auto timeout_duration = short_timeout;
