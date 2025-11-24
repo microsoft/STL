@@ -2527,7 +2527,6 @@ static_assert(!is_constructible_v<expected<ConstructibleFromEverything, Converti
 // Test LWG-4366 "Heterogeneous comparison of expected may be ill-formed"
 // Test taken from an example in the issue text
 namespace test_lwg_4366 {
-
     struct E1 {};
     struct E2 {};
 
@@ -2566,7 +2565,7 @@ namespace test_lwg_4366 {
     struct E4 {};
 
     template <bool X>
-    constexpr bool_with_noexcept<X> operator==(const E3, const E4<X>) noexcept {
+    constexpr bool_with_noexcept<X> operator==(E3, E4<X>) noexcept {
         return {};
     }
 
