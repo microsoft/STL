@@ -93,7 +93,7 @@ namespace {
     // Idea: Make the main thread wait for a CV with a short timeout and modify it from another thread in the meantime.
     // If the main thread wait times out after a short time, the modification did not influence the ongoing wait.
     template <typename CV>
-    void test_timeout_immutable(int test_number, int retries_remaining = 5) {
+    void test_timeout_immutable(const int test_number, const int retries_remaining = 5) {
         printf("\ntest %d\n", test_number);
 
         mutex m;
