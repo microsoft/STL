@@ -791,7 +791,7 @@ public:
 
     _CONSTEXPR20 void _Destroy() noexcept { // destroy the contained value, if any
         if constexpr (!conjunction_v<is_trivially_destructible<_Types>...>) {
-            _STD _Variant_raw_visit(index(), _Storage(), [](auto _Ref) noexcept {
+            _STD _Variant_raw_visit(index(), _Storage(), [](auto _Ref) _STATIC_CALL_OPERATOR noexcept {
                 if constexpr (decltype(_Ref)::_Idx != variant_npos) {
                     using _Indexed_value_type = _Remove_cvref_t<decltype(_Ref._Val)>;
                     _Ref._Val.~_Indexed_value_type();
