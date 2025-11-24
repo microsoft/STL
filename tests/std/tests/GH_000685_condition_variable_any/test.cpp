@@ -107,15 +107,14 @@ namespace {
         atomic_flag waiting_for_other_thread{};
         waiting_for_other_thread.test_and_set();
 
+        const auto wait_start = steady_clock::now();
         auto timeout_duration = short_timeout;
-        auto timeout          = steady_clock::now() + timeout_duration;
+        auto timeout          = wait_start + timeout_duration;
 
         const auto set_timeout = [&](const auto new_timeout) {
             timeout_duration = new_timeout;
             timeout          = steady_clock::now() + new_timeout;
         };
-
-        const auto wait_start = steady_clock::now();
 
         thread other_thread([&] {
             printf(
@@ -178,18 +177,20 @@ namespace {
             }
         }();
 
+        const auto elapsed = steady_clock::now() - wait_start;
+
         if (!cv_wait_timed_out) {
             if (retries_remaining > 0) {
-                printf("unexpected wakeup after %lld ms, retry %d...\n",
-                    duration_cast<milliseconds>(steady_clock::now() - wait_start).count(), retries_remaining);
+                printf("unexpected wakeup after %lld ms, retry %d...\n", duration_cast<milliseconds>(elapsed).count(),
+                    retries_remaining);
                 test_timeout_immutable<CV>(test_number, retries_remaining - 1); // recurse to try the test again
             } else {
                 puts("Too many unexpected wakeups");
                 assert(false);
             }
         } else {
-            assert(steady_clock::now() - wait_start < long_timeout / 2);
-            printf("wait end after %lld ms\n", duration_cast<milliseconds>(steady_clock::now() - wait_start).count());
+            assert(elapsed < long_timeout / 2);
+            printf("wait end after %lld ms\n", duration_cast<milliseconds>(elapsed).count());
         }
 
         // Make sure the child thread has indeed finished (so the next join does not block)
