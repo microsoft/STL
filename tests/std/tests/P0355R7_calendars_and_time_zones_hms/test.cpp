@@ -109,19 +109,23 @@ constexpr void constructor() {
 
 // Test LWG-4274 "The chrono::hh_mm_ss constructor is ill-formed for unsigned durations"
 constexpr void constructor_unsigned_durations() {
-    duration<unsigned long long, milli> unsigned_duration{37 + 1000 * (7 + 4 * 60 + 3 * 3600)};
-    hh_mm_ss a{unsigned_duration};
-    assert(!a.is_negative());
-    assert(a.hours() == 3h);
-    assert(a.minutes() == 4min);
-    assert(a.seconds() == 7s);
-    assert(a.subseconds() == 37ms);
+    {
+        duration<unsigned long long, milli> unsigned_duration{37 + 1000 * (7 + 4 * 60 + 3 * 3600)};
+        hh_mm_ss a{unsigned_duration};
+        assert(!a.is_negative());
+        assert(a.hours() == 3h);
+        assert(a.minutes() == 4min);
+        assert(a.seconds() == 7s);
+        assert(a.subseconds() == 37ms);
+    }
 
-    // Reproducing example from GH-5569 "<chrono>: Cannot construct an hh_mm_ss object from an unsigned duration"
-    duration<uint32_t> dur{1};
-    hh_mm_ss hms{dur};
-    assert(!hms.is_negative());
-    assert(hms.seconds() == 1s);
+    {
+        // Reproducing example from GH-5569 "<chrono>: Cannot construct an hh_mm_ss object from an unsigned duration"
+        duration<uint32_t> dur{1};
+        hh_mm_ss hms{dur};
+        assert(!hms.is_negative());
+        assert(hms.seconds() == 1s);
+    }
 }
 
 constexpr void is_negative() {
