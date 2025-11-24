@@ -6,40 +6,10 @@
 #
 #===----------------------------------------------------------------------===##
 
-from contextlib import contextmanager
-from pathlib import Path
-import os
 import platform
 import signal
 import subprocess
-import sys
-import tempfile
 import threading
-
-
-@contextmanager
-def guardedTempFilename(suffix='', prefix='', dir=None):
-    # Creates and yields a temporary filename within a with statement. The file
-    # is removed upon scope exit.
-    handle, name = tempfile.mkstemp(suffix=suffix, prefix=prefix, dir=dir)
-    os.close(handle)
-    yield name
-    Path(name).unlink(True)
-
-
-@contextmanager
-def guardedFilename(name):
-    # Yields a filename within a with statement. The file is removed upon scope
-    # exit.
-    yield name
-    Path(name).unlink(True)
-
-
-@contextmanager
-def nullContext(value):
-    # Yields a variable within a with statement. No action is taken upon scope
-    # exit.
-    yield value
 
 
 def makeReport(cmd, out, err, rc):
