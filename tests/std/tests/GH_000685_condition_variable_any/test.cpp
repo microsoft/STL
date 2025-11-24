@@ -8,9 +8,14 @@
 #include <cassert>
 #include <chrono>
 #include <condition_variable>
+#include <cstdio>
 #include <mutex>
 #include <thread>
 #include <type_traits>
+
+#if _HAS_CXX20
+#include <stop_token>
+#endif // _HAS_CXX20
 
 using namespace std;
 using namespace std::chrono;
