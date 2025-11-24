@@ -3933,7 +3933,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                             if (_Code == _Rx_unwind_ops::_After_assert) {
                                 _Next = _Frame._Node->_Next;
                                 if (_Last_capture_restore_frame != 0U) {
-                                    auto _Not_capture_restore = [](const auto& _Other_frame) _STATIC_LAMBDA {
+                                    auto _Not_capture_restore = [](const auto& _Other_frame) _STATIC_CALL_OPERATOR {
                                         return _Other_frame._Code != _Rx_unwind_ops::_Capture_restore_begin
                                             && _Other_frame._Code != _Rx_unwind_ops::_Capture_restore_end;
                                     };

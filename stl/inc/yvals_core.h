@@ -1991,11 +1991,9 @@ _EMIT_STL_ERROR(STL1013, "The STL doesn't support /RTCc because it rejects confo
 // TRANSITION, VSO-2397560, temporary workaround for Real World Code relying on ancient Clang versions.
 #define _STATIC_CALL_OPERATOR
 #define _CONST_CALL_OPERATOR const
-#define _STATIC_LAMBDA
 #else // ^^^ workaround / no workaround vvv
 #define _STATIC_CALL_OPERATOR static
 #define _CONST_CALL_OPERATOR
-#define _STATIC_LAMBDA static
 #endif // ^^^ no workaround ^^^
 
 #ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't recognize MSVC __restrict; CUDA __restrict__ is not usable in C++
