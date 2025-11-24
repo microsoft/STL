@@ -5353,61 +5353,52 @@ namespace chrono {
                 if (_Spec._Type != '\0' && !_Is_valid_type<_Ty>(_Spec._Type)) {
                     _STD _Throw_format_error("Invalid type.");
                 }
-                _Check_modifier(_Spec._Type, _Spec._Modifier);
+
+                if (!_Valid_modifier(_Spec._Type, _Spec._Modifier)) {
+                    _STD _Throw_format_error("Incompatible modifier for type");
+                }
             }
 
             return _Res_iter;
         }
 
-        enum _Allowed_bit : uint8_t { _E_mod = 1, _O_mod = 2, _EO_mod = _E_mod | _O_mod };
-
-        struct _Table_entry {
-            char _Type;
-            _Allowed_bit _Allowed;
-        };
-
-        static constexpr _Table_entry _Table[] = {
-            {'c', _E_mod},
-            {'C', _E_mod},
-            {'d', _O_mod},
-            {'e', _O_mod},
-            {'H', _O_mod},
-            {'I', _O_mod},
-            {'m', _O_mod},
-            {'M', _O_mod},
-            {'S', _O_mod},
-            {'u', _O_mod},
-            {'U', _O_mod},
-            {'V', _O_mod},
-            {'w', _O_mod},
-            {'W', _O_mod},
-            {'x', _E_mod},
-            {'X', _E_mod},
-            {'y', _EO_mod},
-            {'Y', _E_mod},
-            {'z', _EO_mod},
-        };
-
-        static constexpr void _Check_modifier(const char _Type, const char _Modifier) {
+        static constexpr bool _Valid_modifier(const char _Type, const char _Modifier) {
+            // N5014 [tab:time.format.spec] lists modified commands.
             if (_Modifier == '\0') {
-                return;
+                return true;
             }
 
-            const _Allowed_bit _Mod = _Modifier == 'E' ? _E_mod : _O_mod;
+            _STL_INTERNAL_CHECK(_Modifier == 'E' || _Modifier == 'O');
 
-#ifdef _M_CEE // TRANSITION, VSO-1664341
-            constexpr auto _Get_table_entry_type = [](const _Table_entry& _Entry) { return _Entry._Type; };
-#else // ^^^ workaround / no workaround vvv
-            constexpr auto _Get_table_entry_type = &_Table_entry::_Type;
-#endif // ^^^ no workaround ^^^
+            switch (_Type) {
+            case 'c':
+            case 'C':
+            case 'x':
+            case 'X':
+            case 'Y':
+                return _Modifier == 'E';
 
-            if (auto _It = _RANGES find(_Table, _Type, _Get_table_entry_type); _It != _STD end(_Table)) {
-                if (_It->_Allowed & _Mod) {
-                    return;
-                }
+            case 'd':
+            case 'e':
+            case 'H':
+            case 'I':
+            case 'm':
+            case 'M':
+            case 'S':
+            case 'u':
+            case 'U':
+            case 'V':
+            case 'w':
+            case 'W':
+                return _Modifier == 'O';
+
+            case 'y':
+            case 'z':
+                return true;
+
+            default:
+                return false;
             }
-
-            _STD _Throw_format_error("Incompatible modifier for type");
         }
 
         template <class _Ty>
