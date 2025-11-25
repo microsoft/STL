@@ -30,7 +30,6 @@ struct real_fake_clock {
 };
 
 struct rep_missing {
-
     using period                    = micro;
     using duration                  = microseconds;
     using time_point                = time_point<real_fake_clock>;
@@ -57,8 +56,7 @@ struct rep_wrong_type {
 };
 
 struct period_missing {
-    using rep = long long;
-
+    using rep                       = long long;
     using duration                  = microseconds;
     using time_point                = time_point<real_fake_clock>;
     constexpr static bool is_steady = false;
@@ -84,9 +82,8 @@ struct period_wrong_type {
 };
 
 struct duration_missing {
-    using rep    = long long;
-    using period = micro;
-
+    using rep                       = long long;
+    using period                    = micro;
     using time_point                = time_point<real_fake_clock>;
     constexpr static bool is_steady = false;
     static time_point now();
@@ -129,10 +126,9 @@ struct duration_slightly_wrong_type2 {
 };
 
 struct time_point_missing {
-    using rep      = long long;
-    using period   = micro;
-    using duration = microseconds;
-
+    using rep                       = long long;
+    using period                    = micro;
+    using duration                  = microseconds;
     constexpr static bool is_steady = false;
     static time_point<time_point_missing> now();
 };
@@ -178,7 +174,6 @@ struct is_steady_missing {
     using period     = micro;
     using duration   = microseconds;
     using time_point = time_point<real_fake_clock>;
-
     static time_point now();
 };
 
@@ -286,7 +281,6 @@ STATIC_ASSERT(!is_clock_v<now_type>);
 STATIC_ASSERT(!is_clock_v<now_not_fun>);
 STATIC_ASSERT(!is_clock_v<now_not_static>);
 STATIC_ASSERT(!is_clock_v<now_wrong_type>);
-
 
 void test_is_leap_second(const year_month_day& ymd) {
     const sys_days ls{ymd};
