@@ -15,8 +15,6 @@
 #include <is_permissive.hpp>
 #include <timezone_data.hpp>
 
-#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__);
-
 using namespace std;
 using namespace std::chrono;
 
@@ -240,47 +238,47 @@ struct now_wrong_type {
 };
 
 // Check standard clocks
-STATIC_ASSERT(is_clock<steady_clock>::value);
-STATIC_ASSERT(is_clock_v<system_clock>);
-STATIC_ASSERT(is_clock_v<steady_clock>);
-STATIC_ASSERT(is_clock_v<high_resolution_clock>);
-STATIC_ASSERT(is_clock_v<utc_clock>);
-STATIC_ASSERT(is_clock_v<tai_clock>);
-STATIC_ASSERT(is_clock_v<gps_clock>);
-STATIC_ASSERT(is_clock_v<file_clock>);
+static_assert(is_clock<steady_clock>::value);
+static_assert(is_clock_v<system_clock>);
+static_assert(is_clock_v<steady_clock>);
+static_assert(is_clock_v<high_resolution_clock>);
+static_assert(is_clock_v<utc_clock>);
+static_assert(is_clock_v<tai_clock>);
+static_assert(is_clock_v<gps_clock>);
+static_assert(is_clock_v<file_clock>);
 
 // Check custom clocks
-STATIC_ASSERT(is_clock_v<real_fake_clock>);
+static_assert(is_clock_v<real_fake_clock>);
 
-STATIC_ASSERT(!is_clock_v<rep_missing>);
-STATIC_ASSERT(!is_clock_v<rep_not_type>);
-STATIC_ASSERT(!is_clock_v<rep_wrong_type>);
+static_assert(!is_clock_v<rep_missing>);
+static_assert(!is_clock_v<rep_not_type>);
+static_assert(!is_clock_v<rep_wrong_type>);
 
-STATIC_ASSERT(!is_clock_v<period_missing>);
-STATIC_ASSERT(!is_clock_v<period_not_type>);
-STATIC_ASSERT(!is_clock_v<period_wrong_type>);
+static_assert(!is_clock_v<period_missing>);
+static_assert(!is_clock_v<period_not_type>);
+static_assert(!is_clock_v<period_wrong_type>);
 
-STATIC_ASSERT(!is_clock_v<duration_missing>);
-STATIC_ASSERT(!is_clock_v<duration_not_type>);
-STATIC_ASSERT(!is_clock_v<duration_wrong_type>);
-STATIC_ASSERT(!is_clock_v<duration_slightly_wrong_type>);
-STATIC_ASSERT(!is_clock_v<duration_slightly_wrong_type2>);
+static_assert(!is_clock_v<duration_missing>);
+static_assert(!is_clock_v<duration_not_type>);
+static_assert(!is_clock_v<duration_wrong_type>);
+static_assert(!is_clock_v<duration_slightly_wrong_type>);
+static_assert(!is_clock_v<duration_slightly_wrong_type2>);
 
-STATIC_ASSERT(!is_clock_v<time_point_missing>);
-STATIC_ASSERT(!is_clock_v<time_point_not_type>);
-STATIC_ASSERT(!is_clock_v<time_point_wrong_type>);
-STATIC_ASSERT(!is_clock_v<time_point_wrong_type2>);
-STATIC_ASSERT(is_clock_v<time_point_different_clock_ok>);
+static_assert(!is_clock_v<time_point_missing>);
+static_assert(!is_clock_v<time_point_not_type>);
+static_assert(!is_clock_v<time_point_wrong_type>);
+static_assert(!is_clock_v<time_point_wrong_type2>);
+static_assert(is_clock_v<time_point_different_clock_ok>);
 
-STATIC_ASSERT(!is_clock_v<is_steady_missing>);
-STATIC_ASSERT(!is_clock_v<is_steady_type>);
-STATIC_ASSERT(!is_clock_v<is_steady_member>);
+static_assert(!is_clock_v<is_steady_missing>);
+static_assert(!is_clock_v<is_steady_type>);
+static_assert(!is_clock_v<is_steady_member>);
 
-STATIC_ASSERT(!is_clock_v<now_missing>);
-STATIC_ASSERT(!is_clock_v<now_type>);
-STATIC_ASSERT(!is_clock_v<now_not_fun>);
-STATIC_ASSERT(!is_clock_v<now_not_static>);
-STATIC_ASSERT(!is_clock_v<now_wrong_type>);
+static_assert(!is_clock_v<now_missing>);
+static_assert(!is_clock_v<now_type>);
+static_assert(!is_clock_v<now_not_fun>);
+static_assert(!is_clock_v<now_not_static>);
+static_assert(!is_clock_v<now_wrong_type>);
 
 void test_is_leap_second(const year_month_day& ymd) {
     const sys_days ls{ymd};
