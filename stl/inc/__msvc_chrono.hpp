@@ -73,7 +73,7 @@ namespace chrono {
         typename _Clock::duration;
         typename _Clock::time_point;
         _Clock::is_steady;
-        _Clock::now;
+        _Clock::now();
 
         // Additional stricter checks from N5014 [time.clock.req]/2
         // "An arithmetic type or a class emulating an arithmetic type" is not checked
