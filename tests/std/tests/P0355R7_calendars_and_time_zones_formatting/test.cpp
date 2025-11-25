@@ -1061,7 +1061,15 @@ void test_locale() {
     assert(stream(year_month_weekday_last{2021y / May / Tuesday[last]}) == STR("2021/Mai/Di[last]"));
 }
 
+void test_unsigned_sys_time_format_after_LWG_4274() {
+    const sys_time<duration<unsigned int>> tp{};
+    const string s = format("{:%Y-%m-%d %H:%M:%S}", tp);
+    assert(s == "1970-01-01 00:00:00");
+}
+
 void test() {
+    test_unsigned_sys_time_format_after_LWG_4274();
+
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
 
