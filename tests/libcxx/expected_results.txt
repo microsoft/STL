@@ -572,15 +572,33 @@ std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporar
 std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:1 FAIL
 
+# P2835R7 atomic_ref::address()
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/atomics/atomics.ref/address.pass.cpp FAIL
+
 # P2944R3 Comparisons For reference_wrapper
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.const_ref.pass.cpp FAIL
 std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.refwrap_const.pass.cpp FAIL
 std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.refwrap.pass.cpp FAIL
 
+# P2988R12 optional<T&>
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/optional/optional.object/optional.object.ctor/ref_t.pass.cpp FAIL
+
+# P3044R2 basic_string::subview()
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/strings/basic.string/string.ops/string_substr/subview.pass.cpp FAIL
+std/strings/string.view/string.view.ops/subview.pass.cpp FAIL
+
+# P3060R3 views::indices
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/ranges/range.factories/range.iota.view/indices.pass.cpp FAIL
+
 # P3168R2 std::optional Range Support
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/utilities/optional/optional.iterator/begin.pass.cpp FAIL
+std/utilities/optional/optional.iterator/borrowed_range.compile.pass.cpp FAIL
 std/utilities/optional/optional.iterator/end.pass.cpp FAIL
 std/utilities/optional/optional.iterator/iterator.pass.cpp FAIL
 
