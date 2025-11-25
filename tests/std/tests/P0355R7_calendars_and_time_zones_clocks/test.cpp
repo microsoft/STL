@@ -185,7 +185,7 @@ struct is_steady_type {
     static time_point now();
 };
 
-struct is_steady_member {
+struct is_steady_not_static {
     using rep        = long long;
     using period     = micro;
     using duration   = microseconds;
@@ -273,7 +273,7 @@ static_assert(is_clock_v<time_point_different_clock_ok>);
 
 static_assert(!is_clock_v<is_steady_missing>);
 static_assert(!is_clock_v<is_steady_type>);
-static_assert(!is_clock_v<is_steady_member>);
+static_assert(!is_clock_v<is_steady_not_static>);
 
 static_assert(!is_clock_v<now_missing>);
 static_assert(!is_clock_v<now_type>);
