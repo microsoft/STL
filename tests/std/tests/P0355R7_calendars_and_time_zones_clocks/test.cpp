@@ -24,7 +24,7 @@ struct real_fake_clock {
     using period                    = micro;
     using duration                  = microseconds;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point now();
 };
 
@@ -32,7 +32,7 @@ struct rep_missing {
     using period                    = micro;
     using duration                  = microseconds;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point now();
 };
 
@@ -41,7 +41,7 @@ struct rep_not_type {
     using period                    = micro;
     using duration                  = microseconds;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point now();
 };
 
@@ -50,7 +50,7 @@ struct rep_wrong_type {
     using period                    = micro;
     using duration                  = microseconds;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point now();
 };
 
@@ -58,7 +58,7 @@ struct period_missing {
     using rep                       = long long;
     using duration                  = microseconds;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point now();
 };
 
@@ -67,7 +67,7 @@ struct period_not_type {
     char period;
     using duration                  = microseconds;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point now();
 };
 
@@ -76,7 +76,7 @@ struct period_wrong_type {
     using period                    = char;
     using duration                  = microseconds;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point now();
 };
 
@@ -84,7 +84,7 @@ struct duration_missing {
     using rep                       = long long;
     using period                    = micro;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point now();
 };
 
@@ -93,7 +93,7 @@ struct duration_not_type {
     using period = micro;
     char duration;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point now();
 };
 
@@ -102,7 +102,7 @@ struct duration_wrong_type {
     using period                    = micro;
     using duration                  = int;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point now();
 };
 
@@ -111,7 +111,7 @@ struct duration_slightly_wrong_type {
     using period                    = micro;
     using duration                  = milliseconds;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point now();
 };
 
@@ -120,7 +120,7 @@ struct duration_slightly_wrong_type2 {
     using period                    = micro;
     using duration                  = duration<int, micro>;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point now();
 };
 
@@ -128,7 +128,7 @@ struct time_point_missing {
     using rep                       = long long;
     using period                    = micro;
     using duration                  = microseconds;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point<time_point_missing> now();
 };
 
@@ -137,7 +137,7 @@ struct time_point_not_type {
     using period   = micro;
     using duration = microseconds;
     char time_point;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static chrono::time_point<time_point_not_type> now();
 };
 
@@ -146,7 +146,7 @@ struct time_point_wrong_type {
     using period                    = micro;
     using duration                  = microseconds;
     using time_point                = int;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point now();
 };
 
@@ -155,7 +155,7 @@ struct time_point_wrong_type2 {
     using period                    = micro;
     using duration                  = microseconds;
     using time_point                = time_point<real_fake_clock, nanoseconds>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point now();
 };
 
@@ -164,7 +164,7 @@ struct time_point_different_clock_ok {
     using period                    = milli;
     using duration                  = milliseconds;
     using time_point                = time_point<real_fake_clock, milliseconds>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point now();
 };
 
@@ -199,7 +199,7 @@ struct now_missing {
     using period                    = micro;
     using duration                  = microseconds;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
 };
 
 struct now_type {
@@ -207,7 +207,7 @@ struct now_type {
     using period                    = micro;
     using duration                  = microseconds;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     using now                       = time_point;
 };
 
@@ -216,7 +216,7 @@ struct now_not_fun {
     using period                    = micro;
     using duration                  = microseconds;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static time_point now;
 };
 
@@ -225,7 +225,7 @@ struct now_not_static {
     using period                    = micro;
     using duration                  = microseconds;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     time_point now();
 };
 
@@ -234,7 +234,7 @@ struct now_wrong_type {
     using period                    = micro;
     using duration                  = microseconds;
     using time_point                = time_point<real_fake_clock>;
-    constexpr static bool is_steady = false;
+    static constexpr bool is_steady = false;
     static duration now();
 };
 
