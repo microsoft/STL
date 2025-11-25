@@ -296,7 +296,9 @@ static_assert(!is_clock_v<is_steady_not_static>);
 static_assert(!is_clock_v<is_steady_wrong_type>);
 
 static_assert(!is_clock_v<now_missing>);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2649325
 static_assert(!is_clock_v<now_type>);
+#endif // ^^^ no workaround ^^^
 static_assert(!is_clock_v<now_not_fun>);
 static_assert(!is_clock_v<now_not_static>);
 static_assert(!is_clock_v<now_wrong_type>);
