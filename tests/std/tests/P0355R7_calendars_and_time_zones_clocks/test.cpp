@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <functional>
 #include <iterator>
+#include <ratio>
 #include <type_traits>
 #include <utility>
 
