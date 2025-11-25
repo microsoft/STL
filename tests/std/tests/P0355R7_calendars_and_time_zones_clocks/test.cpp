@@ -159,6 +159,15 @@ struct time_point_wrong_type2 {
     static time_point now();
 };
 
+struct time_point_wrong_type3 {
+    using rep                       = long long;
+    using period                    = micro;
+    using duration                  = microseconds;
+    using time_point                = time_point<time_point_wrong_type3, nanoseconds>;
+    static constexpr bool is_steady = false;
+    static time_point now();
+};
+
 struct time_point_different_clock_ok {
     using rep                       = long long;
     using period                    = milli;
@@ -191,6 +200,15 @@ struct is_steady_not_static {
     using duration   = microseconds;
     using time_point = time_point<real_fake_clock>;
     bool is_steady;
+    static time_point now();
+};
+
+struct is_steady_wrong_type {
+    using rep                      = long long;
+    using period                   = micro;
+    using duration                 = microseconds;
+    using time_point               = time_point<real_fake_clock>;
+    static constexpr int is_steady = 0;
     static time_point now();
 };
 
@@ -269,11 +287,13 @@ static_assert(!is_clock_v<time_point_missing>);
 static_assert(!is_clock_v<time_point_not_type>);
 static_assert(!is_clock_v<time_point_wrong_type>);
 static_assert(!is_clock_v<time_point_wrong_type2>);
+static_assert(!is_clock_v<time_point_wrong_type3>);
 static_assert(is_clock_v<time_point_different_clock_ok>);
 
 static_assert(!is_clock_v<is_steady_missing>);
 static_assert(!is_clock_v<is_steady_type>);
 static_assert(!is_clock_v<is_steady_not_static>);
+static_assert(!is_clock_v<is_steady_wrong_type>);
 
 static_assert(!is_clock_v<now_missing>);
 static_assert(!is_clock_v<now_type>);
