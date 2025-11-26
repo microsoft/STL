@@ -261,11 +261,11 @@ inline constexpr strong_ordering strong_ordering::equal{static_cast<_Compare_t>(
 inline constexpr strong_ordering strong_ordering::equivalent{static_cast<_Compare_t>(_Compare_eq::equivalent)};
 inline constexpr strong_ordering strong_ordering::greater{static_cast<_Compare_t>(_Compare_ord::greater)};
 
-template<typename>
+template <typename>
 struct tuple_size;
 
 // Prevent structured binding to objects of xxx_ordering, see GH-5689
-template<>
+template <>
 struct tuple_size<partial_ordering> {
     void value();
 };
