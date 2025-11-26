@@ -12,6 +12,7 @@
 _EMIT_STL_WARNING(STL4038, "The contents of <compare> are available only with C++20 or later.");
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 #include <concepts>
+#include <utility>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -102,9 +103,16 @@ _EXPORT_STD struct partial_ordering {
         // The stored value is either less (0xff), equivalent (0x00), greater (0x01), or unordered (0x80).
         // Subtracting from 0 produces either 0x01, 0x00, 0xff, or 0x80. Note that the effect is to
         // exchange less for greater (and vice versa), while leaving equivalent and unordered unchanged.
-        return {static_cast<_Compare_t>(0 - static_cast<unsigned int>(_Val._Value))};
+        return partial_ordering{static_cast<_Compare_t>(0 - static_cast<unsigned int>(_Val._Value))};
     }
 
+private:
+    friend struct weak_ordering;
+    friend struct strong_ordering;
+
+    explicit constexpr partial_ordering(_Compare_t _Value) : _Value{_Value} {}
+
+public:
     _Compare_t _Value;
 };
 
@@ -119,7 +127,7 @@ _EXPORT_STD struct weak_ordering {
     static const weak_ordering greater;
 
     constexpr operator partial_ordering() const noexcept {
-        return {static_cast<_Compare_t>(_Value)};
+        return partial_ordering{static_cast<_Compare_t>(_Value)};
     }
 
     _NODISCARD friend constexpr bool operator==(const weak_ordering _Val, _Literal_zero) noexcept {
@@ -165,9 +173,15 @@ _EXPORT_STD struct weak_ordering {
     }
 
     _NODISCARD friend constexpr weak_ordering operator<=>(_Literal_zero, const weak_ordering _Val) noexcept {
-        return {static_cast<_Compare_t>(-_Val._Value)};
+        return weak_ordering{static_cast<_Compare_t>(-_Val._Value)};
     }
 
+private:
+    friend struct strong_ordering;
+
+    explicit constexpr weak_ordering(_Compare_t _Value) : _Value{_Value} {}
+
+public:
     _Compare_t _Value;
 };
 
@@ -182,11 +196,11 @@ _EXPORT_STD struct strong_ordering {
     static const strong_ordering greater;
 
     constexpr operator partial_ordering() const noexcept {
-        return {static_cast<_Compare_t>(_Value)};
+        return partial_ordering{static_cast<_Compare_t>(_Value)};
     }
 
     constexpr operator weak_ordering() const noexcept {
-        return {static_cast<_Compare_t>(_Value)};
+        return weak_ordering{static_cast<_Compare_t>(_Value)};
     }
 
     _NODISCARD friend constexpr bool operator==(const strong_ordering _Val, _Literal_zero) noexcept {
@@ -232,9 +246,13 @@ _EXPORT_STD struct strong_ordering {
     }
 
     _NODISCARD friend constexpr strong_ordering operator<=>(_Literal_zero, const strong_ordering _Val) noexcept {
-        return {static_cast<_Compare_t>(-_Val._Value)};
+        return strong_ordering{static_cast<_Compare_t>(-_Val._Value)};
     }
 
+private:
+    explicit constexpr strong_ordering(_Compare_t _Value) : _Value{_Value} {}
+
+public:
     _Compare_t _Value;
 };
 
@@ -242,6 +260,24 @@ inline constexpr strong_ordering strong_ordering::less{static_cast<_Compare_t>(_
 inline constexpr strong_ordering strong_ordering::equal{static_cast<_Compare_t>(_Compare_eq::equal)};
 inline constexpr strong_ordering strong_ordering::equivalent{static_cast<_Compare_t>(_Compare_eq::equivalent)};
 inline constexpr strong_ordering strong_ordering::greater{static_cast<_Compare_t>(_Compare_ord::greater)};
+
+template<typename>
+struct tuple_size;
+
+template<>
+struct tuple_size<partial_ordering> {
+    void value();
+};
+
+template <>
+struct tuple_size<weak_ordering> {
+    void value();
+};
+
+template <>
+struct tuple_size<strong_ordering> {
+    void value();
+};
 
 _EXPORT_STD _NODISCARD constexpr bool is_eq(const partial_ordering _Comp) noexcept {
     return _Comp == 0;
