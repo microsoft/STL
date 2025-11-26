@@ -610,9 +610,7 @@ std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.p
 std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/release_reset_initial_status.pass.cpp FAIL
 
 # LWG-3343 "Ordering of calls to unlock() and notify_all() in Effects element of notify_all_at_thread_exit() should be reversed" (Open)
-# libc++ speculatively implements LWG-3343. If we wanted to do the same thing,
-# we'd need to reverse the order of the _Mtx_unlock() and _Cnd_broadcast() calls in xnotify.cpp.
-std/thread/thread.condition/notify_all_at_thread_exit_lwg3343.pass.cpp SKIPPED
+std/thread/thread.condition/notify_all_at_thread_exit_lwg3343.pass.cpp PASS
 
 
 # *** C1XX COMPILER BUGS ***
