@@ -110,7 +110,7 @@ private:
     friend struct weak_ordering;
     friend struct strong_ordering;
 
-    explicit constexpr partial_ordering(_Compare_t _Value) : _Value{_Value} {}
+    constexpr explicit partial_ordering(_Compare_t _Value) : _Value{_Value} {}
 
 public:
     _Compare_t _Value;
@@ -179,7 +179,7 @@ _EXPORT_STD struct weak_ordering {
 private:
     friend struct strong_ordering;
 
-    explicit constexpr weak_ordering(_Compare_t _Value) : _Value{_Value} {}
+    constexpr explicit weak_ordering(_Compare_t _Value) : _Value{_Value} {}
 
 public:
     _Compare_t _Value;
@@ -250,7 +250,7 @@ _EXPORT_STD struct strong_ordering {
     }
 
 private:
-    explicit constexpr strong_ordering(_Compare_t _Value) : _Value{_Value} {}
+    constexpr explicit strong_ordering(_Compare_t _Value) : _Value{_Value} {}
 
 public:
     _Compare_t _Value;
