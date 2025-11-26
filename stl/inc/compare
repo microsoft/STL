@@ -264,6 +264,7 @@ inline constexpr strong_ordering strong_ordering::greater{static_cast<_Compare_t
 template<typename>
 struct tuple_size;
 
+// Prevent structured binding to objects of xxx_ordering, see GH-5689
 template<>
 struct tuple_size<partial_ordering> {
     void value();
