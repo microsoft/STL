@@ -465,7 +465,10 @@ constexpr bool _Vector_alg_in_unique_is_safe = _Vector_alg_in_search_is_safe<_It
 // Can we use this output iterator for remove_copy and unique_copy?
 template <class _Out, class _In>
 constexpr bool _Output_iterator_for_vector_alg_is_safe() {
-    if constexpr (_Iterator_is_contiguous<_Out>) {
+    // Before running remove_copy and unique_copy, the output size is unknown. This limits vectorization
+    // to pointers (after unwrapping). N5014 [iterator.requirements.general]/13 allows us to convert
+    // a range of contiguous iterators to pointers if and only if we know the size of the range ahead of time.
+    if constexpr (is_pointer_v<_Out>) {
         return is_same_v<_Iter_value_t<_Out>, remove_const_t<_Iter_value_t<_In>>>;
     } else {
         return false;
@@ -886,7 +889,7 @@ namespace ranges {
                     }
 
                     const auto _First_ptr = _STD _To_address(_First);
-                    const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_Last - _First);
+                    const auto _Last_ptr  = _STD _To_address(_First + (_Last - _First));
 
                     return static_cast<iter_difference_t<_It>>(_STD _Count_vectorized(_First_ptr, _Last_ptr, _Val));
                 }
@@ -984,8 +987,11 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InI
         if (!_STD _Is_constant_evaluated()) {
             constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
 
+            const auto _Dist = _STD _Contiguous_iter_distance(_UFirst1, _ULast1);
+            _STD _Contiguous_iter_verify(_UFirst2, static_cast<_Iter_diff_t<_InIt2>>(_Dist));
+
             const size_t _Pos = _STD _Mismatch_vectorized<_Elem_size>(
-                _STD _To_address(_UFirst1), _STD _To_address(_UFirst2), static_cast<size_t>(_ULast1 - _UFirst1));
+                _STD _To_address(_UFirst1), _STD _To_address(_UFirst2), static_cast<size_t>(_Dist));
 
             _UFirst1 += static_cast<_Iter_diff_t<_InIt1>>(_Pos);
             _UFirst2 += static_cast<_Iter_diff_t<_InIt2>>(_Pos);
@@ -1047,6 +1053,9 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
         if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
             if (!_STD _Is_constant_evaluated()) {
                 constexpr size_t _Elem_size = sizeof(_Iter_value_t<_InIt1>);
+
+                (void) _STD _To_address(_ULast1);
+                (void) _STD _To_address(_ULast2);
 
                 const size_t _Pos = _STD _Mismatch_vectorized<_Elem_size>(
                     _STD _To_address(_UFirst1), _STD _To_address(_UFirst2), static_cast<size_t>(_Count));
@@ -2413,6 +2422,7 @@ _NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHays
             if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
                 if (!_STD _Is_constant_evaluated()) {
                     const auto _Ptr1 = _STD _To_address(_UFirst1);
+                    (void) _STD _To_address(_ULast2);
 
                     const auto _Ptr_res1 = _STD _Search_vectorized(
                         _Ptr1, _STD _To_address(_ULast1), _STD _To_address(_UFirst2), static_cast<size_t>(_Count2));
@@ -2722,7 +2732,7 @@ namespace ranges {
                         }
 
                         const auto _First_ptr = _STD _To_address(_First);
-                        const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_Dist);
+                        const auto _Last_ptr  = _STD _To_address(_First + _Dist);
                         const auto _Result =
                             _STD _Search_n_vectorized(_First_ptr, _Last_ptr, static_cast<size_t>(_Count), _Val);
 
@@ -3414,7 +3424,7 @@ namespace ranges {
                     }
 
                     const auto _First_ptr = _STD _To_address(_First);
-                    const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_Count);
+                    const auto _Last_ptr  = _STD _To_address(_First + _Count);
 
                     const auto _Result = _STD _Find_last_vectorized(_First_ptr, _Last_ptr, _Value);
                     if constexpr (is_pointer_v<_It>) {
@@ -3568,6 +3578,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
             if constexpr (_Vector_alg_in_search_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
                 if (!_STD _Is_constant_evaluated()) {
                     const auto _Ptr1 = _STD _To_address(_UFirst1);
+                    (void) _STD _To_address(_ULast2);
 
                     const auto _Ptr_res1 = _STD _Find_end_vectorized(
                         _Ptr1, _STD _To_address(_ULast1), _STD _To_address(_UFirst2), static_cast<size_t>(_Count2));
@@ -3691,9 +3702,11 @@ namespace ranges {
                 if constexpr (_Vector_alg_in_search_is_safe<_It1, _It2, _Pr> && is_same_v<_Pj1, identity>
                               && is_same_v<_Pj2, identity>) {
                     if (!_STD is_constant_evaluated()) {
+                        _STD _Contiguous_iter_verify(_First2, _Count2);
+
                         const auto _Ptr1      = _STD to_address(_First1);
                         const auto _Ptr2      = _STD to_address(_First2);
-                        const auto _Ptr_last1 = _Ptr1 + static_cast<ptrdiff_t>(_Count1);
+                        const auto _Ptr_last1 = _STD to_address(_First1 + _Count1);
 
                         const auto _Ptr_res1 =
                             _STD _Find_end_vectorized(_Ptr1, _Ptr_last1, _Ptr2, static_cast<size_t>(_Count2));
@@ -3995,13 +4008,11 @@ namespace ranges {
             if constexpr (_Vector_alg_in_search_is_safe<_It1, _It2, _Pr> && sized_sentinel_for<_Se1, _It1>
                           && sized_sentinel_for<_Se2, _It2> && is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>) {
                 if (!_STD is_constant_evaluated() && _Last1 - _First1 >= _Threshold_find_first_of) {
-                    const auto _Count1     = static_cast<ptrdiff_t>(_Last1 - _First1);
                     const auto _First1_ptr = _STD _To_address(_First1);
-                    const auto _Last1_ptr  = _First1_ptr + _Count1;
+                    const auto _Last1_ptr  = _STD _To_address(_First1 + (_Last1 - _First1));
 
-                    const auto _Count2     = static_cast<ptrdiff_t>(_Last2 - _First2);
                     const auto _First2_ptr = _STD _To_address(_First2);
-                    const auto _Last2_ptr  = _First2_ptr + _Count2;
+                    const auto _Last2_ptr  = _STD _To_address(_First2 + (_Last2 - _First2));
 
                     const auto _Result =
                         _STD _Find_first_of_vectorized(_First1_ptr, _Last1_ptr, _First2_ptr, _Last2_ptr);
@@ -4065,20 +4076,25 @@ namespace ranges {
                 if constexpr (_Is_sized1 && _Is_sized2) {
                     const size_t _Count =
                         (_STD min) (static_cast<size_t>(_Last1 - _First1), static_cast<size_t>(_Last2 - _First2));
-                    const auto _Last1_addr = _First1_addr + _Count;
+                    const auto _Last1_addr = _STD to_address(_First1 + static_cast<iter_difference_t<_It1>>(_Count));
+                    _STD _Contiguous_iter_verify(_First2, static_cast<iter_difference_t<_It2>>(_Count));
                     ::__std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
                     return {_First1 + static_cast<iter_difference_t<_It1>>(_Count),
                         _First2 + static_cast<iter_difference_t<_It2>>(_Count)};
                 } else if constexpr (_Is_sized1) {
-                    const auto _Final1     = _RANGES next(_First1, _Last1);
+                    const auto _Dist1      = _Last1 - _First1;
+                    const auto _Final1     = _First1 + _Dist1;
                     const auto _Last1_addr = _STD to_address(_Final1);
+                    _STD _Contiguous_iter_verify(_First2, static_cast<iter_difference_t<_It2>>(_Dist1));
                     ::__std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
-                    return {_Final1, _First2 + static_cast<iter_difference_t<_It2>>(_Last1 - _First1)};
+                    return {_Final1, _First2 + static_cast<iter_difference_t<_It2>>(_Dist1)};
                 } else if constexpr (_Is_sized2) {
-                    const auto _Final2     = _RANGES next(_First2, _Last2);
+                    const auto _Dist2      = _Last2 - _First2;
+                    const auto _Final2     = _First2 + _Dist2;
                     const auto _Last2_addr = _STD to_address(_Final2);
+                    _STD _Contiguous_iter_verify(_First1, static_cast<iter_difference_t<_It1>>(_Dist2));
                     ::__std_swap_ranges_trivially_swappable_noalias(_First2_addr, _Last2_addr, _First1_addr);
-                    return {_First1 + static_cast<iter_difference_t<_It1>>(_Last2 - _First2), _Final2};
+                    return {_First1 + static_cast<iter_difference_t<_It1>>(_Dist2), _Final2};
                 } else {
                     _STL_ASSERT(false, "Tried to swap_ranges with two unreachable sentinels");
                 }
@@ -4463,7 +4479,7 @@ namespace ranges {
 
                     if (_STD _Could_compare_equal_to_value_type<_It>(_Oldval)) {
                         const auto _First_ptr = _STD to_address(_First);
-                        const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_Count);
+                        const auto _Last_ptr  = _STD to_address(_First + _Count);
                         _STD _Replace_vectorized(_First_ptr, _Last_ptr, _Oldval, _Newval);
                     }
 
@@ -5078,7 +5094,7 @@ namespace ranges {
                 if (!_STD is_constant_evaluated()) {
                     const auto _Size      = _Last - _First;
                     const auto _First_ptr = _STD to_address(_First);
-                    const auto _Last_ptr  = _First_ptr + static_cast<size_t>(_Size);
+                    const auto _Last_ptr  = _STD to_address(_First + _Size);
                     const auto _Result    = _STD _Remove_vectorized(_First_ptr, _Last_ptr, _Val);
 
                     if constexpr (is_pointer_v<_It>) {
@@ -5407,7 +5423,7 @@ namespace ranges {
                 if (!_STD is_constant_evaluated()) {
                     const auto _Size      = _Last - _First;
                     const auto _First_ptr = _STD to_address(_First);
-                    const auto _Last_ptr  = _First_ptr + static_cast<size_t>(_Size);
+                    const auto _Last_ptr  = _STD to_address(_First + _Size);
                     const auto _Result    = _STD _Unique_vectorized(_First_ptr, _Last_ptr);
 
                     if constexpr (is_pointer_v<_It>) {
@@ -5627,7 +5643,7 @@ namespace ranges {
                 if (!_STD is_constant_evaluated()) {
                     const auto _Size       = _Last - _First;
                     const auto _First_ptr  = _STD to_address(_First);
-                    const auto _Last_ptr   = _First_ptr + static_cast<size_t>(_Size);
+                    const auto _Last_ptr   = _STD to_address(_First + _Size);
                     const auto _Output_ptr = _STD to_address(_Output);
                     const auto _Result     = _STD _Unique_copy_vectorized(_First_ptr, _Last_ptr, _Output_ptr);
 
@@ -5761,9 +5777,12 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
+            const auto _Dest_dist = static_cast<_Iter_diff_t<decltype(_UDest)>>(_ULast - _UFirst);
+            _STD _Contiguous_iter_verify(_UDest, _Dest_dist);
+
             _STD _Reverse_copy_vectorized<_Nx>(
                 _STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _To_address(_UDest));
-            _UDest += _ULast - _UFirst;
+            _UDest += _Dest_dist;
             _STD _Seek_wrapped(_Dest, _UDest);
             return _Dest;
         }
@@ -5847,9 +5866,11 @@ namespace ranges {
 
                 if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
                     if (!_STD is_constant_evaluated()) {
+                        const auto _Dest_dist = static_cast<iter_difference_t<_Out>>(_Last - _First);
+                        _STD _Contiguous_iter_verify(_Output, _Dest_dist);
                         _STD _Reverse_copy_vectorized<_Nx>(
                             _STD to_address(_First), _STD to_address(_Last), _STD to_address(_Output));
-                        _Output += _Last - _First;
+                        _Output += _Dest_dist;
                         return _Output;
                     }
                 }
@@ -8542,7 +8563,7 @@ namespace ranges {
             if constexpr (_Is_greater || _Is_predicate_less<_It, _Pr>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _First_ptr = _STD _To_address(_First);
-                    const auto _Last_ptr  = _First_ptr + static_cast<size_t>(_Last - _First);
+                    const auto _Last_ptr  = _STD _To_address(_First + (_Last - _First));
                     const auto _Result    = _STD _Is_sorted_until_vectorized(_First_ptr, _Last_ptr, _Is_greater);
 
                     if constexpr (is_pointer_v<_It>) {
@@ -10471,8 +10492,8 @@ namespace ranges {
                 if (!_STD is_constant_evaluated()) {
                     const auto _First1_ptr = _STD to_address(_First1);
                     const auto _First2_ptr = _STD to_address(_First2);
-                    const auto _Last1_ptr  = _First1_ptr + static_cast<ptrdiff_t>(_Last1 - _First1);
-                    const auto _Last2_ptr  = _First2_ptr + static_cast<ptrdiff_t>(_Last2 - _First2);
+                    const auto _Last1_ptr  = _STD to_address(_First1 + (_Last1 - _First1));
+                    const auto _Last2_ptr  = _STD to_address(_First2 + (_Last2 - _First2));
                     return _STD _Includes_vectorized(_First1_ptr, _Last1_ptr, _First2_ptr, _Last2_ptr);
                 }
             }
@@ -11195,7 +11216,7 @@ namespace ranges {
                           && sized_sentinel_for<_Se, _It>) {
                 if (!_STD is_constant_evaluated()) {
                     const auto _First_ptr = _STD to_address(_First);
-                    const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_Last - _First);
+                    const auto _Last_ptr  = _STD to_address(_First + (_Last - _First));
                     const auto _Result    = _STD _Minmax_element_vectorized(_First_ptr, _Last_ptr);
                     if constexpr (is_pointer_v<_It>) {
                         return {_Result.first, _Result.second};
@@ -11374,7 +11395,7 @@ namespace ranges {
                 if constexpr (_Is_min_max_value_optimization_safe<decltype(_UFirst), _Pr>) {
                     if (!_STD is_constant_evaluated()) {
                         const auto _First_ptr = _STD to_address(_UFirst);
-                        const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_ULast - _UFirst);
+                        const auto _Last_ptr  = _STD to_address(_UFirst + (_ULast - _UFirst));
                         const auto _Result    = _STD _Minmax_vectorized(_First_ptr, _Last_ptr);
                         return {static_cast<_Vty>(_Result._Min), static_cast<_Vty>(_Result._Max)};
                     }
@@ -11385,7 +11406,7 @@ namespace ranges {
                     if constexpr (_Is_min_max_optimization_safe<decltype(_UFirst), _Pr>) {
                         if (!_STD is_constant_evaluated()) {
                             const auto _First_ptr = _STD to_address(_UFirst);
-                            const auto _Last_ptr  = _First_ptr + static_cast<ptrdiff_t>(_ULast - _UFirst);
+                            const auto _Last_ptr  = _STD to_address(_UFirst + (_ULast - _UFirst));
                             const auto _Result    = _STD _Minmax_element_vectorized(_First_ptr, _Last_ptr);
                             return {
                                 *static_cast<const _Vty*>(_Result.first), *static_cast<const _Vty*>(_Result.second)};
@@ -11963,14 +11984,14 @@ namespace ranges {
                 if (!_STD is_constant_evaluated()) {
                     size_t _Num1;
                     if constexpr (_Is_sized1) {
-                        _Num1 = static_cast<size_t>(_Last1 - _First1);
+                        _Num1 = static_cast<size_t>(_STD _Contiguous_iter_distance(_First1, _Last1));
                     } else {
                         _Num1 = SIZE_MAX;
                     }
 
                     size_t _Num2;
                     if constexpr (_Is_sized2) {
-                        _Num2 = static_cast<size_t>(_Last2 - _First2);
+                        _Num2 = static_cast<size_t>(_STD _Contiguous_iter_distance(_First2, _Last2));
                     } else {
                         _Num2 = SIZE_MAX;
                     }

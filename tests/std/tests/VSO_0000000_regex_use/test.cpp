@@ -910,12 +910,12 @@ void test_gh_997() {
         assert(ex.code() == error_stack);
     }
 
-    wregex rgx(LR"(^http[s]?://([^.]+\.)*example\.com/.*$)", icase);
+    {
+        test_wregex rgx(&g_regexTester, LR"(^http[s]?://([^.]+\.)*example\.com/.*$)", icase);
 
-    assert(regex_match(L"https://www.example.com/meow", rgx));
+        rgx.should_search_match(L"https://www.example.com/meow", L"https://www.example.com/meow");
 
-    try {
-        assert(!regex_match(
+        rgx.should_search_fail(
             L"https://www.bogus.invalid/"
             L"123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-"
             L"123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-"
@@ -923,10 +923,7 @@ void test_gh_997() {
             L"123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-"
             L"123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456.89-123456789-123456789."
             L"123456789-12345678.-123456789-123456789-1.3456789-123456789-123456789-123456789-123456789-123456789-"
-            L"123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-1234",
-            rgx));
-    } catch (const regex_error& ex) {
-        assert(ex.code() == error_stack);
+            L"123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-1234");
     }
 }
 
@@ -2263,6 +2260,13 @@ void test_gh_5792() {
     g_regexTester.should_match("bc", "(?:(?!ab))+bc");
 }
 
+void test_gh_5797() {
+    // GH-5797: <regex>: Loops with bounded number of repetitions and context-dependent empty alternative are mishandled
+    g_regexTester.should_match("bc", "(?:b|c|(?=bc)){3}");
+    g_regexTester.should_match("bc", "(^|b|c){3}");
+    g_regexTester.should_match("bc", "(^|b|c){3}", regex_constants::extended);
+}
+
 void test_gh_5798() {
     // GH-5798: <regex>: Process generic loops non-recursively.
     // This extends our test coverage on non-simple loops,
@@ -2346,6 +2350,15 @@ void test_gh_5798() {
     }
 }
 
+void test_gh_5865() {
+    // GH-5865: <regex>: Remove capture extent vectors from stack frames
+    // These tests check correct restoration of capturing groups
+    // when backtracking over positive lookahead assertions that matched successfully.
+    g_regexTester.should_capture("ab", "(?:(?=(.*))ab)*", "ab");
+    g_regexTester.should_capture("abcd", "(?:(?=(.*))ab)*cd", "abcd");
+    g_regexTester.should_capture("abab", "(?:(?=(.*))ab)*ab", "abab");
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2401,7 +2414,9 @@ int main() {
     test_gh_5774();
     test_gh_5790();
     test_gh_5792();
+    test_gh_5797();
     test_gh_5798();
+    test_gh_5865();
 
     return g_regexTester.result();
 }
