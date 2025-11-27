@@ -237,7 +237,9 @@ public:
         _Construct<_Traits>(_Str.data() + _Pos, _Count, _Elem0, _Elem1);
     }
 
-    template <class _Elem>
+    template <class _Elem, enable_if_t<conjunction_v<negation<is_array<_Elem>>, is_trivially_copyable<_Elem>,
+                                           is_standard_layout<_Elem>, is_trivially_default_constructible<_Elem>>,
+                               int> = 0>
     _CONSTEXPR23 explicit bitset(const _Elem* _Ntcts,
         typename basic_string<_Elem>::size_type _Count = basic_string<_Elem>::npos,
         _Elem _Elem0 = static_cast<_Elem>('0'), _Elem _Elem1 = static_cast<_Elem>('1')) {

@@ -136,7 +136,7 @@ const int free_correct   = 444343; // x86 ijw
 const int member_correct = 2111121; // x86 pure
 const int free_correct   = 433343; // x86 pure
 #endif
-#elif defined(_M_X64)
+#elif defined(_M_X64) && !defined(_M_ARM64EC)
 #if !defined(_M_CEE)
 const int member_correct = 2211112; // x64 native
 const int free_correct   = 433334; // x64 native
@@ -149,14 +149,14 @@ const int free_correct   = 433343; // x64 pure
 #endif
 #else
 #if !defined(_M_CEE)
-const int member_correct = 2211111; // arm64 native
-const int free_correct   = 433333; // arm64 native
+const int member_correct = 2211111; // arm64/arm64ec native
+const int free_correct   = 433333; // arm64/arm64ec native
 #elif !defined(_M_CEE_PURE)
-const int member_correct = 2211121; // arm64 ijw
-const int free_correct   = 433343; // arm64 ijw
+const int member_correct = 2211121; // arm64/arm64ec ijw
+const int free_correct   = 433343; // arm64/arm64ec ijw
 #else
-const int member_correct = 2111121; // arm64 pure
-const int free_correct   = 433343; // arm64 pure
+const int member_correct = 2111121; // arm64/arm64ec pure
+const int free_correct   = 433343; // arm64/arm64ec pure
 #endif
 #endif
 

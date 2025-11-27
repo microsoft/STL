@@ -48,11 +48,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // !defined(_REGEX_MAX_COMPLEXITY_COUNT)
 
 #ifndef _REGEX_MAX_STACK_COUNT
-#ifdef _WIN64
-#define _REGEX_MAX_STACK_COUNT 600L // set to 0 to disable
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
 #define _REGEX_MAX_STACK_COUNT 1000L // set to 0 to disable
-#endif // ^^^ !defined(_WIN64) ^^^
 #endif // !defined(_REGEX_MAX_STACK_COUNT)
 
 #ifndef _ENHANCED_REGEX_VISUALIZER
@@ -1675,7 +1671,7 @@ public:
 };
 
 enum class _Rx_unwind_ops {
-    _After_assert = _N_end + 1,
+    _After_assert = 1,
     _After_neg_assert,
     _Disjunction_eval_alt_on_failure,
     _Disjunction_eval_alt_always,
@@ -1685,6 +1681,8 @@ enum class _Rx_unwind_ops {
     _Loop_nongreedy,
     _Loop_greedy,
     _Loop_restore_vals,
+    _Capture_restore_begin,
+    _Capture_restore_end,
 };
 
 template <class _BidIt>
@@ -1693,7 +1691,7 @@ public:
     _Rx_unwind_ops _Code;
     int _Loop_idx_sav;
     _Node_base* _Node;
-    _Tgt_state_t<_BidIt> _Match_state;
+    _Bt_state_t<_BidIt> _Match_state;
     size_t _Loop_frame_idx_sav;
 };
 
@@ -1764,7 +1762,6 @@ public:
         _Matched = false;
 
         bool _Succeeded = _Match_pat(_Rep) || _Matched;
-        _STL_INTERNAL_CHECK(_Frames_count == 0);
 
         if (!_Succeeded) {
             return false;
@@ -1814,7 +1811,7 @@ private:
     vector<_Rx_state_frame_t<_It>> _Frames;
     size_t _Frames_count;
 
-    size_t _Push_frame(_Rx_unwind_ops _Code = {}, _Node_base* _Node = nullptr);
+    size_t _Push_frame(_Rx_unwind_ops _Code, _Node_base* _Node);
     void _Pop_frame(size_t);
 
     void _Increase_stack_usage_count();
@@ -3818,8 +3815,7 @@ template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // check for match
     _Increase_stack_usage_count();
 
-    bool _Failed                       = false;
-    const size_t _Initial_frames_count = _Frames_count;
+    bool _Failed = false;
 
     while (_Nx) {
         do { // match current node
@@ -3925,14 +3921,53 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 }
 
             case _N_end_assert:
-                _Next = nullptr;
+                {
+                    size_t _Last_capture_restore_frame = 0U;
+                    for (;;) {
+                        --_Frames_count;
+                        const auto& _Frame = _Frames[_Frames_count];
+                        const auto _Code   = _Frame._Code;
+                        if (_Code == _Rx_unwind_ops::_After_assert || _Code == _Rx_unwind_ops::_After_neg_assert) {
+                            _Tgt_state._Cur = _Frame._Match_state._Cur;
+                            _Decrease_stack_usage_count();
+                            if (_Code == _Rx_unwind_ops::_After_assert) {
+                                _Next = _Frame._Node->_Next;
+                                if (_Last_capture_restore_frame != 0U) {
+                                    auto _Not_capture_restore = [](const auto& _Other_frame) _STATIC_LAMBDA {
+                                        return _Other_frame._Code != _Rx_unwind_ops::_Capture_restore_begin
+                                            && _Other_frame._Code != _Rx_unwind_ops::_Capture_restore_end;
+                                    };
+                                    const auto _Effective_frames_end =
+                                        _STD remove_if(_Frames.begin() + static_cast<ptrdiff_t>(_Frames_count),
+                                            _Frames.begin() + static_cast<ptrdiff_t>(_Last_capture_restore_frame) + 1,
+                                            _Not_capture_restore);
+                                    _Frames_count = static_cast<size_t>(_Effective_frames_end - _Frames.begin());
+                                }
+                            } else {
+                                _Failed = true;
+                            }
+                            break;
+                        } else if (_Code == _Rx_unwind_ops::_Disjunction_eval_alt_on_failure
+                                   || _Code == _Rx_unwind_ops::_Disjunction_eval_alt_always
+                                   || _Code == _Rx_unwind_ops::_Loop_greedy //
+                                   || _Code == _Rx_unwind_ops::_Loop_nongreedy
+                                   || _Code == _Rx_unwind_ops::_Loop_restore_vals) {
+                            _Decrease_stack_usage_count();
+                        } else if (_Code == _Rx_unwind_ops::_Capture_restore_end && _Last_capture_restore_frame == 0U) {
+                            _Last_capture_restore_frame = _Frames_count;
+                        }
+                    }
+                }
                 break;
 
             case _N_capture:
                 { // record current position
                     _Node_capture* _Node = static_cast<_Node_capture*>(_Nx);
                     if (_Node->_Idx != 0U) {
-                        _Tgt_state._Grps[_Node->_Idx]._Begin = _Tgt_state._Cur;
+                        auto& _Group    = _Tgt_state._Grps[_Node->_Idx];
+                        auto _Frame_idx = _Push_frame(_Rx_unwind_ops::_Capture_restore_begin, _Node);
+                        _Frames[_Frame_idx]._Match_state._Cur = _Group._Begin;
+                        _Group._Begin                         = _Tgt_state._Cur;
                     }
                     break;
                 }
@@ -3942,8 +3977,11 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     _Node_end_group* _Node = static_cast<_Node_end_group*>(_Nx);
                     _Node_capture* _Node0  = static_cast<_Node_capture*>(_Node->_Back);
                     if (_Node0->_Idx != 0U) { // update capture data
-                        _Tgt_state._Grp_valid[_Node0->_Idx] = true;
-                        _Tgt_state._Grps[_Node0->_Idx]._End = _Tgt_state._Cur;
+                        auto& _Group    = _Tgt_state._Grps[_Node0->_Idx];
+                        auto _Frame_idx = _Push_frame(_Rx_unwind_ops::_Capture_restore_end, _Node0);
+                        _Frames[_Frame_idx]._Match_state._Cur = _Group._End;
+                        _Tgt_state._Grp_valid[_Node0->_Idx]   = true;
+                        _Group._End                           = _Tgt_state._Cur;
                     }
                     break;
                 }
@@ -3994,7 +4032,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     auto& _Sav   = _Loop_vals[_Node->_Loop_number];
 
                     if (_Node->_Simple_loop == 1) {
-                        _Sav._Loop_frame_idx = _Push_frame(_Rx_unwind_ops::_Do_nothing);
+                        _Sav._Loop_frame_idx = _Push_frame(_Rx_unwind_ops::_Do_nothing, nullptr);
                         _Increase_complexity_count();
                         if (_Node->_Min > 0 || (_Greedy && !_Longest && _Node->_Max != 0)) { // try a rep first
                             _Sav._Loop_idx = 1;
@@ -4096,11 +4134,15 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                             _Frame._Loop_idx_sav       = _Sav._Loop_idx;
                             _Frame._Loop_frame_idx_sav = _Sav._Loop_frame_idx;
                             _Sav._Loop_frame_idx       = _Frame_idx;
-                            if (_Progress) {
-                                ++_Sav._Loop_idx;
-                            } else { // try only one more match after an empty match
+
+                            // optimization: try only one more match after an empty match
+                            // if there is no maximum number of reps
+                            if (!_Progress && _Nr->_Max < 0) {
                                 _Sav._Loop_idx = _Nr->_Min;
+                            } else {
+                                ++_Sav._Loop_idx;
                             }
+
                             _STD fill(_Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Sav._Group_first),
                                 _Tgt_state._Grp_valid.end(), false);
                             _Next = _Nr->_Next;
@@ -4157,7 +4199,9 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                         && _Begin == _Tgt_state._Cur)
                     || (_Full && _Tgt_state._Cur != _End)) {
                     _Failed = true;
-                } else if (_Longest && (!_Matched || _Better_match())) { // record successful match
+                } else if (!_Longest) { // match result found, skip unwinding
+                    return true;
+                } else if (!_Matched || _Better_match()) { // record successful match
                     _Res     = _Tgt_state;
                     _Matched = true;
                 }
@@ -4179,29 +4223,25 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
             }
         } while (_Nx);
 
-        while (_Frames_count > _Initial_frames_count && !_Nx) {
+        while (_Frames_count > 0 && !_Nx) {
             auto& _Frame = _Frames[--_Frames_count];
 
             switch (_Frame._Code) {
             case _Rx_unwind_ops::_After_assert:
-                { // positive assert completed
+                { // matching pattern of positive assert failed
+                    _STL_INTERNAL_CHECK(_Failed);
                     _Decrease_stack_usage_count();
-                    if (!_Failed) {
-                        _Tgt_state._Cur = _Frame._Match_state._Cur;
-                        _Nx             = _Frame._Node->_Next;
-                    }
                     break;
                 }
 
             case _Rx_unwind_ops::_After_neg_assert:
-                { // negative assert completed
+                { // matching pattern of negative assert failed
+                    _STL_INTERNAL_CHECK(_Failed);
                     _Decrease_stack_usage_count();
-                    if (_Failed) {
-                        const _Bt_state_t<_It>& _St = _Frame._Match_state;
-                        _Tgt_state                  = _St;
-                        _Nx                         = _Frame._Node->_Next;
-                    }
-                    _Failed = !_Failed;
+                    const _Bt_state_t<_It>& _St = _Frame._Match_state;
+                    _Tgt_state                  = _St;
+                    _Nx                         = _Frame._Node->_Next;
+                    _Failed                     = false;
                     break;
                 }
 
@@ -4309,6 +4349,20 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 }
                 break;
 
+            case _Rx_unwind_ops::_Capture_restore_begin:
+                { // restore begin of capturing group
+                    auto _Node                           = static_cast<_Node_capture*>(_Frame._Node);
+                    _Tgt_state._Grps[_Node->_Idx]._Begin = _Frame._Match_state._Cur;
+                }
+                break;
+
+            case _Rx_unwind_ops::_Capture_restore_end:
+                { // restore end of capturing group
+                    auto _Node                         = static_cast<_Node_capture*>(_Frame._Node);
+                    _Tgt_state._Grps[_Node->_Idx]._End = _Frame._Match_state._Cur;
+                }
+                break;
+
             default:
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _STL_REPORT_ERROR("internal stack of regex matcher corrupted");
@@ -4319,6 +4373,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
     }
 
     _Decrease_stack_usage_count();
+    _STL_INTERNAL_CHECK(_Frames_count == 0);
 
     return !_Failed;
 }

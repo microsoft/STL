@@ -36,4 +36,8 @@ _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Cosh(double x, double y) noexcept 
     }
 }
 
+_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _LCosh(long double x, long double y) noexcept {
+    return _Cosh(static_cast<double>(x), static_cast<double>(y));
+}
+
 _END_EXTERN_C_UNLESS_PURE

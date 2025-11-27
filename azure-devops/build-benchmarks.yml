@@ -25,7 +25,7 @@ steps:
     -DSTL_BINARY_DIR="$(buildOutputLocation)" ^
     -DVCLIBS_TARGET_ARCHITECTURE=${{ parameters.targetPlatform }} ^
     -S $(Build.SourcesDirectory)/benchmarks -B "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
-  displayName: 'Configure the benchmarks for ${{ parameters.compiler }}'
+  displayName: 'Configure Benchmarks for ${{ parameters.compiler }}'
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
   # TRANSITION, we currently only build the benchmarks with Clang for x64
@@ -36,7 +36,7 @@ steps:
 - script: |
     call "$(vsDevCmdBat)" -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     cmake --build "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
-  displayName: 'Build the benchmarks for ${{ parameters.compiler }}'
+  displayName: 'Build Benchmarks for ${{ parameters.compiler }}'
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
   # TRANSITION, we currently only build the benchmarks with Clang for x64
