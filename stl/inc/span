@@ -558,13 +558,14 @@ span(_Rng&&) -> span<remove_reference_t<_RANGES range_reference_t<_Rng>>>;
 #ifdef __cpp_lib_byte
 // [span.objectrep] Views of object representation
 _EXPORT_STD template <class _Ty, size_t _Extent>
+    requires (!is_volatile_v<_Ty>)
 _NODISCARD auto as_bytes(span<_Ty, _Extent> _Sp) noexcept {
     using _ReturnType = span<const byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent>;
     return _ReturnType{reinterpret_cast<const byte*>(_Sp.data()), _Sp.size_bytes()};
 }
 
 _EXPORT_STD template <class _Ty, size_t _Extent>
-    requires (!is_const_v<_Ty>)
+    requires (!is_const_v<_Ty> && !is_volatile_v<_Ty>)
 _NODISCARD auto as_writable_bytes(span<_Ty, _Extent> _Sp) noexcept {
     using _ReturnType = span<byte, _Extent == dynamic_extent ? dynamic_extent : sizeof(_Ty) * _Extent>;
     return _ReturnType{reinterpret_cast<byte*>(_Sp.data()), _Sp.size_bytes()};
