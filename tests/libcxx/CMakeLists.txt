@@ -1,6 +1,11 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+execute_process(
+  COMMAND "${Python_EXECUTABLE}" "${STL_SOURCE_DIR}/tools/scripts/check_libcxx_paths.py"
+  COMMAND_ERROR_IS_FATAL ANY
+)
+
 set(LIBCXX_ENVLST "${CMAKE_CURRENT_SOURCE_DIR}/usual_matrix.lst")
 set(LIBCXX_EXPECTED_RESULTS "${CMAKE_CURRENT_SOURCE_DIR}/expected_results.txt")
 set(LIBCXX_TEST_OUTPUT_DIR "${STL_TEST_OUTPUT_DIR}/libcxx")
