@@ -38,6 +38,7 @@ constexpr void test_one(It iter) {
     static_assert(contiguous_iterator<ConstIt> == contiguous_iterator<It>);
 
     // Validate nested types
+    static_assert(same_as<typename ConstIt::iterator_type, It>);
     static_assert(same_as<typename ConstIt::value_type, iter_value_t<It>>);
     static_assert(same_as<typename ConstIt::difference_type, iter_difference_t<It>>);
     if constexpr (forward_iterator<It>) {
