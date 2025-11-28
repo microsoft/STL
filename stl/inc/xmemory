@@ -2803,7 +2803,7 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
             const unsigned long _UVal_trunc_part = _UVal_trunc % 100;
             _UVal_trunc /= 100;
             _RNext -= 2;
-            _CSTD memcpy(_RNext, _Digits_table + _UVal_trunc_part * 2, 2);
+            _CSTD memcpy(_RNext, _Digits_table + _UVal_trunc_part * 2, 2 * sizeof(_Elem));
         } while (_UVal_trunc >= 10);
 
         if (_UVal_trunc == 0) {
