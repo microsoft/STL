@@ -28,7 +28,7 @@ void _Uses_alloc_construct_non_pair(_Ty* const _Ptr, _Outer_alloc& _Outer, _Inne
     if constexpr (uses_allocator_v<remove_cv_t<_Ty>, _Inner_alloc>) {
         if constexpr (is_constructible_v<_Ty, allocator_arg_t, _Inner_alloc&, _Types...>) {
             allocator_traits<_Outer_alloc>::construct(
-                _Outer, _Ptr, allocator_arg, _Inner, _STD forward<_Types>(_Args)...);
+                _Outer, _Ptr, allocator_arg_t{}, _Inner, _STD forward<_Types>(_Args)...);
         } else {
             static_assert(is_constructible_v<_Ty, _Types..., _Inner_alloc&>,
                 "N4950 [allocator.uses.trait]/1 requires "

@@ -119,6 +119,23 @@ void test_case_LWG_2586() {
     sa.deallocate(ptr, 1);
 }
 
+struct lwg_4312 {
+    using allocator_type = allocator<lwg_4312>;
+    lwg_4312(allocator_arg_t&&, const allocator_type&) {}
+    lwg_4312(allocator_arg_t&, const allocator_type&)       = delete;
+    lwg_4312(const allocator_arg_t&, const allocator_type&) = delete;
+};
+
+void test_case_LWG_4312() {
+    // LWG-4312 "Const and value category mismatch for allocator_arg_t/allocator_arg in the description of
+    // uses-allocator construction"
+    scoped_allocator_adaptor<allocator<lwg_4312>> sa;
+    const auto ptr = sa.allocate(1);
+    sa.construct(ptr);
+    sa.destroy(ptr);
+    sa.deallocate(ptr, 1);
+}
+
 void test_case_move_rebind_one_alloc() {
     scoped_allocator_adaptor<allocator<int>> sa;
     scoped_allocator_adaptor<allocator<double>> target(move(sa));
@@ -159,5 +176,6 @@ int main() {
     test_case_VSO_224478_allow_stacking();
     test_case_VSO_224478_piecewise_construct_calls_allocator_construct();
     test_case_LWG_2586();
+    test_case_LWG_4312();
     test_case_move_rebind_one_alloc();
 }
