@@ -75,7 +75,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _VECTORIZED_FOR_X64_X86_ARM64         1
 #define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
 #else // ^^^ known architecture / unknown architecture vvv
-#error Unknown architecture.
+#error Unknown architecture
 #endif // ^^^ unknown architecture ^^^
 
 #define _VECTORIZED_ADJACENT_FIND      _VECTORIZED_FOR_X64_X86
