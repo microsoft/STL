@@ -113,16 +113,13 @@ _NODISCARD int _Countl_zero_bsr(const _Ty _Val) noexcept {
 
 template <class _Ty>
 _NODISCARD int _Checked_x86_x64_countl_zero(const _Ty _Val) noexcept {
-#ifdef __AVX2__
-    return _Countl_zero_lzcnt(_Val);
-#else // ^^^ defined(__AVX2__) / !defined(__AVX2__) vvv
+#ifndef __AVX2__
     const bool _Definitely_have_lzcnt = __isa_available >= _Stl_isa_available_avx2;
-    if (_Definitely_have_lzcnt) {
-        return _Countl_zero_lzcnt(_Val);
-    } else {
+    if (!_Definitely_have_lzcnt) {
         return _Countl_zero_bsr(_Val);
     }
 #endif // ^^^ !defined(__AVX2__) ^^^
+    return _Countl_zero_lzcnt(_Val);
 }
 #endif // (defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))
 
@@ -259,16 +256,13 @@ _NODISCARD int _Countr_zero_bsf(const _Ty _Val) noexcept {
 
 template <class _Ty>
 _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
-#ifdef __AVX2__
-    return _Countr_zero_tzcnt(_Val);
-#else // ^^^ defined(__AVX2__) / !defined(__AVX2__) vvv
+#ifndef __AVX2__
     const bool _Definitely_have_tzcnt = __isa_available >= _Stl_isa_available_avx2;
-    if (_Definitely_have_tzcnt) {
-        return _Countr_zero_tzcnt(_Val);
-    } else {
+    if (!_Definitely_have_tzcnt) {
         return _Countr_zero_bsf(_Val);
     }
 #endif // ^^^ !defined(__AVX2__) ^^^
+    return _Countr_zero_tzcnt(_Val);
 }
 
 #endif // _HAS_TZCNT_BSF_INTRINSICS
@@ -336,16 +330,13 @@ constexpr decltype(auto) _Select_countr_zero_impl(_Fn _Callback) {
     // TRANSITION, DevCom-1527995: Lambdas in this function ensure inlining
 #if _HAS_TZCNT_BSF_INTRINSICS && _HAS_CXX20
     if (!_STD is_constant_evaluated()) {
-#ifdef __AVX2__
-        return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Countr_zero_tzcnt(_Val); });
-#else // ^^^ AVX2 / not AVX2 vvv
+#ifndef __AVX2__
         const bool _Definitely_have_tzcnt = __isa_available >= _Stl_isa_available_avx2;
-        if (_Definitely_have_tzcnt) {
-            return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Countr_zero_tzcnt(_Val); });
-        } else {
+        if (!_Definitely_have_tzcnt) {
             return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Countr_zero_bsf(_Val); });
         }
-#endif // ^^^ not AVX2 ^^^
+#endif // ^^^ !defined(__AVX2__) ^^^
+        return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Countr_zero_tzcnt(_Val); });
     }
 #endif // ^^^ _HAS_TZCNT_BSF_INTRINSICS && _HAS_CXX20 ^^^
     // C++17 constexpr gcd() calls this function, so it should be constexpr unless we detect runtime evaluation.
