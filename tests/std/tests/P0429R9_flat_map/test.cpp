@@ -475,6 +475,33 @@ void test_insert() {
     assert(check_value_content(fmm, {'m', 'n', 'p', 'q', 'w'}));
 }
 
+void test_insert_range() {
+    {
+        flat_map<int, char> fm{{1, 'p'}, {4, 'q'}, {9, 'r'}};
+        using char_type_array = flat_map<int, char>::value_type[];
+
+        fm.insert_range(char_type_array{{16, 'x'}, {9, 'y'}, {4, 'z'}});
+        assert(check_key_content(fm, {1, 4, 9, 16}));
+        assert(check_value_content(fm, {'p', 'q', 'r', 'x'}));
+
+        fm.insert_range(sorted_unique, char_type_array{{9, 'a'}, {16, 'b'}, {25, 'c'}});
+        assert(check_key_content(fm, {1, 4, 9, 16, 25}));
+        assert(check_value_content(fm, {'p', 'q', 'r', 'x', 'c'}));
+    }
+    {
+        flat_multimap<int, char> fmm{{1, 'p'}, {4, 'q'}, {9, 'r'}};
+        using char_type_array = flat_multimap<int, char>::value_type[];
+
+        fmm.insert_range(char_type_array{{16, 'x'}, {9, 'y'}, {4, 'z'}});
+        assert(check_key_content(fmm, {1, 4, 4, 9, 9, 16}));
+        assert(check_value_content(fmm, {'p', 'q', 'z', 'r', 'y', 'x'}));
+
+        fmm.insert_range(sorted_equivalent, char_type_array{{9, 'a'}, {16, 'b'}, {25, 'c'}});
+        assert(check_key_content(fmm, {1, 4, 4, 9, 9, 9, 16, 16, 25}));
+        assert(check_value_content(fmm, {'p', 'q', 'z', 'r', 'y', 'a', 'x', 'b', 'c'}));
+    }
+}
+
 // GH-4344 <flat_map> Fix compile errors
 void test_gh_4344() {
     flat_map<int, char> fm;
@@ -655,79 +682,88 @@ void test_comparison() {
     }
 }
 
-// Test MSVC STL-specific SCARY-ness
+namespace test_throwing_swap {
+    struct unique_exception {};
 
-template <bool>
-struct flat_map_unique_if_impl;
-template <>
-struct flat_map_unique_if_impl<true> {
-    template <class Key, class Mapped, class Comp, class KeyCont, class MappedCont>
-    using type = flat_map<Key, Mapped, Comp, KeyCont, MappedCont>;
-};
-template <>
-struct flat_map_unique_if_impl<false> {
-    template <class Key, class Mapped, class Comp, class KeyCont, class MappedCont>
-    using type = flat_multimap<Key, Mapped, Comp, KeyCont, MappedCont>;
-};
+    template <class T>
+    struct throwing_less {
+        static bool operator()(const T& left, const T& right) {
+            return left < right;
+        }
 
-template <bool IsUnique, class Key, class Mapped, class Comp, class KeyCont, class MappedCont>
-using flat_map_unique_if = flat_map_unique_if_impl<IsUnique>::template type<Key, Mapped, Comp, KeyCont, MappedCont>;
+        bool throws_;
+    };
 
-template <bool IsUnique, class Comparator, class Alloc1, class Alloc2>
-void test_scary_ness_one() { // COMPILE-ONLY
-    using Iter = flat_map<int, int>::iterator;
-    using OtherIter =
-        flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::iterator;
-    static_assert(is_same_v<Iter, OtherIter>);
+    template <class T>
+    void swap(throwing_less<T>& lhs, throwing_less<T>& rhs) {
+        if (lhs.throws_ || rhs.throws_) {
+            throw unique_exception{};
+        }
+    }
+} // namespace test_throwing_swap
 
-    using ConstIter = flat_map<int, int>::const_iterator;
-    using OtherConstIter =
-        flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::const_iterator;
-    static_assert(is_same_v<ConstIter, OtherConstIter>);
+template <template <class...> class FlatMapCont, template <class...> class KeyCont,
+    template <class...> class MappedCont>
+void test_throwing_compare_swap_single() {
+    using test_throwing_swap::unique_exception;
+    using comparator = test_throwing_swap::throwing_less<int>;
 
-    using Cont = flat_map<int, int, less<int>, vector<int, Alloc1>, vector<int, Alloc2>>::containers;
-    using OtherCont =
-        flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::containers;
-    static_assert(is_same_v<Cont, OtherCont>);
-
-    using ValueComp = flat_map<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::value_compare;
-    using OtherValueComp1 =
-        flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::value_compare;
-    using OtherValueComp2 = flat_map_unique_if<IsUnique, int, int, Comparator, vector<int>, vector<int>>::value_compare;
-    using OtherValueComp3 =
-        flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, deque<int, Alloc2>>::value_compare;
-    using OtherValueComp4 =
-        flat_map_unique_if<IsUnique, int, int, Comparator, deque<int, Alloc1>, vector<int, Alloc2>>::value_compare;
-    static_assert(is_same_v<ValueComp, OtherValueComp1>);
-    static_assert(is_same_v<ValueComp, OtherValueComp2>);
-    static_assert(is_same_v<ValueComp, OtherValueComp3>);
-    static_assert(is_same_v<ValueComp, OtherValueComp4>);
+    using map_type =
+        FlatMapCont<int, char, comparator, KeyCont<int, allocator<int>>, MappedCont<char, allocator<char>>>;
+    using value_type = map_type::value_type;
+    static_assert(!is_nothrow_swappable_v<map_type>);
+    {
+        map_type m1{{{1, 'x'}, {2, 'y'}, {3, 'z'}}, comparator{false}};
+        map_type m2{{{4, 'A'}, {5, 'B'}, {6, 'C'}}, comparator{false}};
+        m1.swap(m2);
+        assert(ranges::equal(m1, initializer_list<value_type>{{4, 'A'}, {5, 'B'}, {6, 'C'}}));
+        assert(ranges::equal(m2, initializer_list<value_type>{{1, 'x'}, {2, 'y'}, {3, 'z'}}));
+    }
+    {
+        map_type m1{{{1, 'x'}, {2, 'y'}, {3, 'z'}}, comparator{false}};
+        map_type m2{{{4, 'A'}, {5, 'B'}, {6, 'C'}}, comparator{false}};
+        ranges::swap(m1, m2);
+        assert(ranges::equal(m1, initializer_list<value_type>{{4, 'A'}, {5, 'B'}, {6, 'C'}}));
+        assert(ranges::equal(m2, initializer_list<value_type>{{1, 'x'}, {2, 'y'}, {3, 'z'}}));
+    }
+    {
+        map_type m1{{{1, 'x'}, {2, 'y'}, {3, 'z'}}, comparator{false}};
+        map_type m2{{{4, 'A'}, {5, 'B'}, {6, 'C'}}, comparator{true}};
+        try {
+            m1.swap(m2);
+            assert(false);
+        } catch (const unique_exception&) {
+            assert(m1.empty());
+            assert(m2.empty());
+        } catch (...) {
+            assert(false);
+        }
+    }
+    {
+        map_type m1{{{1, 'x'}, {2, 'y'}, {3, 'z'}}, comparator{false}};
+        map_type m2{{{4, 'A'}, {5, 'B'}, {6, 'C'}}, comparator{true}};
+        try {
+            ranges::swap(m1, m2);
+            assert(false);
+        } catch (const unique_exception&) {
+            assert(m1.empty());
+            assert(m2.empty());
+        } catch (...) {
+            assert(false);
+        }
+    }
 }
 
-void test_scary_ness() { // COMPILE-ONLY
-    test_scary_ness_one<true, greater<int>, allocator<int>, allocator<int>>();
-    test_scary_ness_one<true, greater<int>, allocator<int>, MyAllocator<int>>();
-    test_scary_ness_one<true, greater<int>, MyAllocator<int>, allocator<int>>();
+void test_throwing_compare_swap() {
+    test_throwing_compare_swap_single<flat_map, vector, vector>();
+    test_throwing_compare_swap_single<flat_map, vector, deque>();
+    test_throwing_compare_swap_single<flat_map, deque, vector>();
+    test_throwing_compare_swap_single<flat_map, deque, deque>();
 
-    test_scary_ness_one<true, less<>, allocator<int>, allocator<int>>();
-    test_scary_ness_one<true, less<>, allocator<int>, MyAllocator<int>>();
-    test_scary_ness_one<true, less<>, MyAllocator<int>, allocator<int>>();
-
-    test_scary_ness_one<true, greater<>, allocator<int>, allocator<int>>();
-    test_scary_ness_one<true, greater<>, allocator<int>, MyAllocator<int>>();
-    test_scary_ness_one<true, greater<>, MyAllocator<int>, allocator<int>>();
-
-    test_scary_ness_one<false, greater<int>, allocator<int>, allocator<int>>();
-    test_scary_ness_one<false, greater<int>, allocator<int>, MyAllocator<int>>();
-    test_scary_ness_one<false, greater<int>, MyAllocator<int>, allocator<int>>();
-
-    test_scary_ness_one<false, less<>, allocator<int>, allocator<int>>();
-    test_scary_ness_one<false, less<>, allocator<int>, MyAllocator<int>>();
-    test_scary_ness_one<false, less<>, MyAllocator<int>, allocator<int>>();
-
-    test_scary_ness_one<false, greater<>, allocator<int>, allocator<int>>();
-    test_scary_ness_one<false, greater<>, allocator<int>, MyAllocator<int>>();
-    test_scary_ness_one<false, greater<>, MyAllocator<int>, allocator<int>>();
+    test_throwing_compare_swap_single<flat_multimap, vector, vector>();
+    test_throwing_compare_swap_single<flat_multimap, vector, deque>();
+    test_throwing_compare_swap_single<flat_multimap, deque, vector>();
+    test_throwing_compare_swap_single<flat_multimap, deque, deque>();
 }
 
 int main() {
@@ -735,7 +771,9 @@ int main() {
     test_pointer_to_incomplete_type();
     test_erase_if();
     test_insert();
+    test_insert_range();
     test_gh_4344();
     test_insert_or_assign();
     test_comparison();
+    test_throwing_compare_swap();
 }
