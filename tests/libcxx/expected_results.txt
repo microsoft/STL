@@ -530,6 +530,8 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:0 FA
 std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:1 FAIL
 
 # MSVC has not implemented P2448R2 "Relaxing some constexpr restrictions"
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp:1 FAIL
 
