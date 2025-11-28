@@ -423,6 +423,30 @@ std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_r
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp FAIL
 
 # FIXME! C++26 "P3372R3 constexpr Containers And Adaptors" isn't completely guarded with `TEST_STD_VER >= 26`.
+std/containers/container.adaptors/flat.multiset/flat.multiset.capacity/max_size.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.capacity/max_size.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/erase_key_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/erase_key_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/extract.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/extract.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_iter.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_iter.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.observers/comp.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.observers/comp.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/contains_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/contains_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/count_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/count_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/equal_range_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/equal_range_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/find_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/find_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/lower_bound_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/lower_bound_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/upper_bound_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.operations/upper_bound_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multiset/op_compare.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/op_compare.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.set/flat.set.capacity/max_size.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.set/flat.set.capacity/max_size.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/erase_key_transparent.pass.cpp:0 FAIL
@@ -447,6 +471,10 @@ std/containers/container.adaptors/flat.set/flat.set.operations/upper_bound_trans
 std/containers/container.adaptors/flat.set/flat.set.operations/upper_bound_transparent.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.set/op_compare.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.set/op_compare.pass.cpp:1 FAIL
+
+# FIXME! Looks like test code isn't defending itself against evil overloaded comma operators.
+std/containers/container.adaptors/flat.multiset/flat.multiset.iterators/iterator.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.iterators/iterator.pass.cpp FAIL
 
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 # (type_traits.version.compile.pass.cpp still fails for Clang due to LLVM-48860)
