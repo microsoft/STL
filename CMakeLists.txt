@@ -6,8 +6,8 @@ cmake_minimum_required(VERSION 4.1.1)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
-if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.50.35717")
-    message(FATAL_ERROR "The STL must be built with MSVC Compiler 19.50.35717 or later.")
+if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.50.35719")
+    message(FATAL_ERROR "The STL must be built with MSVC Compiler 19.50.35719 or later.")
 endif()
 
 include(CheckCXXSourceCompiles)
@@ -46,7 +46,7 @@ if(TARGET run-validate)
     add_dependencies(validate run-validate)
 endif()
 
-option(BUILD_TESTING "Enable testing" ON)
+option(CONFIGURE_TESTING "Enable testing" ON)
 set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid conflicts with distributed DLLs")
 
 option(STL_USE_ANALYZE "Pass the /analyze flag to MSVC" OFF)
@@ -115,7 +115,7 @@ set(VCLIBS_DEBUG_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/Od>")
 # TRANSITION, GH-2108: Investigate building the STL with only /O2, not /Os.
 set(VCLIBS_RELEASE_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/O2;/Os>")
 
-if(BUILD_TESTING)
+if(CONFIGURE_TESTING)
     add_subdirectory(tests)
 endif()
 

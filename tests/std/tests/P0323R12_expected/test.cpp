@@ -2524,6 +2524,72 @@ static_assert(!is_constructible_v<expected<ConstructibleFromEverything, Converti
 static_assert(!is_constructible_v<expected<ConstructibleFromEverything, ConvertibleFromInt>, unexpect_t>);
 static_assert(!is_constructible_v<expected<ConstructibleFromEverything, ConvertibleFromInt>, const unexpect_t>);
 
+// Test LWG-4366 "Heterogeneous comparison of expected may be ill-formed"
+// Test taken from an example in the issue text
+namespace test_lwg_4366 {
+    struct E1 {};
+    struct E2 {};
+
+    struct Bool {
+        constexpr operator bool() const {
+            return false;
+        }
+        constexpr explicit operator bool() = delete;
+    };
+
+    constexpr Bool operator==(E1, E2) {
+        return {};
+    }
+
+    constexpr void test() {
+        unexpected e1{E1{}};
+        unexpected e2{E2{}};
+        (void) (expected<int, E1>{e1} == e2);
+        (void) (expected<void, E1>{e1} == e2);
+        (void) (e1 == e2);
+        (void) (expected<int, E1>{e1} == expected<int, E2>{e2});
+        (void) (expected<void, E1>{e1} == expected<void, E2>{e2});
+    }
+
+    template <bool has_noexcept_operator_bool>
+    struct bool_with_noexcept {
+        constexpr operator bool() const noexcept(has_noexcept_operator_bool) {
+            return false;
+        }
+    };
+
+    // Test that operator== has correct noexcept specification (based on noexcept specs of underlying expressions)
+
+    struct E3 {};
+    template <bool has_noexcept_operator_bool>
+    struct E4 {};
+
+    template <bool X>
+    constexpr bool_with_noexcept<X> operator==(E3, E4<X>) noexcept {
+        return {};
+    }
+
+    template <bool has_noexcept_operator_bool>
+    constexpr void test2() {
+        unexpected e3{E3{}};
+        unexpected e4{E4<has_noexcept_operator_bool>{}};
+
+        (void) (expected<int, E3>{e3} == e4);
+        (void) (expected<void, E3>{e3} == e4);
+        (void) (e3 == e4);
+        (void) (expected<int, E3>{e3} == expected<int, E4<has_noexcept_operator_bool>>{e4});
+        (void) (expected<void, E3>{e3} == expected<void, E4<has_noexcept_operator_bool>>{e4});
+
+        static_assert(has_noexcept_operator_bool == noexcept(expected<int, E3>{e3} == e4));
+        static_assert(has_noexcept_operator_bool == noexcept(expected<void, E3>{e3} == e4));
+        static_assert(has_noexcept_operator_bool == noexcept(e3 == e4));
+        static_assert(has_noexcept_operator_bool
+                      == noexcept(expected<int, E3>{e3} == expected<int, E4<has_noexcept_operator_bool>>{e4}));
+        static_assert(has_noexcept_operator_bool
+                      == noexcept(expected<void, E3>{e3} == expected<void, E4<has_noexcept_operator_bool>>{e4}));
+    }
+} // namespace test_lwg_4366
+
 int main() {
     test_unexpected::test_all();
     static_assert(test_unexpected::test_all());
@@ -2543,4 +2609,8 @@ int main() {
     test_lwg_3886();
     test_lwg_3886_volatile();
     test_inherited_constructors();
+
+    test_lwg_4366::test();
+    test_lwg_4366::test2<true>();
+    test_lwg_4366::test2<false>();
 }
