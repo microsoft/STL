@@ -2762,6 +2762,20 @@ namespace ranges {
 } // namespace ranges
 #endif // _HAS_CXX23
 
+template <class _Elem>
+constexpr auto _UIntegral_to_buff_digits() {
+    struct {
+        _Elem _Data[200];
+    } _Result = {};
+
+    for (int _Ix = 0; _Ix != 100; ++_Ix) {
+        _Result._Data[_Ix * 2 + 0] = static_cast<_Elem>(_Ix / 10 + '0');
+        _Result._Data[_Ix * 2 + 1] = static_cast<_Elem>(_Ix % 10 + '0');
+    }
+
+    return _Result;
+}
+
 template <class _Elem, class _UTy>
 _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by both to_string and thread::id output
     // format _UVal into buffer *ending at* _RNext
@@ -2785,25 +2799,14 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
 
     auto _UVal_trunc = static_cast<unsigned long>(_UVal);
 #endif // ^^^ !defined(_WIN64) ^^^
-
-    static constexpr _Elem _Digits_table[] = {//
-        '0', '0', '0', '1', '0', '2', '0', '3', '0', '4', '0', '5', '0', '6', '0', '7', '0', '8', '0', '9', //
-        '1', '0', '1', '1', '1', '2', '1', '3', '1', '4', '1', '5', '1', '6', '1', '7', '1', '8', '1', '9', //
-        '2', '0', '2', '1', '2', '2', '2', '3', '2', '4', '2', '5', '2', '6', '2', '7', '2', '8', '2', '9', //
-        '3', '0', '3', '1', '3', '2', '3', '3', '3', '4', '3', '5', '3', '6', '3', '7', '3', '8', '3', '9', //
-        '4', '0', '4', '1', '4', '2', '4', '3', '4', '4', '4', '5', '4', '6', '4', '7', '4', '8', '4', '9', //
-        '5', '0', '5', '1', '5', '2', '5', '3', '5', '4', '5', '5', '5', '6', '5', '7', '5', '8', '5', '9', //
-        '6', '0', '6', '1', '6', '2', '6', '3', '6', '4', '6', '5', '6', '6', '6', '7', '6', '8', '6', '9', //
-        '7', '0', '7', '1', '7', '2', '7', '3', '7', '4', '7', '5', '7', '6', '7', '7', '7', '8', '7', '9', //
-        '8', '0', '8', '1', '8', '2', '8', '3', '8', '4', '8', '5', '8', '6', '8', '7', '8', '8', '8', '9', //
-        '9', '0', '9', '1', '9', '2', '9', '3', '9', '4', '9', '5', '9', '6', '9', '7', '9', '8', '9', '9'};
+    static constexpr auto _Table = _STD _UIntegral_to_buff_digits<_Elem>();
 
     if (_UVal_trunc >= 10) {
         do {
             const unsigned long _UVal_trunc_part = _UVal_trunc % 100;
             _UVal_trunc /= 100;
             _RNext -= 2;
-            _CSTD memcpy(_RNext, _Digits_table + _UVal_trunc_part * 2, 2 * sizeof(_Elem));
+            _CSTD memcpy(_RNext, _Table._Data + _UVal_trunc_part * 2, 2 * sizeof(_Elem));
         } while (_UVal_trunc >= 10);
 
         if (_UVal_trunc == 0) {
