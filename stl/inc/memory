@@ -3532,7 +3532,7 @@ public:
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
     constexpr unique_ptr() noexcept : _Mypair(_Zero_then_variadic_args_t{}) {}
 
-    template <class _Uty, class _Is_nullptr = is_same<_Uty, nullptr_t>>
+    template <class _Uty, class _Is_nullptr = is_null_pointer<_Uty>>
     using _Enable_ctor_reset =
         enable_if_t<is_same_v<_Uty, pointer> || _Is_nullptr::value
                         || (is_same_v<pointer, element_type*> && is_pointer_v<_Uty>

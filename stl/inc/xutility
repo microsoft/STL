@@ -5513,7 +5513,7 @@ template <class _Ty>
 _NODISCARD bool _Is_all_bits_zero(const _Ty& _Val) {
     // checks if scalar type has all bits set to zero
     _STL_INTERNAL_STATIC_ASSERT(is_scalar_v<_Ty> && !is_member_pointer_v<_Ty>);
-    if constexpr (is_same_v<_Ty, nullptr_t>) {
+    if constexpr (is_null_pointer_v<_Ty>) {
         return true;
     } else {
         constexpr _Ty _Zero{};
@@ -6306,7 +6306,7 @@ constexpr bool _Vector_alg_in_find_is_safe_elem =
         // We're finding an (object or function) pointer in a range of pointers of the same type.
         conjunction<is_pointer<_Ty>, is_same<_Ty, _Elem>>,
         // We're finding a nullptr in a range of (object or function) pointers.
-        conjunction<is_same<_Ty, nullptr_t>, is_pointer<_Elem>>,
+        conjunction<is_null_pointer<_Ty>, is_pointer<_Elem>>,
         // We're finding an object pointer in a range of object pointers, and:
         // - One of the pointer types is a cv void*.
         // - One of the pointer types is a cv1 U* and the other is a cv2 U*.
@@ -6333,7 +6333,7 @@ _NODISCARD constexpr bool _Could_compare_equal_to_value_type(const _Ty& _Val) {
     if constexpr (disjunction_v<is_same<_Ty, _Elem>, // If types are the same, _Val can compare equal to _Elem
                       is_same<_Ty, bool>, // true or false can be represented in any integer type
                       is_pointer<_Ty>, // we only compare pointers vs. other pointers with the same representation
-                      is_same<_Ty, nullptr_t> // we only compare nullptr_t against pointers; any pointer can be null
+                      is_null_pointer<_Ty> // we only compare nullptr_t against pointers; any pointer can be null
                       >) {
         return true;
     } else {
