@@ -16,10 +16,11 @@
 #include <cstdint>
 #include <cstring>
 #include <xatomic.h>
+#include <xthreads.h>
+
 #if _HAS_CXX20
 #include <xatomic_wait.h>
 #endif // _HAS_CXX20
-#include <xthreads.h>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
