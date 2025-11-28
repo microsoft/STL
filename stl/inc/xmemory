@@ -2798,17 +2798,20 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
         '8', '0', '8', '1', '8', '2', '8', '3', '8', '4', '8', '5', '8', '6', '8', '7', '8', '8', '8', '9', //
         '9', '0', '9', '1', '9', '2', '9', '3', '9', '4', '9', '5', '9', '6', '9', '7', '9', '8', '9', '9'};
 
-    while (_UVal_trunc >= 100) {
-        const unsigned long _UVal_trunc_part = _UVal_trunc % 100;
-        _UVal_trunc /= 100;
-        _RNext -= 2;
-        _CSTD memcpy(_RNext, _Digits_table + _UVal_trunc_part * 2, 2);
+    if (_UVal_trunc >= 10) {
+        do {
+            const unsigned long _UVal_trunc_part = _UVal_trunc % 100;
+            _UVal_trunc /= 100;
+            _RNext -= 2;
+            _CSTD memcpy(_RNext, _Digits_table + _UVal_trunc_part * 2, 2);
+        } while (_UVal_trunc >= 10);
+
+        if (_UVal_trunc == 0) {
+            return _RNext;
+        }
     }
 
-    do {
-        *--_RNext = static_cast<_Elem>('0' + _UVal_trunc % 10);
-        _UVal_trunc /= 10;
-    } while (_UVal_trunc != 0);
+    *--_RNext = static_cast<_Elem>('0' + _UVal_trunc);
     return _RNext;
 }
 _STD_END
