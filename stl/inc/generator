@@ -15,6 +15,7 @@ _EMIT_STL_WARNING(STL4038, "The contents of <generator> are available only with 
 #include <coroutine>
 #include <exception>
 #include <xmemory>
+
 #ifdef __cpp_lib_byte
 #include <xpolymorphic_allocator.h>
 #endif // defined(__cpp_lib_byte)

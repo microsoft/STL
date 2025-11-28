@@ -11,12 +11,14 @@
 #include <tuple>
 #include <typeinfo>
 #include <xmemory>
+
 #if _HAS_CXX17
 #ifdef _LEGACY_CODE_ASSUMES_FUNCTIONAL_INCLUDES_MEMORY
 #include <memory>
 #endif // defined(_LEGACY_CODE_ASSUMES_FUNCTIONAL_INCLUDES_MEMORY)
 #include <unordered_map>
 #endif // _HAS_CXX17
+
 #if _HAS_CXX20
 #include <compare>
 #endif // _HAS_CXX20

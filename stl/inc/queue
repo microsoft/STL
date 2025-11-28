@@ -13,6 +13,7 @@
       // !defined(_LEGACY_CODE_ASSUMES_QUEUE_INCLUDES_ALGORITHM) vvv
 #include <__msvc_heap_algorithms.hpp>
 #endif // ^^^ !defined(_LEGACY_CODE_ASSUMES_QUEUE_INCLUDES_ALGORITHM) ^^^
+
 #include <deque>
 #include <vector>
 
