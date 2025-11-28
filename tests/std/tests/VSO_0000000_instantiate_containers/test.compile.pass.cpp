@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _USE_NAMED_IDL_NAMESPACE 1
 #include <array>
 #include <bitset>
 #include <complex>
