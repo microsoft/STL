@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <ranges>
 
-#include "range_algorithm_support.hpp"
+#include <range_algorithm_support.hpp>
 
 using namespace std;
 
