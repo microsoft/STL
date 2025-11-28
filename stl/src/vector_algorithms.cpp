@@ -194,7 +194,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
         } while (_First1 != _Stop_at);
     }
 
-#if defined(_M_X64)
+#ifdef _WIN64
     constexpr size_t _Mask_8 = ~((static_cast<size_t>(1) << 3) - 1);
     if (_Byte_length(_First1, _Last1) >= 8) {
         const void* _Stop_at = _First1;
@@ -210,7 +210,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
             _Advance_bytes(_First2, 8);
         } while (_First1 != _Stop_at);
     }
-#elif defined(_M_IX86)
+#else // ^^^ 64-bit / 32-bit vvv
     constexpr size_t _Mask_4 = ~((static_cast<size_t>(1) << 2) - 1);
     if (_Byte_length(_First1, _Last1) >= 4) {
         const void* _Stop_at = _First1;
@@ -226,9 +226,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
             _Advance_bytes(_First2, 4);
         } while (_First1 != _Stop_at);
     }
-#else
-#error Unsupported architecture
-#endif
+#endif // ^^^ 32-bit ^^^
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     auto _First1c = static_cast<unsigned char*>(_First1);
@@ -395,7 +393,7 @@ namespace {
                 } while (_First1 != _Stop_at);
             }
 
-#if defined(_M_X64)
+#ifdef _WIN64
             constexpr size_t _Mask_8 = ~((static_cast<size_t>(1) << 3) - 1);
             if (_Byte_length(_First1, _Last1) >= 8) {
                 const void* _Stop_at = _First1;
@@ -415,7 +413,7 @@ namespace {
                     _Advance_bytes(_First3, 8);
                 } while (_First1 != _Stop_at);
             }
-#elif defined(_M_IX86)
+#else // ^^^ 64-bit / 32-bit vvv
             constexpr size_t _Mask_4 = ~((static_cast<size_t>(1) << 2) - 1);
             if (_Byte_length(_First1, _Last1) >= 4) {
                 const void* _Stop_at = _First1;
@@ -435,9 +433,7 @@ namespace {
                     _Advance_bytes(_First3, 4);
                 } while (_First1 != _Stop_at);
             }
-#else
-#error Unsupported architecture
-#endif
+#endif // ^^^ 32-bit ^^^
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
 
             auto _First1c = static_cast<unsigned char*>(_First1);
@@ -3548,18 +3544,15 @@ namespace {
                     }
 
                     if (_MskX != 0) {
-#ifdef _M_IX86
+#ifdef _WIN64
+                        const long long _Shift = static_cast<long long>(_tzcnt_u64(_MskX)) - 32;
+#else // ^^^ 64-bit / 32-bit vvv
                         const uint32_t _MskLow = static_cast<uint32_t>(_MskX);
 
                         const int _Shift = _MskLow != 0
                                              ? static_cast<int>(_tzcnt_u32(_MskLow)) - 32
                                              : static_cast<int>(_tzcnt_u32(static_cast<uint32_t>(_MskX >> 32)));
-
-#elifdef _M_X64
-                        const long long _Shift = static_cast<long long>(_tzcnt_u64(_MskX)) - 32;
-#else
-#error Unsupported architecture
-#endif
+#endif // ^^^ 32-bit ^^^
                         _Advance_bytes(_First, _Shift);
                         return _First;
                     }
@@ -3594,18 +3587,15 @@ namespace {
                     }
 
                     if (_MskX != 0) {
-#ifdef _M_IX86
+#ifdef _WIN64
+                        const long long _Shift = static_cast<long long>(_tzcnt_u64(_MskX)) - 32;
+#else // ^^^ 64-bit / 32-bit vvv
                         const uint32_t _MskLow = static_cast<uint32_t>(_MskX);
 
                         const int _Shift = _MskLow != 0
                                              ? static_cast<int>(_tzcnt_u32(_MskLow)) - 32
                                              : static_cast<int>(_tzcnt_u32(static_cast<uint32_t>(_MskX >> 32)));
-
-#elifdef _M_X64
-                        const long long _Shift = static_cast<long long>(_tzcnt_u64(_MskX)) - 32;
-#else
-#error Unsupported architecture
-#endif
+#endif // ^^^ 32-bit ^^^
                         _Advance_bytes(_First, _Shift);
                         return _First;
                     }
