@@ -1,6 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+# CUDA is not available in the MSVC-internal test harness:
+# tests\GH_000639_nvcc_include_all
+
+# Needs special machinery to work in the MSVC-internal test harness, not yet implemented:
+# tests\GH_002094_cpp_core_guidelines
+
 tests\Dev08_496675_iostream_int_reading
 tests\Dev08_527068_scl_no_exceptions
 tests\Dev08_563686_ostream
@@ -207,8 +213,6 @@ tests\GH_002030_asan_annotate_vector
 tests\GH_002039_byte_is_not_trivially_swappable
 tests\GH_002045_put_time_changes_errno
 tests\GH_002058_debug_iterator_race
-# Needs special machinery to work in the MSVC-internal test harness, not yet implemented:
-# tests\GH_002094_cpp_core_guidelines
 tests\GH_002120_streambuf_seekpos_and_seekoff
 tests\GH_002168_regex_overflow
 tests\GH_002206_unreserved_names
@@ -419,13 +423,13 @@ tests\P0784R7_library_support_for_more_constexpr_containers
 tests\P0798R8_monadic_operations_for_std_optional
 tests\P0811R3_midpoint_lerp
 tests\P0881R7_stacktrace
+tests\P0896R4_and_P1614R2_comparisons
 tests\P0896R4_common_iterator
 tests\P0896R4_common_iterator_death
 tests\P0896R4_counted_iterator
 tests\P0896R4_counted_iterator_death
 tests\P0896R4_istream_view
 tests\P0896R4_istream_view_death
-tests\P0896R4_P1614R2_comparisons
 tests\P0896R4_ranges_alg_adjacent_find
 tests\P0896R4_ranges_alg_all_of
 tests\P0896R4_ranges_alg_any_of
