@@ -37,6 +37,10 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#if !_HAS_CXX17
+#error The contents of <charconv> are only available with C++17. (Also, you should not include this internal header.)
+#endif // !_HAS_CXX17
+
 #include <cstdint>
 
 #pragma pack(push, _CRT_PACKING)
@@ -52,19 +56,15 @@ _STD_BEGIN
 // See xcharconv_ryu.h for the exact commit.
 // (Keep the cgmanifest.json commitHash in sync.)
 
-// clang-format off: avoid diverging from external code
+// clang-format off
 
 // vvvvvvvvvv DERIVED FROM digit_table.h vvvvvvvvvv
-
-#if !_HAS_CXX17
-namespace { // work around Clang link issues
-#endif // !_HAS_CXX17
 
 // A table of all two-digit numbers. This is used to speed up decimal digit
 // generation by copying pairs of digits into the final output.
 template <class _CharT> constexpr _CharT __DIGIT_TABLE[] = {_CharT{}};
 
-template <> _INLINE_VAR constexpr char __DIGIT_TABLE<char>[200] = {
+template <> inline constexpr char __DIGIT_TABLE<char>[200] = {
   '0','0','0','1','0','2','0','3','0','4','0','5','0','6','0','7','0','8','0','9',
   '1','0','1','1','1','2','1','3','1','4','1','5','1','6','1','7','1','8','1','9',
   '2','0','2','1','2','2','2','3','2','4','2','5','2','6','2','7','2','8','2','9',
@@ -77,7 +77,7 @@ template <> _INLINE_VAR constexpr char __DIGIT_TABLE<char>[200] = {
   '9','0','9','1','9','2','9','3','9','4','9','5','9','6','9','7','9','8','9','9'
 };
 
-template <> _INLINE_VAR constexpr wchar_t __DIGIT_TABLE<wchar_t>[200] = {
+template <> inline constexpr wchar_t __DIGIT_TABLE<wchar_t>[200] = {
   L'0',L'0',L'0',L'1',L'0',L'2',L'0',L'3',L'0',L'4',L'0',L'5',L'0',L'6',L'0',L'7',L'0',L'8',L'0',L'9',
   L'1',L'0',L'1',L'1',L'1',L'2',L'1',L'3',L'1',L'4',L'1',L'5',L'1',L'6',L'1',L'7',L'1',L'8',L'1',L'9',
   L'2',L'0',L'2',L'1',L'2',L'2',L'2',L'3',L'2',L'4',L'2',L'5',L'2',L'6',L'2',L'7',L'2',L'8',L'2',L'9',
@@ -89,10 +89,6 @@ template <> _INLINE_VAR constexpr wchar_t __DIGIT_TABLE<wchar_t>[200] = {
   L'8',L'0',L'8',L'1',L'8',L'2',L'8',L'3',L'8',L'4',L'8',L'5',L'8',L'6',L'8',L'7',L'8',L'8',L'8',L'9',
   L'9',L'0',L'9',L'1',L'9',L'2',L'9',L'3',L'9',L'4',L'9',L'5',L'9',L'6',L'9',L'7',L'9',L'8',L'9',L'9'
 };
-
-#if !_HAS_CXX17
-} // unnamed namespace
-#endif // !_HAS_CXX17
 
 // ^^^^^^^^^^ DERIVED FROM digit_table.h ^^^^^^^^^^
 
@@ -107,9 +103,9 @@ extern const uint64_t __DOUBLE_POW5_SPLIT[326][2];
 
 // vvvvvvvvvv DERIVED FROM d2fixed_full_table.h vvvvvvvvvv
 
-_INLINE_VAR constexpr int __TABLE_SIZE = 64;
+inline constexpr int __TABLE_SIZE = 64;
 
-_INLINE_VAR constexpr uint16_t __POW10_OFFSET[__TABLE_SIZE] = {
+inline constexpr uint16_t __POW10_OFFSET[__TABLE_SIZE] = {
   0, 2, 5, 8, 12, 16, 21, 26, 32, 39,
   46, 54, 62, 71, 80, 90, 100, 111, 122, 134,
   146, 159, 173, 187, 202, 217, 233, 249, 266, 283,
@@ -121,10 +117,10 @@ _INLINE_VAR constexpr uint16_t __POW10_OFFSET[__TABLE_SIZE] = {
 
 extern const uint64_t __POW10_SPLIT[1224][3];
 
-_INLINE_VAR constexpr int __TABLE_SIZE_2 = 69;
-_INLINE_VAR constexpr int __ADDITIONAL_BITS_2 = 120;
+inline constexpr int __TABLE_SIZE_2 = 69;
+inline constexpr int __ADDITIONAL_BITS_2 = 120;
 
-_INLINE_VAR constexpr uint16_t __POW10_OFFSET_2[__TABLE_SIZE_2] = {
+inline constexpr uint16_t __POW10_OFFSET_2[__TABLE_SIZE_2] = {
      0,    2,    6,   12,   20,   29,   40,   52,   66,   80,
     95,  112,  130,  150,  170,  192,  215,  240,  265,  292,
    320,  350,  381,  413,  446,  480,  516,  552,  590,  629,
@@ -134,7 +130,7 @@ _INLINE_VAR constexpr uint16_t __POW10_OFFSET_2[__TABLE_SIZE_2] = {
   2465, 2544, 2625, 2706, 2789, 2873, 2959, 3046, 3133
 };
 
-_INLINE_VAR constexpr uint8_t __MIN_BLOCK_2[__TABLE_SIZE_2] = {
+inline constexpr uint8_t __MIN_BLOCK_2[__TABLE_SIZE_2] = {
      0,    0,    0,    0,    0,    0,    1,    1,    2,    3,
      3,    4,    4,    5,    5,    6,    6,    7,    7,    8,
      8,    9,    9,   10,   11,   11,   12,   12,   13,   13,
