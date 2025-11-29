@@ -523,12 +523,14 @@ _Elem* _Maklocstr(const char* _Ptr, const _Locinfo::_Cvtvec& _Cvt) {
         size_t _Wchars;
         const char* _Ptr1;
         int _Bytes;
-        wchar_t _Wc;
+        _Elem _Wc;
         mbstate_t _Mbst1 = {};
 
         _Count1 = _CSTD strlen(_Ptr) + 1;
         for (_Count = _Count1, _Wchars = 0, _Ptr1 = _Ptr; 0 < _Count; _Count -= _Bytes, _Ptr1 += _Bytes, ++_Wchars) {
-            if ((_Bytes = _Mbrtowc(&_Wc, _Ptr1, _Count, &_Mbst1, &_Cvt)) <= 0) {
+            if ((_Bytes = _Mbrtowc(reinterpret_cast<wchar_t*>(&_Wc), // no-op cast if _Elem is wchar_t
+                     _Ptr1, _Count, &_Mbst1, &_Cvt))
+                <= 0) {
                 break;
             }
         }
@@ -553,7 +555,7 @@ _Elem* _Maklocstr(const char* _Ptr, const _Locinfo::_Cvtvec& _Cvt) {
 
         *_Ptrnext = L'\0';
 
-        return _Ptrdest;
+        return reinterpret_cast<_Elem*>(_Ptrdest); // no-op cast if _Elem is wchar_t
     }
 #ifdef _CRTBLD
     else if constexpr (is_same_v<_Elem, unsigned short>) {
@@ -562,12 +564,14 @@ _Elem* _Maklocstr(const char* _Ptr, const _Locinfo::_Cvtvec& _Cvt) {
         size_t _Wchars;
         const char* _Ptr1;
         int _Bytes;
-        unsigned short _Wc;
+        _Elem _Wc;
         mbstate_t _Mbst1 = {};
 
         _Count1 = _CSTD strlen(_Ptr) + 1;
         for (_Count = _Count1, _Wchars = 0, _Ptr1 = _Ptr; 0 < _Count; _Count -= _Bytes, _Ptr1 += _Bytes, ++_Wchars) {
-            if ((_Bytes = _Mbrtowc(reinterpret_cast<wchar_t*>(&_Wc), _Ptr1, _Count, &_Mbst1, &_Cvt)) <= 0) {
+            if ((_Bytes = _Mbrtowc(reinterpret_cast<wchar_t*>(&_Wc), // no-op cast if _Elem is wchar_t
+                     _Ptr1, _Count, &_Mbst1, &_Cvt))
+                <= 0) {
                 break;
             }
         }
@@ -583,6 +587,7 @@ _Elem* _Maklocstr(const char* _Ptr, const _Locinfo::_Cvtvec& _Cvt) {
 
         wchar_t* _Ptrnext = _Ptrdest;
         mbstate_t _Mbst2  = {};
+
         for (; 0 < _Wchars; _Count -= _Bytes, _Ptr += _Bytes, --_Wchars, ++_Ptrnext) {
             if ((_Bytes = _Mbrtowc(_Ptrnext, _Ptr, _Count1, &_Mbst2, &_Cvt)) <= 0) {
                 break;
@@ -590,7 +595,8 @@ _Elem* _Maklocstr(const char* _Ptr, const _Locinfo::_Cvtvec& _Cvt) {
         }
 
         *_Ptrnext = L'\0';
-        return reinterpret_cast<unsigned short*>(_Ptrdest);
+
+        return reinterpret_cast<_Elem*>(_Ptrdest); // no-op cast if _Elem is wchar_t
     }
 #endif // defined(_CRTBLD)
     else {
