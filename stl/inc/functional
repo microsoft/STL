@@ -2033,6 +2033,19 @@ private:
         is_constructible_v<decay_t<_Fn>, initializer_list<_Ux>&, _CTypes...>
         && _Call::template _Is_callable_from<decay_t<_Fn>>;
 
+    template <class...>
+    friend class move_only_function;
+
+    template <class _Vt>
+    static constexpr bool _Is_move_only_fuction_varying_cv_ref_noex() {
+        if constexpr (_Is_specialization_v<_Vt, move_only_function>) {
+            return is_same_v<typename _Call::_Signature_without_cv_ref_noex,
+                typename _Vt::_Signature_without_cv_ref_noex>;
+        } else {
+            return false;
+        }
+    }
+
 public:
     using typename _Call::result_type;
 
@@ -2063,22 +2076,15 @@ public:
                 }
             }
 
-            if constexpr (_Is_specialization_v<_Vt, move_only_function>) {
-                if constexpr (is_same_v<typename _Call::_Signature_without_cv_ref_noex,
-                                  typename _Vt::_Signature_without_cv_ref_noex>) {
-                    this->_Checked_move(this->_Data, _Callable._Data);
-                    _Callable._Reset_to_null();
-                    return;
-                }
+            if constexpr (_Is_move_only_fuction_varying_cv_ref_noex<_Vt>()) {
+                this->_Checked_move(this->_Data, _Callable._Data);
+                _Callable._Reset_to_null();
+            } else {
+                using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
+                this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_Fn>(_Callable));
             }
-
-            using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
-            this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_Fn>(_Callable));
         }
     }
-
-    template <class...>
-    friend class move_only_function;
 
     template <class _Fn, class... _CTypes>
         requires _Enable_in_place_constructor<_Fn, _CTypes...>
