@@ -4102,16 +4102,12 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                             }
                         } else if (_Sav._Loop_idx < _Nr->_Min) { // at least one more rep to reach minimum
                             _Next = _Nr->_Next;
-                            // GH-5365: We have to reset the capture groups from the second iteration on.
-                            _Tgt_state._Grp_valid = _Frames[_Sav._Loop_frame_idx]._Match_state._Grp_valid;
                             ++_Sav._Loop_idx;
                         } else if (_Greedy && !_Longest && _Sav._Loop_idx != _Nr->_Max) { // one more rep to try next
                             // set up stack unwinding for greedy matching
                             _Push_frame(_Rx_unwind_ops::_Loop_simple_greedy, _Nr);
 
                             _Next = _Nr->_Next;
-                            // GH-5365: We have to reset the capture groups from the second iteration on.
-                            _Tgt_state._Grp_valid = _Frames[_Sav._Loop_frame_idx]._Match_state._Grp_valid;
                             if (_Sav._Loop_idx < INT_MAX) { // avoid overflowing _Loop_idx
                                 ++_Sav._Loop_idx;
                             }
@@ -4294,12 +4290,11 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 // try tail if matching one more rep failed
                 if (_Failed) {
                     auto _Node = static_cast<_Node_rep*>(_Frame._Node);
-                    auto& _Sav = _Loop_vals[_Node->_Loop_number];
 
                     _Increase_complexity_count();
                     _Nx                   = _Node->_End_rep->_Next;
                     _Tgt_state._Cur       = _Frame._Match_state._Cur;
-                    _Tgt_state._Grp_valid = _Frames[_Sav._Loop_frame_idx]._Match_state._Grp_valid;
+                    _Tgt_state._Grp_valid = _Frame._Match_state._Grp_valid;
                     _Failed               = false;
                 }
                 break;
@@ -5356,14 +5351,21 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
             for (_Node_if* _Branch = static_cast<_Node_if*>(_Nx)->_Child; _Branch; _Branch = _Branch->_Child) {
                 _Calculate_loop_simplicity(_Branch->_Next, _Branch->_Endif, _Outer_rep);
             }
-
             break;
+
         case _N_assert:
+            // A positive lookahead assertion inside a _Node_rep makes the rep not simple
+            if (_Outer_rep) {
+                _Outer_rep->_Simple_loop = 0;
+            }
+            _FALLTHROUGH;
+
         case _N_neg_assert:
             // visit the assertion body
             // note _Outer_rep being reset: the assertion regex is completely independent
             _Calculate_loop_simplicity(static_cast<_Node_assert*>(_Nx)->_Child, nullptr, nullptr);
             break;
+
         case _N_rep:
             // _Node_rep inside another _Node_rep makes both not simple if _Outer_rep can be repeated more than once
             // because the matcher does not reset capture group boundaries when handling simple loops.
@@ -5381,6 +5383,7 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
                 _Outer_rep = static_cast<_Node_rep*>(_Nx);
             }
             break;
+
         case _N_end_rep:
             if (_Outer_rep == static_cast<_Node_end_rep*>(_Nx)->_Begin_rep) {
                 // if the _Node_rep is still undetermined when we reach its end, it is simple
@@ -5391,6 +5394,7 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
                 _Outer_rep = nullptr;
             }
             break;
+
         case _N_class:
             if (_Outer_rep) {
                 // _Node_rep is not simple if a class can match character sequences of different lengths
@@ -5407,14 +5411,6 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
 
         case _N_group:
         case _N_capture:
-            // TRANSITION, requires more research to decide on the subset of loops that we can make simple:
-            // - Simple mode can square the running time when matching a regex to an input string in the current matcher
-            // - The optimal subset of simple loops for a non-recursive rewrite of the matcher aren't clear yet
-            if (_Outer_rep) {
-                _Outer_rep->_Simple_loop = 0;
-            }
-            break;
-
         case _N_none:
         case _N_nop:
         case _N_bol:

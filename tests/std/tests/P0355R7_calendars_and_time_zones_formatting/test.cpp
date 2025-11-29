@@ -20,6 +20,8 @@
 
 #include <timezone_data.hpp>
 
+// Extended to test LWG-4257 "Stream insertion for chrono::local_time should be constrained"
+
 using namespace std;
 using namespace chrono;
 
@@ -1061,7 +1063,50 @@ void test_locale() {
     assert(stream(year_month_weekday_last{2021y / May / Tuesday[last]}) == STR("2021/Mai/Di[last]"));
 }
 
+void test_unsigned_sys_time_format_after_LWG_4274() {
+    const sys_time<duration<unsigned int>> tp{};
+    const string s = format("{:%Y-%m-%d %H:%M:%S}", tp);
+    assert(s == "1970-01-01 00:00:00");
+}
+
+template <typename T>
+concept ostream_insertable = requires(ostream& o, const T& t) { o << t; };
+
+template <typename Dur>
+void check_stream_insertion_operator_for_duration() {
+    if constexpr (ostream_insertable<sys_time<Dur>>) {
+        ostringstream oss;
+        oss << sys_time<Dur>{};
+        assert(oss.str() == "1970-01-01 00:00:00");
+    }
+
+    if constexpr (ostream_insertable<local_time<Dur>>) {
+        ostringstream oss;
+        oss << local_time<Dur>{};
+        assert(oss.str() == "1970-01-01 00:00:00");
+    }
+}
+
+// Test based on example in LWG-4257
+void check_stream_insertion_operator() {
+    // operator<< is constrained such that it does not participate when underlying duration has floating-point rep
+    using ok_dur  = duration<long long>;
+    using bad_dur = duration<double>;
+
+    static_assert(ostream_insertable<sys_time<ok_dur>>);
+    static_assert(ostream_insertable<local_time<ok_dur>>);
+    check_stream_insertion_operator_for_duration<ok_dur>();
+
+    static_assert(!ostream_insertable<sys_time<bad_dur>>);
+    static_assert(!ostream_insertable<local_time<bad_dur>>);
+    check_stream_insertion_operator_for_duration<bad_dur>();
+}
+
 void test() {
+    test_unsigned_sys_time_format_after_LWG_4274();
+
+    check_stream_insertion_operator();
+
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
 
