@@ -6957,7 +6957,7 @@ namespace ranges {
         };
 
     public:
-        constexpr explicit stride_view(_Vw _Range_, range_difference_t<_Vw> _Stride_)
+        constexpr explicit stride_view(_Vw _Range_, const range_difference_t<_Vw> _Stride_)
             noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
             : _Range(_STD move(_Range_)), _Stride(_Stride_) {
 #if _ITERATOR_DEBUG_LEVEL != 0
