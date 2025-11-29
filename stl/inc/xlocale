@@ -493,7 +493,7 @@ char _Maklocbyte(_Elem _Char, const _Locinfo::_Cvtvec& _Cvt) {
 }
 
 template <class _Elem>
-_Elem _Maklocchr(char _Byte, _Elem*, const _Locinfo::_Cvtvec& _Cvt) {
+_Elem _Maklocchr(char _Byte, const _Locinfo::_Cvtvec& _Cvt) {
     // convert char to _Elem using _Cvtvec
     if constexpr (is_same_v<_Elem, wchar_t>) {
         wchar_t _Wc      = L'\0';
@@ -515,7 +515,7 @@ _Elem _Maklocchr(char _Byte, _Elem*, const _Locinfo::_Cvtvec& _Cvt) {
 }
 
 template <class _Elem>
-_Elem* _Maklocstr(const char* _Ptr, _Elem*, const _Locinfo::_Cvtvec& _Cvt) {
+_Elem* _Maklocstr(const char* _Ptr, const _Locinfo::_Cvtvec& _Cvt) {
     // convert C string to _Elem sequence using _Cvtvec
     if constexpr (is_same_v<_Elem, wchar_t>) {
         size_t _Count;
@@ -2626,14 +2626,14 @@ protected:
     }
 
     virtual _Elem __CLR_OR_THIS_CALL do_widen(char _Byte) const { // widen char
-        return _Maklocchr(_Byte, static_cast<_Elem*>(nullptr), _Cvt);
+        return _Maklocchr<_Elem>(_Byte, _Cvt);
     }
 
     virtual const char* __CLR_OR_THIS_CALL do_widen(
         const char* _First, const char* _Last, _Elem* _Dest) const { // widen chars in [_First, _Last)
         _Adl_verify_range(_First, _Last);
         for (; _First != _Last; ++_First, ++_Dest) {
-            *_Dest = _Maklocchr(*_First, static_cast<_Elem*>(nullptr), _Cvt);
+            *_Dest = _Maklocchr<_Elem>(*_First, _Cvt);
         }
 
         return _First;
