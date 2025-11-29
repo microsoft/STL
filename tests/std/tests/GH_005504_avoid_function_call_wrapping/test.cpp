@@ -160,15 +160,12 @@ int main() {
     alloc_checker{1}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type_c>, large_callable>(0);
 
     static_assert(!is_constructible_v<move_only_function<fn_type>, move_only_function<fn_type_r>>);
-    static_assert(!is_constructible_v<move_only_function<fn_type>, move_only_function<fn_type_r>>);
-    static_assert(!is_constructible_v<move_only_function<fn_type_c>, move_only_function<fn_type>>);
     static_assert(!is_constructible_v<move_only_function<fn_type_c>, move_only_function<fn_type>>);
 
 #ifdef __cpp_noexcept_function_type
     alloc_checker{0}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type_nx>, small_callable>(0);
     alloc_checker{1}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type_nx>, large_callable>(0);
 
-    static_assert(!is_constructible_v<move_only_function<fn_type_nx>, move_only_function<fn_type>>);
     static_assert(!is_constructible_v<move_only_function<fn_type_nx>, move_only_function<fn_type>>);
 #endif // defined(__cpp_noexcept_function_type)
 
