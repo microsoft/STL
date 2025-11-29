@@ -96,7 +96,7 @@ size_t _Find_first_of_pos_vectorized(const _Ty1* const _Haystack, const size_t _
     } else if constexpr (sizeof(_Ty1) == 8) {
         return ::__std_find_first_of_trivial_pos_8(_Haystack, _Haystack_length, _Needle, _Needle_length);
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
@@ -111,7 +111,7 @@ size_t _Find_last_of_pos_vectorized(const _Ty1* const _Haystack, const size_t _H
     } else if constexpr (sizeof(_Ty1) == 2) {
         return ::__std_find_last_of_trivial_pos_2(_Haystack, _Haystack_length, _Needle, _Needle_length);
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_FIND_LAST_OF ^^^
@@ -128,7 +128,7 @@ const _Ty* _Find_not_ch_vectorized(const _Ty* const _First, const _Ty* const _La
     } else if constexpr (sizeof(_Ty) == 8) {
         return static_cast<const _Ty*>(::__std_find_not_ch_8(_First, _Last, static_cast<uint64_t>(_Ch)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_FIND ^^^
@@ -145,7 +145,7 @@ size_t _Find_last_not_ch_pos_vectorized(const _Ty* const _First, const _Ty* cons
     } else if constexpr (sizeof(_Ty) == 8) {
         return ::__std_find_last_not_ch_pos_8(_First, _Last, static_cast<uint64_t>(_Ch));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_FIND_LAST ^^^
@@ -160,7 +160,7 @@ size_t _Find_first_not_of_pos_vectorized(const _Ty1* const _Haystack, const size
     } else if constexpr (sizeof(_Ty1) == 2) {
         return ::__std_find_first_not_of_trivial_pos_2(_Haystack, _Haystack_length, _Needle, _Needle_length);
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
@@ -175,7 +175,7 @@ size_t _Find_last_not_of_pos_vectorized(const _Ty1* const _Haystack, const size_
     } else if constexpr (sizeof(_Ty1) == 2) {
         return ::__std_find_last_not_of_trivial_pos_2(_Haystack, _Haystack_length, _Needle, _Needle_length);
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_FIND_LAST_OF ^^^

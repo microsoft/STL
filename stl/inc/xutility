@@ -275,7 +275,7 @@ __declspec(noalias) void _Reverse_vectorized(void* _First, void* _Last) noexcept
     } else if constexpr (_Nx == 8) {
         ::__std_reverse_trivially_swappable_8(_First, _Last);
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_REVERSE ^^^
@@ -292,7 +292,7 @@ __declspec(noalias) size_t _Count_vectorized(_Ty* const _First, _Ty* const _Last
     } else if constexpr (sizeof(_Ty) == 8) {
         return ::__std_count_trivial_8(_First, _Last, _STD _Find_arg_cast<uint64_t>(_Val));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_COUNT ^^^
@@ -313,7 +313,7 @@ _Ty* _Find_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noe
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_trivial_8(_First, _Last, _STD _Find_arg_cast<uint64_t>(_Val))));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_FIND ^^^
@@ -334,7 +334,7 @@ _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, _STD _Find_arg_cast<uint64_t>(_Val))));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_FIND_LAST ^^^
@@ -351,7 +351,7 @@ _Ty* _Adjacent_find_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_adjacent_find_8(_First, _Last)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_ADJACENT_FIND ^^^
@@ -376,7 +376,7 @@ _Ty1* _Search_vectorized(_Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _F
     } else if constexpr (sizeof(_Ty1) == 8) {
         return const_cast<_Ty1*>(static_cast<const _Ty1*>(::__std_search_8(_First1, _Last1, _First2, _Count2)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_SEARCH ^^^
@@ -395,7 +395,7 @@ _Ty1* _Find_end_vectorized(
     } else if constexpr (sizeof(_Ty1) == 8) {
         return const_cast<_Ty1*>(static_cast<const _Ty1*>(::__std_find_end_8(_First1, _Last1, _First2, _Count2)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_FIND_END ^^^
@@ -418,7 +418,7 @@ _Ty* _Min_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_8(_First, _Last, _Signed)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 
@@ -439,7 +439,7 @@ _Ty* _Max_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_8(_First, _Last, _Signed)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
@@ -484,7 +484,7 @@ auto _Min_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
             return ::__std_min_8u(_First, _Last);
         }
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 
@@ -527,7 +527,7 @@ auto _Max_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
             return ::__std_max_8u(_First, _Last);
         }
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_MINMAX ^^^

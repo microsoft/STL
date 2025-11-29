@@ -2120,7 +2120,7 @@ private:
             } else if constexpr (sizeof...(_Val) == 2) {
                 _My_data._Mylast = _STD _Uninitialized_copy(_STD forward<_Valty>(_Val)..., _My_data._Myfirst, _Al);
             } else {
-                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected number of arguments
+                static_assert(false, "unexpected number of arguments");
             }
             _ASAN_VECTOR_CREATE;
             _Guard._Target = nullptr;

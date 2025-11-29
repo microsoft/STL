@@ -172,7 +172,7 @@ _Ty1* _Find_first_of_vectorized(
         return const_cast<_Ty1*>(
             static_cast<const _Ty1*>(::__std_find_first_of_trivial_8(_First1, _Last1, _First2, _Last2)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
@@ -189,7 +189,7 @@ __declspec(noalias) void _Reverse_copy_vectorized(const void* _First, const void
     } else if constexpr (_Nx == 8) {
         ::__std_reverse_copy_trivially_copyable_8(_First, _Last, _Dest);
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_REVERSE_COPY ^^^
@@ -214,7 +214,7 @@ pair<_Ty*, _Ty*> _Minmax_element_vectorized(_Ty* const _First, _Ty* const _Last)
     } else if constexpr (sizeof(_Ty) == 8) {
         _Res = ::__std_minmax_element_8(_First, _Last, _Signed);
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 
     return {const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
@@ -262,7 +262,7 @@ auto _Minmax_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
             return ::__std_minmax_8u(_First, _Last);
         }
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_MINMAX ^^^
@@ -301,7 +301,7 @@ _Ty* _Is_sorted_until_vectorized(_Ty* const _First, _Ty* const _Last, const bool
             return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_is_sorted_until_8u(_First, _Last, _Greater)));
         }
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_IS_SORTED_UNTIL ^^^
@@ -337,7 +337,7 @@ bool _Includes_vectorized(
             return ::__std_includes_less_8u(_First1, _Last1, _First2, _Last2);
         }
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_INCLUDES ^^^
@@ -353,7 +353,7 @@ __declspec(noalias) void _Replace_vectorized(
         ::__std_replace_8(
             _First, _Last, _STD _Find_arg_cast<uint64_t>(_Old_val), _STD _Find_arg_cast<uint64_t>(_New_val));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_REPLACE ^^^
@@ -374,7 +374,7 @@ _Ty* _Search_n_vectorized(_Ty* const _First, _Ty* const _Last, const size_t _Cou
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_search_n_8(_First, _Last, _Count, _STD _Find_arg_cast<uint64_t>(_Val))));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_SEARCH_N ^^^
@@ -391,7 +391,7 @@ _Ty* _Unique_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return reinterpret_cast<_Ty*>(::__std_unique_8(_First, _Last));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_UNIQUE ^^^
@@ -409,7 +409,7 @@ _Ty* _Remove_copy_vectorized(
     } else if constexpr (sizeof(_Ty) == 8) {
         return reinterpret_cast<_Ty*>(::__std_remove_copy_8(_First, _Last, _Dest, _STD _Find_arg_cast<uint64_t>(_Val)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_REMOVE_COPY ^^^
@@ -426,7 +426,7 @@ _Ty* _Unique_copy_vectorized(const _Ty* const _First, const _Ty* const _Last, _T
     } else if constexpr (sizeof(_Ty) == 8) {
         return reinterpret_cast<_Ty*>(::__std_unique_copy_8(_First, _Last, _Dest));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_UNIQUE_COPY ^^^
