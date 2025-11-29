@@ -1576,6 +1576,7 @@ template <class _Rx, bool _Noexcept, class... _Types>
 class _Function_base {
 public:
     using result_type = _Rx;
+    using _Signature_no_cv_noex = _Rx(_Types...);
 
     struct _Impl_t { // A per-callable-type structure acting as a virtual function table.
         // Using vtable emulations gives more flexibility for optimizations and reduces the amount of RTTI data.
@@ -2051,7 +2052,7 @@ public:
         using _Vt = decay_t<_Fn>;
         static_assert(is_constructible_v<_Vt, _Fn>, "_Vt should be constructible from _Fn. "
                                                     "(N4950 [func.wrap.move.ctor]/6)");
-        if constexpr (is_same_v<_Vt, function<_Signature...>>) {
+        if constexpr (is_same_v<_Vt, function<typename _Call::_Signature_no_cv_noex>>) {
             this->template _Construct_with_old_fn<_Vt>(_STD forward<_Fn>(_Callable));
         } else {
             if constexpr (is_member_pointer_v<_Vt> || is_pointer_v<_Vt>

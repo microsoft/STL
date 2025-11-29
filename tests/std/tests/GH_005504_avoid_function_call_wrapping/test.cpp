@@ -69,12 +69,12 @@ struct copy_counter {
     int count = 0;
 };
 
-using fn_type = int(copy_counter);
+using fn_type   = int(copy_counter);
 using fn_type_r = int(copy_counter) &;
-using fn_type_c  = int(copy_counter) const;
+using fn_type_c = int(copy_counter) const;
 
 #ifdef __cpp_noexcept_function_type
-using fn_type_nx  = int(copy_counter) noexcept;
+using fn_type_nx = int(copy_counter) noexcept;
 #endif // defined(__cpp_noexcept_function_type)
 
 
@@ -180,10 +180,12 @@ int main() {
     alloc_checker{1}, test_wrapped_call<move_only_function<fn_type>, function<fn_type>, large_callable>(0);
 
     // Moves from function to abominable move_only_function
-    alloc_checker{1}, test_wrapped_call<move_only_function<fn_type_r>, function<fn_type>, small_callable>(1);
-    alloc_checker{2}, test_wrapped_call<move_only_function<fn_type_r>, function<fn_type>, large_callable>(1);
-    alloc_checker{1}, test_wrapped_call<move_only_function<fn_type_c>, function<fn_type>, small_callable>(1);
-    alloc_checker{2}, test_wrapped_call<move_only_function<fn_type_c>, function<fn_type>, large_callable>(1);
+    alloc_checker{is_64_bit ? 0 : 1},
+        test_wrapped_call<move_only_function<fn_type_r>, function<fn_type>, small_callable>(0);
+    alloc_checker{1}, test_wrapped_call<move_only_function<fn_type_r>, function<fn_type>, large_callable>(0);
+    alloc_checker{is_64_bit ? 0 : 1},
+        test_wrapped_call<move_only_function<fn_type_c>, function<fn_type>, small_callable>(0);
+    alloc_checker{1}, test_wrapped_call<move_only_function<fn_type_c>, function<fn_type>, large_callable>(0);
 
 #ifdef __cpp_noexcept_function_type
     static_assert(!is_constructible_v<move_only_function<fn_type_nx>, function<fn_type>>);
