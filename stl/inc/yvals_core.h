@@ -1497,7 +1497,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // next warning number: STL4049
 
-// next error number: STL1013
+// next error number: STL1014
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
@@ -1885,11 +1885,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif
 
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED
-#ifndef _ALLOW_RTCc_IN_STL
-#error /RTCc rejects conformant code, so it is not supported by the C++ Standard Library. Either remove this \
-compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
-#endif // !defined(_ALLOW_RTCc_IN_STL)
-#endif // defined(_RTC_CONVERSION_CHECKS_ENABLED)
+_EMIT_STL_ERROR(STL1013, "The STL doesn't support /RTCc because it rejects conformant code. Remove the /RTCc option.");
+#endif
 
 #define _EMPTY_ARGUMENT // for empty macro argument
 

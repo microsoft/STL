@@ -90,7 +90,7 @@ public:
     }
 
     template <class _Lock, class _Clock, class _Duration>
-    cv_status wait_until(_Lock& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+    cv_status wait_until(_Lock& _Lck, const chrono::time_point<_Clock, _Duration> _Abs_time) {
         // wait until time point
         static_assert(chrono::_Is_clock_v<_Clock>, "Clock type required");
         const auto _Now                  = _Clock::now();
@@ -100,7 +100,7 @@ public:
     }
 
     template <class _Lock, class _Clock, class _Duration, class _Predicate>
-    bool wait_until(_Lock& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate _Pred) {
+    bool wait_until(_Lock& _Lck, const chrono::time_point<_Clock, _Duration> _Abs_time, _Predicate _Pred) {
         // wait for signal with timeout and check predicate
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
@@ -115,7 +115,7 @@ public:
     }
 
     template <class _Lock, class _Rep, class _Period>
-    cv_status wait_for(_Lock& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time) { // wait for duration
+    cv_status wait_for(_Lock& _Lck, const chrono::duration<_Rep, _Period> _Rel_time) { // wait for duration
         if (_Rel_time <= chrono::duration<_Rep, _Period>::zero()) {
             _Unlock_guard<_Lock> _Unlock_outer{_Lck};
             (void) _Unlock_outer;
@@ -146,7 +146,7 @@ public:
     }
 
     template <class _Lock, class _Rep, class _Period, class _Predicate>
-    bool wait_for(_Lock& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time, _Predicate _Pred) {
+    bool wait_for(_Lock& _Lck, const chrono::duration<_Rep, _Period> _Rel_time, _Predicate _Pred) {
         // wait for signal with timeout and check predicate
         return wait_until(_Lck, _To_absolute_time(_Rel_time), _STD move(_Pred));
     }
@@ -194,7 +194,7 @@ public:
 
     template <class _Lock, class _Clock, class _Duration, class _Predicate>
     bool wait_until(
-        _Lock& _Lck, stop_token _Stoken, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate _Pred) {
+        _Lock& _Lck, stop_token _Stoken, const chrono::time_point<_Clock, _Duration> _Abs_time, _Predicate _Pred) {
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
         stop_callback<_Cv_any_notify_all> _Cb{_Stoken, this};
         for (;;) {
@@ -224,7 +224,7 @@ public:
     }
 
     template <class _Lock, class _Rep, class _Period, class _Predicate>
-    bool wait_for(_Lock& _Lck, stop_token _Stoken, const chrono::duration<_Rep, _Period>& _Rel_time, _Predicate _Pred) {
+    bool wait_for(_Lock& _Lck, stop_token _Stoken, const chrono::duration<_Rep, _Period> _Rel_time, _Predicate _Pred) {
         return wait_until(_Lck, _STD move(_Stoken), _To_absolute_time(_Rel_time), _STD move(_Pred));
     }
 #endif // _HAS_CXX20

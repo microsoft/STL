@@ -624,7 +624,7 @@ struct _Ptr_traits_base {
     using _Reftype = conditional_t<is_void_v<_Elem>, char, _Elem>&;
 
     _NODISCARD static _CONSTEXPR20 pointer pointer_to(_Reftype _Val)
-        noexcept(noexcept(_Ty::pointer_to(_Val))) /* strengthened */ { // Per LWG-3454
+        noexcept(noexcept(_Ty::pointer_to(_Val))) /* strengthened */ {
         return _Ty::pointer_to(_Val);
     }
 };
