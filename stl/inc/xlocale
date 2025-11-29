@@ -479,14 +479,14 @@ char _Maklocbyte(_Elem _Char, const _Locinfo::_Cvtvec& _Cvt) {
         _Wcrtomb(&_Byte, _Char, &_Mbst1, &_Cvt);
         return _Byte;
     }
-#if defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
+#ifdef _CRTBLD
     else if constexpr (is_same_v<_Elem, unsigned short>) {
         char _Byte       = '\0';
         mbstate_t _Mbst1 = {};
         _Wcrtomb(&_Byte, static_cast<wchar_t>(_Char), &_Mbst1, &_Cvt);
         return _Byte;
     }
-#endif // defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
+#endif // defined(_CRTBLD)
     else {
         return static_cast<char>(static_cast<unsigned char>(_Char));
     }
@@ -501,14 +501,14 @@ _Elem _Maklocchr(char _Byte, _Elem*, const _Locinfo::_Cvtvec& _Cvt) {
         _Mbrtowc(&_Wc, &_Byte, 1, &_Mbst1, &_Cvt);
         return _Wc;
     }
-#if defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
+#ifdef _CRTBLD
     else if constexpr (is_same_v<_Elem, unsigned short>) {
         unsigned short _Wc = 0;
         mbstate_t _Mbst1   = {};
         _Mbrtowc(reinterpret_cast<wchar_t*>(&_Wc), &_Byte, 1, &_Mbst1, &_Cvt);
         return _Wc;
     }
-#endif // defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
+#endif // defined(_CRTBLD)
     else {
         return static_cast<_Elem>(static_cast<unsigned char>(_Byte));
     }
@@ -555,7 +555,7 @@ _Elem* _Maklocstr(const char* _Ptr, _Elem*, const _Locinfo::_Cvtvec& _Cvt) {
 
         return _Ptrdest;
     }
-#if defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
+#ifdef _CRTBLD
     else if constexpr (is_same_v<_Elem, unsigned short>) {
         size_t _Count;
         size_t _Count1;
@@ -592,7 +592,7 @@ _Elem* _Maklocstr(const char* _Ptr, _Elem*, const _Locinfo::_Cvtvec& _Cvt) {
         *_Ptrnext = L'\0';
         return reinterpret_cast<unsigned short*>(_Ptrdest);
     }
-#endif // defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
+#endif // defined(_CRTBLD)
     else {
         size_t _Count = _CSTD strlen(_Ptr) + 1;
 
