@@ -59,18 +59,18 @@ _MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(_When_(_Max_multibyte != 0,
 
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Strcoll(
     const char*, const char*, const char*, const char*, const _Collvec*) noexcept;
-_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(_Out_writes_(_End1 - _String1)
-                                                          _Post_readable_size_(return) char* _String1,
-    _In_z_ char* _End1, const char*, const char*, const _Collvec*) noexcept;
+_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(
+    _Out_writes_(_End1 - _String1) _Post_readable_size_(return) char* _String1, char* _End1,
+    _In_reads_(_End2 - _String2) const char* _String2, const char* _End2, _In_opt_ const _Collvec*) noexcept;
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int, const _Ctypevec*) noexcept;
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Toupper(int, const _Ctypevec*) noexcept;
 _CRTIMP2_PURE _Success_(return != -1) int __CLRCALL_PURE_OR_CDECL
     _Wcrtomb(_Out_ char*, wchar_t, mbstate_t*, const _Cvtvec*) noexcept;
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(
     const wchar_t*, const wchar_t*, const wchar_t*, const wchar_t*, const _Collvec*) noexcept;
-_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(_End1 - _String1) _Post_readable_size_(return)
-                                                          wchar_t* _String1,
-    _In_z_ wchar_t* _End1, const wchar_t*, const wchar_t*, const _Collvec*) noexcept;
+_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(
+    _Out_writes_(_End1 - _String1) _Post_readable_size_(return) wchar_t* _String1, wchar_t* _End1,
+    _In_reads_(_End2 - _String2) const wchar_t* _String2, const wchar_t* _End2, _In_opt_ const _Collvec*) noexcept;
 
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Getwctype(wchar_t, const _Ctypevec*) noexcept;
 _CRTIMP2_PURE const wchar_t* __CLRCALL_PURE_OR_CDECL _Getwctypes(

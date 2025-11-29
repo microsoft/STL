@@ -50,8 +50,9 @@ int _LStrcoll(const _Elem* _First1, const _Elem* _Last1, const _Elem* _First2, c
 }
 
 template <class _Elem>
-size_t _LStrxfrm(
-    _Elem* _First1, _Elem* _Last1, const _Elem* _First2, const _Elem* _Last2, const _Locinfo::_Collvec* _Vector) {
+size_t _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return) _Elem* _First1, _Elem* _Last1,
+    _In_reads_(_Last2 - _First2) const _Elem* _First2, const _Elem* _Last2,
+    _In_opt_ const _Locinfo::_Collvec* _Vector) {
     // perform locale-specific transform of _Elems [_First1, _Last1)
     if constexpr (is_same_v<_Elem, char>) {
         return _Strxfrm(_First1, _Last1, _First2, _Last2, _Vector);
