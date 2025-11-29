@@ -2063,10 +2063,21 @@ public:
                 }
             }
 
+            if constexpr (_Is_specialization_v<_Vt, move_only_function>) {
+                if constexpr (is_same_v<typename _Call::_Signature_no_cv_noex, typename _Vt::_Signature_no_cv_noex>) {
+                    this->_Checked_move(this->_Data, _Callable._Data);
+                    _Callable._Reset_to_null();
+                    return;
+                }
+            }
+
             using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
             this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_Fn>(_Callable));
         }
     }
+
+    template <class...>
+    friend class move_only_function;
 
     template <class _Fn, class... _CTypes>
         requires _Enable_in_place_constructor<_Fn, _CTypes...>
