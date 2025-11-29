@@ -2077,7 +2077,7 @@ public:
             }
 
             if constexpr (_Is_move_only_fuction_varying_cv_ref_noex<_Vt>()) {
-                this->_Checked_move(this->_Data, _Callable._Data);
+                _Call::_Checked_move(this->_Data, _Callable._Data);
                 _Callable._Reset_to_null();
             } else {
                 using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
