@@ -172,7 +172,7 @@ protected:
     }
 
 private:
-    _Locinfo::_Collvec _Coll; // used by _LStrcoll and _XStrxfrm
+    _Locinfo::_Collvec _Coll; // used by _LStrcoll and _LStrxfrm
 
     friend _Regex_traits<_Elem>;
 };
