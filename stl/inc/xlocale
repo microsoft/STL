@@ -476,14 +476,14 @@ char _Maklocbyte(_Elem _Char, const _Locinfo::_Cvtvec& _Cvt) {
     if constexpr (is_same_v<_Elem, wchar_t>) {
         char _Byte       = '\0';
         mbstate_t _Mbst1 = {};
-        _Wcrtomb(&_Byte, _Char, &_Mbst1, &_Cvt);
+        _Wcrtomb(&_Byte, static_cast<wchar_t>(_Char), &_Mbst1, &_Cvt); // no-op cast if _Elem is wchar_t
         return _Byte;
     }
 #ifdef _CRTBLD
     else if constexpr (is_same_v<_Elem, unsigned short>) {
         char _Byte       = '\0';
         mbstate_t _Mbst1 = {};
-        _Wcrtomb(&_Byte, static_cast<wchar_t>(_Char), &_Mbst1, &_Cvt);
+        _Wcrtomb(&_Byte, static_cast<wchar_t>(_Char), &_Mbst1, &_Cvt); // no-op cast if _Elem is wchar_t
         return _Byte;
     }
 #endif // defined(_CRTBLD)
@@ -496,16 +496,16 @@ template <class _Elem>
 _Elem _Maklocchr(char _Byte, const _Locinfo::_Cvtvec& _Cvt) {
     // convert char to _Elem using _Cvtvec
     if constexpr (is_same_v<_Elem, wchar_t>) {
-        wchar_t _Wc      = L'\0';
+        _Elem _Wc{};
         mbstate_t _Mbst1 = {};
-        _Mbrtowc(&_Wc, &_Byte, 1, &_Mbst1, &_Cvt);
+        _Mbrtowc(reinterpret_cast<wchar_t*>(&_Wc), &_Byte, 1, &_Mbst1, &_Cvt); // no-op cast if _Elem is wchar_t
         return _Wc;
     }
 #ifdef _CRTBLD
     else if constexpr (is_same_v<_Elem, unsigned short>) {
-        unsigned short _Wc = 0;
-        mbstate_t _Mbst1   = {};
-        _Mbrtowc(reinterpret_cast<wchar_t*>(&_Wc), &_Byte, 1, &_Mbst1, &_Cvt);
+        _Elem _Wc{};
+        mbstate_t _Mbst1 = {};
+        _Mbrtowc(reinterpret_cast<wchar_t*>(&_Wc), &_Byte, 1, &_Mbst1, &_Cvt); // no-op cast if _Elem is wchar_t
         return _Wc;
     }
 #endif // defined(_CRTBLD)
