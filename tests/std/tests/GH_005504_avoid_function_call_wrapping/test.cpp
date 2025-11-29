@@ -77,7 +77,6 @@ using fn_type_c = int(copy_counter) const;
 using fn_type_nx = int(copy_counter) noexcept;
 #endif // defined(__cpp_noexcept_function_type)
 
-
 struct small_callable {
     const int context = 42;
 
