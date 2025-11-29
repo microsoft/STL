@@ -3054,8 +3054,7 @@ namespace ranges {
 #endif // _HAS_CXX23
 
     namespace views {
-        class _Join_fn : public _Pipe::_Base<_Join_fn> {
-        public:
+        struct _Join_fn : public _Pipe::_Base<_Join_fn> {
             template <viewable_range _Rng>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
                 noexcept(noexcept(join_view<views::all_t<_Rng>>{_STD forward<_Rng>(_Range)}))
@@ -5117,8 +5116,7 @@ namespace ranges {
 
     namespace views {
         template <size_t _Index>
-        class _Elements_fn : public _Pipe::_Base<_Elements_fn<_Index>> {
-        public:
+        struct _Elements_fn : public _Pipe::_Base<_Elements_fn<_Index>> {
             template <viewable_range _Rng>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
                 noexcept(noexcept(elements_view<views::all_t<_Rng>, _Index>{_STD forward<_Rng>(_Range)}))
@@ -5459,8 +5457,7 @@ namespace ranges {
     constexpr auto _Compile_time_max_size<const enumerate_view<_Rng>> = _Compile_time_max_size<const _Rng>;
 
     namespace views {
-        class _Enumerate_fn : public _Pipe::_Base<_Enumerate_fn> {
-        public:
+        struct _Enumerate_fn : public _Pipe::_Base<_Enumerate_fn> {
             template <viewable_range _Rng>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
                 noexcept(noexcept(enumerate_view<views::all_t<_Rng>>{_STD forward<_Rng>(_Range)}))
@@ -8369,8 +8366,7 @@ namespace ranges {
 
     namespace views {
         template <size_t _Nx>
-        class _Adjacent_fn : public _Pipe::_Base<_Adjacent_fn<_Nx>> {
-        public:
+        struct _Adjacent_fn : public _Pipe::_Base<_Adjacent_fn<_Nx>> {
             template <viewable_range _Rng>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
                 noexcept(noexcept(adjacent_view<views::all_t<_Rng>, _Nx>{_STD forward<_Rng>(_Range)}))
@@ -8712,8 +8708,7 @@ namespace ranges {
 
     namespace views {
         template <size_t _Nx>
-        class _Adjacent_transform_fn {
-        public:
+        struct _Adjacent_transform_fn {
             template <viewable_range _Rng, class _Fn>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&&, _Fn&& _Func) _CONST_CALL_OPERATOR
                 noexcept(noexcept(views::zip_transform(_STD forward<_Fn>(_Func))))
@@ -9254,8 +9249,7 @@ namespace ranges {
         _Cartesian_product_view_compile_time_max_size<const _Rngs...>();
 
     namespace views {
-        class _Cartesian_product_fn {
-        public:
+        struct _Cartesian_product_fn {
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()() _CONST_CALL_OPERATOR noexcept {
                 return views::single(tuple{});
             }

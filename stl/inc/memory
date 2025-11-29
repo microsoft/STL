@@ -180,8 +180,7 @@ namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using uninitialized_copy_n_result = in_out_result<_In, _Out>;
 
-    class _Uninitialized_copy_n_fn {
-    public:
+    struct _Uninitialized_copy_n_fn {
         template <input_iterator _It, _No_throw_forward_iterator _Out, _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>
         _STATIC_CALL_OPERATOR uninitialized_copy_n_result<_It, _Out> operator()(
@@ -253,8 +252,7 @@ _NoThrowFwdIt uninitialized_move(_ExPo&&, const _FwdIt _First, const _FwdIt _Las
 
 #if _HAS_CXX20
 namespace ranges {
-    class _Uninitialized_move_fn {
-    public:
+    struct _Uninitialized_move_fn {
         template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
             _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
@@ -345,8 +343,7 @@ namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using uninitialized_move_n_result = in_out_result<_In, _Out>;
 
-    class _Uninitialized_move_n_fn {
-    public:
+    struct _Uninitialized_move_n_fn {
         template <input_iterator _It, _No_throw_forward_iterator _Out, _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
         _STATIC_CALL_OPERATOR uninitialized_move_n_result<_It, _Out> operator()(
@@ -498,8 +495,7 @@ _NoThrowFwdIt uninitialized_fill_n(
 
 #if _HAS_CXX20
 namespace ranges {
-    class _Uninitialized_fill_n_fn {
-    public:
+    struct _Uninitialized_fill_n_fn {
         template <_No_throw_forward_iterator _It, class _Ty>
             requires constructible_from<iter_value_t<_It>, const _Ty&>
         _STATIC_CALL_OPERATOR _It operator()(
@@ -535,8 +531,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_fill_n_fn uninitialized_fill_n;
 
-    class _Construct_at_fn {
-    public:
+    struct _Construct_at_fn {
         template <class _Ty, class... _Types>
             requires requires(_Ty* _Ptr, _Types&&... _Args) {
                 ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types &&>(_Args)...); // per LWG-3888
@@ -558,8 +553,7 @@ namespace ranges {
         requires destructible<iter_value_t<_It>>
     _NODISCARD constexpr _It _Destroy_unchecked(_It _First, _Se _Last) noexcept;
 
-    class _Destroy_at_fn {
-    public:
+    struct _Destroy_at_fn {
         template <destructible _Ty>
         _STATIC_CALL_OPERATOR constexpr void operator()(_Ty* const _Location) _CONST_CALL_OPERATOR noexcept {
             if constexpr (is_array_v<_Ty>) {
@@ -607,8 +601,7 @@ namespace ranges {
         return _First;
     }
 
-    class _Destroy_fn {
-    public:
+    struct _Destroy_fn {
         template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires destructible<iter_value_t<_It>>
         _STATIC_CALL_OPERATOR constexpr _It operator()(_It _First, _Se _Last) _CONST_CALL_OPERATOR noexcept {
@@ -668,8 +661,7 @@ _NoThrowFwdIt destroy_n(_ExPo&& _Exec, _NoThrowFwdIt _First, _Diff _Count_raw) n
 
 #if _HAS_CXX20
 namespace ranges {
-    class _Destroy_n_fn {
-    public:
+    struct _Destroy_n_fn {
         template <_No_throw_input_iterator _It>
             requires destructible<iter_value_t<_It>>
         _STATIC_CALL_OPERATOR constexpr _It operator()(
@@ -804,8 +796,7 @@ _NoThrowFwdIt uninitialized_default_construct_n(
 
 #if _HAS_CXX20
 namespace ranges {
-    class _Uninitialized_default_construct_n_fn {
-    public:
+    struct _Uninitialized_default_construct_n_fn {
         template <_No_throw_forward_iterator _It>
             requires default_initializable<iter_value_t<_It>>
         _STATIC_CALL_OPERATOR _It operator()(_It _First, iter_difference_t<_It> _Count) _CONST_CALL_OPERATOR {
@@ -922,8 +913,7 @@ _NoThrowFwdIt uninitialized_value_construct_n(
 
 #if _HAS_CXX20
 namespace ranges {
-    class _Uninitialized_value_construct_n_fn {
-    public:
+    struct _Uninitialized_value_construct_n_fn {
         template <_No_throw_forward_iterator _It>
             requires default_initializable<iter_value_t<_It>>
         _STATIC_CALL_OPERATOR _It operator()(_It _First, iter_difference_t<_It> _Count) _CONST_CALL_OPERATOR {
