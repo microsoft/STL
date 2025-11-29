@@ -27,16 +27,10 @@ int _LStrcoll(const _Elem* _First1, const _Elem* _Last1, const _Elem* _First2, c
     const _Locinfo::_Collvec* _Vector) { // perform locale-specific comparison of _Elem sequences
     if constexpr (is_same_v<_Elem, char>) {
         return _Strcoll(_First1, _Last1, _First2, _Last2, _Vector);
-    } else if constexpr (is_same_v<_Elem, wchar_t>) {
-        return _Wcscoll(_First1, _Last1, _First2, _Last2, _Vector);
-    }
-#ifdef _CRTBLD
-    else if constexpr (is_same_v<_Elem, unsigned short>) {
+    } else if constexpr (_Is_wchar_or_crtbld_ushort<_Elem>) { // no-op casts if _Elem is wchar_t
         return _Wcscoll(reinterpret_cast<const wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_Last1),
             reinterpret_cast<const wchar_t*>(_First2), reinterpret_cast<const wchar_t*>(_Last2), _Vector);
-    }
-#endif // defined(_CRTBLD)
-    else {
+    } else {
         for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, ++_First2) {
             if (*_First1 < *_First2) {
                 return -1; // [_First1, _Last1) < [_First2, _Last2)
@@ -56,16 +50,10 @@ size_t _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return) _El
     // perform locale-specific transform of _Elems [_First1, _Last1)
     if constexpr (is_same_v<_Elem, char>) {
         return _Strxfrm(_First1, _Last1, _First2, _Last2, _Vector);
-    } else if constexpr (is_same_v<_Elem, wchar_t>) {
-        return _Wcsxfrm(_First1, _Last1, _First2, _Last2, _Vector);
-    }
-#ifdef _CRTBLD
-    else if constexpr (is_same_v<_Elem, unsigned short>) {
+    } else if constexpr (_Is_wchar_or_crtbld_ushort<_Elem>) { // no-op casts if _Elem is wchar_t
         return _Wcsxfrm(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<wchar_t*>(_Last1),
             reinterpret_cast<const wchar_t*>(_First2), reinterpret_cast<const wchar_t*>(_Last2), _Vector);
-    }
-#endif // defined(_CRTBLD)
-    else {
+    } else {
         const ptrdiff_t _Count = _Last2 - _First2;
         if (_Count <= _Last1 - _First1) {
             _CSTD memcpy(_First1, _First2, _Count * sizeof(_Elem));

@@ -470,24 +470,23 @@ const _Facet& __CRTDECL use_facet(const locale& _Loc) { // get facet reference f
     _END_LOCK()
 } // end of use_facet body
 
+#ifdef _CRTBLD
+template <class _Elem>
+constexpr bool _Is_wchar_or_crtbld_ushort = _Is_any_of_v<remove_cv_t<_Elem>, wchar_t, unsigned short>;
+#else // ^^^ defined(_CRTBLD) / !defined(_CRTBLD) vvv
+template <class _Elem>
+constexpr bool _Is_wchar_or_crtbld_ushort = is_same_v<remove_cv_t<_Elem>, wchar_t>;
+#endif // ^^^ !defined(_CRTBLD) ^^^
+
 template <class _Elem>
 char _Maklocbyte(_Elem _Char, const _Locinfo::_Cvtvec& _Cvt) {
     // convert _Elem to char using _Cvtvec
-    if constexpr (is_same_v<_Elem, wchar_t>) {
+    if constexpr (_Is_wchar_or_crtbld_ushort<_Elem>) {
         char _Byte       = '\0';
         mbstate_t _Mbst1 = {};
         _Wcrtomb(&_Byte, static_cast<wchar_t>(_Char), &_Mbst1, &_Cvt); // no-op cast if _Elem is wchar_t
         return _Byte;
-    }
-#ifdef _CRTBLD
-    else if constexpr (is_same_v<_Elem, unsigned short>) {
-        char _Byte       = '\0';
-        mbstate_t _Mbst1 = {};
-        _Wcrtomb(&_Byte, static_cast<wchar_t>(_Char), &_Mbst1, &_Cvt); // no-op cast if _Elem is wchar_t
-        return _Byte;
-    }
-#endif // defined(_CRTBLD)
-    else {
+    } else {
         return static_cast<char>(static_cast<unsigned char>(_Char));
     }
 }
@@ -495,21 +494,12 @@ char _Maklocbyte(_Elem _Char, const _Locinfo::_Cvtvec& _Cvt) {
 template <class _Elem>
 _Elem _Maklocchr(char _Byte, const _Locinfo::_Cvtvec& _Cvt) {
     // convert char to _Elem using _Cvtvec
-    if constexpr (is_same_v<_Elem, wchar_t>) {
+    if constexpr (_Is_wchar_or_crtbld_ushort<_Elem>) {
         _Elem _Wc{};
         mbstate_t _Mbst1 = {};
         _Mbrtowc(reinterpret_cast<wchar_t*>(&_Wc), &_Byte, 1, &_Mbst1, &_Cvt); // no-op cast if _Elem is wchar_t
         return _Wc;
-    }
-#ifdef _CRTBLD
-    else if constexpr (is_same_v<_Elem, unsigned short>) {
-        _Elem _Wc{};
-        mbstate_t _Mbst1 = {};
-        _Mbrtowc(reinterpret_cast<wchar_t*>(&_Wc), &_Byte, 1, &_Mbst1, &_Cvt); // no-op cast if _Elem is wchar_t
-        return _Wc;
-    }
-#endif // defined(_CRTBLD)
-    else {
+    } else {
         return static_cast<_Elem>(static_cast<unsigned char>(_Byte));
     }
 }
@@ -517,7 +507,7 @@ _Elem _Maklocchr(char _Byte, const _Locinfo::_Cvtvec& _Cvt) {
 template <class _Elem>
 _Elem* _Maklocstr(const char* _Ptr, const _Locinfo::_Cvtvec& _Cvt) {
     // convert C string to _Elem sequence using _Cvtvec
-    if constexpr (is_same_v<_Elem, wchar_t>) {
+    if constexpr (_Is_wchar_or_crtbld_ushort<_Elem>) {
         size_t _Count;
         size_t _Count1;
         size_t _Wchars;
@@ -556,50 +546,7 @@ _Elem* _Maklocstr(const char* _Ptr, const _Locinfo::_Cvtvec& _Cvt) {
         *_Ptrnext = L'\0';
 
         return reinterpret_cast<_Elem*>(_Ptrdest); // no-op cast if _Elem is wchar_t
-    }
-#ifdef _CRTBLD
-    else if constexpr (is_same_v<_Elem, unsigned short>) {
-        size_t _Count;
-        size_t _Count1;
-        size_t _Wchars;
-        const char* _Ptr1;
-        int _Bytes;
-        _Elem _Wc;
-        mbstate_t _Mbst1 = {};
-
-        _Count1 = _CSTD strlen(_Ptr) + 1;
-        for (_Count = _Count1, _Wchars = 0, _Ptr1 = _Ptr; 0 < _Count; _Count -= _Bytes, _Ptr1 += _Bytes, ++_Wchars) {
-            if ((_Bytes = _Mbrtowc(reinterpret_cast<wchar_t*>(&_Wc), // no-op cast if _Elem is wchar_t
-                     _Ptr1, _Count, &_Mbst1, &_Cvt))
-                <= 0) {
-                break;
-            }
-        }
-
-        ++_Wchars; // count terminating nul
-
-        wchar_t* _Ptrdest =
-            static_cast<wchar_t*>(_calloc_dbg(_Wchars, sizeof(wchar_t), _CRT_BLOCK, __FILE__, __LINE__));
-
-        if (!_Ptrdest) {
-            _Xbad_alloc();
-        }
-
-        wchar_t* _Ptrnext = _Ptrdest;
-        mbstate_t _Mbst2  = {};
-
-        for (; 0 < _Wchars; _Count -= _Bytes, _Ptr += _Bytes, --_Wchars, ++_Ptrnext) {
-            if ((_Bytes = _Mbrtowc(_Ptrnext, _Ptr, _Count1, &_Mbst2, &_Cvt)) <= 0) {
-                break;
-            }
-        }
-
-        *_Ptrnext = L'\0';
-
-        return reinterpret_cast<_Elem*>(_Ptrdest); // no-op cast if _Elem is wchar_t
-    }
-#endif // defined(_CRTBLD)
-    else {
+    } else {
         size_t _Count = _CSTD strlen(_Ptr) + 1;
 
         _Elem* _Ptrdest = static_cast<_Elem*>(_calloc_dbg(_Count, sizeof(_Elem), _CRT_BLOCK, __FILE__, __LINE__));
