@@ -1005,7 +1005,7 @@ namespace ranges {
                         return *static_cast<_Ty&&>(_Val);
                     }
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -1329,7 +1329,7 @@ namespace ranges {
                     *static_cast<_Ty1&&>(_Val1) =
                         _Iter_swap::_Iter_exchange_move(static_cast<_Ty2&&>(_Val2), static_cast<_Ty1&&>(_Val1));
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -2742,7 +2742,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Non_member) {
                     return begin(_Val); // intentional ADL
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -2819,7 +2819,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Non_member) {
                     return end(_Val); // intentional ADL
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -2955,7 +2955,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Unwrap) {
                     return _RANGES _Unwrap_range_iter<_Ty>(_RANGES begin(_Val));
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -3006,7 +3006,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Unwrap) {
                     return _RANGES _Unwrap_range_sent<_Ty>(_RANGES end(_Val));
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -3172,7 +3172,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Make_reverse) {
                     return _STD make_reverse_iterator(_RANGES end(_Val));
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -3243,7 +3243,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Make_reverse) {
                     return _STD make_reverse_iterator(_RANGES begin(_Val));
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -3388,7 +3388,7 @@ namespace ranges {
                     const auto _Delta = _RANGES end(_Val) - _RANGES begin(_Val);
                     return static_cast<_Make_unsigned_like_t<remove_cv_t<decltype(_Delta)>>>(_Delta);
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -3450,7 +3450,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Compare) {
                     return static_cast<bool>(_RANGES begin(_Val) == _RANGES end(_Val));
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -3505,7 +3505,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Address) {
                     return _STD to_address(_RANGES begin(_Val));
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };

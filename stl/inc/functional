@@ -2821,7 +2821,7 @@ public:
             } else if constexpr (_Del == _Deletion_kind::_Normal_array) {
                 delete[] _Ptr;
             } else {
-                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                static_assert(false); // unexpected strategy
             }
         }
     }

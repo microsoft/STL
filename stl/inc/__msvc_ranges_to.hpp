@@ -632,7 +632,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Own) {
                     return owning_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };

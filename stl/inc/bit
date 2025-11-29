@@ -71,7 +71,7 @@ _NODISCARD constexpr _Ty byteswap(const _Ty _Val) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return static_cast<_Ty>(_Byteswap_uint64(static_cast<unsigned long long>(_Val)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false); // unexpected size
     }
 }
 #endif // _HAS_CXX23

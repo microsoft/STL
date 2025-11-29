@@ -3095,7 +3095,7 @@ namespace chrono {
             static_assert(false, "A three-step clock time conversion is required to be unique, "
                                  "either utc-to-system or system-to-utc, but not both (N4950 [time.clock.cast.fn]/2).");
         } else {
-            _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+            static_assert(false); // unexpected strategy
         }
     }
 
@@ -5452,7 +5452,7 @@ namespace chrono {
             } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
                 return _Type == 'z' || _Type == 'Z' || _Is_valid_type<decltype(_Ty::_Time)>(_Type);
             } else {
-                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected type
+                static_assert(false); // unexpected type
             }
         }
 
