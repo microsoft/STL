@@ -1575,7 +1575,7 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
 template <class _Rx, bool _Noexcept, class... _Types>
 class _Function_base {
 public:
-    using result_type = _Rx;
+    using result_type           = _Rx;
     using _Signature_no_cv_noex = _Rx(_Types...);
 
     struct _Impl_t { // A per-callable-type structure acting as a virtual function table.
