@@ -146,12 +146,10 @@ int main() {
     alloc_checker{0}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>, small_callable>(0);
     alloc_checker{1}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>, large_callable>(0);
 
+    constexpr bool is_64_bit = sizeof(void*) > 4;
+
     // Moves from function to move_only_function
-#ifdef _WIN64
-    alloc_checker{0},
-#else
-    alloc_checker{1},
-#endif
+    alloc_checker{is_64_bit ? 0 : 1},
         test_wrapped_call<move_only_function<fn_type>, function<fn_type>, small_callable>(0);
     alloc_checker{1}, test_wrapped_call<move_only_function<fn_type>, function<fn_type>, large_callable>(0);
 
