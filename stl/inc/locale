@@ -50,39 +50,29 @@ int _LStrcoll(const _Elem* _First1, const _Elem* _Last1, const _Elem* _First2, c
 }
 
 template <class _Elem>
-size_t _LStrxfrm(_Elem* _First1, _Elem* _Last1, const _Elem* _First2, const _Elem* _Last2,
-    const _Locinfo::_Collvec*) { // perform locale-specific transform of _Elems [_First1, _Last1)
-    const ptrdiff_t _Count = _Last2 - _First2;
-    if (_Count <= _Last1 - _First1) {
-        _CSTD memcpy(_First1, _First2, _Count * sizeof(_Elem));
+size_t _LStrxfrm(
+    _Elem* _First1, _Elem* _Last1, const _Elem* _First2, const _Elem* _Last2, const _Locinfo::_Collvec* _Vector) {
+    // perform locale-specific transform of _Elems [_First1, _Last1)
+    if constexpr (is_same_v<_Elem, char>) {
+        return _Strxfrm(_First1, _Last1, _First2, _Last2, _Vector);
+    } else if constexpr (is_same_v<_Elem, wchar_t>) {
+        return _Wcsxfrm(_First1, _Last1, _First2, _Last2, _Vector);
     }
-
-    return _Count;
-}
-
-template <>
-inline size_t _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return) char* _First1, _In_z_ char* _Last1,
-    const char* _First2, const char* _Last2,
-    const _Locinfo::_Collvec* _Vector) { // perform locale-specific transform of chars [_First1, _Last1)
-    return _Strxfrm(_First1, _Last1, _First2, _Last2, _Vector);
-}
-
-template <>
-inline size_t _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return) wchar_t* _First1,
-    _In_z_ wchar_t* _Last1, const wchar_t* _First2, const wchar_t* _Last2,
-    const _Locinfo::_Collvec* _Vector) { // perform locale-specific transform of wchar_ts [_First1, _Last1)
-    return _Wcsxfrm(_First1, _Last1, _First2, _Last2, _Vector);
-}
-
 #ifdef _CRTBLD
-template <>
-inline size_t _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return) unsigned short* _First1,
-    _In_z_ unsigned short* _Last1, const unsigned short* _First2, const unsigned short* _Last2,
-    const _Locinfo::_Collvec* _Vector) { // perform locale-specific transform of unsigned shorts [_First1, _Last1)
-    return _Wcsxfrm(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<wchar_t*>(_Last1),
-        reinterpret_cast<const wchar_t*>(_First2), reinterpret_cast<const wchar_t*>(_Last2), _Vector);
-}
+    else if constexpr (is_same_v<_Elem, unsigned short>) {
+        return _Wcsxfrm(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<wchar_t*>(_Last1),
+            reinterpret_cast<const wchar_t*>(_First2), reinterpret_cast<const wchar_t*>(_Last2), _Vector);
+    }
 #endif // defined(_CRTBLD)
+    else {
+        const ptrdiff_t _Count = _Last2 - _First2;
+        if (_Count <= _Last1 - _First1) {
+            _CSTD memcpy(_First1, _First2, _Count * sizeof(_Elem));
+        }
+
+        return _Count;
+    }
+}
 
 template <class _Elem>
 class _Regex_traits;
