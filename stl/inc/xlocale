@@ -471,13 +471,13 @@ const _Facet& __CRTDECL use_facet(const locale& _Loc) { // get facet reference f
 } // end of use_facet body
 
 template <class _Elem>
-char __CRTDECL _Maklocbyte(_Elem _Char, const _Locinfo::_Cvtvec&) {
+char _Maklocbyte(_Elem _Char, const _Locinfo::_Cvtvec&) {
     // convert _Elem to char using _Cvtvec
     return static_cast<char>(static_cast<unsigned char>(_Char));
 }
 
 template <>
-inline char __CRTDECL _Maklocbyte(wchar_t _Char, const _Locinfo::_Cvtvec& _Cvt) {
+inline char _Maklocbyte(wchar_t _Char, const _Locinfo::_Cvtvec& _Cvt) {
     // convert wchar_t to char using _Cvtvec
     char _Byte       = '\0';
     mbstate_t _Mbst1 = {};
@@ -487,7 +487,7 @@ inline char __CRTDECL _Maklocbyte(wchar_t _Char, const _Locinfo::_Cvtvec& _Cvt) 
 
 #if defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
 template <>
-inline char __CRTDECL _Maklocbyte(unsigned short _Char, const _Locinfo::_Cvtvec& _Cvt) {
+inline char _Maklocbyte(unsigned short _Char, const _Locinfo::_Cvtvec& _Cvt) {
     // convert unsigned short to char using _Cvtvec
     char _Byte       = '\0';
     mbstate_t _Mbst1 = {};
@@ -497,13 +497,13 @@ inline char __CRTDECL _Maklocbyte(unsigned short _Char, const _Locinfo::_Cvtvec&
 #endif // defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
 
 template <class _Elem>
-_Elem __CRTDECL _Maklocchr(char _Byte, _Elem*, const _Locinfo::_Cvtvec&) {
+_Elem _Maklocchr(char _Byte, _Elem*, const _Locinfo::_Cvtvec&) {
     // convert char to _Elem using _Cvtvec
     return static_cast<_Elem>(static_cast<unsigned char>(_Byte));
 }
 
 template <>
-inline wchar_t __CRTDECL _Maklocchr(char _Byte, wchar_t*, const _Locinfo::_Cvtvec& _Cvt) {
+inline wchar_t _Maklocchr(char _Byte, wchar_t*, const _Locinfo::_Cvtvec& _Cvt) {
     // convert char to wchar_t using _Cvtvec
     wchar_t _Wc      = L'\0';
     mbstate_t _Mbst1 = {};
@@ -513,7 +513,7 @@ inline wchar_t __CRTDECL _Maklocchr(char _Byte, wchar_t*, const _Locinfo::_Cvtve
 
 #if defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
 template <>
-inline unsigned short __CRTDECL _Maklocchr(char _Byte, unsigned short*, const _Locinfo::_Cvtvec& _Cvt) {
+inline unsigned short _Maklocchr(char _Byte, unsigned short*, const _Locinfo::_Cvtvec& _Cvt) {
     // convert char to unsigned short using _Cvtvec
     unsigned short _Wc = 0;
     mbstate_t _Mbst1   = {};
@@ -523,7 +523,7 @@ inline unsigned short __CRTDECL _Maklocchr(char _Byte, unsigned short*, const _L
 #endif // defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
 
 template <class _Elem>
-_Elem* __CRTDECL _Maklocstr(const char* _Ptr, _Elem*, const _Locinfo::_Cvtvec&) {
+_Elem* _Maklocstr(const char* _Ptr, _Elem*, const _Locinfo::_Cvtvec&) {
     // convert C string to _Elem sequence using _Cvtvec
     size_t _Count = _CSTD strlen(_Ptr) + 1;
 
@@ -541,7 +541,7 @@ _Elem* __CRTDECL _Maklocstr(const char* _Ptr, _Elem*, const _Locinfo::_Cvtvec&) 
 }
 
 template <>
-inline wchar_t* __CRTDECL _Maklocstr(const char* _Ptr, wchar_t*, const _Locinfo::_Cvtvec& _Cvt) {
+inline wchar_t* _Maklocstr(const char* _Ptr, wchar_t*, const _Locinfo::_Cvtvec& _Cvt) {
     // convert C string to wchar_t sequence using _Cvtvec
     size_t _Count;
     size_t _Count1;
@@ -582,7 +582,7 @@ inline wchar_t* __CRTDECL _Maklocstr(const char* _Ptr, wchar_t*, const _Locinfo:
 
 #if defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
 template <>
-inline unsigned short* __CRTDECL _Maklocstr(const char* _Ptr, unsigned short*, const _Locinfo::_Cvtvec& _Cvt) {
+inline unsigned short* _Maklocstr(const char* _Ptr, unsigned short*, const _Locinfo::_Cvtvec& _Cvt) {
     // convert C string to unsigned short sequence using _Cvtvec
     size_t _Count;
     size_t _Count1;
@@ -3309,8 +3309,7 @@ protected:
 enum class _Case_sensitive : bool { _Nope, _Yes };
 
 template <class _InIt, class _Elem>
-int __CRTDECL _Getloctxt(
-    _InIt& _First, _InIt& _Last, size_t _Numfields, const _Elem* _Ptr, const _Case_sensitive _Matching) {
+int _Getloctxt(_InIt& _First, _InIt& _Last, size_t _Numfields, const _Elem* _Ptr, const _Case_sensitive _Matching) {
     // find field at _Ptr that matches longest in [_First, _Last)
     for (size_t _Off = 0; _Ptr[_Off] != _Elem{}; ++_Off) {
         if (_Ptr[_Off] == _Ptr[0]) {
