@@ -193,10 +193,10 @@ public:
         static void __CLRCALL_OR_CDECL _Makewloc(
             const _Locinfo&, category, _Locimp*, const locale*); // make wchar_t facets
 
-#if defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
+#ifdef _CRTBLD
         static void __CLRCALL_OR_CDECL _Makeushloc(
             const _Locinfo&, category, _Locimp*, const locale*); // make ushort facets
-#endif // defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
+#endif // defined(_CRTBLD)
 
         static void __CLRCALL_OR_CDECL _Makexloc(
             const _Locinfo&, category, _Locimp*, const locale*); // make remaining facets
