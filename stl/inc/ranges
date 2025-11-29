@@ -7557,7 +7557,7 @@ namespace ranges {
     constexpr auto _Compile_time_max_size<const zip_view<_Rngs...>> = _Zip_view_compile_time_max_size<const _Rngs...>();
 
     namespace views {
-        struct _Zip_fn {
+        class _Zip_fn {
         private:
             template <class... _Types>
             _NODISCARD static consteval bool _Is_invocation_noexcept() {
@@ -7903,7 +7903,7 @@ namespace ranges {
         _Compile_time_max_size<const zip_view<_Rngs...>>;
 
     namespace views {
-        struct _Zip_transform_fn {
+        class _Zip_transform_fn {
         private:
             template <class _Func, class... _Types>
             _NODISCARD static consteval bool _Is_invocation_noexcept() {
