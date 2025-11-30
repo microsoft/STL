@@ -156,7 +156,6 @@
 // P2875R4 Undeprecate polymorphic_allocator::destroy
 // LWG-2385 function::assign allocator argument doesn't make sense
 // Enforcement of matching allocator value_types
-// Other C++17 deprecation warnings
 
 // Implemented when char8_t is available (C++14/17 with /Zc:char8_t, C++20 without /Zc:char8_t-):
 // P0482R6 Library Support For char8_t
@@ -319,7 +318,6 @@
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic_ref<cv T>)
 // P3349R1 Converting Contiguous Iterators To Pointers
-// Other C++20 deprecation warnings
 
 // _HAS_CXX23 controls:
 // P0009R18 <mdspan>
@@ -403,7 +401,6 @@
 // P3142R0 Printing Blank Lines With println()
 // P3235R3 std::print More Types Faster With Less Memory
 //     (partial implementation; see GH-4924)
-// Other C++23 deprecation warnings
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
