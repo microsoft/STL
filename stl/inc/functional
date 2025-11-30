@@ -1645,7 +1645,7 @@ public:
                     void* _Ptr;
 
                     ~_Guard_type() {
-                        // _Ptr is not nullptr only if an exception is thrown as a result of _Vt construction.
+                        // _Ptr is not nullptr only if an exception is thrown as a result of _Copy.
                         // Check _Ptr before calling operator delete to save the call in the common case.
                         if (_Ptr) {
                             ::operator delete(_Ptr);
