@@ -1924,19 +1924,6 @@ _EMIT_STL_ERROR(STL1013, "The STL doesn't support /RTCc because it rejects confo
 #define _CHRONO ::std::chrono::
 #define _RANGES ::std::ranges::
 
-// We use the stdext (standard extension) namespace to contain non-standard extensions
-#pragma push_macro("stdext")
-#undef stdext
-#define _STDEXT_BEGIN      \
-    _EXTERN_CXX_WORKAROUND \
-    namespace stdext {
-#define _STDEXT_END \
-    }               \
-    _END_EXTERN_CXX_WORKAROUND
-
-#define _STDEXT ::stdext::
-#pragma pop_macro("stdext")
-
 #define _CSTD ::
 
 #ifdef _M_CEE_PURE
