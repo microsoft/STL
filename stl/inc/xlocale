@@ -537,7 +537,7 @@ _Elem* _Maklocstr(const char* _Ptr, const _Locinfo::_Cvtvec& _Cvt) {
         wchar_t* _Ptrnext = _Ptrdest;
         mbstate_t _Mbst2  = {};
 
-        for (; 0 < _Wchars; _Count -= _Bytes, _Ptr += _Bytes, --_Wchars, ++_Ptrnext) {
+        for (; 0 < _Wchars; _Ptr += _Bytes, --_Wchars, ++_Ptrnext) {
             if ((_Bytes = _Mbrtowc(_Ptrnext, _Ptr, _Count1, &_Mbst2, &_Cvt)) <= 0) {
                 break;
             }
