@@ -508,16 +508,14 @@ template <class _Elem>
 _Elem* _Maklocstr(const char* _Ptr, const _Locinfo::_Cvtvec& _Cvt) {
     // convert C string to _Elem sequence using _Cvtvec
     if constexpr (_Is_wchar_or_crtbld_ushort<_Elem>) {
-        size_t _Count;
-        size_t _Count1;
-        size_t _Wchars;
-        const char* _Ptr1;
+        size_t _Wchars    = 0;
+        const char* _Ptr1 = _Ptr;
         int _Bytes;
         _Elem _Wc;
         mbstate_t _Mbst1 = {};
 
-        _Count1 = _CSTD strlen(_Ptr) + 1;
-        for (_Count = _Count1, _Wchars = 0, _Ptr1 = _Ptr; 0 < _Count; _Count -= _Bytes, _Ptr1 += _Bytes, ++_Wchars) {
+        const size_t _Count1 = _CSTD strlen(_Ptr) + 1;
+        for (size_t _Count = _Count1; 0 < _Count; _Count -= _Bytes, _Ptr1 += _Bytes, ++_Wchars) {
             if ((_Bytes = _Mbrtowc(reinterpret_cast<wchar_t*>(&_Wc), // no-op cast if _Elem is wchar_t
                      _Ptr1, _Count, &_Mbst1, &_Cvt))
                 <= 0) {
