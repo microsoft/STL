@@ -1629,15 +1629,38 @@ public:
             _STL_INTERNAL_STATIC_ASSERT(alignof(max_align_t) == alignof(void*));
             // 64-bit target, can put small function into small move_only_function directly
             _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small, _Vt, void>();
-            _Old_fn_impl->_Move(_Data._Buf_ptr<void*>());
-            _Func._Tidy();
+            if constexpr (is_lvalue_reference_v<_Fn>) {
+                _Old_fn_impl->_Copy(_Data._Buf_ptr<void*>());
+            } else {
+                _Old_fn_impl->_Move(_Data._Buf_ptr<void*>());
+                _Func._Tidy();
+            }
 #else // ^^^ 64-bit / 32-bit vvv
             _STL_INTERNAL_STATIC_ASSERT(alignof(max_align_t) > alignof(void*));
             // 32-bit target, cannot put small function into small move_only_function directly
             // due to potentially not enough alignment. Allocate large function
             void* _Where = ::operator new((_Small_object_num_ptrs - 1) * sizeof(void*));
-            _Old_fn_impl->_Move(_Where);
-            _Func._Tidy();
+            if constexpr (is_lvalue_reference_v<_Fn>) {
+                struct _NODISCARD _Guard_type {
+                    void* _Ptr;
+
+                    ~_Guard_type() {
+                        // _Ptr is not nullptr only if an exception is thrown as a result of _Vt construction.
+                        // Check _Ptr before calling operator delete to save the call in the common case.
+                        if (_Ptr) {
+                            ::operator delete(_Ptr);
+                        }
+                    }
+                };
+
+                _Guard_type _Guard;
+                _Guard._Ptr = _Where;
+                _Old_fn_impl->_Copy(_Where);
+                _Guard._Ptr = nullptr;
+            } else {
+                _Old_fn_impl->_Move(_Where);
+                _Func._Tidy();
+            }
 
             _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small_as_large, _Vt, void>();
             _Data._Set_large_fn_ptr(_Where);
@@ -1645,8 +1668,12 @@ public:
         } else {
             // Just take ownership of the inner impl pointer
             _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_large, _Vt, void>();
-            _Data._Set_large_fn_ptr(_Old_fn_impl);
-            _Func._Set(nullptr);
+            if constexpr (is_lvalue_reference_v<_Fn>) {
+                _Data._Set_large_fn_ptr(_Old_fn_impl->_Copy(nullptr));
+            } else {
+                _Data._Set_large_fn_ptr(_Old_fn_impl);
+                _Func._Set(nullptr);
+            }
         }
     }
 
@@ -2051,7 +2078,7 @@ public:
         using _Vt = decay_t<_Fn>;
         static_assert(is_constructible_v<_Vt, _Fn>, "_Vt should be constructible from _Fn. "
                                                     "(N4950 [func.wrap.move.ctor]/6)");
-        if constexpr (!is_lvalue_reference_v<_Fn> && is_same_v<_Vt, function<_Signature...>>) {
+        if constexpr (is_same_v<_Vt, function<_Signature...>>) {
             this->template _Construct_with_old_fn<_Vt>(_STD forward<_Fn>(_Callable));
         } else {
             if constexpr (is_member_pointer_v<_Vt> || is_pointer_v<_Vt>
