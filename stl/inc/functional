@@ -2051,7 +2051,7 @@ public:
         using _Vt = decay_t<_Fn>;
         static_assert(is_constructible_v<_Vt, _Fn>, "_Vt should be constructible from _Fn. "
                                                     "(N4950 [func.wrap.move.ctor]/6)");
-        if constexpr (is_same_v<_Vt, function<_Signature...>>) {
+        if constexpr (!is_lvalue_reference_v<_Fn> && is_same_v<_Vt, function<_Signature...>>) {
             this->template _Construct_with_old_fn<_Vt>(_STD forward<_Fn>(_Callable));
         } else {
             if constexpr (is_member_pointer_v<_Vt> || is_pointer_v<_Vt>

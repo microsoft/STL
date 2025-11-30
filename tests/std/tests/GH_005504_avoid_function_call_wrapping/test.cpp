@@ -163,4 +163,16 @@ int main() {
     alloc_checker{0}, test_wrapped_null<function<fn_type>, function<fn_type>>(true, true);
     alloc_checker{0}, test_wrapped_null<move_only_function<fn_type>, move_only_function<fn_type>>(true, false);
     alloc_checker{0}, test_wrapped_null<move_only_function<fn_type>, function<fn_type>>(false, true);
+
+    {
+        // make sure we only move from function when we can
+        function<fn_type> f1{small_callable{}};
+        assert(move_only_function<fn_type>(f1)(copy_counter{}) == 1);
+        assert(f1);
+        assert(f1(copy_counter{}) == 0);
+
+        function<fn_type> f2{small_callable{}};
+        assert(move_only_function<fn_type>(move(f2))(copy_counter{}) == 0);
+        assert(!f2);
+    }
 }
