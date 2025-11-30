@@ -3081,13 +3081,9 @@ private:
 
         // We can't check for overlapping ranges when constant evaluated since comparison of pointers into string
         // literals is unspecified, so always reallocate and copy to the new buffer if constant evaluated.
-#if _HAS_CXX20
-        const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size && !_STD is_constant_evaluated();
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size;
-#endif // ^^^ !_HAS_CXX20 ^^^
 
-        if (_Check_overlap) {
+        if (_Check_overlap && !_STD _Is_constant_evaluated()) {
             const auto _New_size = static_cast<size_type>(_Old_size + _Count);
             _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
             _Mypair._Myval2._Mysize = _New_size;
