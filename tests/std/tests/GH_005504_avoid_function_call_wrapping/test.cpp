@@ -104,6 +104,14 @@ void test_wrapped_call(const int expected_copies) {
     assert(outer(copy_counter{}) == expected_copies);
 }
 
+template <class OuterWrapper, class InnerWrapper, class Callable>
+void test_wrapped_copy_call(const int expected_copies) {
+    InnerWrapper inner{Callable{}};
+    OuterWrapper outer{inner};
+    assert(inner);
+    assert(outer(copy_counter{}) == expected_copies);
+}
+
 template <class Wrapper>
 void check_call_null(Wrapper& wrapper, const bool throws) {
     if (throws) {
@@ -143,6 +151,8 @@ int main() {
     // Moves to the same
     alloc_checker{0}, test_wrapped_call<function<fn_type>, function<fn_type>, small_callable>(0);
     alloc_checker{1}, test_wrapped_call<function<fn_type>, function<fn_type>, large_callable>(0);
+    alloc_checker{0}, test_wrapped_copy_call<function<fn_type>, function<fn_type>, small_callable>(0);
+    alloc_checker{2}, test_wrapped_copy_call<function<fn_type>, function<fn_type>, large_callable>(0);
     alloc_checker{0}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>, small_callable>(0);
     alloc_checker{1}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>, large_callable>(0);
 
@@ -154,6 +164,8 @@ int main() {
 #endif
         test_wrapped_call<move_only_function<fn_type>, function<fn_type>, small_callable>(0);
     alloc_checker{1}, test_wrapped_call<move_only_function<fn_type>, function<fn_type>, large_callable>(0);
+    alloc_checker{1}, test_wrapped_copy_call<move_only_function<fn_type>, function<fn_type>, small_callable>(1);
+    alloc_checker{3}, test_wrapped_copy_call<move_only_function<fn_type>, function<fn_type>, large_callable>(1);
 
     // nulls
     alloc_checker{0}, test_plain_null<function<fn_type>>(true);
@@ -163,16 +175,4 @@ int main() {
     alloc_checker{0}, test_wrapped_null<function<fn_type>, function<fn_type>>(true, true);
     alloc_checker{0}, test_wrapped_null<move_only_function<fn_type>, move_only_function<fn_type>>(true, false);
     alloc_checker{0}, test_wrapped_null<move_only_function<fn_type>, function<fn_type>>(false, true);
-
-    {
-        // make sure we only move from function when we can
-        function<fn_type> f1{small_callable{}};
-        assert(move_only_function<fn_type>(f1)(copy_counter{}) == 1);
-        assert(f1);
-        assert(f1(copy_counter{}) == 0);
-
-        function<fn_type> f2{small_callable{}};
-        assert(move_only_function<fn_type>(move(f2))(copy_counter{}) == 0);
-        assert(!f2);
-    }
 }
