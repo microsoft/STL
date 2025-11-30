@@ -2065,7 +2065,8 @@ public:
         using _Vt = decay_t<_Fn>;
         static_assert(is_constructible_v<_Vt, _Fn>, "_Vt should be constructible from _Fn. "
                                                     "(N4950 [func.wrap.move.ctor]/6)");
-        if constexpr (is_same_v<_Vt, function<typename _Call::_Signature_without_cv_ref_noex>>) {
+        if constexpr (!is_lvalue_reference_v<_Fn>
+                      && is_same_v<_Vt, function<typename _Call::_Signature_without_cv_ref_noex>>) {
             this->template _Construct_with_old_fn<_Vt>(_STD forward<_Fn>(_Callable));
         } else {
             if constexpr (is_member_pointer_v<_Vt> || is_pointer_v<_Vt>
@@ -2076,7 +2077,7 @@ public:
                 }
             }
 
-            if constexpr (_Is_move_only_fuction_varying_cv_ref_noex<_Vt>()) {
+            if constexpr (!is_lvalue_reference_v<_Fn> && _Is_move_only_fuction_varying_cv_ref_noex<_Vt>()) {
                 _Call::_Checked_move(this->_Data, _Callable._Data);
                 _Callable._Reset_to_null();
             } else {
