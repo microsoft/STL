@@ -85,7 +85,10 @@
 //     (for atomic<cv T>)
 // P3503R3 Make Type-Erased Allocator Use In promise And packaged_task Consistent
 
-// _HAS_CXX17 directly controls:
+// _HAS_CXX17 controls:
+// N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
+// P0003R5 Removing Dynamic Exception Specifications
+// P0004R1 Removing Deprecated Iostreams Aliases
 // P0005R4 not_fn()
 // P0024R2 Parallel Algorithms
 // P0025R1 clamp()
@@ -102,6 +105,7 @@
 // P0154R1 hardware_destructive_interference_size, etc.
 // P0156R2 scoped_lock
 // P0163R0 shared_ptr::weak_type
+// P0174R2 Deprecating Vestigial Library Parts
 // P0185R1 is_swappable, is_nothrow_swappable
 // P0209R2 make_from_tuple()
 // P0218R1 <filesystem>
@@ -112,6 +116,8 @@
 // P0258R2 has_unique_object_representations
 // P0272R1 Non-const basic_string::data()
 // P0295R0 gcd(), lcm()
+// P0298R3 std::byte
+// P0302R1 Removing Allocator Support In std::function
 // P0307R2 Making Optional Greater Equal Again
 // P0336R1 Renaming Parallel Execution Policies
 // P0337R0 Deleting polymorphic_allocator Assignment
@@ -127,10 +133,12 @@
 // P0505R0 constexpr For <chrono> (Again)
 // P0508R0 Clarifying insert_return_type
 // P0510R0 Rejecting variants Of Nothing, Arrays, References, And Incomplete Types
+// P0521R0 Deprecating shared_ptr::unique()
 // P0602R4 Propagating Copy/Move Triviality In variant/optional
 // P0604R0 invoke_result, is_invocable, is_nothrow_invocable
 // P0607R0 Inline Variables For The STL
 // P0608R3 Improving variant's Converting Constructor/Assignment
+// P0618R0 Deprecating <codecvt>
 // P0682R1 Repairing Elementary String Conversions
 // P0739R0 Improving Class Template Argument Deduction For The STL
 // P0858R0 Constexpr Iterator Requirements
@@ -146,27 +154,15 @@
 //     __cpp_lib_freestanding_variant)
 // P2517R1 Conditional noexcept For apply()
 // P2875R4 Undeprecate polymorphic_allocator::destroy
-
-// _HAS_CXX17 indirectly controls:
-// N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
-// P0003R5 Removing Dynamic Exception Specifications
-// P0004R1 Removing Deprecated Iostreams Aliases
-// P0298R3 std::byte
-// P0302R1 Removing Allocator Support In std::function
 // LWG-2385 function::assign allocator argument doesn't make sense
 // Enforcement of matching allocator value_types
-
-// _HAS_CXX17 and _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS control:
-// P0174R2 Deprecating Vestigial Library Parts
-// P0521R0 Deprecating shared_ptr::unique()
-// P0618R0 Deprecating <codecvt>
 // Other C++17 deprecation warnings
 
 // Implemented when char8_t is available (C++14/17 with /Zc:char8_t, C++20 without /Zc:char8_t-):
 // P0482R6 Library Support For char8_t
 //     (mbrtoc8 and c8rtomb not yet implemented, see GH-2207)
 
-// _HAS_CXX20 directly controls:
+// _HAS_CXX20 controls:
 // P0019R8 atomic_ref
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
 // P0053R7 <syncstream>
@@ -196,6 +192,7 @@
 // P0591R4 Utility Functions For Uses-Allocator Construction
 // P0595R2 is_constant_evaluated()
 // P0616R0 Using move() In <numeric>
+// P0619R4 Removing C++17-Deprecated Features
 // P0631R8 <numbers> Math Constants
 // P0645R10 <format> Text Formatting
 // P0646R1 list/forward_list remove()/remove_if()/unique() Return size_type
@@ -206,6 +203,7 @@
 // P0718R2 atomic<shared_ptr<T>>, atomic<weak_ptr<T>>
 // P0753R2 osyncstream Manipulators
 // P0758R1 is_nothrow_convertible
+// P0767R1 Deprecating is_pod
 // P0768R1 Library Support For The Spaceship Comparison Operator <=>
 // P0769R2 shift_left(), shift_right()
 // P0784R7 Library Support For More constexpr Containers
@@ -259,6 +257,7 @@
 // P1716R3 Range Comparison Algorithms Are Over-Constrained
 // P1739R4 Avoiding Template Bloat For Ranges
 // P1754R1 Rename Concepts To standard_case
+// P1831R1 Deprecating volatile In The Standard Library
 // P1862R1 Range Adaptors For Non-Copyable Iterators
 // P1865R1 Adding max() To latch And barrier
 // P1870R1 Rename forwarding-range To borrowed_range (Was safe_range before LWG-3379)
@@ -320,16 +319,9 @@
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic_ref<cv T>)
 // P3349R1 Converting Contiguous Iterators To Pointers
-
-// _HAS_CXX20 indirectly controls:
-// P0619R4 Removing C++17-Deprecated Features
-
-// _HAS_CXX20 and _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS control:
-// P0767R1 Deprecating is_pod
-// P1831R1 Deprecating volatile In The Standard Library
 // Other C++20 deprecation warnings
 
-// _HAS_CXX23 directly controls:
+// _HAS_CXX23 controls:
 // P0009R18 <mdspan>
 // P0288R9 move_only_function
 // P0323R12 <expected>
@@ -347,6 +339,7 @@
 // P1223R5 ranges::find_last, ranges::find_last_if, ranges::find_last_if_not
 // P1272R4 byteswap()
 // P1328R1 constexpr type_info::operator==()
+// P1413R3 Deprecate aligned_storage And aligned_union
 // P1425R4 Iterator Pair Constructors For stack And queue
 // P1467R9 Extended Floating-Point Types
 //     (only the <stdfloat> header; we don't support any optional extended floating-point types)
@@ -396,6 +389,7 @@
 // P2599R2 mdspan: index_type, size_type
 // P2604R0 mdspan: data_handle_type, data_handle(), exhaustive
 // P2613R1 mdspan: empty()
+// P2614R2 Deprecating float_denorm_style, numeric_limits::has_denorm, numeric_limits::has_denorm_loss
 // P2652R2 Disallowing User Specialization Of allocator_traits
 // P2674R1 is_implicit_lifetime
 // P2693R1 Formatting thread::id And stacktrace
@@ -409,10 +403,6 @@
 // P3142R0 Printing Blank Lines With println()
 // P3235R3 std::print More Types Faster With Less Memory
 //     (partial implementation; see GH-4924)
-
-// _HAS_CXX23 and _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS control:
-// P1413R3 Deprecate aligned_storage And aligned_union
-// P2614R2 Deprecating float_denorm_style, numeric_limits::has_denorm, numeric_limits::has_denorm_loss
 // Other C++23 deprecation warnings
 
 // Parallel Algorithms Notes
