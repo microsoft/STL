@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <__msvc_threads_core.hpp>
-#include <synchapi.h>
+
+#include <Windows.h>
 
 #include "primitives.hpp"
 

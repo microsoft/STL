@@ -1929,14 +1929,7 @@ _EMIT_STL_ERROR(STL1013, "The STL doesn't support /RTCc because it rejects confo
 #error In yvals_core.h, defined(MRTDLL) implies defined(_M_CEE_PURE); !defined(_M_CEE_PURE) implies !defined(MRTDLL)
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
 
-#define _STL_WIN32_WINNT_VISTA 0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
-#define _STL_WIN32_WINNT_WIN10 0x0A00 // _WIN32_WINNT_WIN10 from sdkddkver.h
-
-// Note that the STL DLL builds will set this to XP for ABI compatibility with VS2015 which supported XP.
-#ifndef _STL_WIN32_WINNT
-// The earliest Windows supported by this implementation is Windows 10
-#define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN10
-#endif // !defined(_STL_WIN32_WINNT)
+// The earliest Windows supported by this implementation is Windows 10.
 
 #ifdef __cpp_noexcept_function_type
 #define _NOEXCEPT_FNPTR           noexcept
