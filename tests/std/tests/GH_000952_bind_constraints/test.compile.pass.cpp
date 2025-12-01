@@ -19,7 +19,7 @@
 
 using namespace std;
 
-void test() { // COMPILE-ONLY
+void test() {
     {
         auto lambda = [](int) {};
         auto f      = bind(lambda, placeholders::_1);

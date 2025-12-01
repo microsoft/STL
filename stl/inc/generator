@@ -15,6 +15,7 @@ _EMIT_STL_WARNING(STL4038, "The contents of <generator> are available only with 
 #include <coroutine>
 #include <exception>
 #include <xmemory>
+
 #ifdef __cpp_lib_byte
 #include <xpolymorphic_allocator.h>
 #endif // defined(__cpp_lib_byte)
@@ -302,8 +303,8 @@ namespace _Gen_detail {
         _NODISCARD auto yield_value(_RANGES elements_of<_Rng, _Alloc> _Elem) {
             using _Nested_awaitable = _Nested_awaitable_provider<_Yielded, void, _Alloc>::_Awaitable;
 
-            auto _Lambda = [](allocator_arg_t, _Alloc, _RANGES iterator_t<_Rng> _It,
-                               const _RANGES sentinel_t<_Rng> _Se) -> generator<_Yielded, void, _Alloc> {
+            auto _Lambda = [](allocator_arg_t, _Alloc, _RANGES iterator_t<_Rng> _It, const _RANGES sentinel_t<_Rng> _Se)
+                               _STATIC_CALL_OPERATOR -> generator<_Yielded, void, _Alloc> {
                 for (; _It != _Se; ++_It) {
                     co_yield static_cast<_Yielded>(*_It);
                 }

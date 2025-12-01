@@ -66,7 +66,7 @@ namespace {
 
         return res;
     }
-} // namespace
+} // unnamed namespace
 
 // TRANSITION, ABI: preserved for compatibility
 _Thrd_result __stdcall _Cnd_timedwait_for(const _Cnd_t cond, const _Mtx_t mtx, const unsigned int target_ms) noexcept {

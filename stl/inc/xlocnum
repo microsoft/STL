@@ -1180,7 +1180,7 @@ int _Float_put_desired_precision(const streamsize _Precision, const ios_base::fm
         } else if constexpr (is_same_v<_Ty, long double>) {
             return ((LDBL_MANT_DIG - 1) + 3) / 4;
         } else {
-            _STL_INTERNAL_STATIC_ASSERT(false); // unexpected type; shouldn't be float
+            static_assert(false, "unexpected type; shouldn't be float");
         }
     }
 
