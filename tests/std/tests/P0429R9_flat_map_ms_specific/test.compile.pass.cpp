@@ -52,7 +52,7 @@ template <bool IsUnique, class Key, class Mapped, class Comp, class KeyCont, cla
 using flat_map_unique_if = flat_map_unique_if_impl<IsUnique>::template type<Key, Mapped, Comp, KeyCont, MappedCont>;
 
 template <bool IsUnique, class Comparator, class Alloc1, class Alloc2>
-void test_scary_ness_one() { // COMPILE-ONLY
+void test_scary_ness_one() {
     using Iter = flat_map<int, int>::iterator;
     using OtherIter =
         flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::iterator;
@@ -82,7 +82,7 @@ void test_scary_ness_one() { // COMPILE-ONLY
     static_assert(is_same_v<ValueComp, OtherValueComp4>);
 }
 
-void test_scary_ness() { // COMPILE-ONLY
+void test_scary_ness() {
     test_scary_ness_one<true, greater<int>, allocator<int>, allocator<int>>();
     test_scary_ness_one<true, greater<int>, allocator<int>, MyAllocator<int>>();
     test_scary_ness_one<true, greater<int>, MyAllocator<int>, allocator<int>>();
