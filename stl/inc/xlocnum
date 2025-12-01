@@ -120,8 +120,7 @@ public:
         _BEGIN_LOCINFO(_Lobj)
         _Init(_Lobj);
         if (_Kseparator == 0) {
-            _Kseparator = // NB: differs from "C" locale
-                _Maklocchr(',', static_cast<_Elem*>(nullptr), _Lobj._Getcvt());
+            _Kseparator = _Maklocchr<_Elem>(',', _Lobj._Getcvt()); // NB: differs from "C" locale
         }
         _END_LOCINFO()
     }
@@ -158,21 +157,21 @@ protected:
         _Truename  = nullptr;
 
         _Tidy_guard<numpunct> _Guard{this};
-        _Grouping      = _Maklocstr(_Isdef ? "" : _Ptr->grouping, static_cast<char*>(nullptr), _Cvt);
-        _Falsename     = _Maklocstr(_Lobj._Getfalse(), static_cast<_Elem*>(nullptr), _Cvt);
-        _Truename      = _Maklocstr(_Lobj._Gettrue(), static_cast<_Elem*>(nullptr), _Cvt);
+        _Grouping      = _Maklocstr<char>(_Isdef ? "" : _Ptr->grouping, _Cvt);
+        _Falsename     = _Maklocstr<_Elem>(_Lobj._Getfalse(), _Cvt);
+        _Truename      = _Maklocstr<_Elem>(_Lobj._Gettrue(), _Cvt);
         _Guard._Target = nullptr;
 
         if (_Isdef) { // apply defaults for required facets
-            _Dp         = _Maklocchr('.', static_cast<_Elem*>(nullptr), _Cvt);
-            _Kseparator = _Maklocchr(',', static_cast<_Elem*>(nullptr), _Cvt);
+            _Dp         = _Maklocchr<_Elem>('.', _Cvt);
+            _Kseparator = _Maklocchr<_Elem>(',', _Cvt);
         } else {
             if constexpr (is_same_v<_Elem, wchar_t>) {
                 _Dp         = _Ptr->_W_decimal_point[0];
                 _Kseparator = _Ptr->_W_thousands_sep[0];
             } else {
-                _Dp         = _Maklocchr(_Ptr->decimal_point[0], static_cast<_Elem*>(nullptr), _Cvt);
-                _Kseparator = _Maklocchr(_Ptr->thousands_sep[0], static_cast<_Elem*>(nullptr), _Cvt);
+                _Dp         = _Maklocchr<_Elem>(_Ptr->decimal_point[0], _Cvt);
+                _Kseparator = _Maklocchr<_Elem>(_Ptr->thousands_sep[0], _Cvt);
             }
         }
     }
