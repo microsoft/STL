@@ -2353,6 +2353,14 @@ void test_gh_5865() {
     g_regexTester.should_capture("abab", "(?:(?=(.*))ab)*ab", "abab");
 }
 
+void test_gh_5918() {
+    // GH-5918: Remove capture validity vectors from stack frames
+    // These tests verify that reset capturing groups are restored correctly when backtracking.
+    g_regexTester.should_match("ababa", R"((?:(a)(?:|b\1b))*)");
+    g_regexTester.should_match("ababa", R"((?:(a)(?:|b\1b))*?)");
+    g_regexTester.should_match("ababa", R"((?:(a)(?:|b\1b)){2})");
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2411,6 +2419,7 @@ int main() {
     test_gh_5797();
     test_gh_5798();
     test_gh_5865();
+    test_gh_5918();
 
     return g_regexTester.result();
 }
