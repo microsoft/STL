@@ -41,9 +41,6 @@ export module std;
 
 // "C++ library headers" [tab:headers.cpp]
 #include <algorithm>
-#if _HAS_STATIC_RTTI
-#include <any>
-#endif // _HAS_STATIC_RTTI
 #include <array>
 #include <atomic>
 #include <barrier>
@@ -60,18 +57,12 @@ export module std;
 #include <deque>
 #include <exception>
 #include <execution>
-#if _HAS_CXX23
-#include <expected>
-#endif // _HAS_CXX23
 #include <filesystem>
 #include <format>
 #include <forward_list>
 #include <fstream>
 #include <functional>
 #include <future>
-#if _HAS_CXX23
-#include <generator>
-#endif // _HAS_CXX23
 #include <initializer_list>
 #include <iomanip>
 #include <ios>
@@ -84,9 +75,6 @@ export module std;
 #include <list>
 #include <locale>
 #include <map>
-#if _HAS_CXX23
-#include <mdspan>
-#endif // _HAS_CXX23
 #include <memory>
 #include <memory_resource>
 #include <mutex>
@@ -95,9 +83,6 @@ export module std;
 #include <numeric>
 #include <optional>
 #include <ostream>
-#if _HAS_CXX23
-#include <print>
-#endif // _HAS_CXX23
 #include <queue>
 #include <random>
 #include <ranges>
@@ -109,18 +94,9 @@ export module std;
 #include <shared_mutex>
 #include <source_location>
 #include <span>
-#if _HAS_CXX23
-#include <spanstream>
-#endif // _HAS_CXX23
 #include <sstream>
 #include <stack>
-#if _HAS_CXX23
-#include <stacktrace>
-#endif // _HAS_CXX23
 #include <stdexcept>
-#if _HAS_CXX23
-#include <stdfloat>
-#endif // _HAS_CXX23
 #include <stop_token>
 #include <streambuf>
 #include <string>
@@ -140,6 +116,20 @@ export module std;
 #include <variant>
 #include <vector>
 #include <version>
+
+#if _HAS_STATIC_RTTI
+#include <any>
+#endif // _HAS_STATIC_RTTI
+
+#if _HAS_CXX23
+#include <expected>
+#include <generator>
+#include <mdspan>
+#include <print>
+#include <spanstream>
+#include <stacktrace>
+#include <stdfloat>
+#endif // _HAS_CXX23
 
 // "C++ headers for C library facilities" [tab:headers.cpp.c]
 #include <cassert>
