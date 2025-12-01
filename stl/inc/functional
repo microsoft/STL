@@ -1653,8 +1653,7 @@ public:
                     }
                 };
 
-                _Guard_type _Guard;
-                _Guard._Ptr = _Where;
+                _Guard_type _Guard{_Where};
                 _Old_fn_impl->_Copy(_Where);
                 _Guard._Ptr = nullptr;
             } else {
