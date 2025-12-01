@@ -290,7 +290,7 @@ Enable warning C4005 to find the forbidden define.
 #define namespace EMIT WARNING C4005
 #error The C++ Standard Library forbids macroizing the keyword "namespace". \
 Enable warning C4005 to find the forbidden define.
-#endif // unnamed namespace
+#endif // namespace
 
 #if defined(new) && defined(_ENFORCE_BAN_OF_MACRO_NEW)
 #define new EMIT WARNING C4005
