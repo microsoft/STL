@@ -35,6 +35,10 @@ extern "C" _CRTIMP2 BOOL __cdecl __crtIsPackagedApp() noexcept {
 
 #endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 
+// Previously, x64/x86 Desktop builds had to support targeting old versions of Windows, so we dllexported functions to
+// dynamically load new Windows APIs. Now, we directly call those Windows APIs, and the dllexported functions have
+// become simple wrappers, but they still need to be preserved for binary compatibility. The ARM64, App, and OneCore
+// builds never supported targeting old versions of Windows, so they never provided these dllexported functions.
 #if !(defined(_M_ARM64) || defined(_CRT_APP) || defined(_ONECORE))
 
 // TRANSITION, ABI: preserved for binary compatibility
