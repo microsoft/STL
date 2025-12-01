@@ -152,6 +152,18 @@ std/atomics/atomics.ref/member_types.compile.pass.cpp FAIL
 std/thread/futures/futures.promise/uses_allocator.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
 
+# libc++ has not implemented P3567R2: "flat_meow Fixes"
+std/containers/container.adaptors/flat.map/flat.map.modifiers/swap_free.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/swap_member.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/swap_free.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/swap_member.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/swap_free.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/swap_member.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/swap_free.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/swap_member.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/flat_map.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/flat_set.version.compile.pass.cpp FAIL
+
 # Various bogosity (LLVM-D141004)
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/ctor_does_not_allocate.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/sync_with_default_resource.pass.cpp FAIL
@@ -303,7 +315,99 @@ std/containers/container.adaptors/flat.multimap/flat.multimap.cons/sorted_iter_i
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/erase_key.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/erase_key.pass.cpp:1 FAIL
 
-# FIXME! C++26 "P3372R3 constexpr Containers And Adaptors" isn't completely guarded with `TEST_STD_VER >= 26`.
+# FIXME! error: conversion function from 'pair<_Unrefwrap_t<int>, _Unrefwrap_t<int>>' to 'pair<const int &, const char &>' invokes a deleted function
+std/containers/container.adaptors/flat.map/flat.map.observers/comp.pass.cpp:2 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.observers/comp.pass.cpp:2 FAIL
+
+# P0533R9 constexpr For <cmath> And <cstdlib>
+std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
+std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
+
+# P0543R3 Saturation Arithmetic
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/numerics/numeric.ops/numeric.ops.sat/add_sat.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/add_sat.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/div_sat.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/div_sat.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/mul_sat.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/mul_sat.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/sub_sat.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/sub_sat.pass.cpp FAIL
+
+# P1222R4 <flat_set>
+
+# FIXME! error: static assertion failed due to requirement '!std::is_nothrow_move_constructible_v<std::flat_MEOW<int, ThrowingMoveComp, std::vector<int, std::allocator<int>>>>'
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/move.pass.cpp FAIL
+
+# FIXME! error: call to implicitly-deleted copy constructor of 'container_type' (aka 'MoveAssignThrows')
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move_assign.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/move_assign.pass.cpp FAIL
+
+# FIXME! Assertion failed: r == m.begin() + 2
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/emplace_hint.pass.cpp FAIL
+
+# FIXME! Assertion failed: r == m.begin() + 1
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_rv.pass.cpp FAIL
+
+# FIXME! warning C4242: 'initializing': conversion from 'int' to '_Ty', possible loss of data
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_iter_iter.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_iter_iter.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/sorted_iter_iter.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/sorted_iter_iter.pass.cpp:1 FAIL
+
+# FIXME! Looks like test code isn't defending itself against evil overloaded comma operators.
+std/containers/container.adaptors/flat.multiset/flat.multiset.iterators/iterator.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.iterators/iterator.pass.cpp FAIL
+
+# P2255R2 "Type Traits To Detect References Binding To Temporaries"
+# (type_traits.version.compile.pass.cpp still fails for Clang due to LLVM-48860)
+std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:1 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:1 FAIL
+
+# P2835R7 atomic_ref::address()
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/atomics/atomics.ref/address.pass.cpp FAIL
+
+# P2944R3 Comparisons For reference_wrapper
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.const_ref.pass.cpp FAIL
+std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.refwrap_const.pass.cpp FAIL
+std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.refwrap.pass.cpp FAIL
+
+# P2988R12 optional<T&>
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/optional/optional.object/optional.object.ctor/ref_t.pass.cpp FAIL
+
+# P3044R2 basic_string::subview()
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/strings/basic.string/string.ops/string_substr/subview.pass.cpp FAIL
+std/strings/string.view/string.view.ops/subview.pass.cpp FAIL
+
+# P3060R3 views::indices
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/ranges/range.factories/range.iota.view/indices.pass.cpp FAIL
+
+# P3168R2 std::optional Range Support
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/optional/optional.iterator/begin.pass.cpp FAIL
+std/utilities/optional/optional.iterator/borrowed_range.compile.pass.cpp FAIL
+std/utilities/optional/optional.iterator/end.pass.cpp FAIL
+std/utilities/optional/optional.iterator/iterator.pass.cpp FAIL
+
+
+# *** MISSING COMPILER FEATURES ***
+
+# VSO-2581622 C1XX should implement `__builtin_is_implicit_lifetime`
+std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:1 FAIL
+
+# MSVC has not implemented P2448R2 "Relaxing some constexpr restrictions"
 std/containers/container.adaptors/flat.map/flat.map.access/at_transparent.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.access/at_transparent.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.access/index_transparent.pass.cpp:0 FAIL
@@ -374,55 +478,6 @@ std/containers/container.adaptors/flat.multimap/flat.multimap.operations/lower_b
 std/containers/container.adaptors/flat.multimap/flat.multimap.operations/lower_bound_transparent.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.operations/upper_bound_transparent.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.operations/upper_bound_transparent.pass.cpp:1 FAIL
-
-# FIXME! error: conversion function from 'pair<_Unrefwrap_t<int>, _Unrefwrap_t<int>>' to 'pair<const int &, const char &>' invokes a deleted function
-std/containers/container.adaptors/flat.map/flat.map.observers/comp.pass.cpp:2 FAIL
-std/containers/container.adaptors/flat.multimap/flat.multimap.observers/comp.pass.cpp:2 FAIL
-
-# P0533R9 constexpr For <cmath> And <cstdlib>
-std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
-
-# P0543R3 Saturation Arithmetic
-# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
-std/numerics/numeric.ops/numeric.ops.sat/add_sat.compile.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/add_sat.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/div_sat.compile.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/div_sat.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/mul_sat.compile.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/mul_sat.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.compile.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/sub_sat.compile.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/sub_sat.pass.cpp FAIL
-
-# P1222R4 <flat_set>
-
-# FIXME! error: static assertion failed due to requirement '!std::is_nothrow_move_constructible_v<std::flat_MEOW<int, ThrowingMoveComp, std::vector<int, std::allocator<int>>>>'
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/move.pass.cpp FAIL
-
-# FIXME! error: call to implicitly-deleted copy constructor of 'container_type' (aka 'MoveAssignThrows')
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move_assign.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/move_assign.pass.cpp FAIL
-
-# FIXME! Assertion failed: r == m.begin() + 2
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/emplace_hint.pass.cpp FAIL
-
-# FIXME! Assertion failed: r == m.begin() + 1
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_rv.pass.cpp FAIL
-
-# FIXME! warning C4242: 'initializing': conversion from 'int' to '_Ty', possible loss of data
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_iter_iter.pass.cpp:0 FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_iter_iter.pass.cpp:1 FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/sorted_iter_iter.pass.cpp:0 FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/sorted_iter_iter.pass.cpp:1 FAIL
-
-# FIXME! Asserts while testing insert_range's exception guarantee.
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp FAIL
-
-# FIXME! C++26 "P3372R3 constexpr Containers And Adaptors" isn't completely guarded with `TEST_STD_VER >= 26`.
 std/containers/container.adaptors/flat.multiset/flat.multiset.capacity/max_size.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.capacity/max_size.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/erase_key_transparent.pass.cpp:0 FAIL
@@ -431,6 +486,8 @@ std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/extract.
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/extract.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_iter.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_iter.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.observers/comp.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.observers/comp.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.operations/contains_transparent.pass.cpp:0 FAIL
@@ -455,6 +512,8 @@ std/containers/container.adaptors/flat.set/flat.set.modifiers/extract.pass.cpp:0
 std/containers/container.adaptors/flat.set/flat.set.modifiers/extract.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_iter.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_iter.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.set/flat.set.observers/comp.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.set/flat.set.observers/comp.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.set/flat.set.operations/contains_transparent.pass.cpp:0 FAIL
@@ -471,55 +530,6 @@ std/containers/container.adaptors/flat.set/flat.set.operations/upper_bound_trans
 std/containers/container.adaptors/flat.set/flat.set.operations/upper_bound_transparent.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.set/op_compare.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.set/op_compare.pass.cpp:1 FAIL
-
-# FIXME! Looks like test code isn't defending itself against evil overloaded comma operators.
-std/containers/container.adaptors/flat.multiset/flat.multiset.iterators/iterator.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.iterators/iterator.pass.cpp FAIL
-
-# P2255R2 "Type Traits To Detect References Binding To Temporaries"
-# (type_traits.version.compile.pass.cpp still fails for Clang due to LLVM-48860)
-std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:0 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:1 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:0 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:1 FAIL
-
-# P2835R7 atomic_ref::address()
-# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
-std/atomics/atomics.ref/address.pass.cpp FAIL
-
-# P2944R3 Comparisons For reference_wrapper
-# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
-std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.const_ref.pass.cpp FAIL
-std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.refwrap_const.pass.cpp FAIL
-std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.refwrap.refwrap.pass.cpp FAIL
-
-# P2988R12 optional<T&>
-# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
-std/utilities/optional/optional.object/optional.object.ctor/ref_t.pass.cpp FAIL
-
-# P3044R2 basic_string::subview()
-# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
-std/strings/basic.string/string.ops/string_substr/subview.pass.cpp FAIL
-std/strings/string.view/string.view.ops/subview.pass.cpp FAIL
-
-# P3060R3 views::indices
-# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
-std/ranges/range.factories/range.iota.view/indices.pass.cpp FAIL
-
-# P3168R2 std::optional Range Support
-# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
-std/utilities/optional/optional.iterator/begin.pass.cpp FAIL
-std/utilities/optional/optional.iterator/borrowed_range.compile.pass.cpp FAIL
-std/utilities/optional/optional.iterator/end.pass.cpp FAIL
-std/utilities/optional/optional.iterator/iterator.pass.cpp FAIL
-
-
-# *** MISSING COMPILER FEATURES ***
-
-# VSO-2581622 C1XX should implement `__builtin_is_implicit_lifetime`
-std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:0 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:1 FAIL
 
 
 # *** MISSING LWG ISSUE RESOLUTIONS ***

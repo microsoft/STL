@@ -352,13 +352,13 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #endif
 
 #if _HAS_CXX23
-STATIC_ASSERT(__cpp_lib_flat_map == 202207L);
+STATIC_ASSERT(__cpp_lib_flat_map == 202511L);
 #elif defined(__cpp_lib_flat_map)
 #error __cpp_lib_flat_map is defined
 #endif
 
 #if _HAS_CXX23
-STATIC_ASSERT(__cpp_lib_flat_set == 202207L);
+STATIC_ASSERT(__cpp_lib_flat_set == 202511L);
 #elif defined(__cpp_lib_flat_set)
 #error __cpp_lib_flat_set is defined
 #endif

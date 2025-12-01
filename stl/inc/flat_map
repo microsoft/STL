@@ -248,6 +248,37 @@ struct _Pairing_iterator_provider {
     };
 };
 
+template <bool _IsNoexcept, class _Containers>
+struct _NODISCARD _Flat_map_swap_clear_guard {
+    // Invariant: (_Target1 == nullptr) == (_Target2 == nullptr)
+    _Containers* _Target1;
+    _Containers* _Target2;
+
+    _Flat_map_swap_clear_guard& operator=(const _Flat_map_swap_clear_guard&) = delete;
+
+    void _Dismiss() noexcept {
+        _Target1 = nullptr;
+        _Target2 = nullptr;
+    }
+
+    ~_Flat_map_swap_clear_guard() {
+        if (_Target1) {
+            _Target1->keys.clear();
+            _Target1->values.clear();
+            _Target2->keys.clear();
+            _Target2->values.clear();
+        }
+    }
+};
+template <class _Containers>
+struct _NODISCARD _Flat_map_swap_clear_guard<true, _Containers> {
+    constexpr explicit _Flat_map_swap_clear_guard(_Containers*, _Containers*) noexcept {}
+
+    _Flat_map_swap_clear_guard& operator=(const _Flat_map_swap_clear_guard&) = delete;
+
+    void _Dismiss() noexcept {}
+};
+
 _EXPORT_STD template <class _Key, class _Mapped, class _Compare = less<_Key>, class _KeyContainer = vector<_Key>,
     class _MappedContainer = vector<_Mapped>>
 class flat_map;
@@ -527,11 +558,18 @@ public:
         return _STD make_reverse_iterator(cbegin());
     }
 
-    void swap(_Derived& _Other) noexcept {
+    void swap(_Derived& _Other)
+        noexcept(is_nothrow_swappable_v<_KeyContainer> && is_nothrow_swappable_v<_MappedContainer>
+                 && is_nothrow_swappable_v<_Compare>) {
+        constexpr bool _Is_noexcept = is_nothrow_swappable_v<_KeyContainer> && is_nothrow_swappable_v<_MappedContainer>
+                                   && is_nothrow_swappable_v<_Compare>;
         auto& _Other_base = static_cast<_Flat_map_base&>(_Other);
+        _Flat_map_swap_clear_guard<_Is_noexcept, containers> _Guard{
+            _STD addressof(_Data), _STD addressof(_Other_base._Data)};
         _RANGES swap(_Key_compare, _Other_base._Key_compare);
         _RANGES swap(_Data.keys, _Other_base._Data.keys);
         _RANGES swap(_Data.values, _Other_base._Data.values);
+        _Guard._Dismiss();
     }
 
     // [container.reqmts] clear
@@ -589,6 +627,11 @@ public:
     template <_Container_compatible_range<value_type> _Rng>
     void insert_range(_Rng&& _Range) {
         _Insert_range<true>(_RANGES begin(_Range), _RANGES end(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    void insert_range(_Sorted_t, _Rng&& _Range) {
+        _Insert_range<false>(_RANGES begin(_Range), _RANGES end(_Range));
     }
 
     void insert(initializer_list<value_type> _Ilist) {
@@ -790,7 +833,7 @@ public:
             _STD _Get_unwrapped(_STD cend(_Right)), _Synth_three_way{});
     }
 
-    friend void swap(_Derived& _Left, _Derived& _Right) noexcept {
+    friend void swap(_Derived& _Left, _Derived& _Right) noexcept(noexcept(_Left.swap(_Right))) {
         _Left.swap(_Right);
     }
 

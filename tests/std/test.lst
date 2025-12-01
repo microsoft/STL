@@ -380,6 +380,7 @@ tests\P0414R2_shared_ptr_for_arrays
 tests\P0415R1_constexpr_complex
 tests\P0426R1_constexpr_char_traits
 tests\P0429R9_flat_map
+tests\P0429R9_flat_map_ms_specific
 tests\P0433R2_deduction_guides
 tests\P0448R4_iosfwd
 tests\P0448R4_spanstream
