@@ -577,21 +577,22 @@ private:
         } else {
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
 
-            // look for upper_bound(_Val)
+            // look for closest position just prior to _Where, respecting ordering
             if (_Where == _End || _Compare(_Val, *_Where)) {
                 // _Val < *_Where
                 if (_Where == _Begin || !_Compare(_Val, *(_Where - 1))) {
-                    // _Val >= *(_Where-1) ~ upper_bound is _Where
+                    // _Val >= *(_Where-1) ~ closest valid position is _Where
                 } else {
-                    // _Val < *(_Where-1) ~ upper_bound is in [_Begin,_Where-1]
+                    // _Val < *(_Where-1) ~ closest valid position is upper_bound(_Val) located in [_Begin,_Where-1]
                     _Where = _STD upper_bound(_Begin, _Where - 1, _Val, _Pass_comp());
                 }
+                // _Val < *_Where, so upper_bound is indeed "as close as possible"
+                _STL_INTERNAL_CHECK(_Can_insert(_Where, _Val));
             } else {
-                // _Val >= *_Where ~ upper_bound is in [_Where+1,_End]
-                _Where = _STD upper_bound(_Where + 1, _End, _Val, _Pass_comp());
+                // _Val >= *_Where ~ search for lower_bound in [_Where,_End] to place _Val "as close as possible"
+                _Where = _STD lower_bound(_Where, _End, _Val, _Pass_comp());
             }
 
-            _STL_INTERNAL_CHECK(_Can_insert(_Where, _Val));
             return _Mycont.emplace(_Where, _STD forward<_Ty>(_Val));
         }
     }

@@ -346,12 +346,6 @@ std/containers/container.adaptors/flat.set/flat.set.cons/move.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move_assign.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.cons/move_assign.pass.cpp FAIL
 
-# FIXME! Assertion failed: r == m.begin() + 2
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/emplace_hint.pass.cpp FAIL
-
-# FIXME! Assertion failed: r == m.begin() + 1
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_rv.pass.cpp FAIL
-
 # FIXME! warning C4242: 'initializing': conversion from 'int' to '_Ty', possible loss of data
 std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_iter_iter.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_iter_iter.pass.cpp:1 FAIL
