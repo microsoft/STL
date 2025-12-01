@@ -255,7 +255,6 @@ struct _NODISCARD _Flat_map_swap_clear_guard {
     _Containers* _Target2;
 
     _Flat_map_swap_clear_guard& operator=(const _Flat_map_swap_clear_guard&) = delete;
-    _Flat_map_swap_clear_guard& operator=(_Flat_map_swap_clear_guard&&)      = delete;
 
     void _Dismiss() noexcept {
         _Target1 = nullptr;
@@ -276,7 +275,6 @@ struct _NODISCARD _Flat_map_swap_clear_guard<true, _Containers> {
     constexpr explicit _Flat_map_swap_clear_guard(_Containers*, _Containers*) noexcept {}
 
     _Flat_map_swap_clear_guard& operator=(const _Flat_map_swap_clear_guard&) = delete;
-    _Flat_map_swap_clear_guard& operator=(_Flat_map_swap_clear_guard&&)      = delete;
 
     void _Dismiss() noexcept {}
 };

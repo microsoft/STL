@@ -31,7 +31,6 @@ struct _NODISCARD _Flat_set_swap_clear_guard {
     _Container* _Target2;
 
     _Flat_set_swap_clear_guard& operator=(const _Flat_set_swap_clear_guard&) = delete;
-    _Flat_set_swap_clear_guard& operator=(_Flat_set_swap_clear_guard&&)      = delete;
 
     void _Dismiss() noexcept {
         _Target1 = nullptr;
@@ -50,7 +49,6 @@ struct _NODISCARD _Flat_set_swap_clear_guard<true, _Container> {
     constexpr explicit _Flat_set_swap_clear_guard(_Container*, _Container*) noexcept {}
 
     _Flat_set_swap_clear_guard& operator=(const _Flat_set_swap_clear_guard&) = delete;
-    _Flat_set_swap_clear_guard& operator=(_Flat_set_swap_clear_guard&&)      = delete;
 
     void _Dismiss() noexcept {}
 };
