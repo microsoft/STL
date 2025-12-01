@@ -110,6 +110,14 @@ void test_wrapped_call(const int expected_copies) {
     assert(outer(copy_counter{}) == expected_copies);
 }
 
+template <class OuterWrapper, class InnerWrapper, class Callable>
+void test_wrapped_copy_call(const int expected_copies) {
+    InnerWrapper inner{Callable{}};
+    OuterWrapper outer{inner};
+    assert(inner);
+    assert(outer(copy_counter{}) == expected_copies);
+}
+
 template <class Wrapper>
 void check_call_null(Wrapper& wrapper, const bool throws) {
     if (throws) {
@@ -149,6 +157,8 @@ int main() {
     // Moves to the same
     alloc_checker{0}, test_wrapped_call<function<fn_type>, function<fn_type>, small_callable>(0);
     alloc_checker{1}, test_wrapped_call<function<fn_type>, function<fn_type>, large_callable>(0);
+    alloc_checker{0}, test_wrapped_copy_call<function<fn_type>, function<fn_type>, small_callable>(0);
+    alloc_checker{2}, test_wrapped_copy_call<function<fn_type>, function<fn_type>, large_callable>(0);
     alloc_checker{0}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>, small_callable>(0);
     alloc_checker{1}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>, large_callable>(0);
 
@@ -186,6 +196,10 @@ int main() {
 #ifdef __cpp_noexcept_function_type
     static_assert(!is_constructible_v<move_only_function<fn_type_nx>, function<fn_type>>);
 #endif // defined(__cpp_noexcept_function_type)
+
+    alloc_checker{is_64_bit ? 0 : 1},
+        test_wrapped_copy_call<move_only_function<fn_type>, function<fn_type>, small_callable>(0);
+    alloc_checker{2}, test_wrapped_copy_call<move_only_function<fn_type>, function<fn_type>, large_callable>(0);
 
     // nulls
     alloc_checker{0}, test_plain_null<function<fn_type>>(true);
