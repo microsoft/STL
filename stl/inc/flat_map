@@ -257,7 +257,7 @@ struct _NODISCARD _Flat_map_swap_clear_guard {
     _Flat_map_swap_clear_guard& operator=(const _Flat_map_swap_clear_guard&) = delete;
     _Flat_map_swap_clear_guard& operator=(_Flat_map_swap_clear_guard&&)      = delete;
 
-    void _Abandon() noexcept {
+    void _Dismiss() noexcept {
         _Target1 = nullptr;
         _Target2 = nullptr;
     }
@@ -278,7 +278,7 @@ struct _NODISCARD _Flat_map_swap_clear_guard<true, _Containers> {
     _Flat_map_swap_clear_guard& operator=(const _Flat_map_swap_clear_guard&) = delete;
     _Flat_map_swap_clear_guard& operator=(_Flat_map_swap_clear_guard&&)      = delete;
 
-    void _Abandon() noexcept {}
+    void _Dismiss() noexcept {}
 };
 
 _EXPORT_STD template <class _Key, class _Mapped, class _Compare = less<_Key>, class _KeyContainer = vector<_Key>,
@@ -571,7 +571,7 @@ public:
         _RANGES swap(_Key_compare, _Other_base._Key_compare);
         _RANGES swap(_Data.keys, _Other_base._Data.keys);
         _RANGES swap(_Data.values, _Other_base._Data.values);
-        _Guard._Abandon();
+        _Guard._Dismiss();
     }
 
     // [container.reqmts] clear

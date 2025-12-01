@@ -33,7 +33,7 @@ struct _NODISCARD _Flat_set_swap_clear_guard {
     _Flat_set_swap_clear_guard& operator=(const _Flat_set_swap_clear_guard&) = delete;
     _Flat_set_swap_clear_guard& operator=(_Flat_set_swap_clear_guard&&)      = delete;
 
-    void _Abandon() noexcept {
+    void _Dismiss() noexcept {
         _Target1 = nullptr;
         _Target2 = nullptr;
     }
@@ -52,7 +52,7 @@ struct _NODISCARD _Flat_set_swap_clear_guard<true, _Container> {
     _Flat_set_swap_clear_guard& operator=(const _Flat_set_swap_clear_guard&) = delete;
     _Flat_set_swap_clear_guard& operator=(_Flat_set_swap_clear_guard&&)      = delete;
 
-    void _Abandon() noexcept {}
+    void _Dismiss() noexcept {}
 };
 
 _EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
@@ -377,7 +377,7 @@ public:
             _STD addressof(_Mycont), _STD addressof(_Other._Mycont)};
         _RANGES swap(_Mycomp, _Other._Mycomp);
         _RANGES swap(_Mycont, _Other._Mycont);
-        _Guard._Abandon();
+        _Guard._Dismiss();
     }
     void clear() noexcept {
         _Mycont.clear();
