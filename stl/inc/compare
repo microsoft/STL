@@ -309,12 +309,7 @@ concept three_way_comparable = _Half_equality_comparable<_Ty, _Ty> && _Half_orde
 
 _EXPORT_STD template <class _Ty1, class _Ty2, class _Cat = partial_ordering>
 concept three_way_comparable_with =
-    three_way_comparable<_Ty1, _Cat> && three_way_comparable<_Ty2, _Cat>
-#if _HAS_CXX23
-    && _Comparison_common_type_with<_Ty1, _Ty2>
-#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
-    && common_reference_with<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>
-#endif // ^^^ !_HAS_CXX23 ^^^
+    three_way_comparable<_Ty1, _Cat> && three_way_comparable<_Ty2, _Cat> && _Comparison_common_type_with<_Ty1, _Ty2>
     && three_way_comparable<common_reference_t<const remove_reference_t<_Ty1>&, const remove_reference_t<_Ty2>&>, _Cat>
     && _Weakly_equality_comparable_with<_Ty1, _Ty2> && _Partially_ordered_with<_Ty1, _Ty2>
     && requires(const remove_reference_t<_Ty1>& __t, const remove_reference_t<_Ty2>& __u) {

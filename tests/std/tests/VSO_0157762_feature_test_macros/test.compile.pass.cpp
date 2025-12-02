@@ -197,10 +197,8 @@ STATIC_ASSERT(__cpp_lib_common_reference_wrapper == 202302L);
 
 STATIC_ASSERT(__cpp_lib_complex_udls == 201309L);
 
-#if _HAS_CXX23
+#if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_concepts == 202207L);
-#elif _HAS_CXX20
-STATIC_ASSERT(__cpp_lib_concepts == 202002L);
 #elif defined(__cpp_lib_concepts)
 #error __cpp_lib_concepts is defined
 #endif
