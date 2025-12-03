@@ -154,7 +154,7 @@ void test_shuffle_edge_cases() {
 
     // Two elements
     {
-        vector<int> v = {1, 2};
+        vector<int> v        = {1, 2};
         vector<int> original = v;
         shuffle(v.begin(), v.end(), gen64);
         sort(v.begin(), v.end());
@@ -163,7 +163,7 @@ void test_shuffle_edge_cases() {
 
     // Three elements (odd count, tests batching boundary)
     {
-        vector<int> v = {1, 2, 3};
+        vector<int> v        = {1, 2, 3};
         vector<int> original = v;
         shuffle(v.begin(), v.end(), gen64);
         sort(v.begin(), v.end());
@@ -172,7 +172,7 @@ void test_shuffle_edge_cases() {
 
     // Four elements (even count)
     {
-        vector<int> v = {1, 2, 3, 4};
+        vector<int> v        = {1, 2, 3, 4};
         vector<int> original = v;
         shuffle(v.begin(), v.end(), gen64);
         sort(v.begin(), v.end());

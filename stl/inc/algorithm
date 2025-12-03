@@ -6107,7 +6107,7 @@ namespace ranges {
 // Batched random generation is only beneficial for such RNGs.
 template <class _Urng>
 constexpr bool _Urng_has_full_64bit_range =
-    is_same_v<_Invoke_result_t<_Urng&>, uint64_t> && (_Urng::min)() == 0 && (_Urng::max)() == _Max_limit<uint64_t>();
+    is_same_v<_Invoke_result_t<_Urng&>, uint64_t> && (_Urng::min) () == 0 && (_Urng::max) () == _Max_limit<uint64_t>();
 
 template <class _Diff, class _Urng>
 struct _Batched_rng_from_urng {
@@ -6127,14 +6127,14 @@ struct _Batched_rng_from_urng {
 
     // Generate a single bounded random value in [0, _Bound) using Lemire's method.
     _NODISCARD _Diff _Single_bounded(_Diff _Bound) {
-        _Unsigned128 _Product{_Base128::_UMul128(static_cast<uint64_t>(_Ref()), static_cast<uint64_t>(_Bound),
-            _Product._Word[1])};
+        _Unsigned128 _Product{
+            _Base128::_UMul128(static_cast<uint64_t>(_Ref()), static_cast<uint64_t>(_Bound), _Product._Word[1])};
         auto _Leftover = _Product._Word[0];
 
         if (_Leftover < static_cast<uint64_t>(_Bound)) {
             const uint64_t _Threshold = (0 - static_cast<uint64_t>(_Bound)) % static_cast<uint64_t>(_Bound);
             while (_Leftover < _Threshold) {
-                _Product = _Unsigned128{_Base128::_UMul128(
+                _Product  = _Unsigned128{_Base128::_UMul128(
                     static_cast<uint64_t>(_Ref()), static_cast<uint64_t>(_Bound), _Product._Word[1])};
                 _Leftover = _Product._Word[0];
             }
@@ -6146,8 +6146,8 @@ struct _Batched_rng_from_urng {
     // Generate two bounded random values from a single 64-bit random word.
     // The bounds are (n+1) and n for Fisher-Yates shuffle positions _Target_index and _Target_index-1.
     void _Batch_2(_Diff* _Results, _Diff _Bound1, _Diff _Bound2) {
-        const uint64_t _B1       = static_cast<uint64_t>(_Bound1);
-        const uint64_t _B2       = static_cast<uint64_t>(_Bound2);
+        const uint64_t _B1            = static_cast<uint64_t>(_Bound1);
+        const uint64_t _B2            = static_cast<uint64_t>(_Bound2);
         const uint64_t _Product_bound = _B1 * _B2;
 
         uint64_t _Random_word = static_cast<uint64_t>(_Ref());
@@ -6630,8 +6630,8 @@ namespace ranges {
                 _STD _Seek_wrapped(_First, _STD move(_UResult));
             } else {
                 _Rng_from_urng_v2<_Diff, _Urng0> _RngFunc(_Func);
-                auto _UResult = _Shuffle_unchecked(
-                    _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _RngFunc);
+                auto _UResult = _Shuffle_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                    _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _RngFunc);
                 _STD _Seek_wrapped(_First, _STD move(_UResult));
             }
             return _First;
