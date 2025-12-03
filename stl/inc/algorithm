@@ -6103,15 +6103,14 @@ namespace ranges {
 // This algorithm extracts multiple bounded random integers from a single 64-bit random word,
 // using only multiplication (no division) in the common case.
 
+// Check if a URNG has full 64-bit range [0, 2^64 - 1].
+// Batched random generation is only beneficial for such RNGs.
+template <class _Urng>
+constexpr bool _Urng_has_full_64bit_range =
+    is_same_v<_Invoke_result_t<_Urng&>, uint64_t> && (_Urng::min)() == 0 && (_Urng::max)() == _Max_limit<uint64_t>();
+
 template <class _Diff, class _Urng>
 struct _Batched_rng_from_urng {
-    // Batched random generation is only beneficial for 64-bit RNGs with full range.
-    // It requires the RNG to produce values in [0, 2^64 - 1].
-    using _Urng_result = _Invoke_result_t<_Urng&>;
-
-    static constexpr bool _Has_full_64bit_range = sizeof(_Urng_result) >= sizeof(uint64_t)
-                                               && is_unsigned_v<_Urng_result> && (_Urng::min) () == 0
-                                               && (_Urng::max) () == (numeric_limits<uint64_t>::max) ();
 
     // Threshold bounds for batch sizes based on array size.
     // These are derived from the paper to minimize expected cost per random value.
@@ -6604,7 +6603,7 @@ void shuffle(_RanIt _First, _RanIt _Last, _Urng&& _Func) { // shuffle [_First, _
     using _Urng0 = remove_reference_t<_Urng>;
 
     // Use batched shuffle when the URNG produces full 64-bit range values.
-    if constexpr (_Batched_rng_from_urng<_Iter_diff_t<_RanIt>, _Urng0>::_Has_full_64bit_range) {
+    if constexpr (_Urng_has_full_64bit_range<_Urng0>) {
         _STD _Random_shuffle_batched(_First, _Last, _Func);
     } else {
         _Rng_from_urng_v2<_Iter_diff_t<_RanIt>, _Urng0> _RngFunc(_Func);
@@ -6625,7 +6624,7 @@ namespace ranges {
             using _Diff  = iter_difference_t<_It>;
 
             // Use batched shuffle when the URNG produces full 64-bit range values.
-            if constexpr (_Batched_rng_from_urng<_Diff, _Urng0>::_Has_full_64bit_range) {
+            if constexpr (_Urng_has_full_64bit_range<_Urng0>) {
                 auto _UResult = _Shuffle_unchecked_batched(
                     _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _Func);
                 _STD _Seek_wrapped(_First, _STD move(_UResult));
@@ -6645,7 +6644,7 @@ namespace ranges {
             using _Diff  = range_difference_t<_Rng>;
 
             // Use batched shuffle when the URNG produces full 64-bit range values.
-            if constexpr (_Batched_rng_from_urng<_Diff, _Urng0>::_Has_full_64bit_range) {
+            if constexpr (_Urng_has_full_64bit_range<_Urng0>) {
                 return _RANGES _Rewrap_iterator(
                     _Range, _Shuffle_unchecked_batched(_Ubegin(_Range), _Uend(_Range), _Func));
             } else {
