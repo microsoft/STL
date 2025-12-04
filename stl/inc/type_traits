@@ -539,7 +539,7 @@ _MEMBER_CALL_CV_REF_NOEXCEPT(_IS_MEMFUNPTR)
 _CLASS_DEFINE_CV_REF_NOEXCEPT(_IS_MEMFUNPTR_ELLIPSIS)
 #undef _IS_MEMFUNPTR_ELLIPSIS
 
-#if _HAS_CXX23 && !defined(__clang__) // TRANSITION, DevCom-10107077, Clang has not implemented Deducing this
+#if _HAS_CXX23
 #define _IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES(CALL_OPT, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
     template <class _Ret, class _Self, class... _Args>                              \
     struct _Is_memfunptr<_Ret(CALL_OPT*)(_Self, _Args...) NOEXCEPT_OPT> {           \
@@ -553,7 +553,7 @@ _NON_MEMBER_CALL(_IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES, , , noexcept)
 #endif // defined(__cpp_noexcept_function_type)
 
 #undef _IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES
-#endif // _HAS_CXX23 && !defined(__clang__)
+#endif // _HAS_CXX23
 
 #ifdef __clang__
 _EXPORT_STD template <class _Ty>
@@ -2677,7 +2677,6 @@ void _Swap_trivial_arrays(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept {
             *reinterpret_cast<_Buffer_type*>(_Right_ptr) = _Buffer;
             _Left_ptr += _Part_size_bytes;
             _Right_ptr += _Part_size_bytes;
-
         } while (_Left_ptr != _Stop);
     }
 

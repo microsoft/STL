@@ -677,7 +677,7 @@ namespace chrono {
         _NODISCARD static time_point now() noexcept { // get current time
             const long long _Freq = _Query_perf_frequency(); // doesn't change after system boot
             const long long _Ctr  = _Query_perf_counter();
-            static_assert(period::num == 1, "This assumes period::num == 1.");
+            _STL_INTERNAL_STATIC_ASSERT(period::num == 1);
             // The compiler recognizes the constants for frequency and time period and uses shifts and
             // multiplies instead of divides to calculate the nanosecond value.
             constexpr long long _TenMHz        = 10'000'000;
@@ -686,7 +686,7 @@ namespace chrono {
                 // 10 MHz is a very common QPC frequency on modern x86/x64 PCs. Optimizing for
                 // this specific frequency can double the performance of this function by
                 // avoiding the expensive frequency conversion path.
-                static_assert(period::den % _TenMHz == 0, "It should never fail.");
+                _STL_INTERNAL_STATIC_ASSERT(period::den % _TenMHz == 0);
                 constexpr long long _Multiplier = period::den / _TenMHz;
                 return time_point(duration(_Ctr * _Multiplier));
             } else if (_Freq == _TwentyFourMHz) {
@@ -695,8 +695,8 @@ namespace chrono {
                 using _Multiplier_part                = ratio<period::den % _TwentyFourMHz, _TwentyFourMHz>;
                 constexpr long long _Multiplier_num   = _Multiplier_part::num;
                 constexpr long long _Multiplier_den   = _Multiplier_part::den;
-                static_assert(
-                    _Multiplier_num <= _Multiplier_whole, "This assumes that _Ctr * _Multiplier_num doesn't overflow.");
+                // This assumes that _Ctr * _Multiplier_num doesn't overflow.
+                _STL_INTERNAL_STATIC_ASSERT(_Multiplier_num <= _Multiplier_whole);
                 const long long _Whole = _Ctr * _Multiplier_whole;
                 const long long _Part  = _Ctr * _Multiplier_num / _Multiplier_den;
                 return time_point(duration(_Whole + _Part));

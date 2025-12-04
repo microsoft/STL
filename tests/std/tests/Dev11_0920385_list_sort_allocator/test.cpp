@@ -108,7 +108,6 @@ int main() {
             forward_list<int, MyAlloc<int>> fl(v.begin(), v.end(), alloc);
             fl.sort();
             assert(is_sorted(fl.begin(), fl.end()));
-
         } while (next_permutation(v.begin(), v.end()));
     }
 

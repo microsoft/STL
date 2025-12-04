@@ -16,7 +16,7 @@ int main() {}
 #include <type_traits>
 #include <utility>
 
-#include "test_generator_support.hpp"
+#include <test_generator_support.hpp>
 
 using namespace std;
 

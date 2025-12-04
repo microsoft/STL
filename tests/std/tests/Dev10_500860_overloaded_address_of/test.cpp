@@ -2,12 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <cstdlib>
-#ifndef _M_CEE_PURE
-#include <atomic>
-#endif // _M_CEE_PURE
-#include <cassert>
 #include <deque>
 #include <exception>
 #include <forward_list>
@@ -26,6 +23,10 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
+#ifndef _M_CEE_PURE
+#include <atomic>
+#endif // _M_CEE_PURE
 
 using namespace std;
 

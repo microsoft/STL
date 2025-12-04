@@ -1582,7 +1582,7 @@ public:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Count,
-                const _Elem _Ch) _STATIC_LAMBDA {
+                const _Elem _Ch) _STATIC_CALL_OPERATOR {
                 _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size));
                 _Traits::assign(_New_ptr + _Old_size, static_cast<size_t>(_Count), _Ch);
                 _Traits::assign(_New_ptr[_Old_size + _Count], _Elem());
@@ -1668,7 +1668,7 @@ public:
 
         return _Reallocate_for(
             _Count,
-            [](_Elem* const _New_ptr, const size_type _Count, const _Elem _Ch) _STATIC_LAMBDA {
+            [](_Elem* const _New_ptr, const size_type _Count, const _Elem _Ch) _STATIC_CALL_OPERATOR {
                 _Traits::assign(_New_ptr, _Count, _Ch);
                 _Traits::assign(_New_ptr[_Count], _Elem());
             },
@@ -1774,7 +1774,7 @@ public:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _Count, const _Elem _Ch) _STATIC_LAMBDA {
+                const size_type _Count, const _Elem _Ch) _STATIC_CALL_OPERATOR {
                 _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Off));
                 _Traits::assign(_New_ptr + _Off, static_cast<size_t>(_Count), _Ch);
                 _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off, static_cast<size_t>(_Old_size - _Off + 1));
@@ -1878,8 +1878,7 @@ public:
         return begin() + static_cast<difference_type>(_Off);
     }
 
-    _CONSTEXPR20 iterator erase(const const_iterator _First, const const_iterator _Last) noexcept
-    /* strengthened */ {
+    _CONSTEXPR20 iterator erase(const const_iterator _First, const const_iterator _Last) noexcept /* strengthened */ {
         _STD _Adl_verify_range(_First, _Last);
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
@@ -1961,7 +1960,7 @@ public:
         return _Reallocate_grow_by(
             static_cast<size_type>(_Count - _Nx),
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _Nx, const size_type _Count, const _Elem _Ch) _STATIC_LAMBDA {
+                const size_type _Nx, const size_type _Count, const _Elem _Ch) _STATIC_CALL_OPERATOR {
                 _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Off));
                 _Traits::assign(_New_ptr + _Off, static_cast<size_t>(_Count), _Ch);
                 _Traits::copy(
@@ -2184,8 +2183,7 @@ public:
         return _Mypair._Myval2._Myptr()[_Off];
     }
 
-    _NODISCARD _CONSTEXPR20 const_reference operator[](const size_type _Off) const noexcept
-    /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 const_reference operator[](const size_type _Off) const noexcept /* strengthened */ {
 #if _MSVC_STL_HARDENING_BASIC_STRING || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Off <= _Mypair._Myval2._Mysize, "string subscript out of range");
 #endif
@@ -2216,7 +2214,7 @@ public:
         _Reallocate_grow_by(
             1,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const _Elem _Ch)
-                _STATIC_LAMBDA {
+                _STATIC_CALL_OPERATOR {
                     _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size));
                     _Traits::assign(_New_ptr[_Old_size], _Ch);
                     _Traits::assign(_New_ptr[_Old_size + 1], _Elem());
@@ -2318,7 +2316,7 @@ public:
         if (_Mypair._Myval2._Myres < _New_size) {
             _Reallocate_grow_by(static_cast<size_type>(_New_size - _Mypair._Myval2._Mysize),
                 [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
-                    _STATIC_LAMBDA { _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size + 1)); });
+                    _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size + 1)); });
         } else {
             _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
             _Mypair._Myval2._Mysize = _New_size;
@@ -2360,7 +2358,7 @@ public:
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         _Reallocate_grow_by(static_cast<size_type>(_Newcap - _Old_size),
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
-                _STATIC_LAMBDA { _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size + 1)); });
+                _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size + 1)); });
 
         // `_Reallocate_grow_by` calls `_ASAN_STRING_CREATE` assuming that the string
         // has size (initialized memory) equal to its new capacity (allocated memory).
@@ -2388,7 +2386,7 @@ public:
             const size_type _Old_size = _Mypair._Myval2._Mysize;
             _Reallocate_grow_by(static_cast<size_type>(_Newcap - _Old_size),
                 [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
-                    _STATIC_LAMBDA { _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size + 1)); });
+                    _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size + 1)); });
 
             // `_Reallocate_grow_by` calls `_ASAN_STRING_CREATE` assuming that the string
             // has size (initialized memory) equal to its new capacity (allocated memory).
@@ -2615,8 +2613,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_of(
-        _In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept
-    /* strengthened */ {
+        _In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
         return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ptr, _Traits::length(_Ptr)));
@@ -2695,8 +2692,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_not_of(
-        _In_z_ const _Elem* const _Ptr, size_type _Off = 0) const noexcept
-    /* strengthened */ {
+        _In_z_ const _Elem* const _Ptr, size_type _Off = 0) const noexcept /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
         return static_cast<size_type>(_Traits_find_first_not_of<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ptr, _Traits::length(_Ptr)));
@@ -3041,7 +3037,7 @@ private:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const _UElem* const _Ptr,
-                const size_type _Count) _STATIC_LAMBDA {
+                const size_type _Count) _STATIC_CALL_OPERATOR {
                 _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size));
                 _STD _Traits_copy_batch<_Traits>(_New_ptr + _Old_size, _Ptr, static_cast<size_t>(_Count));
                 _Traits::assign(_New_ptr[_Old_size + _Count], _Elem());
@@ -3067,7 +3063,7 @@ private:
 
         return _Reallocate_for(
             _Count,
-            [](_Elem* const _New_ptr, const size_type _Count, const _UElem* const _Ptr) _STATIC_LAMBDA {
+            [](_Elem* const _New_ptr, const size_type _Count, const _UElem* const _Ptr) _STATIC_CALL_OPERATOR {
                 _STD _Traits_copy_batch<_Traits>(_New_ptr, _Ptr, static_cast<size_t>(_Count));
                 _Traits::assign(_New_ptr[_Count], _Elem());
             },
@@ -3085,13 +3081,9 @@ private:
 
         // We can't check for overlapping ranges when constant evaluated since comparison of pointers into string
         // literals is unspecified, so always reallocate and copy to the new buffer if constant evaluated.
-#if _HAS_CXX20
-        const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size && !_STD is_constant_evaluated();
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size;
-#endif // ^^^ !_HAS_CXX20 ^^^
 
-        if (_Check_overlap) {
+        if (_Check_overlap && !_STD _Is_constant_evaluated()) {
             const auto _New_size = static_cast<size_type>(_Old_size + _Count);
             _ASAN_STRING_MODIFY(*this, _Old_size, _New_size);
             _Mypair._Myval2._Mysize = _New_size;
@@ -3120,7 +3112,7 @@ private:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const _UElem* const _Ptr, const size_type _Count) _STATIC_LAMBDA {
+                const _UElem* const _Ptr, const size_type _Count) _STATIC_CALL_OPERATOR {
                 _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Off));
                 _STD _Traits_copy_batch<_Traits>(_New_ptr + _Off, _Ptr, static_cast<size_t>(_Count));
                 _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off, static_cast<size_t>(_Old_size - _Off + 1));
@@ -3196,7 +3188,7 @@ private:
         return _Reallocate_grow_by(
             _Growth,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _Nx, const _UElem* const _Ptr, const size_type _Count) _STATIC_LAMBDA {
+                const size_type _Nx, const _UElem* const _Ptr, const size_type _Count) _STATIC_CALL_OPERATOR {
                 _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Off));
                 _STD _Traits_copy_batch<_Traits>(_New_ptr + _Off, _Ptr, static_cast<size_t>(_Count));
                 _Traits::copy(
