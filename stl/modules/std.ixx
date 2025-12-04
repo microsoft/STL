@@ -58,10 +58,6 @@ export module std;
 #include <exception>
 #include <execution>
 #include <filesystem>
-#if _HAS_CXX23
-#include <flat_map>
-#include <flat_set>
-#endif // _HAS_CXX23
 #include <format>
 #include <forward_list>
 #include <fstream>
@@ -127,6 +123,8 @@ export module std;
 
 #if _HAS_CXX23
 #include <expected>
+#include <flat_map>
+#include <flat_set>
 #include <generator>
 #include <mdspan>
 #include <print>
