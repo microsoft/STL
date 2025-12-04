@@ -134,8 +134,10 @@ public:
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp() {}
 
     template <_Iterator_for_container _Iter>
-    _Flat_set_base(_Iter _First, _Iter _Last, const key_compare& _Comp = key_compare())
-        : _Flat_set_base(container_type(_First, _Last), _Comp) {}
+    _Flat_set_base(_Iter _First, _Iter _Last, const key_compare& _Comp = key_compare()) : _Mycont(), _Mycomp(_Comp) {
+        _Mycont.assign(_First, _Last);
+        _Make_invariants_fulfilled();
+    }
     template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Iter _First, _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
         : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp(_Comp) {
@@ -179,7 +181,7 @@ public:
         : _Flat_set_base(_Tag, _STD make_obj_using_allocator<container_type>(_Al, _First, _Last)) {}
 
     _Flat_set_base(initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
-        : _Flat_set_base(container_type(_Ilist), _Comp) {}
+        : _Flat_set_base(_Ilist.begin(), _Ilist.end(), _Comp) {}
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
         : _Flat_set_base(_Ilist.begin(), _Ilist.end(), _Comp, _Al) {}
@@ -188,7 +190,7 @@ public:
         : _Flat_set_base(_Ilist.begin(), _Ilist.end(), _Al) {}
 
     _Flat_set_base(_Sorted_t _Tag, initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
-        : _Flat_set_base(_Tag, container_type(_Ilist), _Comp) {}
+        : _Flat_set_base(_Tag, _Ilist.begin(), _Ilist.end(), _Comp) {}
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t _Tag, initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
         : _Flat_set_base(_Tag, _Ilist.begin(), _Ilist.end(), _Comp, _Al) {}

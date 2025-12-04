@@ -343,8 +343,8 @@ std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move.pass.cpp
 std/containers/container.adaptors/flat.set/flat.set.cons/move.pass.cpp FAIL
 
 # FIXME! error: call to implicitly-deleted copy constructor of 'container_type' (aka 'MoveAssignThrows')
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move_assign.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/move_assign.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move_assign.pass.cpp:2 FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/move_assign.pass.cpp:2 FAIL
 
 # FIXME! warning C4242: 'initializing': conversion from 'int' to '_Ty', possible loss of data
 std/containers/container.adaptors/flat.multiset/flat.multiset.cons/sorted_iter_iter.pass.cpp:0 FAIL
