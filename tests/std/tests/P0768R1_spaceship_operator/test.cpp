@@ -217,6 +217,19 @@ void test_algorithm() {
     assert((test_algorithm2<Ty2, Ty1>()));
 }
 
+// Test added to handle GH-5689
+template <typename T>
+void test_not_constructible() {
+    static_assert(!std::is_default_constructible_v<T>);
+    static_assert(!std::is_constructible_v<T, int>);
+
+    // How to test this does not compile?
+    //{
+    //    auto [n] = 0 <=> 0;
+    //    (void) n;
+    //}
+}
+
 int main() {
     static_assert(test_orderings());
     test_orderings();
@@ -230,4 +243,8 @@ int main() {
     test_algorithm<int, char>();
     test_algorithm<int, unsigned char>();
     test_algorithm<char, unsigned char>();
+
+    test_not_constructible<std::strong_ordering>();
+    test_not_constructible<std::weak_ordering>();
+    test_not_constructible<std::partial_ordering>();
 }
