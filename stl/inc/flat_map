@@ -849,7 +849,7 @@ protected:
         auto _Mut_last       = _View.end();
         const auto _Old_size = size();
 
-        _Clear_guard<_Flat_map_base> _Guard{this};
+        _Clear_guard _Guard{this};
 
         _STD _Seek_wrapped(_Mut_first, _RANGES remove_if(_View, _Pred).begin());
         (void) _Data.keys.erase(_Mut_first._Key_it, _Mut_last._Key_it);
