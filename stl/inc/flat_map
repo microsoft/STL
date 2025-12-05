@@ -1326,6 +1326,7 @@ private:
     using _MyBase::_Insert_exact;
     using _MyBase::_Key_equal;
 
+    // FIXME, typename is an EDG workaround
     template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
     friend typename flat_map<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>::size_type erase_if(
         flat_map<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>&, _Pred);
@@ -1529,6 +1530,7 @@ private:
     using _MyBase::_Insert_exact;
     using _MyBase::_Key_equal;
 
+    // FIXME, typename is an EDG workaround
     template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
     friend typename flat_multimap<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>::size_type erase_if(
         flat_multimap<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>&, _Pred);

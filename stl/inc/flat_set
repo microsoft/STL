@@ -636,10 +636,11 @@ private:
         }
     }
 
+    // FIXME, typename is an EDG workaround
     template <class _Kty2, class _Keylt2, class _Container2, class _Pred2>
-    friend _Container2::size_type erase_if(flat_set<_Kty2, _Keylt2, _Container2>&, _Pred2);
+    friend typename _Container2::size_type erase_if(flat_set<_Kty2, _Keylt2, _Container2>&, _Pred2);
     template <class _Kty2, class _Keylt2, class _Container2, class _Pred2>
-    friend _Container2::size_type erase_if(flat_multiset<_Kty2, _Keylt2, _Container2>&, _Pred2);
+    friend typename _Container2::size_type erase_if(flat_multiset<_Kty2, _Keylt2, _Container2>&, _Pred2);
 
     template <class _Pred>
     size_type _Erase_if(_Pred _Predicate) {
