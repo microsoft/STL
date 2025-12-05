@@ -90,7 +90,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _VECTORIZED_INCLUDES           _VECTORIZED_FOR_X64_X86
 #define _VECTORIZED_IS_SORTED_UNTIL    _VECTORIZED_FOR_X64_X86
 #define _VECTORIZED_MINMAX             _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_MINMAX_ELEMENT     _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_MINMAX_ELEMENT     _VECTORIZED_FOR_X64_X86_ARM64
 #define _VECTORIZED_MISMATCH           _VECTORIZED_FOR_X64_X86
 #define _VECTORIZED_REMOVE             _VECTORIZED_FOR_X64_X86
 #define _VECTORIZED_REMOVE_COPY        _VECTORIZED_FOR_X64_X86
@@ -123,6 +123,16 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE 0
 #endif // ^^^ !defined(__clang__) || __clang_major__ < 19 ^^^
 #endif // ^^^ !defined(_USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE) ^^^
+
+#if _VECTORIZED_MINMAX_ELEMENT
+#ifdef _M_ARM64
+template <class _Ty>
+_INLINE_VAR constexpr bool _Is_64bit_int_on_arm64_v = _STD is_integral_v<_Ty> && sizeof(_Ty) == 8;
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+template <class _Ty>
+_INLINE_VAR constexpr bool _Is_64bit_int_on_arm64_v = false;
+#endif // ^^^ defined(_M_ARM64) ^^^
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
 extern "C" {
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
@@ -7306,7 +7316,8 @@ constexpr bool _Is_min_max_value_optimization_safe = // Activate the vector algo
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
 #if _VECTORIZED_MINMAX_ELEMENT
-    if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
+    using _Ty = typename iterator_traits<_FwdIt>::value_type;
+    if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr> && !_Is_64bit_int_on_arm64_v<_Ty>) {
         if (!_Is_constant_evaluated()) {
             const auto _First_ptr = _STD _To_address(_First);
             const auto _Result    = _STD _Max_element_vectorized(_First_ptr, _STD _To_address(_Last));
@@ -7371,7 +7382,7 @@ namespace ranges {
 
 #if _VECTORIZED_MINMAX_ELEMENT
         if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
-                      && sized_sentinel_for<_Se, _It>) {
+                      && sized_sentinel_for<_Se, _It> && !_Is_64bit_int_on_arm64_v<iter_value_t<_It>>) {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _STD to_address(_First);
                 const auto _Last_ptr  = _STD to_address(_First + (_Last - _First));
@@ -7528,7 +7539,8 @@ namespace ranges {
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find smallest element
 #if _VECTORIZED_MINMAX_ELEMENT
-    if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
+    using _Ty = typename iterator_traits<_FwdIt>::value_type;
+    if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr> && !_Is_64bit_int_on_arm64_v<_Ty>) {
         if (!_Is_constant_evaluated()) {
             const auto _First_ptr = _STD _To_address(_First);
             const auto _Result    = _STD _Min_element_vectorized(_First_ptr, _STD _To_address(_Last));
@@ -7593,7 +7605,7 @@ namespace ranges {
 
 #if _VECTORIZED_MINMAX_ELEMENT
         if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
-                      && sized_sentinel_for<_Se, _It>) {
+                      && sized_sentinel_for<_Se, _It> && !_Is_64bit_int_on_arm64_v<iter_value_t<_It>>) {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _STD to_address(_First);
                 const auto _Last_ptr  = _STD to_address(_First + (_Last - _First));
