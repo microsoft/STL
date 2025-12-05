@@ -4056,7 +4056,7 @@ _CONSTEXPR20 _OutIt _Transform_vbool_aligned(
 #undef _INSERT_VECTOR_ANNOTATION
 
 #if _HAS_CXX23
-// This `flat_meow` machinery is here because `vector` is the leaf-most header included by both `flat_meow` headers.
+// This <flat_map> and <flat_set> machinery is here because <vector> is the leaf-most header included by both of them.
 
 _EXPORT_STD struct sorted_unique_t {
     explicit sorted_unique_t() = default;
