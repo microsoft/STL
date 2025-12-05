@@ -205,7 +205,7 @@ public:
     {}
 
     _Flat_set_base& operator=(const _Flat_set_base& _Other) {
-        _Clear_guard<container_type> _Guard{_STD addressof(_Mycont)};
+        _Clear_guard _Guard{this};
         _Mycont        = _Other._Mycont;
         _Mycomp        = _Other._Mycomp;
         _Guard._Target = nullptr;
@@ -215,8 +215,8 @@ public:
         is_nothrow_move_assignable_v<container_type> && is_nothrow_copy_assignable_v<key_compare>) // strengthened
     {
         if (this != _STD addressof(_Other)) {
-            _Clear_guard<container_type> _Guard{_STD addressof(_Mycont)};
-            _Clear_guard<container_type> _Always_clear{_STD addressof(_Other._Mycont)};
+            _Clear_guard _Guard{this};
+            _Clear_guard _Always_clear{_STD addressof(_Other)};
             _Mycont        = _STD move(_Other._Mycont);
             _Mycomp        = _Other._Mycomp; // intentionally copy comparator, see LWG-2227
             _Guard._Target = nullptr;
@@ -225,7 +225,7 @@ public:
     }
 
     _Derived& operator=(initializer_list<_Kty> _Ilist) {
-        _Clear_guard<container_type> _Guard{_STD addressof(_Mycont)};
+        _Clear_guard _Guard{this};
         _Mycont.assign(_Ilist);
         _Make_invariants_fulfilled();
         _Guard._Target = nullptr;
@@ -345,12 +345,12 @@ public:
     _NODISCARD container_type extract() && noexcept(
         is_nothrow_move_constructible_v<container_type>) /* strengthened */ {
         // always clears the container (N4950 [flat.set.modifiers]/14 and [flat.multiset.modifiers]/10)
-        _Clear_guard<container_type> _Always_clear{_STD addressof(_Mycont)};
+        _Clear_guard _Always_clear{this};
         return _STD move(_Mycont);
     }
     void replace(container_type&& _Cont) {
         _STL_ASSERT(_Is_sorted(_Cont), _Msg_not_sorted);
-        _Clear_guard<container_type> _Guard{_STD addressof(_Mycont)};
+        _Clear_guard _Guard{this};
         _Mycont        = _STD move(_Cont);
         _Guard._Target = nullptr;
     }
