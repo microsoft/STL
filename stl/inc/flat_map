@@ -1323,7 +1323,6 @@ public:
 
 private:
     using _MyBase::_Emplace_hint;
-    using _MyBase::_Erase_if;
     using _MyBase::_Insert_exact;
     using _MyBase::_Key_equal;
 
@@ -1527,7 +1526,6 @@ public:
 
 private:
     using _MyBase::_Emplace_hint;
-    using _MyBase::_Erase_if;
     using _MyBase::_Insert_exact;
     using _MyBase::_Key_equal;
 
