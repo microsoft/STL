@@ -391,10 +391,6 @@ public:
         return _Mycomp;
     }
 
-    _NODISCARD container_type& _Get_container_for_erase_if() noexcept {
-        return _Mycont;
-    }
-
     // set operations
     // NB: The non-const overloads are intentionally removed for brevity. This will not result in behavioral changes.
     _NODISCARD const_iterator find(const _Kty& _Val) const {
@@ -640,6 +636,20 @@ private:
         }
     }
 
+    template <class _Kty2, class _Keylt2, class _Container2, class _Pred2>
+    friend _Container2::size_type erase_if(flat_set<_Kty2, _Keylt2, _Container2>&, _Pred2);
+    template <class _Kty2, class _Keylt2, class _Container2, class _Pred2>
+    friend _Container2::size_type erase_if(flat_multiset<_Kty2, _Keylt2, _Container2>&, _Pred2);
+
+    template <class _Pred>
+    size_type _Erase_if(_Pred _Predicate) {
+        // Maintain invariants when an exception is thrown (N4950 [flat.set.erasure]/5, [flat.multiset.erasure]/5)
+        _Clear_guard _Guard{this};
+        const auto _Erased_count = _STD _Erase_remove_if(_Mycont, _Predicate);
+        _Guard._Target           = nullptr;
+        return _Erased_count;
+    }
+
     template <class _Ty>
     _NODISCARD const_iterator _Find(const _Ty& _Val) const {
         _STL_INTERNAL_STATIC_ASSERT(_Transparent<key_compare> || is_same_v<_Ty, _Kty>);
@@ -763,22 +773,12 @@ public:
 
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
 _Container::size_type erase_if(flat_set<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
-    // clears the container to maintain the invariants when an exception is thrown (N4950 [flat.set.erasure]/5)
-    _Container& _Cont = _Val._Get_container_for_erase_if();
-    _Clear_guard<_Container> _Guard{_STD addressof(_Cont)};
-    const auto _Erased_count = _STD _Erase_remove_if(_Cont, _STD _Pass_fn(_Predicate));
-    _Guard._Target           = nullptr;
-    return _Erased_count;
+    return _Val._Erase_if(_STD _Pass_fn(_Predicate));
 }
 
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
 _Container::size_type erase_if(flat_multiset<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
-    // clears the container to maintain the invariants when an exception is thrown (N4950 [flat.multiset.erasure]/5)
-    _Container& _Cont = _Val._Get_container_for_erase_if();
-    _Clear_guard<_Container> _Guard{_STD addressof(_Cont)};
-    const auto _Erased_count = _STD _Erase_remove_if(_Cont, _STD _Pass_fn(_Predicate));
-    _Guard._Target           = nullptr;
-    return _Erased_count;
+    return _Val._Erase_if(_STD _Pass_fn(_Predicate));
 }
 
 template <class _Kty, class _Keylt, class _Container, class _Alloc>
