@@ -4,14 +4,15 @@
 #ifndef _M_CEE // TRANSITION, VSO-1659496
 #include <algorithm>
 #include <cstddef>
-#if _HAS_CXX17
-#include <execution>
-#endif // _HAS_CXX17
 #include <memory>
 #include <new>
 #include <numeric>
 #include <type_traits>
 #include <utility>
+
+#if _HAS_CXX17
+#include <execution>
+#endif // _HAS_CXX17
 
 template <class Tag>
 struct tagged_truth {

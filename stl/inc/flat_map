@@ -842,23 +842,6 @@ protected:
     key_compare _Key_compare;
     containers _Data;
 
-    template <class _Predicate>
-    size_type _Erase_if(_Predicate _Pred) {
-        auto _View           = _View_to_mutate();
-        auto _Mut_first      = _View.begin();
-        auto _Mut_last       = _View.end();
-        const auto _Old_size = size();
-
-        _Clear_guard<_Flat_map_base> _Guard{this};
-
-        _STD _Seek_wrapped(_Mut_first, _RANGES remove_if(_View, _Pred).begin());
-        (void) _Data.keys.erase(_Mut_first._Key_it, _Mut_last._Key_it);
-        (void) _Data.values.erase(_Mut_first._Mapped_it, _Mut_last._Mapped_it);
-
-        _Guard._Target = nullptr;
-        return _Old_size - size();
-    }
-
     template <bool _OverwriteIfExists, class _OtherKey, class... _MappedArgTypes>
     iterator _Emplace_hint(const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Args) {
         _STL_INTERNAL_STATIC_ASSERT(is_constructible_v<mapped_type, _MappedArgTypes...>
@@ -951,6 +934,31 @@ protected:
     }
 
 private:
+    // FIXME, typename is an EDG workaround
+    template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
+    friend typename flat_map<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>::size_type erase_if(
+        flat_map<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>&, _Pred);
+    template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
+    friend typename flat_multimap<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>::size_type erase_if(
+        flat_multimap<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>&, _Pred);
+
+    template <class _Predicate>
+    size_type _Erase_if(_Predicate _Pred) {
+        auto _View           = _View_to_mutate();
+        auto _Mut_first      = _View.begin();
+        auto _Mut_last       = _View.end();
+        const auto _Old_size = size();
+
+        _Clear_guard _Guard{this};
+
+        _STD _Seek_wrapped(_Mut_first, _RANGES remove_if(_View, _Pred).begin());
+        (void) _Data.keys.erase(_Mut_first._Key_it, _Mut_last._Key_it);
+        (void) _Data.values.erase(_Mut_first._Mapped_it, _Mut_last._Mapped_it);
+
+        _Guard._Target = nullptr;
+        return _Old_size - size();
+    }
+
     auto _View_to_mutate() {
         using _Mutating_iterator = _Pairing_iterator_provider<typename key_container_type::iterator,
             typename mapped_container_type::iterator, typename mapped_container_type::iterator>::_Iterator;
@@ -1323,13 +1331,8 @@ public:
 
 private:
     using _MyBase::_Emplace_hint;
-    using _MyBase::_Erase_if;
     using _MyBase::_Insert_exact;
     using _MyBase::_Key_equal;
-
-    template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
-    friend typename flat_map<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>::size_type erase_if(
-        flat_map<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>&, _Pred);
 
     template <class _KeyTy>
     _NODISCARD mapped_type& _At(const _KeyTy& _Key_val) {
@@ -1527,13 +1530,8 @@ public:
 
 private:
     using _MyBase::_Emplace_hint;
-    using _MyBase::_Erase_if;
     using _MyBase::_Insert_exact;
     using _MyBase::_Key_equal;
-
-    template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
-    friend typename flat_multimap<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>::size_type erase_if(
-        flat_multimap<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>&, _Pred);
 
     template <class _KeyTy, class _MappedTy>
     iterator _Emplace_key_mapped(_KeyTy&& _Key_val, _MappedTy&& _Mapped_val) {

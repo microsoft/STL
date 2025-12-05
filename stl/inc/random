@@ -528,15 +528,13 @@ public:
     }
 
     _NODISCARD friend bool operator==(
-        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
-    /* strengthened */ {
+        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept /* strengthened */ {
         return _Lhs._Prev == _Rhs._Prev;
     }
 
 #if !_HAS_CXX20
     _NODISCARD friend bool operator!=(
-        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
-    /* strengthened */ {
+        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept /* strengthened */ {
         return _Lhs._Prev != _Rhs._Prev;
     }
 #endif // !_HAS_CXX20
@@ -1203,15 +1201,15 @@ public:
             do {
                 _Val = _Eng() - (_Engine::min) ();
             } while (_Val > _Yx0);
-            _Res = _Res << _Wx0 | (static_cast<result_type>(_Val) & _Mask);
+            _Res = (_Res << _Wx0) | (static_cast<result_type>(_Val) & _Mask);
         }
 
-        _Mask = _Mask << 1 | 1;
+        _Mask = (_Mask << 1) | 1;
         for (; _Idx < _Nx; ++_Idx) { // pack _Wx0+1-bit values
             do {
                 _Val = _Eng() - (_Engine::min) ();
             } while (_Val > _Yx1);
-            _Res = _Res << (_Wx0 + 1) | (static_cast<result_type>(_Val) & _Mask);
+            _Res = (_Res << (_Wx0 + 1)) | (static_cast<result_type>(_Val) & _Mask);
         }
         return _Res;
     }

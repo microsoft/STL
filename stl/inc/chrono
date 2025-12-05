@@ -2118,8 +2118,8 @@ namespace chrono {
     template <class _Ty>
     _NODISCARD const _Ty* _Locate_zone_impl(const vector<_Ty>& _Vec, string_view _Name) {
         // N5008 [time.zone.db.tzdb]/1: "Each vector in a tzdb object is sorted to enable fast lookup."
-        const auto _Result = _STD lower_bound(
-            _Vec.begin(), _Vec.end(), _Name, [](const auto& _Tz, const auto& _Sv) { return _Tz.name() < _Sv; });
+        const auto _Result = _STD lower_bound(_Vec.begin(), _Vec.end(), _Name,
+            [](const auto& _Tz, const auto& _Sv) _STATIC_CALL_OPERATOR { return _Tz.name() < _Sv; });
         if (_Result != _Vec.end() && _Result->name() == _Name) {
             return &*_Result;
         } else {
@@ -2174,7 +2174,7 @@ namespace chrono {
         return {_Info->_Version, _STD move(_Time_zones), _STD move(_Time_zone_links)};
     }
 
-    _NODISCARD inline pair<decltype(tzdb::leap_seconds), bool> _Tzdb_generate_leap_seconds(const size_t _Current_size) {
+    _NODISCARD inline pair<vector<leap_second>, bool> _Tzdb_generate_leap_seconds(const size_t _Current_size) {
         // Returns empty vector if no new leap seconds are found.
         static constexpr leap_second _Known_leap_seconds[]{
             {sys_seconds{seconds{78796800}}, true, seconds{0}},
@@ -2225,7 +2225,7 @@ namespace chrono {
         }
 
         const size_t _New_size = _Pre_2018_count + _Reg_post_2018_ls_size; // total size with registry data
-        decltype(tzdb::leap_seconds) _Leap_sec_info;
+        vector<leap_second> _Leap_sec_info;
         bool _All_ls_positive = true;
 
         if (_New_size > _Current_size) {
@@ -3095,7 +3095,7 @@ namespace chrono {
             static_assert(false, "A three-step clock time conversion is required to be unique, "
                                  "either utc-to-system or system-to-utc, but not both (N4950 [time.clock.cast.fn]/2).");
         } else {
-            _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+            static_assert(false); // unexpected strategy
         }
     }
 
@@ -5452,7 +5452,7 @@ namespace chrono {
             } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
                 return _Type == 'z' || _Type == 'Z' || _Is_valid_type<decltype(_Ty::_Time)>(_Type);
             } else {
-                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected type
+                static_assert(false); // unexpected type
             }
         }
 
