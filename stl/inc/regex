@@ -3432,7 +3432,7 @@ void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Increase_complexity_coun
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Prepare_rep(_Node_rep* _Node) {
-    auto* _Psav = &_Loop_vals[_Node->_Loop_number];
+    const auto _Psav = &_Loop_vals[_Node->_Loop_number];
 
     // Determine first capture group in repetition for later capture group reset, if not done so previously.
     // No capture group reset is performed for POSIX regexes,
@@ -3501,8 +3501,8 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Find_first_inner_capture
 
         case _N_rep:
             {
-                _Node_rep* _Inner_rep   = static_cast<_Node_rep*>(_Nx);
-                auto* _Inner_loop_state = &_Loop_vals[_Inner_rep->_Loop_number];
+                const auto _Inner_rep        = static_cast<_Node_rep*>(_Nx);
+                const auto _Inner_loop_state = &_Loop_vals[_Inner_rep->_Loop_number];
                 if (_Find_first_inner_capture_group(_Inner_rep->_Next, _Inner_loop_state)) {
                     _Loop_state->_Group_first = _Inner_loop_state->_Group_first;
                     _Found_group              = true;
