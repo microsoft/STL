@@ -70,7 +70,7 @@ _NODISCARD constexpr intmax_t _Gcd(intmax_t _Ax, intmax_t _Bx) noexcept {
 }
 
 _EXPORT_STD template <intmax_t _Nx, intmax_t _Dx = 1>
-struct ratio { // holds the ratio of _Nx to _Dx
+struct _NO_SPECIALIZATIONS_CITING("N5014 [format.arg]/2.1") ratio { // holds the ratio of _Nx to _Dx
     static_assert(_Dx != 0, "zero denominator");
     static_assert(-INTMAX_MAX <= _Nx, "numerator too negative");
     static_assert(-INTMAX_MAX <= _Dx, "denominator too negative");
