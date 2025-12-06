@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "range_algorithm_support.hpp"
+#include <range_algorithm_support.hpp>
 
 using namespace std;
 

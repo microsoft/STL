@@ -65,10 +65,6 @@ _INLINE_VAR constexpr long double _Exp1   = 2.7182818284590452353602874713526625
 _INLINE_VAR constexpr long double _Two32  = 4294967296.0L;
 _INLINE_VAR constexpr long double _Two31  = 2147483648.0L;
 
-extern "C++" _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _XLgamma(float) noexcept;
-extern "C++" _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _XLgamma(double) noexcept;
-extern "C++" _CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _XLgamma(long double) noexcept;
-
 _INLINE_VAR constexpr int _Nwords = 4;
 
 template <class _Elem, class _Traits>
@@ -532,15 +528,13 @@ public:
     }
 
     _NODISCARD friend bool operator==(
-        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
-    /* strengthened */ {
+        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept /* strengthened */ {
         return _Lhs._Prev == _Rhs._Prev;
     }
 
 #if !_HAS_CXX20
     _NODISCARD friend bool operator!=(
-        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
-    /* strengthened */ {
+        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept /* strengthened */ {
         return _Lhs._Prev != _Rhs._Prev;
     }
 #endif // !_HAS_CXX20
@@ -1207,15 +1201,15 @@ public:
             do {
                 _Val = _Eng() - (_Engine::min) ();
             } while (_Val > _Yx0);
-            _Res = _Res << _Wx0 | (static_cast<result_type>(_Val) & _Mask);
+            _Res = (_Res << _Wx0) | (static_cast<result_type>(_Val) & _Mask);
         }
 
-        _Mask = _Mask << 1 | 1;
+        _Mask = (_Mask << 1) | 1;
         for (; _Idx < _Nx; ++_Idx) { // pack _Wx0+1-bit values
             do {
                 _Val = _Eng() - (_Engine::min) ();
             } while (_Val > _Yx1);
-            _Res = _Res << (_Wx0 + 1) | (static_cast<result_type>(_Val) & _Mask);
+            _Res = (_Res << (_Wx0 + 1)) | (static_cast<result_type>(_Val) & _Mask);
         }
         return _Res;
     }
@@ -1926,7 +1920,7 @@ public:
             }
             _Sqrt = _CSTD sqrt(2.0 * _Mean0);
             _Logm = _CSTD log(_Mean0);
-            _Gx1  = _Mean0 * _Logm - _XLgamma(_Mean0 + 1.0);
+            _Gx1  = _Mean0 * _Logm - _STD lgamma(_Mean0 + 1.0);
         }
 
         _Ty1 _Mean = 0.0;
@@ -2030,7 +2024,7 @@ private:
             }
 
             if (_Nrand_impl<_Ty1>(_Eng)
-                <= 0.9 * (1.0 + _Yx * _Yx) * _CSTD exp(_Res * _Par0._Logm - _XLgamma(_Res + 1.0) - _Par0._Gx1)) {
+                <= 0.9 * (1.0 + _Yx * _Yx) * _CSTD exp(_Res * _Par0._Logm - _STD lgamma(_Res + 1.0) - _Par0._Gx1)) {
                 return _Res;
             }
         }
@@ -2086,7 +2080,7 @@ public:
             _Px    = _Px0;
             _Pp    = _Px < 0.5 ? _Px : (1.0 - _Px);
             _Mean  = _Tx * _Pp;
-            _Gx1   = _XLgamma(_Tx + 1.0);
+            _Gx1   = _STD lgamma(_Tx + 1.0);
             _Sqrt  = _CSTD sqrt(2 * _Mean * (1 - _Pp));
             _Logp  = _CSTD log(_Pp);
             _Logp1 = _CSTD log(1.0 - _Pp);
@@ -2232,7 +2226,7 @@ private:
                 }
                 if (_Nrand_impl<_Ty1>(_Eng)
                     <= 1.2 * _Par0._Sqrt * (1.0 + _Yx * _Yx)
-                           * _CSTD exp(_Par0._Gx1 - _XLgamma(_Res + 1.0) - _XLgamma(_Par0._Tx - _Res + 1.0)
+                           * _CSTD exp(_Par0._Gx1 - _STD lgamma(_Res + 1.0) - _STD lgamma(_Par0._Tx - _Res + 1.0)
                                        + _Res * _Par0._Logp + (_Par0._Tx - _Res) * _Par0._Logp1)) {
                     break;
                 }

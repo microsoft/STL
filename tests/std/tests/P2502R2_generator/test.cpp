@@ -25,7 +25,7 @@ int main() {}
 #include <utility>
 #include <vector>
 
-#include "test_generator_support.hpp"
+#include <test_generator_support.hpp>
 
 #pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
 

@@ -75,7 +75,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _VECTORIZED_FOR_X64_X86_ARM64         1
 #define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
 #else // ^^^ known architecture / unknown architecture vvv
-#error Unknown architecture.
+#error Unknown architecture
 #endif // ^^^ unknown architecture ^^^
 
 #define _VECTORIZED_ADJACENT_FIND      _VECTORIZED_FOR_X64_X86
@@ -275,7 +275,7 @@ __declspec(noalias) void _Reverse_vectorized(void* _First, void* _Last) noexcept
     } else if constexpr (_Nx == 8) {
         ::__std_reverse_trivially_swappable_8(_First, _Last);
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_REVERSE ^^^
@@ -292,7 +292,7 @@ __declspec(noalias) size_t _Count_vectorized(_Ty* const _First, _Ty* const _Last
     } else if constexpr (sizeof(_Ty) == 8) {
         return ::__std_count_trivial_8(_First, _Last, _STD _Find_arg_cast<uint64_t>(_Val));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_COUNT ^^^
@@ -313,7 +313,7 @@ _Ty* _Find_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noe
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_trivial_8(_First, _Last, _STD _Find_arg_cast<uint64_t>(_Val))));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_FIND ^^^
@@ -334,7 +334,7 @@ _Ty* _Find_last_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_find_last_trivial_8(_First, _Last, _STD _Find_arg_cast<uint64_t>(_Val))));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_FIND_LAST ^^^
@@ -351,7 +351,7 @@ _Ty* _Adjacent_find_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_adjacent_find_8(_First, _Last)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_ADJACENT_FIND ^^^
@@ -376,7 +376,7 @@ _Ty1* _Search_vectorized(_Ty1* const _First1, _Ty1* const _Last1, _Ty2* const _F
     } else if constexpr (sizeof(_Ty1) == 8) {
         return const_cast<_Ty1*>(static_cast<const _Ty1*>(::__std_search_8(_First1, _Last1, _First2, _Count2)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_SEARCH ^^^
@@ -395,7 +395,7 @@ _Ty1* _Find_end_vectorized(
     } else if constexpr (sizeof(_Ty1) == 8) {
         return const_cast<_Ty1*>(static_cast<const _Ty1*>(::__std_find_end_8(_First1, _Last1, _First2, _Count2)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_FIND_END ^^^
@@ -418,7 +418,7 @@ _Ty* _Min_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_8(_First, _Last, _Signed)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 
@@ -439,7 +439,7 @@ _Ty* _Max_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_8(_First, _Last, _Signed)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
@@ -484,7 +484,7 @@ auto _Min_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
             return ::__std_min_8u(_First, _Last);
         }
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 
@@ -527,7 +527,7 @@ auto _Max_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
             return ::__std_max_8u(_First, _Last);
         }
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_MINMAX ^^^
@@ -624,7 +624,7 @@ struct _Ptr_traits_base {
     using _Reftype = conditional_t<is_void_v<_Elem>, char, _Elem>&;
 
     _NODISCARD static _CONSTEXPR20 pointer pointer_to(_Reftype _Val)
-        noexcept(noexcept(_Ty::pointer_to(_Val))) /* strengthened */ { // Per LWG-3454
+        noexcept(noexcept(_Ty::pointer_to(_Val))) /* strengthened */ {
         return _Ty::pointer_to(_Val);
     }
 };
@@ -1005,7 +1005,7 @@ namespace ranges {
                         return *static_cast<_Ty&&>(_Val);
                     }
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -1329,7 +1329,7 @@ namespace ranges {
                     *static_cast<_Ty1&&>(_Val1) =
                         _Iter_swap::_Iter_exchange_move(static_cast<_Ty2&&>(_Val2), static_cast<_Ty1&&>(_Val1));
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -2742,7 +2742,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Non_member) {
                     return begin(_Val); // intentional ADL
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -2819,7 +2819,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Non_member) {
                     return end(_Val); // intentional ADL
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -2955,7 +2955,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Unwrap) {
                     return _RANGES _Unwrap_range_iter<_Ty>(_RANGES begin(_Val));
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -3006,7 +3006,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Unwrap) {
                     return _RANGES _Unwrap_range_sent<_Ty>(_RANGES end(_Val));
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -3172,7 +3172,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Make_reverse) {
                     return _STD make_reverse_iterator(_RANGES end(_Val));
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -3243,7 +3243,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Make_reverse) {
                     return _STD make_reverse_iterator(_RANGES begin(_Val));
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -3388,7 +3388,7 @@ namespace ranges {
                     const auto _Delta = _RANGES end(_Val) - _RANGES begin(_Val);
                     return static_cast<_Make_unsigned_like_t<remove_cv_t<decltype(_Delta)>>>(_Delta);
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -3450,7 +3450,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Compare) {
                     return static_cast<bool>(_RANGES begin(_Val) == _RANGES end(_Val));
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -3505,7 +3505,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Address) {
                     return _STD to_address(_RANGES begin(_Val));
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -3582,8 +3582,7 @@ namespace ranges {
         { _RANGES data(__r) } -> same_as<add_pointer_t<range_reference_t<_Rng>>>;
     };
 
-    class _Advance_fn {
-    public:
+    struct _Advance_fn {
         template <input_or_output_iterator _It>
         _STATIC_CALL_OPERATOR constexpr void operator()(_It& _Where, iter_difference_t<_It> _Off) _CONST_CALL_OPERATOR {
             if constexpr (random_access_iterator<_It>) {
@@ -3750,8 +3749,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Distance_fn distance;
 
-    class _Ssize_fn {
-    public:
+    struct _Ssize_fn {
         template <class _Rng>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
             noexcept(noexcept(_RANGES size(_Range)))
@@ -3767,8 +3765,7 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Ssize_fn ssize;
     }
 
-    class _Next_fn {
-    public:
+    struct _Next_fn {
         template <input_or_output_iterator _It>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(_It _Where) _CONST_CALL_OPERATOR {
             ++_Where;
@@ -3798,8 +3795,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Next_fn next;
 
-    class _Prev_fn {
-    public:
+    struct _Prev_fn {
         template <bidirectional_iterator _It>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(_It _Where) _CONST_CALL_OPERATOR {
             --_Where;
@@ -5513,7 +5509,7 @@ template <class _Ty>
 _NODISCARD bool _Is_all_bits_zero(const _Ty& _Val) {
     // checks if scalar type has all bits set to zero
     _STL_INTERNAL_STATIC_ASSERT(is_scalar_v<_Ty> && !is_member_pointer_v<_Ty>);
-    if constexpr (is_same_v<_Ty, nullptr_t>) {
+    if constexpr (is_null_pointer_v<_Ty>) {
         return true;
     } else {
         constexpr _Ty _Zero{};
@@ -5611,8 +5607,7 @@ _FwdIt fill_n(_ExPo&&, _FwdIt _Dest, _Diff _Count_raw, const _Ty& _Val) noexcept
 
 #if _HAS_CXX20
 namespace ranges {
-    class _Fill_n_fn {
-    public:
+    struct _Fill_n_fn {
         template <class _Ty, output_iterator<const _Ty&> _It>
         _STATIC_CALL_OPERATOR constexpr _It operator()(
             _It _First, iter_difference_t<_It> _Count, const _Ty& _Value) _CONST_CALL_OPERATOR {
@@ -5948,8 +5943,7 @@ namespace ranges {
         return {_STD move(_First1), _STD move(_First2)};
     }
 
-    class _Mismatch_fn {
-    public:
+    struct _Mismatch_fn {
         template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
@@ -6306,7 +6300,7 @@ constexpr bool _Vector_alg_in_find_is_safe_elem =
         // We're finding an (object or function) pointer in a range of pointers of the same type.
         conjunction<is_pointer<_Ty>, is_same<_Ty, _Elem>>,
         // We're finding a nullptr in a range of (object or function) pointers.
-        conjunction<is_same<_Ty, nullptr_t>, is_pointer<_Elem>>,
+        conjunction<is_null_pointer<_Ty>, is_pointer<_Elem>>,
         // We're finding an object pointer in a range of object pointers, and:
         // - One of the pointer types is a cv void*.
         // - One of the pointer types is a cv1 U* and the other is a cv2 U*.
@@ -6333,7 +6327,7 @@ _NODISCARD constexpr bool _Could_compare_equal_to_value_type(const _Ty& _Val) {
     if constexpr (disjunction_v<is_same<_Ty, _Elem>, // If types are the same, _Val can compare equal to _Elem
                       is_same<_Ty, bool>, // true or false can be represented in any integer type
                       is_pointer<_Ty>, // we only compare pointers vs. other pointers with the same representation
-                      is_same<_Ty, nullptr_t> // we only compare nullptr_t against pointers; any pointer can be null
+                      is_null_pointer<_Ty> // we only compare nullptr_t against pointers; any pointer can be null
                       >) {
         return true;
     } else {
@@ -6541,8 +6535,7 @@ namespace ranges {
         return _First;
     }
 
-    class _Find_fn {
-    public:
+    struct _Find_fn {
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
@@ -6963,8 +6956,7 @@ namespace ranges {
         return _First;
     }
 
-    class _Find_if_fn {
-    public:
+    struct _Find_if_fn {
         template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
@@ -7407,8 +7399,7 @@ namespace ranges {
         return _Found;
     }
 
-    class _Max_element_fn {
-    public:
+    struct _Max_element_fn {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
@@ -7465,8 +7456,7 @@ namespace ranges {
         sizeof(_It) <= 2 * sizeof(iter_value_t<_It>)
         && (is_trivially_copyable_v<_It> || !is_trivially_copyable_v<iter_value_t<_It>>);
 
-    class _Max_fn {
-    public:
+    struct _Max_fn {
         template <class _Ty, class _Pj = identity,
             indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr const _Ty& operator()(const _Ty& _Left _MSVC_LIFETIMEBOUND,
@@ -7631,8 +7621,7 @@ namespace ranges {
         return _Found;
     }
 
-    class _Min_element_fn {
-    public:
+    struct _Min_element_fn {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
@@ -7683,8 +7672,7 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist) {
 
 #if _HAS_CXX20
 namespace ranges {
-    class _Min_fn {
-    public:
+    struct _Min_fn {
         template <class _Ty, class _Pj = identity,
             indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr const _Ty& operator()(const _Ty& _Left _MSVC_LIFETIMEBOUND,

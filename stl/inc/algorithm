@@ -172,7 +172,7 @@ _Ty1* _Find_first_of_vectorized(
         return const_cast<_Ty1*>(
             static_cast<const _Ty1*>(::__std_find_first_of_trivial_8(_First1, _Last1, _First2, _Last2)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_FIND_FIRST_OF ^^^
@@ -189,7 +189,7 @@ __declspec(noalias) void _Reverse_copy_vectorized(const void* _First, const void
     } else if constexpr (_Nx == 8) {
         ::__std_reverse_copy_trivially_copyable_8(_First, _Last, _Dest);
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_REVERSE_COPY ^^^
@@ -214,7 +214,7 @@ pair<_Ty*, _Ty*> _Minmax_element_vectorized(_Ty* const _First, _Ty* const _Last)
     } else if constexpr (sizeof(_Ty) == 8) {
         _Res = ::__std_minmax_element_8(_First, _Last, _Signed);
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 
     return {const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
@@ -262,7 +262,7 @@ auto _Minmax_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
             return ::__std_minmax_8u(_First, _Last);
         }
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_MINMAX ^^^
@@ -301,7 +301,7 @@ _Ty* _Is_sorted_until_vectorized(_Ty* const _First, _Ty* const _Last, const bool
             return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_is_sorted_until_8u(_First, _Last, _Greater)));
         }
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_IS_SORTED_UNTIL ^^^
@@ -337,7 +337,7 @@ bool _Includes_vectorized(
             return ::__std_includes_less_8u(_First1, _Last1, _First2, _Last2);
         }
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_INCLUDES ^^^
@@ -353,7 +353,7 @@ __declspec(noalias) void _Replace_vectorized(
         ::__std_replace_8(
             _First, _Last, _STD _Find_arg_cast<uint64_t>(_Old_val), _STD _Find_arg_cast<uint64_t>(_New_val));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_REPLACE ^^^
@@ -374,7 +374,7 @@ _Ty* _Search_n_vectorized(_Ty* const _First, _Ty* const _Last, const size_t _Cou
         return const_cast<_Ty*>(
             static_cast<const _Ty*>(::__std_search_n_8(_First, _Last, _Count, _STD _Find_arg_cast<uint64_t>(_Val))));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_SEARCH_N ^^^
@@ -391,7 +391,7 @@ _Ty* _Unique_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return reinterpret_cast<_Ty*>(::__std_unique_8(_First, _Last));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_UNIQUE ^^^
@@ -409,7 +409,7 @@ _Ty* _Remove_copy_vectorized(
     } else if constexpr (sizeof(_Ty) == 8) {
         return reinterpret_cast<_Ty*>(::__std_remove_copy_8(_First, _Last, _Dest, _STD _Find_arg_cast<uint64_t>(_Val)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_REMOVE_COPY ^^^
@@ -426,7 +426,7 @@ _Ty* _Unique_copy_vectorized(const _Ty* const _First, const _Ty* const _Last, _T
     } else if constexpr (sizeof(_Ty) == 8) {
         return reinterpret_cast<_Ty*>(::__std_unique_copy_8(_First, _Last, _Dest));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 #endif // ^^^ _VECTORIZED_UNIQUE_COPY ^^^
@@ -749,8 +749,7 @@ namespace ranges {
     _EXPORT_STD template <class _In, class _Fun>
     using for_each_n_result = in_fun_result<_In, _Fun>;
 
-    class _For_each_n_fn {
-    public:
+    struct _For_each_n_fn {
         template <input_iterator _It, class _Pj = identity, indirectly_unary_invocable<projected<_It, _Pj>> _Fn>
         _STATIC_CALL_OPERATOR constexpr for_each_n_result<_It, _Fn> operator()(
             _It _First, iter_difference_t<_It> _Count, _Fn _Func, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
@@ -1754,8 +1753,7 @@ namespace ranges {
     _EXPORT_STD inline constexpr _None_of_fn none_of;
 
 #if _HAS_CXX23
-    class _Contains_fn {
-    public:
+    struct _Contains_fn {
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr bool operator()(
@@ -1778,8 +1776,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Contains_fn contains;
 
-    class _Contains_subrange_fn {
-    public:
+    struct _Contains_subrange_fn {
         template <forward_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
@@ -1819,8 +1816,7 @@ namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using copy_n_result = in_out_result<_In, _Out>;
 
-    class _Copy_n_fn {
-    public:
+    struct _Copy_n_fn {
         template <input_iterator _It, weakly_incrementable _Out>
             requires indirectly_copyable<_It, _Out>
         _STATIC_CALL_OPERATOR constexpr copy_n_result<_It, _Out> operator()(
@@ -1854,8 +1850,7 @@ namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using copy_backward_result = in_out_result<_In, _Out>;
 
-    class _Copy_backward_fn {
-    public:
+    struct _Copy_backward_fn {
         template <bidirectional_iterator _It1, sentinel_for<_It1> _Se1, bidirectional_iterator _It2>
             requires indirectly_copyable<_It1, _It2>
         _STATIC_CALL_OPERATOR constexpr copy_backward_result<_It1, _It2> operator()(
@@ -1993,8 +1988,7 @@ namespace ranges {
         return {_STD move(_First), _STD move(_Output)};
     }
 
-    class _Move_fn {
-    public:
+    struct _Move_fn {
         template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
             requires indirectly_movable<_It, _Out>
         _STATIC_CALL_OPERATOR constexpr move_result<_It, _Out> operator()(
@@ -2048,8 +2042,7 @@ namespace ranges {
         return _Output;
     }
 
-    class _Move_backward_fn {
-    public:
+    struct _Move_backward_fn {
         template <bidirectional_iterator _It1, sentinel_for<_It1> _Se1, bidirectional_iterator _It2>
             requires indirectly_movable<_It1, _It2>
         _STATIC_CALL_OPERATOR constexpr move_backward_result<_It1, _It2> operator()(
@@ -2844,8 +2837,7 @@ namespace ranges {
     _EXPORT_STD inline constexpr _Search_n_fn search_n;
 
 #if _HAS_CXX23
-    class _Starts_with_fn {
-    public:
+    struct _Starts_with_fn {
         template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
@@ -3203,8 +3195,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Fold_left_with_iter_fn fold_left_with_iter;
 
-    class _Fold_left_fn {
-    public:
+    struct _Fold_left_fn {
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, _Indirectly_binary_left_foldable<_Ty, _It> _Fn>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
             _It _First, _Se _Last, _Ty _Init, _Fn _Func) _CONST_CALL_OPERATOR {
@@ -3270,8 +3261,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Fold_left_first_with_iter_fn fold_left_first_with_iter;
 
-    class _Fold_left_first_fn {
-    public:
+    struct _Fold_left_first_fn {
         template <input_iterator _It, sentinel_for<_It> _Se,
             _Indirectly_binary_left_foldable<iter_value_t<_It>, _It> _Fn>
             requires constructible_from<iter_value_t<_It>, iter_reference_t<_It>>
@@ -3308,8 +3298,7 @@ namespace ranges {
         }
     }
 
-    class _Fold_right_fn {
-    public:
+    struct _Fold_right_fn {
         template <bidirectional_iterator _It, sentinel_for<_It> _Se, class _Ty,
             _Indirectly_binary_right_foldable<_Ty, _It> _Fn>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
@@ -4109,8 +4098,7 @@ namespace ranges {
         return {_STD move(_First1), _STD move(_First2)};
     }
 
-    class _Swap_ranges_fn {
-    public:
+    struct _Swap_ranges_fn {
         template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2>
             requires indirectly_swappable<_It1, _It2>
         _STATIC_CALL_OPERATOR constexpr swap_ranges_result<_It1, _It2> operator()(
@@ -4800,8 +4788,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Replace_copy_if_fn replace_copy_if;
 
-    class _Fill_fn {
-    public:
+    struct _Fill_fn {
         template <class _Ty, output_iterator<const _Ty&> _It, sentinel_for<_It> _Se>
         _STATIC_CALL_OPERATOR constexpr _It operator()(_It _First, _Se _Last, const _Ty& _Value) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Last);
@@ -4885,8 +4872,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Generate_fn generate;
 
-    class _Generate_n_fn {
-    public:
+    struct _Generate_n_fn {
         template <input_or_output_iterator _Out, copy_constructible _Fn>
             requires invocable<_Fn&> && indirectly_writable<_Out, invoke_result_t<_Fn&>>
         _STATIC_CALL_OPERATOR constexpr _Out operator()(
@@ -5725,8 +5711,7 @@ namespace ranges {
         }
     }
 
-    class _Reverse_fn {
-    public:
+    struct _Reverse_fn {
         template <bidirectional_iterator _It, sentinel_for<_It> _Se>
             requires permutable<_It>
         _STATIC_CALL_OPERATOR constexpr _It operator()(_It _First, _Se _Last) _CONST_CALL_OPERATOR {
@@ -5982,8 +5967,7 @@ namespace ranges {
         }
     }
 
-    class _Rotate_fn {
-    public:
+    struct _Rotate_fn {
         template <permutable _It, sentinel_for<_It> _Se>
         _STATIC_CALL_OPERATOR constexpr subrange<_It> operator()(_It _First, _It _Mid, _Se _Last) _CONST_CALL_OPERATOR {
             _STD _Adl_verify_range(_First, _Mid);
@@ -6986,11 +6970,12 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_unary_predicate<_Pr, projected<_It, _Pj>>);
 
-            if constexpr (_Bidi_common<_It, _Se>) {
-                auto _Saved_last = _Last;
+            if constexpr (bidirectional_iterator<_It>) {
+                auto _Saved_last = _RANGES next(_First, _Last);
+                auto _Tail       = _Saved_last;
                 for (;; ++_First) { // find any out-of-order pair
                     for (;; ++_First) { // skip in-place elements at beginning
-                        if (_First == _Last) {
+                        if (_First == _Tail) {
                             return {_STD move(_First), _STD move(_Saved_last)};
                         }
 
@@ -7000,13 +6985,13 @@ namespace ranges {
                     }
 
                     do { // skip in-place elements at end
-                        --_Last;
-                        if (_First == _Last) {
+                        --_Tail;
+                        if (_First == _Tail) {
                             return {_STD move(_First), _STD move(_Saved_last)};
                         }
-                    } while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Last)));
+                    } while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Tail)));
 
-                    _RANGES iter_swap(_First, _Last); // out of place, swap and loop
+                    _RANGES iter_swap(_First, _Tail); // out of place, swap and loop
                 }
 
                 return {_STD move(_First), _STD move(_Saved_last)};
@@ -7543,8 +7528,7 @@ namespace ranges {
         _RANGES _Pop_heap_hole_unchecked(_STD move(_First), _Last, _Last, _STD move(_Val), _Pred, _Proj, _Proj);
     }
 
-    class _Pop_heap_fn {
-    public:
+    struct _Pop_heap_fn {
         template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
             requires sortable<_It, _Pr, _Pj>
         _STATIC_CALL_OPERATOR constexpr _It operator()(
@@ -7590,8 +7574,7 @@ namespace ranges {
         }
     }
 
-    class _Make_heap_fn {
-    public:
+    struct _Make_heap_fn {
         template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
             requires sortable<_It, _Pr, _Pj>
         _STATIC_CALL_OPERATOR constexpr _It operator()(
@@ -7715,8 +7698,7 @@ namespace ranges {
         return _First + _Off;
     }
 
-    class _Is_heap_fn {
-    public:
+    struct _Is_heap_fn {
         template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr bool operator()(
@@ -7743,8 +7725,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Is_heap_fn is_heap;
 
-    class _Is_heap_until_fn {
-    public:
+    struct _Is_heap_until_fn {
         template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
@@ -7810,8 +7791,7 @@ namespace ranges {
         }
     }
 
-    class _Sort_heap_fn {
-    public:
+    struct _Sort_heap_fn {
         template <random_access_iterator _It, sentinel_for<_It> _Se, class _Pr = ranges::less, class _Pj = identity>
             requires sortable<_It, _Pr, _Pj>
         _STATIC_CALL_OPERATOR constexpr _It operator()(
@@ -7865,8 +7845,7 @@ namespace ranges {
         return _First;
     }
 
-    class _Lower_bound_fn {
-    public:
+    struct _Lower_bound_fn {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity,
             indirect_strict_weak_order<const _Ty*, projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
@@ -7916,8 +7895,7 @@ namespace ranges {
         return _First;
     }
 
-    class _Upper_bound_fn {
-    public:
+    struct _Upper_bound_fn {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity,
             indirect_strict_weak_order<const _Ty*, projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
@@ -8070,8 +8048,7 @@ _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _T
 
 #if _HAS_CXX20
 namespace ranges {
-    class _Binary_search_fn {
-    public:
+    struct _Binary_search_fn {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity,
             indirect_strict_weak_order<const _Ty*, projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr bool operator()(
@@ -11823,8 +11800,7 @@ _NODISCARD bool is_sorted(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last) noexcept /
 
 #if _HAS_CXX20
 namespace ranges {
-    class _Is_sorted_fn {
-    public:
+    struct _Is_sorted_fn {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr bool operator()(
@@ -11849,8 +11825,7 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Is_sorted_fn is_sorted;
 
-    class _Is_sorted_until_fn {
-    public:
+    struct _Is_sorted_until_fn {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
@@ -11913,8 +11888,7 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val _MSVC_LIFETIMEBOUND, const
 
 #if _HAS_CXX20
 namespace ranges {
-    class _Clamp_fn {
-    public:
+    struct _Clamp_fn {
         template <class _Ty, class _Pj = identity,
             indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
         _NODISCARD _STATIC_CALL_OPERATOR constexpr const _Ty& operator()(const _Ty& _Val _MSVC_LIFETIMEBOUND,

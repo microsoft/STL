@@ -471,7 +471,7 @@ public:
         : _MyMutexes(_Mtxes...) {} // construct but don't lock
 
     ~scoped_lock() noexcept {
-        _STD apply([](_Mutexes&... _Mtxes) _STATIC_LAMBDA { (..., (void) _Mtxes.unlock()); }, _MyMutexes);
+        _STD apply([](_Mutexes&... _Mtxes) _STATIC_CALL_OPERATOR { (..., (void) _Mtxes.unlock()); }, _MyMutexes);
     }
 
     scoped_lock(const scoped_lock&)            = delete;
@@ -556,7 +556,7 @@ public:
     }
 
     template <class _Rep, class _Period>
-    cv_status wait_for(unique_lock<mutex>& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time) {
+    cv_status wait_for(unique_lock<mutex>& _Lck, const chrono::duration<_Rep, _Period> _Rel_time) {
         // wait for duration
         if (_Rel_time <= chrono::duration<_Rep, _Period>::zero()) {
             // we don't unlock-and-relock _Lck for this case because it's not observable
@@ -566,13 +566,13 @@ public:
     }
 
     template <class _Rep, class _Period, class _Predicate>
-    bool wait_for(unique_lock<mutex>& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time, _Predicate _Pred) {
+    bool wait_for(unique_lock<mutex>& _Lck, const chrono::duration<_Rep, _Period> _Rel_time, _Predicate _Pred) {
         // wait for signal with timeout and check predicate
         return wait_until(_Lck, _To_absolute_time(_Rel_time), _STD _Pass_fn(_Pred));
     }
 
     template <class _Clock, class _Duration>
-    cv_status wait_until(unique_lock<mutex>& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+    cv_status wait_until(unique_lock<mutex>& _Lck, const chrono::time_point<_Clock, _Duration> _Abs_time) {
         // wait until time point
         static_assert(chrono::_Is_clock_v<_Clock>, "Clock type required");
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -598,8 +598,7 @@ public:
     }
 
     template <class _Clock, class _Duration, class _Predicate>
-    bool wait_until(
-        unique_lock<mutex>& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate _Pred) {
+    bool wait_until(unique_lock<mutex>& _Lck, const chrono::time_point<_Clock, _Duration> _Abs_time, _Predicate _Pred) {
         // wait for signal with timeout and check predicate
         static_assert(chrono::_Is_clock_v<_Clock>, "Clock type required");
         while (!_Pred()) {
