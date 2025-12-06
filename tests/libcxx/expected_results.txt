@@ -626,9 +626,6 @@ std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.p
 # LWG-3120 Unclear behavior of monotonic_buffer_resource::release()
 std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/release_reset_initial_status.pass.cpp FAIL
 
-# LWG-3343 "Ordering of calls to unlock() and notify_all() in Effects element of notify_all_at_thread_exit() should be reversed" (Open)
-std/thread/thread.condition/notify_all_at_thread_exit_lwg3343.pass.cpp PASS
-
 
 # *** C1XX COMPILER BUGS ***
 # DevCom-1436243 VSO-1335743 constexpr new initialized array
