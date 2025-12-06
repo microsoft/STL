@@ -5,7 +5,9 @@
 #define TEST_NAME "<cwchar>, part 2"
 
 #include "tdefs.h"
+#include <clocale>
 #include <cwchar>
+#include <errno.h>
 #include <limits.h>
 #include <time.h>
 
@@ -49,6 +51,27 @@ void test_cpp() { // test C++ header
         CHECK_INT(wc, L'c');
         CHECK_INT(STDx mbrtowc(&wc, abc + 3, 9, &mbst), 0);
         CHECK_INT(wc, L'\0');
+
+        { // UTF-8 overlong sequences should be rejected
+            const char overlong_nul[] = "\xC0\x80";
+            const char overlong_A[]   = "\xC1\x81";
+
+            if (std::setlocale(LC_CTYPE, ".UTF-8") != nullptr) {
+                STDx mbstate_t utf8_state{};
+                wchar_t wide_out;
+
+                errno = 0;
+                CHECK_INT(STDx mbrtowc(&wide_out, overlong_nul, sizeof(overlong_nul) - 1, &utf8_state), -1);
+                CHECK_INT(errno, EILSEQ);
+
+                utf8_state = STDx mbstate_t{};
+                errno      = 0;
+                CHECK_INT(STDx mbrtowc(&wide_out, overlong_A, sizeof(overlong_A) - 1, &utf8_state), -1);
+                CHECK_INT(errno, EILSEQ);
+
+                std::setlocale(LC_CTYPE, "C");
+            }
+        }
 
         CHECK(STDx mbsinit(&mbst) != 0);
         pc = &abc[0];
