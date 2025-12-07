@@ -665,7 +665,7 @@ constexpr bool test_construct_at_array() {
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-10798069
     if (!is_constant_evaluated())
-#endif // !defined(__clang__) && !defined(__EDG__)
+#endif // ^^^ workaround ^^^
     {
 #if !_HAS_CXX23
         if (!is_constant_evaluated())

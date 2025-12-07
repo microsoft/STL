@@ -269,7 +269,7 @@ _NODISCARD _Ret_notnull_ _Post_writable_byte_size_(_Size)
 
 template <_STD same_as<_STD _Secret_placement_new_tag> _Tag>
 constexpr void __CRTDECL operator delete[](void*, _Tag, void*) noexcept {}
-#endif // _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)
+#endif // ^^^ workaround ^^^
 
 _STD_BEGIN
 

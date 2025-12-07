@@ -657,11 +657,9 @@ constexpr bool test_growth() {
     return true;
 }
 
-#if !defined(__clang__) && !defined(__EDG__)
 #pragma warning(push)
 #pragma warning(disable : 4582) // '%s': constructor is not implicitly called
 #pragma warning(disable : 4583) // '%s': destructor is not implicitly called
-#endif // !defined(__clang__) && !defined(__EDG__)
 template <class T, size_t N>
 constexpr void test_vector_of_array() {
     vector<T[N]> v(42);
@@ -678,7 +676,7 @@ constexpr bool test_vector_of_array() {
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-10798069
     if (!is_constant_evaluated())
-#endif // !defined(__clang__) && !defined(__EDG__)
+#endif // ^^^ workaround ^^^
     {
 #if !_HAS_CXX23
         if (!is_constant_evaluated())
@@ -693,9 +691,7 @@ constexpr bool test_vector_of_array() {
 
     return true;
 }
-#if !defined(__clang__) && !defined(__EDG__)
 #pragma warning(pop)
-#endif // !defined(__clang__) && !defined(__EDG__)
 
 int main() {
     test_interface();
@@ -707,5 +703,5 @@ int main() {
     static_assert(test_growth());
 #ifndef __EDG__ // TRANSITION, DevCom-11008487
     static_assert(test_vector_of_array());
-#endif // !defined(__EDG__)
+#endif // ^^^ no workaround ^^^
 }
