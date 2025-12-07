@@ -310,7 +310,7 @@ _NODISCARD int _Checked_popcount(const _Ty _Val) noexcept {
 
 template <class _Ty>
 constexpr bool _Is_standard_unsigned_integer =
-    _Is_any_of_v<remove_cv_t<_Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
+    _Is_any_of_v<_Ty, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR20 int _Countr_zero(const _Ty _Val) noexcept {
