@@ -627,38 +627,34 @@ static_assert(!CanWellDefinedlyAccessAfterOperation<[](auto& arr) { ranges::dest
 // Test LWG-3436 "std::construct_at should support arrays"
 template <class T, size_t N>
 constexpr void test_construct_at_array() {
-    {
-        union U {
-            constexpr U() {}
-            constexpr ~U() {}
+    union U {
+        constexpr U() {}
+        constexpr ~U() {}
 
-            T a[N];
-        };
-        U u;
-        construct_at(&u.a);
-        for (const auto& elem : u.a) {
-            assert(elem == T{});
-        }
-        destroy_at(&u.a);
+        T a[N];
+    };
+    U u;
+    construct_at(&u.a);
+    for (const auto& elem : u.a) {
+        assert(elem == T{});
     }
+    destroy_at(&u.a);
 }
 
 template <class T, size_t N>
 constexpr void test_ranges_construct_at_array() {
-    {
-        union U {
-            constexpr U() {}
-            constexpr ~U() {}
+    union U {
+        constexpr U() {}
+        constexpr ~U() {}
 
-            T a[N];
-        };
-        U u;
-        ranges::construct_at(&u.a);
-        for (const auto& elem : u.a) {
-            assert(elem == T{});
-        }
-        ranges::destroy_at(&u.a);
+        T a[N];
+    };
+    U u;
+    ranges::construct_at(&u.a);
+    for (const auto& elem : u.a) {
+        assert(elem == T{});
     }
+    ranges::destroy_at(&u.a);
 }
 
 constexpr bool test_construct_at_array() {
