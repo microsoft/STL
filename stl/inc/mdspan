@@ -227,7 +227,7 @@ public:
         : extents(_Extents_from_tuple{}, _STD tie(_Exts...), make_index_sequence<rank_dynamic()>{}) {
 #if _ITERATOR_DEBUG_LEVEL != 0
         auto _Check_extent = []<class _Ty>(const _Ty& _Ext) {
-            if constexpr (_Is_standard_integer<remove_cv_t<_Ty>>) {
+            if constexpr (_Is_standard_integer<_Ty>) {
                 return _Ext >= 0 && _STD in_range<index_type>(_Ext);
             } else if constexpr (integral<_Ty> && !same_as<_Ty, bool>) { // NB: character types
                 const auto _Integer_ext = static_cast<long long>(_Ext);
