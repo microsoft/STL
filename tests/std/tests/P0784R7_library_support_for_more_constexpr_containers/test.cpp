@@ -677,9 +677,19 @@ constexpr bool test_construct_at_array() {
             test_ranges_construct_at_array<unique_ptr<string>, 42>();
         }
         test_construct_at_array<string, 1>();
-        test_construct_at_array<string, 42>();
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, DevCom-11012299
+        if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
+        {
+            test_construct_at_array<string, 42>();
+        }
         test_ranges_construct_at_array<string, 1>();
-        test_ranges_construct_at_array<string, 42>();
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, DevCom-11012299
+        if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
+        {
+            test_ranges_construct_at_array<string, 42>();
+        }
     }
 
     return true;
@@ -705,7 +715,5 @@ int main() {
     test_array(string("hello to some really long world that certainly doesn't fit in SSO"));
 
     test_construct_at_array();
-#if !_HAS_CXX23 || !defined(__EDG__) // TRANSITION, EDG crashes, to be reported
     static_assert(test_construct_at_array());
-#endif // !_HAS_CXX23 || !defined(__EDG__)
 }
