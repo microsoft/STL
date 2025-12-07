@@ -146,7 +146,7 @@ def parse_result_file(filename: Union[str, bytes, os.PathLike]) \
         if result_code is None:
             result_code = getattr(stl.test.tests, result, None)
         if result_code is None:
-            raise Exception(f"Incorrect result code \"{result}\" in \"{line}\" in {filename}.")
+            raise Exception(f"Unknown result code \"{result}\" in \"{line}\" in {filename}.")
         res[prefix] = result_code
 
     _expected_result_entry_cache[str(filename)] = res
