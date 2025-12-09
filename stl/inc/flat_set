@@ -690,7 +690,7 @@ private:
         if constexpr (_NeedSorting) {
             _STD sort(_Old_end, _End, _Pass_comp());
         } else {
-            _STL_ASSERT(_Is_sorted(_Old_end, _End), _Msg_not_sorted);
+            _STL_INTERNAL_CHECK(_Is_sorted(_Old_end, _End));
         }
 
         _STD inplace_merge(_Begin, _Old_end, _End, _Pass_comp());
