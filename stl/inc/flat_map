@@ -847,11 +847,13 @@ protected:
 
     template <bool _OverwriteIfExists, class _OtherKey, class... _MappedArgTypes>
     iterator _Emplace_hint(const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Args) {
-        _STL_INTERNAL_STATIC_ASSERT(is_constructible_v<mapped_type, _MappedArgTypes...>
-                                    && (is_same_v<remove_cvref_t<_OtherKey>, key_type>
-                                        || (is_constructible_v<key_type, _OtherKey> && _Transparent<key_compare>) ));
-        static_assert(_IsUnique || !_OverwriteIfExists,
-            "Overwriting is not supported when the container allows multiple copies of a key.");
+        _STL_INTERNAL_STATIC_ASSERT(is_constructible_v<mapped_type, _MappedArgTypes...>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_OtherKey>, key_type>
+                                    || (is_constructible_v<key_type, _OtherKey> && _Transparent<key_compare>) );
+
+        // Overwriting is not supported when the container allows multiple copies of a key.
+        _STL_INTERNAL_STATIC_ASSERT(_IsUnique || !_OverwriteIfExists);
+
         const const_iterator _Begin = cbegin();
         const const_iterator _End   = cend();
 
