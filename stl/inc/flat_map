@@ -27,6 +27,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#undef msvc
+
 _STD_BEGIN
 template <class _Key, class _Mapped, class _KeyCompare>
 struct _Flat_map_value_compare_provider {
@@ -1656,6 +1660,9 @@ flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>::size_ty
     return _Cont._Erase_if(_STD _Pass_fn(_Pred));
 }
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

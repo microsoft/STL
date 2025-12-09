@@ -23,6 +23,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#undef msvc
+
 _STD_BEGIN
 template <bool _IsNoexcept, class _Container>
 struct _NODISCARD _Flat_set_swap_clear_guard {
@@ -876,6 +880,9 @@ template <class _Kty, _Not_allocator_for_container _Compare = less<_Kty>>
 flat_multiset(sorted_equivalent_t, initializer_list<_Kty>, _Compare = _Compare()) -> flat_multiset<_Kty, _Compare>;
 
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
