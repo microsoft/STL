@@ -699,7 +699,7 @@ public:
     }
 
     value_compare value_comp() const {
-        return value_compare(_Key_compare);
+        return value_compare{_Key_compare};
     }
 
     const key_container_type& keys() const noexcept {
@@ -969,7 +969,7 @@ private:
 
     void _Sort() {
         _Clear_guard _Guard{this};
-        _RANGES sort(_View_to_mutate(), value_compare(_Key_compare));
+        _RANGES sort(_View_to_mutate(), value_compare{_Key_compare});
         _Guard._Target = nullptr;
     }
 
@@ -1015,11 +1015,11 @@ private:
         if constexpr (_NeedSorting) {
             auto _Sorted_new_elements = _Sorted_view;
             _Sorted_new_elements.advance(_Old_distance);
-            _RANGES sort(_Sorted_new_elements, value_compare(_Key_compare));
+            _RANGES sort(_Sorted_new_elements, value_compare{_Key_compare});
         }
 
         // Merge the newly inserted elements with the existing elements
-        _RANGES inplace_merge(_Sorted_view, _Sorted_view.begin() + _Old_distance, value_compare(_Key_compare));
+        _RANGES inplace_merge(_Sorted_view, _Sorted_view.begin() + _Old_distance, value_compare{_Key_compare});
 
         if constexpr (_IsUnique) {
             _Dedup();
