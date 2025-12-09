@@ -70,10 +70,14 @@ private:
 
 public:
     static_assert(same_as<_Kty, typename _Container::value_type>,
-        "The C++ Standard dictates that the Key type must be the "
-        "same as the container's value type [flatset.overview]");
-    static_assert(
-        !_Is_vector_bool<_Container>, "vector<bool, A> cannot be adapted because it is not a sequence container.");
+        "key_type and container_type::value_type must be the same. "
+        "(N5014 [flat.set.overview]/8, [flat.multiset.overview]/8)");
+    static_assert(!_Is_vector_bool<_Container>,
+        "vector<bool> cannot be adapted because it is not a sequence container. "
+        "(N5014 [flat.set.overview]/7, [flat.multiset.overview]/7)");
+    static_assert(random_access_iterator<typename _Container::const_iterator>,
+        "Sequence containers must support random-access iterators in order to be adapted. "
+        "(N5014 [flat.set.overview]/7, [flat.multiset.overview]/7)");
 
     using key_type               = _Kty;
     using value_type             = _Kty;
@@ -88,9 +92,6 @@ public:
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
     using reverse_iterator       = const_reverse_iterator;
     using container_type         = _Container;
-
-    static_assert(random_access_iterator<iterator>, "The C++ Standard forbids containers without random "
-                                                    "access iterators from being adapted. See [flatset.overview].");
 
     _Flat_set_base() : _Mycont(), _Mycomp() {}
 
