@@ -1036,17 +1036,11 @@ namespace {
             }
 
             static unsigned long _Get_first_h_pos(unsigned long _Mask) {
-                unsigned long _H_pos;
-                // CodeQL [SM02313] _H_pos is always initialized: element exists, so _Mask != 0.
-                _BitScanForward(&_H_pos, _Mask);
-                return _H_pos;
+                return _tzcnt_u32(_Mask);
             }
 
             static unsigned long _Get_last_h_pos(unsigned long _Mask) {
-                unsigned long _H_pos;
-                // CodeQL [SM02313] _H_pos is always initialized: element exists, so _Mask != 0.
-                _BitScanReverse(&_H_pos, _Mask);
-                return _H_pos;
+                return 31 - _lzcnt_u32(_Mask);
             }
         };
 
