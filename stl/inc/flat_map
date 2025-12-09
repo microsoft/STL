@@ -993,7 +993,6 @@ private:
             _Mutating_iterator{_Data.keys.end(), _Data.values.end()}};
     }
 
-    template <typename _Iter>
     _NODISCARD bool _Is_sorted(
         typename key_container_type::const_iterator _It, const typename key_container_type::const_iterator _End) const {
         if constexpr (_IsUnique) {
