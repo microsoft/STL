@@ -124,16 +124,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ !defined(__clang__) || __clang_major__ < 19 ^^^
 #endif // ^^^ !defined(_USE_BUILTIN_IS_TRIVIALLY_EQUALITY_COMPARABLE) ^^^
 
-#if _VECTORIZED_MINMAX_ELEMENT
-#ifdef _M_ARM64
-template <class _Ty>
-_INLINE_VAR constexpr bool _Is_64bit_int_on_arm64_v = _STD is_integral_v<_Ty> && sizeof(_Ty) == 8;
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
-template <class _Ty>
-_INLINE_VAR constexpr bool _Is_64bit_int_on_arm64_v = false;
-#endif // ^^^ defined(_M_ARM64) ^^^
-#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
-
 extern "C" {
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
 // won't be stored beyond the lifetime of the function, and that the function will only reference arrays denoted by
@@ -7291,9 +7281,19 @@ constexpr bool _Is_predicate_greater = _Is_any_of_v<_Pr,
 #endif // _HAS_CXX20
     greater<>, greater<_Iter_value_t<_Iter>>>;
 
+#ifdef _M_ARM64
+// We choose not to vectorize minmax_element on ARM64 as this does not improve performance over the scalar code.
+template <class _Ty>
+_INLINE_VAR constexpr bool _Is_64bit_int_on_arm64_v = sizeof(_Ty) == 8 && !_STD is_floating_point_v<_Ty>;
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+template <class _Ty>
+_INLINE_VAR constexpr bool _Is_64bit_int_on_arm64_v = false;
+#endif // ^^^ defined(_M_ARM64) ^^^
+
 template <class _Iter, class _Pr>
 constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms for min_/max_element?
-    _Is_min_max_iterators_safe<_Iter> && _Is_predicate_less<_Iter, _Pr>;
+    _Is_min_max_iterators_safe<_Iter> && _Is_predicate_less<_Iter, _Pr>
+    && !_Is_64bit_int_on_arm64_v<_Iter_value_t<_Iter>>;
 
 // Unlike the position-based vectorized implementation, the value-based vectorized implementation
 // does not always produce the expected results for floating-point types.
@@ -7316,8 +7316,7 @@ constexpr bool _Is_min_max_value_optimization_safe = // Activate the vector algo
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
 #if _VECTORIZED_MINMAX_ELEMENT
-    using _Ty = typename iterator_traits<_FwdIt>::value_type;
-    if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr> && !_Is_64bit_int_on_arm64_v<_Ty>) {
+    if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
             const auto _First_ptr = _STD _To_address(_First);
             const auto _Result    = _STD _Max_element_vectorized(_First_ptr, _STD _To_address(_Last));
@@ -7382,7 +7381,7 @@ namespace ranges {
 
 #if _VECTORIZED_MINMAX_ELEMENT
         if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
-                      && sized_sentinel_for<_Se, _It> && !_Is_64bit_int_on_arm64_v<iter_value_t<_It>>) {
+                      && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _STD to_address(_First);
                 const auto _Last_ptr  = _STD to_address(_First + (_Last - _First));
@@ -7539,8 +7538,7 @@ namespace ranges {
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find smallest element
 #if _VECTORIZED_MINMAX_ELEMENT
-    using _Ty = typename iterator_traits<_FwdIt>::value_type;
-    if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr> && !_Is_64bit_int_on_arm64_v<_Ty>) {
+    if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
             const auto _First_ptr = _STD _To_address(_First);
             const auto _Result    = _STD _Min_element_vectorized(_First_ptr, _STD _To_address(_Last));
@@ -7605,7 +7603,7 @@ namespace ranges {
 
 #if _VECTORIZED_MINMAX_ELEMENT
         if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr>
-                      && sized_sentinel_for<_Se, _It> && !_Is_64bit_int_on_arm64_v<iter_value_t<_It>>) {
+                      && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _STD to_address(_First);
                 const auto _Last_ptr  = _STD to_address(_First + (_Last - _First));
