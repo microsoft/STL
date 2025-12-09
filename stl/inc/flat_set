@@ -259,6 +259,7 @@ public:
     _NODISCARD const_iterator cend() const noexcept {
         return _Mycont.end();
     }
+
     _NODISCARD const_reverse_iterator crbegin() const noexcept {
         return rbegin();
     }
@@ -339,7 +340,6 @@ public:
     void insert_range(_Sorted_t, _Rng&& _Range) {
         _Insert_range<false>(_STD forward<_Rng>(_Range));
     }
-
     void insert(initializer_list<_Kty> _Ilist) {
         _Insert_range<true>(_Ilist.begin(), _Ilist.end());
     }
@@ -353,6 +353,7 @@ public:
         _Clear_guard _Always_clear{this};
         return _STD move(_Mycont);
     }
+
     void replace(container_type&& _Cont) {
         _STL_ASSERT(_Is_sorted(_Cont), _Msg_not_sorted);
         _Clear_guard _Guard{this};
@@ -384,6 +385,7 @@ public:
         _RANGES swap(_Mycomp, _Other._Mycomp);
         _Guard._Dismiss();
     }
+
     void clear() noexcept {
         _Mycont.clear();
     }
@@ -781,7 +783,6 @@ _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
 _Container::size_type erase_if(flat_set<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
     return _Val._Erase_if(_STD _Pass_fn(_Predicate));
 }
-
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>
 _Container::size_type erase_if(flat_multiset<_Kty, _Keylt, _Container>& _Val, _Pred _Predicate) {
     return _Val._Erase_if(_STD _Pass_fn(_Predicate));
