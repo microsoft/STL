@@ -1143,29 +1143,29 @@ private:
 _EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer>
 class flat_map : public _Flat_map_base<true, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer> {
 private:
-    using _MyBase = _Flat_map_base<true, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
+    using _Mybase = _Flat_map_base<true, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
 
-    using _MyBase::_Data;
-    using _MyBase::_Key_compare;
+    using _Mybase::_Data;
+    using _Mybase::_Key_compare;
 
 public:
-    using typename _MyBase::const_iterator;
-    using typename _MyBase::iterator;
-    using typename _MyBase::key_compare;
-    using typename _MyBase::key_type;
-    using typename _MyBase::mapped_type;
-    using typename _MyBase::value_type;
+    using typename _Mybase::const_iterator;
+    using typename _Mybase::iterator;
+    using typename _Mybase::key_compare;
+    using typename _Mybase::key_type;
+    using typename _Mybase::mapped_type;
+    using typename _Mybase::value_type;
 
-    using _MyBase::_MyBase;
-    using _MyBase::clear;
-    using _MyBase::insert;
+    using _Mybase::_Mybase;
+    using _Mybase::clear;
+    using _Mybase::insert;
 
 #if 1 // TRANSITION, P2582R1 (MSVC, Clang, EDG)
     template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Allocator>
-    flat_map(const flat_map& _Other, const _Allocator& _Al) : _MyBase(_Other, _Al) {}
+    flat_map(const flat_map& _Other, const _Allocator& _Al) : _Mybase(_Other, _Al) {}
 
     template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Allocator>
-    flat_map(flat_map&& _Other, const _Allocator& _Al) : _MyBase(_STD move(_Other), _Al) {}
+    flat_map(flat_map&& _Other, const _Allocator& _Al) : _Mybase(_STD move(_Other), _Al) {}
 #endif // ^^^ workaround ^^^
 
     flat_map& operator=(initializer_list<value_type> _Ilist) {
@@ -1330,9 +1330,9 @@ public:
     }
 
 private:
-    using _MyBase::_Emplace_hint;
-    using _MyBase::_Insert_exact;
-    using _MyBase::_Key_equal;
+    using _Mybase::_Emplace_hint;
+    using _Mybase::_Insert_exact;
+    using _Mybase::_Key_equal;
 
     template <class _KeyTy>
     _NODISCARD mapped_type& _At(const _KeyTy& _Key_val) {
@@ -1477,25 +1477,25 @@ flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>::size_type er
 _EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer>
 class flat_multimap : public _Flat_map_base<false, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer> {
 private:
-    using _MyBase = _Flat_map_base<false, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
+    using _Mybase = _Flat_map_base<false, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
 
-    using _MyBase::_Data;
-    using _MyBase::_Key_compare;
+    using _Mybase::_Data;
+    using _Mybase::_Key_compare;
 
 public:
-    using typename _MyBase::iterator;
-    using typename _MyBase::value_type;
+    using typename _Mybase::iterator;
+    using typename _Mybase::value_type;
 
-    using _MyBase::_MyBase;
-    using _MyBase::clear;
-    using _MyBase::insert;
+    using _Mybase::_Mybase;
+    using _Mybase::clear;
+    using _Mybase::insert;
 
 #if 1 // TRANSITION, P2582R1 (MSVC, Clang, EDG)
     template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Allocator>
-    flat_multimap(const flat_multimap& _Other, const _Allocator& _Al) : _MyBase(_Other, _Al) {}
+    flat_multimap(const flat_multimap& _Other, const _Allocator& _Al) : _Mybase(_Other, _Al) {}
 
     template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Allocator>
-    flat_multimap(flat_multimap&& _Other, const _Allocator& _Al) : _MyBase(_STD move(_Other), _Al) {}
+    flat_multimap(flat_multimap&& _Other, const _Allocator& _Al) : _Mybase(_STD move(_Other), _Al) {}
 #endif // ^^^ workaround ^^^
 
     flat_multimap& operator=(initializer_list<value_type> _Ilist) {
@@ -1529,9 +1529,9 @@ public:
     }
 
 private:
-    using _MyBase::_Emplace_hint;
-    using _MyBase::_Insert_exact;
-    using _MyBase::_Key_equal;
+    using _Mybase::_Emplace_hint;
+    using _Mybase::_Insert_exact;
+    using _Mybase::_Key_equal;
 
     template <class _KeyTy, class _MappedTy>
     iterator _Emplace_key_mapped(_KeyTy&& _Key_val, _MappedTy&& _Mapped_val) {
