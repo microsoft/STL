@@ -36,7 +36,8 @@ template <class _Key, class _Mapped, class _KeyCompare>
 struct _Flat_map_value_compare_provider {
     struct value_compare {
     public:
-        bool operator()(pair<const _Key&, const _Mapped&> _Left, pair<const _Key&, const _Mapped&> _Right) const {
+        _NODISCARD bool operator()(
+            pair<const _Key&, const _Mapped&> _Left, pair<const _Key&, const _Mapped&> _Right) const {
             return _Key_comparator(_Left.first, _Right.first);
         }
 
@@ -97,7 +98,7 @@ struct _Pairing_iterator_provider {
         public:
             explicit _Arrow_proxy(const reference& _Rx) noexcept : _Ref{_Rx} {}
 
-            const reference* operator->() const noexcept {
+            _NODISCARD const reference* operator->() const noexcept {
                 return _STD addressof(_Ref);
             }
 
@@ -108,16 +109,16 @@ struct _Pairing_iterator_provider {
     public:
         using pointer = _Arrow_proxy;
 
-        reference operator*() const {
+        _NODISCARD reference operator*() const {
             return reference{*_Key_it, *_Mapped_it};
         }
 
-        friend pair<iter_rvalue_reference_t<_KeyIter>, iter_rvalue_reference_t<_MappedIter>> iter_move(
+        _NODISCARD friend pair<iter_rvalue_reference_t<_KeyIter>, iter_rvalue_reference_t<_MappedIter>> iter_move(
             const _Iterator& _It) {
             return {_RANGES iter_move(_It._Key_it), _RANGES iter_move(_It._Mapped_it)};
         }
 
-        pointer operator->() const {
+        _NODISCARD pointer operator->() const {
             return pointer{**this};
         }
 
@@ -133,11 +134,11 @@ struct _Pairing_iterator_provider {
             return _Old;
         }
 
-        bool operator==(const _Iterator& _Right) const {
+        _NODISCARD bool operator==(const _Iterator& _Right) const {
             return _Key_it == _Right._Key_it;
         }
 
-        auto operator<=>(const _Iterator& _Right) const {
+        _NODISCARD auto operator<=>(const _Iterator& _Right) const {
             return _Synth_three_way{}(_Key_it, _Right._Key_it);
         }
 
@@ -165,41 +166,41 @@ struct _Pairing_iterator_provider {
             return *this;
         }
 
-        _Iterator operator+(const difference_type _Off) const {
+        _NODISCARD _Iterator operator+(const difference_type _Off) const {
             auto _Old = *this;
             _Old += _Off;
             return _Old;
         }
 
-        _Iterator operator-(const difference_type _Off) const {
+        _NODISCARD _Iterator operator-(const difference_type _Off) const {
             auto _Old = *this;
             _Old -= _Off;
             return _Old;
         }
 
-        reference operator[](const difference_type _Off) const {
+        _NODISCARD reference operator[](const difference_type _Off) const {
             return *(*this + _Off);
         }
 
-        difference_type operator-(const _Iterator& _Right) const {
+        _NODISCARD difference_type operator-(const _Iterator& _Right) const {
             return _Key_it - _Right._Key_it;
         }
 
-        friend _Iterator operator+(const difference_type _Off, const _Iterator& _Right) {
+        _NODISCARD friend _Iterator operator+(const difference_type _Off, const _Iterator& _Right) {
             return _Right + _Off;
         }
 
-        operator _Const_iterator() const
+        _NODISCARD operator _Const_iterator() const
             requires (!is_same_v<_MappedIter, _MappedConvIter>)
         {
             return _Const_iterator{_Key_it, _Mapped_it};
         }
 
-        const _KeyIter& _Key_iterator() const noexcept {
+        _NODISCARD const _KeyIter& _Key_iterator() const noexcept {
             return _Key_it;
         }
 
-        const _MappedIter& _Mapped_iterator() const noexcept {
+        _NODISCARD const _MappedIter& _Mapped_iterator() const noexcept {
             return _Mapped_it;
         }
 
@@ -694,13 +695,13 @@ public:
         return _Erase_key(_STD forward<_OtherKey>(_Key_val));
     }
 
-    containers extract() && {
+    _NODISCARD containers extract() && {
         _Clear_guard _Guard{this};
         return _STD move(_Data);
     }
 
     template <class _Allocator>
-    containers _Extract_using_allocator(const _Allocator& _Alloc) {
+    _NODISCARD containers _Extract_using_allocator(const _Allocator& _Alloc) {
         _Clear_guard _Guard{this};
         return containers{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _STD move(_Data.keys)),
             .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _STD move(_Data.values))};
@@ -714,19 +715,19 @@ public:
     }
 
     // observers
-    key_compare key_comp() const {
+    _NODISCARD key_compare key_comp() const {
         return _Key_compare;
     }
 
-    value_compare value_comp() const {
+    _NODISCARD value_compare value_comp() const {
         return value_compare{_Key_compare};
     }
 
-    const key_container_type& keys() const noexcept {
+    _NODISCARD const key_container_type& keys() const noexcept {
         return _Data.keys;
     }
 
-    const mapped_container_type& values() const noexcept {
+    _NODISCARD const mapped_container_type& values() const noexcept {
         return _Data.values;
     }
 
@@ -862,7 +863,7 @@ protected:
     _MSVC_NO_UNIQUE_ADDRESS key_compare _Key_compare;
 
     template <bool _OverwriteIfExists, class _OtherKey, class... _MappedArgTypes>
-    iterator _Emplace_hint(const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Args) {
+    _NODISCARD iterator _Emplace_hint(const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Args) {
         _STL_INTERNAL_STATIC_ASSERT(is_constructible_v<mapped_type, _MappedArgTypes...>);
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_OtherKey>, key_type>
                                     || (is_constructible_v<key_type, _OtherKey> && _Transparent<key_compare>) );
@@ -945,7 +946,7 @@ protected:
     }
 
     template <class _KeyTy1, class _KeyTy2>
-    bool _Key_equal(_KeyTy1&& _Left, _KeyTy2&& _Right) const {
+    _NODISCARD bool _Key_equal(_KeyTy1&& _Left, _KeyTy2&& _Right) const {
         _STL_INTERNAL_STATIC_ASSERT(
             (is_same_v<remove_cvref_t<_KeyTy1>, key_type> && is_same_v<remove_cvref_t<_KeyTy2>, key_type>)
             || (is_constructible_v<key_type, _KeyTy1> && is_constructible_v<key_type, _KeyTy2>
@@ -964,7 +965,7 @@ private:
         flat_multimap<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>&, _Pred);
 
     template <class _Predicate>
-    size_type _Erase_if(_Predicate _Pred) {
+    _NODISCARD size_type _Erase_if(_Predicate _Pred) {
         auto _View           = _View_to_mutate();
         auto _Mut_first      = _View.begin();
         auto _Mut_last       = _View.end();
@@ -980,7 +981,7 @@ private:
         return _Old_size - size();
     }
 
-    auto _View_to_mutate() {
+    _NODISCARD auto _View_to_mutate() {
         using _Mutating_iterator = _Pairing_iterator_provider<typename key_container_type::iterator,
             typename mapped_container_type::iterator, typename mapped_container_type::iterator>::_Iterator;
         return _RANGES subrange<_Mutating_iterator>{_Mutating_iterator{_Data.keys.begin(), _Data.values.begin()},
@@ -1049,7 +1050,7 @@ private:
     }
 
     template <class _KeyTy>
-    size_type _Erase_key(_KeyTy&& _Key_val) {
+    _NODISCARD size_type _Erase_key(_KeyTy&& _Key_val) {
         const auto _Equal_pos = equal_range(_STD forward<_KeyTy>(_Key_val));
         const auto _Count     = static_cast<size_type>(_Equal_pos.second - _Equal_pos.first);
         erase(_Equal_pos.first, _Equal_pos.second);
@@ -1378,7 +1379,7 @@ private:
     }
 
     template <class _KeyTy, class... _MappedArgTypes>
-    pair<iterator, bool> _Try_emplace(_KeyTy&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
+    _NODISCARD pair<iterator, bool> _Try_emplace(_KeyTy&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
         auto _Key_it = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Key_compare);
         if (_Key_it != _Data.keys.end() && !_Key_compare(_STD forward<_KeyTy>(_Key_val), *_Key_it)) {
             // Already exists
@@ -1396,7 +1397,7 @@ private:
     }
 
     template <class _KeyTy, class _MappedTy>
-    pair<iterator, bool> _Insert_or_assign(_KeyTy&& _Key_val, _MappedTy&& _Mapped_val) {
+    _NODISCARD pair<iterator, bool> _Insert_or_assign(_KeyTy&& _Key_val, _MappedTy&& _Mapped_val) {
         auto _Res = _Try_emplace(_STD forward<_KeyTy>(_Key_val), _STD forward<_MappedTy>(_Mapped_val));
         if (!_Res.second) { // Already exists
             _Res.first->second = _STD forward<_MappedTy>(_Mapped_val);
@@ -1555,7 +1556,7 @@ private:
     using _Mybase::_Key_equal;
 
     template <class _KeyTy, class _MappedTy>
-    iterator _Emplace_key_mapped(_KeyTy&& _Key_val, _MappedTy&& _Mapped_val) {
+    _NODISCARD iterator _Emplace_key_mapped(_KeyTy&& _Key_val, _MappedTy&& _Mapped_val) {
         const auto _Key_it = _STD upper_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Key_compare);
         const auto _Index  = _Key_it - _Data.keys.begin();
 
