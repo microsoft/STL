@@ -581,9 +581,9 @@ public:
 
     void swap(_Derived& _Other)
         noexcept(is_nothrow_swappable_v<_KeyContainer> && is_nothrow_swappable_v<_MappedContainer>
-                 && is_nothrow_swappable_v<_Compare>) {
+                 && is_nothrow_swappable_v<key_compare>) {
         constexpr bool _Is_noexcept = is_nothrow_swappable_v<_KeyContainer> && is_nothrow_swappable_v<_MappedContainer>
-                                   && is_nothrow_swappable_v<_Compare>;
+                                   && is_nothrow_swappable_v<key_compare>;
         auto& _Other_base = static_cast<_Flat_map_base&>(_Other);
         _Flat_map_swap_clear_guard<_Is_noexcept, containers> _Guard{
             _STD addressof(_Data), _STD addressof(_Other_base._Data)};
