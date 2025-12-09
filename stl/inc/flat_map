@@ -359,30 +359,21 @@ public:
     _Flat_map_base(
         key_container_type _Key_cont, mapped_container_type _Mapped_cont, const key_compare& _Comp = key_compare())
         : _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)}, _Key_compare(_Comp) {
-        _Sort();
-        if constexpr (_IsUnique) {
-            _Dedup();
-        }
+        _Sort_and_dedup_if_unique();
     }
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(
         const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont, const _Allocator& _Alloc)
         : _Flat_map_base(_Sorted_t{}, _Key_cont, _Mapped_cont, _Alloc) {
-        _Sort();
-        if constexpr (_IsUnique) {
-            _Dedup();
-        }
+        _Sort_and_dedup_if_unique();
     }
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
         const key_compare& _Comp, const _Allocator& _Alloc)
         : _Flat_map_base(_Sorted_t{}, _Key_cont, _Mapped_cont, _Comp, _Alloc) {
-        _Sort();
-        if constexpr (_IsUnique) {
-            _Dedup();
-        }
+        _Sort_and_dedup_if_unique();
     }
 
     _Flat_map_base(_Sorted_t, key_container_type _Key_cont, mapped_container_type _Mapped_cont,
@@ -990,14 +981,16 @@ private:
             _Mutating_iterator{_Data.keys.end(), _Data.values.end()}};
     }
 
-    void _Sort() {
+    void _Sort_and_dedup_if_unique() {
         _Clear_guard _Guard{this};
         _RANGES sort(_View_to_mutate(), value_compare{_Key_compare});
+        if constexpr (_IsUnique) {
+            _Dedup();
+        }
         _Guard._Target = nullptr;
     }
 
     void _Dedup() {
-        _Clear_guard _Guard{this};
         auto _Sorted_view = _View_to_mutate();
         auto _Subrange    = _RANGES unique(_Sorted_view, [this](const_reference _Left, const_reference _Right) {
             return this->_Key_equal(_Left.first, _Right.first);
@@ -1008,7 +1001,6 @@ private:
         _Data.values.erase(
             _Data.values.begin() + static_cast<_RANGES range_difference_t<_MappedContainer>>(_Remaining_count),
             _Data.values.end());
-        _Guard._Target = nullptr;
     }
 
     template <bool _NeedSorting, class _InputIterator, class _Sentinel>
