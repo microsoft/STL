@@ -1966,120 +1966,7 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
-#ifdef _M_ARM64
-        struct _Traits_8_neon : _Traits_8_base, _Traits_neon_base {
-            using _Vec_t = int64x2_t;
-
-            // Compresses a 128-bit Mask of 2 64-bit values into a 64-bit Mask of 2 32-bit values.
-            static uint64_t _Mask(const int64x2_t _Val) noexcept {
-                const uint32x2_t _Res = vreinterpret_u32_s32(vmovn_s64(_Val));
-                return vget_lane_u64(vreinterpret_u64_u32(_Res), 0);
-            }
-
-            static unsigned long _Get_first_h_pos(uint64_t _Mask) {
-                return _CountTrailingZeros64(_Mask) >> 2;
-            }
-
-            static unsigned long _Get_last_h_pos(uint64_t _Mask) {
-                return 15 - (_CountLeadingZeros64(_Mask) >> 2);
-            }
-
-            static _Vec_t _Load(const void* const _Src) noexcept {
-                return vld1q_s64(reinterpret_cast<const int64_t*>(_Src));
-            }
-
-            static _Vec_t _Inc(const _Vec_t _Idx) noexcept {
-                return vaddq_s64(_Idx, vdupq_n_s64(1));
-            }
-
-            static _Vec_t _H_min(const _Vec_t _Cur) noexcept {
-                int64x2_t _Swapped  = vextq_s64(_Cur, _Cur, 1);
-                uint64x2_t _Mask_lt = vcltq_s64(_Swapped, _Cur);
-                return vbslq_s64(_Mask_lt, _Swapped, _Cur);
-            }
-
-            static _Vec_t _H_max(const _Vec_t _Cur) noexcept {
-                int64x2_t _Swapped  = vextq_s64(_Cur, _Cur, 1);
-                uint64x2_t _Mask_gt = vcgtq_s64(_Swapped, _Cur);
-                return vbslq_s64(_Mask_gt, _Swapped, _Cur);
-            }
-
-            static _Vec_t _H_min_u(const _Vec_t _Cur) noexcept {
-                const uint64x2_t _Cur_u = vreinterpretq_u64_s64(_Cur);
-                uint64x2_t _Swapped     = vextq_u64(_Cur_u, _Cur_u, 1);
-                uint64x2_t _Mask_lt     = vcltq_u64(_Swapped, _Cur_u);
-                return vreinterpretq_s64_u64(vbslq_u64(_Mask_lt, _Swapped, _Cur_u));
-            }
-
-            static _Vec_t _H_max_u(const _Vec_t _Cur) noexcept {
-                const uint64x2_t _Cur_u = vreinterpretq_u64_s64(_Cur);
-                uint64x2_t _Swapped     = vextq_u64(_Cur_u, _Cur_u, 1);
-                uint64x2_t _Mask_gt     = vcgtq_u64(_Swapped, _Cur_u);
-                return vreinterpretq_s64_u64(vbslq_u64(_Mask_gt, _Swapped, _Cur_u));
-            }
-
-            static _Signed_t _Get_any(const _Vec_t _Cur) noexcept {
-                return static_cast<_Signed_t>(vgetq_lane_s64(_Cur, 0));
-            }
-
-            static _Unsigned_t _Get_v_pos(const _Vec_t _Cur) noexcept {
-                return static_cast<_Unsigned_t>(_Get_any(_Cur));
-            }
-
-            static _Vec_t _Cmp_eq(const _Vec_t _First, const _Vec_t _Second) noexcept {
-                return vreinterpretq_s64_u64(vceqq_s64(_First, _Second));
-            }
-
-            static _Vec_t _Cmp_gt(const _Vec_t _First, const _Vec_t _Second) noexcept {
-                return vreinterpretq_s64_u64(vcgtq_s64(_First, _Second));
-            }
-
-            static _Vec_t _Cmp_gt_u(const _Vec_t _First, const _Vec_t _Second) noexcept {
-                return vreinterpretq_s64_u64(vcgtq_u64(vreinterpretq_u64_s64(_First), vreinterpretq_u64_s64(_Second)));
-            }
-
-            static _Vec_t _Cmp_eq_idx(const _Vec_t _First, const _Vec_t _Second) noexcept {
-                return _Cmp_eq(_First, _Second);
-            }
-
-            static _Vec_t _Min(const _Vec_t _First, const _Vec_t _Second, _Vec_t _Mask) noexcept {
-                return vbslq_s64(vreinterpretq_u64_s64(_Mask), _Second, _First);
-            }
-
-            static _Vec_t _Min(const _Vec_t _First, const _Vec_t _Second) noexcept {
-                return _Min(_First, _Second, _Cmp_gt(_First, _Second));
-            }
-
-            static _Vec_t _Min_u(const _Vec_t _First, const _Vec_t _Second, _Vec_t _Mask) noexcept {
-                return _Min(_First, _Second, _Mask);
-            }
-
-            static _Vec_t _Min_u(const _Vec_t _First, const _Vec_t _Second) noexcept {
-                return _Min_u(_First, _Second, _Cmp_gt_u(_First, _Second));
-            }
-
-            static _Vec_t _Max(const _Vec_t _First, const _Vec_t _Second, _Vec_t _Mask) noexcept {
-                return vbslq_s64(vreinterpretq_u64_s64(_Mask), _Second, _First);
-            }
-
-            static _Vec_t _Max(const _Vec_t _First, const _Vec_t _Second) noexcept {
-                return _Max(_First, _Second, _Cmp_gt(_Second, _First));
-            }
-
-            static _Vec_t _Max_u(const _Vec_t _First, const _Vec_t _Second, _Vec_t _Mask) noexcept {
-                return _Max(_First, _Second, _Mask);
-            }
-
-            static _Vec_t _Max_u(const _Vec_t _First, const _Vec_t _Second) noexcept {
-                return _Max_u(_First, _Second, _Cmp_gt_u(_Second, _First));
-            }
-
-            static _Vec_t _Mask_cast(const _Vec_t _Mask) noexcept {
-                return _Mask;
-            }
-        };
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
-#ifndef _M_ARM64EC
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
         struct _Traits_8_sse : _Traits_8_base, _Traits_sse_base {
             static __m128i _Load(const void* const _Src) noexcept {
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
@@ -2266,8 +2153,7 @@ namespace {
                 return _Mask;
             }
         };
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_f_base {
             static constexpr bool _Is_floating = true;
@@ -2547,24 +2433,26 @@ namespace {
             using _Idx_t                            = int64x2_t;
             static constexpr bool _Has_unsigned_cmp = false;
 
+            // Compresses a 128-bit Mask of 2 64-bit values into a 64-bit Mask of 2 32-bit values.
             static uint64_t _Mask(const int64x2_t _Val) noexcept {
-                return _Traits_8_neon::_Mask(_Val);
+                const uint32x2_t _Res = vreinterpret_u32_s32(vmovn_s64(_Val));
+                return vget_lane_u64(vreinterpret_u64_u32(_Res), 0);
             }
 
             static unsigned long _Get_first_h_pos(uint64_t _Mask) {
-                return _Traits_8_neon::_Get_first_h_pos(_Mask);
+                return _CountTrailingZeros64(_Mask) >> 2;
             }
 
             static unsigned long _Get_last_h_pos(uint64_t _Mask) {
-                return _Traits_8_neon::_Get_last_h_pos(_Mask);
+                return 15 - (_CountLeadingZeros64(_Mask) >> 2);
             }
 
             static _Vec_t _Load(const void* const _Src) noexcept {
                 return vld1q_f64(reinterpret_cast<const float64_t*>(_Src));
             }
 
-            static _Idx_t _Inc(const _Idx_t _Idx) noexcept {
-                return _Traits_8_neon::_Inc(_Idx);
+            static _Vec_t _Inc(const _Vec_t _Idx) noexcept {
+                return vaddq_s64(_Idx, vdupq_n_s64(1));
             }
 
             static _Vec_t _H_min(const _Vec_t _Cur) noexcept {
@@ -2575,20 +2463,26 @@ namespace {
                 return vdupq_n_f64(vmaxvq_f64(_Cur));
             }
 
-            static _Idx_t _H_min_u(const _Idx_t _Cur) noexcept {
-                return _Traits_8_neon::_H_min_u(_Cur);
+            static _Vec_t _H_min_u(const _Vec_t _Cur) noexcept {
+                const uint64x2_t _Cur_u = vreinterpretq_u64_s64(_Cur);
+                uint64x2_t _Swapped     = vextq_u64(_Cur_u, _Cur_u, 1);
+                uint64x2_t _Mask_lt     = vcltq_u64(_Swapped, _Cur_u);
+                return vreinterpretq_s64_u64(vbslq_u64(_Mask_lt, _Swapped, _Cur_u));
             }
 
-            static _Idx_t _H_max_u(const _Idx_t _Cur) noexcept {
-                return _Traits_8_neon::_H_max_u(_Cur);
+            static _Vec_t _H_max_u(const _Vec_t _Cur) noexcept {
+                const uint64x2_t _Cur_u = vreinterpretq_u64_s64(_Cur);
+                uint64x2_t _Swapped     = vextq_u64(_Cur_u, _Cur_u, 1);
+                uint64x2_t _Mask_gt     = vcgtq_u64(_Swapped, _Cur_u);
+                return vreinterpretq_s64_u64(vbslq_u64(_Mask_gt, _Swapped, _Cur_u));
             }
 
             static double _Get_any(const _Vec_t _Cur) noexcept {
                 return vgetq_lane_f64(_Cur, 0);
             }
 
-            static _Traits_8_neon::_Unsigned_t _Get_v_pos(const _Idx_t _Cur) noexcept {
-                return _Traits_8_neon::_Get_v_pos(_Cur);
+            static _Traits_8_base::_Unsigned_t _Get_v_pos(const _Vec_t _Cur) noexcept {
+                return static_cast<_Traits_8_base::_Unsigned_t>(_Get_any(_Cur));
             }
 
             static _Idx_t _Cmp_eq(const _Vec_t _First, const _Vec_t _Second) noexcept {
@@ -2599,8 +2493,8 @@ namespace {
                 return vreinterpretq_s64_u64(vcgtq_f64(_First, _Second));
             }
 
-            static _Idx_t _Cmp_eq_idx(const _Idx_t _First, const _Idx_t _Second) noexcept {
-                return _Traits_8_neon::_Cmp_eq_idx(_First, _Second);
+            static _Vec_t _Cmp_eq_idx(const _Vec_t _First, const _Vec_t _Second) noexcept {
+                return _Cmp_eq(_First, _Second);
             }
 
             static _Vec_t _Min(const _Vec_t _First, const _Vec_t _Second, _Vec_t = vdupq_n_f64(0)) noexcept {
@@ -2801,15 +2695,15 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
+#ifndef _M_ARM64
         struct _Traits_8 {
             using _Scalar = _Traits_scalar<_Traits_8_base>;
-#ifdef _M_ARM64
-            using _Neon = _Traits_8_neon;
-#elif !defined(_M_ARM64EC)
+#ifndef _M_ARM64EC
             using _Sse = _Traits_8_sse;
             using _Avx = _Traits_8_avx;
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
         struct _Traits_f {
             using _Scalar = _Traits_scalar<_Traits_f_base>;
@@ -3565,10 +3459,12 @@ const void* __stdcall __std_min_element_4(
     return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_4>(_First, _Last, _Signed);
 }
 
+#ifndef _M_ARM64
 const void* __stdcall __std_min_element_8(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_8>(_First, _Last, _Signed);
 }
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
 // TRANSITION, ABI: remove unused `bool`
 const void* __stdcall __std_min_element_f(const void* const _First, const void* const _Last, bool) noexcept {
@@ -3595,10 +3491,12 @@ const void* __stdcall __std_max_element_4(
     return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_4>(_First, _Last, _Signed);
 }
 
+#ifndef _M_ARM64
 const void* __stdcall __std_max_element_8(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_8>(_First, _Last, _Signed);
 }
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
 // TRANSITION, ABI: remove unused `bool`
 const void* __stdcall __std_max_element_f(const void* const _First, const void* const _Last, bool) noexcept {
@@ -3625,10 +3523,12 @@ _Min_max_element_t __stdcall __std_minmax_element_4(
     return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_4>(_First, _Last, _Signed);
 }
 
+#ifndef _M_ARM64
 _Min_max_element_t __stdcall __std_minmax_element_8(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_8>(_First, _Last, _Signed);
 }
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
 // TRANSITION, ABI: remove unused `bool`
 _Min_max_element_t __stdcall __std_minmax_element_f(const void* const _First, const void* const _Last, bool) noexcept {
