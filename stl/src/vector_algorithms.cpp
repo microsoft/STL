@@ -2451,7 +2451,7 @@ namespace {
                 return vld1q_f64(reinterpret_cast<const float64_t*>(_Src));
             }
 
-            static _Vec_t _Inc(const _Vec_t _Idx) noexcept {
+            static _Idx_t _Inc(const _Idx_t _Idx) noexcept {
                 return vaddq_s64(_Idx, vdupq_n_s64(1));
             }
 
@@ -2463,14 +2463,14 @@ namespace {
                 return vdupq_n_f64(vmaxvq_f64(_Cur));
             }
 
-            static _Vec_t _H_min_u(const _Vec_t _Cur) noexcept {
+            static _Idx_t _H_min_u(const _Idx_t _Cur) noexcept {
                 const uint64x2_t _Cur_u = vreinterpretq_u64_s64(_Cur);
                 uint64x2_t _Swapped     = vextq_u64(_Cur_u, _Cur_u, 1);
                 uint64x2_t _Mask_lt     = vcltq_u64(_Swapped, _Cur_u);
                 return vreinterpretq_s64_u64(vbslq_u64(_Mask_lt, _Swapped, _Cur_u));
             }
 
-            static _Vec_t _H_max_u(const _Vec_t _Cur) noexcept {
+            static _Idx_t _H_max_u(const _Idx_t _Cur) noexcept {
                 const uint64x2_t _Cur_u = vreinterpretq_u64_s64(_Cur);
                 uint64x2_t _Swapped     = vextq_u64(_Cur_u, _Cur_u, 1);
                 uint64x2_t _Mask_gt     = vcgtq_u64(_Swapped, _Cur_u);
@@ -2481,8 +2481,8 @@ namespace {
                 return vgetq_lane_f64(_Cur, 0);
             }
 
-            static _Traits_8_base::_Unsigned_t _Get_v_pos(const _Vec_t _Cur) noexcept {
-                return static_cast<_Traits_8_base::_Unsigned_t>(_Get_any(_Cur));
+            static _Traits_8_base::_Unsigned_t _Get_v_pos(const _Idx_t _Cur) noexcept {
+                return static_cast<_Traits_8_base::_Unsigned_t>(vgetq_lane_s64(_Cur, 0));
             }
 
             static _Idx_t _Cmp_eq(const _Vec_t _First, const _Vec_t _Second) noexcept {
@@ -2493,8 +2493,8 @@ namespace {
                 return vreinterpretq_s64_u64(vcgtq_f64(_First, _Second));
             }
 
-            static _Vec_t _Cmp_eq_idx(const _Vec_t _First, const _Vec_t _Second) noexcept {
-                return _Cmp_eq(_First, _Second);
+            static _Idx_t _Cmp_eq_idx(const _Idx_t _First, const _Idx_t _Second) noexcept {
+                return vreinterpretq_s64_u64(vceqq_s64(_First, _Second));
             }
 
             static _Vec_t _Min(const _Vec_t _First, const _Vec_t _Second, _Vec_t = vdupq_n_f64(0)) noexcept {
