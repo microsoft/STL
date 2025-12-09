@@ -496,8 +496,7 @@ public:
 
     // Move constructors
     _Flat_map_base(_Flat_map_base&& _Other)
-        noexcept(is_nothrow_copy_constructible_v<key_compare> && is_nothrow_move_constructible_v<key_compare>
-                 && is_nothrow_move_constructible_v<key_container_type>
+        noexcept(is_nothrow_copy_constructible_v<key_compare> && is_nothrow_move_constructible_v<key_container_type>
                  && is_nothrow_move_constructible_v<mapped_container_type>)
         : _Data(_STD move(_Other).extract()),
           _Key_compare(_Other._Key_compare) // intentionally copy comparator, see LWG-2227
@@ -518,9 +517,9 @@ public:
         return *this;
     }
 
-    _Flat_map_base& operator=(_Flat_map_base&& _Other) noexcept(
-        is_nothrow_copy_assignable_v<key_compare> && is_nothrow_move_assignable_v<key_compare>
-        && is_nothrow_move_assignable_v<key_container_type> && is_nothrow_move_assignable_v<mapped_container_type>) {
+    _Flat_map_base& operator=(_Flat_map_base&& _Other)
+        noexcept(is_nothrow_copy_assignable_v<key_compare> && is_nothrow_move_assignable_v<key_container_type>
+                 && is_nothrow_move_assignable_v<mapped_container_type>) {
         _Clear_guard _Guard{this};
         _Data          = _STD move(_Other).extract();
         _Key_compare   = _Other._Key_compare; // intentionally copy comparator, see LWG-2227
