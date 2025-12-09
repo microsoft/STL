@@ -959,7 +959,7 @@ namespace {
                 return vbslq_s8(vreinterpretq_u8_s8(_Msk), _Px2, _Px1);
             }
 
-            static int8x16_t _Sign_correction(const int8x16_t _Val, const bool) noexcept {
+            static int8x16_t _Sign_correction(const int8x16_t _Val, bool) noexcept {
                 return _Val;
             }
 
