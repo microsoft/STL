@@ -23,6 +23,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#undef msvc
+
 _STD_BEGIN
 template <bool _IsNoexcept, class _Container>
 struct _NODISCARD _Flat_set_swap_clear_guard {
@@ -70,10 +74,14 @@ private:
 
 public:
     static_assert(same_as<_Kty, typename _Container::value_type>,
-        "The C++ Standard dictates that the Key type must be the "
-        "same as the container's value type [flatset.overview]");
-    static_assert(
-        !_Is_vector_bool<_Container>, "vector<bool, A> cannot be adapted because it is not a sequence container.");
+        "key_type and container_type::value_type must be the same. "
+        "(N5014 [flat.set.overview]/8, [flat.multiset.overview]/8)");
+    static_assert(!_Is_vector_bool<_Container>,
+        "vector<bool> cannot be adapted because it is not a sequence container. "
+        "(N5014 [flat.set.overview]/7, [flat.multiset.overview]/7)");
+    static_assert(random_access_iterator<typename _Container::const_iterator>,
+        "Sequence containers must support random-access iterators in order to be adapted. "
+        "(N5014 [flat.set.overview]/7, [flat.multiset.overview]/7)");
 
     using key_type               = _Kty;
     using value_type             = _Kty;
@@ -89,18 +97,15 @@ public:
     using reverse_iterator       = const_reverse_iterator;
     using container_type         = _Container;
 
-    static_assert(random_access_iterator<iterator>, "The C++ Standard forbids containers without random "
-                                                    "access iterators from being adapted. See [flatset.overview].");
-
     _Flat_set_base() : _Mycont(), _Mycomp() {}
 
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Flat_set_base(const _Derived& _Set, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _Set._Mycont)), _Mycomp(_Set._Mycomp) {}
+    _Flat_set_base(const _Flat_set_base& _Other, const _Alloc& _Al)
+        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _Other._Mycont)), _Mycomp(_Other._Mycomp) {}
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Flat_set_base(_Derived&& _Set, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _STD move(_Set).extract())),
-          _Mycomp(_Set._Mycomp) // intentionally copy comparator, see LWG-2227
+    _Flat_set_base(_Flat_set_base&& _Other, const _Alloc& _Al)
+        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _STD move(_Other).extract())),
+          _Mycomp(_Other._Mycomp) // intentionally copy comparator, see LWG-2227
     {}
 
     explicit _Flat_set_base(container_type _Cont, const key_compare& _Comp = key_compare())
@@ -375,8 +380,8 @@ public:
         constexpr bool _Is_noexcept = is_nothrow_swappable_v<_Container> && is_nothrow_swappable_v<_Keylt>;
         _Flat_set_swap_clear_guard<_Is_noexcept, _Container> _Guard{
             _STD addressof(_Mycont), _STD addressof(_Other._Mycont)};
-        _RANGES swap(_Mycomp, _Other._Mycomp);
         _RANGES swap(_Mycont, _Other._Mycont);
+        _RANGES swap(_Mycomp, _Other._Mycomp);
         _Guard._Dismiss();
     }
     void clear() noexcept {
@@ -723,7 +728,7 @@ private:
     }
 
     container_type _Mycont;
-    /* [[no_unique_address]] */ key_compare _Mycomp;
+    _MSVC_NO_UNIQUE_ADDRESS key_compare _Mycomp;
 };
 
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container>
@@ -875,6 +880,9 @@ template <class _Kty, _Not_allocator_for_container _Compare = less<_Kty>>
 flat_multiset(sorted_equivalent_t, initializer_list<_Kty>, _Compare = _Compare()) -> flat_multiset<_Kty, _Compare>;
 
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

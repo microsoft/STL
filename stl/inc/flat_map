@@ -27,6 +27,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#undef msvc
+
 _STD_BEGIN
 template <class _Key, class _Mapped, class _KeyCompare>
 struct _Flat_map_value_compare_provider {
@@ -316,18 +320,30 @@ public:
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
     static_assert(is_same_v<key_type, typename key_container_type::value_type>,
-        "key_type should be the element type of key_container_type");
+        "key_type and key_container_type::value_type must be the same. "
+        "(N5014 [flat.map.overview]/8, [flat.multimap.overview]/8)");
     static_assert(is_same_v<mapped_type, typename mapped_container_type::value_type>,
-        "mapped_type should be the element type of mapped_container_type");
-    static_assert(!_Is_vector_bool<key_container_type> && !_Is_vector_bool<mapped_container_type>,
-        "vector<bool, A> cannot be adapted because it is not a sequence container.");
+        "mapped_type and mapped_container_type::value_type must be the same. "
+        "(N5014 [flat.map.overview]/8, [flat.multimap.overview]/8)");
+    static_assert(!_Is_vector_bool<key_container_type>,
+        "key_container_type cannot be vector<bool> because it is not a sequence container. "
+        "(N5014 [flat.map.overview]/7, [flat.multimap.overview]/7)");
+    static_assert(!_Is_vector_bool<mapped_container_type>,
+        "mapped_container_type cannot be vector<bool> because it is not a sequence container. "
+        "(N5014 [flat.map.overview]/7, [flat.multimap.overview]/7)");
+    static_assert(random_access_iterator<typename key_container_type::const_iterator>,
+        "key_container_type must support random-access iterators in order to be adapted. "
+        "(N5014 [flat.map.overview]/7, [flat.multimap.overview]/7)");
+    static_assert(random_access_iterator<typename mapped_container_type::const_iterator>,
+        "mapped_container_type must support random-access iterators in order to be adapted. "
+        "(N5014 [flat.map.overview]/7, [flat.multimap.overview]/7)");
 
     using value_compare = _Flat_map_value_compare_provider<key_type, mapped_type, key_compare>::value_compare;
     using containers    = _Flat_map_container_provider<key_container_type, mapped_container_type>::containers;
 
 public:
     // [flat.map.cons] Constructors
-    explicit _Flat_map_base(const key_compare& _Comp) : _Key_compare(_Comp), _Data() {}
+    explicit _Flat_map_base(const key_compare& _Comp) : _Data(), _Key_compare(_Comp) {}
     _Flat_map_base() : _Flat_map_base(key_compare()) {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
@@ -335,12 +351,13 @@ public:
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(const key_compare& _Comp, const _Allocator& _Alloc)
-        : _Key_compare(_Comp), _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc),
-                                   .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc)} {}
+        : _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc),
+              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc)},
+          _Key_compare(_Comp) {}
 
     _Flat_map_base(
         key_container_type _Key_cont, mapped_container_type _Mapped_cont, const key_compare& _Comp = key_compare())
-        : _Key_compare(_Comp), _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)} {
+        : _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)}, _Key_compare(_Comp) {
         _Sort();
         if constexpr (_IsUnique) {
             _Dedup();
@@ -369,21 +386,21 @@ public:
 
     _Flat_map_base(_Sorted_t, key_container_type _Key_cont, mapped_container_type _Mapped_cont,
         const key_compare& _Comp = key_compare())
-        : _Key_compare(_Comp), _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)} {}
+        : _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)}, _Key_compare(_Comp) {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(_Sorted_t, const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
         const _Allocator& _Alloc)
-        : _Key_compare(key_compare()),
-          _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Key_cont),
-              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)} {}
+        : _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Key_cont),
+              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)},
+          _Key_compare(key_compare()) {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(_Sorted_t, const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
         const key_compare& _Comp, const _Allocator& _Alloc)
-        : _Key_compare(_Comp),
-          _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Key_cont),
-              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)} {}
+        : _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Key_cont),
+              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)},
+          _Key_compare(_Comp) {}
 
     template <_Iterator_for_container _InputIterator>
     _Flat_map_base(_InputIterator _First, _InputIterator _Last, const key_compare& _Comp = key_compare())
@@ -468,30 +485,34 @@ public:
         : _Flat_map_base(_Tag, _Ilist, key_compare(), _Alloc) {}
 
     // Copy constructors
-    _Flat_map_base(const _Flat_map_base& _Other) : _Key_compare(_Other._Key_compare), _Data(_Other._Data) {}
+    _Flat_map_base(const _Flat_map_base& _Other) : _Data(_Other._Data), _Key_compare(_Other._Key_compare) {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(const _Flat_map_base& _Other, const _Allocator& _Alloc)
-        : _Key_compare(_Other._Key_compare),
-          _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Other._Data.keys),
-              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Other._Data.values)} {}
+        : _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Other._Data.keys),
+              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Other._Data.values)},
+          _Key_compare(_Other._Key_compare) {}
 
     // Move constructors
     _Flat_map_base(_Flat_map_base&& _Other)
         noexcept(is_nothrow_copy_constructible_v<key_compare> && is_nothrow_move_constructible_v<key_compare>
                  && is_nothrow_move_constructible_v<key_container_type>
                  && is_nothrow_move_constructible_v<mapped_container_type>)
-        : _Key_compare(_Other._Key_compare), _Data(_STD move(_Other).extract()) {}
+        : _Data(_STD move(_Other).extract()),
+          _Key_compare(_Other._Key_compare) // intentionally copy comparator, see LWG-2227
+    {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(_Flat_map_base&& _Other, const _Allocator& _Alloc)
-        : _Key_compare(_Other._Key_compare), _Data{_Other._Extract_using_allocator(_Alloc)} {}
+        : _Data{_Other._Extract_using_allocator(_Alloc)},
+          _Key_compare(_Other._Key_compare) // intentionally copy comparator, see LWG-2227
+    {}
 
     // Assignment
     _Flat_map_base& operator=(const _Flat_map_base& _Other) {
         _Clear_guard _Guard{this};
-        _Key_compare   = _Other._Key_compare;
         _Data          = _Other._Data;
+        _Key_compare   = _Other._Key_compare;
         _Guard._Target = nullptr;
         return *this;
     }
@@ -500,8 +521,8 @@ public:
         is_nothrow_copy_assignable_v<key_compare> && is_nothrow_move_assignable_v<key_compare>
         && is_nothrow_move_assignable_v<key_container_type> && is_nothrow_move_assignable_v<mapped_container_type>) {
         _Clear_guard _Guard{this};
-        _Key_compare   = _Other._Key_compare;
         _Data          = _STD move(_Other).extract();
+        _Key_compare   = _Other._Key_compare; // intentionally copy comparator, see LWG-2227
         _Guard._Target = nullptr;
         return *this;
     }
@@ -566,9 +587,9 @@ public:
         auto& _Other_base = static_cast<_Flat_map_base&>(_Other);
         _Flat_map_swap_clear_guard<_Is_noexcept, containers> _Guard{
             _STD addressof(_Data), _STD addressof(_Other_base._Data)};
-        _RANGES swap(_Key_compare, _Other_base._Key_compare);
         _RANGES swap(_Data.keys, _Other_base._Data.keys);
         _RANGES swap(_Data.values, _Other_base._Data.values);
+        _RANGES swap(_Key_compare, _Other_base._Key_compare);
         _Guard._Dismiss();
     }
 
@@ -698,7 +719,7 @@ public:
     }
 
     value_compare value_comp() const {
-        return value_compare(_Key_compare);
+        return value_compare{_Key_compare};
     }
 
     const key_container_type& keys() const noexcept {
@@ -821,10 +842,8 @@ public:
     }
 
     _NODISCARD friend bool operator==(const _Derived& _Left, const _Derived& _Right) {
-        auto& _Left_base  = static_cast<const _Flat_map_base&>(_Left);
-        auto& _Right_base = static_cast<const _Flat_map_base&>(_Right);
-        return _RANGES equal(_Left_base._Data.keys, _Right_base._Data.keys)
-            && _RANGES equal(_Left_base._Data.values, _Right_base._Data.values);
+        return _STD equal(_STD _Get_unwrapped(_STD cbegin(_Left)), _STD _Get_unwrapped(_STD cend(_Left)),
+            _STD _Get_unwrapped(_STD cbegin(_Right)), _STD _Get_unwrapped(_STD cend(_Right)));
     }
 
     _NODISCARD friend auto operator<=>(const _Derived& _Left, const _Derived& _Right) {
@@ -839,16 +858,18 @@ public:
 
 
 protected:
-    key_compare _Key_compare;
     containers _Data;
+    _MSVC_NO_UNIQUE_ADDRESS key_compare _Key_compare;
 
     template <bool _OverwriteIfExists, class _OtherKey, class... _MappedArgTypes>
     iterator _Emplace_hint(const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Args) {
-        _STL_INTERNAL_STATIC_ASSERT(is_constructible_v<mapped_type, _MappedArgTypes...>
-                                    && (is_same_v<remove_cvref_t<_OtherKey>, key_type>
-                                        || (is_constructible_v<key_type, _OtherKey> && _Transparent<key_compare>) ));
-        static_assert(_IsUnique || !_OverwriteIfExists,
-            "Overwriting is not supported when the container allows multiple copies of a key.");
+        _STL_INTERNAL_STATIC_ASSERT(is_constructible_v<mapped_type, _MappedArgTypes...>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_OtherKey>, key_type>
+                                    || (is_constructible_v<key_type, _OtherKey> && _Transparent<key_compare>) );
+
+        // Overwriting is not supported when the container allows multiple copies of a key.
+        _STL_INTERNAL_STATIC_ASSERT(_IsUnique || !_OverwriteIfExists);
+
         const const_iterator _Begin = cbegin();
         const const_iterator _End   = cend();
 
@@ -968,7 +989,7 @@ private:
 
     void _Sort() {
         _Clear_guard _Guard{this};
-        _RANGES sort(_View_to_mutate(), value_compare(_Key_compare));
+        _RANGES sort(_View_to_mutate(), value_compare{_Key_compare});
         _Guard._Target = nullptr;
     }
 
@@ -1014,11 +1035,11 @@ private:
         if constexpr (_NeedSorting) {
             auto _Sorted_new_elements = _Sorted_view;
             _Sorted_new_elements.advance(_Old_distance);
-            _RANGES sort(_Sorted_new_elements, value_compare(_Key_compare));
+            _RANGES sort(_Sorted_new_elements, value_compare{_Key_compare});
         }
 
         // Merge the newly inserted elements with the existing elements
-        _RANGES inplace_merge(_Sorted_view, _Sorted_view.begin() + _Old_distance, value_compare(_Key_compare));
+        _RANGES inplace_merge(_Sorted_view, _Sorted_view.begin() + _Old_distance, value_compare{_Key_compare});
 
         if constexpr (_IsUnique) {
             _Dedup();
@@ -1143,29 +1164,29 @@ private:
 _EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer>
 class flat_map : public _Flat_map_base<true, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer> {
 private:
-    using _MyBase = _Flat_map_base<true, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
+    using _Mybase = _Flat_map_base<true, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
 
-    using _MyBase::_Data;
-    using _MyBase::_Key_compare;
+    using _Mybase::_Data;
+    using _Mybase::_Key_compare;
 
 public:
-    using typename _MyBase::const_iterator;
-    using typename _MyBase::iterator;
-    using typename _MyBase::key_compare;
-    using typename _MyBase::key_type;
-    using typename _MyBase::mapped_type;
-    using typename _MyBase::value_type;
+    using typename _Mybase::const_iterator;
+    using typename _Mybase::iterator;
+    using typename _Mybase::key_compare;
+    using typename _Mybase::key_type;
+    using typename _Mybase::mapped_type;
+    using typename _Mybase::value_type;
 
-    using _MyBase::_MyBase;
-    using _MyBase::clear;
-    using _MyBase::insert;
+    using _Mybase::_Mybase;
+    using _Mybase::clear;
+    using _Mybase::insert;
 
 #if 1 // TRANSITION, P2582R1 (MSVC, Clang, EDG)
     template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Allocator>
-    flat_map(const flat_map& _Other, const _Allocator& _Al) : _MyBase(_Other, _Al) {}
+    flat_map(const flat_map& _Other, const _Allocator& _Al) : _Mybase(_Other, _Al) {}
 
     template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Allocator>
-    flat_map(flat_map&& _Other, const _Allocator& _Al) : _MyBase(_STD move(_Other), _Al) {}
+    flat_map(flat_map&& _Other, const _Allocator& _Al) : _Mybase(_STD move(_Other), _Al) {}
 #endif // ^^^ workaround ^^^
 
     flat_map& operator=(initializer_list<value_type> _Ilist) {
@@ -1330,16 +1351,16 @@ public:
     }
 
 private:
-    using _MyBase::_Emplace_hint;
-    using _MyBase::_Insert_exact;
-    using _MyBase::_Key_equal;
+    using _Mybase::_Emplace_hint;
+    using _Mybase::_Insert_exact;
+    using _Mybase::_Key_equal;
 
     template <class _KeyTy>
     _NODISCARD mapped_type& _At(const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         const auto _Position = this->find(_Key_val);
         if (_Position == this->end()) {
-            _Xout_of_range("std::flat_map::at: the specified key does not exist.");
+            _Xout_of_range("invalid flat_map key");
         }
 
         return _Position->second;
@@ -1350,7 +1371,7 @@ private:
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         const auto _Position = this->find(_Key_val);
         if (_Position == this->end()) {
-            _Xout_of_range("std::flat_map::at: the specified key does not exist.");
+            _Xout_of_range("invalid flat_map key");
         }
 
         return _Position->second;
@@ -1477,25 +1498,25 @@ flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>::size_type er
 _EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer>
 class flat_multimap : public _Flat_map_base<false, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer> {
 private:
-    using _MyBase = _Flat_map_base<false, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
+    using _Mybase = _Flat_map_base<false, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
 
-    using _MyBase::_Data;
-    using _MyBase::_Key_compare;
+    using _Mybase::_Data;
+    using _Mybase::_Key_compare;
 
 public:
-    using typename _MyBase::iterator;
-    using typename _MyBase::value_type;
+    using typename _Mybase::iterator;
+    using typename _Mybase::value_type;
 
-    using _MyBase::_MyBase;
-    using _MyBase::clear;
-    using _MyBase::insert;
+    using _Mybase::_Mybase;
+    using _Mybase::clear;
+    using _Mybase::insert;
 
 #if 1 // TRANSITION, P2582R1 (MSVC, Clang, EDG)
     template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Allocator>
-    flat_multimap(const flat_multimap& _Other, const _Allocator& _Al) : _MyBase(_Other, _Al) {}
+    flat_multimap(const flat_multimap& _Other, const _Allocator& _Al) : _Mybase(_Other, _Al) {}
 
     template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Allocator>
-    flat_multimap(flat_multimap&& _Other, const _Allocator& _Al) : _MyBase(_STD move(_Other), _Al) {}
+    flat_multimap(flat_multimap&& _Other, const _Allocator& _Al) : _Mybase(_STD move(_Other), _Al) {}
 #endif // ^^^ workaround ^^^
 
     flat_multimap& operator=(initializer_list<value_type> _Ilist) {
@@ -1529,9 +1550,9 @@ public:
     }
 
 private:
-    using _MyBase::_Emplace_hint;
-    using _MyBase::_Insert_exact;
-    using _MyBase::_Key_equal;
+    using _Mybase::_Emplace_hint;
+    using _Mybase::_Insert_exact;
+    using _Mybase::_Key_equal;
 
     template <class _KeyTy, class _MappedTy>
     iterator _Emplace_key_mapped(_KeyTy&& _Key_val, _MappedTy&& _Mapped_val) {
@@ -1639,6 +1660,9 @@ flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>::size_ty
     return _Cont._Erase_if(_STD _Pass_fn(_Pred));
 }
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

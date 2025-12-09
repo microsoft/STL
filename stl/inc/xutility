@@ -1733,19 +1733,19 @@ constexpr bool _Enable_debug_lt_pred_order_check = is_same_v<_Remove_cvref_t<_Ty
 
 template <class _Pr, class _Ty1, class _Ty2, bool _Order_check = _Enable_debug_lt_pred_order_check<_Pr, _Ty1, _Ty2>>
 constexpr bool _Debug_lt_pred_order_check_noexcept =
-    noexcept(_STD declval<_Pr&>()(_STD declval<_Ty2&>(), _STD declval<_Ty1&>()));
+    noexcept(static_cast<bool>(_STD declval<_Pr&>()(_STD declval<_Ty2&>(), _STD declval<_Ty1&>())));
 
 template <class _Pr, class _Ty1, class _Ty2>
 constexpr bool _Debug_lt_pred_order_check_noexcept<_Pr, _Ty1, _Ty2, false> = true;
 
 template <class _Pr, class _Ty1, class _Ty2>
-_NODISCARD constexpr bool _Debug_lt_pred(_Pr&& _Pred, _Ty1&& _Left, _Ty2&& _Right)
-    noexcept(noexcept(_Pred(_Left, _Right)) && _Debug_lt_pred_order_check_noexcept<_Pr, _Ty1, _Ty2>) {
+_NODISCARD constexpr bool _Debug_lt_pred(_Pr&& _Pred, _Ty1&& _Left, _Ty2&& _Right) noexcept(
+    noexcept(static_cast<bool>(_Pred(_Left, _Right))) && _Debug_lt_pred_order_check_noexcept<_Pr, _Ty1, _Ty2>) {
     const auto _Result = static_cast<bool>(_Pred(_Left, _Right));
 
     if constexpr (_Enable_debug_lt_pred_order_check<_Pr, _Ty1, _Ty2>) {
         if (_Result) {
-            _STL_VERIFY(!_Pred(_Right, _Left), "invalid comparator");
+            _STL_VERIFY(!static_cast<bool>(_Pred(_Right, _Left)), "invalid comparator");
         }
     }
 

@@ -949,8 +949,8 @@ _NODISCARD constexpr bool _In_range(const _Ty _Value) noexcept {
 
 #if _HAS_CXX20
 template <class _Ty>
-constexpr bool _Is_standard_integer = _Is_any_of_v<remove_cv_t<_Ty>, signed char, short, int, long, long long,
-    unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
+constexpr bool _Is_standard_integer = _Is_any_of_v<_Ty, signed char, short, int, long, long long, unsigned char,
+    unsigned short, unsigned int, unsigned long, unsigned long long>;
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {

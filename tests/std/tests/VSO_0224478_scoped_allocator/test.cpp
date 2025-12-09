@@ -6,12 +6,18 @@
 #include <new>
 #include <scoped_allocator>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
+
+template <class T>
+constexpr bool is_lvalue_reference_to_const = false;
+template <class T>
+constexpr bool is_lvalue_reference_to_const<const T&> = true;
 
 template <typename T>
 struct VSO_129349_alloc : allocator<T> {
@@ -108,15 +114,30 @@ struct lwg_2586 {
     using allocator_type = allocator<lwg_2586>;
     lwg_2586(allocator_arg_t, allocator_type&&) {}
     lwg_2586(const allocator_type&) {}
+
+    // Also test LWG-3187 "P0591R4 reverted DR 2586 fixes to scoped_allocator_adaptor::construct()"
+    template <class T, enable_if_t<is_lvalue_reference_to_const<T> && is_convertible_v<T, allocator_type>, int> = 0>
+    lwg_2586(T&&) {}
+    template <class T, enable_if_t<!is_lvalue_reference_to_const<T> || !is_convertible_v<T, allocator_type>, int> = 0>
+    lwg_2586(T&&) = delete;
 };
 
 void test_case_LWG_2586() {
     // LWG-2586: "Wrong value category used in scoped_allocator_adaptor::construct()"
-    scoped_allocator_adaptor<allocator<lwg_2586>> sa;
-    const auto ptr = sa.allocate(1);
-    sa.construct(ptr);
-    sa.destroy(ptr);
-    sa.deallocate(ptr, 1);
+    {
+        scoped_allocator_adaptor<allocator<lwg_2586>> sa;
+        const auto ptr = sa.allocate(1);
+        sa.construct(ptr);
+        sa.destroy(ptr);
+        sa.deallocate(ptr, 1);
+    }
+    {
+        scoped_allocator_adaptor<allocator<pair<lwg_2586, lwg_2586>>> sa;
+        const auto ptr = sa.allocate(1);
+        sa.construct(ptr);
+        sa.destroy(ptr);
+        sa.deallocate(ptr, 1);
+    }
 }
 
 struct lwg_4312 {
@@ -124,16 +145,31 @@ struct lwg_4312 {
     lwg_4312(allocator_arg_t&&, const allocator_type&) {}
     lwg_4312(allocator_arg_t&, const allocator_type&)       = delete;
     lwg_4312(const allocator_arg_t&, const allocator_type&) = delete;
+
+    // Also test LWG-3187 "P0591R4 reverted DR 2586 fixes to scoped_allocator_adaptor::construct()"
+    template <class T, enable_if_t<is_lvalue_reference_to_const<T> && is_convertible_v<T, allocator_type>, int> = 0>
+    lwg_4312(allocator_arg_t&&, T&&) {}
+    template <class T, enable_if_t<!is_lvalue_reference_to_const<T> || !is_convertible_v<T, allocator_type>, int> = 0>
+    lwg_4312(allocator_arg_t&&, T&&) = delete;
 };
 
 void test_case_LWG_4312() {
     // LWG-4312 "Const and value category mismatch for allocator_arg_t/allocator_arg in the description of
     // uses-allocator construction"
-    scoped_allocator_adaptor<allocator<lwg_4312>> sa;
-    const auto ptr = sa.allocate(1);
-    sa.construct(ptr);
-    sa.destroy(ptr);
-    sa.deallocate(ptr, 1);
+    {
+        scoped_allocator_adaptor<allocator<lwg_4312>> sa;
+        const auto ptr = sa.allocate(1);
+        sa.construct(ptr);
+        sa.destroy(ptr);
+        sa.deallocate(ptr, 1);
+    }
+    {
+        scoped_allocator_adaptor<allocator<pair<lwg_4312, lwg_4312>>> sa;
+        const auto ptr = sa.allocate(1);
+        sa.construct(ptr);
+        sa.destroy(ptr);
+        sa.deallocate(ptr, 1);
+    }
 }
 
 void test_case_move_rebind_one_alloc() {
