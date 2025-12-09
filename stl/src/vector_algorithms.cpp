@@ -1227,8 +1227,8 @@ namespace {
                 return static_cast<_Signed_t>(_mm_cvtsi128_si32(_Cur));
             }
 
-            static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
-                return static_cast<_Unsigned_t>(_mm_cvtsi128_si32(_mm_shuffle_epi8(_Idx, _mm_cvtsi32_si128(_H_pos))));
+            static _Unsigned_t _Get_v_pos(const __m128i _Idx) noexcept {
+                return static_cast<_Unsigned_t>(_Get_any(_Idx));
             }
 
             static __m128i _Cmp_eq(const __m128i _First, const __m128i _Second) noexcept {
@@ -1320,10 +1320,8 @@ namespace {
                 return static_cast<_Signed_t>(_mm256_cvtsi256_si32(_Cur));
             }
 
-            static _Unsigned_t _Get_v_pos(const __m256i _Idx, const unsigned long _H_pos) noexcept {
-                const uint32_t _Part = _mm256_cvtsi256_si32(
-                    _mm256_permutevar8x32_epi32(_Idx, _mm256_castsi128_si256(_mm_cvtsi32_si128(_H_pos >> 2))));
-                return static_cast<_Unsigned_t>(_Part >> ((_H_pos & 0x3) << 3));
+            static _Unsigned_t _Get_v_pos(const __m256i _Idx) noexcept {
+                return static_cast<_Unsigned_t>(_Get_any(_Idx));
             }
 
             static __m256i _Cmp_eq(const __m256i _First, const __m256i _Second) noexcept {
@@ -1523,11 +1521,8 @@ namespace {
                 return static_cast<_Signed_t>(_mm_cvtsi128_si32(_Cur));
             }
 
-            static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
-                static constexpr _Unsigned_t _Shuf[] = {0x0100, 0x0302, 0x0504, 0x0706, 0x0908, 0x0B0A, 0x0D0C, 0x0F0E};
-
-                return static_cast<_Unsigned_t>(
-                    _mm_cvtsi128_si32(_mm_shuffle_epi8(_Idx, _mm_cvtsi32_si128(_Shuf[_H_pos >> 1]))));
+            static _Unsigned_t _Get_v_pos(const __m128i _Idx) noexcept {
+                return static_cast<_Unsigned_t>(_Get_any(_Idx));
             }
 
             static __m128i _Cmp_eq(const __m128i _First, const __m128i _Second) noexcept {
@@ -1615,10 +1610,8 @@ namespace {
                 return static_cast<_Signed_t>(_mm256_cvtsi256_si32(_Cur));
             }
 
-            static _Unsigned_t _Get_v_pos(const __m256i _Idx, const unsigned long _H_pos) noexcept {
-                const uint32_t _Part = _mm256_cvtsi256_si32(
-                    _mm256_permutevar8x32_epi32(_Idx, _mm256_castsi128_si256(_mm_cvtsi32_si128(_H_pos >> 2))));
-                return static_cast<_Unsigned_t>(_Part >> ((_H_pos & 0x2) << 3));
+            static _Unsigned_t _Get_v_pos(const __m256i _Idx) noexcept {
+                return static_cast<_Unsigned_t>(_Get_any(_Idx));
             }
 
             static __m256i _Cmp_eq(const __m256i _First, const __m256i _Second) noexcept {
@@ -1819,10 +1812,8 @@ namespace {
                 return static_cast<_Signed_t>(_mm_cvtsi128_si32(_Cur));
             }
 
-            static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
-                _Unsigned_t _Array[4];
-                _mm_storeu_si128(reinterpret_cast<__m128i*>(&_Array), _Idx);
-                return _Array[_H_pos >> 2];
+            static _Unsigned_t _Get_v_pos(const __m128i _Idx) noexcept {
+                return static_cast<_Unsigned_t>(_Get_any(_Idx));
             }
 
             static __m128i _Cmp_eq(const __m128i _First, const __m128i _Second) noexcept {
@@ -1907,9 +1898,8 @@ namespace {
                 return static_cast<_Signed_t>(_mm256_cvtsi256_si32(_Cur));
             }
 
-            static _Unsigned_t _Get_v_pos(const __m256i _Idx, const unsigned long _H_pos) noexcept {
-                return _mm256_cvtsi256_si32(
-                    _mm256_permutevar8x32_epi32(_Idx, _mm256_castsi128_si256(_mm_cvtsi32_si128(_H_pos >> 2))));
+            static _Unsigned_t _Get_v_pos(const __m256i _Idx) noexcept {
+                return static_cast<_Unsigned_t>(_Get_any(_Idx));
             }
 
             static __m256i _Cmp_eq(const __m256i _First, const __m256i _Second) noexcept {
@@ -2013,13 +2003,13 @@ namespace {
             static _Signed_t _Get_any(const __m128i _Cur) noexcept {
                 // With optimizations enabled, compiles into register movement, rather than an actual stack spill.
                 // Works around the absence of _mm_cvtsi128_si64 on 32-bit.
-                return static_cast<_Signed_t>(_Get_v_pos(_Cur, 0));
+                _Signed_t _Array[2];
+                _mm_storeu_si128(reinterpret_cast<__m128i*>(&_Array), _Cur);
+                return _Array[0];
             }
 
-            static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
-                _Unsigned_t _Array[2];
-                _mm_storeu_si128(reinterpret_cast<__m128i*>(&_Array), _Idx);
-                return _Array[_H_pos >> 3];
+            static _Unsigned_t _Get_v_pos(const __m128i _Idx) noexcept {
+                return static_cast<_Unsigned_t>(_Get_any(_Idx));
             }
 
             static __m128i _Cmp_eq(const __m128i _First, const __m128i _Second) noexcept {
@@ -2115,10 +2105,8 @@ namespace {
                 return _Traits_8_sse::_Get_any(_mm256_castsi256_si128(_Cur));
             }
 
-            static _Unsigned_t _Get_v_pos(const __m256i _Idx, const unsigned long _H_pos) noexcept {
-                _Unsigned_t _Array[4];
-                _mm256_storeu_si256(reinterpret_cast<__m256i*>(&_Array), _Idx);
-                return _Array[_H_pos >> 3];
+            static _Unsigned_t _Get_v_pos(const __m256i _Idx) noexcept {
+                return static_cast<_Unsigned_t>(_Get_any(_Idx));
             }
 
             static __m256i _Cmp_eq(const __m256i _First, const __m256i _Second) noexcept {
@@ -2296,8 +2284,8 @@ namespace {
                 return _mm_cvtss_f32(_Cur);
             }
 
-            static uint32_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
-                return _Traits_4_sse::_Get_v_pos(_Idx, _H_pos);
+            static uint32_t _Get_v_pos(const __m128i _Idx) noexcept {
+                return _Traits_4_sse::_Get_v_pos(_Idx);
             }
 
             static __m128 _Cmp_eq(const __m128 _First, const __m128 _Second) noexcept {
@@ -2379,8 +2367,8 @@ namespace {
                 return _mm256_cvtss_f32(_Cur);
             }
 
-            static uint32_t _Get_v_pos(const __m256i _Idx, const unsigned long _H_pos) noexcept {
-                return _Traits_4_avx::_Get_v_pos(_Idx, _H_pos);
+            static uint32_t _Get_v_pos(const __m256i _Idx) noexcept {
+                return _Traits_4_avx::_Get_v_pos(_Idx);
             }
 
             static __m256 _Cmp_eq(const __m256 _First, const __m256 _Second) noexcept {
@@ -2552,8 +2540,8 @@ namespace {
                 return _mm_cvtsd_f64(_Cur);
             }
 
-            static uint64_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
-                return _Traits_8_sse::_Get_v_pos(_Idx, _H_pos);
+            static uint64_t _Get_v_pos(const __m128i _Idx) noexcept {
+                return _Traits_8_sse::_Get_v_pos(_Idx);
             }
 
             static __m128d _Cmp_eq(const __m128d _First, const __m128d _Second) noexcept {
@@ -2634,8 +2622,8 @@ namespace {
                 return _mm256_cvtsd_f64(_Cur);
             }
 
-            static uint64_t _Get_v_pos(const __m256i _Idx, const unsigned long _H_pos) noexcept {
-                return _Traits_8_avx::_Get_v_pos(_Idx, _H_pos);
+            static uint64_t _Get_v_pos(const __m256i _Idx) noexcept {
+                return _Traits_8_avx::_Get_v_pos(_Idx);
             }
 
             static __m256d _Cmp_eq(const __m256d _First, const __m256d _Second) noexcept {
@@ -2963,12 +2951,7 @@ namespace {
                                 unsigned long _H_pos = _Traits::_Get_first_h_pos(_Mask);
 
                                 // Extract its vertical index
-
-#ifdef _M_ARM64
                                 const auto _V_pos = _Traits::_Get_v_pos(_Idx_min);
-#else
-                                const auto _V_pos = _Traits::_Get_v_pos(_Cur_idx_min, _H_pos);
-#endif
                                 // Finally, compute the pointer
                                 _Res._Min = _Base + static_cast<size_t>(_V_pos) * _Traits::_Vec_size + _H_pos;
                             }
@@ -3005,12 +2988,7 @@ namespace {
                                     _H_pos -= sizeof(_Cur_max_val) - 1; // Correct from highest val bit to lowest
 
                                     // Extract its vertical index
-
-#ifdef _M_ARM64
                                     _V_pos = static_cast<size_t>(_Traits::_Get_v_pos(_Idx_max));
-#else
-                                    _V_pos = static_cast<size_t>(_Traits::_Get_v_pos(_Cur_idx_max, _H_pos));
-#endif
                                 } else {
                                     // Looking for the first occurrence of maximum
                                     // Indices of maximum elements or the greatest index if none
@@ -3025,12 +3003,7 @@ namespace {
                                     _H_pos = _Traits::_Get_first_h_pos(_Mask);
 
                                     // Extract its vertical index
-
-#ifdef _M_ARM64
                                     _V_pos = static_cast<size_t>(_Traits::_Get_v_pos(_Idx_max));
-#else
-                                    _V_pos = static_cast<size_t>(_Traits::_Get_v_pos(_Cur_idx_max, _H_pos));
-#endif
                                 }
 
                                 // Finally, compute the pointer
