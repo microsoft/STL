@@ -822,10 +822,8 @@ public:
     }
 
     _NODISCARD friend bool operator==(const _Derived& _Left, const _Derived& _Right) {
-        auto& _Left_base  = static_cast<const _Flat_map_base&>(_Left);
-        auto& _Right_base = static_cast<const _Flat_map_base&>(_Right);
-        return _RANGES equal(_Left_base._Data.keys, _Right_base._Data.keys)
-            && _RANGES equal(_Left_base._Data.values, _Right_base._Data.values);
+        return _STD equal(_STD _Get_unwrapped(_STD cbegin(_Left)), _STD _Get_unwrapped(_STD cend(_Left)),
+            _STD _Get_unwrapped(_STD cbegin(_Right)), _STD _Get_unwrapped(_STD cend(_Right)));
     }
 
     _NODISCARD friend auto operator<=>(const _Derived& _Left, const _Derived& _Right) {
