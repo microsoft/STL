@@ -694,8 +694,11 @@ public:
         return _Erase_key(_STD forward<_OtherKey>(_Key_val));
     }
 
-    _NODISCARD containers extract() && {
-        _Clear_guard _Guard{this};
+    _NODISCARD containers extract() && noexcept(
+        is_nothrow_move_constructible_v<key_container_type>
+        && is_nothrow_move_constructible_v<mapped_container_type>) /* strengthened */ {
+        // always clears the container (N4950 [flat.map.modifiers]/33 and [flat.multimap.overview]/4
+        _Clear_guard _Always_clear{this};
         return _STD move(_Data);
     }
 
