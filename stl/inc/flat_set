@@ -375,8 +375,8 @@ public:
         constexpr bool _Is_noexcept = is_nothrow_swappable_v<_Container> && is_nothrow_swappable_v<_Keylt>;
         _Flat_set_swap_clear_guard<_Is_noexcept, _Container> _Guard{
             _STD addressof(_Mycont), _STD addressof(_Other._Mycont)};
-        _RANGES swap(_Mycomp, _Other._Mycomp);
         _RANGES swap(_Mycont, _Other._Mycont);
+        _RANGES swap(_Mycomp, _Other._Mycomp);
         _Guard._Dismiss();
     }
     void clear() noexcept {
