@@ -1028,10 +1028,10 @@ private:
             _STD is_sorted_until(_STD cbegin(_Data.keys), _STD cend(_Data.keys), _Pass_key_comp());
         const difference_type _Num_sorted = _Begin_unsorted - _STD cbegin(_Data.keys);
 
-        auto _View = _View_to_mutate();
-        const auto _Begin = _STD begin(_View);
+        auto _View                        = _View_to_mutate();
+        const auto _Begin                 = _STD begin(_View);
         const auto _Begin_unsorted_values = _Begin + _Num_sorted;
-        const auto _End = _STD end(_View);
+        const auto _End                   = _STD end(_View);
 
         _STD sort(_Begin_unsorted_values, _End, value_compare{_Key_compare});
         _STD inplace_merge(_Begin, _Begin_unsorted_values, _End, value_compare{_Key_compare});
