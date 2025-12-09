@@ -95,12 +95,12 @@ public:
     _Flat_set_base() : _Mycont(), _Mycomp() {}
 
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Flat_set_base(const _Derived& _Set, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _Set._Mycont)), _Mycomp(_Set._Mycomp) {}
+    _Flat_set_base(const _Flat_set_base& _Other, const _Alloc& _Al)
+        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _Other._Mycont)), _Mycomp(_Other._Mycomp) {}
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Flat_set_base(_Derived&& _Set, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _STD move(_Set).extract())),
-          _Mycomp(_Set._Mycomp) // intentionally copy comparator, see LWG-2227
+    _Flat_set_base(_Flat_set_base&& _Other, const _Alloc& _Al)
+        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _STD move(_Other).extract())),
+          _Mycomp(_Other._Mycomp) // intentionally copy comparator, see LWG-2227
     {}
 
     explicit _Flat_set_base(container_type _Cont, const key_compare& _Comp = key_compare())
