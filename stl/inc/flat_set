@@ -651,7 +651,7 @@ private:
 
     template <class _Pred>
     _NODISCARD size_type _Erase_if(_Pred _Predicate) {
-        // Maintain invariants when an exception is thrown (N4950 [flat.set.erasure]/5, [flat.multiset.erasure]/5)
+        // Maintain invariants when an exception is thrown (N5014 [flat.set.erasure]/5, [flat.multiset.erasure]/5)
         _Clear_guard _Guard{this};
         const auto _Erased_count = _STD _Erase_remove_if(_Mycont, _Predicate);
         _Guard._Target           = nullptr;
