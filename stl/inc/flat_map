@@ -19,6 +19,7 @@ _EMIT_STL_WARNING(STL4038, "The contents of <flat_map> are available only with C
 #include <utility>
 #include <vector>
 #include <xmemory>
+#include <xutility>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
