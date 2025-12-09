@@ -1344,7 +1344,7 @@ private:
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         const auto _Position = this->find(_Key_val);
         if (_Position == this->end()) {
-            _Xout_of_range("std::flat_map::at: the specified key does not exist.");
+            _Xout_of_range("invalid flat_map key");
         }
 
         return _Position->second;
@@ -1355,7 +1355,7 @@ private:
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         const auto _Position = this->find(_Key_val);
         if (_Position == this->end()) {
-            _Xout_of_range("std::flat_map::at: the specified key does not exist.");
+            _Xout_of_range("invalid flat_map key");
         }
 
         return _Position->second;
