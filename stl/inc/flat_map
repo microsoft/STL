@@ -867,7 +867,8 @@ protected:
     _MSVC_NO_UNIQUE_ADDRESS key_compare _Key_compare;
 
     template <bool _OverwriteIfExists, class _OtherKey, class... _MappedArgTypes>
-    _NODISCARD iterator _Emplace_hint(const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Args) {
+    _NODISCARD iterator _Emplace_hint(
+        const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Args) {
         _STL_INTERNAL_STATIC_ASSERT(is_constructible_v<mapped_type, _MappedArgTypes...>);
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_OtherKey>, key_type>
                                     || (is_constructible_v<key_type, _OtherKey> && _Transparent<key_compare>) );
