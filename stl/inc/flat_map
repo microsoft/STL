@@ -839,7 +839,7 @@ public:
 
 
 protected:
-    key_compare _Key_compare;
+    _MSVC_NO_UNIQUE_ADDRESS key_compare _Key_compare;
     containers _Data;
 
     template <bool _OverwriteIfExists, class _OtherKey, class... _MappedArgTypes>

@@ -723,7 +723,7 @@ private:
     }
 
     container_type _Mycont;
-    /* [[no_unique_address]] */ key_compare _Mycomp;
+    _MSVC_NO_UNIQUE_ADDRESS key_compare _Mycomp;
 };
 
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container>
