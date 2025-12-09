@@ -3640,6 +3640,7 @@ _Min_max_element_t __stdcall __std_minmax_element_d(const void* const _First, co
     return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_d>(_First, _Last, false);
 }
 
+#ifndef _M_ARM64
 __declspec(noalias) int8_t __stdcall __std_min_1i(const void* const _First, const void* const _Last) noexcept {
     return _Sorting::_Minmax_disp<_Sorting::_Mode_min, _Sorting::_Traits_1, true>(_First, _Last);
 }
@@ -3809,6 +3810,7 @@ const void* __stdcall __std_is_sorted_until_d(
     const void* const _First, const void* const _Last, const bool _Greater) noexcept {
     return _Sorting::_Is_sorted_until_disp<_Sorting::_Traits_d, double>(_First, _Last, _Greater);
 }
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
 } // extern "C"
 
