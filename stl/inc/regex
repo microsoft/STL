@@ -47,10 +47,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _REGEX_MAX_COMPLEXITY_COUNT 10000000L // set to 0 to disable
 #endif // !defined(_REGEX_MAX_COMPLEXITY_COUNT)
 
-#ifndef _REGEX_MAX_STACK_COUNT
-#define _REGEX_MAX_STACK_COUNT 1000L // set to 0 to disable
-#endif // !defined(_REGEX_MAX_STACK_COUNT)
-
 #ifndef _ENHANCED_REGEX_VISUALIZER
 #ifdef _DEBUG
 #define _ENHANCED_REGEX_VISUALIZER 1
@@ -1725,6 +1721,13 @@ public:
             _Char_class_d = _Lookup_char_class(static_cast<_Elem>('D'));
         }
 
+        _Input_length = _STD distance(_Pfirst, _Plast);
+        if (_Input_length < 0) {
+            _Input_length = 0;
+        }
+
+        _Frames_limit = _Calculate_frames_limit();
+
 // sanitize multiline mode setting
 #if _REGEX_LEGACY_MULTILINE_MODE
         _Sflags |= regex_constants::multiline; // old matcher applied multiline mode for all grammars
@@ -1765,7 +1768,6 @@ public:
         }
         _Full                 = _Full_match;
         _Max_complexity_count = _REGEX_MAX_COMPLEXITY_COUNT;
-        _Max_stack_count      = _REGEX_MAX_STACK_COUNT;
         _Frames_count         = 0;
 
         _Matched = false;
@@ -1819,12 +1821,13 @@ private:
     vector<_Loop_vals_v3_t<_Iter_diff_t<_It>>> _Loop_vals;
     vector<_Rx_state_frame_t<_It>> _Frames;
     size_t _Frames_count;
+    size_t _Frames_limit;
+    _Iter_diff_t<_It> _Input_length;
 
     size_t _Push_frame(_Rx_unwind_ops _Code, _Node_base* _Node);
     void _Pop_frame(size_t);
 
-    void _Increase_stack_usage_count();
-    void _Decrease_stack_usage_count();
+    size_t _Calculate_frames_limit();
     void _Increase_complexity_count();
 
     void _Prepare_rep(_Node_rep*);
@@ -1847,7 +1850,6 @@ private:
     const _RxTraits& _Traits;
     bool _Full;
     long _Max_complexity_count;
-    long _Max_stack_count;
     typename _RxTraits::char_class_type _Char_class_w{};
     typename _RxTraits::char_class_type _Char_class_s{};
     typename _RxTraits::char_class_type _Char_class_d{};
@@ -3389,6 +3391,10 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Tidy() noexcept { // free memory
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Push_frame(_Rx_unwind_ops _Code, _Node_base* _Node) {
     if (_Frames_count >= _Frames.size()) {
+        if (_Frames_count >= _Frames_limit) {
+            _Xregex_error(regex_constants::error_stack);
+        }
+
         _Frames.push_back({_Code, {0}, _Node, _Tgt_state._Cur, size_t{}});
     } else {
         auto& _Frame = _Frames[_Frames_count];
@@ -3405,22 +3411,17 @@ void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Pop_frame(size_t _Idx) {
     _Frames_count = _Idx;
 }
 
-template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Increase_stack_usage_count() {
-    if (0 < _Max_stack_count && --_Max_stack_count <= 0) {
-        _Xregex_error(regex_constants::error_stack);
-    }
-
-    if (0 < _Max_complexity_count && --_Max_complexity_count <= 0) {
-        _Xregex_error(regex_constants::error_complexity);
-    }
-}
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Decrease_stack_usage_count() {
-    if (0 < _Max_stack_count) {
-        ++_Max_stack_count;
+size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit() {
+    const size_t _Max_frames_size = _Frames.max_size();
+
+    if (PTRDIFF_MAX / 10 - 10000000 <= _Input_length) {
+        return _Max_frames_size;
     }
+
+    return (_STD min) (_Max_frames_size,
+        (static_cast<size_t>(_Input_length) * 10U + 10000000U) / sizeof(_Rx_state_frame_t<_It>));
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
@@ -3447,9 +3448,6 @@ void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Prepare_rep(_Node_rep* _
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Find_first_inner_capture_group(
     _Node_base* _Nx, _Loop_vals_v3_t<_Iter_diff_t<_It>>* _Loop_state) {
-    if (0 < _Max_stack_count && --_Max_stack_count <= 0) {
-        _Xregex_error(regex_constants::error_stack);
-    }
 
     bool _Found_group = false;
     while (_Nx) {
@@ -3527,10 +3525,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Find_first_inner_capture
         if (_Nx) {
             _Nx = _Nx->_Next;
         }
-    }
-
-    if (0 < _Max_stack_count) {
-        ++_Max_stack_count;
     }
 
     return _Found_group;
@@ -3841,7 +3835,7 @@ bool _Is_ecmascript_line_terminator(_Elem _Ch) {
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // check for match
-    _Increase_stack_usage_count();
+    _Increase_complexity_count();
 
     bool _Failed = false;
 
@@ -3934,7 +3928,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     _Push_frame(_Rx_unwind_ops::_After_assert, _Node);
                     _Next = _Node->_Child;
 
-                    _Increase_stack_usage_count();
+                    _Increase_complexity_count();
                     break;
                 }
 
@@ -3944,7 +3938,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     _Push_frame(_Rx_unwind_ops::_After_neg_assert, _Node);
                     _Next = _Node->_Child;
 
-                    _Increase_stack_usage_count();
+                    _Increase_complexity_count();
                     break;
                 }
 
@@ -3958,7 +3952,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                         const auto& _Frame = _Frames[_Frames_count];
                         const auto _Code   = _Frame._Code;
                         if (_Code == _Rx_unwind_ops::_After_assert || _Code == _Rx_unwind_ops::_After_neg_assert) {
-                            _Decrease_stack_usage_count();
                             if (_Code == _Rx_unwind_ops::_After_assert) {
                                 _Tgt_state._Cur = _Frame._Pos;
                                 _Next           = _Frame._Node->_Next;
@@ -3982,12 +3975,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                                 }
                             }
                             break;
-                        } else if (_Code == _Rx_unwind_ops::_Disjunction_eval_alt_on_failure
-                                   || _Code == _Rx_unwind_ops::_Disjunction_eval_alt_always
-                                   || _Code == _Rx_unwind_ops::_Loop_greedy //
-                                   || _Code == _Rx_unwind_ops::_Loop_nongreedy
-                                   || _Code == _Rx_unwind_ops::_Loop_restore_vals) {
-                            _Decrease_stack_usage_count();
                         } else if (_Code == _Rx_unwind_ops::_Capture_restore_unmatched_end) {
                             auto _Node        = static_cast<_Node_capture*>(_Frame._Node);
                             auto _Capture_idx = _Node->_Idx;
@@ -4072,7 +4059,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                         _Push_frame(_Longest ? _Rx_unwind_ops::_Disjunction_eval_alt_always
                                              : _Rx_unwind_ops::_Disjunction_eval_alt_on_failure,
                             _Node->_Child);
-                        _Increase_stack_usage_count();
+                        _Increase_complexity_count();
                     }
                     break;
                 }
@@ -4119,10 +4106,11 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                             _Frame._Loop_frame_idx_sav = _Sav._Loop_frame_idx;
                             _Sav._Loop_idx             = 1;
                             _Sav._Loop_frame_idx       = _Frame_idx;
-                            _Increase_stack_usage_count();
+                            _Increase_complexity_count();
                             // _Next is already assigned correctly for matching a rep
                         } else { // try tail first
                             _Next = _Node->_End_rep->_Next;
+                            _Increase_complexity_count();
                             // set up stack unwinding for non-greedy matching if at least one rep is allowed
                             if (_Node->_Max != 0) {
                                 auto _Frame_idx            = _Push_frame(_Rx_unwind_ops::_Loop_nongreedy, _Node);
@@ -4131,9 +4119,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                                 _Frame._Loop_frame_idx_sav = _Sav._Loop_frame_idx;
                                 _Sav._Loop_idx             = 0;
                                 _Sav._Loop_frame_idx       = _Frame_idx;
-                                _Increase_stack_usage_count();
-                            } else {
-                                _Increase_complexity_count();
                             }
                         }
                     }
@@ -4239,7 +4224,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 
                             _Reset_capture_groups(_Sav._Group_first);
                             _Next = _Nr->_Next;
-                            _Increase_stack_usage_count();
+                            _Increase_complexity_count();
                         } else if (!_Progress) { // latest rep match empty
                             // An empty match is allowed if it is needed to reach the minimum number of reps.
                             // Moreover, POSIX allows an empty repetition if the subexpression is matched only once.
@@ -4264,18 +4249,16 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 
                             _Reset_capture_groups(_Sav._Group_first);
                             _Next = _Nr->_Next;
-                            _Increase_stack_usage_count();
+                            _Increase_complexity_count();
                         } else { // non-greedy matching or greedy matching with maximum reached
                             // set up stack unwinding for non-greedy matching if one more rep is allowed
+                            _Increase_complexity_count();
                             if (_Sav._Loop_idx != _Nr->_Max) {
                                 auto _Frame_idx            = _Push_frame(_Rx_unwind_ops::_Loop_nongreedy, _Nr);
                                 auto& _Frame               = _Frames[_Frame_idx];
                                 _Frame._Loop_idx_sav       = _Sav._Loop_idx;
                                 _Frame._Loop_frame_idx_sav = _Sav._Loop_frame_idx;
                                 _Sav._Loop_frame_idx       = _Frame_idx;
-                                _Increase_stack_usage_count();
-                            } else {
-                                _Increase_complexity_count();
                             }
                             // _Next is already assigned correctly for matching tail
                         }
@@ -4322,14 +4305,12 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
             case _Rx_unwind_ops::_After_assert:
                 { // matching pattern of positive assert failed
                     _STL_INTERNAL_CHECK(_Failed);
-                    _Decrease_stack_usage_count();
                     break;
                 }
 
             case _Rx_unwind_ops::_After_neg_assert:
                 { // matching pattern of negative assert failed
                     _STL_INTERNAL_CHECK(_Failed);
-                    _Decrease_stack_usage_count();
                     _Tgt_state._Cur = _Frame._Pos;
                     _Nx             = _Frame._Node->_Next;
                     _Failed         = false;
@@ -4339,7 +4320,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
             case _Rx_unwind_ops::_Disjunction_eval_alt_on_failure:
                 // evaluate next alternative if matching prior alternatives failed
                 if (!_Failed) {
-                    _Decrease_stack_usage_count();
                     break;
                 }
                 _FALLTHROUGH;
@@ -4355,8 +4335,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     if (_Node->_Child) {
                         _Frame._Node = _Node->_Child;
                         ++_Frames_count;
-                    } else {
-                        _Decrease_stack_usage_count();
                     }
                     break;
                 }
@@ -4455,8 +4433,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 
                     _Sav._Loop_idx       = _Frame._Loop_idx_sav;
                     _Sav._Loop_frame_idx = _Frame._Loop_frame_idx_sav;
-
-                    _Decrease_stack_usage_count();
                 }
                 break;
 
@@ -4513,7 +4489,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
         }
     }
 
-    _Decrease_stack_usage_count();
     _STL_INTERNAL_CHECK(_Frames_count == 0);
 
     return !_Failed;
