@@ -268,6 +268,10 @@ std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 
 # P0429R9 <flat_map>
 
+# static_assert(!std::is_nothrow_move_constructible_v<C>) with C = std::flat_(multi)map<int, int, ThrowingMoveComp>
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_noexcept.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.cons/move_noexcept.pass.cpp FAIL
+
 # FIXME! warning C4242: 'initializing': conversion from '_Ty' to '_Ty2', possible loss of data
 std/containers/container.adaptors/flat.map/flat.map.cons/copy_assign.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/copy_assign.pass.cpp:1 FAIL
