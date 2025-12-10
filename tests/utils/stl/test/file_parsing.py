@@ -139,14 +139,14 @@ def parse_result_file(filename: Union[str, bytes, os.PathLike]) \
     for line in parse_commented_file(filename):
         m = _EXPECTED_RESULT_REGEX.match(line)
         if m is None:
-            raise Exception(f'Line "{line}" has incorrect format in {filename}.')
+            raise Exception(f'Incorrectly formatted line "{line}" in {filename}.')
         prefix = m.group("prefix")
         result = m.group("result")
         result_code = getattr(lit.Test, result, None)
         if result_code is None:
             result_code = getattr(stl.test.tests, result, None)
         if result_code is None:
-            raise Exception(f'Unknown result code "{result}" in "{line}" in {filename}.')
+            raise Exception(f'Unknown result code "{result}" in line "{line}" in {filename}.')
         res[prefix] = result_code
 
     _expected_result_entry_cache[str(filename)] = res
