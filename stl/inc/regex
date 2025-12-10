@@ -3414,14 +3414,16 @@ void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Pop_frame(size_t _Idx) {
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit() {
+    constexpr size_t _Fixed_part  = 10000000U / sizeof(_Rx_state_frame_t<_It>);
+    constexpr size_t _Divisor     = sizeof(_Rx_state_frame_t<_It>) / 10U;
+    const auto _Variable_part     = _Input_length / static_cast<_Iter_diff_t<_It>>(_Divisor);
     const size_t _Max_frames_size = _Frames.max_size();
 
-    if (PTRDIFF_MAX / 10 - 10000000 <= _Input_length) {
+    if (PTRDIFF_MAX < _Variable_part) {
         return _Max_frames_size;
     }
 
-    return (_STD min) (_Max_frames_size,
-        (static_cast<size_t>(_Input_length) * 10U + 10000000U) / sizeof(_Rx_state_frame_t<_It>));
+    return (_STD min) (_Max_frames_size, static_cast<size_t>(_Variable_part) + _Fixed_part);
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
