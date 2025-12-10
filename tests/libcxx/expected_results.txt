@@ -268,6 +268,7 @@ std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 
 # P0429R9 <flat_map>
 
+# MSVC's STL and libc++ speculatively implement LWG-2227 (not yet resolved) in different ways
 # static_assert(!std::is_nothrow_move_constructible_v<C>) with C = std::flat_(multi)map<int, int, ThrowingMoveComp>
 std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_noexcept.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.cons/move_noexcept.pass.cpp FAIL
