@@ -3112,6 +3112,7 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) ^^^
         }
 
+#ifndef _M_ARM64
         template <_Min_max_mode _Mode, class _Traits, bool _Sign>
         auto _Minmax_impl(const void* _First, const void* const _Last) noexcept {
             using _Ty = std::conditional_t<_Sign, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>;
@@ -3271,7 +3272,7 @@ namespace {
             }
         }
 
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
+#ifndef _M_ARM64EC
         // TRANSITION, DevCom-10767462
         template <_Min_max_mode _Mode, class _Traits, bool _Sign>
         auto _Minmax_impl_wrap(const void* const _First, const void* const _Last) noexcept {
@@ -3279,15 +3280,11 @@ namespace {
             _mm256_zeroupper();
             return _Rx;
         }
-#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         template <_Min_max_mode _Mode, class _Traits, bool _Sign>
         auto __stdcall _Minmax_disp(const void* const _First, const void* const _Last) noexcept {
-#ifdef _M_ARM64
-            if (_Byte_length(_First, _Last) >= 16) {
-                return _Minmax_impl<_Mode, typename _Traits::_Neon, _Sign>(_First, _Last);
-            }
-#elif !defined(_M_ARM64EC)
+#ifndef _M_ARM64EC
             if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
                 if constexpr (_Traits::_Avx::_Is_floating) {
                     return _Minmax_impl_wrap<_Mode, typename _Traits::_Avx, _Sign>(_First, _Last);
@@ -3391,11 +3388,7 @@ namespace {
 
             _Advance_bytes(_First, sizeof(_Ty));
 
-#ifdef _M_ARM64
-            if (_Byte_length(_First, _Last) >= 16) {
-                return _Is_sorted_until_impl<typename _Traits::_Neon, _Ty>(_First, _Last, _Greater);
-            }
-#elif !defined(_M_ARM64EC)
+#ifndef _M_ARM64EC
             if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
                 return _Is_sorted_until_impl<typename _Traits::_Avx, _Ty>(_First, _Last, _Greater);
             }
@@ -3406,6 +3399,7 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
             return _Is_sorted_until_impl<typename _Traits::_Scalar, _Ty>(_First, _Last, _Greater);
         }
+#endif // ^^^ !defined(_M_ARM64) ^^^
     } // namespace _Sorting
 } // unnamed namespace
 
