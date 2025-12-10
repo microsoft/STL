@@ -2446,16 +2446,16 @@ namespace {
             }
 
             static _Idx_t _H_min_u(const _Idx_t _Cur) noexcept {
-                const uint64x2_t _Cur_u = vreinterpretq_u64_s64(_Cur);
-                uint64x2_t _Swapped     = vextq_u64(_Cur_u, _Cur_u, 1);
-                uint64x2_t _Mask_lt     = vcltq_u64(_Swapped, _Cur_u);
+                const uint64x2_t _Cur_u   = vreinterpretq_u64_s64(_Cur);
+                const uint64x2_t _Swapped = vextq_u64(_Cur_u, _Cur_u, 1);
+                const uint64x2_t _Mask_lt = vcltq_u64(_Swapped, _Cur_u);
                 return vreinterpretq_s64_u64(vbslq_u64(_Mask_lt, _Swapped, _Cur_u));
             }
 
             static _Idx_t _H_max_u(const _Idx_t _Cur) noexcept {
-                const uint64x2_t _Cur_u = vreinterpretq_u64_s64(_Cur);
-                uint64x2_t _Swapped     = vextq_u64(_Cur_u, _Cur_u, 1);
-                uint64x2_t _Mask_gt     = vcgtq_u64(_Swapped, _Cur_u);
+                const uint64x2_t _Cur_u   = vreinterpretq_u64_s64(_Cur);
+                const uint64x2_t _Swapped = vextq_u64(_Cur_u, _Cur_u, 1);
+                const uint64x2_t _Mask_gt = vcgtq_u64(_Swapped, _Cur_u);
                 return vreinterpretq_s64_u64(vbslq_u64(_Mask_gt, _Swapped, _Cur_u));
             }
 
@@ -2942,7 +2942,7 @@ namespace {
                                 _Mask &= _Traits::_Mask(_Traits::_Cmp_eq_idx(_Idx_min, _Idx_min_val));
 
                                 // Find the smallest horizontal index
-                                unsigned long _H_pos = _Traits::_Get_first_h_pos(_Mask);
+                                const unsigned long _H_pos = _Traits::_Get_first_h_pos(_Mask);
 
                                 // Extract its vertical index
                                 const auto _V_pos = _Traits::_Get_v_pos(_Idx_min);
@@ -3332,10 +3332,10 @@ namespace {
                     }
 
                     const auto _Is_less = _Traits::_Cmp_gt(_Right, _Left);
-                    auto _Mask          = _Traits::_Mask(_Traits::_Mask_cast(_Is_less));
+                    const auto _Mask    = _Traits::_Mask(_Traits::_Mask_cast(_Is_less));
 
                     if (_Mask != 0) {
-                        unsigned long _H_pos = _Traits::_Get_first_h_pos(_Mask);
+                        const unsigned long _H_pos = _Traits::_Get_first_h_pos(_Mask);
                         _Advance_bytes(_First, _H_pos);
                         return _First;
                     }
@@ -3357,10 +3357,10 @@ namespace {
                         }
 
                         const auto _Is_less = _Traits::_Cmp_gt(_Right, _Left);
-                        auto _Mask = _Traits::_Mask(_mm256_and_si256(_Traits::_Mask_cast(_Is_less), _Tail_mask));
+                        const auto _Mask = _Traits::_Mask(_mm256_and_si256(_Traits::_Mask_cast(_Is_less), _Tail_mask));
 
                         if (_Mask != 0) {
-                            unsigned long _H_pos = _Traits::_Get_first_h_pos(_Mask);
+                            const unsigned long _H_pos = _Traits::_Get_first_h_pos(_Mask);
                             _Advance_bytes(_First, _H_pos);
                             return _First;
                         }
