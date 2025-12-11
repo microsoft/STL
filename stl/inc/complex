@@ -429,7 +429,7 @@ public:
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
-        return static_cast<_Ty>(_CSTD _Sinh(static_cast<double>(_Left), static_cast<double>(_Right)));
+        return static_cast<_Ty>(_STD sinh(static_cast<double>(_Left)) * static_cast<double>(_Right));
     }
 
     static _Ty asinh(_Ty _Left) {
@@ -573,7 +573,7 @@ public:
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) noexcept { // return sinh(_Left) * _Right
-        return _CSTD _LSinh(_Left, _Right);
+        return _STD sinh(_Left) * _Right;
     }
 
     static _Ty asinh(_Ty _Left) noexcept {
@@ -709,7 +709,7 @@ public:
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) noexcept { // return sinh(_Left) * _Right
-        return _CSTD _Sinh(_Left, _Right);
+        return _STD sinh(_Left) * _Right;
     }
 
     static _Ty asinh(_Ty _Left) noexcept {
@@ -848,7 +848,7 @@ public:
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) noexcept { // return sinh(_Left) * _Right
-        return _CSTD _FSinh(_Left, _Right);
+        return _STD sinh(_Left) * _Right;
     }
 
     static _Ty asinh(_Ty _Left) noexcept {
