@@ -390,7 +390,7 @@ public:
     }
 
     static _Ty _Cosh(_Ty _Left, _Ty _Right) { // return cosh(_Left) * _Right
-        return static_cast<_Ty>(_CSTD _Cosh(static_cast<double>(_Left), static_cast<double>(_Right)));
+        return static_cast<_Ty>(_STD cosh(static_cast<double>(_Left)) * static_cast<double>(_Right));
     }
 
     static _Ty _Copysign(_Ty _Magnitude, _Ty _Sign) {
@@ -528,7 +528,7 @@ public:
     }
 
     static _Ty _Cosh(_Ty _Left, _Ty _Right) noexcept { // return cosh(_Left) * _Right
-        return _CSTD _LCosh(_Left, _Right);
+        return _STD cosh(_Left) * _Right;
     }
 
     static _Ty _Copysign(_Ty _Magnitude, _Ty _Sign) noexcept {
@@ -672,7 +672,7 @@ public:
     }
 
     static _Ty _Cosh(_Ty _Left, _Ty _Right) noexcept { // return cosh(_Left) * _Right
-        return _CSTD _Cosh(_Left, _Right);
+        return _STD cosh(_Left) * _Right;
     }
 
     static _Ty _Copysign(_Ty _Magnitude, _Ty _Sign) noexcept {
@@ -811,7 +811,7 @@ public:
     }
 
     static _Ty _Cosh(_Ty _Left, _Ty _Right) noexcept { // return cosh(_Left) * _Right
-        return _CSTD _FCosh(_Left, _Right);
+        return _STD cosh(_Left) * _Right;
     }
 
     static _Ty _Copysign(_Ty _Magnitude, _Ty _Sign) noexcept {
