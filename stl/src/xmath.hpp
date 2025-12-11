@@ -23,9 +23,6 @@
 
 _EXTERN_C_UNLESS_PURE
 
-_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Dtest(double*) noexcept;
-_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FDtest(float*) noexcept;
-
 // double declarations
 union _Dval { // pun floating type as integer array
     unsigned short _Sh[8];

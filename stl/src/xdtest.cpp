@@ -5,6 +5,7 @@
 
 _EXTERN_C_UNLESS_PURE
 
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Dtest(double* px) noexcept { // categorize *px
     const auto ps = reinterpret_cast<_Dval*>(px);
 
@@ -18,10 +19,12 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Dtest(double* px) noexcept { // cat
     }
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LDtest(long double* px) noexcept { // categorize *px -- 64-bit
     return _Dtest(reinterpret_cast<double*>(px));
 }
 
+// TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FDtest(float* px) noexcept { // categorize *px
     const auto ps = reinterpret_cast<_Fval*>(px);
 
