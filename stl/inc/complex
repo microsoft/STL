@@ -1858,8 +1858,18 @@ _NODISCARD complex<_Ty> exp(const complex<_Ty>& _Left) noexcept(_Is_unqual_fp<_T
     const _Ty _Theta   = _STD imag(_Left);
 
     if (!_Ctraits<_Ty>::_Isnan(_Log_rho) && !_Ctraits<_Ty>::_Isinf(_Log_rho)) { // real component is finite
-        const _Ty _Real = _Ctraits<_Ty>::exp(_Log_rho) * _Ctraits<_Ty>::cos(_Theta);
-        const _Ty _Imag = _Ctraits<_Ty>::exp(_Log_rho) * _Ctraits<_Ty>::sin(_Theta);
+        const _Ty _Exp_log_rho = _Ctraits<_Ty>::exp(_Log_rho);
+        _Ty _Real              = _Ctraits<_Ty>::cos(_Theta);
+        _Ty _Imag              = _Ctraits<_Ty>::sin(_Theta);
+
+        if (_Real != _Ty{0}) {
+            _Real = _Exp_log_rho * _Real;
+        }
+
+        if (_Imag != _Ty{0}) {
+            _Imag = _Exp_log_rho * _Imag;
+        }
+
         return complex<_Ty>(_Real, _Imag);
     }
 

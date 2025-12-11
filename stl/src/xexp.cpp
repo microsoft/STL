@@ -7,6 +7,11 @@ _EXTERN_C_UNLESS_PURE
 
 // TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(double* px, double y, short eoff) noexcept {
+    if (y == 0.0) {
+        *px = y;
+        return 0;
+    }
+
     *px = _STD exp(*px) * y * _STD exp2(static_cast<double>(eoff));
     return static_cast<short>(_STD fpclassify(*px));
 }
@@ -18,6 +23,11 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LExp(long double* px, long double y
 
 // TRANSITION, ABI: preserved for binary compatibility
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(float* px, float y, short eoff) noexcept {
+    if (y == 0.0f) {
+        *px = y;
+        return 0;
+    }
+
     *px = _STD exp(*px) * y * _STD exp2(static_cast<float>(eoff));
     return static_cast<short>(_STD fpclassify(*px));
 }
