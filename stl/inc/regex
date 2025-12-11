@@ -1722,10 +1722,6 @@ public:
         }
 
         _Input_length = _STD distance(_Pfirst, _Plast);
-        if (_Input_length < 0) {
-            _Input_length = 0;
-        }
-
         _Frames_limit = _Calculate_frames_limit();
 
 // sanitize multiline mode setting
@@ -3410,7 +3406,6 @@ void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Pop_frame(size_t _Idx) {
     _STL_INTERNAL_CHECK(_Idx + 1 == _Frames_count);
     _Frames_count = _Idx;
 }
-
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit() {
