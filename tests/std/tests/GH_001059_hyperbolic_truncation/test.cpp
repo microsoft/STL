@@ -8,56 +8,56 @@
 
 #include <array>
 #include <cassert>
-#include <cmath>
 #include <complex>
-#include <iostream>
-#include <limits>
-
+#include <cstdio>
 using namespace std;
 
 template <class T>
-void Test(T x) {
-    const complex<T> z{x};
-    const T exp_over_2 = T{0.5} * real(exp(z));
-
-    const T cosh_expected = exp_over_2 + T{0.25} / exp_over_2;
-    const T cosh_calc     = real(cosh(z));
-    if (cosh_expected != cosh_calc) {
-        cout.precision(numeric_limits<T>::digits10 + 2);
-        cout << "x = " << x << '\n'
-             << "cosh (expected)   = " << cosh_expected << '\n'
-             << "cosh (calculated) = " << cosh_calc << endl;
-        assert(cosh_expected == cosh_calc);
-    }
-
-    const T sinh_expected = exp_over_2 - T{0.25} / exp_over_2;
-    const T sinh_calc     = real(sinh(z));
-    if (sinh_expected != sinh_calc) {
-        cout.precision(numeric_limits<T>::digits10 + 2);
-        cout << "x = " << x << '\n'
-             << "sinh (expected)   = " << sinh_expected << '\n'
-             << "sinh (calculated) = " << sinh_calc << endl;
-        assert(sinh_expected == sinh_calc);
-    }
-}
+struct TestCase {
+    T val;
+    T cosh_expected;
+    T sinh_expected;
+};
 
 template <class T>
-constexpr array<T, 3> GenerateValues() {
-    // {old crossover, difference ~ 1 ulp, difference ~ ulp/2}
-    constexpr int DIG = numeric_limits<T>::digits;
-    return {DIG * 347L / 1000L, DIG * static_cast<T>(0.347), (DIG + 1) * static_cast<T>(0.347)};
+void test(const TestCase<T>& tc) {
+    const complex<T> z{tc.val};
+
+    const T cosh_calc = real(cosh(z));
+    if (cosh_calc != tc.cosh_expected) {
+        printf("tc.val: %a (%.1000g); cosh_calc: %a (%.1000g); tc.cosh_expected: %a (%.1000g)\n", tc.val, tc.val,
+            cosh_calc, cosh_calc, tc.cosh_expected, tc.cosh_expected);
+        assert(cosh_calc == tc.cosh_expected);
+    }
+
+    const T sinh_calc = real(sinh(z));
+    if (sinh_calc != tc.sinh_expected) {
+        printf("tc.val: %a (%.1000g); sinh_calc: %a (%.1000g); tc.sinh_expected: %a (%.1000g)\n", tc.val, tc.val,
+            sinh_calc, sinh_calc, tc.sinh_expected, tc.sinh_expected);
+        assert(sinh_calc == tc.sinh_expected);
+    }
 }
 
 int main() {
-    constexpr auto fValues{GenerateValues<float>()};
-    for (const auto& x : fValues) {
-        Test<float>(x);
+    // Precise values from Wolfram Alpha, rounded to float and double.
+    constexpr array<TestCase<float>, 3> fTests{{
+        {0x1p+3f, 0x1.749eaap+10f, 0x1.749ea6p+10f},
+        {0x1.0a7efap+3f, 0x1.02a222p+11f, 0x1.02a22p+11f},
+        {0x1.15999ap+3f, 0x1.6deb38p+11f, 0x1.6deb36p+11f},
+    }};
+
+    constexpr array<TestCase<double>, 3> dTests{{
+        {0x1.2p+4, 0x1.f4f22091940bfp+24, 0x1.f4f22091940bbp+24},
+        {0x1.264189374bc6ap+4, 0x1.7250551723516p+25,
+            0x1.7250551723514p+25 /* TRANSITION, sinh_expected should be 0x1.7250551723515p+25 */},
+        {0x1.2bced916872bp+4, 0x1.05f68c44177a1p+26, 0x1.05f68c44177ap+26},
+    }};
+
+    for (const auto& tc : fTests) {
+        test(tc);
     }
 
-    constexpr auto dValues{GenerateValues<double>()};
-    for (const auto& x : dValues) {
-        Test<double>(x);
+    for (const auto& tc : dTests) {
+        test(tc);
     }
-
-    return 0;
 }
