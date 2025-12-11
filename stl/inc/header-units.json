@@ -167,8 +167,7 @@
         "xtimec.h",
         "xtr1common",
         "xtree",
-        "xutility",
-        "ymath.h"
+        "xutility"
         // "yvals.h", // internal header, provides macros that control header inclusion
         // "yvals_core.h" // internal header, provides macros that control header inclusion
     ]

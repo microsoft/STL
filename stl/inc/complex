@@ -13,7 +13,6 @@
 #include <sstream>
 #include <type_traits>
 #include <xutility>
-#include <ymath.h>
 
 #ifdef _M_CEE_PURE
 // no intrinsics for /clr:pure
@@ -56,6 +55,12 @@ struct _C_ldouble_complex {
 // complex _Val offsets
 #define _RE 0
 #define _IM 1
+
+#if defined(__LDBL_DIG__) && __LDBL_DIG__ == 18
+_EXTERN_C_UNLESS_PURE
+_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LDtest(long double*) noexcept;
+_END_EXTERN_C_UNLESS_PURE
+#endif // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) ^^^
 
 _STD_BEGIN
 // TRANSITION, workaround x86 ABI
@@ -535,7 +540,7 @@ public:
 
     static bool _Isinf(_Ty _Left) noexcept { // test for infinity
 #if defined(__LDBL_DIG__) && __LDBL_DIG__ == 18
-        return _CSTD _LDtest(&_Left) == _INFCODE;
+        return _CSTD _LDtest(&_Left) == 1; // _INFCODE
 #else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
         const auto _Uint = _Bit_cast<uint64_t>(_Left);
         return (_Uint & 0x7fffffffffffffffU) == 0x7ff0000000000000U;
@@ -544,7 +549,7 @@ public:
 
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) noexcept {
 #if defined(__LDBL_DIG__) && __LDBL_DIG__ == 18
-        return _CSTD _LDtest(&_Left) == _NANCODE;
+        return _CSTD _LDtest(&_Left) == 2; // _NANCODE
 #else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
         const auto _Uint = _Bit_cast<uint64_t>(_Left);
         return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;

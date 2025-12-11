@@ -174,7 +174,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xtr1common
     ${CMAKE_CURRENT_LIST_DIR}/inc/xtree
     ${CMAKE_CURRENT_LIST_DIR}/inc/xutility
-    ${CMAKE_CURRENT_LIST_DIR}/inc/ymath.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/yvals.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/yvals_core.h
 )
