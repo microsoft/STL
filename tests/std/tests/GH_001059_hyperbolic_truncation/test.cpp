@@ -48,8 +48,14 @@ int main() {
 
     constexpr array<TestCase<double>, 3> dTests{{
         {0x1.2p+4, 0x1.f4f22091940bfp+24, 0x1.f4f22091940bbp+24},
-        {0x1.264189374bc6ap+4, 0x1.7250551723516p+25,
-            0x1.7250551723514p+25 /* TRANSITION, sinh_expected should be 0x1.7250551723515p+25 */},
+        {
+            0x1.264189374bc6ap+4, 0x1.7250551723516p+25,
+#ifdef _M_IX86 // TRANSITION, accuracy issue
+            0x1.7250551723515p+25 // Wolfram Alpha
+#else // ^^^ no workaround / workaround vvv
+            0x1.7250551723514p+25 // observed behavior
+#endif // ^^^ workaround ^^^
+        },
         {0x1.2bced916872bp+4, 0x1.05f68c44177a1p+26, 0x1.05f68c44177ap+26},
     }};
 
