@@ -20,12 +20,7 @@ _EXTERN_C_UNLESS_PURE
 #define _INFCODE 1
 #define _NANCODE 2
 
-_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(double*, double, short) noexcept;
-
-_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(float*, float, short) noexcept;
-
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LDtest(long double*) noexcept;
-_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LExp(long double*, long double, short) noexcept;
 
 _END_EXTERN_C_UNLESS_PURE
 

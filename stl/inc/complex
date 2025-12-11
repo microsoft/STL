@@ -397,13 +397,6 @@ public:
         return static_cast<_Ty>(_Signbit(_Sign) ? -_Abs(_Magnitude) : _Abs(_Magnitude));
     }
 
-    static short _Exp(_Ty* _Pleft, _Ty _Right, short _Exponent) { // compute exp(*_Pleft) * _Right * 2 ^ _Exponent
-        double _Tmp = static_cast<double>(*_Pleft);
-        short _Ans  = _CSTD _Exp(&_Tmp, static_cast<double>(_Right), _Exponent);
-        *_Pleft     = static_cast<_Ty>(_Tmp);
-        return _Ans;
-    }
-
     static constexpr _Ty _Infv() { // return infinity
         return numeric_limits<_Ty>::infinity();
     }
@@ -534,11 +527,6 @@ public:
     static _Ty _Copysign(_Ty _Magnitude, _Ty _Sign) noexcept {
         // testing _Sign < 0 would be incorrect when _Sign is -0.0
         return _CSTD copysignl(_Magnitude, _Sign);
-    }
-
-    static short _Exp(_Ty* _Pleft, _Ty _Right, short _Exponent) noexcept {
-        // compute exp(*_Pleft) * _Right * 2 ^ _Exponent
-        return _CSTD _LExp(_Pleft, _Right, _Exponent);
     }
 
     static constexpr _Ty _Infv() noexcept { // return infinity
@@ -680,11 +668,6 @@ public:
         return _CSTD copysign(_Magnitude, _Sign);
     }
 
-    static short _Exp(_Ty* _Pleft, _Ty _Right, short _Exponent) noexcept {
-        // compute exp(*_Pleft) * _Right * 2 ^ _Exponent
-        return _CSTD _Exp(_Pleft, _Right, _Exponent);
-    }
-
     static constexpr _Ty _Infv() noexcept { // return infinity
         return numeric_limits<double>::infinity();
     }
@@ -817,11 +800,6 @@ public:
     static _Ty _Copysign(_Ty _Magnitude, _Ty _Sign) noexcept {
         // testing _Sign < 0 would be incorrect when _Sign is -0.0
         return _CSTD copysignf(_Magnitude, _Sign);
-    }
-
-    static short _Exp(_Ty* _Pleft, _Ty _Right, short _Exponent) noexcept {
-        // compute exp(*_Pleft) * _Right * 2 ^ _Exponent
-        return _CSTD _FExp(_Pleft, _Right, _Exponent);
     }
 
     static constexpr _Ty _Infv() noexcept { // return infinity
@@ -1875,10 +1853,8 @@ _NODISCARD complex<_Ty> exp(const complex<_Ty>& _Left) noexcept(_Is_unqual_fp<_T
     const _Ty _Theta   = _STD imag(_Left);
 
     if (!_Ctraits<_Ty>::_Isnan(_Log_rho) && !_Ctraits<_Ty>::_Isinf(_Log_rho)) { // real component is finite
-        _Ty _Real = _Log_rho;
-        _Ty _Imag = _Log_rho;
-        _Ctraits<_Ty>::_Exp(&_Real, _Ctraits<_Ty>::cos(_Theta), 0);
-        _Ctraits<_Ty>::_Exp(&_Imag, _Ctraits<_Ty>::sin(_Theta), 0);
+        const _Ty _Real = _Ctraits<_Ty>::exp(_Log_rho) * _Ctraits<_Ty>::cos(_Theta);
+        const _Ty _Imag = _Ctraits<_Ty>::exp(_Log_rho) * _Ctraits<_Ty>::sin(_Theta);
         return complex<_Ty>(_Real, _Imag);
     }
 
