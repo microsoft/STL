@@ -287,7 +287,6 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/xfdnorm.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xfdscale.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xferaise.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfexp.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xgetwctype.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlgamma.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlocale.cpp
