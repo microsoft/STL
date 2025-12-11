@@ -284,8 +284,6 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/xdateord.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xdtest.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xexp.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfdnorm.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfdscale.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xgetwctype.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlgamma.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlocale.cpp
