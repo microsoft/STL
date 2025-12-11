@@ -43,8 +43,6 @@ union _Dval { // pun floating type as integer array
     double _Val;
 };
 
-extern const double _Xbig;
-
 // float declarations
 union _Fval { // pun floating type as integer array
     unsigned short _Sh[8];
@@ -53,8 +51,6 @@ union _Fval { // pun floating type as integer array
 
 short _FDnorm(_Fval*) noexcept;
 short _FDscale(float*, long) noexcept;
-
-extern const float _FXbig;
 
 _END_EXTERN_C_UNLESS_PURE
 

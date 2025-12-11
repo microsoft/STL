@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // GH-1059: "Incorrect const float values in xvalues.cpp files"
-// The _Xbig constants, used to determine when the exp(-x) terms in
-// cosh and sinh can be ignored, have off-by-one and integer
+// Internal constants (used to determine when the exp(-x) terms in
+// cosh and sinh could be ignored) had off-by-one and integer
 // truncation errors.
 
 #include <array>

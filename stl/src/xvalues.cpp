@@ -13,9 +13,6 @@
 
 _EXTERN_C_UNLESS_PURE
 
-extern const double _Xbig = ((48 + _DOFF) + 2) * 0.347;
-extern const float _FXbig = ((16 + _FOFF) + 2) * 0.347f;
-
 // TRANSITION, ABI: preserved for binary compatibility
 union _Dconst { // pun float types as integer array
     unsigned short _Word[8];
