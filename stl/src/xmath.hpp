@@ -52,7 +52,6 @@ union _Fval { // pun floating type as integer array
 };
 
 short _FDnorm(_Fval*) noexcept;
-short _FDscale(float*, long) noexcept;
 
 extern const float _FXbig;
 
