@@ -705,7 +705,7 @@ public:
 
     template <class _Allocator>
     _NODISCARD containers _Extract_using_allocator(const _Allocator& _Alloc) && {
-        _Clear_guard _Guard{this};
+        _Clear_guard _Always_clear{this};
         return containers{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _STD move(_Data.keys)),
             .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _STD move(_Data.values))};
     }
