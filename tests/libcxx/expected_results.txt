@@ -266,13 +266,6 @@ std/input.output/syncstream/osyncstream/thread/several_threads.pass.cpp:1 SKIPPE
 std/depr/depr.c.headers/uchar_h.compile.pass.cpp FAIL
 std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 
-# P0429R9 <flat_map>
-
-# MSVC's STL and libc++ speculatively implement LWG-2227 (not yet resolved) in different ways
-# static_assert(!std::is_nothrow_move_constructible_v<C>) with C = std::flat_(multi)map<int, int, ThrowingMoveComp>
-std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_noexcept.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.cons/move_noexcept.pass.cpp FAIL
-
 # P0533R9 constexpr For <cmath> And <cstdlib>
 std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
@@ -799,6 +792,11 @@ std/time/time.clock/time.clock.file/to_from_sys.pass.cpp FAIL
 
 # libc++'s filesystem::path::iterator models bidirectional_iterator, which is not guaranteed by the Standard
 std/input.output/filesystems/class.path/range_concept_conformance.compile.pass.cpp FAIL
+
+# MSVC's STL and libc++ speculatively implement LWG-2227 (not yet resolved) in different ways.
+# static_assert(!std::is_nothrow_move_constructible_v<C>) with C = std::flat_(multi)map<int, int, ThrowingMoveComp>
+std/containers/container.adaptors/flat.map/flat.map.cons/move_noexcept.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.cons/move_noexcept.pass.cpp FAIL
 
 # libc++ speculatively implemented an old proposed resolution for LWG-3645.
 # This test is bogus according to the wording that was ultimately accepted for C++23.
