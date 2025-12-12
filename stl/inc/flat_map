@@ -698,7 +698,7 @@ public:
     _NODISCARD containers extract() && noexcept(
         is_nothrow_move_constructible_v<key_container_type>
         && is_nothrow_move_constructible_v<mapped_container_type>) /* strengthened */ {
-        // always clears the container (N5014 [flat.map.modifiers]/33 and [flat.multimap.overview]/4
+        // always clears the container (N5014 [flat.map.modifiers]/34 and [flat.multimap.overview]/4)
         _Clear_guard _Always_clear{this};
         return _STD move(_Data);
     }

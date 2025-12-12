@@ -349,7 +349,7 @@ public:
 
     _NODISCARD container_type extract() && noexcept(
         is_nothrow_move_constructible_v<container_type>) /* strengthened */ {
-        // always clears the container (N4950 [flat.set.modifiers]/14 and [flat.multiset.modifiers]/10)
+        // always clears the container (N5014 [flat.set.modifiers]/14 and [flat.multiset.modifiers]/10)
         _Clear_guard _Always_clear{this};
         return _STD move(_Mycont);
     }
