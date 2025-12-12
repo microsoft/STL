@@ -4,11 +4,10 @@
 #include "xmath.hpp"
 
 namespace {
-// float properties
-#define _D0 3 // little-endian, small long doubles
-#define _D1 2
-#define _D2 1
-#define _D3 0
+    constexpr int _D0 = 3; // little-endian
+    constexpr int _D1 = 2;
+    constexpr int _D2 = 1;
+    constexpr int _D3 = 0;
 
     union _Dval { // pun floating type as integer array
         unsigned short _Sh[8];
@@ -108,8 +107,8 @@ namespace {
         }
     }
 
-#define _F0 1 // little-endian
-#define _F1 0
+    constexpr int _F0 = 1; // little-endian
+    constexpr int _F1 = 0;
 
     union _Fval { // pun floating type as integer array
         unsigned short _Sh[8];

@@ -9,13 +9,8 @@
 #include <ymath.h>
 
 _EXTERN_C_UNLESS_PURE
-
-// double declarations
 extern const double _Xbig;
-
-// float declarations
 extern const float _FXbig;
-
 _END_EXTERN_C_UNLESS_PURE
 
 // raise IEEE 754 exceptions
