@@ -11,9 +11,10 @@ namespace {
     constexpr int _D3 = 0;
 
     union _Dval { // pun floating type as integer array
-        unsigned short _Sh[8];
+        unsigned short _Sh[4];
         double _Val;
     };
+    static_assert(sizeof(_Dval::_Sh) == sizeof(_Dval::_Val), "_Dval members should be the same size");
 
     short _Dnorm(_Dval* ps) noexcept { // normalize double fraction
         short xchar         = 1;
@@ -112,9 +113,10 @@ namespace {
     constexpr int _F1 = 0;
 
     union _Fval { // pun floating type as integer array
-        unsigned short _Sh[8];
+        unsigned short _Sh[2];
         float _Val;
     };
+    static_assert(sizeof(_Fval::_Sh) == sizeof(_Fval::_Val), "_Fval members should be the same size");
 
     short _FDnorm(_Fval* ps) noexcept { // normalize float fraction
         short xchar         = 1;
