@@ -39,7 +39,7 @@ namespace {
 
         if (xchar == _DMAX) {
             return (ps->_Sh[_D0] & _DFRAC) != 0 || ps->_Sh[_D1] != 0 || ps->_Sh[_D2] != 0 || ps->_Sh[_D3] != 0
-                     ? _NANCODE
+                     ? FP_NAN
                      : FP_INFINITE;
         } else if (xchar == 0 && 0 < (xchar = _Dnorm(ps))) {
             return 0;
@@ -127,7 +127,7 @@ namespace {
         short xchar   = static_cast<short>((ps->_Sh[_F0] & _FMASK) >> _FOFF);
 
         if (xchar == _FMAX) {
-            return (ps->_Sh[_F0] & _FFRAC) != 0 || ps->_Sh[_F1] != 0 ? _NANCODE : FP_INFINITE;
+            return (ps->_Sh[_F0] & _FFRAC) != 0 || ps->_Sh[_F1] != 0 ? FP_NAN : FP_INFINITE;
         } else if (xchar == 0 && 0 < (xchar = _FDnorm(ps))) {
             return 0;
         }
