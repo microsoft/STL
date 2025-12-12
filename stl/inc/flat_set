@@ -477,15 +477,8 @@ private:
     _NODISCARD bool _Is_sorted(const_iterator _It, const const_iterator _End) const {
         if constexpr (_IsUnique) {
             // sorted-unique
-            if (_It == _End) {
-                return true;
-            }
-            while (++_It != _End) {
-                if (!_Compare(*(_It - 1), *_It)) {
-                    return false;
-                }
-            }
-            return true;
+            auto _Negated = [this](const key_type& _Lhs, const key_type& _Rhs) { return !_Compare(_Lhs, _Rhs); };
+            return _STD adjacent_find(_It, _End, _Negated) == _End;
         } else {
             return _STD is_sorted(_It, _End, _Pass_comp());
         }
