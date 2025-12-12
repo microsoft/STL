@@ -9,7 +9,7 @@
 #endif
 #endif
 
-#include "xmath.hpp"
+#include <yvals.h>
 
 _EXTERN_C_UNLESS_PURE
 

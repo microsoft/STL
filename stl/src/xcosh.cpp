@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include "xmath.hpp"
+#include <cerrno>
+#include <cmath>
+#include <ymath.h>
 
 _EXTERN_C_UNLESS_PURE
 

@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <cerrno>
+#include <cmath>
 #include <xutility>
-
-#include "xmath.hpp"
+#include <ymath.h>
 
 namespace {
     double _Poly(double x, const double* tab, int n) noexcept { // compute polynomial
