@@ -34,7 +34,7 @@ _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double x, double y) noexcept 
         return x;
     case FP_INFINITE:
         return y != 0.0 ? x : DSIGN(x) ? -y : y;
-    case 0:
+    case FP_ZERO:
         return x * y;
     default: // finite
         if (y == 0.0) {
@@ -61,7 +61,7 @@ _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double x, double y) noexcept 
             x = y * (x - 0.25 / x);
         } else {
             switch (_Exp(&x, y, -1)) {
-            case 0: // report underflow
+            case FP_ZERO: // report underflow
             case FP_INFINITE: // report overflow
                 errno = ERANGE;
                 break;
@@ -89,7 +89,7 @@ _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float x, float y) noexcept {
         return x;
     case FP_INFINITE:
         return y != 0.0F ? x : FSIGN(x) ? -y : y;
-    case 0:
+    case FP_ZERO:
         return x * y;
     default: // finite
         if (y == 0.0F) {
@@ -116,7 +116,7 @@ _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float x, float y) noexcept {
             x = y * (x - 0.25F / x);
         } else {
             switch (_FExp(&x, y, -1)) {
-            case 0: // report underflow
+            case FP_ZERO: // report underflow
             case FP_INFINITE: // report overflow
                 errno = ERANGE;
                 break;

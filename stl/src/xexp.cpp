@@ -42,7 +42,7 @@ namespace {
                      ? FP_NAN
                      : FP_INFINITE;
         } else if (xchar == 0 && 0 < (xchar = _Dnorm(ps))) {
-            return 0;
+            return FP_ZERO;
         }
 
         if (0 < lexp && _DMAX - xchar <= lexp) { // overflow, return +/-INF
@@ -63,7 +63,7 @@ namespace {
                 ps->_Sh[_D1] = 0;
                 ps->_Sh[_D2] = 0;
                 ps->_Sh[_D3] = 0;
-                return 0;
+                return FP_ZERO;
             } else { // nonzero, align fraction
                 short xexp         = static_cast<short>(lexp);
                 unsigned short psx = 0;
@@ -89,7 +89,7 @@ namespace {
                     && (++ps->_Sh[_D2] & 0xffff) == 0 && (++ps->_Sh[_D1] & 0xffff) == 0) {
                     ++ps->_Sh[_D0]; // round up
                 } else if (ps->_Sh[_D0] == sign && ps->_Sh[_D1] == 0 && ps->_Sh[_D2] == 0 && ps->_Sh[_D3] == 0) {
-                    return 0;
+                    return FP_ZERO;
                 }
 
                 return FP_NORMAL;
@@ -129,7 +129,7 @@ namespace {
         if (xchar == _FMAX) {
             return (ps->_Sh[_F0] & _FFRAC) != 0 || ps->_Sh[_F1] != 0 ? FP_NAN : FP_INFINITE;
         } else if (xchar == 0 && 0 < (xchar = _FDnorm(ps))) {
-            return 0;
+            return FP_ZERO;
         }
 
         if (0 < lexp && _FMAX - xchar <= lexp) { // overflow, return +/-INF
@@ -148,7 +148,7 @@ namespace {
             if (lexp < -(16 + 1 + _FOFF) || 0 <= lexp) { // underflow, return +/-0
                 ps->_Sh[_F0] = sign;
                 ps->_Sh[_F1] = 0;
-                return 0;
+                return FP_ZERO;
             } else { // nonzero, align fraction
                 short xexp         = static_cast<short>(lexp);
                 unsigned short psx = 0;
@@ -171,7 +171,7 @@ namespace {
                 if ((0x8000 < psx || 0x8000 == psx && (ps->_Sh[_F1] & 0x0001) != 0) && (++ps->_Sh[_F1] & 0xffff) == 0) {
                     ++ps->_Sh[_F0]; // round up
                 } else if (ps->_Sh[_F0] == sign && ps->_Sh[_F1] == 0) {
-                    return 0;
+                    return FP_ZERO;
                 }
 
                 return FP_NORMAL;
@@ -195,10 +195,10 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(double* px, double y, short eof
 
     if (y == 0.0) { // zero
         *px = y;
-        return 0;
+        return FP_ZERO;
     } else if (*px < -hugexp) { // certain underflow
         *px = _Xfe_underflow(y);
-        return 0;
+        return FP_ZERO;
     } else if (hugexp < *px) { // certain overflow
         *px = _Xfe_overflow(y);
         return FP_INFINITE;
@@ -224,7 +224,7 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(double* px, double y, short eof
         const short result_code = _Dscale(px, static_cast<long>(xexp) + eoff);
 
         switch (result_code) {
-        case 0:
+        case FP_ZERO:
             *px = _Xfe_underflow(y);
             break;
         case FP_INFINITE:
@@ -254,10 +254,10 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(float* px, float y, short eoff
 
     if (y == 0.0F) { // zero
         *px = y;
-        return 0;
+        return FP_ZERO;
     } else if (*px < -hugexp) { // certain underflow
         *px = _Xfe_underflow(y);
-        return 0;
+        return FP_ZERO;
     } else if (hugexp < *px) { // certain overflow
         *px = _Xfe_overflow(y);
         return FP_INFINITE;
@@ -283,7 +283,7 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(float* px, float y, short eoff
         const short result_code = _FDscale(px, static_cast<long>(xexp) + eoff);
 
         switch (result_code) {
-        case 0:
+        case FP_ZERO:
             *px = _Xfe_underflow(y);
             break;
         case FP_INFINITE:
