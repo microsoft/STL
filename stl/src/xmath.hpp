@@ -17,9 +17,6 @@
 #define _F0 1 // little-endian
 #define _F1 0
 
-#define DSIGN(x) (reinterpret_cast<_Dval*>(&(x))->_Sh[_D0] & _DSIGN)
-#define FSIGN(x) (reinterpret_cast<_Fval*>(&(x))->_Sh[_F0] & _FSIGN)
-
 _EXTERN_C_UNLESS_PURE
 
 // double declarations

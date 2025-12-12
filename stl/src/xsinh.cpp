@@ -33,7 +33,7 @@ _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double x, double y) noexcept 
     case FP_NAN:
         return x;
     case FP_INFINITE:
-        return y != 0.0 ? x : DSIGN(x) ? -y : y;
+        return y != 0.0 ? x : _STD signbit(x) ? -y : y;
     case FP_ZERO:
         return x * y;
     default: // finite
@@ -88,7 +88,7 @@ _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float x, float y) noexcept {
     case FP_NAN:
         return x;
     case FP_INFINITE:
-        return y != 0.0F ? x : FSIGN(x) ? -y : y;
+        return y != 0.0F ? x : _STD signbit(x) ? -y : y;
     case FP_ZERO:
         return x * y;
     default: // finite
