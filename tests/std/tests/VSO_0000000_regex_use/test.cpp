@@ -902,7 +902,8 @@ void test_gh_993() {
 void test_gh_997() {
     // GH-997: <regex>: Grouping within repetition causes regex stack error
     // GH-1528: <regex>: regex_match gets caught in recursive loop until stack overflow occurs
-    g_regexTester.should_match(string(1025, 'a'), "(?:a)+");
+    g_regexTester.should_match(string(2000, 'a'), "(?:a)+");
+    g_regexTester.should_match(string(2000, 'a'), "(?:a|bc)+");
 
     {
         test_wregex rgx(&g_regexTester, LR"(^http[s]?://([^.]+\.)*example\.com/.*$)", icase);
