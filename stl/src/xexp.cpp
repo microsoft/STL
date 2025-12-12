@@ -97,6 +97,31 @@ namespace {
         }
     }
 
+    short _FDnorm(_Fval* ps) noexcept { // normalize float fraction
+        short xchar         = 1;
+        unsigned short sign = static_cast<unsigned short>(ps->_Sh[_F0] & _FSIGN);
+
+        if ((ps->_Sh[_F0] &= _FFRAC) != 0 || ps->_Sh[_F1]) { // nonzero, scale
+            if (ps->_Sh[_F0] == 0) {
+                ps->_Sh[_F0] = ps->_Sh[_F1];
+                ps->_Sh[_F1] = 0;
+                xchar -= 16;
+            }
+
+            for (; ps->_Sh[_F0] < 1 << _FOFF; --xchar) { // shift left by 1
+                ps->_Sh[_F0] = static_cast<unsigned short>(ps->_Sh[_F0] << 1 | ps->_Sh[_F1] >> 15);
+                ps->_Sh[_F1] <<= 1;
+            }
+            for (; 1 << (_FOFF + 1) <= ps->_Sh[_F0]; ++xchar) { // shift right by 1
+                ps->_Sh[_F1] = static_cast<unsigned short>(ps->_Sh[_F1] >> 1 | ps->_Sh[_F0] << 15);
+                ps->_Sh[_F0] >>= 1;
+            }
+            ps->_Sh[_F0] &= _FFRAC;
+        }
+        ps->_Sh[_F0] |= sign;
+        return xchar;
+    }
+
     short _FDscale(float* px, long lexp) noexcept { // scale *px by 2^xexp with checking
         const auto ps = reinterpret_cast<_Fval*>(px);
         short xchar   = static_cast<short>((ps->_Sh[_F0] & _FMASK) >> _FOFF);
