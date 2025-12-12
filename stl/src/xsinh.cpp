@@ -29,7 +29,7 @@ _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double x, double y) noexcept 
 
     short neg;
 
-    switch (_Dtest(&x)) { // test for special codes
+    switch (_STD fpclassify(x)) { // test for special codes
     case _NANCODE:
         return x;
     case _INFCODE:
@@ -84,7 +84,7 @@ _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float x, float y) noexcept {
 
     short neg;
 
-    switch (_FDtest(&x)) { // test for special codes
+    switch (_STD fpclassify(x)) { // test for special codes
     case _NANCODE:
         return x;
     case _INFCODE:
