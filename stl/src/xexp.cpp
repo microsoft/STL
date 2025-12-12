@@ -4,6 +4,17 @@
 #include "xmath.hpp"
 
 namespace {
+// float properties
+#define _D0 3 // little-endian, small long doubles
+#define _D1 2
+#define _D2 1
+#define _D3 0
+
+    union _Dval { // pun floating type as integer array
+        unsigned short _Sh[8];
+        double _Val;
+    };
+
     short _Dnorm(_Dval* ps) noexcept { // normalize double fraction
         short xchar         = 1;
         unsigned short sign = static_cast<unsigned short>(ps->_Sh[_D0] & _DSIGN);
@@ -96,6 +107,14 @@ namespace {
             }
         }
     }
+
+#define _F0 1 // little-endian
+#define _F1 0
+
+    union _Fval { // pun floating type as integer array
+        unsigned short _Sh[8];
+        float _Val;
+    };
 
     short _FDnorm(_Fval* ps) noexcept { // normalize float fraction
         short xchar         = 1;

@@ -8,31 +8,12 @@
 #include <limits>
 #include <ymath.h>
 
-// float properties
-#define _D0 3 // little-endian, small long doubles
-#define _D1 2
-#define _D2 1
-#define _D3 0
-
-#define _F0 1 // little-endian
-#define _F1 0
-
 _EXTERN_C_UNLESS_PURE
 
 // double declarations
-union _Dval { // pun floating type as integer array
-    unsigned short _Sh[8];
-    double _Val;
-};
-
 extern const double _Xbig;
 
 // float declarations
-union _Fval { // pun floating type as integer array
-    unsigned short _Sh[8];
-    float _Val;
-};
-
 extern const float _FXbig;
 
 _END_EXTERN_C_UNLESS_PURE
