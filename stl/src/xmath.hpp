@@ -20,10 +20,6 @@
 #define DSIGN(x) (reinterpret_cast<_Dval*>(&(x))->_Sh[_D0] & _DSIGN)
 #define FSIGN(x) (reinterpret_cast<_Fval*>(&(x))->_Sh[_F0] & _FSIGN)
 
-// macros for _Dtest return (0 => ZERO)
-#define _DENORM (-2) // C9X only
-#define _FINITE (-1)
-
 _EXTERN_C_UNLESS_PURE
 
 // double declarations
