@@ -49,6 +49,7 @@ _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double x, double y) noexcept 
         }
 
         constexpr double rteps = 0x1p-27;
+        constexpr double _Xbig = ((48 + _DOFF) + 2) * 0.347;
         if (x < rteps) {
             x *= y; // x tiny
         } else if (x < 1.0) {
@@ -103,7 +104,8 @@ _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float x, float y) noexcept {
             neg = 0;
         }
 
-        constexpr float rteps = 0x1p-12f;
+        constexpr float rteps  = 0x1p-12f;
+        constexpr float _FXbig = ((16 + _FOFF) + 2) * 0.347f;
         if (x < rteps) {
             x *= y; // x tiny
         } else if (x < 1.0F) {

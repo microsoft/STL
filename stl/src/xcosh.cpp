@@ -21,6 +21,7 @@ _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Cosh(double x, double y) noexcept 
             x = -x;
         }
 
+        constexpr double _Xbig = ((48 + _DOFF) + 2) * 0.347;
         if (x < _Xbig) { // worth adding in exp(-x)
             _Exp(&x, 1.0, -1);
             return y * (x + 0.25 / x);
@@ -55,6 +56,7 @@ _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FCosh(float x, float y) noexcept { 
             x = -x;
         }
 
+        constexpr float _FXbig = ((16 + _FOFF) + 2) * 0.347f;
         if (x < _FXbig) { // worth adding in exp(-x)
             _FExp(&x, 1.0F, -1);
             return y * (x + 0.25F / x);
