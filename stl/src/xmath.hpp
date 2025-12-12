@@ -8,12 +8,6 @@
 #include <limits>
 #include <ymath.h>
 
-// macros for _Feraise argument
-#define _FE_DIVBYZERO 0x04
-#define _FE_INVALID   0x01
-#define _FE_OVERFLOW  0x08
-#define _FE_UNDERFLOW 0x10
-
 // float properties
 #define _D0 3 // little-endian, small long doubles
 #define _D1 2
@@ -31,8 +25,6 @@
 #define _FINITE (-1)
 
 _EXTERN_C_UNLESS_PURE
-
-void __CLRCALL_PURE_OR_CDECL _Feraise(int) noexcept;
 
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Dtest(double*) noexcept;
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FDtest(float*) noexcept;

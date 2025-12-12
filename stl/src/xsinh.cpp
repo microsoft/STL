@@ -62,10 +62,10 @@ _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double x, double y) noexcept 
         } else {
             switch (_Exp(&x, y, -1)) { // report over/underflow
             case 0:
-                _Feraise(_FE_UNDERFLOW);
+                errno = ERANGE; // underflow
                 break;
             case _INFCODE:
-                _Feraise(_FE_OVERFLOW);
+                errno = ERANGE; // overflow
             }
         }
 
@@ -118,10 +118,10 @@ _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float x, float y) noexcept {
         } else {
             switch (_FExp(&x, y, -1)) { // report over/underflow
             case 0:
-                _Feraise(_FE_UNDERFLOW);
+                errno = ERANGE; // underflow
                 break;
             case _INFCODE:
-                _Feraise(_FE_OVERFLOW);
+                errno = ERANGE; // overflow
             }
         }
 

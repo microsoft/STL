@@ -27,10 +27,10 @@ _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Cosh(double x, double y) noexcept 
         }
         switch (_Exp(&x, y, -1)) { // report over/underflow
         case 0:
-            _Feraise(_FE_UNDERFLOW);
+            errno = ERANGE; // underflow
             break;
         case _INFCODE:
-            _Feraise(_FE_OVERFLOW);
+            errno = ERANGE; // overflow
         }
         return x;
     }
@@ -62,10 +62,10 @@ _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FCosh(float x, float y) noexcept { 
         }
         switch (_FExp(&x, y, -1)) { // report over/underflow
         case 0:
-            _Feraise(_FE_UNDERFLOW);
+            errno = ERANGE; // underflow
             break;
         case _INFCODE:
-            _Feraise(_FE_OVERFLOW);
+            errno = ERANGE; // overflow
         }
         return x;
     }
