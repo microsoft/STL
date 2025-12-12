@@ -52,7 +52,7 @@ namespace {
             return _INFCODE;
         } else if (-xchar < lexp) { // finite result, repack
             ps->_Sh[_D0] = static_cast<unsigned short>(ps->_Sh[_D0] & ~_DMASK | (lexp + xchar) << _DOFF);
-            return _FINITE;
+            return FP_NORMAL;
         } else { // denormalized, scale
             unsigned short sign = static_cast<unsigned short>(ps->_Sh[_D0] & _DSIGN);
 
@@ -92,7 +92,7 @@ namespace {
                     return 0;
                 }
 
-                return _FINITE;
+                return FP_NORMAL;
             }
         }
     }
@@ -139,7 +139,7 @@ namespace {
             return _INFCODE;
         } else if (-xchar < lexp) { // finite result, repack
             ps->_Sh[_F0] = static_cast<unsigned short>(ps->_Sh[_F0] & ~_FMASK | (lexp + xchar) << _FOFF);
-            return _FINITE;
+            return FP_NORMAL;
         } else { // denormalized, scale
             unsigned short sign = static_cast<unsigned short>(ps->_Sh[_F0] & _FSIGN);
 
@@ -174,7 +174,7 @@ namespace {
                     return 0;
                 }
 
-                return _FINITE;
+                return FP_NORMAL;
             }
         }
     }
