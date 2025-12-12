@@ -40,7 +40,7 @@ namespace {
         if (xchar == _DMAX) {
             return (ps->_Sh[_D0] & _DFRAC) != 0 || ps->_Sh[_D1] != 0 || ps->_Sh[_D2] != 0 || ps->_Sh[_D3] != 0
                      ? _NANCODE
-                     : _INFCODE;
+                     : FP_INFINITE;
         } else if (xchar == 0 && 0 < (xchar = _Dnorm(ps))) {
             return 0;
         }
@@ -49,7 +49,7 @@ namespace {
             constexpr double inf = _STD numeric_limits<double>::infinity();
 
             *px = ps->_Sh[_D0] & _DSIGN ? -inf : inf;
-            return _INFCODE;
+            return FP_INFINITE;
         } else if (-xchar < lexp) { // finite result, repack
             ps->_Sh[_D0] = static_cast<unsigned short>(ps->_Sh[_D0] & ~_DMASK | (lexp + xchar) << _DOFF);
             return FP_NORMAL;
@@ -127,7 +127,7 @@ namespace {
         short xchar   = static_cast<short>((ps->_Sh[_F0] & _FMASK) >> _FOFF);
 
         if (xchar == _FMAX) {
-            return (ps->_Sh[_F0] & _FFRAC) != 0 || ps->_Sh[_F1] != 0 ? _NANCODE : _INFCODE;
+            return (ps->_Sh[_F0] & _FFRAC) != 0 || ps->_Sh[_F1] != 0 ? _NANCODE : FP_INFINITE;
         } else if (xchar == 0 && 0 < (xchar = _FDnorm(ps))) {
             return 0;
         }
@@ -136,7 +136,7 @@ namespace {
             constexpr float inf = _STD numeric_limits<float>::infinity();
 
             *px = ps->_Sh[_F0] & _FSIGN ? -inf : inf;
-            return _INFCODE;
+            return FP_INFINITE;
         } else if (-xchar < lexp) { // finite result, repack
             ps->_Sh[_F0] = static_cast<unsigned short>(ps->_Sh[_F0] & ~_FMASK | (lexp + xchar) << _FOFF);
             return FP_NORMAL;
@@ -201,7 +201,7 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(double* px, double y, short eof
         return 0;
     } else if (hugexp < *px) { // certain overflow
         *px = _Xfe_overflow(y);
-        return _INFCODE;
+        return FP_INFINITE;
     } else { // xexp won't overflow
         double g   = *px * invln2;
         short xexp = static_cast<short>(g + (g < 0.0 ? -0.5 : +0.5));
@@ -227,7 +227,7 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(double* px, double y, short eof
         case 0:
             *px = _Xfe_underflow(y);
             break;
-        case _INFCODE:
+        case FP_INFINITE:
             *px = _Xfe_overflow(y);
             break;
         default:
@@ -260,7 +260,7 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(float* px, float y, short eoff
         return 0;
     } else if (hugexp < *px) { // certain overflow
         *px = _Xfe_overflow(y);
-        return _INFCODE;
+        return FP_INFINITE;
     } else { // xexp won't overflow
         float g    = *px * invln2;
         short xexp = static_cast<short>(g + (g < 0.0F ? -0.5F : +0.5F));
@@ -286,7 +286,7 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(float* px, float y, short eoff
         case 0:
             *px = _Xfe_underflow(y);
             break;
-        case _INFCODE:
+        case FP_INFINITE:
             *px = _Xfe_overflow(y);
             break;
         default:

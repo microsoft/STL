@@ -32,7 +32,7 @@ _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double x, double y) noexcept 
     switch (_STD fpclassify(x)) { // test for special codes
     case _NANCODE:
         return x;
-    case _INFCODE:
+    case FP_INFINITE:
         return y != 0.0 ? x : DSIGN(x) ? -y : y;
     case 0:
         return x * y;
@@ -62,7 +62,7 @@ _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double x, double y) noexcept 
         } else {
             switch (_Exp(&x, y, -1)) {
             case 0: // report underflow
-            case _INFCODE: // report overflow
+            case FP_INFINITE: // report overflow
                 errno = ERANGE;
                 break;
             }
@@ -87,7 +87,7 @@ _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float x, float y) noexcept {
     switch (_STD fpclassify(x)) { // test for special codes
     case _NANCODE:
         return x;
-    case _INFCODE:
+    case FP_INFINITE:
         return y != 0.0F ? x : FSIGN(x) ? -y : y;
     case 0:
         return x * y;
@@ -117,7 +117,7 @@ _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float x, float y) noexcept {
         } else {
             switch (_FExp(&x, y, -1)) {
             case 0: // report underflow
-            case _INFCODE: // report overflow
+            case FP_INFINITE: // report overflow
                 errno = ERANGE;
                 break;
             }
