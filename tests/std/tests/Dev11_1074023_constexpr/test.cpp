@@ -53,7 +53,9 @@ constexpr auto int64_max = numeric_limits<int64_t>::max();
 constexpr initializer_list<int> il;
 STATIC_ASSERT(il.size() == 0);
 STATIC_ASSERT(il.begin() == il.end());
+#if _HAS_CXX17
 STATIC_ASSERT(begin(il) == end(il));
+#endif // _HAS_CXX17
 
 // TRANSITION,
 // constexpr error_category() noexcept;
