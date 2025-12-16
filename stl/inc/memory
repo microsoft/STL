@@ -544,7 +544,7 @@ namespace ranges {
 #else // ^^^ EDG / Other vvv
             if constexpr (is_array_v<_Ty>) {
                 static_assert(sizeof...(_Types) == 0, "The array is only allowed to be value-initialized by "
-                                                      "std::ranges::construct_at. (N5014 [specialized.construct]/2)");
+                                                      "std::ranges::construct_at. (N5032 [specialized.construct]/2)");
 #if defined(__clang__) // TRANSITION, LLVM-117294
                 ::new (static_cast<void*>(_Location)) _Ty();
                 return __builtin_launder(_Location); // per old resolution of LWG-3436
