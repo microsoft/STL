@@ -1634,18 +1634,18 @@ namespace chrono {
         constexpr hh_mm_ss() noexcept : hh_mm_ss{_Duration::zero()} {}
         constexpr explicit hh_mm_ss(_Duration _Dur)
             : _Is_neg{_Dur < _Duration::zero()},
-              _Hours{_CHRONO _Duration_cast_underflow_to_zero<_CHRONO hours>(_CHRONO abs(_Dur))},
+              _Hours{_CHRONO _Duration_cast_underflow_to_zero<_CHRONO hours>(_Abs_if_needed(_Dur, _Is_neg))},
               _Mins{_CHRONO _Duration_cast_underflow_to_zero<_CHRONO minutes>(
-                  _CHRONO _Remove_duration_part<_CHRONO hours>(_CHRONO abs(_Dur)))},
+                  _CHRONO _Remove_duration_part<_CHRONO hours>(_Abs_if_needed(_Dur, _Is_neg)))},
               _Secs{_CHRONO _Duration_cast_underflow_to_zero<_CHRONO seconds>(
                   _CHRONO _Remove_duration_part<_CHRONO minutes>(
-                      _CHRONO _Remove_duration_part<_CHRONO hours>(_CHRONO abs(_Dur))))} {
+                      _CHRONO _Remove_duration_part<_CHRONO hours>(_Abs_if_needed(_Dur, _Is_neg))))} {
             if constexpr (treat_as_floating_point_v<typename precision::rep>) {
                 // no need to deal with underflow here, because floating durations allow it
-                _Sub_secs = _CHRONO abs(_Dur) - hours() - minutes() - seconds();
+                _Sub_secs = _Abs_if_needed(_Dur, _Is_neg) - hours() - minutes() - seconds();
             } else {
-                _Sub_secs =
-                    _CHRONO duration_cast<precision>(_CHRONO _Remove_duration_part<_CHRONO seconds>(_CHRONO abs(_Dur)));
+                _Sub_secs = _CHRONO duration_cast<precision>(
+                    _CHRONO _Remove_duration_part<_CHRONO seconds>(_Abs_if_needed(_Dur, _Is_neg)));
             }
         }
 
@@ -1674,6 +1674,14 @@ namespace chrono {
         }
 
     private:
+        _NODISCARD static constexpr _Duration _Abs_if_needed(_Duration _Dur, bool _Is_neg) {
+            if constexpr (is_unsigned_v<typename _Duration::rep>) {
+                return _Dur;
+            } else {
+                return _Is_neg ? -_Dur : _Dur;
+            }
+        }
+
         bool _Is_neg;
         _CHRONO hours _Hours;
         _CHRONO minutes _Mins;
@@ -2110,8 +2118,8 @@ namespace chrono {
     template <class _Ty>
     _NODISCARD const _Ty* _Locate_zone_impl(const vector<_Ty>& _Vec, string_view _Name) {
         // N5008 [time.zone.db.tzdb]/1: "Each vector in a tzdb object is sorted to enable fast lookup."
-        const auto _Result = _STD lower_bound(
-            _Vec.begin(), _Vec.end(), _Name, [](const auto& _Tz, const auto& _Sv) { return _Tz.name() < _Sv; });
+        const auto _Result = _STD lower_bound(_Vec.begin(), _Vec.end(), _Name,
+            [](const auto& _Tz, const auto& _Sv) _STATIC_CALL_OPERATOR { return _Tz.name() < _Sv; });
         if (_Result != _Vec.end() && _Result->name() == _Name) {
             return &*_Result;
         } else {
@@ -2166,7 +2174,7 @@ namespace chrono {
         return {_Info->_Version, _STD move(_Time_zones), _STD move(_Time_zone_links)};
     }
 
-    _NODISCARD inline pair<decltype(tzdb::leap_seconds), bool> _Tzdb_generate_leap_seconds(const size_t _Current_size) {
+    _NODISCARD inline pair<vector<leap_second>, bool> _Tzdb_generate_leap_seconds(const size_t _Current_size) {
         // Returns empty vector if no new leap seconds are found.
         static constexpr leap_second _Known_leap_seconds[]{
             {sys_seconds{seconds{78796800}}, true, seconds{0}},
@@ -2217,7 +2225,7 @@ namespace chrono {
         }
 
         const size_t _New_size = _Pre_2018_count + _Reg_post_2018_ls_size; // total size with registry data
-        decltype(tzdb::leap_seconds) _Leap_sec_info;
+        vector<leap_second> _Leap_sec_info;
         bool _All_ls_positive = true;
 
         if (_New_size > _Current_size) {
@@ -2460,86 +2468,88 @@ namespace chrono {
     public:
         using duration = common_type_t<_Duration, seconds>;
 
-        template <class _Traits2 = _Traits, class = void_t<decltype(_Traits2::default_zone())>>
-        zoned_time() : _Zone{_Traits::default_zone()} {}
+        zoned_time()
+            requires requires { _Traits::default_zone(); }
+            : _Zone{_Traits::default_zone()} {}
+
         zoned_time(const zoned_time&)            = default;
         zoned_time& operator=(const zoned_time&) = default;
 
-        template <class _Traits2 = _Traits, class = void_t<decltype(_Traits2::default_zone())>>
-        zoned_time(const sys_time<_Duration>& _Sys) : _Zone{_Traits::default_zone()}, _Tp{_Sys} {}
+        zoned_time(const sys_time<_Duration>& _Sys)
+            requires requires { _Traits::default_zone(); }
+            : _Zone{_Traits::default_zone()}, _Tp{_Sys} {}
 
         explicit zoned_time(_TimeZonePtr _Tz) noexcept /* strengthened */ : _Zone{_STD move(_Tz)} {}
 
-        template <class _Traits2                                                                             = _Traits,
-            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{}))>, int> = 0>
-        explicit zoned_time(string_view _Name) : _Zone{_Traits::locate_zone(_Name)} {}
+        explicit zoned_time(string_view _Name)
+            requires requires {
+                { _Traits::locate_zone(_Name) } -> convertible_to<_TimeZonePtr>;
+            }
+            : _Zone{_Traits::locate_zone(_Name)} {}
 
-        template <class _Duration2, enable_if_t<is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>, int> = 0>
+        template <class _Duration2>
+            requires is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>
         zoned_time(const zoned_time<_Duration2, _TimeZonePtr>& _Zt) noexcept /* strengthened */
             : _Zone{_Zt.get_time_zone()}, _Tp{_Zt.get_sys_time()} {}
 
         zoned_time(_TimeZonePtr _Tz, const sys_time<_Duration>& _Sys) : _Zone{_STD move(_Tz)}, _Tp{_Sys} {}
 
-        template <class _Traits2 = _Traits,
-            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
-                            const sys_time<_Duration>&>,
-                int>             = 0>
         zoned_time(string_view _Name, type_identity_t<const sys_time<_Duration>&> _Sys)
-            : zoned_time{_Traits::locate_zone(_Name), _Sys} {}
+            requires requires {
+                { _Traits::locate_zone(_Name) } -> convertible_to<_TimeZonePtr>;
+            }
+            : _Zone{_Traits::locate_zone(_Name)}, _Tp{_Sys} {}
 
-        template <class _Ptr = _TimeZonePtr,
-            enable_if_t<
-                is_convertible_v<decltype(_STD declval<_Ptr&>()->to_sys(local_time<_Duration>{})), sys_time<duration>>,
-                int> = 0>
         zoned_time(_TimeZonePtr _Tz, const local_time<_Duration>& _Local)
+            requires requires {
+                { _Tz->to_sys(_Local) } -> convertible_to<sys_time<duration>>;
+            }
             : _Zone{_STD move(_Tz)}, _Tp{_Zone->to_sys(_Local)} {}
 
-        template <class _Traits2 = _Traits,
-            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
-                            const local_time<_Duration>&>,
-                int>             = 0>
-        zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>>& _Local)
-            : zoned_time{_Traits::locate_zone(_Name), _Local} {}
+        zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>&> _Local)
+            requires requires {
+                { _Traits::locate_zone(_Name) } -> convertible_to<_TimeZonePtr>;
+                { _STD declval<_TimeZonePtr&>() -> to_sys(_Local) } -> convertible_to<sys_time<duration>>;
+            }
+            : _Zone{_Traits::locate_zone(_Name)}, _Tp{_Zone->to_sys(_Local)} {}
 
-        template <class _Ptr = _TimeZonePtr,
-            enable_if_t<
-                is_convertible_v<decltype(_STD declval<_Ptr&>()->to_sys(local_time<_Duration>{}, choose::earliest)),
-                    sys_time<duration>>,
-                int> = 0>
         zoned_time(_TimeZonePtr _Tz, const local_time<_Duration>& _Local, choose _Choose)
+            requires requires {
+                { _Tz->to_sys(_Local, _Choose) } -> convertible_to<sys_time<duration>>;
+            }
             : _Zone{_STD move(_Tz)}, _Tp{_Zone->to_sys(_Local, _Choose)} {}
 
-        template <class _Traits2 = _Traits,
-            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
-                            const local_time<_Duration>&, choose>,
-                int>             = 0>
         zoned_time(string_view _Name, type_identity_t<const local_time<_Duration>&> _Local, choose _Choose)
-            : zoned_time{_Traits::locate_zone(_Name), _Local, _Choose} {}
+            requires requires {
+                { _Traits::locate_zone(_Name) } -> convertible_to<_TimeZonePtr>;
+                { _STD declval<_TimeZonePtr&>() -> to_sys(_Local, _Choose) } -> convertible_to<sys_time<duration>>;
+            }
+            : _Zone{_Traits::locate_zone(_Name)}, _Tp{_Zone->to_sys(_Local, _Choose)} {}
 
-        template <class _Duration2, class _TimeZonePtr2,
-            enable_if_t<is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>, int> = 0>
+        template <class _Duration2, class _TimeZonePtr2>
+            requires is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>
         zoned_time(_TimeZonePtr _Tz, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt) noexcept /* strengthened */
             : _Zone{_STD move(_Tz)}, _Tp{_Zt.get_sys_time()} {}
 
-        template <class _Duration2, class _TimeZonePtr2,
-            enable_if_t<is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>, int> = 0>
+        template <class _Duration2, class _TimeZonePtr2>
+            requires is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>
         zoned_time(
             _TimeZonePtr _Tz, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt, choose) noexcept /* strengthened */
-            : zoned_time{_Tz, _Zt} {}
+            : _Zone{_STD move(_Tz)}, _Tp{_Zt.get_sys_time()} {}
 
-        template <class _Duration2, class _TimeZonePtr2, class _Traits2 = _Traits,
-            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
-                            const zoned_time<_Duration2, _TimeZonePtr2>&>,
-                int> = 0>
+        template <class _Duration2, class _TimeZonePtr2>
         zoned_time(string_view _Name, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt)
-            : zoned_time{_Traits::locate_zone(_Name), _Zt} {}
+            requires requires {
+                { _Traits::locate_zone(_Name) } -> convertible_to<_TimeZonePtr>;
+            } && is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>
+            : _Zone{_Traits::locate_zone(_Name)}, _Tp{_Zt.get_sys_time()} {}
 
-        template <class _Duration2, class _TimeZonePtr2, class _Traits2 = _Traits,
-            enable_if_t<is_constructible_v<zoned_time, decltype(_Traits2::locate_zone(string_view{})),
-                            const zoned_time<_Duration2, _TimeZonePtr2>&, choose>,
-                int> = 0>
-        zoned_time(string_view _Name, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt, choose _Choose)
-            : zoned_time{_Traits::locate_zone(_Name), _Zt, _Choose} {}
+        template <class _Duration2, class _TimeZonePtr2>
+        zoned_time(string_view _Name, const zoned_time<_Duration2, _TimeZonePtr2>& _Zt, choose)
+            requires requires {
+                { _Traits::locate_zone(_Name) } -> convertible_to<_TimeZonePtr>;
+            } && is_convertible_v<sys_time<_Duration2>, sys_time<_Duration>>
+            : _Zone{_Traits::locate_zone(_Name)}, _Tp{_Zt.get_sys_time()} {}
 
         zoned_time& operator=(const sys_time<_Duration>& _Sys) noexcept /* strengthened */ {
             _Tp = _Sys;
@@ -3085,7 +3095,7 @@ namespace chrono {
             static_assert(false, "A three-step clock time conversion is required to be unique, "
                                  "either utc-to-system or system-to-utc, but not both (N4950 [time.clock.cast.fn]/2).");
         } else {
-            _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+            static_assert(false); // unexpected strategy
         }
     }
 
@@ -5294,7 +5304,9 @@ namespace chrono {
     }
 
     _EXPORT_STD template <class _CharT, class _Traits, class _Duration>
-    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const local_time<_Duration>& _Val) {
+    basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const local_time<_Duration>& _Val)
+        requires requires { _Os << sys_time<_Duration>{_Val.time_since_epoch()}; }
+    {
         return _Os << sys_time<_Duration>{_Val.time_since_epoch()};
     }
 
@@ -5353,61 +5365,52 @@ namespace chrono {
                 if (_Spec._Type != '\0' && !_Is_valid_type<_Ty>(_Spec._Type)) {
                     _STD _Throw_format_error("Invalid type.");
                 }
-                _Check_modifier(_Spec._Type, _Spec._Modifier);
+
+                if (!_Valid_modifier(_Spec._Type, _Spec._Modifier)) {
+                    _STD _Throw_format_error("Incompatible modifier for type");
+                }
             }
 
             return _Res_iter;
         }
 
-        enum _Allowed_bit : uint8_t { _E_mod = 1, _O_mod = 2, _EO_mod = _E_mod | _O_mod };
-
-        struct _Table_entry {
-            char _Type;
-            _Allowed_bit _Allowed;
-        };
-
-        static constexpr _Table_entry _Table[] = {
-            {'c', _E_mod},
-            {'C', _E_mod},
-            {'d', _O_mod},
-            {'e', _O_mod},
-            {'H', _O_mod},
-            {'I', _O_mod},
-            {'m', _O_mod},
-            {'M', _O_mod},
-            {'S', _O_mod},
-            {'u', _O_mod},
-            {'U', _O_mod},
-            {'V', _O_mod},
-            {'w', _O_mod},
-            {'W', _O_mod},
-            {'x', _E_mod},
-            {'X', _E_mod},
-            {'y', _EO_mod},
-            {'Y', _E_mod},
-            {'z', _EO_mod},
-        };
-
-        static constexpr void _Check_modifier(const char _Type, const char _Modifier) {
+        static constexpr bool _Valid_modifier(const char _Type, const char _Modifier) {
+            // N5014 [tab:time.format.spec] lists modified commands.
             if (_Modifier == '\0') {
-                return;
+                return true;
             }
 
-            const _Allowed_bit _Mod = _Modifier == 'E' ? _E_mod : _O_mod;
+            _STL_INTERNAL_CHECK(_Modifier == 'E' || _Modifier == 'O');
 
-#ifdef _M_CEE // TRANSITION, VSO-1664341
-            constexpr auto _Get_table_entry_type = [](const _Table_entry& _Entry) { return _Entry._Type; };
-#else // ^^^ workaround / no workaround vvv
-            constexpr auto _Get_table_entry_type = &_Table_entry::_Type;
-#endif // ^^^ no workaround ^^^
+            switch (_Type) {
+            case 'c':
+            case 'C':
+            case 'x':
+            case 'X':
+            case 'Y':
+                return _Modifier == 'E';
 
-            if (auto _It = _RANGES find(_Table, _Type, _Get_table_entry_type); _It != _STD end(_Table)) {
-                if (_It->_Allowed & _Mod) {
-                    return;
-                }
+            case 'd':
+            case 'e':
+            case 'H':
+            case 'I':
+            case 'm':
+            case 'M':
+            case 'S':
+            case 'u':
+            case 'U':
+            case 'V':
+            case 'w':
+            case 'W':
+                return _Modifier == 'O';
+
+            case 'y':
+            case 'z':
+                return true;
+
+            default:
+                return false;
             }
-
-            _STD _Throw_format_error("Incompatible modifier for type");
         }
 
         template <class _Ty>
@@ -5449,7 +5452,7 @@ namespace chrono {
             } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
                 return _Type == 'z' || _Type == 'Z' || _Is_valid_type<decltype(_Ty::_Time)>(_Type);
             } else {
-                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected type
+                static_assert(false); // unexpected type
             }
         }
 
@@ -5609,7 +5612,11 @@ namespace chrono {
                 return true;
             case 'Q':
                 if constexpr (_Is_specialization_v<_Ty, duration>) {
-                    _Os << _STD abs(_Val.count());
+                    if constexpr (is_unsigned_v<typename _Ty::rep>) {
+                        _Os << _Val.count();
+                    } else {
+                        _Os << _STD abs(_Val.count());
+                    }
                 } else {
                     _STL_INTERNAL_CHECK(false);
                 }

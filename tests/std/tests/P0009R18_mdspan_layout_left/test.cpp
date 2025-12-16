@@ -293,6 +293,8 @@ constexpr void check_construction_from_other_stride_mapping() {
             layout_stride::mapping<extents<long long, 3>>>);
         static_assert(NotImplicitlyConstructibleFrom<layout_left::mapping<extents<int, 3>>,
             layout_stride::mapping<extents<int, dynamic_extent>>>);
+        static_assert(NotImplicitlyConstructibleFrom<layout_left::mapping<extents<int>>,
+            layout_stride::mapping<extents<long long>>>);
     }
 }
 

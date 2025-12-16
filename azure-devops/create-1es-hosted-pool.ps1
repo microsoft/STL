@@ -21,15 +21,18 @@ $ErrorActionPreference = 'Stop'
 $CurrentDate = Get-Date
 $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 
-$Location = 'eastus2'
-
 if ($Arch -ieq 'x64') {
+  $Location = 'eastus2'
   $VMSize = 'Standard_F32as_v6'
   $PoolSize = 64
   $ImagePublisher = 'MicrosoftWindowsServer'
   $ImageOffer = 'WindowsServer'
   $ImageSku = '2025-datacenter-azure-edition'
 } else {
+  # CPP_STL_GitHub has quota for 672 cores (21 VMs) in westcentralus, not currently used.
+  $AvailableLocations = @('eastus2', 'northeurope') # Locations where CPP_STL_GitHub has quota for 1024 cores (32 VMs).
+  $AvailableLocationIdx = 3 # Increment for each new pool, to cycle through the available locations.
+  $Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
   $VMSize = 'Standard_D32ps_v6'
   $PoolSize = 32
   $ImageId = '/SharedGalleries/WindowsServer.1P/Images/2025-datacenter-azure-edition-arm64/Versions/latest'

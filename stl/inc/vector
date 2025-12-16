@@ -2120,7 +2120,7 @@ private:
             } else if constexpr (sizeof...(_Val) == 2) {
                 _My_data._Mylast = _STD _Uninitialized_copy(_STD forward<_Valty>(_Val)..., _My_data._Myfirst, _Al);
             } else {
-                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected number of arguments
+                static_assert(false, "unexpected number of arguments");
             }
             _ASAN_VECTOR_CREATE;
             _Guard._Target = nullptr;
@@ -2862,7 +2862,7 @@ public:
     _CONSTEXPR20 ~_Vb_val() noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         this->_Orphan_all();
-        auto _Alproxy = _STD _Get_proxy_allocator(this->_Getal());
+        auto _Alproxy = _STD _Get_proxy_allocator(_Getal());
         _Delete_plain_internal(_Alproxy, _STD exchange(this->_Myproxy, nullptr));
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
@@ -3464,8 +3464,7 @@ public:
         return begin() + _Off;
     }
 
-    _CONSTEXPR20 iterator erase(const_iterator _First_arg, const_iterator _Last_arg) noexcept
-    /* strengthened */ {
+    _CONSTEXPR20 iterator erase(const_iterator _First_arg, const_iterator _Last_arg) noexcept /* strengthened */ {
         iterator _First      = _Make_iter(_First_arg);
         iterator _Last       = _Make_iter(_Last_arg);
         difference_type _Off = _First - begin();

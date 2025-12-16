@@ -20,6 +20,9 @@
 
 #include <timezone_data.hpp>
 
+// Extended to test LWG-4257 "Stream insertion for chrono::local_time should be constrained"
+// Extended to test GH-5945 "<chrono>: cannot format unsigned durations"
+
 using namespace std;
 using namespace chrono;
 
@@ -283,6 +286,11 @@ void test_duration_formatter() {
     assert(format(STR("{:%T %j}"), -days{4} - 23h - 30min) == STR("-119:30:00 4"));
     assert(format(STR("{:%T %j}"), duration<float, days::period>{1.55f}) == STR("37:11:59 1"));
     assert(format(STR("{:%T %j}"), duration<float, days::period>{-1.55f}) == STR("-37:11:59 1"));
+
+    // GH-5945 "<chrono>: cannot format unsigned durations"
+    assert(format(STR("{:%T %j %q %Q}"), duration<unsigned long long, days::period>{4} + 30min)
+           == STR("96:30:00 4 min 5790"));
+    assert(format(STR("{:%T %j}"), duration<unsigned long long, days::period>{4} + 23h + 30min) == STR("119:30:00 4"));
 
     // GH-4247: <chrono>: format() should accept %X and %EX for duration and hh_mm_ss
     assert(format(STR("{:%X}"), 9h + 7min + 5s) == STR("09:07:05"));
@@ -1061,7 +1069,71 @@ void test_locale() {
     assert(stream(year_month_weekday_last{2021y / May / Tuesday[last]}) == STR("2021/Mai/Di[last]"));
 }
 
+void test_unsigned_sys_time_format_after_LWG_4274() {
+    const sys_time<duration<unsigned int>> tp{};
+    const string s = format("{:%Y-%m-%d %H:%M:%S}", tp);
+    assert(s == "1970-01-01 00:00:00");
+}
+
+template <typename T>
+concept ostream_insertable = requires(ostream& o, const T& t) { o << t; };
+
+template <typename Dur>
+void check_stream_insertion_operator_for_duration() {
+    if constexpr (ostream_insertable<sys_time<Dur>>) {
+        ostringstream oss;
+        oss << sys_time<Dur>{};
+        assert(oss.str() == "1970-01-01 00:00:00");
+    }
+
+    if constexpr (ostream_insertable<local_time<Dur>>) {
+        ostringstream oss;
+        oss << local_time<Dur>{};
+        assert(oss.str() == "1970-01-01 00:00:00");
+    }
+}
+
+// Test based on example in LWG-4257
+void check_stream_insertion_operator() {
+    // operator<< is constrained such that it does not participate when underlying duration has floating-point rep
+    using ok_dur  = duration<long long>;
+    using bad_dur = duration<double>;
+
+    static_assert(ostream_insertable<sys_time<ok_dur>>);
+    static_assert(ostream_insertable<local_time<ok_dur>>);
+    check_stream_insertion_operator_for_duration<ok_dur>();
+
+    static_assert(!ostream_insertable<sys_time<bad_dur>>);
+    static_assert(!ostream_insertable<local_time<bad_dur>>);
+    check_stream_insertion_operator_for_duration<bad_dur>();
+}
+
+// Test introduced for GH-5945 "<chrono>: cannot format unsigned durations"
+void test_format_duration_with_unsigned_rep() {
+    // operator<<(ostream&, duration _Dur) only prints _Dur.count() (does not use abs)
+    {
+        ostringstream oss;
+        oss << duration<unsigned long, nano>{3};
+        assert(oss.str() == "3ns");
+    }
+    {
+        ostringstream oss;
+        oss << duration<long, nano>{-3};
+        assert(oss.str() == "-3ns");
+    }
+
+    // format calls abs under the hood when needed, this would be rejected before fix.
+    assert(format("{}", duration<long, nano>{-3}) == "-3ns");
+    assert(format("{}", duration<unsigned long, nano>{3}) == "3ns");
+    assert(format("{:%Q}", duration<unsigned long, nano>{3}) == "3");
+}
+
 void test() {
+    test_unsigned_sys_time_format_after_LWG_4274();
+    test_format_duration_with_unsigned_rep();
+
+    check_stream_insertion_operator();
+
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
 

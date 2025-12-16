@@ -6,40 +6,10 @@
 #
 #===----------------------------------------------------------------------===##
 
-from contextlib import contextmanager
-from pathlib import Path
-import os
 import platform
 import signal
 import subprocess
-import sys
-import tempfile
 import threading
-
-
-@contextmanager
-def guardedTempFilename(suffix='', prefix='', dir=None):
-    # Creates and yields a temporary filename within a with statement. The file
-    # is removed upon scope exit.
-    handle, name = tempfile.mkstemp(suffix=suffix, prefix=prefix, dir=dir)
-    os.close(handle)
-    yield name
-    Path(name).unlink(True)
-
-
-@contextmanager
-def guardedFilename(name):
-    # Yields a filename within a with statement. The file is removed upon scope
-    # exit.
-    yield name
-    Path(name).unlink(True)
-
-
-@contextmanager
-def nullContext(value):
-    # Yields a variable within a with statement. No action is taken upon scope
-    # exit.
-    yield value
 
 
 def makeReport(cmd, out, err, rc):
@@ -155,25 +125,14 @@ def killProcessAndChildren(pid):
     using the psutil module which provides a simple platform
     neutral implementation.
     """
-    if platform.system() == 'AIX':
-        subprocess.call('kill -kill $(ps -o pid= -L{})'.format(pid),
-                        shell=True)
-    else:
-        import psutil
-        try:
-            psutilProc = psutil.Process(pid)
-            # Handle the different psutil API versions
+    import psutil
+    try:
+        psutilProc = psutil.Process(pid)
+        for child in psutilProc.children(recursive=True):
             try:
-                # psutil >= 2.x
-                children_iterator = psutilProc.children(recursive=True)
-            except AttributeError:
-                # psutil 1.x
-                children_iterator = psutilProc.get_children(recursive=True)
-            for child in children_iterator:
-                try:
-                    child.kill()
-                except psutil.NoSuchProcess:
-                    pass
-            psutilProc.kill()
-        except psutil.NoSuchProcess:
-            pass
+                child.kill()
+            except psutil.NoSuchProcess:
+                pass
+        psutilProc.kill()
+    except psutil.NoSuchProcess:
+        pass

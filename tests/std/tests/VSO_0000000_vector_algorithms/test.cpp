@@ -26,9 +26,9 @@
 #include <ranges>
 #endif // _HAS_CXX20
 
-#include "test_is_sorted_until_support.hpp"
-#include "test_min_max_element_support.hpp"
-#include "test_vector_algorithms_support.hpp"
+#include <test_is_sorted_until_support.hpp>
+#include <test_min_max_element_support.hpp>
+#include <test_vector_algorithms_support.hpp>
 
 using namespace std;
 

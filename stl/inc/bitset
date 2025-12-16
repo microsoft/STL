@@ -18,6 +18,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 #ifndef _STD_BITSET_TO_STREAM_STACK_RESERVATION
 #define _STD_BITSET_TO_STREAM_STACK_RESERVATION 128
 #endif // !defined(_STD_BITSET_TO_STREAM_STACK_RESERVATION)
@@ -72,8 +78,8 @@ struct _Buffer_for_bitset<_Elem, _Bits, false> {
     _Elem _Buf[(_Bits != 0) ? _Bits : 1];
 };
 
-_EXPORT_STD template <size_t _Bits>
-class bitset { // store fixed-length sequence of Boolean elements
+_EXPORT_STD template <size_t _Bits> // store fixed-length sequence of Boolean elements
+class _NO_SPECIALIZATIONS_CITING("N5014 [namespace.std]/2.1") bitset {
 private:
 #pragma warning(push)
 #pragma warning(disable : 4296) // expression is always true (/Wall)
@@ -237,7 +243,9 @@ public:
         _Construct<_Traits>(_Str.data() + _Pos, _Count, _Elem0, _Elem1);
     }
 
-    template <class _Elem>
+    template <class _Elem, enable_if_t<conjunction_v<negation<is_array<_Elem>>, is_trivially_copyable<_Elem>,
+                                           is_standard_layout<_Elem>, is_trivially_default_constructible<_Elem>>,
+                               int> = 0>
     _CONSTEXPR23 explicit bitset(const _Elem* _Ntcts,
         typename basic_string<_Elem>::size_type _Count = basic_string<_Elem>::npos,
         _Elem _Elem0 = static_cast<_Elem>('0'), _Elem _Elem1 = static_cast<_Elem>('1')) {
@@ -684,6 +692,10 @@ struct hash<bitset<_Bits>> {
     }
 };
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
