@@ -243,7 +243,7 @@ namespace {
 
         locked_data.uninitialize();
     }
-} // namespace
+} // unnamed namespace
 
 extern "C" {
 #pragma optimize("", off) // inhibit tail call optimization to have consistent _Frames_to_skip adjustment here

@@ -51,7 +51,7 @@ _Ty* _Remove_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) n
     } else if constexpr (sizeof(_Ty) == 8) {
         return reinterpret_cast<_Ty*>(::__std_remove_8(_First, _Last, _STD _Find_arg_cast<uint64_t>(_Val)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 _STD_END

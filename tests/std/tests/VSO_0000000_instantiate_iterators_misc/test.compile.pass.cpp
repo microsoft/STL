@@ -19,7 +19,6 @@
 #define _SILENCE_CXX20_U8PATH_DEPRECATION_WARNING
 #define _SILENCE_CXX20_VOLATILE_DEPRECATION_WARNING
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
-#define _USE_NAMED_IDL_NAMESPACE 1
 
 #include <algorithm>
 #include <array>
@@ -104,7 +103,7 @@
 #include <thread>
 #endif // _M_CEE_PURE
 
-#include "experimental_filesystem.hpp"
+#include <experimental_filesystem.hpp>
 #include <instantiate_containers_iterators_common.hpp>
 
 

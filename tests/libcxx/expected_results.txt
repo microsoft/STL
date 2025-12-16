@@ -168,6 +168,9 @@ std/language.support/support.limits/support.limits.general/format.version.compil
 # libc++ doesn't implement LWG-2584 (LLVM-99976)
 std/re/re.regex/re.regex.construct/bad_escape.pass.cpp FAIL
 
+# libc++ doesn't implement LWG-3187
+std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_piecewise_pair_evil.pass.cpp FAIL
+
 # libc++ doesn't implement LWG-3670
 std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass.cpp FAIL
 
@@ -626,11 +629,6 @@ std/thread/futures/futures.task/futures.task.members/make_ready_at_thread_exit.p
 # LWG-3120 Unclear behavior of monotonic_buffer_resource::release()
 std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/release_reset_initial_status.pass.cpp FAIL
 
-# LWG-3343 "Ordering of calls to unlock() and notify_all() in Effects element of notify_all_at_thread_exit() should be reversed" (Open)
-# libc++ speculatively implements LWG-3343. If we wanted to do the same thing,
-# we'd need to reverse the order of the _Mtx_unlock() and _Cnd_broadcast() calls in xnotify.cpp.
-std/thread/thread.condition/notify_all_at_thread_exit_lwg3343.pass.cpp SKIPPED
-
 
 # *** C1XX COMPILER BUGS ***
 # DevCom-1436243 VSO-1335743 constexpr new initialized array
@@ -1003,6 +1001,9 @@ std/containers/sequences/vector/trivial_relocation.pass.cpp:1 FAIL
 # Not analyzed, likely bogus test. constexpr fails with "vector iterators incompatible".
 std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.default.pass.cpp FAIL
 
+# Test uses std::to_string() without including <string>.
+std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not analyzed, likely STL bugs. Various assertions.
@@ -1206,9 +1207,6 @@ std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp FAIL
 # Not analyzed, possible path length issue. With a repo root of D:\GitHub\STL (13 characters), fails with:
 # "error RC2136 : missing '=' in EXSTYLE=<flags>" followed by "LINK : fatal error LNK1327: failure during running rc.exe"
 std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_until_deadlock_bug.pass.cpp SKIPPED
-
-# Not analyzed, possible bug in uses_allocator_construction_args
-std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_piecewise_pair_evil.pass.cpp FAIL
 
 # Not analyzed, failing due to constexpr step limits.
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:2 FAIL

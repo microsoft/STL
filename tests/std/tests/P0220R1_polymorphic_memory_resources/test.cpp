@@ -22,8 +22,10 @@
 #include <set>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 constexpr auto size_max = std::numeric_limits<std::size_t>::max();
@@ -131,14 +133,25 @@ namespace {
     template <class T>
     using placement_ptr = std::unique_ptr<T, placement_delete>;
 
+    template <class T>
+    constexpr bool is_lvalue_reference_to_const = false;
+    template <class T>
+    constexpr bool is_lvalue_reference_to_const<const T&> = true;
+
     template <class Alloc, bool NeedsAllocatorArgT>
     struct uses_allocator_thing : private Alloc {
         using allocator_type = Alloc;
 
         int i_ = 0;
 
-        // Such overload set is used for testing LWG-4312.
+        // Such overload set is used for testing LWG-3187 and LWG-4312.
         uses_allocator_thing(std::allocator_arg_t&&, Alloc const& a, int i = 0) : Alloc(a), i_{i} {}
+        template <class T,
+            std::enable_if_t<is_lvalue_reference_to_const<T> && std::is_convertible_v<T, Alloc>, int> = 0>
+        uses_allocator_thing(std::allocator_arg_t&&, T&& a, int i = 0) : Alloc(std::forward<T>(a)), i_{i} {}
+        template <class T,
+            std::enable_if_t<!is_lvalue_reference_to_const<T> || !std::is_convertible_v<T, Alloc>, int> = 0>
+        uses_allocator_thing(std::allocator_arg_t&&, T&&, int = 0)               = delete;
         uses_allocator_thing(std::allocator_arg_t&, Alloc const&, int = 0)       = delete;
         uses_allocator_thing(const std::allocator_arg_t&, Alloc const&, int = 0) = delete;
 
