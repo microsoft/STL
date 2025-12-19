@@ -9,10 +9,10 @@
 #include "shared_test.hpp"
 
 void test_optional() {
-#if 0 // TRANSITION, _HAS_CXX26, depends on fixing GH-4772
+#ifdef __cpp_lib_optional_range_support
     std::optional<int> container{1};
     shared_test(container);
-#endif // _HAS_CXX26
+#endif // defined(__cpp_lib_optional_range_support)
 }
 
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
