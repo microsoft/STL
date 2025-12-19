@@ -369,14 +369,15 @@ public:
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(
         const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont, const _Allocator& _Alloc)
-        : _Flat_map_base(_Sorted_t{}, _Key_cont, _Mapped_cont, _Alloc) {
-        _Sort_and_erase_dupes_if_not_multi();
-    }
+        : _Flat_map_base(_Key_cont, _Mapped_cont, key_compare(), _Alloc) {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
         const key_compare& _Comp, const _Allocator& _Alloc)
-        : _Flat_map_base(_Sorted_t{}, _Key_cont, _Mapped_cont, _Comp, _Alloc) {
+        : _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Key_cont),
+              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)},
+          _Key_compare(_Comp) {
+        _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
         _Sort_and_erase_dupes_if_not_multi();
     }
 
@@ -384,16 +385,13 @@ public:
         const key_compare& _Comp = key_compare())
         : _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)}, _Key_compare(_Comp) {
         _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
+        _STL_ASSERT(_Is_sorted(_Data.keys), _Msg_not_sorted);
     }
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
-    _Flat_map_base(_Sorted_t, const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
+    _Flat_map_base(_Sorted_t _Tag, const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
         const _Allocator& _Alloc)
-        : _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Key_cont),
-              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)},
-          _Key_compare(key_compare()) {
-        _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
-    }
+        : _Flat_map_base(_Tag, _Key_cont, _Mapped_cont, key_compare(), _Alloc) {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(_Sorted_t, const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
@@ -402,6 +400,7 @@ public:
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)},
           _Key_compare(_Comp) {
         _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
+        _STL_ASSERT(_Is_sorted(_Data.keys), _Msg_not_sorted);
     }
 
     template <_Iterator_for_container _InputIterator>
@@ -1080,6 +1079,10 @@ private:
             auto _Sorted_new_elements = _Sorted_view;
             _Sorted_new_elements.advance(_Old_distance);
             _RANGES sort(_Sorted_new_elements, value_compare{_Key_compare});
+        } else {
+            [[maybe_unused]] auto const _New_elements_begin =
+                _Data.keys.begin() + static_cast<key_container_type::difference_type>(_Old_distance);
+            _STL_ASSERT(_Is_sorted(_New_elements_begin, _Data.keys.end()), _Msg_not_sorted);
         }
 
         // Merge the newly inserted elements with the existing elements
