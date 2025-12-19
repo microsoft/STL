@@ -8,10 +8,8 @@ void test_deque();
 void test_flat_map();
 void test_flat_set();
 void test_forward_list();
-#if 0 // TRANSITION, _HAS_CXX26
 void test_hive();
 void test_inplace_vector();
-#endif // _HAS_CXX26
 void test_list();
 void test_map();
 void test_optional();
@@ -32,10 +30,8 @@ int main() {
     test_flat_map();
     test_flat_set();
     test_forward_list();
-#if 0 // TRANSITION, _HAS_CXX26
     test_hive();
     test_inplace_vector();
-#endif // _HAS_CXX26
     test_list();
     test_map();
     test_optional();
