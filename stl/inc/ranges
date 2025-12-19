@@ -1577,7 +1577,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_As_rvalue) {
                     return as_rvalue_view(_STD forward<_Rng>(_Range));
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -2134,7 +2134,7 @@ namespace ranges {
                     } else if constexpr (_Strat == _St::_Reconstruct_subrange) {
                         return subrange(_First, _First + _Count);
                     } else {
-                        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                        static_assert(false); // unexpected strategy
                     }
                 }
             }
@@ -2540,7 +2540,7 @@ namespace ranges {
                     } else if constexpr (_Strat == _St::_Reconstruct_other) {
                         return remove_cvref_t<_Rng>(_RANGES begin(_Range) + _Count, _RANGES end(_Range));
                     } else {
-                        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                        static_assert(false); // unexpected strategy
                     }
                 }
             }
@@ -3054,8 +3054,7 @@ namespace ranges {
 #endif // _HAS_CXX23
 
     namespace views {
-        class _Join_fn : public _Pipe::_Base<_Join_fn> {
-        public:
+        struct _Join_fn : public _Pipe::_Base<_Join_fn> {
             template <viewable_range _Rng>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
                 noexcept(noexcept(join_view<views::all_t<_Rng>>{_STD forward<_Rng>(_Range)}))
@@ -3326,7 +3325,7 @@ namespace ranges {
 
             _NODISCARD constexpr decltype(auto) operator*() const {
                 using _Ref = common_reference_t<iter_reference_t<_InnerIter>, iter_reference_t<_PatternIter>>;
-                return _Visit_inner_it<_Ref>([](auto&& _It) _STATIC_LAMBDA -> _Ref { return *_It; });
+                return _Visit_inner_it<_Ref>([](auto&& _It) _STATIC_CALL_OPERATOR -> _Ref { return *_It; });
             }
 
             constexpr _Iterator& operator++() {
@@ -4402,7 +4401,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Common) {
                     return common_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -4561,7 +4560,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Reverse) {
                     return reverse_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -4703,7 +4702,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_As_const) {
                     return as_const_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -5117,8 +5116,7 @@ namespace ranges {
 
     namespace views {
         template <size_t _Index>
-        class _Elements_fn : public _Pipe::_Base<_Elements_fn<_Index>> {
-        public:
+        struct _Elements_fn : public _Pipe::_Base<_Elements_fn<_Index>> {
             template <viewable_range _Rng>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
                 noexcept(noexcept(elements_view<views::all_t<_Rng>, _Index>{_STD forward<_Rng>(_Range)}))
@@ -5459,8 +5457,7 @@ namespace ranges {
     constexpr auto _Compile_time_max_size<const enumerate_view<_Rng>> = _Compile_time_max_size<const _Rng>;
 
     namespace views {
-        class _Enumerate_fn : public _Pipe::_Base<_Enumerate_fn> {
-        public:
+        struct _Enumerate_fn : public _Pipe::_Base<_Enumerate_fn> {
             template <viewable_range _Rng>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
                 noexcept(noexcept(enumerate_view<views::all_t<_Rng>>{_STD forward<_Rng>(_Range)}))
@@ -6957,7 +6954,7 @@ namespace ranges {
         };
 
     public:
-        constexpr explicit stride_view(_Vw _Range_, range_difference_t<_Vw> _Stride_)
+        constexpr explicit stride_view(_Vw _Range_, const range_difference_t<_Vw> _Stride_)
             noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
             : _Range(_STD move(_Range_)), _Stride(_Stride_) {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -7223,13 +7220,14 @@ namespace ranges {
                 noexcept((noexcept(*(_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>&>()))
                           && ...)) /* strengthened */ {
                 return _Tuple_transform(
-                    [](auto& _Itr) _STATIC_LAMBDA noexcept(noexcept(*_Itr)) -> decltype(auto) { return *_Itr; },
+                    [](auto& _Itr) _STATIC_CALL_OPERATOR noexcept(noexcept(*_Itr)) -> decltype(auto) { return *_Itr; },
                     _Current);
             }
 
-            constexpr _Iterator& operator++() noexcept(noexcept(_Tuple_for_each(
-                [](auto& _Itr) _STATIC_LAMBDA noexcept(noexcept(++_Itr)) { ++_Itr; }, _Current))) /* strengthened */ {
-                _Tuple_for_each([](auto& _Itr) _STATIC_LAMBDA noexcept(noexcept(++_Itr)) { ++_Itr; }, _Current);
+            constexpr _Iterator& operator++() noexcept(
+                noexcept(_Tuple_for_each([](auto& _Itr) _STATIC_CALL_OPERATOR noexcept(noexcept(++_Itr)) { ++_Itr; },
+                    _Current))) /* strengthened */ {
+                _Tuple_for_each([](auto& _Itr) _STATIC_CALL_OPERATOR noexcept(noexcept(++_Itr)) { ++_Itr; }, _Current);
                 return *this;
             }
 
@@ -7248,10 +7246,10 @@ namespace ranges {
             }
 
             constexpr _Iterator& operator--() noexcept(noexcept(_Tuple_for_each(
-                [](auto& _Itr) _STATIC_LAMBDA noexcept(noexcept(--_Itr)) { --_Itr; }, _Current))) // strengthened
+                [](auto& _Itr) _STATIC_CALL_OPERATOR noexcept(noexcept(--_Itr)) { --_Itr; }, _Current))) // strengthened
                 requires _All_bidirectional<_IsConst, _ViewTypes...>
             {
-                _Tuple_for_each([](auto& _Itr) _STATIC_LAMBDA noexcept(noexcept(--_Itr)) { --_Itr; }, _Current);
+                _Tuple_for_each([](auto& _Itr) _STATIC_CALL_OPERATOR noexcept(noexcept(--_Itr)) { --_Itr; }, _Current);
                 return *this;
             }
 
@@ -7472,7 +7470,7 @@ namespace ranges {
             }
         }
 
-        static constexpr auto _Size_closure = [](auto... _Sizes) _STATIC_LAMBDA noexcept {
+        static constexpr auto _Size_closure = [](auto... _Sizes) _STATIC_CALL_OPERATOR noexcept {
             using _Common_unsigned_type = _Make_unsigned_like_t<common_type_t<decltype(_Sizes)...>>;
             return (_RANGES min) ({static_cast<_Common_unsigned_type>(_Sizes)...});
         };
@@ -7556,7 +7554,7 @@ namespace ranges {
     constexpr auto _Compile_time_max_size<const zip_view<_Rngs...>> = _Zip_view_compile_time_max_size<const _Rngs...>();
 
     namespace views {
-        struct _Zip_fn {
+        class _Zip_fn {
         private:
             template <class... _Types>
             _NODISCARD static consteval bool _Is_invocation_noexcept() {
@@ -7902,7 +7900,7 @@ namespace ranges {
         _Compile_time_max_size<const zip_view<_Rngs...>>;
 
     namespace views {
-        struct _Zip_transform_fn {
+        class _Zip_transform_fn {
         private:
             template <class _Func, class... _Types>
             _NODISCARD static consteval bool _Is_invocation_noexcept() {
@@ -8062,7 +8060,7 @@ namespace ranges {
 
             _NODISCARD constexpr auto operator*() const {
                 return _RANGES _Tuple_transform(
-                    [](auto& _It) _STATIC_LAMBDA -> decltype(auto) { return *_It; }, _Current);
+                    [](auto& _It) _STATIC_CALL_OPERATOR -> decltype(auto) { return *_It; }, _Current);
             }
 
             constexpr _Iterator& operator++() noexcept(noexcept(++_Current.front())) /* strengthened */ {
@@ -8368,8 +8366,7 @@ namespace ranges {
 
     namespace views {
         template <size_t _Nx>
-        class _Adjacent_fn : public _Pipe::_Base<_Adjacent_fn<_Nx>> {
-        public:
+        struct _Adjacent_fn : public _Pipe::_Base<_Adjacent_fn<_Nx>> {
             template <viewable_range _Rng>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
                 noexcept(noexcept(adjacent_view<views::all_t<_Rng>, _Nx>{_STD forward<_Rng>(_Range)}))
@@ -8711,8 +8708,7 @@ namespace ranges {
 
     namespace views {
         template <size_t _Nx>
-        class _Adjacent_transform_fn {
-        public:
+        struct _Adjacent_transform_fn {
             template <viewable_range _Rng, class _Fn>
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&&, _Fn&& _Func) _CONST_CALL_OPERATOR
                 noexcept(noexcept(views::zip_transform(_STD forward<_Fn>(_Func))))
@@ -8989,7 +8985,7 @@ namespace ranges {
 
             _NODISCARD constexpr auto operator*() const {
                 return _RANGES _Tuple_transform(
-                    [](auto& _It) _STATIC_LAMBDA -> decltype(auto) { return *_It; }, _Current);
+                    [](auto& _It) _STATIC_CALL_OPERATOR -> decltype(auto) { return *_It; }, _Current);
             }
 
             constexpr _Iterator& operator++() {
@@ -9253,8 +9249,7 @@ namespace ranges {
         _Cartesian_product_view_compile_time_max_size<const _Rngs...>();
 
     namespace views {
-        class _Cartesian_product_fn {
-        public:
+        struct _Cartesian_product_fn {
             _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()() _CONST_CALL_OPERATOR noexcept {
                 return views::single(tuple{});
             }

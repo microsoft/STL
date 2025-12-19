@@ -96,7 +96,7 @@ namespace {
             }
         }
     }
-} // namespace
+} // unnamed namespace
 
 _EXTERN_C_UNLESS_PURE
 

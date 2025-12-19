@@ -39,7 +39,7 @@ struct layout_packed_upper { // LAPACK packed storage, VERY INCOMPLETE
     };
 };
 
-int main() {
+void test() {
     constexpr int32_t dim        = 47'000; // sqrt(2^32) > dim > sqrt(2^31), dim assumed even below
     constexpr auto expected_size = [] {
         int32_t unused;
@@ -74,6 +74,4 @@ int main() {
         static_assert(m.size() == expected_size);
         static_assert(m.mapping().required_span_size() == expected_req_size);
     }
-
-    return 0;
 }
