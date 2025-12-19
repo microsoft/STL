@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <version>
-#if defined(__cpp_lib_hive)
+#if defined(__cpp_lib_hive) && _HAS_CXX26
 
 #include <hive>
 
@@ -13,8 +13,8 @@ void test_hive() {
     shared_test(container);
 }
 
-#else // ^^^ defined(__cpp_lib_hive) / !defined(__cpp_lib_hive) vvv
+#else // ^^^ defined(__cpp_lib_hive) && _HAS_CXX26 / feature not available vvv
 
 void test_hive() {}
 
-#endif // !defined(__cpp_lib_hive)
+#endif // feature not available
