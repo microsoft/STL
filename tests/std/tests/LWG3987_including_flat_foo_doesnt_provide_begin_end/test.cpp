@@ -8,6 +8,7 @@ void test_flat_set();
 void test_forward_list();
 void test_hive();
 void test_inplace_vector();
+void test_iterator();
 void test_list();
 void test_map();
 void test_optional();
@@ -30,6 +31,7 @@ int main() {
     test_forward_list();
     test_hive();
     test_inplace_vector();
+    test_iterator();
     test_list();
     test_map();
     test_optional();
