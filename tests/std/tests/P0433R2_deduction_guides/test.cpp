@@ -37,10 +37,6 @@
 #include <valarray>
 #include <vector>
 
-#if _HAS_CXX23 && !defined(__clang__) // TRANSITION, DevCom-10107077, Clang has not implemented Deducing this
-#define HAS_EXPLICIT_THIS_PARAMETER
-#endif // _HAS_CXX23 && !defined(__clang__)
-
 using namespace std;
 
 template <typename T>
@@ -327,7 +323,7 @@ void test_function_wrapper() {
     static_assert(is_same_v<decltype(f9), F<double(const double&, const double&)>>);
     static_assert(is_same_v<decltype(f10), F<int(int, int)>>);
 
-#ifdef HAS_EXPLICIT_THIS_PARAMETER
+#if _HAS_CXX23
     struct ExplicitThisByVal {
         void operator()(this ExplicitThisByVal, char) {}
     };
@@ -409,7 +405,7 @@ void test_function_wrapper() {
     static_assert(is_same_v<decltype(f25), F<float(double)>>);
     static_assert(is_same_v<decltype(f26), F<float(double)>>);
     static_assert(is_same_v<decltype(f27), F<float(double)>>);
-#endif // HAS_EXPLICIT_THIS_PARAMETER
+#endif // _HAS_CXX23
 }
 
 void test_searchers() {

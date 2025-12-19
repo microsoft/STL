@@ -11,12 +11,14 @@
 #include <tuple>
 #include <typeinfo>
 #include <xmemory>
+
 #if _HAS_CXX17
 #ifdef _LEGACY_CODE_ASSUMES_FUNCTIONAL_INCLUDES_MEMORY
 #include <memory>
 #endif // defined(_LEGACY_CODE_ASSUMES_FUNCTIONAL_INCLUDES_MEMORY)
 #include <unordered_map>
 #endif // _HAS_CXX17
+
 #if _HAS_CXX20
 #include <compare>
 #endif // _HAS_CXX20
@@ -1689,15 +1691,37 @@ public:
             _STL_INTERNAL_STATIC_ASSERT(alignof(max_align_t) == alignof(void*));
             // 64-bit target, can put small function into small move_only_function directly
             _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small, _Vt, void>();
-            _Old_fn_impl->_Move(_Data._Buf_ptr<void*>());
-            _Func._Tidy();
+            if constexpr (is_lvalue_reference_v<_Fn>) {
+                _Old_fn_impl->_Copy(_Data._Buf_ptr<void*>());
+            } else {
+                _Old_fn_impl->_Move(_Data._Buf_ptr<void*>());
+                _Func._Tidy();
+            }
 #else // ^^^ 64-bit / 32-bit vvv
             _STL_INTERNAL_STATIC_ASSERT(alignof(max_align_t) > alignof(void*));
             // 32-bit target, cannot put small function into small move_only_function directly
             // due to potentially not enough alignment. Allocate large function
             void* _Where = ::operator new((_Small_object_num_ptrs - 1) * sizeof(void*));
-            _Old_fn_impl->_Move(_Where);
-            _Func._Tidy();
+            if constexpr (is_lvalue_reference_v<_Fn>) {
+                struct _NODISCARD _Guard_type {
+                    void* _Ptr;
+
+                    ~_Guard_type() {
+                        // _Ptr is not nullptr only if an exception is thrown as a result of _Copy.
+                        // Check _Ptr before calling operator delete to save the call in the common case.
+                        if (_Ptr) {
+                            ::operator delete(_Ptr);
+                        }
+                    }
+                };
+
+                _Guard_type _Guard{_Where};
+                _Old_fn_impl->_Copy(_Where);
+                _Guard._Ptr = nullptr;
+            } else {
+                _Old_fn_impl->_Move(_Where);
+                _Func._Tidy();
+            }
 
             _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small_as_large, _Vt, void>();
             _Data._Set_large_fn_ptr(_Where);
@@ -1705,8 +1729,12 @@ public:
         } else {
             // Just take ownership of the inner impl pointer
             _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_large, _Vt, void>();
-            _Data._Set_large_fn_ptr(_Old_fn_impl);
-            _Func._Set(nullptr);
+            if constexpr (is_lvalue_reference_v<_Fn>) {
+                _Data._Set_large_fn_ptr(_Old_fn_impl->_Copy(nullptr));
+            } else {
+                _Data._Set_large_fn_ptr(_Old_fn_impl);
+                _Func._Set(nullptr);
+            }
         }
     }
 
@@ -2879,7 +2907,7 @@ public:
             } else if constexpr (_Del == _Deletion_kind::_Normal_array) {
                 delete[] _Ptr;
             } else {
-                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                static_assert(false); // unexpected strategy
             }
         }
     }

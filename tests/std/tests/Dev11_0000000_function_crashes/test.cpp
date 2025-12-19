@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <functional>
+
 #ifndef _M_CEE_PURE
 #include <future>
 #endif
+
 using namespace std;
 
 int global = 0;

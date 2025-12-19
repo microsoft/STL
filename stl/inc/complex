@@ -191,18 +191,13 @@ namespace _Float_multi_prec {
         const double _Prod0 = _Xval * _Xval;
 
 #if defined(_FMP_USING_X86_X64_INTRINSICS)
-
-#ifdef __AVX2__
-        return {_Prod0, _Sqr_error_x86_x64_fma(_Xval, _Prod0)};
-#else // ^^^ defined(__AVX2__) / !defined(__AVX2__) vvv
+#ifndef __AVX2__
         const bool _Definitely_have_fma = __isa_available >= _Stl_isa_available_avx2;
-        if (_Definitely_have_fma) {
-            return {_Prod0, _Sqr_error_x86_x64_fma(_Xval, _Prod0)};
-        } else {
+        if (!_Definitely_have_fma) {
             return {_Prod0, _Sqr_error_fallback(_Xval, _Prod0)};
         }
 #endif // ^^^ !defined(__AVX2__) ^^^
-
+        return {_Prod0, _Sqr_error_x86_x64_fma(_Xval, _Prod0)};
 #elif defined(_FMP_USING_STD_FMA)
         return {_Prod0, _Sqr_error_std_fma(_Xval, _Prod0)};
 #else // ^^^ defined(_FMP_USING_STD_FMA) / not using intrinsics vvv

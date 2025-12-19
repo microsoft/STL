@@ -147,7 +147,7 @@ private:
         _STL_INTERNAL_STATIC_ASSERT(is_convertible_v<const _OtherIndexType&, index_type>
                                     && is_nothrow_constructible_v<index_type, const _OtherIndexType&>);
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (_Is_standard_integer<_OtherIndexType> && _Rank_dynamic != 0) {
+        if constexpr (_Is_standard_integer<remove_cv_t<_OtherIndexType>> && _Rank_dynamic != 0) {
             _STL_VERIFY(((_Dynamic_exts[_Indices] >= 0 && _STD in_range<index_type>(_Dynamic_exts[_Indices])) && ...),
                 "exts[r] must be representable as a nonnegative value of type index_type for every rank index r "
                 "(N4950 [mdspan.extents.cons]/10.2)");
@@ -162,7 +162,7 @@ private:
         _STL_INTERNAL_STATIC_ASSERT(is_convertible_v<const _OtherIndexType&, index_type>
                                     && is_nothrow_constructible_v<index_type, const _OtherIndexType&>);
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (_Is_standard_integer<_OtherIndexType>) {
+        if constexpr (_Is_standard_integer<remove_cv_t<_OtherIndexType>>) {
             for (rank_type _Idx = 0; _Idx < _Rank; ++_Idx) {
                 _STL_VERIFY(
                     _Static_extents[_Idx] == dynamic_extent || _STD cmp_equal(_Static_extents[_Idx], _Mixed_exts[_Idx]),
