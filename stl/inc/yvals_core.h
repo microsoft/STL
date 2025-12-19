@@ -292,6 +292,7 @@
 // P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
 // P2372R3 Fixing Locale Handling In chrono Formatters
 // P2393R1 Cleaning Up Integer-Class Types
+// P2404R3 Move-Only Types For Comparison Concepts
 // P2408R5 Ranges Iterators As Inputs To Non-Ranges Algorithms
 // P2415R2 What Is A view?
 // P2418R2 Add Support For std::generator-like Types To std::format
@@ -365,7 +366,6 @@
 // P2322R6 ranges::fold_left, ranges::fold_right, Etc.
 // P2374R4 views::cartesian_product
 // P2387R3 Pipe Support For User-Defined Range Adaptors
-// P2404R3 Move-Only Types For Comparison Concepts
 // P2417R2 More constexpr bitset
 // P2438R2 string::substr() &&
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
@@ -922,7 +922,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 145
-#define _MSVC_STL_UPDATE  202511L
+#define _MSVC_STL_UPDATE  202512L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1681,6 +1681,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_bounded_array_traits            201902L
 #define __cpp_lib_common_reference                202302L
 #define __cpp_lib_common_reference_wrapper        202302L
+#define __cpp_lib_concepts                        202207L
 #define __cpp_lib_constexpr_algorithms            201806L
 #define __cpp_lib_constexpr_complex               201711L
 #define __cpp_lib_constexpr_dynamic_alloc         201907L
@@ -1816,12 +1817,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
 #else
 #define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
-#endif
-
-#if _HAS_CXX23
-#define __cpp_lib_concepts 202207L // P2404R3 Move-Only Types For Comparison Concepts
-#elif _HAS_CXX20
-#define __cpp_lib_concepts 202002L // P1964R2 Replacing boolean With boolean-testable
 #endif
 
 #if _HAS_CXX23

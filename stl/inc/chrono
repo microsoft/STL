@@ -5612,7 +5612,11 @@ namespace chrono {
                 return true;
             case 'Q':
                 if constexpr (_Is_specialization_v<_Ty, duration>) {
-                    _Os << _STD abs(_Val.count());
+                    if constexpr (is_unsigned_v<typename _Ty::rep>) {
+                        _Os << _Val.count();
+                    } else {
+                        _Os << _STD abs(_Val.count());
+                    }
                 } else {
                     _STL_INTERNAL_CHECK(false);
                 }

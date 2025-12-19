@@ -1312,8 +1312,16 @@ protected:
         char _Buf[2 * _Max_int_dig];
         char _Fmt[6];
 
-        return _Iput(_Dest, _Iosbase, _Fill, _Buf,
-            static_cast<size_t>(_CSTD sprintf_s(_Buf, sizeof(_Buf), _Ifmt(_Fmt, "ld", _Iosbase.flags()), _Val)));
+        (void) _Ifmt(_Fmt, "ld", _Iosbase.flags());
+
+        const int _Count = _CSTD sprintf_s(_Buf, sizeof(_Buf), _Fmt, _Val);
+
+        if (_Count < 0) { // It should be impossible for sprintf_s() to fail here.
+            _STL_INTERNAL_CHECK(false); // In STL tests, report an error.
+            return _Dest; // In production, return early to avoid static_cast<size_t> of a negative _Count.
+        }
+
+        return _Iput(_Dest, _Iosbase, _Fill, _Buf, static_cast<size_t>(_Count));
     }
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base& _Iosbase, _Elem _Fill,
@@ -1321,8 +1329,16 @@ protected:
         char _Buf[2 * _Max_int_dig];
         char _Fmt[6];
 
-        return _Iput(_Dest, _Iosbase, _Fill, _Buf,
-            static_cast<size_t>(_CSTD sprintf_s(_Buf, sizeof(_Buf), _Ifmt(_Fmt, "lu", _Iosbase.flags()), _Val)));
+        (void) _Ifmt(_Fmt, "lu", _Iosbase.flags());
+
+        const int _Count = _CSTD sprintf_s(_Buf, sizeof(_Buf), _Fmt, _Val);
+
+        if (_Count < 0) { // It should be impossible for sprintf_s() to fail here.
+            _STL_INTERNAL_CHECK(false); // In STL tests, report an error.
+            return _Dest; // In production, return early to avoid static_cast<size_t> of a negative _Count.
+        }
+
+        return _Iput(_Dest, _Iosbase, _Fill, _Buf, static_cast<size_t>(_Count));
     }
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(
@@ -1330,8 +1346,16 @@ protected:
         char _Buf[2 * _Max_int_dig];
         char _Fmt[8];
 
-        return _Iput(_Dest, _Iosbase, _Fill, _Buf,
-            static_cast<size_t>(_CSTD sprintf_s(_Buf, sizeof(_Buf), _Ifmt(_Fmt, "Ld", _Iosbase.flags()), _Val)));
+        (void) _Ifmt(_Fmt, "Ld", _Iosbase.flags());
+
+        const int _Count = _CSTD sprintf_s(_Buf, sizeof(_Buf), _Fmt, _Val);
+
+        if (_Count < 0) { // It should be impossible for sprintf_s() to fail here.
+            _STL_INTERNAL_CHECK(false); // In STL tests, report an error.
+            return _Dest; // In production, return early to avoid static_cast<size_t> of a negative _Count.
+        }
+
+        return _Iput(_Dest, _Iosbase, _Fill, _Buf, static_cast<size_t>(_Count));
     }
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base& _Iosbase, _Elem _Fill,
@@ -1339,8 +1363,16 @@ protected:
         char _Buf[2 * _Max_int_dig];
         char _Fmt[8];
 
-        return _Iput(_Dest, _Iosbase, _Fill, _Buf,
-            static_cast<size_t>(_CSTD sprintf_s(_Buf, sizeof(_Buf), _Ifmt(_Fmt, "Lu", _Iosbase.flags()), _Val)));
+        (void) _Ifmt(_Fmt, "Lu", _Iosbase.flags());
+
+        const int _Count = _CSTD sprintf_s(_Buf, sizeof(_Buf), _Fmt, _Val);
+
+        if (_Count < 0) { // It should be impossible for sprintf_s() to fail here.
+            _STL_INTERNAL_CHECK(false); // In STL tests, report an error.
+            return _Dest; // In production, return early to avoid static_cast<size_t> of a negative _Count.
+        }
+
+        return _Iput(_Dest, _Iosbase, _Fill, _Buf, static_cast<size_t>(_Count));
     }
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(
@@ -1364,10 +1396,17 @@ protected:
         const bool _Is_finite      = (_STD isfinite) (_Val);
         const auto _Adjusted_flags = // TRANSITION, DevCom-10519861
             _Is_finite ? _Iosbase.flags() : _Iosbase.flags() & ~ios_base::showpoint;
-        const auto _Ngen = static_cast<size_t>(_CSTD sprintf_s(
-            &_Buf[0], _Buf.size(), _Ffmt(_Fmt, 0, _Adjusted_flags), static_cast<int>(_Precision), _Val));
 
-        return _Fput_v3(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen, _Is_finite);
+        (void) _Ffmt(_Fmt, 0, _Adjusted_flags);
+
+        const int _Count = _CSTD sprintf_s(&_Buf[0], _Buf.size(), _Fmt, static_cast<int>(_Precision), _Val);
+
+        if (_Count < 0) { // It should be impossible for sprintf_s() to fail here.
+            _STL_INTERNAL_CHECK(false); // In STL tests, report an error.
+            return _Dest; // In production, return early to avoid static_cast<size_t> of a negative _Count.
+        }
+
+        return _Fput_v3(_Dest, _Iosbase, _Fill, _Buf.c_str(), static_cast<size_t>(_Count), _Is_finite);
     }
 
     virtual _OutIt __CLR_OR_THIS_CALL do_put(
@@ -1391,10 +1430,17 @@ protected:
         const bool _Is_finite      = (_STD isfinite) (_Val);
         const auto _Adjusted_flags = // TRANSITION, DevCom-10519861
             _Is_finite ? _Iosbase.flags() : _Iosbase.flags() & ~ios_base::showpoint;
-        const auto _Ngen = static_cast<size_t>(_CSTD sprintf_s(
-            &_Buf[0], _Buf.size(), _Ffmt(_Fmt, 'L', _Adjusted_flags), static_cast<int>(_Precision), _Val));
 
-        return _Fput_v3(_Dest, _Iosbase, _Fill, _Buf.c_str(), _Ngen, _Is_finite);
+        (void) _Ffmt(_Fmt, 'L', _Adjusted_flags);
+
+        const int _Count = _CSTD sprintf_s(&_Buf[0], _Buf.size(), _Fmt, static_cast<int>(_Precision), _Val);
+
+        if (_Count < 0) { // It should be impossible for sprintf_s() to fail here.
+            _STL_INTERNAL_CHECK(false); // In STL tests, report an error.
+            return _Dest; // In production, return early to avoid static_cast<size_t> of a negative _Count.
+        }
+
+        return _Fput_v3(_Dest, _Iosbase, _Fill, _Buf.c_str(), static_cast<size_t>(_Count), _Is_finite);
     }
 #pragma warning(pop)
 
@@ -1402,13 +1448,20 @@ protected:
         _OutIt _Dest, ios_base& _Iosbase, _Elem _Fill, const void* _Val) const { // put formatted void pointer to _Dest
         char _Buf[2 * _Max_int_dig];
 
-        return _Iput(
-            _Dest, _Iosbase, _Fill, _Buf, static_cast<size_t>(_CSTD sprintf_s(_Buf, sizeof(_Buf), "%p", _Val)));
+        const int _Count = _CSTD sprintf_s(_Buf, sizeof(_Buf), "%p", _Val);
+
+        if (_Count < 0) { // It should be impossible for sprintf_s() to fail here.
+            _STL_INTERNAL_CHECK(false); // In STL tests, report an error.
+            return _Dest; // In production, return early to avoid static_cast<size_t> of a negative _Count.
+        }
+
+        return _Iput(_Dest, _Iosbase, _Fill, _Buf, static_cast<size_t>(_Count));
     }
 
 private:
-    char* __CLRCALL_OR_CDECL _Ffmt(
-        char* _Fmt, char _Spec, ios_base::fmtflags _Flags) const { // generate sprintf format for floating-point
+    // TRANSITION, ABI: This always returns _Fmt, which is now ignored.
+    char* __CLRCALL_OR_CDECL _Ffmt(char* _Fmt, char _Spec, ios_base::fmtflags _Flags) const {
+        // generate sprintf format for floating-point
         char* _Ptr = _Fmt;
         *_Ptr++    = '%';
 
@@ -1530,8 +1583,9 @@ private:
         return _Rep(_Dest, _Fill, _Fillcount); // put trailing fill
     }
 
-    char* __CLRCALL_OR_CDECL _Ifmt(
-        char* _Fmt, const char* _Spec, ios_base::fmtflags _Flags) const { // generate sprintf format for integer
+    // TRANSITION, ABI: This always returns _Fmt, which is now ignored.
+    char* __CLRCALL_OR_CDECL _Ifmt(char* _Fmt, const char* _Spec, ios_base::fmtflags _Flags) const {
+        // generate sprintf format for integer
         char* _Ptr = _Fmt;
         *_Ptr++    = '%';
 
