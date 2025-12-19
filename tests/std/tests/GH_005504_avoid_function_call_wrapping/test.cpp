@@ -104,6 +104,14 @@ void test_wrapped_call(const int expected_copies) {
     assert(outer(copy_counter{}) == expected_copies);
 }
 
+template <class OuterWrapper, class InnerWrapper, class Callable>
+void test_wrapped_copy_call(const int expected_copies) {
+    InnerWrapper inner{Callable{}};
+    OuterWrapper outer{inner};
+    assert(inner);
+    assert(outer(copy_counter{}) == expected_copies);
+}
+
 template <class Wrapper>
 void check_call_null(Wrapper& wrapper, const bool throws) {
     if (throws) {
@@ -143,17 +151,21 @@ int main() {
     // Moves to the same
     alloc_checker{0}, test_wrapped_call<function<fn_type>, function<fn_type>, small_callable>(0);
     alloc_checker{1}, test_wrapped_call<function<fn_type>, function<fn_type>, large_callable>(0);
+    alloc_checker{0}, test_wrapped_copy_call<function<fn_type>, function<fn_type>, small_callable>(0);
+    alloc_checker{2}, test_wrapped_copy_call<function<fn_type>, function<fn_type>, large_callable>(0);
     alloc_checker{0}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>, small_callable>(0);
     alloc_checker{1}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>, large_callable>(0);
 
+    constexpr bool is_64_bit = sizeof(void*) > 4;
+
     // Moves from function to move_only_function
-#ifdef _WIN64
-    alloc_checker{0},
-#else
-    alloc_checker{1},
-#endif
+    alloc_checker{is_64_bit ? 0 : 1},
         test_wrapped_call<move_only_function<fn_type>, function<fn_type>, small_callable>(0);
     alloc_checker{1}, test_wrapped_call<move_only_function<fn_type>, function<fn_type>, large_callable>(0);
+
+    alloc_checker{is_64_bit ? 0 : 1},
+        test_wrapped_copy_call<move_only_function<fn_type>, function<fn_type>, small_callable>(0);
+    alloc_checker{2}, test_wrapped_copy_call<move_only_function<fn_type>, function<fn_type>, large_callable>(0);
 
     // nulls
     alloc_checker{0}, test_plain_null<function<fn_type>>(true);

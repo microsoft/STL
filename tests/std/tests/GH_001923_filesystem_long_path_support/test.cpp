@@ -11,7 +11,7 @@
 #include <Windows.h>
 #pragma warning(pop)
 
-#include "test_filesystem_support.hpp"
+#include <test_filesystem_support.hpp>
 
 using namespace std;
 
