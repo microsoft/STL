@@ -244,9 +244,9 @@ protected:
                 reinterpret_cast<const _Elem*>(_Maklocwcs(reinterpret_cast<const wchar_t*>(_Lobj._W_Getmonths())));
             _Ampm = reinterpret_cast<const _Elem*>(_Maklocwcs(L":AM:am:PM:pm"));
         } else {
-            _Days   = _Maklocstr(_Lobj._Getdays(), static_cast<_Elem*>(nullptr), _Cvt);
-            _Months = _Maklocstr(_Lobj._Getmonths(), static_cast<_Elem*>(nullptr), _Cvt);
-            _Ampm   = _Maklocstr(":AM:am:PM:pm", static_cast<_Elem*>(nullptr), _Cvt);
+            _Days   = _Maklocstr<_Elem>(_Lobj._Getdays(), _Cvt);
+            _Months = _Maklocstr<_Elem>(_Lobj._Getmonths(), _Cvt);
+            _Ampm   = _Maklocstr<_Elem>(":AM:am:PM:pm", _Cvt);
         }
     }
 

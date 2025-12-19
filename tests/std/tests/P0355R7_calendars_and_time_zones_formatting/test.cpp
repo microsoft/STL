@@ -21,6 +21,7 @@
 #include <timezone_data.hpp>
 
 // Extended to test LWG-4257 "Stream insertion for chrono::local_time should be constrained"
+// Extended to test GH-5945 "<chrono>: cannot format unsigned durations"
 
 using namespace std;
 using namespace chrono;
@@ -285,6 +286,11 @@ void test_duration_formatter() {
     assert(format(STR("{:%T %j}"), -days{4} - 23h - 30min) == STR("-119:30:00 4"));
     assert(format(STR("{:%T %j}"), duration<float, days::period>{1.55f}) == STR("37:11:59 1"));
     assert(format(STR("{:%T %j}"), duration<float, days::period>{-1.55f}) == STR("-37:11:59 1"));
+
+    // GH-5945 "<chrono>: cannot format unsigned durations"
+    assert(format(STR("{:%T %j %q %Q}"), duration<unsigned long long, days::period>{4} + 30min)
+           == STR("96:30:00 4 min 5790"));
+    assert(format(STR("{:%T %j}"), duration<unsigned long long, days::period>{4} + 23h + 30min) == STR("119:30:00 4"));
 
     // GH-4247: <chrono>: format() should accept %X and %EX for duration and hh_mm_ss
     assert(format(STR("{:%X}"), 9h + 7min + 5s) == STR("09:07:05"));
@@ -1102,8 +1108,29 @@ void check_stream_insertion_operator() {
     check_stream_insertion_operator_for_duration<bad_dur>();
 }
 
+// Test introduced for GH-5945 "<chrono>: cannot format unsigned durations"
+void test_format_duration_with_unsigned_rep() {
+    // operator<<(ostream&, duration _Dur) only prints _Dur.count() (does not use abs)
+    {
+        ostringstream oss;
+        oss << duration<unsigned long, nano>{3};
+        assert(oss.str() == "3ns");
+    }
+    {
+        ostringstream oss;
+        oss << duration<long, nano>{-3};
+        assert(oss.str() == "-3ns");
+    }
+
+    // format calls abs under the hood when needed, this would be rejected before fix.
+    assert(format("{}", duration<long, nano>{-3}) == "-3ns");
+    assert(format("{}", duration<unsigned long, nano>{3}) == "3ns");
+    assert(format("{:%Q}", duration<unsigned long, nano>{3}) == "3");
+}
+
 void test() {
     test_unsigned_sys_time_format_after_LWG_4274();
+    test_format_duration_with_unsigned_rep();
 
     check_stream_insertion_operator();
 
