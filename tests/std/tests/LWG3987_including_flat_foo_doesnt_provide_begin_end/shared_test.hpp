@@ -7,6 +7,9 @@
 
 namespace detail {
 
+    // file test_iterator.cpp uses a non-std container and thus we can't rely on ADL to find begin/end etc.
+    using namespace std;
+
     // Define minimal metaprogramming tools, avoid including anything
 
 #define DEFINE_CONDITIONAL_CALLER_OF(member_name)                                                      \
@@ -20,7 +23,7 @@ namespace detail {
     template <typename T>                                                                              \
     struct conditional_caller_of_##member_name<T, decltype(static_cast<T*>(nullptr)->member_name())> { \
         void operator()(T& t) {                                                                        \
-            t.member_name();                                                                           \
+            (void) member_name(t);                                                                     \
         }                                                                                              \
     };
 
@@ -53,8 +56,6 @@ namespace detail {
     }
 
     inline void test_free_array_functions() {
-        using namespace std;
-
         int a[]{1, 2, 3};
 
         (void) begin(a);
