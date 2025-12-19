@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <version>
-#if __has_include(<inplace_vector>)
+#if defined(__cpp_lib_inplace_vector)
 
 #include <inplace_vector>
 
@@ -13,8 +13,8 @@ void test_inplace_vector() {
     shared_test(container);
 }
 
-#else // ^^^ __has_include(<inplace_vector>) / !__has_include(<inplace_vector>) vvv
+#else // ^^^ defined(__cpp_lib_inplace_vector) / ! defined(__cpp_lib_inplace_vector) vvv
 
 void test_inplace_vector() {}
 
-#endif // !__has_include(<inplace_vector>)
+#endif // ! defined(__cpp_lib_inplace_vector)

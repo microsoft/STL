@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <version>
-#ifdef __cpp_lib_flat_set
+#if defined(__cpp_lib_flat_set)
 
 #include <flat_set>
 
