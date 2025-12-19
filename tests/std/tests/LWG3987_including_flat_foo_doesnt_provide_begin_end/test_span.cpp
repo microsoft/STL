@@ -3,6 +3,7 @@
 
 #include <version>
 #if _HAS_CXX20
+
 #include <span>
 
 #include "shared_test.hpp"

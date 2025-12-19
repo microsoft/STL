@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <version>
-#if defined(__cpp_lib_optional_range_support) && _HAS_CXX17
+#if defined(__cpp_lib_optional_range_support)
 
 #include <optional>
 
@@ -13,7 +13,7 @@ void test_optional() {
     shared_test(container);
 }
 
-#else // ^^^ defined(__cpp_lib_optional_range_support) && _HAS_CXX17 / feature not available vvv
+#else // ^^^ defined(__cpp_lib_optional_range_support) / feature not available vvv
 
 void test_optional() {}
 

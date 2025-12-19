@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <version>
-#if defined(__cpp_lib_flat_set ) && _HAS_CXX23
+#if defined(__cpp_lib_flat_set )
 
 #include <flat_set>
 
@@ -16,7 +16,7 @@ void test_flat_set() {
     shared_test(container2);
 }
 
-#else // ^^^ defined(__cpp_lib_flat_set) && _HAS_CXX23 / feature not available vvv
+#else // ^^^ defined(__cpp_lib_flat_set) / feature not available vvv
 
 void test_flat_set() {}
 
