@@ -51,15 +51,6 @@ std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cp
 std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:1 FAIL
 
-# LLVM-140448: [libc++][test] flat_set std test uses EmplaceUnsafeContainer which is non-standard
-std/containers/container.adaptors/flat.set/flat.set.modifiers/emplace_hint.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/emplace.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_cv.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_cv.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_rv.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_rv.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_transparent.pass.cpp FAIL
-
 # LLVM-158302: Clang 20 i686-pc-windows-msvc regression, silent bad codegen for std::current_exception()
 # SKIPPED because this is x86-specific.
 std/language.support/support.exception/except.nested/assign.pass.cpp:2 SKIPPED
@@ -435,6 +426,8 @@ std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_iter.p
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_iter.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_transparent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_transparent.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.set/flat.set.observers/comp.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.set/flat.set.observers/comp.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.set/flat.set.operations/contains_transparent.pass.cpp:0 FAIL
