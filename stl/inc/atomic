@@ -941,7 +941,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
         if constexpr (_Might_have_non_value_bits<_TVal>) {
             _Storage_for<_TVal> _Mask{_Form_mask};
-            const long _Mask_val = _STD _Atomic_reinterpret_as<long>(_Mask);
+            const long _Mask_val = _STD _Atomic_reinterpret_as<long>(_Mask._Ref());
 
             for (;;) {
                 _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange,
@@ -1077,7 +1077,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
         if constexpr (_Might_have_non_value_bits<_TVal>) {
             _Storage_for<_TVal> _Mask{_Form_mask};
-            const long long _Mask_val = _STD _Atomic_reinterpret_as<long long>(_Mask);
+            const long long _Mask_val = _STD _Atomic_reinterpret_as<long long>(_Mask._Ref());
 
             for (;;) {
                 _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange64,
