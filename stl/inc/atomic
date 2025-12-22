@@ -718,8 +718,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
 
             for (;;) {
                 _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange8,
-                    _STD _Atomic_address_as<char>(_Storage), _STD _Bit_cast<char>(_Desired),
-                    _Expected_bytes);
+                    _STD _Atomic_address_as<char>(_Storage), _STD _Bit_cast<char>(_Desired), _Expected_bytes);
                 if (_Prev_bytes == _Expected_bytes) {
                     return true;
                 }
@@ -824,8 +823,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
 
             for (;;) {
                 _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange16,
-                    _STD _Atomic_address_as<short>(_Storage), _STD _Bit_cast<short>(_Desired),
-                    _Expected_bytes);
+                    _STD _Atomic_address_as<short>(_Storage), _STD _Bit_cast<short>(_Desired), _Expected_bytes);
                 if (_Prev_bytes == _Expected_bytes) {
                     return true;
                 }
@@ -930,8 +928,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
 
             for (;;) {
                 _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange,
-                    _STD _Atomic_address_as<long>(_Storage), _STD _Bit_cast<long>(_Desired),
-                    _Expected_bytes);
+                    _STD _Atomic_address_as<long>(_Storage), _STD _Bit_cast<long>(_Desired), _Expected_bytes);
                 if (_Prev_bytes == _Expected_bytes) {
                     return true;
                 }
@@ -1066,8 +1063,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
             for (;;) {
                 _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange64,
-                    _STD _Atomic_address_as<long long>(_Storage), _STD _Bit_cast<long long>(_Desired),
-                    _Expected_bytes);
+                    _STD _Atomic_address_as<long long>(_Storage), _STD _Bit_cast<long long>(_Desired), _Expected_bytes);
                 if (_Prev_bytes == _Expected_bytes) {
                     return true;
                 }
@@ -1081,8 +1077,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         }
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange64,
-            _STD _Atomic_address_as<long long>(_Storage), _STD _Bit_cast<long long>(_Desired),
-            _Expected_bytes);
+            _STD _Atomic_address_as<long long>(_Storage), _STD _Bit_cast<long long>(_Desired), _Expected_bytes);
         if (_Prev_bytes == _Expected_bytes) {
             return true;
         }
