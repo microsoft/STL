@@ -4562,15 +4562,6 @@ namespace ranges {
 } // namespace ranges
 #endif // _HAS_CXX20
 
-// TRANSITION, DevCom-10606350: help the compiler auto-vectorize for simple types
-template <class _UOutIt, class _InTy, class _NewTy, class _OutTy = remove_pointer_t<_UOutIt>>
-constexpr bool _Can_vectorize_replace_copy = conjunction_v<is_pointer<_UOutIt>, is_same<_InTy, _NewTy>,
-    disjunction<
-#ifdef __cpp_lib_byte
-        conjunction<is_same<_InTy, byte>, is_same<_OutTy, byte>>,
-#endif // defined(__cpp_lib_byte)
-        conjunction<is_integral<_InTy>, is_integral<_OutTy>>, conjunction<is_pointer<_InTy>, is_pointer<_OutTy>>>>;
-
 _EXPORT_STD template <class _InIt, class _OutIt, class _Ty>
 _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Oldval, const _Ty& _Newval) {
     // copy replacing each matching _Oldval with _Newval
@@ -4580,14 +4571,10 @@ _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const 
     const auto _ULast = _STD _Get_unwrapped(_Last);
     auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
     for (; _UFirst != _ULast; ++_UFirst, (void) ++_UDest) {
-        if constexpr (_Can_vectorize_replace_copy<decltype(_UDest), _Iter_value_t<_InIt>, _Ty>) {
-            *_UDest = *_UFirst == _Oldval ? _Newval : *_UFirst;
+        if (*_UFirst == _Oldval) {
+            *_UDest = _Newval;
         } else {
-            if (*_UFirst == _Oldval) {
-                *_UDest = _Newval;
-            } else {
-                *_UDest = *_UFirst;
-            }
+            *_UDest = *_UFirst;
         }
     }
 
@@ -4661,14 +4648,10 @@ namespace ranges {
             _STD _Verify_ranges_do_not_overlap(_First, _Last, _Output);
 
             for (; _First != _Last; ++_First, (void) ++_Output) {
-                if constexpr (_Can_vectorize_replace_copy<_Out, iter_value_t<_It>, _Ty2>) {
-                    *_Output = _STD invoke(_Proj, *_First) == _Oldval ? _Newval : *_First;
+                if (_STD invoke(_Proj, *_First) == _Oldval) {
+                    *_Output = _Newval;
                 } else {
-                    if (_STD invoke(_Proj, *_First) == _Oldval) {
-                        *_Output = _Newval;
-                    } else {
-                        *_Output = *_First;
-                    }
+                    *_Output = *_First;
                 }
             }
 
@@ -4689,14 +4672,10 @@ _CONSTEXPR20 _OutIt replace_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr
     const auto _ULast = _STD _Get_unwrapped(_Last);
     auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
     for (; _UFirst != _ULast; ++_UFirst, (void) ++_UDest) {
-        if constexpr (_Can_vectorize_replace_copy<decltype(_UDest), _Iter_value_t<_InIt>, _Ty>) {
-            *_UDest = _Pred(*_UFirst) ? _Val : *_UFirst;
+        if (_Pred(*_UFirst)) {
+            *_UDest = _Val;
         } else {
-            if (_Pred(*_UFirst)) {
-                *_UDest = _Val;
-            } else {
-                *_UDest = *_UFirst;
-            }
+            *_UDest = *_UFirst;
         }
     }
 
@@ -4771,14 +4750,10 @@ namespace ranges {
             _STD _Verify_ranges_do_not_overlap(_First, _Last, _Output);
 
             for (; _First != _Last; ++_First, (void) ++_Output) {
-                if constexpr (_Can_vectorize_replace_copy<_Out, iter_value_t<_It>, _Ty>) {
-                    *_Output = _STD invoke(_Pred, _STD invoke(_Proj, *_First)) ? _Newval : *_First;
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    *_Output = _Newval;
                 } else {
-                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
-                        *_Output = _Newval;
-                    } else {
-                        *_Output = *_First;
-                    }
+                    *_Output = *_First;
                 }
             }
 
