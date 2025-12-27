@@ -3,20 +3,14 @@
 
 // ios::Init members
 
+#include <atomic>
 #include <iostream>
 _STD_BEGIN
 
-__PURE_APPDOMAIN_GLOBAL int ios_base::Init::_Init_cnt = -1;
-int& ios_base::Init::_Init_cnt_func() {
-    return ios_base::Init::_Init_cnt;
-}
+static std::atomic<int> _Init_cnt{0};
 
 _CRTIMP2_PURE void __cdecl ios_base::Init::_Init_ctor(ios_base::Init*) { // initialize standard streams first time
-    if (0 <= _Init_cnt) {
-        ++_Init_cnt;
-    } else {
-        _Init_cnt = 1;
-    }
+    ++_Init_cnt;
 }
 
 _CRTIMP2_PURE void __cdecl ios_base::Init::_Init_dtor(ios_base::Init*) { // flush standard streams last time
