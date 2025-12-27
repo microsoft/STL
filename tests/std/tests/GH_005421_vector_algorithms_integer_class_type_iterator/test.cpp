@@ -221,10 +221,16 @@ int main() {
             assert(r_rot_it == temp_end - rotate_pos);
         }
         {
-            // Out of replace family, only replace for 32-bit and 64-bit elements is manually vectorized,
-            // replace_copy is auto vectorized (along with replace_copy_if)
             const int replace_expected[] = {
                 200, 210, 220, 333, 240, 333, 333, 270, 280, 290, 300, 310, 320, 333, 340, 333, 333, 370, 380, 390};
+
+            auto repl_copy_it = replace_copy(arr_begin, arr_end, temp_begin, 250, 333);
+            assert(equal(temp_begin, temp_end, begin(replace_expected), end(replace_expected)));
+            assert(repl_copy_it == temp_end);
+
+            auto r_repl_copy_it = ranges::replace_copy(arr_begin, arr_end, temp_begin, 250, 333).out;
+            assert(ranges::equal(temp_begin, temp_end, begin(replace_expected), end(replace_expected)));
+            assert(r_repl_copy_it == temp_end);
 
             copy(arr_begin, arr_end, temp_begin);
             replace(temp_begin, temp_end, 250, 333);
