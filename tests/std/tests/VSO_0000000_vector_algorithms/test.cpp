@@ -1350,7 +1350,7 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_replace<signed char, false>(gen);
     test_replace<unsigned char, false>(gen);
     test_replace<short, false>(gen);
-    test_replace<unsigned short, true>(gen);
+    test_replace<unsigned short, false>(gen);
     test_replace<int, true>(gen);
     test_replace<unsigned int, true>(gen);
     test_replace<long long, true>(gen);
