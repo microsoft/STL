@@ -1330,6 +1330,13 @@ class complex {
         "is unspecified. The possibility of such instantiation will be removed in a future version. "
         "You can define _HAS_NONFLOATING_COMPLEX to 1 to enable such instantiation "
         "and define _SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING to suppress its deprecation warning.");
+
+    // Keep constructors for deduction
+
+    constexpr complex(const _Ty& = _Ty(), const _Ty& = _Ty()) {}
+
+    template <class _Other>
+    constexpr complex(const complex<_Other>&) {}
 };
 #else // ^^^ _HAS_NONFLOATING_COMPLEX / _HAS_NONFLOATING_COMPLEX vvv
 _EXPORT_STD template <class _Ty>
