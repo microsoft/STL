@@ -1324,7 +1324,7 @@ constexpr complex<long double>::complex(const complex<double>& _Right) noexcept 
 
 #if !_HAS_NONFLOATING_COMPLEX
 _EXPORT_STD template <class _Ty>
-class complex{
+class complex {
     static_assert(_Always_false<_Ty>,
         "The effect of instantiating the template std::complex for any type other than float, double, or long double "
         "is unspecified. The possibility of such instantiation will be removed in a future version. "
