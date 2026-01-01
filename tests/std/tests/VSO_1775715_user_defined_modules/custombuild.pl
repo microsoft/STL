@@ -10,9 +10,14 @@ sub CustomBuildHook()
 {
     my $cwd = Run::GetCWDName();
 
-    # Dependency order is important here:
-    my @inputPaths = ("user.ixx", "test.cpp");
+    if ($ENV{PM_COMPILER} =~ m/clang/) {
+        Run::ExecuteCL("-x c++-module user.ixx --precompile");
+        Run::ExecuteCL("-x c++-module user.ixx -x none test.cpp /Fe$cwd.exe");
+    } else {
+        # Dependency order is important here:
+        my @inputPaths = ("user.ixx", "test.cpp");
 
-    Run::ExecuteCL(join(" ", @inputPaths, "/Fe$cwd.exe"));
+        Run::ExecuteCL(join(" ", @inputPaths, "/Fe$cwd.exe"));
+    }
 }
 1

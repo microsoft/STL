@@ -34,6 +34,15 @@ module;
 // <intrin.h> defines some types outside of `extern "C"` or `extern "C++"`.
 #include <intrin.h>
 
+#ifdef __clang__
+#pragma clang diagnostic push
+// warning: '#include <filename>' attaches the declarations to the named module 'std', which is not usually intended;
+//     consider moving that directive before the module declaration [-Winclude-angled-in-module-purview]
+// warning: 'std' is a reserved name for a module [-Wreserved-module-identifier]
+#pragma clang diagnostic ignored "-Winclude-angled-in-module-purview"
+#pragma clang diagnostic ignored "-Wreserved-module-identifier"
+#endif // defined(__clang__)
+
 export module std;
 
 #pragma warning(push)
@@ -155,3 +164,6 @@ export module std;
 #include <cwctype>
 
 #pragma warning(pop)
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // defined(__clang__)

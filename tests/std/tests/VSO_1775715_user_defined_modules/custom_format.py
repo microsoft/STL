@@ -15,10 +15,17 @@ class CustomTestFormat(STLTestFormat):
         sourceDir = os.path.dirname(testCpp)
         userIxx = os.path.join(sourceDir, 'user.ixx')
 
-        # Dependency order is important here:
-        inputPaths = [userIxx, testCpp]
+        if 'clang' in test.cxx:
+            cmd = [test.cxx, '-x', 'c++-module', userIxx, '--precompile', *test.flags, *test.compileFlags]
+            yield TestStep(cmd, shared.execDir, shared.env, False)
 
-        cmd = [test.cxx, *inputPaths, *test.flags, *test.compileFlags]
+            inputPaths = ['-x', 'c++-module', userIxx, '-x', 'none', testCpp]
+            cmd = [test.cxx, *inputPaths, *test.flags, *test.compileFlags]
+        else:
+            # Dependency order is important here:
+            inputPaths = [userIxx, testCpp]
+
+            cmd = [test.cxx, *inputPaths, *test.flags, *test.compileFlags]
 
         if TestType.COMPILE in test.testType:
             cmd += ['/c']
