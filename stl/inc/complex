@@ -1322,6 +1322,16 @@ constexpr complex<long double>::complex(const complex<float>& _Right) noexcept /
 constexpr complex<long double>::complex(const complex<double>& _Right) noexcept // strengthened
     : _Complex_base<long double, _Lcomplex_value>(_Right.real(), _Right.imag()) {}
 
+#if !_HAS_NONFLOATING_COMPLEX
+_EXPORT_STD template <class _Ty>
+class complex{
+    static_assert(_Always_false<_Ty>,
+        "The effect of instantiating the template std::complex for any type other than float, double, or long double "
+        "is unspecified. The possibility of such instantiation will be removed in a future version. "
+        "You can define _HAS_NONFLOATING_COMPLEX to 1 to enable such instantiation "
+        "and define _SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING to suppress its deprecation warning.");
+};
+#else // ^^^ _HAS_NONFLOATING_COMPLEX / _HAS_NONFLOATING_COMPLEX vvv
 _EXPORT_STD template <class _Ty>
 class complex : public _Complex_base<_Ty, _Complex_value<_Ty>> {
 public:
@@ -1413,6 +1423,7 @@ public:
         return *this;
     }
 };
+#endif //  ^^^ _HAS_NONFLOATING_COMPLEX ^^^
 
 _EXPORT_STD template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left, const complex<_Ty>& _Right)
