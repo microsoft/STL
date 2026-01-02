@@ -35,6 +35,8 @@ module;
 #include <intrin.h>
 
 #ifdef __clang__
+#include <malloc.h> // TRANSITION, LLVM-37969
+
 #pragma clang diagnostic push
 // warning: '#include <filename>' attaches the declarations to the named module 'std', which is not usually intended;
 //     consider moving that directive before the module declaration [-Winclude-angled-in-module-purview]
