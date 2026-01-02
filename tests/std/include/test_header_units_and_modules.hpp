@@ -284,6 +284,7 @@ void test_future() {
     assert(f.get() == 1729);
 }
 
+#if !(defined(__clang__) && defined(_M_ARM64EC)) // TRANSITION, LLVM-158341
 #if TEST_STANDARD >= 23
 void test_generator() {
     using namespace std;
@@ -297,6 +298,7 @@ void test_generator() {
     assert(ranges::equal(some_ints(bound), views::iota(0, bound)));
 }
 #endif // TEST_STANDARD >= 23
+#endif // ^^^ no workaround ^^^
 
 void test_initializer_list() {
     using namespace std;
@@ -1200,9 +1202,11 @@ void all_cpp_header_tests() {
     test_fstream();
     test_functional();
     test_future();
+#if !(defined(__clang__) && defined(_M_ARM64EC)) // TRANSITION, LLVM-158341
 #if TEST_STANDARD >= 23
     test_generator();
 #endif // TEST_STANDARD >= 23
+#endif // ^^^ no workaround ^^^
     test_initializer_list();
     test_iomanip();
     test_ios();
