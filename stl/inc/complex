@@ -1331,12 +1331,12 @@ class complex {
         "You can define _HAS_NONFLOATING_COMPLEX to 1 to enable such instantiation "
         "and define _SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING to suppress its deprecation warning.");
 
-    // Keep constructors for deduction
+    // For deduction, primary template is used, so keeping couple of constructor around
 
-    constexpr complex(const _Ty& = _Ty(), const _Ty& = _Ty()) {}
+    constexpr complex(const _Ty& = _Ty(), const _Ty& = _Ty()) = delete;
 
     template <class _Other>
-    constexpr complex(const complex<_Other>&) {}
+    constexpr complex(const complex<_Other>&) = delete;
 };
 #else // ^^^ _HAS_NONFLOATING_COMPLEX / _HAS_NONFLOATING_COMPLEX vvv
 _EXPORT_STD template <class _Ty>
