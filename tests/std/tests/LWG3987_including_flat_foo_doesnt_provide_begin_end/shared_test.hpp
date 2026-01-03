@@ -12,19 +12,19 @@ namespace detail {
 
     // Define minimal metaprogramming tools, avoid including anything
 
-#define DEFINE_CONDITIONAL_CALLER_OF(member_name)                                                      \
-    template <typename T, typename = void>                                                             \
-    struct conditional_caller_of_##member_name {                                                       \
-        void operator()(T& t) {                                                                        \
-            (void) t;                                                                                  \
-        }                                                                                              \
-    };                                                                                                 \
-                                                                                                       \
-    template <typename T>                                                                              \
-    struct conditional_caller_of_##member_name<T, decltype(static_cast<T*>(nullptr)->member_name())> { \
-        void operator()(T& t) {                                                                        \
-            (void) member_name(t);                                                                     \
-        }                                                                                              \
+#define DEFINE_CONDITIONAL_CALLER_OF(member_name)                                                              \
+    template <typename T, typename = void>                                                                     \
+    struct conditional_caller_of_##member_name {                                                               \
+        void operator()(T& t) {                                                                                \
+            (void) t;                                                                                          \
+        }                                                                                                      \
+    };                                                                                                         \
+                                                                                                               \
+    template <typename T>                                                                                      \
+    struct conditional_caller_of_##member_name<T&, decltype((void) static_cast<T*>(nullptr)->member_name())> { \
+        void operator()(T& t) {                                                                                \
+            (void) member_name(t);                                                                             \
+        }                                                                                                      \
     };
 
 #define CONDITIONALLY_CALL(c, member_name) conditional_caller_of_##member_name<decltype(c)>{}(c)

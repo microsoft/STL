@@ -14,8 +14,9 @@ struct minimal_container {
     void crend() const {}
     void rbegin() const {}
     void rend() const {}
-    void size() const {}
-    void ssize() const {}
+    size_t size() const {
+        return 0;
+    }
     void empty() const {}
     void data() const {}
 };
