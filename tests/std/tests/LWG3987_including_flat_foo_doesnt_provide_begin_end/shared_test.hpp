@@ -15,15 +15,15 @@ namespace detail {
 #define DEFINE_CONDITIONAL_CALLER_OF(member_name)                                                              \
     template <typename T, typename = void>                                                                     \
     struct conditional_caller_of_##member_name {                                                               \
-        void operator()(T& t) {                                                                                \
+        constexpr void operator()(T& t) {                                                                      \
             (void) t;                                                                                          \
         }                                                                                                      \
     };                                                                                                         \
                                                                                                                \
     template <typename T>                                                                                      \
     struct conditional_caller_of_##member_name<T&, decltype((void) static_cast<T*>(nullptr)->member_name())> { \
-        void operator()(T& t) {                                                                                \
-            (void) member_name(t);                                                                             \
+        constexpr auto operator()(T& t) {                                                                      \
+            return member_name(t);                                                                             \
         }                                                                                                      \
     };
 
