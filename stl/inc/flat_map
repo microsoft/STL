@@ -385,7 +385,7 @@ public:
         const key_compare& _Comp = key_compare())
         : _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)}, _Key_compare(_Comp) {
         _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
-        _STL_ASSERT(_Is_sorted(_Data.keys), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
@@ -400,7 +400,7 @@ public:
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)},
           _Key_compare(_Comp) {
         _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
-        _STL_ASSERT(_Is_sorted(_Data.keys), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Iterator_for_container _InputIterator>
@@ -718,7 +718,7 @@ public:
 
     void replace(key_container_type&& _Key_cont, mapped_container_type&& _Mapped_cont) {
         _STL_ASSERT(_Key_cont.size() == _Mapped_cont.size(), "key_cont.size() != mapped_cont.size()");
-        _STL_ASSERT(_Is_sorted(_Key_cont), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_and_unique(_Key_cont), _Msg_not_sorted);
         _Clear_guard _Guard{this};
         _Data.keys     = _STD move(_Key_cont);
         _Data.values   = _STD move(_Mapped_cont);
@@ -1004,7 +1004,13 @@ private:
             _Mutating_iterator{_Data.keys.end(), _Data.values.end()}};
     }
 
-    _NODISCARD bool _Is_sorted(
+public:
+    _NODISCARD bool _Is_sorted_and_unique() const {
+        return _Is_sorted_and_unique(_Data.keys);
+    }
+
+private:
+    _NODISCARD bool _Is_sorted_and_unique(
         const key_container_type::const_iterator _It, const key_container_type::const_iterator _End) const {
         if constexpr (_IsUnique) {
             // sorted-unique
@@ -1015,8 +1021,8 @@ private:
         }
     }
 
-    _NODISCARD bool _Is_sorted(const key_container_type& _Cont) const {
-        return _Is_sorted(_Cont.begin(), _Cont.end());
+    _NODISCARD bool _Is_sorted_and_unique(const key_container_type& _Cont) const {
+        return _Is_sorted_and_unique(_Cont.begin(), _Cont.end());
     }
 
     void _Sort_and_erase_dupes_if_not_multi() {
@@ -1037,7 +1043,7 @@ private:
 
         _Erase_dupes_if_not_multi();
 
-        _STL_INTERNAL_CHECK(_Is_sorted(_Data.keys));
+        _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
 
         _Guard._Target = nullptr;
     }
@@ -1089,14 +1095,14 @@ private:
         } else {
             [[maybe_unused]] auto const _New_elements_begin =
                 _Data.keys.begin() + static_cast<key_container_type::difference_type>(_Old_distance);
-            _STL_ASSERT(_Is_sorted(_New_elements_begin, _Data.keys.end()), _Msg_not_sorted);
+            _STL_ASSERT(_Is_sorted_and_unique(_New_elements_begin, _Data.keys.end()), _Msg_not_sorted);
         }
 
         // Merge the newly inserted elements with the existing elements
         _RANGES inplace_merge(_Sorted_view, _Sorted_view.begin() + _Old_distance, value_compare{_Key_compare});
 
         _Erase_dupes_if_not_multi();
-        _STL_INTERNAL_CHECK(_Is_sorted(_Data.keys));
+        _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
 
         _Guard._Target = nullptr;
     }

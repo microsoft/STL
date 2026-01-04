@@ -121,7 +121,7 @@ public:
 
     _Flat_set_base(_Sorted_t, container_type _Cont, const key_compare& _Comp = key_compare())
         : _Mycont(_STD move(_Cont)), _Mycomp(_Comp) {
-        _STL_ASSERT(_Is_sorted(_Mycont), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t _Tag, const container_type& _Cont, const _Alloc& _Al)
@@ -356,7 +356,7 @@ public:
     }
 
     void replace(container_type&& _Cont) {
-        _STL_ASSERT(_Is_sorted(_Cont), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_and_unique(_Cont), _Msg_not_sorted);
         _Clear_guard _Guard{this};
         _Mycont        = _STD move(_Cont);
         _Guard._Target = nullptr;
@@ -474,8 +474,12 @@ public:
         _Lhs.swap(_Rhs);
     }
 
+    _NODISCARD bool _Is_sorted_and_unique() const {
+        return _Is_sorted_and_unique(_Mycont);
+    }
+
 private:
-    _NODISCARD bool _Is_sorted(const const_iterator _It, const const_iterator _End) const {
+    _NODISCARD bool _Is_sorted_and_unique(const const_iterator _It, const const_iterator _End) const {
         if constexpr (_IsUnique) {
             // sorted-unique
             auto _Negated = [this](const key_type& _Lhs, const key_type& _Rhs) { return !_Compare(_Lhs, _Rhs); };
@@ -485,8 +489,8 @@ private:
         }
     }
 
-    _NODISCARD bool _Is_sorted(const container_type& _Cont) const {
-        return _Is_sorted(_Cont.begin(), _Cont.end());
+    _NODISCARD bool _Is_sorted_and_unique(const container_type& _Cont) const {
+        return _Is_sorted_and_unique(_Cont.begin(), _Cont.end());
     }
 
     template <class _Ty>
@@ -684,13 +688,13 @@ private:
         if constexpr (_NeedSorting) {
             _STD sort(_Old_end, _End, _Pass_comp());
         } else {
-            _STL_ASSERT(_Is_sorted(_Old_end, _End), _Msg_not_sorted);
+            _STL_ASSERT(_Is_sorted_and_unique(_Old_end, _End), _Msg_not_sorted);
         }
 
         _STD inplace_merge(_Begin, _Old_end, _End, _Pass_comp());
         _Erase_dupes_if_not_multi();
 
-        _STL_INTERNAL_CHECK(_Is_sorted(_Mycont));
+        _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
     }
 
     void _Make_invariants_fulfilled() {
@@ -708,7 +712,7 @@ private:
         _STD inplace_merge(_Begin, _Begin_unsorted, _End, _Pass_comp());
         _Erase_dupes_if_not_multi();
 
-        _STL_INTERNAL_CHECK(_Is_sorted(_Mycont));
+        _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
     }
 
     template <class _Lty, class _Rty>
