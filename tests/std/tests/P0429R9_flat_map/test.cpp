@@ -770,14 +770,18 @@ void test_throwing_compare_swap() {
 template <typename T>
 void test_lookup_call_on_temporaries_single() {
     (void) T{}.lower_bound(42);
+    (void) T{}.lower_bound('a');
     (void) T{}.upper_bound(42);
+    (void) T{}.upper_bound('a');
     (void) T{}.equal_range(42);
+    (void) T{}.equal_range('a');
     (void) T{}.find(42);
+    (void) T{}.find('a');
 }
 
 void test_lookup_call_on_temporaries() {
-    test_lookup_call_on_temporaries_single<std::flat_map<int, int>>();
-    test_lookup_call_on_temporaries_single<std::flat_multimap<int, int>>();
+    test_lookup_call_on_temporaries_single<flat_map<int, int>>();
+    test_lookup_call_on_temporaries_single<flat_multimap<int, int>>();
 }
 
 int main() {
