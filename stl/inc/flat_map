@@ -1353,21 +1353,10 @@ private:
     using _Mybase::_Pass_key_comp;
 
     template <class _KeyTy>
-    _NODISCARD mapped_type& _At(const _KeyTy& _Key_val) {
+    _NODISCARD auto& _At(this auto& _Self, const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        const auto _Position = this->find(_Key_val);
-        if (_Position == this->end()) {
-            _Xout_of_range("invalid flat_map key");
-        }
-
-        return _Position->second;
-    }
-
-    template <class _KeyTy>
-    _NODISCARD const mapped_type& _At(const _KeyTy& _Key_val) const {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        const auto _Position = this->find(_Key_val);
-        if (_Position == this->end()) {
+        const auto _Position = _Self.find(_Key_val);
+        if (_Position == _Self.end()) {
             _Xout_of_range("invalid flat_map key");
         }
 

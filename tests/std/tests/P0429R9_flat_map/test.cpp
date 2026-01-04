@@ -782,6 +782,11 @@ void test_lookup_call_on_temporaries_single() {
 void test_lookup_call_on_temporaries() {
     test_lookup_call_on_temporaries_single<flat_map<int, int>>();
     test_lookup_call_on_temporaries_single<flat_multimap<int, int>>();
+    try {
+        (void) flat_map<int, int>{}.at(42);
+        (void) flat_map<int, int>{}.at('a');
+    } catch (...) {
+    }
 }
 
 int main() {
