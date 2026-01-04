@@ -33,30 +33,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef msvc
 
 _STD_BEGIN
-template <class _Key, class _Mapped, class _KeyCompare>
-struct _Flat_map_value_compare_provider {
-    struct value_compare {
-    public:
-        _NODISCARD bool operator()(
-            pair<const _Key&, const _Mapped&> _Left, pair<const _Key&, const _Mapped&> _Right) const {
-            return _Key_comparator(_Left.first, _Right.first);
-        }
-
-        value_compare(_KeyCompare _Comp) : _Key_comparator(_Comp) {}
-
-    private:
-        _KeyCompare _Key_comparator;
-    };
-};
-
-template <class _KeyContainer, class _MappedContainer>
-struct _Flat_map_container_provider {
-    struct containers {
-        _KeyContainer keys;
-        _MappedContainer values;
-    };
-};
-
 // Implementation
 
 template <bool _IsUnique, class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer>
@@ -342,8 +318,22 @@ public:
         "mapped_container_type must support random-access iterators in order to be adapted. "
         "(N5014 [flat.map.overview]/7, [flat.multimap.overview]/7)");
 
-    using value_compare = _Flat_map_value_compare_provider<key_type, mapped_type, key_compare>::value_compare;
-    using containers    = _Flat_map_container_provider<key_container_type, mapped_container_type>::containers;
+    struct value_compare {
+    public:
+        _NODISCARD bool operator()(const_reference _Left, const_reference _Right) const {
+            return _Key_comparator(_Left.first, _Right.first);
+        }
+
+        value_compare(key_compare _Comp) : _Key_comparator(_Comp) {}
+
+    private:
+        key_compare _Key_comparator;
+    };
+
+    struct containers {
+        key_container_type keys;
+        mapped_container_type values;
+    };
 
 public:
     // [flat.map.cons] Constructors
