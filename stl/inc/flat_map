@@ -1123,10 +1123,10 @@ private:
     }
 
     template <class _KeyTy, class _SelfTy, class _BoundFn>
-    _NODISCARD auto _Find_bound(this _SelfTy& _Self, const _KeyTy& _Key_val, _BoundFn&& _Bound_fun) {
+    _NODISCARD auto _Find_bound(this _SelfTy& _Self, const _KeyTy& _Key_val, _BoundFn _Bound_fun) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         const auto _Key_unchecked_begin = _STD _Get_unwrapped(_STD cbegin(_Self._Data.keys));
-        const auto _Key_unchecked_it = _Bound_fun(
+        const auto _Key_unchecked_it    = _Bound_fun(
             _Key_unchecked_begin, _STD _Get_unwrapped(_STD cend(_Self._Data.keys)), _Key_val, _Self._Pass_key_comp());
         const auto _Dist = _Key_unchecked_it - _Key_unchecked_begin;
 
@@ -1134,7 +1134,8 @@ private:
         _STD _Seek_wrapped(_Key_it, _Key_unchecked_it);
         auto _Val_it = _Self._Data.values.begin() + static_cast<_RANGES range_difference_t<_MappedContainer>>(_Dist);
 
-        using return_type = _STD conditional_t<_STD is_const_v<_SelfTy>, const_iterator, iterator>;
+        using return_type =
+            _STD conditional_t<_STD is_const_v<_STD remove_reference_t<_SelfTy>>, const_iterator, iterator>;
         return return_type{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
