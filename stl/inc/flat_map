@@ -603,6 +603,30 @@ public:
         return _STD min(_Data.keys.max_size(), _Data.values.max_size());
     }
 
+    // [flat.map.modifiers] Modifiers
+    template <class... _ArgTypes>
+    auto emplace(_ArgTypes&&... _Args)
+        requires is_constructible_v<value_type, _ArgTypes...>
+    {
+        value_type _Val(_STD forward<_ArgTypes>(_Args)...);
+        return _Try_emplace(_STD move(_Val.first), _STD move(_Val.second));
+    }
+
+    auto insert(const value_type& _Pair_val) {
+        return _Try_emplace(_Pair_val.first, _Pair_val.second);
+    }
+
+    auto insert(value_type&& _Pair_val) {
+        return _Try_emplace(_STD move(_Pair_val.first), _STD move(_Pair_val.second));
+    }
+
+    template <class _PairValTy>
+    auto insert(_PairValTy&& _Pair_val)
+        requires is_constructible_v<value_type, _PairValTy>
+    {
+        return emplace(_STD forward<_PairValTy>(_Pair_val));
+    }
+
     template <class... _ArgTypes>
     iterator emplace_hint(const_iterator _Position, _ArgTypes&&... _Args)
         requires is_constructible_v<value_type, _ArgTypes...>
@@ -859,6 +883,35 @@ protected:
 
     _NODISCARD auto _Pass_key_comp() const noexcept {
         return _STD _Pass_fn(_Key_compare);
+    }
+
+    template <class _OtherKey, class... _MappedArgTypes>
+    _NODISCARD conditional_t<_IsUnique, pair<iterator, bool>, iterator> _Try_emplace(
+        _OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
+        _STL_INTERNAL_STATIC_ASSERT(is_constructible_v<mapped_type, _MappedArgTypes...>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_OtherKey>, key_type>
+                                    || (is_constructible_v<key_type, _OtherKey> && _Transparent<key_compare>) );
+
+        const auto _Key_it = _RANGES upper_bound(_Data.keys, _Key_val, _Pass_key_comp());
+        const auto _Index  = _RANGES distance(_Data.keys.begin(), _Key_it);
+        if constexpr (_IsUnique) {
+            if (_Key_it != _Data.keys.begin()
+                && !_Key_compare(*_RANGES prev(_Key_it), _STD forward<_OtherKey>(_Key_val))) {
+                // Previous element is equivalent to key, no insert needed
+                return {this->begin() + (_Index - 1), false};
+            }
+        }
+
+        // Need to insert
+        key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
+        mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Mapped_args)...);
+        _Insert_exact(_STD cbegin(*this) + _Index, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
+
+        if constexpr (_IsUnique) {
+            return {this->begin() + _Index, true};
+        } else {
+            return this->begin() + _Index;
+        }
     }
 
     template <bool _OverwriteIfExists, class _OtherKey, class... _MappedArgTypes>
@@ -1151,20 +1204,17 @@ class flat_map : public _Flat_map_base<true, _Key, _Mapped, _Compare, _KeyContai
 private:
     using _Mybase = _Flat_map_base<true, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
 
-    using _Mybase::_Data;
-    using _Mybase::_Key_compare;
-
 public:
+    using _Mybase::_Mybase;
+    flat_map(const flat_map&) = default;
+    flat_map(flat_map&&)      = default;
+
     using typename _Mybase::const_iterator;
     using typename _Mybase::iterator;
     using typename _Mybase::key_compare;
     using typename _Mybase::key_type;
     using typename _Mybase::mapped_type;
     using typename _Mybase::value_type;
-
-    using _Mybase::_Mybase;
-    using _Mybase::clear;
-    using _Mybase::insert;
 
 #if 1 // TRANSITION, P2582R1 (MSVC, Clang, EDG)
     template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Allocator>
@@ -1174,11 +1224,14 @@ public:
     flat_map(flat_map&& _Other, const _Allocator& _Al) : _Mybase(_STD move(_Other), _Al) {}
 #endif // ^^^ workaround ^^^
 
-    flat_map& operator=(initializer_list<value_type> _Ilist) {
-        clear();
-        insert(_Ilist.begin(), _Ilist.end());
+    flat_map& operator=(const initializer_list<value_type> _Ilist) {
+        this->clear();
+        this->insert(_Ilist.begin(), _Ilist.end());
         return *this;
     }
+
+    flat_map& operator=(const flat_map&) = default;
+    flat_map& operator=(flat_map&&)      = default;
 
     // [flat.map.access] Access
     mapped_type& operator[](const key_type& _Key_val)
@@ -1223,39 +1276,16 @@ public:
     }
 
     // [flat.map.modifiers] Modifiers
-    template <class... _ArgTypes>
-    pair<iterator, bool> emplace(_ArgTypes&&... _Args)
-        requires is_constructible_v<value_type, _ArgTypes...>
-    {
-        value_type _Val(_STD forward<_ArgTypes>(_Args)...);
-        return try_emplace(_STD move(_Val.first), _STD move(_Val.second));
-    }
-
-    pair<iterator, bool> insert(const value_type& _Pair_val) {
-        return try_emplace(_Pair_val.first, _Pair_val.second);
-    }
-
-    pair<iterator, bool> insert(value_type&& _Pair_val) {
-        return try_emplace(_STD move(_Pair_val.first), _STD move(_Pair_val.second));
-    }
-
-    template <class _PairValTy>
-    pair<iterator, bool> insert(_PairValTy&& _Pair_val)
-        requires is_constructible_v<value_type, _PairValTy>
-    {
-        return emplace(_STD forward<_PairValTy>(_Pair_val));
-    }
-
     template <class... _MappedArgTypes>
         requires is_constructible_v<mapped_type, _MappedArgTypes&&...>
     pair<iterator, bool> try_emplace(const key_type& _Key_val, _MappedArgTypes&&... _Mapped_args) {
-        return _Try_emplace(_Key_val, _STD forward<_MappedArgTypes>(_Mapped_args)...);
+        return this->_Try_emplace(_Key_val, _STD forward<_MappedArgTypes>(_Mapped_args)...);
     }
 
     template <class... _MappedArgTypes>
         requires is_constructible_v<mapped_type, _MappedArgTypes&&...>
     pair<iterator, bool> try_emplace(key_type&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
-        return _Try_emplace(_STD move(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
+        return this->_Try_emplace(_STD move(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
     }
 
     template <class _OtherKey, class... _MappedArgTypes>
@@ -1263,7 +1293,7 @@ public:
               && is_constructible_v<mapped_type, _MappedArgTypes...> && (!is_convertible_v<_OtherKey, const_iterator>)
               && (!is_convertible_v<_OtherKey, iterator>)
     pair<iterator, bool> try_emplace(_OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
-        return _Try_emplace(_STD forward<_OtherKey>(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
+        return this->_Try_emplace(_STD forward<_OtherKey>(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
     }
 
     template <class... _MappedArgTypes>
@@ -1336,11 +1366,6 @@ public:
     }
 
 private:
-    using _Mybase::_Emplace_hint;
-    using _Mybase::_Insert_exact;
-    using _Mybase::_Key_equal;
-    using _Mybase::_Pass_key_comp;
-
     template <class _SelfTy, class _KeyTy>
     _NODISCARD auto& _At(this _SelfTy& _Self, const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
@@ -1352,27 +1377,9 @@ private:
         return _Position->second;
     }
 
-    template <class _KeyTy, class... _MappedArgTypes>
-    _NODISCARD pair<iterator, bool> _Try_emplace(_KeyTy&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
-        auto _Key_it = _STD lower_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Pass_key_comp());
-        if (_Key_it != _Data.keys.end() && !_Key_compare(_STD forward<_KeyTy>(_Key_val), *_Key_it)) {
-            // Already exists
-            return {this->begin() + (_Key_it - _Data.keys.begin()), false};
-        }
-
-        // Need to insert
-        const auto _Index = _Key_it - _Data.keys.begin();
-        {
-            key_type _Key_to_insert(_STD forward<_KeyTy>(_Key_val));
-            mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Mapped_args)...);
-            this->_Insert_exact(_STD cbegin(*this) + _Index, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
-        }
-        return {this->begin() + _Index, true};
-    }
-
     template <class _KeyTy, class _MappedTy>
     _NODISCARD pair<iterator, bool> _Insert_or_assign(_KeyTy&& _Key_val, _MappedTy&& _Mapped_val) {
-        auto _Res = _Try_emplace(_STD forward<_KeyTy>(_Key_val), _STD forward<_MappedTy>(_Mapped_val));
+        auto _Res = this->_Try_emplace(_STD forward<_KeyTy>(_Key_val), _STD forward<_MappedTy>(_Mapped_val));
         if (!_Res.second) { // Already exists
             _Res.first->second = _STD forward<_MappedTy>(_Mapped_val);
         }
@@ -1475,16 +1482,12 @@ class flat_multimap : public _Flat_map_base<false, _Key, _Mapped, _Compare, _Key
 private:
     using _Mybase = _Flat_map_base<false, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
 
-    using _Mybase::_Data;
-    using _Mybase::_Key_compare;
-
 public:
-    using typename _Mybase::iterator;
     using typename _Mybase::value_type;
 
     using _Mybase::_Mybase;
-    using _Mybase::clear;
-    using _Mybase::insert;
+    flat_multimap(const flat_multimap&) = default;
+    flat_multimap(flat_multimap&&)      = default;
 
 #if 1 // TRANSITION, P2582R1 (MSVC, Clang, EDG)
     template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Allocator>
@@ -1494,54 +1497,14 @@ public:
     flat_multimap(flat_multimap&& _Other, const _Allocator& _Al) : _Mybase(_STD move(_Other), _Al) {}
 #endif // ^^^ workaround ^^^
 
-    flat_multimap& operator=(initializer_list<value_type> _Ilist) {
-        clear();
-        insert(_Ilist.begin(), _Ilist.end());
+    flat_multimap& operator=(const initializer_list<value_type> _Ilist) {
+        this->clear();
+        this->insert(_Ilist.begin(), _Ilist.end());
         return *this;
     }
 
-    // [flat.multimap.modifiers] Modifiers
-    template <class... _ArgTypes>
-    iterator emplace(_ArgTypes&&... _Args)
-        requires is_constructible_v<value_type, _ArgTypes...>
-    {
-        value_type _Val(_STD forward<_ArgTypes>(_Args)...);
-        return _Emplace_key_mapped(_STD move(_Val.first), _STD move(_Val.second));
-    }
-
-    iterator insert(const value_type& _Px) {
-        return _Emplace_key_mapped(_Px.first, _Px.second);
-    }
-
-    iterator insert(value_type&& _Px) {
-        return _Emplace_key_mapped(_STD move(_Px.first), _STD move(_Px.second));
-    }
-
-    template <class _PairValTy>
-    iterator insert(_PairValTy&& _Pair_val)
-        requires is_constructible_v<value_type, _PairValTy>
-    {
-        return emplace(_STD forward<_PairValTy>(_Pair_val));
-    }
-
-private:
-    using _Mybase::_Emplace_hint;
-    using _Mybase::_Insert_exact;
-    using _Mybase::_Key_equal;
-    using _Mybase::_Pass_key_comp;
-
-    template <class _KeyTy, class _MappedTy>
-    _NODISCARD iterator _Emplace_key_mapped(_KeyTy&& _Key_val, _MappedTy&& _Mapped_val) {
-        const auto _Key_it = _STD upper_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Pass_key_comp());
-        const auto _Index  = _Key_it - _Data.keys.begin();
-
-        {
-            _Key _Key_to_insert(_STD forward<_KeyTy>(_Key_val));
-            _Mapped _Mapped_to_insert(_STD forward<_MappedTy>(_Mapped_val));
-            this->_Insert_exact(_STD cbegin(*this) + _Index, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
-        }
-        return this->begin() + _Index;
-    }
+    flat_multimap& operator=(const flat_multimap&) = default;
+    flat_multimap& operator=(flat_multimap&&)      = default;
 };
 
 template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_container _MappedContainer,

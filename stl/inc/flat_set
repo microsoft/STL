@@ -757,7 +757,7 @@ public:
     flat_set(flat_set&& _Other, const _Allocator& _Al) : _Mybase(_STD move(_Other), _Al) {}
 #endif // ^^^ workaround ^^^
 
-    using _Mybase::operator=;
+    using _Mybase::operator=; // for operator=(initializer_list)
     flat_set& operator=(const flat_set&) = default;
     flat_set& operator=(flat_set&&)      = default;
 };
@@ -780,7 +780,7 @@ public:
     flat_multiset(flat_multiset&& _Other, const _Allocator& _Al) : _Mybase(_STD move(_Other), _Al) {}
 #endif // ^^^ workaround ^^^
 
-    using _Mybase::operator=;
+    using _Mybase::operator=; // for operator=(initializer_list)
     flat_multiset& operator=(const flat_multiset&) = default;
     flat_multiset& operator=(flat_multiset&&)      = default;
 };
