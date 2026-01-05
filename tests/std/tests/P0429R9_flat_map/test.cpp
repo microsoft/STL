@@ -766,7 +766,7 @@ void test_throwing_compare_swap() {
     test_throwing_compare_swap_single<flat_multimap, deque, deque>();
 }
 
-// Test that changes in GH-5987 did not break calls of lookup member functions by using deduced this.
+// Test that changes in GH-5987 did not break calls of lookup member functions by using deducing this.
 template <typename T>
 void test_lookup_call_on_temporaries_single() {
     (void) T{}.lower_bound(42);
