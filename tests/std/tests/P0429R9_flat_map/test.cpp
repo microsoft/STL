@@ -766,6 +766,29 @@ void test_throwing_compare_swap() {
     test_throwing_compare_swap_single<flat_multimap, deque, deque>();
 }
 
+// Test that changes in GH-5987 did not break calls of lookup member functions by using deducing this.
+template <typename T>
+void test_lookup_call_on_temporaries_single() {
+    (void) T{}.lower_bound(42);
+    (void) T{}.lower_bound('a');
+    (void) T{}.upper_bound(42);
+    (void) T{}.upper_bound('a');
+    (void) T{}.equal_range(42);
+    (void) T{}.equal_range('a');
+    (void) T{}.find(42);
+    (void) T{}.find('a');
+}
+
+void test_lookup_call_on_temporaries() {
+    test_lookup_call_on_temporaries_single<flat_map<int, int>>();
+    test_lookup_call_on_temporaries_single<flat_multimap<int, int>>();
+    try {
+        (void) flat_map<int, int>{}.at(42);
+        (void) flat_map<int, int>{}.at('a');
+    } catch (...) {
+    }
+}
+
 int main() {
     test_construction();
     test_pointer_to_incomplete_type();
@@ -776,4 +799,5 @@ int main() {
     test_insert_or_assign();
     test_comparison();
     test_throwing_compare_swap();
+    test_lookup_call_on_temporaries();
 }
