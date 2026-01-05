@@ -1135,8 +1135,7 @@ private:
         auto _Val_it =
             _STD begin(_Self._Data.values) + static_cast<_RANGES range_difference_t<mapped_container_type>>(_Dist);
 
-        using _Maybe_const_iter =
-            _STD conditional_t<_STD is_const_v<_STD remove_reference_t<_SelfTy>>, const_iterator, iterator>;
+        using _Maybe_const_iter = conditional_t<is_const_v<remove_reference_t<_SelfTy>>, const_iterator, iterator>;
         return _Maybe_const_iter{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
