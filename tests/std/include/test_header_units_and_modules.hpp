@@ -281,12 +281,12 @@ void test_flat_set() {
     assert(erase_if(fs, simple_truth) == 1);
     assert(fs.empty());
 
-    flat_multiset<int> fss;
-    fss.emplace(42);
-    fss.emplace(42);
-    assert(fss.size() == 2);
-    assert(erase_if(fss, simple_truth) == 2);
-    assert(fss.empty());
+    flat_multiset<int> fms;
+    fms.emplace(42);
+    fms.emplace(42);
+    assert(fms.size() == 2);
+    assert(erase_if(fms, simple_truth) == 2);
+    assert(fms.empty());
 }
 #endif // TEST_STANDARD >= 23
 
