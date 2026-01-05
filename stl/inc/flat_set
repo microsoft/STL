@@ -57,6 +57,18 @@ struct _NODISCARD _Flat_set_swap_clear_guard<true, _Container> {
     void _Dismiss() noexcept {}
 };
 
+template <class _Container, class _Ty>
+_NODISCARD auto _Emplace_with_clear_guard(_Container& _Cont, typename _Container::const_iterator _Where, _Ty&& _Val) {
+    if constexpr (_Has_guaranteed_single_insertion<_Container>) {
+        return _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
+    } else {
+        _Clear_guard _Guard{_STD addressof(_Cont)};
+        auto _Iter     = _Cont.emplace(_Where, _STD forward<_Ty>(_Val));
+        _Guard._Target = nullptr;
+        return _Iter;
+    }
+}
+
 _EXPORT_STD template <class _Kty, class _Keylt = less<_Kty>, class _Container = vector<_Kty>>
 class flat_set;
 
@@ -279,8 +291,6 @@ public:
     }
 
     // modifiers
-    // FIXME, the "insert" and "erase" methods may not be able to restore the invariant, if the underlying
-    // container is unable to provide strong guarantee for "erase" and "insert" methods.
     template <class... _Args>
     auto emplace(_Args&&... _Vals) {
         constexpr bool _Is_key_type = _In_place_key_extract_set<_Kty, remove_cvref_t<_Args>...>::_Extractable;
@@ -360,6 +370,9 @@ public:
         _Mycont        = _STD move(_Cont);
         _Guard._Target = nullptr;
     }
+
+    // FIXME, the "erase" member functions need clear guards to restore the invariant when the underlying
+    // container doesn't provide the strong guarantee for its "erase" member functions.
 
     // NB: `erase(iterator)` is identical to `erase(const_iterator)`
     iterator erase(const_iterator _Where) {
@@ -516,7 +529,7 @@ private:
 
             if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
                 _STL_INTERNAL_CHECK(_Can_insert(_Where, _Val));
-                return pair{_Mycont.emplace(_Where, _STD forward<_Ty>(_Val)), true};
+                return pair{_STD _Emplace_with_clear_guard(_Mycont, _Where, _STD forward<_Ty>(_Val)), true};
             } else {
                 // heterogeneous insertion
                 // FIXME: The standard only requires `find(_Val) == find(_Keyval)` (per N4958 [flat.set.modifiers]/2),
@@ -526,11 +539,11 @@ private:
                 _STL_ASSERT(_Can_insert(_Where, _Keyval),
                     "The conversion from the heterogeneous key to key_type should "
                     "be consistent with the heterogeneous lookup!");
-                return pair{_Mycont.emplace(_Where, _STD move(_Keyval)), true};
+                return pair{_STD _Emplace_with_clear_guard(_Mycont, _Where, _STD move(_Keyval)), true};
             }
         } else {
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
-            return _Mycont.emplace(upper_bound(_Val), _STD forward<_Ty>(_Val));
+            return _STD _Emplace_with_clear_guard(_Mycont, upper_bound(_Val), _STD forward<_Ty>(_Val));
         }
     }
 
@@ -560,7 +573,7 @@ private:
 
             if constexpr (is_same_v<remove_cvref_t<_Ty>, _Kty>) {
                 _STL_INTERNAL_CHECK(_Can_insert(_Where, _Val));
-                return _Mycont.emplace(_Where, _STD forward<_Ty>(_Val));
+                return _STD _Emplace_with_clear_guard(_Mycont, _Where, _STD forward<_Ty>(_Val));
             } else {
                 // heterogeneous insertion
                 // FIXME: The standard only requires `find(_Val) == find(_Keyval)` (per N4958 [flat.set.modifiers]/2),
@@ -570,7 +583,7 @@ private:
                 _STL_ASSERT(_Can_insert(_Where, _Keyval),
                     "The conversion from the heterogeneous key to key_type should "
                     "be consistent with the heterogeneous lookup!");
-                return _Mycont.emplace(_Where, _STD move(_Keyval));
+                return _STD _Emplace_with_clear_guard(_Mycont, _Where, _STD move(_Keyval));
             }
         } else {
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Kty>);
@@ -591,7 +604,7 @@ private:
                 _Where = _STD lower_bound(_Where, _End, _Val, _Pass_comp());
             }
 
-            return _Mycont.emplace(_Where, _STD forward<_Ty>(_Val));
+            return _STD _Emplace_with_clear_guard(_Mycont, _Where, _STD forward<_Ty>(_Val));
         }
     }
 
