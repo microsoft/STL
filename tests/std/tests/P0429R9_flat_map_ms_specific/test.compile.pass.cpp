@@ -51,6 +51,10 @@ struct flat_map_unique_if_impl<false> {
 template <bool IsUnique, class Key, class Mapped, class Comp, class KeyCont, class MappedCont>
 using flat_map_unique_if = flat_map_unique_if_impl<IsUnique>::template type<Key, Mapped, Comp, KeyCont, MappedCont>;
 
+template <typename A, typename B>
+constexpr bool has_different_nested_types = !is_same_v<typename A::value_compare, typename B::value_compare>
+                                         && !is_same_v<typename A::containers, typename B::containers>;
+
 template <bool IsUnique, class Comparator, class Alloc1, class Alloc2>
 void test_scary_ness_one() {
     using Iter = flat_map<int, int>::iterator;
@@ -63,23 +67,15 @@ void test_scary_ness_one() {
         flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::const_iterator;
     static_assert(is_same_v<ConstIter, OtherConstIter>);
 
-    using Cont = flat_map<int, int, less<int>, vector<int, Alloc1>, vector<int, Alloc2>>::containers;
-    using OtherCont =
-        flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::containers;
-    static_assert(is_same_v<Cont, OtherCont>);
-
-    using ValueComp = flat_map<int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::value_compare;
-    using OtherValueComp1 =
-        flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::value_compare;
-    using OtherValueComp2 = flat_map_unique_if<IsUnique, int, int, Comparator, vector<int>, vector<int>>::value_compare;
-    using OtherValueComp3 =
-        flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, deque<int, Alloc2>>::value_compare;
-    using OtherValueComp4 =
-        flat_map_unique_if<IsUnique, int, int, Comparator, deque<int, Alloc1>, vector<int, Alloc2>>::value_compare;
-    static_assert(is_same_v<ValueComp, OtherValueComp1>);
-    static_assert(is_same_v<ValueComp, OtherValueComp2>);
-    static_assert(is_same_v<ValueComp, OtherValueComp3>);
-    static_assert(is_same_v<ValueComp, OtherValueComp4>);
+    using Cont       = flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>;
+    using OtherCont1 = flat_map_unique_if<!IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>;
+    using OtherCont2 = flat_map_unique_if<IsUnique, int, int, Comparator, deque<int>, deque<int>>;
+    using OtherCont3 = flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, deque<int, Alloc2>>;
+    using OtherCont4 = flat_map_unique_if<IsUnique, int, int, Comparator, deque<int, Alloc1>, vector<int, Alloc2>>;
+    static_assert(has_different_nested_types<Cont, OtherCont1>);
+    static_assert(has_different_nested_types<Cont, OtherCont2>);
+    static_assert(has_different_nested_types<Cont, OtherCont3>);
+    static_assert(has_different_nested_types<Cont, OtherCont4>);
 }
 
 void test_scary_ness() {

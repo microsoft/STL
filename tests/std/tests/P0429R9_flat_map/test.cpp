@@ -16,6 +16,11 @@
 
 using namespace std;
 
+// See GH-5965: Speculative resolution of LWG-3963 "Different flat_(multi)map specializations
+// should be able to share same nested classes" is not likely to be accepted
+static_assert(!is_same_v<flat_map<int, int>::containers, flat_multimap<int, int>::containers>);
+static_assert(!is_same_v<flat_map<int, int>::value_compare, flat_multimap<int, int>::value_compare>);
+
 template <class T, template <class...> class Tmpl>
 constexpr bool is_specialization_v = false;
 template <template <class...> class Tmpl, class... Ts>
