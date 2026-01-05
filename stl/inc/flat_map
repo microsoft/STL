@@ -1152,7 +1152,7 @@ private:
     template <class _KeyTy>
     _NODISCARD auto _Equal_range(this auto& _Self, const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        return _STD make_pair(_Self.lower_bound(_Key_val), _Self.upper_bound(_Key_val));
+        return pair{_Self.lower_bound(_Key_val), _Self.upper_bound(_Key_val)};
     }
 };
 
