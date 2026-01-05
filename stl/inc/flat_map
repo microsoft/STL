@@ -1099,8 +1099,8 @@ private:
         return _Count;
     }
 
-    template <class _KeyTy>
-    _NODISCARD auto _Find(this auto& _Self, const _KeyTy& _Key_val) {
+    template <class _SelfTy, class _KeyTy>
+    _NODISCARD auto _Find(this _SelfTy& _Self, const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         const auto _Position = _Self.lower_bound(_Key_val);
         if (_Position != _Self.end() && !_Self._Key_compare(_Key_val, _Position->first)) {
@@ -1149,8 +1149,8 @@ private:
         return _Self._Find_bound(_Key_val, _RANGES upper_bound);
     }
 
-    template <class _KeyTy>
-    _NODISCARD auto _Equal_range(this auto& _Self, const _KeyTy& _Key_val) {
+    template <class _SelfTy, class _KeyTy>
+    _NODISCARD auto _Equal_range(this _SelfTy& _Self, const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         return pair{_Self.lower_bound(_Key_val), _Self.upper_bound(_Key_val)};
     }
@@ -1351,8 +1351,8 @@ private:
     using _Mybase::_Key_equal;
     using _Mybase::_Pass_key_comp;
 
-    template <class _KeyTy>
-    _NODISCARD auto& _At(this auto& _Self, const _KeyTy& _Key_val) {
+    template <class _SelfTy, class _KeyTy>
+    _NODISCARD auto& _At(this _SelfTy& _Self, const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         const auto _Position = _Self.find(_Key_val);
         if (_Position == _Self.end()) {
