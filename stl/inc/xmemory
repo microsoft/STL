@@ -2762,10 +2762,14 @@ namespace ranges {
 } // namespace ranges
 
 template <class>
-constexpr bool _Has_guaranteed_push_back = false; // N5014 [sequence.reqmts]/104, /108; used by flat_(multi)map::insert.
+constexpr bool _Has_guaranteed_push_back = false; // N5032 [sequence.reqmts]/104, /108; used by flat_(multi)map::insert.
+
+// N5032 [container.reqmts]/66.1; used by various flat_(multi)set inserting functions.
+template <class _Ty>
+constexpr bool _Has_guaranteed_single_insertion = _Has_guaranteed_push_back<_Ty>;
 
 template <class>
-constexpr bool _Has_guaranteed_append_range = false; // N5014 [sequence.reqmts]/112; used by flat_(multi)set::insert.
+constexpr bool _Has_guaranteed_append_range = false; // N5032 [sequence.reqmts]/112; used by flat_(multi)set::insert.
 #endif // _HAS_CXX23
 
 template <class _Elem, class _UTy>

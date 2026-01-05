@@ -33,30 +33,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef msvc
 
 _STD_BEGIN
-template <class _Key, class _Mapped, class _KeyCompare>
-struct _Flat_map_value_compare_provider {
-    struct value_compare {
-    public:
-        _NODISCARD bool operator()(
-            pair<const _Key&, const _Mapped&> _Left, pair<const _Key&, const _Mapped&> _Right) const {
-            return _Key_comparator(_Left.first, _Right.first);
-        }
-
-        value_compare(_KeyCompare _Comp) : _Key_comparator(_Comp) {}
-
-    private:
-        _KeyCompare _Key_comparator;
-    };
-};
-
-template <class _KeyContainer, class _MappedContainer>
-struct _Flat_map_container_provider {
-    struct containers {
-        _KeyContainer keys;
-        _MappedContainer values;
-    };
-};
-
 // Implementation
 
 template <bool _IsUnique, class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer>
@@ -342,8 +318,22 @@ public:
         "mapped_container_type must support random-access iterators in order to be adapted. "
         "(N5014 [flat.map.overview]/7, [flat.multimap.overview]/7)");
 
-    using value_compare = _Flat_map_value_compare_provider<key_type, mapped_type, key_compare>::value_compare;
-    using containers    = _Flat_map_container_provider<key_container_type, mapped_container_type>::containers;
+    struct value_compare {
+    public:
+        _NODISCARD bool operator()(const_reference _Left, const_reference _Right) const {
+            return _Key_comparator(_Left.first, _Right.first);
+        }
+
+        value_compare(key_compare _Comp) : _Key_comparator(_Comp) {}
+
+    private:
+        key_compare _Key_comparator;
+    };
+
+    struct containers {
+        key_container_type keys;
+        mapped_container_type values;
+    };
 
 public:
     // [flat.map.cons] Constructors
@@ -1152,25 +1142,14 @@ private:
         return _Count;
     }
 
-    template <class _KeyTy>
-    _NODISCARD iterator _Find(const _KeyTy& _Key_val) {
+    template <class _SelfTy, class _KeyTy>
+    _NODISCARD auto _Find(this _SelfTy& _Self, const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        iterator _Position = lower_bound(_Key_val);
-        if (_Position != end() && !_Key_compare(_Key_val, _Position->first)) {
+        const auto _Position = _Self.lower_bound(_Key_val);
+        if (_Position != _Self.end() && !_Self._Key_compare(_Key_val, _Position->first)) {
             return _Position;
         } else {
-            return end();
-        }
-    }
-
-    template <class _KeyTy>
-    _NODISCARD const_iterator _Find(const _KeyTy& _Key_val) const {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        const_iterator _Position = lower_bound(_Key_val);
-        if (_Position != cend() && !_Key_compare(_Key_val, _Position->first)) {
-            return _Position;
-        } else {
-            return cend();
+            return _Self.end();
         }
     }
 
@@ -1186,74 +1165,37 @@ private:
         return find(_Key_val) != cend();
     }
 
-    template <class _KeyTy>
-    _NODISCARD iterator _Lower_bound(const _KeyTy& _Key_val) {
+    template <class _SelfTy, class _KeyTy, class _BoundFn>
+    _NODISCARD auto _Find_bound(this _SelfTy& _Self, const _KeyTy& _Key_val, _BoundFn _Bound_fun) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        const auto _Key_unchecked_begin = _STD _Get_unwrapped(_STD cbegin(_Data.keys));
-        const auto _Key_unchecked_it    = _STD lower_bound(
-               _Key_unchecked_begin, _STD _Get_unwrapped(_STD cend(_Data.keys)), _Key_val, _Pass_key_comp());
+        const auto _Key_unchecked_begin = _STD _Get_unwrapped(_STD cbegin(_Self._Data.keys));
+        const auto _Key_unchecked_it    = _Bound_fun(
+            _Key_unchecked_begin, _STD _Get_unwrapped(_STD cend(_Self._Data.keys)), _Key_val, _Self._Pass_key_comp());
         const auto _Dist = _Key_unchecked_it - _Key_unchecked_begin;
 
-        auto _Key_it = _STD cbegin(_Data.keys);
-        _STD _Seek_wrapped(_Key_it, _Key_unchecked_it);
-        auto _Val_it = _Data.values.begin() + static_cast<_RANGES range_difference_t<_MappedContainer>>(_Dist);
-        return iterator{_STD move(_Key_it), _STD move(_Val_it)};
-    }
-
-    template <class _KeyTy>
-    _NODISCARD const_iterator _Lower_bound(const _KeyTy& _Key_val) const {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        const auto _Key_unchecked_begin = _STD _Get_unwrapped(_STD cbegin(_Data.keys));
-        const auto _Key_unchecked_it    = _STD lower_bound(
-               _Key_unchecked_begin, _STD _Get_unwrapped(_STD cend(_Data.keys)), _Key_val, _Pass_key_comp());
-        const auto _Dist = _Key_unchecked_it - _Key_unchecked_begin;
-
-        auto _Key_it = _STD cbegin(_Data.keys);
+        auto _Key_it = _STD cbegin(_Self._Data.keys);
         _STD _Seek_wrapped(_Key_it, _Key_unchecked_it);
         auto _Val_it =
-            _STD cbegin(_Data.values) + static_cast<_RANGES range_difference_t<const _MappedContainer>>(_Dist);
-        return const_iterator{_STD move(_Key_it), _STD move(_Val_it)};
+            _STD begin(_Self._Data.values) + static_cast<_RANGES range_difference_t<mapped_container_type>>(_Dist);
+
+        using _Maybe_const_iter = conditional_t<is_const_v<_SelfTy>, const_iterator, iterator>;
+        return _Maybe_const_iter{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
-    template <class _KeyTy>
-    _NODISCARD iterator _Upper_bound(const _KeyTy& _Key_val) {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        const auto _Key_unchecked_begin = _STD _Get_unwrapped(_STD cbegin(_Data.keys));
-        const auto _Key_unchecked_it    = _STD upper_bound(
-               _Key_unchecked_begin, _STD _Get_unwrapped(_STD cend(_Data.keys)), _Key_val, _Pass_key_comp());
-        const auto _Dist = _Key_unchecked_it - _Key_unchecked_begin;
-
-        auto _Key_it = _STD cbegin(_Data.keys);
-        _STD _Seek_wrapped(_Key_it, _Key_unchecked_it);
-        auto _Val_it = _Data.values.begin() + static_cast<_RANGES range_difference_t<_MappedContainer>>(_Dist);
-        return iterator{_STD move(_Key_it), _STD move(_Val_it)};
+    template <class _SelfTy, class _KeyTy>
+    _NODISCARD auto _Lower_bound(this _SelfTy& _Self, const _KeyTy& _Key_val) {
+        return _Self._Find_bound(_Key_val, _RANGES lower_bound);
     }
 
-    template <class _KeyTy>
-    _NODISCARD const_iterator _Upper_bound(const _KeyTy& _Key_val) const {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        const auto _Key_unchecked_begin = _STD _Get_unwrapped(_STD cbegin(_Data.keys));
-        const auto _Key_unchecked_it    = _STD upper_bound(
-               _Key_unchecked_begin, _STD _Get_unwrapped(_STD cend(_Data.keys)), _Key_val, _Pass_key_comp());
-        const auto _Dist = _Key_unchecked_it - _Key_unchecked_begin;
-
-        auto _Key_it = _STD cbegin(_Data.keys);
-        _STD _Seek_wrapped(_Key_it, _Key_unchecked_it);
-        auto _Val_it =
-            _STD cbegin(_Data.values) + static_cast<_RANGES range_difference_t<const _MappedContainer>>(_Dist);
-        return const_iterator{_STD move(_Key_it), _STD move(_Val_it)};
+    template <class _SelfTy, class _KeyTy>
+    _NODISCARD auto _Upper_bound(this _SelfTy& _Self, const _KeyTy& _Key_val) {
+        return _Self._Find_bound(_Key_val, _RANGES upper_bound);
     }
 
-    template <class _KeyTy>
-    _NODISCARD pair<iterator, iterator> _Equal_range(const _KeyTy& _Key_val) {
+    template <class _SelfTy, class _KeyTy>
+    _NODISCARD auto _Equal_range(this _SelfTy& _Self, const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        return {lower_bound(_Key_val), upper_bound(_Key_val)};
-    }
-
-    template <class _KeyTy>
-    _NODISCARD pair<const_iterator, const_iterator> _Equal_range(const _KeyTy& _Key_val) const {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        return {lower_bound(_Key_val), upper_bound(_Key_val)};
+        return pair{_Self.lower_bound(_Key_val), _Self.upper_bound(_Key_val)};
     }
 };
 
@@ -1424,22 +1366,11 @@ public:
     }
 
 private:
-    template <class _KeyTy>
-    _NODISCARD mapped_type& _At(const _KeyTy& _Key_val) {
+    template <class _SelfTy, class _KeyTy>
+    _NODISCARD auto& _At(this _SelfTy& _Self, const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        const auto _Position = this->find(_Key_val);
-        if (_Position == this->end()) {
-            _Xout_of_range("invalid flat_map key");
-        }
-
-        return _Position->second;
-    }
-
-    template <class _KeyTy>
-    _NODISCARD const mapped_type& _At(const _KeyTy& _Key_val) const {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        const auto _Position = this->find(_Key_val);
-        if (_Position == this->end()) {
+        const auto _Position = _Self.find(_Key_val);
+        if (_Position == _Self.end()) {
             _Xout_of_range("invalid flat_map key");
         }
 
