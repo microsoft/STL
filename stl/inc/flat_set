@@ -97,7 +97,8 @@ public:
     using reverse_iterator       = const_reverse_iterator;
     using container_type         = _Container;
 
-    _Flat_set_base() : _Mycont(), _Mycomp() {}
+    // [flat.set.cons] Constructors
+    _Flat_set_base() : _Flat_set_base(key_compare()) {}
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const _Flat_set_base& _Other, const _Alloc& _Al)
