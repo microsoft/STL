@@ -1135,9 +1135,10 @@ private:
             _Sorted_new_elements.advance(_Old_distance);
             _RANGES sort(_Sorted_new_elements, value_compare{_Key_compare});
         } else {
-            [[maybe_unused]] auto const _New_elements_begin =
-                _Data.keys.begin() + static_cast<key_container_type::difference_type>(_Old_distance);
-            _STL_ASSERT(_Is_sorted_and_unique(_New_elements_begin, _Data.keys.end()), _Msg_not_sorted);
+            _STL_ASSERT(_Is_sorted_and_unique(
+                            _Data.keys.begin() + static_cast<key_container_type::difference_type>(_Old_distance),
+                            _Data.keys.end()),
+                _Msg_not_sorted);
         }
 
         // Merge the newly inserted elements with the existing elements
