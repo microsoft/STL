@@ -269,7 +269,24 @@ void test_flat_set() {
     using namespace std;
     puts("Testing <flat_set>.");
 
-    // FIXME! ADD TEST COVERAGE HERE!
+    [[maybe_unused]] constexpr sorted_unique_t unique_tag         = sorted_unique;
+    [[maybe_unused]] constexpr sorted_equivalent_t equivalent_tag = sorted_equivalent;
+
+    constexpr auto simple_truth = [](const auto&) { return true; };
+
+    flat_set<int> fs;
+    fs.emplace(42);
+    fs.emplace(42);
+    assert(fs.size() == 1);
+    assert(erase_if(fs, simple_truth) == 1);
+    assert(fs.empty());
+
+    flat_multiset<int> fms;
+    fms.emplace(42);
+    fms.emplace(42);
+    assert(fms.size() == 2);
+    assert(erase_if(fms, simple_truth) == 2);
+    assert(fms.empty());
 }
 #endif // TEST_STANDARD >= 23
 
