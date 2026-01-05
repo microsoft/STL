@@ -291,8 +291,6 @@ public:
     }
 
     // modifiers
-    // FIXME, the "insert" and "erase" methods may not be able to restore the invariant, if the underlying
-    // container is unable to provide strong guarantee for "erase" and "insert" methods.
     template <class... _Args>
     auto emplace(_Args&&... _Vals) {
         constexpr bool _Is_key_type = _In_place_key_extract_set<_Kty, remove_cvref_t<_Args>...>::_Extractable;
@@ -372,6 +370,9 @@ public:
         _Mycont        = _STD move(_Cont);
         _Guard._Target = nullptr;
     }
+
+    // FIXME, the "erase" member functions need clear guards to restore the invariant when the underlying
+    // container doesn't provide the strong guarantee for its "erase" member functions.
 
     // NB: `erase(iterator)` is identical to `erase(const_iterator)`
     iterator erase(const_iterator _Where) {
