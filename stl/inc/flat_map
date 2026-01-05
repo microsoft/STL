@@ -1122,7 +1122,7 @@ private:
         return find(_Key_val) != cend();
     }
 
-    template <class _KeyTy, class _SelfTy, class _BoundFn>
+    template <class _SelfTy, class _KeyTy, class _BoundFn>
     _NODISCARD auto _Find_bound(this _SelfTy& _Self, const _KeyTy& _Key_val, _BoundFn _Bound_fun) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         const auto _Key_unchecked_begin = _STD _Get_unwrapped(_STD cbegin(_Self._Data.keys));
@@ -1139,12 +1139,12 @@ private:
         return _Maybe_const_iter{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
-    template <class _KeyTy, class _SelfTy>
+    template <class _SelfTy, class _KeyTy>
     _NODISCARD auto _Lower_bound(this _SelfTy& _Self, const _KeyTy& _Key_val) {
         return _Self._Find_bound(_Key_val, _RANGES lower_bound);
     }
 
-    template <class _KeyTy, class _SelfTy>
+    template <class _SelfTy, class _KeyTy>
     _NODISCARD auto _Upper_bound(this _SelfTy& _Self, const _KeyTy& _Key_val) {
         return _Self._Find_bound(_Key_val, _RANGES upper_bound);
     }
