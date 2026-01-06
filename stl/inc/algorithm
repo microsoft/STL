@@ -371,7 +371,7 @@ __declspec(noalias) void _Replace_vectorized(
 
 #if _VECTORIZED_REPLACE_COPY
 template <class _Ty, class _TVal1, class _TVal2>
-__declspec(noalias) void _Replace_copy_vectorized(const _Ty* const _First, const _Ty* const _Last, _Ty* _Dest,
+__declspec(noalias) void _Replace_copy_vectorized(const _Ty* const _First, const _Ty* const _Last, _Ty* const _Dest,
     const _TVal1 _Old_val, const _TVal2 _New_val) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
         ::__std_replace_copy_1(
