@@ -6491,7 +6491,7 @@ __declspec(noalias) size_t __stdcall __std_mismatch_8(
 namespace {
     namespace _Replacing {
         template <class _Traits, class _Ty>
-        void __stdcall _Replace_copy_impl(
+        __declspec(noalias) void __stdcall _Replace_copy_impl(
             const void* _First, const void* const _Last, void* _Dest, const _Ty _Old_val, const _Ty _New_val) noexcept {
 #ifndef _M_ARM64EC
             const size_t _Size_bytes = _Byte_length(_First, _Last);
