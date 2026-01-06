@@ -4721,15 +4721,13 @@ namespace ranges {
                           && _Vector_alg_in_find_is_safe<_It, _Ty1> && _Vector_alg_in_find_is_safe<_It, _Ty2>
                           && _Output_iterator_for_known_size_vector_alg_is_safe<_Out, _It>()) {
                 if (!_STD is_constant_evaluated()) {
-                    const auto _Count     = _Last - _First;
+                    const auto _Count = _Last - _First;
+                    _STD _Contiguous_iter_verify(_First, _Count);
+                    _STD _Contiguous_iter_verify(_Output, static_cast<iter_difference_t<_Out>>(_Count));
+
                     const auto _First_ptr = _STD to_address(_First);
+                    const auto _Last_ptr  = _First_ptr + static_cast<size_t>(_Count);
                     const auto _Out_ptr   = _STD to_address(_Output);
-
-                    _First += _Count;
-                    const auto _Last_ptr = _STD to_address(_First);
-
-                    _Output += static_cast<iter_difference_t<_Out>>(_Count);
-                    (void) _STD to_address(_Output);
 
                     if (_STD _Could_compare_equal_to_value_type<_It>(_Oldval)) {
                         _STD _Replace_copy_vectorized(_First_ptr, _Last_ptr, _Out_ptr, _Oldval, _Newval);
@@ -4737,6 +4735,8 @@ namespace ranges {
                         _CSTD memcpy(_Out_ptr, _First_ptr, static_cast<size_t>(_Count) * sizeof(*_Out_ptr));
                     }
 
+                    _First += _Count;
+                    _Output += static_cast<iter_difference_t<_Out>>(_Count);
                     return {_STD move(_First), _STD move(_Output)};
                 }
             }
