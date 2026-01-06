@@ -15,16 +15,14 @@
 #include <cwchar>
 #include <type_traits>
 
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
+#ifdef _M_ARM64
+#include <arm64_neon.h>
+#elif !defined(_M_ARM64EC)
 #include <intrin.h>
 #include <isa_availability.h>
 
 extern "C" long __isa_enabled;
-#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
-
-#ifdef _M_ARM64
-#include <arm64_neon.h>
-#endif
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
 namespace {
 #if !defined(_M_ARM64) && !defined(_M_ARM64EC)
