@@ -2752,7 +2752,7 @@ namespace {
         }
 
 #ifdef _M_ARM64
-        template <_Min_max_mode _Mode, class _Traits, const bool _Sign>
+        template <_Min_max_mode _Mode, class _Traits, bool _Sign>
         auto _Minmax_element_impl(const void* _First, const void* const _Last) noexcept {
 #else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
         template <_Min_max_mode _Mode, class _Traits>
