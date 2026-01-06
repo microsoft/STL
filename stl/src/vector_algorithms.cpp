@@ -965,8 +965,7 @@ namespace {
 
             static void _Exit_vectorized() noexcept {}
         };
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
-#ifndef _M_ARM64EC
+#elif !defined(_M_ARM64EC)
         struct _Traits_sse_base {
             using _Guard                            = char;
             static constexpr bool _Vectorized       = true;
@@ -1056,7 +1055,6 @@ namespace {
             }
         };
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
-#endif // ^^^ !defined(_M_ARM64) ^^^
 
         struct _Traits_1_base {
             static constexpr bool _Is_floating = false;
@@ -1166,8 +1164,7 @@ namespace {
                 return _Mask;
             }
         };
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
-#ifndef _M_ARM64EC
+#elif !defined(_M_ARM64EC)
         struct _Traits_1_sse : _Traits_1_base, _Traits_sse_base {
             static __m128i _Load(const void* const _Src) noexcept {
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
@@ -1353,7 +1350,6 @@ namespace {
             }
         };
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
-#endif // ^^^ !defined(_M_ARM64) ^^^
 
         struct _Traits_2_base {
             static constexpr bool _Is_floating = false;
@@ -1463,8 +1459,7 @@ namespace {
                 return _Mask;
             }
         };
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
-#ifndef _M_ARM64EC
+#elif !defined(_M_ARM64EC)
         struct _Traits_2_sse : _Traits_2_base, _Traits_sse_base {
             static __m128i _Load(const void* const _Src) noexcept {
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
@@ -1643,7 +1638,6 @@ namespace {
             }
         };
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
-#endif // ^^^ !defined(_M_ARM64) ^^^
 
         struct _Traits_4_base {
             static constexpr bool _Is_floating = false;
@@ -1757,8 +1751,7 @@ namespace {
                 return _Mask;
             }
         };
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
-#ifndef _M_ARM64EC
+#elif !defined(_M_ARM64EC)
         struct _Traits_4_sse : _Traits_4_base, _Traits_sse_base {
             static __m128i _Load(const void* const _Src) noexcept {
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
@@ -1931,7 +1924,6 @@ namespace {
             }
         };
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
-#endif // ^^^ !defined(_M_ARM64) ^^^
 
         struct _Traits_8_base {
             static constexpr bool _Is_floating = false;
@@ -2233,8 +2225,7 @@ namespace {
                 return vreinterpretq_s32_f32(_Mask);
             }
         };
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
-#ifndef _M_ARM64EC
+#elif !defined(_M_ARM64EC)
         struct _Traits_f_sse : _Traits_f_base, _Traits_sse_base {
             static __m128 _Load(const void* const _Src) noexcept {
                 return _mm_loadu_ps(reinterpret_cast<const float*>(_Src));
@@ -2390,7 +2381,6 @@ namespace {
             }
         };
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
-#endif // ^^^ !defined(_M_ARM64) ^^^
 
         struct _Traits_d_base {
             static constexpr bool _Is_floating = true;
@@ -2491,8 +2481,7 @@ namespace {
                 return vreinterpretq_s64_f64(_Mask);
             }
         };
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
-#ifndef _M_ARM64EC
+#elif !defined(_M_ARM64EC)
         struct _Traits_d_sse : _Traits_d_base, _Traits_sse_base {
             static __m128d _Load(const void* const _Src) noexcept {
                 return _mm_loadu_pd(reinterpret_cast<const double*>(_Src));
@@ -2645,7 +2634,6 @@ namespace {
             }
         };
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
-#endif // ^^^ !defined(_M_ARM64) ^^^
 
         struct _Traits_1 {
             using _Scalar = _Traits_scalar<_Traits_1_base>;
