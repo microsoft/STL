@@ -243,6 +243,7 @@ void assert_all_requirements(const T& s) {
             }
         }
     }
+    assert(s._Is_sorted_and_unique());
 }
 
 template <class T>

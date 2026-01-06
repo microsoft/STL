@@ -335,7 +335,6 @@ public:
         mapped_container_type values;
     };
 
-public:
     // [flat.map.cons] Constructors
     explicit _Flat_map_base(const key_compare& _Comp) : _Data(), _Key_compare(_Comp) {}
     _Flat_map_base() : _Flat_map_base(key_compare()) {}
@@ -359,14 +358,15 @@ public:
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(
         const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont, const _Allocator& _Alloc)
-        : _Flat_map_base(_Sorted_t{}, _Key_cont, _Mapped_cont, _Alloc) {
-        _Sort_and_erase_dupes_if_not_multi();
-    }
+        : _Flat_map_base(_Key_cont, _Mapped_cont, key_compare(), _Alloc) {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
         const key_compare& _Comp, const _Allocator& _Alloc)
-        : _Flat_map_base(_Sorted_t{}, _Key_cont, _Mapped_cont, _Comp, _Alloc) {
+        : _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Key_cont),
+              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)},
+          _Key_compare(_Comp) {
+        _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
         _Sort_and_erase_dupes_if_not_multi();
     }
 
@@ -374,16 +374,13 @@ public:
         const key_compare& _Comp = key_compare())
         : _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)}, _Key_compare(_Comp) {
         _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
+        _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
-    _Flat_map_base(_Sorted_t, const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
+    _Flat_map_base(_Sorted_t _Tag, const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
         const _Allocator& _Alloc)
-        : _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _Key_cont),
-              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)},
-          _Key_compare(key_compare()) {
-        _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
-    }
+        : _Flat_map_base(_Tag, _Key_cont, _Mapped_cont, key_compare(), _Alloc) {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(_Sorted_t, const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
@@ -392,23 +389,26 @@ public:
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)},
           _Key_compare(_Comp) {
         _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
+        _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Iterator_for_container _InputIterator>
-    _Flat_map_base(_InputIterator _First, _InputIterator _Last, const key_compare& _Comp = key_compare())
+    _Flat_map_base(const _InputIterator _First, const _InputIterator _Last, const key_compare& _Comp = key_compare())
         : _Flat_map_base(_Comp) {
         insert(_First, _Last);
     }
 
     template <_Iterator_for_container _InputIterator,
         _Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
-    _Flat_map_base(_InputIterator _First, _InputIterator _Last, const _Allocator& _Alloc) : _Flat_map_base(_Alloc) {
+    _Flat_map_base(const _InputIterator _First, const _InputIterator _Last, const _Allocator& _Alloc)
+        : _Flat_map_base(_Alloc) {
         insert(_First, _Last);
     }
 
     template <_Iterator_for_container _InputIterator,
         _Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
-    _Flat_map_base(_InputIterator _First, _InputIterator _Last, const key_compare& _Comp, const _Allocator& _Alloc)
+    _Flat_map_base(
+        const _InputIterator _First, const _InputIterator _Last, const key_compare& _Comp, const _Allocator& _Alloc)
         : _Flat_map_base(_Comp, _Alloc) {
         insert(_First, _Last);
     }
@@ -435,45 +435,46 @@ public:
     }
 
     template <_Iterator_for_container _InputIterator>
-    _Flat_map_base(_Sorted_t, _InputIterator _First, _InputIterator _Last, const key_compare& _Comp = key_compare())
+    _Flat_map_base(
+        _Sorted_t, const _InputIterator _First, const _InputIterator _Last, const key_compare& _Comp = key_compare())
         : _Flat_map_base(_Comp) {
         _Insert_range<false>(_First, _Last);
     }
 
     template <_Iterator_for_container _InputIterator,
         _Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
-    _Flat_map_base(
-        _Sorted_t, _InputIterator _First, _InputIterator _Last, const key_compare& _Comp, const _Allocator& _Alloc)
+    _Flat_map_base(_Sorted_t, const _InputIterator _First, const _InputIterator _Last, const key_compare& _Comp,
+        const _Allocator& _Alloc)
         : _Flat_map_base(_Comp, _Alloc) {
         _Insert_range<false>(_First, _Last);
     }
 
     template <_Iterator_for_container _InputIterator,
         _Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
-    _Flat_map_base(_Sorted_t _Tag, _InputIterator _First, _InputIterator _Last, const _Allocator& _Alloc)
+    _Flat_map_base(_Sorted_t _Tag, const _InputIterator _First, const _InputIterator _Last, const _Allocator& _Alloc)
         : _Flat_map_base(_Tag, _First, _Last, key_compare(), _Alloc) {}
 
-    _Flat_map_base(initializer_list<value_type> _Ilist, const key_compare& _Comp = key_compare())
+    _Flat_map_base(const initializer_list<value_type> _Ilist, const key_compare& _Comp = key_compare())
         : _Flat_map_base(_Ilist.begin(), _Ilist.end(), _Comp) {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
-    _Flat_map_base(initializer_list<value_type> _Ilist, const key_compare& _Comp, const _Allocator& _Alloc)
+    _Flat_map_base(const initializer_list<value_type> _Ilist, const key_compare& _Comp, const _Allocator& _Alloc)
         : _Flat_map_base(_Ilist.begin(), _Ilist.end(), _Comp, _Alloc) {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
-    _Flat_map_base(initializer_list<value_type> _Ilist, const _Allocator& _Alloc)
+    _Flat_map_base(const initializer_list<value_type> _Ilist, const _Allocator& _Alloc)
         : _Flat_map_base(_Ilist, key_compare(), _Alloc) {}
 
-    _Flat_map_base(_Sorted_t _Tag, initializer_list<value_type> _Ilist, const key_compare& _Comp = key_compare())
+    _Flat_map_base(_Sorted_t _Tag, const initializer_list<value_type> _Ilist, const key_compare& _Comp = key_compare())
         : _Flat_map_base(_Tag, _Ilist.begin(), _Ilist.end(), _Comp) {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(
-        _Sorted_t _Tag, initializer_list<value_type> _Ilist, const key_compare& _Comp, const _Allocator& _Alloc)
+        _Sorted_t _Tag, const initializer_list<value_type> _Ilist, const key_compare& _Comp, const _Allocator& _Alloc)
         : _Flat_map_base(_Tag, _Ilist.begin(), _Ilist.end(), _Comp, _Alloc) {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
-    _Flat_map_base(_Sorted_t _Tag, initializer_list<value_type> _Ilist, const _Allocator& _Alloc)
+    _Flat_map_base(_Sorted_t _Tag, const initializer_list<value_type> _Ilist, const _Allocator& _Alloc)
         : _Flat_map_base(_Tag, _Ilist, key_compare(), _Alloc) {}
 
     // Copy constructors
@@ -511,10 +512,14 @@ public:
     _Flat_map_base& operator=(_Flat_map_base&& _Other)
         noexcept(is_nothrow_copy_assignable_v<key_compare> && is_nothrow_move_assignable_v<key_container_type>
                  && is_nothrow_move_assignable_v<mapped_container_type>) {
-        _Clear_guard _Guard{this};
-        _Data          = _STD move(_Other).extract();
-        _Key_compare   = _Other._Key_compare; // intentionally copy comparator, see LWG-2227
-        _Guard._Target = nullptr;
+
+        if (this != _STD addressof(_Other)) {
+            _Clear_guard _Guard{this};
+            _Clear_guard _Always_clear{_STD addressof(_Other)};
+            _Data          = _STD move(_Other._Data);
+            _Key_compare   = _Other._Key_compare; // intentionally copy comparator, see LWG-2227
+            _Guard._Target = nullptr;
+        }
         return *this;
     }
 
@@ -628,35 +633,35 @@ public:
     }
 
     template <class... _ArgTypes>
-    iterator emplace_hint(const_iterator _Position, _ArgTypes&&... _Args)
+    iterator emplace_hint(const const_iterator _Position, _ArgTypes&&... _Args)
         requires is_constructible_v<value_type, _ArgTypes...>
     {
         value_type _Val(_STD forward<_ArgTypes>(_Args)...);
         return _Emplace_hint<false>(_Position, _STD move(_Val.first), _STD move(_Val.second));
     }
 
-    iterator insert(const_iterator _Position, const value_type& _Pair_val) {
+    iterator insert(const const_iterator _Position, const value_type& _Pair_val) {
         return emplace_hint(_Position, _Pair_val);
     }
 
-    iterator insert(const_iterator _Position, value_type&& _Pair_val) {
+    iterator insert(const const_iterator _Position, value_type&& _Pair_val) {
         return emplace_hint(_Position, _STD move(_Pair_val));
     }
 
     template <class _PairValTy>
-    iterator insert(const_iterator _Position, _PairValTy&& _Pair_val)
+    iterator insert(const const_iterator _Position, _PairValTy&& _Pair_val)
         requires is_constructible_v<value_type, _PairValTy>
     {
         return emplace_hint(_Position, _STD forward<_PairValTy>(_Pair_val));
     }
 
     template <_Iterator_for_container _InputIterator>
-    void insert(_InputIterator _First, _InputIterator _Last) {
+    void insert(const _InputIterator _First, const _InputIterator _Last) {
         _Insert_range<true>(_First, _Last);
     }
 
     template <_Iterator_for_container _InputIterator>
-    void insert(_Sorted_t, _InputIterator _First, _InputIterator _Last) {
+    void insert(_Sorted_t, const _InputIterator _First, const _InputIterator _Last) {
         _Insert_range<false>(_First, _Last);
     }
 
@@ -670,19 +675,19 @@ public:
         _Insert_range<false>(_RANGES begin(_Range), _RANGES end(_Range));
     }
 
-    void insert(initializer_list<value_type> _Ilist) {
+    void insert(const initializer_list<value_type> _Ilist) {
         _Insert_range<true>(_Ilist.begin(), _Ilist.end());
     }
 
-    void insert(_Sorted_t, initializer_list<value_type> _Ilist) {
+    void insert(_Sorted_t, const initializer_list<value_type> _Ilist) {
         _Insert_range<false>(_Ilist.begin(), _Ilist.end());
     }
 
-    iterator erase(iterator _Position) {
+    iterator erase(const iterator _Position) {
         return erase(static_cast<const_iterator>(_Position));
     }
 
-    iterator erase(const_iterator _Position) {
+    iterator erase(const const_iterator _Position) {
         _Clear_guard _Guard{this};
         auto _Key_it   = _Data.keys.erase(_Position._Key_it);
         auto _Val_it   = _Data.values.erase(_Position._Mapped_it);
@@ -690,7 +695,7 @@ public:
         return iterator{_STD move(_Key_it), _STD move(_Val_it)};
     }
 
-    iterator erase(const_iterator _First, const_iterator _Last) {
+    iterator erase(const const_iterator _First, const const_iterator _Last) {
         _Clear_guard _Guard{this};
         auto _Key_it   = _Data.keys.erase(_First._Key_it, _Last._Key_it);
         auto _Val_it   = _Data.values.erase(_First._Mapped_it, _Last._Mapped_it);
@@ -726,7 +731,7 @@ public:
 
     void replace(key_container_type&& _Key_cont, mapped_container_type&& _Mapped_cont) {
         _STL_ASSERT(_Key_cont.size() == _Mapped_cont.size(), "key_cont.size() != mapped_cont.size()");
-        _STL_ASSERT(_Is_sorted(_Key_cont), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_and_unique(_Key_cont), _Msg_not_sorted);
         _Clear_guard _Guard{this};
         _Data.keys     = _STD move(_Key_cont);
         _Data.values   = _STD move(_Mapped_cont);
@@ -964,7 +969,7 @@ protected:
             if (_Hint_order == weak_ordering::less) {
                 if (_New_position != _End && !_Key_compare(_Key_val, *_New_position._Key_it)) {
                     const auto _Dist = _New_position._Key_it - _Begin._Key_it;
-                    auto _It         = begin() + _Dist;
+                    const auto _It   = begin() + _Dist;
                     if constexpr (_OverwriteIfExists) {
                         *_It._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
                     }
@@ -973,7 +978,7 @@ protected:
             } else {
                 if (_New_position != _Begin && !_Key_compare(*_STD prev(_New_position._Key_it), _Key_val)) {
                     const auto _Dist = _STD prev(_New_position._Key_it) - _Begin._Key_it;
-                    auto _It         = begin() + _Dist;
+                    const auto _It   = begin() + _Dist;
                     if constexpr (_OverwriteIfExists) {
                         *_It._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
                     }
@@ -991,7 +996,7 @@ protected:
         return begin() + _Dist;
     }
 
-    void _Insert_exact(const_iterator _Position, key_type&& _Key_val, mapped_type&& _Mapped_val) {
+    void _Insert_exact(const const_iterator _Position, key_type&& _Key_val, mapped_type&& _Mapped_val) {
         _Clear_guard _Guard{this};
         _Data.keys.insert(_Position._Key_it, _STD move(_Key_val));
         _Data.values.insert(_Position._Mapped_it, _STD move(_Mapped_val));
@@ -1021,14 +1026,14 @@ private:
     _NODISCARD size_type _Erase_if(_Predicate _Pred) {
         auto _View           = _View_to_mutate();
         auto _Mut_first      = _View.begin();
-        auto _Mut_last       = _View.end();
+        const auto _Mut_last = _View.end();
         const auto _Old_size = size();
 
         _Clear_guard _Guard{this};
 
         _STD _Seek_wrapped(_Mut_first, _RANGES remove_if(_View, _Pred).begin());
-        (void) _Data.keys.erase(_Mut_first._Key_it, _Mut_last._Key_it);
-        (void) _Data.values.erase(_Mut_first._Mapped_it, _Mut_last._Mapped_it);
+        _Data.keys.erase(_Mut_first._Key_it, _Mut_last._Key_it);
+        _Data.values.erase(_Mut_first._Mapped_it, _Mut_last._Mapped_it);
 
         _Guard._Target = nullptr;
         return _Old_size - size();
@@ -1041,8 +1046,14 @@ private:
             _Mutating_iterator{_Data.keys.end(), _Data.values.end()}};
     }
 
-    _NODISCARD bool _Is_sorted(
-        typename key_container_type::const_iterator _It, const typename key_container_type::const_iterator _End) const {
+public:
+    _NODISCARD bool _Is_sorted_and_unique() const {
+        return _Is_sorted_and_unique(_Data.keys);
+    }
+
+private:
+    _NODISCARD bool _Is_sorted_and_unique(
+        const key_container_type::const_iterator _It, const key_container_type::const_iterator _End) const {
         if constexpr (_IsUnique) {
             // sorted-unique
             auto _Negated = [this](const key_type& _Lhs, const key_type& _Rhs) { return !_Key_compare(_Lhs, _Rhs); };
@@ -1052,8 +1063,8 @@ private:
         }
     }
 
-    _NODISCARD bool _Is_sorted(const key_container_type& _Cont) const {
-        return _Is_sorted(_Cont.begin(), _Cont.end());
+    _NODISCARD bool _Is_sorted_and_unique(const key_container_type& _Cont) const {
+        return _Is_sorted_and_unique(_Cont.begin(), _Cont.end());
     }
 
     void _Sort_and_erase_dupes_if_not_multi() {
@@ -1074,15 +1085,15 @@ private:
 
         _Erase_dupes_if_not_multi();
 
-        _STL_INTERNAL_CHECK(_Is_sorted(_Data.keys));
+        _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
 
         _Guard._Target = nullptr;
     }
 
     void _Erase_dupes_if_not_multi() {
         if constexpr (_IsUnique) {
-            auto _Sorted_view = _View_to_mutate();
-            auto _Subrange    = _RANGES unique(_Sorted_view, [this](const_reference _Left, const_reference _Right) {
+            auto _Sorted_view    = _View_to_mutate();
+            const auto _Subrange = _RANGES unique(_Sorted_view, [this](const_reference _Left, const_reference _Right) {
                 return this->_Key_equal(_Left.first, _Right.first);
             });
             const auto _Remaining_count = _Subrange.begin() - _Sorted_view.begin();
@@ -1096,7 +1107,7 @@ private:
     }
 
     template <bool _NeedSorting, class _InputIterator, class _Sentinel>
-    void _Insert_range(_InputIterator _First, _Sentinel _Last) {
+    void _Insert_range(_InputIterator _First, const _Sentinel _Last) {
         _Clear_guard _Guard{this};
 
         const auto _Old_distance = static_cast<difference_type>(size());
@@ -1123,13 +1134,18 @@ private:
             auto _Sorted_new_elements = _Sorted_view;
             _Sorted_new_elements.advance(_Old_distance);
             _RANGES sort(_Sorted_new_elements, value_compare{_Key_compare});
+        } else {
+            _STL_ASSERT(_Is_sorted_and_unique(
+                            _Data.keys.begin() + static_cast<key_container_type::difference_type>(_Old_distance),
+                            _Data.keys.end()),
+                _Msg_not_sorted);
         }
 
         // Merge the newly inserted elements with the existing elements
         _RANGES inplace_merge(_Sorted_view, _Sorted_view.begin() + _Old_distance, value_compare{_Key_compare});
 
         _Erase_dupes_if_not_multi();
-        _STL_INTERNAL_CHECK(_Is_sorted(_Data.keys));
+        _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
 
         _Guard._Target = nullptr;
     }
@@ -1297,14 +1313,14 @@ public:
     }
 
     template <class... _MappedArgTypes>
-    iterator try_emplace(const_iterator _Position, const key_type& _Key_val, _MappedArgTypes&&... _Mapped_args)
+    iterator try_emplace(const const_iterator _Position, const key_type& _Key_val, _MappedArgTypes&&... _Mapped_args)
         requires is_constructible_v<mapped_type, _MappedArgTypes...>
     {
         return this->template _Emplace_hint<false>(_Position, _Key_val, _STD forward<_MappedArgTypes>(_Mapped_args)...);
     }
 
     template <class... _MappedArgTypes>
-    iterator try_emplace(const_iterator _Position, key_type&& _Key_val, _MappedArgTypes&&... _Mapped_args)
+    iterator try_emplace(const const_iterator _Position, key_type&& _Key_val, _MappedArgTypes&&... _Mapped_args)
         requires is_constructible_v<mapped_type, _MappedArgTypes&&...>
     {
         return this->template _Emplace_hint<false>(
@@ -1312,7 +1328,7 @@ public:
     }
 
     template <class _OtherKey, class... _MappedArgTypes>
-    iterator try_emplace(const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args)
+    iterator try_emplace(const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args)
         requires _Transparent<key_compare> && is_constructible_v<key_type, _OtherKey>
               && is_constructible_v<mapped_type, _MappedArgTypes&&...>
     {
@@ -1343,21 +1359,21 @@ public:
     }
 
     template <class _MappedTy>
-    iterator insert_or_assign(const_iterator _Position, const key_type& _Key_val, _MappedTy&& _Mapped_val)
+    iterator insert_or_assign(const const_iterator _Position, const key_type& _Key_val, _MappedTy&& _Mapped_val)
         requires is_assignable_v<mapped_type&, _MappedTy> && is_constructible_v<mapped_type, _MappedTy>
     {
         return this->template _Emplace_hint<true>(_Position, _Key_val, _STD forward<_MappedTy>(_Mapped_val));
     }
 
     template <class _MappedTy>
-    iterator insert_or_assign(const_iterator _Position, key_type&& _Key_val, _MappedTy&& _Mapped_val)
+    iterator insert_or_assign(const const_iterator _Position, key_type&& _Key_val, _MappedTy&& _Mapped_val)
         requires is_assignable_v<mapped_type&, _MappedTy> && is_constructible_v<mapped_type, _MappedTy>
     {
         return this->template _Emplace_hint<true>(_Position, _STD move(_Key_val), _STD forward<_MappedTy>(_Mapped_val));
     }
 
     template <class _OtherKey, class _MappedTy>
-    iterator insert_or_assign(const_iterator _Position, _OtherKey&& _Key_val, _MappedTy&& _Mapped_val)
+    iterator insert_or_assign(const const_iterator _Position, _OtherKey&& _Key_val, _MappedTy&& _Mapped_val)
         requires _Transparent<key_compare> && is_constructible_v<key_type, _OtherKey>
               && is_assignable_v<mapped_type&, _MappedTy> && is_constructible_v<mapped_type, _MappedTy>
     {
