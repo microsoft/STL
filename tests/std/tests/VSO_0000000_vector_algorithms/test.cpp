@@ -762,7 +762,7 @@ void test_case_replace_copy(const vector<T>& input, vector<T>& out_expected, vec
     assert(out_expected == out_actual_r);
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     (void) out_actual_r;
-#endif // ^^^ !_HAS_CXX20 ^^
+#endif // ^^^ !_HAS_CXX20 ^^^
 }
 
 template <class T, bool in_place>

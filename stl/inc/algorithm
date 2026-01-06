@@ -518,7 +518,7 @@ constexpr bool _Output_iterator_for_known_size_vector_alg_is_safe() {
         return false;
     }
 }
-#endif // ^^^ _VECTORIZED_REPLACE_COPY
+#endif // ^^^ _VECTORIZED_REPLACE_COPY ^^^
 
 #if _VECTORIZED_INCLUDES
 // Can we activate the vector algorithms for includes?
