@@ -765,8 +765,11 @@ void test_case_replace_copy(const vector<T>& input, vector<T>& out_expected, vec
 #endif // ^^^ !_HAS_CXX20 ^^^
 }
 
-template <class T, bool in_place>
+template <class T>
 void test_replace(mt19937_64& gen) {
+    // replace() is vectorized for 4 and 8 bytes only.
+    constexpr bool replace_is_vectorized = sizeof(T) >= 4;
+
     using TD = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis(0, 9);
 
@@ -782,7 +785,7 @@ void test_replace(mt19937_64& gen) {
         v->reserve(dataCount);
     }
 
-    if constexpr (in_place) {
+    if constexpr (replace_is_vectorized) {
         for (const auto& v : {&in_out_expected, &in_out_actual, &in_out_actual_r}) {
             v->reserve(dataCount);
         }
@@ -792,7 +795,7 @@ void test_replace(mt19937_64& gen) {
         const T old_val = static_cast<T>(dis(gen));
         const T new_val = static_cast<T>(dis(gen));
 
-        if constexpr (in_place) {
+        if constexpr (replace_is_vectorized) {
             test_case_replace(in_out_expected, in_out_actual, in_out_actual_r, old_val, new_val);
         }
         test_case_replace_copy(source, out_expected, out_actual, out_actual_r, old_val, new_val);
@@ -811,7 +814,7 @@ void test_replace(mt19937_64& gen) {
             v->assign(source.size(), T{0});
         }
 
-        if constexpr (in_place) {
+        if constexpr (replace_is_vectorized) {
             test_case_replace(in_out_expected, in_out_actual, in_out_actual_r, old_val, new_val);
         }
         test_case_replace_copy(source, out_expected, out_actual, out_actual_r, old_val, new_val);
@@ -1345,16 +1348,15 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_includes<unsigned long long>(gen);
 #endif // _HAS_CXX17
 
-    // replace() is vectorized for 4 and 8 bytes only.
-    test_replace<char, false>(gen);
-    test_replace<signed char, false>(gen);
-    test_replace<unsigned char, false>(gen);
-    test_replace<short, false>(gen);
-    test_replace<unsigned short, false>(gen);
-    test_replace<int, true>(gen);
-    test_replace<unsigned int, true>(gen);
-    test_replace<long long, true>(gen);
-    test_replace<unsigned long long, true>(gen);
+    test_replace<char>(gen);
+    test_replace<signed char>(gen);
+    test_replace<unsigned char>(gen);
+    test_replace<short>(gen);
+    test_replace<unsigned short>(gen);
+    test_replace<int>(gen);
+    test_replace<unsigned int>(gen);
+    test_replace<long long>(gen);
+    test_replace<unsigned long long>(gen);
 
     test_reverse<char>(gen);
     test_reverse<signed char>(gen);
