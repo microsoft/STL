@@ -1111,13 +1111,13 @@ namespace {
             }
 
             static _Vec_t _H_min_u(const _Vec_t _Cur) noexcept {
-                const uint8_t m = vminvq_u8(vreinterpretq_u8_s8(_Cur));
-                return vreinterpretq_s8_u8(vdupq_n_u8(m));
+                const uint8_t _Mx = vminvq_u8(vreinterpretq_u8_s8(_Cur));
+                return vreinterpretq_s8_u8(vdupq_n_u8(_Mx));
             }
 
             static _Vec_t _H_max_u(const _Vec_t _Cur) noexcept {
-                const uint8_t M = vmaxvq_u8(vreinterpretq_u8_s8(_Cur));
-                return vreinterpretq_s8_u8(vdupq_n_u8(M));
+                const uint8_t _Mx = vmaxvq_u8(vreinterpretq_u8_s8(_Cur));
+                return vreinterpretq_s8_u8(vdupq_n_u8(_Mx));
             }
 
             static _Signed_t _Get_any(const _Vec_t _Cur) noexcept {
@@ -1153,13 +1153,13 @@ namespace {
             }
 
             static _Vec_t _Min_u(const _Vec_t _First, const _Vec_t _Second, _Vec_t = vdupq_n_s8(0)) noexcept {
-                const uint8x16_t r = vminq_u8(vreinterpretq_u8_s8(_First), vreinterpretq_u8_s8(_Second));
-                return vreinterpretq_s8_u8(r);
+                const uint8x16_t _Rx = vminq_u8(vreinterpretq_u8_s8(_First), vreinterpretq_u8_s8(_Second));
+                return vreinterpretq_s8_u8(_Rx);
             }
 
             static _Vec_t _Max_u(const _Vec_t _First, const _Vec_t _Second, _Vec_t = vdupq_n_s8(0)) noexcept {
-                const uint8x16_t r = vmaxq_u8(vreinterpretq_u8_s8(_First), vreinterpretq_u8_s8(_Second));
-                return vreinterpretq_s8_u8(r);
+                const uint8x16_t _Rx = vmaxq_u8(vreinterpretq_u8_s8(_First), vreinterpretq_u8_s8(_Second));
+                return vreinterpretq_s8_u8(_Rx);
             }
 
             static _Vec_t _Mask_cast(const _Vec_t _Mask) noexcept {
@@ -1408,13 +1408,13 @@ namespace {
             }
 
             static _Vec_t _H_min_u(const _Vec_t _Cur) noexcept {
-                const uint16_t m = vminvq_u16(vreinterpretq_u16_s16(_Cur));
-                return vreinterpretq_s16_u16(vdupq_n_u16(m));
+                const uint16_t _Mx = vminvq_u16(vreinterpretq_u16_s16(_Cur));
+                return vreinterpretq_s16_u16(vdupq_n_u16(_Mx));
             }
 
             static _Vec_t _H_max_u(const _Vec_t _Cur) noexcept {
-                const uint16_t M = vmaxvq_u16(vreinterpretq_u16_s16(_Cur));
-                return vreinterpretq_s16_u16(vdupq_n_u16(M));
+                const uint16_t _Mx = vmaxvq_u16(vreinterpretq_u16_s16(_Cur));
+                return vreinterpretq_s16_u16(vdupq_n_u16(_Mx));
             }
 
             static _Signed_t _Get_any(const _Vec_t _Cur) noexcept {
@@ -1450,13 +1450,13 @@ namespace {
             }
 
             static _Vec_t _Min_u(const _Vec_t _First, const _Vec_t _Second, _Vec_t = vdupq_n_s16(0)) noexcept {
-                const uint16x8_t r = vminq_u16(vreinterpretq_u16_s16(_First), vreinterpretq_u16_s16(_Second));
-                return vreinterpretq_s16_u16(r);
+                const uint16x8_t _Rx = vminq_u16(vreinterpretq_u16_s16(_First), vreinterpretq_u16_s16(_Second));
+                return vreinterpretq_s16_u16(_Rx);
             }
 
             static _Vec_t _Max_u(const _Vec_t _First, const _Vec_t _Second, _Vec_t = vdupq_n_s16(0)) noexcept {
-                const uint16x8_t r = vmaxq_u16(vreinterpretq_u16_s16(_First), vreinterpretq_u16_s16(_Second));
-                return vreinterpretq_s16_u16(r);
+                const uint16x8_t _Rx = vmaxq_u16(vreinterpretq_u16_s16(_First), vreinterpretq_u16_s16(_Second));
+                return vreinterpretq_s16_u16(_Rx);
             }
 
             static _Vec_t _Mask_cast(const _Vec_t _Mask) noexcept {
@@ -1702,13 +1702,13 @@ namespace {
             }
 
             static _Vec_t _H_min_u(const _Vec_t _Cur) noexcept {
-                const uint32_t m = vminvq_u32(vreinterpretq_u32_s32(_Cur));
-                return vreinterpretq_s32_u32(vdupq_n_u32(m));
+                const uint32_t _Mx = vminvq_u32(vreinterpretq_u32_s32(_Cur));
+                return vreinterpretq_s32_u32(vdupq_n_u32(_Mx));
             }
 
             static _Vec_t _H_max_u(const _Vec_t _Cur) noexcept {
-                const uint32_t M = vmaxvq_u32(vreinterpretq_u32_s32(_Cur));
-                return vreinterpretq_s32_u32(vdupq_n_u32(M));
+                const uint32_t _Mx = vmaxvq_u32(vreinterpretq_u32_s32(_Cur));
+                return vreinterpretq_s32_u32(vdupq_n_u32(_Mx));
             }
 
             static _Signed_t _Get_any(const _Vec_t _Cur) noexcept {
@@ -1744,13 +1744,13 @@ namespace {
             }
 
             static _Vec_t _Min_u(const _Vec_t _First, const _Vec_t _Second, _Vec_t = vdupq_n_s32(0)) noexcept {
-                const uint32x4_t r = vminq_u32(vreinterpretq_u32_s32(_First), vreinterpretq_u32_s32(_Second));
-                return vreinterpretq_s32_u32(r);
+                const uint32x4_t _Rx = vminq_u32(vreinterpretq_u32_s32(_First), vreinterpretq_u32_s32(_Second));
+                return vreinterpretq_s32_u32(_Rx);
             }
 
             static _Vec_t _Max_u(const _Vec_t _First, const _Vec_t _Second, _Vec_t = vdupq_n_s32(0)) noexcept {
-                const uint32x4_t r = vmaxq_u32(vreinterpretq_u32_s32(_First), vreinterpretq_u32_s32(_Second));
-                return vreinterpretq_s32_u32(r);
+                const uint32x4_t _Rx = vmaxq_u32(vreinterpretq_u32_s32(_First), vreinterpretq_u32_s32(_Second));
+                return vreinterpretq_s32_u32(_Rx);
             }
 
             static _Vec_t _Mask_cast(const _Vec_t _Mask) noexcept {
