@@ -419,8 +419,10 @@ _Ty* _Min_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_2(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 4) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_4(_First, _Last, _Signed)));
-#ifndef _M_ARM64
     } else if constexpr (sizeof(_Ty) == 8) {
+#ifdef _M_ARM64
+        static_assert(false, "unexpected size; 64-bit integers on ARM64 should not take this codepath");
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_8(_First, _Last, _Signed)));
 #endif // ^^^ !defined(_M_ARM64) ^^^
     } else {
@@ -442,8 +444,10 @@ _Ty* _Max_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_2(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 4) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_4(_First, _Last, _Signed)));
-#ifndef _M_ARM64
     } else if constexpr (sizeof(_Ty) == 8) {
+#ifdef _M_ARM64
+        static_assert(false, "unexpected size; 64-bit integers on ARM64 should not take this codepath");
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_8(_First, _Last, _Signed)));
 #endif // ^^^ !defined(_M_ARM64) ^^^
     } else {
@@ -7290,13 +7294,14 @@ constexpr bool _Is_predicate_greater = _Is_any_of_v<_Pr,
     greater<>, greater<_Iter_value_t<_Iter>>>;
 
 #ifdef _M_ARM64
-// We choose not to vectorize minmax_element on ARM64 as this does not improve performance over the scalar code.
+// We choose not to vectorize minmax_element for 64-bit integers on ARM64
+// as this does not improve performance over the scalar code.
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_64bit_int_on_arm64_v = sizeof(_Ty) == 8 && !_STD is_floating_point_v<_Ty>;
+_INLINE_VAR constexpr bool _Is_64bit_int_on_arm64_v = sizeof(_Ty) == 8 && !is_floating_point_v<_Ty>;
 #else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
 template <class _Ty>
 _INLINE_VAR constexpr bool _Is_64bit_int_on_arm64_v = false;
-#endif // ^^^ defined(_M_ARM64) ^^^
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
 template <class _Iter, class _Pr>
 constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms for min_/max_element?

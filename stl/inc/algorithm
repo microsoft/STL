@@ -213,8 +213,10 @@ pair<_Ty*, _Ty*> _Minmax_element_vectorized(_Ty* const _First, _Ty* const _Last)
         _Res = ::__std_minmax_element_2(_First, _Last, _Signed);
     } else if constexpr (sizeof(_Ty) == 4) {
         _Res = ::__std_minmax_element_4(_First, _Last, _Signed);
-#ifndef _M_ARM64
     } else if constexpr (sizeof(_Ty) == 8) {
+#ifdef _M_ARM64
+        static_assert(false, "unexpected size; 64-bit integers on ARM64 should not take this codepath");
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
         _Res = ::__std_minmax_element_8(_First, _Last, _Signed);
 #endif // ^^^ !defined(_M_ARM64) ^^^
     } else {
