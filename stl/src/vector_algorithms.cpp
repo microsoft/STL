@@ -965,7 +965,7 @@ namespace {
 
             static void _Exit_vectorized() noexcept {}
         };
-#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
 #ifndef _M_ARM64EC
         struct _Traits_sse_base {
             using _Guard                            = char;
@@ -1166,7 +1166,7 @@ namespace {
                 return _Mask;
             }
         };
-#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
 #ifndef _M_ARM64EC
         struct _Traits_1_sse : _Traits_1_base, _Traits_sse_base {
             static __m128i _Load(const void* const _Src) noexcept {
