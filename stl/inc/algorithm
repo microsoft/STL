@@ -4619,13 +4619,12 @@ _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const 
     if constexpr (_Vector_alg_in_find_is_safe<decltype(_UFirst), _Ty>
                   && _Output_iterator_for_known_size_vector_alg_is_safe<decltype(_UDest), decltype(_UFirst)>()) {
         if (!_STD _Is_constant_evaluated()) {
+            const auto _Count = static_cast<_Iter_diff_t<decltype(_UDest)>>(_ULast - _UFirst);
+            _STD _Contiguous_iter_verify(_UDest, _Count);
+
             const auto _First_ptr = _STD _To_address(_UFirst);
             const auto _Last_ptr  = _STD _To_address(_ULast);
             const auto _Dest_ptr  = _STD _To_address(_UDest);
-            const auto _Count     = _ULast - _UFirst;
-
-            _UDest += static_cast<_Iter_diff_t<decltype(_UDest)>>(_Count);
-            (void) _STD _To_address(_UDest);
 
             if (_STD _Could_compare_equal_to_value_type<decltype(_UFirst)>(_Oldval)) {
                 _STD _Replace_copy_vectorized(_First_ptr, _Last_ptr, _Dest_ptr, _Oldval, _Newval);
@@ -4633,6 +4632,7 @@ _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const 
                 _CSTD memcpy(_Dest_ptr, _First_ptr, static_cast<size_t>(_Count) * sizeof(*_Dest_ptr));
             }
 
+            _UDest += _Count;
             _STD _Seek_wrapped(_Dest, _UDest);
             return _Dest;
         }
