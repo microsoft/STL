@@ -4620,8 +4620,8 @@ _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const 
                   && _Output_iterator_for_known_size_vector_alg_is_safe<decltype(_UDest), decltype(_UFirst)>()) {
         if (!_STD _Is_constant_evaluated()) {
             const auto _First_ptr = _STD _To_address(_UFirst);
-            const auto _Dest_ptr  = _STD _To_address(_UDest);
             const auto _Last_ptr  = _STD _To_address(_ULast);
+            const auto _Dest_ptr  = _STD _To_address(_UDest);
             const auto _Count     = _ULast - _UFirst;
 
             _UDest += static_cast<_Iter_diff_t<decltype(_UDest)>>(_Count);
