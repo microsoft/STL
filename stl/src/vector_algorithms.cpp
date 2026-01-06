@@ -3119,7 +3119,7 @@ namespace {
                 auto _Cur_vals = _Traits::_Load(_First);
 
                 // We don't have unsigned 64-bit stuff, so we'll use sign correction just for that case
-                constexpr bool _Sign_correction = sizeof(_Ty) == 8 && !_Sign && !_Traits::_Has_unsigned_cmp;
+                constexpr bool _Sign_correction = sizeof(_Ty) == 8 && !_Sign;
 
                 if constexpr (_Sign_correction) {
                     _Cur_vals = _Traits::_Sign_correction(_Cur_vals, false);
