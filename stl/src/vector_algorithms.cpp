@@ -993,14 +993,14 @@ namespace {
 
             static void _Exit_vectorized() noexcept {}
 
-            static unsigned long _Get_first_h_pos(unsigned long _Mask) {
+            static unsigned long _Get_first_h_pos(const unsigned long _Mask) noexcept {
                 unsigned long _H_pos;
                 // CodeQL [SM02313] _H_pos is always initialized: element exists, so _Mask != 0.
                 _BitScanForward(&_H_pos, _Mask);
                 return _H_pos;
             }
 
-            static unsigned long _Get_last_h_pos(unsigned long _Mask) {
+            static unsigned long _Get_last_h_pos(const unsigned long _Mask) noexcept {
                 unsigned long _H_pos;
                 // CodeQL [SM02313] _H_pos is always initialized: element exists, so _Mask != 0.
                 _BitScanReverse(&_H_pos, _Mask);
@@ -1035,11 +1035,11 @@ namespace {
                 _mm256_zeroupper();
             }
 
-            static unsigned long _Get_first_h_pos(unsigned long _Mask) {
+            static unsigned long _Get_first_h_pos(const unsigned long _Mask) noexcept {
                 return _tzcnt_u32(_Mask);
             }
 
-            static unsigned long _Get_last_h_pos(unsigned long _Mask) {
+            static unsigned long _Get_last_h_pos(const unsigned long _Mask) noexcept {
                 return 31 - _lzcnt_u32(_Mask);
             }
         };
@@ -1086,11 +1086,11 @@ namespace {
                 return vget_lane_u64(vreinterpret_u64_u8(_Res), 0);
             }
 
-            static unsigned long _Get_first_h_pos(uint64_t _Mask) {
+            static unsigned long _Get_first_h_pos(const uint64_t _Mask) noexcept {
                 return _CountTrailingZeros64(_Mask) >> 2;
             }
 
-            static unsigned long _Get_last_h_pos(uint64_t _Mask) {
+            static unsigned long _Get_last_h_pos(const uint64_t _Mask) noexcept {
                 return 15 - (_CountLeadingZeros64(_Mask) >> 2);
             }
 
@@ -1383,11 +1383,11 @@ namespace {
                 return vget_lane_u64(vreinterpret_u64_u16(_Res), 0);
             }
 
-            static unsigned long _Get_first_h_pos(uint64_t _Mask) {
+            static unsigned long _Get_first_h_pos(const uint64_t _Mask) noexcept {
                 return _CountTrailingZeros64(_Mask) >> 2;
             }
 
-            static unsigned long _Get_last_h_pos(uint64_t _Mask) {
+            static unsigned long _Get_last_h_pos(const uint64_t _Mask) noexcept {
                 return 15 - (_CountLeadingZeros64(_Mask) >> 2);
             }
 
@@ -1677,11 +1677,11 @@ namespace {
                 return vget_lane_u64(vreinterpret_u64_u32(_Res), 0);
             }
 
-            static unsigned long _Get_first_h_pos(uint64_t _Mask) {
+            static unsigned long _Get_first_h_pos(const uint64_t _Mask) noexcept {
                 return _CountTrailingZeros64(_Mask) >> 2;
             }
 
-            static unsigned long _Get_last_h_pos(uint64_t _Mask) {
+            static unsigned long _Get_last_h_pos(const uint64_t _Mask) noexcept {
                 return 15 - (_CountLeadingZeros64(_Mask) >> 2);
             }
 
@@ -2169,11 +2169,11 @@ namespace {
                 return _Traits_4_neon::_Mask(_Val);
             }
 
-            static unsigned long _Get_first_h_pos(uint64_t _Mask) {
+            static unsigned long _Get_first_h_pos(const uint64_t _Mask) noexcept {
                 return _Traits_4_neon::_Get_first_h_pos(_Mask);
             }
 
-            static unsigned long _Get_last_h_pos(uint64_t _Mask) {
+            static unsigned long _Get_last_h_pos(const uint64_t _Mask) noexcept {
                 return _Traits_4_neon::_Get_last_h_pos(_Mask);
             }
 
@@ -2421,11 +2421,11 @@ namespace {
                 return vget_lane_u64(vreinterpret_u64_u32(_Res), 0);
             }
 
-            static unsigned long _Get_first_h_pos(uint64_t _Mask) {
+            static unsigned long _Get_first_h_pos(const uint64_t _Mask) noexcept {
                 return _CountTrailingZeros64(_Mask) >> 2;
             }
 
-            static unsigned long _Get_last_h_pos(uint64_t _Mask) {
+            static unsigned long _Get_last_h_pos(const uint64_t _Mask) noexcept {
                 return 15 - (_CountLeadingZeros64(_Mask) >> 2);
             }
 
