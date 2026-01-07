@@ -16,7 +16,7 @@ template <class T, double M, double S>
 auto generate_array() {
     array<T, 2000> a;
 
-    mt19937 gen;
+    mt19937_64 gen;
     lognormal_distribution<double> dis(M, S);
     ranges::generate(a, [&] { return static_cast<T>(dis(gen)); });
 
