@@ -1189,18 +1189,8 @@ private:
     template <class _SelfTy, class _KeyTy, class _BoundFn>
     _NODISCARD auto _Find_bound(this _SelfTy& _Self, const _KeyTy& _Key_val, _BoundFn _Bound_fun) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        const auto _Key_unchecked_begin = _STD _Get_unwrapped(_STD cbegin(_Self._Data.keys));
-        const auto _Key_unchecked_it    = _Bound_fun(
-            _Key_unchecked_begin, _STD _Get_unwrapped(_STD cend(_Self._Data.keys)), _Key_val, _Self._Pass_key_comp());
-        const auto _Dist = _Key_unchecked_it - _Key_unchecked_begin;
 
-        auto _Key_it = _STD cbegin(_Self._Data.keys);
-        _STD _Seek_wrapped(_Key_it, _Key_unchecked_it);
-        auto _Val_it =
-            _STD begin(_Self._Data.values) + static_cast<_RANGES range_difference_t<mapped_container_type>>(_Dist);
-
-        using _Maybe_const_iter = conditional_t<is_const_v<_SelfTy>, const_iterator, iterator>;
-        return _Maybe_const_iter{_STD move(_Key_it), _STD move(_Val_it)};
+        return _Self._Iterator_from_key_iterator(_Bound_fun(_Self._Data.keys, _Key_val, _Self._Pass_key_comp()));
     }
 
     template <class _SelfTy, class _KeyTy>
