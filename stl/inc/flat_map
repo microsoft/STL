@@ -352,7 +352,7 @@ public:
         key_container_type _Key_cont, mapped_container_type _Mapped_cont, const key_compare& _Comp = key_compare())
         : _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)}, _Key_compare(_Comp) {
         _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
-        _Sort_and_erase_dupes_if_not_multi();
+        _Make_invariants_fulfilled();
     }
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
@@ -367,7 +367,7 @@ public:
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)},
           _Key_compare(_Comp) {
         _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
-        _Sort_and_erase_dupes_if_not_multi();
+        _Make_invariants_fulfilled();
     }
 
     _Flat_map_base(_Sorted_t, key_container_type _Key_cont, mapped_container_type _Mapped_cont,
@@ -1064,8 +1064,10 @@ private:
         return _Is_sorted_and_unique(_Cont.begin(), _Cont.end());
     }
 
-    void _Sort_and_erase_dupes_if_not_multi() {
-        _Clear_guard _Guard{this};
+    void _Make_invariants_fulfilled() {
+        if (empty()) { // FIXME maybe consider if (begin() == end()) for consistency with flat_set
+            return;
+        }
 
         // O(N) if already sorted.
         const auto _Num_sorted = _RANGES is_sorted_until(_Data.keys, _Pass_key_comp()) - _Data.keys.begin();
@@ -1079,8 +1081,6 @@ private:
         _Erase_dupes_if_not_multi();
 
         _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
-
-        _Guard._Target = nullptr;
     }
 
     void _Erase_dupes_if_not_multi() {
