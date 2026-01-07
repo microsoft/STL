@@ -3263,7 +3263,7 @@ namespace {
                 _Advance_bytes(_Stop_at, _Vec_byte_size);
 
                 // We don't have unsigned 64-bit stuff, so we'll use sign correction just for that case
-                constexpr bool _Sign_correction = sizeof(_Ty) == 8 && !_Sign;
+                constexpr bool _Sign_correction = sizeof(_Ty) == 8 && !_Sign && !_Traits::_Has_unsigned_cmp;
 
                 _VecTy _Cur_vals[_Lanes];
                 _VecTy _Cur_vals_min[_Lanes]; // vector of vertical minimum values
