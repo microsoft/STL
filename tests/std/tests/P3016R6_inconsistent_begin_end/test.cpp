@@ -38,6 +38,7 @@ _CONSTEXPR17 bool test_initializer_list() {
     return true;
 }
 
+// test_valarray() is not constexpr because valarray is not a literal type
 bool test_valarray() {
     // Check that free functions in std can be invoked on std::valarray
     std::valarray<int> v{1};
@@ -49,8 +50,6 @@ bool test_valarray() {
     (void) cend(v); // Did not compile before P3016R6
     (void) size(v);
     // There are no members 'empty' and 'data' of valarray
-    // (void) empty(il);
-    // (void) data(il);
 
     return true;
 }
@@ -80,6 +79,5 @@ int main() {
 #if _HAS_CXX17
     STATIC_ASSERT(test_initializer_list());
 #endif // _HAS_CXX17
-    // STATIC_ASSERT(test_valarray()); // valarray is not literal
     STATIC_ASSERT(test_braced_init_list_iteration());
 }
