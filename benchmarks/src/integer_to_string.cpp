@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <benchmark/benchmark.h>
+#include <cmath>
 #include <cstdint>
 #include <limits>
 #include <random>
@@ -18,8 +19,16 @@ auto generate_array() {
 
     mt19937_64 gen;
     lognormal_distribution<double> dis(M, S);
-    constexpr auto max_val = static_cast<double>(numeric_limits<T>::max());
-    ranges::generate(a, [&] { return static_cast<T>(clamp(dis(gen), 0.0, max_val)); });
+    auto get_clamped_value = [&] {
+        for (;;) {
+            const double dbl       = floor(dis(gen));
+            constexpr auto max_val = static_cast<double>(numeric_limits<T>::max());
+            if (dbl <= max_val) {
+                return static_cast<T>(dbl);
+            }
+        }
+    };
+    ranges::generate(a, get_clamped_value);
 
     if constexpr (is_signed_v<T>) {
         bernoulli_distribution b(0.5);
