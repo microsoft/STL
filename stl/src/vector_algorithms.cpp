@@ -2025,7 +2025,7 @@ namespace {
                 return vreinterpretq_s64_u64(vcgtq_u64(vreinterpretq_u64_s64(_First), vreinterpretq_u64_s64(_Second)));
             }
 
-            static _Vec_t _Min(const _Vec_t _First, const _Vec_t _Second, _Vec_t _Mask) noexcept {
+            static _Vec_t _Min(const _Vec_t _First, const _Vec_t _Second, const _Vec_t _Mask) noexcept {
                 return vbslq_s64(vreinterpretq_u64_s64(_Mask), _Second, _First);
             }
 
@@ -2037,7 +2037,7 @@ namespace {
                 return _Min(_First, _Second, _Cmp_gt_u(_First, _Second));
             }
 
-            static _Vec_t _Max(const _Vec_t _First, const _Vec_t _Second, _Vec_t _Mask) noexcept {
+            static _Vec_t _Max(const _Vec_t _First, const _Vec_t _Second, const _Vec_t _Mask) noexcept {
                 return vbslq_s64(vreinterpretq_u64_s64(_Mask), _Second, _First);
             }
 
