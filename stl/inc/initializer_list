@@ -52,11 +52,11 @@ public:
     }
 
     _NODISCARD constexpr bool empty() const noexcept {
-        return size() == 0;
+        return _First == _Last;
     }
 
     _NODISCARD constexpr const _Elem* data() const noexcept {
-        return begin();
+        return _First;
     }
 
 private:
