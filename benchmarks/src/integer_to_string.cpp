@@ -27,11 +27,11 @@ auto generate_array() {
     return a;
 }
 
-template <class T, double M, double S>
+template <class CharT, class T, double M, double S>
 void internal_integer_to_buff(benchmark::State& state) {
     auto a = generate_array<T, M, S>();
 
-    char buff[20]; // can hold -2^63 and 2^64 - 1
+    CharT buff[20]; // can hold -2^63 and 2^64 - 1
     auto buff_end = end(buff);
 
     auto it = a.begin();
@@ -66,10 +66,15 @@ void integer_to_string(benchmark::State& state) {
     }
 }
 
-BENCHMARK(internal_integer_to_buff<uint8_t, 2.5, 1.5>);
-BENCHMARK(internal_integer_to_buff<uint16_t, 5.0, 3.0>);
-BENCHMARK(internal_integer_to_buff<uint32_t, 10.0, 6.0>);
-BENCHMARK(internal_integer_to_buff<uint64_t, 20.0, 12.0>);
+BENCHMARK(internal_integer_to_buff<char, uint8_t, 2.5, 1.5>);
+BENCHMARK(internal_integer_to_buff<char, uint16_t, 5.0, 3.0>);
+BENCHMARK(internal_integer_to_buff<char, uint32_t, 10.0, 6.0>);
+BENCHMARK(internal_integer_to_buff<char, uint64_t, 20.0, 12.0>);
+
+BENCHMARK(internal_integer_to_buff<wchar_t, uint8_t, 2.5, 1.5>);
+BENCHMARK(internal_integer_to_buff<wchar_t, uint16_t, 5.0, 3.0>);
+BENCHMARK(internal_integer_to_buff<wchar_t, uint32_t, 10.0, 6.0>);
+BENCHMARK(internal_integer_to_buff<wchar_t, uint64_t, 20.0, 12.0>);
 
 BENCHMARK(integer_to_string<uint8_t, 2.5, 1.5>);
 BENCHMARK(integer_to_string<uint16_t, 5.0, 3.0>);
