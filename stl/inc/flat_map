@@ -963,22 +963,22 @@ protected:
             return begin() + _Dist;
         }
 
-        const auto _New_position = _Hint_order == weak_ordering::less ? _STD as_const(*this).lower_bound(_Key_val)
-                                                                      : _STD as_const(*this).upper_bound(_Key_val);
+        const auto _New_position = _Iterator_from_key_iterator(
+            _Hint_order == weak_ordering::less
+                ? _RANGES lower_bound(_Position._Key_it, _STD cend(_Data.keys), _Key_val, _Pass_key_comp())
+                : _RANGES upper_bound(_STD cbegin(_Data.keys), _Position._Key_it, _Key_val, _Pass_key_comp()));
+
         if constexpr (_IsUnique) {
             if (_Hint_order == weak_ordering::less) {
                 if (_New_position != _End && !_Key_compare(_Key_val, *_New_position._Key_it)) {
-                    const auto _Dist = _New_position._Key_it - _Begin._Key_it;
-                    const auto _It   = begin() + _Dist;
                     if constexpr (_OverwriteIfExists) {
-                        *_It._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
+                        *_New_position._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
                     }
-                    return _It;
+                    return _New_position;
                 }
             } else {
                 if (_New_position != _Begin && !_Key_compare(*_STD prev(_New_position._Key_it), _Key_val)) {
-                    const auto _Dist = _STD prev(_New_position._Key_it) - _Begin._Key_it;
-                    const auto _It   = begin() + _Dist;
+                    const auto _It = _STD prev(_New_position);
                     if constexpr (_OverwriteIfExists) {
                         *_It._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
                     }
@@ -987,7 +987,7 @@ protected:
             }
         }
 
-        const auto _Dist = _New_position - _Begin;
+        const auto _Dist = _New_position - this->begin();
         {
             key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
             mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Args)...);
