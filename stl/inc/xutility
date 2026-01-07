@@ -2249,8 +2249,7 @@ _NODISCARD constexpr size_t size(const _Ty (&)[_Size]) noexcept {
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Container>
-_NODISCARD constexpr auto ssize(const _Container& _Cont) noexcept(noexcept(
-    static_cast<common_type_t<ptrdiff_t, make_signed_t<decltype(_Cont.size())>>>(_Cont.size()))) /* strengthened */
+_NODISCARD constexpr auto ssize(const _Container& _Cont) noexcept(noexcept(_Cont.size()))
     -> common_type_t<ptrdiff_t, make_signed_t<decltype(_Cont.size())>> {
     using _Common = common_type_t<ptrdiff_t, make_signed_t<decltype(_Cont.size())>>;
     return static_cast<_Common>(_Cont.size());
