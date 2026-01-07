@@ -2808,20 +2808,25 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
     auto _UVal_trunc = static_cast<unsigned long>(_UVal);
 #endif // ^^^ !defined(_WIN64) ^^^
 
-    if (_UVal_trunc >= 10) {
-        do {
-            const unsigned long _UVal_trunc_part = _UVal_trunc % 100;
-            _UVal_trunc /= 100;
-            _RNext -= 2;
-            _CSTD memcpy(_RNext, _Digit_pairs<_Elem>._Data[_UVal_trunc_part], 2 * sizeof(_Elem));
-        } while (_UVal_trunc >= 10);
-
-        if (_UVal_trunc == 0) {
-            return _RNext;
-        }
+    // If we have a single digit, print [0, 9] and return. (This is necessary to correctly handle 0.)
+    if (_UVal_trunc < 10) {
+        *--_RNext = static_cast<_Elem>('0' + _UVal_trunc);
+        return _RNext;
     }
 
-    *--_RNext = static_cast<_Elem>('0' + _UVal_trunc);
+    // Print one or more pairs of digits.
+    do {
+        const unsigned long _UVal_trunc_part = _UVal_trunc % 100;
+        _UVal_trunc /= 100;
+        _RNext -= 2;
+        _CSTD memcpy(_RNext, _Digit_pairs<_Elem>._Data[_UVal_trunc_part], 2 * sizeof(_Elem));
+    } while (_UVal_trunc >= 10);
+
+    // If we have an unpaired digit, print it. For example, 1729 is printed as 17 29, and 19937 is printed as 1 99 37.
+    if (_UVal_trunc != 0) {
+        *--_RNext = static_cast<_Elem>('0' + _UVal_trunc);
+    }
+
     return _RNext;
 }
 _STD_END
