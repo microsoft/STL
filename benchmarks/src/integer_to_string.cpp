@@ -5,6 +5,7 @@
 #include <array>
 #include <benchmark/benchmark.h>
 #include <cstdint>
+#include <limits>
 #include <random>
 #include <string>
 #include <type_traits>
@@ -17,7 +18,8 @@ auto generate_array() {
 
     mt19937_64 gen;
     lognormal_distribution<double> dis(M, S);
-    ranges::generate(a, [&] { return static_cast<T>(dis(gen)); });
+    constexpr auto max_val = static_cast<double>(numeric_limits<T>::max());
+    ranges::generate(a, [&] { return static_cast<T>(clamp(dis(gen), 0.0, max_val)); });
 
     if constexpr (is_signed_v<T>) {
         bernoulli_distribution b(0.5);
