@@ -58,15 +58,32 @@ namespace chrono {
         }
     };
 
+    _EXPORT_STD template <class _Rep, class _Period = ratio<1>>
+    class duration;
+
+    _EXPORT_STD template <class _Clock, class _Duration = typename _Clock::duration>
+    class time_point;
+
 #if _HAS_CXX20
     _EXPORT_STD template <class _Clock>
     _NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool is_clock_v = requires {
+        // Basic checks from N5014 [time.traits.is.clock]/1
         typename _Clock::rep;
         typename _Clock::period;
         typename _Clock::duration;
         typename _Clock::time_point;
         _Clock::is_steady;
         _Clock::now();
+
+        // Additional stricter checks from N5014 [time.clock.req]/2
+        // "An arithmetic type or a class emulating an arithmetic type" is not checked
+        requires _Is_ratio_v<typename _Clock::period>;
+        requires same_as<typename _Clock::duration, duration<typename _Clock::rep, typename _Clock::period>>;
+        requires same_as<typename _Clock::time_point, time_point<_Clock>>
+                     || same_as<typename _Clock::time_point,
+                         time_point<typename _Clock::time_point::clock, typename _Clock::duration>>;
+        { _Clock::is_steady } -> std::same_as<const bool&>;
+        { _Clock::now() } -> std::same_as<typename _Clock::time_point>;
     };
     _EXPORT_STD template <class _Clock>
     struct _NO_SPECIALIZATIONS_CITING("N5014 [time.traits.is.clock]/2") is_clock : bool_constant<is_clock_v<_Clock>> {};
@@ -83,9 +100,6 @@ namespace chrono {
                                 typename _Clock::time_point, decltype(_Clock::is_steady), decltype(_Clock::now())>> =
             true;
 #endif // ^^^ !_HAS_CXX20 ^^^
-
-    _EXPORT_STD template <class _Rep, class _Period = ratio<1>>
-    class duration;
 
     template <class _Ty>
     constexpr bool _Is_duration_v = _Is_specialization_v<_Ty, duration>;
@@ -203,7 +217,7 @@ namespace chrono {
         _Rep _MyRep; // the stored rep
     };
 
-    _EXPORT_STD template <class _Clock, class _Duration = typename _Clock::duration>
+    _EXPORT_STD template <class _Clock, class _Duration>
     class time_point { // represents a point in time
     public:
         using clock    = _Clock;
@@ -663,7 +677,7 @@ namespace chrono {
         _NODISCARD static time_point now() noexcept { // get current time
             const long long _Freq = _Query_perf_frequency(); // doesn't change after system boot
             const long long _Ctr  = _Query_perf_counter();
-            static_assert(period::num == 1, "This assumes period::num == 1.");
+            _STL_INTERNAL_STATIC_ASSERT(period::num == 1);
             // The compiler recognizes the constants for frequency and time period and uses shifts and
             // multiplies instead of divides to calculate the nanosecond value.
             constexpr long long _TenMHz        = 10'000'000;
@@ -672,13 +686,19 @@ namespace chrono {
                 // 10 MHz is a very common QPC frequency on modern x86/x64 PCs. Optimizing for
                 // this specific frequency can double the performance of this function by
                 // avoiding the expensive frequency conversion path.
-                static_assert(period::den % _TenMHz == 0, "It should never fail.");
+                _STL_INTERNAL_STATIC_ASSERT(period::den % _TenMHz == 0);
                 constexpr long long _Multiplier = period::den / _TenMHz;
                 return time_point(duration(_Ctr * _Multiplier));
             } else if (_Freq == _TwentyFourMHz) {
                 // 24 MHz is a common frequency on ARM64, including cases where it emulates x86/x64.
-                const long long _Whole = (_Ctr / _TwentyFourMHz) * period::den;
-                const long long _Part  = (_Ctr % _TwentyFourMHz) * period::den / _TwentyFourMHz;
+                constexpr long long _Multiplier_whole = period::den / _TwentyFourMHz;
+                using _Multiplier_part                = ratio<period::den % _TwentyFourMHz, _TwentyFourMHz>;
+                constexpr long long _Multiplier_num   = _Multiplier_part::num;
+                constexpr long long _Multiplier_den   = _Multiplier_part::den;
+                // This assumes that _Ctr * _Multiplier_num doesn't overflow.
+                _STL_INTERNAL_STATIC_ASSERT(_Multiplier_num <= _Multiplier_whole);
+                const long long _Whole = _Ctr * _Multiplier_whole;
+                const long long _Part  = _Ctr * _Multiplier_num / _Multiplier_den;
                 return time_point(duration(_Whole + _Part));
             } else {
                 // Instead of just having "(_Ctr * period::den) / _Freq",

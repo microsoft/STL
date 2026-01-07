@@ -282,59 +282,32 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/xalloc.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xcosh.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xdateord.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xdint.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xdnorm.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xdscale.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xdtento.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xdtest.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xdunscal.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xexp.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xfcosh.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfdint.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xfdnorm.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xfdscale.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfdtento.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xfdtest.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfdunsca.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xferaise.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xfexp.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfprec.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xfsinh.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfvalues.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xgetwctype.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlcosh.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xldint.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xldscale.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xldtento.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xldtest.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xldunsca.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlexp.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlgamma.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlocale.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlock.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlpoly.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlprec.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlsinh.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlvalues.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xmbtowc.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xmtx.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xnotify.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xonce.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xpoly.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xprec.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xrngabort.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xrngdev.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xsinh.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstod.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstof.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xstoflt.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstol.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xstold.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstoll.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xstopfx.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstoul.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstoull.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xstoxflt.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstrcoll.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstrxfrm.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xthrow.cpp
@@ -347,10 +320,6 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/xwctomb.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xwstod.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xwstof.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xwstoflt.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xwstold.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xwstopfx.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xwstoxfl.cpp
 )
 
 set(ASAN_SOURCES

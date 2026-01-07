@@ -5,15 +5,28 @@
 
 #include "xmath.hpp"
 
+namespace {
+    double _Poly(double x, const double* tab, int n) noexcept { // compute polynomial
+        double y;
+
+        for (y = *tab; 0 <= --n;) {
+            y = y * x + *++tab;
+        }
+
+        return y;
+    }
+} // unnamed namespace
+
 _EXTERN_C_UNLESS_PURE
 
-// coefficients
-static constexpr double p[] = {0.0000000001632881, 0.0000000250483893, 0.0000027557344615, 0.0001984126975233,
-    0.0083333333334816, 0.1666666666666574, 1.0000000000000001};
+_CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double x, double y) noexcept {
+    // compute y * sinh(x), |y| <= 1
 
-static constexpr size_t NP = std::size(p) - 1;
+    // coefficients
+    static constexpr double p[] = {0.0000000001632881, 0.0000000250483893, 0.0000027557344615, 0.0001984126975233,
+        0.0083333333334816, 0.1666666666666574, 1.0000000000000001};
+    constexpr size_t NP         = std::size(p) - 1;
 
-_CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double x, double y) noexcept { // compute y * sinh(x), |y| <= 1
     short neg;
 
     switch (_Dtest(&x)) { // test for special codes
@@ -35,7 +48,8 @@ _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double x, double y) noexcept 
             neg = 0;
         }
 
-        if (x < _Rteps._Double) {
+        constexpr double rteps = 0x1p-27;
+        if (x < rteps) {
             x *= y; // x tiny
         } else if (x < 1.0) {
             double w = x * x;
@@ -57,6 +71,10 @@ _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double x, double y) noexcept 
 
         return neg ? -x : x;
     }
+}
+
+_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _LSinh(long double x, long double y) noexcept {
+    return _Sinh(static_cast<double>(x), static_cast<double>(y));
 }
 
 _END_EXTERN_C_UNLESS_PURE

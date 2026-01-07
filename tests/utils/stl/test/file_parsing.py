@@ -58,7 +58,7 @@ _INCLUDE_REGEX = re.compile(r'^RUNALL_INCLUDE (?P<filename>.+$)')
 _TAGS_REGEX = re.compile(r'^(?P<tags>(\*|\w+(,\w+)*))\t+(?P<remainder>.*)$')
 _ENV_VAR_MULTI_ITEM_REGEX = re.compile(r'(?P<name>\w+)="(?P<value>.*?)"')
 _CROSSLIST_REGEX = re.compile(r'^RUNALL_CROSSLIST$')
-_EXPECTED_RESULT_REGEX = re.compile(r'^(?P<prefix>.*) (?P<result>.*?)$')
+_EXPECTED_RESULT_REGEX = re.compile(r'^(?P<prefix>[^ ]+) (?P<result>\w+)$')
 
 
 def _parse_env_line(line: str) -> Optional[_TmpEnvEntry]:
@@ -138,11 +138,15 @@ def parse_result_file(filename: Union[str, bytes, os.PathLike]) \
     res = dict()
     for line in parse_commented_file(filename):
         m = _EXPECTED_RESULT_REGEX.match(line)
+        if m is None:
+            raise Exception(f'Incorrectly formatted line "{line}" in {filename}.')
         prefix = m.group("prefix")
         result = m.group("result")
         result_code = getattr(lit.Test, result, None)
         if result_code is None:
-            result_code = getattr(stl.test.tests, result)
+            result_code = getattr(stl.test.tests, result, None)
+        if result_code is None:
+            raise Exception(f'Unknown result code "{result}" in line "{line}" in {filename}.')
         res[prefix] = result_code
 
     _expected_result_entry_cache[str(filename)] = res

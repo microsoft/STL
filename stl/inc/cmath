@@ -1425,14 +1425,12 @@ _EXPORT_STD _NODISCARD inline long double sph_bessell(const unsigned int _Arg1, 
 }
 
 _EXPORT_STD _NODISCARD inline double sph_legendre(
-    const unsigned int _Arg1, const unsigned int _Arg2, const double _Theta) noexcept
-/* strengthened */ {
+    const unsigned int _Arg1, const unsigned int _Arg2, const double _Theta) noexcept /* strengthened */ {
     return __std_smf_sph_legendre(_Arg1, _Arg2, _Theta);
 }
 
 _EXPORT_STD _NODISCARD inline float sph_legendref(
-    const unsigned int _Arg1, const unsigned int _Arg2, const float _Theta) noexcept
-/* strengthened */ {
+    const unsigned int _Arg1, const unsigned int _Arg2, const float _Theta) noexcept /* strengthened */ {
     return __std_smf_sph_legendref(_Arg1, _Arg2, _Theta);
 }
 

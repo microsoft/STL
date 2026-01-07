@@ -43,10 +43,12 @@ struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq> {
     // transparency selector for transparent hashed containers
     static constexpr bool _Has_transparent_overloads = true;
 
+#if _HAS_CXX23
     template <class _Container, class _Kx>
     static constexpr bool _Supports_transparency =
         !disjunction_v<is_convertible<_Kx, typename _Container::const_iterator>,
             is_convertible<_Kx, typename _Container::iterator>>;
+#endif // _HAS_CXX23
 };
 #endif // _HAS_CXX20
 
