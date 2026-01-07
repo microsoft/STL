@@ -3417,6 +3417,7 @@ namespace {
                 _Advance_bytes(_First, sizeof(_Ty));
             }
 
+// Avoid auto-vectorization of the scalar tail, as this is not beneficial for performance.
 #pragma loop(no_vector)
             for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
                 if constexpr ((_Mode & _Mode_min) != 0) {
