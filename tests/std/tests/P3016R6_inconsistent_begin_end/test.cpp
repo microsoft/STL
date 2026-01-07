@@ -9,7 +9,6 @@
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 namespace my {
-
     template <class T>
     void begin(std::initializer_list<T>);
 
@@ -63,7 +62,6 @@ constexpr bool test_braced_init_list_iteration() {
     }
     return sum == 10;
 }
-
 
 int main() {
     // Check that free functions in std can't be invoked with braced-initializer-list.
