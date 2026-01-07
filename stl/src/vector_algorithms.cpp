@@ -2049,8 +2049,7 @@ namespace {
                 return _Max(_First, _Second, _Cmp_gt_u(_Second, _First));
             }
         };
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
-#ifndef _M_ARM64EC
+#elif !defined(_M_ARM64EC)
         struct _Traits_8_sse : _Traits_8_base, _Traits_sse_base {
             static __m128i _Load(const void* const _Src) noexcept {
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
@@ -2236,7 +2235,6 @@ namespace {
             }
         };
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
-#endif // ^^^ !defined(_M_ARM64) ^^^
 
         struct _Traits_f_base {
             static constexpr bool _Is_floating = true;
