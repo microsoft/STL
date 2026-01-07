@@ -11,6 +11,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <print>
 #include <random>
 #include <ranges>
 #include <tuple>
@@ -492,6 +493,65 @@ void test_insert_2() {
         assert_all_requirements_and_equals(a, {5, 4, 3, 0});
     }
 }
+
+// Test that hint to emplace/insert is respected, when possible; check returned iterator
+template <class C>
+void test_insert_hint_is_respected() {
+    using lt = std::less<int>;
+
+    {
+        flat_multiset<int, lt, C> a{-1, -1, 1, 1};
+        bool problem_seen                      = false;
+        auto const assert_inserted_at_position = [&a, &problem_seen](
+                                                     const int expected_index, const auto insert_position) {
+            const auto expected_position = a.begin() + expected_index;
+            if (expected_position != insert_position) {
+                println("Wrong insert position: expected {}, actual {}\nContainer after insert {}", expected_index,
+                    insert_position - a.begin(), a);
+                problem_seen = true;
+            }
+        };
+
+        // hint is greater
+        assert_all_requirements_and_equals(a, {-1, -1, 1, 1});
+        assert_inserted_at_position(2, a.insert(a.end(), 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 1, 1});
+        assert_inserted_at_position(3, a.insert(a.find(1), 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 1, 1});
+        assert_inserted_at_position(4, a.insert(a.find(1), 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 1, 1});
+        assert_inserted_at_position(5, a.insert(a.upper_bound(0), 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 1, 1});
+
+        // hint is correct
+        assert_inserted_at_position(5, a.insert(a.upper_bound(0) - 1, 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 1, 1});
+        assert_inserted_at_position(6, a.insert(a.upper_bound(0) - 1, 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 0, 1, 1});
+        assert_inserted_at_position(6, a.insert(a.begin() + 6, 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 1});
+        assert_inserted_at_position(4, a.insert(a.begin() + 4, 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1});
+        assert_inserted_at_position(2, a.insert(a.begin() + 2, 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1});
+        assert_inserted_at_position(2, a.emplace_hint(a.lower_bound(0), 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1});
+
+        // hint is less
+        assert_inserted_at_position(2, a.emplace_hint(a.lower_bound(0) - 1, 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1});
+        assert_inserted_at_position(2, a.insert(a.begin() + 1, 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1});
+        assert_inserted_at_position(2, a.insert(a.begin(), 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1});
+
+        assert(!problem_seen);
+
+        assert(13 == erase_if(a, [](const auto value) { return value == 0; }));
+        assert_all_requirements_and_equals(a, {-1, -1, 1, 1});
+    }
+}
+
 
 struct key_comparer {
     const auto& extract_key(const auto& obj) const {
@@ -1167,6 +1227,8 @@ int main() {
     test_insert_1<deque<int>>();
     test_insert_2<vector<int>>();
     test_insert_2<deque<int>>();
+    test_insert_hint_is_respected<vector<int>>();
+    test_insert_hint_is_respected<deque<int>>();
     test_insert_transparent();
     test_insert_using_invalid_hint();
     test_insert_upper_bound();
