@@ -1979,6 +1979,10 @@ namespace {
         struct _Traits_8_neon : _Traits_8_base, _Traits_neon_base {
             using _Vec_t = int64x2_t;
 
+            static _Vec_t _Sign_correction(const _Vec_t _Val, bool) noexcept {
+                return _Val;
+            }
+
             static _Vec_t _Load(const void* const _Src) noexcept {
                 return vld1q_s64(reinterpret_cast<const int64_t*>(_Src));
             }
