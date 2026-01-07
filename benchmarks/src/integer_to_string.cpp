@@ -33,12 +33,13 @@ void internal_integer_to_buff(benchmark::State& state) {
     auto a = generate_array<T, M, S>();
 
     char buff[20]; // can hold -2^63 and 2^64 - 1
+    auto buff_end = end(buff);
 
     auto it = a.begin();
     for (auto _ : state) {
         auto i = *it;
         benchmark::DoNotOptimize(i);
-        auto s = std::_UIntegral_to_buff(buff, i);
+        auto s = std::_UIntegral_to_buff(buff_end, i);
         benchmark::DoNotOptimize(s);
 
         ++it;
