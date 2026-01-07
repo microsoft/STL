@@ -7281,10 +7281,10 @@ template <class _Ty>
 _INLINE_VAR constexpr bool _Is_64bit_int_on_arm64_v = false;
 #endif // ^^^ !defined(_M_ARM64) ^^^
 
-template <class _Iter, class _Pr, bool _Support64BitIntOnArm = false>
+template <class _Iter, class _Pr>
 constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms for min_/max_element?
     _Is_min_max_iterators_safe<_Iter> && _Is_predicate_less<_Iter, _Pr>
-    && (_Support64BitIntOnArm || !_Is_64bit_int_on_arm64_v<_Iter_value_t<_Iter>>);
+    && !_Is_64bit_int_on_arm64_v<_Iter_value_t<_Iter>>;
 
 // Unlike the position-based vectorized implementation, the value-based vectorized implementation
 // does not always produce the expected results for floating-point types.
@@ -7302,7 +7302,7 @@ constexpr bool _Is_min_max_value_optimization_safe = // Activate the vector algo
 #ifndef _M_FP_FAST
     !is_floating_point_v<_Elem> &&
 #endif // ^^^ !defined(_M_FP_FAST) ^^^
-    _Is_min_max_optimization_safe<_Iter, _Pr, true>;
+    _Is_min_max_iterators_safe<_Iter> && _Is_predicate_less<_Iter, _Pr>;
 
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
