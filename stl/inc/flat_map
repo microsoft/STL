@@ -1120,9 +1120,7 @@ private:
         // Sort the newly inserted elements
         auto _Sorted_view = _View_to_mutate();
         if constexpr (_NeedSorting) {
-            auto _Sorted_new_elements = _Sorted_view;
-            _Sorted_new_elements.advance(_Old_distance);
-            _RANGES sort(_Sorted_new_elements, value_compare{_Key_compare});
+            _RANGES sort(_STD begin(_Sorted_view) + _Old_distance, _STD end(_Sorted_view), value_compare{_Key_compare});
         } else {
             _STL_ASSERT(_Is_sorted_and_unique(
                             _Data.keys.begin() + static_cast<key_container_type::difference_type>(_Old_distance),
