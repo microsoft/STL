@@ -2791,8 +2791,8 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
 
     if constexpr (sizeof(_UTy) > 4) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
         while (_UVal > 0xFFFFFFFFU) {
-            auto _UVal_chunk = static_cast<unsigned long>(_UVal % 1000000000);
-            _UVal /= 1000000000;
+            auto _UVal_chunk = static_cast<unsigned long>(_UVal % 100000000);
+            _UVal /= 100000000;
 
             for (int _Idx = 0; _Idx != 4; ++_Idx) {
                 const unsigned long _UVal_chunk_part = _UVal_chunk % 100;
@@ -2800,8 +2800,6 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
                 _RNext -= 2;
                 _CSTD memcpy(_RNext, _Digit_pairs<_Elem>._Data[_UVal_chunk_part], 2 * sizeof(_Elem));
             }
-
-            *--_RNext = static_cast<_Elem>('0' + _UVal_chunk);
         }
     }
 
