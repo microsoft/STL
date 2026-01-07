@@ -946,22 +946,6 @@ namespace {
             static constexpr size_t _Tail_mask      = 0;
             static constexpr bool _Has_unsigned_cmp = true;
 
-            static int8x16_t _Zero() noexcept {
-                return vdupq_n_s8(0);
-            }
-
-            static int8x16_t _All_ones() noexcept {
-                return vdupq_n_s8(static_cast<int8_t>(0xFF));
-            }
-
-            static int8x16_t _Blend(const int8x16_t _Px1, const int8x16_t _Px2, const int8x16_t _Msk) noexcept {
-                return vbslq_s8(vreinterpretq_u8_s8(_Msk), _Px2, _Px1);
-            }
-
-            static int8x16_t _Sign_correction(const int8x16_t _Val, bool) noexcept {
-                return _Val;
-            }
-
             static void _Exit_vectorized() noexcept {}
         };
 #elif !defined(_M_ARM64EC)
@@ -1078,6 +1062,22 @@ namespace {
 #ifdef _M_ARM64
         struct _Traits_1_neon : _Traits_1_base, _Traits_neon_base {
             using _Vec_t = int8x16_t;
+
+            static _Vec_t _Sign_correction(const _Vec_t _Val, bool) noexcept {
+                return _Val;
+            }
+
+            static _Vec_t _Zero() noexcept {
+                return vdupq_n_s8(0);
+            }
+
+            static _Vec_t _All_ones() noexcept {
+                return vdupq_n_s8(static_cast<int8_t>(0xFF));
+            }
+
+            static _Vec_t _Blend(const _Vec_t _Px1, const _Vec_t _Px2, const _Vec_t _Msk) noexcept {
+                return vbslq_s8(vreinterpretq_u8_s8(_Msk), _Px2, _Px1);
+            }
 
             // Compresses a 128-bit Mask of 16 8-bit values into a 64-bit Mask of 16 4-bit values.
             static uint64_t _Mask(const _Vec_t _Val) noexcept {
@@ -1374,6 +1374,22 @@ namespace {
         struct _Traits_2_neon : _Traits_2_base, _Traits_neon_base {
             using _Vec_t = int16x8_t;
 
+            static _Vec_t _Sign_correction(const _Vec_t _Val, bool) noexcept {
+                return _Val;
+            }
+
+            static _Vec_t _Zero() noexcept {
+                return vdupq_n_s16(0);
+            }
+
+            static _Vec_t _All_ones() noexcept {
+                return vreinterpretq_s16_s8(vdupq_n_s8(static_cast<int8_t>(0xFF)));
+            }
+
+            static _Vec_t _Blend(const _Vec_t _Px1, const _Vec_t _Px2, const _Vec_t _Msk) noexcept {
+                return vbslq_s16(vreinterpretq_u16_s16(_Msk), _Px2, _Px1);
+            }
+
             // Compresses a 128-bit Mask of 8 16-bit values into a 64-bit Mask of 8 8-bit values.
             static uint64_t _Mask(const _Vec_t _Val) noexcept {
                 const uint16x4_t _Res = vshrn_n_u32(vreinterpretq_u32_s16(_Val), 8);
@@ -1665,6 +1681,22 @@ namespace {
 #ifdef _M_ARM64
         struct _Traits_4_neon : _Traits_4_base, _Traits_neon_base {
             using _Vec_t = int32x4_t;
+
+            static _Vec_t _Sign_correction(const _Vec_t _Val, bool) noexcept {
+                return _Val;
+            }
+
+            static _Vec_t _Zero() noexcept {
+                return vdupq_n_s32(0);
+            }
+
+            static _Vec_t _All_ones() noexcept {
+                return vreinterpretq_s32_s8(vdupq_n_s8(static_cast<int8_t>(0xFF)));
+            }
+
+            static _Vec_t _Blend(const _Vec_t _Px1, const _Vec_t _Px2, const _Vec_t _Msk) noexcept {
+                return vbslq_s32(vreinterpretq_u32_s32(_Msk), _Px2, _Px1);
+            }
 
             // Compresses a 128-bit Mask of 4 32-bit values into a 64-bit Mask of 4 16-bit values.
             static uint64_t _Mask(const int32x4_t _Val) noexcept {
@@ -2230,6 +2262,22 @@ namespace {
             using _Idx_t                            = int32x4_t;
             static constexpr bool _Has_unsigned_cmp = false;
 
+            static _Vec_t _Sign_correction(const _Vec_t _Val, bool) noexcept {
+                return _Val;
+            }
+
+            static _Idx_t _Zero() noexcept {
+                return vdupq_n_s32(0);
+            }
+
+            static _Idx_t _All_ones() noexcept {
+                return vreinterpretq_s32_s8(vdupq_n_s8(static_cast<int8_t>(0xFF)));
+            }
+
+            static _Idx_t _Blend(const _Idx_t _Px1, const _Idx_t _Px2, const _Idx_t _Msk) noexcept {
+                return vbslq_s32(vreinterpretq_u32_s32(_Msk), _Px2, _Px1);
+            }
+
             static uint64_t _Mask(const _Idx_t _Val) noexcept {
                 return _Traits_4_neon::_Mask(_Val);
             }
@@ -2286,16 +2334,16 @@ namespace {
                 return _Traits_4_neon::_Cmp_eq_idx(_First, _Second);
             }
 
-            static _Vec_t _Min(const _Vec_t _First, const _Vec_t _Second, _Vec_t = vdupq_n_f32(0)) noexcept {
+            static _Vec_t _Min(const _Vec_t _First, const _Vec_t _Second, _Idx_t = vdupq_n_s32(0)) noexcept {
                 return vminq_f32(_First, _Second);
             }
 
-            static _Vec_t _Max(const _Vec_t _First, const _Vec_t _Second, _Vec_t = vdupq_n_f32(0)) noexcept {
+            static _Vec_t _Max(const _Vec_t _First, const _Vec_t _Second, _Idx_t = vdupq_n_s32(0)) noexcept {
                 return vmaxq_f32(_First, _Second);
             }
 
-            static _Idx_t _Mask_cast(const _Vec_t _Mask) noexcept {
-                return vreinterpretq_s32_f32(_Mask);
+            static _Idx_t _Mask_cast(const _Idx_t _Mask) noexcept {
+                return _Mask;
             }
         };
 #elif !defined(_M_ARM64EC)
@@ -2481,6 +2529,22 @@ namespace {
             using _Idx_t                            = int64x2_t;
             static constexpr bool _Has_unsigned_cmp = false;
 
+            static _Vec_t _Sign_correction(const _Vec_t _Val, bool) noexcept {
+                return _Val;
+            }
+
+            static _Idx_t _Zero() noexcept {
+                return vdupq_n_s64(0);
+            }
+
+            static _Idx_t _All_ones() noexcept {
+                return vreinterpretq_s64_s8(vdupq_n_s8(static_cast<int8_t>(0xFF)));
+            }
+
+            static _Idx_t _Blend(const _Idx_t _Px1, const _Idx_t _Px2, const _Idx_t _Msk) noexcept {
+                return vbslq_s64(vreinterpretq_u64_s64(_Msk), _Px2, _Px1);
+            }
+
             // Compresses a 128-bit Mask of 2 64-bit values into a 64-bit Mask of 2 32-bit values.
             static uint64_t _Mask(const int64x2_t _Val) noexcept {
                 const uint32x2_t _Res = vreinterpret_u32_s32(vmovn_s64(_Val));
@@ -2539,16 +2603,16 @@ namespace {
                 return vreinterpretq_s64_u64(vceqq_s64(_First, _Second));
             }
 
-            static _Vec_t _Min(const _Vec_t _First, const _Vec_t _Second, _Vec_t = vdupq_n_f64(0)) noexcept {
+            static _Vec_t _Min(const _Vec_t _First, const _Vec_t _Second, _Idx_t = vdupq_n_s64(0)) noexcept {
                 return vminq_f64(_First, _Second);
             }
 
-            static _Vec_t _Max(const _Vec_t _First, const _Vec_t _Second, _Vec_t = vdupq_n_f64(0)) noexcept {
+            static _Vec_t _Max(const _Vec_t _First, const _Vec_t _Second, _Idx_t = vdupq_n_s64(0)) noexcept {
                 return vmaxq_f64(_First, _Second);
             }
 
-            static _Idx_t _Mask_cast(const _Vec_t _Mask) noexcept {
-                return vreinterpretq_s64_f64(_Mask);
+            static _Idx_t _Mask_cast(const _Idx_t _Mask) noexcept {
+                return _Mask;
             }
         };
 #elif !defined(_M_ARM64EC)
