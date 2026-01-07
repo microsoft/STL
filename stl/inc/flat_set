@@ -425,18 +425,12 @@ public:
     }
 
     _NODISCARD size_type count(const _Kty& _Val) const {
-        if constexpr (_IsUnique) {
-            return contains(_Val);
-        } else {
-            const auto [_First, _Last] = equal_range(_Val);
-            return static_cast<size_type>(_Last - _First);
-        }
+        return _Count(_Val);
     }
     template <class _Other>
         requires _Transparent<key_compare>
     _NODISCARD size_type count(const _Other& _Val) const {
-        const auto [_First, _Last] = equal_range(_Val);
-        return static_cast<size_type>(_Last - _First);
+        return _Count(_Val);
     }
 
     _NODISCARD bool contains(const _Kty& _Val) const {
@@ -680,6 +674,17 @@ private:
             return _Where;
         } else {
             return _End;
+        }
+    }
+
+    template <class _KeyTy>
+    _NODISCARD size_type _Count(const _KeyTy& _Key_val) const {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
+        if constexpr (_IsUnique) {
+            return contains(_Key_val);
+        } else {
+            const auto [_First, _Last] = _Equal_range(_Key_val);
+            return static_cast<size_type>(_Last - _First);
         }
     }
 

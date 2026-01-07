@@ -1172,13 +1172,18 @@ private:
     template <class _KeyTy>
     _NODISCARD size_type _Count(const _KeyTy& _Key_val) const {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        return upper_bound(_Key_val) - lower_bound(_Key_val);
+        if constexpr (_IsUnique) {
+            return _Contains(_Key_val);
+        } else {
+            const auto [_First, _Last] = _RANGES equal_range(_Data.keys, _Key_val, _Pass_key_comp());
+            return static_cast<size_type>(_Last - _First);
+        }
     }
 
     template <class _KeyTy>
     _NODISCARD bool _Contains(const _KeyTy& _Key_val) const {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        return find(_Key_val) != cend();
+        return _RANGES binary_search(_Data.keys, _Key_val, _Pass_key_comp());
     }
 
     template <class _SelfTy, class _KeyTy, class _BoundFn>
