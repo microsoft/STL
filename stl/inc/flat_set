@@ -461,12 +461,12 @@ public:
     }
 
     _NODISCARD pair<const_iterator, const_iterator> equal_range(const _Kty& _Val) const {
-        return _STD equal_range(cbegin(), cend(), _Val, _Pass_comp());
+        return _Equal_range(_Val);
     }
     template <class _Other>
         requires _Transparent<key_compare>
     _NODISCARD pair<const_iterator, const_iterator> equal_range(const _Other& _Val) const {
-        return _STD equal_range(cbegin(), cend(), _Val, _Pass_comp());
+        return _Equal_range(_Val);
     }
 
     _NODISCARD friend bool operator==(const _Derived& _Lhs, const _Derived& _Rhs) {
@@ -685,6 +685,19 @@ private:
         } else {
             const auto [_First, _Last] = _Equal_range(_Key_val);
             return static_cast<size_type>(_Last - _First);
+        }
+    }
+
+    template <class _KeyTy>
+    _NODISCARD pair<const_iterator, const_iterator> _Equal_range(const _KeyTy& _Key_val) const {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
+        if constexpr (_IsUnique) {
+            // In a non-multi container, equal range can have size at most 1
+            auto const _First   = _RANGES lower_bound(_Mycont, _Key_val, _Pass_comp());
+            bool const _Missing = _First == _STD end(_Mycont) || _Mycomp(_Key_val, *_First);
+            return pair{_First, _Missing ? _First : _STD next(_First)};
+        } else {
+            return _STD equal_range(begin(), end(), _Key_val, _Pass_comp());
         }
     }
 

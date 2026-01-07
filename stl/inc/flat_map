@@ -1216,7 +1216,23 @@ private:
     template <class _SelfTy, class _KeyTy>
     _NODISCARD auto _Equal_range(this _SelfTy& _Self, const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        return pair{_Self.lower_bound(_Key_val), _Self.upper_bound(_Key_val)};
+        if constexpr (_IsUnique) {
+            // In a non-multi container, equal range can have size at most 1
+            auto const _First   = _RANGES lower_bound(_Self._Data.keys, _Key_val, _Self._Pass_key_comp());
+            bool const _Missing = _First == _STD end(_Self._Data.keys) || _Self._Key_compare(_Key_val, *_First);
+            return pair{_Self._Iterator_from_key_iterator(_First),
+                _Self._Iterator_from_key_iterator(_Missing ? _First : _STD next(_First))};
+        } else {
+            auto const [_First, _Last] = _RANGES equal_range(_Self._Data.keys, _Key_val, _Self._Pass_key_comp());
+            return pair{_Self._Iterator_from_key_iterator(_First), _Self._Iterator_from_key_iterator(_Last)};
+        }
+    }
+
+    template <class _SelfTy>
+    _NODISCARD conditional_t<is_const_v<_SelfTy>, const_iterator, iterator> _Iterator_from_key_iterator(
+        this _SelfTy& _Self, const typename key_container_type::const_iterator& _Iter) {
+        const difference_type _Offset = _Iter - _STD cbegin(_Self._Data.keys);
+        return _Self.begin() + _Offset;
     }
 };
 
