@@ -491,6 +491,8 @@ STATIC_ASSERT(__cpp_lib_hypot == 201603L);
 
 STATIC_ASSERT(__cpp_lib_incomplete_container_elements == 201505L);
 
+STATIC_ASSERT(__cpp_lib_initializer_list == 202511L);
+
 #if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_int_pow2 == 202002L);
 #elif defined(__cpp_lib_int_pow2)
@@ -1037,6 +1039,8 @@ STATIC_ASSERT(__cpp_lib_unwrap_ref == 201811L);
 #error __cpp_lib_unwrap_ref is defined
 #endif
 
+STATIC_ASSERT(__cpp_lib_valarray == 202511L);
+
 #if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_variant == 202106L);
 #elif _HAS_CXX17
@@ -1046,7 +1050,3 @@ STATIC_ASSERT(__cpp_lib_variant == 202102L);
 #endif
 
 STATIC_ASSERT(__cpp_lib_void_t == 201411L);
-
-STATIC_ASSERT(__cpp_lib_initializer_list == 202511L);
-
-STATIC_ASSERT(__cpp_lib_valarray == 202511L);
