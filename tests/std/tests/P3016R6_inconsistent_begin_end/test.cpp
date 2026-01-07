@@ -10,16 +10,16 @@
 
 namespace my {
 
-    template <typename T>
+    template <class T>
     void begin(std::initializer_list<T>);
 
-    template <typename T>
+    template <class T>
     void end(std::initializer_list<T>);
 
-    template <typename T>
+    template <class T>
     void empty(std::initializer_list<T>);
 
-    template <typename T>
+    template <class T>
     void data(std::initializer_list<T>);
 } // namespace my
 
