@@ -968,11 +968,24 @@ void test_invariant_robustness() {
     }
 }
 
-// TRANSITION, too simple
 void test_erase_1() {
     flat_set<int> fs{1};
-    fs.erase(1);
+    assert(1 == fs.erase(1));
     assert_all_requirements_and_equals(fs, {});
+    int numbers[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    fs.insert_range(numbers);
+    assert_all_requirements_and_equals(fs, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+    fs.insert_range(numbers);
+    assert_all_requirements_and_equals(fs, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+    assert(0 == fs.erase(-1));
+    assert(0 == fs.erase(10));
+    assert_all_requirements_and_equals(fs, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+    {
+        const auto iter = fs.erase(fs.begin() + 3, fs.begin() + 6);
+        assert(fs.begin() + 3 == iter);
+        assert(6 == *iter);
+        assert_all_requirements_and_equals(fs, {0, 1, 2, 6, 7, 8, 9});
+    }
 }
 
 template <class T>
@@ -982,6 +995,8 @@ struct holder {
         return std::move(t);
     }
 };
+
+static_assert(is_convertible_v<holder<flat_set<int>::const_iterator>, flat_set<int>::const_iterator>);
 
 void test_erase_2() {
     using C = flat_set<int, std::less<>>;
@@ -996,6 +1011,40 @@ void test_erase_2() {
     fs.erase(ref(i));
     assert_all_requirements_and_equals(fs, {3});
 }
+
+template <class Cont, class OtherKey>
+concept can_erase_key = requires(Cont c, OtherKey key) {
+    { c.erase(key) } -> same_as<typename Cont::size_type>;
+};
+template <class Cont>
+concept can_erase_iterator_holder = requires(Cont c) {
+    { c.erase(holder<typename Cont::const_iterator>{c.begin()}) } -> same_as<typename Cont::iterator>;
+};
+// Note that std::less<T> is not transparent, std::less<> and ranges::less are
+
+using C = flat_set<int>;
+static_assert(same_as<C::iterator, decltype(std::declval<C>().erase(std::declval<C::iterator>()))>);
+static_assert(same_as<C::iterator, decltype(std::declval<C>().erase(std::declval<holder<C::iterator>>()))>);
+static_assert(same_as<C::iterator, decltype(std::declval<C>().erase(std::declval<C::const_iterator>()))>);
+static_assert(same_as<C::iterator, decltype(std::declval<C>().erase(std::declval<holder<C::const_iterator>>()))>);
+static_assert(
+    same_as<C::iterator, decltype(std::declval<C>().erase(std::declval<C::iterator>(), std::declval<C::iterator>()))>);
+static_assert(same_as<C::size_type, decltype(std::declval<C>().erase(std::declval<holder<int>>()))>);
+static_assert(same_as<C::size_type, decltype(std::declval<C>().erase(std::declval<int>()))>);
+
+// erase key_type
+static_assert(can_erase_key<flat_set<int, _STD less<int>>, int>);
+static_assert(can_erase_key<flat_set<int, _STD less<>>, int>);
+static_assert(can_erase_key<flat_set<int, _RANGES less>, int>);
+// erase wrapped key_type
+static_assert(!can_erase_key<flat_set<int, _STD less<int>>, holder<int>>);
+static_assert(can_erase_key<flat_set<int, _STD less<>>, holder<int>>);
+static_assert(can_erase_key<flat_set<int, _RANGES less>, holder<int>>);
+// erase wrapped iterator - the member function template returning size_type must not be selected
+static_assert(can_erase_iterator_holder<flat_set<int, _STD less<int>>>);
+static_assert(can_erase_iterator_holder<flat_set<int, _STD less<>>>);
+static_assert(can_erase_iterator_holder<flat_set<int, _RANGES less>>);
+
 
 template <class C>
 void test_erase_if() {
