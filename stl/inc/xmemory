@@ -2763,24 +2763,27 @@ namespace ranges {
 #endif // _HAS_CXX23
 
 template <class _Elem>
-constexpr auto _UIntegral_to_buff_digits() {
-    struct {
-        _Elem _Data[200];
-    } _Result = {};
+struct _Digit_pair_table {
+    _Elem _Data[100][2];
 
-    for (int _Idx = 0; _Idx != 100; ++_Idx) {
-        _Result._Data[_Idx * 2 + 0] = static_cast<_Elem>(_Idx / 10 + '0');
-        _Result._Data[_Idx * 2 + 1] = static_cast<_Elem>(_Idx % 10 + '0');
+    constexpr explicit _Digit_pair_table() : _Data{} {
+        for (int _Idx = 0; _Idx != 100; ++_Idx) {
+            _Data[_Idx][0] = static_cast<_Elem>('0' + _Idx / 10);
+            _Data[_Idx][1] = static_cast<_Elem>('0' + _Idx % 10);
+        }
     }
 
-    return _Result;
-}
+    _Digit_pair_table(const _Digit_pair_table&)            = delete;
+    _Digit_pair_table& operator=(const _Digit_pair_table&) = delete;
+};
+
+template <class _Elem>
+constexpr _Digit_pair_table<_Elem> _Digit_pairs{};
 
 template <class _Elem, class _UTy>
 _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by both to_string and thread::id output
     // format _UVal into buffer *ending at* _RNext
     static_assert(is_unsigned_v<_UTy>, "_UTy must be unsigned");
-    static constexpr auto _Table = _STD _UIntegral_to_buff_digits<_Elem>();
 
 #ifdef _WIN64
     auto _UVal_trunc = _UVal;
@@ -2795,7 +2798,7 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
                 const unsigned long _UVal_chunk_part = _UVal_chunk % 100;
                 _UVal_chunk /= 100;
                 _RNext -= 2;
-                _CSTD memcpy(_RNext, _Table._Data + _UVal_chunk_part * 2, 2 * sizeof(_Elem));
+                _CSTD memcpy(_RNext, _Digit_pairs<_Elem>._Data[_UVal_chunk_part], 2 * sizeof(_Elem));
             }
 
             *--_RNext = static_cast<_Elem>('0' + _UVal_chunk);
@@ -2810,7 +2813,7 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
             const unsigned long _UVal_trunc_part = _UVal_trunc % 100;
             _UVal_trunc /= 100;
             _RNext -= 2;
-            _CSTD memcpy(_RNext, _Table._Data + _UVal_trunc_part * 2, 2 * sizeof(_Elem));
+            _CSTD memcpy(_RNext, _Digit_pairs<_Elem>._Data[_UVal_trunc_part], 2 * sizeof(_Elem));
         } while (_UVal_trunc >= 10);
 
         if (_UVal_trunc == 0) {
