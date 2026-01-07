@@ -10,6 +10,7 @@
 #include <flat_map>
 #include <functional>
 #include <memory>
+#include <print>
 #include <ranges>
 #include <type_traits>
 #include <vector>
@@ -70,6 +71,16 @@ bool check_key_content(const T& obj, const typename T::key_container_type& expec
 template <IsFlatMap T>
 bool check_value_content(const T& obj, const typename T::mapped_container_type& expected) {
     return ranges::equal(obj.values(), expected);
+}
+
+template <IsFlatMap T>
+bool assert_check_content(const T& obj, const type_identity_t<T>& expected) {
+    if (!ranges::equal(obj, expected)) {
+        println(stderr, "Unexpected content!\nExpected {}", expected);
+        println(stderr, "Actual {}", obj);
+        return false;
+    }
+    return true;
 }
 
 enum class subrange_type : bool {
@@ -794,6 +805,71 @@ void test_lookup_call_on_temporaries() {
     }
 }
 
+// Test that hint to emplace/insert is respected, when possible; check returned iterator
+template <template <class...> class KeyC, template <class...> class ValueC>
+void test_insert_hint_is_respected() {
+    using lt = std::less<int>;
+
+    {
+        flat_multimap<int, char, lt, KeyC<int>, ValueC<char>> a{{-1, 'x'}, {-1, 'x'}, {1, 'x'}, {1, 'x'}};
+        bool problem_seen                      = false;
+        auto const assert_inserted_at_position = [&a, &problem_seen](
+                                                     const int expected_index, const auto insert_position) {
+            const auto expected_position = a.begin() + expected_index;
+            if (expected_position != insert_position) {
+                println("Wrong insert position: expected {}, actual {}\nContainer after insert {}", expected_index,
+                    insert_position - a.begin(), a);
+                problem_seen = true;
+            }
+        };
+
+        struct pseudopair {
+            int i;
+            char c;
+
+            operator pair<int, char>() const {
+                return pair{i, c};
+            }
+        };
+
+        pair pair0c{0, 'c'};
+        pair const pair0f{0, 'f'};
+        // hint is greater
+        assert(assert_check_content(a, {{-1, 'x'}, {-1, 'x'}, {1, 'x'}, {1, 'x'}}));
+        assert_inserted_at_position(2, a.emplace_hint(a.end(), 0, 'a'));
+        assert(assert_check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {1, 'x'}, {1, 'x'}}));
+        assert_inserted_at_position(3, a.emplace_hint(a.find(1), pair{0, 'b'}));
+        assert(assert_check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {0, 'b'}, {1, 'x'}, {1, 'x'}}));
+        assert_inserted_at_position(4, a.insert(a.upper_bound(0), std::move(pair0c)));
+        assert(assert_check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {0, 'b'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
+        // hint is correct
+        assert_inserted_at_position(4, a.emplace_hint(a.upper_bound(0) - 1, 0, 'd'));
+        assert(assert_check_content(
+            a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {0, 'b'}, {0, 'd'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
+        assert_inserted_at_position(3, a.emplace_hint(a.begin() + 3, pseudopair{0, 'e'}));
+        assert(assert_check_content(
+            a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {0, 'e'}, {0, 'b'}, {0, 'd'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
+        assert_inserted_at_position(2, a.insert(a.lower_bound(0), pair0f));
+        assert(assert_check_content(
+            a, {{-1, 'x'}, {-1, 'x'}, {0, 'f'}, {0, 'a'}, {0, 'e'}, {0, 'b'}, {0, 'd'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
+        // hint is less
+        assert_inserted_at_position(2, a.emplace_hint(a.lower_bound(0) - 1, pair{0, 'g'}));
+        assert(assert_check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'g'}, {0, 'f'}, {0, 'a'}, {0, 'e'}, {0, 'b'},
+                                           {0, 'd'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
+        assert_inserted_at_position(2, a.insert(a.begin(), pseudopair{0, 'h'}));
+        assert(assert_check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'h'}, {0, 'g'}, {0, 'f'}, {0, 'a'}, {0, 'e'},
+                                           {0, 'b'}, {0, 'd'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
+
+        assert(!problem_seen);
+
+        assert(4 == erase_if(a, [](const auto pair) { return pair.second <= 'd'; }));
+        assert(assert_check_content(
+            a, {{-1, 'x'}, {-1, 'x'}, {0, 'h'}, {0, 'g'}, {0, 'f'}, {0, 'e'}, {1, 'x'}, {1, 'x'}}));
+        assert(4 == a.erase(0));
+        assert(assert_check_content(a, {{-1, 'x'}, {-1, 'x'}, {1, 'x'}, {1, 'x'}}));
+    }
+}
+
 int main() {
     test_construction();
     test_pointer_to_incomplete_type();
@@ -805,4 +881,8 @@ int main() {
     test_comparison();
     test_throwing_compare_swap();
     test_lookup_call_on_temporaries();
+    test_insert_hint_is_respected<vector, vector>();
+    test_insert_hint_is_respected<vector, deque>();
+    test_insert_hint_is_respected<deque, vector>();
+    test_insert_hint_is_respected<deque, deque>();
 }
