@@ -32,7 +32,7 @@ template <class T, double M, double S>
 void internal_integer_to_buff(benchmark::State& state) {
     auto a = generate_array<T, M, S>();
 
-    char buff[24];
+    char buff[20]; // can hold -2^63 and 2^64 - 1
 
     auto it = a.begin();
     for (auto _ : state) {
