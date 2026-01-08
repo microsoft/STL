@@ -294,7 +294,9 @@ public:
 
     // modifiers
     template <class... _Args>
-    auto emplace(_Args&&... _Vals) {
+    auto emplace(_Args&&... _Vals)
+        requires is_constructible_v<value_type, _Args...>
+    {
         constexpr bool _Is_key_type = _In_place_key_extract_set<_Kty, remove_cvref_t<_Args>...>::_Extractable;
         if constexpr (_Is_key_type) {
             return _Emplace(_STD forward<_Args>(_Vals)...);
@@ -303,7 +305,9 @@ public:
         }
     }
     template <class... _Args>
-    iterator emplace_hint(const const_iterator _Hint, _Args&&... _Vals) {
+    iterator emplace_hint(const const_iterator _Hint, _Args&&... _Vals)
+        requires is_constructible_v<value_type, _Args...>
+    {
         constexpr bool _Is_key_type = _In_place_key_extract_set<_Kty, remove_cvref_t<_Args>...>::_Extractable;
         if constexpr (_Is_key_type) {
             return _Emplace_hint(_Hint, _STD forward<_Args>(_Vals)...);
@@ -425,18 +429,12 @@ public:
     }
 
     _NODISCARD size_type count(const _Kty& _Val) const {
-        if constexpr (_IsUnique) {
-            return contains(_Val);
-        } else {
-            const auto [_First, _Last] = equal_range(_Val);
-            return static_cast<size_type>(_Last - _First);
-        }
+        return _Count(_Val);
     }
     template <class _Other>
         requires _Transparent<key_compare>
     _NODISCARD size_type count(const _Other& _Val) const {
-        const auto [_First, _Last] = equal_range(_Val);
-        return static_cast<size_type>(_Last - _First);
+        return _Count(_Val);
     }
 
     _NODISCARD bool contains(const _Kty& _Val) const {
@@ -467,12 +465,12 @@ public:
     }
 
     _NODISCARD pair<const_iterator, const_iterator> equal_range(const _Kty& _Val) const {
-        return _STD equal_range(cbegin(), cend(), _Val, _Pass_comp());
+        return _Equal_range(_Val);
     }
     template <class _Other>
         requires _Transparent<key_compare>
     _NODISCARD pair<const_iterator, const_iterator> equal_range(const _Other& _Val) const {
-        return _STD equal_range(cbegin(), cend(), _Val, _Pass_comp());
+        return _Equal_range(_Val);
     }
 
     _NODISCARD friend bool operator==(const _Derived& _Lhs, const _Derived& _Rhs) {
@@ -680,6 +678,30 @@ private:
             return _Where;
         } else {
             return _End;
+        }
+    }
+
+    template <class _KeyTy>
+    _NODISCARD size_type _Count(const _KeyTy& _Key_val) const {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
+        if constexpr (_IsUnique && is_same_v<_KeyTy, key_type>) { // Optimization restricted due to GH-5992
+            return contains(_Key_val);
+        } else {
+            const auto [_First, _Last] = _Equal_range(_Key_val);
+            return static_cast<size_type>(_Last - _First);
+        }
+    }
+
+    template <class _KeyTy>
+    _NODISCARD pair<const_iterator, const_iterator> _Equal_range(const _KeyTy& _Key_val) const {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
+        if constexpr (_IsUnique && is_same_v<_KeyTy, key_type>) { // Optimization restricted due to GH-5992
+            // In a non-multi container, equal_range can have size at most 1
+            const auto _First   = _STD lower_bound(_Mycont.begin(), _Mycont.end(), _Key_val, _Pass_comp());
+            const bool _Missing = _First == _STD end(_Mycont) || _Mycomp(_Key_val, *_First);
+            return pair{_First, _Missing ? _First : _STD next(_First)};
+        } else {
+            return _STD equal_range(begin(), end(), _Key_val, _Pass_comp());
         }
     }
 

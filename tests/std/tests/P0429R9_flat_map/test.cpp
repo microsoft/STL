@@ -1277,6 +1277,39 @@ void test_key_mapped_cont_combinations() {
     test_erase_if<KeyCont, MappedCont>();
 }
 
+enum class strange_int {};
+
+// No overload divless::operator()(strange_int, strange_int), does not satisfy std::strict_weak_order
+struct divless {
+    using is_transparent = void;
+
+    template <class X, class Y>
+        requires (is_same_v<X, int> && is_same_v<Y, strange_int>)
+              || (is_same_v<X, strange_int> && is_same_v<Y, int>) || (is_same_v<X, int> && is_same_v<Y, int>)
+    constexpr bool operator()(X x, Y y) const noexcept {
+        if constexpr (is_same_v<X, strange_int>) {
+            return static_cast<int>(x) < y / 10;
+        } else if constexpr (is_same_v<Y, strange_int>) {
+            return x / 10 < static_cast<int>(y);
+        } else {
+            return x < y;
+        }
+    }
+};
+static_assert(!strict_weak_order<divless, int, strange_int>);
+
+// ranges:: algorithms can't be called with divless compare, as it does not satisfy std::strict_weak_order
+void test_generic_count_gh_5992() {
+    {
+        flat_map<int, int, divless> m{{1, 0}, {2, 0}, {11, 0}, {12, 0}};
+        assert(2 == m.count(strange_int{0}));
+    }
+    {
+        flat_multimap<int, int, divless> mm{{1, 0}, {2, 0}, {11, 0}, {12, 0}};
+        assert(2 == mm.count(strange_int{0}));
+    }
+}
+
 int main() {
     test_key_mapped_cont_combinations<vector, vector>();
     test_key_mapped_cont_combinations<vector, deque>();
@@ -1289,4 +1322,5 @@ int main() {
     test_insert_or_assign();
     test_comparison();
     test_lookup_call_on_temporaries();
+    test_generic_count_gh_5992();
 }
