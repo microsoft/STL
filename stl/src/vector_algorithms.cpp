@@ -7034,6 +7034,80 @@ __declspec(noalias) size_t __stdcall __std_mismatch_8(
     return _Mismatching::_Mismatch_impl<uint64_t>(_First1, _First2, _Count);
 }
 
+} // extern "C"
+
+namespace {
+    namespace _Replacing {
+        template <class _Traits, class _Ty>
+        __declspec(noalias) void __stdcall _Replace_copy_impl(
+            const void* _First, const void* const _Last, void* _Dest, const _Ty _Old_val, const _Ty _New_val) noexcept {
+#ifndef _M_ARM64EC
+            const size_t _Size_bytes = _Byte_length(_First, _Last);
+
+            if (const size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
+                const __m256i _Comparand   = _Traits::_Set_avx(_Old_val);
+                const __m256i _Replacement = _Traits::_Set_avx(_New_val);
+                const void* _Stop_at       = _First;
+                _Advance_bytes(_Stop_at, _Avx_size);
+
+                do {
+                    const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
+                    const __m256i _Mask = _Traits::_Cmp_avx(_Data, _Comparand);
+                    const __m256i _Val  = _mm256_blendv_epi8(_Data, _Replacement, _Mask);
+
+                    _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Val);
+
+                    _Advance_bytes(_First, 32);
+                    _Advance_bytes(_Dest, 32);
+                } while (_First != _Stop_at);
+
+                if (const size_t _Avx_tail_size = _Size_bytes & 0x1C; _Avx_tail_size != 0) {
+                    const __m256i _Tail_mask = _Avx2_tail_mask_32(_Avx_tail_size);
+                    const __m256i _Data      = _mm256_maskload_epi32(static_cast<const int*>(_First), _Tail_mask);
+                    const __m256i _Mask      = _Traits::_Cmp_avx(_Data, _Comparand);
+                    const __m256i _Val       = _mm256_blendv_epi8(_Data, _Replacement, _Mask);
+
+                    _mm256_maskstore_epi32(static_cast<int*>(_Dest), _Tail_mask, _Val);
+
+                    _Advance_bytes(_First, _Avx_tail_size);
+                    _Advance_bytes(_Dest, _Avx_tail_size);
+                }
+
+                _mm256_zeroupper(); // TRANSITION, DevCom-10331414
+
+                if constexpr (sizeof(_Ty) >= 4) {
+                    return;
+                }
+            } else if (const size_t _Sse_size = _Size_bytes & ~size_t{0xF}; _Sse_size != 0 && _Use_sse42()) {
+                const __m128i _Comparand   = _Traits::_Set_sse(_Old_val);
+                const __m128i _Replacement = _Traits::_Set_sse(_New_val);
+                const void* _Stop_at       = _First;
+                _Advance_bytes(_Stop_at, _Sse_size);
+
+                do {
+                    const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
+                    const __m128i _Mask = _Traits::_Cmp_sse(_Data, _Comparand);
+                    const __m128i _Val  = _mm_blendv_epi8(_Data, _Replacement, _Mask);
+
+                    _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Val);
+
+                    _Advance_bytes(_First, 16);
+                    _Advance_bytes(_Dest, 16);
+                } while (_First != _Stop_at);
+            }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+            auto _Ptr_dest = static_cast<_Ty*>(_Dest);
+            for (auto _Ptr_src = static_cast<const _Ty*>(_First); _Ptr_src != _Last; ++_Ptr_src) {
+                const _Ty _Val = *_Ptr_src;
+                *_Ptr_dest     = _Val == _Old_val ? _New_val : _Val;
+                ++_Ptr_dest;
+            }
+        }
+    } // namespace _Replacing
+} // unnamed namespace
+
+extern "C" {
+
 __declspec(noalias) void __stdcall __std_replace_4(
     void* _First, void* const _Last, const uint32_t _Old_val, const uint32_t _New_val) noexcept {
 #ifndef _M_ARM64EC
@@ -7113,6 +7187,26 @@ __declspec(noalias) void __stdcall __std_replace_8(
             }
         }
     }
+}
+
+__declspec(noalias) void __stdcall __std_replace_copy_1(const void* const _First, const void* const _Last,
+    void* const _Dest, const uint8_t _Old_val, const uint8_t _New_val) noexcept {
+    _Replacing::_Replace_copy_impl<_Finding::_Find_traits_1>(_First, _Last, _Dest, _Old_val, _New_val);
+}
+
+__declspec(noalias) void __stdcall __std_replace_copy_2(const void* const _First, const void* const _Last,
+    void* const _Dest, const uint16_t _Old_val, const uint16_t _New_val) noexcept {
+    _Replacing::_Replace_copy_impl<_Finding::_Find_traits_2>(_First, _Last, _Dest, _Old_val, _New_val);
+}
+
+__declspec(noalias) void __stdcall __std_replace_copy_4(const void* const _First, const void* const _Last,
+    void* const _Dest, const uint32_t _Old_val, const uint32_t _New_val) noexcept {
+    _Replacing::_Replace_copy_impl<_Finding::_Find_traits_4>(_First, _Last, _Dest, _Old_val, _New_val);
+}
+
+__declspec(noalias) void __stdcall __std_replace_copy_8(const void* const _First, const void* const _Last,
+    void* const _Dest, const uint64_t _Old_val, const uint64_t _New_val) noexcept {
+    _Replacing::_Replace_copy_impl<_Finding::_Find_traits_8>(_First, _Last, _Dest, _Old_val, _New_val);
 }
 
 } // extern "C"
