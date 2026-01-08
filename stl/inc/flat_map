@@ -352,7 +352,7 @@ public:
         key_container_type _Key_cont, mapped_container_type _Mapped_cont, const key_compare& _Comp = key_compare())
         : _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)}, _Key_compare(_Comp) {
         _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
-        _Sort_and_erase_dupes_if_not_multi();
+        _Make_invariants_fulfilled();
     }
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
@@ -367,7 +367,7 @@ public:
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Mapped_cont)},
           _Key_compare(_Comp) {
         _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
-        _Sort_and_erase_dupes_if_not_multi();
+        _Make_invariants_fulfilled();
     }
 
     _Flat_map_base(_Sorted_t, key_container_type _Key_cont, mapped_container_type _Mapped_cont,
@@ -1024,16 +1024,13 @@ private:
 
     template <class _Predicate>
     _NODISCARD size_type _Erase_if(_Predicate _Pred) {
-        auto _View           = _View_to_mutate();
-        auto _Mut_first      = _View.begin();
-        const auto _Mut_last = _View.end();
-        const auto _Old_size = size();
-
         _Clear_guard _Guard{this};
 
-        _STD _Seek_wrapped(_Mut_first, _RANGES remove_if(_View, _Pred).begin());
-        _Data.keys.erase(_Mut_first._Key_it, _Mut_last._Key_it);
-        _Data.values.erase(_Mut_first._Mapped_it, _Mut_last._Mapped_it);
+        const auto _New_last = _RANGES remove_if(_View_to_mutate(), _Pred).begin();
+        const auto _Old_size = size();
+
+        _Data.keys.erase(_New_last._Key_it, _Data.keys.end());
+        _Data.values.erase(_New_last._Mapped_it, _Data.values.end());
 
         _Guard._Target = nullptr;
         return _Old_size - size();
@@ -1067,42 +1064,34 @@ private:
         return _Is_sorted_and_unique(_Cont.begin(), _Cont.end());
     }
 
-    void _Sort_and_erase_dupes_if_not_multi() {
-        _Clear_guard _Guard{this};
+    void _Make_invariants_fulfilled() {
+        if (empty()) { // FIXME maybe consider if (begin() == end()) for consistency with flat_set
+            return;
+        }
 
         // O(N) if already sorted.
-        const auto _Begin_unsorted =
-            _STD is_sorted_until(_STD cbegin(_Data.keys), _STD cend(_Data.keys), _Pass_key_comp());
-        const difference_type _Num_sorted = _Begin_unsorted - _STD cbegin(_Data.keys);
+        const auto _Num_sorted = _RANGES is_sorted_until(_Data.keys, _Pass_key_comp()) - _Data.keys.begin();
 
         auto _View                        = _View_to_mutate();
-        const auto _Begin                 = _STD begin(_View);
-        const auto _Begin_unsorted_values = _Begin + _Num_sorted;
-        const auto _End                   = _STD end(_View);
+        const auto _Begin_unsorted_values = _STD begin(_View) + _Num_sorted;
 
-        _RANGES sort(_Begin_unsorted_values, _End, value_compare{_Key_compare});
-        _RANGES inplace_merge(_Begin, _Begin_unsorted_values, _End, value_compare{_Key_compare});
+        _RANGES sort(_Begin_unsorted_values, _STD end(_View), value_compare{_Key_compare});
+        _RANGES inplace_merge(_View, _Begin_unsorted_values, value_compare{_Key_compare});
 
         _Erase_dupes_if_not_multi();
 
         _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
-
-        _Guard._Target = nullptr;
     }
 
     void _Erase_dupes_if_not_multi() {
         if constexpr (_IsUnique) {
             auto _Sorted_view    = _View_to_mutate();
-            const auto _Subrange = _RANGES unique(_Sorted_view, [this](const_reference _Left, const_reference _Right) {
+            const auto _New_last = _RANGES unique(_Sorted_view, [this](const_reference _Left, const_reference _Right) {
                 return this->_Key_equal(_Left.first, _Right.first);
-            });
-            const auto _Remaining_count = _Subrange.begin() - _Sorted_view.begin();
-            _Data.keys.erase(
-                _Data.keys.begin() + static_cast<_RANGES range_difference_t<_KeyContainer>>(_Remaining_count),
-                _Data.keys.end());
-            _Data.values.erase(
-                _Data.values.begin() + static_cast<_RANGES range_difference_t<_MappedContainer>>(_Remaining_count),
-                _Data.values.end());
+            }).begin();
+
+            _Data.keys.erase(_New_last._Key_it, _Data.keys.end());
+            _Data.values.erase(_New_last._Mapped_it, _Data.values.end());
         }
     }
 
@@ -1131,9 +1120,7 @@ private:
         // Sort the newly inserted elements
         auto _Sorted_view = _View_to_mutate();
         if constexpr (_NeedSorting) {
-            auto _Sorted_new_elements = _Sorted_view;
-            _Sorted_new_elements.advance(_Old_distance);
-            _RANGES sort(_Sorted_new_elements, value_compare{_Key_compare});
+            _RANGES sort(_STD begin(_Sorted_view) + _Old_distance, _STD end(_Sorted_view), value_compare{_Key_compare});
         } else {
             _STL_ASSERT(_Is_sorted_and_unique(
                             _Data.keys.begin() + static_cast<key_container_type::difference_type>(_Old_distance),
