@@ -1205,13 +1205,13 @@ private:
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         if constexpr (_IsUnique && is_same_v<_KeyTy, key_type>) { // Optimization restricted due to GH-5992
             // In a non-multi container, equal range can have size at most 1
-            auto const _First =
+            const auto _First =
                 _STD lower_bound(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp());
-            bool const _Missing = _First == _STD end(_Self._Data.keys) || _Self._Key_compare(_Key_val, *_First);
+            const bool _Missing = _First == _STD end(_Self._Data.keys) || _Self._Key_compare(_Key_val, *_First);
             return pair{_Self._Iterator_from_key_iterator(_First),
                 _Self._Iterator_from_key_iterator(_Missing ? _First : _STD next(_First))};
         } else {
-            auto const [_First, _Last] =
+            const auto [_First, _Last] =
                 _STD equal_range(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp());
             return pair{_Self._Iterator_from_key_iterator(_First), _Self._Iterator_from_key_iterator(_Last)};
         }
