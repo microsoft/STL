@@ -680,7 +680,7 @@ private:
     template <class _KeyTy>
     _NODISCARD size_type _Count(const _KeyTy& _Key_val) const {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        if constexpr (_IsUnique) {
+        if constexpr (_IsUnique && is_same_v<_KeyTy, key_type>) { // Optimization restricted due to GH-5592
             return contains(_Key_val);
         } else {
             const auto [_First, _Last] = _Equal_range(_Key_val);
@@ -691,7 +691,7 @@ private:
     template <class _KeyTy>
     _NODISCARD pair<const_iterator, const_iterator> _Equal_range(const _KeyTy& _Key_val) const {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        if constexpr (_IsUnique) {
+        if constexpr (_IsUnique && is_same_v<_KeyTy, key_type>) { // Optimization restricted due to GH-5592
             // In a non-multi container, equal range can have size at most 1
             auto const _First   = _RANGES lower_bound(_Mycont, _Key_val, _Pass_comp());
             bool const _Missing = _First == _STD end(_Mycont) || _Mycomp(_Key_val, *_First);
