@@ -1145,6 +1145,39 @@ void test_throwing_compare_swap() {
     test_throwing_compare_single<flat_multiset, deque>();
 }
 
+enum class strange_int {};
+
+// No overload divless::operator()(strange_int, strange_int), does not satisfy std::strict_weak_order
+struct divless {
+    using is_transparent = void;
+
+    template <class X, class Y>
+        requires (is_same_v<X, int> && is_same_v<Y, strange_int>)
+              || (is_same_v<X, strange_int> && is_same_v<Y, int>) || (is_same_v<X, int> && is_same_v<Y, int>)
+    constexpr bool operator()(X x, Y y) const noexcept {
+        if constexpr (is_same_v<X, strange_int>) {
+            return static_cast<int>(x) < y / 10;
+        } else if constexpr (is_same_v<Y, strange_int>) {
+            return x / 10 < static_cast<int>(y);
+        } else {
+            return x < y;
+        }
+    }
+};
+static_assert(!strict_weak_order<divless, int, strange_int>);
+
+// ranges:: algorithms can't be called with divless compare, as it does not satisfy std::strict_weak_order
+void test_generic_count_gh_5992() {
+    {
+        flat_set<int, divless> s{1, 2, 11, 12};
+        assert(2 == s.count(strange_int{0}));
+    }
+    {
+        flat_multiset<int, divless> ms{1, 2, 11, 12};
+        assert(2 == ms.count(strange_int{0}));
+    }
+}
+
 int main() {
     test_spaceship_operator<flat_set<int>>();
     test_spaceship_operator<flat_multiset<int>>();
@@ -1195,4 +1228,5 @@ int main() {
     test_set_operations_transparent<flat_multiset>();
 
     test_throwing_compare_swap();
+    test_generic_count_gh_5992();
 }
