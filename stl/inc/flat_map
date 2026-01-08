@@ -1161,9 +1161,10 @@ private:
     template <class _SelfTy, class _KeyTy>
     _NODISCARD auto _Find(this _SelfTy& _Self, const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        const auto _Position = _Self.lower_bound(_Key_val);
-        if (_Position != _Self.end() && !_Self._Key_compare(_Key_val, _Position->first)) {
-            return _Position;
+        const auto _Position =
+            _STD lower_bound(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp());
+        if (_Position != _Self._Data.keys.end() && !_Self._Key_compare(_Key_val, *_Position)) {
+            return _Self._Iterator_from_key_iterator(_Position);
         } else {
             return _Self.end();
         }
