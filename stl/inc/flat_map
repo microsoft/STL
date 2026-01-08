@@ -897,7 +897,7 @@ protected:
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_OtherKey>, key_type>
                                     || (is_constructible_v<key_type, _OtherKey> && _Transparent<key_compare>) );
 
-        const auto _Key_it = _RANGES upper_bound(_Data.keys, _Key_val, _Pass_key_comp());
+        const auto _Key_it = _STD upper_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Pass_key_comp());
         const auto _Index  = _RANGES distance(_Data.keys.begin(), _Key_it);
         if constexpr (_IsUnique) {
             if (_Key_it != _Data.keys.begin()
@@ -963,22 +963,22 @@ protected:
             return begin() + _Dist;
         }
 
-        const auto _New_position = _Hint_order == weak_ordering::less ? _STD as_const(*this).lower_bound(_Key_val)
-                                                                      : _STD as_const(*this).upper_bound(_Key_val);
+        const auto _New_position = _Iterator_from_key_iterator(
+            _Hint_order == weak_ordering::less
+                ? _STD lower_bound(_Position._Key_it, _STD cend(_Data.keys), _Key_val, _Pass_key_comp())
+                : _STD upper_bound(_STD cbegin(_Data.keys), _Position._Key_it, _Key_val, _Pass_key_comp()));
+
         if constexpr (_IsUnique) {
             if (_Hint_order == weak_ordering::less) {
                 if (_New_position != _End && !_Key_compare(_Key_val, *_New_position._Key_it)) {
-                    const auto _Dist = _New_position._Key_it - _Begin._Key_it;
-                    const auto _It   = begin() + _Dist;
                     if constexpr (_OverwriteIfExists) {
-                        *_It._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
+                        *_New_position._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
                     }
-                    return _It;
+                    return _New_position;
                 }
             } else {
                 if (_New_position != _Begin && !_Key_compare(*_STD prev(_New_position._Key_it), _Key_val)) {
-                    const auto _Dist = _STD prev(_New_position._Key_it) - _Begin._Key_it;
-                    const auto _It   = begin() + _Dist;
+                    const auto _It = _STD prev(_New_position);
                     if constexpr (_OverwriteIfExists) {
                         *_It._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
                     }
@@ -987,7 +987,7 @@ protected:
             }
         }
 
-        const auto _Dist = _New_position - _Begin;
+        const auto _Dist = _New_position - this->begin();
         {
             key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
             mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Args)...);
@@ -1161,9 +1161,10 @@ private:
     template <class _SelfTy, class _KeyTy>
     _NODISCARD auto _Find(this _SelfTy& _Self, const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        const auto _Position = _Self.lower_bound(_Key_val);
-        if (_Position != _Self.end() && !_Self._Key_compare(_Key_val, _Position->first)) {
-            return _Position;
+        const auto _Position =
+            _STD lower_bound(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp());
+        if (_Position != _Self._Data.keys.end() && !_Self._Key_compare(_Key_val, *_Position)) {
+            return _Self._Iterator_from_key_iterator(_Position);
         } else {
             return _Self.end();
         }
@@ -1172,46 +1173,55 @@ private:
     template <class _KeyTy>
     _NODISCARD size_type _Count(const _KeyTy& _Key_val) const {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        return upper_bound(_Key_val) - lower_bound(_Key_val);
+        if constexpr (_IsUnique && is_same_v<_KeyTy, key_type>) { // Optimization restricted due to GH-5992
+            return _Contains(_Key_val);
+        } else {
+            const auto [_First, _Last] =
+                _STD equal_range(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Pass_key_comp());
+            return static_cast<size_type>(_Last - _First);
+        }
     }
 
     template <class _KeyTy>
     _NODISCARD bool _Contains(const _KeyTy& _Key_val) const {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        return find(_Key_val) != cend();
-    }
-
-    template <class _SelfTy, class _KeyTy, class _BoundFn>
-    _NODISCARD auto _Find_bound(this _SelfTy& _Self, const _KeyTy& _Key_val, _BoundFn _Bound_fun) {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        const auto _Key_unchecked_begin = _STD _Get_unwrapped(_STD cbegin(_Self._Data.keys));
-        const auto _Key_unchecked_it    = _Bound_fun(
-            _Key_unchecked_begin, _STD _Get_unwrapped(_STD cend(_Self._Data.keys)), _Key_val, _Self._Pass_key_comp());
-        const auto _Dist = _Key_unchecked_it - _Key_unchecked_begin;
-
-        auto _Key_it = _STD cbegin(_Self._Data.keys);
-        _STD _Seek_wrapped(_Key_it, _Key_unchecked_it);
-        auto _Val_it =
-            _STD begin(_Self._Data.values) + static_cast<_RANGES range_difference_t<mapped_container_type>>(_Dist);
-
-        using _Maybe_const_iter = conditional_t<is_const_v<_SelfTy>, const_iterator, iterator>;
-        return _Maybe_const_iter{_STD move(_Key_it), _STD move(_Val_it)};
+        return _STD binary_search(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Pass_key_comp());
     }
 
     template <class _SelfTy, class _KeyTy>
     _NODISCARD auto _Lower_bound(this _SelfTy& _Self, const _KeyTy& _Key_val) {
-        return _Self._Find_bound(_Key_val, _RANGES lower_bound);
+        return _Self._Iterator_from_key_iterator(
+            _STD lower_bound(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp()));
     }
 
     template <class _SelfTy, class _KeyTy>
     _NODISCARD auto _Upper_bound(this _SelfTy& _Self, const _KeyTy& _Key_val) {
-        return _Self._Find_bound(_Key_val, _RANGES upper_bound);
+        return _Self._Iterator_from_key_iterator(
+            _STD upper_bound(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp()));
     }
 
     template <class _SelfTy, class _KeyTy>
     _NODISCARD auto _Equal_range(this _SelfTy& _Self, const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
-        return pair{_Self.lower_bound(_Key_val), _Self.upper_bound(_Key_val)};
+        if constexpr (_IsUnique && is_same_v<_KeyTy, key_type>) { // Optimization restricted due to GH-5992
+            // In a non-multi container, equal_range can have size at most 1
+            const auto _First =
+                _STD lower_bound(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp());
+            const bool _Missing = _First == _STD end(_Self._Data.keys) || _Self._Key_compare(_Key_val, *_First);
+            return pair{_Self._Iterator_from_key_iterator(_First),
+                _Self._Iterator_from_key_iterator(_Missing ? _First : _STD next(_First))};
+        } else {
+            const auto [_First, _Last] =
+                _STD equal_range(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp());
+            return pair{_Self._Iterator_from_key_iterator(_First), _Self._Iterator_from_key_iterator(_Last)};
+        }
+    }
+
+    template <class _SelfTy>
+    _NODISCARD conditional_t<is_const_v<_SelfTy>, const_iterator, iterator> _Iterator_from_key_iterator(
+        this _SelfTy& _Self, const key_container_type::const_iterator& _Iter) {
+        const difference_type _Offset = _Iter - _STD cbegin(_Self._Data.keys);
+        return _Self.begin() + _Offset;
     }
 };
 
