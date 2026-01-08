@@ -1204,7 +1204,7 @@ private:
     _NODISCARD auto _Equal_range(this _SelfTy& _Self, const _KeyTy& _Key_val) {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         if constexpr (_IsUnique && is_same_v<_KeyTy, key_type>) { // Optimization restricted due to GH-5992
-            // In a non-multi container, equal range can have size at most 1
+            // In a non-multi container, equal_range can have size at most 1
             const auto _First =
                 _STD lower_bound(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp());
             const bool _Missing = _First == _STD end(_Self._Data.keys) || _Self._Key_compare(_Key_val, *_First);
