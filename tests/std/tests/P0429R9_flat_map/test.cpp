@@ -802,10 +802,11 @@ void test_construction() {
     }
 }
 
+template <template <class...> class KeyCont, template <class...> class MappedCont>
 void test_erase_if() {
     {
-        vector<int> keys      = {0, 1, 2, 3, 4, 2};
-        vector<int> vals      = {44, 2324, 635462, 433, 5, 7};
+        KeyCont<int> keys     = {0, 1, 2, 3, 4, 2};
+        MappedCont<int> vals  = {44, 2324, 635462, 433, 5, 7};
         auto even_key_odd_val = [](pair<const int&, const int&> p) { return p.first % 2 == 0 && p.second % 2 != 0; };
         flat_map fmap(keys, vals);
         const auto erased_num = erase_if(fmap, even_key_odd_val);
@@ -1179,18 +1180,6 @@ void test_throwing_compare_swap_single() {
     }
 }
 
-void test_throwing_compare_swap() {
-    test_throwing_compare_swap_single<flat_map, vector, vector>();
-    test_throwing_compare_swap_single<flat_map, vector, deque>();
-    test_throwing_compare_swap_single<flat_map, deque, vector>();
-    test_throwing_compare_swap_single<flat_map, deque, deque>();
-
-    test_throwing_compare_swap_single<flat_multimap, vector, vector>();
-    test_throwing_compare_swap_single<flat_multimap, vector, deque>();
-    test_throwing_compare_swap_single<flat_multimap, deque, vector>();
-    test_throwing_compare_swap_single<flat_multimap, deque, deque>();
-}
-
 // Test that changes in GH-5987 did not break calls of lookup member functions by using deducing this.
 template <typename T>
 void test_lookup_call_on_temporaries_single() {
@@ -1283,6 +1272,9 @@ template <template <class...> class KeyCont, template <class...> class MappedCon
 void test_key_mapped_cont_combinations() {
     test_construction<KeyCont, MappedCont>();
     test_insert_hint_is_respected<KeyCont, MappedCont>();
+    test_throwing_compare_swap_single<flat_map, KeyCont, MappedCont>();
+    test_throwing_compare_swap_single<flat_multimap, KeyCont, MappedCont>();
+    test_erase_if<KeyCont, MappedCont>();
 }
 
 int main() {
@@ -1291,12 +1283,10 @@ int main() {
     test_key_mapped_cont_combinations<deque, vector>();
     test_key_mapped_cont_combinations<deque, deque>();
     test_pointer_to_incomplete_type();
-    test_erase_if();
     test_insert();
     test_insert_range();
     test_gh_4344();
     test_insert_or_assign();
     test_comparison();
-    test_throwing_compare_swap();
     test_lookup_call_on_temporaries();
 }
