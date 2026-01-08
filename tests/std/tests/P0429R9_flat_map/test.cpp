@@ -671,7 +671,7 @@ void test_construction() {
             assert(fmmap == fmmap1);
         }
     }
-    // FIXME, test more flat_map and flat_multimap constructors
+    // FIXME, verify that all flat_map and flat_multimap constructors are tested
     {
         PackagedCompare<int> comp;
         {
