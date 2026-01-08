@@ -9,17 +9,21 @@
 #include "shared_test.hpp"
 
 void test_flat_map() {
-    std::flat_map<int, int> container{
-        {1, 5},
-        {3, 7},
-    };
-    shared_test(container);
+    {
+        std::flat_map<int, int> container{
+            {1, 5},
+            {3, 7},
+        };
+        shared_test(container);
+    }
 
-    std::flat_multimap<int, int> container2{
-        {1, 5},
-        {3, 7},
-    };
-    shared_test(container2);
+    {
+        std::flat_multimap<int, int> container2{
+            {1, 5},
+            {3, 7},
+        };
+        shared_test(container2);
+    }
 }
 
 #else // ^^^ defined(__cpp_lib_flat_map) / feature not available vvv

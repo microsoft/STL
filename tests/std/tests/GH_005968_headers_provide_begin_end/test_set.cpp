@@ -6,9 +6,13 @@
 #include "shared_test.hpp"
 
 void test_set() {
-    std::set<int> container{1,2,3};
-    shared_test(container);
+    {
+        std::set<int> container{1, 2, 3};
+        shared_test(container);
+    }
 
-    std::multiset<int> container2{1,2,3};
-    shared_test(container2);
+    {
+        std::multiset<int> container2{1, 2, 3};
+        shared_test(container2);
+    }
 }

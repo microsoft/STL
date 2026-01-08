@@ -6,9 +6,13 @@
 #include "shared_test.hpp"
 
 void test_unordered_set() {
-    std::unordered_set<int> container{1,2,3};
-    shared_test(container);
-    
-    std::unordered_multiset<int> container2{4,5,6};
-    shared_test(container2);
+    {
+        std::unordered_set<int> container{1, 2, 3};
+        shared_test(container);
+    }
+
+    {
+        std::unordered_multiset<int> container2{4, 5, 6};
+        shared_test(container2);
+    }
 }
