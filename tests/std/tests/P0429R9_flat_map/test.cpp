@@ -249,6 +249,7 @@ struct MyAllocatorCounter {
     size_t activeAllocations;
 };
 
+template <template <class...> class KeyCont, template <class...> class MappedCont>
 void test_construction() {
     // Using CTAD, the given MyAllocator is only used by the container when the constructor (deduction guide)
     // directly accepts KeyContainer and MappedContainer or using two deduction guides:
@@ -256,9 +257,9 @@ void test_construction() {
     //      flat_map(from_range_t, _Rng&&, _Allocator)
     // In other cases we have to fully specify template arguments, such as for  flat_map(_Iter, _Iter, _Allocator)
     using flat_map_my_allocator =
-        flat_map<int, int, less<int>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>;
+        flat_map<int, int, less<int>, KeyCont<int, MyAllocator<int>>, MappedCont<int, MyAllocator<int>>>;
     using flat_multimap_my_allocator =
-        flat_multimap<int, int, less<int>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>;
+        flat_multimap<int, int, less<int>, KeyCont<int, MyAllocator<int>>, MappedCont<int, MyAllocator<int>>>;
 
     {
         // Test flat_map() and flat_map(const key_compare&)
@@ -284,8 +285,8 @@ void test_construction() {
     }
     {
         // Test flat_map(key_cont, mapped_cont, comp = key_comp()())
-        vector<int> keys = {0, 1, 2, 3, 4, 2};
-        vector<int> vals = {44, 2324, 635462, 433, 5, 7};
+        KeyCont<int> keys    = {0, 1, 2, 3, 4, 2};
+        MappedCont<int> vals = {44, 2324, 635462, 433, 5, 7};
         {
             flat_map fmap(keys, vals);
             flat_map fmap1(keys, vals, less<int>());
@@ -313,8 +314,8 @@ void test_construction() {
     {
         // Test flat_map(const key_cont&, const mapped_cont&, const key_comp&, const alloc&)
         // and  flat_map(const key_cont&, const mapped_cont&, const alloc&)
-        vector<int, MyAllocator<int>> keys = {0, 1, 2, 3, 4, 2};
-        vector<int, MyAllocator<int>> vals = {44, 2324, 635462, 433, 5, 7};
+        KeyCont<int, MyAllocator<int>> keys    = {0, 1, 2, 3, 4, 2};
+        MappedCont<int, MyAllocator<int>> vals = {44, 2324, 635462, 433, 5, 7};
         {
             MyAllocatorCounter allocation_counter;
             flat_map fmap(keys, vals, MyAllocator<int>());
@@ -346,10 +347,8 @@ void test_construction() {
     {
         // Test flat_map(_Sorted_t, key_cont, mapped_cont, comp = key_comp()())
         {
-            static_assert(is_constructible_v<flat_map<int, int>, sorted_unique_t, vector<int>, vector<int>>);
-            static_assert(!is_constructible_v<flat_multimap<int, int>, sorted_unique_t, vector<int>, vector<int>>);
-            vector<int> keys = {0, 1, 2, 3, 38, 242};
-            vector<int> vals = {44, 2324, 635462, 433, 5, 7};
+            KeyCont<int> keys    = {0, 1, 2, 3, 38, 242};
+            MappedCont<int> vals = {44, 2324, 635462, 433, 5, 7};
 
             flat_map fmap(sorted_unique, keys, vals);
             flat_map fmap1(sorted_unique, keys, vals, less<int>());
@@ -360,10 +359,8 @@ void test_construction() {
             assert(fmap == fmap1);
         }
         {
-            static_assert(!is_constructible_v<flat_map<int, int>, sorted_equivalent_t, vector<int>, vector<int>>);
-            static_assert(is_constructible_v<flat_multimap<int, int>, sorted_equivalent_t, vector<int>, vector<int>>);
-            vector<int> keys = {0, 1, 2, 2, 3, 4};
-            vector<int> vals = {44, 2324, 635462, 7, 433, 5};
+            KeyCont<int> keys    = {0, 1, 2, 2, 3, 4};
+            MappedCont<int> vals = {44, 2324, 635462, 7, 433, 5};
 
             flat_multimap fmmap(sorted_equivalent, keys, vals);
             flat_multimap fmmap1(sorted_equivalent, keys, vals, less<int>());
@@ -373,13 +370,21 @@ void test_construction() {
                 fmmap, {44, 2324, 635462, 7, 433, 5})); // guaranteed by N4971 [flat.multimap.cons]/6
             assert(fmmap == fmmap1);
         }
+        {
+            using non_multi = flat_map<int, int, less<int>, KeyCont<int>, MappedCont<int>>;
+            using multi     = flat_multimap<int, int, less<int>, KeyCont<int>, MappedCont<int>>;
+            static_assert(is_constructible_v<non_multi, sorted_unique_t, KeyCont<int>, MappedCont<int>>);
+            static_assert(!is_constructible_v<multi, sorted_unique_t, KeyCont<int>, MappedCont<int>>);
+            static_assert(!is_constructible_v<non_multi, sorted_equivalent_t, KeyCont<int>, MappedCont<int>>);
+            static_assert(is_constructible_v<multi, sorted_equivalent_t, KeyCont<int>, MappedCont<int>>);
+        }
     }
     {
         // Test flat_map(_Sorted_t, const key_cont&, const mapped_cont&, const key_comp&, const alloc&)
         // and flat_map(_Sorted_t, const key_cont&, const mapped_cont&, const alloc&)
         {
-            vector<int, MyAllocator<int>> keys = {0, 1, 2, 3, 4};
-            vector<int, MyAllocator<int>> vals = {44, 2324, 635462, 433, 5};
+            KeyCont<int, MyAllocator<int>> keys    = {0, 1, 2, 3, 4};
+            MappedCont<int, MyAllocator<int>> vals = {44, 2324, 635462, 433, 5};
 
             MyAllocatorCounter allocation_counter;
             flat_map fmap(sorted_unique, keys, vals, MyAllocator<int>());
@@ -392,8 +397,8 @@ void test_construction() {
             assert(fmap == fmap1);
         }
         {
-            vector<int, MyAllocator<int>> keys = {0, 1, 2, 2, 3, 4};
-            vector<int, MyAllocator<int>> vals = {44, 2324, 635462, 7, 433, 5};
+            KeyCont<int, MyAllocator<int>> keys    = {0, 1, 2, 2, 3, 4};
+            MappedCont<int, MyAllocator<int>> vals = {44, 2324, 635462, 7, 433, 5};
 
             MyAllocatorCounter allocation_counter;
             flat_multimap fmmap(sorted_equivalent, keys, vals, MyAllocator<int>());
@@ -696,14 +701,14 @@ void test_construction() {
     {
         PackagedCompare<int> comp;
         MyAllocator<Packaged<int>> alloc;
-        flat_map<Packaged<int>, Packaged<int>, PackagedCompare<int>, vector<Packaged<int>, MyAllocator<Packaged<int>>>,
-            vector<Packaged<int>, MyAllocator<Packaged<int>>>>
+        flat_map<Packaged<int>, Packaged<int>, PackagedCompare<int>, KeyCont<Packaged<int>, MyAllocator<Packaged<int>>>,
+            MappedCont<Packaged<int>, MyAllocator<Packaged<int>>>>
             fmap(comp, alloc);
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
         flat_multimap<Packaged<int>, Packaged<int>, PackagedCompare<int>,
-            vector<Packaged<int>, MyAllocator<Packaged<int>>>, vector<Packaged<int>, MyAllocator<Packaged<int>>>>
+            KeyCont<Packaged<int>, MyAllocator<Packaged<int>>>, MappedCont<Packaged<int>, MyAllocator<Packaged<int>>>>
             fmmap(comp, alloc);
         assert(check_requirements(fmmap));
         assert(check_key_content(fmmap, {}));
@@ -711,14 +716,14 @@ void test_construction() {
     }
     {
         MyAllocator<Packaged<int>> alloc;
-        flat_map<Packaged<int>, Packaged<int>, PackagedCompare<int>, vector<Packaged<int>, MyAllocator<Packaged<int>>>,
-            vector<Packaged<int>, MyAllocator<Packaged<int>>>>
+        flat_map<Packaged<int>, Packaged<int>, PackagedCompare<int>, KeyCont<Packaged<int>, MyAllocator<Packaged<int>>>,
+            MappedCont<Packaged<int>, MyAllocator<Packaged<int>>>>
             fmap(alloc);
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
         flat_multimap<Packaged<int>, Packaged<int>, PackagedCompare<int>,
-            vector<Packaged<int>, MyAllocator<Packaged<int>>>, vector<Packaged<int>, MyAllocator<Packaged<int>>>>
+            KeyCont<Packaged<int>, MyAllocator<Packaged<int>>>, MappedCont<Packaged<int>, MyAllocator<Packaged<int>>>>
             fmmap(alloc);
         assert(check_requirements(fmmap));
         assert(check_key_content(fmmap, {}));
@@ -726,14 +731,14 @@ void test_construction() {
     }
     {
         MyAllocator<Packaged<int>> alloc;
-        flat_map<Packaged<int>, int, PackagedCompare<int>, vector<Packaged<int>, MyAllocator<Packaged<int>>>,
-            vector<int, MyAllocator<int>>>
+        flat_map<Packaged<int>, int, PackagedCompare<int>, KeyCont<Packaged<int>, MyAllocator<Packaged<int>>>,
+            MappedCont<int, MyAllocator<int>>>
             fmap(alloc);
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
-        flat_multimap<Packaged<int>, int, PackagedCompare<int>, vector<Packaged<int>, MyAllocator<Packaged<int>>>,
-            vector<int, MyAllocator<int>>>
+        flat_multimap<Packaged<int>, int, PackagedCompare<int>, KeyCont<Packaged<int>, MyAllocator<Packaged<int>>>,
+            MappedCont<int, MyAllocator<int>>>
             fmmap(alloc);
         assert(check_requirements(fmmap));
         assert(check_key_content(fmmap, {}));
@@ -742,8 +747,8 @@ void test_construction() {
     {
         PackagedCompare<int> comp;
         MyAllocator<int> alloc;
-        vector<Packaged<int>, MyAllocator<Packaged<int>>> keys = {0, 1, 2, 3, 4, 2};
-        vector<int, MyAllocator<int>> vals                     = {44, 2324, 635462, 433, 5, 7};
+        KeyCont<Packaged<int>, MyAllocator<Packaged<int>>> keys = {0, 1, 2, 3, 4, 2};
+        MappedCont<int, MyAllocator<int>> vals                  = {44, 2324, 635462, 433, 5, 7};
         flat_map fmap(keys, vals, comp, alloc);
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
@@ -761,8 +766,8 @@ void test_construction() {
     {
         TransparentPackagedCompare<int> comp;
         MyAllocator<int> alloc;
-        vector<Packaged<int>, MyAllocator<Packaged<int>>> keys = {0, 1, 2, 3, 4, 2};
-        vector<int, MyAllocator<int>> vals                     = {44, 2324, 635462, 433, 5, 7};
+        KeyCont<Packaged<int>, MyAllocator<Packaged<int>>> keys = {0, 1, 2, 3, 4, 2};
+        MappedCont<int, MyAllocator<int>> vals                  = {44, 2324, 635462, 433, 5, 7};
         flat_map fmap(keys, vals, comp, alloc);
         assert(check_requirements(fmap));
         assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
@@ -781,14 +786,14 @@ void test_construction() {
     {
         allocator<int> ator;
 
-        using fm = flat_map<int, int, less<>, vector<int>, vector<int>>;
+        using fm = flat_map<int, int, less<>, KeyCont<int>, MappedCont<int>>;
         fm m0;
         fm m1(m0);
         fm m2(m0, ator);
         fm m3(move(m0));
         fm m4(move(m1), ator);
 
-        using fmm = flat_multimap<int, int, less<>, vector<int>, vector<int>>;
+        using fmm = flat_multimap<int, int, less<>, KeyCont<int>, MappedCont<int>>;
         fmm mm0;
         fmm mm1(mm0);
         fmm mm2(mm0, ator);
@@ -1274,8 +1279,17 @@ void test_insert_hint_is_respected() {
     }
 }
 
+template <template <class...> class KeyCont, template <class...> class MappedCont>
+void test_key_mapped_cont_combinations() {
+    test_construction<KeyCont, MappedCont>();
+    test_insert_hint_is_respected<KeyCont, MappedCont>();
+}
+
 int main() {
-    test_construction();
+    test_key_mapped_cont_combinations<vector, vector>();
+    test_key_mapped_cont_combinations<vector, deque>();
+    test_key_mapped_cont_combinations<deque, vector>();
+    test_key_mapped_cont_combinations<deque, deque>();
     test_pointer_to_incomplete_type();
     test_erase_if();
     test_insert();
@@ -1285,8 +1299,4 @@ int main() {
     test_comparison();
     test_throwing_compare_swap();
     test_lookup_call_on_temporaries();
-    test_insert_hint_is_respected<vector, vector>();
-    test_insert_hint_is_respected<vector, deque>();
-    test_insert_hint_is_respected<deque, vector>();
-    test_insert_hint_is_respected<deque, deque>();
 }
