@@ -163,6 +163,32 @@ private:
     static inline atomic<size_t> s_allocations{0};
 };
 
+template <class T, class U>
+struct almost_pair {
+    using first_type  = T;
+    using second_type = U;
+
+    T first;
+    U second;
+
+    constexpr operator pair<T, U>() const {
+        return {first, second};
+    }
+};
+
+namespace std {
+    template <class T, class U, size_t N>
+    struct tuple_element<N, almost_pair<T, U>> {
+        using type = conditional_t<N == 1, T, U>;
+    };
+
+    // template<class T, class U>
+    // struct tuple_size<almost_pair<T, U>> {
+    //     using type = conditional_t<N == 1, T, U>;
+    // };
+
+} // namespace std
+
 template <typename T>
 class Packaged {
 private:
@@ -224,6 +250,16 @@ struct MyAllocatorCounter {
 };
 
 void test_construction() {
+    // Using CTAD, the given MyAllocator is only used by the container when the constructor (deduction guide)
+    // directly accepts KeyContainer and MappedContainer or using two deduction guides:
+    //      flat_map(from_range_t, _Rng&&, _Compare, _Allocator)
+    //      flat_map(from_range_t, _Rng&&, _Allocator)
+    // In other cases we have to fully specify template arguments, such as for  flat_map(_Iter, _Iter, _Allocator)
+    using flat_map_my_allocator =
+        flat_map<int, int, less<int>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>;
+    using flat_multimap_my_allocator =
+        flat_multimap<int, int, less<int>, vector<int, MyAllocator<int>>, vector<int, MyAllocator<int>>>;
+
     {
         // Test flat_map() and flat_map(const key_compare&)
         auto compare = less<int>();
@@ -339,6 +375,301 @@ void test_construction() {
         }
     }
     {
+        // Test flat_map(_Sorted_t, const key_cont&, const mapped_cont&, const key_comp&, const alloc&)
+        // and flat_map(_Sorted_t, const key_cont&, const mapped_cont&, const alloc&)
+        {
+            vector<int, MyAllocator<int>> keys = {0, 1, 2, 3, 4};
+            vector<int, MyAllocator<int>> vals = {44, 2324, 635462, 433, 5};
+
+            MyAllocatorCounter allocation_counter;
+            flat_map fmap(sorted_unique, keys, vals, MyAllocator<int>());
+            assert(allocation_counter.check_then_reset());
+            flat_map fmap1(sorted_unique, keys, vals, less<int>(), MyAllocator<int>());
+            assert(allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
+            assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+            assert(fmap == fmap1);
+        }
+        {
+            vector<int, MyAllocator<int>> keys = {0, 1, 2, 2, 3, 4};
+            vector<int, MyAllocator<int>> vals = {44, 2324, 635462, 7, 433, 5};
+
+            MyAllocatorCounter allocation_counter;
+            flat_multimap fmmap(sorted_equivalent, keys, vals, MyAllocator<int>());
+            assert(allocation_counter.check_then_reset());
+            flat_multimap fmmap1(sorted_equivalent, keys, vals, less<int>(), MyAllocator<int>());
+            assert(allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+            assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
+                {
+                    {0, 1, subrange_type::equal},
+                    {2, 3, subrange_type::permutation},
+                    {4, 5, subrange_type::equal},
+                }));
+            assert(fmmap == fmmap1);
+        }
+    }
+    {
+        // Test flat_map(iter, iter, comp = key_compare())
+        almost_pair<int, int> value_types[]{{0, 44}, {1, 2324}, {2, 635462}, {2, 7}, {3, 433}, {4, 5}};
+
+        {
+            flat_map fmap{ranges::begin(value_types), ranges::end(value_types)};
+            flat_map fmap1{ranges::begin(value_types), ranges::end(value_types), less<int>{}};
+
+            assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
+            assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+            assert(fmap == fmap1);
+        }
+        {
+            flat_multimap fmmap{ranges::begin(value_types), ranges::end(value_types)};
+            flat_multimap fmmap1{ranges::begin(value_types), ranges::end(value_types), less<int>{}};
+
+            assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+            assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5}));
+            assert(fmmap == fmmap1);
+        }
+    }
+    {
+        // Test flat_map(iter, iter, const key_comp&, const alloc&)
+        // and  flat_map(iter, iter, const alloc&)
+        almost_pair<int, int> value_types[]{{0, 44}, {1, 2324}, {2, 635462}, {2, 7}, {3, 433}, {4, 5}};
+        {
+            MyAllocatorCounter allocation_counter;
+            flat_map_my_allocator fmap{ranges::begin(value_types), ranges::end(value_types), MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+            flat_map_my_allocator fmap1{
+                ranges::begin(value_types), ranges::end(value_types), less<int>(), MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
+            assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+            assert(fmap == fmap1);
+        }
+        {
+            MyAllocatorCounter allocation_counter;
+            flat_multimap_my_allocator fmmap{ranges::begin(value_types), ranges::end(value_types), MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+            flat_multimap_my_allocator fmmap1{
+                ranges::begin(value_types), ranges::end(value_types), less<int>(), MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+            assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5}));
+            assert(fmmap == fmmap1);
+        }
+    }
+    {
+        // Test flat_map(from_range_t, _Rng &&, const key_compare&)
+        // and  flat_map(from_range_t, _Rng &&)
+        almost_pair<int, int> value_types[]{{0, 44}, {1, 2324}, {2, 635462}, {2, 7}, {3, 433}, {4, 5}};
+        {
+            flat_map fmap{from_range, value_types};
+            flat_map fmap1{from_range, value_types, less<int>()};
+
+            assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
+            assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+            assert(fmap == fmap1);
+        }
+
+        {
+            flat_multimap fmmap{from_range, value_types};
+            flat_multimap fmmap1{from_range, value_types, less<int>()};
+
+            assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+            assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5}));
+            assert(fmmap == fmmap1);
+        }
+    }
+    {
+        // Test flat_map(from_range_t, _Rng &&, const key_compare&, const alloc&)
+        // and  flat_map(from_range_t, _Rng &&, const alloc&)
+        // These constructors with allocators have a corresponding deduction guide -  can rely on CTAD
+        almost_pair<int, int> value_types[]{{0, 44}, {1, 2324}, {2, 635462}, {2, 7}, {3, 433}, {4, 5}};
+
+        {
+            MyAllocatorCounter allocation_counter;
+            flat_map fmap{from_range, value_types, MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+            flat_map fmap1{from_range, value_types, less<int>(), MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
+            assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+            assert(fmap == fmap1);
+        }
+        {
+            MyAllocatorCounter allocation_counter;
+            flat_multimap fmmap{from_range, value_types, MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+            flat_multimap fmmap1{from_range, value_types, less<int>(), MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+            assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5}));
+            assert(fmmap == fmmap1);
+        }
+    }
+    {
+        // Test flat_map(_Sorted_t, iter, iter, comp = key_comp())
+        {
+            almost_pair<int, int> value_types[]{{0, 44}, {1, 2324}, {2, 635462}, {3, 433}, {4, 5}};
+
+            flat_map fmap{sorted_unique, ranges::begin(value_types), ranges::end(value_types)};
+            flat_map fmap1{sorted_unique, ranges::begin(value_types), ranges::end(value_types), less<int>{}};
+
+            assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
+            assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+            assert(fmap == fmap1);
+        }
+        {
+            almost_pair<int, int> value_types[]{{0, 44}, {1, 2324}, {2, 635462}, {2, 7}, {3, 433}, {4, 5}};
+
+            flat_multimap fmmap{sorted_equivalent, ranges::begin(value_types), ranges::end(value_types)};
+            flat_multimap fmmap1{sorted_equivalent, ranges::begin(value_types), ranges::end(value_types), less<int>{}};
+
+            assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+            assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5}));
+            assert(fmmap == fmmap1);
+        }
+    }
+    {
+        // Test flat_map(_Sorted_t, iter, iter, const key_comp&, const alloc&)
+        // and flat_map(_Sorted_t, iter, iter, const alloc&)
+        {
+            almost_pair<int, int> value_types[]{{0, 44}, {1, 2324}, {2, 635462}, {3, 433}, {4, 5}};
+
+            MyAllocatorCounter allocation_counter;
+            flat_map_my_allocator fmap{
+                sorted_unique, ranges::begin(value_types), ranges::end(value_types), MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+            flat_map_my_allocator fmap1{
+                sorted_unique, ranges::begin(value_types), ranges::end(value_types), less<int>(), MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
+            assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+            assert(fmap == fmap1);
+        }
+        {
+            almost_pair<int, int> value_types[]{{0, 44}, {1, 2324}, {2, 635462}, {2, 7}, {3, 433}, {4, 5}};
+
+            MyAllocatorCounter allocation_counter;
+            flat_multimap_my_allocator fmmap{
+                sorted_equivalent, ranges::begin(value_types), ranges::end(value_types), MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+            flat_multimap_my_allocator fmmap1{sorted_equivalent, ranges::begin(value_types), ranges::end(value_types),
+                less<int>(), MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+            assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5}));
+            assert(fmmap == fmmap1);
+        }
+    }
+    {
+        // Test flat_map(initializer_list, comp = key_comp())
+        {
+            flat_map fmap{{pair{0, 44}, pair{1, 2324}, pair{2, 635462}, pair{2, 7}, pair{3, 433}, pair{4, 5}}};
+            flat_map fmap1{
+                {pair{0, 44}, pair{1, 2324}, pair{2, 635462}, pair{2, 7}, pair{3, 433}, pair{4, 5}}, less<int>{}};
+
+            assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
+            assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+            assert(fmap == fmap1);
+        }
+        {
+            flat_multimap fmmap{{pair{0, 44}, pair{1, 2324}, pair{2, 635462}, pair{2, 7}, pair{3, 433}, pair{4, 5}}};
+            flat_multimap fmmap1{
+                {pair{0, 44}, pair{1, 2324}, pair{2, 635462}, pair{2, 7}, pair{3, 433}, pair{4, 5}}, less<int>{}};
+
+            assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+            assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5}));
+            assert(fmmap == fmmap1);
+        }
+    }
+    {
+        // Test flat_map(initializer_list, const key_comp&, const alloc&)
+        // and  flat_map(initializer_list, const alloc&)
+        {
+            MyAllocatorCounter allocation_counter;
+            flat_map_my_allocator fmap{{{0, 44}, {1, 2324}, {2, 635462}, {2, 7}, {3, 433}, {4, 5}}, MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+            flat_map_my_allocator fmap1{
+                {{0, 44}, {1, 2324}, {2, 635462}, {2, 7}, {3, 433}, {4, 5}}, less<int>(), MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
+            assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+            assert(fmap == fmap1);
+        }
+        {
+            MyAllocatorCounter allocation_counter;
+            flat_multimap_my_allocator fmmap{
+                {{0, 44}, {1, 2324}, {2, 635462}, {2, 7}, {3, 433}, {4, 5}}, MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+            flat_multimap_my_allocator fmmap1{
+                {{0, 44}, {1, 2324}, {2, 635462}, {2, 7}, {3, 433}, {4, 5}}, less<int>(), MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+            assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5}));
+            assert(fmmap == fmmap1);
+        }
+    }
+    {
+        // Test flat_map(_Sorted_t, initializer_list, comp = key_comp())
+        {
+            flat_map fmap{sorted_unique, {pair{0, 44}, pair{1, 2324}, pair{2, 635462}, pair{3, 433}, pair{4, 5}}};
+            flat_map fmap1{
+                sorted_unique, {pair{0, 44}, pair{1, 2324}, pair{2, 635462}, pair{3, 433}, pair{4, 5}}, less<int>{}};
+
+            assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
+            assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+            assert(fmap == fmap1);
+        }
+        {
+            flat_multimap fmmap{
+                sorted_equivalent, {pair{0, 44}, pair{1, 2324}, pair{2, 635462}, pair{2, 7}, pair{3, 433}, pair{4, 5}}};
+            flat_multimap fmmap1{sorted_equivalent,
+                {pair{0, 44}, pair{1, 2324}, pair{2, 635462}, pair{2, 7}, pair{3, 433}, pair{4, 5}}, less<int>{}};
+
+            assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+            assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5}));
+            assert(fmmap == fmmap1);
+        }
+    }
+    {
+        // Test flat_map(_Sorted_t, initializer_list, const key_comp&, const alloc&)
+        // and  flat_map(_Sorted_t, initializer_list, const alloc&)
+        {
+            MyAllocatorCounter allocation_counter;
+            flat_map_my_allocator fmap{
+                sorted_unique, {{0, 44}, {1, 2324}, {2, 635462}, {3, 433}, {4, 5}}, MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+            flat_map_my_allocator fmap1{
+                sorted_unique, {{0, 44}, {1, 2324}, {2, 635462}, {3, 433}, {4, 5}}, less<int>(), MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
+            assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+            assert(fmap == fmap1);
+        }
+        {
+            MyAllocatorCounter allocation_counter;
+            flat_multimap_my_allocator fmmap{
+                sorted_equivalent, {{0, 44}, {1, 2324}, {2, 635462}, {2, 7}, {3, 433}, {4, 5}}, MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+            flat_multimap_my_allocator fmmap1{sorted_equivalent,
+                {{0, 44}, {1, 2324}, {2, 635462}, {2, 7}, {3, 433}, {4, 5}}, less<int>(), MyAllocator<int>()};
+            assert(allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+            assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5}));
+            assert(fmmap == fmmap1);
+        }
     }
     // FIXME, test more flat_map and flat_multimap constructors
     {
