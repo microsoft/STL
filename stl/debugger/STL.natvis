@@ -1011,6 +1011,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Intrinsic Name="bufSize" Expression="16 / sizeof($T1) &lt; 1 ? 1 : 16 / sizeof($T1)" />
     <Intrinsic Name="isShortString" Expression="capacity() &lt; bufSize()" />
     <Intrinsic Name="isLongString" Expression="capacity() &gt;= bufSize()" />
+    <Intrinsic Name="c_str" Expression="const_cast&lt;const $T1*&gt;(isShortString() ? _Mypair._Myval2._Bx._Buf : _Mypair._Myval2._Bx._Ptr)" />
     <DisplayString Condition="isShortString()">{_Mypair._Myval2._Bx._Buf,na}</DisplayString>
     <DisplayString Condition="isLongString()">{_Mypair._Myval2._Bx._Ptr,na}</DisplayString>
     <StringView Condition="isShortString()">_Mypair._Myval2._Bx._Buf,na</StringView>
