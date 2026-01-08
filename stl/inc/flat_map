@@ -1219,7 +1219,7 @@ private:
 
     template <class _SelfTy>
     _NODISCARD conditional_t<is_const_v<_SelfTy>, const_iterator, iterator> _Iterator_from_key_iterator(
-        this _SelfTy& _Self, const typename key_container_type::const_iterator& _Iter) {
+        this _SelfTy& _Self, const key_container_type::const_iterator& _Iter) {
         const difference_type _Offset = _Iter - _STD cbegin(_Self._Data.keys);
         return _Self.begin() + _Offset;
     }
