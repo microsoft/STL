@@ -294,7 +294,9 @@ public:
 
     // modifiers
     template <class... _Args>
-    auto emplace(_Args&&... _Vals) {
+    auto emplace(_Args&&... _Vals)
+        requires is_constructible_v<value_type, _Args...>
+    {
         constexpr bool _Is_key_type = _In_place_key_extract_set<_Kty, remove_cvref_t<_Args>...>::_Extractable;
         if constexpr (_Is_key_type) {
             return _Emplace(_STD forward<_Args>(_Vals)...);
@@ -303,7 +305,9 @@ public:
         }
     }
     template <class... _Args>
-    iterator emplace_hint(const const_iterator _Hint, _Args&&... _Vals) {
+    iterator emplace_hint(const const_iterator _Hint, _Args&&... _Vals)
+        requires is_constructible_v<value_type, _Args...>
+    {
         constexpr bool _Is_key_type = _In_place_key_extract_set<_Kty, remove_cvref_t<_Args>...>::_Extractable;
         if constexpr (_Is_key_type) {
             return _Emplace_hint(_Hint, _STD forward<_Args>(_Vals)...);
