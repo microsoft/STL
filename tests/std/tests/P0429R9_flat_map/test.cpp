@@ -211,6 +211,18 @@ struct TransparentPackagedCompare : PackagedCompare<T> {
     }
 };
 
+struct MyAllocatorCounter {
+    MyAllocatorCounter() : activeAllocations{MyAllocator<int>::getActiveAllocationCount()} {}
+
+    bool check_then_reset() {
+        const bool allocated_some = MyAllocator<int>::getActiveAllocationCount() > activeAllocations;
+        activeAllocations         = MyAllocator<int>::getActiveAllocationCount();
+        return allocated_some;
+    }
+
+    size_t activeAllocations;
+};
+
 void test_construction() {
     {
         // Test flat_map() and flat_map(const key_compare&)
@@ -263,23 +275,37 @@ void test_construction() {
         }
     }
     {
+        // Test flat_map(const key_cont&, const mapped_cont&, const key_comp&, const alloc&)
+        // and  flat_map(const key_cont&, const mapped_cont&, const alloc&)
         vector<int, MyAllocator<int>> keys = {0, 1, 2, 3, 4, 2};
         vector<int, MyAllocator<int>> vals = {44, 2324, 635462, 433, 5, 7};
-        size_t activeAllocations           = MyAllocator<int>::getActiveAllocationCount();
-        flat_map fmap(keys, vals, MyAllocator<int>());
-        assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
-        assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
-        assert(MyAllocator<int>::getActiveAllocationCount() > activeAllocations);
-        activeAllocations = MyAllocator<int>::getActiveAllocationCount();
-        flat_multimap fmmap(keys, vals); // FIXME, should use MyAllocator<int>(); deduction guides must be constrained
-        assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
-        assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
-            {
-                {0, 1, subrange_type::equal},
-                {2, 3, subrange_type::permutation},
-                {4, 5, subrange_type::equal},
-            }));
-        assert(MyAllocator<int>::getActiveAllocationCount() > activeAllocations);
+        {
+            MyAllocatorCounter allocation_counter;
+            flat_map fmap(keys, vals, MyAllocator<int>());
+            assert(allocation_counter.check_then_reset());
+            flat_map fmap1(keys, vals, less<int>(), MyAllocator<int>());
+            assert(allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
+            assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
+            assert(fmap == fmap1);
+        }
+        {
+            MyAllocatorCounter allocation_counter;
+            flat_multimap fmmap(keys, vals, MyAllocator<int>());
+            assert(allocation_counter.check_then_reset());
+            flat_multimap fmmap1(keys, vals, less<int>(), MyAllocator<int>());
+            assert(allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
+            assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
+                {
+                    {0, 1, subrange_type::equal},
+                    {2, 3, subrange_type::permutation},
+                    {4, 5, subrange_type::equal},
+                }));
+            assert(fmmap == fmmap1);
+        }
     }
     {
         // Test flat_map(_Sorted_t, key_cont, mapped_cont, comp = key_comp()())
