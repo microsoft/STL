@@ -1505,7 +1505,7 @@ int main(int argc, char* argv[]) {
 #if defined(_DEBUG)
     exec.add_death_tests({
 
-        // Tests shared with flat_set - violation of sorted and unique
+        // Tests shared between flat_set and flat_map - violation of sorted elements
         test_death_construct_unsorted_initializer_list<cont_type::unique>,
         test_death_construct_unsorted_initializer_list<cont_type::multi>,
         test_death_construct_unsorted_iter_iter<cont_type::unique>,
@@ -1521,6 +1521,7 @@ int main(int argc, char* argv[]) {
         test_death_insert_unsorted_initializer_list<cont_type::unique>,
         test_death_insert_unsorted_initializer_list<cont_type::multi>,
 
+        // Tests shared between flat_set and flat_map - violation of unique elements
         test_death_construct_duplicates_initializer_list<cont_type::unique>,
         test_death_construct_duplicates_iter_iter<cont_type::unique>,
         test_death_construct_duplicates_container<cont_type::unique>,
