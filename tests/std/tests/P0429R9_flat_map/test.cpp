@@ -48,6 +48,7 @@ void assert_all_requirements(const T& s) {
 
 template <IsFlatMap T>
 bool check_key_content(const T& obj, const typename T::key_container_type& expected) {
+    assert_all_requirements(obj);
     return ranges::equal(obj.keys(), expected);
 }
 
@@ -58,6 +59,7 @@ bool check_value_content(const T& obj, const typename T::mapped_container_type& 
 
 template <IsFlatMap T>
 bool assert_check_content(const T& obj, const type_identity_t<T>& expected) {
+    assert_all_requirements(obj);
     if (!ranges::equal(obj, expected)) {
         println(stderr, "Unexpected content!\nExpected {}", expected);
         println(stderr, "Actual {}", obj);
@@ -267,7 +269,6 @@ void test_construction() {
             flat_map<int, int> fmap;
             flat_map<int, int> fmap1(compare);
 
-            assert(check_requirements(fmap));
             assert(check_key_content(fmap, {}));
             assert(check_value_content(fmap, {}));
             assert(fmap == fmap1);
@@ -276,7 +277,6 @@ void test_construction() {
             flat_multimap<int, int> fmmap;
             flat_multimap<int, int> fmmap1(compare);
 
-            assert(check_requirements(fmmap));
             assert(check_key_content(fmmap, {}));
             assert(check_value_content(fmmap, {}));
             assert(fmmap == fmmap1);
@@ -290,7 +290,6 @@ void test_construction() {
             flat_map fmap(keys, vals);
             flat_map fmap1(keys, vals, less<int>());
 
-            assert(check_requirements(fmap));
             assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
             assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
             assert(fmap == fmap1);
@@ -299,7 +298,6 @@ void test_construction() {
             flat_multimap fmmap(keys, vals);
             flat_multimap fmmap1(keys, vals, less<int>());
 
-            assert(check_requirements(fmmap));
             assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
             assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
                 {
@@ -352,7 +350,6 @@ void test_construction() {
             flat_map fmap(sorted_unique, keys, vals);
             flat_map fmap1(sorted_unique, keys, vals, less<int>());
 
-            assert(check_requirements(fmap));
             assert(check_key_content(fmap, {0, 1, 2, 3, 38, 242}));
             assert(check_value_content(fmap, {44, 2324, 635462, 433, 5, 7}));
             assert(fmap == fmap1);
@@ -682,7 +679,6 @@ void test_construction() {
             flat_map<Packaged<int>, int, PackagedCompare<int>> fmap;
             flat_map<Packaged<int>, int, PackagedCompare<int>> fmap1(comp);
 
-            assert(check_requirements(fmap));
             assert(check_key_content(fmap, {}));
             assert(check_value_content(fmap, {}));
             assert(fmap == fmap1);
@@ -691,7 +687,6 @@ void test_construction() {
             flat_multimap<Packaged<int>, int, PackagedCompare<int>> fmmap;
             flat_multimap<Packaged<int>, int, PackagedCompare<int>> fmmap1(comp);
 
-            assert(check_requirements(fmmap));
             assert(check_key_content(fmmap, {}));
             assert(check_value_content(fmmap, {}));
             assert(fmmap == fmmap1);
@@ -703,13 +698,11 @@ void test_construction() {
         flat_map<Packaged<int>, Packaged<int>, PackagedCompare<int>, KeyCont<Packaged<int>, MyAllocator<Packaged<int>>>,
             MappedCont<Packaged<int>, MyAllocator<Packaged<int>>>>
             fmap(comp, alloc);
-        assert(check_requirements(fmap));
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
         flat_multimap<Packaged<int>, Packaged<int>, PackagedCompare<int>,
             KeyCont<Packaged<int>, MyAllocator<Packaged<int>>>, MappedCont<Packaged<int>, MyAllocator<Packaged<int>>>>
             fmmap(comp, alloc);
-        assert(check_requirements(fmmap));
         assert(check_key_content(fmmap, {}));
         assert(check_value_content(fmmap, {}));
     }
@@ -718,13 +711,11 @@ void test_construction() {
         flat_map<Packaged<int>, Packaged<int>, PackagedCompare<int>, KeyCont<Packaged<int>, MyAllocator<Packaged<int>>>,
             MappedCont<Packaged<int>, MyAllocator<Packaged<int>>>>
             fmap(alloc);
-        assert(check_requirements(fmap));
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
         flat_multimap<Packaged<int>, Packaged<int>, PackagedCompare<int>,
             KeyCont<Packaged<int>, MyAllocator<Packaged<int>>>, MappedCont<Packaged<int>, MyAllocator<Packaged<int>>>>
             fmmap(alloc);
-        assert(check_requirements(fmmap));
         assert(check_key_content(fmmap, {}));
         assert(check_value_content(fmmap, {}));
     }
@@ -733,13 +724,11 @@ void test_construction() {
         flat_map<Packaged<int>, int, PackagedCompare<int>, KeyCont<Packaged<int>, MyAllocator<Packaged<int>>>,
             MappedCont<int, MyAllocator<int>>>
             fmap(alloc);
-        assert(check_requirements(fmap));
         assert(check_key_content(fmap, {}));
         assert(check_value_content(fmap, {}));
         flat_multimap<Packaged<int>, int, PackagedCompare<int>, KeyCont<Packaged<int>, MyAllocator<Packaged<int>>>,
             MappedCont<int, MyAllocator<int>>>
             fmmap(alloc);
-        assert(check_requirements(fmmap));
         assert(check_key_content(fmmap, {}));
         assert(check_value_content(fmmap, {}));
     }
@@ -749,11 +738,9 @@ void test_construction() {
         KeyCont<Packaged<int>, MyAllocator<Packaged<int>>> keys = {0, 1, 2, 3, 4, 2};
         MappedCont<int, MyAllocator<int>> vals                  = {44, 2324, 635462, 433, 5, 7};
         flat_map fmap(keys, vals, comp, alloc);
-        assert(check_requirements(fmap));
         assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
         assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
         flat_multimap fmmap(keys, vals, comp, alloc);
-        assert(check_requirements(fmmap));
         assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
         assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
             {
@@ -768,11 +755,9 @@ void test_construction() {
         KeyCont<Packaged<int>, MyAllocator<Packaged<int>>> keys = {0, 1, 2, 3, 4, 2};
         MappedCont<int, MyAllocator<int>> vals                  = {44, 2324, 635462, 433, 5, 7};
         flat_map fmap(keys, vals, comp, alloc);
-        assert(check_requirements(fmap));
         assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
         assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
         flat_multimap fmmap(keys, vals, comp, alloc);
-        assert(check_requirements(fmmap));
         assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
         assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5},
             {
