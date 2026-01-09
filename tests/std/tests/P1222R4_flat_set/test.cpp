@@ -19,6 +19,7 @@
 #include <utility>
 #include <vector>
 
+#include <test_death.hpp>
 #define TEST_ASSERT(...) assert((__VA_ARGS__))
 
 using namespace std;
@@ -1347,7 +1348,7 @@ void test_non_strict_weak_order_compare() {
     }
 }
 
-int main() {
+void run_normal_tests() {
     test_spaceship_operator<flat_set<int>>();
     test_spaceship_operator<flat_multiset<int>>();
     test_spaceship_operator<flat_set<int, std::greater<int>>>();
@@ -1400,4 +1401,151 @@ int main() {
 
     test_throwing_compare_swap();
     test_non_strict_weak_order_compare();
+}
+
+enum class cont_type { multi, unique };
+
+template <cont_type type>
+void test_death_construct_unsorted_initializer_list() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    C cont(sorted, {137, 42, 3337, 15});
+}
+
+template <cont_type type>
+void test_death_construct_unsorted_iter_iter() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::container_type values{137, 42, 3337, 15};
+    C cont(sorted, values.begin(), values.end());
+}
+
+template <cont_type type>
+void test_death_construct_unsorted_container() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::container_type values{137, 42, 3337, 15};
+    C cont(sorted, values);
+}
+
+template <cont_type type>
+void test_death_replace_unsorted_container() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    C cont;
+    cont.replace({137, 42, 3337, 15});
+}
+
+template <cont_type type>
+void test_death_insert_unsorted_iter_iter() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::container_type values{137, 42, 3337, 15};
+    C cont;
+    cont.insert(sorted, values.begin(), values.end());
+}
+
+template <cont_type type>
+void test_death_insert_unsorted_range() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::container_type values{137, 42, 3337, 15};
+    C cont;
+    cont.insert_range(sorted, values);
+}
+
+template <cont_type type>
+void test_death_insert_unsorted_initializer_list() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    C cont;
+    cont.insert(sorted, {137, 42, 3337, 15});
+}
+
+template <cont_type type>
+void test_death_construct_duplicates_initializer_list() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    C cont(sorted, {42, 137, 137, 3337});
+}
+
+template <cont_type type>
+void test_death_construct_duplicates_iter_iter() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::container_type values{42, 137, 137, 3337};
+    C cont(sorted, values.begin(), values.end());
+}
+
+template <cont_type type>
+void test_death_construct_duplicates_container() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::container_type values{42, 137, 137, 3337};
+    C cont(sorted, values);
+}
+
+template <cont_type type>
+void test_death_replace_duplicates_container() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    C cont;
+    cont.replace({42, 137, 137, 3337});
+}
+
+template <cont_type type>
+void test_death_insert_duplicates_iter_iter() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::container_type values{42, 137, 137, 3337};
+    C cont;
+    cont.insert(sorted, values.begin(), values.end());
+}
+
+template <cont_type type>
+void test_death_insert_duplicates_range() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::container_type values{42, 137, 137, 3337};
+    C cont;
+    cont.insert_range(sorted, values);
+}
+
+template <cont_type type>
+void test_death_insert_duplicates_initializer_list() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    C cont;
+    cont.insert(sorted, {42, 137, 137, 3337});
+}
+
+int main(int argc, char* argv[]) {
+    std_testing::death_test_executive exec([] { run_normal_tests(); });
+
+#if defined(_DEBUG)
+    exec.add_death_tests({
+        test_death_construct_unsorted_initializer_list<cont_type::unique>,
+        test_death_construct_unsorted_initializer_list<cont_type::multi>,
+        test_death_construct_unsorted_iter_iter<cont_type::unique>,
+        test_death_construct_unsorted_iter_iter<cont_type::multi>,
+        test_death_construct_unsorted_container<cont_type::unique>,
+        test_death_construct_unsorted_container<cont_type::multi>,
+        test_death_replace_unsorted_container<cont_type::unique>,
+        test_death_replace_unsorted_container<cont_type::multi>,
+        test_death_insert_unsorted_iter_iter<cont_type::unique>,
+        test_death_insert_unsorted_iter_iter<cont_type::multi>,
+        test_death_insert_unsorted_range<cont_type::unique>,
+        test_death_insert_unsorted_range<cont_type::multi>,
+        test_death_insert_unsorted_initializer_list<cont_type::unique>,
+        test_death_insert_unsorted_initializer_list<cont_type::multi>,
+
+        test_death_construct_duplicates_initializer_list<cont_type::unique>,
+        test_death_construct_duplicates_iter_iter<cont_type::unique>,
+        test_death_construct_duplicates_container<cont_type::unique>,
+        test_death_replace_duplicates_container<cont_type::unique>,
+        test_death_insert_duplicates_iter_iter<cont_type::unique>,
+        test_death_insert_duplicates_range<cont_type::unique>,
+        test_death_insert_duplicates_initializer_list<cont_type::unique>,
+    });
+#endif // defined(_DEBUG)
+
+    return exec.run(argc, argv);
 }
