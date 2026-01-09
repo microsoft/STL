@@ -148,3 +148,11 @@ void assert_map_requirements() {
     // additionally:
     static_assert(is_same_v<value_type, pair<key_type, mapped_type>>);
 }
+
+template <typename T>
+void assert_three_way_comparability() {
+    using value_type = typename T::value_type;
+    if constexpr (std::three_way_comparable<value_type>) {
+        static_assert(std::three_way_comparable<T>);
+    }
+}

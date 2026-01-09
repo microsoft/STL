@@ -37,7 +37,7 @@ template <IsFlatMap T>
 void assert_all_requirements(const T& s) {
     assert_container_requirements(s);
     assert_reversible_container_requirements(s);
-    static_assert(three_way_comparable<T>);
+    assert_three_way_comparability<T>();
     assert_map_requirements<T>();
 
     assert_noexcept_requirements(s);
