@@ -27,7 +27,8 @@ void assert_container_requirements(const T& s) {
     static_assert(std::is_same_v<decltype(m.begin() <=> m.end()), std::strong_ordering>);
     static_assert(std::is_same_v<decltype(s.size()), typename T::size_type>);
     static_assert(std::is_same_v<decltype(s.max_size()), typename T::size_type>);
-    static_assert(std::is_same_v<decltype(*m.begin()), typename T::reference>);
+    static_assert(std::is_same_v<decltype(*m.begin()), typename T::reference>
+                  || std::is_same_v<decltype(*m.begin()), typename T::const_reference>);
     static_assert(std::is_same_v<decltype(*m.cbegin()), typename T::const_reference>);
 
     T my_moved = std::move(m);
