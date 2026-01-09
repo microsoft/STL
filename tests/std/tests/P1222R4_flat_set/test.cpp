@@ -1279,6 +1279,7 @@ void test_throwing_compare_swap() {
     test_throwing_compare_single<flat_multiset, deque>();
 }
 
+// Test heterogeneous lookup and erase operations when the compare object does not satisfy strict_weak_order (GH-5992)
 enum class strange_int {};
 
 // No overload divless::operator()(strange_int, strange_int), does not satisfy std::strict_weak_order
@@ -1301,14 +1302,46 @@ struct divless {
 static_assert(!strict_weak_order<divless, int, strange_int>);
 
 // ranges:: algorithms can't be called with divless compare, as it does not satisfy std::strict_weak_order
-void test_generic_count_gh_5992() {
+void test_non_strict_weak_order_compare() {
     {
-        flat_set<int, divless> s{1, 2, 11, 12};
-        assert(2 == s.count(strange_int{0}));
+        flat_set<int, divless> cont{1, 2, 11, 12};
+        assert(2 == cont.count(strange_int{0}));
+
+        assert(cont.contains(strange_int{0}));
+        assert(!cont.contains(strange_int{2}));
+
+        assert(cont.begin() + 2 == cont.lower_bound(strange_int{1}));
+        assert(cont.begin() + 2 == cont.upper_bound(strange_int{0}));
+
+        const auto [first, last] = cont.equal_range(strange_int{0});
+        assert(first == cont.begin());
+        assert(last == cont.begin() + 2);
+
+        assert(cont.end() != cont.find(strange_int{1}));
+        assert(cont.end() == cont.find(strange_int{3}));
+
+        assert(2 == cont.erase(strange_int{0}));
+        assert_all_requirements_and_equals(cont, {11, 12});
     }
     {
-        flat_multiset<int, divless> ms{1, 2, 11, 12};
-        assert(2 == ms.count(strange_int{0}));
+        flat_multiset<int, divless> cont{1, 2, 11, 12};
+        assert(2 == cont.count(strange_int{0}));
+
+        assert(cont.contains(strange_int{0}));
+        assert(!cont.contains(strange_int{2}));
+
+        assert(cont.begin() + 2 == cont.lower_bound(strange_int{1}));
+        assert(cont.begin() + 2 == cont.upper_bound(strange_int{0}));
+
+        const auto [first, last] = cont.equal_range(strange_int{0});
+        assert(first == cont.begin());
+        assert(last == cont.begin() + 2);
+
+        assert(cont.end() != cont.find(strange_int{1}));
+        assert(cont.end() == cont.find(strange_int{3}));
+
+        assert(2 == cont.erase(strange_int{0}));
+        assert_all_requirements_and_equals(cont, {11, 12});
     }
 }
 
@@ -1364,5 +1397,5 @@ int main() {
     test_set_operations_transparent<flat_multiset>();
 
     test_throwing_compare_swap();
-    test_generic_count_gh_5992();
+    test_non_strict_weak_order_compare();
 }

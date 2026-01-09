@@ -1277,6 +1277,7 @@ void test_key_mapped_cont_combinations() {
     test_erase_if<KeyCont, MappedCont>();
 }
 
+// Test heterogeneous lookup and erase operations when the compare object does not satisfy strict_weak_order (GH-5992)
 enum class strange_int {};
 
 // No overload divless::operator()(strange_int, strange_int), does not satisfy std::strict_weak_order
@@ -1299,14 +1300,46 @@ struct divless {
 static_assert(!strict_weak_order<divless, int, strange_int>);
 
 // ranges:: algorithms can't be called with divless compare, as it does not satisfy std::strict_weak_order
-void test_generic_count_gh_5992() {
+void test_non_strict_weak_order_compare() {
     {
-        flat_map<int, int, divless> m{{1, 0}, {2, 0}, {11, 0}, {12, 0}};
-        assert(2 == m.count(strange_int{0}));
+        flat_map<int, int, divless> cont{{1, 0}, {2, 0}, {11, 0}, {12, 0}};
+        assert(2 == cont.count(strange_int{0}));
+
+        assert(cont.contains(strange_int{0}));
+        assert(!cont.contains(strange_int{2}));
+
+        assert(cont.begin() + 2 == cont.lower_bound(strange_int{1}));
+        assert(cont.begin() + 2 == cont.upper_bound(strange_int{0}));
+
+        const auto [first, last] = cont.equal_range(strange_int{0});
+        assert(first == cont.begin());
+        assert(last == cont.begin() + 2);
+
+        assert(cont.end() != cont.find(strange_int{1}));
+        assert(cont.end() == cont.find(strange_int{3}));
+
+        assert(2 == cont.erase(strange_int{0}));
+        assert(assert_check_content(cont, {{11, 0}, {12, 0}}));
     }
     {
-        flat_multimap<int, int, divless> mm{{1, 0}, {2, 0}, {11, 0}, {12, 0}};
-        assert(2 == mm.count(strange_int{0}));
+        flat_multimap<int, int, divless> cont{{1, 0}, {2, 0}, {11, 0}, {12, 0}};
+        assert(2 == cont.count(strange_int{0}));
+
+        assert(cont.contains(strange_int{0}));
+        assert(!cont.contains(strange_int{2}));
+
+        assert(cont.begin() + 2 == cont.lower_bound(strange_int{1}));
+        assert(cont.begin() + 2 == cont.upper_bound(strange_int{0}));
+
+        const auto [first, last] = cont.equal_range(strange_int{0});
+        assert(first == cont.begin());
+        assert(last == cont.begin() + 2);
+
+        assert(cont.end() != cont.find(strange_int{1}));
+        assert(cont.end() == cont.find(strange_int{3}));
+
+        assert(2 == cont.erase(strange_int{0}));
+        assert(assert_check_content(cont, {{11, 0}, {12, 0}}));
     }
 }
 
@@ -1322,5 +1355,5 @@ int main() {
     test_insert_or_assign();
     test_comparison();
     test_lookup_call_on_temporaries();
-    test_generic_count_gh_5992();
+    test_non_strict_weak_order_compare();
 }
