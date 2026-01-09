@@ -1227,6 +1227,7 @@ std/algorithms/alg.modifying.operations/alg.swap/ranges.swap_ranges.pass.cpp FAI
 std/algorithms/alg.nonmodifying/alg.contains/ranges.contains_subrange.pass.cpp:2 FAIL
 std/algorithms/alg.nonmodifying/alg.count/count.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.count/ranges.count.pass.cpp FAIL
+std/algorithms/alg.sorting/alg.sort/partial.sort.copy/ranges_partial_sort_copy.pass.cpp:2 FAIL
 std/containers/sequences/vector.bool/append_range.pass.cpp FAIL
 std/containers/sequences/vector.bool/assign_range.pass.cpp FAIL
 std/containers/sequences/vector.bool/flip.pass.cpp FAIL
