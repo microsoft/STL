@@ -3315,9 +3315,9 @@ namespace {
                         }
                     } else {
                         if constexpr (_Unrolled) {
-                            const size_t _Vec_byte_size = _Byte_length(_First, _Last) & ~_Traits::_Vec_mask;
+                            const bool _Has_vec_tail = (_Byte_length(_First, _Last) & ~_Traits::_Vec_mask) != 0;
 
-                            if (_Vec_byte_size != 0) {
+                            if (_Has_vec_tail) {
                                 _Cur_vals[0] = _Traits::_Load(_First);
 
                                 if constexpr (_Sign_correction) {
