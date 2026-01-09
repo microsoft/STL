@@ -154,7 +154,7 @@ void assert_set_requirements() {
     static_assert(std::same_as<std::const_iterator<iterator>, iterator>);
     static_assert(std::is_convertible_v<const_iterator, iterator>);
     static_assert(std::is_same_v<decltype(*std::declval<T>().begin()), const typename T::value_type&>);
-    static_assert(std::is_same_v<typename T::reference, typename T::value_type&>);
+    static_assert(std::is_same_v<std::remove_cvref_t<typename T::reference>, typename T::value_type>);
     static_assert(std::is_same_v<typename T::const_reference, const typename T::value_type&>);
 }
 

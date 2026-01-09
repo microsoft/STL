@@ -43,7 +43,7 @@ void assert_all_requirements(const T& s) {
     assert_noexcept_requirements(s);
     assert_noexcept_requirements(const_cast<T&>(s));
 
-    assert_is_sorted_maybe_unique<_Is_specialization_v<T, flat_set>>(s);
+    assert_is_sorted_maybe_unique<_Is_specialization_v<T, flat_map>>(s);
 }
 
 template <IsFlatMap T>
