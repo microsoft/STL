@@ -3352,16 +3352,20 @@ namespace {
 
                         if constexpr ((_Mode & _Mode_min) != 0) {
                             if constexpr (_Sign || _Sign_correction) {
-                                for (size_t _Lane = 1; _Lane < _Lanes; ++_Lane) {
-                                    _Cur_vals_min[0] = _Traits::_Min(_Cur_vals_min[0], _Cur_vals_min[_Lane]);
+                                if constexpr (_Unrolled) {
+                                    for (size_t _Lane = 1; _Lane < _Lanes; ++_Lane) {
+                                        _Cur_vals_min[0] = _Traits::_Min(_Cur_vals_min[0], _Cur_vals_min[_Lane]);
+                                    }
                                 }
 
                                 // Vector populated by the smallest element
                                 const auto _H_min = _Traits::_H_min(_Cur_vals_min[0]);
                                 _Cur_min_val      = _Traits::_Get_any(_H_min); // Get any element of it
                             } else {
-                                for (size_t _Lane = 1; _Lane < _Lanes; ++_Lane) {
-                                    _Cur_vals_min[0] = _Traits::_Min_u(_Cur_vals_min[0], _Cur_vals_min[_Lane]);
+                                if constexpr (_Unrolled) {
+                                    for (size_t _Lane = 1; _Lane < _Lanes; ++_Lane) {
+                                        _Cur_vals_min[0] = _Traits::_Min_u(_Cur_vals_min[0], _Cur_vals_min[_Lane]);
+                                    }
                                 }
 
                                 // Vector populated by the smallest element
@@ -3372,16 +3376,20 @@ namespace {
 
                         if constexpr ((_Mode & _Mode_max) != 0) {
                             if constexpr (_Sign || _Sign_correction) {
-                                for (size_t _Lane = 1; _Lane < _Lanes; ++_Lane) {
-                                    _Cur_vals_max[0] = _Traits::_Max(_Cur_vals_max[0], _Cur_vals_max[_Lane]);
+                                if constexpr (_Unrolled) {
+                                    for (size_t _Lane = 1; _Lane < _Lanes; ++_Lane) {
+                                        _Cur_vals_max[0] = _Traits::_Max(_Cur_vals_max[0], _Cur_vals_max[_Lane]);
+                                    }
                                 }
 
                                 // Vector populated by the largest element
                                 const auto _H_max = _Traits::_H_max(_Cur_vals_max[0]);
                                 _Cur_max_val      = _Traits::_Get_any(_H_max); // Get any element of it
                             } else {
-                                for (size_t _Lane = 1; _Lane < _Lanes; ++_Lane) {
-                                    _Cur_vals_max[0] = _Traits::_Max_u(_Cur_vals_max[0], _Cur_vals_max[_Lane]);
+                                if constexpr (_Unrolled) {
+                                    for (size_t _Lane = 1; _Lane < _Lanes; ++_Lane) {
+                                        _Cur_vals_max[0] = _Traits::_Max_u(_Cur_vals_max[0], _Cur_vals_max[_Lane]);
+                                    }
                                 }
 
                                 // Vector populated by the largest element
