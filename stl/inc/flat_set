@@ -99,8 +99,8 @@ public:
     using value_type             = _Kty;
     using key_compare            = _Keylt;
     using value_compare          = _Keylt;
-    using reference              = value_type&;
     using const_reference        = const value_type&;
+    using reference              = const_reference;
     using size_type              = _Container::size_type;
     using difference_type        = _Container::difference_type;
     using const_iterator         = _Container::const_iterator;
