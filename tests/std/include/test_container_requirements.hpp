@@ -7,8 +7,7 @@
 #include <iterator>
 #include <print>
 #include <type_traits>
-
-using namespace std;
+#include <utility>
 
 // Extracted common functionality from flat_map and flat_set tests.
 // May be extended for other containers if needed
@@ -18,18 +17,18 @@ void assert_container_requirements(const T& s) {
     T m = s;
     assert(m == s);
 
-    static_assert(is_same_v<decltype(m = s), T&>);
-    static_assert(is_same_v<decltype(m = std::move(m)), T&>);
-    static_assert(is_same_v<decltype(m.begin()), typename T::iterator>);
-    static_assert(is_same_v<decltype(m.end()), typename T::iterator>);
-    static_assert(is_same_v<decltype(s.cbegin()), typename T::const_iterator>);
-    static_assert(is_same_v<decltype(m.cend()), typename T::const_iterator>);
-    static_assert(is_convertible_v<typename T::iterator, typename T::const_iterator>);
-    static_assert(is_same_v<decltype(m.begin() <=> m.end()), strong_ordering>);
-    static_assert(is_same_v<decltype(s.size()), typename T::size_type>);
-    static_assert(is_same_v<decltype(s.max_size()), typename T::size_type>);
-    static_assert(is_same_v<decltype(*m.begin()), const typename T::value_type&>);
-    static_assert(is_same_v<decltype(*m.cbegin()), const typename T::value_type&>);
+    static_assert(std::is_same_v<decltype(m = s), T&>);
+    static_assert(std::is_same_v<decltype(m = std::move(m)), T&>);
+    static_assert(std::is_same_v<decltype(m.begin()), typename T::iterator>);
+    static_assert(std::is_same_v<decltype(m.end()), typename T::iterator>);
+    static_assert(std::is_same_v<decltype(s.cbegin()), typename T::const_iterator>);
+    static_assert(std::is_same_v<decltype(m.cend()), typename T::const_iterator>);
+    static_assert(std::is_convertible_v<typename T::iterator, typename T::const_iterator>);
+    static_assert(std::is_same_v<decltype(m.begin() <=> m.end()), std::strong_ordering>);
+    static_assert(std::is_same_v<decltype(s.size()), typename T::size_type>);
+    static_assert(std::is_same_v<decltype(s.max_size()), typename T::size_type>);
+    static_assert(std::is_same_v<decltype(*m.begin()), typename T::reference>);
+    static_assert(std::is_same_v<decltype(*m.cbegin()), typename T::const_reference>);
 
     T my_moved = std::move(m);
     assert(!(my_moved != s));
@@ -57,16 +56,38 @@ void assert_container_requirements(const T& s) {
 
 template <class T>
 void assert_reversible_container_requirements(const T& s) {
-    static_assert(is_same_v<reverse_iterator<typename T::iterator>, typename T::reverse_iterator>);
-    static_assert(is_same_v<reverse_iterator<typename T::const_iterator>, typename T::const_reverse_iterator>);
-    static_assert(is_same_v<decltype(T{}.rbegin()), typename T::reverse_iterator>);
-    static_assert(is_same_v<decltype(T{}.rend()), typename T::reverse_iterator>);
-    static_assert(is_same_v<decltype(s.rbegin()), typename T::const_reverse_iterator>);
-    static_assert(is_same_v<decltype(s.rend()), typename T::const_reverse_iterator>);
-    static_assert(is_same_v<decltype(s.crbegin()), typename T::const_reverse_iterator>);
-    static_assert(is_same_v<decltype(s.crend()), typename T::const_reverse_iterator>);
-    static_assert(is_convertible_v<typename T::reverse_iterator, typename T::const_reverse_iterator>);
+    static_assert(std::is_same_v<std::reverse_iterator<typename T::iterator>, typename T::reverse_iterator>);
+    static_assert(
+        std::is_same_v<std::reverse_iterator<typename T::const_iterator>, typename T::const_reverse_iterator>);
+    static_assert(std::is_same_v<decltype(T{}.rbegin()), typename T::reverse_iterator>);
+    static_assert(std::is_same_v<decltype(T{}.rend()), typename T::reverse_iterator>);
+    static_assert(std::is_same_v<decltype(s.rbegin()), typename T::const_reverse_iterator>);
+    static_assert(std::is_same_v<decltype(s.rend()), typename T::const_reverse_iterator>);
+    static_assert(std::is_same_v<decltype(s.crbegin()), typename T::const_reverse_iterator>);
+    static_assert(std::is_same_v<decltype(s.crend()), typename T::const_reverse_iterator>);
+    static_assert(std::is_convertible_v<typename T::reverse_iterator, typename T::const_reverse_iterator>);
 }
+
+template <typename T>
+concept map_has_nothrow_swappable_containers = requires {
+    typename T::key_container_type;
+    typename T::mapped_container_type;
+    requires std::is_nothrow_swappable_v<typename T::mapped_container_type>;
+    requires std::is_nothrow_swappable_v<typename T::key_container_type>;
+};
+
+template <typename T>
+concept set_has_nothrow_swappable_containers = requires {
+    typename T::container_type;
+    requires std::is_nothrow_swappable_v<typename T::container_type>;
+};
+
+template <typename T>
+concept has_nothrow_swappable_containers =
+    set_has_nothrow_swappable_containers<T> || map_has_nothrow_swappable_containers<T>;
+
+template <typename T>
+struct is_nothrow_swappable {};
 
 template <class T>
 void assert_noexcept_requirements(T& s) {
@@ -83,11 +104,11 @@ void assert_noexcept_requirements(T& s) {
     static_assert(noexcept(s.size()));
     static_assert(noexcept(s.max_size()));
 
-    if constexpr (!is_const_v<T>) {
+    if constexpr (!std::is_const_v<T>) {
         constexpr bool is_noexcept =
-            is_nothrow_swappable_v<typename T::container_type> && is_nothrow_swappable_v<typename T::key_compare>;
+            has_nothrow_swappable_containers<T> && std::is_nothrow_swappable_v<typename T::key_compare>;
         static_assert(noexcept(s.swap(s)) == is_noexcept);
-        static_assert(noexcept(ranges::swap(s, s)) == is_noexcept); // using ADL-swap
+        static_assert(noexcept(std::ranges::swap(s, s)) == is_noexcept); // using ADL-swap
         static_assert(noexcept(s.clear()));
     }
 }
@@ -102,7 +123,7 @@ void assert_is_sorted_maybe_unique(const T& s) {
     assert(s._Is_sorted_and_unique());
 
     // external check observable by the user
-    assert(is_sorted(begin_it, end_it, val_comp));
+    assert(std::is_sorted(begin_it, end_it, val_comp));
     if constexpr (ExpectedUnique) {
         if (!s.empty()) {
             for (auto prev_it = begin_it, it = prev_it + 1; it != end_it; ++prev_it, ++it) {
@@ -125,13 +146,16 @@ void assert_set_requirements() {
     using key_type       = T::key_type;
     using value_type     = T::value_type;
 
-    static_assert(same_as<std::const_iterator<const_iterator>, const_iterator>);
-    static_assert(is_convertible_v<iterator, const_iterator>);
+    static_assert(std::same_as<std::const_iterator<const_iterator>, const_iterator>);
+    static_assert(std::is_convertible_v<iterator, const_iterator>);
 
     // additionally:
-    static_assert(is_same_v<key_type, value_type>);
-    static_assert(same_as<std::const_iterator<iterator>, iterator>);
-    static_assert(is_convertible_v<const_iterator, iterator>);
+    static_assert(std::is_same_v<key_type, value_type>);
+    static_assert(std::same_as<std::const_iterator<iterator>, iterator>);
+    static_assert(std::is_convertible_v<const_iterator, iterator>);
+    static_assert(std::is_same_v<decltype(*std::declval<T>().begin()), const typename T::value_type&>);
+    static_assert(std::is_same_v<typename T::reference, typename T::value_type&>);
+    static_assert(std::is_same_v<typename T::const_reference, const typename T::value_type&>);
 }
 
 template <class T>
@@ -142,11 +166,11 @@ void assert_map_requirements() {
     using value_type     = T::value_type;
     using mapped_type    = T::mapped_type;
 
-    static_assert(same_as<std::const_iterator<const_iterator>, const_iterator>);
-    static_assert(is_convertible_v<iterator, const_iterator>);
+    static_assert(std::same_as<std::const_iterator<const_iterator>, const_iterator>);
+    static_assert(std::is_convertible_v<iterator, const_iterator>);
 
     // additionally:
-    static_assert(is_same_v<value_type, pair<key_type, mapped_type>>);
+    static_assert(std::is_same_v<value_type, std::pair<key_type, mapped_type>>);
 }
 
 template <typename T>
