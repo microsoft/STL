@@ -6,6 +6,7 @@
 #include <cassert>
 #include <concepts>
 #include <cstddef>
+#include <cstdlib>
 #include <deque>
 #include <flat_map>
 #include <functional>

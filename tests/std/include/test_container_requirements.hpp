@@ -3,7 +3,10 @@
 
 #pragma once
 
+#include <algorithm>
+#include <cassert>
 #include <compare>
+#include <format>
 #include <iterator>
 #include <print>
 #include <type_traits>
