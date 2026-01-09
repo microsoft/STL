@@ -1085,6 +1085,11 @@ namespace {
                 return vget_lane_u64(vreinterpret_u64_u8(_Res), 0);
             }
 
+            static uint64_t _Match_mask(const _Vec_t _Val_lo, const _Vec_t _Val_hi) noexcept {
+                const uint64x2_t _Val = vreinterpretq_u64_s8(vorrq_s8(_Val_lo, _Val_hi));
+                return vgetq_lane_u64(vpaddq_u64(_Val, _Val), 0);
+            }
+
             static unsigned long _Get_first_h_pos(const uint64_t _Mask) noexcept {
                 return _CountTrailingZeros64(_Mask) >> 2;
             }
@@ -1396,6 +1401,11 @@ namespace {
                 return vget_lane_u64(vreinterpret_u64_u16(_Res), 0);
             }
 
+            static uint64_t _Match_mask(const _Vec_t _Val_lo, const _Vec_t _Val_hi) noexcept {
+                const int8x8_t _Val = vaddhn_s16(_Val_lo, _Val_hi);
+                return vget_lane_u64(vreinterpret_u64_s8(_Val), 0);
+            }
+
             static unsigned long _Get_first_h_pos(const uint64_t _Mask) noexcept {
                 return _CountTrailingZeros64(_Mask) >> 2;
             }
@@ -1704,6 +1714,11 @@ namespace {
                 return vget_lane_u64(vreinterpret_u64_u32(_Res), 0);
             }
 
+            static uint64_t _Match_mask(const _Vec_t _Val_lo, const _Vec_t _Val_hi) noexcept {
+                const int8x8_t _Val = vaddhn_s16(vreinterpretq_s16_s32(_Val_lo), vreinterpretq_s16_s32(_Val_hi));
+                return vget_lane_u64(vreinterpret_u64_s8(_Val), 0);
+            }
+
             static unsigned long _Get_first_h_pos(const uint64_t _Mask) noexcept {
                 return _CountTrailingZeros64(_Mask) >> 2;
             }
@@ -1983,6 +1998,21 @@ namespace {
                 return _Val;
             }
 
+            // Compresses a 128-bit Mask of 2 64-bit values into a 64-bit Mask of 2 32-bit values.
+            static uint64_t _Mask(const _Vec_t _Val) noexcept {
+                const uint32x2_t _Res = vreinterpret_u32_s32(vmovn_s64(_Val));
+                return vget_lane_u64(vreinterpret_u64_u32(_Res), 0);
+            }
+
+            static uint64_t _Match_mask(const _Vec_t _Val_lo, const _Vec_t _Val_hi) noexcept {
+                const int8x8_t _Val = vaddhn_s16(vreinterpretq_s16_s64(_Val_lo), vreinterpretq_s16_s64(_Val_hi));
+                return vget_lane_u64(vreinterpret_u64_s8(_Val), 0);
+            }
+
+            static unsigned long _Get_first_h_pos(const uint64_t _Mask) noexcept {
+                return _CountTrailingZeros64(_Mask) >> 2;
+            }
+
             static _Vec_t _Load(const void* const _Src) noexcept {
                 return vld1q_s64(reinterpret_cast<const int64_t*>(_Src));
             }
@@ -2047,6 +2077,10 @@ namespace {
 
             static _Vec_t _Max_u(const _Vec_t _First, const _Vec_t _Second) noexcept {
                 return _Max(_First, _Second, _Cmp_gt_u(_Second, _First));
+            }
+
+            static _Vec_t _Mask_cast(const _Vec_t _Mask) noexcept {
+                return _Mask;
             }
         };
 #elif !defined(_M_ARM64EC)
@@ -2282,6 +2316,10 @@ namespace {
 
             static uint64_t _Mask(const _Idx_t _Val) noexcept {
                 return _Traits_4_neon::_Mask(_Val);
+            }
+
+            static uint64_t _Match_mask(const _Idx_t _Val_lo, const _Idx_t _Val_hi) noexcept {
+                return _Traits_4_neon::_Match_mask(_Val_lo, _Val_hi);
             }
 
             static unsigned long _Get_first_h_pos(const uint64_t _Mask) noexcept {
@@ -2549,12 +2587,15 @@ namespace {
 
             // Compresses a 128-bit Mask of 2 64-bit values into a 64-bit Mask of 2 32-bit values.
             static uint64_t _Mask(const int64x2_t _Val) noexcept {
-                const uint32x2_t _Res = vreinterpret_u32_s32(vmovn_s64(_Val));
-                return vget_lane_u64(vreinterpret_u64_u32(_Res), 0);
+                return _Traits_8_neon::_Mask(_Val);
+            }
+
+            static uint64_t _Match_mask(const _Idx_t _Val_lo, const _Idx_t _Val_hi) noexcept {
+                return _Traits_8_neon::_Match_mask(_Val_lo, _Val_hi);
             }
 
             static unsigned long _Get_first_h_pos(const uint64_t _Mask) noexcept {
-                return _CountTrailingZeros64(_Mask) >> 2;
+                return _Traits_8_neon::_Get_first_h_pos(_Mask);
             }
 
             static unsigned long _Get_last_h_pos(const uint64_t _Mask) noexcept {
@@ -3490,7 +3531,88 @@ namespace {
             return _Minmax_impl<_Mode, typename _Traits::_Scalar, _Sign>(_First, _Last);
         }
 
-#ifndef _M_ARM64
+#ifdef _M_ARM64
+        template <class _Traits, class _Ty>
+        const void* _Is_sorted_until_impl(const void* _First, const void* const _Last, const bool _Greater) noexcept {
+            const ptrdiff_t _Left_off  = 0 - static_cast<ptrdiff_t>(_Greater);
+            const ptrdiff_t _Right_off = static_cast<ptrdiff_t>(_Greater) - 1;
+
+            if constexpr (_Traits::_Vectorized) {
+                const size_t _Total_size_bytes = _Byte_length(_First, _Last);
+
+                const auto _Cmp_gt_wrap = [](const auto _Right, const auto _Left) noexcept {
+                    constexpr bool _Unsigned = static_cast<_Ty>(-1) > _Ty{0};
+
+                    if constexpr (_Unsigned && _Traits::_Has_unsigned_cmp) {
+                        return _Traits::_Cmp_gt_u(_Right, _Left);
+                    } else {
+                        return _Traits::_Cmp_gt(_Right, _Left);
+                    }
+                };
+
+                if (_Total_size_bytes >= 32) {
+                    constexpr size_t _Bytes_per_iter = 2 * _Traits::_Vec_size;
+                    const size_t _Vec_byte_size      = _Total_size_bytes & ~(_Bytes_per_iter - 1);
+                    const void* _Stop_at             = _First;
+                    _Advance_bytes(_Stop_at, _Vec_byte_size);
+
+                    do {
+                        const void* _Next = static_cast<const uint8_t*>(_First) + _Traits::_Vec_size;
+
+                        const auto _Left_lo  = _Traits::_Load(static_cast<const _Ty*>(_First) + _Left_off);
+                        const auto _Right_lo = _Traits::_Load(static_cast<const _Ty*>(_First) + _Right_off);
+                        const auto _Left_hi  = _Traits::_Load(static_cast<const _Ty*>(_Next) + _Left_off);
+                        const auto _Right_hi = _Traits::_Load(static_cast<const _Ty*>(_Next) + _Right_off);
+
+                        const auto _Is_less_lo = _Cmp_gt_wrap(_Right_lo, _Left_lo);
+                        const auto _Is_less_hi = _Cmp_gt_wrap(_Right_hi, _Left_hi);
+                        const auto _Any_match  = _Traits::_Match_mask(_Is_less_lo, _Is_less_hi);
+
+                        if (_Any_match != 0) {
+                            const auto _Mask_lo = _Traits::_Mask(_Is_less_lo);
+                            if (_Mask_lo != 0) {
+                                const unsigned long _H_pos = _Traits::_Get_first_h_pos(_Mask_lo);
+                                _Advance_bytes(_First, _H_pos);
+                                return _First;
+                            }
+
+                            const auto _Mask_hi        = _Traits::_Mask(_Is_less_hi);
+                            const unsigned long _H_pos = _Traits::_Get_first_h_pos(_Mask_hi) + _Traits::_Vec_size;
+                            _Advance_bytes(_First, _H_pos);
+                            return _First;
+                        }
+
+                        _Advance_bytes(_First, 2 * _Traits::_Vec_size);
+                    } while (_First != _Stop_at);
+                }
+
+                const size_t _Has_vec_tail = (_Byte_length(_First, _Last) & ~_Traits::_Vec_mask) != 0;
+                if (_Has_vec_tail) {
+                    const auto _Left  = _Traits::_Load(static_cast<const _Ty*>(_First) + _Left_off);
+                    const auto _Right = _Traits::_Load(static_cast<const _Ty*>(_First) + _Right_off);
+
+                    const auto _Is_less = _Cmp_gt_wrap(_Right, _Left);
+                    const auto _Mask    = _Traits::_Mask(_Traits::_Mask_cast(_Is_less));
+
+                    if (_Mask != 0) {
+                        const unsigned long _H_pos = _Traits::_Get_first_h_pos(_Mask);
+                        _Advance_bytes(_First, _H_pos);
+                        return _First;
+                    }
+
+                    _Advance_bytes(_First, _Traits::_Vec_size);
+                }
+            }
+
+            for (const _Ty* _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                if (_Ptr[_Left_off] < _Ptr[_Right_off]) {
+                    return _Ptr;
+                }
+            }
+
+            return _Last;
+        }
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
         template <class _Traits, class _Ty>
         const void* _Is_sorted_until_impl(const void* _First, const void* const _Last, const bool _Greater) noexcept {
             const ptrdiff_t _Left_off  = 0 - static_cast<ptrdiff_t>(_Greater);
@@ -3569,6 +3691,7 @@ namespace {
 
             return _Last;
         }
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
         template <class _Traits, class _Ty>
         const void* __stdcall _Is_sorted_until_disp(
@@ -3579,7 +3702,11 @@ namespace {
 
             _Advance_bytes(_First, sizeof(_Ty));
 
-#ifndef _M_ARM64EC
+#ifdef _M_ARM64
+            if (_Byte_length(_First, _Last) >= 16) {
+                return _Is_sorted_until_impl<typename _Traits::_Neon, _Ty>(_First, _Last, _Greater);
+            }
+#elif !defined(_M_ARM64EC)
             if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
                 return _Is_sorted_until_impl<typename _Traits::_Avx, _Ty>(_First, _Last, _Greater);
             }
@@ -3590,7 +3717,6 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
             return _Is_sorted_until_impl<typename _Traits::_Scalar, _Ty>(_First, _Last, _Greater);
         }
-#endif // ^^^ !defined(_M_ARM64) ^^^
     } // namespace _Sorting
 } // unnamed namespace
 
@@ -3812,7 +3938,6 @@ __declspec(noalias) _Min_max_d __stdcall __std_minmax_d(const void* const _First
     return _Sorting::_Minmax_disp<_Sorting::_Mode_both, _Sorting::_Traits_d, true>(_First, _Last);
 }
 
-#ifndef _M_ARM64
 const void* __stdcall __std_is_sorted_until_1i(
     const void* const _First, const void* const _Last, const bool _Greater) noexcept {
     return _Sorting::_Is_sorted_until_disp<_Sorting::_Traits_1, int8_t>(_First, _Last, _Greater);
@@ -3862,7 +3987,6 @@ const void* __stdcall __std_is_sorted_until_d(
     const void* const _First, const void* const _Last, const bool _Greater) noexcept {
     return _Sorting::_Is_sorted_until_disp<_Sorting::_Traits_d, double>(_First, _Last, _Greater);
 }
-#endif // ^^^ !defined(_M_ARM64) ^^^
 
 } // extern "C"
 
