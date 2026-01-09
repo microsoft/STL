@@ -250,6 +250,22 @@ struct MyAllocatorCounter {
     size_t activeAllocations;
 };
 
+struct key_comparer {
+    const auto& extract_key(const auto& obj) const {
+        if constexpr (requires { obj.key; }) {
+            return obj.key;
+        } else {
+            return obj;
+        }
+    }
+
+    bool operator()(const auto& lhs, const auto& rhs) const {
+        return extract_key(lhs) < extract_key(rhs);
+    }
+
+    using is_transparent = int;
+};
+
 template <template <class...> class KeyCont, template <class...> class MappedCont>
 void test_construction() {
     // Using CTAD, the given MyAllocator is only used by the container when the constructor (deduction guide)
@@ -1109,6 +1125,29 @@ void test_comparison() {
     }
 }
 
+template <template <class...> class Map>
+void test_map_operations_transparent() {
+    struct shouldnt_convert {
+        int key;
+        /* implicit */ [[noreturn]] operator int() const {
+            abort();
+        }
+    };
+
+    Map<int, char, key_comparer> fm{{0, 'a'}, {3, 'g'}, {5, 't'}};
+    assert(check_key_content(fm, {0, 3, 5}));
+    assert(check_value_content(fm, {'a', 'g', 't'}));
+
+    assert(fm.find(shouldnt_convert{0}) != fm.end());
+    assert(fm.count(shouldnt_convert{3}) == 1);
+    assert(!fm.contains(shouldnt_convert{1}));
+    assert(fm.lower_bound(shouldnt_convert{-1}) == fm.begin());
+    assert(fm.lower_bound(shouldnt_convert{8}) == fm.end());
+    assert(fm.upper_bound(shouldnt_convert{2}) == fm.find(3));
+    auto [first, last] = fm.equal_range(shouldnt_convert{5});
+    assert(first + 1 == last);
+}
+
 namespace test_throwing_swap {
     struct unique_exception {};
 
@@ -1355,6 +1394,10 @@ void run_normal_tests() {
     test_gh_4344();
     test_insert_or_assign();
     test_comparison();
+
+    test_map_operations_transparent<flat_map>();
+    test_map_operations_transparent<flat_multimap>();
+
     test_lookup_call_on_temporaries();
     test_non_strict_weak_order_compare();
 }
