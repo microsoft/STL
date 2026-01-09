@@ -37,16 +37,16 @@ void assert_container_requirements(const T& s) {
     T my_moved = std::move(m);
     assert(!(my_moved != s));
 
-    T empty{};
-    assert(empty.empty());
+    T my_empty{};
+    assert(my_empty.empty());
 
     T non_empty = s;
-    empty.swap(non_empty);
+    my_empty.swap(non_empty);
     assert(non_empty.empty());
-    assert(empty == s);
+    assert(my_empty == s);
 
-    std::swap(empty, non_empty);
-    assert(empty.empty());
+    std::swap(my_empty, non_empty);
+    assert(my_empty.empty());
     assert(non_empty == s);
 
     assert(s.cbegin() <= s.cend());
