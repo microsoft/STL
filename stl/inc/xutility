@@ -90,11 +90,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _VECTORIZED_INCLUDES           _VECTORIZED_FOR_X64_X86
 #define _VECTORIZED_IS_SORTED_UNTIL    _VECTORIZED_FOR_X64_X86
 #define _VECTORIZED_MINMAX             _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_MINMAX_ELEMENT     _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_MINMAX_ELEMENT     _VECTORIZED_FOR_X64_X86_ARM64
 #define _VECTORIZED_MISMATCH           _VECTORIZED_FOR_X64_X86
 #define _VECTORIZED_REMOVE             _VECTORIZED_FOR_X64_X86
 #define _VECTORIZED_REMOVE_COPY        _VECTORIZED_FOR_X64_X86
 #define _VECTORIZED_REPLACE            _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_REPLACE_COPY       _VECTORIZED_FOR_X64_X86
 #define _VECTORIZED_REVERSE            _VECTORIZED_FOR_X64_X86_ARM64
 #define _VECTORIZED_REVERSE_COPY       _VECTORIZED_FOR_X64_X86_ARM64
 #define _VECTORIZED_ROTATE             _VECTORIZED_FOR_X64_X86_ARM64
@@ -207,14 +208,18 @@ const void* __stdcall __std_find_end_8(
 const void* __stdcall __std_min_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_min_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_min_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
+#ifndef _M_ARM64
 const void* __stdcall __std_min_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
+#endif // ^^^ !defined(_M_ARM64) ^^^
 const void* __stdcall __std_min_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
 const void* __stdcall __std_min_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
 
 const void* __stdcall __std_max_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_max_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_max_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
+#ifndef _M_ARM64
 const void* __stdcall __std_max_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
+#endif // ^^^ !defined(_M_ARM64) ^^^
 const void* __stdcall __std_max_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
 const void* __stdcall __std_max_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
 #endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
@@ -416,7 +421,11 @@ _Ty* _Min_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 4) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_4(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 8) {
+#ifdef _M_ARM64
+        static_assert(false, "unexpected size; 64-bit integers on ARM64 should not take this codepath");
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_8(_First, _Last, _Signed)));
+#endif // ^^^ !defined(_M_ARM64) ^^^
     } else {
         static_assert(false, "unexpected size");
     }
@@ -437,7 +446,11 @@ _Ty* _Max_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 4) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_4(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 8) {
+#ifdef _M_ARM64
+        static_assert(false, "unexpected size; 64-bit integers on ARM64 should not take this codepath");
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_8(_First, _Last, _Signed)));
+#endif // ^^^ !defined(_M_ARM64) ^^^
     } else {
         static_assert(false, "unexpected size");
     }
@@ -2142,26 +2155,23 @@ constexpr bool disable_sized_sentinel_for<reverse_iterator<_BidIt1>, reverse_ite
 #endif // _HAS_CXX20
 
 _EXPORT_STD template <class _Container>
-_NODISCARD _CONSTEXPR17 auto begin(_Container& _Cont) noexcept(noexcept(_Cont.begin())) /* strengthened */
+_NODISCARD _CONSTEXPR17 auto begin(_Container& _Cont) noexcept(noexcept(_Cont.begin())) -> decltype(_Cont.begin()) {
+    return _Cont.begin();
+}
+
+_EXPORT_STD template <class _Container>
+_NODISCARD _CONSTEXPR17 auto begin(const _Container& _Cont) noexcept(noexcept(_Cont.begin()))
     -> decltype(_Cont.begin()) {
     return _Cont.begin();
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD _CONSTEXPR17 auto begin(const _Container& _Cont) noexcept(noexcept(_Cont.begin())) /* strengthened */
-    -> decltype(_Cont.begin()) {
-    return _Cont.begin();
-}
-
-_EXPORT_STD template <class _Container>
-_NODISCARD _CONSTEXPR17 auto end(_Container& _Cont) noexcept(noexcept(_Cont.end())) /* strengthened */
-    -> decltype(_Cont.end()) {
+_NODISCARD _CONSTEXPR17 auto end(_Container& _Cont) noexcept(noexcept(_Cont.end())) -> decltype(_Cont.end()) {
     return _Cont.end();
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD _CONSTEXPR17 auto end(const _Container& _Cont) noexcept(noexcept(_Cont.end())) /* strengthened */
-    -> decltype(_Cont.end()) {
+_NODISCARD _CONSTEXPR17 auto end(const _Container& _Cont) noexcept(noexcept(_Cont.end())) -> decltype(_Cont.end()) {
     return _Cont.end();
 }
 
@@ -2188,66 +2198,60 @@ _NODISCARD constexpr auto cend(const _Container& _Cont) noexcept(noexcept(_STD e
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD _CONSTEXPR17 auto rbegin(_Container& _Cont) noexcept(noexcept(_Cont.rbegin())) /* strengthened */
+_NODISCARD _CONSTEXPR17 auto rbegin(_Container& _Cont) noexcept(noexcept(_Cont.rbegin())) -> decltype(_Cont.rbegin()) {
+    return _Cont.rbegin();
+}
+
+_EXPORT_STD template <class _Container>
+_NODISCARD _CONSTEXPR17 auto rbegin(const _Container& _Cont) noexcept(noexcept(_Cont.rbegin()))
     -> decltype(_Cont.rbegin()) {
     return _Cont.rbegin();
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD _CONSTEXPR17 auto rbegin(const _Container& _Cont) noexcept(noexcept(_Cont.rbegin())) /* strengthened */
-    -> decltype(_Cont.rbegin()) {
-    return _Cont.rbegin();
-}
-
-_EXPORT_STD template <class _Container>
-_NODISCARD _CONSTEXPR17 auto rend(_Container& _Cont) noexcept(noexcept(_Cont.rend())) /* strengthened */
-    -> decltype(_Cont.rend()) {
+_NODISCARD _CONSTEXPR17 auto rend(_Container& _Cont) noexcept(noexcept(_Cont.rend())) -> decltype(_Cont.rend()) {
     return _Cont.rend();
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD _CONSTEXPR17 auto rend(const _Container& _Cont) noexcept(noexcept(_Cont.rend())) /* strengthened */
-    -> decltype(_Cont.rend()) {
+_NODISCARD _CONSTEXPR17 auto rend(const _Container& _Cont) noexcept(noexcept(_Cont.rend())) -> decltype(_Cont.rend()) {
     return _Cont.rend();
 }
 
 _EXPORT_STD template <class _Ty, size_t _Size>
-_NODISCARD _CONSTEXPR17 reverse_iterator<_Ty*> rbegin(_Ty (&_Array)[_Size]) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR17 reverse_iterator<_Ty*> rbegin(_Ty (&_Array)[_Size]) noexcept {
     return reverse_iterator<_Ty*>(_Array + _Size);
 }
 
 _EXPORT_STD template <class _Ty, size_t _Size>
-_NODISCARD _CONSTEXPR17 reverse_iterator<_Ty*> rend(_Ty (&_Array)[_Size]) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR17 reverse_iterator<_Ty*> rend(_Ty (&_Array)[_Size]) noexcept {
     return reverse_iterator<_Ty*>(_Array);
 }
 
 _EXPORT_STD template <class _Elem>
-_NODISCARD _CONSTEXPR17 reverse_iterator<const _Elem*> rbegin(initializer_list<_Elem> _Ilist) noexcept
-/* strengthened */ {
+_NODISCARD _CONSTEXPR17 reverse_iterator<const _Elem*> rbegin(initializer_list<_Elem> _Ilist) noexcept {
     return reverse_iterator<const _Elem*>(_Ilist.end());
 }
 
 _EXPORT_STD template <class _Elem>
-_NODISCARD _CONSTEXPR17 reverse_iterator<const _Elem*> rend(initializer_list<_Elem> _Ilist) noexcept
-/* strengthened */ {
+_NODISCARD _CONSTEXPR17 reverse_iterator<const _Elem*> rend(initializer_list<_Elem> _Ilist) noexcept {
     return reverse_iterator<const _Elem*>(_Ilist.begin());
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD _CONSTEXPR17 auto crbegin(const _Container& _Cont) noexcept(noexcept(_STD rbegin(_Cont))) /* strengthened */
+_NODISCARD _CONSTEXPR17 auto crbegin(const _Container& _Cont) noexcept(noexcept(_STD rbegin(_Cont)))
     -> decltype(_STD rbegin(_Cont)) {
     return _STD rbegin(_Cont);
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD _CONSTEXPR17 auto crend(const _Container& _Cont) noexcept(noexcept(_STD rend(_Cont))) /* strengthened */
+_NODISCARD _CONSTEXPR17 auto crend(const _Container& _Cont) noexcept(noexcept(_STD rend(_Cont)))
     -> decltype(_STD rend(_Cont)) {
     return _STD rend(_Cont);
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD constexpr auto size(const _Container& _Cont) noexcept(noexcept(_Cont.size())) /* strengthened */
-    -> decltype(_Cont.size()) {
+_NODISCARD constexpr auto size(const _Container& _Cont) noexcept(noexcept(_Cont.size())) -> decltype(_Cont.size()) {
     return _Cont.size();
 }
 
@@ -2258,8 +2262,7 @@ _NODISCARD constexpr size_t size(const _Ty (&)[_Size]) noexcept {
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Container>
-_NODISCARD constexpr auto ssize(const _Container& _Cont) noexcept(noexcept(
-    static_cast<common_type_t<ptrdiff_t, make_signed_t<decltype(_Cont.size())>>>(_Cont.size()))) /* strengthened */
+_NODISCARD constexpr auto ssize(const _Container& _Cont) noexcept(noexcept(_Cont.size()))
     -> common_type_t<ptrdiff_t, make_signed_t<decltype(_Cont.size())>> {
     using _Common = common_type_t<ptrdiff_t, make_signed_t<decltype(_Cont.size())>>;
     return static_cast<_Common>(_Cont.size());
@@ -2272,8 +2275,7 @@ _NODISCARD constexpr ptrdiff_t ssize(const _Ty (&)[_Size]) noexcept {
 #endif // _HAS_CXX20
 
 _EXPORT_STD template <class _Container>
-_NODISCARD_EMPTY_NON_MEMBER constexpr auto empty(const _Container& _Cont)
-    noexcept(noexcept(_Cont.empty())) /* strengthened */
+_NODISCARD_EMPTY_NON_MEMBER constexpr auto empty(const _Container& _Cont) noexcept(noexcept(_Cont.empty()))
     -> decltype(_Cont.empty()) {
     return _Cont.empty();
 }
@@ -2283,31 +2285,19 @@ _NODISCARD_EMPTY_NON_MEMBER constexpr bool empty(const _Ty (&)[_Size]) noexcept 
     return false;
 }
 
-_EXPORT_STD template <class _Elem>
-_NODISCARD_EMPTY_NON_MEMBER constexpr bool empty(initializer_list<_Elem> _Ilist) noexcept {
-    return _Ilist.size() == 0;
-}
-
 _EXPORT_STD template <class _Container>
-_NODISCARD constexpr auto data(_Container& _Cont) noexcept(noexcept(_Cont.data())) /* strengthened */
-    -> decltype(_Cont.data()) {
+_NODISCARD constexpr auto data(_Container& _Cont) noexcept(noexcept(_Cont.data())) -> decltype(_Cont.data()) {
     return _Cont.data();
 }
 
 _EXPORT_STD template <class _Container>
-_NODISCARD constexpr auto data(const _Container& _Cont) noexcept(noexcept(_Cont.data())) /* strengthened */
-    -> decltype(_Cont.data()) {
+_NODISCARD constexpr auto data(const _Container& _Cont) noexcept(noexcept(_Cont.data())) -> decltype(_Cont.data()) {
     return _Cont.data();
 }
 
 _EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD constexpr _Ty* data(_Ty (&_Array)[_Size]) noexcept {
     return _Array;
-}
-
-_EXPORT_STD template <class _Elem>
-_NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept {
-    return _Ilist.begin();
 }
 
 #if _HAS_CXX20
@@ -7281,9 +7271,20 @@ constexpr bool _Is_predicate_greater = _Is_any_of_v<_Pr,
 #endif // _HAS_CXX20
     greater<>, greater<_Iter_value_t<_Iter>>>;
 
+#ifdef _M_ARM64
+// We choose not to vectorize minmax_element for 64-bit integers on ARM64
+// as this does not improve performance over the scalar code.
+template <class _Ty>
+_INLINE_VAR constexpr bool _Is_64bit_int_on_arm64_v = sizeof(_Ty) == 8 && !is_floating_point_v<_Ty>;
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+template <class _Ty>
+_INLINE_VAR constexpr bool _Is_64bit_int_on_arm64_v = false;
+#endif // ^^^ !defined(_M_ARM64) ^^^
+
 template <class _Iter, class _Pr>
 constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms for min_/max_element?
-    _Is_min_max_iterators_safe<_Iter> && _Is_predicate_less<_Iter, _Pr>;
+    _Is_min_max_iterators_safe<_Iter> && _Is_predicate_less<_Iter, _Pr>
+    && !_Is_64bit_int_on_arm64_v<_Iter_value_t<_Iter>>;
 
 // Unlike the position-based vectorized implementation, the value-based vectorized implementation
 // does not always produce the expected results for floating-point types.

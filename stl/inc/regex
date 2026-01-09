@@ -1671,8 +1671,7 @@ public:
 enum class _Rx_unwind_ops {
     _After_assert = 1,
     _After_neg_assert,
-    _Disjunction_eval_alt_on_failure,
-    _Disjunction_eval_alt_always,
+    _Disjunction_eval_alternative,
     _Do_nothing,
     _Loop_simple_nongreedy,
     _Loop_simple_greedy_firstrep,
@@ -4053,9 +4052,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 {
                     auto _Node = static_cast<_Node_if*>(_Nx);
                     if (_Node->_Child) {
-                        _Push_frame(_Longest ? _Rx_unwind_ops::_Disjunction_eval_alt_always
-                                             : _Rx_unwind_ops::_Disjunction_eval_alt_on_failure,
-                            _Node->_Child);
+                        _Push_frame(_Rx_unwind_ops::_Disjunction_eval_alternative, _Node->_Child);
                         _Increase_complexity_count();
                     }
                     break;
@@ -4296,34 +4293,24 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
         } while (_Nx);
 
         while (_Frames_count > 0 && !_Nx) {
-            auto& _Frame = _Frames[--_Frames_count];
+            _STL_INTERNAL_CHECK(_Failed || _Longest);
 
+            auto& _Frame = _Frames[--_Frames_count];
             switch (_Frame._Code) {
-            case _Rx_unwind_ops::_After_assert:
-                { // matching pattern of positive assert failed
-                    _STL_INTERNAL_CHECK(_Failed);
-                    break;
-                }
+            case _Rx_unwind_ops::_After_assert: // matching pattern of positive assert failed
+            case _Rx_unwind_ops::_Do_nothing:
+                break;
 
             case _Rx_unwind_ops::_After_neg_assert:
                 { // matching pattern of negative assert failed
-                    _STL_INTERNAL_CHECK(_Failed);
                     _Tgt_state._Cur = _Frame._Pos;
                     _Nx             = _Frame._Node->_Next;
                     _Failed         = false;
                     break;
                 }
 
-            case _Rx_unwind_ops::_Disjunction_eval_alt_on_failure:
-                // evaluate next alternative if matching prior alternatives failed
-                if (!_Failed) {
-                    break;
-                }
-                _FALLTHROUGH;
-
-            case _Rx_unwind_ops::_Disjunction_eval_alt_always:
-                // evaluate next alternative no matter if matching prior alternatives succeeded
-                {
+            case _Rx_unwind_ops::_Disjunction_eval_alternative:
+                { // try next alternative in a disjunction
                     auto _Node      = static_cast<_Node_if*>(_Frame._Node);
                     _Nx             = _Node->_Next;
                     _Tgt_state._Cur = _Frame._Pos;
@@ -4336,12 +4323,8 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     break;
                 }
 
-            case _Rx_unwind_ops::_Do_nothing:
-                break;
-
             case _Rx_unwind_ops::_Loop_simple_nongreedy:
-                // try one more rep after matching tail if necessary
-                if (_Longest || _Failed) {
+                { // try one more rep
                     auto _Node = static_cast<_Node_rep*>(_Frame._Node);
                     auto& _Sav = _Loop_vals[_Node->_Loop_number];
 
@@ -4356,8 +4339,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 break;
 
             case _Rx_unwind_ops::_Loop_simple_greedy_firstrep:
-                // try tail after backtracking from first rep
-                if (_Failed) {
+                { // try tail after backtracking from first rep
                     auto _Node = static_cast<_Node_rep*>(_Frame._Node);
 
                     _Increase_complexity_count();
@@ -4368,9 +4350,9 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 break;
 
             case _Rx_unwind_ops::_Loop_simple_greedy_intermediaterep:
-                // shift capturing groups, set up unwinding prior rep and try tail
-                // when backtracking between the second and the last attempted rep
-                if (_Failed) {
+                {
+                    // shift capturing groups, set up unwinding prior rep and try tail
+                    // when backtracking between the second and the last attempted rep
                     auto _Node = static_cast<_Node_rep*>(_Frame._Node);
 
                     // adjust capturing group begin and end iterators by rep length
@@ -4390,9 +4372,9 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 _FALLTHROUGH;
 
             case _Rx_unwind_ops::_Loop_simple_greedy_lastrep:
-                // set up unwinding prior rep and try tail
-                // when backtracking from last attempted rep
-                if (_Failed) {
+                {
+                    // set up unwinding prior rep and try tail
+                    // when backtracking from last attempted rep
                     auto _Node = static_cast<_Node_rep*>(_Frame._Node);
 
                     _Increase_complexity_count();
@@ -4412,8 +4394,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 break;
 
             case _Rx_unwind_ops::_Loop_greedy:
-                // try tail if matching one more rep failed
-                if (_Failed) {
+                { // try tail
                     auto _Node = static_cast<_Node_rep*>(_Frame._Node);
 
                     _Increase_complexity_count();
@@ -4434,8 +4415,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 break;
 
             case _Rx_unwind_ops::_Loop_nongreedy:
-                // try another rep if matching tail failed or longest mode
-                if (_Failed || _Longest) {
+                { // try another rep
                     auto _Node = static_cast<_Node_rep*>(_Frame._Node);
                     auto& _Sav = _Loop_vals[_Node->_Loop_number];
 

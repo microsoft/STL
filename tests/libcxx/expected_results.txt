@@ -136,6 +136,9 @@ std/language.support/support.limits/support.limits.general/mdspan.version.compil
 # libc++ has not implemented P2937R0: "Freestanding Library: Remove strtok"
 std/language.support/support.limits/support.limits.general/cstring.version.compile.pass.cpp FAIL
 
+# libc++ has not implemented P3016R6: "Resolve Inconsistencies In begin/end For valarray And Braced Initializer Lists"
+std/language.support/support.initlist/support.initlist.range/begin_end.pass.cpp FAIL
+
 # libc++ has not implemented P3323R1: "Forbid atomic<cv T>, Specify atomic_ref<cv T>"
 std/atomics/atomics.ref/member_types.compile.pass.cpp FAIL
 
