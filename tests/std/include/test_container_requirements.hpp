@@ -72,7 +72,7 @@ void assert_reversible_container_requirements(const T& s) {
     static_assert(std::is_convertible_v<typename T::reverse_iterator, typename T::const_reverse_iterator>);
 }
 
-template <typename T>
+template <class T>
 concept map_has_nothrow_swappable_containers = requires {
     typename T::key_container_type;
     typename T::mapped_container_type;
@@ -80,13 +80,13 @@ concept map_has_nothrow_swappable_containers = requires {
     requires std::is_nothrow_swappable_v<typename T::key_container_type>;
 };
 
-template <typename T>
+template <class T>
 concept set_has_nothrow_swappable_containers = requires {
     typename T::container_type;
     requires std::is_nothrow_swappable_v<typename T::container_type>;
 };
 
-template <typename T>
+template <class T>
 concept has_nothrow_swappable_containers =
     set_has_nothrow_swappable_containers<T> || map_has_nothrow_swappable_containers<T>;
 
@@ -176,7 +176,7 @@ void assert_map_requirements() {
     static_assert(std::is_same_v<value_type, std::pair<key_type, mapped_type>>);
 }
 
-template <typename T>
+template <class T>
 void assert_three_way_comparability() {
     using value_type = T::value_type;
     if constexpr (std::three_way_comparable<value_type>) {
