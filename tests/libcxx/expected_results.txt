@@ -1525,6 +1525,16 @@ std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:1 FAIL
 std/input.output/file.streams/fstreams/filebuf.virtuals/xsputn.pass.cpp:0 FAIL
 std/input.output/file.streams/fstreams/filebuf.virtuals/xsputn.pass.cpp:1 FAIL
 
+# Not analyzed. MSVC emits error C2338: static assertion failed: 'SentinelHasMinus<View>'
+std/ranges/range.adaptors/range.adjacent.transform/sentinel/minus.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.adjacent.transform/sentinel/minus.pass.cpp:1 FAIL
+
+# Not analyzed. Clang emits error: static assertion failed due to requirement 'check_equality_comparable_with<nonmovable_equality_with_int, int>()'
+std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:2 FAIL
+
+# Not analyzed. Clang emits error: static assertion failed due to requirement 'check_three_way_comparable_with<user_defined::NonMovableIntComparable, int>()'
+std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:2 FAIL
+
 
 # *** XFAILS WHICH PASS ***
 # These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
