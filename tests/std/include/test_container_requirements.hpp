@@ -106,10 +106,13 @@ void assert_is_sorted_maybe_unique(const T& s) {
     if constexpr (ExpectedUnique) {
         if (!s.empty()) {
             for (auto prev_it = begin_it, it = prev_it + 1; it != end_it; ++prev_it, ++it) {
-                if (!val_comp(*prev_it, *it)) {
-                    println("Container {} is not sorted-maybe-unique", s);
-                    assert(false);
+                const bool val_comp_ok = val_comp(*prev_it, *it);
+                if constexpr (std::formattable<T, char>) {
+                    if (!val_comp_ok) {
+                        std::println("Container {} is not sorted-maybe-unique", s);
+                    }
                 }
+                assert(val_comp_ok);
             }
         }
     }
