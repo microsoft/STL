@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <compare>
 #include <iterator>
 #include <print>
 #include <type_traits>
@@ -114,7 +115,6 @@ void assert_is_sorted_maybe_unique(const T& s) {
     }
 }
 
-
 template <class T>
 void assert_set_requirements() {
     using iterator       = T::iterator;
@@ -129,4 +129,19 @@ void assert_set_requirements() {
     static_assert(is_same_v<key_type, value_type>);
     static_assert(same_as<std::const_iterator<iterator>, iterator>);
     static_assert(is_convertible_v<const_iterator, iterator>);
+}
+
+template <class T>
+void assert_map_requirements() {
+    using iterator       = T::iterator;
+    using const_iterator = T::const_iterator;
+    using key_type       = T::key_type;
+    using value_type     = T::value_type;
+    using mapped_type    = T::mapped_type;
+
+    static_assert(same_as<std::const_iterator<const_iterator>, const_iterator>);
+    static_assert(is_convertible_v<iterator, const_iterator>);
+
+    // additionally:
+    static_assert(is_same_v<value_type, pair<key_type, mapped_type>>);
 }

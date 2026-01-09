@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <vector>
 
+#include <test_container_requirements.hpp>
 #include <test_death.hpp>
 using namespace std;
 
@@ -33,35 +34,16 @@ concept IsFlatMap =
     is_specialization_v<remove_cvref_t<T>, flat_map> || is_specialization_v<remove_cvref_t<T>, flat_multimap>;
 
 template <IsFlatMap T>
-bool check_container_requirements(T&&) {
-    return true;
-}
+void assert_all_requirements(const T& s) {
+    assert_container_requirements(s);
+    assert_reversible_container_requirements(s);
+    static_assert(three_way_comparable<T>);
+    assert_map_requirements<T>();
 
-template <IsFlatMap T>
-consteval bool check_reversible_container_requirements() {
-    using map_t = remove_cvref_t<T>;
-    return is_same_v<reverse_iterator<typename map_t::iterator>, typename map_t::reverse_iterator>
-        && is_same_v<reverse_iterator<typename map_t::const_iterator>, typename map_t::const_reverse_iterator>
-        && is_same_v<decltype(declval<map_t>().begin()), typename map_t::iterator>
-        && is_same_v<decltype(declval<map_t>().end()), typename map_t::iterator>
-        && is_same_v<decltype(declval<map_t>().cbegin()), typename map_t::const_iterator>
-        && is_same_v<decltype(declval<map_t>().cend()), typename map_t::const_iterator>
-        && is_same_v<decltype(declval<map_t>().rbegin()), typename map_t::reverse_iterator>
-        && is_same_v<decltype(declval<map_t>().rend()), typename map_t::reverse_iterator>
-        && is_same_v<decltype(declval<map_t>().crbegin()), typename map_t::const_reverse_iterator>
-        && is_same_v<decltype(declval<map_t>().crend()), typename map_t::const_reverse_iterator>
-        && is_convertible_v<typename map_t::iterator, typename map_t::const_iterator>
-        && is_convertible_v<typename map_t::reverse_iterator, typename map_t::const_reverse_iterator>;
-}
+    assert_noexcept_requirements(s);
+    assert_noexcept_requirements(const_cast<T&>(s));
 
-template <IsFlatMap T>
-constexpr bool check_reversible_container_requirements(T&&) {
-    return check_reversible_container_requirements<T&&>();
-}
-
-template <IsFlatMap T>
-bool check_requirements(T&& obj) {
-    return check_container_requirements(forward<T>(obj)) && check_reversible_container_requirements(forward<T>(obj));
+    assert_is_sorted_maybe_unique<_Is_specialization_v<T, flat_set>>(s);
 }
 
 template <IsFlatMap T>
