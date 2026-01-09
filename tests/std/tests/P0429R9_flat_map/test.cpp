@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <vector>
 
+#include <test_death.hpp>
 using namespace std;
 
 // See GH-5965: Speculative resolution of LWG-3963 "Different flat_(multi)map specializations
@@ -1343,7 +1344,7 @@ void test_non_strict_weak_order_compare() {
     }
 }
 
-int main() {
+void run_normal_tests() {
     test_key_mapped_cont_combinations<vector, vector>();
     test_key_mapped_cont_combinations<vector, deque>();
     test_key_mapped_cont_combinations<deque, vector>();
@@ -1356,4 +1357,187 @@ int main() {
     test_comparison();
     test_lookup_call_on_temporaries();
     test_non_strict_weak_order_compare();
+}
+
+enum class cont_type { multi, unique };
+
+template <cont_type type>
+void test_death_construct_unsorted_initializer_list() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    C cont(sorted, {{137, 'a'}, {42, 'g'}, {3337, 'f'}, {15, 'r'}});
+}
+
+template <cont_type type>
+void test_death_construct_unsorted_iter_iter() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    vector<typename C::value_type> values{{137, 'a'}, {42, 'g'}, {3337, 'f'}, {15, 'r'}};
+    C cont(sorted, values.begin(), values.end());
+}
+
+template <cont_type type>
+void test_death_construct_unsorted_container() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::key_container_type keys{137, 42, 3337, 15};
+    typename C::mapped_container_type mapped{'a', 'g', 'f', 'r'};
+    C cont(sorted, keys, mapped);
+}
+
+template <cont_type type>
+void test_death_replace_unsorted_container() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    C cont;
+    cont.replace({137, 42, 3337, 15}, {'a', 'g', 'f', 'r'});
+}
+
+template <cont_type type>
+void test_death_insert_unsorted_iter_iter() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    vector<typename C::value_type> values{{137, 'a'}, {42, 'g'}, {3337, 'f'}, {15, 'r'}};
+    C cont;
+    cont.insert(sorted, values.begin(), values.end());
+}
+
+template <cont_type type>
+void test_death_insert_unsorted_range() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    vector<typename C::value_type> values{{137, 'a'}, {42, 'g'}, {3337, 'f'}, {15, 'r'}};
+    C cont;
+    cont.insert_range(sorted, values);
+}
+
+template <cont_type type>
+void test_death_insert_unsorted_initializer_list() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    C cont;
+    cont.insert(sorted, {{137, 'a'}, {42, 'g'}, {3337, 'f'}, {15, 'r'}});
+}
+
+template <cont_type type>
+void test_death_construct_duplicates_initializer_list() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    C cont(sorted, {{42, 'a'}, {137, 'g'}, {137, 'f'}, {3337, 'r'}});
+}
+
+template <cont_type type>
+void test_death_construct_duplicates_iter_iter() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    vector<typename C::value_type> values{{42, 'a'}, {137, 'g'}, {137, 'f'}, {3337, 'r'}};
+    C cont(sorted, values.begin(), values.end());
+}
+
+template <cont_type type>
+void test_death_construct_duplicates_container() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::key_container_type keys{42, 137, 137, 3337};
+    typename C::mapped_container_type mapped{'a', 'g', 'f', 'r'};
+    C cont(sorted, keys, mapped);
+}
+
+template <cont_type type>
+void test_death_replace_duplicates_container() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    C cont;
+    cont.replace({42, 137, 137, 3337}, {'a', 'g', 'f', 'r'});
+}
+
+template <cont_type type>
+void test_death_insert_duplicates_iter_iter() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    vector<typename C::value_type> values{{42, 'a'}, {137, 'g'}, {137, 'f'}, {3337, 'r'}};
+    C cont;
+    cont.insert(sorted, values.begin(), values.end());
+}
+
+template <cont_type type>
+void test_death_insert_duplicates_range() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    vector<typename C::value_type> values{{42, 'a'}, {137, 'g'}, {137, 'f'}, {3337, 'r'}};
+    C cont;
+    cont.insert_range(sorted, values);
+}
+
+template <cont_type type>
+void test_death_insert_duplicates_initializer_list() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    C cont;
+    cont.insert(sorted, {{42, 'a'}, {137, 'g'}, {137, 'f'}, {3337, 'r'}});
+}
+
+template <cont_type type>
+void test_death_different_size_ctor() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    typename C::key_container_type keys{42, 137, 137, 3337, 0};
+    typename C::mapped_container_type mapped{'a'};
+    C cont(keys, mapped);
+}
+
+template <cont_type type>
+void test_death_different_size_ctor_sorted() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::key_container_type keys{42, 137, 137, 3337, 0};
+    typename C::mapped_container_type mapped{'a'};
+    C cont(sorted, keys, mapped);
+}
+
+template <cont_type type>
+void test_death_different_size_replace() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    C cont;
+    cont.replace({42, 137, 137, 3337, 0}, {'a'});
+}
+
+int main(int argc, char* argv[]) {
+    std_testing::death_test_executive exec([] { run_normal_tests(); });
+
+#if defined(_DEBUG)
+    exec.add_death_tests({
+
+        // Tests shared with flat_set - violation of sorted and unique
+        test_death_construct_unsorted_initializer_list<cont_type::unique>,
+        test_death_construct_unsorted_initializer_list<cont_type::multi>,
+        test_death_construct_unsorted_iter_iter<cont_type::unique>,
+        test_death_construct_unsorted_iter_iter<cont_type::multi>,
+        test_death_construct_unsorted_container<cont_type::unique>,
+        test_death_construct_unsorted_container<cont_type::multi>,
+        test_death_replace_unsorted_container<cont_type::unique>,
+        test_death_replace_unsorted_container<cont_type::multi>,
+        test_death_insert_unsorted_iter_iter<cont_type::unique>,
+        test_death_insert_unsorted_iter_iter<cont_type::multi>,
+        test_death_insert_unsorted_range<cont_type::unique>,
+        test_death_insert_unsorted_range<cont_type::multi>,
+        test_death_insert_unsorted_initializer_list<cont_type::unique>,
+        test_death_insert_unsorted_initializer_list<cont_type::multi>,
+
+        test_death_construct_duplicates_initializer_list<cont_type::unique>,
+        test_death_construct_duplicates_iter_iter<cont_type::unique>,
+        test_death_construct_duplicates_container<cont_type::unique>,
+        test_death_replace_duplicates_container<cont_type::unique>,
+        test_death_insert_duplicates_iter_iter<cont_type::unique>,
+        test_death_insert_duplicates_range<cont_type::unique>,
+        test_death_insert_duplicates_initializer_list<cont_type::unique>,
+
+        // Tests not present in flat_set - mismatch of length of key and mapped containers
+        test_death_different_size_ctor<cont_type::unique>,
+        test_death_different_size_ctor<cont_type::multi>,
+        test_death_different_size_ctor_sorted<cont_type::unique>,
+        test_death_different_size_ctor_sorted<cont_type::multi>,
+        test_death_different_size_replace<cont_type::unique>,
+        test_death_different_size_replace<cont_type::multi>,
+    });
+#endif // defined(_DEBUG)
+
+    return exec.run(argc, argv);
 }
