@@ -3275,7 +3275,7 @@ namespace {
                     _Cur_vals_max[_Lane] = _Cur_vals[_Lane];
                 }
 
-                const auto _Update_min_max = [&](const auto _Cur_vals, size_t _Lane) noexcept {
+                const auto _Update_min_max = [&](const auto _Cur_vals, size_t _Lane = 0) noexcept {
                     if constexpr ((_Mode & _Mode_min) != 0) {
                         if constexpr (_Sign || _Sign_correction) {
                             _Cur_vals_min[_Lane] =
@@ -3340,7 +3340,7 @@ namespace {
                                     _Tail_vals = _Traits::_Sign_correction(_Tail_vals, false);
                                 }
 
-                                _Tail_vals = _Traits::_Blendval(_Cur_vals, _Tail_vals, _Tail_mask);
+                                _Tail_vals = _Traits::_Blendval(_Cur_vals[0], _Tail_vals, _Tail_mask);
 
                                 _Update_min_max(_Tail_vals);
 
