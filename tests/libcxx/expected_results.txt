@@ -985,6 +985,8 @@ std/re/re.regex/re.regex.swap/swap.pass.cpp FAIL
 
 # Test emits a Clang -Wself-move warning, so it should avoid the self-move or suppress the warning.
 std/containers/sequences/vector/addressof.compile.pass.cpp:2 FAIL
+std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/move_assign.pass.cpp:2 FAIL
+std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.cons/move_assign.pass.cpp:2 FAIL
 
 # throwing_allocator appears to be totally non-Standard.
 std/containers/sequences/vector.bool/ctor_exceptions.pass.cpp FAIL
