@@ -10,7 +10,7 @@
 #include <utility>
 
 // Extracted common functionality from flat_map and flat_set tests.
-// May be extended for other containers if needed
+// May be extended for other containers if needed.
 
 template <class T>
 void assert_container_requirements(const T& s) {

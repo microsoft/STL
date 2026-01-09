@@ -256,7 +256,7 @@ void test_construction() {
     // directly accepts KeyContainer and MappedContainer or using two deduction guides:
     //      flat_map(from_range_t, _Rng&&, _Compare, _Allocator)
     //      flat_map(from_range_t, _Rng&&, _Allocator)
-    // In other cases we have to fully specify template arguments, such as for  flat_map(_Iter, _Iter, _Allocator)
+    // In other cases we have to fully specify template arguments, such as for flat_map(_Iter, _Iter, _Allocator)
     using flat_map_my_allocator =
         flat_map<int, int, less<int>, KeyCont<int, MyAllocator<int>>, MappedCont<int, MyAllocator<int>>>;
     using flat_multimap_my_allocator =
@@ -283,7 +283,7 @@ void test_construction() {
         }
     }
     {
-        // Test flat_map(key_cont, mapped_cont, comp = key_comp()())
+        // Test flat_map(key_cont, mapped_cont, comp = key_comp())
         KeyCont<int> keys    = {0, 1, 2, 3, 4, 2};
         MappedCont<int> vals = {44, 2324, 635462, 433, 5, 7};
         {
@@ -342,7 +342,7 @@ void test_construction() {
         }
     }
     {
-        // Test flat_map(_Sorted_t, key_cont, mapped_cont, comp = key_comp()())
+        // Test flat_map(_Sorted_t, key_cont, mapped_cont, comp = key_comp())
         {
             KeyCont<int> keys    = {0, 1, 2, 3, 38, 242};
             MappedCont<int> vals = {44, 2324, 635462, 433, 5, 7};
@@ -487,7 +487,7 @@ void test_construction() {
     {
         // Test flat_map(from_range_t, _Rng &&, const key_compare&, const alloc&)
         // and  flat_map(from_range_t, _Rng &&, const alloc&)
-        // These constructors with allocators have a corresponding deduction guide -  can rely on CTAD
+        // These constructors with allocators have a corresponding deduction guide - can rely on CTAD
         almost_pair<int, int> value_types[]{{0, 44}, {1, 2324}, {2, 635462}, {2, 7}, {3, 433}, {4, 5}};
 
         {
