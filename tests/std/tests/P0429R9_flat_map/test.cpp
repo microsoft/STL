@@ -263,7 +263,7 @@ void test_construction() {
 
     {
         // Test flat_map() and flat_map(const key_compare&)
-        auto compare = less<int>();
+        const less<int> compare;
         {
             flat_map<int, int> fmap;
             flat_map<int, int> fmap1(compare);
