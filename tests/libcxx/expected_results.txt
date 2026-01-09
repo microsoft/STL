@@ -299,12 +299,14 @@ std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_iter_iter.p
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_iter_rv.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_or_assign_transparent.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_or_assign.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_range_sorted_unique.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_range.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_rv.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_sorted_initializer_list.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_sorted_iter_iter.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_transparent.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/replace.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/swap_exception.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/swap_free.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/swap_member.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/try_emplace_transparent.pass.cpp FAIL
@@ -325,6 +327,7 @@ std/containers/container.adaptors/flat.map/flat.map.operations/upper_bound_trans
 std/containers/container.adaptors/flat.map/flat.map.operations/upper_bound.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/incomplete_type.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/op_compare.pass.cpp FAIL
+std/containers/container.adaptors/flat.map/robust_against_nonbool.compile.pass.cpp FAIL
 std/containers/container.adaptors/flat.map/types.compile.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.capacity/empty.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.capacity/max_size.pass.cpp FAIL
@@ -377,12 +380,14 @@ std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_i
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_iter_cv.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_iter_iter.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_iter_rv.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_range_sorted_equivalent.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_range.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_rv.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_sorted_initializer_list.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_sorted_iter_iter.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_transparent.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/replace.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/swap_exception.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/swap_free.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/swap_member.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.observers/comp.pass.cpp FAIL
@@ -401,6 +406,7 @@ std/containers/container.adaptors/flat.multimap/flat.multimap.operations/upper_b
 std/containers/container.adaptors/flat.multimap/flat.multimap.operations/upper_bound.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/incomplete_type.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/op_compare.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/robust_against_nonbool.compile.pass.cpp FAIL
 std/containers/container.adaptors/flat.multimap/types.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/flat_map.version.compile.pass.cpp FAIL
 std/utilities/format/format.formattable/concept.formattable.compile.pass.cpp FAIL
@@ -470,11 +476,13 @@ std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_i
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_cv.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_iter.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_rv.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range_sorted_equivalent.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_rv.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_sorted_initializer_list.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_sorted_iter_iter.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/replace.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/swap_exception.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/swap_free.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/swap_member.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.observers/comp.pass.cpp FAIL
@@ -492,6 +500,7 @@ std/containers/container.adaptors/flat.multiset/flat.multiset.operations/upper_b
 std/containers/container.adaptors/flat.multiset/flat.multiset.operations/upper_bound.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/incomplete_type.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/op_compare.pass.cpp FAIL
+std/containers/container.adaptors/flat.multiset/robust_against_nonbool.compile.pass.cpp FAIL
 std/containers/container.adaptors/flat.multiset/types.compile.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.capacity/empty.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.capacity/max_size.pass.cpp FAIL
@@ -538,12 +547,14 @@ std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_initializer
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_cv.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_iter.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_rv.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range_sorted_unique.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_rv.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_sorted_initializer_list.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_sorted_iter_iter.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_transparent.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/replace.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/swap_exception.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/swap_free.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/swap_member.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/flat.set.observers/comp.pass.cpp FAIL
@@ -561,6 +572,7 @@ std/containers/container.adaptors/flat.set/flat.set.operations/upper_bound_trans
 std/containers/container.adaptors/flat.set/flat.set.operations/upper_bound.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/incomplete_type.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/op_compare.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/robust_against_nonbool.compile.pass.cpp FAIL
 std/containers/container.adaptors/flat.set/types.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/flat_set.version.compile.pass.cpp FAIL
 
