@@ -142,10 +142,12 @@ void assert_is_sorted_maybe_unique(const T& s) {
 
 template <class T>
 void assert_set_requirements() {
-    using iterator       = T::iterator;
-    using const_iterator = T::const_iterator;
-    using key_type       = T::key_type;
-    using value_type     = T::value_type;
+    using iterator        = T::iterator;
+    using const_iterator  = T::const_iterator;
+    using key_type        = T::key_type;
+    using value_type      = T::value_type;
+    using reference       = T::reference;
+    using const_reference = T::const_reference;
 
     static_assert(std::same_as<std::const_iterator<const_iterator>, const_iterator>);
     static_assert(std::is_convertible_v<iterator, const_iterator>);
@@ -154,9 +156,9 @@ void assert_set_requirements() {
     static_assert(std::is_same_v<key_type, value_type>);
     static_assert(std::same_as<std::const_iterator<iterator>, iterator>);
     static_assert(std::is_convertible_v<const_iterator, iterator>);
-    static_assert(std::is_same_v<decltype(*std::declval<T>().begin()), const typename T::value_type&>);
-    static_assert(std::is_same_v<std::remove_cvref_t<typename T::reference>, typename T::value_type>);
-    static_assert(std::is_same_v<typename T::const_reference, const typename T::value_type&>);
+    static_assert(std::is_same_v<decltype(*std::declval<T>().begin()), const value_type&>);
+    static_assert(std::is_same_v<std::remove_cvref_t<reference>, value_type>);
+    static_assert(std::is_same_v<const_reference, const value_type&>);
 }
 
 template <class T>
