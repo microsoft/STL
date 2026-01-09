@@ -117,7 +117,7 @@ void assert_noexcept_requirements(T& s) {
 template <bool ExpectedUnique, class T>
 void assert_is_sorted_maybe_unique(const T& s) {
     const auto val_comp = s.value_comp();
-    auto begin_it       = s.cbegin();
+    const auto begin_it = s.cbegin();
     const auto end_it   = s.cend();
 
     // internal check by the container itself
