@@ -898,10 +898,9 @@ protected:
                                     || (is_constructible_v<key_type, _OtherKey> && _Transparent<key_compare>) );
 
         const auto _Key_it = _STD upper_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Pass_key_comp());
-        const auto _Index  = _RANGES distance(_Data.keys.begin(), _Key_it);
+        const auto _Index  = _Key_it - _Data.keys.begin();
         if constexpr (_IsUnique) {
-            if (_Key_it != _Data.keys.begin()
-                && !_Key_compare(*_RANGES prev(_Key_it), _STD forward<_OtherKey>(_Key_val))) {
+            if (_Key_it != _Data.keys.begin() && !_Key_compare(*(_Key_it - 1), _STD forward<_OtherKey>(_Key_val))) {
                 // Previous element is equivalent to key, no insert needed
                 return {this->begin() + (_Index - 1), false};
             }
@@ -935,7 +934,7 @@ protected:
         const weak_ordering _Hint_order = [&] {
             if constexpr (_IsUnique) {
                 if (_Position == _End || _Key_compare(_Key_val, *_Position._Key_it)) {
-                    if (_Position == _Begin || _Key_compare(*_STD prev(_Position._Key_it), _Key_val)) {
+                    if (_Position == _Begin || _Key_compare(*(_Position._Key_it - 1), _Key_val)) {
                         return weak_ordering::equivalent;
                     } else {
                         return weak_ordering::greater;
@@ -943,7 +942,7 @@ protected:
                 }
             } else {
                 if (_Position == _End || !_Key_compare(*_Position._Key_it, _Key_val)) {
-                    if (_Position == _Begin || !_Key_compare(_Key_val, *_STD prev(_Position._Key_it))) {
+                    if (_Position == _Begin || !_Key_compare(_Key_val, *(_Position._Key_it - 1))) {
                         return weak_ordering::equivalent;
                     } else {
                         return weak_ordering::greater;
@@ -977,8 +976,8 @@ protected:
                     return _New_position;
                 }
             } else {
-                if (_New_position != _Begin && !_Key_compare(*_STD prev(_New_position._Key_it), _Key_val)) {
-                    const auto _It = _STD prev(_New_position);
+                if (_New_position != _Begin && !_Key_compare(*(_New_position._Key_it - 1), _Key_val)) {
+                    const auto _It = _New_position - 1;
                     if constexpr (_OverwriteIfExists) {
                         *_It._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
                     }
@@ -1196,7 +1195,7 @@ private:
                 _STD lower_bound(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp());
             const bool _Missing = _First == _STD end(_Self._Data.keys) || _Self._Key_compare(_Key_val, *_First);
             return pair{_Self._Iterator_from_key_iterator(_First),
-                _Self._Iterator_from_key_iterator(_Missing ? _First : _STD next(_First))};
+                _Self._Iterator_from_key_iterator(_Missing ? _First : _First + 1)};
         } else {
             const auto [_First, _Last] =
                 _STD equal_range(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp());
