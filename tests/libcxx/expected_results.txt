@@ -727,6 +727,10 @@ std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_delet
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_deleter.pass.cpp:1 FAIL
 
 # VSO-2574473 constexpr error in ranges::join_with_view: failure was caused by unevaluable pointer value
+std/ranges/range.adaptors/range.adjacent.transform/general.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.adjacent.transform/general.pass.cpp:1 FAIL
+std/ranges/range.adaptors/range.adjacent/general.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.adjacent/general.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:1 FAIL
 
