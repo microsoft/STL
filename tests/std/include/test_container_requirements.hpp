@@ -55,7 +55,7 @@ void assert_container_requirements(const T& s) {
     assert(m.begin() <= m.end());
     assert(m.begin() < m.end() || m.empty());
 
-    assert(static_cast<typename T::size_type>(s.cend() - s.cbegin()) == s.size());
+    assert(static_cast<T::size_type>(s.cend() - s.cbegin()) == s.size());
 }
 
 template <class T>
@@ -179,7 +179,7 @@ void assert_map_requirements() {
 
 template <typename T>
 void assert_three_way_comparability() {
-    using value_type = typename T::value_type;
+    using value_type = T::value_type;
     if constexpr (std::three_way_comparable<value_type>) {
         static_assert(std::three_way_comparable<T>);
     }
