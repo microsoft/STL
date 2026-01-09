@@ -50,10 +50,10 @@ void assert_container_requirements(const T& s) {
     assert(non_empty == s);
 
     assert(s.cbegin() <= s.cend());
-    assert(s.cbegin() < s.cend() || s.empty());
+    assert((s.cbegin() < s.cend()) == !s.empty());
 
     assert(m.begin() <= m.end());
-    assert(m.begin() < m.end() || m.empty());
+    assert((m.begin() < m.end()) == !m.empty());
 
     assert(static_cast<T::size_type>(s.cend() - s.cbegin()) == s.size());
 }
