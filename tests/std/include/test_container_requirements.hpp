@@ -90,9 +90,6 @@ template <typename T>
 concept has_nothrow_swappable_containers =
     set_has_nothrow_swappable_containers<T> || map_has_nothrow_swappable_containers<T>;
 
-template <typename T>
-struct is_nothrow_swappable {};
-
 template <class T>
 void assert_noexcept_requirements(T& s) {
     static_assert(noexcept(s.begin()));
