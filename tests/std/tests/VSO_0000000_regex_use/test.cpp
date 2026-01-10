@@ -2392,6 +2392,22 @@ void test_gh_5939() {
     g_regexTester.should_not_match("abcbbacdab", R"((?:([abc])([abc])){2,}abbacd\1\2)");
 }
 
+void test_gh_5944() {
+    // GH-5944: <regex>: Revising the stack and complexity limits
+
+    // long strings should be matched successfully if the regex is simple
+    g_regexTester.should_match(string(20000000, 'a'), "a+");
+
+    // too much backtracking in complex regex expressions must result in a complexity exception
+    try {
+        regex re("a*[^b]*a*[^b]*a*[^b]*a*[^b]*a*[^b]*a*[^b]*");
+        (void) regex_match("aaaaaaaaaaaaaaaaaaaaaaaaaaaaab", re);
+        assert(false);
+    } catch (regex_error& ex) {
+        assert(ex.code() == error_complexity);
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2452,6 +2468,7 @@ int main() {
     test_gh_5865();
     test_gh_5918();
     test_gh_5939();
+    test_gh_5944();
 
     return g_regexTester.result();
 }
