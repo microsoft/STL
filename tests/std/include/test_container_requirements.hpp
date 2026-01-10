@@ -132,17 +132,15 @@ void assert_is_sorted_maybe_unique(const T& s) {
     // external check observable by the user
     assert(std::is_sorted(begin_it, end_it, val_comp));
     if constexpr (ExpectedUnique) {
-        if (!s.empty()) {
-            for (auto prev_it = begin_it, it = prev_it + 1; it != end_it; ++prev_it, ++it) {
-                const bool val_comp_ok = val_comp(*prev_it, *it);
-                if constexpr (std::formattable<T, char>) {
-                    if (!val_comp_ok) {
-                        std::println("Container {} is not sorted-maybe-unique", s);
-                    }
-                }
-                assert(val_comp_ok);
+        const auto not_comp  = [&](const auto& left, const auto& right) { return !val_comp(left, right); };
+        const bool is_unique = std::adjacent_find(begin_it, end_it, not_comp) == end_it;
+
+        if constexpr (std::formattable<T, char>) {
+            if (!is_unique) {
+                std::println("Container {} is not unique", s);
             }
         }
+        assert(is_unique);
     }
 }
 
