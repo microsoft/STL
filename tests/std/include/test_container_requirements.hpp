@@ -82,8 +82,8 @@ template <class T>
 concept map_has_nothrow_swappable_containers = requires {
     typename T::key_container_type;
     typename T::mapped_container_type;
-    requires std::is_nothrow_swappable_v<typename T::mapped_container_type>;
     requires std::is_nothrow_swappable_v<typename T::key_container_type>;
+    requires std::is_nothrow_swappable_v<typename T::mapped_container_type>;
 };
 
 template <class T>
