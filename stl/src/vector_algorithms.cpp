@@ -3699,17 +3699,15 @@ namespace {
                 return vget_lane_u64(vreinterpret_u64_u8(_Val), 0);
             }
 
-            static uint64_t _Match_mask_q(const uint8x16_t _Cmp_lo, const uint8x16_t _Cmp_hi) noexcept {
+            static uint64_t _Match_mask_eq(const uint8x16_t _Cmp_lo, const uint8x16_t _Cmp_hi) noexcept {
                 auto _Cmp = vreinterpretq_u64_u8(vorrq_u8(_Cmp_lo, _Cmp_hi));
                 return vgetq_lane_u64(vpaddq_u64(_Cmp, _Cmp), 0);
             }
 
-            static uint8x16_t _Not_q(const uint8x16_t _Val) {
-                return vmvnq_u8(_Val);
-            }
-
-            static uint8x8_t _Not(const uint8x8_t _Val) {
-                return vmvn_u8(_Val);
+            static uint64_t _Match_mask_ne(const uint8x16_t _Cmp_lo, const uint8x16_t _Cmp_hi) noexcept {
+                auto _Cmp  = vminq_u8(_Cmp_lo, _Cmp_hi);
+                auto _Comb = vreinterpretq_u64_u8(vpminq_u8(_Cmp, _Cmp));
+                return vgetq_lane_u64(_Comb, 0) ^ 0xFFFF'FFFF'FFFF'FFFF;
             }
         };
 
@@ -3748,17 +3746,15 @@ namespace {
                 return vget_lane_u64(vreinterpret_u64_u16(_Val), 0);
             }
 
-            static uint64_t _Match_mask_q(const uint16x8_t _Cmp_lo, const uint16x8_t _Cmp_hi) noexcept {
+            static uint64_t _Match_mask_eq(const uint16x8_t _Cmp_lo, const uint16x8_t _Cmp_hi) noexcept {
                 uint8x8_t _Cmp = vaddhn_u16(_Cmp_lo, _Cmp_hi);
                 return vget_lane_u64(vreinterpret_u64_u8(_Cmp), 0);
             }
 
-            static uint16x8_t _Not_q(const uint16x8_t _Val) {
-                return vmvnq_u16(_Val);
-            }
-
-            static uint16x4_t _Not(const uint16x4_t _Val) {
-                return vmvn_u16(_Val);
+            static uint64_t _Match_mask_ne(const uint16x8_t _Cmp_lo, const uint16x8_t _Cmp_hi) noexcept {
+                auto _Cmp  = vminq_u16(_Cmp_lo, _Cmp_hi);
+                auto _Comb = vreinterpretq_u64_u16(vpminq_u16(_Cmp, _Cmp));
+                return vgetq_lane_u64(_Comb, 0) ^ 0xFFFF'FFFF'FFFF'FFFF;
             }
         };
 
@@ -3797,17 +3793,15 @@ namespace {
                 return vget_lane_u64(vreinterpret_u64_u32(_Val), 0);
             }
 
-            static uint64_t _Match_mask_q(const uint32x4_t _Cmp_lo, const uint32x4_t _Cmp_hi) noexcept {
+            static uint64_t _Match_mask_eq(const uint32x4_t _Cmp_lo, const uint32x4_t _Cmp_hi) noexcept {
                 uint8x8_t _Cmp = vaddhn_u16(vreinterpretq_u16_u32(_Cmp_lo), vreinterpretq_u16_u32(_Cmp_hi));
                 return vget_lane_u64(vreinterpret_u64_u8(_Cmp), 0);
             }
 
-            static uint32x4_t _Not_q(const uint32x4_t _Val) {
-                return vmvnq_u32(_Val);
-            }
-
-            static uint32x2_t _Not(const uint32x2_t _Val) {
-                return vmvn_u32(_Val);
+            static uint64_t _Match_mask_ne(const uint32x4_t _Cmp_lo, const uint32x4_t _Cmp_hi) noexcept {
+                auto _Cmp  = vminq_u32(_Cmp_lo, _Cmp_hi);
+                auto _Comb = vreinterpretq_u64_u32(vpminq_u32(_Cmp, _Cmp));
+                return vgetq_lane_u64(_Comb, 0) ^ 0xFFFF'FFFF'FFFF'FFFF;
             }
         };
 
@@ -3830,13 +3824,13 @@ namespace {
                 return vget_lane_u64(vreinterpret_u64_u32(_Res), 0);
             }
 
-            static uint64_t _Match_mask_q(const uint64x2_t _Cmp_lo, const uint64x2_t _Cmp_hi) noexcept {
+            static uint64_t _Match_mask_eq(const uint64x2_t _Cmp_lo, const uint64x2_t _Cmp_hi) noexcept {
                 uint8x8_t _Cmp = vaddhn_u16(vreinterpretq_u16_u64(_Cmp_lo), vreinterpretq_u16_u64(_Cmp_hi));
                 return vget_lane_u64(vreinterpret_u64_u8(_Cmp), 0);
             }
 
-            static uint64x2_t _Not_q(const uint64x2_t _Val) {
-                return vreinterpretq_u64_u8(vmvnq_u8(vreinterpretq_u8_u64(_Val)));
+            static uint64_t _Match_mask_ne(const uint64x2_t _Cmp_lo, const uint64x2_t _Cmp_hi) noexcept {
+                return _Mask_q(vandq_u64(_Cmp_lo, _Cmp_hi)) ^ 0xFFFF'FFFF'FFFF'FFFF;
             }
         };
 
@@ -3975,23 +3969,32 @@ namespace {
 
                     auto _Comparison_lo = _Traits::_Cmp_neon_q(_Data_lo, _Comparand);
                     auto _Comparison_hi = _Traits::_Cmp_neon_q(_Data_hi, _Comparand);
-                    if constexpr (_Pred == _Predicate::_Not_equal) {
-                        _Comparison_lo = _Traits::_Not_q(_Comparison_lo);
-                        _Comparison_hi = _Traits::_Not_q(_Comparison_hi);
-                    }
 
                     // Use a fast check for the termination condition.
-                    uint64_t _Any_match = _Traits::_Match_mask_q(_Comparison_lo, _Comparison_hi);
+                    uint64_t _Any_match = 0;
+                    if constexpr (_Pred == _Predicate::_Not_equal) {
+                        _Any_match = _Traits::_Match_mask_ne(_Comparison_lo, _Comparison_hi);
+                    } else {
+                        _Any_match = _Traits::_Match_mask_eq(_Comparison_lo, _Comparison_hi);
+                    }
 
                     if (_Any_match != 0) {
                         auto _Mask_lo = _Traits::_Mask_q(_Comparison_lo);
+                        if constexpr (_Pred == _Predicate::_Not_equal) {
+                            _Mask_lo ^= 0xFFFF'FFFF'FFFF'FFFF;
+                        }
+
                         if (_Mask_lo != 0) {
                             const auto _Offset = _Get_first_h_pos_q(_Mask_lo);
                             _Advance_bytes(_First, _Offset);
                             return _First;
                         }
 
-                        auto _Mask_hi      = _Traits::_Mask_q(_Comparison_hi);
+                        auto _Mask_hi = _Traits::_Mask_q(_Comparison_hi);
+                        if constexpr (_Pred == _Predicate::_Not_equal) {
+                            _Mask_hi ^= 0xFFFF'FFFF'FFFF'FFFF;
+                        }
+
                         const auto _Offset = _Get_first_h_pos_q(_Mask_hi) + 16;
                         _Advance_bytes(_First, _Offset);
                         return _First;
@@ -4006,11 +4009,12 @@ namespace {
                 const auto _Data      = _Traits::_Load_q(_First);
 
                 auto _Comparison = _Traits::_Cmp_neon_q(_Data, _Comparand);
-                if constexpr (_Pred == _Predicate::_Not_equal) {
-                    _Comparison = _Traits::_Not_q(_Comparison);
-                }
 
                 auto _Match = _Traits::_Mask_q(_Comparison);
+                if constexpr (_Pred == _Predicate::_Not_equal) {
+                    _Match ^= 0xFFFF'FFFF'FFFF'FFFF;
+                }
+
                 if (_Match != 0) {
                     const auto _Offset = _Get_first_h_pos_q(_Match);
                     _Advance_bytes(_First, _Offset);
@@ -4026,11 +4030,12 @@ namespace {
                     const auto _Data      = _Traits::_Load(_First);
 
                     auto _Comparison = _Traits::_Cmp_neon(_Data, _Comparand);
-                    if constexpr (_Pred == _Predicate::_Not_equal) {
-                        _Comparison = _Traits::_Not(_Comparison);
-                    }
 
                     auto _Match = _Traits::_Mask(_Comparison);
+                    if constexpr (_Pred == _Predicate::_Not_equal) {
+                        _Match ^= 0xFFFF'FFFF'FFFF'FFFF;
+                    }
+
                     if (_Match != 0) {
                         const auto _Offset = _Get_first_h_pos_d(_Match);
                         _Advance_bytes(_First, _Offset);
