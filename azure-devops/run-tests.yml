@@ -20,7 +20,11 @@ steps:
   timeoutInMinutes: 30
   condition: and(succeeded(), ${{ parameters.runTesting }})
   workingDirectory: $(buildOutputLocation)
-  env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+  env:
+    TMP: $(tmpDir)
+    TEMP: $(tmpDir)
+    ${{ if eq(parameters.testTargets, 'STL-ASan-CI') }}:
+      ASAN_OPTIONS: windows_capture_dump_on_deadly_signal=true
 - task: PublishTestResults@2
   displayName: 'Publish Tests'
   timeoutInMinutes: 5
