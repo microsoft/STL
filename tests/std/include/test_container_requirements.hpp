@@ -24,8 +24,12 @@ void assert_container_requirements(const T& s) {
     static_assert(std::is_same_v<decltype(m = std::move(m)), T&>);
     static_assert(std::is_same_v<decltype(m.begin()), typename T::iterator>);
     static_assert(std::is_same_v<decltype(m.end()), typename T::iterator>);
-    static_assert(std::is_same_v<decltype(s.cbegin()), typename T::const_iterator>);
+    static_assert(std::is_same_v<decltype(s.begin()), typename T::const_iterator>);
+    static_assert(std::is_same_v<decltype(s.end()), typename T::const_iterator>);
+    static_assert(std::is_same_v<decltype(m.cbegin()), typename T::const_iterator>);
     static_assert(std::is_same_v<decltype(m.cend()), typename T::const_iterator>);
+    static_assert(std::is_same_v<decltype(s.cbegin()), typename T::const_iterator>);
+    static_assert(std::is_same_v<decltype(s.cend()), typename T::const_iterator>);
     static_assert(std::is_convertible_v<typename T::iterator, typename T::const_iterator>);
     static_assert(std::is_same_v<decltype(m.begin() <=> m.end()), std::strong_ordering>);
     static_assert(std::is_same_v<decltype(s.size()), typename T::size_type>);
@@ -67,6 +71,8 @@ void assert_reversible_container_requirements(const T& s) {
     static_assert(std::is_same_v<decltype(T{}.rend()), typename T::reverse_iterator>);
     static_assert(std::is_same_v<decltype(s.rbegin()), typename T::const_reverse_iterator>);
     static_assert(std::is_same_v<decltype(s.rend()), typename T::const_reverse_iterator>);
+    static_assert(std::is_same_v<decltype(T{}.crbegin()), typename T::const_reverse_iterator>);
+    static_assert(std::is_same_v<decltype(T{}.crend()), typename T::const_reverse_iterator>);
     static_assert(std::is_same_v<decltype(s.crbegin()), typename T::const_reverse_iterator>);
     static_assert(std::is_same_v<decltype(s.crend()), typename T::const_reverse_iterator>);
     static_assert(std::is_convertible_v<typename T::reverse_iterator, typename T::const_reverse_iterator>);
