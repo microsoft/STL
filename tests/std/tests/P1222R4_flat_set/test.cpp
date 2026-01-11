@@ -945,14 +945,13 @@ concept can_erase_iterator_holder = requires(Cont c) {
 
 namespace detail {
     using C = flat_set<int>;
-    static_assert(same_as<C::iterator, decltype(std::declval<C>().erase(std::declval<C::iterator>()))>);
-    static_assert(same_as<C::iterator, decltype(std::declval<C>().erase(std::declval<holder<C::iterator>>()))>);
-    static_assert(same_as<C::iterator, decltype(std::declval<C>().erase(std::declval<C::const_iterator>()))>);
-    static_assert(same_as<C::iterator, decltype(std::declval<C>().erase(std::declval<holder<C::const_iterator>>()))>);
-    static_assert(same_as<C::iterator,
-        decltype(std::declval<C>().erase(std::declval<C::iterator>(), std::declval<C::iterator>()))>);
-    static_assert(same_as<C::size_type, decltype(std::declval<C>().erase(std::declval<holder<int>>()))>);
-    static_assert(same_as<C::size_type, decltype(std::declval<C>().erase(std::declval<int>()))>);
+    static_assert(same_as<C::iterator, decltype(declval<C>().erase(declval<C::iterator>()))>);
+    static_assert(same_as<C::iterator, decltype(declval<C>().erase(declval<holder<C::iterator>>()))>);
+    static_assert(same_as<C::iterator, decltype(declval<C>().erase(declval<C::const_iterator>()))>);
+    static_assert(same_as<C::iterator, decltype(declval<C>().erase(declval<holder<C::const_iterator>>()))>);
+    static_assert(same_as<C::iterator, decltype(declval<C>().erase(declval<C::iterator>(), declval<C::iterator>()))>);
+    static_assert(same_as<C::size_type, decltype(declval<C>().erase(declval<holder<int>>()))>);
+    static_assert(same_as<C::size_type, decltype(declval<C>().erase(declval<int>()))>);
 
     // erase key_type
     static_assert(can_erase_key<flat_set<int, _STD less<int>>, int>);
