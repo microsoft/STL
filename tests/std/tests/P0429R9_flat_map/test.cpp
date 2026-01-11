@@ -167,12 +167,6 @@ namespace std {
     struct tuple_element<N, almost_pair<T, U>> {
         using type = conditional_t<N == 1, T, U>;
     };
-
-    // template<class T, class U>
-    // struct tuple_size<almost_pair<T, U>> {
-    //     using type = conditional_t<N == 1, T, U>;
-    // };
-
 } // namespace std
 
 template <typename T>
