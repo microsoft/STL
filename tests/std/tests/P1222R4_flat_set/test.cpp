@@ -178,7 +178,7 @@ void test_constructors() {
     {
         // Test flat_set()
         // and  flat_set(const key_compare&)
-        const std::less<int> comp;
+        const lt comp;
         {
             flat_set<int, lt, C> fs;
             flat_set<int, lt, C> fs1(comp);
