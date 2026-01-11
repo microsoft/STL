@@ -3665,11 +3665,11 @@ namespace {
     namespace _Finding {
 #ifdef _M_ARM64
         struct _Find_traits_1 {
-            static uint8x16_t _Load_q(const void* _Ptr) noexcept {
+            static uint8x16_t _Load_q(const void* const _Ptr) noexcept {
                 return vld1q_u8(static_cast<const uint8_t*>(_Ptr));
             }
 
-            static uint8x8_t _Load(const void* _Ptr) noexcept {
+            static uint8x8_t _Load(const void* const _Ptr) noexcept {
                 return vld1_u8(static_cast<const uint8_t*>(_Ptr));
             }
 
@@ -3714,11 +3714,11 @@ namespace {
         };
 
         struct _Find_traits_2 {
-            static uint16x8_t _Load_q(const void* _Ptr) noexcept {
+            static uint16x8_t _Load_q(const void* const _Ptr) noexcept {
                 return vld1q_u16(static_cast<const uint16_t*>(_Ptr));
             }
 
-            static uint16x4_t _Load(const void* _Ptr) noexcept {
+            static uint16x4_t _Load(const void* const _Ptr) noexcept {
                 return vld1_u16(static_cast<const uint16_t*>(_Ptr));
             }
 
@@ -3763,11 +3763,11 @@ namespace {
         };
 
         struct _Find_traits_4 {
-            static uint32x4_t _Load_q(const void* _Ptr) noexcept {
+            static uint32x4_t _Load_q(const void* const _Ptr) noexcept {
                 return vld1q_u32(static_cast<const uint32_t*>(_Ptr));
             }
 
-            static uint32x2_t _Load(const void* _Ptr) noexcept {
+            static uint32x2_t _Load(const void* const _Ptr) noexcept {
                 return vld1_u32(static_cast<const uint32_t*>(_Ptr));
             }
 
@@ -3812,7 +3812,7 @@ namespace {
         };
 
         struct _Find_traits_8 {
-            static uint64x2_t _Load_q(const void* _Ptr) noexcept {
+            static uint64x2_t _Load_q(const void* const _Ptr) noexcept {
                 return vld1q_u64(static_cast<const uint64_t*>(_Ptr));
             }
 
