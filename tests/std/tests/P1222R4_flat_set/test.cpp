@@ -423,7 +423,7 @@ void test_insert_hint_is_respected() {
     {
         flat_multiset<int, lt, C> a{-1, -1, 1, 1};
         bool problem_seen                      = false;
-        auto const assert_inserted_at_position = [&a, &problem_seen](
+        const auto assert_inserted_at_position = [&a, &problem_seen](
                                                      const int expected_index, const auto insert_position) {
             const auto expected_position = a.begin() + expected_index;
             if (expected_position != insert_position) {

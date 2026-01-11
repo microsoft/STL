@@ -1219,7 +1219,7 @@ void test_insert_hint_is_respected() {
     {
         flat_multimap<int, char, lt, KeyC<int>, ValueC<char>> a{{-1, 'x'}, {-1, 'x'}, {1, 'x'}, {1, 'x'}};
         bool problem_seen                      = false;
-        auto const assert_inserted_at_position = [&a, &problem_seen](
+        const auto assert_inserted_at_position = [&a, &problem_seen](
                                                      const int expected_index, const auto insert_position) {
             const auto expected_position = a.begin() + expected_index;
             if (expected_position != insert_position) {
@@ -1239,7 +1239,7 @@ void test_insert_hint_is_respected() {
         };
 
         pair pair0c{0, 'c'};
-        pair const pair0f{0, 'f'};
+        const pair pair0f{0, 'f'};
         // hint is greater
         assert(assert_check_content(a, {{-1, 'x'}, {-1, 'x'}, {1, 'x'}, {1, 'x'}}));
         assert_inserted_at_position(2, a.emplace_hint(a.end(), 0, 'a'));
