@@ -107,7 +107,7 @@ _NODISCARD _CONSTEXPR23 to_chars_result _Integer_to_chars(
 
             // Print one or more pairs of digits.
             do {
-                const unsigned long _Trunc_part = _Trunc % 100;
+                const auto _Trunc_part = static_cast<unsigned long>(_Trunc % 100);
                 _Trunc /= 100;
                 _RNext -= 2;
                 if (!_STD _Is_constant_evaluated()) {

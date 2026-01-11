@@ -2799,7 +2799,7 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
 
     // Print one or more pairs of digits.
     do {
-        const unsigned long _UVal_trunc_part = _UVal_trunc % 100;
+        const auto _UVal_trunc_part = static_cast<unsigned long>(_UVal_trunc % 100);
         _UVal_trunc /= 100;
         _RNext -= 2;
         _CSTD memcpy(_RNext, _Digit_pairs<_Elem>._Data[_UVal_trunc_part], 2 * sizeof(_Elem));
