@@ -61,6 +61,12 @@ std/language.support/support.exception/except.nested/ctor_default.pass.cpp:2 SKI
 # SKIPPED because this is ARM64EC-specific.
 std/language.support/support.coroutines/coroutine.handle/coroutine.handle.noop/noop_coroutine.pass.cpp:2 SKIPPED
 
+# LLVM-171438: [Clang] __builtin_common_type is overly permissive
+# These tests are improperly working around this Clang bug by detecting Clang and asserting buggy results,
+# but only libc++ with Clang is affected; MSVC's STL with Clang is unaffected.
+std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:2 FAIL
+std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:2 FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -1529,12 +1535,6 @@ std/input.output/file.streams/fstreams/filebuf.virtuals/xsputn.pass.cpp:1 FAIL
 # Not analyzed. MSVC emits error C2338: static assertion failed: 'SentinelHasMinus<View>'
 std/ranges/range.adaptors/range.adjacent.transform/sentinel/minus.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.adjacent.transform/sentinel/minus.pass.cpp:1 FAIL
-
-# Not analyzed. Clang emits error: static assertion failed due to requirement 'check_equality_comparable_with<nonmovable_equality_with_int, int>()'
-std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:2 FAIL
-
-# Not analyzed. Clang emits error: static assertion failed due to requirement 'check_three_way_comparable_with<user_defined::NonMovableIntComparable, int>()'
-std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:2 FAIL
 
 
 # *** XFAILS WHICH PASS ***
