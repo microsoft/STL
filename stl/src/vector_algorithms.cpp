@@ -3699,11 +3699,6 @@ namespace {
                 return vget_lane_u64(vreinterpret_u64_u8(_Val), 0);
             }
 
-            static uint64_t _Match_mask_q(const uint8x16_t _Val) noexcept {
-                const uint8x16_t _Res = vpmaxq_u8(_Val, _Val);
-                return vgetq_lane_u64(vreinterpretq_u64_u8(_Res), 0);
-            }
-
             static uint64_t _Match_mask_q(const uint8x16_t _Cmp_lo, const uint8x16_t _Cmp_hi) noexcept {
                 auto _Cmp = vreinterpretq_u64_u8(vorrq_u8(_Cmp_lo, _Cmp_hi));
                 return vgetq_lane_u64(vpaddq_u64(_Cmp, _Cmp), 0);
@@ -3751,11 +3746,6 @@ namespace {
 
             static uint64_t _Mask(const uint16x4_t _Val) noexcept {
                 return vget_lane_u64(vreinterpret_u64_u16(_Val), 0);
-            }
-
-            static uint64_t _Match_mask_q(const uint16x8_t _Val) noexcept {
-                const uint16x8_t _Res = vpmaxq_u16(_Val, _Val);
-                return vgetq_lane_u64(vreinterpretq_u64_u16(_Res), 0);
             }
 
             static uint64_t _Match_mask_q(const uint16x8_t _Cmp_lo, const uint16x8_t _Cmp_hi) noexcept {
@@ -3807,11 +3797,6 @@ namespace {
                 return vget_lane_u64(vreinterpret_u64_u32(_Val), 0);
             }
 
-            static uint64_t _Match_mask_q(const uint32x4_t _Val) noexcept {
-                const uint32x4_t _Res = vpmaxq_u32(_Val, _Val);
-                return vgetq_lane_u64(vreinterpretq_u64_u32(_Res), 0);
-            }
-
             static uint64_t _Match_mask_q(const uint32x4_t _Cmp_lo, const uint32x4_t _Cmp_hi) noexcept {
                 uint8x8_t _Cmp = vaddhn_u16(vreinterpretq_u16_u32(_Cmp_lo), vreinterpretq_u16_u32(_Cmp_hi));
                 return vget_lane_u64(vreinterpret_u64_u8(_Cmp), 0);
@@ -3843,10 +3828,6 @@ namespace {
             static uint64_t _Mask_q(const uint64x2_t _Val) noexcept {
                 const uint32x2_t _Res = vmovn_u64(_Val);
                 return vget_lane_u64(vreinterpret_u64_u32(_Res), 0);
-            }
-
-            static uint64_t _Match_mask_q(const uint64x2_t _Val) noexcept {
-                return _Mask_q(_Val);
             }
 
             static uint64_t _Match_mask_q(const uint64x2_t _Cmp_lo, const uint64x2_t _Cmp_hi) noexcept {
