@@ -954,17 +954,17 @@ namespace detail {
     static_assert(same_as<C::size_type, decltype(declval<C>().erase(declval<int>()))>);
 
     // erase key_type
-    static_assert(can_erase_key<flat_set<int, _STD less<int>>, int>);
-    static_assert(can_erase_key<flat_set<int, _STD less<>>, int>);
-    static_assert(can_erase_key<flat_set<int, _RANGES less>, int>);
+    static_assert(can_erase_key<flat_set<int, std::less<int>>, int>);
+    static_assert(can_erase_key<flat_set<int, std::less<>>, int>);
+    static_assert(can_erase_key<flat_set<int, ranges::less>, int>);
     // erase wrapped key_type
-    static_assert(!can_erase_key<flat_set<int, _STD less<int>>, holder<int>>);
-    static_assert(can_erase_key<flat_set<int, _STD less<>>, holder<int>>);
-    static_assert(can_erase_key<flat_set<int, _RANGES less>, holder<int>>);
+    static_assert(!can_erase_key<flat_set<int, std::less<int>>, holder<int>>);
+    static_assert(can_erase_key<flat_set<int, std::less<>>, holder<int>>);
+    static_assert(can_erase_key<flat_set<int, ranges::less>, holder<int>>);
     // erase wrapped iterator - the member function template returning size_type must not be selected
-    static_assert(can_erase_iterator_holder<flat_set<int, _STD less<int>>>);
-    static_assert(can_erase_iterator_holder<flat_set<int, _STD less<>>>);
-    static_assert(can_erase_iterator_holder<flat_set<int, _RANGES less>>);
+    static_assert(can_erase_iterator_holder<flat_set<int, std::less<int>>>);
+    static_assert(can_erase_iterator_holder<flat_set<int, std::less<>>>);
+    static_assert(can_erase_iterator_holder<flat_set<int, ranges::less>>);
 } // namespace detail
 
 
