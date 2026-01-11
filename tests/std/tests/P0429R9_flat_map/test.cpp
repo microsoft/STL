@@ -48,18 +48,18 @@ void assert_all_requirements(const T& s) {
 }
 
 template <IsFlatMap T>
-bool check_key_content(const T& obj, const typename T::key_container_type& expected) {
+[[nodiscard]] bool check_key_content(const T& obj, const typename T::key_container_type& expected) {
     assert_all_requirements(obj);
     return ranges::equal(obj.keys(), expected);
 }
 
 template <IsFlatMap T>
-bool check_value_content(const T& obj, const typename T::mapped_container_type& expected) {
+[[nodiscard]] bool check_value_content(const T& obj, const typename T::mapped_container_type& expected) {
     return ranges::equal(obj.values(), expected);
 }
 
 template <IsFlatMap T>
-bool assert_check_content(const T& obj, const type_identity_t<T>& expected) {
+[[nodiscard]] bool check_content(const T& obj, const type_identity_t<T>& expected) {
     assert_all_requirements(obj);
     if (!ranges::equal(obj, expected)) {
         println(stderr, "Unexpected content!\nExpected {}", expected);
@@ -86,7 +86,7 @@ struct subrange_t { // represents a closed subrange [first_index, last_index]
 };
 
 template <IsFlatMap T>
-bool check_value_content(
+[[nodiscard]] bool check_value_content(
     const T& obj, const typename T::mapped_container_type& expected, const vector<subrange_t>& subranges) {
     const auto& actual = obj.values();
     if (actual.size() != expected.size()) {
@@ -226,7 +226,7 @@ struct TransparentPackagedCompare : PackagedCompare<T> {
 struct MyAllocatorCounter {
     MyAllocatorCounter() : activeAllocations{MyAllocator<int>::getActiveAllocationCount()} {}
 
-    bool check_then_reset() {
+    [[nodiscard]] bool check_then_reset() {
         const bool allocated_some = MyAllocator<int>::getActiveAllocationCount() > activeAllocations;
         activeAllocations         = MyAllocator<int>::getActiveAllocationCount();
         return allocated_some;
@@ -1241,38 +1241,36 @@ void test_insert_hint_is_respected() {
         pair pair0c{0, 'c'};
         const pair pair0f{0, 'f'};
         // hint is greater
-        assert(assert_check_content(a, {{-1, 'x'}, {-1, 'x'}, {1, 'x'}, {1, 'x'}}));
+        assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {1, 'x'}, {1, 'x'}}));
         assert_inserted_at_position(2, a.emplace_hint(a.end(), 0, 'a'));
-        assert(assert_check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {1, 'x'}, {1, 'x'}}));
+        assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {1, 'x'}, {1, 'x'}}));
         assert_inserted_at_position(3, a.emplace_hint(a.find(1), pair{0, 'b'}));
-        assert(assert_check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {0, 'b'}, {1, 'x'}, {1, 'x'}}));
+        assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {0, 'b'}, {1, 'x'}, {1, 'x'}}));
         assert_inserted_at_position(4, a.insert(a.upper_bound(0), std::move(pair0c)));
-        assert(assert_check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {0, 'b'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
+        assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {0, 'b'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
         // hint is correct
         assert_inserted_at_position(4, a.emplace_hint(a.upper_bound(0) - 1, 0, 'd'));
-        assert(assert_check_content(
-            a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {0, 'b'}, {0, 'd'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
+        assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {0, 'b'}, {0, 'd'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
         assert_inserted_at_position(3, a.emplace_hint(a.begin() + 3, pseudopair{0, 'e'}));
-        assert(assert_check_content(
+        assert(check_content(
             a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {0, 'e'}, {0, 'b'}, {0, 'd'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
         assert_inserted_at_position(2, a.insert(a.lower_bound(0), pair0f));
-        assert(assert_check_content(
+        assert(check_content(
             a, {{-1, 'x'}, {-1, 'x'}, {0, 'f'}, {0, 'a'}, {0, 'e'}, {0, 'b'}, {0, 'd'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
         // hint is less
         assert_inserted_at_position(2, a.emplace_hint(a.lower_bound(0) - 1, pair{0, 'g'}));
-        assert(assert_check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'g'}, {0, 'f'}, {0, 'a'}, {0, 'e'}, {0, 'b'},
-                                           {0, 'd'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
+        assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'g'}, {0, 'f'}, {0, 'a'}, {0, 'e'}, {0, 'b'}, {0, 'd'},
+                                    {0, 'c'}, {1, 'x'}, {1, 'x'}}));
         assert_inserted_at_position(2, a.insert(a.begin(), pseudopair{0, 'h'}));
-        assert(assert_check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'h'}, {0, 'g'}, {0, 'f'}, {0, 'a'}, {0, 'e'},
-                                           {0, 'b'}, {0, 'd'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
+        assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'h'}, {0, 'g'}, {0, 'f'}, {0, 'a'}, {0, 'e'}, {0, 'b'},
+                                    {0, 'd'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
 
         assert(!problem_seen);
 
         assert(4 == erase_if(a, [](const auto pair) { return pair.second <= 'd'; }));
-        assert(assert_check_content(
-            a, {{-1, 'x'}, {-1, 'x'}, {0, 'h'}, {0, 'g'}, {0, 'f'}, {0, 'e'}, {1, 'x'}, {1, 'x'}}));
+        assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'h'}, {0, 'g'}, {0, 'f'}, {0, 'e'}, {1, 'x'}, {1, 'x'}}));
         assert(4 == a.erase(0));
-        assert(assert_check_content(a, {{-1, 'x'}, {-1, 'x'}, {1, 'x'}, {1, 'x'}}));
+        assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {1, 'x'}, {1, 'x'}}));
     }
 }
 
@@ -1327,7 +1325,7 @@ void test_non_strict_weak_order_compare() {
         assert(cont.end() == cont.find(strange_int{3}));
 
         assert(2 == cont.erase(strange_int{0}));
-        assert(assert_check_content(cont, {{11, 0}, {12, 0}}));
+        assert(check_content(cont, {{11, 0}, {12, 0}}));
     }
     {
         flat_multimap<int, int, divless> cont{{1, 0}, {2, 0}, {11, 0}, {12, 0}};
@@ -1347,7 +1345,7 @@ void test_non_strict_weak_order_compare() {
         assert(cont.end() == cont.find(strange_int{3}));
 
         assert(2 == cont.erase(strange_int{0}));
-        assert(assert_check_content(cont, {{11, 0}, {12, 0}}));
+        assert(check_content(cont, {{11, 0}, {12, 0}}));
     }
 }
 
