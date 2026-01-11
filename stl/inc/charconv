@@ -64,7 +64,7 @@ _NODISCARD _CONSTEXPR23 to_chars_result _Integer_to_chars(
     switch (_Base) {
     case 10:
         { // Derived from _UIntegral_to_buff()
-            // Performance note: Ryu's digit table should be faster here.
+          // Performance note: Ryu's digit table should be faster here.
 #ifndef _WIN64
             auto _Trunc = _Value;
 #else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
@@ -103,7 +103,7 @@ _NODISCARD _CONSTEXPR23 to_chars_result _Integer_to_chars(
                 _CSTD memcpy(_RNext, _Digit_pairs<char>._Data[_Trunc_part], 2);
             } while (_Trunc >= 10);
 
-            // If we have an unpaired digit, print it. 
+            // If we have an unpaired digit, print it.
             // For example, 1729 is printed as 17 29, and 19937 is printed as 1 99 37.
             if (_Trunc != 0) {
                 *--_RNext = static_cast<char>('0' + _Trunc);
