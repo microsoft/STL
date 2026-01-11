@@ -11,6 +11,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <print>
 #include <random>
 #include <ranges>
 #include <tuple>
@@ -18,6 +19,8 @@
 #include <utility>
 #include <vector>
 
+#include <test_container_requirements.hpp>
+#include <test_death.hpp>
 #define TEST_ASSERT(...) assert((__VA_ARGS__))
 
 using namespace std;
@@ -128,122 +131,16 @@ public:
 };
 
 template <class T>
-void assert_container_requirements(const T& s) {
-    T m = s;
-    assert(m == s);
-
-    static_assert(is_same_v<decltype(m = s), T&>);
-    static_assert(is_same_v<decltype(m = std::move(m)), T&>);
-    static_assert(is_same_v<decltype(m.begin()), typename T::iterator>);
-    static_assert(is_same_v<decltype(m.end()), typename T::iterator>);
-    static_assert(is_same_v<decltype(s.cbegin()), typename T::const_iterator>);
-    static_assert(is_same_v<decltype(m.cend()), typename T::const_iterator>);
-    static_assert(is_convertible_v<typename T::iterator, typename T::const_iterator>);
-    static_assert(is_same_v<decltype(m.begin() <=> m.end()), strong_ordering>);
-    static_assert(is_same_v<decltype(s.size()), typename T::size_type>);
-    static_assert(is_same_v<decltype(s.max_size()), typename T::size_type>);
-    static_assert(is_same_v<decltype(*m.begin()), const typename T::value_type&>);
-    static_assert(is_same_v<decltype(*m.cbegin()), const typename T::value_type&>);
-
-    T my_moved = std::move(m);
-    assert(!(my_moved != s));
-
-    T empty{};
-    assert(empty.empty());
-
-    T non_empty = s;
-    empty.swap(non_empty);
-    assert(non_empty.empty());
-    assert(empty == s);
-
-    std::swap(empty, non_empty);
-    assert(empty.empty());
-    assert(non_empty == s);
-
-    assert(s.cbegin() <= s.cend());
-    assert(s.cbegin() < s.cend() || s.empty());
-
-    assert(m.begin() <= m.end());
-    assert(m.begin() < m.end() || m.empty());
-
-    assert(static_cast<typename T::size_type>(s.cend() - s.cbegin()) == s.size());
-}
-
-template <class T>
-void assert_reversible_container_requirements(const T& s) {
-    static_assert(is_same_v<reverse_iterator<typename T::iterator>, typename T::reverse_iterator>);
-    static_assert(is_same_v<reverse_iterator<typename T::const_iterator>, typename T::const_reverse_iterator>);
-    static_assert(is_same_v<decltype(T{}.rbegin()), typename T::reverse_iterator>);
-    static_assert(is_same_v<decltype(T{}.rend()), typename T::reverse_iterator>);
-    static_assert(is_same_v<decltype(s.rbegin()), typename T::const_reverse_iterator>);
-    static_assert(is_same_v<decltype(s.rend()), typename T::const_reverse_iterator>);
-    static_assert(is_same_v<decltype(s.crbegin()), typename T::const_reverse_iterator>);
-    static_assert(is_same_v<decltype(s.crend()), typename T::const_reverse_iterator>);
-    static_assert(is_convertible_v<typename T::reverse_iterator, typename T::const_reverse_iterator>);
-}
-
-template <class T>
-void assert_set_requirements() {
-    using iterator       = T::iterator;
-    using const_iterator = T::const_iterator;
-    using key_type       = T::key_type;
-    using value_type     = T::value_type;
-
-    static_assert(same_as<std::const_iterator<const_iterator>, const_iterator>);
-    static_assert(is_convertible_v<iterator, const_iterator>);
-
-    // additionally:
-    static_assert(is_same_v<key_type, value_type>);
-    static_assert(same_as<std::const_iterator<iterator>, iterator>);
-    static_assert(is_convertible_v<const_iterator, iterator>);
-}
-
-template <class T>
-void assert_noexcept_requirements(T& s) {
-    static_assert(noexcept(s.begin()));
-    static_assert(noexcept(s.end()));
-    static_assert(noexcept(s.cbegin()));
-    static_assert(noexcept(s.cend()));
-    static_assert(noexcept(s.rbegin()));
-    static_assert(noexcept(s.rend()));
-    static_assert(noexcept(s.crbegin()));
-    static_assert(noexcept(s.crend()));
-
-    static_assert(noexcept(s.empty()));
-    static_assert(noexcept(s.size()));
-    static_assert(noexcept(s.max_size()));
-
-    if constexpr (!is_const_v<T>) {
-        constexpr bool is_noexcept =
-            is_nothrow_swappable_v<typename T::container_type> && is_nothrow_swappable_v<typename T::key_compare>;
-        static_assert(noexcept(s.swap(s)) == is_noexcept);
-        static_assert(noexcept(ranges::swap(s, s)) == is_noexcept); // using ADL-swap
-        static_assert(noexcept(s.clear()));
-    }
-}
-
-template <class T>
 void assert_all_requirements(const T& s) {
     assert_container_requirements(s);
     assert_reversible_container_requirements(s);
+    assert_three_way_comparability<T>();
     assert_set_requirements<T>();
 
     assert_noexcept_requirements(s);
     assert_noexcept_requirements(const_cast<T&>(s));
 
-    auto val_comp = s.value_comp();
-    auto begin_it = s.cbegin();
-    auto end_it   = s.cend();
-    assert(std::is_sorted(begin_it, end_it, val_comp));
-    if constexpr (!_Is_specialization_v<T, flat_multiset>) {
-        if (!s.empty()) {
-            auto it = begin_it;
-            while (++it != end_it) {
-                assert(val_comp(*(it - 1), *it));
-            }
-        }
-    }
-    assert(s._Is_sorted_and_unique());
+    assert_is_sorted_maybe_unique<_Is_specialization_v<T, flat_set>>(s);
 }
 
 template <class T>
@@ -265,23 +162,48 @@ void assert_all_requirements_and_equals(const T& s, const initializer_list<typen
     }
 }
 
+template <class T, class U>
+void assert_all_requirements_and_equals(
+    const T& first, const U& second, const initializer_list<typename T::value_type>& il) {
+    assert_all_requirements_and_equals(first, il);
+    assert_all_requirements_and_equals(second, il);
+    assert(first == second);
+}
+
 template <class C>
 void test_constructors() {
     using lt = std::less<int>;
     using gt = std::greater<int>;
 
-    assert_all_requirements_and_equals(flat_set<int, lt, C>(), {});
-    assert_all_requirements_and_equals(flat_multiset<int, lt, C>(), {});
-    assert_all_requirements_and_equals(flat_set<int, lt, C>(C{3, 7, 1, 85, 222, 1}), {1, 3, 7, 85, 222});
-    assert_all_requirements_and_equals(flat_multiset<int, lt, C>(C{3, 7, 1, 85, 7, 222, 1}), {1, 1, 3, 7, 7, 85, 222});
-    assert_all_requirements_and_equals(flat_set<int, gt, C>(C{1, 2, 3, 3}, gt()), {3, 2, 1});
-    assert_all_requirements_and_equals(flat_multiset<int, gt, C>(C{1, 1, 2, 3}, gt()), {3, 2, 1, 1});
-    assert_all_requirements_and_equals(flat_set<int, gt, C>(sorted_unique, C{30000, 200, 1}, gt()), {30000, 200, 1});
-    assert_all_requirements_and_equals(flat_multiset<int, gt, C>(sorted_equivalent, C{3, 3, -1}, gt()), {3, 3, -1});
-    assert_all_requirements_and_equals(flat_set<int, gt, C>({30000, 200, 1}, gt()), {30000, 200, 1});
-    assert_all_requirements_and_equals(flat_multiset<int, gt, C>({3, 3, -1}, gt()), {3, 3, -1});
-    assert_all_requirements_and_equals(flat_set<int, gt, C>(sorted_unique, {30000, 200, 1}, gt()), {30000, 200, 1});
-    assert_all_requirements_and_equals(flat_multiset<int, gt, C>(sorted_equivalent, {3, 3, -1}, gt()), {3, 3, -1});
+    {
+        // Test flat_set()
+        // and  flat_set(const key_compare&)
+        const lt comp;
+        {
+            flat_set<int, lt, C> fs;
+            flat_set<int, lt, C> fs1(comp);
+            assert_all_requirements_and_equals(fs, fs1, {});
+        }
+        {
+            flat_multiset<int, lt, C> fms;
+            flat_multiset<int, lt, C> fms1(comp);
+            assert_all_requirements_and_equals(fms, fms1, {});
+        }
+    }
+    {
+        // Test flat_set(const container)
+    }
+
+    assert_all_requirements_and_equals(flat_set(C{3, 7, 1, 85, 222, 1}), {1, 3, 7, 85, 222});
+    assert_all_requirements_and_equals(flat_multiset(C{3, 7, 1, 85, 7, 222, 1}), {1, 1, 3, 7, 7, 85, 222});
+    assert_all_requirements_and_equals(flat_set(C{1, 2, 3, 3}, gt{}), {3, 2, 1});
+    assert_all_requirements_and_equals(flat_multiset(C{1, 1, 2, 3}, gt{}), {3, 2, 1, 1});
+    assert_all_requirements_and_equals(flat_set(sorted_unique, C{30000, 200, 1}, gt{}), {30000, 200, 1});
+    assert_all_requirements_and_equals(flat_multiset(sorted_equivalent, C{3, 3, -1}, gt{}), {3, 3, -1});
+    assert_all_requirements_and_equals(flat_set<int, gt, C>({30000, 200, 1}, gt{}), {30000, 200, 1});
+    assert_all_requirements_and_equals(flat_multiset<int, gt, C>({3, 3, -1}, gt{}), {3, 3, -1});
+    assert_all_requirements_and_equals(flat_set<int, gt, C>(sorted_unique, {30000, 200, 1}, gt{}), {30000, 200, 1});
+    assert_all_requirements_and_equals(flat_multiset<int, gt, C>(sorted_equivalent, {3, 3, -1}, gt{}), {3, 3, -1});
 
     flat_set<int> a{};
     a = {1, 7, 7, 7, 2, 100, -1};
@@ -492,6 +414,65 @@ void test_insert_2() {
         assert_all_requirements_and_equals(a, {5, 4, 3, 0});
     }
 }
+
+// Test that hint to emplace/insert is respected, when possible; check returned iterator
+template <class C>
+void test_insert_hint_is_respected() {
+    using lt = std::less<int>;
+
+    {
+        flat_multiset<int, lt, C> a{-1, -1, 1, 1};
+        bool problem_seen                      = false;
+        const auto assert_inserted_at_position = [&a, &problem_seen](
+                                                     const int expected_index, const auto insert_position) {
+            const auto expected_position = a.begin() + expected_index;
+            if (expected_position != insert_position) {
+                println("Wrong insert position: expected {}, actual {}\nContainer after insert {}", expected_index,
+                    insert_position - a.begin(), a);
+                problem_seen = true;
+            }
+        };
+
+        // hint is greater
+        assert_all_requirements_and_equals(a, {-1, -1, 1, 1});
+        assert_inserted_at_position(2, a.insert(a.end(), 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 1, 1});
+        assert_inserted_at_position(3, a.insert(a.find(1), 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 1, 1});
+        assert_inserted_at_position(4, a.insert(a.find(1), 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 1, 1});
+        assert_inserted_at_position(5, a.insert(a.upper_bound(0), 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 1, 1});
+
+        // hint is correct
+        assert_inserted_at_position(5, a.insert(a.upper_bound(0) - 1, 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 1, 1});
+        assert_inserted_at_position(6, a.insert(a.upper_bound(0) - 1, 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 0, 1, 1});
+        assert_inserted_at_position(6, a.insert(a.begin() + 6, 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 0, 0, 1, 1});
+        assert_inserted_at_position(4, a.insert(a.begin() + 4, 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1});
+        assert_inserted_at_position(2, a.insert(a.begin() + 2, 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1});
+        assert_inserted_at_position(2, a.emplace_hint(a.lower_bound(0), 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1});
+
+        // hint is less
+        assert_inserted_at_position(2, a.emplace_hint(a.lower_bound(0) - 1, 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1});
+        assert_inserted_at_position(2, a.insert(a.begin() + 1, 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1});
+        assert_inserted_at_position(2, a.insert(a.begin(), 0));
+        assert_all_requirements_and_equals(a, {-1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1});
+
+        assert(!problem_seen);
+
+        assert(13 == erase_if(a, [](const auto value) { return value == 0; }));
+        assert_all_requirements_and_equals(a, {-1, -1, 1, 1});
+    }
+}
+
 
 struct key_comparer {
     const auto& extract_key(const auto& obj) const {
@@ -908,11 +889,24 @@ void test_invariant_robustness() {
     }
 }
 
-// TRANSITION, too simple
 void test_erase_1() {
     flat_set<int> fs{1};
-    fs.erase(1);
+    assert(1 == fs.erase(1));
     assert_all_requirements_and_equals(fs, {});
+    int numbers[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    fs.insert_range(numbers);
+    assert_all_requirements_and_equals(fs, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+    fs.insert_range(numbers);
+    assert_all_requirements_and_equals(fs, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+    assert(0 == fs.erase(-1));
+    assert(0 == fs.erase(10));
+    assert_all_requirements_and_equals(fs, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
+    {
+        const auto iter = fs.erase(fs.begin() + 3, fs.begin() + 6);
+        assert(fs.begin() + 3 == iter);
+        assert(6 == *iter);
+        assert_all_requirements_and_equals(fs, {0, 1, 2, 6, 7, 8, 9});
+    }
 }
 
 template <class T>
@@ -922,6 +916,8 @@ struct holder {
         return std::move(t);
     }
 };
+
+static_assert(is_convertible_v<holder<flat_set<int>::const_iterator>, flat_set<int>::const_iterator>);
 
 void test_erase_2() {
     using C = flat_set<int, std::less<>>;
@@ -936,6 +932,41 @@ void test_erase_2() {
     fs.erase(ref(i));
     assert_all_requirements_and_equals(fs, {3});
 }
+
+template <class Cont, class OtherKey>
+concept can_erase_key = requires(Cont c, OtherKey key) {
+    { c.erase(key) } -> same_as<typename Cont::size_type>;
+};
+template <class Cont>
+concept can_erase_iterator_holder = requires(Cont c) {
+    { c.erase(holder<typename Cont::const_iterator>{c.begin()}) } -> same_as<typename Cont::iterator>;
+};
+// Note that std::less<T> is not transparent, std::less<> and ranges::less are
+
+namespace detail {
+    using C = flat_set<int>;
+    static_assert(same_as<C::iterator, decltype(declval<C>().erase(declval<C::iterator>()))>);
+    static_assert(same_as<C::iterator, decltype(declval<C>().erase(declval<holder<C::iterator>>()))>);
+    static_assert(same_as<C::iterator, decltype(declval<C>().erase(declval<C::const_iterator>()))>);
+    static_assert(same_as<C::iterator, decltype(declval<C>().erase(declval<holder<C::const_iterator>>()))>);
+    static_assert(same_as<C::iterator, decltype(declval<C>().erase(declval<C::iterator>(), declval<C::iterator>()))>);
+    static_assert(same_as<C::size_type, decltype(declval<C>().erase(declval<holder<int>>()))>);
+    static_assert(same_as<C::size_type, decltype(declval<C>().erase(declval<int>()))>);
+
+    // erase key_type
+    static_assert(can_erase_key<flat_set<int, std::less<int>>, int>);
+    static_assert(can_erase_key<flat_set<int, std::less<>>, int>);
+    static_assert(can_erase_key<flat_set<int, ranges::less>, int>);
+    // erase wrapped key_type
+    static_assert(!can_erase_key<flat_set<int, std::less<int>>, holder<int>>);
+    static_assert(can_erase_key<flat_set<int, std::less<>>, holder<int>>);
+    static_assert(can_erase_key<flat_set<int, ranges::less>, holder<int>>);
+    // erase wrapped iterator - the member function template returning size_type must not be selected
+    static_assert(can_erase_iterator_holder<flat_set<int, std::less<int>>>);
+    static_assert(can_erase_iterator_holder<flat_set<int, std::less<>>>);
+    static_assert(can_erase_iterator_holder<flat_set<int, ranges::less>>);
+} // namespace detail
+
 
 template <class C>
 void test_erase_if() {
@@ -1145,6 +1176,7 @@ void test_throwing_compare_swap() {
     test_throwing_compare_single<flat_multiset, deque>();
 }
 
+// Test heterogeneous lookup and erase operations when the compare object does not satisfy strict_weak_order (GH-5992)
 enum class strange_int {};
 
 // No overload divless::operator()(strange_int, strange_int), does not satisfy std::strict_weak_order
@@ -1167,18 +1199,50 @@ struct divless {
 static_assert(!strict_weak_order<divless, int, strange_int>);
 
 // ranges:: algorithms can't be called with divless compare, as it does not satisfy std::strict_weak_order
-void test_generic_count_gh_5992() {
+void test_non_strict_weak_order_compare() {
     {
-        flat_set<int, divless> s{1, 2, 11, 12};
-        assert(2 == s.count(strange_int{0}));
+        flat_set<int, divless> cont{1, 2, 11, 12};
+        assert(2 == cont.count(strange_int{0}));
+
+        assert(cont.contains(strange_int{0}));
+        assert(!cont.contains(strange_int{2}));
+
+        assert(cont.begin() + 2 == cont.lower_bound(strange_int{1}));
+        assert(cont.begin() + 2 == cont.upper_bound(strange_int{0}));
+
+        const auto [first, last] = cont.equal_range(strange_int{0});
+        assert(first == cont.begin());
+        assert(last == cont.begin() + 2);
+
+        assert(cont.end() != cont.find(strange_int{1}));
+        assert(cont.end() == cont.find(strange_int{3}));
+
+        assert(2 == cont.erase(strange_int{0}));
+        assert_all_requirements_and_equals(cont, {11, 12});
     }
     {
-        flat_multiset<int, divless> ms{1, 2, 11, 12};
-        assert(2 == ms.count(strange_int{0}));
+        flat_multiset<int, divless> cont{1, 2, 11, 12};
+        assert(2 == cont.count(strange_int{0}));
+
+        assert(cont.contains(strange_int{0}));
+        assert(!cont.contains(strange_int{2}));
+
+        assert(cont.begin() + 2 == cont.lower_bound(strange_int{1}));
+        assert(cont.begin() + 2 == cont.upper_bound(strange_int{0}));
+
+        const auto [first, last] = cont.equal_range(strange_int{0});
+        assert(first == cont.begin());
+        assert(last == cont.begin() + 2);
+
+        assert(cont.end() != cont.find(strange_int{1}));
+        assert(cont.end() == cont.find(strange_int{3}));
+
+        assert(2 == cont.erase(strange_int{0}));
+        assert_all_requirements_and_equals(cont, {11, 12});
     }
 }
 
-int main() {
+void run_normal_tests() {
     test_spaceship_operator<flat_set<int>>();
     test_spaceship_operator<flat_multiset<int>>();
     test_spaceship_operator<flat_set<int, std::greater<int>>>();
@@ -1200,6 +1264,8 @@ int main() {
     test_insert_1<deque<int>>();
     test_insert_2<vector<int>>();
     test_insert_2<deque<int>>();
+    test_insert_hint_is_respected<vector<int>>();
+    test_insert_hint_is_respected<deque<int>>();
     test_insert_transparent();
     test_insert_using_invalid_hint();
     test_insert_upper_bound();
@@ -1228,5 +1294,155 @@ int main() {
     test_set_operations_transparent<flat_multiset>();
 
     test_throwing_compare_swap();
-    test_generic_count_gh_5992();
+    test_non_strict_weak_order_compare();
+}
+
+enum class cont_type { multi, unique };
+
+template <cont_type type>
+void test_death_construct_unsorted_initializer_list() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    C cont(sorted, {137, 42, 3337, 15});
+}
+
+template <cont_type type>
+void test_death_construct_unsorted_iter_iter() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::container_type values{137, 42, 3337, 15};
+    C cont(sorted, values.begin(), values.end());
+}
+
+template <cont_type type>
+void test_death_construct_unsorted_container() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::container_type values{137, 42, 3337, 15};
+    C cont(sorted, values);
+}
+
+template <cont_type type>
+void test_death_replace_unsorted_container() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    C cont;
+    cont.replace({137, 42, 3337, 15});
+}
+
+template <cont_type type>
+void test_death_insert_unsorted_iter_iter() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::container_type values{137, 42, 3337, 15};
+    C cont;
+    cont.insert(sorted, values.begin(), values.end());
+}
+
+template <cont_type type>
+void test_death_insert_unsorted_range() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::container_type values{137, 42, 3337, 15};
+    C cont;
+    cont.insert_range(sorted, values);
+}
+
+template <cont_type type>
+void test_death_insert_unsorted_initializer_list() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    C cont;
+    cont.insert(sorted, {137, 42, 3337, 15});
+}
+
+template <cont_type type>
+void test_death_construct_duplicates_initializer_list() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    C cont(sorted, {42, 137, 137, 3337});
+}
+
+template <cont_type type>
+void test_death_construct_duplicates_iter_iter() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::container_type values{42, 137, 137, 3337};
+    C cont(sorted, values.begin(), values.end());
+}
+
+template <cont_type type>
+void test_death_construct_duplicates_container() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::container_type values{42, 137, 137, 3337};
+    C cont(sorted, values);
+}
+
+template <cont_type type>
+void test_death_replace_duplicates_container() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    C cont;
+    cont.replace({42, 137, 137, 3337});
+}
+
+template <cont_type type>
+void test_death_insert_duplicates_iter_iter() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::container_type values{42, 137, 137, 3337};
+    C cont;
+    cont.insert(sorted, values.begin(), values.end());
+}
+
+template <cont_type type>
+void test_death_insert_duplicates_range() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    typename C::container_type values{42, 137, 137, 3337};
+    C cont;
+    cont.insert_range(sorted, values);
+}
+
+template <cont_type type>
+void test_death_insert_duplicates_initializer_list() {
+    using C = conditional_t<type == cont_type::unique, flat_set<int>, flat_multiset<int>>;
+    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    C cont;
+    cont.insert(sorted, {42, 137, 137, 3337});
+}
+
+int main(int argc, char* argv[]) {
+    std_testing::death_test_executive exec([] { run_normal_tests(); });
+
+#if defined(_DEBUG)
+    exec.add_death_tests({
+
+        // Tests shared between flat_set and flat_map - violation of sorted elements
+        test_death_construct_unsorted_initializer_list<cont_type::unique>,
+        test_death_construct_unsorted_initializer_list<cont_type::multi>,
+        test_death_construct_unsorted_iter_iter<cont_type::unique>,
+        test_death_construct_unsorted_iter_iter<cont_type::multi>,
+        test_death_construct_unsorted_container<cont_type::unique>,
+        test_death_construct_unsorted_container<cont_type::multi>,
+        test_death_replace_unsorted_container<cont_type::unique>,
+        test_death_replace_unsorted_container<cont_type::multi>,
+        test_death_insert_unsorted_iter_iter<cont_type::unique>,
+        test_death_insert_unsorted_iter_iter<cont_type::multi>,
+        test_death_insert_unsorted_range<cont_type::unique>,
+        test_death_insert_unsorted_range<cont_type::multi>,
+        test_death_insert_unsorted_initializer_list<cont_type::unique>,
+        test_death_insert_unsorted_initializer_list<cont_type::multi>,
+
+        // Tests shared between flat_set and flat_map - violation of unique elements
+        test_death_construct_duplicates_initializer_list<cont_type::unique>,
+        test_death_construct_duplicates_iter_iter<cont_type::unique>,
+        test_death_construct_duplicates_container<cont_type::unique>,
+        test_death_replace_duplicates_container<cont_type::unique>,
+        test_death_insert_duplicates_iter_iter<cont_type::unique>,
+        test_death_insert_duplicates_range<cont_type::unique>,
+        test_death_insert_duplicates_initializer_list<cont_type::unique>,
+    });
+#endif // defined(_DEBUG)
+
+    return exec.run(argc, argv);
 }

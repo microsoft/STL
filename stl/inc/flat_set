@@ -637,7 +637,7 @@ private:
     _NODISCARD size_type _Erase(const _Ty& _Val) {
         _STL_INTERNAL_STATIC_ASSERT(_Transparent<key_compare> || is_same_v<_Ty, _Kty>);
 
-        if constexpr (_IsUnique) {
+        if constexpr (_IsUnique && is_same_v<_Ty, key_type>) { // Optimization restricted due to GH-5992
             const const_iterator _Where = lower_bound(_Val);
             if (_Where != cend() && !_Compare(_Val, *_Where)) {
                 _Mycont.erase(_Where);
