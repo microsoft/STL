@@ -196,14 +196,14 @@ void test_constructors() {
 
     assert_all_requirements_and_equals(flat_set(C{3, 7, 1, 85, 222, 1}), {1, 3, 7, 85, 222});
     assert_all_requirements_and_equals(flat_multiset(C{3, 7, 1, 85, 7, 222, 1}), {1, 1, 3, 7, 7, 85, 222});
-    assert_all_requirements_and_equals(flat_set(C{1, 2, 3, 3}, gt()), {3, 2, 1});
-    assert_all_requirements_and_equals(flat_multiset(C{1, 1, 2, 3}, gt()), {3, 2, 1, 1});
-    assert_all_requirements_and_equals(flat_set(sorted_unique, C{30000, 200, 1}, gt()), {30000, 200, 1});
-    assert_all_requirements_and_equals(flat_multiset(sorted_equivalent, C{3, 3, -1}, gt()), {3, 3, -1});
-    assert_all_requirements_and_equals(flat_set<int, gt, C>({30000, 200, 1}, gt()), {30000, 200, 1});
-    assert_all_requirements_and_equals(flat_multiset<int, gt, C>({3, 3, -1}, gt()), {3, 3, -1});
-    assert_all_requirements_and_equals(flat_set<int, gt, C>(sorted_unique, {30000, 200, 1}, gt()), {30000, 200, 1});
-    assert_all_requirements_and_equals(flat_multiset<int, gt, C>(sorted_equivalent, {3, 3, -1}, gt()), {3, 3, -1});
+    assert_all_requirements_and_equals(flat_set(C{1, 2, 3, 3}, gt{}), {3, 2, 1});
+    assert_all_requirements_and_equals(flat_multiset(C{1, 1, 2, 3}, gt{}), {3, 2, 1, 1});
+    assert_all_requirements_and_equals(flat_set(sorted_unique, C{30000, 200, 1}, gt{}), {30000, 200, 1});
+    assert_all_requirements_and_equals(flat_multiset(sorted_equivalent, C{3, 3, -1}, gt{}), {3, 3, -1});
+    assert_all_requirements_and_equals(flat_set<int, gt, C>({30000, 200, 1}, gt{}), {30000, 200, 1});
+    assert_all_requirements_and_equals(flat_multiset<int, gt, C>({3, 3, -1}, gt{}), {3, 3, -1});
+    assert_all_requirements_and_equals(flat_set<int, gt, C>(sorted_unique, {30000, 200, 1}, gt{}), {30000, 200, 1});
+    assert_all_requirements_and_equals(flat_multiset<int, gt, C>(sorted_equivalent, {3, 3, -1}, gt{}), {3, 3, -1});
 
     flat_set<int> a{};
     a = {1, 7, 7, 7, 2, 100, -1};
