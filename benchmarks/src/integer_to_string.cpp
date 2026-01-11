@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <benchmark/benchmark.h>
+#include <charconv>
 #include <cmath>
 #include <cstdint>
 #include <limits>
@@ -36,6 +37,26 @@ auto generate_array() {
     }
 
     return a;
+}
+
+template <class T, double M, double S>
+void integer_to_chars(benchmark::State& state) {
+    auto a = generate_array<char, M, S>();
+    char d[20];
+
+    auto it = a.begin();
+    for (auto _ : state) {
+        auto i = *it;
+        benchmark::DoNotOptimize(i);
+        auto s = to_chars(begin(d), end(d), i);
+        benchmark::DoNotOptimize(s.ec);
+        benchmark::DoNotOptimize(s.ptr);
+
+        ++it;
+        if (it == a.end()) {
+            it = a.begin();
+        }
+    }
 }
 
 template <class CharT, class T, double M, double S>
@@ -76,6 +97,11 @@ void integer_to_string(benchmark::State& state) {
         }
     }
 }
+
+BENCHMARK(integer_to_chars<uint8_t, 2.5, 1.5>);
+BENCHMARK(integer_to_chars<uint16_t, 5.0, 3.0>);
+BENCHMARK(integer_to_chars<uint32_t, 10.0, 6.0>);
+BENCHMARK(integer_to_chars<uint64_t, 20.0, 12.0>);
 
 BENCHMARK(internal_integer_to_buff<char, uint8_t, 2.5, 1.5>);
 BENCHMARK(internal_integer_to_buff<char, uint16_t, 5.0, 3.0>);
