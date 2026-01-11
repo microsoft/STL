@@ -526,21 +526,21 @@ public:
     // [container.reqmts] iterators
     _NODISCARD iterator begin() noexcept {
         _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<iterator>);
-        return iterator{_Data.keys.begin(), _Data.values.begin()};
+        return iterator{_Data.keys.cbegin(), _Data.values.begin()};
     }
 
     _NODISCARD const_iterator begin() const noexcept {
         _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<const_iterator>);
         _STL_INTERNAL_STATIC_ASSERT(convertible_to<iterator, const_iterator>);
-        return const_iterator{_Data.keys.begin(), _Data.values.begin()};
+        return const_iterator{_Data.keys.cbegin(), _Data.values.begin()};
     }
 
     _NODISCARD iterator end() noexcept {
-        return iterator{_Data.keys.end(), _Data.values.end()};
+        return iterator{_Data.keys.cend(), _Data.values.end()};
     }
 
     _NODISCARD const_iterator end() const noexcept {
-        return const_iterator{_Data.keys.end(), _Data.values.end()};
+        return const_iterator{_Data.keys.cend(), _Data.values.end()};
     }
 
     _NODISCARD reverse_iterator rbegin() noexcept {
@@ -560,11 +560,11 @@ public:
     }
 
     _NODISCARD const_iterator cbegin() const noexcept {
-        return const_iterator{_Data.keys.begin(), _Data.values.begin()};
+        return const_iterator{_Data.keys.cbegin(), _Data.values.cbegin()};
     }
 
     _NODISCARD const_iterator cend() const noexcept {
-        return const_iterator{_Data.keys.end(), _Data.values.end()};
+        return const_iterator{_Data.keys.cend(), _Data.values.cend()};
     }
 
     _NODISCARD const_reverse_iterator crbegin() const noexcept {
