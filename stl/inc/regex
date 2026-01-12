@@ -1716,9 +1716,9 @@ public:
             _Char_class_d = _Lookup_char_class(static_cast<_Elem>('D'));
         }
 
-        _Remaining_complexity_input_count = _STD distance(_Pfirst, _Plast);
-        _Frames_limit                     = _Calculate_frames_limit();
-        _Complexity_limit_for_next_char   = 300000;
+        _Iter_diff_t<_It> _Input_length = _STD distance(_Pfirst, _Plast);
+        _Frames_limit                   = _Calculate_frames_limit(_Input_length);
+        _Complexity_limit               = _Calculate_complexity_limit(_Input_length);
 
 // sanitize multiline mode setting
 #if _REGEX_LEGACY_MULTILINE_MODE
@@ -1813,11 +1813,12 @@ private:
     vector<_Rx_state_frame_t<_It>> _Frames;
     size_t _Frames_count;
     size_t _Frames_limit;
-    _Iter_diff_t<_It> _Remaining_complexity_input_count;
+    long long _Complexity_limit;
 
     size_t _Push_frame(_Rx_unwind_ops _Code, _Node_base* _Node);
 
-    size_t _Calculate_frames_limit();
+    size_t _Calculate_frames_limit(_Iter_diff_t<_It> _Input_length);
+    long long _Calculate_complexity_limit(_Iter_diff_t<_It> _Input_length);
     void _Increase_complexity_count(_Iter_diff_t<_It> _Count);
 
     void _Prepare_rep(_Node_rep*);
@@ -1839,7 +1840,6 @@ private:
     bool _Longest;
     const _RxTraits& _Traits;
     bool _Full;
-    int _Complexity_limit_for_next_char;
     typename _RxTraits::char_class_type _Char_class_w{};
     typename _RxTraits::char_class_type _Char_class_s{};
     typename _RxTraits::char_class_type _Char_class_d{};
@@ -3396,10 +3396,10 @@ size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Push_frame(_Rx_unwind_
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit() {
+size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit(_Iter_diff_t<_It> _Input_length) {
     constexpr size_t _Fixed_part  = 10000000U / sizeof(_Rx_state_frame_t<_It>);
     constexpr size_t _Divisor     = sizeof(_Rx_state_frame_t<_It>) / 10U;
-    const auto _Variable_part     = _Remaining_complexity_input_count / static_cast<_Iter_diff_t<_It>>(_Divisor);
+    const auto _Variable_part     = _Input_length / static_cast<_Iter_diff_t<_It>>(_Divisor);
     const size_t _Max_frames_size = _Frames.max_size();
 
     if (PTRDIFF_MAX < _Variable_part) {
@@ -3410,18 +3410,22 @@ size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
+long long _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Calculate_complexity_limit(
+    _Iter_diff_t<_It> _Input_length) {
+    constexpr long long _Intercept = 300000LL;
+    constexpr long long _Slope     = 256LL;
+    if ((LLONG_MAX - _Intercept) / _Slope < _Input_length) {
+        return LLONG_MAX;
+    }
+    return _Slope * static_cast<long long>(_Input_length) + _Intercept;
+}
+
+template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Increase_complexity_count(_Iter_diff_t<_It> _Count) {
-    constexpr int _Limit_per_char = 256;
-    if (_Complexity_limit_for_next_char < _Count) {
-        _Count -= static_cast<_Iter_diff_t<_It>>(_Complexity_limit_for_next_char);
-        auto _Exhausted_input_chars = static_cast<_Iter_diff_t<_It>>(1 + _Count / _Limit_per_char);
-        if (_Remaining_complexity_input_count < _Exhausted_input_chars) {
-            _Xregex_error(regex_constants::error_complexity);
-        }
-        _Remaining_complexity_input_count -= _Exhausted_input_chars;
-        _Complexity_limit_for_next_char = _Limit_per_char - static_cast<int>(_Count % _Limit_per_char);
+    if (_Complexity_limit < _Count) {
+        _Xregex_error(regex_constants::error_complexity);
     } else {
-        _Complexity_limit_for_next_char -= static_cast<int>(_Count);
+        _Complexity_limit -= static_cast<long long>(_Count);
     }
 }
 
