@@ -64,7 +64,6 @@ _NODISCARD _CONSTEXPR23 to_chars_result _Integer_to_chars(
     switch (_Base) {
     case 10:
         { // Derived from _UIntegral_to_buff()
-          // Performance note: Ryu's digit table should be faster here.
 #ifndef _WIN64
             auto _Trunc = _Value;
 #else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
@@ -2646,3 +2645,4 @@ _STL_RESTORE_CLANG_WARNINGS
 #endif // ^^^ _HAS_CXX17 ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _CHARCONV_
+
