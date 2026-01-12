@@ -8827,6 +8827,21 @@ namespace ranges {
 
         template <bool _Const>
         class _Iterator {
+        public:
+            using iterator_category = input_iterator_tag;
+
+            using iterator_concept = conditional_t<_Cartesian_product_is_random_access<_Const, _First, _Rest...>,
+                random_access_iterator_tag,
+                conditional_t<_Cartesian_product_is_bidirectional<_Const, _First, _Rest...>, bidirectional_iterator_tag,
+                    conditional_t<forward_range<_Maybe_const<_Const, _First>>, forward_iterator_tag,
+                        input_iterator_tag>>>;
+
+            using value_type =
+                tuple<range_value_t<_Maybe_const<_Const, _First>>, range_value_t<_Maybe_const<_Const, _Rest>>...>;
+            using reference       = tuple<range_reference_t<_Maybe_const<_Const, _First>>,
+                      range_reference_t<_Maybe_const<_Const, _Rest>>...>;
+            using difference_type = _Difference_type<_Const>;
+
         private:
             friend cartesian_product_view;
             using _Parent_t = _Maybe_const<_Const, cartesian_product_view>;
@@ -8962,20 +8977,6 @@ namespace ranges {
                 : _Parent(_STD addressof(_Parent_)), _Current(_STD move(_Current_)) {}
 
         public:
-            using iterator_category = input_iterator_tag;
-
-            using iterator_concept = conditional_t<_Cartesian_product_is_random_access<_Const, _First, _Rest...>,
-                random_access_iterator_tag,
-                conditional_t<_Cartesian_product_is_bidirectional<_Const, _First, _Rest...>, bidirectional_iterator_tag,
-                    conditional_t<forward_range<_Maybe_const<_Const, _First>>, forward_iterator_tag,
-                        input_iterator_tag>>>;
-
-            using value_type =
-                tuple<range_value_t<_Maybe_const<_Const, _First>>, range_value_t<_Maybe_const<_Const, _Rest>>...>;
-            using reference       = tuple<range_reference_t<_Maybe_const<_Const, _First>>,
-                      range_reference_t<_Maybe_const<_Const, _Rest>>...>;
-            using difference_type = _Difference_type<_Const>;
-
             _Iterator() = default;
 
             constexpr _Iterator(_Iterator<!_Const> _It)
