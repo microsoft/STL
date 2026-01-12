@@ -8601,9 +8601,12 @@ namespace ranges {
             }
 
             template <bool _OtherConst>
+            using _Inner_view_diff = range_difference_t<_Maybe_const<_OtherConst, _Inner_view>>;
+
+            template <bool _OtherConst>
                 requires sized_sentinel_for<_Inner_sentinel<_Const>, _Inner_iterator<_OtherConst>>
-            _NODISCARD constexpr range_difference_t<_Maybe_const<_OtherConst, _Inner_view>> _Distance_from(
-                const _Iterator<_OtherConst>& _It) const noexcept(noexcept(_Inner - _It._Inner)) {
+            _NODISCARD constexpr _Inner_view_diff<_OtherConst> _Distance_from(const _Iterator<_OtherConst>& _It) const
+                noexcept(noexcept(_Inner - _It._Inner)) {
                 return _Inner - _It._Inner;
             }
 
@@ -8623,17 +8626,15 @@ namespace ranges {
 
             template <bool _OtherConst>
                 requires sized_sentinel_for<_Inner_sentinel<_Const>, _Inner_iterator<_OtherConst>>
-            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Inner_view>> operator-(
-                const _Iterator<_OtherConst>& _It, const _Sentinel& _Se) noexcept( //
-                noexcept(_Se._Distance_from(_It))) /* strengthened */ {
+            _NODISCARD friend constexpr _Inner_view_diff<_OtherConst> operator-(const _Iterator<_OtherConst>& _It,
+                const _Sentinel& _Se) noexcept(noexcept(_Se._Distance_from(_It))) /* strengthened */ {
                 return -_Se._Distance_from(_It);
             }
 
             template <bool _OtherConst>
                 requires sized_sentinel_for<_Inner_sentinel<_Const>, _Inner_iterator<_OtherConst>>
-            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Inner_view>> operator-(
-                const _Sentinel& _Se, const _Iterator<_OtherConst>& _It) noexcept( //
-                noexcept(_Se._Distance_from(_It))) /* strengthened */ {
+            _NODISCARD friend constexpr _Inner_view_diff<_OtherConst> operator-(const _Sentinel& _Se,
+                const _Iterator<_OtherConst>& _It) noexcept(noexcept(_Se._Distance_from(_It))) /* strengthened */ {
                 return _Se._Distance_from(_It);
             }
         };

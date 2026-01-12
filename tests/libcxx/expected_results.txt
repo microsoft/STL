@@ -1532,10 +1532,6 @@ std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:1 FAIL
 std/input.output/file.streams/fstreams/filebuf.virtuals/xsputn.pass.cpp:0 FAIL
 std/input.output/file.streams/fstreams/filebuf.virtuals/xsputn.pass.cpp:1 FAIL
 
-# Not analyzed. MSVC emits error C2338: static assertion failed: 'SentinelHasMinus<View>'
-std/ranges/range.adaptors/range.adjacent.transform/sentinel/minus.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.adjacent.transform/sentinel/minus.pass.cpp:1 FAIL
-
 
 # *** XFAILS WHICH PASS ***
 # These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
