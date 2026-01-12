@@ -3834,11 +3834,11 @@ namespace {
             }
         };
 
-        static unsigned long _Get_first_h_pos_q(uint64_t _Mask) {
+        unsigned long _Get_first_h_pos_q(const uint64_t _Mask) noexcept {
             return _CountTrailingZeros64(_Mask) >> 2;
         }
 
-        static unsigned long _Get_first_h_pos_d(uint64_t _Mask) {
+        unsigned long _Get_first_h_pos_d(const uint64_t _Mask) noexcept {
             return _CountTrailingZeros64(_Mask) >> 3;
         }
 #elif defined(_M_ARM64EC)
@@ -3935,7 +3935,7 @@ namespace {
         enum class _Predicate { _Equal, _Not_equal };
 
         template <_Predicate _Pred, class _Ty>
-        static const void* _Find_scalar_tail(const void* _First, const void* const _Last, const _Ty _Val) noexcept {
+        const void* _Find_scalar_tail(const void* _First, const void* const _Last, const _Ty _Val) noexcept {
             auto _Ptr = static_cast<const _Ty*>(_First);
             if constexpr (_Pred == _Predicate::_Not_equal) {
                 while (_Ptr != _Last && *_Ptr == _Val) {
