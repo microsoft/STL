@@ -4046,7 +4046,7 @@ namespace {
                 }
             }
 
-            return _Find_scalar_tail<_Pred, _Ty>(_First, _Last, _Val);
+            return _Find_scalar_tail<_Pred>(_First, _Last, _Val);
         }
 #else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
         template <class _Traits, _Predicate _Pred, class _Ty>
@@ -4126,7 +4126,7 @@ namespace {
             }
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
 
-            return _Find_scalar_tail<_Pred, _Ty>(_First, _Last, _Val);
+            return _Find_scalar_tail<_Pred>(_First, _Last, _Val);
         }
 
         template <class _Traits, _Predicate _Pred, class _Ty>
