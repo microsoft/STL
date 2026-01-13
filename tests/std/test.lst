@@ -278,6 +278,7 @@ tests\GH_005553_regex_character_translation
 tests\GH_005768_pow_accuracy
 tests\GH_005800_stable_sort_large_alignment
 tests\GH_005968_headers_provide_begin_end
+tests\GH_005974_optional_asan
 tests\LWG2381_num_get_floating_point
 tests\LWG2510_tag_classes
 tests\LWG2597_complex_branch_cut
