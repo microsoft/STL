@@ -5024,10 +5024,81 @@ const void* __stdcall __std_search_n_8(
 
 } // extern "C"
 
-#ifndef _M_ARM64
 namespace {
     namespace _Counting {
-#ifdef _M_ARM64EC
+#ifdef _M_ARM64
+        struct _Count_traits_8 : _Finding::_Find_traits_8 {
+            static uint64x2_t _Sub(const uint64x2_t _Lhs, const uint64x2_t _Rhs) noexcept {
+                return vsubq_u64(_Lhs, _Rhs);
+            }
+
+            static size_t _Reduce(const uint64x2_t _Val) noexcept {
+                return vgetq_lane_u64(vpaddq_u64(_Val, _Val), 0);
+            }
+
+            static size_t _Reduce(const uint64x2_t _Val_lo, const uint64x2_t _Val_hi) noexcept {
+                return _Reduce(vaddq_u64(_Val_lo, _Val_hi));
+            }
+        };
+
+        struct _Count_traits_4 : _Finding::_Find_traits_4 {
+            // Max value that will fit in 32-bit counters without overflow.
+            static constexpr size_t _Max_count = 0xFFFFFFFF;
+
+            static uint32x4_t _Sub(const uint32x4_t _Lhs, const uint32x4_t _Rhs) noexcept {
+                return vsubq_u32(_Lhs, _Rhs);
+            }
+
+            static size_t _Reduce(const uint32x4_t _Val) noexcept {
+                return vaddlvq_u32(_Val);
+            }
+
+            static size_t _Reduce(const uint32x4_t _Val_lo, const uint32x4_t _Val_hi) noexcept {
+                uint64x2_t _Sum = vpaddlq_u32(_Val_lo);
+                _Sum            = vpadalq_u32(_Sum, _Val_hi);
+                return _Count_traits_8::_Reduce(_Sum);
+            }
+        };
+
+        struct _Count_traits_2 : _Finding::_Find_traits_2 {
+            // Max value that will fit in 16-bit counters without overflow.
+            static constexpr size_t _Max_count = 0xFFFF;
+
+            static uint16x8_t _Sub(const uint16x8_t _Lhs, const uint16x8_t _Rhs) noexcept {
+                return vsubq_u16(_Lhs, _Rhs);
+            }
+
+            static size_t _Reduce(const uint16x8_t _Val) noexcept {
+                return vaddlvq_u16(_Val);
+            }
+
+            static size_t _Reduce(const uint16x8_t _Val_lo, const uint16x8_t _Val_hi) noexcept {
+                uint32x4_t _Sum = vpaddlq_u16(_Val_lo);
+                _Sum            = vpadalq_u16(_Sum, _Val_hi);
+                return _Count_traits_4::_Reduce(_Sum);
+            }
+        };
+
+        struct _Count_traits_1 : _Finding::_Find_traits_1 {
+            // Max value that will fit in 8-bit counters without overflow.
+            static constexpr size_t _Max_count = 0xFF;
+
+            static uint8x16_t _Sub(const uint8x16_t _Lhs, const uint8x16_t _Rhs) noexcept {
+                return vsubq_u8(_Lhs, _Rhs);
+            }
+
+            static size_t _Reduce(const uint8x16_t _Val) noexcept {
+                return vaddlvq_u8(_Val);
+            }
+
+            static size_t _Reduce(const uint8x16_t _Val_lo, const uint8x16_t _Val_hi) noexcept {
+                uint16x8_t _Sum = vpaddlq_u8(_Val_lo);
+                _Sum            = vpadalq_u8(_Sum, _Val_hi);
+                return _Count_traits_2::_Reduce(_Sum);
+            }
+        };
+
+#elif defined(_M_ARM64EC)
         using _Count_traits_8 = void;
         using _Count_traits_4 = void;
         using _Count_traits_2 = void;
@@ -5152,6 +5223,75 @@ namespace {
         };
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
 
+#ifdef _M_ARM64
+        template <class _Traits, class _Ty>
+        __declspec(noalias) size_t __stdcall _Count_impl(
+            const void* _First, const void* const _Last, const _Ty _Val) noexcept {
+            size_t _Result           = 0;
+            const size_t _Size_bytes = _Byte_length(_First, _Last);
+
+            if (size_t _Size = _Size_bytes & ~size_t{0x1F}; _Size != 0) {
+                const auto _Comparand = _Traits::_Set_neon_q(_Val);
+                const void* _Stop_at  = _First;
+
+                for (;;) {
+                    if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
+                        _Advance_bytes(_Stop_at, _Size);
+                    } else {
+                        constexpr size_t _Max_portion_size = _Traits::_Max_count * 32;
+                        const size_t _Portion_size         = _Size < _Max_portion_size ? _Size : _Max_portion_size;
+                        _Advance_bytes(_Stop_at, _Portion_size);
+                        _Size -= _Portion_size;
+                    }
+
+                    auto _Count_lo = _Traits::_Set_neon_q(0);
+                    auto _Count_hi = _Traits::_Set_neon_q(0);
+
+                    do {
+                        const auto _Data_lo = _Traits::_Load_q(static_cast<const uint8_t*>(_First) + 0);
+                        const auto _Data_hi = _Traits::_Load_q(static_cast<const uint8_t*>(_First) + 16);
+
+                        const auto _Mask_lo = _Traits::_Cmp_neon_q(_Data_lo, _Comparand);
+                        const auto _Mask_hi = _Traits::_Cmp_neon_q(_Data_hi, _Comparand);
+                        _Count_lo           = _Traits::_Sub(_Count_lo, _Mask_lo);
+                        _Count_hi           = _Traits::_Sub(_Count_hi, _Mask_hi);
+                        _Advance_bytes(_First, 32);
+                    } while (_First != _Stop_at);
+
+                    _Result += _Traits::_Reduce(_Count_lo, _Count_hi);
+
+                    if constexpr (sizeof(_Ty) >= sizeof(size_t)) {
+                        break;
+                    } else {
+                        if (_Size == 0) {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if ((_Size_bytes & size_t{0x10}) != 0) {
+                const auto _Comparand = _Traits::_Set_neon_q(_Val);
+                auto _Count_vector    = _Traits::_Set_neon_q(0);
+
+                const auto _Data = _Traits::_Load_q(_First);
+                const auto _Mask = _Traits::_Cmp_neon_q(_Data, _Comparand);
+                _Count_vector    = _Traits::_Sub(_Count_vector, _Mask);
+                _Result += _Traits::_Reduce(_Count_vector);
+
+                _Advance_bytes(_First, 16);
+            }
+
+// Avoid auto-vectorization of the scalar tail, as this is not beneficial for performance.
+#pragma loop(no_vector)
+            for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+                if (*_Ptr == _Val) {
+                    ++_Result;
+                }
+            }
+            return _Result;
+        }
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
         template <class _Traits, class _Ty>
         __declspec(noalias) size_t __stdcall _Count_impl(
             const void* _First, const void* const _Last, const _Ty _Val) noexcept {
@@ -5252,6 +5392,7 @@ namespace {
             }
             return _Result;
         }
+#endif // ^^^ !defined(_M_ARM64) ^^^
     } // namespace _Counting
 } // unnamed namespace
 
@@ -5279,6 +5420,7 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_8(
 
 } // extern "C"
 
+#ifndef _M_ARM64
 namespace {
     namespace _Find_meow_of {
         enum class _Predicate { _Any_of, _None_of };
