@@ -3470,6 +3470,7 @@ namespace {
             if (_Byte_length(_First, _Last) >= 32) {
                 return _Minmax_impl<_Mode, typename _Traits::_Neon, _Sign, true>(_First, _Last);
             }
+
             if (_Byte_length(_First, _Last) >= 16) {
                 return _Minmax_impl<_Mode, typename _Traits::_Neon, _Sign, false>(_First, _Last);
             }
