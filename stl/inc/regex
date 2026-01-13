@@ -3413,11 +3413,11 @@ template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 long long _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Calculate_complexity_limit(
     _Iter_diff_t<_It> _Input_length) {
     constexpr long long _Intercept = 300000LL;
-    constexpr long long _Slope     = 256LL;
-    if ((LLONG_MAX - _Intercept) / _Slope < _Input_length) {
+    constexpr long long _Gradient  = 256LL;
+    if ((LLONG_MAX - _Intercept) / _Gradient < _Input_length) {
         return LLONG_MAX;
     }
-    return _Slope * static_cast<long long>(_Input_length) + _Intercept;
+    return _Gradient * static_cast<long long>(_Input_length) + _Intercept;
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
