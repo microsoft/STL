@@ -137,6 +137,26 @@ Function DownloadAndInstall {
   }
 }
 
+<#
+.SYNOPSIS
+Enables native NVMe support.
+
+.DESCRIPTION
+Native NVMe support is opt-in for Windows Server 2025.
+TRANSITION, this will be enabled by default for the next version of Windows Server.
+#>
+Function EnableNativeNVMe {
+  $registryKey = 'HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides'
+  $valueName = '1176759950'
+  $valueData = 1
+
+  if (!(Test-Path $registryKey)) {
+    New-Item -Path $registryKey -Force | Out-Null
+  }
+
+  New-ItemProperty -Path $registryKey -Name $valueName -Value $valueData -PropertyType DWORD -Force | Out-Null
+}
+
 Write-Host "Old PowerShell version: $($PSVersionTable.PSVersion)"
 
 # Print the Windows version, so we can verify whether Patch Tuesday has been picked up.
@@ -160,6 +180,11 @@ Write-Host 'Enabling long paths...'
 # https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' `
   -Value 1 -PropertyType DWORD -Force | Out-Null
+
+if ($Provisioning_x64) {
+  Write-Host 'Enabling native NVMe...'
+  EnableNativeNVMe
+}
 
 # Tell create-1es-hosted-pool.ps1 that we succeeded.
 Write-Host 'PROVISION_IMAGE_SUCCEEDED'
