@@ -2403,7 +2403,7 @@ void test_gh_5944() {
         regex re("a*[^b]*a*[^b]*a*[^b]*a*[^b]*a*[^b]*a*[^b]*");
         (void) regex_match("aaaaaaaaaaaaaaaaaaaaaaaaaaaaab", re);
         assert(false);
-    } catch (regex_error& ex) {
+    } catch (const regex_error& ex) {
         assert(ex.code() == error_complexity);
     }
 }
