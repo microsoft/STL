@@ -3935,7 +3935,7 @@ namespace {
         enum class _Predicate { _Equal, _Not_equal };
 
         template <_Predicate _Pred, class _Ty>
-        const void* _Find_scalar_tail(const void* _First, const void* const _Last, const _Ty _Val) noexcept {
+        const void* _Find_scalar_tail(const void* const _First, const void* const _Last, const _Ty _Val) noexcept {
             auto _Ptr = static_cast<const _Ty*>(_First);
             if constexpr (_Pred == _Predicate::_Not_equal) {
                 while (_Ptr != _Last && *_Ptr == _Val) {
