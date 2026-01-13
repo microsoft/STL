@@ -6,8 +6,8 @@ cmake_minimum_required(VERSION 4.1.1)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
-if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.50.35720")
-    message(FATAL_ERROR "The STL must be built with MSVC Compiler 19.50.35720 or later.")
+if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.50.35722")
+    message(FATAL_ERROR "The STL must be built with MSVC Compiler 19.50.35722 or later.")
 endif()
 
 include(CheckCXXSourceCompiles)
