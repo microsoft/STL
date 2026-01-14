@@ -1,45 +1,55 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <__msvc_sanitizer_annotate_container.hpp>
 #include <cassert>
 #include <optional>
 
-struct LargePayload {
-    int data[4];
+#ifdef __SANITIZE_ADDRESS__
+extern "C" int __cdecl __asan_address_is_poisoned(void const volatile* addr);
+#define ASAN_VERIFY_POISONED(addr)   assert(__asan_address_is_poisoned((addr)) != 0)
+#define ASAN_VERIFY_UNPOISONED(addr) assert(__asan_address_is_poisoned((addr)) == 0)
+#else
+#define ASAN_VERIFY_POISONED(addr)
+#define ASAN_VERIFY_UNPOISONED(addr)
+#endif
+
+struct Payload {
+    long long x;
+    long long y;
+    long long z;
+    long long w;
 };
 
-void test_activation_unpoisoning() {
-    std::optional<LargePayload> opt;
-    opt.emplace(LargePayload{1, 2, 3, 4});
-    assert(opt->data[0] == 1);
+void test_poison_on_empty_access() {
+    std::optional<Payload> opt;
+    ASAN_VERIFY_POISONED(reinterpret_cast<Payload*>(&opt));
+}
+
+void test_emplace_unpoisoning() {
+    std::optional<Payload> opt;
+    opt.emplace(Payload{1, 2, 3, 4});
+    ASAN_VERIFY_UNPOISONED(reinterpret_cast<Payload*>(&opt));
 }
 
 void test_assignment_unpoisoning() {
-    std::optional<LargePayload> opt;
-    LargePayload val{5, 6, 7, 8};
+    std::optional<Payload> opt;
+    Payload val{1, 2, 3, 4};
     opt = val;
-    assert(opt->data[0] == 5);
-}
-
-void test_poison_on_empty_access() {
-    std::optional<LargePayload> opt;
-    volatile int x = opt->data[0];
-    (void) x;
+    ASAN_VERIFY_UNPOISONED(reinterpret_cast<Payload*>(&opt));
 }
 
 void test_repoison_after_reset() {
-    std::optional<LargePayload> opt;
-    opt.emplace(LargePayload{1, 1, 1, 1});
+    std::optional<Payload> opt = Payload{1, 2, 3, 4};
+    ASAN_VERIFY_UNPOISONED(reinterpret_cast<Payload*>(&opt));
     opt.reset();
-
-    volatile int x = opt->data[0];
-    (void) x;
+    ASAN_VERIFY_POISONED(reinterpret_cast<Payload*>(&opt));
 }
 
 int main() {
-    test_activation_unpoisoning();
-    test_assignment_unpoisoning();
     test_poison_on_empty_access();
+    test_emplace_unpoisoning();
+    test_assignment_unpoisoning();
     test_repoison_after_reset();
 
     return 0;
