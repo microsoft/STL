@@ -23,9 +23,8 @@ void test_assignment_unpoisoning() {
 
 void test_poison_on_empty_access() {
     std::optional<LargePayload> opt;
-    auto* p                = reinterpret_cast<LargePayload*>(&opt);
-    volatile int crash_val = p->data[0];
-    (void) crash_val;
+    volatile int x = opt->data[0];
+    (void) x;
 }
 
 void test_repoison_after_reset() {
@@ -33,9 +32,8 @@ void test_repoison_after_reset() {
     opt.emplace(LargePayload{1, 1, 1, 1});
     opt.reset();
 
-    auto* p                = reinterpret_cast<LargePayload*>(&opt);
-    volatile int crash_val = p->data[0];
-    (void) crash_val;
+    volatile int x = opt->data[0];
+    (void) x;
 }
 
 int main() {
