@@ -3908,7 +3908,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
             if (_UnalignedFirstBits != 0) {
                 const auto _SourceBitMask = static_cast<char>(UCHAR_MAX << _UnalignedFirstBits);
                 const auto _DestBitMask   = static_cast<char>(UCHAR_MAX >> (8 - _UnalignedFirstBits));
-                *_VbDest_ch               = (*_VbDest_ch & _DestBitMask) | (*_VbFirst_ch & _SourceBitMask);
+                *_VbDest_ch = static_cast<char>((*_VbDest_ch & _DestBitMask) | (*_VbFirst_ch & _SourceBitMask));
                 ++_VbFirst_ch;
                 ++_VbDest_ch;
             }
@@ -3919,7 +3919,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
             if (_UnalignedLastBits != 0) {
                 const auto _SourceBitMask = static_cast<char>(UCHAR_MAX >> (8 - _UnalignedLastBits));
                 const auto _DestBitMask   = static_cast<char>(UCHAR_MAX << _UnalignedLastBits);
-                *_VbDest_ch               = (*_VbDest_ch & _DestBitMask) | (*_VbLast_ch & _SourceBitMask);
+                *_VbDest_ch = static_cast<char>((*_VbDest_ch & _DestBitMask) | (*_VbLast_ch & _SourceBitMask));
             }
 
             return _DestEnd;
