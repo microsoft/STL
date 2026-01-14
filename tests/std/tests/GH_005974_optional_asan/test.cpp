@@ -10,8 +10,8 @@ extern "C" int __cdecl __asan_address_is_poisoned(void const volatile* addr);
 #define ASAN_VERIFY_POISONED(addr)   assert(__asan_address_is_poisoned((addr)) != 0)
 #define ASAN_VERIFY_UNPOISONED(addr) assert(__asan_address_is_poisoned((addr)) == 0)
 #else
-#define ASAN_VERIFY_POISONED(addr)
-#define ASAN_VERIFY_UNPOISONED(addr)
+#define ASAN_VERIFY_POISONED(addr)   ((void) (addr))
+#define ASAN_VERIFY_UNPOISONED(addr) ((void) (addr))
 #endif
 
 struct Payload {
@@ -22,25 +22,24 @@ struct Payload {
 };
 
 void test_poison_on_empty_access() {
-    std::optional<Payload> opt;
+    [[maybe_unused]] std::optional<Payload> opt;
     ASAN_VERIFY_POISONED(reinterpret_cast<Payload*>(&opt));
 }
 
 void test_emplace_unpoisoning() {
     std::optional<Payload> opt;
-    opt.emplace(Payload{1, 2, 3, 4});
+    opt.emplace(Payload());
     ASAN_VERIFY_UNPOISONED(reinterpret_cast<Payload*>(&opt));
 }
 
 void test_assignment_unpoisoning() {
-    std::optional<Payload> opt;
-    Payload val{1, 2, 3, 4};
-    opt = val;
+    std::optional<Payload> opt = std::nullopt;
+    opt                        = Payload();
     ASAN_VERIFY_UNPOISONED(reinterpret_cast<Payload*>(&opt));
 }
 
 void test_repoison_after_reset() {
-    std::optional<Payload> opt = Payload{1, 2, 3, 4};
+    std::optional<Payload> opt = Payload();
     ASAN_VERIFY_UNPOISONED(reinterpret_cast<Payload*>(&opt));
     opt.reset();
     ASAN_VERIFY_POISONED(reinterpret_cast<Payload*>(&opt));
