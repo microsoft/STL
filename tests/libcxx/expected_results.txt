@@ -1504,8 +1504,6 @@ std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.pass.cpp FAIL
 # Not analyzed, likely MSVC compiler bugs.
 std/utilities/function.objects/refwrap/common_reference.compile.pass.cpp:0 FAIL
 std/utilities/function.objects/refwrap/common_reference.compile.pass.cpp:1 FAIL
-std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp:0 FAIL
-std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp:1 FAIL
 
 # Not analyzed. MSVC emits warning C4267: 'argument': conversion from 'size_t' to 'unsigned char', possible loss of data
 std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:0 FAIL
