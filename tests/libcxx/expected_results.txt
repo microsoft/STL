@@ -582,6 +582,11 @@ std/containers/container.adaptors/flat.set/robust_against_nonbool.compile.pass.c
 std/containers/container.adaptors/flat.set/types.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/flat_set.version.compile.pass.cpp FAIL
 
+# P1789R3 Library Support For Expansion Statements
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/intseq/intseq.binding/structured_binding.pass.cpp FAIL
+std/utilities/intseq/intseq.binding/tuple_interface.compile.pass.cpp FAIL
+
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 # (type_traits.version.compile.pass.cpp still fails for Clang due to LLVM-48860)
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
@@ -589,6 +594,10 @@ std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporar
 std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:1 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:1 FAIL
+
+# P2592R3 Hashing Support For chrono Value Classes
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/time/time.hash/time.hash_enabled.pass.cpp FAIL
 
 # P2835R7 atomic_ref::address()
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
