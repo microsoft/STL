@@ -67,6 +67,9 @@ std/language.support/support.coroutines/coroutine.handle/coroutine.handle.noop/n
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:2 FAIL
 std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:2 FAIL
 
+# LLVM-176232: The implementation of P3567R2 "flat_meow Fixes" forgot to update `__cpp_lib_flat_set`
+std/language.support/support.limits/support.limits.general/flat_set.version.compile.pass.cpp FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -141,18 +144,6 @@ std/atomics/atomics.ref/member_types.compile.pass.cpp FAIL
 # libc++ has not implemented P3503R3 "Make Type-Erased Allocator Use In promise And packaged_task Consistent"
 std/thread/futures/futures.promise/uses_allocator.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
-
-# libc++ has not implemented P3567R2: "flat_meow Fixes"
-std/containers/container.adaptors/flat.map/flat.map.modifiers/swap_free.pass.cpp FAIL
-std/containers/container.adaptors/flat.map/flat.map.modifiers/swap_member.pass.cpp FAIL
-std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/swap_free.pass.cpp FAIL
-std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/swap_member.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/swap_free.pass.cpp FAIL
-std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/swap_member.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/swap_free.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.modifiers/swap_member.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/flat_map.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/flat_set.version.compile.pass.cpp FAIL
 
 # Various bogosity (LLVM-D141004)
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/ctor_does_not_allocate.pass.cpp FAIL
@@ -344,6 +335,8 @@ std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_iter_iter.p
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_iter_iter.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_or_assign_transparent.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_or_assign_transparent.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_range_sorted_unique.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_range_sorted_unique.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_range.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_range.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.map/flat.map.modifiers/insert_rv.pass.cpp:0 FAIL
@@ -378,6 +371,8 @@ std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/extract.
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/extract.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_iter_iter.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_iter_iter.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_range_sorted_equivalent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_range_sorted_equivalent.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_range.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_range.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.multimap/flat.multimap.modifiers/insert_rv.pass.cpp:0 FAIL
@@ -406,6 +401,8 @@ std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/extract.
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/extract.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_iter.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_iter_iter.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range_sorted_equivalent.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range_sorted_equivalent.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.modifiers/insert_range.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.multiset/flat.multiset.observers/comp.pass.cpp:0 FAIL
@@ -432,6 +429,8 @@ std/containers/container.adaptors/flat.set/flat.set.modifiers/extract.pass.cpp:0
 std/containers/container.adaptors/flat.set/flat.set.modifiers/extract.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_iter.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_iter_iter.pass.cpp:1 FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range_sorted_unique.pass.cpp:0 FAIL
+std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range_sorted_unique.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp:0 FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_range.pass.cpp:1 FAIL
 std/containers/container.adaptors/flat.set/flat.set.modifiers/insert_transparent.pass.cpp:0 FAIL
@@ -1360,6 +1359,10 @@ std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:1 FAIL
 # Not analyzed. MSVC emits warning C4242: 'argument': conversion from 'int' to 'char', possible loss of data
 std/input.output/file.streams/fstreams/filebuf.virtuals/xsputn.pass.cpp:0 FAIL
 std/input.output/file.streams/fstreams/filebuf.virtuals/xsputn.pass.cpp:1 FAIL
+
+# FIXME, not analyzed. _Flat_map_base::_Erase_if's usage of ranges::remove_if is failing to compile.
+std/containers/container.adaptors/flat.map/robust_against_nonbool.compile.pass.cpp FAIL
+std/containers/container.adaptors/flat.multimap/robust_against_nonbool.compile.pass.cpp FAIL
 
 
 # *** XFAILS WHICH PASS ***
