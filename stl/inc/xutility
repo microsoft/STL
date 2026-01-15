@@ -89,7 +89,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _VECTORIZED_FIND_LAST_OF       _VECTORIZED_FOR_X64_X86
 #define _VECTORIZED_INCLUDES           _VECTORIZED_FOR_X64_X86
 #define _VECTORIZED_IS_SORTED_UNTIL    _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_MINMAX             _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_MINMAX             _VECTORIZED_FOR_X64_X86_ARM64
 #define _VECTORIZED_MINMAX_ELEMENT     _VECTORIZED_FOR_X64_X86_ARM64
 #define _VECTORIZED_MISMATCH           _VECTORIZED_FOR_X64_X86
 #define _VECTORIZED_REMOVE             _VECTORIZED_FOR_X64_X86
@@ -7302,7 +7302,7 @@ constexpr bool _Is_min_max_value_optimization_safe = // Activate the vector algo
 #ifndef _M_FP_FAST
     !is_floating_point_v<_Elem> &&
 #endif // ^^^ !defined(_M_FP_FAST) ^^^
-    _Is_min_max_optimization_safe<_Iter, _Pr>;
+    _Is_min_max_iterators_safe<_Iter> && _Is_predicate_less<_Iter, _Pr>;
 
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
