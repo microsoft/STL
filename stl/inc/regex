@@ -43,10 +43,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _REGEX_LEGACY_MULTILINE_MODE 0
 #endif
 
-#ifndef _REGEX_MAX_COMPLEXITY_COUNT
-#define _REGEX_MAX_COMPLEXITY_COUNT 10000000L // set to 0 to disable
-#endif // !defined(_REGEX_MAX_COMPLEXITY_COUNT)
-
 #ifndef _ENHANCED_REGEX_VISUALIZER
 #ifdef _DEBUG
 #define _ENHANCED_REGEX_VISUALIZER 1
@@ -1720,8 +1716,9 @@ public:
             _Char_class_d = _Lookup_char_class(static_cast<_Elem>('D'));
         }
 
-        _Input_length = _STD distance(_Pfirst, _Plast);
-        _Frames_limit = _Calculate_frames_limit();
+        _Iter_diff_t<_It> _Input_length = _STD distance(_Pfirst, _Plast);
+        _Frames_limit                   = _Calculate_frames_limit(_Input_length);
+        _Complexity_limit               = _Calculate_complexity_limit(_Input_length);
 
 // sanitize multiline mode setting
 #if _REGEX_LEGACY_MULTILINE_MODE
@@ -1761,9 +1758,8 @@ public:
             _Tgt_state._Grp_valid.resize(_Ncap);
             _Tgt_state._Grps.resize(_Ncap);
         }
-        _Full                 = _Full_match;
-        _Max_complexity_count = _REGEX_MAX_COMPLEXITY_COUNT;
-        _Frames_count         = 0;
+        _Full         = _Full_match;
+        _Frames_count = 0;
 
         _Matched = false;
 
@@ -1817,13 +1813,13 @@ private:
     vector<_Rx_state_frame_t<_It>> _Frames;
     size_t _Frames_count;
     size_t _Frames_limit;
-    _Iter_diff_t<_It> _Input_length;
+    long long _Complexity_limit;
 
     size_t _Push_frame(_Rx_unwind_ops _Code, _Node_base* _Node);
-    void _Pop_frame(size_t);
 
-    size_t _Calculate_frames_limit();
-    void _Increase_complexity_count();
+    size_t _Calculate_frames_limit(_Iter_diff_t<_It> _Input_length);
+    long long _Calculate_complexity_limit(_Iter_diff_t<_It> _Input_length);
+    void _Increase_complexity_count(_Iter_diff_t<_It> _Count);
 
     void _Prepare_rep(_Node_rep*);
     bool _Find_first_inner_capture_group(_Node_base*, _Loop_vals_v3_t<_Iter_diff_t<_It>>*);
@@ -1844,7 +1840,6 @@ private:
     bool _Longest;
     const _RxTraits& _Traits;
     bool _Full;
-    long _Max_complexity_count;
     typename _RxTraits::char_class_type _Char_class_w{};
     typename _RxTraits::char_class_type _Char_class_s{};
     typename _RxTraits::char_class_type _Char_class_d{};
@@ -3401,13 +3396,7 @@ size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Push_frame(_Rx_unwind_
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Pop_frame(size_t _Idx) {
-    _STL_INTERNAL_CHECK(_Idx + 1 == _Frames_count);
-    _Frames_count = _Idx;
-}
-
-template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit() {
+size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit(_Iter_diff_t<_It> _Input_length) {
     constexpr size_t _Fixed_part  = 10000000U / sizeof(_Rx_state_frame_t<_It>);
     constexpr size_t _Divisor     = sizeof(_Rx_state_frame_t<_It>) / 10U;
     const auto _Variable_part     = _Input_length / static_cast<_Iter_diff_t<_It>>(_Divisor);
@@ -3421,9 +3410,22 @@ size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Increase_complexity_count() {
-    if (0 < _Max_complexity_count && --_Max_complexity_count <= 0) {
+long long _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Calculate_complexity_limit(
+    _Iter_diff_t<_It> _Input_length) {
+    constexpr long long _Intercept = 300000LL;
+    constexpr long long _Gradient  = 256LL;
+    if ((LLONG_MAX - _Intercept) / _Gradient < _Input_length) {
+        return LLONG_MAX;
+    }
+    return _Gradient * static_cast<long long>(_Input_length) + _Intercept;
+}
+
+template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
+void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Increase_complexity_count(_Iter_diff_t<_It> _Count) {
+    if (_Complexity_limit < _Count) {
         _Xregex_error(regex_constants::error_complexity);
+    } else {
+        _Complexity_limit -= static_cast<long long>(_Count);
     }
 }
 
@@ -3538,11 +3540,12 @@ void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Reset_capture_groups(uns
     }
 }
 
-template <class _BidIt1, class _BidIt2, class _Pr>
-_BidIt1 _Cmp_chrange(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, _BidIt2 _End2, _Pr _Pred) {
+template <class _BidIt1, class _BidIt2, class _Counter, class _Pr>
+_BidIt1 _Cmp_chrange(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, _BidIt2 _End2, _Counter& _Count, _Pr _Pred) {
     // compare character ranges
     _BidIt1 _Res = _Begin1;
     while (_Begin1 != _End1 && _Begin2 != _End2) {
+        ++_Count;
         if (!_Pred(*_Begin1++, *_Begin2++)) {
             return _Res;
         }
@@ -3550,33 +3553,34 @@ _BidIt1 _Cmp_chrange(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, _BidIt2 _E
     return _Begin2 == _End2 ? _Begin1 : _Res;
 }
 
-template <class _BidIt1, class _BidIt2, class _RxTraits>
+template <class _BidIt1, class _BidIt2, class _RxTraits, class _Counter>
 _BidIt1 _Compare_translate_both(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, _BidIt2 _End2,
-    const _RxTraits& _Traits, regex_constants::syntax_option_type _Sflags) {
+    const _RxTraits& _Traits, regex_constants::syntax_option_type _Sflags, _Counter& _Count) {
     // compare character ranges, translating characters in both ranges according to syntax options
     if (_Sflags & regex_constants::icase) {
-        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_icase<_RxTraits>{_Traits});
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, _Cmp_icase<_RxTraits>{_Traits});
     } else if constexpr (_Is_any_of_v<_RxTraits, regex_traits<char>, regex_traits<wchar_t>>) {
-        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
-        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_collate<_RxTraits>{_Traits});
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, _Cmp_collate<_RxTraits>{_Traits});
     } else {
-        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, equal_to<typename _RxTraits::char_type>{});
     }
 }
 
-template <class _BidIt1, class _BidIt2, class _RxTraits>
+template <class _BidIt1, class _BidIt2, class _RxTraits, class _Counter>
 _BidIt1 _Compare_translate_left(_BidIt1 _Begin1, _BidIt1 _End1, _BidIt2 _Begin2, _BidIt2 _End2,
-    const _RxTraits& _Traits, regex_constants::syntax_option_type _Sflags) {
+    const _RxTraits& _Traits, regex_constants::syntax_option_type _Sflags, _Counter& _Count) {
     // compare character ranges, translating characters in the left range according to syntax options
     if (_Sflags & regex_constants::icase) {
-        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_icase_translateleft<_RxTraits>{_Traits});
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, _Cmp_icase_translateleft<_RxTraits>{_Traits});
     } else if constexpr (_Is_any_of_v<_RxTraits, regex_traits<char>, regex_traits<wchar_t>>) {
-        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, equal_to<typename _RxTraits::char_type>{});
     } else if (_Sflags & regex_constants::collate) {
-        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Cmp_collate_translateleft<_RxTraits>{_Traits});
+        return _STD _Cmp_chrange(
+            _Begin1, _End1, _Begin2, _End2, _Count, _Cmp_collate_translateleft<_RxTraits>{_Traits});
     } else {
-        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, equal_to<typename _RxTraits::char_type>{});
+        return _STD _Cmp_chrange(_Begin1, _End1, _Begin2, _End2, _Count, equal_to<typename _RxTraits::char_type>{});
     }
 }
 
@@ -3831,12 +3835,11 @@ bool _Is_ecmascript_line_terminator(_Elem _Ch) {
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _Nx) { // check for match
-    _Increase_complexity_count();
-
     bool _Failed = false;
 
     while (_Nx) {
         do { // match current node
+            _Increase_complexity_count(_Iter_diff_t<_It>{1}); // one state transition
             _Node_base* _Next = _Nx->_Next;
             switch (_Nx->_Kind) { // handle current node's type
             case _N_nop:
@@ -3890,13 +3893,17 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 { // check for string match
                     _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
                     _It _Res0;
+                    _Iter_diff_t<_It> _Count{};
                     if ((_Res0 = _STD _Compare_translate_left(_Tgt_state._Cur, _End, _Node->_Data._Str(),
-                             _Node->_Data._Str() + _Node->_Data._Size(), _Traits, _Sflags))
+                             _Node->_Data._Str() + _Node->_Data._Size(), _Traits, _Sflags, _Count))
                         != _Tgt_state._Cur) {
                         _Tgt_state._Cur = _Res0;
                     } else {
                         _Failed = true;
                     }
+
+                    // divide by 64 because character comparisons are cheaper than state transitions
+                    _Increase_complexity_count(static_cast<_Iter_diff_t<_It>>(_Count / 64));
 
                     break;
                 }
@@ -3923,8 +3930,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     auto _Node = static_cast<_Node_assert*>(_Nx);
                     _Push_frame(_Rx_unwind_ops::_After_assert, _Node);
                     _Next = _Node->_Child;
-
-                    _Increase_complexity_count();
                     break;
                 }
 
@@ -3933,8 +3938,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     auto _Node = static_cast<_Node_assert*>(_Nx);
                     _Push_frame(_Rx_unwind_ops::_After_neg_assert, _Node);
                     _Next = _Node->_Child;
-
-                    _Increase_complexity_count();
                     break;
                 }
 
@@ -4035,13 +4038,18 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                         _It _Res0 = _Tgt_state._Cur;
                         _It _Bx   = _Tgt_state._Grps[_Node->_Idx]._Begin;
                         _It _Ex   = _Tgt_state._Grps[_Node->_Idx]._End;
+                        _Iter_diff_t<_It> _Count{};
                         if (_Bx != _Ex // _Bx == _Ex for zero-length match
-                            && (_Res0 = _STD _Compare_translate_both(_Tgt_state._Cur, _End, _Bx, _Ex, _Traits, _Sflags))
+                            && (_Res0 = _STD _Compare_translate_both(
+                                    _Tgt_state._Cur, _End, _Bx, _Ex, _Traits, _Sflags, _Count))
                                    == _Tgt_state._Cur) {
                             _Failed = true;
                         } else {
                             _Tgt_state._Cur = _Res0;
                         }
+
+                        // divide by 64 because character comparisons are cheaper than state transitions
+                        _Increase_complexity_count(static_cast<_Iter_diff_t<_It>>(_Count / 64));
                     } else if (_Sflags & (regex_constants::basic | regex_constants::grep)) {
                         _Failed = true;
                     }
@@ -4053,7 +4061,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     auto _Node = static_cast<_Node_if*>(_Nx);
                     if (_Node->_Child) {
                         _Push_frame(_Rx_unwind_ops::_Disjunction_eval_alternative, _Node->_Child);
-                        _Increase_complexity_count();
                     }
                     break;
                 }
@@ -4070,7 +4077,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 
                     if (_Node->_Simple_loop == 1) {
                         _Sav._Loop_frame_idx = _Push_frame(_Rx_unwind_ops::_Do_nothing, _Node);
-                        _Increase_complexity_count();
                         if (_Node->_Min > 0 || (_Greedy && !_Longest && _Node->_Max != 0)) { // try a rep first
                             _Sav._Loop_idx = 1;
                             // _Next is already assigned correctly for matching a rep
@@ -4100,11 +4106,9 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                             _Frame._Loop_frame_idx_sav = _Sav._Loop_frame_idx;
                             _Sav._Loop_idx             = 1;
                             _Sav._Loop_frame_idx       = _Frame_idx;
-                            _Increase_complexity_count();
                             // _Next is already assigned correctly for matching a rep
                         } else { // try tail first
                             _Next = _Node->_End_rep->_Next;
-                            _Increase_complexity_count();
                             // set up stack unwinding for non-greedy matching if at least one rep is allowed
                             if (_Node->_Max != 0) {
                                 auto _Frame_idx            = _Push_frame(_Rx_unwind_ops::_Loop_nongreedy, _Node);
@@ -4136,8 +4140,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                                 // _Next is already assigned correctly for matching tail
                                 if (!(_Sflags & regex_constants::_Any_posix) && _Nr->_Min == 0) {
                                     _Failed = true;
-                                } else {
-                                    _Increase_complexity_count();
                                 }
                                 break;
                             }
@@ -4197,8 +4199,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                             }
                             // _Next is already assigned correctly for matching tail
                         }
-
-                        _Increase_complexity_count();
                     } else {
                         const bool _Progress = _Frames[_Sav._Loop_frame_idx]._Pos != _Tgt_state._Cur;
                         if (_Sav._Loop_idx < _Nr->_Min) { // try another required match
@@ -4218,7 +4218,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 
                             _Reset_capture_groups(_Sav._Group_first);
                             _Next = _Nr->_Next;
-                            _Increase_complexity_count();
                         } else if (!_Progress) { // latest rep match empty
                             // An empty match is allowed if it is needed to reach the minimum number of reps.
                             // Moreover, POSIX allows an empty repetition if the subexpression is matched only once.
@@ -4226,8 +4225,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                             if (_Sav._Loop_idx != _Nr->_Min
                                 && !((_Sflags & regex_constants::_Any_posix) && _Sav._Loop_idx == 1)) {
                                 _Failed = true;
-                            } else {
-                                _Increase_complexity_count();
                             }
                             // _Next is already assigned correctly for matching tail
                         } else if (_Greedy && !_Longest && _Sav._Loop_idx != _Nr->_Max) { // one more rep to try next
@@ -4243,10 +4240,8 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 
                             _Reset_capture_groups(_Sav._Group_first);
                             _Next = _Nr->_Next;
-                            _Increase_complexity_count();
                         } else { // non-greedy matching or greedy matching with maximum reached
                             // set up stack unwinding for non-greedy matching if one more rep is allowed
-                            _Increase_complexity_count();
                             if (_Sav._Loop_idx != _Nr->_Max) {
                                 auto _Frame_idx            = _Push_frame(_Rx_unwind_ops::_Loop_nongreedy, _Nr);
                                 auto& _Frame               = _Frames[_Frame_idx];
@@ -4315,7 +4310,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     _Nx             = _Node->_Next;
                     _Tgt_state._Cur = _Frame._Pos;
                     _Failed         = false;
-                    _Increase_complexity_count();
                     if (_Node->_Child) {
                         _Frame._Node = _Node->_Child;
                         ++_Frames_count;
@@ -4328,7 +4322,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     auto _Node = static_cast<_Node_rep*>(_Frame._Node);
                     auto& _Sav = _Loop_vals[_Node->_Loop_number];
 
-                    _Increase_complexity_count();
                     _Nx             = _Node->_Next;
                     _Tgt_state._Cur = _Frame._Pos;
                     _Failed         = false;
@@ -4342,7 +4335,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 { // try tail after backtracking from first rep
                     auto _Node = static_cast<_Node_rep*>(_Frame._Node);
 
-                    _Increase_complexity_count();
                     _Nx             = _Node->_End_rep->_Next;
                     _Tgt_state._Cur = _Frame._Pos;
                     _Failed         = false;
@@ -4377,7 +4369,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     // when backtracking from last attempted rep
                     auto _Node = static_cast<_Node_rep*>(_Frame._Node);
 
-                    _Increase_complexity_count();
                     _Nx             = _Node->_End_rep->_Next;
                     _Tgt_state._Cur = _Frame._Pos;
                     _Failed         = false;
@@ -4397,7 +4388,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 { // try tail
                     auto _Node = static_cast<_Node_rep*>(_Frame._Node);
 
-                    _Increase_complexity_count();
                     _Nx             = _Node->_End_rep->_Next;
                     _Tgt_state._Cur = _Frame._Pos;
                     _Failed         = false;
@@ -4419,7 +4409,6 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     auto _Node = static_cast<_Node_rep*>(_Frame._Node);
                     auto& _Sav = _Loop_vals[_Node->_Loop_number];
 
-                    _Increase_complexity_count();
                     _Nx             = _Node->_Next;
                     _Tgt_state._Cur = _Frame._Pos;
                     _Failed         = false;
