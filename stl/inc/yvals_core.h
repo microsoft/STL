@@ -1951,9 +1951,7 @@ _EMIT_STL_ERROR(STL1013, "The STL doesn't support /RTCc because it rejects confo
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // ^^^ !defined(_ENABLE_STL_INTERNAL_CHECK) ^^^
 
-#if defined(__CUDACC__) || (defined(__clang__) && __clang_major__ < 16)
-// TRANSITION, CUDA 12.4 doesn't have downlevel support for static call operators.
-// TRANSITION, VSO-2397560, temporary workaround for Real World Code relying on ancient Clang versions.
+#ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't have downlevel support for static call operators.
 #define _STATIC_CALL_OPERATOR
 #define _CONST_CALL_OPERATOR const
 #else // ^^^ workaround / no workaround vvv
