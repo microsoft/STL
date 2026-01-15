@@ -159,7 +159,7 @@ extern const bool _Asan_optional_should_annotate;
 #endif
 } // extern "C"
 
-#if defined(_INSERT_VECTOR_ANNOTATION) || defined(_INSERT_STRING_ANNOTATION)
+#if defined(_INSERT_VECTOR_ANNOTATION) || defined(_INSERT_STRING_ANNOTATION) || defined(_INSERT_OPTIONAL_ANNOTATION)
 extern "C" {
 void __cdecl __asan_poison_memory_region(void const volatile* addr, size_t size);
 void __cdecl __asan_unpoison_memory_region(void const volatile* addr, size_t size);
@@ -178,6 +178,8 @@ void __cdecl __sanitizer_annotate_contiguous_container(
 #pragma comment(linker, "/alternatename:_Asan_vector_should_annotate=_Asan_vector_should_annotate_default")
 #pragma comment(linker, "/alternatename:#_Asan_string_should_annotate=#_Asan_string_should_annotate_default")
 #pragma comment(linker, "/alternatename:_Asan_string_should_annotate=_Asan_string_should_annotate_default")
+#pragma comment(linker, "/alternatename:#_Asan_optional_should_annotate=#_Asan_optional_should_annotate_default")
+#pragma comment(linker, "/alternatename:_Asan_optional_should_annotate=_Asan_optional_should_annotate_default")
 #elif defined(_M_HYBRID)
 #pragma comment(linker, \
     "/alternatename:#__sanitizer_annotate_contiguous_container=#__sanitizer_annotate_contiguous_container_default")
@@ -187,16 +189,20 @@ void __cdecl __sanitizer_annotate_contiguous_container(
 #pragma comment(linker, "/alternatename:__Asan_vector_should_annotate=__Asan_vector_should_annotate_default")
 #pragma comment(linker, "/alternatename:#_Asan_string_should_annotate=#_Asan_string_should_annotate_default")
 #pragma comment(linker, "/alternatename:__Asan_string_should_annotate=__Asan_string_should_annotate_default")
+#pragma comment(linker, "/alternatename:#_Asan_optional_should_annotate=#_Asan_optional_should_annotate_default")
+#pragma comment(linker, "/alternatename:__Asan_optional_should_annotate=__Asan_optional_should_annotate_default")
 #elif defined(_M_IX86)
 #pragma comment(linker, \
     "/alternatename:___sanitizer_annotate_contiguous_container=___sanitizer_annotate_contiguous_container_default")
 #pragma comment(linker, "/alternatename:__Asan_vector_should_annotate=__Asan_vector_should_annotate_default")
 #pragma comment(linker, "/alternatename:__Asan_string_should_annotate=__Asan_string_should_annotate_default")
+#pragma comment(linker, "/alternatename:__Asan_optional_should_annotate=__Asan_optional_should_annotate_default")
 #elif defined(_M_X64) || defined(_M_ARM64)
 #pragma comment(linker, \
     "/alternatename:__sanitizer_annotate_contiguous_container=__sanitizer_annotate_contiguous_container_default")
 #pragma comment(linker, "/alternatename:_Asan_vector_should_annotate=_Asan_vector_should_annotate_default")
 #pragma comment(linker, "/alternatename:_Asan_string_should_annotate=_Asan_string_should_annotate_default")
+#pragma comment(linker, "/alternatename:_Asan_optional_should_annotate=_Asan_optional_should_annotate_default")
 #else // ^^^ known architecture / unknown architecture vvv
 #error Unknown architecture
 #endif // ^^^ unknown architecture ^^^
