@@ -61,6 +61,12 @@ std/language.support/support.exception/except.nested/ctor_default.pass.cpp:2 SKI
 # SKIPPED because this is ARM64EC-specific.
 std/language.support/support.coroutines/coroutine.handle/coroutine.handle.noop/noop_coroutine.pass.cpp:2 SKIPPED
 
+# LLVM-171438: [Clang] __builtin_common_type is overly permissive
+# These tests are improperly working around this Clang bug by detecting Clang and asserting buggy results,
+# but only libc++ with Clang is affected; MSVC's STL with Clang is unaffected.
+std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:2 FAIL
+std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:2 FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -111,16 +117,6 @@ std/ranges/range.access/end.pass.cpp FAIL
 std/ranges/range.access/rbegin.pass.cpp FAIL
 std/ranges/range.access/rend.pass.cpp FAIL
 
-# libc++ has not implemented P2404R3: "Move-Only Types For Comparison Concepts"
-std/algorithms/alg.sorting/alg.sort/partial.sort.copy/ranges_partial_sort_copy.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/concepts.version.compile.pass.cpp FAIL
-std/utilities/function.objects/range.cmp/equal_to.pass.cpp FAIL
-std/utilities/function.objects/range.cmp/greater.pass.cpp FAIL
-std/utilities/function.objects/range.cmp/greater_equal.pass.cpp FAIL
-std/utilities/function.objects/range.cmp/less.pass.cpp FAIL
-std/utilities/function.objects/range.cmp/less_equal.pass.cpp FAIL
-std/utilities/function.objects/range.cmp/not_equal_to.pass.cpp FAIL
-
 # libc++ has not implemented P2407R5: "Freestanding Library: Partial Classes"
 std/language.support/support.limits/support.limits.general/array.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/optional.version.compile.pass.cpp FAIL
@@ -135,6 +131,9 @@ std/language.support/support.limits/support.limits.general/mdspan.version.compil
 
 # libc++ has not implemented P2937R0: "Freestanding Library: Remove strtok"
 std/language.support/support.limits/support.limits.general/cstring.version.compile.pass.cpp FAIL
+
+# libc++ has not implemented P3016R6: "Resolve Inconsistencies In begin/end For valarray And Braced Initializer Lists"
+std/language.support/support.initlist/support.initlist.range/begin_end.pass.cpp FAIL
 
 # libc++ has not implemented P3323R1: "Forbid atomic<cv T>, Specify atomic_ref<cv T>"
 std/atomics/atomics.ref/member_types.compile.pass.cpp FAIL
@@ -274,6 +273,11 @@ std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/sub_sat.compile.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/sub_sat.pass.cpp FAIL
 
+# P1789R3 Library Support For Expansion Statements
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/intseq/intseq.binding/structured_binding.pass.cpp FAIL
+std/utilities/intseq/intseq.binding/tuple_interface.compile.pass.cpp FAIL
+
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 # (type_traits.version.compile.pass.cpp still fails for Clang due to LLVM-48860)
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
@@ -281,6 +285,10 @@ std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporar
 std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:1 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:1 FAIL
+
+# P2592R3 Hashing Support For chrono Value Classes
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/time/time.hash/time.hash_enabled.pass.cpp FAIL
 
 # P2835R7 atomic_ref::address()
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
@@ -551,6 +559,10 @@ std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_delet
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_deleter.pass.cpp:1 FAIL
 
 # VSO-2574473 constexpr error in ranges::join_with_view: failure was caused by unevaluable pointer value
+std/ranges/range.adaptors/range.adjacent.transform/general.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.adjacent.transform/general.pass.cpp:1 FAIL
+std/ranges/range.adaptors/range.adjacent/general.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.adjacent/general.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:1 FAIL
 
@@ -810,6 +822,8 @@ std/re/re.regex/re.regex.swap/swap.pass.cpp FAIL
 
 # Test emits a Clang -Wself-move warning, so it should avoid the self-move or suppress the warning.
 std/containers/sequences/vector/addressof.compile.pass.cpp:2 FAIL
+std/thread/thread.mutex/thread.lock/thread.lock.shared/thread.lock.shared.cons/move_assign.pass.cpp:2 FAIL
+std/thread/thread.mutex/thread.lock/thread.lock.unique/thread.lock.unique.cons/move_assign.pass.cpp:2 FAIL
 
 # throwing_allocator appears to be totally non-Standard.
 std/containers/sequences/vector.bool/ctor_exceptions.pass.cpp FAIL
@@ -1050,6 +1064,7 @@ std/algorithms/alg.modifying.operations/alg.swap/ranges.swap_ranges.pass.cpp FAI
 std/algorithms/alg.nonmodifying/alg.contains/ranges.contains_subrange.pass.cpp:2 FAIL
 std/algorithms/alg.nonmodifying/alg.count/count.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.count/ranges.count.pass.cpp FAIL
+std/algorithms/alg.sorting/alg.sort/partial.sort.copy/ranges_partial_sort_copy.pass.cpp:2 FAIL
 std/containers/sequences/vector.bool/append_range.pass.cpp FAIL
 std/containers/sequences/vector.bool/assign_range.pass.cpp FAIL
 std/containers/sequences/vector.bool/flip.pass.cpp FAIL
@@ -1335,8 +1350,6 @@ std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.pass.cpp FAIL
 # Not analyzed, likely MSVC compiler bugs.
 std/utilities/function.objects/refwrap/common_reference.compile.pass.cpp:0 FAIL
 std/utilities/function.objects/refwrap/common_reference.compile.pass.cpp:1 FAIL
-std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp:0 FAIL
-std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp:1 FAIL
 
 # Not analyzed. MSVC emits warning C4267: 'argument': conversion from 'size_t' to 'unsigned char', possible loss of data
 std/algorithms/alg.modifying.operations/alg.copy/copy_backward.pass.cpp:0 FAIL

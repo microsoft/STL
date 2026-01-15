@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 4.1.1)
+cmake_minimum_required(VERSION 4.1.2)
 project(msvc_standard_libraries_benchmarks LANGUAGES CXX)
 
 if(DEFINED STL_BINARY_DIR)
@@ -113,6 +113,7 @@ add_benchmark(find_and_count src/find_and_count.cpp)
 add_benchmark(find_first_of src/find_first_of.cpp)
 add_benchmark(has_single_bit src/has_single_bit.cpp)
 add_benchmark(includes src/includes.cpp)
+add_benchmark(integer_to_string src/integer_to_string.cpp)
 add_benchmark(iota src/iota.cpp)
 add_benchmark(is_sorted_until src/is_sorted_until.cpp)
 add_benchmark(locale_classic src/locale_classic.cpp)
