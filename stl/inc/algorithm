@@ -64,7 +64,9 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 _Min_max_element_t __stdcall __std_minmax_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
+#ifndef _M_ARM64
 _Min_max_element_t __stdcall __std_minmax_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
+#endif // ^^^ !defined(_M_ARM64) ^^^
 _Min_max_element_t __stdcall __std_minmax_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
 _Min_max_element_t __stdcall __std_minmax_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
 #endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
@@ -121,6 +123,17 @@ __declspec(noalias) void __stdcall __std_replace_4(
 __declspec(noalias) void __stdcall __std_replace_8(
     void* _First, void* _Last, uint64_t _Old_val, uint64_t _New_val) noexcept;
 #endif // ^^^ _VECTORIZED_REPLACE ^^^
+
+#if _VECTORIZED_REPLACE_COPY
+__declspec(noalias) void __stdcall __std_replace_copy_1(
+    const void* _First, const void* _Last, void* _Dest, uint8_t _Old_val, uint8_t _New_val) noexcept;
+__declspec(noalias) void __stdcall __std_replace_copy_2(
+    const void* _First, const void* _Last, void* _Dest, uint16_t _Old_val, uint16_t _New_val) noexcept;
+__declspec(noalias) void __stdcall __std_replace_copy_4(
+    const void* _First, const void* _Last, void* _Dest, uint32_t _Old_val, uint32_t _New_val) noexcept;
+__declspec(noalias) void __stdcall __std_replace_copy_8(
+    const void* _First, const void* _Last, void* _Dest, uint64_t _Old_val, uint64_t _New_val) noexcept;
+#endif // ^^^ _VECTORIZED_REPLACE_COPY ^^^
 
 #if _VECTORIZED_SEARCH_N
 const void* __stdcall __std_search_n_1(const void* _First, const void* _Last, size_t _Count, uint8_t _Value) noexcept;
@@ -212,7 +225,11 @@ pair<_Ty*, _Ty*> _Minmax_element_vectorized(_Ty* const _First, _Ty* const _Last)
     } else if constexpr (sizeof(_Ty) == 4) {
         _Res = ::__std_minmax_element_4(_First, _Last, _Signed);
     } else if constexpr (sizeof(_Ty) == 8) {
+#ifdef _M_ARM64
+        static_assert(false, "unexpected size; 64-bit integers on ARM64 should not take this codepath");
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
         _Res = ::__std_minmax_element_8(_First, _Last, _Signed);
+#endif // ^^^ !defined(_M_ARM64) ^^^
     } else {
         static_assert(false, "unexpected size");
     }
@@ -358,6 +375,28 @@ __declspec(noalias) void _Replace_vectorized(
 }
 #endif // ^^^ _VECTORIZED_REPLACE ^^^
 
+#if _VECTORIZED_REPLACE_COPY
+template <class _Ty, class _TVal1, class _TVal2>
+__declspec(noalias) void _Replace_copy_vectorized(const _Ty* const _First, const _Ty* const _Last, _Ty* const _Dest,
+    const _TVal1 _Old_val, const _TVal2 _New_val) noexcept {
+    if constexpr (sizeof(_Ty) == 1) {
+        ::__std_replace_copy_1(
+            _First, _Last, _Dest, _STD _Find_arg_cast<uint8_t>(_Old_val), _STD _Find_arg_cast<uint8_t>(_New_val));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        ::__std_replace_copy_2(
+            _First, _Last, _Dest, _STD _Find_arg_cast<uint16_t>(_Old_val), _STD _Find_arg_cast<uint16_t>(_New_val));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        ::__std_replace_copy_4(
+            _First, _Last, _Dest, _STD _Find_arg_cast<uint32_t>(_Old_val), _STD _Find_arg_cast<uint32_t>(_New_val));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        ::__std_replace_copy_8(
+            _First, _Last, _Dest, _STD _Find_arg_cast<uint64_t>(_Old_val), _STD _Find_arg_cast<uint64_t>(_New_val));
+    } else {
+        static_assert(false, "unexpected size");
+    }
+}
+#endif // ^^^ _VECTORIZED_REPLACE_COPY ^^^
+
 #if _VECTORIZED_SEARCH_N
 template <class _Ty, class _TVal>
 _Ty* _Search_n_vectorized(_Ty* const _First, _Ty* const _Last, const size_t _Count, const _TVal _Val) noexcept {
@@ -475,6 +514,17 @@ constexpr bool _Output_iterator_for_vector_alg_is_safe() {
     }
 }
 #endif // ^^^ _VECTORIZED_REMOVE_COPY || _VECTORIZED_UNIQUE_COPY ^^^
+
+#if _VECTORIZED_REPLACE_COPY
+template <class _Out, class _In>
+constexpr bool _Output_iterator_for_known_size_vector_alg_is_safe() {
+    if constexpr (_Iterator_is_contiguous<_Out>) {
+        return is_same_v<_Iter_value_t<_Out>, remove_const_t<_Iter_value_t<_In>>>;
+    } else {
+        return false;
+    }
+}
+#endif // ^^^ _VECTORIZED_REPLACE_COPY ^^^
 
 #if _VECTORIZED_INCLUDES
 // Can we activate the vector algorithms for includes?
@@ -4562,15 +4612,6 @@ namespace ranges {
 } // namespace ranges
 #endif // _HAS_CXX20
 
-// TRANSITION, DevCom-10606350: help the compiler auto-vectorize for simple types
-template <class _UOutIt, class _InTy, class _NewTy, class _OutTy = remove_pointer_t<_UOutIt>>
-constexpr bool _Can_vectorize_replace_copy = conjunction_v<is_pointer<_UOutIt>, is_same<_InTy, _NewTy>,
-    disjunction<
-#ifdef __cpp_lib_byte
-        conjunction<is_same<_InTy, byte>, is_same<_OutTy, byte>>,
-#endif // defined(__cpp_lib_byte)
-        conjunction<is_integral<_InTy>, is_integral<_OutTy>>, conjunction<is_pointer<_InTy>, is_pointer<_OutTy>>>>;
-
 _EXPORT_STD template <class _InIt, class _OutIt, class _Ty>
 _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Oldval, const _Ty& _Newval) {
     // copy replacing each matching _Oldval with _Newval
@@ -4579,15 +4620,36 @@ _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const 
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
     auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
-    for (; _UFirst != _ULast; ++_UFirst, (void) ++_UDest) {
-        if constexpr (_Can_vectorize_replace_copy<decltype(_UDest), _Iter_value_t<_InIt>, _Ty>) {
-            *_UDest = *_UFirst == _Oldval ? _Newval : *_UFirst;
-        } else {
-            if (*_UFirst == _Oldval) {
-                *_UDest = _Newval;
+
+#if _VECTORIZED_REPLACE_COPY
+    if constexpr (_Vector_alg_in_find_is_safe<decltype(_UFirst), _Ty>
+                  && _Output_iterator_for_known_size_vector_alg_is_safe<decltype(_UDest), decltype(_UFirst)>()) {
+        if (!_STD _Is_constant_evaluated()) {
+            const auto _Count = static_cast<_Iter_diff_t<decltype(_UDest)>>(_ULast - _UFirst);
+            _STD _Contiguous_iter_verify(_UDest, _Count);
+
+            const auto _First_ptr = _STD _To_address(_UFirst);
+            const auto _Last_ptr  = _STD _To_address(_ULast);
+            const auto _Dest_ptr  = _STD _To_address(_UDest);
+
+            if (_STD _Could_compare_equal_to_value_type<decltype(_UFirst)>(_Oldval)) {
+                _STD _Replace_copy_vectorized(_First_ptr, _Last_ptr, _Dest_ptr, _Oldval, _Newval);
             } else {
-                *_UDest = *_UFirst;
+                _CSTD memcpy(_Dest_ptr, _First_ptr, static_cast<size_t>(_Count) * sizeof(*_Dest_ptr));
             }
+
+            _UDest += _Count;
+            _STD _Seek_wrapped(_Dest, _UDest);
+            return _Dest;
+        }
+    }
+#endif // ^^^ _VECTORIZED_REPLACE_COPY ^^^
+
+    for (; _UFirst != _ULast; ++_UFirst, (void) ++_UDest) {
+        if (*_UFirst == _Oldval) {
+            *_UDest = _Newval;
+        } else {
+            *_UDest = *_UFirst;
         }
     }
 
@@ -4660,15 +4722,37 @@ namespace ranges {
 
             _STD _Verify_ranges_do_not_overlap(_First, _Last, _Output);
 
-            for (; _First != _Last; ++_First, (void) ++_Output) {
-                if constexpr (_Can_vectorize_replace_copy<_Out, iter_value_t<_It>, _Ty2>) {
-                    *_Output = _STD invoke(_Proj, *_First) == _Oldval ? _Newval : *_First;
-                } else {
-                    if (_STD invoke(_Proj, *_First) == _Oldval) {
-                        *_Output = _Newval;
+#if _VECTORIZED_REPLACE_COPY
+            if constexpr (is_same_v<_Pj, identity> && sized_sentinel_for<_Se, _It>
+                          && _Vector_alg_in_find_is_safe<_It, _Ty1> && _Vector_alg_in_find_is_safe<_It, _Ty2>
+                          && _Output_iterator_for_known_size_vector_alg_is_safe<_Out, _It>()) {
+                if (!_STD is_constant_evaluated()) {
+                    const auto _Count = _Last - _First;
+                    _STD _Contiguous_iter_verify(_First, _Count);
+                    _STD _Contiguous_iter_verify(_Output, static_cast<iter_difference_t<_Out>>(_Count));
+
+                    const auto _First_ptr = _STD to_address(_First);
+                    const auto _Last_ptr  = _First_ptr + static_cast<size_t>(_Count);
+                    const auto _Out_ptr   = _STD to_address(_Output);
+
+                    if (_STD _Could_compare_equal_to_value_type<_It>(_Oldval)) {
+                        _STD _Replace_copy_vectorized(_First_ptr, _Last_ptr, _Out_ptr, _Oldval, _Newval);
                     } else {
-                        *_Output = *_First;
+                        _CSTD memcpy(_Out_ptr, _First_ptr, static_cast<size_t>(_Count) * sizeof(*_Out_ptr));
                     }
+
+                    _First += _Count;
+                    _Output += static_cast<iter_difference_t<_Out>>(_Count);
+                    return {_STD move(_First), _STD move(_Output)};
+                }
+            }
+#endif // ^^^ _VECTORIZED_REPLACE_COPY ^^^
+
+            for (; _First != _Last; ++_First, (void) ++_Output) {
+                if (_STD invoke(_Proj, *_First) == _Oldval) {
+                    *_Output = _Newval;
+                } else {
+                    *_Output = *_First;
                 }
             }
 
@@ -4689,14 +4773,10 @@ _CONSTEXPR20 _OutIt replace_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr
     const auto _ULast = _STD _Get_unwrapped(_Last);
     auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
     for (; _UFirst != _ULast; ++_UFirst, (void) ++_UDest) {
-        if constexpr (_Can_vectorize_replace_copy<decltype(_UDest), _Iter_value_t<_InIt>, _Ty>) {
-            *_UDest = _Pred(*_UFirst) ? _Val : *_UFirst;
+        if (_Pred(*_UFirst)) {
+            *_UDest = _Val;
         } else {
-            if (_Pred(*_UFirst)) {
-                *_UDest = _Val;
-            } else {
-                *_UDest = *_UFirst;
-            }
+            *_UDest = *_UFirst;
         }
     }
 
@@ -4771,14 +4851,10 @@ namespace ranges {
             _STD _Verify_ranges_do_not_overlap(_First, _Last, _Output);
 
             for (; _First != _Last; ++_First, (void) ++_Output) {
-                if constexpr (_Can_vectorize_replace_copy<_Out, iter_value_t<_It>, _Ty>) {
-                    *_Output = _STD invoke(_Pred, _STD invoke(_Proj, *_First)) ? _Newval : *_First;
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
+                    *_Output = _Newval;
                 } else {
-                    if (_STD invoke(_Pred, _STD invoke(_Proj, *_First))) {
-                        *_Output = _Newval;
-                    } else {
-                        *_Output = *_First;
-                    }
+                    *_Output = *_First;
                 }
             }
 

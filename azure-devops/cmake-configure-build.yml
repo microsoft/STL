@@ -27,28 +27,38 @@ parameters:
     - '--run-shard=$(System.JobPositionInPhase)'
 
 steps:
-- script: |
-    if exist "$(buildOutputLocation)" (
-      rmdir /S /Q "$(buildOutputLocation)"
-    )
-    call "$(vsDevCmdBat)" -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-    cmake -G Ninja ^
-    -DCMAKE_CXX_COMPILER=cl ^
-    -DCMAKE_BUILD_TYPE=Release ^
-    -DLIT_FLAGS=${{ join(';', parameters.litFlags) }} ^
-    -DSTL_USE_ANALYZE=${{ parameters.analyzeBuild }} ^
-    -DSTL_ASAN_BUILD=${{ parameters.asanBuild }} ^
-    -DCONFIGURE_TESTING=${{ parameters.configureTesting }} ^
-    -DTESTS_BUILD_ONLY=${{ parameters.testsBuildOnly }} ^
-    -DVCLIBS_TARGET_ARCHITECTURE=${{ parameters.targetPlatform }} ^
-    -S $(Build.SourcesDirectory) -B "$(buildOutputLocation)"
+- task: PowerShell@2
   displayName: 'Configure STL'
+  inputs:
+    pwsh: true
+    targetType: inline
+    script: |
+      $PSNativeCommandUseErrorActionPreference = $true
+      if (Test-Path -LiteralPath "$(buildOutputLocation)") {
+          Remove-Item -LiteralPath "$(buildOutputLocation)" -Recurse -Force
+      }
+      & "$(launchVsDevShell)" -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
+      cmake -G Ninja `
+      -DCMAKE_CXX_COMPILER=cl `
+      -DCMAKE_BUILD_TYPE=Release `
+      -DLIT_FLAGS="${{ join(';', parameters.litFlags) }}" `
+      -DSTL_USE_ANALYZE=${{ parameters.analyzeBuild }} `
+      -DSTL_ASAN_BUILD=${{ parameters.asanBuild }} `
+      -DCONFIGURE_TESTING=${{ parameters.configureTesting }} `
+      -DTESTS_BUILD_ONLY=${{ parameters.testsBuildOnly }} `
+      -DVCLIBS_TARGET_ARCHITECTURE=${{ parameters.targetPlatform }} `
+      -S $(Build.SourcesDirectory) -B "$(buildOutputLocation)"
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-- script: |
-    call "$(vsDevCmdBat)" -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-    cmake --build "$(buildOutputLocation)"
+- task: PowerShell@2
   displayName: 'Build STL'
+  inputs:
+    pwsh: true
+    targetType: inline
+    script: |
+      $PSNativeCommandUseErrorActionPreference = $true
+      & "$(launchVsDevShell)" -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
+      cmake --build "$(buildOutputLocation)"
   timeoutInMinutes: 5
   condition: and(succeeded(), ${{ parameters.buildStl }})
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
