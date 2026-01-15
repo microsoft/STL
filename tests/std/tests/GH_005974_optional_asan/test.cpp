@@ -44,11 +44,29 @@ void test_repoison_after_reset() {
     ASAN_VERIFY_POISONED(reinterpret_cast<Payload*>(&opt));
 }
 
+constexpr bool test_constexpr() {
+#if _HAS_CXX20
+    bool res                   = true;
+    std::optional<Payload> opt = std::nullopt;
+    opt                        = Payload{};
+    opt.reset();
+    opt = Payload{86, 0, 0, 0};
+    res = opt->x == 86;
+    opt.emplace(42, 0, 0, 0);
+    res = res && (opt->x == 42);
+    return res;
+#else
+    std::optional<Payload> opt{Payload{86, 0, 0, 0}};
+    return opt->x == 86;
+#endif
+}
+
 int main() {
     test_poison_on_empty_access();
     test_emplace_unpoisoning();
     test_assignment_unpoisoning();
     test_repoison_after_reset();
+    static_assert(test_constexpr(), "constexpr test failed");
 
     return 0;
 }
