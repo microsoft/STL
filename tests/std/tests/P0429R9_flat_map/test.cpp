@@ -30,7 +30,7 @@ constexpr bool is_specialization_v = false;
 template <template <class...> class Tmpl, class... Ts>
 constexpr bool is_specialization_v<Tmpl<Ts...>, Tmpl> = true;
 
-template <typename T>
+template <class T>
 concept IsFlatMap =
     is_specialization_v<remove_cvref_t<T>, flat_map> || is_specialization_v<remove_cvref_t<T>, flat_multimap>;
 
@@ -120,7 +120,7 @@ template <IsFlatMap T>
     });
 }
 
-template <typename T>
+template <class T>
 class MyAllocator : public allocator<T> {
 public:
     using value_type = T;
@@ -169,14 +169,14 @@ namespace std {
     };
 } // namespace std
 
-template <typename T>
+template <class T>
 class Packaged {
 private:
     T value;
 
 public:
     Packaged() : value() {}
-    template <typename U>
+    template <class U>
         requires constructible_from<T, U&&>
     Packaged(U&& u) : value(forward<U>(u)) {}
 
@@ -197,10 +197,10 @@ public:
     friend auto operator<=>(const Packaged&, const Packaged&) = default;
 };
 
-template <typename T>
+template <class T>
 struct PackagedCompare : less<Packaged<T>> {};
 
-template <typename T>
+template <class T>
 struct TransparentPackagedCompare : PackagedCompare<T> {
     using is_transparent = void;
 
@@ -1183,7 +1183,7 @@ void test_throwing_compare_swap_single() {
 }
 
 // Test that changes in GH-5987 did not break calls of lookup member functions by using deducing this.
-template <typename T>
+template <class T>
 void test_lookup_call_on_temporaries_single() {
     (void) T{}.lower_bound(42);
     (void) T{}.lower_bound('a');

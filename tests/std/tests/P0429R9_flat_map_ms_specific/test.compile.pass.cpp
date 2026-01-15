@@ -51,7 +51,7 @@ struct flat_map_unique_if_impl<false> {
 template <bool IsUnique, class Key, class Mapped, class Comp, class KeyCont, class MappedCont>
 using flat_map_unique_if = flat_map_unique_if_impl<IsUnique>::template type<Key, Mapped, Comp, KeyCont, MappedCont>;
 
-template <typename A, typename B>
+template <class A, class B>
 constexpr bool has_different_nested_types = !is_same_v<typename A::value_compare, typename B::value_compare>
                                          && !is_same_v<typename A::containers, typename B::containers>;
 
