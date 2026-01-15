@@ -77,7 +77,7 @@ struct _Optional_destruct_base { // either contains a value of _Ty or is empty (
 
     constexpr _Optional_destruct_base() noexcept : _Dummy{}, _Has_value{false} { // initialize an empty optional
 #ifdef _INSERT_OPTIONAL_ANNOTATION
-        if (_Asan_optional_should_annotate && !_STD _Is_constant_evaluated()) {
+        if (!_STD _Is_constant_evaluated() && _Asan_optional_should_annotate) {
             __asan_poison_memory_region(_STD addressof(_Value), sizeof(_Ty));
         }
 #endif
@@ -101,7 +101,7 @@ struct _Optional_destruct_base { // either contains a value of _Ty or is empty (
     _CONSTEXPR20 void reset() noexcept {
         _Has_value = false;
 #ifdef _INSERT_OPTIONAL_ANNOTATION
-        if (_Asan_optional_should_annotate && !_STD _Is_constant_evaluated()) {
+        if (!_STD _Is_constant_evaluated() && _Asan_optional_should_annotate) {
             __asan_poison_memory_region(_STD addressof(_Value), sizeof(_Ty));
         }
 #endif
@@ -121,7 +121,7 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
             _Value.~_Ty();
 
 #ifdef _INSERT_OPTIONAL_ANNOTATION
-            if (_Asan_optional_should_annotate && !_STD _Is_constant_evaluated()) {
+            if (!_STD _Is_constant_evaluated() && _Asan_optional_should_annotate) {
                 __asan_poison_memory_region(_STD addressof(_Value), sizeof(_Ty));
             }
 #endif
@@ -137,7 +137,7 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
 
     constexpr _Optional_destruct_base() noexcept : _Dummy{}, _Has_value{false} { // initialize an empty optional
 #ifdef _INSERT_OPTIONAL_ANNOTATION
-        if (_Asan_optional_should_annotate && !_STD _Is_constant_evaluated()) {
+        if (!_STD _Is_constant_evaluated() && _Asan_optional_should_annotate) {
             __asan_poison_memory_region(_STD addressof(_Value), sizeof(_Ty));
         }
 #endif
@@ -165,7 +165,7 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
             _Value.~_Ty();
 
 #ifdef _INSERT_OPTIONAL_ANNOTATION
-            if (_Asan_optional_should_annotate && !_STD _Is_constant_evaluated()) {
+            if (!_STD _Is_constant_evaluated() && _Asan_optional_should_annotate) {
                 __asan_poison_memory_region(_STD addressof(_Value), sizeof(_Ty));
             }
 #endif
@@ -186,7 +186,7 @@ struct _Optional_construct_base : _Optional_destruct_base<_Ty> {
         _STL_INTERNAL_CHECK(!this->_Has_value);
 
 #ifdef _INSERT_OPTIONAL_ANNOTATION
-        if (_Asan_optional_should_annotate && !_STD _Is_constant_evaluated()) {
+        if (!_STD _Is_constant_evaluated() && _Asan_optional_should_annotate) {
             __asan_unpoison_memory_region(_STD addressof(this->_Value), sizeof(_Ty));
         }
 #endif
