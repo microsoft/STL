@@ -1013,7 +1013,7 @@ protected:
     }
 
 private:
-    // FIXME, typename is an EDG workaround
+    // typename is a workaround for VSO-2680018 (EDG)
     template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
     friend typename flat_map<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>::size_type erase_if(
         flat_map<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>&, _Pred);

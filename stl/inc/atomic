@@ -341,21 +341,6 @@ _NODISCARD inline memory_order _Combine_cas_memory_orders(
     return _Combined_memory_orders[static_cast<int>(_Success)][static_cast<int>(_Failure)];
 }
 
-template <class _Integral, class _Ty>
-_NODISCARD _Integral _Atomic_reinterpret_as(const _Ty& _Source) noexcept {
-    // interprets _Source as the supplied integral type
-    static_assert(is_integral_v<_Integral>, "Tried to reinterpret memory as non-integral");
-    if constexpr (is_integral_v<_Ty> && sizeof(_Integral) == sizeof(_Ty)) {
-        return static_cast<_Integral>(_Source);
-    } else if constexpr (is_pointer_v<_Ty> && sizeof(_Integral) == sizeof(_Ty)) {
-        return reinterpret_cast<_Integral>(_Source);
-    } else {
-        _Integral _Result{}; // zero padding bits
-        _CSTD memcpy(&_Result, _STD addressof(_Source), sizeof(_Source));
-        return _Result;
-    }
-}
-
 #if 1 // TRANSITION, ABI
 template <class _Ty>
 struct _Atomic_padded {
@@ -428,13 +413,13 @@ void _Atomic_wait_direct(
     const auto _Storage_ptr =
         const_cast<const void*>(static_cast<const volatile void*>(_STD addressof(_This->_Storage)));
     for (;;) {
-        const _Value_type _Observed_bytes = _STD _Atomic_reinterpret_as<_Value_type>(_This->load(_Order));
+        const _Value_type _Observed_bytes = _STD _Bit_cast<_Value_type>(_This->load(_Order));
         if (_Expected_bytes != _Observed_bytes) {
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
             using _TVal = _Remove_cvref_t<_Ty>;
             if constexpr (_Might_have_non_value_bits<_TVal>) {
                 _Storage_for<_TVal> _Mask{_Form_mask};
-                const _Value_type _Mask_val = _STD _Atomic_reinterpret_as<_Value_type>(_Mask._Ref());
+                const _Value_type _Mask_val = _STD _Bit_cast<_Value_type>(_Mask._Ref());
 
                 if (((_Expected_bytes ^ _Observed_bytes) & _Mask_val) == 0) {
                     _Expected_bytes = _Observed_bytes;
@@ -681,13 +666,13 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
 
     void store(const _TVal _Value) noexcept { // store with sequential consistency
         const auto _Mem      = _STD _Atomic_address_as<char>(_Storage);
-        const char _As_bytes = _STD _Atomic_reinterpret_as<char>(_Value);
+        const char _As_bytes = _STD _Bit_cast<char>(_Value);
         _ATOMIC_STORE_SEQ_CST(8, _Mem, _As_bytes)
     }
 
     void store(const _TVal _Value, const memory_order _Order) noexcept { // store with given memory order
         const auto _Mem      = _STD _Atomic_address_as<char>(_Storage);
-        const char _As_bytes = _STD _Atomic_reinterpret_as<char>(_Value);
+        const char _As_bytes = _STD _Bit_cast<char>(_Value);
 
         _Check_store_memory_order(_Order);
 
@@ -717,24 +702,23 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         // exchange with given memory order
         char _As_bytes;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _As_bytes, _InterlockedExchange8,
-            _STD _Atomic_address_as<char>(_Storage), _STD _Atomic_reinterpret_as<char>(_Value));
+            _STD _Atomic_address_as<char>(_Storage), _STD _Bit_cast<char>(_Value));
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
     bool compare_exchange_strong(_TVal& _Expected, const _TVal _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
-        char _Expected_bytes = _STD _Atomic_reinterpret_as<char>(_Expected); // read before atomic operation
+        char _Expected_bytes = _STD _Bit_cast<char>(_Expected); // read before atomic operation
         char _Prev_bytes;
 
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
         if constexpr (_Might_have_non_value_bits<_TVal>) {
             _Storage_for<_TVal> _Mask{_Form_mask};
-            const char _Mask_val = _STD _Atomic_reinterpret_as<char>(_Mask._Ref());
+            const char _Mask_val = _STD _Bit_cast<char>(_Mask._Ref());
 
             for (;;) {
                 _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange8,
-                    _STD _Atomic_address_as<char>(_Storage), _STD _Atomic_reinterpret_as<char>(_Desired),
-                    _Expected_bytes);
+                    _STD _Atomic_address_as<char>(_Storage), _STD _Bit_cast<char>(_Desired), _Expected_bytes);
                 if (_Prev_bytes == _Expected_bytes) {
                     return true;
                 }
@@ -748,7 +732,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         }
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange8,
-            _STD _Atomic_address_as<char>(_Storage), _STD _Atomic_reinterpret_as<char>(_Desired), _Expected_bytes);
+            _STD _Atomic_address_as<char>(_Storage), _STD _Bit_cast<char>(_Desired), _Expected_bytes);
         if (_Prev_bytes == _Expected_bytes) {
             return true;
         }
@@ -759,7 +743,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
 
 #if _HAS_CXX20
     void wait(const _TVal _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        _STD _Atomic_wait_direct(this, _STD _Atomic_reinterpret_as<char>(_Expected), _Order);
+        _STD _Atomic_wait_direct(this, _STD _Bit_cast<char>(_Expected), _Order);
     }
 
     void notify_one() noexcept {
@@ -788,13 +772,13 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
 
     void store(const _TVal _Value) noexcept { // store with sequential consistency
         const auto _Mem       = _STD _Atomic_address_as<short>(_Storage);
-        const short _As_bytes = _STD _Atomic_reinterpret_as<short>(_Value);
+        const short _As_bytes = _STD _Bit_cast<short>(_Value);
         _ATOMIC_STORE_SEQ_CST(16, _Mem, _As_bytes)
     }
 
     void store(const _TVal _Value, const memory_order _Order) noexcept { // store with given memory order
         const auto _Mem       = _STD _Atomic_address_as<short>(_Storage);
-        const short _As_bytes = _STD _Atomic_reinterpret_as<short>(_Value);
+        const short _As_bytes = _STD _Bit_cast<short>(_Value);
 
         _Check_store_memory_order(_Order);
 
@@ -824,23 +808,22 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         // exchange with given memory order
         short _As_bytes;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _As_bytes, _InterlockedExchange16,
-            _STD _Atomic_address_as<short>(_Storage), _STD _Atomic_reinterpret_as<short>(_Value));
+            _STD _Atomic_address_as<short>(_Storage), _STD _Bit_cast<short>(_Value));
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
     bool compare_exchange_strong(_TVal& _Expected, const _TVal _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
-        short _Expected_bytes = _STD _Atomic_reinterpret_as<short>(_Expected); // read before atomic operation
+        short _Expected_bytes = _STD _Bit_cast<short>(_Expected); // read before atomic operation
         short _Prev_bytes;
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
         if constexpr (_Might_have_non_value_bits<_Ty>) {
             _Storage_for<_TVal> _Mask{_Form_mask};
-            const short _Mask_val = _STD _Atomic_reinterpret_as<short>(_Mask._Ref());
+            const short _Mask_val = _STD _Bit_cast<short>(_Mask._Ref());
 
             for (;;) {
                 _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange16,
-                    _STD _Atomic_address_as<short>(_Storage), _STD _Atomic_reinterpret_as<short>(_Desired),
-                    _Expected_bytes);
+                    _STD _Atomic_address_as<short>(_Storage), _STD _Bit_cast<short>(_Desired), _Expected_bytes);
                 if (_Prev_bytes == _Expected_bytes) {
                     return true;
                 }
@@ -854,7 +837,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         }
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange16,
-            _STD _Atomic_address_as<short>(_Storage), _STD _Atomic_reinterpret_as<short>(_Desired), _Expected_bytes);
+            _STD _Atomic_address_as<short>(_Storage), _STD _Bit_cast<short>(_Desired), _Expected_bytes);
         if (_Prev_bytes == _Expected_bytes) {
             return true;
         }
@@ -865,7 +848,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
 
 #if _HAS_CXX20
     void wait(const _TVal _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        _STD _Atomic_wait_direct(this, _STD _Atomic_reinterpret_as<short>(_Expected), _Order);
+        _STD _Atomic_wait_direct(this, _STD _Bit_cast<short>(_Expected), _Order);
     }
 
     void notify_one() noexcept {
@@ -894,13 +877,13 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
 
     void store(const _TVal _Value) noexcept { // store with sequential consistency
         const auto _Mem     = _STD _Atomic_address_as<int>(_Storage);
-        const int _As_bytes = _STD _Atomic_reinterpret_as<int>(_Value);
+        const int _As_bytes = _STD _Bit_cast<int>(_Value);
         _ATOMIC_STORE_32_SEQ_CST(_Mem, _As_bytes)
     }
 
     void store(const _TVal _Value, const memory_order _Order) noexcept { // store with given memory order
         const auto _Mem     = _STD _Atomic_address_as<int>(_Storage);
-        const int _As_bytes = _STD _Atomic_reinterpret_as<int>(_Value);
+        const int _As_bytes = _STD _Bit_cast<int>(_Value);
 
         _Check_store_memory_order(_Order);
 
@@ -930,23 +913,22 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         // exchange with given memory order
         long _As_bytes;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _As_bytes, _InterlockedExchange,
-            _STD _Atomic_address_as<long>(_Storage), _STD _Atomic_reinterpret_as<long>(_Value));
+            _STD _Atomic_address_as<long>(_Storage), _STD _Bit_cast<long>(_Value));
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
     bool compare_exchange_strong(_TVal& _Expected, const _TVal _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
-        long _Expected_bytes = _STD _Atomic_reinterpret_as<long>(_Expected); // read before atomic operation
+        long _Expected_bytes = _STD _Bit_cast<long>(_Expected); // read before atomic operation
         long _Prev_bytes;
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
         if constexpr (_Might_have_non_value_bits<_TVal>) {
             _Storage_for<_TVal> _Mask{_Form_mask};
-            const long _Mask_val = _STD _Atomic_reinterpret_as<long>(_Mask);
+            const long _Mask_val = _STD _Bit_cast<long>(_Mask._Ref());
 
             for (;;) {
                 _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange,
-                    _STD _Atomic_address_as<long>(_Storage), _STD _Atomic_reinterpret_as<long>(_Desired),
-                    _Expected_bytes);
+                    _STD _Atomic_address_as<long>(_Storage), _STD _Bit_cast<long>(_Desired), _Expected_bytes);
                 if (_Prev_bytes == _Expected_bytes) {
                     return true;
                 }
@@ -960,7 +942,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         }
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange,
-            _STD _Atomic_address_as<long>(_Storage), _STD _Atomic_reinterpret_as<long>(_Desired), _Expected_bytes);
+            _STD _Atomic_address_as<long>(_Storage), _STD _Bit_cast<long>(_Desired), _Expected_bytes);
         if (_Prev_bytes == _Expected_bytes) {
             return true;
         }
@@ -971,7 +953,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
 
 #if _HAS_CXX20
     void wait(const _TVal _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        _STD _Atomic_wait_direct(this, _STD _Atomic_reinterpret_as<long>(_Expected), _Order);
+        _STD _Atomic_wait_direct(this, _STD _Bit_cast<long>(_Expected), _Order);
     }
 
     void notify_one() noexcept {
@@ -1000,7 +982,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
     void store(const _TVal _Value) noexcept { // store with sequential consistency
         const auto _Mem           = _STD _Atomic_address_as<long long>(_Storage);
-        const long long _As_bytes = _STD _Atomic_reinterpret_as<long long>(_Value);
+        const long long _As_bytes = _STD _Bit_cast<long long>(_Value);
 #if defined(__clang__) && defined(_M_IX86) // TRANSITION, LLVM-126516
         static_assert(_M_IX86_FP != 0, "8 byte atomic store is not supported on clang-cl with /arch:IA32");
         __atomic_store_n(_Mem, _As_bytes, __ATOMIC_SEQ_CST);
@@ -1011,7 +993,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
     void store(const _TVal _Value, const memory_order _Order) noexcept { // store with given memory order
         const auto _Mem           = _STD _Atomic_address_as<long long>(_Storage);
-        const long long _As_bytes = _STD _Atomic_reinterpret_as<long long>(_Value);
+        const long long _As_bytes = _STD _Bit_cast<long long>(_Value);
 
         _Check_store_memory_order(_Order);
 
@@ -1064,25 +1046,24 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         // exchange with given memory order
         long long _As_bytes;
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _As_bytes, _InterlockedExchange64,
-            _STD _Atomic_address_as<long long>(_Storage), _STD _Atomic_reinterpret_as<long long>(_Value));
+            _STD _Atomic_address_as<long long>(_Storage), _STD _Bit_cast<long long>(_Value));
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 #endif // ^^^ !defined(_M_IX86) ^^^
 
     bool compare_exchange_strong(_TVal& _Expected, const _TVal _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with given memory order
-        long long _Expected_bytes = _STD _Atomic_reinterpret_as<long long>(_Expected); // read before atomic operation
+        long long _Expected_bytes = _STD _Bit_cast<long long>(_Expected); // read before atomic operation
         long long _Prev_bytes;
 
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
         if constexpr (_Might_have_non_value_bits<_TVal>) {
             _Storage_for<_TVal> _Mask{_Form_mask};
-            const long long _Mask_val = _STD _Atomic_reinterpret_as<long long>(_Mask);
+            const long long _Mask_val = _STD _Bit_cast<long long>(_Mask._Ref());
 
             for (;;) {
                 _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange64,
-                    _STD _Atomic_address_as<long long>(_Storage), _STD _Atomic_reinterpret_as<long long>(_Desired),
-                    _Expected_bytes);
+                    _STD _Atomic_address_as<long long>(_Storage), _STD _Bit_cast<long long>(_Desired), _Expected_bytes);
                 if (_Prev_bytes == _Expected_bytes) {
                     return true;
                 }
@@ -1096,8 +1077,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         }
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Prev_bytes, _InterlockedCompareExchange64,
-            _STD _Atomic_address_as<long long>(_Storage), _STD _Atomic_reinterpret_as<long long>(_Desired),
-            _Expected_bytes);
+            _STD _Atomic_address_as<long long>(_Storage), _STD _Bit_cast<long long>(_Desired), _Expected_bytes);
         if (_Prev_bytes == _Expected_bytes) {
             return true;
         }
@@ -1108,7 +1088,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
 
 #if _HAS_CXX20
     void wait(const _TVal _Expected, const memory_order _Order = memory_order_seq_cst) const noexcept {
-        _STD _Atomic_wait_direct(this, _STD _Atomic_reinterpret_as<long long>(_Expected), _Order);
+        _STD _Atomic_wait_direct(this, _STD _Bit_cast<long long>(_Expected), _Order);
     }
 
     void notify_one() noexcept {

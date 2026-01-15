@@ -26,11 +26,11 @@ if __name__ == "__main__":
 
     # Build up a list of nonexistent tests so they can be printed in sorted order.
     absolute_libcxx_test = absolute_repo_path / "llvm-project/libcxx/test"
-    nonexistent_tests = [str for str in unique_tests if not (absolute_libcxx_test / str).is_file()]
+    nonexistent_tests = [s for s in unique_tests if not (absolute_libcxx_test / s).is_file()]
 
     if nonexistent_tests:
         print(f"Failure: {expected_results_txt} contains {len(nonexistent_tests)} nonexistent tests:", file=sys.stderr)
-        for str in sorted(nonexistent_tests):
-            print(f"{str}", file=sys.stderr)
+        for s in sorted(nonexistent_tests):
+            print(f"{s}", file=sys.stderr)
         print(f"##vso[task.logissue type=error]{expected_results_txt} failed validation, see log.", file=sys.stderr)
         sys.exit(1)
