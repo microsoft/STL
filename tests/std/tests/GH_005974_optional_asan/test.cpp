@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <__msvc_sanitizer_annotate_container.hpp>
 #include <cassert>
 #include <optional>
 
@@ -28,18 +27,18 @@ void test_poison_on_empty_access() {
 
 void test_emplace_unpoisoning() {
     std::optional<Payload> opt;
-    opt.emplace(Payload());
+    opt.emplace();
     ASAN_VERIFY_UNPOISONED(reinterpret_cast<Payload*>(&opt));
 }
 
 void test_assignment_unpoisoning() {
     std::optional<Payload> opt = std::nullopt;
-    opt                        = Payload();
+    opt                        = Payload{};
     ASAN_VERIFY_UNPOISONED(reinterpret_cast<Payload*>(&opt));
 }
 
 void test_repoison_after_reset() {
-    std::optional<Payload> opt = Payload();
+    std::optional<Payload> opt = Payload{};
     ASAN_VERIFY_UNPOISONED(reinterpret_cast<Payload*>(&opt));
     opt.reset();
     ASAN_VERIFY_POISONED(reinterpret_cast<Payload*>(&opt));
