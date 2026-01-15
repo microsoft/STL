@@ -526,21 +526,21 @@ public:
     // [container.reqmts] iterators
     _NODISCARD iterator begin() noexcept {
         _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<iterator>);
-        return iterator{_STD cbegin(_Data.keys), _Data.values.begin()};
+        return iterator{_Data.keys.cbegin(), _Data.values.begin()};
     }
 
     _NODISCARD const_iterator begin() const noexcept {
         _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<const_iterator>);
         _STL_INTERNAL_STATIC_ASSERT(convertible_to<iterator, const_iterator>);
-        return const_iterator{_STD cbegin(_Data.keys), _Data.values.begin()};
+        return const_iterator{_Data.keys.cbegin(), _Data.values.begin()};
     }
 
     _NODISCARD iterator end() noexcept {
-        return iterator{_STD cend(_Data.keys), _Data.values.end()};
+        return iterator{_Data.keys.cend(), _Data.values.end()};
     }
 
     _NODISCARD const_iterator end() const noexcept {
-        return const_iterator{_STD cend(_Data.keys), _Data.values.end()};
+        return const_iterator{_Data.keys.cend(), _Data.values.end()};
     }
 
     _NODISCARD reverse_iterator rbegin() noexcept {
@@ -560,11 +560,11 @@ public:
     }
 
     _NODISCARD const_iterator cbegin() const noexcept {
-        return const_iterator{_STD cbegin(_Data.keys), _STD cbegin(_Data.values)};
+        return const_iterator{_Data.keys.cbegin(), _Data.values.cbegin()};
     }
 
     _NODISCARD const_iterator cend() const noexcept {
-        return const_iterator{_STD cend(_Data.keys), _STD cend(_Data.values)};
+        return const_iterator{_Data.keys.cend(), _Data.values.cend()};
     }
 
     _NODISCARD const_reverse_iterator crbegin() const noexcept {
@@ -867,14 +867,14 @@ public:
     }
 
     _NODISCARD friend bool operator==(const _Derived& _Left, const _Derived& _Right) {
-        return _STD equal(_STD _Get_unwrapped(_STD cbegin(_Left)), _STD _Get_unwrapped(_STD cend(_Left)),
-            _STD _Get_unwrapped(_STD cbegin(_Right)), _STD _Get_unwrapped(_STD cend(_Right)));
+        return _STD equal(_STD _Get_unwrapped(_Left.cbegin()), _STD _Get_unwrapped(_Left.cend()),
+            _STD _Get_unwrapped(_Right.cbegin()), _STD _Get_unwrapped(_Right.cend()));
     }
 
     _NODISCARD friend auto operator<=>(const _Derived& _Left, const _Derived& _Right) {
-        return _STD lexicographical_compare_three_way(_STD _Get_unwrapped(_STD cbegin(_Left)),
-            _STD _Get_unwrapped(_STD cend(_Left)), _STD _Get_unwrapped(_STD cbegin(_Right)),
-            _STD _Get_unwrapped(_STD cend(_Right)), _Synth_three_way{});
+        return _STD lexicographical_compare_three_way(_STD _Get_unwrapped(_Left.cbegin()),
+            _STD _Get_unwrapped(_Left.cend()), _STD _Get_unwrapped(_Right.cbegin()), _STD _Get_unwrapped(_Right.cend()),
+            _Synth_three_way{});
     }
 
     friend void swap(_Derived& _Left, _Derived& _Right) noexcept(noexcept(_Left.swap(_Right))) {
@@ -898,10 +898,9 @@ protected:
                                     || (is_constructible_v<key_type, _OtherKey> && _Transparent<key_compare>) );
 
         const auto _Key_it = _STD upper_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Pass_key_comp());
-        const auto _Index  = _RANGES distance(_Data.keys.begin(), _Key_it);
+        const auto _Index  = _Key_it - _Data.keys.begin();
         if constexpr (_IsUnique) {
-            if (_Key_it != _Data.keys.begin()
-                && !_Key_compare(*_RANGES prev(_Key_it), _STD forward<_OtherKey>(_Key_val))) {
+            if (_Key_it != _Data.keys.begin() && !_Key_compare(*(_Key_it - 1), _STD forward<_OtherKey>(_Key_val))) {
                 // Previous element is equivalent to key, no insert needed
                 return {this->begin() + (_Index - 1), false};
             }
@@ -910,7 +909,7 @@ protected:
         // Need to insert
         key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
         mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Mapped_args)...);
-        _Insert_exact(_STD cbegin(*this) + _Index, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
+        _Insert_exact(this->cbegin() + _Index, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
 
         if constexpr (_IsUnique) {
             return {this->begin() + _Index, true};
@@ -935,7 +934,7 @@ protected:
         const weak_ordering _Hint_order = [&] {
             if constexpr (_IsUnique) {
                 if (_Position == _End || _Key_compare(_Key_val, *_Position._Key_it)) {
-                    if (_Position == _Begin || _Key_compare(*_STD prev(_Position._Key_it), _Key_val)) {
+                    if (_Position == _Begin || _Key_compare(*(_Position._Key_it - 1), _Key_val)) {
                         return weak_ordering::equivalent;
                     } else {
                         return weak_ordering::greater;
@@ -943,7 +942,7 @@ protected:
                 }
             } else {
                 if (_Position == _End || !_Key_compare(*_Position._Key_it, _Key_val)) {
-                    if (_Position == _Begin || !_Key_compare(_Key_val, *_STD prev(_Position._Key_it))) {
+                    if (_Position == _Begin || !_Key_compare(_Key_val, *(_Position._Key_it - 1))) {
                         return weak_ordering::equivalent;
                     } else {
                         return weak_ordering::greater;
@@ -965,8 +964,8 @@ protected:
 
         const auto _New_position = _Iterator_from_key_iterator(
             _Hint_order == weak_ordering::less
-                ? _STD lower_bound(_Position._Key_it, _STD cend(_Data.keys), _Key_val, _Pass_key_comp())
-                : _STD upper_bound(_STD cbegin(_Data.keys), _Position._Key_it, _Key_val, _Pass_key_comp()));
+                ? _STD lower_bound(_Position._Key_it, _Data.keys.cend(), _Key_val, _Pass_key_comp())
+                : _STD upper_bound(_Data.keys.cbegin(), _Position._Key_it, _Key_val, _Pass_key_comp()));
 
         if constexpr (_IsUnique) {
             if (_Hint_order == weak_ordering::less) {
@@ -977,8 +976,8 @@ protected:
                     return _New_position;
                 }
             } else {
-                if (_New_position != _Begin && !_Key_compare(*_STD prev(_New_position._Key_it), _Key_val)) {
-                    const auto _It = _STD prev(_New_position);
+                if (_New_position != _Begin && !_Key_compare(*(_New_position._Key_it - 1), _Key_val)) {
+                    const auto _It = _New_position - 1;
                     if constexpr (_OverwriteIfExists) {
                         *_It._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
                     }
@@ -1073,9 +1072,9 @@ private:
         const auto _Num_sorted = _RANGES is_sorted_until(_Data.keys, _Pass_key_comp()) - _Data.keys.begin();
 
         auto _View                        = _View_to_mutate();
-        const auto _Begin_unsorted_values = _STD begin(_View) + _Num_sorted;
+        const auto _Begin_unsorted_values = _View.begin() + _Num_sorted;
 
-        _RANGES sort(_Begin_unsorted_values, _STD end(_View), value_compare{_Key_compare});
+        _RANGES sort(_Begin_unsorted_values, _View.end(), value_compare{_Key_compare});
         _RANGES inplace_merge(_View, _Begin_unsorted_values, value_compare{_Key_compare});
 
         _Erase_dupes_if_not_multi();
@@ -1120,7 +1119,7 @@ private:
         // Sort the newly inserted elements
         auto _Sorted_view = _View_to_mutate();
         if constexpr (_NeedSorting) {
-            _RANGES sort(_STD begin(_Sorted_view) + _Old_distance, _STD end(_Sorted_view), value_compare{_Key_compare});
+            _RANGES sort(_Sorted_view.begin() + _Old_distance, _Sorted_view.end(), value_compare{_Key_compare});
         } else {
             _STL_ASSERT(_Is_sorted_and_unique(
                             _Data.keys.begin() + static_cast<key_container_type::difference_type>(_Old_distance),
@@ -1194,9 +1193,9 @@ private:
             // In a non-multi container, equal_range can have size at most 1
             const auto _First =
                 _STD lower_bound(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp());
-            const bool _Missing = _First == _STD end(_Self._Data.keys) || _Self._Key_compare(_Key_val, *_First);
+            const bool _Missing = _First == _Self._Data.keys.end() || _Self._Key_compare(_Key_val, *_First);
             return pair{_Self._Iterator_from_key_iterator(_First),
-                _Self._Iterator_from_key_iterator(_Missing ? _First : _STD next(_First))};
+                _Self._Iterator_from_key_iterator(_Missing ? _First : _First + 1)};
         } else {
             const auto [_First, _Last] =
                 _STD equal_range(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp());
@@ -1207,7 +1206,7 @@ private:
     template <class _SelfTy>
     _NODISCARD conditional_t<is_const_v<_SelfTy>, const_iterator, iterator> _Iterator_from_key_iterator(
         this _SelfTy& _Self, const key_container_type::const_iterator& _Iter) {
-        const difference_type _Offset = _Iter - _STD cbegin(_Self._Data.keys);
+        const difference_type _Offset = _Iter - _Self._Data.keys.cbegin();
         return _Self.begin() + _Offset;
     }
 };
