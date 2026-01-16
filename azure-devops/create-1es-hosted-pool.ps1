@@ -31,7 +31,7 @@ if ($Arch -ieq 'x64') {
 } else {
   # CPP_STL_GitHub has quota for 672 cores (21 VMs) in westcentralus, not currently used.
   $AvailableLocations = @('eastus2', 'northeurope') # Locations where CPP_STL_GitHub has quota for 1024 cores (32 VMs).
-  $AvailableLocationIdx = 3 # Increment for each new pool, to cycle through the available locations.
+  $AvailableLocationIdx = 4 # Increment for each new pool, to cycle through the available locations.
   $Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
   $VMSize = 'Standard_D32ps_v6'
   $PoolSize = 32
