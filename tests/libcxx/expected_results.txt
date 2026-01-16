@@ -1360,10 +1360,6 @@ std/algorithms/alg.modifying.operations/alg.copy/copy.pass.cpp:1 FAIL
 std/input.output/file.streams/fstreams/filebuf.virtuals/xsputn.pass.cpp:0 FAIL
 std/input.output/file.streams/fstreams/filebuf.virtuals/xsputn.pass.cpp:1 FAIL
 
-# FIXME, not analyzed. _Flat_map_base::_Erase_if's usage of ranges::remove_if is failing to compile.
-std/containers/container.adaptors/flat.map/robust_against_nonbool.compile.pass.cpp FAIL
-std/containers/container.adaptors/flat.multimap/robust_against_nonbool.compile.pass.cpp FAIL
-
 
 # *** XFAILS WHICH PASS ***
 # These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
