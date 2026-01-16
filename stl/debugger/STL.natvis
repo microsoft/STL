@@ -1230,6 +1230,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   <Type Name="std::_Vector_iterator&lt;*&gt;">
       <AlternativeType Name="std::_Vector_const_iterator&lt;*&gt;" />
       <SmartPointer Usage="Indexable">_Ptr,na</SmartPointer>
+      <DisplayString>{*_Ptr}</DisplayString>
       <Expand>
           <Item Name="[ptr]">_Ptr</Item>
       </Expand>
