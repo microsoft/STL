@@ -636,44 +636,30 @@ struct __std_fs_file_id { // typedef struct _FILE_ID_INFO {
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_change_permissions(
     _In_z_ const wchar_t* const _Path, _In_ const bool _Follow_symlinks, _In_ const bool _Readonly) noexcept {
-    const DWORD _Old_attributes = GetFileAttributesW(_Path);
-    if (_Old_attributes == INVALID_FILE_ATTRIBUTES) {
+
+    const auto _File_flags = _Follow_symlinks
+                               ? __std_fs_file_flags::_Backup_semantics
+                               : __std_fs_file_flags::_Backup_semantics | __std_fs_file_flags::_Open_reparse_point;
+    __std_win_error _Err;
+    _STD _Fs_file _Handle(_Path,
+        __std_access_rights::_File_read_attributes | __std_access_rights::_File_write_attributes, _File_flags, &_Err);
+
+    if (_Err != __std_win_error::_Success) {
+        return _Err;
+    }
+
+    FILE_BASIC_INFO _Basic_info;
+    if (!GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
         return __std_win_error{GetLastError()};
     }
 
     const DWORD _Readonly_test = _Readonly ? FILE_ATTRIBUTE_READONLY : 0;
-    if ((_Old_attributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0u && _Follow_symlinks) {
-        __std_win_error _Err;
-        _STD _Fs_file _Handle(_Path,
-            __std_access_rights::_File_read_attributes | __std_access_rights::_File_write_attributes,
-            __std_fs_file_flags::_Backup_semantics, &_Err);
-
-        if (_Err != __std_win_error::_Success) {
-            return _Err;
-        }
-
-        FILE_BASIC_INFO _Basic_info;
-        if (!GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
-            return __std_win_error{GetLastError()};
-        }
-
-        if ((_Basic_info.FileAttributes & FILE_ATTRIBUTE_READONLY) == _Readonly_test) { // nothing to do
-            return __std_win_error::_Success;
-        }
-
-        _Basic_info.FileAttributes ^= FILE_ATTRIBUTE_READONLY;
-        if (SetFileInformationByHandle(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
-            return __std_win_error::_Success;
-        }
-
-        return __std_win_error{GetLastError()};
-    }
-
-    if ((_Old_attributes & FILE_ATTRIBUTE_READONLY) == _Readonly_test) { // nothing to do
+    if ((_Basic_info.FileAttributes & FILE_ATTRIBUTE_READONLY) == _Readonly_test) { // nothing to do
         return __std_win_error::_Success;
     }
 
-    if (SetFileAttributesW(_Path, _Old_attributes ^ FILE_ATTRIBUTE_READONLY)) {
+    _Basic_info.FileAttributes ^= FILE_ATTRIBUTE_READONLY;
+    if (SetFileInformationByHandle(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
         return __std_win_error::_Success;
     }
 
@@ -818,19 +804,22 @@ namespace {
     }
 
     // Effects: If exists(p) is false or is_directory(p) is false, an error is reported
-    const DWORD _Attributes = GetFileAttributesW(_Target);
-    if (_Attributes == INVALID_FILE_ATTRIBUTES || (_Attributes & FILE_ATTRIBUTE_DIRECTORY) == 0u) {
+    __std_fs_file_handle _Handle;
+    __std_win_error _Last_error = __std_fs_open_handle(
+        &_Handle, _Target, __std_access_rights::_File_read_attributes, __std_fs_file_flags::_Backup_semantics);
+    if (_Last_error != __std_win_error::_Success) {
         return {_Size, __std_win_error::_Max};
     }
 
-    if ((_Attributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0u) {
-        __std_fs_file_handle _Handle;
-        const auto _Last_error = __std_fs_open_handle(
-            &_Handle, _Target, __std_access_rights::_File_read_attributes, __std_fs_file_flags::_Backup_semantics);
-        __std_fs_close_handle(_Handle);
-        if (_Last_error != __std_win_error::_Success) {
-            return {_Size, __std_win_error::_Max};
-        }
+    unsigned long _File_attributes;
+    _Last_error = __std_fs_get_file_attributes_by_handle(_Handle, &_File_attributes);
+    __std_fs_close_handle(_Handle);
+    if (_Last_error != __std_win_error::_Success) {
+        return {_Size, __std_win_error::_Max};
+    }
+
+    if ((_File_attributes & FILE_ATTRIBUTE_DIRECTORY) == 0u) {
+        return {_Size, __std_win_error::_Max};
     }
 
     return {_Size, __std_win_error::_Success};
