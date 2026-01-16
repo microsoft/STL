@@ -1025,9 +1025,10 @@ private:
     _NODISCARD size_type _Erase_if(_Predicate _Pred) {
         _Clear_guard _Guard{this};
 
-        const auto _New_last = _RANGES remove_if(_View_to_mutate(), _Pred, [](const auto& _Element) {
-            return const_reference{_Element}; // N5032 [flat.map.erasure]/2 and [flat.multimap.erasure]/2
-        }).begin();
+        const auto _New_last =
+            _RANGES remove_if(_View_to_mutate(), _Pred, [](const auto& _Element) _STATIC_CALL_OPERATOR {
+                return const_reference{_Element}; // N5032 [flat.map.erasure]/2 and [flat.multimap.erasure]/2
+            }).begin();
         const auto _Old_size = size();
 
         _Data.keys.erase(_New_last._Key_it, _Data.keys.end());
