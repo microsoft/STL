@@ -2325,7 +2325,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
   <!-- fallback when the primary visualization (above) fails to parse, e.g. some custom containers -->
   <Type Name="std::flat_map&lt;*&gt;" Priority="MediumLow">
-    <DisplayString>{_Data}</DisplayString>
+    <AlternativeType Name="std::flat_multimap&lt;*&gt;"/>
+    <Intrinsic Name="size" Expression="_Data.keys.size()"/>
+    <DisplayString>{{ size={size()} }}</DisplayString>
     <Expand>
       <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
       <Item Name="[keys]">_Data.keys</Item>
