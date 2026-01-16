@@ -2342,6 +2342,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::flat_set&lt;*&gt;">
+    <AlternativeType Name="std::flat_multiset&lt;*&gt;"/>
     <DisplayString>{_Mycont}</DisplayString>
     <Expand>
       <Item Name="[comparator]" ExcludeView="simple">_Mycomp</Item>
