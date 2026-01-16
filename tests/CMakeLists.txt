@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-find_package(Python "3.14.0" REQUIRED COMPONENTS Interpreter)
+find_package(Python "3.14.2" REQUIRED COMPONENTS Interpreter)
 
 set(STL_BUILD_ROOT "${PROJECT_BINARY_DIR}/out")
 set(STL_SOURCE_DIR "${PROJECT_SOURCE_DIR}")
