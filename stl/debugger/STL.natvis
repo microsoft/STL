@@ -587,6 +587,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
 
+  <Type Name="std::ranges::equal_to"><DisplayString>ranges::equal_to</DisplayString><Expand/></Type>
+  <Type Name="std::ranges::not_equal_to"><DisplayString>ranges::not_equal_to</DisplayString><Expand/></Type>
+  <Type Name="std::ranges::greater"><DisplayString>ranges::greater</DisplayString><Expand/></Type>
+  <Type Name="std::ranges::less"><DisplayString>ranges::less</DisplayString><Expand/></Type>
+  <Type Name="std::ranges::greater_equal"><DisplayString>ranges::greater_equal</DisplayString><Expand/></Type>
+  <Type Name="std::ranges::less_equal"><DisplayString>ranges::less_equal</DisplayString><Expand/></Type>
+
   <Type Name="std::plus&lt;void&gt;"><DisplayString>plus&lt;&gt;</DisplayString><Expand/></Type>
   <Type Name="std::minus&lt;void&gt;"><DisplayString>minus&lt;&gt;</DisplayString><Expand/></Type>
   <Type Name="std::multiplies&lt;void&gt;"><DisplayString>multiplies&lt;&gt;</DisplayString><Expand/></Type>
@@ -607,101 +614,25 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   <Type Name="std::bit_xor&lt;void&gt;"><DisplayString>bit_xor&lt;&gt;</DisplayString><Expand/></Type>
   <Type Name="std::bit_not&lt;void&gt;"><DisplayString>bit_not&lt;&gt;</DisplayString><Expand/></Type>
 
-
-  <Type Name="std::plus&lt;*&gt;">
-      <DisplayString>plus</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::minus&lt;*&gt;">
-      <DisplayString>minus</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::multiplies&lt;*&gt;">
-      <DisplayString>multiplies</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::divides&lt;*&gt;">
-      <DisplayString>divides</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::modulus&lt;*&gt;">
-      <DisplayString>modulus</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::negate&lt;*&gt;">
-      <DisplayString>negate</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::equal_to&lt;*&gt;">
-      <DisplayString>equal_to</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::not_equal_to&lt;*&gt;">
-      <DisplayString>not_equal_to</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::greater&lt;*&gt;">
-      <DisplayString>greater</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::less&lt;*&gt;">
-      <DisplayString>less</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::greater_equal&lt;*&gt;">
-      <DisplayString>greater_equal</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::less_equal&lt;*&gt;">
-      <DisplayString>less_equal</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::logical_and&lt;*&gt;">
-      <DisplayString>logical_and</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::logical_or&lt;*&gt;">
-      <DisplayString>logical_or</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::logical_not&lt;*&gt;">
-      <DisplayString>logical_not</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::bit_and&lt;*&gt;">
-      <DisplayString>bit_and</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::bit_or&lt;*&gt;">
-      <DisplayString>bit_or</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::bit_xor&lt;*&gt;">
-      <DisplayString>bit_xor</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::bit_not&lt;*&gt;">
-      <DisplayString>bit_not</DisplayString>
-      <Expand/>
-  </Type>
+  <Type Name="std::plus&lt;*&gt;"><DisplayString>plus</DisplayString><Expand/></Type>
+  <Type Name="std::minus&lt;*&gt;"><DisplayString>minus</DisplayString><Expand/></Type>
+  <Type Name="std::multiplies&lt;*&gt;"><DisplayString>multiplies</DisplayString><Expand/></Type>
+  <Type Name="std::divides&lt;*&gt;"><DisplayString>divides</DisplayString><Expand/></Type>
+  <Type Name="std::modulus&lt;*&gt;"><DisplayString>modulus</DisplayString><Expand/></Type>
+  <Type Name="std::negate&lt;*&gt;"><DisplayString>negate</DisplayString><Expand/></Type>
+  <Type Name="std::equal_to&lt;*&gt;"><DisplayString>equal_to</DisplayString><Expand/></Type>
+  <Type Name="std::not_equal_to&lt;*&gt;"><DisplayString>not_equal_to</DisplayString><Expand/></Type>
+  <Type Name="std::greater&lt;*&gt;"><DisplayString>greater</DisplayString><Expand/></Type>
+  <Type Name="std::less&lt;*&gt;"><DisplayString>less</DisplayString><Expand/></Type>
+  <Type Name="std::greater_equal&lt;*&gt;"><DisplayString>greater_equal</DisplayString><Expand/></Type>
+  <Type Name="std::less_equal&lt;*&gt;"><DisplayString>less_equal</DisplayString><Expand/></Type>
+  <Type Name="std::logical_and&lt;*&gt;"><DisplayString>logical_and</DisplayString><Expand/></Type>
+  <Type Name="std::logical_or&lt;*&gt;"><DisplayString>logical_or</DisplayString><Expand/></Type>
+  <Type Name="std::logical_not&lt;*&gt;"><DisplayString>logical_not</DisplayString><Expand/></Type>
+  <Type Name="std::bit_and&lt;*&gt;"><DisplayString>bit_and</DisplayString><Expand/></Type>
+  <Type Name="std::bit_or&lt;*&gt;"><DisplayString>bit_or</DisplayString><Expand/></Type>
+  <Type Name="std::bit_xor&lt;*&gt;"><DisplayString>bit_xor</DisplayString><Expand/></Type>
+  <Type Name="std::bit_not&lt;*&gt;"><DisplayString>bit_not</DisplayString><Expand/></Type>
 
 
   <Type Name="std::unary_negate&lt;*&gt;">
