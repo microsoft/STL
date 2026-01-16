@@ -318,15 +318,17 @@ public:
         "mapped_container_type must support random-access iterators in order to be adapted. "
         "(N5014 [flat.map.overview]/7, [flat.multimap.overview]/7)");
 
-    struct value_compare {
+    class value_compare {
     public:
         _NODISCARD bool operator()(const_reference _Left, const_reference _Right) const {
             return _Key_comparator(_Left.first, _Right.first);
         }
 
-        value_compare(key_compare _Comp) : _Key_comparator(_Comp) {}
-
     private:
+        friend _Flat_map_base;
+
+        value_compare(const key_compare& _Comp) : _Key_comparator(_Comp) {}
+
         key_compare _Key_comparator;
     };
 
