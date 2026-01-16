@@ -1102,11 +1102,12 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
   <!-- VC 2015 -->
   <Type Name="std::deque&lt;*&gt;">
-      <DisplayString>{{ size={_Mypair._Myval2._Mysize} }}</DisplayString>
+      <Intrinsic Name="size" Expression="_Mypair._Myval2._Mysize" />
+      <DisplayString>{{ size={size()} }}</DisplayString>
       <Expand>
           <Item Name="[allocator]" ExcludeView="simple">_Mypair</Item>
           <IndexListItems>
-              <Size>_Mypair._Myval2._Mysize</Size>
+              <Size>size()</Size>
               <ValueNode>_Mypair._Myval2._Map[(($i + _Mypair._Myval2._Myoff) / _EEN_DS) % _Mypair._Myval2._Mapsize][($i + _Mypair._Myval2._Myoff) % _EEN_DS]</ValueNode>
           </IndexListItems>
       </Expand>
@@ -2296,117 +2297,37 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
-  <!-- KeyContainer: vector, MappedContainer: vector -->
-  <Type Name="std::flat_map&lt;*,*,*,std::vector&lt;*&gt;,std::vector&lt;*&gt;&gt;">
-    <Intrinsic Name="size" Expression="(size_t)(_Data.keys._Mypair._Myval2._Mylast - _Data.keys._Mypair._Myval2._Myfirst)"/>
-    <Intrinsic Name="key_at" Expression="&amp;_Data.keys._Mypair._Myval2._Myfirst[index]">
-      <Parameter Name="index" Type="size_t" />
-    </Intrinsic>
-    <Intrinsic Name="value_at" Expression="&amp;_Data.values._Mypair._Myval2._Myfirst[index]">
-      <Parameter Name="index" Type="size_t" />
-    </Intrinsic>
-
-    <DisplayString>{{ size={size()} }}</DisplayString>
-
-    <Expand>
-      <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
-      <Item Name="[size]">size()</Item>
-      <CustomListItems>
-        <Variable Name="i" InitialValue="0" />
-        <Size>size()</Size>
-        <Loop>
-          <Item Name="[{*key_at(i)}]">*value_at(i)</Item>
-          <Exec>++i</Exec>
-        </Loop>
-      </CustomListItems>
-    </Expand>
-  </Type>
-
-  <!-- KeyContainer: std::deque, MappedContainer: std::vector -->
-  <Type Name="std::flat_map&lt;*,*,*,std::deque&lt;*&gt;,std::vector&lt;*&gt;&gt;">
-    <Intrinsic Name="size" Expression="_Data.keys._Mypair._Myval2._Mysize" />
-    <Intrinsic Name="key_at" Expression="&amp;_Data.keys._Mypair._Myval2._Map[((index + _Data.keys._Mypair._Myval2._Myoff) / _Data.keys._EEN_DS) %
-          _Data.keys._Mypair._Myval2._Mapsize][(index + _Data.keys._Mypair._Myval2._Myoff) % _Data.keys._EEN_DS]">
-      <Parameter Name="index" Type="size_t" />
-    </Intrinsic>
-    <Intrinsic Name="value_at" Expression="&amp;_Data.values._Mypair._Myval2._Myfirst[index]">
-      <Parameter Name="index" Type="size_t" />
-    </Intrinsic>
-
-    <DisplayString>{{ size={size()} }}</DisplayString>
-
-    <Expand>
-      <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
-      <Item Name="[size]">size()</Item>
-      <CustomListItems>
-        <Variable Name="i" InitialValue="0" />
-        <Size>size()</Size>
-        <Loop>
-          <Item Name="[{*key_at(i)}]">*value_at(i)</Item>
-          <Exec>++i</Exec>
-        </Loop>
-      </CustomListItems>
-    </Expand>
-  </Type>
-
-  <!-- KeyContainer: std::vector, MappedContainer: std::deque -->
-  <Type Name="std::flat_map&lt;*,*,*,std::vector&lt;*&gt;,std::deque&lt;*&gt;&gt;">
-    <Intrinsic Name="size" Expression="(size_t)(_Data.keys._Mypair._Myval2._Mylast - _Data.keys._Mypair._Myval2._Myfirst)" />
-    <Intrinsic Name="key_at" Expression="&amp;_Data.keys._Mypair._Myval2._Myfirst[index]">
-      <Parameter Name="index" Type="size_t" />
-    </Intrinsic>
-    <Intrinsic Name="value_at" Expression="&amp;_Data.values._Mypair._Myval2._Map[((index + _Data.values._Mypair._Myval2._Myoff) / _Data.values._EEN_DS) %
-          _Data.values._Mypair._Myval2._Mapsize][(index + _Data.values._Mypair._Myval2._Myoff) % _Data.values._EEN_DS]">
-      <Parameter Name="index" Type="size_t" />
-    </Intrinsic>
-
-    <DisplayString>{{ size={size()} }}</DisplayString>
-
-    <Expand>
-      <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
-      <Item Name="[size]">size()</Item>
-      <CustomListItems>
-        <Variable Name="i" InitialValue="0" />
-        <Size>size()</Size>
-        <Loop>
-          <Item Name="[{*key_at(i)}]">*value_at(i)</Item>
-          <Exec>++i</Exec>
-        </Loop>
-      </CustomListItems>
-    </Expand>
-  </Type>
-
-  <!-- KeyContainer: std::deque, MappedContainer: std::deque -->
-  <Type Name="std::flat_map&lt;*,*,*,std::deque&lt;*&gt;,std::deque&lt;*&gt;&gt;">
-    <Intrinsic Name="size" Expression="_Data.keys._Mypair._Myval2._Mysize" />
-    <Intrinsic Name="key_at" Expression="&amp;_Data.keys._Mypair._Myval2._Map[((index + _Data.keys._Mypair._Myval2._Myoff) / _Data.keys._EEN_DS) %
-          _Data.keys._Mypair._Myval2._Mapsize][(index + _Data.keys._Mypair._Myval2._Myoff) % _Data.keys._EEN_DS]">
-      <Parameter Name="index" Type="size_t" />
-    </Intrinsic>
-    <Intrinsic Name="value_at" Expression="&amp;_Data.values._Mypair._Myval2._Map[((index + _Data.values._Mypair._Myval2._Myoff) / _Data.values._EEN_DS) %
-          _Data.values._Mypair._Myval2._Mapsize][(index + _Data.values._Mypair._Myval2._Myoff) % _Data.values._EEN_DS]">
-      <Parameter Name="index" Type="size_t" />
-    </Intrinsic>
-
-    <DisplayString>{{ size={size()} }}</DisplayString>
-
-    <Expand>
-      <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
-      <Item Name="[size]">size()</Item>
-      <CustomListItems>
-        <Variable Name="i" InitialValue="0" />
-        <Size>size()</Size>
-        <Loop>
-          <Item Name="[{*key_at(i)}]">*value_at(i)</Item>
-          <Exec>++i</Exec>
-        </Loop>
-      </CustomListItems>
-    </Expand>
-  </Type>
-
-  <!-- fallback for a custom container -->
   <Type Name="std::flat_map&lt;*&gt;">
-    <DisplayString>{_Data}</DisplayString>
+   <AlternativeType Name="std::flat_multimap&lt;*&gt;"/>
+    <Intrinsic Name="size" Expression="_Data.keys.size()"/>
+    <Intrinsic Name="key_at" Expression="&amp;_Data.keys[index]">
+      <Parameter Name="index" Type="size_t" />
+    </Intrinsic>
+    <Intrinsic Name="value_at" Expression="&amp;_Data.values[index]">
+      <Parameter Name="index" Type="size_t" />
+    </Intrinsic>
+
+    <DisplayString>{{ size={size()} }}</DisplayString>
+
+    <Expand>
+      <Item Name="[size]">size()</Item>
+      <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
+      <CustomListItems>
+        <Variable Name="i" InitialValue="0" />
+        <Size>size()</Size>
+        <Loop>
+          <Item Name="[{*key_at(i)}]">*value_at(i)</Item>
+          <Exec>++i</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
+  <!-- fallback when the primary visualization (above) fails to parse, e.g. some custom containers -->
+  <Type Name="std::flat_map&lt;*&gt;" Priority="MediumLow">
+    <AlternativeType Name="std::flat_multimap&lt;*&gt;"/>
+    <Intrinsic Name="size" Expression="_Data.keys.size()"/>
+    <DisplayString>{{ size={size()} }}</DisplayString>
     <Expand>
       <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
       <Item Name="[keys]">_Data.keys</Item>
@@ -2423,6 +2344,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::flat_set&lt;*&gt;">
+    <AlternativeType Name="std::flat_multiset&lt;*&gt;"/>
     <DisplayString>{_Mycont}</DisplayString>
     <Expand>
       <Item Name="[comparator]" ExcludeView="simple">_Mycomp</Item>
