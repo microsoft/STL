@@ -1619,18 +1619,30 @@ namespace ranges {
 } // namespace ranges
 #endif // _HAS_CXX20
 
+struct _All_of_vbool_traits;
+struct _Any_of_vbool_traits;
+struct _None_of_vbool_traits;
+
+template <class _Traits, class _VbIt, class _Mapped_fn>
+_NODISCARD _CONSTEXPR20 bool _Meow_of_vbool(_VbIt _First, _VbIt _Last, _Mapped_fn _Mapped_func);
+
 _EXPORT_STD template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool all_of(_InIt _First, _InIt _Last, _Pr _Pred) { // test if all elements satisfy _Pred
     _STD _Adl_verify_range(_First, _Last);
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
-    for (; _UFirst != _ULast; ++_UFirst) {
-        if (!_Pred(*_UFirst)) {
-            return false;
-        }
-    }
 
-    return true;
+    if constexpr (_Is_vb_iterator<decltype(_UFirst)> && !is_void_v<_Map_vb_functor_t<_Pr>>) {
+        return _Meow_of_vbool<_All_of_vbool_traits>(_UFirst, _ULast, _Map_vb_functor_t<_Pr>{});
+    } else {
+        for (; _UFirst != _ULast; ++_UFirst) {
+            if (!_Pred(*_UFirst)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
 
 #if _HAS_CXX17
@@ -1686,13 +1698,18 @@ _NODISCARD _CONSTEXPR20 bool any_of(const _InIt _First, const _InIt _Last, _Pr _
     _STD _Adl_verify_range(_First, _Last);
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
-    for (; _UFirst != _ULast; ++_UFirst) {
-        if (_Pred(*_UFirst)) {
-            return true;
-        }
-    }
 
-    return false;
+    if constexpr (_Is_vb_iterator<decltype(_UFirst)> && !is_void_v<_Map_vb_functor_t<_Pr>>) {
+        return _Meow_of_vbool<_Any_of_vbool_traits>(_UFirst, _ULast, _Map_vb_functor_t<_Pr>{});
+    } else {
+        for (; _UFirst != _ULast; ++_UFirst) {
+            if (_Pred(*_UFirst)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 #if _HAS_CXX17
@@ -1748,13 +1765,17 @@ _NODISCARD _CONSTEXPR20 bool none_of(const _InIt _First, const _InIt _Last, _Pr 
     _STD _Adl_verify_range(_First, _Last);
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
-    for (; _UFirst != _ULast; ++_UFirst) {
-        if (_Pred(*_UFirst)) {
-            return false;
+    if constexpr (_Is_vb_iterator<decltype(_UFirst)> && !is_void_v<_Map_vb_functor_t<_Pr>>) {
+        return _Meow_of_vbool<_None_of_vbool_traits>(_UFirst, _ULast, _Map_vb_functor_t<_Pr>{});
+    } else {
+        for (; _UFirst != _ULast; ++_UFirst) {
+            if (_Pred(*_UFirst)) {
+                return false;
+            }
         }
-    }
 
-    return true;
+        return true;
+    }
 }
 
 #if _HAS_CXX17
