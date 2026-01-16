@@ -586,13 +586,14 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-  <!-- std::ranges::less and similar -->
+  <!-- std::compare_three_way, std::ranges::less and similar -->
   <Type Name="std::ranges::equal_to"><DisplayString>ranges::equal_to</DisplayString><Expand/></Type>
   <Type Name="std::ranges::not_equal_to"><DisplayString>ranges::not_equal_to</DisplayString><Expand/></Type>
   <Type Name="std::ranges::greater"><DisplayString>ranges::greater</DisplayString><Expand/></Type>
   <Type Name="std::ranges::less"><DisplayString>ranges::less</DisplayString><Expand/></Type>
   <Type Name="std::ranges::greater_equal"><DisplayString>ranges::greater_equal</DisplayString><Expand/></Type>
   <Type Name="std::ranges::less_equal"><DisplayString>ranges::less_equal</DisplayString><Expand/></Type>
+  <Type Name="std::compare_three_way"><DisplayString>compare_three_way</DisplayString><Expand/></Type>
 
   <!-- std::less<> and similar -->
   <Type Name="std::plus&lt;void&gt;"><DisplayString>plus&lt;&gt;</DisplayString><Expand/></Type>
