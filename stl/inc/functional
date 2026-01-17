@@ -2065,7 +2065,7 @@ private:
     friend class move_only_function;
 
     template <class _Vt>
-    static constexpr bool _Is_move_only_fuction_varying_cv_ref_noex() {
+    static constexpr bool _Is_move_only_function_varying_cv_ref_noex() {
         if constexpr (_Is_specialization_v<_Vt, move_only_function>) {
             return is_same_v<typename _Call::_Signature_without_cv_ref_noex,
                 typename _Vt::_Signature_without_cv_ref_noex>;
@@ -2104,7 +2104,7 @@ public:
                 }
             }
 
-            if constexpr (_Is_move_only_fuction_varying_cv_ref_noex<_Vt>()) {
+            if constexpr (_Is_move_only_function_varying_cv_ref_noex<_Vt>()) {
                 _Call::_Checked_move(this->_Data, _Callable._Data);
                 _Callable._Reset_to_null();
             } else {
