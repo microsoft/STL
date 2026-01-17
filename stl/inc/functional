@@ -1577,7 +1577,8 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
 template <class _Rx, bool _Noexcept, class... _Types>
 class _Function_base {
 public:
-    using result_type = _Rx;
+    using result_type                    = _Rx;
+    using _Signature_without_cv_ref_noex = _Rx(_Types...);
 
     struct _Impl_t { // A per-callable-type structure acting as a virtual function table.
         // Using vtable emulations gives more flexibility for optimizations and reduces the amount of RTTI data.
@@ -2060,6 +2061,19 @@ private:
         is_constructible_v<decay_t<_Fn>, initializer_list<_Ux>&, _CTypes...>
         && _Call::template _Is_callable_from<decay_t<_Fn>>;
 
+    template <class...>
+    friend class move_only_function;
+
+    template <class _Vt>
+    static constexpr bool _Is_move_only_function_varying_cv_ref_noex() {
+        if constexpr (_Is_specialization_v<_Vt, move_only_function>) {
+            return is_same_v<typename _Call::_Signature_without_cv_ref_noex,
+                typename _Vt::_Signature_without_cv_ref_noex>;
+        } else {
+            return false;
+        }
+    }
+
 public:
     using typename _Call::result_type;
 
@@ -2079,7 +2093,7 @@ public:
         using _Vt = decay_t<_Fn>;
         static_assert(is_constructible_v<_Vt, _Fn>, "_Vt should be constructible from _Fn. "
                                                     "(N4950 [func.wrap.move.ctor]/6)");
-        if constexpr (is_same_v<_Vt, function<_Signature...>>) {
+        if constexpr (is_same_v<_Vt, function<typename _Call::_Signature_without_cv_ref_noex>>) {
             this->template _Construct_with_old_fn<_Vt>(_STD forward<_Fn>(_Callable));
         } else {
             if constexpr (is_member_pointer_v<_Vt> || is_pointer_v<_Vt>
@@ -2090,8 +2104,13 @@ public:
                 }
             }
 
-            using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
-            this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_Fn>(_Callable));
+            if constexpr (_Is_move_only_function_varying_cv_ref_noex<_Vt>()) {
+                _Call::_Checked_move(this->_Data, _Callable._Data);
+                _Callable._Reset_to_null();
+            } else {
+                using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
+                this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_Fn>(_Callable));
+            }
         }
     }
 
