@@ -33,7 +33,7 @@
     "@octokit/graphql": "^9.0.3",
     "@types/cli-progress": "^3.11.6",
     "@types/luxon": "^3.7.1",
-    "@types/node": "^25.0.3",
+    "@types/node": "^25.0.9",
     "@types/yargs": "^17.0.35",
     "chart.js": "^4.5.1",
     "chartjs-adapter-luxon": "^1.3.1",
