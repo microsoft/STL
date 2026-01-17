@@ -1901,7 +1901,7 @@ private:
     void _Quantifier();
     bool _Alternative();
     void _Disjunction();
-    void _Calculate_loop_simplicity(_Node_base* _Nx, _Node_base* _Ne, _Node_rep* _Outer_rep, const bool _Nonreentrant);
+    void _Calculate_loop_simplicity(_Node_base* _Nx, _Node_base* _Ne, _Node_rep* _Outer_rep, bool _Nonreentrant);
 
     _FwdIt _Pat;
     _FwdIt _End;
