@@ -3557,7 +3557,7 @@ namespace {
                     _Advance_bytes(_Stop_at, _Vec_byte_size);
 
                     do {
-                        const void* _Next = static_cast<const uint8_t*>(_First) + _Traits::_Vec_size;
+                        const void* const _Next = static_cast<const uint8_t*>(_First) + _Traits::_Vec_size;
 
                         const auto _Left_lo  = _Traits::_Load(static_cast<const _Ty*>(_First) + _Left_off);
                         const auto _Right_lo = _Traits::_Load(static_cast<const _Ty*>(_First) + _Right_off);
