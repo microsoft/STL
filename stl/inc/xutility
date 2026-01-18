@@ -7920,6 +7920,10 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 }
 #endif // _HAS_CXX17
 
+#if _HAS_CXX23
+template <class _Ty>
+constexpr bool _Equivalence_is_equality = is_integral_v<_Ty> || is_pointer_v<_Ty>;
+#endif // _HAS_CXX23
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens

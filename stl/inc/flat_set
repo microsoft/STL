@@ -705,13 +705,19 @@ private:
         }
     }
 
+    auto _Erase_dupes_if_not_multi_pred() {
+        if constexpr (_Equivalence_is_equality<_Kty>) {
+            return equal_to<>{};
+        } else {
+            return
+                [this](const _Kty& _Lhs, const _Kty& _Rhs) { return !_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs); };
+        }
+    }
+
     void _Erase_dupes_if_not_multi() {
         if constexpr (_IsUnique) {
-            const auto _Equivalent = [this](const _Kty& _Lhs, const _Kty& _Rhs) {
-                return !_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs);
-            };
             const auto _End = _Mycont.end();
-            _Mycont.erase(_STD unique(_Mycont.begin(), _End, _Equivalent), _End);
+            _Mycont.erase(_STD unique(_Mycont.begin(), _End, _Erase_dupes_if_not_multi_pred()), _End);
         }
     }
 

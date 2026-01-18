@@ -1084,12 +1084,20 @@ private:
         _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
     }
 
+    auto _Erase_dupes_if_not_multi_pred() {
+        if constexpr (_Equivalence_is_equality<_Key>) {
+            return equal_to<>{};
+        } else {
+            return [this](const_reference _Left, const_reference _Right) {
+                return this->_Key_equal(_Left.first, _Right.first);
+            };
+        }
+    }
+
     void _Erase_dupes_if_not_multi() {
         if constexpr (_IsUnique) {
             auto _Sorted_view    = _View_to_mutate();
-            const auto _New_last = _RANGES unique(_Sorted_view, [this](const_reference _Left, const_reference _Right) {
-                return this->_Key_equal(_Left.first, _Right.first);
-            }).begin();
+            const auto _New_last = _RANGES unique(_Sorted_view, _Erase_dupes_if_not_multi_pred()).begin();
 
             _Data.keys.erase(_New_last._Key_it, _Data.keys.end());
             _Data.values.erase(_New_last._Mapped_it, _Data.values.end());
