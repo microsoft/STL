@@ -1088,8 +1088,7 @@ private:
         if constexpr (_Is_any_of_v<_Compare, less<>, less<_Key>, _RANGES less, greater<>, greater<_Key>,
                           _RANGES greater>
                       && _Equivalence_is_equality<_Key>) {
-
-            return equal_to<>{};
+            return [](const_reference _Left, const_reference _Right) { return _Left.first == _Right.first; };
         } else {
             return [this](const_reference _Left, const_reference _Right) {
                 return this->_Key_equal(_Left.first, _Right.first);
