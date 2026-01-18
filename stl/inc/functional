@@ -1760,7 +1760,11 @@ public:
     template <bool _Noexcept>
     _NODISCARD auto _Get_invoke() const noexcept {
         if constexpr (_Noexcept) {
+#ifdef __cpp_noexcept_function_type
             return reinterpret_cast<_Rx(__stdcall*)(void*, _Types&&...) noexcept>(_Get_impl(_Data)->_Invoke);
+#else
+            static_assert(false); // when noexcept isn't in the type system, this should never be selected
+#endif
         } else {
             return _Get_impl(_Data)->_Invoke;
         }
