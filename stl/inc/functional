@@ -1107,6 +1107,7 @@ private:
 #if _HAS_CXX23
     friend _Function_base<_Ret, _Types...>;
 #endif // _HAS_CXX23
+
     bool _Local() const noexcept { // test for locally stored copy of object
         return _Getimpl() == static_cast<const void*>(&_Mystorage);
     }
