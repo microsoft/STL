@@ -17,7 +17,7 @@ public:
     static constexpr bool _Noexcept = {noex_val};
 
     _Rx operator()(_Types... _Args) {cv} {ref} {noex} {{
-        return this->template _Get_invoke<{noex_val}>()({self}, _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()({self}, _STD forward<_Types>(_Args)...);
     }}
 }};
 """
