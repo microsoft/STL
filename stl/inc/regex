@@ -1700,7 +1700,7 @@ class _Matcher3 { // provides ways to match a regular expression to a text seque
 public:
     _Matcher3(_It _Pfirst, _It _Plast, const _RxTraits& _Tr, _Root_node* _Re, unsigned int _Nx,
         regex_constants::syntax_option_type _Sf, regex_constants::match_flag_type _Mf)
-        : _Begin(_Pfirst), _End(_Plast), _Rep(_Re), _Sflags(_Sf), _Mflags(_Mf), _Ncap(_Nx),
+        : _Begin(_Pfirst), _End(_Plast), _Sflags(_Sf), _Mflags(_Mf), _Ncap(_Nx),
           _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)), _Traits(_Tr) {
         _Loop_vals.resize(_Re->_Loops);
         _Adl_verify_range(_Pfirst, _Plast);
@@ -1719,6 +1719,12 @@ public:
         _Iter_diff_t<_It> _Input_length = _STD distance(_Pfirst, _Plast);
         _Frames_limit                   = _Calculate_frames_limit(_Input_length);
         _Complexity_limit               = _Calculate_complexity_limit(_Input_length);
+
+        // TRANSITION, ABI, GH-6025:
+        // The first two nodes are of types _N_begin and _N_capture with capturing group 0.
+        // These nodes do not affect the state of the matcher and thus can be skipped immediately
+        // before engaging the expensive NFA interpreter loop.
+        _Start = _Re->_Next->_Next;
 
 // sanitize multiline mode setting
 #if _REGEX_LEGACY_MULTILINE_MODE
@@ -1763,7 +1769,7 @@ public:
 
         _Matched = false;
 
-        bool _Succeeded = _Match_pat(_Rep) || _Matched;
+        bool _Succeeded = _Match_pat(_Start) || _Matched;
 
         if (!_Succeeded) {
             return false;
@@ -1832,7 +1838,7 @@ private:
 
     _It _Begin;
     _It _End;
-    _Node_base* _Rep;
+    _Node_base* _Start;
     regex_constants::syntax_option_type _Sflags;
     regex_constants::match_flag_type _Mflags;
     bool _Matched = false;
@@ -3997,14 +4003,13 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 { // record current position
                     auto _Node = static_cast<_Node_capture*>(_Nx);
                     auto _Idx  = _Node->_Idx;
-                    if (_Idx != 0U) {
-                        auto& _Group        = _Tgt_state._Grps[_Idx];
-                        auto _Frame_idx     = _Push_frame(_Rx_unwind_ops::_Capture_restore_begin, _Node);
-                        auto& _Frame        = _Frames[_Frame_idx];
-                        _Frame._Pos         = _Group._Begin;
-                        _Frame._Capture_idx = _Idx;
-                        _Group._Begin       = _Tgt_state._Cur;
-                    }
+                    _STL_INTERNAL_CHECK(_Idx != 0U);
+                    auto& _Group        = _Tgt_state._Grps[_Idx];
+                    auto _Frame_idx     = _Push_frame(_Rx_unwind_ops::_Capture_restore_begin, _Node);
+                    auto& _Frame        = _Frames[_Frame_idx];
+                    _Frame._Pos         = _Group._Begin;
+                    _Frame._Capture_idx = _Idx;
+                    _Group._Begin       = _Tgt_state._Cur;
                     break;
                 }
 
@@ -4469,7 +4474,7 @@ _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
     static constexpr wchar_t _Line_terminators_wchar_t[] = {static_cast<wchar_t>(_Meta_cr),
         static_cast<wchar_t>(_Meta_nl), static_cast<wchar_t>(_Meta_ls), static_cast<wchar_t>(_Meta_ps)};
     constexpr unsigned int _Max_recursion_depth          = 50U;
-    _Node_base* _Nx                                      = _Node_arg ? _Node_arg : _Rep;
+    _Node_base* _Nx                                      = _Node_arg ? _Node_arg : _Start;
 
     while (_First_arg != _Last && _Nx) { // check current node
         switch (_Nx->_Kind) { // handle current node's type
