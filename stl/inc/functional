@@ -1621,16 +1621,16 @@ public:
         _Data._Impl = nullptr;
     }
 
-    template <class _Vt, bool _Noexcept, class _Fn>
+    template <class _Vt, class _Fn>
     void _Construct_with_old_fn(_Fn&& _Func) {
         const auto _Old_fn_impl = _Func._Getimpl();
         if (_Old_fn_impl == nullptr) {
-            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_null, _Vt, _Noexcept, void>();
+            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_null, _Vt, false, void>();
         } else if (_Func._Local()) {
 #ifdef _WIN64
             _STL_INTERNAL_STATIC_ASSERT(alignof(max_align_t) == alignof(void*));
             // 64-bit target, can put small function into small move_only_function directly
-            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small, _Vt, _Noexcept, void>();
+            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small, _Vt, false, void>();
             if constexpr (is_lvalue_reference_v<_Fn>) {
                 _Old_fn_impl->_Copy(_Data._Buf_ptr<void*>());
             } else {
@@ -1663,12 +1663,12 @@ public:
                 _Func._Tidy();
             }
 
-            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small_as_large, _Vt, _Noexcept, void>();
+            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small_as_large, _Vt, false, void>();
             _Data._Set_large_fn_ptr(_Where);
 #endif // ^^^ 32-bit ^^^
         } else {
             // Just take ownership of the inner impl pointer
-            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_large, _Vt, _Noexcept, void>();
+            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_large, _Vt, false, void>();
             if constexpr (is_lvalue_reference_v<_Fn>) {
                 _Data._Set_large_fn_ptr(_Old_fn_impl->_Copy(nullptr));
             } else {
@@ -2128,7 +2128,7 @@ public:
         static_assert(is_constructible_v<_Vt, _Fn>, "_Vt should be constructible from _Fn. "
                                                     "(N4950 [func.wrap.move.ctor]/6)");
         if constexpr (is_same_v<_Vt, function<typename _Call::_Signature_without_cv_ref_noex>>) {
-            this->template _Construct_with_old_fn<_Vt, _Call::_Noexcept>(_STD forward<_Fn>(_Callable));
+            this->template _Construct_with_old_fn<_Vt>(_STD forward<_Fn>(_Callable));
         } else {
             if constexpr (is_member_pointer_v<_Vt> || is_pointer_v<_Vt>
                           || _Is_specialization_v<_Vt, move_only_function>) {
