@@ -10,7 +10,7 @@ sub CustomBuildHook()
 {
     my $cwd = Run::GetCWDName();
 
-    if ($ENV{PM_COMPILER} =~ m/clang/) {
+    if ($ENV{PM_COMPILER} eq "clang-cl") {
         Run::ExecuteCL("-x c++-module user.ixx --precompile");
         Run::ExecuteCL("-x c++-module user.ixx -x none test.cpp /Fe$cwd.exe");
     } else {

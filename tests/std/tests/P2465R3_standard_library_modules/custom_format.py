@@ -24,7 +24,7 @@ class CustomTestFormat(STLTestFormat):
         moduleUnits = [stdIxx, stdCompatIxx]
         traditionalUnits = [testCpp, test2Cpp, test3Cpp, test4Cpp, classicCpp]
 
-        if 'clang' in test.cxx:
+        if 'clang' in test.config.available_features:
             for modulePath in moduleUnits:
                 cmd = [test.cxx, '-x', 'c++-module', modulePath, '--precompile', *test.flags, *test.compileFlags]
                 yield TestStep(cmd, shared.execDir, shared.env, False)

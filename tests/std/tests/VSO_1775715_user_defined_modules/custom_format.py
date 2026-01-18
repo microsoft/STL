@@ -15,7 +15,7 @@ class CustomTestFormat(STLTestFormat):
         sourceDir = os.path.dirname(testCpp)
         userIxx = os.path.join(sourceDir, 'user.ixx')
 
-        if 'clang' in test.cxx:
+        if 'clang' in test.config.available_features:
             cmd = [test.cxx, '-x', 'c++-module', userIxx, '--precompile', *test.flags, *test.compileFlags]
             yield TestStep(cmd, shared.execDir, shared.env, False)
 

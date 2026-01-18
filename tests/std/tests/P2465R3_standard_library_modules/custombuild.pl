@@ -18,7 +18,7 @@ sub CustomBuildHook()
     my @moduleUnits = ($stdIxx, $stdCompatIxx);
     my @traditionalUnits = ("test.cpp", "test2.cpp", "test3.cpp", "test4.cpp", "classic.cpp");
 
-    if ($ENV{PM_COMPILER} =~ m/clang/) {
+    if ($ENV{PM_COMPILER} eq "clang-cl") {
         for my $modulePath (@moduleUnits) {
             Run::ExecuteCL("-x c++-module $modulePath --precompile");
         }
