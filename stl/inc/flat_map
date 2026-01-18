@@ -1085,7 +1085,10 @@ private:
     }
 
     auto _Erase_dupes_if_not_multi_pred() {
-        if constexpr (_Equivalence_is_equality<_Key>) {
+        if constexpr (_Is_any_of_v<_Compare, less<>, less<_Key>, _RANGES less, greater<>, greater<_Key>,
+                          _RANGES greater>
+                      && _Equivalence_is_equality<_Key>) {
+
             return equal_to<>{};
         } else {
             return [this](const_reference _Left, const_reference _Right) {
