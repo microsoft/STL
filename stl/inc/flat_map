@@ -1091,7 +1091,7 @@ private:
             return [](const_reference _Left, const_reference _Right) { return _Left.first == _Right.first; };
         } else {
             return [this](const_reference _Left, const_reference _Right) {
-                return this->_Key_equal(_Left.first, _Right.first);
+                return !this->_Key_compare(_Left.first, _Right.first);
             };
         }
     }
