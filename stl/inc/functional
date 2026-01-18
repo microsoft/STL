@@ -1873,7 +1873,7 @@ public:
     static constexpr bool _Noexcept = false;
 
     _Rx operator()(_Types... _Args) {
-        return this->template _Get_invoke<false>()(&this->_Data, _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(&this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
 
@@ -1890,7 +1890,7 @@ public:
     static constexpr bool _Noexcept = false;
 
     _Rx operator()(_Types... _Args) & {
-        return this->template _Get_invoke<false>()(&this->_Data, _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(&this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
 
@@ -1907,7 +1907,7 @@ public:
     static constexpr bool _Noexcept = false;
 
     _Rx operator()(_Types... _Args) && {
-        return this->template _Get_invoke<false>()(&this->_Data, _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(&this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
 
@@ -1925,7 +1925,7 @@ public:
     static constexpr bool _Noexcept = false;
 
     _Rx operator()(_Types... _Args) const {
-        return this->template _Get_invoke<false>()(
+        return this->template _Get_invoke<_Noexcept>()(
             const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
     }
 };
@@ -1943,7 +1943,7 @@ public:
     static constexpr bool _Noexcept = false;
 
     _Rx operator()(_Types... _Args) const& {
-        return this->template _Get_invoke<false>()(
+        return this->template _Get_invoke<_Noexcept>()(
             const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
     }
 };
@@ -1961,7 +1961,7 @@ public:
     static constexpr bool _Noexcept = false;
 
     _Rx operator()(_Types... _Args) const&& {
-        return this->template _Get_invoke<false>()(
+        return this->template _Get_invoke<_Noexcept>()(
             const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
     }
 };
@@ -1981,7 +1981,7 @@ public:
     static constexpr bool _Noexcept = true;
 
     _Rx operator()(_Types... _Args) noexcept {
-        return this->template _Get_invoke<true>()(&this->_Data, _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(&this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
 
@@ -1998,7 +1998,7 @@ public:
     static constexpr bool _Noexcept = true;
 
     _Rx operator()(_Types... _Args) & noexcept {
-        return this->template _Get_invoke<true>()(&this->_Data, _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(&this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
 
@@ -2015,7 +2015,7 @@ public:
     static constexpr bool _Noexcept = true;
 
     _Rx operator()(_Types... _Args) && noexcept {
-        return this->template _Get_invoke<true>()(&this->_Data, _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(&this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
 
@@ -2033,7 +2033,7 @@ public:
     static constexpr bool _Noexcept = true;
 
     _Rx operator()(_Types... _Args) const noexcept {
-        return this->template _Get_invoke<true>()(
+        return this->template _Get_invoke<_Noexcept>()(
             const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
     }
 };
@@ -2051,7 +2051,7 @@ public:
     static constexpr bool _Noexcept = true;
 
     _Rx operator()(_Types... _Args) const& noexcept {
-        return this->template _Get_invoke<true>()(
+        return this->template _Get_invoke<_Noexcept>()(
             const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
     }
 };
@@ -2069,7 +2069,7 @@ public:
     static constexpr bool _Noexcept = true;
 
     _Rx operator()(_Types... _Args) const&& noexcept {
-        return this->template _Get_invoke<true>()(
+        return this->template _Get_invoke<_Noexcept>()(
             const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
     }
 };
