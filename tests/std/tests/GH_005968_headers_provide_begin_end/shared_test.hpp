@@ -15,30 +15,31 @@ namespace detail {
 
     // Define minimal metaprogramming tools, avoid including anything
 
-#define DEFINE_CONDITIONAL_CALLER_OF(member_name)                                                              \
-    template <class T, class = void>                                                                           \
-    struct conditional_caller_of_##member_name {                                                               \
-        constexpr void operator()(T&) {}                                                                       \
-    };                                                                                                         \
-                                                                                                               \
-    template <class T>                                                                                         \
-    struct conditional_caller_of_##member_name<T&, decltype((void) static_cast<T*>(nullptr)->member_name())> { \
-        constexpr auto operator()(T& t) {                                                                      \
-            return member_name(t);                                                                             \
-        }                                                                                                      \
+#define DEFINE_CONDITIONAL_CALLER_OF_FREE_MEMBER(free_name, member_name)                                     \
+    template <class T, class = void>                                                                         \
+    struct conditional_caller_of_##free_name {                                                               \
+        constexpr void operator()(T&) {}                                                                     \
+    };                                                                                                       \
+                                                                                                             \
+    template <class T>                                                                                       \
+    struct conditional_caller_of_##free_name<T&, decltype((void) static_cast<T*>(nullptr)->member_name())> { \
+        constexpr auto operator()(T& t) {                                                                    \
+            return free_name(t);                                                                             \
+        }                                                                                                    \
     };
 
-#define CONDITIONALLY_CALL(c, member_name) conditional_caller_of_##member_name<decltype(c)>{}(c)
+#define DEFINE_CONDITIONAL_CALLER_OF(name) DEFINE_CONDITIONAL_CALLER_OF_FREE_MEMBER(name, name)
+
+#define CONDITIONALLY_CALL(c, name) conditional_caller_of_##name<decltype(c)>{}(c)
 
     DEFINE_CONDITIONAL_CALLER_OF(rbegin);
     DEFINE_CONDITIONAL_CALLER_OF(rend);
     DEFINE_CONDITIONAL_CALLER_OF(crbegin);
     DEFINE_CONDITIONAL_CALLER_OF(crend);
     DEFINE_CONDITIONAL_CALLER_OF(size);
-    DEFINE_CONDITIONAL_CALLER_OF(ssize);
+    DEFINE_CONDITIONAL_CALLER_OF_FREE_MEMBER(ssize, size); // N5032 [iterator.range]/18
     DEFINE_CONDITIONAL_CALLER_OF(empty);
     DEFINE_CONDITIONAL_CALLER_OF(data);
-
 
     template <class C>
     void test_free_container_functions(C& c) {
