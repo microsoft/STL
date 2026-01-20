@@ -7920,6 +7920,16 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 }
 #endif // _HAS_CXX17
 
+#if _HAS_CXX23
+template <class _Ty>
+constexpr bool _Equivalence_is_equality_impl = is_integral_v<_Ty> || is_pointer_v<_Ty>;
+
+// For ranges::less and ranges::greater, see N5032 [range.cmp]/9, [concept.totallyordered]/1.1, [cmp.concept]/1.2.
+template <class _Compare, class _Key>
+constexpr bool _Equivalence_is_equality =
+    _Is_any_of_v<_Compare, _RANGES less, _RANGES greater>
+    || (_Is_any_of_v<_Compare, less<>, less<_Key>, greater<>, greater<_Key>> && _Equivalence_is_equality_impl<_Key>);
+#endif // _HAS_CXX23
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
