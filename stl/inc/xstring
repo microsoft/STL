@@ -3238,7 +3238,7 @@ private:
 
 #if _HAS_CXX23
 template <class _Elem, class _Traits, class _Alloc>
-constexpr bool _Equivalence_is_equality<basic_string<_Elem, _Traits, _Alloc>> =
+constexpr bool _Equivalence_is_equality_impl<basic_string<_Elem, _Traits, _Alloc>> =
     _Is_implementation_handled_char_traits<_Traits>;
 #endif // _HAS_CXX23
 

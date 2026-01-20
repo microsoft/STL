@@ -706,9 +706,7 @@ private:
     }
 
     auto _Erase_dupes_if_not_multi_pred() {
-        if constexpr (_Is_any_of_v<_Keylt, _RANGES less, _RANGES greater>
-                      || (_Is_any_of_v<_Keylt, less<>, less<_Kty>, greater<>, greater<_Kty>>
-                          && _Equivalence_is_equality<_Kty>) ) {
+        if constexpr (_Equivalence_is_equality<_Keylt, _Kty>) {
             return equal_to<>{};
         } else {
             return
