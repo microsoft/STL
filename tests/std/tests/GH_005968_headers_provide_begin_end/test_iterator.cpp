@@ -26,7 +26,7 @@ struct minimal_container {
 
 // Self-test the template machinery to check it properly detects member functions
 namespace detail {
-    template <typename C>
+    template <class C>
     constexpr bool minimal_container_test(C& c) {
         // when the CONDITIONALLY_CALL expression fails to detect the member, it has type voi, i.e. clearly
         // incompatible with operator==. If the detection mechanism did not work properly, this would fail to compile.

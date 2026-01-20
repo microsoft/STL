@@ -14,14 +14,14 @@ namespace detail {
     // Define minimal metaprogramming tools, avoid including anything
 
 #define DEFINE_CONDITIONAL_CALLER_OF(member_name)                                                              \
-    template <typename T, typename = void>                                                                     \
+    template <class T, class = void>                                                                           \
     struct conditional_caller_of_##member_name {                                                               \
         constexpr void operator()(T& t) {                                                                      \
             (void) t;                                                                                          \
         }                                                                                                      \
     };                                                                                                         \
                                                                                                                \
-    template <typename T>                                                                                      \
+    template <class T>                                                                                         \
     struct conditional_caller_of_##member_name<T&, decltype((void) static_cast<T*>(nullptr)->member_name())> { \
         constexpr auto operator()(T& t) {                                                                      \
             return member_name(t);                                                                             \
@@ -40,7 +40,7 @@ namespace detail {
     DEFINE_CONDITIONAL_CALLER_OF(data);
 
 
-    template <typename C>
+    template <class C>
     void test_free_container_functions(C& c) {
         (void) begin(c);
         (void) end(c);
@@ -76,7 +76,7 @@ namespace detail {
     }
 } // namespace detail
 
-template <typename C>
+template <class C>
 void shared_test(C& c) {
     detail::test_free_container_functions(c);
     // as_const from <utility> not required to be available
