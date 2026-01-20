@@ -37,7 +37,9 @@ namespace detail {
     DEFINE_CONDITIONAL_CALLER_OF(crbegin);
     DEFINE_CONDITIONAL_CALLER_OF(crend);
     DEFINE_CONDITIONAL_CALLER_OF(size);
+#if _HAS_CXX20
     DEFINE_CONDITIONAL_CALLER_OF_FREE_MEMBER(ssize, size); // N5032 [iterator.range]/18
+#endif
     DEFINE_CONDITIONAL_CALLER_OF(empty);
     DEFINE_CONDITIONAL_CALLER_OF(data);
 
@@ -52,7 +54,9 @@ namespace detail {
         CONDITIONALLY_CALL(c, crbegin); // missing e.g. for forward_list
         CONDITIONALLY_CALL(c, crend); // missing e.g. for forward_list
         CONDITIONALLY_CALL(c, size); // missing e.g. for optional
+#if _HAS_CXX20
         CONDITIONALLY_CALL(c, ssize); // missing e.g. for optional
+#endif
         CONDITIONALLY_CALL(c, empty); // missing e.g. for valarray
         CONDITIONALLY_CALL(c, data); // missing e.g. for valarray
     }
