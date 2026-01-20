@@ -11,12 +11,12 @@ static_assert(false, "When this feature is implemented, update this to a Standar
 
 void test_flat_set() {
     {
-        std::flat_set container{1, 2, 3};
+        std::flat_set<int> container{1, 2, 3};
         shared_test(container);
     }
 
     {
-        std::flat_multiset container2{1, 2, 3};
+        std::flat_multiset<int> container2{1, 2, 3};
         shared_test(container2);
     }
 }
