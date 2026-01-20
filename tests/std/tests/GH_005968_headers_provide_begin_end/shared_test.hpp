@@ -3,7 +3,9 @@
 
 #pragma once
 
-// Intentionally avoid including anything, relevant headers are included in .cpp files.
+// Intentionally avoid including anything. Order assumption: shared_test.hpp assumes
+// that the relevant Standard headers have already been included by the .cpp files.
+
 // Test requirements of N5032 [iterator.range]/1.
 
 namespace detail {
