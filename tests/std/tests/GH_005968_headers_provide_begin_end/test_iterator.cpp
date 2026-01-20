@@ -12,10 +12,10 @@ struct minimal_container {
     constexpr void end() const {}
     constexpr void cbegin() const {}
     constexpr void cend() const {}
-    constexpr void crbegin() const {}
-    constexpr void crend() const {}
     constexpr void rbegin() const {}
     constexpr void rend() const {}
+    constexpr void crbegin() const {}
+    constexpr void crend() const {}
     constexpr size_t size() const {
         return magic_value;
     }
