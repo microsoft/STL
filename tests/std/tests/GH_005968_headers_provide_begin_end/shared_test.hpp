@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#pragma once
+
 // Intentionally avoid including anything, relevant headers are included in .cpp files.
 // Test requirements of N5032 [iterator.range]/1.
 
