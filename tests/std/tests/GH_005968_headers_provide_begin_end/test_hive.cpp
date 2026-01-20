@@ -3,6 +3,7 @@
 
 #include <version>
 #if defined(__cpp_lib_hive)
+static_assert(false, "When this feature is implemented, update this to a Standard mode check.");
 
 #include <hive>
 
