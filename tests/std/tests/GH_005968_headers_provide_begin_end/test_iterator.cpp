@@ -28,7 +28,7 @@ struct minimal_container {
 namespace detail {
     template <class C>
     constexpr bool minimal_container_test(C& c) {
-        // when the CONDITIONALLY_CALL expression fails to detect the member, it has type voi, i.e. clearly
+        // when the CONDITIONALLY_CALL expression fails to detect the member, it has type void, i.e. clearly
         // incompatible with operator==. If the detection mechanism did not work properly, this would fail to compile.
         return CONDITIONALLY_CALL(c, size) == minimal_container::magic_value;
     }
