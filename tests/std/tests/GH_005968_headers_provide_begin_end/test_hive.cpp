@@ -13,8 +13,8 @@ void test_hive() {
     shared_test(container);
 }
 
-#else // ^^^ defined(__cpp_lib_hive) / feature not available vvv
+#else // ^^^ defined(__cpp_lib_hive) / !defined(__cpp_lib_hive) vvv
 
 void test_hive() {}
 
-#endif // feature not available
+#endif // ^^^ !defined(__cpp_lib_hive) ^^^

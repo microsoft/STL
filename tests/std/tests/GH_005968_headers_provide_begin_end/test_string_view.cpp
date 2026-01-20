@@ -17,4 +17,4 @@ void test_string_view() {
 
 void test_string_view() {}
 
-#endif // !_HAS_CXX17
+#endif // ^^^ !_HAS_CXX17 ^^^

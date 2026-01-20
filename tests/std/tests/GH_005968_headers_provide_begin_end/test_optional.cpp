@@ -13,8 +13,8 @@ void test_optional() {
     shared_test(container);
 }
 
-#else // ^^^ defined(__cpp_lib_optional_range_support) / feature not available vvv
+#else // ^^^ defined(__cpp_lib_optional_range_support) / !defined(__cpp_lib_optional_range_support) vvv
 
 void test_optional() {}
 
-#endif // feature not available
+#endif // ^^^ !defined(__cpp_lib_optional_range_support) ^^^

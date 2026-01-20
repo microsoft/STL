@@ -13,8 +13,8 @@ void test_inplace_vector() {
     shared_test(container);
 }
 
-#else // ^^^ defined(__cpp_lib_inplace_vector) / feature not available vvv
+#else // ^^^ defined(__cpp_lib_inplace_vector) / !defined(__cpp_lib_inplace_vector) vvv
 
 void test_inplace_vector() {}
 
-#endif // feature not available
+#endif // ^^^ !defined(__cpp_lib_inplace_vector) ^^^

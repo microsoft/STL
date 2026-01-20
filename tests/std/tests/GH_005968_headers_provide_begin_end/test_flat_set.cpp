@@ -20,8 +20,8 @@ void test_flat_set() {
     }
 }
 
-#else // ^^^ defined(__cpp_lib_flat_set) / feature not available vvv
+#else // ^^^ defined(__cpp_lib_flat_set) / !defined(__cpp_lib_flat_set) vvv
 
 void test_flat_set() {}
 
-#endif // feature not available
+#endif // ^^^ !defined(__cpp_lib_flat_set) ^^^

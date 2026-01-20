@@ -18,4 +18,4 @@ void test_span() {
 
 void test_span() {}
 
-#endif // !_HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^

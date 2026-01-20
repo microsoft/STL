@@ -17,4 +17,4 @@ void test_stacktrace() {
 
 void test_stacktrace() {}
 
-#endif // !_HAS_CXX23
+#endif // ^^^ !_HAS_CXX23 ^^^

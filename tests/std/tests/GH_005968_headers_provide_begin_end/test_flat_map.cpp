@@ -26,8 +26,8 @@ void test_flat_map() {
     }
 }
 
-#else // ^^^ defined(__cpp_lib_flat_map) / feature not available vvv
+#else // ^^^ defined(__cpp_lib_flat_map) / !defined(__cpp_lib_flat_map) vvv
 
 void test_flat_map() {}
 
-#endif // feature not available
+#endif // ^^^ !defined(__cpp_lib_flat_map) ^^^
