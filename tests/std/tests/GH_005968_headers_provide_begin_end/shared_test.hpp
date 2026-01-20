@@ -16,9 +16,7 @@ namespace detail {
 #define DEFINE_CONDITIONAL_CALLER_OF(member_name)                                                              \
     template <class T, class = void>                                                                           \
     struct conditional_caller_of_##member_name {                                                               \
-        constexpr void operator()(T& t) {                                                                      \
-            (void) t;                                                                                          \
-        }                                                                                                      \
+        constexpr void operator()(T&) {}                                                                       \
     };                                                                                                         \
                                                                                                                \
     template <class T>                                                                                         \
