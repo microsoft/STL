@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // Intentionally avoid including anything, relevant headers are included in .cpp files.
-// Test requirements of N5014 [iterator.range]/1
-// LWG-3987 added headers <flat_meow>
+// Test requirements of N5032 [iterator.range]/1.
 
 namespace detail {
 
