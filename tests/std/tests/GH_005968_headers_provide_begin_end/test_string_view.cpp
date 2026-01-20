@@ -9,8 +9,7 @@
 #include "shared_test.hpp"
 
 void test_string_view() {
-    char text[]                = "hello";
-    std::string_view container = text;
+    std::string_view container = "hello";
     shared_test(container);
 }
 #else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
