@@ -39,7 +39,8 @@ public:
     using pointer           = typename _Myvec::const_pointer;
     using reference         = const value_type&;
 
-    using _Tptr = typename _Myvec::pointer;
+    using _Tptr    = typename _Myvec::pointer;
+    using _Myvec_t = _Myvec; // helper for expression evaluator
 
     _CONSTEXPR20 _Vector_const_iterator() noexcept : _Ptr() {}
 

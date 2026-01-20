@@ -1018,6 +1018,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   <Type Name="std::_Array_iterator&lt;*&gt;" Priority="MediumLow">
       <AlternativeType Name="std::_Array_const_iterator&lt;*&gt;" />
       <SmartPointer Usage="Indexable">_Ptr,na</SmartPointer>
+      <DisplayString>{*_Ptr}</DisplayString>
       <Expand>
           <Item Name="[ptr]">_Ptr</Item>
       </Expand>
@@ -1161,14 +1162,27 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
-  <Type Name="std::_Vector_iterator&lt;*&gt;">
+  <!-- This is for _ITERATOR_DEBUG_LEVEL == 0 and must have lower priority. -->
+  <Type Name="std::_Vector_iterator&lt;*&gt;" Priority="MediumLow">
       <AlternativeType Name="std::_Vector_const_iterator&lt;*&gt;" />
       <SmartPointer Usage="Indexable">_Ptr,na</SmartPointer>
+      <DisplayString>{*_Ptr}</DisplayString>
       <Expand>
           <Item Name="[ptr]">_Ptr</Item>
       </Expand>
   </Type>
 
+  <!-- This is for _ITERATOR_DEBUG_LEVEL != 0 and must have higher priority. -->
+  <Type Name="std::_Vector_iterator&lt;*&gt;" Priority="Medium">
+      <AlternativeType Name="std::_Vector_const_iterator&lt;*&gt;" />
+      <Intrinsic Name="my_cont_end" Expression="((_Myvec_t *)_Myproxy-&gt;_Mycont)-&gt;_Mylast" />
+      <SmartPointer Usage="Indexable">_Ptr,na</SmartPointer>
+      <DisplayString Condition="_Ptr == my_cont_end()">end</DisplayString>
+      <DisplayString Condition="_Ptr != my_cont_end()">{*_Ptr}</DisplayString>
+      <Expand>
+          <Item Name="[ptr]">_Ptr</Item>
+      </Expand>
+  </Type>
 
   <!-- VC 2015 -->
   <Type Name="std::map&lt;*&gt;" Priority="Medium">
@@ -1771,11 +1785,23 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
-  <Type Name="std::_Span_iterator&lt;*&gt;">
+  <!-- This is for _ITERATOR_DEBUG_LEVEL == 0 and must have lower priority. -->
+  <Type Name="std::_Span_iterator&lt;*&gt;" Priority="MediumLow">
     <SmartPointer Usage="Indexable">_Myptr,na</SmartPointer>
+    <DisplayString>{*_Myptr}</DisplayString>
     <Expand>
       <Item Name="[ptr]">_Myptr</Item>
     </Expand>
+  </Type>
+
+  <!-- This is for _ITERATOR_DEBUG_LEVEL != 0 and must have higher priority. -->
+  <Type Name="std::_Span_iterator&lt;*&gt;" Priority="Medium">
+      <SmartPointer Usage="Indexable">_Myptr,na</SmartPointer>
+      <DisplayString Condition="_Myptr == _Myend">end</DisplayString>
+      <DisplayString Condition="_Myptr != _Myend">{*_Myptr}</DisplayString>
+      <Expand>
+          <Item Name="[ptr]">_Myptr</Item>
+      </Expand>
   </Type>
 
   <Type Name="std::default_sentinel_t">
