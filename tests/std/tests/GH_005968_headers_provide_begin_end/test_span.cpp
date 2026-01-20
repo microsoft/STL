@@ -9,8 +9,8 @@
 #include "shared_test.hpp"
 
 void test_span() {
-    int array[]{1, 2, 3};
-    std::span<int> container(array);
+    int arr[]{1, 2, 3};
+    std::span<int> container(arr);
     shared_test(container);
 }
 
