@@ -78,7 +78,7 @@ template <typename C>
 void shared_test(C& c) {
     detail::test_free_container_functions(c);
     // as_const from <utility> not required to be available
-    detail::test_free_container_functions(const_cast<C const&>(c));
+    detail::test_free_container_functions(const_cast<const C&>(c));
 
     detail::test_free_array_functions();
 }
