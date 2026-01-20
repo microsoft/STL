@@ -4,6 +4,7 @@
 #include <benchmark/benchmark.h>
 #include <flat_map>
 #include <flat_set>
+#include <string>
 
 using namespace std;
 
@@ -11,8 +12,8 @@ void flat_map_strings(benchmark::State& state) {
     flat_map<string, int> pieces;
     for (auto _ : state) {
         pieces = {{"soldier"s, 1}, {"soldier"s, 2}, {"soldier"s, 3}, {"soldier"s, 4}, {"soldier"s, 5}, {"soldier"s, 6},
-            {"soldier"s, 7}, {"soldier"s, 8}, {"tour"s, 9}, {"horse"s, 10}, {"elephant"s, 11}, {"vizier"s, 12},
-            {"king"s, 13}, {"elephant"s, 14}, {"horse"s, 15}, {"tour"s, 16}};
+            {"soldier"s, 7}, {"soldier"s, 8}, {"tower"s, 9}, {"horse"s, 10}, {"elephant"s, 11}, {"vizier"s, 12},
+            {"king"s, 13}, {"elephant"s, 14}, {"horse"s, 15}, {"tower"s, 16}};
         benchmark::DoNotOptimize(pieces);
     }
 }
@@ -21,7 +22,7 @@ void flat_set_strings(benchmark::State& state) {
     flat_set<string> pieces;
     for (auto _ : state) {
         pieces = {"soldier"s, "soldier"s, "soldier"s, "soldier"s, "soldier"s, "soldier"s, "soldier"s, "soldier"s,
-            "tour"s, "horse"s, "elephant"s, "vizier"s, "king"s, "elephant"s, "horse"s, "tour"s};
+            "tower"s, "horse"s, "elephant"s, "vizier"s, "king"s, "elephant"s, "horse"s, "tower"s};
         benchmark::DoNotOptimize(pieces);
     }
 }
