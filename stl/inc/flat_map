@@ -112,10 +112,16 @@ struct _Pairing_iterator_provider {
         }
 
         _NODISCARD bool operator==(const _Iterator& _Right) const {
+#if _ITERATOR_DEBUG_LEVEL != 0
+            _Compat(_Right);
+#endif // _ITERATOR_DEBUG_LEVEL != 0
             return _Key_it == _Right._Key_it;
         }
 
         _NODISCARD auto operator<=>(const _Iterator& _Right) const {
+#if _ITERATOR_DEBUG_LEVEL != 0
+            _Compat(_Right);
+#endif // _ITERATOR_DEBUG_LEVEL != 0
             return _Synth_three_way{}(_Key_it, _Right._Key_it);
         }
 
@@ -160,6 +166,9 @@ struct _Pairing_iterator_provider {
         }
 
         _NODISCARD difference_type operator-(const _Iterator& _Right) const {
+#if _ITERATOR_DEBUG_LEVEL != 0
+            _Compat(_Right);
+#endif // _ITERATOR_DEBUG_LEVEL != 0
             return _Key_it - _Right._Key_it;
         }
 
@@ -181,6 +190,13 @@ struct _Pairing_iterator_provider {
             return _Mapped_it;
         }
 
+        void _Compat([[maybe_unused]] const _Iterator& _Right) const noexcept { // test for compatible iterator pair
+#if _ITERATOR_DEBUG_LEVEL != 0
+            _STL_VERIFY(
+                _Key_it - _Right._Key_it == _Mapped_it - _Right._Mapped_it, "iterators from inconsistent ranges");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        }
+
         using _Prevent_inheriting_unwrap = _Iterator;
 
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -193,8 +209,7 @@ struct _Pairing_iterator_provider {
                 _Verify_range(_First._Mapped_it, _Last._Mapped_it); // intentional ADL
             }
 
-            _STL_VERIFY(_Last._Key_it - _First._Key_it == _Last._Mapped_it - _First._Mapped_it,
-                "iterators from inconsistent ranges");
+            _First._Compat(_Last);
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
