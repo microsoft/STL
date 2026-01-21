@@ -13,13 +13,18 @@ parameters:
 - name: runTesting
   type: boolean
 steps:
-- script: |
-    call "$(vsDevCmdBat)" -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-    ninja --verbose -k 0 ${{ parameters.testTargets }}
+- task: PowerShell@2
   displayName: 'Run Tests'
+  inputs:
+    pwsh: true
+    workingDirectory: $(buildOutputLocation)
+    targetType: inline
+    script: |
+      $PSNativeCommandUseErrorActionPreference = $true
+      & "$(launchVsDevShell)" -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
+      ninja --verbose -k 0 ${{ parameters.testTargets }}
   timeoutInMinutes: 30
   condition: and(succeeded(), ${{ parameters.runTesting }})
-  workingDirectory: $(buildOutputLocation)
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - task: PublishTestResults@2
   displayName: 'Publish Tests'
