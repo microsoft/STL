@@ -1502,6 +1502,47 @@ void test_death_different_size_replace() {
     cont.replace({42, 137, 137, 3337, 0}, {'a'});
 }
 
+// Reach into the pairing iterator and modify one of the underlying iterators to break invariants
+template <class Cont, class Iter>
+void vandalize_pairing_iterator(Iter& pairing_iterator) {
+    using key_iterator_type = Cont::key_container_type::const_iterator;
+    // FIXME static_assert fails for _Vector_const_iterator. Do we have a more elegant way
+    //  to break invariants? Droping these tests is the last option..
+    //  static_assert(is_trivially_copyable_v<key_iterator_type>);
+    key_iterator_type key_iterator_copy;
+    memcpy(static_cast<void*>(&key_iterator_copy), static_cast<void*>(&pairing_iterator), sizeof(key_iterator_type));
+    ++key_iterator_copy;
+    memcpy(static_cast<void*>(&pairing_iterator), static_cast<void*>(&key_iterator_copy), sizeof(key_iterator_type));
+}
+
+template <cont_type type>
+void test_death_iterator_at_different_offset_operator_equals() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    C cont{{42, 'a'}, {137, 'g'}, {137, 'r'}, {3337, 'f'}, {7755, 'z'}};
+    auto broken_iter = cont.begin();
+    vandalize_pairing_iterator<C>(broken_iter);
+    (void) (cont.end() == broken_iter);
+}
+
+template <cont_type type>
+void test_death_iterator_at_different_offset_three_way() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    C cont{{42, 'a'}, {137, 'g'}, {137, 'r'}, {3337, 'f'}, {7755, 'z'}};
+    auto broken_iter = cont.begin();
+    vandalize_pairing_iterator<C>(broken_iter);
+    (void) (cont.end() <=> broken_iter);
+}
+
+template <cont_type type>
+void test_death_iterator_at_different_offset_operator_minus() {
+    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    C cont{{42, 'a'}, {137, 'g'}, {137, 'r'}, {3337, 'f'}, {7755, 'z'}};
+    auto broken_iter = cont.begin();
+    vandalize_pairing_iterator<C>(broken_iter);
+    (void) (cont.end() - broken_iter);
+}
+
+
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec([] { run_normal_tests(); });
 
@@ -1540,8 +1581,21 @@ int main(int argc, char* argv[]) {
         test_death_different_size_ctor_sorted<cont_type::multi>,
         test_death_different_size_replace<cont_type::unique>,
         test_death_different_size_replace<cont_type::multi>,
+
     });
 #endif // defined(_DEBUG)
+
+#if _ITERATOR_DEBUG_LEVEL != 0
+    exec.add_death_tests({
+        // Tests specific to flat_map - incompatible key and mapped component of pairing iterator
+        test_death_iterator_at_different_offset_operator_equals<cont_type::unique>,
+        test_death_iterator_at_different_offset_operator_equals<cont_type::multi>,
+        test_death_iterator_at_different_offset_three_way<cont_type::unique>,
+        test_death_iterator_at_different_offset_three_way<cont_type::multi>,
+        test_death_iterator_at_different_offset_operator_minus<cont_type::unique>,
+        test_death_iterator_at_different_offset_operator_minus<cont_type::multi>,
+    });
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 
     return exec.run(argc, argv);
 }
