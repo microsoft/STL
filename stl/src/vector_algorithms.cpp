@@ -4290,10 +4290,8 @@ namespace {
         const void* _Find_last_scalar_tail(
             const void* const _First, const void* const _Last, const void* const _Real_last, const _Ty _Val) noexcept {
             auto _Ptr = static_cast<const _Ty*>(_Last);
-            for (;;) {
-                if (_Ptr == _First) {
-                    return _Real_last;
-                }
+
+            while (_Ptr != _First) {
                 --_Ptr;
                 if constexpr (_Pred == _Predicate::_Not_equal) {
                     if (*_Ptr != _Val) {
@@ -4305,6 +4303,8 @@ namespace {
                     }
                 }
             }
+
+            return _Real_last;
         }
 
         // The below functions have exactly the same signature as the extern "C" functions, up to calling convention.
