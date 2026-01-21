@@ -4287,7 +4287,7 @@ namespace {
         }
 
         template <_Predicate _Pred, class _Ty>
-        static const void* _Find_last_scalar_tail(
+        const void* _Find_last_scalar_tail(
             const void* _First, const void* const _Last, const void* const _Real_last, const _Ty _Val) noexcept {
             auto _Ptr = static_cast<const _Ty*>(_Last);
             for (;;) {
