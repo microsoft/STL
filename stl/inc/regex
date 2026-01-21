@@ -1279,7 +1279,8 @@ enum _Node_flags : int { // flags for nfa nodes with special properties
     _Fl_class_cl_all_bits = 0x800, // TRANSITION, ABI: GH-5242
     _Fl_begin_needs_w     = 0x100,
     _Fl_begin_needs_s     = 0x200,
-    _Fl_begin_needs_d     = 0x400
+    _Fl_begin_needs_d     = 0x400,
+    _Fl_rep_branchless    = 0x800,
 };
 
 _BITMASK_OPS(_EMPTY_ARGUMENT, _Node_flags)
@@ -1700,7 +1701,7 @@ class _Matcher3 { // provides ways to match a regular expression to a text seque
 public:
     _Matcher3(_It _Pfirst, _It _Plast, const _RxTraits& _Tr, _Root_node* _Re, unsigned int _Nx,
         regex_constants::syntax_option_type _Sf, regex_constants::match_flag_type _Mf)
-        : _Begin(_Pfirst), _End(_Plast), _Rep(_Re), _Sflags(_Sf), _Mflags(_Mf), _Ncap(_Nx),
+        : _Begin(_Pfirst), _End(_Plast), _Sflags(_Sf), _Mflags(_Mf), _Ncap(_Nx),
           _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)), _Traits(_Tr) {
         _Loop_vals.resize(_Re->_Loops);
         _Adl_verify_range(_Pfirst, _Plast);
@@ -1719,6 +1720,12 @@ public:
         _Iter_diff_t<_It> _Input_length = _STD distance(_Pfirst, _Plast);
         _Frames_limit                   = _Calculate_frames_limit(_Input_length);
         _Complexity_limit               = _Calculate_complexity_limit(_Input_length);
+
+        // TRANSITION, ABI, GH-6025:
+        // The first two nodes are of types _N_begin and _N_capture with capturing group 0.
+        // These nodes do not affect the state of the matcher and thus can be skipped immediately
+        // before engaging the expensive NFA interpreter loop.
+        _Start = _Re->_Next->_Next;
 
 // sanitize multiline mode setting
 #if _REGEX_LEGACY_MULTILINE_MODE
@@ -1763,7 +1770,7 @@ public:
 
         _Matched = false;
 
-        bool _Succeeded = _Match_pat(_Rep) || _Matched;
+        bool _Succeeded = _Match_pat(_Start) || _Matched;
 
         if (!_Succeeded) {
             return false;
@@ -1832,7 +1839,7 @@ private:
 
     _It _Begin;
     _It _End;
-    _Node_base* _Rep;
+    _Node_base* _Start;
     regex_constants::syntax_option_type _Sflags;
     regex_constants::match_flag_type _Mflags;
     bool _Matched = false;
@@ -1900,7 +1907,7 @@ private:
     void _Quantifier();
     bool _Alternative();
     void _Disjunction();
-    void _Calculate_loop_simplicity(_Node_base* _Nx, _Node_base* _Ne, _Node_rep* _Outer_rep);
+    void _Calculate_loop_simplicity(_Node_base* _Nx, _Node_base* _Ne, _Node_rep* _Outer_rep, bool _Nonreentrant);
 
     _FwdIt _Pat;
     _FwdIt _End;
@@ -3997,14 +4004,13 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 { // record current position
                     auto _Node = static_cast<_Node_capture*>(_Nx);
                     auto _Idx  = _Node->_Idx;
-                    if (_Idx != 0U) {
-                        auto& _Group        = _Tgt_state._Grps[_Idx];
-                        auto _Frame_idx     = _Push_frame(_Rx_unwind_ops::_Capture_restore_begin, _Node);
-                        auto& _Frame        = _Frames[_Frame_idx];
-                        _Frame._Pos         = _Group._Begin;
-                        _Frame._Capture_idx = _Idx;
-                        _Group._Begin       = _Tgt_state._Cur;
-                    }
+                    _STL_INTERNAL_CHECK(_Idx != 0U);
+                    auto& _Group        = _Tgt_state._Grps[_Idx];
+                    auto _Frame_idx     = _Push_frame(_Rx_unwind_ops::_Capture_restore_begin, _Node);
+                    auto& _Frame        = _Frames[_Frame_idx];
+                    _Frame._Pos         = _Group._Begin;
+                    _Frame._Capture_idx = _Idx;
+                    _Group._Begin       = _Tgt_state._Cur;
                     break;
                 }
 
@@ -4129,7 +4135,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                     _Node_rep* _Nr = static_cast<_Node_end_rep*>(_Nx)->_Begin_rep;
                     auto& _Sav     = _Loop_vals[_Nr->_Loop_number];
                     bool _Greedy   = (_Nr->_Flags & _Fl_greedy) != 0;
-                    if (_Nr->_Simple_loop != 0) {
+                    if (_Nr->_Simple_loop != 0 || (_Nr->_Flags & _Fl_rep_branchless) != 0) {
                         if (_Sav._Loop_idx == 1) {
                             auto& _Base_frame = _Frames[_Sav._Loop_frame_idx];
                             _Sav._Loop_length = _STD distance(_Base_frame._Pos, _Tgt_state._Cur);
@@ -4146,6 +4152,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 
                             // allocate stack frame holding loop-specific unwinding opcode for second rep and beyond
                             auto _New_frame_code = _Base_frame._Code == _Rx_unwind_ops::_Loop_simple_greedy_firstrep
+                                                        || _Base_frame._Code == _Rx_unwind_ops::_Loop_greedy
                                                      ? _Rx_unwind_ops::_Loop_simple_greedy_lastrep
                                                      : _Rx_unwind_ops::_Do_nothing;
                             auto _New_frame_idx  = _Push_frame(_New_frame_code, _Nr);
@@ -4469,7 +4476,7 @@ _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
     static constexpr wchar_t _Line_terminators_wchar_t[] = {static_cast<wchar_t>(_Meta_cr),
         static_cast<wchar_t>(_Meta_nl), static_cast<wchar_t>(_Meta_ls), static_cast<wchar_t>(_Meta_ps)};
     constexpr unsigned int _Max_recursion_depth          = 50U;
-    _Node_base* _Nx                                      = _Node_arg ? _Node_arg : _Rep;
+    _Node_base* _Nx                                      = _Node_arg ? _Node_arg : _Start;
 
     while (_First_arg != _Last && _Nx) { // check current node
         switch (_Nx->_Kind) { // handle current node's type
@@ -5424,7 +5431,7 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Disjunction() { // check for valid dis
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
-    _Node_base* _Nx, _Node_base* _Ne, _Node_rep* _Outer_rep) {
+    _Node_base* _Nx, _Node_base* _Ne, _Node_rep* _Outer_rep, const bool _Nonreentrant) {
     // walks regex NFA, calculates values of _Node_rep::_Simple_loop
     for (; _Nx != _Ne && _Nx; _Nx = _Nx->_Next) {
         switch (_Nx->_Kind) {
@@ -5432,11 +5439,12 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
             // _Node_if inside a _Node_rep makes the rep not simple
             if (_Outer_rep) {
                 _Outer_rep->_Simple_loop = 0;
+                _Outer_rep->_Flags &= ~_Fl_rep_branchless;
             }
 
             // visit each branch of the if
             for (_Node_if* _Branch = static_cast<_Node_if*>(_Nx)->_Child; _Branch; _Branch = _Branch->_Child) {
-                _Calculate_loop_simplicity(_Branch->_Next, _Branch->_Endif, _Outer_rep);
+                _Calculate_loop_simplicity(_Branch->_Next, _Branch->_Endif, _Outer_rep, _Nonreentrant);
             }
             break;
 
@@ -5444,13 +5452,14 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
             // A positive lookahead assertion inside a _Node_rep makes the rep not simple
             if (_Outer_rep) {
                 _Outer_rep->_Simple_loop = 0;
+                _Outer_rep->_Flags &= ~_Fl_rep_branchless;
             }
             _FALLTHROUGH;
 
         case _N_neg_assert:
             // visit the assertion body
             // note _Outer_rep being reset: the assertion regex is completely independent
-            _Calculate_loop_simplicity(static_cast<_Node_assert*>(_Nx)->_Child, nullptr, nullptr);
+            _Calculate_loop_simplicity(static_cast<_Node_assert*>(_Nx)->_Child, nullptr, nullptr, true);
             break;
 
         case _N_rep:
@@ -5459,15 +5468,20 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
             // If _Outer_rep can repeat at most once, we have to analyze the structure of the inner loop.
             if (_Outer_rep) {
                 _Outer_rep->_Simple_loop = 0;
-                auto _Inner_rep          = static_cast<_Node_rep*>(_Nx);
-                if (_Outer_rep->_Max >= 0 && _Outer_rep->_Max <= 1) {
-                    _Calculate_loop_simplicity(_Inner_rep->_Next, _Inner_rep->_End_rep->_Next, _Inner_rep);
-                    _Nx = _Inner_rep->_End_rep;
-                } else {
+                _Outer_rep->_Flags &= ~_Fl_rep_branchless;
+                auto _Inner_rep = static_cast<_Node_rep*>(_Nx);
+                _Inner_rep->_Flags |= _Fl_rep_branchless;
+                const bool _Inner_nonreentrant = _Outer_rep->_Max >= 0 && _Outer_rep->_Max <= 1 && _Nonreentrant;
+                if (!_Inner_nonreentrant) {
                     _Inner_rep->_Simple_loop = 0;
                 }
+
+                _Calculate_loop_simplicity(
+                    _Inner_rep->_Next, _Inner_rep->_End_rep->_Next, _Inner_rep, _Inner_nonreentrant);
+                _Nx = _Inner_rep->_End_rep;
             } else {
                 _Outer_rep = static_cast<_Node_rep*>(_Nx);
+                _Outer_rep->_Flags |= _Fl_rep_branchless;
             }
             break;
 
@@ -5492,6 +5506,7 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
                 if (_Coll_diff_size || _Node->_Equiv
                     || ((_Flags & regex_constants::collate) && (_Node->_Ranges || (_Node->_Flags & _Fl_negate)))) {
                     _Outer_rep->_Simple_loop = 0;
+                    _Outer_rep->_Flags &= ~_Fl_rep_branchless;
                 }
             }
             break;
@@ -5530,7 +5545,7 @@ _Root_node* _Parser2<_FwdIt, _Elem, _RxTraits>::_Compile() { // compile regular 
     _Res         = _Nfa._End_pattern();
     _Res->_Fl    = _Flags;
     _Res->_Marks = _Mark_count();
-    _Calculate_loop_simplicity(_Res, nullptr, nullptr);
+    _Calculate_loop_simplicity(_Res, nullptr, nullptr, true);
     _Guard._Target = nullptr;
     return _Res;
 }
