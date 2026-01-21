@@ -58,10 +58,13 @@ struct _Pairing_iterator_provider {
         friend class _Flat_map_base;
 
         _Iterator() = default;
+
+    private:
         _Iterator(_KeyIter _Key_iter, _MappedIter _Mapped_iter)
             noexcept(is_nothrow_move_constructible_v<_KeyIter> && is_nothrow_move_constructible_v<_MappedIter>)
             : _Key_it(_STD move(_Key_iter)), _Mapped_it(_STD move(_Mapped_iter)) {}
 
+    public:
         using iterator_category = input_iterator_tag;
         using iterator_concept  = random_access_iterator_tag;
         using difference_type   = ptrdiff_t;
@@ -69,7 +72,11 @@ struct _Pairing_iterator_provider {
         using reference         = pair<iter_reference_t<_KeyIter>, iter_reference_t<_MappedIter>>;
 
     private:
-        using _Const_iterator = _Pairing_iterator_provider<_KeyIter, _MappedConvIter, _MappedConvIter>::_Iterator;
+        using _Const_iterator     = _Pairing_iterator_provider<_KeyIter, _MappedConvIter, _MappedConvIter>::_Iterator;
+        using _Unwrapped_iterator = _Unwrapped_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>;
+        template <class _Key, class _Mapped, class _MappedConv>
+        friend struct _Pairing_iterator_provider;
+
 
         class _Arrow_proxy {
         public:
@@ -230,7 +237,6 @@ struct _Pairing_iterator_provider {
         _NODISCARD auto _Unwrapped() const
             requires _Can_unwrap_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>
         {
-            using _Unwrapped_iterator = _Unwrapped_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>;
             return _Unwrapped_iterator{_STD _Get_unwrapped(_Key_it), _STD _Get_unwrapped(_Mapped_it)};
         }
 
