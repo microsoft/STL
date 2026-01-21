@@ -183,6 +183,7 @@ struct _Pairing_iterator_provider {
 
         using _Prevent_inheriting_unwrap = _Iterator;
 
+#if _ITERATOR_DEBUG_LEVEL != 0
         friend void _Verify_range(const _Iterator& _First, const _Iterator& _Last) noexcept {
             if constexpr (_Range_verifiable_v<_KeyIter>) {
                 _Verify_range(_First._Key_it, _Last._Key_it); // intentional ADL
@@ -195,6 +196,7 @@ struct _Pairing_iterator_provider {
             _STL_VERIFY(_Last._Key_it - _First._Key_it == _Last._Mapped_it - _First._Mapped_it,
                 "iterators from inconsistent ranges");
         }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 
         void _Verify_offset(const difference_type _Off) const noexcept {
             if constexpr (_Offset_verifiable_v<_KeyIter>) {
@@ -216,6 +218,10 @@ struct _Pairing_iterator_provider {
             using _Unwrapped_iterator = _Unwrapped_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>;
             return _Unwrapped_iterator{_STD _Get_unwrapped(_Key_it), _STD _Get_unwrapped(_Mapped_it)};
         }
+
+        static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<_KeyIter>
+                                                     && _Do_unwrap_when_unverified_v<_MappedIter>
+                                                     && _Do_unwrap_when_unverified_v<_MappedConvIter>;
 
         void _Seek_to(const _Unwrapped_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>& _Dst)
             requires _Can_unwrap_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>
