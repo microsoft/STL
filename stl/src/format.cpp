@@ -31,8 +31,15 @@ extern "C" [[nodiscard]] __std_win_error __stdcall __std_get_cvt(
             break;
         }
 
-        for (unsigned char _First = _Info.LeadByte[_Idx], _Last = _Info.LeadByte[_Idx + 1]; _First != _Last; ++_First) {
-            _Pcvt->_Isleadbyte[_First >> 3] |= 1u << (_First & 0b111u);
+        const unsigned int _First = _Info.LeadByte[_Idx];
+        const unsigned int _Last  = _Info.LeadByte[_Idx + 1];
+
+        if (_Last < _First) {
+            continue;
+        }
+
+        for (unsigned int _Byte = _First; _Byte <= _Last; ++_Byte) {
+            _Pcvt->_Isleadbyte[_Byte >> 3] |= 1u << (_Byte & 0b111u);
         }
     }
 
