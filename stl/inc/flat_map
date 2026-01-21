@@ -241,7 +241,7 @@ struct _Pairing_iterator_provider {
                                                      && _Do_unwrap_when_unverified_v<_MappedIter>
                                                      && _Do_unwrap_when_unverified_v<_MappedConvIter>;
 
-        void _Seek_to(const _Unwrapped_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>& _Dst)
+        void _Seek_to(const _Unwrapped_iterator& _Dst)
             requires _Can_unwrap_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>
         {
             _STD _Seek_wrapped(_Key_it, _Dst._Key_iterator());
