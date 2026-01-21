@@ -53,13 +53,15 @@ template <class _KeyIter, class _MappedIter, class _MappedConvIter>
 struct _Pairing_iterator_provider {
     class _Iterator {
     public:
-        template <bool _IsUnique, class _Key, class _Mapped, class _Compare, class _KeyContainer,
-            class _MappedContainer>
-        friend class _Flat_map_base;
-
         _Iterator() = default;
 
     private:
+        template <bool _IsUnique, class _Key, class _Mapped, class _Compare, class _KeyContainer,
+            class _MappedContainer>
+        friend class _Flat_map_base;
+        template <class _Key, class _Mapped, class _MappedConv>
+        friend struct _Pairing_iterator_provider;
+
         _Iterator(_KeyIter _Key_iter, _MappedIter _Mapped_iter)
             noexcept(is_nothrow_move_constructible_v<_KeyIter> && is_nothrow_move_constructible_v<_MappedIter>)
             : _Key_it(_STD move(_Key_iter)), _Mapped_it(_STD move(_Mapped_iter)) {}
@@ -74,9 +76,6 @@ struct _Pairing_iterator_provider {
     private:
         using _Const_iterator     = _Pairing_iterator_provider<_KeyIter, _MappedConvIter, _MappedConvIter>::_Iterator;
         using _Unwrapped_iterator = _Unwrapped_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>;
-        template <class _Key, class _Mapped, class _MappedConv>
-        friend struct _Pairing_iterator_provider;
-
 
         class _Arrow_proxy {
         public:
