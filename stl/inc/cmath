@@ -1686,14 +1686,15 @@ _EXPORT_STD _NODISCARD constexpr inline double lerp(
 
 _EXPORT_STD _NODISCARD constexpr inline long double lerp(
     const long double _ArgA, const long double _ArgB, const long double _ArgT) noexcept {
-    return _Common_lerp(_ArgA, _ArgB, _ArgT);
+    return _Common_lerp(static_cast<double>(_ArgA), static_cast<double>(_ArgB), static_cast<double>(_ArgT));
 }
 
 _EXPORT_STD template <class _Ty1, class _Ty2, class _Ty3>
     requires is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>
 _NODISCARD constexpr auto lerp(const _Ty1 _ArgA, const _Ty2 _ArgB, const _Ty3 _ArgT) noexcept {
-    using _Tgt = conditional_t<_Is_any_of_v<long double, _Ty1, _Ty2, _Ty3>, long double, double>;
-    return _Common_lerp(static_cast<_Tgt>(_ArgA), static_cast<_Tgt>(_ArgB), static_cast<_Tgt>(_ArgT));
+    using _Common = _Common_float_type_t<_Ty1, _Common_float_type_t<_Ty2, _Ty3>>;
+    return static_cast<_Common>(
+        _Common_lerp(static_cast<double>(_ArgA), static_cast<double>(_ArgB), static_cast<double>(_ArgT)));
 }
 #endif // _HAS_CXX20
 _STD_END
