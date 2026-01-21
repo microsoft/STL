@@ -4497,7 +4497,7 @@ namespace {
                 }
             }
 
-            return _Find_last_scalar_tail<_Pred, _Ty>(_First, _Last, _Real_last, _Val);
+            return _Find_last_scalar_tail<_Pred>(_First, _Last, _Real_last, _Val);
         }
 #else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
         template <class _Traits, _Predicate _Pred, class _Ty>
@@ -4654,7 +4654,7 @@ namespace {
                 } while (_Last != _Stop_at);
             }
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
-            return _Find_last_scalar_tail<_Pred, _Ty>(_First, _Last, _Real_last, _Val);
+            return _Find_last_scalar_tail<_Pred>(_First, _Last, _Real_last, _Val);
         }
 
         template <class _Traits, class _Ty>
