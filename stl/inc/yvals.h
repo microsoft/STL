@@ -261,8 +261,6 @@ _EMIT_STL_ERROR(STL1008, "_STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER has been 
 #ifndef _MSVC_STL_DOOM_FUNCTION
 #ifdef _MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION // The user wants to use abort():
 #define _MSVC_STL_DOOM_FUNCTION(mesg) _CSTD abort()
-#elif defined(__clang__) && __clang_major__ < 19 // TRANSITION, VSO-2397560, Real World Code relying on ancient Clang
-#define _MSVC_STL_DOOM_FUNCTION(mesg) __builtin_trap()
 #elif defined(__clang__) // Use the Clang intrinsic:
 #define _MSVC_STL_DOOM_FUNCTION(mesg) __builtin_verbose_trap("MSVC STL error", mesg)
 #elif defined(_M_CEE) // TRANSITION, VSO-2457624 (/clr silent bad codegen for __fastfail); /clr:pure lacks __fastfail

@@ -974,7 +974,7 @@ private:
 };
 
 #if _HAS_CXX23
-template <class _Rx, bool _Noexcept, class... _Types>
+template <class _Rx, class... _Types>
 class _Function_base;
 #endif // _HAS_CXX23
 
@@ -1105,7 +1105,7 @@ protected:
 
 private:
 #if _HAS_CXX23
-    friend _Function_base<_Ret, false, _Types...>;
+    friend _Function_base<_Ret, _Types...>;
 #endif // _HAS_CXX23
 
     bool _Local() const noexcept { // test for locally stored copy of object
@@ -1574,10 +1574,11 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
     return _Ptr;
 }
 
-template <class _Rx, bool _Noexcept, class... _Types>
+template <class _Rx, class... _Types>
 class _Function_base {
 public:
-    using result_type = _Rx;
+    using result_type                    = _Rx;
+    using _Signature_without_cv_ref_noex = _Rx(_Types...);
 
     struct _Impl_t { // A per-callable-type structure acting as a virtual function table.
         // Using vtable emulations gives more flexibility for optimizations and reduces the amount of RTTI data.
@@ -1588,7 +1589,7 @@ public:
         // empty function from a DLL that is unloaded later, and then safely moving/destroying that empty function.
 
         // Calls target
-        _Rx(__stdcall* _Invoke)(void*, _Types&&...) _NOEXCEPT_FNPTR_COND(_Noexcept);
+        _Rx(__stdcall* _Invoke)(void*, _Types&&...);
         // Moves the data, including pointer to "vtable", AND destroys old data (not resetting its "vtable").
         // nullptr if we can trivially move two pointers.
         void(__stdcall* _Move)(_Function_data&, _Function_data&) _NOEXCEPT_FNPTR;
@@ -1625,12 +1626,12 @@ public:
     void _Construct_with_old_fn(_Fn&& _Func) {
         const auto _Old_fn_impl = _Func._Getimpl();
         if (_Old_fn_impl == nullptr) {
-            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_null, _Vt, void>();
+            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_null, _Vt, false, void>();
         } else if (_Func._Local()) {
 #ifdef _WIN64
             _STL_INTERNAL_STATIC_ASSERT(alignof(max_align_t) == alignof(void*));
             // 64-bit target, can put small function into small move_only_function directly
-            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small, _Vt, void>();
+            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small, _Vt, false, void>();
             if constexpr (is_lvalue_reference_v<_Fn>) {
                 _Old_fn_impl->_Copy(_Data._Buf_ptr<void*>());
             } else {
@@ -1663,12 +1664,12 @@ public:
                 _Func._Tidy();
             }
 
-            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small_as_large, _Vt, void>();
+            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_small_as_large, _Vt, false, void>();
             _Data._Set_large_fn_ptr(_Where);
 #endif // ^^^ 32-bit ^^^
         } else {
             // Just take ownership of the inner impl pointer
-            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_large, _Vt, void>();
+            _Data._Impl = _Create_impl_ptr<_Impl_kind::_Old_fn_large, _Vt, false, void>();
             if constexpr (is_lvalue_reference_v<_Fn>) {
                 _Data._Set_large_fn_ptr(_Old_fn_impl->_Copy(nullptr));
             } else {
@@ -1678,9 +1679,9 @@ public:
         }
     }
 
-    template <class _Vt, class _VtInvQuals, class... _CTypes>
+    template <class _Vt, bool _Noexcept, class _VtInvQuals, class... _CTypes>
     void _Construct_with_fn(_CTypes&&... _Args) {
-        _Data._Impl = _Create_impl_ptr<_Impl_kind::_Usual, _Vt, _VtInvQuals>();
+        _Data._Impl = _Create_impl_ptr<_Impl_kind::_Usual, _Vt, _Noexcept, _VtInvQuals>();
         if constexpr (_Large_function_engaged<_Vt>) {
             _Data._Set_large_fn_ptr(_STD _Function_new_large<_Vt>(_STD forward<_CTypes>(_Args)...));
         } else {
@@ -1756,8 +1757,17 @@ public:
                                                  || sizeof(_Vt) > _Function_data::_Buf_size<_Vt>
                                                  || !is_nothrow_move_constructible_v<_Vt>;
 
+    template <bool _Noexcept>
     _NODISCARD auto _Get_invoke() const noexcept {
-        return _Get_impl(_Data)->_Invoke;
+        if constexpr (_Noexcept) {
+#ifdef __cpp_noexcept_function_type
+            return reinterpret_cast<_Rx(__stdcall*)(void*, _Types&&...) noexcept>(_Get_impl(_Data)->_Invoke);
+#else
+            static_assert(false); // when noexcept isn't in the type system, this should never be selected
+#endif
+        } else {
+            return _Get_impl(_Data)->_Invoke;
+        }
     }
 
     _NODISCARD static const _Impl_t* _Get_impl(const _Function_data& _Data) noexcept {
@@ -1771,7 +1781,7 @@ public:
         return _Ret ? _Ret : &_Null_move_only_function;
     }
 
-    template <_Impl_kind _Kind, class _Vt, class _VtInvQuals>
+    template <_Impl_kind _Kind, class _Vt, bool _Noexcept, class _VtInvQuals>
     _NODISCARD static constexpr _Impl_t _Create_impl() noexcept {
         _Impl_t _Impl{};
         if constexpr (_Kind != _Impl_kind::_Usual) {
@@ -1834,9 +1844,9 @@ public:
         return _Impl;
     }
 
-    template <_Impl_kind _Kind, class _Vt, class _VtInvQuals>
+    template <_Impl_kind _Kind, class _Vt, bool _Noexcept, class _VtInvQuals>
     _NODISCARD static const _Impl_t* _Create_impl_ptr() noexcept {
-        static constexpr _Impl_t _Impl = _Create_impl<_Kind, _Vt, _VtInvQuals>();
+        static constexpr _Impl_t _Impl = _Create_impl<_Kind, _Vt, _Noexcept, _VtInvQuals>();
         return &_Impl;
     }
 };
@@ -1856,7 +1866,7 @@ class _Function_call {
 // Beginning of generated code - DO NOT EDIT manually!
 template <class _Rx, class... _Types>
 class _Function_call<_Rx(_Types...)> // Generated code - DO NOT EDIT manually!
-    : public _Function_base<_Rx, false, _Types...> {
+    : public _Function_base<_Rx, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = _Vt&;
@@ -1865,14 +1875,16 @@ public:
     static constexpr bool _Is_callable_from =
         is_invocable_r_v<_Rx, _Vt, _Types...> && is_invocable_r_v<_Rx, _Vt&, _Types...>;
 
+    static constexpr bool _Noexcept = false;
+
     _Rx operator()(_Types... _Args) {
-        return this->_Get_invoke()(&this->_Data, _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(&this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
 
 template <class _Rx, class... _Types>
 class _Function_call<_Rx(_Types...) &> // Generated code - DO NOT EDIT manually!
-    : public _Function_base<_Rx, false, _Types...> {
+    : public _Function_base<_Rx, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = _Vt&;
@@ -1880,14 +1892,16 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt&, _Types...>;
 
+    static constexpr bool _Noexcept = false;
+
     _Rx operator()(_Types... _Args) & {
-        return this->_Get_invoke()(&this->_Data, _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(&this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
 
 template <class _Rx, class... _Types>
 class _Function_call<_Rx(_Types...) &&> // Generated code - DO NOT EDIT manually!
-    : public _Function_base<_Rx, false, _Types...> {
+    : public _Function_base<_Rx, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = _Vt&&;
@@ -1895,14 +1909,16 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt, _Types...>;
 
+    static constexpr bool _Noexcept = false;
+
     _Rx operator()(_Types... _Args) && {
-        return this->_Get_invoke()(&this->_Data, _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(&this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
 
 template <class _Rx, class... _Types>
 class _Function_call<_Rx(_Types...) const> // Generated code - DO NOT EDIT manually!
-    : public _Function_base<_Rx, false, _Types...> {
+    : public _Function_base<_Rx, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
@@ -1911,14 +1927,17 @@ public:
     static constexpr bool _Is_callable_from =
         is_invocable_r_v<_Rx, const _Vt, _Types...> && is_invocable_r_v<_Rx, const _Vt&, _Types...>;
 
+    static constexpr bool _Noexcept = false;
+
     _Rx operator()(_Types... _Args) const {
-        return this->_Get_invoke()(const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(
+            const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
     }
 };
 
 template <class _Rx, class... _Types>
 class _Function_call<_Rx(_Types...) const&> // Generated code - DO NOT EDIT manually!
-    : public _Function_base<_Rx, false, _Types...> {
+    : public _Function_base<_Rx, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
@@ -1926,14 +1945,17 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, const _Vt&, _Types...>;
 
+    static constexpr bool _Noexcept = false;
+
     _Rx operator()(_Types... _Args) const& {
-        return this->_Get_invoke()(const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(
+            const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
     }
 };
 
 template <class _Rx, class... _Types>
 class _Function_call<_Rx(_Types...) const&&> // Generated code - DO NOT EDIT manually!
-    : public _Function_base<_Rx, false, _Types...> {
+    : public _Function_base<_Rx, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = const _Vt&&;
@@ -1941,15 +1963,18 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, const _Vt, _Types...>;
 
+    static constexpr bool _Noexcept = false;
+
     _Rx operator()(_Types... _Args) const&& {
-        return this->_Get_invoke()(const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(
+            const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
     }
 };
 
 #ifdef __cpp_noexcept_function_type
 template <class _Rx, class... _Types>
 class _Function_call<_Rx(_Types...) noexcept> // Generated code - DO NOT EDIT manually!
-    : public _Function_base<_Rx, true, _Types...> {
+    : public _Function_base<_Rx, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = _Vt&;
@@ -1958,14 +1983,16 @@ public:
     static constexpr bool _Is_callable_from =
         is_nothrow_invocable_r_v<_Rx, _Vt, _Types...> && is_nothrow_invocable_r_v<_Rx, _Vt&, _Types...>;
 
+    static constexpr bool _Noexcept = true;
+
     _Rx operator()(_Types... _Args) noexcept {
-        return this->_Get_invoke()(&this->_Data, _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(&this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
 
 template <class _Rx, class... _Types>
 class _Function_call<_Rx(_Types...) & noexcept> // Generated code - DO NOT EDIT manually!
-    : public _Function_base<_Rx, true, _Types...> {
+    : public _Function_base<_Rx, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = _Vt&;
@@ -1973,14 +2000,16 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt&, _Types...>;
 
+    static constexpr bool _Noexcept = true;
+
     _Rx operator()(_Types... _Args) & noexcept {
-        return this->_Get_invoke()(&this->_Data, _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(&this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
 
 template <class _Rx, class... _Types>
 class _Function_call<_Rx(_Types...) && noexcept> // Generated code - DO NOT EDIT manually!
-    : public _Function_base<_Rx, true, _Types...> {
+    : public _Function_base<_Rx, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = _Vt&&;
@@ -1988,14 +2017,16 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt, _Types...>;
 
+    static constexpr bool _Noexcept = true;
+
     _Rx operator()(_Types... _Args) && noexcept {
-        return this->_Get_invoke()(&this->_Data, _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(&this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
 
 template <class _Rx, class... _Types>
 class _Function_call<_Rx(_Types...) const noexcept> // Generated code - DO NOT EDIT manually!
-    : public _Function_base<_Rx, true, _Types...> {
+    : public _Function_base<_Rx, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
@@ -2004,14 +2035,17 @@ public:
     static constexpr bool _Is_callable_from =
         is_nothrow_invocable_r_v<_Rx, const _Vt, _Types...> && is_nothrow_invocable_r_v<_Rx, const _Vt&, _Types...>;
 
+    static constexpr bool _Noexcept = true;
+
     _Rx operator()(_Types... _Args) const noexcept {
-        return this->_Get_invoke()(const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(
+            const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
     }
 };
 
 template <class _Rx, class... _Types>
 class _Function_call<_Rx(_Types...) const & noexcept> // Generated code - DO NOT EDIT manually!
-    : public _Function_base<_Rx, true, _Types...> {
+    : public _Function_base<_Rx, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
@@ -2019,14 +2053,17 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, const _Vt&, _Types...>;
 
+    static constexpr bool _Noexcept = true;
+
     _Rx operator()(_Types... _Args) const& noexcept {
-        return this->_Get_invoke()(const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(
+            const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
     }
 };
 
 template <class _Rx, class... _Types>
 class _Function_call<_Rx(_Types...) const && noexcept> // Generated code - DO NOT EDIT manually!
-    : public _Function_base<_Rx, true, _Types...> {
+    : public _Function_base<_Rx, _Types...> {
 public:
     template <class _Vt>
     using _VtInvQuals = const _Vt&&;
@@ -2034,8 +2071,11 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, const _Vt, _Types...>;
 
+    static constexpr bool _Noexcept = true;
+
     _Rx operator()(_Types... _Args) const&& noexcept {
-        return this->_Get_invoke()(const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()(
+            const_cast<_Function_data*>(&this->_Data), _STD forward<_Types>(_Args)...);
     }
 };
 #endif // defined(__cpp_noexcept_function_type)
@@ -2060,6 +2100,19 @@ private:
         is_constructible_v<decay_t<_Fn>, initializer_list<_Ux>&, _CTypes...>
         && _Call::template _Is_callable_from<decay_t<_Fn>>;
 
+    template <class...>
+    friend class move_only_function;
+
+    template <class _Vt>
+    static constexpr bool _Is_move_only_function_varying_cv_ref_noex() {
+        if constexpr (_Is_specialization_v<_Vt, move_only_function>) {
+            return is_same_v<typename _Call::_Signature_without_cv_ref_noex,
+                typename _Vt::_Signature_without_cv_ref_noex>;
+        } else {
+            return false;
+        }
+    }
+
 public:
     using typename _Call::result_type;
 
@@ -2079,7 +2132,7 @@ public:
         using _Vt = decay_t<_Fn>;
         static_assert(is_constructible_v<_Vt, _Fn>, "_Vt should be constructible from _Fn. "
                                                     "(N4950 [func.wrap.move.ctor]/6)");
-        if constexpr (is_same_v<_Vt, function<_Signature...>>) {
+        if constexpr (is_same_v<_Vt, function<typename _Call::_Signature_without_cv_ref_noex>>) {
             this->template _Construct_with_old_fn<_Vt>(_STD forward<_Fn>(_Callable));
         } else {
             if constexpr (is_member_pointer_v<_Vt> || is_pointer_v<_Vt>
@@ -2090,8 +2143,13 @@ public:
                 }
             }
 
-            using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
-            this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_Fn>(_Callable));
+            if constexpr (_Is_move_only_function_varying_cv_ref_noex<_Vt>()) {
+                _Call::_Checked_move(this->_Data, _Callable._Data);
+                _Callable._Reset_to_null();
+            } else {
+                using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
+                this->template _Construct_with_fn<_Vt, _Call::_Noexcept, _VtInvQuals>(_STD forward<_Fn>(_Callable));
+            }
         }
     }
 
@@ -2102,7 +2160,7 @@ public:
         static_assert(is_same_v<_Vt, _Fn>, "_Vt should be the same type as _Fn. (N4950 [func.wrap.move.ctor]/12)");
 
         using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
-        this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_CTypes>(_Args)...);
+        this->template _Construct_with_fn<_Vt, _Call::_Noexcept, _VtInvQuals>(_STD forward<_CTypes>(_Args)...);
     }
 
     template <class _Fn, class _Ux, class... _CTypes>
@@ -2112,7 +2170,7 @@ public:
         static_assert(is_same_v<_Vt, _Fn>, "_Vt should be the same type as _Fn. (N4950 [func.wrap.move.ctor]/18)");
 
         using _VtInvQuals = _Call::template _VtInvQuals<_Vt>;
-        this->template _Construct_with_fn<_Vt, _VtInvQuals>(_Li, _STD forward<_CTypes>(_Args)...);
+        this->template _Construct_with_fn<_Vt, _Call::_Noexcept, _VtInvQuals>(_Li, _STD forward<_CTypes>(_Args)...);
     }
 
     ~move_only_function() {
