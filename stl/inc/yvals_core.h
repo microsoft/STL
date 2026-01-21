@@ -1935,11 +1935,9 @@ _EMIT_STL_ERROR(STL1013, "The STL doesn't support /RTCc because it rejects confo
 // The earliest Windows supported by this implementation is Windows 10.
 
 #ifdef __cpp_noexcept_function_type
-#define _NOEXCEPT_FNPTR           noexcept
-#define _NOEXCEPT_FNPTR_COND(...) noexcept(__VA_ARGS__)
+#define _NOEXCEPT_FNPTR noexcept
 #else // ^^^ defined(__cpp_noexcept_function_type) / !defined(__cpp_noexcept_function_type) vvv
 #define _NOEXCEPT_FNPTR
-#define _NOEXCEPT_FNPTR_COND(...)
 #endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
 
 #ifdef __clang__
