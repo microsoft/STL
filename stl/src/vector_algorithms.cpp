@@ -4288,7 +4288,7 @@ namespace {
 
         template <_Predicate _Pred, class _Ty>
         const void* _Find_last_scalar_tail(
-            const void* _First, const void* const _Last, const void* const _Real_last, const _Ty _Val) noexcept {
+            const void* const _First, const void* const _Last, const void* const _Real_last, const _Ty _Val) noexcept {
             auto _Ptr = static_cast<const _Ty*>(_Last);
             for (;;) {
                 if (_Ptr == _First) {
@@ -4408,7 +4408,7 @@ namespace {
         }
 
         template <class _Traits, _Predicate _Pred, class _Ty>
-        const void* __stdcall _Find_last_impl(const void* _First, const void* _Last, const _Ty _Val) noexcept {
+        const void* __stdcall _Find_last_impl(const void* const _First, const void* _Last, const _Ty _Val) noexcept {
             const void* const _Real_last = _Last;
             const size_t _Size_bytes     = _Byte_length(_First, _Last);
 
@@ -4581,7 +4581,7 @@ namespace {
         }
 
         template <class _Traits, _Predicate _Pred, class _Ty>
-        const void* __stdcall _Find_last_impl(const void* _First, const void* _Last, const _Ty _Val) noexcept {
+        const void* __stdcall _Find_last_impl(const void* const _First, const void* _Last, const _Ty _Val) noexcept {
             const void* const _Real_last = _Last;
 #ifndef _M_ARM64EC
             const size_t _Size_bytes = _Byte_length(_First, _Last);
