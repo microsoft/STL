@@ -318,15 +318,17 @@ public:
         "mapped_container_type must support random-access iterators in order to be adapted. "
         "(N5014 [flat.map.overview]/7, [flat.multimap.overview]/7)");
 
-    struct value_compare {
+    class value_compare {
     public:
         _NODISCARD bool operator()(const_reference _Left, const_reference _Right) const {
             return _Key_comparator(_Left.first, _Right.first);
         }
 
-        value_compare(key_compare _Comp) : _Key_comparator(_Comp) {}
-
     private:
+        friend _Flat_map_base;
+
+        value_compare(const key_compare& _Comp) : _Key_comparator(_Comp) {}
+
         key_compare _Key_comparator;
     };
 
@@ -902,19 +904,19 @@ protected:
         if constexpr (_IsUnique) {
             if (_Key_it != _Data.keys.begin() && !_Key_compare(*(_Key_it - 1), _STD forward<_OtherKey>(_Key_val))) {
                 // Previous element is equivalent to key, no insert needed
-                return {this->begin() + (_Index - 1), false};
+                return {begin() + (_Index - 1), false};
             }
         }
 
         // Need to insert
         key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
         mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Mapped_args)...);
-        _Insert_exact(this->cbegin() + _Index, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
+        _Insert_exact(cbegin() + _Index, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
 
         if constexpr (_IsUnique) {
-            return {this->begin() + _Index, true};
+            return {begin() + _Index, true};
         } else {
-            return this->begin() + _Index;
+            return begin() + _Index;
         }
     }
 
@@ -986,7 +988,7 @@ protected:
             }
         }
 
-        const auto _Dist = _New_position - this->begin();
+        const auto _Dist = _New_position - begin();
         {
             key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
             mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Args)...);
@@ -1260,12 +1262,12 @@ public:
     mapped_type& operator[](const key_type& _Key_val)
         requires is_default_constructible_v<mapped_type>
     {
-        return this->try_emplace(_Key_val).first->second;
+        return try_emplace(_Key_val).first->second;
     }
     mapped_type& operator[](key_type&& _Key_val)
         requires is_default_constructible_v<mapped_type>
     {
-        return this->try_emplace(_STD move(_Key_val)).first->second;
+        return try_emplace(_STD move(_Key_val)).first->second;
     }
 
     template <class _OtherKey>
@@ -1273,7 +1275,7 @@ public:
         requires _Transparent<key_compare> && is_constructible_v<key_type, _OtherKey>
               && is_default_constructible_v<mapped_type>
     {
-        return this->try_emplace(_STD forward<_OtherKey>(_Key_val)).first->second;
+        return try_emplace(_STD forward<_OtherKey>(_Key_val)).first->second;
     }
 
     _NODISCARD mapped_type& at(const key_type& _Key_val) {
