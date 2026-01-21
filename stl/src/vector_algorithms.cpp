@@ -4362,7 +4362,7 @@ namespace {
                 } while (_First != _Stop_at);
             }
 
-            if ((_Size_bytes & size_t{0x10}) != 0) {
+            if ((_Size_bytes & size_t{0x10}) != 0) { // use original _Size_bytes; we've read only 32-byte chunks
                 const auto _Comparand = _Traits::_Set_neon_q(_Val);
                 const auto _Data      = _Traits::_Load_q(_First);
 
@@ -4383,7 +4383,7 @@ namespace {
             }
 
             if constexpr (sizeof(_Ty) < 8) {
-                if ((_Size_bytes & size_t{0x08}) != 0) {
+                if ((_Size_bytes & size_t{0x08}) != 0) { // use original _Size_bytes; we've read only 16/32-byte chunks
                     const auto _Comparand = _Traits::_Set_neon(_Val);
                     const auto _Data      = _Traits::_Load(_First);
 
@@ -4457,7 +4457,7 @@ namespace {
                 } while (_Last != _Stop_at);
             }
 
-            if ((_Size_bytes & size_t{0x10}) != 0) {
+            if ((_Size_bytes & size_t{0x10}) != 0) { // use original _Size_bytes; we've read only 32-byte chunks
                 const auto _Comparand = _Traits::_Set_neon_q(_Val);
                 _Rewind_bytes(_Last, 16);
                 const auto _Data = _Traits::_Load_q(_Last);
@@ -4477,7 +4477,7 @@ namespace {
             }
 
             if constexpr (sizeof(_Ty) < 8) {
-                if ((_Size_bytes & size_t{0x08}) != 0) {
+                if ((_Size_bytes & size_t{0x08}) != 0) { // use original _Size_bytes; we've read only 16/32-byte chunks
                     const auto _Comparand = _Traits::_Set_neon(_Val);
                     _Rewind_bytes(_Last, 8);
                     const auto _Data = _Traits::_Load(_Last);
