@@ -53,23 +53,27 @@ template <class _KeyIter, class _MappedIter, class _MappedConvIter>
 struct _Pairing_iterator_provider {
     class _Iterator {
     public:
-        template <bool _IsUnique, class _Key, class _Mapped, class _Compare, class _KeyContainer,
-            class _MappedContainer>
-        friend class _Flat_map_base;
-
-        _Iterator() = default;
-        _Iterator(_KeyIter _Key_iter, _MappedIter _Mapped_iter)
-            noexcept(is_nothrow_move_constructible_v<_KeyIter> && is_nothrow_move_constructible_v<_MappedIter>)
-            : _Key_it(_STD move(_Key_iter)), _Mapped_it(_STD move(_Mapped_iter)) {}
-
         using iterator_category = input_iterator_tag;
         using iterator_concept  = random_access_iterator_tag;
         using difference_type   = ptrdiff_t;
         using value_type        = pair<iter_value_t<_KeyIter>, iter_value_t<_MappedIter>>;
         using reference         = pair<iter_reference_t<_KeyIter>, iter_reference_t<_MappedIter>>;
 
+        _Iterator() = default;
+
     private:
-        using _Const_iterator = _Pairing_iterator_provider<_KeyIter, _MappedConvIter, _MappedConvIter>::_Iterator;
+        template <bool _IsUnique, class _Key, class _Mapped, class _Compare, class _KeyContainer,
+            class _MappedContainer>
+        friend class _Flat_map_base;
+        template <class _Key, class _Mapped, class _MappedConv>
+        friend struct _Pairing_iterator_provider;
+
+        _Iterator(_KeyIter _Key_iter, _MappedIter _Mapped_iter)
+            noexcept(is_nothrow_move_constructible_v<_KeyIter> && is_nothrow_move_constructible_v<_MappedIter>)
+            : _Key_it(_STD move(_Key_iter)), _Mapped_it(_STD move(_Mapped_iter)) {}
+
+        using _Const_iterator     = _Pairing_iterator_provider<_KeyIter, _MappedConvIter, _MappedConvIter>::_Iterator;
+        using _Unwrapped_iterator = _Unwrapped_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>;
 
         class _Arrow_proxy {
         public:
@@ -112,10 +116,12 @@ struct _Pairing_iterator_provider {
         }
 
         _NODISCARD bool operator==(const _Iterator& _Right) const {
+            _Compat(_Right);
             return _Key_it == _Right._Key_it;
         }
 
         _NODISCARD auto operator<=>(const _Iterator& _Right) const {
+            _Compat(_Right);
             return _Synth_three_way{}(_Key_it, _Right._Key_it);
         }
 
@@ -160,6 +166,7 @@ struct _Pairing_iterator_provider {
         }
 
         _NODISCARD difference_type operator-(const _Iterator& _Right) const {
+            _Compat(_Right);
             return _Key_it - _Right._Key_it;
         }
 
@@ -173,16 +180,16 @@ struct _Pairing_iterator_provider {
             return _Const_iterator{_Key_it, _Mapped_it};
         }
 
-        _NODISCARD const _KeyIter& _Key_iterator() const noexcept {
-            return _Key_it;
-        }
-
-        _NODISCARD const _MappedIter& _Mapped_iterator() const noexcept {
-            return _Mapped_it;
+        void _Compat([[maybe_unused]] const _Iterator& _Right) const noexcept { // test for compatible iterator pair
+#if _ITERATOR_DEBUG_LEVEL != 0
+            _STL_VERIFY(
+                _Key_it - _Right._Key_it == _Mapped_it - _Right._Mapped_it, "iterators from inconsistent ranges");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
         }
 
         using _Prevent_inheriting_unwrap = _Iterator;
 
+#if _ITERATOR_DEBUG_LEVEL != 0
         friend void _Verify_range(const _Iterator& _First, const _Iterator& _Last) noexcept {
             if constexpr (_Range_verifiable_v<_KeyIter>) {
                 _Verify_range(_First._Key_it, _Last._Key_it); // intentional ADL
@@ -192,9 +199,9 @@ struct _Pairing_iterator_provider {
                 _Verify_range(_First._Mapped_it, _Last._Mapped_it); // intentional ADL
             }
 
-            _STL_VERIFY(_Last._Key_it - _First._Key_it == _Last._Mapped_it - _First._Mapped_it,
-                "iterators from inconsistent ranges");
+            _First._Compat(_Last);
         }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 
         void _Verify_offset(const difference_type _Off) const noexcept {
             if constexpr (_Offset_verifiable_v<_KeyIter>) {
@@ -213,18 +220,25 @@ struct _Pairing_iterator_provider {
         _NODISCARD auto _Unwrapped() const
             requires _Can_unwrap_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>
         {
-            using _Unwrapped_iterator = _Unwrapped_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>;
             return _Unwrapped_iterator{_STD _Get_unwrapped(_Key_it), _STD _Get_unwrapped(_Mapped_it)};
         }
 
-        void _Seek_to(const _Unwrapped_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>& _Dst)
+        static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<_KeyIter>
+                                                     && _Do_unwrap_when_unverified_v<_MappedIter>
+                                                     && _Do_unwrap_when_unverified_v<_MappedConvIter>;
+
+        void _Seek_to(const _Unwrapped_iterator& _Dst)
             requires _Can_unwrap_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>
         {
-            _STD _Seek_wrapped(_Key_it, _Dst._Key_iterator());
-            _STD _Seek_wrapped(_Mapped_it, _Dst._Mapped_iterator());
+            _STD _Seek_wrapped(_Key_it, _Dst._Key_it);
+            _STD _Seek_wrapped(_Mapped_it, _Dst._Mapped_it);
         }
 
+#ifdef _ENABLE_STL_INTERNAL_CHECK
+    public:
+#else
     private:
+#endif
         _KeyIter _Key_it;
         _MappedIter _Mapped_it;
     };
