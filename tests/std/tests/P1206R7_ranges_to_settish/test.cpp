@@ -4,6 +4,9 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <flat_set>
+#include <functional>
+#include <memory>
 #include <ranges>
 #include <set>
 #include <unordered_set>
@@ -64,6 +67,18 @@ struct settish_instantiator {
     struct deduce_container_impl<std::unordered_multiset> {
         template <class Key, class... Args>
         using apply = std::unordered_multiset<Key, std::hash<Key>, std::equal_to<Key>, Args...>;
+    };
+    template <>
+    struct deduce_container_impl<std::flat_set> {
+        template <class Key, class... Args>
+        using apply = std::flat_set<Key, std::less<Key>,
+            std::vector<Key, typename std::allocator_traits<Args>::template rebind_alloc<Key>...>>;
+    };
+    template <>
+    struct deduce_container_impl<std::flat_multiset> {
+        template <class Key, class... Args>
+        using apply = std::flat_multiset<Key, std::less<Key>,
+            std::vector<Key, typename std::allocator_traits<Args>::template rebind_alloc<Key>...>>;
     };
 
     template <template <class...> class C, class Key, class... Args>
@@ -139,26 +154,48 @@ struct settish_instantiator {
 
         using Alloc = myalloc<int>;
         using T     = deduce_container<C, int, Alloc>;
+        constexpr bool is_flat =
+            std::_Is_specialization_v<T, std::flat_set> || std::_Is_specialization_v<T, std::flat_multiset>;
 
         {
             std::same_as<T> auto c4 = ranges::to<T>(R{some_ints}, Alloc{13});
-            assert(c4.get_allocator().state == 13);
             assert(ranges::is_permutation(c4, expected));
+
+            if constexpr (is_flat) {
+                assert(std::move(c4).extract().get_allocator().state == 13);
+            } else {
+                assert(c4.get_allocator().state == 13);
+            }
         }
         {
             std::same_as<T> auto c5 = ranges::to<C>(R{some_ints}, Alloc{13});
-            assert(c5.get_allocator().state == 13);
             assert(ranges::is_permutation(c5, expected));
+
+            if constexpr (is_flat) {
+                assert(std::move(c5).extract().get_allocator().state == 13);
+            } else {
+                assert(c5.get_allocator().state == 13);
+            }
         }
         {
             std::same_as<T> auto c6 = R{some_ints} | ranges::to<T>(Alloc{13});
-            assert(c6.get_allocator().state == 13);
             assert(ranges::is_permutation(c6, expected));
+
+            if constexpr (is_flat) {
+                assert(std::move(c6).extract().get_allocator().state == 13);
+            } else {
+                assert(c6.get_allocator().state == 13);
+            }
         }
         {
             std::same_as<T> auto c7 = R{some_ints} | ranges::to<C>(Alloc{13});
-            assert(c7.get_allocator().state == 13);
             assert(ranges::is_permutation(c7, expected));
+
+            if constexpr (is_flat) {
+                assert(std::move(c7).extract().get_allocator().state == 13);
+            } else {
+                assert(c7.get_allocator().state == 13);
+            }
         }
     }
 
@@ -168,6 +205,8 @@ struct settish_instantiator {
         test_settish<R, std::multiset, is_multi::yes>();
         test_settish<R, std::unordered_set, is_multi::no>();
         test_settish<R, std::unordered_multiset, is_multi::yes>();
+        test_settish<R, std::flat_set, is_multi::no>();
+        test_settish<R, std::flat_multiset, is_multi::yes>();
     }
 };
 
@@ -177,4 +216,6 @@ int main() {
     settish_instantiator::test_copy_move<std::multiset>();
     settish_instantiator::test_copy_move<std::unordered_set>();
     settish_instantiator::test_copy_move<std::unordered_multiset>();
+    settish_instantiator::test_copy_move<std::flat_set>();
+    settish_instantiator::test_copy_move<std::flat_multiset>();
 }
