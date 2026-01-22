@@ -116,16 +116,12 @@ struct _Pairing_iterator_provider {
         }
 
         _NODISCARD bool operator==(const _Iterator& _Right) const {
-#if _ITERATOR_DEBUG_LEVEL != 0
             _Compat(_Right);
-#endif // _ITERATOR_DEBUG_LEVEL != 0
             return _Key_it == _Right._Key_it;
         }
 
         _NODISCARD auto operator<=>(const _Iterator& _Right) const {
-#if _ITERATOR_DEBUG_LEVEL != 0
             _Compat(_Right);
-#endif // _ITERATOR_DEBUG_LEVEL != 0
             return _Synth_three_way{}(_Key_it, _Right._Key_it);
         }
 
@@ -170,9 +166,7 @@ struct _Pairing_iterator_provider {
         }
 
         _NODISCARD difference_type operator-(const _Iterator& _Right) const {
-#if _ITERATOR_DEBUG_LEVEL != 0
             _Compat(_Right);
-#endif // _ITERATOR_DEBUG_LEVEL != 0
             return _Key_it - _Right._Key_it;
         }
 
