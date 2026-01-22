@@ -275,6 +275,21 @@ struct _NODISCARD _Flat_map_swap_clear_guard<true, _Containers> {
     void _Dismiss() noexcept {}
 };
 
+template <class _Compare, class _Key, class _Mapped>
+struct _Value_compare_to_pass_in_flat_map {
+    using _Key_compare =
+        conditional_t<conjunction_v<bool_constant<sizeof(_Compare) <= sizeof(void*)>,
+                          is_trivially_copy_constructible<_Compare>, is_trivially_destructible<_Compare>>,
+            _Compare, const _Compare&>;
+    using _Const_reference = pair<const _Key&, const _Mapped&>;
+
+    _Key_compare _Key_comparator;
+
+    _NODISCARD bool operator()(_Const_reference _Left, _Const_reference _Right) const {
+        return _Key_comparator(_Left.first, _Right.first);
+    }
+};
+
 _EXPORT_STD template <class _Key, class _Mapped, class _Compare = less<_Key>, class _KeyContainer = vector<_Key>,
     class _MappedContainer = vector<_Mapped>>
 class flat_map;
@@ -1066,6 +1081,8 @@ public:
     }
 
 private:
+    using _Value_compare_to_pass = _Value_compare_to_pass_in_flat_map<_Compare, _Key, _Mapped>;
+
     _NODISCARD bool _Is_sorted_and_unique(
         const key_container_type::const_iterator _It, const key_container_type::const_iterator _End) const {
         if constexpr (_IsUnique) {
@@ -1092,8 +1109,8 @@ private:
         auto _View                        = _View_to_mutate();
         const auto _Begin_unsorted_values = _View.begin() + _Num_sorted;
 
-        _RANGES sort(_Begin_unsorted_values, _View.end(), value_compare{_Key_compare});
-        _RANGES inplace_merge(_View, _Begin_unsorted_values, value_compare{_Key_compare});
+        _RANGES sort(_Begin_unsorted_values, _View.end(), _Value_compare_to_pass{_Key_compare});
+        _RANGES inplace_merge(_View, _Begin_unsorted_values, _Value_compare_to_pass{_Key_compare});
 
         _Erase_dupes_if_not_multi();
 
@@ -1146,7 +1163,8 @@ private:
         // Sort the newly inserted elements
         auto _Sorted_view = _View_to_mutate();
         if constexpr (_NeedSorting) {
-            _RANGES sort(_Sorted_view.begin() + _Old_distance, _Sorted_view.end(), value_compare{_Key_compare});
+            _RANGES sort(
+                _Sorted_view.begin() + _Old_distance, _Sorted_view.end(), _Value_compare_to_pass{_Key_compare});
         } else {
             _STL_ASSERT(_Is_sorted_and_unique(
                             _Data.keys.begin() + static_cast<key_container_type::difference_type>(_Old_distance),
@@ -1155,7 +1173,7 @@ private:
         }
 
         // Merge the newly inserted elements with the existing elements
-        _RANGES inplace_merge(_Sorted_view, _Sorted_view.begin() + _Old_distance, value_compare{_Key_compare});
+        _RANGES inplace_merge(_Sorted_view, _Sorted_view.begin() + _Old_distance, _Value_compare_to_pass{_Key_compare});
 
         _Erase_dupes_if_not_multi();
         _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
