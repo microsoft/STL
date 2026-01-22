@@ -180,14 +180,6 @@ struct _Pairing_iterator_provider {
             return _Const_iterator{_Key_it, _Mapped_it};
         }
 
-        _NODISCARD const _KeyIter& _Key_iterator() const noexcept {
-            return _Key_it;
-        }
-
-        _NODISCARD const _MappedIter& _Mapped_iterator() const noexcept {
-            return _Mapped_it;
-        }
-
         void _Compat([[maybe_unused]] const _Iterator& _Right) const noexcept { // test for compatible iterator pair
 #if _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(
@@ -238,8 +230,8 @@ struct _Pairing_iterator_provider {
         void _Seek_to(const _Unwrapped_iterator& _Dst)
             requires _Can_unwrap_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>
         {
-            _STD _Seek_wrapped(_Key_it, _Dst._Key_iterator());
-            _STD _Seek_wrapped(_Mapped_it, _Dst._Mapped_iterator());
+            _STD _Seek_wrapped(_Key_it, _Dst._Key_it);
+            _STD _Seek_wrapped(_Mapped_it, _Dst._Mapped_it);
         }
 
     private:
