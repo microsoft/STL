@@ -4403,7 +4403,7 @@ public:
         return _Dist(_Eng);
     }
 
-    discrete_distribution<size_t> _Base_distribution; // TRANSITION, ABI: unused _Par subobject
+    discrete_distribution<size_t> _Base_distribution; // TRANSITION, ABI: unused _Base_distribution._Par subobject
     param_type _Par;
 };
 
@@ -4636,7 +4636,7 @@ public:
         return _Par0._Bvec[_Px] + _Xx0 * (_Par0._Bvec[_Px + 1] - _Par0._Bvec[_Px]);
     }
 
-    discrete_distribution<size_t> _Base_distribution; // TRANSITION, ABI: unused _Par subobject
+    discrete_distribution<size_t> _Base_distribution; // TRANSITION, ABI: unused _Base_distribution._Par subobject
     param_type _Par;
 };
 

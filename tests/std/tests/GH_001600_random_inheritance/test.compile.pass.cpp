@@ -12,9 +12,9 @@ using namespace std;
 
 // GH-1600 "<random>: piecewise_linear_distribution<T>::param_type should not inherit from
 // discrete_distribution<size_t>::param_type"
-// Note that inheritance between distribution type should also be removed.
+// Note that inheritance between distribution types should also be removed.
 template <class F>
-void test_gh_1600_inheritance() { // COMPILE-ONLY
+void test_gh_1600_inheritance() {
     STATIC_ASSERT(!is_base_of_v<discrete_distribution<size_t>, piecewise_constant_distribution<F>>);
     STATIC_ASSERT(!is_base_of_v<discrete_distribution<size_t>::param_type,
         typename piecewise_constant_distribution<F>::param_type>);
@@ -30,11 +30,11 @@ void test_gh_1600_inheritance() { // COMPILE-ONLY
 //   Same for corresponding param_type subobjects.
 // In vNext, we should probably remove unused members, so the sizes will be reduced.
 template <class F>
-void test_gh_1600_abi() { // COMPILE-ONLY
+void test_gh_1600_abi() {
     // piecewise_{constant,linear}_distribution and their param_type don't introduce padding bytes under MSVC ABI.
     // So it's OK to just add the sizes.
 
-    // The sizes will probably reduced in vNext.
+    // The sizes will be probably reduced in vNext.
 
     STATIC_ASSERT(
         sizeof(piecewise_constant_distribution<F>)
@@ -57,7 +57,7 @@ void test_gh_1600_abi() { // COMPILE-ONLY
     STATIC_ASSERT(alignof(typename piecewise_linear_distribution<F>::param_type) == alignof(void*));
 }
 
-void test() { // COMPILE-ONLY
+void test() {
     test_gh_1600_inheritance<float>();
     test_gh_1600_inheritance<double>();
     test_gh_1600_inheritance<long double>();
