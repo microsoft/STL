@@ -1581,7 +1581,6 @@ int main(int argc, char* argv[]) {
         test_death_different_size_ctor_sorted<cont_type::multi>,
         test_death_different_size_replace<cont_type::unique>,
         test_death_different_size_replace<cont_type::multi>,
-
     });
 #endif // defined(_DEBUG)
 
