@@ -27,7 +27,9 @@ void test_gh_1600_inheritance() {
 // Until 2026-01, piecewise_{constant,linear}_distribution<FP> were both derived from discrete_distribution<size_t>.
 //   Same for their param_type.
 // Now the discrete_distribution<size_t> objects are changed from base class subobjects to leading member subobjects.
-//   Same for corresponding param_type subobjects.
+//   Same for piecewise_constant_distribution::param_type.
+//   For piecewise_linear_distribution::param_type, the original discrete_distribution<size_t>::param_type subobject is
+//   decomposed into vectors to avoid imposing invariants.
 // In vNext, we should probably remove unused members, so the sizes will be reduced.
 template <class F>
 void test_gh_1600_abi() {

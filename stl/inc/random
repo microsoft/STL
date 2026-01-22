@@ -4175,14 +4175,23 @@ public:
 
     void reset() noexcept /* strengthened */ {} // clear internal state
 
+    // reused by piecewise_{constant,linear}_distribution
+    template <class _Engine>
+    _NODISCARD static result_type _Invoke_param_pcdf(_Engine& _Eng, const _Myvec& _Pcdf) {
+        const double _Px     = _STD _Nrand_impl<double>(_Eng);
+        const auto _First    = _Pcdf.begin();
+        const auto _Position = _STD lower_bound(_First, _STD _Prev_iter(_Pcdf.end()), _Px);
+        return static_cast<result_type>(_Position - _First);
+    }
+
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
-        return _Eval(_Eng, _Par);
+        return _Invoke_param_pcdf(_Eng, _Par._Pcdf);
     }
 
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
-        return _Eval(_Eng, _Par0);
+        return _Invoke_param_pcdf(_Eng, _Par0._Pcdf);
     }
 
     _NODISCARD friend bool operator==(const discrete_distribution& _Left, const discrete_distribution& _Right) {
@@ -4207,16 +4216,6 @@ public:
         return _Dist._Par._Write(_Ostr);
     }
 
-private:
-    template <class _Engine>
-    result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
-        double _Px           = _Nrand_impl<double>(_Eng);
-        const auto _First    = _Par0._Pcdf.begin();
-        const auto _Position = _STD lower_bound(_First, _Prev_iter(_Par0._Pcdf.end()), _Px);
-        return static_cast<result_type>(_Position - _First);
-    }
-
-public:
     param_type _Par;
 };
 
@@ -4398,12 +4397,12 @@ public:
 
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
-        size_t _Px = _Base_distribution(_Eng, _Par0._Base_params);
+        size_t _Px = discrete_distribution<size_t>::_Invoke_param_pcdf(_Eng, _Par0._Base_params._Pcdf);
         uniform_real_distribution<_Ty> _Dist(_Par0._Bvec[_Px], _Par0._Bvec[_Px + 1]);
         return _Dist(_Eng);
     }
 
-    discrete_distribution<size_t> _Base_distribution; // TRANSITION, ABI: unused _Base_distribution._Par subobject
+    discrete_distribution<size_t> _Unused; // TRANSITION, ABI: this was a base class subobject
     param_type _Par;
 };
 
@@ -4417,15 +4416,17 @@ public:
     struct param_type { // parameter package
         using distribution_type = piecewise_linear_distribution;
 
-        param_type() : _Bvec{0, 1} {
-            _Base_params._Pvec.push_back(1.0);
+        param_type() {
+            _Init_base();
+            _Pvec.push_back(1.0);
+            _Bvec = {0, 1};
         }
 
         template <class _InIt1, class _InIt2>
-        param_type(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2) : _Base_params(_Noinit), _Bvec(_First1, _Last1) {
+        param_type(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2) : _Bvec(_First1, _Last1) {
             if (2 <= _Bvec.size()) {
                 for (size_t _Idx = 0; _Idx < _Bvec.size(); ++_Idx) {
-                    _Base_params._Pvec.push_back(static_cast<double>(*_First2++));
+                    _Pvec.push_back(static_cast<double>(*_First2++));
                 }
             } else { // default construct
                 _Bvec = {0, 1};
@@ -4435,12 +4436,12 @@ public:
         }
 
         template <class _Fn>
-        param_type(initializer_list<_Ty> _Ilist, _Fn _Func) : _Base_params(_Noinit) {
+        param_type(initializer_list<_Ty> _Ilist, _Fn _Func) {
             if (2 <= _Ilist.size()) {
                 _Bvec.assign(_Ilist);
 
                 for (const auto& _Bval : _Bvec) {
-                    _Base_params._Pvec.push_back(_Func(_Bval));
+                    _Pvec.push_back(_Func(_Bval));
                 }
             } else { // default construct
                 _Bvec = {0, 1};
@@ -4450,7 +4451,7 @@ public:
         }
 
         template <class _Fn>
-        param_type(size_t _Count, _Ty _Low, _Ty _High, _Fn _Func) : _Base_params(_Noinit) {
+        param_type(size_t _Count, _Ty _Low, _Ty _High, _Fn _Func) {
             _Ty _Range = _High - _Low;
             _STL_ASSERT(_Ty{0} < _Range, "invalid range for piecewise_linear_distribution");
             if (_Count < 1) {
@@ -4461,13 +4462,13 @@ public:
             for (size_t _Idx = 0; _Idx <= _Count; ++_Idx) { // compute _Bvec and _Pvec
                 _Ty _Bval = _Low + _Idx * _Range;
                 _Bvec.push_back(_Bval);
-                _Base_params._Pvec.push_back(_Func(_Bval));
+                _Pvec.push_back(_Func(_Bval));
             }
             _Init();
         }
 
         _NODISCARD friend bool operator==(const param_type& _Left, const param_type& _Right) {
-            return _Left._Base_params == _Right._Base_params && _Left._Bvec == _Right._Bvec;
+            return _Left._Pvec == _Right._Pvec && _Left._Bvec == _Right._Bvec;
         }
 
 #if !_HAS_CXX20
@@ -4483,51 +4484,103 @@ public:
 #pragma warning(push)
 #pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data
         _NODISCARD vector<_Ty> densities() const {
-            vector<_Ty> _Ans(_Base_params._Pvec.begin(), _Base_params._Pvec.end());
+            vector<_Ty> _Ans(_Pvec.begin(), _Pvec.end());
             return _Ans;
         }
 #pragma warning(pop)
 
         _NODISCARD double _Piece_probability(const size_t _Idx) const {
-            return 0.5 * (_Base_params._Pvec[_Idx] + _Base_params._Pvec[_Idx + 1])
-                 * static_cast<double>(_Bvec[_Idx + 1] - _Bvec[_Idx]);
+            return 0.5 * (_Pvec[_Idx] + _Pvec[_Idx + 1]) * static_cast<double>(_Bvec[_Idx + 1] - _Bvec[_Idx]);
         }
 
-        void _Init(bool _Renorm = true) { // initialize
-            size_t _Size = _Base_params._Pvec.size();
+        void _Init_base(bool _Renorm = true) { // initialize like discrete_distribution::param_type
+            size_t _Size = _Pvec.size();
             size_t _Idx;
 
             if (_Renorm) {
-                if (_Base_params._Pvec.empty()) { // make empty vector degenerate
-                    _Base_params._Pvec = {1.0, 1.0};
+                if (_Pvec.empty()) {
+                    _Pvec.push_back(1.0); // make empty vector degenerate
                 } else { // normalize probabilities
                     double _Sum = 0;
 
-                    _STL_ASSERT(0.0 <= _Base_params._Pvec[0], "invalid probability for piecewise_linear_distribution");
+                    for (_Idx = 0; _Idx < _Size; ++_Idx) { // sum all probabilities
+                        _STL_ASSERT(0.0 <= _Pvec[_Idx], "invalid probability for piecewise_linear_distribution");
+                        _Sum += _Pvec[_Idx];
+                    }
+
+                    _STL_ASSERT(0.0 < _Sum, "invalid probability vector for piecewise_linear_distribution");
+                    if (_Sum != 1.0) {
+                        for (_Idx = 0; _Idx < _Size; ++_Idx) {
+                            _Pvec[_Idx] /= _Sum;
+                        }
+                    }
+                }
+            }
+
+            _Pcdf.assign(1, _Pvec[0]);
+            for (_Idx = 1; _Idx < _Size; ++_Idx) {
+                _Pcdf.push_back(_Pvec[_Idx] + _Pcdf[_Idx - 1]);
+            }
+        }
+
+        void _Init(bool _Renorm = true) { // initialize
+            size_t _Size = _Pvec.size();
+            size_t _Idx;
+
+            if (_Renorm) {
+                if (_Pvec.empty()) { // make empty vector degenerate
+                    _Pvec = {1.0, 1.0};
+                } else { // normalize probabilities
+                    double _Sum = 0;
+
+                    _STL_ASSERT(0.0 <= _Pvec[0], "invalid probability for piecewise_linear_distribution");
                     for (_Idx = 1; _Idx < _Size; ++_Idx) { // sum all probabilities
-                        _STL_ASSERT(
-                            0.0 <= _Base_params._Pvec[_Idx], "invalid probability for piecewise_linear_distribution");
+                        _STL_ASSERT(0.0 <= _Pvec[_Idx], "invalid probability for piecewise_linear_distribution");
                         _Sum += _Piece_probability(_Idx - 1);
                     }
 
                     _STL_ASSERT(0.0 < _Sum, "invalid probability vector for piecewise_linear_distribution");
                     if (_Sum != 1.0) {
                         for (_Idx = 0; _Idx < _Size; ++_Idx) {
-                            _Base_params._Pvec[_Idx] /= _Sum;
+                            _Pvec[_Idx] /= _Sum;
                         }
                     }
                 }
             }
 
-            _Base_params._Pcdf.assign(1, _Piece_probability(0));
+            _Pcdf.assign(1, _Piece_probability(0));
             for (_Idx = 2; _Idx < _Size; ++_Idx) {
-                _Base_params._Pcdf.push_back(_Piece_probability(_Idx - 1) + _Base_params._Pcdf[_Idx - 2]);
+                _Pcdf.push_back(_Piece_probability(_Idx - 1) + _Pcdf[_Idx - 2]);
             }
         }
 
-        // TRANSITION, ABI: stores probability densities (N + 1 elements) in _Base_params._Pvec
-        // this breaks invariants of discrete_distribution<size_t>::param_type
-        discrete_distribution<size_t>::param_type _Base_params;
+        template <class _Elem, class _Traits>
+        basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
+            size_t _Nvals;
+            _Istr >> _Nvals;
+            _Pvec.clear();
+            for (; 0 < _Nvals; --_Nvals) { // get a value and add to vector
+                double _Val;
+                _In(_Istr, _Val);
+                _Pvec.push_back(_Val);
+            }
+            _Init_base(false); // don't renormalize, just compute CDF
+            return _Istr;
+        }
+
+        template <class _Elem, class _Traits>
+        basic_ostream<_Elem, _Traits>& _Write(basic_ostream<_Elem, _Traits>& _Ostr) const { // write state to _Ostr
+            _Ostr << ' ' << _Pvec.size();
+
+            for (const auto& _Val : _Pvec) {
+                _Out(_Ostr, _Val);
+            }
+
+            return _Ostr;
+        }
+
+        vector<double> _Pvec;
+        vector<double> _Pcdf;
         vector<_Ty> _Bvec;
     };
 
@@ -4595,10 +4648,10 @@ public:
     template <class _Elem, class _Traits>
     friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
         piecewise_linear_distribution& _Dist) { // read state from _Istr
-        _Dist._Par._Base_params._Read(_Istr);
+        _Dist._Par._Read(_Istr);
 
         _Dist._Par._Bvec.clear();
-        for (size_t _Idx = _Dist._Par._Base_params._Pvec.size(); 0 < _Idx; --_Idx) {
+        for (size_t _Idx = _Dist._Par._Pvec.size(); 0 < _Idx; --_Idx) {
             // get a value and add to intervals vector
             double _Val;
             _In(_Istr, _Val);
@@ -4611,7 +4664,7 @@ public:
     template <class _Elem, class _Traits>
     friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
         const piecewise_linear_distribution& _Dist) { // write state to _Ostr
-        _Dist._Par._Base_params._Write(_Ostr);
+        _Dist._Par._Write(_Ostr);
 
         for (const auto& _Val : _Dist._Par._Bvec) {
             _Out(_Ostr, _Val);
@@ -4622,9 +4675,9 @@ public:
 
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
-        size_t _Px  = _Base_distribution(_Eng, _Par0._Base_params);
-        double _Px0 = _Par0._Base_params._Pvec[_Px];
-        double _Px1 = _Par0._Base_params._Pvec[_Px + 1];
+        size_t _Px  = discrete_distribution<size_t>::_Invoke_param_pcdf(_Eng, _Par0._Pcdf);
+        double _Px0 = _Par0._Pvec[_Px];
+        double _Px1 = _Par0._Pvec[_Px + 1];
         uniform_real_distribution<_Ty> _Dist;
         result_type _Xx0 = _Dist(_Eng);
 
@@ -4636,7 +4689,7 @@ public:
         return _Par0._Bvec[_Px] + _Xx0 * (_Par0._Bvec[_Px + 1] - _Par0._Bvec[_Px]);
     }
 
-    discrete_distribution<size_t> _Base_distribution; // TRANSITION, ABI: unused _Base_distribution._Par subobject
+    discrete_distribution<size_t> _Unused; // TRANSITION, ABI: this was a base class subobject
     param_type _Par;
 };
 
