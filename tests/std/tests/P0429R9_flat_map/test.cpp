@@ -1503,16 +1503,9 @@ void test_death_different_size_replace() {
 }
 
 // Reach into the pairing iterator and modify one of the underlying iterators to break invariants
-template <class Cont, class Iter>
+template <class Iter>
 void vandalize_pairing_iterator(Iter& pairing_iterator) {
-    using key_iterator_type = Cont::key_container_type::const_iterator;
-    // FIXME static_assert fails for _Vector_const_iterator. Do we have a more elegant way
-    //  to break invariants? Droping these tests is the last option..
-    //  static_assert(is_trivially_copyable_v<key_iterator_type>);
-    key_iterator_type key_iterator_copy;
-    memcpy(static_cast<void*>(&key_iterator_copy), static_cast<void*>(&pairing_iterator), sizeof(key_iterator_type));
-    ++key_iterator_copy;
-    memcpy(static_cast<void*>(&pairing_iterator), static_cast<void*>(&key_iterator_copy), sizeof(key_iterator_type));
+    ++pairing_iterator._Key_it;
 }
 
 enum class iter_test { op_equals, op_spaceship, op_minus };
@@ -1522,7 +1515,7 @@ void test_death_iterator_at_different_offset() {
     using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
     C cont{{42, 'a'}, {137, 'g'}, {137, 'r'}, {3337, 'f'}, {7755, 'z'}};
     auto broken_iter = cont.begin();
-    vandalize_pairing_iterator<C>(broken_iter);
+    vandalize_pairing_iterator(broken_iter);
     if constexpr (mode == iter_test::op_equals) {
         (void) (cont.end() == broken_iter);
     } else if constexpr (mode == iter_test::op_spaceship) {

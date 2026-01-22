@@ -234,7 +234,11 @@ struct _Pairing_iterator_provider {
             _STD _Seek_wrapped(_Mapped_it, _Dst._Mapped_it);
         }
 
+#ifdef _ENABLE_STL_INTERNAL_CHECK
+    public:
+#else
     private:
+#endif
         _KeyIter _Key_it;
         _MappedIter _Mapped_it;
     };
