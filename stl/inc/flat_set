@@ -536,8 +536,6 @@ private:
                 return pair{_STD _Emplace_with_clear_guard(_Mycont, _Where, _STD forward<_Ty>(_Val)), true};
             } else {
                 // heterogeneous insertion
-                // FIXME: The standard only requires `find(_Val) == find(_Keyval)` (per N4958 [flat.set.modifiers]/2),
-                // which cannot guarantee `_Can_insert(_Where, _Keyval)`.
                 _STL_INTERNAL_STATIC_ASSERT(_Transparent<key_compare> && is_constructible_v<_Kty, _Ty>);
                 _Kty _Keyval(_STD forward<_Ty>(_Val));
                 _STL_ASSERT(_Can_insert(_Where, _Keyval),
@@ -580,8 +578,6 @@ private:
                 return _STD _Emplace_with_clear_guard(_Mycont, _Where, _STD forward<_Ty>(_Val));
             } else {
                 // heterogeneous insertion
-                // FIXME: The standard only requires `find(_Val) == find(_Keyval)` (per N4958 [flat.set.modifiers]/2),
-                // which cannot guarantee `_Can_insert(_Where, _Keyval)`.
                 _STL_INTERNAL_STATIC_ASSERT(_Transparent<key_compare> && is_constructible_v<_Kty, _Ty>);
                 _Kty _Keyval(_STD forward<_Ty>(_Val));
                 _STL_ASSERT(_Can_insert(_Where, _Keyval),
