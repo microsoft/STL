@@ -14,6 +14,7 @@
 #include <print>
 #include <ranges>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include <test_container_requirements.hpp>
@@ -278,9 +279,36 @@ void test_construction() {
         }
     }
     {
-        // Test flat_map(key_cont, mapped_cont, comp = key_comp())
+        // Test flat_map(const alloc&)
+        // and  flat_map(const key_comp&, const alloc&)
+        {
+            MyAllocatorCounter allocation_counter;
+            flat_map<int, int> fmap(MyAllocator<int>{});
+            assert(!allocation_counter.check_then_reset());
+            flat_map<int, int> fmap1(less<int>{}, MyAllocator<int>{});
+            assert(!allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmap, {}));
+            assert(check_value_content(fmap, {}));
+            assert(fmap == fmap1);
+        }
+        {
+            MyAllocatorCounter allocation_counter;
+            flat_multimap<int, int> fmmap(MyAllocator<int>{});
+            assert(!allocation_counter.check_then_reset());
+            flat_multimap<int, int> fmmap1(less<int>{}, MyAllocator<int>{});
+            assert(!allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmmap, {}));
+            assert(check_value_content(fmmap, {}));
+            assert(fmmap == fmmap1);
+        }
+    }
+    {
         KeyCont<int> keys    = {0, 1, 2, 3, 4, 2};
         MappedCont<int> vals = {44, 2324, 635462, 433, 5, 7};
+
+        // Test flat_map(key_cont, mapped_cont, comp = key_comp())
         {
             flat_map fmap(keys, vals);
             flat_map fmap1(keys, vals, less<int>{});
@@ -302,12 +330,39 @@ void test_construction() {
                 }));
             assert(fmmap == fmmap1);
         }
+
+        // Test flat_map(const flat_map&)
+        // and  flat_map(flat_map&&)
+        {
+            flat_map fmap(keys, vals);
+            flat_map fmap1(fmap);
+            flat_map fmap2(move(fmap));
+
+            assert(check_key_content(fmap1, {0, 1, 2, 3, 4}));
+            assert(check_value_content(fmap1, {44, 2324, 635462, 433, 5}));
+            assert(fmap1 == fmap2);
+        }
+        {
+            flat_multimap fmmap(keys, vals);
+            flat_multimap fmmap1(fmmap);
+            flat_multimap fmmap2(move(fmmap));
+
+            assert(check_key_content(fmmap1, {0, 1, 2, 2, 3, 4}));
+            assert(check_value_content(fmmap1, {44, 2324, 635462, 7, 433, 5},
+                {
+                    {0, 1, subrange_type::equal},
+                    {2, 3, subrange_type::permutation},
+                    {4, 5, subrange_type::equal},
+                }));
+            assert(fmmap1 == fmmap2);
+        }
     }
     {
-        // Test flat_map(const key_cont&, const mapped_cont&, const key_comp&, const alloc&)
-        // and  flat_map(const key_cont&, const mapped_cont&, const alloc&)
         KeyCont<int, MyAllocator<int>> keys    = {0, 1, 2, 3, 4, 2};
         MappedCont<int, MyAllocator<int>> vals = {44, 2324, 635462, 433, 5, 7};
+
+        // Test flat_map(const key_cont&, const mapped_cont&, const key_comp&, const alloc&)
+        // and  flat_map(const key_cont&, const mapped_cont&, const alloc&)
         {
             MyAllocatorCounter allocation_counter;
             flat_map fmap(keys, vals, MyAllocator<int>{});
@@ -334,6 +389,40 @@ void test_construction() {
                     {4, 5, subrange_type::equal},
                 }));
             assert(fmmap == fmmap1);
+        }
+
+        // Test flat_map(const flat_map&, const alloc&)
+        // and  flat_map(flat_map&&, const alloc&)
+        {
+            MyAllocatorCounter allocation_counter;
+            flat_map fmap(keys, vals, MyAllocator<int>{});
+            assert(allocation_counter.check_then_reset());
+            flat_map fmap1(fmap);
+            assert(allocation_counter.check_then_reset());
+            flat_map fmap2(move(fmap));
+            assert(!allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmap1, {0, 1, 2, 3, 4}));
+            assert(check_value_content(fmap1, {44, 2324, 635462, 433, 5}));
+            assert(fmap1 == fmap2);
+        }
+        {
+            MyAllocatorCounter allocation_counter;
+            flat_multimap fmmap(keys, vals, MyAllocator<int>{});
+            assert(allocation_counter.check_then_reset());
+            flat_multimap fmmap1(fmmap);
+            assert(allocation_counter.check_then_reset());
+            flat_multimap fmmap2(move(fmmap));
+            assert(!allocation_counter.check_then_reset());
+
+            assert(check_key_content(fmmap1, {0, 1, 2, 2, 3, 4}));
+            assert(check_value_content(fmmap1, {44, 2324, 635462, 7, 433, 5},
+                {
+                    {0, 1, subrange_type::equal},
+                    {2, 3, subrange_type::permutation},
+                    {4, 5, subrange_type::equal},
+                }));
+            assert(fmmap1 == fmmap2);
         }
     }
     {
@@ -667,7 +756,6 @@ void test_construction() {
             assert(fmmap == fmmap1);
         }
     }
-    // FIXME, verify that all flat_map and flat_multimap constructors are tested
     {
         PackagedCompare<int> comp;
         {
