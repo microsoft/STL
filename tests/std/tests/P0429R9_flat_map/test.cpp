@@ -1515,33 +1515,24 @@ void vandalize_pairing_iterator(Iter& pairing_iterator) {
     memcpy(static_cast<void*>(&pairing_iterator), static_cast<void*>(&key_iterator_copy), sizeof(key_iterator_type));
 }
 
-template <cont_type type>
-void test_death_iterator_at_different_offset_operator_equals() {
+enum class iter_test { op_equals, op_spaceship, op_minus };
+
+template <cont_type type, iter_test mode>
+void test_death_iterator_at_different_offset() {
     using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
     C cont{{42, 'a'}, {137, 'g'}, {137, 'r'}, {3337, 'f'}, {7755, 'z'}};
     auto broken_iter = cont.begin();
     vandalize_pairing_iterator<C>(broken_iter);
-    (void) (cont.end() == broken_iter);
+    if constexpr (mode == iter_test::op_equals) {
+        (void) (cont.end() == broken_iter);
+    } else if constexpr (mode == iter_test::op_spaceship) {
+        (void) (cont.end() <=> broken_iter);
+    } else if constexpr (mode == iter_test::op_minus) {
+        (void) (cont.end() - broken_iter);
+    } else {
+        static_assert(false, "unknown iter_test mode");
+    }
 }
-
-template <cont_type type>
-void test_death_iterator_at_different_offset_operator_spaceship() {
-    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
-    C cont{{42, 'a'}, {137, 'g'}, {137, 'r'}, {3337, 'f'}, {7755, 'z'}};
-    auto broken_iter = cont.begin();
-    vandalize_pairing_iterator<C>(broken_iter);
-    (void) (cont.end() <=> broken_iter);
-}
-
-template <cont_type type>
-void test_death_iterator_at_different_offset_operator_minus() {
-    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
-    C cont{{42, 'a'}, {137, 'g'}, {137, 'r'}, {3337, 'f'}, {7755, 'z'}};
-    auto broken_iter = cont.begin();
-    vandalize_pairing_iterator<C>(broken_iter);
-    (void) (cont.end() - broken_iter);
-}
-
 
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec([] { run_normal_tests(); });
@@ -1587,12 +1578,12 @@ int main(int argc, char* argv[]) {
 #if _ITERATOR_DEBUG_LEVEL != 0
     exec.add_death_tests({
         // Tests specific to flat_map - incompatible key and mapped component of pairing iterator
-        test_death_iterator_at_different_offset_operator_equals<cont_type::unique>,
-        test_death_iterator_at_different_offset_operator_equals<cont_type::multi>,
-        test_death_iterator_at_different_offset_operator_spaceship<cont_type::unique>,
-        test_death_iterator_at_different_offset_operator_spaceship<cont_type::multi>,
-        test_death_iterator_at_different_offset_operator_minus<cont_type::unique>,
-        test_death_iterator_at_different_offset_operator_minus<cont_type::multi>,
+        test_death_iterator_at_different_offset<cont_type::unique, iter_test::op_equals>,
+        test_death_iterator_at_different_offset<cont_type::multi, iter_test::op_equals>,
+        test_death_iterator_at_different_offset<cont_type::unique, iter_test::op_spaceship>,
+        test_death_iterator_at_different_offset<cont_type::multi, iter_test::op_spaceship>,
+        test_death_iterator_at_different_offset<cont_type::unique, iter_test::op_minus>,
+        test_death_iterator_at_different_offset<cont_type::multi, iter_test::op_minus>,
     });
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
