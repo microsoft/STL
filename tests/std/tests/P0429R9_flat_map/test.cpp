@@ -1525,7 +1525,7 @@ void test_death_iterator_at_different_offset_operator_equals() {
 }
 
 template <cont_type type>
-void test_death_iterator_at_different_offset_three_way() {
+void test_death_iterator_at_different_offset_operator_spaceship() {
     using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
     C cont{{42, 'a'}, {137, 'g'}, {137, 'r'}, {3337, 'f'}, {7755, 'z'}};
     auto broken_iter = cont.begin();
@@ -1589,8 +1589,8 @@ int main(int argc, char* argv[]) {
         // Tests specific to flat_map - incompatible key and mapped component of pairing iterator
         test_death_iterator_at_different_offset_operator_equals<cont_type::unique>,
         test_death_iterator_at_different_offset_operator_equals<cont_type::multi>,
-        test_death_iterator_at_different_offset_three_way<cont_type::unique>,
-        test_death_iterator_at_different_offset_three_way<cont_type::multi>,
+        test_death_iterator_at_different_offset_operator_spaceship<cont_type::unique>,
+        test_death_iterator_at_different_offset_operator_spaceship<cont_type::multi>,
         test_death_iterator_at_different_offset_operator_minus<cont_type::unique>,
         test_death_iterator_at_different_offset_operator_minus<cont_type::multi>,
     });
