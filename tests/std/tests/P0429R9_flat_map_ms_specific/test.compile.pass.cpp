@@ -45,17 +45,16 @@ constexpr bool has_different_nested_types = !is_same_v<typename A::value_compare
 
 template <bool IsUnique, class Comparator, class Alloc1, class Alloc2>
 void test_scary_ness_one() {
-    using Iter = flat_map<int, int>::iterator;
-    using OtherIter =
-        flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::iterator;
+    using Cont = flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>;
+
+    using Iter      = flat_map<int, int>::iterator;
+    using OtherIter = Cont::iterator;
     static_assert(is_same_v<Iter, OtherIter>);
 
-    using ConstIter = flat_map<int, int>::const_iterator;
-    using OtherConstIter =
-        flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>::const_iterator;
+    using ConstIter      = flat_map<int, int>::const_iterator;
+    using OtherConstIter = Cont::const_iterator;
     static_assert(is_same_v<ConstIter, OtherConstIter>);
 
-    using Cont       = flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>;
     using OtherCont1 = flat_map_unique_if<!IsUnique, int, int, Comparator, vector<int, Alloc1>, vector<int, Alloc2>>;
     using OtherCont2 = flat_map_unique_if<IsUnique, int, int, Comparator, deque<int>, deque<int>>;
     using OtherCont3 = flat_map_unique_if<IsUnique, int, int, Comparator, vector<int, Alloc1>, deque<int, Alloc2>>;
