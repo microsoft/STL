@@ -108,8 +108,8 @@ template <IsFlatMap T>
         assert(ranges::adjacent_find(subranges, is_gap_or_overlap) == subranges.end());
     }
 
-    return ranges::all_of(subranges, [&expected, &actual](const subrange_t& subrange) {
-        const auto& [first_index, last_index, type] = subrange;
+    return ranges::all_of(subranges, [&expected, &actual](const subrange_t& sr) {
+        const auto& [first_index, last_index, type] = sr;
         const ranges::subrange actual_subrange{actual.begin() + first_index, actual.begin() + last_index + 1};
         const ranges::subrange expected_subrange{expected.begin() + first_index, expected.begin() + last_index + 1};
 
