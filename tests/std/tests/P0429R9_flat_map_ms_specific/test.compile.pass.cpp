@@ -35,21 +35,9 @@ struct MyAllocator {
     }
 };
 
-template <bool>
-struct flat_map_unique_if_impl;
-template <>
-struct flat_map_unique_if_impl<true> {
-    template <class Key, class Mapped, class Comp, class KeyCont, class MappedCont>
-    using type = flat_map<Key, Mapped, Comp, KeyCont, MappedCont>;
-};
-template <>
-struct flat_map_unique_if_impl<false> {
-    template <class Key, class Mapped, class Comp, class KeyCont, class MappedCont>
-    using type = flat_multimap<Key, Mapped, Comp, KeyCont, MappedCont>;
-};
-
 template <bool IsUnique, class Key, class Mapped, class Comp, class KeyCont, class MappedCont>
-using flat_map_unique_if = flat_map_unique_if_impl<IsUnique>::template type<Key, Mapped, Comp, KeyCont, MappedCont>;
+using flat_map_unique_if = conditional_t<IsUnique, flat_map<Key, Mapped, Comp, KeyCont, MappedCont>,
+    flat_multimap<Key, Mapped, Comp, KeyCont, MappedCont>>;
 
 template <class A, class B>
 constexpr bool has_different_nested_types = !is_same_v<typename A::value_compare, typename B::value_compare>
