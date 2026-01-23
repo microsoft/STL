@@ -377,12 +377,12 @@ public:
         _Guard._Target = nullptr;
     }
 
-    // FIXME, the "erase" member functions need clear guards to restore the invariant when the underlying
-    // container doesn't provide the strong guarantee for its "erase" member functions.
-
     // NB: `erase(iterator)` is identical to `erase(const_iterator)`
     iterator erase(const const_iterator _Where) {
-        return _Mycont.erase(_Where);
+        _Clear_guard _Guard{this};
+        const auto _Ret = _Mycont.erase(_Where);
+        _Guard._Target  = nullptr;
+        return _Ret;
     }
     size_type erase(const _Kty& _Val) {
         return _Erase(_Val);
@@ -393,7 +393,10 @@ public:
         return _Erase(_Val);
     }
     iterator erase(const const_iterator _First, const const_iterator _Last) {
-        return _Mycont.erase(_First, _Last);
+        _Clear_guard _Guard{this};
+        const auto _Ret = _Mycont.erase(_First, _Last);
+        _Guard._Target  = nullptr;
+        return _Ret;
     }
 
     void swap(_Derived& _Other) noexcept(is_nothrow_swappable_v<_Container> && is_nothrow_swappable_v<_Keylt>) {
@@ -536,8 +539,6 @@ private:
                 return pair{_STD _Emplace_with_clear_guard(_Mycont, _Where, _STD forward<_Ty>(_Val)), true};
             } else {
                 // heterogeneous insertion
-                // FIXME: The standard only requires `find(_Val) == find(_Keyval)` (per N4958 [flat.set.modifiers]/2),
-                // which cannot guarantee `_Can_insert(_Where, _Keyval)`.
                 _STL_INTERNAL_STATIC_ASSERT(_Transparent<key_compare> && is_constructible_v<_Kty, _Ty>);
                 _Kty _Keyval(_STD forward<_Ty>(_Val));
                 _STL_ASSERT(_Can_insert(_Where, _Keyval),
@@ -580,8 +581,6 @@ private:
                 return _STD _Emplace_with_clear_guard(_Mycont, _Where, _STD forward<_Ty>(_Val));
             } else {
                 // heterogeneous insertion
-                // FIXME: The standard only requires `find(_Val) == find(_Keyval)` (per N4958 [flat.set.modifiers]/2),
-                // which cannot guarantee `_Can_insert(_Where, _Keyval)`.
                 _STL_INTERNAL_STATIC_ASSERT(_Transparent<key_compare> && is_constructible_v<_Kty, _Ty>);
                 _Kty _Keyval(_STD forward<_Ty>(_Val));
                 _STL_ASSERT(_Can_insert(_Where, _Keyval),
@@ -640,7 +639,9 @@ private:
         if constexpr (_IsUnique && is_same_v<_Ty, key_type>) { // Optimization restricted due to GH-5992
             const const_iterator _Where = lower_bound(_Val);
             if (_Where != cend() && !_Compare(_Val, *_Where)) {
+                _Clear_guard _Guard{this};
                 _Mycont.erase(_Where);
+                _Guard._Target = nullptr;
                 return 1;
             }
             return 0;
@@ -648,7 +649,9 @@ private:
             const auto [_First, _Last] = equal_range(_Val);
 
             const auto _Removed = static_cast<size_type>(_Last - _First);
+            _Clear_guard _Guard{this};
             _Mycont.erase(_First, _Last);
+            _Guard._Target = nullptr;
             return _Removed;
         }
     }
@@ -717,6 +720,9 @@ private:
 
     void _Erase_dupes_if_not_multi() {
         if constexpr (_IsUnique) {
+            // No _Clear_guard needed. The only callers are _Restore_invariants_after_insert() (which is called
+            // only by _Insert_range() which has a _Clear_guard) and _Make_invariants_fulfilled() (which is called
+            // only by constructors which don't need guards and operator=() which has a _Clear_guard).
             const auto _End = _Mycont.end();
             _Mycont.erase(_STD unique(_Mycont.begin(), _End, _Erase_dupes_if_not_multi_pred()), _End);
         }

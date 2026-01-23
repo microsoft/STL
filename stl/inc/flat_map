@@ -1099,7 +1099,7 @@ private:
     }
 
     void _Make_invariants_fulfilled() {
-        if (empty()) { // FIXME maybe consider if (begin() == end()) for consistency with flat_set
+        if (empty()) {
             return;
         }
 
@@ -1130,6 +1130,8 @@ private:
 
     void _Erase_dupes_if_not_multi() {
         if constexpr (_IsUnique) {
+            // No _Clear_guard needed. The only callers are _Insert_range() (which has a _Clear_guard)
+            // and _Make_invariants_fulfilled() (which is called only by constructors).
             auto _Sorted_view    = _View_to_mutate();
             const auto _New_last = _RANGES unique(_Sorted_view, _Erase_dupes_if_not_multi_pred()).begin();
 
