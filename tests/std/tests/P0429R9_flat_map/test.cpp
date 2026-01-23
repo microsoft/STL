@@ -167,7 +167,7 @@ struct almost_pair {
 };
 
 namespace std {
-    template <class T, class U, size_t N>
+    template <size_t N, class T, class U>
     struct tuple_element<N, almost_pair<T, U>> {
         using type = conditional_t<N == 1, T, U>;
     };
