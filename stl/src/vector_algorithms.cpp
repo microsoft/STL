@@ -5326,8 +5326,16 @@ namespace {
 
 #ifndef _M_ARM64EC
         namespace _Bitmap_details {
-            // AVX2 bitmap: __m256i value with each bit corresponding to needle element, 1 means present.
-
+            // AVX2 bitmap: __m256i value with each bit corresponding to needle element, set bit means present.
+            //
+            // The bitmap algorithm implemented in _Bitmap_step:
+            //  - Process by 8 elements, populate them as in 32-bit values vector,
+            //    regardless of the original element size
+            //  - Split the low 5 bits and high 3 bits of these elements
+            //  - Use the high 3 bits with _mm256_permutevar8x32_epi32 to find 32-bit bitmap portion for each element
+            //  - Use the low 5 bits to shift the bitmap portion, so that the bitmap bit corresponding to them is on
+            //    higiest position. Negate these low 5 bits before that, as we're populating the highest position
+            //  - The resulting maks can later be converted via _mm256_movemask_ps to one byte bitmap
             __m256i _Bitmap_step(const __m256i _Bitmap, const __m256i _Data) noexcept {
                 const __m256i _Data_high    = _mm256_srli_epi32(_Data, 5);
                 const __m256i _Bitmap_parts = _mm256_permutevar8x32_epi32(_Bitmap, _Data_high);
