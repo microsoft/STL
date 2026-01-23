@@ -330,22 +330,22 @@ public:
 
     static_assert(is_same_v<key_type, typename key_container_type::value_type>,
         "key_type and key_container_type::value_type must be the same. "
-        "(N5014 [flat.map.overview]/8, [flat.multimap.overview]/8)");
+        "(N5032 [flat.map.overview]/8, [flat.multimap.overview]/8)");
     static_assert(is_same_v<mapped_type, typename mapped_container_type::value_type>,
         "mapped_type and mapped_container_type::value_type must be the same. "
-        "(N5014 [flat.map.overview]/8, [flat.multimap.overview]/8)");
+        "(N5032 [flat.map.overview]/8, [flat.multimap.overview]/8)");
     static_assert(!_Is_vector_bool<key_container_type>,
         "key_container_type cannot be vector<bool> because it is not a sequence container. "
-        "(N5014 [flat.map.overview]/7, [flat.multimap.overview]/7)");
+        "(N5032 [flat.map.overview]/7, [flat.multimap.overview]/7)");
     static_assert(!_Is_vector_bool<mapped_container_type>,
         "mapped_container_type cannot be vector<bool> because it is not a sequence container. "
-        "(N5014 [flat.map.overview]/7, [flat.multimap.overview]/7)");
+        "(N5032 [flat.map.overview]/7, [flat.multimap.overview]/7)");
     static_assert(random_access_iterator<typename key_container_type::const_iterator>,
         "key_container_type must support random-access iterators in order to be adapted. "
-        "(N5014 [flat.map.overview]/7, [flat.multimap.overview]/7)");
+        "(N5032 [flat.map.overview]/7, [flat.multimap.overview]/7)");
     static_assert(random_access_iterator<typename mapped_container_type::const_iterator>,
         "mapped_container_type must support random-access iterators in order to be adapted. "
-        "(N5014 [flat.map.overview]/7, [flat.multimap.overview]/7)");
+        "(N5032 [flat.map.overview]/7, [flat.multimap.overview]/7)");
 
     class value_compare {
     public:
@@ -748,7 +748,7 @@ public:
     _NODISCARD containers extract() && noexcept(
         is_nothrow_move_constructible_v<key_container_type>
         && is_nothrow_move_constructible_v<mapped_container_type>) /* strengthened */ {
-        // always clears the container (N5014 [flat.map.modifiers]/34 and [flat.multimap.overview]/4)
+        // always clears the container (N5032 [flat.map.modifiers]/35 and [flat.multimap.overview]/4)
         _Clear_guard _Always_clear{this};
         return _STD move(_Data);
     }
@@ -1104,7 +1104,8 @@ private:
         }
 
         // O(N) if already sorted.
-        const auto _Num_sorted = _RANGES is_sorted_until(_Data.keys, _Pass_key_comp()) - _Data.keys.begin();
+        const auto _Num_sorted =
+            _STD is_sorted_until(_Data.keys.begin(), _Data.keys.end(), _Pass_key_comp()) - _Data.keys.begin();
 
         auto _View                        = _View_to_mutate();
         const auto _Begin_unsorted_values = _View.begin() + _Num_sorted;

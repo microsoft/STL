@@ -6,6 +6,7 @@
 #include <cassert>
 #include <concepts>
 #include <cstddef>
+#include <cstdio>
 #include <cstdlib>
 #include <deque>
 #include <flat_map>
@@ -45,7 +46,7 @@ void assert_all_requirements(const T& s) {
     assert_noexcept_requirements(s);
     assert_noexcept_requirements(const_cast<T&>(s));
 
-    assert_is_sorted_maybe_unique<_Is_specialization_v<T, flat_map>>(s);
+    assert_is_sorted_maybe_unique<is_specialization_v<T, flat_map>>(s);
 }
 
 template <IsFlatMap T>
@@ -63,8 +64,7 @@ template <IsFlatMap T>
 [[nodiscard]] bool check_content(const T& obj, const type_identity_t<T>& expected) {
     assert_all_requirements(obj);
     if (!ranges::equal(obj, expected)) {
-        println(stderr, "Unexpected content!\nExpected {}", expected);
-        println(stderr, "Actual {}", obj);
+        println(stderr, "Unexpected content!\nExpected {}\nActual {}", expected, obj);
         return false;
     }
     return true;
@@ -108,8 +108,8 @@ template <IsFlatMap T>
         assert(ranges::adjacent_find(subranges, is_gap_or_overlap) == subranges.end());
     }
 
-    return ranges::all_of(subranges, [&expected, &actual](const subrange_t& subrange) {
-        const auto& [first_index, last_index, type] = subrange;
+    return ranges::all_of(subranges, [&expected, &actual](const subrange_t& sr) {
+        const auto& [first_index, last_index, type] = sr;
         const ranges::subrange actual_subrange{actual.begin() + first_index, actual.begin() + last_index + 1};
         const ranges::subrange expected_subrange{expected.begin() + first_index, expected.begin() + last_index + 1};
 
@@ -122,28 +122,31 @@ template <IsFlatMap T>
 }
 
 template <class T>
-class MyAllocator : public allocator<T> {
+class MyAllocator {
 public:
     using value_type = T;
-    using allocator<T>::allocator;
 
-    static size_t getActiveAllocationCount() {
+    MyAllocator() = default;
+    template <class U>
+    MyAllocator(const MyAllocator<U>&) noexcept {}
+
+    [[nodiscard]] static size_t getActiveAllocationCount() {
         return s_allocations.load();
     }
 
-    T* allocate(size_t n) {
+    [[nodiscard]] T* allocate(size_t n) {
         ++s_allocations;
-        return allocator<T>::allocate(n);
-    }
-
-    T* allocate_at_least(size_t n) {
-        ++s_allocations;
-        return allocator<T>::allocate_at_least(n);
+        return allocator<T>{}.allocate(n);
     }
 
     void deallocate(T* p, size_t n) noexcept {
         --s_allocations;
-        allocator<T>::deallocate(p, n);
+        allocator<T>{}.deallocate(p, n);
+    }
+
+    template <class U>
+    [[nodiscard]] friend constexpr bool operator==(const MyAllocator&, const MyAllocator<U>&) noexcept {
+        return true;
     }
 
 private:
@@ -164,9 +167,9 @@ struct almost_pair {
 };
 
 namespace std {
-    template <class T, class U, size_t N>
+    template <size_t N, class T, class U>
     struct tuple_element<N, almost_pair<T, U>> {
-        using type = conditional_t<N == 1, T, U>;
+        using type = conditional_t<N == 0, T, U>;
     };
 } // namespace std
 
@@ -178,7 +181,7 @@ private:
 public:
     Packaged() : value() {}
     template <class U>
-        requires constructible_from<T, U&&>
+        requires constructible_from<T, U>
     Packaged(U&& u) : value(forward<U>(u)) {}
 
     T get() const {
@@ -260,10 +263,9 @@ void test_construction() {
 
     {
         // Test flat_map() and flat_map(const key_compare&)
-        const less<int> compare;
         {
             flat_map<int, int> fmap;
-            flat_map<int, int> fmap1(compare);
+            flat_map<int, int> fmap1(less<int>{});
 
             assert(check_key_content(fmap, {}));
             assert(check_value_content(fmap, {}));
@@ -271,7 +273,7 @@ void test_construction() {
         }
         {
             flat_multimap<int, int> fmmap;
-            flat_multimap<int, int> fmmap1(compare);
+            flat_multimap<int, int> fmmap1(less<int>{});
 
             assert(check_key_content(fmmap, {}));
             assert(check_value_content(fmmap, {}));
@@ -283,9 +285,9 @@ void test_construction() {
         // and  flat_map(const key_comp&, const alloc&)
         {
             MyAllocatorCounter allocation_counter;
-            flat_map<int, int> fmap(MyAllocator<int>{});
+            flat_map_my_allocator fmap(MyAllocator<int>{});
             assert(!allocation_counter.check_then_reset());
-            flat_map<int, int> fmap1(less<int>{}, MyAllocator<int>{});
+            flat_map_my_allocator fmap1(less<int>{}, MyAllocator<int>{});
             assert(!allocation_counter.check_then_reset());
 
             assert(check_key_content(fmap, {}));
@@ -294,9 +296,9 @@ void test_construction() {
         }
         {
             MyAllocatorCounter allocation_counter;
-            flat_multimap<int, int> fmmap(MyAllocator<int>{});
+            flat_multimap_my_allocator fmmap(MyAllocator<int>{});
             assert(!allocation_counter.check_then_reset());
-            flat_multimap<int, int> fmmap1(less<int>{}, MyAllocator<int>{});
+            flat_multimap_my_allocator fmmap1(less<int>{}, MyAllocator<int>{});
             assert(!allocation_counter.check_then_reset());
 
             assert(check_key_content(fmmap, {}));
@@ -447,7 +449,7 @@ void test_construction() {
 
             assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
             assert(check_value_content(
-                fmmap, {44, 2324, 635462, 7, 433, 5})); // guaranteed by N4971 [flat.multimap.cons]/6
+                fmmap, {44, 2324, 635462, 7, 433, 5})); // guaranteed by N5032 [flat.multimap.cons]/3
             assert(fmmap == fmmap1);
         }
         {
@@ -461,7 +463,7 @@ void test_construction() {
     }
     {
         // Test flat_map(_Sorted_t, const key_cont&, const mapped_cont&, const key_comp&, const alloc&)
-        // and flat_map(_Sorted_t, const key_cont&, const mapped_cont&, const alloc&)
+        // and  flat_map(_Sorted_t, const key_cont&, const mapped_cont&, const alloc&)
         {
             KeyCont<int, MyAllocator<int>> keys    = {0, 1, 2, 3, 4};
             MappedCont<int, MyAllocator<int>> vals = {44, 2324, 635462, 433, 5};
@@ -622,7 +624,7 @@ void test_construction() {
     }
     {
         // Test flat_map(_Sorted_t, iter, iter, const key_comp&, const alloc&)
-        // and flat_map(_Sorted_t, iter, iter, const alloc&)
+        // and  flat_map(_Sorted_t, iter, iter, const alloc&)
         {
             almost_pair<int, int> value_types[]{{0, 44}, {1, 2324}, {2, 635462}, {3, 433}, {4, 5}};
 
@@ -871,16 +873,18 @@ void test_construction() {
 
 template <template <class...> class KeyCont, template <class...> class MappedCont>
 void test_erase_if() {
+    KeyCont<int> keys     = {0, 1, 2, 3, 4, 2};
+    MappedCont<int> vals  = {44, 2324, 635462, 433, 5, 7};
+    auto even_key_odd_val = [](pair<const int&, const int&> p) { return p.first % 2 == 0 && p.second % 2 != 0; };
     {
-        KeyCont<int> keys     = {0, 1, 2, 3, 4, 2};
-        MappedCont<int> vals  = {44, 2324, 635462, 433, 5, 7};
-        auto even_key_odd_val = [](pair<const int&, const int&> p) { return p.first % 2 == 0 && p.second % 2 != 0; };
         flat_map fmap(keys, vals);
         const auto erased_num = erase_if(fmap, even_key_odd_val);
         assert(erased_num == 1);
         assert(fmap.size() == 4);
         assert(check_key_content(fmap, {0, 1, 2, 3}));
         assert(check_value_content(fmap, {44, 2324, 635462, 433}));
+    }
+    {
         flat_multimap fmmap(keys, vals);
         const auto erased_num_m = erase_if(fmmap, even_key_odd_val);
         assert(erased_num_m == 2);
@@ -929,11 +933,11 @@ void test_insert() {
     assert(res3.first->second == 'w');
     assert(res3.second);
 
-    const auto res4 = fm.insert(fm.cbegin(), std::pair<int, char>{30, 'c'});
+    const auto res4 = fm.insert(fm.cbegin(), pair<int, char>{30, 'c'});
     assert(res4->first == 30);
     assert(res4->second == 'c');
 
-    const auto res5 = fm.insert(fm.cbegin(), std::pair<char, char>{static_cast<char>(40), 'd'});
+    const auto res5 = fm.insert(fm.cbegin(), pair<char, char>{static_cast<char>(40), 'd'});
     assert(res5->first == 40);
     assert(res5->second == 'd');
 
@@ -959,12 +963,12 @@ void test_insert() {
     assert(it4->first == 90);
     assert(it4->second == 'w');
 
-    const auto it5 = fmm.insert(fmm.cend(), std::pair<char, char>{static_cast<char>(70), 'q'});
+    const auto it5 = fmm.insert(fmm.cend(), pair<char, char>{static_cast<char>(70), 'q'});
     assert(it5->first == 70);
     assert(it5->second == 'q');
 
     assert(check_key_content(fmm, {10, 10, 70, 70, 90}));
-    // N4981 [associative.reqmts.general]/68 and /72 specify the values of the result to be {'m', 'n', 'p', 'q', 'w'}.
+    // N5032 [associative.reqmts.general]/68 and /72 specify the values of the result to be {'m', 'n', 'p', 'q', 'w'}.
     assert(check_value_content(fmm, {'m', 'n', 'p', 'q', 'w'}));
 }
 
@@ -1296,10 +1300,8 @@ void test_lookup_call_on_temporaries() {
 // Test that hint to emplace/insert is respected, when possible; check returned iterator
 template <template <class...> class KeyC, template <class...> class ValueC>
 void test_insert_hint_is_respected() {
-    using lt = std::less<int>;
-
     {
-        flat_multimap<int, char, lt, KeyC<int>, ValueC<char>> a{{-1, 'x'}, {-1, 'x'}, {1, 'x'}, {1, 'x'}};
+        flat_multimap<int, char, less<int>, KeyC<int>, ValueC<char>> a{{-1, 'x'}, {-1, 'x'}, {1, 'x'}, {1, 'x'}};
         bool problem_seen                      = false;
         const auto assert_inserted_at_position = [&a, &problem_seen](
                                                      const int expected_index, const auto insert_position) {
@@ -1328,7 +1330,7 @@ void test_insert_hint_is_respected() {
         assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {1, 'x'}, {1, 'x'}}));
         assert_inserted_at_position(3, a.emplace_hint(a.find(1), pair{0, 'b'}));
         assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {0, 'b'}, {1, 'x'}, {1, 'x'}}));
-        assert_inserted_at_position(4, a.insert(a.upper_bound(0), std::move(pair0c)));
+        assert_inserted_at_position(4, a.insert(a.upper_bound(0), move(pair0c)));
         assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {0, 'b'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
         // hint is correct
         assert_inserted_at_position(4, a.emplace_hint(a.upper_bound(0) - 1, 0, 'd'));
@@ -1349,7 +1351,7 @@ void test_insert_hint_is_respected() {
 
         assert(!problem_seen);
 
-        assert(4 == erase_if(a, [](const auto pair) { return pair.second <= 'd'; }));
+        assert(4 == erase_if(a, [](const auto p) { return p.second <= 'd'; }));
         assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'h'}, {0, 'g'}, {0, 'f'}, {0, 'e'}, {1, 'x'}, {1, 'x'}}));
         assert(4 == a.erase(0));
         assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {1, 'x'}, {1, 'x'}}));

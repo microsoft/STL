@@ -87,13 +87,13 @@ private:
 public:
     static_assert(same_as<_Kty, typename _Container::value_type>,
         "key_type and container_type::value_type must be the same. "
-        "(N5014 [flat.set.overview]/8, [flat.multiset.overview]/8)");
+        "(N5032 [flat.set.overview]/8, [flat.multiset.overview]/8)");
     static_assert(!_Is_vector_bool<_Container>,
         "vector<bool> cannot be adapted because it is not a sequence container. "
-        "(N5014 [flat.set.overview]/7, [flat.multiset.overview]/7)");
+        "(N5032 [flat.set.overview]/7, [flat.multiset.overview]/7)");
     static_assert(random_access_iterator<typename _Container::const_iterator>,
         "Sequence containers must support random-access iterators in order to be adapted. "
-        "(N5014 [flat.set.overview]/7, [flat.multiset.overview]/7)");
+        "(N5032 [flat.set.overview]/7, [flat.multiset.overview]/7)");
 
     using key_type               = _Kty;
     using value_type             = _Kty;
@@ -365,7 +365,7 @@ public:
 
     _NODISCARD container_type extract() && noexcept(
         is_nothrow_move_constructible_v<container_type>) /* strengthened */ {
-        // always clears the container (N5014 [flat.set.modifiers]/14 and [flat.multiset.modifiers]/10)
+        // always clears the container (N5032 [flat.set.modifiers]/16 and [flat.multiset.modifiers]/15)
         _Clear_guard _Always_clear{this};
         return _STD move(_Mycont);
     }
@@ -664,7 +664,7 @@ private:
 
     template <class _Pred>
     _NODISCARD size_type _Erase_if(_Pred _Predicate) {
-        // Maintain invariants when an exception is thrown (N5014 [flat.set.erasure]/5, [flat.multiset.erasure]/5)
+        // Maintain invariants when an exception is thrown (N5032 [flat.set.erasure]/5, [flat.multiset.erasure]/5)
         _Clear_guard _Guard{this};
         const auto _Erased_count = _STD _Erase_remove_if(_Mycont, _Predicate);
         _Guard._Target           = nullptr;
