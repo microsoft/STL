@@ -873,16 +873,18 @@ void test_construction() {
 
 template <template <class...> class KeyCont, template <class...> class MappedCont>
 void test_erase_if() {
+    KeyCont<int> keys     = {0, 1, 2, 3, 4, 2};
+    MappedCont<int> vals  = {44, 2324, 635462, 433, 5, 7};
+    auto even_key_odd_val = [](pair<const int&, const int&> p) { return p.first % 2 == 0 && p.second % 2 != 0; };
     {
-        KeyCont<int> keys     = {0, 1, 2, 3, 4, 2};
-        MappedCont<int> vals  = {44, 2324, 635462, 433, 5, 7};
-        auto even_key_odd_val = [](pair<const int&, const int&> p) { return p.first % 2 == 0 && p.second % 2 != 0; };
         flat_map fmap(keys, vals);
         const auto erased_num = erase_if(fmap, even_key_odd_val);
         assert(erased_num == 1);
         assert(fmap.size() == 4);
         assert(check_key_content(fmap, {0, 1, 2, 3}));
         assert(check_value_content(fmap, {44, 2324, 635462, 433}));
+    }
+    {
         flat_multimap fmmap(keys, vals);
         const auto erased_num_m = erase_if(fmmap, even_key_odd_val);
         assert(erased_num_m == 2);
