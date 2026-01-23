@@ -447,7 +447,7 @@ void test_construction() {
 
             assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
             assert(check_value_content(
-                fmmap, {44, 2324, 635462, 7, 433, 5})); // guaranteed by N4971 [flat.multimap.cons]/6
+                fmmap, {44, 2324, 635462, 7, 433, 5})); // guaranteed by N5032 [flat.multimap.cons]/3
             assert(fmmap == fmmap1);
         }
         {
@@ -964,7 +964,7 @@ void test_insert() {
     assert(it5->second == 'q');
 
     assert(check_key_content(fmm, {10, 10, 70, 70, 90}));
-    // N4981 [associative.reqmts.general]/68 and /72 specify the values of the result to be {'m', 'n', 'p', 'q', 'w'}.
+    // N5032 [associative.reqmts.general]/68 and /72 specify the values of the result to be {'m', 'n', 'p', 'q', 'w'}.
     assert(check_value_content(fmm, {'m', 'n', 'p', 'q', 'w'}));
 }
 
