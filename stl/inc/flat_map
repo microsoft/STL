@@ -1104,7 +1104,8 @@ private:
         }
 
         // O(N) if already sorted.
-        const auto _Num_sorted = _RANGES is_sorted_until(_Data.keys, _Pass_key_comp()) - _Data.keys.begin();
+        const auto _Num_sorted =
+            _STD is_sorted_until(_Data.keys.begin(), _Data.keys.end(), _Pass_key_comp()) - _Data.keys.begin();
 
         auto _View                        = _View_to_mutate();
         const auto _Begin_unsorted_values = _View.begin() + _Num_sorted;
