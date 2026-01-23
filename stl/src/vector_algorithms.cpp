@@ -6682,7 +6682,7 @@ namespace {
         //  - in outer loop, do the 'find'-like thing, but preserve the setup (i.e. vector with first needle element)
         //  - in inner loop, try to compare with readily available needle in a register,
         //    or at least with the needle start, if the needle is long, to fail early mismatches early.
-        // Or use SSE4.2 _mm_cmpestri, which can be good too, especially for 9-bit forward search.
+        // Or use SSE4.2 _mm_cmpestri, which can be good too, especially for 8-bit forward search.
 
 #ifdef _M_ARM64EC
         using _Find_seq_traits_avx_1 = void;
