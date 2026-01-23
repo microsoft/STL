@@ -713,8 +713,7 @@ private:
         if constexpr (_Equivalence_is_equality<_Keylt, _Kty>) {
             return equal_to<>{};
         } else {
-            return
-                [this](const _Kty& _Lhs, const _Kty& _Rhs) { return !_Compare(_Lhs, _Rhs) && !_Compare(_Rhs, _Lhs); };
+            return [this](const _Kty& _Lhs, const _Kty& _Rhs) { return !_Compare(_Lhs, _Rhs); };
         }
     }
 
