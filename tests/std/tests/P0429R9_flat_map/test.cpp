@@ -122,28 +122,31 @@ template <IsFlatMap T>
 }
 
 template <class T>
-class MyAllocator : public allocator<T> {
+class MyAllocator {
 public:
     using value_type = T;
-    using allocator<T>::allocator;
 
-    static size_t getActiveAllocationCount() {
+    MyAllocator() = default;
+    template <class U>
+    MyAllocator(const MyAllocator<U>&) noexcept {}
+
+    [[nodiscard]] static size_t getActiveAllocationCount() {
         return s_allocations.load();
     }
 
-    T* allocate(size_t n) {
+    [[nodiscard]] T* allocate(size_t n) {
         ++s_allocations;
-        return allocator<T>::allocate(n);
-    }
-
-    T* allocate_at_least(size_t n) {
-        ++s_allocations;
-        return allocator<T>::allocate_at_least(n);
+        return allocator<T>{}.allocate(n);
     }
 
     void deallocate(T* p, size_t n) noexcept {
         --s_allocations;
-        allocator<T>::deallocate(p, n);
+        allocator<T>{}.deallocate(p, n);
+    }
+
+    template <class U>
+    [[nodiscard]] friend constexpr bool operator==(const MyAllocator&, const MyAllocator<U>&) noexcept {
+        return true;
     }
 
 private:
@@ -283,9 +286,9 @@ void test_construction() {
         // and  flat_map(const key_comp&, const alloc&)
         {
             MyAllocatorCounter allocation_counter;
-            flat_map<int, int> fmap(MyAllocator<int>{});
+            flat_map_my_allocator fmap(MyAllocator<int>{});
             assert(!allocation_counter.check_then_reset());
-            flat_map<int, int> fmap1(less<int>{}, MyAllocator<int>{});
+            flat_map_my_allocator fmap1(less<int>{}, MyAllocator<int>{});
             assert(!allocation_counter.check_then_reset());
 
             assert(check_key_content(fmap, {}));
@@ -294,9 +297,9 @@ void test_construction() {
         }
         {
             MyAllocatorCounter allocation_counter;
-            flat_multimap<int, int> fmmap(MyAllocator<int>{});
+            flat_multimap_my_allocator fmmap(MyAllocator<int>{});
             assert(!allocation_counter.check_then_reset());
-            flat_multimap<int, int> fmmap1(less<int>{}, MyAllocator<int>{});
+            flat_multimap_my_allocator fmmap1(less<int>{}, MyAllocator<int>{});
             assert(!allocation_counter.check_then_reset());
 
             assert(check_key_content(fmmap, {}));
