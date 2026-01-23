@@ -1351,7 +1351,7 @@ void test_insert_hint_is_respected() {
 
         assert(!problem_seen);
 
-        assert(4 == erase_if(a, [](const auto pair) { return pair.second <= 'd'; }));
+        assert(4 == erase_if(a, [](const auto p) { return p.second <= 'd'; }));
         assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'h'}, {0, 'g'}, {0, 'f'}, {0, 'e'}, {1, 'x'}, {1, 'x'}}));
         assert(4 == a.erase(0));
         assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {1, 'x'}, {1, 'x'}}));
