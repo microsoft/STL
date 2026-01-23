@@ -933,11 +933,11 @@ void test_insert() {
     assert(res3.first->second == 'w');
     assert(res3.second);
 
-    const auto res4 = fm.insert(fm.cbegin(), std::pair<int, char>{30, 'c'});
+    const auto res4 = fm.insert(fm.cbegin(), pair<int, char>{30, 'c'});
     assert(res4->first == 30);
     assert(res4->second == 'c');
 
-    const auto res5 = fm.insert(fm.cbegin(), std::pair<char, char>{static_cast<char>(40), 'd'});
+    const auto res5 = fm.insert(fm.cbegin(), pair<char, char>{static_cast<char>(40), 'd'});
     assert(res5->first == 40);
     assert(res5->second == 'd');
 
@@ -963,7 +963,7 @@ void test_insert() {
     assert(it4->first == 90);
     assert(it4->second == 'w');
 
-    const auto it5 = fmm.insert(fmm.cend(), std::pair<char, char>{static_cast<char>(70), 'q'});
+    const auto it5 = fmm.insert(fmm.cend(), pair<char, char>{static_cast<char>(70), 'q'});
     assert(it5->first == 70);
     assert(it5->second == 'q');
 
@@ -1300,10 +1300,8 @@ void test_lookup_call_on_temporaries() {
 // Test that hint to emplace/insert is respected, when possible; check returned iterator
 template <template <class...> class KeyC, template <class...> class ValueC>
 void test_insert_hint_is_respected() {
-    using lt = std::less<int>;
-
     {
-        flat_multimap<int, char, lt, KeyC<int>, ValueC<char>> a{{-1, 'x'}, {-1, 'x'}, {1, 'x'}, {1, 'x'}};
+        flat_multimap<int, char, less<int>, KeyC<int>, ValueC<char>> a{{-1, 'x'}, {-1, 'x'}, {1, 'x'}, {1, 'x'}};
         bool problem_seen                      = false;
         const auto assert_inserted_at_position = [&a, &problem_seen](
                                                      const int expected_index, const auto insert_position) {
@@ -1332,7 +1330,7 @@ void test_insert_hint_is_respected() {
         assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {1, 'x'}, {1, 'x'}}));
         assert_inserted_at_position(3, a.emplace_hint(a.find(1), pair{0, 'b'}));
         assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {0, 'b'}, {1, 'x'}, {1, 'x'}}));
-        assert_inserted_at_position(4, a.insert(a.upper_bound(0), std::move(pair0c)));
+        assert_inserted_at_position(4, a.insert(a.upper_bound(0), move(pair0c)));
         assert(check_content(a, {{-1, 'x'}, {-1, 'x'}, {0, 'a'}, {0, 'b'}, {0, 'c'}, {1, 'x'}, {1, 'x'}}));
         // hint is correct
         assert_inserted_at_position(4, a.emplace_hint(a.upper_bound(0) - 1, 0, 'd'));
