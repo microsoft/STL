@@ -477,7 +477,7 @@ public:
     }
 
     _NODISCARD friend bool operator==(const _Derived& _Lhs, const _Derived& _Rhs) {
-        return _RANGES equal(_Lhs._Mycont, _Rhs._Mycont);
+        return _STD equal(_Lhs._Mycont.begin(), _Lhs._Mycont.end(), _Rhs._Mycont.begin(), _Rhs._Mycont.end());
     }
 
     _NODISCARD friend auto operator<=>(const _Derived& _Lhs, const _Derived& _Rhs) {
