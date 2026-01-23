@@ -463,7 +463,7 @@ void test_construction() {
     }
     {
         // Test flat_map(_Sorted_t, const key_cont&, const mapped_cont&, const key_comp&, const alloc&)
-        // and flat_map(_Sorted_t, const key_cont&, const mapped_cont&, const alloc&)
+        // and  flat_map(_Sorted_t, const key_cont&, const mapped_cont&, const alloc&)
         {
             KeyCont<int, MyAllocator<int>> keys    = {0, 1, 2, 3, 4};
             MappedCont<int, MyAllocator<int>> vals = {44, 2324, 635462, 433, 5};
@@ -624,7 +624,7 @@ void test_construction() {
     }
     {
         // Test flat_map(_Sorted_t, iter, iter, const key_comp&, const alloc&)
-        // and flat_map(_Sorted_t, iter, iter, const alloc&)
+        // and  flat_map(_Sorted_t, iter, iter, const alloc&)
         {
             almost_pair<int, int> value_types[]{{0, 44}, {1, 2324}, {2, 635462}, {3, 433}, {4, 5}};
 
