@@ -263,10 +263,9 @@ void test_construction() {
 
     {
         // Test flat_map() and flat_map(const key_compare&)
-        const less<int> compare;
         {
             flat_map<int, int> fmap;
-            flat_map<int, int> fmap1(compare);
+            flat_map<int, int> fmap1(less<int>{});
 
             assert(check_key_content(fmap, {}));
             assert(check_value_content(fmap, {}));
@@ -274,7 +273,7 @@ void test_construction() {
         }
         {
             flat_multimap<int, int> fmmap;
-            flat_multimap<int, int> fmmap1(compare);
+            flat_multimap<int, int> fmmap1(less<int>{});
 
             assert(check_key_content(fmmap, {}));
             assert(check_value_content(fmmap, {}));
