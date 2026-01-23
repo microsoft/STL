@@ -64,8 +64,7 @@ template <IsFlatMap T>
 [[nodiscard]] bool check_content(const T& obj, const type_identity_t<T>& expected) {
     assert_all_requirements(obj);
     if (!ranges::equal(obj, expected)) {
-        println(stderr, "Unexpected content!\nExpected {}", expected);
-        println(stderr, "Actual {}", obj);
+        println(stderr, "Unexpected content!\nExpected {}\nActual {}", expected, obj);
         return false;
     }
     return true;
