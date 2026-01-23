@@ -181,7 +181,7 @@ private:
 public:
     Packaged() : value() {}
     template <class U>
-        requires constructible_from<T, U&&>
+        requires constructible_from<T, U>
     Packaged(U&& u) : value(forward<U>(u)) {}
 
     T get() const {
