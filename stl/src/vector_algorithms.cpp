@@ -250,7 +250,7 @@ namespace {
     namespace _Rotating {
         // 'rotate' algorithm can be implemented:
         //  - using 'reverse' on the parts and the whole
-        //  - using repelated 'swap_ranges' repeatedly
+        //  - using 'swap_ranges' repeatedly
         // If both are vectorized, the latter is generally faster, due to not doing extra swizzling
         //
         // On top of swap ranges the following optimization are made:
