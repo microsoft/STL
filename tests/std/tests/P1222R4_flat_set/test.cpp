@@ -24,12 +24,11 @@
 #define TEST_ASSERT(...) assert((__VA_ARGS__))
 
 using namespace std;
-using namespace ranges;
 
 enum class iterator_pair_construction : bool { no_allocator, with_allocator };
 
 template <class R, class T>
-concept container_compatible_range = input_range<R> && convertible_to<range_reference_t<R>, T>;
+concept container_compatible_range = ranges::input_range<R> && convertible_to<ranges::range_reference_t<R>, T>;
 
 template <class T, class Alloc = allocator<T>,
     iterator_pair_construction Choice = iterator_pair_construction::with_allocator>
