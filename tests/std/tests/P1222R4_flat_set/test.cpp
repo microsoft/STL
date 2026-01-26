@@ -67,7 +67,7 @@ public:
     constexpr alternative_vector(allocator_arg_t, const type_identity_t<Alloc>& a, const alternative_vector& other)
         : base_type(other, a) {}
     constexpr alternative_vector(allocator_arg_t, const type_identity_t<Alloc>& a, alternative_vector&& other)
-        : base_type(std::move(other), a) {}
+        : base_type(move(other), a) {}
     constexpr explicit alternative_vector(initializer_list<T> il) : base_type(il) {}
 
     alternative_vector(const alternative_vector&) = default;
@@ -171,8 +171,8 @@ void assert_all_requirements_and_equals(
 
 template <class C>
 void test_constructors() {
-    using lt = std::less<int>;
-    using gt = std::greater<int>;
+    using lt = less<int>;
+    using gt = greater<int>;
 
     {
         // Test flat_set()
@@ -208,21 +208,21 @@ void test_constructors() {
     a = {1, 7, 7, 7, 2, 100, -1};
     assert_all_requirements_and_equals(a, {-1, 1, 2, 7, 100});
     assert_all_requirements_and_equals(flat_set<int>(a, allocator<int>{}), {-1, 1, 2, 7, 100});
-    assert_all_requirements_and_equals(flat_set<int>(std::move(a), allocator<int>{}), {-1, 1, 2, 7, 100});
+    assert_all_requirements_and_equals(flat_set<int>(move(a), allocator<int>{}), {-1, 1, 2, 7, 100});
     flat_multiset<int> b{};
     b = {1, 7, 7, 7, 2, 100, -1};
     assert_all_requirements_and_equals(b, {-1, 1, 2, 7, 7, 7, 100});
     assert_all_requirements_and_equals(flat_multiset<int>(b, allocator<int>{}), {-1, 1, 2, 7, 7, 7, 100});
-    assert_all_requirements_and_equals(flat_multiset<int>(std::move(b), allocator<int>{}), {-1, 1, 2, 7, 7, 7, 100});
+    assert_all_requirements_and_equals(flat_multiset<int>(move(b), allocator<int>{}), {-1, 1, 2, 7, 7, 7, 100});
 }
 
 template <iterator_pair_construction Choice>
 void test_allocator_extended_constructors() {
     using vec = alternative_vector<int, allocator<int>, Choice>;
     constexpr allocator<int> ator;
-    constexpr std::less<int> comp;
+    constexpr less<int> comp;
     {
-        using fs = flat_set<int, std::less<int>, vec>;
+        using fs = flat_set<int, less<int>, vec>;
 
         fs s{3, 7, 1, 85, 222, 1};
         fs s_expected{1, 3, 7, 85, 222};
@@ -233,7 +233,7 @@ void test_allocator_extended_constructors() {
 
         TEST_ASSERT(fs{s, ator} == s_expected);
         TEST_ASSERT(fs{s_expected, ator} == s_expected);
-        TEST_ASSERT(fs{std::move(s), ator} == s_expected);
+        TEST_ASSERT(fs{move(s), ator} == s_expected);
         TEST_ASSERT(fs{fs{s_expected}, ator} == s_expected);
 
         TEST_ASSERT(fs{v_raw, ator} == s_expected);
@@ -257,7 +257,7 @@ void test_allocator_extended_constructors() {
         }
     }
     {
-        using fms = flat_multiset<int, std::less<int>, vec>;
+        using fms = flat_multiset<int, less<int>, vec>;
 
         fms s{3, 7, 1, 85, 222, 1};
         fms s_expected{1, 1, 3, 7, 85, 222};
@@ -268,7 +268,7 @@ void test_allocator_extended_constructors() {
 
         TEST_ASSERT(fms{s, ator} == s_expected);
         TEST_ASSERT(fms{s_expected, ator} == s_expected);
-        TEST_ASSERT(fms{std::move(s), ator} == s_expected);
+        TEST_ASSERT(fms{move(s), ator} == s_expected);
         TEST_ASSERT(fms{fms{s_expected}, ator} == s_expected);
 
         TEST_ASSERT(fms{v_raw, ator} == s_expected);
@@ -311,7 +311,7 @@ void test_always_reversible() {
         using base::base;
     };
 
-    Set<int, std::greater<int>, not_reversible> fs({1, 2, 3});
+    Set<int, greater<int>, not_reversible> fs({1, 2, 3});
     assert_all_requirements_and_equals(fs, {3, 2, 1});
     assert(fs.rbegin() + 3 == fs.rend());
     assert(fs.crend() - fs.crbegin() == 3);
@@ -319,7 +319,7 @@ void test_always_reversible() {
 
 template <class C>
 void test_insert_1() {
-    using lt = std::less<int>;
+    using lt = less<int>;
 
     const vector<int> vec{0, 1, 2};
     {
@@ -374,7 +374,7 @@ void test_insert_1() {
 
 template <class C>
 void test_insert_2() {
-    using lt = std::less<int>;
+    using lt = less<int>;
 
     const int val = 1;
     {
@@ -403,7 +403,7 @@ void test_insert_2() {
     }
 
     // TRANSITION, too simple
-    using gt = std::greater<int>;
+    using gt = greater<int>;
     {
         flat_set<int, gt, C> a{0, 5};
         assert_all_requirements_and_equals(a, {5, 0});
@@ -417,7 +417,7 @@ void test_insert_2() {
 // Test that hint to emplace/insert is respected, when possible; check returned iterator
 template <class C>
 void test_insert_hint_is_respected() {
-    using lt = std::less<int>;
+    using lt = less<int>;
 
     {
         flat_multiset<int, lt, C> a{-1, -1, 1, 1};
@@ -621,7 +621,7 @@ void test_insert_upper_bound() {
 template <class T>
 void test_spaceship_operator() {
     static constexpr bool multi  = _Is_specialization_v<T, flat_multiset>;
-    static constexpr bool invert = is_same_v<typename T::key_compare, std::greater<typename T::key_type>>;
+    static constexpr bool invert = is_same_v<typename T::key_compare, greater<typename T::key_type>>;
 
     T a{3, 2, 2, 1};
     T b{1, 2, 3};
@@ -659,7 +659,7 @@ void test_non_static_comparer() {
     a.insert_range(vector{7, 7, 3, 3, 2});
     assert_all_requirements_and_equals(a, {9, 7, 5, 3, 2, -1});
 
-    a = std::move(aBackup);
+    a = move(aBackup);
     assert_all_requirements_and_equals(a, {1, 2, 3});
 
     a.insert(-100);
@@ -696,9 +696,9 @@ void test_extract_1() {
     };
 
     will_throw = false;
-    Set<int, std::less<int>, test_exception> fs{4, 3, 2, 1};
+    Set<int, less<int>, test_exception> fs{4, 3, 2, 1};
     assert_all_requirements_and_equals(fs, {1, 2, 3, 4});
-    auto extr = std::move(fs).extract();
+    auto extr = move(fs).extract();
     assert(ranges::equal(extr, vector{1, 2, 3, 4}));
     assert_all_requirements_and_equals(fs, {}); // assert empty
 
@@ -706,7 +706,7 @@ void test_extract_1() {
     assert_all_requirements_and_equals(fs, {1, 2, 3, 4});
     try {
         will_throw = true;
-        (void) std::move(fs).extract();
+        (void) move(fs).extract();
     } catch (...) {
         will_throw = false;
         assert_all_requirements_and_equals(fs, {}); // assert empty
@@ -736,9 +736,9 @@ void test_extract_2() {
         }
     };
 
-    Set<int, std::less<int>, always_copy> fs{4, 3, 2, 1};
+    Set<int, less<int>, always_copy> fs{4, 3, 2, 1};
     assert_all_requirements_and_equals(fs, {1, 2, 3, 4});
-    auto extr = std::move(fs).extract();
+    auto extr = move(fs).extract();
     assert(ranges::equal(extr, vector{1, 2, 3, 4}));
     assert_all_requirements_and_equals(fs, {}); // assert empty
 }
@@ -798,7 +798,7 @@ void test_invariant_robustness() {
         // this copy-assignment cannot provide strong-guarantee for `this`:
         odd_container& operator=(const odd_container& other) {
             resize(other.size());
-            std::copy(other.begin(), other.end(), begin());
+            copy(other.begin(), other.end(), begin());
             return *this;
         }
 
@@ -807,7 +807,7 @@ void test_invariant_robustness() {
         odd_container(odd_container&& other) {
             reserve(other.size());
             for (auto& e : other) {
-                push_back(std::move(e));
+                push_back(move(e));
             }
         }
 
@@ -815,7 +815,7 @@ void test_invariant_robustness() {
         // elements of `other` in moved-from state:
         odd_container& operator=(odd_container&& other) {
             resize(other.size());
-            std::move(other.begin(), other.end(), begin());
+            move(other.begin(), other.end(), begin());
             return *this;
         }
     };
@@ -846,7 +846,7 @@ void test_invariant_robustness() {
     {
         copy_limit = unlimited;
         SetT fs1{0, 1, 2, 3, 4};
-        SetT fs2{std::move(fs1)};
+        SetT fs2{move(fs1)};
 
         assert_all_requirements(fs1);
         assert(ranges::equal(fs2, vector{0, 1, 2, 3, 4}, {}, &odd_key::key));
@@ -854,7 +854,7 @@ void test_invariant_robustness() {
         bool caught = false;
         try {
             copy_limit = 2;
-            SetT fs3{std::move(fs2)}; // will throw after moving 2 odd_key.
+            SetT fs3{move(fs2)}; // will throw after moving 2 odd_key.
         } catch (...) {
             copy_limit = unlimited;
             assert_all_requirements(fs2);
@@ -868,7 +868,7 @@ void test_invariant_robustness() {
         SetT fs1{0, 1, 2, 3, 4};
         SetT fs2;
         SetT fs3{5, 6, 7, 8, 9};
-        fs2 = std::move(fs1);
+        fs2 = move(fs1);
 
         assert_all_requirements(fs1);
         assert(ranges::equal(fs2, vector{0, 1, 2, 3, 4}, {}, &odd_key::key));
@@ -877,7 +877,7 @@ void test_invariant_robustness() {
         bool caught = false;
         try {
             copy_limit = 2;
-            fs2        = std::move(fs3); // will throw after moving 2 odd_key.
+            fs2        = move(fs3); // will throw after moving 2 odd_key.
         } catch (...) {
             copy_limit = unlimited;
             assert_all_requirements(fs2);
@@ -912,14 +912,14 @@ template <class T>
 struct holder {
     T t;
     operator T() && {
-        return std::move(t);
+        return move(t);
     }
 };
 
 static_assert(is_convertible_v<holder<flat_set<int>::const_iterator>, flat_set<int>::const_iterator>);
 
 void test_erase_2() {
-    using C = flat_set<int, std::less<>>;
+    using C = flat_set<int, less<>>;
     C fs{0, 1, 2, 3};
     assert_all_requirements_and_equals(fs, {0, 1, 2, 3});
     // this should be allowed per P2077R3:
@@ -953,16 +953,16 @@ namespace detail {
     static_assert(same_as<C::size_type, decltype(declval<C>().erase(declval<int>()))>);
 
     // erase key_type
-    static_assert(can_erase_key<flat_set<int, std::less<int>>, int>);
-    static_assert(can_erase_key<flat_set<int, std::less<>>, int>);
+    static_assert(can_erase_key<flat_set<int, less<int>>, int>);
+    static_assert(can_erase_key<flat_set<int, less<>>, int>);
     static_assert(can_erase_key<flat_set<int, ranges::less>, int>);
     // erase wrapped key_type
-    static_assert(!can_erase_key<flat_set<int, std::less<int>>, holder<int>>);
-    static_assert(can_erase_key<flat_set<int, std::less<>>, holder<int>>);
+    static_assert(!can_erase_key<flat_set<int, less<int>>, holder<int>>);
+    static_assert(can_erase_key<flat_set<int, less<>>, holder<int>>);
     static_assert(can_erase_key<flat_set<int, ranges::less>, holder<int>>);
     // erase wrapped iterator - the member function template returning size_type must not be selected
-    static_assert(can_erase_iterator_holder<flat_set<int, std::less<int>>>);
-    static_assert(can_erase_iterator_holder<flat_set<int, std::less<>>>);
+    static_assert(can_erase_iterator_holder<flat_set<int, less<int>>>);
+    static_assert(can_erase_iterator_holder<flat_set<int, less<>>>);
     static_assert(can_erase_iterator_holder<flat_set<int, ranges::less>>);
 } // namespace detail
 
@@ -1244,12 +1244,12 @@ void test_non_strict_weak_order_compare() {
 void run_normal_tests() {
     test_spaceship_operator<flat_set<int>>();
     test_spaceship_operator<flat_multiset<int>>();
-    test_spaceship_operator<flat_set<int, std::greater<int>>>();
-    test_spaceship_operator<flat_multiset<int, std::greater<int>>>();
-    test_spaceship_operator<flat_set<int, std::less<int>, deque<int>>>();
-    test_spaceship_operator<flat_multiset<int, std::less<int>, deque<int>>>();
-    test_spaceship_operator<flat_set<int, std::greater<int>, deque<int>>>();
-    test_spaceship_operator<flat_multiset<int, std::greater<int>, deque<int>>>();
+    test_spaceship_operator<flat_set<int, greater<int>>>();
+    test_spaceship_operator<flat_multiset<int, greater<int>>>();
+    test_spaceship_operator<flat_set<int, less<int>, deque<int>>>();
+    test_spaceship_operator<flat_multiset<int, less<int>, deque<int>>>();
+    test_spaceship_operator<flat_set<int, greater<int>, deque<int>>>();
+    test_spaceship_operator<flat_multiset<int, greater<int>, deque<int>>>();
 
     test_constructors<vector<int>>();
     test_constructors<deque<int>>();
