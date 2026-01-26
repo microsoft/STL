@@ -462,7 +462,6 @@ void test_insert_hint_is_respected() {
     }
 }
 
-
 struct key_comparer {
     const auto& extract_key(const auto& obj) const {
         if constexpr (requires { obj.key; }) {
@@ -955,7 +954,6 @@ namespace detail {
     static_assert(can_erase_iterator_holder<flat_set<int, less<>>>);
     static_assert(can_erase_iterator_holder<flat_set<int, ranges::less>>);
 } // namespace detail
-
 
 template <class C>
 void test_erase_if() {
