@@ -3,12 +3,12 @@
 
 #include <algorithm>
 #include <cassert>
-#include <climits>
 #include <concepts>
 #include <cstdlib>
 #include <deque>
 #include <flat_set>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <print>
 #include <random>
@@ -735,7 +735,7 @@ void test_extract_2() {
 
 void test_invariant_robustness() {
     static int copy_limit   = 2;
-    constexpr int unlimited = INT_MAX;
+    constexpr int unlimited = (numeric_limits<int>::max)();
 
     struct odd_key {
         static void countdown() {
