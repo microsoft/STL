@@ -249,6 +249,7 @@ void test_allocator_extended_constructors() {
         vec v_raw{3, 7, 1, 85, 222, 1};
         vec v_sorted_unique{1, 3, 7, 85, 222};
 
+        TEST_ASSERT(fs{ator} == fs{});
         TEST_ASSERT(fs{comp, ator} == fs{});
 
         TEST_ASSERT(fs{s, ator} == s_expected);
@@ -284,6 +285,7 @@ void test_allocator_extended_constructors() {
         vec v_raw{3, 7, 1, 85, 222, 1};
         vec v_sorted_eq{1, 1, 3, 7, 85, 222};
 
+        TEST_ASSERT(fms{ator} == fms{});
         TEST_ASSERT(fms{comp, ator} == fms{});
 
         TEST_ASSERT(fms{s, ator} == s_expected);
