@@ -9,7 +9,6 @@
 #include <deque>
 #include <flat_set>
 #include <functional>
-#include <iostream>
 #include <memory>
 #include <print>
 #include <random>
@@ -146,17 +145,8 @@ template <class T>
 void assert_all_requirements_and_equals(const T& s, const initializer_list<typename T::value_type>& il) {
     assert_all_requirements(s);
 
-    if (!std::equal(s.begin(), s.end(), il.begin(), il.end())) {
-        cout << "Expected: {";
-        for (auto&& e : il) {
-            cout << e << ", ";
-        }
-        cout << "}" << endl;
-        cout << "Got:      {";
-        for (auto&& e : s) {
-            cout << e << ", ";
-        }
-        cout << "}" << endl;
+    if (!ranges::equal(s, il)) {
+        println("Unexpected content!\nExpected {}\nActual {}", il, s);
         assert(false);
     }
 }
