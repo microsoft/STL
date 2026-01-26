@@ -912,7 +912,7 @@ void test_erase_2() {
     using C = flat_set<int, less<>>;
     C fs{0, 1, 2, 3};
     assert_all_requirements_and_equals(fs, {0, 1, 2, 3});
-    // this should be allowed per P2077R3:
+    // this should be allowed per N5032 [associative.reqmts.general]/7.23.2 and /122-125:
     fs.erase(holder<C::const_iterator>{fs.cbegin()});
     assert_all_requirements_and_equals(fs, {1, 2, 3});
     fs.erase(holder<C::iterator>{fs.begin()});
