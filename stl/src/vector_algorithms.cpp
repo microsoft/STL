@@ -5270,7 +5270,7 @@ namespace {
                 }
             }
 
-            if ((_Size_bytes & size_t{0x10}) != 0) {
+            if ((_Size_bytes & size_t{0x10}) != 0) { // use original _Size_bytes; we've read only 32-byte chunks
                 const auto _Comparand = _Traits::_Set_neon_q(_Val);
                 auto _Count_vector    = _Traits::_Set_neon_q(0);
 
