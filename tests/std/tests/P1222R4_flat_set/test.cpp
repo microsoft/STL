@@ -1230,15 +1230,6 @@ void test_non_strict_weak_order_compare() {
 }
 
 void run_normal_tests() {
-    test_spaceship_operator<flat_set<int>>();
-    test_spaceship_operator<flat_multiset<int>>();
-    test_spaceship_operator<flat_set<int, greater<int>>>();
-    test_spaceship_operator<flat_multiset<int, greater<int>>>();
-    test_spaceship_operator<flat_set<int, less<int>, deque<int>>>();
-    test_spaceship_operator<flat_multiset<int, less<int>, deque<int>>>();
-    test_spaceship_operator<flat_set<int, greater<int>, deque<int>>>();
-    test_spaceship_operator<flat_multiset<int, greater<int>, deque<int>>>();
-
     test_constructors<vector<int>>();
     test_constructors<deque<int>>();
     test_allocator_extended_constructors<iterator_pair_construction::no_allocator>();
@@ -1253,11 +1244,20 @@ void run_normal_tests() {
     test_insert_2<deque<int>>();
     test_insert_hint_is_respected<vector<int>>();
     test_insert_hint_is_respected<deque<int>>();
+    test_comparer_application();
     test_insert_transparent();
     test_insert_using_invalid_hint();
     test_insert_upper_bound();
 
-    test_comparer_application();
+    test_spaceship_operator<flat_set<int>>();
+    test_spaceship_operator<flat_multiset<int>>();
+    test_spaceship_operator<flat_set<int, greater<int>>>();
+    test_spaceship_operator<flat_multiset<int, greater<int>>>();
+    test_spaceship_operator<flat_set<int, less<int>, deque<int>>>();
+    test_spaceship_operator<flat_multiset<int, less<int>, deque<int>>>();
+    test_spaceship_operator<flat_set<int, greater<int>, deque<int>>>();
+    test_spaceship_operator<flat_multiset<int, greater<int>, deque<int>>>();
+
     test_non_static_comparer();
 
     test_extract_1<flat_set>();
@@ -1265,9 +1265,9 @@ void run_normal_tests() {
     test_extract_2<flat_set>();
     test_extract_2<flat_multiset>();
 
+    test_invariant_robustness();
     test_erase_1();
     test_erase_2();
-    test_invariant_robustness();
 
     test_erase_if<flat_set<int>>();
     test_erase_if<flat_multiset<int>>();
