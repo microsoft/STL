@@ -5,10 +5,12 @@
 // Tests the new functions added as part of P0092R1, "Polishing Chrono"
 //
 
+#include <__msvc_int128.hpp> // an integer-class type should emulate an arithmetic type, see also GH-1919
 #include <cassert>
 #include <chrono>
 #include <cstdint>
 #include <ratio>
+#include <type_traits>
 
 using namespace std;
 using namespace std::chrono;
@@ -188,6 +190,75 @@ STATIC_ASSERT(floor<seconds>(tp1).time_since_epoch().count() == 1);
 STATIC_ASSERT(ceil<seconds>(tp1).time_since_epoch().count() == 2);
 STATIC_ASSERT(round<seconds>(tp1).time_since_epoch().count() == 2);
 
+// Test LWG-3090 "What is [time.duration.cons]/4's "no overflow is induced in the conversion" intended to mean?"
+constexpr bool test_lwg_3090() {
+    STATIC_ASSERT(is_constructible_v<duration<_Signed128>, seconds>);
+    STATIC_ASSERT(is_constructible_v<duration<_Signed128>, const seconds&>);
+    STATIC_ASSERT(is_convertible_v<seconds, duration<_Signed128>>);
+    STATIC_ASSERT(is_convertible_v<const seconds&, duration<_Signed128>>);
+
+    STATIC_ASSERT(!is_constructible_v<seconds, duration<_Signed128>>);
+    STATIC_ASSERT(!is_constructible_v<seconds, const duration<_Signed128>&>);
+    STATIC_ASSERT(!is_convertible_v<duration<_Signed128>, seconds>);
+    STATIC_ASSERT(!is_convertible_v<const duration<_Signed128>&, seconds>);
+
+    STATIC_ASSERT(is_constructible_v<duration<_Signed128>, minutes>);
+    STATIC_ASSERT(is_constructible_v<duration<_Signed128>, const minutes&>);
+    STATIC_ASSERT(is_convertible_v<minutes, duration<_Signed128>>);
+    STATIC_ASSERT(is_convertible_v<const minutes&, duration<_Signed128>>);
+
+    STATIC_ASSERT(!is_constructible_v<minutes, duration<_Signed128>>);
+    STATIC_ASSERT(!is_constructible_v<minutes, const duration<_Signed128>&>);
+    STATIC_ASSERT(!is_convertible_v<duration<_Signed128>, minutes>);
+    STATIC_ASSERT(!is_convertible_v<const duration<_Signed128>&, minutes>);
+
+    STATIC_ASSERT(!is_constructible_v<duration<_Signed128>, milliseconds>);
+    STATIC_ASSERT(!is_constructible_v<duration<_Signed128>, const milliseconds&>);
+    STATIC_ASSERT(!is_convertible_v<milliseconds, duration<_Signed128>>);
+    STATIC_ASSERT(!is_convertible_v<const milliseconds&, duration<_Signed128>>);
+
+    STATIC_ASSERT(!is_constructible_v<milliseconds, duration<_Signed128>>);
+    STATIC_ASSERT(!is_constructible_v<milliseconds, const duration<_Signed128>&>);
+    STATIC_ASSERT(!is_convertible_v<duration<_Signed128>, milliseconds>);
+    STATIC_ASSERT(!is_convertible_v<const duration<_Signed128>&, milliseconds>);
+
+    STATIC_ASSERT(is_constructible_v<duration<_Unsigned128>, seconds>);
+    STATIC_ASSERT(is_constructible_v<duration<_Unsigned128>, const seconds&>);
+    STATIC_ASSERT(is_convertible_v<seconds, duration<_Unsigned128>>);
+    STATIC_ASSERT(is_convertible_v<const seconds&, duration<_Unsigned128>>);
+
+    STATIC_ASSERT(!is_constructible_v<seconds, duration<_Unsigned128>>);
+    STATIC_ASSERT(!is_constructible_v<seconds, const duration<_Unsigned128>&>);
+    STATIC_ASSERT(!is_convertible_v<duration<_Unsigned128>, seconds>);
+    STATIC_ASSERT(!is_convertible_v<const duration<_Unsigned128>&, seconds>);
+
+    STATIC_ASSERT(is_constructible_v<duration<_Unsigned128>, minutes>);
+    STATIC_ASSERT(is_constructible_v<duration<_Unsigned128>, const minutes&>);
+    STATIC_ASSERT(is_convertible_v<minutes, duration<_Unsigned128>>);
+    STATIC_ASSERT(is_convertible_v<const minutes&, duration<_Unsigned128>>);
+
+    STATIC_ASSERT(!is_constructible_v<minutes, duration<_Unsigned128>>);
+    STATIC_ASSERT(!is_constructible_v<minutes, const duration<_Unsigned128>&>);
+    STATIC_ASSERT(!is_convertible_v<duration<_Unsigned128>, minutes>);
+    STATIC_ASSERT(!is_convertible_v<const duration<_Unsigned128>&, minutes>);
+
+    STATIC_ASSERT(!is_constructible_v<duration<_Unsigned128>, milliseconds>);
+    STATIC_ASSERT(!is_constructible_v<duration<_Unsigned128>, const milliseconds&>);
+    STATIC_ASSERT(!is_convertible_v<milliseconds, duration<_Unsigned128>>);
+    STATIC_ASSERT(!is_convertible_v<const milliseconds&, duration<_Unsigned128>>);
+
+    STATIC_ASSERT(!is_constructible_v<milliseconds, duration<_Unsigned128>>);
+    STATIC_ASSERT(!is_constructible_v<milliseconds, const duration<_Unsigned128>&>);
+    STATIC_ASSERT(!is_convertible_v<duration<_Unsigned128>, milliseconds>);
+    STATIC_ASSERT(!is_convertible_v<const duration<_Unsigned128>&, milliseconds>);
+
+    assert(duration<_Signed128>{seconds{1}}.count() == 1);
+    assert(duration<_Signed128>{minutes{12}}.count() == 720);
+    assert(duration<_Unsigned128>{seconds{123}}.count() == 123);
+    assert(duration<_Unsigned128>{minutes{1234}}.count() == 74040);
+
+    return true;
+}
 
 int overloaded(milliseconds) {
     return 11;
@@ -222,4 +293,7 @@ int main() {
     assert(overloaded(40ms) == 11);
     assert(overloaded(50s) == 22);
     assert(overloaded(duration<int, exa>(60)) == 33);
+
+    STATIC_ASSERT(test_lwg_3090());
+    test_lwg_3090();
 }
