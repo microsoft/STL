@@ -85,16 +85,6 @@ private:
     static constexpr const char* _Msg_not_sorted = _IsUnique ? "Input was not sorted-unique!" : "Input was not sorted!";
 
 public:
-    static_assert(same_as<_Kty, typename _Container::value_type>,
-        "key_type and container_type::value_type must be the same. "
-        "(N5032 [flat.set.overview]/8, [flat.multiset.overview]/8)");
-    static_assert(!_Is_vector_bool<_Container>,
-        "vector<bool> cannot be adapted because it is not a sequence container. "
-        "(N5032 [flat.set.overview]/7, [flat.multiset.overview]/7)");
-    static_assert(random_access_iterator<typename _Container::const_iterator>,
-        "Sequence containers must support random-access iterators in order to be adapted. "
-        "(N5032 [flat.set.overview]/7, [flat.multiset.overview]/7)");
-
     using key_type               = _Kty;
     using value_type             = _Kty;
     using key_compare            = _Keylt;
@@ -108,6 +98,16 @@ public:
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
     using reverse_iterator       = const_reverse_iterator;
     using container_type         = _Container;
+
+    static_assert(same_as<key_type, typename container_type::value_type>,
+        "key_type and container_type::value_type must be the same. "
+        "(N5032 [flat.set.overview]/8, [flat.multiset.overview]/8)");
+    static_assert(!_Is_vector_bool<container_type>,
+        "vector<bool> cannot be adapted because it is not a sequence container. "
+        "(N5032 [flat.set.overview]/7, [flat.multiset.overview]/7)");
+    static_assert(random_access_iterator<typename container_type::const_iterator>,
+        "Sequence containers must support random-access iterators in order to be adapted. "
+        "(N5032 [flat.set.overview]/7, [flat.multiset.overview]/7)");
 
     // [flat.set.cons] Constructors
     _Flat_set_base() : _Flat_set_base(key_compare()) {}
@@ -399,9 +399,10 @@ public:
         return _Ret;
     }
 
-    void swap(_Derived& _Other) noexcept(is_nothrow_swappable_v<_Container> && is_nothrow_swappable_v<_Keylt>) {
-        constexpr bool _Is_noexcept = is_nothrow_swappable_v<_Container> && is_nothrow_swappable_v<_Keylt>;
-        _Flat_set_swap_clear_guard<_Is_noexcept, _Container> _Guard{
+    void swap(_Derived& _Other)
+        noexcept(is_nothrow_swappable_v<container_type> && is_nothrow_swappable_v<key_compare>) {
+        constexpr bool _Is_noexcept = is_nothrow_swappable_v<container_type> && is_nothrow_swappable_v<key_compare>;
+        _Flat_set_swap_clear_guard<_Is_noexcept, container_type> _Guard{
             _STD addressof(_Mycont), _STD addressof(_Other._Mycont)};
         _RANGES swap(_Mycont, _Other._Mycont);
         _RANGES swap(_Mycomp, _Other._Mycomp);
@@ -623,7 +624,7 @@ private:
     void _Insert_range(_Rng&& _Range) {
         const size_type _Old_size = size();
         _Clear_guard _Guard{this};
-        if constexpr (_Has_guaranteed_append_range<_Container>) {
+        if constexpr (_Has_guaranteed_append_range<container_type>) {
             _Mycont.append_range(_STD forward<_Rng>(_Range));
         } else {
             _Mycont.insert_range(_Mycont.end(), _STD forward<_Rng>(_Range));

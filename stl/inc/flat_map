@@ -606,9 +606,10 @@ public:
     }
 
     void swap(_Derived& _Other)
-        noexcept(is_nothrow_swappable_v<_KeyContainer> && is_nothrow_swappable_v<_MappedContainer>
+        noexcept(is_nothrow_swappable_v<key_container_type> && is_nothrow_swappable_v<mapped_container_type>
                  && is_nothrow_swappable_v<key_compare>) {
-        constexpr bool _Is_noexcept = is_nothrow_swappable_v<_KeyContainer> && is_nothrow_swappable_v<_MappedContainer>
+        constexpr bool _Is_noexcept = is_nothrow_swappable_v<key_container_type>
+                                   && is_nothrow_swappable_v<mapped_container_type>
                                    && is_nothrow_swappable_v<key_compare>;
         auto& _Other_base = static_cast<_Flat_map_base&>(_Other);
         _Flat_map_swap_clear_guard<_Is_noexcept, containers> _Guard{
@@ -1150,13 +1151,13 @@ private:
         // Insert the new elements at the end
         for (; _First != _Last; ++_First) {
             value_type _Val = *_First;
-            if constexpr (_Has_guaranteed_push_back<_KeyContainer>) {
+            if constexpr (_Has_guaranteed_push_back<key_container_type>) {
                 _Data.keys.push_back(_STD move(_Val.first));
             } else {
                 _Data.keys.insert(_Data.keys.end(), _STD move(_Val.first));
             }
 
-            if constexpr (_Has_guaranteed_push_back<_MappedContainer>) {
+            if constexpr (_Has_guaranteed_push_back<mapped_container_type>) {
                 _Data.values.push_back(_STD move(_Val.second));
             } else {
                 _Data.values.insert(_Data.values.end(), _STD move(_Val.second));
