@@ -1048,7 +1048,7 @@ void test_set_operations() {
         // flat_set:
         assert_all_requirements_and_equals(fs, {2, 3, 8, 11, 20});
 
-        assert(fs.find(3) != fs.end());
+        assert(fs.find(3) == fs.begin() + 1);
         assert(fs.find(4) == fs.end());
 
         assert(fs.count(1) == 0);
@@ -1074,7 +1074,7 @@ void test_set_operations() {
         // flat_multiset:
         assert_all_requirements_and_equals(fs, {2, 3, 3, 8, 11, 11, 11, 20});
 
-        assert(fs.find(3) != fs.end());
+        assert(fs.find(3) == fs.begin() + 1);
         assert(fs.find(4) == fs.end());
 
         assert(fs.count(1) == 0);
@@ -1111,7 +1111,7 @@ void test_set_operations_transparent() {
     Set<int, key_comparator> fs{0, 3, 5};
     assert_all_requirements_and_equals(fs, {0, 3, 5});
 
-    assert(fs.find(shouldnt_convert{0}) != fs.end());
+    assert(fs.find(shouldnt_convert{0}) == fs.begin());
     assert(fs.count(shouldnt_convert{3}) == 1);
     assert(!fs.contains(shouldnt_convert{1}));
     assert(fs.lower_bound(shouldnt_convert{-1}) == fs.begin());
@@ -1236,7 +1236,7 @@ void test_non_strict_weak_order_compare() {
         assert(first == cont.begin());
         assert(last == cont.begin() + 2);
 
-        assert(cont.end() != cont.find(strange_int{1}));
+        assert(cont.begin() + 2 == cont.find(strange_int{1}));
         assert(cont.end() == cont.find(strange_int{3}));
 
         assert(2 == cont.erase(strange_int{0}));
@@ -1256,7 +1256,7 @@ void test_non_strict_weak_order_compare() {
         assert(first == cont.begin());
         assert(last == cont.begin() + 2);
 
-        assert(cont.end() != cont.find(strange_int{1}));
+        assert(cont.begin() + 2 == cont.find(strange_int{1}));
         assert(cont.end() == cont.find(strange_int{3}));
 
         assert(2 == cont.erase(strange_int{0}));
