@@ -1117,8 +1117,17 @@ void test_set_operations_transparent() {
     assert(fs.lower_bound(shouldnt_convert{-1}) == fs.begin());
     assert(fs.lower_bound(shouldnt_convert{8}) == fs.end());
     assert(fs.upper_bound(shouldnt_convert{2}) == fs.find(3));
-    auto [first, last] = fs.equal_range(shouldnt_convert{5});
-    assert(first + 1 == last);
+    assert(fs.equal_range(shouldnt_convert{5}) == (pair{fs.begin() + 2, fs.end()}));
+
+    // Also test const overloads:
+    const auto& cfs = fs;
+    assert(cfs.find(shouldnt_convert{0}) == cfs.begin());
+    assert(cfs.count(shouldnt_convert{3}) == 1);
+    assert(!cfs.contains(shouldnt_convert{1}));
+    assert(cfs.lower_bound(shouldnt_convert{-1}) == cfs.begin());
+    assert(cfs.lower_bound(shouldnt_convert{8}) == cfs.end());
+    assert(cfs.upper_bound(shouldnt_convert{2}) == cfs.find(3));
+    assert(cfs.equal_range(shouldnt_convert{5}) == (pair{cfs.begin() + 2, cfs.end()}));
 }
 
 namespace test_throwing_swap {
