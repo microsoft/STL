@@ -953,17 +953,16 @@ void test_erase_2() {
     assert_all_requirements_and_equals(fs, {3});
 }
 
-template <class Cont, class OtherKey>
-concept can_erase_key = requires(Cont c, OtherKey key) {
-    { c.erase(key) } -> same_as<typename Cont::size_type>;
-};
-template <class Cont>
-concept can_erase_iterator_holder = requires(Cont c) {
-    { c.erase(holder<typename Cont::const_iterator>{c.begin()}) } -> same_as<typename Cont::iterator>;
-};
-// Note that std::less<T> is not transparent, while std::less<> and ranges::less are
+namespace test_erase_compile_time {
+    template <class Cont, class OtherKey>
+    concept can_erase_key = requires(Cont c, OtherKey key) {
+        { c.erase(key) } -> same_as<typename Cont::size_type>;
+    };
+    template <class Cont>
+    concept can_erase_iterator_holder = requires(Cont c) {
+        { c.erase(holder<typename Cont::const_iterator>{c.begin()}) } -> same_as<typename Cont::iterator>;
+    };
 
-namespace detail {
     using C = flat_set<int>;
     static_assert(same_as<C::iterator, decltype(declval<C>().erase(declval<C::iterator>()))>);
     static_assert(same_as<C::iterator, decltype(declval<C>().erase(declval<holder<C::iterator>>()))>);
@@ -973,19 +972,23 @@ namespace detail {
     static_assert(same_as<C::size_type, decltype(declval<C>().erase(declval<holder<int>>()))>);
     static_assert(same_as<C::size_type, decltype(declval<C>().erase(declval<int>()))>);
 
+    // Note that std::less<T> is not transparent, while std::less<> and ranges::less are
+
     // erase key_type
     static_assert(can_erase_key<flat_set<int, less<int>>, int>);
     static_assert(can_erase_key<flat_set<int, less<>>, int>);
     static_assert(can_erase_key<flat_set<int, ranges::less>, int>);
+
     // erase wrapped key_type
     static_assert(!can_erase_key<flat_set<int, less<int>>, holder<int>>);
     static_assert(can_erase_key<flat_set<int, less<>>, holder<int>>);
     static_assert(can_erase_key<flat_set<int, ranges::less>, holder<int>>);
+
     // erase wrapped iterator - the member function template returning size_type must not be selected
     static_assert(can_erase_iterator_holder<flat_set<int, less<int>>>);
     static_assert(can_erase_iterator_holder<flat_set<int, less<>>>);
     static_assert(can_erase_iterator_holder<flat_set<int, ranges::less>>);
-} // namespace detail
+} // namespace test_erase_compile_time
 
 template <class C>
 void test_erase_if() {
