@@ -315,6 +315,48 @@ void test_allocator_extended_constructors() {
     }
 }
 
+template <class T>
+void test_iterators_and_capacity() {
+    T t{11, 22, 33, 44};
+    const T& c = t;
+
+    {
+        const int arr[]{11, 22, 33, 44};
+        assert(equal(t.begin(), t.end(), begin(arr), end(arr)));
+        assert(equal(c.begin(), c.end(), begin(arr), end(arr)));
+        assert(equal(t.cbegin(), t.cend(), begin(arr), end(arr)));
+        assert(equal(c.cbegin(), c.cend(), begin(arr), end(arr)));
+    }
+    {
+        const int rev[]{44, 33, 22, 11};
+        assert(equal(t.rbegin(), t.rend(), begin(rev), end(rev)));
+        assert(equal(c.rbegin(), c.rend(), begin(rev), end(rev)));
+        assert(equal(t.crbegin(), t.crend(), begin(rev), end(rev)));
+        assert(equal(c.crbegin(), c.crend(), begin(rev), end(rev)));
+    }
+
+    {
+        const T zero;
+
+        assert(!t.empty());
+        assert(zero.empty());
+
+        assert(t.size() == 4);
+        assert(zero.size() == 0);
+
+        assert(t.max_size() > 10);
+        assert(zero.max_size() > 10);
+    }
+
+    // Finally, test replace() and clear().
+    typename T::container_type primes{17, 29, 47};
+    t.replace(move(primes));
+    assert(t.size() == 3);
+    assert(*t.begin() == 17);
+    t.clear();
+    assert(t.empty());
+}
+
 template <template <class...> class Set>
 void test_always_reversible() {
     // Test that flat_meow is unconditionally reversible.
@@ -655,6 +697,12 @@ void test_spaceship_operator() {
 
     T f{1, 2, 3, 4};
     assert((f <=> a) == strong_ordering::greater);
+
+    // also test equality
+    assert(f == f);
+    assert(!(f != f));
+    assert(!(f == a));
+    assert(f != a);
 }
 
 template <class T>
@@ -1167,6 +1215,13 @@ void test_throwing_compare_single() {
     {
         set_type s1{{1, 2, 3}, comparator{false}};
         set_type s2{{4, 5, 6}, comparator{false}};
+        swap(s1, s2);
+        assert(ranges::equal(s1, initializer_list<int>{4, 5, 6}));
+        assert(ranges::equal(s2, initializer_list<int>{1, 2, 3}));
+    }
+    {
+        set_type s1{{1, 2, 3}, comparator{false}};
+        set_type s2{{4, 5, 6}, comparator{false}};
         ranges::swap(s1, s2);
         assert(ranges::equal(s1, initializer_list<int>{4, 5, 6}));
         assert(ranges::equal(s2, initializer_list<int>{1, 2, 3}));
@@ -1176,6 +1231,19 @@ void test_throwing_compare_single() {
         set_type s2{{4, 5, 6}, comparator{false}};
         try {
             s1.swap(s2);
+            assert(false);
+        } catch (const unique_exception&) {
+            assert(s1.empty());
+            assert(s2.empty());
+        } catch (...) {
+            assert(false);
+        }
+    }
+    {
+        set_type s1{{1, 2, 3}, comparator{true}};
+        set_type s2{{4, 5, 6}, comparator{false}};
+        try {
+            swap(s1, s2);
             assert(false);
         } catch (const unique_exception&) {
             assert(s1.empty());
@@ -1280,6 +1348,11 @@ void run_normal_tests() {
     test_constructors<deque<int>>();
     test_allocator_extended_constructors<iterator_pair_construction::no_allocator>();
     test_allocator_extended_constructors<iterator_pair_construction::with_allocator>();
+
+    test_iterators_and_capacity<flat_set<int>>();
+    test_iterators_and_capacity<flat_multiset<int>>();
+    test_iterators_and_capacity<flat_set<int, less<int>, deque<int>>>();
+    test_iterators_and_capacity<flat_multiset<int, less<int>, deque<int>>>();
 
     test_always_reversible<flat_set>();
     test_always_reversible<flat_multiset>();
