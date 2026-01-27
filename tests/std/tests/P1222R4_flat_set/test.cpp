@@ -577,11 +577,13 @@ void test_insert_transparent() {
 void test_insert_using_invalid_hint() {
     mt19937 eng(42);
 
-    uniform_int_distribution<int> dist_seq(0, 20);
-
     vector<int> seq(200);
-    for (auto& val : seq) {
-        val = dist_seq(eng);
+
+    {
+        uniform_int_distribution<int> dist_seq(0, 20);
+        for (auto& val : seq) {
+            val = dist_seq(eng);
+        }
     }
 
     {
