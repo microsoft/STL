@@ -188,7 +188,7 @@ void assert_three_way_comparability() {
     }
 }
 
-class key_comparer {
+class key_comparator {
 private:
     static const auto& extract_key(const auto& obj) {
         if constexpr (requires { obj.key; }) {

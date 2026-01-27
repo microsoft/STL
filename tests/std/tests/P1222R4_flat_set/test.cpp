@@ -509,15 +509,15 @@ void test_insert_hint_is_respected() {
     }
 }
 
-void test_comparer_application() {
-    // The set must rely on its comparer to do the comparisons.
+void test_comparator_application() {
+    // The set must rely on its comparator to do the comparisons.
     struct incomparable {
         int key;
         bool operator<(const incomparable&) const  = delete;
         bool operator==(const incomparable&) const = delete;
     };
 
-    flat_set<incomparable, key_comparer> fs{{0}, {3}, {1}, {0}, {5}};
+    flat_set<incomparable, key_comparator> fs{{0}, {3}, {1}, {0}, {5}};
     assert(fs.contains(0));
     assert(!fs.contains(2));
     fs.insert(fs.begin(), incomparable{4});
@@ -543,7 +543,7 @@ void test_insert_transparent() {
         }
     };
 
-    flat_set<int, key_comparer> fs{0, 3, 5};
+    flat_set<int, key_comparator> fs{0, 3, 5};
     assert_all_requirements_and_equals(fs, {0, 3, 5});
     detect_conversion detector{3};
 
@@ -628,13 +628,13 @@ void test_insert_upper_bound() {
         extra = e++;
     }
 
-    flat_multiset<test_position, key_comparer> fs;
+    flat_multiset<test_position, key_comparator> fs;
     for (const auto& val : seq) {
         fs.insert(val);
     }
 
     // The result should be identical to as if doing stable_sort on seq.
-    ranges::stable_sort(seq, key_comparer{});
+    ranges::stable_sort(seq, key_comparator{});
     assert(ranges::equal(fs, seq));
 }
 
@@ -659,7 +659,7 @@ void test_spaceship_operator() {
 }
 
 template <class T>
-struct proxy_comparer {
+struct proxy_comparator {
     bool operator()(const T& lhs, const T& rhs) const {
         return m_less ? (lhs < rhs) : (lhs > rhs);
     }
@@ -667,10 +667,10 @@ struct proxy_comparer {
     bool m_less = true;
 };
 
-void test_non_static_comparer() {
-    flat_set<int, proxy_comparer<int>> a{3, 2, 2, 1};
+void test_non_static_comparator() {
+    flat_set<int, proxy_comparator<int>> a{3, 2, 2, 1};
     assert_all_requirements_and_equals(a, {1, 2, 3});
-    auto b = flat_set<int, proxy_comparer<int>>({-1, 5, 9, 9, 9, 9, 9}, proxy_comparer<int>{.m_less = false});
+    auto b = flat_set<int, proxy_comparator<int>>({-1, 5, 9, 9, 9, 9, 9}, proxy_comparator<int>{.m_less = false});
     assert_all_requirements_and_equals(b, {9, 5, -1});
 
     auto aBackup = a;
@@ -840,7 +840,7 @@ void test_invariant_robustness() {
         }
     };
 
-    using SetT = flat_set<odd_key, key_comparer, odd_container>;
+    using SetT = flat_set<odd_key, key_comparator, odd_container>;
 
     // copy-assignment
     {
@@ -1104,7 +1104,7 @@ void test_set_operations_transparent() {
         }
     };
 
-    Set<int, key_comparer> fs{0, 3, 5};
+    Set<int, key_comparator> fs{0, 3, 5};
     assert_all_requirements_and_equals(fs, {0, 3, 5});
 
     assert(fs.find(shouldnt_convert{0}) != fs.end());
@@ -1275,7 +1275,7 @@ void run_normal_tests() {
     test_insert_2<deque<int>>();
     test_insert_hint_is_respected<vector<int>>();
     test_insert_hint_is_respected<deque<int>>();
-    test_comparer_application();
+    test_comparator_application();
     test_insert_transparent();
     test_insert_using_invalid_hint();
     test_insert_upper_bound();
@@ -1289,7 +1289,7 @@ void run_normal_tests() {
     test_spaceship_operator<flat_set<int, greater<int>, deque<int>>>();
     test_spaceship_operator<flat_multiset<int, greater<int>, deque<int>>>();
 
-    test_non_static_comparer();
+    test_non_static_comparator();
 
     test_extract_1<flat_set>();
     test_extract_1<flat_multiset>();

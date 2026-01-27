@@ -1172,7 +1172,7 @@ void test_map_operations_transparent() {
         }
     };
 
-    Map<int, char, key_comparer> fm{{0, 'a'}, {3, 'g'}, {5, 't'}};
+    Map<int, char, key_comparator> fm{{0, 'a'}, {3, 'g'}, {5, 't'}};
     assert(check_key_content(fm, {0, 3, 5}));
     assert(check_value_content(fm, {'a', 'g', 't'}));
 
