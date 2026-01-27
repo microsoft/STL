@@ -2256,4 +2256,46 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
+  <Type Name="std::extents&lt;*&gt;">
+    <DisplayString>{{ rank={_Rank}, rank_dynamic={_Rank_dynamic} }}</DisplayString>
+    <Expand>
+      <!-- Mixed static and dynamic extents -->
+      <CustomListItems Condition="_Rank != _Rank_dynamic" Optional="true">
+        <Variable Name="idx" InitialValue="0" />
+        <Variable Name="statptr" InitialValue="(const rank_type*) _Static_extents._Elems" />
+        <Variable Name="dynptr" InitialValue="($T1*) _Array._Elems" />
+        <Loop>
+          <Break Condition="idx == _Rank" />
+          <If Condition="*statptr == -1">
+            <Item Name="[{idx}] dynamic extent">*dynptr</Item>
+            <Exec>++dynptr</Exec>
+          </If>
+          <Item Condition="*statptr != -1" Name="[{idx}] static extent">($T1) *statptr</Item>
+          <Exec>++idx, ++statptr</Exec>
+        </Loop>
+      </CustomListItems>
+
+    <!-- Fully dynamic extents -->
+    <CustomListItems Condition="_Rank == _Rank_dynamic" Optional="true">
+      <Variable Name="idx" InitialValue="0" />
+      <Variable Name="dynptr" InitialValue="($T1*) _Array._Elems" />
+      <Loop>
+        <Break Condition="idx == _Rank_dynamic" />
+        <Item Name="[{idx}] dynamic extent">*dynptr</Item>
+        <Exec>++idx, ++dynptr</Exec>
+      </Loop>
+    </CustomListItems>
+
+    <!-- Fully static extents -->
+    <CustomListItems Condition="_Rank_dynamic == 0" Optional="true">
+      <Variable Name="idx" InitialValue="0" />
+      <Variable Name="statptr" InitialValue="(const rank_type*) _Static_extents._Elems" />
+      <Loop>
+        <Break Condition="idx == _Rank" />
+        <Item Name="[{idx}] static extent">($T1) *statptr</Item>
+        <Exec>++idx, ++statptr</Exec>
+      </Loop>
+    </CustomListItems>
+    </Expand>
+  </Type>
 </AutoVisualizer>
