@@ -574,9 +574,7 @@ void test_insert_transparent() {
     assert(detector.converted);
 }
 
-void test_insert_using_invalid_hint() {
-    mt19937 eng(42);
-
+void test_insert_using_invalid_hint(mt19937_64& eng) {
     vector<int> seq(200);
 
     {
@@ -613,7 +611,7 @@ void test_insert_using_invalid_hint() {
     }
 }
 
-void test_insert_upper_bound() {
+void test_insert_upper_bound(mt19937_64& eng) {
     // For flat_multiset's single-element insertion, the key should be inserted before the upper_bound.
     struct test_position {
         int key;
@@ -621,7 +619,6 @@ void test_insert_upper_bound() {
         bool operator==(const test_position&) const = default;
     };
 
-    mt19937 eng(24);
     uniform_int_distribution<int> dist_seq(0, 20);
 
     vector<test_position> seq(200);
@@ -1263,6 +1260,8 @@ void test_non_strict_weak_order_compare() {
 }
 
 void run_normal_tests() {
+    mt19937_64 eng(42);
+
     test_constructors<vector<int>>();
     test_constructors<deque<int>>();
     test_allocator_extended_constructors<iterator_pair_construction::no_allocator>();
@@ -1279,8 +1278,8 @@ void run_normal_tests() {
     test_insert_hint_is_respected<deque<int>>();
     test_comparator_application();
     test_insert_transparent();
-    test_insert_using_invalid_hint();
-    test_insert_upper_bound();
+    test_insert_using_invalid_hint(eng);
+    test_insert_upper_bound(eng);
 
     test_spaceship_operator<flat_set<int>>();
     test_spaceship_operator<flat_multiset<int>>();
