@@ -2369,25 +2369,29 @@ _STL_RESTORE_DEPRECATED_WARNING
 #define _UP _UPPER // 'A'-'Z'
 #define _XD _HEX // '0'-'9', 'A'-'F', 'a'-'f'
 
-_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT ctype_base // base for ctype
-    : locale::facet // TRANSITION, ABI, shouldn't be derived from locale::facet
-{
-    enum { // constants for character classifications
-        alnum  = _DI | _LO | _UP | _XA,
-        alpha  = _LO | _UP | _XA,
-        cntrl  = _BB,
-        digit  = _DI,
-        graph  = _DI | _LO | _PU | _UP | _XA,
-        lower  = _LO,
-        print  = _DI | _LO | _PU | _SP | _UP | _XA | _XD,
-        punct  = _PU,
-        space  = _CN | _SP,
-        upper  = _UP,
-        xdigit = _XD,
-        blank  = _CN | _SP
-    };
+struct _Ctype_constants_base {
     using mask = short; // to match <ctype.h>
 
+    // constants for character classifications
+
+    static constexpr mask alnum  = _DI | _LO | _UP | _XA;
+    static constexpr mask alpha  = _LO | _UP | _XA;
+    static constexpr mask cntrl  = _BB;
+    static constexpr mask digit  = _DI;
+    static constexpr mask graph  = _DI | _LO | _PU | _UP | _XA;
+    static constexpr mask lower  = _LO;
+    static constexpr mask print  = _DI | _LO | _PU | _SP | _UP | _XA | _XD;
+    static constexpr mask punct  = _PU;
+    static constexpr mask space  = _CN | _SP;
+    static constexpr mask upper  = _UP;
+    static constexpr mask xdigit = _XD;
+    static constexpr mask blank  = _CN | _SP;
+};
+
+_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT ctype_base // base for ctype
+    : locale::facet, // TRANSITION, ABI, shouldn't be derived from locale::facet
+      _Ctype_constants_base // TRANSITION, ABI, avoid affecting DLL interface
+{
     __CLR_OR_THIS_CALL ctype_base(size_t _Refs = 0) noexcept // strengthened
         : locale::facet(_Refs) {}
 
