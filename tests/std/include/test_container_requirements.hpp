@@ -187,3 +187,19 @@ void assert_three_way_comparability() {
         static_assert(std::three_way_comparable<T>);
     }
 }
+
+struct key_comparer {
+    const auto& extract_key(const auto& obj) const {
+        if constexpr (requires { obj.key; }) {
+            return obj.key;
+        } else {
+            return obj;
+        }
+    }
+
+    bool operator()(const auto& lhs, const auto& rhs) const {
+        return extract_key(lhs) < extract_key(rhs);
+    }
+
+    using is_transparent = int;
+};

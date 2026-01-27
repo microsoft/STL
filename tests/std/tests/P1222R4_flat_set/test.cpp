@@ -509,22 +509,6 @@ void test_insert_hint_is_respected() {
     }
 }
 
-struct key_comparer {
-    const auto& extract_key(const auto& obj) const {
-        if constexpr (requires { obj.key; }) {
-            return obj.key;
-        } else {
-            return obj;
-        }
-    }
-
-    bool operator()(const auto& lhs, const auto& rhs) const {
-        return extract_key(lhs) < extract_key(rhs);
-    }
-
-    using is_transparent = int;
-};
-
 void test_comparer_application() {
     // The set must rely on its comparer to do the comparisons.
     struct incomparable {

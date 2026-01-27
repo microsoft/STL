@@ -233,22 +233,6 @@ struct MyAllocatorCounter {
     size_t activeAllocations;
 };
 
-struct key_comparer {
-    const auto& extract_key(const auto& obj) const {
-        if constexpr (requires { obj.key; }) {
-            return obj.key;
-        } else {
-            return obj;
-        }
-    }
-
-    bool operator()(const auto& lhs, const auto& rhs) const {
-        return extract_key(lhs) < extract_key(rhs);
-    }
-
-    using is_transparent = int;
-};
-
 template <template <class...> class KeyCont, template <class...> class MappedCont>
 void test_construction() {
     // Using CTAD, the given MyAllocator is only used by the container when the constructor (deduction guide)
