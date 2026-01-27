@@ -669,7 +669,7 @@ struct proxy_comparator {
 void test_non_static_comparator() {
     flat_set<int, proxy_comparator<int>> a{3, 2, 2, 1};
     assert_all_requirements_and_equals(a, {1, 2, 3});
-    auto b = flat_set<int, proxy_comparator<int>>({-1, 5, 9, 9, 9, 9, 9}, proxy_comparator<int>{.m_less = false});
+    flat_set<int, proxy_comparator<int>> b({-1, 5, 9, 9, 9, 9, 9}, proxy_comparator<int>{.m_less = false});
     assert_all_requirements_and_equals(b, {9, 5, -1});
 
     auto aBackup = a;
