@@ -188,8 +188,9 @@ void assert_three_way_comparability() {
     }
 }
 
-struct key_comparer {
-    const auto& extract_key(const auto& obj) const {
+class key_comparer {
+private:
+    static const auto& extract_key(const auto& obj) {
         if constexpr (requires { obj.key; }) {
             return obj.key;
         } else {
@@ -197,6 +198,7 @@ struct key_comparer {
         }
     }
 
+public:
     bool operator()(const auto& lhs, const auto& rhs) const {
         return extract_key(lhs) < extract_key(rhs);
     }
