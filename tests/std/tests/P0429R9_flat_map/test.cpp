@@ -233,22 +233,6 @@ struct MyAllocatorCounter {
     size_t activeAllocations;
 };
 
-struct key_comparer {
-    const auto& extract_key(const auto& obj) const {
-        if constexpr (requires { obj.key; }) {
-            return obj.key;
-        } else {
-            return obj;
-        }
-    }
-
-    bool operator()(const auto& lhs, const auto& rhs) const {
-        return extract_key(lhs) < extract_key(rhs);
-    }
-
-    using is_transparent = int;
-};
-
 template <template <class...> class KeyCont, template <class...> class MappedCont>
 void test_construction() {
     // Using CTAD, the given MyAllocator is only used by the container when the constructor (deduction guide)
@@ -1188,7 +1172,7 @@ void test_map_operations_transparent() {
         }
     };
 
-    Map<int, char, key_comparer> fm{{0, 'a'}, {3, 'g'}, {5, 't'}};
+    Map<int, char, key_comparator> fm{{0, 'a'}, {3, 'g'}, {5, 't'}};
     assert(check_key_content(fm, {0, 3, 5}));
     assert(check_value_content(fm, {'a', 'g', 't'}));
 
@@ -1511,61 +1495,48 @@ void test_death_insert_unsorted_initializer_list() {
     cont.insert(sorted, {{137, 'a'}, {42, 'g'}, {3337, 'f'}, {15, 'r'}});
 }
 
-template <cont_type type>
 void test_death_construct_duplicates_initializer_list() {
-    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
-    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
-    C cont(sorted, {{42, 'a'}, {137, 'g'}, {137, 'f'}, {3337, 'r'}});
+    using C = flat_map<int, char>;
+    C cont(sorted_unique, {{42, 'a'}, {137, 'g'}, {137, 'f'}, {3337, 'r'}});
 }
 
-template <cont_type type>
 void test_death_construct_duplicates_iter_iter() {
-    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
-    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
-    vector<typename C::value_type> values{{42, 'a'}, {137, 'g'}, {137, 'f'}, {3337, 'r'}};
-    C cont(sorted, values.begin(), values.end());
+    using C = flat_map<int, char>;
+    vector<C::value_type> values{{42, 'a'}, {137, 'g'}, {137, 'f'}, {3337, 'r'}};
+    C cont(sorted_unique, values.begin(), values.end());
 }
 
-template <cont_type type>
 void test_death_construct_duplicates_container() {
-    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
-    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
-    typename C::key_container_type keys{42, 137, 137, 3337};
-    typename C::mapped_container_type mapped{'a', 'g', 'f', 'r'};
-    C cont(sorted, keys, mapped);
+    using C = flat_map<int, char>;
+    C::key_container_type keys{42, 137, 137, 3337};
+    C::mapped_container_type mapped{'a', 'g', 'f', 'r'};
+    C cont(sorted_unique, keys, mapped);
 }
 
-template <cont_type type>
 void test_death_replace_duplicates_container() {
-    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
+    using C = flat_map<int, char>;
     C cont;
     cont.replace({42, 137, 137, 3337}, {'a', 'g', 'f', 'r'});
 }
 
-template <cont_type type>
 void test_death_insert_duplicates_iter_iter() {
-    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
-    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
-    vector<typename C::value_type> values{{42, 'a'}, {137, 'g'}, {137, 'f'}, {3337, 'r'}};
+    using C = flat_map<int, char>;
+    vector<C::value_type> values{{42, 'a'}, {137, 'g'}, {137, 'f'}, {3337, 'r'}};
     C cont;
-    cont.insert(sorted, values.begin(), values.end());
+    cont.insert(sorted_unique, values.begin(), values.end());
 }
 
-template <cont_type type>
 void test_death_insert_duplicates_range() {
-    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
-    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
-    vector<typename C::value_type> values{{42, 'a'}, {137, 'g'}, {137, 'f'}, {3337, 'r'}};
+    using C = flat_map<int, char>;
+    vector<C::value_type> values{{42, 'a'}, {137, 'g'}, {137, 'f'}, {3337, 'r'}};
     C cont;
-    cont.insert_range(sorted, values);
+    cont.insert_range(sorted_unique, values);
 }
 
-template <cont_type type>
 void test_death_insert_duplicates_initializer_list() {
-    using C = conditional_t<type == cont_type::unique, flat_map<int, char>, flat_multimap<int, char>>;
-    const conditional_t<type == cont_type::unique, sorted_unique_t, sorted_equivalent_t> sorted;
+    using C = flat_map<int, char>;
     C cont;
-    cont.insert(sorted, {{42, 'a'}, {137, 'g'}, {137, 'f'}, {3337, 'r'}});
+    cont.insert(sorted_unique, {{42, 'a'}, {137, 'g'}, {137, 'f'}, {3337, 'r'}});
 }
 
 template <cont_type type>
@@ -1640,13 +1611,13 @@ int main(int argc, char* argv[]) {
         test_death_insert_unsorted_initializer_list<cont_type::multi>,
 
         // Tests shared between flat_set and flat_map - violation of unique elements
-        test_death_construct_duplicates_initializer_list<cont_type::unique>,
-        test_death_construct_duplicates_iter_iter<cont_type::unique>,
-        test_death_construct_duplicates_container<cont_type::unique>,
-        test_death_replace_duplicates_container<cont_type::unique>,
-        test_death_insert_duplicates_iter_iter<cont_type::unique>,
-        test_death_insert_duplicates_range<cont_type::unique>,
-        test_death_insert_duplicates_initializer_list<cont_type::unique>,
+        test_death_construct_duplicates_initializer_list,
+        test_death_construct_duplicates_iter_iter,
+        test_death_construct_duplicates_container,
+        test_death_replace_duplicates_container,
+        test_death_insert_duplicates_iter_iter,
+        test_death_insert_duplicates_range,
+        test_death_insert_duplicates_initializer_list,
 
         // Tests not present in flat_set - mismatch of length of key and mapped containers
         test_death_different_size_ctor<cont_type::unique>,
