@@ -913,7 +913,7 @@ void test_erase_1() {
     flat_set<int> fs{1};
     assert(1 == fs.erase(1));
     assert_all_requirements_and_equals(fs, {});
-    int numbers[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    const int numbers[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     fs.insert_range(numbers);
     assert_all_requirements_and_equals(fs, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
     fs.insert_range(numbers);
