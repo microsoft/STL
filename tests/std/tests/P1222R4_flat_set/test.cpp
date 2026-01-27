@@ -424,15 +424,30 @@ void test_insert_2() {
         assert_all_requirements_and_equals(a, {0, 0, 0, 1, 5, 6});
     }
 
-    // TRANSITION, too simple
     using gt = greater<int>;
     {
-        flat_set<int, gt, C> a{0, 5};
-        assert_all_requirements_and_equals(a, {5, 0});
-        a.insert(a.begin(), 3);
-        assert_all_requirements_and_equals(a, {5, 3, 0});
-        a.insert(a.end(), 4);
-        assert_all_requirements_and_equals(a, {5, 4, 3, 0});
+        flat_set<int, gt, C> a{5, 7, 9};
+        assert_all_requirements_and_equals(a, {9, 7, 5});
+        a.emplace_hint(a.end());
+        assert_all_requirements_and_equals(a, {9, 7, 5, 0});
+        a.emplace_hint(a.begin() + 1, 8);
+        assert_all_requirements_and_equals(a, {9, 8, 7, 5, 0});
+        a.insert(a.begin() + 3, 6);
+        assert_all_requirements_and_equals(a, {9, 8, 7, 6, 5, 0});
+        a.insert(a.end() - 1, val);
+        assert_all_requirements_and_equals(a, {9, 8, 7, 6, 5, 1, 0});
+    }
+    {
+        flat_multiset<int, gt, C> a{3, 1, 4, 1, 5, 9};
+        assert_all_requirements_and_equals(a, {9, 5, 4, 3, 1, 1});
+        a.emplace_hint(a.end());
+        assert_all_requirements_and_equals(a, {9, 5, 4, 3, 1, 1, 0});
+        a.emplace_hint(a.begin() + 2, 4);
+        assert_all_requirements_and_equals(a, {9, 5, 4, 4, 3, 1, 1, 0});
+        a.insert(a.begin() + 1, 6);
+        assert_all_requirements_and_equals(a, {9, 6, 5, 4, 4, 3, 1, 1, 0});
+        a.insert(a.end() - 3, val);
+        assert_all_requirements_and_equals(a, {9, 6, 5, 4, 4, 3, 1, 1, 1, 0});
     }
 }
 
