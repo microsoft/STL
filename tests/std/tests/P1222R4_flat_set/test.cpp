@@ -814,15 +814,15 @@ void test_invariant_robustness() {
         using base::base;
         odd_container(const odd_container&) = default;
 
-        // this copy-assignment cannot provide strong-guarantee for `this`:
+        // this copy assignment operator cannot provide the strong guarantee for `this`:
         odd_container& operator=(const odd_container& other) {
             resize(other.size());
             copy(other.begin(), other.end(), begin());
             return *this;
         }
 
-        // this move-ctor cannot provide strong-guarantee for `other`, and even successful, will leave elements of
-        // `other` in moved-from state:
+        // this move ctor cannot provide the strong guarantee for `other`,
+        // and even if it is successful, it will leave the elements of `other` in a moved-from state:
         odd_container(odd_container&& other) {
             reserve(other.size());
             for (auto& e : other) {
@@ -830,8 +830,8 @@ void test_invariant_robustness() {
             }
         }
 
-        // this move-assignment cannot provide strong-guarantee for `this` and `other`, and even successful, will leave
-        // elements of `other` in moved-from state:
+        // this move assignment operator cannot provide the strong guarantee for `this` and `other`,
+        // and even if it is successful, it will leave the elements of `other` in a moved-from state:
         odd_container& operator=(odd_container&& other) {
             resize(other.size());
             move(other.begin(), other.end(), begin());
@@ -841,7 +841,7 @@ void test_invariant_robustness() {
 
     using SetT = flat_set<odd_key, key_comparator, odd_container>;
 
-    // copy-assignment
+    // copy assignment
     {
         copy_limit = unlimited;
         SetT fs1{0, 1, 2, 3, 4};
@@ -861,7 +861,8 @@ void test_invariant_robustness() {
         }
         assert(caught);
     }
-    // move-ctor
+
+    // move ctor
     {
         copy_limit = unlimited;
         SetT fs1{0, 1, 2, 3, 4};
@@ -881,7 +882,8 @@ void test_invariant_robustness() {
         }
         assert(caught);
     }
-    // move-assignment
+
+    // move assignment
     {
         copy_limit = unlimited;
         SetT fs1{0, 1, 2, 3, 4};
@@ -959,7 +961,7 @@ template <class Cont>
 concept can_erase_iterator_holder = requires(Cont c) {
     { c.erase(holder<typename Cont::const_iterator>{c.begin()}) } -> same_as<typename Cont::iterator>;
 };
-// Note that std::less<T> is not transparent, std::less<> and ranges::less are
+// Note that std::less<T> is not transparent, while std::less<> and ranges::less are
 
 namespace detail {
     using C = flat_set<int>;
