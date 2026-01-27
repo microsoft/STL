@@ -575,19 +575,19 @@ public:
     }
 
     _NODISCARD reverse_iterator rbegin() noexcept {
-        return _STD make_reverse_iterator(end());
+        return reverse_iterator{end()};
     }
 
     _NODISCARD const_reverse_iterator rbegin() const noexcept {
-        return _STD make_reverse_iterator(end());
+        return const_reverse_iterator{end()};
     }
 
     _NODISCARD reverse_iterator rend() noexcept {
-        return _STD make_reverse_iterator(begin());
+        return reverse_iterator{begin()};
     }
 
     _NODISCARD const_reverse_iterator rend() const noexcept {
-        return _STD make_reverse_iterator(begin());
+        return const_reverse_iterator{begin()};
     }
 
     _NODISCARD const_iterator cbegin() const noexcept {
@@ -599,11 +599,11 @@ public:
     }
 
     _NODISCARD const_reverse_iterator crbegin() const noexcept {
-        return _STD make_reverse_iterator(cend());
+        return const_reverse_iterator{cend()};
     }
 
     _NODISCARD const_reverse_iterator crend() const noexcept {
-        return _STD make_reverse_iterator(cbegin());
+        return const_reverse_iterator{cbegin()};
     }
 
     void swap(_Derived& _Other)
