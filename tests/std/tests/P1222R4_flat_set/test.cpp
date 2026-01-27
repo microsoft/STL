@@ -580,14 +580,14 @@ void test_insert_using_invalid_hint() {
     uniform_int_distribution<int> dist_seq(0, 20);
 
     vector<int> seq(200);
-    for (int& val : seq) {
+    for (auto& val : seq) {
         val = dist_seq(eng);
     }
 
     {
         flat_multiset<int> with_hint;
         flat_multiset<int> no_hint;
-        for (const int val : seq) {
+        for (const auto& val : seq) {
             uniform_int_distribution<int> dist_idx(0, static_cast<int>(with_hint.size()));
             auto random_hint = with_hint.begin() + dist_idx(eng);
             with_hint.insert(random_hint, val);
@@ -600,7 +600,7 @@ void test_insert_using_invalid_hint() {
     {
         flat_set<int> with_hint;
         flat_set<int> no_hint;
-        for (const int val : seq) {
+        for (const auto& val : seq) {
             uniform_int_distribution<int> dist_idx(0, static_cast<int>(with_hint.size()));
             auto random_hint = with_hint.begin() + dist_idx(eng);
             with_hint.insert(random_hint, val);
