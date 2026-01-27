@@ -636,7 +636,7 @@ public:
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return _STD min(_Data.keys.max_size(), _Data.values.max_size());
+        return (_STD min) (_Data.keys.max_size(), _Data.values.max_size());
     }
 
     // [flat.map.modifiers] Modifiers
