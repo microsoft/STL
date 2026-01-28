@@ -1005,16 +1005,6 @@ protected:
         _Guard._Target = nullptr;
     }
 
-    template <class _KeyTy1, class _KeyTy2>
-    _NODISCARD bool _Key_equal(_KeyTy1&& _Left, _KeyTy2&& _Right) const {
-        _STL_INTERNAL_STATIC_ASSERT(
-            (is_same_v<remove_cvref_t<_KeyTy1>, key_type> && is_same_v<remove_cvref_t<_KeyTy2>, key_type>)
-            || (is_constructible_v<key_type, _KeyTy1> && is_constructible_v<key_type, _KeyTy2>
-                && _Transparent<key_compare>) );
-        return !_Key_compare(_STD forward<_KeyTy1>(_Left), _STD forward<_KeyTy2>(_Right))
-            && !_Key_compare(_STD forward<_KeyTy2>(_Right), _STD forward<_KeyTy1>(_Left));
-    }
-
 private:
     // typename is a workaround for VSO-2680018 (EDG)
     template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
