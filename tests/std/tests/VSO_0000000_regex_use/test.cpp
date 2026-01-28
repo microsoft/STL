@@ -2437,6 +2437,8 @@ void test_gh_6022() {
     g_regexTester.should_not_match(
         "bacabcdacdabbaddabbcdcdba", R"((?:(?:([abc])([abc]))*d)*cabcdacdabbaddabbcdcd\1\2)");
     g_regexTester.should_match("bacabcdacdabbaddabbcdcd", R"((?:(?:([abc])([abc]))*d)*bacabcdacdabbaddabbcdcd\1\2)");
+
+    g_regexTester.should_match("abaaacaabaaaadab", R"((?:(a*)b(\1*)a*c)+aabaaaad\2b)");
 }
 
 int main() {
