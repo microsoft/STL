@@ -16,6 +16,11 @@
 #include <unordered_set>
 #include <vector>
 
+#if _HAS_CXX23
+#include <flat_map>
+#include <flat_set>
+#endif // _HAS_CXX23
+
 using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
@@ -31,11 +36,19 @@ void assert_range_for_impl(Range& c) {
     for (auto&& val : c) {
         STATIC_ASSERT(is_same_v<remove_reference_t<decltype(val)>, remove_reference_t<decltype(*b)>>);
         assert(b != c.end());
-        if (is_same_v<remove_const_t<Range>, vector<bool>>) {
-            assert(*b == val);
-        } else {
-            assert_same_address(*b, val);
-        }
+
+        using RC = remove_const_t<Range>;
+#if _HAS_CXX23
+        if constexpr (_Is_specialization_v<RC, flat_map> || _Is_specialization_v<RC, flat_multimap>) {
+            assert_same_address(b->first, val.first);
+            assert_same_address(b->second, val.second);
+        } else
+#endif // _HAS_CXX23
+            if (is_same_v<RC, vector<bool>>) {
+                assert(*b == val);
+            } else {
+                assert_same_address(*b, val);
+            }
 
         ++b;
     }
@@ -152,11 +165,19 @@ int main() {
     test_case_set_container<set>();
     test_case_set_container<unordered_multiset>();
     test_case_set_container<unordered_set>();
+#if _HAS_CXX23
+    test_case_set_container<flat_set>();
+    test_case_set_container<flat_multiset>();
+#endif // _HAS_CXX23
 
     test_case_map_container<map>();
     test_case_map_container<multimap>();
     test_case_map_container<unordered_map>();
     test_case_map_container<unordered_multimap>();
+#if _HAS_CXX23
+    test_case_map_container<flat_map>();
+    test_case_map_container<flat_multimap>();
+#endif // _HAS_CXX23
 
     cmatch matchResults;
     assert_range_for(matchResults);

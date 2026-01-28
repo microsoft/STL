@@ -27,6 +27,11 @@
 #include <valarray>
 #include <vector>
 
+#if _HAS_CXX23
+#include <flat_map>
+#include <flat_set>
+#endif // _HAS_CXX23
+
 #include <range_algorithm_support.hpp>
 
 // Note that many tests herein assume:
@@ -906,6 +911,14 @@ static_assert(test_std_container<std::unordered_set<int>, std::bidirectional_ite
 static_assert(test_std_container<std::vector<int>, std::contiguous_iterator_tag>());
 static_assert(test_std_container<std::vector<bool>, std::random_access_iterator_tag>());
 static_assert(test_std_container<std::wstring, std::contiguous_iterator_tag>());
+
+#if _HAS_CXX23
+static_assert(test_std_container<std::flat_map<int, int>, std::random_access_iterator_tag>());
+static_assert(test_std_container<std::flat_multimap<int, int>, std::random_access_iterator_tag>());
+// FIXME: Should `flat_(multi)set` iterators model `contiguous_iterator` concept when underlying does?
+// static_assert(test_std_container<std::flat_set<int>, std::random_access_iterator_tag>());
+// static_assert(test_std_container<std::flat_multiset<int>, std::random_access_iterator_tag>());
+#endif // _HAS_CXX23
 
 // Validate that "old" fancy pointers that fail to model contiguous_iterator don't break contiguity of containers.
 template <class T>
