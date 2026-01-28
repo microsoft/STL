@@ -696,7 +696,7 @@ public:
 
     void replace(key_container_type&& _Key_cont, mapped_container_type&& _Mapped_cont) {
         _STL_ASSERT(_Key_cont.size() == _Mapped_cont.size(), "key_cont.size() != mapped_cont.size()");
-        _STL_ASSERT(_Is_sorted_and_unique(_Key_cont), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_and_unique(_Key_cont.begin(), _Key_cont.end()), _Msg_not_sorted);
         _Clear_guard _Guard{this};
         _Data.keys     = _STD move(_Key_cont);
         _Data.values   = _STD move(_Mapped_cont);
@@ -1045,14 +1045,16 @@ private:
             _Mutating_iterator{_Data.keys.end(), _Data.values.end()}};
     }
 
+#ifdef _ENABLE_STL_INTERNAL_CHECK
 public:
+#else
+private:
+#endif
     _NODISCARD bool _Is_sorted_and_unique() const {
-        return _Is_sorted_and_unique(_Data.keys);
+        return _Is_sorted_and_unique(_Data.keys.begin(), _Data.keys.end());
     }
 
 private:
-    using _Value_compare_to_pass = _Value_compare_to_pass_in_flat_map<_Compare, _Key, _Mapped>;
-
     _NODISCARD bool _Is_sorted_and_unique(
         const key_container_type::const_iterator _It, const key_container_type::const_iterator _End) const {
         if constexpr (_IsUnique) {
@@ -1064,9 +1066,7 @@ private:
         }
     }
 
-    _NODISCARD bool _Is_sorted_and_unique(const key_container_type& _Cont) const {
-        return _Is_sorted_and_unique(_Cont.begin(), _Cont.end());
-    }
+    using _Value_compare_to_pass = _Value_compare_to_pass_in_flat_map<_Compare, _Key, _Mapped>;
 
     void _Make_invariants_fulfilled() {
         if (empty()) {

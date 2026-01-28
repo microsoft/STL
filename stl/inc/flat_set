@@ -384,7 +384,7 @@ public:
     }
 
     void replace(container_type&& _Cont) {
-        _STL_ASSERT(_Is_sorted_and_unique(_Cont), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_and_unique(_Cont.begin(), _Cont.end()), _Msg_not_sorted);
         _Clear_guard _Guard{this};
         _Mycont        = _STD move(_Cont);
         _Guard._Target = nullptr;
@@ -505,8 +505,13 @@ public:
         _Lhs.swap(_Rhs);
     }
 
+#ifdef _ENABLE_STL_INTERNAL_CHECK
+public:
+#else
+private:
+#endif
     _NODISCARD bool _Is_sorted_and_unique() const {
-        return _Is_sorted_and_unique(_Mycont);
+        return _Is_sorted_and_unique(_Mycont.begin(), _Mycont.end());
     }
 
 private:
@@ -518,10 +523,6 @@ private:
         } else {
             return _STD is_sorted(_It, _End, _Pass_comp());
         }
-    }
-
-    _NODISCARD bool _Is_sorted_and_unique(const container_type& _Cont) const {
-        return _Is_sorted_and_unique(_Cont.begin(), _Cont.end());
     }
 
     template <class _Ty>
