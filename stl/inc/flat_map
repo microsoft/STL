@@ -467,6 +467,15 @@ public:
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _Other._Data.values)},
           _Key_compare(_Other._Key_compare) {}
 
+private:
+    template <class _Allocator>
+    _NODISCARD containers _Extract_using_allocator(const _Allocator& _Alloc) && {
+        _Clear_guard _Always_clear{this};
+        return containers{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _STD move(_Data.keys)),
+            .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _STD move(_Data.values))};
+    }
+
+public:
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(_Flat_map_base&& _Other, const _Allocator& _Alloc)
         : _Data{_STD move(_Other)._Extract_using_allocator(_Alloc)},
@@ -685,13 +694,6 @@ public:
         // always clears the container (N5032 [flat.map.modifiers]/35 and [flat.multimap.overview]/4)
         _Clear_guard _Always_clear{this};
         return _STD move(_Data);
-    }
-
-    template <class _Allocator>
-    _NODISCARD containers _Extract_using_allocator(const _Allocator& _Alloc) && {
-        _Clear_guard _Always_clear{this};
-        return containers{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc, _STD move(_Data.keys)),
-            .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc, _STD move(_Data.values))};
     }
 
     void replace(key_container_type&& _Key_cont, mapped_container_type&& _Mapped_cont) {
