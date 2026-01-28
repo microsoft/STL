@@ -999,16 +999,14 @@ private:
         _Guard._Target = nullptr;
     }
 
-    // typename is a workaround for VSO-2680018 (EDG)
+    // size_type is always size_t
     template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
-    friend typename flat_map<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>::size_type erase_if(
-        flat_map<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>&, _Pred);
+    friend size_t erase_if(flat_map<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>&, _Pred);
     template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
-    friend typename flat_multimap<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>::size_type erase_if(
-        flat_multimap<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>&, _Pred);
+    friend size_t erase_if(flat_multimap<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>&, _Pred);
 
     template <class _Predicate>
-    _NODISCARD size_type _Erase_if(_Predicate _Pred) {
+    _NODISCARD size_t _Erase_if(_Predicate _Pred) {
         _Clear_guard _Guard{this};
 
         // N5032 [flat.map.erasure]/2 and [flat.multimap.erasure]/2
@@ -1490,8 +1488,7 @@ struct uses_allocator<flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedCo
 
 _EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer,
     class _Predicate>
-flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>::size_type erase_if(
-    flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>& _Cont, _Predicate _Pred) {
+size_t erase_if(flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>& _Cont, _Predicate _Pred) {
     return _Cont._Erase_if(_STD _Pass_fn(_Pred));
 }
 
@@ -1613,8 +1610,7 @@ struct uses_allocator<flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _Map
 
 _EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer,
     class _Predicate>
-flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>::size_type erase_if(
-    flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>& _Cont, _Predicate _Pred) {
+size_t erase_if(flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>& _Cont, _Predicate _Pred) {
     return _Cont._Erase_if(_STD _Pass_fn(_Pred));
 }
 _STD_END
