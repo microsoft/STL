@@ -886,13 +886,6 @@ public:
     }
 
 protected:
-    containers _Data;
-    _MSVC_NO_UNIQUE_ADDRESS key_compare _Key_compare;
-
-    _NODISCARD auto _Pass_key_comp() const noexcept {
-        return _STD _Pass_fn(_Key_compare);
-    }
-
     template <class _OtherKey, class... _MappedArgTypes>
     _NODISCARD conditional_t<_IsUnique, pair<iterator, bool>, iterator> _Try_emplace(
         _OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
@@ -1220,6 +1213,13 @@ private:
         const difference_type _Offset = _Iter - _Self._Data.keys.cbegin();
         return _Self.begin() + _Offset;
     }
+
+    _NODISCARD auto _Pass_key_comp() const noexcept {
+        return _STD _Pass_fn(_Key_compare);
+    }
+
+    containers _Data;
+    _MSVC_NO_UNIQUE_ADDRESS key_compare _Key_compare;
 };
 
 _EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer>
