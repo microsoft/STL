@@ -29,8 +29,7 @@ enum class iterator_pair_construction : bool { no_allocator, with_allocator };
 template <class R, class T>
 concept container_compatible_range = ranges::input_range<R> && convertible_to<ranges::range_reference_t<R>, T>;
 
-template <class T, class Alloc = allocator<T>,
-    iterator_pair_construction Choice = iterator_pair_construction::with_allocator>
+template <class T, class Alloc, iterator_pair_construction Choice>
 class alternative_vector : private vector<T, Alloc> { // not allocator-aware, but can be uses-allocator constructed
 private:
     using base_type = vector<T, Alloc>;
