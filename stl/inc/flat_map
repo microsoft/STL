@@ -366,7 +366,7 @@ public:
     };
 
     // [flat.map.cons] Constructors
-    _Flat_map_base() : _Flat_map_base(key_compare()) {}
+    _Flat_map_base() : _Data(), _Key_compare() {}
 
     _Flat_map_base(const _Flat_map_base& _Other) : _Data(_Other._Data), _Key_compare(_Other._Key_compare) {}
 
@@ -395,35 +395,43 @@ public:
 
     template <_Iterator_for_container _InputIterator>
     _Flat_map_base(const _InputIterator _First, const _InputIterator _Last, const key_compare& _Comp = key_compare())
-        : _Flat_map_base(_Comp) {
+        : _Data(), _Key_compare(_Comp) {
         insert(_First, _Last);
     }
 
     template <_Iterator_for_container _InputIterator>
     _Flat_map_base(
         _Sorted_t, const _InputIterator _First, const _InputIterator _Last, const key_compare& _Comp = key_compare())
-        : _Flat_map_base(_Comp) {
+        : _Data(), _Key_compare(_Comp) {
         _Insert_range<false>(_First, _Last);
     }
 
     template <_Container_compatible_range<value_type> _Rng>
-    _Flat_map_base(from_range_t _From_range, _Rng&& _Range)
-        : _Flat_map_base(_From_range, _STD forward<_Rng>(_Range), key_compare()) {}
+    _Flat_map_base(from_range_t, _Rng&& _Range) : _Data(), _Key_compare() {
+        insert_range(_STD forward<_Rng>(_Range));
+    }
 
     template <_Container_compatible_range<value_type> _Rng>
-    _Flat_map_base(from_range_t, _Rng&& _Range, const key_compare& _Comp) : _Flat_map_base(_Comp) {
+    _Flat_map_base(from_range_t, _Rng&& _Range, const key_compare& _Comp) : _Data(), _Key_compare(_Comp) {
         insert_range(_STD forward<_Rng>(_Range));
     }
 
     _Flat_map_base(const initializer_list<value_type> _Ilist, const key_compare& _Comp = key_compare())
-        : _Flat_map_base(_Ilist.begin(), _Ilist.end(), _Comp) {}
+        : _Data(), _Key_compare(_Comp) {
+        insert(_Ilist.begin(), _Ilist.end());
+    }
 
-    _Flat_map_base(_Sorted_t _Tag, const initializer_list<value_type> _Ilist, const key_compare& _Comp = key_compare())
-        : _Flat_map_base(_Tag, _Ilist.begin(), _Ilist.end(), _Comp) {}
+    _Flat_map_base(_Sorted_t, const initializer_list<value_type> _Ilist, const key_compare& _Comp = key_compare())
+        : _Data(), _Key_compare(_Comp) {
+        _Insert_range<false>(_Ilist.begin(), _Ilist.end());
+    }
 
     // [flat.map.cons.alloc] Constructors with allocators
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
-    explicit _Flat_map_base(const _Allocator& _Alloc) : _Flat_map_base(key_compare(), _Alloc) {}
+    explicit _Flat_map_base(const _Allocator& _Alloc)
+        : _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Alloc),
+              .values = _STD make_obj_using_allocator<mapped_container_type>(_Alloc)},
+          _Key_compare() {}
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(const key_compare& _Comp, const _Allocator& _Alloc)
@@ -499,8 +507,10 @@ public:
 
     template <_Iterator_for_container _InputIterator,
         _Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
-    _Flat_map_base(_Sorted_t _Tag, const _InputIterator _First, const _InputIterator _Last, const _Allocator& _Alloc)
-        : _Flat_map_base(_Tag, _First, _Last, key_compare(), _Alloc) {}
+    _Flat_map_base(_Sorted_t, const _InputIterator _First, const _InputIterator _Last, const _Allocator& _Alloc)
+        : _Flat_map_base(_Alloc) {
+        _Insert_range<false>(_First, _Last);
+    }
 
     template <_Iterator_for_container _InputIterator,
         _Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
@@ -512,8 +522,9 @@ public:
 
     template <_Container_compatible_range<value_type> _Rng,
         _Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
-    _Flat_map_base(from_range_t _From_range, _Rng&& _Range, const _Allocator& _Alloc)
-        : _Flat_map_base(_From_range, _STD forward<_Rng>(_Range), key_compare(), _Alloc) {}
+    _Flat_map_base(from_range_t, _Rng&& _Range, const _Allocator& _Alloc) : _Flat_map_base(_Alloc) {
+        insert_range(_STD forward<_Rng>(_Range));
+    }
 
     template <_Container_compatible_range<value_type> _Rng,
         _Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
@@ -523,21 +534,28 @@ public:
     }
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
-    _Flat_map_base(const initializer_list<value_type> _Ilist, const _Allocator& _Alloc)
-        : _Flat_map_base(_Ilist, key_compare(), _Alloc) {}
+    _Flat_map_base(const initializer_list<value_type> _Ilist, const _Allocator& _Alloc) : _Flat_map_base(_Alloc) {
+        insert(_Ilist.begin(), _Ilist.end());
+    }
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(const initializer_list<value_type> _Ilist, const key_compare& _Comp, const _Allocator& _Alloc)
-        : _Flat_map_base(_Ilist.begin(), _Ilist.end(), _Comp, _Alloc) {}
+        : _Flat_map_base(_Comp, _Alloc) {
+        insert(_Ilist.begin(), _Ilist.end());
+    }
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
-    _Flat_map_base(_Sorted_t _Tag, const initializer_list<value_type> _Ilist, const _Allocator& _Alloc)
-        : _Flat_map_base(_Tag, _Ilist, key_compare(), _Alloc) {}
+    _Flat_map_base(_Sorted_t, const initializer_list<value_type> _Ilist, const _Allocator& _Alloc)
+        : _Flat_map_base(_Alloc) {
+        _Insert_range<false>(_Ilist.begin(), _Ilist.end());
+    }
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Allocator>
     _Flat_map_base(
-        _Sorted_t _Tag, const initializer_list<value_type> _Ilist, const key_compare& _Comp, const _Allocator& _Alloc)
-        : _Flat_map_base(_Tag, _Ilist.begin(), _Ilist.end(), _Comp, _Alloc) {}
+        _Sorted_t, const initializer_list<value_type> _Ilist, const key_compare& _Comp, const _Allocator& _Alloc)
+        : _Flat_map_base(_Comp, _Alloc) {
+        _Insert_range<false>(_Ilist.begin(), _Ilist.end());
+    }
 
     // Assignment operators
     _Flat_map_base& operator=(const _Flat_map_base& _Other) {
