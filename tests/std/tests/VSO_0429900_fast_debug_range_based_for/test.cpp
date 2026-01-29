@@ -11,10 +11,13 @@
 #include <regex>
 #include <set>
 #include <string>
-#include <string_view>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+#if _HAS_CXX17
+#include <string_view>
+#endif // _HAS_CXX17
 
 #if _HAS_CXX23
 #include <flat_map>
@@ -44,11 +47,13 @@ void assert_range_for_impl(Range& c) {
             assert_same_address(b->second, val.second);
         } else
 #endif // _HAS_CXX23
+        {
             if (is_same_v<RC, vector<bool>>) {
                 assert(*b == val);
             } else {
                 assert_same_address(*b, val);
             }
+        }
 
         ++b;
     }
