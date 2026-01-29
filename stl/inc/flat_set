@@ -253,14 +253,6 @@ public:
         return *this;
     }
 
-    _Derived& operator=(const initializer_list<_Kty> _Ilist) {
-        _Clear_guard _Guard{this};
-        _Mycont.assign(_Ilist);
-        _Make_invariants_fulfilled();
-        _Guard._Target = nullptr;
-        return static_cast<_Derived&>(*this);
-    }
-
     // Iterators
     // NB: The non-const overloads are intentionally removed for brevity. This will not result in behavioral changes.
     _NODISCARD const_iterator begin() const noexcept {
@@ -827,9 +819,14 @@ public:
     flat_set(flat_set&& _Other, const _Allocator& _Al) : _Mybase(_STD move(_Other), _Al) {}
 #endif // ^^^ workaround ^^^
 
-    using _Mybase::operator=; // for operator=(initializer_list)
     flat_set& operator=(const flat_set&) = default;
     flat_set& operator=(flat_set&&)      = default;
+
+    flat_set& operator=(const initializer_list<_Kty> _Ilist) {
+        this->clear();
+        this->insert(_Ilist.begin(), _Ilist.end());
+        return *this;
+    }
 };
 
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container>
@@ -850,9 +847,14 @@ public:
     flat_multiset(flat_multiset&& _Other, const _Allocator& _Al) : _Mybase(_STD move(_Other), _Al) {}
 #endif // ^^^ workaround ^^^
 
-    using _Mybase::operator=; // for operator=(initializer_list)
     flat_multiset& operator=(const flat_multiset&) = default;
     flat_multiset& operator=(flat_multiset&&)      = default;
+
+    flat_multiset& operator=(const initializer_list<_Kty> _Ilist) {
+        this->clear();
+        this->insert(_Ilist.begin(), _Ilist.end());
+        return *this;
+    }
 };
 
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container, class _Pred>

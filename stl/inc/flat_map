@@ -1245,14 +1245,14 @@ public:
     flat_map(flat_map&& _Other, const _Allocator& _Al) : _Mybase(_STD move(_Other), _Al) {}
 #endif // ^^^ workaround ^^^
 
+    flat_map& operator=(const flat_map&) = default;
+    flat_map& operator=(flat_map&&)      = default;
+
     flat_map& operator=(const initializer_list<value_type> _Ilist) {
         this->clear();
         this->insert(_Ilist.begin(), _Ilist.end());
         return *this;
     }
-
-    flat_map& operator=(const flat_map&) = default;
-    flat_map& operator=(flat_map&&)      = default;
 
     // [flat.map.access] Access
     mapped_type& operator[](const key_type& _Key_val)
@@ -1512,14 +1512,14 @@ public:
     flat_multimap(flat_multimap&& _Other, const _Allocator& _Al) : _Mybase(_STD move(_Other), _Al) {}
 #endif // ^^^ workaround ^^^
 
+    flat_multimap& operator=(const flat_multimap&) = default;
+    flat_multimap& operator=(flat_multimap&&)      = default;
+
     flat_multimap& operator=(const initializer_list<value_type> _Ilist) {
         this->clear();
         this->insert(_Ilist.begin(), _Ilist.end());
         return *this;
     }
-
-    flat_multimap& operator=(const flat_multimap&) = default;
-    flat_multimap& operator=(flat_multimap&&)      = default;
 };
 
 template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_container _MappedContainer,
