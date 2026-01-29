@@ -841,7 +841,11 @@ constexpr bool test_std_container() {
     }
     static_assert(test_empty<T&, true>());
     if constexpr (std::contiguous_iterator<I>) {
-        static_assert(test_data<T&, V*>());
+        if constexpr (std::is_same_v<I, CI>) {
+            static_assert(test_data<T&, V const*>());
+        } else {
+            static_assert(test_data<T&, V*>());
+        }
         static_assert(test_cdata<T&, V const*>());
     }
     static_assert(!ranges::view<T&>);
