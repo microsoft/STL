@@ -66,7 +66,7 @@ void bm(benchmark::State& state) {
     }
 }
 
-void common_args(auto bm) {
+void common_args(benchmark::Benchmark* bm) {
     bm->Args({8021, 3056});
     // AVX tail tests
     bm->Args({63, 62})->Args({31, 30})->Args({15, 14})->Args({7, 6});

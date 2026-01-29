@@ -39,7 +39,7 @@ void bm_match_sequence_of_9a1b(benchmark::State& state, const char* pattern, syn
     }
 }
 
-void common_args(auto bm) {
+void common_args(benchmark::Benchmark* bm) {
     bm->Arg(100)->Arg(200)->Arg(400);
 }
 
