@@ -50,8 +50,11 @@ public:
 
     constexpr alternative_vector() noexcept(noexcept(Alloc())) : base_type(Alloc()) {}
     constexpr alternative_vector(allocator_arg_t, const Alloc& a) : base_type(a) {}
-    constexpr explicit alternative_vector(size_type n) : base_type(n) {}
+
     constexpr explicit alternative_vector(size_type n, const T& v) : base_type(n, v) {}
+    constexpr explicit alternative_vector(allocator_arg_t, const Alloc& a, size_type n, const T& v)
+        : base_type(n, v, a) {}
+
     template <class InputIt>
     constexpr explicit alternative_vector(InputIt first, InputIt last) : base_type(first, last) {}
     template <class InputIt>
@@ -64,12 +67,17 @@ public:
 
     template <container_compatible_range<T> R>
     constexpr explicit alternative_vector(from_range_t, R&& rg) : base_type(from_range, forward<R>(rg)) {}
+    template <container_compatible_range<T> R>
+    constexpr explicit alternative_vector(allocator_arg_t, const Alloc& a, from_range_t, R&& rg)
+        : base_type(from_range, forward<R>(rg), a) {}
 
     constexpr alternative_vector(allocator_arg_t, const type_identity_t<Alloc>& a, const alternative_vector& other)
         : base_type(other, a) {}
     constexpr alternative_vector(allocator_arg_t, const type_identity_t<Alloc>& a, alternative_vector&& other)
         : base_type(move(other), a) {}
+
     constexpr explicit alternative_vector(initializer_list<T> il) : base_type(il) {}
+    constexpr explicit alternative_vector(allocator_arg_t, const Alloc& a, initializer_list<T> il) : base_type(il, a) {}
 
     alternative_vector(const alternative_vector&) = default;
     alternative_vector(alternative_vector&&)      = default;
