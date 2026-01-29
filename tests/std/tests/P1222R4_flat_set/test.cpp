@@ -24,13 +24,12 @@
 
 using namespace std;
 
-enum class iterator_pair_construction : bool { no_allocator, with_allocator };
+enum class iterator_pair_construction : bool { allocator_first, allocator_last };
 
 template <class R, class T>
 concept container_compatible_range = ranges::input_range<R> && convertible_to<ranges::range_reference_t<R>, T>;
 
-template <class T, class Alloc = allocator<T>,
-    iterator_pair_construction Choice = iterator_pair_construction::with_allocator>
+template <class T, class Alloc, iterator_pair_construction Choice>
 class alternative_vector : private vector<T, Alloc> { // not allocator-aware, but can be uses-allocator constructed
 private:
     using base_type = vector<T, Alloc>;
@@ -51,23 +50,34 @@ public:
 
     constexpr alternative_vector() noexcept(noexcept(Alloc())) : base_type(Alloc()) {}
     constexpr alternative_vector(allocator_arg_t, const Alloc& a) : base_type(a) {}
-    constexpr explicit alternative_vector(size_type n) : base_type(n) {}
+
     constexpr explicit alternative_vector(size_type n, const T& v) : base_type(n, v) {}
+    constexpr explicit alternative_vector(allocator_arg_t, const Alloc& a, size_type n, const T& v)
+        : base_type(n, v, a) {}
+
     template <class InputIt>
     constexpr explicit alternative_vector(InputIt first, InputIt last) : base_type(first, last) {}
     template <class InputIt>
-        requires (Choice == iterator_pair_construction::with_allocator)
+        requires (Choice == iterator_pair_construction::allocator_first)
     constexpr explicit alternative_vector(allocator_arg_t, const Alloc& a, InputIt first, InputIt last)
         : base_type(first, last, a) {}
+    template <class InputIt>
+        requires (Choice == iterator_pair_construction::allocator_last)
+    constexpr explicit alternative_vector(InputIt first, InputIt last, const Alloc& a) : base_type(first, last, a) {}
 
     template <container_compatible_range<T> R>
     constexpr explicit alternative_vector(from_range_t, R&& rg) : base_type(from_range, forward<R>(rg)) {}
+    template <container_compatible_range<T> R>
+    constexpr explicit alternative_vector(allocator_arg_t, const Alloc& a, from_range_t, R&& rg)
+        : base_type(from_range, forward<R>(rg), a) {}
 
     constexpr alternative_vector(allocator_arg_t, const type_identity_t<Alloc>& a, const alternative_vector& other)
         : base_type(other, a) {}
     constexpr alternative_vector(allocator_arg_t, const type_identity_t<Alloc>& a, alternative_vector&& other)
         : base_type(move(other), a) {}
+
     constexpr explicit alternative_vector(initializer_list<T> il) : base_type(il) {}
+    constexpr explicit alternative_vector(allocator_arg_t, const Alloc& a, initializer_list<T> il) : base_type(il, a) {}
 
     alternative_vector(const alternative_vector&) = default;
     alternative_vector(alternative_vector&&)      = default;
@@ -269,13 +279,12 @@ void test_allocator_extended_constructors() {
 
         TEST_ASSERT(fs{sorted_unique, v_sorted_unique, ator} == s_expected);
         TEST_ASSERT(fs{sorted_unique, v_sorted_unique, comp, ator} == s_expected);
-        if constexpr (Choice == iterator_pair_construction::with_allocator) {
-            TEST_ASSERT(fs{sorted_unique, {1, 3, 7, 85, 222}, ator} == s_expected);
-            TEST_ASSERT(fs{sorted_unique, {1, 3, 7, 85, 222}, comp, ator} == s_expected);
 
-            TEST_ASSERT(fs{sorted_unique, v_sorted_unique.begin(), v_sorted_unique.end(), ator} == s_expected);
-            TEST_ASSERT(fs{sorted_unique, v_sorted_unique.begin(), v_sorted_unique.end(), comp, ator} == s_expected);
-        }
+        TEST_ASSERT(fs{sorted_unique, {1, 3, 7, 85, 222}, ator} == s_expected);
+        TEST_ASSERT(fs{sorted_unique, {1, 3, 7, 85, 222}, comp, ator} == s_expected);
+
+        TEST_ASSERT(fs{sorted_unique, v_sorted_unique.begin(), v_sorted_unique.end(), ator} == s_expected);
+        TEST_ASSERT(fs{sorted_unique, v_sorted_unique.begin(), v_sorted_unique.end(), comp, ator} == s_expected);
     }
     {
         using fms = flat_multiset<int, less<int>, vec>;
@@ -305,13 +314,12 @@ void test_allocator_extended_constructors() {
 
         TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq, ator} == s_expected);
         TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq, comp, ator} == s_expected);
-        if constexpr (Choice == iterator_pair_construction::with_allocator) {
-            TEST_ASSERT(fms{sorted_equivalent, {1, 1, 3, 7, 85, 222}, ator} == s_expected);
-            TEST_ASSERT(fms{sorted_equivalent, {1, 1, 3, 7, 85, 222}, comp, ator} == s_expected);
 
-            TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq.begin(), v_sorted_eq.end(), ator} == s_expected);
-            TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq.begin(), v_sorted_eq.end(), comp, ator} == s_expected);
-        }
+        TEST_ASSERT(fms{sorted_equivalent, {1, 1, 3, 7, 85, 222}, ator} == s_expected);
+        TEST_ASSERT(fms{sorted_equivalent, {1, 1, 3, 7, 85, 222}, comp, ator} == s_expected);
+
+        TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq.begin(), v_sorted_eq.end(), ator} == s_expected);
+        TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq.begin(), v_sorted_eq.end(), comp, ator} == s_expected);
     }
 }
 
@@ -1346,8 +1354,8 @@ void run_normal_tests() {
 
     test_constructors<vector<int>>();
     test_constructors<deque<int>>();
-    test_allocator_extended_constructors<iterator_pair_construction::no_allocator>();
-    test_allocator_extended_constructors<iterator_pair_construction::with_allocator>();
+    test_allocator_extended_constructors<iterator_pair_construction::allocator_first>();
+    test_allocator_extended_constructors<iterator_pair_construction::allocator_last>();
 
     test_iterators_and_capacity<flat_set<int>>();
     test_iterators_and_capacity<flat_multiset<int>>();

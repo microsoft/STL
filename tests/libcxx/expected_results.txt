@@ -70,6 +70,10 @@ std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:
 # LLVM-176232: The implementation of P3567R2 "flat_meow Fixes" forgot to update `__cpp_lib_flat_set`
 std/language.support/support.limits/support.limits.general/flat_set.version.compile.pass.cpp FAIL
 
+# LLVM-178624: [libc++][test] flat_set tests have an EvilContainer that's too evil
+std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move.pass.cpp FAIL
+std/containers/container.adaptors/flat.set/flat.set.cons/move.pass.cpp FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
