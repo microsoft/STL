@@ -24,7 +24,7 @@
 
 using namespace std;
 
-enum class iterator_pair_construction : bool { no_allocator, with_allocator };
+enum class iterator_pair_construction : bool { allocator_first, allocator_last };
 
 template <class R, class T>
 concept container_compatible_range = ranges::input_range<R> && convertible_to<ranges::range_reference_t<R>, T>;
@@ -55,9 +55,12 @@ public:
     template <class InputIt>
     constexpr explicit alternative_vector(InputIt first, InputIt last) : base_type(first, last) {}
     template <class InputIt>
-        requires (Choice == iterator_pair_construction::with_allocator)
+        requires (Choice == iterator_pair_construction::allocator_first)
     constexpr explicit alternative_vector(allocator_arg_t, const Alloc& a, InputIt first, InputIt last)
         : base_type(first, last, a) {}
+    template <class InputIt>
+        requires (Choice == iterator_pair_construction::allocator_last)
+    constexpr explicit alternative_vector(InputIt first, InputIt last, const Alloc& a) : base_type(first, last, a) {}
 
     template <container_compatible_range<T> R>
     constexpr explicit alternative_vector(from_range_t, R&& rg) : base_type(from_range, forward<R>(rg)) {}
@@ -1343,8 +1346,8 @@ void run_normal_tests() {
 
     test_constructors<vector<int>>();
     test_constructors<deque<int>>();
-    test_allocator_extended_constructors<iterator_pair_construction::no_allocator>();
-    test_allocator_extended_constructors<iterator_pair_construction::with_allocator>();
+    test_allocator_extended_constructors<iterator_pair_construction::allocator_first>();
+    test_allocator_extended_constructors<iterator_pair_construction::allocator_last>();
 
     test_iterators_and_capacity<flat_set<int>>();
     test_iterators_and_capacity<flat_multiset<int>>();
