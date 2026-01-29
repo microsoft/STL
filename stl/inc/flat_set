@@ -723,7 +723,7 @@ private:
         if constexpr (_IsUnique && is_same_v<_KeyTy, key_type>) { // Optimization restricted due to GH-5992
             // In a non-multi container, equal_range can have size at most 1
             const auto _First   = _STD lower_bound(_Mycont.begin(), _Mycont.end(), _Key_val, _Pass_comp());
-            const bool _Missing = _First == _Mycont.end() || _Mycomp(_Key_val, *_First);
+            const bool _Missing = _First == _Mycont.end() || _Compare(_Key_val, *_First);
             return pair{_First, _Missing ? _First : _First + 1};
         } else {
             return _STD equal_range(begin(), end(), _Key_val, _Pass_comp());
