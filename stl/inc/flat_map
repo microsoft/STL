@@ -275,13 +275,13 @@ struct _NODISCARD _Flat_map_swap_clear_guard<true, _Containers> {
 
 template <class _Compare, class _Key, class _Mapped>
 struct _Value_compare_to_pass_in_flat_map {
-    using _Key_compare =
-        conditional_t<conjunction_v<bool_constant<sizeof(_Compare) <= sizeof(void*)>,
-                          is_trivially_copy_constructible<_Compare>, is_trivially_destructible<_Compare>>,
-            _Compare, const _Compare&>;
+    static constexpr bool _Efficiently_copyable = conjunction_v<bool_constant<sizeof(_Compare) <= sizeof(void*)>,
+        is_trivially_copy_constructible<_Compare>, is_trivially_destructible<_Compare>>;
+
+    using _Copy_or_ref     = conditional_t<_Efficiently_copyable, _Compare, const _Compare&>;
     using _Const_reference = pair<const _Key&, const _Mapped&>;
 
-    _Key_compare _Key_comparator;
+    _Copy_or_ref _Key_comparator;
 
     _NODISCARD bool operator()(_Const_reference _Left, _Const_reference _Right) const {
         return _Key_comparator(_Left.first, _Right.first);
