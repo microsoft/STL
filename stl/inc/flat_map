@@ -1089,12 +1089,10 @@ private:
     auto _Erase_dupes_if_not_multi_pred() {
         _STL_INTERNAL_STATIC_ASSERT(_IsUnique);
         if constexpr (_Equivalence_is_equality<_Compare, _Key>) {
-            return [](const_reference _Left, const_reference _Right)
+            return [](const auto& _Left, const auto& _Right)
                        _STATIC_CALL_OPERATOR { return _Left.first == _Right.first; };
         } else {
-            return [this](const_reference _Left, const_reference _Right) {
-                return !_Key_compare(_Left.first, _Right.first);
-            };
+            return [this](const auto& _Left, const auto& _Right) { return !_Key_compare(_Left.first, _Right.first); };
         }
     }
 
