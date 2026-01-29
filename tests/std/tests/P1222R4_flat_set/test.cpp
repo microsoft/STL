@@ -268,13 +268,12 @@ void test_allocator_extended_constructors() {
 
         TEST_ASSERT(fs{sorted_unique, v_sorted_unique, ator} == s_expected);
         TEST_ASSERT(fs{sorted_unique, v_sorted_unique, comp, ator} == s_expected);
-        if constexpr (Choice == iterator_pair_construction::with_allocator) {
-            TEST_ASSERT(fs{sorted_unique, {1, 3, 7, 85, 222}, ator} == s_expected);
-            TEST_ASSERT(fs{sorted_unique, {1, 3, 7, 85, 222}, comp, ator} == s_expected);
 
-            TEST_ASSERT(fs{sorted_unique, v_sorted_unique.begin(), v_sorted_unique.end(), ator} == s_expected);
-            TEST_ASSERT(fs{sorted_unique, v_sorted_unique.begin(), v_sorted_unique.end(), comp, ator} == s_expected);
-        }
+        TEST_ASSERT(fs{sorted_unique, {1, 3, 7, 85, 222}, ator} == s_expected);
+        TEST_ASSERT(fs{sorted_unique, {1, 3, 7, 85, 222}, comp, ator} == s_expected);
+
+        TEST_ASSERT(fs{sorted_unique, v_sorted_unique.begin(), v_sorted_unique.end(), ator} == s_expected);
+        TEST_ASSERT(fs{sorted_unique, v_sorted_unique.begin(), v_sorted_unique.end(), comp, ator} == s_expected);
     }
     {
         using fms = flat_multiset<int, less<int>, vec>;
@@ -304,13 +303,12 @@ void test_allocator_extended_constructors() {
 
         TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq, ator} == s_expected);
         TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq, comp, ator} == s_expected);
-        if constexpr (Choice == iterator_pair_construction::with_allocator) {
-            TEST_ASSERT(fms{sorted_equivalent, {1, 1, 3, 7, 85, 222}, ator} == s_expected);
-            TEST_ASSERT(fms{sorted_equivalent, {1, 1, 3, 7, 85, 222}, comp, ator} == s_expected);
 
-            TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq.begin(), v_sorted_eq.end(), ator} == s_expected);
-            TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq.begin(), v_sorted_eq.end(), comp, ator} == s_expected);
-        }
+        TEST_ASSERT(fms{sorted_equivalent, {1, 1, 3, 7, 85, 222}, ator} == s_expected);
+        TEST_ASSERT(fms{sorted_equivalent, {1, 1, 3, 7, 85, 222}, comp, ator} == s_expected);
+
+        TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq.begin(), v_sorted_eq.end(), ator} == s_expected);
+        TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq.begin(), v_sorted_eq.end(), comp, ator} == s_expected);
     }
 }
 
