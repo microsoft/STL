@@ -273,17 +273,17 @@ struct _NODISCARD _Flat_map_swap_clear_guard<true, _Containers> {
     void _Dismiss() noexcept {}
 };
 
-template <class _Compare, class _Key, class _Mapped>
+template <class _Compare>
 struct _Value_compare_to_pass_in_flat_map {
     static constexpr bool _Efficiently_copyable = conjunction_v<bool_constant<sizeof(_Compare) <= sizeof(void*)>,
         is_trivially_copy_constructible<_Compare>, is_trivially_destructible<_Compare>>;
 
-    using _Copy_or_ref     = conditional_t<_Efficiently_copyable, _Compare, const _Compare&>;
-    using _Const_reference = pair<const _Key&, const _Mapped&>;
+    using _Copy_or_ref = conditional_t<_Efficiently_copyable, _Compare, const _Compare&>;
 
     _Copy_or_ref _Key_comparator;
 
-    _NODISCARD bool operator()(_Const_reference _Left, _Const_reference _Right) const {
+    template <class _Pair1, class _Pair2>
+    _NODISCARD bool operator()(const _Pair1& _Left, const _Pair2& _Right) const {
         return _Key_comparator(_Left.first, _Right.first);
     }
 };
@@ -1067,7 +1067,7 @@ private:
         }
     }
 
-    using _Value_compare_to_pass = _Value_compare_to_pass_in_flat_map<_Compare, _Key, _Mapped>;
+    using _Value_compare_to_pass = _Value_compare_to_pass_in_flat_map<_Compare>;
 
     void _Make_invariants_fulfilled() {
         if (empty()) {
