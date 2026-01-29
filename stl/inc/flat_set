@@ -122,8 +122,7 @@ public:
 
     template <_Iterator_for_container _Iter>
     _Flat_set_base(const _Iter _First, const _Iter _Last, const key_compare& _Comp = key_compare())
-        : _Mycont(), _Mycomp(_Comp) {
-        _Mycont.assign(_First, _Last);
+        : _Mycont(_First, _Last), _Mycomp(_Comp) {
         _Make_invariants_fulfilled();
     }
 
@@ -182,15 +181,13 @@ public:
 
     template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const _Iter _First, const _Iter _Last, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp() {
-        _Mycont.assign(_First, _Last);
+        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Mycomp() {
         _Make_invariants_fulfilled();
     }
 
     template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const _Iter _First, const _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp(_Comp) {
-        _Mycont.assign(_First, _Last);
+        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Mycomp(_Comp) {
         _Make_invariants_fulfilled();
     }
 
