@@ -368,7 +368,7 @@ public:
     // [flat.map.cons] Constructors
     _Flat_map_base() : _Data(), _Key_compare() {}
 
-    _Flat_map_base(const _Flat_map_base& _Other) : _Data(_Other._Data), _Key_compare(_Other._Key_compare) {}
+    _Flat_map_base(const _Flat_map_base&) = default;
 
     _Flat_map_base(_Flat_map_base&& _Other)
         noexcept(is_nothrow_copy_constructible_v<key_compare> && is_nothrow_move_constructible_v<key_container_type>
