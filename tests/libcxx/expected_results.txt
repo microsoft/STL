@@ -1209,9 +1209,6 @@ std/algorithms/algorithms.results/min_max_result.pass.cpp:1 FAIL
 # Not analyzed.
 std/algorithms/robust_against_proxy_iterators_lifetime_bugs.pass.cpp FAIL
 
-# Not analyzed. Inspecting shift operators for quoted().
-std/input.output/iostream.format/quoted.manip/quoted_traits.compile.pass.cpp FAIL
-
 # Not analyzed. Failing assert(arr[0].moves() == 1 && arr[1].moves() == 3).
 std/iterators/iterator.requirements/iterator.cust/iterator.cust.swap/iter_swap.pass.cpp FAIL
 
