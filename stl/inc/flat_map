@@ -1093,8 +1093,11 @@ private:
                        _STATIC_CALL_OPERATOR { return _Left.first == _Right.first; };
         } else {
             return [this](const auto& _Left, const auto& _Right) {
-                // TRANSITION, not yet reported: `this->` avoids spurious -Wunused-lambda-capture warning with Clang 20
+#ifdef __clang__ // TRANSITION, LLVM-81243
                 return !this->_Compare_keys(_Left.first, _Right.first);
+#else // ^^^ workaround / no workaround vvv
+                return !_Compare_keys(_Left.first, _Right.first);
+#endif // ^^^ no workaround ^^^
             };
         }
     }
