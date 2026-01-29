@@ -201,15 +201,15 @@ public:
 
     template <_Container_compatible_range<_Kty> _Rng, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(from_range_t, _Rng&& _Range, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp() {
-        _Mycont.assign_range(_STD forward<_Rng>(_Range));
+        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, from_range, _STD forward<_Rng>(_Range))),
+          _Mycomp() {
         _Make_invariants_fulfilled();
     }
 
     template <_Container_compatible_range<_Kty> _Rng, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(from_range_t, _Rng&& _Range, const key_compare& _Comp, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp(_Comp) {
-        _Mycont.assign_range(_STD forward<_Rng>(_Range));
+        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, from_range, _STD forward<_Rng>(_Range))),
+          _Mycomp(_Comp) {
         _Make_invariants_fulfilled();
     }
 
