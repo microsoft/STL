@@ -1092,7 +1092,10 @@ private:
             return [](const auto& _Left, const auto& _Right)
                        _STATIC_CALL_OPERATOR { return _Left.first == _Right.first; };
         } else {
-            return [this](const auto& _Left, const auto& _Right) { return !_Compare_keys(_Left.first, _Right.first); };
+            return [this](const auto& _Left, const auto& _Right) {
+                // TRANSITION, not yet reported: `this->` avoids spurious -Wunused-lambda-capture warning with Clang 20
+                return !this->_Compare_keys(_Left.first, _Right.first);
+            };
         }
     }
 
