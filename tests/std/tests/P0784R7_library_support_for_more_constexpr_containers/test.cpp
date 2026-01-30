@@ -677,17 +677,12 @@ constexpr bool test_construct_at_array() {
             test_ranges_construct_at_array<unique_ptr<string>, 42>();
         }
         test_std_construct_at_array<string, 1>();
-#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, DevCom-11012299
-        if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-        {
-            test_std_construct_at_array<string, 42>();
-        }
         test_ranges_construct_at_array<string, 1>();
 #if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, DevCom-11012299
         if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
         {
+            test_std_construct_at_array<string, 42>();
             test_ranges_construct_at_array<string, 42>();
         }
     }
