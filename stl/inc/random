@@ -4082,9 +4082,8 @@ public:
             return _Pvec;
         }
 
-        void _Init(bool _Renorm = true) { // initialize
-            size_t _Size = _Pvec.size();
-            size_t _Idx;
+        void _Init(const bool _Renorm = true) { // initialize
+            const size_t _Size = _Pvec.size();
 
             if (_Renorm) {
                 if (_Pvec.empty()) {
@@ -4092,14 +4091,14 @@ public:
                 } else { // normalize probabilities
                     double _Sum = 0;
 
-                    for (_Idx = 0; _Idx < _Size; ++_Idx) { // sum all probabilities
+                    for (size_t _Idx = 0; _Idx < _Size; ++_Idx) { // sum all probabilities
                         _STL_ASSERT(0.0 <= _Pvec[_Idx], "invalid probability for discrete_distribution");
                         _Sum += _Pvec[_Idx];
                     }
 
                     _STL_ASSERT(0.0 < _Sum, "invalid probability vector for discrete_distribution");
                     if (_Sum != 1.0) {
-                        for (_Idx = 0; _Idx < _Size; ++_Idx) {
+                        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
                             _Pvec[_Idx] /= _Sum;
                         }
                     }
@@ -4107,7 +4106,7 @@ public:
             }
 
             _Pcdf.assign(1, _Pvec[0]);
-            for (_Idx = 1; _Idx < _Size; ++_Idx) {
+            for (size_t _Idx = 1; _Idx < _Size; ++_Idx) {
                 _Pcdf.push_back(_Pvec[_Idx] + _Pcdf[_Idx - 1]);
             }
         }
@@ -4493,9 +4492,8 @@ public:
             return 0.5 * (_Pvec[_Idx] + _Pvec[_Idx + 1]) * static_cast<double>(_Bvec[_Idx + 1] - _Bvec[_Idx]);
         }
 
-        void _Init_base(bool _Renorm = true) { // initialize like discrete_distribution::param_type
-            size_t _Size = _Pvec.size();
-            size_t _Idx;
+        void _Init_base(const bool _Renorm = true) { // initialize like discrete_distribution::param_type
+            const size_t _Size = _Pvec.size();
 
             if (_Renorm) {
                 if (_Pvec.empty()) {
@@ -4503,14 +4501,14 @@ public:
                 } else { // normalize probabilities
                     double _Sum = 0;
 
-                    for (_Idx = 0; _Idx < _Size; ++_Idx) { // sum all probabilities
+                    for (size_t _Idx = 0; _Idx < _Size; ++_Idx) { // sum all probabilities
                         _STL_ASSERT(0.0 <= _Pvec[_Idx], "invalid probability for piecewise_linear_distribution");
                         _Sum += _Pvec[_Idx];
                     }
 
                     _STL_ASSERT(0.0 < _Sum, "invalid probability vector for piecewise_linear_distribution");
                     if (_Sum != 1.0) {
-                        for (_Idx = 0; _Idx < _Size; ++_Idx) {
+                        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
                             _Pvec[_Idx] /= _Sum;
                         }
                     }
@@ -4518,14 +4516,13 @@ public:
             }
 
             _Pcdf.assign(1, _Pvec[0]);
-            for (_Idx = 1; _Idx < _Size; ++_Idx) {
+            for (size_t _Idx = 1; _Idx < _Size; ++_Idx) {
                 _Pcdf.push_back(_Pvec[_Idx] + _Pcdf[_Idx - 1]);
             }
         }
 
-        void _Init(bool _Renorm = true) { // initialize
-            size_t _Size = _Pvec.size();
-            size_t _Idx;
+        void _Init(const bool _Renorm = true) { // initialize
+            const size_t _Size = _Pvec.size();
 
             if (_Renorm) {
                 if (_Pvec.empty()) { // make empty vector degenerate
@@ -4534,14 +4531,14 @@ public:
                     double _Sum = 0;
 
                     _STL_ASSERT(0.0 <= _Pvec[0], "invalid probability for piecewise_linear_distribution");
-                    for (_Idx = 1; _Idx < _Size; ++_Idx) { // sum all probabilities
+                    for (size_t _Idx = 1; _Idx < _Size; ++_Idx) { // sum all probabilities
                         _STL_ASSERT(0.0 <= _Pvec[_Idx], "invalid probability for piecewise_linear_distribution");
                         _Sum += _Piece_probability(_Idx - 1);
                     }
 
                     _STL_ASSERT(0.0 < _Sum, "invalid probability vector for piecewise_linear_distribution");
                     if (_Sum != 1.0) {
-                        for (_Idx = 0; _Idx < _Size; ++_Idx) {
+                        for (size_t _Idx = 0; _Idx < _Size; ++_Idx) {
                             _Pvec[_Idx] /= _Sum;
                         }
                     }
@@ -4549,7 +4546,7 @@ public:
             }
 
             _Pcdf.assign(1, _Piece_probability(0));
-            for (_Idx = 2; _Idx < _Size; ++_Idx) {
+            for (size_t _Idx = 2; _Idx < _Size; ++_Idx) {
                 _Pcdf.push_back(_Piece_probability(_Idx - 1) + _Pcdf[_Idx - 2]);
             }
         }
