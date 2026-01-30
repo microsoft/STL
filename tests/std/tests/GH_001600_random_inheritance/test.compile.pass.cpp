@@ -24,8 +24,8 @@ void test_gh_1600_inheritance() {
         typename piecewise_linear_distribution<F>::param_type>);
 }
 
-// Until 2026-01, piecewise_{constant,linear}_distribution<FP> were both derived from discrete_distribution<size_t>.
-//   Same for their param_type.
+// Until 2026-01, piecewise_constant_distribution<FP> and piecewise_linear_distribution<FP>
+//   were both derived from discrete_distribution<size_t>. Same for their param_type structs.
 // Now the discrete_distribution<size_t> objects are changed from base class subobjects to leading member subobjects.
 //   Same for piecewise_constant_distribution::param_type.
 //   For piecewise_linear_distribution::param_type, the original discrete_distribution<size_t>::param_type subobject is
@@ -33,8 +33,8 @@ void test_gh_1600_inheritance() {
 // In vNext, we should probably remove unused members, so the sizes will be reduced.
 template <class F>
 void test_gh_1600_abi() {
-    // piecewise_{constant,linear}_distribution and their param_type don't introduce padding bytes under MSVC ABI.
-    // So it's OK to just add the sizes.
+    // piecewise_constant_distribution, piecewise_linear_distribution, and their param_type structs
+    // don't introduce padding bytes under MSVC ABI. So it's OK to just add the sizes.
 
     // The sizes will be probably reduced in vNext.
 

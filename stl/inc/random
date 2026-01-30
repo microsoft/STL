@@ -4175,7 +4175,7 @@ public:
 
     void reset() noexcept /* strengthened */ {} // clear internal state
 
-    // reused by piecewise_{constant,linear}_distribution
+    // reused by piecewise_constant_distribution and piecewise_linear_distribution
     template <class _Engine>
     _NODISCARD static result_type _Invoke_param_pcdf(_Engine& _Eng, const _Myvec& _Pcdf) {
         const double _Px     = _STD _Nrand_impl<double>(_Eng);
