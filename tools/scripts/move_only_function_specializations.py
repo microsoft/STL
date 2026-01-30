@@ -6,7 +6,7 @@
 def specialization(self: str, cv: str, ref: str, ref_inv: str, noex: str, noex_val: str, callable: str) -> str:
     return f"""template <class _Rx, class... _Types>
 class _Function_call<_Rx(_Types...) {cv} {ref} {noex}> // Generated code - DO NOT EDIT manually!
-    : public _Function_base<_Rx, {noex_val}, _Types...> {{
+    : public _Function_base<_Rx, _Types...> {{
 public:
     template <class _Vt>
     using _VtInvQuals = {cv} _Vt {ref_inv};
@@ -14,8 +14,10 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = {callable};
 
+    static constexpr bool _Noexcept = {noex_val};
+
     _Rx operator()(_Types... _Args) {cv} {ref} {noex} {{
-        return this->_Get_invoke()({self}, _STD forward<_Types>(_Args)...);
+        return this->template _Get_invoke<_Noexcept>()({self}, _STD forward<_Types>(_Args)...);
     }}
 }};
 """
