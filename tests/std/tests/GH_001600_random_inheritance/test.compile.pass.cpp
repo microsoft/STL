@@ -42,7 +42,7 @@ void test_gh_1600_abi() {
     // piecewise_constant_distribution, piecewise_linear_distribution, and their param_type structs
     // don't introduce padding bytes under MSVC ABI. So it's OK to just add the sizes.
 
-    // The sizes will be probably reduced in vNext.
+    // The sizes will probably be reduced in vNext.
 
     using Con = piecewise_constant_distribution<F>;
     using Lin = piecewise_linear_distribution<F>;
