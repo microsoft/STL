@@ -15,13 +15,19 @@ using namespace std;
 // Note that inheritance between distribution types should also be removed.
 template <class F>
 void test_gh_1600_inheritance() {
-    STATIC_ASSERT(!is_base_of_v<discrete_distribution<size_t>, piecewise_constant_distribution<F>>);
-    STATIC_ASSERT(!is_base_of_v<discrete_distribution<size_t>::param_type,
-        typename piecewise_constant_distribution<F>::param_type>);
+    using Con = piecewise_constant_distribution<F>;
+    using Lin = piecewise_linear_distribution<F>;
+    using Dis = discrete_distribution<size_t>;
 
-    STATIC_ASSERT(!is_base_of_v<discrete_distribution<size_t>, piecewise_linear_distribution<F>>);
-    STATIC_ASSERT(!is_base_of_v<discrete_distribution<size_t>::param_type,
-        typename piecewise_linear_distribution<F>::param_type>);
+    using ConParam = typename Con::param_type;
+    using LinParam = typename Lin::param_type;
+    using DisParam = Dis::param_type;
+
+    STATIC_ASSERT(!is_base_of_v<Dis, Con>);
+    STATIC_ASSERT(!is_base_of_v<DisParam, ConParam>);
+
+    STATIC_ASSERT(!is_base_of_v<Dis, Lin>);
+    STATIC_ASSERT(!is_base_of_v<DisParam, LinParam>);
 }
 
 // Until 2026-01, piecewise_constant_distribution<FP> and piecewise_linear_distribution<FP>
@@ -38,25 +44,27 @@ void test_gh_1600_abi() {
 
     // The sizes will be probably reduced in vNext.
 
-    STATIC_ASSERT(
-        sizeof(piecewise_constant_distribution<F>)
-        == sizeof(discrete_distribution<size_t>) + sizeof(typename piecewise_constant_distribution<F>::param_type));
-    STATIC_ASSERT(sizeof(typename piecewise_constant_distribution<F>::param_type)
-                  == sizeof(discrete_distribution<size_t>::param_type) + sizeof(vector<F>));
+    using Con = piecewise_constant_distribution<F>;
+    using Lin = piecewise_linear_distribution<F>;
+    using Dis = discrete_distribution<size_t>;
 
-    STATIC_ASSERT(
-        sizeof(piecewise_linear_distribution<F>)
-        == sizeof(discrete_distribution<size_t>) + sizeof(typename piecewise_linear_distribution<F>::param_type));
-    STATIC_ASSERT(sizeof(typename piecewise_linear_distribution<F>::param_type)
-                  == sizeof(discrete_distribution<size_t>::param_type) + sizeof(vector<F>));
+    using ConParam = typename Con::param_type;
+    using LinParam = typename Lin::param_type;
+    using DisParam = Dis::param_type;
+
+    STATIC_ASSERT(sizeof(Con) == sizeof(Dis) + sizeof(ConParam));
+    STATIC_ASSERT(sizeof(ConParam) == sizeof(DisParam) + sizeof(vector<F>));
+
+    STATIC_ASSERT(sizeof(Lin) == sizeof(Dis) + sizeof(LinParam));
+    STATIC_ASSERT(sizeof(LinParam) == sizeof(DisParam) + sizeof(vector<F>));
 
     // The alignments are likely to be unchanged in vNext.
 
-    STATIC_ASSERT(alignof(piecewise_constant_distribution<F>) == alignof(void*));
-    STATIC_ASSERT(alignof(typename piecewise_constant_distribution<F>::param_type) == alignof(void*));
+    STATIC_ASSERT(alignof(Con) == alignof(void*));
+    STATIC_ASSERT(alignof(ConParam) == alignof(void*));
 
-    STATIC_ASSERT(alignof(piecewise_linear_distribution<F>) == alignof(void*));
-    STATIC_ASSERT(alignof(typename piecewise_linear_distribution<F>::param_type) == alignof(void*));
+    STATIC_ASSERT(alignof(Lin) == alignof(void*));
+    STATIC_ASSERT(alignof(LinParam) == alignof(void*));
 }
 
 void test() {
