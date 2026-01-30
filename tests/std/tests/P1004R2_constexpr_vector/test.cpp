@@ -661,7 +661,7 @@ constexpr bool test_growth() {
 #pragma warning(disable : 4582) // '%s': constructor is not implicitly called
 #pragma warning(disable : 4583) // '%s': destructor is not implicitly called
 template <class T, size_t N>
-constexpr void test_vector_of_array() {
+constexpr void test_vector_of_array_impl() {
     vector<T[N]> v(42);
     for (const auto& a : v) {
         for (const auto& elem : a) {
@@ -671,8 +671,8 @@ constexpr void test_vector_of_array() {
 }
 
 constexpr bool test_vector_of_array() {
-    test_vector_of_array<int, 1>();
-    test_vector_of_array<int, 42>();
+    test_vector_of_array_impl<int, 1>();
+    test_vector_of_array_impl<int, 42>();
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-10798069
     if (!is_constant_evaluated())
@@ -682,11 +682,11 @@ constexpr bool test_vector_of_array() {
         if (!is_constant_evaluated())
 #endif // !_HAS_CXX23
         {
-            test_vector_of_array<unique_ptr<vector<char>>, 1>();
-            test_vector_of_array<unique_ptr<vector<char>>, 42>();
+            test_vector_of_array_impl<unique_ptr<vector<char>>, 1>();
+            test_vector_of_array_impl<unique_ptr<vector<char>>, 42>();
         }
-        test_vector_of_array<vector<long>, 1>();
-        test_vector_of_array<vector<long>, 42>();
+        test_vector_of_array_impl<vector<long>, 1>();
+        test_vector_of_array_impl<vector<long>, 42>();
     }
 
     return true;
