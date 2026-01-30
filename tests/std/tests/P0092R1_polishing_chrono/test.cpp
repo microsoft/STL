@@ -5,7 +5,7 @@
 // Tests the new functions added as part of P0092R1, "Polishing Chrono"
 //
 
-#include <__msvc_int128.hpp> // an integer-class type should emulate an arithmetic type, see also GH-1919
+#include <__msvc_int128.hpp> // an integer-class type should emulate an arithmetic type, see also GH-1909
 #include <cassert>
 #include <chrono>
 #include <cstdint>
