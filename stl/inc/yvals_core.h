@@ -543,7 +543,7 @@
 
 #ifndef __has_cpp_attribute
 #define _FALLTHROUGH
-#elif __has_cpp_attribute(fallthrough) >= 201603L
+#elif __has_cpp_attribute(fallthrough) >= 201603L // TRANSITION, VSO-2696854
 #define _FALLTHROUGH [[fallthrough]]
 #else
 #define _FALLTHROUGH
