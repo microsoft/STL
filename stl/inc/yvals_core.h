@@ -549,30 +549,10 @@
 #define _FALLTHROUGH
 #endif
 
-// _HAS_NODISCARD (in vcruntime.h) controls:
-// [[nodiscard]] attributes on STL functions
-
-// TRANSITION, This should go to vcruntime.h
-#ifndef __has_cpp_attribute
-#define _NODISCARD_MSG(_Msg)
-#elif __has_cpp_attribute(nodiscard) >= 201907L
-#define _NODISCARD_MSG(_Msg) [[nodiscard(_Msg)]]
-#elif __has_cpp_attribute(nodiscard) >= 201603L
-#define _NODISCARD_MSG(_Msg) [[nodiscard]]
-#else
-#define _NODISCARD_MSG(_Msg)
-#endif
-
-#ifndef __has_cpp_attribute
-#define _NODISCARD_CTOR
-#define _NODISCARD_CTOR_MSG(_Msg)
-#elif __has_cpp_attribute(nodiscard) >= 201907L
-#define _NODISCARD_CTOR           _NODISCARD
-#define _NODISCARD_CTOR_MSG(_Msg) _NODISCARD_MSG(_Msg)
-#else // ^^^ __has_cpp_attribute(nodiscard) >= 201907L / __has_cpp_attribute(nodiscard) < 201907L vvv
-#define _NODISCARD_CTOR
-#define _NODISCARD_CTOR_MSG(_Msg)
-#endif // ^^^ defined(__has_cpp_attribute) && __has_cpp_attribute(nodiscard) < 201907L ^^^
+// vcruntime.h defines _NODISCARD to [[nodiscard]]
+#define _NODISCARD_MSG(_Msg)      [[nodiscard(_Msg)]]
+#define _NODISCARD_CTOR           [[nodiscard]]
+#define _NODISCARD_CTOR_MSG(_Msg) [[nodiscard(_Msg)]]
 
 #define _NODISCARD_REMOVE_ALG                                                                                    \
     _NODISCARD_MSG("The 'remove' and 'remove_if' algorithms return the iterator past the last element "          \
