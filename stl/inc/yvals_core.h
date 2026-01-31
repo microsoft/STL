@@ -550,9 +550,8 @@
 #endif
 
 // vcruntime.h defines _NODISCARD to [[nodiscard]]
-#define _NODISCARD_MSG(_Msg)      [[nodiscard(_Msg)]]
-#define _NODISCARD_CTOR           [[nodiscard]]
-#define _NODISCARD_CTOR_MSG(_Msg) [[nodiscard(_Msg)]]
+#define _NODISCARD_MSG(_Msg) [[nodiscard(_Msg)]]
+#define _NODISCARD_CTOR      [[nodiscard]]
 
 #define _NODISCARD_REMOVE_ALG                                                                                    \
     _NODISCARD_MSG("The 'remove' and 'remove_if' algorithms return the iterator past the last element "          \
@@ -625,22 +624,21 @@
                    "a temporary to protect the rest of the current expression using the comma operator, you can cast " \
                    "the temporary to void or define _SILENCE_NODISCARD_LOCK_WARNINGS to suppress this warning.")
 
-#define _NODISCARD_CTOR_LOCK                                                                                \
-    _NODISCARD_CTOR_MSG(                                                                                    \
-        "A lock should be stored in a variable to protect the scope. If you're intentionally constructing " \
-        "a temporary to protect the rest of the current expression using the comma operator, you can cast " \
-        "the temporary to void or define _SILENCE_NODISCARD_LOCK_WARNINGS to suppress this warning.")
+#define _NODISCARD_CTOR_LOCK                                                                                           \
+    _NODISCARD_MSG("A lock should be stored in a variable to protect the scope. If you're intentionally constructing " \
+                   "a temporary to protect the rest of the current expression using the comma operator, you can cast " \
+                   "the temporary to void or define _SILENCE_NODISCARD_LOCK_WARNINGS to suppress this warning.")
 
 #endif // ^^^ !defined(_SILENCE_NODISCARD_LOCK_WARNINGS) ^^^
 
-#define _NODISCARD_CTOR_THREAD                                                     \
-    _NODISCARD_CTOR_MSG("This temporary 'std::thread' is not joined or detached, " \
-                        "so 'std::terminate' will be called at the end of the statement.")
+#define _NODISCARD_CTOR_THREAD                                                \
+    _NODISCARD_MSG("This temporary 'std::thread' is not joined or detached, " \
+                   "so 'std::terminate' will be called at the end of the statement.")
 
-#define _NODISCARD_CTOR_JTHREAD                                                                            \
-    _NODISCARD_CTOR_MSG("This temporary 'std::jthread' is implicitly joined at the end of the statement. " \
-                        "If this is intentional, you can add '.join()' to suppress this warning. "         \
-                        "Otherwise, this 'std::jthread' should be stored in a variable.")
+#define _NODISCARD_CTOR_JTHREAD                                                                       \
+    _NODISCARD_MSG("This temporary 'std::jthread' is implicitly joined at the end of the statement. " \
+                   "If this is intentional, you can add '.join()' to suppress this warning. "         \
+                   "Otherwise, this 'std::jthread' should be stored in a variable.")
 
 #define _NODISCARD_ASYNC                                                                                           \
     _NODISCARD_MSG("The result of 'std::async' should be stored in a variable. If the return value is discarded, " \
