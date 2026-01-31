@@ -32,7 +32,7 @@ const encoding_test_char utf_test_cases[] = {
     {"\xED\x9F\xBF", L"\uD7FF"}, // U+D7FF unencoded from the Hangul Jamo Extended-B block,
                                  // last character before UTF-16 illegal region
     {"\xED\xA0\x80", nullptr}, // U+D800 beginning of surrogate range
-    {nullptr, L"\xD800"},
+    {nullptr, L"\xD800"}, //
     {"\xED\xBF\xBF", nullptr}, // U+DFFF end of surrogate range
     {nullptr, L"\xDFFF"},
     {"\xEE\x80\x80", L"\uE000"}, // U+E000 unencoded from the private use area, first codepoint after surrogate range
@@ -49,8 +49,16 @@ const encoding_test_char utf_test_cases[] = {
     {"\xC2\x61", nullptr}, // Wrong number of trailing bytes
     {"\xE0\xA0\x61", nullptr},
 
-    {"\xC0\x80", nullptr}, // overlong form
-    {"\xC0\x81", nullptr},
+    {"\xC0\x80", nullptr}, // overlong form: 2 bytes for U+0000 NULL
+    {"\xC0\x81", nullptr}, // overlong form: 2 bytes for U+0001 START OF HEADING
+
+    {"\xC1\xBF", nullptr}, // overlong form: 2 bytes for U+007F DELETE
+    {"\xE0\x81\xBF", nullptr}, // overlong form: 3 bytes for U+007F DELETE
+    {"\xF0\x80\x81\xBF", nullptr}, // overlong form: 4 bytes for U+007F DELETE
+
+    {"\xD0\xAF", L"\u042F"}, // U+042F CYRILLIC CAPITAL LETTER YA
+    {"\xE0\x90\xAF", nullptr}, // overlong form: 3 bytes for U+042F CYRILLIC CAPITAL LETTER YA
+    {"\xF0\x80\x90\xAF", nullptr}, // overlong form: 4 bytes for U+042F CYRILLIC CAPITAL LETTER YA
 };
 
 void assert_empty_file(const wchar_t* const fileName) {
