@@ -165,52 +165,65 @@ void test_lwg3677_volatile() {
     assert(get<0>(t6).get_payload() == 252);
 }
 
+// LWG-3187 "P0591R4 reverted DR 2586 fixes to scoped_allocator_adaptor::construct()"
 // LWG-4312 "Const and value category mismatch for allocator_arg_t/allocator_arg in the description of uses-allocator
 // construction"
 
-struct allocator_arg_mutable_rvalue_only {
-    allocator_arg_mutable_rvalue_only() = default;
+struct allocator_arg_and_ator_cvref_requirer {
+    allocator_arg_and_ator_cvref_requirer() = default;
 
     template <class A>
-    constexpr allocator_arg_mutable_rvalue_only(allocator_arg_t&&, const A&) {}
+    constexpr allocator_arg_and_ator_cvref_requirer(allocator_arg_t&&, const A&) {}
     template <class A>
-    constexpr allocator_arg_mutable_rvalue_only(allocator_arg_t&&, const A&, const allocator_arg_mutable_rvalue_only&) {
-    }
+    constexpr allocator_arg_and_ator_cvref_requirer(
+        allocator_arg_t&&, const A&, const allocator_arg_and_ator_cvref_requirer&) {}
     template <class A>
-    constexpr allocator_arg_mutable_rvalue_only(allocator_arg_t&&, const A&, allocator_arg_mutable_rvalue_only&&) {}
+    constexpr allocator_arg_and_ator_cvref_requirer(
+        allocator_arg_t&&, const A&, allocator_arg_and_ator_cvref_requirer&&) {}
+
+    template <class T>
+    allocator_arg_and_ator_cvref_requirer(allocator_arg_t&&, T&&) = delete;
+    template <class T>
+    allocator_arg_and_ator_cvref_requirer(
+        allocator_arg_t&&, T&&, const allocator_arg_and_ator_cvref_requirer&) = delete;
+    template <class T>
+    allocator_arg_and_ator_cvref_requirer(allocator_arg_t&&, T&&, allocator_arg_and_ator_cvref_requirer&&) = delete;
 
     template <class A>
-    allocator_arg_mutable_rvalue_only(allocator_arg_t&, const A&) = delete;
+    allocator_arg_and_ator_cvref_requirer(allocator_arg_t&, const A&) = delete;
     template <class A>
-    allocator_arg_mutable_rvalue_only(allocator_arg_t&, const A&, const allocator_arg_mutable_rvalue_only&) = delete;
+    allocator_arg_and_ator_cvref_requirer(
+        allocator_arg_t&, const A&, const allocator_arg_and_ator_cvref_requirer&) = delete;
     template <class A>
-    allocator_arg_mutable_rvalue_only(allocator_arg_t&, const A&, allocator_arg_mutable_rvalue_only&&) = delete;
+    allocator_arg_and_ator_cvref_requirer(allocator_arg_t&, const A&, allocator_arg_and_ator_cvref_requirer&&) = delete;
 
     template <class A>
-    allocator_arg_mutable_rvalue_only(const allocator_arg_t&, const A&) = delete;
+    allocator_arg_and_ator_cvref_requirer(const allocator_arg_t&, const A&) = delete;
     template <class A>
-    allocator_arg_mutable_rvalue_only(
-        const allocator_arg_t&, const A&, const allocator_arg_mutable_rvalue_only&) = delete;
+    allocator_arg_and_ator_cvref_requirer(
+        const allocator_arg_t&, const A&, const allocator_arg_and_ator_cvref_requirer&) = delete;
     template <class A>
-    allocator_arg_mutable_rvalue_only(const allocator_arg_t&, const A&, allocator_arg_mutable_rvalue_only&&) = delete;
+    allocator_arg_and_ator_cvref_requirer(
+        const allocator_arg_t&, const A&, allocator_arg_and_ator_cvref_requirer&&) = delete;
 };
 
 template <class A>
-struct std::uses_allocator<allocator_arg_mutable_rvalue_only, A> : true_type {};
+struct std::uses_allocator<allocator_arg_and_ator_cvref_requirer, A> : true_type {};
 
-CONSTEXPR20 bool test_lwg4312() {
-    tuple<allocator_arg_mutable_rvalue_only> t1{allocator_arg, allocator<int>{}};
-    tuple<allocator_arg_mutable_rvalue_only> t2{allocator_arg, allocator<int>{}, get<0>(t1)};
-    tuple<allocator_arg_mutable_rvalue_only> t3{allocator_arg, allocator<int>{}, allocator_arg_mutable_rvalue_only{}};
+CONSTEXPR20 bool test_lwg4312() { // also test LWG-3187
+    using tuple_type = tuple<allocator_arg_and_ator_cvref_requirer>;
+
+    tuple_type t1{allocator_arg, allocator<int>{}};
+    tuple_type t2{allocator_arg, allocator<int>{}, get<0>(t1)};
+    tuple_type t3{allocator_arg, allocator<int>{}, allocator_arg_and_ator_cvref_requirer{}};
 
     (void) t1;
     (void) t2;
     (void) t3;
 
-    tuple<allocator_arg_mutable_rvalue_only> t4{allocator_arg, payloaded_allocator<int>{42}};
-    tuple<allocator_arg_mutable_rvalue_only> t5{allocator_arg, payloaded_allocator<int>{84}, get<0>(t1)};
-    tuple<allocator_arg_mutable_rvalue_only> t6{
-        allocator_arg, payloaded_allocator<int>{168}, allocator_arg_mutable_rvalue_only{}};
+    tuple_type t4{allocator_arg, payloaded_allocator<int>{42}};
+    tuple_type t5{allocator_arg, payloaded_allocator<int>{84}, get<0>(t4)};
+    tuple_type t6{allocator_arg, payloaded_allocator<int>{168}, allocator_arg_and_ator_cvref_requirer{}};
 
     (void) t4;
     (void) t5;

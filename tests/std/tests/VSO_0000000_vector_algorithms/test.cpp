@@ -723,40 +723,101 @@ void last_known_good_replace(FwdIt first, FwdIt last, const T old_val, const T n
     }
 }
 
+template <class FwdIt, class OutIt, class T>
+void last_known_good_replace_copy(FwdIt first, FwdIt last, OutIt dest, const T old_val, const T new_val) {
+    for (; first != last; ++first, ++dest) {
+        if (*first == old_val) {
+            *dest = new_val;
+        } else {
+            *dest = *first;
+        }
+    }
+}
+
 template <class T>
-void test_case_replace(const vector<T>& input, T old_val, T new_val) {
-    vector<T> replaced_actual(input);
-    vector<T> replaced_expected(input);
-    replace(replaced_actual.begin(), replaced_actual.end(), old_val, new_val);
-    last_known_good_replace(replaced_expected.begin(), replaced_expected.end(), old_val, new_val);
-    assert(replaced_expected == replaced_actual);
+void test_case_replace(vector<T>& in_out_expected, vector<T>& in_out_actual, vector<T>& in_out_actual_r,
+    const T old_val, const T new_val) {
+    replace(in_out_actual.begin(), in_out_actual.end(), old_val, new_val);
+    last_known_good_replace(in_out_expected.begin(), in_out_expected.end(), old_val, new_val);
+    assert(in_out_expected == in_out_actual);
 
 #if _HAS_CXX20
-    vector<T> replaced_actual_r(input);
-    ranges::replace(replaced_actual_r, old_val, new_val);
-    assert(replaced_expected == replaced_actual_r);
-#endif // _HAS_CXX20
+    ranges::replace(in_out_actual_r, old_val, new_val);
+    assert(in_out_expected == in_out_actual_r);
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    (void) in_out_actual_r;
+#endif // ^^^ !_HAS_CXX20 ^^^
+}
+
+template <class T>
+void test_case_replace_copy(const vector<T>& input, vector<T>& out_expected, vector<T>& out_actual,
+    vector<T>& out_actual_r, const T old_val, const T new_val) {
+
+    replace_copy(input.begin(), input.end(), out_actual.begin(), old_val, new_val);
+    last_known_good_replace_copy(input.begin(), input.end(), out_expected.begin(), old_val, new_val);
+    assert(out_expected == out_actual);
+
+#if _HAS_CXX20
+    ranges::replace_copy(input, out_actual_r.begin(), old_val, new_val);
+    assert(out_expected == out_actual_r);
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    (void) out_actual_r;
+#endif // ^^^ !_HAS_CXX20 ^^^
 }
 
 template <class T>
 void test_replace(mt19937_64& gen) {
+    // replace() is vectorized for 4 and 8 bytes only.
+    constexpr bool replace_is_vectorized = sizeof(T) >= 4;
+
     using TD = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis(0, 9);
-    vector<T> input;
 
-    input.reserve(dataCount);
+    vector<T> source;
+    vector<T> out_expected;
+    vector<T> out_actual;
+    vector<T> out_actual_r;
+    vector<T> in_out_expected;
+    vector<T> in_out_actual;
+    vector<T> in_out_actual_r;
+
+    for (const auto& v : {&source, &out_expected, &out_actual, &out_actual_r}) {
+        v->reserve(dataCount);
+    }
+
+    if constexpr (replace_is_vectorized) {
+        for (const auto& v : {&in_out_expected, &in_out_actual, &in_out_actual_r}) {
+            v->reserve(dataCount);
+        }
+    }
 
     {
         const T old_val = static_cast<T>(dis(gen));
         const T new_val = static_cast<T>(dis(gen));
-        test_case_replace(input, old_val, new_val);
+
+        if constexpr (replace_is_vectorized) {
+            test_case_replace(in_out_expected, in_out_actual, in_out_actual_r, old_val, new_val);
+        }
+        test_case_replace_copy(source, out_expected, out_actual, out_actual_r, old_val, new_val);
     }
 
-    for (size_t i = 0; i != dataCount; ++i) {
-        input.push_back(static_cast<T>(dis(gen)));
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        source.push_back(static_cast<T>(dis(gen)));
         const T old_val = static_cast<T>(dis(gen));
         const T new_val = static_cast<T>(dis(gen));
-        test_case_replace(input, old_val, new_val);
+
+        for (const auto& v : {&in_out_expected, &in_out_actual, &in_out_actual_r}) {
+            *v = source;
+        }
+
+        for (const auto& v : {&out_expected, &out_actual, &out_actual_r}) {
+            v->assign(source.size(), T{0});
+        }
+
+        if constexpr (replace_is_vectorized) {
+            test_case_replace(in_out_expected, in_out_actual, in_out_actual_r, old_val, new_val);
+        }
+        test_case_replace_copy(source, out_expected, out_actual, out_actual_r, old_val, new_val);
     }
 }
 
@@ -1287,7 +1348,11 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_includes<unsigned long long>(gen);
 #endif // _HAS_CXX17
 
-    // replace() is vectorized for 4 and 8 bytes only.
+    test_replace<char>(gen);
+    test_replace<signed char>(gen);
+    test_replace<unsigned char>(gen);
+    test_replace<short>(gen);
+    test_replace<unsigned short>(gen);
     test_replace<int>(gen);
     test_replace<unsigned int>(gen);
     test_replace<long long>(gen);

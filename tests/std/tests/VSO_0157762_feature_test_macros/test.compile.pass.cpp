@@ -197,10 +197,8 @@ STATIC_ASSERT(__cpp_lib_common_reference_wrapper == 202302L);
 
 STATIC_ASSERT(__cpp_lib_complex_udls == 201309L);
 
-#if _HAS_CXX23
+#if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_concepts == 202207L);
-#elif _HAS_CXX20
-STATIC_ASSERT(__cpp_lib_concepts == 202002L);
 #elif defined(__cpp_lib_concepts)
 #error __cpp_lib_concepts is defined
 #endif
@@ -492,6 +490,8 @@ STATIC_ASSERT(__cpp_lib_hypot == 201603L);
 #endif
 
 STATIC_ASSERT(__cpp_lib_incomplete_container_elements == 201505L);
+
+STATIC_ASSERT(__cpp_lib_initializer_list == 202511L);
 
 #if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_int_pow2 == 202002L);
@@ -1038,6 +1038,8 @@ STATIC_ASSERT(__cpp_lib_unwrap_ref == 201811L);
 #elif defined(__cpp_lib_unwrap_ref)
 #error __cpp_lib_unwrap_ref is defined
 #endif
+
+STATIC_ASSERT(__cpp_lib_valarray == 202511L);
 
 #if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_variant == 202106L);

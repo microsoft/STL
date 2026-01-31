@@ -80,6 +80,7 @@
 //     (__cpp_lib_freestanding_algorithm and __cpp_lib_freestanding_array only)
 // P2937R0 Freestanding Library: Remove strtok
 // P2968R2 Make std::ignore A First-Class Object
+// P3016R6 Resolve Inconsistencies In begin/end For valarray And Braced Initializer Lists
 // P3223R2 Making istream::ignore() Less Surprising
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic<cv T>)
@@ -292,6 +293,7 @@
 // P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
 // P2372R3 Fixing Locale Handling In chrono Formatters
 // P2393R1 Cleaning Up Integer-Class Types
+// P2404R3 Move-Only Types For Comparison Concepts
 // P2408R5 Ranges Iterators As Inputs To Non-Ranges Algorithms
 // P2415R2 What Is A view?
 // P2418R2 Add Support For std::generator-like Types To std::format
@@ -365,7 +367,6 @@
 // P2322R6 ranges::fold_left, ranges::fold_right, Etc.
 // P2374R4 views::cartesian_product
 // P2387R3 Pipe Support For User-Defined Range Adaptors
-// P2404R3 Move-Only Types For Comparison Concepts
 // P2417R2 More constexpr bitset
 // P2438R2 string::substr() &&
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
@@ -922,7 +923,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 145
-#define _MSVC_STL_UPDATE  202511L
+#define _MSVC_STL_UPDATE  202601L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1578,6 +1579,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_freestanding_tuple               202306L
 #define __cpp_lib_freestanding_utility             202306L
 #define __cpp_lib_generic_associative_lookup       201304L
+#define __cpp_lib_initializer_list                 202511L
 #define __cpp_lib_integer_sequence                 201304L
 #define __cpp_lib_integral_constant_callable       201304L
 #define __cpp_lib_is_final                         201402L
@@ -1595,6 +1597,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_transformation_trait_aliases 201304L
 #define __cpp_lib_tuple_element_t              201402L
 #define __cpp_lib_tuples_by_type               201304L
+#define __cpp_lib_valarray                     202511L
 
 // C++17
 #define __cpp_lib_addressof_constexpr              201603L
@@ -1681,6 +1684,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_bounded_array_traits            201902L
 #define __cpp_lib_common_reference                202302L
 #define __cpp_lib_common_reference_wrapper        202302L
+#define __cpp_lib_concepts                        202207L
 #define __cpp_lib_constexpr_algorithms            201806L
 #define __cpp_lib_constexpr_complex               201711L
 #define __cpp_lib_constexpr_dynamic_alloc         201907L
@@ -1819,12 +1823,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif
 
 #if _HAS_CXX23
-#define __cpp_lib_concepts 202207L // P2404R3 Move-Only Types For Comparison Concepts
-#elif _HAS_CXX20
-#define __cpp_lib_concepts 202002L // P1964R2 Replacing boolean With boolean-testable
-#endif
-
-#if _HAS_CXX23
 #define __cpp_lib_constexpr_memory 202202L // P2273R3 constexpr unique_ptr
 #elif _HAS_CXX20
 #define __cpp_lib_constexpr_memory 201811L // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
@@ -1932,11 +1930,9 @@ _EMIT_STL_ERROR(STL1013, "The STL doesn't support /RTCc because it rejects confo
 // The earliest Windows supported by this implementation is Windows 10.
 
 #ifdef __cpp_noexcept_function_type
-#define _NOEXCEPT_FNPTR           noexcept
-#define _NOEXCEPT_FNPTR_COND(...) noexcept(__VA_ARGS__)
+#define _NOEXCEPT_FNPTR noexcept
 #else // ^^^ defined(__cpp_noexcept_function_type) / !defined(__cpp_noexcept_function_type) vvv
 #define _NOEXCEPT_FNPTR
-#define _NOEXCEPT_FNPTR_COND(...)
 #endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
 
 #ifdef __clang__
@@ -1953,9 +1949,7 @@ _EMIT_STL_ERROR(STL1013, "The STL doesn't support /RTCc because it rejects confo
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // ^^^ !defined(_ENABLE_STL_INTERNAL_CHECK) ^^^
 
-#if defined(__CUDACC__) || (defined(__clang__) && __clang_major__ < 16)
-// TRANSITION, CUDA 12.4 doesn't have downlevel support for static call operators.
-// TRANSITION, VSO-2397560, temporary workaround for Real World Code relying on ancient Clang versions.
+#ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't have downlevel support for static call operators.
 #define _STATIC_CALL_OPERATOR
 #define _CONST_CALL_OPERATOR const
 #else // ^^^ workaround / no workaround vvv

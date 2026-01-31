@@ -902,7 +902,8 @@ void test_gh_993() {
 void test_gh_997() {
     // GH-997: <regex>: Grouping within repetition causes regex stack error
     // GH-1528: <regex>: regex_match gets caught in recursive loop until stack overflow occurs
-    g_regexTester.should_match(string(1025, 'a'), "(?:a)+");
+    g_regexTester.should_match(string(2000, 'a'), "(?:a)+");
+    g_regexTester.should_match(string(2000, 'a'), "(?:a|bc)+");
 
     {
         test_wregex rgx(&g_regexTester, LR"(^http[s]?://([^.]+\.)*example\.com/.*$)", icase);
@@ -2361,6 +2362,83 @@ void test_gh_5918() {
     g_regexTester.should_match("ababa", R"((?:(a)(?:|b\1b)){2})");
 }
 
+void test_gh_5939() {
+    // GH-5939: Avoid stack growth in simple loops
+    // This PR manipulates the stack while processing simple loops to avoid growing it.
+    // The following tests verify that backtracking from such loops still works
+    // and matches capturing groups even with these modifications to the stack.
+    g_regexTester.should_match("abcdd", R"(([abc])*?abcd\1d)");
+
+    g_regexTester.should_match("abb", R"((a)*ab\1b)");
+    g_regexTester.should_match("abb", R"((a){0,1}ab\1b)");
+    g_regexTester.should_not_match("abb", R"((a){1,1}ab\1b)");
+    g_regexTester.should_not_match("abb", R"((a){1,2}ab\1b)");
+    g_regexTester.should_match("aabab", R"((a){1,2}ab\1b)");
+    g_regexTester.should_match("abcdab", R"((?:([abc])([abc]))*cd\1\2)");
+    g_regexTester.should_match("abcdab", R"((?:([abc])([abc])){0,1}cd\1\2)");
+    g_regexTester.should_match("abbacdba", R"((?:([abc])([abc]))*cd\1\2)");
+    g_regexTester.should_match("abbacdab", R"((?:([abc])([abc]))*bacd\1\2)");
+    g_regexTester.should_match("abbacd", R"((?:([abc])([abc]))*abbacd\1\2)");
+    g_regexTester.should_match("abbacdba", R"((?:([abc])([abc]))+cd\1\2)");
+    g_regexTester.should_match("abbacdab", R"((?:([abc])([abc]))+bacd\1\2)");
+    g_regexTester.should_match("abbacdab", R"((?:([abc])([abc])){0,2}bacd\1\2)");
+    g_regexTester.should_match("abbacdab", R"((?:([abc])([abc])){1,2}bacd\1\2)");
+    g_regexTester.should_not_match("abbacdab", R"((?:([abc])([abc]))+abbacd\1\2)");
+    g_regexTester.should_match("abbacdba", R"((?:([abc])([abc])){2,}cd\1\2)");
+    g_regexTester.should_not_match("abbacdab", R"((?:([abc])([abc])){2,}bacd\1\2)");
+    g_regexTester.should_not_match("abbacdab", R"((?:([abc])([abc])){2,}abbacd\1\2)");
+    g_regexTester.should_match("abcbbacdba", R"((?:([abc])([abc])){2,}cd\1\2)");
+    g_regexTester.should_match("abcbbacdcb", R"((?:([abc])([abc])){2,}bacd\1\2)");
+    g_regexTester.should_not_match("abcbbacdab", R"((?:([abc])([abc])){2,}abbacd\1\2)");
+}
+
+void test_gh_5944() {
+    // GH-5944: <regex>: Revising the stack and complexity limits
+
+    // long strings should be matched successfully if the regex is simple
+    g_regexTester.should_match(string(20000000, 'a'), "a+");
+
+    // too much backtracking in complex regex expressions must result in a complexity exception
+    try {
+        regex re("a*[^b]*a*[^b]*a*[^b]*a*[^b]*a*[^b]*a*[^b]*");
+        (void) regex_match("aaaaaaaaaaaaaaaaaaaaaaaaaaaaab", re);
+        assert(false);
+    } catch (const regex_error& ex) {
+        assert(ex.code() == error_complexity);
+    }
+}
+
+void test_gh_6022() {
+    // GH-6022: Optimize matching of branchless loops
+    g_regexTester.should_match("acddabb", R"((?:([ac])*d)*ab\1b)");
+    g_regexTester.should_match("acdaadabab", R"((?:([ac])*d)*ab\1b)");
+    g_regexTester.should_match("acddabcb", R"((?:([ac])*d)*dab\1b)");
+
+    g_regexTester.should_match("addabb", R"((?:(a){0,1}d)*ab\1b)");
+    g_regexTester.should_match("adadabab", R"((?:(a){0,1}d)*ab\1b)");
+    g_regexTester.should_match("adadabb", R"((?:(a){0,1}d)*adadab\1b)");
+    g_regexTester.should_not_match("adaddabab", R"((?:(a){0,1}d)*ab\1b)");
+    g_regexTester.should_not_match("dabb", R"((?:(a){1,1}d)+ab\1b)");
+    g_regexTester.should_not_match("addabb", R"((?:(a){1,2}d)+ab\1b)");
+    g_regexTester.should_not_match("adaadabb", R"((?:(a){1,2}d)+ab\1b)");
+
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcdbc", R"((?:(?:([abc])([abc]))*d)+cd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdab", R"((?:(?:([abc])([abc]))*d)+dcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdab", R"((?:(?:([abc])([abc]))*d)+bcdcd\1\2)");
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcd", R"((?:(?:([abc])([abc]))*d)*abbcdcd\1\2)");
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcdba", R"((?:(?:([abc])([abc]))*d)*dabbcdcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdba", R"((?:(?:([abc])([abc]))*d)+ddabbcdcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdab", R"((?:(?:([abc])([abc]))*d)+baddabbcdcd\1\2)");
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcdac", R"((?:(?:([abc])([abc]))*d)*abbaddabbcdcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdac", R"((?:(?:([abc])([abc]))*d)*dabbaddabcdcd\1\2)");
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcdbc", R"((?:(?:([abc])([abc]))*d)*acdabbaddabbcdcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdbc", R"((?:(?:([abc])([abc]))*d)*dacdabbaddabbcdcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdca", R"((?:(?:([abc])([abc]))*d)*bcdacdabbaddabbcdcd\1\2)");
+    g_regexTester.should_not_match(
+        "bacabcdacdabbaddabbcdcdba", R"((?:(?:([abc])([abc]))*d)*cabcdacdabbaddabbcdcd\1\2)");
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcd", R"((?:(?:([abc])([abc]))*d)*bacabcdacdabbaddabbcdcd\1\2)");
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2420,6 +2498,9 @@ int main() {
     test_gh_5798();
     test_gh_5865();
     test_gh_5918();
+    test_gh_5939();
+    test_gh_5944();
+    test_gh_6022();
 
     return g_regexTester.result();
 }
