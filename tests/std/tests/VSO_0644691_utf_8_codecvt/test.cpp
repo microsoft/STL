@@ -48,6 +48,9 @@ const encoding_test_char utf_test_cases[] = {
     // ^^^ TRANSITION, VSO-653059 ^^^
     {"\xC2\x61", nullptr}, // Wrong number of trailing bytes
     {"\xE0\xA0\x61", nullptr},
+
+    {"\xC0\x80", nullptr}, // overlong form
+    {"\xC0\x81", nullptr},
 };
 
 void assert_empty_file(const wchar_t* const fileName) {
