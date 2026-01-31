@@ -126,8 +126,7 @@ _MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(
             }
         }
 
-        // Reject overlong forms and out-of-range code points (see N4950 [locale.codecvt.virtuals]/3)
-        if ((consumedCount == 2 && wch < 0x80u) || (consumedCount == 3 && wch < 0x800u) || wch > 0x10FFFFu) {
+        if ((consumedCount == 2 && wch < 0x80u) || (consumedCount == 3 && wch < 0x800u)) { // overlong forms
             errno = EILSEQ;
             return -1;
         }
