@@ -642,12 +642,6 @@
 #define _NODISCARD_GET_FUTURE \
     [[nodiscard("Since 'get_future' may be called only once, discarding the result is likely a mistake.")]]
 
-#define _NODISCARD_CTOR_SOURCE_LOCATION \
-    [[nodiscard("This temporary 'std::source_location' is unused, which is likely a mistake.")]]
-
-#define _NODISCARD_CTOR_REPEAT_VIEW \
-    [[nodiscard("This temporary 'std::ranges::repeat_view' is unused, which is likely a mistake.")]]
-
 #pragma push_macro("msvc")
 #pragma push_macro("known_semantics")
 #pragma push_macro("noop_dtor")

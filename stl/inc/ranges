@@ -1259,7 +1259,7 @@ namespace ranges {
             requires default_initializable<_Ty>
         = default;
 
-        _NODISCARD_CTOR_REPEAT_VIEW constexpr explicit repeat_view(const _Ty& _Value_, _Bo _Bound_ = _Bo{})
+        _NODISCARD constexpr explicit repeat_view(const _Ty& _Value_, _Bo _Bound_ = _Bo{})
             noexcept(is_nothrow_copy_constructible_v<_Ty>) // strengthened
             requires copy_constructible<_Ty>
             : _Value(in_place, _Value_), _Bound(_STD move(_Bound_)) {
@@ -1269,7 +1269,7 @@ namespace ranges {
             }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         }
-        _NODISCARD_CTOR_REPEAT_VIEW constexpr explicit repeat_view(_Ty&& _Value_, _Bo _Bound_ = _Bo{})
+        _NODISCARD constexpr explicit repeat_view(_Ty&& _Value_, _Bo _Bound_ = _Bo{})
             noexcept(is_nothrow_move_constructible_v<_Ty>) // strengthened
             : _Value(in_place, _STD move(_Value_)), _Bound(_STD move(_Bound_)) {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -1280,7 +1280,7 @@ namespace ranges {
         }
         template <class... _TArgs, class... _BArgs>
             requires constructible_from<_Ty, _TArgs...> && constructible_from<_Bo, _BArgs...>
-        _NODISCARD_CTOR_REPEAT_VIEW constexpr explicit repeat_view(
+        _NODISCARD constexpr explicit repeat_view(
             piecewise_construct_t, tuple<_TArgs...> _Val_args, tuple<_BArgs...> _Bound_args = tuple<>{})
             noexcept(noexcept(_RANGES _Make_box_from_tuple<_Ty>(_STD move(_Val_args)))
                      && noexcept(_STD make_from_tuple<_Bo>(_STD move(_Bound_args)))) // strengthened

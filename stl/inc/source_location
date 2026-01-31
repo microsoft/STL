@@ -42,7 +42,7 @@ _EXPORT_STD struct source_location {
         return _Result;
     }
 
-    _NODISCARD_CTOR_SOURCE_LOCATION constexpr source_location() noexcept = default;
+    _NODISCARD constexpr source_location() noexcept = default;
 
     _NODISCARD constexpr uint_least32_t line() const noexcept {
         return _Line;
