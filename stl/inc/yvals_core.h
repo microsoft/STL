@@ -607,23 +607,13 @@
                 "It is not useful to call 'std::launder' and discard the return value.")]]
 
 #ifdef _SILENCE_NODISCARD_LOCK_WARNINGS
-
 #define _NODISCARD_LOCK
-#define _NODISCARD_CTOR_LOCK
-
-#else // ^^^ defined(_SILENCE_NODISCARD_LOCK_WARNINGS) / !defined(_SILENCE_NODISCARD_LOCK_WARNINGS) vvv
-
+#else // ^^^ warning disabled / warning enabled vvv
 #define _NODISCARD_LOCK                                                                                             \
     [[nodiscard("A lock should be stored in a variable to protect the scope. If you're intentionally constructing " \
                 "a temporary to protect the rest of the current expression using the comma operator, you can cast " \
                 "the temporary to void or define _SILENCE_NODISCARD_LOCK_WARNINGS to suppress this warning.")]]
-
-#define _NODISCARD_CTOR_LOCK                                                                                        \
-    [[nodiscard("A lock should be stored in a variable to protect the scope. If you're intentionally constructing " \
-                "a temporary to protect the rest of the current expression using the comma operator, you can cast " \
-                "the temporary to void or define _SILENCE_NODISCARD_LOCK_WARNINGS to suppress this warning.")]]
-
-#endif // ^^^ !defined(_SILENCE_NODISCARD_LOCK_WARNINGS) ^^^
+#endif // ^^^ warning enabled ^^^
 
 #define _NODISCARD_CTOR_THREAD                                             \
     [[nodiscard("This temporary 'std::thread' is not joined or detached, " \
