@@ -249,6 +249,25 @@ __declspec(noalias) size_t __stdcall __std_mismatch_8(const void* _First1, const
 
 } // extern "C"
 
+#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-10798069
+_STD_BEGIN
+struct _Secret_placement_new_tag {
+    explicit _Secret_placement_new_tag() = default;
+};
+_STD_END
+
+template <_STD same_as<_STD _Secret_placement_new_tag> _Tag>
+_NODISCARD _Ret_notnull_ _Post_writable_byte_size_(_Size)
+    _Post_satisfies_(return == _Where) constexpr void* __CRTDECL operator new[](
+        size_t _Size, _Tag, _Writable_bytes_(_Size) void* _Where) noexcept {
+    (void) _Size;
+    return _Where;
+}
+
+template <_STD same_as<_STD _Secret_placement_new_tag> _Tag>
+constexpr void __CRTDECL operator delete[](void*, _Tag, void*) noexcept {}
+#endif // ^^^ workaround ^^^
+
 _STD_BEGIN
 
 template <class _Target, class _Source>
@@ -590,12 +609,31 @@ struct _Get_rebind_alias<_Ty, _Other, void_t<typename _Ty::template rebind<_Othe
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class... _Types>
-    requires requires(_Ty* _Location, _Types&&... _Args) {
+    requires (!is_unbounded_array_v<_Ty>) && requires(_Ty* _Location, _Types&&... _Args) {
         ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...); // per LWG-3888
     }
 constexpr _Ty* construct_at(_Ty* const _Location, _Types&&... _Args)
     noexcept(noexcept(::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
-    _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...);
+    if constexpr (is_array_v<_Ty>) {
+        static_assert(sizeof...(_Types) == 0, "The array is only allowed to be value-initialized by std::construct_at. "
+                                              "(N5032 [specialized.construct]/2)");
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-117294, DevCom-10798145
+        ::new (static_cast<void*>(_Location)) _Ty();
+        return __builtin_launder(_Location); // per old resolution of LWG-3436
+#elif defined(_MSC_VER) // TRANSITION, DevCom-10798069
+        if constexpr (is_trivially_destructible_v<_Ty>) {
+            _MSVC_CONSTEXPR return ::new (_Secret_placement_new_tag{}, static_cast<void*>(_Location)) _Ty[1]();
+        } else {
+            // For non-trivially-destructible types, the workaround doesn't work
+            // because additional space is required to record the number of class objects to destroy.
+            return ::new (static_cast<void*>(_Location)) _Ty[1]();
+        }
+#else // ^^^ workaround / no workaround vvv
+        _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty[1]();
+#endif // ^^^ no workaround ^^^
+    } else {
+        _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...);
+    }
 }
 #endif // _HAS_CXX20
 
