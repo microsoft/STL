@@ -64,31 +64,64 @@ _NODISCARD _CONSTEXPR23 to_chars_result _Integer_to_chars(
     switch (_Base) {
     case 10:
         { // Derived from _UIntegral_to_buff()
-            // Performance note: Ryu's digit table should be faster here.
-            constexpr bool _Use_chunks = sizeof(_Unsigned) > sizeof(size_t);
+#ifndef _WIN64
+            auto _Trunc = _Value;
+#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
 
-            if constexpr (_Use_chunks) { // For 64-bit numbers on 32-bit platforms, work in chunks to avoid 64-bit
-                                         // divisions.
-                while (_Value > 0xFFFF'FFFFU) {
-                    // Performance note: Ryu's division workaround would be faster here.
-                    unsigned long _Chunk = static_cast<unsigned long>(_Value % 1'000'000'000);
-                    _Value               = static_cast<_Unsigned>(_Value / 1'000'000'000);
+            if constexpr (sizeof(_Unsigned) > 4) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
+                while (_Value > 0xFFFFFFFFU) {
+                    auto _Value_chunk = static_cast<unsigned long>(_Value % 100000000);
+                    _Value /= 100000000;
 
-                    for (int _Idx = 0; _Idx != 9; ++_Idx) {
-                        *--_RNext = static_cast<char>('0' + _Chunk % 10);
-                        _Chunk /= 10;
+                    for (int _Idx = 0; _Idx != 3; ++_Idx) {
+                        const unsigned long _Value_chunk_part = _Value_chunk % 100;
+                        _Value_chunk /= 100;
+                        _RNext -= 2;
+                        if (!_STD _Is_constant_evaluated()) {
+                            _CSTD memcpy(_RNext, _Digit_pairs<char>._Data[_Value_chunk_part], 2);
+                        } else {
+                            _RNext[0] = _Digit_pairs<char>._Data[_Value_chunk_part][0];
+                            _RNext[1] = _Digit_pairs<char>._Data[_Value_chunk_part][1];
+                        }
+                    }
+
+                    _RNext -= 2;
+                    if (!_STD _Is_constant_evaluated()) {
+                        _CSTD memcpy(_RNext, _Digit_pairs<char>._Data[_Value_chunk], 2);
+                    } else {
+                        _RNext[0] = _Digit_pairs<char>._Data[_Value_chunk][0];
+                        _RNext[1] = _Digit_pairs<char>._Data[_Value_chunk][1];
                     }
                 }
             }
 
-            using _Truncated = conditional_t<_Use_chunks, unsigned long, _Unsigned>;
+            auto _Trunc = static_cast<unsigned long>(_Value);
+#endif // ^^^ !defined(_WIN64) ^^^
 
-            _Truncated _Trunc = static_cast<_Truncated>(_Value);
+            // If we have a single digit, print [0, 9] and return. (This is necessary to correctly handle 0.)
+            if (_Trunc < 10) {
+                *--_RNext = static_cast<char>('0' + _Trunc);
+                break;
+            }
 
+            // Print one or more pairs of digits.
             do {
-                *--_RNext = static_cast<char>('0' + _Trunc % 10);
-                _Trunc /= 10;
-            } while (_Trunc != 0);
+                const auto _Trunc_part = static_cast<unsigned long>(_Trunc % 100);
+                _Trunc /= 100;
+                _RNext -= 2;
+                if (!_STD _Is_constant_evaluated()) {
+                    _CSTD memcpy(_RNext, _Digit_pairs<char>._Data[_Trunc_part], 2);
+                } else {
+                    _RNext[0] = _Digit_pairs<char>._Data[_Trunc_part][0];
+                    _RNext[1] = _Digit_pairs<char>._Data[_Trunc_part][1];
+                }
+            } while (_Trunc >= 10);
+
+            // If we have an unpaired digit, print it.
+            // For example, 1729 is printed as 17 29, and 19937 is printed as 1 99 37.
+            if (_Trunc != 0) {
+                *--_RNext = static_cast<char>('0' + _Trunc);
+            }
             break;
         }
 
