@@ -42,7 +42,7 @@ void transform_two_inputs_aligned(benchmark::State& state) {
     }
 }
 
-void common_args(auto bm) {
+void common_args(benchmark::Benchmark* bm) {
     bm->RangeMultiplier(64)->Range(64, 64 << 10);
 }
 
