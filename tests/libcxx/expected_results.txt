@@ -67,12 +67,8 @@ std/language.support/support.coroutines/coroutine.handle/coroutine.handle.noop/n
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:2 FAIL
 std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:2 FAIL
 
-# LLVM-176232: The implementation of P3567R2 "flat_meow Fixes" forgot to update `__cpp_lib_flat_set`
-std/language.support/support.limits/support.limits.general/flat_set.version.compile.pass.cpp FAIL
-
-# LLVM-178624: [libc++][test] flat_set tests have an EvilContainer that's too evil
-std/containers/container.adaptors/flat.multiset/flat.multiset.cons/move.pass.cpp FAIL
-std/containers/container.adaptors/flat.set/flat.set.cons/move.pass.cpp FAIL
+# LLVM-178855: [libc++][test] -Wunused-variable warning in thread.semaphore/lost_wakeup.timed.pass.cpp
+std/thread/thread.semaphore/lost_wakeup.timed.pass.cpp:2 FAIL
 
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
@@ -1034,9 +1030,6 @@ std/algorithms/algorithms.results/min_max_result.pass.cpp:1 FAIL
 # Not analyzed.
 std/algorithms/robust_against_proxy_iterators_lifetime_bugs.pass.cpp FAIL
 
-# Not analyzed. Inspecting shift operators for quoted().
-std/input.output/iostream.format/quoted.manip/quoted_traits.compile.pass.cpp FAIL
-
 # Not analyzed. Failing assert(arr[0].moves() == 1 && arr[1].moves() == 3).
 std/iterators/iterator.requirements/iterator.cust/iterator.cust.swap/iter_swap.pass.cpp FAIL
 
@@ -1080,6 +1073,7 @@ std/strings/basic.string/string.modifiers/string_replace/replace_with_range.pass
 std/utilities/charconv/charconv.to.chars/integral.pass.cpp FAIL
 
 # Not analyzed, failing due to constexpr step limits. SKIPPED because they occasionally pass in certain configurations.
+std/algorithms/alg.modifying.operations/alg.shift/ranges.shift_left.pass.cpp SKIPPED
 std/utilities/template.bitset/bitset.members/left_shift_eq.pass.cpp SKIPPED
 std/utilities/template.bitset/bitset.members/op_and_eq.pass.cpp SKIPPED
 std/utilities/template.bitset/bitset.members/op_or_eq.pass.cpp SKIPPED
