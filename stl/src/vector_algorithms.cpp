@@ -248,6 +248,22 @@ void* __cdecl __std_swap_ranges_trivially_swappable(
 
 namespace {
     namespace _Rotating {
+        // The 'rotate' algorithm can be implemented:
+        //  - using 'reverse' on the parts and the whole
+        //  - using 'swap_ranges' repeatedly
+        // If both are vectorized, the latter is generally faster, due to avoiding extra swizzling.
+        //
+        // On top of 'swap_ranges' the following optimizations are made:
+        //  - using a temporary buffer (on the stack), if one of the parts is small enough
+        //  - 'swap_ranges' with more than two ranges
+        //
+        // When swapping multiple ranges, the more ranges the fewer operations, however:
+        //  - determining the number of ranges at runtime will require more instructions to manage it
+        //  - adding more code paths will spend more instruction cache and will fail branch prediction more often
+        //  - going way too far with the number of ranges may interfere with prefetching
+        //
+        // We implement the 'swap_ranges' approach with a small temporary buffer and swapping three ranges.
+
 #ifdef _M_ARM64
         void __forceinline _Swap_3_ranges(void* _First1, void* const _Last1, void* _First2, void* _First3) noexcept {
             if (_Byte_length(_First1, _Last1) >= 64) {
@@ -923,6 +939,15 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 
 namespace {
     namespace _Sorting {
+        // The 'minmax' and 'minmax_element' algorithms first compare vectors against other vectors
+        // ("vertical" comparisons), then elements of the same vector ("horizontal" comparisons).
+        // For 'minmax' that's it.
+        //
+        // 'minmax_element' needs to track element positions, so it has a vector of integers that is incremented,
+        // and min/max indices vectors.
+        // Since small integer indices for small elements may overflow, we sometimes have to do the horizontal part
+        // more often than just once at the end.
+
         enum _Min_max_mode {
             _Mode_min  = 1 << 0,
             _Mode_max  = 1 << 1,
@@ -4785,6 +4810,9 @@ namespace {
 
                     _MskX = (_MskX >> sizeof(_Ty)) & _MskX;
 
+                    // Use __ull_rshift for better codegen in 32-bit mode, assuming the shifts are small.
+                    // In 64-bit mode, __ull_rshift works exactly the same as the right shift operator.
+
                     if constexpr (sizeof(_Ty) == 1) {
                         _MskX = __ull_rshift(_MskX, _Sh1) & _MskX;
                     }
@@ -5527,10 +5555,33 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_8(
 #ifndef _M_ARM64
 namespace {
     namespace _Find_meow_of {
+        // 'find_meow_of' is a quadratic complexity algorithm.
+        // Quadratic vectorization:
+        //  - SSE4.2 for 8-bit and 16-bit elements: _mm_cmpestri
+        //  - AVX2 for 32-bit and 64-bit elements: shuffle elements so that each is tried in each position,
+        //    find the min/max match position
+        //
+        // But for a needle with elements in a small range, a bitmap can be used, making the algorithm linear.
+        // We consider that only for 'basic_string'/'basic_string_view', not for 'std::find_first_of'.
+        // We consider bitmaps for elements in the range [0, 255].
+        //
+        // We have two different bitmap algorithms: AVX2 and scalar.
+        // The decision is based on needle and haystack lengths, see _Pick_strategy.
+
         enum class _Predicate { _Any_of, _None_of };
 
 #ifndef _M_ARM64EC
         namespace _Bitmap_details {
+            // AVX2 bitmap: __m256i value with each bit corresponding to a needle element. Set bits mean "present".
+            //
+            // The bitmap algorithm implemented in _Bitmap_step:
+            //  - Process by 8 elements, populate them as in 32-bit values vector,
+            //    regardless of the original element size
+            //  - Split the low 5 bits and high 3 bits of these elements
+            //  - Use the high 3 bits with _mm256_permutevar8x32_epi32 to find 32-bit bitmap portion for each element
+            //  - Use the low 5 bits to shift the bitmap portion, so that the bitmap bit corresponding to them is on
+            //    highest position. Negate these low 5 bits before that, as we're populating the highest position
+            //  - The resulting mask can later be converted via _mm256_movemask_ps to one byte bitmap
             __m256i _Bitmap_step(const __m256i _Bitmap, const __m256i _Data) noexcept {
                 const __m256i _Data_high    = _mm256_srli_epi32(_Data, 5);
                 const __m256i _Bitmap_parts = _mm256_permutevar8x32_epi32(_Bitmap, _Data_high);
@@ -5751,6 +5802,10 @@ namespace {
                 }
             }
 
+            // The bitmap takes time to setup (especially AVX2), but it's linear and fast (especially AVX2, again), so:
+            //  - with a small amount of total iterations, the vectorized quadratic algorithm wins over bitmaps
+            //  - with a small haystack, among bitmaps the scalar bitmap is preferred, even if AVX2 is available
+
             enum class _Strategy { _No_bitmap, _Scalar_bitmap, _Vector_bitmap };
 
             template <class _Ty>
@@ -5899,6 +5954,8 @@ namespace {
             }
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
 
+            // Scalar bitmap: bools, not really compressed to bits, for faster building and faster access.
+            // For sizes above integers but fitting within cache, this approach wins.
             using _Scalar_table_t = bool[256];
 
             template <class _Ty>
@@ -6861,6 +6918,18 @@ __declspec(noalias) size_t __stdcall __std_find_last_not_of_trivial_pos_2(const 
 
 namespace {
     namespace _Find_seq {
+        // The caveat in the 'search' and 'find_end' optimization is that this pattern would be inefficient:
+        //   for (auto i = hay_begin; i != hay_end; ++i) {
+        //      if (memcmp(i, needle, size) == 0) { return i; }
+        //   }
+        // because the mismatch usually happens early, so memcmp would typically be slower than a simple loop.
+        //
+        // The solution is:
+        //  - in outer loop, do the 'find'-like thing, but preserve the setup (i.e. vector with first needle element)
+        //  - in inner loop, try to compare with readily available needle in a register,
+        //    or at least with the needle start, if the needle is long, to fail early mismatches early.
+        // Or use SSE4.2 _mm_cmpestri, which can be good too, especially for 8-bit forward search.
+
 #ifdef _M_ARM64EC
         using _Find_seq_traits_avx_1 = void;
         using _Find_seq_traits_avx_2 = void;
@@ -8079,6 +8148,17 @@ __declspec(noalias) void __stdcall __std_replace_copy_8(const void* const _First
 
 namespace {
     namespace _Removing {
+        // 'remove' and 'unique': form bit mask based on matches, then do _mm_shuffle_epi8/_mm256_permutevar8x32_epi32
+        // to the destination with removed matches; the shuffle pattern is taken from a lookup table using the bit mask.
+        // After writing to dest, shift the dest pointer by the mismatch count.
+        // There will be redundant elements written, and they will be subsequently overwritten by overlapped writes.
+        //
+        // 'unique': the bit mask is formed by comparing against shifted self. 'adjacent_find' must precede this
+        // to avoid a load overlapping a just stored vector (store buffer stall).
+        //
+        // Non '_copy' flavors: store directly, the data past the returned iterator must be ignored anyway.
+        // '_copy' flavors: can't write more than expected, use intermediate buffer and then copy to dest.
+
         template <class _Ty>
         void* _Remove_fallback(
             const void* const _First, const void* const _Last, void* const _Out, const _Ty _Val) noexcept {
