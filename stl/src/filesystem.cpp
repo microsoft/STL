@@ -487,7 +487,8 @@ struct __std_fs_file_id { // typedef struct _FILE_ID_INFO {
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_write_reparse_data_buffer(
     _In_ const __std_fs_file_handle _Handle, _In_ const __std_fs_reparse_data_buffer* const _Buffer) noexcept {
-    const auto _Buffer_size = __std_fs_reparse_data_buffer_header_size + _Buffer->_Reparse_data_length;
+    constexpr unsigned long _Reparse_data_buffer_header_size = 8; // REPARSE_DATA_BUFFER_HEADER_SIZE
+    const auto _Buffer_size = _Reparse_data_buffer_header_size + _Buffer->_Reparse_data_length;
     if (DeviceIoControl(reinterpret_cast<HANDLE>(_Handle), FSCTL_SET_REPARSE_POINT,
             const_cast<__std_fs_reparse_data_buffer*>(_Buffer), _Buffer_size, nullptr, 0, nullptr, nullptr)) {
         return __std_win_error::_Success;

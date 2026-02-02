@@ -178,8 +178,6 @@ struct __std_fs_reparse_data_buffer { // typedef struct _REPARSE_DATA_BUFFER
     };
 };
 
-inline constexpr unsigned long __std_fs_reparse_data_buffer_header_size = 8; // REPARSE_DATA_BUFFER_HEADER_SIZE
-
 struct __std_ulong_and_error {
     unsigned long _Size;
     __std_win_error _Error;
