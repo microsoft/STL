@@ -3219,7 +3219,7 @@ namespace filesystem {
 
     _NODISCARD inline __std_win_error _Read_reparse_data(
         const _Fs_file& _Handle, unique_ptr<char[]>& _Buffer_unique_ptr) noexcept {
-        constexpr auto _Buffer_size = 16 * 1024 + sizeof(wchar_t); // MAXIMUM_REPARSE_DATA_BUFFER_SIZE + sizeof(wchar_t)
+        constexpr auto _Buffer_size = 16 * 1024; // MAXIMUM_REPARSE_DATA_BUFFER_SIZE
 
         _Buffer_unique_ptr.reset(::new (nothrow) char[_Buffer_size]);
         if (!_Buffer_unique_ptr) {
