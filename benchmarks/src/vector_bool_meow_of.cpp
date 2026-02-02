@@ -40,7 +40,7 @@ void meow_of(benchmark::State& state) {
     }
 }
 
-void common_args(auto bm) {
+void common_args(benchmark::Benchmark* bm) {
     bm->RangeMultiplier(64)->Range(64, 64 << 10);
 }
 
