@@ -1051,10 +1051,10 @@ private:
     }
 
     struct _Value_compare_to_pass {
-        static constexpr bool _Efficiently_copyable = conjunction_v<bool_constant<sizeof(_Compare) <= sizeof(void*)>,
-            is_trivially_copy_constructible<_Compare>, is_trivially_destructible<_Compare>>;
+        static constexpr bool _Efficiently_copyable = conjunction_v<bool_constant<sizeof(key_compare) <= sizeof(void*)>,
+            is_trivially_copy_constructible<key_compare>, is_trivially_destructible<key_compare>>;
 
-        using _Copy_or_ref = conditional_t<_Efficiently_copyable, _Compare, const _Compare&>;
+        using _Copy_or_ref = conditional_t<_Efficiently_copyable, key_compare, const key_compare&>;
 
         _Copy_or_ref _Key_comparator;
 
@@ -1086,7 +1086,7 @@ private:
 
     auto _Erase_dupes_if_not_multi_pred() {
         _STL_INTERNAL_STATIC_ASSERT(_IsUnique);
-        if constexpr (_Equivalence_is_equality<_Compare, _Key>) {
+        if constexpr (_Equivalence_is_equality<key_compare, key_type>) {
             return [](const auto& _Left, const auto& _Right)
                        _STATIC_CALL_OPERATOR { return _Left.first == _Right.first; };
         } else {
