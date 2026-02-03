@@ -1431,6 +1431,55 @@ private:
     }
 };
 
+_EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer>
+class flat_multimap : public _Flat_map_base<false, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer> {
+private:
+    using _Mybase = _Flat_map_base<false, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
+
+public:
+    using typename _Mybase::value_type;
+
+    using _Mybase::_Mybase;
+    flat_multimap(const flat_multimap&) = default;
+    flat_multimap(flat_multimap&&)      = default;
+
+#if 1 // TRANSITION, P2582R1 (MSVC, Clang, EDG)
+    template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
+    flat_multimap(const flat_multimap& _Other, const _Alloc& _Al) : _Mybase(_Other, _Al) {}
+
+    template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
+    flat_multimap(flat_multimap&& _Other, const _Alloc& _Al) : _Mybase(_STD move(_Other), _Al) {}
+#endif // ^^^ workaround ^^^
+
+    flat_multimap& operator=(const flat_multimap&) = default;
+    flat_multimap& operator=(flat_multimap&&)      = default;
+
+    flat_multimap& operator=(const initializer_list<value_type> _Ilist) {
+        this->clear();
+        this->insert(_Ilist.begin(), _Ilist.end());
+        return *this;
+    }
+};
+
+_EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer,
+    class _Predicate>
+size_t erase_if(flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>& _Cont, _Predicate _Pred) {
+    return _Cont._Erase_if(_STD _Pass_fn(_Pred));
+}
+_EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer,
+    class _Predicate>
+size_t erase_if(flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>& _Cont, _Predicate _Pred) {
+    return _Cont._Erase_if(_STD _Pass_fn(_Pred));
+}
+
+template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer, class _Alloc>
+struct uses_allocator<flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>, _Alloc>
+    : bool_constant<uses_allocator_v<_KeyContainer, _Alloc> && uses_allocator_v<_MappedContainer, _Alloc>> {};
+
+template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer, class _Alloc>
+struct uses_allocator<flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>, _Alloc>
+    : bool_constant<uses_allocator_v<_KeyContainer, _Alloc> && uses_allocator_v<_MappedContainer, _Alloc>> {};
+
 template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_container _MappedContainer,
     _Valid_compare_for_container<_KeyContainer> _Compare = less<typename _KeyContainer::value_type>>
 flat_map(_KeyContainer, _MappedContainer, _Compare = _Compare()) -> flat_map<typename _KeyContainer::value_type,
@@ -1505,46 +1554,6 @@ flat_map(initializer_list<pair<_Key, _Mapped>>, _Compare = _Compare()) -> flat_m
 template <class _Key, class _Mapped, _Not_allocator_for_container _Compare = less<_Key>>
 flat_map(sorted_unique_t, initializer_list<pair<_Key, _Mapped>>, _Compare = _Compare())
     -> flat_map<_Key, _Mapped, _Compare>;
-
-template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer, class _Alloc>
-struct uses_allocator<flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>, _Alloc>
-    : bool_constant<uses_allocator_v<_KeyContainer, _Alloc> && uses_allocator_v<_MappedContainer, _Alloc>> {};
-
-_EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer,
-    class _Predicate>
-size_t erase_if(flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>& _Cont, _Predicate _Pred) {
-    return _Cont._Erase_if(_STD _Pass_fn(_Pred));
-}
-
-_EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer>
-class flat_multimap : public _Flat_map_base<false, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer> {
-private:
-    using _Mybase = _Flat_map_base<false, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
-
-public:
-    using typename _Mybase::value_type;
-
-    using _Mybase::_Mybase;
-    flat_multimap(const flat_multimap&) = default;
-    flat_multimap(flat_multimap&&)      = default;
-
-#if 1 // TRANSITION, P2582R1 (MSVC, Clang, EDG)
-    template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
-    flat_multimap(const flat_multimap& _Other, const _Alloc& _Al) : _Mybase(_Other, _Al) {}
-
-    template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
-    flat_multimap(flat_multimap&& _Other, const _Alloc& _Al) : _Mybase(_STD move(_Other), _Al) {}
-#endif // ^^^ workaround ^^^
-
-    flat_multimap& operator=(const flat_multimap&) = default;
-    flat_multimap& operator=(flat_multimap&&)      = default;
-
-    flat_multimap& operator=(const initializer_list<value_type> _Ilist) {
-        this->clear();
-        this->insert(_Ilist.begin(), _Ilist.end());
-        return *this;
-    }
-};
 
 template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_container _MappedContainer,
     _Valid_compare_for_container<_KeyContainer> _Compare = less<typename _KeyContainer::value_type>>
@@ -1622,16 +1631,6 @@ flat_multimap(initializer_list<pair<_Key, _Mapped>>, _Compare = _Compare()) -> f
 template <class _Key, class _Mapped, _Not_allocator_for_container _Compare = less<_Key>>
 flat_multimap(sorted_equivalent_t, initializer_list<pair<_Key, _Mapped>>, _Compare = _Compare())
     -> flat_multimap<_Key, _Mapped, _Compare>;
-
-template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer, class _Alloc>
-struct uses_allocator<flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>, _Alloc>
-    : bool_constant<uses_allocator_v<_KeyContainer, _Alloc> && uses_allocator_v<_MappedContainer, _Alloc>> {};
-
-_EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer,
-    class _Predicate>
-size_t erase_if(flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>& _Cont, _Predicate _Pred) {
-    return _Cont._Erase_if(_STD _Pass_fn(_Pred));
-}
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
