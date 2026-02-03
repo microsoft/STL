@@ -1003,10 +1003,12 @@ private:
     }
 
     // size_type is always size_t
-    template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
-    friend size_t erase_if(flat_map<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>&, _Pred);
-    template <class _KTy, class _MTy, class _Comp, class _KeyCont, class _MappedCont, class _Pred>
-    friend size_t erase_if(flat_multimap<_KTy, _MTy, _Comp, _KeyCont, _MappedCont>&, _Pred);
+    template <class _Key2, class _Mapped2, class _Compare2, class _KeyContainer2, class _MappedContainer2,
+        class _Predicate2>
+    friend size_t erase_if(flat_map<_Key2, _Mapped2, _Compare2, _KeyContainer2, _MappedContainer2>&, _Predicate2);
+    template <class _Key2, class _Mapped2, class _Compare2, class _KeyContainer2, class _MappedContainer2,
+        class _Predicate2>
+    friend size_t erase_if(flat_multimap<_Key2, _Mapped2, _Compare2, _KeyContainer2, _MappedContainer2>&, _Predicate2);
 
     template <class _Predicate>
     _NODISCARD size_t _Erase_if(_Predicate _Pred) {
