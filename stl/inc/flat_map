@@ -1234,7 +1234,7 @@ private:
     _NODISCARD bool _Compare_keys(const _Lty& _Lhs, const _Rty& _Rhs) const
         noexcept(noexcept(_DEBUG_LT_PRED(_Key_compare, _Lhs, _Rhs))) {
         _STL_INTERNAL_STATIC_ASSERT(
-            _Transparent<key_compare> || (is_same_v<key_type, _Lty> && is_same_v<key_type, _Rty>) );
+            (is_same_v<_Lty, key_type> && is_same_v<_Rty, key_type>) || _Transparent<key_compare>);
 
         return _DEBUG_LT_PRED(_Key_compare, _Lhs, _Rhs);
     }

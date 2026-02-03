@@ -683,7 +683,7 @@ private:
 
     template <class _Ty>
     _NODISCARD size_type _Erase(const _Ty& _Val) {
-        _STL_INTERNAL_STATIC_ASSERT(_Transparent<key_compare> || is_same_v<_Ty, key_type>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Ty, key_type> || _Transparent<key_compare>);
 
         if constexpr (_IsUnique && is_same_v<_Ty, key_type>) { // Optimization restricted due to GH-5992
             const const_iterator _Where = lower_bound(_Val);
@@ -722,7 +722,7 @@ private:
 
     template <class _Ty>
     _NODISCARD const_iterator _Find(const _Ty& _Val) const {
-        _STL_INTERNAL_STATIC_ASSERT(_Transparent<key_compare> || is_same_v<_Ty, key_type>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Ty, key_type> || _Transparent<key_compare>);
 
         const const_iterator _End   = cend();
         const const_iterator _Where = lower_bound(_Val);
@@ -816,7 +816,7 @@ private:
     _NODISCARD bool _Compare_keys(const _Lty& _Lhs, const _Rty& _Rhs) const
         noexcept(noexcept(_DEBUG_LT_PRED(_Key_compare, _Lhs, _Rhs))) {
         _STL_INTERNAL_STATIC_ASSERT(
-            _Transparent<key_compare> || (is_same_v<key_type, _Lty> && is_same_v<key_type, _Rty>) );
+            (is_same_v<_Lty, key_type> && is_same_v<_Rty, key_type>) || _Transparent<key_compare>);
 
         return _DEBUG_LT_PRED(_Key_compare, _Lhs, _Rhs);
     }
