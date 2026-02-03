@@ -1035,7 +1035,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-  <!-- VC 2015 -->
   <Type Name="std::deque&lt;*&gt;">
       <Intrinsic Name="size" Expression="_Mypair._Myval2._Mysize" />
       <DisplayString>{{ size={size()} }}</DisplayString>
@@ -2305,10 +2304,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
   <Type Name="std::flat_set&lt;*&gt;">
     <AlternativeType Name="std::flat_multiset&lt;*&gt;"/>
-    <DisplayString>{_Mycont}</DisplayString>
+    <DisplayString>{_Data}</DisplayString>
     <Expand>
-      <Item Name="[comparator]" ExcludeView="simple">_Mycomp</Item>
-      <ExpandedItem>_Mycont</ExpandedItem>
+      <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
+      <ExpandedItem>_Data</ExpandedItem>
     </Expand>
   </Type>
 

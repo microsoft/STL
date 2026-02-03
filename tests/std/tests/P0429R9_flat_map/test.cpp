@@ -383,9 +383,9 @@ void test_construction() {
             MyAllocatorCounter allocation_counter;
             flat_map fmap(keys, vals, MyAllocator<int>{});
             assert(allocation_counter.check_then_reset());
-            flat_map fmap1(fmap);
+            flat_map fmap1(fmap, MyAllocator<int>{});
             assert(allocation_counter.check_then_reset());
-            flat_map fmap2(move(fmap));
+            flat_map fmap2(move(fmap), MyAllocator<int>{});
             assert(!allocation_counter.check_then_reset());
 
             assert(check_key_content(fmap1, {0, 1, 2, 3, 4}));
@@ -396,9 +396,9 @@ void test_construction() {
             MyAllocatorCounter allocation_counter;
             flat_multimap fmmap(keys, vals, MyAllocator<int>{});
             assert(allocation_counter.check_then_reset());
-            flat_multimap fmmap1(fmmap);
+            flat_multimap fmmap1(fmmap, MyAllocator<int>{});
             assert(allocation_counter.check_then_reset());
-            flat_multimap fmmap2(move(fmmap));
+            flat_multimap fmmap2(move(fmmap), MyAllocator<int>{});
             assert(!allocation_counter.check_then_reset());
 
             assert(check_key_content(fmmap1, {0, 1, 2, 2, 3, 4}));
