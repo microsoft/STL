@@ -1356,49 +1356,50 @@ public:
             _Position, _STD forward<_OtherKey>(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
     }
 
-    template <class _MappedTy>
-    pair<iterator, bool> insert_or_assign(const key_type& _Key_val, _MappedTy&& _Mapped_val)
-        requires is_assignable_v<mapped_type&, _MappedTy> && is_constructible_v<mapped_type, _MappedTy>
+    template <class _OtherMapped>
+    pair<iterator, bool> insert_or_assign(const key_type& _Key_val, _OtherMapped&& _Mapped_val)
+        requires is_assignable_v<mapped_type&, _OtherMapped> && is_constructible_v<mapped_type, _OtherMapped>
     {
-        return _Insert_or_assign(_Key_val, _STD forward<_MappedTy>(_Mapped_val));
+        return _Insert_or_assign(_Key_val, _STD forward<_OtherMapped>(_Mapped_val));
     }
 
-    template <class _MappedTy>
-    pair<iterator, bool> insert_or_assign(key_type&& _Key_val, _MappedTy&& _Mapped_val)
-        requires is_assignable_v<mapped_type&, _MappedTy> && is_constructible_v<mapped_type, _MappedTy>
+    template <class _OtherMapped>
+    pair<iterator, bool> insert_or_assign(key_type&& _Key_val, _OtherMapped&& _Mapped_val)
+        requires is_assignable_v<mapped_type&, _OtherMapped> && is_constructible_v<mapped_type, _OtherMapped>
     {
-        return _Insert_or_assign(_STD move(_Key_val), _STD forward<_MappedTy>(_Mapped_val));
+        return _Insert_or_assign(_STD move(_Key_val), _STD forward<_OtherMapped>(_Mapped_val));
     }
 
-    template <class _OtherKey, class _MappedTy>
-    pair<iterator, bool> insert_or_assign(_OtherKey&& _Key_val, _MappedTy&& _Mapped_val)
+    template <class _OtherKey, class _OtherMapped>
+    pair<iterator, bool> insert_or_assign(_OtherKey&& _Key_val, _OtherMapped&& _Mapped_val)
         requires _Transparent<key_compare> && is_constructible_v<key_type, _OtherKey>
-              && is_assignable_v<mapped_type&, _MappedTy> && is_constructible_v<mapped_type, _MappedTy>
+              && is_assignable_v<mapped_type&, _OtherMapped> && is_constructible_v<mapped_type, _OtherMapped>
     {
-        return _Insert_or_assign(_STD forward<_OtherKey>(_Key_val), _STD forward<_MappedTy>(_Mapped_val));
+        return _Insert_or_assign(_STD forward<_OtherKey>(_Key_val), _STD forward<_OtherMapped>(_Mapped_val));
     }
 
-    template <class _MappedTy>
-    iterator insert_or_assign(const const_iterator _Position, const key_type& _Key_val, _MappedTy&& _Mapped_val)
-        requires is_assignable_v<mapped_type&, _MappedTy> && is_constructible_v<mapped_type, _MappedTy>
+    template <class _OtherMapped>
+    iterator insert_or_assign(const const_iterator _Position, const key_type& _Key_val, _OtherMapped&& _Mapped_val)
+        requires is_assignable_v<mapped_type&, _OtherMapped> && is_constructible_v<mapped_type, _OtherMapped>
     {
-        return this->template _Emplace_hint<true>(_Position, _Key_val, _STD forward<_MappedTy>(_Mapped_val));
+        return this->template _Emplace_hint<true>(_Position, _Key_val, _STD forward<_OtherMapped>(_Mapped_val));
     }
 
-    template <class _MappedTy>
-    iterator insert_or_assign(const const_iterator _Position, key_type&& _Key_val, _MappedTy&& _Mapped_val)
-        requires is_assignable_v<mapped_type&, _MappedTy> && is_constructible_v<mapped_type, _MappedTy>
-    {
-        return this->template _Emplace_hint<true>(_Position, _STD move(_Key_val), _STD forward<_MappedTy>(_Mapped_val));
-    }
-
-    template <class _OtherKey, class _MappedTy>
-    iterator insert_or_assign(const const_iterator _Position, _OtherKey&& _Key_val, _MappedTy&& _Mapped_val)
-        requires _Transparent<key_compare> && is_constructible_v<key_type, _OtherKey>
-              && is_assignable_v<mapped_type&, _MappedTy> && is_constructible_v<mapped_type, _MappedTy>
+    template <class _OtherMapped>
+    iterator insert_or_assign(const const_iterator _Position, key_type&& _Key_val, _OtherMapped&& _Mapped_val)
+        requires is_assignable_v<mapped_type&, _OtherMapped> && is_constructible_v<mapped_type, _OtherMapped>
     {
         return this->template _Emplace_hint<true>(
-            _Position, _STD forward<_OtherKey>(_Key_val), _STD forward<_MappedTy>(_Mapped_val));
+            _Position, _STD move(_Key_val), _STD forward<_OtherMapped>(_Mapped_val));
+    }
+
+    template <class _OtherKey, class _OtherMapped>
+    iterator insert_or_assign(const const_iterator _Position, _OtherKey&& _Key_val, _OtherMapped&& _Mapped_val)
+        requires _Transparent<key_compare> && is_constructible_v<key_type, _OtherKey>
+              && is_assignable_v<mapped_type&, _OtherMapped> && is_constructible_v<mapped_type, _OtherMapped>
+    {
+        return this->template _Emplace_hint<true>(
+            _Position, _STD forward<_OtherKey>(_Key_val), _STD forward<_OtherMapped>(_Mapped_val));
     }
 
 private:
@@ -1413,11 +1414,11 @@ private:
         return _Position->second;
     }
 
-    template <class _KeyTy, class _MappedTy>
-    _NODISCARD pair<iterator, bool> _Insert_or_assign(_KeyTy&& _Key_val, _MappedTy&& _Mapped_val) {
-        auto _Res = this->_Try_emplace(_STD forward<_KeyTy>(_Key_val), _STD forward<_MappedTy>(_Mapped_val));
+    template <class _KeyTy, class _OtherMapped>
+    _NODISCARD pair<iterator, bool> _Insert_or_assign(_KeyTy&& _Key_val, _OtherMapped&& _Mapped_val) {
+        auto _Res = this->_Try_emplace(_STD forward<_KeyTy>(_Key_val), _STD forward<_OtherMapped>(_Mapped_val));
         if (!_Res.second) { // Already exists
-            _Res.first->second = _STD forward<_MappedTy>(_Mapped_val);
+            _Res.first->second = _STD forward<_OtherMapped>(_Mapped_val);
         }
         return _Res;
     }
