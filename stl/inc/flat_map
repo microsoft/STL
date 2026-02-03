@@ -1085,7 +1085,7 @@ private:
         _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
     }
 
-    auto _Erase_dupes_if_not_multi_pred() {
+    _NODISCARD auto _Erase_dupes_if_not_multi_pred() {
         _STL_INTERNAL_STATIC_ASSERT(_IsUnique);
         if constexpr (_Equivalence_is_equality<key_compare, key_type>) {
             return [](const auto& _Lhs, const auto& _Rhs) _STATIC_CALL_OPERATOR { return _Lhs.first == _Rhs.first; };

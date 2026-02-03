@@ -760,7 +760,7 @@ private:
         }
     }
 
-    auto _Erase_dupes_if_not_multi_pred() {
+    _NODISCARD auto _Erase_dupes_if_not_multi_pred() {
         _STL_INTERNAL_STATIC_ASSERT(_IsUnique);
         if constexpr (_Equivalence_is_equality<key_compare, key_type>) {
             return equal_to<>{};
