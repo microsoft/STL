@@ -759,7 +759,7 @@ private:
 
     auto _Erase_dupes_if_not_multi_pred() {
         _STL_INTERNAL_STATIC_ASSERT(_IsUnique);
-        if constexpr (_Equivalence_is_equality<_Compare, key_type>) {
+        if constexpr (_Equivalence_is_equality<key_compare, key_type>) {
             return equal_to<>{};
         } else {
             return [this](const key_type& _Lhs, const key_type& _Rhs) { return !_Compare_keys(_Lhs, _Rhs); };
