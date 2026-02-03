@@ -2408,6 +2408,39 @@ void test_gh_5944() {
     }
 }
 
+void test_gh_6022() {
+    // GH-6022: Optimize matching of branchless loops
+    g_regexTester.should_match("acddabb", R"((?:([ac])*d)*ab\1b)");
+    g_regexTester.should_match("acdaadabab", R"((?:([ac])*d)*ab\1b)");
+    g_regexTester.should_match("acddabcb", R"((?:([ac])*d)*dab\1b)");
+
+    g_regexTester.should_match("addabb", R"((?:(a){0,1}d)*ab\1b)");
+    g_regexTester.should_match("adadabab", R"((?:(a){0,1}d)*ab\1b)");
+    g_regexTester.should_match("adadabb", R"((?:(a){0,1}d)*adadab\1b)");
+    g_regexTester.should_not_match("adaddabab", R"((?:(a){0,1}d)*ab\1b)");
+    g_regexTester.should_not_match("dabb", R"((?:(a){1,1}d)+ab\1b)");
+    g_regexTester.should_not_match("addabb", R"((?:(a){1,2}d)+ab\1b)");
+    g_regexTester.should_not_match("adaadabb", R"((?:(a){1,2}d)+ab\1b)");
+
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcdbc", R"((?:(?:([abc])([abc]))*d)+cd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdab", R"((?:(?:([abc])([abc]))*d)+dcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdab", R"((?:(?:([abc])([abc]))*d)+bcdcd\1\2)");
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcd", R"((?:(?:([abc])([abc]))*d)*abbcdcd\1\2)");
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcdba", R"((?:(?:([abc])([abc]))*d)*dabbcdcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdba", R"((?:(?:([abc])([abc]))*d)+ddabbcdcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdab", R"((?:(?:([abc])([abc]))*d)+baddabbcdcd\1\2)");
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcdac", R"((?:(?:([abc])([abc]))*d)*abbaddabbcdcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdac", R"((?:(?:([abc])([abc]))*d)*dabbaddabcdcd\1\2)");
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcdbc", R"((?:(?:([abc])([abc]))*d)*acdabbaddabbcdcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdbc", R"((?:(?:([abc])([abc]))*d)*dacdabbaddabbcdcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdca", R"((?:(?:([abc])([abc]))*d)*bcdacdabbaddabbcdcd\1\2)");
+    g_regexTester.should_not_match(
+        "bacabcdacdabbaddabbcdcdba", R"((?:(?:([abc])([abc]))*d)*cabcdacdabbaddabbcdcd\1\2)");
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcd", R"((?:(?:([abc])([abc]))*d)*bacabcdacdabbaddabbcdcd\1\2)");
+
+    g_regexTester.should_match("abaaacaabaaaadab", R"((?:(a*)b(\1*)a*c)+aabaaaad\2b)");
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2469,6 +2502,7 @@ int main() {
     test_gh_5918();
     test_gh_5939();
     test_gh_5944();
+    test_gh_6022();
 
     return g_regexTester.result();
 }
