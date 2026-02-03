@@ -874,14 +874,12 @@ public:
     }
 
     _NODISCARD friend bool operator==(const _Derived& _Left, const _Derived& _Right) {
-        return _STD equal(_STD _Get_unwrapped(_Left.cbegin()), _STD _Get_unwrapped(_Left.cend()),
-            _STD _Get_unwrapped(_Right.cbegin()), _STD _Get_unwrapped(_Right.cend()));
+        return _STD equal(_Left.cbegin(), _Left.cend(), _Right.cbegin(), _Right.cend());
     }
 
     _NODISCARD friend auto operator<=>(const _Derived& _Left, const _Derived& _Right) {
-        return _STD lexicographical_compare_three_way(_STD _Get_unwrapped(_Left.cbegin()),
-            _STD _Get_unwrapped(_Left.cend()), _STD _Get_unwrapped(_Right.cbegin()), _STD _Get_unwrapped(_Right.cend()),
-            _Synth_three_way{});
+        return _STD lexicographical_compare_three_way(
+            _Left.cbegin(), _Left.cend(), _Right.cbegin(), _Right.cend(), _Synth_three_way{});
     }
 
     friend void swap(_Derived& _Left, _Derived& _Right) noexcept(noexcept(_Left.swap(_Right))) {
