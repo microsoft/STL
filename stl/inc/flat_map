@@ -627,32 +627,32 @@ public:
         return _Emplace_hint<false>(_Position, _STD move(_Val.first), _STD move(_Val.second));
     }
 
-    auto insert(const value_type& _Pair_val) {
-        return _Try_emplace(_Pair_val.first, _Pair_val.second);
+    auto insert(const value_type& _Val) {
+        return _Try_emplace(_Val.first, _Val.second);
     }
-    auto insert(value_type&& _Pair_val) {
-        return _Try_emplace(_STD move(_Pair_val.first), _STD move(_Pair_val.second));
-    }
-
-    iterator insert(const const_iterator _Position, const value_type& _Pair_val) {
-        return emplace_hint(_Position, _Pair_val);
-    }
-    iterator insert(const const_iterator _Position, value_type&& _Pair_val) {
-        return emplace_hint(_Position, _STD move(_Pair_val));
+    auto insert(value_type&& _Val) {
+        return _Try_emplace(_STD move(_Val.first), _STD move(_Val.second));
     }
 
-    template <class _OtherPair>
-    auto insert(_OtherPair&& _Pair_val)
-        requires is_constructible_v<value_type, _OtherPair>
-    {
-        return emplace(_STD forward<_OtherPair>(_Pair_val));
+    iterator insert(const const_iterator _Position, const value_type& _Val) {
+        return emplace_hint(_Position, _Val);
+    }
+    iterator insert(const const_iterator _Position, value_type&& _Val) {
+        return emplace_hint(_Position, _STD move(_Val));
     }
 
     template <class _OtherPair>
-    iterator insert(const const_iterator _Position, _OtherPair&& _Pair_val)
+    auto insert(_OtherPair&& _Val)
         requires is_constructible_v<value_type, _OtherPair>
     {
-        return emplace_hint(_Position, _STD forward<_OtherPair>(_Pair_val));
+        return emplace(_STD forward<_OtherPair>(_Val));
+    }
+
+    template <class _OtherPair>
+    iterator insert(const const_iterator _Position, _OtherPair&& _Val)
+        requires is_constructible_v<value_type, _OtherPair>
+    {
+        return emplace_hint(_Position, _STD forward<_OtherPair>(_Val));
     }
 
     template <_Iterator_for_container _InIt>
