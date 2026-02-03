@@ -63,7 +63,7 @@ struct _Pairing_iterator_provider {
         template <bool _IsUnique, class _Key, class _Mapped, class _Compare, class _KeyContainer,
             class _MappedContainer>
         friend class _Flat_map_base;
-        template <class _Key, class _Mapped, class _MappedConv>
+        template <class _KeyIter2, class _MappedIter2, class _MappedConvIter2>
         friend struct _Pairing_iterator_provider;
 
         _Iterator(_KeyIter _Key_iter, _MappedIter _Mapped_iter)
