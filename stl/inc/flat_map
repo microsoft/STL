@@ -1067,11 +1067,10 @@ private:
 
     template <bool _NeedSorting>
     void _Restore_invariants(const size_type _Old_size) {
-        // Sort the newly inserted elements
-        auto _Sorted_view   = _View_to_mutate();
-        const auto _Begin   = _Sorted_view.begin();
+        auto _View          = _View_to_mutate();
+        const auto _Begin   = _View.begin();
         const auto _Old_end = _Begin + static_cast<difference_type>(_Old_size);
-        const auto _End     = _Sorted_view.end();
+        const auto _End     = _View.end();
 
         if constexpr (_NeedSorting) {
             _RANGES sort(_Old_end, _End, _Value_compare_to_pass{_Key_compare});
@@ -1080,8 +1079,7 @@ private:
             _STL_ASSERT(_Is_sorted_and_unique(_Data.keys.begin() + _Diff, _Data.keys.end()), _Msg_not_sorted);
         }
 
-        // Merge the newly inserted elements with the existing elements
-        _RANGES inplace_merge(_Sorted_view, _Old_end, _Value_compare_to_pass{_Key_compare});
+        _RANGES inplace_merge(_View, _Old_end, _Value_compare_to_pass{_Key_compare});
 
         _Erase_dupes_if_not_multi();
 
