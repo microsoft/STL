@@ -537,7 +537,7 @@ private:
     _NODISCARD bool _Is_sorted_and_unique(const const_iterator _It, const const_iterator _End) const {
         if constexpr (_IsUnique) {
             // sorted-unique
-            auto _Negated = [this](const key_type& _Lhs, const key_type& _Rhs) { return !_Compare(_Lhs, _Rhs); };
+            auto _Negated = [this](const key_type& _Lhs, const key_type& _Rhs) { return !_Compare_keys(_Lhs, _Rhs); };
             return _STD adjacent_find(_It, _End, _Negated) == _End;
         } else {
             return _STD is_sorted(_It, _End, _Pass_comp());
@@ -552,13 +552,13 @@ private:
         if constexpr (_IsUnique) {
             // check that _Where is the lower_bound for _Val, and *_Where is not equivalent to _Val
             // equivalent to checking *(_Where-1) < _Val < *_Where
-            return (_Where == cend() || _Compare(_Val, *_Where))
-                && (_Where == cbegin() || _Compare(*(_Where - 1), _Val));
+            return (_Where == cend() || _Compare_keys(_Val, *_Where))
+                && (_Where == cbegin() || _Compare_keys(*(_Where - 1), _Val));
         } else {
             // check that _Where is the upper_bound for _Val
             // equivalent to checking *(_Where-1) <= _Val < *_Where
-            return (_Where == cend() || _Compare(_Val, *_Where))
-                && (_Where == cbegin() || !_Compare(_Val, *(_Where - 1)));
+            return (_Where == cend() || _Compare_keys(_Val, *_Where))
+                && (_Where == cbegin() || !_Compare_keys(_Val, *(_Where - 1)));
         }
     }
 
@@ -578,7 +578,7 @@ private:
     _NODISCARD conditional_t<_IsUnique, pair<iterator, bool>, iterator> _Emplace(_Ty&& _Val) {
         if constexpr (_IsUnique) {
             const const_iterator _Where = lower_bound(_Val);
-            if (_Where != cend() && !_Compare(_Val, *_Where)) {
+            if (_Where != cend() && !_Compare_keys(_Val, *_Where)) {
                 return pair{_Where, false};
             }
 
@@ -607,9 +607,9 @@ private:
 
         if constexpr (_IsUnique) {
             // look for lower_bound(_Val)
-            if (_Where == _End || !_Compare(*_Where, _Val)) {
+            if (_Where == _End || !_Compare_keys(*_Where, _Val)) {
                 // _Val <= *_Where
-                if (_Where == _Begin || _Compare(*(_Where - 1), _Val)) {
+                if (_Where == _Begin || _Compare_keys(*(_Where - 1), _Val)) {
                     // _Val > *(_Where-1) ~ lower_bound is _Where
                 } else {
                     // _Val <= *(_Where-1) ~ lower_bound is in [_Begin,_Where-1]
@@ -620,7 +620,7 @@ private:
                 _Where = _STD lower_bound(_Where + 1, _End, _Val, _Pass_comp());
             }
 
-            if (_Where != _End && !_Compare(_Val, *_Where)) {
+            if (_Where != _End && !_Compare_keys(_Val, *_Where)) {
                 return _Where;
             }
 
@@ -640,9 +640,9 @@ private:
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_Ty>, _Key>);
 
             // look for closest position just prior to _Where, respecting ordering
-            if (_Where == _End || _Compare(_Val, *_Where)) {
+            if (_Where == _End || _Compare_keys(_Val, *_Where)) {
                 // _Val < *_Where
-                if (_Where == _Begin || !_Compare(_Val, *(_Where - 1))) {
+                if (_Where == _Begin || !_Compare_keys(_Val, *(_Where - 1))) {
                     // _Val >= *(_Where-1) ~ closest valid position is _Where
                 } else {
                     // _Val < *(_Where-1) ~ closest valid position is upper_bound(_Val) located in [_Begin,_Where-1]
@@ -687,7 +687,7 @@ private:
 
         if constexpr (_IsUnique && is_same_v<_Ty, key_type>) { // Optimization restricted due to GH-5992
             const const_iterator _Where = lower_bound(_Val);
-            if (_Where != cend() && !_Compare(_Val, *_Where)) {
+            if (_Where != cend() && !_Compare_keys(_Val, *_Where)) {
                 _Clear_guard _Guard{this};
                 _Data.erase(_Where);
                 _Guard._Target = nullptr;
@@ -726,7 +726,7 @@ private:
 
         const const_iterator _End   = cend();
         const const_iterator _Where = lower_bound(_Val);
-        if (_Where != _End && !_Compare(_Val, *_Where)) {
+        if (_Where != _End && !_Compare_keys(_Val, *_Where)) {
             return _Where;
         } else {
             return _End;
@@ -750,7 +750,7 @@ private:
         if constexpr (_IsUnique && is_same_v<_KeyTy, key_type>) { // Optimization restricted due to GH-5992
             // In a non-multi container, equal_range can have size at most 1
             const auto _First   = _STD lower_bound(_Data.begin(), _Data.end(), _Key_val, _Pass_comp());
-            const bool _Missing = _First == _Data.end() || _Compare(_Key_val, *_First);
+            const bool _Missing = _First == _Data.end() || _Compare_keys(_Key_val, *_First);
             return pair{_First, _Missing ? _First : _First + 1};
         } else {
             return _STD equal_range(begin(), end(), _Key_val, _Pass_comp());
@@ -762,7 +762,7 @@ private:
         if constexpr (_Equivalence_is_equality<_Keylt, _Key>) {
             return equal_to<>{};
         } else {
-            return [this](const _Key& _Lhs, const _Key& _Rhs) { return !_Compare(_Lhs, _Rhs); };
+            return [this](const _Key& _Lhs, const _Key& _Rhs) { return !_Compare_keys(_Lhs, _Rhs); };
         }
     }
 
@@ -813,7 +813,7 @@ private:
     }
 
     template <class _Lty, class _Rty>
-    _NODISCARD bool _Compare(const _Lty& _Lhs, const _Rty& _Rhs) const
+    _NODISCARD bool _Compare_keys(const _Lty& _Lhs, const _Rty& _Rhs) const
         noexcept(noexcept(_DEBUG_LT_PRED(_Key_compare, _Lhs, _Rhs))) {
         _STL_INTERNAL_STATIC_ASSERT(_Transparent<key_compare> || (is_same_v<_Key, _Lty> && is_same_v<_Key, _Rty>) );
 
