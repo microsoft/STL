@@ -1013,37 +1013,6 @@ private:
         }
     }
 
-    void _Insert_exact(const const_iterator _Position, key_type&& _Key_val, mapped_type&& _Mapped_val) {
-        _Clear_guard _Guard{this};
-        _Data.keys.insert(_Position._Key_it, _STD move(_Key_val));
-        _Data.values.insert(_Position._Mapped_it, _STD move(_Mapped_val));
-        _Guard._Target = nullptr;
-    }
-
-    // size_type is always size_t
-    template <class _Key2, class _Mapped2, class _Compare2, class _KeyContainer2, class _MappedContainer2,
-        class _Predicate2>
-    friend size_t erase_if(flat_map<_Key2, _Mapped2, _Compare2, _KeyContainer2, _MappedContainer2>&, _Predicate2);
-    template <class _Key2, class _Mapped2, class _Compare2, class _KeyContainer2, class _MappedContainer2,
-        class _Predicate2>
-    friend size_t erase_if(flat_multimap<_Key2, _Mapped2, _Compare2, _KeyContainer2, _MappedContainer2>&, _Predicate2);
-
-    template <class _Predicate>
-    _NODISCARD size_t _Erase_if(_Predicate _Pred) {
-        _Clear_guard _Guard{this};
-
-        // N5032 [flat.map.erasure]/2 and [flat.multimap.erasure]/2
-        const auto _Proj     = [](const auto& _Element) _STATIC_CALL_OPERATOR { return const_reference{_Element}; };
-        const auto _New_last = _RANGES remove_if(_View_to_mutate(), _Pred, _Proj).begin();
-        const auto _Old_size = size();
-
-        _Data.keys.erase(_New_last._Key_it, _Data.keys.end());
-        _Data.values.erase(_New_last._Mapped_it, _Data.values.end());
-
-        _Guard._Target = nullptr;
-        return _Old_size - size();
-    }
-
     _NODISCARD auto _View_to_mutate() {
         using _Mutating_iterator = _Pairing_iterator_provider<typename key_container_type::iterator,
             typename mapped_container_type::iterator, typename mapped_container_type::iterator>::_Iterator;
@@ -1064,6 +1033,21 @@ private:
             return _Key_comparator(_Lhs.first, _Rhs.first);
         }
     };
+
+    _NODISCARD auto _Erase_dupes_if_not_multi_pred() {
+        _STL_INTERNAL_STATIC_ASSERT(_IsUnique);
+        if constexpr (_Equivalence_is_equality<key_compare, key_type>) {
+            return [](const auto& _Lhs, const auto& _Rhs) _STATIC_CALL_OPERATOR { return _Lhs.first == _Rhs.first; };
+        } else {
+            return [this](const auto& _Lhs, const auto& _Rhs) {
+#ifdef __clang__ // TRANSITION, LLVM-81243
+                return !this->_Compare_keys(_Lhs.first, _Rhs.first);
+#else // ^^^ workaround / no workaround vvv
+                return !_Compare_keys(_Lhs.first, _Rhs.first);
+#endif // ^^^ no workaround ^^^
+            };
+        }
+    }
 
     template <bool _NeedSorting>
     void _Restore_invariants(const size_type _Old_size) {
@@ -1105,19 +1089,11 @@ private:
         _Restore_invariants<true>(_Sorted_size);
     }
 
-    _NODISCARD auto _Erase_dupes_if_not_multi_pred() {
-        _STL_INTERNAL_STATIC_ASSERT(_IsUnique);
-        if constexpr (_Equivalence_is_equality<key_compare, key_type>) {
-            return [](const auto& _Lhs, const auto& _Rhs) _STATIC_CALL_OPERATOR { return _Lhs.first == _Rhs.first; };
-        } else {
-            return [this](const auto& _Lhs, const auto& _Rhs) {
-#ifdef __clang__ // TRANSITION, LLVM-81243
-                return !this->_Compare_keys(_Lhs.first, _Rhs.first);
-#else // ^^^ workaround / no workaround vvv
-                return !_Compare_keys(_Lhs.first, _Rhs.first);
-#endif // ^^^ no workaround ^^^
-            };
-        }
+    void _Insert_exact(const const_iterator _Position, key_type&& _Key_val, mapped_type&& _Mapped_val) {
+        _Clear_guard _Guard{this};
+        _Data.keys.insert(_Position._Key_it, _STD move(_Key_val));
+        _Data.values.insert(_Position._Mapped_it, _STD move(_Mapped_val));
+        _Guard._Target = nullptr;
     }
 
     template <bool _NeedSorting, class _InIt, class _Sentinel>
@@ -1154,6 +1130,30 @@ private:
         const auto _Count     = static_cast<size_type>(_Equal_pos.second - _Equal_pos.first);
         erase(_Equal_pos.first, _Equal_pos.second);
         return _Count;
+    }
+
+    // size_type is always size_t
+    template <class _Key2, class _Mapped2, class _Compare2, class _KeyContainer2, class _MappedContainer2,
+        class _Predicate2>
+    friend size_t erase_if(flat_map<_Key2, _Mapped2, _Compare2, _KeyContainer2, _MappedContainer2>&, _Predicate2);
+    template <class _Key2, class _Mapped2, class _Compare2, class _KeyContainer2, class _MappedContainer2,
+        class _Predicate2>
+    friend size_t erase_if(flat_multimap<_Key2, _Mapped2, _Compare2, _KeyContainer2, _MappedContainer2>&, _Predicate2);
+
+    template <class _Predicate>
+    _NODISCARD size_t _Erase_if(_Predicate _Pred) {
+        _Clear_guard _Guard{this};
+
+        // N5032 [flat.map.erasure]/2 and [flat.multimap.erasure]/2
+        const auto _Proj     = [](const auto& _Element) _STATIC_CALL_OPERATOR { return const_reference{_Element}; };
+        const auto _New_last = _RANGES remove_if(_View_to_mutate(), _Pred, _Proj).begin();
+        const auto _Old_size = size();
+
+        _Data.keys.erase(_New_last._Key_it, _Data.keys.end());
+        _Data.values.erase(_New_last._Mapped_it, _Data.values.end());
+
+        _Guard._Target = nullptr;
+        return _Old_size - size();
     }
 
     template <class _SelfTy, class _KeyTy>

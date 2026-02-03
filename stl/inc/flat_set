@@ -551,6 +551,52 @@ private:
         }
     }
 
+    _NODISCARD auto _Erase_dupes_if_not_multi_pred() {
+        _STL_INTERNAL_STATIC_ASSERT(_IsUnique);
+        if constexpr (_Equivalence_is_equality<key_compare, key_type>) {
+            return equal_to<>{};
+        } else {
+            return [this](const key_type& _Lhs, const key_type& _Rhs) { return !_Compare_keys(_Lhs, _Rhs); };
+        }
+    }
+
+    template <bool _NeedSorting>
+    void _Restore_invariants(const size_type _Old_size) {
+        // No _Clear_guard needed. This is called only by _Insert_range() (which has a _Clear_guard)
+        // and _Establish_invariants() (which is called only by constructors which don't need guards
+        // and operator=() which has a _Clear_guard).
+
+        const auto _Begin   = _Data.begin();
+        const auto _Old_end = _Begin + static_cast<difference_type>(_Old_size);
+        const auto _End     = _Data.end();
+
+        if constexpr (_NeedSorting) {
+            _STD sort(_Old_end, _End, _Pass_comp());
+        } else {
+            _STL_ASSERT(_Is_sorted_and_unique(_Old_end, _End), _Msg_not_sorted);
+        }
+
+        _STD inplace_merge(_Begin, _Old_end, _End, _Pass_comp());
+
+        if constexpr (_IsUnique) {
+            _Data.erase(_STD unique(_Begin, _End, _Erase_dupes_if_not_multi_pred()), _End);
+        }
+
+        _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
+    }
+
+    void _Establish_invariants() {
+        if (_Data.empty()) {
+            return;
+        }
+
+        const auto _Begin        = _Data.begin();
+        const auto _End          = _Data.end();
+        const auto _Sorted_until = _STD is_sorted_until(_Begin, _End, _Pass_comp()); // O(N) if already sorted.
+        const auto _Sorted_size  = static_cast<size_type>(_Sorted_until - _Begin);
+        _Restore_invariants<true>(_Sorted_size);
+    }
+
     template <class _Ty>
     _NODISCARD bool _Can_insert(const const_iterator _Where, const _Ty& _Val) const {
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Ty, key_type>); // only accepts key_type
@@ -758,52 +804,6 @@ private:
         } else {
             return _STD equal_range(begin(), end(), _Key_val, _Pass_comp());
         }
-    }
-
-    _NODISCARD auto _Erase_dupes_if_not_multi_pred() {
-        _STL_INTERNAL_STATIC_ASSERT(_IsUnique);
-        if constexpr (_Equivalence_is_equality<key_compare, key_type>) {
-            return equal_to<>{};
-        } else {
-            return [this](const key_type& _Lhs, const key_type& _Rhs) { return !_Compare_keys(_Lhs, _Rhs); };
-        }
-    }
-
-    template <bool _NeedSorting>
-    void _Restore_invariants(const size_type _Old_size) {
-        // No _Clear_guard needed. This is called only by _Insert_range() (which has a _Clear_guard)
-        // and _Establish_invariants() (which is called only by constructors which don't need guards
-        // and operator=() which has a _Clear_guard).
-
-        const auto _Begin   = _Data.begin();
-        const auto _Old_end = _Begin + static_cast<difference_type>(_Old_size);
-        const auto _End     = _Data.end();
-
-        if constexpr (_NeedSorting) {
-            _STD sort(_Old_end, _End, _Pass_comp());
-        } else {
-            _STL_ASSERT(_Is_sorted_and_unique(_Old_end, _End), _Msg_not_sorted);
-        }
-
-        _STD inplace_merge(_Begin, _Old_end, _End, _Pass_comp());
-
-        if constexpr (_IsUnique) {
-            _Data.erase(_STD unique(_Begin, _End, _Erase_dupes_if_not_multi_pred()), _End);
-        }
-
-        _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
-    }
-
-    void _Establish_invariants() {
-        if (_Data.empty()) {
-            return;
-        }
-
-        const auto _Begin        = _Data.begin();
-        const auto _End          = _Data.end();
-        const auto _Sorted_until = _STD is_sorted_until(_Begin, _End, _Pass_comp()); // O(N) if already sorted.
-        const auto _Sorted_size  = static_cast<size_type>(_Sorted_until - _Begin);
-        _Restore_invariants<true>(_Sorted_size);
     }
 
     template <class _Lty, class _Rty>
