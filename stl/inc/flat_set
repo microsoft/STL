@@ -524,7 +524,7 @@ public:
 
     _NODISCARD friend auto operator<=>(const _Derived& _Lhs, const _Derived& _Rhs) {
         return _STD lexicographical_compare_three_way(
-            _Lhs.cbegin(), _Lhs.cend(), _Rhs.cbegin(), _Rhs.cend(), _Synth_three_way{});
+            _Lhs._Data.begin(), _Lhs._Data.end(), _Rhs._Data.begin(), _Rhs._Data.end(), _Synth_three_way{});
     }
 
     friend void swap(_Derived& _Lhs, _Derived& _Rhs) noexcept(noexcept(_Lhs.swap(_Rhs))) {
