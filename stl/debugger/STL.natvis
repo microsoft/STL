@@ -1035,7 +1035,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-  <!-- VC 2015 -->
   <Type Name="std::deque&lt;*&gt;">
       <Intrinsic Name="size" Expression="_Mypair._Myval2._Mysize" />
       <DisplayString>{{ size={size()} }}</DisplayString>
