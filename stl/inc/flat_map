@@ -1158,8 +1158,9 @@ private:
     }
 
     template <class _KeyTy>
-    _NODISCARD size_type _Erase_key(_KeyTy&& _Key_val) {
-        const auto _Equal_pos = equal_range(_STD forward<_KeyTy>(_Key_val));
+    _NODISCARD size_type _Erase_key(const _KeyTy& _Key_val) {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
+        const auto _Equal_pos = _Equal_range(_Key_val);
         const auto _Count     = static_cast<size_type>(_Equal_pos.second - _Equal_pos.first);
         erase(_Equal_pos.first, _Equal_pos.second);
         return _Count;
