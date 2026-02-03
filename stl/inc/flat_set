@@ -120,7 +120,7 @@ public:
 
     explicit _Flat_set_base(container_type _Cont, const key_compare& _Comp = key_compare())
         : _Data(_STD move(_Cont)), _Key_compare(_Comp) {
-        _Make_invariants_fulfilled();
+        _Establish_invariants();
     }
 
     _Flat_set_base(_Sorted_t, container_type _Cont, const key_compare& _Comp = key_compare())
@@ -131,7 +131,7 @@ public:
     template <_Iterator_for_container _InIt>
     _Flat_set_base(const _InIt _First, const _InIt _Last, const key_compare& _Comp = key_compare())
         : _Data(_First, _Last), _Key_compare(_Comp) {
-        _Make_invariants_fulfilled();
+        _Establish_invariants();
     }
 
     template <_Iterator_for_container _InIt>
@@ -142,18 +142,18 @@ public:
 
     template <_Container_compatible_range<value_type> _Rng>
     _Flat_set_base(from_range_t, _Rng&& _Range) : _Data(from_range, _STD forward<_Rng>(_Range)), _Key_compare() {
-        _Make_invariants_fulfilled();
+        _Establish_invariants();
     }
 
     template <_Container_compatible_range<value_type> _Rng>
     _Flat_set_base(from_range_t, _Rng&& _Range, const key_compare& _Comp)
         : _Data(from_range, _STD forward<_Rng>(_Range)), _Key_compare(_Comp) {
-        _Make_invariants_fulfilled();
+        _Establish_invariants();
     }
 
     _Flat_set_base(const initializer_list<value_type> _Ilist, const key_compare& _Comp = key_compare())
         : _Data(_Ilist.begin(), _Ilist.end()), _Key_compare(_Comp) {
-        _Make_invariants_fulfilled();
+        _Establish_invariants();
     }
 
     _Flat_set_base(_Sorted_t, const initializer_list<value_type> _Ilist, const key_compare& _Comp = key_compare())
@@ -173,13 +173,13 @@ public:
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const container_type& _Cont, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Key_compare() {
-        _Make_invariants_fulfilled();
+        _Establish_invariants();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const container_type& _Cont, const key_compare& _Comp, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Key_compare(_Comp) {
-        _Make_invariants_fulfilled();
+        _Establish_invariants();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
@@ -207,13 +207,13 @@ public:
     template <_Iterator_for_container _InIt, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const _InIt _First, const _InIt _Last, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Key_compare() {
-        _Make_invariants_fulfilled();
+        _Establish_invariants();
     }
 
     template <_Iterator_for_container _InIt, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const _InIt _First, const _InIt _Last, const key_compare& _Comp, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Key_compare(_Comp) {
-        _Make_invariants_fulfilled();
+        _Establish_invariants();
     }
 
     template <_Iterator_for_container _InIt, _Usable_allocator_for<container_type> _Alloc>
@@ -232,26 +232,26 @@ public:
     _Flat_set_base(from_range_t, _Rng&& _Range, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, from_range, _STD forward<_Rng>(_Range))),
           _Key_compare() {
-        _Make_invariants_fulfilled();
+        _Establish_invariants();
     }
 
     template <_Container_compatible_range<value_type> _Rng, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(from_range_t, _Rng&& _Range, const key_compare& _Comp, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, from_range, _STD forward<_Rng>(_Range))),
           _Key_compare(_Comp) {
-        _Make_invariants_fulfilled();
+        _Establish_invariants();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const initializer_list<value_type> _Ilist, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Key_compare() {
-        _Make_invariants_fulfilled();
+        _Establish_invariants();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const initializer_list<value_type> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Key_compare(_Comp) {
-        _Make_invariants_fulfilled();
+        _Establish_invariants();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
@@ -773,7 +773,7 @@ private:
         if constexpr (_IsUnique) {
             // No _Clear_guard needed. The only caller is _Restore_invariants_after_insert().
             // That's called only by _Insert_range() (which has a _Clear_guard)
-            // and _Make_invariants_fulfilled() (which is called only by constructors which don't need guards
+            // and _Establish_invariants() (which is called only by constructors which don't need guards
             // and operator=() which has a _Clear_guard).
             const auto _End = _Data.end();
             _Data.erase(_STD unique(_Data.begin(), _End, _Erase_dupes_if_not_multi_pred()), _End);
@@ -798,7 +798,7 @@ private:
         _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
     }
 
-    void _Make_invariants_fulfilled() {
+    void _Establish_invariants() {
         if (_Data.empty()) {
             return;
         }
