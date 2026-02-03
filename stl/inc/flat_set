@@ -57,18 +57,18 @@ struct _NODISCARD _Flat_set_swap_clear_guard<true, _Container> {
     void _Dismiss() noexcept {}
 };
 
-_EXPORT_STD template <class _Key, class _Keylt = less<_Key>, class _Container = vector<_Key>>
+_EXPORT_STD template <class _Key, class _Compare = less<_Key>, class _Container = vector<_Key>>
 class flat_set;
 
-_EXPORT_STD template <class _Key, class _Keylt = less<_Key>, class _Container = vector<_Key>>
+_EXPORT_STD template <class _Key, class _Compare = less<_Key>, class _Container = vector<_Key>>
 class flat_multiset;
 
-template <bool _IsUnique, class _Key, class _Keylt, class _Container>
+template <bool _IsUnique, class _Key, class _Compare, class _Container>
 class _Flat_set_base {
 private:
     using _Sorted_t = conditional_t<_IsUnique, sorted_unique_t, sorted_equivalent_t>;
     using _Derived =
-        conditional_t<_IsUnique, flat_set<_Key, _Keylt, _Container>, flat_multiset<_Key, _Keylt, _Container>>;
+        conditional_t<_IsUnique, flat_set<_Key, _Compare, _Container>, flat_multiset<_Key, _Compare, _Container>>;
 
     static constexpr const char* _Msg_not_sorted = _IsUnique ? "Input was not sorted-unique!" : "Input was not sorted!";
 
@@ -76,8 +76,8 @@ public:
     // [flat.set.defn] Types
     using key_type               = _Key;
     using value_type             = _Key;
-    using key_compare            = _Keylt;
-    using value_compare          = _Keylt;
+    using key_compare            = _Compare;
+    using value_compare          = _Compare;
     using reference              = value_type&;
     using const_reference        = const value_type&;
     using size_type              = _Container::size_type;
@@ -759,7 +759,7 @@ private:
 
     auto _Erase_dupes_if_not_multi_pred() {
         _STL_INTERNAL_STATIC_ASSERT(_IsUnique);
-        if constexpr (_Equivalence_is_equality<_Keylt, _Key>) {
+        if constexpr (_Equivalence_is_equality<_Compare, _Key>) {
             return equal_to<>{};
         } else {
             return [this](const _Key& _Lhs, const _Key& _Rhs) { return !_Compare_keys(_Lhs, _Rhs); };
@@ -828,10 +828,10 @@ private:
     _MSVC_NO_UNIQUE_ADDRESS key_compare _Key_compare;
 };
 
-_EXPORT_STD template <class _Key, class _Keylt, class _Container>
-class flat_set : public _Flat_set_base<true, _Key, _Keylt, _Container> {
+_EXPORT_STD template <class _Key, class _Compare, class _Container>
+class flat_set : public _Flat_set_base<true, _Key, _Compare, _Container> {
 private:
-    using _Mybase = _Flat_set_base<true, _Key, _Keylt, _Container>;
+    using _Mybase = _Flat_set_base<true, _Key, _Compare, _Container>;
 
 public:
     using _Mybase::_Mybase;
@@ -856,10 +856,10 @@ public:
     }
 };
 
-_EXPORT_STD template <class _Key, class _Keylt, class _Container>
-class flat_multiset : public _Flat_set_base<false, _Key, _Keylt, _Container> {
+_EXPORT_STD template <class _Key, class _Compare, class _Container>
+class flat_multiset : public _Flat_set_base<false, _Key, _Compare, _Container> {
 private:
-    using _Mybase = _Flat_set_base<false, _Key, _Keylt, _Container>;
+    using _Mybase = _Flat_set_base<false, _Key, _Compare, _Container>;
 
 public:
     using _Mybase::_Mybase;
@@ -884,21 +884,21 @@ public:
     }
 };
 
-_EXPORT_STD template <class _Key, class _Keylt, class _Container, class _Pred>
-_Container::size_type erase_if(flat_set<_Key, _Keylt, _Container>& _Val, _Pred _Predicate) {
+_EXPORT_STD template <class _Key, class _Compare, class _Container, class _Pred>
+_Container::size_type erase_if(flat_set<_Key, _Compare, _Container>& _Val, _Pred _Predicate) {
     return _Val._Erase_if(_STD _Pass_fn(_Predicate));
 }
-_EXPORT_STD template <class _Key, class _Keylt, class _Container, class _Pred>
-_Container::size_type erase_if(flat_multiset<_Key, _Keylt, _Container>& _Val, _Pred _Predicate) {
+_EXPORT_STD template <class _Key, class _Compare, class _Container, class _Pred>
+_Container::size_type erase_if(flat_multiset<_Key, _Compare, _Container>& _Val, _Pred _Predicate) {
     return _Val._Erase_if(_STD _Pass_fn(_Predicate));
 }
 
-template <class _Key, class _Keylt, class _Container, class _Alloc>
-struct uses_allocator<flat_set<_Key, _Keylt, _Container>, _Alloc>
+template <class _Key, class _Compare, class _Container, class _Alloc>
+struct uses_allocator<flat_set<_Key, _Compare, _Container>, _Alloc>
     : bool_constant<uses_allocator_v<_Container, _Alloc>> {};
 
-template <class _Key, class _Keylt, class _Container, class _Alloc>
-struct uses_allocator<flat_multiset<_Key, _Keylt, _Container>, _Alloc>
+template <class _Key, class _Compare, class _Container, class _Alloc>
+struct uses_allocator<flat_multiset<_Key, _Compare, _Container>, _Alloc>
     : bool_constant<uses_allocator_v<_Container, _Alloc>> {};
 
 template <_Not_allocator_for_container _Container,
