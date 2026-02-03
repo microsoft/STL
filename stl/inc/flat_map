@@ -1256,14 +1256,6 @@ public:
     using typename _Mybase::mapped_type;
     using typename _Mybase::value_type;
 
-#if 1 // TRANSITION, P2582R1 (MSVC, Clang, EDG)
-    template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
-    flat_map(const flat_map& _Other, const _Alloc& _Al) : _Mybase(_Other, _Al) {}
-
-    template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
-    flat_map(flat_map&& _Other, const _Alloc& _Al) : _Mybase(_STD move(_Other), _Al) {}
-#endif // ^^^ workaround ^^^
-
     flat_map& operator=(const flat_map&) = default;
     flat_map& operator=(flat_map&&)      = default;
 
@@ -1436,14 +1428,6 @@ public:
     flat_multimap(const flat_multimap&) = default;
     flat_multimap(flat_multimap&&)      = default;
 
-#if 1 // TRANSITION, P2582R1 (MSVC, Clang, EDG)
-    template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
-    flat_multimap(const flat_multimap& _Other, const _Alloc& _Al) : _Mybase(_Other, _Al) {}
-
-    template <_Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
-    flat_multimap(flat_multimap&& _Other, const _Alloc& _Al) : _Mybase(_STD move(_Other), _Al) {}
-#endif // ^^^ workaround ^^^
-
     flat_multimap& operator=(const flat_multimap&) = default;
     flat_multimap& operator=(flat_multimap&&)      = default;
 
@@ -1504,6 +1488,13 @@ template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_contain
 flat_map(sorted_unique_t, _KeyContainer, _MappedContainer, _Compare, _Alloc)
     -> flat_map<typename _KeyContainer::value_type, typename _MappedContainer::value_type, _Compare, _KeyContainer,
         _MappedContainer>;
+
+#if 1 // TRANSITION, P2582R1 (MSVC, Clang, EDG)
+template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer,
+    _Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
+flat_map(flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>, _Alloc)
+    -> flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
+#endif // ^^^ workaround ^^^
 
 template <_Iterator_for_container _InIt, _Not_allocator_for_container _Compare = less<_Guide_key_t<_InIt>>>
 flat_map(_InIt, _InIt, _Compare = _Compare()) -> flat_map<_Guide_key_t<_InIt>, _Guide_val_t<_InIt>, _Compare>;
@@ -1578,6 +1569,13 @@ template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_contain
 flat_multimap(sorted_equivalent_t, _KeyContainer, _MappedContainer, _Compare, _Alloc)
     -> flat_multimap<typename _KeyContainer::value_type, typename _MappedContainer::value_type, _Compare, _KeyContainer,
         _MappedContainer>;
+
+#if 1 // TRANSITION, P2582R1 (MSVC, Clang, EDG)
+template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer,
+    _Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
+flat_multimap(flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>, _Alloc)
+    -> flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
+#endif // ^^^ workaround ^^^
 
 template <_Iterator_for_container _InIt, _Not_allocator_for_container _Compare = less<_Guide_key_t<_InIt>>>
 flat_multimap(_InIt, _InIt, _Compare = _Compare()) -> flat_multimap<_Guide_key_t<_InIt>, _Guide_val_t<_InIt>, _Compare>;
