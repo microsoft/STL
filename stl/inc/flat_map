@@ -378,15 +378,14 @@ public:
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
-    template <_Iterator_for_container _InputIterator>
-    _Flat_map_base(const _InputIterator _First, const _InputIterator _Last, const key_compare& _Comp = key_compare())
+    template <_Iterator_for_container _InIt>
+    _Flat_map_base(const _InIt _First, const _InIt _Last, const key_compare& _Comp = key_compare())
         : _Data(), _Key_compare(_Comp) {
         insert(_First, _Last);
     }
 
-    template <_Iterator_for_container _InputIterator>
-    _Flat_map_base(_Sorted_t _Tag, const _InputIterator _First, const _InputIterator _Last,
-        const key_compare& _Comp = key_compare())
+    template <_Iterator_for_container _InIt>
+    _Flat_map_base(_Sorted_t _Tag, const _InIt _First, const _InIt _Last, const key_compare& _Comp = key_compare())
         : _Data(), _Key_compare(_Comp) {
         insert(_Tag, _First, _Last);
     }
@@ -474,30 +473,24 @@ public:
           _Key_compare(_Other._Key_compare) // intentionally copy comparator, see LWG-2227
     {}
 
-    template <_Iterator_for_container _InputIterator,
-        _Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
-    _Flat_map_base(const _InputIterator _First, const _InputIterator _Last, const _Alloc& _Al) : _Flat_map_base(_Al) {
+    template <_Iterator_for_container _InIt, _Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(const _InIt _First, const _InIt _Last, const _Alloc& _Al) : _Flat_map_base(_Al) {
         insert(_First, _Last);
     }
 
-    template <_Iterator_for_container _InputIterator,
-        _Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
-    _Flat_map_base(const _InputIterator _First, const _InputIterator _Last, const key_compare& _Comp, const _Alloc& _Al)
+    template <_Iterator_for_container _InIt, _Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(const _InIt _First, const _InIt _Last, const key_compare& _Comp, const _Alloc& _Al)
         : _Flat_map_base(_Comp, _Al) {
         insert(_First, _Last);
     }
 
-    template <_Iterator_for_container _InputIterator,
-        _Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
-    _Flat_map_base(_Sorted_t _Tag, const _InputIterator _First, const _InputIterator _Last, const _Alloc& _Al)
-        : _Flat_map_base(_Al) {
+    template <_Iterator_for_container _InIt, _Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(_Sorted_t _Tag, const _InIt _First, const _InIt _Last, const _Alloc& _Al) : _Flat_map_base(_Al) {
         insert(_Tag, _First, _Last);
     }
 
-    template <_Iterator_for_container _InputIterator,
-        _Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
-    _Flat_map_base(_Sorted_t _Tag, const _InputIterator _First, const _InputIterator _Last, const key_compare& _Comp,
-        const _Alloc& _Al)
+    template <_Iterator_for_container _InIt, _Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(_Sorted_t _Tag, const _InIt _First, const _InIt _Last, const key_compare& _Comp, const _Alloc& _Al)
         : _Flat_map_base(_Comp, _Al) {
         insert(_Tag, _First, _Last);
     }
@@ -662,12 +655,12 @@ public:
         return emplace_hint(_Position, _STD forward<_PairValTy>(_Pair_val));
     }
 
-    template <_Iterator_for_container _InputIterator>
-    void insert(const _InputIterator _First, const _InputIterator _Last) {
+    template <_Iterator_for_container _InIt>
+    void insert(const _InIt _First, const _InIt _Last) {
         _Insert_range<true>(_First, _Last);
     }
-    template <_Iterator_for_container _InputIterator>
-    void insert(_Sorted_t, const _InputIterator _First, const _InputIterator _Last) {
+    template <_Iterator_for_container _InIt>
+    void insert(_Sorted_t, const _InIt _First, const _InIt _Last) {
         _Insert_range<false>(_First, _Last);
     }
 
@@ -1112,8 +1105,8 @@ private:
         }
     }
 
-    template <bool _NeedSorting, class _InputIterator, class _Sentinel>
-    void _Insert_range(_InputIterator _First, const _Sentinel _Last) {
+    template <bool _NeedSorting, class _InIt, class _Sentinel>
+    void _Insert_range(_InIt _First, const _Sentinel _Last) {
         _Clear_guard _Guard{this};
 
         const auto _Old_distance = static_cast<difference_type>(size());
@@ -1512,15 +1505,12 @@ flat_map(sorted_unique_t, _KeyContainer, _MappedContainer, _Compare, _Alloc)
     -> flat_map<typename _KeyContainer::value_type, typename _MappedContainer::value_type, _Compare, _KeyContainer,
         _MappedContainer>;
 
-template <_Iterator_for_container _InputIterator,
-    _Not_allocator_for_container _Compare = less<_Guide_key_t<_InputIterator>>>
-flat_map(_InputIterator, _InputIterator, _Compare = _Compare())
-    -> flat_map<_Guide_key_t<_InputIterator>, _Guide_val_t<_InputIterator>, _Compare>;
+template <_Iterator_for_container _InIt, _Not_allocator_for_container _Compare = less<_Guide_key_t<_InIt>>>
+flat_map(_InIt, _InIt, _Compare = _Compare()) -> flat_map<_Guide_key_t<_InIt>, _Guide_val_t<_InIt>, _Compare>;
 
-template <_Iterator_for_container _InputIterator,
-    _Not_allocator_for_container _Compare = less<_Guide_key_t<_InputIterator>>>
-flat_map(sorted_unique_t, _InputIterator, _InputIterator, _Compare = _Compare())
-    -> flat_map<_Guide_key_t<_InputIterator>, _Guide_val_t<_InputIterator>, _Compare>;
+template <_Iterator_for_container _InIt, _Not_allocator_for_container _Compare = less<_Guide_key_t<_InIt>>>
+flat_map(sorted_unique_t, _InIt, _InIt, _Compare = _Compare())
+    -> flat_map<_Guide_key_t<_InIt>, _Guide_val_t<_InIt>, _Compare>;
 
 #ifdef __cpp_lib_byte
 // TRANSITION, CWG-2369, should just use constrained template parameters.
@@ -1589,15 +1579,12 @@ flat_multimap(sorted_equivalent_t, _KeyContainer, _MappedContainer, _Compare, _A
     -> flat_multimap<typename _KeyContainer::value_type, typename _MappedContainer::value_type, _Compare, _KeyContainer,
         _MappedContainer>;
 
-template <_Iterator_for_container _InputIterator,
-    _Not_allocator_for_container _Compare = less<_Guide_key_t<_InputIterator>>>
-flat_multimap(_InputIterator, _InputIterator, _Compare = _Compare())
-    -> flat_multimap<_Guide_key_t<_InputIterator>, _Guide_val_t<_InputIterator>, _Compare>;
+template <_Iterator_for_container _InIt, _Not_allocator_for_container _Compare = less<_Guide_key_t<_InIt>>>
+flat_multimap(_InIt, _InIt, _Compare = _Compare()) -> flat_multimap<_Guide_key_t<_InIt>, _Guide_val_t<_InIt>, _Compare>;
 
-template <_Iterator_for_container _InputIterator,
-    _Not_allocator_for_container _Compare = less<_Guide_key_t<_InputIterator>>>
-flat_multimap(sorted_equivalent_t, _InputIterator, _InputIterator, _Compare = _Compare())
-    -> flat_multimap<_Guide_key_t<_InputIterator>, _Guide_val_t<_InputIterator>, _Compare>;
+template <_Iterator_for_container _InIt, _Not_allocator_for_container _Compare = less<_Guide_key_t<_InIt>>>
+flat_multimap(sorted_equivalent_t, _InIt, _InIt, _Compare = _Compare())
+    -> flat_multimap<_Guide_key_t<_InIt>, _Guide_val_t<_InIt>, _Compare>;
 
 #ifdef __cpp_lib_byte
 // TRANSITION, CWG-2369, should just use constrained template parameters.
