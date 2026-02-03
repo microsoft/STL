@@ -641,18 +641,18 @@ public:
         return emplace_hint(_Position, _STD move(_Pair_val));
     }
 
-    template <class _PairValTy>
-    auto insert(_PairValTy&& _Pair_val)
-        requires is_constructible_v<value_type, _PairValTy>
+    template <class _OtherPair>
+    auto insert(_OtherPair&& _Pair_val)
+        requires is_constructible_v<value_type, _OtherPair>
     {
-        return emplace(_STD forward<_PairValTy>(_Pair_val));
+        return emplace(_STD forward<_OtherPair>(_Pair_val));
     }
 
-    template <class _PairValTy>
-    iterator insert(const const_iterator _Position, _PairValTy&& _Pair_val)
-        requires is_constructible_v<value_type, _PairValTy>
+    template <class _OtherPair>
+    iterator insert(const const_iterator _Position, _OtherPair&& _Pair_val)
+        requires is_constructible_v<value_type, _OtherPair>
     {
-        return emplace_hint(_Position, _STD forward<_PairValTy>(_Pair_val));
+        return emplace_hint(_Position, _STD forward<_OtherPair>(_Pair_val));
     }
 
     template <_Iterator_for_container _InIt>
