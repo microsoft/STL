@@ -121,14 +121,14 @@ public:
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
-    template <_Iterator_for_container _Iter>
-    _Flat_set_base(const _Iter _First, const _Iter _Last, const key_compare& _Comp = key_compare())
+    template <_Iterator_for_container _InIt>
+    _Flat_set_base(const _InIt _First, const _InIt _Last, const key_compare& _Comp = key_compare())
         : _Data(_First, _Last), _Key_compare(_Comp) {
         _Make_invariants_fulfilled();
     }
 
-    template <_Iterator_for_container _Iter>
-    _Flat_set_base(_Sorted_t, const _Iter _First, const _Iter _Last, const key_compare& _Comp = key_compare())
+    template <_Iterator_for_container _InIt>
+    _Flat_set_base(_Sorted_t, const _InIt _First, const _InIt _Last, const key_compare& _Comp = key_compare())
         : _Data(_First, _Last), _Key_compare(_Comp) {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
@@ -197,26 +197,26 @@ public:
           _Key_compare(_Other._Key_compare) // intentionally copy comparator, see LWG-2227
     {}
 
-    template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
-    _Flat_set_base(const _Iter _First, const _Iter _Last, const _Alloc& _Al)
+    template <_Iterator_for_container _InIt, _Usable_allocator_for<container_type> _Alloc>
+    _Flat_set_base(const _InIt _First, const _InIt _Last, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Key_compare() {
         _Make_invariants_fulfilled();
     }
 
-    template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
-    _Flat_set_base(const _Iter _First, const _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
+    template <_Iterator_for_container _InIt, _Usable_allocator_for<container_type> _Alloc>
+    _Flat_set_base(const _InIt _First, const _InIt _Last, const key_compare& _Comp, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Key_compare(_Comp) {
         _Make_invariants_fulfilled();
     }
 
-    template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
-    _Flat_set_base(_Sorted_t, const _Iter _First, const _Iter _Last, const _Alloc& _Al)
+    template <_Iterator_for_container _InIt, _Usable_allocator_for<container_type> _Alloc>
+    _Flat_set_base(_Sorted_t, const _InIt _First, const _InIt _Last, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Key_compare() {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
-    template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
-    _Flat_set_base(_Sorted_t, const _Iter _First, const _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
+    template <_Iterator_for_container _InIt, _Usable_allocator_for<container_type> _Alloc>
+    _Flat_set_base(_Sorted_t, const _InIt _First, const _InIt _Last, const key_compare& _Comp, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Key_compare(_Comp) {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
@@ -370,12 +370,12 @@ public:
         return _Emplace_hint(_Hint, _STD forward<_Other>(_Val));
     }
 
-    template <_Iterator_for_container _Iter>
-    void insert(const _Iter _First, const _Iter _Last) {
+    template <_Iterator_for_container _InIt>
+    void insert(const _InIt _First, const _InIt _Last) {
         _Insert_range<true>(_First, _Last);
     }
-    template <_Iterator_for_container _Iter>
-    void insert(_Sorted_t, const _Iter _First, const _Iter _Last) {
+    template <_Iterator_for_container _InIt>
+    void insert(_Sorted_t, const _InIt _First, const _InIt _Last) {
         _Insert_range<false>(_First, _Last);
     }
 
@@ -659,8 +659,8 @@ private:
         }
     }
 
-    template <bool _NeedSorting, class _Iter>
-    void _Insert_range(const _Iter _First, const _Iter _Last) {
+    template <bool _NeedSorting, class _InIt>
+    void _Insert_range(const _InIt _First, const _InIt _Last) {
         const size_type _Old_size = size();
         _Clear_guard _Guard{this};
         _Data.insert(_Data.end(), _First, _Last);
@@ -924,10 +924,10 @@ template <_Not_allocator_for_container _Container, _Valid_compare_for_container<
 flat_set(sorted_unique_t, _Container, _Compare, _Alloc)
     -> flat_set<typename _Container::value_type, _Compare, _Container>;
 
-template <_Iterator_for_container _Iter, _Not_allocator_for_container _Compare = less<iter_value_t<_Iter>>>
-flat_set(_Iter, _Iter, _Compare = _Compare()) -> flat_set<iter_value_t<_Iter>, _Compare>;
-template <_Iterator_for_container _Iter, _Not_allocator_for_container _Compare = less<iter_value_t<_Iter>>>
-flat_set(sorted_unique_t, _Iter, _Iter, _Compare = _Compare()) -> flat_set<iter_value_t<_Iter>, _Compare>;
+template <_Iterator_for_container _InIt, _Not_allocator_for_container _Compare = less<iter_value_t<_InIt>>>
+flat_set(_InIt, _InIt, _Compare = _Compare()) -> flat_set<iter_value_t<_InIt>, _Compare>;
+template <_Iterator_for_container _InIt, _Not_allocator_for_container _Compare = less<iter_value_t<_InIt>>>
+flat_set(sorted_unique_t, _InIt, _InIt, _Compare = _Compare()) -> flat_set<iter_value_t<_InIt>, _Compare>;
 
 // TRANSITION, CWG-2369, should just use constrained template parameters.
 template <_RANGES input_range _Range, _Not_allocator_for_container _Compare = less<_RANGES range_value_t<_Range>>,
@@ -968,10 +968,10 @@ template <_Not_allocator_for_container _Container, _Valid_compare_for_container<
 flat_multiset(sorted_equivalent_t, _Container, _Compare, _Alloc)
     -> flat_multiset<typename _Container::value_type, _Compare, _Container>;
 
-template <_Iterator_for_container _Iter, _Not_allocator_for_container _Compare = less<iter_value_t<_Iter>>>
-flat_multiset(_Iter, _Iter, _Compare = _Compare()) -> flat_multiset<iter_value_t<_Iter>, _Compare>;
-template <_Iterator_for_container _Iter, _Not_allocator_for_container _Compare = less<iter_value_t<_Iter>>>
-flat_multiset(sorted_equivalent_t, _Iter, _Iter, _Compare = _Compare()) -> flat_multiset<iter_value_t<_Iter>, _Compare>;
+template <_Iterator_for_container _InIt, _Not_allocator_for_container _Compare = less<iter_value_t<_InIt>>>
+flat_multiset(_InIt, _InIt, _Compare = _Compare()) -> flat_multiset<iter_value_t<_InIt>, _Compare>;
+template <_Iterator_for_container _InIt, _Not_allocator_for_container _Compare = less<iter_value_t<_InIt>>>
+flat_multiset(sorted_equivalent_t, _InIt, _InIt, _Compare = _Compare()) -> flat_multiset<iter_value_t<_InIt>, _Compare>;
 
 // TRANSITION, CWG-2369, should just use constrained template parameters.
 template <_RANGES input_range _Range, _Not_allocator_for_container _Compare = less<_RANGES range_value_t<_Range>>,
