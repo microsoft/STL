@@ -1066,7 +1066,7 @@ private:
     };
 
     template <bool _NeedSorting>
-    void _Restore_invariants_after_insert(const size_type _Old_size) {
+    void _Restore_invariants(const size_type _Old_size) {
         // Sort the newly inserted elements
         auto _Sorted_view   = _View_to_mutate();
         const auto _Begin   = _Sorted_view.begin();
@@ -1097,7 +1097,7 @@ private:
         const auto _End          = _Data.keys.end();
         const auto _Sorted_until = _STD is_sorted_until(_Begin, _End, _Pass_key_comp()); // O(N) if already sorted.
         const auto _Sorted_size  = static_cast<size_type>(_Sorted_until - _Begin);
-        _Restore_invariants_after_insert<true>(_Sorted_size);
+        _Restore_invariants<true>(_Sorted_size);
     }
 
     _NODISCARD auto _Erase_dupes_if_not_multi_pred() {
@@ -1117,7 +1117,7 @@ private:
 
     void _Erase_dupes_if_not_multi() {
         if constexpr (_IsUnique) {
-            // No _Clear_guard needed. The only caller is _Restore_invariants_after_insert().
+            // No _Clear_guard needed. The only caller is _Restore_invariants().
             // That's called only by _Insert_range() (which has a _Clear_guard)
             // and _Establish_invariants() (which is called only by constructors which don't need guards).
             auto _Sorted_view    = _View_to_mutate();
@@ -1150,7 +1150,7 @@ private:
             }
         }
 
-        _Restore_invariants_after_insert<_NeedSorting>(_Old_size);
+        _Restore_invariants<_NeedSorting>(_Old_size);
 
         _Guard._Target = nullptr;
     }
