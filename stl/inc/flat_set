@@ -144,12 +144,12 @@ public:
         _Make_invariants_fulfilled();
     }
 
-    _Flat_set_base(const initializer_list<_Key> _Ilist, const key_compare& _Comp = key_compare())
+    _Flat_set_base(const initializer_list<value_type> _Ilist, const key_compare& _Comp = key_compare())
         : _Data(_Ilist.begin(), _Ilist.end()), _Key_compare(_Comp) {
         _Make_invariants_fulfilled();
     }
 
-    _Flat_set_base(_Sorted_t, const initializer_list<_Key> _Ilist, const key_compare& _Comp = key_compare())
+    _Flat_set_base(_Sorted_t, const initializer_list<value_type> _Ilist, const key_compare& _Comp = key_compare())
         : _Data(_Ilist.begin(), _Ilist.end()), _Key_compare(_Comp) {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
@@ -236,25 +236,25 @@ public:
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Flat_set_base(const initializer_list<_Key> _Ilist, const _Alloc& _Al)
+    _Flat_set_base(const initializer_list<value_type> _Ilist, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Key_compare() {
         _Make_invariants_fulfilled();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Flat_set_base(const initializer_list<_Key> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
+    _Flat_set_base(const initializer_list<value_type> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Key_compare(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Flat_set_base(_Sorted_t, const initializer_list<_Key> _Ilist, const _Alloc& _Al)
+    _Flat_set_base(_Sorted_t, const initializer_list<value_type> _Ilist, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Key_compare() {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
-    _Flat_set_base(_Sorted_t, const initializer_list<_Key> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
+    _Flat_set_base(_Sorted_t, const initializer_list<value_type> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Key_compare(_Comp) {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
@@ -388,10 +388,10 @@ public:
         _Insert_range<false>(_STD forward<_Rng>(_Range));
     }
 
-    void insert(const initializer_list<_Key> _Ilist) {
+    void insert(const initializer_list<value_type> _Ilist) {
         _Insert_range<true>(_Ilist.begin(), _Ilist.end());
     }
-    void insert(_Sorted_t, const initializer_list<_Key> _Ilist) {
+    void insert(_Sorted_t, const initializer_list<value_type> _Ilist) {
         _Insert_range<false>(_Ilist.begin(), _Ilist.end());
     }
 
