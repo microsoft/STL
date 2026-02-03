@@ -880,12 +880,12 @@ public:
 };
 
 _EXPORT_STD template <class _Key, class _Compare, class _Container, class _Predicate>
-_Container::size_type erase_if(flat_set<_Key, _Compare, _Container>& _Val, _Predicate _Pred) {
-    return _Val._Erase_if(_STD _Pass_fn(_Pred));
+_Container::size_type erase_if(flat_set<_Key, _Compare, _Container>& _Cont, _Predicate _Pred) {
+    return _Cont._Erase_if(_STD _Pass_fn(_Pred));
 }
 _EXPORT_STD template <class _Key, class _Compare, class _Container, class _Predicate>
-_Container::size_type erase_if(flat_multiset<_Key, _Compare, _Container>& _Val, _Predicate _Pred) {
-    return _Val._Erase_if(_STD _Pass_fn(_Pred));
+_Container::size_type erase_if(flat_multiset<_Key, _Compare, _Container>& _Cont, _Predicate _Pred) {
+    return _Cont._Erase_if(_STD _Pass_fn(_Pred));
 }
 
 template <class _Key, class _Compare, class _Container, class _Alloc>
