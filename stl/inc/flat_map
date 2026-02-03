@@ -635,10 +635,10 @@ public:
     }
 
     iterator insert(const const_iterator _Position, const value_type& _Val) {
-        return emplace_hint(_Position, _Val);
+        return _Emplace_hint<false>(_Position, _Val.first, _Val.second);
     }
     iterator insert(const const_iterator _Position, value_type&& _Val) {
-        return emplace_hint(_Position, _STD move(_Val));
+        return _Emplace_hint<false>(_Position, _STD move(_Val.first), _STD move(_Val.second));
     }
 
     template <class _OtherPair>
