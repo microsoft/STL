@@ -99,160 +99,163 @@ public:
         "(N5032 [flat.set.overview]/7, [flat.multiset.overview]/7)");
 
     // [flat.set.cons] Constructors
-    _Flat_set_base() : _Data(), _Mycomp() {}
+    _Flat_set_base() : _Data(), _Key_compare() {}
 
     _Flat_set_base(const _Flat_set_base&) = default;
 
     _Flat_set_base(_Flat_set_base&& _Other) noexcept(
         is_nothrow_move_constructible_v<container_type> && is_nothrow_copy_constructible_v<key_compare>) // strengthened
-        : _Data(_STD move(_Other).extract()), _Mycomp(_Other._Mycomp) // intentionally copy comparator, see LWG-2227
+        : _Data(_STD move(_Other).extract()),
+          _Key_compare(_Other._Key_compare) // intentionally copy comparator, see LWG-2227
     {}
 
-    explicit _Flat_set_base(const key_compare& _Comp) : _Data(), _Mycomp(_Comp) {}
+    explicit _Flat_set_base(const key_compare& _Comp) : _Data(), _Key_compare(_Comp) {}
 
     explicit _Flat_set_base(container_type _Cont, const key_compare& _Comp = key_compare())
-        : _Data(_STD move(_Cont)), _Mycomp(_Comp) {
+        : _Data(_STD move(_Cont)), _Key_compare(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     _Flat_set_base(_Sorted_t, container_type _Cont, const key_compare& _Comp = key_compare())
-        : _Data(_STD move(_Cont)), _Mycomp(_Comp) {
+        : _Data(_STD move(_Cont)), _Key_compare(_Comp) {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Iterator_for_container _Iter>
     _Flat_set_base(const _Iter _First, const _Iter _Last, const key_compare& _Comp = key_compare())
-        : _Data(_First, _Last), _Mycomp(_Comp) {
+        : _Data(_First, _Last), _Key_compare(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     template <_Iterator_for_container _Iter>
     _Flat_set_base(_Sorted_t, const _Iter _First, const _Iter _Last, const key_compare& _Comp = key_compare())
-        : _Data(_First, _Last), _Mycomp(_Comp) {
+        : _Data(_First, _Last), _Key_compare(_Comp) {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Container_compatible_range<_Kty> _Rng>
-    _Flat_set_base(from_range_t, _Rng&& _Range) : _Data(from_range, _STD forward<_Rng>(_Range)), _Mycomp() {
+    _Flat_set_base(from_range_t, _Rng&& _Range) : _Data(from_range, _STD forward<_Rng>(_Range)), _Key_compare() {
         _Make_invariants_fulfilled();
     }
 
     template <_Container_compatible_range<_Kty> _Rng>
     _Flat_set_base(from_range_t, _Rng&& _Range, const key_compare& _Comp)
-        : _Data(from_range, _STD forward<_Rng>(_Range)), _Mycomp(_Comp) {
+        : _Data(from_range, _STD forward<_Rng>(_Range)), _Key_compare(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     _Flat_set_base(const initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
-        : _Data(_Ilist.begin(), _Ilist.end()), _Mycomp(_Comp) {
+        : _Data(_Ilist.begin(), _Ilist.end()), _Key_compare(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     _Flat_set_base(_Sorted_t, const initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
-        : _Data(_Ilist.begin(), _Ilist.end()), _Mycomp(_Comp) {
+        : _Data(_Ilist.begin(), _Ilist.end()), _Key_compare(_Comp) {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     // [flat.set.cons.alloc] Constructors with allocators
     template <_Usable_allocator_for<container_type> _Alloc>
-    explicit _Flat_set_base(const _Alloc& _Al) : _Data(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp() {}
+    explicit _Flat_set_base(const _Alloc& _Al)
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al)), _Key_compare() {}
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const key_compare& _Comp, const _Alloc& _Al)
-        : _Data(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp(_Comp) {}
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al)), _Key_compare(_Comp) {}
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const container_type& _Cont, const _Alloc& _Al)
-        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Mycomp() {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Key_compare() {
         _Make_invariants_fulfilled();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const container_type& _Cont, const key_compare& _Comp, const _Alloc& _Al)
-        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Mycomp(_Comp) {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Key_compare(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const container_type& _Cont, const _Alloc& _Al)
-        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Mycomp() {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Key_compare() {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const container_type& _Cont, const key_compare& _Comp, const _Alloc& _Al)
-        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Mycomp(_Comp) {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Key_compare(_Comp) {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const _Flat_set_base& _Other, const _Alloc& _Al)
-        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Other._Data)), _Mycomp(_Other._Mycomp) {}
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Other._Data)), _Key_compare(_Other._Key_compare) {}
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Flat_set_base&& _Other, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _STD move(_Other).extract())),
-          _Mycomp(_Other._Mycomp) // intentionally copy comparator, see LWG-2227
+          _Key_compare(_Other._Key_compare) // intentionally copy comparator, see LWG-2227
     {}
 
     template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const _Iter _First, const _Iter _Last, const _Alloc& _Al)
-        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Mycomp() {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Key_compare() {
         _Make_invariants_fulfilled();
     }
 
     template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const _Iter _First, const _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
-        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Mycomp(_Comp) {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Key_compare(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const _Iter _First, const _Iter _Last, const _Alloc& _Al)
-        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Mycomp() {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Key_compare() {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const _Iter _First, const _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
-        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Mycomp(_Comp) {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Key_compare(_Comp) {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Container_compatible_range<_Kty> _Rng, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(from_range_t, _Rng&& _Range, const _Alloc& _Al)
-        : _Data(_STD make_obj_using_allocator<container_type>(_Al, from_range, _STD forward<_Rng>(_Range))), _Mycomp() {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, from_range, _STD forward<_Rng>(_Range))),
+          _Key_compare() {
         _Make_invariants_fulfilled();
     }
 
     template <_Container_compatible_range<_Kty> _Rng, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(from_range_t, _Rng&& _Range, const key_compare& _Comp, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, from_range, _STD forward<_Rng>(_Range))),
-          _Mycomp(_Comp) {
+          _Key_compare(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const initializer_list<_Kty> _Ilist, const _Alloc& _Al)
-        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Mycomp() {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Key_compare() {
         _Make_invariants_fulfilled();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
-        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Mycomp(_Comp) {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Key_compare(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const initializer_list<_Kty> _Ilist, const _Alloc& _Al)
-        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Mycomp() {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Key_compare() {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
-        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Mycomp(_Comp) {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Key_compare(_Comp) {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
@@ -260,7 +263,7 @@ public:
     _Flat_set_base& operator=(const _Flat_set_base& _Other) {
         _Clear_guard _Guard{this};
         _Data          = _Other._Data;
-        _Mycomp        = _Other._Mycomp;
+        _Key_compare   = _Other._Key_compare;
         _Guard._Target = nullptr;
         return *this;
     }
@@ -271,7 +274,7 @@ public:
             _Clear_guard _Guard{this};
             _Clear_guard _Always_clear{_STD addressof(_Other)};
             _Data          = _STD move(_Other._Data);
-            _Mycomp        = _Other._Mycomp; // intentionally copy comparator, see LWG-2227
+            _Key_compare   = _Other._Key_compare; // intentionally copy comparator, see LWG-2227
             _Guard._Target = nullptr;
         }
         return *this;
@@ -436,7 +439,7 @@ public:
         _Flat_set_swap_clear_guard<_Is_noexcept, container_type> _Guard{
             _STD addressof(_Data), _STD addressof(_Other._Data)};
         _RANGES swap(_Data, _Other._Data);
-        _RANGES swap(_Mycomp, _Other._Mycomp);
+        _RANGES swap(_Key_compare, _Other._Key_compare);
         _Guard._Dismiss();
     }
 
@@ -446,10 +449,10 @@ public:
 
     // Observers
     _NODISCARD key_compare key_comp() const {
-        return _Mycomp;
+        return _Key_compare;
     }
     _NODISCARD value_compare value_comp() const {
-        return _Mycomp;
+        return _Key_compare;
     }
 
     // Set operations
@@ -811,18 +814,18 @@ private:
 
     template <class _Lty, class _Rty>
     _NODISCARD bool _Compare(const _Lty& _Lhs, const _Rty& _Rhs) const
-        noexcept(noexcept(_DEBUG_LT_PRED(_Mycomp, _Lhs, _Rhs))) {
+        noexcept(noexcept(_DEBUG_LT_PRED(_Key_compare, _Lhs, _Rhs))) {
         _STL_INTERNAL_STATIC_ASSERT(_Transparent<key_compare> || (is_same_v<_Kty, _Lty> && is_same_v<_Kty, _Rty>) );
 
-        return _DEBUG_LT_PRED(_Mycomp, _Lhs, _Rhs);
+        return _DEBUG_LT_PRED(_Key_compare, _Lhs, _Rhs);
     }
 
     _NODISCARD auto _Pass_comp() const noexcept {
-        return _STD _Pass_fn(_Mycomp);
+        return _STD _Pass_fn(_Key_compare);
     }
 
     container_type _Data;
-    _MSVC_NO_UNIQUE_ADDRESS key_compare _Mycomp;
+    _MSVC_NO_UNIQUE_ADDRESS key_compare _Key_compare;
 };
 
 _EXPORT_STD template <class _Kty, class _Keylt, class _Container>
