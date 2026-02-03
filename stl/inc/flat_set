@@ -335,14 +335,14 @@ public:
     }
 
     template <class... _ArgTypes>
-    iterator emplace_hint(const const_iterator _Hint, _ArgTypes&&... _Args)
+    iterator emplace_hint(const const_iterator _Position, _ArgTypes&&... _Args)
         requires is_constructible_v<value_type, _ArgTypes...>
     {
         constexpr bool _Is_key_type = _In_place_key_extract_set<key_type, remove_cvref_t<_ArgTypes>...>::_Extractable;
         if constexpr (_Is_key_type) {
-            return _Emplace_hint(_Hint, _STD forward<_ArgTypes>(_Args)...);
+            return _Emplace_hint(_Position, _STD forward<_ArgTypes>(_Args)...);
         } else {
-            return _Emplace_hint(_Hint, key_type(_STD forward<_ArgTypes>(_Args)...));
+            return _Emplace_hint(_Position, key_type(_STD forward<_ArgTypes>(_Args)...));
         }
     }
 
@@ -358,16 +358,16 @@ public:
         return _Emplace(_STD forward<_Other>(_Val));
     }
 
-    iterator insert(const const_iterator _Hint, const value_type& _Val) {
-        return _Emplace_hint(_Hint, _Val);
+    iterator insert(const const_iterator _Position, const value_type& _Val) {
+        return _Emplace_hint(_Position, _Val);
     }
-    iterator insert(const const_iterator _Hint, value_type&& _Val) {
-        return _Emplace_hint(_Hint, _STD move(_Val));
+    iterator insert(const const_iterator _Position, value_type&& _Val) {
+        return _Emplace_hint(_Position, _STD move(_Val));
     }
     template <_Different_from<value_type> _Other>
         requires _IsUnique && _Transparent<key_compare> && is_constructible_v<value_type, _Other>
-    iterator insert(const const_iterator _Hint, _Other&& _Val) {
-        return _Emplace_hint(_Hint, _STD forward<_Other>(_Val));
+    iterator insert(const const_iterator _Position, _Other&& _Val) {
+        return _Emplace_hint(_Position, _STD forward<_Other>(_Val));
     }
 
     template <_Iterator_for_container _InIt>
