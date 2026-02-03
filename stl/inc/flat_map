@@ -1067,6 +1067,9 @@ private:
 
     template <bool _NeedSorting>
     void _Restore_invariants(const size_type _Old_size) {
+        // No _Clear_guard needed. This is called only by _Insert_range() (which has a _Clear_guard)
+        // and _Establish_invariants() (which is called only by constructors which don't need guards).
+
         auto _View          = _View_to_mutate();
         const auto _Begin   = _View.begin();
         const auto _Old_end = _Begin + static_cast<difference_type>(_Old_size);
@@ -1081,7 +1084,11 @@ private:
 
         _RANGES inplace_merge(_View, _Old_end, _Value_compare_to_pass{_Key_compare});
 
-        _Erase_dupes_if_not_multi();
+        if constexpr (_IsUnique) {
+            const auto _New_last = _RANGES unique(_View, _Erase_dupes_if_not_multi_pred()).begin();
+            _Data.keys.erase(_New_last._Key_it, _Data.keys.end());
+            _Data.values.erase(_New_last._Mapped_it, _Data.values.end());
+        }
 
         _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
     }
@@ -1110,19 +1117,6 @@ private:
                 return !_Compare_keys(_Lhs.first, _Rhs.first);
 #endif // ^^^ no workaround ^^^
             };
-        }
-    }
-
-    void _Erase_dupes_if_not_multi() {
-        if constexpr (_IsUnique) {
-            // No _Clear_guard needed. The only caller is _Restore_invariants().
-            // That's called only by _Insert_range() (which has a _Clear_guard)
-            // and _Establish_invariants() (which is called only by constructors which don't need guards).
-            auto _Sorted_view    = _View_to_mutate();
-            const auto _New_last = _RANGES unique(_Sorted_view, _Erase_dupes_if_not_multi_pred()).begin();
-
-            _Data.keys.erase(_New_last._Key_it, _Data.keys.end());
-            _Data.values.erase(_New_last._Mapped_it, _Data.values.end());
         }
     }
 
