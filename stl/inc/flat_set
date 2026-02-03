@@ -706,16 +706,16 @@ private:
     }
 
     // typename is a workaround for VSO-2680018 (EDG)
-    template <class _Key2, class _Compare2, class _Container2, class _Pred2>
-    friend typename _Container2::size_type erase_if(flat_set<_Key2, _Compare2, _Container2>&, _Pred2);
-    template <class _Key2, class _Compare2, class _Container2, class _Pred2>
-    friend typename _Container2::size_type erase_if(flat_multiset<_Key2, _Compare2, _Container2>&, _Pred2);
+    template <class _Key2, class _Compare2, class _Container2, class _Predicate2>
+    friend typename _Container2::size_type erase_if(flat_set<_Key2, _Compare2, _Container2>&, _Predicate2);
+    template <class _Key2, class _Compare2, class _Container2, class _Predicate2>
+    friend typename _Container2::size_type erase_if(flat_multiset<_Key2, _Compare2, _Container2>&, _Predicate2);
 
-    template <class _Pred>
-    _NODISCARD size_type _Erase_if(_Pred _Predicate) {
+    template <class _Predicate>
+    _NODISCARD size_type _Erase_if(_Predicate _Pred) {
         // Maintain invariants when an exception is thrown (N5032 [flat.set.erasure]/5, [flat.multiset.erasure]/5)
         _Clear_guard _Guard{this};
-        const auto _Erased_count = _STD _Erase_remove_if(_Data, _Predicate);
+        const auto _Erased_count = _STD _Erase_remove_if(_Data, _Pred);
         _Guard._Target           = nullptr;
         return _Erased_count;
     }
@@ -884,13 +884,13 @@ public:
     }
 };
 
-_EXPORT_STD template <class _Key, class _Compare, class _Container, class _Pred>
-_Container::size_type erase_if(flat_set<_Key, _Compare, _Container>& _Val, _Pred _Predicate) {
-    return _Val._Erase_if(_STD _Pass_fn(_Predicate));
+_EXPORT_STD template <class _Key, class _Compare, class _Container, class _Predicate>
+_Container::size_type erase_if(flat_set<_Key, _Compare, _Container>& _Val, _Predicate _Pred) {
+    return _Val._Erase_if(_STD _Pass_fn(_Pred));
 }
-_EXPORT_STD template <class _Key, class _Compare, class _Container, class _Pred>
-_Container::size_type erase_if(flat_multiset<_Key, _Compare, _Container>& _Val, _Pred _Predicate) {
-    return _Val._Erase_if(_STD _Pass_fn(_Predicate));
+_EXPORT_STD template <class _Key, class _Compare, class _Container, class _Predicate>
+_Container::size_type erase_if(flat_multiset<_Key, _Compare, _Container>& _Val, _Predicate _Pred) {
+    return _Val._Erase_if(_STD _Pass_fn(_Pred));
 }
 
 template <class _Key, class _Compare, class _Container, class _Alloc>
