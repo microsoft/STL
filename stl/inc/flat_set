@@ -99,169 +99,167 @@ public:
         "(N5032 [flat.set.overview]/7, [flat.multiset.overview]/7)");
 
     // [flat.set.cons] Constructors
-    _Flat_set_base() : _Mycont(), _Mycomp() {}
+    _Flat_set_base() : _Data(), _Mycomp() {}
 
     _Flat_set_base(const _Flat_set_base&) = default;
 
     _Flat_set_base(_Flat_set_base&& _Other) noexcept(
         is_nothrow_move_constructible_v<container_type> && is_nothrow_copy_constructible_v<key_compare>) // strengthened
-        : _Mycont(_STD move(_Other).extract()), _Mycomp(_Other._Mycomp) // intentionally copy comparator, see LWG-2227
+        : _Data(_STD move(_Other).extract()), _Mycomp(_Other._Mycomp) // intentionally copy comparator, see LWG-2227
     {}
 
-    explicit _Flat_set_base(const key_compare& _Comp) : _Mycont(), _Mycomp(_Comp) {}
+    explicit _Flat_set_base(const key_compare& _Comp) : _Data(), _Mycomp(_Comp) {}
 
     explicit _Flat_set_base(container_type _Cont, const key_compare& _Comp = key_compare())
-        : _Mycont(_STD move(_Cont)), _Mycomp(_Comp) {
+        : _Data(_STD move(_Cont)), _Mycomp(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     _Flat_set_base(_Sorted_t, container_type _Cont, const key_compare& _Comp = key_compare())
-        : _Mycont(_STD move(_Cont)), _Mycomp(_Comp) {
+        : _Data(_STD move(_Cont)), _Mycomp(_Comp) {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Iterator_for_container _Iter>
     _Flat_set_base(const _Iter _First, const _Iter _Last, const key_compare& _Comp = key_compare())
-        : _Mycont(_First, _Last), _Mycomp(_Comp) {
+        : _Data(_First, _Last), _Mycomp(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     template <_Iterator_for_container _Iter>
     _Flat_set_base(_Sorted_t, const _Iter _First, const _Iter _Last, const key_compare& _Comp = key_compare())
-        : _Mycont(_First, _Last), _Mycomp(_Comp) {
+        : _Data(_First, _Last), _Mycomp(_Comp) {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Container_compatible_range<_Kty> _Rng>
-    _Flat_set_base(from_range_t, _Rng&& _Range) : _Mycont(from_range, _STD forward<_Rng>(_Range)), _Mycomp() {
+    _Flat_set_base(from_range_t, _Rng&& _Range) : _Data(from_range, _STD forward<_Rng>(_Range)), _Mycomp() {
         _Make_invariants_fulfilled();
     }
 
     template <_Container_compatible_range<_Kty> _Rng>
     _Flat_set_base(from_range_t, _Rng&& _Range, const key_compare& _Comp)
-        : _Mycont(from_range, _STD forward<_Rng>(_Range)), _Mycomp(_Comp) {
+        : _Data(from_range, _STD forward<_Rng>(_Range)), _Mycomp(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     _Flat_set_base(const initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
-        : _Mycont(_Ilist.begin(), _Ilist.end()), _Mycomp(_Comp) {
+        : _Data(_Ilist.begin(), _Ilist.end()), _Mycomp(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     _Flat_set_base(_Sorted_t, const initializer_list<_Kty> _Ilist, const key_compare& _Comp = key_compare())
-        : _Mycont(_Ilist.begin(), _Ilist.end()), _Mycomp(_Comp) {
+        : _Data(_Ilist.begin(), _Ilist.end()), _Mycomp(_Comp) {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     // [flat.set.cons.alloc] Constructors with allocators
     template <_Usable_allocator_for<container_type> _Alloc>
-    explicit _Flat_set_base(const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp() {}
+    explicit _Flat_set_base(const _Alloc& _Al) : _Data(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp() {}
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const key_compare& _Comp, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp(_Comp) {}
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al)), _Mycomp(_Comp) {}
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const container_type& _Cont, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Mycomp() {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Mycomp() {
         _Make_invariants_fulfilled();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const container_type& _Cont, const key_compare& _Comp, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Mycomp(_Comp) {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Mycomp(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const container_type& _Cont, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Mycomp() {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Mycomp() {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const container_type& _Cont, const key_compare& _Comp, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Mycomp(_Comp) {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Mycomp(_Comp) {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const _Flat_set_base& _Other, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _Other._Mycont)), _Mycomp(_Other._Mycomp) {}
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Other._Data)), _Mycomp(_Other._Mycomp) {}
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Flat_set_base&& _Other, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _STD move(_Other).extract())),
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _STD move(_Other).extract())),
           _Mycomp(_Other._Mycomp) // intentionally copy comparator, see LWG-2227
     {}
 
     template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const _Iter _First, const _Iter _Last, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Mycomp() {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Mycomp() {
         _Make_invariants_fulfilled();
     }
 
     template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const _Iter _First, const _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Mycomp(_Comp) {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Mycomp(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const _Iter _First, const _Iter _Last, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Mycomp() {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Mycomp() {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Iterator_for_container _Iter, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const _Iter _First, const _Iter _Last, const key_compare& _Comp, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Mycomp(_Comp) {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Mycomp(_Comp) {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Container_compatible_range<_Kty> _Rng, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(from_range_t, _Rng&& _Range, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, from_range, _STD forward<_Rng>(_Range))),
-          _Mycomp() {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, from_range, _STD forward<_Rng>(_Range))), _Mycomp() {
         _Make_invariants_fulfilled();
     }
 
     template <_Container_compatible_range<_Kty> _Rng, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(from_range_t, _Rng&& _Range, const key_compare& _Comp, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, from_range, _STD forward<_Rng>(_Range))),
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, from_range, _STD forward<_Rng>(_Range))),
           _Mycomp(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const initializer_list<_Kty> _Ilist, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Mycomp() {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Mycomp() {
         _Make_invariants_fulfilled();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(const initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Mycomp(_Comp) {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Mycomp(_Comp) {
         _Make_invariants_fulfilled();
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const initializer_list<_Kty> _Ilist, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Mycomp() {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Mycomp() {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const initializer_list<_Kty> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
-        : _Mycont(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Mycomp(_Comp) {
+        : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Mycomp(_Comp) {
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
     // Assignment operators
     _Flat_set_base& operator=(const _Flat_set_base& _Other) {
         _Clear_guard _Guard{this};
-        _Mycont        = _Other._Mycont;
+        _Data          = _Other._Data;
         _Mycomp        = _Other._Mycomp;
         _Guard._Target = nullptr;
         return *this;
@@ -272,7 +270,7 @@ public:
         if (this != _STD addressof(_Other)) {
             _Clear_guard _Guard{this};
             _Clear_guard _Always_clear{_STD addressof(_Other)};
-            _Mycont        = _STD move(_Other._Mycont);
+            _Data          = _STD move(_Other._Data);
             _Mycomp        = _Other._Mycomp; // intentionally copy comparator, see LWG-2227
             _Guard._Target = nullptr;
         }
@@ -282,42 +280,42 @@ public:
     // Iterators
     // NB: The non-const overloads are intentionally removed for brevity. This will not result in behavioral changes.
     _NODISCARD const_iterator begin() const noexcept {
-        return _Mycont.begin();
+        return _Data.begin();
     }
     _NODISCARD const_iterator end() const noexcept {
-        return _Mycont.end();
+        return _Data.end();
     }
 
     _NODISCARD const_reverse_iterator rbegin() const noexcept {
-        return const_reverse_iterator{_Mycont.end()};
+        return const_reverse_iterator{_Data.end()};
     }
     _NODISCARD const_reverse_iterator rend() const noexcept {
-        return const_reverse_iterator{_Mycont.begin()};
+        return const_reverse_iterator{_Data.begin()};
     }
 
     _NODISCARD const_iterator cbegin() const noexcept {
-        return _Mycont.begin();
+        return _Data.begin();
     }
     _NODISCARD const_iterator cend() const noexcept {
-        return _Mycont.end();
+        return _Data.end();
     }
 
     _NODISCARD const_reverse_iterator crbegin() const noexcept {
-        return const_reverse_iterator{_Mycont.end()};
+        return const_reverse_iterator{_Data.end()};
     }
     _NODISCARD const_reverse_iterator crend() const noexcept {
-        return const_reverse_iterator{_Mycont.begin()};
+        return const_reverse_iterator{_Data.begin()};
     }
 
     // Capacity
     _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
-        return _Mycont.empty();
+        return _Data.empty();
     }
     _NODISCARD size_type size() const noexcept {
-        return _Mycont.size();
+        return _Data.size();
     }
     _NODISCARD size_type max_size() const noexcept {
-        return _Mycont.max_size();
+        return _Data.max_size();
     }
 
     // [flat.set.modifiers] Modifiers
@@ -398,20 +396,20 @@ public:
         is_nothrow_move_constructible_v<container_type>) /* strengthened */ {
         // always clears the container (N5032 [flat.set.modifiers]/16 and [flat.multiset.modifiers]/15)
         _Clear_guard _Always_clear{this};
-        return _STD move(_Mycont);
+        return _STD move(_Data);
     }
 
     void replace(container_type&& _Cont) {
         _STL_ASSERT(_Is_sorted_and_unique(_Cont.begin(), _Cont.end()), _Msg_not_sorted);
         _Clear_guard _Guard{this};
-        _Mycont        = _STD move(_Cont);
+        _Data          = _STD move(_Cont);
         _Guard._Target = nullptr;
     }
 
     // NB: `erase(iterator)` is identical to `erase(const_iterator)`
     iterator erase(const const_iterator _Where) {
         _Clear_guard _Guard{this};
-        const auto _Ret = _Mycont.erase(_Where);
+        const auto _Ret = _Data.erase(_Where);
         _Guard._Target  = nullptr;
         return _Ret;
     }
@@ -427,7 +425,7 @@ public:
 
     iterator erase(const const_iterator _First, const const_iterator _Last) {
         _Clear_guard _Guard{this};
-        const auto _Ret = _Mycont.erase(_First, _Last);
+        const auto _Ret = _Data.erase(_First, _Last);
         _Guard._Target  = nullptr;
         return _Ret;
     }
@@ -436,14 +434,14 @@ public:
         noexcept(is_nothrow_swappable_v<container_type> && is_nothrow_swappable_v<key_compare>) {
         constexpr bool _Is_noexcept = is_nothrow_swappable_v<container_type> && is_nothrow_swappable_v<key_compare>;
         _Flat_set_swap_clear_guard<_Is_noexcept, container_type> _Guard{
-            _STD addressof(_Mycont), _STD addressof(_Other._Mycont)};
-        _RANGES swap(_Mycont, _Other._Mycont);
+            _STD addressof(_Data), _STD addressof(_Other._Data)};
+        _RANGES swap(_Data, _Other._Data);
         _RANGES swap(_Mycomp, _Other._Mycomp);
         _Guard._Dismiss();
     }
 
     void clear() noexcept {
-        _Mycont.clear();
+        _Data.clear();
     }
 
     // Observers
@@ -511,7 +509,7 @@ public:
     }
 
     _NODISCARD friend bool operator==(const _Derived& _Lhs, const _Derived& _Rhs) {
-        return _STD equal(_Lhs._Mycont.begin(), _Lhs._Mycont.end(), _Rhs._Mycont.begin(), _Rhs._Mycont.end());
+        return _STD equal(_Lhs._Data.begin(), _Lhs._Data.end(), _Rhs._Data.begin(), _Rhs._Data.end());
     }
 
     _NODISCARD friend auto operator<=>(const _Derived& _Lhs, const _Derived& _Rhs) {
@@ -529,7 +527,7 @@ public:
 private:
 #endif
     _NODISCARD bool _Is_sorted_and_unique() const {
-        return _Is_sorted_and_unique(_Mycont.begin(), _Mycont.end());
+        return _Is_sorted_and_unique(_Data.begin(), _Data.end());
     }
 
 private:
@@ -564,10 +562,10 @@ private:
     template <class _Ty>
     _NODISCARD iterator _Emplace_with_clear_guard(const const_iterator _Where, _Ty&& _Val) {
         if constexpr (_Has_guaranteed_single_insertion<container_type>) {
-            return _Mycont.emplace(_Where, _STD forward<_Ty>(_Val));
+            return _Data.emplace(_Where, _STD forward<_Ty>(_Val));
         } else {
             _Clear_guard _Guard{this};
-            auto _Iter     = _Mycont.emplace(_Where, _STD forward<_Ty>(_Val));
+            auto _Iter     = _Data.emplace(_Where, _STD forward<_Ty>(_Val));
             _Guard._Target = nullptr;
             return _Iter;
         }
@@ -662,7 +660,7 @@ private:
     void _Insert_range(const _Iter _First, const _Iter _Last) {
         const size_type _Old_size = size();
         _Clear_guard _Guard{this};
-        _Mycont.insert(_Mycont.end(), _First, _Last);
+        _Data.insert(_Data.end(), _First, _Last);
         _Restore_invariants_after_insert<_NeedSorting>(_Old_size);
         _Guard._Target = nullptr;
     }
@@ -672,9 +670,9 @@ private:
         const size_type _Old_size = size();
         _Clear_guard _Guard{this};
         if constexpr (_Has_guaranteed_append_range<container_type>) {
-            _Mycont.append_range(_STD forward<_Rng>(_Range));
+            _Data.append_range(_STD forward<_Rng>(_Range));
         } else {
-            _Mycont.insert_range(_Mycont.end(), _STD forward<_Rng>(_Range));
+            _Data.insert_range(_Data.end(), _STD forward<_Rng>(_Range));
         }
         _Restore_invariants_after_insert<_NeedSorting>(_Old_size);
         _Guard._Target = nullptr;
@@ -688,7 +686,7 @@ private:
             const const_iterator _Where = lower_bound(_Val);
             if (_Where != cend() && !_Compare(_Val, *_Where)) {
                 _Clear_guard _Guard{this};
-                _Mycont.erase(_Where);
+                _Data.erase(_Where);
                 _Guard._Target = nullptr;
                 return 1;
             }
@@ -698,7 +696,7 @@ private:
 
             const auto _Removed = static_cast<size_type>(_Last - _First);
             _Clear_guard _Guard{this};
-            _Mycont.erase(_First, _Last);
+            _Data.erase(_First, _Last);
             _Guard._Target = nullptr;
             return _Removed;
         }
@@ -714,7 +712,7 @@ private:
     _NODISCARD size_type _Erase_if(_Pred _Predicate) {
         // Maintain invariants when an exception is thrown (N5032 [flat.set.erasure]/5, [flat.multiset.erasure]/5)
         _Clear_guard _Guard{this};
-        const auto _Erased_count = _STD _Erase_remove_if(_Mycont, _Predicate);
+        const auto _Erased_count = _STD _Erase_remove_if(_Data, _Predicate);
         _Guard._Target           = nullptr;
         return _Erased_count;
     }
@@ -748,8 +746,8 @@ private:
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
         if constexpr (_IsUnique && is_same_v<_KeyTy, key_type>) { // Optimization restricted due to GH-5992
             // In a non-multi container, equal_range can have size at most 1
-            const auto _First   = _STD lower_bound(_Mycont.begin(), _Mycont.end(), _Key_val, _Pass_comp());
-            const bool _Missing = _First == _Mycont.end() || _Compare(_Key_val, *_First);
+            const auto _First   = _STD lower_bound(_Data.begin(), _Data.end(), _Key_val, _Pass_comp());
+            const bool _Missing = _First == _Data.end() || _Compare(_Key_val, *_First);
             return pair{_First, _Missing ? _First : _First + 1};
         } else {
             return _STD equal_range(begin(), end(), _Key_val, _Pass_comp());
@@ -770,16 +768,16 @@ private:
             // No _Clear_guard needed. The only callers are _Restore_invariants_after_insert() (which is called
             // only by _Insert_range() which has a _Clear_guard) and _Make_invariants_fulfilled() (which is called
             // only by constructors which don't need guards and operator=() which has a _Clear_guard).
-            const auto _End = _Mycont.end();
-            _Mycont.erase(_STD unique(_Mycont.begin(), _End, _Erase_dupes_if_not_multi_pred()), _End);
+            const auto _End = _Data.end();
+            _Data.erase(_STD unique(_Data.begin(), _End, _Erase_dupes_if_not_multi_pred()), _End);
         }
     }
 
     template <bool _NeedSorting>
     void _Restore_invariants_after_insert(const size_type _Old_size) {
-        const auto _Begin   = _Mycont.begin();
+        const auto _Begin   = _Data.begin();
         const auto _Old_end = _Begin + static_cast<difference_type>(_Old_size);
-        const auto _End     = _Mycont.end();
+        const auto _End     = _Data.end();
 
         if constexpr (_NeedSorting) {
             _STD sort(_Old_end, _End, _Pass_comp());
@@ -794,8 +792,8 @@ private:
     }
 
     void _Make_invariants_fulfilled() {
-        const auto _Begin = _Mycont.begin();
-        const auto _End   = _Mycont.end();
+        const auto _Begin = _Data.begin();
+        const auto _End   = _Data.end();
 
         if (_Begin == _End) {
             return;
@@ -823,7 +821,7 @@ private:
         return _STD _Pass_fn(_Mycomp);
     }
 
-    container_type _Mycont;
+    container_type _Data;
     _MSVC_NO_UNIQUE_ADDRESS key_compare _Mycomp;
 };
 
