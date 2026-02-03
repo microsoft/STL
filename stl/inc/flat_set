@@ -346,26 +346,26 @@ public:
         }
     }
 
-    auto insert(const _Key& _Val) {
+    auto insert(const value_type& _Val) {
         return _Emplace(_Val);
     }
-    auto insert(_Key&& _Val) {
+    auto insert(value_type&& _Val) {
         return _Emplace(_STD move(_Val));
     }
-    template <_Different_from<_Key> _Other>
-        requires _IsUnique && _Transparent<key_compare> && is_constructible_v<_Key, _Other>
+    template <_Different_from<value_type> _Other>
+        requires _IsUnique && _Transparent<key_compare> && is_constructible_v<value_type, _Other>
     auto insert(_Other&& _Val) {
         return _Emplace(_STD forward<_Other>(_Val));
     }
 
-    iterator insert(const const_iterator _Hint, const _Key& _Val) {
+    iterator insert(const const_iterator _Hint, const value_type& _Val) {
         return _Emplace_hint(_Hint, _Val);
     }
-    iterator insert(const const_iterator _Hint, _Key&& _Val) {
+    iterator insert(const const_iterator _Hint, value_type&& _Val) {
         return _Emplace_hint(_Hint, _STD move(_Val));
     }
-    template <_Different_from<_Key> _Other>
-        requires _IsUnique && _Transparent<key_compare> && is_constructible_v<_Key, _Other>
+    template <_Different_from<value_type> _Other>
+        requires _IsUnique && _Transparent<key_compare> && is_constructible_v<value_type, _Other>
     iterator insert(const const_iterator _Hint, _Other&& _Val) {
         return _Emplace_hint(_Hint, _STD forward<_Other>(_Val));
     }
