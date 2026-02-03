@@ -288,7 +288,18 @@ private:
     using _Derived  = conditional_t<_IsUnique, flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>,
          flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>>;
 
-    static constexpr const char* _Msg_not_sorted = _IsUnique ? "Keys were not sorted-unique!" : "Keys were not sorted!";
+    static constexpr const char* _Msg_not_sorted = //
+        _IsUnique ? "Keys were not sorted-unique! (N5032 [flat.map.overview]/10)"
+                  : "Keys were not sorted! (N5032 [flat.multimap.overview]/10)";
+    static constexpr const char* _Msg_replace_not_sorted =
+        _IsUnique ? "Keys were not sorted-unique! (N5032 [flat.map.modifiers]/37)"
+                  : "Keys were not sorted! (N5032 [flat.map.modifiers]/37, [flat.multimap.overview]/4)";
+    static constexpr const char* _Msg_different_sizes =
+        _IsUnique ? "Containers were different sizes! (N5032 [flat.map.overview]/9)"
+                  : "Containers were different sizes! (N5032 [flat.multimap.overview]/9)";
+    static constexpr const char* _Msg_replace_different_sizes =
+        _IsUnique ? "Containers were different sizes! (N5032 [flat.map.modifiers]/37)"
+                  : "Containers were different sizes! (N5032 [flat.map.modifiers]/37, [flat.multimap.overview]/4)";
 
 public:
     // [flat.map.defn] Types
@@ -367,14 +378,14 @@ public:
     _Flat_map_base(
         key_container_type _Key_cont, mapped_container_type _Mapped_cont, const key_compare& _Comp = key_compare())
         : _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)}, _Key_compare(_Comp) {
-        _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
+        _STL_ASSERT(_Data.keys.size() == _Data.values.size(), _Msg_different_sizes);
         _Make_invariants_fulfilled();
     }
 
     _Flat_map_base(_Sorted_t, key_container_type _Key_cont, mapped_container_type _Mapped_cont,
         const key_compare& _Comp = key_compare())
         : _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)}, _Key_compare(_Comp) {
-        _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
+        _STL_ASSERT(_Data.keys.size() == _Data.values.size(), _Msg_different_sizes);
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
@@ -433,7 +444,7 @@ public:
         : _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Al, _Key_cont),
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Al, _Mapped_cont)},
           _Key_compare(_Comp) {
-        _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
+        _STL_ASSERT(_Data.keys.size() == _Data.values.size(), _Msg_different_sizes);
         _Make_invariants_fulfilled();
     }
 
@@ -448,7 +459,7 @@ public:
         : _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Al, _Key_cont),
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Al, _Mapped_cont)},
           _Key_compare(_Comp) {
-        _STL_ASSERT(_Data.keys.size() == _Data.values.size(), "key_cont.size() != mapped_cont.size()");
+        _STL_ASSERT(_Data.keys.size() == _Data.values.size(), _Msg_different_sizes);
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
@@ -689,8 +700,8 @@ public:
     }
 
     void replace(key_container_type&& _Key_cont, mapped_container_type&& _Mapped_cont) {
-        _STL_ASSERT(_Key_cont.size() == _Mapped_cont.size(), "key_cont.size() != mapped_cont.size()");
-        _STL_ASSERT(_Is_sorted_and_unique(_Key_cont.begin(), _Key_cont.end()), _Msg_not_sorted);
+        _STL_ASSERT(_Key_cont.size() == _Mapped_cont.size(), _Msg_replace_different_sizes);
+        _STL_ASSERT(_Is_sorted_and_unique(_Key_cont.begin(), _Key_cont.end()), _Msg_replace_not_sorted);
         _Clear_guard _Guard{this};
         _Data.keys     = _STD move(_Key_cont);
         _Data.values   = _STD move(_Mapped_cont);
