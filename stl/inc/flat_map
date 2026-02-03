@@ -1089,23 +1089,15 @@ private:
     }
 
     void _Make_invariants_fulfilled() {
-        if (empty()) {
+        if (_Data.keys.empty()) {
             return;
         }
 
-        // O(N) if already sorted.
-        const auto _Num_sorted =
-            _STD is_sorted_until(_Data.keys.begin(), _Data.keys.end(), _Pass_key_comp()) - _Data.keys.begin();
-
-        auto _View                        = _View_to_mutate();
-        const auto _Begin_unsorted_values = _View.begin() + _Num_sorted;
-
-        _RANGES sort(_Begin_unsorted_values, _View.end(), _Value_compare_to_pass{_Key_compare});
-        _RANGES inplace_merge(_View, _Begin_unsorted_values, _Value_compare_to_pass{_Key_compare});
-
-        _Erase_dupes_if_not_multi();
-
-        _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
+        const auto _Begin        = _Data.keys.begin();
+        const auto _End          = _Data.keys.end();
+        const auto _Sorted_until = _STD is_sorted_until(_Begin, _End, _Pass_key_comp()); // O(N) if already sorted.
+        const auto _Sorted_size  = static_cast<size_type>(_Sorted_until - _Begin);
+        _Restore_invariants_after_insert<true>(_Sorted_size);
     }
 
     _NODISCARD auto _Erase_dupes_if_not_multi_pred() {
@@ -1125,9 +1117,9 @@ private:
 
     void _Erase_dupes_if_not_multi() {
         if constexpr (_IsUnique) {
-            // No _Clear_guard needed. The only callers are _Restore_invariants_after_insert() (which is called
-            // only by _Insert_range() which has a _Clear_guard) and _Make_invariants_fulfilled() (which is called
-            // only by constructors which don't need guards).
+            // No _Clear_guard needed. The only caller is _Restore_invariants_after_insert().
+            // That's called only by _Insert_range() (which has a _Clear_guard)
+            // and _Make_invariants_fulfilled() (which is called only by constructors which don't need guards).
             auto _Sorted_view    = _View_to_mutate();
             const auto _New_last = _RANGES unique(_Sorted_view, _Erase_dupes_if_not_multi_pred()).begin();
 

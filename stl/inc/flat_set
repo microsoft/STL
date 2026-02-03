@@ -771,9 +771,10 @@ private:
 
     void _Erase_dupes_if_not_multi() {
         if constexpr (_IsUnique) {
-            // No _Clear_guard needed. The only callers are _Restore_invariants_after_insert() (which is called
-            // only by _Insert_range() which has a _Clear_guard) and _Make_invariants_fulfilled() (which is called
-            // only by constructors which don't need guards and operator=() which has a _Clear_guard).
+            // No _Clear_guard needed. The only caller is _Restore_invariants_after_insert().
+            // That's called only by _Insert_range() (which has a _Clear_guard)
+            // and _Make_invariants_fulfilled() (which is called only by constructors which don't need guards
+            // and operator=() which has a _Clear_guard).
             const auto _End = _Data.end();
             _Data.erase(_STD unique(_Data.begin(), _End, _Erase_dupes_if_not_multi_pred()), _End);
         }
@@ -798,21 +799,15 @@ private:
     }
 
     void _Make_invariants_fulfilled() {
-        const auto _Begin = _Data.begin();
-        const auto _End   = _Data.end();
-
-        if (_Begin == _End) {
+        if (_Data.empty()) {
             return;
         }
 
-        // O(N) if already sorted.
-        const auto _Begin_unsorted = _STD is_sorted_until(_Begin, _End, _Pass_comp());
-
-        _STD sort(_Begin_unsorted, _End, _Pass_comp());
-        _STD inplace_merge(_Begin, _Begin_unsorted, _End, _Pass_comp());
-        _Erase_dupes_if_not_multi();
-
-        _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
+        const auto _Begin        = _Data.begin();
+        const auto _End          = _Data.end();
+        const auto _Sorted_until = _STD is_sorted_until(_Begin, _End, _Pass_comp()); // O(N) if already sorted.
+        const auto _Sorted_size  = static_cast<size_type>(_Sorted_until - _Begin);
+        _Restore_invariants_after_insert<true>(_Sorted_size);
     }
 
     template <class _Lty, class _Rty>
