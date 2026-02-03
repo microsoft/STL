@@ -23,6 +23,10 @@ extern "C" long __isa_enabled;
 #endif // !defined(_DEBUG)
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
 
+#if defined(_M_ARM64)
+#include <windows.h>
+#endif
+
 namespace {
 #ifndef _M_ARM64EC
     bool _Use_avx2() noexcept {
@@ -52,6 +56,44 @@ namespace {
             reinterpret_cast<const unsigned char*>(_Tail_masks) + (32 - _Count_in_bytes)));
     }
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
+
+#if defined(_M_ARM64)
+    bool _Use_FEAT_DotProd() noexcept {
+        return IsProcessorFeaturePresent(PF_ARM_V82_DP_INSTRUCTIONS_AVAILABLE);
+    }
+
+    bool _Use_FEAT_I8MM() noexcept {
+        return IsProcessorFeaturePresent(PF_ARM_V82_I8MM_INSTRUCTIONS_AVAILABLE);
+    }
+
+    bool _Use_FEAT_SHA3() noexcept {
+        return IsProcessorFeaturePresent(PF_ARM_SHA3_INSTRUCTIONS_AVAILABLE);
+    }
+
+    bool _Use_FEAT_SVE() noexcept {
+        return IsProcessorFeaturePresent(PF_ARM_SVE_INSTRUCTIONS_AVAILABLE);
+    }
+
+    bool _Use_FEAT_SVE2() noexcept {
+        return IsProcessorFeaturePresent(PF_ARM_SVE2_INSTRUCTIONS_AVAILABLE);
+    }
+
+    bool _Use_FEAT_SVE2p1() noexcept {
+        return IsProcessorFeaturePresent(PF_ARM_SVE2_1_INSTRUCTIONS_AVAILABLE);
+    }
+
+    bool _Use_FEAT_SVE_SHA3() noexcept {
+        return IsProcessorFeaturePresent(PF_ARM_SVE_SHA3_INSTRUCTIONS_AVAILABLE);
+    }
+
+    bool _Use_FEAT_AES() noexcept {
+        return IsProcessorFeaturePresent(PF_ARM_SVE_AES_INSTRUCTIONS_AVAILABLE);
+    }
+
+    bool _Use_FEAT_BitPerm() noexcept {
+        return IsProcessorFeaturePresent(PF_ARM_SVE_BITPERM_INSTRUCTIONS_AVAILABLE);
+    }
+#endif //^^^ defined(_M_ARM64) ^^^
 
     size_t _Byte_length(const void* const _First, const void* const _Last) noexcept {
         return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
