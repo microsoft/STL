@@ -205,12 +205,11 @@ void test_constructors() {
     const int arr[] = {2, 7, 18, 28, 18, 28, 45, 90, 45, 23};
 
     // Test flat_set(InIt, InIt, const key_compare& = key_compare())
-    assert_all_requirements_and_equals(flat_set<int, lt, C>(begin(arr), end(arr)), {2, 7, 18, 23, 28, 45, 90});
+    assert_all_requirements_and_equals(flat_set(begin(arr), end(arr)), {2, 7, 18, 23, 28, 45, 90});
+    assert_all_requirements_and_equals(flat_multiset(begin(arr), end(arr)), {2, 7, 18, 18, 23, 28, 28, 45, 45, 90});
+    assert_all_requirements_and_equals(flat_set(begin(arr), end(arr), gt{}), {90, 45, 28, 23, 18, 7, 2});
     assert_all_requirements_and_equals(
-        flat_multiset<int, lt, C>(begin(arr), end(arr)), {2, 7, 18, 18, 23, 28, 28, 45, 45, 90});
-    assert_all_requirements_and_equals(flat_set<int, gt, C>(begin(arr), end(arr), gt{}), {90, 45, 28, 23, 18, 7, 2});
-    assert_all_requirements_and_equals(
-        flat_multiset<int, gt, C>(begin(arr), end(arr), gt{}), {90, 45, 45, 28, 28, 23, 18, 18, 7, 2});
+        flat_multiset(begin(arr), end(arr), gt{}), {90, 45, 45, 28, 28, 23, 18, 18, 7, 2});
 
     {
         // Test flat_set(sorted_unique_t, InIt, InIt, const key_compare& = key_compare())
@@ -218,32 +217,30 @@ void test_constructors() {
         const int ea[] = {40, 50, 50, 60, 60, 60}; // equivalent ascending
         const int ud[] = {66, 55, 44}; // unique descending
         const int ed[] = {33, 22, 22, 11, 11, 11}; // equivalent descending
-        assert_all_requirements_and_equals(flat_set<int, lt, C>(sorted_unique, begin(ua), end(ua)), ua);
-        assert_all_requirements_and_equals(flat_multiset<int, lt, C>(sorted_equivalent, begin(ea), end(ea)), ea);
-        assert_all_requirements_and_equals(flat_set<int, gt, C>(sorted_unique, begin(ud), end(ud), gt{}), ud);
-        assert_all_requirements_and_equals(flat_multiset<int, gt, C>(sorted_equivalent, begin(ed), end(ed), gt{}), ed);
+        assert_all_requirements_and_equals(flat_set(sorted_unique, begin(ua), end(ua)), ua);
+        assert_all_requirements_and_equals(flat_multiset(sorted_equivalent, begin(ea), end(ea)), ea);
+        assert_all_requirements_and_equals(flat_set(sorted_unique, begin(ud), end(ud), gt{}), ud);
+        assert_all_requirements_and_equals(flat_multiset(sorted_equivalent, begin(ed), end(ed), gt{}), ed);
     }
 
     // Test flat_set(from_range_t, R&&)
     // and  flat_set(from_range_t, R&&, const key_compare&)
-    assert_all_requirements_and_equals(flat_set<int, lt, C>(from_range, arr), {2, 7, 18, 23, 28, 45, 90});
-    assert_all_requirements_and_equals(
-        flat_multiset<int, lt, C>(from_range, arr), {2, 7, 18, 18, 23, 28, 28, 45, 45, 90});
-    assert_all_requirements_and_equals(flat_set<int, gt, C>(from_range, arr, gt{}), {90, 45, 28, 23, 18, 7, 2});
-    assert_all_requirements_and_equals(
-        flat_multiset<int, gt, C>(from_range, arr, gt{}), {90, 45, 45, 28, 28, 23, 18, 18, 7, 2});
+    assert_all_requirements_and_equals(flat_set(from_range, arr), {2, 7, 18, 23, 28, 45, 90});
+    assert_all_requirements_and_equals(flat_multiset(from_range, arr), {2, 7, 18, 18, 23, 28, 28, 45, 45, 90});
+    assert_all_requirements_and_equals(flat_set(from_range, arr, gt{}), {90, 45, 28, 23, 18, 7, 2});
+    assert_all_requirements_and_equals(flat_multiset(from_range, arr, gt{}), {90, 45, 45, 28, 28, 23, 18, 18, 7, 2});
 
     // Test flat_set(initializer_list<value_type>, const key_compare& = key_compare())
-    assert_all_requirements_and_equals(flat_set<int, lt, C>({3, 7, 1, 85, 222, 1}), {1, 3, 7, 85, 222});
-    assert_all_requirements_and_equals(flat_multiset<int, lt, C>({3, 7, 1, 85, 7, 222, 1}), {1, 1, 3, 7, 7, 85, 222});
-    assert_all_requirements_and_equals(flat_set<int, gt, C>({1, 2, 3, 3}, gt{}), {3, 2, 1});
-    assert_all_requirements_and_equals(flat_multiset<int, gt, C>({1, 1, 2, 3}, gt{}), {3, 2, 1, 1});
+    assert_all_requirements_and_equals(flat_set({3, 7, 1, 85, 222, 1}), {1, 3, 7, 85, 222});
+    assert_all_requirements_and_equals(flat_multiset({3, 7, 1, 85, 7, 222, 1}), {1, 1, 3, 7, 7, 85, 222});
+    assert_all_requirements_and_equals(flat_set({1, 2, 3, 3}, gt{}), {3, 2, 1});
+    assert_all_requirements_and_equals(flat_multiset({1, 1, 2, 3}, gt{}), {3, 2, 1, 1});
 
     // Test flat_set(sorted_unique_t, initializer_list<value_type>, const key_compare& = key_compare())
-    assert_all_requirements_and_equals(flat_set<int, lt, C>(sorted_unique, {1, 200, 30000}), {1, 200, 30000});
-    assert_all_requirements_and_equals(flat_multiset<int, lt, C>(sorted_equivalent, {-1, 3, 3}), {-1, 3, 3});
-    assert_all_requirements_and_equals(flat_set<int, gt, C>(sorted_unique, {30000, 200, 1}, gt{}), {30000, 200, 1});
-    assert_all_requirements_and_equals(flat_multiset<int, gt, C>(sorted_equivalent, {3, 3, -1}, gt{}), {3, 3, -1});
+    assert_all_requirements_and_equals(flat_set(sorted_unique, {1, 200, 30000}), {1, 200, 30000});
+    assert_all_requirements_and_equals(flat_multiset(sorted_equivalent, {-1, 3, 3}), {-1, 3, 3});
+    assert_all_requirements_and_equals(flat_set(sorted_unique, {30000, 200, 1}, gt{}), {30000, 200, 1});
+    assert_all_requirements_and_equals(flat_multiset(sorted_equivalent, {3, 3, -1}, gt{}), {3, 3, -1});
 }
 
 template <iterator_pair_construction Choice>
@@ -256,29 +253,30 @@ void test_allocator_extended_constructors() {
 
         fs s{3, 7, 1, 85, 222, 1};
         fs s_expected{1, 3, 7, 85, 222};
+        flat_set<int> s_expected_plain{1, 3, 7, 85, 222};
         vec v_raw{3, 7, 1, 85, 222, 1};
         vec v_sorted_unique{1, 3, 7, 85, 222};
 
         TEST_ASSERT(fs{ator} == fs{});
         TEST_ASSERT(fs{comp, ator} == fs{});
 
-        TEST_ASSERT(fs{s, ator} == s_expected);
-        TEST_ASSERT(fs{s_expected, ator} == s_expected);
-        TEST_ASSERT(fs{move(s), ator} == s_expected);
-        TEST_ASSERT(fs{fs{s_expected}, ator} == s_expected);
+        TEST_ASSERT(flat_set{s, ator} == s_expected);
+        TEST_ASSERT(flat_set{s_expected, ator} == s_expected);
+        TEST_ASSERT(flat_set{move(s), ator} == s_expected);
+        TEST_ASSERT(flat_set{fs{s_expected}, ator} == s_expected);
 
-        TEST_ASSERT(fs{v_raw, ator} == s_expected);
+        TEST_ASSERT(flat_set{v_raw, ator} == s_expected);
         TEST_ASSERT(fs{{3, 7, 1, 85, 222, 1}, ator} == s_expected);
         TEST_ASSERT(fs{v_raw.begin(), v_raw.end(), ator} == s_expected);
-        TEST_ASSERT(fs{from_range, v_raw, ator} == s_expected);
+        TEST_ASSERT(flat_set{from_range, v_raw, ator} == s_expected_plain);
 
-        TEST_ASSERT(fs{v_raw, comp, ator} == s_expected);
+        TEST_ASSERT(flat_set{v_raw, comp, ator} == s_expected);
         TEST_ASSERT(fs{{3, 7, 1, 85, 222, 1}, comp, ator} == s_expected);
         TEST_ASSERT(fs{v_raw.begin(), v_raw.end(), comp, ator} == s_expected);
-        TEST_ASSERT(fs{from_range, v_raw, comp, ator} == s_expected);
+        TEST_ASSERT(flat_set{from_range, v_raw, comp, ator} == s_expected_plain);
 
-        TEST_ASSERT(fs{sorted_unique, v_sorted_unique, ator} == s_expected);
-        TEST_ASSERT(fs{sorted_unique, v_sorted_unique, comp, ator} == s_expected);
+        TEST_ASSERT(flat_set{sorted_unique, v_sorted_unique, ator} == s_expected);
+        TEST_ASSERT(flat_set{sorted_unique, v_sorted_unique, comp, ator} == s_expected);
 
         TEST_ASSERT(fs{sorted_unique, {1, 3, 7, 85, 222}, ator} == s_expected);
         TEST_ASSERT(fs{sorted_unique, {1, 3, 7, 85, 222}, comp, ator} == s_expected);
@@ -291,29 +289,30 @@ void test_allocator_extended_constructors() {
 
         fms s{3, 7, 1, 85, 222, 1};
         fms s_expected{1, 1, 3, 7, 85, 222};
+        flat_multiset<int> s_expected_plain{1, 1, 3, 7, 85, 222};
         vec v_raw{3, 7, 1, 85, 222, 1};
         vec v_sorted_eq{1, 1, 3, 7, 85, 222};
 
         TEST_ASSERT(fms{ator} == fms{});
         TEST_ASSERT(fms{comp, ator} == fms{});
 
-        TEST_ASSERT(fms{s, ator} == s_expected);
-        TEST_ASSERT(fms{s_expected, ator} == s_expected);
-        TEST_ASSERT(fms{move(s), ator} == s_expected);
-        TEST_ASSERT(fms{fms{s_expected}, ator} == s_expected);
+        TEST_ASSERT(flat_multiset{s, ator} == s_expected);
+        TEST_ASSERT(flat_multiset{s_expected, ator} == s_expected);
+        TEST_ASSERT(flat_multiset{move(s), ator} == s_expected);
+        TEST_ASSERT(flat_multiset{fms{s_expected}, ator} == s_expected);
 
-        TEST_ASSERT(fms{v_raw, ator} == s_expected);
+        TEST_ASSERT(flat_multiset{v_raw, ator} == s_expected);
         TEST_ASSERT(fms{{3, 7, 1, 85, 222, 1}, ator} == s_expected);
         TEST_ASSERT(fms{v_raw.begin(), v_raw.end(), ator} == s_expected);
-        TEST_ASSERT(fms{from_range, v_raw, ator} == s_expected);
+        TEST_ASSERT(flat_multiset{from_range, v_raw, ator} == s_expected_plain);
 
-        TEST_ASSERT(fms{v_raw, comp, ator} == s_expected);
+        TEST_ASSERT(flat_multiset{v_raw, comp, ator} == s_expected);
         TEST_ASSERT(fms{{3, 7, 1, 85, 222, 1}, comp, ator} == s_expected);
         TEST_ASSERT(fms{v_raw.begin(), v_raw.end(), comp, ator} == s_expected);
-        TEST_ASSERT(fms{from_range, v_raw, comp, ator} == s_expected);
+        TEST_ASSERT(flat_multiset{from_range, v_raw, comp, ator} == s_expected_plain);
 
-        TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq, ator} == s_expected);
-        TEST_ASSERT(fms{sorted_equivalent, v_sorted_eq, comp, ator} == s_expected);
+        TEST_ASSERT(flat_multiset{sorted_equivalent, v_sorted_eq, ator} == s_expected);
+        TEST_ASSERT(flat_multiset{sorted_equivalent, v_sorted_eq, comp, ator} == s_expected);
 
         TEST_ASSERT(fms{sorted_equivalent, {1, 1, 3, 7, 85, 222}, ator} == s_expected);
         TEST_ASSERT(fms{sorted_equivalent, {1, 1, 3, 7, 85, 222}, comp, ator} == s_expected);
