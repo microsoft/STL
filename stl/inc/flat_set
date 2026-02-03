@@ -425,12 +425,12 @@ public:
     }
 
     size_type erase(const key_type& _Val) {
-        return _Erase(_Val);
+        return _Erase_key(_Val);
     }
     template <_Different_from<key_type> _Other>
         requires _Transparent<key_compare> && (!is_convertible_v<_Other, const_iterator>)
     size_type erase(_Other&& _Val) {
-        return _Erase(_Val);
+        return _Erase_key(_Val);
     }
 
     iterator erase(const const_iterator _First, const const_iterator _Last) {
@@ -684,13 +684,13 @@ private:
         _Guard._Target = nullptr;
     }
 
-    template <class _Ty>
-    _NODISCARD size_type _Erase(const _Ty& _Val) {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Ty, key_type> || _Transparent<key_compare>);
+    template <class _KeyTy>
+    _NODISCARD size_type _Erase_key(const _KeyTy& _Key_val) {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
 
-        if constexpr (_IsUnique && is_same_v<_Ty, key_type>) { // Optimization restricted due to GH-5992
-            const const_iterator _Where = lower_bound(_Val);
-            if (_Where != cend() && !_Compare_keys(_Val, *_Where)) {
+        if constexpr (_IsUnique && is_same_v<_KeyTy, key_type>) { // Optimization restricted due to GH-5992
+            const const_iterator _Where = lower_bound(_Key_val);
+            if (_Where != cend() && !_Compare_keys(_Key_val, *_Where)) {
                 _Clear_guard _Guard{this};
                 _Data.erase(_Where);
                 _Guard._Target = nullptr;
@@ -698,7 +698,7 @@ private:
             }
             return 0;
         } else {
-            const auto [_First, _Last] = equal_range(_Val);
+            const auto [_First, _Last] = equal_range(_Key_val);
 
             const auto _Removed = static_cast<size_type>(_Last - _First);
             _Clear_guard _Guard{this};
