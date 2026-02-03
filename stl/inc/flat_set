@@ -723,13 +723,13 @@ private:
         return _Erased_count;
     }
 
-    template <class _Ty>
-    _NODISCARD const_iterator _Find(const _Ty& _Val) const {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Ty, key_type> || _Transparent<key_compare>);
+    template <class _KeyTy>
+    _NODISCARD const_iterator _Find(const _KeyTy& _Key_val) const {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
 
         const const_iterator _End   = cend();
-        const const_iterator _Where = lower_bound(_Val);
-        if (_Where != _End && !_Compare_keys(_Val, *_Where)) {
+        const const_iterator _Where = lower_bound(_Key_val);
+        if (_Where != _End && !_Compare_keys(_Key_val, *_Where)) {
             return _Where;
         } else {
             return _End;
