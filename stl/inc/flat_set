@@ -133,12 +133,12 @@ public:
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
-    template <_Container_compatible_range<_Key> _Rng>
+    template <_Container_compatible_range<value_type> _Rng>
     _Flat_set_base(from_range_t, _Rng&& _Range) : _Data(from_range, _STD forward<_Rng>(_Range)), _Key_compare() {
         _Make_invariants_fulfilled();
     }
 
-    template <_Container_compatible_range<_Key> _Rng>
+    template <_Container_compatible_range<value_type> _Rng>
     _Flat_set_base(from_range_t, _Rng&& _Range, const key_compare& _Comp)
         : _Data(from_range, _STD forward<_Rng>(_Range)), _Key_compare(_Comp) {
         _Make_invariants_fulfilled();
@@ -221,14 +221,14 @@ public:
         _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
     }
 
-    template <_Container_compatible_range<_Key> _Rng, _Usable_allocator_for<container_type> _Alloc>
+    template <_Container_compatible_range<value_type> _Rng, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(from_range_t, _Rng&& _Range, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, from_range, _STD forward<_Rng>(_Range))),
           _Key_compare() {
         _Make_invariants_fulfilled();
     }
 
-    template <_Container_compatible_range<_Key> _Rng, _Usable_allocator_for<container_type> _Alloc>
+    template <_Container_compatible_range<value_type> _Rng, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(from_range_t, _Rng&& _Range, const key_compare& _Comp, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, from_range, _STD forward<_Rng>(_Range))),
           _Key_compare(_Comp) {
@@ -379,11 +379,11 @@ public:
         _Insert_range<false>(_First, _Last);
     }
 
-    template <_Container_compatible_range<_Key> _Rng>
+    template <_Container_compatible_range<value_type> _Rng>
     void insert_range(_Rng&& _Range) {
         _Insert_range<true>(_STD forward<_Rng>(_Range));
     }
-    template <_Container_compatible_range<_Key> _Rng>
+    template <_Container_compatible_range<value_type> _Rng>
     void insert_range(_Sorted_t, _Rng&& _Range) {
         _Insert_range<false>(_STD forward<_Rng>(_Range));
     }
@@ -668,7 +668,7 @@ private:
         _Guard._Target = nullptr;
     }
 
-    template <bool _NeedSorting, _Container_compatible_range<_Key> _Rng>
+    template <bool _NeedSorting, _Container_compatible_range<value_type> _Rng>
     void _Insert_range(_Rng&& _Range) {
         const size_type _Old_size = size();
         _Clear_guard _Guard{this};
