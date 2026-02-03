@@ -417,9 +417,9 @@ public:
     }
 
     // NB: `erase(iterator)` is identical to `erase(const_iterator)`
-    iterator erase(const const_iterator _Where) {
+    iterator erase(const const_iterator _Position) {
         _Clear_guard _Guard{this};
-        const auto _Ret = _Data.erase(_Where);
+        const auto _Ret = _Data.erase(_Position);
         _Guard._Target  = nullptr;
         return _Ret;
     }
