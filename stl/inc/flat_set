@@ -322,27 +322,27 @@ public:
     }
 
     // [flat.set.modifiers] Modifiers
-    template <class... _Args>
-    auto emplace(_Args&&... _Vals)
-        requires is_constructible_v<value_type, _Args...>
+    template <class... _ArgTypes>
+    auto emplace(_ArgTypes&&... _Args)
+        requires is_constructible_v<value_type, _ArgTypes...>
     {
-        constexpr bool _Is_key_type = _In_place_key_extract_set<key_type, remove_cvref_t<_Args>...>::_Extractable;
+        constexpr bool _Is_key_type = _In_place_key_extract_set<key_type, remove_cvref_t<_ArgTypes>...>::_Extractable;
         if constexpr (_Is_key_type) {
-            return _Emplace(_STD forward<_Args>(_Vals)...);
+            return _Emplace(_STD forward<_ArgTypes>(_Args)...);
         } else {
-            return _Emplace(key_type(_STD forward<_Args>(_Vals)...));
+            return _Emplace(key_type(_STD forward<_ArgTypes>(_Args)...));
         }
     }
 
-    template <class... _Args>
-    iterator emplace_hint(const const_iterator _Hint, _Args&&... _Vals)
-        requires is_constructible_v<value_type, _Args...>
+    template <class... _ArgTypes>
+    iterator emplace_hint(const const_iterator _Hint, _ArgTypes&&... _Args)
+        requires is_constructible_v<value_type, _ArgTypes...>
     {
-        constexpr bool _Is_key_type = _In_place_key_extract_set<key_type, remove_cvref_t<_Args>...>::_Extractable;
+        constexpr bool _Is_key_type = _In_place_key_extract_set<key_type, remove_cvref_t<_ArgTypes>...>::_Extractable;
         if constexpr (_Is_key_type) {
-            return _Emplace_hint(_Hint, _STD forward<_Args>(_Vals)...);
+            return _Emplace_hint(_Hint, _STD forward<_ArgTypes>(_Args)...);
         } else {
-            return _Emplace_hint(_Hint, key_type(_STD forward<_Args>(_Vals)...));
+            return _Emplace_hint(_Hint, key_type(_STD forward<_ArgTypes>(_Args)...));
         }
     }
 
