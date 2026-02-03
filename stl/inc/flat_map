@@ -992,7 +992,27 @@ protected:
         return begin() + _Dist;
     }
 
+#ifdef _ENABLE_STL_INTERNAL_CHECK
+public:
+#else
 private:
+#endif
+    _NODISCARD bool _Is_sorted_and_unique() const {
+        return _Is_sorted_and_unique(_Data.keys.begin(), _Data.keys.end());
+    }
+
+private:
+    _NODISCARD bool _Is_sorted_and_unique(
+        const key_container_type::const_iterator _It, const key_container_type::const_iterator _End) const {
+        if constexpr (_IsUnique) {
+            // sorted-unique
+            auto _Negated = [this](const key_type& _Lhs, const key_type& _Rhs) { return !_Compare_keys(_Lhs, _Rhs); };
+            return _STD adjacent_find(_It, _End, _Negated) == _End;
+        } else {
+            return _STD is_sorted(_It, _End, _Pass_key_comp());
+        }
+    }
+
     void _Insert_exact(const const_iterator _Position, key_type&& _Key_val, mapped_type&& _Mapped_val) {
         _Clear_guard _Guard{this};
         _Data.keys.insert(_Position._Key_it, _STD move(_Key_val));
@@ -1029,27 +1049,6 @@ private:
             typename mapped_container_type::iterator, typename mapped_container_type::iterator>::_Iterator;
         return _RANGES subrange<_Mutating_iterator>{_Mutating_iterator{_Data.keys.begin(), _Data.values.begin()},
             _Mutating_iterator{_Data.keys.end(), _Data.values.end()}};
-    }
-
-#ifdef _ENABLE_STL_INTERNAL_CHECK
-public:
-#else
-private:
-#endif
-    _NODISCARD bool _Is_sorted_and_unique() const {
-        return _Is_sorted_and_unique(_Data.keys.begin(), _Data.keys.end());
-    }
-
-private:
-    _NODISCARD bool _Is_sorted_and_unique(
-        const key_container_type::const_iterator _It, const key_container_type::const_iterator _End) const {
-        if constexpr (_IsUnique) {
-            // sorted-unique
-            auto _Negated = [this](const key_type& _Lhs, const key_type& _Rhs) { return !_Compare_keys(_Lhs, _Rhs); };
-            return _STD adjacent_find(_It, _End, _Negated) == _End;
-        } else {
-            return _STD is_sorted(_It, _End, _Pass_key_comp());
-        }
     }
 
     struct _Value_compare_to_pass {
