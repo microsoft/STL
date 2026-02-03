@@ -839,11 +839,11 @@ public:
     flat_set(flat_set&&)      = default;
 
 #if 1 // TRANSITION, P2582R1 (MSVC, Clang, EDG)
-    template <_Usable_allocator_for<_Container> _Allocator>
-    flat_set(const flat_set& _Other, const _Allocator& _Al) : _Mybase(_Other, _Al) {}
+    template <_Usable_allocator_for<_Container> _Alloc>
+    flat_set(const flat_set& _Other, const _Alloc& _Al) : _Mybase(_Other, _Al) {}
 
-    template <_Usable_allocator_for<_Container> _Allocator>
-    flat_set(flat_set&& _Other, const _Allocator& _Al) : _Mybase(_STD move(_Other), _Al) {}
+    template <_Usable_allocator_for<_Container> _Alloc>
+    flat_set(flat_set&& _Other, const _Alloc& _Al) : _Mybase(_STD move(_Other), _Al) {}
 #endif // ^^^ workaround ^^^
 
     flat_set& operator=(const flat_set&) = default;
@@ -867,11 +867,11 @@ public:
     flat_multiset(flat_multiset&&)      = default;
 
 #if 1 // TRANSITION, P2582R1 (MSVC, Clang, EDG)
-    template <_Usable_allocator_for<_Container> _Allocator>
-    flat_multiset(const flat_multiset& _Other, const _Allocator& _Al) : _Mybase(_Other, _Al) {}
+    template <_Usable_allocator_for<_Container> _Alloc>
+    flat_multiset(const flat_multiset& _Other, const _Alloc& _Al) : _Mybase(_Other, _Al) {}
 
-    template <_Usable_allocator_for<_Container> _Allocator>
-    flat_multiset(flat_multiset&& _Other, const _Allocator& _Al) : _Mybase(_STD move(_Other), _Al) {}
+    template <_Usable_allocator_for<_Container> _Alloc>
+    flat_multiset(flat_multiset&& _Other, const _Alloc& _Al) : _Mybase(_STD move(_Other), _Al) {}
 #endif // ^^^ workaround ^^^
 
     flat_multiset& operator=(const flat_multiset&) = default;
