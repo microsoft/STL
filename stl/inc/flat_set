@@ -333,7 +333,7 @@ public:
     auto emplace(_ArgTypes&&... _Args)
         requires is_constructible_v<value_type, _ArgTypes...>
     {
-        constexpr bool _Is_key_type = _In_place_key_extract_set<key_type, remove_cvref_t<_ArgTypes>...>::_Extractable;
+        constexpr bool _Is_key_type = _In_place_key_extract_set<key_type, _ArgTypes...>::_Extractable;
         if constexpr (_Is_key_type) {
             return _Emplace(_STD forward<_ArgTypes>(_Args)...);
         } else {
@@ -345,7 +345,7 @@ public:
     iterator emplace_hint(const const_iterator _Position, _ArgTypes&&... _Args)
         requires is_constructible_v<value_type, _ArgTypes...>
     {
-        constexpr bool _Is_key_type = _In_place_key_extract_set<key_type, remove_cvref_t<_ArgTypes>...>::_Extractable;
+        constexpr bool _Is_key_type = _In_place_key_extract_set<key_type, _ArgTypes...>::_Extractable;
         if constexpr (_Is_key_type) {
             return _Emplace_hint(_Position, _STD forward<_ArgTypes>(_Args)...);
         } else {
