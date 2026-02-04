@@ -108,7 +108,6 @@ int main() {
             forward_list<int, MyAlloc<int>> fl(v.begin(), v.end(), alloc);
             fl.sort();
             assert(is_sorted(fl.begin(), fl.end()));
-
         } while (next_permutation(v.begin(), v.end()));
     }
 
@@ -254,7 +253,6 @@ int main() {
         f.get();
     }
 
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     {
         packaged_task<int()> pt(allocator_arg, alloc, [] { return 1234; });
         future<int> f = pt.get_future();
@@ -276,7 +274,6 @@ int main() {
         pt();
         f.get();
     }
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 #endif // _M_CEE_PURE
 
     test_DevDiv_1119194();

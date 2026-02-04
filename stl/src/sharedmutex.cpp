@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <__msvc_threads_core.hpp>
-#include <synchapi.h>
+
+#include <Windows.h>
 
 #include "primitives.hpp"
 
@@ -66,7 +67,7 @@ namespace {
 
         return res;
     }
-} // namespace
+} // unnamed namespace
 
 // TRANSITION, ABI: preserved for compatibility
 _Thrd_result __stdcall _Cnd_timedwait_for(const _Cnd_t cond, const _Mtx_t mtx, const unsigned int target_ms) noexcept {

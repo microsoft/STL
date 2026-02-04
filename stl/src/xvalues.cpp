@@ -9,21 +9,29 @@
 #endif
 #endif
 
-#include "xmath.hpp"
+#include <yvals.h>
 
-// macros
-#define NBITS (48 + _DOFF)
+_EXTERN_C_UNLESS_PURE
 
-#define INIT(w0)      {0, 0, 0, w0}
-#define INIT2(w0, w1) {w1, 0, 0, w0}
+// TRANSITION, ABI: preserved for binary compatibility
+union _Dconst { // pun float types as integer array
+    unsigned short _Word[8];
+    float _Float;
+    double _Double;
+    long double _Long_double;
+};
+extern _CRTIMP2_PURE _Dconst _Denorm  = {1, 0, 0, 0};
+extern _CRTIMP2_PURE _Dconst _LDenorm = {1, 0, 0, 0};
+extern _CRTIMP2_PURE _Dconst _Hugeval = {0, 0, 0, 0x7ff0};
+extern _CRTIMP2_PURE _Dconst _Inf     = {0, 0, 0, 0x7ff0};
+extern _CRTIMP2_PURE _Dconst _LInf    = {0, 0, 0, 0x7ff0};
+extern _CRTIMP2_PURE _Dconst _Nan     = {0, 0, 0, 0x7ff8};
+extern _CRTIMP2_PURE _Dconst _LNan    = {0, 0, 0, 0x7ff8};
+extern _CRTIMP2_PURE _Dconst _Snan    = {1, 0, 0, 0x7ff0};
+extern _CRTIMP2_PURE _Dconst _LSnan   = {1, 0, 0, 0x7ff0};
+extern _CRTIMP2_PURE _Dconst _FDenorm = {1, 0};
+extern _CRTIMP2_PURE _Dconst _FInf    = {0, 0x7f80};
+extern _CRTIMP2_PURE _Dconst _FNan    = {0, 0x7fc0};
+extern _CRTIMP2_PURE _Dconst _FSnan   = {1, 0x7f80};
 
-// static data
-extern /* const */ _Dconst _Denorm  = {INIT2(0, 1)};
-extern const _Dconst _Eps           = {INIT((_DBIAS - NBITS - 1) << _DOFF)};
-extern /* const */ _Dconst _Hugeval = {INIT(_DMAX << _DOFF)};
-extern /* const */ _Dconst _Inf     = {INIT(_DMAX << _DOFF)};
-extern /* const */ _Dconst _Nan     = {INIT((_DMAX << _DOFF) | (1 << (_DOFF - 1)))};
-extern /* const */ _Dconst _Snan    = {INIT2(_DMAX << _DOFF, 1)};
-extern const _Dconst _Rteps         = {INIT((_DBIAS - NBITS / 2) << _DOFF)};
-
-extern const double _Xbig = (NBITS + 2) * 0.347;
+_END_EXTERN_C_UNLESS_PURE

@@ -19,8 +19,6 @@
 #define _SILENCE_CXX20_U8PATH_DEPRECATION_WARNING
 #define _SILENCE_CXX20_VOLATILE_DEPRECATION_WARNING
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
-#define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
-#define _USE_NAMED_IDL_NAMESPACE 1
 
 #include <algorithm>
 #include <array>
@@ -105,7 +103,7 @@
 #include <thread>
 #endif // _M_CEE_PURE
 
-#include "experimental_filesystem.hpp"
+#include <experimental_filesystem.hpp>
 #include <instantiate_containers_iterators_common.hpp>
 
 
@@ -621,11 +619,9 @@ void future_test() {
     // GH-321: "<future>: packaged_task can't be constructed from a move-only lambda"
     packaged_task<void()> pt2([uptr = unique_ptr<int>{}]() { (void) uptr; });
 
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     packaged_task<void()> pta(allocator_arg, allocator<double>{}, []() {});
     // GH-321: "<future>: packaged_task can't be constructed from a move-only lambda"
     packaged_task<void()> pta2(allocator_arg, allocator<double>{}, [uptr = unique_ptr<int>{}]() { (void) uptr; });
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     swap_test(pt);
 
@@ -634,9 +630,7 @@ void future_test() {
 
     TRAIT_V(uses_allocator, promise<int>, allocator<double>);
 
-#if _HAS_FUNCTION_ALLOCATOR_SUPPORT
     TRAIT_V(uses_allocator, packaged_task<void()>, allocator<double>);
-#endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 }
 #endif // _M_CEE_PURE
 
@@ -719,22 +713,6 @@ void nonmember_iterator_functions_test() {
     (void) cend(c);
 }
 
-void msvc_array_iterators_test() {
-    using namespace stdext;
-    int arr[] = {1, 2, 3, 4};
-
-    auto unchecked = make_unchecked_array_iterator(arr);
-    auto checked   = make_checked_array_iterator(arr, size(arr));
-
-    random_access_iterator_test(unchecked);
-    random_access_iterator_test(checked);
-
-    swap_test(unchecked);
-    swap_test(checked);
-    comparable_test(unchecked);
-    comparable_test(checked);
-}
-
 void iterators_test() {
     fwd_iterators_test<forward_list<int>>();
     fwd_iterators_test<list<int>>();
@@ -753,8 +731,6 @@ void iterators_test() {
     nonmember_reverse_iterator_functions_test<initializer_list<int>>();
     nonmember_reverse_iterator_functions_test<list<int>>();
     nonmember_reverse_iterator_functions_test<vector<int>>();
-
-    msvc_array_iterators_test();
 
     int arr[]                = {1};
     initializer_list<int> il = {2};

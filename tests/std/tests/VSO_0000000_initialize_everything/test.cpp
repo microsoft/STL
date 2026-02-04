@@ -44,12 +44,12 @@ struct stateful_allocator {
 };
 
 template <typename T, typename U>
-inline bool operator==(const stateful_allocator<T>& lhs, const stateful_allocator<U>& rhs) {
+bool operator==(const stateful_allocator<T>& lhs, const stateful_allocator<U>& rhs) {
     return lhs.state == rhs.state;
 }
 
 template <typename T, typename U>
-inline bool operator!=(const stateful_allocator<T>& lhs, const stateful_allocator<U>& rhs) {
+bool operator!=(const stateful_allocator<T>& lhs, const stateful_allocator<U>& rhs) {
     return lhs.state != rhs.state;
 }
 

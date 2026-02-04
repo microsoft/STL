@@ -10,10 +10,10 @@
 #include <type_traits>
 #include <vector>
 
-template <class Contained, template <class> class Alloc = std::allocator>
-std::vector<Contained, Alloc<Contained>> random_vector(size_t n) {
+template <class Contained, template <class> class Alloc = std::allocator, class... Seed>
+std::vector<Contained, Alloc<Contained>> random_vector(size_t n, Seed... seed) {
     std::vector<Contained, Alloc<Contained>> res(n);
-    std::mt19937_64 prng;
+    std::mt19937_64 prng{seed...};
 
     if constexpr (std::is_same_v<Contained, bool>) {
         std::generate(res.begin(), res.end(), [&prng] { return static_cast<bool>(prng() & 1); });

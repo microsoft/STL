@@ -39,7 +39,8 @@ public:
     using pointer           = typename _Myvec::const_pointer;
     using reference         = const value_type&;
 
-    using _Tptr = typename _Myvec::pointer;
+    using _Tptr    = typename _Myvec::pointer;
+    using _Myvec_t = _Myvec; // helper for expression evaluator
 
     _CONSTEXPR20 _Vector_const_iterator() noexcept : _Ptr() {}
 
@@ -2120,7 +2121,7 @@ private:
             } else if constexpr (sizeof...(_Val) == 2) {
                 _My_data._Mylast = _STD _Uninitialized_copy(_STD forward<_Valty>(_Val)..., _My_data._Myfirst, _Al);
             } else {
-                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected number of arguments
+                static_assert(false, "unexpected number of arguments");
             }
             _ASAN_VECTOR_CREATE;
             _Guard._Target = nullptr;
@@ -2862,7 +2863,7 @@ public:
     _CONSTEXPR20 ~_Vb_val() noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         this->_Orphan_all();
-        auto _Alproxy = _STD _Get_proxy_allocator(this->_Getal());
+        auto _Alproxy = _STD _Get_proxy_allocator(_Getal());
         _Delete_plain_internal(_Alproxy, _STD exchange(this->_Myproxy, nullptr));
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
@@ -3464,8 +3465,7 @@ public:
         return begin() + _Off;
     }
 
-    _CONSTEXPR20 iterator erase(const_iterator _First_arg, const_iterator _Last_arg) noexcept
-    /* strengthened */ {
+    _CONSTEXPR20 iterator erase(const_iterator _First_arg, const_iterator _Last_arg) noexcept /* strengthened */ {
         iterator _First      = _Make_iter(_First_arg);
         iterator _Last       = _Make_iter(_Last_arg);
         difference_type _Off = _First - begin();
@@ -3705,8 +3705,8 @@ _CONSTEXPR20 void _Fill_vbool(_VbIt _First, const _VbIt _Last, const bool _Val) 
     } else
 #endif // _HAS_CXX20
     {
-        const auto _VbFirst_ch = reinterpret_cast<const char*>(_VbFirst);
-        const auto _VbLast_ch  = reinterpret_cast<const char*>(_VbLast);
+        const auto _VbFirst_ch = reinterpret_cast<const unsigned char*>(_VbFirst);
+        const auto _VbLast_ch  = reinterpret_cast<const unsigned char*>(_VbLast);
         const auto _Count_ch   = static_cast<size_t>(_VbLast_ch - _VbFirst_ch);
         const auto _ValChar    = static_cast<unsigned char>(_Val ? -1 : 0);
         _CSTD memset(_VbFirst, _ValChar, _Count_ch);
@@ -3895,21 +3895,24 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
     } else
 #endif // _HAS_CXX20
     {
-        // If _First and _Dest have matching char alignment, use memmove
+        // If _First and _Dest have matching unsigned char alignment, use memmove
         const auto _UnalignedFirstBits = _First._Myoff & _Vbase{7};
         const auto _UnalignedDestBits  = _Dest._Myoff & _Vbase{7};
         if (_UnalignedFirstBits == _UnalignedDestBits) {
             const auto _UnalignedLastBits = _Last._Myoff & _Vbase{7};
 
-            auto _VbFirst_ch      = reinterpret_cast<const char*>(_VbFirst) + (_First._Myoff - _UnalignedFirstBits) / 8;
-            const auto _VbLast_ch = reinterpret_cast<const char*>(_VbLast) + (_Last._Myoff - _UnalignedLastBits) / 8;
-            auto _VbDest_ch       = reinterpret_cast<char*>(_VbDest) + (_Dest._Myoff - _UnalignedDestBits) / 8;
+            auto _VbFirst_ch =
+                reinterpret_cast<const unsigned char*>(_VbFirst) + (_First._Myoff - _UnalignedFirstBits) / 8;
+            const auto _VbLast_ch =
+                reinterpret_cast<const unsigned char*>(_VbLast) + (_Last._Myoff - _UnalignedLastBits) / 8;
+            auto _VbDest_ch = reinterpret_cast<unsigned char*>(_VbDest) + (_Dest._Myoff - _UnalignedDestBits) / 8;
 
-            // Copy bits until the next char alignment
+            // Copy bits until the next unsigned char alignment
             if (_UnalignedFirstBits != 0) {
-                const auto _SourceBitMask = static_cast<char>(UCHAR_MAX << _UnalignedFirstBits);
-                const auto _DestBitMask   = static_cast<char>(UCHAR_MAX >> (8 - _UnalignedFirstBits));
-                *_VbDest_ch               = (*_VbDest_ch & _DestBitMask) | (*_VbFirst_ch & _SourceBitMask);
+                const auto _SourceBitMask = static_cast<unsigned char>(UCHAR_MAX << _UnalignedFirstBits);
+                const auto _DestBitMask   = static_cast<unsigned char>(UCHAR_MAX >> (8 - _UnalignedFirstBits));
+                *_VbDest_ch =
+                    static_cast<unsigned char>((*_VbDest_ch & _DestBitMask) | (*_VbFirst_ch & _SourceBitMask));
                 ++_VbFirst_ch;
                 ++_VbDest_ch;
             }
@@ -3918,9 +3921,9 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
 
             // Copy remaining last bits
             if (_UnalignedLastBits != 0) {
-                const auto _SourceBitMask = static_cast<char>(UCHAR_MAX >> (8 - _UnalignedLastBits));
-                const auto _DestBitMask   = static_cast<char>(UCHAR_MAX << _UnalignedLastBits);
-                *_VbDest_ch               = (*_VbDest_ch & _DestBitMask) | (*_VbLast_ch & _SourceBitMask);
+                const auto _SourceBitMask = static_cast<unsigned char>(UCHAR_MAX >> (8 - _UnalignedLastBits));
+                const auto _DestBitMask   = static_cast<unsigned char>(UCHAR_MAX << _UnalignedLastBits);
+                *_VbDest_ch = static_cast<unsigned char>((*_VbDest_ch & _DestBitMask) | (*_VbLast_ch & _SourceBitMask));
             }
 
             return _DestEnd;
@@ -4002,6 +4005,49 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
     }
 
     return _DestEnd;
+}
+
+template <class _VbIt, class _OutIt, class _Mapped_fn>
+_CONSTEXPR20 _OutIt _Transform_vbool_aligned(
+    const _VbIt _First, const _VbIt _Last, _OutIt _Dest, const _Mapped_fn _Mapped_func) {
+    auto _First_ptr      = _First._Myptr;
+    const auto _Last_ptr = _Last._Myptr;
+    auto _Dest_ptr       = const_cast<_Vbase*>(_Dest._Myptr);
+
+    for (; _First_ptr != _Last_ptr; ++_First_ptr, ++_Dest_ptr) {
+        *_Dest_ptr = _Mapped_func(*_First_ptr);
+    }
+
+    if (_Last._Myoff != 0) {
+        const _Vbase _Mask = (_Vbase{1} << _Last._Myoff) - 1;
+        *_Dest_ptr         = (*_Dest_ptr & ~_Mask) | (_Mapped_func(*_First_ptr) & _Mask);
+        _Dest._Myoff       = _Last._Myoff;
+    }
+
+    _Dest._Myptr = _Dest_ptr;
+    return _Dest;
+}
+
+template <class _VbIt1, class _VbIt2, class _OutIt, class _Mapped_fn>
+_CONSTEXPR20 _OutIt _Transform_vbool_aligned(
+    const _VbIt1 _First1, const _VbIt1 _Last1, const _VbIt2 _First2, _OutIt _Dest, const _Mapped_fn _Mapped_func) {
+    auto _First1_ptr      = _First1._Myptr;
+    auto _First2_ptr      = _First2._Myptr;
+    const auto _Last1_ptr = _Last1._Myptr;
+    auto _Dest_ptr        = const_cast<_Vbase*>(_Dest._Myptr);
+
+    for (; _First1_ptr != _Last1_ptr; ++_First1_ptr, ++_First2_ptr, ++_Dest_ptr) {
+        *_Dest_ptr = _Mapped_func(*_First1_ptr, *_First2_ptr);
+    }
+
+    if (_Last1._Myoff != 0) {
+        const _Vbase _Mask = (_Vbase{1} << _Last1._Myoff) - 1;
+        *_Dest_ptr         = (*_Dest_ptr & ~_Mask) | (_Mapped_func(*_First1_ptr, *_First2_ptr) & _Mask);
+        _Dest._Myoff       = _Last1._Myoff;
+    }
+
+    _Dest._Myptr = _Dest_ptr;
+    return _Dest;
 }
 
 #undef _ASAN_VECTOR_MODIFY

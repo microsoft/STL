@@ -345,6 +345,73 @@ public:
     }
 };
 
+// Implements a DFA matching the regex of the rule GB9c. The DFA is:
+//
+//                             Consonant
+//                       +-------------------+
+//                       |                   |
+// +---+   Consonant   +-v-+    Linker     +-+-+
+// | 1 +---------------> 2 +---------------> 3 |
+// +---+               ++-^+               ++-^+
+//                      | |                 | |
+//                      +-+                 +-+
+//                      Extend       Linker or Extend
+//
+// State '3' is the accepting state.
+class _GB9c_regex {
+private:
+    enum _State_t : uint8_t { _Start, _Consonant, _Linker };
+
+    _State_t _State = _Start;
+
+public:
+    _NODISCARD constexpr bool operator==(const _GB9c_regex&) const noexcept = default;
+
+    _NODISCARD constexpr bool _Match(const _Indic_Conjunct_Break_property_values _Left_InCB) noexcept {
+        switch (_State) {
+        case _Start:
+            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Consonant_value) {
+                _State = _Consonant;
+            }
+            return false;
+
+        case _Consonant:
+            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Consonant_value) {
+                return false;
+            }
+
+            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Extend_value) {
+                return false;
+            }
+
+            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Linker_value) {
+                _State = _Linker;
+                return true;
+            }
+            break;
+
+        case _Linker:
+            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Consonant_value) {
+                _State = _Consonant;
+                return false;
+            }
+
+            if (_Left_InCB == _Indic_Conjunct_Break_property_values::_Extend_value
+                || _Left_InCB == _Indic_Conjunct_Break_property_values::_Linker_value) {
+                return true;
+            }
+            break;
+
+        default:
+            _STL_INTERNAL_CHECK(false);
+            break;
+        }
+
+        _State = _Start;
+        return false;
+    }
+};
+
 // Implements a DFA matching the regex on the left side of rule GB11. The DFA is:
 //
 // +---+   ExtPic      +---+    ZWJ        +---+
@@ -390,11 +457,12 @@ public:
 };
 
 template <class _CharT>
-class _Grapheme_break_property_iterator {
+class _Grapheme_break_property_iterator2 {
 private:
     using _Wrapped_iter_type = _Unicode_codepoint_iterator<_CharT>;
 
     _Wrapped_iter_type _WrappedIter;
+    _GB9c_regex _GB9c_rx;
     _GB11_LeftHand_regex _GB11_rx;
 
 public:
@@ -405,28 +473,32 @@ public:
         return _WrappedIter == default_sentinel;
     }
 
-    _NODISCARD constexpr bool operator==(const _Grapheme_break_property_iterator&) const noexcept = default;
+    _NODISCARD constexpr bool operator==(const _Grapheme_break_property_iterator2&) const noexcept = default;
 
-    constexpr _Grapheme_break_property_iterator(const _CharT* _First, const _CharT* _Last)
+    constexpr _Grapheme_break_property_iterator2(const _CharT* _First, const _CharT* _Last)
         : _WrappedIter(_First, _Last) {}
 
-    constexpr _Grapheme_break_property_iterator() = default;
+    constexpr _Grapheme_break_property_iterator2() = default;
 
-    constexpr _Grapheme_break_property_iterator& operator++() noexcept {
+    constexpr _Grapheme_break_property_iterator2& operator++() noexcept {
         auto _Left_gbp     = _Grapheme_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
+        auto _Left_InCB    = _Indic_Conjunct_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
         auto _Left_ExtPic  = _Extended_Pictographic_property_data._Get_property_for_codepoint(*_WrappedIter);
         auto _Right_gbp    = _Grapheme_Break_property_values::_No_value;
         auto _Right_ExtPic = _Extended_Pictographic_property_values::_No_value;
         size_t _Num_RIs    = 0;
-        for (;; _Left_gbp = _Right_gbp, _Left_ExtPic = _Right_ExtPic) {
+        for (;; _Left_gbp    = _Right_gbp,
+                _Left_InCB   = _Indic_Conjunct_Break_property_data._Get_property_for_codepoint(*_WrappedIter),
+                _Left_ExtPic = _Right_ExtPic) {
             ++_WrappedIter;
             if (_WrappedIter == default_sentinel) {
                 return *this; // GB2 Any % eot
             }
             _Right_gbp    = _Grapheme_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
             _Right_ExtPic = _Extended_Pictographic_property_data._Get_property_for_codepoint(*_WrappedIter);
-            // match GB11 now, so that we're sure to update it for every character, not just ones where
-            // the GB11 rule is considered
+            // match GB9c and GB11 now, so that we're sure to update them for every character,
+            // not just ones where the rules are considered
+            const bool _GB9c_Match = _GB9c_rx._Match(_Left_InCB);
             const bool _GB11_Match = _GB11_rx._Match(_Left_gbp, _Left_ExtPic);
             // Also update the number of sequential RIs immediately
             if (_Left_gbp == _Grapheme_Break_property_values::_Regional_Indicator_value) {
@@ -486,6 +558,13 @@ public:
                 continue; // GB9b Prepend x
             }
 
+            if (_GB9c_Match) {
+                // GB9c (since Unicode 15.1)
+                // \p{InCB=Consonant}[ \p{InCB=Extend} \p{InCB=Linker} ]* \p{InCB=Linker} [ \p{InCB=Extend}
+                // \p{InCB=Linker} ]* x \p{InCB=Consonant}
+                continue;
+            }
+
             if (_GB11_Match && _Right_ExtPic == _Extended_Pictographic_property_values::_Extended_Pictographic_value) {
                 continue; // GB11 \p{ExtendedPictographic} Extend* ZWJ x \p{ExtendedPictographic}
             }
@@ -498,7 +577,7 @@ public:
             return *this;
         }
     }
-    constexpr _Grapheme_break_property_iterator operator++(int) noexcept {
+    constexpr _Grapheme_break_property_iterator2 operator++(int) noexcept {
         auto _Old = *this;
         ++*this;
         return _Old;
@@ -2385,35 +2464,35 @@ _NODISCARD _OutputIt _Fmt_write(
 
 // width iterator for UTF-8 and UTF-16
 template <class _CharT>
-class _Measure_string_prefix_iterator_utf {
+class _Measure_string_prefix_iterator_utf2 {
 private:
-    _Grapheme_break_property_iterator<_CharT> _WrappedIter;
+    _Grapheme_break_property_iterator2<_CharT> _WrappedIter;
 
 public:
     using value_type      = int;
     using difference_type = ptrdiff_t;
 
-    _NODISCARD constexpr bool operator==(const _Measure_string_prefix_iterator_utf&) const noexcept = default;
+    _NODISCARD constexpr bool operator==(const _Measure_string_prefix_iterator_utf2&) const noexcept = default;
 
     _NODISCARD constexpr bool operator==(default_sentinel_t) const noexcept {
         return _WrappedIter == default_sentinel;
     }
 
-    constexpr _Measure_string_prefix_iterator_utf(const _CharT* _First, const _CharT* _Last)
+    constexpr _Measure_string_prefix_iterator_utf2(const _CharT* _First, const _CharT* _Last)
         : _WrappedIter(_First, _Last) {}
 
-    constexpr _Measure_string_prefix_iterator_utf() = default;
+    constexpr _Measure_string_prefix_iterator_utf2() = default;
 
     _NODISCARD constexpr value_type operator*() const {
         return _Unicode_width_estimate(*_WrappedIter);
     }
 
-    constexpr _Measure_string_prefix_iterator_utf& operator++() noexcept {
+    constexpr _Measure_string_prefix_iterator_utf2& operator++() noexcept {
         ++_WrappedIter;
         return *this;
     }
 
-    constexpr _Measure_string_prefix_iterator_utf operator++(int) noexcept {
+    constexpr _Measure_string_prefix_iterator_utf2 operator++(int) noexcept {
         auto _Old = *this;
         ++*this;
         return _Old;
@@ -2479,7 +2558,7 @@ public:
 template <class _CharT>
 using _Measure_string_prefix_iterator =
     conditional_t<is_same_v<_CharT, char> && !_Is_execution_charset_self_synchronizing(),
-        _Measure_string_prefix_iterator_legacy, _Measure_string_prefix_iterator_utf<_CharT>>;
+        _Measure_string_prefix_iterator_legacy, _Measure_string_prefix_iterator_utf2<_CharT>>;
 
 template <class _CharT>
 _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> _Value, int& _Width) {
@@ -3288,9 +3367,10 @@ void _Range_formatter_format_as_sequence(const formatter<_Ty, _CharT>& _Underlyi
 template <class _CharT, _RANGES input_range _Range, class _FormatContext>
 void _Range_formatter_format_as_string(_Range&& _Rng, _FormatContext& _Ctx, const bool _Debug) {
     if constexpr (_RANGES contiguous_range<_Range>) {
-        const auto _Size = _STD _To_unsigned_like(_RANGES distance(_Rng));
+        const auto _Dist = _RANGES distance(_Rng);
 
 #ifdef _DEBUG
+        const auto _Size = _STD _To_unsigned_like(_Dist);
         if constexpr (sizeof(_Size) > sizeof(size_t)) {
             _STL_VERIFY(_Size <= size_t{PTRDIFF_MAX}, "contiguous range has impossible size.");
         }
@@ -3301,7 +3381,8 @@ void _Range_formatter_format_as_string(_Range&& _Rng, _FormatContext& _Ctx, cons
             _String_view_formatter.set_debug_format();
         }
 
-        const basic_string_view<_CharT> _Str(_STD to_address(_RANGES begin(_Rng)), static_cast<size_t>(_Size));
+        const auto _First = _RANGES begin(_Rng);
+        const basic_string_view<_CharT> _Str(_STD to_address(_First), _STD to_address(_First + _Dist));
         _String_view_formatter.format(_Str, _Ctx);
     } else {
         using _String = basic_string<_CharT>;

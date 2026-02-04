@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+find_package(Python "3.14.2" REQUIRED COMPONENTS Interpreter)
+
 set(STL_BUILD_ROOT "${PROJECT_BINARY_DIR}/out")
 set(STL_SOURCE_DIR "${PROJECT_SOURCE_DIR}")
 set(STL_TEST_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
@@ -23,8 +25,6 @@ add_subdirectory(tr1)
 # chance to add to the config map and test directory global properties.
 add_subdirectory(utils/stl-lit)
 
-find_package(Python "3.13" REQUIRED COMPONENTS Interpreter)
-
 if(NOT DEFINED LIT_FLAGS)
     set(LIT_FLAGS "-o" "${CMAKE_CURRENT_BINARY_DIR}/test_results.json")
 endif()
@@ -32,6 +32,6 @@ endif()
 set(STL_LIT_COMMAND ${Python_EXECUTABLE} ${STL_LIT_OUTPUT} ${LIT_FLAGS})
 get_property(STL_LIT_TEST_DIRS GLOBAL PROPERTY STL_LIT_TEST_DIRS)
 
-add_custom_target(STL-CI COMMAND ${STL_LIT_COMMAND} -Dnotags=ASAN ${STL_LIT_TEST_DIRS} USES_TERMINAL)
-add_custom_target(STL-ASan-CI COMMAND ${STL_LIT_COMMAND} -Dtags=ASAN ${STL_LIT_TEST_DIRS} USES_TERMINAL)
-add_custom_target(test-only-edg COMMAND ${STL_LIT_COMMAND} -Dnotags=ASAN -Dtest-only-edg=True --xunit-xml-output test-results.xml ${STL_LIT_TEST_DIRS} USES_TERMINAL)
+add_custom_target(STL-CI COMMAND ${STL_LIT_COMMAND} --time-tests -Dnotags=ASAN ${STL_LIT_TEST_DIRS} USES_TERMINAL)
+add_custom_target(STL-ASan-CI COMMAND ${STL_LIT_COMMAND} --time-tests -Dtags=ASAN ${STL_LIT_TEST_DIRS} USES_TERMINAL)
+add_custom_target(test-only-edg COMMAND ${STL_LIT_COMMAND} --time-tests -Dnotags=ASAN -Dtest-only-edg=True --xunit-xml-output test-results.xml ${STL_LIT_TEST_DIRS} USES_TERMINAL)

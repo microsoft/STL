@@ -53,33 +53,6 @@ template <typename Elem, typename Traits>
     return str.size() >= prefix.size() && Traits::compare(str.data(), prefix.data(), prefix.size()) == 0;
 }
 
-struct [[nodiscard]] test_temp_directory {
-    path directoryPath;
-    explicit test_temp_directory(const string_view testName) : directoryPath(get_test_directory(testName)) {
-        error_code ec;
-        remove_all(directoryPath, ec);
-        if (ec) {
-            wcerr << L"Warning, couldn't clean up " << directoryPath << L" before test.\n";
-        } else {
-            create_directories(directoryPath, ec);
-            if (ec) {
-                wcerr << L"Warning, couldn't create test directory " << directoryPath << L" before test.\n";
-            }
-        }
-    }
-
-    test_temp_directory(const test_temp_directory&)            = delete;
-    test_temp_directory& operator=(const test_temp_directory&) = delete;
-
-    ~test_temp_directory() noexcept {
-        error_code ec;
-        remove_all(directoryPath, ec);
-        if (ec) {
-            wcerr << L"Warning, couldn't clean up " << directoryPath << L" after test.\n";
-        }
-    }
-};
-
 bool pass = true;
 
 bool expect(const bool b, const char* const func, const int line, const char* const message) {

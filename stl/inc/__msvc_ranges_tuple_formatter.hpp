@@ -426,7 +426,7 @@ auto _Format_arg_traits<_Context>::_Type_eraser() {
         return basic_string_view<_Char_type>{};
     } else if constexpr (_Is_any_of_v<decay_t<_Td>, _Char_type*, const _Char_type*>) {
         return static_cast<const _Char_type*>(nullptr);
-    } else if constexpr (is_void_v<remove_pointer_t<_Td>> || is_same_v<_Td, nullptr_t>) {
+    } else if constexpr (is_void_v<remove_pointer_t<_Td>> || is_null_pointer_v<_Td>) {
         return static_cast<const void*>(nullptr);
     } else {
         int _Dummy{};
@@ -1086,13 +1086,15 @@ public:
     template <class _FormatContext>
     _FormatContext::iterator format(_Range_type& _Rx, _FormatContext& _Ctx) const {
         if constexpr (_RANGES contiguous_range<_Range_type>) {
-            const auto _Size = _STD _To_unsigned_like(_RANGES distance(_Rx));
+            const auto _Dist = _RANGES distance(_Rx);
+            const auto _Size = _STD _To_unsigned_like(_Dist);
 
             if (!_STD in_range<size_t>(_Size)) {
                 _Throw_format_error("Formatted range is too long.");
             }
 
-            const basic_string_view<_CharT> _Str(_STD to_address(_RANGES begin(_Rx)), static_cast<size_t>(_Size));
+            const auto _First = _RANGES begin(_Rx);
+            const basic_string_view<_CharT> _Str(_STD to_address(_First), _STD to_address(_First + _Dist));
             return _Underlying.format(_Str, _Ctx);
         } else {
             return _Underlying.format(basic_string<_CharT>{from_range, _Rx}, _Ctx);

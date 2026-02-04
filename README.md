@@ -58,7 +58,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N5014][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N5032][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
@@ -145,13 +145,13 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
   + **You must install Insiders for STL development.** *See Note 1 below.*
   + Select the "Desktop development with C++" workload.
   + Select the following components at a minimum:
-    - "MSVC v145 - C++ x64/x86 build tools (Latest)"
+    - "MSVC Build Tools for x64/x86 (Latest)"
     - "C++ CMake tools for Windows"
-    - "C++ AddressSanitizer"
+    - "MSVC AddressSanitizer"
     - "Windows 11 SDK (10.0.26100)" or later
     - "C++ Clang tools for Windows (20.1.8 - x64/x86)"
-    - *Optional, see Note 2 below:* "MSVC v145 - C++ ARM64/ARM64EC build tools (Latest)"
-* Install [Python][] 3.13 or later.
+    - *Optional, see Note 2 below:* "MSVC Build Tools for ARM64/ARM64EC (Latest)"
+* Install [Python][] 3.14.2 or later.
   + Select "Add python.exe to PATH" if you want to follow the instructions below that invoke `python`.
     Otherwise, you should be familiar with alternative methods.
 
@@ -584,7 +584,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N5014]: https://wg21.link/N5014
+[N5032]: https://wg21.link/N5032
 [NOTICE.txt]: NOTICE.txt
 [STL-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-CI?branchName=main "STL-CI"
 [STL-CI-link]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main

@@ -96,19 +96,15 @@ constexpr void sloc_constructor_test() {
     assert(x.loc.column() == 13);
 #endif // ^^^ !defined(__EDG__) ^^^
 #if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1285783
-    if (is_constant_evaluated()) {
-        assert(x.loc.function_name() == "int __cdecl main(void)"sv);
-    } else
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1285783 (fixed in MSVC Compiler 19.51)
+    if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     {
         assert(x.loc.function_name() == "void __cdecl sloc_constructor_test(void)"sv);
     }
 #else // ^^^ detailed / basic vvv
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1285783
-    if (is_constant_evaluated()) {
-        assert(x.loc.function_name() == "main"sv);
-    } else
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1285783 (fixed in MSVC Compiler 19.51)
+    if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     {
         assert(x.loc.function_name() == "sloc_constructor_test"sv);
@@ -146,19 +142,15 @@ constexpr void sub_member_test() {
     assert(s.x.loc.column() == 14);
 #endif // ^^^ !defined(__EDG__) ^^^
 #if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1285783
-    if (is_constant_evaluated()) {
-        assert(s.x.loc.function_name() == "int __cdecl main(void)"sv);
-    } else
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1285783 (fixed in MSVC Compiler 19.51)
+    if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     {
         assert(s.x.loc.function_name() == "void __cdecl sub_member_test(void)"sv);
     }
 #else // ^^^ detailed / basic vvv
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1285783
-    if (is_constant_evaluated()) {
-        assert(s.x.loc.function_name() == "main"sv);
-    } else
+    if (!is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     {
         assert(s.x.loc.function_name() == "sub_member_test"sv);
