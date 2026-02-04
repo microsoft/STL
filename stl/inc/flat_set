@@ -563,8 +563,7 @@ private:
     template <bool _NeedSorting>
     void _Restore_invariants(const size_type _Old_size) {
         // No _Clear_guard needed. This is called only by _Insert_range() (which has a _Clear_guard)
-        // and _Establish_invariants() (which is called only by constructors which don't need guards
-        // and operator=() which has a _Clear_guard).
+        // and _Establish_invariants() (which is called only by constructors which don't need guards).
 
         const auto _Begin   = _Data.begin();
         const auto _Old_end = _Begin + static_cast<difference_type>(_Old_size);
