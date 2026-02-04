@@ -740,12 +740,11 @@ public:
         constexpr bool _Is_noexcept = is_nothrow_swappable_v<key_container_type>
                                    && is_nothrow_swappable_v<mapped_container_type>
                                    && is_nothrow_swappable_v<key_compare>;
-        auto& _Other_base = static_cast<_Flat_map_base&>(_Other);
         _Flat_map_swap_clear_guard<_Is_noexcept, containers> _Guard{
-            _STD addressof(_Data), _STD addressof(_Other_base._Data)};
-        _RANGES swap(_Data.keys, _Other_base._Data.keys);
-        _RANGES swap(_Data.values, _Other_base._Data.values);
-        _RANGES swap(_Key_compare, _Other_base._Key_compare);
+            _STD addressof(_Data), _STD addressof(_Other._Data)};
+        _RANGES swap(_Data.keys, _Other._Data.keys);
+        _RANGES swap(_Data.values, _Other._Data.values);
+        _RANGES swap(_Key_compare, _Other._Key_compare);
         _Guard._Dismiss();
     }
 
