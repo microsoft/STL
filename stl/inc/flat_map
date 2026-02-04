@@ -145,15 +145,15 @@ struct _Pairing_iterator_provider {
         }
 
         _NODISCARD _Iterator operator+(const difference_type _Off) const {
-            auto _Old = *this;
-            _Old += _Off;
-            return _Old;
+            auto _Tmp = *this;
+            _Tmp += _Off;
+            return _Tmp;
         }
 
         _NODISCARD _Iterator operator-(const difference_type _Off) const {
-            auto _Old = *this;
-            _Old -= _Off;
-            return _Old;
+            auto _Tmp = *this;
+            _Tmp -= _Off;
+            return _Tmp;
         }
 
         _NODISCARD reference operator[](const difference_type _Off) const {
