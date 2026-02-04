@@ -949,18 +949,9 @@ protected:
             return weak_ordering::less;
         }();
 
-        if (_Hint_order == weak_ordering::equivalent) {
-            const auto _Dist = _Position._Key_it - _Begin._Key_it;
-            {
-                key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
-                mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Args)...);
-                _Insert_exact(_Position, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
-            }
-            return begin() + _Dist;
-        }
-
         const auto _New_position = _Iterator_from_key_iterator(
-            _Hint_order == weak_ordering::less
+            _Hint_order == weak_ordering::equivalent ? _Position._Key_it
+            : _Hint_order == weak_ordering::less
                 ? _STD lower_bound(_Position._Key_it, _Data.keys.cend(), _Key_val, _Pass_key_comp())
                 : _STD upper_bound(_Data.keys.cbegin(), _Position._Key_it, _Key_val, _Pass_key_comp()));
 
@@ -972,7 +963,7 @@ protected:
                     }
                     return _New_position;
                 }
-            } else {
+            } else if (_Hint_order == weak_ordering::greater) {
                 if (_New_position != _Begin && !_Compare_keys(*(_New_position._Key_it - 1), _Key_val)) {
                     const auto _It = _New_position - 1;
                     if constexpr (_OverwriteIfExists) {
