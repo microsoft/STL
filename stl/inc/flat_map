@@ -62,7 +62,7 @@ struct _Pairing_iterator_provider {
         template <class _KeyIter2, class _MappedIter2, class _MappedConvIter2>
         friend struct _Pairing_iterator_provider;
 
-        _Iterator(_KeyIter _Key_iter, _MappedIter _Mapped_iter)
+        explicit _Iterator(_KeyIter _Key_iter, _MappedIter _Mapped_iter)
             noexcept(is_nothrow_move_constructible_v<_KeyIter> && is_nothrow_move_constructible_v<_MappedIter>)
             : _Key_it(_STD move(_Key_iter)), _Mapped_it(_STD move(_Mapped_iter)) {}
 
@@ -344,7 +344,7 @@ public:
     private:
         friend _Flat_map_base;
 
-        value_compare(const key_compare& _Comp) : _Key_comparator(_Comp) {}
+        explicit value_compare(const key_compare& _Comp) : _Key_comparator(_Comp) {}
 
         key_compare _Key_comparator;
     };
