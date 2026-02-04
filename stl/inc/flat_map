@@ -72,13 +72,15 @@ struct _Pairing_iterator_provider {
 
         class _Arrow_proxy {
         public:
-            explicit _Arrow_proxy(const reference& _Rx) noexcept : _Ref{_Rx} {}
-
             _NODISCARD const reference* operator->() const noexcept {
                 return _STD addressof(_Ref);
             }
 
         private:
+            friend _Iterator;
+
+            explicit _Arrow_proxy(const _Iterator& _Iter) : _Ref{*_Iter} {}
+
             reference _Ref;
         };
 
@@ -95,7 +97,7 @@ struct _Pairing_iterator_provider {
         }
 
         _NODISCARD pointer operator->() const {
-            return pointer{**this};
+            return pointer{*this};
         }
 
         _Iterator& operator++() {
