@@ -917,7 +917,7 @@ protected:
 
     template <bool _OverwriteIfExists, class _OtherKey, class... _MappedArgTypes>
     _NODISCARD iterator _Emplace_hint(
-        const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Args) {
+        const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
         _STL_INTERNAL_STATIC_ASSERT(is_constructible_v<mapped_type, _MappedArgTypes...>);
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_OtherKey>, key_type>
                                     || (is_constructible_v<key_type, _OtherKey> && _Transparent<key_compare>) );
@@ -959,7 +959,7 @@ protected:
             if (_Hint_order == weak_ordering::less) {
                 if (_New_position != _End && !_Compare_keys(_Key_val, *_New_position._Key_it)) {
                     if constexpr (_OverwriteIfExists) {
-                        *_New_position._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
+                        *_New_position._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Mapped_args)...);
                     }
                     return _New_position;
                 }
@@ -967,7 +967,7 @@ protected:
                 if (_New_position != _Begin && !_Compare_keys(*(_New_position._Key_it - 1), _Key_val)) {
                     const auto _It = _New_position - 1;
                     if constexpr (_OverwriteIfExists) {
-                        *_It._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
+                        *_It._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Mapped_args)...);
                     }
                     return _It;
                 }
@@ -977,7 +977,7 @@ protected:
         const auto _Dist = _New_position - begin();
         {
             key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
-            mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Args)...);
+            mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Mapped_args)...);
             _Insert_exact(_New_position, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
         }
         return begin() + _Dist;
