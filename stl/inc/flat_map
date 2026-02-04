@@ -904,9 +904,8 @@ protected:
         }
 
         // Need to insert
-        key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
-        mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Mapped_args)...);
-        _Insert_exact(cbegin() + _Index, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
+        _Emplace_exact(
+            cbegin() + _Index, _STD forward<_OtherKey>(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
 
         if constexpr (_IsUnique) {
             return {begin() + _Index, true};
@@ -975,11 +974,8 @@ protected:
         }
 
         const auto _Dist = _New_position - begin();
-        {
-            key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
-            mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Mapped_args)...);
-            _Insert_exact(_New_position, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
-        }
+        _Emplace_exact(
+            _New_position, _STD forward<_OtherKey>(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
         return begin() + _Dist;
     }
 
@@ -1080,10 +1076,11 @@ private:
         _Restore_invariants<true>(_Sorted_size);
     }
 
-    void _Insert_exact(const const_iterator _Position, key_type&& _Key_val, mapped_type&& _Mapped_val) {
+    template <class _OtherKey, class... _MappedArgTypes>
+    void _Emplace_exact(const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
         _Clear_guard _Guard{this};
-        _Data.keys.insert(_Position._Key_it, _STD move(_Key_val));
-        _Data.values.insert(_Position._Mapped_it, _STD move(_Mapped_val));
+        _Data.keys.emplace(_Position._Key_it, _STD forward<_OtherKey>(_Key_val));
+        _Data.values.emplace(_Position._Mapped_it, _STD forward<_MappedArgTypes>(_Mapped_args)...);
         _Guard._Target = nullptr;
     }
 
