@@ -201,14 +201,10 @@ struct _Pairing_iterator_provider {
         void _Verify_offset(const difference_type _Off) const noexcept {
             if constexpr (_Offset_verifiable_v<_KeyIter>) {
                 _Key_it._Verify_offset(_Off);
-            } else {
-                _STL_VERIFY(_Off == 0 || _Key_it != _KeyIter(), "cannot seek value-initialized iterator");
             }
 
             if constexpr (_Offset_verifiable_v<_MappedIter>) {
                 _Mapped_it._Verify_offset(_Off);
-            } else {
-                _STL_VERIFY(_Off == 0 || _Mapped_it != _MappedIter(), "cannot seek value-initialized iterator");
             }
         }
 
