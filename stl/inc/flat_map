@@ -1086,9 +1086,9 @@ private:
 
     template <bool _NeedSorting, class _InIt, class _Sentinel>
     void _Insert_range(_InIt _First, const _Sentinel _Last) {
-        const size_type _Old_size = size();
-
         _Clear_guard _Guard{this};
+
+        const size_type _Old_size = size();
 
         // Insert the new elements at the end
         for (; _First != _Last; ++_First) {

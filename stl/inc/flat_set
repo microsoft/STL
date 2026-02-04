@@ -710,8 +710,8 @@ private:
 
     template <bool _NeedSorting, class _InIt>
     void _Insert_range(const _InIt _First, const _InIt _Last) {
-        const size_type _Old_size = size();
         _Clear_guard _Guard{this};
+        const size_type _Old_size = size();
         _Data.insert(_Data.end(), _First, _Last);
         _Restore_invariants<_NeedSorting>(_Old_size);
         _Guard._Target = nullptr;
@@ -719,8 +719,8 @@ private:
 
     template <bool _NeedSorting, _Container_compatible_range<value_type> _Rng>
     void _Insert_range(_Rng&& _Range) {
-        const size_type _Old_size = size();
         _Clear_guard _Guard{this};
+        const size_type _Old_size = size();
         if constexpr (_Has_guaranteed_append_range<container_type>) {
             _Data.append_range(_STD forward<_Rng>(_Range));
         } else {
