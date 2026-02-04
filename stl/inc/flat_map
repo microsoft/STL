@@ -44,10 +44,6 @@ concept _Can_unwrap_pairing_iterator =
     !conjunction_v<is_same<_Unwrapped_t<_KeyIter>, _KeyIter>, is_same<_Unwrapped_t<_MappedIter>, _MappedIter>>;
 
 template <class _KeyIter, class _MappedIter, class _MappedConvIter>
-using _Unwrapped_pairing_iterator = _Pairing_iterator_provider<_Unwrapped_t<_KeyIter>, _Unwrapped_t<_MappedIter>,
-    _Unwrapped_t<_MappedConvIter>>::_Iterator;
-
-template <class _KeyIter, class _MappedIter, class _MappedConvIter>
 struct _Pairing_iterator_provider {
     class _Iterator {
     public:
@@ -71,7 +67,8 @@ struct _Pairing_iterator_provider {
             : _Key_it(_STD move(_Key_iter)), _Mapped_it(_STD move(_Mapped_iter)) {}
 
         using _Const_iterator     = _Pairing_iterator_provider<_KeyIter, _MappedConvIter, _MappedConvIter>::_Iterator;
-        using _Unwrapped_iterator = _Unwrapped_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>;
+        using _Unwrapped_iterator = _Pairing_iterator_provider<_Unwrapped_t<_KeyIter>, _Unwrapped_t<_MappedIter>,
+            _Unwrapped_t<_MappedConvIter>>::_Iterator;
 
         class _Arrow_proxy {
         public:
