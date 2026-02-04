@@ -44,10 +44,6 @@ concept _Can_unwrap_pairing_iterator =
     !conjunction_v<is_same<_Unwrapped_t<_KeyIter>, _KeyIter>, is_same<_Unwrapped_t<_MappedIter>, _MappedIter>>;
 
 template <class _KeyIter, class _MappedIter, class _MappedConvIter>
-using _Unwrapped_pairing_iterator = _Pairing_iterator_provider<_Unwrapped_t<_KeyIter>, _Unwrapped_t<_MappedIter>,
-    _Unwrapped_t<_MappedConvIter>>::_Iterator;
-
-template <class _KeyIter, class _MappedIter, class _MappedConvIter>
 struct _Pairing_iterator_provider {
     class _Iterator {
     public:
@@ -66,22 +62,25 @@ struct _Pairing_iterator_provider {
         template <class _KeyIter2, class _MappedIter2, class _MappedConvIter2>
         friend struct _Pairing_iterator_provider;
 
-        _Iterator(_KeyIter _Key_iter, _MappedIter _Mapped_iter)
+        explicit _Iterator(_KeyIter _Key_iter, _MappedIter _Mapped_iter)
             noexcept(is_nothrow_move_constructible_v<_KeyIter> && is_nothrow_move_constructible_v<_MappedIter>)
             : _Key_it(_STD move(_Key_iter)), _Mapped_it(_STD move(_Mapped_iter)) {}
 
         using _Const_iterator     = _Pairing_iterator_provider<_KeyIter, _MappedConvIter, _MappedConvIter>::_Iterator;
-        using _Unwrapped_iterator = _Unwrapped_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>;
+        using _Unwrapped_iterator = _Pairing_iterator_provider<_Unwrapped_t<_KeyIter>, _Unwrapped_t<_MappedIter>,
+            _Unwrapped_t<_MappedConvIter>>::_Iterator;
 
         class _Arrow_proxy {
         public:
-            explicit _Arrow_proxy(const reference& _Rx) noexcept : _Ref{_Rx} {}
-
             _NODISCARD const reference* operator->() const noexcept {
                 return _STD addressof(_Ref);
             }
 
         private:
+            friend _Iterator;
+
+            explicit _Arrow_proxy(const _Iterator& _Iter) : _Ref{*_Iter} {}
+
             reference _Ref;
         };
 
@@ -98,7 +97,7 @@ struct _Pairing_iterator_provider {
         }
 
         _NODISCARD pointer operator->() const {
-            return pointer{**this};
+            return pointer{*this};
         }
 
         _Iterator& operator++() {
@@ -148,15 +147,15 @@ struct _Pairing_iterator_provider {
         }
 
         _NODISCARD _Iterator operator+(const difference_type _Off) const {
-            auto _Old = *this;
-            _Old += _Off;
-            return _Old;
+            auto _Tmp = *this;
+            _Tmp += _Off;
+            return _Tmp;
         }
 
         _NODISCARD _Iterator operator-(const difference_type _Off) const {
-            auto _Old = *this;
-            _Old -= _Off;
-            return _Old;
+            auto _Tmp = *this;
+            _Tmp -= _Off;
+            return _Tmp;
         }
 
         _NODISCARD reference operator[](const difference_type _Off) const {
@@ -204,14 +203,10 @@ struct _Pairing_iterator_provider {
         void _Verify_offset(const difference_type _Off) const noexcept {
             if constexpr (_Offset_verifiable_v<_KeyIter>) {
                 _Key_it._Verify_offset(_Off);
-            } else {
-                _STL_VERIFY(_Off == 0 || _Key_it != _KeyIter(), "cannot seek value-initialized iterator");
             }
 
             if constexpr (_Offset_verifiable_v<_MappedIter>) {
                 _Mapped_it._Verify_offset(_Off);
-            } else {
-                _STL_VERIFY(_Off == 0 || _Mapped_it != _MappedIter(), "cannot seek value-initialized iterator");
             }
         }
 
@@ -351,7 +346,7 @@ public:
     private:
         friend _Flat_map_base;
 
-        value_compare(const key_compare& _Comp) : _Key_comparator(_Comp) {}
+        explicit value_compare(const key_compare& _Comp) : _Key_comparator(_Comp) {}
 
         key_compare _Key_comparator;
     };
@@ -366,9 +361,9 @@ public:
 
     _Flat_map_base(const _Flat_map_base&) = default;
 
-    _Flat_map_base(_Flat_map_base&& _Other)
-        noexcept(is_nothrow_copy_constructible_v<key_compare> && is_nothrow_move_constructible_v<key_container_type>
-                 && is_nothrow_move_constructible_v<mapped_container_type>) // strengthened
+    _Flat_map_base(_Flat_map_base&& _Other) noexcept(is_nothrow_move_constructible_v<key_container_type>
+                                                     && is_nothrow_move_constructible_v<mapped_container_type>
+                                                     && is_nothrow_copy_constructible_v<key_compare>) // strengthened
         : _Data(_STD move(_Other).extract()),
           _Key_compare(_Other._Key_compare) // intentionally copy comparator, see LWG-2227
     {}
@@ -552,8 +547,8 @@ public:
     }
 
     _Flat_map_base& operator=(_Flat_map_base&& _Other)
-        noexcept(is_nothrow_copy_assignable_v<key_compare> && is_nothrow_move_assignable_v<key_container_type>
-                 && is_nothrow_move_assignable_v<mapped_container_type>) /* strengthened */ {
+        noexcept(is_nothrow_move_assignable_v<key_container_type> && is_nothrow_move_assignable_v<mapped_container_type>
+                 && is_nothrow_copy_assignable_v<key_compare>) /* strengthened */ {
         if (this != _STD addressof(_Other)) {
             _Clear_guard _Guard{this};
             _Clear_guard _Always_clear{_STD addressof(_Other)};
@@ -745,12 +740,11 @@ public:
         constexpr bool _Is_noexcept = is_nothrow_swappable_v<key_container_type>
                                    && is_nothrow_swappable_v<mapped_container_type>
                                    && is_nothrow_swappable_v<key_compare>;
-        auto& _Other_base = static_cast<_Flat_map_base&>(_Other);
         _Flat_map_swap_clear_guard<_Is_noexcept, containers> _Guard{
-            _STD addressof(_Data), _STD addressof(_Other_base._Data)};
-        _RANGES swap(_Data.keys, _Other_base._Data.keys);
-        _RANGES swap(_Data.values, _Other_base._Data.values);
-        _RANGES swap(_Key_compare, _Other_base._Key_compare);
+            _STD addressof(_Data), _STD addressof(_Other._Data)};
+        _RANGES swap(_Data.keys, _Other._Data.keys);
+        _RANGES swap(_Data.values, _Other._Data.values);
+        _RANGES swap(_Key_compare, _Other._Key_compare);
         _Guard._Dismiss();
     }
 
@@ -904,9 +898,8 @@ protected:
         }
 
         // Need to insert
-        key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
-        mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Mapped_args)...);
-        _Insert_exact(cbegin() + _Index, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
+        _Emplace_exact(
+            cbegin() + _Index, _STD forward<_OtherKey>(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
 
         if constexpr (_IsUnique) {
             return {begin() + _Index, true};
@@ -917,7 +910,7 @@ protected:
 
     template <bool _OverwriteIfExists, class _OtherKey, class... _MappedArgTypes>
     _NODISCARD iterator _Emplace_hint(
-        const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Args) {
+        const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
         _STL_INTERNAL_STATIC_ASSERT(is_constructible_v<mapped_type, _MappedArgTypes...>);
         _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_OtherKey>, key_type>
                                     || (is_constructible_v<key_type, _OtherKey> && _Transparent<key_compare>) );
@@ -949,18 +942,9 @@ protected:
             return weak_ordering::less;
         }();
 
-        if (_Hint_order == weak_ordering::equivalent) {
-            const auto _Dist = _Position._Key_it - _Begin._Key_it;
-            {
-                key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
-                mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Args)...);
-                _Insert_exact(_Position, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
-            }
-            return begin() + _Dist;
-        }
-
         const auto _New_position = _Iterator_from_key_iterator(
-            _Hint_order == weak_ordering::less
+            _Hint_order == weak_ordering::equivalent ? _Position._Key_it
+            : _Hint_order == weak_ordering::less
                 ? _STD lower_bound(_Position._Key_it, _Data.keys.cend(), _Key_val, _Pass_key_comp())
                 : _STD upper_bound(_Data.keys.cbegin(), _Position._Key_it, _Key_val, _Pass_key_comp()));
 
@@ -968,15 +952,15 @@ protected:
             if (_Hint_order == weak_ordering::less) {
                 if (_New_position != _End && !_Compare_keys(_Key_val, *_New_position._Key_it)) {
                     if constexpr (_OverwriteIfExists) {
-                        *_New_position._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
+                        *_New_position._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Mapped_args)...);
                     }
                     return _New_position;
                 }
-            } else {
+            } else if (_Hint_order == weak_ordering::greater) {
                 if (_New_position != _Begin && !_Compare_keys(*(_New_position._Key_it - 1), _Key_val)) {
                     const auto _It = _New_position - 1;
                     if constexpr (_OverwriteIfExists) {
-                        *_It._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Args)...);
+                        *_It._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Mapped_args)...);
                     }
                     return _It;
                 }
@@ -984,11 +968,8 @@ protected:
         }
 
         const auto _Dist = _New_position - begin();
-        {
-            key_type _Key_to_insert(_STD forward<_OtherKey>(_Key_val));
-            mapped_type _Mapped_to_insert(_STD forward<_MappedArgTypes>(_Args)...);
-            _Insert_exact(_New_position, _STD move(_Key_to_insert), _STD move(_Mapped_to_insert));
-        }
+        _Emplace_exact(
+            _New_position, _STD forward<_OtherKey>(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
         return begin() + _Dist;
     }
 
@@ -1089,18 +1070,19 @@ private:
         _Restore_invariants<true>(_Sorted_size);
     }
 
-    void _Insert_exact(const const_iterator _Position, key_type&& _Key_val, mapped_type&& _Mapped_val) {
+    template <class _OtherKey, class... _MappedArgTypes>
+    void _Emplace_exact(const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
         _Clear_guard _Guard{this};
-        _Data.keys.insert(_Position._Key_it, _STD move(_Key_val));
-        _Data.values.insert(_Position._Mapped_it, _STD move(_Mapped_val));
+        _Data.keys.emplace(_Position._Key_it, _STD forward<_OtherKey>(_Key_val));
+        _Data.values.emplace(_Position._Mapped_it, _STD forward<_MappedArgTypes>(_Mapped_args)...);
         _Guard._Target = nullptr;
     }
 
     template <bool _NeedSorting, class _InIt, class _Sentinel>
     void _Insert_range(_InIt _First, const _Sentinel _Last) {
-        const size_type _Old_size = size();
-
         _Clear_guard _Guard{this};
+
+        const size_type _Old_size = size();
 
         // Insert the new elements at the end
         for (; _First != _Last; ++_First) {
