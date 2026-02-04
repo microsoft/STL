@@ -27,6 +27,11 @@
 #include <valarray>
 #include <vector>
 
+#if _HAS_CXX23
+#include <flat_map>
+#include <flat_set>
+#endif // _HAS_CXX23
+
 #include <range_algorithm_support.hpp>
 
 // Note that many tests herein assume:
@@ -836,7 +841,11 @@ constexpr bool test_std_container() {
     }
     static_assert(test_empty<T&, true>());
     if constexpr (std::contiguous_iterator<I>) {
-        static_assert(test_data<T&, V*>());
+        if constexpr (std::is_same_v<I, CI>) {
+            static_assert(test_data<T&, V const*>());
+        } else {
+            static_assert(test_data<T&, V*>());
+        }
         static_assert(test_cdata<T&, V const*>());
     }
     static_assert(!ranges::view<T&>);
@@ -899,6 +908,7 @@ static_assert(test_std_container<std::multimap<int, int>, std::bidirectional_ite
 static_assert(test_std_container<std::multiset<int>, std::bidirectional_iterator_tag>());
 static_assert(test_std_container<std::set<int>, std::bidirectional_iterator_tag>());
 static_assert(test_std_container<std::string, std::contiguous_iterator_tag>());
+// Implementation-specific: unordered_meow uses list's iterators, so they're bidirectional instead of forward.
 static_assert(test_std_container<std::unordered_map<int, int>, std::bidirectional_iterator_tag>());
 static_assert(test_std_container<std::unordered_multimap<int, int>, std::bidirectional_iterator_tag>());
 static_assert(test_std_container<std::unordered_multiset<int>, std::bidirectional_iterator_tag>());
@@ -906,6 +916,14 @@ static_assert(test_std_container<std::unordered_set<int>, std::bidirectional_ite
 static_assert(test_std_container<std::vector<int>, std::contiguous_iterator_tag>());
 static_assert(test_std_container<std::vector<bool>, std::random_access_iterator_tag>());
 static_assert(test_std_container<std::wstring, std::contiguous_iterator_tag>());
+
+#if _HAS_CXX23
+static_assert(test_std_container<std::flat_map<int, int>, std::random_access_iterator_tag>());
+static_assert(test_std_container<std::flat_multimap<int, int>, std::random_access_iterator_tag>());
+// Implementation-specific: flat_set uses the underlying container's iterators, so they're contiguous here.
+static_assert(test_std_container<std::flat_set<int>, std::contiguous_iterator_tag>());
+static_assert(test_std_container<std::flat_multiset<int>, std::contiguous_iterator_tag>());
+#endif // _HAS_CXX23
 
 // Validate that "old" fancy pointers that fail to model contiguous_iterator don't break contiguity of containers.
 template <class T>

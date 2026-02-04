@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <version>
-#if defined(__cpp_lib_flat_map)
-static_assert(false, "When this feature is implemented, update this to a Standard mode check.");
+#if _HAS_CXX23
 
 #include <flat_map>
 
@@ -27,8 +26,8 @@ void test_flat_map() {
     }
 }
 
-#else // ^^^ defined(__cpp_lib_flat_map) / !defined(__cpp_lib_flat_map) vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 
 void test_flat_map() {}
 
-#endif // ^^^ !defined(__cpp_lib_flat_map) ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^

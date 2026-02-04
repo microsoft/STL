@@ -381,6 +381,8 @@ tests\P0408R7_efficient_access_to_stringbuf_buffer
 tests\P0414R2_shared_ptr_for_arrays
 tests\P0415R1_constexpr_complex
 tests\P0426R1_constexpr_char_traits
+tests\P0429R9_flat_map
+tests\P0429R9_flat_map_ms_specific
 tests\P0433R2_deduction_guides
 tests\P0448R4_iosfwd
 tests\P0448R4_spanstream
@@ -618,6 +620,7 @@ tests\P1206R7_vector_from_range
 tests\P1206R7_vector_insert_range
 tests\P1208R6_source_location
 tests\P1209R0_erase_if_erase
+tests\P1222R4_flat_set
 tests\P1223R5_ranges_alg_find_last
 tests\P1223R5_ranges_alg_find_last_if
 tests\P1223R5_ranges_alg_find_last_if_not

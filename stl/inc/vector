@@ -882,7 +882,7 @@ private:
 
         _STL_INTERNAL_CHECK(_Mylast == _My_data._Myend); // check that we have no unused capacity
 
-        const auto _Whereoff = static_cast<size_type>(_Whereptr - _Myfirst);
+        const auto _Whereoff = _Whereptr - _Myfirst;
         const auto _Oldsize  = static_cast<size_type>(_Mylast - _Myfirst);
 
         if (_Oldsize == max_size()) {
@@ -893,7 +893,7 @@ private:
         size_type _Newcapacity   = _Calculate_growth(_Newsize);
 
         const pointer _Newvec           = _STD _Allocate_at_least_helper(_Al, _Newcapacity);
-        const pointer _Constructed_last = _Newvec + _Whereoff + 1;
+        const pointer _Constructed_last = _Newvec + static_cast<_Iter_diff_t<pointer>>(_Whereoff + 1);
 
         _Reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
         auto& _Constructed_first = _Guard._Constructed_first;
@@ -910,7 +910,8 @@ private:
         } else { // provide basic guarantee
             _STD _Uninitialized_move(_Myfirst, _Whereptr, _Newvec, _Al);
             _Constructed_first = _Newvec;
-            _STD _Uninitialized_move(_Whereptr, _Mylast, _Newvec + _Whereoff + 1, _Al);
+            _STD _Uninitialized_move(
+                _Whereptr, _Mylast, _Newvec + static_cast<_Iter_diff_t<pointer>>(_Whereoff + 1), _Al);
         }
 
         _Guard._New_begin = nullptr;
@@ -2075,8 +2076,8 @@ private:
         }
 
         _Myfirst = _Newvec;
-        _Mylast  = _Newvec + _Newsize;
-        _Myend   = _Newvec + _Newcapacity;
+        _Mylast  = _Newvec + static_cast<_Iter_diff_t<pointer>>(_Newsize);
+        _Myend   = _Newvec + static_cast<_Iter_diff_t<pointer>>(_Newcapacity);
         _ASAN_VECTOR_CREATE;
     }
 
@@ -4057,6 +4058,53 @@ _CONSTEXPR20 _OutIt _Transform_vbool_aligned(
 #undef _ASAN_VECTOR_EXTEND_GUARD
 #undef _ASAN_VECTOR_RELEASE_GUARD
 #undef _INSERT_VECTOR_ANNOTATION
+
+#if _HAS_CXX23
+// This <flat_map> and <flat_set> machinery is here because <vector> is the leaf-most header included by both of them.
+
+_EXPORT_STD struct sorted_unique_t {
+    explicit sorted_unique_t() = default;
+};
+_EXPORT_STD inline constexpr sorted_unique_t sorted_unique{};
+
+_EXPORT_STD struct sorted_equivalent_t {
+    explicit sorted_equivalent_t() = default;
+};
+_EXPORT_STD inline constexpr sorted_equivalent_t sorted_equivalent{};
+
+template <class>
+constexpr bool _Is_vector_bool = false;
+template <class _Alloc>
+constexpr bool _Is_vector_bool<vector<bool, _Alloc>> = true;
+
+template <class _Ty, class _Alloc>
+constexpr bool _Has_guaranteed_push_back<vector<_Ty, _Alloc>> = !is_same_v<_Ty, bool>;
+
+template <class _Ty, class _Alloc>
+constexpr bool _Has_guaranteed_append_range<vector<_Ty, _Alloc>> = !is_same_v<_Ty, bool>;
+
+template <class _Alloc, class... _Containers>
+concept _Usable_allocator_for = (uses_allocator_v<_Containers, _Alloc> && ...);
+
+template <class _Compare, class _KeyContainer>
+concept _Valid_compare_for_container = _Not_allocator_for_container<_Compare>
+                                    && is_invocable_v<const _Compare&, const typename _KeyContainer::value_type&,
+                                        const typename _KeyContainer::value_type&>;
+#endif // ^^^ _HAS_CXX23 ^^^
+
+template <class _Ty>
+struct _NODISCARD _Clear_guard {
+    _Ty* _Target;
+
+    _Clear_guard& operator=(const _Clear_guard&) = delete;
+    _Clear_guard& operator=(_Clear_guard&&)      = delete;
+
+    ~_Clear_guard() {
+        if (_Target) {
+            _Target->clear();
+        }
+    }
+};
 _STD_END
 
 #pragma pop_macro("new")
