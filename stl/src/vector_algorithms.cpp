@@ -17,16 +17,14 @@
 
 #ifdef _M_ARM64
 #include <arm64_neon.h>
+
+#include <Windows.h>
 #elif !defined(_M_ARM64EC)
 #include <intrin.h>
 #include <isa_availability.h>
 
 extern "C" long __isa_enabled;
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
-
-#if defined(_M_ARM64)
-#include <windows.h>
-#endif
 
 namespace {
 #if !defined(_M_ARM64) && !defined(_M_ARM64EC)
