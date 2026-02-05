@@ -95,11 +95,15 @@ struct _Monobj { // store reference to monetary amount
 
 _EXPORT_STD template <class _Money>
 _NODISCARD _Monobj<_Money> get_money(_Money& _Val_arg, bool _Intl_arg = false) {
+    static_assert(is_same_v<_Money, long double> || _Is_specialization_v<_Money, basic_string>,
+        "_Money must be either long double or a basic_string specialization (N5032 [ext.manip]/2).");
     return _Monobj<_Money>(_Val_arg, _Intl_arg);
 }
 
 _EXPORT_STD template <class _Money>
 _NODISCARD _Monobj<const _Money> put_money(const _Money& _Val_arg, bool _Intl_arg = false) {
+    static_assert(is_same_v<_Money, long double> || _Is_specialization_v<_Money, basic_string>,
+        "_Money must be either long double or a basic_string specialization (N5032 [ext.manip]/5).");
     return _Monobj<const _Money>(_Val_arg, _Intl_arg);
 }
 
