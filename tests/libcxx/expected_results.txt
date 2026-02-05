@@ -70,6 +70,34 @@ std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:
 # LLVM-178855: [libc++][test] -Wunused-variable warning in thread.semaphore/lost_wakeup.timed.pass.cpp
 std/thread/thread.semaphore/lost_wakeup.timed.pass.cpp:2 FAIL
 
+# LLVM-179780: [lib++][test] Align `atomic_ref` underlying variable as required
+# SKIPPED because failures are architecture-dependent (x86 only),
+# and potentially sporadic (exact stack alignment may be affected by compiler/VCRuntime/OS changes).
+std/atomics/atomics.ref/assign.pass.cpp SKIPPED
+std/atomics/atomics.ref/bitwise_and_assign.pass.cpp SKIPPED
+std/atomics/atomics.ref/bitwise_or_assign.pass.cpp SKIPPED
+std/atomics/atomics.ref/bitwise_xor_assign.pass.cpp SKIPPED
+std/atomics/atomics.ref/compare_exchange_strong.pass.cpp SKIPPED
+std/atomics/atomics.ref/compare_exchange_weak.pass.cpp SKIPPED
+std/atomics/atomics.ref/convert.pass.cpp SKIPPED
+std/atomics/atomics.ref/ctor.pass.cpp SKIPPED
+std/atomics/atomics.ref/deduction.pass.cpp SKIPPED
+std/atomics/atomics.ref/exchange.pass.cpp SKIPPED
+std/atomics/atomics.ref/fetch_add.pass.cpp SKIPPED
+std/atomics/atomics.ref/fetch_and.pass.cpp SKIPPED
+std/atomics/atomics.ref/fetch_or.pass.cpp SKIPPED
+std/atomics/atomics.ref/fetch_sub.pass.cpp SKIPPED
+std/atomics/atomics.ref/fetch_xor.pass.cpp SKIPPED
+std/atomics/atomics.ref/increment_decrement.pass.cpp SKIPPED
+std/atomics/atomics.ref/is_always_lock_free.pass.cpp SKIPPED
+std/atomics/atomics.ref/load.pass.cpp SKIPPED
+std/atomics/atomics.ref/notify_all.pass.cpp SKIPPED
+std/atomics/atomics.ref/notify_one.pass.cpp SKIPPED
+std/atomics/atomics.ref/operator_minus_equals.pass.cpp SKIPPED
+std/atomics/atomics.ref/operator_plus_equals.pass.cpp SKIPPED
+std/atomics/atomics.ref/store.pass.cpp SKIPPED
+std/atomics/atomics.ref/wait.pass.cpp SKIPPED
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -807,6 +835,7 @@ std/input.output/file.streams/fstreams/filebuf.virtuals/underflow.pass.cpp FAIL
 
 # GH-1190 <future>: incorrectly used copy assignment instead of copy construction in set_value
 std/thread/futures/futures.promise/set_value_const.pass.cpp FAIL
+std/thread/futures/futures.promise/set_rvalue.pass.cpp FAIL
 
 # GH-1264 <locale>: wbuffer_convert does not implement seek
 std/localization/locales/locale.convenience/conversions/conversions.buffer/seekoff.pass.cpp FAIL
@@ -1098,9 +1127,6 @@ std/localization/locales/locale.convenience/conversions/conversions.string/ctor_
 std/input.output/iostream.format/ext.manip/get_money.pass.cpp FAIL
 std/input.output/iostream.format/ext.manip/put_money.pass.cpp FAIL
 std/input.output/iostreams.base/ios/basic.ios.members/copyfmt.pass.cpp FAIL
-
-# Likely STL bug: Looks like we shouldn't be using assignment.
-std/thread/futures/futures.promise/set_rvalue.pass.cpp FAIL
 
 # Possible STL bugs in pair and tuple.
 std/utilities/tuple/tuple.tuple/tuple.cnstr/PR23256_constrain_UTypes_ctor.pass.cpp:0 FAIL
@@ -1464,33 +1490,6 @@ std/iterators/iterator.primitives/range.iter.ops/range.iter.ops.advance/iterator
 
 # Not analyzed. Says "no exception is thrown while an exception of type std::format_error was expected".
 std/time/time.syn/formatter.local_info.pass.cpp FAIL
-
-# Not analyzed. <atomic> Assertion failed: atomic_ref underlying object is not aligned as required_alignment
-# SKIPPED because failures are sporadic and/or architecture-dependent.
-std/atomics/atomics.ref/assign.pass.cpp SKIPPED
-std/atomics/atomics.ref/bitwise_and_assign.pass.cpp SKIPPED
-std/atomics/atomics.ref/bitwise_or_assign.pass.cpp SKIPPED
-std/atomics/atomics.ref/bitwise_xor_assign.pass.cpp SKIPPED
-std/atomics/atomics.ref/compare_exchange_strong.pass.cpp SKIPPED
-std/atomics/atomics.ref/compare_exchange_weak.pass.cpp SKIPPED
-std/atomics/atomics.ref/convert.pass.cpp SKIPPED
-std/atomics/atomics.ref/ctor.pass.cpp SKIPPED
-std/atomics/atomics.ref/deduction.pass.cpp SKIPPED
-std/atomics/atomics.ref/exchange.pass.cpp SKIPPED
-std/atomics/atomics.ref/fetch_add.pass.cpp SKIPPED
-std/atomics/atomics.ref/fetch_and.pass.cpp SKIPPED
-std/atomics/atomics.ref/fetch_or.pass.cpp SKIPPED
-std/atomics/atomics.ref/fetch_sub.pass.cpp SKIPPED
-std/atomics/atomics.ref/fetch_xor.pass.cpp SKIPPED
-std/atomics/atomics.ref/increment_decrement.pass.cpp SKIPPED
-std/atomics/atomics.ref/is_always_lock_free.pass.cpp SKIPPED
-std/atomics/atomics.ref/load.pass.cpp SKIPPED
-std/atomics/atomics.ref/notify_all.pass.cpp SKIPPED
-std/atomics/atomics.ref/notify_one.pass.cpp SKIPPED
-std/atomics/atomics.ref/operator_minus_equals.pass.cpp SKIPPED
-std/atomics/atomics.ref/operator_plus_equals.pass.cpp SKIPPED
-std/atomics/atomics.ref/store.pass.cpp SKIPPED
-std/atomics/atomics.ref/wait.pass.cpp SKIPPED
 
 # Not analyzed. Attempting to delete `nullptr_t`.
 std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/pointer_deleter.pass.cpp FAIL
