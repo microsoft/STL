@@ -17,8 +17,8 @@ enum class content { ones_then_zeros, zeros_then_ones };
 
 template <alg Alg, content Content, class Pred = identity>
 void meow_of(benchmark::State& state) {
-    const auto size = static_cast<size_t>(state.range(0));
-    vector<bool, not_highly_aligned_allocator<bool>> source(size);
+    const auto n = static_cast<size_t>(state.range(0));
+    vector<bool, not_highly_aligned_allocator<bool>> source(n);
 
     if constexpr (Content == content::ones_then_zeros) {
         fill(source.begin(), source.begin() + source.size() / 2, true);
