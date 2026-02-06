@@ -4086,9 +4086,13 @@ _NODISCARD _CONSTEXPR20 bool _Meow_of_vbool(const _VbIt _First, const _VbIt _Las
     auto _First_ptr              = _First._Myptr;
     const auto _Last_ptr         = _Last._Myptr;
 
-    if (_First_ptr == _Last_ptr) { // handle potentially-empty single word
-        const _Vbase _Mask = (_Vbase{1} << _Last._Myoff) - (_Vbase{1} << _First._Myoff);
-        if (_Traits::_Check(_Mapped_func(*_First_ptr), _Mask)) { // correctly handles `_Mask == 0`
+    if (_First_ptr == _Last_ptr) {
+        if (_First._Myoff == _Last._Myoff) { // empty, can't read the word
+            return _Traits::_Default_result;
+        }
+
+        const _Vbase _Mask = (_Vbase{1} << _Last._Myoff) - (_Vbase{1} << _First._Myoff); // handle partial single word
+        if (_Traits::_Check(_Mapped_func(*_First_ptr), _Mask)) {
             return _Early_result;
         }
         return _Traits::_Default_result;
