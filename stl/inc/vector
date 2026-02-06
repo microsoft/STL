@@ -4090,9 +4090,8 @@ _NODISCARD _CONSTEXPR20 bool _Meow_of_vbool(const _VbIt _First, const _VbIt _Las
         const _Vbase _Mask = (_Vbase{1} << _Last._Myoff) - (_Vbase{1} << _First._Myoff);
         if (_Traits::_Check(_Mapped_func(*_First_ptr), _Mask)) { // correctly handles `_Mask == 0`
             return _Early_result;
-        } else {
-            return _Traits::_Default_result;
         }
+        return _Traits::_Default_result;
     }
 
     {
