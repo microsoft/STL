@@ -206,7 +206,7 @@ CONSTEXPR20 bool test_meow_of_helper(const size_t length_before, const size_t le
     fill(last_0, zeros.end(), true);
     fill(first_1, last_1, true);
     fill(mix.begin(), first_m, true);
-    fill(mix.begin() + static_cast<ptrdiff_t>(length_before + length / 2), last_m, true);
+    fill(first_m + static_cast<ptrdiff_t>(length / 2), last_m, true);
 
     if (length == 0) {
 #if _HAS_CXX20
