@@ -281,7 +281,7 @@ CONSTEXPR20 bool test_meow_of() {
     test_meow_of_helper(3, blockSize - 2, 3);
     test_meow_of_helper(3, blockSize + 2, 3);
 
-    // Many blocks, exaclty
+    // Many blocks, exactly
     test_meow_of_helper(blockSize, 4 * blockSize, blockSize);
 
     return true;
