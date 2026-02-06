@@ -268,6 +268,20 @@ CONSTEXPR20 bool test_meow_of_helper(const size_t length_before, const size_t le
 }
 
 CONSTEXPR20 bool test_meow_of() {
+    { // Super empty range
+        const vector<bool>::const_iterator it{}; // value-initialized, compares equal to itself
+
+#if _HAS_CXX20
+        assert(all_of(it, it, identity{}) == true);
+        assert(any_of(it, it, identity{}) == false);
+        assert(none_of(it, it, identity{}) == true);
+#endif // _HAS_CXX20
+
+        assert(all_of(it, it, logical_not<>{}) == true);
+        assert(any_of(it, it, logical_not<>{}) == false);
+        assert(none_of(it, it, logical_not<>{}) == true);
+    }
+
     // Empty range
     test_meow_of_helper(0, 0, 3);
     test_meow_of_helper(3, 0, 3);
