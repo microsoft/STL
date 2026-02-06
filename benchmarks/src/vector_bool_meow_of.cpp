@@ -12,7 +12,7 @@
 
 using namespace std;
 
-enum class alg { any_, all_, none_ };
+enum class alg { all_, any_, none_ };
 enum class content { ones_then_zeros, zeros_then_ones };
 
 template <alg Alg, content Content, class Pred = identity>
@@ -29,10 +29,10 @@ void meow_of(benchmark::State& state) {
     for (auto _ : state) {
         benchmark::DoNotOptimize(source);
         bool result;
-        if constexpr (Alg == alg::any_) {
-            result = any_of(source.begin(), source.end(), Pred{});
-        } else if constexpr (Alg == alg::all_) {
+        if constexpr (Alg == alg::all_) {
             result = all_of(source.begin(), source.end(), Pred{});
+        } else if constexpr (Alg == alg::any_) {
+            result = any_of(source.begin(), source.end(), Pred{});
         } else {
             result = none_of(source.begin(), source.end(), Pred{});
         }
@@ -46,9 +46,9 @@ void common_args(benchmark::Benchmark* bm) {
 
 using not_ = logical_not<>;
 
+BENCHMARK(meow_of<alg::all_, content::ones_then_zeros>)->Apply(common_args);
 BENCHMARK(meow_of<alg::any_, content::zeros_then_ones>)->Apply(common_args);
 BENCHMARK(meow_of<alg::any_, content::ones_then_zeros, not_>)->Apply(common_args);
-BENCHMARK(meow_of<alg::all_, content::ones_then_zeros>)->Apply(common_args);
 BENCHMARK(meow_of<alg::none_, content::zeros_then_ones>)->Apply(common_args);
 
 BENCHMARK_MAIN();
