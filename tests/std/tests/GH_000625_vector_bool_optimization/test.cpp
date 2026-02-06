@@ -235,6 +235,8 @@ CONSTEXPR20 bool test_meow_of_helper(const size_t length_before, const size_t le
         assert(none_of(first_1, last_1, logical_not<>{}) == true);
         assert(none_of(first_m, last_m, logical_not<>{}) == true);
     } else {
+        assert(length != 1); // [first_m, last_m) needs to contain both true and false
+
 #if _HAS_CXX20
         assert(all_of(first_0, last_0, identity{}) == false);
         assert(all_of(first_1, last_1, identity{}) == true);
