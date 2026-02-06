@@ -194,19 +194,19 @@ CONSTEXPR20 bool test_meow_of_helper(const size_t length_before, const size_t le
     vector<bool> zeros(total_length);
     vector<bool> ones(total_length);
     vector<bool> mix(total_length);
-    fill(zeros.begin(), zeros.begin() + static_cast<ptrdiff_t>(length_before), true);
-    fill(zeros.end() - static_cast<ptrdiff_t>(length_after), zeros.end(), true);
-    fill(ones.begin() + static_cast<ptrdiff_t>(length_before), ones.end() - static_cast<ptrdiff_t>(length_after), true);
-    fill(mix.begin(), mix.begin() + static_cast<ptrdiff_t>(length_before), true);
-    fill(mix.begin() + static_cast<ptrdiff_t>(length_before + length / 2),
-        mix.end() - static_cast<ptrdiff_t>(length_after), true);
 
     const auto first_0 = zeros.begin() + static_cast<ptrdiff_t>(length_before);
     const auto last_0  = zeros.end() - static_cast<ptrdiff_t>(length_after);
-    const auto first_1 = ones.cbegin() + static_cast<ptrdiff_t>(length_before);
-    const auto last_1  = ones.cend() - static_cast<ptrdiff_t>(length_after);
-    const auto first_m = mix.cbegin() + static_cast<ptrdiff_t>(length_before);
-    const auto last_m  = mix.cend() - static_cast<ptrdiff_t>(length_after);
+    const auto first_1 = ones.begin() + static_cast<ptrdiff_t>(length_before);
+    const auto last_1  = ones.end() - static_cast<ptrdiff_t>(length_after);
+    const auto first_m = mix.begin() + static_cast<ptrdiff_t>(length_before);
+    const auto last_m  = mix.end() - static_cast<ptrdiff_t>(length_after);
+
+    fill(zeros.begin(), first_0, true);
+    fill(last_0, zeros.end(), true);
+    fill(first_1, last_1, true);
+    fill(mix.begin(), first_m, true);
+    fill(mix.begin() + static_cast<ptrdiff_t>(length_before + length / 2), last_m, true);
 
     if (length == 0) {
 #if _HAS_CXX20
