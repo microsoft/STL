@@ -11,6 +11,7 @@
 #include <memory>
 #include <numeric>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 struct bigint {
@@ -36,7 +37,22 @@ struct int128 {
 };
 
 // Also test constraints and conditional existence of difference_type specified by
-// P3323R1 "Forbid atomic<cv T>, Specify atomic_ref<cv T>".
+// P3323R1 "Forbid atomic<cv T>, Specify atomic_ref<cv T>",
+// and convertibility specified by
+// P3860R1 "Make atomic_ref<T> Convertible To atomic_ref<const T>".
+
+template <class T, class U>
+void test_atomic_ref_not_convertible_to() { // COMPILE-ONLY
+    static_assert(!std::is_convertible_v<std::atomic_ref<T>, std::atomic_ref<U>>);
+    static_assert(!std::is_convertible_v<const std::atomic_ref<T>, std::atomic_ref<U>>);
+    static_assert(!std::is_convertible_v<std::atomic_ref<T>&, std::atomic_ref<U>>);
+    static_assert(!std::is_convertible_v<const std::atomic_ref<T>&, std::atomic_ref<U>>);
+
+    static_assert(!std::is_constructible_v<std::atomic_ref<U>, std::atomic_ref<T>>);
+    static_assert(!std::is_constructible_v<std::atomic_ref<U>, const std::atomic_ref<T>>);
+    static_assert(!std::is_constructible_v<std::atomic_ref<U>, std::atomic_ref<T>&>);
+    static_assert(!std::is_constructible_v<std::atomic_ref<U>, const std::atomic_ref<T>&>);
+}
 
 template <class T>
 void test_atomic_ref_constraints_single() { // COMPILE-ONLY
@@ -216,15 +232,63 @@ void test_atomic_ref_constraints_single() { // COMPILE-ONLY
     }
 }
 
+template <class T, class MoreCv>
+void test_atomic_ref_cv_convertibility() { // COMPILE-ONLY
+    static_assert(std::is_nothrow_convertible_v<std::atomic_ref<T>, std::atomic_ref<MoreCv>>);
+    static_assert(std::is_nothrow_convertible_v<const std::atomic_ref<T>, std::atomic_ref<MoreCv>>);
+    static_assert(std::is_nothrow_convertible_v<std::atomic_ref<T>&, std::atomic_ref<MoreCv>>);
+    static_assert(std::is_nothrow_convertible_v<const std::atomic_ref<T>&, std::atomic_ref<MoreCv>>);
+
+    static_assert(std::is_nothrow_constructible_v<std::atomic_ref<MoreCv>, std::atomic_ref<T>>);
+    static_assert(std::is_nothrow_constructible_v<std::atomic_ref<MoreCv>, const std::atomic_ref<T>>);
+    static_assert(std::is_nothrow_constructible_v<std::atomic_ref<MoreCv>, std::atomic_ref<T>&>);
+    static_assert(std::is_nothrow_constructible_v<std::atomic_ref<MoreCv>, const std::atomic_ref<T>&>);
+
+    [[maybe_unused]] auto instantiator = [](std::atomic_ref<T>& ar) {
+        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv1 = ar;
+        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv2{ar};
+        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv3 = std::as_const(ar);
+        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv4{std::as_const(ar)};
+        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv5 = std::move(ar);
+        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv6{std::move(ar)};
+        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv7 = std::move(std::as_const(ar));
+        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv8{std::move(std::as_const(ar))};
+    };
+
+    test_atomic_ref_not_convertible_to<MoreCv, T>();
+}
+
 template <class T>
 void test_atomic_ref_constraints_cv() { // COMPILE-ONLY
     static_assert(!std::is_const_v<T> && !std::is_volatile_v<T>);
     test_atomic_ref_constraints_single<T>();
     test_atomic_ref_constraints_single<const T>();
+    test_atomic_ref_cv_convertibility<T, const T>();
     if constexpr (std::atomic_ref<T>::is_always_lock_free) {
         test_atomic_ref_constraints_single<volatile T>();
         test_atomic_ref_constraints_single<const volatile T>();
+        test_atomic_ref_cv_convertibility<T, volatile T>();
+        test_atomic_ref_cv_convertibility<T, const volatile T>();
+        test_atomic_ref_cv_convertibility<const T, const volatile T>();
+        test_atomic_ref_cv_convertibility<volatile T, const volatile T>();
     }
+
+    test_atomic_ref_cv_convertibility<T*, const T* const>();
+    test_atomic_ref_cv_convertibility<T*, volatile T* const>();
+    test_atomic_ref_cv_convertibility<T(*)[42], const T(*const)[42]>();
+
+    test_atomic_ref_not_convertible_to<T*, const T*>();
+    test_atomic_ref_not_convertible_to<T*, volatile T*>();
+
+    struct Base {
+        T t;
+    };
+    struct Derived : Base {};
+
+    test_atomic_ref_not_convertible_to<T, Base>();
+    test_atomic_ref_not_convertible_to<Base, T>();
+    test_atomic_ref_not_convertible_to<Base, Derived>();
+    test_atomic_ref_not_convertible_to<Derived, Base>();
 }
 
 void test_atomic_ref_constraints() { // COMPILE-ONLY
@@ -311,23 +375,21 @@ void test_ops() {
 
     using std::execution::par;
 
-    auto load  = [](const std::atomic_ref<ValueType>& ref) { return static_cast<int>(ref.load()); };
-    auto xchg0 = [](std::atomic_ref<ValueType>& ref) { return static_cast<int>(ref.exchange(0)); };
-
-    int (*inc)(std::atomic_ref<ValueType>& ref);
-    if constexpr (AddViaCas) {
-        inc = [](std::atomic_ref<ValueType>& ref) {
+    auto load  = [](const std::atomic_ref<ValueType>& ar) { return static_cast<int>(ar.load()); };
+    auto xchg0 = [](std::atomic_ref<ValueType>& ar) { return static_cast<int>(ar.exchange(0)); };
+    auto inc   = [](std::atomic_ref<ValueType>& ar) {
+        if constexpr (AddViaCas) {
             for (;;) {
-                ValueType e = ref.load();
+                ValueType e = ar.load();
                 ValueType d = static_cast<ValueType>(static_cast<int>(e) + 1);
-                if (ref.compare_exchange_weak(e, d)) {
+                if (ar.compare_exchange_weak(e, d)) {
                     return static_cast<int>(e);
                 }
             }
-        };
-    } else {
-        inc = [](std::atomic_ref<ValueType>& ref) { return static_cast<int>(ref.fetch_add(1)); };
-    }
+        } else {
+            return static_cast<int>(ar.fetch_add(1));
+        }
+    };
 
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load) == 0);
     assert(std::transform_reduce(par, refs.begin(), refs.begin() + range, 0, std::plus{}, inc) == 0);
@@ -336,16 +398,72 @@ void test_ops() {
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load) == range * repetitions * 2);
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, xchg0) == range * 2);
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load) == 0);
+
+    auto load_const = [](std::atomic_ref<const ValueType> ar) { return static_cast<int>(ar.load()); };
+
+    assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load_const) == 0);
+    assert(std::transform_reduce(par, refs.begin(), refs.begin() + range, 0, std::plus{}, inc) == 0);
+    assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load_const) == range * repetitions);
+    assert(std::transform_reduce(par, refs.begin(), refs.begin() + range, 0, std::plus{}, inc) == range);
+    assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load_const) == range * repetitions * 2);
+    assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, xchg0) == range * 2);
+    assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load_const) == 0);
+
+    if constexpr (std::atomic_ref<ValueType>::is_always_lock_free) {
+        auto load_volatile  = [](std::atomic_ref<volatile ValueType> ar) { return static_cast<int>(ar.load()); };
+        auto xchg0_volatile = [](std::atomic_ref<volatile ValueType> ar) { return static_cast<int>(ar.exchange(0)); };
+        auto inc_volatile   = [](std::atomic_ref<volatile ValueType> ar) {
+            if constexpr (AddViaCas) {
+                for (;;) {
+                    ValueType e = ar.load();
+                    ValueType d = static_cast<ValueType>(static_cast<int>(e) + 1);
+                    if (ar.compare_exchange_weak(e, d)) {
+                        return static_cast<int>(e);
+                    }
+                }
+            } else {
+                return static_cast<int>(ar.fetch_add(1));
+            }
+        };
+
+        assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load_volatile) == 0);
+        assert(std::transform_reduce(par, refs.begin(), refs.begin() + range, 0, std::plus{}, inc_volatile) == 0);
+        assert(
+            std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load_volatile) == range * repetitions);
+        assert(std::transform_reduce(par, refs.begin(), refs.begin() + range, 0, std::plus{}, inc_volatile) == range);
+        assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load_volatile)
+               == range * repetitions * 2);
+        assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, xchg0_volatile) == range * 2);
+        assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load_volatile) == 0);
+
+        auto load_const_volatile = [](std::atomic_ref<const volatile ValueType> ar) {
+            return static_cast<int>(ar.load());
+        };
+
+        assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load_const_volatile) == 0);
+        assert(std::transform_reduce(par, refs.begin(), refs.begin() + range, 0, std::plus{}, inc_volatile) == 0);
+        assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load_const_volatile)
+               == range * repetitions);
+        assert(std::transform_reduce(par, refs.begin(), refs.begin() + range, 0, std::plus{}, inc_volatile) == range);
+        assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load_const_volatile)
+               == range * repetitions * 2);
+        assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, xchg0_volatile) == range * 2);
+        assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load_const_volatile) == 0);
+    }
 }
 
-template <class Integer>
-void test_int_ops() {
+template <class Integer, bool AddVolatile>
+void test_int_ops_add_volatile_if() {
+    using Referenced = std::conditional_t<AddVolatile, Integer, volatile Integer>;
+
     Integer v = 0x40;
 
     std::atomic vx(v);
     std::atomic vy(v);
-    const std::atomic_ref rx(v);
-    const std::atomic_ref ry(v);
+    const std::atomic_ref<Referenced> rx        = std::atomic_ref(v);
+    const std::atomic_ref<Referenced> ry        = std::atomic_ref(v);
+    const std::atomic_ref<const Referenced> rxc = rx;
+    const std::atomic_ref<const Referenced> ryc = ry;
 
     assert(vx.fetch_add(0x10) == 0x40);
     assert(rx.fetch_add(0x10) == 0x40);
@@ -354,6 +472,8 @@ void test_int_ops() {
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x50);
     assert(ry.load() == 0x50);
+    assert(rxc.load() == 0x50);
+    assert(ryc.load() == 0x50);
 
     assert(vx.fetch_sub(0x8) == 0x50);
     assert(rx.fetch_sub(0x8) == 0x50);
@@ -362,6 +482,8 @@ void test_int_ops() {
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x48);
     assert(ry.load() == 0x48);
+    assert(rxc.load() == 0x48);
+    assert(ryc.load() == 0x48);
 
     assert(vx.fetch_or(0xF) == 0x48);
     assert(rx.fetch_or(0xF) == 0x48);
@@ -370,6 +492,8 @@ void test_int_ops() {
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x4F);
     assert(ry.load() == 0x4F);
+    assert(rxc.load() == 0x4F);
+    assert(ryc.load() == 0x4F);
 
     assert(vx.fetch_and(0x3C) == 0x4F);
     assert(rx.fetch_and(0x3C) == 0x4F);
@@ -378,6 +502,8 @@ void test_int_ops() {
     assert(vy.load() == 0x40);
     assert(rx.load() == 0xC);
     assert(ry.load() == 0xC);
+    assert(rxc.load() == 0xC);
+    assert(ryc.load() == 0xC);
 
     assert(vx.fetch_xor(0x3F) == 0xC);
     assert(rx.fetch_xor(0x3F) == 0xC);
@@ -386,6 +512,8 @@ void test_int_ops() {
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x33);
     assert(ry.load() == 0x33);
+    assert(rxc.load() == 0x33);
+    assert(ryc.load() == 0x33);
 
     assert(vx-- == 0x33);
     assert(rx-- == 0x33);
@@ -394,6 +522,8 @@ void test_int_ops() {
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x32);
     assert(ry.load() == 0x32);
+    assert(rxc.load() == 0x32);
+    assert(ryc.load() == 0x32);
 
     assert(--vx == 0x31);
     assert(--rx == 0x31);
@@ -402,6 +532,8 @@ void test_int_ops() {
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x31);
     assert(ry.load() == 0x31);
+    assert(rxc.load() == 0x31);
+    assert(ryc.load() == 0x31);
 
     assert(vx++ == 0x31);
     assert(rx++ == 0x31);
@@ -410,6 +542,8 @@ void test_int_ops() {
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x32);
     assert(ry.load() == 0x32);
+    assert(rxc.load() == 0x32);
+    assert(ryc.load() == 0x32);
 
     assert(++vx == 0x33);
     assert(++rx == 0x33);
@@ -418,17 +552,31 @@ void test_int_ops() {
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x33);
     assert(ry.load() == 0x33);
+    assert(rxc.load() == 0x33);
+    assert(ryc.load() == 0x33);
+}
+
+template <class Integer>
+void test_int_ops() {
+    test_int_ops_add_volatile_if<Integer, false>();
+    if constexpr (std::atomic_ref<Integer>::is_always_lock_free) {
+        test_int_ops_add_volatile_if<Integer, true>();
+    }
 }
 
 
-template <class Float>
-void test_float_ops() {
+template <class Float, bool AddVolatile>
+void test_float_ops_add_volatile_if() {
+    using Referenced = std::conditional_t<AddVolatile, Float, volatile Float>;
+
     Float v = 0x40;
 
     std::atomic vx(v);
     std::atomic vy(v);
-    const std::atomic_ref rx(v);
-    const std::atomic_ref ry(v);
+    const std::atomic_ref<Referenced> rx        = std::atomic_ref(v);
+    const std::atomic_ref<Referenced> ry        = std::atomic_ref(v);
+    const std::atomic_ref<const Referenced> rxc = rx;
+    const std::atomic_ref<const Referenced> ryc = ry;
 
     assert(vx.fetch_add(0x10) == 0x40);
     assert(rx.fetch_add(0x10) == 0x40);
@@ -437,6 +585,8 @@ void test_float_ops() {
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x50);
     assert(ry.load() == 0x50);
+    assert(rxc.load() == 0x50);
+    assert(ryc.load() == 0x50);
 
     assert(vx.fetch_sub(0x8) == 0x50);
     assert(rx.fetch_sub(0x8) == 0x50);
@@ -445,6 +595,8 @@ void test_float_ops() {
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x48);
     assert(ry.load() == 0x48);
+    assert(rxc.load() == 0x48);
+    assert(ryc.load() == 0x48);
 
     vx.store(0x10);
     rx.store(0x10);
@@ -453,17 +605,31 @@ void test_float_ops() {
     assert(vy.load() == 0x40);
     assert(rx.load() == 0x10);
     assert(ry.load() == 0x10);
+    assert(rxc.load() == 0x10);
+    assert(ryc.load() == 0x10);
 }
 
-template <class Ptr>
-void test_ptr_ops() {
+template <class Float>
+void test_float_ops() {
+    test_float_ops_add_volatile_if<Float, false>();
+    if constexpr (std::atomic_ref<Float>::is_always_lock_free) {
+        test_float_ops_add_volatile_if<Float, true>();
+    }
+}
+
+template <class Ptr, bool AddVolatile>
+void test_ptr_ops_add_volatile_if() {
+    using Referenced = std::conditional_t<AddVolatile, Ptr, volatile Ptr>;
+
     std::remove_pointer_t<Ptr> a[0x100];
     Ptr v = a;
 
     std::atomic vx(v);
     std::atomic vy(v);
-    const std::atomic_ref rx(v);
-    const std::atomic_ref ry(v);
+    const std::atomic_ref<Referenced> rx        = std::atomic_ref(v);
+    const std::atomic_ref<Referenced> ry        = std::atomic_ref(v);
+    const std::atomic_ref<const Referenced> rxc = rx;
+    const std::atomic_ref<const Referenced> ryc = ry;
 
     assert(vx.fetch_add(0x10) == a);
     assert(rx.fetch_add(0x10) == a);
@@ -472,6 +638,8 @@ void test_ptr_ops() {
     assert(vy.load() == a);
     assert(rx.load() == a + 0x10);
     assert(ry.load() == a + 0x10);
+    assert(rxc.load() == a + 0x10);
+    assert(ryc.load() == a + 0x10);
 
     assert(vx.fetch_sub(0x8) == a + 0x10);
     assert(rx.fetch_sub(0x8) == a + 0x10);
@@ -480,6 +648,8 @@ void test_ptr_ops() {
     assert(vy.load() == a);
     assert(rx.load() == a + 0x8);
     assert(ry.load() == a + 0x8);
+    assert(rxc.load() == a + 0x8);
+    assert(ryc.load() == a + 0x8);
 
     vx.store(a + 0x10);
     rx.store(a + 0x10);
@@ -488,6 +658,8 @@ void test_ptr_ops() {
     assert(vy.load() == a);
     assert(rx.load() == a + 0x10);
     assert(ry.load() == a + 0x10);
+    assert(rxc.load() == a + 0x10);
+    assert(ryc.load() == a + 0x10);
 
     assert(vx-- == a + 0x10);
     assert(rx-- == a + 0x10);
@@ -496,6 +668,8 @@ void test_ptr_ops() {
     assert(vy.load() == a);
     assert(rx.load() == a + 0xF);
     assert(ry.load() == a + 0xF);
+    assert(rxc.load() == a + 0xF);
+    assert(ryc.load() == a + 0xF);
 
     assert(--vx == a + 0xE);
     assert(--rx == a + 0xE);
@@ -504,6 +678,8 @@ void test_ptr_ops() {
     assert(vy.load() == a);
     assert(rx.load() == a + 0xE);
     assert(ry.load() == a + 0xE);
+    assert(rxc.load() == a + 0xE);
+    assert(ryc.load() == a + 0xE);
 
     assert(vx++ == a + 0xE);
     assert(rx++ == a + 0xE);
@@ -512,6 +688,8 @@ void test_ptr_ops() {
     assert(vy.load() == a);
     assert(rx.load() == a + 0xF);
     assert(ry.load() == a + 0xF);
+    assert(rxc.load() == a + 0xF);
+    assert(ryc.load() == a + 0xF);
 
     assert(++vx == a + 0x10);
     assert(++rx == a + 0x10);
@@ -520,6 +698,16 @@ void test_ptr_ops() {
     assert(vy.load() == a);
     assert(rx.load() == a + 0x10);
     assert(ry.load() == a + 0x10);
+    assert(rxc.load() == a + 0x10);
+    assert(ryc.load() == a + 0x10);
+}
+
+template <class Ptr>
+void test_ptr_ops() {
+    test_ptr_ops_add_volatile_if<Ptr, false>();
+    if constexpr (std::atomic_ref<Ptr>::is_always_lock_free) {
+        test_ptr_ops_add_volatile_if<Ptr, true>();
+    }
 }
 
 // GH-1497 <atomic>: atomic_ref<const T> fails to compile
