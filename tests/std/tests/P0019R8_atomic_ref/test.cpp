@@ -270,6 +270,7 @@ void test_atomic_ref_constraints_cv() { // COMPILE-ONLY
         test_atomic_ref_cv_convertibility<T, volatile T>();
         test_atomic_ref_cv_convertibility<T, const volatile T>();
         test_atomic_ref_cv_convertibility<const T, const volatile T>();
+        test_atomic_ref_cv_convertibility<volatile T, const volatile T>();
     }
 
     test_atomic_ref_cv_convertibility<T*, const T* const>();
