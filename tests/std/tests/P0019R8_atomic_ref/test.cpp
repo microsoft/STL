@@ -244,15 +244,15 @@ void test_atomic_ref_cv_convertibility() { // COMPILE-ONLY
     static_assert(std::is_nothrow_constructible_v<std::atomic_ref<MoreCv>, std::atomic_ref<T>&>);
     static_assert(std::is_nothrow_constructible_v<std::atomic_ref<MoreCv>, const std::atomic_ref<T>&>);
 
-    [[maybe_unused]] auto instantiator = [](std::atomic_ref<T>& ref) {
-        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv1 = ref;
-        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv2{ref};
-        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv3 = std::as_const(ref);
-        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv4{std::as_const(ref)};
-        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv5 = std::move(ref);
-        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv6{std::move(ref)};
-        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv7 = std::move(std::as_const(ref));
-        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv8{std::move(std::as_const(ref))};
+    [[maybe_unused]] auto instantiator = [](std::atomic_ref<T>& ar) {
+        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv1 = ar;
+        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv2{ar};
+        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv3 = std::as_const(ar);
+        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv4{std::as_const(ar)};
+        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv5 = std::move(ar);
+        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv6{std::move(ar)};
+        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv7 = std::move(std::as_const(ar));
+        [[maybe_unused]] std::atomic_ref<MoreCv> ref_cv8{std::move(std::as_const(ar))};
     };
 
     test_atomic_ref_not_convertible_to<MoreCv, T>();
@@ -374,19 +374,19 @@ void test_ops() {
 
     using std::execution::par;
 
-    auto load  = [](const std::atomic_ref<ValueType>& ref) { return static_cast<int>(ref.load()); };
-    auto xchg0 = [](std::atomic_ref<ValueType>& ref) { return static_cast<int>(ref.exchange(0)); };
-    auto inc   = [](std::atomic_ref<ValueType>& ref) {
+    auto load  = [](const std::atomic_ref<ValueType>& ar) { return static_cast<int>(ar.load()); };
+    auto xchg0 = [](std::atomic_ref<ValueType>& ar) { return static_cast<int>(ar.exchange(0)); };
+    auto inc   = [](std::atomic_ref<ValueType>& ar) {
         if constexpr (AddViaCas) {
             for (;;) {
-                ValueType e = ref.load();
+                ValueType e = ar.load();
                 ValueType d = static_cast<ValueType>(static_cast<int>(e) + 1);
-                if (ref.compare_exchange_weak(e, d)) {
+                if (ar.compare_exchange_weak(e, d)) {
                     return static_cast<int>(e);
                 }
             }
         } else {
-            return static_cast<int>(ref.fetch_add(1));
+            return static_cast<int>(ar.fetch_add(1));
         }
     };
 
@@ -398,7 +398,7 @@ void test_ops() {
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, xchg0) == range * 2);
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load) == 0);
 
-    auto load_const = [](std::atomic_ref<const ValueType> ref) { return static_cast<int>(ref.load()); };
+    auto load_const = [](std::atomic_ref<const ValueType> ar) { return static_cast<int>(ar.load()); };
 
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load_const) == 0);
     assert(std::transform_reduce(par, refs.begin(), refs.begin() + range, 0, std::plus{}, inc) == 0);
@@ -409,19 +409,19 @@ void test_ops() {
     assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load_const) == 0);
 
     if constexpr (std::atomic_ref<ValueType>::is_always_lock_free) {
-        auto load_volatile  = [](std::atomic_ref<volatile ValueType> ref) { return static_cast<int>(ref.load()); };
-        auto xchg0_volatile = [](std::atomic_ref<volatile ValueType> ref) { return static_cast<int>(ref.exchange(0)); };
-        auto inc_volatile   = [](std::atomic_ref<volatile ValueType> ref) {
+        auto load_volatile  = [](std::atomic_ref<volatile ValueType> ar) { return static_cast<int>(ar.load()); };
+        auto xchg0_volatile = [](std::atomic_ref<volatile ValueType> ar) { return static_cast<int>(ar.exchange(0)); };
+        auto inc_volatile   = [](std::atomic_ref<volatile ValueType> ar) {
             if constexpr (AddViaCas) {
                 for (;;) {
-                    ValueType e = ref.load();
+                    ValueType e = ar.load();
                     ValueType d = static_cast<ValueType>(static_cast<int>(e) + 1);
-                    if (ref.compare_exchange_weak(e, d)) {
+                    if (ar.compare_exchange_weak(e, d)) {
                         return static_cast<int>(e);
                     }
                 }
             } else {
-                return static_cast<int>(ref.fetch_add(1));
+                return static_cast<int>(ar.fetch_add(1));
             }
         };
 
@@ -435,8 +435,8 @@ void test_ops() {
         assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, xchg0_volatile) == range * 2);
         assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load_volatile) == 0);
 
-        auto load_const_volatile = [](std::atomic_ref<const volatile ValueType> ref) {
-            return static_cast<int>(ref.load());
+        auto load_const_volatile = [](std::atomic_ref<const volatile ValueType> ar) {
+            return static_cast<int>(ar.load());
         };
 
         assert(std::transform_reduce(par, refs.begin(), refs.end(), 0, std::plus{}, load_const_volatile) == 0);
