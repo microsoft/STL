@@ -5655,7 +5655,7 @@ namespace {
                 const __m256i _Ones = _mm256_set1_epi32(1);
 
                 for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
-                    const _Ty _Val           = *_Needle_ptr;
+                    const _Ty _Val = *_Needle_ptr;
                     // Broadcast character value to eight 32-bit vector elements
                     const __m128i _Count_low = _mm_cvtsi32_si128(static_cast<uint32_t>(_Val));
                     const __m256i _Count_all = _mm256_broadcastd_epi32(_Count_low);
