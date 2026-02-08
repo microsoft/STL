@@ -5645,25 +5645,28 @@ namespace {
             }
 
             template <class _Ty>
-            __m256i _Make_bitmap_small(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
+            __forceinline __m256i _Make_bitmap_small(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
                 __m256i _Bitmap = _mm256_setzero_si256();
 
                 const _Ty* const _Stop = _Needle_ptr + _Needle_length;
 
+                const __m256i _Pow  = _mm256_set_epi32(7 << 5, 6 << 5, 5 << 5, 4 << 5, 3 << 5, 2 << 5, 1 << 5, 0 << 5);
+                const __m256i _Ones = _mm256_set1_epi32(1);
+
                 for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
-                    const _Ty _Val            = *_Needle_ptr;
-                    const __m128i _Count_low  = _mm_cvtsi32_si128(_Val & 0x3F);
-                    const auto _Count_high_x8 = static_cast<uint32_t>((_Val >> 3) & 0x18);
-                    const __m256i _One_1_high = _mm256_cvtepu8_epi64(_mm_cvtsi32_si128(1u << _Count_high_x8));
-                    const __m256i _One_1      = _mm256_sll_epi64(_One_1_high, _Count_low);
-                    _Bitmap                   = _mm256_or_si256(_Bitmap, _One_1);
+                    const _Ty _Val           = *_Needle_ptr;
+                    const __m128i _Count_low = _mm_cvtsi32_si128(static_cast<uint32_t>(_Val));
+                    const __m256i _Count_all = _mm256_broadcastd_epi32(_Count_low);
+                    const __m256i _Count_one = _mm256_xor_si256(_Pow, _Count_all);
+                    const __m256i _One_1     = _mm256_sllv_epi32(_Ones, _Count_one);
+                    _Bitmap                  = _mm256_or_si256(_Bitmap, _One_1);
                 }
 
                 return _Bitmap;
             }
 
             template <class _Ty>
-            __m256i _Make_bitmap_large(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
+            __forceinline __m256i _Make_bitmap_large(const _Ty* _Needle_ptr, const size_t _Needle_length) noexcept {
                 alignas(32) uint8_t _Table[256] = {};
 
                 const _Ty* const _Stop = _Needle_ptr + _Needle_length;
@@ -5686,7 +5689,7 @@ namespace {
             }
 
             template <class _Ty>
-            __m256i _Make_bitmap(const _Ty* const _Needle_ptr, const size_t _Needle_length) noexcept {
+            __forceinline __m256i _Make_bitmap(const _Ty* const _Needle_ptr, const size_t _Needle_length) noexcept {
                 if (_Needle_length <= 20) {
                     return _Make_bitmap_small(_Needle_ptr, _Needle_length);
                 } else {
