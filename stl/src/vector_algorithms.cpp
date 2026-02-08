@@ -5659,7 +5659,7 @@ namespace {
                     // Broadcast character value to eight 32-bit vector elements
                     const __m128i _Count_low = _mm_cvtsi32_si128(static_cast<uint32_t>(_Val));
                     const __m256i _Count_all = _mm256_broadcastd_epi32(_Count_low);
-                    // Xor with high bit patters to make the right element below 32
+                    // XOR with high bit patterns to make the right element below 32
                     const __m256i _Count_one = _mm256_xor_si256(_High_bits_pattern, _Count_all);
                     // The shift will produce zero for all ones, except the right one
                     const __m256i _One_1 = _mm256_sllv_epi32(_Ones, _Count_one);
