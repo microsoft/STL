@@ -70,7 +70,7 @@ private:
     using _Derived =
         conditional_t<_IsUnique, flat_set<_Key, _Compare, _Container>, flat_multiset<_Key, _Compare, _Container>>;
 
-    static constexpr const char* _Msg_not_sorted_maybe_unique = //
+    static constexpr const char* _Msg_not_sorted_maybe_unique =
         _IsUnique ? "Input was not sorted-unique! (N5032 [flat.set.overview]/9)"
                   : "Input was not sorted! (N5032 [flat.multiset.overview]/9)";
     static constexpr const char* _Msg_replace_not_sorted_maybe_unique =

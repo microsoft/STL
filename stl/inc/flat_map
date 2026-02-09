@@ -283,7 +283,7 @@ private:
     using _Derived  = conditional_t<_IsUnique, flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>,
          flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>>;
 
-    static constexpr const char* _Msg_not_sorted_maybe_unique = //
+    static constexpr const char* _Msg_not_sorted_maybe_unique =
         _IsUnique ? "Keys were not sorted-unique! (N5032 [flat.map.overview]/10)"
                   : "Keys were not sorted! (N5032 [flat.multimap.overview]/10)";
     static constexpr const char* _Msg_replace_not_sorted_maybe_unique =
