@@ -351,9 +351,8 @@ unordered_set(initializer_list<_Kty>, _Guide_size_type_t<_Alloc>, _Hasher, _Allo
 
 #if _HAS_CXX23
 template <_RANGES input_range _Rng, _Hasher_for_container _Hasher = hash<_RANGES range_value_t<_Rng>>,
-    class _Keyeq                    = equal_to<_RANGES range_value_t<_Rng>>,
-    _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
-    requires (!_Allocator_for_container<_Keyeq>)
+    _Not_allocator_for_container _Keyeq = equal_to<_RANGES range_value_t<_Rng>>,
+    _Allocator_for_container _Alloc     = allocator<_RANGES range_value_t<_Rng>>>
 unordered_set(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(),
     _Alloc = _Alloc()) -> unordered_set<_RANGES range_value_t<_Rng>, _Hasher, _Keyeq, _Alloc>;
 
@@ -694,9 +693,8 @@ unordered_multiset(initializer_list<_Kty>, _Guide_size_type_t<_Alloc>, _Hasher, 
 
 #if _HAS_CXX23
 template <_RANGES input_range _Rng, _Hasher_for_container _Hasher = hash<_RANGES range_value_t<_Rng>>,
-    class _Keyeq                    = equal_to<_RANGES range_value_t<_Rng>>,
-    _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
-    requires (!_Allocator_for_container<_Keyeq>)
+    _Not_allocator_for_container _Keyeq = equal_to<_RANGES range_value_t<_Rng>>,
+    _Allocator_for_container _Alloc     = allocator<_RANGES range_value_t<_Rng>>>
 unordered_multiset(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(),
     _Alloc = _Alloc()) -> unordered_multiset<_RANGES range_value_t<_Rng>, _Hasher, _Keyeq, _Alloc>;
 

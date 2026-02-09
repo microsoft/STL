@@ -76,6 +76,8 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/generator
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/resumable
     ${CMAKE_CURRENT_LIST_DIR}/inc/filesystem
+    ${CMAKE_CURRENT_LIST_DIR}/inc/flat_map
+    ${CMAKE_CURRENT_LIST_DIR}/inc/flat_set
     ${CMAKE_CURRENT_LIST_DIR}/inc/format
     ${CMAKE_CURRENT_LIST_DIR}/inc/forward_list
     ${CMAKE_CURRENT_LIST_DIR}/inc/fstream

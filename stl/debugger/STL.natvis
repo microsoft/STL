@@ -1035,13 +1035,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-  <!-- VC 2015 -->
   <Type Name="std::deque&lt;*&gt;">
-      <DisplayString>{{ size={_Mypair._Myval2._Mysize} }}</DisplayString>
+      <Intrinsic Name="size" Expression="_Mypair._Myval2._Mysize" />
+      <DisplayString>{{ size={size()} }}</DisplayString>
       <Expand>
           <Item Name="[allocator]" ExcludeView="simple">_Mypair</Item>
           <IndexListItems>
-              <Size>_Mypair._Myval2._Mysize</Size>
+              <Size>size()</Size>
               <ValueNode>_Mypair._Myval2._Map[(($i + _Mypair._Myval2._Myoff) / _EEN_DS) % _Mypair._Myval2._Mapsize][($i + _Mypair._Myval2._Myoff) % _EEN_DS]</ValueNode>
           </IndexListItems>
       </Expand>
@@ -2298,4 +2298,60 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </CustomListItems>
     </Expand>
   </Type>
+
+  <Type Name="std::flat_map&lt;*&gt;">
+   <AlternativeType Name="std::flat_multimap&lt;*&gt;"/>
+    <Intrinsic Name="size" Expression="_Data.keys.size()"/>
+    <Intrinsic Name="key_at" Expression="&amp;_Data.keys[index]">
+      <Parameter Name="index" Type="size_t" />
+    </Intrinsic>
+    <Intrinsic Name="value_at" Expression="&amp;_Data.values[index]">
+      <Parameter Name="index" Type="size_t" />
+    </Intrinsic>
+
+    <DisplayString>{{ size={size()} }}</DisplayString>
+
+    <Expand>
+      <Item Name="[size]">size()</Item>
+      <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
+      <CustomListItems>
+        <Variable Name="i" InitialValue="0" />
+        <Size>size()</Size>
+        <Loop>
+          <Item Name="[{*key_at(i)}]">*value_at(i)</Item>
+          <Exec>++i</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
+  <!-- fallback when the primary visualization (above) fails to parse, e.g. some custom containers -->
+  <Type Name="std::flat_map&lt;*&gt;" Priority="MediumLow">
+    <AlternativeType Name="std::flat_multimap&lt;*&gt;"/>
+    <Intrinsic Name="size" Expression="_Data.keys.size()"/>
+    <DisplayString>{{ size={size()} }}</DisplayString>
+    <Expand>
+      <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
+      <Item Name="[keys]">_Data.keys</Item>
+      <Item Name="[values]">_Data.values</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::_Pairing_iterator_provider&lt;*&gt;::_Iterator">
+    <DisplayString>({_Key_it}, {_Mapped_it})</DisplayString>
+    <Expand>
+      <Item Name="[key]">_Key_it</Item>
+      <Item Name="[value]">_Mapped_it</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::flat_set&lt;*&gt;">
+    <AlternativeType Name="std::flat_multiset&lt;*&gt;"/>
+    <DisplayString>{_Data}</DisplayString>
+    <Expand>
+      <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
+      <ExpandedItem>_Data</ExpandedItem>
+    </Expand>
+  </Type>
+
 </AutoVisualizer>

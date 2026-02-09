@@ -8564,14 +8564,13 @@ void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred) {
 
     ++_ULast;
 
-    using _Diff         = _Iter_diff_t<_BidIt>;
-    const _Diff _Count1 = _STD distance(_UFirst, _UMid);
+    const auto _Count1 = _STD distance(_UFirst, _UMid);
     if (_Count1 == 1) { // rotate only element remaining in left partition to the end, without allocating
         _STD _Rotate_one_left(_UFirst, _UMid, _ULast);
         return;
     }
 
-    const _Diff _Count2 = _STD distance(_UMid, _ULast);
+    const auto _Count2 = _STD distance(_UMid, _ULast);
     _Optimistic_temporary_buffer2<_Iter_value_t<_BidIt>> _Temp_buf{(_STD min) (_Count1, _Count2)};
     _STD _Buffered_inplace_merge_unchecked_impl(
         _UFirst, _UMid, _ULast, _Count1, _Count2, _Temp_buf._Data, _Temp_buf._Capacity, _STD _Pass_fn(_Pred));
