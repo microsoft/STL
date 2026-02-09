@@ -5,26 +5,37 @@
 #include <flat_map>
 #include <flat_set>
 #include <string>
+#include <utility>
 
 using namespace std;
 
-void flat_map_strings(benchmark::State& state) {
+void flat_map_strings_impl(benchmark::State& state, initializer_list<pair<string, int>> il) {
     flat_map<string, int> pieces;
     for (auto _ : state) {
-        pieces = {{"soldier"s, 1}, {"soldier"s, 2}, {"soldier"s, 3}, {"soldier"s, 4}, {"soldier"s, 5}, {"soldier"s, 6},
-            {"soldier"s, 7}, {"soldier"s, 8}, {"tower"s, 9}, {"horse"s, 10}, {"elephant"s, 11}, {"vizier"s, 12},
-            {"king"s, 13}, {"elephant"s, 14}, {"horse"s, 15}, {"tower"s, 16}};
+        pieces = il;
+        benchmark::DoNotOptimize(pieces);
+    }
+}
+
+void flat_map_strings(benchmark::State& state) {
+    flat_map_strings_impl(
+        state, {{"soldier"s, 1}, {"soldier"s, 2}, {"soldier"s, 3}, {"soldier"s, 4}, {"soldier"s, 5}, {"soldier"s, 6},
+                   {"soldier"s, 7}, {"soldier"s, 8}, {"tower"s, 9}, {"horse"s, 10}, {"elephant"s, 11}, {"vizier"s, 12},
+                   {"king"s, 13}, {"elephant"s, 14}, {"horse"s, 15}, {"tower"s, 16}});
+}
+
+void flat_set_strings_impl(benchmark::State& state, initializer_list<string> il) {
+    flat_set<string> pieces;
+    for (auto _ : state) {
+        pieces = il;
         benchmark::DoNotOptimize(pieces);
     }
 }
 
 void flat_set_strings(benchmark::State& state) {
-    flat_set<string> pieces;
-    for (auto _ : state) {
-        pieces = {"soldier"s, "soldier"s, "soldier"s, "soldier"s, "soldier"s, "soldier"s, "soldier"s, "soldier"s,
-            "tower"s, "horse"s, "elephant"s, "vizier"s, "king"s, "elephant"s, "horse"s, "tower"s};
-        benchmark::DoNotOptimize(pieces);
-    }
+    flat_set_strings_impl(
+        state, {"soldier"s, "soldier"s, "soldier"s, "soldier"s, "soldier"s, "soldier"s, "soldier"s, "soldier"s,
+                   "tower"s, "horse"s, "elephant"s, "vizier"s, "king"s, "elephant"s, "horse"s, "tower"s});
 }
 
 void flat_map_integers(benchmark::State& state) {
