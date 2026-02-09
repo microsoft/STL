@@ -567,13 +567,13 @@ public:
     _NODISCARD const_iterator begin() const noexcept {
         _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<const_iterator>);
         _STL_INTERNAL_STATIC_ASSERT(convertible_to<iterator, const_iterator>);
-        return const_iterator{_Data.keys.cbegin(), _Data.values.begin()};
+        return const_iterator{_Data.keys.cbegin(), _Data.values.cbegin()};
     }
     _NODISCARD iterator end() noexcept {
         return iterator{_Data.keys.cend(), _Data.values.end()};
     }
     _NODISCARD const_iterator end() const noexcept {
-        return const_iterator{_Data.keys.cend(), _Data.values.end()};
+        return const_iterator{_Data.keys.cend(), _Data.values.cend()};
     }
 
     _NODISCARD reverse_iterator rbegin() noexcept {
