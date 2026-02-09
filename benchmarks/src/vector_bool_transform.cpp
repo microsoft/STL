@@ -48,6 +48,7 @@ void common_args(benchmark::Benchmark* bm) {
 
 BENCHMARK(transform_two_inputs_aligned<logical_and<>>)->Apply(common_args);
 BENCHMARK(transform_two_inputs_aligned<logical_or<>>)->Apply(common_args);
+BENCHMARK(transform_two_inputs_aligned<less<>>)->Apply(common_args);
 BENCHMARK(transform_one_input_aligned<logical_not<>>)->Apply(common_args);
 
 BENCHMARK_MAIN();

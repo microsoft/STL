@@ -74,12 +74,20 @@ CONSTEXPR20 void test_transform_helper(const size_t length) {
     bool or_expected_raw[size(source_raw)];
     bool xor_expected_raw[size(source_raw)];
     bool xnor_expected_raw[size(source_raw)];
+    bool l_expected_raw[size(source_raw)];
+    bool le_expected_raw[size(source_raw)];
+    bool g_expected_raw[size(source_raw)];
+    bool ge_expected_raw[size(source_raw)];
     bool not_expected_raw[size(source_raw)];
 
     transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(and_expected_raw), logical_and<>{});
     transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(or_expected_raw), logical_or<>{});
     transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(xor_expected_raw), not_equal_to<>{});
     transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(xnor_expected_raw), equal_to<>{});
+    transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(l_expected_raw), less<>{});
+    transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(le_expected_raw), less_equal<>{});
+    transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(g_expected_raw), greater<>{});
+    transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(ge_expected_raw), greater_equal<>{});
     transform(begin(source_raw), end(source_raw), begin(not_expected_raw), logical_not<>{});
 
     const vector<bool> source1(source_raw, source_raw + static_cast<ptrdiff_t>(length));
@@ -89,18 +97,30 @@ CONSTEXPR20 void test_transform_helper(const size_t length) {
     vector<bool> or_expected(or_expected_raw, or_expected_raw + static_cast<ptrdiff_t>(length));
     vector<bool> xor_expected(xor_expected_raw, xor_expected_raw + static_cast<ptrdiff_t>(length));
     vector<bool> xnor_expected(xnor_expected_raw, xnor_expected_raw + static_cast<ptrdiff_t>(length));
+    vector<bool> less_expected(l_expected_raw, l_expected_raw + static_cast<ptrdiff_t>(length));
+    vector<bool> less_equal_expected(le_expected_raw, le_expected_raw + static_cast<ptrdiff_t>(length));
+    vector<bool> greater_expected(g_expected_raw, g_expected_raw + static_cast<ptrdiff_t>(length));
+    vector<bool> greater_equal_expected(ge_expected_raw, ge_expected_raw + static_cast<ptrdiff_t>(length));
     vector<bool> not_expected(not_expected_raw, not_expected_raw + static_cast<ptrdiff_t>(length));
 
     and_expected.resize(length + 3, false);
     or_expected.resize(length + 3, false);
     xor_expected.resize(length + 3, false);
     xnor_expected.resize(length + 3, false);
+    less_expected.resize(length + 3, false);
+    less_equal_expected.resize(length + 3, false);
+    greater_expected.resize(length + 3, false);
+    greater_equal_expected.resize(length + 3, false);
     not_expected.resize(length + 3, false);
 
     vector<bool> and_actual(length + 3);
     vector<bool> or_actual(length + 3);
     vector<bool> xor_actual(length + 3);
     vector<bool> xnor_actual(length + 3);
+    vector<bool> less_actual(length + 3);
+    vector<bool> less_equal_actual(length + 3);
+    vector<bool> greater_actual(length + 3);
+    vector<bool> greater_equal_actual(length + 3);
     vector<bool> not_actual(length + 3);
 
     // Also test combinations of vector<bool>::iterator and vector<bool>::const_iterator for the inputs.
@@ -153,6 +173,31 @@ CONSTEXPR20 void test_transform_helper(const size_t length) {
         assert(xnor_ret == xnor_actual.begin() + static_cast<ptrdiff_t>(length));
 
         // bit_xnor doesn't exist in the Standard
+    }
+
+    {
+        const auto less_ret = transform(cfirst1, clast1, cfirst2, less_actual.begin(), less<>{});
+        assert(less_actual == less_expected);
+        assert(less_ret == less_actual.begin() + static_cast<ptrdiff_t>(length));
+    }
+
+    {
+        const auto less_equal_ret = transform(cfirst1, clast1, cfirst2, less_equal_actual.begin(), less_equal<>{});
+        assert(less_equal_actual == less_equal_expected);
+        assert(less_equal_ret == less_equal_actual.begin() + static_cast<ptrdiff_t>(length));
+    }
+
+    {
+        const auto greater_ret = transform(cfirst1, clast1, cfirst2, greater_actual.begin(), greater<>{});
+        assert(greater_actual == greater_expected);
+        assert(greater_ret == greater_actual.begin() + static_cast<ptrdiff_t>(length));
+    }
+
+    {
+        const auto greater_equal_ret =
+            transform(cfirst1, clast1, cfirst2, greater_equal_actual.begin(), greater_equal<>{});
+        assert(greater_equal_actual == greater_equal_expected);
+        assert(greater_equal_ret == greater_equal_actual.begin() + static_cast<ptrdiff_t>(length));
     }
 
     {
