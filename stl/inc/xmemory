@@ -792,6 +792,9 @@ constexpr bool _Is_simple_alloc_v =
     && is_same_v<typename allocator_traits<_Alloc>::pointer, typename _Alloc::value_type*>
     && is_same_v<typename allocator_traits<_Alloc>::const_pointer, const typename _Alloc::value_type*>;
 
+// SCARY iterators are permitted but not required by the Standard. See:
+// N2911 Minimizing Dependencies Within Generic Classes For Faster And Smaller Programs
+// N2980 SCARY Iterator Assignment And Initialization
 template <class _Value_type>
 struct _Simple_types { // wraps types from allocators with simple addressing for use in iterators
                        // and other SCARY machinery
