@@ -1883,7 +1883,7 @@ protected:
 // For constraining deduction guides (N4981 [unord.req.general]/248.3)
 #if _HAS_CXX23
 template <class _Hasher>
-concept _Hasher_for_container = !integral<_Hasher> && !_Allocator_for_container<_Hasher>;
+concept _Hasher_for_container = !integral<_Hasher> && _Not_allocator_for_container<_Hasher>;
 
 template <class _Hasher>
 using _Is_hasher = bool_constant<_Hasher_for_container<_Hasher>>;
