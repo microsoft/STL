@@ -381,7 +381,7 @@ public:
         const key_compare& _Comp = key_compare())
         : _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)}, _Key_compare(_Comp) {
         _STL_ASSERT(_Data.keys.size() == _Data.values.size(), _Msg_different_sizes);
-        _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted);
     }
 
     template <_Iterator_for_container _InIt>
@@ -455,7 +455,7 @@ public:
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Al, _Mapped_cont)},
           _Key_compare(_Comp) {
         _STL_ASSERT(_Data.keys.size() == _Data.values.size(), _Msg_different_sizes);
-        _STL_ASSERT(_Is_sorted_and_unique(), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted);
     }
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
@@ -696,7 +696,7 @@ public:
 
     void replace(key_container_type&& _Key_cont, mapped_container_type&& _Mapped_cont) {
         _STL_ASSERT(_Key_cont.size() == _Mapped_cont.size(), _Msg_replace_different_sizes);
-        _STL_ASSERT(_Is_sorted_and_unique(_Key_cont.begin(), _Key_cont.end()), _Msg_replace_not_sorted);
+        _STL_ASSERT(_Is_sorted_maybe_unique(_Key_cont.begin(), _Key_cont.end()), _Msg_replace_not_sorted);
         _Clear_guard _Guard{this};
         _Data.keys     = _STD move(_Key_cont);
         _Data.values   = _STD move(_Mapped_cont);
@@ -978,12 +978,12 @@ public:
 #else
 private:
 #endif
-    _NODISCARD bool _Is_sorted_and_unique() const {
-        return _Is_sorted_and_unique(_Data.keys.begin(), _Data.keys.end());
+    _NODISCARD bool _Is_sorted_maybe_unique() const {
+        return _Is_sorted_maybe_unique(_Data.keys.begin(), _Data.keys.end());
     }
 
 private:
-    _NODISCARD bool _Is_sorted_and_unique(
+    _NODISCARD bool _Is_sorted_maybe_unique(
         const key_container_type::const_iterator _It, const key_container_type::const_iterator _End) const {
         if constexpr (_IsUnique) {
             // sorted-unique
@@ -1044,7 +1044,7 @@ private:
             _RANGES sort(_Old_end, _End, _Value_compare_to_pass{_Key_compare});
         } else {
             [[maybe_unused]] const auto _Diff = static_cast<key_container_type::difference_type>(_Old_size);
-            _STL_ASSERT(_Is_sorted_and_unique(_Data.keys.begin() + _Diff, _Data.keys.end()), _Msg_not_sorted);
+            _STL_ASSERT(_Is_sorted_maybe_unique(_Data.keys.begin() + _Diff, _Data.keys.end()), _Msg_not_sorted);
         }
 
         _RANGES inplace_merge(_View, _Old_end, _Value_compare_to_pass{_Key_compare});
@@ -1055,7 +1055,7 @@ private:
             _Data.values.erase(_New_last._Mapped_it, _Data.values.end());
         }
 
-        _STL_INTERNAL_CHECK(_Is_sorted_and_unique());
+        _STL_INTERNAL_CHECK(_Is_sorted_maybe_unique());
     }
 
     void _Establish_invariants() {

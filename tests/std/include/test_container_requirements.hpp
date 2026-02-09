@@ -127,7 +127,7 @@ void assert_is_sorted_maybe_unique(const T& s) {
     const auto end_it   = s.cend();
 
     // internal check by the container itself
-    assert(s._Is_sorted_and_unique());
+    assert(s._Is_sorted_maybe_unique());
 
     // external check observable by the user
     assert(std::is_sorted(begin_it, end_it, val_comp));
