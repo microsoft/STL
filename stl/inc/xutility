@@ -5028,6 +5028,13 @@ struct _Map_vb_functor {
     using type = void;
 };
 
+#if _HAS_CXX20
+template <>
+struct _Map_vb_functor<identity> {
+    using type = identity;
+};
+#endif // _HAS_CXX20
+
 template <class _Fn>
 using _Map_vb_functor_t = typename _Map_vb_functor<_Fn>::type;
 
