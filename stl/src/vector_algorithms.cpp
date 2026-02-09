@@ -8001,9 +8001,88 @@ const void* __stdcall __std_find_end_8(
 }
 
 } // extern "C"
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
 namespace {
     namespace _Mismatching {
+#ifdef _M_ARM64
+        template <class _Ty>
+        __declspec(noalias) size_t __stdcall _Mismatch_impl(
+            const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
+            size_t _Result            = 0;
+            const auto _First1_ch     = static_cast<const uint8_t*>(_First1);
+            const auto _First2_ch     = static_cast<const uint8_t*>(_First2);
+            const size_t _Count_bytes = _Count * sizeof(_Ty);
+
+            const size_t _Count_bytes_32 = _Count_bytes & ~size_t{0x1F};
+            for (; _Result != _Count_bytes_32; _Result += 0x20) {
+                const auto _Elem1_lo = _Finding::_Find_traits_1::_Load_q(_First1_ch + _Result);
+                const auto _Elem2_lo = _Finding::_Find_traits_1::_Load_q(_First2_ch + _Result);
+                const auto _Elem1_hi = _Finding::_Find_traits_1::_Load_q(_First1_ch + _Result + 0x10);
+                const auto _Elem2_hi = _Finding::_Find_traits_1::_Load_q(_First2_ch + _Result + 0x10);
+
+                const auto _Cmp_lo = _Finding::_Find_traits_1::_Cmp_neon_q(_Elem1_lo, _Elem2_lo);
+                const auto _Cmp_hi = _Finding::_Find_traits_1::_Cmp_neon_q(_Elem1_hi, _Elem2_hi);
+
+                const auto _Any_mismatch = _Finding::_Find_traits_1::_Match_mask_ne(_Cmp_lo, _Cmp_hi);
+                if (_Any_mismatch != 0) {
+                    auto _Mask_lo = ~_Finding::_Find_traits_1::_Mask_q(_Cmp_lo);
+                    if (_Mask_lo != 0) {
+                        const auto _Offset = _Finding::_Get_first_h_pos_q(_Mask_lo);
+                        return (_Result + _Offset) / sizeof(_Ty);
+                    }
+
+                    auto _Mask_hi      = ~_Finding::_Find_traits_1::_Mask_q(_Cmp_hi);
+                    const auto _Offset = _Finding::_Get_first_h_pos_q(_Mask_hi) + 0x10;
+                    return (_Result + _Offset) / sizeof(_Ty);
+                }
+            }
+
+            if ((_Count_bytes & size_t{0x10}) != 0) { // use original _Count_bytes; we've read only 32-byte chunks
+                const auto _Elem1 = _Finding::_Find_traits_1::_Load_q(_First1_ch + _Result);
+                const auto _Elem2 = _Finding::_Find_traits_1::_Load_q(_First2_ch + _Result);
+                const auto _Cmp   = _Finding::_Find_traits_1::_Cmp_neon_q(_Elem1, _Elem2);
+
+                const auto _Mask = ~_Finding::_Find_traits_1::_Mask_q(_Cmp);
+                if (_Mask != 0) {
+                    const auto _Offset = _Finding::_Get_first_h_pos_q(_Mask);
+                    return (_Result + _Offset) / sizeof(_Ty);
+                }
+
+                _Result += 0x10;
+            }
+
+            if constexpr (sizeof(_Ty) < 8) {
+                // use original _Count_bytes; we've read only 16/32-byte chunks
+                if ((_Count_bytes & size_t{0x08}) != 0) {
+                    const auto _Elem1 = _Finding::_Find_traits_1::_Load(_First1_ch + _Result);
+                    const auto _Elem2 = _Finding::_Find_traits_1::_Load(_First2_ch + _Result);
+                    const auto _Cmp   = _Finding::_Find_traits_1::_Cmp_neon(_Elem1, _Elem2);
+
+                    const auto _Mask = ~_Finding::_Find_traits_1::_Mask(_Cmp);
+                    if (_Mask != 0) {
+                        const auto _Offset = _Finding::_Get_first_h_pos_d(_Mask);
+                        return (_Result + _Offset) / sizeof(_Ty);
+                    }
+
+                    _Result += 0x08;
+                }
+            }
+
+            _Result /= sizeof(_Ty);
+
+            const auto _First1_el = static_cast<const _Ty*>(_First1);
+            const auto _First2_el = static_cast<const _Ty*>(_First2);
+
+            for (; _Result != _Count; ++_Result) {
+                if (_First1_el[_Result] != _First2_el[_Result]) {
+                    break;
+                }
+            }
+
+            return _Result;
+        }
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
         template <class _Ty>
         __declspec(noalias) size_t __stdcall _Mismatch_impl(
             const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
@@ -8081,6 +8160,7 @@ namespace {
 
             return _Result;
         }
+#endif // ^^^ !defined(_M_ARM64) ^^^
     } // namespace _Mismatching
 } // unnamed namespace
 
@@ -8108,6 +8188,7 @@ __declspec(noalias) size_t __stdcall __std_mismatch_8(
 
 } // extern "C"
 
+#ifndef _M_ARM64
 namespace {
     namespace _Replacing {
         template <class _Traits, class _Ty>
