@@ -9059,23 +9059,127 @@ void* __stdcall __std_unique_copy_8(const void* _First, const void* const _Last,
 }
 
 } // extern "C"
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
 namespace {
     namespace _Sorted_ranges {
-#ifdef _M_ARM64EC
-        using _Traits_1_avx = void;
-        using _Traits_2_avx = void;
-        using _Traits_4_avx = void;
-        using _Traits_8_avx = void;
-        using _Traits_1_sse = void;
-        using _Traits_2_sse = void;
-        using _Traits_4_sse = void;
-        using _Traits_8_sse = void;
-#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+#ifdef _M_ARM64
+        struct _Traits_neon {
+            using _Guard                                = char;
+            static constexpr size_t _Vec_size           = 16;
+            static constexpr size_t _Tail_mask          = 0;
+            static constexpr bool _Has_unsigned_cmp     = true;
+            static constexpr uint64_t _Highest_one_mask = 1ull << 63;
+            static constexpr uint64_t _All_ones_mask    = static_cast<uint64_t>(-1);
+
+            static uint64_t _Bsf(const uint64_t _Mask) noexcept {
+                return _CountTrailingZeros64(_Mask) >> 2;
+            }
+        };
+
+        struct _Traits_1_neon : _Traits_neon {
+            using _Vec_t = int8x16_t;
+
+            static _Vec_t _Load(const void* const _Src) noexcept {
+                return _Sorting::_Traits_1_neon::_Load(_Src);
+            }
+
+            static uint64_t _Mask(const _Vec_t _Val) noexcept {
+                return _Finding::_Find_traits_1::_Mask_q(vreinterpretq_u8_s8(_Val));
+            }
+
+            static _Vec_t _Broadcast(const uint8_t _Data) noexcept {
+                return vreinterpretq_s8_u8(_Finding::_Find_traits_1::_Set_neon_q(_Data));
+            }
+
+            static _Vec_t _Cmp_gt(const _Vec_t _First, const _Vec_t _Second) noexcept {
+                return _Sorting::_Traits_1_neon::_Cmp_gt(_First, _Second);
+            }
+
+            static _Vec_t _Cmp_gt_u(const _Vec_t _First, const _Vec_t _Second) noexcept {
+                return _Sorting::_Traits_1_neon::_Cmp_gt_u(_First, _Second);
+            }
+        };
+
+        struct _Traits_2_neon : _Traits_neon {
+            using _Vec_t = int16x8_t;
+
+            static _Vec_t _Load(const void* const _Src) noexcept {
+                return _Sorting::_Traits_2_neon::_Load(_Src);
+            }
+
+            static uint64_t _Mask(const _Vec_t _Val) noexcept {
+                return _Finding::_Find_traits_2::_Mask_q(vreinterpretq_u16_s16(_Val));
+            }
+
+            static _Vec_t _Broadcast(const uint16_t _Data) noexcept {
+                return vreinterpretq_s16_u16(_Finding::_Find_traits_2::_Set_neon_q(_Data));
+            }
+
+            static _Vec_t _Cmp_gt(const _Vec_t _First, const _Vec_t _Second) noexcept {
+                return _Sorting::_Traits_2_neon::_Cmp_gt(_First, _Second);
+            }
+
+            static _Vec_t _Cmp_gt_u(const _Vec_t _First, const _Vec_t _Second) noexcept {
+                return _Sorting::_Traits_2_neon::_Cmp_gt_u(_First, _Second);
+            }
+        };
+
+        struct _Traits_4_neon : _Traits_neon {
+            using _Vec_t = int32x4_t;
+
+            static _Vec_t _Load(const void* const _Src) noexcept {
+                return _Sorting::_Traits_4_neon::_Load(_Src);
+            }
+
+            static uint64_t _Mask(const _Vec_t _Val) noexcept {
+                return _Finding::_Find_traits_4::_Mask_q(vreinterpretq_u32_s32(_Val));
+            }
+
+            static _Vec_t _Broadcast(const uint32_t _Data) noexcept {
+                return vreinterpretq_s32_u32(_Finding::_Find_traits_4::_Set_neon_q(_Data));
+            }
+
+            static _Vec_t _Cmp_gt(const _Vec_t _First, const _Vec_t _Second) noexcept {
+                return _Sorting::_Traits_4_neon::_Cmp_gt(_First, _Second);
+            }
+
+            static _Vec_t _Cmp_gt_u(const _Vec_t _First, const _Vec_t _Second) noexcept {
+                return _Sorting::_Traits_4_neon::_Cmp_gt_u(_First, _Second);
+            }
+        };
+
+        struct _Traits_8_neon : _Traits_neon {
+            using _Vec_t = int64x2_t;
+
+            static _Vec_t _Load(const void* const _Src) noexcept {
+                return _Sorting::_Traits_8_neon::_Load(_Src);
+            }
+
+            static uint64_t _Mask(const _Vec_t _Val) noexcept {
+                return _Finding::_Find_traits_8::_Mask_q(vreinterpretq_u64_s64(_Val));
+            }
+
+            static _Vec_t _Broadcast(const uint64_t _Data) noexcept {
+                return vreinterpretq_s64_u64(_Finding::_Find_traits_8::_Set_neon_q(_Data));
+            }
+
+            static _Vec_t _Cmp_gt(const _Vec_t _First, const _Vec_t _Second) noexcept {
+                return _Sorting::_Traits_8_neon::_Cmp_gt(_First, _Second);
+            }
+
+            static _Vec_t _Cmp_gt_u(const _Vec_t _First, const _Vec_t _Second) noexcept {
+                return _Sorting::_Traits_8_neon::_Cmp_gt_u(_First, _Second);
+            }
+        };
+#elif !defined(_M_ARM64EC)
         struct _Traits_avx {
-            using _Guard                       = _Zeroupper_on_exit;
-            static constexpr size_t _Vec_size  = 32;
-            static constexpr size_t _Tail_mask = 0x1C;
+            using _Guard                                = _Zeroupper_on_exit;
+            static constexpr size_t _Vec_size           = 32;
+            static constexpr size_t _Tail_mask          = 0x1C;
+            static constexpr bool _Has_unsigned_cmp     = false;
+            static constexpr uint32_t _Highest_one_mask = 1u << (_Vec_size - 1);
+            static constexpr uint32_t _All_ones_mask    = uint32_t{(uint64_t{1} << _Vec_size) - 1};
 
             static __m256i _Load(const void* const _Src) noexcept {
                 return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(_Src));
@@ -9155,9 +9259,12 @@ namespace {
         };
 
         struct _Traits_sse {
-            using _Guard                       = char;
-            static constexpr size_t _Vec_size  = 16;
-            static constexpr size_t _Tail_mask = 0;
+            using _Guard                                = char;
+            static constexpr size_t _Vec_size           = 16;
+            static constexpr size_t _Tail_mask          = 0;
+            static constexpr bool _Has_unsigned_cmp     = false;
+            static constexpr uint32_t _Highest_one_mask = 1u << (_Vec_size - 1);
+            static constexpr uint32_t _All_ones_mask    = uint32_t{(uint64_t{1} << _Vec_size) - 1};
 
             static __m128i _Load(const void* const _Src) noexcept {
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
@@ -9247,9 +9354,7 @@ namespace {
                 // Only skipping some parts of haystack that are less than current needle element is vectorized.
                 // Otherwise this is scalar algorithm.
 
-                constexpr bool _Is_signed            = std::is_signed_v<_Ty>;
-                constexpr uint32_t _All_ones_mask    = uint32_t{(uint64_t{1} << _Traits::_Vec_size) - 1};
-                constexpr uint32_t _Highest_one_mask = 1u << (_Traits::_Vec_size - 1);
+                constexpr bool _Is_signed = std::is_signed_v<_Ty>;
                 [[maybe_unused]] typename _Traits::_Guard _Guard; // TRANSITION, DevCom-10331414
 
                 const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
@@ -9258,23 +9363,31 @@ namespace {
 
                 _Ty _Val2    = *reinterpret_cast<const _Ty*>(_First2);
                 auto _Start2 = _Traits::_Broadcast(_Val2);
-                if constexpr (!_Is_signed) {
+                if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
                     _Start2 = _Traits::_Sign_correction(_Start2);
                 }
 
                 do {
                     auto _Data1 = _Traits::_Load(_First1);
-                    if constexpr (!_Is_signed) {
+                    if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
                         _Data1 = _Traits::_Sign_correction(_Data1);
                     }
 
                     const void* _Next1 = _First1;
                     _Advance_bytes(_Next1, _Traits::_Vec_size);
 
-                    const uint32_t _Greater_start_2 = _Traits::_Mask(_Traits::_Cmp_gt(_Start2, _Data1));
-                    // Testing _Highest_one_mask can be a bit more efficient on AVX2 than comparing against
+                    const auto _Cmp_gt_wrap = [](const auto _First, const auto _Second) noexcept {
+                        if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
+                            return _Traits::_Cmp_gt(_First, _Second);
+                        } else {
+                            return _Traits::_Cmp_gt_u(_First, _Second);
+                        }
+                    };
+
+                    const auto _Greater_start_2 = _Traits::_Mask(_Cmp_gt_wrap(_Start2, _Data1));
+                    // Testing _Highest_one_mask can be a bit more efficient than comparing against
                     // _All_ones_mask (will test sign, and can share comparison with != 0 below).
-                    if ((_Greater_start_2 & _Highest_one_mask) != 0) {
+                    if ((_Greater_start_2 & _Traits::_Highest_one_mask) != 0) {
                         // Needle first element is greater than each element of haystack vector.
                         // Proceed to the next one, without updating the needle comparand.
                         _First1 = _Next1;
@@ -9283,7 +9396,7 @@ namespace {
                             // Needle first element is greater than some first elements of haystack part.
                             // Advance past these elements.
                             // The input is nonzero because we handled that case with _Highest_one_mask branch above.
-                            const uint32_t _Skip = _Traits::_Bsf(_Greater_start_2 ^ _All_ones_mask);
+                            const auto _Skip = _Traits::_Bsf(_Greater_start_2 ^ _Traits::_All_ones_mask);
                             _Advance_bytes(_First1, _Skip);
                         }
 
@@ -9309,7 +9422,7 @@ namespace {
                         } while (_First1 != _Next1);
 
                         _Start2 = _Traits::_Broadcast(_Val2);
-                        if constexpr (!_Is_signed) {
+                        if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
                             _Start2 = _Traits::_Sign_correction(_Start2);
                         }
                     }
@@ -9332,7 +9445,7 @@ namespace {
                             // Needle first element is greater than some first elements of haystack part.
                             // Advance past these elements.
                             // The input is nonzero because tail mask will have zeros for remaining elements.
-                            const uint32_t _Skip = _Traits::_Bsf(_Greater_start_2 ^ _All_ones_mask);
+                            const uint32_t _Skip = _Traits::_Bsf(_Greater_start_2 ^ _Traits::_All_ones_mask);
                             _Advance_bytes(_First1, _Skip);
                         }
                     }
@@ -9367,7 +9480,43 @@ namespace {
             }
         }
 
-        template <class _Traits_avx, class _Traits_sse, class _Ty>
+        struct _Traits_1 {
+#ifdef _M_ARM64
+            using _Neon = _Traits_1_neon;
+#elif !defined(_M_ARM64EC)
+            using _Sse = _Traits_1_sse;
+            using _Avx = _Traits_1_avx;
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+        };
+
+        struct _Traits_2 {
+#ifdef _M_ARM64
+            using _Neon = _Traits_2_neon;
+#elif !defined(_M_ARM64EC)
+            using _Sse = _Traits_2_sse;
+            using _Avx = _Traits_2_avx;
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+        };
+
+        struct _Traits_4 {
+#ifdef _M_ARM64
+            using _Neon = _Traits_4_neon;
+#elif !defined(_M_ARM64EC)
+            using _Sse = _Traits_4_sse;
+            using _Avx = _Traits_4_avx;
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+        };
+
+        struct _Traits_8 {
+#ifdef _M_ARM64
+            using _Neon = _Traits_8_neon;
+#elif !defined(_M_ARM64EC)
+            using _Sse = _Traits_8_sse;
+            using _Avx = _Traits_8_avx;
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+        };
+
+        template <class _Traits, class _Ty>
         bool __stdcall _Includes_disp(const void* const _First1, const void* const _Last1, const void* const _First2,
             const void* const _Last2) noexcept {
             const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
@@ -9378,13 +9527,17 @@ namespace {
                 return false;
             }
 
-#ifndef _M_ARM64EC
+#ifdef _M_ARM64
+            if (_Size_bytes_1 >= 16) {
+                return _Includes_impl<typename _Traits::_Neon, _Ty>(_First1, _Last1, _First2, _Last2);
+            }
+#elif !defined(_M_ARM64EC)
             if (_Size_bytes_1 >= 32 && _Use_avx2()) {
-                return _Includes_impl<_Traits_avx, _Ty>(_First1, _Last1, _First2, _Last2);
+                return _Includes_impl<typename _Traits::_Avx, _Ty>(_First1, _Last1, _First2, _Last2);
             }
 
             if (_Size_bytes_1 >= 16 && _Use_sse42()) {
-                return _Includes_impl<_Traits_sse, _Ty>(_First1, _Last1, _First2, _Last2);
+                return _Includes_impl<typename _Traits::_Sse, _Ty>(_First1, _Last1, _First2, _Last2);
             }
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
             return _Includes_impl<void, _Ty>(_First1, _Last1, _First2, _Last2);
@@ -9396,54 +9549,47 @@ extern "C" {
 
 __declspec(noalias) bool __stdcall __std_includes_less_1i(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_1_avx, _Sorted_ranges::_Traits_1_sse, int8_t>(
-        _First1, _Last1, _First2, _Last2);
+    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_1, int8_t>(_First1, _Last1, _First2, _Last2);
 }
 
 __declspec(noalias) bool __stdcall __std_includes_less_1u(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_1_avx, _Sorted_ranges::_Traits_1_sse, uint8_t>(
-        _First1, _Last1, _First2, _Last2);
+    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_1, uint8_t>(_First1, _Last1, _First2, _Last2);
 }
 
 __declspec(noalias) bool __stdcall __std_includes_less_2i(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_2_avx, _Sorted_ranges::_Traits_2_sse, int16_t>(
-        _First1, _Last1, _First2, _Last2);
+    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_2, int16_t>(_First1, _Last1, _First2, _Last2);
 }
 
 __declspec(noalias) bool __stdcall __std_includes_less_2u(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_2_avx, _Sorted_ranges::_Traits_2_sse, uint16_t>(
-        _First1, _Last1, _First2, _Last2);
+    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_2, uint16_t>(_First1, _Last1, _First2, _Last2);
 }
 
 __declspec(noalias) bool __stdcall __std_includes_less_4i(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_4_avx, _Sorted_ranges::_Traits_4_sse, int32_t>(
-        _First1, _Last1, _First2, _Last2);
+    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_4, int32_t>(_First1, _Last1, _First2, _Last2);
 }
 
 __declspec(noalias) bool __stdcall __std_includes_less_4u(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_4_avx, _Sorted_ranges::_Traits_4_sse, uint32_t>(
-        _First1, _Last1, _First2, _Last2);
+    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_4, uint32_t>(_First1, _Last1, _First2, _Last2);
 }
 
 __declspec(noalias) bool __stdcall __std_includes_less_8i(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_8_avx, _Sorted_ranges::_Traits_8_sse, int64_t>(
-        _First1, _Last1, _First2, _Last2);
+    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_8, int64_t>(_First1, _Last1, _First2, _Last2);
 }
 
 __declspec(noalias) bool __stdcall __std_includes_less_8u(
     const void* const _First1, const void* const _Last1, const void* const _First2, const void* const _Last2) noexcept {
-    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_8_avx, _Sorted_ranges::_Traits_8_sse, uint64_t>(
-        _First1, _Last1, _First2, _Last2);
+    return _Sorted_ranges::_Includes_disp<_Sorted_ranges::_Traits_8, uint64_t>(_First1, _Last1, _First2, _Last2);
 }
 
 } // extern "C"
 
+#ifndef _M_ARM64
 namespace {
     namespace _Bitset_to_string {
 #ifdef _M_ARM64EC
