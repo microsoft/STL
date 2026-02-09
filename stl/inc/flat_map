@@ -286,7 +286,7 @@ private:
     static constexpr const char* _Msg_not_sorted_maybe_unique = //
         _IsUnique ? "Keys were not sorted-unique! (N5032 [flat.map.overview]/10)"
                   : "Keys were not sorted! (N5032 [flat.multimap.overview]/10)";
-    static constexpr const char* _Msg_replace_not_sorted =
+    static constexpr const char* _Msg_replace_not_sorted_maybe_unique =
         _IsUnique ? "Keys were not sorted-unique! (N5032 [flat.map.modifiers]/37)"
                   : "Keys were not sorted! (N5032 [flat.map.modifiers]/37, [flat.multimap.overview]/4)";
     static constexpr const char* _Msg_different_sizes =
@@ -696,7 +696,7 @@ public:
 
     void replace(key_container_type&& _Key_cont, mapped_container_type&& _Mapped_cont) {
         _STL_ASSERT(_Key_cont.size() == _Mapped_cont.size(), _Msg_replace_different_sizes);
-        _STL_ASSERT(_Is_sorted_maybe_unique(_Key_cont.begin(), _Key_cont.end()), _Msg_replace_not_sorted);
+        _STL_ASSERT(_Is_sorted_maybe_unique(_Key_cont.begin(), _Key_cont.end()), _Msg_replace_not_sorted_maybe_unique);
         _Clear_guard _Guard{this};
         _Data.keys     = _STD move(_Key_cont);
         _Data.values   = _STD move(_Mapped_cont);

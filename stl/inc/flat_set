@@ -73,7 +73,7 @@ private:
     static constexpr const char* _Msg_not_sorted_maybe_unique = //
         _IsUnique ? "Input was not sorted-unique! (N5032 [flat.set.overview]/9)"
                   : "Input was not sorted! (N5032 [flat.multiset.overview]/9)";
-    static constexpr const char* _Msg_replace_not_sorted =
+    static constexpr const char* _Msg_replace_not_sorted_maybe_unique =
         _IsUnique ? "Input was not sorted-unique! (N5032 [flat.set.modifiers]/18)"
                   : "Input was not sorted! (N5032 [flat.multiset.modifiers]/17)";
     static constexpr const char* _Msg_heterogeneous_insertion_inconsistent_with_lookup =
@@ -410,7 +410,7 @@ public:
     }
 
     void replace(container_type&& _Cont) {
-        _STL_ASSERT(_Is_sorted_maybe_unique(_Cont.begin(), _Cont.end()), _Msg_replace_not_sorted);
+        _STL_ASSERT(_Is_sorted_maybe_unique(_Cont.begin(), _Cont.end()), _Msg_replace_not_sorted_maybe_unique);
         _Clear_guard _Guard{this};
         _Data          = _STD move(_Cont);
         _Guard._Target = nullptr;
