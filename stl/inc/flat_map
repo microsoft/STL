@@ -283,7 +283,7 @@ private:
     using _Derived  = conditional_t<_IsUnique, flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>,
          flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>>;
 
-    static constexpr const char* _Msg_not_sorted = //
+    static constexpr const char* _Msg_not_sorted_maybe_unique = //
         _IsUnique ? "Keys were not sorted-unique! (N5032 [flat.map.overview]/10)"
                   : "Keys were not sorted! (N5032 [flat.multimap.overview]/10)";
     static constexpr const char* _Msg_replace_not_sorted =
@@ -381,7 +381,7 @@ public:
         const key_compare& _Comp = key_compare())
         : _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)}, _Key_compare(_Comp) {
         _STL_ASSERT(_Data.keys.size() == _Data.values.size(), _Msg_different_sizes);
-        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted_maybe_unique);
     }
 
     template <_Iterator_for_container _InIt>
@@ -455,7 +455,7 @@ public:
               .values = _STD make_obj_using_allocator<mapped_container_type>(_Al, _Mapped_cont)},
           _Key_compare(_Comp) {
         _STL_ASSERT(_Data.keys.size() == _Data.values.size(), _Msg_different_sizes);
-        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted_maybe_unique);
     }
 
     template <_Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
@@ -1044,7 +1044,8 @@ private:
             _RANGES sort(_Old_end, _End, _Value_compare_to_pass{_Key_compare});
         } else {
             [[maybe_unused]] const auto _Diff = static_cast<key_container_type::difference_type>(_Old_size);
-            _STL_ASSERT(_Is_sorted_maybe_unique(_Data.keys.begin() + _Diff, _Data.keys.end()), _Msg_not_sorted);
+            _STL_ASSERT(
+                _Is_sorted_maybe_unique(_Data.keys.begin() + _Diff, _Data.keys.end()), _Msg_not_sorted_maybe_unique);
         }
 
         _RANGES inplace_merge(_View, _Old_end, _Value_compare_to_pass{_Key_compare});

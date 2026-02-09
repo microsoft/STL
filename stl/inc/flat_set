@@ -70,7 +70,7 @@ private:
     using _Derived =
         conditional_t<_IsUnique, flat_set<_Key, _Compare, _Container>, flat_multiset<_Key, _Compare, _Container>>;
 
-    static constexpr const char* _Msg_not_sorted = //
+    static constexpr const char* _Msg_not_sorted_maybe_unique = //
         _IsUnique ? "Input was not sorted-unique! (N5032 [flat.set.overview]/9)"
                   : "Input was not sorted! (N5032 [flat.multiset.overview]/9)";
     static constexpr const char* _Msg_replace_not_sorted =
@@ -125,7 +125,7 @@ public:
 
     _Flat_set_base(_Sorted_t, container_type _Cont, const key_compare& _Comp = key_compare())
         : _Data(_STD move(_Cont)), _Key_compare(_Comp) {
-        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted_maybe_unique);
     }
 
     template <_Iterator_for_container _InIt>
@@ -137,7 +137,7 @@ public:
     template <_Iterator_for_container _InIt>
     _Flat_set_base(_Sorted_t, const _InIt _First, const _InIt _Last, const key_compare& _Comp = key_compare())
         : _Data(_First, _Last), _Key_compare(_Comp) {
-        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted_maybe_unique);
     }
 
     template <_Container_compatible_range<value_type> _Rng>
@@ -158,7 +158,7 @@ public:
 
     _Flat_set_base(_Sorted_t, const initializer_list<value_type> _Ilist, const key_compare& _Comp = key_compare())
         : _Data(_Ilist.begin(), _Ilist.end()), _Key_compare(_Comp) {
-        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted_maybe_unique);
     }
 
     // [flat.set.cons.alloc] Constructors with allocators
@@ -185,13 +185,13 @@ public:
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const container_type& _Cont, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Key_compare() {
-        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted_maybe_unique);
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const container_type& _Cont, const key_compare& _Comp, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Cont)), _Key_compare(_Comp) {
-        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted_maybe_unique);
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
@@ -219,13 +219,13 @@ public:
     template <_Iterator_for_container _InIt, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const _InIt _First, const _InIt _Last, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Key_compare() {
-        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted_maybe_unique);
     }
 
     template <_Iterator_for_container _InIt, _Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const _InIt _First, const _InIt _Last, const key_compare& _Comp, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _First, _Last)), _Key_compare(_Comp) {
-        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted_maybe_unique);
     }
 
     template <_Container_compatible_range<value_type> _Rng, _Usable_allocator_for<container_type> _Alloc>
@@ -257,13 +257,13 @@ public:
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const initializer_list<value_type> _Ilist, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Key_compare() {
-        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted_maybe_unique);
     }
 
     template <_Usable_allocator_for<container_type> _Alloc>
     _Flat_set_base(_Sorted_t, const initializer_list<value_type> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
         : _Data(_STD make_obj_using_allocator<container_type>(_Al, _Ilist.begin(), _Ilist.end())), _Key_compare(_Comp) {
-        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted);
+        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted_maybe_unique);
     }
 
     // Assignment operators
@@ -572,7 +572,7 @@ private:
         if constexpr (_NeedSorting) {
             _STD sort(_Old_end, _End, _Pass_comp());
         } else {
-            _STL_ASSERT(_Is_sorted_maybe_unique(_Old_end, _End), _Msg_not_sorted);
+            _STL_ASSERT(_Is_sorted_maybe_unique(_Old_end, _End), _Msg_not_sorted_maybe_unique);
         }
 
         _STD inplace_merge(_Begin, _Old_end, _End, _Pass_comp());
