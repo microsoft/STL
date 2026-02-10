@@ -18,6 +18,7 @@
 #include <utility>
 #include <vector>
 
+#include <is_permissive.hpp>
 #include <test_container_requirements.hpp>
 #include <test_death.hpp>
 #define TEST_ASSERT(...) assert((__VA_ARGS__))
@@ -1351,10 +1352,15 @@ void test_non_strict_weak_order_compare() {
 void run_normal_tests() {
     mt19937_64 eng(42);
 
-    test_constructors<vector<int>>();
-    test_constructors<deque<int>>();
-    test_allocator_extended_constructors<iterator_pair_construction::allocator_first>();
-    test_allocator_extended_constructors<iterator_pair_construction::allocator_last>();
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-2714784
+    if constexpr (!is_permissive)
+#endif // ^^^ workaround ^^^
+    {
+        test_constructors<vector<int>>();
+        test_constructors<deque<int>>();
+        test_allocator_extended_constructors<iterator_pair_construction::allocator_first>();
+        test_allocator_extended_constructors<iterator_pair_construction::allocator_last>();
+    }
 
     test_iterators_and_capacity<flat_set<int>>();
     test_iterators_and_capacity<flat_multiset<int>>();

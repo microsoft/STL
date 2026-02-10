@@ -18,6 +18,7 @@
 #include <utility>
 #include <vector>
 
+#include <is_permissive.hpp>
 #include <test_container_requirements.hpp>
 #include <test_death.hpp>
 using namespace std;
@@ -957,6 +958,7 @@ void test_insert() {
 }
 
 void test_insert_range() {
+#ifndef _PREFAST_ // TRANSITION, VSO-2714798
     {
         flat_map<int, char> fm{{1, 'p'}, {4, 'q'}, {9, 'r'}};
         using char_type_array = flat_map<int, char>::value_type[];
@@ -981,6 +983,7 @@ void test_insert_range() {
         assert(check_key_content(fmm, {1, 4, 4, 9, 9, 9, 16, 16, 25}));
         assert(check_value_content(fmm, {'p', 'q', 'z', 'r', 'y', 'a', 'x', 'b', 'c'}));
     }
+#endif // ^^^ no workaround ^^^
 }
 
 // GH-4344 <flat_map> Fix compile errors
@@ -1344,7 +1347,12 @@ void test_insert_hint_is_respected() {
 
 template <template <class...> class KeyCont, template <class...> class MappedCont>
 void test_key_mapped_cont_combinations() {
-    test_construction<KeyCont, MappedCont>();
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-2714784
+    if constexpr (!is_permissive)
+#endif // ^^^ workaround ^^^
+    {
+        test_construction<KeyCont, MappedCont>();
+    }
     test_insert_hint_is_respected<KeyCont, MappedCont>();
     test_throwing_compare_swap_single<flat_map, KeyCont, MappedCont>();
     test_throwing_compare_swap_single<flat_multimap, KeyCont, MappedCont>();
