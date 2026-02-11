@@ -4564,6 +4564,103 @@ namespace {
 
             return _Find_last_scalar_tail<_Pred>(_First, _Last, _Real_last, _Val);
         }
+
+        template <class _Traits, class _Ty>
+        const void* __stdcall _Adjacent_find_impl(const void* _First, const void* const _Last) noexcept {
+            if (_First == _Last) {
+                return _Last;
+            }
+
+            const size_t _Size_bytes = _Byte_length(_First, _Last) - sizeof(_Ty);
+
+            if (const size_t _Neon_size = _Size_bytes & ~size_t{0x1F}; _Neon_size != 0) {
+                const void* _Stop_at = _First;
+                _Advance_bytes(_Stop_at, _Neon_size);
+
+                do {
+                    const void* _Next = _First;
+                    _Advance_bytes(_Next, sizeof(_Ty));
+
+                    const auto _Data_lo      = _Traits::_Load_q(static_cast<const uint8_t*>(_First) + 0);
+                    const auto _Data_hi      = _Traits::_Load_q(static_cast<const uint8_t*>(_First) + 16);
+                    const auto _Comparand_lo = _Traits::_Load_q(static_cast<const uint8_t*>(_Next) + 0);
+                    const auto _Comparand_hi = _Traits::_Load_q(static_cast<const uint8_t*>(_Next) + 16);
+
+                    const auto _Comparison_lo = _Traits::_Cmp_neon_q(_Data_lo, _Comparand_lo);
+                    const auto _Comparison_hi = _Traits::_Cmp_neon_q(_Data_hi, _Comparand_hi);
+
+                    // Use a fast check for the termination condition.
+                    const uint64_t _Any_match = _Traits::_Match_mask_eq(_Comparison_lo, _Comparison_hi);
+
+                    if (_Any_match != 0) {
+                        const auto _Mask_lo = _Traits::_Mask_q(_Comparison_lo);
+                        if (_Mask_lo != 0) {
+                            const auto _Offset = _Get_first_h_pos_q(_Mask_lo);
+                            _Advance_bytes(_First, _Offset);
+                            return _First;
+                        }
+
+                        const auto _Mask_hi = _Traits::_Mask_q(_Comparison_hi);
+                        const auto _Offset  = _Get_first_h_pos_q(_Mask_hi) + 16;
+                        _Advance_bytes(_First, _Offset);
+                        return _First;
+                    }
+
+                    _Advance_bytes(_First, 32);
+                } while (_First != _Stop_at);
+            }
+
+            if ((_Size_bytes & size_t{0x10}) != 0) { // use original _Size_bytes; we've read only 32-byte chunks
+                const void* _Next = _First;
+                _Advance_bytes(_Next, sizeof(_Ty));
+
+                const auto _Data      = _Traits::_Load_q(_First);
+                const auto _Comparand = _Traits::_Load_q(_Next);
+
+                const auto _Comparison = _Traits::_Cmp_neon_q(_Data, _Comparand);
+
+                const auto _Match = _Traits::_Mask_q(_Comparison);
+                if (_Match != 0) {
+                    const auto _Offset = _Get_first_h_pos_q(_Match);
+                    _Advance_bytes(_First, _Offset);
+                    return _First;
+                }
+
+                _Advance_bytes(_First, 16);
+            }
+
+            if constexpr (sizeof(_Ty) < 8) {
+                if ((_Size_bytes & size_t{0x08}) != 0) { // use original _Size_bytes; we've read only 16/32-byte chunks
+                    const void* _Next = _First;
+                    _Advance_bytes(_Next, sizeof(_Ty));
+
+                    const auto _Data      = _Traits::_Load(_First);
+                    const auto _Comparand = _Traits::_Load(_Next);
+
+                    const auto _Comparison = _Traits::_Cmp_neon(_Data, _Comparand);
+
+                    const auto _Match = _Traits::_Mask(_Comparison);
+                    if (_Match != 0) {
+                        const auto _Offset = _Get_first_h_pos_d(_Match);
+                        _Advance_bytes(_First, _Offset);
+                        return _First;
+                    }
+
+                    _Advance_bytes(_First, 8);
+                }
+            }
+
+            auto _Ptr  = static_cast<const _Ty*>(_First);
+            auto _Next = _Ptr + 1;
+            for (; _Next != _Last; ++_Ptr, ++_Next) {
+                if (*_Ptr == *_Next) {
+                    return _Ptr;
+                }
+            }
+
+            return _Last;
+        }
+
 #else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
         template <class _Traits, _Predicate _Pred, class _Ty>
         const void* __stdcall _Find_impl(const void* _First, const void* const _Last, const _Ty _Val) noexcept {
@@ -5156,7 +5253,6 @@ __declspec(noalias) size_t __stdcall __std_find_last_not_ch_pos_8(
         _First, _Last, _Val);
 }
 
-#ifndef _M_ARM64
 const void* __stdcall __std_adjacent_find_1(const void* const _First, const void* const _Last) noexcept {
     return _Finding::_Adjacent_find_impl<_Finding::_Find_traits_1, uint8_t>(_First, _Last);
 }
@@ -5173,6 +5269,7 @@ const void* __stdcall __std_adjacent_find_8(const void* const _First, const void
     return _Finding::_Adjacent_find_impl<_Finding::_Find_traits_8, uint64_t>(_First, _Last);
 }
 
+#ifndef _M_ARM64
 const void* __stdcall __std_search_n_1(
     const void* const _First, const void* const _Last, const size_t _Count, const uint8_t _Value) noexcept {
     return _Finding::_Search_n_impl<_Finding::_Find_traits_1>(_First, _Last, _Count, _Value);
