@@ -2392,7 +2392,7 @@ struct _Ctype_constants_base {
     static constexpr mask blank  = _CN | _SP;
 };
 
-_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT ctype_base // base for ctype
+_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT __declspec(empty_bases) ctype_base // base for ctype
     : locale::facet, // TRANSITION, ABI, shouldn't be derived from locale::facet
       _Ctype_constants_base // TRANSITION, ABI, avoid affecting DLL interface
 {
