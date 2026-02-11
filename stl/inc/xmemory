@@ -792,6 +792,9 @@ constexpr bool _Is_simple_alloc_v =
     && is_same_v<typename allocator_traits<_Alloc>::pointer, typename _Alloc::value_type*>
     && is_same_v<typename allocator_traits<_Alloc>::const_pointer, const typename _Alloc::value_type*>;
 
+// SCARY iterators are permitted but not required by the Standard. See:
+// N2911 Minimizing Dependencies Within Generic Classes For Faster And Smaller Programs
+// N2980 SCARY Iterator Assignment And Initialization
 template <class _Value_type>
 struct _Simple_types { // wraps types from allocators with simple addressing for use in iterators
                        // and other SCARY machinery
@@ -2760,6 +2763,16 @@ namespace ranges {
     elements_of(_Rng&&, _Alloc) -> elements_of<_Rng&&, _Alloc>;
 #endif // ^^^ !defined(__cpp_lib_byte) ^^^
 } // namespace ranges
+
+template <class>
+constexpr bool _Has_guaranteed_push_back = false; // N5032 [sequence.reqmts]/104, /108; used by flat_(multi)map::insert.
+
+// N5032 [container.reqmts]/66.1; used by various flat_(multi)set inserting functions.
+template <class _Ty>
+constexpr bool _Has_guaranteed_single_insertion = _Has_guaranteed_push_back<_Ty>;
+
+template <class>
+constexpr bool _Has_guaranteed_append_range = false; // N5032 [sequence.reqmts]/112; used by flat_(multi)set::insert.
 #endif // _HAS_CXX23
 
 template <class _Elem, class _UTy>

@@ -2,16 +2,28 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 steps:
-- script: |
-    if exist "$(tmpDir)" (rmdir /S /Q $(tmpDir))
-    mkdir $(tmpDir)
+- task: PowerShell@2
   displayName: 'Setup TMP Directory'
+  inputs:
+    pwsh: true
+    targetType: inline
+    script: |
+      $PSNativeCommandUseErrorActionPreference = $true
+      if (Test-Path -LiteralPath "$(tmpDir)") {
+          Remove-Item -LiteralPath "$(tmpDir)" -Recurse -Force
+      }
+      mkdir "$(tmpDir)" -Force | Out-Null
 - checkout: self
   clean: true
   submodules: false
   fetchDepth: 1
   fetchTags: false
   retryCountOnTaskFailure: 4
-- script: |
-    git clean --quiet -x -d -f -f
+- task: PowerShell@2
   displayName: 'Clean After Checkout'
+  inputs:
+    pwsh: true
+    targetType: inline
+    script: |
+      $PSNativeCommandUseErrorActionPreference = $true
+      git clean --quiet -x -d -f -f
