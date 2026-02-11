@@ -882,7 +882,7 @@ private:
 
         _STL_INTERNAL_CHECK(_Mylast == _My_data._Myend); // check that we have no unused capacity
 
-        const auto _Whereoff = static_cast<size_type>(_Whereptr - _Myfirst);
+        const auto _Whereoff = _Whereptr - _Myfirst;
         const auto _Oldsize  = static_cast<size_type>(_Mylast - _Myfirst);
 
         if (_Oldsize == max_size()) {
@@ -893,7 +893,7 @@ private:
         size_type _Newcapacity   = _Calculate_growth(_Newsize);
 
         const pointer _Newvec           = _STD _Allocate_at_least_helper(_Al, _Newcapacity);
-        const pointer _Constructed_last = _Newvec + _Whereoff + 1;
+        const pointer _Constructed_last = _Newvec + static_cast<_Iter_diff_t<pointer>>(_Whereoff + 1);
 
         _Reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
         auto& _Constructed_first = _Guard._Constructed_first;
@@ -910,7 +910,8 @@ private:
         } else { // provide basic guarantee
             _STD _Uninitialized_move(_Myfirst, _Whereptr, _Newvec, _Al);
             _Constructed_first = _Newvec;
-            _STD _Uninitialized_move(_Whereptr, _Mylast, _Newvec + _Whereoff + 1, _Al);
+            _STD _Uninitialized_move(
+                _Whereptr, _Mylast, _Newvec + static_cast<_Iter_diff_t<pointer>>(_Whereoff + 1), _Al);
         }
 
         _Guard._New_begin = nullptr;
@@ -2075,8 +2076,8 @@ private:
         }
 
         _Myfirst = _Newvec;
-        _Mylast  = _Newvec + _Newsize;
-        _Myend   = _Newvec + _Newcapacity;
+        _Mylast  = _Newvec + static_cast<_Iter_diff_t<pointer>>(_Newsize);
+        _Myend   = _Newvec + static_cast<_Iter_diff_t<pointer>>(_Newcapacity);
         _ASAN_VECTOR_CREATE;
     }
 
@@ -4050,6 +4051,79 @@ _CONSTEXPR20 _OutIt _Transform_vbool_aligned(
     return _Dest;
 }
 
+struct _All_of_vbool_traits {
+    static constexpr bool _Default_result = true;
+
+    static _CONSTEXPR20 bool _Check(const _Vbase _Value) {
+        return _Value != ~_Vbase{0};
+    }
+
+    static _CONSTEXPR20 bool _Check(const _Vbase _Value, const _Vbase _Mask) {
+        return (_Value & _Mask) != _Mask;
+    }
+};
+
+struct _Any_of_vbool_traits_base {
+    static _CONSTEXPR20 bool _Check(const _Vbase _Value) {
+        return _Value != 0;
+    }
+
+    static _CONSTEXPR20 bool _Check(const _Vbase _Value, const _Vbase _Mask) {
+        return (_Value & _Mask) != 0;
+    }
+};
+
+struct _Any_of_vbool_traits : _Any_of_vbool_traits_base {
+    static constexpr bool _Default_result = false;
+};
+
+struct _None_of_vbool_traits : _Any_of_vbool_traits_base {
+    static constexpr bool _Default_result = true;
+};
+
+template <class _Traits, class _VbIt, class _Mapped_fn>
+_NODISCARD _CONSTEXPR20 bool _Meow_of_vbool(const _VbIt _First, const _VbIt _Last, const _Mapped_fn _Mapped_func) {
+    constexpr bool _Early_result = !_Traits::_Default_result;
+    auto _First_ptr              = _First._Myptr;
+    const auto _Last_ptr         = _Last._Myptr;
+
+    if (_First_ptr == _Last_ptr) {
+        if (_First._Myoff == _Last._Myoff) { // empty, can't read the word
+            return _Traits::_Default_result;
+        }
+
+        const _Vbase _Mask = (_Vbase{1} << _Last._Myoff) - (_Vbase{1} << _First._Myoff); // handle partial single word
+        if (_Traits::_Check(_Mapped_func(*_First_ptr), _Mask)) {
+            return _Early_result;
+        }
+        return _Traits::_Default_result;
+    }
+
+    if (_First._Myoff != 0) { // if we have a partial first word, handle it
+        const _Vbase _Mask = static_cast<_Vbase>(-1) << _First._Myoff;
+        if (_Traits::_Check(_Mapped_func(*_First_ptr), _Mask)) {
+            return _Early_result;
+        }
+
+        ++_First_ptr;
+    }
+
+    for (; _First_ptr != _Last_ptr; ++_First_ptr) { // handle full words
+        if (_Traits::_Check(_Mapped_func(*_First_ptr))) {
+            return _Early_result;
+        }
+    }
+
+    if (_Last._Myoff != 0) { // if we have a partial last word, handle it
+        const _Vbase _Mask = (_Vbase{1} << _Last._Myoff) - 1;
+        if (_Traits::_Check(_Mapped_func(*_First_ptr), _Mask)) {
+            return _Early_result;
+        }
+    }
+
+    return _Traits::_Default_result;
+}
+
 #undef _ASAN_VECTOR_MODIFY
 #undef _ASAN_VECTOR_REMOVE
 #undef _ASAN_VECTOR_CREATE
@@ -4057,6 +4131,53 @@ _CONSTEXPR20 _OutIt _Transform_vbool_aligned(
 #undef _ASAN_VECTOR_EXTEND_GUARD
 #undef _ASAN_VECTOR_RELEASE_GUARD
 #undef _INSERT_VECTOR_ANNOTATION
+
+#if _HAS_CXX23
+// This <flat_map> and <flat_set> machinery is here because <vector> is the leaf-most header included by both of them.
+
+_EXPORT_STD struct sorted_unique_t {
+    explicit sorted_unique_t() = default;
+};
+_EXPORT_STD inline constexpr sorted_unique_t sorted_unique{};
+
+_EXPORT_STD struct sorted_equivalent_t {
+    explicit sorted_equivalent_t() = default;
+};
+_EXPORT_STD inline constexpr sorted_equivalent_t sorted_equivalent{};
+
+template <class>
+constexpr bool _Is_vector_bool = false;
+template <class _Alloc>
+constexpr bool _Is_vector_bool<vector<bool, _Alloc>> = true;
+
+template <class _Ty, class _Alloc>
+constexpr bool _Has_guaranteed_push_back<vector<_Ty, _Alloc>> = !is_same_v<_Ty, bool>;
+
+template <class _Ty, class _Alloc>
+constexpr bool _Has_guaranteed_append_range<vector<_Ty, _Alloc>> = !is_same_v<_Ty, bool>;
+
+template <class _Alloc, class... _Containers>
+concept _Usable_allocator_for = (uses_allocator_v<_Containers, _Alloc> && ...);
+
+template <class _Compare, class _KeyContainer>
+concept _Valid_compare_for_container = _Not_allocator_for_container<_Compare>
+                                    && is_invocable_v<const _Compare&, const typename _KeyContainer::value_type&,
+                                        const typename _KeyContainer::value_type&>;
+#endif // ^^^ _HAS_CXX23 ^^^
+
+template <class _Ty>
+struct _NODISCARD _Clear_guard {
+    _Ty* _Target;
+
+    _Clear_guard& operator=(const _Clear_guard&) = delete;
+    _Clear_guard& operator=(_Clear_guard&&)      = delete;
+
+    ~_Clear_guard() {
+        if (_Target) {
+            _Target->clear();
+        }
+    }
+};
 _STD_END
 
 #pragma pop_macro("new")
