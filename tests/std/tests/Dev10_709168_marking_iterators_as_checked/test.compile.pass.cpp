@@ -5,6 +5,8 @@
 #include <cstddef>
 #include <deque>
 #include <filesystem>
+#include <flat_map>
+#include <flat_set>
 #include <forward_list>
 #include <iterator>
 #include <list>
@@ -109,6 +111,14 @@ STATIC_ASSERT(stl_checked == _Range_verifiable_v<span<int>::iterator>);
 STATIC_ASSERT(stl_checked == _Range_verifiable_v<span<int>::reverse_iterator>);
 #endif // _HAS_CXX20
 
+#if _HAS_CXX23
+// Checks for flat_set should trivially pass since it directly uses the underlying container's iterator
+STATIC_ASSERT(stl_checked == _Range_verifiable_v<flat_set<int>::iterator>);
+STATIC_ASSERT(stl_checked == _Range_verifiable_v<flat_set<int>::reverse_iterator>);
+STATIC_ASSERT(stl_checked == _Range_verifiable_v<flat_map<int, int>::iterator>);
+STATIC_ASSERT(stl_checked == _Range_verifiable_v<flat_map<int, int>::reverse_iterator>);
+#endif // _HAS_CXX23
+
 STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<string::iterator>>);
 STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<string::const_iterator>>);
 STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<string::reverse_iterator>>);
@@ -180,6 +190,13 @@ STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<std::filesystem::path::const_it
 STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<span<int>::iterator>>);
 STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<span<int>::reverse_iterator>>);
 #endif // _HAS_CXX20
+
+#if _HAS_CXX23
+STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<flat_set<int>::iterator>>);
+STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<flat_set<int>::reverse_iterator>>);
+STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<flat_map<int, int>::iterator>>);
+STATIC_ASSERT(!_Range_verifiable_v<::DerivedFrom<flat_map<int, int>::reverse_iterator>>);
+#endif // _HAS_CXX23
 
 template <class I, bool Expected>
 constexpr bool test_unwrappable() {
@@ -394,6 +411,13 @@ STATIC_ASSERT(test_unwrappable_for_unverified<span<int>::iterator, !stl_checked>
 STATIC_ASSERT(test_unwrappable_for_unverified<span<int>::reverse_iterator, !stl_checked>());
 #endif // _HAS_CXX20
 
+#if _HAS_CXX23
+STATIC_ASSERT(test_unwrappable_for_unverified<flat_set<int>::iterator, !stl_checked>());
+STATIC_ASSERT(test_unwrappable_for_unverified<flat_set<int>::reverse_iterator, !stl_checked>());
+STATIC_ASSERT(test_unwrappable_for_unverified<flat_map<int, int>::iterator, !stl_checked>());
+STATIC_ASSERT(test_unwrappable_for_unverified<flat_map<int, int>::reverse_iterator, !stl_checked>());
+#endif // _HAS_CXX23
+
 STATIC_ASSERT(test_unwrappable<string::iterator, true>());
 STATIC_ASSERT(test_unwrappable<string::const_iterator, true>());
 STATIC_ASSERT(test_unwrappable<string::reverse_iterator, true>());
@@ -466,6 +490,13 @@ STATIC_ASSERT(test_unwrappable<std::filesystem::path::const_iterator, true>());
 STATIC_ASSERT(test_unwrappable<span<int>::iterator, true>());
 STATIC_ASSERT(test_unwrappable<span<int>::reverse_iterator, true>());
 #endif // _HAS_CXX20
+
+#if _HAS_CXX23
+STATIC_ASSERT(test_unwrappable<flat_set<int>::iterator, true>());
+STATIC_ASSERT(test_unwrappable<flat_set<int>::reverse_iterator, true>());
+STATIC_ASSERT(test_unwrappable<flat_map<int, int>::iterator, true>());
+STATIC_ASSERT(test_unwrappable<flat_map<int, int>::reverse_iterator, true>());
+#endif // _HAS_CXX23
 
 STATIC_ASSERT(test_unwrappable_for_offset<string::iterator, true>());
 STATIC_ASSERT(test_unwrappable_for_offset<string::const_iterator, true>());
@@ -540,6 +571,13 @@ STATIC_ASSERT(test_unwrappable_for_offset<span<int>::iterator, true>());
 STATIC_ASSERT(test_unwrappable_for_offset<span<int>::reverse_iterator, true>());
 #endif // _HAS_CXX20
 
+#if _HAS_CXX23
+STATIC_ASSERT(test_unwrappable_for_offset<flat_set<int>::iterator, true>());
+STATIC_ASSERT(test_unwrappable_for_offset<flat_set<int>::reverse_iterator, true>());
+STATIC_ASSERT(test_unwrappable_for_offset<flat_map<int, int>::iterator, true>());
+STATIC_ASSERT(test_unwrappable_for_offset<flat_map<int, int>::reverse_iterator, true>());
+#endif // _HAS_CXX23
+
 STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<string::iterator>, false>());
 STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<string::const_iterator>, false>());
 STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<string::reverse_iterator>, false>());
@@ -611,6 +649,13 @@ STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<std::filesystem::pat
 STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<span<int>::iterator>, false>());
 STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<span<int>::reverse_iterator>, false>());
 #endif // _HAS_CXX20
+
+#if _HAS_CXX23
+STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<flat_set<int>::iterator>, false>());
+STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<flat_set<int>::reverse_iterator>, false>());
+STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<flat_map<int, int>::iterator>, false>());
+STATIC_ASSERT(test_unwrappable_for_unverified<::DerivedFrom<flat_map<int, int>::reverse_iterator>, false>());
+#endif // _HAS_CXX23
 
 STATIC_ASSERT(test_unwrappable<::DerivedFrom<string::iterator>, false>());
 STATIC_ASSERT(test_unwrappable<::DerivedFrom<string::const_iterator>, false>());
@@ -684,6 +729,13 @@ STATIC_ASSERT(test_unwrappable<::DerivedFrom<span<int>::iterator>, false>());
 STATIC_ASSERT(test_unwrappable<::DerivedFrom<span<int>::reverse_iterator>, false>());
 #endif // _HAS_CXX20
 
+#if _HAS_CXX23
+STATIC_ASSERT(test_unwrappable<::DerivedFrom<flat_set<int>::iterator>, false>());
+STATIC_ASSERT(test_unwrappable<::DerivedFrom<flat_set<int>::reverse_iterator>, false>());
+STATIC_ASSERT(test_unwrappable<::DerivedFrom<flat_map<int, int>::iterator>, false>());
+STATIC_ASSERT(test_unwrappable<::DerivedFrom<flat_map<int, int>::reverse_iterator>, false>());
+#endif // _HAS_CXX23
+
 STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<string::iterator>, false>());
 STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<string::const_iterator>, false>());
 STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<string::reverse_iterator>, false>());
@@ -755,3 +807,10 @@ STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<std::filesystem::path::c
 STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<span<int>::iterator>, false>());
 STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<span<int>::reverse_iterator>, false>());
 #endif // _HAS_CXX20
+
+#if _HAS_CXX23
+STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<flat_set<int>::iterator>, false>());
+STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<flat_set<int>::reverse_iterator>, false>());
+STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<flat_map<int, int>::iterator>, false>());
+STATIC_ASSERT(test_unwrappable_for_offset<::DerivedFrom<flat_map<int, int>::reverse_iterator>, false>());
+#endif // _HAS_CXX23

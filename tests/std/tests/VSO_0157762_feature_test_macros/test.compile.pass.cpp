@@ -349,6 +349,18 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #error __cpp_lib_filesystem is defined
 #endif
 
+#if _HAS_CXX23
+STATIC_ASSERT(__cpp_lib_flat_map == 202511L);
+#elif defined(__cpp_lib_flat_map)
+#error __cpp_lib_flat_map is defined
+#endif
+
+#if _HAS_CXX23
+STATIC_ASSERT(__cpp_lib_flat_set == 202511L);
+#elif defined(__cpp_lib_flat_set)
+#error __cpp_lib_flat_set is defined
+#endif
+
 #if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_format == 202304L);
 #elif defined(__cpp_lib_format)
@@ -490,6 +502,8 @@ STATIC_ASSERT(__cpp_lib_hypot == 201603L);
 #endif
 
 STATIC_ASSERT(__cpp_lib_incomplete_container_elements == 201505L);
+
+STATIC_ASSERT(__cpp_lib_initializer_list == 202511L);
 
 #if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_int_pow2 == 202002L);
@@ -1036,6 +1050,8 @@ STATIC_ASSERT(__cpp_lib_unwrap_ref == 201811L);
 #elif defined(__cpp_lib_unwrap_ref)
 #error __cpp_lib_unwrap_ref is defined
 #endif
+
+STATIC_ASSERT(__cpp_lib_valarray == 202511L);
 
 #if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_variant == 202106L);

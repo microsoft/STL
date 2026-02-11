@@ -547,7 +547,7 @@ public:
 
     static bool _Isinf(_Ty _Left) noexcept { // test for infinity
 #if defined(__LDBL_DIG__) && __LDBL_DIG__ == 18
-        return _CSTD _LDtest(&_Left) == _INFCODE;
+        return _CSTD _LDtest(&_Left) == FP_INFINITE;
 #else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
         const auto _Uint = _Bit_cast<uint64_t>(_Left);
         return (_Uint & 0x7fffffffffffffffU) == 0x7ff0000000000000U;
@@ -556,7 +556,7 @@ public:
 
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) noexcept {
 #if defined(__LDBL_DIG__) && __LDBL_DIG__ == 18
-        return _CSTD _LDtest(&_Left) == _NANCODE;
+        return _CSTD _LDtest(&_Left) == FP_NAN;
 #else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
         const auto _Uint = _Bit_cast<uint64_t>(_Left);
         return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;

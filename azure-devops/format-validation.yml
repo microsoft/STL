@@ -9,26 +9,41 @@ jobs:
   displayName: 'Validation'
   steps:
     - template: checkout-self.yml
-    - script: |
-        if exist "$(validationBuildOutputLocation)" (
-          rmdir /S /Q "$(validationBuildOutputLocation)"
-        )
-        call "$(vsDevCmdBat)" -host_arch=x64 -arch=x64 -no_logo
-        cmake -G Ninja -S $(Build.SourcesDirectory)/tools -B "$(validationBuildOutputLocation)"
-        cmake --build "$(validationBuildOutputLocation)"
+    - task: PowerShell@2
       displayName: 'Build Validation Tools'
+      inputs:
+        pwsh: true
+        targetType: inline
+        script: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          if (Test-Path -LiteralPath "$(validationBuildOutputLocation)") {
+              Remove-Item -LiteralPath "$(validationBuildOutputLocation)" -Recurse -Force
+          }
+          & "$(launchVsDevShell)" -HostArch x64 -Arch x64
+          cmake -G Ninja -S $(Build.SourcesDirectory)/tools -B "$(validationBuildOutputLocation)"
+          cmake --build "$(validationBuildOutputLocation)"
       timeoutInMinutes: 5
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-    - script: |
-        call "$(vsDevCmdBat)" -host_arch=x64 -arch=x64 -no_logo
-        cmake --build "$(validationBuildOutputLocation)" --target run-format
+    - task: PowerShell@2
       displayName: 'clang-format Files'
+      inputs:
+        pwsh: true
+        targetType: inline
+        script: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          & "$(launchVsDevShell)" -HostArch x64 -Arch x64
+          cmake --build "$(validationBuildOutputLocation)" --target run-format
       timeoutInMinutes: 5
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-    - script: |
-        call "$(vsDevCmdBat)" -host_arch=x64 -arch=x64 -no_logo
-        cmake --build "$(validationBuildOutputLocation)" --target run-validate
+    - task: PowerShell@2
       displayName: 'Validate Files'
+      inputs:
+        pwsh: true
+        targetType: inline
+        script: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          & "$(launchVsDevShell)" -HostArch x64 -Arch x64
+          cmake --build "$(validationBuildOutputLocation)" --target run-validate
       timeoutInMinutes: 2
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
     - task: PowerShell@2
@@ -37,6 +52,7 @@ jobs:
         pwsh: true
         targetType: inline
         script: |
+          $PSNativeCommandUseErrorActionPreference = $true
           $TempSubDir = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
           mkdir $TempSubDir -Force | Out-Null
           $DiffFile = Join-Path $TempSubDir 'format.diff'

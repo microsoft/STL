@@ -22,7 +22,24 @@ void bm_match_sequence_of_as(benchmark::State& state, const char* pattern, synta
     }
 }
 
-void common_args(auto bm) {
+void bm_match_sequence_of_9a1b(benchmark::State& state, const char* pattern, syntax_option_type syntax = ECMAScript) {
+    string input;
+    for (int i = 0; i < state.range(); ++i) {
+        input += "aaaaaaaaab";
+    }
+
+    regex re{pattern, syntax};
+
+    for (auto _ : state) {
+        benchmark::DoNotOptimize(input);
+        const char* pos = input.data();
+        const char* end = input.data() + input.size();
+        cmatch match;
+        regex_match(pos, end, match, re);
+    }
+}
+
+void common_args(benchmark::Benchmark* bm) {
     bm->Arg(100)->Arg(200)->Arg(400);
 }
 
@@ -36,5 +53,6 @@ BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(b|a)*", "(b|a)*")->Apply(common_arg
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)(?:b|a)*", "(a)(?:b|a)*")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)(b|a)*", "(a)(b|a)*")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_match_sequence_of_as, "(a)(?:b|a)*c", "(a)(?:b|a)*c")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_match_sequence_of_9a1b, "(?:a*b)*", "(?:a*b)*")->Apply(common_args);
 
 BENCHMARK_MAIN();
