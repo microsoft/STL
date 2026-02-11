@@ -1619,18 +1619,30 @@ namespace ranges {
 } // namespace ranges
 #endif // _HAS_CXX20
 
+struct _All_of_vbool_traits;
+struct _Any_of_vbool_traits;
+struct _None_of_vbool_traits;
+
+template <class _Traits, class _VbIt, class _Mapped_fn>
+_NODISCARD _CONSTEXPR20 bool _Meow_of_vbool(_VbIt _First, _VbIt _Last, _Mapped_fn _Mapped_func);
+
 _EXPORT_STD template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool all_of(_InIt _First, _InIt _Last, _Pr _Pred) { // test if all elements satisfy _Pred
     _STD _Adl_verify_range(_First, _Last);
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
-    for (; _UFirst != _ULast; ++_UFirst) {
-        if (!_Pred(*_UFirst)) {
-            return false;
-        }
-    }
 
-    return true;
+    if constexpr (_Is_vb_iterator<decltype(_UFirst)> && !is_void_v<_Map_vb_functor_t<_Pr>>) {
+        return _Meow_of_vbool<_All_of_vbool_traits>(_UFirst, _ULast, _Map_vb_functor_t<_Pr>{});
+    } else {
+        for (; _UFirst != _ULast; ++_UFirst) {
+            if (!_Pred(*_UFirst)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
 
 #if _HAS_CXX17
@@ -1686,13 +1698,18 @@ _NODISCARD _CONSTEXPR20 bool any_of(const _InIt _First, const _InIt _Last, _Pr _
     _STD _Adl_verify_range(_First, _Last);
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
-    for (; _UFirst != _ULast; ++_UFirst) {
-        if (_Pred(*_UFirst)) {
-            return true;
-        }
-    }
 
-    return false;
+    if constexpr (_Is_vb_iterator<decltype(_UFirst)> && !is_void_v<_Map_vb_functor_t<_Pr>>) {
+        return _Meow_of_vbool<_Any_of_vbool_traits>(_UFirst, _ULast, _Map_vb_functor_t<_Pr>{});
+    } else {
+        for (; _UFirst != _ULast; ++_UFirst) {
+            if (_Pred(*_UFirst)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 #if _HAS_CXX17
@@ -1748,13 +1765,17 @@ _NODISCARD _CONSTEXPR20 bool none_of(const _InIt _First, const _InIt _Last, _Pr 
     _STD _Adl_verify_range(_First, _Last);
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
-    for (; _UFirst != _ULast; ++_UFirst) {
-        if (_Pred(*_UFirst)) {
-            return false;
+    if constexpr (_Is_vb_iterator<decltype(_UFirst)> && !is_void_v<_Map_vb_functor_t<_Pr>>) {
+        return _Meow_of_vbool<_None_of_vbool_traits>(_UFirst, _ULast, _Map_vb_functor_t<_Pr>{});
+    } else {
+        for (; _UFirst != _ULast; ++_UFirst) {
+            if (_Pred(*_UFirst)) {
+                return false;
+            }
         }
-    }
 
-    return true;
+        return true;
+    }
 }
 
 #if _HAS_CXX17
@@ -4228,7 +4249,8 @@ _CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Des
     const auto _ULast = _STD _Get_unwrapped(_Last);
     auto _UDest       = _STD _Get_unwrapped_n(_Dest, _STD _Idl_distance<_InIt>(_UFirst, _ULast));
 
-    if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt, true> && !is_same_v<_Map_vb_functor_t<_Fn>, void>) {
+    if constexpr (_Is_vb_iterator<decltype(_UFirst)> && _Is_vb_iterator<decltype(_UDest), true>
+                  && !is_void_v<_Map_vb_functor_t<_Fn>>) {
         if (_UFirst._Myoff == 0 && _UDest._Myoff == 0) {
             _UDest = _Transform_vbool_aligned(_UFirst, _ULast, _UDest, _Map_vb_functor_t<_Fn>{});
             _STD _Seek_wrapped(_Dest, _UDest);
@@ -4260,8 +4282,8 @@ _CONSTEXPR20 _OutIt transform(
     auto _UFirst2      = _STD _Get_unwrapped_n(_First2, _Count);
     auto _UDest        = _STD _Get_unwrapped_n(_Dest, _Count);
 
-    if constexpr (_Is_vb_iterator<_InIt1> && _Is_vb_iterator<_InIt2> && _Is_vb_iterator<_OutIt, true>
-                  && !is_same_v<_Map_vb_functor_t<_Fn>, void>) {
+    if constexpr (_Is_vb_iterator<decltype(_UFirst1)> && _Is_vb_iterator<decltype(_UFirst2)>
+                  && _Is_vb_iterator<decltype(_UDest), true> && !is_void_v<_Map_vb_functor_t<_Fn>>) {
         if (_UFirst1._Myoff == 0 && _UFirst2._Myoff == 0 && _UDest._Myoff == 0) {
             _UDest = _Transform_vbool_aligned(_UFirst1, _ULast1, _UFirst2, _UDest, _Map_vb_functor_t<_Fn>{});
             _STD _Seek_wrapped(_Dest, _UDest);
@@ -8564,14 +8586,13 @@ void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred) {
 
     ++_ULast;
 
-    using _Diff         = _Iter_diff_t<_BidIt>;
-    const _Diff _Count1 = _STD distance(_UFirst, _UMid);
+    const auto _Count1 = _STD distance(_UFirst, _UMid);
     if (_Count1 == 1) { // rotate only element remaining in left partition to the end, without allocating
         _STD _Rotate_one_left(_UFirst, _UMid, _ULast);
         return;
     }
 
-    const _Diff _Count2 = _STD distance(_UMid, _ULast);
+    const auto _Count2 = _STD distance(_UMid, _ULast);
     _Optimistic_temporary_buffer2<_Iter_value_t<_BidIt>> _Temp_buf{(_STD min) (_Count1, _Count2)};
     _STD _Buffered_inplace_merge_unchecked_impl(
         _UFirst, _UMid, _ULast, _Count1, _Count2, _Temp_buf._Data, _Temp_buf._Capacity, _STD _Pass_fn(_Pred));

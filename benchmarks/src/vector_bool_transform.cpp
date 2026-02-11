@@ -42,12 +42,13 @@ void transform_two_inputs_aligned(benchmark::State& state) {
     }
 }
 
-void common_args(auto bm) {
+void common_args(benchmark::Benchmark* bm) {
     bm->RangeMultiplier(64)->Range(64, 64 << 10);
 }
 
 BENCHMARK(transform_two_inputs_aligned<logical_and<>>)->Apply(common_args);
 BENCHMARK(transform_two_inputs_aligned<logical_or<>>)->Apply(common_args);
+BENCHMARK(transform_two_inputs_aligned<less<>>)->Apply(common_args);
 BENCHMARK(transform_one_input_aligned<logical_not<>>)->Apply(common_args);
 
 BENCHMARK_MAIN();

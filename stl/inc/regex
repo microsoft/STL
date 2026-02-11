@@ -1269,18 +1269,18 @@ _INLINE_VAR constexpr unsigned int _Bmp_size  = (_Bmp_max + _Bmp_chrs - 1U) / _B
 _INLINE_VAR constexpr unsigned int _ARRAY_THRESHOLD = 4U;
 
 enum _Node_flags : int { // flags for nfa nodes with special properties
-    _Fl_none              = 0x000,
-    _Fl_negate            = 0x001,
-    _Fl_greedy            = 0x002,
-    _Fl_longest           = 0x008, // TRANSITION, ABI: 0x004 is unused; the parser previously marked some nodes with it
-    _Fl_class_negated_w   = 0x100,
-    _Fl_class_negated_s   = 0x200,
-    _Fl_class_negated_d   = 0x400,
-    _Fl_class_cl_all_bits = 0x800, // TRANSITION, ABI: GH-5242
-    _Fl_begin_needs_w     = 0x100,
-    _Fl_begin_needs_s     = 0x200,
-    _Fl_begin_needs_d     = 0x400,
-    _Fl_rep_branchless    = 0x800,
+    _Fl_none              = 0x0000,
+    _Fl_negate            = 0x0001,
+    _Fl_greedy            = 0x0002,
+    _Fl_longest           = 0x0008, // TRANSITION, ABI: 0x004 is unused; the parser previously marked some nodes with it
+    _Fl_class_negated_w   = 0x0100,
+    _Fl_class_negated_s   = 0x0200,
+    _Fl_class_negated_d   = 0x0400,
+    _Fl_class_cl_all_bits = 0x0800, // TRANSITION, ABI: GH-5242
+    _Fl_begin_needs_w     = 0x0100,
+    _Fl_begin_needs_s     = 0x0200,
+    _Fl_begin_needs_d     = 0x0400,
+    _Fl_rep_branchless    = 0x1000,
 };
 
 _BITMASK_OPS(_EMPTY_ARGUMENT, _Node_flags)
@@ -5511,6 +5511,14 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
             }
             break;
 
+        case _N_back:
+            if (_Outer_rep && !_Nonreentrant) {
+                // The content and thus length of a back-reference may change
+                // when a loop is reentered
+                _Outer_rep->_Flags &= ~_Fl_rep_branchless;
+            }
+            break;
+
         case _N_group:
         case _N_capture:
         case _N_none:
@@ -5523,7 +5531,6 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Calculate_loop_simplicity(
         case _N_end_group:
         case _N_end_assert:
         case _N_end_capture:
-        case _N_back:
         case _N_endif:
         case _N_begin:
         case _N_end:
