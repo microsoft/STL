@@ -803,7 +803,9 @@ _NODISCARD int _Codecvt_do_length(
 
 enum _Codecvt_mode { _Consume_header = 4, _Generate_header = 2 };
 
-extern "C++" template <>
+extern "C++" {
+
+template <>
 class _CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE _CXX20_DEPRECATE_CODECVT_FACETS
     codecvt<char16_t, char, mbstate_t> : public codecvt_base {
     // facet for converting between char16_t and UTF-8 byte sequences
@@ -1101,7 +1103,7 @@ private:
     _Codecvt_mode _Mode; // default: _Consume_header
 };
 
-extern "C++" template <>
+template <>
 class _CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE _CXX20_DEPRECATE_CODECVT_FACETS
     codecvt<char32_t, char, mbstate_t> : public codecvt_base {
     // facet for converting between char32_t and UTF-8 byte sequences
@@ -1355,7 +1357,7 @@ struct _NODISCARD _Codecvt_guard {
     }
 };
 
-extern "C++" template <>
+template <>
 class _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS codecvt<char16_t, char8_t, mbstate_t> : public codecvt_base {
     // facet for converting between UTF-16 and UTF-8 sequences
 public:
@@ -1636,7 +1638,7 @@ protected:
     }
 };
 
-extern "C++" template <>
+template <>
 class _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS codecvt<char32_t, char8_t, mbstate_t> : public codecvt_base {
     // facet for converting between UTF-32 and UTF-8 sequences
 public:
@@ -1879,7 +1881,7 @@ protected:
 };
 #endif // defined(__cpp_char8_t) && !defined(_M_CEE_PURE)
 
-extern "C++" template <>
+template <>
 class _CRTIMP2_PURE_IMPORT codecvt<wchar_t, char, mbstate_t> : public codecvt_base {
     // facet for converting between wchar_t and char (_Byte) sequences
 public:
@@ -2078,7 +2080,7 @@ private:
 };
 
 #if defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
-extern "C++" template <>
+template <>
 class _CRTIMP2_PURE_IMPORT codecvt<unsigned short, char, mbstate_t> : public codecvt_base {
     // facet for converting between unsigned short and char sequences
 public:
@@ -2278,6 +2280,8 @@ private:
     _Locinfo::_Cvtvec _Cvt; // locale info passed to _Mbrtowc, _Wcrtomb
 };
 #endif // defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
+
+} // extern "C++"
 
 _EXPORT_STD template <class _Elem, class _Byte, class _Statype>
 class codecvt_byname : public codecvt<_Elem, _Byte, _Statype> {
@@ -2637,7 +2641,9 @@ locale::id ctype<_Elem>::id;
 #pragma clang diagnostic pop
 #endif // defined(__clang__)
 
-extern "C++" template <>
+extern "C++" {
+
+template <>
 class _CRTIMP2_PURE_IMPORT ctype<char> : public ctype_base { // facet for classifying char elements, converting cases
 public:
     using _Elem     = char;
@@ -2827,7 +2833,7 @@ private:
     _Locinfo::_Ctypevec _Ctype; // information
 };
 
-extern "C++" template <>
+template <>
 class _CRTIMP2_PURE_IMPORT
     ctype<wchar_t> : public ctype_base { // facet for classifying wchar_t elements, converting cases
 public:
@@ -3028,7 +3034,7 @@ private:
 };
 
 #if defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
-extern "C++" template <>
+template <>
 class _CRTIMP2_PURE_IMPORT
     ctype<unsigned short> : public ctype_base { // facet for classifying unsigned short elements, converting cases
 public:
@@ -3234,6 +3240,8 @@ private:
     _Locinfo::_Cvtvec _Cvt; // conversion information
 };
 #endif // defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
+
+} // extern "C++"
 
 _EXPORT_STD template <class _Elem>
 class ctype_byname : public ctype<_Elem> { // ctype for named locale
