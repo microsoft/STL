@@ -9288,109 +9288,110 @@ namespace {
         template <class _Traits, class _Ty>
         bool _Includes_impl(
             const void* _First1, const void* const _Last1, const void* _First2, const void* const _Last2) noexcept {
+            if constexpr (!std::is_void_v<_Traits>) {
+                // Only skipping some parts of haystack that are less than current needle element is vectorized.
+                // Otherwise this is scalar algorithm.
 
-            // Only skipping some parts of haystack that are less than current needle element is vectorized.
-            // Otherwise this is scalar algorithm.
+                constexpr bool _Is_signed = std::is_signed_v<_Ty>;
+                [[maybe_unused]] typename _Traits::_Guard _Guard; // TRANSITION, DevCom-10331414
 
-            constexpr bool _Is_signed = std::is_signed_v<_Ty>;
-            [[maybe_unused]] typename _Traits::_Guard _Guard; // TRANSITION, DevCom-10331414
+                const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
+                const void* _Stop1         = _First1;
+                _Advance_bytes(_Stop1, _Size_bytes_1 & ~(_Traits::_Vec_size - 1));
 
-            const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
-            const void* _Stop1         = _First1;
-            _Advance_bytes(_Stop1, _Size_bytes_1 & ~(_Traits::_Vec_size - 1));
-
-            _Ty _Val2    = *reinterpret_cast<const _Ty*>(_First2);
-            auto _Start2 = _Traits::_Broadcast(_Val2);
-            if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
-                _Start2 = _Traits::_Sign_correction(_Start2);
-            }
-
-            do {
-                auto _Data1 = _Traits::_Load(_First1);
+                _Ty _Val2    = *reinterpret_cast<const _Ty*>(_First2);
+                auto _Start2 = _Traits::_Broadcast(_Val2);
                 if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
-                    _Data1 = _Traits::_Sign_correction(_Data1);
+                    _Start2 = _Traits::_Sign_correction(_Start2);
                 }
 
-                const void* _Next1 = _First1;
-                _Advance_bytes(_Next1, _Traits::_Vec_size);
-
-                const auto _Cmp_gt_wrap = [](const auto _First, const auto _Second) noexcept {
-                    if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
-                        return _Traits::_Cmp_gt(_First, _Second);
-                    } else {
-                        return _Traits::_Cmp_gt_u(_First, _Second);
-                    }
-                };
-
-                const auto _Greater_start_2 = _Traits::_Mask(_Cmp_gt_wrap(_Start2, _Data1));
-                // Testing _Highest_one_mask can be a bit more efficient than comparing against
-                // _All_ones_mask (will test sign, and can share comparison with != 0 below).
-                if ((_Greater_start_2 & _Traits::_Highest_one_mask) != 0) {
-                    // Needle first element is greater than each element of haystack vector.
-                    // Proceed to the next one, without updating the needle comparand.
-                    _First1 = _Next1;
-                } else {
-                    if (_Greater_start_2 != 0) {
-                        // Needle first element is greater than some first elements of haystack part.
-                        // Advance past these elements.
-                        // The input is nonzero because we handled that case with _Highest_one_mask branch above.
-                        const auto _Skip = _Traits::_Bsf(_Greater_start_2 ^ _Traits::_All_ones_mask);
-                        _Advance_bytes(_First1, _Skip);
-                    }
-
-                    // The rest is scalar loop that completes the remaining vector-sized haystack part.
-                    // Except that it updates current needle value to compare against.
-                    do {
-                        const _Ty _Val1 = *static_cast<const _Ty*>(_First1);
-
-                        if (_Val2 < _Val1) {
-                            return false;
-                        }
-
-                        if (_Val2 == _Val1) {
-                            _Advance_bytes(_First2, sizeof(_Ty));
-                            if (_First2 == _Last2) {
-                                return true;
-                            }
-
-                            _Val2 = *reinterpret_cast<const _Ty*>(_First2);
-                        }
-
-                        _Advance_bytes(_First1, sizeof(_Ty));
-                    } while (_First1 != _Next1);
-
-                    _Start2 = _Traits::_Broadcast(_Val2);
+                do {
+                    auto _Data1 = _Traits::_Load(_First1);
                     if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
-                        _Start2 = _Traits::_Sign_correction(_Start2);
-                    }
-                }
-            } while (_First1 != _Stop1);
-
-            if constexpr (_Traits::_Tail_mask != 0) {
-                const size_t _Tail_bytes_size_1 = _Size_bytes_1 & _Traits::_Tail_mask;
-                if (_Tail_bytes_size_1 != 0) {
-                    // Just try to advance past less one more time.
-                    // Don't need to repeat the scalar part here - falling to scalar loop anyway.
-                    const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_bytes_size_1);
-                    auto _Data1           = _Traits::_Load_mask(_First1, _Tail_mask);
-                    if constexpr (!_Is_signed) {
                         _Data1 = _Traits::_Sign_correction(_Data1);
                     }
 
-                    const auto _Cmp                 = _Traits::_Cmp_gt(_Start2, _Data1);
-                    const uint32_t _Greater_start_2 = _Traits::_Mask(_mm256_and_si256(_Cmp, _Tail_mask));
-                    if (_Greater_start_2 != 0) {
-                        // Needle first element is greater than some first elements of haystack part.
-                        // Advance past these elements.
-                        // The input is nonzero because tail mask will have zeros for remaining elements.
-                        const uint32_t _Skip = _Traits::_Bsf(_Greater_start_2 ^ _Traits::_All_ones_mask);
-                        _Advance_bytes(_First1, _Skip);
+                    const void* _Next1 = _First1;
+                    _Advance_bytes(_Next1, _Traits::_Vec_size);
+
+                    const auto _Cmp_gt_wrap = [](const auto _First, const auto _Second) noexcept {
+                        if constexpr (_Is_signed || !_Traits::_Has_unsigned_cmp) {
+                            return _Traits::_Cmp_gt(_First, _Second);
+                        } else {
+                            return _Traits::_Cmp_gt_u(_First, _Second);
+                        }
+                    };
+
+                    const auto _Greater_start_2 = _Traits::_Mask(_Cmp_gt_wrap(_Start2, _Data1));
+                    // Testing _Highest_one_mask can be a bit more efficient than comparing against
+                    // _All_ones_mask (will test sign, and can share comparison with != 0 below).
+                    if ((_Greater_start_2 & _Traits::_Highest_one_mask) != 0) {
+                        // Needle first element is greater than each element of haystack vector.
+                        // Proceed to the next one, without updating the needle comparand.
+                        _First1 = _Next1;
+                    } else {
+                        if (_Greater_start_2 != 0) {
+                            // Needle first element is greater than some first elements of haystack part.
+                            // Advance past these elements.
+                            // The input is nonzero because we handled that case with _Highest_one_mask branch above.
+                            const auto _Skip = _Traits::_Bsf(_Greater_start_2 ^ _Traits::_All_ones_mask);
+                            _Advance_bytes(_First1, _Skip);
+                        }
+
+                        // The rest is scalar loop that completes the remaining vector-sized haystack part.
+                        // Except that it updates current needle value to compare against.
+                        do {
+                            const _Ty _Val1 = *static_cast<const _Ty*>(_First1);
+
+                            if (_Val2 < _Val1) {
+                                return false;
+                            }
+
+                            if (_Val2 == _Val1) {
+                                _Advance_bytes(_First2, sizeof(_Ty));
+                                if (_First2 == _Last2) {
+                                    return true;
+                                }
+
+                                _Val2 = *reinterpret_cast<const _Ty*>(_First2);
+                            }
+
+                            _Advance_bytes(_First1, sizeof(_Ty));
+                        } while (_First1 != _Next1);
+
+                        _Start2 = _Traits::_Broadcast(_Val2);
+                        if constexpr (!_Is_signed && !_Traits::_Has_unsigned_cmp) {
+                            _Start2 = _Traits::_Sign_correction(_Start2);
+                        }
+                    }
+                } while (_First1 != _Stop1);
+
+                if constexpr (_Traits::_Tail_mask != 0) {
+                    const size_t _Tail_bytes_size_1 = _Size_bytes_1 & _Traits::_Tail_mask;
+                    if (_Tail_bytes_size_1 != 0) {
+                        // Just try to advance past less one more time.
+                        // Don't need to repeat the scalar part here - falling to scalar loop anyway.
+                        const auto _Tail_mask = _Avx2_tail_mask_32(_Tail_bytes_size_1);
+                        auto _Data1           = _Traits::_Load_mask(_First1, _Tail_mask);
+                        if constexpr (!_Is_signed) {
+                            _Data1 = _Traits::_Sign_correction(_Data1);
+                        }
+
+                        const auto _Cmp                 = _Traits::_Cmp_gt(_Start2, _Data1);
+                        const uint32_t _Greater_start_2 = _Traits::_Mask(_mm256_and_si256(_Cmp, _Tail_mask));
+                        if (_Greater_start_2 != 0) {
+                            // Needle first element is greater than some first elements of haystack part.
+                            // Advance past these elements.
+                            // The input is nonzero because tail mask will have zeros for remaining elements.
+                            const uint32_t _Skip = _Traits::_Bsf(_Greater_start_2 ^ _Traits::_All_ones_mask);
+                            _Advance_bytes(_First1, _Skip);
+                        }
                     }
                 }
-            }
 
-            if (_First1 == _Last1) {
-                return false;
+                if (_First1 == _Last1) {
+                    return false;
+                }
             }
 
             auto _Ptr1 = static_cast<const _Ty*>(_First1);
