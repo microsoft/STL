@@ -101,7 +101,7 @@ def _do_crosslist(ctx: _ParseCtx):
 
 
 def _parse_env_lst(env_lst: Path, ctx: _ParseCtx):
-    for line_number, line in _parse_commented_file(env_lst):
+    for _, line in _parse_commented_file(env_lst):
         if (m:=_INCLUDE_REGEX.match(line)) is not None:
             p = env_lst.parent / Path(m.group("filename"))
             _parse_env_lst(p, ctx)
