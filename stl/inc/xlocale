@@ -21,6 +21,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("empty_bases")
+#undef empty_bases
+
 _STD_BEGIN
 template <class _Dummy>
 class _Locbase {}; // TRANSITION, ABI, affects sizeof(locale)
@@ -803,7 +807,9 @@ _NODISCARD int _Codecvt_do_length(
 
 enum _Codecvt_mode { _Consume_header = 4, _Generate_header = 2 };
 
-extern "C++" template <>
+extern "C++" {
+
+template <>
 class _CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE _CXX20_DEPRECATE_CODECVT_FACETS
     codecvt<char16_t, char, mbstate_t> : public codecvt_base {
     // facet for converting between char16_t and UTF-8 byte sequences
@@ -1101,7 +1107,7 @@ private:
     _Codecvt_mode _Mode; // default: _Consume_header
 };
 
-extern "C++" template <>
+template <>
 class _CRTIMP2_PURE_IMPORT_UNLESS_CODECVT_ID_SATELLITE _CXX20_DEPRECATE_CODECVT_FACETS
     codecvt<char32_t, char, mbstate_t> : public codecvt_base {
     // facet for converting between char32_t and UTF-8 byte sequences
@@ -1355,7 +1361,7 @@ struct _NODISCARD _Codecvt_guard {
     }
 };
 
-extern "C++" template <>
+template <>
 class _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS codecvt<char16_t, char8_t, mbstate_t> : public codecvt_base {
     // facet for converting between UTF-16 and UTF-8 sequences
 public:
@@ -1636,7 +1642,7 @@ protected:
     }
 };
 
-extern "C++" template <>
+template <>
 class _CXX20_DEPRECATE_CODECVT_CHAR8_T_FACETS codecvt<char32_t, char8_t, mbstate_t> : public codecvt_base {
     // facet for converting between UTF-32 and UTF-8 sequences
 public:
@@ -1879,7 +1885,7 @@ protected:
 };
 #endif // defined(__cpp_char8_t) && !defined(_M_CEE_PURE)
 
-extern "C++" template <>
+template <>
 class _CRTIMP2_PURE_IMPORT codecvt<wchar_t, char, mbstate_t> : public codecvt_base {
     // facet for converting between wchar_t and char (_Byte) sequences
 public:
@@ -2078,7 +2084,7 @@ private:
 };
 
 #if defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
-extern "C++" template <>
+template <>
 class _CRTIMP2_PURE_IMPORT codecvt<unsigned short, char, mbstate_t> : public codecvt_base {
     // facet for converting between unsigned short and char sequences
 public:
@@ -2279,6 +2285,8 @@ private:
 };
 #endif // defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
 
+} // extern "C++"
+
 _EXPORT_STD template <class _Elem, class _Byte, class _Statype>
 class codecvt_byname : public codecvt<_Elem, _Byte, _Statype> {
 public:
@@ -2369,25 +2377,29 @@ _STL_RESTORE_DEPRECATED_WARNING
 #define _UP _UPPER // 'A'-'Z'
 #define _XD _HEX // '0'-'9', 'A'-'F', 'a'-'f'
 
-_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT ctype_base // base for ctype
-    : locale::facet // TRANSITION, ABI, shouldn't be derived from locale::facet
-{
-    enum { // constants for character classifications
-        alnum  = _DI | _LO | _UP | _XA,
-        alpha  = _LO | _UP | _XA,
-        cntrl  = _BB,
-        digit  = _DI,
-        graph  = _DI | _LO | _PU | _UP | _XA,
-        lower  = _LO,
-        print  = _DI | _LO | _PU | _SP | _UP | _XA | _XD,
-        punct  = _PU,
-        space  = _CN | _SP,
-        upper  = _UP,
-        xdigit = _XD,
-        blank  = _CN | _SP
-    };
+struct _Ctype_constants_base {
     using mask = short; // to match <ctype.h>
 
+    // constants for character classifications
+
+    static constexpr mask alnum  = _DI | _LO | _UP | _XA;
+    static constexpr mask alpha  = _LO | _UP | _XA;
+    static constexpr mask cntrl  = _BB;
+    static constexpr mask digit  = _DI;
+    static constexpr mask graph  = _DI | _LO | _PU | _UP | _XA;
+    static constexpr mask lower  = _LO;
+    static constexpr mask print  = _DI | _LO | _PU | _SP | _UP | _XA | _XD;
+    static constexpr mask punct  = _PU;
+    static constexpr mask space  = _CN | _SP;
+    static constexpr mask upper  = _UP;
+    static constexpr mask xdigit = _XD;
+    static constexpr mask blank  = _CN | _SP;
+};
+
+_EXPORT_STD extern "C++" struct _CRTIMP2_PURE_IMPORT __declspec(empty_bases) ctype_base // base for ctype
+    : locale::facet, // TRANSITION, ABI, shouldn't be derived from locale::facet
+      _Ctype_constants_base // TRANSITION, ABI, avoid affecting DLL interface
+{
     __CLR_OR_THIS_CALL ctype_base(size_t _Refs = 0) noexcept // strengthened
         : locale::facet(_Refs) {}
 
@@ -2637,7 +2649,9 @@ locale::id ctype<_Elem>::id;
 #pragma clang diagnostic pop
 #endif // defined(__clang__)
 
-extern "C++" template <>
+extern "C++" {
+
+template <>
 class _CRTIMP2_PURE_IMPORT ctype<char> : public ctype_base { // facet for classifying char elements, converting cases
 public:
     using _Elem     = char;
@@ -2827,7 +2841,7 @@ private:
     _Locinfo::_Ctypevec _Ctype; // information
 };
 
-extern "C++" template <>
+template <>
 class _CRTIMP2_PURE_IMPORT
     ctype<wchar_t> : public ctype_base { // facet for classifying wchar_t elements, converting cases
 public:
@@ -3028,7 +3042,7 @@ private:
 };
 
 #if defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
-extern "C++" template <>
+template <>
 class _CRTIMP2_PURE_IMPORT
     ctype<unsigned short> : public ctype_base { // facet for classifying unsigned short elements, converting cases
 public:
@@ -3235,6 +3249,8 @@ private:
 };
 #endif // defined(_NATIVE_WCHAR_T_DEFINED) && !_ENFORCE_FACET_SPECIALIZATIONS
 
+} // extern "C++"
+
 _EXPORT_STD template <class _Elem>
 class ctype_byname : public ctype<_Elem> { // ctype for named locale
 public:
@@ -3304,6 +3320,10 @@ template class _CRTIMP2_PURE_IMPORT codecvt<char, char, mbstate_t>;
 #endif // !defined(_CRTBLD) || defined(__FORCE_INSTANCE)
 #endif // defined(_DLL_CPPLIB)
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("empty_bases")
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)

@@ -138,7 +138,7 @@ public:
         _Init(nullptr, _Newfl);
     }
 
-    explicit basic_filebuf(FILE* const _File) : _Mysb() { // extension
+    explicit basic_filebuf(FILE* const _File) : _Mysb() { // extension, no ownership taking
         _Init(_File, _Newfl);
     }
 

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 4.1.1)
+cmake_minimum_required(VERSION 4.1.2)
 project(msvc_standard_libraries_benchmarks LANGUAGES CXX)
 
 if(DEFINED STL_BINARY_DIR)
@@ -111,6 +111,7 @@ add_benchmark(filesystem src/filesystem.cpp)
 add_benchmark(fill src/fill.cpp)
 add_benchmark(find_and_count src/find_and_count.cpp)
 add_benchmark(find_first_of src/find_first_of.cpp)
+add_benchmark(flat_meow_assign src/flat_meow_assign.cpp)
 add_benchmark(has_single_bit src/has_single_bit.cpp)
 add_benchmark(includes src/includes.cpp)
 add_benchmark(integer_to_string src/integer_to_string.cpp)
@@ -143,5 +144,6 @@ add_benchmark(unique src/unique.cpp)
 add_benchmark(vector_bool_copy src/vector_bool_copy.cpp)
 add_benchmark(vector_bool_copy_n src/vector_bool_copy_n.cpp)
 add_benchmark(vector_bool_count src/vector_bool_count.cpp)
+add_benchmark(vector_bool_meow_of src/vector_bool_meow_of.cpp)
 add_benchmark(vector_bool_move src/vector_bool_move.cpp)
 add_benchmark(vector_bool_transform src/vector_bool_transform.cpp)
