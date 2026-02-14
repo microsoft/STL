@@ -67,6 +67,20 @@ jobs:
       configureTesting: ${{ parameters.configureTesting }}
       buildStl: ${{ parameters.buildStl }}
       testsBuildOnly: ${{ parameters.testsBuildOnly }}
+  - template: build-benchmarks.yml
+    parameters:
+      hostArch: ${{ parameters.hostArch }}
+      targetArch: ${{ parameters.targetArch }}
+      targetPlatform: ${{ parameters.targetPlatform }}
+      buildBenchmarks: ${{ parameters.buildBenchmarks }}
+      compiler: cl
+  - template: build-benchmarks.yml
+    parameters:
+      hostArch: ${{ parameters.hostArch }}
+      targetArch: ${{ parameters.targetArch }}
+      targetPlatform: ${{ parameters.targetPlatform }}
+      buildBenchmarks: ${{ parameters.buildBenchmarks }}
+      compiler: clang-cl
   - template: run-tests.yml
     parameters:
       hostArch: ${{ parameters.hostArch }}
