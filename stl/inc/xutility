@@ -193,18 +193,18 @@ const void* __stdcall __std_find_end_8(
 const void* __stdcall __std_min_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_min_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_min_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
-#ifndef _M_ARM64
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
 const void* __stdcall __std_min_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 const void* __stdcall __std_min_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
 const void* __stdcall __std_min_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
 
 const void* __stdcall __std_max_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_max_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_max_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
-#ifndef _M_ARM64
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
 const void* __stdcall __std_max_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 const void* __stdcall __std_max_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
 const void* __stdcall __std_max_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
 #endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
@@ -425,11 +425,11 @@ _Ty* _Min_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 4) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_4(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 8) {
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         static_assert(false, "unexpected size; 64-bit integers on ARM64 should not take this codepath");
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_8(_First, _Last, _Signed)));
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
     } else {
         static_assert(false, "unexpected size");
     }
@@ -450,11 +450,11 @@ _Ty* _Max_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 4) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_4(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 8) {
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         static_assert(false, "unexpected size; 64-bit integers on ARM64 should not take this codepath");
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_8(_First, _Last, _Signed)));
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
     } else {
         static_assert(false, "unexpected size");
     }
