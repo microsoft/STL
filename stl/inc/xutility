@@ -64,9 +64,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #elif defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _VECTORIZED_FOR_X64_X86               0
 #define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
-#elif 
-#define _VECTORIZED_FOR_X64_X86               0
-#define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
 #elif defined(_M_X64) || defined(_M_IX86)
 #define _VECTORIZED_FOR_X64_X86               1
 #define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
