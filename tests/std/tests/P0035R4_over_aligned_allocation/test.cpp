@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef __cpp_aligned_new
-int main() {}
-#else // ^^^ !defined(__cpp_aligned_new) / defined(__cpp_aligned_new) vvv
+#if !defined(__cpp_aligned_new)
+#error overaligned allocation does not work with /Zc:alignedNew-
+#endif 
+
 #define _ENABLE_EXTENDED_ALIGNED_STORAGE
 #define _HAS_DEPRECATED_TEMPORARY_BUFFER 1
 #define _SILENCE_CXX17_TEMPORARY_BUFFER_DEPRECATION_WARNING
@@ -89,4 +90,3 @@ int main() {
     // for every x in [0, max_align_log)...
     test_alignments(std::make_index_sequence<max_align_log>{});
 }
-#endif // ^^^ defined(__cpp_aligned_new) ^^^
