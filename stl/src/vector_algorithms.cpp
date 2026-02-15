@@ -274,13 +274,16 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     }
 }
 
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
+
+#ifndef _M_ARM64
 // TRANSITION, ABI: __std_swap_ranges_trivially_swappable() is preserved for binary compatibility (x64/x86/ARM64EC)
 void* __cdecl __std_swap_ranges_trivially_swappable(
     void* const _First1, void* const _Last1, void* const _First2) noexcept {
     __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
     return static_cast<char*>(_First2) + (static_cast<char*>(_Last1) - static_cast<char*>(_First1));
 }
-#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
 } // extern "C"
 
@@ -4857,7 +4860,9 @@ namespace {
 
             return _Last;
         }
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
+#ifndef _M_ARM64
         template <class _Traits, class _Ty>
         const void* __stdcall _Search_n_impl(
             const void* _First, const void* const _Last, const size_t _Count, const _Ty _Val) noexcept {
@@ -4868,7 +4873,7 @@ namespace {
             }
 
             auto _Mid1 = static_cast<const _Ty*>(_First);
-
+#ifndef _M_ARM64EC
             const size_t _Length = _Byte_length(_First, _Last);
             if (_Count <= 16 / sizeof(_Ty) && _Length >= 32 && _Use_avx2()) {
                 _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
@@ -5029,6 +5034,7 @@ namespace {
                     _Rewind_bytes(_First, 15 - static_cast<ptrdiff_t>(_Carry_pos));
                 }
             }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
             auto _Match_start    = static_cast<const _Ty*>(_First);
             const auto _Last_ptr = static_cast<const _Ty*>(_Last);
 
@@ -5063,7 +5069,8 @@ namespace {
                 }
             }
         }
-#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) ^^^
+
         template <class _Traits, _Predicate _Pred, class _Ty>
         size_t __stdcall _Find_last_pos_impl(
             const void* const _First, const void* const _Last, const _Ty _Val) noexcept {
@@ -5212,7 +5219,7 @@ const void* __stdcall __std_adjacent_find_8(const void* const _First, const void
     return _Finding::_Adjacent_find_impl<_Finding::_Find_traits_8, uint64_t>(_First, _Last);
 }
 
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
+#ifndef _M_ARM64
 const void* __stdcall __std_search_n_1(
     const void* const _First, const void* const _Last, const size_t _Count, const uint8_t _Value) noexcept {
     return _Finding::_Search_n_impl<_Finding::_Find_traits_1>(_First, _Last, _Count, _Value);
@@ -5232,7 +5239,7 @@ const void* __stdcall __std_search_n_8(
     const void* const _First, const void* const _Last, const size_t _Count, const uint64_t _Value) noexcept {
     return _Finding::_Search_n_impl<_Finding::_Find_traits_8>(_First, _Last, _Count, _Value);
 }
-#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
 } // extern "C"
 
