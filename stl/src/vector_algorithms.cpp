@@ -4697,7 +4697,8 @@ namespace {
         template <class _Traits, _Predicate _Pred, class _Ty>
         const void* __stdcall _Find_last_impl(const void* const _First, const void* _Last, const _Ty _Val) noexcept {
             const void* const _Real_last = _Last;
-            const size_t _Size_bytes     = _Byte_length(_First, _Last);
+
+            const size_t _Size_bytes = _Byte_length(_First, _Last);
 
             if (const size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
                 _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
