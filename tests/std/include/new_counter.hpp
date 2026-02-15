@@ -33,6 +33,7 @@ void* operator new(size_t size) {
     return p;
 }
 
+#ifdef __cpp_aligned_new
 void* operator new(size_t, std::align_val_t) {
     abort();
 }
@@ -117,5 +118,6 @@ void operator delete[](void* ptr, const std::nothrow_t&) noexcept {
 void operator delete[](void*, std::align_val_t, const std::nothrow_t&) noexcept {
     abort();
 }
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
 
 #pragma warning(pop)

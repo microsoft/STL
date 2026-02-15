@@ -306,11 +306,11 @@ void dynamic_allocator_test() {
     test_one<gen_traits<int>, int, int&&, int&&>(
         g(allocator_arg, StatefulAlloc<float>{1729}, 1024), views::iota(0, 1024));
 #endif // ^^^ no workaround ^^^
-#ifdef __cpp_aligned_new
+// #ifdef __cpp_aligned_new
     pmr::synchronized_pool_resource pool;
     test_one<gen_traits<int>, int, int&&, int&&>(
         g(allocator_arg, pmr::polymorphic_allocator<>{&pool}, 1024), views::iota(0, 1024));
-#endif // ^^^ defined(__cpp_aligned_new) ^^^
+// #endif // ^^^ defined(__cpp_aligned_new) ^^^
 }
 
 static atomic<bool> allow_allocation{true};
