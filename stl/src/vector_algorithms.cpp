@@ -1722,12 +1722,12 @@ namespace {
             static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7FFF'FFFFUL);
             static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x8000'0000UL);
 
-#ifndef _WIN64
-            static constexpr bool _Has_portion_max = false;
-#else // ^^^ 32-bit / 64-bit vvv
+#ifdef _WIN64
             static constexpr bool _Has_portion_max = true;
             static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
-#endif // ^^^ 64-bit ^^^
+#else // ^^^ 64-bit / 32-bit vvv
+            static constexpr bool _Has_portion_max = false;
+#endif // ^^^ 32-bit ^^^
         };
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
@@ -2322,12 +2322,12 @@ namespace {
             using _Minmax_i_t = _Min_max_f;
             using _Minmax_u_t = void;
 
-#ifndef _WIN64
-            static constexpr bool _Has_portion_max = false;
-#else // ^^^ 32-bit / 64-bit vvv
+#ifdef _WIN64
             static constexpr bool _Has_portion_max = true;
             static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
-#endif // ^^^ 64-bit ^^^
+#else // ^^^ 64-bit / 32-bit vvv
+            static constexpr bool _Has_portion_max = false;
+#endif // ^^^ 32-bit ^^^
         };
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
