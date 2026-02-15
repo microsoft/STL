@@ -977,17 +977,9 @@ namespace {
             _Mode_both = _Mode_min | _Mode_max,
         };
 
-        enum _Vectorized_mask {
-            _None            = 0,
-            _Minmax_element  = 1 << 0,
-            _Minmax          = 1 << 1,
-            _Is_sorted_until = 1 << 2,
-            _All             = _Minmax_element | _Minmax | _Is_sorted_until,
-        };
-
         template <class _Base>
         struct _Traits_scalar : _Base {
-            static constexpr bool _Vectorized       = _Vectorized_mask::_None;
+            static constexpr bool _Vectorized       = false;
             static constexpr size_t _Tail_mask      = 0;
             static constexpr bool _Has_unsigned_cmp = false;
             using _Vec_t                            = void;
@@ -995,24 +987,24 @@ namespace {
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_neon_base {
-            using _Guard                                  = char;
-            static constexpr _Vectorized_mask _Vectorized = _Vectorized_mask::_All;
-            static constexpr size_t _Vec_size             = 16;
-            static constexpr size_t _Vec_mask             = 0xF;
-            static constexpr size_t _Tail_mask            = 0;
-            static constexpr bool _Has_unsigned_cmp       = true;
+            using _Guard                            = char;
+            static constexpr bool _Vectorized       = true;
+            static constexpr size_t _Vec_size       = 16;
+            static constexpr size_t _Vec_mask       = 0xF;
+            static constexpr size_t _Tail_mask      = 0;
+            static constexpr bool _Has_unsigned_cmp = true;
 
             static void _Exit_vectorized() noexcept {}
         };
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Traits_sse_base {
-            using _Guard                                  = char;
-            static constexpr _Vectorized_mask _Vectorized = _Vectorized_mask::_All;
-            static constexpr size_t _Vec_size             = 16;
-            static constexpr size_t _Vec_mask             = 0xF;
-            static constexpr size_t _Tail_mask            = 0;
-            static constexpr bool _Has_unsigned_cmp       = false;
-            using _Vec_t                                  = __m128i;
+            using _Guard                            = char;
+            static constexpr bool _Vectorized       = true;
+            static constexpr size_t _Vec_size       = 16;
+            static constexpr size_t _Vec_mask       = 0xF;
+            static constexpr size_t _Tail_mask      = 0;
+            static constexpr bool _Has_unsigned_cmp = false;
+            using _Vec_t                            = __m128i;
 
             static __m128i _Zero() noexcept {
                 return _mm_setzero_si128();
@@ -1048,11 +1040,11 @@ namespace {
         };
 
         struct _Traits_avx_base {
-            using _Guard                                  = _Zeroupper_on_exit;
-            static constexpr _Vectorized_mask _Vectorized = _Vectorized_mask::_All;
-            static constexpr size_t _Vec_size             = 32;
-            static constexpr size_t _Vec_mask             = 0x1F;
-            static constexpr bool _Has_unsigned_cmp       = false;
+            using _Guard                            = _Zeroupper_on_exit;
+            static constexpr bool _Vectorized       = true;
+            static constexpr size_t _Vec_size       = 32;
+            static constexpr size_t _Vec_mask       = 0x1F;
+            static constexpr bool _Has_unsigned_cmp = false;
 
             static __m256i _Zero() noexcept {
                 return _mm256_setzero_si256();
@@ -2040,9 +2032,6 @@ namespace {
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_8_neon : _Traits_8_base, _Traits_neon_base {
-            static constexpr _Vectorized_mask _Vectorized =
-                static_cast<_Vectorized_mask>(_Vectorized_mask::_All & ~_Vectorized_mask::_Minmax_element);
-
             using _Vec_t = int64x2_t;
 
             static _Vec_t _Sign_correction(const _Vec_t _Val, bool) noexcept {
@@ -2977,7 +2966,7 @@ namespace {
             auto _Cur_min_val       = _Traits::_Init_min_val;
             auto _Cur_max_val       = _Traits::_Init_max_val;
 
-            if constexpr ((_Traits::_Vectorized & _Vectorized_mask::_Minmax_element) != 0) {
+            if constexpr (_Traits::_Vectorized) {
                 auto _Base                = static_cast<const char*>(_First);
                 size_t _Portion_byte_size = _Byte_length(_First, _Last) & ~_Traits::_Vec_mask;
 
@@ -3296,11 +3285,13 @@ namespace {
         auto __stdcall _Minmax_element_disp(
             const void* const _First, const void* const _Last, const bool _Sign) noexcept {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-            if (_Byte_length(_First, _Last) >= 16) {
-                if (_Sign) {
-                    return _Minmax_element_impl<_Mode, typename _Traits::_Neon, true>(_First, _Last);
-                } else {
-                    return _Minmax_element_impl<_Mode, typename _Traits::_Neon, false>(_First, _Last);
+            if constexpr (!std::is_same_v<typename _Traits::_Neon, _Traits_8_neon>) {
+                if (_Byte_length(_First, _Last) >= 16) {
+                    if (_Sign) {
+                        return _Minmax_element_impl<_Mode, typename _Traits::_Neon, true>(_First, _Last);
+                    } else {
+                        return _Minmax_element_impl<_Mode, typename _Traits::_Neon, false>(_First, _Last);
+                    }
                 }
             }
 
@@ -3329,7 +3320,7 @@ namespace {
             _Ty _Cur_min_val; // initialized in both of the branches below
             _Ty _Cur_max_val; // initialized in both of the branches below
 
-            if constexpr ((_Traits::_Vectorized & _Vectorized_mask::_Minmax) != 0) {
+            if constexpr (_Traits::_Vectorized) {
                 constexpr size_t _Lanes          = _Unrolled ? 2 : 1;
                 constexpr size_t _Bytes_per_iter = _Lanes * _Traits::_Vec_size;
 
@@ -3574,7 +3565,7 @@ namespace {
             const ptrdiff_t _Left_off  = 0 - static_cast<ptrdiff_t>(_Greater);
             const ptrdiff_t _Right_off = static_cast<ptrdiff_t>(_Greater) - 1;
 
-            if constexpr ((_Traits::_Vectorized & _Vectorized_mask::_Is_sorted_until) != 0) {
+            if constexpr (_Traits::_Vectorized) {
                 const size_t _Total_size_bytes = _Byte_length(_First, _Last);
 
                 const auto _Cmp_gt_wrap = [](const auto _Right, const auto _Left) noexcept {
