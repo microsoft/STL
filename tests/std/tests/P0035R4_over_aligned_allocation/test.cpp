@@ -3,7 +3,7 @@
 
 #if !defined(__cpp_aligned_new)
 #error overaligned allocation does not work with /Zc:alignedNew-
-#endif 
+#endif
 
 #define _ENABLE_EXTENDED_ALIGNED_STORAGE
 #define _HAS_DEPRECATED_TEMPORARY_BUFFER 1
