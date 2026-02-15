@@ -37,6 +37,7 @@ void* operator new(size_t size) {
 void* operator new(size_t, std::align_val_t) {
     abort();
 }
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
 
 void* operator new(size_t size, const std::nothrow_t&) noexcept {
     if (std_testing::g_total_news == std_testing::g_maximum_news) {
@@ -51,9 +52,11 @@ void* operator new(size_t size, const std::nothrow_t&) noexcept {
     return malloc(size);
 }
 
+#ifdef __cpp_aligned_new
 void* operator new(size_t, std::align_val_t, const std::nothrow_t&) noexcept {
     abort();
 }
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
 
 void operator delete(void* ptr) noexcept {
     ::operator delete(ptr, std::nothrow);
@@ -63,9 +66,11 @@ void operator delete(void* ptr, size_t) noexcept {
     ::operator delete(ptr, std::nothrow);
 }
 
+#ifdef __cpp_aligned_new
 void operator delete(void*, std::align_val_t) noexcept {
     abort();
 }
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
 
 void operator delete(void* ptr, const std::nothrow_t&) noexcept {
     if (ptr) {
@@ -75,25 +80,31 @@ void operator delete(void* ptr, const std::nothrow_t&) noexcept {
     }
 }
 
+#ifdef __cpp_aligned_new
 void operator delete(void*, std::align_val_t, const std::nothrow_t&) noexcept {
     abort();
 }
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
 
 void* operator new[](size_t size) {
     return ::operator new(size);
 }
 
+#ifdef __cpp_aligned_new
 void* operator new[](size_t, std::align_val_t) {
     abort();
 }
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
 
 void* operator new[](size_t size, const std::nothrow_t&) noexcept {
     return ::operator new(size, std::nothrow);
 }
 
+#ifdef __cpp_aligned_new
 void* operator new[](size_t, std::align_val_t, const std::nothrow_t&) noexcept {
     abort();
 }
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
 
 void operator delete[](void* ptr) noexcept {
     ::operator delete(ptr);
@@ -103,6 +114,7 @@ void operator delete[](void* ptr, size_t size) noexcept {
     ::operator delete(ptr, size);
 }
 
+#ifdef __cpp_aligned_new
 void operator delete[](void*, std::align_val_t) noexcept {
     abort();
 }
@@ -110,11 +122,13 @@ void operator delete[](void*, std::align_val_t) noexcept {
 void operator delete[](void*, size_t, std::align_val_t) noexcept {
     abort();
 }
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
 
 void operator delete[](void* ptr, const std::nothrow_t&) noexcept {
     ::operator delete(ptr, std::nothrow);
 }
 
+#ifdef __cpp_aligned_new
 void operator delete[](void*, std::align_val_t, const std::nothrow_t&) noexcept {
     abort();
 }
