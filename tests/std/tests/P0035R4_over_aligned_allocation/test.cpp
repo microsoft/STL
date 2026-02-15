@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #ifndef __cpp_aligned_new
-int main() {{
+int main() {}
 #else // ^^^ !defined(__cpp_aligned_new) / defined(__cpp_aligned_new) vvv
 #define _ENABLE_EXTENDED_ALIGNED_STORAGE
 #define _HAS_DEPRECATED_TEMPORARY_BUFFER 1
