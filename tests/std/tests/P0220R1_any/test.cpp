@@ -26,6 +26,9 @@
 // Yes, this is an awkward hand process; notably the required headers can change without notice. We should investigate
 // running the libc++ tests directly in all of our configurations so we needn't replicate this subset of files.
 
+#ifndef __cpp_aligned_new
+int main() {}
+#else // ^^^ !defined(__cpp_aligned_new) / defined(__cpp_aligned_new) vvv
 #define _LIBCXX_IN_DEVCRT
 #include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers
 #include <stdlib.h>
@@ -3208,3 +3211,4 @@ int main() {
     msvc::gh_140_robust_against_adl::run_test();
 #endif // _M_CEE
 }
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
