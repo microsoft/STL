@@ -426,7 +426,7 @@ _Ty* _Min_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_4(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 8) {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-        static_assert(false, "unexpected size; 64-bit integers on ARM64 should not take this codepath");
+        static_assert(false, "unexpected size; 64-bit integers on ARM64/ARM64EC should not take this codepath");
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_8(_First, _Last, _Signed)));
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
@@ -451,7 +451,7 @@ _Ty* _Max_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_4(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 8) {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-        static_assert(false, "unexpected size; 64-bit integers on ARM64 should not take this codepath");
+        static_assert(false, "unexpected size; 64-bit integers on ARM64/ARM64EC should not take this codepath");
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_8(_First, _Last, _Signed)));
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
@@ -7305,19 +7305,19 @@ constexpr bool _Is_predicate_greater = _Is_any_of_v<_Pr,
     greater<>, greater<_Iter_value_t<_Iter>>>;
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-// We choose not to vectorize minmax_element for 64-bit integers on ARM64
+// We choose not to vectorize minmax_element for 64-bit integers on ARM64/ARM64EC
 // as this does not improve performance over the scalar code.
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_64bit_int_on_arm64 = sizeof(_Ty) == 8 && !is_floating_point_v<_Ty>;
+_INLINE_VAR constexpr bool _Is_64bit_int_on_arm64_arm64ec = sizeof(_Ty) == 8 && !is_floating_point_v<_Ty>;
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_64bit_int_on_arm64 = false;
+_INLINE_VAR constexpr bool _Is_64bit_int_on_arm64_arm64ec = false;
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
 template <class _Iter, class _Pr>
 constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms for min_/max_element?
     _Is_min_max_iterators_safe<_Iter> && _Is_predicate_less<_Iter, _Pr>
-    && !_Is_64bit_int_on_arm64<_Iter_value_t<_Iter>>;
+    && !_Is_64bit_int_on_arm64_arm64ec<_Iter_value_t<_Iter>>;
 
 // Unlike the position-based vectorized implementation, the value-based vectorized implementation
 // does not always produce the expected results for floating-point types.
