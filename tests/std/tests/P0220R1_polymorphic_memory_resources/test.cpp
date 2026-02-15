@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#ifndef __cpp_aligned_new
+int main() {}
+#else // ^^^ !defined(__cpp_aligned_new) / defined(__cpp_aligned_new) vvv
 #define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
 
 #include <algorithm>
@@ -1642,3 +1645,4 @@ int main() {
 
     test_gh3408();
 }
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
