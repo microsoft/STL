@@ -714,7 +714,7 @@ struct _Variant_assign_visitor { // visitor that implements assignment for varia
                         _Self._Reset();
                         _STD _Construct_in_place(_Self._Storage(), integral_constant<size_t, _Idx>{}, _Source._Val);
                     } else { // copy throws and move does not; move from a temporary copy
-                        auto _Temp = _Source._Val;
+                        auto _Temp(_Source._Val);
                         _Self._Reset();
                         _STD _Construct_in_place(_Self._Storage(), integral_constant<size_t, _Idx>{}, _STD move(_Temp));
                     }
