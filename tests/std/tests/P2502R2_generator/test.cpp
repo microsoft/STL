@@ -310,7 +310,7 @@ void dynamic_allocator_test() {
     pmr::synchronized_pool_resource pool;
     test_one<gen_traits<int>, int, int&&, int&&>(
         g(allocator_arg, pmr::polymorphic_allocator<>{&pool}, 1024), views::iota(0, 1024));
-#endif // defined(__cpp_aligned_new)
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
 }
 
 static atomic<bool> allow_allocation{true};
@@ -349,7 +349,7 @@ void operator delete(void* const p, align_val_t) noexcept {
 void operator delete(void* const p, size_t, align_val_t) noexcept {
     ::_aligned_free(p);
 }
-#endif // ^^^ !defined(__cpp_aligned_new) ^^^
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
 
 class malloc_resource final : public pmr::memory_resource {
 private:

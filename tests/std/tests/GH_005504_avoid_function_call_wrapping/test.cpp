@@ -48,7 +48,7 @@ void operator delete(void* const mem, align_val_t) noexcept {
     ++dealloc_count;
     _aligned_free(mem);
 }
-#endif // ^^^ !defined(__cpp_aligned_new) ^^^
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
 
 struct alloc_checker {
     explicit alloc_checker(const int expected_delta_) : expected_delta(expected_delta_) {}
@@ -94,7 +94,7 @@ struct alignas(128) large_callable {
     int operator()(const copy_counter& counter) const noexcept {
 #ifdef __cpp_aligned_new
         assert((reinterpret_cast<uintptr_t>(this) & 0x7f) == 0);
-#endif // ^^^ !defined(__cpp_aligned_new) ^^^
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
         assert(context == 1729);
         return counter.count;
     }
