@@ -288,7 +288,9 @@ void test_allocate_shared_for_overwrite() {
 
     allocator<HighlyAligned> a2{};
     auto p2 = allocate_shared_for_overwrite_assert<HighlyAligned>(a2);
+#ifdef __cpp_aligned_new
     assert(reinterpret_cast<uintptr_t>(p2.get()) % alignof(HighlyAligned) == 0);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
     assert_uninitialized(addressof(*p2), sizeof(HighlyAligned));
 
     auto p3 = allocate_shared_for_overwrite_assert<int[100]>(a0);
