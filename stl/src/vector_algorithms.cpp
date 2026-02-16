@@ -5390,12 +5390,12 @@ namespace {
             }
 
             static size_t _Reduce_sse(const __m128i _Val) noexcept {
-#ifdef _M_IX86
+#ifdef _WIN64
+                return _mm_cvtsi128_si64(_Val) + _mm_extract_epi64(_Val, 1);
+#else // ^^^ 64-bit / 32-bit vvv
                 return static_cast<uint32_t>(_mm_cvtsi128_si32(_Val))
                      + static_cast<uint32_t>(_mm_extract_epi32(_Val, 2));
-#else // ^^^ defined(_M_IX86) / defined(_M_X64) vvv
-                return _mm_cvtsi128_si64(_Val) + _mm_extract_epi64(_Val, 1);
-#endif // ^^^ defined(_M_X64) ^^^
+#endif // ^^^ 32-bit ^^^
             }
         };
 
