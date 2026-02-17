@@ -15,16 +15,16 @@
 #include <cwchar>
 #include <type_traits>
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
 #include <arm64_neon.h>
 
 #include <Windows.h>
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
 #include <intrin.h>
 #include <isa_availability.h>
 
 extern "C" long __isa_enabled;
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
 namespace {
 #if !defined(_M_ARM64) && !defined(_M_ARM64EC)
@@ -56,7 +56,7 @@ namespace {
     }
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
-#if defined(_M_ARM64)
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
     bool _Use_FEAT_DotProd() noexcept {
         return IsProcessorFeaturePresent(PF_ARM_V82_DP_INSTRUCTIONS_AVAILABLE);
     }
@@ -92,7 +92,7 @@ namespace {
     bool _Use_FEAT_BitPerm() noexcept {
         return IsProcessorFeaturePresent(PF_ARM_SVE_BITPERM_INSTRUCTIONS_AVAILABLE);
     }
-#endif // ^^^ defined(_M_ARM64) ^^^
+#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
 
     size_t _Byte_length(const void* const _First, const void* const _Last) noexcept {
         return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
@@ -119,7 +119,7 @@ namespace {
 
 extern "C" {
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* const _Last1, void* _First2) noexcept {
     if (_Byte_length(_First1, _Last1) >= 64) {
@@ -198,10 +198,9 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
         *_First2c               = _Ch;
     }
 }
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* const _Last1, void* _First2) noexcept {
-#ifndef _M_ARM64EC
     constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
     if (_Byte_length(_First1, _Last1) >= 32 && _Use_avx2()) {
         const void* _Stop_at = _First1;
@@ -265,7 +264,6 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
         } while (_First1 != _Stop_at);
     }
 #endif // ^^^ 32-bit ^^^
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     auto _First1c = static_cast<unsigned char*>(_First1);
     auto _First2c = static_cast<unsigned char*>(_First2);
@@ -276,6 +274,9 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     }
 }
 
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
+
+#ifndef _M_ARM64
 // TRANSITION, ABI: __std_swap_ranges_trivially_swappable() is preserved for binary compatibility (x64/x86/ARM64EC)
 void* __cdecl __std_swap_ranges_trivially_swappable(
     void* const _First1, void* const _Last1, void* const _First2) noexcept {
@@ -304,7 +305,7 @@ namespace {
         //
         // We implement the 'swap_ranges' approach with a small temporary buffer and swapping three ranges.
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         void __forceinline _Swap_3_ranges(void* _First1, void* const _Last1, void* _First2, void* _First3) noexcept {
             if (_Byte_length(_First1, _Last1) >= 64) {
                 constexpr size_t _Mask_64 = ~((static_cast<size_t>(1) << 6) - 1);
@@ -408,9 +409,8 @@ namespace {
                 *_First3c               = _Ch;
             }
         }
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         void _Swap_3_ranges(void* _First1, void* const _Last1, void* _First2, void* _First3) noexcept {
-#ifndef _M_ARM64EC
             constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
             if (_Byte_length(_First1, _Last1) >= 32 && _Use_avx2()) {
                 const void* _Stop_at = _First1;
@@ -488,7 +488,6 @@ namespace {
                 } while (_First1 != _Stop_at);
             }
 #endif // ^^^ 32-bit ^^^
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
             auto _First1c = static_cast<unsigned char*>(_First1);
             auto _First2c = static_cast<unsigned char*>(_First2);
@@ -500,7 +499,7 @@ namespace {
                 *_First3c               = _Ch;
             }
         }
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         constexpr size_t _Buf_size = 512;
 
@@ -591,7 +590,7 @@ namespace {
             }
         }
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_1 {
             static uint8x8_t _Rev(const uint8x8_t _Val) noexcept {
                 return vrev64_u8(_Val);
@@ -774,13 +773,7 @@ namespace {
                     static_cast<const _Ty*>(_First), static_cast<const _Ty*>(_Last), static_cast<_Ty*>(_Dest));
             }
         }
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
-#ifdef _M_ARM64EC
-        using _Traits_1 = void;
-        using _Traits_2 = void;
-        using _Traits_4 = void;
-        using _Traits_8 = void;
-#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Traits_1 {
             static __m256i _Rev_avx(const __m256i _Val) noexcept {
                 const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
@@ -833,9 +826,7 @@ namespace {
                 return _mm_shuffle_epi32(_Val, _MM_SHUFFLE(1, 0, 3, 2));
             }
         };
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
-#ifndef _M_ARM64EC
         __m256i _Avx2_rev_tail_mask_32(const size_t _Count_in_bytes) noexcept {
             // _Count_in_bytes must be within [0, 32].
             static constexpr unsigned int _Tail_masks[16] = {
@@ -843,11 +834,9 @@ namespace {
             return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(
                 reinterpret_cast<const unsigned char*>(_Tail_masks) + _Count_in_bytes));
         }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         template <class _Traits, class _Ty>
         __declspec(noalias) void __cdecl _Reverse_impl(void* _First, void* _Last) noexcept {
-#ifndef _M_ARM64EC
             if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 64 && _Use_avx2()) {
                 const void* _Stop_at = _First;
                 _Advance_bytes(_Stop_at, (_Length >> 1) & ~size_t{0x1F});
@@ -879,7 +868,6 @@ namespace {
                     _Advance_bytes(_First, 16);
                 } while (_First != _Stop_at);
             }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
             _Reverse_tail(static_cast<_Ty*>(_First), static_cast<_Ty*>(_Last));
         }
@@ -887,7 +875,6 @@ namespace {
         template <class _Traits, class _Ty>
         __declspec(noalias) void __cdecl _Reverse_copy_impl(
             const void* _First, const void* _Last, void* _Dest) noexcept {
-#ifndef _M_ARM64EC
             if (const size_t _Length = _Byte_length(_First, _Last); _Length >= 32 && _Use_avx2()) {
                 const void* _Stop_at = _Dest;
                 _Advance_bytes(_Stop_at, _Length & ~size_t{0x1F});
@@ -928,12 +915,11 @@ namespace {
                     _Advance_bytes(_Dest, 16);
                 } while (_Dest != _Stop_at);
             }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
             _Reverse_copy_tail(
                 static_cast<const _Ty*>(_First), static_cast<const _Ty*>(_Last), static_cast<_Ty*>(_Dest));
         }
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
     } // namespace _Reversing
 } // unnamed namespace
 
@@ -1002,7 +988,7 @@ namespace {
             using _Vec_t                            = void;
         };
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_neon_base {
             using _Guard                            = char;
             static constexpr bool _Vectorized       = true;
@@ -1013,7 +999,7 @@ namespace {
 
             static void _Exit_vectorized() noexcept {}
         };
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Traits_sse_base {
             using _Guard                            = char;
             static constexpr bool _Vectorized       = true;
@@ -1104,7 +1090,7 @@ namespace {
                 return _mm256_maskload_epi32(reinterpret_cast<const int*>(_Src), _Mask);
             }
         };
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_1_base {
             static constexpr bool _Is_floating = false;
@@ -1118,13 +1104,11 @@ namespace {
             using _Minmax_i_t = _Min_max_1i;
             using _Minmax_u_t = _Min_max_1u;
 
-#ifndef _M_ARM64EC
             static constexpr bool _Has_portion_max = true;
             static constexpr size_t _Portion_max   = 256;
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_1_neon : _Traits_1_base, _Traits_neon_base {
             using _Vec_t = int8x16_t;
 
@@ -1235,7 +1219,7 @@ namespace {
                 return _Mask;
             }
         };
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Traits_1_sse : _Traits_1_base, _Traits_sse_base {
             static __m128i _Load(const void* const _Src) noexcept {
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
@@ -1420,7 +1404,7 @@ namespace {
                 return _Mask;
             }
         };
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_2_base {
             static constexpr bool _Is_floating = false;
@@ -1434,13 +1418,11 @@ namespace {
             using _Minmax_i_t = _Min_max_2i;
             using _Minmax_u_t = _Min_max_2u;
 
-#ifndef _M_ARM64EC
             static constexpr bool _Has_portion_max = true;
             static constexpr size_t _Portion_max   = 65536;
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_2_neon : _Traits_2_base, _Traits_neon_base {
             using _Vec_t = int16x8_t;
 
@@ -1551,7 +1533,7 @@ namespace {
                 return _Mask;
             }
         };
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Traits_2_sse : _Traits_2_base, _Traits_sse_base {
             static __m128i _Load(const void* const _Src) noexcept {
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
@@ -1729,7 +1711,7 @@ namespace {
                 return _Mask;
             }
         };
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_4_base {
             static constexpr bool _Is_floating = false;
@@ -1743,17 +1725,15 @@ namespace {
             static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7FFF'FFFFUL);
             static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x8000'0000UL);
 
-#ifndef _M_ARM64EC
-#ifdef _M_IX86
-            static constexpr bool _Has_portion_max = false;
-#else // ^^^ 32-bit / 64-bit vvv
+#ifdef _WIN64
             static constexpr bool _Has_portion_max = true;
             static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
-#endif // ^^^ 64-bit ^^^
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#else // ^^^ 64-bit / 32-bit vvv
+            static constexpr bool _Has_portion_max = false;
+#endif // ^^^ 32-bit ^^^
         };
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_4_neon : _Traits_4_base, _Traits_neon_base {
             using _Vec_t = int32x4_t;
 
@@ -1864,7 +1844,7 @@ namespace {
                 return _Mask;
             }
         };
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Traits_4_sse : _Traits_4_base, _Traits_sse_base {
             static __m128i _Load(const void* const _Src) noexcept {
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
@@ -2036,7 +2016,7 @@ namespace {
                 return _Mask;
             }
         };
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_8_base {
             static constexpr bool _Is_floating = false;
@@ -2050,12 +2030,10 @@ namespace {
             using _Minmax_i_t = _Min_max_8i;
             using _Minmax_u_t = _Min_max_8u;
 
-#ifndef _M_ARM64EC
             static constexpr bool _Has_portion_max = false;
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_8_neon : _Traits_8_base, _Traits_neon_base {
             using _Vec_t = int64x2_t;
 
@@ -2148,7 +2126,7 @@ namespace {
                 return _Mask;
             }
         };
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Traits_8_sse : _Traits_8_base, _Traits_sse_base {
             static __m128i _Load(const void* const _Src) noexcept {
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Src));
@@ -2333,7 +2311,7 @@ namespace {
                 return _Mask;
             }
         };
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_f_base {
             static constexpr bool _Is_floating = true;
@@ -2347,17 +2325,15 @@ namespace {
             using _Minmax_i_t = _Min_max_f;
             using _Minmax_u_t = void;
 
-#ifndef _M_ARM64EC
-#ifdef _M_IX86
-            static constexpr bool _Has_portion_max = false;
-#else // ^^^ 32-bit / 64-bit vvv
+#ifdef _WIN64
             static constexpr bool _Has_portion_max = true;
             static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
-#endif // ^^^ 64-bit ^^^
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#else // ^^^ 64-bit / 32-bit vvv
+            static constexpr bool _Has_portion_max = false;
+#endif // ^^^ 32-bit ^^^
         };
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_f_neon : _Traits_f_base, _Traits_neon_base {
             using _Vec_t                            = float32x4_t;
             using _Idx_t                            = int32x4_t;
@@ -2451,7 +2427,7 @@ namespace {
                 return _Mask;
             }
         };
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Traits_f_sse : _Traits_f_base, _Traits_sse_base {
             using _Vec_t = __m128;
 
@@ -2609,7 +2585,7 @@ namespace {
                 return _mm256_castps_si256(_Mask);
             }
         };
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_d_base {
             static constexpr bool _Is_floating = true;
@@ -2623,12 +2599,10 @@ namespace {
             using _Minmax_i_t = _Min_max_d;
             using _Minmax_u_t = void;
 
-#ifndef _M_ARM64EC
             static constexpr bool _Has_portion_max = false;
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
         };
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_d_neon : _Traits_d_base, _Traits_neon_base {
             using _Vec_t                            = float64x2_t;
             using _Idx_t                            = int64x2_t;
@@ -2723,7 +2697,7 @@ namespace {
                 return _Mask;
             }
         };
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Traits_d_sse : _Traits_d_base, _Traits_sse_base {
             using _Vec_t = __m128d;
 
@@ -2878,66 +2852,66 @@ namespace {
                 return _mm256_castpd_si256(_Mask);
             }
         };
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         struct _Traits_1 {
             using _Scalar = _Traits_scalar<_Traits_1_base>;
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
             using _Neon = _Traits_1_neon;
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             using _Sse = _Traits_1_sse;
             using _Avx = _Traits_1_avx;
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
         };
 
         struct _Traits_2 {
             using _Scalar = _Traits_scalar<_Traits_2_base>;
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
             using _Neon = _Traits_2_neon;
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             using _Sse = _Traits_2_sse;
             using _Avx = _Traits_2_avx;
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
         };
 
         struct _Traits_4 {
             using _Scalar = _Traits_scalar<_Traits_4_base>;
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
             using _Neon = _Traits_4_neon;
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             using _Sse = _Traits_4_sse;
             using _Avx = _Traits_4_avx;
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
         };
 
         struct _Traits_8 {
             using _Scalar = _Traits_scalar<_Traits_8_base>;
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
             using _Neon = _Traits_8_neon;
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             using _Sse = _Traits_8_sse;
             using _Avx = _Traits_8_avx;
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
         };
 
         struct _Traits_f {
             using _Scalar = _Traits_scalar<_Traits_f_base>;
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
             using _Neon = _Traits_f_neon;
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             using _Sse = _Traits_f_sse;
             using _Avx = _Traits_f_avx;
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
         };
 
         struct _Traits_d {
             using _Scalar = _Traits_scalar<_Traits_d_base>;
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
             using _Neon = _Traits_d_neon;
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             using _Sse = _Traits_d_sse;
             using _Avx = _Traits_d_avx;
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
         };
 
         template <class _Ty>
@@ -2984,21 +2958,18 @@ namespace {
             return _Res;
         }
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         template <_Min_max_mode _Mode, class _Traits, bool _Sign>
         auto _Minmax_element_impl(const void* _First, const void* const _Last) noexcept {
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         template <_Min_max_mode _Mode, class _Traits>
         auto _Minmax_element_impl(const void* _First, const void* const _Last, const bool _Sign) noexcept {
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
             _Min_max_element_t _Res = {_First, _First};
             auto _Cur_min_val       = _Traits::_Init_min_val;
             auto _Cur_max_val       = _Traits::_Init_max_val;
 
             if constexpr (_Traits::_Vectorized) {
-#ifdef _M_ARM64EC
-                static_assert(false, "No vectorization for _M_ARM64EC yet");
-#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
                 auto _Base                = static_cast<const char*>(_First);
                 size_t _Portion_byte_size = _Byte_length(_First, _Last) & ~_Traits::_Vec_mask;
 
@@ -3021,7 +2992,7 @@ namespace {
                 auto _Cur_idx_max  = _Traits::_Zero(); // vector of vertical maximum indices
                 auto _Cur_idx      = _Traits::_Zero(); // current vector of indices
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
                 const auto _Cmp_gt_wrap = [](const auto _First, const auto _Second) noexcept {
                     if constexpr (_Sign || !_Traits::_Has_unsigned_cmp) {
                         return _Traits::_Cmp_gt(_First, _Second);
@@ -3057,7 +3028,7 @@ namespace {
                         return _Traits::_H_max_u(_Vals);
                     }
                 };
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
                 const auto _Cmp_gt_wrap = [](const auto _First, const auto _Second) noexcept {
                     return _Traits::_Cmp_gt(_First, _Second);
                 };
@@ -3069,7 +3040,7 @@ namespace {
                 };
                 const auto _H_min_wrap = [](const auto _Vals) noexcept { return _Traits::_H_min(_Vals); };
                 const auto _H_max_wrap = [](const auto _Vals) noexcept { return _Traits::_H_max(_Vals); };
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
                 const auto _Update_min_max = [&](const auto _Cur_vals, [[maybe_unused]] const auto _Blend_idx_0,
                                                  const auto _Blend_idx_1) noexcept {
@@ -3273,7 +3244,6 @@ namespace {
                 }
 
                 _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
             }
 
             if constexpr (_Traits::_Is_floating) {
@@ -3317,12 +3287,14 @@ namespace {
         template <_Min_max_mode _Mode, class _Traits>
         auto __stdcall _Minmax_element_disp(
             const void* const _First, const void* const _Last, const bool _Sign) noexcept {
-#ifdef _M_ARM64
-            if (_Byte_length(_First, _Last) >= 16) {
-                if (_Sign) {
-                    return _Minmax_element_impl<_Mode, typename _Traits::_Neon, true>(_First, _Last);
-                } else {
-                    return _Minmax_element_impl<_Mode, typename _Traits::_Neon, false>(_First, _Last);
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+            if constexpr (!std::is_same_v<typename _Traits::_Neon, _Traits_8_neon>) {
+                if (_Byte_length(_First, _Last) >= 16) {
+                    if (_Sign) {
+                        return _Minmax_element_impl<_Mode, typename _Traits::_Neon, true>(_First, _Last);
+                    } else {
+                        return _Minmax_element_impl<_Mode, typename _Traits::_Neon, false>(_First, _Last);
+                    }
                 }
             }
 
@@ -3331,8 +3303,7 @@ namespace {
             } else {
                 return _Minmax_element_impl<_Mode, typename _Traits::_Scalar, false>(_First, _Last);
             }
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
-#ifndef _M_ARM64EC
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
                 return _Minmax_element_impl<_Mode, typename _Traits::_Avx>(_First, _Last, _Sign);
             }
@@ -3340,9 +3311,8 @@ namespace {
             if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
                 return _Minmax_element_impl<_Mode, typename _Traits::_Sse>(_First, _Last, _Sign);
             }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
             return _Minmax_element_impl<_Mode, typename _Traits::_Scalar>(_First, _Last, _Sign);
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
         }
 
         template <_Min_max_mode _Mode, class _Traits, bool _Sign, bool _Unrolled = false>
@@ -3354,9 +3324,6 @@ namespace {
             _Ty _Cur_max_val; // initialized in both of the branches below
 
             if constexpr (_Traits::_Vectorized) {
-#ifdef _M_ARM64EC
-                static_assert(false, "No vectorization for _M_ARM64EC yet");
-#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
                 constexpr size_t _Lanes          = _Unrolled ? 2 : 1;
                 constexpr size_t _Bytes_per_iter = _Lanes * _Traits::_Vec_size;
 
@@ -3521,7 +3488,6 @@ namespace {
                 }
 
                 _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
             } else {
                 _Cur_min_val = *reinterpret_cast<const _Ty*>(_First);
                 _Cur_max_val = *reinterpret_cast<const _Ty*>(_First);
@@ -3572,7 +3538,7 @@ namespace {
 
         template <_Min_max_mode _Mode, class _Traits, bool _Sign>
         auto __stdcall _Minmax_disp(const void* const _First, const void* const _Last) noexcept {
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
             if (_Byte_length(_First, _Last) >= 32) {
                 return _Minmax_impl<_Mode, typename _Traits::_Neon, _Sign, true>(_First, _Last);
             }
@@ -3580,7 +3546,7 @@ namespace {
             if (_Byte_length(_First, _Last) >= 16) {
                 return _Minmax_impl<_Mode, typename _Traits::_Neon, _Sign, false>(_First, _Last);
             }
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
                 if constexpr (_Traits::_Avx::_Is_floating) {
                     return _Minmax_impl_wrap<_Mode, typename _Traits::_Avx, _Sign>(_First, _Last);
@@ -3592,11 +3558,11 @@ namespace {
             if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
                 return _Minmax_impl<_Mode, typename _Traits::_Sse, _Sign>(_First, _Last);
             }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
             return _Minmax_impl<_Mode, typename _Traits::_Scalar, _Sign>(_First, _Last);
         }
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         template <class _Traits, class _Ty>
         const void* _Is_sorted_until_impl(const void* _First, const void* const _Last, const bool _Greater) noexcept {
             const ptrdiff_t _Left_off  = 0 - static_cast<ptrdiff_t>(_Greater);
@@ -3677,16 +3643,13 @@ namespace {
 
             return _Last;
         }
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         template <class _Traits, class _Ty>
         const void* _Is_sorted_until_impl(const void* _First, const void* const _Last, const bool _Greater) noexcept {
             const ptrdiff_t _Left_off  = 0 - static_cast<ptrdiff_t>(_Greater);
             const ptrdiff_t _Right_off = static_cast<ptrdiff_t>(_Greater) - 1;
 
             if constexpr (_Traits::_Vectorized) {
-#ifdef _M_ARM64EC
-                static_assert(false, "No vectorization for _M_ARM64EC yet");
-#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
                 [[maybe_unused]] typename _Traits::_Guard _Guard; // TRANSITION, DevCom-10331414
 
                 constexpr bool _Sign_cor = static_cast<_Ty>(-1) > _Ty{0};
@@ -3743,7 +3706,6 @@ namespace {
                         _Advance_bytes(_First, _Tail_byte_size);
                     }
                 }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
             }
 
             if constexpr ((_Traits::_Tail_mask & sizeof(_Ty)) != sizeof(_Ty)) {
@@ -3756,7 +3718,7 @@ namespace {
 
             return _Last;
         }
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         template <class _Traits, class _Ty>
         const void* __stdcall _Is_sorted_until_disp(
@@ -3767,11 +3729,11 @@ namespace {
 
             _Advance_bytes(_First, sizeof(_Ty));
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
             if (_Byte_length(_First, _Last) >= 16) {
                 return _Is_sorted_until_impl<typename _Traits::_Neon, _Ty>(_First, _Last, _Greater);
             }
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
                 return _Is_sorted_until_impl<typename _Traits::_Avx, _Ty>(_First, _Last, _Greater);
             }
@@ -3779,7 +3741,7 @@ namespace {
             if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
                 return _Is_sorted_until_impl<typename _Traits::_Sse, _Ty>(_First, _Last, _Greater);
             }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
             return _Is_sorted_until_impl<typename _Traits::_Scalar, _Ty>(_First, _Last, _Greater);
         }
     } // namespace _Sorting
@@ -4057,7 +4019,7 @@ const void* __stdcall __std_is_sorted_until_d(
 
 namespace {
     namespace _Finding {
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Find_traits_1 {
             static uint8x16_t _Load_q(const void* const _Ptr) noexcept {
                 return vld1q_u8(static_cast<const uint8_t*>(_Ptr));
@@ -4243,12 +4205,7 @@ namespace {
         unsigned long _Get_last_h_pos_d(const uint64_t _Mask) noexcept {
             return 7 - (_CountLeadingZeros64(_Mask) >> 3);
         }
-#elif defined(_M_ARM64EC)
-        using _Find_traits_1 = void;
-        using _Find_traits_2 = void;
-        using _Find_traits_4 = void;
-        using _Find_traits_8 = void;
-#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Find_traits_1 {
             static __m256i _Set_avx(const uint8_t _Val) noexcept {
                 return _mm256_set1_epi8(_Val);
@@ -4320,7 +4277,7 @@ namespace {
                 return _mm_cmpeq_epi64(_Lhs, _Rhs);
             }
         };
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
 #ifndef _M_ARM64
         // TRANSITION, ABI: used only in functions preserved for binary compatibility
@@ -4376,7 +4333,7 @@ namespace {
         // This makes sure the template specialization can be fused with the extern "C" function.
         // In optimized builds it avoids an extra call, as these functions are too large to inline.
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         template <class _Traits, _Predicate _Pred, class _Ty>
         const void* __stdcall _Find_impl(const void* _First, const void* const _Last, const _Ty _Val) noexcept {
             const size_t _Size_bytes = _Byte_length(_First, _Last);
@@ -4661,10 +4618,9 @@ namespace {
             return _Last;
         }
 
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         template <class _Traits, _Predicate _Pred, class _Ty>
         const void* __stdcall _Find_impl(const void* _First, const void* const _Last, const _Ty _Val) noexcept {
-#ifndef _M_ARM64EC
             const size_t _Size_bytes = _Byte_length(_First, _Last);
 
             if (const size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
@@ -4737,7 +4693,6 @@ namespace {
                     _Advance_bytes(_First, 16);
                 } while (_First != _Stop_at);
             }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
             return _Find_scalar_tail<_Pred>(_First, _Last, _Val);
         }
@@ -4745,7 +4700,7 @@ namespace {
         template <class _Traits, _Predicate _Pred, class _Ty>
         const void* __stdcall _Find_last_impl(const void* const _First, const void* _Last, const _Ty _Val) noexcept {
             const void* const _Real_last = _Last;
-#ifndef _M_ARM64EC
+
             const size_t _Size_bytes = _Byte_length(_First, _Last);
 
             if (const size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
@@ -4815,7 +4770,6 @@ namespace {
                     }
                 } while (_Last != _Stop_at);
             }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
             return _Find_last_scalar_tail<_Pred>(_First, _Last, _Real_last, _Val);
         }
 
@@ -4825,7 +4779,6 @@ namespace {
                 return _Last;
             }
 
-#ifndef _M_ARM64EC
             const size_t _Size_bytes = _Byte_length(_First, _Last) - sizeof(_Ty);
 
             if (const size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
@@ -4896,7 +4849,6 @@ namespace {
                     _Advance_bytes(_First, 16);
                 } while (_First != _Stop_at);
             }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
             auto _Ptr  = static_cast<const _Ty*>(_First);
             auto _Next = _Ptr + 1;
@@ -4908,7 +4860,9 @@ namespace {
 
             return _Last;
         }
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
+#ifndef _M_ARM64
         template <class _Traits, class _Ty>
         const void* __stdcall _Search_n_impl(
             const void* _First, const void* const _Last, const size_t _Count, const _Ty _Val) noexcept {
@@ -5116,6 +5070,7 @@ namespace {
             }
         }
 #endif // ^^^ !defined(_M_ARM64) ^^^
+
         template <class _Traits, _Predicate _Pred, class _Ty>
         size_t __stdcall _Find_last_pos_impl(
             const void* const _First, const void* const _Last, const _Ty _Val) noexcept {
@@ -5171,12 +5126,7 @@ const void* __stdcall __std_find_trivial_1(
 
 const void* __stdcall __std_find_trivial_2(
     const void* const _First, const void* const _Last, const uint16_t _Val) noexcept {
-#ifdef _M_ARM64EC
-    auto _Result = wmemchr(static_cast<const wchar_t*>(_First), _Val, _Byte_length(_First, _Last) / sizeof(wchar_t));
-    return _Result ? _Result : _Last;
-#else
     return _Finding::_Find_impl<_Finding::_Find_traits_2, _Finding::_Predicate::_Equal>(_First, _Last, _Val);
-#endif
 }
 
 const void* __stdcall __std_find_trivial_4(
@@ -5295,7 +5245,7 @@ const void* __stdcall __std_search_n_8(
 
 namespace {
     namespace _Counting {
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Count_traits_8 : _Finding::_Find_traits_8 {
             static uint64x2_t _Sub(const uint64x2_t _Lhs, const uint64x2_t _Rhs) noexcept {
                 return vsubq_u64(_Lhs, _Rhs);
@@ -5367,12 +5317,7 @@ namespace {
             }
         };
 
-#elif defined(_M_ARM64EC)
-        using _Count_traits_8 = void;
-        using _Count_traits_4 = void;
-        using _Count_traits_2 = void;
-        using _Count_traits_1 = void;
-#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Count_traits_8 : _Finding::_Find_traits_8 {
             static __m256i _Sub_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
                 return _mm256_sub_epi64(_Lhs, _Rhs);
@@ -5490,9 +5435,9 @@ namespace {
                 return _Count_traits_8::_Reduce_sse(_Rx1);
             }
         };
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         template <class _Traits, class _Ty>
         __declspec(noalias) size_t __stdcall _Count_impl(
             const void* _First, const void* const _Last, const _Ty _Val) noexcept {
@@ -5560,13 +5505,12 @@ namespace {
             }
             return _Result;
         }
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         template <class _Traits, class _Ty>
         __declspec(noalias) size_t __stdcall _Count_impl(
             const void* _First, const void* const _Last, const _Ty _Val) noexcept {
             size_t _Result = 0;
 
-#ifndef _M_ARM64EC
             const size_t _Size_bytes = _Byte_length(_First, _Last);
 
             if (size_t _Avx_size = _Size_bytes & ~size_t{0x1F}; _Avx_size != 0 && _Use_avx2()) {
@@ -5652,7 +5596,6 @@ namespace {
                     }
                 }
             }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
             for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
                 if (*_Ptr == _Val) {
@@ -5661,7 +5604,7 @@ namespace {
             }
             return _Result;
         }
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
     } // namespace _Counting
 } // unnamed namespace
 
@@ -8012,7 +7955,7 @@ const void* __stdcall __std_find_end_8(
 
 namespace {
     namespace _Mismatching {
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         template <class _Ty>
         __declspec(noalias) size_t __stdcall _Mismatch_impl(
             const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
@@ -8089,12 +8032,12 @@ namespace {
 
             return _Result;
         }
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         template <class _Ty>
         __declspec(noalias) size_t __stdcall _Mismatch_impl(
             const void* const _First1, const void* const _First2, const size_t _Count) noexcept {
             size_t _Result = 0;
-#ifndef _M_ARM64EC
+
             const auto _First1_ch = static_cast<const char*>(_First1);
             const auto _First2_ch = static_cast<const char*>(_First2);
 
@@ -8155,7 +8098,7 @@ namespace {
 
                 _Result /= sizeof(_Ty);
             }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+
             const auto _First1_el = static_cast<const _Ty*>(_First1);
             const auto _First2_el = static_cast<const _Ty*>(_First2);
 
@@ -8167,7 +8110,7 @@ namespace {
 
             return _Result;
         }
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
     } // namespace _Mismatching
 } // unnamed namespace
 
@@ -9070,7 +9013,7 @@ void* __stdcall __std_unique_copy_8(const void* _First, const void* const _Last,
 
 namespace {
     namespace _Sorted_ranges {
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_neon {
             using _Guard                                = char;
             static constexpr size_t _Vec_size           = 16;
@@ -9179,7 +9122,7 @@ namespace {
                 return _Sorting::_Traits_8_neon::_Cmp_gt_u(_First, _Second);
             }
         };
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Traits_avx {
             using _Guard                                = _Zeroupper_on_exit;
             static constexpr size_t _Vec_size           = 32;
@@ -9348,16 +9291,12 @@ namespace {
                 return _mm_sub_epi64(_Data, _mm_set1_epi64x(static_cast<long long>(0x8000'0000'0000'0000)));
             }
         };
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         template <class _Traits, class _Ty>
         bool _Includes_impl(
             const void* _First1, const void* const _Last1, const void* _First2, const void* const _Last2) noexcept {
             if constexpr (!std::is_void_v<_Traits>) {
-#ifdef _M_ARM64EC
-                static_assert(false, "No vectorization for _M_ARM64EC yet");
-#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
-
                 // Only skipping some parts of haystack that are less than current needle element is vectorized.
                 // Otherwise this is scalar algorithm.
 
@@ -9461,7 +9400,6 @@ namespace {
                 if (_First1 == _Last1) {
                     return false;
                 }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
             }
 
             auto _Ptr1 = static_cast<const _Ty*>(_First1);
@@ -9488,39 +9426,39 @@ namespace {
         }
 
         struct _Traits_1 {
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
             using _Neon = _Traits_1_neon;
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             using _Sse = _Traits_1_sse;
             using _Avx = _Traits_1_avx;
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
         };
 
         struct _Traits_2 {
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
             using _Neon = _Traits_2_neon;
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             using _Sse = _Traits_2_sse;
             using _Avx = _Traits_2_avx;
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
         };
 
         struct _Traits_4 {
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
             using _Neon = _Traits_4_neon;
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             using _Sse = _Traits_4_sse;
             using _Avx = _Traits_4_avx;
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
         };
 
         struct _Traits_8 {
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
             using _Neon = _Traits_8_neon;
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             using _Sse = _Traits_8_sse;
             using _Avx = _Traits_8_avx;
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
         };
 
         template <class _Traits, class _Ty>
@@ -9534,11 +9472,11 @@ namespace {
                 return false;
             }
 
-#ifdef _M_ARM64
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
             if (_Size_bytes_1 >= 16) {
                 return _Includes_impl<typename _Traits::_Neon, _Ty>(_First1, _Last1, _First2, _Last2);
             }
-#elif !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             if (_Size_bytes_1 >= 32 && _Use_avx2()) {
                 return _Includes_impl<typename _Traits::_Avx, _Ty>(_First1, _Last1, _First2, _Last2);
             }
@@ -9546,7 +9484,7 @@ namespace {
             if (_Size_bytes_1 >= 16 && _Use_sse42()) {
                 return _Includes_impl<typename _Traits::_Sse, _Ty>(_First1, _Last1, _First2, _Last2);
             }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
             return _Includes_impl<void, _Ty>(_First1, _Last1, _First2, _Last2);
         }
     } // namespace _Sorted_ranges
