@@ -173,7 +173,6 @@ stages:
           hostArch: arm64
           targetArch: arm64
           targetPlatform: arm64
-          numShards: 10
 
   - stage: Test_ARM64EC
     dependsOn:
@@ -189,4 +188,3 @@ stages:
           hostArch: arm64
           targetArch: arm64
           targetPlatform: arm64ec
-          numShards: 10
