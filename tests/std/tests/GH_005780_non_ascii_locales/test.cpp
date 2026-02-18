@@ -27,6 +27,7 @@ void assert_string_non_ascii(const string& str) {
     assert(any_of(str.begin(), str.end(), char_not_ascii));
 }
 
+// GH-5780 <iostream>: Printing with std::cout changes the global locale permanently
 void test_gh_5780() {
     // https://learn.microsoft.com/en-us/cpp/c-runtime-library/language-strings#supported-language-strings
     string locale_name = set_locale("norwegian-bokmal.437");
