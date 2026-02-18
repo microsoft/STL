@@ -400,7 +400,7 @@ private:
     _Yarn<char> _Months; // month names
     _Yarn<wchar_t> _W_Days; // wide weekday names
     _Yarn<wchar_t> _W_Months; // wide month names
-    // TRANSITION, ABI, `_Oldlocname._Myptr` is reinterpreted as `wchar_t*`. `wchar` should be wrapped instead.
+    // TRANSITION, ABI, `_Oldlocname._Myptr` is reinterpreted as `wchar_t*`. We should use `_Yarn<wchar_t>`.
     _Yarn<char> _Oldlocname; // old locale name to revert to on destruction
     _Yarn<char> _Newlocname; // new locale name for this object
 };
