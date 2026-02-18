@@ -135,7 +135,7 @@ private:
 };
 
 template <class _Elem>
-_Elem* _Ntcts_dup_dbg(const _Elem* const _Ptr) noexcept {
+_NODISCARD _Elem* _Ntcts_dup_dbg(const _Elem* const _Ptr) noexcept {
     _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Elem, char, wchar_t, unsigned short>);
 
     const size_t _Bytes = (char_traits<_Elem>::length(_Ptr) + 1) * sizeof(_Elem);
