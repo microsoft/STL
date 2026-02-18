@@ -138,11 +138,7 @@ template <class _Elem>
 _Elem* _Ntcts_dup_dbg(const _Elem* const _Ptr) noexcept {
     _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Elem, char, wchar_t, unsigned short>);
 
-    auto _Iter = _Ptr;
-    while (*_Iter != _Elem{}) {
-        ++_Iter;
-    }
-    const size_t _Count = static_cast<size_t>(_Iter - _Ptr + 1) * sizeof(_Elem);
+    const size_t _Count = (char_traits<_Elem>::length(_Ptr) + 1) * sizeof(_Elem);
 
 #ifdef _DEBUG
     const auto _Result = static_cast<_Elem*>(_CSTD _malloc_dbg(_Count, _CRT_BLOCK, __FILE__, __LINE__));
