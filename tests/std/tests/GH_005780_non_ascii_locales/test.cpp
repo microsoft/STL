@@ -20,9 +20,9 @@ std::string query_locale() {
     return ret;
 }
 
-void assert_string_non_ascii(const std::string& string) {
+void assert_string_non_ascii(const std::string& str) {
     const auto char_not_ascii = [](const char c) { return (c & 0x80) != 0; };
-    assert(std::any_of(string.begin(), string.end(), char_not_ascii));
+    assert(std::any_of(str.begin(), str.end(), char_not_ascii));
 }
 
 void test_gh_5780() {
