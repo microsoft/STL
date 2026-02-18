@@ -6,32 +6,34 @@
 #include <clocale>
 #include <iomanip>
 #include <iostream>
+#include <locale>
 #include <string>
+using namespace std;
 
-std::string set_locale(const std::string& locale_name) {
-    const char* ret = std::setlocale(LC_ALL, locale_name.c_str());
+string set_locale(const string& locale_name) {
+    const char* ret = setlocale(LC_ALL, locale_name.c_str());
     assert(ret != nullptr);
     return ret;
 }
 
-std::string query_locale() {
-    const char* ret = std::setlocale(LC_ALL, nullptr);
+string query_locale() {
+    const char* ret = setlocale(LC_ALL, nullptr);
     assert(ret != nullptr);
     return ret;
 }
 
-void assert_string_non_ascii(const std::string& str) {
+void assert_string_non_ascii(const string& str) {
     const auto char_not_ascii = [](const char c) { return (c & 0x80) != 0; };
-    assert(std::any_of(str.begin(), str.end(), char_not_ascii));
+    assert(any_of(str.begin(), str.end(), char_not_ascii));
 }
 
 void test_gh_5780() {
     // https://learn.microsoft.com/en-us/cpp/c-runtime-library/language-strings#supported-language-strings
-    std::string locale_name = set_locale("norwegian-bokmal.437");
+    string locale_name = set_locale("norwegian-bokmal.437");
     assert_string_non_ascii(locale_name);
 
-    std::cerr.imbue(std::locale::classic());
-    std::cerr << std::setprecision(2) << 0.1 << std::endl;
+    cerr.imbue(locale::classic());
+    cerr << setprecision(2) << 0.1 << endl;
 
     assert(query_locale() == locale_name);
 }
