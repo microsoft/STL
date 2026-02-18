@@ -102,12 +102,14 @@ namespace ranges {
                     return _RANGES _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
                         _RANGES next(_OFirst, _STD move(_OLast)));
                 } else if constexpr (_Is_sized1) {
-                    return _RANGES _Copy_memcpy_distance(
-                        _IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
+                    const auto _Dist = _ILast - _IFirst;
+                    _STD _Contiguous_iter_verify(_OFirst, static_cast<iter_difference_t<_Out>>(_Dist));
+                    return _RANGES _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _IFirst + _Dist);
                 } else {
                     _STL_INTERNAL_STATIC_ASSERT(_Is_sized2);
-                    return _RANGES _Copy_memcpy_distance(
-                        _IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                    const auto _Dist = _OLast - _OFirst;
+                    _STD _Contiguous_iter_verify(_IFirst, static_cast<iter_difference_t<_It>>(_Dist));
+                    return _RANGES _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _OFirst + _Dist);
                 }
             } else {
                 if constexpr (_Can_memcpy) {
@@ -178,8 +180,7 @@ namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using uninitialized_copy_n_result = in_out_result<_In, _Out>;
 
-    class _Uninitialized_copy_n_fn {
-    public:
+    struct _Uninitialized_copy_n_fn {
         template <input_iterator _It, _No_throw_forward_iterator _Out, _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>
         _STATIC_CALL_OPERATOR uninitialized_copy_n_result<_It, _Out> operator()(
@@ -200,6 +201,8 @@ namespace ranges {
                     _IFirst = _STD move(_UResult.in);
                     _OFirst = _STD move(_UResult.out);
                 } else {
+                    _STD _Contiguous_iter_verify(_IFirst, _Count);
+                    _STD _Contiguous_iter_verify(_OFirst, static_cast<iter_difference_t<_Out>>(_Count));
                     auto _UResult = _RANGES _Copy_memcpy_count(_IFirst, _OFirst, static_cast<size_t>(_Count));
                     _IFirst       = _STD move(_UResult.in);
                     _OFirst       = _STD move(_UResult.out);
@@ -249,8 +252,7 @@ _NoThrowFwdIt uninitialized_move(_ExPo&&, const _FwdIt _First, const _FwdIt _Las
 
 #if _HAS_CXX20
 namespace ranges {
-    class _Uninitialized_move_fn {
-    public:
+    struct _Uninitialized_move_fn {
         template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
             _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
@@ -341,8 +343,7 @@ namespace ranges {
     _EXPORT_STD template <class _In, class _Out>
     using uninitialized_move_n_result = in_out_result<_In, _Out>;
 
-    class _Uninitialized_move_n_fn {
-    public:
+    struct _Uninitialized_move_n_fn {
         template <input_iterator _It, _No_throw_forward_iterator _Out, _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
         _STATIC_CALL_OPERATOR uninitialized_move_n_result<_It, _Out> operator()(
@@ -363,6 +364,8 @@ namespace ranges {
                     _IFirst = _STD move(_UResult.in);
                     _OFirst = _STD move(_UResult.out);
                 } else {
+                    _STD _Contiguous_iter_verify(_IFirst, _Count);
+                    _STD _Contiguous_iter_verify(_OFirst, static_cast<iter_difference_t<_Out>>(_Count));
                     auto _UResult = _RANGES _Copy_memcpy_count(_IFirst, _OFirst, static_cast<size_t>(_Count));
                     _IFirst       = _STD move(_UResult.in);
                     _OFirst       = _STD move(_UResult.out);
@@ -492,8 +495,7 @@ _NoThrowFwdIt uninitialized_fill_n(
 
 #if _HAS_CXX20
 namespace ranges {
-    class _Uninitialized_fill_n_fn {
-    public:
+    struct _Uninitialized_fill_n_fn {
         template <_No_throw_forward_iterator _It, class _Ty>
             requires constructible_from<iter_value_t<_It>, const _Ty&>
         _STATIC_CALL_OPERATOR _It operator()(
@@ -529,10 +531,9 @@ namespace ranges {
 
     _EXPORT_STD inline constexpr _Uninitialized_fill_n_fn uninitialized_fill_n;
 
-    class _Construct_at_fn {
-    public:
+    struct _Construct_at_fn {
         template <class _Ty, class... _Types>
-            requires requires(_Ty* _Ptr, _Types&&... _Args) {
+            requires (!is_unbounded_array_v<_Ty>) && requires(_Ty* _Ptr, _Types&&... _Args) {
                 ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types &&>(_Args)...); // per LWG-3888
             }
         _STATIC_CALL_OPERATOR constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) _CONST_CALL_OPERATOR
@@ -541,7 +542,26 @@ namespace ranges {
 #ifdef __EDG__
             return _STD construct_at(_Location, _STD forward<_Types>(_Args)...);
 #else // ^^^ EDG / Other vvv
-            _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...);
+            if constexpr (is_array_v<_Ty>) {
+                static_assert(sizeof...(_Types) == 0, "The array is only allowed to be value-initialized by "
+                                                      "std::ranges::construct_at. (N5032 [specialized.construct]/2)");
+#if defined(__clang__) // TRANSITION, LLVM-117294
+                ::new (static_cast<void*>(_Location)) _Ty();
+                return __builtin_launder(_Location); // per old resolution of LWG-3436
+#elif defined(_MSC_VER) // TRANSITION, DevCom-10798069
+                if constexpr (is_trivially_destructible_v<_Ty>) {
+                    _MSVC_CONSTEXPR return ::new (_Secret_placement_new_tag{}, static_cast<void*>(_Location)) _Ty[1]();
+                } else {
+                    // For non-trivially-destructible types, the workaround doesn't work
+                    // because additional space is required to record the number of class objects to destroy.
+                    return ::new (static_cast<void*>(_Location)) _Ty[1]();
+                }
+#else // ^^^ workaround / no workaround vvv
+                _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty[1]();
+#endif // ^^^ no workaround ^^^
+            } else {
+                _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...);
+            }
 #endif // ^^^ Other ^^^
         }
     };
@@ -552,8 +572,7 @@ namespace ranges {
         requires destructible<iter_value_t<_It>>
     _NODISCARD constexpr _It _Destroy_unchecked(_It _First, _Se _Last) noexcept;
 
-    class _Destroy_at_fn {
-    public:
+    struct _Destroy_at_fn {
         template <destructible _Ty>
         _STATIC_CALL_OPERATOR constexpr void operator()(_Ty* const _Location) _CONST_CALL_OPERATOR noexcept {
             if constexpr (is_array_v<_Ty>) {
@@ -601,8 +620,7 @@ namespace ranges {
         return _First;
     }
 
-    class _Destroy_fn {
-    public:
+    struct _Destroy_fn {
         template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires destructible<iter_value_t<_It>>
         _STATIC_CALL_OPERATOR constexpr _It operator()(_It _First, _Se _Last) _CONST_CALL_OPERATOR noexcept {
@@ -662,8 +680,7 @@ _NoThrowFwdIt destroy_n(_ExPo&& _Exec, _NoThrowFwdIt _First, _Diff _Count_raw) n
 
 #if _HAS_CXX20
 namespace ranges {
-    class _Destroy_n_fn {
-    public:
+    struct _Destroy_n_fn {
         template <_No_throw_input_iterator _It>
             requires destructible<iter_value_t<_It>>
         _STATIC_CALL_OPERATOR constexpr _It operator()(
@@ -798,8 +815,7 @@ _NoThrowFwdIt uninitialized_default_construct_n(
 
 #if _HAS_CXX20
 namespace ranges {
-    class _Uninitialized_default_construct_n_fn {
-    public:
+    struct _Uninitialized_default_construct_n_fn {
         template <_No_throw_forward_iterator _It>
             requires default_initializable<iter_value_t<_It>>
         _STATIC_CALL_OPERATOR _It operator()(_It _First, iter_difference_t<_It> _Count) _CONST_CALL_OPERATOR {
@@ -916,8 +932,7 @@ _NoThrowFwdIt uninitialized_value_construct_n(
 
 #if _HAS_CXX20
 namespace ranges {
-    class _Uninitialized_value_construct_n_fn {
-    public:
+    struct _Uninitialized_value_construct_n_fn {
         template <_No_throw_forward_iterator _It>
             requires default_initializable<iter_value_t<_It>>
         _STATIC_CALL_OPERATOR _It operator()(_It _First, iter_difference_t<_It> _Count) _CONST_CALL_OPERATOR {
@@ -3526,7 +3541,7 @@ public:
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
     constexpr unique_ptr() noexcept : _Mypair(_Zero_then_variadic_args_t{}) {}
 
-    template <class _Uty, class _Is_nullptr = is_same<_Uty, nullptr_t>>
+    template <class _Uty, class _Is_nullptr = is_null_pointer<_Uty>>
     using _Enable_ctor_reset =
         enable_if_t<is_same_v<_Uty, pointer> || _Is_nullptr::value
                         || (is_same_v<pointer, element_type*> && is_pointer_v<_Uty>

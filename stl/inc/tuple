@@ -142,7 +142,7 @@ struct _Tuple_val { // stores each value in a tuple
                         _STD is_constructible<_Ty, _STD allocator_arg_t, const _Alloc&, _Other...>>,
             int> = 0>
     constexpr _Tuple_val(const _Alloc& _Al, allocator_arg_t, _Other&&... _Arg)
-        : _Val(allocator_arg, _Al, _STD forward<_Other>(_Arg)...) {}
+        : _Val(allocator_arg_t{}, _Al, _STD forward<_Other>(_Arg)...) {}
 
     template <class _Alloc, class... _Other,
         enable_if_t<conjunction_v<_STD uses_allocator<_Dty, _Alloc>,

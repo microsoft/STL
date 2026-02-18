@@ -1848,6 +1848,14 @@ namespace pmr {
     using deque = _STD deque<_Ty, polymorphic_allocator<_Ty>>;
 } // namespace pmr
 #endif // _HAS_CXX17
+
+#if _HAS_CXX23
+template <class _Ty, class _Alloc>
+constexpr bool _Has_guaranteed_push_back<deque<_Ty, _Alloc>> = true;
+
+template <class _Ty, class _Alloc>
+constexpr bool _Has_guaranteed_append_range<deque<_Ty, _Alloc>> = true;
+#endif // _HAS_CXX23
 _STD_END
 
 #pragma pop_macro("new")

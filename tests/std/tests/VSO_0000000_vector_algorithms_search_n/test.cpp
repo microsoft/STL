@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "test_vector_algorithms_support.hpp"
+#include <test_vector_algorithms_support.hpp>
 
 #pragma warning(disable : 4984) // if constexpr is a C++17 language extension
 #ifdef __clang__

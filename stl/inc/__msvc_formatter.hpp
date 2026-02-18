@@ -47,6 +47,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
+
 #if _HAS_CXX23
 #include <xutility>
 #endif // _HAS_CXX23
@@ -401,11 +402,12 @@ constexpr bool enable_nonlocking_formatter_optimization<basic_string_view<_CharT
 
 template <class _Ty1, class _Ty2>
 constexpr bool enable_nonlocking_formatter_optimization<pair<_Ty1, _Ty2>> =
-    enable_nonlocking_formatter_optimization<_Ty1> && enable_nonlocking_formatter_optimization<_Ty2>;
+    enable_nonlocking_formatter_optimization<remove_cvref_t<_Ty1>>
+    && enable_nonlocking_formatter_optimization<remove_cvref_t<_Ty2>>;
 
 template <class... _Ts>
 constexpr bool enable_nonlocking_formatter_optimization<tuple<_Ts...>> =
-    (enable_nonlocking_formatter_optimization<_Ts> && ...);
+    (enable_nonlocking_formatter_optimization<remove_cvref_t<_Ts>> && ...);
 
 template <class _CharT>
 struct _Fill_align_and_width_specs {

@@ -3219,7 +3219,7 @@ namespace filesystem {
 
     _NODISCARD inline __std_win_error _Read_reparse_data(
         const _Fs_file& _Handle, unique_ptr<char[]>& _Buffer_unique_ptr) noexcept {
-        constexpr auto _Buffer_size = 16 * 1024 + sizeof(wchar_t); // MAXIMUM_REPARSE_DATA_BUFFER_SIZE + sizeof(wchar_t)
+        constexpr auto _Buffer_size = 16 * 1024; // MAXIMUM_REPARSE_DATA_BUFFER_SIZE
 
         _Buffer_unique_ptr.reset(::new (nothrow) char[_Buffer_size]);
         if (!_Buffer_unique_ptr) {
@@ -3394,8 +3394,7 @@ namespace filesystem {
     }
 
     _EXPORT_STD inline bool copy_file(
-        const path& _From, const path& _To, const copy_options _Options, error_code& _Ec) noexcept
-    /* strengthened */ {
+        const path& _From, const path& _To, const copy_options _Options, error_code& _Ec) noexcept /* strengthened */ {
         // copy a file _From -> _To according to _Options
         const auto _Result =
             __std_fs_copy_file(_From.c_str(), _To.c_str(), static_cast<__std_fs_copy_options>(_Options));

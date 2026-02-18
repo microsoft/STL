@@ -9,8 +9,6 @@
 
 #undef _ENFORCE_ONLY_CORE_HEADERS // TRANSITION, <xfacet> should be a core header
 
-#define _SILENCE_LOCALE_EMPTY_DEPRECATION_WARNING
-
 #include <crtdbg.h>
 #include <internal_shared.h>
 #include <xatomic.h>
@@ -157,6 +155,7 @@ _MRTIMP2_PURE const locale& __CLRCALL_PURE_OR_CDECL locale::classic() { // get r
     return classic_locale;
 }
 
+// TRANSITION, ABI: non-Standard locale::empty() is preserved for binary compatibility
 _MRTIMP2_PURE locale __CLRCALL_PURE_OR_CDECL locale::empty() { // make empty transparent locale
     _Init();
     return locale{_Secret_locale_construct_tag{}, _Locimp::_New_Locimp(true)};
