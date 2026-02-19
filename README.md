@@ -145,12 +145,12 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
   + **You must install Insiders for STL development.** *See Note 1 below.*
   + Select the "Desktop development with C++" workload.
   + Select the following components at a minimum:
-    - "MSVC Build Tools for x64/x86 (Latest)"
+    - "MSVC Build Tools for x64/x86 (Preview)"
     - "C++ CMake tools for Windows"
     - "MSVC AddressSanitizer"
     - "Windows 11 SDK (10.0.26100)" or later
     - "C++ Clang tools for Windows (20.1.8 - x64/x86)"
-    - *Optional, see Note 2 below:* "MSVC Build Tools for ARM64/ARM64EC (Latest)"
+    - *Optional, see Note 2 below:* "MSVC Build Tools for ARM64/ARM64EC (Preview)"
 * Install [Python][] 3.14.3 or later.
   + Select "Add python.exe to PATH" if you want to follow the instructions below that invoke `python`.
     Otherwise, you should be familiar with alternative methods.
