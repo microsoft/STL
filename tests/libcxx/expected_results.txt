@@ -108,6 +108,9 @@ std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get
 std/containers/sequences/vector/trivial_relocation.pass.cpp:0 FAIL
 std/containers/sequences/vector/trivial_relocation.pass.cpp:1 FAIL
 
+# LLVM-182397: [libc++][test] rand.dist.bern.negbin/eval.pass.cpp constructs with p == 1, which has undefined behavior
+std/numerics/rand/rand.dist/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -672,10 +675,6 @@ std/numerics/complex.number/cmplx.over/proj.pass.cpp:1 FAIL
 # Testing input values outside the range of [complex.value.ops]/9
 # libc++ handles those input values differently
 std/numerics/complex.number/complex.value.ops/polar.pass.cpp FAIL
-
-# Assertion failed: invalid beta argument for gamma_distribution
-# test4() constructs a negative_binomial_distribution from (40, 1); [rand.dist.bern.negbin] says p == 1 generates undefined probabilities.
-std/numerics/rand/rand.dist/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp FAIL
 
 # Assertion failed: (std::lerp(T(2.3), T(2.3), inf) == T(2.3))
 # Asserts `(std::lerp(T(2.3), T(2.3), inf) == T(2.3))` and `std::isnan(std::lerp(T( 0), T( 0), inf))`
