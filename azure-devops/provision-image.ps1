@@ -185,6 +185,13 @@ if ($Provisioning_x64) {
   EnableNativeNVMe
 }
 
+# TRANSITION, patch Launch-VsDevShell.ps1 to pass `-vcvars_ver=preview` before a proper parameter is available.
+Write-Host 'Patching Launch-VsDevShell.ps1...'
+$launchVsDevShell = 'C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\Tools\Launch-VsDevShell.ps1'
+$paramRegex = 'VsInstanceId = \$instanceId'
+$paramSubst = '$&; DevCmdArguments = "-vcvars_ver=preview";'
+(Get-Content -Raw $launchVsDevShell) -creplace $paramRegex, $paramSubst | Set-Content -NoNewLine $launchVsDevShell
+
 # Tell create-1es-hosted-pool.ps1 that we succeeded.
 Write-Host 'PROVISION_IMAGE_SUCCEEDED'
 
