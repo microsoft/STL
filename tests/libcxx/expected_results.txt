@@ -933,10 +933,8 @@ std/ranges/range.adaptors/range.lazy.split/ctor.copy_move.pass.cpp FAIL
 std/ranges/range.adaptors/range.lazy.split/range.lazy.split.inner/iter_swap.pass.cpp FAIL
 
 # Not analyzed.
-# MSVC error C2131: expression did not evaluate to a constant
-# MSVC note: failure was caused by a read of an uninitialized symbol
 # Clang error: non-type template argument is not a constant expression
-std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp:2 FAIL
 
 # Not analyzed, possible path length issue. With a repo root of D:\GitHub\STL (13 characters), fails with:
 # "error RC2136 : missing '=' in EXSTYLE=<flags>" followed by "LINK : fatal error LNK1327: failure during running rc.exe"
