@@ -746,8 +746,9 @@ struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS has_unique_object_representations
 _EXPORT_STD template <class _Ty>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool has_unique_object_representations_v =
     __has_unique_object_representations(_Ty);
+#endif // _HAS_CXX17
 
-#ifdef __cpp_lib_reference_from_temporary
+#if _HAS_CXX23
 #ifdef __clang__ // TRANSITION, LLVM-114344
 template <class _Ty>
 struct _Adjust_ref_binding_source {
@@ -786,8 +787,9 @@ struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS reference_converts_from_temporary
 _EXPORT_STD template <class _Ty, class _Uty>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool reference_converts_from_temporary_v =
     __reference_converts_from_temporary(_Ty, _Adjust_ref_binding_source_t<_Uty>);
-#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
+#endif // _HAS_CXX23
 
+#if _HAS_CXX17
 #ifdef __EDG__ // TRANSITION, VSO-1690654
 template <class _Ty>
 struct _Is_aggregate_impl : bool_constant<__is_aggregate(_Ty)> {};
@@ -1860,13 +1862,13 @@ struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_nothrow_convertible
 template <class _From, class _To, class = void>
 struct _Invoke_convertible : false_type {};
 
-#ifdef __cpp_lib_reference_from_temporary
+#if _HAS_CXX23
 template <class _To, class _From>
 using _Not_reference_converts_from_temporary = bool_constant<!reference_converts_from_temporary_v<_To, _From>>;
-#else // ^^^ defined(__cpp_lib_reference_from_temporary) / !defined(__cpp_lib_reference_from_temporary) vvv
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 template <class _To, class _From>
 using _Not_reference_converts_from_temporary = true_type;
-#endif // ^^^ !defined(__cpp_lib_reference_from_temporary) ^^^
+#endif // ^^^ !_HAS_CXX23 ^^^
 
 template <class _From, class _To>
 struct _Invoke_convertible<_From, _To, void_t<decltype(_STD _Fake_copy_init<_To>(_STD _Returns_exactly<_From>()))>>

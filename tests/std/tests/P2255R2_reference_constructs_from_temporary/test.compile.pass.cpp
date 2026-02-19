@@ -5,8 +5,6 @@
 
 using namespace std;
 
-// TRANSITION, MSVC and EDG haven't implemented intrinsics needed for P2255R2.
-#ifdef __cpp_lib_reference_from_temporary
 enum class conv_explicitly : bool {
     no,
     yes,
@@ -174,11 +172,15 @@ void test_to_int_ref() {
     static_assert(reference_constructs_from_temporary<const long&, to_int_lvalue<Explicitly>>::value
                   == !static_cast<bool>(Explicitly));
     static_assert(!reference_constructs_from_temporary<int&, to_int_xvalue<Explicitly>>::value);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2742607
     static_assert(!reference_constructs_from_temporary<const int&, to_int_xvalue<Explicitly>>::value);
+#endif // ^^^ no workaround ^^^
     static_assert(reference_constructs_from_temporary<const long&, to_int_xvalue<Explicitly>>::value
                   == !static_cast<bool>(Explicitly));
     static_assert(!reference_constructs_from_temporary<int&, to_int_prvalue<Explicitly>>::value);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2742607
     static_assert(reference_constructs_from_temporary<const int&, to_int_prvalue<Explicitly>>::value);
+#endif // ^^^ no workaround ^^^
     static_assert(reference_constructs_from_temporary<const long&, to_int_prvalue<Explicitly>>::value
                   == !static_cast<bool>(Explicitly));
 
@@ -187,12 +189,16 @@ void test_to_int_ref() {
     static_assert(reference_constructs_from_temporary_v<const long&, to_int_lvalue<Explicitly>>
                   == !static_cast<bool>(Explicitly));
     static_assert(!reference_constructs_from_temporary_v<int&, to_int_xvalue<Explicitly>>);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2742607
     static_assert(!reference_constructs_from_temporary_v<const int&, to_int_xvalue<Explicitly>>);
+#endif // ^^^ no workaround ^^^
     static_assert(reference_constructs_from_temporary_v<const long&, to_int_xvalue<Explicitly>>
                   == !static_cast<bool>(Explicitly));
 
     static_assert(!reference_constructs_from_temporary_v<int&, to_int_prvalue<Explicitly>>);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2742607
     static_assert(reference_constructs_from_temporary_v<const int&, to_int_prvalue<Explicitly>>);
+#endif // ^^^ no workaround ^^^
     static_assert(reference_constructs_from_temporary_v<const long&, to_int_prvalue<Explicitly>>
                   == !static_cast<bool>(Explicitly));
 }
@@ -201,4 +207,3 @@ void test_to_int_ref_all() {
     test_to_int_ref<conv_explicitly::no>();
     test_to_int_ref<conv_explicitly::yes>();
 }
-#endif // ^^^ no workaround ^^^

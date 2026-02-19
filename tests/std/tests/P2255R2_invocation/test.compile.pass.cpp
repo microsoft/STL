@@ -6,8 +6,6 @@
 
 using namespace std;
 
-// TRANSITION, MSVC and EDG haven't implemented intrinsics needed for P2255R2.
-#ifdef __cpp_lib_reference_from_temporary
 struct LvalueTempFunctor {
     int operator()() const& noexcept;
     const int& operator()() const&& noexcept;
@@ -61,4 +59,3 @@ static_assert(!is_constructible_v<move_only_function<const int&() const & noexce
 static_assert(is_constructible_v<move_only_function<const int&() && noexcept>, LvalueTempFunctor>);
 static_assert(is_constructible_v<move_only_function<const int&() const && noexcept>, LvalueTempFunctor>);
 #endif // defined(__cpp_noexcept_function_type)
-#endif // ^^^ no workaround ^^^

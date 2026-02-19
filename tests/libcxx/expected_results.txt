@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # *** ISSUES REPORTED/KNOWN UPSTREAM ***
+# LLVM-48860: P0466R5 Layout-Compatibility And Pointer-Interconvertibility Traits
+std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp:2 FAIL
+
 # LLVM-73836: warning C5101: use of preprocessor directive in function-like macro argument list is undefined behavior
 std/time/time.syn/formatter.duration.pass.cpp:0 FAIL
 std/time/time.syn/formatter.duration.pass.cpp:1 FAIL
@@ -185,8 +188,8 @@ std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_allocate_over
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.mem/unsync_deallocate_matches_allocate.pass.cpp FAIL
 
 # libc++ hasn't completely implemented P2255R2 "Type Traits To Detect References Binding To Temporaries"
-std/utilities/meta/meta.rel/is_invocable_r.compile.pass.cpp:2 FAIL
-std/utilities/meta/meta.rel/is_invocable_r_v.compile.pass.cpp:2 FAIL
+std/utilities/meta/meta.rel/is_invocable_r.compile.pass.cpp FAIL
+std/utilities/meta/meta.rel/is_invocable_r_v.compile.pass.cpp FAIL
 
 # libc++ is missing various Ranges DRs
 std/language.support/support.limits/support.limits.general/memory.version.compile.pass.cpp FAIL
@@ -290,14 +293,6 @@ std/numerics/numeric.ops/numeric.ops.sat/sub_sat.pass.cpp FAIL
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/utilities/intseq/intseq.binding/structured_binding.pass.cpp FAIL
 std/utilities/intseq/intseq.binding/tuple_interface.compile.pass.cpp FAIL
-
-# P2255R2 "Type Traits To Detect References Binding To Temporaries"
-# (type_traits.version.compile.pass.cpp still fails for Clang due to LLVM-48860)
-std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:0 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:1 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:0 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:1 FAIL
 
 # P2592R3 Hashing Support For chrono Value Classes
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
@@ -592,6 +587,12 @@ std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:0 FAIL
 std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:1 FAIL
 std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:0 FAIL
 std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:1 FAIL
+
+# VSO-2742607 C1XX __reference_constructs_from_temporary mishandles a couple of cases
+std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:1 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:1 FAIL
 
 
 # *** CLANG COMPILER BUGS ***
