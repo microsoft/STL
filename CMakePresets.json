@@ -10,7 +10,11 @@
       "name": "base",
       "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/out/${presetName}"
+      "binaryDir": "${sourceDir}/out/${presetName}",
+      "toolset": {
+        "strategy": "external",
+        "value": "version=preview"
+      }
     },
     {
       "name": "x64",
