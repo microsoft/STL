@@ -4137,6 +4137,24 @@ namespace filesystem {
 
         bool _Call_canonical = true;
 
+        // GH-6054: Fix drive-relative paths like "C:bar".
+        // For such paths, root_path() is just the root-name "C:" (no root-directory).
+        // Canonicalize "C:" first (to the current directory on that drive), then append relative elements.
+        if (_Call_canonical && _Normalized.has_root_name() && !_Normalized.has_root_directory()) {
+            _Temp.clear();
+
+            const auto _Err = _Canonical(_Temp, _Result.native());
+
+            if (_Err == __std_win_error::_Success) {
+                _Result = _STD move(_Temp);
+            } else if (__std_is_file_not_found(_Err)) {
+                _Call_canonical = false; // match the loop's behavior
+            } else {
+                _Ec = _Make_ec(_Err);
+                return {};
+            }
+        }
+
         for (const auto& _Elem : _Normalized_relative) {
             _Result /= _Elem;
 

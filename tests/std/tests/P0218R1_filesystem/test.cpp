@@ -3191,6 +3191,46 @@ void test_weakly_canonical() {
     const path p2 = weakly_canonical(meow_txt);
     EXPECT(p1.native() == p2.native());
 
+    {
+        const path old_cwd = current_path(ec);
+        EXPECT(good(ec));
+
+        const path abs_dir = p1.parent_path();
+        EXPECT(abs_dir.is_absolute());
+
+        // Mirror the repro structure: ensure 'foo' exists under the cwd we use.
+        create_directories(abs_dir / L"foo"sv, ec);
+        EXPECT(good(ec));
+
+        current_path(abs_dir, ec);
+        EXPECT(good(ec));
+
+        const path cwd = current_path(ec);
+        EXPECT(good(ec));
+        EXPECT(cwd.is_absolute());
+
+        const wstring drive = cwd.root_name().native(); // e.g. L"C:"
+        EXPECT(!drive.empty());
+        EXPECT(drive.back() == L':');
+
+        const path got_drive_only = weakly_canonical(drive, ec);
+        EXPECT(good(ec));
+        EXPECT(got_drive_only == cwd);
+
+        // Intentionally drive-relative (no backslash after colon).
+        const path got_foo_bar = weakly_canonical(drive + L"foo\\bar", ec);
+        EXPECT(good(ec));
+        EXPECT(got_foo_bar == (cwd / L"foo"sv / L"bar"sv));
+
+        const path got_bar = weakly_canonical(drive + L"bar", ec);
+        EXPECT(good(ec));
+        EXPECT(got_bar == (cwd / L"bar"sv));
+
+        // Restore cwd so this test doesn't leak process state.
+        current_path(old_cwd, ec);
+        EXPECT(good(ec));
+    }
+
     const path woof_txt(L"test_weakly_canonical/a/b/x/y/woof.txt"sv);
     const path p3 = weakly_canonical(woof_txt, ec);
     EXPECT(good(ec));
