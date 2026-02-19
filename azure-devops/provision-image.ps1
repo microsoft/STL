@@ -36,13 +36,12 @@ if ($Arch -ieq 'x64') {
 
 $VisualStudioWorkloads = @(
   'Microsoft.VisualStudio.Component.VC.ASAN',
-  'Microsoft.VisualStudio.Component.VC.CLI.Support',
   'Microsoft.VisualStudio.Component.VC.CMake.Project',
   'Microsoft.VisualStudio.Component.VC.CoreIde',
   'Microsoft.VisualStudio.Component.VC.Llvm.Clang',
-  'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
-  'Microsoft.VisualStudio.Component.VC.Tools.ARM64EC',
-  'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
+  'Microsoft.VisualStudio.Component.VC.Preview.ARM64',
+  'Microsoft.VisualStudio.Component.VC.Preview.CLI.Support',
+  'Microsoft.VisualStudio.Component.VC.Preview.Tools.x86.x64',
   'Microsoft.VisualStudio.Component.Windows11SDK.26100'
 )
 
