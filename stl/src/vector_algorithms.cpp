@@ -5705,18 +5705,180 @@ namespace {
 
         enum class _Predicate { _Any_of, _None_of };
 
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
         namespace _Bitmap_details {
-            // AVX2 bitmap: __m256i value with each bit corresponding to a needle element. Set bits mean "present".
-            //
-            // The bitmap algorithm implemented in _Bitmap_step:
-            //  - Process by 8 elements, populate them as in 32-bit values vector,
-            //    regardless of the original element size
-            //  - Split the low 5 bits and high 3 bits of these elements
-            //  - Use the high 3 bits with _mm256_permutevar8x32_epi32 to find 32-bit bitmap portion for each element
-            //  - Use the low 5 bits to shift the bitmap portion, so that the bitmap bit corresponding to them is on
-            //    highest position. Negate these low 5 bits before that, as we're populating the highest position
-            //  - The resulting mask can later be converted via _mm256_movemask_ps to one byte bitmap
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+            __forceinline uint8x16_t _Bitmap_step(const uint8x16_t _Data, const uint8x16x2_t _Bitmap) noexcept {
+                const uint8x16_t _Idx = vshrq_n_u8(_Data, 3);
+                const uint8x16_t _Bit = vandq_u8(_Data, vdupq_n_u8(7));
+
+                const uint8x16_t _Byte = vqtbl2q_u8(_Bitmap, _Idx);
+                const int8x16_t _Shift = vnegq_s8(vreinterpretq_s8_u8(_Bit));
+                const uint8x16_t _Test = vshlq_u8(_Byte, _Shift);
+                return vtstq_u8(_Test, vdupq_n_u8(1));
+            }
+
+            inline uint8x16_t _Pack_u16(const uint16x8_t _V0, const uint16x8_t _V1) {
+                return vuzp1q_u8(vreinterpretq_u8_u16(_V0), vreinterpretq_u8_u16(_V1));
+            }
+
+            inline uint8x16_t _Pack_u32(
+                const uint32x4_t _V0, const uint32x4_t _V1, const uint32x4_t _V2, const uint32x4_t _V3) {
+                const auto _V01 = vuzp1q_u16(vreinterpretq_u16_u32(_V0), vreinterpretq_u16_u32(_V1));
+                const auto _V23 = vuzp1q_u16(vreinterpretq_u16_u32(_V2), vreinterpretq_u16_u32(_V3));
+                return _Pack_u16(_V01, _V23);
+            }
+
+            template <class _Ty>
+            __forceinline uint8x16_t _Do_bitmap(const _Ty* const _Src, const uint8x16x2_t _Bitmap) noexcept {
+                if constexpr (sizeof(_Ty) == 1) {
+                    const uint8x16_t _Data = vld1q_u8(_Src);
+                    return _Bitmap_step(_Data, _Bitmap);
+                } else if constexpr (sizeof(_Ty) == 2) {
+                    const auto _Data0 = vld1q_u16(_Src + 0);
+                    const auto _Data1 = vld1q_u16(_Src + 8);
+                    const auto _Data  = _Pack_u16(_Data0, _Data1);
+
+                    const auto _Limit     = vdupq_n_u16(0xFF);
+                    const auto _Overflow  = _Pack_u16(vcleq_u16(_Data0, _Limit), vcleq_u16(_Data1, _Limit));
+                    const auto _Mask_part = _Bitmap_step(_Data, _Bitmap);
+                    return vandq_u8(_Mask_part, _Overflow);
+                } else if constexpr (sizeof(_Ty) == 4) {
+                    const auto _Data0 = vld1q_u32(_Src + 0);
+                    const auto _Data1 = vld1q_u32(_Src + 4);
+                    const auto _Data2 = vld1q_u32(_Src + 8);
+                    const auto _Data3 = vld1q_u32(_Src + 12);
+                    const auto _Data  = _Pack_u32(_Data0, _Data1, _Data2, _Data3);
+
+                    const auto _Limit     = vdupq_n_u32(0xFF);
+                    const auto _Overflow0 = vcleq_u32(_Data0, _Limit);
+                    const auto _Overflow1 = vcleq_u32(_Data1, _Limit);
+                    const auto _Overflow2 = vcleq_u32(_Data2, _Limit);
+                    const auto _Overflow3 = vcleq_u32(_Data3, _Limit);
+                    const auto _Overflow  = _Pack_u32(_Overflow0, _Overflow1, _Overflow2, _Overflow3);
+
+                    const auto _Mask_part = _Bitmap_step(_Data, _Bitmap);
+                    return vandq_u8(_Mask_part, _Overflow);
+                } else {
+                    static_assert(false, "Unexpected size");
+                }
+            }
+
+
+            template <class _Ty>
+            __forceinline bool _Make_bitmap_small(
+                const void* const _Needle, const size_t _Needle_length, uint8x16x2_t& _Bitmap) noexcept {
+                auto _Needle_ptr = static_cast<const _Ty*>(_Needle);
+                const auto _Stop = _Needle_ptr + _Needle_length;
+
+                uint64_t _Bitmap0 = 0;
+                uint64_t _Bitmap1 = 0;
+                uint64_t _Bitmap2 = 0;
+                uint64_t _Bitmap3 = 0;
+
+                constexpr uint64_t _One = 1;
+
+                for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
+                    const unsigned int _Val = static_cast<unsigned int>(*_Needle_ptr);
+
+                    if constexpr (sizeof(_Ty) > 1) {
+                        if (_Val >= 256) {
+                            return false;
+                        }
+                    }
+
+                    const uint64_t _One_low  = _rotl64(_One, _Val);
+                    const uint64_t _Bitmap01 = (_Val & 0x80) == 0 ? _One_low : 0;
+                    const uint64_t _Bitmap23 = (_Val & 0x80) != 0 ? _One_low : 0;
+                    _Bitmap0 |= (_Val & 0x40) == 0 ? _Bitmap01 : 0;
+                    _Bitmap1 |= (_Val & 0x40) != 0 ? _Bitmap01 : 0;
+                    _Bitmap2 |= (_Val & 0x40) == 0 ? _Bitmap23 : 0;
+                    _Bitmap3 |= (_Val & 0x40) != 0 ? _Bitmap23 : 0;
+                }
+
+                _Bitmap.val[0] = vreinterpretq_u8_u64(vsetq_lane_u64(_Bitmap1, vdupq_n_u64(_Bitmap0), 1));
+                _Bitmap.val[1] = vreinterpretq_u8_u64(vsetq_lane_u64(_Bitmap3, vdupq_n_u64(_Bitmap2), 1));
+
+                return true;
+            }
+
+            __forceinline uint64x1_t _Movemask_128_x4(
+                uint8x16_t _In0, uint8x16_t _In1, uint8x16_t _In2, uint8x16_t _In3, uint8x16_t _Mask) noexcept {
+                uint8x16_t _And0 = vandq_u8(_In0, _Mask);
+                uint8x16_t _And1 = vandq_u8(_In1, _Mask);
+                uint8x16_t _And2 = vandq_u8(_In2, _Mask);
+                uint8x16_t _And3 = vandq_u8(_In3, _Mask);
+
+                uint8x16_t _Sum0 = vpaddq_u8(_And0, _And1);
+                uint8x16_t _Sum1 = vpaddq_u8(_And2, _And3);
+                _Sum0            = vpaddq_u8(_Sum0, _Sum1);
+                _Sum0            = vpaddq_u8(_Sum0, _Sum0);
+
+                return vget_low_u64(vreinterpretq_u64_u8(_Sum0));
+            }
+
+            template <class _Ty>
+            __forceinline bool _Make_bitmap_large_neon(
+                const void* const _Needle, const size_t _Needle_length, uint8x16x2_t& _Bm) noexcept {
+                constexpr uint8_t _Mask_arr[16] = {
+                    0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80, 0x01, 0x02, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80};
+                const auto _Mask = vld1q_u8(_Mask_arr);
+
+                auto _Needle_ptr       = static_cast<const _Ty*>(_Needle);
+                const _Ty* const _Stop = _Needle_ptr + _Needle_length;
+
+                alignas(16) uint8_t _Table[256] = {};
+                for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
+
+                    if constexpr (sizeof(_Ty) > 1) {
+                        if (*_Needle_ptr >= 256) {
+                            return false;
+                        }
+                    }
+
+                    _Table[*_Needle_ptr] = 0xFF;
+                }
+
+                for (size_t _Ix = 0; _Ix < 2; ++_Ix) {
+                    const auto _In0 = vld1q_u8(_Table + _Ix * 128 + 0 * 16);
+                    const auto _In1 = vld1q_u8(_Table + _Ix * 128 + 1 * 16);
+                    const auto _In2 = vld1q_u8(_Table + _Ix * 128 + 2 * 16);
+                    const auto _In3 = vld1q_u8(_Table + _Ix * 128 + 3 * 16);
+
+                    const auto _Bm0 = _Movemask_128_x4(_In0, _In1, _In2, _In3, _Mask);
+
+                    const auto _In4 = vld1q_u8(_Table + _Ix * 128 + 4 * 16);
+                    const auto _In5 = vld1q_u8(_Table + _Ix * 128 + 5 * 16);
+                    const auto _In6 = vld1q_u8(_Table + _Ix * 128 + 6 * 16);
+                    const auto _In7 = vld1q_u8(_Table + _Ix * 128 + 7 * 16);
+
+                    const auto _Bm1 = _Movemask_128_x4(_In4, _In5, _In6, _In7, _Mask);
+
+                    _Bm.val[_Ix] = vreinterpretq_u8_u64(vcombine_u64(_Bm0, _Bm1));
+                }
+
+                return true;
+            }
+
+            template <class _Ty>
+            __forceinline bool _Make_bitmap(
+                const void* const _Needle, const size_t _Needle_length, uint8x16x2_t& _Bitmap) noexcept {
+                if (_Needle_length <= 20) {
+                    return _Make_bitmap_small<_Ty>(_Needle, _Needle_length, _Bitmap);
+                } else {
+                    return _Make_bitmap_large_neon<_Ty>(_Needle, _Needle_length, _Bitmap);
+                }
+            }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
+      // AVX2 bitmap: __m256i value with each bit corresponding to a needle element. Set bits mean "present".
+      //
+      // The bitmap algorithm implemented in _Bitmap_step:
+      //  - Process by 8 elements, populate them as in 32-bit values vector,
+      //    regardless of the original element size
+      //  - Split the low 5 bits and high 3 bits of these elements
+      //  - Use the high 3 bits with _mm256_permutevar8x32_epi32 to find 32-bit bitmap portion for each element
+      //  - Use the low 5 bits to shift the bitmap portion, so that the bitmap bit corresponding to them is on
+      //    highest position. Negate these low 5 bits before that, as we're populating the highest position
+      //  - The resulting mask can later be converted via _mm256_movemask_ps to one byte bitmap
             __m256i _Bitmap_step(const __m256i _Bitmap, const __m256i _Data) noexcept {
                 const __m256i _Data_high    = _mm256_srli_epi32(_Data, 5);
                 const __m256i _Bitmap_parts = _mm256_permutevar8x32_epi32(_Bitmap, _Data_high);
@@ -5835,8 +5997,8 @@ namespace {
                     return _Make_bitmap_large(_Needle_ptr, _Needle_length);
                 }
             }
-        } // namespace _Bitmap_details
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
+        } // namespace _Bitmap_details
 
         namespace _Bitmap_impl {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
@@ -5868,6 +6030,98 @@ namespace {
                 } else {
                     return _Count2 >= 2;
                 }
+            }
+
+            template <class _Ty>
+            bool _Use_bitmap_neon(const size_t _Count1, const size_t _Count2) noexcept {
+                if constexpr (sizeof(_Ty) == 1) {
+                    if (_Count1 < 32) {
+                        return false;
+                    } else if (_Count1 < 64) {
+                        return _Count2 >= 24;
+                    } else if (_Count1 < 128) {
+                        return _Count2 >= 8;
+                    } else {
+                        return _Count2 >= 4;
+                    }
+                } else if constexpr (sizeof(_Ty) == 2) {
+                    if (_Count1 < 32) {
+                        return false;
+                    } else if (_Count1 < 96) {
+                        return _Count2 >= 8;
+                    } else {
+                        return _Count2 >= 4;
+                    }
+                } else if constexpr (sizeof(_Ty) == 4) {
+                    if (_Count1 < 32) {
+                        return false;
+                    } else if (_Count1 < 64) {
+                        return _Count2 >= 64;
+                    } else if (_Count1 < 96) {
+                        return _Count2 >= 8;
+                    } else {
+                        return _Count2 >= 4;
+                    }
+                } else {
+                    return false;
+                }
+            }
+
+            template <class _Ty, _Predicate _Pred>
+            size_t _Impl_first_neon(
+                const void* const _Haystack, const size_t _Haystack_length, const uint8x16x2_t _Bitmap) noexcept {
+                const auto _Hay_ptr = static_cast<const _Ty*>(_Haystack);
+
+                alignas(16) uint8_t _Bitmap_scalar[32];
+                vst1q_u8(_Bitmap_scalar, _Bitmap.val[0]);
+                vst1q_u8(_Bitmap_scalar + 16, _Bitmap.val[1]);
+
+                size_t _Ix            = 0;
+                const size_t _Vec_end = _Haystack_length & ~size_t{15};
+                for (; _Ix != _Vec_end; _Ix += 16) {
+
+                    const auto _Eq = _Bitmap_details::_Do_bitmap(_Hay_ptr + _Ix, _Bitmap);
+
+                    auto _Mask = _Finding::_Find_traits_1::_Mask_q(_Eq);
+                    if constexpr (_Pred == _Predicate::_None_of) {
+                        _Mask ^= 0xFFFF'FFFF'FFFF'FFFF;
+                    }
+
+                    if (_Mask != 0) {
+                        return _Ix + _Finding::_Get_first_h_pos_q(_Mask);
+                    }
+                }
+
+                for (; _Ix != _Haystack_length; ++_Ix) {
+                    const _Ty _Val = _Hay_ptr[_Ix];
+
+                    if constexpr (sizeof(_Val) > 1) {
+                        if (_Val >= 256) {
+                            if constexpr (_Pred == _Predicate::_Any_of) {
+                                continue;
+                            } else {
+                                return _Ix;
+                            }
+                        }
+                    }
+
+                    const auto _Val_u8 = static_cast<uint8_t>(_Val);
+                    const uint8_t _Hi  = static_cast<uint8_t>(_Val_u8 >> 3);
+                    const uint8_t _Lo  = static_cast<uint8_t>(_Val_u8 & 0x7);
+                    const bool _Hit    = ((_Bitmap_scalar[_Hi] >> _Lo) & 0x1) != 0;
+
+                    if constexpr (_Pred == _Predicate::_Any_of) {
+                        if (_Hit) {
+                            return _Ix;
+                        }
+                    } else {
+                        if (!_Hit) {
+                            return _Ix;
+                        }
+                    }
+                }
+
+                return static_cast<size_t>(-1);
             }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             template <class _Ty>
@@ -6927,7 +7181,14 @@ namespace {
                 const size_t _Count2) noexcept {
                 using namespace _Bitmap_impl;
 
-                if (_Use_bitmap_scalar<_Ty>(_Count1, _Count2)) {
+                if (_Use_bitmap_neon<_Ty>(_Count1, _Count2)) {
+                    if constexpr (sizeof(_Ty) < 8) {
+                        uint8x16x2_t _Bitmap;
+                        if (_Bitmap_details::_Make_bitmap<_Ty>(_First2, _Count2, _Bitmap)) {
+                            return _Impl_first_neon<_Ty, _Pred>(_First1, _Count1, _Bitmap);
+                        }
+                    }
+                } else if (_Use_bitmap_scalar<_Ty>(_Count1, _Count2)) {
                     _Scalar_table_t _Table = {};
                     if (_Build_scalar_table<_Ty>(_First2, _Count2, _Table)) {
                         return _Impl_first_scalar<_Ty, _Pred>(_First1, _Count1, _Table);
