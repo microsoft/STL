@@ -170,7 +170,7 @@ For example, `<atomic>` has conditionally compiled code for the `_M_ARM64` and `
 4. Use the IDE's dropdown menu to choose the architecture you want to build. We recommend x64 for general development.
 5. Build > Build All.
 
-# How To Build With A Native Tools Command Prompt
+# How To Build With The Command Prompt
 
 1. Open a command prompt.
 2. Change directories to a location where you'd like a clone of this STL repository.
@@ -180,33 +180,35 @@ If you installed VS to a non-default location, change the `vcvarsall.bat` paths 
 
 To build the x64 target (recommended):
 
-1. `"C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" x64`
-    * Or open an "x64 Native Tools Command Prompt for VS 18 Insiders".
-2. Change directories to the previously cloned `STL` directory.
-3. `cmake --preset x64`
-4. `cmake --build --preset x64`
+1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
+1. `vcvarsall.bat x64 -vcvars_ver=preview`
+1. Change directories to the previously cloned `STL` directory.
+1. `cmake --preset x64`
+1. `cmake --build --preset x64`
 
 To build the x86 target:
 
-1. `"C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" x86`
-    * Or open an "x86 Native Tools Command Prompt for VS 18 Insiders".
-2. Change directories to the previously cloned `STL` directory.
-3. `cmake --preset x86`
-4. `cmake --build --preset x86`
+1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
+1. `vcvarsall.bat x86 -vcvars_ver=preview`
+1. Change directories to the previously cloned `STL` directory.
+1. `cmake --preset x86`
+1. `cmake --build --preset x86`
 
 To build the ARM64 target:
 
-1. `"C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
-2. Change directories to the previously cloned `STL` directory.
-3. `cmake --preset ARM64`
-4. `cmake --build --preset ARM64`
+1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
+1. `vcvarsall.bat x64_arm64 -vcvars_ver=preview`
+1. Change directories to the previously cloned `STL` directory.
+1. `cmake --preset ARM64`
+1. `cmake --build --preset ARM64`
 
 To build the ARM64EC target:
 
-1. `"C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
-2. Change directories to the previously cloned `STL` directory.
-3. `cmake --preset ARM64EC`
-4. `cmake --build --preset ARM64EC`
+1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
+1. `vcvarsall.bat x64_arm64 -vcvars_ver=preview`
+1. Change directories to the previously cloned `STL` directory.
+1. `cmake --preset ARM64EC`
+1. `cmake --build --preset ARM64EC`
 
 # How To Consume
 
@@ -227,21 +229,30 @@ your .exe would "win" over the versions in System32.
 The compiler looks for include directories according to the `INCLUDE` environment variable, and the linker looks for
 import library directories according to the `LIB` environment variable, and the Windows loader will (eventually) look
 for DLL dependencies according to directories in the `PATH` environment variable.
-The build generates a batch script named `set_environment.bat` in the output directory. If you run this script in a VS
-Developer Command Prompt, it will insert the proper directories into the `INCLUDE`, `LIB`, and `PATH` environment
+The build generates a batch script named `set_environment.bat` in the output directory. If you run this script,
+it will insert the proper directories into the `INCLUDE`, `LIB`, and `PATH` environment
 variables to ensure that the built headers and libraries are used.
 
 ## Complete Example Using x64 DLL Flavor
 
-From an "x64 Native Tools Command Prompt for VS 18 Insiders":
-
 ```
+C:\Temp>pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"
+
+C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build>vcvarsall.bat x64 -vcvars_ver=preview
+**********************************************************************
+** Visual Studio 2026 Developer Command Prompt v18.4.0-insiders
+** Copyright (c) 2026 Microsoft Corporation
+**********************************************************************
+[vcvarsall.bat] Environment initialized for: 'x64'
+
+C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build>pushd D:\GitHub\STL
+
 D:\GitHub\STL>cmake --preset x64
 [...]
 -- Build files have been written to: D:/GitHub/STL/out/x64
 
 D:\GitHub\STL>cmake --build --preset x64
-[1028/1028] Linking CXX static library out\lib\amd64\libcpmtd0.lib
+[762/762] Linking CXX static library out\lib\amd64\libcpmtd0.lib
 
 D:\GitHub\STL>out\x64\set_environment.bat
 
@@ -264,7 +275,7 @@ C:\Temp>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
     msvcp140d_oss.dll
 ```
 
-# How To Run The Tests With A Native Tools Command Prompt
+# How To Run The Tests
 
 Our tests are currently split across three test suites that are located at `tests\std`, `tests\tr1`, and
 `llvm-project\libcxx\test\std`. The test runner `${PROJECT_BINARY_DIR}\tests\utils\stl-lit\stl-lit.py` accepts paths to
