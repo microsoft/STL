@@ -146,7 +146,7 @@ struct formatter {
 };
 
 _FMT_P2286_BEGIN
-// TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
+// TRANSITION, VSO-2744645: Avoid declaring and defining member functions in different headers.
 template <_Basic_format_arg_type _ArgType, class _CharT, class _ParseContext>
 constexpr _ParseContext::iterator _Formatter_base_parse(
     _Dynamic_format_specs<_CharT>& _Specs, _ParseContext& _Parse_ctx);
@@ -420,7 +420,7 @@ struct _Fill_align_and_width_specs {
     _CharT _Fill[4 / sizeof(_CharT)]{' '};
 };
 
-// TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
+// TRANSITION, VSO-2744645: Avoid declaring and defining member functions in different headers.
 template <class _CharT, class _ParseContext>
 _NODISCARD constexpr _ParseContext::iterator _Fill_align_and_width_formatter_parse(
     _Fill_align_and_width_specs<_CharT>& _Specs, _ParseContext& _Parse_ctx);

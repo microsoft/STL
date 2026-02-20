@@ -903,7 +903,7 @@ struct _Range_specs : _Fill_align_and_width_specs<_CharT> {
     char _Type        = '\0';
 };
 
-// TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
+// TRANSITION, VSO-2744645: Avoid declaring and defining member functions in different headers.
 template <class _Ty, class _CharT, class _ParseContext>
 _NODISCARD constexpr _ParseContext::iterator _Range_formatter_parse(formatter<_Ty, _CharT>& _Underlying,
     basic_string_view<_CharT>& _Separator, basic_string_view<_CharT>& _Opening_bracket,
@@ -1148,7 +1148,7 @@ public:
     }
 };
 
-// TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
+// TRANSITION, VSO-2744645: Avoid declaring and defining member functions in different headers.
 template <class... _Types, class _CharT, class _ParseContext>
 _NODISCARD constexpr _ParseContext::iterator _Tuple_formatter_parse(tuple<formatter<_Types, _CharT>...>& _Underlying,
     basic_string_view<_CharT>& _Separator, basic_string_view<_CharT>& _Opening_bracket,
