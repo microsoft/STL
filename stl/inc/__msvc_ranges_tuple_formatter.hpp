@@ -905,12 +905,12 @@ struct _Range_specs : _Fill_align_and_width_specs<_CharT> {
 
 // TRANSITION, VSO-2744645: Avoid declaring and defining member functions in different headers.
 template <class _Ty, class _CharT, class _ParseContext>
-_NODISCARD constexpr _ParseContext::iterator _Range_formatter_parse(formatter<_Ty, _CharT>& _Underlying,
+constexpr _ParseContext::iterator _Range_formatter_parse(formatter<_Ty, _CharT>& _Underlying,
     basic_string_view<_CharT>& _Separator, basic_string_view<_CharT>& _Opening_bracket,
     basic_string_view<_CharT>& _Closing_bracket, _Range_specs<_CharT>& _Specs, _ParseContext& _Ctx);
 
 template <class _Ty, class _CharT, _RANGES input_range _Range, class _FormatContext>
-_NODISCARD _FormatContext::iterator _Range_formatter_format(const formatter<_Ty, _CharT>& _Underlying,
+_FormatContext::iterator _Range_formatter_format(const formatter<_Ty, _CharT>& _Underlying,
     basic_string_view<_CharT> _Separator, basic_string_view<_CharT> _Opening_bracket,
     basic_string_view<_CharT> _Closing_bracket, const _Range_specs<_CharT>& _Specs, _Range&& _Rng,
     _FormatContext& _Ctx);
@@ -1150,12 +1150,12 @@ public:
 
 // TRANSITION, VSO-2744645: Avoid declaring and defining member functions in different headers.
 template <class... _Types, class _CharT, class _ParseContext>
-_NODISCARD constexpr _ParseContext::iterator _Tuple_formatter_parse(tuple<formatter<_Types, _CharT>...>& _Underlying,
+constexpr _ParseContext::iterator _Tuple_formatter_parse(tuple<formatter<_Types, _CharT>...>& _Underlying,
     basic_string_view<_CharT>& _Separator, basic_string_view<_CharT>& _Opening_bracket,
     basic_string_view<_CharT>& _Closing_bracket, _Fill_align_and_width_specs<_CharT>& _Specs, _ParseContext& _Ctx);
 
 template <class... _Types, class _CharT, class _FormatContext, class... _ArgTypes>
-_NODISCARD _FormatContext::iterator _Tuple_formatter_format(const tuple<formatter<_Types, _CharT>...>& _Underlying,
+_FormatContext::iterator _Tuple_formatter_format(const tuple<formatter<_Types, _CharT>...>& _Underlying,
     basic_string_view<_CharT> _Separator, basic_string_view<_CharT> _Opening_bracket,
     basic_string_view<_CharT> _Closing_bracket, const _Fill_align_and_width_specs<_CharT>& _Specs,
     _FormatContext& _Fmt_ctx, _ArgTypes&... _Args);
