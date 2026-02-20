@@ -153,7 +153,7 @@ constexpr _ParseContext::iterator _Formatter_base_parse(
 
 template <class _Ty, class _CharT, class _FormatContext>
 _FormatContext::iterator _Formatter_base_format(
-    const _Dynamic_format_specs<_CharT>& _Specs, const _Ty& _Val, _FormatContext& _FormatCtx);
+    const _Dynamic_format_specs<_CharT>& _Specs, const _Ty& _Val, _FormatContext& _Format_ctx);
 
 template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
 struct _Formatter_base {
@@ -172,8 +172,8 @@ public:
     }
 
     template <class _FormatContext>
-    _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) const {
-        return _Formatter_base_format(_Specs, _Val, _FormatCtx);
+    _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _Format_ctx) const {
+        return _Formatter_base_format(_Specs, _Val, _Format_ctx);
     }
 
 private:

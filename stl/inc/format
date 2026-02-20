@@ -2904,21 +2904,21 @@ constexpr _ParseContext::iterator _Formatter_base_parse(
 
 template <class _Ty, class _CharT, class _FormatContext>
 _FormatContext::iterator _Formatter_base_format(
-    const _Dynamic_format_specs<_CharT>& _Specs, const _Ty& _Val, _FormatContext& _FormatCtx) {
+    const _Dynamic_format_specs<_CharT>& _Specs, const _Ty& _Val, _FormatContext& _Format_ctx) {
     _Dynamic_format_specs<_CharT> _Format_specs = _Specs;
     if (_Specs._Dynamic_width_index >= 0) {
         _Format_specs._Width =
-            _Get_dynamic_specs<_Width_checker>(_FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
+            _Get_dynamic_specs<_Width_checker>(_Format_ctx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
     }
 
     if (_Specs._Dynamic_precision_index >= 0) {
         _Format_specs._Precision = _Get_dynamic_specs<_Precision_checker>(
-            _FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_precision_index)));
+            _Format_ctx.arg(static_cast<size_t>(_Specs._Dynamic_precision_index)));
     }
 
     return _STD visit_format_arg(
         _Arg_formatter<typename _FormatContext::iterator, _CharT>{
-            ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Format_specs)},
+            ._Ctx = _STD addressof(_Format_ctx), ._Specs = _STD addressof(_Format_specs)},
         basic_format_arg<_FormatContext>::_Make_from(_Val));
 }
 _FMT_P2286_END
