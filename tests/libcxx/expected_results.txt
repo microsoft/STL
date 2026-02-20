@@ -939,28 +939,26 @@ std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp:2 FAIL
 # "error RC2136 : missing '=' in EXSTYLE=<flags>" followed by "LINK : fatal error LNK1327: failure during running rc.exe"
 std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_until_deadlock_bug.pass.cpp SKIPPED
 
-# Not analyzed, failing due to constexpr step limits.
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:2 FAIL
-std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp:2 FAIL
-std/algorithms/alg.modifying.operations/alg.rotate/rotate.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.swap/ranges.swap_ranges.pass.cpp FAIL
-std/algorithms/alg.nonmodifying/alg.contains/ranges.contains_subrange.pass.cpp:2 FAIL
-std/algorithms/alg.nonmodifying/alg.count/count.pass.cpp FAIL
-std/algorithms/alg.nonmodifying/alg.count/ranges.count.pass.cpp FAIL
-std/algorithms/alg.sorting/alg.sort/partial.sort.copy/ranges_partial_sort_copy.pass.cpp:2 FAIL
-std/containers/sequences/vector.bool/append_range.pass.cpp FAIL
-std/containers/sequences/vector.bool/assign_range.pass.cpp FAIL
-std/containers/sequences/vector.bool/flip.pass.cpp FAIL
-std/containers/sequences/vector.bool/insert_range.pass.cpp FAIL
-std/containers/sequences/vector/vector.modifiers/destroy_elements.pass.cpp FAIL
-std/containers/sequences/vector/vector.modifiers/emplace.pass.cpp FAIL
-std/containers/sequences/vector/vector.modifiers/insert_range.pass.cpp FAIL
-std/ranges/range.adaptors/range.join.with/range.join.with.view/end.pass.cpp FAIL
-std/strings/basic.string/string.modifiers/string_replace/replace_with_range.pass.cpp FAIL
-std/utilities/charconv/charconv.to.chars/integral.pass.cpp FAIL
-
 # Not analyzed, failing due to constexpr step limits. SKIPPED because they occasionally pass in certain configurations.
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp SKIPPED
+std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp SKIPPED
+std/algorithms/alg.modifying.operations/alg.rotate/rotate.pass.cpp SKIPPED
 std/algorithms/alg.modifying.operations/alg.shift/ranges.shift_left.pass.cpp SKIPPED
+std/algorithms/alg.modifying.operations/alg.swap/ranges.swap_ranges.pass.cpp SKIPPED
+std/algorithms/alg.nonmodifying/alg.contains/ranges.contains_subrange.pass.cpp SKIPPED
+std/algorithms/alg.nonmodifying/alg.count/count.pass.cpp SKIPPED
+std/algorithms/alg.nonmodifying/alg.count/ranges.count.pass.cpp SKIPPED
+std/algorithms/alg.sorting/alg.sort/partial.sort.copy/ranges_partial_sort_copy.pass.cpp SKIPPED
+std/containers/sequences/vector.bool/append_range.pass.cpp SKIPPED
+std/containers/sequences/vector.bool/assign_range.pass.cpp SKIPPED
+std/containers/sequences/vector.bool/flip.pass.cpp SKIPPED
+std/containers/sequences/vector.bool/insert_range.pass.cpp SKIPPED
+std/containers/sequences/vector/vector.modifiers/destroy_elements.pass.cpp SKIPPED
+std/containers/sequences/vector/vector.modifiers/emplace.pass.cpp SKIPPED
+std/containers/sequences/vector/vector.modifiers/insert_range.pass.cpp SKIPPED
+std/ranges/range.adaptors/range.join.with/range.join.with.view/end.pass.cpp SKIPPED
+std/strings/basic.string/string.modifiers/string_replace/replace_with_range.pass.cpp SKIPPED
+std/utilities/charconv/charconv.to.chars/integral.pass.cpp SKIPPED
 std/utilities/template.bitset/bitset.members/left_shift_eq.pass.cpp SKIPPED
 std/utilities/template.bitset/bitset.members/op_and_eq.pass.cpp SKIPPED
 std/utilities/template.bitset/bitset.members/op_or_eq.pass.cpp SKIPPED
