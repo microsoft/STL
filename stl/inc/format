@@ -2797,7 +2797,7 @@ struct _Arg_formatter {
 // care about avoiding code bloat for code that never runs at runtime, and we can't form
 // the erased basic_format_args structure at compile time.
 template <class _Ty, class _ParseContext>
-consteval _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Pc) {
+consteval _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Parse_ctx) {
     using _CharT                = _ParseContext::char_type;
     using _Context              = basic_format_context<back_insert_iterator<_Fmt_buffer<_CharT>>, _CharT>;
     using _ArgTraits            = _Format_arg_traits<_Context>;
@@ -2808,7 +2808,7 @@ consteval _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext
     using _FormattedType = conditional_t<is_same_v<_FormattedTypeMapping, typename basic_format_arg<_Context>::handle>,
         _Ty, _FormattedTypeMapping>;
     formatter<_FormattedType, _CharT> _Formatter{};
-    return _Formatter.parse(_Pc);
+    return _Formatter.parse(_Parse_ctx);
 }
 
 // set of format parsing actions that only checks for validity
