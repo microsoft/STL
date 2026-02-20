@@ -6515,7 +6515,7 @@ namespace {
                     const __m128i _Last_needle_val   = _mm_load_si128(reinterpret_cast<const __m128i*>(_Tmp2));
                     const int _Last_needle_length_el = _Last_needle_length / sizeof(_Ty);
 
-                    constexpr int _Not_found = 16; // arbitrary value greater than any found value
+                    constexpr int _Not_found      = 16; // arbitrary value greater than any found value
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
                     const auto _Test_whole_needle = [=](const __m128i _Data1, const int _Size1,
