@@ -2890,9 +2890,11 @@ struct _Format_handler {
     }
 };
 
-template <_Basic_format_arg_type _ArgType, class _CharT, class _Pc>
-constexpr _Pc::iterator _Formatter_base_parse(_Dynamic_format_specs<_CharT>& _Specs, _Pc& _ParseCtx) {
-    _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>{_Specs, _ParseCtx}, _ArgType);
+template <_Basic_format_arg_type _ArgType, class _CharT, class _ParseContext>
+constexpr _ParseContext::iterator _Formatter_base_parse(
+    _Dynamic_format_specs<_CharT>& _Specs, _ParseContext& _ParseCtx) {
+    _Specs_checker<_Dynamic_specs_handler<_ParseContext>> _Handler(
+        _Dynamic_specs_handler<_ParseContext>{_Specs, _ParseCtx}, _ArgType);
     const auto _It = _Parse_format_specs(_ParseCtx._Unchecked_begin(), _ParseCtx._Unchecked_end(), _Handler);
     if (_It != _ParseCtx._Unchecked_end() && *_It != '}') {
         _Throw_format_error("Missing '}' in format string.");
@@ -3693,9 +3695,9 @@ _NODISCARD constexpr const _CharT* _Parse_fill_align_and_width_specs(
 }
 
 // TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
-template <class _CharT, class _Pc>
-_NODISCARD constexpr _Pc::iterator _Fill_align_and_width_formatter_parse(
-    _Fill_align_and_width_specs<_CharT>& _Specs, _Pc& _Parse_ctx) {
+template <class _CharT, class _ParseContext>
+_NODISCARD constexpr _ParseContext::iterator _Fill_align_and_width_formatter_parse(
+    _Fill_align_and_width_specs<_CharT>& _Specs, _ParseContext& _Parse_ctx) {
     _Fill_align_and_width_specs_setter<_CharT> _Callback{_Specs, _Parse_ctx};
     const auto _It =
         _Parse_fill_align_and_width_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);

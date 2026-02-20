@@ -147,8 +147,9 @@ struct formatter {
 
 _FMT_P2286_BEGIN
 // TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
-template <_Basic_format_arg_type _ArgType, class _CharT, class _Pc>
-constexpr _Pc::iterator _Formatter_base_parse(_Dynamic_format_specs<_CharT>& _Specs, _Pc& _ParseCtx);
+template <_Basic_format_arg_type _ArgType, class _CharT, class _ParseContext>
+constexpr _ParseContext::iterator _Formatter_base_parse(
+    _Dynamic_format_specs<_CharT>& _Specs, _ParseContext& _ParseCtx);
 
 template <class _Ty, class _CharT, class _FormatContext>
 _FormatContext::iterator _Formatter_base_format(
@@ -165,8 +166,8 @@ public:
     }
 #endif // _HAS_CXX23
 
-    template <class _Pc = basic_format_parse_context<_CharT>>
-    constexpr _Pc::iterator parse(type_identity_t<_Pc&> _ParseCtx) {
+    template <class _ParseContext = basic_format_parse_context<_CharT>>
+    constexpr _ParseContext::iterator parse(type_identity_t<_ParseContext&> _ParseCtx) {
         return _Formatter_base_parse<_ArgType>(_Specs, _ParseCtx);
     }
 
@@ -420,9 +421,9 @@ struct _Fill_align_and_width_specs {
 };
 
 // TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
-template <class _CharT, class _Pc>
-_NODISCARD constexpr _Pc::iterator _Fill_align_and_width_formatter_parse(
-    _Fill_align_and_width_specs<_CharT>& _Specs, _Pc& _Parse_ctx);
+template <class _CharT, class _ParseContext>
+_NODISCARD constexpr _ParseContext::iterator _Fill_align_and_width_formatter_parse(
+    _Fill_align_and_width_specs<_CharT>& _Specs, _ParseContext& _Parse_ctx);
 
 template <class _CharT, class _FormatContext, class _Func>
 _NODISCARD _FormatContext::iterator _Fill_align_and_width_formatter_format(
