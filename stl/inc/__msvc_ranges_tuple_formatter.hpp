@@ -1133,8 +1133,8 @@ public:
         return _Underlying.parse(_Ctx);
     }
 
-    template <class _FmtCtx>
-    _FmtCtx::iterator format(_Maybe_const_adaptor& _Adaptor, _FmtCtx& _Ctx) const {
+    template <class _FormatContext>
+    _FormatContext::iterator format(_Maybe_const_adaptor& _Adaptor, _FormatContext& _Ctx) const {
         struct _Container_exposer : _AdaptorType {
             using _AdaptorType::c;
 
