@@ -1227,39 +1227,6 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:0 FA
 std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:1 FAIL
 
 
-# *** XFAILS WHICH PASS ***
-# These tests contain `// XFAIL: msvc` comments, which accurately describe runtime failures for x86 and x64.
-# However, for ARM64, they successfully compile, then we don't run them.
-# Our test harness properly handles the ambiguity of whether a FAIL line in this file means "fails to compile"
-# or "fails to run", combined with the `build_only` setting that we use for ARM64.
-# The upstream logic that parses `// XFAIL: msvc` bypasses this, so it's interpreted as "this always fails",
-# so compilation success for ARM64 is reported as unexpectedly passing.
-# The test harness should be fixed to treat `// XFAIL: msvc` the same way that FAIL lines here are treated.
-# In the meantime, because this is platform-dependent and we don't have a way to express that in this file,
-# we need to mark these tests as SKIPPED.
-# Finally, note that only :0 (MSVC) and :2 (Clang) configurations are mentioned here,
-# because we don't run :1 (ASan) for ARM64.
-std/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/ostream.pass.cpp:0 SKIPPED
-std/time/time.cal/time.cal.ymd/time.cal.ymd.nonmembers/ostream.pass.cpp:2 SKIPPED
-std/time/time.clock/time.clock.system/sys_date.ostream.pass.cpp:0 SKIPPED
-std/time/time.clock/time.clock.system/sys_date.ostream.pass.cpp:2 SKIPPED
-std/time/time.syn/formatter.day.pass.cpp:0 SKIPPED
-std/time/time.syn/formatter.day.pass.cpp:2 SKIPPED
-std/time/time.syn/formatter.month_day.pass.cpp:0 SKIPPED
-std/time/time.syn/formatter.month_day.pass.cpp:2 SKIPPED
-std/time/time.syn/formatter.weekday_index.pass.cpp:0 SKIPPED
-std/time/time.syn/formatter.weekday_index.pass.cpp:2 SKIPPED
-std/time/time.syn/formatter.weekday_last.pass.cpp:0 SKIPPED
-std/time/time.syn/formatter.weekday_last.pass.cpp:2 SKIPPED
-std/time/time.syn/formatter.weekday.pass.cpp:0 SKIPPED
-std/time/time.syn/formatter.weekday.pass.cpp:2 SKIPPED
-std/time/time.syn/formatter.year_month_day.pass.cpp:2 SKIPPED
-std/language.support/support.exception/except.nested/rethrow_if_nested.pass.cpp:0 SKIPPED
-std/language.support/support.exception/except.nested/rethrow_if_nested.pass.cpp:2 SKIPPED
-std/language.support/support.exception/propagation/current_exception.pass.cpp:0 SKIPPED
-std/language.support/support.exception/propagation/current_exception.pass.cpp:2 SKIPPED
-
-
 # *** MSVC-INTERNAL TEST HARNESS ISSUES (note: configuration :9 restricts these skips to be MSVC-internal) ***
 
 # These tests need ADDITIONAL_COMPILE_FLAGS(cl-style-warnings) and/or ADDITIONAL_COMPILE_FLAGS(gcc-style-warnings)
@@ -1292,6 +1259,14 @@ std/utilities/meta/meta.unary/dependent_return_type.pass.cpp:9 SKIPPED
 # These tests are marked as `XFAIL: msvc`, but the MSVC-internal test harness doesn't yet parse XFAIL.
 std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp:9 SKIPPED
 std/input.output/iostream.format/print.fun/no_file_description.pass.cpp:9 SKIPPED
+std/language.support/support.exception/except.nested/rethrow_if_nested.pass.cpp:9 SKIPPED
+std/language.support/support.exception/propagation/current_exception.pass.cpp:9 SKIPPED
+std/time/time.syn/formatter.day.pass.cpp:9 SKIPPED
+std/time/time.syn/formatter.month_day.pass.cpp:9 SKIPPED
+std/time/time.syn/formatter.weekday_index.pass.cpp:9 SKIPPED
+std/time/time.syn/formatter.weekday_last.pass.cpp:9 SKIPPED
+std/time/time.syn/formatter.weekday.pass.cpp:9 SKIPPED
+std/time/time.syn/formatter.year_month_day.pass.cpp:9 SKIPPED
 std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp:9 SKIPPED
 
 # This test is marked as `REQUIRES: large_tests`. The GitHub test harness doesn't define that feature, so it doesn't
