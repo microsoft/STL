@@ -439,7 +439,7 @@ public:
     }
 
     template <class _FormatContext, class _Func>
-    _NODISCARD constexpr auto _Format(
+    _NODISCARD auto _Format(
         _FormatContext& _Format_ctx, const int _Width, _Fmt_align _Default_align, _Func&& _Fn) const {
         return _STD _Fill_align_and_width_formatter_format(
             _Specs, _Format_ctx, _Width, _Default_align, _STD forward<_Func>(_Fn));
