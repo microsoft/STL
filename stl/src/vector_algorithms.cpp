@@ -6845,6 +6845,8 @@ namespace {
                             _First1, _Byte_length(_First1, _Last1), _First2, _Byte_length(_First2, _Last2));
                     }
                 }
+
+                return _Fallback<_Ty, _Predicate::_Any_of>(_First1, _Last1, _First2, _Last2);
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
             }
 
@@ -6979,6 +6981,7 @@ namespace {
                         return _Dispatch_pos_avx_4_8<_Ty>(_First1, _Count1, _First2, _Count2);
                     }
                 }
+                return _Dispatch_pos_fallback<_Ty, _Pred>(_First1, _Count1, _First2, _Count2);
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
             }
         } // namespace _First_of
