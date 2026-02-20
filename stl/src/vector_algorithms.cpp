@@ -6359,8 +6359,10 @@ namespace {
                     constexpr size_t _Lanes = _Unrolled_tail_elems == 0 ? 1 : _Unrolled_tail_elems;
                     _Find_first_of_vec_t<_Ty> _Needle_tail[_Lanes];
 
-                    for (size_t _Lane = 0; _Lane < _Unrolled_tail_elems; ++_Lane) {
-                        _Needle_tail[_Lane] = _Traits::_Set_neon_q(*(static_cast<const _Ty*>(_Stop2) + _Lane));
+                    if constexpr (_Unrolled_tail_elems > 0) {
+                        for (size_t _Lane = 0; _Lane < _Unrolled_tail_elems; ++_Lane) {
+                            _Needle_tail[_Lane] = _Traits::_Set_neon_q(*(static_cast<const _Ty*>(_Stop2) + _Lane));
+                        }
                     }
 
                     do {
@@ -6374,10 +6376,12 @@ namespace {
                             _Eq = _Traits::_Or(_Eq, _Shuffle_step<_Traits, _Length_el, _Ty>(_Data1, _Data2s0));
                         }
 
-                        // Unrolled tail.
-                        for (size_t _Lane = 0; _Lane < _Unrolled_tail_elems; ++_Lane) {
-                            const auto _Cmp = _Traits::_Cmp_neon_q(_Data1, _Needle_tail[_Lane]);
-                            _Eq             = _Traits::_Or(_Eq, _Cmp);
+                        if constexpr (_Unrolled_tail_elems > 0) {
+                            // Unrolled tail.
+                            for (size_t _Lane = 0; _Lane < _Unrolled_tail_elems; ++_Lane) {
+                                const auto _Cmp = _Traits::_Cmp_neon_q(_Data1, _Needle_tail[_Lane]);
+                                _Eq             = _Traits::_Or(_Eq, _Cmp);
+                            }
                         }
 
                         // We unroll by a maximum of 4 (for 2-byte and 1-byte element types), so we need a non-unrolled
