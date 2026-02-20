@@ -1128,8 +1128,8 @@ private:
     formatter<_RefView<_Maybe_const_container>, _CharT> _Underlying;
 
 public:
-    template <class _ParseCtx>
-    constexpr _ParseCtx::iterator parse(_ParseCtx& _Ctx) {
+    template <class _ParseContext>
+    constexpr _ParseContext::iterator parse(_ParseContext& _Ctx) {
         return _Underlying.parse(_Ctx);
     }
 
