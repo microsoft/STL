@@ -149,7 +149,7 @@ _FMT_P2286_BEGIN
 // TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
 template <_Basic_format_arg_type _ArgType, class _CharT, class _ParseContext>
 constexpr _ParseContext::iterator _Formatter_base_parse(
-    _Dynamic_format_specs<_CharT>& _Specs, _ParseContext& _ParseCtx);
+    _Dynamic_format_specs<_CharT>& _Specs, _ParseContext& _Parse_ctx);
 
 template <class _Ty, class _CharT, class _FormatContext>
 _FormatContext::iterator _Formatter_base_format(
@@ -167,8 +167,8 @@ public:
 #endif // _HAS_CXX23
 
     template <class _ParseContext = basic_format_parse_context<_CharT>>
-    constexpr _ParseContext::iterator parse(type_identity_t<_ParseContext&> _ParseCtx) {
-        return _Formatter_base_parse<_ArgType>(_Specs, _ParseCtx);
+    constexpr _ParseContext::iterator parse(type_identity_t<_ParseContext&> _Parse_ctx) {
+        return _Formatter_base_parse<_ArgType>(_Specs, _Parse_ctx);
     }
 
     template <class _FormatContext>

@@ -2892,14 +2892,14 @@ struct _Format_handler {
 
 template <_Basic_format_arg_type _ArgType, class _CharT, class _ParseContext>
 constexpr _ParseContext::iterator _Formatter_base_parse(
-    _Dynamic_format_specs<_CharT>& _Specs, _ParseContext& _ParseCtx) {
+    _Dynamic_format_specs<_CharT>& _Specs, _ParseContext& _Parse_ctx) {
     _Specs_checker<_Dynamic_specs_handler<_ParseContext>> _Handler(
-        _Dynamic_specs_handler<_ParseContext>{_Specs, _ParseCtx}, _ArgType);
-    const auto _It = _Parse_format_specs(_ParseCtx._Unchecked_begin(), _ParseCtx._Unchecked_end(), _Handler);
-    if (_It != _ParseCtx._Unchecked_end() && *_It != '}') {
+        _Dynamic_specs_handler<_ParseContext>{_Specs, _Parse_ctx}, _ArgType);
+    const auto _It = _Parse_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Handler);
+    if (_It != _Parse_ctx._Unchecked_end() && *_It != '}') {
         _Throw_format_error("Missing '}' in format string.");
     }
-    return _ParseCtx.begin() + (_It - _ParseCtx._Unchecked_begin());
+    return _Parse_ctx.begin() + (_It - _Parse_ctx._Unchecked_begin());
 }
 
 template <class _Ty, class _CharT, class _FormatContext>
