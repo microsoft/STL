@@ -2890,9 +2890,11 @@ struct _Format_handler {
     }
 };
 
-template <_Basic_format_arg_type _ArgType, class _CharT, class _ParseContext>
-constexpr _ParseContext::iterator _Formatter_base_parse(
-    _Dynamic_format_specs<_CharT>& _Specs, _ParseContext& _Parse_ctx) {
+// declared in <__msvc_formatter.hpp>
+template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
+template <class _ParseContext>
+constexpr _ParseContext::iterator _Formatter_base<_Ty, _CharT, _ArgType>::parse(
+    type_identity_t<_ParseContext&> _Parse_ctx) {
     _Specs_checker<_Dynamic_specs_handler<_ParseContext>> _Handler(
         _Dynamic_specs_handler<_ParseContext>{_Specs, _Parse_ctx}, _ArgType);
     const auto _It = _Parse_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Handler);
@@ -2902,9 +2904,11 @@ constexpr _ParseContext::iterator _Formatter_base_parse(
     return _Parse_ctx.begin() + (_It - _Parse_ctx._Unchecked_begin());
 }
 
-template <class _Ty, class _CharT, class _FormatContext>
-_FormatContext::iterator _Formatter_base_format(
-    const _Dynamic_format_specs<_CharT>& _Specs, const _Ty& _Val, _FormatContext& _Format_ctx) {
+// declared in <__msvc_formatter.hpp>
+template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
+template <class _FormatContext>
+_FormatContext::iterator _Formatter_base<_Ty, _CharT, _ArgType>::format(
+    const _Ty& _Val, _FormatContext& _Format_ctx) const {
     _Dynamic_format_specs<_CharT> _Format_specs = _Specs;
     if (_Specs._Dynamic_width_index >= 0) {
         _Format_specs._Width =
@@ -3273,11 +3277,11 @@ _NODISCARD constexpr const _CharT* _Parse_range_specs(
     return _Begin;
 }
 
-// TRANSITION, VSO-2744645: Avoid declaring and defining member functions in different headers.
-template <class _Ty, class _CharT, class _ParseContext>
-constexpr _ParseContext::iterator _Range_formatter_parse(formatter<_Ty, _CharT>& _Underlying,
-    basic_string_view<_CharT>& _Separator, basic_string_view<_CharT>& _Opening_bracket,
-    basic_string_view<_CharT>& _Closing_bracket, _Range_specs<_CharT>& _Specs, _ParseContext& _Ctx) {
+// declared in <__msvc_ranges_tuple_formatter.hpp>
+template <class _Ty, class _CharT>
+    requires same_as<remove_cvref_t<_Ty>, _Ty> && formattable<_Ty, _CharT>
+template <class _ParseContext>
+constexpr _ParseContext::iterator range_formatter<_Ty, _CharT>::parse(_ParseContext& _Ctx) {
     _Range_specs_setter<_CharT> _Callback{_Specs, _Ctx};
     auto _It = _STD _Parse_range_specs(_Ctx._Unchecked_begin(), _Ctx._Unchecked_end(), _Callback);
 
@@ -3397,11 +3401,14 @@ void _Range_formatter_format_as_string(_Range&& _Rng, _FormatContext& _Ctx, cons
     }
 }
 
-template <class _Ty, class _CharT, _RANGES input_range _Range, class _FormatContext>
-_FormatContext::iterator _Range_formatter_format(const formatter<_Ty, _CharT>& _Underlying,
-    const basic_string_view<_CharT> _Separator, const basic_string_view<_CharT> _Opening_bracket,
-    const basic_string_view<_CharT> _Closing_bracket, const _Range_specs<_CharT>& _Specs, _Range&& _Rng,
-    _FormatContext& _Ctx) {
+// declared in <__msvc_ranges_tuple_formatter.hpp>
+template <class _Ty, class _CharT>
+    requires same_as<remove_cvref_t<_Ty>, _Ty>
+          && formattable<_Ty, _CharT>
+             template <_RANGES input_range _Range, class _FormatContext>
+                 requires _Is_specialization_v<typename _FormatContext::iterator, back_insert_iterator>
+                       && derived_from<typename _FormatContext::iterator::container_type, _Fmt_buffer<_CharT>>
+_FormatContext::iterator range_formatter<_Ty, _CharT>::_Format(_Range&& _Rng, _FormatContext& _Ctx) const {
     auto _Format_specs = _Specs;
     if (_Specs._Dynamic_width_index >= 0) {
         _Format_specs._Width =
@@ -3551,11 +3558,10 @@ constexpr void _Set_tuple_debug_format(_FormatterType& _Formatter, _ParseContext
     }
 }
 
-// TRANSITION, VSO-2744645: Avoid declaring and defining member functions in different headers.
-template <class... _Types, class _CharT, class _ParseContext>
-constexpr _ParseContext::iterator _Tuple_formatter_parse(tuple<formatter<_Types, _CharT>...>& _Underlying,
-    basic_string_view<_CharT>& _Separator, basic_string_view<_CharT>& _Opening_bracket,
-    basic_string_view<_CharT>& _Closing_bracket, _Fill_align_and_width_specs<_CharT>& _Specs, _ParseContext& _Ctx) {
+// declared in <__msvc_ranges_tuple_formatter.hpp>
+template <class _CharT, formattable<_CharT>... _Types>
+template <class _ParseContext>
+constexpr _ParseContext::iterator _Tuple_formatter_common_base<_CharT, _Types...>::parse(_ParseContext& _Ctx) {
     _Fmt_tuple_type _Fmt_type = _Fmt_tuple_type::_None;
     _Tuple_format_specs_setter<_CharT, sizeof...(_Types) == 2> _Callback{_Specs, _Fmt_type, _Ctx};
     const auto _It = _STD _Parse_tuple_format_specs(_Ctx._Unchecked_begin(), _Ctx._Unchecked_end(), _Callback);
@@ -3597,11 +3603,14 @@ void _Tuple_formatter_format_to_context(const tuple<formatter<_Types, _CharT>...
     _STD _Copy_unchecked(_Closing_bracket._Unchecked_begin(), _Closing_bracket._Unchecked_end(), _Fmt_ctx.out());
 }
 
-template <class... _Types, class _CharT, class _FormatContext, class... _ArgTypes>
-_FormatContext::iterator _Tuple_formatter_format(const tuple<formatter<_Types, _CharT>...>& _Underlying,
-    const basic_string_view<_CharT> _Separator, const basic_string_view<_CharT> _Opening_bracket,
-    const basic_string_view<_CharT> _Closing_bracket, const _Fill_align_and_width_specs<_CharT>& _Specs,
-    _FormatContext& _Fmt_ctx, _ArgTypes&... _Args) {
+// declared in <__msvc_ranges_tuple_formatter.hpp>
+template <class _CharT, formattable<_CharT>... _Types>
+template <class _FormatContext, class... _ArgTypes>
+_FormatContext::iterator _Tuple_formatter_common_base<_CharT, _Types...>::_Format(
+    _FormatContext& _Fmt_ctx, _ArgTypes&... _Args) const {
+    _STL_INTERNAL_STATIC_ASSERT(
+        (is_same_v<_ArgTypes, remove_reference_t<_Maybe_const<_Is_const_formattable, _Types>>> && ...));
+
     auto _Format_specs = _Specs;
     if (_Specs._Dynamic_width_index >= 0) {
         _Format_specs._Width =
@@ -3694,10 +3703,11 @@ _NODISCARD constexpr const _CharT* _Parse_fill_align_and_width_specs(
     return _Parse_width(_Begin, _End, _Callbacks);
 }
 
-// TRANSITION, VSO-2744645: Avoid declaring and defining member functions in different headers.
-template <class _CharT, class _ParseContext>
-_NODISCARD constexpr _ParseContext::iterator _Fill_align_and_width_formatter_parse(
-    _Fill_align_and_width_specs<_CharT>& _Specs, _ParseContext& _Parse_ctx) {
+// declared in <__msvc_formatter.hpp>
+template <class _CharT>
+template <class _ParseContext>
+_NODISCARD constexpr _ParseContext::iterator _Fill_align_and_width_formatter<_CharT>::_Parse(
+    type_identity_t<_ParseContext&> _Parse_ctx) {
     _Fill_align_and_width_specs_setter<_CharT> _Callback{_Specs, _Parse_ctx};
     const auto _It =
         _Parse_fill_align_and_width_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
@@ -3708,10 +3718,11 @@ _NODISCARD constexpr _ParseContext::iterator _Fill_align_and_width_formatter_par
     return _Parse_ctx.begin() + (_It - _Parse_ctx._Unchecked_begin());
 }
 
-template <class _CharT, class _FormatContext, class _Func>
-_NODISCARD _FormatContext::iterator _Fill_align_and_width_formatter_format(
-    const _Fill_align_and_width_specs<_CharT>& _Specs, _FormatContext& _Format_ctx, const int _Width,
-    _Fmt_align _Default_align, _Func&& _Fn) {
+// declared in <__msvc_formatter.hpp>
+template <class _CharT>
+template <class _FormatContext, class _Func>
+_NODISCARD _FormatContext::iterator _Fill_align_and_width_formatter<_CharT>::_Format(
+    _FormatContext& _Format_ctx, const int _Width, _Fmt_align _Default_align, _Func&& _Fn) const {
     _Fill_align_and_width_specs _Format_specs = _Specs;
     if (_Specs._Dynamic_width_index >= 0) {
         _Format_specs._Width =

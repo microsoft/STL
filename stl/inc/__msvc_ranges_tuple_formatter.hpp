@@ -903,18 +903,6 @@ struct _Range_specs : _Fill_align_and_width_specs<_CharT> {
     char _Type        = '\0';
 };
 
-// TRANSITION, VSO-2744645: Avoid declaring and defining member functions in different headers.
-template <class _Ty, class _CharT, class _ParseContext>
-constexpr _ParseContext::iterator _Range_formatter_parse(formatter<_Ty, _CharT>& _Underlying,
-    basic_string_view<_CharT>& _Separator, basic_string_view<_CharT>& _Opening_bracket,
-    basic_string_view<_CharT>& _Closing_bracket, _Range_specs<_CharT>& _Specs, _ParseContext& _Ctx);
-
-template <class _Ty, class _CharT, _RANGES input_range _Range, class _FormatContext>
-_FormatContext::iterator _Range_formatter_format(const formatter<_Ty, _CharT>& _Underlying,
-    basic_string_view<_CharT> _Separator, basic_string_view<_CharT> _Opening_bracket,
-    basic_string_view<_CharT> _Closing_bracket, const _Range_specs<_CharT>& _Specs, _Range&& _Rng,
-    _FormatContext& _Ctx);
-
 _EXPORT_STD template <class _Ty, class _CharT = char>
     requires same_as<remove_cvref_t<_Ty>, _Ty> && formattable<_Ty, _CharT>
 class range_formatter {
@@ -944,9 +932,7 @@ public:
     }
 
     template <class _ParseContext>
-    constexpr _ParseContext::iterator parse(_ParseContext& _Ctx) {
-        return _STD _Range_formatter_parse(_Underlying, _Separator, _Opening_bracket, _Closing_bracket, _Specs, _Ctx);
-    }
+    constexpr _ParseContext::iterator parse(_ParseContext& _Ctx); // defined in <format>
 
     template <_RANGES input_range _Range, class _FormatContext>
         requires formattable<_RANGES range_reference_t<_Range>, _CharT>
@@ -964,10 +950,7 @@ private:
     template <_RANGES input_range _Range, class _FormatContext>
         requires _Is_specialization_v<typename _FormatContext::iterator, back_insert_iterator>
               && derived_from<typename _FormatContext::iterator::container_type, _Fmt_buffer<_CharT>>
-    _FormatContext::iterator _Format(_Range&& _Rng, _FormatContext& _Ctx) const {
-        return _STD _Range_formatter_format(
-            _Underlying, _Separator, _Opening_bracket, _Closing_bracket, _Specs, _STD forward<_Range>(_Rng), _Ctx);
-    }
+    _FormatContext::iterator _Format(_Range&& _Rng, _FormatContext& _Ctx) const; // defined in <format>
 };
 
 template <class _Rng, class _CharT>
@@ -1148,18 +1131,6 @@ public:
     }
 };
 
-// TRANSITION, VSO-2744645: Avoid declaring and defining member functions in different headers.
-template <class... _Types, class _CharT, class _ParseContext>
-constexpr _ParseContext::iterator _Tuple_formatter_parse(tuple<formatter<_Types, _CharT>...>& _Underlying,
-    basic_string_view<_CharT>& _Separator, basic_string_view<_CharT>& _Opening_bracket,
-    basic_string_view<_CharT>& _Closing_bracket, _Fill_align_and_width_specs<_CharT>& _Specs, _ParseContext& _Ctx);
-
-template <class... _Types, class _CharT, class _FormatContext, class... _ArgTypes>
-_FormatContext::iterator _Tuple_formatter_format(const tuple<formatter<_Types, _CharT>...>& _Underlying,
-    basic_string_view<_CharT> _Separator, basic_string_view<_CharT> _Opening_bracket,
-    basic_string_view<_CharT> _Closing_bracket, const _Fill_align_and_width_specs<_CharT>& _Specs,
-    _FormatContext& _Fmt_ctx, _ArgTypes&... _Args);
-
 template <class _CharT, formattable<_CharT>... _Types>
 class _Tuple_formatter_common_base {
 private:
@@ -1174,13 +1145,7 @@ protected:
     static constexpr bool _Is_const_formattable = (formattable<const _Types, _CharT> && ...);
 
     template <class _FormatContext, class... _ArgTypes>
-    _FormatContext::iterator _Format(_FormatContext& _Fmt_ctx, _ArgTypes&... _Args) const {
-        _STL_INTERNAL_STATIC_ASSERT(
-            (is_same_v<_ArgTypes, remove_reference_t<_Maybe_const<_Is_const_formattable, _Types>>> && ...));
-
-        return _STD _Tuple_formatter_format(
-            _Underlying, _Separator, _Opening_bracket, _Closing_bracket, _Specs, _Fmt_ctx, _Args...);
-    }
+    _FormatContext::iterator _Format(_FormatContext& _Fmt_ctx, _ArgTypes&... _Args) const; // defined in <format>
 
 public:
     constexpr void set_separator(const basic_string_view<_CharT> _Sep) noexcept {
@@ -1194,9 +1159,7 @@ public:
     }
 
     template <class _ParseContext>
-    constexpr _ParseContext::iterator parse(_ParseContext& _Ctx) {
-        return _STD _Tuple_formatter_parse(_Underlying, _Separator, _Opening_bracket, _Closing_bracket, _Specs, _Ctx);
-    }
+    constexpr _ParseContext::iterator parse(_ParseContext& _Ctx); // defined in <format>
 };
 
 // formatter definition for all pairs and tuples, the deleted default constructor
