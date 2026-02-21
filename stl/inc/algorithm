@@ -6193,6 +6193,7 @@ constexpr bool _Urng_has_full_64bit_range =
 
 template <class _Diff, class _Urng>
 struct _Batched_rng_from_urng {
+    _STL_INTERNAL_STATIC_ASSERT(_Urng_has_full_64bit_range<_Urng>);
 
     // Threshold bounds for batch sizes based on array size.
     // These are derived from the paper to minimize expected cost per random value.
@@ -6209,15 +6210,13 @@ struct _Batched_rng_from_urng {
 
     // Generate a single bounded random value in [0, _Bound) using Lemire's method.
     _NODISCARD _Diff _Single_bounded(_Diff _Bound) {
-        _Unsigned128 _Product{
-            _Base128::_UMul128(static_cast<uint64_t>(_Ref()), static_cast<uint64_t>(_Bound), _Product._Word[1])};
+        _Unsigned128 _Product{_Base128::_UMul128(_Ref(), static_cast<uint64_t>(_Bound), _Product._Word[1])};
         auto _Leftover = _Product._Word[0];
 
         if (_Leftover < static_cast<uint64_t>(_Bound)) {
             const uint64_t _Threshold = (0 - static_cast<uint64_t>(_Bound)) % static_cast<uint64_t>(_Bound);
             while (_Leftover < _Threshold) {
-                _Product  = _Unsigned128{_Base128::_UMul128(
-                    static_cast<uint64_t>(_Ref()), static_cast<uint64_t>(_Bound), _Product._Word[1])};
+                _Product  = _Unsigned128{_Base128::_UMul128(_Ref(), static_cast<uint64_t>(_Bound), _Product._Word[1])};
                 _Leftover = _Product._Word[0];
             }
         }
@@ -6232,7 +6231,7 @@ struct _Batched_rng_from_urng {
         const uint64_t _Bx2           = static_cast<uint64_t>(_Bound2);
         const uint64_t _Product_bound = _Bx1 * _Bx2;
 
-        uint64_t _Random_word = static_cast<uint64_t>(_Ref());
+        uint64_t _Random_word = _Ref();
 
         _Unsigned128 _Prod1{_Base128::_UMul128(_Random_word, _Bx1, _Prod1._Word[1])};
         _Results[0]         = static_cast<_Diff>(_Prod1._Word[1]);
@@ -6246,7 +6245,7 @@ struct _Batched_rng_from_urng {
         if (_Leftover < _Product_bound) {
             const uint64_t _Threshold = (0 - _Product_bound) % _Product_bound;
             while (_Leftover < _Threshold) {
-                _Random_word = static_cast<uint64_t>(_Ref());
+                _Random_word = _Ref();
 
                 _Prod1      = _Unsigned128{_Base128::_UMul128(_Random_word, _Bx1, _Prod1._Word[1])};
                 _Results[0] = static_cast<_Diff>(_Prod1._Word[1]);
