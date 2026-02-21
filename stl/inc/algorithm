@@ -6186,7 +6186,7 @@ namespace ranges {
 // using only multiplication (no division) in the common case.
 
 // Check if a URNG has full 64-bit range [0, 2^64 - 1].
-// Batched random generation is only beneficial for such RNGs.
+// Batched random generation is only beneficial for such URNGs.
 template <class _Urng>
 constexpr bool _Urng_has_full_64bit_range =
     is_same_v<_Invoke_result_t<_Urng&>, uint64_t> && (_Urng::min) () == 0 && (_Urng::max) () == _Max_limit<uint64_t>();
@@ -6603,7 +6603,7 @@ void _Random_shuffle1(_RanIt _First, _RanIt _Last, _RngFn& _RngFunc) {
 }
 
 // Batched shuffle implementation for 64-bit URNGs with full range.
-// Uses batched random generation to reduce RNG calls.
+// Uses batched random generation to reduce URNG calls.
 template <class _RanIt, class _Urng>
 void _Random_shuffle_batched(_RanIt _First, _RanIt _Last, _Urng& _Func) {
     // shuffle [_First, _Last) using batched random generation
