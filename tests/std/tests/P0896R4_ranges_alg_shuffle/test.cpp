@@ -91,9 +91,8 @@ void test_shuffle_permutation() {
         shuffle(v.begin(), v.end(), gen64);
 
         // Verify it's still a permutation
-        vector<int> sorted_v = v;
-        sort(sorted_v.begin(), sorted_v.end());
-        assert(sorted_v == original);
+        sort(v.begin(), v.end());
+        assert(v == original);
     }
 
     // Test with ranges::shuffle and 64-bit generator
@@ -103,9 +102,8 @@ void test_shuffle_permutation() {
         ranges::shuffle(v, gen64);
 
         // Verify it's still a permutation
-        vector<int> sorted_v = v;
-        sort(sorted_v.begin(), sorted_v.end());
-        assert(sorted_v == original);
+        sort(v.begin(), v.end());
+        assert(v == original);
     }
 
     // Test with 32-bit generator (non-batched path)
@@ -115,9 +113,8 @@ void test_shuffle_permutation() {
         shuffle(v.begin(), v.end(), gen);
 
         // Verify it's still a permutation
-        vector<int> sorted_v = v;
-        sort(sorted_v.begin(), sorted_v.end());
-        assert(sorted_v == original);
+        sort(v.begin(), v.end());
+        assert(v == original);
     }
 
     // Test with ranges::shuffle and 32-bit generator
@@ -127,9 +124,8 @@ void test_shuffle_permutation() {
         ranges::shuffle(v, gen);
 
         // Verify it's still a permutation
-        vector<int> sorted_v = v;
-        sort(sorted_v.begin(), sorted_v.end());
-        assert(sorted_v == original);
+        sort(v.begin(), v.end());
+        assert(v == original);
     }
 }
 
