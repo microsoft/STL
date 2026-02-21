@@ -6198,10 +6198,6 @@ struct _Batched_rng_from_urng {
     // Threshold bounds for batch sizes based on array size.
     // These are derived from the paper to minimize expected cost per random value.
     // Batch size k requires product of k consecutive bounds <= 2^64.
-    static constexpr uint64_t _Bound_for_batch_6 = 21; // (21)^6 = 85,766,121 < 2^64 / (very conservative)
-    static constexpr uint64_t _Bound_for_batch_5 = 73; // (73)^5 = 2,073,071,593 < 2^64
-    static constexpr uint64_t _Bound_for_batch_4 = 302; // (302)^4 = 8,319,430,096 < 2^64
-    static constexpr uint64_t _Bound_for_batch_3 = 2642; // (2642)^3 = 18,454,249,288 < 2^64
     static constexpr uint64_t _Bound_for_batch_2 = 4294967296; // 2^32, for batch of 2
 
     _Urng& _Ref;
