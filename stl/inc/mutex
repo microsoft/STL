@@ -139,33 +139,33 @@ public:
 
     unique_lock() noexcept = default;
 
-    _NODISCARD_CTOR_LOCK explicit unique_lock(_Mutex& _Mtx)
+    _NODISCARD_LOCK explicit unique_lock(_Mutex& _Mtx)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(false) { // construct and lock
         _Pmtx->lock();
         _Owns = true;
     }
 
-    _NODISCARD_CTOR_LOCK unique_lock(_Mutex& _Mtx, adopt_lock_t) noexcept // strengthened
+    _NODISCARD_LOCK unique_lock(_Mutex& _Mtx, adopt_lock_t) noexcept // strengthened
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) {} // construct and assume already locked
 
     unique_lock(_Mutex& _Mtx, defer_lock_t) noexcept
         : _Pmtx(_STD addressof(_Mtx)), _Owns(false) {} // construct but don't lock
 
-    _NODISCARD_CTOR_LOCK unique_lock(_Mutex& _Mtx, try_to_lock_t)
+    _NODISCARD_LOCK unique_lock(_Mutex& _Mtx, try_to_lock_t)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock()) {} // construct and try to lock
 
     template <class _Rep, class _Period>
-    _NODISCARD_CTOR_LOCK unique_lock(_Mutex& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
+    _NODISCARD_LOCK unique_lock(_Mutex& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock_for(_Rel_time)) {} // construct and lock with timeout
 
     template <class _Clock, class _Duration>
-    _NODISCARD_CTOR_LOCK unique_lock(_Mutex& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
+    _NODISCARD_LOCK unique_lock(_Mutex& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Pmtx->try_lock_until(_Abs_time)) {
         // construct and lock with timeout
         static_assert(chrono::_Is_clock_v<_Clock>, "Clock type required");
     }
 
-    _NODISCARD_CTOR_LOCK unique_lock(unique_lock&& _Other) noexcept : _Pmtx(_Other._Pmtx), _Owns(_Other._Owns) {
+    _NODISCARD_LOCK unique_lock(unique_lock&& _Other) noexcept : _Pmtx(_Other._Pmtx), _Owns(_Other._Owns) {
         _Other._Pmtx = nullptr;
         _Other._Owns = false;
     }
@@ -343,30 +343,25 @@ int _Try_lock_range(const int _First, const int _Last, _LockN&... _LkN) {
     return -1;
 }
 
-template <class _Lock0, class _Lock1, class _Lock2, class... _LockN>
-int _Try_lock1(_Lock0& _Lk0, _Lock1& _Lk1, _Lock2& _Lk2, _LockN&... _LkN) { // try to lock 3 or more locks
-    return _Try_lock_range(0, sizeof...(_LockN) + 3, _Lk0, _Lk1, _Lk2, _LkN...);
-}
-
-template <class _Lock0, class _Lock1>
-int _Try_lock1(_Lock0& _Lk0, _Lock1& _Lk1) {
-    // try to lock 2 locks, special case for better codegen and reduced metaprogramming for common case
-    if (!_Lk0.try_lock()) {
-        return 0;
-    }
-
-    _Unlock_one_guard<_Lock0> _Guard{_Lk0};
-    if (!_Lk1.try_lock()) {
-        return 1;
-    }
-
-    _Guard._Lk_ptr = nullptr;
-    return -1;
-}
-
 _EXPORT_STD template <class _Lock0, class _Lock1, class... _LockN>
 _NODISCARD_TRY_CHANGE_STATE int try_lock(_Lock0& _Lk0, _Lock1& _Lk1, _LockN&... _LkN) { // try to lock multiple locks
-    return _Try_lock1(_Lk0, _Lk1, _LkN...);
+    if constexpr (sizeof...(_LockN) == 0) {
+        // try to lock 2 locks, special case for better codegen and reduced metaprogramming for common case
+        if (!_Lk0.try_lock()) {
+            return 0;
+        }
+
+        _Unlock_one_guard<_Lock0> _Guard{_Lk0};
+        if (!_Lk1.try_lock()) {
+            return 1;
+        }
+
+        _Guard._Lk_ptr = nullptr;
+        return -1;
+    } else {
+        // try to lock 3 or more locks
+        return _Try_lock_range(0, sizeof...(_LockN) + 2, _Lk0, _Lk1, _LkN...);
+    }
 }
 
 template <class... _LockN>
@@ -399,15 +394,6 @@ int _Lock_attempt(const int _Hard_lock, _LockN&... _LkN) {
     return _Failed;
 }
 
-template <class _Lock0, class _Lock1, class _Lock2, class... _LockN>
-void _Lock_nonmember1(_Lock0& _Lk0, _Lock1& _Lk1, _Lock2& _Lk2, _LockN&... _LkN) {
-    // lock 3 or more locks, without deadlock
-    int _Hard_lock = 0;
-    while (_Hard_lock != -1) {
-        _Hard_lock = _Lock_attempt(_Hard_lock, _Lk0, _Lk1, _Lk2, _LkN...);
-    }
-}
-
 template <class _Lock0, class _Lock1>
 bool _Lock_attempt_small(_Lock0& _Lk0, _Lock1& _Lk1) {
     // attempt to lock 2 locks, by first locking _Lk0, and then trying to lock _Lk1 returns whether to try again
@@ -424,16 +410,19 @@ bool _Lock_attempt_small(_Lock0& _Lk0, _Lock1& _Lk1) {
     return true;
 }
 
-template <class _Lock0, class _Lock1>
-void _Lock_nonmember1(_Lock0& _Lk0, _Lock1& _Lk1) {
-    // lock 2 locks, without deadlock, special case for better codegen and reduced metaprogramming for common case
-    while (_Lock_attempt_small(_Lk0, _Lk1) && _Lock_attempt_small(_Lk1, _Lk0)) { // keep trying
-    }
-}
-
 _EXPORT_STD template <class _Lock0, class _Lock1, class... _LockN>
 void lock(_Lock0& _Lk0, _Lock1& _Lk1, _LockN&... _LkN) { // lock multiple locks, without deadlock
-    _Lock_nonmember1(_Lk0, _Lk1, _LkN...);
+    if constexpr (sizeof...(_LockN) == 0) {
+        // lock 2 locks, without deadlock, special case for better codegen and reduced metaprogramming for common case
+        while (_Lock_attempt_small(_Lk0, _Lk1) && _Lock_attempt_small(_Lk1, _Lk0)) { // keep trying
+        }
+    } else {
+        // lock 3 or more locks, without deadlock
+        int _Hard_lock = 0;
+        while (_Hard_lock != -1) {
+            _Hard_lock = _Lock_attempt(_Hard_lock, _Lk0, _Lk1, _LkN...);
+        }
+    }
 }
 
 _EXPORT_STD template <class _Mutex>
@@ -471,7 +460,7 @@ public:
         : _MyMutexes(_Mtxes...) {} // construct but don't lock
 
     ~scoped_lock() noexcept {
-        _STD apply([](_Mutexes&... _Mtxes) _STATIC_LAMBDA { (..., (void) _Mtxes.unlock()); }, _MyMutexes);
+        _STD apply([](_Mutexes&... _Mtxes) _STATIC_CALL_OPERATOR { (..., (void) _Mtxes.unlock()); }, _MyMutexes);
     }
 
     scoped_lock(const scoped_lock&)            = delete;
@@ -556,7 +545,7 @@ public:
     }
 
     template <class _Rep, class _Period>
-    cv_status wait_for(unique_lock<mutex>& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time) {
+    cv_status wait_for(unique_lock<mutex>& _Lck, const chrono::duration<_Rep, _Period> _Rel_time) {
         // wait for duration
         if (_Rel_time <= chrono::duration<_Rep, _Period>::zero()) {
             // we don't unlock-and-relock _Lck for this case because it's not observable
@@ -566,13 +555,13 @@ public:
     }
 
     template <class _Rep, class _Period, class _Predicate>
-    bool wait_for(unique_lock<mutex>& _Lck, const chrono::duration<_Rep, _Period>& _Rel_time, _Predicate _Pred) {
+    bool wait_for(unique_lock<mutex>& _Lck, const chrono::duration<_Rep, _Period> _Rel_time, _Predicate _Pred) {
         // wait for signal with timeout and check predicate
         return wait_until(_Lck, _To_absolute_time(_Rel_time), _STD _Pass_fn(_Pred));
     }
 
     template <class _Clock, class _Duration>
-    cv_status wait_until(unique_lock<mutex>& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+    cv_status wait_until(unique_lock<mutex>& _Lck, const chrono::time_point<_Clock, _Duration> _Abs_time) {
         // wait until time point
         static_assert(chrono::_Is_clock_v<_Clock>, "Clock type required");
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -598,8 +587,7 @@ public:
     }
 
     template <class _Clock, class _Duration, class _Predicate>
-    bool wait_until(
-        unique_lock<mutex>& _Lck, const chrono::time_point<_Clock, _Duration>& _Abs_time, _Predicate _Pred) {
+    bool wait_until(unique_lock<mutex>& _Lck, const chrono::time_point<_Clock, _Duration> _Abs_time, _Predicate _Pred) {
         // wait for signal with timeout and check predicate
         static_assert(chrono::_Is_clock_v<_Clock>, "Clock type required");
         while (!_Pred()) {

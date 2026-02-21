@@ -144,6 +144,34 @@ int main() {
            L"2304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.000000");
     assert(to_wstring(numeric_limits<long double>::infinity()) == L"inf");
 
+    // Exercise the logic for printing digit pairs, and the optimization for printing 64-bit values on 32-bit targets.
+    assert(to_string(0ULL) == "0");
+    assert(to_string(1ULL) == "1");
+    assert(to_string(12ULL) == "12");
+    assert(to_string(123ULL) == "123");
+    assert(to_string(1234ULL) == "1234");
+    assert(to_string(12345ULL) == "12345");
+    assert(to_string(123456ULL) == "123456");
+    assert(to_string(1234567ULL) == "1234567");
+    assert(to_string(12345678ULL) == "12345678");
+    assert(to_string(123456789ULL) == "123456789");
+    assert(to_string(1234567890ULL) == "1234567890");
+    assert(to_string(4294967295ULL) == "4294967295"); // 2^32-1
+    assert(to_string(4294967296ULL) == "4294967296");
+    assert(to_string(12345678901ULL) == "12345678901");
+    assert(to_string(123456789012ULL) == "123456789012");
+    assert(to_string(1234567890123ULL) == "1234567890123");
+    assert(to_string(12345678901234ULL) == "12345678901234");
+    assert(to_string(123456789012345ULL) == "123456789012345");
+    assert(to_string(1234567890123456ULL) == "1234567890123456");
+    assert(to_string(12345678901234567ULL) == "12345678901234567");
+    assert(to_string(123456789012345678ULL) == "123456789012345678");
+    assert(to_string(429496729599999999ULL) == "429496729599999999"); // 2^32-1 followed by 8 digits
+    assert(to_string(429496729600000000ULL) == "429496729600000000");
+    assert(to_string(1234567890123456789ULL) == "1234567890123456789");
+    assert(to_string(4294967295999999999ULL) == "4294967295999999999"); // 2^32-1 followed by 9 digits
+    assert(to_string(4294967296000000000ULL) == "4294967296000000000");
+    assert(to_string(12345678901234567890ULL) == "12345678901234567890");
 
     // Also test DevDiv-875295 "<string>: std::stof returns 1.#INF instead of throwing out_of_range [libcxx]".
 

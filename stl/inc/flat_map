@@ -1,0 +1,1613 @@
+// flat_map standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#ifndef _FLAT_MAP_
+#define _FLAT_MAP_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+#if !_HAS_CXX23
+_EMIT_STL_WARNING(STL4038, "The contents of <flat_map> are available only with C++23 or later.");
+#else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
+
+#include <algorithm>
+#include <compare>
+#include <concepts>
+#include <initializer_list>
+#include <type_traits>
+#include <utility>
+#include <vector>
+#include <xmemory>
+#include <xutility>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#undef msvc
+
+_STD_BEGIN
+template <bool _IsUnique, class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer>
+class _Flat_map_base;
+
+template <class _KeyIter, class _MappedIter, class _MappedConvIter>
+struct _Pairing_iterator_provider;
+
+template <class _KeyIter, class _MappedIter, class _MappedConvIter>
+concept _Can_unwrap_pairing_iterator =
+    !conjunction_v<is_same<_Unwrapped_t<_KeyIter>, _KeyIter>, is_same<_Unwrapped_t<_MappedIter>, _MappedIter>>;
+
+template <class _KeyIter, class _MappedIter, class _MappedConvIter>
+struct _Pairing_iterator_provider {
+    class _Iterator {
+    public:
+        using iterator_category = input_iterator_tag;
+        using iterator_concept  = random_access_iterator_tag;
+        using difference_type   = ptrdiff_t;
+        using value_type        = pair<iter_value_t<_KeyIter>, iter_value_t<_MappedIter>>;
+        using reference         = pair<iter_reference_t<_KeyIter>, iter_reference_t<_MappedIter>>;
+
+        _Iterator() = default;
+
+    private:
+        template <bool _IsUnique, class _Key, class _Mapped, class _Compare, class _KeyContainer,
+            class _MappedContainer>
+        friend class _Flat_map_base;
+        template <class _KeyIter2, class _MappedIter2, class _MappedConvIter2>
+        friend struct _Pairing_iterator_provider;
+
+        explicit _Iterator(_KeyIter _Key_iter, _MappedIter _Mapped_iter)
+            noexcept(is_nothrow_move_constructible_v<_KeyIter> && is_nothrow_move_constructible_v<_MappedIter>)
+            : _Key_it(_STD move(_Key_iter)), _Mapped_it(_STD move(_Mapped_iter)) {}
+
+        using _Const_iterator     = _Pairing_iterator_provider<_KeyIter, _MappedConvIter, _MappedConvIter>::_Iterator;
+        using _Unwrapped_iterator = _Pairing_iterator_provider<_Unwrapped_t<_KeyIter>, _Unwrapped_t<_MappedIter>,
+            _Unwrapped_t<_MappedConvIter>>::_Iterator;
+
+        class _Arrow_proxy {
+        public:
+            _NODISCARD const reference* operator->() const noexcept {
+                return _STD addressof(_Ref);
+            }
+
+        private:
+            friend _Iterator;
+
+            explicit _Arrow_proxy(const _Iterator& _Iter) : _Ref{*_Iter} {}
+
+            reference _Ref;
+        };
+
+    public:
+        using pointer = _Arrow_proxy;
+
+        _NODISCARD reference operator*() const {
+            return reference{*_Key_it, *_Mapped_it};
+        }
+
+        _NODISCARD friend pair<iter_rvalue_reference_t<_KeyIter>, iter_rvalue_reference_t<_MappedIter>> iter_move(
+            const _Iterator& _It) {
+            return {_RANGES iter_move(_It._Key_it), _RANGES iter_move(_It._Mapped_it)};
+        }
+
+        _NODISCARD pointer operator->() const {
+            return pointer{*this};
+        }
+
+        _Iterator& operator++() {
+            ++_Key_it;
+            ++_Mapped_it;
+            return *this;
+        }
+
+        _Iterator operator++(int) {
+            auto _Old = *this;
+            ++*this;
+            return _Old;
+        }
+
+        _NODISCARD bool operator==(const _Iterator& _Right) const {
+            _Compat(_Right);
+            return _Key_it == _Right._Key_it;
+        }
+
+        _NODISCARD auto operator<=>(const _Iterator& _Right) const {
+            _Compat(_Right);
+            return _Synth_three_way{}(_Key_it, _Right._Key_it);
+        }
+
+        _Iterator& operator--() {
+            --_Key_it;
+            --_Mapped_it;
+            return *this;
+        }
+
+        _Iterator operator--(int) {
+            auto _Old = *this;
+            --*this;
+            return _Old;
+        }
+
+        _Iterator& operator+=(const difference_type _Off) {
+            _Key_it += static_cast<iter_difference_t<_KeyIter>>(_Off);
+            _Mapped_it += static_cast<iter_difference_t<_MappedIter>>(_Off);
+            return *this;
+        }
+
+        _Iterator& operator-=(const difference_type _Off) {
+            _Key_it -= static_cast<iter_difference_t<_KeyIter>>(_Off);
+            _Mapped_it -= static_cast<iter_difference_t<_MappedIter>>(_Off);
+            return *this;
+        }
+
+        _NODISCARD _Iterator operator+(const difference_type _Off) const {
+            auto _Tmp = *this;
+            _Tmp += _Off;
+            return _Tmp;
+        }
+
+        _NODISCARD _Iterator operator-(const difference_type _Off) const {
+            auto _Tmp = *this;
+            _Tmp -= _Off;
+            return _Tmp;
+        }
+
+        _NODISCARD reference operator[](const difference_type _Off) const {
+            return *(*this + _Off);
+        }
+
+        _NODISCARD difference_type operator-(const _Iterator& _Right) const {
+            _Compat(_Right);
+            return _Key_it - _Right._Key_it;
+        }
+
+        _NODISCARD friend _Iterator operator+(const difference_type _Off, const _Iterator& _Right) {
+            return _Right + _Off;
+        }
+
+        _NODISCARD operator _Const_iterator() const
+            requires (!is_same_v<_MappedIter, _MappedConvIter>)
+        {
+            return _Const_iterator{_Key_it, _Mapped_it};
+        }
+
+        void _Compat([[maybe_unused]] const _Iterator& _Right) const noexcept { // test for compatible iterator pair
+#if _ITERATOR_DEBUG_LEVEL != 0
+            _STL_VERIFY(
+                _Key_it - _Right._Key_it == _Mapped_it - _Right._Mapped_it, "iterators from inconsistent ranges");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        }
+
+        using _Prevent_inheriting_unwrap = _Iterator;
+
+#if _ITERATOR_DEBUG_LEVEL != 0
+        friend void _Verify_range(const _Iterator& _First, const _Iterator& _Last) noexcept {
+            if constexpr (_Range_verifiable_v<_KeyIter>) {
+                _Verify_range(_First._Key_it, _Last._Key_it); // intentional ADL
+            }
+
+            if constexpr (_Range_verifiable_v<_MappedIter>) {
+                _Verify_range(_First._Mapped_it, _Last._Mapped_it); // intentional ADL
+            }
+
+            _First._Compat(_Last);
+        }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+        void _Verify_offset(const difference_type _Off) const noexcept {
+            if constexpr (_Offset_verifiable_v<_KeyIter>) {
+                _Key_it._Verify_offset(_Off);
+            }
+
+            if constexpr (_Offset_verifiable_v<_MappedIter>) {
+                _Mapped_it._Verify_offset(_Off);
+            }
+        }
+
+        _NODISCARD auto _Unwrapped() const
+            requires _Can_unwrap_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>
+        {
+            return _Unwrapped_iterator{_STD _Get_unwrapped(_Key_it), _STD _Get_unwrapped(_Mapped_it)};
+        }
+
+        static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<_KeyIter>
+                                                     && _Do_unwrap_when_unverified_v<_MappedIter>
+                                                     && _Do_unwrap_when_unverified_v<_MappedConvIter>;
+
+        void _Seek_to(const _Unwrapped_iterator& _Dst)
+            requires _Can_unwrap_pairing_iterator<_KeyIter, _MappedIter, _MappedConvIter>
+        {
+            _STD _Seek_wrapped(_Key_it, _Dst._Key_it);
+            _STD _Seek_wrapped(_Mapped_it, _Dst._Mapped_it);
+        }
+
+#ifdef _ENABLE_STL_INTERNAL_CHECK
+    public:
+#else
+    private:
+#endif
+        _KeyIter _Key_it;
+        _MappedIter _Mapped_it;
+    };
+};
+
+template <bool _IsNoexcept, class _Containers>
+struct _NODISCARD _Flat_map_swap_clear_guard {
+    // Invariant: (_Target1 == nullptr) == (_Target2 == nullptr)
+    _Containers* _Target1;
+    _Containers* _Target2;
+
+    _Flat_map_swap_clear_guard& operator=(const _Flat_map_swap_clear_guard&) = delete;
+
+    void _Dismiss() noexcept {
+        _Target1 = nullptr;
+        _Target2 = nullptr;
+    }
+
+    ~_Flat_map_swap_clear_guard() {
+        if (_Target1) {
+            _Target1->keys.clear();
+            _Target1->values.clear();
+            _Target2->keys.clear();
+            _Target2->values.clear();
+        }
+    }
+};
+template <class _Containers>
+struct _NODISCARD _Flat_map_swap_clear_guard<true, _Containers> {
+    constexpr explicit _Flat_map_swap_clear_guard(_Containers*, _Containers*) noexcept {}
+
+    _Flat_map_swap_clear_guard& operator=(const _Flat_map_swap_clear_guard&) = delete;
+
+    void _Dismiss() noexcept {}
+};
+
+_EXPORT_STD template <class _Key, class _Mapped, class _Compare = less<_Key>, class _KeyContainer = vector<_Key>,
+    class _MappedContainer = vector<_Mapped>>
+class flat_map;
+
+_EXPORT_STD template <class _Key, class _Mapped, class _Compare = less<_Key>, class _KeyContainer = vector<_Key>,
+    class _MappedContainer = vector<_Mapped>>
+class flat_multimap;
+
+template <bool _IsUnique, class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer>
+class _Flat_map_base {
+private:
+    using _Sorted_t = conditional_t<_IsUnique, sorted_unique_t, sorted_equivalent_t>;
+    using _Derived  = conditional_t<_IsUnique, flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>,
+         flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>>;
+
+    static constexpr const char* _Msg_not_sorted_maybe_unique =
+        _IsUnique ? "Keys were not sorted-unique! (N5032 [flat.map.overview]/10)"
+                  : "Keys were not sorted! (N5032 [flat.multimap.overview]/10)";
+    static constexpr const char* _Msg_replace_not_sorted_maybe_unique =
+        _IsUnique ? "Keys were not sorted-unique! (N5032 [flat.map.modifiers]/37)"
+                  : "Keys were not sorted! (N5032 [flat.map.modifiers]/37, [flat.multimap.overview]/4)";
+    static constexpr const char* _Msg_different_sizes =
+        _IsUnique ? "Containers were different sizes! (N5032 [flat.map.overview]/9)"
+                  : "Containers were different sizes! (N5032 [flat.multimap.overview]/9)";
+    static constexpr const char* _Msg_replace_different_sizes =
+        _IsUnique ? "Containers were different sizes! (N5032 [flat.map.modifiers]/37)"
+                  : "Containers were different sizes! (N5032 [flat.map.modifiers]/37, [flat.multimap.overview]/4)";
+
+public:
+    // [flat.map.defn] Types
+    using key_type              = _Key;
+    using mapped_type           = _Mapped;
+    using value_type            = pair<key_type, mapped_type>;
+    using key_compare           = _Compare;
+    using reference             = pair<const key_type&, mapped_type&>;
+    using const_reference       = pair<const key_type&, const mapped_type&>;
+    using size_type             = size_t;
+    using difference_type       = ptrdiff_t;
+    using key_container_type    = _KeyContainer;
+    using mapped_container_type = _MappedContainer;
+
+    using iterator = _Pairing_iterator_provider<typename key_container_type::const_iterator,
+        typename mapped_container_type::iterator, typename mapped_container_type::const_iterator>::_Iterator;
+
+    using const_iterator = _Pairing_iterator_provider<typename key_container_type::const_iterator,
+        typename mapped_container_type::const_iterator, typename mapped_container_type::const_iterator>::_Iterator;
+
+    using reverse_iterator       = _STD reverse_iterator<iterator>;
+    using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
+
+    static_assert(is_same_v<key_type, typename key_container_type::value_type>,
+        "key_type and key_container_type::value_type must be the same. "
+        "(N5032 [flat.map.overview]/8, [flat.multimap.overview]/8)");
+    static_assert(is_same_v<mapped_type, typename mapped_container_type::value_type>,
+        "mapped_type and mapped_container_type::value_type must be the same. "
+        "(N5032 [flat.map.overview]/8, [flat.multimap.overview]/8)");
+    static_assert(!_Is_vector_bool<key_container_type>,
+        "key_container_type cannot be vector<bool> because it is not a sequence container. "
+        "(N5032 [flat.map.overview]/7, [flat.multimap.overview]/7)");
+    static_assert(!_Is_vector_bool<mapped_container_type>,
+        "mapped_container_type cannot be vector<bool> because it is not a sequence container. "
+        "(N5032 [flat.map.overview]/7, [flat.multimap.overview]/7)");
+    static_assert(random_access_iterator<typename key_container_type::const_iterator>,
+        "key_container_type must support random-access iterators in order to be adapted. "
+        "(N5032 [flat.map.overview]/7, [flat.multimap.overview]/7)");
+    static_assert(random_access_iterator<typename mapped_container_type::const_iterator>,
+        "mapped_container_type must support random-access iterators in order to be adapted. "
+        "(N5032 [flat.map.overview]/7, [flat.multimap.overview]/7)");
+
+    class value_compare {
+    public:
+        _NODISCARD bool operator()(const_reference _Lhs, const_reference _Rhs) const {
+            return _Key_comparator(_Lhs.first, _Rhs.first);
+        }
+
+    private:
+        friend _Flat_map_base;
+
+        explicit value_compare(const key_compare& _Comp) : _Key_comparator(_Comp) {}
+
+        key_compare _Key_comparator;
+    };
+
+    struct containers {
+        key_container_type keys;
+        mapped_container_type values;
+    };
+
+    // [flat.map.cons] Constructors
+    _Flat_map_base() : _Data(), _Key_compare() {}
+
+    _Flat_map_base(const _Flat_map_base&) = default;
+
+    _Flat_map_base(_Flat_map_base&& _Other) noexcept(is_nothrow_move_constructible_v<key_container_type>
+                                                     && is_nothrow_move_constructible_v<mapped_container_type>
+                                                     && is_nothrow_copy_constructible_v<key_compare>) // strengthened
+        : _Data(_STD move(_Other).extract()),
+          _Key_compare(_Other._Key_compare) // intentionally copy comparator, see LWG-2227
+    {}
+
+    explicit _Flat_map_base(const key_compare& _Comp) : _Data(), _Key_compare(_Comp) {}
+
+    _Flat_map_base(
+        key_container_type _Key_cont, mapped_container_type _Mapped_cont, const key_compare& _Comp = key_compare())
+        : _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)}, _Key_compare(_Comp) {
+        _STL_ASSERT(_Data.keys.size() == _Data.values.size(), _Msg_different_sizes);
+        _Establish_invariants();
+    }
+
+    _Flat_map_base(_Sorted_t, key_container_type _Key_cont, mapped_container_type _Mapped_cont,
+        const key_compare& _Comp = key_compare())
+        : _Data{.keys = _STD move(_Key_cont), .values = _STD move(_Mapped_cont)}, _Key_compare(_Comp) {
+        _STL_ASSERT(_Data.keys.size() == _Data.values.size(), _Msg_different_sizes);
+        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted_maybe_unique);
+    }
+
+    template <_Iterator_for_container _InIt>
+    _Flat_map_base(const _InIt _First, const _InIt _Last, const key_compare& _Comp = key_compare())
+        : _Data(), _Key_compare(_Comp) {
+        insert(_First, _Last);
+    }
+
+    template <_Iterator_for_container _InIt>
+    _Flat_map_base(_Sorted_t _Tag, const _InIt _First, const _InIt _Last, const key_compare& _Comp = key_compare())
+        : _Data(), _Key_compare(_Comp) {
+        insert(_Tag, _First, _Last);
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    _Flat_map_base(from_range_t, _Rng&& _Range) : _Data(), _Key_compare() {
+        insert_range(_STD forward<_Rng>(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    _Flat_map_base(from_range_t, _Rng&& _Range, const key_compare& _Comp) : _Data(), _Key_compare(_Comp) {
+        insert_range(_STD forward<_Rng>(_Range));
+    }
+
+    _Flat_map_base(const initializer_list<value_type> _Ilist, const key_compare& _Comp = key_compare())
+        : _Data(), _Key_compare(_Comp) {
+        insert(_Ilist);
+    }
+
+    _Flat_map_base(_Sorted_t _Tag, const initializer_list<value_type> _Ilist, const key_compare& _Comp = key_compare())
+        : _Data(), _Key_compare(_Comp) {
+        insert(_Tag, _Ilist);
+    }
+
+    // [flat.map.cons.alloc] Constructors with allocators
+    template <_Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    explicit _Flat_map_base(const _Alloc& _Al)
+        : _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Al),
+              .values = _STD make_obj_using_allocator<mapped_container_type>(_Al)},
+          _Key_compare() {}
+
+    template <_Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(const key_compare& _Comp, const _Alloc& _Al)
+        : _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Al),
+              .values = _STD make_obj_using_allocator<mapped_container_type>(_Al)},
+          _Key_compare(_Comp) {}
+
+    template <_Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont, const _Alloc& _Al)
+        : _Flat_map_base(_Key_cont, _Mapped_cont, key_compare(), _Al) {}
+
+    template <_Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
+        const key_compare& _Comp, const _Alloc& _Al)
+        : _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Al, _Key_cont),
+              .values = _STD make_obj_using_allocator<mapped_container_type>(_Al, _Mapped_cont)},
+          _Key_compare(_Comp) {
+        _STL_ASSERT(_Data.keys.size() == _Data.values.size(), _Msg_different_sizes);
+        _Establish_invariants();
+    }
+
+    template <_Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(_Sorted_t _Tag, const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
+        const _Alloc& _Al)
+        : _Flat_map_base(_Tag, _Key_cont, _Mapped_cont, key_compare(), _Al) {}
+
+    template <_Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(_Sorted_t, const key_container_type& _Key_cont, const mapped_container_type& _Mapped_cont,
+        const key_compare& _Comp, const _Alloc& _Al)
+        : _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Al, _Key_cont),
+              .values = _STD make_obj_using_allocator<mapped_container_type>(_Al, _Mapped_cont)},
+          _Key_compare(_Comp) {
+        _STL_ASSERT(_Data.keys.size() == _Data.values.size(), _Msg_different_sizes);
+        _STL_ASSERT(_Is_sorted_maybe_unique(), _Msg_not_sorted_maybe_unique);
+    }
+
+    template <_Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(const _Flat_map_base& _Other, const _Alloc& _Al)
+        : _Data{.keys = _STD make_obj_using_allocator<key_container_type>(_Al, _Other._Data.keys),
+              .values = _STD make_obj_using_allocator<mapped_container_type>(_Al, _Other._Data.values)},
+          _Key_compare(_Other._Key_compare) {}
+
+private:
+    template <class _Alloc>
+    _NODISCARD containers _Extract_using_allocator(const _Alloc& _Al) && {
+        _Clear_guard _Always_clear{this};
+        return containers{.keys = _STD make_obj_using_allocator<key_container_type>(_Al, _STD move(_Data.keys)),
+            .values             = _STD make_obj_using_allocator<mapped_container_type>(_Al, _STD move(_Data.values))};
+    }
+
+public:
+    template <_Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(_Flat_map_base&& _Other, const _Alloc& _Al)
+        : _Data{_STD move(_Other)._Extract_using_allocator(_Al)},
+          _Key_compare(_Other._Key_compare) // intentionally copy comparator, see LWG-2227
+    {}
+
+    template <_Iterator_for_container _InIt, _Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(const _InIt _First, const _InIt _Last, const _Alloc& _Al) : _Flat_map_base(_Al) {
+        insert(_First, _Last);
+    }
+
+    template <_Iterator_for_container _InIt, _Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(const _InIt _First, const _InIt _Last, const key_compare& _Comp, const _Alloc& _Al)
+        : _Flat_map_base(_Comp, _Al) {
+        insert(_First, _Last);
+    }
+
+    template <_Iterator_for_container _InIt, _Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(_Sorted_t _Tag, const _InIt _First, const _InIt _Last, const _Alloc& _Al) : _Flat_map_base(_Al) {
+        insert(_Tag, _First, _Last);
+    }
+
+    template <_Iterator_for_container _InIt, _Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(_Sorted_t _Tag, const _InIt _First, const _InIt _Last, const key_compare& _Comp, const _Alloc& _Al)
+        : _Flat_map_base(_Comp, _Al) {
+        insert(_Tag, _First, _Last);
+    }
+
+    template <_Container_compatible_range<value_type> _Rng,
+        _Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(from_range_t, _Rng&& _Range, const _Alloc& _Al) : _Flat_map_base(_Al) {
+        insert_range(_STD forward<_Rng>(_Range));
+    }
+
+    template <_Container_compatible_range<value_type> _Rng,
+        _Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(from_range_t, _Rng&& _Range, const key_compare& _Comp, const _Alloc& _Al)
+        : _Flat_map_base(_Comp, _Al) {
+        insert_range(_STD forward<_Rng>(_Range));
+    }
+
+    template <_Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(const initializer_list<value_type> _Ilist, const _Alloc& _Al) : _Flat_map_base(_Al) {
+        insert(_Ilist);
+    }
+
+    template <_Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(const initializer_list<value_type> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
+        : _Flat_map_base(_Comp, _Al) {
+        insert(_Ilist);
+    }
+
+    template <_Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(_Sorted_t _Tag, const initializer_list<value_type> _Ilist, const _Alloc& _Al) : _Flat_map_base(_Al) {
+        insert(_Tag, _Ilist);
+    }
+
+    template <_Usable_allocator_for<key_container_type, mapped_container_type> _Alloc>
+    _Flat_map_base(
+        _Sorted_t _Tag, const initializer_list<value_type> _Ilist, const key_compare& _Comp, const _Alloc& _Al)
+        : _Flat_map_base(_Comp, _Al) {
+        insert(_Tag, _Ilist);
+    }
+
+    // Assignment operators
+    _Flat_map_base& operator=(const _Flat_map_base& _Other) {
+        _Clear_guard _Guard{this};
+        _Data          = _Other._Data;
+        _Key_compare   = _Other._Key_compare;
+        _Guard._Target = nullptr;
+        return *this;
+    }
+
+    _Flat_map_base& operator=(_Flat_map_base&& _Other)
+        noexcept(is_nothrow_move_assignable_v<key_container_type> && is_nothrow_move_assignable_v<mapped_container_type>
+                 && is_nothrow_copy_assignable_v<key_compare>) /* strengthened */ {
+        if (this != _STD addressof(_Other)) {
+            _Clear_guard _Guard{this};
+            _Clear_guard _Always_clear{_STD addressof(_Other)};
+            _Data          = _STD move(_Other._Data);
+            _Key_compare   = _Other._Key_compare; // intentionally copy comparator, see LWG-2227
+            _Guard._Target = nullptr;
+        }
+        return *this;
+    }
+
+    // Iterators
+    _NODISCARD iterator begin() noexcept {
+        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<iterator>);
+        return iterator{_Data.keys.cbegin(), _Data.values.begin()};
+    }
+    _NODISCARD const_iterator begin() const noexcept {
+        _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<const_iterator>);
+        _STL_INTERNAL_STATIC_ASSERT(convertible_to<iterator, const_iterator>);
+        return const_iterator{_Data.keys.cbegin(), _Data.values.cbegin()};
+    }
+    _NODISCARD iterator end() noexcept {
+        return iterator{_Data.keys.cend(), _Data.values.end()};
+    }
+    _NODISCARD const_iterator end() const noexcept {
+        return const_iterator{_Data.keys.cend(), _Data.values.cend()};
+    }
+
+    _NODISCARD reverse_iterator rbegin() noexcept {
+        return reverse_iterator{end()};
+    }
+    _NODISCARD const_reverse_iterator rbegin() const noexcept {
+        return const_reverse_iterator{end()};
+    }
+    _NODISCARD reverse_iterator rend() noexcept {
+        return reverse_iterator{begin()};
+    }
+    _NODISCARD const_reverse_iterator rend() const noexcept {
+        return const_reverse_iterator{begin()};
+    }
+
+    _NODISCARD const_iterator cbegin() const noexcept {
+        return const_iterator{_Data.keys.cbegin(), _Data.values.cbegin()};
+    }
+    _NODISCARD const_iterator cend() const noexcept {
+        return const_iterator{_Data.keys.cend(), _Data.values.cend()};
+    }
+
+    _NODISCARD const_reverse_iterator crbegin() const noexcept {
+        return const_reverse_iterator{cend()};
+    }
+    _NODISCARD const_reverse_iterator crend() const noexcept {
+        return const_reverse_iterator{cbegin()};
+    }
+
+    // [flat.map.capacity] Capacity
+    _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
+        return _Data.keys.empty();
+    }
+
+    _NODISCARD size_type size() const noexcept {
+        return _Data.keys.size();
+    }
+
+    _NODISCARD size_type max_size() const noexcept {
+        return (_STD min) (_Data.keys.max_size(), _Data.values.max_size());
+    }
+
+    // [flat.map.modifiers] Modifiers
+    template <class... _ArgTypes>
+    auto emplace(_ArgTypes&&... _Args)
+        requires is_constructible_v<value_type, _ArgTypes...>
+    {
+        value_type _Val(_STD forward<_ArgTypes>(_Args)...);
+        return _Try_emplace(_STD move(_Val.first), _STD move(_Val.second));
+    }
+
+    template <class... _ArgTypes>
+    iterator emplace_hint(const const_iterator _Position, _ArgTypes&&... _Args)
+        requires is_constructible_v<value_type, _ArgTypes...>
+    {
+        value_type _Val(_STD forward<_ArgTypes>(_Args)...);
+        return _Emplace_hint<false>(_Position, _STD move(_Val.first), _STD move(_Val.second));
+    }
+
+    auto insert(const value_type& _Val) {
+        return _Try_emplace(_Val.first, _Val.second);
+    }
+    auto insert(value_type&& _Val) {
+        return _Try_emplace(_STD move(_Val.first), _STD move(_Val.second));
+    }
+
+    iterator insert(const const_iterator _Position, const value_type& _Val) {
+        return _Emplace_hint<false>(_Position, _Val.first, _Val.second);
+    }
+    iterator insert(const const_iterator _Position, value_type&& _Val) {
+        return _Emplace_hint<false>(_Position, _STD move(_Val.first), _STD move(_Val.second));
+    }
+
+    template <class _OtherPair>
+    auto insert(_OtherPair&& _Val)
+        requires is_constructible_v<value_type, _OtherPair>
+    {
+        return emplace(_STD forward<_OtherPair>(_Val));
+    }
+
+    template <class _OtherPair>
+    iterator insert(const const_iterator _Position, _OtherPair&& _Val)
+        requires is_constructible_v<value_type, _OtherPair>
+    {
+        return emplace_hint(_Position, _STD forward<_OtherPair>(_Val));
+    }
+
+    template <_Iterator_for_container _InIt>
+    void insert(const _InIt _First, const _InIt _Last) {
+        _Insert_range<true>(_First, _Last);
+    }
+    template <_Iterator_for_container _InIt>
+    void insert(_Sorted_t, const _InIt _First, const _InIt _Last) {
+        _Insert_range<false>(_First, _Last);
+    }
+
+    template <_Container_compatible_range<value_type> _Rng>
+    void insert_range(_Rng&& _Range) {
+        _Insert_range<true>(_RANGES begin(_Range), _RANGES end(_Range));
+    }
+    template <_Container_compatible_range<value_type> _Rng>
+    void insert_range(_Sorted_t, _Rng&& _Range) {
+        _Insert_range<false>(_RANGES begin(_Range), _RANGES end(_Range));
+    }
+
+    void insert(const initializer_list<value_type> _Ilist) {
+        _Insert_range<true>(_Ilist.begin(), _Ilist.end());
+    }
+    void insert(_Sorted_t, const initializer_list<value_type> _Ilist) {
+        _Insert_range<false>(_Ilist.begin(), _Ilist.end());
+    }
+
+    _NODISCARD containers extract() && noexcept(
+        is_nothrow_move_constructible_v<key_container_type>
+        && is_nothrow_move_constructible_v<mapped_container_type>) /* strengthened */ {
+        // always clears the container (N5032 [flat.map.modifiers]/35 and [flat.multimap.overview]/4)
+        _Clear_guard _Always_clear{this};
+        return _STD move(_Data);
+    }
+
+    void replace(key_container_type&& _Key_cont, mapped_container_type&& _Mapped_cont) {
+        _STL_ASSERT(_Key_cont.size() == _Mapped_cont.size(), _Msg_replace_different_sizes);
+        _STL_ASSERT(_Is_sorted_maybe_unique(_Key_cont.begin(), _Key_cont.end()), _Msg_replace_not_sorted_maybe_unique);
+        _Clear_guard _Guard{this};
+        _Data.keys     = _STD move(_Key_cont);
+        _Data.values   = _STD move(_Mapped_cont);
+        _Guard._Target = nullptr;
+    }
+
+    iterator erase(const iterator _Position) {
+        return erase(static_cast<const_iterator>(_Position));
+    }
+
+    iterator erase(const const_iterator _Position) {
+        _Clear_guard _Guard{this};
+        auto _Key_it   = _Data.keys.erase(_Position._Key_it);
+        auto _Val_it   = _Data.values.erase(_Position._Mapped_it);
+        _Guard._Target = nullptr;
+        return iterator{_STD move(_Key_it), _STD move(_Val_it)};
+    }
+
+    size_type erase(const key_type& _Key_val) {
+        return _Erase_key(_Key_val);
+    }
+
+    template <class _OtherKey>
+        requires _Transparent<key_compare> && (!is_convertible_v<_OtherKey, iterator>)
+              && (!is_convertible_v<_OtherKey, const_iterator>)
+    size_type erase(_OtherKey&& _Key_val) {
+        return _Erase_key(_STD forward<_OtherKey>(_Key_val));
+    }
+
+    iterator erase(const const_iterator _First, const const_iterator _Last) {
+        _Clear_guard _Guard{this};
+        auto _Key_it   = _Data.keys.erase(_First._Key_it, _Last._Key_it);
+        auto _Val_it   = _Data.values.erase(_First._Mapped_it, _Last._Mapped_it);
+        _Guard._Target = nullptr;
+        return iterator{_STD move(_Key_it), _STD move(_Val_it)};
+    }
+
+    void swap(_Derived& _Other)
+        noexcept(is_nothrow_swappable_v<key_container_type> && is_nothrow_swappable_v<mapped_container_type>
+                 && is_nothrow_swappable_v<key_compare>) {
+        constexpr bool _Is_noexcept = is_nothrow_swappable_v<key_container_type>
+                                   && is_nothrow_swappable_v<mapped_container_type>
+                                   && is_nothrow_swappable_v<key_compare>;
+        _Flat_map_swap_clear_guard<_Is_noexcept, containers> _Guard{
+            _STD addressof(_Data), _STD addressof(_Other._Data)};
+        _RANGES swap(_Data.keys, _Other._Data.keys);
+        _RANGES swap(_Data.values, _Other._Data.values);
+        _RANGES swap(_Key_compare, _Other._Key_compare);
+        _Guard._Dismiss();
+    }
+
+    void clear() noexcept {
+        _Data.keys.clear();
+        _Data.values.clear();
+    }
+
+    // Observers
+    _NODISCARD key_compare key_comp() const {
+        return _Key_compare;
+    }
+
+    _NODISCARD value_compare value_comp() const {
+        return value_compare{_Key_compare};
+    }
+
+    _NODISCARD const key_container_type& keys() const noexcept {
+        return _Data.keys;
+    }
+
+    _NODISCARD const mapped_container_type& values() const noexcept {
+        return _Data.values;
+    }
+
+    // map operations
+    _NODISCARD iterator find(const key_type& _Key_val) {
+        return _Find(_Key_val);
+    }
+    _NODISCARD const_iterator find(const key_type& _Key_val) const {
+        return _Find(_Key_val);
+    }
+    template <class _OtherKey>
+    _NODISCARD iterator find(const _OtherKey& _Key_val)
+        requires _Transparent<key_compare>
+    {
+        return _Find(_Key_val);
+    }
+    template <class _OtherKey>
+    _NODISCARD const_iterator find(const _OtherKey& _Key_val) const
+        requires _Transparent<key_compare>
+    {
+        return _Find(_Key_val);
+    }
+
+    _NODISCARD size_type count(const key_type& _Key_val) const {
+        return _Count(_Key_val);
+    }
+    template <class _OtherKey>
+    _NODISCARD size_type count(const _OtherKey& _Key_val) const
+        requires _Transparent<key_compare>
+    {
+        return _Count(_Key_val);
+    }
+
+    _NODISCARD bool contains(const key_type& _Key_val) const {
+        return _Contains(_Key_val);
+    }
+    template <class _OtherKey>
+    _NODISCARD bool contains(const _OtherKey& _Key_val) const
+        requires _Transparent<key_compare>
+    {
+        return _Contains(_Key_val);
+    }
+
+    _NODISCARD iterator lower_bound(const key_type& _Key_val) {
+        return _Lower_bound(_Key_val);
+    }
+    _NODISCARD const_iterator lower_bound(const key_type& _Key_val) const {
+        return _Lower_bound(_Key_val);
+    }
+    template <class _OtherKey>
+    _NODISCARD iterator lower_bound(const _OtherKey& _Key_val)
+        requires _Transparent<key_compare>
+    {
+        return _Lower_bound(_Key_val);
+    }
+    template <class _OtherKey>
+    _NODISCARD const_iterator lower_bound(const _OtherKey& _Key_val) const
+        requires _Transparent<key_compare>
+    {
+        return _Lower_bound(_Key_val);
+    }
+
+    _NODISCARD iterator upper_bound(const key_type& _Key_val) {
+        return _Upper_bound(_Key_val);
+    }
+    _NODISCARD const_iterator upper_bound(const key_type& _Key_val) const {
+        return _Upper_bound(_Key_val);
+    }
+    template <class _OtherKey>
+    _NODISCARD iterator upper_bound(const _OtherKey& _Key_val)
+        requires _Transparent<key_compare>
+    {
+        return _Upper_bound(_Key_val);
+    }
+    template <class _OtherKey>
+    _NODISCARD const_iterator upper_bound(const _OtherKey& _Key_val) const
+        requires _Transparent<key_compare>
+    {
+        return _Upper_bound(_Key_val);
+    }
+
+    _NODISCARD pair<iterator, iterator> equal_range(const key_type& _Key_val) {
+        return _Equal_range(_Key_val);
+    }
+    _NODISCARD pair<const_iterator, const_iterator> equal_range(const key_type& _Key_val) const {
+        return _Equal_range(_Key_val);
+    }
+    template <class _OtherKey>
+    _NODISCARD pair<iterator, iterator> equal_range(const _OtherKey& _Key_val)
+        requires _Transparent<key_compare>
+    {
+        return _Equal_range(_Key_val);
+    }
+    template <class _OtherKey>
+    _NODISCARD pair<const_iterator, const_iterator> equal_range(const _OtherKey& _Key_val) const
+        requires _Transparent<key_compare>
+    {
+        return _Equal_range(_Key_val);
+    }
+
+    _NODISCARD friend bool operator==(const _Derived& _Lhs, const _Derived& _Rhs) {
+        return _STD equal(_Lhs.cbegin(), _Lhs.cend(), _Rhs.cbegin(), _Rhs.cend());
+    }
+
+    _NODISCARD friend auto operator<=>(const _Derived& _Lhs, const _Derived& _Rhs) {
+        return _STD lexicographical_compare_three_way(
+            _Lhs.cbegin(), _Lhs.cend(), _Rhs.cbegin(), _Rhs.cend(), _Synth_three_way{});
+    }
+
+    friend void swap(_Derived& _Lhs, _Derived& _Rhs) noexcept(noexcept(_Lhs.swap(_Rhs))) {
+        _Lhs.swap(_Rhs);
+    }
+
+protected:
+    template <class _OtherKey, class... _MappedArgTypes>
+    _NODISCARD conditional_t<_IsUnique, pair<iterator, bool>, iterator> _Try_emplace(
+        _OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
+        _STL_INTERNAL_STATIC_ASSERT(is_constructible_v<mapped_type, _MappedArgTypes...>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_OtherKey>, key_type>
+                                    || (is_constructible_v<key_type, _OtherKey> && _Transparent<key_compare>) );
+
+        const auto _Key_it = _STD upper_bound(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Pass_key_comp());
+        const auto _Index  = _Key_it - _Data.keys.begin();
+        if constexpr (_IsUnique) {
+            if (_Key_it != _Data.keys.begin() && !_Compare_keys(*(_Key_it - 1), _Key_val)) {
+                // Previous element is equivalent to key, no insert needed
+                return {begin() + (_Index - 1), false};
+            }
+        }
+
+        // Need to insert
+        _Emplace_exact(
+            cbegin() + _Index, _STD forward<_OtherKey>(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
+
+        if constexpr (_IsUnique) {
+            return {begin() + _Index, true};
+        } else {
+            return begin() + _Index;
+        }
+    }
+
+    template <bool _OverwriteIfExists, class _OtherKey, class... _MappedArgTypes>
+    _NODISCARD iterator _Emplace_hint(
+        const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
+        _STL_INTERNAL_STATIC_ASSERT(is_constructible_v<mapped_type, _MappedArgTypes...>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_OtherKey>, key_type>
+                                    || (is_constructible_v<key_type, _OtherKey> && _Transparent<key_compare>) );
+
+        // Overwriting is not supported when the container allows multiple copies of a key.
+        _STL_INTERNAL_STATIC_ASSERT(_IsUnique || !_OverwriteIfExists);
+
+        const const_iterator _Begin = cbegin();
+        const const_iterator _End   = cend();
+
+        const weak_ordering _Hint_order = [&] {
+            if constexpr (_IsUnique) {
+                if (_Position == _End || _Compare_keys(_Key_val, *_Position._Key_it)) {
+                    if (_Position == _Begin || _Compare_keys(*(_Position._Key_it - 1), _Key_val)) {
+                        return weak_ordering::equivalent;
+                    } else {
+                        return weak_ordering::greater;
+                    }
+                }
+            } else {
+                if (_Position == _End || !_Compare_keys(*_Position._Key_it, _Key_val)) {
+                    if (_Position == _Begin || !_Compare_keys(_Key_val, *(_Position._Key_it - 1))) {
+                        return weak_ordering::equivalent;
+                    } else {
+                        return weak_ordering::greater;
+                    }
+                }
+            }
+            return weak_ordering::less;
+        }();
+
+        const auto _New_position = _Iterator_from_key_iterator(
+            _Hint_order == weak_ordering::equivalent ? _Position._Key_it
+            : _Hint_order == weak_ordering::less
+                ? _STD lower_bound(_Position._Key_it, _Data.keys.cend(), _Key_val, _Pass_key_comp())
+                : _STD upper_bound(_Data.keys.cbegin(), _Position._Key_it, _Key_val, _Pass_key_comp()));
+
+        if constexpr (_IsUnique) {
+            if (_Hint_order == weak_ordering::less) {
+                if (_New_position != _End && !_Compare_keys(_Key_val, *_New_position._Key_it)) {
+                    if constexpr (_OverwriteIfExists) {
+                        *_New_position._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Mapped_args)...);
+                    }
+                    return _New_position;
+                }
+            } else if (_Hint_order == weak_ordering::greater) {
+                if (_New_position != _Begin && !_Compare_keys(*(_New_position._Key_it - 1), _Key_val)) {
+                    const auto _It = _New_position - 1;
+                    if constexpr (_OverwriteIfExists) {
+                        *_It._Mapped_it = mapped_type(_STD forward<_MappedArgTypes>(_Mapped_args)...);
+                    }
+                    return _It;
+                }
+            }
+        }
+
+        const auto _Dist = _New_position - begin();
+        _Emplace_exact(
+            _New_position, _STD forward<_OtherKey>(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
+        return begin() + _Dist;
+    }
+
+#ifdef _ENABLE_STL_INTERNAL_CHECK
+public:
+#else
+private:
+#endif
+    _NODISCARD bool _Is_sorted_maybe_unique() const {
+        return _Is_sorted_maybe_unique(_Data.keys.begin(), _Data.keys.end());
+    }
+
+private:
+    _NODISCARD bool _Is_sorted_maybe_unique(
+        const key_container_type::const_iterator _It, const key_container_type::const_iterator _End) const {
+        if constexpr (_IsUnique) {
+            // sorted-unique
+            auto _Negated = [this](const key_type& _Lhs, const key_type& _Rhs) { return !_Compare_keys(_Lhs, _Rhs); };
+            return _STD adjacent_find(_It, _End, _Negated) == _End;
+        } else {
+            return _STD is_sorted(_It, _End, _Pass_key_comp());
+        }
+    }
+
+    _NODISCARD auto _View_to_mutate() {
+        using _Mutating_iterator = _Pairing_iterator_provider<typename key_container_type::iterator,
+            typename mapped_container_type::iterator, typename mapped_container_type::iterator>::_Iterator;
+        return _RANGES subrange<_Mutating_iterator>{_Mutating_iterator{_Data.keys.begin(), _Data.values.begin()},
+            _Mutating_iterator{_Data.keys.end(), _Data.values.end()}};
+    }
+
+    struct _Value_compare_to_pass {
+        static constexpr bool _Efficiently_copyable = conjunction_v<bool_constant<sizeof(key_compare) <= sizeof(void*)>,
+            is_trivially_copy_constructible<key_compare>, is_trivially_destructible<key_compare>>;
+
+        using _Copy_or_ref = conditional_t<_Efficiently_copyable, key_compare, const key_compare&>;
+
+        _Copy_or_ref _Key_comparator;
+
+        template <class _Pair1, class _Pair2>
+        _NODISCARD bool operator()(const _Pair1& _Lhs, const _Pair2& _Rhs) const {
+            return _Key_comparator(_Lhs.first, _Rhs.first);
+        }
+    };
+
+    _NODISCARD auto _Erase_dupes_if_not_multi_pred() {
+        _STL_INTERNAL_STATIC_ASSERT(_IsUnique);
+        if constexpr (_Equivalence_is_equality<key_compare, key_type>) {
+            return [](const auto& _Lhs, const auto& _Rhs) _STATIC_CALL_OPERATOR { return _Lhs.first == _Rhs.first; };
+        } else {
+            return [this](const auto& _Lhs, const auto& _Rhs) {
+#ifdef __clang__ // TRANSITION, LLVM-81243
+                return !this->_Compare_keys(_Lhs.first, _Rhs.first);
+#else // ^^^ workaround / no workaround vvv
+                return !_Compare_keys(_Lhs.first, _Rhs.first);
+#endif // ^^^ no workaround ^^^
+            };
+        }
+    }
+
+    template <bool _NeedSorting>
+    void _Restore_invariants(const size_type _Old_size) {
+        // No _Clear_guard needed. This is called only by _Insert_range() (which has a _Clear_guard)
+        // and _Establish_invariants() (which is called only by constructors which don't need guards).
+
+        auto _View          = _View_to_mutate();
+        const auto _Begin   = _View.begin();
+        const auto _Old_end = _Begin + static_cast<difference_type>(_Old_size);
+        const auto _End     = _View.end();
+
+        if constexpr (_NeedSorting) {
+            _RANGES sort(_Old_end, _End, _Value_compare_to_pass{_Key_compare});
+        } else {
+            [[maybe_unused]] const auto _Diff = static_cast<key_container_type::difference_type>(_Old_size);
+            _STL_ASSERT(
+                _Is_sorted_maybe_unique(_Data.keys.begin() + _Diff, _Data.keys.end()), _Msg_not_sorted_maybe_unique);
+        }
+
+        _RANGES inplace_merge(_View, _Old_end, _Value_compare_to_pass{_Key_compare});
+
+        if constexpr (_IsUnique) {
+            const auto _New_last = _RANGES unique(_View, _Erase_dupes_if_not_multi_pred()).begin();
+            _Data.keys.erase(_New_last._Key_it, _Data.keys.end());
+            _Data.values.erase(_New_last._Mapped_it, _Data.values.end());
+        }
+
+        _STL_INTERNAL_CHECK(_Is_sorted_maybe_unique());
+    }
+
+    void _Establish_invariants() {
+        if (_Data.keys.empty()) {
+            return;
+        }
+
+        const auto _Begin        = _Data.keys.begin();
+        const auto _End          = _Data.keys.end();
+        const auto _Sorted_until = _STD is_sorted_until(_Begin, _End, _Pass_key_comp()); // O(N) if already sorted.
+        const auto _Sorted_size  = static_cast<size_type>(_Sorted_until - _Begin);
+        _Restore_invariants<true>(_Sorted_size);
+    }
+
+    template <class _OtherKey, class... _MappedArgTypes>
+    void _Emplace_exact(const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
+        _Clear_guard _Guard{this};
+        _Data.keys.emplace(_Position._Key_it, _STD forward<_OtherKey>(_Key_val));
+        _Data.values.emplace(_Position._Mapped_it, _STD forward<_MappedArgTypes>(_Mapped_args)...);
+        _Guard._Target = nullptr;
+    }
+
+    template <bool _NeedSorting, class _InIt, class _Sentinel>
+    void _Insert_range(_InIt _First, const _Sentinel _Last) {
+        _Clear_guard _Guard{this};
+
+        const size_type _Old_size = size();
+
+        // Insert the new elements at the end
+        for (; _First != _Last; ++_First) {
+            value_type _Val = *_First;
+            if constexpr (_Has_guaranteed_push_back<key_container_type>) {
+                _Data.keys.push_back(_STD move(_Val.first));
+            } else {
+                _Data.keys.insert(_Data.keys.end(), _STD move(_Val.first));
+            }
+
+            if constexpr (_Has_guaranteed_push_back<mapped_container_type>) {
+                _Data.values.push_back(_STD move(_Val.second));
+            } else {
+                _Data.values.insert(_Data.values.end(), _STD move(_Val.second));
+            }
+        }
+
+        _Restore_invariants<_NeedSorting>(_Old_size);
+
+        _Guard._Target = nullptr;
+    }
+
+    template <class _KeyTy>
+    _NODISCARD size_type _Erase_key(const _KeyTy& _Key_val) {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
+        const auto _Equal_pos = _Equal_range(_Key_val);
+        const auto _Count     = static_cast<size_type>(_Equal_pos.second - _Equal_pos.first);
+        erase(_Equal_pos.first, _Equal_pos.second);
+        return _Count;
+    }
+
+    // size_type is always size_t
+    template <class _Key2, class _Mapped2, class _Compare2, class _KeyContainer2, class _MappedContainer2,
+        class _Predicate2>
+    friend size_t erase_if(flat_map<_Key2, _Mapped2, _Compare2, _KeyContainer2, _MappedContainer2>&, _Predicate2);
+    template <class _Key2, class _Mapped2, class _Compare2, class _KeyContainer2, class _MappedContainer2,
+        class _Predicate2>
+    friend size_t erase_if(flat_multimap<_Key2, _Mapped2, _Compare2, _KeyContainer2, _MappedContainer2>&, _Predicate2);
+
+    template <class _Predicate>
+    _NODISCARD size_t _Erase_if(_Predicate _Pred) {
+        _Clear_guard _Guard{this};
+
+        // N5032 [flat.map.erasure]/2 and [flat.multimap.erasure]/2
+        const auto _Proj     = [](const auto& _Element) _STATIC_CALL_OPERATOR { return const_reference{_Element}; };
+        const auto _New_last = _RANGES remove_if(_View_to_mutate(), _Pred, _Proj).begin();
+        const auto _Old_size = size();
+
+        _Data.keys.erase(_New_last._Key_it, _Data.keys.end());
+        _Data.values.erase(_New_last._Mapped_it, _Data.values.end());
+
+        _Guard._Target = nullptr;
+        return _Old_size - size();
+    }
+
+    template <class _SelfTy, class _KeyTy>
+    _NODISCARD auto _Find(this _SelfTy& _Self, const _KeyTy& _Key_val) {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
+        const auto _Position =
+            _STD lower_bound(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp());
+        if (_Position != _Self._Data.keys.end() && !_Self._Compare_keys(_Key_val, *_Position)) {
+            return _Self._Iterator_from_key_iterator(_Position);
+        } else {
+            return _Self.end();
+        }
+    }
+
+    template <class _KeyTy>
+    _NODISCARD size_type _Count(const _KeyTy& _Key_val) const {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
+        if constexpr (_IsUnique && is_same_v<_KeyTy, key_type>) { // Optimization restricted due to GH-5992
+            return _Contains(_Key_val);
+        } else {
+            const auto [_First, _Last] =
+                _STD equal_range(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Pass_key_comp());
+            return static_cast<size_type>(_Last - _First);
+        }
+    }
+
+    template <class _KeyTy>
+    _NODISCARD bool _Contains(const _KeyTy& _Key_val) const {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
+        return _STD binary_search(_Data.keys.begin(), _Data.keys.end(), _Key_val, _Pass_key_comp());
+    }
+
+    template <class _SelfTy, class _KeyTy>
+    _NODISCARD auto _Lower_bound(this _SelfTy& _Self, const _KeyTy& _Key_val) {
+        return _Self._Iterator_from_key_iterator(
+            _STD lower_bound(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp()));
+    }
+
+    template <class _SelfTy, class _KeyTy>
+    _NODISCARD auto _Upper_bound(this _SelfTy& _Self, const _KeyTy& _Key_val) {
+        return _Self._Iterator_from_key_iterator(
+            _STD upper_bound(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp()));
+    }
+
+    template <class _SelfTy, class _KeyTy>
+    _NODISCARD auto _Equal_range(this _SelfTy& _Self, const _KeyTy& _Key_val) {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
+        if constexpr (_IsUnique && is_same_v<_KeyTy, key_type>) { // Optimization restricted due to GH-5992
+            // In a non-multi container, equal_range can have size at most 1
+            const auto _First =
+                _STD lower_bound(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp());
+            const bool _Missing = _First == _Self._Data.keys.end() || _Self._Compare_keys(_Key_val, *_First);
+            return pair{_Self._Iterator_from_key_iterator(_First),
+                _Self._Iterator_from_key_iterator(_Missing ? _First : _First + 1)};
+        } else {
+            const auto [_First, _Last] =
+                _STD equal_range(_Self._Data.keys.begin(), _Self._Data.keys.end(), _Key_val, _Self._Pass_key_comp());
+            return pair{_Self._Iterator_from_key_iterator(_First), _Self._Iterator_from_key_iterator(_Last)};
+        }
+    }
+
+    template <class _SelfTy>
+    _NODISCARD conditional_t<is_const_v<_SelfTy>, const_iterator, iterator> _Iterator_from_key_iterator(
+        this _SelfTy& _Self, const key_container_type::const_iterator& _Iter) {
+        const difference_type _Offset = _Iter - _Self._Data.keys.cbegin();
+        return _Self.begin() + _Offset;
+    }
+
+    template <class _Lty, class _Rty>
+    _NODISCARD bool _Compare_keys(const _Lty& _Lhs, const _Rty& _Rhs) const
+        noexcept(noexcept(_DEBUG_LT_PRED(_Key_compare, _Lhs, _Rhs))) {
+        _STL_INTERNAL_STATIC_ASSERT(
+            (is_same_v<_Lty, key_type> && is_same_v<_Rty, key_type>) || _Transparent<key_compare>);
+
+        return _DEBUG_LT_PRED(_Key_compare, _Lhs, _Rhs);
+    }
+
+    _NODISCARD auto _Pass_key_comp() const noexcept {
+        return _STD _Pass_fn(_Key_compare);
+    }
+
+    containers _Data;
+    _MSVC_NO_UNIQUE_ADDRESS key_compare _Key_compare;
+};
+
+_EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer>
+class flat_map : public _Flat_map_base<true, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer> {
+private:
+    using _Mybase = _Flat_map_base<true, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
+
+public:
+    using _Mybase::_Mybase;
+    flat_map(const flat_map&) = default;
+    flat_map(flat_map&&)      = default;
+
+    using typename _Mybase::const_iterator;
+    using typename _Mybase::iterator;
+    using typename _Mybase::key_compare;
+    using typename _Mybase::key_type;
+    using typename _Mybase::mapped_type;
+    using typename _Mybase::value_type;
+
+    flat_map& operator=(const flat_map&) = default;
+    flat_map& operator=(flat_map&&)      = default;
+
+    flat_map& operator=(const initializer_list<value_type> _Ilist) {
+        this->clear();
+        this->insert(_Ilist.begin(), _Ilist.end());
+        return *this;
+    }
+
+    // [flat.map.access] Access
+    mapped_type& operator[](const key_type& _Key_val)
+        requires is_default_constructible_v<mapped_type>
+    {
+        return try_emplace(_Key_val).first->second;
+    }
+    mapped_type& operator[](key_type&& _Key_val)
+        requires is_default_constructible_v<mapped_type>
+    {
+        return try_emplace(_STD move(_Key_val)).first->second;
+    }
+    template <class _OtherKey>
+    mapped_type& operator[](_OtherKey&& _Key_val)
+        requires _Transparent<key_compare> && is_constructible_v<key_type, _OtherKey>
+              && is_default_constructible_v<mapped_type>
+    {
+        return try_emplace(_STD forward<_OtherKey>(_Key_val)).first->second;
+    }
+
+    _NODISCARD mapped_type& at(const key_type& _Key_val) {
+        return _At(_Key_val);
+    }
+    _NODISCARD const mapped_type& at(const key_type& _Key_val) const {
+        return _At(_Key_val);
+    }
+    template <class _OtherKey>
+    _NODISCARD mapped_type& at(const _OtherKey& _Key_val)
+        requires _Transparent<key_compare>
+    {
+        return _At(_Key_val);
+    }
+    template <class _OtherKey>
+    _NODISCARD const mapped_type& at(const _OtherKey& _Key_val) const
+        requires _Transparent<key_compare>
+    {
+        return _At(_Key_val);
+    }
+
+    // [flat.map.modifiers] Modifiers
+    template <class... _MappedArgTypes>
+        requires is_constructible_v<mapped_type, _MappedArgTypes...>
+    pair<iterator, bool> try_emplace(const key_type& _Key_val, _MappedArgTypes&&... _Mapped_args) {
+        return this->_Try_emplace(_Key_val, _STD forward<_MappedArgTypes>(_Mapped_args)...);
+    }
+
+    template <class... _MappedArgTypes>
+        requires is_constructible_v<mapped_type, _MappedArgTypes...>
+    pair<iterator, bool> try_emplace(key_type&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
+        return this->_Try_emplace(_STD move(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
+    }
+
+    template <class _OtherKey, class... _MappedArgTypes>
+        requires _Transparent<key_compare> && is_constructible_v<key_type, _OtherKey>
+              && is_constructible_v<mapped_type, _MappedArgTypes...> && (!is_convertible_v<_OtherKey, const_iterator>)
+              && (!is_convertible_v<_OtherKey, iterator>)
+    pair<iterator, bool> try_emplace(_OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args) {
+        return this->_Try_emplace(_STD forward<_OtherKey>(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
+    }
+
+    template <class... _MappedArgTypes>
+    iterator try_emplace(const const_iterator _Position, const key_type& _Key_val, _MappedArgTypes&&... _Mapped_args)
+        requires is_constructible_v<mapped_type, _MappedArgTypes...>
+    {
+        return this->template _Emplace_hint<false>(_Position, _Key_val, _STD forward<_MappedArgTypes>(_Mapped_args)...);
+    }
+
+    template <class... _MappedArgTypes>
+    iterator try_emplace(const const_iterator _Position, key_type&& _Key_val, _MappedArgTypes&&... _Mapped_args)
+        requires is_constructible_v<mapped_type, _MappedArgTypes...>
+    {
+        return this->template _Emplace_hint<false>(
+            _Position, _STD move(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
+    }
+
+    template <class _OtherKey, class... _MappedArgTypes>
+    iterator try_emplace(const const_iterator _Position, _OtherKey&& _Key_val, _MappedArgTypes&&... _Mapped_args)
+        requires _Transparent<key_compare> && is_constructible_v<key_type, _OtherKey>
+              && is_constructible_v<mapped_type, _MappedArgTypes...>
+    {
+        return this->template _Emplace_hint<false>(
+            _Position, _STD forward<_OtherKey>(_Key_val), _STD forward<_MappedArgTypes>(_Mapped_args)...);
+    }
+
+    template <class _OtherMapped>
+    pair<iterator, bool> insert_or_assign(const key_type& _Key_val, _OtherMapped&& _Mapped_val)
+        requires is_assignable_v<mapped_type&, _OtherMapped> && is_constructible_v<mapped_type, _OtherMapped>
+    {
+        return _Insert_or_assign(_Key_val, _STD forward<_OtherMapped>(_Mapped_val));
+    }
+
+    template <class _OtherMapped>
+    pair<iterator, bool> insert_or_assign(key_type&& _Key_val, _OtherMapped&& _Mapped_val)
+        requires is_assignable_v<mapped_type&, _OtherMapped> && is_constructible_v<mapped_type, _OtherMapped>
+    {
+        return _Insert_or_assign(_STD move(_Key_val), _STD forward<_OtherMapped>(_Mapped_val));
+    }
+
+    template <class _OtherKey, class _OtherMapped>
+    pair<iterator, bool> insert_or_assign(_OtherKey&& _Key_val, _OtherMapped&& _Mapped_val)
+        requires _Transparent<key_compare> && is_constructible_v<key_type, _OtherKey>
+              && is_assignable_v<mapped_type&, _OtherMapped> && is_constructible_v<mapped_type, _OtherMapped>
+    {
+        return _Insert_or_assign(_STD forward<_OtherKey>(_Key_val), _STD forward<_OtherMapped>(_Mapped_val));
+    }
+
+    template <class _OtherMapped>
+    iterator insert_or_assign(const const_iterator _Position, const key_type& _Key_val, _OtherMapped&& _Mapped_val)
+        requires is_assignable_v<mapped_type&, _OtherMapped> && is_constructible_v<mapped_type, _OtherMapped>
+    {
+        return this->template _Emplace_hint<true>(_Position, _Key_val, _STD forward<_OtherMapped>(_Mapped_val));
+    }
+
+    template <class _OtherMapped>
+    iterator insert_or_assign(const const_iterator _Position, key_type&& _Key_val, _OtherMapped&& _Mapped_val)
+        requires is_assignable_v<mapped_type&, _OtherMapped> && is_constructible_v<mapped_type, _OtherMapped>
+    {
+        return this->template _Emplace_hint<true>(
+            _Position, _STD move(_Key_val), _STD forward<_OtherMapped>(_Mapped_val));
+    }
+
+    template <class _OtherKey, class _OtherMapped>
+    iterator insert_or_assign(const const_iterator _Position, _OtherKey&& _Key_val, _OtherMapped&& _Mapped_val)
+        requires _Transparent<key_compare> && is_constructible_v<key_type, _OtherKey>
+              && is_assignable_v<mapped_type&, _OtherMapped> && is_constructible_v<mapped_type, _OtherMapped>
+    {
+        return this->template _Emplace_hint<true>(
+            _Position, _STD forward<_OtherKey>(_Key_val), _STD forward<_OtherMapped>(_Mapped_val));
+    }
+
+private:
+    template <class _SelfTy, class _KeyTy>
+    _NODISCARD auto& _At(this _SelfTy& _Self, const _KeyTy& _Key_val) {
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<_KeyTy, key_type> || _Transparent<key_compare>);
+        const auto _Position = _Self.find(_Key_val);
+        if (_Position == _Self.end()) {
+            _Xout_of_range("invalid flat_map key");
+        }
+
+        return _Position->second;
+    }
+
+    template <class _KeyTy, class _OtherMapped>
+    _NODISCARD pair<iterator, bool> _Insert_or_assign(_KeyTy&& _Key_val, _OtherMapped&& _Mapped_val) {
+        auto _Res = this->_Try_emplace(_STD forward<_KeyTy>(_Key_val), _STD forward<_OtherMapped>(_Mapped_val));
+        if (!_Res.second) { // Already exists
+            _Res.first->second = _STD forward<_OtherMapped>(_Mapped_val);
+        }
+        return _Res;
+    }
+};
+
+_EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer>
+class flat_multimap : public _Flat_map_base<false, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer> {
+private:
+    using _Mybase = _Flat_map_base<false, _Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
+
+public:
+    using typename _Mybase::value_type;
+
+    using _Mybase::_Mybase;
+    flat_multimap(const flat_multimap&) = default;
+    flat_multimap(flat_multimap&&)      = default;
+
+    flat_multimap& operator=(const flat_multimap&) = default;
+    flat_multimap& operator=(flat_multimap&&)      = default;
+
+    flat_multimap& operator=(const initializer_list<value_type> _Ilist) {
+        this->clear();
+        this->insert(_Ilist.begin(), _Ilist.end());
+        return *this;
+    }
+};
+
+_EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer,
+    class _Predicate>
+size_t erase_if(flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>& _Cont, _Predicate _Pred) {
+    return _Cont._Erase_if(_STD _Pass_fn(_Pred));
+}
+_EXPORT_STD template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer,
+    class _Predicate>
+size_t erase_if(flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>& _Cont, _Predicate _Pred) {
+    return _Cont._Erase_if(_STD _Pass_fn(_Pred));
+}
+
+template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer, class _Alloc>
+struct uses_allocator<flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>, _Alloc>
+    : bool_constant<uses_allocator_v<_KeyContainer, _Alloc> && uses_allocator_v<_MappedContainer, _Alloc>> {};
+
+template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer, class _Alloc>
+struct uses_allocator<flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>, _Alloc>
+    : bool_constant<uses_allocator_v<_KeyContainer, _Alloc> && uses_allocator_v<_MappedContainer, _Alloc>> {};
+
+template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_container _MappedContainer,
+    _Valid_compare_for_container<_KeyContainer> _Compare = less<typename _KeyContainer::value_type>>
+flat_map(_KeyContainer, _MappedContainer, _Compare = _Compare()) -> flat_map<typename _KeyContainer::value_type,
+    typename _MappedContainer::value_type, _Compare, _KeyContainer, _MappedContainer>;
+
+template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_container _MappedContainer,
+    _Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
+flat_map(_KeyContainer, _MappedContainer, _Alloc) -> flat_map<typename _KeyContainer::value_type,
+    typename _MappedContainer::value_type, less<typename _KeyContainer::value_type>, _KeyContainer, _MappedContainer>;
+
+template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_container _MappedContainer,
+    _Valid_compare_for_container<_KeyContainer> _Compare, _Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
+flat_map(_KeyContainer, _MappedContainer, _Compare, _Alloc) -> flat_map<typename _KeyContainer::value_type,
+    typename _MappedContainer::value_type, _Compare, _KeyContainer, _MappedContainer>;
+
+template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_container _MappedContainer,
+    _Valid_compare_for_container<_KeyContainer> _Compare = less<typename _KeyContainer::value_type>>
+flat_map(sorted_unique_t, _KeyContainer, _MappedContainer, _Compare = _Compare())
+    -> flat_map<typename _KeyContainer::value_type, typename _MappedContainer::value_type, _Compare, _KeyContainer,
+        _MappedContainer>;
+
+template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_container _MappedContainer,
+    _Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
+flat_map(sorted_unique_t, _KeyContainer, _MappedContainer, _Alloc) -> flat_map<typename _KeyContainer::value_type,
+    typename _MappedContainer::value_type, less<typename _KeyContainer::value_type>, _KeyContainer, _MappedContainer>;
+
+template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_container _MappedContainer,
+    _Valid_compare_for_container<_KeyContainer> _Compare, _Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
+flat_map(sorted_unique_t, _KeyContainer, _MappedContainer, _Compare, _Alloc)
+    -> flat_map<typename _KeyContainer::value_type, typename _MappedContainer::value_type, _Compare, _KeyContainer,
+        _MappedContainer>;
+
+#if 1 // TRANSITION, P2582R1 (MSVC, Clang, EDG)
+template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer,
+    _Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
+flat_map(flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>, _Alloc)
+    -> flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
+#endif // ^^^ workaround ^^^
+
+template <_Iterator_for_container _InIt, _Not_allocator_for_container _Compare = less<_Guide_key_t<_InIt>>>
+flat_map(_InIt, _InIt, _Compare = _Compare()) -> flat_map<_Guide_key_t<_InIt>, _Guide_val_t<_InIt>, _Compare>;
+
+template <_Iterator_for_container _InIt, _Not_allocator_for_container _Compare = less<_Guide_key_t<_InIt>>>
+flat_map(sorted_unique_t, _InIt, _InIt, _Compare = _Compare())
+    -> flat_map<_Guide_key_t<_InIt>, _Guide_val_t<_InIt>, _Compare>;
+
+#ifdef __cpp_lib_byte
+// TRANSITION, CWG-2369, should just use constrained template parameters.
+template <_RANGES input_range _Rng, _Not_allocator_for_container _Compare = less<_Range_key_type<_Rng>>,
+    class _Alloc = allocator<byte>, enable_if_t<_Allocator_for_container<_Alloc>, int> = 0>
+flat_map(from_range_t, _Rng&&, _Compare = _Compare(), _Alloc = _Alloc()) -> flat_map<_Range_key_type<_Rng>,
+    _Range_mapped_type<_Rng>, _Compare, vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Alloc, _Range_key_type<_Rng>>>,
+    vector<_Range_mapped_type<_Rng>, _Rebind_alloc_t<_Alloc, _Range_mapped_type<_Rng>>>>;
+#else // ^^^ defined(__cpp_lib_byte) / !defined(__cpp_lib_byte) vvv
+template <_RANGES input_range _Rng, _Not_allocator_for_container _Compare = less<_Range_key_type<_Rng>>>
+flat_map(from_range_t, _Rng&&, _Compare = _Compare()) -> flat_map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>,
+    _Compare, vector<_Range_key_type<_Rng>>, vector<_Range_mapped_type<_Rng>>>;
+
+// TRANSITION, CWG-2369, should just use constrained template parameters.
+template <_RANGES input_range _Rng, _Not_allocator_for_container _Compare, class _Alloc,
+    enable_if_t<_Allocator_for_container<_Alloc>, int> = 0>
+flat_map(from_range_t, _Rng&&, _Compare, _Alloc) -> flat_map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Compare,
+    vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Alloc, _Range_key_type<_Rng>>>,
+    vector<_Range_mapped_type<_Rng>, _Rebind_alloc_t<_Alloc, _Range_mapped_type<_Rng>>>>;
+#endif // ^^^ !defined(__cpp_lib_byte) ^^^
+
+// TRANSITION, CWG-2369, should just use constrained template parameters.
+template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Allocator_for_container<_Alloc>, int> = 0>
+flat_map(from_range_t, _Rng&&, _Alloc) -> flat_map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>,
+    less<_Range_key_type<_Rng>>, vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Alloc, _Range_key_type<_Rng>>>,
+    vector<_Range_mapped_type<_Rng>, _Rebind_alloc_t<_Alloc, _Range_mapped_type<_Rng>>>>;
+
+template <class _Key, class _Mapped, _Not_allocator_for_container _Compare = less<_Key>>
+flat_map(initializer_list<pair<_Key, _Mapped>>, _Compare = _Compare()) -> flat_map<_Key, _Mapped, _Compare>;
+
+template <class _Key, class _Mapped, _Not_allocator_for_container _Compare = less<_Key>>
+flat_map(sorted_unique_t, initializer_list<pair<_Key, _Mapped>>, _Compare = _Compare())
+    -> flat_map<_Key, _Mapped, _Compare>;
+
+template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_container _MappedContainer,
+    _Valid_compare_for_container<_KeyContainer> _Compare = less<typename _KeyContainer::value_type>>
+flat_multimap(_KeyContainer, _MappedContainer, _Compare = _Compare())
+    -> flat_multimap<typename _KeyContainer::value_type, typename _MappedContainer::value_type, _Compare, _KeyContainer,
+        _MappedContainer>;
+
+template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_container _MappedContainer,
+    _Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
+flat_multimap(_KeyContainer, _MappedContainer, _Alloc) -> flat_multimap<typename _KeyContainer::value_type,
+    typename _MappedContainer::value_type, less<typename _KeyContainer::value_type>, _KeyContainer, _MappedContainer>;
+
+template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_container _MappedContainer,
+    _Valid_compare_for_container<_KeyContainer> _Compare, _Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
+flat_multimap(_KeyContainer, _MappedContainer, _Compare, _Alloc) -> flat_multimap<typename _KeyContainer::value_type,
+    typename _MappedContainer::value_type, _Compare, _KeyContainer, _MappedContainer>;
+
+template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_container _MappedContainer,
+    _Valid_compare_for_container<_KeyContainer> _Compare = less<typename _KeyContainer::value_type>>
+flat_multimap(sorted_equivalent_t, _KeyContainer, _MappedContainer, _Compare = _Compare())
+    -> flat_multimap<typename _KeyContainer::value_type, typename _MappedContainer::value_type, _Compare, _KeyContainer,
+        _MappedContainer>;
+
+template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_container _MappedContainer,
+    _Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
+flat_multimap(sorted_equivalent_t, _KeyContainer, _MappedContainer, _Alloc)
+    -> flat_multimap<typename _KeyContainer::value_type, typename _MappedContainer::value_type,
+        less<typename _KeyContainer::value_type>, _KeyContainer, _MappedContainer>;
+
+template <_Not_allocator_for_container _KeyContainer, _Not_allocator_for_container _MappedContainer,
+    _Valid_compare_for_container<_KeyContainer> _Compare, _Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
+flat_multimap(sorted_equivalent_t, _KeyContainer, _MappedContainer, _Compare, _Alloc)
+    -> flat_multimap<typename _KeyContainer::value_type, typename _MappedContainer::value_type, _Compare, _KeyContainer,
+        _MappedContainer>;
+
+#if 1 // TRANSITION, P2582R1 (MSVC, Clang, EDG)
+template <class _Key, class _Mapped, class _Compare, class _KeyContainer, class _MappedContainer,
+    _Usable_allocator_for<_KeyContainer, _MappedContainer> _Alloc>
+flat_multimap(flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>, _Alloc)
+    -> flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>;
+#endif // ^^^ workaround ^^^
+
+template <_Iterator_for_container _InIt, _Not_allocator_for_container _Compare = less<_Guide_key_t<_InIt>>>
+flat_multimap(_InIt, _InIt, _Compare = _Compare()) -> flat_multimap<_Guide_key_t<_InIt>, _Guide_val_t<_InIt>, _Compare>;
+
+template <_Iterator_for_container _InIt, _Not_allocator_for_container _Compare = less<_Guide_key_t<_InIt>>>
+flat_multimap(sorted_equivalent_t, _InIt, _InIt, _Compare = _Compare())
+    -> flat_multimap<_Guide_key_t<_InIt>, _Guide_val_t<_InIt>, _Compare>;
+
+#ifdef __cpp_lib_byte
+// TRANSITION, CWG-2369, should just use constrained template parameters.
+template <_RANGES input_range _Rng, _Not_allocator_for_container _Compare = less<_Range_key_type<_Rng>>,
+    class _Alloc = allocator<byte>, enable_if_t<_Allocator_for_container<_Alloc>, int> = 0>
+flat_multimap(from_range_t, _Rng&&, _Compare = _Compare(), _Alloc = _Alloc()) -> flat_multimap<_Range_key_type<_Rng>,
+    _Range_mapped_type<_Rng>, _Compare, vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Alloc, _Range_key_type<_Rng>>>,
+    vector<_Range_mapped_type<_Rng>, _Rebind_alloc_t<_Alloc, _Range_mapped_type<_Rng>>>>;
+#else // ^^^ defined(__cpp_lib_byte) / !defined(__cpp_lib_byte) vvv
+template <_RANGES input_range _Rng, _Not_allocator_for_container _Compare = less<_Range_key_type<_Rng>>>
+flat_multimap(from_range_t, _Rng&&, _Compare = _Compare()) -> flat_multimap<_Range_key_type<_Rng>,
+    _Range_mapped_type<_Rng>, _Compare, vector<_Range_key_type<_Rng>>, vector<_Range_mapped_type<_Rng>>>;
+
+// TRANSITION, CWG-2369, should just use constrained template parameters.
+template <_RANGES input_range _Rng, _Not_allocator_for_container _Compare, class _Alloc,
+    enable_if_t<_Allocator_for_container<_Alloc>, int> = 0>
+flat_multimap(from_range_t, _Rng&&, _Compare, _Alloc) -> flat_multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>,
+    _Compare, vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Alloc, _Range_key_type<_Rng>>>,
+    vector<_Range_mapped_type<_Rng>, _Rebind_alloc_t<_Alloc, _Range_mapped_type<_Rng>>>>;
+#endif // ^^^ !defined(__cpp_lib_byte) ^^^
+
+// TRANSITION, CWG-2369, should just use constrained template parameters.
+template <_RANGES input_range _Rng, class _Alloc, enable_if_t<_Allocator_for_container<_Alloc>, int> = 0>
+flat_multimap(from_range_t, _Rng&&, _Alloc) -> flat_multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>,
+    less<_Range_key_type<_Rng>>, vector<_Range_key_type<_Rng>, _Rebind_alloc_t<_Alloc, _Range_key_type<_Rng>>>,
+    vector<_Range_mapped_type<_Rng>, _Rebind_alloc_t<_Alloc, _Range_mapped_type<_Rng>>>>;
+
+template <class _Key, class _Mapped, _Not_allocator_for_container _Compare = less<_Key>>
+flat_multimap(initializer_list<pair<_Key, _Mapped>>, _Compare = _Compare()) -> flat_multimap<_Key, _Mapped, _Compare>;
+
+template <class _Key, class _Mapped, _Not_allocator_for_container _Compare = less<_Key>>
+flat_multimap(sorted_equivalent_t, initializer_list<pair<_Key, _Mapped>>, _Compare = _Compare())
+    -> flat_multimap<_Key, _Mapped, _Compare>;
+_STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("msvc")
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+#endif // ^^^ _HAS_CXX23 ^^^
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _FLAT_MAP_

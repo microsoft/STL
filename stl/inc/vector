@@ -39,7 +39,8 @@ public:
     using pointer           = typename _Myvec::const_pointer;
     using reference         = const value_type&;
 
-    using _Tptr = typename _Myvec::pointer;
+    using _Tptr    = typename _Myvec::pointer;
+    using _Myvec_t = _Myvec; // helper for expression evaluator
 
     _CONSTEXPR20 _Vector_const_iterator() noexcept : _Ptr() {}
 
@@ -881,7 +882,7 @@ private:
 
         _STL_INTERNAL_CHECK(_Mylast == _My_data._Myend); // check that we have no unused capacity
 
-        const auto _Whereoff = static_cast<size_type>(_Whereptr - _Myfirst);
+        const auto _Whereoff = _Whereptr - _Myfirst;
         const auto _Oldsize  = static_cast<size_type>(_Mylast - _Myfirst);
 
         if (_Oldsize == max_size()) {
@@ -892,7 +893,7 @@ private:
         size_type _Newcapacity   = _Calculate_growth(_Newsize);
 
         const pointer _Newvec           = _STD _Allocate_at_least_helper(_Al, _Newcapacity);
-        const pointer _Constructed_last = _Newvec + _Whereoff + 1;
+        const pointer _Constructed_last = _Newvec + static_cast<_Iter_diff_t<pointer>>(_Whereoff + 1);
 
         _Reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
         auto& _Constructed_first = _Guard._Constructed_first;
@@ -909,7 +910,8 @@ private:
         } else { // provide basic guarantee
             _STD _Uninitialized_move(_Myfirst, _Whereptr, _Newvec, _Al);
             _Constructed_first = _Newvec;
-            _STD _Uninitialized_move(_Whereptr, _Mylast, _Newvec + _Whereoff + 1, _Al);
+            _STD _Uninitialized_move(
+                _Whereptr, _Mylast, _Newvec + static_cast<_Iter_diff_t<pointer>>(_Whereoff + 1), _Al);
         }
 
         _Guard._New_begin = nullptr;
@@ -2074,8 +2076,8 @@ private:
         }
 
         _Myfirst = _Newvec;
-        _Mylast  = _Newvec + _Newsize;
-        _Myend   = _Newvec + _Newcapacity;
+        _Mylast  = _Newvec + static_cast<_Iter_diff_t<pointer>>(_Newsize);
+        _Myend   = _Newvec + static_cast<_Iter_diff_t<pointer>>(_Newcapacity);
         _ASAN_VECTOR_CREATE;
     }
 
@@ -2120,7 +2122,7 @@ private:
             } else if constexpr (sizeof...(_Val) == 2) {
                 _My_data._Mylast = _STD _Uninitialized_copy(_STD forward<_Valty>(_Val)..., _My_data._Myfirst, _Al);
             } else {
-                _STL_INTERNAL_STATIC_ASSERT(false); // unexpected number of arguments
+                static_assert(false, "unexpected number of arguments");
             }
             _ASAN_VECTOR_CREATE;
             _Guard._Target = nullptr;
@@ -2862,7 +2864,7 @@ public:
     _CONSTEXPR20 ~_Vb_val() noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         this->_Orphan_all();
-        auto _Alproxy = _STD _Get_proxy_allocator(this->_Getal());
+        auto _Alproxy = _STD _Get_proxy_allocator(_Getal());
         _Delete_plain_internal(_Alproxy, _STD exchange(this->_Myproxy, nullptr));
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
@@ -3464,8 +3466,7 @@ public:
         return begin() + _Off;
     }
 
-    _CONSTEXPR20 iterator erase(const_iterator _First_arg, const_iterator _Last_arg) noexcept
-    /* strengthened */ {
+    _CONSTEXPR20 iterator erase(const_iterator _First_arg, const_iterator _Last_arg) noexcept /* strengthened */ {
         iterator _First      = _Make_iter(_First_arg);
         iterator _Last       = _Make_iter(_Last_arg);
         difference_type _Off = _First - begin();
@@ -3705,8 +3706,8 @@ _CONSTEXPR20 void _Fill_vbool(_VbIt _First, const _VbIt _Last, const bool _Val) 
     } else
 #endif // _HAS_CXX20
     {
-        const auto _VbFirst_ch = reinterpret_cast<const char*>(_VbFirst);
-        const auto _VbLast_ch  = reinterpret_cast<const char*>(_VbLast);
+        const auto _VbFirst_ch = reinterpret_cast<const unsigned char*>(_VbFirst);
+        const auto _VbLast_ch  = reinterpret_cast<const unsigned char*>(_VbLast);
         const auto _Count_ch   = static_cast<size_t>(_VbLast_ch - _VbFirst_ch);
         const auto _ValChar    = static_cast<unsigned char>(_Val ? -1 : 0);
         _CSTD memset(_VbFirst, _ValChar, _Count_ch);
@@ -3895,21 +3896,24 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
     } else
 #endif // _HAS_CXX20
     {
-        // If _First and _Dest have matching char alignment, use memmove
+        // If _First and _Dest have matching unsigned char alignment, use memmove
         const auto _UnalignedFirstBits = _First._Myoff & _Vbase{7};
         const auto _UnalignedDestBits  = _Dest._Myoff & _Vbase{7};
         if (_UnalignedFirstBits == _UnalignedDestBits) {
             const auto _UnalignedLastBits = _Last._Myoff & _Vbase{7};
 
-            auto _VbFirst_ch      = reinterpret_cast<const char*>(_VbFirst) + (_First._Myoff - _UnalignedFirstBits) / 8;
-            const auto _VbLast_ch = reinterpret_cast<const char*>(_VbLast) + (_Last._Myoff - _UnalignedLastBits) / 8;
-            auto _VbDest_ch       = reinterpret_cast<char*>(_VbDest) + (_Dest._Myoff - _UnalignedDestBits) / 8;
+            auto _VbFirst_ch =
+                reinterpret_cast<const unsigned char*>(_VbFirst) + (_First._Myoff - _UnalignedFirstBits) / 8;
+            const auto _VbLast_ch =
+                reinterpret_cast<const unsigned char*>(_VbLast) + (_Last._Myoff - _UnalignedLastBits) / 8;
+            auto _VbDest_ch = reinterpret_cast<unsigned char*>(_VbDest) + (_Dest._Myoff - _UnalignedDestBits) / 8;
 
-            // Copy bits until the next char alignment
+            // Copy bits until the next unsigned char alignment
             if (_UnalignedFirstBits != 0) {
-                const auto _SourceBitMask = static_cast<char>(UCHAR_MAX << _UnalignedFirstBits);
-                const auto _DestBitMask   = static_cast<char>(UCHAR_MAX >> (8 - _UnalignedFirstBits));
-                *_VbDest_ch               = (*_VbDest_ch & _DestBitMask) | (*_VbFirst_ch & _SourceBitMask);
+                const auto _SourceBitMask = static_cast<unsigned char>(UCHAR_MAX << _UnalignedFirstBits);
+                const auto _DestBitMask   = static_cast<unsigned char>(UCHAR_MAX >> (8 - _UnalignedFirstBits));
+                *_VbDest_ch =
+                    static_cast<unsigned char>((*_VbDest_ch & _DestBitMask) | (*_VbFirst_ch & _SourceBitMask));
                 ++_VbFirst_ch;
                 ++_VbDest_ch;
             }
@@ -3918,9 +3922,9 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
 
             // Copy remaining last bits
             if (_UnalignedLastBits != 0) {
-                const auto _SourceBitMask = static_cast<char>(UCHAR_MAX >> (8 - _UnalignedLastBits));
-                const auto _DestBitMask   = static_cast<char>(UCHAR_MAX << _UnalignedLastBits);
-                *_VbDest_ch               = (*_VbDest_ch & _DestBitMask) | (*_VbLast_ch & _SourceBitMask);
+                const auto _SourceBitMask = static_cast<unsigned char>(UCHAR_MAX >> (8 - _UnalignedLastBits));
+                const auto _DestBitMask   = static_cast<unsigned char>(UCHAR_MAX << _UnalignedLastBits);
+                *_VbDest_ch = static_cast<unsigned char>((*_VbDest_ch & _DestBitMask) | (*_VbLast_ch & _SourceBitMask));
             }
 
             return _DestEnd;
@@ -4047,6 +4051,79 @@ _CONSTEXPR20 _OutIt _Transform_vbool_aligned(
     return _Dest;
 }
 
+struct _All_of_vbool_traits {
+    static constexpr bool _Default_result = true;
+
+    static _CONSTEXPR20 bool _Check(const _Vbase _Value) {
+        return _Value != ~_Vbase{0};
+    }
+
+    static _CONSTEXPR20 bool _Check(const _Vbase _Value, const _Vbase _Mask) {
+        return (_Value & _Mask) != _Mask;
+    }
+};
+
+struct _Any_of_vbool_traits_base {
+    static _CONSTEXPR20 bool _Check(const _Vbase _Value) {
+        return _Value != 0;
+    }
+
+    static _CONSTEXPR20 bool _Check(const _Vbase _Value, const _Vbase _Mask) {
+        return (_Value & _Mask) != 0;
+    }
+};
+
+struct _Any_of_vbool_traits : _Any_of_vbool_traits_base {
+    static constexpr bool _Default_result = false;
+};
+
+struct _None_of_vbool_traits : _Any_of_vbool_traits_base {
+    static constexpr bool _Default_result = true;
+};
+
+template <class _Traits, class _VbIt, class _Mapped_fn>
+_NODISCARD _CONSTEXPR20 bool _Meow_of_vbool(const _VbIt _First, const _VbIt _Last, const _Mapped_fn _Mapped_func) {
+    constexpr bool _Early_result = !_Traits::_Default_result;
+    auto _First_ptr              = _First._Myptr;
+    const auto _Last_ptr         = _Last._Myptr;
+
+    if (_First_ptr == _Last_ptr) {
+        if (_First._Myoff == _Last._Myoff) { // empty, can't read the word
+            return _Traits::_Default_result;
+        }
+
+        const _Vbase _Mask = (_Vbase{1} << _Last._Myoff) - (_Vbase{1} << _First._Myoff); // handle partial single word
+        if (_Traits::_Check(_Mapped_func(*_First_ptr), _Mask)) {
+            return _Early_result;
+        }
+        return _Traits::_Default_result;
+    }
+
+    if (_First._Myoff != 0) { // if we have a partial first word, handle it
+        const _Vbase _Mask = static_cast<_Vbase>(-1) << _First._Myoff;
+        if (_Traits::_Check(_Mapped_func(*_First_ptr), _Mask)) {
+            return _Early_result;
+        }
+
+        ++_First_ptr;
+    }
+
+    for (; _First_ptr != _Last_ptr; ++_First_ptr) { // handle full words
+        if (_Traits::_Check(_Mapped_func(*_First_ptr))) {
+            return _Early_result;
+        }
+    }
+
+    if (_Last._Myoff != 0) { // if we have a partial last word, handle it
+        const _Vbase _Mask = (_Vbase{1} << _Last._Myoff) - 1;
+        if (_Traits::_Check(_Mapped_func(*_First_ptr), _Mask)) {
+            return _Early_result;
+        }
+    }
+
+    return _Traits::_Default_result;
+}
+
 #undef _ASAN_VECTOR_MODIFY
 #undef _ASAN_VECTOR_REMOVE
 #undef _ASAN_VECTOR_CREATE
@@ -4054,6 +4131,53 @@ _CONSTEXPR20 _OutIt _Transform_vbool_aligned(
 #undef _ASAN_VECTOR_EXTEND_GUARD
 #undef _ASAN_VECTOR_RELEASE_GUARD
 #undef _INSERT_VECTOR_ANNOTATION
+
+#if _HAS_CXX23
+// This <flat_map> and <flat_set> machinery is here because <vector> is the leaf-most header included by both of them.
+
+_EXPORT_STD struct sorted_unique_t {
+    explicit sorted_unique_t() = default;
+};
+_EXPORT_STD inline constexpr sorted_unique_t sorted_unique{};
+
+_EXPORT_STD struct sorted_equivalent_t {
+    explicit sorted_equivalent_t() = default;
+};
+_EXPORT_STD inline constexpr sorted_equivalent_t sorted_equivalent{};
+
+template <class>
+constexpr bool _Is_vector_bool = false;
+template <class _Alloc>
+constexpr bool _Is_vector_bool<vector<bool, _Alloc>> = true;
+
+template <class _Ty, class _Alloc>
+constexpr bool _Has_guaranteed_push_back<vector<_Ty, _Alloc>> = !is_same_v<_Ty, bool>;
+
+template <class _Ty, class _Alloc>
+constexpr bool _Has_guaranteed_append_range<vector<_Ty, _Alloc>> = !is_same_v<_Ty, bool>;
+
+template <class _Alloc, class... _Containers>
+concept _Usable_allocator_for = (uses_allocator_v<_Containers, _Alloc> && ...);
+
+template <class _Compare, class _KeyContainer>
+concept _Valid_compare_for_container = _Not_allocator_for_container<_Compare>
+                                    && is_invocable_v<const _Compare&, const typename _KeyContainer::value_type&,
+                                        const typename _KeyContainer::value_type&>;
+#endif // ^^^ _HAS_CXX23 ^^^
+
+template <class _Ty>
+struct _NODISCARD _Clear_guard {
+    _Ty* _Target;
+
+    _Clear_guard& operator=(const _Clear_guard&) = delete;
+    _Clear_guard& operator=(_Clear_guard&&)      = delete;
+
+    ~_Clear_guard() {
+        if (_Target) {
+            _Target->clear();
+        }
+    }
+};
 _STD_END
 
 #pragma pop_macro("new")
