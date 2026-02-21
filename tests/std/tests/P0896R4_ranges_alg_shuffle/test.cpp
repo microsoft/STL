@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <concepts>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <numeric>
@@ -117,59 +118,26 @@ void test_shuffle_permutation() {
     }
 }
 
+[[nodiscard]] bool shuffle_is_a_permutation(const size_t n) {
+    vector<int> v(n);
+    iota(v.begin(), v.end(), 0);
+    const vector<int> original = v;
+    shuffle(v.begin(), v.end(), gen64);
+    sort(v.begin(), v.end());
+    return v == original; // have the caller assert() for clearer diagnostics
+}
+
 // Test edge cases for shuffle
 void test_shuffle_edge_cases() {
-    // Empty range
-    {
-        vector<int> v;
-        shuffle(v.begin(), v.end(), gen64);
-        assert(v.empty());
-    }
-
-    // Single element
-    {
-        vector<int> v = {42};
-        shuffle(v.begin(), v.end(), gen64);
-        assert(v.size() == 1);
-        assert(v[0] == 42);
-    }
-
-    // Two elements
-    {
-        vector<int> v              = {1, 2};
-        const vector<int> original = v;
-        shuffle(v.begin(), v.end(), gen64);
-        sort(v.begin(), v.end());
-        assert(v == original);
-    }
-
-    // Three elements (odd count, tests batching boundary)
-    {
-        vector<int> v              = {1, 2, 3};
-        const vector<int> original = v;
-        shuffle(v.begin(), v.end(), gen64);
-        sort(v.begin(), v.end());
-        assert(v == original);
-    }
-
-    // Four elements (even count)
-    {
-        vector<int> v              = {1, 2, 3, 4};
-        const vector<int> original = v;
-        shuffle(v.begin(), v.end(), gen64);
-        sort(v.begin(), v.end());
-        assert(v == original);
-    }
-
-    // Large array to ensure batching is effective
-    {
-        vector<int> v(10000);
-        iota(v.begin(), v.end(), 0);
-        const vector<int> original = v;
-        shuffle(v.begin(), v.end(), gen64);
-        sort(v.begin(), v.end());
-        assert(v == original);
-    }
+    // Test both even and odd sizes to exercise the batching boundary.
+    // Test large sizes to ensure batching is effective.
+    assert(shuffle_is_a_permutation(0));
+    assert(shuffle_is_a_permutation(1));
+    assert(shuffle_is_a_permutation(2));
+    assert(shuffle_is_a_permutation(3));
+    assert(shuffle_is_a_permutation(4));
+    assert(shuffle_is_a_permutation(1729));
+    assert(shuffle_is_a_permutation(10000));
 }
 
 int main() {
