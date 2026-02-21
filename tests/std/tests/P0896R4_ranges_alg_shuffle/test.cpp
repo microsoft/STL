@@ -78,11 +78,15 @@ void test_urbg() { // COMPILE-ONLY
 // Test that shuffle produces a valid permutation for various sizes.
 // This exercises both the batched path (for 64-bit RNGs) and the fallback path.
 void test_shuffle_permutation() {
+    const vector<int> original = [] {
+        vector<int> ret(100);
+        iota(ret.begin(), ret.end(), 0);
+        return ret;
+    }();
+
     // Test with 64-bit generator (batched random path)
     {
-        vector<int> v(100);
-        iota(v.begin(), v.end(), 0);
-        vector<int> original = v;
+        vector<int> v = original;
 
         shuffle(v.begin(), v.end(), gen64);
 
@@ -94,9 +98,7 @@ void test_shuffle_permutation() {
 
     // Test with ranges::shuffle and 64-bit generator
     {
-        vector<int> v(100);
-        iota(v.begin(), v.end(), 0);
-        vector<int> original = v;
+        vector<int> v = original;
 
         ranges::shuffle(v, gen64);
 
@@ -108,9 +110,7 @@ void test_shuffle_permutation() {
 
     // Test with 32-bit generator (non-batched path)
     {
-        vector<int> v(100);
-        iota(v.begin(), v.end(), 0);
-        vector<int> original = v;
+        vector<int> v = original;
 
         shuffle(v.begin(), v.end(), gen);
 
@@ -122,9 +122,7 @@ void test_shuffle_permutation() {
 
     // Test with ranges::shuffle and 32-bit generator
     {
-        vector<int> v(100);
-        iota(v.begin(), v.end(), 0);
-        vector<int> original = v;
+        vector<int> v = original;
 
         ranges::shuffle(v, gen);
 
@@ -154,8 +152,8 @@ void test_shuffle_edge_cases() {
 
     // Two elements
     {
-        vector<int> v        = {1, 2};
-        vector<int> original = v;
+        vector<int> v              = {1, 2};
+        const vector<int> original = v;
         shuffle(v.begin(), v.end(), gen64);
         sort(v.begin(), v.end());
         assert(v == original);
@@ -163,8 +161,8 @@ void test_shuffle_edge_cases() {
 
     // Three elements (odd count, tests batching boundary)
     {
-        vector<int> v        = {1, 2, 3};
-        vector<int> original = v;
+        vector<int> v              = {1, 2, 3};
+        const vector<int> original = v;
         shuffle(v.begin(), v.end(), gen64);
         sort(v.begin(), v.end());
         assert(v == original);
@@ -172,8 +170,8 @@ void test_shuffle_edge_cases() {
 
     // Four elements (even count)
     {
-        vector<int> v        = {1, 2, 3, 4};
-        vector<int> original = v;
+        vector<int> v              = {1, 2, 3, 4};
+        const vector<int> original = v;
         shuffle(v.begin(), v.end(), gen64);
         sort(v.begin(), v.end());
         assert(v == original);
@@ -183,7 +181,7 @@ void test_shuffle_edge_cases() {
     {
         vector<int> v(10000);
         iota(v.begin(), v.end(), 0);
-        vector<int> original = v;
+        const vector<int> original = v;
         shuffle(v.begin(), v.end(), gen64);
         sort(v.begin(), v.end());
         assert(v == original);
