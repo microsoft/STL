@@ -6353,8 +6353,8 @@ namespace {
                     const void* _Stop2          = _First2;
                     _Advance_bytes(_Stop2, _Needle_length & ~size_t{0xF});
 
-                    // Set _Lanes to 1 when we have 0 tail elements, to stop compiler from complaining about empty
-                    // array.
+                    // Set _Lanes to 1 when we have 0 tail elements,
+                    // to stop the compiler from complaining about an empty array.
                     constexpr size_t _Lanes = _Unrolled_tail_elems == 0 ? 1 : _Unrolled_tail_elems;
                     _Find_first_of_vec_t<_Ty> _Needle_tail[_Lanes];
 
