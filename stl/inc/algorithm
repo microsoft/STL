@@ -6228,17 +6228,17 @@ struct _Batched_rng_from_urng {
     // Generate two bounded random values from a single 64-bit random word.
     // The bounds are (n+1) and n for Fisher-Yates shuffle positions _Target_index and _Target_index-1.
     void _Batch_2(_Diff* _Results, _Diff _Bound1, _Diff _Bound2) {
-        const uint64_t _B1            = static_cast<uint64_t>(_Bound1);
-        const uint64_t _B2            = static_cast<uint64_t>(_Bound2);
-        const uint64_t _Product_bound = _B1 * _B2;
+        const uint64_t _Bx1           = static_cast<uint64_t>(_Bound1);
+        const uint64_t _Bx2           = static_cast<uint64_t>(_Bound2);
+        const uint64_t _Product_bound = _Bx1 * _Bx2;
 
         uint64_t _Random_word = static_cast<uint64_t>(_Ref());
 
-        _Unsigned128 _Prod1{_Base128::_UMul128(_Random_word, _B1, _Prod1._Word[1])};
+        _Unsigned128 _Prod1{_Base128::_UMul128(_Random_word, _Bx1, _Prod1._Word[1])};
         _Results[0]         = static_cast<_Diff>(_Prod1._Word[1]);
         uint64_t _Leftover1 = _Prod1._Word[0];
 
-        _Unsigned128 _Prod2{_Base128::_UMul128(_Leftover1, _B2, _Prod2._Word[1])};
+        _Unsigned128 _Prod2{_Base128::_UMul128(_Leftover1, _Bx2, _Prod2._Word[1])};
         _Results[1]        = static_cast<_Diff>(_Prod2._Word[1]);
         uint64_t _Leftover = _Prod2._Word[0];
 
@@ -6248,11 +6248,11 @@ struct _Batched_rng_from_urng {
             while (_Leftover < _Threshold) {
                 _Random_word = static_cast<uint64_t>(_Ref());
 
-                _Prod1      = _Unsigned128{_Base128::_UMul128(_Random_word, _B1, _Prod1._Word[1])};
+                _Prod1      = _Unsigned128{_Base128::_UMul128(_Random_word, _Bx1, _Prod1._Word[1])};
                 _Results[0] = static_cast<_Diff>(_Prod1._Word[1]);
                 _Leftover1  = _Prod1._Word[0];
 
-                _Prod2      = _Unsigned128{_Base128::_UMul128(_Leftover1, _B2, _Prod2._Word[1])};
+                _Prod2      = _Unsigned128{_Base128::_UMul128(_Leftover1, _Bx2, _Prod2._Word[1])};
                 _Results[1] = static_cast<_Diff>(_Prod2._Word[1]);
                 _Leftover   = _Prod2._Word[0];
             }
