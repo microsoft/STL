@@ -87,45 +87,33 @@ void test_shuffle_permutation() {
     // Test with 64-bit generator (batched random path)
     {
         vector<int> v = original;
-
         shuffle(v.begin(), v.end(), gen64);
-
-        // Verify it's still a permutation
         sort(v.begin(), v.end());
-        assert(v == original);
+        assert(v == original); // Verify it's still a permutation
     }
 
     // Test with ranges::shuffle and 64-bit generator (batched random path)
     {
         vector<int> v = original;
-
         ranges::shuffle(v, gen64);
-
-        // Verify it's still a permutation
         sort(v.begin(), v.end());
-        assert(v == original);
+        assert(v == original); // Verify it's still a permutation
     }
 
     // Test with 32-bit generator (non-batched path)
     {
         vector<int> v = original;
-
         shuffle(v.begin(), v.end(), gen);
-
-        // Verify it's still a permutation
         sort(v.begin(), v.end());
-        assert(v == original);
+        assert(v == original); // Verify it's still a permutation
     }
 
     // Test with ranges::shuffle and 32-bit generator (non-batched path)
     {
         vector<int> v = original;
-
         ranges::shuffle(v, gen);
-
-        // Verify it's still a permutation
         sort(v.begin(), v.end());
-        assert(v == original);
+        assert(v == original); // Verify it's still a permutation
     }
 }
 
