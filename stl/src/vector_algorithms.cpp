@@ -6413,8 +6413,8 @@ namespace {
                 return _Fallback<_Ty, _Pred>(_First1, _Last1, _First2, _Last2);
             }
 
-            const void* _Fallback_find_not_2(const void* _First1, const void* const _Last1, const void* const _First2,
-                const void* const _Last2) noexcept {
+            const void* _Fallback_find_not_2(const void* const _First1, const void* const _Last1,
+                const void* const _First2, const void* const _Last2) noexcept {
                 auto _Ptr_haystack           = static_cast<const uint16_t*>(_First1);
                 const auto _Ptr_haystack_end = static_cast<const uint16_t*>(_Last1);
 
