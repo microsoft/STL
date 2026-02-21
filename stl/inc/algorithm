@@ -6612,8 +6612,8 @@ template <class _RanIt, class _Urng>
 void _Random_shuffle_batched(_RanIt _First, _RanIt _Last, _Urng& _Func) {
     // shuffle [_First, _Last) using batched random generation
     _STD _Adl_verify_range(_First, _Last);
-    auto _UFirst      = _STD _Get_unwrapped(_First);
-    const auto _ULast = _STD _Get_unwrapped(_Last);
+    const auto _UFirst = _STD _Get_unwrapped(_First);
+    const auto _ULast  = _STD _Get_unwrapped(_Last);
     if (_UFirst == _ULast) {
         return;
     }
