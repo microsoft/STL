@@ -6349,7 +6349,6 @@ namespace {
                 _Advance_bytes(_Stop1, _Vec_bytes);
 
                 if (_First1 != _Stop1) {
-
                     const size_t _Needle_length = _Byte_length(_First2, _Last2);
                     const void* _Stop2          = _First2;
                     _Advance_bytes(_Stop2, _Needle_length & ~size_t{0xF});
@@ -6891,7 +6890,6 @@ namespace {
                             _Fallback_find_not_2(_First1, _Last1, _First2, _Last2), _First1, _Last1);
                     }
                 }
-
 
                 return _Pos_from_ptr<_Ty>(
                     _Shuffle_impl_dispatch<_Ty, _Pred>(_First1, _Last1, _First2, _Last2), _First1, _Last1);
