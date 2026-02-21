@@ -6210,13 +6210,14 @@ struct _Batched_rng_from_urng {
 
     // Generate a single bounded random value in [0, _Bound) using Lemire's method.
     _NODISCARD _Diff _Single_bounded(const _Diff _Bound) {
-        _Unsigned128 _Product{_Base128::_UMul128(_Ref(), static_cast<uint64_t>(_Bound), _Product._Word[1])};
+        const uint64_t _Bx = static_cast<uint64_t>(_Bound);
+        _Unsigned128 _Product{_Base128::_UMul128(_Ref(), _Bx, _Product._Word[1])};
         auto _Leftover = _Product._Word[0];
 
-        if (_Leftover < static_cast<uint64_t>(_Bound)) {
-            const uint64_t _Threshold = (0 - static_cast<uint64_t>(_Bound)) % static_cast<uint64_t>(_Bound);
+        if (_Leftover < _Bx) {
+            const uint64_t _Threshold = (0 - _Bx) % _Bx;
             while (_Leftover < _Threshold) {
-                _Product  = _Unsigned128{_Base128::_UMul128(_Ref(), static_cast<uint64_t>(_Bound), _Product._Word[1])};
+                _Product  = _Unsigned128{_Base128::_UMul128(_Ref(), _Bx, _Product._Word[1])};
                 _Leftover = _Product._Word[0];
             }
         }
