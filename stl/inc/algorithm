@@ -6209,7 +6209,7 @@ struct _Batched_rng_from_urng {
     explicit _Batched_rng_from_urng(_Urng& _Func) noexcept : _Ref(_Func) {}
 
     // Generate a single bounded random value in [0, _Bound) using Lemire's method.
-    _NODISCARD _Diff _Single_bounded(_Diff _Bound) {
+    _NODISCARD _Diff _Single_bounded(const _Diff _Bound) {
         _Unsigned128 _Product{_Base128::_UMul128(_Ref(), static_cast<uint64_t>(_Bound), _Product._Word[1])};
         auto _Leftover = _Product._Word[0];
 
@@ -6226,7 +6226,7 @@ struct _Batched_rng_from_urng {
 
     // Generate two bounded random values from a single 64-bit random word.
     // The bounds are (n+1) and n for Fisher-Yates shuffle positions _Target_index and _Target_index-1.
-    void _Batch_2(_Diff* _Results, _Diff _Bound1, _Diff _Bound2) {
+    void _Batch_2(_Diff* _Results, const _Diff _Bound1, const _Diff _Bound2) {
         const uint64_t _Bx1           = static_cast<uint64_t>(_Bound1);
         const uint64_t _Bx2           = static_cast<uint64_t>(_Bound2);
         const uint64_t _Product_bound = _Bx1 * _Bx2;
