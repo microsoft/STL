@@ -6703,7 +6703,6 @@ namespace ranges {
             _STD _Adl_verify_range(_First, _Last);
 
             using _Urng0 = remove_reference_t<_Urng>;
-            using _Diff  = iter_difference_t<_It>;
 
             // Use batched shuffle when the URNG produces full 64-bit range values.
             if constexpr (_Urng_has_full_64bit_range<_Urng0>) {
@@ -6711,6 +6710,7 @@ namespace ranges {
                     _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _Func);
                 _STD _Seek_wrapped(_First, _STD move(_UResult));
             } else {
+                using _Diff = iter_difference_t<_It>;
                 _Rng_from_urng_v2<_Diff, _Urng0> _RngFunc(_Func);
                 auto _UResult = _Shuffle_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
                     _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _RngFunc);
@@ -6723,13 +6723,13 @@ namespace ranges {
             requires permutable<iterator_t<_Rng>> && uniform_random_bit_generator<remove_reference_t<_Urng>>
         _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Urng&& _Func) _CONST_CALL_OPERATOR {
             using _Urng0 = remove_reference_t<_Urng>;
-            using _Diff  = range_difference_t<_Rng>;
 
             // Use batched shuffle when the URNG produces full 64-bit range values.
             if constexpr (_Urng_has_full_64bit_range<_Urng0>) {
                 return _RANGES _Rewrap_iterator(
                     _Range, _Shuffle_unchecked_batched(_Ubegin(_Range), _Uend(_Range), _Func));
             } else {
+                using _Diff = range_difference_t<_Rng>;
                 _Rng_from_urng_v2<_Diff, _Urng0> _RngFunc(_Func);
                 return _RANGES _Rewrap_iterator(_Range, _Shuffle_unchecked(_Ubegin(_Range), _Uend(_Range), _RngFunc));
             }
