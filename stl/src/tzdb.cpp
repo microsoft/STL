@@ -146,11 +146,6 @@ namespace {
         return _Fun(status);
     }
 
-    [[nodiscard]] UBool __icu_ucal_inDaylightTime(const UCalendar* cal, UErrorCode* status) noexcept {
-        const auto _Fun = _Icu_functions._Pfn_ucal_inDaylightTime.load(_STD memory_order_relaxed);
-        return _Fun(cal, status);
-    }
-
     [[nodiscard]] UCalendar* __icu_ucal_open(
         const UChar* zoneID, int32_t len, const char* locale, UCalendarType type, UErrorCode* status) noexcept {
         const auto _Fun = _Icu_functions._Pfn_ucal_open.load(_STD memory_order_relaxed);
@@ -519,12 +514,7 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
         return _Report_error(_Info, __std_tzdb_error::_Icu_error);
     }
 
-    const auto _Is_daylight = __icu_ucal_inDaylightTime(_Cal.get(), &_UErr);
-    if (U_FAILURE(_UErr)) {
-        return _Report_error(_Info, __std_tzdb_error::_Icu_error);
-    }
-
-    _Info->_Save = _Is_daylight ? __icu_ucal_get(_Cal.get(), UCalendarDateFields::UCAL_DST_OFFSET, &_UErr) : 0;
+    _Info->_Save = __icu_ucal_get(_Cal.get(), UCalendarDateFields::UCAL_DST_OFFSET, &_UErr);
     if (U_FAILURE(_UErr)) {
         return _Report_error(_Info, __std_tzdb_error::_Icu_error);
     }
@@ -665,3 +655,4 @@ void __stdcall __std_free_crt(void* p) noexcept {
 }
 
 } // extern "C"
+
