@@ -6225,9 +6225,9 @@ namespace {
                     return vandq_u8(_Lhs, _Rhs);
                 }
 
-                template <size_t _N>
+                template <size_t _Nx>
                 static _Vec_t _Ext(const _Vec_t _Val) noexcept {
-                    return vextq_u8(_Val, _Val, _N);
+                    return vextq_u8(_Val, _Val, _Nx);
                 }
             };
 
@@ -6243,9 +6243,9 @@ namespace {
                     return vandq_u16(_Lhs, _Rhs);
                 }
 
-                template <size_t _N>
+                template <size_t _Nx>
                 static _Vec_t _Ext(const _Vec_t _Val) noexcept {
-                    return vextq_u16(_Val, _Val, _N);
+                    return vextq_u16(_Val, _Val, _Nx);
                 }
             };
 
@@ -6261,9 +6261,9 @@ namespace {
                     return vandq_u32(_Lhs, _Rhs);
                 }
 
-                template <size_t _N>
+                template <size_t _Nx>
                 static _Vec_t _Ext(const _Vec_t _Val) noexcept {
-                    return vextq_u32(_Val, _Val, _N);
+                    return vextq_u32(_Val, _Val, _Nx);
                 }
             };
 
@@ -6279,9 +6279,9 @@ namespace {
                     return vandq_u64(_Lhs, _Rhs);
                 }
 
-                template <size_t _N>
+                template <size_t _Nx>
                 static _Vec_t _Ext(const _Vec_t _Val) noexcept {
-                    return vextq_u64(_Val, _Val, _N);
+                    return vextq_u64(_Val, _Val, _Nx);
                 }
             };
 
