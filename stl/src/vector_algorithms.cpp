@@ -6884,7 +6884,7 @@ namespace {
                 if constexpr (_Pred == _Predicate::_None_of && sizeof(_Ty) >= 2) {
                     static_assert(sizeof(_Ty) == 2);
 
-                    // Heuristic of Haystack smaller than Neon width, or Needle larger than 2 x Neon width.
+                    // Heuristic of Haystack smaller than Neon width, or Needle at least twice the Neon width.
                     if (_Count1 * sizeof(_Ty) < 16 || _Count2 * sizeof(_Ty) >= 32) {
                         return _Pos_from_ptr<_Ty>(
                             _Fallback_find_not_2(_First1, _Last1, _First2, _Last2), _First1, _Last1);
