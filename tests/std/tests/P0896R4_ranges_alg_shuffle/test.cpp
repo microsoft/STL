@@ -95,7 +95,7 @@ void test_shuffle_permutation() {
         assert(v == original);
     }
 
-    // Test with ranges::shuffle and 64-bit generator
+    // Test with ranges::shuffle and 64-bit generator (batched random path)
     {
         vector<int> v = original;
 
@@ -117,7 +117,7 @@ void test_shuffle_permutation() {
         assert(v == original);
     }
 
-    // Test with ranges::shuffle and 32-bit generator
+    // Test with ranges::shuffle and 32-bit generator (non-batched path)
     {
         vector<int> v = original;
 
