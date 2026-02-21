@@ -6419,7 +6419,9 @@ namespace {
                 const auto _Ptr_haystack_end = static_cast<const uint16_t*>(_Last1);
 
                 for (; _Ptr_haystack != _Ptr_haystack_end; ++_Ptr_haystack) {
-                    if (__std_find_trivial_2(_First2, _Last2, *_Ptr_haystack) == _Last2) {
+                    if (_Finding::_Find_impl<_Finding::_Find_traits_2, _Finding::_Predicate::_Equal>(
+                            _First2, _Last2, *_Ptr_haystack)
+                        == _Last2) {
                         return _Ptr_haystack;
                     }
                 }
