@@ -403,28 +403,28 @@ void timezone_sorted_vectors_test() {
 }
 
 void timezone_historical_dst_abolished_test() {
-   // Regression test: timezones that abolished DST must still report
-   // correct historical offsets for dates when DST was active.
-   const auto& my_tzdb = get_tzdb();
+    // Regression test: timezones that abolished DST must still report
+    // correct historical offsets for dates when DST was active.
+    const auto& my_tzdb = get_tzdb();
 
-   { // America/Sao_Paulo - abolished DST Feb 2019
-       auto tz = my_tzdb.locate_zone("America/Sao_Paulo");
-       auto info = tz->get_info(sys_days{year{2019} / January / day{1}});
-       assert(info.offset == seconds{-7200});
-       assert(info.save == minutes{60});
-   }
-   { // Europe/Istanbul - abolished DST Sep 2016
-       auto tz = my_tzdb.locate_zone("Europe/Istanbul");
-       auto info = tz->get_info(sys_days{year{2016} / July / day{1}});
-       assert(info.offset == seconds{10800});
-       assert(info.save == minutes{60});
-   }
-   { // Europe/Moscow - abolished DST Oct 2014
-       auto tz = my_tzdb.locate_zone("Europe/Moscow");
-       auto info = tz->get_info(sys_days{year{2010} / July / day{1}});
-       assert(info.offset == seconds{14400});
-       assert(info.save == minutes{60});
-   }
+    { // America/Sao_Paulo - abolished DST Feb 2019
+        auto tz   = my_tzdb.locate_zone("America/Sao_Paulo");
+        auto info = tz->get_info(sys_days{year{2019} / January / day{1}});
+        assert(info.offset == seconds{-7200});
+        assert(info.save == minutes{60});
+    }
+    { // Europe/Istanbul - abolished DST Sep 2016
+        auto tz   = my_tzdb.locate_zone("Europe/Istanbul");
+        auto info = tz->get_info(sys_days{year{2016} / July / day{1}});
+        assert(info.offset == seconds{10800});
+        assert(info.save == minutes{60});
+    }
+    { // Europe/Moscow - abolished DST Oct 2014
+        auto tz   = my_tzdb.locate_zone("Europe/Moscow");
+        auto info = tz->get_info(sys_days{year{2010} / July / day{1}});
+        assert(info.offset == seconds{14400});
+        assert(info.save == minutes{60});
+    }
 }
 
 void test() {
