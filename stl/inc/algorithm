@@ -228,7 +228,7 @@ pair<_Ty*, _Ty*> _Minmax_element_vectorized(_Ty* const _First, _Ty* const _Last)
 #if _VECTORIZED_MINMAX_ELEMENT_64BIT_INT
         _Res = ::__std_minmax_element_8(_First, _Last, _Signed);
 #else // ^^^ _VECTORIZED_MINMAX_ELEMENT_64BIT_INT / !_VECTORIZED_MINMAX_ELEMENT_64BIT_INT vvv
-        static_assert(false, "unexpected size; 64-bit integers on ARM64/ARM64EC should not take this codepath");
+        static_assert(false, "unexpected size");
 #endif // ^^^ !_VECTORIZED_MINMAX_ELEMENT_64BIT_INT ^^^
     } else {
         static_assert(false, "unexpected size");
