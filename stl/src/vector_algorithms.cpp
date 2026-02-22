@@ -29,11 +29,11 @@ extern "C" long __isa_enabled;
 namespace {
 #if !defined(_M_ARM64) && !defined(_M_ARM64EC)
     bool _Use_avx2() noexcept {
-        return __isa_enabled & (1 << __ISA_AVAILABLE_AVX2);
+        return __check_arch_support(__IA_SUPPORT_VECTOR256, 0) || __isa_enabled & (1 << __ISA_AVAILABLE_AVX2);
     }
 
     bool _Use_sse42() noexcept {
-        return __isa_enabled & (1 << __ISA_AVAILABLE_SSE42);
+        return __check_arch_support(__IA_SUPPORT_SSE42, 0) || (__isa_enabled & (1 << __ISA_AVAILABLE_SSE42));
     }
 
     struct [[nodiscard]] _Zeroupper_on_exit { // TRANSITION, DevCom-10331414
@@ -9956,3 +9956,4 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest,
 
 } // extern "C"
 #endif // ^^^ !defined(_M_ARM64) ^^^
+
