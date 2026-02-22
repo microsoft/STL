@@ -284,16 +284,16 @@ public:
         enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, const _Ty2&>>, int> = 0>
     _CONSTEXPR20 explicit(!is_convertible_v<const _Ty2&, _Ty>) optional(const optional<_Ty2>& _Right)
         noexcept(is_nothrow_constructible_v<_Ty, const _Ty2&>) /* strengthened */ {
-        if (_Right) {
-            this->_Construct(*_Right);
+        if (_Right._Has_value) {
+            this->_Construct(_Right._Value);
         }
     }
 
     template <class _Ty2, enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, _Ty2>>, int> = 0>
     _CONSTEXPR20 explicit(!is_convertible_v<_Ty2, _Ty>) optional(optional<_Ty2>&& _Right)
         noexcept(is_nothrow_constructible_v<_Ty, _Ty2>) /* strengthened */ {
-        if (_Right) {
-            this->_Construct(_STD move(*_Right));
+        if (_Right._Has_value) {
+            this->_Construct(_STD move(_Right._Value));
         }
     }
 
@@ -324,8 +324,8 @@ public:
                               int> = 0>
     _CONSTEXPR20 optional& operator=(const optional<_Ty2>& _Right) noexcept(
         is_nothrow_assignable_v<_Ty&, const _Ty2&> && is_nothrow_constructible_v<_Ty, const _Ty2&>) /* strengthened */ {
-        if (_Right) {
-            this->_Assign(*_Right);
+        if (_Right._Has_value) {
+            this->_Assign(_Right._Value);
         } else {
             reset();
         }
@@ -338,8 +338,8 @@ public:
                               int> = 0>
     _CONSTEXPR20 optional& operator=(optional<_Ty2>&& _Right)
         noexcept(is_nothrow_assignable_v<_Ty&, _Ty2> && is_nothrow_constructible_v<_Ty, _Ty2>) /* strengthened */ {
-        if (_Right) {
-            this->_Assign(_STD move(*_Right));
+        if (_Right._Has_value) {
+            this->_Assign(_STD move(_Right._Value));
         } else {
             reset();
         }
