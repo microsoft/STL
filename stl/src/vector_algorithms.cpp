@@ -9956,4 +9956,3 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest,
 
 } // extern "C"
 #endif // ^^^ !defined(_M_ARM64) ^^^
-
