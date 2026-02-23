@@ -175,14 +175,16 @@ For example, `<atomic>` has conditionally compiled code for the `_M_ARM64` and `
 1. Open a command prompt.
 2. Change directories to a location where you'd like a clone of this STL repository.
 3. `git clone https://github.com/microsoft/STL.git --recurse-submodules`
+4. `pushd STL`
 
+The following instructions assume that you're starting in the previously cloned `STL` directory.
 If you installed VS to a non-default location, change the `vcvarsall.bat` paths below accordingly.
 
 To build the x64 target (recommended):
 
 1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
 1. `vcvarsall.bat x64 -vcvars_ver=preview`
-1. Change directories to the previously cloned `STL` directory.
+1. `popd`
 1. `cmake --preset x64`
 1. `cmake --build --preset x64`
 
@@ -190,7 +192,7 @@ To build the x86 target:
 
 1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
 1. `vcvarsall.bat x86 -vcvars_ver=preview`
-1. Change directories to the previously cloned `STL` directory.
+1. `popd`
 1. `cmake --preset x86`
 1. `cmake --build --preset x86`
 
@@ -198,7 +200,7 @@ To build the ARM64 target:
 
 1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
 1. `vcvarsall.bat x64_arm64 -vcvars_ver=preview`
-1. Change directories to the previously cloned `STL` directory.
+1. `popd`
 1. `cmake --preset ARM64`
 1. `cmake --build --preset ARM64`
 
@@ -206,7 +208,7 @@ To build the ARM64EC target:
 
 1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
 1. `vcvarsall.bat x64_arm64 -vcvars_ver=preview`
-1. Change directories to the previously cloned `STL` directory.
+1. `popd`
 1. `cmake --preset ARM64EC`
 1. `cmake --build --preset ARM64EC`
 
@@ -236,7 +238,9 @@ variables to ensure that the built headers and libraries are used.
 ## Complete Example Using x64 DLL Flavor
 
 ```
-C:\Temp>pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"
+C:\Temp>pushd D:\GitHub\STL
+
+D:\GitHub\STL>pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"
 
 C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build>vcvarsall.bat x64 -vcvars_ver=preview
 **********************************************************************
@@ -245,7 +249,7 @@ C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build>vcvarsal
 **********************************************************************
 [vcvarsall.bat] Environment initialized for: 'x64'
 
-C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build>pushd D:\GitHub\STL
+C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build>popd
 
 D:\GitHub\STL>cmake --preset x64
 [...]
@@ -256,15 +260,18 @@ D:\GitHub\STL>cmake --build --preset x64
 
 D:\GitHub\STL>out\x64\set_environment.bat
 
-D:\GitHub\STL>pushd C:\Temp
+D:\GitHub\STL>popd
 
 C:\Temp>type .\example.cpp
+```
+```cpp
 #include <print>
 
 int main() {
     std::println("Hello STL OSS world!");
 }
-
+```
+```
 C:\Temp>cl /EHsc /nologo /W4 /WX /MDd /std:c++latest .\example.cpp
 example.cpp
 
