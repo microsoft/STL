@@ -216,12 +216,12 @@ void generate_tables(string_view name, bool is_signed, auto&& pdf, auto&& invers
     // _Uty _Alias_probabilities[256];
     for (bool first = true; const alias_table_entry& entry : alias_table) {
         if (first) {
-            print("    {{{}", static_cast<unsigned long long>(
-                                  __nearbyintq(__fminq(entry.probability, max_probability) * probability_scale)));
+            print("    {{{}u", static_cast<unsigned long long>(
+                                   __nearbyintq(__fminq(entry.probability, max_probability) * probability_scale)));
             first = false;
         } else {
-            print(", {}", static_cast<unsigned long long>(
-                              __nearbyintq(__fminq(entry.probability, max_probability) * probability_scale)));
+            print(", {}u", static_cast<unsigned long long>(
+                               __nearbyintq(__fminq(entry.probability, max_probability) * probability_scale)));
         }
     }
 
