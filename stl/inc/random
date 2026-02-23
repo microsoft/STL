@@ -2718,8 +2718,10 @@ private:
     }
 
     param_type _Par;
+    // TRANSITION, ABI: _Valid must be initialized to false, and must be reset to false when reset() is called, but is
+    // unused by the current implementation
     bool _Valid;
-    _Ty _Xx2;
+    _Ty _Xx2; // TRANSITION, ABI: unused by the current implementation
 };
 
 _EXPORT_STD template <class _Ty = double>
