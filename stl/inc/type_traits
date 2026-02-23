@@ -720,13 +720,15 @@ struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_trivially_copyable : bool_constant<
 _EXPORT_STD template <class _Ty>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_trivially_copyable_v = __is_trivially_copyable(_Ty);
 
-#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, GH-5738 tracking VSO-2581623 (EDG)
+#if _HAS_CXX23
+#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
 _EXPORT_STD template <class _Ty>
 struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_implicit_lifetime : bool_constant<__builtin_is_implicit_lifetime(_Ty)> {};
 
 _EXPORT_STD template <class _Ty>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_implicit_lifetime_v = __builtin_is_implicit_lifetime(_Ty);
-#endif // ^^^ _HAS_CXX23 && !defined(__EDG__) ^^^
+#endif // ^^^ no workaround ^^^
+#endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Ty>
 struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS has_virtual_destructor : bool_constant<__has_virtual_destructor(_Ty)> {
