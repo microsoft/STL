@@ -9,6 +9,7 @@
 
 #if _STL_COMPILER_PREPROCESSOR
 #include <__msvc_int128.hpp>
+#include <__msvc_random_ziggurat_tables.hpp>
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -2645,48 +2646,75 @@ public:
 
 private:
     template <class _Engine>
-    result_type _Eval(_Engine& _Eng, const param_type& _Par0) {
-        // compute next value
-        // Knuth, vol. 2, p. 122, alg. P
-        _Ty _Res;
-        if (_Valid) {
-            _Res   = _Xx2;
-            _Valid = false;
-        } else { // generate two values, store one, return one
-            _Ty _Vx1;
-            _Ty _Vx2;
-            _Ty _Sx;
-            for (;;) { // reject bad values to avoid generating NaN/Inf on the next calculations
-                _Vx1 = 2 * _Nrand_impl<_Ty>(_Eng) - 1;
-                _Vx2 = 2 * _Nrand_impl<_Ty>(_Eng) - 1;
-                _Sx  = _Vx1 * _Vx1 + _Vx2 * _Vx2;
-                if (_Sx < _Ty{1} && _Vx1 != _Ty{0} && _Vx2 != _Ty{0}) {
-                    // good values!
-                    break;
+    _NODISCARD result_type _Eval_std(_Engine& _Eng) {
+        // McFarland, C. D. (2015). A modified ziggurat algorithm for generating exponentially and normally distributed
+        // pseudorandom numbers. Journal of Statistical Computation and Simulation, 86(7), 1281–1294.
+        // https://doi.org/10.1080/00949655.2015.1060234
+        using _Fty                    = conditional_t<numeric_limits<_Ty>::digits <= 24, float, double>;
+        constexpr const auto& _Tables = _Normal_distribution_tables<_Fty>;
+        using _Traits                 = remove_reference_t<decltype(_Tables)>;
+        _Rng_from_urng_v2<typename _Traits::_Uint_type, _Engine> _Generator(_Eng);
+
+        auto _Xbits = static_cast<typename _Traits::_Xtype>(_Generator._Get_all_bits());
+        auto _Layer = static_cast<uint8_t>(_Xbits);
+
+        if (_Layer < _Tables._Layer_num - 1) {
+            // rectangular region of a middle layer
+            return static_cast<_Ty>(_Tables._Layer_widths[_Layer + 1] * static_cast<_Fty>(_Xbits));
+        } else {
+            const auto _Lbits = static_cast<typename _Traits::_Uint_type>(_Generator._Get_all_bits());
+            const auto _Index = static_cast<uint8_t>(_Lbits);
+            _Layer            = _Lbits < _Tables._Alias_probabilities[_Index] ? _Index : _Tables._Alias_indices[_Index];
+
+            if (_Layer < _Tables._Layer_num) {
+                // tail of a non-bottommost layer
+                const _Fty _X0    = _Tables._Layer_widths[_Layer] * _Tables._Width_scale;
+                const _Fty _X1    = _Tables._Layer_widths[_Layer + 1] * _Tables._Width_scale;
+                const _Fty _Y0    = _Tables._Layer_heights[_Layer];
+                const _Fty _Y1    = _Tables._Layer_heights[_Layer + 1];
+                const _Fty _Xdiff = _X1 - _X0;
+                const _Fty _Ydiff = _Y1 - _Y0;
+
+                for (;;) {
+                    const _Fty _Dx   = _Xdiff * _STD _Nrand_impl<_Fty>(_Eng);
+                    const _Fty _Dy   = _Ydiff * _STD _Nrand_impl<_Fty>(_Eng);
+                    const _Fty _Dexp = -_Dx * (_X0 + _Dx * _Fty{0.5});
+                    if (_Dy > _Dexp * _Y1) {
+                        continue;
+                    }
+
+                    const _Fty _Xval = _X0 + _Dx;
+                    if (_Dy < _Dexp * _Y0) {
+                        return static_cast<_Ty>(_Xbits < 0 ? -_Xval : _Xval);
+                    }
+
+                    const _Fty _Yval = _Y0 + _Dy;
+                    if (_Yval < _STD exp(_Xval * _Xval * _Fty{-0.5})) {
+                        return static_cast<_Ty>(_Xbits < 0 ? -_Xval : _Xval);
+                    }
                 }
-            }
-
-            _Ty _LogSx;
-            if (_Sx > _Ty{1e-4}) {
-                _LogSx = _STD log(_Sx);
+            } else if (_Layer == _Tables._Layer_num) {
+                // tail of the bottommost layer (infinite width)
+                constexpr _Fty _Tail            = _Tables._Layer_widths[_Tables._Layer_num] * _Tables._Width_scale;
+                constexpr _Fty _Tail_reciprocal = _Fty{1.0} / _Tail;
+                for (;;) {
+                    const _Fty _Xval = -_STD log(_Fty{1.0} - _STD _Nrand_impl<_Fty>(_Eng)) * _Tail_reciprocal;
+                    const _Fty _Yval = _STD _Nrand_impl<_Fty>(_Eng);
+                    if (_Yval < _STD exp(_Xval * _Xval * _Fty{-0.5})) {
+                        const _Fty _Xorig = _Tail + _Xval;
+                        return static_cast<_Ty>(_Xbits < 0 ? -_Xorig : _Xorig);
+                    }
+                }
             } else {
-                // Bad _Sx value! Very small values will overflow log(_Sx) / _Sx.
-                // Generate a new value based on scaling method.
-                const _Ty _Ln2{_Ty{0.69314718055994530941723212145818}};
-                const _Ty _Maxabs{(_STD max) (_STD abs(_Vx1), _STD abs(_Vx2))};
-                const int _ExpMax{_STD ilogb(_Maxabs)};
-                _Vx1   = _STD scalbn(_Vx1, -_ExpMax);
-                _Vx2   = _STD scalbn(_Vx2, -_ExpMax);
-                _Sx    = _Vx1 * _Vx1 + _Vx2 * _Vx2;
-                _LogSx = _STD log(_Sx) + static_cast<_Ty>(_ExpMax) * (_Ln2 * 2);
+                // rectangular region of the bottommost layer
+                return static_cast<_Ty>(_Tables._Layer_widths[_Tables._Layer_num] * static_cast<_Fty>(_Xbits));
             }
-
-            const _Ty _Fx{_STD sqrt(_Ty{-2} * _LogSx / _Sx)};
-            _Xx2   = _Fx * _Vx2; // save second value for next call
-            _Valid = true;
-            _Res   = _Fx * _Vx1;
         }
-        return _Res * _Par0._Sigma + _Par0._Mean;
+    }
+
+    template <class _Engine>
+    result_type _Eval(_Engine& _Eng, const param_type& _Par0) {
+        return _Eval_std(_Eng) * _Par0._Sigma + _Par0._Mean;
     }
 
     param_type _Par;
