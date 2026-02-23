@@ -7310,17 +7310,17 @@ constexpr bool _Is_predicate_greater = _Is_any_of_v<_Pr,
 
 #if _VECTORIZED_MINMAX_ELEMENT_64BIT_INT
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_64bit_int_exclcuded_from_min_max_element_optimization = false;
+_INLINE_VAR constexpr bool _Is_64bit_int_excluded_from_min_max_element_optimization = false;
 #else // ^^^ _VECTORIZED_MINMAX_ELEMENT_64BIT_INT / !_VECTORIZED_MINMAX_ELEMENT_64BIT_INT vvv
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_64bit_int_exclcuded_from_min_max_element_optimization =
+_INLINE_VAR constexpr bool _Is_64bit_int_excluded_from_min_max_element_optimization =
     sizeof(_Ty) == 8 && !is_floating_point_v<_Ty>;
 #endif // ^^^ !_VECTORIZED_MINMAX_ELEMENT_64BIT_INT ^^^
 
 template <class _Iter, class _Pr>
 constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms for min_/max_element?
     _Is_min_max_iterators_safe<_Iter> && _Is_predicate_less<_Iter, _Pr>
-    && !_Is_64bit_int_exclcuded_from_min_max_element_optimization<_Iter_value_t<_Iter>>;
+    && !_Is_64bit_int_excluded_from_min_max_element_optimization<_Iter_value_t<_Iter>>;
 
 // Unlike the position-based vectorized implementation, the value-based vectorized implementation
 // does not always produce the expected results for floating-point types.
