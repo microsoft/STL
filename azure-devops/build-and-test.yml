@@ -22,7 +22,7 @@ parameters:
   default: 'STL-CI'
 - name: numShards
   type: number
-  default: 8
+  default: 10
 - name: configureTesting
   type: boolean
   default: true

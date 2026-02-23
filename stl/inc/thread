@@ -309,8 +309,8 @@ basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _I
 // constrained to character types supported by `format`.
 template <_Format_supported_charT _CharT>
 struct formatter<thread::id, _CharT> {
-    template <class _Pc = basic_format_parse_context<_CharT>> // improves throughput, see GH-5003
-    constexpr _Pc::iterator parse(type_identity_t<_Pc&> _Parse_ctx) {
+    template <class _ParseContext = basic_format_parse_context<_CharT>> // improves throughput, see GH-5003
+    constexpr _ParseContext::iterator parse(type_identity_t<_ParseContext&> _Parse_ctx) {
         return _Impl._Parse(_Parse_ctx);
     }
 

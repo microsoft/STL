@@ -5457,10 +5457,10 @@ namespace chrono {
         }
 
         template <class _FormatContext, class _Ty>
-        _NODISCARD auto _Write(_FormatContext& _FormatCtx, const _Ty& _Val, const tm& _Time) const {
+        _NODISCARD auto _Write(_FormatContext& _Format_ctx, const _Ty& _Val, const tm& _Time) const {
             basic_ostringstream<_CharT> _Stream;
 
-            _Stream.imbue(_Specs._Localized ? _FormatCtx.locale() : locale::classic());
+            _Stream.imbue(_Specs._Localized ? _Format_ctx.locale() : locale::classic());
             if (_Specs._Chrono_specs_list.empty()) {
                 _Stream << _Val; // N4950 [time.format]/7
             } else {
@@ -5492,7 +5492,7 @@ namespace chrono {
                     if constexpr (is_same_v<_CharT, char>) {
                         if (_Specs._Localized) {
                             wostringstream _Wstream;
-                            _Wstream.imbue(_FormatCtx.locale());
+                            _Wstream.imbue(_Format_ctx.locale());
 
                             wchar_t _Fmt_str[4];
                             _Chrono_spec<wchar_t> _Wspec{._Modifier = _Spec._Modifier, ._Type = _Spec._Type};
@@ -5517,10 +5517,10 @@ namespace chrono {
             auto _Format_specs = _Specs;
             if (_Specs._Dynamic_width_index >= 0) {
                 _Format_specs._Width = _STD _Get_dynamic_specs<_Width_checker>(
-                    _FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
+                    _Format_ctx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
             }
 
-            return _STD _Write_aligned(_STD move(_FormatCtx.out()), _Estimated_width, _Format_specs, _Fmt_align::_Left,
+            return _STD _Write_aligned(_STD move(_Format_ctx.out()), _Estimated_width, _Format_specs, _Fmt_align::_Left,
                 [&](auto _Out) { return _STD _Fmt_write(_STD move(_Out), _Stream.view()); });
         }
 
@@ -5857,8 +5857,8 @@ struct _Fill_tm_formatter {
     }
 
     template <class _FormatContext>
-    auto format(const _Ty& _Val, _FormatContext& _FormatCtx) const {
-        return _Impl._Write(_FormatCtx, _Val, _CHRONO _Fill_tm(_Val));
+    auto format(const _Ty& _Val, _FormatContext& _Format_ctx) const {
+        return _Impl._Write(_Format_ctx, _Val, _CHRONO _Fill_tm(_Val));
     }
 
 private:
@@ -6031,8 +6031,8 @@ struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
     }
 
     template <class _FormatContext>
-    auto format(const _CHRONO sys_time<_Duration>& _Val, _FormatContext& _FormatCtx) const {
-        return _Impl._Write(_FormatCtx, _Val, _CHRONO _Fill_tm(_Val));
+    auto format(const _CHRONO sys_time<_Duration>& _Val, _FormatContext& _Format_ctx) const {
+        return _Impl._Write(_Format_ctx, _Val, _CHRONO _Fill_tm(_Val));
     }
 
 private:
@@ -6051,9 +6051,9 @@ struct formatter<_CHRONO utc_time<_Duration>, _CharT> {
     }
 
     template <class _FormatContext>
-    auto format(const _CHRONO utc_time<_Duration>& _Val, _FormatContext& _FormatCtx) const {
+    auto format(const _CHRONO utc_time<_Duration>& _Val, _FormatContext& _Format_ctx) const {
         const auto _Sys = _CHRONO utc_clock::to_sys(_Val);
-        return _Impl._Write(_FormatCtx, _Val, _CHRONO _Fill_tm(_Sys));
+        return _Impl._Write(_Format_ctx, _Val, _CHRONO _Fill_tm(_Sys));
     }
 
 private:
@@ -6072,12 +6072,12 @@ struct formatter<_CHRONO tai_time<_Duration>, _CharT> {
     }
 
     template <class _FormatContext>
-    auto format(const _CHRONO tai_time<_Duration>& _Val, _FormatContext& _FormatCtx) const {
+    auto format(const _CHRONO tai_time<_Duration>& _Val, _FormatContext& _Format_ctx) const {
         using namespace chrono;
         using _Common = common_type_t<_Duration, days>; // slightly optimize by performing conversion at compile time
         constexpr _Common _Offset{sys_days{year{1970} / January / 1} - sys_days{year{1958} / January / 1}};
         const auto _Sys = sys_time<_Duration>{_Val.time_since_epoch()} - _Offset;
-        return _Impl._Write(_FormatCtx, _Val, _CHRONO _Fill_tm(_Sys));
+        return _Impl._Write(_Format_ctx, _Val, _CHRONO _Fill_tm(_Sys));
     }
 
 private:
@@ -6096,12 +6096,12 @@ struct formatter<_CHRONO gps_time<_Duration>, _CharT> {
     }
 
     template <class _FormatContext>
-    auto format(const _CHRONO gps_time<_Duration>& _Val, _FormatContext& _FormatCtx) const {
+    auto format(const _CHRONO gps_time<_Duration>& _Val, _FormatContext& _Format_ctx) const {
         using namespace chrono;
         using _Common = common_type_t<_Duration, days>; // slightly optimize by performing conversion at compile time
         constexpr _Common _Offset{sys_days{year{1980} / January / Sunday[1]} - sys_days{year{1970} / January / 1}};
         const auto _Sys = sys_time<_Duration>{_Val.time_since_epoch()} + _Offset;
-        return _Impl._Write(_FormatCtx, _Val, _CHRONO _Fill_tm(_Sys));
+        return _Impl._Write(_Format_ctx, _Val, _CHRONO _Fill_tm(_Sys));
     }
 
 private:
@@ -6120,10 +6120,10 @@ struct formatter<_CHRONO file_time<_Duration>, _CharT> {
     }
 
     template <class _FormatContext>
-    auto format(const _CHRONO file_time<_Duration>& _Val, _FormatContext& _FormatCtx) const {
+    auto format(const _CHRONO file_time<_Duration>& _Val, _FormatContext& _Format_ctx) const {
         const auto _Utc = _CHRONO file_clock::to_utc(_Val);
         const auto _Sys = _CHRONO utc_clock::to_sys(_Utc);
-        return _Impl._Write(_FormatCtx, _Utc, _CHRONO _Fill_tm(_Sys));
+        return _Impl._Write(_Format_ctx, _Utc, _CHRONO _Fill_tm(_Sys));
     }
 
 private:
@@ -6156,10 +6156,10 @@ template <class _Duration, class _TimeZonePtr, _Format_supported_charT _CharT>
 struct formatter<_CHRONO zoned_time<_Duration, _TimeZonePtr>, _CharT>
     : formatter<_CHRONO _Local_time_format_t<common_type_t<_Duration, _CHRONO seconds>>, _CharT> {
     template <class _FormatContext>
-    auto format(const _CHRONO zoned_time<_Duration, _TimeZonePtr>& _Val, _FormatContext& _FormatCtx) const {
+    auto format(const _CHRONO zoned_time<_Duration, _TimeZonePtr>& _Val, _FormatContext& _Format_ctx) const {
         using _Mybase    = formatter<_CHRONO _Local_time_format_t<common_type_t<_Duration, _CHRONO seconds>>, _CharT>;
         const auto _Info = _Val.get_info();
-        return _Mybase::format({_Val.get_local_time(), &_Info.abbrev, &_Info.offset}, _FormatCtx);
+        return _Mybase::format({_Val.get_local_time(), &_Info.abbrev, &_Info.offset}, _Format_ctx);
     }
 };
 

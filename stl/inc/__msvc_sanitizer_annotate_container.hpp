@@ -28,7 +28,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #if !defined(_DISABLE_STL_ANNOTATION) && !defined(_ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORMS)
 
-#if defined(_M_ARM64EC) || defined(_M_ARM64) || defined(_M_CEE_PURE)
+#if defined(_M_ARM64EC) || defined(_M_CEE_PURE)
 #define _DISABLE_STL_ANNOTATION
 #endif // ^^^ unsupported platform ^^^
 
