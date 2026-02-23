@@ -2648,7 +2648,7 @@ private:
     template <class _Engine>
     _NODISCARD result_type _Eval_std(_Engine& _Eng) {
         // McFarland, C. D. (2015). A modified ziggurat algorithm for generating exponentially and normally distributed
-        // pseudorandom numbers. Journal of Statistical Computation and Simulation, 86(7), 1281–1294.
+        // pseudorandom numbers. Journal of Statistical Computation and Simulation, 86(7), 1281-1294.
         // https://doi.org/10.1080/00949655.2015.1060234
         using _Fty                    = conditional_t<numeric_limits<_Ty>::digits <= 24, float, double>;
         constexpr const auto& _Tables = _Normal_distribution_tables<_Fty>;
