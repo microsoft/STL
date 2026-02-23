@@ -37,7 +37,7 @@ struct _Modified_ziggurat_tables {
 };
 
 template <class _Ty>
-_INLINE_VAR constexpr _Modified_ziggurat_tables<_Ty, void, true, 0> _Normal_distribution_tables;
+_INLINE_VAR constexpr _Modified_ziggurat_tables<_Ty, unsigned int, true, 2> _Normal_distribution_tables;
 
 template <>
 _INLINE_VAR constexpr _Modified_ziggurat_tables<double, uint64_t, true, 254> _Normal_distribution_tables<double>{

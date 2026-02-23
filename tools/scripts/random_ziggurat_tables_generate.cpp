@@ -305,7 +305,7 @@ struct _Modified_ziggurat_tables {
 void generate_normal_distribution() {
     println();
     println("template <class _Ty>");
-    println("_INLINE_VAR constexpr _Modified_ziggurat_tables<_Ty, void, true, 0> _Normal_distribution_tables;");
+    println("_INLINE_VAR constexpr _Modified_ziggurat_tables<_Ty, unsigned int, true, 2> _Normal_distribution_tables;");
 
     generate_tables<double>("_Normal_distribution_tables"sv, true, half_normal_pdf, half_normal_inverse_pdf,
         half_normal_cdf, half_normal_pdf_derivative, half_normal_pdf_2nd_derivative,
