@@ -4081,6 +4081,10 @@ namespace {
             static uint8x8_t _Blend(const uint8x8_t _Px1, const uint8x8_t _Px2, const uint8x8_t _Msk) noexcept {
                 return vbsl_u8(_Msk, _Px2, _Px1);
             }
+
+            static uint64_t _Nibble_mask(const uint8x16_t _Val) noexcept {
+                return _Mask_q(_Val);
+            }
         };
 
         struct _Find_traits_2 {
@@ -4143,6 +4147,10 @@ namespace {
 
             static uint16x4_t _Blend(const uint16x4_t _Px1, const uint16x4_t _Px2, const uint16x4_t _Msk) noexcept {
                 return vbsl_u16(_Msk, _Px2, _Px1);
+            }
+
+            static uint64_t _Nibble_mask(const uint16x8_t _Val) noexcept {
+                return _Find_traits_1::_Nibble_mask(vreinterpretq_u8_u16(_Val));
             }
         };
 
@@ -4207,6 +4215,10 @@ namespace {
             static uint32x2_t _Blend(const uint32x2_t _Px1, const uint32x2_t _Px2, const uint32x2_t _Msk) noexcept {
                 return vbsl_u32(_Msk, _Px2, _Px1);
             }
+
+            static uint64_t _Nibble_mask(const uint32x4_t _Val) noexcept {
+                return _Find_traits_1::_Nibble_mask(vreinterpretq_u8_u32(_Val));
+            }
         };
 
         struct _Find_traits_8 {
@@ -4243,6 +4255,10 @@ namespace {
 
             static uint64x2_t _Blend_q(const uint64x2_t _Px1, const uint64x2_t _Px2, const uint64x2_t _Msk) noexcept {
                 return vbslq_u64(_Msk, _Px2, _Px1);
+            }
+
+            static uint64_t _Nibble_mask(const uint64x2_t _Val) noexcept {
+                return _Find_traits_1::_Nibble_mask(vreinterpretq_u8_u64(_Val));
             }
         };
 
@@ -4918,7 +4934,45 @@ namespace {
         }
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
-#ifndef _M_ARM64
+        template <class _Ty>
+        const void* _Search_n_tail(const void* _First, const void* const _Last, const size_t _Count, const _Ty* _Mid1,
+            const _Ty _Val) noexcept {
+            auto _Match_start    = static_cast<const _Ty*>(_First);
+            const auto _Last_ptr = static_cast<const _Ty*>(_Last);
+
+            if (static_cast<size_t>(_Last_ptr - _Match_start) < _Count) {
+                return _Last_ptr;
+            }
+
+            auto _Match_end = _Match_start + _Count;
+            auto _Mid2      = _Match_end;
+            for (;;) {
+                // Invariants: _Match_end - _Match_start == _Count, [_Match_start, _Mid1) and [_Mid2, _Match_end) match
+                // _Val:
+                //
+                // _Match_start  _Mid1    _Mid2    _Match_end
+                // |=============|????????|========|??????????...
+
+                --_Mid2;
+                if (*_Mid2 == _Val) { // match;
+                    if (_Mid1 == _Mid2) { // [_Mid1, _Mid2) is empty, so [_Match_start, _Match_end) all match
+                        return _Match_start;
+                    }
+                } else { // mismatch; skip past it
+                    _Match_start = _Mid2 + 1;
+
+                    if (static_cast<size_t>(_Last_ptr - _Match_start) < _Count) { // not enough space left
+                        return _Last_ptr;
+                    }
+
+                    _Mid1      = _Match_end;
+                    _Match_end = _Match_start + _Count;
+                    _Mid2      = _Match_end;
+                }
+            }
+        }
+
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         template <class _Traits, class _Ty>
         const void* __stdcall _Search_n_impl(
             const void* _First, const void* const _Last, const size_t _Count, const _Ty _Val) noexcept {
@@ -4928,8 +4982,81 @@ namespace {
                 return _Find_impl<_Traits, _Predicate::_Equal>(_First, _Last, _Val);
             }
 
-            auto _Mid1 = static_cast<const _Ty*>(_First);
-#ifndef _M_ARM64EC
+            auto _Mid1           = static_cast<const _Ty*>(_First);
+            const size_t _Length = _Byte_length(_First, _Last);
+            if (_Count <= 8 / sizeof(_Ty) && _Length >= 16) {
+                // We use 64-bit masks, consisting of 4-bits per byte of the inpute element.
+                constexpr size_t _Bits_per_element = sizeof(_Ty) << 2;
+                const size_t _Count_bits           = _Count * _Bits_per_element;
+                const size_t _Sh1                  = sizeof(_Ty) != 1 ? 0 : (_Count_bits < 16 ? _Count_bits - 8 : 8);
+                const size_t _Sh2                  = sizeof(_Ty) >= 4 ? 0
+                                                   : _Count_bits < 16 ? 0
+                                                                      : (_Count_bits < 32 ? _Count_bits - 16 : 16);
+
+                const auto _Comparand = _Traits::_Set_neon_q(_Val);
+
+                const void* _Stop_at = _First;
+                _Advance_bytes(_Stop_at, _Length & ~size_t{0xF});
+
+                uint64_t _Carry = 0;
+                do {
+                    const auto _Data = _Traits::_Load_q(_First);
+
+                    const auto _Cmp      = _Traits::_Cmp_neon_q(_Comparand, _Data);
+                    const uint64_t _Mask = _Traits::_Nibble_mask(_Cmp);
+
+                    if (_Carry != 0) {
+                        const uint64_t _Tail_bits   = _CountLeadingZeros64(~_Carry);
+                        const uint64_t _Need        = _Count_bits - _Tail_bits;
+                        const uint64_t _Prefix_mask = (uint64_t{1} << _Need) - 1;
+                        if ((_Mask & _Prefix_mask) == _Prefix_mask) {
+                            _Rewind_bytes(_First, _Tail_bits >> 2);
+                            return _First;
+                        }
+                    }
+
+                    uint64_t _MskX = _Mask;
+
+                    _MskX = (_MskX >> _Bits_per_element) & _MskX;
+
+                    if constexpr (sizeof(_Ty) == 1) {
+                        _MskX = (_MskX >> _Sh1) & _MskX;
+                    }
+
+                    if constexpr (sizeof(_Ty) < 4) {
+                        _MskX = (_MskX >> _Sh2) & _MskX;
+                    }
+
+                    if (_MskX != 0) {
+                        const auto _Pos = _CountTrailingZeros64(_MskX) >> 2;
+                        _Advance_bytes(_First, _Pos);
+                        return _First;
+                    }
+
+                    _Carry = _Mask;
+
+                    _Advance_bytes(_First, 16);
+                } while (_First != _Stop_at);
+
+                _Mid1 = static_cast<const _Ty*>(_First);
+
+                const auto _Tail_run = _CountLeadingZeros64(~_Carry) >> 2;
+                _Rewind_bytes(_First, _Tail_run);
+            }
+
+            return _Search_n_tail(_First, _Last, _Count, _Mid1, _Val);
+        }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
+        template <class _Traits, class _Ty>
+        const void* __stdcall _Search_n_impl(
+            const void* _First, const void* const _Last, const size_t _Count, const _Ty _Val) noexcept {
+            if (_Count == 0) {
+                return _First;
+            } else if (_Count == 1) {
+                return _Find_impl<_Traits, _Predicate::_Equal>(_First, _Last, _Val);
+            }
+
+            auto _Mid1           = static_cast<const _Ty*>(_First);
             const size_t _Length = _Byte_length(_First, _Last);
             if (_Count <= 16 / sizeof(_Ty) && _Length >= 32 && _Use_avx2()) {
                 _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
@@ -5090,42 +5217,10 @@ namespace {
                     _Rewind_bytes(_First, 15 - static_cast<ptrdiff_t>(_Carry_pos));
                 }
             }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-            auto _Match_start    = static_cast<const _Ty*>(_First);
-            const auto _Last_ptr = static_cast<const _Ty*>(_Last);
 
-            if (static_cast<size_t>(_Last_ptr - _Match_start) < _Count) {
-                return _Last_ptr;
-            }
-
-            auto _Match_end = _Match_start + _Count;
-            auto _Mid2      = _Match_end;
-            for (;;) {
-                // Invariants: _Match_end - _Match_start == _Count, [_Match_start, _Mid1) and [_Mid2, _Match_end) match
-                // _Val:
-                //
-                // _Match_start  _Mid1    _Mid2    _Match_end
-                // |=============|????????|========|??????????...
-
-                --_Mid2;
-                if (*_Mid2 == _Val) { // match;
-                    if (_Mid1 == _Mid2) { // [_Mid1, _Mid2) is empty, so [_Match_start, _Match_end) all match
-                        return _Match_start;
-                    }
-                } else { // mismatch; skip past it
-                    _Match_start = _Mid2 + 1;
-
-                    if (static_cast<size_t>(_Last_ptr - _Match_start) < _Count) { // not enough space left
-                        return _Last_ptr;
-                    }
-
-                    _Mid1      = _Match_end;
-                    _Match_end = _Match_start + _Count;
-                    _Mid2      = _Match_end;
-                }
-            }
+            return _Search_n_tail(_First, _Last, _Count, _Mid1, _Val);
         }
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         template <class _Traits, _Predicate _Pred, class _Ty>
         size_t __stdcall _Find_last_pos_impl(
@@ -5275,7 +5370,6 @@ const void* __stdcall __std_adjacent_find_8(const void* const _First, const void
     return _Finding::_Adjacent_find_impl<_Finding::_Find_traits_8, uint64_t>(_First, _Last);
 }
 
-#ifndef _M_ARM64
 const void* __stdcall __std_search_n_1(
     const void* const _First, const void* const _Last, const size_t _Count, const uint8_t _Value) noexcept {
     return _Finding::_Search_n_impl<_Finding::_Find_traits_1>(_First, _Last, _Count, _Value);
@@ -5295,7 +5389,6 @@ const void* __stdcall __std_search_n_8(
     const void* const _First, const void* const _Last, const size_t _Count, const uint64_t _Value) noexcept {
     return _Finding::_Search_n_impl<_Finding::_Find_traits_8>(_First, _Last, _Count, _Value);
 }
-#endif // ^^^ !defined(_M_ARM64) ^^^
 
 } // extern "C"
 
