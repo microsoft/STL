@@ -714,7 +714,7 @@ struct _Variant_assign_visitor { // visitor that implements assignment for varia
                         _Self._Reset();
                         _STD _Construct_in_place(_Self._Storage(), integral_constant<size_t, _Idx>{}, _Source._Val);
                     } else { // copy throws and move does not; move from a temporary copy
-                        auto _Temp = _Source._Val;
+                        auto _Temp(_Source._Val);
                         _Self._Reset();
                         _STD _Construct_in_place(_Self._Storage(), integral_constant<size_t, _Idx>{}, _STD move(_Temp));
                     }
@@ -1422,9 +1422,6 @@ struct _Variant_dispatcher<index_sequence<_Is...>> {
     template <class _Ret, class _Callable, class... _Types, bool _Any_valueless = ((_Is == 0) || ...)>
     _NODISCARD static constexpr _Ret _Dispatch2(_Callable&& _Obj, _Types&&... _Args) {
         if constexpr (_Any_valueless) {
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1513409
-            ((void) _Args, ...);
-#endif // ^^^ workaround ^^^
             _STD _Throw_bad_variant_access();
         }
 #if _HAS_CXX20
