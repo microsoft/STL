@@ -8,12 +8,12 @@ Creates a 1ES Hosted Pool, set up for the STL's CI.
 .DESCRIPTION
 See https://github.com/microsoft/STL/wiki/Checklist-for-Toolset-Updates for more information.
 
-.PARAMETER Arch
-The architecture can be either x64 or arm64.
+.PARAMETER VMSku
+The VM SKU can be Fasv6, Fasv7, or Dpsv6.
 #>
 [CmdletBinding(PositionalBinding=$false)]
 Param(
-  [Parameter(Mandatory)][ValidateSet('x64', 'arm64')][String]$Arch
+  [Parameter(Mandatory)][ValidateSet('Fasv6', 'Fasv7', 'Dpsv6')][String]$VMSku
 )
 
 $ErrorActionPreference = 'Stop'
@@ -21,26 +21,47 @@ $ErrorActionPreference = 'Stop'
 $CurrentDate = Get-Date
 $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 
-if ($Arch -ieq 'x64') {
-  $Location = 'eastus2'
+# | SKU   | Location      | Cores | Notes              |
+# |-------|---------------|------:|--------------------|
+# | Fasv6 | eastus2       |  4096 |                    |
+# | Fasv7 | australiaeast |   740 |                    |
+# | Fasv7 | northeurope   |   640 |                    |
+# | Fasv7 | southeastasia |   640 |                    |
+# | Dpsv6 | eastus2       |  1024 |                    |
+# | Dpsv6 | northeurope   |  1024 |                    |
+# | Dpsv6 | westcentralus |   672 | Not currently used |
+
+if ($VMSku -ieq 'Fasv6') {
+  $Arch = 'x64'
   $VMSize = 'Standard_F32as_v6'
   $PoolSize = 64
+  $AvailableLocations = @('eastus2')
+} elseif ($VMSku -ieq 'Fasv7') {
+  $Arch = 'x64'
+  $VMSize = 'Standard_F32as_v7'
+  $PoolSize = 20
+  $AvailableLocations = @('australiaeast', 'northeurope', 'southeastasia')
+} elseif ($VMSku -ieq 'Dpsv6') {
+  $Arch = 'arm64'
+  $VMSize = 'Standard_D32ps_v6'
+  $PoolSize = 32
+  $AvailableLocations = @('eastus2', 'northeurope') # Locations where CPP_STL_GitHub has quota for 1024 cores (32 VMs).
+}
+
+$AvailableLocationIdx = 5 # Increment for each new set of pools, to cycle through the available locations.
+$Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
+
+if ($Arch -ieq 'x64') {
   $ImagePublisher = 'MicrosoftWindowsServer'
   $ImageOffer = 'WindowsServer'
   $ImageSku = '2025-datacenter-azure-edition'
 } else {
-  # CPP_STL_GitHub has quota for 672 cores (21 VMs) in westcentralus, not currently used.
-  $AvailableLocations = @('eastus2', 'northeurope') # Locations where CPP_STL_GitHub has quota for 1024 cores (32 VMs).
-  $AvailableLocationIdx = 5 # Increment for each new pool, to cycle through the available locations.
-  $Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
-  $VMSize = 'Standard_D32ps_v6'
-  $PoolSize = 32
   $ImageId = '/SharedGalleries/WindowsServer.1P/Images/2025-datacenter-azure-edition-arm64/Versions/latest'
 }
 
 $ProtoVMName = 'PROTOTYPE'
 
-$LogFile = "1es-hosted-pool-$Timestamp-$Arch.log"
+$LogFile = "1es-hosted-pool-$Timestamp-$Arch-$VMSku.log"
 $ProgressActivity = 'Preparing STL CI pool'
 $TotalProgress = 38
 $CurrentProgress = 1
@@ -111,7 +132,7 @@ if ((Get-AzContext).Subscription.Name -cne 'CPP_STL_GitHub') {
 ####################################################################################################
 Display-ProgressBar -Status 'Creating resource group'
 
-$ResourceGroupName = "Stl-$Timestamp-$Arch"
+$ResourceGroupName = "Stl-$Timestamp-$Arch-$VMSku"
 
 New-AzResourceGroup `
   -Name $ResourceGroupName `
