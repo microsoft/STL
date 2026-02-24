@@ -2651,7 +2651,7 @@ private:
         // pseudorandom numbers. Journal of Statistical Computation and Simulation, 86(7), 1281-1294.
         // https://doi.org/10.1080/00949655.2015.1060234
         using _Fty                    = conditional_t<numeric_limits<_Ty>::digits <= 24, float, double>;
-        constexpr const auto& _Tables = _Normal_distribution_tables<_Fty>;
+        constexpr const auto& _Tables = _Normal_distribution_tables<_Fty>::_Value;
         using _Traits                 = remove_reference_t<decltype(_Tables)>;
         _Rng_from_urng_v2<typename _Traits::_Uint_type, _Engine> _Generator(_Eng);
 

@@ -185,11 +185,12 @@ void generate_tables(string_view name, bool is_signed, auto&& pdf, auto&& invers
 
     println();
     println("template <>");
-    println("_INLINE_VAR constexpr _Modified_ziggurat_tables<{0}, uint{1}_t, {2}, {3}> {4}<{0}>{{", traits::type_name,
-        traits::bits, is_signed, layers.size(), name);
+    println("struct {}<{}> {{", name, traits::type_name);
+    println("    static constexpr _Modified_ziggurat_tables<{}, uint{}_t, {}, {}> _Value{{", traits::type_name,
+        traits::bits, is_signed, layers.size());
 
     // _Ty _Layer_widths[_Layer_num + 1];
-    print("    {{{:#}{}", static_cast<FloatType>(layers[0].x_inner * width_scale), traits::type_suffix);
+    print("        {{{:#}{}", static_cast<FloatType>(layers[0].x_inner * width_scale), traits::type_suffix);
     for (const ziggurat_layer& layer : layers) {
         print(", {:#}{}", static_cast<FloatType>(layer.x_outer * width_scale), traits::type_suffix);
     }
@@ -197,7 +198,7 @@ void generate_tables(string_view name, bool is_signed, auto&& pdf, auto&& invers
     println("}},");
 
     // _Ty _Layer_heights[_Layer_num + 1];
-    print("    {{{:#}{}", static_cast<FloatType>(layers[0].y_max * height_scale), traits::type_suffix);
+    print("        {{{:#}{}", static_cast<FloatType>(layers[0].y_max * height_scale), traits::type_suffix);
     for (const ziggurat_layer& layer : layers) {
         print(", {:#}{}", static_cast<FloatType>(layer.y_min * height_scale), traits::type_suffix);
     }
@@ -207,8 +208,8 @@ void generate_tables(string_view name, bool is_signed, auto&& pdf, auto&& invers
     // _Uty _Alias_probabilities[256];
     for (bool first = true; const alias_table_entry& entry : alias_table) {
         if (first) {
-            print("    {{{}u", static_cast<unsigned long long>(
-                                   __nearbyintq(__fminq(entry.probability, max_probability) * probability_scale)));
+            print("        {{{}u", static_cast<unsigned long long>(
+                                       __nearbyintq(__fminq(entry.probability, max_probability) * probability_scale)));
             first = false;
         } else {
             print(", {}u", static_cast<unsigned long long>(
@@ -221,7 +222,7 @@ void generate_tables(string_view name, bool is_signed, auto&& pdf, auto&& invers
     // uint8_t _Alias_indices[256];
     for (bool first = true; const alias_table_entry& entry : alias_table) {
         if (first) {
-            print("    {{{}", entry.alias_index);
+            print("        {{{}", entry.alias_index);
             first = false;
         } else {
             print(", {}", entry.alias_index);
@@ -230,6 +231,7 @@ void generate_tables(string_view name, bool is_signed, auto&& pdf, auto&& invers
 
     println("}},");
 
+    println("    }};");
     println("}};");
 }
 
@@ -297,7 +299,7 @@ struct _Modified_ziggurat_tables {
 void generate_normal_distribution() {
     println();
     println("template <class _Ty>");
-    println("_INLINE_VAR constexpr _Modified_ziggurat_tables<_Ty, unsigned int, true, 2> _Normal_distribution_tables;");
+    println("struct _Normal_distribution_tables;");
 
     generate_tables<double>("_Normal_distribution_tables"sv, true, half_normal_pdf, half_normal_inverse_pdf,
         half_normal_cdf, half_normal_pdf_derivative, half_normal_pdf_2nd_derivative,
