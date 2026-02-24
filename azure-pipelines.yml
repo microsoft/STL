@@ -137,7 +137,7 @@ stages:
       - Configure_Tests
     displayName: 'Test x64'
     pool:
-      name: ${{ variables.x64SlowPoolName }}
+      name: ${{ variables.x64FastPoolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/build-and-test.yml
