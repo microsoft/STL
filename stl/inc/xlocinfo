@@ -134,6 +134,24 @@ private:
     void* _Timeptr; // pointer to time information
 };
 
+template <class _Elem>
+_NODISCARD _Elem* _Ntcts_dup_dbg(const _Elem* const _Ptr) noexcept {
+    _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Elem, char, wchar_t, unsigned short>);
+
+    const size_t _Bytes = (char_traits<_Elem>::length(_Ptr) + 1) * sizeof(_Elem);
+
+#ifdef _DEBUG
+    const auto _Result = static_cast<_Elem*>(_CSTD _malloc_dbg(_Bytes, _CRT_BLOCK, __FILE__, __LINE__));
+#else
+    const auto _Result = static_cast<_Elem*>(_CSTD malloc(_Bytes));
+#endif
+    if (_Result) {
+        _CSTD memcpy(_Result, _Ptr, _Bytes);
+    }
+
+    return _Result;
+}
+
 extern "C++" template <class _Elem>
 class _CRTIMP2_PURE_IMPORT _Yarn { // wrap a NTCTS
 public:
@@ -156,26 +174,22 @@ public:
             _Tidy();
 
             if (_Right) { // new is not empty, copy it
-                const _Elem* _Ptr = _Right;
-                while (*_Ptr != _Elem{}) {
-                    ++_Ptr;
-                }
-
-                const auto _Count = (++_Ptr - _Right) * sizeof(_Elem);
-
-#ifdef _DEBUG
-                _Myptr = static_cast<_Elem*>(_malloc_dbg(_Count, _CRT_BLOCK, __FILE__, __LINE__));
-#else
-                _Myptr = static_cast<_Elem*>(_CSTD malloc(_Count));
-#endif
-
-                if (_Myptr) {
-                    _CSTD memcpy(_Myptr, _Right, _Count);
-                }
+                _Myptr = _STD _Ntcts_dup_dbg(_Right);
             }
         }
 
         return *this;
+    }
+
+    template <class _Elem2 = _Elem, enable_if_t<is_same_v<_Elem2, char>, int> = 0>
+    void _From_wide(const wchar_t* const _Right) noexcept {
+        if (reinterpret_cast<wchar_t*>(_Myptr) != _Right) { // new value, discard old and copy new
+            _Tidy();
+
+            if (_Right) { // new is not empty, copy it
+                _Myptr = reinterpret_cast<char*>(_STD _Ntcts_dup_dbg(_Right));
+            }
+        }
     }
 
     __CLR_OR_THIS_CALL ~_Yarn() noexcept {
@@ -382,6 +396,7 @@ private:
     _Yarn<char> _Months; // month names
     _Yarn<wchar_t> _W_Days; // wide weekday names
     _Yarn<wchar_t> _W_Months; // wide month names
+    // TRANSITION, ABI, `_Oldlocname._Myptr` is reinterpreted as `wchar_t*`. We should use `_Yarn<wchar_t>`.
     _Yarn<char> _Oldlocname; // old locale name to revert to on destruction
     _Yarn<char> _Newlocname; // new locale name for this object
 };

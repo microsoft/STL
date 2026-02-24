@@ -221,9 +221,8 @@ void __CLRCALL_PURE_OR_CDECL locale::_Locimp::_Locimp_dtor(_Locimp* _This) { // 
 
 void __CLRCALL_PURE_OR_CDECL _Locinfo::_Locinfo_ctor(
     _Locinfo* pLocinfo, const char* locname) { // switch to a named locale
-    const char* oldlocname = setlocale(LC_ALL, nullptr);
+    pLocinfo->_Oldlocname._From_wide(_wsetlocale(LC_ALL, nullptr));
 
-    pLocinfo->_Oldlocname = oldlocname == nullptr ? "" : oldlocname;
     if (locname != nullptr) {
         locname = setlocale(LC_ALL, locname);
     }
@@ -232,8 +231,12 @@ void __CLRCALL_PURE_OR_CDECL _Locinfo::_Locinfo_ctor(
 }
 
 void __CLRCALL_PURE_OR_CDECL _Locinfo::_Locinfo_dtor(_Locinfo* pLocinfo) { // destroy a _Locinfo object, revert locale
-    if (!pLocinfo->_Oldlocname._Empty()) {
-        setlocale(LC_ALL, pLocinfo->_Oldlocname._C_str());
+    if (pLocinfo->_Oldlocname._Empty()) {
+        // `pLocinfo->_Oldlocname._C_str()` points to a single `char` of value 0 in this case,
+        // so reinterpret_cast is not reliable.
+        _wsetlocale(LC_ALL, L"");
+    } else {
+        _wsetlocale(LC_ALL, reinterpret_cast<const wchar_t*>(pLocinfo->_Oldlocname._C_str()));
     }
 }
 _STD_END
