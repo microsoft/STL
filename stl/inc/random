@@ -2655,45 +2655,53 @@ private:
         using _Traits                 = remove_reference_t<decltype(_Tables)>;
         _Rng_from_urng_v2<typename _Traits::_Uint_type, _Engine> _Generator(_Eng);
 
-        auto _Xbits = static_cast<typename _Traits::_Xtype>(_Generator._Get_all_bits());
-        auto _Layer = static_cast<uint8_t>(_Xbits);
+        const auto _Xbits         = static_cast<typename _Traits::_Xtype>(_Generator._Get_all_bits());
+        const auto _Regular_layer = static_cast<uint8_t>(_Xbits);
 
-        if (_Layer < _Tables._Layer_num - 1) {
+        if (_Regular_layer < _Tables._Layer_num - 1) {
             // rectangular region of a middle layer
-            return static_cast<_Ty>(_Tables._Layer_widths[_Layer + 1] * static_cast<_Fty>(_Xbits));
+            return static_cast<_Ty>(_Tables._Layer_widths[_Regular_layer + 1] * static_cast<_Fty>(_Xbits));
         } else {
             const auto _Lbits = static_cast<typename _Traits::_Uint_type>(_Generator._Get_all_bits());
             const auto _Index = static_cast<uint8_t>(_Lbits);
-            _Layer            = _Lbits < _Tables._Alias_probabilities[_Index] ? _Index : _Tables._Alias_indices[_Index];
+            const uint8_t _Irregular_layer =
+                _Lbits < _Tables._Alias_probabilities[_Index] ? _Index : _Tables._Alias_indices[_Index];
 
-            if (_Layer < _Tables._Layer_num) {
+            if (_Irregular_layer < _Tables._Layer_num) {
                 // tail of a non-bottommost layer
-                const _Fty _X0    = _Tables._Layer_widths[_Layer] * _Tables._Width_scale;
-                const _Fty _X1    = _Tables._Layer_widths[_Layer + 1] * _Tables._Width_scale;
-                const _Fty _Y0    = _Tables._Layer_heights[_Layer];
-                const _Fty _Y1    = _Tables._Layer_heights[_Layer + 1];
-                const _Fty _Xdiff = _X1 - _X0;
-                const _Fty _Ydiff = _Y1 - _Y0;
+                const _Fty _Xx0   = _Tables._Layer_widths[_Irregular_layer] * _Tables._Width_scale;
+                const _Fty _Xx1   = _Tables._Layer_widths[_Irregular_layer + 1] * _Tables._Width_scale;
+                const _Fty _Yy0   = _Tables._Layer_heights[_Irregular_layer];
+                const _Fty _Yy1   = _Tables._Layer_heights[_Irregular_layer + 1];
+                const _Fty _Xdiff = _Xx1 - _Xx0;
+                const _Fty _Ydiff = _Yy1 - _Yy0;
 
                 for (;;) {
-                    const _Fty _Dx   = _Xdiff * _STD _Nrand_impl<_Fty>(_Eng);
-                    const _Fty _Dy   = _Ydiff * _STD _Nrand_impl<_Fty>(_Eng);
-                    const _Fty _Dexp = -_Dx * (_X0 + _Dx * _Fty{0.5});
-                    if (_Dy > _Dexp * _Y1) {
+                    const _Fty _Dx = _Xdiff * _STD _Nrand_impl<_Fty>(_Eng);
+                    const _Fty _Dy = _Ydiff * _STD _Nrand_impl<_Fty>(_Eng);
+
+                    // _Dexp = -(_Xval^2 - _Xx0^2) / 2
+                    // f(_Xval) = exp(-_Xval^2 / 2) = _Yy0 * exp(_Dexp)
+                    // _Yy0 >= d(f(_Xval))/d(_Dexp) = f(_Xval) >= _Yy1
+                    // _Dexp * _Yy0 <= f(_Xval) - _Yy0 <= _Dexp * _Yy1
+                    const _Fty _Dexp = -_Dx * (_Xx0 + _Dx * _Fty{0.5});
+                    if (_Dy > _Dexp * _Yy1) {
+                        // _Yval > _Yy0 + _Dexp * _Yy1 >= f(_Xval), reject
                         continue;
                     }
 
-                    const _Fty _Xval = _X0 + _Dx;
-                    if (_Dy < _Dexp * _Y0) {
+                    const _Fty _Xval = _Xx0 + _Dx;
+                    if (_Dy < _Dexp * _Yy0) {
+                        // _Yval < _Yy0 + _Dexp * _Yy0 <= f(_Xval), accept
                         return static_cast<_Ty>(_Xbits < 0 ? -_Xval : _Xval);
                     }
 
-                    const _Fty _Yval = _Y0 + _Dy;
+                    const _Fty _Yval = _Yy0 + _Dy;
                     if (_Yval < _STD exp(_Xval * _Xval * _Fty{-0.5})) {
                         return static_cast<_Ty>(_Xbits < 0 ? -_Xval : _Xval);
                     }
                 }
-            } else if (_Layer == _Tables._Layer_num) {
+            } else if (_Irregular_layer == _Tables._Layer_num) {
                 // tail of the bottommost layer (infinite width)
                 constexpr _Fty _Tail            = _Tables._Layer_widths[_Tables._Layer_num] * _Tables._Width_scale;
                 constexpr _Fty _Tail_reciprocal = _Fty{1.0} / _Tail;

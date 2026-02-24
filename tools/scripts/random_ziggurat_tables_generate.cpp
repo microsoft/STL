@@ -12,15 +12,6 @@
 #include <vector>
 using namespace std;
 
-// get rid of the squiggles
-#ifdef __INTELLISENSE__
-using __float128 = long double;
-
-inline constexpr __float128 operator"" q(long double value) noexcept {
-    return value;
-}
-#endif // defined(__INTELLISENSE__)
-
 extern "C" [[nodiscard]] __float128 __fabsq(__float128 x) noexcept;
 extern "C" [[nodiscard]] __float128 __fminq(__float128 x, __float128 y) noexcept;
 extern "C" [[nodiscard]] __float128 __nearbyintq(__float128 x) noexcept;
