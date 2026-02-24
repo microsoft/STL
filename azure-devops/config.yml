@@ -4,7 +4,7 @@
 # Common configuration used by both pipelines
 
 variables:
-- name: poolName
+- name: x64SlowPoolName
   value: 'Stl-2026-02-20T0952-x64-Pool'
   readonly: true
 - name: arm64PoolName
