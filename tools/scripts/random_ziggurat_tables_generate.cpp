@@ -274,6 +274,7 @@ void generate_header() {
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <cstdint>
+#include <type_traits>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -293,7 +294,7 @@ struct _Modified_ziggurat_tables {
     using _Xtype     = conditional_t<_Signed, make_signed_t<_Uty>, _Uty>;
 
     static constexpr int _Layer_num   = _Lx;
-    static constexpr _Ty _Width_scale = (_Signed ? _Ty{1} : _Ty{2}) * _Ty{(numeric_limits<_Uty>::max)() / 2u + 1u};
+    static constexpr _Ty _Width_scale = (_Signed ? _Ty{1} : _Ty{2}) * _Ty{static_cast<_Uty>(-1) / 2u + 1u};
 
     _Ty _Layer_widths[_Lx + 1];
     _Ty _Layer_heights[_Lx + 1];
