@@ -4935,8 +4935,8 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         template <class _Ty>
-        const void* _Search_n_tail(const void* _First, const void* const _Last, const size_t _Count, const _Ty* _Mid1,
-            const _Ty _Val) noexcept {
+        const void* _Search_n_tail(const void* const _First, const void* const _Last, const size_t _Count,
+            const _Ty* _Mid1, const _Ty _Val) noexcept {
             auto _Match_start    = static_cast<const _Ty*>(_First);
             const auto _Last_ptr = static_cast<const _Ty*>(_Last);
 
