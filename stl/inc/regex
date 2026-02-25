@@ -1645,17 +1645,18 @@ public:
 
 template <class _Ty, class _Alloc = allocator<_Ty>>
 class _Rx_fixed_size_buffer {
+    using _Al_pointer   = _Alloc_ptr_t<_Alloc>;
     using _Al_size_type = _Alloc_size_t<_Alloc>;
 
     struct _Val {
-        _Ty* _First;
-        _Ty* _Last;
+        _Al_pointer _First;
+        _Al_pointer _Last;
         bool _Allocated;
     };
 
     struct _NODISCARD _Allocation_guard {
         _Alloc& _Al;
-        _Ty* _Ptr;
+        _Al_pointer _Ptr;
         _Al_size_type _Size;
 
         _Allocation_guard& operator=(const _Allocation_guard&) = delete;
@@ -1715,7 +1716,7 @@ public:
 
 private:
     void _Use_external_buf(unsigned char* _Buf, size_t _Ty_size) {
-        auto _Ty_first = reinterpret_cast<_Ty*>(_Buf);
+        auto _Ty_first = _STD _Refancy<_Al_pointer>(reinterpret_cast<_Ty*>(_Buf));
         auto _Ty_last  = _Ty_first + _Ty_size;
         auto& _Data    = _Mypair._Myval2;
         _STD uninitialized_fill(_Ty_first, _Ty_last, _Ty{}); // uninitialized_value_construct() is C++17
