@@ -663,6 +663,7 @@ std/utilities/function.objects/func.bind_front/bind_front.pass.cpp FAIL
 std/time/time.clock/time.clock.file/to_from_sys.pass.cpp FAIL
 
 # libc++'s filesystem::path::iterator models bidirectional_iterator, which is not guaranteed by the Standard
+std/input.output/filesystems/class.path/path.itr/iterator.pass.cpp FAIL
 std/input.output/filesystems/class.path/range_concept_conformance.compile.pass.cpp FAIL
 
 # MSVC's STL and libc++ speculatively implement LWG-2227 (not yet resolved) in different ways.
@@ -795,6 +796,13 @@ std/time/time.syn/formatter.month_day_last.pass.cpp FAIL
 
 # Our monotonic_buffer_resource takes "user" space for metadata, which it probably should not do.
 std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/allocate_with_initial_size.pass.cpp FAIL
+
+# Looks like we don't handle const value_types as required by N5032 [fs.path.req]/2.2:
+# "the qualified-id iterator_traits<decay_t<Source>>::value_type is valid and denotes a possibly const encoded character type"
+std/input.output/filesystems/class.path/path.member/path.append.pass.cpp FAIL
+std/input.output/filesystems/class.path/path.member/path.assign/source.pass.cpp FAIL
+std/input.output/filesystems/class.path/path.member/path.concat.pass.cpp FAIL
+std/input.output/filesystems/class.path/path.member/path.construct/source.pass.cpp FAIL
 
 
 # *** NOT YET ANALYZED ***
@@ -1105,6 +1113,32 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:1 FA
 
 # Not analyzed. Clang error: no member named 'value' in 'std::is_copy_constructible<ConvertibleFromAndToAny>'
 std/utilities/any/any.class/any.cons/value.pass.cpp:2 FAIL
+
+# Not analyzed. Assertion failed: globalMemCounter.checkOutstandingNewLessThanOrEqual(1)
+std/input.output/filesystems/class.path/path.member/path.assign/move.pass.cpp FAIL
+std/input.output/filesystems/class.path/path.member/path.construct/move.pass.cpp FAIL
+
+# Not analyzed. Assertion failed: Alloc::outstanding_alloc() == 1
+std/input.output/filesystems/class.path/path.member/path.generic.obs/generic_string_alloc.pass.cpp FAIL
+
+# Not analyzed. Assertion failed: std::equal(p.begin(), p.end(), TC.elements.begin(), ComparePathExact())
+std/input.output/filesystems/class.path/path.member/path.decompose/path.decompose.pass.cpp FAIL
+
+# Not analyzed. Assertion failed: ret.is_absolute()
+std/input.output/filesystems/fs.op.funcs/fs.op.absolute/absolute.pass.cpp FAIL
+
+# Not analyzed. Assertion failed: ret == TC.p
+std/input.output/filesystems/fs.op.funcs/fs.op.temp_dir_path/temp_directory_path.pass.cpp FAIL
+
+# Not analyzed. Assertion failure: PathEq(output, expect)
+std/input.output/filesystems/class.path/path.member/path.gen/lexically_relative_and_proximate.pass.cpp FAIL
+std/input.output/filesystems/fs.op.funcs/fs.op.proximate/proximate.pass.cpp FAIL
+
+# Not analyzed. Test aborts.
+std/input.output/filesystems/fs.op.funcs/fs.op.remove_all/toctou.pass.cpp FAIL
+
+# Not analyzed. Asserts that `fs::copy_file(p, p, ec)` and `fs::copy_file(p, p, opts, ec)` "must NOT be noexcept".
+std/input.output/filesystems/fs.op.funcs/fs.op.copy_file/copy_file.pass.cpp FAIL
 
 
 # *** MSVC-INTERNAL TEST HARNESS ISSUES (note: configuration :9 restricts these skips to be MSVC-internal) ***
