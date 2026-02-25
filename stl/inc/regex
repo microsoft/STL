@@ -1645,6 +1645,7 @@ public:
 
 template <class _Ty, class _Alloc = allocator<_Ty>>
 class _Rx_fixed_size_buffer {
+private:
     using _Al_pointer   = _Alloc_ptr_t<_Alloc>;
     using _Al_size_type = _Alloc_size_t<_Alloc>;
 
