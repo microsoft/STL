@@ -1669,7 +1669,8 @@ class _Rx_fixed_size_buffer {
     };
 
 public:
-    _Rx_fixed_size_buffer(const _Alloc& _Al = _Alloc{}) : _Mypair(_One_then_variadic_args_t{}, _Al) {}
+    explicit _Rx_fixed_size_buffer(const _Alloc& _Al = _Alloc{}) : _Mypair(_One_then_variadic_args_t{}, _Al) {}
+
     _Rx_fixed_size_buffer(const _Rx_fixed_size_buffer&) = delete;
     _Rx_fixed_size_buffer(_Rx_fixed_size_buffer&&)      = delete;
 
