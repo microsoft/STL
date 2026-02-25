@@ -4985,7 +4985,7 @@ namespace {
             auto _Mid1           = static_cast<const _Ty*>(_First);
             const size_t _Length = _Byte_length(_First, _Last);
             if (_Count <= 8 / sizeof(_Ty) && _Length >= 16) {
-                // We use 64-bit masks, consisting of 4-bits per byte of the inpute element.
+                // We use 64-bit masks, consisting of 4-bits per byte of the input element.
                 constexpr size_t _Bits_per_element = sizeof(_Ty) << 2;
                 const size_t _Count_bits           = _Count * _Bits_per_element;
                 const size_t _Sh1                  = sizeof(_Ty) != 1 ? 0 : (_Count_bits < 16 ? _Count_bits - 8 : 8);
