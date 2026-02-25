@@ -1650,9 +1650,9 @@ private:
     using _Al_size_type = _Alloc_size_t<_Alloc>;
 
     struct _Val {
-        _Al_pointer _First;
-        _Al_pointer _Last;
-        bool _Allocated;
+        _Al_pointer _First{};
+        _Al_pointer _Last{};
+        bool _Allocated{false};
     };
 
     struct _NODISCARD _Allocation_guard {
