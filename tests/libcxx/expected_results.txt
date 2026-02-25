@@ -1276,3 +1276,7 @@ std/iterators/iterator.container/ssize.LWG3207.compile.pass.cpp:9 SKIPPED
 
 # This test is marked as `REQUIRES: target={{.+}}-apple-{{.+}}`.
 std/input.output/file.streams/fstreams/filebuf.virtuals/overflow.writefail.pass.cpp:9 SKIPPED
+
+# This test has one check guarded in a "not CLANG" block, but upcoming MSVC will implement the
+# same behavior for binding an xvalue conversion function result to a const lvalue reference.
+std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:9 SKIPPED
