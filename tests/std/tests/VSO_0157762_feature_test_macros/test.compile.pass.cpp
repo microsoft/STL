@@ -555,7 +555,7 @@ STATIC_ASSERT(__cpp_lib_is_constant_evaluated == 201811L);
 
 STATIC_ASSERT(__cpp_lib_is_final == 201402L);
 
-#if _HAS_CXX23 && defined(__clang__) // TRANSITION, GH-5738 tracking VSO-2581622 (MSVC) and VSO-2581623 (EDG)
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, GH-5738 tracking VSO-2581623 (EDG)
 STATIC_ASSERT(__cpp_lib_is_implicit_lifetime == 202302L);
 #elif defined(__cpp_lib_is_implicit_lifetime)
 #error __cpp_lib_is_implicit_lifetime is defined
@@ -847,7 +847,7 @@ STATIC_ASSERT(__cpp_lib_raw_memory_algorithms == 201606L);
 #error __cpp_lib_raw_memory_algorithms is defined
 #endif
 
-#if _HAS_CXX23 && defined(__clang__) // TRANSITION, MSVC and EDG haven't implemented intrinsics needed for P2255R2.
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_reference_from_temporary == 202202L);
 #elif defined(__cpp_lib_reference_from_temporary)
 #error __cpp_lib_reference_from_temporary is defined
