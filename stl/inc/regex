@@ -1649,7 +1649,7 @@ private:
     using _Al_pointer   = _Alloc_ptr_t<_Alloc>;
     using _Al_size_type = _Alloc_size_t<_Alloc>;
 
-    struct _Val {
+    struct _Buffer_range {
         _Al_pointer _First{};
         _Al_pointer _Last{};
         bool _Allocated{false};
@@ -1745,7 +1745,7 @@ private:
         _Guard._Ptr      = nullptr;
     }
 
-    _Compressed_pair<_Alloc, _Val> _Mypair;
+    _Compressed_pair<_Alloc, _Buffer_range> _Mypair;
 };
 
 template <class _BidIt>
