@@ -1144,8 +1144,6 @@ std/time/time.syn/formatter.local_info.pass.cpp FAIL
 std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/pointer_deleter.pass.cpp FAIL
 
 # Not analyzed. Various assertions.
-std/time/time.clock/time.clock.gps/gps_time.ostream.pass.cpp FAIL
-std/time/time.clock/time.clock.tai/tai_time.ostream.pass.cpp FAIL
 std/time/time.clock/time.clock.utc/time.clock.utc.members/to_sys.pass.cpp FAIL
 std/time/time.zone/time.zone.timezone/time.zone.members/get_info.local_time.pass.cpp FAIL
 std/time/time.zone/time.zone.zonedtime/time.zone.zonedtime.members/get_info.pass.cpp FAIL
