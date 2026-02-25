@@ -749,8 +749,6 @@ std/localization/locale.categories/category.monetary/locale.moneypunct/locale.mo
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname_wide.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_one.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_time_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_time.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday_wide.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.put/locale.time.put.members/put2.pass.cpp FAIL
