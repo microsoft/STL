@@ -73,34 +73,6 @@ std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:
 # LLVM-178855: [libc++][test] -Wunused-variable warning in thread.semaphore/lost_wakeup.timed.pass.cpp
 std/thread/thread.semaphore/lost_wakeup.timed.pass.cpp:2 FAIL
 
-# LLVM-179780: [lib++][test] Align `atomic_ref` underlying variable as required
-# SKIPPED because failures are architecture-dependent (x86 only),
-# and potentially sporadic (exact stack alignment may be affected by compiler/VCRuntime/OS changes).
-std/atomics/atomics.ref/assign.pass.cpp SKIPPED
-std/atomics/atomics.ref/bitwise_and_assign.pass.cpp SKIPPED
-std/atomics/atomics.ref/bitwise_or_assign.pass.cpp SKIPPED
-std/atomics/atomics.ref/bitwise_xor_assign.pass.cpp SKIPPED
-std/atomics/atomics.ref/compare_exchange_strong.pass.cpp SKIPPED
-std/atomics/atomics.ref/compare_exchange_weak.pass.cpp SKIPPED
-std/atomics/atomics.ref/convert.pass.cpp SKIPPED
-std/atomics/atomics.ref/ctor.pass.cpp SKIPPED
-std/atomics/atomics.ref/deduction.pass.cpp SKIPPED
-std/atomics/atomics.ref/exchange.pass.cpp SKIPPED
-std/atomics/atomics.ref/fetch_add.pass.cpp SKIPPED
-std/atomics/atomics.ref/fetch_and.pass.cpp SKIPPED
-std/atomics/atomics.ref/fetch_or.pass.cpp SKIPPED
-std/atomics/atomics.ref/fetch_sub.pass.cpp SKIPPED
-std/atomics/atomics.ref/fetch_xor.pass.cpp SKIPPED
-std/atomics/atomics.ref/increment_decrement.pass.cpp SKIPPED
-std/atomics/atomics.ref/is_always_lock_free.pass.cpp SKIPPED
-std/atomics/atomics.ref/load.pass.cpp SKIPPED
-std/atomics/atomics.ref/notify_all.pass.cpp SKIPPED
-std/atomics/atomics.ref/notify_one.pass.cpp SKIPPED
-std/atomics/atomics.ref/operator_minus_equals.pass.cpp SKIPPED
-std/atomics/atomics.ref/operator_plus_equals.pass.cpp SKIPPED
-std/atomics/atomics.ref/store.pass.cpp SKIPPED
-std/atomics/atomics.ref/wait.pass.cpp SKIPPED
-
 # LLVM-182390: [libc++][test] facet.num.get.members/get_long.pass.cpp uses std::to_string() without including <string>
 std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long.pass.cpp FAIL
 
