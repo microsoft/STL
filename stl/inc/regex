@@ -1717,7 +1717,7 @@ private:
         auto _Ty_first = reinterpret_cast<_Ty*>(_Buf);
         auto _Ty_last  = _Ty_first + _Ty_size;
         auto& _Data    = _Mypair._Myval2;
-        _STD uninitialized_fill(_Ty_first, _Ty_last, _Ty{});
+        _STD uninitialized_fill(_Ty_first, _Ty_last, _Ty{}); // uninitialized_value_construct() is C++17
         _Data._Allocated = false;
         _Data._First     = _Ty_first;
         _Data._Last      = _Ty_last;
@@ -1734,7 +1734,7 @@ private:
         auto _Ty_first = _Al.allocate(_Al_size);
         _Allocation_guard _Guard{_Al, _Ty_first, _Al_size};
         auto& _Data      = _Mypair._Myval2;
-        _Data._Last      = _STD _Uninitialized_fill_n(_Ty_first, _Ty_size, _Ty{}, _Al);
+        _Data._Last      = _STD _Uninitialized_value_construct_n(_Ty_first, _Ty_size, _Al);
         _Data._Allocated = true;
         _Data._First     = _Ty_first;
         _Guard._Ptr      = nullptr;
