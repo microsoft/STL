@@ -1673,8 +1673,10 @@ private:
 public:
     explicit _Rx_fixed_size_buffer(const _Alloc& _Al = _Alloc{}) : _Mypair(_One_then_variadic_args_t{}, _Al) {}
 
-    _Rx_fixed_size_buffer(const _Rx_fixed_size_buffer&) = delete;
-    _Rx_fixed_size_buffer(_Rx_fixed_size_buffer&&)      = delete;
+    _Rx_fixed_size_buffer(const _Rx_fixed_size_buffer&)            = delete;
+    _Rx_fixed_size_buffer(_Rx_fixed_size_buffer&&)                 = delete;
+    _Rx_fixed_size_buffer& operator=(const _Rx_fixed_size_buffer&) = delete;
+    _Rx_fixed_size_buffer& operator=(_Rx_fixed_size_buffer&&)      = delete;
 
     _NODISCARD size_t _Initialize(unsigned char* _Stack_buf, size_t _Stack_size, size_t _Size) {
         if (_Stack_size / sizeof(_Ty) >= _Size) {
