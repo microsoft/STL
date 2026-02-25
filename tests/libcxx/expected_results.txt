@@ -70,9 +70,6 @@ std/language.support/support.coroutines/coroutine.handle/coroutine.handle.noop/n
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:2 FAIL
 std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:2 FAIL
 
-# LLVM-178855: [libc++][test] -Wunused-variable warning in thread.semaphore/lost_wakeup.timed.pass.cpp
-std/thread/thread.semaphore/lost_wakeup.timed.pass.cpp:2 FAIL
-
 # LLVM-182390: [libc++][test] facet.num.get.members/get_long.pass.cpp uses std::to_string() without including <string>
 std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long.pass.cpp FAIL
 
