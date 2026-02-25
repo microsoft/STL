@@ -316,6 +316,8 @@ class STLTest(Test):
                 self.requires.append('edg') # available for x64, see features.py
             elif flag[1:] == 'arch:AVX2':
                 self.requires.append('arch_avx2') # available for x86 and x64, see features.py
+            elif flag[1:] == 'D_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC':
+                self.requires.append('arm64ec') # available for x86 and x64, see features.py
             elif flag[1:] == 'MDd':
                 self._addCustomFeature('MDd')
                 self._addCustomFeature('debug_CRT')
