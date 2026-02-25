@@ -910,6 +910,7 @@ std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requir
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp SKIPPED
 std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp SKIPPED
 std/algorithms/alg.modifying.operations/alg.rotate/rotate.pass.cpp SKIPPED
+std/algorithms/alg.modifying.operations/alg.shift/ranges_shift_right.pass.cpp SKIPPED
 std/algorithms/alg.modifying.operations/alg.shift/ranges.shift_left.pass.cpp SKIPPED
 std/algorithms/alg.modifying.operations/alg.swap/ranges.swap_ranges.pass.cpp SKIPPED
 std/algorithms/alg.nonmodifying/alg.contains/ranges.contains_subrange.pass.cpp SKIPPED
