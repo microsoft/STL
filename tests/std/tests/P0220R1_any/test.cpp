@@ -1040,6 +1040,7 @@ int run_test()
 
 #include <any>
 #include <cassert>
+#include <type_traits>
 
 #include "any_helpers.h"
 #include "count_new.h"
