@@ -5717,11 +5717,11 @@ namespace {
                 return vtstq_u8(_Test, vdupq_n_u8(1));
             }
 
-            inline uint8x16_t _Pack_u16(const uint16x8_t _V0, const uint16x8_t _V1) {
+            uint8x16_t _Pack_u16(const uint16x8_t _V0, const uint16x8_t _V1) {
                 return vuzp1q_u8(vreinterpretq_u8_u16(_V0), vreinterpretq_u8_u16(_V1));
             }
 
-            inline uint8x16_t _Pack_u32(
+            uint8x16_t _Pack_u32(
                 const uint32x4_t _V0, const uint32x4_t _V1, const uint32x4_t _V2, const uint32x4_t _V3) {
                 const auto _V01 = vuzp1q_u16(vreinterpretq_u16_u32(_V0), vreinterpretq_u16_u32(_V1));
                 const auto _V23 = vuzp1q_u16(vreinterpretq_u16_u32(_V2), vreinterpretq_u16_u32(_V3));
