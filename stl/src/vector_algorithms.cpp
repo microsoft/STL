@@ -5800,8 +5800,8 @@ namespace {
                 return true;
             }
 
-            __forceinline uint64x1_t _Movemask_128_x4(
-                uint8x16_t _In0, uint8x16_t _In1, uint8x16_t _In2, uint8x16_t _In3, uint8x16_t _Mask) noexcept {
+            __forceinline uint64x1_t _Movemask_128_x4(const uint8x16_t _In0, const uint8x16_t _In1,
+                const uint8x16_t _In2, const uint8x16_t _In3, const uint8x16_t _Mask) noexcept {
                 uint8x16_t _And0 = vandq_u8(_In0, _Mask);
                 uint8x16_t _And1 = vandq_u8(_In1, _Mask);
                 uint8x16_t _And2 = vandq_u8(_In2, _Mask);
