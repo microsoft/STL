@@ -1111,9 +1111,6 @@ std/input.output/file.streams/fstreams/filebuf.virtuals/xsputn.pass.cpp:1 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:1 FAIL
 
-# Not analyzed. Clang error: no member named 'value' in 'std::is_copy_constructible<ConvertibleFromAndToAny>'
-std/utilities/any/any.class/any.cons/value.pass.cpp:2 FAIL
-
 # Not analyzed. Assertion failed: globalMemCounter.checkOutstandingNewLessThanOrEqual(1)
 std/input.output/filesystems/class.path/path.member/path.assign/move.pass.cpp FAIL
 std/input.output/filesystems/class.path/path.member/path.construct/move.pass.cpp FAIL
