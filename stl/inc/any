@@ -133,7 +133,9 @@ public:
     template <class _ValueType,
         enable_if_t<!is_same_v<decay_t<_ValueType>, any> && !_Is_specialization_v<decay_t<_ValueType>, in_place_type_t>,
             int> = 0, // Separate these conditions into two `enable_if_t`s to avoid meta-recursion.
-                      // See LLVM-176877 and GH-6109.
+                      // See LLVM-176877 and GH-6109. N5032 [temp.deduct.general]/7 guarantees:
+                      // "The substitution proceeds in lexical order and stops when
+                      // a condition that causes deduction to fail is encountered."
         enable_if_t<is_copy_constructible_v<decay_t<_ValueType>>, int> = 0>
     any(_ValueType&& _Value) { // initialize with _Value
         _Emplace<decay_t<_ValueType>>(_STD forward<_ValueType>(_Value));
