@@ -161,8 +161,8 @@ extern const bool _Asan_optional_should_annotate;
 
 #if defined(_INSERT_VECTOR_ANNOTATION) || defined(_INSERT_STRING_ANNOTATION) || defined(_INSERT_OPTIONAL_ANNOTATION)
 extern "C" {
-void __cdecl __asan_poison_memory_region(void const volatile* addr, size_t size);
-void __cdecl __asan_unpoison_memory_region(void const volatile* addr, size_t size);
+void __cdecl __asan_poison_memory_region(void const volatile* _Addr, size_t _Size);
+void __cdecl __asan_unpoison_memory_region(void const volatile* _Addr, size_t _Size);
 
 // This must match ASan's primary declaration, which isn't marked `noexcept`.
 void __cdecl __sanitizer_annotate_contiguous_container(
@@ -170,6 +170,10 @@ void __cdecl __sanitizer_annotate_contiguous_container(
 } // extern "C"
 
 #ifdef _M_ARM64EC
+#pragma comment(linker, "/alternatename:#__asan_poison_memory_region=#__asan_poison_memory_region_default")
+#pragma comment(linker, "/alternatename:__asan_poison_memory_region=__asan_poison_memory_region_default")
+#pragma comment(linker, "/alternatename:#__asan_unpoison_memory_region=#__asan_unpoison_memory_region_default")
+#pragma comment(linker, "/alternatename:__asan_unpoison_memory_region=__asan_unpoison_memory_region_default")
 #pragma comment(linker, \
     "/alternatename:#__sanitizer_annotate_contiguous_container=#__sanitizer_annotate_contiguous_container_default")
 #pragma comment(linker, \
@@ -181,6 +185,10 @@ void __cdecl __sanitizer_annotate_contiguous_container(
 #pragma comment(linker, "/alternatename:#_Asan_optional_should_annotate=#_Asan_optional_should_annotate_default")
 #pragma comment(linker, "/alternatename:_Asan_optional_should_annotate=_Asan_optional_should_annotate_default")
 #elif defined(_M_HYBRID)
+#pragma comment(linker, "/alternatename:#__asan_poison_memory_region=#__asan_poison_memory_region_default")
+#pragma comment(linker, "/alternatename:___asan_poison_memory_region=___asan_poison_memory_region_default")
+#pragma comment(linker, "/alternatename:#__asan_unpoison_memory_region=#__asan_unpoison_memory_region_default")
+#pragma comment(linker, "/alternatename:___asan_unpoison_memory_region=___asan_unpoison_memory_region_default")
 #pragma comment(linker, \
     "/alternatename:#__sanitizer_annotate_contiguous_container=#__sanitizer_annotate_contiguous_container_default")
 #pragma comment(linker, \
@@ -192,12 +200,16 @@ void __cdecl __sanitizer_annotate_contiguous_container(
 #pragma comment(linker, "/alternatename:#_Asan_optional_should_annotate=#_Asan_optional_should_annotate_default")
 #pragma comment(linker, "/alternatename:__Asan_optional_should_annotate=__Asan_optional_should_annotate_default")
 #elif defined(_M_IX86)
+#pragma comment(linker, "/alternatename:___asan_poison_memory_region=___asan_poison_memory_region_default")
+#pragma comment(linker, "/alternatename:___asan_unpoison_memory_region=___asan_unpoison_memory_region_default")
 #pragma comment(linker, \
     "/alternatename:___sanitizer_annotate_contiguous_container=___sanitizer_annotate_contiguous_container_default")
 #pragma comment(linker, "/alternatename:__Asan_vector_should_annotate=__Asan_vector_should_annotate_default")
 #pragma comment(linker, "/alternatename:__Asan_string_should_annotate=__Asan_string_should_annotate_default")
 #pragma comment(linker, "/alternatename:__Asan_optional_should_annotate=__Asan_optional_should_annotate_default")
 #elif defined(_M_X64) || defined(_M_ARM64)
+#pragma comment(linker, "/alternatename:__asan_poison_memory_region=__asan_poison_memory_region_default")
+#pragma comment(linker, "/alternatename:__asan_unpoison_memory_region=__asan_unpoison_memory_region_default")
 #pragma comment(linker, \
     "/alternatename:__sanitizer_annotate_contiguous_container=__sanitizer_annotate_contiguous_container_default")
 #pragma comment(linker, "/alternatename:_Asan_vector_should_annotate=_Asan_vector_should_annotate_default")
