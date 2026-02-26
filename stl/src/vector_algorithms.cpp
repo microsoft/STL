@@ -6073,10 +6073,6 @@ namespace {
                 const void* const _Haystack, const size_t _Haystack_length, const uint8x16x2_t _Bitmap) noexcept {
                 const auto _Hay_ptr = static_cast<const _Ty*>(_Haystack);
 
-                alignas(16) uint8_t _Bitmap_scalar[32];
-                vst1q_u8(_Bitmap_scalar, _Bitmap.val[0]);
-                vst1q_u8(_Bitmap_scalar + 16, _Bitmap.val[1]);
-
                 size_t _Ix            = 0;
                 const size_t _Vec_end = _Haystack_length & ~size_t{15};
                 for (; _Ix != _Vec_end; _Ix += 16) {
@@ -6093,33 +6089,39 @@ namespace {
                     }
                 }
 
-                for (; _Ix != _Haystack_length; ++_Ix) {
-                    const _Ty _Val = _Hay_ptr[_Ix];
+                if (_Ix != _Haystack_length) {
+                    alignas(16) uint8_t _Bitmap_scalar_tail[32];
+                    vst1q_u8(_Bitmap_scalar_tail, _Bitmap.val[0]);
+                    vst1q_u8(_Bitmap_scalar_tail + 16, _Bitmap.val[1]);
 
-                    if constexpr (sizeof(_Val) > 1) {
-                        if (_Val >= 256) {
-                            if constexpr (_Pred == _Predicate::_Any_of) {
-                                continue;
-                            } else {
+                    do {
+                        const _Ty _Val = _Hay_ptr[_Ix];
+
+                        if constexpr (sizeof(_Val) > 1) {
+                            if (_Val >= 256) {
+                                if constexpr (_Pred == _Predicate::_Any_of) {
+                                    continue;
+                                } else {
+                                    return _Ix;
+                                }
+                            }
+                        }
+
+                        const auto _Val_u8 = static_cast<uint8_t>(_Val);
+                        const uint8_t _Hi  = static_cast<uint8_t>(_Val_u8 >> 3);
+                        const uint8_t _Lo  = static_cast<uint8_t>(_Val_u8 & 0x7);
+                        const bool _Hit    = ((_Bitmap_scalar_tail[_Hi] >> _Lo) & 0x1) != 0;
+
+                        if constexpr (_Pred == _Predicate::_Any_of) {
+                            if (_Hit) {
+                                return _Ix;
+                            }
+                        } else {
+                            if (!_Hit) {
                                 return _Ix;
                             }
                         }
-                    }
-
-                    const auto _Val_u8 = static_cast<uint8_t>(_Val);
-                    const uint8_t _Hi  = static_cast<uint8_t>(_Val_u8 >> 3);
-                    const uint8_t _Lo  = static_cast<uint8_t>(_Val_u8 & 0x7);
-                    const bool _Hit    = ((_Bitmap_scalar[_Hi] >> _Lo) & 0x1) != 0;
-
-                    if constexpr (_Pred == _Predicate::_Any_of) {
-                        if (_Hit) {
-                            return _Ix;
-                        }
-                    } else {
-                        if (!_Hit) {
-                            return _Ix;
-                        }
-                    }
+                    } while (++_Ix != _Haystack_length);
                 }
 
                 return static_cast<size_t>(-1);
