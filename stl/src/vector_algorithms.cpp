@@ -5817,7 +5817,7 @@ namespace {
 
             template <class _Ty>
             __forceinline bool _Make_bitmap_large_neon(
-                const void* const _Needle, const size_t _Needle_length, uint8x16x2_t& _Bm) noexcept {
+                const void* const _Needle, const size_t _Needle_length, uint8x16x2_t& _Bitmap) noexcept {
                 static constexpr uint8_t _Mask_arr[16] = {
                     0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
                 const auto _Mask = vld1q_u8(_Mask_arr);
@@ -5851,7 +5851,7 @@ namespace {
 
                     const auto _Bm1 = _Movemask_128_x4(_In4, _In5, _In6, _In7, _Mask);
 
-                    _Bm.val[_Ix] = vreinterpretq_u8_u64(vcombine_u64(_Bm0, _Bm1));
+                    _Bitmap.val[_Ix] = vreinterpretq_u8_u64(vcombine_u64(_Bm0, _Bm1));
                 }
 
                 return true;
