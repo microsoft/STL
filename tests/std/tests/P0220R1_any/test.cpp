@@ -1160,6 +1160,24 @@ void test_sfinae_constraints() {
     }
 }
 
+// https://llvm.org/PR176877
+// Avoid constraint meta-recursion for a type both convertible from and to std::any.
+template <class T, bool = std::is_copy_constructible<T>::value>
+void test_default_template_argument_is_copy_constructible(T) {}
+
+template <class T, bool = std::is_copy_constructible_v<T>>
+void test_default_template_argument_is_copy_constructible_v(T) {}
+
+void test_no_constraint_recursion() {
+  struct ConvertibleFromAndToAny {
+    ConvertibleFromAndToAny(std::any) {}
+  };
+
+  ConvertibleFromAndToAny src = std::any{};
+  test_default_template_argument_is_copy_constructible(src);
+  test_default_template_argument_is_copy_constructible_v(src);
+}
+
 int run_test() {
     test_copy_move_value<small>();
     test_copy_move_value<large>();
@@ -1167,8 +1185,9 @@ int run_test() {
     test_copy_value_throws<large_throws_on_copy>();
     test_move_value_throws();
     test_sfinae_constraints();
+    test_no_constraint_recursion();
 
-  return 0;
+    return 0;
 }
 } // namespace ctor::value
 // -- END: test/std/utilities/any/any.class/any.cons/value.pass.cpp
