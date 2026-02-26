@@ -304,6 +304,7 @@ std/ranges/range.factories/range.iota.view/indices.pass.cpp FAIL
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/utilities/optional/optional.iterator/begin.pass.cpp FAIL
 std/utilities/optional/optional.iterator/borrowed_range.compile.pass.cpp FAIL
+std/utilities/optional/optional.iterator/compare.pass.cpp FAIL
 std/utilities/optional/optional.iterator/end.pass.cpp FAIL
 std/utilities/optional/optional.iterator/iterator.pass.cpp FAIL
 
@@ -1151,6 +1152,9 @@ std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:9 SKIPPE
 std/algorithms/alg.nonmodifying/alg.find/find.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find/ranges.find.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.fold/left_folds.pass.cpp:9 SKIPPED
+std/atomics/atomics.ref/compare_exchange_strong.pass.cpp:9 SKIPPED
+std/atomics/atomics.ref/compare_exchange_weak.pass.cpp:9 SKIPPED
+std/atomics/atomics.ref/wait.pass.cpp:9 SKIPPED
 std/containers/associative/map/map.modifiers/insert_range.pass.cpp:9 SKIPPED
 std/containers/associative/multimap/multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
 std/containers/associative/multiset/insert_range.pass.cpp:9 SKIPPED
@@ -1169,6 +1173,35 @@ std/ranges/range.adaptors/range.lazy.split/constraints.compile.pass.cpp:9 SKIPPE
 std/ranges/range.utility/range.utility.conv/to.pass.cpp:9 SKIPPED
 std/thread/thread.jthread/assign.move.pass.cpp:9 SKIPPED
 std/utilities/meta/meta.unary/dependent_return_type.pass.cpp:9 SKIPPED
+
+# These tests are marked as `REQUIRES: can-create-symlinks`
+std/input.output/filesystems/class.directory_entry/directory_entry.cons/path.pass.cpp:9 SKIPPED
+std/input.output/filesystems/class.directory_entry/directory_entry.mods/assign.pass.cpp:9 SKIPPED
+std/input.output/filesystems/class.directory_entry/directory_entry.mods/refresh.pass.cpp:9 SKIPPED
+std/input.output/filesystems/class.directory_entry/directory_entry.mods/replace_filename.pass.cpp:9 SKIPPED
+std/input.output/filesystems/class.directory_entry/directory_entry.obs/file_size.pass.cpp:9 SKIPPED
+std/input.output/filesystems/class.directory_entry/directory_entry.obs/file_type_obs.pass.cpp:9 SKIPPED
+std/input.output/filesystems/class.directory_entry/directory_entry.obs/hard_link_count.pass.cpp:9 SKIPPED
+std/input.output/filesystems/class.directory_entry/directory_entry.obs/last_write_time.pass.cpp:9 SKIPPED
+std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/recursion_pending.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.copy_symlink/copy_symlink.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.copy/copy.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.create_directories/create_directories.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.create_directory/create_directory_with_attributes.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.file_size/file_size.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.is_block_file/is_block_file.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.is_char_file/is_character_file.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.is_fifo/is_fifo.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.is_socket/is_socket.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.last_write_time/last_write_time.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.relative/relative.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.weakly_canonical/weakly_canonical.pass.cpp:9 SKIPPED
+
+# These tests are marked as `REQUIRES: linux`
+std/input.output/filesystems/fs.op.funcs/fs.op.copy_file/copy_file_procfs.pass.cpp:9 SKIPPED
+
+# These tests are marked as `XFAIL: *`
+std/input.output/filesystems/class.path/path.nonmember/path.io.unicode_bug.pass.cpp:9 SKIPPED
 
 # These tests are marked as `XFAIL: msvc`, but the MSVC-internal test harness doesn't yet parse XFAIL.
 std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp:9 SKIPPED
