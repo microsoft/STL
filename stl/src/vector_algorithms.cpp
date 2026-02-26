@@ -5763,7 +5763,6 @@ namespace {
                 }
             }
 
-
             template <class _Ty>
             __forceinline bool _Make_bitmap_small(
                 const void* const _Needle, const size_t _Needle_length, uint8x16x2_t& _Bitmap) noexcept {
