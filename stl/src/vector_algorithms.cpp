@@ -5827,7 +5827,6 @@ namespace {
 
                 alignas(16) uint8_t _Table[256] = {};
                 for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
-
                     if constexpr (sizeof(_Ty) > 1) {
                         if (*_Needle_ptr >= 256) {
                             return false;
@@ -6075,7 +6074,6 @@ namespace {
                 size_t _Ix            = 0;
                 const size_t _Vec_end = _Haystack_length & ~size_t{15};
                 for (; _Ix != _Vec_end; _Ix += 16) {
-
                     const auto _Eq = _Bitmap_details::_Do_bitmap(_Hay_ptr + _Ix, _Bitmap);
 
                     auto _Mask = _Finding::_Find_traits_1::_Mask_q(_Eq);
