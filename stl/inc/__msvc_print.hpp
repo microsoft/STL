@@ -63,7 +63,7 @@ _NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
 _STD_BEGIN
 
 _NODISCARD consteval bool _Is_ordinary_literal_encoding_utf8() {
-    // See: https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
+    // See: https://learn.microsoft.com/windows/win32/intl/code-page-identifiers
 #if defined(_MSVC_EXECUTION_CHARACTER_SET) && _MSVC_EXECUTION_CHARACTER_SET == 65001 // Unicode (UTF-8) == 65001
     return true;
 #else

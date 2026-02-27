@@ -18,8 +18,8 @@ using namespace std;
 #pragma comment(lib, "Advapi32") // for RegGetValueW()
 
 bool are_long_paths_enabled() {
-    // https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell
-    // https://learn.microsoft.com/en-us/windows/win32/api/winreg/nf-winreg-reggetvaluew
+    // https://learn.microsoft.com/windows/win32/fileio/maximum-file-path-limitation
+    // https://learn.microsoft.com/windows/win32/api/winreg/nf-winreg-reggetvaluew
     DWORD registry_value = 0;
     DWORD buffer_size    = sizeof(registry_value);
     const LSTATUS status = RegGetValueW(HKEY_LOCAL_MACHINE, LR"(SYSTEM\CurrentControlSet\Control\FileSystem)",
