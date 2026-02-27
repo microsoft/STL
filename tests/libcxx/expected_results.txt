@@ -70,37 +70,6 @@ std/language.support/support.coroutines/coroutine.handle/coroutine.handle.noop/n
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:2 FAIL
 std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:2 FAIL
 
-# LLVM-178855: [libc++][test] -Wunused-variable warning in thread.semaphore/lost_wakeup.timed.pass.cpp
-std/thread/thread.semaphore/lost_wakeup.timed.pass.cpp:2 FAIL
-
-# LLVM-179780: [lib++][test] Align `atomic_ref` underlying variable as required
-# SKIPPED because failures are architecture-dependent (x86 only),
-# and potentially sporadic (exact stack alignment may be affected by compiler/VCRuntime/OS changes).
-std/atomics/atomics.ref/assign.pass.cpp SKIPPED
-std/atomics/atomics.ref/bitwise_and_assign.pass.cpp SKIPPED
-std/atomics/atomics.ref/bitwise_or_assign.pass.cpp SKIPPED
-std/atomics/atomics.ref/bitwise_xor_assign.pass.cpp SKIPPED
-std/atomics/atomics.ref/compare_exchange_strong.pass.cpp SKIPPED
-std/atomics/atomics.ref/compare_exchange_weak.pass.cpp SKIPPED
-std/atomics/atomics.ref/convert.pass.cpp SKIPPED
-std/atomics/atomics.ref/ctor.pass.cpp SKIPPED
-std/atomics/atomics.ref/deduction.pass.cpp SKIPPED
-std/atomics/atomics.ref/exchange.pass.cpp SKIPPED
-std/atomics/atomics.ref/fetch_add.pass.cpp SKIPPED
-std/atomics/atomics.ref/fetch_and.pass.cpp SKIPPED
-std/atomics/atomics.ref/fetch_or.pass.cpp SKIPPED
-std/atomics/atomics.ref/fetch_sub.pass.cpp SKIPPED
-std/atomics/atomics.ref/fetch_xor.pass.cpp SKIPPED
-std/atomics/atomics.ref/increment_decrement.pass.cpp SKIPPED
-std/atomics/atomics.ref/is_always_lock_free.pass.cpp SKIPPED
-std/atomics/atomics.ref/load.pass.cpp SKIPPED
-std/atomics/atomics.ref/notify_all.pass.cpp SKIPPED
-std/atomics/atomics.ref/notify_one.pass.cpp SKIPPED
-std/atomics/atomics.ref/operator_minus_equals.pass.cpp SKIPPED
-std/atomics/atomics.ref/operator_plus_equals.pass.cpp SKIPPED
-std/atomics/atomics.ref/store.pass.cpp SKIPPED
-std/atomics/atomics.ref/wait.pass.cpp SKIPPED
-
 # LLVM-182390: [libc++][test] facet.num.get.members/get_long.pass.cpp uses std::to_string() without including <string>
 std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long.pass.cpp FAIL
 
@@ -335,6 +304,7 @@ std/ranges/range.factories/range.iota.view/indices.pass.cpp FAIL
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/utilities/optional/optional.iterator/begin.pass.cpp FAIL
 std/utilities/optional/optional.iterator/borrowed_range.compile.pass.cpp FAIL
+std/utilities/optional/optional.iterator/compare.pass.cpp FAIL
 std/utilities/optional/optional.iterator/end.pass.cpp FAIL
 std/utilities/optional/optional.iterator/iterator.pass.cpp FAIL
 
@@ -694,6 +664,7 @@ std/utilities/function.objects/func.bind_front/bind_front.pass.cpp FAIL
 std/time/time.clock/time.clock.file/to_from_sys.pass.cpp FAIL
 
 # libc++'s filesystem::path::iterator models bidirectional_iterator, which is not guaranteed by the Standard
+std/input.output/filesystems/class.path/path.itr/iterator.pass.cpp FAIL
 std/input.output/filesystems/class.path/range_concept_conformance.compile.pass.cpp FAIL
 
 # MSVC's STL and libc++ speculatively implement LWG-2227 (not yet resolved) in different ways.
@@ -780,8 +751,6 @@ std/localization/locale.categories/category.monetary/locale.moneypunct/locale.mo
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname_wide.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_one.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_time_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_time.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday_wide.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.put/locale.time.put.members/put2.pass.cpp FAIL
@@ -828,6 +797,13 @@ std/time/time.syn/formatter.month_day_last.pass.cpp FAIL
 
 # Our monotonic_buffer_resource takes "user" space for metadata, which it probably should not do.
 std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.mem/allocate_with_initial_size.pass.cpp FAIL
+
+# Looks like we don't handle const value_types as required by N5032 [fs.path.req]/2.2:
+# "the qualified-id iterator_traits<decay_t<Source>>::value_type is valid and denotes a possibly const encoded character type"
+std/input.output/filesystems/class.path/path.member/path.append.pass.cpp FAIL
+std/input.output/filesystems/class.path/path.member/path.assign/source.pass.cpp FAIL
+std/input.output/filesystems/class.path/path.member/path.concat.pass.cpp FAIL
+std/input.output/filesystems/class.path/path.member/path.construct/source.pass.cpp FAIL
 
 
 # *** NOT YET ANALYZED ***
@@ -943,6 +919,7 @@ std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requir
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp SKIPPED
 std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp SKIPPED
 std/algorithms/alg.modifying.operations/alg.rotate/rotate.pass.cpp SKIPPED
+std/algorithms/alg.modifying.operations/alg.shift/ranges_shift_right.pass.cpp SKIPPED
 std/algorithms/alg.modifying.operations/alg.shift/ranges.shift_left.pass.cpp SKIPPED
 std/algorithms/alg.modifying.operations/alg.swap/ranges.swap_ranges.pass.cpp SKIPPED
 std/algorithms/alg.nonmodifying/alg.contains/ranges.contains_subrange.pass.cpp SKIPPED
@@ -1055,93 +1032,6 @@ std/algorithms/alg.sorting/alg.set.operations/set.union/ranges_set_union.pass.cp
 # Not analyzed. Clang emits a -Wundefined-inline warning.
 std/utilities/variant/variant.relops/three_way.pass.cpp:2 FAIL
 
-# Not analyzed, affected by various issues. It may be possible to enable most of the filesystem tests.
-# These tests are SKIPPED due to unknown differences between local test runs and Azure Pipelines.
-std/input.output/filesystems/class.directory_entry/directory_entry.cons/copy_assign.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_entry/directory_entry.cons/copy.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_entry/directory_entry.cons/move_assign.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_entry/directory_entry.cons/move.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_entry/directory_entry.cons/path.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_entry/directory_entry.mods/assign.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_entry/directory_entry.mods/refresh.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_entry/directory_entry.mods/replace_filename.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_entry/directory_entry.obs/file_size.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_entry/directory_entry.obs/file_type_obs.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_entry/directory_entry.obs/hard_link_count.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_entry/directory_entry.obs/last_write_time.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_entry/directory_entry.obs/status.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_entry/directory_entry.obs/symlink_status.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_iterator/directory_iterator.members/copy_assign.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_iterator/directory_iterator.members/copy.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_iterator/directory_iterator.members/ctor.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_iterator/directory_iterator.members/increment.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_iterator/directory_iterator.members/move_assign.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_iterator/directory_iterator.members/move.pass.cpp SKIPPED
-std/input.output/filesystems/class.directory_iterator/directory_iterator.nonmembers/begin_end.pass.cpp SKIPPED
-std/input.output/filesystems/class.path/path.itr/iterator.pass.cpp SKIPPED
-std/input.output/filesystems/class.path/path.member/path.append.pass.cpp SKIPPED
-std/input.output/filesystems/class.path/path.member/path.assign/move.pass.cpp SKIPPED
-std/input.output/filesystems/class.path/path.member/path.assign/source.pass.cpp SKIPPED
-std/input.output/filesystems/class.path/path.member/path.concat.pass.cpp SKIPPED
-std/input.output/filesystems/class.path/path.member/path.construct/move.pass.cpp SKIPPED
-std/input.output/filesystems/class.path/path.member/path.construct/source.pass.cpp SKIPPED
-std/input.output/filesystems/class.path/path.member/path.decompose/path.decompose.pass.cpp SKIPPED
-std/input.output/filesystems/class.path/path.member/path.gen/lexically_relative_and_proximate.pass.cpp SKIPPED
-std/input.output/filesystems/class.path/path.member/path.generic.obs/generic_string_alloc.pass.cpp SKIPPED
-std/input.output/filesystems/class.path/path.nonmember/path.io.unicode_bug.pass.cpp SKIPPED
-std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/copy_assign.pass.cpp SKIPPED
-std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/copy.pass.cpp SKIPPED
-std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/ctor.pass.cpp SKIPPED
-std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/depth.pass.cpp SKIPPED
-std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/disable_recursion_pending.pass.cpp SKIPPED
-std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/increment.pass.cpp SKIPPED
-std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/move_assign.pass.cpp SKIPPED
-std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/move.pass.cpp SKIPPED
-std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/pop.pass.cpp SKIPPED
-std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/recursion_pending.pass.cpp SKIPPED
-std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.nonmembers/begin_end.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.absolute/absolute.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.canonical/canonical.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.copy_file/copy_file_procfs.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.copy_file/copy_file.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.copy_symlink/copy_symlink.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.copy/copy.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.create_directories/create_directories.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.create_directory_symlink/create_directory_symlink.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.create_directory/create_directory_with_attributes.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.create_directory/create_directory.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.create_hard_link/create_hard_link.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.create_symlink/create_symlink.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.current_path/current_path.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.equivalent/equivalent.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.exists/exists.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.file_size/file_size.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.hard_lk_ct/hard_link_count.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.is_block_file/is_block_file.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.is_char_file/is_character_file.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.is_directory/is_directory.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.is_empty/is_empty.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.is_fifo/is_fifo.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.is_other/is_other.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.is_regular_file/is_regular_file.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.is_socket/is_socket.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.is_symlink/is_symlink.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.last_write_time/last_write_time.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.permissions/permissions.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.proximate/proximate.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.read_symlink/read_symlink.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.relative/relative.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.remove_all/remove_all.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.remove_all/toctou.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.remove/remove.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.rename/rename.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.resize_file/resize_file.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.space/space.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.status/status.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.symlink_status/symlink_status.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.temp_dir_path/temp_directory_path.pass.cpp SKIPPED
-std/input.output/filesystems/fs.op.funcs/fs.op.weakly_canonical/weakly_canonical.pass.cpp SKIPPED
-
 # Not analyzed.
 # MSVC error C2719: '_Fun_': formal parameter with requested alignment of 128 won't be aligned
 # Clang error: unknown attribute 'no_unique_address' ignored [-Werror,-Wunknown-attributes]
@@ -1172,8 +1062,6 @@ std/time/time.syn/formatter.local_info.pass.cpp FAIL
 std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/pointer_deleter.pass.cpp FAIL
 
 # Not analyzed. Various assertions.
-std/time/time.clock/time.clock.gps/gps_time.ostream.pass.cpp FAIL
-std/time/time.clock/time.clock.tai/tai_time.ostream.pass.cpp FAIL
 std/time/time.clock/time.clock.utc/time.clock.utc.members/to_sys.pass.cpp FAIL
 std/time/time.zone/time.zone.timezone/time.zone.members/get_info.local_time.pass.cpp FAIL
 std/time/time.zone/time.zone.zonedtime/time.zone.zonedtime.members/get_info.pass.cpp FAIL
@@ -1224,6 +1112,35 @@ std/input.output/file.streams/fstreams/filebuf.virtuals/xsputn.pass.cpp:1 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/is_implicit_lifetime.pass.cpp:1 FAIL
 
+# Not analyzed. Clang error: no member named 'value' in 'std::is_copy_constructible<ConvertibleFromAndToAny>'
+std/utilities/any/any.class/any.cons/value.pass.cpp:2 FAIL
+
+# Not analyzed. Assertion failed: globalMemCounter.checkOutstandingNewLessThanOrEqual(1)
+std/input.output/filesystems/class.path/path.member/path.assign/move.pass.cpp FAIL
+std/input.output/filesystems/class.path/path.member/path.construct/move.pass.cpp FAIL
+
+# Not analyzed. Assertion failed: Alloc::outstanding_alloc() == 1
+std/input.output/filesystems/class.path/path.member/path.generic.obs/generic_string_alloc.pass.cpp FAIL
+
+# Not analyzed. Assertion failed: std::equal(p.begin(), p.end(), TC.elements.begin(), ComparePathExact())
+std/input.output/filesystems/class.path/path.member/path.decompose/path.decompose.pass.cpp FAIL
+
+# Not analyzed. Assertion failed: ret.is_absolute()
+std/input.output/filesystems/fs.op.funcs/fs.op.absolute/absolute.pass.cpp FAIL
+
+# Not analyzed. Assertion failed: ret == TC.p
+std/input.output/filesystems/fs.op.funcs/fs.op.temp_dir_path/temp_directory_path.pass.cpp FAIL
+
+# Not analyzed. Assertion failure: PathEq(output, expect)
+std/input.output/filesystems/class.path/path.member/path.gen/lexically_relative_and_proximate.pass.cpp FAIL
+std/input.output/filesystems/fs.op.funcs/fs.op.proximate/proximate.pass.cpp FAIL
+
+# Not analyzed. Test aborts.
+std/input.output/filesystems/fs.op.funcs/fs.op.remove_all/toctou.pass.cpp FAIL
+
+# Not analyzed. Asserts that `fs::copy_file(p, p, ec)` and `fs::copy_file(p, p, opts, ec)` "must NOT be noexcept".
+std/input.output/filesystems/fs.op.funcs/fs.op.copy_file/copy_file.pass.cpp FAIL
+
 
 # *** MSVC-INTERNAL TEST HARNESS ISSUES (note: configuration :9 restricts these skips to be MSVC-internal) ***
 
@@ -1235,6 +1152,9 @@ std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:9 SKIPPE
 std/algorithms/alg.nonmodifying/alg.find/find.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find/ranges.find.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.fold/left_folds.pass.cpp:9 SKIPPED
+std/atomics/atomics.ref/compare_exchange_strong.pass.cpp:9 SKIPPED
+std/atomics/atomics.ref/compare_exchange_weak.pass.cpp:9 SKIPPED
+std/atomics/atomics.ref/wait.pass.cpp:9 SKIPPED
 std/containers/associative/map/map.modifiers/insert_range.pass.cpp:9 SKIPPED
 std/containers/associative/multimap/multimap.modifiers/insert_range.pass.cpp:9 SKIPPED
 std/containers/associative/multiset/insert_range.pass.cpp:9 SKIPPED
@@ -1253,6 +1173,35 @@ std/ranges/range.adaptors/range.lazy.split/constraints.compile.pass.cpp:9 SKIPPE
 std/ranges/range.utility/range.utility.conv/to.pass.cpp:9 SKIPPED
 std/thread/thread.jthread/assign.move.pass.cpp:9 SKIPPED
 std/utilities/meta/meta.unary/dependent_return_type.pass.cpp:9 SKIPPED
+
+# These tests are marked as `REQUIRES: can-create-symlinks`
+std/input.output/filesystems/class.directory_entry/directory_entry.cons/path.pass.cpp:9 SKIPPED
+std/input.output/filesystems/class.directory_entry/directory_entry.mods/assign.pass.cpp:9 SKIPPED
+std/input.output/filesystems/class.directory_entry/directory_entry.mods/refresh.pass.cpp:9 SKIPPED
+std/input.output/filesystems/class.directory_entry/directory_entry.mods/replace_filename.pass.cpp:9 SKIPPED
+std/input.output/filesystems/class.directory_entry/directory_entry.obs/file_size.pass.cpp:9 SKIPPED
+std/input.output/filesystems/class.directory_entry/directory_entry.obs/file_type_obs.pass.cpp:9 SKIPPED
+std/input.output/filesystems/class.directory_entry/directory_entry.obs/hard_link_count.pass.cpp:9 SKIPPED
+std/input.output/filesystems/class.directory_entry/directory_entry.obs/last_write_time.pass.cpp:9 SKIPPED
+std/input.output/filesystems/class.rec.dir.itr/rec.dir.itr.members/recursion_pending.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.copy_symlink/copy_symlink.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.copy/copy.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.create_directories/create_directories.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.create_directory/create_directory_with_attributes.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.file_size/file_size.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.is_block_file/is_block_file.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.is_char_file/is_character_file.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.is_fifo/is_fifo.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.is_socket/is_socket.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.last_write_time/last_write_time.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.relative/relative.pass.cpp:9 SKIPPED
+std/input.output/filesystems/fs.op.funcs/fs.op.weakly_canonical/weakly_canonical.pass.cpp:9 SKIPPED
+
+# These tests are marked as `REQUIRES: linux`
+std/input.output/filesystems/fs.op.funcs/fs.op.copy_file/copy_file_procfs.pass.cpp:9 SKIPPED
+
+# These tests are marked as `XFAIL: *`
+std/input.output/filesystems/class.path/path.nonmember/path.io.unicode_bug.pass.cpp:9 SKIPPED
 
 # These tests are marked as `XFAIL: msvc`, but the MSVC-internal test harness doesn't yet parse XFAIL.
 std/algorithms/algorithms.results/no_unique_address.compile.pass.cpp:9 SKIPPED
