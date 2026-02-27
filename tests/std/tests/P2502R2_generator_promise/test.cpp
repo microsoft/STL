@@ -23,8 +23,8 @@ int main() {}
 #include <utility>
 #include <vector>
 
-#include "range_algorithm_support.hpp"
-#include "test_generator_support.hpp"
+#include <range_algorithm_support.hpp>
+#include <test_generator_support.hpp>
 
 using namespace std;
 

@@ -4464,13 +4464,13 @@ struct _Static_partitioned_exclusive_scan3 {
         }
 
         const auto _Chunk_number = _Key._Chunk_number;
-        const auto _In_range     = _Basis1._Get_chunk(_Key);
+        const auto _In_rng       = _Basis1._Get_chunk(_Key);
         const auto _Dest         = _Basis2._Get_first(_Chunk_number, _Team._Get_chunk_offset(_Chunk_number));
         // Run local exclusive_scan on this chunk
         const auto _Chunk = _Lookback.data() + static_cast<ptrdiff_t>(_Chunk_number);
         if (_Chunk_number == 0) { // chunk 0 is special as it has no predecessor; its local and total sums are the same
             _STD _Exclusive_scan_per_chunk_complete(
-                _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Sum._Ref(), _Initial);
+                _In_rng._First, _In_rng._Last, _Dest, _Reduce_op, _Chunk->_Sum._Ref(), _Initial);
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
@@ -4479,13 +4479,13 @@ struct _Static_partitioned_exclusive_scan3 {
         if (_Prev_chunk->_State.load() & _Sum_available) {
             // if predecessor sum already complete, we can incorporate its value directly for 1 pass
             _STD _Exclusive_scan_per_chunk_complete(
-                _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Sum._Ref(), _Prev_chunk->_Sum._Ref());
+                _In_rng._First, _In_rng._Last, _Dest, _Reduce_op, _Chunk->_Sum._Ref(), _Prev_chunk->_Sum._Ref());
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
 
         // Calculate local sum and publish to other threads
-        const auto _Last = _STD _Exclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op,
+        const auto _Last = _STD _Exclusive_scan_per_chunk(_In_rng._First, _In_rng._Last, _Dest, _Reduce_op,
             _Chunk->_Local._Ref(), _Intermediate_result[_Chunk_number]);
         _Chunk->_Store_available_state(_Local_available);
 
@@ -4606,13 +4606,13 @@ struct _Static_partitioned_inclusive_scan3 {
         }
 
         const auto _Chunk_number = _Key._Chunk_number;
-        const auto _In_range     = _Basis1._Get_chunk(_Key);
+        const auto _In_rng       = _Basis1._Get_chunk(_Key);
         const auto _Dest         = _Basis2._Get_first(_Chunk_number, _Team._Get_chunk_offset(_Chunk_number));
         // Run local inclusive_scan on this chunk
         const auto _Chunk = _Lookback.data() + static_cast<ptrdiff_t>(_Chunk_number);
         if (_Chunk_number == 0) { // chunk 0 is special as it has no predecessor; its local and total sums are the same
             _STD _Inclusive_scan_per_chunk(
-                _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Sum._Ref(), _STD move(_Initial));
+                _In_rng._First, _In_rng._Last, _Dest, _Reduce_op, _Chunk->_Sum._Ref(), _STD move(_Initial));
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
@@ -4621,13 +4621,13 @@ struct _Static_partitioned_inclusive_scan3 {
         if (_Prev_chunk->_State.load() & _Sum_available) {
             // if predecessor sum already complete, we can incorporate its value directly for 1 pass
             _STD _Inclusive_scan_per_chunk(
-                _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Chunk->_Sum._Ref(), _Prev_chunk->_Sum._Ref());
+                _In_rng._First, _In_rng._Last, _Dest, _Reduce_op, _Chunk->_Sum._Ref(), _Prev_chunk->_Sum._Ref());
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
 
         // Calculate local sum and publish to other threads
-        const auto _Last = _STD _Inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op,
+        const auto _Last = _STD _Inclusive_scan_per_chunk(_In_rng._First, _In_rng._Last, _Dest, _Reduce_op,
             _Chunk->_Local._Ref(), _No_init_tag{}, _Intermediate_result[_Chunk_number]);
         _Chunk->_Store_available_state(_Local_available);
 
@@ -4809,13 +4809,13 @@ struct _Static_partitioned_transform_exclusive_scan3 {
         }
 
         const auto _Chunk_number = _Key._Chunk_number;
-        const auto _In_range     = _Basis1._Get_chunk(_Key);
+        const auto _In_rng       = _Basis1._Get_chunk(_Key);
         const auto _Dest         = _Basis2._Get_first(_Chunk_number, _Team._Get_chunk_offset(_Chunk_number));
         // Run local transform_exclusive_scan on this chunk
         const auto _Chunk = _Lookback.data() + static_cast<ptrdiff_t>(_Chunk_number);
         if (_Chunk_number == 0) { // chunk 0 is special as it has no predecessor; its local and total sums are the same
             _STD _Transform_exclusive_scan_per_chunk_complete(
-                _In_range._First, _In_range._Last, _Dest, _Reduce_op, _Transform_op, _Chunk->_Sum._Ref(), _Initial);
+                _In_rng._First, _In_rng._Last, _Dest, _Reduce_op, _Transform_op, _Chunk->_Sum._Ref(), _Initial);
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
@@ -4823,15 +4823,15 @@ struct _Static_partitioned_transform_exclusive_scan3 {
         const auto _Prev_chunk = _STD _Prev_iter(_Chunk);
         if (_Prev_chunk->_State.load() & _Sum_available) {
             // if predecessor sum already complete, we can incorporate its value directly for 1 pass
-            _STD _Transform_exclusive_scan_per_chunk_complete(_In_range._First, _In_range._Last, _Dest, _Reduce_op,
+            _STD _Transform_exclusive_scan_per_chunk_complete(_In_rng._First, _In_rng._Last, _Dest, _Reduce_op,
                 _Transform_op, _Chunk->_Sum._Ref(), _Prev_chunk->_Sum._Ref());
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
 
         // Calculate local sum and publish to other threads
-        const auto _Last = _STD _Transform_exclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest,
-            _Reduce_op, _Transform_op, _Chunk->_Local._Ref(), _Intermediate_result[_Chunk_number]);
+        const auto _Last = _STD _Transform_exclusive_scan_per_chunk(_In_rng._First, _In_rng._Last, _Dest, _Reduce_op,
+            _Transform_op, _Chunk->_Local._Ref(), _Intermediate_result[_Chunk_number]);
         _Chunk->_Store_available_state(_Local_available);
 
         // Apply the predecessor overall sum to current overall sum and elements
@@ -4953,13 +4953,13 @@ struct _Static_partitioned_transform_inclusive_scan3 {
         }
 
         const auto _Chunk_number = _Key._Chunk_number;
-        const auto _In_range     = _Basis1._Get_chunk(_Key);
+        const auto _In_rng       = _Basis1._Get_chunk(_Key);
         const auto _Dest         = _Basis2._Get_first(_Chunk_number, _Team._Get_chunk_offset(_Chunk_number));
         // Run local transform_inclusive_scan on this chunk
         const auto _Chunk = _Lookback.data() + static_cast<ptrdiff_t>(_Chunk_number);
         if (_Chunk_number == 0) { // chunk 0 is special as it has no predecessor; its local and total sums are the same
-            _STD _Transform_inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op,
-                _Transform_op, _Chunk->_Sum._Ref(), _STD move(_Initial));
+            _STD _Transform_inclusive_scan_per_chunk(_In_rng._First, _In_rng._Last, _Dest, _Reduce_op, _Transform_op,
+                _Chunk->_Sum._Ref(), _STD move(_Initial));
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
@@ -4967,15 +4967,15 @@ struct _Static_partitioned_transform_inclusive_scan3 {
         const auto _Prev_chunk = _STD _Prev_iter(_Chunk);
         if (_Prev_chunk->_State.load() & _Sum_available) {
             // if predecessor sum already complete, we can incorporate its value directly for 1 pass
-            _STD _Transform_inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest, _Reduce_op,
-                _Transform_op, _Chunk->_Sum._Ref(), _Prev_chunk->_Sum._Ref());
+            _STD _Transform_inclusive_scan_per_chunk(_In_rng._First, _In_rng._Last, _Dest, _Reduce_op, _Transform_op,
+                _Chunk->_Sum._Ref(), _Prev_chunk->_Sum._Ref());
             _Chunk->_Store_available_state(_Sum_available);
             return _Cancellation_status::_Running;
         }
 
         // Calculate local sum and publish to other threads
-        const auto _Last = _STD _Transform_inclusive_scan_per_chunk(_In_range._First, _In_range._Last, _Dest,
-            _Reduce_op, _Transform_op, _Chunk->_Local._Ref(), _No_init_tag{}, _Intermediate_result[_Chunk_number]);
+        const auto _Last = _STD _Transform_inclusive_scan_per_chunk(_In_rng._First, _In_rng._Last, _Dest, _Reduce_op,
+            _Transform_op, _Chunk->_Local._Ref(), _No_init_tag{}, _Intermediate_result[_Chunk_number]);
         _Chunk->_Store_available_state(_Local_available);
 
         // Apply the predecessor overall sum to current overall sum and elements
@@ -5114,15 +5114,15 @@ struct _Static_partitioned_adjacent_difference2 {
         }
 
         const auto _Chunk_number = _Key._Chunk_number;
-        auto _In_range           = _Basis1._Get_chunk(_Key);
+        auto _In_rng             = _Basis1._Get_chunk(_Key);
         auto _Dest               = _Basis2._Get_first(_Chunk_number, _Team._Get_chunk_offset(_Chunk_number));
-        auto _Next               = _In_range._First;
+        auto _Next               = _In_rng._First;
         do {
             ++_Next; // note: steps 1 element into the following chunk
-            *_Dest = _Diff_op(*_Next, *_In_range._First);
+            *_Dest = _Diff_op(*_Next, *_In_rng._First);
             ++_Dest;
-            _In_range._First = _Next;
-        } while (_In_range._First != _In_range._Last);
+            _In_rng._First = _Next;
+        } while (_In_rng._First != _In_rng._Last);
 
         return _Cancellation_status::_Running;
     }

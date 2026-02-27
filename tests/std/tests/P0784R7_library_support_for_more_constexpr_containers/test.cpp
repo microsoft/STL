@@ -67,6 +67,11 @@ static_assert(!can_construct_at<const volatile int>);
 static_assert(!can_construct_at<const volatile int, int>);
 static_assert(!can_construct_at<const volatile int, int&>);
 
+static_assert(can_construct_at<int[1]>);
+static_assert(can_construct_at<int[1][42]>);
+static_assert(!can_construct_at<int[]>);
+static_assert(!can_construct_at<int[][42]>);
+
 struct X {};
 
 static_assert(!can_construct_at<int, X>);
@@ -619,6 +624,72 @@ static_assert(!CanWellDefinedlyAccessAfterOperation<[](auto& arr) { ranges::dest
 static_assert(!CanWellDefinedlyAccessAfterOperation<[](auto& arr) { ranges::destroy_n(arr + 0, 1); }>);
 #endif // ^^^ no workaround ^^^
 
+// Test LWG-3436 "std::construct_at should support arrays"
+template <class T, size_t N>
+constexpr void test_std_construct_at_array() {
+    union U {
+        constexpr U() {}
+        constexpr ~U() {}
+
+        T a[N];
+    };
+    U u;
+    construct_at(&u.a);
+    for (const auto& elem : u.a) {
+        assert(elem == T{});
+    }
+    destroy_at(&u.a);
+}
+
+template <class T, size_t N>
+constexpr void test_ranges_construct_at_array() {
+    union U {
+        constexpr U() {}
+        constexpr ~U() {}
+
+        T a[N];
+    };
+    U u;
+    ranges::construct_at(&u.a);
+    for (const auto& elem : u.a) {
+        assert(elem == T{});
+    }
+    ranges::destroy_at(&u.a);
+}
+
+constexpr bool test_construct_at_array() {
+    test_std_construct_at_array<int, 1>();
+    test_std_construct_at_array<int, 42>();
+    test_ranges_construct_at_array<int, 1>();
+    test_ranges_construct_at_array<int, 42>();
+
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-10798069
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
+    {
+#if !_HAS_CXX23
+        if (!is_constant_evaluated())
+#endif // !_HAS_CXX23
+        {
+            test_std_construct_at_array<unique_ptr<string>, 1>();
+            test_std_construct_at_array<unique_ptr<string>, 42>();
+            test_ranges_construct_at_array<unique_ptr<string>, 1>();
+            test_ranges_construct_at_array<unique_ptr<string>, 42>();
+        }
+        test_std_construct_at_array<string, 1>();
+        test_ranges_construct_at_array<string, 1>();
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, DevCom-11012299
+        if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
+        {
+            test_std_construct_at_array<string, 42>();
+            test_ranges_construct_at_array<string, 42>();
+        }
+    }
+
+    return true;
+}
+
 int main() {
     test_runtime(1234);
     test_runtime(string("hello world"));
@@ -637,4 +708,7 @@ int main() {
     test_array(1234);
     test_array(string("hello world"));
     test_array(string("hello to some really long world that certainly doesn't fit in SSO"));
+
+    test_construct_at_array();
+    static_assert(test_construct_at_array());
 }

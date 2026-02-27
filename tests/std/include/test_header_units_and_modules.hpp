@@ -240,11 +240,63 @@ void test_filesystem() {
     assert(info.capacity != static_cast<decltype(info.capacity)>(-1));
 }
 
+#if TEST_STANDARD >= 23
+void test_flat_map() {
+    using namespace std;
+    puts("Testing <flat_map>.");
+
+    [[maybe_unused]] constexpr sorted_unique_t unique_tag         = sorted_unique;
+    [[maybe_unused]] constexpr sorted_equivalent_t equivalent_tag = sorted_equivalent;
+
+    constexpr auto simple_truth = [](const auto&) { return true; };
+
+    flat_map<int, int> fm;
+    fm.emplace(42, 172);
+    fm.emplace(42, 729);
+    assert(fm.size() == 1);
+    assert(erase_if(fm, simple_truth) == 1);
+    assert(fm.empty());
+
+    flat_multimap<int, int> fmm;
+    fmm.emplace(42, 172);
+    fmm.emplace(42, 729);
+    assert(fmm.size() == 2);
+    assert(erase_if(fmm, simple_truth) == 2);
+    assert(fmm.empty());
+}
+
+void test_flat_set() {
+    using namespace std;
+    puts("Testing <flat_set>.");
+
+    [[maybe_unused]] constexpr sorted_unique_t unique_tag         = sorted_unique;
+    [[maybe_unused]] constexpr sorted_equivalent_t equivalent_tag = sorted_equivalent;
+
+    constexpr auto simple_truth = [](const auto&) { return true; };
+
+    flat_set<int> fs;
+    fs.emplace(42);
+    fs.emplace(42);
+    assert(fs.size() == 1);
+    assert(erase_if(fs, simple_truth) == 1);
+    assert(fs.empty());
+
+    flat_multiset<int> fms;
+    fms.emplace(42);
+    fms.emplace(42);
+    assert(fms.size() == 2);
+    assert(erase_if(fms, simple_truth) == 2);
+    assert(fms.empty());
+}
+#endif // TEST_STANDARD >= 23
+
 void test_format() {
     using namespace std;
     puts("Testing <format>.");
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2744645
     assert(format("{} {}", 1729, "kittens") == "1729 kittens");
     assert(format(L"{} {}", 1729, L"kittens") == L"1729 kittens");
+#endif // ^^^ no workaround ^^^
 }
 
 void test_forward_list() {
@@ -562,7 +614,9 @@ void test_print() {
     println();
 
 #ifdef _CPPRTTI
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2744645
     println(cout, "The answer to life, the universe, and everything: {}", 42);
+#endif // ^^^ no workaround ^^^
     println(cout);
 #endif // _CPPRTTI
 }
@@ -1193,6 +1247,10 @@ void all_cpp_header_tests() {
     test_expected();
 #endif // TEST_STANDARD >= 23
     test_filesystem();
+#if TEST_STANDARD >= 23
+    test_flat_map();
+    test_flat_set();
+#endif // TEST_STANDARD >= 23
     test_format();
     test_forward_list();
     test_fstream();

@@ -58,7 +58,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N5014][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N5032][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
@@ -145,13 +145,13 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
   + **You must install Insiders for STL development.** *See Note 1 below.*
   + Select the "Desktop development with C++" workload.
   + Select the following components at a minimum:
-    - "MSVC Build Tools for x64/x86 (Latest)"
+    - "MSVC Build Tools for x64/x86 (Preview)"
     - "C++ CMake tools for Windows"
     - "MSVC AddressSanitizer"
     - "Windows 11 SDK (10.0.26100)" or later
     - "C++ Clang tools for Windows (20.1.8 - x64/x86)"
-    - *Optional, see Note 2 below:* "MSVC Build Tools for ARM64/ARM64EC (Latest)"
-* Install [Python][] 3.14.0 or later.
+    - *Optional, see Note 2 below:* "MSVC Build Tools for ARM64/ARM64EC (Preview)"
+* Install [Python][] 3.14.3 or later.
   + Select "Add python.exe to PATH" if you want to follow the instructions below that invoke `python`.
     Otherwise, you should be familiar with alternative methods.
 
@@ -170,43 +170,47 @@ For example, `<atomic>` has conditionally compiled code for the `_M_ARM64` and `
 4. Use the IDE's dropdown menu to choose the architecture you want to build. We recommend x64 for general development.
 5. Build > Build All.
 
-# How To Build With A Native Tools Command Prompt
+# How To Build With The Command Prompt
 
 1. Open a command prompt.
 2. Change directories to a location where you'd like a clone of this STL repository.
 3. `git clone https://github.com/microsoft/STL.git --recurse-submodules`
+4. `pushd STL`
 
+The following instructions assume that you're starting in the previously cloned `STL` directory.
 If you installed VS to a non-default location, change the `vcvarsall.bat` paths below accordingly.
 
 To build the x64 target (recommended):
 
-1. `"C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" x64`
-    * Or open an "x64 Native Tools Command Prompt for VS 18 Insiders".
-2. Change directories to the previously cloned `STL` directory.
-3. `cmake --preset x64`
-4. `cmake --build --preset x64`
+1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
+1. `vcvarsall.bat x64 -vcvars_ver=preview`
+1. `popd`
+1. `cmake --preset x64`
+1. `cmake --build --preset x64`
 
 To build the x86 target:
 
-1. `"C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" x86`
-    * Or open an "x86 Native Tools Command Prompt for VS 18 Insiders".
-2. Change directories to the previously cloned `STL` directory.
-3. `cmake --preset x86`
-4. `cmake --build --preset x86`
+1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
+1. `vcvarsall.bat x86 -vcvars_ver=preview`
+1. `popd`
+1. `cmake --preset x86`
+1. `cmake --build --preset x86`
 
 To build the ARM64 target:
 
-1. `"C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
-2. Change directories to the previously cloned `STL` directory.
-3. `cmake --preset ARM64`
-4. `cmake --build --preset ARM64`
+1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
+1. `vcvarsall.bat x64_arm64 -vcvars_ver=preview`
+1. `popd`
+1. `cmake --preset ARM64`
+1. `cmake --build --preset ARM64`
 
 To build the ARM64EC target:
 
-1. `"C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build\vcvarsall.bat" x64_arm64`
-2. Change directories to the previously cloned `STL` directory.
-3. `cmake --preset ARM64EC`
-4. `cmake --build --preset ARM64EC`
+1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
+1. `vcvarsall.bat x64_arm64 -vcvars_ver=preview`
+1. `popd`
+1. `cmake --preset ARM64EC`
+1. `cmake --build --preset ARM64EC`
 
 # How To Consume
 
@@ -227,33 +231,47 @@ your .exe would "win" over the versions in System32.
 The compiler looks for include directories according to the `INCLUDE` environment variable, and the linker looks for
 import library directories according to the `LIB` environment variable, and the Windows loader will (eventually) look
 for DLL dependencies according to directories in the `PATH` environment variable.
-The build generates a batch script named `set_environment.bat` in the output directory. If you run this script in a VS
-Developer Command Prompt, it will insert the proper directories into the `INCLUDE`, `LIB`, and `PATH` environment
+The build generates a batch script named `set_environment.bat` in the output directory. If you run this script,
+it will insert the proper directories into the `INCLUDE`, `LIB`, and `PATH` environment
 variables to ensure that the built headers and libraries are used.
 
 ## Complete Example Using x64 DLL Flavor
 
-From an "x64 Native Tools Command Prompt for VS 18 Insiders":
-
 ```
+C:\Temp>pushd D:\GitHub\STL
+
+D:\GitHub\STL>pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"
+
+C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build>vcvarsall.bat x64 -vcvars_ver=preview
+**********************************************************************
+** Visual Studio 2026 Developer Command Prompt v18.4.0-insiders
+** Copyright (c) 2026 Microsoft Corporation
+**********************************************************************
+[vcvarsall.bat] Environment initialized for: 'x64'
+
+C:\Program Files\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build>popd
+
 D:\GitHub\STL>cmake --preset x64
 [...]
 -- Build files have been written to: D:/GitHub/STL/out/x64
 
 D:\GitHub\STL>cmake --build --preset x64
-[1028/1028] Linking CXX static library out\lib\amd64\libcpmtd0.lib
+[762/762] Linking CXX static library out\lib\amd64\libcpmtd0.lib
 
 D:\GitHub\STL>out\x64\set_environment.bat
 
-D:\GitHub\STL>pushd C:\Temp
+D:\GitHub\STL>popd
 
 C:\Temp>type .\example.cpp
+```
+```cpp
 #include <print>
 
 int main() {
     std::println("Hello STL OSS world!");
 }
-
+```
+```
 C:\Temp>cl /EHsc /nologo /W4 /WX /MDd /std:c++latest .\example.cpp
 example.cpp
 
@@ -264,7 +282,7 @@ C:\Temp>dumpbin /DEPENDENTS .\example.exe | findstr msvcp
     msvcp140d_oss.dll
 ```
 
-# How To Run The Tests With A Native Tools Command Prompt
+# How To Run The Tests
 
 Our tests are currently split across three test suites that are located at `tests\std`, `tests\tr1`, and
 `llvm-project\libcxx\test\std`. The test runner `${PROJECT_BINARY_DIR}\tests\utils\stl-lit\stl-lit.py` accepts paths to
@@ -584,7 +602,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N5014]: https://wg21.link/N5014
+[N5032]: https://wg21.link/N5032
 [NOTICE.txt]: NOTICE.txt
 [STL-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-CI?branchName=main "STL-CI"
 [STL-CI-link]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main

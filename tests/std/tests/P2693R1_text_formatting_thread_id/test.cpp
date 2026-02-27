@@ -19,7 +19,7 @@
 #include <utility>
 #include <variant>
 
-#include "test_format_support.hpp"
+#include <test_format_support.hpp>
 
 #define STR(Str) TYPED_LITERAL(CharT, Str)
 

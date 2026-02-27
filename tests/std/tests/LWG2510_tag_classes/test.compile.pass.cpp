@@ -59,7 +59,7 @@ STATIC_ASSERT(!implicitly_default_constructible<int&>);
 STATIC_ASSERT(!implicitly_default_constructible<void()>);
 
 template <class T>
-void check_tag_class() { // COMPILE-ONLY
+void check_tag_class() {
     STATIC_ASSERT(is_default_constructible_v<T>);
     STATIC_ASSERT(!implicitly_default_constructible<T>);
 
@@ -119,7 +119,7 @@ void check_tag_class() { // COMPILE-ONLY
     STATIC_ASSERT(sizeof(T) == 1);
 }
 
-void check_standard_tags() { // COMPILE-ONLY
+void check_standard_tags() {
     check_tag_class<nothrow_t>();
     check_tag_class<allocator_arg_t>();
     check_tag_class<piecewise_construct_t>();
@@ -164,7 +164,7 @@ void check_standard_tags() { // COMPILE-ONLY
 }
 
 // We intentionally implement internal disambiguation tag types like standard ones.
-void check_implementation_details() { // COMPILE-ONLY
+void check_implementation_details() {
     // TODO: Synchronize the check list with actual implementation details.
     check_tag_class<_Alloc_exact_args_t>();
     check_tag_class<_Alloc_unpack_tuple_t>();

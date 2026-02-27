@@ -59,19 +59,9 @@ class valarray { // store array with various indexing options
 public:
     friend _Tidy_deallocate_guard<valarray>;
 
-    template <class _Ty2>
-    friend _Ty2* begin(valarray<_Ty2>& _Array) noexcept /* strengthened */;
-
-    template <class _Ty2>
-    friend const _Ty2* begin(const valarray<_Ty2>& _Array) noexcept /* strengthened */;
-
-    template <class _Ty2>
-    friend _Ty2* end(valarray<_Ty2>& _Array) noexcept /* strengthened */;
-
-    template <class _Ty2>
-    friend const _Ty2* end(const valarray<_Ty2>& _Array) noexcept /* strengthened */;
-
-    using value_type = _Ty;
+    using value_type     = _Ty;
+    using iterator       = _Ty*;
+    using const_iterator = const _Ty*;
 
     valarray() = default; // construct empty valarray
 
@@ -411,6 +401,22 @@ public:
         return _Mysize;
     }
 
+    _NODISCARD iterator begin() noexcept /* strengthened */ {
+        return _Myptr;
+    }
+
+    _NODISCARD const_iterator begin() const noexcept /* strengthened */ {
+        return _Myptr;
+    }
+
+    _NODISCARD iterator end() noexcept /* strengthened */ {
+        return _Myptr + _Mysize;
+    }
+
+    _NODISCARD const_iterator end() const noexcept /* strengthened */ {
+        return _Myptr + _Mysize;
+    }
+
     _NODISCARD const _Ty& operator[](size_t _Off) const noexcept /* strengthened */ {
 #if _MSVC_STL_HARDENING_VALARRAY || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Off < _Mysize, "valarray subscript out of range");
@@ -610,26 +616,6 @@ valarray(const _Ty (&)[_Nx], size_t) -> valarray<_Ty>;
 _EXPORT_STD template <class _Ty>
 void swap(valarray<_Ty>& _Left, valarray<_Ty>& _Right) noexcept {
     _Left.swap(_Right);
-}
-
-_EXPORT_STD template <class _Ty>
-_NODISCARD _Ty* begin(valarray<_Ty>& _Array) noexcept /* strengthened */ {
-    return _Array._Myptr;
-}
-
-_EXPORT_STD template <class _Ty>
-_NODISCARD const _Ty* begin(const valarray<_Ty>& _Array) noexcept /* strengthened */ {
-    return _Array._Myptr;
-}
-
-_EXPORT_STD template <class _Ty>
-_NODISCARD _Ty* end(valarray<_Ty>& _Array) noexcept /* strengthened */ {
-    return _Array._Myptr + _Array.size();
-}
-
-_EXPORT_STD template <class _Ty>
-_NODISCARD const _Ty* end(const valarray<_Ty>& _Array) noexcept /* strengthened */ {
-    return _Array._Myptr + _Array.size();
 }
 
 _EXPORT_STD template <class _Ty>

@@ -22,8 +22,10 @@
 #include <set>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 constexpr auto size_max = std::numeric_limits<std::size_t>::max();
@@ -131,13 +133,28 @@ namespace {
     template <class T>
     using placement_ptr = std::unique_ptr<T, placement_delete>;
 
+    template <class T>
+    constexpr bool is_lvalue_reference_to_const = false;
+    template <class T>
+    constexpr bool is_lvalue_reference_to_const<const T&> = true;
+
     template <class Alloc, bool NeedsAllocatorArgT>
     struct uses_allocator_thing : private Alloc {
         using allocator_type = Alloc;
 
         int i_ = 0;
 
-        uses_allocator_thing(std::allocator_arg_t, Alloc const& a, int i = 0) : Alloc(a), i_{i} {}
+        // Such overload set is used for testing LWG-3187 and LWG-4312.
+        uses_allocator_thing(std::allocator_arg_t&&, Alloc const& a, int i = 0) : Alloc(a), i_{i} {}
+        template <class T,
+            std::enable_if_t<is_lvalue_reference_to_const<T> && std::is_convertible_v<T, Alloc>, int> = 0>
+        uses_allocator_thing(std::allocator_arg_t&&, T&& a, int i = 0) : Alloc(std::forward<T>(a)), i_{i} {}
+        template <class T,
+            std::enable_if_t<!is_lvalue_reference_to_const<T> || !std::is_convertible_v<T, Alloc>, int> = 0>
+        uses_allocator_thing(std::allocator_arg_t&&, T&&, int = 0)               = delete;
+        uses_allocator_thing(std::allocator_arg_t&, Alloc const&, int = 0)       = delete;
+        uses_allocator_thing(const std::allocator_arg_t&, Alloc const&, int = 0) = delete;
+
         Alloc get_allocator() const {
             return *this;
         }
@@ -151,8 +168,8 @@ namespace {
     };
     template <class Alloc>
     struct uses_allocator_thing<Alloc, false> : uses_allocator_thing<Alloc, true> {
-        uses_allocator_thing(int i, Alloc const& a) : uses_allocator_thing<Alloc, true>{std::allocator_arg, a, i} {}
-        uses_allocator_thing(Alloc const& a) : uses_allocator_thing<Alloc, true>{std::allocator_arg, a} {}
+        uses_allocator_thing(int i, Alloc const& a) : uses_allocator_thing<Alloc, true>{std::allocator_arg_t{}, a, i} {}
+        uses_allocator_thing(Alloc const& a) : uses_allocator_thing<Alloc, true>{std::allocator_arg_t{}, a} {}
     };
 
     struct malloc_resource final : std::pmr::memory_resource {
@@ -690,6 +707,25 @@ namespace {
                     test_throws();
                 }
             } // namespace construct
+
+
+            // Also test LWG-4312 "Const and value category mismatch for allocator_arg_t/allocator_arg in the
+            // description of uses-allocator construction"
+            namespace uses_allocator_construct {
+                void test() {
+                    malloc_resource mr;
+                    std::pmr::polymorphic_allocator<not_constructible> alloc = &mr;
+
+                    using T = uses_allocator_thing<std::pmr::polymorphic_allocator<int>, true>;
+
+                    alignas(T) unsigned char space[sizeof(T)];
+                    const auto rawptr = reinterpret_cast<T*>(space);
+                    alloc.construct(rawptr);
+                    placement_ptr<T> ptr{rawptr};
+
+                    CHECK(ptr->get_allocator().resource() == &mr);
+                }
+            } // namespace uses_allocator_construct
 
             namespace piecewise_construct {
                 void test() {
@@ -1573,6 +1609,7 @@ int main() {
     polymorphic_allocator::ctor::rebind::test();
     polymorphic_allocator::mem::allocate_deallocate::test();
     polymorphic_allocator::mem::construct::test();
+    polymorphic_allocator::mem::uses_allocator_construct::test();
     polymorphic_allocator::mem::piecewise_construct::test();
     polymorphic_allocator::mem::construct_pair::test();
     polymorphic_allocator::mem::construct_pair_U_V::test();

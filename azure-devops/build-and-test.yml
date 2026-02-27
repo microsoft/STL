@@ -22,10 +22,16 @@ parameters:
   default: 'STL-CI'
 - name: numShards
   type: number
-  default: 8
-- name: skipTesting
+  default: 10
+- name: configureTesting
   type: boolean
-  default: false
+  default: true
+- name: buildStl
+  type: boolean
+  default: true
+- name: runTesting
+  type: boolean
+  default: true
 - name: testsBuildOnly
   type: boolean
   default: false
@@ -38,7 +44,7 @@ jobs:
   - template: checkout-self.yml
   - template: checkout-submodule.yml
     parameters:
-      enabled: ${{ not(parameters.skipTesting) }}
+      enabled: ${{ parameters.configureTesting }}
       path: 'llvm-project'
       url: 'https://github.com/llvm/llvm-project.git'
   - template: checkout-submodule.yml
@@ -58,6 +64,8 @@ jobs:
       targetPlatform: ${{ parameters.targetPlatform }}
       analyzeBuild: ${{ parameters.analyzeBuild }}
       asanBuild: ${{ parameters.asanBuild }}
+      configureTesting: ${{ parameters.configureTesting }}
+      buildStl: ${{ parameters.buildStl }}
       testsBuildOnly: ${{ parameters.testsBuildOnly }}
   - template: build-benchmarks.yml
     parameters:
@@ -79,4 +87,4 @@ jobs:
       targetArch: ${{ parameters.targetArch }}
       targetPlatform: ${{ parameters.targetPlatform }}
       testTargets: ${{ parameters.testTargets }}
-      skipTesting: ${{ parameters.skipTesting }}
+      runTesting: ${{ parameters.runTesting }}

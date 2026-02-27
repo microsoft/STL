@@ -36,13 +36,12 @@ if ($Arch -ieq 'x64') {
 
 $VisualStudioWorkloads = @(
   'Microsoft.VisualStudio.Component.VC.ASAN',
-  'Microsoft.VisualStudio.Component.VC.CLI.Support',
   'Microsoft.VisualStudio.Component.VC.CMake.Project',
   'Microsoft.VisualStudio.Component.VC.CoreIde',
   'Microsoft.VisualStudio.Component.VC.Llvm.Clang',
-  'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
-  'Microsoft.VisualStudio.Component.VC.Tools.ARM64EC',
-  'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
+  'Microsoft.VisualStudio.Component.VC.Preview.ARM64',
+  'Microsoft.VisualStudio.Component.VC.Preview.CLI.Support',
+  'Microsoft.VisualStudio.Component.VC.Preview.Tools.x86.x64',
   'Microsoft.VisualStudio.Component.Windows11SDK.26100'
 )
 
@@ -67,9 +66,9 @@ $PowerShellArgs = @('/quiet', '/norestart')
 
 # https://www.python.org
 if ($Provisioning_x64) {
-  $PythonUrl = 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-amd64.exe'
+  $PythonUrl = 'https://www.python.org/ftp/python/3.14.3/python-3.14.3-amd64.exe'
 } else {
-  $PythonUrl = 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-arm64.exe'
+  $PythonUrl = 'https://www.python.org/ftp/python/3.14.3/python-3.14.3-arm64.exe'
 }
 $PythonArgs = @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1', 'Include_doc=0')
 
@@ -137,6 +136,26 @@ Function DownloadAndInstall {
   }
 }
 
+<#
+.SYNOPSIS
+Enables native NVMe support.
+
+.DESCRIPTION
+Native NVMe support is opt-in for Windows Server 2025.
+TRANSITION, this will be enabled by default for the next version of Windows Server.
+#>
+Function EnableNativeNVMe {
+  $registryKey = 'HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides'
+  $valueName = '1176759950'
+  $valueData = 1
+
+  if (!(Test-Path $registryKey)) {
+    New-Item -Path $registryKey -Force | Out-Null
+  }
+
+  New-ItemProperty -Path $registryKey -Name $valueName -Value $valueData -PropertyType DWORD -Force | Out-Null
+}
+
 Write-Host "Old PowerShell version: $($PSVersionTable.PSVersion)"
 
 # Print the Windows version, so we can verify whether Patch Tuesday has been picked up.
@@ -160,6 +179,18 @@ Write-Host 'Enabling long paths...'
 # https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' `
   -Value 1 -PropertyType DWORD -Force | Out-Null
+
+if ($Provisioning_x64) {
+  Write-Host 'Enabling native NVMe...'
+  EnableNativeNVMe
+}
+
+# TRANSITION, patch Launch-VsDevShell.ps1 to pass `-vcvars_ver=preview` before a proper parameter is available.
+Write-Host 'Patching Launch-VsDevShell.ps1...'
+$launchVsDevShell = 'C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\Tools\Launch-VsDevShell.ps1'
+$paramRegex = 'VsInstanceId = \$instanceId'
+$paramSubst = '$&; DevCmdArguments = "-vcvars_ver=preview";'
+(Get-Content -Raw $launchVsDevShell) -creplace $paramRegex, $paramSubst | Set-Content -NoNewLine $launchVsDevShell
 
 # Tell create-1es-hosted-pool.ps1 that we succeeded.
 Write-Host 'PROVISION_IMAGE_SUCCEEDED'

@@ -47,6 +47,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
+
 #if _HAS_CXX23
 #include <xutility>
 #endif // _HAS_CXX23
@@ -145,14 +146,6 @@ struct formatter {
 };
 
 _FMT_P2286_BEGIN
-// TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
-template <_Basic_format_arg_type _ArgType, class _CharT, class _Pc>
-constexpr _Pc::iterator _Formatter_base_parse(_Dynamic_format_specs<_CharT>& _Specs, _Pc& _ParseCtx);
-
-template <class _Ty, class _CharT, class _FormatContext>
-_FormatContext::iterator _Formatter_base_format(
-    const _Dynamic_format_specs<_CharT>& _Specs, const _Ty& _Val, _FormatContext& _FormatCtx);
-
 template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
 struct _Formatter_base {
 public:
@@ -164,15 +157,11 @@ public:
     }
 #endif // _HAS_CXX23
 
-    template <class _Pc = basic_format_parse_context<_CharT>>
-    constexpr _Pc::iterator parse(type_identity_t<_Pc&> _ParseCtx) {
-        return _Formatter_base_parse<_ArgType>(_Specs, _ParseCtx);
-    }
+    template <class _ParseContext = basic_format_parse_context<_CharT>>
+    constexpr _ParseContext::iterator parse(type_identity_t<_ParseContext&> _Parse_ctx); // defined in <format>
 
     template <class _FormatContext>
-    _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) const {
-        return _Formatter_base_format(_Specs, _Val, _FormatCtx);
-    }
+    _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _Format_ctx) const; // defined in <format>
 
 private:
     _Dynamic_format_specs<_CharT> _Specs;
@@ -401,11 +390,12 @@ constexpr bool enable_nonlocking_formatter_optimization<basic_string_view<_CharT
 
 template <class _Ty1, class _Ty2>
 constexpr bool enable_nonlocking_formatter_optimization<pair<_Ty1, _Ty2>> =
-    enable_nonlocking_formatter_optimization<_Ty1> && enable_nonlocking_formatter_optimization<_Ty2>;
+    enable_nonlocking_formatter_optimization<remove_cvref_t<_Ty1>>
+    && enable_nonlocking_formatter_optimization<remove_cvref_t<_Ty2>>;
 
 template <class... _Ts>
 constexpr bool enable_nonlocking_formatter_optimization<tuple<_Ts...>> =
-    (enable_nonlocking_formatter_optimization<_Ts> && ...);
+    (enable_nonlocking_formatter_optimization<remove_cvref_t<_Ts>> && ...);
 
 template <class _CharT>
 struct _Fill_align_and_width_specs {
@@ -417,30 +407,17 @@ struct _Fill_align_and_width_specs {
     _CharT _Fill[4 / sizeof(_CharT)]{' '};
 };
 
-// TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
-template <class _CharT, class _Pc>
-_NODISCARD constexpr _Pc::iterator _Fill_align_and_width_formatter_parse(
-    _Fill_align_and_width_specs<_CharT>& _Specs, _Pc& _Parse_ctx);
-
-template <class _CharT, class _FormatContext, class _Func>
-_NODISCARD _FormatContext::iterator _Fill_align_and_width_formatter_format(
-    const _Fill_align_and_width_specs<_CharT>& _Specs, _FormatContext& _Format_ctx, int _Width,
-    _Fmt_align _Default_align, _Func&& _Fn);
-
 template <class _CharT>
 struct _Fill_align_and_width_formatter {
 public:
     template <class _ParseContext = basic_format_parse_context<_CharT>> // improves throughput, see GH-5003
-    _NODISCARD constexpr _ParseContext::iterator _Parse(type_identity_t<_ParseContext&> _Parse_ctx) {
-        return _STD _Fill_align_and_width_formatter_parse(_Specs, _Parse_ctx);
-    }
+    _NODISCARD constexpr _ParseContext::iterator _Parse(
+        type_identity_t<_ParseContext&> _Parse_ctx); // defined in <format>
 
     template <class _FormatContext, class _Func>
-    _NODISCARD constexpr auto _Format(
-        _FormatContext& _Format_ctx, const int _Width, _Fmt_align _Default_align, _Func&& _Fn) const {
-        return _STD _Fill_align_and_width_formatter_format(
-            _Specs, _Format_ctx, _Width, _Default_align, _STD forward<_Func>(_Fn));
-    }
+    _NODISCARD _FormatContext::iterator _Format(_FormatContext& _Format_ctx, const int _Width,
+        _Fmt_align _Default_align,
+        _Func&& _Fn) const; // defined in <format>
 
 private:
     _Fill_align_and_width_specs<_CharT> _Specs;

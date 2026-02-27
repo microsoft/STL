@@ -1,6 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+# CUDA is not available in the MSVC-internal test harness:
+# tests\GH_000639_nvcc_include_all
+
+# Needs special machinery to work in the MSVC-internal test harness, not yet implemented:
+# tests\GH_002094_cpp_core_guidelines
+
 tests\Dev08_496675_iostream_int_reading
 tests\Dev08_527068_scl_no_exceptions
 tests\Dev08_563686_ostream
@@ -196,6 +202,7 @@ tests\GH_001411_core_headers
 tests\GH_001530_binomial_accuracy
 tests\GH_001541_case_sensitive_boolalpha
 tests\GH_001596_adl_proof_algorithms
+tests\GH_001600_random_inheritance
 tests\GH_001638_dllexport_derived_classes
 tests\GH_001850_clog_tied_to_cout
 tests\GH_001858_iostream_exception
@@ -207,8 +214,6 @@ tests\GH_002030_asan_annotate_vector
 tests\GH_002039_byte_is_not_trivially_swappable
 tests\GH_002045_put_time_changes_errno
 tests\GH_002058_debug_iterator_race
-# Needs special machinery to work in the MSVC-internal test harness, not yet implemented:
-# tests\GH_002094_cpp_core_guidelines
 tests\GH_002120_streambuf_seekpos_and_seekoff
 tests\GH_002168_regex_overflow
 tests\GH_002206_unreserved_names
@@ -272,7 +277,9 @@ tests\GH_005504_avoid_function_call_wrapping
 tests\GH_005546_containers_size_type_cast
 tests\GH_005553_regex_character_translation
 tests\GH_005768_pow_accuracy
+tests\GH_005780_non_ascii_locales
 tests\GH_005800_stable_sort_large_alignment
+tests\GH_005968_headers_provide_begin_end
 tests\LWG2381_num_get_floating_point
 tests\LWG2510_tag_classes
 tests\LWG2597_complex_branch_cut
@@ -375,6 +382,8 @@ tests\P0408R7_efficient_access_to_stringbuf_buffer
 tests\P0414R2_shared_ptr_for_arrays
 tests\P0415R1_constexpr_complex
 tests\P0426R1_constexpr_char_traits
+tests\P0429R9_flat_map
+tests\P0429R9_flat_map_ms_specific
 tests\P0433R2_deduction_guides
 tests\P0448R4_iosfwd
 tests\P0448R4_spanstream
@@ -417,13 +426,13 @@ tests\P0784R7_library_support_for_more_constexpr_containers
 tests\P0798R8_monadic_operations_for_std_optional
 tests\P0811R3_midpoint_lerp
 tests\P0881R7_stacktrace
+tests\P0896R4_and_P1614R2_comparisons
 tests\P0896R4_common_iterator
 tests\P0896R4_common_iterator_death
 tests\P0896R4_counted_iterator
 tests\P0896R4_counted_iterator_death
 tests\P0896R4_istream_view
 tests\P0896R4_istream_view_death
-tests\P0896R4_P1614R2_comparisons
 tests\P0896R4_ranges_alg_adjacent_find
 tests\P0896R4_ranges_alg_all_of
 tests\P0896R4_ranges_alg_any_of
@@ -612,6 +621,7 @@ tests\P1206R7_vector_from_range
 tests\P1206R7_vector_insert_range
 tests\P1208R6_source_location
 tests\P1209R0_erase_if_erase
+tests\P1222R4_flat_set
 tests\P1223R5_ranges_alg_find_last
 tests\P1223R5_ranges_alg_find_last_if
 tests\P1223R5_ranges_alg_find_last_if_not
@@ -721,6 +731,7 @@ tests\P2693R1_text_formatting_header_stacktrace
 tests\P2693R1_text_formatting_header_thread
 tests\P2693R1_text_formatting_stacktrace
 tests\P2693R1_text_formatting_thread_id
+tests\P3016R6_inconsistent_begin_end
 tests\P3107R5_enabled_specializations
 tests\P3349R1_contiguous_iterators_to_pointers
 tests\P3503R3_packaged_task_promise_with_allocator

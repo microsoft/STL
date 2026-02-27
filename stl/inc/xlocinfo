@@ -59,18 +59,18 @@ _MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(_When_(_Max_multibyte != 0,
 
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Strcoll(
     const char*, const char*, const char*, const char*, const _Collvec*) noexcept;
-_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(_Out_writes_(_End1 - _String1)
-                                                          _Post_readable_size_(return) char* _String1,
-    _In_z_ char* _End1, const char*, const char*, const _Collvec*) noexcept;
+_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Strxfrm(
+    _Out_writes_(_End1 - _String1) _Post_readable_size_(return) char* _String1, char* _End1,
+    _In_reads_(_End2 - _String2) const char* _String2, const char* _End2, _In_opt_ const _Collvec*) noexcept;
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int, const _Ctypevec*) noexcept;
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Toupper(int, const _Ctypevec*) noexcept;
 _CRTIMP2_PURE _Success_(return != -1) int __CLRCALL_PURE_OR_CDECL
     _Wcrtomb(_Out_ char*, wchar_t, mbstate_t*, const _Cvtvec*) noexcept;
 _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Wcscoll(
     const wchar_t*, const wchar_t*, const wchar_t*, const wchar_t*, const _Collvec*) noexcept;
-_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(_Out_writes_(_End1 - _String1) _Post_readable_size_(return)
-                                                          wchar_t* _String1,
-    _In_z_ wchar_t* _End1, const wchar_t*, const wchar_t*, const _Collvec*) noexcept;
+_CRTIMP2_PURE size_t __CLRCALL_PURE_OR_CDECL _Wcsxfrm(
+    _Out_writes_(_End1 - _String1) _Post_readable_size_(return) wchar_t* _String1, wchar_t* _End1,
+    _In_reads_(_End2 - _String2) const wchar_t* _String2, const wchar_t* _End2, _In_opt_ const _Collvec*) noexcept;
 
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Getwctype(wchar_t, const _Ctypevec*) noexcept;
 _CRTIMP2_PURE const wchar_t* __CLRCALL_PURE_OR_CDECL _Getwctypes(
@@ -134,6 +134,24 @@ private:
     void* _Timeptr; // pointer to time information
 };
 
+template <class _Elem>
+_NODISCARD _Elem* _Ntcts_dup_dbg(const _Elem* const _Ptr) noexcept {
+    _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Elem, char, wchar_t, unsigned short>);
+
+    const size_t _Bytes = (char_traits<_Elem>::length(_Ptr) + 1) * sizeof(_Elem);
+
+#ifdef _DEBUG
+    const auto _Result = static_cast<_Elem*>(_CSTD _malloc_dbg(_Bytes, _CRT_BLOCK, __FILE__, __LINE__));
+#else
+    const auto _Result = static_cast<_Elem*>(_CSTD malloc(_Bytes));
+#endif
+    if (_Result) {
+        _CSTD memcpy(_Result, _Ptr, _Bytes);
+    }
+
+    return _Result;
+}
+
 extern "C++" template <class _Elem>
 class _CRTIMP2_PURE_IMPORT _Yarn { // wrap a NTCTS
 public:
@@ -156,26 +174,22 @@ public:
             _Tidy();
 
             if (_Right) { // new is not empty, copy it
-                const _Elem* _Ptr = _Right;
-                while (*_Ptr != _Elem{}) {
-                    ++_Ptr;
-                }
-
-                const auto _Count = (++_Ptr - _Right) * sizeof(_Elem);
-
-#ifdef _DEBUG
-                _Myptr = static_cast<_Elem*>(_malloc_dbg(_Count, _CRT_BLOCK, __FILE__, __LINE__));
-#else
-                _Myptr = static_cast<_Elem*>(_CSTD malloc(_Count));
-#endif
-
-                if (_Myptr) {
-                    _CSTD memcpy(_Myptr, _Right, _Count);
-                }
+                _Myptr = _STD _Ntcts_dup_dbg(_Right);
             }
         }
 
         return *this;
+    }
+
+    template <class _Elem2 = _Elem, enable_if_t<is_same_v<_Elem2, char>, int> = 0>
+    void _From_wide(const wchar_t* const _Right) noexcept {
+        if (reinterpret_cast<wchar_t*>(_Myptr) != _Right) { // new value, discard old and copy new
+            _Tidy();
+
+            if (_Right) { // new is not empty, copy it
+                _Myptr = reinterpret_cast<char*>(_STD _Ntcts_dup_dbg(_Right));
+            }
+        }
     }
 
     __CLR_OR_THIS_CALL ~_Yarn() noexcept {
@@ -382,6 +396,7 @@ private:
     _Yarn<char> _Months; // month names
     _Yarn<wchar_t> _W_Days; // wide weekday names
     _Yarn<wchar_t> _W_Months; // wide month names
+    // TRANSITION, ABI, `_Oldlocname._Myptr` is reinterpreted as `wchar_t*`. We should use `_Yarn<wchar_t>`.
     _Yarn<char> _Oldlocname; // old locale name to revert to on destruction
     _Yarn<char> _Newlocname; // new locale name for this object
 };
