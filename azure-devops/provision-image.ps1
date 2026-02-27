@@ -176,7 +176,7 @@ Write-Host 'Setting environment variables...'
 
 Write-Host 'Enabling long paths...'
 
-# https://learn.microsoft.com/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell
+# https://learn.microsoft.com/windows/win32/fileio/maximum-file-path-limitation
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' `
   -Value 1 -PropertyType DWORD -Force | Out-Null
 
