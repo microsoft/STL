@@ -616,7 +616,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [enhancement tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement
 [gbenchmark]: https://github.com/google/benchmark
 [gbenchmark:docs]: https://github.com/google/benchmark/blob/main/docs/user_guide.md
-[hub]: https://support.microsoft.com/en-us/help/4021566/windows-10-send-feedback-to-microsoft-with-feedback-hub-app
+[hub]: https://support.microsoft.com/help/4021566
 [libcxx]: https://libcxx.llvm.org
 [lit]: https://llvm.org/docs/CommandGuide/lit.html
 [lit result codes]: https://llvm.org/docs/CommandGuide/lit.html#test-status-results
