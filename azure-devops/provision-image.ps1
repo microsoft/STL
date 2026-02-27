@@ -45,7 +45,7 @@ $VisualStudioWorkloads = @(
   'Microsoft.VisualStudio.Component.Windows11SDK.26100'
 )
 
-# https://learn.microsoft.com/en-us/visualstudio/install/visual-studio-on-arm-devices
+# https://learn.microsoft.com/visualstudio/install/visual-studio-on-arm-devices
 # "There's a single installer for both Visual Studio x64 and Visual Studio Arm64 architectures.
 # The Visual Studio Installer detects whether the system architecture is Arm64.
 # If it is, the installer downloads and installs the Arm64 version of Visual Studio."
@@ -176,7 +176,7 @@ Write-Host 'Setting environment variables...'
 
 Write-Host 'Enabling long paths...'
 
-# https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell
+# https://learn.microsoft.com/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' `
   -Value 1 -PropertyType DWORD -Force | Out-Null
 

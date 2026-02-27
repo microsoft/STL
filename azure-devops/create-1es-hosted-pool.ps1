@@ -161,7 +161,7 @@ Display-ProgressBar -Status 'Creating virtual network subnet config'
 # TRANSITION, 2026-03-31: "After March 31, 2026, new virtual networks will default to using private subnets,
 # meaning that an explicit outbound method must be enabled in order to reach public endpoints on the Internet
 # and within Microsoft."
-# https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/default-outbound-access
+# https://learn.microsoft.com/azure/virtual-network/ip-services/default-outbound-access
 # We're using `-DefaultOutboundAccess $false` to opt-in early.
 $SubnetName = "$ResourceGroupName-Subnet"
 $Subnet = New-AzVirtualNetworkSubnetConfig `

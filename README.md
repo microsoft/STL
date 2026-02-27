@@ -620,10 +620,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [libcxx]: https://libcxx.llvm.org
 [lit]: https://llvm.org/docs/CommandGuide/lit.html
 [lit result codes]: https://llvm.org/docs/CommandGuide/lit.html#test-status-results
-[redistributables]: https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist
-[natvis documentation]: https://learn.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects
-[ASan]: https://learn.microsoft.com/en-us/cpp/sanitizers/asan
+[redistributables]: https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist
+[natvis documentation]: https://learn.microsoft.com/visualstudio/debugger/create-custom-views-of-native-objects
+[ASan]: https://learn.microsoft.com/cpp/sanitizers/asan
 [Import Library]: /docs/import_library.md
 [VS 2026 Insiders]: https://visualstudio.microsoft.com/insiders/
 [CXXFLAGS]: https://cmake.org/cmake/help/latest/envvar/CXXFLAGS.html
-[start-command]: https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/start
+[start-command]: https://learn.microsoft.com/windows-server/administration/windows-commands/start
