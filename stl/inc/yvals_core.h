@@ -406,6 +406,10 @@
 //     (partial implementation; see GH-4924)
 // P3567R2 flat_meow Fixes
 
+// _HAS_CXX26 and _SILENCE_ALL_CXX26_DEPRECATION_WARNINGS control:
+// P3612R1 Harmonize Proxy-Reference Operations
+// Other C++26 deprecation warnings
+
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
 // This implementation parallelizes several common algorithm calls, but not all.
@@ -1448,7 +1452,19 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // STL4048 was "locale::empty() is a non-Standard extension and will be removed in the future."
 
-// next warning number: STL4049
+
+#if _HAS_CXX26 && !defined(_SILENCE_VECTOR_BOOL_STATIC_REFERENCE_SWAP_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX26_DEPRECATION_WARNINGS)
+#define _DEPRECATE_VECTOR_BOOL_STATIC_REFERENCE_SWAP                                                                  \
+    [[deprecated("warning STL4049: Static std::vector<bool>::swap(reference, reference) is deprecated by C++26 (see " \
+                 "LWG-3638 and P3612R1). Use non-member function swap(reference, reference) instead. You can define " \
+                 "_SILENCE_VECTOR_BOOL_STATIC_REFERENCE_SWAP_DEPRECATION_WARNING or "                                 \
+                 "_SILENCE_ALL_CXX26_DEPRECATION_WARNINGS to suppress this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _DEPRECATE_VECTOR_BOOL_STATIC_REFERENCE_SWAP
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4050
 
 // next error number: STL1014
 

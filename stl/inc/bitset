@@ -91,7 +91,7 @@ public:
         friend bitset;
 
     public:
-        _CONSTEXPR23 reference(const reference&) = default;
+        _CONSTEXPR23 reference(const reference&) noexcept = default;
 
         _CONSTEXPR23 ~reference() noexcept {} // TRANSITION, ABI
 
@@ -102,6 +102,11 @@ public:
 
         _CONSTEXPR23 reference& operator=(const reference& _Bitref) noexcept {
             _Pbitset->_Set_unchecked(_Mypos, static_cast<bool>(_Bitref));
+            return *this;
+        }
+
+        _CONSTEXPR23 const reference& operator=(const bool _Val) const noexcept {
+            _Pbitset->_Set_unchecked(_Mypos, _Val);
             return *this;
         }
 
@@ -116,6 +121,22 @@ public:
         _CONSTEXPR23 reference& flip() noexcept {
             _Pbitset->_Flip_unchecked(_Mypos);
             return *this;
+        }
+
+        friend constexpr void swap(reference _Left, reference _Right) noexcept {
+            bool _Val = _Left; // NOT _STD swap
+            _Left     = _Right;
+            _Right    = _Val;
+        }
+
+        friend constexpr void swap(reference _Left, bool& _Right) noexcept {
+            bool _Val = _Left; // NOT _STD swap
+            _Left     = _Right;
+            _Right    = _Val;
+        }
+
+        friend constexpr void swap(bool& _Left, reference _Right) noexcept {
+            swap(_Right, _Left);
         }
 
     private:
