@@ -544,7 +544,9 @@ void test_new() {
 
     static_assert(is_class_v<bad_alloc>);
     static_assert(is_class_v<bad_array_new_length>);
+#ifdef __cpp_aligned_new
     static_assert(is_same_v<underlying_type_t<align_val_t>, size_t>);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
     static_assert(is_class_v<nothrow_t>);
 
     bool caught_bad_alloc = false;

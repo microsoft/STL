@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#if !defined(__cpp_aligned_new)
+#error overaligned allocation does not work with /Zc:alignedNew-
+#endif
+
 #define _ENABLE_EXTENDED_ALIGNED_STORAGE
 #define _HAS_DEPRECATED_TEMPORARY_BUFFER 1
 #define _SILENCE_CXX17_TEMPORARY_BUFFER_DEPRECATION_WARNING
