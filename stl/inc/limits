@@ -120,7 +120,10 @@ struct _Num_int_base : _Num_base { // base for integer types
     static constexpr bool is_exact       = true;
     static constexpr bool is_integer     = true;
     static constexpr bool is_specialized = true;
-    static constexpr int radix           = 2;
+#if !defined(__clang__) || defined(_M_X64) && !defined(_M_ARM64EC) || defined(_M_IX86)
+    static constexpr bool traps = true;
+#endif
+    static constexpr int radix = 2;
 };
 
 struct _Num_float_base : _Num_base { // base for floating-point types
@@ -178,6 +181,7 @@ public:
         return 0;
     }
 
+    static constexpr bool traps = false;
     static constexpr int digits = 1;
 };
 
@@ -222,6 +226,7 @@ public:
 
     static constexpr bool is_signed = CHAR_MIN != 0;
     static constexpr bool is_modulo = CHAR_MIN == 0;
+    static constexpr bool traps     = false;
     static constexpr int digits     = 8 - (CHAR_MIN != 0);
     static constexpr int digits10   = 2;
 };
@@ -266,6 +271,7 @@ public:
     }
 
     static constexpr bool is_signed = true;
+    static constexpr bool traps     = false;
     static constexpr int digits     = 7;
     static constexpr int digits10   = 2;
 };
@@ -310,6 +316,7 @@ public:
     }
 
     static constexpr bool is_modulo = true;
+    static constexpr bool traps     = false;
     static constexpr int digits     = 8;
     static constexpr int digits10   = 2;
 };
@@ -355,6 +362,7 @@ public:
     }
 
     static constexpr bool is_modulo = true;
+    static constexpr bool traps     = false;
     static constexpr int digits     = 8;
     static constexpr int digits10   = 2;
 };
@@ -400,6 +408,7 @@ public:
     }
 
     static constexpr bool is_modulo = true;
+    static constexpr bool traps     = false;
     static constexpr int digits     = 16;
     static constexpr int digits10   = 4;
 };
@@ -444,6 +453,7 @@ public:
     }
 
     static constexpr bool is_modulo = true;
+    static constexpr bool traps     = false;
     static constexpr int digits     = 32;
     static constexpr int digits10   = 9;
 };
@@ -488,6 +498,7 @@ public:
     }
 
     static constexpr bool is_modulo = true;
+    static constexpr bool traps     = false;
     static constexpr int digits     = 16;
     static constexpr int digits10   = 4;
 };
@@ -532,6 +543,7 @@ public:
     }
 
     static constexpr bool is_signed = true;
+    static constexpr bool traps     = false;
     static constexpr int digits     = 15;
     static constexpr int digits10   = 4;
 };
@@ -710,6 +722,7 @@ public:
     }
 
     static constexpr bool is_modulo = true;
+    static constexpr bool traps     = false;
     static constexpr int digits     = 16;
     static constexpr int digits10   = 4;
 };
