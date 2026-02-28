@@ -21,10 +21,21 @@ class CustomTestFormat(STLTestFormat):
         test4Cpp = os.path.join(sourceDir, 'test4.cpp')
         classicCpp = os.path.join(sourceDir, 'classic.cpp')
 
-        # Dependency order is important here:
-        inputPaths = [stdIxx, stdCompatIxx, testCpp, test2Cpp, test3Cpp, test4Cpp, classicCpp]
+        moduleUnits = [stdIxx, stdCompatIxx]
+        traditionalUnits = [testCpp, test2Cpp, test3Cpp, test4Cpp, classicCpp]
 
-        cmd = [test.cxx, *inputPaths, *test.flags, *test.compileFlags]
+        if 'clang' in test.cxx:
+            for modulePath in moduleUnits:
+                cmd = [test.cxx, '-x', 'c++-module', modulePath, '--precompile', *test.flags, *test.compileFlags]
+                yield TestStep(cmd, shared.execDir, shared.env, False)
+
+            inputPaths = ['-x', 'c++-module', *moduleUnits, '-x', 'none', *traditionalUnits]
+            cmd = [test.cxx, *inputPaths, *test.flags, *test.compileFlags]
+        else:
+            # Dependency order is important here:
+            inputPaths = [*moduleUnits, *traditionalUnits]
+
+            cmd = [test.cxx, *inputPaths, *test.flags, *test.compileFlags]
 
         if TestType.COMPILE in test.testType:
             cmd += ['/c']
