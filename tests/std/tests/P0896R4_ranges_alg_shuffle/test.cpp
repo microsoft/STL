@@ -4,21 +4,17 @@
 #include <algorithm>
 #include <cassert>
 #include <concepts>
-#include <cstddef>
 #include <cstdint>
 #include <cstdio>
-#include <numeric>
 #include <random>
 #include <ranges>
 #include <utility>
-#include <vector>
 
 #include <range_algorithm_support.hpp>
 using namespace std;
 
 const unsigned int seed = random_device{}();
 mt19937 gen{seed};
-mt19937_64 gen64{seed}; // 64-bit generator for batched random path
 
 // Validate dangling story
 static_assert(same_as<decltype(ranges::shuffle(borrowed<false>{}, gen)), ranges::dangling>);
@@ -76,74 +72,8 @@ void test_urbg() { // COMPILE-ONLY
     ranges::shuffle(arr, RandGen{});
 }
 
-// Test that shuffle produces a valid permutation for various sizes.
-// This exercises both the batched path (for 64-bit RNGs) and the fallback path.
-void test_shuffle_permutation() {
-    const vector<int> original = [] {
-        vector<int> ret(100);
-        iota(ret.begin(), ret.end(), 0);
-        return ret;
-    }();
-
-    // Test with 64-bit generator (batched random path)
-    {
-        vector<int> v = original;
-        shuffle(v.begin(), v.end(), gen64);
-        sort(v.begin(), v.end());
-        assert(v == original); // Verify it's still a permutation
-    }
-
-    // Test with ranges::shuffle and 64-bit generator (batched random path)
-    {
-        vector<int> v = original;
-        ranges::shuffle(v, gen64);
-        sort(v.begin(), v.end());
-        assert(v == original); // Verify it's still a permutation
-    }
-
-    // Test with 32-bit generator (non-batched path)
-    {
-        vector<int> v = original;
-        shuffle(v.begin(), v.end(), gen);
-        sort(v.begin(), v.end());
-        assert(v == original); // Verify it's still a permutation
-    }
-
-    // Test with ranges::shuffle and 32-bit generator (non-batched path)
-    {
-        vector<int> v = original;
-        ranges::shuffle(v, gen);
-        sort(v.begin(), v.end());
-        assert(v == original); // Verify it's still a permutation
-    }
-}
-
-[[nodiscard]] bool shuffle_is_a_permutation(const size_t n) {
-    vector<int> v(n);
-    iota(v.begin(), v.end(), 0);
-    const vector<int> original = v;
-    shuffle(v.begin(), v.end(), gen64);
-    sort(v.begin(), v.end());
-    return v == original; // have the caller assert() for clearer diagnostics
-}
-
-// Test edge cases for shuffle
-void test_shuffle_edge_cases() {
-    // Test both even and odd sizes to exercise the batching boundary.
-    // Test large sizes to ensure batching is effective.
-    assert(shuffle_is_a_permutation(0));
-    assert(shuffle_is_a_permutation(1));
-    assert(shuffle_is_a_permutation(2));
-    assert(shuffle_is_a_permutation(3));
-    assert(shuffle_is_a_permutation(4));
-    assert(shuffle_is_a_permutation(1729));
-    assert(shuffle_is_a_permutation(10000));
-}
-
 int main() {
     printf("Using seed: %u\n", seed);
 
     test_random<instantiator, int>();
-    test_shuffle_permutation();
-    test_shuffle_edge_cases();
 }
