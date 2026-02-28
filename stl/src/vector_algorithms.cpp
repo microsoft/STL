@@ -5,10 +5,6 @@
 #error _M_CEE_PURE should not be defined when compiling vector_algorithms.cpp.
 #endif
 
-#ifndef _DEBUG
-#pragma optimize("t", on) // TRANSITION, GH-2108: Override /Os with /Ot for this TU before any function definitions
-#endif
-
 #include <__msvc_minmax.hpp>
 #include <cstdint>
 #include <cstring>
