@@ -2441,6 +2441,20 @@ void test_gh_6022() {
     g_regexTester.should_match("abaaacaabaaaadab", R"((?:(a*)b(\1*)a*c)+aabaaaad\2b)");
 }
 
+void test_gh_6118() {
+    // GH-6118: regex_search() sometimes incorrectly matches capturing groups
+    // regex_search() failed to reset capture groups between match attempts.
+    {
+        test_regex re_matching_inbetween(&g_regexTester, "a|(b)c");
+        re_matching_inbetween.should_search_match_capture_groups("ba", "a", match_default, {{-1, -1}});
+    }
+
+    {
+        test_regex re_matching_at_end(&g_regexTester, "$|(b)c");
+        re_matching_at_end.should_search_match_capture_groups("b", "", match_default, {{-1, -1}});
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2503,6 +2517,7 @@ int main() {
     test_gh_5939();
     test_gh_5944();
     test_gh_6022();
+    test_gh_6118();
 
     return g_regexTester.result();
 }
