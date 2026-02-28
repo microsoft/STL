@@ -918,6 +918,10 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19
 #error /GR implies _HAS_STATIC_RTTI.
 #endif // defined(_CPPRTTI) && !_HAS_STATIC_RTTI
 
+#ifndef _HAS_NONFLOATING_COMPLEX
+#define _HAS_NONFLOATING_COMPLEX 0
+#endif // !defined(_HAS_NONFLOATING_COMPLEX)
+
 // N4950 [dcl.constexpr]/1: "A function or static data member declared with the
 // constexpr or consteval specifier is implicitly an inline function or variable"
 
@@ -1383,6 +1387,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _CXX20_REMOVE_CISO646
 #endif // ^^^ warning disabled ^^^
 
+#if _HAS_NONFLOATING_COMPLEX
 #if !defined(_SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING)
 #define _DEPRECATE_NONFLOATING_COMPLEX                                                 \
     [[deprecated("warning STL4037: "                                                   \
@@ -1393,6 +1398,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #else // ^^^ warning enabled / warning disabled vvv
 #define _DEPRECATE_NONFLOATING_COMPLEX
 #endif // ^^^ warning disabled ^^^
+#endif // ^^^ _HAS_NONFLOATING_COMPLEX ^^^
 
 // STL4038 is used to warn that "The contents of <meow> are available only with C++NN or later."
 
