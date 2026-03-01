@@ -911,10 +911,6 @@ std/ranges/range.adaptors/range.lazy.split/range.lazy.split.inner/iter_swap.pass
 # Clang error: non-type template argument is not a constant expression
 std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp:2 FAIL
 
-# Not analyzed, possible path length issue. With a repo root of D:\GitHub\STL (13 characters), fails with:
-# "error RC2136 : missing '=' in EXSTYLE=<flags>" followed by "LINK : fatal error LNK1327: failure during running rc.exe"
-std/thread/thread.mutex/thread.mutex.requirements/thread.sharedtimedmutex.requirements/thread.sharedtimedmutex.class/try_lock_until_deadlock_bug.pass.cpp SKIPPED
-
 # Not analyzed, failing due to constexpr step limits. SKIPPED because they occasionally pass in certain configurations.
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp SKIPPED
 std/algorithms/alg.modifying.operations/alg.move/move.pass.cpp SKIPPED
