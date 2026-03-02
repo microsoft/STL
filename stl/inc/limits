@@ -120,7 +120,7 @@ struct _Num_int_base : _Num_base { // base for integer types
     static constexpr bool is_exact       = true;
     static constexpr bool is_integer     = true;
     static constexpr bool is_specialized = true;
-#if !defined(__clang__) || defined(_M_X64) && !defined(_M_ARM64EC) || defined(_M_IX86)
+#if !defined(__clang__) || (defined(_M_X64) && !defined(_M_ARM64EC)) || defined(_M_IX86)
     static constexpr bool traps = true;
 #endif
     static constexpr int radix = 2;
