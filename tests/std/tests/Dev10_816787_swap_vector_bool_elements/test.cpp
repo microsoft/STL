@@ -35,7 +35,6 @@ void check_values_match() {
 
 template <typename T>
 void check_P3612(T& collection) {
-
     auto ref0       = collection[0];
     auto const ref1 = collection[1];
 
@@ -65,7 +64,6 @@ constexpr bool has_noexcept_copy_ctor = noexcept(T(std::declval<const T&>()));
 
 int main() {
     check_values_match();
-
 
     constexpr size_t N = 10;
     vector<bool> vector(N);
