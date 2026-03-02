@@ -15,7 +15,7 @@ static_assert(traps_<int>,
 #ifdef __clang__
 static_assert(!traps_<int>, "The hardware does not trap. Clang compiles code as is, so there's no trap");
 #else // ^^^ defined(__clang__) / !defined(__clang__) vvv
-static_assert(traps_<int>, "The hardware does not trap. MSVC inserts check for zero to trap zero division. "
+static_assert(traps_<int>, "The hardware does not trap. MSVC inserts a check for zero to trap zero division. "
                            "It does not insert checks for INT_MIN/-1 division overflow though");
 #endif // ^^^ !defined(__clang__) ^^^
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64) ^^^
