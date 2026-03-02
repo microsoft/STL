@@ -6193,65 +6193,39 @@ constexpr bool _Urng_has_full_64bit_range =
 
 template <class _Diff, class _Urng>
 struct _Batched_rng_from_urng {
-
-    // Threshold bounds for batch sizes based on array size.
-    // These are derived from the paper to minimize expected cost per random value.
-    // Batch size k requires product of k consecutive bounds <= 2^64.
-    static constexpr uint64_t _Bound_for_batch_6 = 21; // (21)^6 = 85,766,121 < 2^64 / (very conservative)
-    static constexpr uint64_t _Bound_for_batch_5 = 73; // (73)^5 = 2,073,071,593 < 2^64
-    static constexpr uint64_t _Bound_for_batch_4 = 302; // (302)^4 = 8,319,430,096 < 2^64
-    static constexpr uint64_t _Bound_for_batch_3 = 2642; // (2642)^3 = 18,454,249,288 < 2^64
-    static constexpr uint64_t _Bound_for_batch_2 = 4294967296; // 2^32, for batch of 2
-
     _Urng& _Ref;
 
     explicit _Batched_rng_from_urng(_Urng& _Func) noexcept : _Ref(_Func) {}
 
-    // Generate a single bounded random value in [0, _Bound) using Lemire's method.
-    _NODISCARD _Diff _Single_bounded(_Diff _Bound) {
+    // Generate _K bounded random indices from a single 64-bit random word.
+    // Uses backward Fisher-Yates bounds: _N, _N-1, ..., _N-_K+1.
+    // _Results[j] is uniform in [0, _N-j).
+    //
+    // _Bound is a conservative upper bound on the product of the _K bounds,
+    // used to skip the threshold computation on the fast path. Returns the
+    // (possibly tightened) bound for the caller to pass to the next call.
+    uint64_t _Batch(_Diff* _Results, uint64_t _N, uint64_t _K, uint64_t _Bound) {
+        uint64_t _Rand = static_cast<uint64_t>(_Ref());
         uint64_t _High;
-        uint64_t _Leftover = _Base128::_UMul128(static_cast<uint64_t>(_Ref()), static_cast<uint64_t>(_Bound), _High);
-
-        if (_Leftover < static_cast<uint64_t>(_Bound)) {
-            const uint64_t _Threshold = (0 - static_cast<uint64_t>(_Bound)) % static_cast<uint64_t>(_Bound);
-            while (_Leftover < _Threshold) {
-                _Leftover = _Base128::_UMul128(static_cast<uint64_t>(_Ref()), static_cast<uint64_t>(_Bound), _High);
+        for (uint64_t _J = 0; _J < _K; ++_J) {
+            _Rand        = _Base128::_UMul128(_Rand, _N - _J, _High);
+            _Results[_J] = static_cast<_Diff>(_High);
+        }
+        if (_Rand < _Bound) {
+            _Bound = _N;
+            for (uint64_t _J = 1; _J < _K; ++_J) {
+                _Bound *= _N - _J;
+            }
+            const uint64_t _Threshold = (0 - _Bound) % _Bound;
+            while (_Rand < _Threshold) {
+                _Rand = static_cast<uint64_t>(_Ref());
+                for (uint64_t _J = 0; _J < _K; ++_J) {
+                    _Rand        = _Base128::_UMul128(_Rand, _N - _J, _High);
+                    _Results[_J] = static_cast<_Diff>(_High);
+                }
             }
         }
-
-        return static_cast<_Diff>(_High);
-    }
-
-    // Generate two bounded random values from a single 64-bit random word.
-    // The bounds are (n+1) and n for Fisher-Yates shuffle positions _Target_index and _Target_index-1.
-    void _Batch_2(_Diff* _Results, _Diff _Bound1, _Diff _Bound2) {
-        const uint64_t _B1            = static_cast<uint64_t>(_Bound1);
-        const uint64_t _B2            = static_cast<uint64_t>(_Bound2);
-        const uint64_t _Product_bound = _B1 * _B2;
-
-        uint64_t _Random_word = static_cast<uint64_t>(_Ref());
-
-        uint64_t _High1;
-        uint64_t _Leftover1 = _Base128::_UMul128(_Random_word, _B1, _High1);
-        _Results[0]         = static_cast<_Diff>(_High1);
-
-        uint64_t _High2;
-        uint64_t _Leftover = _Base128::_UMul128(_Leftover1, _B2, _High2);
-        _Results[1]        = static_cast<_Diff>(_High2);
-
-        // Rejection sampling: check if leftover is below threshold.
-        if (_Leftover < _Product_bound) {
-            const uint64_t _Threshold = (0 - _Product_bound) % _Product_bound;
-            while (_Leftover < _Threshold) {
-                _Random_word = static_cast<uint64_t>(_Ref());
-
-                _Leftover1  = _Base128::_UMul128(_Random_word, _B1, _High1);
-                _Results[0] = static_cast<_Diff>(_High1);
-
-                _Leftover   = _Base128::_UMul128(_Leftover1, _B2, _High2);
-                _Results[1] = static_cast<_Diff>(_High2);
-            }
-        }
+        return _Bound;
     }
 
     _Batched_rng_from_urng(const _Batched_rng_from_urng&)            = delete;
@@ -6602,66 +6576,90 @@ void _Random_shuffle1(_RanIt _First, _RanIt _Last, _RngFn& _RngFunc) {
 }
 
 // Batched shuffle implementation for 64-bit URNGs with full range.
-// Uses batched random generation to reduce RNG calls.
+// Uses backward Fisher-Yates (Durstenfeld) with batched random generation
+// to reduce URNG calls. Adapted from Lemire's cpp_batched_random.
 template <class _RanIt, class _Urng>
 void _Random_shuffle_batched(_RanIt _First, _RanIt _Last, _Urng& _Func) {
-    // shuffle [_First, _Last) using batched random generation
     _STD _Adl_verify_range(_First, _Last);
     auto _UFirst      = _STD _Get_unwrapped(_First);
     const auto _ULast = _STD _Get_unwrapped(_Last);
-    if (_UFirst == _ULast) {
+
+    using _Diff     = _Iter_diff_t<_RanIt>;
+    auto _Remaining = static_cast<uint64_t>(_ULast - _UFirst);
+    if (_Remaining <= 1) {
         return;
     }
 
-    using _Diff = _Iter_diff_t<_RanIt>;
     _Batched_rng_from_urng<_Diff, _Urng> _BatchedRng(_Func);
+    _Diff _Offsets[7];
 
-    auto _UTarget       = _UFirst;
-    _Diff _Target_index = 1;
+    // Process one element at a time while bounds are too large for batching.
+    for (; _Remaining > (uint64_t{1} << 30); --_Remaining) {
+        _BatchedRng._Batch(_Offsets, _Remaining, 1, _Remaining);
+        swap(*(_UFirst + _Remaining - 1), *(_UFirst + _Offsets[0])); // intentional ADL
+    }
 
-    // Process pairs using batched generation when beneficial.
-    // Batch of 2 is beneficial when bounds fit in 32 bits (product fits in 64 bits).
-    for (; ++_UTarget != _ULast; ++_Target_index) { // randomly place an element from [_First, _Target] at _Target
-        const _Diff _Bound1 = _Target_index + 1; // bound for current position
-
-        // Check if we can batch: both bounds and their product must fit safely.
-        // Use batch of 2 when the larger bound is <= 2^32 (product fits in 64 bits).
-        if (static_cast<uint64_t>(_Target_index + 2) <= _Batched_rng_from_urng<_Diff, _Urng>::_Bound_for_batch_2) {
-            auto _UTarget_next = _UTarget;
-            ++_UTarget_next;
-
-            if (_UTarget_next != _ULast) {
-                const _Diff _Bound2 = _Target_index + 2; // bound for next position
-
-                // Generate two random indices in one batch.
-                _Diff _Offsets[2];
-                _BatchedRng._Batch_2(_Offsets, _Bound1, _Bound2);
-
-                _STL_ASSERT(0 <= _Offsets[0] && _Offsets[0] <= _Target_index, "random value out of range");
-                _STL_ASSERT(0 <= _Offsets[1] && _Offsets[1] <= _Target_index + 1, "random value out of range");
-
-                // Perform first swap.
-                if (_Offsets[0] != _Target_index) {
-                    swap(*_UTarget, *(_UFirst + _Offsets[0])); // intentional ADL
-                }
-
-                // Advance to next position and perform second swap.
-                ++_UTarget;
-                ++_Target_index;
-
-                if (_Offsets[1] != _Target_index) {
-                    swap(*_UTarget, *(_UFirst + _Offsets[1])); // intentional ADL
-                }
-
-                continue; // The for-loop's ++_UTarget and ++_Target_index handle the next advance.
+    // Batch of 2: product of 2 consecutive bounds fits in 64 bits.
+    {
+        uint64_t _Bound = uint64_t{1} << 60;
+        for (; _Remaining > (uint64_t{1} << 19); _Remaining -= 2) {
+            _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 2, _Bound);
+            for (uint64_t _J = 0; _J < 2; ++_J) {
+                swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
             }
         }
+    }
 
-        // Fall back to single generation for this position.
-        const _Diff _Off = _BatchedRng._Single_bounded(_Bound1);
-        _STL_ASSERT(0 <= _Off && _Off <= _Target_index, "random value out of range");
-        if (_Off != _Target_index) {
-            swap(*_UTarget, *(_UFirst + _Off)); // intentional ADL
+    // Batch of 3.
+    {
+        uint64_t _Bound = uint64_t{1} << 57;
+        for (; _Remaining > (uint64_t{1} << 14); _Remaining -= 3) {
+            _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 3, _Bound);
+            for (uint64_t _J = 0; _J < 3; ++_J) {
+                swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
+            }
+        }
+    }
+
+    // Batch of 4.
+    {
+        uint64_t _Bound = uint64_t{1} << 56;
+        for (; _Remaining > (uint64_t{1} << 11); _Remaining -= 4) {
+            _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 4, _Bound);
+            for (uint64_t _J = 0; _J < 4; ++_J) {
+                swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
+            }
+        }
+    }
+
+    // Batch of 5.
+    {
+        uint64_t _Bound = uint64_t{1} << 55;
+        for (; _Remaining > (uint64_t{1} << 9); _Remaining -= 5) {
+            _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 5, _Bound);
+            for (uint64_t _J = 0; _J < 5; ++_J) {
+                swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
+            }
+        }
+    }
+
+    // Batch of 6.
+    {
+        uint64_t _Bound = uint64_t{1} << 54;
+        for (; _Remaining > 6; _Remaining -= 6) {
+            _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 6, _Bound);
+            for (uint64_t _J = 0; _J < 6; ++_J) {
+                swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
+            }
+        }
+    }
+
+    // Final: remaining <= 6 elements, handle in one batch.
+    if (_Remaining > 1) {
+        const auto _K = _Remaining - 1;
+        _BatchedRng._Batch(_Offsets, _Remaining, _K, 720);
+        for (uint64_t _J = 0; _J < _K; ++_J) {
+            swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
         }
     }
 }
@@ -6748,64 +6746,101 @@ namespace ranges {
         }
 
         // Batched shuffle implementation for ranges.
+        // Uses backward Fisher-Yates (Durstenfeld) with batched random generation.
         template <class _It, class _Se, class _Urng>
         _NODISCARD static _It _Shuffle_unchecked_batched(_It _First, const _Se _Last, _Urng& _Func) {
-            // shuffle [_First, _Last) using batched random generation
             _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
 
-            if (_First == _Last) {
-                return _First;
+            using _Diff       = iter_difference_t<_It>;
+            const auto _Count = static_cast<_Diff>(_Last - _First);
+            auto _Remaining   = static_cast<uint64_t>(_Count);
+            if (_Remaining <= 1) {
+                return _First + _Count;
             }
 
-            using _Diff = iter_difference_t<_It>;
             _Batched_rng_from_urng<_Diff, _Urng> _BatchedRng(_Func);
+            _Diff _Offsets[7];
 
-            auto _Target        = _First;
-            _Diff _Target_index = 1;
+            // Process one element at a time while bounds are too large for batching.
+            for (; _Remaining > (uint64_t{1} << 30); --_Remaining) {
+                _BatchedRng._Batch(_Offsets, _Remaining, 1, _Remaining);
+                _RANGES iter_swap(
+                    _First + static_cast<_Diff>(_Remaining - 1), _First + static_cast<_Diff>(_Offsets[0]));
+            }
 
-            // Process pairs using batched generation when beneficial.
-            for (; ++_Target != _Last; ++_Target_index) {
-                // randomly place an element from [_First, _Target] at _Target
-                const _Diff _Bound1 = _Target_index + 1;
-
-                if (static_cast<uint64_t>(_Target_index + 2)
-                    <= _Batched_rng_from_urng<_Diff, _Urng>::_Bound_for_batch_2) {
-                    auto _Target_next = _Target;
-                    ++_Target_next;
-
-                    if (_Target_next != _Last) {
-                        const _Diff _Bound2 = _Target_index + 2;
-
-                        _Diff _Offsets[2];
-                        _BatchedRng._Batch_2(_Offsets, _Bound1, _Bound2);
-
-                        _STL_ASSERT(0 <= _Offsets[0] && _Offsets[0] <= _Target_index, "random value out of range");
-                        _STL_ASSERT(0 <= _Offsets[1] && _Offsets[1] <= _Target_index + 1, "random value out of range");
-
-                        if (_Offsets[0] != _Target_index) {
-                            _RANGES iter_swap(_Target, _First + _Offsets[0]);
-                        }
-
-                        ++_Target;
-                        ++_Target_index;
-
-                        if (_Offsets[1] != _Target_index) {
-                            _RANGES iter_swap(_Target, _First + _Offsets[1]);
-                        }
-
-                        continue; // The for-loop's ++_Target and ++_Target_index handle the next advance.
+            // Batch of 2.
+            {
+                uint64_t _Bound = uint64_t{1} << 60;
+                for (; _Remaining > (uint64_t{1} << 19); _Remaining -= 2) {
+                    _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 2, _Bound);
+                    for (uint64_t _J = 0; _J < 2; ++_J) {
+                        _RANGES iter_swap(_First + static_cast<_Diff>(_Remaining - _J - 1),
+                            _First + static_cast<_Diff>(_Offsets[_J]));
                     }
                 }
+            }
 
-                const _Diff _Off = _BatchedRng._Single_bounded(_Bound1);
-                _STL_ASSERT(0 <= _Off && _Off <= _Target_index, "random value out of range");
-                if (_Off != _Target_index) {
-                    _RANGES iter_swap(_Target, _First + _Off);
+            // Batch of 3.
+            {
+                uint64_t _Bound = uint64_t{1} << 57;
+                for (; _Remaining > (uint64_t{1} << 14); _Remaining -= 3) {
+                    _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 3, _Bound);
+                    for (uint64_t _J = 0; _J < 3; ++_J) {
+                        _RANGES iter_swap(_First + static_cast<_Diff>(_Remaining - _J - 1),
+                            _First + static_cast<_Diff>(_Offsets[_J]));
+                    }
                 }
             }
-            return _Target;
+
+            // Batch of 4.
+            {
+                uint64_t _Bound = uint64_t{1} << 56;
+                for (; _Remaining > (uint64_t{1} << 11); _Remaining -= 4) {
+                    _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 4, _Bound);
+                    for (uint64_t _J = 0; _J < 4; ++_J) {
+                        _RANGES iter_swap(_First + static_cast<_Diff>(_Remaining - _J - 1),
+                            _First + static_cast<_Diff>(_Offsets[_J]));
+                    }
+                }
+            }
+
+            // Batch of 5.
+            {
+                uint64_t _Bound = uint64_t{1} << 55;
+                for (; _Remaining > (uint64_t{1} << 9); _Remaining -= 5) {
+                    _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 5, _Bound);
+                    for (uint64_t _J = 0; _J < 5; ++_J) {
+                        _RANGES iter_swap(_First + static_cast<_Diff>(_Remaining - _J - 1),
+                            _First + static_cast<_Diff>(_Offsets[_J]));
+                    }
+                }
+            }
+
+            // Batch of 6.
+            {
+                uint64_t _Bound = uint64_t{1} << 54;
+                for (; _Remaining > 6; _Remaining -= 6) {
+                    _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 6, _Bound);
+                    for (uint64_t _J = 0; _J < 6; ++_J) {
+                        _RANGES iter_swap(_First + static_cast<_Diff>(_Remaining - _J - 1),
+                            _First + static_cast<_Diff>(_Offsets[_J]));
+                    }
+                }
+            }
+
+            // Final: remaining <= 6 elements, handle in one batch.
+            if (_Remaining > 1) {
+                const auto _K = _Remaining - 1;
+                _BatchedRng._Batch(_Offsets, _Remaining, _K, 720);
+                for (uint64_t _J = 0; _J < _K; ++_J) {
+                    _RANGES iter_swap(
+                        _First + static_cast<_Diff>(_Remaining - _J - 1), _First + static_cast<_Diff>(_Offsets[_J]));
+                }
+            }
+
+            return _First + _Count;
         }
     };
 
