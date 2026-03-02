@@ -5,7 +5,7 @@
 
 #include <yvals.h>
 
-#include <synchapi.h>
+#include <Windows.h>
 
 namespace {
     SRWLOCK _Shared_ptr_lock = SRWLOCK_INIT;

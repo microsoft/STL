@@ -586,7 +586,16 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
+  <!-- std::compare_three_way, std::ranges::less and similar -->
+  <Type Name="std::ranges::equal_to"><DisplayString>ranges::equal_to</DisplayString><Expand/></Type>
+  <Type Name="std::ranges::not_equal_to"><DisplayString>ranges::not_equal_to</DisplayString><Expand/></Type>
+  <Type Name="std::ranges::greater"><DisplayString>ranges::greater</DisplayString><Expand/></Type>
+  <Type Name="std::ranges::less"><DisplayString>ranges::less</DisplayString><Expand/></Type>
+  <Type Name="std::ranges::greater_equal"><DisplayString>ranges::greater_equal</DisplayString><Expand/></Type>
+  <Type Name="std::ranges::less_equal"><DisplayString>ranges::less_equal</DisplayString><Expand/></Type>
+  <Type Name="std::compare_three_way"><DisplayString>compare_three_way</DisplayString><Expand/></Type>
 
+  <!-- std::less<> and similar -->
   <Type Name="std::plus&lt;void&gt;"><DisplayString>plus&lt;&gt;</DisplayString><Expand/></Type>
   <Type Name="std::minus&lt;void&gt;"><DisplayString>minus&lt;&gt;</DisplayString><Expand/></Type>
   <Type Name="std::multiplies&lt;void&gt;"><DisplayString>multiplies&lt;&gt;</DisplayString><Expand/></Type>
@@ -607,101 +616,26 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   <Type Name="std::bit_xor&lt;void&gt;"><DisplayString>bit_xor&lt;&gt;</DisplayString><Expand/></Type>
   <Type Name="std::bit_not&lt;void&gt;"><DisplayString>bit_not&lt;&gt;</DisplayString><Expand/></Type>
 
-
-  <Type Name="std::plus&lt;*&gt;">
-      <DisplayString>plus</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::minus&lt;*&gt;">
-      <DisplayString>minus</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::multiplies&lt;*&gt;">
-      <DisplayString>multiplies</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::divides&lt;*&gt;">
-      <DisplayString>divides</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::modulus&lt;*&gt;">
-      <DisplayString>modulus</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::negate&lt;*&gt;">
-      <DisplayString>negate</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::equal_to&lt;*&gt;">
-      <DisplayString>equal_to</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::not_equal_to&lt;*&gt;">
-      <DisplayString>not_equal_to</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::greater&lt;*&gt;">
-      <DisplayString>greater</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::less&lt;*&gt;">
-      <DisplayString>less</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::greater_equal&lt;*&gt;">
-      <DisplayString>greater_equal</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::less_equal&lt;*&gt;">
-      <DisplayString>less_equal</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::logical_and&lt;*&gt;">
-      <DisplayString>logical_and</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::logical_or&lt;*&gt;">
-      <DisplayString>logical_or</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::logical_not&lt;*&gt;">
-      <DisplayString>logical_not</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::bit_and&lt;*&gt;">
-      <DisplayString>bit_and</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::bit_or&lt;*&gt;">
-      <DisplayString>bit_or</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::bit_xor&lt;*&gt;">
-      <DisplayString>bit_xor</DisplayString>
-      <Expand/>
-  </Type>
-
-  <Type Name="std::bit_not&lt;*&gt;">
-      <DisplayString>bit_not</DisplayString>
-      <Expand/>
-  </Type>
+  <!-- std::less<T> and similar -->
+  <Type Name="std::plus&lt;*&gt;"><DisplayString>plus</DisplayString><Expand/></Type>
+  <Type Name="std::minus&lt;*&gt;"><DisplayString>minus</DisplayString><Expand/></Type>
+  <Type Name="std::multiplies&lt;*&gt;"><DisplayString>multiplies</DisplayString><Expand/></Type>
+  <Type Name="std::divides&lt;*&gt;"><DisplayString>divides</DisplayString><Expand/></Type>
+  <Type Name="std::modulus&lt;*&gt;"><DisplayString>modulus</DisplayString><Expand/></Type>
+  <Type Name="std::negate&lt;*&gt;"><DisplayString>negate</DisplayString><Expand/></Type>
+  <Type Name="std::equal_to&lt;*&gt;"><DisplayString>equal_to</DisplayString><Expand/></Type>
+  <Type Name="std::not_equal_to&lt;*&gt;"><DisplayString>not_equal_to</DisplayString><Expand/></Type>
+  <Type Name="std::greater&lt;*&gt;"><DisplayString>greater</DisplayString><Expand/></Type>
+  <Type Name="std::less&lt;*&gt;"><DisplayString>less</DisplayString><Expand/></Type>
+  <Type Name="std::greater_equal&lt;*&gt;"><DisplayString>greater_equal</DisplayString><Expand/></Type>
+  <Type Name="std::less_equal&lt;*&gt;"><DisplayString>less_equal</DisplayString><Expand/></Type>
+  <Type Name="std::logical_and&lt;*&gt;"><DisplayString>logical_and</DisplayString><Expand/></Type>
+  <Type Name="std::logical_or&lt;*&gt;"><DisplayString>logical_or</DisplayString><Expand/></Type>
+  <Type Name="std::logical_not&lt;*&gt;"><DisplayString>logical_not</DisplayString><Expand/></Type>
+  <Type Name="std::bit_and&lt;*&gt;"><DisplayString>bit_and</DisplayString><Expand/></Type>
+  <Type Name="std::bit_or&lt;*&gt;"><DisplayString>bit_or</DisplayString><Expand/></Type>
+  <Type Name="std::bit_xor&lt;*&gt;"><DisplayString>bit_xor</DisplayString><Expand/></Type>
+  <Type Name="std::bit_not&lt;*&gt;"><DisplayString>bit_not</DisplayString><Expand/></Type>
 
 
   <Type Name="std::unary_negate&lt;*&gt;">
@@ -1011,6 +945,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Intrinsic Name="bufSize" Expression="16 / sizeof($T1) &lt; 1 ? 1 : 16 / sizeof($T1)" />
     <Intrinsic Name="isShortString" Expression="capacity() &lt; bufSize()" />
     <Intrinsic Name="isLongString" Expression="capacity() &gt;= bufSize()" />
+    <Intrinsic Name="c_str" Expression="const_cast&lt;const $T1*&gt;(isShortString() ? _Mypair._Myval2._Bx._Buf : _Mypair._Myval2._Bx._Ptr)" />
     <DisplayString Condition="isShortString()">{_Mypair._Myval2._Bx._Buf,na}</DisplayString>
     <DisplayString Condition="isLongString()">{_Mypair._Myval2._Bx._Ptr,na}</DisplayString>
     <StringView Condition="isShortString()">_Mypair._Myval2._Bx._Buf,na</StringView>
@@ -1083,6 +1018,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   <Type Name="std::_Array_iterator&lt;*&gt;" Priority="MediumLow">
       <AlternativeType Name="std::_Array_const_iterator&lt;*&gt;" />
       <SmartPointer Usage="Indexable">_Ptr,na</SmartPointer>
+      <DisplayString>{*_Ptr}</DisplayString>
       <Expand>
           <Item Name="[ptr]">_Ptr</Item>
       </Expand>
@@ -1099,13 +1035,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-  <!-- VC 2015 -->
   <Type Name="std::deque&lt;*&gt;">
-      <DisplayString>{{ size={_Mypair._Myval2._Mysize} }}</DisplayString>
+      <Intrinsic Name="size" Expression="_Mypair._Myval2._Mysize" />
+      <DisplayString>{{ size={size()} }}</DisplayString>
       <Expand>
           <Item Name="[allocator]" ExcludeView="simple">_Mypair</Item>
           <IndexListItems>
-              <Size>_Mypair._Myval2._Mysize</Size>
+              <Size>size()</Size>
               <ValueNode>_Mypair._Myval2._Map[(($i + _Mypair._Myval2._Myoff) / _EEN_DS) % _Mypair._Myval2._Mapsize][($i + _Mypair._Myval2._Myoff) % _EEN_DS]</ValueNode>
           </IndexListItems>
       </Expand>
@@ -1226,14 +1162,27 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
-  <Type Name="std::_Vector_iterator&lt;*&gt;">
+  <!-- This is for _ITERATOR_DEBUG_LEVEL == 0 and must have lower priority. -->
+  <Type Name="std::_Vector_iterator&lt;*&gt;" Priority="MediumLow">
       <AlternativeType Name="std::_Vector_const_iterator&lt;*&gt;" />
       <SmartPointer Usage="Indexable">_Ptr,na</SmartPointer>
+      <DisplayString>{*_Ptr}</DisplayString>
       <Expand>
           <Item Name="[ptr]">_Ptr</Item>
       </Expand>
   </Type>
 
+  <!-- This is for _ITERATOR_DEBUG_LEVEL != 0 and must have higher priority. -->
+  <Type Name="std::_Vector_iterator&lt;*&gt;" Priority="Medium">
+      <AlternativeType Name="std::_Vector_const_iterator&lt;*&gt;" />
+      <Intrinsic Name="my_cont_end" Expression="((_Myvec_t *)_Myproxy-&gt;_Mycont)-&gt;_Mylast" />
+      <SmartPointer Usage="Indexable">_Ptr,na</SmartPointer>
+      <DisplayString Condition="_Ptr == my_cont_end()">end</DisplayString>
+      <DisplayString Condition="_Ptr != my_cont_end()">{*_Ptr}</DisplayString>
+      <Expand>
+          <Item Name="[ptr]">_Ptr</Item>
+      </Expand>
+  </Type>
 
   <!-- VC 2015 -->
   <Type Name="std::map&lt;*&gt;" Priority="Medium">
@@ -1836,11 +1785,23 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
-  <Type Name="std::_Span_iterator&lt;*&gt;">
+  <!-- This is for _ITERATOR_DEBUG_LEVEL == 0 and must have lower priority. -->
+  <Type Name="std::_Span_iterator&lt;*&gt;" Priority="MediumLow">
     <SmartPointer Usage="Indexable">_Myptr,na</SmartPointer>
+    <DisplayString>{*_Myptr}</DisplayString>
     <Expand>
       <Item Name="[ptr]">_Myptr</Item>
     </Expand>
+  </Type>
+
+  <!-- This is for _ITERATOR_DEBUG_LEVEL != 0 and must have higher priority. -->
+  <Type Name="std::_Span_iterator&lt;*&gt;" Priority="Medium">
+      <SmartPointer Usage="Indexable">_Myptr,na</SmartPointer>
+      <DisplayString Condition="_Myptr == _Myend">end</DisplayString>
+      <DisplayString Condition="_Myptr != _Myend">{*_Myptr}</DisplayString>
+      <Expand>
+          <Item Name="[ptr]">_Myptr</Item>
+      </Expand>
   </Type>
 
   <Type Name="std::default_sentinel_t">
@@ -2292,6 +2253,104 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Item Name="[ms]">_MyDur._MyRep/(10 * 1000)</Item>
       <Item Name="[s]">_MyDur._MyRep/(10 * 1000 * 1000)</Item>
       <Synthetic Name="[clock]"><DisplayString>UTC</DisplayString></Synthetic>
+    </Expand>
+  </Type>
+
+  <Type Name="std::extents&lt;*&gt;">
+    <DisplayString>{{ rank={_Rank}, rank_dynamic={_Rank_dynamic} }}</DisplayString>
+    <Expand>
+      <!-- Mixed static and dynamic extents -->
+      <CustomListItems Condition="_Rank != _Rank_dynamic" Optional="true">
+        <Variable Name="idx" InitialValue="0" />
+        <Variable Name="statptr" InitialValue="(const rank_type*) _Static_extents._Elems" />
+        <Variable Name="dynptr" InitialValue="($T1*) _Array._Elems" />
+        <Loop>
+          <Break Condition="idx == _Rank" />
+          <If Condition="*statptr == -1">
+            <Item Name="[{idx}] dynamic extent">*dynptr</Item>
+            <Exec>++dynptr</Exec>
+          </If>
+          <Item Condition="*statptr != -1" Name="[{idx}] static extent">($T1) *statptr</Item>
+          <Exec>++idx, ++statptr</Exec>
+        </Loop>
+      </CustomListItems>
+
+    <!-- Fully dynamic extents -->
+    <CustomListItems Condition="_Rank == _Rank_dynamic" Optional="true">
+      <Variable Name="idx" InitialValue="0" />
+      <Variable Name="dynptr" InitialValue="($T1*) _Array._Elems" />
+      <Loop>
+        <Break Condition="idx == _Rank_dynamic" />
+        <Item Name="[{idx}] dynamic extent">*dynptr</Item>
+        <Exec>++idx, ++dynptr</Exec>
+      </Loop>
+    </CustomListItems>
+
+    <!-- Fully static extents -->
+    <CustomListItems Condition="_Rank_dynamic == 0" Optional="true">
+      <Variable Name="idx" InitialValue="0" />
+      <Variable Name="statptr" InitialValue="(const rank_type*) _Static_extents._Elems" />
+      <Loop>
+        <Break Condition="idx == _Rank" />
+        <Item Name="[{idx}] static extent">($T1) *statptr</Item>
+        <Exec>++idx, ++statptr</Exec>
+      </Loop>
+    </CustomListItems>
+    </Expand>
+  </Type>
+
+  <Type Name="std::flat_map&lt;*&gt;">
+   <AlternativeType Name="std::flat_multimap&lt;*&gt;"/>
+    <Intrinsic Name="size" Expression="_Data.keys.size()"/>
+    <Intrinsic Name="key_at" Expression="&amp;_Data.keys[index]">
+      <Parameter Name="index" Type="size_t" />
+    </Intrinsic>
+    <Intrinsic Name="value_at" Expression="&amp;_Data.values[index]">
+      <Parameter Name="index" Type="size_t" />
+    </Intrinsic>
+
+    <DisplayString>{{ size={size()} }}</DisplayString>
+
+    <Expand>
+      <Item Name="[size]">size()</Item>
+      <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
+      <CustomListItems>
+        <Variable Name="i" InitialValue="0" />
+        <Size>size()</Size>
+        <Loop>
+          <Item Name="[{*key_at(i)}]">*value_at(i)</Item>
+          <Exec>++i</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
+  <!-- fallback when the primary visualization (above) fails to parse, e.g. some custom containers -->
+  <Type Name="std::flat_map&lt;*&gt;" Priority="MediumLow">
+    <AlternativeType Name="std::flat_multimap&lt;*&gt;"/>
+    <Intrinsic Name="size" Expression="_Data.keys.size()"/>
+    <DisplayString>{{ size={size()} }}</DisplayString>
+    <Expand>
+      <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
+      <Item Name="[keys]">_Data.keys</Item>
+      <Item Name="[values]">_Data.values</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::_Pairing_iterator_provider&lt;*&gt;::_Iterator">
+    <DisplayString>({_Key_it}, {_Mapped_it})</DisplayString>
+    <Expand>
+      <Item Name="[key]">_Key_it</Item>
+      <Item Name="[value]">_Mapped_it</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::flat_set&lt;*&gt;">
+    <AlternativeType Name="std::flat_multiset&lt;*&gt;"/>
+    <DisplayString>{_Data}</DisplayString>
+    <Expand>
+      <Item Name="[comparator]" ExcludeView="simple">_Key_compare</Item>
+      <ExpandedItem>_Data</ExpandedItem>
     </Expand>
   </Type>
 

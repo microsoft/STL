@@ -199,7 +199,7 @@ constexpr void do_check_members(const extents<IndexType, Extents...>& ext,
 
     { // Check 'is_always_[unique/exhaustive/strided]' functions
         static_assert(Mapping::is_always_unique());
-        static_assert(!Mapping::is_always_exhaustive());
+        static_assert(Mapping::is_always_exhaustive() == (Ext::rank() == 0 || ((Extents == 0) || ...)));
         static_assert(Mapping::is_always_strided());
     }
 
@@ -410,7 +410,7 @@ constexpr void check_is_exhaustive() {
 
     // rank() is equal to 1
     check(extents<int, 0>{}, array{1}, true);
-    check(dextents<int, 1>{0}, array{2}, false);
+    check(dextents<int, 1>{0}, array{2}, true);
     check(extents<int, 1>{}, array{3}, false);
     check(dextents<int, 1>{2}, array{2}, false);
     check(extents<int, 3>{}, array{1}, true);
@@ -426,14 +426,14 @@ constexpr void check_is_exhaustive() {
     check(extents<int, dynamic_extent, 7>{5}, array{1, 8}, false);
     check(dextents<int, 2>{6, 5}, array{1, 10}, false);
     check(extents<int, 0, 3>{}, array{3, 1}, true);
-    check(extents<int, 0, 3>{}, array{6, 2}, false);
-    check(extents<int, dynamic_extent, 3>{0}, array{6, 1}, false);
-    check(extents<int, 0, dynamic_extent>{3}, array{6, 2}, false);
-    check(dextents<int, 2>{0, 3}, array{7, 2}, false);
-    check(extents<int, 0, 0>{}, array{1, 1}, false);
-    check(extents<int, 0, dynamic_extent>{0, 0}, array{1, 1}, false);
-    check(dextents<int, 2>{0, 0}, array{1, 2}, false);
-    check(extents<int, 1, dynamic_extent>{0}, array{1, 2}, false);
+    check(extents<int, 0, 3>{}, array{6, 2}, true);
+    check(extents<int, dynamic_extent, 3>{0}, array{6, 1}, true);
+    check(extents<int, 0, dynamic_extent>{3}, array{6, 2}, true);
+    check(dextents<int, 2>{0, 3}, array{7, 2}, true);
+    check(extents<int, 0, 0>{}, array{1, 1}, true);
+    check(extents<int, 0, dynamic_extent>{0, 0}, array{1, 1}, true);
+    check(dextents<int, 2>{0, 0}, array{1, 2}, true);
+    check(extents<int, 1, dynamic_extent>{0}, array{1, 2}, true);
 
     // rank() is greater than 2
     check(extents<int, 2, 3, 5>{}, array{1, 2, 6}, true);
@@ -449,20 +449,20 @@ constexpr void check_is_exhaustive() {
     // rank() is greater than 2 and some extents are equal to 0
     check(extents<int, 2, 0, 7>{}, array{7, 14, 1}, true);
     check(extents<int, dynamic_extent, 0, 7>{2}, array{1, 14, 2}, true);
-    check(extents<int, 2, dynamic_extent, 7>{0}, array{14, 28, 1}, false);
-    check(extents<int, 2, dynamic_extent, dynamic_extent>{0, 7}, array{1, 2, 2}, false);
-    check(dextents<int, 3>{2, 0, 7}, array{2, 28, 4}, false);
-    check(extents<int, 5, 0, 0>{}, array{3, 1, 1}, false);
-    check(extents<int, 5, dynamic_extent, 0>{0}, array{1, 5, 1}, false);
-    check(dextents<int, 3>{5, 0, 0}, array{2, 1, 10}, false);
-    check(extents<int, 0, 0, 0>{}, array{1, 1, 1}, false);
+    check(extents<int, 2, dynamic_extent, 7>{0}, array{14, 28, 1}, true);
+    check(extents<int, 2, dynamic_extent, dynamic_extent>{0, 7}, array{1, 2, 2}, true);
+    check(dextents<int, 3>{2, 0, 7}, array{2, 28, 4}, true);
+    check(extents<int, 5, 0, 0>{}, array{3, 1, 1}, true);
+    check(extents<int, 5, dynamic_extent, 0>{0}, array{1, 5, 1}, true);
+    check(dextents<int, 3>{5, 0, 0}, array{2, 1, 10}, true);
+    check(extents<int, 0, 0, 0>{}, array{1, 1, 1}, true);
     check(extents<int, 0, 1, 1>{}, array{1, 1, 1}, true);
 
     // rank() is greater than 2 - one extent is equal to 0 while others are equal to each other
     check(extents<int, 3, 0, 3>{}, array{1, 9, 3}, true);
     check(extents<int, dynamic_extent, 0, 3>{3}, array{3, 9, 1}, true);
-    check(extents<int, 3, dynamic_extent, dynamic_extent>{0, 3}, array{1, 3, 3}, false);
-    check(dextents<int, 3>{3, 0, 3}, array{1, 4, 8}, false);
+    check(extents<int, 3, dynamic_extent, dynamic_extent>{0, 3}, array{1, 3, 3}, true);
+    check(dextents<int, 3>{3, 0, 3}, array{1, 4, 8}, true);
     check(dextents<int, 3>{0, 1, 1}, array{1, 1, 1}, true);
 
     // required_span_size() is equal to 1
@@ -764,15 +764,9 @@ constexpr void check_correctness() {
         layout_stride::mapping<E> m{E{}, array{1}};
         mdspan<const int, extents<int, 3>, layout_stride> vec{vals.data(), m};
 
-#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
         assert((vec[0] == 1));
         assert((vec[1] == 2));
         assert((vec[2] == 3));
-#else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
-        assert((vec[array{0}] == 1));
-        assert((vec[array{1}] == 2));
-        assert((vec[array{2}] == 3));
-#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
     }
 
     { // 2x3 matrix with row-major order
@@ -781,21 +775,12 @@ constexpr void check_correctness() {
         layout_stride::mapping<E> m{E{}, array{3, 1}};
         mdspan<const int, E, layout_stride> matrix{vals.data(), m};
 
-#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
         assert((matrix[0, 0] == 1));
         assert((matrix[0, 1] == 2));
         assert((matrix[0, 2] == 3));
         assert((matrix[1, 0] == 4));
         assert((matrix[1, 1] == 5));
         assert((matrix[1, 2] == 6));
-#else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
-        assert((matrix[array{0, 0}] == 1));
-        assert((matrix[array{0, 1}] == 2));
-        assert((matrix[array{0, 2}] == 3));
-        assert((matrix[array{1, 0}] == 4));
-        assert((matrix[array{1, 1}] == 5));
-        assert((matrix[array{1, 2}] == 6));
-#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
     }
 
     { // 3x2x2 tensor
@@ -805,7 +790,6 @@ constexpr void check_correctness() {
         assert(!m.is_exhaustive());
         mdspan<const int, E, layout_stride> tensor{vals.data(), m};
 
-#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
         assert((tensor[0, 0, 0] == 0));
         assert((tensor[0, 0, 1] == 3));
         assert((tensor[0, 1, 0] == 1));
@@ -818,20 +802,6 @@ constexpr void check_correctness() {
         assert((tensor[2, 0, 1] == 17));
         assert((tensor[2, 1, 0] == 15));
         assert((tensor[2, 1, 1] == 18));
-#else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
-        assert((tensor[array{0, 0, 0}] == 0));
-        assert((tensor[array{0, 0, 1}] == 3));
-        assert((tensor[array{0, 1, 0}] == 1));
-        assert((tensor[array{0, 1, 1}] == 4));
-        assert((tensor[array{1, 0, 0}] == 7));
-        assert((tensor[array{1, 0, 1}] == 10));
-        assert((tensor[array{1, 1, 0}] == 8));
-        assert((tensor[array{1, 1, 1}] == 11));
-        assert((tensor[array{2, 0, 0}] == 14));
-        assert((tensor[array{2, 0, 1}] == 17));
-        assert((tensor[array{2, 1, 0}] == 15));
-        assert((tensor[array{2, 1, 1}] == 18));
-#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
     }
 
     { // 2x3x3x2 tensor
@@ -842,7 +812,6 @@ constexpr void check_correctness() {
         assert(m.is_exhaustive());
         mdspan<const int, E, layout_stride> tensor{vals.data(), m};
 
-#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
         assert((tensor[0, 0, 0, 0] == 0));
         assert((tensor[0, 0, 0, 1] == 9));
         assert((tensor[0, 0, 1, 0] == 3));
@@ -861,26 +830,6 @@ constexpr void check_correctness() {
         assert((tensor[1, 1, 1, 1] == 31));
         assert((tensor[0, 2, 2, 0] == 8));
         assert((tensor[1, 2, 2, 1] == 35));
-#else // ^^^ defined(__cpp_multidimensional_subscript) / !defined(__cpp_multidimensional_subscript) vvv
-        assert((tensor[array{0, 0, 0, 0}] == 0));
-        assert((tensor[array{0, 0, 0, 1}] == 9));
-        assert((tensor[array{0, 0, 1, 0}] == 3));
-        assert((tensor[array{0, 0, 1, 1}] == 12));
-        assert((tensor[array{0, 1, 0, 0}] == 1));
-        assert((tensor[array{0, 1, 0, 1}] == 10));
-        assert((tensor[array{0, 1, 1, 0}] == 4));
-        assert((tensor[array{0, 1, 1, 1}] == 13));
-        assert((tensor[array{1, 0, 0, 0}] == 18));
-        assert((tensor[array{1, 0, 0, 1}] == 27));
-        assert((tensor[array{1, 0, 1, 0}] == 21));
-        assert((tensor[array{1, 0, 1, 1}] == 30));
-        assert((tensor[array{1, 1, 0, 0}] == 19));
-        assert((tensor[array{1, 1, 0, 1}] == 28));
-        assert((tensor[array{1, 1, 1, 0}] == 22));
-        assert((tensor[array{1, 1, 1, 1}] == 31));
-        assert((tensor[array{0, 2, 2, 0}] == 8));
-        assert((tensor[array{1, 2, 2, 1}] == 35));
-#endif // ^^^ !defined(__cpp_multidimensional_subscript) ^^^
     }
 }
 

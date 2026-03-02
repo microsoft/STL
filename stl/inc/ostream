@@ -219,7 +219,7 @@ ios_base::iostate _Print_noformat_unicode(ostream& _Ostr, const string_view _Str
 
 template <int = 0>
 ios_base::iostate _Print_newline_only_unicode(ostream& _Ostr) {
-    const auto _Unicode_console = [](const __std_unicode_console_handle _Console_handle) {
+    const auto _Unicode_console = [](const __std_unicode_console_handle _Console_handle) _STATIC_CALL_OPERATOR {
         return __std_print_newline_only_to_unicode_console(_Console_handle);
     };
 

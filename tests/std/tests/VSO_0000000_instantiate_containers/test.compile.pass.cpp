@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _USE_NAMED_IDL_NAMESPACE 1
 #include <array>
 #include <bitset>
 #include <complex>
@@ -748,7 +747,7 @@ void extended_math_functions_test(T value) {
 
 namespace std {
     template <typename T>
-    inline const T* cbegin(valarray<T>& arr) {
+    const T* cbegin(valarray<T>& arr) {
         return begin(arr); // unqualified
     }
 } // namespace std

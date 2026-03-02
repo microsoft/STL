@@ -657,11 +657,51 @@ constexpr bool test_growth() {
     return true;
 }
 
+#pragma warning(push)
+#pragma warning(disable : 4582) // '%s': constructor is not implicitly called
+#pragma warning(disable : 4583) // '%s': destructor is not implicitly called
+template <class T, size_t N>
+constexpr void test_vector_of_array_impl() {
+    vector<T[N]> v(42);
+    for (const auto& a : v) {
+        for (const auto& elem : a) {
+            assert(elem == T{});
+        }
+    }
+}
+
+constexpr bool test_vector_of_array() {
+    test_vector_of_array_impl<int, 1>();
+    test_vector_of_array_impl<int, 42>();
+
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-10798069
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
+    {
+#if !_HAS_CXX23
+        if (!is_constant_evaluated())
+#endif // !_HAS_CXX23
+        {
+            test_vector_of_array_impl<unique_ptr<vector<char>>, 1>();
+            test_vector_of_array_impl<unique_ptr<vector<char>>, 42>();
+        }
+        test_vector_of_array_impl<vector<long>, 1>();
+        test_vector_of_array_impl<vector<long>, 42>();
+    }
+
+    return true;
+}
+#pragma warning(pop)
+
 int main() {
     test_interface();
     test_iterators();
     test_growth();
+    test_vector_of_array();
     static_assert(test_interface());
     static_assert(test_iterators());
     static_assert(test_growth());
+#ifndef __EDG__ // TRANSITION, DevCom-11008487
+    static_assert(test_vector_of_array());
+#endif // ^^^ no workaround ^^^
 }

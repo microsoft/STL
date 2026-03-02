@@ -43,8 +43,10 @@ struct partition_point_test {
         int elements[200];
         iota(ranges::begin(elements), ranges::end(elements), 0);
 
-        // to avoid constant expression step limits
-        const size_t bound = elements[0] + (is_constant_evaluated() ? 10 : ranges::size(elements));
+        size_t bound = ranges::size(elements);
+        if (is_constant_evaluated()) {
+            bound = min(bound, size_t{10}); // to avoid constant expression step limits
+        }
 
         for (size_t i = 0; i < bound; ++i) {
             const R range{span{elements}.first(i)};

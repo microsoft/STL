@@ -14,18 +14,23 @@ parameters:
   type: string
 
 steps:
-- script: |
-    if exist "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}" (
-      rmdir /S /Q "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
-    )
-    call "$(vsDevCmdBat)" -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-    cmake -G Ninja ^
-    -DCMAKE_CXX_COMPILER=${{ parameters.compiler }} ^
-    -DCMAKE_BUILD_TYPE=Release ^
-    -DSTL_BINARY_DIR="$(buildOutputLocation)" ^
-    -DVCLIBS_TARGET_ARCHITECTURE=${{ parameters.targetPlatform }} ^
-    -S $(Build.SourcesDirectory)/benchmarks -B "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
-  displayName: 'Configure the benchmarks for ${{ parameters.compiler }}'
+- task: PowerShell@2
+  displayName: 'Configure Benchmarks for ${{ parameters.compiler }}'
+  inputs:
+    pwsh: true
+    targetType: inline
+    script: |
+      $PSNativeCommandUseErrorActionPreference = $true
+      if (Test-Path -LiteralPath "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}") {
+          Remove-Item -LiteralPath "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}" -Recurse -Force
+      }
+      & "$(launchVsDevShell)" -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
+      cmake -G Ninja `
+      -DCMAKE_CXX_COMPILER=${{ parameters.compiler }} `
+      -DCMAKE_BUILD_TYPE=Release `
+      -DSTL_BINARY_DIR="$(buildOutputLocation)" `
+      -DVCLIBS_TARGET_ARCHITECTURE=${{ parameters.targetPlatform }} `
+      -S $(Build.SourcesDirectory)/benchmarks -B "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
   # TRANSITION, we currently only build the benchmarks with Clang for x64
@@ -33,10 +38,15 @@ steps:
     and(succeeded(), ${{ parameters.buildBenchmarks }},
       not(and(eq('${{ parameters.compiler }}', 'clang-cl'),
         not(eq('${{ parameters.targetPlatform }}', 'x64')))))
-- script: |
-    call "$(vsDevCmdBat)" -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
-    cmake --build "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
-  displayName: 'Build the benchmarks for ${{ parameters.compiler }}'
+- task: PowerShell@2
+  displayName: 'Build Benchmarks for ${{ parameters.compiler }}'
+  inputs:
+    pwsh: true
+    targetType: inline
+    script: |
+      $PSNativeCommandUseErrorActionPreference = $true
+      & "$(launchVsDevShell)" -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
+      cmake --build "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
   # TRANSITION, we currently only build the benchmarks with Clang for x64

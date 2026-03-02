@@ -30,7 +30,6 @@ namespace {
         _STD atomic<decltype(&::ucal_getTimeZoneDisplayName)> _Pfn_ucal_getTimeZoneDisplayName{nullptr};
         _STD atomic<decltype(&::ucal_getTimeZoneTransitionDate)> _Pfn_ucal_getTimeZoneTransitionDate{nullptr};
         _STD atomic<decltype(&::ucal_getTZDataVersion)> _Pfn_ucal_getTZDataVersion{nullptr};
-        _STD atomic<decltype(&::ucal_inDaylightTime)> _Pfn_ucal_inDaylightTime{nullptr};
         _STD atomic<decltype(&::ucal_open)> _Pfn_ucal_open{nullptr};
         _STD atomic<decltype(&::ucal_openTimeZoneIDEnumeration)> _Pfn_ucal_openTimeZoneIDEnumeration{nullptr};
         _STD atomic<decltype(&::ucal_setMillis)> _Pfn_ucal_setMillis{nullptr};
@@ -78,7 +77,6 @@ namespace {
             _Load_address(_Icu_module, _Icu_functions._Pfn_ucal_getTimeZoneTransitionDate,
                 "ucal_getTimeZoneTransitionDate", _Last_error);
             _Load_address(_Icu_module, _Icu_functions._Pfn_ucal_getTZDataVersion, "ucal_getTZDataVersion", _Last_error);
-            _Load_address(_Icu_module, _Icu_functions._Pfn_ucal_inDaylightTime, "ucal_inDaylightTime", _Last_error);
             _Load_address(_Icu_module, _Icu_functions._Pfn_ucal_open, "ucal_open", _Last_error);
             _Load_address(_Icu_module, _Icu_functions._Pfn_ucal_openTimeZoneIDEnumeration,
                 "ucal_openTimeZoneIDEnumeration", _Last_error);
@@ -144,11 +142,6 @@ namespace {
     [[nodiscard]] const char* __icu_ucal_getTZDataVersion(UErrorCode* status) noexcept {
         const auto _Fun = _Icu_functions._Pfn_ucal_getTZDataVersion.load(_STD memory_order_relaxed);
         return _Fun(status);
-    }
-
-    [[nodiscard]] UBool __icu_ucal_inDaylightTime(const UCalendar* cal, UErrorCode* status) noexcept {
-        const auto _Fun = _Icu_functions._Pfn_ucal_inDaylightTime.load(_STD memory_order_relaxed);
-        return _Fun(cal, status);
     }
 
     [[nodiscard]] UCalendar* __icu_ucal_open(
@@ -519,12 +512,7 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
         return _Report_error(_Info, __std_tzdb_error::_Icu_error);
     }
 
-    const auto _Is_daylight = __icu_ucal_inDaylightTime(_Cal.get(), &_UErr);
-    if (U_FAILURE(_UErr)) {
-        return _Report_error(_Info, __std_tzdb_error::_Icu_error);
-    }
-
-    _Info->_Save = _Is_daylight ? __icu_ucal_get(_Cal.get(), UCalendarDateFields::UCAL_DST_OFFSET, &_UErr) : 0;
+    _Info->_Save = __icu_ucal_get(_Cal.get(), UCalendarDateFields::UCAL_DST_OFFSET, &_UErr);
     if (U_FAILURE(_UErr)) {
         return _Report_error(_Info, __std_tzdb_error::_Icu_error);
     }
@@ -560,7 +548,7 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
     }
 
     int32_t _Abbrev_len{};
-    const auto _Abbrev = _Get_timezone_short_id(_Cal.get(), _Is_daylight, _Abbrev_len, _Info->_Err);
+    const auto _Abbrev = _Get_timezone_short_id(_Cal.get(), _Info->_Save != 0, _Abbrev_len, _Info->_Err);
     if (_Abbrev == nullptr) {
         return _Propagate_error(_Info);
     }

@@ -20,13 +20,14 @@
 #include <new>
 #include <sstream>
 #include <string>
+#include <type_traits>
+#include <utility>
 
-#include <test_death.hpp>
 #if _HAS_CXX17
 #include <string_view>
 #endif // _HAS_CXX17
-#include <type_traits>
-#include <utility>
+
+#include <test_death.hpp>
 
 using namespace std;
 

@@ -31,7 +31,7 @@ void bm_rotate(benchmark::State& state) {
     }
 }
 
-void common_args(auto bm) {
+void common_args(benchmark::Benchmark* bm) {
     bm->Args({3333, 2242})->Args({3332, 1666})->Args({3333, 1111})->Args({3333, 501});
     bm->Args({3333, 3300})->Args({3333, 12})->Args({3333, 5})->Args({3333, 1});
     bm->Args({333, 101})->Args({123, 32})->Args({23, 7})->Args({12, 5})->Args({3, 2});

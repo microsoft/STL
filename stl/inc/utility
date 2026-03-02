@@ -275,14 +275,16 @@ struct pair { // store a pair of values
             is_nothrow_constructible_v<_Ty1, _Other1> && is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
         : first(_STD forward<_Other1>(_Val1)), second(_STD forward<_Other2>(_Val2)) {
     }
-#ifdef __cpp_lib_reference_from_temporary
+#if _HAS_CXX23
+#ifdef __cpp_lib_reference_from_temporary // TRANSITION
     template <class _Other1 = _Ty1, class _Other2 = _Ty2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>>, int> = 0>
         requires reference_constructs_from_temporary_v<_Ty1, _Other1&&>
                   || reference_constructs_from_temporary_v<_Ty2, _Other2&&>
     explicit(!conjunction_v<is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>)
         pair(_Other1&&, _Other2&&) = delete;
-#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
+#endif // ^^^ no workaround ^^^
+#endif // _HAS_CXX23
 
     pair(const pair&) = default;
     pair(pair&&)      = default;
@@ -294,14 +296,14 @@ struct pair { // store a pair of values
         pair(pair<_Other1, _Other2>& _Right) noexcept(
             is_nothrow_constructible_v<_Ty1, _Other1&> && is_nothrow_constructible_v<_Ty2, _Other2&>) // strengthened
         : first(_Right.first), second(_Right.second) {}
-#ifdef __cpp_lib_reference_from_temporary
+#ifdef __cpp_lib_reference_from_temporary // TRANSITION
     template <class _Other1, class _Other2>
         requires is_constructible_v<_Ty1, _Other1&> && is_constructible_v<_Ty2, _Other2&>
                   && (reference_constructs_from_temporary_v<_Ty1, _Other1&>
                       || reference_constructs_from_temporary_v<_Ty2, _Other2&>)
     explicit(!conjunction_v<is_convertible<_Other1&, _Ty1>, is_convertible<_Other2&, _Ty2>>)
         pair(pair<_Other1, _Other2>&) = delete;
-#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
+#endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX23
 
     template <class _Other1, class _Other2,
@@ -312,7 +314,8 @@ struct pair { // store a pair of values
             noexcept(is_nothrow_constructible_v<_Ty1, const _Other1&>
                      && is_nothrow_constructible_v<_Ty2, const _Other2&>) // strengthened
         : first(_Right.first), second(_Right.second) {}
-#ifdef __cpp_lib_reference_from_temporary
+#if _HAS_CXX23
+#ifdef __cpp_lib_reference_from_temporary // TRANSITION
     template <class _Other1, class _Other2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, const _Other1&>, is_constructible<_Ty2, const _Other2&>>,
             int> = 0>
@@ -320,7 +323,8 @@ struct pair { // store a pair of values
                   || reference_constructs_from_temporary_v<_Ty2, const _Other2&>
     explicit(!conjunction_v<is_convertible<const _Other1&, _Ty1>, is_convertible<const _Other2&, _Ty2>>)
         pair(const pair<_Other1, _Other2>&) = delete;
-#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
+#endif // ^^^ no workaround ^^^
+#endif // _HAS_CXX23
 
     template <class _Other1, class _Other2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>>, int> = 0>
@@ -328,16 +332,16 @@ struct pair { // store a pair of values
         pair(pair<_Other1, _Other2>&& _Right) noexcept(
             is_nothrow_constructible_v<_Ty1, _Other1> && is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
         : first(_STD forward<_Other1>(_Right.first)), second(_STD forward<_Other2>(_Right.second)) {}
-#ifdef __cpp_lib_reference_from_temporary
+#if _HAS_CXX23
+#ifdef __cpp_lib_reference_from_temporary // TRANSITION
     template <class _Other1, class _Other2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>>, int> = 0>
         requires reference_constructs_from_temporary_v<_Ty1, _Other1&&>
                   || reference_constructs_from_temporary_v<_Ty2, _Other2&&>
     explicit(!conjunction_v<is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>)
         pair(pair<_Other1, _Other2>&&) = delete;
-#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
+#endif // ^^^ no workaround ^^^
 
-#if _HAS_CXX23
     template <class _Other1, class _Other2>
         requires is_constructible_v<_Ty1, const _Other1> && is_constructible_v<_Ty2, const _Other2>
     constexpr explicit(!conjunction_v<is_convertible<const _Other1, _Ty1>, is_convertible<const _Other2, _Ty2>>)
@@ -345,14 +349,14 @@ struct pair { // store a pair of values
             noexcept(is_nothrow_constructible_v<_Ty1, const _Other1>
                      && is_nothrow_constructible_v<_Ty2, const _Other2>) // strengthened
         : first(_STD forward<const _Other1>(_Right.first)), second(_STD forward<const _Other2>(_Right.second)) {}
-#ifdef __cpp_lib_reference_from_temporary
+#ifdef __cpp_lib_reference_from_temporary // TRANSITION
     template <class _Other1, class _Other2>
         requires is_constructible_v<_Ty1, const _Other1> && is_constructible_v<_Ty2, const _Other2>
                   && (reference_constructs_from_temporary_v<_Ty1, const _Other1 &&>
                       || reference_constructs_from_temporary_v<_Ty2, const _Other2 &&>)
     explicit(!conjunction_v<is_convertible<const _Other1, _Ty1>, is_convertible<const _Other2, _Ty2>>)
         pair(const pair<_Other1, _Other2>&&) = delete;
-#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
+#endif // ^^^ no workaround ^^^
 
 #ifdef __EDG__ // TRANSITION, VSO-1900279
     template <class _Other, enable_if_t<_Can_construct_from_pair_like<_Other, _Ty1, _Ty2>, int> = 0>
@@ -367,7 +371,7 @@ struct pair { // store a pair of values
                  && is_nothrow_constructible_v<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>) // strengthened
         : first(_STD get<0>(_STD forward<_Other>(_Right))), second(_STD get<1>(_STD forward<_Other>(_Right))) {
     }
-#ifdef __cpp_lib_reference_from_temporary
+#ifdef __cpp_lib_reference_from_temporary // TRANSITION
     template <_Pair_like_non_subrange _Other>
         requires conjunction_v<is_constructible<_Ty1, decltype(_STD get<0>(_STD declval<_Other>()))>,
                      is_constructible<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>>
@@ -375,7 +379,7 @@ struct pair { // store a pair of values
                       || reference_constructs_from_temporary_v<_Ty2, decltype(_STD get<1>(_STD declval<_Other>()))>)
     explicit(!conjunction_v<is_convertible<decltype(_STD get<0>(_STD declval<_Other>())), _Ty1>,
         is_convertible<decltype(_STD get<1>(_STD declval<_Other>())), _Ty2>>) pair(_Other&&) = delete;
-#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
+#endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX23
 
     template <class... _Types1, class... _Types2>
@@ -949,8 +953,8 @@ _NODISCARD constexpr bool _In_range(const _Ty _Value) noexcept {
 
 #if _HAS_CXX20
 template <class _Ty>
-constexpr bool _Is_standard_integer = _Is_any_of_v<remove_cv_t<_Ty>, signed char, short, int, long, long long,
-    unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
+constexpr bool _Is_standard_integer = _Is_any_of_v<_Ty, signed char, short, int, long, long long, unsigned char,
+    unsigned short, unsigned int, unsigned long, unsigned long long>;
 
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {

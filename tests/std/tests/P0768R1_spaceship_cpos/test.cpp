@@ -54,7 +54,7 @@ namespace {
     static_assert(is_same_v<CpoResult<compare_strong_order_fallback, D, L>, IllFormed>); // [cmp.alg]/4.1
     static_assert(is_same_v<CpoResult<compare_weak_order_fallback, D, L>, IllFormed>); // [cmp.alg]/5.1
     static_assert(is_same_v<CpoResult<compare_partial_order_fallback, D, L>, IllFormed>); // [cmp.alg]/6.1
-} // namespace
+} // unnamed namespace
 
 // Test when the type isn't comparable at all.
 struct NotComparable {};
@@ -324,7 +324,7 @@ namespace {
     static_assert(is_same_v<CpoResult<compare_partial_order_fallback, F<11>, const F<11>>, Partial>); // [cmp.alg]/6.3
     static_assert(is_same_v<CpoResult<compare_partial_order_fallback, F<12>, const F<12>>, IllFormed>); // [cmp.alg]/6.3
     static_assert(is_same_v<CpoResult<compare_partial_order_fallback, F<13>, const F<13>>, Partial>); // [cmp.alg]/6.3
-} // namespace
+} // unnamed namespace
 
 // Test strengthened requirements in P2167R3: compare_*_order_fallback CPOs require return types to be boolean-testable.
 enum class ResultKind : bool {

@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <xcall_once.h>
 #include <xerrc.h>
+
 #ifndef _M_CEE_PURE
 #include <atomic>
 #endif // !defined(_M_CEE_PURE)

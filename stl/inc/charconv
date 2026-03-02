@@ -2295,7 +2295,6 @@ _NODISCARD to_chars_result _Floating_to_chars_hex_shortest(
 
             const _Uint_type _Mask = (_Uint_type{1} << _Number_of_bits_remaining) - 1;
             _Adjusted_mantissa &= _Mask;
-
         } while (_Adjusted_mantissa != 0);
     }
 
@@ -2325,7 +2324,7 @@ _NODISCARD to_chars_result _Floating_to_chars_hex_shortest(
 }
 
 template <class _Floating>
-_NODISCARD inline to_chars_result _Floating_to_chars_general_precision(
+_NODISCARD to_chars_result _Floating_to_chars_general_precision(
     char* _First, char* const _Last, const _Floating _Value, int _Precision) noexcept {
 
     using _Traits    = _Floating_type_traits<_Floating>;

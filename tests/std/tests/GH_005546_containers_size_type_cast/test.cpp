@@ -484,16 +484,12 @@ CONSTEXPR20 void test_basic_string() {
 #if _HAS_CXX20
     assert(s2 <=> s2 == strong_ordering::equal);
     assert(s2 <=> "EF" == strong_ordering::equal);
-#endif // _HAS_CXX20
 
-#if _HAS_CXX20
     erase(s2, 'E');
     assert(s2 == "F");
     erase_if(s2, [](char) { return true; });
     assert(s2.empty());
-#endif // _HAS_CXX20
 
-#if _HAS_CXX20
     if (!is_constant_evaluated())
 #endif // _HAS_CXX20
     {

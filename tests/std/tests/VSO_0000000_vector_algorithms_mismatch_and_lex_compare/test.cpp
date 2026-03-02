@@ -15,7 +15,7 @@
 #include <ranges>
 #endif // _HAS_CXX20
 
-#include "test_vector_algorithms_support.hpp"
+#include <test_vector_algorithms_support.hpp>
 
 using namespace std;
 
