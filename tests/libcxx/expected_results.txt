@@ -710,7 +710,7 @@ std/iterators/iterator.requirements/iterator.assoc.types/readable.traits/indirec
 std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.default.pass.cpp FAIL
 
 # Problems in this test:
-# - Clang does not trap on Arm64, but MSVC does.
+# - Clang does not trap on ARM64, but MSVC does.
 # - The test inspects `__x86_64__` and `__i386__`, which MSVC doesn't define.
 # - The __x86_64__ is defined on ARM64EC, but it is expected to behave like ARM64
 # :2 SKIPPED because this passes for x64/x86/ARM64 and fails for ARM64EC.
