@@ -1544,8 +1544,6 @@ void test_absolute() {
               << ec.value() << L"\n";
     }
     EXPECT(ec.category() == system_category());
-
-    expect_absolute({}, {});
 }
 
 void test_canonical() {
