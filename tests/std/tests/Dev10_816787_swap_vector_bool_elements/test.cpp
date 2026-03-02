@@ -66,14 +66,14 @@ int main() {
     check_values_match();
 
     constexpr size_t N = 10;
-    vector<bool> vector(N);
-    bitset<N> bitset(0);
+    vector<bool> vb(N);
+    bitset<N> bs(0);
 
-    check_P3612(vector);
-    check_P3612(bitset);
+    check_P3612(vb);
+    check_P3612(bs);
 
-    static_assert(is_nothrow_copy_constructible_v<decltype(vector)::reference>, "");
-    static_assert(is_nothrow_copy_constructible_v<decltype(bitset)::reference>, "");
-    static_assert(has_noexcept_copy_ctor<decltype(vector)::reference>, "");
-    static_assert(has_noexcept_copy_ctor<decltype(bitset)::reference>, "");
+    static_assert(is_nothrow_copy_constructible_v<decltype(vb)::reference>, "");
+    static_assert(is_nothrow_copy_constructible_v<decltype(bs)::reference>, "");
+    static_assert(has_noexcept_copy_ctor<decltype(vb)::reference>, "");
+    static_assert(has_noexcept_copy_ctor<decltype(bs)::reference>, "");
 }
