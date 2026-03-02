@@ -33,7 +33,7 @@ void check_values_match() {
     assert(all_of(y.begin() + 35, y.end(), is_true));
 }
 
-template <typename T>
+template <class T>
 void check_P3612(T& collection) {
     auto ref0       = collection[0];
     auto const ref1 = collection[1];
