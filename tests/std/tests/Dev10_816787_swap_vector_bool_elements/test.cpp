@@ -38,26 +38,47 @@ template <class T>
 void check_P3612(T& collection) {
     auto ref0       = collection[0];
     const auto ref1 = collection[1];
+    auto ref2       = collection[2];
 
     // assignments from bool
     ref0 = true;
+    ref1 = true;
+    assert(collection[0]);
+    assert(collection[1]);
+
+    ref0 = false;
     ref1 = false;
+    assert(!collection[0]);
+    assert(!collection[1]);
+
     // assignments from reference
-    ref0 = ref1;
-    ref1 = ref0;
+    ref2 = true;
+    ref0 = ref2;
+    ref1 = ref2;
+    assert(collection[0]);
+    assert(collection[1]);
+
+    ref2 = false;
+    ref0 = ref2;
+    ref1 = ref2;
+    assert(!collection[0]);
+    assert(!collection[1]);
 
     collection[0] = true;
     collection[1] = false;
 
     swap(collection[0], collection[1]); // swap(reference, reference)
     assert(!collection[0]);
+    assert(collection[1]);
 
     bool b = true;
     swap(collection[0], b); // swap(reference, bool)
     assert(collection[0]);
+    assert(!b);
 
     swap(b, collection[0]); // swap(bool, reference)
     assert(!collection[0]);
+    assert(b);
 }
 
 int main() {
