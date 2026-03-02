@@ -36,7 +36,7 @@ void check_values_match() {
 template <class T>
 void check_P3612(T& collection) {
     auto ref0       = collection[0];
-    auto const ref1 = collection[1];
+    const auto ref1 = collection[1];
 
     // assignments from bool
     ref0 = true;
