@@ -60,7 +60,7 @@ void check_P3612(T& collection) {
 }
 
 template <typename T>
-constexpr bool has_noexcept_copy_ctor = noexcept(T(std::declval<const T&>()));
+constexpr bool has_noexcept_copy_ctor = noexcept(T(declval<const T&>()));
 
 int main() {
     check_values_match();
@@ -72,8 +72,8 @@ int main() {
     check_P3612(vector);
     check_P3612(bitset);
 
-    static_assert(std::is_nothrow_copy_constructible_v<decltype(vector)::reference>, "");
-    static_assert(std::is_nothrow_copy_constructible_v<decltype(bitset)::reference>, "");
+    static_assert(is_nothrow_copy_constructible_v<decltype(vector)::reference>, "");
+    static_assert(is_nothrow_copy_constructible_v<decltype(bitset)::reference>, "");
     static_assert(has_noexcept_copy_ctor<decltype(vector)::reference>, "");
     static_assert(has_noexcept_copy_ctor<decltype(bitset)::reference>, "");
 }
