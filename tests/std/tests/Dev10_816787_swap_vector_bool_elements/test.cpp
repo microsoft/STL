@@ -70,6 +70,6 @@ int main() {
     check_P3612(vb);
     check_P3612(bs);
 
-    static_assert(is_nothrow_copy_constructible_v<decltype(vb)::reference>, "");
-    static_assert(is_nothrow_copy_constructible_v<decltype(bs)::reference>, "");
+    static_assert(is_nothrow_copy_constructible_v<vector<bool>::reference>, "");
+    static_assert(is_nothrow_copy_constructible_v<bitset<N>::reference>, "");
 }
