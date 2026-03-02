@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <limits>
+#include <type_traits>
 
 template <class T>
 constexpr bool traps_ = std::numeric_limits<T>::traps;
