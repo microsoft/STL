@@ -1857,7 +1857,7 @@ public:
         _STL_VERIFY(_Source._Grp_valid._Buffer_end() - _Source._Grp_valid._Buffer_begin()
                         == _Grp_valid._Buffer_end() - _Grp_valid._Buffer_begin(),
             "Source and destination must have same amount of storage for capture group validity markers");
-#endif
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 
         _Cur = _Source._Cur;
         _STD copy(_Source._Grps._Begin(), _Source._Grps._End(), _Grps._Begin());
