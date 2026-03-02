@@ -85,6 +85,8 @@
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic<cv T>)
 // P3503R3 Make Type-Erased Allocator Use In promise And packaged_task Consistent
+// P3612R1 Harmonize Proxy-Reference Operations
+//     (deprecation controlled by _HAS_CXX26)
 
 // _HAS_CXX17 controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
@@ -405,10 +407,6 @@
 // P3235R3 std::print More Types Faster With Less Memory
 //     (partial implementation; see GH-4924)
 // P3567R2 flat_meow Fixes
-
-// _HAS_CXX26 and _SILENCE_ALL_CXX26_DEPRECATION_WARNINGS control:
-// P3612R1 Harmonize Proxy-Reference Operations
-// Other C++26 deprecation warnings
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
