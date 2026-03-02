@@ -26,8 +26,9 @@ template <class T>
 constexpr bool non_promoted_and_traps_if_int_does = std::is_same_v<decltype(~T{}), T> && traps_<T> == traps_<int>;
 
 static_assert(non_promoted_and_traps_if_int_does<unsigned int> //
-                  && non_promoted_and_traps_if_int_does<long> && non_promoted_and_traps_if_int_does<unsigned long>
-                  && non_promoted_and_traps_if_int_does<long long>
+                  && non_promoted_and_traps_if_int_does<long> //
+                  && non_promoted_and_traps_if_int_does<unsigned long> //
+                  && non_promoted_and_traps_if_int_does<long long> //
                   && non_promoted_and_traps_if_int_does<unsigned long long>,
     "all non-promoted integers should trap or not trap equally");
 
@@ -36,10 +37,13 @@ constexpr bool promoted_and_does_not_trap = !std::is_same_v<decltype(~T{}), T> &
 
 static_assert(!traps_<bool>, "bool does not trap for a moot reason; see LWG-554 resolution");
 
-static_assert(promoted_and_does_not_trap<char> && promoted_and_does_not_trap<signed char>
+static_assert(promoted_and_does_not_trap<char> //
+                  && promoted_and_does_not_trap<signed char> //
                   && promoted_and_does_not_trap<unsigned char> //
-                  && promoted_and_does_not_trap<short> && promoted_and_does_not_trap<unsigned short>
-                  && promoted_and_does_not_trap<wchar_t> && promoted_and_does_not_trap<char16_t>
+                  && promoted_and_does_not_trap<short> //
+                  && promoted_and_does_not_trap<unsigned short> //
+                  && promoted_and_does_not_trap<wchar_t> //
+                  && promoted_and_does_not_trap<char16_t> //
                   && promoted_and_does_not_trap<char32_t>,
     "promoted integers do not trap for a moot reason; see LWG-554 resolution");
 
