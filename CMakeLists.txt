@@ -105,9 +105,7 @@ if(STL_USE_ANALYZE)
 endif()
 
 set(VCLIBS_DEBUG_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/Od>")
-
-# TRANSITION, GH-2108: Investigate building the STL with only /O2, not /Os.
-set(VCLIBS_RELEASE_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/O2;/Os>")
+set(VCLIBS_RELEASE_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/O2>")
 
 if(CONFIGURE_TESTING)
     add_subdirectory(tests)

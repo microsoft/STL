@@ -5,10 +5,6 @@
 #error _M_CEE_PURE should not be defined when compiling vector_algorithms.cpp.
 #endif
 
-#ifndef _DEBUG
-#pragma optimize("t", on) // TRANSITION, GH-2108: Override /Os with /Ot for this TU before any function definitions
-#endif
-
 #include <__msvc_minmax.hpp>
 #include <cstdint>
 #include <cstring>
@@ -29,11 +25,11 @@ extern "C" long __isa_enabled;
 namespace {
 #if !defined(_M_ARM64) && !defined(_M_ARM64EC)
     bool _Use_avx2() noexcept {
-        return __isa_enabled & (1 << __ISA_AVAILABLE_AVX2);
+        return __check_arch_support(__IA_SUPPORT_VECTOR256, 0) || (__isa_enabled & (1 << __ISA_AVAILABLE_AVX2));
     }
 
     bool _Use_sse42() noexcept {
-        return __isa_enabled & (1 << __ISA_AVAILABLE_SSE42);
+        return __check_arch_support(__IA_SUPPORT_SSE42, 0) || (__isa_enabled & (1 << __ISA_AVAILABLE_SSE42));
     }
 
     struct [[nodiscard]] _Zeroupper_on_exit { // TRANSITION, DevCom-10331414
@@ -4081,6 +4077,10 @@ namespace {
             static uint8x8_t _Blend(const uint8x8_t _Px1, const uint8x8_t _Px2, const uint8x8_t _Msk) noexcept {
                 return vbsl_u8(_Msk, _Px2, _Px1);
             }
+
+            static uint64_t _Nibble_mask(const uint8x16_t _Val) noexcept {
+                return _Mask_q(_Val);
+            }
         };
 
         struct _Find_traits_2 {
@@ -4143,6 +4143,10 @@ namespace {
 
             static uint16x4_t _Blend(const uint16x4_t _Px1, const uint16x4_t _Px2, const uint16x4_t _Msk) noexcept {
                 return vbsl_u16(_Msk, _Px2, _Px1);
+            }
+
+            static uint64_t _Nibble_mask(const uint16x8_t _Val) noexcept {
+                return _Find_traits_1::_Nibble_mask(vreinterpretq_u8_u16(_Val));
             }
         };
 
@@ -4207,6 +4211,10 @@ namespace {
             static uint32x2_t _Blend(const uint32x2_t _Px1, const uint32x2_t _Px2, const uint32x2_t _Msk) noexcept {
                 return vbsl_u32(_Msk, _Px2, _Px1);
             }
+
+            static uint64_t _Nibble_mask(const uint32x4_t _Val) noexcept {
+                return _Find_traits_1::_Nibble_mask(vreinterpretq_u8_u32(_Val));
+            }
         };
 
         struct _Find_traits_8 {
@@ -4243,6 +4251,10 @@ namespace {
 
             static uint64x2_t _Blend_q(const uint64x2_t _Px1, const uint64x2_t _Px2, const uint64x2_t _Msk) noexcept {
                 return vbslq_u64(_Msk, _Px2, _Px1);
+            }
+
+            static uint64_t _Nibble_mask(const uint64x2_t _Val) noexcept {
+                return _Find_traits_1::_Nibble_mask(vreinterpretq_u8_u64(_Val));
             }
         };
 
@@ -4918,7 +4930,45 @@ namespace {
         }
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
-#ifndef _M_ARM64
+        template <class _Ty>
+        const void* _Search_n_tail(const void* const _First, const void* const _Last, const size_t _Count,
+            const _Ty* _Mid1, const _Ty _Val) noexcept {
+            auto _Match_start    = static_cast<const _Ty*>(_First);
+            const auto _Last_ptr = static_cast<const _Ty*>(_Last);
+
+            if (static_cast<size_t>(_Last_ptr - _Match_start) < _Count) {
+                return _Last_ptr;
+            }
+
+            auto _Match_end = _Match_start + _Count;
+            auto _Mid2      = _Match_end;
+            for (;;) {
+                // Invariants: _Match_end - _Match_start == _Count, [_Match_start, _Mid1) and [_Mid2, _Match_end) match
+                // _Val:
+                //
+                // _Match_start  _Mid1    _Mid2    _Match_end
+                // |=============|????????|========|??????????...
+
+                --_Mid2;
+                if (*_Mid2 == _Val) { // match;
+                    if (_Mid1 == _Mid2) { // [_Mid1, _Mid2) is empty, so [_Match_start, _Match_end) all match
+                        return _Match_start;
+                    }
+                } else { // mismatch; skip past it
+                    _Match_start = _Mid2 + 1;
+
+                    if (static_cast<size_t>(_Last_ptr - _Match_start) < _Count) { // not enough space left
+                        return _Last_ptr;
+                    }
+
+                    _Mid1      = _Match_end;
+                    _Match_end = _Match_start + _Count;
+                    _Mid2      = _Match_end;
+                }
+            }
+        }
+
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         template <class _Traits, class _Ty>
         const void* __stdcall _Search_n_impl(
             const void* _First, const void* const _Last, const size_t _Count, const _Ty _Val) noexcept {
@@ -4928,8 +4978,81 @@ namespace {
                 return _Find_impl<_Traits, _Predicate::_Equal>(_First, _Last, _Val);
             }
 
-            auto _Mid1 = static_cast<const _Ty*>(_First);
-#ifndef _M_ARM64EC
+            auto _Mid1           = static_cast<const _Ty*>(_First);
+            const size_t _Length = _Byte_length(_First, _Last);
+            if (_Count <= 8 / sizeof(_Ty) && _Length >= 16) {
+                // We use 64-bit masks, consisting of 4-bits per byte of the input element.
+                constexpr size_t _Bits_per_element = sizeof(_Ty) << 2;
+                const size_t _Count_bits           = _Count * _Bits_per_element;
+                const size_t _Sh1                  = sizeof(_Ty) != 1 ? 0 : (_Count_bits < 16 ? _Count_bits - 8 : 8);
+                const size_t _Sh2                  = sizeof(_Ty) >= 4 ? 0
+                                                   : _Count_bits < 16 ? 0
+                                                                      : (_Count_bits < 32 ? _Count_bits - 16 : 16);
+
+                const auto _Comparand = _Traits::_Set_neon_q(_Val);
+
+                const void* _Stop_at = _First;
+                _Advance_bytes(_Stop_at, _Length & ~size_t{0xF});
+
+                uint64_t _Carry = 0;
+                do {
+                    const auto _Data = _Traits::_Load_q(_First);
+
+                    const auto _Cmp      = _Traits::_Cmp_neon_q(_Comparand, _Data);
+                    const uint64_t _Mask = _Traits::_Nibble_mask(_Cmp);
+
+                    if (_Carry != 0) {
+                        const uint64_t _Tail_bits   = _CountLeadingZeros64(~_Carry);
+                        const uint64_t _Need        = _Count_bits - _Tail_bits;
+                        const uint64_t _Prefix_mask = (uint64_t{1} << _Need) - 1;
+                        if ((_Mask & _Prefix_mask) == _Prefix_mask) {
+                            _Rewind_bytes(_First, _Tail_bits >> 2);
+                            return _First;
+                        }
+                    }
+
+                    uint64_t _MskX = _Mask;
+
+                    _MskX = (_MskX >> _Bits_per_element) & _MskX;
+
+                    if constexpr (sizeof(_Ty) == 1) {
+                        _MskX = (_MskX >> _Sh1) & _MskX;
+                    }
+
+                    if constexpr (sizeof(_Ty) < 4) {
+                        _MskX = (_MskX >> _Sh2) & _MskX;
+                    }
+
+                    if (_MskX != 0) {
+                        const auto _Pos = _CountTrailingZeros64(_MskX) >> 2;
+                        _Advance_bytes(_First, _Pos);
+                        return _First;
+                    }
+
+                    _Carry = _Mask;
+
+                    _Advance_bytes(_First, 16);
+                } while (_First != _Stop_at);
+
+                _Mid1 = static_cast<const _Ty*>(_First);
+
+                const auto _Tail_run = _CountLeadingZeros64(~_Carry) >> 2;
+                _Rewind_bytes(_First, _Tail_run);
+            }
+
+            return _Search_n_tail(_First, _Last, _Count, _Mid1, _Val);
+        }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
+        template <class _Traits, class _Ty>
+        const void* __stdcall _Search_n_impl(
+            const void* _First, const void* const _Last, const size_t _Count, const _Ty _Val) noexcept {
+            if (_Count == 0) {
+                return _First;
+            } else if (_Count == 1) {
+                return _Find_impl<_Traits, _Predicate::_Equal>(_First, _Last, _Val);
+            }
+
+            auto _Mid1           = static_cast<const _Ty*>(_First);
             const size_t _Length = _Byte_length(_First, _Last);
             if (_Count <= 16 / sizeof(_Ty) && _Length >= 32 && _Use_avx2()) {
                 _Zeroupper_on_exit _Guard; // TRANSITION, DevCom-10331414
@@ -5090,42 +5213,10 @@ namespace {
                     _Rewind_bytes(_First, 15 - static_cast<ptrdiff_t>(_Carry_pos));
                 }
             }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-            auto _Match_start    = static_cast<const _Ty*>(_First);
-            const auto _Last_ptr = static_cast<const _Ty*>(_Last);
 
-            if (static_cast<size_t>(_Last_ptr - _Match_start) < _Count) {
-                return _Last_ptr;
-            }
-
-            auto _Match_end = _Match_start + _Count;
-            auto _Mid2      = _Match_end;
-            for (;;) {
-                // Invariants: _Match_end - _Match_start == _Count, [_Match_start, _Mid1) and [_Mid2, _Match_end) match
-                // _Val:
-                //
-                // _Match_start  _Mid1    _Mid2    _Match_end
-                // |=============|????????|========|??????????...
-
-                --_Mid2;
-                if (*_Mid2 == _Val) { // match;
-                    if (_Mid1 == _Mid2) { // [_Mid1, _Mid2) is empty, so [_Match_start, _Match_end) all match
-                        return _Match_start;
-                    }
-                } else { // mismatch; skip past it
-                    _Match_start = _Mid2 + 1;
-
-                    if (static_cast<size_t>(_Last_ptr - _Match_start) < _Count) { // not enough space left
-                        return _Last_ptr;
-                    }
-
-                    _Mid1      = _Match_end;
-                    _Match_end = _Match_start + _Count;
-                    _Mid2      = _Match_end;
-                }
-            }
+            return _Search_n_tail(_First, _Last, _Count, _Mid1, _Val);
         }
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         template <class _Traits, _Predicate _Pred, class _Ty>
         size_t __stdcall _Find_last_pos_impl(
@@ -5275,7 +5366,6 @@ const void* __stdcall __std_adjacent_find_8(const void* const _First, const void
     return _Finding::_Adjacent_find_impl<_Finding::_Find_traits_8, uint64_t>(_First, _Last);
 }
 
-#ifndef _M_ARM64
 const void* __stdcall __std_search_n_1(
     const void* const _First, const void* const _Last, const size_t _Count, const uint8_t _Value) noexcept {
     return _Finding::_Search_n_impl<_Finding::_Find_traits_1>(_First, _Last, _Count, _Value);
@@ -5295,7 +5385,6 @@ const void* __stdcall __std_search_n_8(
     const void* const _First, const void* const _Last, const size_t _Count, const uint64_t _Value) noexcept {
     return _Finding::_Search_n_impl<_Finding::_Find_traits_8>(_First, _Last, _Count, _Value);
 }
-#endif // ^^^ !defined(_M_ARM64) ^^^
 
 } // extern "C"
 
@@ -5705,8 +5794,171 @@ namespace {
 
         enum class _Predicate { _Any_of, _None_of };
 
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
         namespace _Bitmap_details {
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+            __forceinline uint8x16_t _Bitmap_step(const uint8x16_t _Data, const uint8x16x2_t _Bitmap) noexcept {
+                const uint8x16_t _Idx = vshrq_n_u8(_Data, 3);
+                const uint8x16_t _Bit = vandq_u8(_Data, vdupq_n_u8(7));
+
+                const uint8x16_t _Byte = vqtbl2q_u8(_Bitmap, _Idx);
+                const int8x16_t _Shift = vnegq_s8(vreinterpretq_s8_u8(_Bit));
+                const uint8x16_t _Test = vshlq_u8(_Byte, _Shift);
+                return vtstq_u8(_Test, vdupq_n_u8(1));
+            }
+
+            uint8x16_t _Pack_u16(const uint16x8_t _Val0, const uint16x8_t _Val1) noexcept {
+                return vuzp1q_u8(vreinterpretq_u8_u16(_Val0), vreinterpretq_u8_u16(_Val1));
+            }
+
+            uint8x16_t _Pack_u32(const uint32x4_t _Val0, const uint32x4_t _Val1, const uint32x4_t _Val2,
+                const uint32x4_t _Val3) noexcept {
+                const auto _Val01 = vuzp1q_u16(vreinterpretq_u16_u32(_Val0), vreinterpretq_u16_u32(_Val1));
+                const auto _Val23 = vuzp1q_u16(vreinterpretq_u16_u32(_Val2), vreinterpretq_u16_u32(_Val3));
+                return _Pack_u16(_Val01, _Val23);
+            }
+
+            template <class _Ty>
+            __forceinline uint8x16_t _Do_bitmap(const _Ty* const _Src, const uint8x16x2_t _Bitmap) noexcept {
+                if constexpr (sizeof(_Ty) == 1) {
+                    const uint8x16_t _Data = vld1q_u8(_Src);
+                    return _Bitmap_step(_Data, _Bitmap);
+                } else if constexpr (sizeof(_Ty) == 2) {
+                    const auto _Data0 = vld1q_u16(_Src + 0);
+                    const auto _Data1 = vld1q_u16(_Src + 8);
+                    const auto _Data  = _Pack_u16(_Data0, _Data1);
+
+                    const auto _Limit     = vdupq_n_u16(0xFF);
+                    const auto _Overflow  = _Pack_u16(vcleq_u16(_Data0, _Limit), vcleq_u16(_Data1, _Limit));
+                    const auto _Mask_part = _Bitmap_step(_Data, _Bitmap);
+                    return vandq_u8(_Mask_part, _Overflow);
+                } else if constexpr (sizeof(_Ty) == 4) {
+                    const auto _Data0 = vld1q_u32(_Src + 0);
+                    const auto _Data1 = vld1q_u32(_Src + 4);
+                    const auto _Data2 = vld1q_u32(_Src + 8);
+                    const auto _Data3 = vld1q_u32(_Src + 12);
+                    const auto _Data  = _Pack_u32(_Data0, _Data1, _Data2, _Data3);
+
+                    const auto _Limit     = vdupq_n_u32(0xFF);
+                    const auto _Overflow0 = vcleq_u32(_Data0, _Limit);
+                    const auto _Overflow1 = vcleq_u32(_Data1, _Limit);
+                    const auto _Overflow2 = vcleq_u32(_Data2, _Limit);
+                    const auto _Overflow3 = vcleq_u32(_Data3, _Limit);
+                    const auto _Overflow  = _Pack_u32(_Overflow0, _Overflow1, _Overflow2, _Overflow3);
+
+                    const auto _Mask_part = _Bitmap_step(_Data, _Bitmap);
+                    return vandq_u8(_Mask_part, _Overflow);
+                } else {
+                    static_assert(false, "Unexpected size");
+                }
+            }
+
+            template <class _Ty>
+            __forceinline bool _Make_bitmap_small(
+                const void* const _Needle, const size_t _Needle_length, uint8x16x2_t& _Bitmap) noexcept {
+                auto _Needle_ptr = static_cast<const _Ty*>(_Needle);
+                const auto _Stop = _Needle_ptr + _Needle_length;
+
+                uint64_t _Bitmap0 = 0;
+                uint64_t _Bitmap1 = 0;
+                uint64_t _Bitmap2 = 0;
+                uint64_t _Bitmap3 = 0;
+
+                constexpr uint64_t _One = 1;
+
+                for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
+                    const unsigned int _Val = static_cast<unsigned int>(*_Needle_ptr);
+
+                    if constexpr (sizeof(_Ty) > 1) {
+                        if (_Val >= 256) {
+                            return false;
+                        }
+                    }
+
+                    const uint64_t _One_low  = _rotl64(_One, _Val);
+                    const uint64_t _Bitmap01 = (_Val & 0x80) == 0 ? _One_low : 0;
+                    const uint64_t _Bitmap23 = (_Val & 0x80) != 0 ? _One_low : 0;
+                    _Bitmap0 |= (_Val & 0x40) == 0 ? _Bitmap01 : 0;
+                    _Bitmap1 |= (_Val & 0x40) != 0 ? _Bitmap01 : 0;
+                    _Bitmap2 |= (_Val & 0x40) == 0 ? _Bitmap23 : 0;
+                    _Bitmap3 |= (_Val & 0x40) != 0 ? _Bitmap23 : 0;
+                }
+
+                _Bitmap.val[0] = vreinterpretq_u8_u64(vsetq_lane_u64(_Bitmap1, vdupq_n_u64(_Bitmap0), 1));
+                _Bitmap.val[1] = vreinterpretq_u8_u64(vsetq_lane_u64(_Bitmap3, vdupq_n_u64(_Bitmap2), 1));
+
+                return true;
+            }
+
+            __forceinline uint64x1_t _Movemask_128_x4(const uint8x16_t _In0, const uint8x16_t _In1,
+                const uint8x16_t _In2, const uint8x16_t _In3, const uint8x16_t _Mask) noexcept {
+                uint8x16_t _And0 = vandq_u8(_In0, _Mask);
+                uint8x16_t _And1 = vandq_u8(_In1, _Mask);
+                uint8x16_t _And2 = vandq_u8(_In2, _Mask);
+                uint8x16_t _And3 = vandq_u8(_In3, _Mask);
+
+                uint8x16_t _Sum0 = vpaddq_u8(_And0, _And1);
+                uint8x16_t _Sum1 = vpaddq_u8(_And2, _And3);
+                _Sum0            = vpaddq_u8(_Sum0, _Sum1);
+                _Sum0            = vpaddq_u8(_Sum0, _Sum0);
+
+                return vget_low_u64(vreinterpretq_u64_u8(_Sum0));
+            }
+
+            template <class _Ty>
+            __forceinline bool _Make_bitmap_large_neon(
+                const void* const _Needle, const size_t _Needle_length, uint8x16x2_t& _Bitmap) noexcept {
+                // TRANSITION, not yet reported: Unlike for x64, where `static constexpr` arrays improve codegen,
+                // `static constexpr` would degrade codegen here.
+                constexpr uint8_t _Mask_arr[16] = {
+                    0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
+                const auto _Mask = vld1q_u8(_Mask_arr);
+
+                auto _Needle_ptr       = static_cast<const _Ty*>(_Needle);
+                const _Ty* const _Stop = _Needle_ptr + _Needle_length;
+
+                alignas(16) uint8_t _Table[256] = {};
+                for (; _Needle_ptr != _Stop; ++_Needle_ptr) {
+                    if constexpr (sizeof(_Ty) > 1) {
+                        if (*_Needle_ptr >= 256) {
+                            return false;
+                        }
+                    }
+
+                    _Table[*_Needle_ptr] = 0xFF;
+                }
+
+                for (size_t _Ix = 0; _Ix < 2; ++_Ix) {
+                    const auto _In0 = vld1q_u8(_Table + _Ix * 128 + 0 * 16);
+                    const auto _In1 = vld1q_u8(_Table + _Ix * 128 + 1 * 16);
+                    const auto _In2 = vld1q_u8(_Table + _Ix * 128 + 2 * 16);
+                    const auto _In3 = vld1q_u8(_Table + _Ix * 128 + 3 * 16);
+
+                    const auto _Bm0 = _Movemask_128_x4(_In0, _In1, _In2, _In3, _Mask);
+
+                    const auto _In4 = vld1q_u8(_Table + _Ix * 128 + 4 * 16);
+                    const auto _In5 = vld1q_u8(_Table + _Ix * 128 + 5 * 16);
+                    const auto _In6 = vld1q_u8(_Table + _Ix * 128 + 6 * 16);
+                    const auto _In7 = vld1q_u8(_Table + _Ix * 128 + 7 * 16);
+
+                    const auto _Bm1 = _Movemask_128_x4(_In4, _In5, _In6, _In7, _Mask);
+
+                    _Bitmap.val[_Ix] = vreinterpretq_u8_u64(vcombine_u64(_Bm0, _Bm1));
+                }
+
+                return true;
+            }
+
+            template <class _Ty>
+            __forceinline bool _Make_bitmap(
+                const void* const _Needle, const size_t _Needle_length, uint8x16x2_t& _Bitmap) noexcept {
+                if (_Needle_length <= 20) {
+                    return _Make_bitmap_small<_Ty>(_Needle, _Needle_length, _Bitmap);
+                } else {
+                    return _Make_bitmap_large_neon<_Ty>(_Needle, _Needle_length, _Bitmap);
+                }
+            }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
+
             // AVX2 bitmap: __m256i value with each bit corresponding to a needle element. Set bits mean "present".
             //
             // The bitmap algorithm implemented in _Bitmap_step:
@@ -5835,8 +6087,8 @@ namespace {
                     return _Make_bitmap_large(_Needle_ptr, _Needle_length);
                 }
             }
-        } // namespace _Bitmap_details
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
+        } // namespace _Bitmap_details
 
         namespace _Bitmap_impl {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
@@ -5868,6 +6120,99 @@ namespace {
                 } else {
                     return _Count2 >= 2;
                 }
+            }
+
+            template <class _Ty>
+            bool _Use_bitmap_neon(const size_t _Count1, const size_t _Count2) noexcept {
+                if constexpr (sizeof(_Ty) == 1) {
+                    if (_Count1 < 32) {
+                        return false;
+                    } else if (_Count1 < 64) {
+                        return _Count2 >= 24;
+                    } else if (_Count1 < 128) {
+                        return _Count2 >= 8;
+                    } else {
+                        return _Count2 >= 4;
+                    }
+                } else if constexpr (sizeof(_Ty) == 2) {
+                    if (_Count1 < 32) {
+                        return false;
+                    } else if (_Count1 < 96) {
+                        return _Count2 >= 8;
+                    } else {
+                        return _Count2 >= 4;
+                    }
+                } else if constexpr (sizeof(_Ty) == 4) {
+                    if (_Count1 < 32) {
+                        return false;
+                    } else if (_Count1 < 64) {
+                        return _Count2 >= 64;
+                    } else if (_Count1 < 96) {
+                        return _Count2 >= 8;
+                    } else {
+                        return _Count2 >= 4;
+                    }
+                } else {
+                    return false;
+                }
+            }
+
+            template <class _Ty, _Predicate _Pred>
+            size_t _Impl_first_neon(
+                const void* const _Haystack, const size_t _Haystack_length, const uint8x16x2_t _Bitmap) noexcept {
+                const auto _Hay_ptr = static_cast<const _Ty*>(_Haystack);
+
+                size_t _Ix            = 0;
+                const size_t _Vec_end = _Haystack_length & ~size_t{15};
+                for (; _Ix != _Vec_end; _Ix += 16) {
+                    const auto _Eq = _Bitmap_details::_Do_bitmap(_Hay_ptr + _Ix, _Bitmap);
+
+                    auto _Mask = _Finding::_Find_traits_1::_Mask_q(_Eq);
+                    if constexpr (_Pred == _Predicate::_None_of) {
+                        _Mask ^= 0xFFFF'FFFF'FFFF'FFFF;
+                    }
+
+                    if (_Mask != 0) {
+                        return _Ix + _Finding::_Get_first_h_pos_q(_Mask);
+                    }
+                }
+
+                if (_Ix != _Haystack_length) {
+                    alignas(16) uint8_t _Bitmap_scalar_tail[32];
+                    vst1q_u8(_Bitmap_scalar_tail, _Bitmap.val[0]);
+                    vst1q_u8(_Bitmap_scalar_tail + 16, _Bitmap.val[1]);
+
+                    do {
+                        const _Ty _Val = _Hay_ptr[_Ix];
+
+                        if constexpr (sizeof(_Val) > 1) {
+                            if (_Val >= 256) {
+                                if constexpr (_Pred == _Predicate::_Any_of) {
+                                    continue;
+                                } else {
+                                    return _Ix;
+                                }
+                            }
+                        }
+
+                        const auto _Val_u8 = static_cast<uint8_t>(_Val);
+                        const uint8_t _Hi  = static_cast<uint8_t>(_Val_u8 >> 3);
+                        const uint8_t _Lo  = static_cast<uint8_t>(_Val_u8 & 0x7);
+                        const bool _Hit    = ((_Bitmap_scalar_tail[_Hi] >> _Lo) & 0x1) != 0;
+
+                        if constexpr (_Pred == _Predicate::_Any_of) {
+                            if (_Hit) {
+                                return _Ix;
+                            }
+                        } else {
+                            if (!_Hit) {
+                                return _Ix;
+                            }
+                        }
+                    } while (++_Ix != _Haystack_length);
+                }
+
+                return static_cast<size_t>(-1);
             }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             template <class _Ty>
@@ -6927,7 +7272,14 @@ namespace {
                 const size_t _Count2) noexcept {
                 using namespace _Bitmap_impl;
 
-                if (_Use_bitmap_scalar<_Ty>(_Count1, _Count2)) {
+                if (_Use_bitmap_neon<_Ty>(_Count1, _Count2)) {
+                    if constexpr (sizeof(_Ty) < 8) {
+                        uint8x16x2_t _Bitmap;
+                        if (_Bitmap_details::_Make_bitmap<_Ty>(_First2, _Count2, _Bitmap)) {
+                            return _Impl_first_neon<_Ty, _Pred>(_First1, _Count1, _Bitmap);
+                        }
+                    }
+                } else if (_Use_bitmap_scalar<_Ty>(_Count1, _Count2)) {
                     _Scalar_table_t _Table = {};
                     if (_Build_scalar_table<_Ty>(_First2, _Count2, _Table)) {
                         return _Impl_first_scalar<_Ty, _Pred>(_First1, _Count1, _Table);
