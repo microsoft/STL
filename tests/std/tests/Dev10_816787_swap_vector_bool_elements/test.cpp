@@ -59,9 +59,6 @@ void check_P3612(T& collection) {
     assert(!collection[0]);
 }
 
-template <typename T>
-constexpr bool has_noexcept_copy_ctor = noexcept(T(declval<const T&>()));
-
 int main() {
     check_values_match();
 
@@ -74,6 +71,4 @@ int main() {
 
     static_assert(is_nothrow_copy_constructible_v<decltype(vb)::reference>, "");
     static_assert(is_nothrow_copy_constructible_v<decltype(bs)::reference>, "");
-    static_assert(has_noexcept_copy_ctor<decltype(vb)::reference>, "");
-    static_assert(has_noexcept_copy_ctor<decltype(bs)::reference>, "");
 }
