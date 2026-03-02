@@ -1779,7 +1779,7 @@ private:
     static constexpr size_t _Bits = sizeof(_Rx_bitset_int_type) * CHAR_BIT;
 
 public:
-    explicit _Rx_fixed_size_bitset(_Alloc _Al) : _Buffer(_Al) {}
+    explicit _Rx_fixed_size_bitset(const _Alloc& _Al) : _Buffer(_Al) {}
 
     _NODISCARD size_t _Initialize(unsigned char* _Stack_buf, size_t _Stack_size, size_t _Size) {
         return _Buffer._Initialize(_Stack_buf, _Stack_size, _Size / _Bits + (_Size % _Bits != 0U));
@@ -1848,7 +1848,7 @@ struct _Rx_capture_range_t { // stores a pair of iterators
 template <class _BidIt, class _Alloc>
 class _Tgt_state_v2_t { // holds the current state of the match
 public:
-    explicit _Tgt_state_v2_t(_Alloc _Al = _Alloc()) : _Grps(_Al), _Grp_valid(_Al) {}
+    explicit _Tgt_state_v2_t(const _Alloc& _Al = _Alloc()) : _Grps(_Al), _Grp_valid(_Al) {}
 
     void _Copy_from(const _Tgt_state_v2_t& _Source) {
 #if _ITERATOR_DEBUG_LEVEL != 0
