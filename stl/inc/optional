@@ -378,12 +378,12 @@ public:
             const bool _Engaged = this->_Has_value;
             if (_Engaged == _Right._Has_value) {
                 if (_Engaged) {
-                    swap(**this, *_Right); // intentional ADL
+                    swap(this->operator*(), _Right.operator*()); // intentional ADL
                 }
             } else {
                 optional& _Source = _Engaged ? *this : _Right;
                 optional& _Target = _Engaged ? _Right : *this;
-                _Target._Construct(_STD move(*_Source));
+                _Target._Construct(_STD move(_Source.operator*()));
                 _Source.reset();
             }
         }
