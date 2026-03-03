@@ -20,6 +20,7 @@ using namespace std;
 // DevDiv-836436 "<iomanip>: get_time()'s AM/PM parsing is broken"
 // DevDiv-872926 "<locale>: time_get::get parsing format string gets tm::tm_hour wrong [libcxx]"
 // VSO-1259138/GH-2618 "<xloctime>: get_time does not return correct year in tm.tm_year if year is 1"
+// GH-6129 "<xloctime>: time_get::do_get uses the wrong format for %c and %x"
 
 tm helper(const char* const s, const char* const fmt) {
     tm t{};
@@ -60,9 +61,9 @@ tuple<int, int, int> read_date(const char* const s) {
     const auto t = helper(s, "%x");
 
     // %x The date, using the locale's date format.
-    // "%d / %m / %y"
-    // %d The day of the month [01,31]; leading zeros are permitted but not required.
+    // "%m/%d/%y"
     // %m The month number [01,12]; leading zeros are permitted but not required.
+    // %d The day of the month [01,31]; leading zeros are permitted but not required.
     // %y The year within century. When a century is not otherwise specified,
     //    values in the range [69,99] shall refer to years 1969 to 1999 inclusive, and
     //    values in the range [00,68] shall refer to years 2000 to 2068 inclusive;
@@ -142,9 +143,9 @@ int main() {
     assert(read_hour("11 PM") == 23);
     assert(read_hour("11 pm") == 23);
 
-    assert(read_date("22 / 4 / 77") == make_tuple(22, /*NOTE DIFFERENCE:*/ 3, 77));
+    assert(read_date("04/22/77") == make_tuple(22, /*NOTE DIFFERENCE:*/ 3, 77));
 
-    assert(read_date("22 / 4 / 11") == make_tuple(22, /*NOTE DIFFERENCE:*/ 3, /*NOTE DIFFERENCE:*/ 111));
+    assert(read_date("04/22/11") == make_tuple(22, /*NOTE DIFFERENCE:*/ 3, /*NOTE DIFFERENCE:*/ 111));
 
     assert(read_time("15 : 47 : 58") == make_tuple(15, 47, 58));
 
