@@ -1003,7 +1003,7 @@ struct hash<optional<_Ty>>
     static size_t _Do_hash(const optional<_Ty>& _Opt) noexcept(_Is_nothrow_hashable<remove_const_t<_Ty>>::value) {
         constexpr size_t _Unspecified_value = 0;
         if (_Opt) {
-            return hash<remove_const_t<_Ty>>{}(*_Opt);
+            return hash<remove_const_t<_Ty>>{}(_Opt.operator*());
         }
 
         return _Unspecified_value;
