@@ -840,7 +840,6 @@ constexpr void check_defaulted_copy_and_move_assignment_operators() {
     }
 }
 
-#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
 template <class Mds, class... IndexTypes>
 concept CanCallMultidimSubscriptOp = requires(const Mds& mds, IndexTypes... indices) {
     { mds[indices...] } -> same_as<typename Mds::reference>;
@@ -926,7 +925,6 @@ constexpr void check_multidimensional_subscript_operator() {
         assert((mds[i, i, move(i)] == 1));
     }
 }
-#endif // __cpp_multidimensional_subscript
 
 template <class Mds, class IndexType, size_t Rank = Mds::rank()>
 concept CanCallSubscriptOp = requires(const Mds& mds, span<IndexType, Rank> s, const array<IndexType, Rank>& a) {
@@ -1356,9 +1354,7 @@ constexpr bool test() {
     check_data_handle_and_mapping_and_accessor_constructor();
     check_construction_from_other_mdspan();
     check_defaulted_copy_and_move_assignment_operators();
-#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
     check_multidimensional_subscript_operator();
-#endif // __cpp_multidimensional_subscript
     check_span_array_subscript_operator();
     check_size();
     check_empty();

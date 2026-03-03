@@ -293,8 +293,10 @@ void test_flat_set() {
 void test_format() {
     using namespace std;
     puts("Testing <format>.");
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2744645
     assert(format("{} {}", 1729, "kittens") == "1729 kittens");
     assert(format(L"{} {}", 1729, L"kittens") == L"1729 kittens");
+#endif // ^^^ no workaround ^^^
 }
 
 void test_forward_list() {
@@ -612,7 +614,9 @@ void test_print() {
     println();
 
 #ifdef _CPPRTTI
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2744645
     println(cout, "The answer to life, the universe, and everything: {}", 42);
+#endif // ^^^ no workaround ^^^
     println(cout);
 #endif // _CPPRTTI
 }
