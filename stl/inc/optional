@@ -285,7 +285,7 @@ public:
     _CONSTEXPR20 explicit(!is_convertible_v<const _Ty2&, _Ty>) optional(const optional<_Ty2>& _Right)
         noexcept(is_nothrow_constructible_v<_Ty, const _Ty2&>) /* strengthened */ {
         if (_Right._Has_value) {
-            this->_Construct(_Right._Value);
+            this->_Construct(_Right.operator*());
         }
     }
 
@@ -293,7 +293,7 @@ public:
     _CONSTEXPR20 explicit(!is_convertible_v<_Ty2, _Ty>) optional(optional<_Ty2>&& _Right)
         noexcept(is_nothrow_constructible_v<_Ty, _Ty2>) /* strengthened */ {
         if (_Right._Has_value) {
-            this->_Construct(_STD move(_Right._Value));
+            this->_Construct(_STD move(_Right.operator*()));
         }
     }
 
@@ -325,7 +325,7 @@ public:
     _CONSTEXPR20 optional& operator=(const optional<_Ty2>& _Right) noexcept(
         is_nothrow_assignable_v<_Ty&, const _Ty2&> && is_nothrow_constructible_v<_Ty, const _Ty2&>) /* strengthened */ {
         if (_Right._Has_value) {
-            this->_Assign(_Right._Value);
+            this->_Assign(_Right.operator*());
         } else {
             reset();
         }
@@ -339,7 +339,7 @@ public:
     _CONSTEXPR20 optional& operator=(optional<_Ty2>&& _Right)
         noexcept(is_nothrow_assignable_v<_Ty&, _Ty2> && is_nothrow_constructible_v<_Ty, _Ty2>) /* strengthened */ {
         if (_Right._Has_value) {
-            this->_Assign(_STD move(_Right._Value));
+            this->_Assign(_STD move(_Right.operator*()));
         } else {
             reset();
         }
