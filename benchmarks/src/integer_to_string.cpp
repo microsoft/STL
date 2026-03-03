@@ -42,13 +42,13 @@ auto generate_array() {
 template <class T, double M, double S>
 void integer_to_chars(benchmark::State& state) {
     auto a = generate_array<char, M, S>();
-    char d[20];
+    char buff[20]; // can hold -2^63 and 2^64 - 1
 
     auto it = a.begin();
     for (auto _ : state) {
         auto i = *it;
         benchmark::DoNotOptimize(i);
-        auto s = to_chars(begin(d), end(d), i);
+        auto s = to_chars(begin(buff), end(buff), i);
         benchmark::DoNotOptimize(s.ec);
         benchmark::DoNotOptimize(s.ptr);
 
