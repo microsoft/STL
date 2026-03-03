@@ -64,10 +64,9 @@ _NODISCARD _CONSTEXPR23 to_chars_result _Integer_to_chars(
     switch (_Base) {
     case 10:
         { // Derived from _UIntegral_to_buff()
-#ifndef _WIN64
+#ifdef _WIN64
             auto _Trunc = _Value;
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
-
+#else // ^^^ 64-bit / 32-bit vvv
             if constexpr (sizeof(_Unsigned) > 4) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
                 while (_Value > 0xFFFFFFFFU) {
                     auto _Value_chunk = static_cast<unsigned long>(_Value % 100000000);
@@ -96,7 +95,7 @@ _NODISCARD _CONSTEXPR23 to_chars_result _Integer_to_chars(
             }
 
             auto _Trunc = static_cast<unsigned long>(_Value);
-#endif // ^^^ !defined(_WIN64) ^^^
+#endif // ^^^ 32-bit ^^^
 
             // If we have a single digit, print [0, 9] and return. (This is necessary to correctly handle 0.)
             if (_Trunc < 10) {
