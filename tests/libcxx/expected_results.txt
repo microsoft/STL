@@ -742,7 +742,7 @@ std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.default.
 std/time/time.zone/time.zone.db/time.zone.db.access/current_zone.pass.cpp FAIL
 std/time/time.zone/time.zone.db/time.zone.db.tzdb/current_zone.pass.cpp FAIL
 
-# LWG-4285 "time_get::do_get_date is problematic even after LWG 461" (Open)
+# LWG-4285 "time_get::do_get_date is problematic even after LWG-461" (Open)
 std/localization/locale.categories/category.time/locale.time.get.byname/get_date.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get.byname/get_date_wide.pass.cpp FAIL
 
