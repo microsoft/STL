@@ -171,20 +171,20 @@ struct _Optional_construct_base : _Optional_destruct_base<_Ty> {
 
     template <class _Self>
     _CONSTEXPR20 void _Construct_from(_Self&& _Right)
-        noexcept(is_nothrow_constructible_v<_Ty, decltype(*_STD forward<_Self>(_Right))>) {
+        noexcept(is_nothrow_constructible_v<_Ty, decltype(_STD forward<_Self>(_Right).operator*())>) {
         // initialize contained value from _Right iff it contains a value
         if (_Right._Has_value) {
-            _Construct(*_STD forward<_Self>(_Right));
+            _Construct(_STD forward<_Self>(_Right).operator*());
         }
     }
 
     template <class _Self>
     _CONSTEXPR20 void _Assign_from(_Self&& _Right)
-        noexcept(is_nothrow_constructible_v<_Ty, decltype(*_STD forward<_Self>(_Right))>
-                 && is_nothrow_assignable_v<_Ty&, decltype(*_STD forward<_Self>(_Right))>) {
+        noexcept(is_nothrow_constructible_v<_Ty, decltype(_STD forward<_Self>(_Right).operator*())>
+                 && is_nothrow_assignable_v<_Ty&, decltype(_STD forward<_Self>(_Right).operator*())>) {
         // assign/initialize/destroy contained value from _Right
         if (_Right._Has_value) {
-            _Assign(*_STD forward<_Self>(_Right));
+            _Assign(_STD forward<_Self>(_Right).operator*());
         } else {
             this->reset();
         }
