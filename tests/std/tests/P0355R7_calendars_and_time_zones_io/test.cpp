@@ -639,10 +639,10 @@ void parse_calendar_types_basic() {
     // basic %D test
     test_parse("07/04/76 17", "%D %C", ymd);
     assert(ymd == July / 4d / 1776y);
-    // locale's date representation %x (== "%d / %m / %y")
-    test_parse("04/07/76 17", "%x %C", ymd);
+    // locale's date representation %x (== "%m/%d/%y")
+    test_parse("07/04/76 17", "%x %C", ymd);
     assert(ymd == 4d / July / 1776y);
-    test_parse("10/12/15 18", "%x %C", ymd);
+    test_parse("12/10/15 18", "%x %C", ymd);
     assert(ymd == 10d / December / 1815y);
 
     // day-of-year tests, leap and non-leap years
@@ -972,10 +972,10 @@ void parse_timepoints() {
     file_time<seconds> ft;
     local_seconds lt;
 
-    test_parse("oct 29 19:01:42 2020", "%c", st);
-    test_parse("oct 29 19:01:42 2020", "%c", ut);
-    test_parse("oct 29 19:01:42 2020", "%c", ft);
-    test_parse("oct 29 19:01:42 2020", "%c", lt);
+    test_parse("thu oct 29 19:01:42 2020", "%c", st);
+    test_parse("thu oct 29 19:01:42 2020", "%c", ut);
+    test_parse("thu oct 29 19:01:42 2020", "%c", ft);
+    test_parse("thu oct 29 19:01:42 2020", "%c", lt);
 
     assert(st == ref);
     assert(ut == clock_cast<utc_clock>(ref));
@@ -983,16 +983,16 @@ void parse_timepoints() {
     assert(lt.time_since_epoch() == ref.time_since_epoch());
 
     minutes offset;
-    test_parse("oct 29 19:01:42 2020 0430", "%c %z", st, nullptr, &offset);
+    test_parse("thu oct 29 19:01:42 2020 0430", "%c %z", st, nullptr, &offset);
     assert(st == ref - offset && offset == 4h + 30min);
 
-    test_parse("oct 29 19:01:42 2020 0430", "%c %z", ut, nullptr, &offset);
+    test_parse("thu oct 29 19:01:42 2020 0430", "%c %z", ut, nullptr, &offset);
     assert(ut == clock_cast<utc_clock>(ref) - offset && offset == 4h + 30min);
 
-    test_parse("oct 29 19:01:42 2020 0430", "%c %z", ft, nullptr, &offset);
+    test_parse("thu oct 29 19:01:42 2020 0430", "%c %z", ft, nullptr, &offset);
     assert(ft == clock_cast<file_clock>(ref) - offset && offset == 4h + 30min);
 
-    test_parse("oct 29 19:01:42 2020 0430", "%c %z", lt, nullptr, &offset);
+    test_parse("thu oct 29 19:01:42 2020 0430", "%c %z", lt, nullptr, &offset);
     assert(lt.time_since_epoch() == ref.time_since_epoch() && offset == 4h + 30min);
 
     // N4878 [time.clock.tai]/1:
@@ -1004,13 +1004,13 @@ void parse_timepoints() {
 
     ref = sys_days{1957y / December / 31d} + days{1} - 10s;
     tai_seconds tt;
-    test_parse("jan 1 00:00:00 1958", "%c", tt);
+    test_parse("wed jan  1 00:00:00 1958", "%c", tt);
     assert(tt == clock_cast<tai_clock>(ref));
 
     ref = sys_days{2000y / January / 1d};
-    test_parse("jan 1 00:00:32 2000", "%c", tt);
+    test_parse("sat jan  1 00:00:32 2000", "%c", tt);
     assert(tt == clock_cast<tai_clock>(ref));
-    test_parse("jan 1 00:00:32 2000 0430", "%c %z", tt, nullptr, &offset);
+    test_parse("sat jan  1 00:00:32 2000 0430", "%c %z", tt, nullptr, &offset);
     assert(tt == clock_cast<tai_clock>(ref) - offset && offset == 4h + 30min);
 
     // N4878 [time.clock.gps]/1:
@@ -1022,11 +1022,11 @@ void parse_timepoints() {
 
     gps_seconds gt;
     ref = sys_days{1980y / January / 6d};
-    test_parse("jan 6 00:00:00 1980 0430", "%c %z", gt, nullptr, &offset);
+    test_parse("sun jan  6 00:00:00 1980 0430", "%c %z", gt, nullptr, &offset);
     assert(gt == clock_cast<gps_clock>(ref) - offset && offset == 4h + 30min);
-    test_parse("jan 6 00:00:00 1980", "%c", gt);
+    test_parse("sun jan  6 00:00:00 1980", "%c", gt);
     assert(gt == clock_cast<gps_clock>(ref));
-    test_parse("jan 6 00:00:19 1980", "%c", tt);
+    test_parse("sun jan  6 00:00:19 1980", "%c", tt);
     assert(gt == clock_cast<gps_clock>(tt));
 
     seconds time;
@@ -1074,75 +1074,75 @@ void parse_timepoints() {
     }
 
     utc_seconds ut_ref = utc_clock::from_sys(sys_days{1d / July / 1972y}) - 1s; // leap second insertion
-    test_parse("june 30 23:59:60 1972", "%c", ut);
+    test_parse("fri june 30 23:59:60 1972", "%c", ut);
     assert(ut == ut_ref);
 
     // Test a later leap second, where the accumulated offset is greater than 1s.
     ut_ref = utc_clock::from_sys(sys_days{1d / July / 1992y}) - 1s;
-    test_parse("june 30 23:59:60 1992", "%c", ut);
+    test_parse("tue june 30 23:59:60 1992", "%c", ut);
     assert(ut == ut_ref);
 
     // not leap-second aware
-    fail_parse("june 30 23:59:60 1972", "%c", st);
-    fail_parse("june 30 23:59:60 1972", "%c", tt);
-    fail_parse("june 30 23:59:60 1972", "%c", gt);
-    fail_parse("june 30 23:59:60 1972", "%c", ft);
+    fail_parse("fri june 30 23:59:60 1972", "%c", st);
+    fail_parse("fri june 30 23:59:60 1972", "%c", tt);
+    fail_parse("fri june 30 23:59:60 1972", "%c", gt);
+    fail_parse("fri june 30 23:59:60 1972", "%c", ft);
 
-    fail_parse("june 30 23:59:60 1973", "%c", ut); // not a leap second insertion
+    fail_parse("sat june 30 23:59:60 1973", "%c", ut); // not a leap second insertion
 
     // the last leap second insertion that file_clock is not aware of
-    test_parse("dec 31 23:59:59 2016", "%c", ut);
-    test_parse("dec 31 23:59:59 2016", "%c", ft);
+    test_parse("sat dec 31 23:59:59 2016", "%c", ut);
+    test_parse("sat dec 31 23:59:59 2016", "%c", ft);
     assert(ft == clock_cast<file_clock>(ut));
 
-    test_parse("dec 31 23:59:60 2016", "%c", ut);
-    fail_parse("dec 31 23:59:60 2016", "%c", ft);
+    test_parse("sat dec 31 23:59:60 2016", "%c", ut);
+    fail_parse("sat dec 31 23:59:60 2016", "%c", ft);
 
-    test_parse("jan 01 00:00:00 2017", "%c", ut);
-    test_parse("jan 01 00:00:00 2017", "%c", ft);
+    test_parse("sun jan 01 00:00:00 2017", "%c", ut);
+    test_parse("sun jan 01 00:00:00 2017", "%c", ft);
     assert(ft == clock_cast<file_clock>(ut));
 
     ref = sys_days{1d / January / 2020y} - 1s; // negative leap second, UTC time doesn't exist
-    fail_parse("dec 31 23:59:59 2019", "%c", ut);
-    fail_parse("dec 31 23:59:59 2019", "%c", ft);
+    fail_parse("tue dec 31 23:59:59 2019", "%c", ut);
+    fail_parse("tue dec 31 23:59:59 2019", "%c", ft);
 
-    test_parse("dec 31 23:59:59 2019", "%c", st);
+    test_parse("tue dec 31 23:59:59 2019", "%c", st);
     assert(st == ref);
 
-    test_parse("dec 31 23:59:59 2019", "%c", lt); // Not UTC, might be valid depending on the time zone.
+    test_parse("tue dec 31 23:59:59 2019", "%c", lt); // Not UTC, might be valid depending on the time zone.
     assert(lt.time_since_epoch() == ref.time_since_epoch());
 
     // Initially, TAI - UTC == 37s.
-    test_parse("dec 31 23:59:59 2019", "%c", tt);
-    test_parse("dec 31 23:59:22 2019", "%c", ut);
+    test_parse("tue dec 31 23:59:59 2019", "%c", tt);
+    test_parse("tue dec 31 23:59:22 2019", "%c", ut);
     assert(tt == clock_cast<tai_clock>(ut));
 
-    test_parse("jan 01 00:00:35 2020", "%c", tt);
-    test_parse("dec 31 23:59:58 2019", "%c", ut);
+    test_parse("wed jan 01 00:00:35 2020", "%c", tt);
+    test_parse("tue dec 31 23:59:58 2019", "%c", ut);
     assert(tt == clock_cast<tai_clock>(ut));
 
-    test_parse("jan 01 00:00:36 2020", "%c", tt);
-    test_parse("jan 01 00:00:00 2020", "%c", ut);
+    test_parse("wed jan 01 00:00:36 2020", "%c", tt);
+    test_parse("wed jan 01 00:00:00 2020", "%c", ut);
     assert(tt == clock_cast<tai_clock>(ut));
 
     // Initially, GPS - UTC == 18s
-    test_parse("dec 31 23:59:59 2019", "%c", gt);
-    test_parse("dec 31 23:59:41 2019", "%c", ut);
+    test_parse("tue dec 31 23:59:59 2019", "%c", gt);
+    test_parse("tue dec 31 23:59:41 2019", "%c", ut);
     assert(gt == clock_cast<gps_clock>(ut));
 
-    test_parse("jan 01 00:00:16 2020", "%c", gt);
-    test_parse("dec 31 23:59:58 2019", "%c", ut);
+    test_parse("wed jan 01 00:00:16 2020", "%c", gt);
+    test_parse("tue dec 31 23:59:58 2019", "%c", ut);
     assert(gt == clock_cast<gps_clock>(ut));
 
-    test_parse("jan 01 00:00:17 2020", "%c", gt);
-    test_parse("jan 01 00:00:00 2020", "%c", ut);
+    test_parse("wed jan 01 00:00:17 2020", "%c", gt);
+    test_parse("wed jan 01 00:00:00 2020", "%c", ut);
     assert(gt == clock_cast<gps_clock>(ut));
 
 
     ut_ref = utc_clock::from_sys(sys_days{1d / January / 2022y}) - 1s; // leap second insertion
-    test_parse("dec 31 23:59:60 2021", "%c", ut);
+    test_parse("fri dec 31 23:59:60 2021", "%c", ut);
     assert(ut == ut_ref);
-    test_parse("dec 31 23:59:60 2021", "%c", ft);
+    test_parse("fri dec 31 23:59:60 2021", "%c", ft);
     assert(ft == clock_cast<file_clock>(ut_ref));
 
 
