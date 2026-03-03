@@ -20,12 +20,11 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 template <class _Dummy>
-class _Iosb { // define templatized bitmask/enumerated types, instantiate on demand
+class _Iosb { // define templatized bitmask types, instantiate on demand
 public:
-    enum _Fmtflags { // constants for formatting options
-        _Fmtmask = 0xffff,
-        _Fmtzero = 0
-    };
+    // constants for formatting options
+    static constexpr int _Fmtmask = 0xffff;
+    static constexpr int _Fmtzero = 0;
 
     static constexpr int skipws     = 0x0001;
     static constexpr int unitbuf    = 0x0002;
@@ -47,9 +46,8 @@ public:
     static constexpr int basefield   = dec | oct | hex;
     static constexpr int floatfield  = scientific | fixed;
 
-    enum _Iostate { // constants for stream states
-        _Statmask = 0x17
-    };
+    // constants for stream states
+    static constexpr int _Statmask = 0x17;
 
     static constexpr int goodbit = 0x0;
     static constexpr int eofbit  = 0x1;
@@ -73,13 +71,6 @@ public:
     static constexpr int end = 2;
 
     static constexpr int _Default_open_prot = _SH_DENYNO; // constant for default file opening protection
-
-    // TRANSITION, ABI: These enums don't appear in the STL DLL's export surface, but MaxMPDCompat
-    // in the MSVC-internal build detects that they appear in the CompatibilityData baseline.
-    enum _Dummy_enum { _Dummy_enum_val = 1 };
-    enum _Openmode { _Openmask = 0xff };
-    enum _Seekdir { _Seekbeg, _Seekcur, _Seekend };
-    enum { _Openprot = _SH_DENYNO };
 };
 
 _EXPORT_STD extern "C++" class _CRTIMP2_PURE_IMPORT ios_base : public _Iosb<int> { // base class for ios

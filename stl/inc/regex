@@ -1643,6 +1643,111 @@ public:
     _Builder2& operator=(const _Builder2&) = delete;
 };
 
+template <class _Ty, class _Alloc = allocator<_Ty>>
+class _Rx_fixed_size_buffer {
+private:
+    using _Al_pointer   = _Alloc_ptr_t<_Alloc>;
+    using _Al_size_type = _Alloc_size_t<_Alloc>;
+
+    struct _Buffer_range {
+        _Al_pointer _First{};
+        _Al_pointer _Last{};
+        bool _Allocated{false};
+    };
+
+    struct _NODISCARD _Allocation_guard {
+        _Alloc& _Al;
+        _Al_pointer _Ptr;
+        _Al_size_type _Size;
+
+        _Allocation_guard& operator=(const _Allocation_guard&) = delete;
+        _Allocation_guard& operator=(_Allocation_guard&&)      = delete;
+
+        ~_Allocation_guard() noexcept {
+            if (_Ptr) {
+                _Al.deallocate(_Ptr, _Size);
+            }
+        }
+    };
+
+public:
+    explicit _Rx_fixed_size_buffer(const _Alloc& _Al = _Alloc{}) : _Mypair(_One_then_variadic_args_t{}, _Al) {}
+
+    _Rx_fixed_size_buffer(const _Rx_fixed_size_buffer&)            = delete;
+    _Rx_fixed_size_buffer(_Rx_fixed_size_buffer&&)                 = delete;
+    _Rx_fixed_size_buffer& operator=(const _Rx_fixed_size_buffer&) = delete;
+    _Rx_fixed_size_buffer& operator=(_Rx_fixed_size_buffer&&)      = delete;
+
+    _NODISCARD size_t _Initialize(unsigned char* _Stack_buf, size_t _Stack_size, size_t _Size) {
+        if (_Stack_size / sizeof(_Ty) >= _Size) {
+            _Use_external_buf(_Stack_buf, _Size);
+            return _Size * sizeof(_Ty);
+        } else {
+            _Allocate_buf(_Size);
+            return 0U;
+        }
+    }
+
+    ~_Rx_fixed_size_buffer() {
+        auto& _Data = _Mypair._Myval2;
+        if (_Data._Allocated) {
+            auto& _Al = _Mypair._Get_first();
+            _STD _Destroy_range(_Data._First, _Data._Last, _Al);
+            _Al.deallocate(_Data._First, static_cast<_Al_size_type>(_Data._Last - _Data._First));
+        } else {
+            _STD _Destroy_range(_Data._First, _Data._Last);
+        }
+    }
+
+    _NODISCARD _Ty& operator[](const size_t _Pos) {
+        auto& _Data = _Mypair._Myval2;
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(
+            _Pos < static_cast<size_t>(_Data._Last - _Data._First), "_Rx_fixed_size_buffer subscript out of range");
+#endif
+        return _Data._First[_Pos];
+    }
+
+    _NODISCARD const _Ty& operator[](const size_t _Pos) const {
+        auto& _Data = _Mypair._Myval2;
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(
+            _Pos < static_cast<size_t>(_Data._Last - _Data._First), "_Rx_fixed_size_buffer subscript out of range");
+#endif
+        return _Data._First[_Pos];
+    }
+
+private:
+    void _Use_external_buf(unsigned char* _Buf, size_t _Ty_size) {
+        auto _Ty_first = _STD _Refancy<_Al_pointer>(reinterpret_cast<_Ty*>(_Buf));
+        auto _Ty_last  = _Ty_first + _Ty_size;
+        auto& _Data    = _Mypair._Myval2;
+        _STD uninitialized_fill(_Ty_first, _Ty_last, _Ty{}); // uninitialized_value_construct() is C++17
+        _Data._Allocated = false;
+        _Data._First     = _Ty_first;
+        _Data._Last      = _Ty_last;
+    }
+
+    void _Allocate_buf(size_t _Ty_size) {
+        auto& _Al = _Mypair._Get_first();
+
+        if (_Ty_size > size_t{PTRDIFF_MAX} || _Ty_size > allocator_traits<_Alloc>::max_size(_Al)) {
+            _Xregex_error(regex_constants::error_stack);
+        }
+
+        auto _Al_size  = static_cast<_Al_size_type>(_Ty_size);
+        auto _Ty_first = _Al.allocate(_Al_size);
+        _Allocation_guard _Guard{_Al, _Ty_first, _Al_size};
+        auto& _Data      = _Mypair._Myval2;
+        _Data._Last      = _STD _Uninitialized_value_construct_n(_Ty_first, _Ty_size, _Al);
+        _Data._Allocated = true;
+        _Data._First     = _Ty_first;
+        _Guard._Ptr      = nullptr;
+    }
+
+    _Compressed_pair<_Alloc, _Buffer_range> _Mypair;
+};
+
 template <class _BidIt>
 class _Bt_state_t { // holds the state needed for backtracking
 public:
@@ -1700,10 +1805,10 @@ template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 class _Matcher3 { // provides ways to match a regular expression to a text sequence
 public:
     _Matcher3(_It _Pfirst, _It _Plast, const _RxTraits& _Tr, _Root_node* _Re, unsigned int _Nx,
-        regex_constants::syntax_option_type _Sf, regex_constants::match_flag_type _Mf)
+        regex_constants::syntax_option_type _Sf, regex_constants::match_flag_type _Mf, unsigned char* _Stackbuf,
+        size_t _Stackbuf_size)
         : _Begin(_Pfirst), _End(_Plast), _Sflags(_Sf), _Mflags(_Mf), _Ncap(_Nx),
           _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)), _Traits(_Tr) {
-        _Loop_vals.resize(_Re->_Loops);
         _Adl_verify_range(_Pfirst, _Plast);
         if (_Re->_Flags & _Fl_begin_needs_w) {
             _Char_class_w = _Lookup_char_class(static_cast<_Elem>('W'));
@@ -1726,6 +1831,8 @@ public:
         // These nodes do not affect the state of the matcher and thus can be skipped immediately
         // before engaging the expensive NFA interpreter loop.
         _Start = _Re->_Next->_Next;
+
+        (void) _Loop_vals._Initialize(_Stackbuf, _Stackbuf_size, _Re->_Loops);
 
 // sanitize multiline mode setting
 #if _REGEX_LEGACY_MULTILINE_MODE
@@ -1816,7 +1923,7 @@ public:
 private:
     _Tgt_state_t<_It> _Tgt_state;
     _Tgt_state_t<_It> _Res;
-    vector<_Loop_vals_v3_t<_Iter_diff_t<_It>>> _Loop_vals;
+    _Rx_fixed_size_buffer<_Loop_vals_v3_t<_Iter_diff_t<_It>>> _Loop_vals;
     vector<_Rx_state_frame_t<_It>> _Frames;
     size_t _Frames_count;
     size_t _Frames_limit;
@@ -2330,8 +2437,9 @@ bool _Regex_match1(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matche
         return false;
     }
 
-    _Matcher3<_BidIt, _Elem, _RxTraits, _It, void> _Mx(
-        _First, _Last, _Re._Get_traits(), _Re._Get(), _Re.mark_count() + 1, _Re.flags(), _Flgs);
+    alignas(_Loop_vals_v3_t<_Iter_diff_t<_It>>) unsigned char _Stackbuf[4096];
+    _Matcher3<_BidIt, _Elem, _RxTraits, _It, void> _Mx(_First, _Last, _Re._Get_traits(), _Re._Get(),
+        _Re.mark_count() + 1, _Re.flags(), _Flgs, _Stackbuf, sizeof(_Stackbuf));
     return _Mx._Match(_Matches, _Full);
 }
 
@@ -2407,8 +2515,9 @@ bool _Regex_search2(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Match
         ++_First;
     }
 
-    _Matcher3<_BidIt, _Elem, _RxTraits, _It, void> _Mx(
-        _First, _Last, _Re._Get_traits(), _Re._Get(), _Re.mark_count() + 1, _Re.flags(), _Flgs);
+    alignas(_Loop_vals_v3_t<_Iter_diff_t<_It>>) unsigned char _Stackbuf[4096];
+    _Matcher3<_BidIt, _Elem, _RxTraits, _It, void> _Mx(_First, _Last, _Re._Get_traits(), _Re._Get(),
+        _Re.mark_count() + 1, _Re.flags(), _Flgs, _Stackbuf, sizeof(_Stackbuf));
 
     if (_Mx._Match(_Matches, false)) {
         _Found = true;
