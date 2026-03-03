@@ -41,7 +41,7 @@ auto generate_array() {
 
 template <class T, double M, double S>
 void integer_to_chars(benchmark::State& state) {
-    auto a = generate_array<char, M, S>();
+    auto a = generate_array<T, M, S>();
     char buff[20]; // can hold -2^63 and 2^64 - 1
 
     auto it = a.begin();
