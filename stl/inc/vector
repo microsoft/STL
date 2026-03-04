@@ -2463,7 +2463,7 @@ private:
     using _Difference_type = typename _Mybase::_Difference_type;
 
 public:
-    _CONSTEXPR20 _Vb_reference(const _Vb_reference&) = default;
+    _CONSTEXPR20 _Vb_reference(const _Vb_reference&) noexcept = default;
 
     _CONSTEXPR20 _Vb_reference(const _Mybase& _Right) noexcept
         : _Mybase(_Right._Myptr, _Right._Myoff, _Right._Getcont()) {}
@@ -2482,8 +2482,7 @@ public:
         return *this;
     }
 
-#if _HAS_CXX23
-    constexpr const _Vb_reference& operator=(bool _Val) const noexcept {
+    _CONSTEXPR20 const _Vb_reference& operator=(bool _Val) const noexcept {
         if (_Val) {
             *const_cast<_Vbase*>(_Getptr()) |= _Mask();
         } else {
@@ -2492,7 +2491,6 @@ public:
 
         return *this;
     }
-#endif // _HAS_CXX23
 
     _CONSTEXPR20 void flip() noexcept {
         *const_cast<_Vbase*>(_Getptr()) ^= _Mask();
@@ -2517,6 +2515,16 @@ public:
         bool _Val = _Left; // NOT _STD swap
         _Left     = _Right;
         _Right    = _Val;
+    }
+
+    friend _CONSTEXPR20 void swap(_Vb_reference _Left, bool& _Right) noexcept {
+        bool _Val = _Left; // NOT _STD swap
+        _Left     = _Right;
+        _Right    = _Val;
+    }
+
+    friend _CONSTEXPR20 void swap(bool& _Left, _Vb_reference _Right) noexcept {
+        swap(_Right, _Left);
     }
 
 protected:
@@ -3510,6 +3518,7 @@ public:
         }
     }
 
+    _DEPRECATE_VECTOR_BOOL_STATIC_REFERENCE_SWAP
     static _CONSTEXPR20 void swap(reference _Left, reference _Right) noexcept {
         bool _Val = _Left; // NOT _STD swap
         _Left     = _Right;
