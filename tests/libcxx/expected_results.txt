@@ -736,6 +736,9 @@ std/iterators/iterator.requirements/iterator.assoc.types/readable.traits/indirec
 # Not analyzed, likely bogus test. constexpr fails with "vector iterators incompatible".
 std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.default.pass.cpp FAIL
 
+# libc++ treats `fs::absolute("", ec)` as a success case, whereas we emit an error and return an empty `path`.
+std/input.output/filesystems/fs.op.funcs/fs.op.absolute/absolute.pass.cpp FAIL
+
 # Problems in this test:
 # - Clang does not trap on ARM64, but MSVC does.
 # - The test inspects `__x86_64__` and `__i386__`, which MSVC doesn't define.
@@ -1139,9 +1142,6 @@ std/input.output/filesystems/class.path/path.member/path.generic.obs/generic_str
 
 # Not analyzed. Assertion failed: std::equal(p.begin(), p.end(), TC.elements.begin(), ComparePathExact())
 std/input.output/filesystems/class.path/path.member/path.decompose/path.decompose.pass.cpp FAIL
-
-# Not analyzed. Assertion failed: ret.is_absolute()
-std/input.output/filesystems/fs.op.funcs/fs.op.absolute/absolute.pass.cpp FAIL
 
 # Not analyzed. Assertion failed: ret == TC.p
 std/input.output/filesystems/fs.op.funcs/fs.op.temp_dir_path/temp_directory_path.pass.cpp FAIL
