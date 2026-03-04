@@ -616,14 +616,14 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [enhancement tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement
 [gbenchmark]: https://github.com/google/benchmark
 [gbenchmark:docs]: https://github.com/google/benchmark/blob/main/docs/user_guide.md
-[hub]: https://support.microsoft.com/en-us/help/4021566/windows-10-send-feedback-to-microsoft-with-feedback-hub-app
+[hub]: https://support.microsoft.com/help/4021566
 [libcxx]: https://libcxx.llvm.org
 [lit]: https://llvm.org/docs/CommandGuide/lit.html
 [lit result codes]: https://llvm.org/docs/CommandGuide/lit.html#test-status-results
-[redistributables]: https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist
-[natvis documentation]: https://learn.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects
-[ASan]: https://learn.microsoft.com/en-us/cpp/sanitizers/asan
+[redistributables]: https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist
+[natvis documentation]: https://learn.microsoft.com/visualstudio/debugger/create-custom-views-of-native-objects
+[ASan]: https://learn.microsoft.com/cpp/sanitizers/asan
 [Import Library]: /docs/import_library.md
 [VS 2026 Insiders]: https://visualstudio.microsoft.com/insiders/
 [CXXFLAGS]: https://cmake.org/cmake/help/latest/envvar/CXXFLAGS.html
-[start-command]: https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/start
+[start-command]: https://learn.microsoft.com/windows-server/administration/windows-commands/start
