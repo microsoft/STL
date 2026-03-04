@@ -7768,7 +7768,7 @@ namespace {
             }
 
             template <class _Ty>
-            static __forceinline int _Memcmp_inline_eq(
+            static __forceinline bool _Memcmp_inline_eq(
                 const void* _First, const void* _Second, size_t _Count) noexcept {
                 const auto* _First_b  = static_cast<const uint8_t*>(_First);
                 const auto* _Second_b = static_cast<const uint8_t*>(_Second);
@@ -7776,10 +7776,10 @@ namespace {
                 if (_Count < 16) {
                     for (size_t _Ix = 0; _Ix < _Count; ++_Ix) {
                         if (_First_b[_Ix] != _Second_b[_Ix]) {
-                            return 1;
+                            return false;
                         }
                     }
-                    return 0;
+                    return true;
                 }
 
                 size_t _Ix            = 0;
@@ -7791,7 +7791,7 @@ namespace {
                     const auto _Combine = vpmaxq_u8(_Cmp1, _Cmp2);
                     const uint64_t _Any = vgetq_lane_u64(vreinterpretq_u64_u8(vpmaxq_u8(_Combine, _Combine)), 0);
                     if (_Any != 0) {
-                        return 1;
+                        return false;
                     }
                 }
 
@@ -7799,7 +7799,7 @@ namespace {
                     const auto _Cmp     = veorq_u8(vld1q_u8(_First_b + _Ix), vld1q_u8(_Second_b + _Ix));
                     const uint64_t _Any = vgetq_lane_u64(vreinterpretq_u64_u8(vpmaxq_u8(_Cmp, _Cmp)), 0);
                     if (_Any != 0) {
-                        return 1;
+                        return false;
                     }
 
                     _Ix += 16;
@@ -7807,11 +7807,11 @@ namespace {
 
                 for (; _Ix < _Count; ++_Ix) {
                     if (_First_b[_Ix] != _Second_b[_Ix]) {
-                        return 1;
+                        return false;
                     }
                 }
 
-                return 0;
+                return true;
             }
         };
 
@@ -8013,9 +8013,9 @@ namespace {
             }
 
             template <class _Ty>
-            static __forceinline int _Memcmp_inline_eq(
+            static __forceinline bool _Memcmp_inline_eq(
                 const void* _First, const void* _Second, size_t _Count) noexcept {
-                return memcmp(_First, _Second, _Count);
+                return memcmp(_First, _Second, _Count) == 0;
             }
         };
 
@@ -8137,9 +8137,9 @@ namespace {
             }
 
             template <class _Ty>
-            static __forceinline int _Memcmp_inline_eq(
+            static __forceinline bool _Memcmp_inline_eq(
                 const void* _First, const void* _Second, size_t _Count) noexcept {
-                return memcmp(_First, _Second, _Count);
+                return memcmp(_First, _Second, _Count) == 0;
             }
         };
 
@@ -8333,8 +8333,7 @@ namespace {
                             const void* _Tail1 = _Match;
                             _Advance_bytes(_Tail1, _Vec_size);
 
-                            if (_Traits::template _Memcmp_inline_eq<_Ty>(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size)
-                                == 0) {
+                            if (_Traits::template _Memcmp_inline_eq<_Ty>(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size)) {
                                 return _Match;
                             }
                         }
@@ -8473,8 +8472,7 @@ namespace {
                             const void* _Tail1 = _Tmp1;
                             _Advance_bytes(_Tail1, _Vec_size);
 
-                            if (_Traits::template _Memcmp_inline_eq<_Ty>(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size)
-                                == 0) {
+                            if (_Traits::template _Memcmp_inline_eq<_Ty>(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size)) {
                                 _Mid1 = _Tmp1;
                                 return true;
                             }
@@ -8495,7 +8493,7 @@ namespace {
                     const void* _Tail1 = _Mid1;
                     _Advance_bytes(_Tail1, _Vec_size);
 
-                    if (_Traits::template _Memcmp_inline_eq<_Ty>(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size) == 0) {
+                    if (_Traits::template _Memcmp_inline_eq<_Ty>(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size)) {
                         return _Mid1;
                     }
                 }
