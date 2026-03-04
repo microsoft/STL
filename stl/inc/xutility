@@ -7971,6 +7971,24 @@ constexpr bool _Equivalence_is_equality =
     _Is_any_of_v<_Compare, _RANGES less, _RANGES greater>
     || (_Is_any_of_v<_Compare, less<>, less<_Key>, greater<>, greater<_Key>> && _Equivalence_is_equality_impl<_Key>);
 #endif // _HAS_CXX23
+
+template <class _Elem>
+struct _Digit_pair_table {
+    _Elem _Data[100][2];
+
+    constexpr explicit _Digit_pair_table() : _Data{} {
+        for (int _Idx = 0; _Idx != 100; ++_Idx) {
+            _Data[_Idx][0] = static_cast<_Elem>('0' + _Idx / 10);
+            _Data[_Idx][1] = static_cast<_Elem>('0' + _Idx % 10);
+        }
+    }
+
+    _Digit_pair_table(const _Digit_pair_table&)            = delete;
+    _Digit_pair_table& operator=(const _Digit_pair_table&) = delete;
+};
+
+template <class _Elem>
+constexpr _Digit_pair_table<_Elem> _Digit_pairs{};
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
