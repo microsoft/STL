@@ -7767,7 +7767,6 @@ namespace {
                 return _Bingo ^ (uint64_t{0xF} << (_Pos << 2));
             }
 
-            template <class _Ty>
             static __forceinline bool _Memcmp_inline_eq(
                 const void* _First, const void* _Second, size_t _Count) noexcept {
                 const auto* _First_b  = static_cast<const uint8_t*>(_First);
@@ -8012,7 +8011,6 @@ namespace {
                 return 31 - _lzcnt_u32(_Mask);
             }
 
-            template <class _Ty>
             static __forceinline bool _Memcmp_inline_eq(
                 const void* _First, const void* _Second, size_t _Count) noexcept {
                 return memcmp(_First, _Second, _Count) == 0;
@@ -8136,7 +8134,6 @@ namespace {
                 return _Index;
             }
 
-            template <class _Ty>
             static __forceinline bool _Memcmp_inline_eq(
                 const void* _First, const void* _Second, size_t _Count) noexcept {
                 return memcmp(_First, _Second, _Count) == 0;
@@ -8332,7 +8329,7 @@ namespace {
                             const void* _Tail1 = _Match;
                             _Advance_bytes(_Tail1, _Vec_size);
 
-                            if (_Traits::template _Memcmp_inline_eq<_Ty>(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size)) {
+                            if (_Traits::_Memcmp_inline_eq(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size)) {
                                 return _Match;
                             }
                         }
@@ -8471,7 +8468,7 @@ namespace {
                             const void* _Tail1 = _Tmp1;
                             _Advance_bytes(_Tail1, _Vec_size);
 
-                            if (_Traits::template _Memcmp_inline_eq<_Ty>(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size)) {
+                            if (_Traits::_Memcmp_inline_eq(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size)) {
                                 _Mid1 = _Tmp1;
                                 return true;
                             }
@@ -8492,7 +8489,7 @@ namespace {
                     const void* _Tail1 = _Mid1;
                     _Advance_bytes(_Tail1, _Vec_size);
 
-                    if (_Traits::template _Memcmp_inline_eq<_Ty>(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size)) {
+                    if (_Traits::_Memcmp_inline_eq(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size)) {
                         return _Mid1;
                     }
                 }
