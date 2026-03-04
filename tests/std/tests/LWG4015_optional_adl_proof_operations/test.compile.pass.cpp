@@ -11,15 +11,17 @@
 #include <utility>
 
 namespace bad {
-    template <class T>
-    void operator*(const std::optional<T>&) = delete;
-
     struct S {
         int val;
         operator int() const {
             return val;
         }
     };
+
+    void operator*(std::optional<S>&)        = delete;
+    void operator*(std::optional<S>&&)       = delete;
+    void operator*(const std::optional<S>&)  = delete;
+    void operator*(const std::optional<S>&&) = delete;
 } // namespace bad
 
 namespace std {
