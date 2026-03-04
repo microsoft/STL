@@ -936,7 +936,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
    * Hard coding _BUF_SIZE for clang-cl compatibility; clang-cl as of 7.0.1 does not emit S_CONSTANT to get _BUF_SIZE
    *
    * The `na` format specifier means "no address". For more info, see:
-   * https://learn.microsoft.com/en-us/visualstudio/debugger/format-specifiers-in-cpp?view=vs-2022
+   * https://learn.microsoft.com/visualstudio/debugger/format-specifiers-in-cpp
    -->
   <Type Name="std::basic_string&lt;*&gt;">
     <Intrinsic Name="size" Expression="_Mypair._Myval2._Mysize" />

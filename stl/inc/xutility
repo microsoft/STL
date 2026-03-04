@@ -54,7 +54,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ vector algorithms supported by default ^^^
 
 // _USE_STD_VECTOR_ALGORITHMS is our documented control macro:
-// https://learn.microsoft.com/en-us/cpp/standard-library/vectorized-stl-algorithms?view=msvc-170
+// https://learn.microsoft.com/cpp/standard-library/vectorized-stl-algorithms
 // In the STL's implementation, we inspect the following detection macros,
 // because various algorithms are vectorized for various architectures.
 
