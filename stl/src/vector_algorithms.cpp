@@ -8199,7 +8199,6 @@ namespace {
         template <class _Ty>
         const void* _Find_end_scalar_tail(
             const void* _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
-
             auto _Ptr1       = static_cast<const _Ty*>(_Last1) - _Count2;
             const auto _Ptr2 = static_cast<const _Ty*>(_First2);
 
