@@ -7772,36 +7772,30 @@ namespace {
                 const auto _First_b  = static_cast<const uint8_t*>(_First);
                 const auto _Second_b = static_cast<const uint8_t*>(_Second);
 
-                if (_Count < 16) {
-                    for (size_t _Ix = 0; _Ix < _Count; ++_Ix) {
-                        if (_First_b[_Ix] != _Second_b[_Ix]) {
+                size_t _Ix = 0;
+
+                if (_Count >= 16) {
+                    const size_t _Vec_end = _Count & ~size_t{0x1F};
+
+                    for (; _Ix < _Vec_end; _Ix += 32) {
+                        const auto _Cmp1    = veorq_u8(vld1q_u8(_First_b + _Ix), vld1q_u8(_Second_b + _Ix));
+                        const auto _Cmp2    = veorq_u8(vld1q_u8(_First_b + _Ix + 16), vld1q_u8(_Second_b + _Ix + 16));
+                        const auto _Combine = vpmaxq_u8(_Cmp1, _Cmp2);
+                        const uint64_t _Any = vgetq_lane_u64(vreinterpretq_u64_u8(vpmaxq_u8(_Combine, _Combine)), 0);
+                        if (_Any != 0) {
                             return false;
                         }
                     }
-                    return true;
-                }
 
-                size_t _Ix            = 0;
-                const size_t _Vec_end = _Count & ~size_t{0x1F};
+                    if ((_Count & size_t{0x10}) != 0) { // use original _Count; we've read only 32-byte chunks
+                        const auto _Cmp     = veorq_u8(vld1q_u8(_First_b + _Ix), vld1q_u8(_Second_b + _Ix));
+                        const uint64_t _Any = vgetq_lane_u64(vreinterpretq_u64_u8(vpmaxq_u8(_Cmp, _Cmp)), 0);
+                        if (_Any != 0) {
+                            return false;
+                        }
 
-                for (; _Ix < _Vec_end; _Ix += 32) {
-                    const auto _Cmp1    = veorq_u8(vld1q_u8(_First_b + _Ix), vld1q_u8(_Second_b + _Ix));
-                    const auto _Cmp2    = veorq_u8(vld1q_u8(_First_b + _Ix + 16), vld1q_u8(_Second_b + _Ix + 16));
-                    const auto _Combine = vpmaxq_u8(_Cmp1, _Cmp2);
-                    const uint64_t _Any = vgetq_lane_u64(vreinterpretq_u64_u8(vpmaxq_u8(_Combine, _Combine)), 0);
-                    if (_Any != 0) {
-                        return false;
+                        _Ix += 16;
                     }
-                }
-
-                if ((_Count & size_t{0x10}) != 0) { // use original _Count; we've read only 32-byte chunks
-                    const auto _Cmp     = veorq_u8(vld1q_u8(_First_b + _Ix), vld1q_u8(_Second_b + _Ix));
-                    const uint64_t _Any = vgetq_lane_u64(vreinterpretq_u64_u8(vpmaxq_u8(_Cmp, _Cmp)), 0);
-                    if (_Any != 0) {
-                        return false;
-                    }
-
-                    _Ix += 16;
                 }
 
                 for (; _Ix < _Count; ++_Ix) {
