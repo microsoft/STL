@@ -6209,7 +6209,68 @@ namespace {
                                 return _Ix;
                             }
                         }
-                    } while (++_Ix != _Haystack_length);
+
+                        ++_Ix;
+                    } while (_Ix != _Haystack_length);
+                }
+
+                return static_cast<size_t>(-1);
+            }
+
+            template <class _Ty, _Predicate _Pred>
+            size_t _Impl_last_neon(
+                const void* const _Haystack, const size_t _Haystack_length, const uint8x16x2_t _Bitmap) noexcept {
+                const auto _Hay_ptr = static_cast<const _Ty*>(_Haystack);
+
+                size_t _Ix = _Haystack_length;
+                while (_Ix >= 16) {
+                    _Ix -= 16;
+                    const auto _Eq = _Bitmap_details::_Do_bitmap(_Hay_ptr + _Ix, _Bitmap);
+
+                    auto _Mask = _Finding::_Find_traits_1::_Mask_q(_Eq);
+                    if constexpr (_Pred == _Predicate::_None_of) {
+                        _Mask ^= 0xFFFF'FFFF'FFFF'FFFF;
+                    }
+
+                    if (_Mask != 0) {
+                        return _Ix + _Finding::_Get_last_h_pos_q(_Mask);
+                    }
+                }
+
+                if (_Ix != 0) {
+                    alignas(16) uint8_t _Bitmap_scalar_tail[32];
+                    vst1q_u8(_Bitmap_scalar_tail, _Bitmap.val[0]);
+                    vst1q_u8(_Bitmap_scalar_tail + 16, _Bitmap.val[1]);
+
+                    do {
+                        --_Ix;
+                        const _Ty _Val = _Hay_ptr[_Ix];
+
+                        if constexpr (sizeof(_Val) > 1) {
+                            if (_Val >= 256) {
+                                if constexpr (_Pred == _Predicate::_Any_of) {
+                                    continue;
+                                } else {
+                                    return _Ix;
+                                }
+                            }
+                        }
+
+                        const auto _Val_u8 = static_cast<uint8_t>(_Val);
+                        const uint8_t _Hi  = static_cast<uint8_t>(_Val_u8 >> 3);
+                        const uint8_t _Lo  = static_cast<uint8_t>(_Val_u8 & 0x7);
+                        const bool _Hit    = ((_Bitmap_scalar_tail[_Hi] >> _Lo) & 0x1) != 0;
+
+                        if constexpr (_Pred == _Predicate::_Any_of) {
+                            if (_Hit) {
+                                return _Ix;
+                            }
+                        } else {
+                            if (!_Hit) {
+                                return _Ix;
+                            }
+                        }
+                    } while (_Ix != 0);
                 }
 
                 return static_cast<size_t>(-1);
@@ -7434,7 +7495,135 @@ namespace {
                 return static_cast<size_t>(-1);
             }
 
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+            template <class _Ty, _Predicate _Pred, size_t _Unrolled_tail_elems>
+            size_t _Shuffle_impl(const void* const _First1, const size_t _Count1, const void* const _First2,
+                const size_t _Count2) noexcept {
+                using _Traits                   = _First_of::_Find_first_of_traits<_Ty>;
+                constexpr size_t _Vec_size_elem = 16 / sizeof(_Ty);
+
+                const void* const _Last1 = static_cast<const _Ty*>(_First1) + _Count1;
+                const void* const _Last2 = static_cast<const _Ty*>(_First2) + _Count2;
+
+                const size_t _Haystack_length = _Byte_length(_First1, _Last1);
+                const size_t _Vec_bytes       = _Haystack_length & ~size_t{0xF};
+                const void* _Stop1            = _Last1;
+                _Rewind_bytes(_Stop1, _Vec_bytes);
+
+                const void* _Cur1 = _Last1;
+                if (_Cur1 != _Stop1) {
+                    const size_t _Needle_length = _Byte_length(_First2, _Last2);
+                    const void* _Stop2          = _First2;
+                    _Advance_bytes(_Stop2, _Needle_length & ~size_t{0xF});
+
+                    // Set _Lanes to 1 when we have 0 tail elements,
+                    // to stop the compiler from complaining about an empty array.
+                    constexpr size_t _Lanes = _Unrolled_tail_elems == 0 ? 1 : _Unrolled_tail_elems;
+                    _First_of::_Find_first_of_vec_t<_Ty> _Needle_tail[_Lanes];
+
+                    if constexpr (_Unrolled_tail_elems > 0) {
+                        for (size_t _Lane = 0; _Lane < _Unrolled_tail_elems; ++_Lane) {
+                            _Needle_tail[_Lane] = _Traits::_Set_neon_q(*(static_cast<const _Ty*>(_Stop2) + _Lane));
+                        }
+                    }
+
+                    do {
+                        _Rewind_bytes(_Cur1, 16);
+                        const auto _Data1 = _Traits::_Load_q(_Cur1);
+
+                        auto _Eq = _Traits::_Set_neon_q(0);
+
+                        const void* _Ptr2 = _First2;
+                        for (; _Ptr2 != _Stop2; _Advance_bytes(_Ptr2, 16)) {
+                            const auto _Data2s0 = _Traits::_Load_q(_Ptr2);
+                            _Eq                 = _Traits::_Or(
+                                _Eq, _First_of::_Shuffle_step<_Traits, _Vec_size_elem, _Ty>(_Data1, _Data2s0));
+                        }
+
+                        if constexpr (_Unrolled_tail_elems > 0) {
+                            // Unrolled tail.
+                            for (size_t _Lane = 0; _Lane < _Unrolled_tail_elems; ++_Lane) {
+                                const auto _Cmp = _Traits::_Cmp_neon_q(_Data1, _Needle_tail[_Lane]);
+                                _Eq             = _Traits::_Or(_Eq, _Cmp);
+                            }
+                        }
+
+                        // We unroll by a maximum of 4 (for 2-byte and 1-byte element types), so we need a non-unrolled
+                        // tail loop.
+                        if constexpr (_Unrolled_tail_elems == 4) {
+                            _Advance_bytes(_Ptr2, sizeof(_Ty) * _Unrolled_tail_elems);
+
+                            for (; _Ptr2 != _Last2; _Advance_bytes(_Ptr2, sizeof(_Ty))) {
+                                const auto _Needle = _Traits::_Set_neon_q(*(static_cast<const _Ty*>(_Ptr2)));
+                                const auto _Cmp    = _Traits::_Cmp_neon_q(_Data1, _Needle);
+                                _Eq                = _Traits::_Or(_Eq, _Cmp);
+                            }
+                        }
+
+                        uint64_t _Match = _Traits::_Mask_q(_Eq);
+                        if constexpr (_Pred == _Predicate::_None_of) {
+                            _Match ^= 0xFFFF'FFFF'FFFF'FFFF;
+                        }
+
+                        if (_Match != 0) {
+                            const auto _Pos = _Finding::_Get_last_h_pos_q(_Match);
+                            _Advance_bytes(_Cur1, _Pos - (sizeof(_Ty) - 1));
+                            return _Byte_length(_First1, _Cur1) / sizeof(_Ty);
+                        }
+                    } while (_Cur1 != _Stop1);
+                }
+
+                const auto _Rem1 = _Byte_length(_First1, _Cur1) / sizeof(_Ty);
+
+                return _Fallback<_Ty, _Pred>(_First1, _Rem1, _First2, _Count2);
+            }
+
+            template <class _Ty, _Predicate _Pred>
+            size_t __stdcall _Shuffle_impl_dispatch(const void* const _First1, const size_t _Count1,
+                const void* const _First2, const size_t _Count2) noexcept {
+
+                constexpr size_t _Vec_size_elems  = 16 / sizeof(_Ty);
+                const size_t _Last_tail_length_el = _Count2 & (_Vec_size_elems - 1);
+
+                if (_Last_tail_length_el == 0) {
+                    return _Shuffle_impl<_Ty, _Pred, 0>(_First1, _Count1, _First2, _Count2);
+                } else if (_Last_tail_length_el == 1) {
+                    return _Shuffle_impl<_Ty, _Pred, 1>(_First1, _Count1, _First2, _Count2);
+                } else if (_Last_tail_length_el == 2) {
+                    if constexpr (sizeof(_Ty) <= 4) {
+                        return _Shuffle_impl<_Ty, _Pred, 2>(_First1, _Count1, _First2, _Count2);
+                    }
+                } else if (_Last_tail_length_el == 3) {
+                    if constexpr (sizeof(_Ty) <= 4) {
+                        return _Shuffle_impl<_Ty, _Pred, 3>(_First1, _Count1, _First2, _Count2);
+                    }
+                } else if (_Last_tail_length_el >= 4) {
+                    if constexpr (sizeof(_Ty) <= 2) {
+                        return _Shuffle_impl<_Ty, _Pred, 4>(_First1, _Count1, _First2, _Count2);
+                    }
+                }
+
+                _STL_UNREACHABLE;
+            }
+
+            size_t _Fallback_find_not_2(const void* const _First1, const size_t _Count1, const void* const _First2,
+                const size_t _Count2) noexcept {
+                const auto _Haystack_start = static_cast<const uint16_t*>(_First1);
+                const auto _Last2          = static_cast<const uint16_t*>(_First2) + _Count2;
+
+                for (auto _Ptr = _Haystack_start + _Count1 - 1;; --_Ptr) {
+                    if (_Finding::_Find_impl<_Finding::_Find_traits_2, _Finding::_Predicate::_Equal>(
+                            _First2, _Last2, *_Ptr)
+                        == _Last2) {
+                        return static_cast<size_t>(_Ptr - _Haystack_start);
+                    }
+
+                    if (_Ptr == _Haystack_start) {
+                        return static_cast<size_t>(-1);
+                    }
+                }
+            }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             template <class _Ty, _Predicate _Pred>
             size_t _Impl(const void* const _Haystack, const size_t _Haystack_length, const void* const _Needle,
                 const size_t _Needle_length) noexcept {
@@ -7504,7 +7693,7 @@ namespace {
                     const int _Last_needle_length_el = _Last_needle_length / sizeof(_Ty);
 
                     // equal to npos when treated as size_t; also less than any found value
-                    constexpr int _Not_found = -1;
+                    constexpr int _Not_found      = -1;
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
@@ -7608,7 +7797,34 @@ namespace {
                 const size_t _Count2) noexcept {
                 using namespace _Bitmap_impl;
 
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+                if (_Use_bitmap_neon<_Ty>(_Count1, _Count2)) {
+                    if constexpr (sizeof(_Ty) < 8) {
+                        uint8x16x2_t _Bitmap;
+                        if (_Bitmap_details::_Make_bitmap<_Ty>(_First2, _Count2, _Bitmap)) {
+                            return _Impl_last_neon<_Ty, _Pred>(_First1, _Count1, _Bitmap);
+                        }
+                    }
+                } else if (_Use_bitmap_scalar<_Ty>(_Count1, _Count2)) {
+                    alignas(32) _Scalar_table_t _Table = {};
+                    if (_Build_scalar_table<_Ty>(_First2, _Count2, _Table)) {
+                        return _Impl_last_scalar<_Ty, _Pred>(_First1, _Count1, _Table);
+                    }
+                }
+
+                // For _None_of, it can be faster to Find Haystack elements in Needle for longer Needles or
+                // non-vectorized Haystack lengths.
+                if constexpr (_Pred == _Predicate::_None_of && sizeof(_Ty) >= 2) {
+                    static_assert(sizeof(_Ty) == 2);
+
+                    // Heuristic of Haystack smaller than Neon width, or Needle at least twice the Neon width.
+                    if (_Count1 * sizeof(_Ty) < 16 || _Count2 * sizeof(_Ty) >= 32) {
+                        return _Fallback_find_not_2(_First1, _Count1, _First2, _Count2);
+                    }
+                }
+
+                return _Shuffle_impl_dispatch<_Ty, _Pred>(_First1, _Count1, _First2, _Count2);
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
                 if (_Use_sse42()) {
                     const auto _Strat = _Pick_strategy<_Ty>(_Count1, _Count2, _Use_avx2());
 
@@ -7625,9 +7841,7 @@ namespace {
                     }
 
                     return _Impl<_Ty, _Pred>(_First1, _Count1, _First2, _Count2);
-                } else
-#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
-                {
+                } else {
                     alignas(32) _Scalar_table_t _Table = {};
                     if (_Build_scalar_table<_Ty>(_First2, _Count2, _Table)) {
                         return _Impl_last_scalar<_Ty, _Pred>(_First1, _Count1, _Table);
@@ -7635,6 +7849,7 @@ namespace {
 
                     return _Fallback<_Ty, _Pred>(_First1, _Count1, _First2, _Count2);
                 }
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
             }
         } // namespace _Last_of
     } // namespace _Find_meow_of
@@ -7686,7 +7901,6 @@ __declspec(noalias) size_t __stdcall __std_find_first_of_trivial_pos_8(const voi
         _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
-#ifndef _M_ARM64
 __declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_1(const void* const _Haystack,
     const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
     return _Find_meow_of::_Last_of::_Dispatch_pos<uint8_t, _Find_meow_of::_Predicate::_Any_of>(
@@ -7698,7 +7912,6 @@ __declspec(noalias) size_t __stdcall __std_find_last_of_trivial_pos_2(const void
     return _Find_meow_of::_Last_of::_Dispatch_pos<uint16_t, _Find_meow_of::_Predicate::_Any_of>(
         _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
-#endif // ^^^ !defined(_M_ARM64) ^^^
 
 __declspec(noalias) size_t __stdcall __std_find_first_not_of_trivial_pos_1(const void* const _Haystack,
     const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
@@ -7712,7 +7925,6 @@ __declspec(noalias) size_t __stdcall __std_find_first_not_of_trivial_pos_2(const
         _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
 
-#ifndef _M_ARM64
 __declspec(noalias) size_t __stdcall __std_find_last_not_of_trivial_pos_1(const void* const _Haystack,
     const size_t _Haystack_length, const void* const _Needle, const size_t _Needle_length) noexcept {
     return _Find_meow_of::_Last_of::_Dispatch_pos<uint8_t, _Find_meow_of::_Predicate::_None_of>(
@@ -7724,7 +7936,6 @@ __declspec(noalias) size_t __stdcall __std_find_last_not_of_trivial_pos_2(const 
     return _Find_meow_of::_Last_of::_Dispatch_pos<uint16_t, _Find_meow_of::_Predicate::_None_of>(
         _Haystack, _Haystack_length, _Needle, _Needle_length);
 }
-#endif // ^^^ !defined(_M_ARM64) ^^^
 
 } // extern "C"
 
