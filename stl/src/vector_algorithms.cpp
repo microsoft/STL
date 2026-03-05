@@ -8159,7 +8159,7 @@ namespace {
                 return _mm_movemask_epi8(_mm_cmpeq_epi64(_Lhs, _Rhs)) & 0x0101;
             }
         };
-#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         template <class _Ty>
         const void* _Search_scalar_tail(const void* _First1, const void* const _Last1, const size_t _Size_bytes_1,
@@ -8938,7 +8938,7 @@ namespace {
 
             return _Find_end_scalar_tail<_Ty>(_First1, _Last1, _First2, _Count2);
         }
-#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
     } // namespace _Find_seq
 } // unnamed namespace
 
@@ -8951,7 +8951,7 @@ const void* __stdcall __std_search_1(
         _First1, _Last1, _First2, _Count2);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Find_seq::_Search_impl<_Finding::_Find_traits_1, void, void, uint8_t>(_First1, _Last1, _First2, _Count2);
-#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 const void* __stdcall __std_search_2(
@@ -8962,7 +8962,7 @@ const void* __stdcall __std_search_2(
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Find_seq::_Search_impl<_Finding::_Find_traits_2, _Find_seq::_Find_seq_traits_avx_2, void, uint16_t>(
         _First1, _Last1, _First2, _Count2);
-#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 const void* __stdcall __std_search_4(
@@ -8973,7 +8973,7 @@ const void* __stdcall __std_search_4(
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Find_seq::_Search_impl<_Finding::_Find_traits_4, _Find_seq::_Find_seq_traits_avx_4,
         _Find_seq::_Find_seq_traits_sse_4, uint32_t>(_First1, _Last1, _First2, _Count2);
-#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 const void* __stdcall __std_search_8(
@@ -8984,7 +8984,7 @@ const void* __stdcall __std_search_8(
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Find_seq::_Search_impl<_Finding::_Find_traits_8, _Find_seq::_Find_seq_traits_avx_8,
         _Find_seq::_Find_seq_traits_sse_8, uint64_t>(_First1, _Last1, _First2, _Count2);
-#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 
@@ -8996,7 +8996,7 @@ const void* __stdcall __std_find_end_1(
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Find_seq::_Find_end_impl<_Finding::_Find_traits_1, _Find_seq::_Find_seq_traits_avx_1, void, uint8_t>(
         _First1, _Last1, _First2, _Count2);
-#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 const void* __stdcall __std_find_end_2(
@@ -9007,7 +9007,7 @@ const void* __stdcall __std_find_end_2(
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Find_seq::_Find_end_impl<_Finding::_Find_traits_2, _Find_seq::_Find_seq_traits_avx_2, void, uint16_t>(
         _First1, _Last1, _First2, _Count2);
-#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 const void* __stdcall __std_find_end_4(
@@ -9018,7 +9018,7 @@ const void* __stdcall __std_find_end_4(
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Find_seq::_Find_end_impl<_Finding::_Find_traits_4, _Find_seq::_Find_seq_traits_avx_4,
         _Find_seq::_Find_seq_traits_sse_4, uint32_t>(_First1, _Last1, _First2, _Count2);
-#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 const void* __stdcall __std_find_end_8(
@@ -9029,7 +9029,7 @@ const void* __stdcall __std_find_end_8(
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Find_seq::_Find_end_impl<_Finding::_Find_traits_8, _Find_seq::_Find_seq_traits_avx_8,
         _Find_seq::_Find_seq_traits_sse_8, uint64_t>(_First1, _Last1, _First2, _Count2);
-#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 } // extern "C"
