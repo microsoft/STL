@@ -1213,6 +1213,7 @@ void test_swap_arrays(mt19937_64& gen) {
 }
 
 void test_vector_algorithms(mt19937_64& gen) {
+#ifndef _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC
     test_adjacent_difference<char>(gen);
     test_adjacent_difference<signed char>(gen);
     test_adjacent_difference<unsigned char>(gen);
@@ -1309,11 +1310,13 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_min_max_element<unsigned short>(gen);
     test_min_max_element<int>(gen);
     test_min_max_element<unsigned int>(gen);
+#endif // ^^^ !defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) ^^^
     test_min_max_element<long long>(gen);
     test_min_max_element<unsigned long long>(gen);
 
     test_min_max_element_pointers(gen);
 
+#ifndef _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC
     test_min_max_element_special_cases<int8_t, 16>(); // SSE2 vectors
     test_min_max_element_special_cases<int8_t, 32>(); // AVX2 vectors
     test_min_max_element_special_cases<int8_t, 64>(); // AVX512 vectors
@@ -1347,6 +1350,7 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_includes<long long>(gen);
     test_includes<unsigned long long>(gen);
 #endif // _HAS_CXX17
+#endif // ^^^ !defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) ^^^
 
     test_replace<char>(gen);
     test_replace<signed char>(gen);
@@ -1358,6 +1362,7 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_replace<long long>(gen);
     test_replace<unsigned long long>(gen);
 
+#ifndef _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC
     test_reverse<char>(gen);
     test_reverse<signed char>(gen);
     test_reverse<unsigned char>(gen);
@@ -1396,6 +1401,7 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_rotate<float>(gen);
     test_rotate<double>(gen);
     test_rotate<long double>(gen);
+#endif // ^^^ !defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) ^^^
 
     test_remove<char>(gen);
     test_remove<signed char>(gen);
@@ -1419,6 +1425,7 @@ void test_vector_algorithms(mt19937_64& gen) {
 
     test_unique<long*>(gen);
 
+#ifndef _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC
     test_swap_ranges<char>(gen);
     test_swap_ranges<short>(gen);
     test_swap_ranges<int>(gen);
@@ -1439,6 +1446,7 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_swap_arrays<uint16_t, 512>(gen);
     test_swap_arrays<uint32_t, 512>(gen);
     test_swap_arrays<uint64_t, 512>(gen);
+#endif // ^^^ !defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) ^^^
 }
 
 template <typename Container1, typename Container2>
@@ -1874,6 +1882,7 @@ void test_gh_5757_find_first_of() {
 }
 
 void test_string(mt19937_64& gen) {
+#ifndef _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC
     test_basic_string<char>(gen);
     test_basic_string<wchar_t>(gen);
 #ifdef __cpp_lib_char8_t
@@ -1884,6 +1893,7 @@ void test_string(mt19937_64& gen) {
     test_basic_string<unsigned long long>(gen);
 
     test_gh_5757_find_first_of();
+#endif // ^^^ !defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) ^^^
 }
 
 void test_various_containers() {
