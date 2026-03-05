@@ -7608,8 +7608,8 @@ namespace {
 
             size_t _Fallback_find_not_2(const void* const _First1, const size_t _Count1, const void* const _First2,
                 const size_t _Count2) noexcept {
-                auto _Haystack_start = static_cast<const uint16_t*>(_First1);
-                const auto _Last2    = static_cast<const uint16_t*>(_First2) + _Count2;
+                const auto _Haystack_start = static_cast<const uint16_t*>(_First1);
+                const auto _Last2          = static_cast<const uint16_t*>(_First2) + _Count2;
 
                 for (auto _Ptr = _Haystack_start + _Count1 - 1;; --_Ptr) {
                     if (_Finding::_Find_impl<_Finding::_Find_traits_2, _Finding::_Predicate::_Equal>(
