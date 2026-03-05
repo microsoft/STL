@@ -439,6 +439,22 @@ public:
     pointer _Myend; // pointer to end of array
 };
 
+template <class _Alloc>
+struct _NODISCARD _Allocation_guard {
+    _Alloc& _Al;
+    _Alloc_ptr_t<_Alloc> _Ptr;
+    _Alloc_size_t<_Alloc> _Size;
+
+    _Allocation_guard& operator=(const _Allocation_guard&) = delete;
+    _Allocation_guard& operator=(_Allocation_guard&&)      = delete;
+
+    _CONSTEXPR20 ~_Allocation_guard() noexcept {
+        if (_Ptr) {
+            _Al.deallocate(_Ptr, _Size);
+        }
+    }
+};
+
 _EXPORT_STD template <class _Ty, class _Alloc = allocator<_Ty>>
 class vector { // varying size array of values
 private:
@@ -621,21 +637,6 @@ private:
         _CONSTEXPR20 ~_Reallocation_guard2() noexcept {
             if (_New_begin != nullptr) {
                 _STD _Destroy_range(_Constructed_first, _Constructed_last, _Al);
-                _Al.deallocate(_New_begin, _New_capacity);
-            }
-        }
-    };
-
-    struct _NODISCARD _Simple_reallocation_guard2 {
-        _Alty& _Al;
-        pointer _New_begin;
-        size_type _New_capacity;
-
-        _Simple_reallocation_guard2& operator=(const _Simple_reallocation_guard2&) = delete;
-        _Simple_reallocation_guard2& operator=(_Simple_reallocation_guard2&&)      = delete;
-
-        _CONSTEXPR20 ~_Simple_reallocation_guard2() noexcept {
-            if (_New_begin != nullptr) {
                 _Al.deallocate(_New_begin, _New_capacity);
             }
         }
@@ -1658,7 +1659,7 @@ private:
             _Newvec = _Al.allocate(_Newcapacity);
         }
 
-        _Simple_reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity};
+        _Allocation_guard<_Alty> _Guard{_Al, _Newvec, _Newcapacity};
 
         if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
             _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
@@ -1666,7 +1667,7 @@ private:
             _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
         }
 
-        _Guard._New_begin = nullptr;
+        _Guard._Ptr = nullptr;
         _Change_array(_Newvec, _Size, _Newcapacity);
     }
 
