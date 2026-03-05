@@ -7690,7 +7690,7 @@ namespace {
                     const int _Last_needle_length_el = _Last_needle_length / sizeof(_Ty);
 
                     // equal to npos when treated as size_t; also less than any found value
-                    constexpr int _Not_found = -1;
+                    constexpr int _Not_found      = -1;
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
