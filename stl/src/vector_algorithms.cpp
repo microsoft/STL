@@ -7970,7 +7970,7 @@ namespace {
             static constexpr size_t _Vec_size = 32;
 
             static unsigned long _Bingo_next(const unsigned long _Bingo, const unsigned int _Pos) noexcept {
-                return _Bingo ^ 1 << _Pos;
+                return _Bingo ^ (1 << _Pos);
             }
 
             static __m256i _Mask(const size_t _Count_in_bytes) noexcept {
@@ -8077,7 +8077,7 @@ namespace {
             static constexpr size_t _Vec_size = 16;
 
             static unsigned long _Bingo_next(const unsigned long _Bingo, const unsigned int _Pos) noexcept {
-                return _Bingo ^ 1 << _Pos;
+                return _Bingo ^ (1 << _Pos);
             }
 
             static __m128i _Mask(const size_t _Count_in_bytes) noexcept {
