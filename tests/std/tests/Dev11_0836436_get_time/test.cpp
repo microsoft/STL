@@ -113,6 +113,7 @@ void test_gh_2618();
 void test_gh_2848();
 void test_gh_4820();
 void test_gh_4882();
+void test_gh_6129();
 
 int main() {
     assert(read_hour("12 AM") == 0);
@@ -161,6 +162,7 @@ int main() {
     test_gh_2848();
     test_gh_4820();
     test_gh_4882();
+    test_gh_6129();
 }
 
 typedef istreambuf_iterator<char> Iter;
@@ -908,6 +910,30 @@ void test_gh_4820() {
         wss << put_time(&currentTime, L"\x043a%\x043e%\x0448%E\x043a%O\x0430");
         assert(wss.rdstate() == ios_base::goodbit);
         assert(wss.str() == L"\x043a%\x043e%\x0448%E\x043a%O\x0430");
+    }
+}
+
+void test_gh_6129() {
+    // GH-6129 "<xloctime>: time_get::do_get uses the wrong format for %c and %x"
+
+    // %c in the C locale uses "%a %b %e %T %Y"
+    {
+        const auto t = helper("Thu Jun  6 09:49:10 2009", "%c");
+        assert(t.tm_wday == 4);
+        assert(t.tm_mon == 5);
+        assert(t.tm_mday == 6);
+        assert(t.tm_hour == 9);
+        assert(t.tm_min == 49);
+        assert(t.tm_sec == 10);
+        assert(t.tm_year == 109);
+    }
+
+    // %x in the C locale uses "%m/%d/%y"
+    {
+        const auto t = helper("03/15/09", "%x");
+        assert(t.tm_mon == 2);
+        assert(t.tm_mday == 15);
+        assert(t.tm_year == 109);
     }
 }
 
