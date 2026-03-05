@@ -85,6 +85,8 @@
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic<cv T>)
 // P3503R3 Make Type-Erased Allocator Use In promise And packaged_task Consistent
+// P3612R1 Harmonize Proxy-Reference Operations
+//     (deprecation controlled by _HAS_CXX26)
 
 // _HAS_CXX17 controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
@@ -888,7 +890,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 145
-#define _MSVC_STL_UPDATE  202602L
+#define _MSVC_STL_UPDATE  202603L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1448,7 +1450,19 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // STL4048 was "locale::empty() is a non-Standard extension and will be removed in the future."
 
-// next warning number: STL4049
+
+#if _HAS_CXX26 && !defined(_SILENCE_VECTOR_BOOL_STATIC_REFERENCE_SWAP_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX26_DEPRECATION_WARNINGS)
+#define _DEPRECATE_VECTOR_BOOL_STATIC_REFERENCE_SWAP                                                                  \
+    [[deprecated("warning STL4049: Static std::vector<bool>::swap(reference, reference) is deprecated by C++26 (see " \
+                 "LWG-3638 and P3612R1). Use non-member function swap(reference, reference) instead. You can define " \
+                 "_SILENCE_VECTOR_BOOL_STATIC_REFERENCE_SWAP_DEPRECATION_WARNING or "                                 \
+                 "_SILENCE_ALL_CXX26_DEPRECATION_WARNINGS to suppress this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _DEPRECATE_VECTOR_BOOL_STATIC_REFERENCE_SWAP
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4050
 
 // next error number: STL1014
 

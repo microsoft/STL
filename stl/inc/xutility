@@ -54,14 +54,16 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ vector algorithms supported by default ^^^
 
 // _USE_STD_VECTOR_ALGORITHMS is our documented control macro:
-// https://learn.microsoft.com/en-us/cpp/standard-library/vectorized-stl-algorithms?view=msvc-170
+// https://learn.microsoft.com/cpp/standard-library/vectorized-stl-algorithms
 // In the STL's implementation, we inspect the following detection macros,
 // because various algorithms are vectorized for various architectures.
+
+// _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC is a macro to test ARM64EC fallbacks for x64 algorithms.
 
 #if !_USE_STD_VECTOR_ALGORITHMS
 #define _VECTORIZED_FOR_X64_X86               0
 #define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 0
-#elif defined(_M_ARM64) || defined(_M_ARM64EC)
+#elif defined(_M_ARM64) || (defined(_M_ARM64EC) && !defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC))
 #define _VECTORIZED_FOR_X64_X86               0
 #define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
 #elif defined(_M_X64) || defined(_M_IX86)
@@ -7971,6 +7973,24 @@ constexpr bool _Equivalence_is_equality =
     _Is_any_of_v<_Compare, _RANGES less, _RANGES greater>
     || (_Is_any_of_v<_Compare, less<>, less<_Key>, greater<>, greater<_Key>> && _Equivalence_is_equality_impl<_Key>);
 #endif // _HAS_CXX23
+
+template <class _Elem>
+struct _Digit_pair_table {
+    _Elem _Data[100][2];
+
+    constexpr explicit _Digit_pair_table() : _Data{} {
+        for (int _Idx = 0; _Idx != 100; ++_Idx) {
+            _Data[_Idx][0] = static_cast<_Elem>('0' + _Idx / 10);
+            _Data[_Idx][1] = static_cast<_Elem>('0' + _Idx % 10);
+        }
+    }
+
+    _Digit_pair_table(const _Digit_pair_table&)            = delete;
+    _Digit_pair_table& operator=(const _Digit_pair_table&) = delete;
+};
+
+template <class _Elem>
+constexpr _Digit_pair_table<_Elem> _Digit_pairs{};
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens

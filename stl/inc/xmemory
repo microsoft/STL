@@ -2775,24 +2775,6 @@ template <class>
 constexpr bool _Has_guaranteed_append_range = false; // N5032 [sequence.reqmts]/112; used by flat_(multi)set::insert.
 #endif // _HAS_CXX23
 
-template <class _Elem>
-struct _Digit_pair_table {
-    _Elem _Data[100][2];
-
-    constexpr explicit _Digit_pair_table() : _Data{} {
-        for (int _Idx = 0; _Idx != 100; ++_Idx) {
-            _Data[_Idx][0] = static_cast<_Elem>('0' + _Idx / 10);
-            _Data[_Idx][1] = static_cast<_Elem>('0' + _Idx % 10);
-        }
-    }
-
-    _Digit_pair_table(const _Digit_pair_table&)            = delete;
-    _Digit_pair_table& operator=(const _Digit_pair_table&) = delete;
-};
-
-template <class _Elem>
-constexpr _Digit_pair_table<_Elem> _Digit_pairs{};
-
 template <class _Elem, class _UTy>
 _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by both to_string and thread::id output
     // format _UVal into buffer *ending at* _RNext
@@ -2830,7 +2812,7 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
 
     // Print one or more pairs of digits.
     do {
-        const unsigned long _UVal_trunc_part = _UVal_trunc % 100;
+        const auto _UVal_trunc_part = static_cast<unsigned long>(_UVal_trunc % 100);
         _UVal_trunc /= 100;
         _RNext -= 2;
         _CSTD memcpy(_RNext, _Digit_pairs<_Elem>._Data[_UVal_trunc_part], 2 * sizeof(_Elem));
