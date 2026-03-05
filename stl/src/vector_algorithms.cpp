@@ -9110,7 +9110,6 @@ __declspec(noalias) void __stdcall __std_replace_copy_8(const void* const _First
 
 } // extern "C"
 
-#ifndef _M_ARM64
 namespace {
     namespace _Removing {
         // 'remove' and 'unique': form bit mask based on matches, then do _mm_shuffle_epi8/_mm256_permutevar8x32_epi32
@@ -9160,7 +9159,6 @@ namespace {
             return _Out;
         }
 
-#ifndef _M_ARM64EC
         template <size_t _Size_v, size_t _Size_h>
         struct _Tables {
             uint8_t _Shuf[_Size_v][_Size_h];
@@ -9206,6 +9204,105 @@ namespace {
             return _Result;
         }
 
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+        constexpr auto _Tables_1_neon = _Make_tables<256, 8>(1, 1);
+        constexpr auto _Tables_2_neon = _Make_tables<256, 16>(2, 2);
+        constexpr auto _Tables_4_neon = _Make_tables<16, 16>(4, 4);
+
+        struct _Neon_1 {
+            static constexpr size_t _Elem_size = 1;
+            static constexpr size_t _Step      = 8;
+            using _Vec_t                       = uint8x8_t;
+
+            static _Vec_t _Set(const uint8_t _Val) noexcept {
+                return vdup_n_u8(_Val);
+            }
+
+            static _Vec_t _Load(const void* const _Ptr) noexcept {
+                return vld1_u8(static_cast<const uint8_t*>(_Ptr));
+            }
+
+            static uint32_t _Mask(const _Vec_t _First, const _Vec_t _Second) noexcept {
+                const auto _Cmp = vceq_u8(_First, _Second);
+                uint64_t _Val   = vget_lane_u64(vreinterpret_u64_u8(_Cmp), 0);
+                _Val &= 0x8080808080808080ull;
+                _Val *= 0x02040810204081ull;
+                return static_cast<uint32_t>(_Val >> 56);
+            }
+
+            static void* _Store_masked(void* _Out, const _Vec_t _Src, const uint32_t _Bingo) noexcept {
+                const auto _Shuf = vld1_u8(_Tables_1_neon._Shuf[_Bingo]);
+                const auto _Dest = vtbl1_u8(_Src, _Shuf);
+                vst1_u8(static_cast<uint8_t*>(_Out), _Dest);
+                _Advance_bytes(_Out, _Tables_1_neon._Size[_Bingo]);
+                return _Out;
+            }
+        };
+
+        struct _Neon_2 {
+            static constexpr size_t _Elem_size = 2;
+            static constexpr size_t _Step      = 16;
+            using _Vec_t                       = uint16x8_t;
+
+            static _Vec_t _Set(const uint16_t _Val) noexcept {
+                return vdupq_n_u16(_Val);
+            }
+
+            static _Vec_t _Load(const void* const _Ptr) noexcept {
+                return vld1q_u16(static_cast<const uint16_t*>(_Ptr));
+            }
+
+            static uint32_t _Mask(const _Vec_t _First, const _Vec_t _Second) noexcept {
+                // TRANSITION, DevCom-11055227
+                constexpr uint16_t _Weights_arr[8] = {1, 2, 4, 8, 16, 32, 64, 128};
+                const auto _Weights                       = vld1q_u16(_Weights_arr);
+
+                const auto _Cmp  = vceqq_u16(_First, _Second);
+                const auto _Bits = vandq_u16(_Cmp, _Weights);
+                return vaddvq_u16(_Bits);
+            }
+
+            static void* _Store_masked(void* _Out, const _Vec_t _Src, const uint32_t _Bingo) noexcept {
+                const auto _Shuf = vld1q_u8(_Tables_2_neon._Shuf[_Bingo]);
+                const auto _Dest = vreinterpretq_u16_u8(vqtbl1q_u8(vreinterpretq_u8_u16(_Src), _Shuf));
+                vst1q_u16(static_cast<uint16_t*>(_Out), _Dest);
+                _Advance_bytes(_Out, _Tables_2_neon._Size[_Bingo]);
+                return _Out;
+            }
+        };
+
+        struct _Neon_4 {
+            static constexpr size_t _Elem_size = 4;
+            static constexpr size_t _Step      = 16;
+            using _Vec_t                       = uint32x4_t;
+
+            static _Vec_t _Set(const uint32_t _Val) noexcept {
+                return vdupq_n_u32(_Val);
+            }
+
+            static _Vec_t _Load(const void* const _Ptr) noexcept {
+                return vld1q_u32(static_cast<const uint32_t*>(_Ptr));
+            }
+
+            static uint32_t _Mask(const _Vec_t _First, const _Vec_t _Second) noexcept {
+                // TRANSITION, DevCom-11055227
+                constexpr uint32_t _Weights_arr[8] = {1, 2, 4, 8};
+                const auto _Weights                       = vld1q_u32(_Weights_arr);
+
+                const auto _Cmp  = vceqq_u32(_First, _Second);
+                const auto _Bits = vandq_u32(_Cmp, _Weights);
+                return vaddvq_u32(_Bits);
+            }
+
+            static void* _Store_masked(void* _Out, const _Vec_t _Src, const uint32_t _Bingo) noexcept {
+                const auto _Shuf = vld1q_u8(_Tables_4_neon._Shuf[_Bingo]);
+                const auto _Dest = vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(_Src), _Shuf));
+                vst1q_u32(static_cast<uint32_t*>(_Out), _Dest);
+                _Advance_bytes(_Out, _Tables_4_neon._Size[_Bingo]);
+                return _Out;
+            }
+        };
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         constexpr auto _Tables_1_sse = _Make_tables<256, 8>(1, 1);
         constexpr auto _Tables_2_sse = _Make_tables<256, 16>(2, 2);
         constexpr auto _Tables_4_sse = _Make_tables<16, 16>(4, 4);
@@ -9367,6 +9464,7 @@ namespace {
                 return _Out;
             }
         };
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         constexpr size_t _Copy_buffer_size = 512;
 
@@ -9459,7 +9557,6 @@ namespace {
             _Advance_bytes(_Out, _Fill);
             return _Out;
         }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
     } // namespace _Removing
 } // unnamed namespace
 
@@ -9468,14 +9565,21 @@ extern "C" {
 void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _Val) noexcept {
     void* _Out = _First;
 
-#ifndef _M_ARM64EC
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 8) {
+        void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
+        _Out   = _Removing::_Remove_impl<_Removing::_Neon_1>(_First, _Stop, _Val);
+        _First = _Stop;
+    }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 8) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
         _Out   = _Removing::_Remove_impl<_Removing::_Sse_1>(_First, _Stop, _Val);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
@@ -9483,14 +9587,21 @@ void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _V
 void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _Val) noexcept {
     void* _Out = _First;
 
-#ifndef _M_ARM64EC
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
+        void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Out   = _Removing::_Remove_impl<_Removing::_Neon_2>(_First, _Stop, _Val);
+        _First = _Stop;
+    }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 16) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Out   = _Removing::_Remove_impl<_Removing::_Sse_2>(_First, _Stop, _Val);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
@@ -9498,7 +9609,14 @@ void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _
 void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _Val) noexcept {
     void* _Out = _First;
 
-#ifndef _M_ARM64EC
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
+        void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Out   = _Removing::_Remove_impl<_Removing::_Neon_4>(_First, _Stop, _Val);
+        _First = _Stop;
+    }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
@@ -9512,7 +9630,7 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
         _Out   = _Removing::_Remove_impl<_Removing::_Sse_4>(_First, _Stop, _Val);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
@@ -9520,7 +9638,7 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
 void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _Val) noexcept {
     void* _Out = _First;
 
-#ifndef _M_ARM64EC
+#if !defined(_M_ARM64) && defined(_M_ARM64EC)
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
@@ -9534,42 +9652,56 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
         _Out   = _Removing::_Remove_impl<_Removing::_Sse_8>(_First, _Stop, _Val);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
 
 void* __stdcall __std_remove_copy_1(
     const void* _First, const void* const _Last, void* _Out, const uint8_t _Val) noexcept {
-#ifndef _M_ARM64EC
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 8) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
+        _Out   = _Removing::_Remove_copy_impl<_Removing::_Neon_1>(_First, _Stop, _Out, _Val);
+        _First = _Stop;
+    }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 8) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
         _Out   = _Removing::_Remove_copy_impl<_Removing::_Sse_1>(_First, _Stop, _Out, _Val);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
 
 void* __stdcall __std_remove_copy_2(
     const void* _First, const void* const _Last, void* _Out, const uint16_t _Val) noexcept {
-#ifndef _M_ARM64EC
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Out   = _Removing::_Remove_copy_impl<_Removing::_Neon_2>(_First, _Stop, _Out, _Val);
+        _First = _Stop;
+    }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 16) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Out   = _Removing::_Remove_copy_impl<_Removing::_Sse_2>(_First, _Stop, _Out, _Val);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
 
 void* __stdcall __std_remove_copy_4(
     const void* _First, const void* const _Last, void* _Out, const uint32_t _Val) noexcept {
-#ifndef _M_ARM64EC
+#if !defined(_M_ARM64) && defined(_M_ARM64EC)
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
@@ -9583,14 +9715,14 @@ void* __stdcall __std_remove_copy_4(
         _Out   = _Removing::_Remove_copy_impl<_Removing::_Sse_4>(_First, _Stop, _Out, _Val);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
 
 void* __stdcall __std_remove_copy_8(
     const void* _First, const void* const _Last, void* _Out, const uint64_t _Val) noexcept {
-#ifndef _M_ARM64EC
+#if !defined(_M_ARM64) && defined(_M_ARM64EC)
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
@@ -9604,7 +9736,7 @@ void* __stdcall __std_remove_copy_8(
         _Out   = _Removing::_Remove_copy_impl<_Removing::_Sse_8>(_First, _Stop, _Out, _Val);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
@@ -9619,14 +9751,21 @@ void* __stdcall __std_unique_1(void* _First, void* const _Last) noexcept {
     void* _Dest = _First;
     _Advance_bytes(_First, 1);
 
-#ifndef _M_ARM64EC
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 8) {
+        void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
+        _Dest  = _Removing::_Unique_impl<_Removing::_Neon_1>(_First, _Stop);
+        _First = _Stop;
+    }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 8) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
         _Dest  = _Removing::_Unique_impl<_Removing::_Sse_1>(_First, _Stop);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Unique_fallback<uint8_t>(_First, _Last, _Dest);
 }
@@ -9641,14 +9780,21 @@ void* __stdcall __std_unique_2(void* _First, void* const _Last) noexcept {
     void* _Dest = _First;
     _Advance_bytes(_First, 2);
 
-#ifndef _M_ARM64EC
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
+        void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Dest  = _Removing::_Unique_impl<_Removing::_Neon_2>(_First, _Stop);
+        _First = _Stop;
+    }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 16) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Dest  = _Removing::_Unique_impl<_Removing::_Sse_2>(_First, _Stop);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Unique_fallback<uint16_t>(_First, _Last, _Dest);
 }
@@ -9663,7 +9809,14 @@ void* __stdcall __std_unique_4(void* _First, void* const _Last) noexcept {
     void* _Dest = _First;
     _Advance_bytes(_First, 4);
 
-#ifndef _M_ARM64EC
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
+        void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Dest  = _Removing::_Unique_impl<_Removing::_Neon_4>(_First, _Stop);
+        _First = _Stop;
+    }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
@@ -9677,7 +9830,7 @@ void* __stdcall __std_unique_4(void* _First, void* const _Last) noexcept {
         _Dest  = _Removing::_Unique_impl<_Removing::_Sse_4>(_First, _Stop);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Unique_fallback<uint32_t>(_First, _Last, _Dest);
 }
@@ -9692,7 +9845,7 @@ void* __stdcall __std_unique_8(void* _First, void* const _Last) noexcept {
     void* _Dest = _First;
     _Advance_bytes(_First, 8);
 
-#ifndef _M_ARM64EC
+#if !defined(_M_ARM64) && defined(_M_ARM64EC)
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
@@ -9706,7 +9859,7 @@ void* __stdcall __std_unique_8(void* _First, void* const _Last) noexcept {
         _Dest  = _Removing::_Unique_impl<_Removing::_Sse_8>(_First, _Stop);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Unique_fallback<uint64_t>(_First, _Last, _Dest);
 }
@@ -9719,14 +9872,21 @@ void* __stdcall __std_unique_copy_1(const void* _First, const void* const _Last,
     memcpy(_Dest, _First, 1);
     _Advance_bytes(_First, 1);
 
-#ifndef _M_ARM64EC
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 8) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
+        _Dest  = _Removing::_Unique_copy_impl<_Removing::_Neon_1>(_First, _Stop, _Dest);
+        _First = _Stop;
+    }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 8) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
         _Dest  = _Removing::_Unique_copy_impl<_Removing::_Sse_1>(_First, _Stop, _Dest);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Unique_fallback<uint8_t>(_First, _Last, _Dest);
 }
@@ -9739,14 +9899,21 @@ void* __stdcall __std_unique_copy_2(const void* _First, const void* const _Last,
     memcpy(_Dest, _First, 2);
     _Advance_bytes(_First, 2);
 
-#ifndef _M_ARM64EC
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Dest  = _Removing::_Unique_copy_impl<_Removing::_Neon_2>(_First, _Stop, _Dest);
+        _First = _Stop;
+    }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 16) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Dest  = _Removing::_Unique_copy_impl<_Removing::_Sse_2>(_First, _Stop, _Dest);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Unique_fallback<uint16_t>(_First, _Last, _Dest);
 }
@@ -9759,7 +9926,14 @@ void* __stdcall __std_unique_copy_4(const void* _First, const void* const _Last,
     memcpy(_Dest, _First, 4);
     _Advance_bytes(_First, 4);
 
-#ifndef _M_ARM64EC
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Dest  = _Removing::_Unique_copy_impl<_Removing::_Neon_4>(_First, _Stop, _Dest);
+        _First = _Stop;
+    }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
@@ -9773,7 +9947,7 @@ void* __stdcall __std_unique_copy_4(const void* _First, const void* const _Last,
         _Dest  = _Removing::_Unique_copy_impl<_Removing::_Sse_4>(_First, _Stop, _Dest);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Unique_fallback<uint32_t>(_First, _Last, _Dest);
 }
@@ -9786,7 +9960,7 @@ void* __stdcall __std_unique_copy_8(const void* _First, const void* const _Last,
     memcpy(_Dest, _First, 8);
     _Advance_bytes(_First, 8);
 
-#ifndef _M_ARM64EC
+#if !defined(_M_ARM64) && defined(_M_ARM64EC)
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
@@ -9800,13 +9974,12 @@ void* __stdcall __std_unique_copy_8(const void* _First, const void* const _Last,
         _Dest  = _Removing::_Unique_copy_impl<_Removing::_Sse_8>(_First, _Stop, _Dest);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
     return _Removing::_Unique_fallback<uint64_t>(_First, _Last, _Dest);
 }
 
 } // extern "C"
-#endif // ^^^ !defined(_M_ARM64) ^^^
 
 namespace {
     namespace _Sorted_ranges {
