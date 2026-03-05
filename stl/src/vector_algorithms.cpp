@@ -7492,6 +7492,7 @@ namespace {
                 return static_cast<size_t>(-1);
             }
 
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
             template <class _Ty, _Predicate _Pred, size_t _Unrolled_tail_elems>
             size_t _Shuffle_impl(const void* const _First1, const size_t _Count1, const void* const _First2,
                 const size_t _Count2) noexcept {
@@ -7619,8 +7620,7 @@ namespace {
                     }
                 }
             }
-
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             template <class _Ty, _Predicate _Pred>
             size_t _Impl(const void* const _Haystack, const size_t _Haystack_length, const void* const _Needle,
                 const size_t _Needle_length) noexcept {
