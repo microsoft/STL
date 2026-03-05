@@ -6241,6 +6241,7 @@ namespace {
                     vst1q_u8(_Bitmap_scalar_tail + 16, _Bitmap.val[1]);
 
                     do {
+                        --_Ix;
                         const _Ty _Val = _Hay_ptr[_Ix];
 
                         if constexpr (sizeof(_Val) > 1) {
@@ -6267,7 +6268,7 @@ namespace {
                                 return _Ix;
                             }
                         }
-                    } while (--_Ix != 0);
+                    } while (_Ix != 0);
                 }
 
                 return static_cast<size_t>(-1);
