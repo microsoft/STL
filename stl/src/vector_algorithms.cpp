@@ -7768,9 +7768,9 @@ namespace {
             }
 
             static __forceinline bool _Memcmp_inline_eq(
-                const void* _First, const void* _Second, size_t _Count) noexcept {
-                const auto* _First_b  = static_cast<const uint8_t*>(_First);
-                const auto* _Second_b = static_cast<const uint8_t*>(_Second);
+                const void* const _First, const void* const _Second, const size_t _Count) noexcept {
+                const auto _First_b  = static_cast<const uint8_t*>(_First);
+                const auto _Second_b = static_cast<const uint8_t*>(_Second);
 
                 if (_Count < 16) {
                     for (size_t _Ix = 0; _Ix < _Count; ++_Ix) {
@@ -7851,7 +7851,7 @@ namespace {
             static uint8x16_t _Mask(const size_t _Count_in_bytes) noexcept {
                 // _Count_in_bytes must be within [0,16].
                 static constexpr uint32_t _Tail_masks[8] = {~0u, ~0u, ~0u, ~0u, 0, 0, 0, 0};
-                const auto* const _Base                  = reinterpret_cast<const uint8_t*>(_Tail_masks);
+                const auto _Base                         = reinterpret_cast<const uint8_t*>(_Tail_masks);
                 return vld1q_u8(_Base + (16 - _Count_in_bytes));
             }
         };
@@ -8012,7 +8012,7 @@ namespace {
             }
 
             static __forceinline bool _Memcmp_inline_eq(
-                const void* _First, const void* _Second, size_t _Count) noexcept {
+                const void* const _First, const void* const _Second, const size_t _Count) noexcept {
                 return memcmp(_First, _Second, _Count) == 0;
             }
         };
@@ -8135,7 +8135,7 @@ namespace {
             }
 
             static __forceinline bool _Memcmp_inline_eq(
-                const void* _First, const void* _Second, size_t _Count) noexcept {
+                const void* const _First, const void* const _Second, const size_t _Count) noexcept {
                 return memcmp(_First, _Second, _Count) == 0;
             }
         };
@@ -8162,7 +8162,7 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         template <class _Ty>
-        const void* _Search_scalar_tail(const void* _First1, const void* const _Last1, const size_t _Size_bytes_1,
+        const void* _Search_scalar_tail(const void* const _First1, const void* const _Last1, const size_t _Size_bytes_1,
             const void* const _First2, const size_t _Count2, const size_t _Size_bytes_2) noexcept {
             const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2 + sizeof(_Ty);
 
@@ -8194,8 +8194,8 @@ namespace {
         }
 
         template <class _Ty>
-        const void* _Find_end_scalar_tail(
-            const void* _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+        const void* _Find_end_scalar_tail(const void* const _First1, const void* const _Last1,
+            const void* const _First2, const size_t _Count2) noexcept {
             auto _Ptr1       = static_cast<const _Ty*>(_Last1) - _Count2;
             const auto _Ptr2 = static_cast<const _Ty*>(_First2);
 
@@ -8521,8 +8521,8 @@ namespace {
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
         template <class _FindTraits, class _Traits, class _Ty>
-        const void* __stdcall _Search_impl(
-            const void* _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+        const void* __stdcall _Search_impl(const void* const _First1, const void* const _Last1,
+            const void* const _First2, const size_t _Count2) noexcept {
             if (_Count2 == 0) {
                 return _First1;
             }
