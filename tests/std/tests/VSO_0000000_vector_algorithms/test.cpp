@@ -1882,7 +1882,6 @@ void test_gh_5757_find_first_of() {
 }
 
 void test_string(mt19937_64& gen) {
-#ifndef _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC
     test_basic_string<char>(gen);
     test_basic_string<wchar_t>(gen);
 #ifdef __cpp_lib_char8_t
@@ -1893,7 +1892,6 @@ void test_string(mt19937_64& gen) {
     test_basic_string<unsigned long long>(gen);
 
     test_gh_5757_find_first_of();
-#endif // ^^^ !defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) ^^^
 }
 
 void test_various_containers() {
@@ -1968,6 +1966,8 @@ int main() {
         test_vector_algorithms(gen);
         test_various_containers();
         test_bitset(gen);
+#ifndef _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC
         test_string(gen);
+#endif // ^^^ !defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) ^^^
     });
 }
