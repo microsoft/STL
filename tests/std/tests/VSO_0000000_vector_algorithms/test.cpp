@@ -1441,6 +1441,18 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_swap_arrays<uint64_t, 512>(gen);
 }
 
+void test_vector_algorithms_fallbacks(mt19937_64& gen) {
+    test_min_max_element<long long>(gen);
+    test_min_max_element<unsigned long long>(gen);
+
+    test_min_max_element_pointers(gen);
+
+    test_replace<int>(gen);
+    test_replace<unsigned int>(gen);
+    test_replace<long long>(gen);
+    test_replace<unsigned long long>(gen);
+}
+
 template <typename Container1, typename Container2>
 void test_two_containers() {
     Container1 one                  = {10, 20, 30, 40, 50};
@@ -1957,7 +1969,9 @@ int main() {
     run_randomized_tests_with_different_isa_levels([](mt19937_64& gen) {
 #ifndef _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC
         test_vector_algorithms(gen);
-#endif // ^^^ !defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) ^^^
+#else // ^^^ !defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) / defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) vvv
+        test_vector_algorithms_fallbacks(gen);
+#endif // ^^^ defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) ^^^
         test_various_containers();
         test_bitset(gen);
 #ifndef _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC
