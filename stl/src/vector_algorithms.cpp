@@ -9638,7 +9638,7 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
 void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _Val) noexcept {
     void* _Out = _First;
 
-#if !defined(_M_ARM64) && defined(_M_ARM64EC)
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
@@ -9701,7 +9701,7 @@ void* __stdcall __std_remove_copy_2(
 
 void* __stdcall __std_remove_copy_4(
     const void* _First, const void* const _Last, void* _Out, const uint32_t _Val) noexcept {
-#if !defined(_M_ARM64) && defined(_M_ARM64EC)
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
@@ -9722,7 +9722,7 @@ void* __stdcall __std_remove_copy_4(
 
 void* __stdcall __std_remove_copy_8(
     const void* _First, const void* const _Last, void* _Out, const uint64_t _Val) noexcept {
-#if !defined(_M_ARM64) && defined(_M_ARM64EC)
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
@@ -9845,7 +9845,7 @@ void* __stdcall __std_unique_8(void* _First, void* const _Last) noexcept {
     void* _Dest = _First;
     _Advance_bytes(_First, 8);
 
-#if !defined(_M_ARM64) && defined(_M_ARM64EC)
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
@@ -9960,7 +9960,7 @@ void* __stdcall __std_unique_copy_8(const void* _First, const void* const _Last,
     memcpy(_Dest, _First, 8);
     _Advance_bytes(_First, 8);
 
-#if !defined(_M_ARM64) && defined(_M_ARM64EC)
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
