@@ -2455,8 +2455,8 @@ void test_gh_6118() {
     }
 }
 
-void test_gh_6143() {
-    // GH-6143: Implement small vector optimization for state frames
+void test_gh_6147() {
+    // GH-6147: Implement small vector optimization for state frames
     //
     // This tests that the buffer doesn't contain uninitialized initial areas after several reallocations
     // by forcing the creation of a sufficiently big vector followed by full backtracking.
@@ -2526,7 +2526,7 @@ int main() {
     test_gh_5944();
     test_gh_6022();
     test_gh_6118();
-    test_gh_6143();
+    test_gh_6147();
 
     return g_regexTester.result();
 }
