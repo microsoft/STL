@@ -7798,8 +7798,12 @@ namespace {
                     }
                 }
 
-                for (; _Ix < _Count; ++_Ix) {
-                    if (_First_b[_Ix] != _Second_b[_Ix]) {
+                if (_Ix < _Count) {
+                    // Overlapped Neon path avoids need for scalar tail.
+                    const ptrdiff_t _Ix_tail = static_cast<ptrdiff_t>(_Count) - 16;
+                    const auto _Cmp          = veorq_u8(vld1q_u8(_First_b + _Ix_tail), vld1q_u8(_Second_b + _Ix_tail));
+                    const uint64_t _Any      = vgetq_lane_u64(vreinterpretq_u64_u8(vpmaxq_u8(_Cmp, _Cmp)), 0);
+                    if (_Any != 0) {
                         return false;
                     }
                 }
