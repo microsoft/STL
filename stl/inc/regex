@@ -2043,8 +2043,9 @@ private:
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 class _Matcher3 { // provides ways to match a regular expression to a text sequence
 private:
-    using _Loop_vals_type = _Loop_vals_v3_t<_Iter_diff_t<_It>>;
-    using _Tgt_state_type = _Tgt_state_v2_t<_It, allocator<_It>>;
+    using _Loop_vals_type   = _Loop_vals_v3_t<_Iter_diff_t<_It>>;
+    using _Tgt_state_type   = _Tgt_state_v2_t<_It, allocator<_It>>;
+    using _State_frame_type = _Rx_state_frame_t<_It>;
 
 public:
     template <size_t _Stack_storage_size>
@@ -2085,7 +2086,7 @@ public:
         constexpr size_t _Capture_range_size  = sizeof(_Rx_capture_range_t<_It>);
         constexpr size_t _Bitset_int_align    = alignof(_Rx_bitset_int_type);
         constexpr size_t _Bitset_int_size     = sizeof(_Rx_bitset_int_type);
-        constexpr size_t _State_frame_align   = alignof(_Rx_state_frame_t<_It>);
+        constexpr size_t _State_frame_align   = alignof(_State_frame_type);
 
         if (_Ncap > 1U) {
             if constexpr (_Loop_vals_size % _Capture_range_align != 0U) {
@@ -2119,7 +2120,7 @@ public:
 
         if constexpr (_Loop_vals_size % _State_frame_align != 0U
                       || (_Bitset_int_align % _State_frame_align != 0U
-                          && (_Capture_range_size % _State_frame_align + _Bitset_int_size % _State_frame_align
+                          && ((_Capture_range_size % _State_frame_align) + (_Bitset_int_size % _State_frame_align)
                               != 0U))) {
             _Offset = (_Offset + (_State_frame_align - 1U)) / _State_frame_align * _State_frame_align;
 
@@ -2219,7 +2220,7 @@ private:
     _Tgt_state_type _Tgt_state;
     _Tgt_state_type _Res;
     _Rx_fixed_size_buffer<_Loop_vals_type> _Loop_vals;
-    _Rx_small_vector<_Rx_state_frame_t<_It>> _Frames;
+    _Rx_small_vector<_State_frame_type> _Frames;
     size_t _Frames_count;
     size_t _Frames_limit;
     long long _Complexity_limit;
@@ -2732,7 +2733,8 @@ bool _Regex_match1(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matche
         return false;
     }
 
-    alignas(_Loop_vals_v3_t<_Iter_diff_t<_It>>) alignas(_Rx_capture_range_t<_It>) unsigned char _Stackbuf[4096];
+    alignas(_Loop_vals_v3_t<_Iter_diff_t<_It>>) alignas(_Rx_capture_range_t<_It>) //
+        alignas(_Rx_state_frame_t<_It>) unsigned char _Stackbuf[4096];
     _Matcher3<_BidIt, _Elem, _RxTraits, _It, void> _Mx(
         _First, _Last, _Re._Get_traits(), _Re._Get(), _Re.mark_count() + 1, _Re.flags(), _Flgs, _Stackbuf);
     return _Mx._Match(_Matches, _Full);
@@ -2810,7 +2812,8 @@ bool _Regex_search2(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Match
         ++_First;
     }
 
-    alignas(_Loop_vals_v3_t<_Iter_diff_t<_It>>) alignas(_Rx_capture_range_t<_It>) unsigned char _Stackbuf[4096];
+    alignas(_Loop_vals_v3_t<_Iter_diff_t<_It>>) alignas(_Rx_capture_range_t<_It>) //
+        alignas(_Rx_state_frame_t<_It>) unsigned char _Stackbuf[4096];
     _Matcher3<_BidIt, _Elem, _RxTraits, _It, void> _Mx(
         _First, _Last, _Re._Get_traits(), _Re._Get(), _Re.mark_count() + 1, _Re.flags(), _Flgs, _Stackbuf);
 
@@ -3808,8 +3811,8 @@ size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Push_frame(_Rx_unwind_
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit(_Iter_diff_t<_It> _Input_length) {
-    constexpr size_t _Fixed_part  = 10000000U / sizeof(_Rx_state_frame_t<_It>);
-    constexpr size_t _Divisor     = sizeof(_Rx_state_frame_t<_It>) / 10U;
+    constexpr size_t _Fixed_part  = 10000000U / sizeof(_State_frame_type);
+    constexpr size_t _Divisor     = sizeof(_State_frame_type) / 10U;
     const auto _Variable_part     = _Input_length / static_cast<_Iter_diff_t<_It>>(_Divisor);
     const size_t _Max_frames_size = _Frames._Max_size();
 
