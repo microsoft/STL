@@ -5540,6 +5540,8 @@ _NODISCARD bool _Is_all_bits_zero(const _Ty& _Val) {
     _STL_INTERNAL_STATIC_ASSERT(is_scalar_v<_Ty> && !is_member_pointer_v<_Ty>);
     if constexpr (is_null_pointer_v<_Ty>) {
         return true;
+    } else if constexpr (is_integral_v<_Ty> || is_pointer_v<_Ty>) {
+        return _Val == _Ty{};
     } else {
         constexpr _Ty _Zero{};
         return _CSTD memcmp(&_Val, &_Zero, sizeof(_Ty)) == 0;
