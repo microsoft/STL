@@ -9701,7 +9701,14 @@ void* __stdcall __std_remove_copy_2(
 
 void* __stdcall __std_remove_copy_4(
     const void* _First, const void* const _Last, void* _Out, const uint32_t _Val) noexcept {
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
+        const void* _Stop = _First;
+        _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
+        _Out   = _Removing::_Remove_copy_impl<_Removing::_Neon_4>(_First, _Stop, _Out, _Val);
+        _First = _Stop;
+    }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
