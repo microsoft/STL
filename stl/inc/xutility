@@ -5542,6 +5542,14 @@ _NODISCARD bool _Is_all_bits_zero(const _Ty& _Val) {
         return true;
     } else if constexpr (is_integral_v<_Ty> || is_pointer_v<_Ty>) {
         return _Val == _Ty{};
+    } else if constexpr (sizeof(_Ty) == 1) {
+        return _STD _Bit_cast<uint8_t>(_Val) == 0;
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return _STD _Bit_cast<uint16_t>(_Val) == 0;
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return _STD _Bit_cast<uint32_t>(_Val) == 0;
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return _STD _Bit_cast<uint64_t>(_Val) == 0;
     } else {
         static constexpr _Ty _Zero{};
         return _CSTD memcmp(&_Val, &_Zero, sizeof(_Ty)) == 0;
