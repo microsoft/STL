@@ -1969,13 +1969,12 @@ int main() {
     run_randomized_tests_with_different_isa_levels([](mt19937_64& gen) {
 #ifndef _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC
         test_vector_algorithms(gen);
-#else // ^ !defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) / defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) v
-        test_vector_algorithms_fallbacks(gen);
-#endif // ^^^ defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) ^^^
         test_various_containers();
         test_bitset(gen);
-#ifndef _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC
         test_string(gen);
+#else // ^ !defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) / defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) v
+        test_vector_algorithms_fallbacks(gen);
+        test_bitset(gen);
 #endif // ^^^ !defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) ^^^
     });
 }
