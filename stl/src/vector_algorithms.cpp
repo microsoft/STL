@@ -9255,7 +9255,7 @@ namespace {
             static uint32_t _Mask(const _Vec_t _First, const _Vec_t _Second) noexcept {
                 // TRANSITION, DevCom-11055227
                 constexpr uint16_t _Weights_arr[8] = {1, 2, 4, 8, 16, 32, 64, 128};
-                const auto _Weights                       = vld1q_u16(_Weights_arr);
+                const auto _Weights                = vld1q_u16(_Weights_arr);
 
                 const auto _Cmp  = vceqq_u16(_First, _Second);
                 const auto _Bits = vandq_u16(_Cmp, _Weights);
@@ -9287,7 +9287,7 @@ namespace {
             static uint32_t _Mask(const _Vec_t _First, const _Vec_t _Second) noexcept {
                 // TRANSITION, DevCom-11055227
                 constexpr uint32_t _Weights_arr[8] = {1, 2, 4, 8};
-                const auto _Weights                       = vld1q_u32(_Weights_arr);
+                const auto _Weights                = vld1q_u32(_Weights_arr);
 
                 const auto _Cmp  = vceqq_u32(_First, _Second);
                 const auto _Bits = vandq_u32(_Cmp, _Weights);
