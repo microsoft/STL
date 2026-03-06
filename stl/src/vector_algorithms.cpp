@@ -7728,7 +7728,6 @@ __declspec(noalias) size_t __stdcall __std_find_last_not_of_trivial_pos_2(const 
 
 } // extern "C"
 
-#ifndef _M_ARM64
 namespace {
     namespace _Find_seq {
         // The caveat in the 'search' and 'find_end' optimization is that this pattern would be inefficient:
@@ -7743,21 +7742,247 @@ namespace {
         //    or at least with the needle start, if the needle is long, to fail early mismatches early.
         // Or use SSE4.2 _mm_cmpestri, which can be good too, especially for 8-bit forward search.
 
-#ifdef _M_ARM64EC
-        using _Find_seq_traits_avx_1 = void;
-        using _Find_seq_traits_avx_2 = void;
-        using _Find_seq_traits_avx_4 = void;
-        using _Find_seq_traits_avx_8 = void;
-        using _Find_seq_traits_sse_4 = void;
-        using _Find_seq_traits_sse_8 = void;
-#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+        struct _Find_seq_traits_neon {
+            static constexpr size_t _Vec_size = 16;
+            using _Guard                      = char;
+
+            static uint64_t _Tail_bitmask(const size_t _Tail_bytes) noexcept {
+                // _Tail_bytes in [0,16].
+                if (_Tail_bytes == 16) {
+                    return ~0ull;
+                }
+                return (uint64_t{1} << (4 * _Tail_bytes)) - 1;
+            }
+
+            static uint64_t _Bsf(const uint64_t _Mask) noexcept {
+                return _Finding::_Get_first_h_pos_q(_Mask);
+            }
+
+            static uint64_t _Bsr(const uint64_t _Mask) noexcept {
+                return _Finding::_Get_last_h_pos_q(_Mask);
+            }
+
+            static uint64_t _Bingo_next(const uint64_t _Bingo, const uint64_t _Pos) noexcept {
+                return _Bingo ^ (uint64_t{0xF} << (_Pos << 2));
+            }
+
+            static __forceinline bool _Memcmp_inline_eq(
+                const void* const _First, const void* const _Second, const size_t _Count) noexcept {
+                const auto _First_b  = static_cast<const uint8_t*>(_First);
+                const auto _Second_b = static_cast<const uint8_t*>(_Second);
+
+                size_t _Ix = 0;
+
+                if (_Count >= 16) {
+                    const size_t _Vec_end = _Count & ~size_t{0x1F};
+
+                    for (; _Ix < _Vec_end; _Ix += 32) {
+                        const auto _Cmp1    = veorq_u8(vld1q_u8(_First_b + _Ix), vld1q_u8(_Second_b + _Ix));
+                        const auto _Cmp2    = veorq_u8(vld1q_u8(_First_b + _Ix + 16), vld1q_u8(_Second_b + _Ix + 16));
+                        const auto _Combine = vpmaxq_u8(_Cmp1, _Cmp2);
+                        const uint64_t _Any = vgetq_lane_u64(vreinterpretq_u64_u8(vpmaxq_u8(_Combine, _Combine)), 0);
+                        if (_Any != 0) {
+                            return false;
+                        }
+                    }
+
+                    if ((_Count & size_t{0x10}) != 0) { // use original _Count; we've read only 32-byte chunks
+                        const auto _Cmp     = veorq_u8(vld1q_u8(_First_b + _Ix), vld1q_u8(_Second_b + _Ix));
+                        const uint64_t _Any = vgetq_lane_u64(vreinterpretq_u64_u8(vpmaxq_u8(_Cmp, _Cmp)), 0);
+                        if (_Any != 0) {
+                            return false;
+                        }
+
+                        _Ix += 16;
+                    }
+                }
+
+                if (_Ix < _Count) {
+                    // Overlapped Neon path avoids need for scalar tail.
+                    const ptrdiff_t _Ix_tail = static_cast<ptrdiff_t>(_Count) - 16;
+                    const auto _Cmp          = veorq_u8(vld1q_u8(_First_b + _Ix_tail), vld1q_u8(_Second_b + _Ix_tail));
+                    const uint64_t _Any      = vgetq_lane_u64(vreinterpretq_u64_u8(vpmaxq_u8(_Cmp, _Cmp)), 0);
+                    if (_Any != 0) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        };
+
+        struct _Find_seq_traits_neon_1 : _Find_seq_traits_neon {
+            using _Vec_t = uint8x16_t;
+
+            static _Vec_t _Load(const void* const _Src) noexcept {
+                return vld1q_u8(static_cast<const uint8_t*>(_Src));
+            }
+
+            static _Vec_t _Load_tail(const void* const _Src, const size_t _Size_bytes, _Vec_t = {}) noexcept {
+                unsigned char _Tmp[16];
+                memcpy(_Tmp, _Src, _Size_bytes);
+                return _Load(_Tmp);
+            }
+
+            static _Vec_t _Broadcast(const _Vec_t _Data) noexcept {
+                return vdupq_n_u8(vgetq_lane_u8(_Data, 0));
+            }
+
+            static uint64_t _Cmp(const _Vec_t _Lhs, const _Vec_t _Rhs) noexcept {
+                return _Finding::_Find_traits_1::_Mask_q(vceqq_u8(_Lhs, _Rhs));
+            }
+
+            static _Vec_t _Xor(const _Vec_t _Val1, const _Vec_t _Val2) noexcept {
+                return veorq_u8(_Val1, _Val2);
+            }
+
+            static bool _TestZ(const _Vec_t _Val) noexcept {
+                const auto _Msk = vgetq_lane_u64(vreinterpretq_u64_u8(vpmaxq_u8(_Val, _Val)), 0);
+                return _Msk == 0;
+            }
+
+            static bool _TestZ(const _Vec_t _Val, const _Vec_t _Mask) noexcept {
+                return _TestZ(vandq_u8(_Val, _Mask));
+            }
+
+            static uint8x16_t _Mask(const size_t _Count_in_bytes) noexcept {
+                // _Count_in_bytes must be within [0,16].
+                static constexpr uint32_t _Tail_masks[8] = {~0u, ~0u, ~0u, ~0u, 0, 0, 0, 0};
+                const auto _Base                         = reinterpret_cast<const uint8_t*>(_Tail_masks);
+                return vld1q_u8(_Base + (16 - _Count_in_bytes));
+            }
+        };
+
+        struct _Find_seq_traits_neon_2 : _Find_seq_traits_neon {
+            using _Vec_t = uint16x8_t;
+
+            static _Vec_t _Load(const void* const _Src) noexcept {
+                return vld1q_u16(static_cast<const uint16_t*>(_Src));
+            }
+
+            static _Vec_t _Load_tail(const void* const _Src, const size_t _Size_bytes, _Vec_t = {}) noexcept {
+                unsigned char _Tmp[16];
+                memcpy(_Tmp, _Src, _Size_bytes);
+                return _Load(_Tmp);
+            }
+
+            static _Vec_t _Broadcast(const _Vec_t _Data) noexcept {
+                return vdupq_n_u16(vgetq_lane_u16(_Data, 0));
+            }
+
+            static uint64_t _Cmp(const _Vec_t _Lhs, const _Vec_t _Rhs) noexcept {
+                return _Finding::_Find_traits_2::_Mask_q(vceqq_u16(_Lhs, _Rhs)) & 0x0F0F0F0F0F0F0F0F;
+            }
+
+            static _Vec_t _Xor(const _Vec_t _Val1, const _Vec_t _Val2) noexcept {
+                return veorq_u16(_Val1, _Val2);
+            }
+
+            static bool _TestZ(const _Vec_t _Val) noexcept {
+                return _Find_seq_traits_neon_1::_TestZ(vreinterpretq_u8_u16(_Val));
+            }
+
+            static bool _TestZ(const _Vec_t _Val, const _Vec_t _Mask) noexcept {
+                return _TestZ(vandq_u16(_Val, _Mask));
+            }
+
+            static _Vec_t _Mask(const size_t _Count_in_bytes) noexcept {
+                return vreinterpretq_u16_u8(_Find_seq_traits_neon_1::_Mask(_Count_in_bytes));
+            }
+        };
+
+        struct _Find_seq_traits_neon_4 : _Find_seq_traits_neon {
+            using _Vec_t = uint32x4_t;
+
+            static _Vec_t _Load(const void* const _Src) noexcept {
+                return vld1q_u32(static_cast<const uint32_t*>(_Src));
+            }
+
+            static _Vec_t _Load_tail(const void* const _Src, const size_t _Size_bytes, _Vec_t = {}) noexcept {
+                unsigned char _Tmp[16];
+                memcpy(_Tmp, _Src, _Size_bytes);
+                return _Load(_Tmp);
+            }
+
+            static _Vec_t _Broadcast(const _Vec_t _Data) noexcept {
+                return vdupq_n_u32(vgetq_lane_u32(_Data, 0));
+            }
+
+            static uint64_t _Cmp(const _Vec_t _Lhs, const _Vec_t _Rhs) noexcept {
+                return _Finding::_Find_traits_4::_Mask_q(vceqq_u32(_Lhs, _Rhs)) & 0x000F000F000F000F;
+            }
+
+            static _Vec_t _Xor(const _Vec_t _Val1, const _Vec_t _Val2) noexcept {
+                return veorq_u32(_Val1, _Val2);
+            }
+
+            static bool _TestZ(const _Vec_t _Val) noexcept {
+                return _Find_seq_traits_neon_1::_TestZ(vreinterpretq_u8_u32(_Val));
+            }
+
+            static bool _TestZ(const _Vec_t _Val, const _Vec_t _Mask) noexcept {
+                return _TestZ(vandq_u32(_Val, _Mask));
+            }
+
+            static _Vec_t _Mask(const size_t _Count_in_bytes) noexcept {
+                return vreinterpretq_u32_u8(_Find_seq_traits_neon_1::_Mask(_Count_in_bytes));
+            }
+        };
+
+        struct _Find_seq_traits_neon_8 : _Find_seq_traits_neon {
+            using _Vec_t = uint64x2_t;
+
+            static _Vec_t _Load(const void* const _Src) noexcept {
+                return vld1q_u64(static_cast<const uint64_t*>(_Src));
+            }
+
+            static _Vec_t _Load_tail(const void* const _Src, const size_t _Size_bytes, _Vec_t = {}) noexcept {
+                unsigned char _Tmp[16];
+                memcpy(_Tmp, _Src, _Size_bytes);
+                return _Load(_Tmp);
+            }
+
+            static _Vec_t _Broadcast(const _Vec_t _Data) noexcept {
+                return vdupq_n_u64(vgetq_lane_u64(_Data, 0));
+            }
+
+            static uint64_t _Cmp(const _Vec_t _Lhs, const _Vec_t _Rhs) noexcept {
+                return _Finding::_Find_traits_8::_Mask_q(vceqq_u64(_Lhs, _Rhs)) & 0x0000000F0000000F;
+            }
+
+            static _Vec_t _Xor(const _Vec_t _Val1, const _Vec_t _Val2) noexcept {
+                return veorq_u64(_Val1, _Val2);
+            }
+
+            static bool _TestZ(const _Vec_t _Val) noexcept {
+                return _Find_seq_traits_neon_1::_TestZ(vreinterpretq_u8_u64(_Val));
+            }
+
+            static bool _TestZ(const _Vec_t _Val, const _Vec_t _Mask) noexcept {
+                return _TestZ(vandq_u64(_Val, _Mask));
+            }
+
+            static _Vec_t _Mask(const size_t _Count_in_bytes) noexcept {
+                return vreinterpretq_u64_u8(_Find_seq_traits_neon_1::_Mask(_Count_in_bytes));
+            }
+        };
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Find_seq_traits_avx {
             using _Guard = _Zeroupper_on_exit;
 
             static constexpr size_t _Vec_size = 32;
 
+            static unsigned long _Bingo_next(const unsigned long _Bingo, const unsigned int _Pos) noexcept {
+                return _Bingo ^ (1 << _Pos);
+            }
+
             static __m256i _Mask(const size_t _Count_in_bytes) noexcept {
                 return _Avx2_tail_mask_32(_Count_in_bytes);
+            }
+
+            static unsigned int _Tail_bitmask(const size_t _Tail_bytes) noexcept {
+                return (1 << _Tail_bytes) - 1;
             }
 
             static __m256i _Load(const void* const _Src) noexcept {
@@ -7766,6 +7991,10 @@ namespace {
 
             static __m256i _Xor(const __m256i _Val1, const __m256i _Val2) noexcept {
                 return _mm256_xor_si256(_Val1, _Val2);
+            }
+
+            static bool _TestZ(const __m256i _Val) noexcept {
+                return _mm256_testz_si256(_Val, _Val);
             }
 
             static bool _TestZ(const __m256i _Val1, const __m256i _Val2) noexcept {
@@ -7778,6 +8007,11 @@ namespace {
 
             static unsigned int _Bsr(const unsigned long _Mask) noexcept {
                 return 31 - _lzcnt_u32(_Mask);
+            }
+
+            static __forceinline bool _Memcmp_inline_eq(
+                const void* const _First, const void* const _Second, const size_t _Count) noexcept {
+                return memcmp(_First, _Second, _Count) == 0;
             }
         };
 
@@ -7846,11 +8080,19 @@ namespace {
 
             static constexpr size_t _Vec_size = 16;
 
+            static unsigned long _Bingo_next(const unsigned long _Bingo, const unsigned int _Pos) noexcept {
+                return _Bingo ^ (1 << _Pos);
+            }
+
             static __m128i _Mask(const size_t _Count_in_bytes) noexcept {
                 // _Count_in_bytes must be within [0, 16].
                 static constexpr unsigned int _Tail_masks[8] = {~0u, ~0u, ~0u, ~0u, 0, 0, 0, 0};
                 return _mm_loadu_si128(reinterpret_cast<const __m128i*>(
                     reinterpret_cast<const unsigned char*>(_Tail_masks) + (16 - _Count_in_bytes)));
+            }
+
+            static unsigned int _Tail_bitmask(const size_t _Tail_bytes) noexcept {
+                return (1 << _Tail_bytes) - 1;
             }
 
             static __m128i _Load(const void* const _Src) noexcept {
@@ -7859,6 +8101,10 @@ namespace {
 
             static __m128i _Xor(const __m128i _Val1, const __m128i _Val2) noexcept {
                 return _mm_xor_si128(_Val1, _Val2);
+            }
+
+            static bool _TestZ(const __m128i _Val) noexcept {
+                return _mm_testz_si128(_Val, _Val);
             }
 
             static bool _TestZ(const __m128i _Val1, const __m128i _Val2) noexcept {
@@ -7885,6 +8131,11 @@ namespace {
                 _BitScanReverse(&_Index, _Mask);
                 return _Index;
             }
+
+            static __forceinline bool _Memcmp_inline_eq(
+                const void* const _First, const void* const _Second, const size_t _Count) noexcept {
+                return memcmp(_First, _Second, _Count) == 0;
+            }
         };
 
         struct _Find_seq_traits_sse_4 : _Find_seq_traits_sse_4_8 {
@@ -7906,6 +8157,69 @@ namespace {
                 return _mm_movemask_epi8(_mm_cmpeq_epi64(_Lhs, _Rhs)) & 0x0101;
             }
         };
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
+
+        template <class _Ty>
+        const void* _Search_scalar_tail(const void* const _First1, const void* const _Last1, const size_t _Size_bytes_1,
+            const void* const _First2, const size_t _Count2, const size_t _Size_bytes_2) noexcept {
+            const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2 + sizeof(_Ty);
+
+            auto _Ptr1         = static_cast<const _Ty*>(_First1);
+            const auto _Ptr2   = static_cast<const _Ty*>(_First2);
+            const void* _Stop1 = _Ptr1;
+            _Advance_bytes(_Stop1, _Max_pos);
+
+            for (; _Ptr1 != _Stop1; ++_Ptr1) {
+                if (*_Ptr1 != *_Ptr2) {
+                    continue;
+                }
+
+                bool _Equal = true;
+
+                for (size_t _Idx = 1; _Idx != _Count2; ++_Idx) {
+                    if (_Ptr1[_Idx] != _Ptr2[_Idx]) {
+                        _Equal = false;
+                        break;
+                    }
+                }
+
+                if (_Equal) {
+                    return _Ptr1;
+                }
+            }
+
+            return _Last1;
+        }
+
+        template <class _Ty>
+        const void* _Find_end_scalar_tail(const void* const _First1, const void* const _Last1,
+            const void* const _First2, const size_t _Count2) noexcept {
+            auto _Ptr1       = static_cast<const _Ty*>(_Last1) - _Count2;
+            const auto _Ptr2 = static_cast<const _Ty*>(_First2);
+
+            for (;;) {
+                if (*_Ptr1 == *_Ptr2) {
+                    bool _Equal = true;
+
+                    for (size_t _Idx = 1; _Idx != _Count2; ++_Idx) {
+                        if (_Ptr1[_Idx] != _Ptr2[_Idx]) {
+                            _Equal = false;
+                            break;
+                        }
+                    }
+
+                    if (_Equal) {
+                        return _Ptr1;
+                    }
+                }
+
+                if (_Ptr1 == _First1) {
+                    return _Last1;
+                }
+
+                --_Ptr1;
+            }
+        }
 
         template <class _Traits, class _Ty>
         const void* _Search_cmpeq(const void* _First1, const void* const _Last1, const void* const _First2,
@@ -7923,11 +8237,11 @@ namespace {
                 const void* _Stop1 = _First1;
                 _Advance_bytes(_Stop1, _Size_bytes_1 & ~_Vec_mask);
                 do {
-                    const auto _Data1    = _Traits::_Load(_First1);
-                    unsigned long _Bingo = _Traits::_Cmp(_Data1, _Start2);
+                    const auto _Data1 = _Traits::_Load(_First1);
+                    auto _Bingo       = _Traits::_Cmp(_Data1, _Start2);
 
                     while (_Bingo != 0) {
-                        const unsigned int _Pos = _Traits::_Bsf(_Bingo);
+                        const auto _Pos = _Traits::_Bsf(_Bingo);
 
                         const void* _Match = _First1;
                         _Advance_bytes(_Match, _Pos);
@@ -7947,18 +8261,18 @@ namespace {
                             return _Match;
                         }
 
-                        _Bingo ^= 1 << _Pos;
+                        _Bingo = _Traits::_Bingo_next(_Bingo, _Pos);
                     }
 
                     _Advance_bytes(_First1, _Vec_size);
                 } while (_First1 != _Stop1);
 
                 if (const size_t _Left1 = _Byte_length(_First1, _Last1); _Left1 >= _Size_bytes_2) {
-                    const auto _Data1    = _Traits::_Load_tail(_First1, _Left1);
-                    unsigned long _Bingo = _Traits::_Cmp(_Data1, _Start2);
+                    const auto _Data1 = _Traits::_Load_tail(_First1, _Left1);
+                    auto _Bingo       = _Traits::_Cmp(_Data1, _Start2);
 
                     while (_Bingo != 0) {
-                        const unsigned int _Pos = _Traits::_Bsf(_Bingo);
+                        const auto _Pos = _Traits::_Bsf(_Bingo);
 
                         if (_Pos > _Left1 - _Size_bytes_2) {
                             break;
@@ -7975,7 +8289,7 @@ namespace {
                             return _Match;
                         }
 
-                        _Bingo ^= 1 << _Pos;
+                        _Bingo = _Traits::_Bingo_next(_Bingo, _Pos);
                     }
                 }
 
@@ -7993,11 +8307,11 @@ namespace {
                 _Advance_bytes(_Tail2, _Vec_size);
 
                 do {
-                    const auto _Data1    = _Traits::_Load(_First1);
-                    unsigned long _Bingo = _Traits::_Cmp(_Data1, _Start2);
+                    const auto _Data1 = _Traits::_Load(_First1);
+                    auto _Bingo       = _Traits::_Cmp(_Data1, _Start2);
 
                     while (_Bingo != 0) {
-                        const unsigned int _Pos = _Traits::_Bsf(_Bingo);
+                        const auto _Pos = _Traits::_Bsf(_Bingo);
 
                         const void* _Match = _First1;
                         _Advance_bytes(_Match, _Pos);
@@ -8009,16 +8323,16 @@ namespace {
                         const auto _Match_val = _Traits::_Load(_Match);
                         const auto _Cmp       = _Traits::_Xor(_Data2, _Match_val);
 
-                        if (_Traits::_TestZ(_Cmp, _Cmp)) {
+                        if (_Traits::_TestZ(_Cmp)) {
                             const void* _Tail1 = _Match;
                             _Advance_bytes(_Tail1, _Vec_size);
 
-                            if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size) == 0) {
+                            if (_Traits::_Memcmp_inline_eq(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size)) {
                                 return _Match;
                             }
                         }
 
-                        _Bingo ^= 1 << _Pos;
+                        _Bingo = _Traits::_Bingo_next(_Bingo, _Pos);
                     }
 
                     _Advance_bytes(_First1, _Vec_size);
@@ -8037,7 +8351,7 @@ namespace {
             constexpr size_t _Vec_mask = _Vec_size - 1;
 
             if (_Size_bytes_2 <= _Vec_size) {
-                const unsigned int _Needle_fit_mask = (1 << (_Vec_size - _Size_bytes_2 + sizeof(_Ty))) - 1;
+                const auto _Needle_fit_mask = _Traits::_Tail_bitmask(_Traits::_Vec_size - _Size_bytes_2 + sizeof(_Ty));
 
                 const void* _Stop1 = _First1;
                 _Advance_bytes(_Stop1, _Size_bytes_1 & _Vec_mask);
@@ -8051,9 +8365,9 @@ namespace {
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
-                const auto _Check_first = [=, &_Mid1](unsigned long _Match) noexcept {
+                const auto _Check_first = [=, &_Mid1](auto _Match) noexcept [[msvc::forceinline]] {
                     while (_Match != 0) {
-                        const unsigned int _Pos = _Traits::_Bsr(_Match);
+                        const auto _Pos = _Traits::_Bsr(_Match);
 
                         const void* _Tmp1 = _Mid1;
                         _Advance_bytes(_Tmp1, _Pos);
@@ -8066,15 +8380,15 @@ namespace {
                             return true;
                         }
 
-                        _Match ^= 1 << _Pos;
+                        _Match = _Traits::_Bingo_next(_Match, _Pos);
                     }
 
                     return false;
                 };
 
-                const auto _Check = [=, &_Mid1](unsigned long _Match) noexcept {
+                const auto _Check = [=, &_Mid1](auto _Match) noexcept [[msvc::forceinline]] {
                     while (_Match != 0) {
-                        const unsigned int _Pos = _Traits::_Bsr(_Match);
+                        const auto _Pos = _Traits::_Bsr(_Match);
 
                         const void* _Tmp1 = _Mid1;
                         _Advance_bytes(_Tmp1, _Pos);
@@ -8087,7 +8401,7 @@ namespace {
                             return true;
                         }
 
-                        _Match ^= 1 << _Pos;
+                        _Match = _Traits::_Bingo_next(_Match, _Pos);
                     }
 
                     return false;
@@ -8095,8 +8409,8 @@ namespace {
 #pragma warning(pop)
 
                 // The very last part, for any match needle should fit, otherwise false match
-                const auto _Data1_last              = _Traits::_Load(_Mid1);
-                const unsigned long _Match_last_val = _Traits::_Cmp(_Data1_last, _Start2);
+                const auto _Data1_last     = _Traits::_Load(_Mid1);
+                const auto _Match_last_val = _Traits::_Cmp(_Data1_last, _Start2);
                 if (_Check_first(_Match_last_val & _Needle_fit_mask)) {
                     return _Mid1;
                 }
@@ -8104,8 +8418,8 @@ namespace {
                 // The middle part, fit and unfit needle
                 while (_Mid1 != _Stop1) {
                     _Rewind_bytes(_Mid1, _Vec_size);
-                    const auto _Data1              = _Traits::_Load(_Mid1);
-                    const unsigned long _Match_val = _Traits::_Cmp(_Data1, _Start2);
+                    const auto _Data1     = _Traits::_Load(_Mid1);
+                    const auto _Match_val = _Traits::_Cmp(_Data1, _Start2);
                     if (_Check(_Match_val)) {
                         return _Mid1;
                     }
@@ -8113,10 +8427,10 @@ namespace {
 
                 // The first part, fit and unfit needle, mask out already processed positions
                 if (const size_t _Tail_bytes_1 = _Size_bytes_1 & _Vec_mask; _Tail_bytes_1 != 0) {
-                    _Mid1                          = _First1;
-                    const auto _Data1              = _Traits::_Load(_Mid1);
-                    const unsigned long _Match_val = _Traits::_Cmp(_Data1, _Start2);
-                    if (_Match_val != 0 && _Check(_Match_val & ((1 << _Tail_bytes_1) - 1))) {
+                    _Mid1                 = _First1;
+                    const auto _Data1     = _Traits::_Load(_Mid1);
+                    const auto _Match_val = _Traits::_Cmp(_Data1, _Start2);
+                    if (_Match_val != 0 && _Check(_Match_val & _Traits::_Tail_bitmask(_Tail_bytes_1))) {
                         return _Mid1;
                     }
                 }
@@ -8138,9 +8452,9 @@ namespace {
 
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
-                const auto _Check = [=, &_Mid1](unsigned long _Match) noexcept {
+                const auto _Check = [=, &_Mid1](auto _Match) noexcept [[msvc::forceinline]] {
                     while (_Match != 0) {
-                        const unsigned int _Pos = _Traits::_Bsr(_Match);
+                        const auto _Pos = _Traits::_Bsr(_Match);
 
                         const void* _Tmp1 = _Mid1;
                         _Advance_bytes(_Tmp1, _Pos);
@@ -8148,17 +8462,17 @@ namespace {
                         const auto _Match_data = _Traits::_Load(_Tmp1);
                         const auto _Cmp_result = _Traits::_Xor(_Data2, _Match_data);
 
-                        if (_Traits::_TestZ(_Cmp_result, _Cmp_result)) {
+                        if (_Traits::_TestZ(_Cmp_result)) {
                             const void* _Tail1 = _Tmp1;
                             _Advance_bytes(_Tail1, _Vec_size);
 
-                            if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size) == 0) {
+                            if (_Traits::_Memcmp_inline_eq(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size)) {
                                 _Mid1 = _Tmp1;
                                 return true;
                             }
                         }
 
-                        _Match ^= 1 << _Pos;
+                        _Match = _Traits::_Bingo_next(_Match, _Pos);
                     }
 
                     return false;
@@ -8168,12 +8482,12 @@ namespace {
                 const auto _Data1_last = _Traits::_Load(_Mid1);
                 const auto _Match_last = _Traits::_Xor(_Data2, _Data1_last);
 
-                if (_Traits::_TestZ(_Match_last, _Match_last)) {
+                if (_Traits::_TestZ(_Match_last)) {
                     // Matched _Vec_size bytes, check the rest
                     const void* _Tail1 = _Mid1;
                     _Advance_bytes(_Tail1, _Vec_size);
 
-                    if (memcmp(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size) == 0) {
+                    if (_Traits::_Memcmp_inline_eq(_Tail1, _Tail2, _Size_bytes_2 - _Vec_size)) {
                         return _Mid1;
                     }
                 }
@@ -8182,8 +8496,8 @@ namespace {
                 while (_Mid1 != _Stop1) {
                     _Rewind_bytes(_Mid1, _Vec_size);
 
-                    const auto _Data1              = _Traits::_Load(_Mid1);
-                    const unsigned long _Match_val = _Traits::_Cmp(_Data1, _Start2);
+                    const auto _Data1     = _Traits::_Load(_Mid1);
+                    const auto _Match_val = _Traits::_Cmp(_Data1, _Start2);
                     if (_Check(_Match_val)) {
                         return _Mid1;
                     }
@@ -8191,10 +8505,10 @@ namespace {
 
                 // The first part, mask out already processed positions
                 if (const size_t _Tail_bytes_1 = _Size_diff_bytes & _Vec_mask; _Tail_bytes_1 != 0) {
-                    _Mid1                          = _First1;
-                    const auto _Data1              = _Traits::_Load(_Mid1);
-                    const unsigned long _Match_val = _Traits::_Cmp(_Data1, _Start2);
-                    if (_Match_val != 0 && _Check(_Match_val & ((1 << _Tail_bytes_1) - 1))) {
+                    _Mid1                 = _First1;
+                    const auto _Data1     = _Traits::_Load(_Mid1);
+                    const auto _Match_val = _Traits::_Cmp(_Data1, _Start2);
+                    if (_Match_val != 0 && _Check(_Match_val & _Traits::_Tail_bitmask(_Tail_bytes_1))) {
                         return _Mid1;
                     }
                 }
@@ -8202,8 +8516,60 @@ namespace {
                 return _Last1;
             }
         }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+        template <class _FindTraits, class _Traits, class _Ty>
+        const void* __stdcall _Search_impl(const void* const _First1, const void* const _Last1,
+            const void* const _First2, const size_t _Count2) noexcept {
+            if (_Count2 == 0) {
+                return _First1;
+            }
+
+            if (_Count2 == 1) {
+                return _Finding::_Find_impl<_FindTraits, _Finding::_Predicate::_Equal>(
+                    _First1, _Last1, *static_cast<const _Ty*>(_First2));
+            }
+
+            const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
+            const size_t _Size_bytes_2 = _Count2 * sizeof(_Ty);
+
+            if (_Size_bytes_1 < _Size_bytes_2) {
+                return _Last1;
+            }
+
+            if (_Size_bytes_1 >= 16) {
+                return _Search_cmpeq<_Traits, _Ty>(_First1, _Last1, _First2, _Size_bytes_2);
+            }
+
+            return _Search_scalar_tail<_Ty>(_First1, _Last1, _Size_bytes_1, _First2, _Count2, _Size_bytes_2);
+        }
+
+        template <class _FindTraits, class _Traits, class _Ty>
+        const void* __stdcall _Find_end_impl(const void* const _First1, const void* const _Last1,
+            const void* const _First2, const size_t _Count2) noexcept {
+            if (_Count2 == 0) {
+                return _Last1;
+            }
+
+            if (_Count2 == 1) {
+                return _Finding::_Find_last_impl<_FindTraits, _Finding::_Predicate::_Equal>(
+                    _First1, _Last1, *static_cast<const _Ty*>(_First2));
+            }
+
+            const size_t _Size_bytes_1 = _Byte_length(_First1, _Last1);
+            const size_t _Size_bytes_2 = _Count2 * sizeof(_Ty);
+
+            if (_Size_bytes_1 < _Size_bytes_2) {
+                return _Last1;
+            }
+
+            if (_Size_bytes_1 >= 16) {
+                return _Find_end_cmpeq<_Traits, _Ty>(_First1, _Last1, _First2, _Size_bytes_2);
+            }
+
+            return _Find_end_scalar_tail<_Ty>(_First1, _Last1, _First2, _Count2);
+        }
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         template <class _FindTraits, class _Traits_avx, class _Traits_sse, class _Ty>
         const void* __stdcall _Search_impl(
             const void* _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
@@ -8223,7 +8589,6 @@ namespace {
                 return _Last1;
             }
 
-#ifndef _M_ARM64EC
             // The AVX2 path for 8-bit elements is not necessarily more efficient than the SSE4.2 cmpestri path
             if constexpr (sizeof(_Ty) != 1) {
                 if (_Use_avx2() && _Size_bytes_1 >= 32) {
@@ -8336,35 +8701,8 @@ namespace {
                     }
                 }
             }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
-            const size_t _Max_pos = _Size_bytes_1 - _Size_bytes_2 + sizeof(_Ty);
-
-            auto _Ptr1         = static_cast<const _Ty*>(_First1);
-            const auto _Ptr2   = static_cast<const _Ty*>(_First2);
-            const void* _Stop1 = _Ptr1;
-            _Advance_bytes(_Stop1, _Max_pos);
-
-            for (; _Ptr1 != _Stop1; ++_Ptr1) {
-                if (*_Ptr1 != *_Ptr2) {
-                    continue;
-                }
-
-                bool _Equal = true;
-
-                for (size_t _Idx = 1; _Idx != _Count2; ++_Idx) {
-                    if (_Ptr1[_Idx] != _Ptr2[_Idx]) {
-                        _Equal = false;
-                        break;
-                    }
-                }
-
-                if (_Equal) {
-                    return _Ptr1;
-                }
-            }
-
-            return _Last1;
+            return _Search_scalar_tail<_Ty>(_First1, _Last1, _Size_bytes_1, _First2, _Count2, _Size_bytes_2);
         }
 
         template <class _FindTraits, class _Traits_avx, class _Traits_sse, class _Ty>
@@ -8386,7 +8724,6 @@ namespace {
                 return _Last1;
             }
 
-#ifndef _M_ARM64EC
             if (_Use_avx2() && _Size_bytes_1 >= 32) {
                 return _Find_end_cmpeq<_Traits_avx, _Ty>(_First1, _Last1, _First2, _Size_bytes_2);
             }
@@ -8596,33 +8933,10 @@ namespace {
                     }
                 }
             }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-            auto _Ptr1       = static_cast<const _Ty*>(_Last1) - _Count2;
-            const auto _Ptr2 = static_cast<const _Ty*>(_First2);
 
-            for (;;) {
-                if (*_Ptr1 == *_Ptr2) {
-                    bool _Equal = true;
-
-                    for (size_t _Idx = 1; _Idx != _Count2; ++_Idx) {
-                        if (_Ptr1[_Idx] != _Ptr2[_Idx]) {
-                            _Equal = false;
-                            break;
-                        }
-                    }
-
-                    if (_Equal) {
-                        return _Ptr1;
-                    }
-                }
-
-                if (_Ptr1 == _First1) {
-                    return _Last1;
-                }
-
-                --_Ptr1;
-            }
+            return _Find_end_scalar_tail<_Ty>(_First1, _Last1, _First2, _Count2);
         }
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
     } // namespace _Find_seq
 } // unnamed namespace
 
@@ -8630,54 +8944,93 @@ extern "C" {
 
 const void* __stdcall __std_search_1(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    return _Find_seq::_Search_impl<_Finding::_Find_traits_1, _Find_seq::_Find_seq_traits_neon_1, uint8_t>(
+        _First1, _Last1, _First2, _Count2);
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Find_seq::_Search_impl<_Finding::_Find_traits_1, void, void, uint8_t>(_First1, _Last1, _First2, _Count2);
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 const void* __stdcall __std_search_2(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    return _Find_seq::_Search_impl<_Finding::_Find_traits_2, _Find_seq::_Find_seq_traits_neon_2, uint16_t>(
+        _First1, _Last1, _First2, _Count2);
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Find_seq::_Search_impl<_Finding::_Find_traits_2, _Find_seq::_Find_seq_traits_avx_2, void, uint16_t>(
         _First1, _Last1, _First2, _Count2);
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 const void* __stdcall __std_search_4(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    return _Find_seq::_Search_impl<_Finding::_Find_traits_4, _Find_seq::_Find_seq_traits_neon_4, uint32_t>(
+        _First1, _Last1, _First2, _Count2);
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Find_seq::_Search_impl<_Finding::_Find_traits_4, _Find_seq::_Find_seq_traits_avx_4,
         _Find_seq::_Find_seq_traits_sse_4, uint32_t>(_First1, _Last1, _First2, _Count2);
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 const void* __stdcall __std_search_8(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    return _Find_seq::_Search_impl<_Finding::_Find_traits_8, _Find_seq::_Find_seq_traits_neon_8, uint64_t>(
+        _First1, _Last1, _First2, _Count2);
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Find_seq::_Search_impl<_Finding::_Find_traits_8, _Find_seq::_Find_seq_traits_avx_8,
         _Find_seq::_Find_seq_traits_sse_8, uint64_t>(_First1, _Last1, _First2, _Count2);
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 
 const void* __stdcall __std_find_end_1(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_1, _Find_seq::_Find_seq_traits_neon_1, uint8_t>(
+        _First1, _Last1, _First2, _Count2);
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Find_seq::_Find_end_impl<_Finding::_Find_traits_1, _Find_seq::_Find_seq_traits_avx_1, void, uint8_t>(
         _First1, _Last1, _First2, _Count2);
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 const void* __stdcall __std_find_end_2(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_2, _Find_seq::_Find_seq_traits_neon_2, uint16_t>(
+        _First1, _Last1, _First2, _Count2);
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Find_seq::_Find_end_impl<_Finding::_Find_traits_2, _Find_seq::_Find_seq_traits_avx_2, void, uint16_t>(
         _First1, _Last1, _First2, _Count2);
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 const void* __stdcall __std_find_end_4(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_4, _Find_seq::_Find_seq_traits_neon_4, uint32_t>(
+        _First1, _Last1, _First2, _Count2);
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Find_seq::_Find_end_impl<_Finding::_Find_traits_4, _Find_seq::_Find_seq_traits_avx_4,
         _Find_seq::_Find_seq_traits_sse_4, uint32_t>(_First1, _Last1, _First2, _Count2);
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 const void* __stdcall __std_find_end_8(
     const void* const _First1, const void* const _Last1, const void* const _First2, const size_t _Count2) noexcept {
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    return _Find_seq::_Find_end_impl<_Finding::_Find_traits_8, _Find_seq::_Find_seq_traits_neon_8, uint64_t>(
+        _First1, _Last1, _First2, _Count2);
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Find_seq::_Find_end_impl<_Finding::_Find_traits_8, _Find_seq::_Find_seq_traits_avx_8,
         _Find_seq::_Find_seq_traits_sse_8, uint64_t>(_First1, _Last1, _First2, _Count2);
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 } // extern "C"
-#endif // ^^^ !defined(_M_ARM64) ^^^
 
 namespace {
     namespace _Mismatching {
