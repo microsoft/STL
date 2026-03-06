@@ -20,11 +20,13 @@ _STL_DISABLE_CLANG_WARNINGS
 //     (this will be auto-defined on unsupported platforms)
 //     + _DISABLE_STRING_ANNOTATION: same, but for only `basic_string`
 //     + _DISABLE_VECTOR_ANNOTATION: same, but for only `vector`
+//     + _DISABLE_OPTIONAL_ANNOTATION: same, but for only `optional`
 //   - _ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORMS: Don't auto-disable ASan annotations
 //   - _ANNOTATE_STL: Even when ASan annotations are disabled, insert the code for annotating into the STL anyways;
 //     this is useful when building static libraries which may be linked against both ASan and non-ASan binaries.
 //     + _ANNOTATE_STRING: same, but only for `basic_string`
 //     + _ANNOTATE_VECTOR: same, but only for `vector`
+//     + _ANNOTATE_OPTIONAL: same, but only for `optional`
 
 #if !defined(_DISABLE_STL_ANNOTATION) && !defined(_ENABLE_STL_ANNOTATION_ON_UNSUPPORTED_PLATFORMS)
 
@@ -46,6 +48,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifndef _DISABLE_VECTOR_ANNOTATION
 #define _DISABLE_VECTOR_ANNOTATION
 #endif // ^^^ !defined(_DISABLE_VECTOR_ANNOTATION) ^^^
+#ifndef _DISABLE_OPTIONAL_ANNOTATION
+#define _DISABLE_OPTIONAL_ANNOTATION
+#endif // ^^^ !defined(_DISABLE_OPTIONAL_ANNOTATION) ^^^
 
 #endif // ^^^ defined(_DISABLE_STL_ANNOTATION) ^^^
 
@@ -59,6 +64,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _ANNOTATE_VECTOR
 #endif // ^^^ !defined(_ANNOTATE_VECTOR) ^^^
 
+#ifndef _ANNOTATE_OPTIONAL
+#define _ANNOTATE_OPTIONAL
+#endif // ^^^ !defined(_ANNOTATE_OPTIONAL) ^^^
+
 #endif // ^^^ defined(_ANNOTATE_STL) ^^^
 
 #ifdef __SANITIZE_ADDRESS__
@@ -67,6 +76,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _INSERT_STRING_ANNOTATION
 #define _ACTIVATE_VECTOR_ANNOTATION
 #define _INSERT_VECTOR_ANNOTATION
+#define _ACTIVATE_OPTIONAL_ANNOTATION
+#define _INSERT_OPTIONAL_ANNOTATION
 
 #elif defined(__clang__) // ^^^ defined(__SANITIZE_ADDRESS__) / defined(__clang__) vvv
 
@@ -75,6 +86,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _INSERT_STRING_ANNOTATION
 #define _ACTIVATE_VECTOR_ANNOTATION
 #define _INSERT_VECTOR_ANNOTATION
+#define _ACTIVATE_OPTIONAL_ANNOTATION
+#define _INSERT_OPTIONAL_ANNOTATION
 #pragma comment(linker, "/INFERASANLIBS")
 #endif // __has_feature(address_sanitizer)
 
@@ -89,6 +102,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef _ACTIVATE_VECTOR_ANNOTATION
 #undef _INSERT_VECTOR_ANNOTATION
 #endif // ^^^ defined(_DISABLE_VECTOR_ANNOTATION) ^^^
+#ifdef _DISABLE_OPTIONAL_ANNOTATION
+#undef _ACTIVATE_OPTIONAL_ANNOTATION
+#undef _INSERT_OPTIONAL_ANNOTATION
+#endif // ^^^ defined(_DISABLE_OPTIONAL_ANNOTATION) ^^^
 
 #ifdef _ANNOTATE_STRING
 #define _INSERT_STRING_ANNOTATION
@@ -96,6 +113,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifdef _ANNOTATE_VECTOR
 #define _INSERT_VECTOR_ANNOTATION
 #endif // ^^^ defined(_ANNOTATE_VECTOR) ^^^
+#ifdef _ANNOTATE_OPTIONAL
+#define _INSERT_OPTIONAL_ANNOTATION
+#endif // ^^^ defined(_ANNOTATE_OPTIONAL) ^^^
 
 
 #ifndef _INSERT_STRING_ANNOTATION
@@ -104,6 +124,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifndef _INSERT_VECTOR_ANNOTATION
 #pragma detect_mismatch("annotate_vector", "0")
 #endif // ^^^ !defined(_INSERT_VECTOR_ANNOTATION) ^^^
+#ifndef _INSERT_OPTIONAL_ANNOTATION
+#pragma detect_mismatch("annotate_optional", "0")
+#endif // ^^^ !defined(_INSERT_OPTIONAL_ANNOTATION) ^^^
 
 #ifdef _ACTIVATE_STRING_ANNOTATION
 #pragma comment(lib, "stl_asan")
@@ -113,9 +136,14 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma comment(lib, "stl_asan")
 #pragma detect_mismatch("annotate_vector", "1")
 #endif // ^^^ defined(_ACTIVATE_VECTOR_ANNOTATION) ^^^
+#ifdef _ACTIVATE_OPTIONAL_ANNOTATION
+#pragma comment(lib, "stl_asan")
+#pragma detect_mismatch("annotate_optional", "1")
+#endif // ^^^ defined(_ACTIVATE_OPTIONAL_ANNOTATION) ^^^
 
 #undef _ACTIVATE_STRING_ANNOTATION
 #undef _ACTIVATE_VECTOR_ANNOTATION
+#undef _ACTIVATE_OPTIONAL_ANNOTATION
 
 extern "C" {
 #ifdef _INSERT_VECTOR_ANNOTATION
@@ -125,16 +153,27 @@ extern const bool _Asan_vector_should_annotate;
 #ifdef _INSERT_STRING_ANNOTATION
 extern const bool _Asan_string_should_annotate;
 #endif
+
+#ifdef _INSERT_OPTIONAL_ANNOTATION
+extern const bool _Asan_optional_should_annotate;
+#endif
 } // extern "C"
 
-#if defined(_INSERT_VECTOR_ANNOTATION) || defined(_INSERT_STRING_ANNOTATION)
+#if defined(_INSERT_VECTOR_ANNOTATION) || defined(_INSERT_STRING_ANNOTATION) || defined(_INSERT_OPTIONAL_ANNOTATION)
 extern "C" {
+void __cdecl __asan_poison_memory_region(void const volatile* _Addr, size_t _Size);
+void __cdecl __asan_unpoison_memory_region(void const volatile* _Addr, size_t _Size);
+
 // This must match ASan's primary declaration, which isn't marked `noexcept`.
 void __cdecl __sanitizer_annotate_contiguous_container(
     const void* _First, const void* _End, const void* _Old_last, const void* _New_last);
 } // extern "C"
 
 #ifdef _M_ARM64EC
+#pragma comment(linker, "/alternatename:#__asan_poison_memory_region=#__asan_poison_memory_region_default")
+#pragma comment(linker, "/alternatename:__asan_poison_memory_region=__asan_poison_memory_region_default")
+#pragma comment(linker, "/alternatename:#__asan_unpoison_memory_region=#__asan_unpoison_memory_region_default")
+#pragma comment(linker, "/alternatename:__asan_unpoison_memory_region=__asan_unpoison_memory_region_default")
 #pragma comment(linker, \
     "/alternatename:#__sanitizer_annotate_contiguous_container=#__sanitizer_annotate_contiguous_container_default")
 #pragma comment(linker, \
@@ -143,7 +182,13 @@ void __cdecl __sanitizer_annotate_contiguous_container(
 #pragma comment(linker, "/alternatename:_Asan_vector_should_annotate=_Asan_vector_should_annotate_default")
 #pragma comment(linker, "/alternatename:#_Asan_string_should_annotate=#_Asan_string_should_annotate_default")
 #pragma comment(linker, "/alternatename:_Asan_string_should_annotate=_Asan_string_should_annotate_default")
+#pragma comment(linker, "/alternatename:#_Asan_optional_should_annotate=#_Asan_optional_should_annotate_default")
+#pragma comment(linker, "/alternatename:_Asan_optional_should_annotate=_Asan_optional_should_annotate_default")
 #elif defined(_M_HYBRID)
+#pragma comment(linker, "/alternatename:#__asan_poison_memory_region=#__asan_poison_memory_region_default")
+#pragma comment(linker, "/alternatename:___asan_poison_memory_region=___asan_poison_memory_region_default")
+#pragma comment(linker, "/alternatename:#__asan_unpoison_memory_region=#__asan_unpoison_memory_region_default")
+#pragma comment(linker, "/alternatename:___asan_unpoison_memory_region=___asan_unpoison_memory_region_default")
 #pragma comment(linker, \
     "/alternatename:#__sanitizer_annotate_contiguous_container=#__sanitizer_annotate_contiguous_container_default")
 #pragma comment(linker, \
@@ -152,16 +197,24 @@ void __cdecl __sanitizer_annotate_contiguous_container(
 #pragma comment(linker, "/alternatename:__Asan_vector_should_annotate=__Asan_vector_should_annotate_default")
 #pragma comment(linker, "/alternatename:#_Asan_string_should_annotate=#_Asan_string_should_annotate_default")
 #pragma comment(linker, "/alternatename:__Asan_string_should_annotate=__Asan_string_should_annotate_default")
+#pragma comment(linker, "/alternatename:#_Asan_optional_should_annotate=#_Asan_optional_should_annotate_default")
+#pragma comment(linker, "/alternatename:__Asan_optional_should_annotate=__Asan_optional_should_annotate_default")
 #elif defined(_M_IX86)
+#pragma comment(linker, "/alternatename:___asan_poison_memory_region=___asan_poison_memory_region_default")
+#pragma comment(linker, "/alternatename:___asan_unpoison_memory_region=___asan_unpoison_memory_region_default")
 #pragma comment(linker, \
     "/alternatename:___sanitizer_annotate_contiguous_container=___sanitizer_annotate_contiguous_container_default")
 #pragma comment(linker, "/alternatename:__Asan_vector_should_annotate=__Asan_vector_should_annotate_default")
 #pragma comment(linker, "/alternatename:__Asan_string_should_annotate=__Asan_string_should_annotate_default")
+#pragma comment(linker, "/alternatename:__Asan_optional_should_annotate=__Asan_optional_should_annotate_default")
 #elif defined(_M_X64) || defined(_M_ARM64)
+#pragma comment(linker, "/alternatename:__asan_poison_memory_region=__asan_poison_memory_region_default")
+#pragma comment(linker, "/alternatename:__asan_unpoison_memory_region=__asan_unpoison_memory_region_default")
 #pragma comment(linker, \
     "/alternatename:__sanitizer_annotate_contiguous_container=__sanitizer_annotate_contiguous_container_default")
 #pragma comment(linker, "/alternatename:_Asan_vector_should_annotate=_Asan_vector_should_annotate_default")
 #pragma comment(linker, "/alternatename:_Asan_string_should_annotate=_Asan_string_should_annotate_default")
+#pragma comment(linker, "/alternatename:_Asan_optional_should_annotate=_Asan_optional_should_annotate_default")
 #else // ^^^ known architecture / unknown architecture vvv
 #error Unknown architecture
 #endif // ^^^ unknown architecture ^^^
