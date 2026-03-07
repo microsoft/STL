@@ -1518,6 +1518,30 @@ CONSTEXPR20 bool test_copy_part_2() {
     return true;
 }
 
+CONSTEXPR20 bool test_is_permutation() {
+    const vector<bool> source = {
+        false, true, false, false, false, true, false, true, true, false, false, true, false, false, true, true};
+
+    // Actually a permutation
+    const vector<bool> perm = {
+        true, false, true, false, false, true, false, false, true, false, true, false, true, false, false, true};
+    assert(is_permutation(source.begin(), source.end(), perm.begin()));
+    assert(is_permutation(source.begin(), source.end(), perm.begin(), perm.end()));
+
+    // One extra true value
+    const vector<bool> extra_true = {
+        true, false, true, false, false, true, false, false, true, true, true, false, true, false, false, true};
+    assert(!is_permutation(source.begin(), source.end(), extra_true.begin()));
+    assert(!is_permutation(source.begin(), source.end(), extra_true.begin(), extra_true.end()));
+
+    // One element longer
+    const vector<bool> longer = {
+        true, false, true, false, false, true, false, false, true, false, true, false, true, false, false, true, false};
+    assert(!is_permutation(source.begin(), source.end(), longer.begin(), longer.end()));
+
+    return true;
+}
+
 void initialize_randomness(mt19937_64& gen) {
     constexpr size_t n = mt19937_64::state_size;
     constexpr size_t w = mt19937_64::word_size;
@@ -1710,6 +1734,7 @@ static_assert(test_meow_of());
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2574489
 static_assert(test_copy_part_1());
 static_assert(test_copy_part_2());
+static_assert(test_is_permutation());
 #endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX20
 
@@ -1721,6 +1746,7 @@ int main() {
     test_meow_of();
     test_copy_part_1();
     test_copy_part_2();
+    test_is_permutation();
 
     test_huge_vector_bool();
 
