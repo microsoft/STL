@@ -1252,6 +1252,21 @@ namespace ranges {
 } // namespace ranges
 #endif // _HAS_CXX20
 
+template <class _FwdIt1, class _FwdIt2>
+_NODISCARD _CONSTEXPR20 bool _Is_permutation_of_bool(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
+    if constexpr (!_Is_vb_iterator<_FwdIt1> && !_Is_vb_iterator<_FwdIt2>) {
+        auto _Pair = _STD mismatch(_First1, _Last1, _First2);
+        _First1    = _STD move(_Pair.first);
+        _First2    = _STD move(_Pair.second);
+
+        if (_First1 == _Last1) {
+            return true;
+        }
+    }
+
+    return _STD count(_First1, _Last1, true) == _STD count(_First2, _Last2, true);
+}
+
 _EXPORT_STD template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) {
     // test if [_First1, _Last1) == permuted [_First2, ...)
@@ -1261,23 +1276,15 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _Fw
     auto _UFirst2      = _STD _Get_unwrapped_n(_First2, _STD _Idl_distance<_FwdIt1>(_UFirst1, _ULast1));
 
     if constexpr (is_same_v<_Iter_value_t<decltype(_UFirst1)>, bool>
-                  && is_same_v<_Iter_value_t<decltype(_UFirst2)>, bool>
+                  && is_same_v<_Iter_value_t<decltype(_UFirst2)>, bool> //
+                  && _Is_ranges_random_iter_v<decltype(_UFirst1)> //
+                  && _Is_ranges_random_iter_v<decltype(_UFirst2)>
                   && _Is_any_of_v<_Pr,
 #if _HAS_CXX20
                       _RANGES equal_to,
 #endif
                       equal_to<>, equal_to<bool>>) {
-        if constexpr (!_Is_vb_iterator<decltype(_UFirst1)> && !_Is_vb_iterator<decltype(_UFirst2)>) {
-            auto _Pair = _STD mismatch(_UFirst1, _ULast1, _UFirst2);
-            _UFirst1   = _STD move(_Pair.first);
-            _UFirst2   = _STD move(_Pair.second);
-
-            if (_UFirst1 == _ULast1) {
-                return true;
-            }
-        }
-
-        return _STD count(_UFirst1, _ULast1, true) == _STD count(_UFirst2, _UFirst2 + (_ULast1 - _UFirst1), true);
+        return _STD _Is_permutation_of_bool(_UFirst1, _ULast1, _UFirst2, _UFirst2 + (_ULast1 - _UFirst1));
     }
 
     for (;; ++_UFirst1, (void) ++_UFirst2) { // trim matching prefix
@@ -1324,17 +1331,7 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(
                           _RANGES equal_to,
 #endif
                           equal_to<>, equal_to<bool>>) {
-            if constexpr (!_Is_vb_iterator<decltype(_UFirst1)> && !_Is_vb_iterator<decltype(_UFirst2)>) {
-                auto _Pair = _STD mismatch(_UFirst1, _ULast1, _UFirst2);
-                _UFirst1   = _STD move(_Pair.first);
-                _UFirst2   = _STD move(_Pair.second);
-
-                if (_UFirst1 == _ULast1) {
-                    return true;
-                }
-            }
-
-            return _STD count(_UFirst1, _ULast1, true) == _STD count(_UFirst2, _ULast2, true);
+            return _STD _Is_permutation_of_bool(_UFirst1, _ULast1, _UFirst2, _ULast2);
         }
 
         for (; _UFirst1 != _ULast1; ++_UFirst1, (void) ++_UFirst2) { // trim matching prefix
