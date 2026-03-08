@@ -53,9 +53,7 @@ void perm_vbool_check(benchmark::State& state) {
     vector<bool> v2;
     if constexpr (Eq == equality::eq) {
         v2 = v1;
-    }
-    else
-    {
+    } else {
         v2 = random_vector<bool>(size, 1u);
     }
 
