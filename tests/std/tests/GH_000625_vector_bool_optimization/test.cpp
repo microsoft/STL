@@ -1519,25 +1519,44 @@ CONSTEXPR20 bool test_copy_part_2() {
 }
 
 CONSTEXPR20 bool test_is_permutation() {
-    const vector<bool> source = {
+    constexpr bool perm_source_raw[] = {
         false, true, false, false, false, true, false, true, true, false, false, true, false, false, true, true};
+    const vector<bool> perm_source(begin(perm_source_raw), end(perm_source_raw));
 
     // Actually a permutation
-    const vector<bool> perm = {
+    constexpr bool perm_raw[] = {
         true, false, true, false, false, true, false, false, true, false, true, false, true, false, false, true};
-    assert(is_permutation(source.begin(), source.end(), perm.begin()));
-    assert(is_permutation(source.begin(), source.end(), perm.begin(), perm.end()));
+    const vector<bool> perm(begin(perm_raw), end(perm_raw));
+    assert(is_permutation(perm_source.begin(), perm_source.end(), perm.begin()));
+    assert(is_permutation(perm_source.begin(), perm_source.end(), perm.begin(), perm.end()));
+    assert(is_permutation(begin(perm_source_raw), end(perm_source_raw), perm.begin()));
+    assert(is_permutation(begin(perm_source_raw), end(perm_source_raw), perm.begin(), perm.end()));
+    assert(is_permutation(perm_source.begin(), perm_source.end(), begin(perm_raw)));
+    assert(is_permutation(perm_source.begin(), perm_source.end(), begin(perm_raw), end(perm_raw)));
+    assert(is_permutation(begin(perm_source_raw), end(perm_source_raw), begin(perm_raw)));
+    assert(is_permutation(begin(perm_source_raw), end(perm_source_raw), begin(perm_raw), end(perm_raw)));
 
     // One extra true value
-    const vector<bool> extra_true = {
+    constexpr bool extra_true_raw[] = {
         true, false, true, false, false, true, false, false, true, true, true, false, true, false, false, true};
-    assert(!is_permutation(source.begin(), source.end(), extra_true.begin()));
-    assert(!is_permutation(source.begin(), source.end(), extra_true.begin(), extra_true.end()));
+    const vector<bool> extra_true(begin(extra_true_raw), end(extra_true_raw));
+    assert(!is_permutation(perm_source.begin(), perm_source.end(), extra_true.begin()));
+    assert(!is_permutation(perm_source.begin(), perm_source.end(), extra_true.begin(), extra_true.end()));
+    assert(!is_permutation(begin(perm_source_raw), end(perm_source_raw), extra_true.begin()));
+    assert(!is_permutation(begin(perm_source_raw), end(perm_source_raw), extra_true.begin(), extra_true.end()));
+    assert(!is_permutation(perm_source.begin(), perm_source.end(), begin(extra_true_raw)));
+    assert(!is_permutation(perm_source.begin(), perm_source.end(), begin(extra_true_raw), end(extra_true_raw)));
+    assert(!is_permutation(begin(perm_source_raw), end(perm_source_raw), begin(extra_true_raw)));
+    assert(!is_permutation(begin(perm_source_raw), end(perm_source_raw), begin(extra_true_raw), end(extra_true_raw)));
 
     // One element longer
-    const vector<bool> longer = {
+    constexpr bool longer_raw[] = {
         true, false, true, false, false, true, false, false, true, false, true, false, true, false, false, true, false};
-    assert(!is_permutation(source.begin(), source.end(), longer.begin(), longer.end()));
+    const vector<bool> longer(begin(longer_raw), end(longer_raw));
+    assert(!is_permutation(perm_source.begin(), perm_source.end(), longer.begin(), longer.end()));
+    assert(!is_permutation(begin(perm_source_raw), end(perm_source_raw), longer.begin(), longer.end()));
+    assert(!is_permutation(perm_source.begin(), perm_source.end(), begin(longer_raw), end(longer_raw)));
+    assert(!is_permutation(begin(perm_source_raw), end(perm_source_raw), begin(longer_raw), end(longer_raw)));
 
     return true;
 }
