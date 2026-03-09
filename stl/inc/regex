@@ -1955,6 +1955,7 @@ public:
         if (_Data._Last == _Data._End) {
             _Realloc_buf();
         }
+
         if (_Data._Allocated) {
             allocator_traits<_Alloc>::construct(
                 _Mypair._Get_first(), _STD _Unfancy(_Data._Last), _STD forward<_Ty>(_Val));
