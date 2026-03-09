@@ -2003,7 +2003,7 @@ private:
 
         auto _Increase = (_STD max) (_Old_capacity / 2, _Al_size_type{1});
 
-        if (_Max_capacity < _Old_capacity || _Max_capacity - _Increase < _Old_capacity) {
+        if (_Max_capacity - _Increase < _Old_capacity) {
             return _Max_capacity;
         } else {
             return _Old_capacity + _Increase;
