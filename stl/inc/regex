@@ -1666,15 +1666,20 @@ public:
     _Rx_fixed_size_buffer& operator=(const _Rx_fixed_size_buffer&) = delete;
     _Rx_fixed_size_buffer& operator=(_Rx_fixed_size_buffer&&)      = delete;
 
-    _NODISCARD size_t _Initialize(unsigned char* _Stack_buf, size_t _Stack_size, size_t _Size) {
+    void _Initialize(void*& _Stack_buf, size_t& _Stack_size, const size_t _Size) {
         if (_Size == 0U) {
-            return 0U;
-        } else if (_Stack_size / sizeof(_Ty) >= _Size) {
+            return; // nothing to do
+        }
+
+        const auto _Bytes = _Size * sizeof(_Ty);
+
+        if (_STD align(alignof(_Ty), _Bytes, _Stack_buf, _Stack_size)) {
             _Use_external_buf(_Stack_buf, _Size);
-            return _Size * sizeof(_Ty);
+
+            _Stack_buf = static_cast<unsigned char*>(_Stack_buf) + _Bytes;
+            _Stack_size -= _Bytes;
         } else {
             _Allocate_buf(_Size);
-            return 0U;
         }
     }
 
@@ -1729,7 +1734,7 @@ public:
     }
 
 private:
-    void _Use_external_buf(unsigned char* _Buf, size_t _Ty_size) {
+    void _Use_external_buf(void* _Buf, size_t _Ty_size) {
         auto _Ty_first = _STD _Refancy<_Al_pointer>(reinterpret_cast<_Ty*>(_Buf));
         auto _Ty_last  = _Ty_first + _Ty_size;
         auto& _Data    = _Mypair._Myval2;
@@ -1771,8 +1776,9 @@ private:
 public:
     explicit _Rx_fixed_size_bitset(const _Alloc& _Al) : _Buffer(_Al) {}
 
-    _NODISCARD size_t _Initialize(unsigned char* _Stack_buf, size_t _Stack_size, size_t _Size) {
-        return _Buffer._Initialize(_Stack_buf, _Stack_size, _Size / _Bits + (_Size % _Bits != 0U));
+    void _Initialize(void*& _Stack_buf, size_t& _Stack_size, const size_t _Bit_size) {
+        const auto _Word_size = _Bit_size / _Bits + (_Bit_size % _Bits != 0U);
+        _Buffer._Initialize(_Stack_buf, _Stack_size, _Word_size);
     }
 
     _NODISCARD bool _Get(const size_t _Pos) const {
@@ -1912,15 +1918,19 @@ public:
     _Rx_small_vector& operator=(const _Rx_small_vector&) = delete;
     _Rx_small_vector& operator=(_Rx_small_vector&&)      = delete;
 
-    void _Initialize(unsigned char* const _Stack_buf, const size_t _Stack_buf_size) {
-        const size_t _Count = _Stack_buf_size / sizeof(_Ty);
-        if (_Count > 0U) {
+    void _Initialize_and_consume_remaining_buffer(void*& _Stack_buf, size_t& _Stack_buf_size) {
+        if (_STD align(alignof(_Ty), sizeof(_Ty), _Stack_buf, _Stack_buf_size)) {
+            const size_t _Count = _Stack_buf_size / sizeof(_Ty); // must calculate after calling _STD align()
+
             auto& _Data        = _Mypair._Myval2;
             const auto _Ty_buf = reinterpret_cast<_Ty*>(_Stack_buf);
             _Data._First       = _STD _Refancy(_Ty_buf);
             _Data._Last        = _Data._First;
             _Data._End         = _STD _Refancy(_Ty_buf + _Count);
         }
+
+        _Stack_buf      = nullptr;
+        _Stack_buf_size = 0;
     }
 
     _CONSTEXPR20 ~_Rx_small_vector() {
@@ -2079,62 +2089,26 @@ public:
         // before engaging the expensive NFA interpreter loop.
         _Start = _Re->_Next->_Next;
 
-        unsigned char* _Buf = _Stack_storage;
-        size_t _Buf_size    = _Stack_storage_size;
-        size_t _Offset      = _Loop_vals._Initialize(_Buf, _Buf_size, _Re->_Loops);
+        {
+            void* _Buf       = _Stack_storage;
+            size_t _Buf_size = _Stack_storage_size;
 
-        constexpr size_t _Loop_vals_size      = sizeof(_Loop_vals_type);
-        constexpr size_t _Capture_range_align = alignof(_Rx_capture_range_t<_It>);
-        constexpr size_t _Capture_range_size  = sizeof(_Rx_capture_range_t<_It>);
-        constexpr size_t _Bitset_int_align    = alignof(_Rx_bitset_int_type);
-        constexpr size_t _Bitset_int_size     = sizeof(_Rx_bitset_int_type);
-        constexpr size_t _State_frame_align   = alignof(_State_frame_type);
+            _Loop_vals._Initialize(_Buf, _Buf_size, _Re->_Loops);
 
-        if (_Ncap > 1U) {
-            if constexpr (_Loop_vals_size % _Capture_range_align != 0U) {
-                _Offset = (_Offset + (_Capture_range_align - 1U)) / _Capture_range_align * _Capture_range_align;
+            if (_Ncap > 1U) {
+                _Tgt_state._Grps._Initialize(_Buf, _Buf_size, _Ncap - 1U);
+                if (_Longest) {
+                    _Res._Grps._Initialize(_Buf, _Buf_size, _Ncap - 1U);
+                }
 
-                if constexpr (_Stack_storage_size % _Capture_range_align != 0U) {
-                    if (_Offset > _Buf_size) {
-                        _Buf      = nullptr;
-                        _Offset   = 0U;
-                        _Buf_size = 0U;
-                    }
+                _Tgt_state._Grp_valid._Initialize(_Buf, _Buf_size, _Ncap - 1U);
+                if (_Longest) {
+                    _Res._Grp_valid._Initialize(_Buf, _Buf_size, _Ncap - 1U);
                 }
             }
 
-            _Offset += _Tgt_state._Grps._Initialize(_Buf + _Offset, _Buf_size - _Offset, _Ncap - 1U);
-            if (_Longest) {
-                _Offset += _Res._Grps._Initialize(_Buf + _Offset, _Buf_size - _Offset, _Ncap - 1U);
-            }
-
-            if constexpr (_Capture_range_align % _Bitset_int_align != 0U
-                          && ((_Loop_vals_size % _Bitset_int_align) + (_Capture_range_size % _Bitset_int_align)
-                              != 0U)) {
-                _Offset = (_Offset + (_Bitset_int_align - 1U)) / _Bitset_int_align * _Bitset_int_align;
-            }
-
-            _Offset += _Tgt_state._Grp_valid._Initialize(_Buf + _Offset, _Buf_size - _Offset, _Ncap - 1U);
-            if (_Longest) {
-                _Offset += _Res._Grp_valid._Initialize(_Buf + _Offset, _Buf_size - _Offset, _Ncap - 1U);
-            }
+            _Frames._Initialize_and_consume_remaining_buffer(_Buf, _Buf_size);
         }
-
-        if constexpr (_Loop_vals_size % _State_frame_align != 0U
-                      || (_Bitset_int_align % _State_frame_align != 0U
-                          && ((_Capture_range_size % _State_frame_align) + (_Bitset_int_size % _State_frame_align)
-                              != 0U))) {
-            _Offset = (_Offset + (_State_frame_align - 1U)) / _State_frame_align * _State_frame_align;
-
-            if constexpr (_Stack_storage_size % _State_frame_align != 0U) {
-                if (_Offset > _Buf_size) {
-                    _Buf      = nullptr;
-                    _Offset   = 0U;
-                    _Buf_size = 0U;
-                }
-            }
-        }
-        _Frames._Initialize(_Buf + _Offset, _Buf_size - _Offset);
 
 // sanitize multiline mode setting
 #if _REGEX_LEGACY_MULTILINE_MODE
