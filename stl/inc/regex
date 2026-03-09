@@ -1912,8 +1912,8 @@ public:
     _Rx_small_vector& operator=(const _Rx_small_vector&) = delete;
     _Rx_small_vector& operator=(_Rx_small_vector&&)      = delete;
 
-    void _Initialize(unsigned char* _Stack_buf, size_t _Stack_buf_size) {
-        size_t _Count = _Stack_buf_size / sizeof(_Ty);
+    void _Initialize(unsigned char* const _Stack_buf, const size_t _Stack_buf_size) {
+        const size_t _Count = _Stack_buf_size / sizeof(_Ty);
         if (_Count > 0U) {
             auto& _Data        = _Mypair._Myval2;
             const auto _Ty_buf = reinterpret_cast<_Ty*>(_Stack_buf);
@@ -1999,9 +1999,9 @@ private:
     _NODISCARD _Al_size_type _Calculate_new_capacity() {
         auto& _Data              = _Mypair._Myval2;
         const auto _Old_capacity = static_cast<_Al_size_type>(_Data._End - _Data._First);
-        auto _Max_capacity       = static_cast<_Al_size_type>(_Max_size());
+        const auto _Max_capacity = static_cast<_Al_size_type>(_Max_size());
 
-        auto _Increase = (_STD max) (_Old_capacity / 2, _Al_size_type{1});
+        const auto _Increase = (_STD max) (_Old_capacity / 2, _Al_size_type{1});
 
         if (_Max_capacity - _Increase < _Old_capacity) {
             return _Max_capacity;
@@ -2022,13 +2022,13 @@ private:
             _Xregex_error(regex_constants::error_stack);
         }
 
-        auto _New_first = _STD _Allocate_at_least_helper(_Al, _New_capacity);
+        const auto _New_first = _STD _Allocate_at_least_helper(_Al, _New_capacity);
         _Allocation_guard<_Alloc> _Guard{_Al, _New_first, _New_capacity};
-        auto _New_last = _STD _Uninitialized_move(_Old_first, _Old_last, _New_first, _Al);
-        _Data._First   = _New_first;
-        _Data._Last    = _New_last;
-        _Data._End     = _New_first + static_cast<_Iter_diff_t<_Al_pointer>>(_New_capacity);
-        _Guard._Ptr    = nullptr;
+        const auto _New_last = _STD _Uninitialized_move(_Old_first, _Old_last, _New_first, _Al);
+        _Data._First         = _New_first;
+        _Data._Last          = _New_last;
+        _Data._End           = _New_first + static_cast<_Iter_diff_t<_Al_pointer>>(_New_capacity);
+        _Guard._Ptr          = nullptr;
 
         if (_Data._Allocated) {
             _STD _Destroy_range(_Old_first, _Old_last, _Al);
