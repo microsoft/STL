@@ -1917,8 +1917,9 @@ public:
         if (_Count > 0U) {
             auto& _Data        = _Mypair._Myval2;
             const auto _Ty_buf = reinterpret_cast<_Ty*>(_Stack_buf);
-            _Data._First = _Data._Last = _STD _Refancy(_Ty_buf);
-            _Data._End                 = _STD _Refancy(_Ty_buf + _Count);
+            _Data._First       = _STD _Refancy(_Ty_buf);
+            _Data._Last        = _Data._First;
+            _Data._End         = _STD _Refancy(_Ty_buf + _Count);
         }
     }
 
