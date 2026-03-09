@@ -1720,7 +1720,7 @@ public:
     }
 
     _NODISCARD _Al_const_pointer _End() const {
-        return _STD _Unfancy(_Mypair._Myval2._Last);
+        return _Mypair._Myval2._Last;
     }
 
     _NODISCARD size_t _Size() const {
