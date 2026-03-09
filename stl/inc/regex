@@ -1972,7 +1972,7 @@ public:
         return static_cast<size_t>(_Max_capacity);
     }
 
-    _NODISCARD size_t _Size() {
+    _NODISCARD size_t _Size() const {
         auto& _Data = _Mypair._Myval2;
         return static_cast<size_t>(_Data._Last - _Data._First);
     }
