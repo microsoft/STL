@@ -1841,8 +1841,8 @@ private:
 
 template <class _BidIt>
 struct _Rx_capture_range_t { // stores a pair of iterators
-    _BidIt _Begin;
-    _BidIt _End;
+    _BidIt _Begin{};
+    _BidIt _End{};
 };
 
 template <class _BidIt, class _Alloc>
