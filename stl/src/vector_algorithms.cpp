@@ -5907,8 +5907,7 @@ namespace {
             template <class _Ty>
             __forceinline bool _Make_bitmap_large_neon(
                 const void* const _Needle, const size_t _Needle_length, uint8x16x2_t& _Bitmap) noexcept {
-                // TRANSITION, not yet reported: Unlike for x64, where `static constexpr` arrays improve codegen,
-                // `static constexpr` would degrade codegen here.
+                // TRANSITION, DevCom-11055227
                 constexpr uint8_t _Mask_arr[16] = {
                     0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
                 const auto _Mask = vld1q_u8(_Mask_arr);
