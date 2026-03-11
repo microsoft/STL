@@ -506,6 +506,9 @@ struct iterator_traits<_Ty*> : _Iterator_traits_pointer_base<_Ty> {}; // get tra
 
 template <class _Ty>
 constexpr bool _Integer_like = _Is_nonbool_integral<_Ty>;
+
+template <class _Ty>
+constexpr bool _Signed_integer_like = _Integer_like<_Ty> && static_cast<_Ty>(-1) < static_cast<_Ty>(0);
 #endif // ^^^ !_HAS_CXX20 ^^^
 
 _INLINE_VAR constexpr auto _Meta_npos = ~size_t{0};
