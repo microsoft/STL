@@ -829,17 +829,28 @@
     _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")        \
     _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"")
 // clang-format on
-#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#elif defined(__CUDACC__) // use the same macros for Clang and CUDA's _Pragma operators
+// warning #342-D: operator may not be a static member function
+// warning #3395-D: a "static" lambda expression is nonstandard
+// clang-format off: make macros readable
+#define _STL_DISABLE_CLANG_WARNINGS  \
+    _Pragma("nv_diagnostic push")    \
+    _Pragma("nv_diag_suppress 342")  \
+    _Pragma("nv_diag_suppress 3395")
+// clang-format on
+#else // ^^^ defined(__CUDACC__) / !defined(__CUDACC__) vvv
 #define _STL_DISABLE_CLANG_WARNINGS
-#endif // ^^^ !defined(__clang__) ^^^
+#endif // ^^^ !defined(__CUDACC__) ^^^
 #endif // !defined(_STL_DISABLE_CLANG_WARNINGS)
 
 #ifndef _STL_RESTORE_CLANG_WARNINGS
 #ifdef __clang__
 #define _STL_RESTORE_CLANG_WARNINGS _Pragma("clang diagnostic pop")
-#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#elif defined(__CUDACC__) // use the same macros for Clang and CUDA's _Pragma operators
+#define _STL_RESTORE_CLANG_WARNINGS _Pragma("nv_diagnostic pop")
+#else // ^^^ defined(__CUDACC__) / !defined(__CUDACC__) vvv
 #define _STL_RESTORE_CLANG_WARNINGS
-#endif // ^^^ !defined(__clang__) ^^^
+#endif // ^^^ !defined(__CUDACC__) ^^^
 #endif // !defined(_STL_RESTORE_CLANG_WARNINGS)
 
 // warning: use of NaN is undefined behavior due to the currently enabled
@@ -1929,7 +1940,7 @@ _EMIT_STL_ERROR(STL1013, "The STL doesn't support /RTCc because it rejects confo
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // ^^^ !defined(_ENABLE_STL_INTERNAL_CHECK) ^^^
 
-#ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't have downlevel support for static call operators.
+#if 0
 #define _STATIC_CALL_OPERATOR
 #define _CONST_CALL_OPERATOR const
 #else // ^^^ workaround / no workaround vvv
