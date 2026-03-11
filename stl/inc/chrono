@@ -5120,17 +5120,16 @@ namespace chrono {
                 _Seconds = static_cast<int>(_Val.seconds().count());
             }
 
-            return {
-                .tm_sec  = _Seconds,
-                .tm_min  = _Minutes,
-                .tm_hour = _Hours,
-                .tm_mday = static_cast<int>(_Day),
-                .tm_mon  = static_cast<int>(_Month) - 1,
-                .tm_year = _Year - 1900,
-                .tm_wday = _Weekday,
-                .tm_yday = _Yearday,
-                .tm_isdst{},
-            };
+            tm _Tm{};
+            _Tm.tm_sec  = _Seconds;
+            _Tm.tm_min  = _Minutes;
+            _Tm.tm_hour = _Hours;
+            _Tm.tm_mday = static_cast<int>(_Day);
+            _Tm.tm_mon  = static_cast<int>(_Month) - 1;
+            _Tm.tm_year = _Year - 1900;
+            _Tm.tm_wday = _Weekday;
+            _Tm.tm_yday = _Yearday;
+            return _Tm;
         }
     }
 
