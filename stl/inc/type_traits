@@ -864,7 +864,7 @@ struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_assignable : bool_constant<__is_ass
 _EXPORT_STD template <class _To, class _From>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_assignable_v = __is_assignable(_To, _From);
 
-#if defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
+#if defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED)
 template <class _To, class _From>
 struct _Is_assignable_no_precondition_check : bool_constant<__is_assignable_no_precondition_check(_To, _From)> {};
 #else // ^^^ Use intrinsic / intrinsic not supported vvv
@@ -882,7 +882,7 @@ _EXPORT_STD template <class _Ty>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_copy_assignable_v =
     __is_assignable(add_lvalue_reference_t<_Ty>, add_lvalue_reference_t<const _Ty>);
 
-#if defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
+#if defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED)
 template <class _Ty>
 struct _Is_copy_assignable_no_precondition_check
     : bool_constant<__is_assignable_no_precondition_check(
@@ -909,7 +909,7 @@ _EXPORT_STD template <class _Ty>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_move_assignable_v =
     __is_assignable(add_lvalue_reference_t<_Ty>, _Ty);
 
-#if defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
+#if defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED)
 template <class _Ty>
 struct _Is_move_assignable_no_precondition_check
     : bool_constant<__is_assignable_no_precondition_check(add_lvalue_reference_t<_Ty>, _Ty)> {};
