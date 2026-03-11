@@ -1948,11 +1948,11 @@ _EMIT_STL_ERROR(STL1013, "The STL doesn't support /RTCc because it rejects confo
 #define _CONST_CALL_OPERATOR
 #endif // ^^^ no workaround ^^^
 
-#ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't recognize MSVC __restrict; CUDA __restrict__ is not usable in C++
+#ifdef __CUDACC__ // TRANSITION, CUDA rejects MSVC __restrict (GH-5061); CUDA __restrict__ is unusable in C++ (GH-5097)
 #define _RESTRICT
-#else // ^^^ defined(__CUDACC__) / !defined(__CUDACC__) vvv
+#else // ^^^ workaround / no workaround vvv
 #define _RESTRICT __restrict
-#endif // ^^^ !defined(__CUDACC__) ^^^
+#endif // ^^^ no workaround ^^^
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_
