@@ -1940,14 +1940,6 @@ _EMIT_STL_ERROR(STL1013, "The STL doesn't support /RTCc because it rejects confo
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // ^^^ !defined(_ENABLE_STL_INTERNAL_CHECK) ^^^
 
-#if 0
-#define _STATIC_CALL_OPERATOR
-#define _CONST_CALL_OPERATOR const
-#else // ^^^ workaround / no workaround vvv
-#define _STATIC_CALL_OPERATOR static
-#define _CONST_CALL_OPERATOR
-#endif // ^^^ no workaround ^^^
-
 #ifdef __CUDACC__ // TRANSITION, CUDA rejects MSVC __restrict (GH-5061); CUDA __restrict__ is unusable in C++ (GH-5097)
 #define _RESTRICT
 #else // ^^^ workaround / no workaround vvv

@@ -345,7 +345,7 @@ namespace filesystem {
     }
 
     struct _Is_slash_oper { // predicate testing if input is a preferred-separator or fallback-separator
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr bool operator()(const wchar_t _Ch) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr bool operator()(const wchar_t _Ch) {
             return _Ch == L'\\' || _Ch == L'/';
         }
     };
@@ -4429,7 +4429,7 @@ template <>
 struct hash<filesystem::path> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = filesystem::path;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
-    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const filesystem::path& _Path) _CONST_CALL_OPERATOR noexcept {
+    _NODISCARD static size_t operator()(const filesystem::path& _Path) noexcept {
         return _STD filesystem::hash_value(_Path);
     }
 };
