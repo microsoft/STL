@@ -2299,6 +2299,14 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
+  <Type Name="std::layout_stride::mapping&lt;*&gt;">
+    <DisplayString>{{ rank={extents_type::_Rank}, rank_dynamic={extents_type::_Rank_dynamic} }}</DisplayString>
+    <Expand>
+      <Item Name="[extents]" Optional="true">this->_Exts</Item>
+      <Item Name="[strides]" Optional="true">this->_Array</Item>
+    </Expand>
+  </Type>
+
   <Type Name="std::flat_map&lt;*&gt;">
    <AlternativeType Name="std::flat_multimap&lt;*&gt;"/>
     <Intrinsic Name="size" Expression="_Data.keys.size()"/>
