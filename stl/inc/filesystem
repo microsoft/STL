@@ -1323,15 +1323,13 @@ namespace filesystem {
         _NODISCARD inline iterator end() const noexcept; // strengthened
 
         template <class _Elem, class _Traits>
-        friend _STD basic_ostream<_Elem, _Traits>& operator<<( // TRANSITION, VSO-570323
-            _STD basic_ostream<_Elem, _Traits>& _Ostr, const path& _Path) { // TRANSITION, VSO-570323
+        friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const path& _Path) {
             // insert a path into a stream
             return _Ostr << _STD quoted(_Path.string<_Elem, _Traits>());
         }
 
         template <class _Elem, class _Traits>
-        friend _STD basic_istream<_Elem, _Traits>& operator>>( // TRANSITION, VSO-570323
-            _STD basic_istream<_Elem, _Traits>& _Istr, path& _Path) { // TRANSITION, VSO-570323
+        friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, path& _Path) {
             // extract a path from a stream
             basic_string<_Elem, _Traits> _Tmp;
             _Istr >> _STD quoted(_Tmp);
@@ -2480,8 +2478,8 @@ namespace filesystem {
 
         // [fs.dir.entry.io], inserter
         template <class _Elem, class _Traits>
-        friend _STD basic_ostream<_Elem, _Traits>& operator<<( // TRANSITION, VSO-570323
-            _STD basic_ostream<_Elem, _Traits>& _Ostr, const directory_entry& _Entry) { // TRANSITION, VSO-570323
+        friend basic_ostream<_Elem, _Traits>& operator<<(
+            basic_ostream<_Elem, _Traits>& _Ostr, const directory_entry& _Entry) {
             // insert a directory_entry into a stream
             return _Ostr << _Entry.path();
         }
