@@ -548,14 +548,6 @@ namespace ranges {
 #if defined(__clang__) // TRANSITION, LLVM-117294
                 ::new (static_cast<void*>(_Location)) _Ty();
                 return __builtin_launder(_Location); // per old resolution of LWG-3436
-#elif defined(_MSC_VER) // TRANSITION, DevCom-10798069
-                if constexpr (is_trivially_destructible_v<_Ty>) {
-                    _MSVC_CONSTEXPR return ::new (_Secret_placement_new_tag{}, static_cast<void*>(_Location)) _Ty[1]();
-                } else {
-                    // For non-trivially-destructible types, the workaround doesn't work
-                    // because additional space is required to record the number of class objects to destroy.
-                    return ::new (static_cast<void*>(_Location)) _Ty[1]();
-                }
 #else // ^^^ workaround / no workaround vvv
                 _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty[1]();
 #endif // ^^^ no workaround ^^^

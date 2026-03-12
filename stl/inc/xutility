@@ -248,25 +248,6 @@ __declspec(noalias) size_t __stdcall __std_mismatch_8(const void* _First1, const
 
 } // extern "C"
 
-#if _HAS_CXX20 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-10798069
-_STD_BEGIN
-struct _Secret_placement_new_tag {
-    explicit _Secret_placement_new_tag() = default;
-};
-_STD_END
-
-template <_STD same_as<_STD _Secret_placement_new_tag> _Tag>
-_NODISCARD _Ret_notnull_ _Post_writable_byte_size_(_Size)
-    _Post_satisfies_(return == _Where) constexpr void* __CRTDECL operator new[](
-        size_t _Size, _Tag, _Writable_bytes_(_Size) void* _Where) noexcept {
-    (void) _Size;
-    return _Where;
-}
-
-template <_STD same_as<_STD _Secret_placement_new_tag> _Tag>
-constexpr void __CRTDECL operator delete[](void*, _Tag, void*) noexcept {}
-#endif // ^^^ workaround ^^^
-
 _STD_BEGIN
 
 template <class _Target, class _Source>
@@ -619,14 +600,6 @@ constexpr _Ty* construct_at(_Ty* const _Location, _Types&&... _Args)
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-117294, DevCom-10798145
         ::new (static_cast<void*>(_Location)) _Ty();
         return __builtin_launder(_Location); // per old resolution of LWG-3436
-#elif defined(_MSC_VER) // TRANSITION, DevCom-10798069
-        if constexpr (is_trivially_destructible_v<_Ty>) {
-            _MSVC_CONSTEXPR return ::new (_Secret_placement_new_tag{}, static_cast<void*>(_Location)) _Ty[1]();
-        } else {
-            // For non-trivially-destructible types, the workaround doesn't work
-            // because additional space is required to record the number of class objects to destroy.
-            return ::new (static_cast<void*>(_Location)) _Ty[1]();
-        }
 #else // ^^^ workaround / no workaround vvv
         _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty[1]();
 #endif // ^^^ no workaround ^^^
