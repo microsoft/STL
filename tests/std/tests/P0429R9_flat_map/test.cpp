@@ -18,7 +18,6 @@
 #include <utility>
 #include <vector>
 
-#include <is_permissive.hpp>
 #include <test_container_requirements.hpp>
 #include <test_death.hpp>
 using namespace std;
@@ -1347,12 +1346,7 @@ void test_insert_hint_is_respected() {
 
 template <template <class...> class KeyCont, template <class...> class MappedCont>
 void test_key_mapped_cont_combinations() {
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-2714784
-    if constexpr (!is_permissive)
-#endif // ^^^ workaround ^^^
-    {
-        test_construction<KeyCont, MappedCont>();
-    }
+    test_construction<KeyCont, MappedCont>();
     test_insert_hint_is_respected<KeyCont, MappedCont>();
     test_throwing_compare_swap_single<flat_map, KeyCont, MappedCont>();
     test_throwing_compare_swap_single<flat_multimap, KeyCont, MappedCont>();
