@@ -172,7 +172,7 @@ class _Associated_state;
 template <class _Ty>
 struct __declspec(novtable) _Deleter_base { // abstract base class for managing deletion of state objects
     virtual void _Delete(_Associated_state<_Ty>*) noexcept = 0;
-    virtual ~_Deleter_base() = default; // TRANSITION, vNext (make non-virtual, never called polymorphically)
+    virtual ~_Deleter_base() = default; // TRANSITION, ABI (make non-virtual, never called polymorphically)
 };
 
 template <class _Ty, class _Derived, class _Alloc>
@@ -1391,7 +1391,7 @@ _Associated_state<_P_arg_type_t<_Ret>>* _Get_associated_state(launch _Psync, _Ft
     switch (_Psync) { // select launch type
     case launch::deferred:
         return new _Deferred_async_state<_Ret>(_STD forward<_Fty>(_Fnarg));
-    case launch::async: // TRANSITION, fixed in vMajorNext, should create a new thread here
+    case launch::async: // TRANSITION, ABI, should create a new thread here
     default:
         return new _Task_async_state<_Ret>(_STD forward<_Fty>(_Fnarg));
     }

@@ -57,7 +57,7 @@ STATIC_ASSERT(il.begin() == il.end());
 STATIC_ASSERT(begin(il) == end(il));
 #endif // _HAS_CXX17
 
-// TRANSITION,
+// TRANSITION, ABI
 // constexpr error_category() noexcept;
 
 constexpr int i = 1729;

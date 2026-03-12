@@ -4130,7 +4130,7 @@ namespace ranges {
     private:
         using _Size_type = _Make_unsigned_like_t<iter_difference_t<_It>>;
 
-        // TRANSITION, [[no_unique_address]]:
+        // TRANSITION, ABI:
         /* [[no_unique_address]] */ _It _First{};
         /* [[no_unique_address]] */ _Se _Last{};
         // [[no_unique_address]] conditional_t<_Store_size<_It, _Se, _Ki>, _Size_type, _Nil> _Size{};

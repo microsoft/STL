@@ -1867,7 +1867,7 @@ namespace chrono {
             using _Internal_duration = duration<__std_tzdb_epoch_milli, milli>;
             const auto _Internal_dur = _CHRONO duration_cast<_Internal_duration>(_Dur);
 
-            // TRANSITION, vNext
+            // TRANSITION, ABI
             // Because the signature of __std_tzdb_get_sys_info cannot be changed, _Type is encoded in the
             // time zone name. In vNext, this should be a dedicated argument.
             const string _Tz_arg = _Name + static_cast<char>(_Type);
