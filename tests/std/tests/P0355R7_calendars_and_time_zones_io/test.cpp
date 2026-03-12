@@ -639,7 +639,7 @@ void parse_calendar_types_basic() {
     // basic %D test
     test_parse("07/04/76 17", "%D %C", ymd);
     assert(ymd == July / 4d / 1776y);
-    // locale's date representation %x (== "%m/%d/%y")
+    // locale's date representation %x (== "%m / %d / %y")
     test_parse("07/04/76 17", "%x %C", ymd);
     assert(ymd == 4d / July / 1776y);
     test_parse("12/10/15 18", "%x %C", ymd);

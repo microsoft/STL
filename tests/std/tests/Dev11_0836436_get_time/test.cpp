@@ -61,7 +61,7 @@ tuple<int, int, int> read_date(const char* const s) {
     const auto t = helper(s, "%x");
 
     // %x The date, using the locale's date format.
-    // "%m/%d/%y"
+    // "%m / %d / %y"
     // %m The month number [01,12]; leading zeros are permitted but not required.
     // %d The day of the month [01,31]; leading zeros are permitted but not required.
     // %y The year within century. When a century is not otherwise specified,
@@ -928,7 +928,7 @@ void test_gh_6129() {
         assert(t.tm_year == 109);
     }
 
-    // %x in the C locale uses "%m/%d/%y"
+    // %x in the C locale uses "%m / %d / %y"
     {
         const auto t = helper("03/15/09", "%x");
         assert(t.tm_mon == 2);

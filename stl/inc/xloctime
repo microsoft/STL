@@ -547,7 +547,7 @@ protected:
             break;
 
         case 'x':
-            _First = _Getfmt(_First, _Last, _Iosbase, _State, _Pt, "%m/%d/%y");
+            _First = _Getfmt(_First, _Last, _Iosbase, _State, _Pt, "%m / %d / %y");
             break;
 
         case 'y':
