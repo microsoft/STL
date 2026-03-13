@@ -142,7 +142,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 # Visual Studio Installer Prerequisites
 
 * Install [VS 2026 Insiders][] and keep it up to date.
-  + **You must install Insiders for STL development.** *See Note 1 below.*
+  + **You must install the Insiders IDE and the Preview build tools for STL development.** *See Note 1 below.*
   + Select the "Desktop development with C++" workload.
   + Select the following components at a minimum:
     - "MSVC Build Tools for x64/x86 (Preview)"
@@ -155,8 +155,12 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
   + Select "Add python.exe to PATH" if you want to follow the instructions below that invoke `python`.
     Otherwise, you should be familiar with alternative methods.
 
-*Note 1:* The STL and the compiler ship together, and we frequently need the latest
-compiler fixes and features, so the last production release of the compiler is too old.
+*Note 1:* The STL and the compiler ship together, and we frequently need recently implemented
+compiler fixes and features, so the Latest build tools (i.e. latest production) are too old.
+Because the Insiders IDE supports having the Latest and Preview build tools installed simultaneously,
+you need to ensure that you're using the Preview build tools. If you build with the IDE, we've arranged for
+this to happen automatically. If you build with the Command Prompt, you need to pass `-vcvars_ver=preview`
+as explained below. For more info, read the [C++ Team Blog post][preview] that announced this release process.
 
 *Note 2:* The x64/x86 build tools are usually sufficient.
 You'll need the ARM64/ARM64EC build tools if you're working with architecture-sensitive code.
@@ -627,3 +631,4 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [VS 2026 Insiders]: https://visualstudio.microsoft.com/insiders/
 [CXXFLAGS]: https://cmake.org/cmake/help/latest/envvar/CXXFLAGS.html
 [start-command]: https://learn.microsoft.com/windows-server/administration/windows-commands/start
+[preview]: https://devblogs.microsoft.com/cppblog/microsoft-c-msvc-build-tools-v14-51-preview-released-how-to-opt-in/
