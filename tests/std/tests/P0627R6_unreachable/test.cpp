@@ -22,9 +22,8 @@ constexpr bool test() {
 
 int main() {
     if (!test()) {
-        return 1729;
+        return 1;
     }
     static_assert(test());
     static_assert(noexcept(std::unreachable())); // strengthened
-    return 0;
 }

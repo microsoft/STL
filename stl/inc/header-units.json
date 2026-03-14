@@ -8,7 +8,7 @@
         "__msvc_bit_utils.hpp",
         "__msvc_chrono.hpp",
         "__msvc_cxx_stdatomic.hpp",
-        // "__msvc_doom_core.hpp", // internal header, provides macro that handles fatal conditions
+        "__msvc_doom_core.hpp",
         "__msvc_filebuf.hpp",
         "__msvc_format_ucd_tables.hpp",
         "__msvc_formatter.hpp",
