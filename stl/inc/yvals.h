@@ -18,6 +18,7 @@ _EMIT_STL_ERROR(
     STL1005, "Tried to include a non-core C++ Standard Library header file with _ENFORCE_ONLY_CORE_HEADERS defined.");
 #endif // defined(_ENFORCE_ONLY_CORE_HEADERS)
 
+#include <__msvc_doom_core.hpp>
 #include <crtdbg.h>
 #include <crtdefs.h>
 
@@ -247,31 +248,6 @@ _EMIT_STL_ERROR(STL1007, "_STL_CRT_SECURE_INVALID_PARAMETER has been removed. "
 _EMIT_STL_ERROR(STL1008, "_STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER has been removed. "
                          "It was superseded by _MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION.");
 #endif
-
-// The STL's "doom function" can be replaced. Notes:
-// * It must not throw. (Attempting to throw would slam into noexcept.)
-// * Common case: If it doesn't return, it should be marked as `[[noreturn]]`.
-// * Uncommon case: If it returns, the STL will attempt to "continue on error", behaving as if no checking was done.
-//   + For example, a legacy codebase with a long startup time might want to log errors for investigation later.
-//   + WARNING: If you replace the STL's "doom function" to "continue on error", you do so at your own risk!
-//     After the STL has detected a precondition violation, undefined behavior is imminent. The STL will support
-//     "continue on error" by proceeding to do what it would have done anyways (instead of falling off the end of
-//     a non-void function, etc.), but it will not attempt to replace undefined behavior with implementation-defined
-//     behavior. (For example, we will not transform `pop_back()` of an empty `vector` to be a no-op.)
-#ifndef _MSVC_STL_DOOM_FUNCTION
-#ifdef _MSVC_STL_USE_ABORT_AS_DOOM_FUNCTION // The user wants to use abort():
-#define _MSVC_STL_DOOM_FUNCTION(mesg) _CSTD abort()
-#elif defined(__clang__) // Use the Clang intrinsic:
-#define _MSVC_STL_DOOM_FUNCTION(mesg) __builtin_verbose_trap("MSVC STL error", mesg)
-#elif defined(_M_CEE) // TRANSITION, VSO-2457624 (/clr silent bad codegen for __fastfail); /clr:pure lacks __fastfail
-#define _MSVC_STL_DOOM_FUNCTION(mesg) ::_invoke_watson(nullptr, nullptr, nullptr, 0, 0)
-#else // Use the MSVC __fastfail intrinsic:
-extern "C" __declspec(noreturn) void __fastfail(unsigned int); // declared by <intrin.h>
-#define _MSVC_STL_DOOM_FUNCTION(mesg)                                                  \
-    __fastfail(5); /* __fastfail(FAST_FAIL_INVALID_ARG), value defined by <winnt.h> */ \
-    _STL_UNREACHABLE /* TRANSITION, DevCom-10914110 */
-#endif // choose "doom function"
-#endif // ^^^ !defined(_MSVC_STL_DOOM_FUNCTION) ^^^
 
 #define _STL_REPORT_ERROR(mesg) \
     _RPTF0(_CRT_ASSERT, mesg);  \
