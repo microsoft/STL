@@ -515,7 +515,7 @@ inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* 
     return _InterlockedCompareExchange128_nf(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
 #endif // ^^^ ARM64, _M_ARM64EC ^^^
 }
-#endif // _WIN64
+#endif // ^^^ 64-bit ^^^
 #endif // _HAS_CXX20
 #endif // TRANSITION, ABI
 
@@ -1295,7 +1295,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
 
     typename _Atomic_storage_types<_Ty&>::_TStorage _Storage;
 };
-#endif // defined(_WIN64)
+#endif // ^^^ 64-bit ^^^
 
 template <class _Ty, size_t = sizeof(_Ty)>
 struct _Atomic_integral; // not defined

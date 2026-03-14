@@ -131,7 +131,7 @@ void test_LWG_2156() {
     // consumes too much RAM.
     x.max_load_factor(FLT_EPSILON);
     assert_throws<length_error>([&] { x.rehash(0); });
-#endif // !_WIN64
+#endif // ^^^ 32-bit ^^^
 }
 
 void test_bad_rehash_size() {

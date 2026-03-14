@@ -628,9 +628,9 @@ protected:
             char* _Ep;
 #ifdef _WIN64
             _Val = reinterpret_cast<void*>(_CSTD _Stoullx(_Ac, &_Ep, _Parse_result._Base, &_Errno));
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
+#else // ^^^ 64-bit / 32-bit vvv
             _Val = reinterpret_cast<void*>(_CSTD _Stoulx(_Ac, &_Ep, _Parse_result._Base, &_Errno));
-#endif // ^^^ !defined(_WIN64) ^^^
+#endif // ^^^ 32-bit ^^^
             if (_Ep == _Ac || _Errno != 0) { // N4950 [facet.num.get.virtuals]/3
                 _State = ios_base::failbit;
                 _Val   = nullptr;
