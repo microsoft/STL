@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <cassert>
-#include <utility>
+#include <utility> // Only include <utility> to test compilation of doom function without additional includes.
 
 constexpr char test_impl(const int arg) {
     switch (arg) {
@@ -18,13 +17,14 @@ constexpr char test_impl(const int arg) {
 }
 
 constexpr bool test() {
-    assert(test_impl(1) == 'a');
-    assert(test_impl(2) == 'z');
-    return true;
+    return test_impl(1) == 'a' && test_impl(2) == 'z';
 }
 
 int main() {
-    test();
+    if (!test()) {
+        return 1729;
+    }
     static_assert(test());
     static_assert(noexcept(std::unreachable())); // strengthened
+    return 0;
 }
