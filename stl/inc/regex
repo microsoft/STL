@@ -2064,8 +2064,8 @@ public:
     _Matcher3(_It _Pfirst, _It _Plast, const _RxTraits& _Tr, _Root_node* _Re, unsigned int _Nx,
         regex_constants::syntax_option_type _Sf, regex_constants::match_flag_type _Mf,
         unsigned char (&_Stack_storage)[_Stack_storage_size])
-        : _Begin(_Pfirst), _End(_Plast), _Sflags(_Sf), _Mflags(_Mf), _Ncap(_Nx),
-          _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)), _Traits(_Tr) {
+        : _Traits(_Tr), _Begin(_Pfirst), _End(_Plast), _Sflags(_Sf), _Mflags(_Mf), _Ncap(_Nx),
+          _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)) {
         _Adl_verify_range(_Pfirst, _Plast);
         if (_Re->_Flags & _Fl_begin_needs_w) {
             _Char_class_w = _Lookup_char_class(static_cast<_Elem>('W'));
@@ -2193,13 +2193,26 @@ public:
     _BidIt _Skip(_BidIt, _BidIt, _Node_base* = nullptr, unsigned int _Recursion_depth = 0U);
 
 private:
+    long long _Complexity_limit;
     _Tgt_state_type _Tgt_state;
     _Tgt_state_type _Res;
     _Rx_fixed_size_buffer<_Loop_vals_type> _Loop_vals;
     _Rx_small_vector<_State_frame_type> _Frames;
     size_t _Frames_count;
     size_t _Frames_limit;
-    long long _Complexity_limit;
+    _Node_base* _Start;
+    const _RxTraits& _Traits;
+    _It _Begin;
+    _It _End;
+    regex_constants::syntax_option_type _Sflags;
+    regex_constants::match_flag_type _Mflags;
+    unsigned int _Ncap;
+    typename _RxTraits::char_class_type _Char_class_w{};
+    typename _RxTraits::char_class_type _Char_class_s{};
+    typename _RxTraits::char_class_type _Char_class_d{};
+    bool _Matched = false;
+    bool _Longest;
+    bool _Full;
 
     size_t _Push_frame(_Rx_unwind_ops _Code, _Node_base* _Node);
 
@@ -2215,20 +2228,6 @@ private:
     bool _Better_match();
     bool _Is_wbound() const;
     typename _RxTraits::char_class_type _Lookup_char_class(_Elem) const;
-
-    _It _Begin;
-    _It _End;
-    _Node_base* _Start;
-    regex_constants::syntax_option_type _Sflags;
-    regex_constants::match_flag_type _Mflags;
-    bool _Matched = false;
-    unsigned int _Ncap;
-    bool _Longest;
-    const _RxTraits& _Traits;
-    bool _Full;
-    typename _RxTraits::char_class_type _Char_class_w{};
-    typename _RxTraits::char_class_type _Char_class_s{};
-    typename _RxTraits::char_class_type _Char_class_d{};
 
 public:
     _Matcher3(const _Matcher3&)            = delete;
