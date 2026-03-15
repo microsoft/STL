@@ -145,7 +145,7 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
     auto _UFirst = _STD _Get_unwrapped_n(_First, _Count);
     auto _UDest  = _STD _Get_unwrapped_n(_Dest, _Count);
     if constexpr (_Iter_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_constructible) {
-        _UDest = _STD _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _UDest);
+        _UDest = _STD _Copy_memcpy_n(_UFirst, static_cast<size_t>(_Count), _UDest);
     } else {
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
 
@@ -297,7 +297,7 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
     auto _UFirst = _STD _Get_unwrapped_n(_First, _Count);
     auto _UDest  = _STD _Get_unwrapped_n(_Dest, _Count);
     if constexpr (_Iter_move_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_constructible) {
-        _UDest = _STD _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _UDest);
+        _UDest = _STD _Copy_memcpy_n(_UFirst, static_cast<size_t>(_Count), _UDest);
         _UFirst += _Count;
     } else {
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
@@ -2301,7 +2301,7 @@ template <class _Ty, size_t _Size>
 void _Uninitialized_copy_multidimensional(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size]) {
     using _Item = remove_all_extents_t<_Ty>;
     if constexpr (conjunction_v<is_trivially_copy_constructible<_Item>, is_trivially_destructible<_Item>>) {
-        _STD _Copy_memmove_n(_In, _Size, _Out);
+        _STD _Copy_memcpy_n(_In, _Size, _Out);
     } else if constexpr (is_array_v<_Ty>) {
         _Reverse_destroy_multidimensional_n_guard<_Ty> _Guard{_Out, 0};
         for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
@@ -2666,7 +2666,7 @@ void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out
     using _Item = remove_all_extents_t<_Ty>;
     if constexpr (conjunction_v<is_trivially_copy_constructible<_Item>, is_trivially_destructible<_Item>,
                       _Uses_default_construct<_Alloc, _Item*, const _Item&>>) {
-        _STD _Copy_memmove_n(_In, _Size, _Out);
+        _STD _Copy_memcpy_n(_In, _Size, _Out);
     } else if constexpr (is_array_v<_Ty>) {
         _Reverse_destroy_multidimensional_n_al_guard<_Ty, _Alloc> _Guard{_Out, 0, _Al};
         for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {

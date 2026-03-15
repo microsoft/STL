@@ -1688,7 +1688,7 @@ _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _No
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX26
         {
-            return _STD _Copy_memmove(_First, _Last, _Dest);
+            return _STD _Copy_memcpy(_First, _Last, _Dest);
         }
     }
     _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
@@ -1901,20 +1901,20 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     auto _ULast  = _STD _Get_unwrapped(_STD move(_Last));
 #endif // ^^^ !_HAS_CXX20 ^^^
 
-    constexpr bool _Can_memmove = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_constructible
+    constexpr bool _Can_memcpy = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_constructible
                                && _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>::value;
 
-    if constexpr (_Can_memmove) {
+    if constexpr (_Can_memcpy) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
             if constexpr (is_same_v<decltype(_UFirst), decltype(_ULast)>) {
-                _STD _Copy_memmove(_STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _Unfancy(_Dest));
+                _STD _Copy_memcpy(_STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _Unfancy(_Dest));
                 _Dest += _ULast - _UFirst;
             } else {
                 const auto _Count = static_cast<size_t>(_STD _Contiguous_iter_distance(_UFirst, _ULast));
-                _STD _Copy_memmove_n(_STD _To_address(_UFirst), _Count, _STD _Unfancy(_Dest));
+                _STD _Copy_memcpy_n(_STD _To_address(_UFirst), _Count, _STD _Unfancy(_Dest));
                 _Dest += _Count;
             }
             return _Dest;
@@ -1942,16 +1942,16 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy_n(
     auto _UFirst = _STD _Get_unwrapped(_STD move(_First));
 #endif // ^^^ No checking ^^^
 
-    constexpr bool _Can_memmove =
+    constexpr bool _Can_memcpy =
         conjunction_v<bool_constant<_Iter_copy_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>,
             _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>;
 
-    if constexpr (_Can_memmove) {
+    if constexpr (_Can_memcpy) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            _STD _Copy_memmove_n(_UFirst, _Count, _STD _Unfancy(_Dest));
+            _STD _Copy_memcpy_n(_UFirst, _Count, _STD _Unfancy(_Dest));
             _Dest += _Count;
             return _Dest;
         }
@@ -1973,7 +1973,7 @@ _NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _InIt _Last, _No
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX26
         {
-            return _STD _Copy_memmove(_First, _Last, _Dest);
+            return _STD _Copy_memcpy(_First, _Last, _Dest);
         }
     }
 
@@ -2013,7 +2013,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_move(
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            _STD _Copy_memmove(_UFirst, _ULast, _STD _Unfancy(_Dest));
+            _STD _Copy_memcpy(_UFirst, _ULast, _STD _Unfancy(_Dest));
             return _Dest + (_ULast - _UFirst);
         }
     }
