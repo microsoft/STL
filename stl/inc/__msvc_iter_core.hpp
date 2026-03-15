@@ -504,7 +504,7 @@ template <class _Ty>
 constexpr bool _Integer_like = _Is_nonbool_integral<_Ty>;
 
 template <class _Ty>
-constexpr bool _Signed_integer_like = _Integer_like<_Ty> && static_cast<_Ty>(-1) < static_cast<_Ty>(0);
+constexpr bool _Signed_integer_like = _Integer_like<_Ty> && is_signed_v<_Ty>;
 #endif // ^^^ !_HAS_CXX20 ^^^
 
 _INLINE_VAR constexpr auto _Meta_npos = ~size_t{0};
