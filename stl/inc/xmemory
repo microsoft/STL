@@ -174,9 +174,9 @@ _INLINE_VAR constexpr size_t _Non_user_size = sizeof(void*) + _Big_allocation_al
 
 #ifdef _WIN64
 _INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAFAFAFAFAULL;
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
+#else // ^^^ 64-bit / 32-bit vvv
 _INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAUL;
-#endif // ^^^ !defined(_WIN64) ^^^
+#endif // ^^^ 32-bit ^^^
 
 template <class _Traits>
 __declspec(allocator) void* _Allocate_manually_vector_aligned(const size_t _Bytes) {
@@ -2782,7 +2782,7 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
 
 #ifdef _WIN64
     auto _UVal_trunc = _UVal;
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
+#else // ^^^ 64-bit / 32-bit vvv
 
     if constexpr (sizeof(_UTy) > 4) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
         while (_UVal > 0xFFFFFFFFU) {
@@ -2802,7 +2802,7 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
     }
 
     auto _UVal_trunc = static_cast<unsigned long>(_UVal);
-#endif // ^^^ !defined(_WIN64) ^^^
+#endif // ^^^ 32-bit ^^^
 
     // If we have a single digit, print [0, 9] and return. (This is necessary to correctly handle 0.)
     if (_UVal_trunc < 10) {
