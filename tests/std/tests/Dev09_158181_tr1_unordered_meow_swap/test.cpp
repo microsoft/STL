@@ -127,7 +127,7 @@ void test_LWG_2156() {
 
 #ifndef _WIN64
     // make it so rehash can't meet its postcondition, even when not asking for more buckets
-    // skip on 64 bit because creating reasonable container sizes to trigger this problem there
+    // skip on 64-bit because creating reasonable container sizes to trigger this problem there
     // consumes too much RAM.
     x.max_load_factor(FLT_EPSILON);
     assert_throws<length_error>([&] { x.rehash(0); });

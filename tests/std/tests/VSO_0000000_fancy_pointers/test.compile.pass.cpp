@@ -104,7 +104,7 @@ public:
         rep += rhs;
         return *this;
     }
-#endif // ^^^ 64 bit ^^^
+#endif // ^^^ 64-bit ^^^
 
     fancy_pointer& operator+=(std::ptrdiff_t rhs) {
         rep += rhs;
@@ -120,7 +120,7 @@ public:
     fancy_pointer operator+(int rhs) const {
         return fancy_pointer{rep + rhs};
     }
-#endif // ^^^ 64 bit ^^^
+#endif // ^^^ 64-bit ^^^
 
     fancy_pointer operator+(std::ptrdiff_t rhs) const {
         return fancy_pointer{rep + rhs};
@@ -135,7 +135,7 @@ public:
         rep -= rhs;
         return *this;
     }
-#endif // ^^^ 64 bit ^^^
+#endif // ^^^ 64-bit ^^^
 
     fancy_pointer& operator-=(std::ptrdiff_t rhs) {
         rep -= rhs;
@@ -151,7 +151,7 @@ public:
     fancy_pointer operator-(int rhs) const {
         return fancy_pointer{rep - rhs};
     }
-#endif // ^^^ 64 bit ^^^
+#endif // ^^^ 64-bit ^^^
 
     fancy_pointer operator-(std::ptrdiff_t rhs) const {
         return fancy_pointer{rep - rhs};
@@ -165,7 +165,7 @@ public:
     std::add_lvalue_reference_t<Val> operator[](int offset) const {
         return rep[offset];
     }
-#endif // ^^^ 64 bit ^^^
+#endif // ^^^ 64-bit ^^^
 
     std::add_lvalue_reference_t<Val> operator[](std::ptrdiff_t offset) const {
         return rep[offset];
