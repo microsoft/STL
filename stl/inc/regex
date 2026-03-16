@@ -2190,7 +2190,7 @@ public:
         return true;
     }
 
-    _BidIt _Skip(_BidIt, _BidIt, const _Node_base* = nullptr, unsigned int _Recursion_depth = 0U);
+    _It _Skip(_It, _It, const _Node_base* = nullptr, unsigned int _Recursion_depth = 0U);
 
 private:
     _Tgt_state_type _Tgt_state;
@@ -4851,8 +4851,8 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-_BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
-    _BidIt _First, const _BidIt _Last, const _Node_base* const _Node_arg, const unsigned int _Recursion_depth) {
+_It _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
+    _It _First, const _It _Last, const _Node_base* const _Node_arg, const unsigned int _Recursion_depth) {
     // skip until possible match
     // assumes --_First is valid
     static constexpr char _Line_terminators_char[]       = {static_cast<char>(_Meta_cr), static_cast<char>(_Meta_nl)};
