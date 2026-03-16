@@ -11085,7 +11085,7 @@ namespace {
                 return vdupq_n_u8(_Val);
             }
 
-            static _Vec_t _Load_constant() {
+            static _Vec_t _Load_constant() noexcept {
                 // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
                 static constexpr uint32_t _Idx_arr[4] = {0x01010101, 0x01010101, 0x00000000, 0x00000000};
                 const auto _Idx                       = vld1q_u8(reinterpret_cast<const uint8_t*>(_Idx_arr));
@@ -11116,7 +11116,7 @@ namespace {
                 return vdupq_n_u16(_Val);
             }
 
-            static _Vec_t _Load_constant() {
+            static _Vec_t _Load_constant() noexcept {
                 // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
                 static constexpr uint64_t _Wx_arr[2] = {0x0010002000400080, 0x0001000200040008};
                 const auto _Wx                       = vld1q_u64(_Wx_arr);
@@ -11142,7 +11142,7 @@ namespace {
                 _mm256_zeroupper();
             }
 
-            static int _Load_constant() {
+            static int _Load_constant() noexcept {
                 return 0;
             }
         };
@@ -11154,7 +11154,7 @@ namespace {
 
             static void _Exit_vectorized() noexcept {}
 
-            static int _Load_constant() {
+            static int _Load_constant() noexcept {
                 return 0;
             }
         };
