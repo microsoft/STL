@@ -2,17 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 steps:
-- task: PowerShell@2
-  displayName: 'Setup TMP Directory'
-  inputs:
-    pwsh: true
-    targetType: inline
-    script: |
-      $PSNativeCommandUseErrorActionPreference = $true
-      if (Test-Path -LiteralPath "$(tmpDir)") {
-          Remove-Item -LiteralPath "$(tmpDir)" -Recurse -Force
-      }
-      mkdir "$(tmpDir)" -Force | Out-Null
 - checkout: self
   clean: true
   submodules: false
@@ -27,3 +16,7 @@ steps:
     script: |
       $PSNativeCommandUseErrorActionPreference = $true
       git clean --quiet -x -d -f -f
+      if (Test-Path -LiteralPath "$(tmpDir)") {
+          Remove-Item -LiteralPath "$(tmpDir)" -Recurse -Force
+      }
+      mkdir "$(tmpDir)" -Force | Out-Null

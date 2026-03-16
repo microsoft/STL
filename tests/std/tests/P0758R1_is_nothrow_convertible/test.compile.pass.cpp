@@ -77,9 +77,7 @@ STATIC_ASSERT(is_nothrow_convertible_v<int(int, long), int (&)(int, long)>);
 STATIC_ASSERT(!is_nothrow_convertible_v<int(int, long) const, int(const int, long)>);
 STATIC_ASSERT(!is_nothrow_convertible_v<int(int, long) const, int(int, long) const>);
 STATIC_ASSERT(is_nothrow_convertible_v<int (Cat::*)(int, int (*)(int, long)), int (Cat::*)(int, int (*)(int, long))>);
-#ifndef __EDG__ // TRANSITION, VSO-892694
 STATIC_ASSERT(!is_nothrow_convertible_v<Cat, Cat&>);
-#endif // ^^^ no workaround ^^^
 STATIC_ASSERT(is_nothrow_convertible_v<Cat&, Cat>);
 STATIC_ASSERT(is_nothrow_convertible_v<Cat, const Cat&>);
 STATIC_ASSERT(is_nothrow_convertible_v<Cat, const Cat>);

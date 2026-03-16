@@ -829,17 +829,28 @@
     _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")        \
     _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"")
 // clang-format on
-#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#elif defined(__CUDACC__) // use the same macros for Clang and CUDA's _Pragma operators
+// warning #342-D: operator may not be a static member function
+// warning #3395-D: a "static" lambda expression is nonstandard
+// clang-format off: make macros readable
+#define _STL_DISABLE_CLANG_WARNINGS  \
+    _Pragma("nv_diagnostic push")    \
+    _Pragma("nv_diag_suppress 342")  \
+    _Pragma("nv_diag_suppress 3395")
+// clang-format on
+#else // ^^^ defined(__CUDACC__) / !defined(__CUDACC__) vvv
 #define _STL_DISABLE_CLANG_WARNINGS
-#endif // ^^^ !defined(__clang__) ^^^
+#endif // ^^^ !defined(__CUDACC__) ^^^
 #endif // !defined(_STL_DISABLE_CLANG_WARNINGS)
 
 #ifndef _STL_RESTORE_CLANG_WARNINGS
 #ifdef __clang__
 #define _STL_RESTORE_CLANG_WARNINGS _Pragma("clang diagnostic pop")
-#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#elif defined(__CUDACC__) // use the same macros for Clang and CUDA's _Pragma operators
+#define _STL_RESTORE_CLANG_WARNINGS _Pragma("nv_diagnostic pop")
+#else // ^^^ defined(__CUDACC__) / !defined(__CUDACC__) vvv
 #define _STL_RESTORE_CLANG_WARNINGS
-#endif // ^^^ !defined(__clang__) ^^^
+#endif // ^^^ !defined(__CUDACC__) ^^^
 #endif // !defined(_STL_RESTORE_CLANG_WARNINGS)
 
 // warning: use of NaN is undefined behavior due to the currently enabled
@@ -894,8 +905,8 @@
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
-#if __CUDACC_VER_MAJOR__ < 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ < 4)
-_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 12.4 or newer.");
+#if __CUDACC_VER_MAJOR__ < 13 || (__CUDACC_VER_MAJOR__ == 13 && __CUDACC_VER_MINOR__ < 2)
+_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.2 or newer.");
 #endif // ^^^ old CUDA ^^^
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
@@ -1929,19 +1940,11 @@ _EMIT_STL_ERROR(STL1013, "The STL doesn't support /RTCc because it rejects confo
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // ^^^ !defined(_ENABLE_STL_INTERNAL_CHECK) ^^^
 
-#ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't have downlevel support for static call operators.
-#define _STATIC_CALL_OPERATOR
-#define _CONST_CALL_OPERATOR const
-#else // ^^^ workaround / no workaround vvv
-#define _STATIC_CALL_OPERATOR static
-#define _CONST_CALL_OPERATOR
-#endif // ^^^ no workaround ^^^
-
-#ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't recognize MSVC __restrict; CUDA __restrict__ is not usable in C++
+#ifdef __CUDACC__ // TRANSITION, CUDA rejects MSVC __restrict (GH-5061); CUDA __restrict__ is unusable in C++ (GH-5097)
 #define _RESTRICT
-#else // ^^^ defined(__CUDACC__) / !defined(__CUDACC__) vvv
+#else // ^^^ workaround / no workaround vvv
 #define _RESTRICT __restrict
-#endif // ^^^ !defined(__CUDACC__) ^^^
+#endif // ^^^ no workaround ^^^
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_

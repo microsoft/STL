@@ -674,20 +674,20 @@ constexpr bool test_vector_of_array() {
     test_vector_of_array_impl<int, 1>();
     test_vector_of_array_impl<int, 42>();
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-10798069
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-    {
 #if !_HAS_CXX23
-        if (!is_constant_evaluated())
+    if (!is_constant_evaluated())
 #endif // !_HAS_CXX23
-        {
-            test_vector_of_array_impl<unique_ptr<vector<char>>, 1>();
-            test_vector_of_array_impl<unique_ptr<vector<char>>, 42>();
-        }
-        test_vector_of_array_impl<vector<long>, 1>();
-        test_vector_of_array_impl<vector<long>, 42>();
+    {
+        test_vector_of_array_impl<unique_ptr<vector<char>>, 1>();
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, GH-6155 (not yet reported to MSVC)
+        test_vector_of_array_impl<unique_ptr<vector<char>>, 42>();
+#endif // ^^^ no workaround ^^^
     }
+
+    test_vector_of_array_impl<vector<long>, 1>();
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, GH-6155 (not yet reported to MSVC)
+    test_vector_of_array_impl<vector<long>, 42>();
+#endif // ^^^ no workaround ^^^
 
     return true;
 }
