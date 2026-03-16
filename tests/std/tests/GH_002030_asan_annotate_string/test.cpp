@@ -4,6 +4,7 @@
 // REQUIRES: x64 || x86 || arm64
 
 #if defined(__clang__) && defined(_M_ARM64) // TRANSITION, LLVM-184902, fixed in Clang 23
+#pragma comment(linker, "/INFERASANLIBS")
 int main() {}
 #else // ^^^ workaround / no workaround vvv
 
