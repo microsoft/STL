@@ -2190,7 +2190,7 @@ public:
         return true;
     }
 
-    _It _Skip(_It, _It, const _Node_base* = nullptr, unsigned int _Recursion_depth = 0U);
+    _It _Skip(_It _First, _It _Last, const _Node_base* _Node_arg = nullptr, unsigned int _Recursion_depth = 0U);
 
 private:
     _Tgt_state_type _Tgt_state;
