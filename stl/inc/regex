@@ -4852,16 +4852,16 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
-    _BidIt _First_arg, _BidIt _Last, _Node_base* _Node_arg, unsigned int _Recursion_depth) {
+    _BidIt _First, _BidIt _Last, _Node_base* _Node_arg, unsigned int _Recursion_depth) {
     // skip until possible match
-    // assumes --_First_arg is valid
+    // assumes --_First is valid
     static constexpr char _Line_terminators_char[]       = {static_cast<char>(_Meta_cr), static_cast<char>(_Meta_nl)};
     static constexpr wchar_t _Line_terminators_wchar_t[] = {static_cast<wchar_t>(_Meta_cr),
         static_cast<wchar_t>(_Meta_nl), static_cast<wchar_t>(_Meta_ls), static_cast<wchar_t>(_Meta_ps)};
     constexpr unsigned int _Max_recursion_depth          = 50U;
     _Node_base* _Nx                                      = _Node_arg ? _Node_arg : _Start;
 
-    while (_First_arg != _Last && _Nx) { // check current node
+    while (_First != _Last && _Nx) { // check current node
         switch (_Nx->_Kind) { // handle current node's type
         case _N_nop:
             break;
@@ -4870,25 +4870,24 @@ _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
             if (_Sflags & regex_constants::multiline) {
                 // multiline mode: check for embedded line terminator
                 // return iterator to character just after the newline; for input like "\nabc"
-                // matching "^abc", _First_arg could be pointing at 'a', so we need to check
-                // --_First_arg for '\n'
-                if (!_STD _Is_ecmascript_line_terminator(*_STD _Prev_iter(_First_arg))) {
+                // matching "^abc", _First could be pointing at 'a', so we need to check --_First for '\n'
+                if (!_STD _Is_ecmascript_line_terminator(*_STD _Prev_iter(_First))) {
                     if constexpr (sizeof(_Elem) == 1) {
-                        _First_arg = _STD find_first_of(
-                            _First_arg, _Last, _Line_terminators_char, _STD end(_Line_terminators_char));
+                        _First =
+                            _STD find_first_of(_First, _Last, _Line_terminators_char, _STD end(_Line_terminators_char));
                     } else {
-                        _First_arg = _STD find_first_of(
-                            _First_arg, _Last, _Line_terminators_wchar_t, _STD end(_Line_terminators_wchar_t));
+                        _First = _STD find_first_of(
+                            _First, _Last, _Line_terminators_wchar_t, _STD end(_Line_terminators_wchar_t));
                     }
 
-                    if (_First_arg != _Last) {
-                        ++_First_arg;
+                    if (_First != _Last) {
+                        ++_First;
                     }
                 }
 
-                return _First_arg;
+                return _First;
             } else {
-                // non-multiline mode: never matches because --_First_arg is valid
+                // non-multiline mode: never matches because --_First is valid
                 return _Last;
             }
 
@@ -4896,11 +4895,10 @@ _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
             if (_Sflags & regex_constants::multiline) {
                 // multiline mode: matches at next line terminator or end of input
                 if constexpr (sizeof(_Elem) == 1) {
-                    return _STD find_first_of(
-                        _First_arg, _Last, _Line_terminators_char, _STD end(_Line_terminators_char));
+                    return _STD find_first_of(_First, _Last, _Line_terminators_char, _STD end(_Line_terminators_char));
                 } else {
                     return _STD find_first_of(
-                        _First_arg, _Last, _Line_terminators_wchar_t, _STD end(_Line_terminators_wchar_t));
+                        _First, _Last, _Line_terminators_wchar_t, _STD end(_Line_terminators_wchar_t));
                 }
             } else {
                 return _Last; // non-multiline mode: matches at end of input or not at all
@@ -4910,21 +4908,20 @@ _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
             { // check for string match
                 _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
                 auto _Str               = _Node->_Data._Str();
-                return _STD _Search_translate_left(
-                    _First_arg, _Last, _Str, _Str + _Node->_Data._Size(), _Traits, _Sflags);
+                return _STD _Search_translate_left(_First, _Last, _Str, _Str + _Node->_Data._Size(), _Traits, _Sflags);
             }
 
         case _N_class:
             { // check for string match
                 _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
 
-                for (; _First_arg != _Last; ++_First_arg) { // look for starting match
-                    if (_Do_class(_Node, _First_arg) != _First_arg) {
-                        return _First_arg;
+                for (; _First != _Last; ++_First) { // look for starting match
+                    if (_Do_class(_Node, _First) != _First) {
+                        return _First;
                     }
                 }
             }
-            return _First_arg;
+            return _First;
 
         case _N_group:
             break;
@@ -4953,7 +4950,7 @@ _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
                 _Node_if* _Node = static_cast<_Node_if*>(_Nx);
 
                 if (_Node->_Child) {
-                    return _First_arg;
+                    return _First;
                 }
                 break;
             }
@@ -4962,7 +4959,7 @@ _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
             {
                 _Node_rep* _Node = static_cast<_Node_rep*>(_Nx);
                 if (_Node->_Min == 0) {
-                    return _First_arg;
+                    return _First;
                 }
                 break;
             }
@@ -4970,21 +4967,21 @@ _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
         case _N_assert:
             {
                 if (_Recursion_depth >= _Max_recursion_depth) {
-                    return _First_arg;
+                    return _First;
                 }
 
                 _Node_assert* _Node = static_cast<_Node_assert*>(_Nx);
-                _First_arg          = _Skip(_First_arg, _Last, _Node->_Child, _Recursion_depth + 1U);
+                _First              = _Skip(_First, _Last, _Node->_Child, _Recursion_depth + 1U);
                 _BidIt _Next;
                 for (;;) {
-                    _Next = _Skip(_First_arg, _Last, _Node->_Next, _Recursion_depth + 1U);
-                    if (_Next == _First_arg) {
-                        return _First_arg;
+                    _Next = _Skip(_First, _Last, _Node->_Next, _Recursion_depth + 1U);
+                    if (_Next == _First) {
+                        return _First;
                     }
 
-                    _First_arg = _Skip(_Next, _Last, _Node->_Child, _Recursion_depth + 1U);
-                    if (_Next == _First_arg) {
-                        return _First_arg;
+                    _First = _Skip(_Next, _Last, _Node->_Child, _Recursion_depth + 1U);
+                    if (_Next == _First) {
+                        return _First;
                     }
                 }
             }
@@ -4996,15 +4993,15 @@ _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
         case _N_wbound:
             {
                 bool _Negated   = (_Nx->_Flags & _Fl_negate) != 0;
-                bool _Prev_word = _STD _Is_word(*_STD _Prev_iter(_First_arg));
-                for (; _First_arg != _Last; ++_First_arg) {
-                    bool _Next_word = _STD _Is_word(*_First_arg);
+                bool _Prev_word = _STD _Is_word(*_STD _Prev_iter(_First));
+                for (; _First != _Last; ++_First) {
+                    bool _Next_word = _STD _Is_word(*_First);
                     if (_Negated == (_Next_word == _Prev_word)) {
                         break;
                     }
                     _Prev_word = _Next_word;
                 }
-                return _First_arg;
+                return _First;
             }
 
         case _N_begin:
@@ -5017,13 +5014,13 @@ _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
         case _N_back:
         case _N_end_rep:
         default:
-            return _First_arg;
+            return _First;
         }
         if (_Nx) {
             _Nx = _Nx->_Next;
         }
     }
-    return _First_arg;
+    return _First;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
