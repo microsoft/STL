@@ -2190,7 +2190,7 @@ public:
         return true;
     }
 
-    _BidIt _Skip(_BidIt, _BidIt, _Node_base* = nullptr, unsigned int _Recursion_depth = 0U);
+    _BidIt _Skip(_BidIt, _BidIt, const _Node_base* = nullptr, unsigned int _Recursion_depth = 0U);
 
 private:
     _Tgt_state_type _Tgt_state;
@@ -2210,7 +2210,7 @@ private:
     void _Prepare_rep(_Node_rep*);
     bool _Find_first_inner_capture_group(_Node_base*, _Loop_vals_type*);
     void _Reset_capture_groups(unsigned int _First);
-    _It _Do_class(_Node_base*, _It);
+    _It _Do_class(const _Node_base*, _It);
     bool _Match_pat(_Node_base*);
     bool _Better_match();
     bool _Is_wbound() const;
@@ -4095,7 +4095,7 @@ _BidIt _Lookup_coll2(_Elem _First_ch, _BidIt _First, const _BidIt _Last, const _
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
-_It _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx, _It _First) {
+_It _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(const _Node_base* const _Nx, _It _First) {
     // apply bracket expression
     bool _Found;
     _Elem _Ch = *_First;
@@ -4109,7 +4109,7 @@ _It _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Do_class(_Node_base* _Nx,
     _It _Res0 = _First;
     ++_Res0;
     _It _Resx;
-    _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
+    const auto _Node = static_cast<const _Node_class<_Elem, _RxTraits>*>(_Nx);
     if (_Node->_Coll
         && (_Resx = _STD _Lookup_coll2(_Ch, _First, _End, _Node->_Coll, _Traits, _Sflags))
                != _First) { // check for collation element
@@ -4852,14 +4852,14 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
-    _BidIt _First, _BidIt _Last, _Node_base* _Node_arg, unsigned int _Recursion_depth) {
+    _BidIt _First, const _BidIt _Last, const _Node_base* const _Node_arg, const unsigned int _Recursion_depth) {
     // skip until possible match
     // assumes --_First is valid
     static constexpr char _Line_terminators_char[]       = {static_cast<char>(_Meta_cr), static_cast<char>(_Meta_nl)};
     static constexpr wchar_t _Line_terminators_wchar_t[] = {static_cast<wchar_t>(_Meta_cr),
         static_cast<wchar_t>(_Meta_nl), static_cast<wchar_t>(_Meta_ls), static_cast<wchar_t>(_Meta_ps)};
     constexpr unsigned int _Max_recursion_depth          = 50U;
-    _Node_base* _Nx                                      = _Node_arg ? _Node_arg : _Start;
+    const _Node_base* _Nx                                = _Node_arg ? _Node_arg : _Start;
 
     while (_First != _Last && _Nx) { // check current node
         switch (_Nx->_Kind) { // handle current node's type
@@ -4906,14 +4906,14 @@ _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
 
         case _N_str:
             { // check for string match
-                _Node_str<_Elem>* _Node = static_cast<_Node_str<_Elem>*>(_Nx);
-                auto _Str               = _Node->_Data._Str();
+                const auto _Node = static_cast<const _Node_str<_Elem>*>(_Nx);
+                const auto _Str  = _Node->_Data._Str();
                 return _STD _Search_translate_left(_First, _Last, _Str, _Str + _Node->_Data._Size(), _Traits, _Sflags);
             }
 
         case _N_class:
             { // check for string match
-                _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Nx);
+                const auto _Node = static_cast<const _Node_class<_Elem, _RxTraits>*>(_Nx);
 
                 for (; _First != _Last; ++_First) { // look for starting match
                     if (_Do_class(_Node, _First) != _First) {
@@ -4947,7 +4947,7 @@ _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
                 // TRANSITION, ABI: After GH-5539, the parser no longer generates single-branch _N_if nodes.
                 // But we have to retain this special handling to avoid performance regression
                 // when an old parser gets mixed with a new matcher.
-                _Node_if* _Node = static_cast<_Node_if*>(_Nx);
+                const auto _Node = static_cast<const _Node_if*>(_Nx);
 
                 if (_Node->_Child) {
                     return _First;
@@ -4957,7 +4957,7 @@ _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
 
         case _N_rep:
             {
-                _Node_rep* _Node = static_cast<_Node_rep*>(_Nx);
+                const auto _Node = static_cast<const _Node_rep*>(_Nx);
                 if (_Node->_Min == 0) {
                     return _First;
                 }
@@ -4970,8 +4970,8 @@ _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
                     return _First;
                 }
 
-                _Node_assert* _Node = static_cast<_Node_assert*>(_Nx);
-                _First              = _Skip(_First, _Last, _Node->_Child, _Recursion_depth + 1U);
+                const auto _Node = static_cast<const _Node_assert*>(_Nx);
+                _First           = _Skip(_First, _Last, _Node->_Child, _Recursion_depth + 1U);
                 _BidIt _Next;
                 for (;;) {
                     _Next = _Skip(_First, _Last, _Node->_Next, _Recursion_depth + 1U);
@@ -4992,10 +4992,10 @@ _BidIt _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Skip(
 
         case _N_wbound:
             {
-                bool _Negated   = (_Nx->_Flags & _Fl_negate) != 0;
-                bool _Prev_word = _STD _Is_word(*_STD _Prev_iter(_First));
+                const bool _Negated = (_Nx->_Flags & _Fl_negate) != 0;
+                bool _Prev_word     = _STD _Is_word(*_STD _Prev_iter(_First));
                 for (; _First != _Last; ++_First) {
-                    bool _Next_word = _STD _Is_word(*_First);
+                    const bool _Next_word = _STD _Is_word(*_First);
                     if (_Negated == (_Next_word == _Prev_word)) {
                         break;
                     }
