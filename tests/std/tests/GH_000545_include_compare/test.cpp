@@ -6,6 +6,8 @@ void test_chrono();
 void test_coroutine();
 void test_deque();
 void test_filesystem();
+void test_flat_map();
+void test_flat_set();
 void test_forward_list();
 void test_iterator();
 void test_list();
@@ -36,6 +38,8 @@ int main() {
     test_coroutine();
     test_deque();
     test_filesystem();
+    test_flat_map();
+    test_flat_set();
     test_forward_list();
     test_iterator();
     test_list();

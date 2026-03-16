@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# Build STL targeting x86, x64, arm64, arm64ec
+# Build STL targeting x64, x86, arm64, arm64ec
 
 variables:
   - template: azure-devops/config.yml
@@ -14,7 +14,7 @@ stages:
     dependsOn: []
     displayName: 'Code Format'
     pool:
-      name: ${{ variables.poolName }}
+      name: ${{ variables.x64SlowPoolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/format-validation.yml
@@ -23,7 +23,7 @@ stages:
     dependsOn: []
     displayName: 'Build x64'
     pool:
-      name: ${{ variables.poolName }}
+      name: ${{ variables.x64SlowPoolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/build-and-test.yml
@@ -41,7 +41,7 @@ stages:
     dependsOn: []
     displayName: 'Build x86'
     pool:
-      name: ${{ variables.poolName }}
+      name: ${{ variables.x64SlowPoolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/build-and-test.yml
@@ -59,7 +59,7 @@ stages:
     dependsOn: []
     displayName: 'Build ARM64 (Cross)'
     pool:
-      name: ${{ variables.poolName }}
+      name: ${{ variables.x64SlowPoolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/build-and-test.yml
@@ -77,7 +77,7 @@ stages:
     dependsOn: []
     displayName: 'Build ARM64EC (Cross)'
     pool:
-      name: ${{ variables.poolName }}
+      name: ${{ variables.x64SlowPoolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/build-and-test.yml
@@ -115,7 +115,7 @@ stages:
     dependsOn: []
     displayName: 'Configure Tests'
     pool:
-      name: ${{ variables.poolName }}
+      name: ${{ variables.x64SlowPoolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/build-and-test.yml
@@ -137,7 +137,7 @@ stages:
       - Configure_Tests
     displayName: 'Test x64'
     pool:
-      name: ${{ variables.poolName }}
+      name: ${{ variables.x64FastPoolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/build-and-test.yml
@@ -150,7 +150,7 @@ stages:
     dependsOn: Test_x64
     displayName: 'Test x86'
     pool:
-      name: ${{ variables.poolName }}
+      name: ${{ variables.x64SlowPoolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
       - template: azure-devops/build-and-test.yml
@@ -173,7 +173,6 @@ stages:
           hostArch: arm64
           targetArch: arm64
           targetPlatform: arm64
-          numShards: 10
 
   - stage: Test_ARM64EC
     dependsOn:
@@ -189,4 +188,3 @@ stages:
           hostArch: arm64
           targetArch: arm64
           targetPlatform: arm64ec
-          numShards: 10

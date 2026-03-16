@@ -57,7 +57,7 @@ STATIC_ASSERT(il.begin() == il.end());
 STATIC_ASSERT(begin(il) == end(il));
 #endif // _HAS_CXX17
 
-// TRANSITION,
+// TRANSITION, ABI
 // constexpr error_category() noexcept;
 
 constexpr int i = 1729;
@@ -241,6 +241,8 @@ struct TestConstexprCtors {
     atomic<Animal> atom1{Animal::Cat};
     atomic<uint64_t> atom2{1729ULL};
     atomic<double*> atom3{nullptr};
+
+    mutex mut{};
 #endif // _M_CEE_PURE
 
     constexpr TestConstexprCtors() {}
@@ -801,6 +803,12 @@ void test_all_constants() {
 
     test_constants<ios_base::seekdir, ios_base::beg, ios_base::cur, ios_base::end>();
 
+    // LWG-4037 "Static data members of ctype_base are not yet required to be usable in constant expressions"
+    // The following furtherly requires ctype_base::mask to be usable as a type of a constant template parameter.
+    test_constants<ctype_base::mask, ctype_base::alnum, ctype_base::alpha, ctype_base::cntrl, ctype_base::digit,
+        ctype_base::graph, ctype_base::lower, ctype_base::print, ctype_base::punct, ctype_base::space,
+        ctype_base::upper, ctype_base::xdigit, ctype_base::blank>();
+
     test_constants<RC::syntax_option_type, RC::icase, RC::nosubs, RC::optimize, RC::collate, RC::ECMAScript, RC::basic,
         RC::extended, RC::awk, RC::grep, RC::egrep, regex::icase, regex::nosubs, regex::optimize, regex::collate,
         regex::ECMAScript, regex::basic, regex::extended, regex::awk, regex::grep, regex::egrep>();
@@ -814,6 +822,34 @@ void test_all_constants() {
         RC::error_badrepeat, RC::error_complexity, RC::error_stack>();
 }
 
+// Ensure that these members of ctype_base are actually implemented as static const members of the correct type.
+
+STATIC_ASSERT(is_same_v<decltype(ctype_base::alnum), const ctype_base::mask>);
+STATIC_ASSERT(is_same_v<decltype(ctype_base::alpha), const ctype_base::mask>);
+STATIC_ASSERT(is_same_v<decltype(ctype_base::cntrl), const ctype_base::mask>);
+STATIC_ASSERT(is_same_v<decltype(ctype_base::digit), const ctype_base::mask>);
+STATIC_ASSERT(is_same_v<decltype(ctype_base::graph), const ctype_base::mask>);
+STATIC_ASSERT(is_same_v<decltype(ctype_base::lower), const ctype_base::mask>);
+STATIC_ASSERT(is_same_v<decltype(ctype_base::print), const ctype_base::mask>);
+STATIC_ASSERT(is_same_v<decltype(ctype_base::punct), const ctype_base::mask>);
+STATIC_ASSERT(is_same_v<decltype(ctype_base::space), const ctype_base::mask>);
+STATIC_ASSERT(is_same_v<decltype(ctype_base::upper), const ctype_base::mask>);
+STATIC_ASSERT(is_same_v<decltype(ctype_base::xdigit), const ctype_base::mask>);
+STATIC_ASSERT(is_same_v<decltype(ctype_base::blank), const ctype_base::mask>);
+
+STATIC_ASSERT(is_same_v<decltype((ctype_base::alnum)), const ctype_base::mask&>);
+STATIC_ASSERT(is_same_v<decltype((ctype_base::alpha)), const ctype_base::mask&>);
+STATIC_ASSERT(is_same_v<decltype((ctype_base::cntrl)), const ctype_base::mask&>);
+STATIC_ASSERT(is_same_v<decltype((ctype_base::digit)), const ctype_base::mask&>);
+STATIC_ASSERT(is_same_v<decltype((ctype_base::graph)), const ctype_base::mask&>);
+STATIC_ASSERT(is_same_v<decltype((ctype_base::lower)), const ctype_base::mask&>);
+STATIC_ASSERT(is_same_v<decltype((ctype_base::print)), const ctype_base::mask&>);
+STATIC_ASSERT(is_same_v<decltype((ctype_base::punct)), const ctype_base::mask&>);
+STATIC_ASSERT(is_same_v<decltype((ctype_base::space)), const ctype_base::mask&>);
+STATIC_ASSERT(is_same_v<decltype((ctype_base::upper)), const ctype_base::mask&>);
+STATIC_ASSERT(is_same_v<decltype((ctype_base::xdigit)), const ctype_base::mask&>);
+STATIC_ASSERT(is_same_v<decltype((ctype_base::blank)), const ctype_base::mask&>);
+
 constexpr csub_match sm{};
 STATIC_ASSERT(sm.first == nullptr);
 STATIC_ASSERT(sm.second == nullptr);
@@ -826,9 +862,6 @@ constexpr try_to_lock_t try_to_lock2 = try_to_lock;
 constexpr adopt_lock_t adopt_lock2   = adopt_lock;
 
 constexpr once_flag once{};
-
-// TRANSITION,
-// constexpr mutex() noexcept;
 
 #endif // _M_CEE_PURE
 

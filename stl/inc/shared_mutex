@@ -212,7 +212,7 @@ public:
 
     shared_lock() noexcept = default;
 
-    _NODISCARD_CTOR_LOCK explicit shared_lock(mutex_type& _Mtx)
+    _NODISCARD_LOCK explicit shared_lock(mutex_type& _Mtx)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) { // construct with mutex and lock shared
         _Mtx.lock_shared();
     }
@@ -220,20 +220,20 @@ public:
     shared_lock(mutex_type& _Mtx, defer_lock_t) noexcept
         : _Pmtx(_STD addressof(_Mtx)), _Owns(false) {} // construct with unlocked mutex
 
-    _NODISCARD_CTOR_LOCK shared_lock(mutex_type& _Mtx, try_to_lock_t)
+    _NODISCARD_LOCK shared_lock(mutex_type& _Mtx, try_to_lock_t)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared()) {} // construct with mutex and try to lock shared
 
-    _NODISCARD_CTOR_LOCK shared_lock(mutex_type& _Mtx, adopt_lock_t) noexcept // strengthened
+    _NODISCARD_LOCK shared_lock(mutex_type& _Mtx, adopt_lock_t) noexcept // strengthened
         : _Pmtx(_STD addressof(_Mtx)), _Owns(true) {} // construct with mutex and adopt ownership
 
     template <class _Rep, class _Period>
-    _NODISCARD_CTOR_LOCK shared_lock(mutex_type& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
+    _NODISCARD_LOCK shared_lock(mutex_type& _Mtx, const chrono::duration<_Rep, _Period>& _Rel_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared_for(_Rel_time)) {
         // construct with mutex and try to lock for relative time
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD_CTOR_LOCK shared_lock(mutex_type& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
+    _NODISCARD_LOCK shared_lock(mutex_type& _Mtx, const chrono::time_point<_Clock, _Duration>& _Abs_time)
         : _Pmtx(_STD addressof(_Mtx)), _Owns(_Mtx.try_lock_shared_until(_Abs_time)) {
         // construct with mutex and try to lock until absolute time
         static_assert(chrono::_Is_clock_v<_Clock>, "Clock type required");
@@ -245,7 +245,7 @@ public:
         }
     }
 
-    _NODISCARD_CTOR_LOCK shared_lock(shared_lock&& _Other) noexcept : _Pmtx(_Other._Pmtx), _Owns(_Other._Owns) {
+    _NODISCARD_LOCK shared_lock(shared_lock&& _Other) noexcept : _Pmtx(_Other._Pmtx), _Owns(_Other._Owns) {
         _Other._Pmtx = nullptr;
         _Other._Owns = false;
     }

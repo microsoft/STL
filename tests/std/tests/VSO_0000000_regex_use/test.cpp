@@ -2437,6 +2437,30 @@ void test_gh_6022() {
     g_regexTester.should_not_match(
         "bacabcdacdabbaddabbcdcdba", R"((?:(?:([abc])([abc]))*d)*cabcdacdabbaddabbcdcd\1\2)");
     g_regexTester.should_match("bacabcdacdabbaddabbcdcd", R"((?:(?:([abc])([abc]))*d)*bacabcdacdabbaddabbcdcd\1\2)");
+
+    g_regexTester.should_match("abaaacaabaaaadab", R"((?:(a*)b(\1*)a*c)+aabaaaad\2b)");
+}
+
+void test_gh_6118() {
+    // GH-6118: regex_search() sometimes incorrectly matches capturing groups
+    // regex_search() failed to reset capture groups between match attempts.
+    {
+        test_regex re_matching_inbetween(&g_regexTester, "a|(b)c");
+        re_matching_inbetween.should_search_match_capture_groups("ba", "a", match_default, {{-1, -1}});
+    }
+
+    {
+        test_regex re_matching_at_end(&g_regexTester, "$|(b)c");
+        re_matching_at_end.should_search_match_capture_groups("b", "", match_default, {{-1, -1}});
+    }
+}
+
+void test_gh_6147() {
+    // GH-6147: Implement small vector optimization for state frames
+    //
+    // This tests that the buffer doesn't contain uninitialized initial areas after several reallocations
+    // by forcing the creation of a sufficiently big vector followed by full backtracking.
+    g_regexTester.should_not_match(string(5000, 'a') + 'c', "(a|b)*");
 }
 
 int main() {
@@ -2501,6 +2525,8 @@ int main() {
     test_gh_5939();
     test_gh_5944();
     test_gh_6022();
+    test_gh_6118();
+    test_gh_6147();
 
     return g_regexTester.result();
 }

@@ -20,6 +20,7 @@
 #include <concepts>
 #include <cstddef>
 #include <cstring>
+#include <flat_map>
 #include <format>
 #include <iterator>
 #include <map>
@@ -325,7 +326,7 @@ void test_char(TestFunction check, ExceptionTest check_exception) {
 
 template <class TestFunction, class ExceptionTest>
 void test_char_to_wchar(TestFunction check, ExceptionTest check_exception) {
-    map<char, char> input{{'a', 'A'}, {'c', 'C'}, {'b', 'B'}};
+    flat_map<char, char> input{{'a', 'A'}, {'c', 'C'}, {'b', 'B'}};
 
     using CharT = wchar_t;
     check(SV("{'a': 'A', 'b': 'B', 'c': 'C'}"), SV("{}"), input);
@@ -646,24 +647,24 @@ void test_int(TestFunction check, ExceptionTest check_exception) {
 
 template <class CharT, class TestFunction, class ExceptionTest>
 void test_floating_point(TestFunction check, ExceptionTest check_exception) {
-    map<double, double> input{{1.0, -1.0}, {-42, 42}};
+    flat_multimap<double, double> input{{11.0, 42.0}, {11.0, -1.0}};
 
-    check(SV("{-42: 42, 1: -1}"), SV("{}"), input);
-    check(SV("{-42: 42, 1: -1}^42"), SV("{}^42"), input);
-    check(SV("{-42: 42, 1: -1}^42"), SV("{:}^42"), input);
+    check(SV("{11: 42, 11: -1}"), SV("{}"), input);
+    check(SV("{11: 42, 11: -1}^42"), SV("{}^42"), input);
+    check(SV("{11: 42, 11: -1}^42"), SV("{:}^42"), input);
 
     // ***** underlying has no format-spec
 
     // *** align-fill & width ***
-    check(SV("{-42: 42, 1: -1}     "), SV("{:21}"), input);
-    check(SV("{-42: 42, 1: -1}*****"), SV("{:*<21}"), input);
-    check(SV("__{-42: 42, 1: -1}___"), SV("{:_^21}"), input);
-    check(SV("#####{-42: 42, 1: -1}"), SV("{:#>21}"), input);
+    check(SV("{11: 42, 11: -1}     "), SV("{:21}"), input);
+    check(SV("{11: 42, 11: -1}*****"), SV("{:*<21}"), input);
+    check(SV("__{11: 42, 11: -1}___"), SV("{:_^21}"), input);
+    check(SV("#####{11: 42, 11: -1}"), SV("{:#>21}"), input);
 
-    check(SV("{-42: 42, 1: -1}     "), SV("{:{}}"), input, 21);
-    check(SV("{-42: 42, 1: -1}*****"), SV("{:*<{}}"), input, 21);
-    check(SV("__{-42: 42, 1: -1}___"), SV("{:_^{}}"), input, 21);
-    check(SV("#####{-42: 42, 1: -1}"), SV("{:#>{}}"), input, 21);
+    check(SV("{11: 42, 11: -1}     "), SV("{:{}}"), input, 21);
+    check(SV("{11: 42, 11: -1}*****"), SV("{:*<{}}"), input, 21);
+    check(SV("__{11: 42, 11: -1}___"), SV("{:_^{}}"), input, 21);
+    check(SV("#####{11: 42, 11: -1}"), SV("{:#>{}}"), input, 21);
 
     check_exception("The format string contains an invalid escape sequence", SV("{:}<}"), input);
     check_exception("The fill option contains an invalid value", SV("{:{<}"), input);
@@ -686,10 +687,10 @@ void test_floating_point(TestFunction check, ExceptionTest check_exception) {
     check_exception("The format specifier should consume the input or end with a '}'", SV("{:L}"), input);
 
     // *** n
-    check(SV("__-42: 42, 1: -1___"), SV("{:_^19n}"), input);
+    check(SV("__11: 42, 11: -1___"), SV("{:_^19n}"), input);
 
     // *** type ***
-    check(SV("__{-42: 42, 1: -1}___"), SV("{:_^21m}"), input); // the m type does the same as the default.
+    check(SV("__{11: 42, 11: -1}___"), SV("{:_^21m}"), input); // the m type does the same as the default.
     check_exception("Type s requires character type as formatting argument", SV("{:s}"), input);
     check_exception("Type ?s requires character type as formatting argument", SV("{:?s}"), input);
 
@@ -698,15 +699,15 @@ void test_floating_point(TestFunction check, ExceptionTest check_exception) {
     }
 
     // ***** Only underlying has a format-spec
-    check(SV("{-42: 42   , 1: -1     }"), SV("{::10}"), input);
-    check(SV("{-42: 42***, 1: -1*****}"), SV("{::*<10}"), input);
-    check(SV("{_-42: 42__, __1: -1___}"), SV("{::_^10}"), input);
-    check(SV("{###-42: 42, #####1: -1}"), SV("{::#>10}"), input);
+    check(SV("{11: 42    , 11: -1    }"), SV("{::10}"), input);
+    check(SV("{11: 42****, 11: -1****}"), SV("{::*<10}"), input);
+    check(SV("{__11: 42__, __11: -1__}"), SV("{::_^10}"), input);
+    check(SV("{####11: 42, ####11: -1}"), SV("{::#>10}"), input);
 
-    check(SV("{-42: 42   , 1: -1     }"), SV("{::{}}"), input, 10);
-    check(SV("{-42: 42***, 1: -1*****}"), SV("{::*<{}}"), input, 10);
-    check(SV("{_-42: 42__, __1: -1___}"), SV("{::_^{}}"), input, 10);
-    check(SV("{###-42: 42, #####1: -1}"), SV("{::#>{}}"), input, 10);
+    check(SV("{11: 42    , 11: -1    }"), SV("{::{}}"), input, 10);
+    check(SV("{11: 42****, 11: -1****}"), SV("{::*<{}}"), input, 10);
+    check(SV("{__11: 42__, __11: -1__}"), SV("{::_^{}}"), input, 10);
+    check(SV("{####11: 42, ####11: -1}"), SV("{::#>{}}"), input, 10);
 
     check_exception("The format string contains an invalid escape sequence", SV("{::}<}"), input);
     check_exception("The fill option contains an invalid value", SV("{::{<}"), input);
@@ -734,9 +735,9 @@ void test_floating_point(TestFunction check, ExceptionTest check_exception) {
     }
 
     // ***** Both have a format-spec
-    check(SV("^^{###-42: 42, #####1: -1}^^^"), SV("{:^^29:#>10}"), input);
-    check(SV("^^{###-42: 42, #####1: -1}^^^"), SV("{:^^{}:#>10}"), input, 29);
-    check(SV("^^{###-42: 42, #####1: -1}^^^"), SV("{:^^{}:#>{}}"), input, 29, 10);
+    check(SV("^^{####11: 42, ####11: -1}^^^"), SV("{:^^29:#>10}"), input);
+    check(SV("^^{####11: 42, ####11: -1}^^^"), SV("{:^^{}:#>10}"), input, 29);
+    check(SV("^^{####11: 42, ####11: -1}^^^"), SV("{:^^{}:#>{}}"), input, 29, 10);
 
     check_exception(
         "The argument index value is too large for the number of arguments supplied", SV("{:^^{}:#>10}"), input);

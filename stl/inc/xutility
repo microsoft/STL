@@ -54,56 +54,55 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ vector algorithms supported by default ^^^
 
 // _USE_STD_VECTOR_ALGORITHMS is our documented control macro:
-// https://learn.microsoft.com/en-us/cpp/standard-library/vectorized-stl-algorithms?view=msvc-170
+// https://learn.microsoft.com/cpp/standard-library/vectorized-stl-algorithms
 // In the STL's implementation, we inspect the following detection macros,
 // because various algorithms are vectorized for various architectures.
 
+// _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC is a macro to test ARM64EC fallbacks for x64 algorithms.
+
 #if !_USE_STD_VECTOR_ALGORITHMS
 #define _VECTORIZED_FOR_X64_X86               0
-#define _VECTORIZED_FOR_X64_X86_ARM64         0
 #define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 0
-#elif defined(_M_ARM64EC)
+#elif defined(_M_ARM64) || (defined(_M_ARM64EC) && !defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC))
 #define _VECTORIZED_FOR_X64_X86               0
-#define _VECTORIZED_FOR_X64_X86_ARM64         0
-#define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
-#elif defined(_M_ARM64)
-#define _VECTORIZED_FOR_X64_X86               0
-#define _VECTORIZED_FOR_X64_X86_ARM64         1
 #define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
 #elif defined(_M_X64) || defined(_M_IX86)
 #define _VECTORIZED_FOR_X64_X86               1
-#define _VECTORIZED_FOR_X64_X86_ARM64         1
 #define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
 #else // ^^^ known architecture / unknown architecture vvv
 #error Unknown architecture
 #endif // ^^^ unknown architecture ^^^
 
-#define _VECTORIZED_ADJACENT_FIND      _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_ADJACENT_FIND      _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
 #define _VECTORIZED_BITSET_FROM_STRING _VECTORIZED_FOR_X64_X86
 #define _VECTORIZED_BITSET_TO_STRING   _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_COUNT              _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_FIND               _VECTORIZED_FOR_X64_X86_ARM64
-#define _VECTORIZED_FIND_END           _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_FIND_FIRST_OF      _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_FIND_LAST          _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_FIND_LAST_OF       _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_INCLUDES           _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_IS_SORTED_UNTIL    _VECTORIZED_FOR_X64_X86_ARM64
-#define _VECTORIZED_MINMAX             _VECTORIZED_FOR_X64_X86_ARM64
-#define _VECTORIZED_MINMAX_ELEMENT     _VECTORIZED_FOR_X64_X86_ARM64
-#define _VECTORIZED_MISMATCH           _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_REMOVE             _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_REMOVE_COPY        _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_COUNT              _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_FIND               _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_FIND_END           _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_FIND_FIRST_OF      _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_FIND_LAST          _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_FIND_LAST_OF       _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_INCLUDES           _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_IS_SORTED_UNTIL    _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_MINMAX             _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_MINMAX_ELEMENT     _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_MISMATCH           _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_REMOVE             _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_REMOVE_COPY        _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
 #define _VECTORIZED_REPLACE            _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_REPLACE_COPY       _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_REVERSE            _VECTORIZED_FOR_X64_X86_ARM64
-#define _VECTORIZED_REVERSE_COPY       _VECTORIZED_FOR_X64_X86_ARM64
-#define _VECTORIZED_ROTATE             _VECTORIZED_FOR_X64_X86_ARM64
-#define _VECTORIZED_SEARCH             _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_SEARCH_N           _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_SWAP_RANGES        _VECTORIZED_FOR_X64_X86_ARM64
-#define _VECTORIZED_UNIQUE             _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_UNIQUE_COPY        _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_REPLACE_COPY       _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_REVERSE            _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_REVERSE_COPY       _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_ROTATE             _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_SEARCH             _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_SEARCH_N           _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_SWAP_RANGES        _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_UNIQUE             _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_UNIQUE_COPY        _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+
+// We choose not to vectorize minmax_element for 64-bit integers on ARM64/ARM64EC
+// as this does not improve performance over the scalar code.
+#define _VECTORIZED_MINMAX_ELEMENT_64BIT_INT _VECTORIZED_FOR_X64_X86
 
 #ifndef _USE_STD_VECTOR_FLOATING_ALGORITHMS
 #if _USE_STD_VECTOR_ALGORITHMS && !defined(_M_FP_EXCEPT)
@@ -200,18 +199,18 @@ const void* __stdcall __std_find_end_8(
 const void* __stdcall __std_min_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_min_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_min_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
-#ifndef _M_ARM64
+#if _VECTORIZED_MINMAX_ELEMENT_64BIT_INT
 const void* __stdcall __std_min_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT_64BIT_INT ^^^
 const void* __stdcall __std_min_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
 const void* __stdcall __std_min_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
 
 const void* __stdcall __std_max_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_max_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
 const void* __stdcall __std_max_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
-#ifndef _M_ARM64
+#if _VECTORIZED_MINMAX_ELEMENT_64BIT_INT
 const void* __stdcall __std_max_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#endif // ^^^ _VECTORIZED_MINMAX_ELEMENT_64BIT_INT ^^^
 const void* __stdcall __std_max_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
 const void* __stdcall __std_max_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
 #endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
@@ -413,11 +412,11 @@ _Ty* _Min_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 4) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_4(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 8) {
-#ifdef _M_ARM64
-        static_assert(false, "unexpected size; 64-bit integers on ARM64 should not take this codepath");
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+#if _VECTORIZED_MINMAX_ELEMENT_64BIT_INT
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_8(_First, _Last, _Signed)));
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#else // ^^^ _VECTORIZED_MINMAX_ELEMENT_64BIT_INT / !_VECTORIZED_MINMAX_ELEMENT_64BIT_INT vvv
+        static_assert(false, "unexpected size");
+#endif // ^^^ !_VECTORIZED_MINMAX_ELEMENT_64BIT_INT ^^^
     } else {
         static_assert(false, "unexpected size");
     }
@@ -438,11 +437,11 @@ _Ty* _Max_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     } else if constexpr (sizeof(_Ty) == 4) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_4(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 8) {
-#ifdef _M_ARM64
-        static_assert(false, "unexpected size; 64-bit integers on ARM64 should not take this codepath");
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+#if _VECTORIZED_MINMAX_ELEMENT_64BIT_INT
         return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_8(_First, _Last, _Signed)));
-#endif // ^^^ !defined(_M_ARM64) ^^^
+#else // ^^^ _VECTORIZED_MINMAX_ELEMENT_64BIT_INT / !_VECTORIZED_MINMAX_ELEMENT_64BIT_INT vvv
+        static_assert(false, "unexpected size");
+#endif // ^^^ !_VECTORIZED_MINMAX_ELEMENT_64BIT_INT ^^^
     } else {
         static_assert(false, "unexpected size");
     }
@@ -590,12 +589,23 @@ struct _Get_rebind_alias<_Ty, _Other, void_t<typename _Ty::template rebind<_Othe
 
 #if _HAS_CXX20
 _EXPORT_STD template <class _Ty, class... _Types>
-    requires requires(_Ty* _Location, _Types&&... _Args) {
+    requires (!is_unbounded_array_v<_Ty>) && requires(_Ty* _Location, _Types&&... _Args) {
         ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...); // per LWG-3888
     }
 constexpr _Ty* construct_at(_Ty* const _Location, _Types&&... _Args)
     noexcept(noexcept(::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
-    _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...);
+    if constexpr (is_array_v<_Ty>) {
+        static_assert(sizeof...(_Types) == 0, "The array is only allowed to be value-initialized by std::construct_at. "
+                                              "(N5032 [specialized.construct]/2)");
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-117294, DevCom-10798145
+        ::new (static_cast<void*>(_Location)) _Ty();
+        return __builtin_launder(_Location); // per old resolution of LWG-3436
+#else // ^^^ workaround / no workaround vvv
+        _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty[1]();
+#endif // ^^^ no workaround ^^^
+    } else {
+        _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...);
+    }
 }
 #endif // _HAS_CXX20
 
@@ -996,8 +1006,7 @@ namespace ranges {
 
         public:
             template <class _Ty>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr _Return_type<_Ty> operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
-                noexcept(_Choice<_Ty>._No_throw) {
+            _NODISCARD static constexpr _Return_type<_Ty> operator()(_Ty&& _Val) noexcept(_Choice<_Ty>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty>._Strategy;
 
                 if constexpr (_Strat == _St::_Custom) {
@@ -1322,8 +1331,7 @@ namespace ranges {
         public:
             template <class _Ty1, class _Ty2>
                 requires (_Choice<_Ty1, _Ty2>._Strategy != _St::_None)
-            _STATIC_CALL_OPERATOR constexpr void operator()(_Ty1&& _Val1, _Ty2&& _Val2) _CONST_CALL_OPERATOR
-                noexcept(_Choice<_Ty1, _Ty2>._No_throw) {
+            static constexpr void operator()(_Ty1&& _Val1, _Ty2&& _Val2) noexcept(_Choice<_Ty1, _Ty2>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty1, _Ty2>._Strategy;
 
                 if constexpr (_Strat == _St::_Custom) {
@@ -1638,6 +1646,9 @@ concept _Allocator_for_container = requires(_Ty& _Alloc) {
     typename _Ty::value_type;
     _Alloc.deallocate(_Alloc.allocate(size_t{1}), size_t{1});
 };
+
+template <class _Ty>
+concept _Not_allocator_for_container = !_Allocator_for_container<_Ty>;
 
 template <class _Ty>
 struct _Is_allocator : bool_constant<_Allocator_for_container<_Ty>> {};
@@ -2713,8 +2724,7 @@ namespace ranges {
         public:
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
-                noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD static constexpr auto operator()(_Ty&& _Val) noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Array) {
@@ -2789,8 +2799,7 @@ namespace ranges {
         public:
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
-                noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD static constexpr auto operator()(_Ty&& _Val) noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Array) {
@@ -2928,8 +2937,7 @@ namespace ranges {
         public:
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
-                noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD static constexpr auto operator()(_Ty&& _Val) noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -2979,8 +2987,7 @@ namespace ranges {
         public:
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
-                noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD static constexpr auto operator()(_Ty&& _Val) noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -3046,13 +3053,13 @@ namespace ranges {
                 typename const_iterator<_Begin_on_const<_Ty>>;
                 const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))};
             }
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR noexcept(
+        _NODISCARD static constexpr auto operator()(_Ty&& _Val) noexcept(
             noexcept(const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))})) {
             return const_iterator<_Begin_on_const<_Ty>>{_RANGES begin(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+        _NODISCARD static constexpr auto operator()(_Ty&& _Val)
             noexcept(noexcept(_RANGES begin(static_cast<_CTy&&>(_Val))))
             requires requires { _RANGES begin(static_cast<_CTy &&>(_Val)); }
         {
@@ -3076,13 +3083,13 @@ namespace ranges {
                 typename const_sentinel<_End_on_const<_Ty>>;
                 const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))};
             }
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+        _NODISCARD static constexpr auto operator()(_Ty&& _Val)
             noexcept(noexcept(const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))})) {
             return const_sentinel<_End_on_const<_Ty>>{_RANGES end(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+        _NODISCARD static constexpr auto operator()(_Ty&& _Val)
             noexcept(noexcept(_RANGES end(static_cast<_CTy&&>(_Val))))
             requires requires { _RANGES end(static_cast<_CTy &&>(_Val)); }
         {
@@ -3143,8 +3150,7 @@ namespace ranges {
         public:
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
-                noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD static constexpr auto operator()(_Ty&& _Val) noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -3214,8 +3220,7 @@ namespace ranges {
         public:
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
-                noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD static constexpr auto operator()(_Ty&& _Val) noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -3246,13 +3251,13 @@ namespace ranges {
                 typename const_iterator<_Rbegin_on_const<_Ty>>;
                 const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))};
             }
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR noexcept(
+        _NODISCARD static constexpr auto operator()(_Ty&& _Val) noexcept(
             noexcept(const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))})) {
             return const_iterator<_Rbegin_on_const<_Ty>>{_RANGES rbegin(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+        _NODISCARD static constexpr auto operator()(_Ty&& _Val)
             noexcept(noexcept(_RANGES rbegin(static_cast<_CTy&&>(_Val))))
             requires requires { _RANGES rbegin(static_cast<_CTy &&>(_Val)); }
         {
@@ -3276,13 +3281,13 @@ namespace ranges {
                 typename const_sentinel<_Rend_on_const<_Ty>>;
                 const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))};
             }
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+        _NODISCARD static constexpr auto operator()(_Ty&& _Val)
             noexcept(noexcept(const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))})) {
             return const_sentinel<_Rend_on_const<_Ty>>{_RANGES rend(_RANGES _Possibly_const_range(_Val))};
         }
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+        _NODISCARD static constexpr auto operator()(_Ty&& _Val)
             noexcept(noexcept(_RANGES rend(static_cast<_CTy&&>(_Val))))
             requires requires { _RANGES rend(static_cast<_CTy &&>(_Val)); }
         {
@@ -3355,8 +3360,7 @@ namespace ranges {
         public:
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
-                noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD static constexpr auto operator()(_Ty&& _Val) noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Array) {
@@ -3421,8 +3425,7 @@ namespace ranges {
         public:
             template <class _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr bool operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
-                noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD static constexpr bool operator()(_Ty&& _Val) noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -3478,8 +3481,7 @@ namespace ranges {
         public:
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
-                noexcept(_Choice<_Ty&>._No_throw) {
+            _NODISCARD static constexpr auto operator()(_Ty&& _Val) noexcept(_Choice<_Ty&>._No_throw) {
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -3503,13 +3505,13 @@ namespace ranges {
             requires requires(_Ty& _Val) { //
                 _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val)));
             }
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+        _NODISCARD static constexpr auto operator()(_Ty&& _Val)
             noexcept(noexcept(_RANGES data(_RANGES _Possibly_const_range(_Val)))) {
             return _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val)));
         }
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         template <class _Ty, class _CTy = _Const_thru_ref<_Ty>>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+        _NODISCARD static constexpr auto operator()(_Ty&& _Val)
             noexcept(noexcept(_RANGES data(static_cast<_CTy&&>(_Val))))
             requires requires { _RANGES data(static_cast<_CTy &&>(_Val)); }
         {
@@ -3566,7 +3568,7 @@ namespace ranges {
 
     struct _Advance_fn {
         template <input_or_output_iterator _It>
-        _STATIC_CALL_OPERATOR constexpr void operator()(_It& _Where, iter_difference_t<_It> _Off) _CONST_CALL_OPERATOR {
+        static constexpr void operator()(_It& _Where, iter_difference_t<_It> _Off) {
             if constexpr (random_access_iterator<_It>) {
                 _Where += _Off;
             } else {
@@ -3594,7 +3596,7 @@ namespace ranges {
         }
 
         template <input_or_output_iterator _It, sentinel_for<_It> _Se>
-        _STATIC_CALL_OPERATOR constexpr void operator()(_It& _Where, _Se _Last) _CONST_CALL_OPERATOR {
+        static constexpr void operator()(_It& _Where, _Se _Last) {
             if constexpr (assignable_from<_It&, _Se>) {
                 _Where = static_cast<_Se&&>(_Last);
             } else if constexpr (sized_sentinel_for<_Se, _It>) {
@@ -3618,8 +3620,7 @@ namespace ranges {
         }
 
         template <input_or_output_iterator _It, sentinel_for<_It> _Se>
-        _STATIC_CALL_OPERATOR constexpr iter_difference_t<_It> operator()(
-            _It& _Where, iter_difference_t<_It> _Off, _Se _Last) _CONST_CALL_OPERATOR {
+        static constexpr iter_difference_t<_It> operator()(_It& _Where, iter_difference_t<_It> _Off, _Se _Last) {
             if constexpr (sized_sentinel_for<_Se, _It>) {
                 const iter_difference_t<_It> _Delta = _Last - _Where;
                 if ((_Off < 0 && _Off <= _Delta) || (_Off > 0 && _Off >= _Delta)) {
@@ -3662,16 +3663,16 @@ namespace ranges {
     public:
         template <class _It, sentinel_for<_It> _Se>
             requires (!sized_sentinel_for<_Se, _It>)
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr iter_difference_t<_It> operator()(
-            _It _First, _Se _Last) _CONST_CALL_OPERATOR noexcept(_Calculate_noexcept<_It, _Se>()) /* strengthened */ {
+        _NODISCARD static constexpr iter_difference_t<_It> operator()(_It _First, _Se _Last)
+            noexcept(_Calculate_noexcept<_It, _Se>()) /* strengthened */ {
             _STD _Adl_verify_range(_First, _Last);
             return _Distance_unchecked(
                 _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
         }
 
         template <class _It, sized_sentinel_for<_Distance_iterator_t<_It>> _Se>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr iter_difference_t<_Distance_iterator_t<_It>> operator()(_It&& _First,
-            const _Se _Last) _CONST_CALL_OPERATOR noexcept(_Calculate_noexcept<_It, _Se>()) /* strengthened */ {
+        _NODISCARD static constexpr iter_difference_t<_Distance_iterator_t<_It>> operator()(
+            _It&& _First, const _Se _Last) noexcept(_Calculate_noexcept<_It, _Se>()) /* strengthened */ {
             if constexpr (!is_array_v<remove_reference_t<_It>>) {
                 return _Last - _First;
             } else {
@@ -3680,8 +3681,8 @@ namespace ranges {
         }
 
         template <range _Rng>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr range_difference_t<_Rng> operator()(
-            _Rng&& _Range) _CONST_CALL_OPERATOR noexcept(_Calculate_noexcept<_Rng>()) /* strengthened */ {
+        _NODISCARD static constexpr range_difference_t<_Rng> operator()(_Rng&& _Range)
+            noexcept(_Calculate_noexcept<_Rng>()) /* strengthened */ {
             if constexpr (sized_range<_Rng>) {
                 return static_cast<range_difference_t<_Rng>>(_RANGES size(_Range));
             } else {
@@ -3733,8 +3734,7 @@ namespace ranges {
 
     struct _Ssize_fn {
         template <class _Rng>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
-            noexcept(noexcept(_RANGES size(_Range)))
+        _NODISCARD static constexpr auto operator()(_Rng&& _Range) noexcept(noexcept(_RANGES size(_Range)))
             requires requires { _RANGES size(_Range); }
         {
             using _Sty = _Make_signed_like_t<decltype(_RANGES size(_Range))>;
@@ -3749,27 +3749,25 @@ namespace ranges {
 
     struct _Next_fn {
         template <input_or_output_iterator _It>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(_It _Where) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr _It operator()(_It _Where) {
             ++_Where;
             return _Where;
         }
 
         template <input_or_output_iterator _It>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
-            _It _Where, const iter_difference_t<_It> _Off) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr _It operator()(_It _Where, const iter_difference_t<_It> _Off) {
             _RANGES advance(_Where, _Off);
             return _Where;
         }
 
         template <input_or_output_iterator _It, sentinel_for<_It> _Se>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(_It _Where, _Se _Last) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr _It operator()(_It _Where, _Se _Last) {
             _RANGES advance(_Where, static_cast<_Se&&>(_Last));
             return _Where;
         }
 
         template <input_or_output_iterator _It, sentinel_for<_It> _Se>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
-            _It _Where, const iter_difference_t<_It> _Off, _Se _Last) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr _It operator()(_It _Where, const iter_difference_t<_It> _Off, _Se _Last) {
             _RANGES advance(_Where, _Off, static_cast<_Se&&>(_Last));
             return _Where;
         }
@@ -3779,22 +3777,20 @@ namespace ranges {
 
     struct _Prev_fn {
         template <bidirectional_iterator _It>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(_It _Where) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr _It operator()(_It _Where) {
             --_Where;
             return _Where;
         }
 
         template <bidirectional_iterator _It>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
-            _It _Where, const iter_difference_t<_It> _Off) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr _It operator()(_It _Where, const iter_difference_t<_It> _Off) {
             _STL_ASSERT(_Off != _Min_possible_v<iter_difference_t<_It>>, "integer overflow");
             _RANGES advance(_Where, -_Off);
             return _Where;
         }
 
         template <bidirectional_iterator _It>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
-            _It _Where, const iter_difference_t<_It> _Off, _It _Last) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr _It operator()(_It _Where, const iter_difference_t<_It> _Off, _It _Last) {
             _STL_ASSERT(_Off != _Min_possible_v<iter_difference_t<_It>>, "integer overflow");
             _RANGES advance(_Where, -_Off, static_cast<_It&&>(_Last));
             return _Where;
@@ -4117,7 +4113,7 @@ namespace ranges {
     private:
         using _Size_type = _Make_unsigned_like_t<iter_difference_t<_It>>;
 
-        // TRANSITION, [[no_unique_address]]:
+        // TRANSITION, ABI:
         /* [[no_unique_address]] */ _It _First{};
         /* [[no_unique_address]] */ _Se _Last{};
         // [[no_unique_address]] conditional_t<_Store_size<_It, _Se, _Ki>, _Size_type, _Nil> _Size{};
@@ -4987,6 +4983,13 @@ struct _Map_vb_functor {
     using type = void;
 };
 
+#if _HAS_CXX20
+template <>
+struct _Map_vb_functor<identity> {
+    using type = identity;
+};
+#endif // _HAS_CXX20
+
 template <class _Fn>
 using _Map_vb_functor_t = typename _Map_vb_functor<_Fn>::type;
 
@@ -5210,8 +5213,7 @@ namespace ranges {
     struct _Copy_fn {
         template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
             requires indirectly_copyable<_It, _Out>
-        _STATIC_CALL_OPERATOR constexpr copy_result<_It, _Out> operator()(
-            _It _First, _Se _Last, _Out _Output) _CONST_CALL_OPERATOR {
+        static constexpr copy_result<_It, _Out> operator()(_It _First, _Se _Last, _Out _Output) {
             _STD _Adl_verify_range(_First, _Last);
             auto _UFirst      = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
             auto _ULast       = _RANGES _Unwrap_sent<_It>(_STD move(_Last));
@@ -5225,8 +5227,7 @@ namespace ranges {
 
         template <input_range _Rng, weakly_incrementable _Out>
             requires indirectly_copyable<iterator_t<_Rng>, _Out>
-        _STATIC_CALL_OPERATOR constexpr copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
-            _Rng&& _Range, _Out _Output) _CONST_CALL_OPERATOR {
+        static constexpr copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(_Rng&& _Range, _Out _Output) {
             const auto _Count = _RANGES _Idl_distance(_Range);
             auto _First       = _RANGES begin(_Range);
             auto _UResult = _RANGES _Copy_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
@@ -5493,8 +5494,18 @@ _NODISCARD bool _Is_all_bits_zero(const _Ty& _Val) {
     _STL_INTERNAL_STATIC_ASSERT(is_scalar_v<_Ty> && !is_member_pointer_v<_Ty>);
     if constexpr (is_null_pointer_v<_Ty>) {
         return true;
+    } else if constexpr (is_integral_v<_Ty> || is_pointer_v<_Ty>) {
+        return _Val == _Ty{};
+    } else if constexpr (sizeof(_Ty) == 1) {
+        return _STD _Bit_cast<uint8_t>(_Val) == 0;
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return _STD _Bit_cast<uint16_t>(_Val) == 0;
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return _STD _Bit_cast<uint32_t>(_Val) == 0;
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return _STD _Bit_cast<uint64_t>(_Val) == 0;
     } else {
-        constexpr _Ty _Zero{};
+        static constexpr _Ty _Zero{};
         return _CSTD memcmp(&_Val, &_Zero, sizeof(_Ty)) == 0;
     }
 }
@@ -5591,8 +5602,7 @@ _FwdIt fill_n(_ExPo&&, _FwdIt _Dest, _Diff _Count_raw, const _Ty& _Val) noexcept
 namespace ranges {
     struct _Fill_n_fn {
         template <class _Ty, output_iterator<const _Ty&> _It>
-        _STATIC_CALL_OPERATOR constexpr _It operator()(
-            _It _First, iter_difference_t<_It> _Count, const _Ty& _Value) _CONST_CALL_OPERATOR {
+        static constexpr _It operator()(_It _First, iter_difference_t<_It> _Count, const _Ty& _Value) {
             if (_Count > 0) {
                 auto _UFirst = _STD _Get_unwrapped_n(_STD move(_First), _Count);
                 if (!_STD is_constant_evaluated()) {
@@ -5929,8 +5939,8 @@ namespace ranges {
         template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr mismatch_result<_It1, _It2> operator()(_It1 _First1, _Se1 _Last1,
-            _It2 _First2, _Se2 _Last2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr mismatch_result<_It1, _It2> operator()(
+            _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) {
             _STD _Adl_verify_range(_First1, _Last1);
             _STD _Adl_verify_range(_First2, _Last2);
 
@@ -5961,10 +5971,8 @@ namespace ranges {
         template <input_range _Rng1, input_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
             class _Pj2 = identity>
             requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
-        _NODISCARD
-            _STATIC_CALL_OPERATOR constexpr mismatch_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>>
-            operator()(_Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {},
-                _Pj2 _Proj2 = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr mismatch_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) {
             if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
                 range_difference_t<_Rng1> _Count1       = _RANGES distance(_Range1);
                 const range_difference_t<_Rng2> _Count2 = _RANGES distance(_Range2);
@@ -6520,8 +6528,7 @@ namespace ranges {
     struct _Find_fn {
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
-            _It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr _It operator()(_It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) {
             _STD _Adl_verify_range(_First, _Last);
             auto _UResult = _RANGES _Find_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
                 _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _Val, _STD _Pass_fn(_Proj));
@@ -6532,8 +6539,8 @@ namespace ranges {
 
         template <input_range _Rng, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr borrowed_iterator_t<_Rng> operator()(
-            _Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) {
             auto _First   = _RANGES begin(_Range);
             auto _UResult = _RANGES _Find_unchecked(
                 _RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Val, _STD _Pass_fn(_Proj));
@@ -6941,8 +6948,7 @@ namespace ranges {
     struct _Find_if_fn {
         template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
-            _It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) {
             _STD _Adl_verify_range(_First, _Last);
             auto _UResult = _RANGES _Find_if_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
                 _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
@@ -6953,8 +6959,7 @@ namespace ranges {
 
         template <input_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr borrowed_iterator_t<_Rng> operator()(
-            _Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) {
             auto _First   = _RANGES begin(_Range);
             auto _UResult = _RANGES _Find_if_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)),
                 _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
@@ -6970,8 +6975,7 @@ namespace ranges {
     public:
         template <input_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
-            _It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, _Pj _Proj = {}) {
             _STD _Adl_verify_range(_First, _Last);
 
             auto _UResult = _Find_if_not_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
@@ -6983,8 +6987,7 @@ namespace ranges {
 
         template <input_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr borrowed_iterator_t<_Rng> operator()(
-            _Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) {
             auto _First = _RANGES begin(_Range);
 
             auto _UResult = _Find_if_not_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
@@ -7017,8 +7020,7 @@ namespace ranges {
     public:
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_binary_predicate<projected<_It, _Pj>, projected<_It, _Pj>> _Pr = ranges::equal_to>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
-            _It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) {
             _STD _Adl_verify_range(_First, _Last);
 
             auto _UResult = _Adjacent_find_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
@@ -7031,8 +7033,8 @@ namespace ranges {
         template <forward_range _Rng, class _Pj = identity,
             indirect_binary_predicate<projected<iterator_t<_Rng>, _Pj>, projected<iterator_t<_Rng>, _Pj>> _Pr =
                 ranges::equal_to>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr borrowed_iterator_t<_Rng> operator()(
-            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) {
             auto _UResult =
                 _Adjacent_find_unchecked(_Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
 
@@ -7102,8 +7104,8 @@ namespace ranges {
         template <forward_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr subrange<_It1> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2,
-            _Se2 _Last2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr subrange<_It1> operator()(
+            _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) {
             _STD _Adl_verify_range(_First1, _Last1);
             _STD _Adl_verify_range(_First2, _Last2);
             auto _UFirst1 = _RANGES _Unwrap_iter<_Se1>(_STD move(_First1));
@@ -7127,8 +7129,8 @@ namespace ranges {
         template <forward_range _Rng1, forward_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
             class _Pj2 = identity>
             requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr borrowed_subrange_t<_Rng1> operator()(
-            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr borrowed_subrange_t<_Rng1> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) {
             if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
                 const auto _Count1 = _RANGES distance(_Range1);
                 const auto _Count2 = _RANGES distance(_Range2);
@@ -7263,20 +7265,19 @@ constexpr bool _Is_predicate_greater = _Is_any_of_v<_Pr,
 #endif // _HAS_CXX20
     greater<>, greater<_Iter_value_t<_Iter>>>;
 
-#ifdef _M_ARM64
-// We choose not to vectorize minmax_element for 64-bit integers on ARM64
-// as this does not improve performance over the scalar code.
+#if _VECTORIZED_MINMAX_ELEMENT_64BIT_INT
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_64bit_int_on_arm64_v = sizeof(_Ty) == 8 && !is_floating_point_v<_Ty>;
-#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+_INLINE_VAR constexpr bool _Is_64bit_int_excluded_from_min_max_element_optimization = false;
+#else // ^^^ _VECTORIZED_MINMAX_ELEMENT_64BIT_INT / !_VECTORIZED_MINMAX_ELEMENT_64BIT_INT vvv
 template <class _Ty>
-_INLINE_VAR constexpr bool _Is_64bit_int_on_arm64_v = false;
-#endif // ^^^ !defined(_M_ARM64) ^^^
+_INLINE_VAR constexpr bool _Is_64bit_int_excluded_from_min_max_element_optimization =
+    sizeof(_Ty) == 8 && !is_floating_point_v<_Ty>;
+#endif // ^^^ !_VECTORIZED_MINMAX_ELEMENT_64BIT_INT ^^^
 
 template <class _Iter, class _Pr>
 constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms for min_/max_element?
     _Is_min_max_iterators_safe<_Iter> && _Is_predicate_less<_Iter, _Pr>
-    && !_Is_64bit_int_on_arm64_v<_Iter_value_t<_Iter>>;
+    && !_Is_64bit_int_excluded_from_min_max_element_optimization<_Iter_value_t<_Iter>>;
 
 // Unlike the position-based vectorized implementation, the value-based vectorized implementation
 // does not always produce the expected results for floating-point types.
@@ -7395,8 +7396,7 @@ namespace ranges {
     struct _Max_element_fn {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
-            _It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) {
             _STD _Adl_verify_range(_First, _Last);
             _STD _Seek_wrapped(
                 _First, _RANGES _Max_element_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
@@ -7406,8 +7406,8 @@ namespace ranges {
 
         template <forward_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr borrowed_iterator_t<_Rng> operator()(
-            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) {
             auto _UResult = _RANGES _Max_element_unchecked(
                 _Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             return _RANGES _Rewrap_iterator(_Range, _STD move(_UResult));
@@ -7452,8 +7452,8 @@ namespace ranges {
     struct _Max_fn {
         template <class _Ty, class _Pj = identity,
             indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr const _Ty& operator()(const _Ty& _Left _MSVC_LIFETIMEBOUND,
-            const _Ty& _Right _MSVC_LIFETIMEBOUND, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr const _Ty& operator()(const _Ty& _Left _MSVC_LIFETIMEBOUND,
+            const _Ty& _Right _MSVC_LIFETIMEBOUND, _Pr _Pred = {}, _Pj _Proj = {}) {
             if (_STD invoke(_Pred, _STD invoke(_Proj, _Left), _STD invoke(_Proj, _Right))) {
                 return _Right;
             } else {
@@ -7463,8 +7463,7 @@ namespace ranges {
 
         template <copyable _Ty, class _Pj = identity,
             indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr _Ty operator()(
-            initializer_list<_Ty> _Range, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr _Ty operator()(initializer_list<_Ty> _Range, _Pr _Pred = {}, _Pj _Proj = {}) {
             const auto _First = _Range.begin();
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
@@ -7482,8 +7481,7 @@ namespace ranges {
         template <input_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
             requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr range_value_t<_Rng> operator()(
-            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr range_value_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) {
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
@@ -7617,8 +7615,7 @@ namespace ranges {
     struct _Min_element_fn {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_strict_weak_order<projected<_It, _Pj>> _Pr = ranges::less>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr _It operator()(
-            _It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) {
             _STD _Adl_verify_range(_First, _Last);
             _STD _Seek_wrapped(
                 _First, _RANGES _Min_element_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
@@ -7628,8 +7625,8 @@ namespace ranges {
 
         template <forward_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr borrowed_iterator_t<_Rng> operator()(
-            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr borrowed_iterator_t<_Rng> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) {
             auto _UResult = _RANGES _Min_element_unchecked(
                 _Ubegin(_Range), _Uend(_Range), _STD _Pass_fn(_Pred), _STD _Pass_fn(_Proj));
             return _RANGES _Rewrap_iterator(_Range, _STD move(_UResult));
@@ -7668,8 +7665,8 @@ namespace ranges {
     struct _Min_fn {
         template <class _Ty, class _Pj = identity,
             indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr const _Ty& operator()(const _Ty& _Left _MSVC_LIFETIMEBOUND,
-            const _Ty& _Right _MSVC_LIFETIMEBOUND, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr const _Ty& operator()(const _Ty& _Left _MSVC_LIFETIMEBOUND,
+            const _Ty& _Right _MSVC_LIFETIMEBOUND, _Pr _Pred = {}, _Pj _Proj = {}) {
             if (_STD invoke(_Pred, _STD invoke(_Proj, _Right), _STD invoke(_Proj, _Left))) {
                 return _Right;
             } else {
@@ -7679,8 +7676,7 @@ namespace ranges {
 
         template <copyable _Ty, class _Pj = identity,
             indirect_strict_weak_order<projected<const _Ty*, _Pj>> _Pr = ranges::less>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr _Ty operator()(
-            initializer_list<_Ty> _Range, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr _Ty operator()(initializer_list<_Ty> _Range, _Pr _Pred = {}, _Pj _Proj = {}) {
             const auto _First = _Range.begin();
             const auto _Last  = _Range.end();
             _STL_ASSERT(_First != _Last,
@@ -7698,8 +7694,7 @@ namespace ranges {
         template <input_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
             requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr range_value_t<_Rng> operator()(
-            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr range_value_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) {
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
@@ -7738,12 +7733,12 @@ _EXPORT_STD template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // find first element not before _Val
     _STD _Adl_verify_range(_First, _Last);
-    auto _UFirst                = _STD _Get_unwrapped(_First);
-    _Iter_diff_t<_FwdIt> _Count = _STD distance(_UFirst, _STD _Get_unwrapped(_Last));
+    auto _UFirst = _STD _Get_unwrapped(_First);
+    auto _Count  = _STD distance(_UFirst, _STD _Get_unwrapped(_Last));
 
     while (0 < _Count) { // divide and conquer, find half that contains answer
-        const _Iter_diff_t<_FwdIt> _Count2 = _Count / 2;
-        const auto _UMid                   = _STD next(_UFirst, _Count2);
+        const auto _Count2 = static_cast<decltype(_Count)>(_Count / 2);
+        const auto _UMid   = _STD next(_UFirst, _Count2);
         if (_Pred(*_UMid, _Val)) { // try top half
             _UFirst = _STD _Next_iter(_UMid);
             _Count -= _Count2 + 1;
@@ -7766,12 +7761,12 @@ _EXPORT_STD template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // find first element that _Val is before
     _STD _Adl_verify_range(_First, _Last);
-    auto _UFirst                = _STD _Get_unwrapped(_First);
-    _Iter_diff_t<_FwdIt> _Count = _STD distance(_UFirst, _STD _Get_unwrapped(_Last));
+    auto _UFirst = _STD _Get_unwrapped(_First);
+    auto _Count  = _STD distance(_UFirst, _STD _Get_unwrapped(_Last));
 
     while (0 < _Count) { // divide and conquer, find half that contains answer
-        _Iter_diff_t<_FwdIt> _Count2 = _Count / 2;
-        const auto _UMid             = _STD next(_UFirst, _Count2);
+        const auto _Count2 = static_cast<decltype(_Count)>(_Count / 2);
+        const auto _UMid   = _STD next(_UFirst, _Count2);
         if (_Pred(_Val, *_UMid)) {
             _Count = _Count2;
         } else { // try top half
@@ -7917,6 +7912,34 @@ _NODISCARD constexpr bool _Mul_overflow(const _Int _Left, const _Int _Right, _In
 }
 #endif // _HAS_CXX17
 
+#if _HAS_CXX23
+template <class _Ty>
+constexpr bool _Equivalence_is_equality_impl = is_integral_v<_Ty> || is_pointer_v<_Ty>;
+
+// For ranges::less and ranges::greater, see N5032 [range.cmp]/9, [concept.totallyordered]/1.1, [cmp.concept]/1.2.
+template <class _Compare, class _Key>
+constexpr bool _Equivalence_is_equality =
+    _Is_any_of_v<_Compare, _RANGES less, _RANGES greater>
+    || (_Is_any_of_v<_Compare, less<>, less<_Key>, greater<>, greater<_Key>> && _Equivalence_is_equality_impl<_Key>);
+#endif // _HAS_CXX23
+
+template <class _Elem>
+struct _Digit_pair_table {
+    _Elem _Data[100][2];
+
+    constexpr explicit _Digit_pair_table() : _Data{} {
+        for (int _Idx = 0; _Idx != 100; ++_Idx) {
+            _Data[_Idx][0] = static_cast<_Elem>('0' + _Idx / 10);
+            _Data[_Idx][1] = static_cast<_Elem>('0' + _Idx % 10);
+        }
+    }
+
+    _Digit_pair_table(const _Digit_pair_table&)            = delete;
+    _Digit_pair_table& operator=(const _Digit_pair_table&) = delete;
+};
+
+template <class _Elem>
+constexpr _Digit_pair_table<_Elem> _Digit_pairs{};
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens

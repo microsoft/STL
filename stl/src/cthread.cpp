@@ -117,7 +117,7 @@ _CRTIMP2_PURE unsigned int __cdecl _Thrd_hardware_concurrency() noexcept { // re
     DWORD buffer_size         = stack_buffer_size;
     _STD unique_ptr<unsigned char[]> new_buffer;
 
-    // https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getlogicalprocessorinformationex
+    // https://learn.microsoft.com/windows/win32/api/sysinfoapi/nf-sysinfoapi-getlogicalprocessorinformationex
     // The buffer "receives a sequence of variable-sized SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX structures".
     for (;;) {
         if (GetLogicalProcessorInformationEx(RelationProcessorPackage,

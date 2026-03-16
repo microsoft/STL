@@ -439,6 +439,22 @@ public:
     pointer _Myend; // pointer to end of array
 };
 
+template <class _Alloc>
+struct _NODISCARD _Allocation_guard {
+    _Alloc& _Al;
+    _Alloc_ptr_t<_Alloc> _Ptr;
+    _Alloc_size_t<_Alloc> _Size;
+
+    _Allocation_guard& operator=(const _Allocation_guard&) = delete;
+    _Allocation_guard& operator=(_Allocation_guard&&)      = delete;
+
+    _CONSTEXPR20 ~_Allocation_guard() noexcept {
+        if (_Ptr) {
+            _Al.deallocate(_Ptr, _Size);
+        }
+    }
+};
+
 _EXPORT_STD template <class _Ty, class _Alloc = allocator<_Ty>>
 class vector { // varying size array of values
 private:
@@ -621,21 +637,6 @@ private:
         _CONSTEXPR20 ~_Reallocation_guard2() noexcept {
             if (_New_begin != nullptr) {
                 _STD _Destroy_range(_Constructed_first, _Constructed_last, _Al);
-                _Al.deallocate(_New_begin, _New_capacity);
-            }
-        }
-    };
-
-    struct _NODISCARD _Simple_reallocation_guard2 {
-        _Alty& _Al;
-        pointer _New_begin;
-        size_type _New_capacity;
-
-        _Simple_reallocation_guard2& operator=(const _Simple_reallocation_guard2&) = delete;
-        _Simple_reallocation_guard2& operator=(_Simple_reallocation_guard2&&)      = delete;
-
-        _CONSTEXPR20 ~_Simple_reallocation_guard2() noexcept {
-            if (_New_begin != nullptr) {
                 _Al.deallocate(_New_begin, _New_capacity);
             }
         }
@@ -882,7 +883,7 @@ private:
 
         _STL_INTERNAL_CHECK(_Mylast == _My_data._Myend); // check that we have no unused capacity
 
-        const auto _Whereoff = static_cast<size_type>(_Whereptr - _Myfirst);
+        const auto _Whereoff = _Whereptr - _Myfirst;
         const auto _Oldsize  = static_cast<size_type>(_Mylast - _Myfirst);
 
         if (_Oldsize == max_size()) {
@@ -893,7 +894,7 @@ private:
         size_type _Newcapacity   = _Calculate_growth(_Newsize);
 
         const pointer _Newvec           = _STD _Allocate_at_least_helper(_Al, _Newcapacity);
-        const pointer _Constructed_last = _Newvec + _Whereoff + 1;
+        const pointer _Constructed_last = _Newvec + static_cast<_Iter_diff_t<pointer>>(_Whereoff + 1);
 
         _Reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity, _Constructed_last, _Constructed_last};
         auto& _Constructed_first = _Guard._Constructed_first;
@@ -910,7 +911,8 @@ private:
         } else { // provide basic guarantee
             _STD _Uninitialized_move(_Myfirst, _Whereptr, _Newvec, _Al);
             _Constructed_first = _Newvec;
-            _STD _Uninitialized_move(_Whereptr, _Mylast, _Newvec + _Whereoff + 1, _Al);
+            _STD _Uninitialized_move(
+                _Whereptr, _Mylast, _Newvec + static_cast<_Iter_diff_t<pointer>>(_Whereoff + 1), _Al);
         }
 
         _Guard._New_begin = nullptr;
@@ -1657,7 +1659,7 @@ private:
             _Newvec = _Al.allocate(_Newcapacity);
         }
 
-        _Simple_reallocation_guard2 _Guard{_Al, _Newvec, _Newcapacity};
+        _Allocation_guard<_Alty> _Guard{_Al, _Newvec, _Newcapacity};
 
         if constexpr (is_nothrow_move_constructible_v<_Ty> || !is_copy_constructible_v<_Ty>) {
             _Uninitialized_move(_Myfirst, _Mylast, _Newvec, _Al);
@@ -1665,7 +1667,7 @@ private:
             _Uninitialized_copy(_Myfirst, _Mylast, _Newvec, _Al);
         }
 
-        _Guard._New_begin = nullptr;
+        _Guard._Ptr = nullptr;
         _Change_array(_Newvec, _Size, _Newcapacity);
     }
 
@@ -2075,8 +2077,8 @@ private:
         }
 
         _Myfirst = _Newvec;
-        _Mylast  = _Newvec + _Newsize;
-        _Myend   = _Newvec + _Newcapacity;
+        _Mylast  = _Newvec + static_cast<_Iter_diff_t<pointer>>(_Newsize);
+        _Myend   = _Newvec + static_cast<_Iter_diff_t<pointer>>(_Newcapacity);
         _ASAN_VECTOR_CREATE;
     }
 
@@ -2302,8 +2304,7 @@ _NODISCARD bool operator!=(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _
 
 template <class _Ret>
 struct _Vbase_compare_three_way {
-    _NODISCARD _STATIC_CALL_OPERATOR constexpr _Ret operator()(
-        const _Vbase _Left, const _Vbase _Right) _CONST_CALL_OPERATOR noexcept {
+    _NODISCARD static constexpr _Ret operator()(const _Vbase _Left, const _Vbase _Right) noexcept {
         const _Vbase _Differing_bits = _Left ^ _Right;
 
         if (_Differing_bits == 0) { // improves _Countr_zero codegen below
@@ -2462,7 +2463,7 @@ private:
     using _Difference_type = typename _Mybase::_Difference_type;
 
 public:
-    _CONSTEXPR20 _Vb_reference(const _Vb_reference&) = default;
+    _CONSTEXPR20 _Vb_reference(const _Vb_reference&) noexcept = default;
 
     _CONSTEXPR20 _Vb_reference(const _Mybase& _Right) noexcept
         : _Mybase(_Right._Myptr, _Right._Myoff, _Right._Getcont()) {}
@@ -2481,8 +2482,7 @@ public:
         return *this;
     }
 
-#if _HAS_CXX23
-    constexpr const _Vb_reference& operator=(bool _Val) const noexcept {
+    _CONSTEXPR20 const _Vb_reference& operator=(bool _Val) const noexcept {
         if (_Val) {
             *const_cast<_Vbase*>(_Getptr()) |= _Mask();
         } else {
@@ -2491,7 +2491,6 @@ public:
 
         return *this;
     }
-#endif // _HAS_CXX23
 
     _CONSTEXPR20 void flip() noexcept {
         *const_cast<_Vbase*>(_Getptr()) ^= _Mask();
@@ -2516,6 +2515,16 @@ public:
         bool _Val = _Left; // NOT _STD swap
         _Left     = _Right;
         _Right    = _Val;
+    }
+
+    friend _CONSTEXPR20 void swap(_Vb_reference _Left, bool& _Right) noexcept {
+        bool _Val = _Left; // NOT _STD swap
+        _Left     = _Right;
+        _Right    = _Val;
+    }
+
+    friend _CONSTEXPR20 void swap(bool& _Left, _Vb_reference _Right) noexcept {
+        swap(_Right, _Left);
     }
 
 protected:
@@ -3509,6 +3518,7 @@ public:
         }
     }
 
+    _DEPRECATE_VECTOR_BOOL_STATIC_REFERENCE_SWAP
     static _CONSTEXPR20 void swap(reference _Left, reference _Right) noexcept {
         bool _Val = _Left; // NOT _STD swap
         _Left     = _Right;
@@ -3625,8 +3635,7 @@ struct hash<vector<bool, _Alloc>> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = vector<bool, _Alloc>;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
-    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(
-        const vector<bool, _Alloc>& _Keyval) _CONST_CALL_OPERATOR noexcept {
+    _NODISCARD static size_t operator()(const vector<bool, _Alloc>& _Keyval) noexcept {
         return _Hash_array_representation(_Keyval._Myvec.data(), _Keyval._Myvec.size());
     }
 };
@@ -4050,6 +4059,79 @@ _CONSTEXPR20 _OutIt _Transform_vbool_aligned(
     return _Dest;
 }
 
+struct _All_of_vbool_traits {
+    static constexpr bool _Default_result = true;
+
+    static _CONSTEXPR20 bool _Check(const _Vbase _Value) {
+        return _Value != ~_Vbase{0};
+    }
+
+    static _CONSTEXPR20 bool _Check(const _Vbase _Value, const _Vbase _Mask) {
+        return (_Value & _Mask) != _Mask;
+    }
+};
+
+struct _Any_of_vbool_traits_base {
+    static _CONSTEXPR20 bool _Check(const _Vbase _Value) {
+        return _Value != 0;
+    }
+
+    static _CONSTEXPR20 bool _Check(const _Vbase _Value, const _Vbase _Mask) {
+        return (_Value & _Mask) != 0;
+    }
+};
+
+struct _Any_of_vbool_traits : _Any_of_vbool_traits_base {
+    static constexpr bool _Default_result = false;
+};
+
+struct _None_of_vbool_traits : _Any_of_vbool_traits_base {
+    static constexpr bool _Default_result = true;
+};
+
+template <class _Traits, class _VbIt, class _Mapped_fn>
+_NODISCARD _CONSTEXPR20 bool _Meow_of_vbool(const _VbIt _First, const _VbIt _Last, const _Mapped_fn _Mapped_func) {
+    constexpr bool _Early_result = !_Traits::_Default_result;
+    auto _First_ptr              = _First._Myptr;
+    const auto _Last_ptr         = _Last._Myptr;
+
+    if (_First_ptr == _Last_ptr) {
+        if (_First._Myoff == _Last._Myoff) { // empty, can't read the word
+            return _Traits::_Default_result;
+        }
+
+        const _Vbase _Mask = (_Vbase{1} << _Last._Myoff) - (_Vbase{1} << _First._Myoff); // handle partial single word
+        if (_Traits::_Check(_Mapped_func(*_First_ptr), _Mask)) {
+            return _Early_result;
+        }
+        return _Traits::_Default_result;
+    }
+
+    if (_First._Myoff != 0) { // if we have a partial first word, handle it
+        const _Vbase _Mask = static_cast<_Vbase>(-1) << _First._Myoff;
+        if (_Traits::_Check(_Mapped_func(*_First_ptr), _Mask)) {
+            return _Early_result;
+        }
+
+        ++_First_ptr;
+    }
+
+    for (; _First_ptr != _Last_ptr; ++_First_ptr) { // handle full words
+        if (_Traits::_Check(_Mapped_func(*_First_ptr))) {
+            return _Early_result;
+        }
+    }
+
+    if (_Last._Myoff != 0) { // if we have a partial last word, handle it
+        const _Vbase _Mask = (_Vbase{1} << _Last._Myoff) - 1;
+        if (_Traits::_Check(_Mapped_func(*_First_ptr), _Mask)) {
+            return _Early_result;
+        }
+    }
+
+    return _Traits::_Default_result;
+}
+
 #undef _ASAN_VECTOR_MODIFY
 #undef _ASAN_VECTOR_REMOVE
 #undef _ASAN_VECTOR_CREATE
@@ -4057,6 +4139,53 @@ _CONSTEXPR20 _OutIt _Transform_vbool_aligned(
 #undef _ASAN_VECTOR_EXTEND_GUARD
 #undef _ASAN_VECTOR_RELEASE_GUARD
 #undef _INSERT_VECTOR_ANNOTATION
+
+#if _HAS_CXX23
+// This <flat_map> and <flat_set> machinery is here because <vector> is the leaf-most header included by both of them.
+
+_EXPORT_STD struct sorted_unique_t {
+    explicit sorted_unique_t() = default;
+};
+_EXPORT_STD inline constexpr sorted_unique_t sorted_unique{};
+
+_EXPORT_STD struct sorted_equivalent_t {
+    explicit sorted_equivalent_t() = default;
+};
+_EXPORT_STD inline constexpr sorted_equivalent_t sorted_equivalent{};
+
+template <class>
+constexpr bool _Is_vector_bool = false;
+template <class _Alloc>
+constexpr bool _Is_vector_bool<vector<bool, _Alloc>> = true;
+
+template <class _Ty, class _Alloc>
+constexpr bool _Has_guaranteed_push_back<vector<_Ty, _Alloc>> = !is_same_v<_Ty, bool>;
+
+template <class _Ty, class _Alloc>
+constexpr bool _Has_guaranteed_append_range<vector<_Ty, _Alloc>> = !is_same_v<_Ty, bool>;
+
+template <class _Alloc, class... _Containers>
+concept _Usable_allocator_for = (uses_allocator_v<_Containers, _Alloc> && ...);
+
+template <class _Compare, class _KeyContainer>
+concept _Valid_compare_for_container = _Not_allocator_for_container<_Compare>
+                                    && is_invocable_v<const _Compare&, const typename _KeyContainer::value_type&,
+                                        const typename _KeyContainer::value_type&>;
+#endif // ^^^ _HAS_CXX23 ^^^
+
+template <class _Ty>
+struct _NODISCARD _Clear_guard {
+    _Ty* _Target;
+
+    _Clear_guard& operator=(const _Clear_guard&) = delete;
+    _Clear_guard& operator=(_Clear_guard&&)      = delete;
+
+    ~_Clear_guard() {
+        if (_Target) {
+            _Target->clear();
+        }
+    }
+};
 _STD_END
 
 #pragma pop_macro("new")

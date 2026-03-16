@@ -792,6 +792,9 @@ constexpr bool _Is_simple_alloc_v =
     && is_same_v<typename allocator_traits<_Alloc>::pointer, typename _Alloc::value_type*>
     && is_same_v<typename allocator_traits<_Alloc>::const_pointer, const typename _Alloc::value_type*>;
 
+// SCARY iterators are permitted but not required by the Standard. See:
+// N2911 Minimizing Dependencies Within Generic Classes For Faster And Smaller Programs
+// N2980 SCARY Iterator Assignment And Initialization
 template <class _Value_type>
 struct _Simple_types { // wraps types from allocators with simple addressing for use in iterators
                        // and other SCARY machinery
@@ -2760,25 +2763,17 @@ namespace ranges {
     elements_of(_Rng&&, _Alloc) -> elements_of<_Rng&&, _Alloc>;
 #endif // ^^^ !defined(__cpp_lib_byte) ^^^
 } // namespace ranges
+
+template <class>
+constexpr bool _Has_guaranteed_push_back = false; // N5032 [sequence.reqmts]/104, /108; used by flat_(multi)map::insert.
+
+// N5032 [container.reqmts]/66.1; used by various flat_(multi)set inserting functions.
+template <class _Ty>
+constexpr bool _Has_guaranteed_single_insertion = _Has_guaranteed_push_back<_Ty>;
+
+template <class>
+constexpr bool _Has_guaranteed_append_range = false; // N5032 [sequence.reqmts]/112; used by flat_(multi)set::insert.
 #endif // _HAS_CXX23
-
-template <class _Elem>
-struct _Digit_pair_table {
-    _Elem _Data[100][2];
-
-    constexpr explicit _Digit_pair_table() : _Data{} {
-        for (int _Idx = 0; _Idx != 100; ++_Idx) {
-            _Data[_Idx][0] = static_cast<_Elem>('0' + _Idx / 10);
-            _Data[_Idx][1] = static_cast<_Elem>('0' + _Idx % 10);
-        }
-    }
-
-    _Digit_pair_table(const _Digit_pair_table&)            = delete;
-    _Digit_pair_table& operator=(const _Digit_pair_table&) = delete;
-};
-
-template <class _Elem>
-constexpr _Digit_pair_table<_Elem> _Digit_pairs{};
 
 template <class _Elem, class _UTy>
 _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by both to_string and thread::id output
@@ -2817,7 +2812,7 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
 
     // Print one or more pairs of digits.
     do {
-        const unsigned long _UVal_trunc_part = _UVal_trunc % 100;
+        const auto _UVal_trunc_part = static_cast<unsigned long>(_UVal_trunc % 100);
         _UVal_trunc /= 100;
         _RNext -= 2;
         _CSTD memcpy(_RNext, _Digit_pairs<_Elem>._Data[_UVal_trunc_part], 2 * sizeof(_Elem));

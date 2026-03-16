@@ -38,6 +38,7 @@ void operator delete(void* const mem) noexcept {
     free(mem);
 }
 
+#ifdef __cpp_aligned_new
 void* operator new(const size_t size, const align_val_t al) {
     ++alloc_count;
     return check_alloc(_aligned_malloc(adjust_alloc_size(size), static_cast<size_t>(al)));
@@ -47,6 +48,7 @@ void operator delete(void* const mem, align_val_t) noexcept {
     ++dealloc_count;
     _aligned_free(mem);
 }
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
 
 struct alloc_checker {
     explicit alloc_checker(const int expected_delta_) : expected_delta(expected_delta_) {}
@@ -90,7 +92,9 @@ struct alignas(128) large_callable {
     const int context = 1729;
 
     int operator()(const copy_counter& counter) const noexcept {
+#ifdef __cpp_aligned_new
         assert((reinterpret_cast<uintptr_t>(this) & 0x7f) == 0);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
         assert(context == 1729);
         return counter.count;
     }
@@ -103,10 +107,20 @@ void test_plain_call(const int expected_copies) {
 }
 
 template <class OuterWrapper, class InnerWrapper, class Callable>
-void test_wrapped_call(const int expected_copies) {
+void test_wrapped_move_call(const int expected_copies) {
     InnerWrapper inner{Callable{}};
     OuterWrapper outer{move(inner)};
     assert(!inner);
+    assert(outer(copy_counter{}) == expected_copies);
+}
+
+template <class OuterWrapper, class MiddleWrapper, class InnerWrapper, class Callable>
+void test_wrapped_move_move_call(const int expected_copies) {
+    InnerWrapper inner{Callable{}};
+    MiddleWrapper middle{move(inner)};
+    OuterWrapper outer{move(middle)};
+    assert(!inner);
+    assert(!middle);
     assert(outer(copy_counter{}) == expected_copies);
 }
 
@@ -155,25 +169,33 @@ int main() {
     alloc_checker{1}, test_plain_call<move_only_function<fn_type>, large_callable>(0);
 
     // Moves to the same
-    alloc_checker{0}, test_wrapped_call<function<fn_type>, function<fn_type>, small_callable>(0);
-    alloc_checker{1}, test_wrapped_call<function<fn_type>, function<fn_type>, large_callable>(0);
+    alloc_checker{0}, test_wrapped_move_call<function<fn_type>, function<fn_type>, small_callable>(0);
+    alloc_checker{1}, test_wrapped_move_call<function<fn_type>, function<fn_type>, large_callable>(0);
     alloc_checker{0}, test_wrapped_copy_call<function<fn_type>, function<fn_type>, small_callable>(0);
     alloc_checker{2}, test_wrapped_copy_call<function<fn_type>, function<fn_type>, large_callable>(0);
-    alloc_checker{0}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>, small_callable>(0);
-    alloc_checker{1}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type>, large_callable>(0);
+    alloc_checker{0},
+        test_wrapped_move_call<move_only_function<fn_type>, move_only_function<fn_type>, small_callable>(0);
+    alloc_checker{1},
+        test_wrapped_move_call<move_only_function<fn_type>, move_only_function<fn_type>, large_callable>(0);
 
     // Abominables and noexcept specifier
-    alloc_checker{0}, test_wrapped_call<move_only_function<fn_type_r>, move_only_function<fn_type>, small_callable>(0);
-    alloc_checker{1}, test_wrapped_call<move_only_function<fn_type_r>, move_only_function<fn_type>, large_callable>(0);
-    alloc_checker{0}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type_c>, small_callable>(0);
-    alloc_checker{1}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type_c>, large_callable>(0);
+    alloc_checker{0},
+        test_wrapped_move_call<move_only_function<fn_type_r>, move_only_function<fn_type>, small_callable>(0);
+    alloc_checker{1},
+        test_wrapped_move_call<move_only_function<fn_type_r>, move_only_function<fn_type>, large_callable>(0);
+    alloc_checker{0},
+        test_wrapped_move_call<move_only_function<fn_type>, move_only_function<fn_type_c>, small_callable>(0);
+    alloc_checker{1},
+        test_wrapped_move_call<move_only_function<fn_type>, move_only_function<fn_type_c>, large_callable>(0);
 
     static_assert(!is_constructible_v<move_only_function<fn_type>, move_only_function<fn_type_r>>);
     static_assert(!is_constructible_v<move_only_function<fn_type_c>, move_only_function<fn_type>>);
 
 #ifdef __cpp_noexcept_function_type
-    alloc_checker{0}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type_nx>, small_callable>(0);
-    alloc_checker{1}, test_wrapped_call<move_only_function<fn_type>, move_only_function<fn_type_nx>, large_callable>(0);
+    alloc_checker{0},
+        test_wrapped_move_call<move_only_function<fn_type>, move_only_function<fn_type_nx>, small_callable>(0);
+    alloc_checker{1},
+        test_wrapped_move_call<move_only_function<fn_type>, move_only_function<fn_type_nx>, large_callable>(0);
 
     static_assert(!is_constructible_v<move_only_function<fn_type_nx>, move_only_function<fn_type>>);
 #endif // defined(__cpp_noexcept_function_type)
@@ -182,16 +204,21 @@ int main() {
 
     // Moves from function to move_only_function
     alloc_checker{is_64_bit ? 0 : 1},
-        test_wrapped_call<move_only_function<fn_type>, function<fn_type>, small_callable>(0);
-    alloc_checker{1}, test_wrapped_call<move_only_function<fn_type>, function<fn_type>, large_callable>(0);
+        test_wrapped_move_call<move_only_function<fn_type>, function<fn_type>, small_callable>(0);
+    alloc_checker{1}, test_wrapped_move_call<move_only_function<fn_type>, function<fn_type>, large_callable>(0);
+
+    alloc_checker{is_64_bit ? 0 : 1}, test_wrapped_move_move_call<move_only_function<fn_type>,
+                                          move_only_function<fn_type>, function<fn_type>, small_callable>(0);
+    alloc_checker{1}, test_wrapped_move_move_call<move_only_function<fn_type>, move_only_function<fn_type>,
+                          function<fn_type>, large_callable>(0);
 
     // Moves from function to abominable move_only_function
     alloc_checker{is_64_bit ? 0 : 1},
-        test_wrapped_call<move_only_function<fn_type_r>, function<fn_type>, small_callable>(0);
-    alloc_checker{1}, test_wrapped_call<move_only_function<fn_type_r>, function<fn_type>, large_callable>(0);
+        test_wrapped_move_call<move_only_function<fn_type_r>, function<fn_type>, small_callable>(0);
+    alloc_checker{1}, test_wrapped_move_call<move_only_function<fn_type_r>, function<fn_type>, large_callable>(0);
     alloc_checker{is_64_bit ? 0 : 1},
-        test_wrapped_call<move_only_function<fn_type_c>, function<fn_type>, small_callable>(0);
-    alloc_checker{1}, test_wrapped_call<move_only_function<fn_type_c>, function<fn_type>, large_callable>(0);
+        test_wrapped_move_call<move_only_function<fn_type_c>, function<fn_type>, small_callable>(0);
+    alloc_checker{1}, test_wrapped_move_call<move_only_function<fn_type_c>, function<fn_type>, large_callable>(0);
 
 #ifdef __cpp_noexcept_function_type
     static_assert(!is_constructible_v<move_only_function<fn_type_nx>, function<fn_type>>);

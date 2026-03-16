@@ -61,7 +61,8 @@ public:
         : basic_ifstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
 #endif // _HAS_CXX17
 
-    explicit basic_ifstream(FILE* _File) : _Mybase(_STD addressof(_Filebuffer)), _Filebuffer(_File) {} // extension
+    explicit basic_ifstream(FILE* _File)
+        : _Mybase(_STD addressof(_Filebuffer)), _Filebuffer(_File) {} // extension, no ownership taking
 
     basic_ifstream(basic_ifstream&& _Right) : _Mybase(_STD addressof(_Filebuffer)) {
         _Assign_rv(_STD move(_Right));
@@ -207,7 +208,8 @@ public:
         : basic_ofstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
 #endif // _HAS_CXX17
 
-    explicit basic_ofstream(FILE* _File) : _Mybase(_STD addressof(_Filebuffer)), _Filebuffer(_File) {} // extension
+    explicit basic_ofstream(FILE* _File)
+        : _Mybase(_STD addressof(_Filebuffer)), _Filebuffer(_File) {} // extension, no ownership taking
 
     basic_ofstream(basic_ofstream&& _Right) : _Mybase(_STD addressof(_Filebuffer)) {
         _Assign_rv(_STD move(_Right));
@@ -358,7 +360,8 @@ public:
         : basic_fstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
 #endif // _HAS_CXX17
 
-    explicit basic_fstream(FILE* _File) : _Mybase(_STD addressof(_Filebuffer)), _Filebuffer(_File) {} // extension
+    explicit basic_fstream(FILE* _File)
+        : _Mybase(_STD addressof(_Filebuffer)), _Filebuffer(_File) {} // extension, no ownership taking
 
     basic_fstream(basic_fstream&& _Right) : _Mybase(_STD addressof(_Filebuffer)) {
         _Assign_rv(_STD move(_Right));

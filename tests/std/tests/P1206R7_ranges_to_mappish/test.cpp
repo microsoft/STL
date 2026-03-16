@@ -4,11 +4,15 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <flat_map>
+#include <functional>
 #include <map>
+#include <memory>
 #include <ranges>
 #include <string_view>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 
@@ -70,6 +74,20 @@ struct mappish_instantiator {
     struct deduce_container_impl<std::unordered_multimap> {
         template <class Key, class Val, class... Args>
         using apply = std::unordered_multimap<Key, Val, std::hash<Key>, std::equal_to<Key>, Args...>;
+    };
+    template <>
+    struct deduce_container_impl<std::flat_map> {
+        template <class Key, class Val, class... Args>
+        using apply = std::flat_map<Key, Val, std::less<Key>,
+            std::vector<Key, typename std::allocator_traits<Args>::template rebind_alloc<Key>...>,
+            std::vector<Val, typename std::allocator_traits<Args>::template rebind_alloc<Val>...>>;
+    };
+    template <>
+    struct deduce_container_impl<std::flat_multimap> {
+        template <class Key, class Val, class... Args>
+        using apply = std::flat_multimap<Key, Val, std::less<Key>,
+            std::vector<Key, typename std::allocator_traits<Args>::template rebind_alloc<Key>...>,
+            std::vector<Val, typename std::allocator_traits<Args>::template rebind_alloc<Val>...>>;
     };
 
     template <template <class...> class C, class Key, class Val, class... Args>
@@ -145,26 +163,56 @@ struct mappish_instantiator {
 
         using Alloc = myalloc<std::pair<const int, std::string_view>>;
         using T     = deduce_container<C, int, std::string_view, Alloc>;
+        constexpr bool is_flat =
+            std::_Is_specialization_v<T, std::flat_map> || std::_Is_specialization_v<T, std::flat_multimap>;
 
         {
             std::same_as<T> auto c4 = ranges::to<T>(R{some_pairs}, Alloc{13});
-            assert(c4.get_allocator().state == 13);
             assert(ranges::is_permutation(c4, expected, any_pair_eq));
+
+            if constexpr (is_flat) {
+                const auto containers = std::move(c4).extract();
+                assert(containers.keys.get_allocator().state == 13);
+                assert(containers.values.get_allocator().state == 13);
+            } else {
+                assert(c4.get_allocator().state == 13);
+            }
         }
         {
             std::same_as<T> auto c5 = ranges::to<C>(R{some_pairs}, Alloc{13});
-            assert(c5.get_allocator().state == 13);
             assert(ranges::is_permutation(c5, expected, any_pair_eq));
+
+            if constexpr (is_flat) {
+                const auto containers = std::move(c5).extract();
+                assert(containers.keys.get_allocator().state == 13);
+                assert(containers.values.get_allocator().state == 13);
+            } else {
+                assert(c5.get_allocator().state == 13);
+            }
         }
         {
             std::same_as<T> auto c6 = R{some_pairs} | ranges::to<T>(Alloc{13});
-            assert(c6.get_allocator().state == 13);
             assert(ranges::is_permutation(c6, expected, any_pair_eq));
+
+            if constexpr (is_flat) {
+                const auto containers = std::move(c6).extract();
+                assert(containers.keys.get_allocator().state == 13);
+                assert(containers.values.get_allocator().state == 13);
+            } else {
+                assert(c6.get_allocator().state == 13);
+            }
         }
         {
             std::same_as<T> auto c7 = R{some_pairs} | ranges::to<C>(Alloc{13});
-            assert(c7.get_allocator().state == 13);
             assert(ranges::is_permutation(c7, expected, any_pair_eq));
+
+            if constexpr (is_flat) {
+                const auto containers = std::move(c7).extract();
+                assert(containers.keys.get_allocator().state == 13);
+                assert(containers.values.get_allocator().state == 13);
+            } else {
+                assert(c7.get_allocator().state == 13);
+            }
         }
     }
 
@@ -176,6 +224,8 @@ struct mappish_instantiator {
             test_mappish<R, std::multimap, is_multi::yes>();
             test_mappish<R, std::unordered_map, is_multi::no>();
             test_mappish<R, std::unordered_multimap, is_multi::yes>();
+            test_mappish<R, std::flat_map, is_multi::no>();
+            test_mappish<R, std::flat_multimap, is_multi::yes>();
         }
     }
 };
@@ -186,4 +236,6 @@ int main() {
     mappish_instantiator::test_copy_move<std::multimap>();
     mappish_instantiator::test_copy_move<std::unordered_map>();
     mappish_instantiator::test_copy_move<std::unordered_multimap>();
+    mappish_instantiator::test_copy_move<std::flat_map>();
+    mappish_instantiator::test_copy_move<std::flat_multimap>();
 }

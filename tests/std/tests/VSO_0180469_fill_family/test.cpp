@@ -12,6 +12,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
@@ -116,6 +117,103 @@ void test_uninitialized_fill(Func fillCall) {
     }
 }
 
+template <class T>
+void all_bits_zero_optimization_test_case(const T zero, const T nonzero) {
+    T arr[3];
+
+    fill(begin(arr), end(arr), zero);
+    for (const auto& elem : arr) {
+        assert(elem == T{});
+    }
+
+    fill(begin(arr), end(arr), nonzero);
+    for (const auto& elem : arr) {
+        assert(elem != T{});
+    }
+}
+
+int square(int x) {
+    return x * x;
+}
+
+void test_all_bits_zero_optimization() {
+    // Integral types (signed integer types, unsigned integer types, character types, bool):
+    all_bits_zero_optimization_test_case(int8_t{0}, int8_t{-1});
+    all_bits_zero_optimization_test_case(int16_t{0}, int16_t{-1});
+    all_bits_zero_optimization_test_case(int32_t{0}, int32_t{-1});
+    all_bits_zero_optimization_test_case(int64_t{0}, int64_t{-1});
+
+    all_bits_zero_optimization_test_case(uint8_t{0}, uint8_t{2});
+    all_bits_zero_optimization_test_case(uint16_t{0}, uint16_t{2});
+    all_bits_zero_optimization_test_case(uint32_t{0}, uint32_t{2});
+    all_bits_zero_optimization_test_case(uint64_t{0}, uint64_t{2});
+
+    all_bits_zero_optimization_test_case('\0', 'x');
+    all_bits_zero_optimization_test_case(L'\0', L'x');
+    all_bits_zero_optimization_test_case(u'\0', u'x');
+    all_bits_zero_optimization_test_case(U'\0', U'x');
+#ifdef __cpp_char8_t
+    all_bits_zero_optimization_test_case(u8'\0', u8'x');
+#endif // __cpp_char8_t
+
+    all_bits_zero_optimization_test_case(false, true);
+
+    // Enumerations:
+    enum class Sm : uint8_t { Zero, One };
+    enum class Md : uint16_t { Zero, One };
+    enum class Lg : uint32_t { Zero, One };
+    enum class Xl : uint64_t { Zero, One };
+    all_bits_zero_optimization_test_case(Sm::Zero, Sm::One);
+    all_bits_zero_optimization_test_case(Md::Zero, Md::One);
+    all_bits_zero_optimization_test_case(Lg::Zero, Lg::One);
+    all_bits_zero_optimization_test_case(Xl::Zero, Xl::One);
+
+    // Pointers (both object pointers and function pointers):
+    const int taxicab{1729};
+    all_bits_zero_optimization_test_case(static_cast<const int*>(nullptr), &taxicab);
+    all_bits_zero_optimization_test_case(static_cast<int (*)(int)>(nullptr), &square);
+
+    // Floating-point:
+    all_bits_zero_optimization_test_case(0.0f, 1.0f);
+    all_bits_zero_optimization_test_case(0.0, 1.0);
+    all_bits_zero_optimization_test_case(0.0L, 1.0L);
+
+    // Floating-point negative zero:
+    {
+        float arr[] = {1.0f, 2.0f, 3.0f};
+        fill(begin(arr), end(arr), -0.0f);
+        for (const auto& elem : arr) {
+            assert(elem == 0.0f); // elem is positive or negative zero
+            assert(signbit(elem)); // elem is negative
+        }
+    }
+    {
+        double arr[] = {1.0, 2.0, 3.0};
+        fill(begin(arr), end(arr), -0.0);
+        for (const auto& elem : arr) {
+            assert(elem == 0.0); // elem is positive or negative zero
+            assert(signbit(elem)); // elem is negative
+        }
+    }
+    {
+        long double arr[] = {1.0L, 2.0L, 3.0L};
+        fill(begin(arr), end(arr), -0.0L);
+        for (const auto& elem : arr) {
+            assert(elem == 0.0L); // elem is positive or negative zero
+            assert(signbit(elem)); // elem is negative
+        }
+    }
+
+    // nullptr_t:
+    {
+        nullptr_t arr[3];
+        fill(begin(arr), end(arr), nullptr);
+        for (const auto& elem : arr) {
+            assert(elem == nullptr);
+        }
+    }
+}
+
 int main() {
     test_fill<char, char>();
     test_fill<char, signed char>();
@@ -158,6 +256,8 @@ int main() {
     test_uninitialized_fill(
         [](count_copies* buff, size_t n, const count_copies& src) { uninitialized_fill_n(buff, n, src); });
 
+    test_all_bits_zero_optimization();
+
     // Validate int is properly converted to bool
     {
         bool output[] = {false, true, false};
@@ -185,16 +285,6 @@ int main() {
         uninitialized_fill_n(output, 3, 5);
         for (const bool& elem : output) {
             assert(elem == true);
-        }
-    }
-
-    // Test floating-point negative zero
-    {
-        float output[] = {1.0f, 2.0f, 3.0f};
-        fill(output, output + 3, -0.0f);
-        for (const float& elem : output) {
-            assert(elem == 0.0f); // elem is positive or negative zero
-            assert(signbit(elem)); // elem is negative
         }
     }
 

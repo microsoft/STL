@@ -184,7 +184,7 @@ void member_rfind(benchmark::State& state) {
     }
 }
 
-void common_args(auto bm) {
+void common_args(benchmark::Benchmark* bm) {
     bm->DenseRange(0, std::size(patterns) - 1, 1);
 }
 

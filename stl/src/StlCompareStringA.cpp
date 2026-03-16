@@ -12,23 +12,22 @@
 // int __cdecl __crtCompareStringA - Get type information about an ANSI string.
 //
 // Purpose:
-//        Internal support function. Assumes info in ANSI string format. Tries
-//        to use NLS API call CompareStringA if available and uses CompareStringW
-//        if it must. If neither is available it fails and returns 0.
+//   Internal support function. Assumes info in ANSI string format. Tries
+//   to use NLS API call CompareStringA if available and uses CompareStringW
+//   if it must. If neither is available it fails and returns 0.
 //
 // Entry:
-//        LPCWSTR LocaleName  - locale context for the comparison.
-//        DWORD   dwCmpFlags  - see https://aka.ms/stl/comparestringex
-//        LPCSTR  lpStringn   - multibyte string to be compared
-//        int     cchCountn   - char (byte) count (NOT including null terminator)
-//                              (-1 if null terminated)
-//        int     code_page   - for MB/WC conversion. If 0, use __lc_codepage
+//   LPCWSTR  LocaleName  - locale context for the comparison.
+//   DWORD    dwCmpFlags  - https://learn.microsoft.com/windows/win32/api/stringapiset/nf-stringapiset-comparestringex
+//   LPCSTR   lpStringn   - multibyte string to be compared
+//   int      cchCountn   - char (byte) count (NOT including null terminator) (-1 if null terminated)
+//   int      code_page   - for MB/WC conversion. If 0, use __lc_codepage
 //
 // Exit:
-//        Success: 1 - if lpString1 <  lpString2
-//                 2 - if lpString1 == lpString2
-//                 3 - if lpString1 >  lpString2
-//        Failure: 0
+//   Success: 1 - if lpString1 <  lpString2
+//            2 - if lpString1 == lpString2
+//            3 - if lpString1 >  lpString2
+//   Failure: 0
 extern "C" _CRTIMP2 int __cdecl __crtCompareStringA(_In_z_ LPCWSTR LocaleName, _In_ DWORD dwCmpFlags,
     _In_reads_(cchCount1) LPCSTR lpString1, _In_ int cchCount1, _In_reads_(cchCount2) LPCSTR lpString2,
     _In_ int cchCount2, _In_ int code_page) noexcept {

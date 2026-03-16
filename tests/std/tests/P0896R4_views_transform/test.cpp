@@ -917,7 +917,7 @@ int main() {
     static_assert((iterator_instantiation_test(), true));
     iterator_instantiation_test();
 
-    { // Validate **non-standard guarantee** that predicates are moved into the range adaptor closure, and into the view
+    { // Validate guarantee that predicates are moved into the range adaptor closure, and into the view
       // object from an rvalue closure
         struct Fn {
             Fn()     = default;

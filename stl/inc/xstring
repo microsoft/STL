@@ -1582,7 +1582,7 @@ public:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Count,
-                const _Elem _Ch) _STATIC_CALL_OPERATOR {
+                const _Elem _Ch) static {
                 _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size));
                 _Traits::assign(_New_ptr + _Old_size, static_cast<size_t>(_Count), _Ch);
                 _Traits::assign(_New_ptr[_Old_size + _Count], _Elem());
@@ -1668,7 +1668,7 @@ public:
 
         return _Reallocate_for(
             _Count,
-            [](_Elem* const _New_ptr, const size_type _Count, const _Elem _Ch) _STATIC_CALL_OPERATOR {
+            [](_Elem* const _New_ptr, const size_type _Count, const _Elem _Ch) static {
                 _Traits::assign(_New_ptr, _Count, _Ch);
                 _Traits::assign(_New_ptr[_Count], _Elem());
             },
@@ -1774,7 +1774,7 @@ public:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _Count, const _Elem _Ch) _STATIC_CALL_OPERATOR {
+                const size_type _Count, const _Elem _Ch) static {
                 _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Off));
                 _Traits::assign(_New_ptr + _Off, static_cast<size_t>(_Count), _Ch);
                 _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off, static_cast<size_t>(_Old_size - _Off + 1));
@@ -1960,7 +1960,7 @@ public:
         return _Reallocate_grow_by(
             static_cast<size_type>(_Count - _Nx),
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _Nx, const size_type _Count, const _Elem _Ch) _STATIC_CALL_OPERATOR {
+                const size_type _Nx, const size_type _Count, const _Elem _Ch) static {
                 _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Off));
                 _Traits::assign(_New_ptr + _Off, static_cast<size_t>(_Count), _Ch);
                 _Traits::copy(
@@ -2213,12 +2213,11 @@ public:
 
         _Reallocate_grow_by(
             1,
-            [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const _Elem _Ch)
-                _STATIC_CALL_OPERATOR {
-                    _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size));
-                    _Traits::assign(_New_ptr[_Old_size], _Ch);
-                    _Traits::assign(_New_ptr[_Old_size + 1], _Elem());
-                },
+            [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const _Elem _Ch) static {
+                _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size));
+                _Traits::assign(_New_ptr[_Old_size], _Ch);
+                _Traits::assign(_New_ptr[_Old_size + 1], _Elem());
+            },
             _Ch);
     }
 
@@ -2315,8 +2314,9 @@ public:
         (_CRT_GUARDOVERFLOW const size_type _New_size, _Operation _Op) {
         if (_Mypair._Myval2._Myres < _New_size) {
             _Reallocate_grow_by(static_cast<size_type>(_New_size - _Mypair._Myval2._Mysize),
-                [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
-                    _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size + 1)); });
+                [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size) static {
+                    _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size + 1));
+                });
         } else {
             _ASAN_STRING_MODIFY(*this, _Mypair._Myval2._Mysize, _New_size);
             _Mypair._Myval2._Mysize = _New_size;
@@ -2325,12 +2325,15 @@ public:
         auto _Arg_ptr           = _Mypair._Myval2._Myptr();
         auto _Arg_size          = _New_size;
         const auto _Result_size = _STD move(_Op)(_Arg_ptr, _Arg_size);
-        static_assert(_Integer_like<decltype(_Result_size)>,
+        using _Result_type      = remove_const_t<decltype(_Result_size)>;
+        static_assert(_Integer_like<_Result_type>,
             "the return type of the operation must be integer-like, N5014 [string.capacity]/8");
 
         const auto _Result_as_size_type = static_cast<size_type>(_Result_size);
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0, N5014 [string.capacity]/9.2");
+        if constexpr (_Signed_integer_like<_Result_type>) {
+            _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0, N5014 [string.capacity]/9.2");
+        }
         _STL_VERIFY(_Result_as_size_type <= _New_size,
             "the returned size can't be greater than the passed size, N5014 [string.capacity]/9.3");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -2357,8 +2360,9 @@ public:
 
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         _Reallocate_grow_by(static_cast<size_type>(_Newcap - _Old_size),
-            [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
-                _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size + 1)); });
+            [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size) static {
+                _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size + 1));
+            });
 
         // `_Reallocate_grow_by` calls `_ASAN_STRING_CREATE` assuming that the string
         // has size (initialized memory) equal to its new capacity (allocated memory).
@@ -2385,8 +2389,9 @@ public:
         if (_Mypair._Myval2._Myres < _Newcap) { // reallocate to grow
             const size_type _Old_size = _Mypair._Myval2._Mysize;
             _Reallocate_grow_by(static_cast<size_type>(_Newcap - _Old_size),
-                [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size)
-                    _STATIC_CALL_OPERATOR { _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size + 1)); });
+                [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size) static {
+                    _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size + 1));
+                });
 
             // `_Reallocate_grow_by` calls `_ASAN_STRING_CREATE` assuming that the string
             // has size (initialized memory) equal to its new capacity (allocated memory).
@@ -3037,7 +3042,7 @@ private:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const _UElem* const _Ptr,
-                const size_type _Count) _STATIC_CALL_OPERATOR {
+                const size_type _Count) static {
                 _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Old_size));
                 _STD _Traits_copy_batch<_Traits>(_New_ptr + _Old_size, _Ptr, static_cast<size_t>(_Count));
                 _Traits::assign(_New_ptr[_Old_size + _Count], _Elem());
@@ -3063,7 +3068,7 @@ private:
 
         return _Reallocate_for(
             _Count,
-            [](_Elem* const _New_ptr, const size_type _Count, const _UElem* const _Ptr) _STATIC_CALL_OPERATOR {
+            [](_Elem* const _New_ptr, const size_type _Count, const _UElem* const _Ptr) static {
                 _STD _Traits_copy_batch<_Traits>(_New_ptr, _Ptr, static_cast<size_t>(_Count));
                 _Traits::assign(_New_ptr[_Count], _Elem());
             },
@@ -3112,7 +3117,7 @@ private:
         return _Reallocate_grow_by(
             _Count,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const _UElem* const _Ptr, const size_type _Count) _STATIC_CALL_OPERATOR {
+                const _UElem* const _Ptr, const size_type _Count) static {
                 _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Off));
                 _STD _Traits_copy_batch<_Traits>(_New_ptr + _Off, _Ptr, static_cast<size_t>(_Count));
                 _Traits::copy(_New_ptr + _Off + _Count, _Old_ptr + _Off, static_cast<size_t>(_Old_size - _Off + 1));
@@ -3188,7 +3193,7 @@ private:
         return _Reallocate_grow_by(
             _Growth,
             [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size, const size_type _Off,
-                const size_type _Nx, const _UElem* const _Ptr, const size_type _Count) _STATIC_CALL_OPERATOR {
+                const size_type _Nx, const _UElem* const _Ptr, const size_type _Count) static {
                 _Traits::copy(_New_ptr, _Old_ptr, static_cast<size_t>(_Off));
                 _STD _Traits_copy_batch<_Traits>(_New_ptr + _Off, _Ptr, static_cast<size_t>(_Count));
                 _Traits::copy(
@@ -3235,6 +3240,12 @@ private:
 };
 
 #pragma warning(pop)
+
+#if _HAS_CXX23
+template <class _Elem, class _Traits, class _Alloc>
+constexpr bool _Equivalence_is_equality_impl<basic_string<_Elem, _Traits, _Alloc>> =
+    _Is_implementation_handled_char_traits<_Traits>;
+#endif // _HAS_CXX23
 
 #if _HAS_CXX17
 template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
@@ -3622,6 +3633,11 @@ namespace pmr {
     _EXPORT_STD using wstring   = basic_string<wchar_t>;
 } // namespace pmr
 #endif // _HAS_CXX17
+
+#if _HAS_CXX23
+template <class _Elem, class _Traits, class _Alloc>
+constexpr bool _Has_guaranteed_push_back<basic_string<_Elem, _Traits, _Alloc>> = true;
+#endif // _HAS_CXX23
 _STD_END
 
 #undef _ASAN_STRING_REMOVE
