@@ -1,5 +1,0 @@
-# Copyright (c) Microsoft Corporation.
-# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-
-## TRANSITION, VSO-1938218 ASAN is not yet supported on arm64
-arm64
