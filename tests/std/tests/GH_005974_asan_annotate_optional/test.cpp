@@ -12,7 +12,7 @@ int main() {}
 #include <optional>
 
 #ifdef __SANITIZE_ADDRESS__
-extern "C" int __cdecl __asan_address_is_poisoned(void const volatile* addr);
+extern "C" int __cdecl __asan_address_is_poisoned(const volatile void* addr);
 #define ASAN_VERIFY_POISONED(addr)   assert(__asan_address_is_poisoned((addr)) != 0)
 #define ASAN_VERIFY_UNPOISONED(addr) assert(__asan_address_is_poisoned((addr)) == 0)
 #else

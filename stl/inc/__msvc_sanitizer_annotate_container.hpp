@@ -161,8 +161,8 @@ extern const bool _Asan_optional_should_annotate;
 
 #if defined(_INSERT_VECTOR_ANNOTATION) || defined(_INSERT_STRING_ANNOTATION) || defined(_INSERT_OPTIONAL_ANNOTATION)
 extern "C" {
-void __cdecl __asan_poison_memory_region(void const volatile* _Addr, size_t _Size);
-void __cdecl __asan_unpoison_memory_region(void const volatile* _Addr, size_t _Size);
+void __cdecl __asan_poison_memory_region(const volatile void* _Addr, size_t _Size);
+void __cdecl __asan_unpoison_memory_region(const volatile void* _Addr, size_t _Size);
 
 // This must match ASan's primary declaration, which isn't marked `noexcept`.
 void __cdecl __sanitizer_annotate_contiguous_container(
