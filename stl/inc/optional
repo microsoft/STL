@@ -99,12 +99,12 @@ struct _Optional_destruct_base { // either contains a value of _Ty or is empty (
     // N5001 [optional.dtor]/2: "Remarks: If is_trivially_destructible_v<T> is true, then this destructor is trivial."
 
     _CONSTEXPR20 void reset() noexcept {
-        _Has_value = false;
 #ifdef _INSERT_OPTIONAL_ANNOTATION
         if (!_STD _Is_constant_evaluated() && _Asan_optional_should_annotate) {
             __asan_poison_memory_region(_STD addressof(_Value), sizeof(_Ty));
         }
 #endif
+        _Has_value = false;
     }
 };
 
