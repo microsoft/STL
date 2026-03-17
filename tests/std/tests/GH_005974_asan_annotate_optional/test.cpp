@@ -10,72 +10,120 @@ int main() {}
 
 #include <cassert>
 #include <optional>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <variant>
+using namespace std;
+
+#if _HAS_CXX20
+#define CONSTEXPR20 constexpr
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#define CONSTEXPR20 inline
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 #ifdef __SANITIZE_ADDRESS__
 extern "C" int __cdecl __asan_address_is_poisoned(const volatile void* addr);
 #define ASAN_VERIFY_POISONED(addr)   assert(__asan_address_is_poisoned((addr)) != 0)
 #define ASAN_VERIFY_UNPOISONED(addr) assert(__asan_address_is_poisoned((addr)) == 0)
-#else
+#else // ^^^ defined(__SANITIZE_ADDRESS__) / !defined(__SANITIZE_ADDRESS__) vvv
 #define ASAN_VERIFY_POISONED(addr)   ((void) (addr))
 #define ASAN_VERIFY_UNPOISONED(addr) ((void) (addr))
-#endif
+#endif // ^^^ !defined(__SANITIZE_ADDRESS__) ^^^
 
-struct Payload {
-    long long x;
-    long long y;
-    long long z;
-    long long w;
-};
+template <class StrType>
+void test_poisoning() {
+    // std::optional<T> is ASan-annotated only for non-trivially destructible T.
+    static_assert(!is_trivially_destructible_v<StrType>);
+    {
+        // Verify layout assumption, specific to our implementation but not a guarantee provided to users.
+        // This test assumes that a std::optional's contained value is stored at offset 0, so it has the same address.
+        const optional<StrType> opt{"cats"};
+        assert(static_cast<const void*>(&opt) == static_cast<const void*>(&opt.value()));
+    }
+    {
+        // Same layout assumption for std::variant.
+        const variant<optional<StrType>, int> var{"cats"};
+        assert(static_cast<const void*>(&var) == static_cast<const void*>(&get<optional<StrType>>(var).value()));
+    }
+    {
+        optional<StrType> opt;
+        ASAN_VERIFY_POISONED(&opt);
+        assert(!opt.has_value());
 
-void test_poison_on_empty_access() {
-    [[maybe_unused]] std::optional<Payload> opt;
-    ASAN_VERIFY_POISONED(reinterpret_cast<Payload*>(&opt));
+        opt.emplace("cats");
+        ASAN_VERIFY_UNPOISONED(&opt);
+        assert(opt.value() == "cats");
+    }
+    {
+        optional<StrType> opt{"cats"};
+        ASAN_VERIFY_UNPOISONED(&opt);
+        assert(opt.value() == "cats");
+
+        opt.reset();
+        ASAN_VERIFY_POISONED(&opt);
+        assert(!opt.has_value());
+    }
+    {
+        // Verify that std::optional's destructor unpoisons its storage, so the bytes can be reused for another object.
+        variant<optional<StrType>, int> var{"cats"};
+        ASAN_VERIFY_UNPOISONED(&var);
+        assert(get<optional<StrType>>(var).value() == "cats");
+
+        get<optional<StrType>>(var).reset();
+        ASAN_VERIFY_POISONED(&var);
+        assert(!get<optional<StrType>>(var).has_value());
+
+        var = 1729;
+        ASAN_VERIFY_UNPOISONED(&var);
+        assert(get<int>(var) == 1729);
+    }
 }
 
-void test_emplace_unpoisoning() {
-    std::optional<Payload> opt;
-    opt.emplace();
-    ASAN_VERIFY_UNPOISONED(reinterpret_cast<Payload*>(&opt));
-}
-
-void test_assignment_unpoisoning() {
-    std::optional<Payload> opt = std::nullopt;
-    opt                        = Payload{};
-    ASAN_VERIFY_UNPOISONED(reinterpret_cast<Payload*>(&opt));
-}
-
-void test_repoison_after_reset() {
-    std::optional<Payload> opt = Payload{};
-    ASAN_VERIFY_UNPOISONED(reinterpret_cast<Payload*>(&opt));
-    opt.reset();
-    ASAN_VERIFY_POISONED(reinterpret_cast<Payload*>(&opt));
-}
-
-constexpr bool test_constexpr() {
 #if _HAS_CXX20
-    bool res                   = true;
-    std::optional<Payload> opt = std::nullopt;
-    opt                        = Payload{};
-    opt.reset();
-    opt = Payload{86, 0, 0, 0};
-    res = opt->x == 86;
-    opt.emplace(42, 0, 0, 0);
-    res = res && (opt->x == 42);
-    return res;
-#else
-    std::optional<Payload> opt{Payload{86, 0, 0, 0}};
-    return opt->x == 86;
-#endif
+template <class StrType>
+constexpr bool test_constexpr() {
+    {
+        optional<StrType> opt;
+        assert(!opt.has_value());
+        opt.emplace("cats");
+        assert(opt.value() == "cats");
+    }
+    {
+        optional<StrType> opt{"cats"};
+        assert(opt.value() == "cats");
+        opt.reset();
+        assert(!opt.has_value());
+    }
+    return true;
 }
+#endif // _HAS_CXX20
+
+class MyString {
+public:
+    constexpr MyString(const char* const ptr) : m_sv{ptr} {}
+
+    CONSTEXPR20 ~MyString() {} // non-trivially destructible
+
+    constexpr bool operator==(const char* const ptr) const {
+        return m_sv == ptr;
+    }
+
+private:
+    string_view m_sv{};
+};
+static_assert(!is_trivially_destructible_v<MyString>);
 
 int main() {
-    test_poison_on_empty_access();
-    test_emplace_unpoisoning();
-    test_assignment_unpoisoning();
-    test_repoison_after_reset();
-    static_assert(test_constexpr(), "constexpr test failed");
-
-    return 0;
+    // Test std::optional with both std::string and MyString as value types.
+    // std::string is the realistic scenario.
+    // MyString ensures that we're exercising std::optional's ASan annotations instead of std::string's.
+    test_poisoning<string>();
+    test_poisoning<MyString>();
+#if _HAS_CXX20
+    static_assert(test_constexpr<string>());
+    static_assert(test_constexpr<MyString>());
+#endif // _HAS_CXX20
 }
 
 #endif // ^^^ no workaround ^^^
