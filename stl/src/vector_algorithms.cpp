@@ -11287,8 +11287,8 @@ namespace {
 
             static uint16_t _To_bits(const _Vec _Ex1) noexcept {
                 // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
-                static constexpr uint8_t _[16] = {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
-                const auto _Idx                = vld1q_u8(reinterpret_cast<const uint8_t*>(_));
+                static constexpr uint8_t _Idx_arr[16] = {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+                const auto _Idx                       = vld1q_u8(reinterpret_cast<const uint8_t*>(_Idx_arr));
 
                 const auto _Ex2 = vqtbl1q_u8(_Ex1, _Idx);
                 return static_cast<uint16_t>(_Movemask(_Ex2));
@@ -11331,9 +11331,9 @@ namespace {
 
             static uint8_t _To_bits(const _Vec _Ex1) noexcept {
                 // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
-                static constexpr uint8_t _[16] = {
+                static constexpr uint8_t _Idx_arr[16] = {
                     14, 12, 10, 8, 6, 4, 2, 0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-                const auto _Idx = vld1q_u8(reinterpret_cast<const uint8_t*>(_));
+                const auto _Idx = vld1q_u8(reinterpret_cast<const uint8_t*>(_Idx_arr));
 
                 const auto _Ex2 = vqtbl1q_u8(vreinterpretq_u8_u16(_Ex1), _Idx);
                 return static_cast<uint8_t>(_Movemask(_Ex2));
