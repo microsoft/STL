@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <algorithm>
 #include <benchmark/benchmark.h>
 #include <cstddef>
 #include <cstdint>
-#include <vector>
+#include <cstring>
+#include <memory>
 
 #include "skewed_allocator.hpp"
 
