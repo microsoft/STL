@@ -475,7 +475,13 @@ public:
 };
 
 _EXPORT_STD template <class _Elem>
-struct char_traits : _Char_traits<_Elem, long> {}; // properties of a string or stream unknown element
+struct char_traits : _Char_traits<_Elem, long> { // properties of a string or stream unknown element
+#ifndef _ALLOW_ANY_TYPE_STD_CHAR_TRAIS
+    static_assert(is_integral_v<_Elem>,
+        "Standard char_traits is only provided for char, wchar_t, char8_t, char16_t, and char32_t. "
+        "See N5032 [char.traits]. Visual C++ accepts other unsigned integral types as an extension.");
+#endif // _ALLOW_ANY_TYPE_STD_CHAR_TRAIS
+};
 
 template <>
 struct char_traits<char16_t> : _WChar_traits<char16_t> {};
@@ -914,7 +920,7 @@ template <class _Elem>
 class _String_bitmap<_Elem, false> { // _String_bitmap for wchar_t/unsigned short/char16_t/char32_t/etc. types
 public:
     static_assert(is_unsigned_v<_Elem>, "Standard char_traits is only provided for char, wchar_t, char8_t, char16_t, "
-                                        "and char32_t. See N4988 [char.traits]. "
+                                        "and char32_t. See N5032 [char.traits]. "
                                         "Visual C++ accepts other unsigned integral types as an extension.");
 
     constexpr bool _Mark(const _Elem* _First, const _Elem* const _Last) noexcept {
