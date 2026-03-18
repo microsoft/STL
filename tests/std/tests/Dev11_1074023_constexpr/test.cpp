@@ -57,7 +57,7 @@ STATIC_ASSERT(il.begin() == il.end());
 STATIC_ASSERT(begin(il) == end(il));
 #endif // _HAS_CXX17
 
-// TRANSITION,
+// TRANSITION, ABI
 // constexpr error_category() noexcept;
 
 constexpr int i = 1729;
@@ -241,6 +241,8 @@ struct TestConstexprCtors {
     atomic<Animal> atom1{Animal::Cat};
     atomic<uint64_t> atom2{1729ULL};
     atomic<double*> atom3{nullptr};
+
+    mutex mut{};
 #endif // _M_CEE_PURE
 
     constexpr TestConstexprCtors() {}
@@ -860,9 +862,6 @@ constexpr try_to_lock_t try_to_lock2 = try_to_lock;
 constexpr adopt_lock_t adopt_lock2   = adopt_lock;
 
 constexpr once_flag once{};
-
-// TRANSITION,
-// constexpr mutex() noexcept;
 
 #endif // _M_CEE_PURE
 

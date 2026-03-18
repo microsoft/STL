@@ -353,7 +353,6 @@ class STLTest(Test):
         # code analysis settings
         if 'espxengine' in self.config.available_features:
             self.compileFlags.extend(["/analyze:rulesetdirectory", ';'.join(litConfig.ruleset_dirs[self.config.name])])
-            self.env['Esp.Extensions'] = 'CppCoreCheck.dll'
             self.env['Esp.AnnotationBuildLevel'] = 'Ignore'
 
 class LibcxxTest(STLTest):

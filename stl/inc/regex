@@ -190,14 +190,14 @@ struct _Cl_names { // structure to associate class name with mask value
 
 template <class _CharT>
 struct _Std_char_traits_eq {
-    _STATIC_CALL_OPERATOR bool operator()(_CharT _Left, _CharT _Right) _CONST_CALL_OPERATOR noexcept {
+    static bool operator()(_CharT _Left, _CharT _Right) noexcept {
         return char_traits<_CharT>::eq(_Left, _Right);
     }
 };
 
 template <class _CharT>
 struct _Std_char_traits_lt {
-    _STATIC_CALL_OPERATOR bool operator()(_CharT _Left, _CharT _Right) _CONST_CALL_OPERATOR noexcept {
+    static bool operator()(_CharT _Left, _CharT _Right) noexcept {
         return char_traits<_CharT>::lt(_Left, _Right);
     }
 };
@@ -4346,7 +4346,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                                 _Tgt_state._Cur = _Frame._Pos;
                                 _Next           = _Frame._Node->_Next;
                                 if (_Last_capture_restore_frame != 0U) {
-                                    auto _Not_capture_restore = [](const auto& _Other_frame) _STATIC_CALL_OPERATOR {
+                                    auto _Not_capture_restore = [](const auto& _Other_frame) static {
                                         return _Other_frame._Code != _Rx_unwind_ops::_Capture_restore_begin
                                             && _Other_frame._Code != _Rx_unwind_ops::_Capture_restore_unmatched_end;
                                     };

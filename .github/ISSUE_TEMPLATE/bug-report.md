@@ -13,6 +13,10 @@ read the guidelines for submitting STL bug reports in `README.md`. If you are
 having problems with any component that is not the STL, instructions to get
 to the right place are there.
 
+Even if your project is using an older version of the MSVC Build Tools, please
+check the Latest production release (or better yet, the Preview release) before
+reporting bugs. This will save time by avoiding reports of already-fixed bugs.
+
 # Command-line test case
 ```
 C:\Temp>type repro.cpp

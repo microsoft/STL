@@ -499,7 +499,7 @@ void __stdcall __std_tzdb_delete_current_zone(__std_tzdb_current_zone_info* cons
     // std::string, and will be treated the same as __std_tzdb_sys_info_type::_Full.
     const auto _Type = static_cast<__std_tzdb_sys_info_type>(_Tz[_Tz_len]);
 
-    // TRANSITION, vNext
+    // TRANSITION, ABI
     // Profiling shows that _Get_cal is a hot path. Its result should be cached (preferably in the time_zone object).
     const auto _Cal = _Get_cal(_Tz, _Tz_len, _Info->_Err);
     if (_Cal == nullptr) {
