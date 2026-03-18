@@ -11250,11 +11250,11 @@ namespace {
             using _Guard = char;
             using _Vec   = uint8x16_t;
 
-            static _Vec _Load(const void* _Src) noexcept {
+            static _Vec _Load(const void* const _Src) noexcept {
                 return vld1q_u8(static_cast<const uint8_t*>(_Src));
             }
 
-            static void _Store(void* _Dest, const _Vec _Val) noexcept {
+            static void _Store(void* const _Dest, const _Vec _Val) noexcept {
                 return vst1q_u8(static_cast<uint8_t*>(_Dest), _Val);
             }
 
@@ -11299,11 +11299,11 @@ namespace {
             using _Guard = char;
             using _Vec   = uint16x8_t;
 
-            static _Vec _Load(const void* _Src) noexcept {
+            static _Vec _Load(const void* const _Src) noexcept {
                 return vld1q_u16(static_cast<const uint16_t*>(_Src));
             }
 
-            static void _Store(void* _Dest, const _Vec _Val) noexcept {
+            static void _Store(void* const _Dest, const _Vec _Val) noexcept {
                 return vst1q_u16(static_cast<uint16_t*>(_Dest), _Val);
             }
 
