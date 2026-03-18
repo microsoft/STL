@@ -51,7 +51,7 @@ _NODISCARD constexpr int _Countl_zero_fallback(_Ty _Val) noexcept {
     return static_cast<int>(_Nx) - static_cast<int>(_Val);
 }
 
-#if !defined(_M_CEE_PURE) && !defined(__CUDACC__)
+#if !defined(_M_CEE_PURE)
 #define _HAS_COUNTL_ZERO_INTRINSICS 1
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_COUNTL_ZERO_INTRINSICS 0
@@ -176,7 +176,7 @@ _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
 }
 
 #if ((defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)) || (defined(_M_X64) && !defined(_M_ARM64EC))) \
-    && !defined(_M_CEE_PURE) && !defined(__CUDACC__)
+    && !defined(_M_CEE_PURE)
 #define _HAS_TZCNT_BSF_INTRINSICS 1
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_TZCNT_BSF_INTRINSICS 0
@@ -267,7 +267,7 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 
 #endif // _HAS_TZCNT_BSF_INTRINSICS
 
-#if (defined(_M_IX86) || defined(_M_X64) || defined(_M_ARM64)) && !defined(_M_CEE_PURE) && !defined(__CUDACC__)
+#if !defined(_M_CEE_PURE)
 #define _HAS_POPCNT_INTRINSICS 1
 #if defined(__AVX__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _POPCNT_INTRINSICS_ALWAYS_AVAILABLE 1
@@ -333,14 +333,14 @@ constexpr decltype(auto) _Select_countr_zero_impl(_Fn _Callback) {
 #ifndef __AVX2__
         const bool _Definitely_have_tzcnt = __isa_available >= _Stl_isa_available_avx2;
         if (!_Definitely_have_tzcnt) {
-            return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Countr_zero_bsf(_Val); });
+            return _Callback([](_Ty _Val) static { return _Countr_zero_bsf(_Val); });
         }
 #endif // ^^^ !defined(__AVX2__) ^^^
-        return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Countr_zero_tzcnt(_Val); });
+        return _Callback([](_Ty _Val) static { return _Countr_zero_tzcnt(_Val); });
     }
 #endif // ^^^ _HAS_TZCNT_BSF_INTRINSICS && _HAS_CXX20 ^^^
     // C++17 constexpr gcd() calls this function, so it should be constexpr unless we detect runtime evaluation.
-    return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Countr_zero_fallback(_Val); });
+    return _Callback([](_Ty _Val) static { return _Countr_zero_fallback(_Val); });
 }
 
 template <class _Ty>
@@ -385,13 +385,13 @@ _CONSTEXPR20 decltype(auto) _Select_popcount_impl(_Fn _Callback) {
 #if !_POPCNT_INTRINSICS_ALWAYS_AVAILABLE
         const bool _Definitely_have_popcnt = __isa_available >= _Stl_isa_available_sse42;
         if (!_Definitely_have_popcnt) {
-            return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Popcount_fallback(_Val); });
+            return _Callback([](_Ty _Val) static { return _Popcount_fallback(_Val); });
         }
 #endif // ^^^ !_POPCNT_INTRINSICS_ALWAYS_AVAILABLE ^^^
-        return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Unchecked_popcount(_Val); });
+        return _Callback([](_Ty _Val) static { return _Unchecked_popcount(_Val); });
     }
 #endif // ^^^ _HAS_POPCNT_INTRINSICS ^^^
-    return _Callback([](_Ty _Val) _STATIC_CALL_OPERATOR { return _Popcount_fallback(_Val); });
+    return _Callback([](_Ty _Val) static { return _Popcount_fallback(_Val); });
 }
 
 #undef _HAS_TZCNT_BSF_INTRINSICS

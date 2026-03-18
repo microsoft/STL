@@ -48,7 +48,7 @@ if ($VMSku -ieq 'Fasv6') {
   $AvailableLocations = @('eastus2', 'northeurope') # Locations where CPP_STL_GitHub has quota for 1024 cores (32 VMs).
 }
 
-$AvailableLocationIdx = 5 # Increment for each new set of pools, to cycle through the available locations.
+$AvailableLocationIdx = 6 # Increment for each new set of pools, to cycle through the available locations.
 $Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
 
 if ($Arch -ieq 'x64') {
@@ -182,7 +182,7 @@ Display-ProgressBar -Status 'Creating virtual network subnet config'
 # TRANSITION, 2026-03-31: "After March 31, 2026, new virtual networks will default to using private subnets,
 # meaning that an explicit outbound method must be enabled in order to reach public endpoints on the Internet
 # and within Microsoft."
-# https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/default-outbound-access
+# https://learn.microsoft.com/azure/virtual-network/ip-services/default-outbound-access
 # We're using `-DefaultOutboundAccess $false` to opt-in early.
 $SubnetName = "$ResourceGroupName-Subnet"
 $Subnet = New-AzVirtualNetworkSubnetConfig `

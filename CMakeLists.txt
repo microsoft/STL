@@ -1,13 +1,13 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 4.2.1)
+cmake_minimum_required(VERSION 4.2.3)
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
-if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.51.36014")
-    message(FATAL_ERROR "The STL must be built with MSVC Compiler 19.51.36014 or later.")
+if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.51.36122")
+    message(FATAL_ERROR "The STL must be built with MSVC Compiler 19.51.36122 or later. Follow the README instructions.")
 endif()
 
 include(CheckCXXSourceCompiles)
@@ -18,7 +18,7 @@ int main() {}
 ]=] WINDOWS_SDK_VERSION_CHECK)
 
 if(NOT WINDOWS_SDK_VERSION_CHECK)
-    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.26100) or later. Make sure it's available by selecting it in the Individual Components tab of the VS Installer.")
+    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.26100) or later. Follow the README instructions.")
 endif()
 
 if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)

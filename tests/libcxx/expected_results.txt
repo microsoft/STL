@@ -155,6 +155,9 @@ std/atomics/atomics.ref/member_types.compile.pass.cpp FAIL
 std/thread/futures/futures.promise/uses_allocator.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
 
+# libc++ has not implemented P3612R1 "Harmonize Proxy-Reference Operations"
+std/containers/sequences/vector.bool/reference.swap.pass.cpp FAIL
+
 # Various bogosity (LLVM-D141004)
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/ctor_does_not_allocate.pass.cpp FAIL
 std/utilities/utility/mem.res/mem.res.pool/mem.res.pool.ctor/sync_with_default_resource.pass.cpp FAIL
@@ -176,6 +179,9 @@ std/language.support/support.limits/support.limits.general/ranges.version.compil
 
 # libc++ is missing various <format> DRs
 std/language.support/support.limits/support.limits.general/format.version.compile.pass.cpp FAIL
+
+# libc++ doesn't implement LWG-2295 "Locale name when the provided Facet is a nullptr"
+std/localization/locales/locale/locale.cons/name_construction.pass.cpp FAIL
 
 # libc++ doesn't implement LWG-2584 (LLVM-99976)
 std/re/re.regex/re.regex.construct/bad_escape.pass.cpp FAIL
@@ -442,6 +448,10 @@ std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporar
 std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:1 FAIL
 
+# DevCom-10892055 VSO-2453093 ADL fails to consider the namespace associated with the base class under a specific scenario
+std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:1 FAIL
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
@@ -449,11 +459,6 @@ std/depr/depr.c.headers/tgmath_h.pass.cpp:2 FAIL
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
-# Not analyzed. Clang apparently defines platform macros differently from C1XX.
-# The test inspects `__x86_64__` and `__i386__`, which MSVC doesn't define.
-# SKIPPED because this fails for x64/x86 and passes for ARM64.
-std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:2 SKIPPED
-
 # Not analyzed. Possibly C++20 equality operator rewrite issues.
 std/utilities/expected/expected.expected/equality/equality.other_expected.pass.cpp:2 FAIL
 std/utilities/expected/expected.void/equality/equality.other_expected.pass.cpp:2 FAIL
@@ -503,15 +508,6 @@ std/localization/locale.categories/category.monetary/locale.moneypunct.byname/ne
 std/localization/locale.categories/category.monetary/locale.moneypunct.byname/negative_sign.pass.cpp FAIL
 std/localization/locale.categories/category.monetary/locale.moneypunct.byname/pos_format.pass.cpp FAIL
 std/localization/locale.categories/category.monetary/locale.moneypunct.byname/thousands_sep.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_date.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_date_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_monthname.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_monthname_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_one.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_one_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_weekday.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_weekday_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.put.byname/put1.pass.cpp FAIL
 std/localization/locale.categories/facet.numpunct/locale.numpunct.byname/thousands_sep.pass.cpp FAIL
 
 # GH-1374: Spaceship CPO wording in [cmp.alg] needs an overhaul
@@ -537,6 +533,10 @@ std/input.output/string.streams/stringbuf/stringbuf.members/view.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.cons/dtor.pass.cpp FAIL
 std/input.output/syncstream/syncbuf/syncstream.syncbuf.members/emit.pass.cpp FAIL
 
+# GH-4273: <ranges>: lazy_split_view should use _Non_propagating_cache instead of _Defaultabox
+std/ranges/range.adaptors/range.lazy.split/ctor.copy_move.pass.cpp FAIL
+std/ranges/range.adaptors/range.lazy.split/range.lazy.split.inner/iter_swap.pass.cpp FAIL
+
 # GH-5393: <regex>: What names can and should regex_traits::lookup_collatename() recognize?
 std/re/re.alg/re.alg.match/awk.pass.cpp FAIL
 std/re/re.alg/re.alg.match/basic.pass.cpp FAIL
@@ -547,6 +547,28 @@ std/re/re.alg/re.alg.search/basic.pass.cpp FAIL
 std/re/re.alg/re.alg.search/ecma.pass.cpp FAIL
 std/re/re.alg/re.alg.search/extended.pass.cpp FAIL
 std/re/re.traits/lookup_collatename.pass.cpp FAIL
+
+# GH-6128 <xloctime>: do_get_monthname and do_get_weekday do not set eofbit in some cases, but libcxx tests expect them to do
+std/localization/locale.categories/category.time/locale.time.get.byname/get_monthname.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_monthname_wide.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_weekday.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_weekday_wide.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname_wide.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday_wide.pass.cpp FAIL
+
+# GH-6129 <xloctime>: time_get::do_get uses the wrong format for %c and %x
+# GH-6130 <xloctime>: time_get::do_get doesn't parse a literal %
+std/localization/locale.categories/category.time/locale.time.get.byname/get_one.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_one_wide.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_one.pass.cpp FAIL
+
+# GH-6134 <xloctime>: time_put::do_put does not match strftime for the %c and %r specifiers in the "C" locale
+std/localization/locale.categories/category.time/locale.time.put/locale.time.put.members/put2.pass.cpp FAIL
+
+# GH-6135 <xloctime>: time_put_byname doesn't encode the output in UTF-8 even if the locale name contains ".UTF-8"
+std/localization/locale.categories/category.time/locale.time.put.byname/put1.pass.cpp FAIL
 
 
 # *** VCRUNTIME BUGS ***
@@ -714,6 +736,23 @@ std/iterators/iterator.requirements/iterator.assoc.types/readable.traits/indirec
 # Not analyzed, likely bogus test. constexpr fails with "vector iterators incompatible".
 std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.default.pass.cpp FAIL
 
+# Problems in this test:
+# - Clang does not trap on ARM64, but MSVC does.
+# - The test inspects `__x86_64__` and `__i386__`, which MSVC doesn't define.
+# - The __x86_64__ is defined on ARM64EC, but it is expected to behave like ARM64
+# :2 SKIPPED because this passes for x64/x86/ARM64 and fails for ARM64EC.
+std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:0 FAIL
+std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:1 FAIL
+std/language.support/support.limits/limits/numeric.limits.members/traps.pass.cpp:2 SKIPPED
+
+# Non-Standard assumption that current_zone() is affected by the TZ environment variable
+std/time/time.zone/time.zone.db/time.zone.db.access/current_zone.pass.cpp FAIL
+std/time/time.zone/time.zone.db/time.zone.db.tzdb/current_zone.pass.cpp FAIL
+
+# LWG-4285 "time_get::do_get_date is problematic even after LWG-461" (Open)
+std/localization/locale.categories/category.time/locale.time.get.byname/get_date.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_date_wide.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not analyzed, likely STL bugs. Various assertions.
@@ -748,12 +787,6 @@ std/localization/locale.categories/category.monetary/locale.money.put/locale.mon
 std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_string_en_US.pass.cpp FAIL
 std/localization/locale.categories/category.monetary/locale.moneypunct/locale.moneypunct.members/decimal_point.pass.cpp FAIL
 std/localization/locale.categories/category.monetary/locale.moneypunct/locale.moneypunct.members/thousands_sep.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_one.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.put/locale.time.put.members/put2.pass.cpp FAIL
 std/localization/locale.stdcvt/codecvt_utf16_in.pass.cpp FAIL
 std/localization/locale.stdcvt/codecvt_utf16_length.pass.cpp FAIL
 std/localization/locale.stdcvt/codecvt_utf16_max_length.pass.cpp FAIL
@@ -903,10 +936,6 @@ std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_gte.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_lte.pass.cpp FAIL
 
-# Not analyzed. error C2280: 'std::ranges::lazy_split_view<InputView,ForwardTinyView>::lazy_split_view(const std::ranges::lazy_split_view<InputView,ForwardTinyView> &)': attempting to reference a deleted function
-std/ranges/range.adaptors/range.lazy.split/ctor.copy_move.pass.cpp FAIL
-std/ranges/range.adaptors/range.lazy.split/range.lazy.split.inner/iter_swap.pass.cpp FAIL
-
 # Not analyzed.
 # Clang error: non-type template argument is not a constant expression
 std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp:2 FAIL
@@ -984,9 +1013,6 @@ std/utilities/format/format.tuple/format.pass.cpp FAIL
 # Not analyzed, unexpected separators. Assertion failed: stream_fr_FR_locale<CharT>(-1'000'000s) == SV("-1 000 000s")
 std/time/time.duration/time.duration.nonmember/ostream.pass.cpp FAIL
 
-# Not analyzed. Assertion failed: loc.name() == "*"
-std/localization/locales/locale/locale.cons/name_construction.pass.cpp FAIL
-
 # Not analyzed. Blocked by our ctype_base deriving from locale::facet.
 std/localization/locale.categories/category.numeric/locale.num.get/user_defined_char_type.pass.cpp FAIL
 
@@ -1045,10 +1071,6 @@ std/time/time.zone/time.zone.leap/members/date.pass.cpp FAIL
 std/time/time.zone/time.zone.leap/members/value.pass.cpp FAIL
 std/time/time.zone/time.zone.leap/nonmembers/comparison.pass.cpp FAIL
 
-# Not analyzed. Assertion failed: tz->name() == zone
-std/time/time.zone/time.zone.db/time.zone.db.access/current_zone.pass.cpp FAIL
-std/time/time.zone/time.zone.db/time.zone.db.tzdb/current_zone.pass.cpp FAIL
-
 # Not analyzed. Assertion failed: buffer.pubsetbuf(b, 10) == &buffer
 std/input.output/file.streams/fstreams/filebuf.virtuals/setbuf.pass.cpp FAIL
 
@@ -1082,10 +1104,6 @@ std/containers/sequences/vector/vector.capacity/shrink_to_fit_exceptions.pass.cp
 # Not analyzed. Our stdalign.h doesn't define __alignas_is_defined in C++ mode.
 std/depr/depr.c.headers/stdalign_h.compile.pass.cpp:0 FAIL
 std/depr/depr.c.headers/stdalign_h.compile.pass.cpp:1 FAIL
-
-# Not analyzed. Probably an MSVC compiler bug, as it rejects `n | negate | negate` while Clang accepts.
-std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:1 FAIL
 
 # Not analyzed. Emitting easily-suppressed truncation warnings for MSVC, but also compiler errors for MSVC and Clang.
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.pass.cpp FAIL
