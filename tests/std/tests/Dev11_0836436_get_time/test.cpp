@@ -112,6 +112,7 @@ void test_gh_2618();
 void test_gh_2848();
 void test_gh_4820();
 void test_gh_4882();
+void test_gh_6130();
 
 int main() {
     assert(read_hour("12 AM") == 0);
@@ -160,6 +161,7 @@ int main() {
     test_gh_2848();
     test_gh_4820();
     test_gh_4882();
+    test_gh_6130();
 }
 
 typedef istreambuf_iterator<char> Iter;
@@ -959,5 +961,24 @@ void test_gh_4882() {
     for (const auto& testData : testDataList) {
         fieldValidation(testData.field, testData.lo, testData.fmt);
         fieldValidation(testData.field, testData.hi, testData.fmt);
+    }
+}
+
+void test_gh_6130() {
+    // GH-6130 <xloctime>: time_get::do_get doesn't parse a literal %
+    {
+        tm t{};
+        istringstream iss{"%"};
+        iss >> get_time(&t, "%%");
+        assert(!iss.fail());
+        assert(iss.eof());
+    }
+
+    {
+        tm t{};
+        istringstream iss{"% "};
+        iss >> get_time(&t, "%%");
+        assert(!iss.fail());
+        assert(iss.tellg() == 1);
     }
 }
