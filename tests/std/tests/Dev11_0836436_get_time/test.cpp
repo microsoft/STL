@@ -144,9 +144,9 @@ int main() {
     assert(read_hour("11 PM") == 23);
     assert(read_hour("11 pm") == 23);
 
-    assert(read_date("04/22/77") == make_tuple(22, /*NOTE DIFFERENCE:*/ 3, 77));
+    assert(read_date("04 / 22 / 77") == make_tuple(22, /*NOTE DIFFERENCE:*/ 3, 77));
 
-    assert(read_date("04/22/11") == make_tuple(22, /*NOTE DIFFERENCE:*/ 3, /*NOTE DIFFERENCE:*/ 111));
+    assert(read_date("04 / 22 / 11") == make_tuple(22, /*NOTE DIFFERENCE:*/ 3, /*NOTE DIFFERENCE:*/ 111));
 
     assert(read_time("15 : 47 : 58") == make_tuple(15, 47, 58));
 
@@ -930,7 +930,13 @@ void test_gh_6129() {
 
     // %x in the C locale uses "%m / %d / %y"
     {
-        const auto t = helper("03/15/09", "%x");
+        const auto t = helper("03 / 15 / 09", "%x"); // test with whitespace
+        assert(t.tm_mon == 2);
+        assert(t.tm_mday == 15);
+        assert(t.tm_year == 109);
+    }
+    {
+        const auto t = helper("03/15/09", "%x"); // test without whitespace
         assert(t.tm_mon == 2);
         assert(t.tm_mday == 15);
         assert(t.tm_year == 109);
