@@ -142,7 +142,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 # Visual Studio Installer Prerequisites
 
 * Install [VS 2026 Insiders][] and keep it up to date.
-  + **You must install Insiders for STL development.** *See Note 1 below.*
+  + **You must install the Insiders IDE and the Preview build tools for STL development.** *See Note 1 below.*
   + Select the "Desktop development with C++" workload.
   + Select the following components at a minimum:
     - "MSVC Build Tools for x64/x86 (Preview)"
@@ -155,8 +155,12 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
   + Select "Add python.exe to PATH" if you want to follow the instructions below that invoke `python`.
     Otherwise, you should be familiar with alternative methods.
 
-*Note 1:* The STL and the compiler ship together, and we frequently need the latest
-compiler fixes and features, so the last production release of the compiler is too old.
+*Note 1:* The STL and the compiler ship together, and we frequently need recently implemented
+compiler fixes and features, so the Latest build tools (i.e. latest production) are too old.
+Because the Insiders IDE supports having the Latest and Preview build tools installed simultaneously,
+you need to ensure that you're using the Preview build tools. If you build with the IDE, we've arranged for
+this to happen automatically. If you build with the Command Prompt, you need to pass `-vcvars_ver=preview`
+as explained below. For more info, read the [C++ Team Blog post][preview] that announced this release process.
 
 *Note 2:* The x64/x86 build tools are usually sufficient.
 You'll need the ARM64/ARM64EC build tools if you're working with architecture-sensitive code.
@@ -616,14 +620,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [enhancement tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement
 [gbenchmark]: https://github.com/google/benchmark
 [gbenchmark:docs]: https://github.com/google/benchmark/blob/main/docs/user_guide.md
-[hub]: https://support.microsoft.com/en-us/help/4021566/windows-10-send-feedback-to-microsoft-with-feedback-hub-app
+[hub]: https://support.microsoft.com/help/4021566
 [libcxx]: https://libcxx.llvm.org
 [lit]: https://llvm.org/docs/CommandGuide/lit.html
 [lit result codes]: https://llvm.org/docs/CommandGuide/lit.html#test-status-results
-[redistributables]: https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist
-[natvis documentation]: https://learn.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects
-[ASan]: https://learn.microsoft.com/en-us/cpp/sanitizers/asan
+[redistributables]: https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist
+[natvis documentation]: https://learn.microsoft.com/visualstudio/debugger/create-custom-views-of-native-objects
+[ASan]: https://learn.microsoft.com/cpp/sanitizers/asan
 [Import Library]: /docs/import_library.md
 [VS 2026 Insiders]: https://visualstudio.microsoft.com/insiders/
 [CXXFLAGS]: https://cmake.org/cmake/help/latest/envvar/CXXFLAGS.html
-[start-command]: https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/start
+[start-command]: https://learn.microsoft.com/windows-server/administration/windows-commands/start
+[preview]: https://devblogs.microsoft.com/cppblog/microsoft-c-msvc-build-tools-v14-51-preview-released-how-to-opt-in/

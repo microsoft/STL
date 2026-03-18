@@ -2090,7 +2090,6 @@ constexpr bool complicated_algorithm_test() {
 }
 
 // Regression test for DevCom-739010 (aka VSO-985597)
-// https://developercommunity.visualstudio.com/content/problem/739010/meow.html
 // which allows overload resolution to prefer a hidden friend `const T&` overload of `begin`
 // for an rvalue `T` over the deleted `begin(T&&)` instantiated from the poison pill.
 template <class T>

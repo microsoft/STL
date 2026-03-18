@@ -113,9 +113,7 @@ int main() {
     test_strengthened_exception_specification<std::size_t>();
     test_strengthened_exception_specification<double>();
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10416247
     STATIC_ASSERT(std::is_nothrow_default_constructible_v<std::gslice>); // strengthened
-#endif // ^^^ no workaround ^^^
     std::gslice gs{};
     STATIC_ASSERT(noexcept(gs.start())); // strengthened
 }

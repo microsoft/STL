@@ -120,7 +120,7 @@ public:
         if (this != &_Right) {
             _CSTD free(_Timeptr);
             _Timeptr                               = _Right._Timeptr;
-            const_cast<_Timevec&>(_Right)._Timeptr = nullptr; // TRANSITION, should be movable-only
+            const_cast<_Timevec&>(_Right)._Timeptr = nullptr; // TRANSITION, ABI, should be movable-only
         }
 
         return *this;

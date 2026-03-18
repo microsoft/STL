@@ -318,8 +318,8 @@ _EXPORT_STD enum class range_format { disabled, map, set, sequence, string, debu
 
 template <class _Ty>
 struct _Invalid_format_kind {
-    static_assert(_Always_false<_Ty>, "A program that instantiates the primary template of format_kind is ill-formed. "
-                                      "(N4981 [format.range.fmtkind]/1)");
+    static_assert(false, "A program that instantiates the primary template of format_kind is ill-formed. "
+                         "(N4981 [format.range.fmtkind]/1)");
 };
 
 _EXPORT_STD template <class _Ty>
