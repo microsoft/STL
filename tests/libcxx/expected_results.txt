@@ -1156,6 +1156,11 @@ std/input.output/filesystems/fs.op.funcs/fs.op.remove_all/toctou.pass.cpp FAIL
 # Not analyzed. Asserts that `fs::copy_file(p, p, ec)` and `fs::copy_file(p, p, opts, ec)` "must NOT be noexcept".
 std/input.output/filesystems/fs.op.funcs/fs.op.copy_file/copy_file.pass.cpp FAIL
 
+# This test causes the x86-hosted MSVC to exhaust heap memory.
+# SKIPPED because the failure is x86-specific.
+std/strings/basic.string/string.modifiers/string_replace/size_size_string_size_size.pass.cpp:0 SKIPPED
+std/strings/basic.string/string.modifiers/string_replace/size_size_string_size_size.pass.cpp:1 SKIPPED
+
 
 # *** MSVC-INTERNAL TEST HARNESS ISSUES (note: configuration :9 restricts these skips to be MSVC-internal) ***
 
