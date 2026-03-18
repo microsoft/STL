@@ -20,7 +20,7 @@ stages:
     displayName: 'Test x64 ASan'
     dependsOn: []
     pool:
-      name: ${{ variables.poolName }}
+      name: ${{ variables.x64SlowPoolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
       - template: build-and-test.yml
@@ -35,7 +35,7 @@ stages:
     displayName: 'Test x86 ASan'
     dependsOn: []
     pool:
-      name: ${{ variables.poolName }}
+      name: ${{ variables.x64SlowPoolName }}
       demands: ${{ variables.poolDemands }}
     jobs:
       - template: build-and-test.yml

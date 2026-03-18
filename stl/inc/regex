@@ -190,14 +190,14 @@ struct _Cl_names { // structure to associate class name with mask value
 
 template <class _CharT>
 struct _Std_char_traits_eq {
-    _STATIC_CALL_OPERATOR bool operator()(_CharT _Left, _CharT _Right) _CONST_CALL_OPERATOR noexcept {
+    static bool operator()(_CharT _Left, _CharT _Right) noexcept {
         return char_traits<_CharT>::eq(_Left, _Right);
     }
 };
 
 template <class _CharT>
 struct _Std_char_traits_lt {
-    _STATIC_CALL_OPERATOR bool operator()(_CharT _Left, _CharT _Right) _CONST_CALL_OPERATOR noexcept {
+    static bool operator()(_CharT _Left, _CharT _Right) noexcept {
         return char_traits<_CharT>::lt(_Left, _Right);
     }
 };
@@ -1643,26 +1643,226 @@ public:
     _Builder2& operator=(const _Builder2&) = delete;
 };
 
-template <class _BidIt>
-class _Bt_state_t { // holds the state needed for backtracking
+template <class _Ty, class _Alloc = allocator<_Ty>>
+class _Rx_fixed_size_buffer {
 public:
-    _BidIt _Cur;
-    vector<bool> _Grp_valid;
+    using _Al_pointer       = _Alloc_ptr_t<_Alloc>;
+    using _Al_const_pointer = typename allocator_traits<_Alloc>::const_pointer;
+
+private:
+    using _Al_size_type = _Alloc_size_t<_Alloc>;
+
+    struct _Buffer_range {
+        _Al_pointer _First{};
+        _Al_pointer _Last{};
+        bool _Allocated{false};
+    };
+
+public:
+    explicit _Rx_fixed_size_buffer(const _Alloc& _Al = _Alloc{}) : _Mypair(_One_then_variadic_args_t{}, _Al) {}
+
+    _Rx_fixed_size_buffer(const _Rx_fixed_size_buffer&)            = delete;
+    _Rx_fixed_size_buffer(_Rx_fixed_size_buffer&&)                 = delete;
+    _Rx_fixed_size_buffer& operator=(const _Rx_fixed_size_buffer&) = delete;
+    _Rx_fixed_size_buffer& operator=(_Rx_fixed_size_buffer&&)      = delete;
+
+    void _Initialize(void*& _Stack_buf, size_t& _Stack_size, const size_t _Size) {
+        if (_Size == 0U) {
+            return; // nothing to do
+        }
+
+        const auto _Bytes = _Size * sizeof(_Ty);
+
+        if (_STD align(alignof(_Ty), _Bytes, _Stack_buf, _Stack_size)) {
+            _Use_external_buf(_Stack_buf, _Size);
+
+            _Stack_buf = static_cast<unsigned char*>(_Stack_buf) + _Bytes;
+            _Stack_size -= _Bytes;
+        } else {
+            _Allocate_buf(_Size);
+        }
+    }
+
+    ~_Rx_fixed_size_buffer() {
+        auto& _Data = _Mypair._Myval2;
+        if (_Data._Allocated) {
+            auto& _Al = _Mypair._Get_first();
+            _STD _Destroy_range(_Data._First, _Data._Last, _Al);
+            _Al.deallocate(_Data._First, static_cast<_Al_size_type>(_Data._Last - _Data._First));
+        } else {
+            _STD _Destroy_range(_Data._First, _Data._Last);
+        }
+    }
+
+    _NODISCARD _Ty& operator[](const size_t _Pos) {
+        auto& _Data = _Mypair._Myval2;
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(
+            _Pos < static_cast<size_t>(_Data._Last - _Data._First), "_Rx_fixed_size_buffer subscript out of range");
+#endif
+        return _Data._First[_Pos];
+    }
+
+    _NODISCARD const _Ty& operator[](const size_t _Pos) const {
+        auto& _Data = _Mypair._Myval2;
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(
+            _Pos < static_cast<size_t>(_Data._Last - _Data._First), "_Rx_fixed_size_buffer subscript out of range");
+#endif
+        return _Data._First[_Pos];
+    }
+
+    _NODISCARD _Al_pointer _Begin() {
+        return _Mypair._Myval2._First;
+    }
+
+    _NODISCARD _Al_const_pointer _Begin() const {
+        return _Mypair._Myval2._First;
+    }
+
+    _NODISCARD _Al_pointer _End() {
+        return _Mypair._Myval2._Last;
+    }
+
+    _NODISCARD _Al_const_pointer _End() const {
+        return _Mypair._Myval2._Last;
+    }
+
+    _NODISCARD size_t _Size() const {
+        auto& _Data = _Mypair._Myval2;
+        return static_cast<size_t>(_Data._Last - _Data._First);
+    }
+
+private:
+    void _Use_external_buf(void* _Buf, size_t _Ty_size) {
+        auto _Ty_first = _STD _Refancy<_Al_pointer>(reinterpret_cast<_Ty*>(_Buf));
+        auto _Ty_last  = _Ty_first + _Ty_size;
+        auto& _Data    = _Mypair._Myval2;
+        _STD uninitialized_fill(_Ty_first, _Ty_last, _Ty{}); // uninitialized_value_construct() is C++17
+        _Data._Allocated = false;
+        _Data._First     = _Ty_first;
+        _Data._Last      = _Ty_last;
+    }
+
+    void _Allocate_buf(size_t _Ty_size) {
+        auto& _Al = _Mypair._Get_first();
+
+        if (_Ty_size > size_t{PTRDIFF_MAX} || _Ty_size > allocator_traits<_Alloc>::max_size(_Al)) {
+            _Xregex_error(regex_constants::error_stack);
+        }
+
+        auto _Al_size  = static_cast<_Al_size_type>(_Ty_size);
+        auto _Ty_first = _Al.allocate(_Al_size);
+        _Allocation_guard<_Alloc> _Guard{_Al, _Ty_first, _Al_size};
+        auto& _Data      = _Mypair._Myval2;
+        _Data._Last      = _STD _Uninitialized_value_construct_n(_Ty_first, _Ty_size, _Al);
+        _Data._Allocated = true;
+        _Data._First     = _Ty_first;
+        _Guard._Ptr      = nullptr;
+    }
+
+    _Compressed_pair<_Alloc, _Buffer_range> _Mypair;
+};
+
+using _Rx_bitset_int_type = size_t;
+
+template <class _Alloc = allocator<bool>>
+class _Rx_fixed_size_bitset {
+private:
+    static constexpr size_t _Bits = sizeof(_Rx_bitset_int_type) * CHAR_BIT;
+
+    using _Buffer_type = _Rx_fixed_size_buffer<_Rx_bitset_int_type, _Rebind_alloc_t<_Alloc, _Rx_bitset_int_type>>;
+
+public:
+    explicit _Rx_fixed_size_bitset(const _Alloc& _Al) : _Buffer(_Al) {}
+
+    void _Initialize(void*& _Stack_buf, size_t& _Stack_size, const size_t _Bit_size) {
+        const auto _Word_size = _Bit_size / _Bits + (_Bit_size % _Bits != 0U);
+        _Buffer._Initialize(_Stack_buf, _Stack_size, _Word_size);
+    }
+
+    _NODISCARD bool _Get(const size_t _Pos) const {
+        return (_Buffer[_Pos / _Bits] & static_cast<_Rx_bitset_int_type>(_Rx_bitset_int_type{1} << (_Pos % _Bits)))
+            != _Rx_bitset_int_type{};
+    }
+
+    void _Clear(const size_t _Pos) {
+        _Buffer[_Pos / _Bits] &= static_cast<_Rx_bitset_int_type>(~(_Rx_bitset_int_type{1} << (_Pos % _Bits)));
+    }
+
+    void _Set(const size_t _Pos) {
+        _Buffer[_Pos / _Bits] |= static_cast<_Rx_bitset_int_type>(_Rx_bitset_int_type{1} << (_Pos % _Bits));
+    }
+
+    void _Clear_range_at_least_until(const size_t _First, const size_t _Last) {
+        if (_First < _Last) {
+            size_t _Buffer_first      = _First / _Bits;
+            const size_t _Buffer_last = _Last / _Bits + (_Last % _Bits != 0U);
+
+#if _ITERATOR_DEBUG_LEVEL != 0
+            _STL_VERIFY(_Buffer_last <= _Buffer._Size(), "_Rx_fixed_size_bitset subscript out of range");
+#endif
+
+            _Buffer[_Buffer_first] &=
+                static_cast<_Rx_bitset_int_type>((_Rx_bitset_int_type{1} << (_First % _Bits)) - 1U);
+
+            ++_Buffer_first;
+            if (_Buffer_first < _Buffer_last) {
+                auto _Begin = _Buffer._Begin();
+                _STD fill(_Begin + static_cast<ptrdiff_t>(_Buffer_first), _Begin + static_cast<ptrdiff_t>(_Buffer_last),
+                    _Rx_bitset_int_type{});
+            }
+        }
+    }
+
+    _NODISCARD typename _Buffer_type::_Al_pointer _Buffer_begin() {
+        return _Buffer._Begin();
+    }
+
+    _NODISCARD typename _Buffer_type::_Al_const_pointer _Buffer_begin() const {
+        return _Buffer._Begin();
+    }
+
+    _NODISCARD typename _Buffer_type::_Al_pointer _Buffer_end() {
+        return _Buffer._End();
+    }
+
+    _NODISCARD typename _Buffer_type::_Al_const_pointer _Buffer_end() const {
+        return _Buffer._End();
+    }
+
+private:
+    _Buffer_type _Buffer;
 };
 
 template <class _BidIt>
-class _Tgt_state_t : public _Bt_state_t<_BidIt> { // holds the current state of the match
+struct _Rx_capture_range_t { // stores a pair of iterators
+    _BidIt _Begin{};
+    _BidIt _End{};
+};
+
+template <class _BidIt, class _Alloc>
+class _Tgt_state_v2_t { // holds the current state of the match
 public:
-    struct _Grp_t { // stores a pair of iterators
-        _BidIt _Begin;
-        _BidIt _End;
-    };
+    explicit _Tgt_state_v2_t(const _Alloc& _Al = _Alloc()) : _Grps(_Al), _Grp_valid(_Al) {}
 
-    vector<_Grp_t> _Grps;
+    void _Copy_from(const _Tgt_state_v2_t& _Source) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Source._Grps._End() - _Source._Grps._Begin() == _Grps._End() - _Grps._Begin(),
+            "Source and destination must have same amount of storage for capture group ranges");
+        _STL_VERIFY(_Source._Grp_valid._Buffer_end() - _Source._Grp_valid._Buffer_begin()
+                        == _Grp_valid._Buffer_end() - _Grp_valid._Buffer_begin(),
+            "Source and destination must have same amount of storage for capture group validity markers");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
 
-    void operator=(const _Bt_state_t<_BidIt>& _Other) {
-        static_cast<_Bt_state_t<_BidIt>&>(*this) = _Other;
+        _Cur = _Source._Cur;
+        _STD copy(_Source._Grps._Begin(), _Source._Grps._End(), _Grps._Begin());
+        _STD copy(_Source._Grp_valid._Buffer_begin(), _Source._Grp_valid._Buffer_end(), _Grp_valid._Buffer_begin());
     }
+
+    _BidIt _Cur;
+    _Rx_fixed_size_buffer<_Rx_capture_range_t<_BidIt>, _Rebind_alloc_t<_Alloc, _Rx_capture_range_t<_BidIt>>> _Grps;
+    _Rx_fixed_size_bitset<_Rebind_alloc_t<_Alloc, bool>> _Grp_valid;
 };
 
 enum class _Rx_unwind_ops {
@@ -1686,24 +1886,186 @@ enum class _Rx_unwind_ops {
 template <class _BidIt>
 class _Rx_state_frame_t {
 public:
-    _Rx_unwind_ops _Code;
+    _Rx_unwind_ops _Code{};
     union {
         int _Loop_idx_sav;
         unsigned int _Capture_idx;
     };
-    _Node_base* _Node;
-    _BidIt _Pos;
-    size_t _Loop_frame_idx_sav;
+    _Node_base* _Node{};
+    _BidIt _Pos{};
+    size_t _Loop_frame_idx_sav{};
+};
+
+template <class _Ty, class _Alloc = allocator<_Ty>>
+class _Rx_small_vector {
+private:
+    using _Al_pointer       = _Alloc_ptr_t<_Alloc>;
+    using _Al_const_pointer = typename allocator_traits<_Alloc>::const_pointer;
+    using _Al_size_type     = _Alloc_size_t<_Alloc>;
+
+    struct _Vector_state {
+        _Al_pointer _First{};
+        _Al_pointer _Last{};
+        _Al_pointer _End{};
+        bool _Allocated{false};
+    };
+
+public:
+    _CONSTEXPR20 explicit _Rx_small_vector(const _Alloc& _Al = _Alloc{}) : _Mypair(_One_then_variadic_args_t{}, _Al) {}
+
+    _Rx_small_vector(const _Rx_small_vector&)            = delete;
+    _Rx_small_vector(_Rx_small_vector&&)                 = delete;
+    _Rx_small_vector& operator=(const _Rx_small_vector&) = delete;
+    _Rx_small_vector& operator=(_Rx_small_vector&&)      = delete;
+
+    void _Initialize_and_consume_remaining_buffer(void*& _Stack_buf, size_t& _Stack_buf_size) {
+        if (_STD align(alignof(_Ty), sizeof(_Ty), _Stack_buf, _Stack_buf_size)) {
+            const size_t _Count = _Stack_buf_size / sizeof(_Ty); // must calculate after calling _STD align()
+
+            auto& _Data        = _Mypair._Myval2;
+            const auto _Ty_buf = reinterpret_cast<_Ty*>(_Stack_buf);
+            _Data._First       = _STD _Refancy(_Ty_buf);
+            _Data._Last        = _Data._First;
+            _Data._End         = _STD _Refancy(_Ty_buf + _Count);
+        }
+
+        _Stack_buf      = nullptr;
+        _Stack_buf_size = 0;
+    }
+
+    _CONSTEXPR20 ~_Rx_small_vector() {
+        auto& _Data = _Mypair._Myval2;
+        if (_Data._Allocated) {
+            auto& _Al = _Mypair._Get_first();
+            _STD _Destroy_range(_Data._First, _Data._Last, _Al);
+            _Al.deallocate(_Data._First, static_cast<_Al_size_type>(_Data._End - _Data._First));
+        } else {
+            _STD _Destroy_range(_Data._First, _Data._Last);
+        }
+    }
+
+    _NODISCARD _Ty& operator[](const size_t _Pos) {
+        auto& _Data = _Mypair._Myval2;
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Pos < static_cast<size_t>(_Data._Last - _Data._First), "_Rx_small_vector subscript out of range");
+#endif
+        return _Data._First[_Pos];
+    }
+
+    _NODISCARD const _Ty& operator[](const size_t _Pos) const {
+        auto& _Data = _Mypair._Myval2;
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Pos < static_cast<size_t>(_Data._Last - _Data._First), "_Rx_small_vector subscript out of range");
+#endif
+        return _Data._First[_Pos];
+    }
+
+    void _Push_back(_Ty&& _Val) {
+        auto& _Data = _Mypair._Myval2;
+        if (_Data._Last == _Data._End) {
+            _Realloc_buf();
+        }
+
+        if (_Data._Allocated) {
+            allocator_traits<_Alloc>::construct(
+                _Mypair._Get_first(), _STD _Unfancy(_Data._Last), _STD forward<_Ty>(_Val));
+        } else {
+            _STD _Construct_in_place(*_Data._Last, _STD forward<_Ty>(_Val));
+        }
+        ++_Data._Last;
+    }
+
+    _NODISCARD _CONSTEXPR20 size_t _Max_size() const noexcept {
+        const auto _Max_capacity = (_STD min) (static_cast<_Al_size_type>(_STD _Max_limit<_Iter_diff_t<_Al_pointer>>()),
+            allocator_traits<_Alloc>::max_size(_Mypair._Get_first()));
+        if (_Max_capacity > size_t{PTRDIFF_MAX}) {
+            return size_t{PTRDIFF_MAX};
+        }
+        return static_cast<size_t>(_Max_capacity);
+    }
+
+    _NODISCARD size_t _Size() const {
+        auto& _Data = _Mypair._Myval2;
+        return static_cast<size_t>(_Data._Last - _Data._First);
+    }
+
+    _NODISCARD _Al_pointer _Begin() {
+        return _Mypair._Myval2._First;
+    }
+
+    _NODISCARD _Al_const_pointer _Begin() const {
+        return _Mypair._Myval2._First;
+    }
+
+    _NODISCARD _Al_pointer _End() {
+        return _Mypair._Myval2._Last;
+    }
+
+    _NODISCARD _Al_const_pointer _End() const {
+        return _Mypair._Myval2._Last;
+    }
+
+private:
+    _NODISCARD _Al_size_type _Calculate_new_capacity() {
+        auto& _Data              = _Mypair._Myval2;
+        const auto _Old_capacity = static_cast<_Al_size_type>(_Data._End - _Data._First);
+        const auto _Max_capacity = static_cast<_Al_size_type>(_Max_size());
+
+        const auto _Increase = (_STD max) (_Old_capacity / 2, _Al_size_type{1});
+
+        if (_Max_capacity - _Increase < _Old_capacity) {
+            return _Max_capacity;
+        } else {
+            return _Old_capacity + _Increase;
+        }
+    }
+
+    void _Realloc_buf() {
+        auto& _Al                = _Mypair._Get_first();
+        auto& _Data              = _Mypair._Myval2;
+        const auto _Old_first    = _Data._First;
+        const auto _Old_last     = _Data._Last;
+        const auto _Old_end      = _Data._End;
+        const auto _Old_capacity = static_cast<_Al_size_type>(_Old_end - _Old_first);
+        auto _New_capacity       = _Calculate_new_capacity();
+        if (_Old_capacity >= _New_capacity) {
+            _Xregex_error(regex_constants::error_stack);
+        }
+
+        const auto _New_first = _STD _Allocate_at_least_helper(_Al, _New_capacity);
+        _Allocation_guard<_Alloc> _Guard{_Al, _New_first, _New_capacity};
+        const auto _New_last = _STD _Uninitialized_move(_Old_first, _Old_last, _New_first, _Al);
+        _Data._First         = _New_first;
+        _Data._Last          = _New_last;
+        _Data._End           = _New_first + static_cast<_Iter_diff_t<_Al_pointer>>(_New_capacity);
+        _Guard._Ptr          = nullptr;
+
+        if (_Data._Allocated) {
+            _STD _Destroy_range(_Old_first, _Old_last, _Al);
+            _Al.deallocate(_Old_first, _Old_capacity);
+        } else {
+            _Data._Allocated = true;
+            _STD _Destroy_range(_Old_first, _Old_last);
+        }
+    }
+
+    _Compressed_pair<_Alloc, _Vector_state> _Mypair;
 };
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 class _Matcher3 { // provides ways to match a regular expression to a text sequence
+private:
+    using _Loop_vals_type   = _Loop_vals_v3_t<_Iter_diff_t<_It>>;
+    using _Tgt_state_type   = _Tgt_state_v2_t<_It, allocator<_It>>;
+    using _State_frame_type = _Rx_state_frame_t<_It>;
+
 public:
+    template <size_t _Stack_storage_size>
     _Matcher3(_It _Pfirst, _It _Plast, const _RxTraits& _Tr, _Root_node* _Re, unsigned int _Nx,
-        regex_constants::syntax_option_type _Sf, regex_constants::match_flag_type _Mf)
+        regex_constants::syntax_option_type _Sf, regex_constants::match_flag_type _Mf,
+        unsigned char (&_Stack_storage)[_Stack_storage_size])
         : _Begin(_Pfirst), _End(_Plast), _Sflags(_Sf), _Mflags(_Mf), _Ncap(_Nx),
           _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)), _Traits(_Tr) {
-        _Loop_vals.resize(_Re->_Loops);
         _Adl_verify_range(_Pfirst, _Plast);
         if (_Re->_Flags & _Fl_begin_needs_w) {
             _Char_class_w = _Lookup_char_class(static_cast<_Elem>('W'));
@@ -1726,6 +2088,27 @@ public:
         // These nodes do not affect the state of the matcher and thus can be skipped immediately
         // before engaging the expensive NFA interpreter loop.
         _Start = _Re->_Next->_Next;
+
+        {
+            void* _Buf       = _Stack_storage;
+            size_t _Buf_size = _Stack_storage_size;
+
+            _Loop_vals._Initialize(_Buf, _Buf_size, _Re->_Loops);
+
+            if (_Ncap > 1U) {
+                _Tgt_state._Grps._Initialize(_Buf, _Buf_size, _Ncap - 1U);
+                if (_Longest) {
+                    _Res._Grps._Initialize(_Buf, _Buf_size, _Ncap - 1U);
+                }
+
+                _Tgt_state._Grp_valid._Initialize(_Buf, _Buf_size, _Ncap - 1U);
+                if (_Longest) {
+                    _Res._Grp_valid._Initialize(_Buf, _Buf_size, _Ncap - 1U);
+                }
+            }
+
+            _Frames._Initialize_and_consume_remaining_buffer(_Buf, _Buf_size);
+        }
 
 // sanitize multiline mode setting
 #if _REGEX_LEGACY_MULTILINE_MODE
@@ -1761,12 +2144,8 @@ public:
         }
 
         _Tgt_state._Cur = _Begin;
-        if (_Ncap > 1U) {
-            _Tgt_state._Grp_valid.resize(_Ncap);
-            _Tgt_state._Grps.resize(_Ncap);
-        }
-        _Full         = _Full_match;
-        _Frames_count = 0;
+        _Full           = _Full_match;
+        _Frames_count   = 0;
 
         _Matched = false;
 
@@ -1786,10 +2165,10 @@ public:
             _Submatch0.second  = _Result._Cur;
 
             for (unsigned int _Idx = 1U; _Idx < _Ncap; ++_Idx) { // copy submatch _Idx
-                if (_Result._Grp_valid[_Idx]) { // copy successful match
+                if (_Result._Grp_valid._Get(_Idx - 1U)) { // copy successful match
                     _Matches->_At(_Idx).matched = true;
-                    _Matches->_At(_Idx).first   = _Result._Grps[_Idx]._Begin;
-                    _Matches->_At(_Idx).second  = _Result._Grps[_Idx]._End;
+                    _Matches->_At(_Idx).first   = _Result._Grps[_Idx - 1U]._Begin;
+                    _Matches->_At(_Idx).second  = _Result._Grps[_Idx - 1U]._End;
                 } else { // copy failed match
                     _Matches->_At(_Idx).matched = false;
                     _Matches->_At(_Idx).first   = _End;
@@ -1814,10 +2193,10 @@ public:
     _BidIt _Skip(_BidIt, _BidIt, _Node_base* = nullptr, unsigned int _Recursion_depth = 0U);
 
 private:
-    _Tgt_state_t<_It> _Tgt_state;
-    _Tgt_state_t<_It> _Res;
-    vector<_Loop_vals_v3_t<_Iter_diff_t<_It>>> _Loop_vals;
-    vector<_Rx_state_frame_t<_It>> _Frames;
+    _Tgt_state_type _Tgt_state;
+    _Tgt_state_type _Res;
+    _Rx_fixed_size_buffer<_Loop_vals_type> _Loop_vals;
+    _Rx_small_vector<_State_frame_type> _Frames;
     size_t _Frames_count;
     size_t _Frames_limit;
     long long _Complexity_limit;
@@ -1829,7 +2208,7 @@ private:
     void _Increase_complexity_count(_Iter_diff_t<_It> _Count);
 
     void _Prepare_rep(_Node_rep*);
-    bool _Find_first_inner_capture_group(_Node_base*, _Loop_vals_v3_t<_Iter_diff_t<_It>>*);
+    bool _Find_first_inner_capture_group(_Node_base*, _Loop_vals_type*);
     void _Reset_capture_groups(unsigned int _First);
     _It _Do_class(_Node_base*, _It);
     bool _Match_pat(_Node_base*);
@@ -2330,8 +2709,10 @@ bool _Regex_match1(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matche
         return false;
     }
 
+    alignas(_Loop_vals_v3_t<_Iter_diff_t<_It>>) alignas(_Rx_capture_range_t<_It>) //
+        alignas(_Rx_state_frame_t<_It>) unsigned char _Stackbuf[4096];
     _Matcher3<_BidIt, _Elem, _RxTraits, _It, void> _Mx(
-        _First, _Last, _Re._Get_traits(), _Re._Get(), _Re.mark_count() + 1, _Re.flags(), _Flgs);
+        _First, _Last, _Re._Get_traits(), _Re._Get(), _Re.mark_count() + 1, _Re.flags(), _Flgs, _Stackbuf);
     return _Mx._Match(_Matches, _Full);
 }
 
@@ -2407,8 +2788,10 @@ bool _Regex_search2(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Match
         ++_First;
     }
 
+    alignas(_Loop_vals_v3_t<_Iter_diff_t<_It>>) alignas(_Rx_capture_range_t<_It>) //
+        alignas(_Rx_state_frame_t<_It>) unsigned char _Stackbuf[4096];
     _Matcher3<_BidIt, _Elem, _RxTraits, _It, void> _Mx(
-        _First, _Last, _Re._Get_traits(), _Re._Get(), _Re.mark_count() + 1, _Re.flags(), _Flgs);
+        _First, _Last, _Re._Get_traits(), _Re._Get(), _Re.mark_count() + 1, _Re.flags(), _Flgs, _Stackbuf);
 
     if (_Mx._Match(_Matches, false)) {
         _Found = true;
@@ -3387,12 +3770,12 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Tidy() noexcept { // free memory
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Push_frame(_Rx_unwind_ops _Code, _Node_base* _Node) {
-    if (_Frames_count >= _Frames.size()) {
+    if (_Frames_count >= _Frames._Size()) {
         if (_Frames_count >= _Frames_limit) {
             _Xregex_error(regex_constants::error_stack);
         }
 
-        _Frames.push_back({_Code, {0}, _Node, _Tgt_state._Cur, size_t{}});
+        _Frames._Push_back({_Code, {0}, _Node, _Tgt_state._Cur, size_t{}});
     } else {
         auto& _Frame = _Frames[_Frames_count];
         _Frame._Code = _Code;
@@ -3404,10 +3787,10 @@ size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Push_frame(_Rx_unwind_
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 size_t _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Calculate_frames_limit(_Iter_diff_t<_It> _Input_length) {
-    constexpr size_t _Fixed_part  = 10000000U / sizeof(_Rx_state_frame_t<_It>);
-    constexpr size_t _Divisor     = sizeof(_Rx_state_frame_t<_It>) / 10U;
+    constexpr size_t _Fixed_part  = 10000000U / sizeof(_State_frame_type);
+    constexpr size_t _Divisor     = sizeof(_State_frame_type) / 10U;
     const auto _Variable_part     = _Input_length / static_cast<_Iter_diff_t<_It>>(_Divisor);
-    const size_t _Max_frames_size = _Frames.max_size();
+    const size_t _Max_frames_size = _Frames._Max_size();
 
     if (PTRDIFF_MAX < _Variable_part) {
         return _Max_frames_size;
@@ -3445,14 +3828,14 @@ void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Prepare_rep(_Node_rep* _
     // so we prevent any reset by setting the first capture group to the size of the capture group vector.
     if (_Psav->_Group_first == 0U) {
         if ((_Sflags & regex_constants::_Any_posix) || !_Find_first_inner_capture_group(_Node->_Next, _Psav)) {
-            _Psav->_Group_first = static_cast<unsigned int>(_Tgt_state._Grp_valid.size());
+            _Psav->_Group_first = static_cast<unsigned int>(_Tgt_state._Grps._Size());
         }
     }
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Find_first_inner_capture_group(
-    _Node_base* _Nx, _Loop_vals_v3_t<_Iter_diff_t<_It>>* _Loop_state) {
+    _Node_base* _Nx, _Loop_vals_type* _Loop_state) {
 
     bool _Found_group = false;
     while (_Nx) {
@@ -3482,7 +3865,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Find_first_inner_capture
         case _N_capture:
             {
                 _Node_capture* _Node      = static_cast<_Node_capture*>(_Nx);
-                _Loop_state->_Group_first = _Node->_Idx;
+                _Loop_state->_Group_first = _Node->_Idx - 1U;
                 _Found_group              = true;
                 _Nx                       = nullptr;
                 break;
@@ -3511,7 +3894,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Find_first_inner_capture
                     _Found_group              = true;
                     _Nx                       = nullptr;
                 } else {
-                    _Inner_loop_state->_Group_first = static_cast<unsigned int>(_Tgt_state._Grp_valid.size());
+                    _Inner_loop_state->_Group_first = static_cast<unsigned int>(_Tgt_state._Grps._Size());
                     _Nx                             = _Inner_rep->_End_rep;
                 }
                 break;
@@ -3537,10 +3920,10 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Find_first_inner_capture
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It, class _Alloc>
 void _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Reset_capture_groups(unsigned int _First) {
-    size_t _Size = _Tgt_state._Grp_valid.size();
+    size_t _Size = _Tgt_state._Grps._Size();
     for (; _First < _Size; ++_First) {
-        if (_Tgt_state._Grp_valid[_First]) {
-            _Tgt_state._Grp_valid[_First]    = false;
+        if (_Tgt_state._Grp_valid._Get(_First)) {
+            _Tgt_state._Grp_valid._Clear(_First);
             auto _Frame_idx                  = _Push_frame(_Rx_unwind_ops::_Capture_restore_matched, nullptr);
             _Frames[_Frame_idx]._Capture_idx = _First;
         }
@@ -3778,13 +4161,14 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Better_match() {
         return _STD distance(_Begin, _Res._Cur) < _STD distance(_Begin, _Tgt_state._Cur);
     }
 
-    for (unsigned int _Ix = 1U; _Ix < _Ncap; ++_Ix) { // check each capture group
+    for (unsigned int _Ix = 0U; _Ix < _Ncap - 1U; ++_Ix) { // check each capture group
         // any match (even an empty one) is better than no match at all
-        if (_Res._Grp_valid[_Ix] != _Tgt_state._Grp_valid[_Ix]) {
-            return _Tgt_state._Grp_valid[_Ix];
+        const bool _Valid_in_tgt_state = _Tgt_state._Grp_valid._Get(_Ix);
+        if (_Res._Grp_valid._Get(_Ix) != _Valid_in_tgt_state) {
+            return _Valid_in_tgt_state;
         }
 
-        if (_Res._Grp_valid[_Ix]) { // now known to be equal to _Tgt_state._Grp_valid[_Ix], no need to test both
+        if (_Valid_in_tgt_state) { // now known to be equal to _Res._Grp_valid._Get(_Ix), no need to test both
             // if both groups are matched, prefer the leftmost one
             if (_Res._Grps[_Ix]._Begin != _Tgt_state._Grps[_Ix]._Begin) {
                 return _STD distance(_Begin, _Res._Grps[_Ix]._Begin)
@@ -3962,28 +4346,26 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                                 _Tgt_state._Cur = _Frame._Pos;
                                 _Next           = _Frame._Node->_Next;
                                 if (_Last_capture_restore_frame != 0U) {
-                                    auto _Not_capture_restore = [](const auto& _Other_frame) _STATIC_CALL_OPERATOR {
+                                    auto _Not_capture_restore = [](const auto& _Other_frame) static {
                                         return _Other_frame._Code != _Rx_unwind_ops::_Capture_restore_begin
                                             && _Other_frame._Code != _Rx_unwind_ops::_Capture_restore_unmatched_end;
                                     };
                                     const auto _Effective_frames_end =
-                                        _STD remove_if(_Frames.begin() + static_cast<ptrdiff_t>(_Frames_count),
-                                            _Frames.begin() + static_cast<ptrdiff_t>(_Last_capture_restore_frame) + 1,
+                                        _STD remove_if(_Frames._Begin() + static_cast<ptrdiff_t>(_Frames_count),
+                                            _Frames._Begin() + static_cast<ptrdiff_t>(_Last_capture_restore_frame) + 1,
                                             _Not_capture_restore);
-                                    _Frames_count = static_cast<size_t>(_Effective_frames_end - _Frames.begin());
+                                    _Frames_count = static_cast<size_t>(_Effective_frames_end - _Frames._Begin());
                                 }
                             } else {
                                 _Failed = true;
                                 if (_Capture_first <= _Capture_back) {
-                                    _STD fill(_Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Capture_first),
-                                        _Tgt_state._Grp_valid.begin() + static_cast<ptrdiff_t>(_Capture_back + 1U),
-                                        false);
+                                    _Tgt_state._Grp_valid._Clear_range_at_least_until(
+                                        _Capture_first, _Capture_back + 1U);
                                 }
                             }
                             break;
                         } else if (_Code == _Rx_unwind_ops::_Capture_restore_unmatched_end) {
-                            auto _Node        = static_cast<_Node_capture*>(_Frame._Node);
-                            auto _Capture_idx = _Node->_Idx;
+                            auto _Capture_idx = _Frame._Capture_idx;
                             if (_Capture_first > _Capture_idx) {
                                 _Capture_first = _Capture_idx;
                             }
@@ -4003,8 +4385,8 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
             case _N_capture:
                 { // record current position
                     auto _Node = static_cast<_Node_capture*>(_Nx);
-                    auto _Idx  = _Node->_Idx;
-                    _STL_INTERNAL_CHECK(_Idx != 0U);
+                    _STL_INTERNAL_CHECK(_Node->_Idx != 0U);
+                    auto _Idx           = _Node->_Idx - 1U;
                     auto& _Group        = _Tgt_state._Grps[_Idx];
                     auto _Frame_idx     = _Push_frame(_Rx_unwind_ops::_Capture_restore_begin, _Node);
                     auto& _Frame        = _Frames[_Frame_idx];
@@ -4018,18 +4400,18 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 { // record successful capture
                     auto _Node  = static_cast<_Node_end_group*>(_Nx);
                     auto _Node0 = static_cast<_Node_capture*>(_Node->_Back);
-                    auto _Idx   = _Node0->_Idx;
-                    if (_Idx != 0U) { // update capture data
-                        auto& _Group                = _Tgt_state._Grps[_Idx];
-                        bool _Matched               = _Tgt_state._Grp_valid[_Idx];
-                        const auto _Code            = _Matched ? _Rx_unwind_ops::_Capture_restore_matched_end
-                                                               : _Rx_unwind_ops::_Capture_restore_unmatched_end;
-                        auto _Frame_idx             = _Push_frame(_Code, _Node0);
-                        auto& _Frame                = _Frames[_Frame_idx];
-                        _Frame._Pos                 = _Group._End;
-                        _Frame._Capture_idx         = _Idx;
-                        _Group._End                 = _Tgt_state._Cur;
-                        _Tgt_state._Grp_valid[_Idx] = true;
+                    if (_Node0->_Idx != 0U) { // update capture data
+                        auto _Idx           = _Node0->_Idx - 1U;
+                        auto& _Group        = _Tgt_state._Grps[_Idx];
+                        bool _Matched       = _Tgt_state._Grp_valid._Get(_Idx);
+                        const auto _Code    = _Matched ? _Rx_unwind_ops::_Capture_restore_matched_end
+                                                       : _Rx_unwind_ops::_Capture_restore_unmatched_end;
+                        auto _Frame_idx     = _Push_frame(_Code, _Node0);
+                        auto& _Frame        = _Frames[_Frame_idx];
+                        _Frame._Pos         = _Group._End;
+                        _Frame._Capture_idx = _Idx;
+                        _Group._End         = _Tgt_state._Cur;
+                        _Tgt_state._Grp_valid._Set(_Idx);
                     }
                     break;
                 }
@@ -4040,10 +4422,11 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                         (_Sflags & (regex_constants::extended | regex_constants::egrep | regex_constants::awk))
                         == 0); // these grammars don't have backreferences
                     _Node_back* _Node = static_cast<_Node_back*>(_Nx);
-                    if (_Tgt_state._Grp_valid[_Node->_Idx]) { // check for match
+                    const auto _Idx   = _Node->_Idx - 1U;
+                    if (_Tgt_state._Grp_valid._Get(_Idx)) { // check for match
                         _It _Res0 = _Tgt_state._Cur;
-                        _It _Bx   = _Tgt_state._Grps[_Node->_Idx]._Begin;
-                        _It _Ex   = _Tgt_state._Grps[_Node->_Idx]._End;
+                        _It _Bx   = _Tgt_state._Grps[_Idx]._Begin;
+                        _It _Ex   = _Tgt_state._Grps[_Idx]._End;
                         _Iter_diff_t<_It> _Count{};
                         if (_Bx != _Ex // _Bx == _Ex for zero-length match
                             && (_Res0 = _STD _Compare_translate_both(
@@ -4273,7 +4656,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
                 } else if (!_Longest) { // match result found, skip unwinding
                     return true;
                 } else if (!_Matched || _Better_match()) { // record successful match
-                    _Res     = _Tgt_state;
+                    _Res._Copy_from(_Tgt_state);
                     _Matched = true;
                 }
                 _Next = nullptr;
@@ -4437,7 +4820,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 
             case _Rx_unwind_ops::_Capture_restore_unmatched_end:
                 { // restore end of capturing group that was previously unmatched
-                    _Tgt_state._Grp_valid[_Frame._Capture_idx] = false;
+                    _Tgt_state._Grp_valid._Clear(_Frame._Capture_idx);
                 }
                 _FALLTHROUGH;
 
@@ -4449,7 +4832,7 @@ bool _Matcher3<_BidIt, _Elem, _RxTraits, _It, _Alloc>::_Match_pat(_Node_base* _N
 
             case _Rx_unwind_ops::_Capture_restore_matched:
                 { // restore matched status of capturing group
-                    _Tgt_state._Grp_valid[_Frame._Capture_idx] = true;
+                    _Tgt_state._Grp_valid._Set(_Frame._Capture_idx);
                 }
                 break;
 

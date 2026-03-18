@@ -193,7 +193,7 @@ struct _Three_way_comparison_result_with_tuple_like {};
 
 template <class... _TTypes, class _UTuple, size_t... _Indices>
     requires
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-10265237
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-2826400
     (sizeof...(_TTypes) == sizeof...(_Indices)) &&
 #endif // ^^^ workaround ^^^
     (requires { typename _Synth_three_way_result<_TTypes, tuple_element_t<_Indices, _UTuple>>; } && ...)

@@ -4,11 +4,14 @@
 # Common configuration used by both pipelines
 
 variables:
-- name: poolName
-  value: 'Stl-2026-02-20T0952-x64-Pool'
+- name: x64SlowPoolName
+  value: 'Stl-2026-03-11T0936-x64-Fasv6-Pool'
+  readonly: true
+- name: x64FastPoolName
+  value: 'Stl-2026-03-11T0936-x64-Fasv7-Pool'
   readonly: true
 - name: arm64PoolName
-  value: 'Stl-2026-02-20T0952-arm64-Pool'
+  value: 'Stl-2026-03-11T0936-arm64-Dpsv6-Pool'
   readonly: true
 - name: poolDemands
   value: 'EnableSpotVM -equals false'
