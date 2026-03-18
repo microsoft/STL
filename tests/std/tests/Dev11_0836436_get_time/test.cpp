@@ -970,13 +970,15 @@ void test_gh_6130() {
         tm t{};
         istringstream iss{"%"};
         iss >> get_time(&t, "%%");
-        assert(!iss.fail() && iss.eof());
+        assert(!iss.fail());
+        assert(iss.eof());
     }
 
     {
         tm t{};
         istringstream iss{"% "};
         iss >> get_time(&t, "%%");
-        assert(!iss.fail() && iss.tellg() == 1);
+        assert(!iss.fail());
+        assert(iss.tellg() == 1);
     }
 }
