@@ -11282,7 +11282,7 @@ namespace {
                 _Val0 *= 0x02040810204081ull;
                 _Val1 *= 0x02040810204081ull;
 
-                return ((_Val0 >> 56) & 0xFF) | (((_Val1 >> 56) & 0xFF) << 8);
+                return (_Val0 >> 56) | ((_Val1 >> 56) << 8);
             }
 
             static uint16_t _To_bits(const _Vec _Ex1) noexcept {
