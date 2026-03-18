@@ -6659,7 +6659,8 @@ namespace ranges {
         template <random_access_range _Rng, class _Urng>
             requires permutable<iterator_t<_Rng>> && uniform_random_bit_generator<remove_reference_t<_Urng>>
         static borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Urng&& _Func) {
-            _Rng_from_urng_v2<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            using _Urng0 = remove_reference_t<_Urng>;
+            using _Diff  = range_difference_t<_Rng>;
 
             // Use batched shuffle when the URNG produces full 64-bit range values.
             if constexpr (_Urng_has_full_64bit_range<_Urng0>) {
