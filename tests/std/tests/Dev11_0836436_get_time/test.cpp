@@ -968,15 +968,15 @@ void test_gh_6130() {
     // GH-6130 <xloctime>: time_get::do_get doesn't parse a literal %
     {
         tm t{};
-        stringstream ss{"%"};
-        ss >> get_time(&t, "%%");
-        assert(!ss.fail() && ss.eof());
+        istringstream iss{"%"};
+        iss >> get_time(&t, "%%");
+        assert(!iss.fail() && iss.eof());
     }
 
     {
         tm t{};
-        stringstream ss{"% "};
-        ss >> get_time(&t, "%%");
-        assert(!ss.fail() && ss.tellg() == 1);
+        istringstream iss{"% "};
+        iss >> get_time(&t, "%%");
+        assert(!iss.fail() && iss.tellg() == 1);
     }
 }
