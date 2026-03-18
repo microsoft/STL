@@ -11241,7 +11241,7 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(wchar_t* const _Dest
 }
 
 } // extern "C"
-#endif // !defined(_M_ARM64)
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
 namespace {
     namespace _Bitset_from_string {
