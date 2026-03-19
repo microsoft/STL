@@ -1388,7 +1388,7 @@ protected:
         size_t _Bufsize       = static_cast<size_t>(_Desired_precision);
         const bool _Is_finite = (_STD isfinite) (_Val);
         if (_Is_fixed && _Is_finite && 1e10 < _CSTD fabs(_Val)) { // f or F format
-            int _Ptwo;
+            int _Ptwo = 0;
             (void) _CSTD frexp(_Val, &_Ptwo);
             _Bufsize += _CSTD abs(_Ptwo) * 30103L / 100000L;
         }
@@ -1422,7 +1422,7 @@ protected:
         size_t _Bufsize       = static_cast<size_t>(_Desired_precision);
         const bool _Is_finite = (_STD isfinite) (_Val);
         if (_Is_fixed && _Is_finite && 1e10 < _CSTD fabsl(_Val)) { // f or F format
-            int _Ptwo;
+            int _Ptwo = 0;
             (void) _CSTD frexpl(_Val, &_Ptwo);
             _Bufsize += _CSTD abs(_Ptwo) * 30103L / 100000L;
         }
