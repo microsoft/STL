@@ -1385,15 +1385,15 @@ protected:
         const streamsize _Precision = _Is_hex ? -1 : _Iosbase.precision(); // precision setting
         const int _Desired_precision =
             _Float_put_desired_precision<double>(_Precision, _Float_flags); // desired precision
-        size_t _Bufsize = static_cast<size_t>(_Desired_precision);
-        if (_Is_fixed && 1e10 < _CSTD fabs(_Val)) { // f or F format
-            int _Ptwo;
+        size_t _Bufsize       = static_cast<size_t>(_Desired_precision);
+        const bool _Is_finite = (_STD isfinite) (_Val);
+        if (_Is_fixed && _Is_finite && 1e10 < _CSTD fabs(_Val)) { // f or F format
+            int _Ptwo = 0;
             (void) _CSTD frexp(_Val, &_Ptwo);
             _Bufsize += _CSTD abs(_Ptwo) * 30103L / 100000L;
         }
 
         _Buf.resize(_Bufsize + 50); // add fudge factor
-        const bool _Is_finite      = (_STD isfinite) (_Val);
         const auto _Adjusted_flags = // TRANSITION, DevCom-10519861
             _Is_finite ? _Iosbase.flags() : _Iosbase.flags() & ~ios_base::showpoint;
 
@@ -1419,15 +1419,15 @@ protected:
         const streamsize _Precision = _Is_hex ? -1 : _Iosbase.precision(); // precision setting
         const int _Desired_precision =
             _Float_put_desired_precision<long double>(_Precision, _Float_flags); // desired precision
-        size_t _Bufsize = static_cast<size_t>(_Desired_precision);
-        if (_Is_fixed && 1e10 < _CSTD fabsl(_Val)) { // f or F format
-            int _Ptwo;
+        size_t _Bufsize       = static_cast<size_t>(_Desired_precision);
+        const bool _Is_finite = (_STD isfinite) (_Val);
+        if (_Is_fixed && _Is_finite && 1e10 < _CSTD fabsl(_Val)) { // f or F format
+            int _Ptwo = 0;
             (void) _CSTD frexpl(_Val, &_Ptwo);
             _Bufsize += _CSTD abs(_Ptwo) * 30103L / 100000L;
         }
 
         _Buf.resize(_Bufsize + 50); // add fudge factor
-        const bool _Is_finite      = (_STD isfinite) (_Val);
         const auto _Adjusted_flags = // TRANSITION, DevCom-10519861
             _Is_finite ? _Iosbase.flags() : _Iosbase.flags() & ~ios_base::showpoint;
 
