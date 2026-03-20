@@ -224,6 +224,16 @@ void test_not_constructible() {
     static_assert(!std::is_constructible_v<T, int>);
 }
 
+// Additionally verify that the comparison category types avoid ambiguities in scenarios like LWG-3160.
+struct ImplicitlyDefaultConstructible {};
+
+double test_gh_5689_overload_resolution(ImplicitlyDefaultConstructible);
+void test_gh_5689_overload_resolution(std::strong_ordering);
+void test_gh_5689_overload_resolution(std::weak_ordering);
+void test_gh_5689_overload_resolution(std::partial_ordering);
+
+static_assert(std::is_same_v<decltype(test_gh_5689_overload_resolution({})), double>);
+
 int main() {
     static_assert(test_orderings());
     test_orderings();
