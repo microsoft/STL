@@ -43,7 +43,7 @@ void bm_is_sorted_until(benchmark::State& state) {
     }
 }
 
-void common_args(auto bm) {
+void common_args(benchmark::Benchmark* bm) {
     bm->ArgPair(3000, 1800);
 }
 

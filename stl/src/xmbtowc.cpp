@@ -126,6 +126,11 @@ _MRTIMP2 _Success_(return >= 0) int __cdecl _Mbrtowc(
             }
         }
 
+        if ((consumedCount == 2 && wch < 0x80u) || (consumedCount == 3 && wch < 0x800u)) { // overlong forms
+            errno = EILSEQ;
+            return -1;
+        }
+
         if (wch >= 0xD800u && wch <= 0xDFFFu) { // tried to decode unpaired surrogate
             errno = EILSEQ;
             return -1;

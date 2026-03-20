@@ -33,7 +33,7 @@ constexpr bool has_emplace_front<Cont,
 
 namespace {
     struct S2 {};
-} // namespace
+} // unnamed namespace
 
 // Was emitting "warning C5046: Symbol involving type with internal linkage not defined"
 // as a consequence of our use of return type deduction for the pertinent container functions.

@@ -195,9 +195,8 @@ template <class _Kty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, in
 set(initializer_list<_Kty>, _Alloc) -> set<_Kty, less<_Kty>, _Alloc>;
 
 #if _HAS_CXX23
-template <_RANGES input_range _Rng, class _Pr = less<_RANGES range_value_t<_Rng>>,
+template <_RANGES input_range _Rng, _Not_allocator_for_container _Pr = less<_RANGES range_value_t<_Rng>>,
     _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
-    requires (!_Allocator_for_container<_Pr>)
 set(from_range_t, _Rng&&, _Pr = _Pr(), _Alloc = _Alloc()) -> set<_RANGES range_value_t<_Rng>, _Pr, _Alloc>;
 
 template <_RANGES input_range _Rng, _Allocator_for_container _Alloc>
@@ -409,9 +408,8 @@ template <class _Kty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>::value, in
 multiset(initializer_list<_Kty>, _Alloc) -> multiset<_Kty, less<_Kty>, _Alloc>;
 
 #if _HAS_CXX23
-template <_RANGES input_range _Rng, class _Pr = less<_RANGES range_value_t<_Rng>>,
+template <_RANGES input_range _Rng, _Not_allocator_for_container _Pr = less<_RANGES range_value_t<_Rng>>,
     _Allocator_for_container _Alloc = allocator<_RANGES range_value_t<_Rng>>>
-    requires (!_Allocator_for_container<_Pr>)
 multiset(from_range_t, _Rng&&, _Pr = _Pr(), _Alloc = _Alloc()) -> multiset<_RANGES range_value_t<_Rng>, _Pr, _Alloc>;
 
 template <_RANGES input_range _Rng, _Allocator_for_container _Alloc>

@@ -8,8 +8,8 @@
 #include <cstddef>
 #include <vector>
 
-#include "test_min_max_element_support.hpp"
-#include "test_vector_algorithms_support.hpp"
+#include <test_min_max_element_support.hpp>
+#include <test_vector_algorithms_support.hpp>
 
 using namespace std;
 

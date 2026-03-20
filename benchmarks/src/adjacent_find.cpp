@@ -41,7 +41,7 @@ void bm(benchmark::State& state) {
     }
 }
 
-void common_args(auto bm) {
+void common_args(benchmark::Benchmark* bm) {
     bm->ArgPair(2525, 1142);
 }
 

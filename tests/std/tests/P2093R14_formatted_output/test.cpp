@@ -24,7 +24,7 @@
 #include <Windows.h>
 #pragma warning(pop)
 
-#include "temp_file_name.hpp"
+#include <temp_file_name.hpp>
 
 using namespace std;
 
@@ -713,7 +713,7 @@ int main(int argc, char* argv[]) {
 
             constexpr BOOL inherit_handles = TRUE;
 
-            // https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags
+            // https://learn.microsoft.com/windows/win32/procthread/process-creation-flags
             // "The new process has a new console, instead of inheriting its parent's console (the default)."
             constexpr DWORD creation_flags = CREATE_NEW_CONSOLE;
 

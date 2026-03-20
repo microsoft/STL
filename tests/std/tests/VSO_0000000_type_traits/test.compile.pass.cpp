@@ -1175,6 +1175,16 @@ template <typename T>
 void test_VSO_707437_i(T, type_identity_t<T>*) {}
 #endif // _HAS_CXX20
 
+void test_VSO_707437() {
+    test_VSO_707437_c(11L, nullptr);
+    test_VSO_707437_v(11L, nullptr);
+    test_VSO_707437_cv(11L, nullptr);
+
+#if _HAS_CXX20
+    test_VSO_707437_i(11L, nullptr);
+#endif // _HAS_CXX20
+}
+
 // VSO-781535 "[RWC][Regression][prod/fe] WebKit failed with error C2938"
 // The compiler can't track that the type __underlying_type(T) is dependent on T, and so will diagnose this definition
 // as ill-formed ("'std::enable_if_t<false,void>' : Failed to specialize alias template") if we expose the intrinsic
@@ -1245,19 +1255,6 @@ STATIC_ASSERT(!HasUnderlyingTypeAlias<ExampleEnum[3]>::value);
 STATIC_ASSERT(!HasUnderlyingTypeAlias<ExampleEnum (&)[3]>::value);
 STATIC_ASSERT(!HasUnderlyingTypeAlias<void>::value);
 STATIC_ASSERT(!HasUnderlyingTypeAlias<ExampleEnum[]>::value);
-
-
-int main() {
-    test_all_function_types();
-
-    test_VSO_707437_c(11L, nullptr);
-    test_VSO_707437_v(11L, nullptr);
-    test_VSO_707437_cv(11L, nullptr);
-
-#if _HAS_CXX20
-    test_VSO_707437_i(11L, nullptr);
-#endif // _HAS_CXX20
-}
 
 #if _HAS_CXX20
 // Test the P0898R3 changes to <type_traits>:
@@ -1342,7 +1339,7 @@ STATIC_ASSERT(is_same_v<common_reference_t<void() volatile>, void() volatile>);
 STATIC_ASSERT(is_same_v<common_reference_t<void() &&>, void() &&>);
 
 
-// N4928 [meta.trans.other]/5.3.1 as updated by P2655R3 (TRANSITION, cite new WP here):
+// N5032 [meta.trans.other]/6.3.1:
 // "Let R be COMMON-REF(T1, T2). If T1 and T2 are reference types, R is well-formed, and
 // is_convertible_v<add_pointer_t<T1>, add_pointer_t<R>> && is_convertible_v<add_pointer_t<T2>, add_pointer_t<R>>
 // is true, then the member typedef type denotes R."

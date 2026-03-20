@@ -68,6 +68,16 @@ _STD_END
 #pragma push_macro("stdext")
 #undef stdext
 
+#define _STDEXT_BEGIN      \
+    _EXTERN_CXX_WORKAROUND \
+    namespace stdext {
+
+#define _STDEXT_END \
+    }               \
+    _END_EXTERN_CXX_WORKAROUND
+
+#define _STDEXT ::stdext::
+
 _STDEXT_BEGIN
 class _NODISCARD exception;
 _STDEXT_END
@@ -202,6 +212,10 @@ _EXPORT_STD using _STDEXT bad_array_new_length;
 _EXPORT_STD using _STDEXT bad_exception;
 
 _STD_END
+
+#undef _STDEXT_BEGIN
+#undef _STDEXT_END
+#undef _STDEXT
 
 #pragma pop_macro("stdext")
 

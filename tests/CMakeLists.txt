@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+find_package(Python "3.14.3" REQUIRED COMPONENTS Interpreter)
+
 set(STL_BUILD_ROOT "${PROJECT_BINARY_DIR}/out")
 set(STL_SOURCE_DIR "${PROJECT_SOURCE_DIR}")
 set(STL_TEST_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
@@ -22,8 +24,6 @@ add_subdirectory(tr1)
 # Add the stl-lit subdirectory last so all the test directories have had a
 # chance to add to the config map and test directory global properties.
 add_subdirectory(utils/stl-lit)
-
-find_package(Python "3.14.0" REQUIRED COMPONENTS Interpreter)
 
 if(NOT DEFINED LIT_FLAGS)
     set(LIT_FLAGS "-o" "${CMAKE_CURRENT_BINARY_DIR}/test_results.json")

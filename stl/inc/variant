@@ -714,7 +714,7 @@ struct _Variant_assign_visitor { // visitor that implements assignment for varia
                         _Self._Reset();
                         _STD _Construct_in_place(_Self._Storage(), integral_constant<size_t, _Idx>{}, _Source._Val);
                     } else { // copy throws and move does not; move from a temporary copy
-                        auto _Temp = _Source._Val;
+                        auto _Temp(_Source._Val);
                         _Self._Reset();
                         _STD _Construct_in_place(_Self._Storage(), integral_constant<size_t, _Idx>{}, _STD move(_Temp));
                     }
@@ -791,7 +791,7 @@ public:
 
     _CONSTEXPR20 void _Destroy() noexcept { // destroy the contained value, if any
         if constexpr (!conjunction_v<is_trivially_destructible<_Types>...>) {
-            _STD _Variant_raw_visit(index(), _Storage(), [](auto _Ref) noexcept {
+            _STD _Variant_raw_visit(index(), _Storage(), [](auto _Ref) static noexcept {
                 if constexpr (decltype(_Ref)::_Idx != variant_npos) {
                     using _Indexed_value_type = _Remove_cvref_t<decltype(_Ref._Val)>;
                     _Ref._Val.~_Indexed_value_type();
@@ -1422,9 +1422,6 @@ struct _Variant_dispatcher<index_sequence<_Is...>> {
     template <class _Ret, class _Callable, class... _Types, bool _Any_valueless = ((_Is == 0) || ...)>
     _NODISCARD static constexpr _Ret _Dispatch2(_Callable&& _Obj, _Types&&... _Args) {
         if constexpr (_Any_valueless) {
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1513409
-            ((void) _Args, ...);
-#endif // ^^^ workaround ^^^
             _STD _Throw_bad_variant_access();
         }
 #if _HAS_CXX20
@@ -1662,7 +1659,7 @@ _CONSTEXPR20 void swap(variant<_Types...>& _Left, variant<_Types...>& _Right) no
 
 struct _Variant_hash_visitor { // visitation function for hashing variants
     template <class _Ty, size_t _Idx>
-    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(_Tagged<const _Ty&, _Idx> _Obj) _CONST_CALL_OPERATOR
+    _NODISCARD static size_t operator()(_Tagged<const _Ty&, _Idx> _Obj)
         noexcept(disjunction_v<bool_constant<_Idx == variant_npos>,
             is_nothrow_invocable<hash<_Ty>, const _Ty&>>) { // hash contained value _Obj
         if constexpr (_Idx == variant_npos) { // hash a valueless variant

@@ -133,7 +133,7 @@ namespace Concurrency {
                 _Chore->_M_callback(_Chore->_M_data);
                 _Decrement_outstanding();
             }
-        } // namespace
+        } // unnamed namespace
 
         _CRTIMP2 void __cdecl _Release_chore(_Threadpool_chore* _Chore) {
             if (_Chore->_M_work != nullptr) {

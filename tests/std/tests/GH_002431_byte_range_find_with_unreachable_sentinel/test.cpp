@@ -11,7 +11,7 @@
 #include <Windows.h>
 #pragma warning(pop)
 
-#include "test_vector_algorithms_support.hpp"
+#include <test_vector_algorithms_support.hpp>
 
 using namespace std;
 

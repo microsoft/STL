@@ -7,7 +7,6 @@
 #define _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
 #define _SILENCE_CXX20_IS_POD_DEPRECATION_WARNING
 #define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
-#define _USE_NAMED_IDL_NAMESPACE 1
 
 #include <array>
 #include <cstddef>
@@ -18,6 +17,8 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#include <is_permissive.hpp>
 
 // lets INSTANTIATE macro be used for types that aren't default constructible.
 // Doesn't actually instantiate the type if not default constructible,
@@ -34,21 +35,6 @@ template <typename T>
 struct instantiate_helper<T, false> {
     using type = int;
 };
-
-#if _HAS_CXX17
-// TRANSITION, Evil Extension
-namespace detail {
-    struct S {};
-    void evil(S&);
-
-    template <typename = S, typename = void>
-    constexpr bool test = false;
-    template <typename T>
-    constexpr bool test<T, std::void_t<decltype(evil(T{}))>> = true;
-} // namespace detail
-
-constexpr bool has_evil_extension = detail::test<>;
-#endif // _HAS_CXX17
 
 #define USE_VALUE(...)          \
     do {                        \
@@ -188,9 +174,7 @@ void type_traits_test_impl() {
     TRAIT_V(is_swappable, T);
     TRAIT_V(is_nothrow_swappable, T);
     TRAIT_V(is_swappable_with, T, U);
-    constexpr bool avoid_evil_extension = // TRANSITION, Evil Extension
-        has_evil_extension && !conjunction_v<is_lvalue_reference<T>, is_lvalue_reference<U>>;
-    if constexpr (!avoid_evil_extension) { // avoid triggering Evil Extension warnings
+    if constexpr (!is_permissive || (is_lvalue_reference_v<T> && is_lvalue_reference_v<U>) ) { // avoid Evil Extension
         TRAIT_V(is_nothrow_swappable_with, T, U);
     }
 #endif // _HAS_CXX17

@@ -36,7 +36,7 @@ void bm_sample(benchmark::State& state) {
     }
 }
 
-void common_args(auto bm) {
+void common_args(benchmark::Benchmark* bm) {
     bm->Args({1 << 20, 1 << 15});
 }
 

@@ -1,8 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// This test was extended with functionality needed for
+// P3612R1: Harmonize Proxy-Reference Operations
+
 #include <algorithm>
+#include <bitset>
 #include <cassert>
+#include <cstddef>
+#include <type_traits>
 #include <vector>
 
 using namespace std;
@@ -10,7 +16,7 @@ using namespace std;
 static const auto is_true  = [](bool b) { return b; };
 static const auto is_false = [](bool b) { return !b; };
 
-int main() {
+void check_values_match() {
     vector<bool> x(100, false);
     vector<bool> y(100, true);
 
@@ -26,4 +32,65 @@ int main() {
     assert(all_of(y.begin(), y.begin() + 34, is_true));
     assert(!y[34]);
     assert(all_of(y.begin() + 35, y.end(), is_true));
+}
+
+template <class T>
+void check_P3612(T& collection) {
+    auto ref0       = collection[0];
+    const auto ref1 = collection[1];
+    auto ref2       = collection[2];
+
+    // assignments from bool
+    ref0 = true;
+    ref1 = true;
+    assert(collection[0]);
+    assert(collection[1]);
+
+    ref0 = false;
+    ref1 = false;
+    assert(!collection[0]);
+    assert(!collection[1]);
+
+    // assignments from reference
+    ref2 = true;
+    ref0 = ref2;
+    ref1 = ref2;
+    assert(collection[0]);
+    assert(collection[1]);
+
+    ref2 = false;
+    ref0 = ref2;
+    ref1 = ref2;
+    assert(!collection[0]);
+    assert(!collection[1]);
+
+    collection[0] = true;
+    collection[1] = false;
+
+    swap(collection[0], collection[1]); // swap(reference, reference)
+    assert(!collection[0]);
+    assert(collection[1]);
+
+    bool b = true;
+    swap(collection[0], b); // swap(reference, bool)
+    assert(collection[0]);
+    assert(!b);
+
+    swap(b, collection[0]); // swap(bool, reference)
+    assert(!collection[0]);
+    assert(b);
+}
+
+int main() {
+    check_values_match();
+
+    constexpr size_t N = 10;
+    vector<bool> vb(N);
+    bitset<N> bs(0);
+
+    check_P3612(vb);
+    check_P3612(bs);
+
+    static_assert(is_nothrow_copy_constructible_v<vector<bool>::reference>, "");
+    static_assert(is_nothrow_copy_constructible_v<bitset<N>::reference>, "");
 }

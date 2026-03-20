@@ -18,6 +18,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 #ifndef _STD_BITSET_TO_STREAM_STACK_RESERVATION
 #define _STD_BITSET_TO_STREAM_STACK_RESERVATION 128
 #endif // !defined(_STD_BITSET_TO_STREAM_STACK_RESERVATION)
@@ -72,8 +78,8 @@ struct _Buffer_for_bitset<_Elem, _Bits, false> {
     _Elem _Buf[(_Bits != 0) ? _Bits : 1];
 };
 
-_EXPORT_STD template <size_t _Bits>
-class bitset { // store fixed-length sequence of Boolean elements
+_EXPORT_STD template <size_t _Bits> // store fixed-length sequence of Boolean elements
+class _NO_SPECIALIZATIONS_CITING("N5014 [namespace.std]/2.1") bitset {
 private:
 #pragma warning(push)
 #pragma warning(disable : 4296) // expression is always true (/Wall)
@@ -85,7 +91,7 @@ public:
         friend bitset;
 
     public:
-        _CONSTEXPR23 reference(const reference&) = default;
+        _CONSTEXPR23 reference(const reference&) noexcept = default;
 
         _CONSTEXPR23 ~reference() noexcept {} // TRANSITION, ABI
 
@@ -96,6 +102,11 @@ public:
 
         _CONSTEXPR23 reference& operator=(const reference& _Bitref) noexcept {
             _Pbitset->_Set_unchecked(_Mypos, static_cast<bool>(_Bitref));
+            return *this;
+        }
+
+        _CONSTEXPR23 const reference& operator=(const bool _Val) const noexcept {
+            _Pbitset->_Set_unchecked(_Mypos, _Val);
             return *this;
         }
 
@@ -110,6 +121,22 @@ public:
         _CONSTEXPR23 reference& flip() noexcept {
             _Pbitset->_Flip_unchecked(_Mypos);
             return *this;
+        }
+
+        friend constexpr void swap(reference _Left, reference _Right) noexcept {
+            bool _Val = _Left; // NOT _STD swap
+            _Left     = _Right;
+            _Right    = _Val;
+        }
+
+        friend constexpr void swap(reference _Left, bool& _Right) noexcept {
+            bool _Val = _Left; // NOT _STD swap
+            _Left     = _Right;
+            _Right    = _Val;
+        }
+
+        friend constexpr void swap(bool& _Left, reference _Right) noexcept {
+            swap(_Right, _Left);
         }
 
     private:
@@ -681,11 +708,15 @@ struct hash<bitset<_Bits>> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = bitset<_Bits>;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
-    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const bitset<_Bits>& _Keyval) _CONST_CALL_OPERATOR noexcept {
+    _NODISCARD static size_t operator()(const bitset<_Bits>& _Keyval) noexcept {
         return _Hash_representation(_Keyval._Array);
     }
 };
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

@@ -15,7 +15,7 @@ namespace {
         _New_handler();
         return 1;
     }
-} // namespace
+} // unnamed namespace
 
 _STD_BEGIN
 

@@ -43,10 +43,12 @@ struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq> {
     // transparency selector for transparent hashed containers
     static constexpr bool _Has_transparent_overloads = true;
 
+#if _HAS_CXX23
     template <class _Container, class _Kx>
     static constexpr bool _Supports_transparency =
         !disjunction_v<is_convertible<_Kx, typename _Container::const_iterator>,
             is_convertible<_Kx, typename _Container::iterator>>;
+#endif // _HAS_CXX23
 };
 #endif // _HAS_CXX20
 
@@ -411,21 +413,6 @@ private:
         _Pocma(_Vec._Mypair._Get_first(), _Right._Vec._Mypair._Get_first());
     }
 
-    struct _NODISCARD _Clear_guard {
-        _Hash* _Target;
-
-        explicit _Clear_guard(_Hash* const _Target_) : _Target(_Target_) {}
-
-        _Clear_guard(const _Clear_guard&)            = delete;
-        _Clear_guard& operator=(const _Clear_guard&) = delete;
-
-        ~_Clear_guard() {
-            if (_Target) {
-                _Target->clear();
-            }
-        }
-    };
-
 #ifdef _ENABLE_STL_INTERNAL_CHECK
     struct _NODISCARD _Check_container_invariants_guard {
         const _Hash& _Target;
@@ -505,7 +492,7 @@ public:
             }
         } else if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
             if (_Al != _Right_al) {
-                _Clear_guard _Guard{this};
+                _Clear_guard<_Hash> _Guard{this};
                 _Traitsobj     = _Right._Traitsobj;
                 using _Adapter = _Reinterpret_move_iter<typename _Mylist::_Unchecked_iterator, _Mutable_value_type>;
                 _List.template _Assign_cast<_Mutable_value_type&>(
@@ -701,7 +688,7 @@ public:
                 _Pocca_both(_Right);
                 _Vec_proxy._Bind(_Alproxy, _STD addressof(_Vec._Mypair._Myval2));
 
-                _Clear_guard _Guard{this};
+                _Clear_guard<_Hash> _Guard{this};
                 _Traitsobj = _Right._Traitsobj;
                 _List.template _Assign_cast<_Mutable_value_type&>(
                     _Right._List._Unchecked_begin(), _Right._List._Unchecked_end());
@@ -712,7 +699,7 @@ public:
             }
         }
 
-        _Clear_guard _Guard{this};
+        _Clear_guard<_Hash> _Guard{this};
         _Traitsobj = _Right._Traitsobj;
         _Pocca_both(_Right);
         _List.template _Assign_cast<_Mutable_value_type&>(
@@ -1659,7 +1646,7 @@ protected:
         _Mask   = _Buckets - 1;
         _Maxidx = _Buckets;
 
-        _Clear_guard _Guard{this};
+        _Clear_guard<_Hash> _Guard{this};
 
         _Unchecked_iterator _Inserted = _Unchecked_begin();
 
@@ -1896,7 +1883,7 @@ protected:
 // For constraining deduction guides (N4981 [unord.req.general]/248.3)
 #if _HAS_CXX23
 template <class _Hasher>
-concept _Hasher_for_container = !integral<_Hasher> && !_Allocator_for_container<_Hasher>;
+concept _Hasher_for_container = !integral<_Hasher> && _Not_allocator_for_container<_Hasher>;
 
 template <class _Hasher>
 using _Is_hasher = bool_constant<_Hasher_for_container<_Hasher>>;

@@ -345,7 +345,7 @@ namespace filesystem {
     }
 
     struct _Is_slash_oper { // predicate testing if input is a preferred-separator or fallback-separator
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr bool operator()(const wchar_t _Ch) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr bool operator()(const wchar_t _Ch) {
             return _Ch == L'\\' || _Ch == L'/';
         }
     };
@@ -1323,15 +1323,13 @@ namespace filesystem {
         _NODISCARD inline iterator end() const noexcept; // strengthened
 
         template <class _Elem, class _Traits>
-        friend _STD basic_ostream<_Elem, _Traits>& operator<<( // TRANSITION, VSO-570323
-            _STD basic_ostream<_Elem, _Traits>& _Ostr, const path& _Path) { // TRANSITION, VSO-570323
+        friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const path& _Path) {
             // insert a path into a stream
             return _Ostr << _STD quoted(_Path.string<_Elem, _Traits>());
         }
 
         template <class _Elem, class _Traits>
-        friend _STD basic_istream<_Elem, _Traits>& operator>>( // TRANSITION, VSO-570323
-            _STD basic_istream<_Elem, _Traits>& _Istr, path& _Path) { // TRANSITION, VSO-570323
+        friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, path& _Path) {
             // extract a path from a stream
             basic_string<_Elem, _Traits> _Tmp;
             _Istr >> _STD quoted(_Tmp);
@@ -2480,8 +2478,8 @@ namespace filesystem {
 
         // [fs.dir.entry.io], inserter
         template <class _Elem, class _Traits>
-        friend _STD basic_ostream<_Elem, _Traits>& operator<<( // TRANSITION, VSO-570323
-            _STD basic_ostream<_Elem, _Traits>& _Ostr, const directory_entry& _Entry) { // TRANSITION, VSO-570323
+        friend basic_ostream<_Elem, _Traits>& operator<<(
+            basic_ostream<_Elem, _Traits>& _Ostr, const directory_entry& _Entry) {
             // insert a directory_entry into a stream
             return _Ostr << _Entry.path();
         }
@@ -3219,7 +3217,7 @@ namespace filesystem {
 
     _NODISCARD inline __std_win_error _Read_reparse_data(
         const _Fs_file& _Handle, unique_ptr<char[]>& _Buffer_unique_ptr) noexcept {
-        constexpr auto _Buffer_size = 16 * 1024 + sizeof(wchar_t); // MAXIMUM_REPARSE_DATA_BUFFER_SIZE + sizeof(wchar_t)
+        constexpr auto _Buffer_size = 16 * 1024; // MAXIMUM_REPARSE_DATA_BUFFER_SIZE
 
         _Buffer_unique_ptr.reset(::new (nothrow) char[_Buffer_size]);
         if (!_Buffer_unique_ptr) {
@@ -3394,8 +3392,7 @@ namespace filesystem {
     }
 
     _EXPORT_STD inline bool copy_file(
-        const path& _From, const path& _To, const copy_options _Options, error_code& _Ec) noexcept
-    /* strengthened */ {
+        const path& _From, const path& _To, const copy_options _Options, error_code& _Ec) noexcept /* strengthened */ {
         // copy a file _From -> _To according to _Options
         const auto _Result =
             __std_fs_copy_file(_From.c_str(), _To.c_str(), static_cast<__std_fs_copy_options>(_Options));
@@ -4432,7 +4429,7 @@ template <>
 struct hash<filesystem::path> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = filesystem::path;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
-    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const filesystem::path& _Path) _CONST_CALL_OPERATOR noexcept {
+    _NODISCARD static size_t operator()(const filesystem::path& _Path) noexcept {
         return _STD filesystem::hash_value(_Path);
     }
 };

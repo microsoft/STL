@@ -1,7 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// REQUIRES: x64 || x86
+// REQUIRES: x64 || x86 || arm64
+
+#if defined(__clang__) && defined(_M_ARM64) // TRANSITION, LLVM-184902, fixed in Clang 23
+#pragma comment(linker, "/INFERASANLIBS")
+int main() {}
+#else // ^^^ workaround / no workaround vvv
 
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
 #pragma warning(disable : 4324) // '%s': structure was padded due to alignment specifier
@@ -20,13 +25,14 @@
 #include <new>
 #include <sstream>
 #include <string>
+#include <type_traits>
+#include <utility>
 
-#include <test_death.hpp>
 #if _HAS_CXX17
 #include <string_view>
 #endif // _HAS_CXX17
-#include <type_traits>
-#include <utility>
+
+#include <test_death.hpp>
 
 using namespace std;
 
@@ -1997,3 +2003,5 @@ int main(int argc, char* argv[]) {
 #endif // ASan instrumentation enabled
     return exec.run(argc, argv);
 }
+
+#endif // ^^^ no workaround ^^^
