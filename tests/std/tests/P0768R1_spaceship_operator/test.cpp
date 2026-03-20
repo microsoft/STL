@@ -217,17 +217,11 @@ void test_algorithm() {
     assert((test_algorithm2<Ty2, Ty1>()));
 }
 
-// Test added to handle GH-5689
-template <typename T>
+// Test GH-5689 "<compare>: ordering types are default constructible and constructible from integer types"
+template <class T>
 void test_not_constructible() {
     static_assert(!std::is_default_constructible_v<T>);
     static_assert(!std::is_constructible_v<T, int>);
-
-    // How to test this does not compile?
-    //{
-    //    auto [n] = 0 <=> 0;
-    //    (void) n;
-    //}
 }
 
 int main() {
