@@ -256,25 +256,6 @@ inline constexpr strong_ordering strong_ordering::equal{_STD _Bit_cast<strong_or
 inline constexpr strong_ordering strong_ordering::equivalent{_STD _Bit_cast<strong_ordering>(_Compare_eq::equivalent)};
 inline constexpr strong_ordering strong_ordering::greater{_STD _Bit_cast<strong_ordering>(_Compare_ord::greater)};
 
-template <typename>
-struct tuple_size;
-
-// Prevent structured binding to objects of xxx_ordering, see GH-5689
-template <>
-struct tuple_size<partial_ordering> {
-    void value();
-};
-
-template <>
-struct tuple_size<weak_ordering> {
-    void value();
-};
-
-template <>
-struct tuple_size<strong_ordering> {
-    void value();
-};
-
 _EXPORT_STD _NODISCARD constexpr bool is_eq(const partial_ordering _Comp) noexcept {
     return _Comp == 0;
 }
