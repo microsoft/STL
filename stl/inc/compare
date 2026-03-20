@@ -47,13 +47,9 @@ enum class _Compare_eq : _Compare_t { equal = 0, equivalent = equal };
 enum class _Compare_ord : _Compare_t { less = -1, greater = 1 };
 enum class _Compare_ncmp : _Compare_t { unordered = -128 };
 
-// TRANSITION, ABI, this is used for allowing comparison category types to be passing and returning in registers
-// in MSVC ABI while making them non-default-constructible.
-// It is intentional to use a specific tag type to avoid impact on overload resolution.
-struct _Secret_ordering_construction_tag {};
-
 _EXPORT_STD struct partial_ordering {
-    constexpr partial_ordering(same_as<_Secret_ordering_construction_tag> auto) = delete;
+    template <int> // Prevent unwanted construction without interfering with overload resolution or the MSVC ABI.
+    constexpr partial_ordering() = delete; // constexpr is necessary, see N5032 [basic.types.general]/10.5.3.4.
 
     static const partial_ordering less;
     static const partial_ordering equivalent;
@@ -123,7 +119,8 @@ inline constexpr partial_ordering partial_ordering::unordered{
     _STD _Bit_cast<partial_ordering>(_Compare_ncmp::unordered)};
 
 _EXPORT_STD struct weak_ordering {
-    constexpr weak_ordering(same_as<_Secret_ordering_construction_tag> auto) = delete;
+    template <int> // Prevent unwanted construction without interfering with overload resolution or the MSVC ABI.
+    constexpr weak_ordering() = delete; // constexpr is necessary, see N5032 [basic.types.general]/10.5.3.4.
 
     static const weak_ordering less;
     static const weak_ordering equivalent;
@@ -187,7 +184,8 @@ inline constexpr weak_ordering weak_ordering::equivalent{_STD _Bit_cast<weak_ord
 inline constexpr weak_ordering weak_ordering::greater{_STD _Bit_cast<weak_ordering>(_Compare_ord::greater)};
 
 _EXPORT_STD struct strong_ordering {
-    constexpr strong_ordering(same_as<_Secret_ordering_construction_tag> auto) = delete;
+    template <int> // Prevent unwanted construction without interfering with overload resolution or the MSVC ABI.
+    constexpr strong_ordering() = delete; // constexpr is necessary, see N5032 [basic.types.general]/10.5.3.4.
 
     static const strong_ordering less;
     static const strong_ordering equal;
