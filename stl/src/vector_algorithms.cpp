@@ -9614,10 +9614,10 @@ __declspec(noalias) void __stdcall __std_replace_8(
 #ifdef _WIN64
         const __m256i _Comparand   = _mm256_broadcastq_epi64(_mm_cvtsi64_si128(_Old_val));
         const __m256i _Replacement = _mm256_broadcastq_epi64(_mm_cvtsi64_si128(_New_val));
-#else // ^^^ defined(_WIN64) / !defined(_WIN64), workaround, _mm_cvtsi64_si128 does not compile vvv
+#else // ^^^ 64-bit / 32-bit, workaround, _mm_cvtsi64_si128 does not compile vvv
         const __m256i _Comparand   = _mm256_set1_epi64x(_Old_val);
         const __m256i _Replacement = _mm256_set1_epi64x(_New_val);
-#endif // ^^^ !defined(_WIN64) ^^^
+#endif // ^^^ 32-bit ^^^
         const size_t _Full_length = _Byte_length(_First, _Last);
 
         void* _Stop_at = _First;
@@ -10729,9 +10729,9 @@ namespace {
             static __m256i _Broadcast(const uint64_t _Data) noexcept {
 #ifdef _WIN64
                 return _mm256_broadcastq_epi64(_mm_cvtsi64_si128(_Data));
-#else // ^^^ defined(_WIN64) / !defined(_WIN64), workaround, _mm_cvtsi64_si128 does not compile vvv
+#else // ^^^ 64-bit / 32-bit, workaround, _mm_cvtsi64_si128 does not compile vvv
                 return _mm256_set1_epi64x(_Data);
-#endif // ^^^ !defined(_WIN64) ^^^
+#endif // ^^^ 32-bit ^^^
             }
 
             static __m256i _Cmp_gt(const __m256i _First, const __m256i _Second) noexcept {
@@ -10813,9 +10813,9 @@ namespace {
             static __m128i _Broadcast(const uint64_t _Data) noexcept {
 #ifdef _WIN64
                 return _mm_shuffle_epi32(_mm_cvtsi64_si128(_Data), _MM_SHUFFLE(1, 0, 1, 0));
-#else // ^^^ defined(_WIN64) / !defined(_WIN64), workaround, _mm_cvtsi64_si128 does not compile vvv
+#else // ^^^ 64-bit / 32-bit, workaround, _mm_cvtsi64_si128 does not compile vvv
                 return _mm_set1_epi64x(_Data);
-#endif // ^^^ !defined(_WIN64) ^^^
+#endif // ^^^ 32-bit ^^^
             }
 
             static __m128i _Cmp_gt(const __m128i _First, const __m128i _Second) noexcept {
