@@ -558,12 +558,6 @@ std/localization/locale.categories/category.time/locale.time.get/locale.time.get
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday_wide.pass.cpp FAIL
 
-# GH-6129 <xloctime>: time_get::do_get uses the wrong format for %c and %x
-# GH-6130 <xloctime>: time_get::do_get doesn't parse a literal %
-std/localization/locale.categories/category.time/locale.time.get.byname/get_one.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_one_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_one.pass.cpp FAIL
-
 # GH-6134 <xloctime>: time_put::do_put does not match strftime for the %c and %r specifiers in the "C" locale
 std/localization/locale.categories/category.time/locale.time.put/locale.time.put.members/put2.pass.cpp FAIL
 
@@ -752,6 +746,14 @@ std/time/time.zone/time.zone.db/time.zone.db.tzdb/current_zone.pass.cpp FAIL
 # LWG-4285 "time_get::do_get_date is problematic even after LWG-461" (Open)
 std/localization/locale.categories/category.time/locale.time.get.byname/get_date.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get.byname/get_date_wide.pass.cpp FAIL
+
+# Assertion failed: base(i) == in+sizeof(in)/sizeof(in[0])-1
+# We fixed GH-6129 "<xloctime>: time_get::do_get uses the wrong format for %c and %x",
+# which created a conflict with `#ifdef _WIN32` test code commented with:
+# `On Windows, the "%c" format lacks the leading week day`.
+# See LWG-4541 "Unclear behavior for parsing locale-dependent format".
+std/localization/locale.categories/category.time/locale.time.get.byname/get_one.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_one_wide.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***
