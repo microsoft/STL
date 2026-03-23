@@ -24,6 +24,8 @@
 _EMIT_STL_WARNING(STL4038, "The contents of <stdatomic.h> are available only with C++23 or later.");
 #else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
 
+_EXTERN_CXX_WORKAROUND
+
 #include <atomic>
 
 #pragma pack(push, _CRT_PACKING)
@@ -132,6 +134,9 @@ using _STD atomic_signal_fence;
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
+
+_END_EXTERN_CXX_WORKAROUND
+
 #endif // ^^^ _HAS_CXX23 ^^^
 
 #endif // !defined(RC_INVOKED) && !defined(Q_MOC_RUN) && !defined(__midl)
