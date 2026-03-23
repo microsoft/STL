@@ -183,6 +183,7 @@ public:
 
     template <class _Elem2 = _Elem, enable_if_t<is_same_v<_Elem2, char>, int> = 0>
     void _From_wide(const wchar_t* const _Right) noexcept {
+        // CodeQL [SM02986] We are intentionally storing `wchar_t*` as `char*` due to ABI, see GH-5781
         if (reinterpret_cast<wchar_t*>(_Myptr) != _Right) { // new value, discard old and copy new
             _Tidy();
 
