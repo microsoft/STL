@@ -188,6 +188,7 @@ public:
             _Tidy();
 
             if (_Right) { // new is not empty, copy it
+                // CodeQL [SM02986] We are intentionally storing `wchar_t*` as `char*` due to ABI, see GH-5781
                 _Myptr = reinterpret_cast<char*>(_STD _Ntcts_dup_dbg(_Right));
             }
         }
