@@ -389,12 +389,14 @@
 // P2540R1 Empty Product For Certain Views
 // P2549R1 unexpected<E>::error()
 // P2585R1 Improve Default Container Formatting
+// P2590R2 Explicit Lifetime Management
 // P2599R2 mdspan: index_type, size_type
 // P2604R0 mdspan: data_handle_type, data_handle(), exhaustive
 // P2613R1 mdspan: empty()
 // P2614R2 Deprecating float_denorm_style, numeric_limits::has_denorm, numeric_limits::has_denorm_loss
 // P2652R2 Disallowing User Specialization Of allocator_traits
 // P2674R1 is_implicit_lifetime
+// P2679R2 Fixing start_lifetime_as And start_lifetime_as_array
 // P2693R1 Formatting thread::id And stacktrace
 // P2713R1 Escaping Improvements In std::format
 // P2763R1 Fixing layout_stride's Default Constructor For Fully Static Extents
@@ -1788,8 +1790,13 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_reference_from_temporary 202202L
 #endif // ^^^ no workaround ^^^
 
-#define __cpp_lib_spanstream                  202106L
-#define __cpp_lib_stacktrace                  202011L
+#define __cpp_lib_spanstream 202106L
+#define __cpp_lib_stacktrace 202011L
+
+#if !defined(__clang__) && !defined(__EDG__) && _MSC_VER >= 1951 // TRANSITION, GH-6169, toolset update
+#define __cpp_lib_start_lifetime_as 202207L
+#endif // ^^^ no workaround ^^^
+
 #define __cpp_lib_stdatomic_h                 202011L
 #define __cpp_lib_string_contains             202011L
 #define __cpp_lib_string_resize_and_overwrite 202110L
