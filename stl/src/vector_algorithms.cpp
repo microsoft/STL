@@ -11069,15 +11069,70 @@ __declspec(noalias) bool __stdcall __std_includes_less_8u(
 
 } // extern "C"
 
-#ifndef _M_ARM64
 namespace {
     namespace _Bitset_to_string {
-#ifdef _M_ARM64EC
-        using _Traits_1_avx = void;
-        using _Traits_1_sse = void;
-        using _Traits_2_avx = void;
-        using _Traits_2_sse = void;
-#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+        struct _Traits_1_neon {
+            using _Value_type = uint16_t;
+            using _Vec_t      = uint8x16_t;
+            static void _Exit_vectorized() noexcept {}
+
+            static void _Out(void* const _Dest, const _Vec_t _Elems) noexcept {
+                vst1q_u8(static_cast<uint8_t*>(_Dest), _Elems);
+            }
+
+            static _Vec_t _Set(const uint8_t _Val) noexcept {
+                return vdupq_n_u8(_Val);
+            }
+
+            static _Vec_t _Load_constant() noexcept {
+                // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
+                static constexpr uint32_t _Idx_arr[4] = {0x01010101, 0x01010101, 0x00000000, 0x00000000};
+                const auto _Idx                       = vld1q_u8(reinterpret_cast<const uint8_t*>(_Idx_arr));
+                return _Idx;
+            }
+
+            static _Vec_t __forceinline _Step(
+                const uint16_t _Val, const _Vec_t _Px0, const _Vec_t _Px1, const _Vec_t _Idx) noexcept {
+                const auto _Vx0 = vdupq_n_u16(_Val);
+                const auto _Vx1 = vqtbl1q_u8(vreinterpretq_u8_u16(_Vx0), _Idx);
+                const auto _Msk = vandq_u8(_Vx1, vreinterpretq_u8_u64(vdupq_n_u64(0x0102040810204080)));
+                const auto _Ex0 = vceqq_u8(_Msk, vdupq_n_u8(0));
+                const auto _Ex1 = vbslq_u8(_Ex0, _Px0, _Px1);
+                return _Ex1;
+            }
+        };
+
+        struct _Traits_2_neon {
+            using _Value_type = uint8_t;
+            using _Vec_t      = uint16x8_t;
+            static void _Exit_vectorized() noexcept {}
+
+            static void _Out(void* const _Dest, const _Vec_t _Elems) noexcept {
+                vst1q_u16(static_cast<uint16_t*>(_Dest), _Elems);
+            }
+
+            static _Vec_t _Set(const uint16_t _Val) noexcept {
+                return vdupq_n_u16(_Val);
+            }
+
+            static _Vec_t _Load_constant() noexcept {
+                // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
+                static constexpr uint64_t _Wx_arr[2] = {0x0010002000400080, 0x0001000200040008};
+                const auto _Wx                       = vld1q_u64(_Wx_arr);
+                return vreinterpretq_u16_u64(_Wx);
+            }
+
+            static _Vec_t __forceinline _Step(
+                const uint8_t _Val, const _Vec_t _Px0, const _Vec_t _Px1, const _Vec_t _Wx) noexcept {
+                const auto _Vx0 = vdupq_n_u16(static_cast<uint16_t>(_Val));
+                const auto _Msk = vandq_u16(_Vx0, _Wx);
+                const auto _Ex0 = vceqq_u16(_Msk, vdupq_n_u16(0));
+                const auto _Ex1 = vbslq_u16(_Ex0, _Px0, _Px1);
+                return _Ex1;
+            }
+        };
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Traits_avx {
             static void _Out(void* const _Dest, const __m256i _Elems) noexcept {
                 _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Elems);
@@ -11085,6 +11140,10 @@ namespace {
 
             static void _Exit_vectorized() noexcept {
                 _mm256_zeroupper();
+            }
+
+            static int _Load_constant() noexcept {
+                return 0;
             }
         };
 
@@ -11094,6 +11153,10 @@ namespace {
             }
 
             static void _Exit_vectorized() noexcept {}
+
+            static int _Load_constant() noexcept {
+                return 0;
+            }
         };
 
         struct _Traits_1_avx : _Traits_avx {
@@ -11103,7 +11166,8 @@ namespace {
                 return _mm256_broadcastb_epi8(_mm_cvtsi32_si128(_Val));
             }
 
-            static __m256i __forceinline _Step(const uint32_t _Val, const __m256i _Px0, const __m256i _Px1) noexcept {
+            static __m256i __forceinline _Step(
+                const uint32_t _Val, const __m256i _Px0, const __m256i _Px1, int) noexcept {
                 const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
                 const __m128i _Vx1 =
                     _mm_shuffle_epi8(_Vx0, _mm_set_epi32(0x00000000, 0x01010101, 0x02020202, 0x03030303));
@@ -11123,7 +11187,8 @@ namespace {
                 return _mm_shuffle_epi8(_mm_cvtsi32_si128(_Val), _mm_setzero_si128());
             }
 
-            static __m128i __forceinline _Step(const uint16_t _Val, const __m128i _Px0, const __m128i _Px1) noexcept {
+            static __m128i __forceinline _Step(
+                const uint16_t _Val, const __m128i _Px0, const __m128i _Px1, int) noexcept {
                 const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
                 const __m128i _Vx1 =
                     _mm_shuffle_epi8(_Vx0, _mm_set_epi32(0x00000000, 0x00000000, 0x01010101, 0x01010101));
@@ -11141,7 +11206,8 @@ namespace {
                 return _mm256_broadcastw_epi16(_mm_cvtsi32_si128(_Val));
             }
 
-            static __m256i __forceinline _Step(const uint16_t _Val, const __m256i _Px0, const __m256i _Px1) noexcept {
+            static __m256i __forceinline _Step(
+                const uint16_t _Val, const __m256i _Px0, const __m256i _Px1, int) noexcept {
                 const __m128i _Vx0 = _mm_cvtsi32_si128(_Val);
                 const __m128i _Vx1 =
                     _mm_shuffle_epi8(_Vx0, _mm_set_epi32(0x00000000, 0x00000000, 0x01010101, 0x01010101));
@@ -11162,7 +11228,8 @@ namespace {
                 return _mm_set1_epi16(_Val);
             }
 
-            static __m128i __forceinline _Step(const uint8_t _Val, const __m128i _Px0, const __m128i _Px1) noexcept {
+            static __m128i __forceinline _Step(
+                const uint8_t _Val, const __m128i _Px0, const __m128i _Px1, int) noexcept {
                 const __m128i _Vx  = _mm_set1_epi16(_Val);
                 const __m128i _Msk = _mm_and_si128(_Vx, _mm_set_epi64x(0x0001000200040008, 0x0010002000400080));
                 const __m128i _Ex0 = _mm_cmpeq_epi16(_Msk, _mm_setzero_si128());
@@ -11170,6 +11237,7 @@ namespace {
                 return _Ex1;
             }
         };
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         template <class _Traits, class _Elem>
         void __stdcall _Impl(
@@ -11178,6 +11246,10 @@ namespace {
 
             const auto _Px0 = _Traits::_Set(_Elem0);
             const auto _Px1 = _Traits::_Set(_Elem1);
+
+            // TRANSITION: DevCom-11056873
+            const auto _Constant = _Traits::_Load_constant();
+
             if (_Size_bits >= _Step_size_bits) {
                 _Elem* _Pos = _Dest + _Size_bits;
                 _Size_bits &= _Step_size_bits - 1;
@@ -11185,7 +11257,7 @@ namespace {
                 do {
                     typename _Traits::_Value_type _Val;
                     memcpy(&_Val, _Src, sizeof(_Val));
-                    const auto _Elems = _Traits::_Step(_Val, _Px0, _Px1);
+                    const auto _Elems = _Traits::_Step(_Val, _Px0, _Px1, _Constant);
                     _Pos -= _Step_size_bits;
                     _Traits::_Out(_Pos, _Elems);
                     _Advance_bytes(_Src, sizeof(_Val));
@@ -11195,7 +11267,7 @@ namespace {
             if (_Size_bits > 0) {
                 typename _Traits::_Value_type _Val;
                 memcpy(&_Val, _Src, sizeof(_Val));
-                const auto _Elems = _Traits::_Step(_Val, _Px0, _Px1);
+                const auto _Elems = _Traits::_Step(_Val, _Px0, _Px1, _Constant);
                 _Elem _Tmp[_Step_size_bits];
                 _Traits::_Out(_Tmp, _Elems);
                 const _Elem* const _Tmpd = _Tmp + (_Step_size_bits - _Size_bits);
@@ -11204,25 +11276,23 @@ namespace {
 
             _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
         }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
         template <class _Avx_traits, class _Sse_traits, class _Elem>
         void __stdcall _Dispatch(_Elem* const _Dest, const void* const _Src, const size_t _Size_bits,
             const _Elem _Elem0, const _Elem _Elem1) noexcept {
-#ifndef _M_ARM64EC
             if (_Use_avx2() && _Size_bits >= 256) {
                 _Impl<_Avx_traits>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
             } else if (_Use_sse42()) {
                 _Impl<_Sse_traits>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
-            } else
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-            {
+            } else {
                 const auto _Arr = reinterpret_cast<const uint8_t*>(_Src);
                 for (size_t _Ix = 0; _Ix < _Size_bits; ++_Ix) {
                     _Dest[_Size_bits - 1 - _Ix] = ((_Arr[_Ix >> 3] >> (_Ix & 7)) & 1) != 0 ? _Elem1 : _Elem0;
                 }
             }
         }
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
     } // namespace _Bitset_to_string
 } // unnamed namespace
 
@@ -11231,18 +11301,27 @@ extern "C" {
 __declspec(noalias) void __stdcall __std_bitset_to_string_1(
     char* const _Dest, const void* const _Src, const size_t _Size_bits, const char _Elem0, const char _Elem1) noexcept {
     using namespace _Bitset_to_string;
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    _Impl<_Traits_1_neon>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     _Dispatch<_Traits_1_avx, _Traits_1_sse>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 __declspec(noalias) void __stdcall __std_bitset_to_string_2(wchar_t* const _Dest, const void* const _Src,
     const size_t _Size_bits, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
     using namespace _Bitset_to_string;
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    _Impl<_Traits_2_neon>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     _Dispatch<_Traits_2_avx, _Traits_2_sse>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 } // extern "C"
 #endif // ^^^ !defined(_M_ARM64) ^^^
 
+#ifndef _M_ARM64
 namespace {
     namespace _Bitset_from_string {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
