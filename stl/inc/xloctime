@@ -572,6 +572,14 @@ protected:
             }
             break;
 
+        case '%':
+            if (_First == _Last || _Ctype_fac.narrow(*_First) != '%') {
+                _State |= ios_base::failbit;
+            } else {
+                ++_First;
+            }
+            break;
+
         default:
             _State |= ios_base::failbit; // unknown specifier
             break;
