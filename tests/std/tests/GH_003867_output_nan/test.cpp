@@ -58,7 +58,8 @@ void test_gh_3867() {
 // Also test GH-4210: With setprecision(0) showpoint fixed, a bogus '.' is emitted for infinity and NaN
 
 template <class FloatingPoint>
-void test_output_nonfinite_value(const FloatingPoint x) {
+void test_output_nonfinite_value(
+    const FloatingPoint x, const string& expected_noshowpos, const string& expected_showpos) {
     const auto s1 = [x] {
         ostringstream os;
         os << setprecision(0) << showpoint << fixed;
@@ -72,6 +73,7 @@ void test_output_nonfinite_value(const FloatingPoint x) {
         return os.str();
     }();
     assert(s1 == s2);
+    assert(s1 == expected_noshowpos);
 
     const auto s3 = [x] {
         ostringstream os;
@@ -86,6 +88,7 @@ void test_output_nonfinite_value(const FloatingPoint x) {
         return os.str();
     }();
     assert(s3 == s4);
+    assert(s3 == expected_showpos);
 }
 
 template <class FloatingPoint>
@@ -93,10 +96,11 @@ void test_gh_4210() {
     constexpr auto inf_val = numeric_limits<FloatingPoint>::infinity();
     constexpr auto nan_val = numeric_limits<FloatingPoint>::quiet_NaN();
 
-    test_output_nonfinite_value(inf_val);
-    test_output_nonfinite_value(-inf_val);
-    test_output_nonfinite_value(nan_val);
-    test_output_nonfinite_value(-nan_val);
+    // These expected results are implementation-defined:
+    test_output_nonfinite_value(inf_val, "inf", "+inf");
+    test_output_nonfinite_value(-inf_val, "-inf", "-inf");
+    test_output_nonfinite_value(nan_val, "nan", "+nan");
+    test_output_nonfinite_value(-nan_val, "-nan(ind)", "-nan(ind)");
 }
 
 int main() {
