@@ -275,7 +275,7 @@ void test_case_void_ptr() {
         assert(reinterpret_cast<uintptr_t>(result) == 0xFFFFFFFFFFFFFFFF);
         assert(src.rdstate() == ios_base::eofbit);
     }
-#endif // _WIN64
+#endif // ^^^ 64-bit ^^^
 
     {
         istringstream src("0x10000000000000000"s);

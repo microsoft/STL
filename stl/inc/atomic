@@ -354,9 +354,9 @@ struct _Atomic_storage_traits { // properties for how _Ty is stored in an atomic
                                           : sizeof(_Ty) == 2 ? 2
                                           : sizeof(_Ty) <= 4 ? 4
                                           : sizeof(_Ty) <= 8 ? 8
-#if defined(_M_X64) || defined(_M_ARM64) || defined(_M_ARM64EC)
+#ifdef _WIN64
                                           : sizeof(_Ty) <= 16 ? 16
-#endif // 64 bits
+#endif // ^^^ 64-bit ^^^
                                                               : sizeof(_Ty);
 
     static constexpr size_t _Padding_size = _Storage_size - sizeof(_Ty);
@@ -515,7 +515,7 @@ inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* 
     return _InterlockedCompareExchange128_nf(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
 #endif // ^^^ ARM64, _M_ARM64EC ^^^
 }
-#endif // _WIN64
+#endif // ^^^ 64-bit ^^^
 #endif // _HAS_CXX20
 #endif // TRANSITION, ABI
 
@@ -1295,7 +1295,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
 
     typename _Atomic_storage_types<_Ty&>::_TStorage _Storage;
 };
-#endif // defined(_WIN64)
+#endif // ^^^ 64-bit ^^^
 
 template <class _Ty, size_t = sizeof(_Ty)>
 struct _Atomic_integral; // not defined
@@ -1942,13 +1942,13 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
         const ptrdiff_t _Shift_bytes =
             static_cast<ptrdiff_t>(static_cast<size_t>(_Diff) * sizeof(remove_pointer_t<_Ty>));
         ptrdiff_t _Result;
-#if defined(_M_IX86)
-        _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedExchangeAdd,
-            _STD _Atomic_address_as<long>(this->_Storage), _Shift_bytes);
-#else // ^^^ 32 bits / 64 bits vvv
+#ifdef _WIN64
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedExchangeAdd64,
             _STD _Atomic_address_as<long long>(this->_Storage), _Shift_bytes);
-#endif // ^^^ 64 bits ^^^
+#else // ^^^ 64-bit / 32-bit vvv
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedExchangeAdd,
+            _STD _Atomic_address_as<long>(this->_Storage), _Shift_bytes);
+#endif // ^^^ 32-bit ^^^
         return reinterpret_cast<_Ty>(_Result);
     }
 
@@ -2040,13 +2040,13 @@ struct _Atomic_pointer<_Ty&> : _Atomic_storage<_Ty&> {
         const ptrdiff_t _Shift_bytes =
             static_cast<ptrdiff_t>(static_cast<size_t>(_Diff) * sizeof(remove_pointer_t<_Ty>));
         ptrdiff_t _Result;
-#if defined(_M_IX86)
-        _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedExchangeAdd,
-            _STD _Atomic_address_as<long>(this->_Storage), _Shift_bytes);
-#else // ^^^ 32 bits / 64 bits vvv
+#ifdef _WIN64
         _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedExchangeAdd64,
             _STD _Atomic_address_as<long long>(this->_Storage), _Shift_bytes);
-#endif // ^^^ 64 bits ^^^
+#else // ^^^ 64-bit / 32-bit vvv
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<unsigned int>(_Order), _Result, _InterlockedExchangeAdd,
+            _STD _Atomic_address_as<long>(this->_Storage), _Shift_bytes);
+#endif // ^^^ 32-bit ^^^
         return reinterpret_cast<_TVal>(_Result);
     }
 
