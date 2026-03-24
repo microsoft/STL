@@ -11320,15 +11320,103 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(wchar_t* const _Dest
 
 } // extern "C"
 
-#ifndef _M_ARM64
 namespace {
     namespace _Bitset_from_string {
-#ifdef _M_ARM64EC
-        using _Traits_1_avx = void;
-        using _Traits_1_sse = void;
-        using _Traits_2_avx = void;
-        using _Traits_2_sse = void;
-#else // ^^^ defined(_M_ARM64EC) / !defined(_M_ARM64EC) vvv
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+        struct _Traits_1_neon {
+            using _Guard = char;
+            using _Vec   = uint8x16_t;
+
+            static _Vec _Load(const void* const _Src) noexcept {
+                return vld1q_u8(static_cast<const uint8_t*>(_Src));
+            }
+
+            static void _Store(void* const _Dest, const _Vec _Val) noexcept {
+                return vst1q_u8(static_cast<uint8_t*>(_Dest), _Val);
+            }
+
+            static _Vec _Set(const uint8_t _Val) noexcept {
+                return vdupq_n_u8(_Val);
+            }
+
+            static _Vec _Cmp(const _Vec _Val1, const _Vec _Val2) noexcept {
+                return vceqq_u8(_Val1, _Val2);
+            }
+
+            static bool _Check(const _Vec _Val, const _Vec _Ex1, const _Vec _Dx0) noexcept {
+                const auto _Ex0  = _Cmp(_Val, _Dx0);
+                const auto _Ex01 = vorrq_u8(_Ex0, _Ex1);
+                const auto _Msk  = vgetq_lane_u64(vreinterpretq_u64_u8(vpminq_u8(_Ex01, _Ex01)), 0);
+                return _Msk == 0xFFFF'FFFF'FFFF'FFFF;
+            }
+
+            static uint64_t _Movemask(const _Vec _Val) noexcept {
+                uint64_t _Val0 = vgetq_lane_u64(vreinterpretq_u64_u8(_Val), 0);
+                uint64_t _Val1 = vgetq_lane_u64(vreinterpretq_u64_u8(_Val), 1);
+
+                _Val0 &= 0x8080808080808080ull;
+                _Val1 &= 0x8080808080808080ull;
+                _Val0 *= 0x02040810204081ull;
+                _Val1 *= 0x02040810204081ull;
+
+                return (_Val0 >> 56) | ((_Val1 >> 56) << 8);
+            }
+
+            static uint16_t _To_bits(const _Vec _Ex1) noexcept {
+                // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
+                static constexpr uint8_t _Idx_arr[16] = {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+                const auto _Idx                       = vld1q_u8(_Idx_arr);
+
+                const auto _Ex2 = vqtbl1q_u8(_Ex1, _Idx);
+                return static_cast<uint16_t>(_Movemask(_Ex2));
+            }
+        };
+
+        struct _Traits_2_neon {
+            using _Guard = char;
+            using _Vec   = uint16x8_t;
+
+            static _Vec _Load(const void* const _Src) noexcept {
+                return vld1q_u16(static_cast<const uint16_t*>(_Src));
+            }
+
+            static void _Store(void* const _Dest, const _Vec _Val) noexcept {
+                return vst1q_u16(static_cast<uint16_t*>(_Dest), _Val);
+            }
+
+            static _Vec _Set(const uint16_t _Val) noexcept {
+                return vdupq_n_u16(_Val);
+            }
+
+            static _Vec _Cmp(const _Vec _Val1, const _Vec _Val2) noexcept {
+                return vceqq_u16(_Val1, _Val2);
+            }
+
+            static bool _Check(const _Vec _Val, const _Vec _Ex1, const _Vec _Dx0) noexcept {
+                const auto _Ex0  = _Cmp(_Val, _Dx0);
+                const auto _Ex01 = vorrq_u16(_Ex0, _Ex1);
+                const auto _Msk  = vgetq_lane_u64(vreinterpretq_u64_u16(vpminq_u16(_Ex01, _Ex01)), 0);
+                return _Msk == 0xFFFF'FFFF'FFFF'FFFF;
+            }
+
+            static uint64_t _Movemask(const _Traits_1_neon::_Vec _Val) noexcept {
+                uint64_t _Val0 = vgetq_lane_u64(vreinterpretq_u64_u8(_Val), 0);
+                _Val0 &= 0x8080808080808080ull;
+                _Val0 *= 0x02040810204081ull;
+                return _Val0 >> 56;
+            }
+
+            static uint8_t _To_bits(const _Vec _Ex1) noexcept {
+                // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
+                static constexpr uint8_t _Idx_arr[16] = {
+                    14, 12, 10, 8, 6, 4, 2, 0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+                const auto _Idx = vld1q_u8(_Idx_arr);
+
+                const auto _Ex2 = vqtbl1q_u8(vreinterpretq_u8_u16(_Ex1), _Idx);
+                return static_cast<uint8_t>(_Movemask(_Ex2));
+            }
+        };
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         struct _Traits_avx {
             using _Guard = _Zeroupper_on_exit;
             using _Vec   = __m256i;
@@ -11432,6 +11520,7 @@ namespace {
                 return _mm_cmpeq_epi16(_Val, _Dx1);
             }
         };
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
         template <class _Traits, class _Elem, class _OutFn>
         bool _Loop(const _Elem* const _Src, const _Elem* _Src_end, const typename _Traits::_Vec _Dx0,
@@ -11500,7 +11589,6 @@ namespace {
 
             return true;
         }
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
         template <class _Elem>
         bool _Fallback(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_bits,
@@ -11533,20 +11621,19 @@ namespace {
             return true;
         }
 
+#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
         template <class _Avx, class _Sse, class _Elem>
         bool _Dispatch(void* _Dest, const _Elem* _Src, size_t _Size_bytes, size_t _Size_bits, size_t _Size_chars,
             _Elem _Elem0, _Elem _Elem1) noexcept {
-#ifndef _M_ARM64EC
             if (_Use_avx2() && _Size_bits >= 256) {
                 return _Impl<_Avx>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
             } else if (_Use_sse42()) {
                 return _Impl<_Sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
-            } else
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-            {
+            } else {
                 return _Fallback(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
             }
         }
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
     } // namespace _Bitset_from_string
 } // unnamed namespace
 
@@ -11557,7 +11644,11 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* const _Dest,
     const char _Elem1) noexcept {
     using namespace _Bitset_from_string;
 
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    return _Impl<_Traits_1_neon>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Dispatch<_Traits_1_avx, _Traits_1_sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest, const wchar_t* const _Src,
@@ -11565,8 +11656,11 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest,
     const wchar_t _Elem1) noexcept {
     using namespace _Bitset_from_string;
 
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    return _Impl<_Traits_2_neon>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Dispatch<_Traits_2_avx, _Traits_2_sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 }
 
 } // extern "C"
-#endif // ^^^ !defined(_M_ARM64) ^^^
