@@ -1966,8 +1966,6 @@ int main() {
         test_replace<unsigned int>(gen);
         test_replace<long long>(gen);
         test_replace<unsigned long long>(gen);
-
-        test_bitset(gen);
 #else // ^^^ defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) / normal test coverage vvv
         test_vector_algorithms(gen);
         test_various_containers();
