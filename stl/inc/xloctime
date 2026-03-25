@@ -453,7 +453,7 @@ protected:
             break;
 
         case 'c':
-            _First = _Getfmt(_First, _Last, _Iosbase, _State, _Pt, "%b %d %H : %M : %S %Y");
+            _First = _Getfmt(_First, _Last, _Iosbase, _State, _Pt, "%a %b %e %T %Y");
             break;
 
         case 'C':
@@ -547,7 +547,7 @@ protected:
             break;
 
         case 'x':
-            _First = _Getfmt(_First, _Last, _Iosbase, _State, _Pt, "%d / %m / %y");
+            _First = _Getfmt(_First, _Last, _Iosbase, _State, _Pt, "%m / %d / %y");
             break;
 
         case 'y':
@@ -569,6 +569,14 @@ protected:
             if (!(_State & ios_base::failbit)) {
                 // CodeQL [SM03231] This is parsing tm_year (years since 1900); leap years are irrelevant.
                 _Pt->tm_year = _Ans - 1900; // parsed literally
+            }
+            break;
+
+        case '%':
+            if (_First == _Last || _Ctype_fac.narrow(*_First) != '%') {
+                _State |= ios_base::failbit;
+            } else {
+                ++_First;
             }
             break;
 

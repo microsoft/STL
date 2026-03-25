@@ -74,8 +74,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ unknown architecture ^^^
 
 #define _VECTORIZED_ADJACENT_FIND      _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
-#define _VECTORIZED_BITSET_FROM_STRING _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_BITSET_TO_STRING   _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_BITSET_FROM_STRING _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_BITSET_TO_STRING   _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
 #define _VECTORIZED_COUNT              _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
 #define _VECTORIZED_FIND               _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
 #define _VECTORIZED_FIND_END           _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
@@ -4937,14 +4937,20 @@ _CONSTEXPR20 void _Verify_ranges_do_not_overlap(const _Iter1& _First1, const _Se
 #endif // _ITERATOR_DEBUG_LEVEL != 2 ^^^
 }
 
-template <class _OutCtgIt>
-_OutCtgIt _Copy_memmove_tail(
+template <bool _Use_memcpy, class _OutCtgIt>
+_OutCtgIt _Impl_copy_memmeow_tail(
     const char* const _First_ch, const _OutCtgIt _Dest, const size_t _Byte_count, const size_t _Object_count) {
     _STL_INTERNAL_CHECK(_Byte_count == _Object_count * sizeof(*_Dest));
     // (pre-verified contiguous iterator)
     const auto _Dest_ptr = _STD _To_address(_Dest);
     const auto _Dest_ch  = const_cast<char*>(reinterpret_cast<const volatile char*>(_Dest_ptr));
-    _CSTD memmove(_Dest_ch, _First_ch, _Byte_count);
+
+    if constexpr (_Use_memcpy) {
+        _CSTD memcpy(_Dest_ch, _First_ch, _Byte_count);
+    } else {
+        _CSTD memmove(_Dest_ch, _First_ch, _Byte_count);
+    }
+
     if constexpr (is_pointer_v<_OutCtgIt>) {
         (void) _Object_count;
         // CodeQL [SM02986] This cast is correct: we're bypassing pointer arithmetic for performance.
@@ -4954,8 +4960,8 @@ _OutCtgIt _Copy_memmove_tail(
     }
 }
 
-template <class _CtgIt, class _OutCtgIt>
-_OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
+template <bool _Use_memcpy, class _CtgIt, class _OutCtgIt>
+_OutCtgIt _Impl_copy_memmeow(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
     _STL_INTERNAL_CHECK(_First <= _Last);
     const auto _First_ptr    = _STD _To_address(_First);
     const auto _Last_ptr     = _STD _To_address(_Last);
@@ -4965,17 +4971,37 @@ _OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
     const auto _Last_ch      = const_cast<const char*>(reinterpret_cast<const volatile char*>(_Last_ptr));
     const auto _Byte_count   = static_cast<size_t>(_Last_ch - _First_ch);
     _STD _Contiguous_iter_verify(_Dest, static_cast<_Iter_diff_t<_OutCtgIt>>(_Ptr_diff));
-    return _STD _Copy_memmove_tail(_First_ch, _STD move(_Dest), _Byte_count, _Object_count);
+    return _STD _Impl_copy_memmeow_tail<_Use_memcpy>(_First_ch, _STD move(_Dest), _Byte_count, _Object_count);
 }
 
-template <class _CtgIt, class _OutCtgIt>
-_OutCtgIt _Copy_memmove_n(_CtgIt _First, const size_t _Object_count, _OutCtgIt _Dest) {
+template <bool _Use_memcpy, class _CtgIt, class _OutCtgIt>
+_OutCtgIt _Impl_copy_memmeow_n(_CtgIt _First, const size_t _Object_count, _OutCtgIt _Dest) {
     _STD _Contiguous_iter_verify(_First, static_cast<_Iter_diff_t<_CtgIt>>(_Object_count));
     _STD _Contiguous_iter_verify(_Dest, static_cast<_Iter_diff_t<_OutCtgIt>>(_Object_count));
     const auto _First_ptr  = _STD _To_address(_First);
     const auto _First_ch   = const_cast<const char*>(reinterpret_cast<const volatile char*>(_First_ptr));
     const auto _Byte_count = _Object_count * sizeof(*_First_ptr);
-    return _STD _Copy_memmove_tail(_First_ch, _STD move(_Dest), _Byte_count, _Object_count);
+    return _STD _Impl_copy_memmeow_tail<_Use_memcpy>(_First_ch, _STD move(_Dest), _Byte_count, _Object_count);
+}
+
+template <class _CtgIt, class _OutCtgIt>
+_OutCtgIt _Copy_memcpy(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
+    return _STD _Impl_copy_memmeow<true>(_First, _Last, _Dest);
+}
+
+template <class _CtgIt, class _OutCtgIt>
+_OutCtgIt _Copy_memcpy_n(_CtgIt _First, const size_t _Object_count, _OutCtgIt _Dest) {
+    return _STD _Impl_copy_memmeow_n<true>(_First, _Object_count, _Dest);
+}
+
+template <class _CtgIt, class _OutCtgIt>
+_OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
+    return _STD _Impl_copy_memmeow<false>(_First, _Last, _Dest);
+}
+
+template <class _CtgIt, class _OutCtgIt>
+_OutCtgIt _Copy_memmove_n(_CtgIt _First, const size_t _Object_count, _OutCtgIt _Dest) {
+    return _STD _Impl_copy_memmeow_n<false>(_First, _Object_count, _Dest);
 }
 
 template <class _Fn>

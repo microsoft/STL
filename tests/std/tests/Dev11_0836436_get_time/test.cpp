@@ -20,6 +20,7 @@ using namespace std;
 // DevDiv-836436 "<iomanip>: get_time()'s AM/PM parsing is broken"
 // DevDiv-872926 "<locale>: time_get::get parsing format string gets tm::tm_hour wrong [libcxx]"
 // VSO-1259138/GH-2618 "<xloctime>: get_time does not return correct year in tm.tm_year if year is 1"
+// GH-6129 "<xloctime>: time_get::do_get uses the wrong format for %c and %x"
 
 tm helper(const char* const s, const char* const fmt) {
     tm t{};
@@ -60,9 +61,9 @@ tuple<int, int, int> read_date(const char* const s) {
     const auto t = helper(s, "%x");
 
     // %x The date, using the locale's date format.
-    // "%d / %m / %y"
-    // %d The day of the month [01,31]; leading zeros are permitted but not required.
+    // "%m / %d / %y"
     // %m The month number [01,12]; leading zeros are permitted but not required.
+    // %d The day of the month [01,31]; leading zeros are permitted but not required.
     // %y The year within century. When a century is not otherwise specified,
     //    values in the range [69,99] shall refer to years 1969 to 1999 inclusive, and
     //    values in the range [00,68] shall refer to years 2000 to 2068 inclusive;
@@ -112,6 +113,8 @@ void test_gh_2618();
 void test_gh_2848();
 void test_gh_4820();
 void test_gh_4882();
+void test_gh_6129();
+void test_gh_6130();
 
 int main() {
     assert(read_hour("12 AM") == 0);
@@ -142,9 +145,9 @@ int main() {
     assert(read_hour("11 PM") == 23);
     assert(read_hour("11 pm") == 23);
 
-    assert(read_date("22 / 4 / 77") == make_tuple(22, /*NOTE DIFFERENCE:*/ 3, 77));
+    assert(read_date("04 / 22 / 77") == make_tuple(22, /*NOTE DIFFERENCE:*/ 3, 77));
 
-    assert(read_date("22 / 4 / 11") == make_tuple(22, /*NOTE DIFFERENCE:*/ 3, /*NOTE DIFFERENCE:*/ 111));
+    assert(read_date("04 / 22 / 11") == make_tuple(22, /*NOTE DIFFERENCE:*/ 3, /*NOTE DIFFERENCE:*/ 111));
 
     assert(read_time("15 : 47 : 58") == make_tuple(15, 47, 58));
 
@@ -160,6 +163,8 @@ int main() {
     test_gh_2848();
     test_gh_4820();
     test_gh_4882();
+    test_gh_6129();
+    test_gh_6130();
 }
 
 typedef istreambuf_iterator<char> Iter;
@@ -910,6 +915,36 @@ void test_gh_4820() {
     }
 }
 
+void test_gh_6129() {
+    // GH-6129 "<xloctime>: time_get::do_get uses the wrong format for %c and %x"
+
+    // %c in the C locale uses "%a %b %e %T %Y"
+    {
+        const auto t = helper("Thu Jun  6 09:49:10 2009", "%c");
+        assert(t.tm_wday == 4);
+        assert(t.tm_mon == 5);
+        assert(t.tm_mday == 6);
+        assert(t.tm_hour == 9);
+        assert(t.tm_min == 49);
+        assert(t.tm_sec == 10);
+        assert(t.tm_year == 109);
+    }
+
+    // %x in the C locale uses "%m / %d / %y"
+    {
+        const auto t = helper("03 / 15 / 09", "%x"); // test with whitespace
+        assert(t.tm_mon == 2);
+        assert(t.tm_mday == 15);
+        assert(t.tm_year == 109);
+    }
+    {
+        const auto t = helper("03/15/09", "%x"); // test without whitespace
+        assert(t.tm_mon == 2);
+        assert(t.tm_mday == 15);
+        assert(t.tm_year == 109);
+    }
+}
+
 void test_gh_4882() {
     // GH-4882 <iomanip>: std::put_time should not crash on invalid/out-of-range tm struct values
     const auto fieldValidation = [](int tm::* const field, const int value, const string& fmt) {
@@ -959,5 +994,24 @@ void test_gh_4882() {
     for (const auto& testData : testDataList) {
         fieldValidation(testData.field, testData.lo, testData.fmt);
         fieldValidation(testData.field, testData.hi, testData.fmt);
+    }
+}
+
+void test_gh_6130() {
+    // GH-6130 <xloctime>: time_get::do_get doesn't parse a literal %
+    {
+        tm t{};
+        istringstream iss{"%"};
+        iss >> get_time(&t, "%%");
+        assert(!iss.fail());
+        assert(iss.eof());
+    }
+
+    {
+        tm t{};
+        istringstream iss{"% "};
+        iss >> get_time(&t, "%%");
+        assert(!iss.fail());
+        assert(iss.tellg() == 1);
     }
 }
