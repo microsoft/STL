@@ -3011,17 +3011,15 @@ namespace filesystem {
         // calls GetFullPathNameW
         _Ec.clear(); // for exception safety
         path _Result;
-        if (!_Input._Text.empty()) {
-            _Result._Text.resize(__std_fs_max_path);
-            for (;;) {
-                const auto _Requested_size = static_cast<unsigned long>(_Result._Text.size());
-                const auto _Full_path_result =
-                    __std_fs_get_full_path_name(_Input._Text.c_str(), _Requested_size, _Result._Text.data());
-                _Result._Text.resize(_Full_path_result._Size);
-                if (_Full_path_result._Size < _Requested_size) {
-                    _Ec = _Make_ec(_Full_path_result._Error);
-                    break;
-                }
+        _Result._Text.resize(__std_fs_max_path);
+        for (;;) {
+            const auto _Requested_size = static_cast<unsigned long>(_Result._Text.size());
+            const auto _Full_path_result =
+                __std_fs_get_full_path_name(_Input._Text.c_str(), _Requested_size, _Result._Text.data());
+            _Result._Text.resize(_Full_path_result._Size);
+            if (_Full_path_result._Size < _Requested_size) {
+                _Ec = _Make_ec(_Full_path_result._Error);
+                break;
             }
         }
         return _Result;
