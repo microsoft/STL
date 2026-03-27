@@ -116,7 +116,6 @@ namespace {
 
         __std_win_error _Last_error{GetLastError()};
 
-#ifndef _CRT_APP
         switch (_Last_error) {
         case __std_win_error::_Not_supported:
         case __std_win_error::_Invalid_parameter:
@@ -125,7 +124,8 @@ namespace {
             return _Last_error; // real error, bail to the caller
         }
 
-        // try GetFileInformationByHandle as a fallback
+        // Some filesystems don't support FILE_ID_INFO's 128-bit file identifiers.
+        // Try GetFileInformationByHandle() as a fallback.
         BY_HANDLE_FILE_INFORMATION _Info;
         if (GetFileInformationByHandle(_Handle, &_Info)) {
             _Id->VolumeSerialNumber = _Info.dwVolumeSerialNumber;
@@ -136,7 +136,6 @@ namespace {
         }
 
         _Last_error = __std_win_error{GetLastError()};
-#endif // !defined(_CRT_APP)
 
         return _Last_error;
     }
