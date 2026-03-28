@@ -43,6 +43,7 @@ struct _Mtx_internal_imp_t {
     int _Type{};
     union {
         _Stl_critical_section _Critical_section{};
+        // TRANSITION, VSO-1659383 and VSO-2616030, use _Aligned_storage_t instead of alignas until /clr is fixed
         _STD _Aligned_storage_t<_Critical_section_size, alignof(void*)> _Cs_storage;
     };
     long _Thread_id{};
@@ -68,6 +69,7 @@ struct _Cnd_internal_imp_t {
 
     union {
         _Stl_condition_variable _Stl_cv{};
+        // TRANSITION, VSO-1659383 and VSO-2616030, use _Aligned_storage_t instead of alignas until /clr is fixed
         _STD _Aligned_storage_t<_Cnd_internal_imp_size, alignof(void*)> _Cv_storage;
     };
 };
