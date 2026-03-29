@@ -444,17 +444,11 @@ struct __std_fs_file_id { // typedef struct _FILE_ID_INFO {
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_create_hard_link(
     _In_z_ const wchar_t* const _File_name, _In_z_ const wchar_t* const _Existing_file_name) noexcept {
-#if defined(_CRT_APP)
-    (void) _File_name;
-    (void) _Existing_file_name;
-    return __std_win_error::_Not_supported;
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     if (CreateHardLinkW(_File_name, _Existing_file_name, nullptr)) {
         return __std_win_error::_Success;
     }
 
     return __std_win_error{GetLastError()};
-#endif // defined(_CRT_APP)
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_create_symbolic_link(
