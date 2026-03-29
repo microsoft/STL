@@ -203,12 +203,7 @@ extern "C" _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL _Current_get(wchar_t (&_De
 
 extern "C" _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL _Current_set(const wchar_t* _Dirname) noexcept {
     // set current working directory
-#ifdef _CRT_APP
-    (void) _Dirname;
-    return false; // no support
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     return _wchdir(_Dirname) == 0;
-#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 extern "C" _CRTIMP2_PURE wchar_t* __CLRCALL_PURE_OR_CDECL _Symlink_get(
