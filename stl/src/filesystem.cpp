@@ -770,7 +770,6 @@ struct __std_fs_file_id { // typedef struct _FILE_ID_INFO {
 namespace {
     _Success_(return > 0 && return < nBufferLength) DWORD WINAPI _Stl_GetTempPath2W(
         _In_ DWORD nBufferLength, _Out_writes_to_opt_(nBufferLength, return +1) LPWSTR lpBuffer) noexcept {
-#if !defined(_ONECORE)
         // See GH-3011: This is intentionally not attempting to cache the function pointer.
         // TRANSITION, ABI: This should use __crtGetTempPath2W after this code is moved into the STL's DLL.
 
@@ -781,7 +780,6 @@ namespace {
         if (_Pf) {
             return _Pf(nBufferLength, lpBuffer);
         }
-#endif // ^^^ !defined(_ONECORE) ^^^
 
         // ...otherwise use GetTempPathW.
         return GetTempPathW(nBufferLength, lpBuffer);
