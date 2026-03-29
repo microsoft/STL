@@ -21,17 +21,6 @@
 static_assert(__std_code_page::_Utf8 == __std_code_page{CP_UTF8});
 
 namespace {
-
-#ifdef _CRT_APP
-    BOOLEAN __stdcall _Not_supported_CreateSymbolicLinkW(const wchar_t*, const wchar_t*, DWORD) {
-        SetLastError(ERROR_NOT_SUPPORTED);
-        return 0;
-    }
-#define __vcrt_CreateSymbolicLinkW _Not_supported_CreateSymbolicLinkW
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
-#define __vcrt_CreateSymbolicLinkW CreateSymbolicLinkW
-#endif // ^^^ !defined(_CRT_APP) ^^^
-
     HANDLE __stdcall __vcp_CreateFile(const wchar_t* const _File_name, const unsigned long _Desired_access,
         const unsigned long _Share, SECURITY_ATTRIBUTES* const _Security_attributes,
         const unsigned long _Creation_disposition, const unsigned long _Flags_and_attributes,
@@ -70,14 +59,14 @@ namespace {
 
     [[nodiscard]] __std_win_error __stdcall _Create_symlink(
         const wchar_t* const _Symlink_file_name, const wchar_t* const _Target_file_name, const DWORD _Flags) noexcept {
-        if (__vcrt_CreateSymbolicLinkW(
+        if (CreateSymbolicLinkW(
                 _Symlink_file_name, _Target_file_name, _Flags | SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE)) {
             return __std_win_error::_Success;
         }
 
         DWORD _Last_error = GetLastError();
         if (_Last_error == ERROR_INVALID_PARAMETER) {
-            if (__vcrt_CreateSymbolicLinkW(_Symlink_file_name, _Target_file_name, _Flags)) {
+            if (CreateSymbolicLinkW(_Symlink_file_name, _Target_file_name, _Flags)) {
                 return __std_win_error::_Success;
             }
 
