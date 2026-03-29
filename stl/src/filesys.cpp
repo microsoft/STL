@@ -198,11 +198,7 @@ extern "C" _CRTIMP2_PURE void* __CLRCALL_PURE_OR_CDECL _Open_dir(
 extern "C" _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL _Current_get(wchar_t (&_Dest)[_MAX_FILESYS_NAME]) noexcept {
     // get current working directory
     _Strcpy(_Dest, L"");
-#ifdef _CRT_APP
-    return false; // no support
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     return _wgetcwd(_Dest, _MAX_FILESYS_NAME) != nullptr;
-#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 extern "C" _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL _Current_set(const wchar_t* _Dirname) noexcept {
