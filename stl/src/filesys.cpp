@@ -137,15 +137,11 @@ extern "C" _CRTIMP2_PURE wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(
 }
 
 static unsigned int _Filesys_code_page() { // determine appropriate code page
-#if defined(_ONECORE)
-    return CP_ACP;
-#else // ^^^ defined(_ONECORE) / !defined(_ONECORE) vvv
     if (AreFileApisANSI()) {
         return CP_ACP;
     } else {
         return CP_OEMCP;
     }
-#endif // ^^^ !defined(_ONECORE) ^^^
 }
 
 extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _To_wide(const char* _Bsrc, wchar_t* _Wdest) noexcept {
