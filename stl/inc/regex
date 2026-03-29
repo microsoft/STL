@@ -5015,13 +5015,22 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip(
                 return _First;
             }
 
+        case _N_dot:
+            {
+                if (_Recursion_depth >= _Max_recursion_depth) {
+                    return _First;
+                }
+
+                _First = _Skip(++_First, _Last, _Nx->_Next, _Recursion_depth + 1U);
+                return --_First;
+            }
+
         case _N_begin:
         case _N_endif:
             break;
 
         case _N_end:
         case _N_none:
-        case _N_dot:
         case _N_back:
         case _N_end_rep:
         default:
