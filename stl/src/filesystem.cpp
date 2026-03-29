@@ -983,10 +983,6 @@ namespace {
 // TRANSITION, ABI: __std_fs_create_directory_template() is preserved for binary compatibility
 [[nodiscard]] __std_fs_create_directory_result __stdcall __std_fs_create_directory_template(
     _In_z_ const wchar_t* const _Template_directory, _In_z_ const wchar_t* const _New_directory) noexcept {
-#if defined(_CRT_APP)
-    (void) _Template_directory;
-    return __std_fs_create_directory(_New_directory);
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     if (CreateDirectoryExW(_Template_directory, _New_directory, nullptr)) {
         return {true, __std_win_error::_Success};
     }
@@ -997,7 +993,6 @@ namespace {
     }
 
     return {false, _Last_error};
-#endif // defined(_CRT_APP)
 }
 
 [[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error
