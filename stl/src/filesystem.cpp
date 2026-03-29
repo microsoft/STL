@@ -223,11 +223,9 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
         return __std_code_page{CP_UTF8};
     }
 
-#if !defined(_ONECORE)
     if (!AreFileApisANSI()) {
         return __std_code_page{CP_OEMCP};
     }
-#endif // !defined(_ONECORE)
 
     return __std_code_page{CP_ACP};
 }
