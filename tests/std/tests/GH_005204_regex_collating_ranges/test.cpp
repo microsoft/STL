@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <locale>
@@ -656,11 +657,29 @@ void test_gh_5437() {
 #endif // !defined(SKIP_COLLATE_TESTS)
 }
 
+void test_gh_6191() {
+    // GH-6191: Optimize searches for patterns with initial branching
+    // Check that collating elements are handled correctly at search window boundaries.
+    const gh_994_regex re("[[.dzs.]]|abc");
+    smatch sm;
+    for (size_t count = 510; count < 516; ++count) {
+        const string prefix(count, 'h');
+        const string dzs_before_abc = prefix + "dzshhhhhabchh";
+        assert(regex_search(dzs_before_abc, sm, re));
+        assert(string(sm[0].first, sm[0].second) == "dzs");
+
+        const string abc_before_dzs = prefix + "abchhhhhdzshh";
+        assert(regex_search(abc_before_dzs, sm, re));
+        assert(string(sm[0].first, sm[0].second) == "abc");
+    }
+}
+
 int main() {
     test_collating_ranges_german();
     test_gh_994();
     test_gh_5435();
     test_gh_5437();
+    test_gh_6191();
 
     return g_regexTester.result();
 }

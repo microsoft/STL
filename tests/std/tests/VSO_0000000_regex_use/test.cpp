@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
+#include <list>
 #include <regex>
 #include <string>
 
@@ -2507,6 +2508,60 @@ void test_gh_6181() {
     }
 }
 
+void test_gh_6191() {
+    // GH-6191: Optimize searches for patterns with initial branching
+    // We must check that we handle matches near search window boundaries correctly.
+
+    {
+        const test_regex test_alt_re(&g_regexTester, "abcdef|uvwxyz");
+        test_alt_re.should_search_match("abcdef", "abcdef");
+        test_alt_re.should_search_match("uvwxyz", "uvwxyz");
+        test_alt_re.should_search_match("hhabcdef", "abcdef");
+        test_alt_re.should_search_match("hhuvwxyz", "uvwxyz");
+        test_alt_re.should_search_match("hhhhhuvwxyzhhhhhabcdefhhhhh", "uvwxyz");
+        for (size_t count = 510; count < 516; ++count) {
+            const string prefix(count, 'h');
+            test_alt_re.should_search_match(prefix + "abcdef", "abcdef");
+            test_alt_re.should_search_match(prefix + "uvwxyz", "uvwxyz");
+            test_alt_re.should_search_match(prefix + "abcdefhhhhhhhuvwxyz", "abcdef");
+            test_alt_re.should_search_match(prefix + "uvwxyzhhhhhhhabcdef", "uvwxyz");
+            test_alt_re.should_search_match(prefix + "abcdefhhhhhhhuvwxyzhhhh", "abcdef");
+            test_alt_re.should_search_match(prefix + "uvwxyzhhhhhhhabcdefhhhh", "uvwxyz");
+        }
+    }
+
+    {
+        const test_regex optional_prefix_re(&g_regexTester, "(abc)?def");
+        optional_prefix_re.should_search_match("abcdef", "abcdef");
+        optional_prefix_re.should_search_match("def", "def");
+        optional_prefix_re.should_search_match("hhabcdef", "abcdef");
+        optional_prefix_re.should_search_match("hhdef", "def");
+        optional_prefix_re.should_search_match("hhhhabcdefhhhhdefhhh", "abcdef");
+        optional_prefix_re.should_search_match("hhhdefhhhhabcdefhhh", "def");
+        for (size_t count = 510; count < 516; ++count) {
+            const string prefix(count, 'h');
+            optional_prefix_re.should_search_match(prefix + "abcdef", "abcdef");
+            optional_prefix_re.should_search_match(prefix + "def", "def");
+            optional_prefix_re.should_search_match(prefix + "abcdefhhhhhhhdef", "abcdef");
+            optional_prefix_re.should_search_match(prefix + "defhhhhhhhabcdef", "def");
+        }
+    }
+
+    // test bidirectional iterators
+    {
+        const regex alt_re("abcdef|uvwxyz");
+        const string suffix = "abcdefhhhhhhhuvwxyz";
+        for (size_t count = 510; count < 516; ++count) {
+            list<char> input(count, 'h');
+            input.insert(input.end(), suffix.begin(), suffix.end());
+
+            match_results<list<char>::iterator> results;
+            assert(regex_search(input.begin(), input.end(), results, alt_re));
+            assert(string(results[0].first, results[0].second) == "abcdef");
+        }
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2572,6 +2627,7 @@ int main() {
     test_gh_6118();
     test_gh_6147();
     test_gh_6181();
+    test_gh_6191();
 
     return g_regexTester.result();
 }
