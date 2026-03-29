@@ -405,13 +405,7 @@ extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Equivalent(
 
 extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
     // link _Fname2 to _Fname1
-#ifdef _CRT_APP
-    (void) _Fname1;
-    (void) _Fname2;
-    return errno = EDOM; // hardlinks not supported
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     return CreateHardLinkW(_Fname2, _Fname1, nullptr) ? 0 : GetLastError();
-#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Symlink(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
