@@ -416,13 +416,7 @@ extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t* _Fname
 
 extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Symlink(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
     // link _Fname2 to _Fname1
-#ifdef _CRT_APP
-    (void) _Fname1;
-    (void) _Fname2;
-    return errno = EDOM; // symlinks not supported
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     return CreateSymbolicLinkW(_Fname2, _Fname1, 0) ? 0 : GetLastError();
-#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Rename(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
