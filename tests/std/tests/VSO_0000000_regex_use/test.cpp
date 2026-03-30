@@ -2556,8 +2556,8 @@ void test_gh_6191() {
             list<char> input(input_size, 'h');
             input.insert(input.end(), suffix.begin(), suffix.end());
 
-            match_results<list<char>::iterator> results;
-            assert(regex_search(input.begin(), input.end(), results, alt_re));
+            match_results<list<char>::const_iterator> results;
+            assert(regex_search(input.cbegin(), input.cend(), results, alt_re));
             assert(string(results[0].first, results[0].second) == "abcdef");
         }
     }
