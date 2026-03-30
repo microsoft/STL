@@ -663,8 +663,8 @@ void test_gh_6191() {
     // Check that collating elements are handled correctly at search window boundaries.
     const gh_994_regex re("[[.dzs.]]|abc");
     smatch sm;
-    for (size_t count = 510; count < 516; ++count) {
-        const string prefix(count, 'h');
+    for (size_t prefix_size = 510; prefix_size < 516; ++prefix_size) {
+        const string prefix(prefix_size, 'h');
         const string dzs_before_abc = prefix + "dzshhhhhabchh";
         assert(regex_search(dzs_before_abc, sm, re));
         assert(string(sm[0].first, sm[0].second) == "dzs");

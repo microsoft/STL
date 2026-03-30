@@ -2520,8 +2520,8 @@ void test_gh_6191() {
         test_alt_re.should_search_match("hhabcdef", "abcdef");
         test_alt_re.should_search_match("hhuvwxyz", "uvwxyz");
         test_alt_re.should_search_match("hhhhhuvwxyzhhhhhabcdefhhhhh", "uvwxyz");
-        for (size_t count = 510; count < 516; ++count) {
-            const string prefix(count, 'h');
+        for (size_t prefix_size = 510; prefix_size < 516; ++prefix_size) {
+            const string prefix(prefix_size, 'h');
             test_alt_re.should_search_match(prefix + "abcdef", "abcdef");
             test_alt_re.should_search_match(prefix + "uvwxyz", "uvwxyz");
             test_alt_re.should_search_match(prefix + "abcdefhhhhhhhuvwxyz", "abcdef");
@@ -2539,8 +2539,8 @@ void test_gh_6191() {
         optional_prefix_re.should_search_match("hhdef", "def");
         optional_prefix_re.should_search_match("hhhhabcdefhhhhdefhhh", "abcdef");
         optional_prefix_re.should_search_match("hhhdefhhhhabcdefhhh", "def");
-        for (size_t count = 510; count < 516; ++count) {
-            const string prefix(count, 'h');
+        for (size_t prefix_size = 510; prefix_size < 516; ++prefix_size) {
+            const string prefix(prefix_size, 'h');
             optional_prefix_re.should_search_match(prefix + "abcdef", "abcdef");
             optional_prefix_re.should_search_match(prefix + "def", "def");
             optional_prefix_re.should_search_match(prefix + "abcdefhhhhhhhdef", "abcdef");
@@ -2552,8 +2552,8 @@ void test_gh_6191() {
     {
         const regex alt_re("abcdef|uvwxyz");
         const string suffix = "abcdefhhhhhhhuvwxyz";
-        for (size_t count = 510; count < 516; ++count) {
-            list<char> input(count, 'h');
+        for (size_t input_size = 510; input_size < 516; ++input_size) {
+            list<char> input(input_size, 'h');
             input.insert(input.end(), suffix.begin(), suffix.end());
 
             match_results<list<char>::iterator> results;
