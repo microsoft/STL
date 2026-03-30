@@ -25,15 +25,11 @@ extern "C" long __isa_enabled;
 namespace {
 #if !defined(_M_ARM64) && !defined(_M_ARM64EC)
     [[nodiscard]] bool _Use_avx2() noexcept {
-        const static bool _HasAVX2 =
-            __check_arch_support(__IA_SUPPORT_VECTOR256, 0) || (__isa_enabled & (1 << __ISA_AVAILABLE_AVX2));
-        return _HasAVX2;
+        return __check_arch_support(__IA_SUPPORT_VECTOR256, 0) || (__isa_enabled & (1 << __ISA_AVAILABLE_AVX2));
     }
 
     [[nodiscard]] bool _Use_sse42() noexcept {
-        const static bool _HasSSE42 =
-            __check_arch_support(__IA_SUPPORT_SSE42, 0) || (__isa_enabled & (1 << __ISA_AVAILABLE_SSE42));
-        return _HasSSE42;
+        return __check_arch_support(__IA_SUPPORT_SSE42, 0) || (__isa_enabled & (1 << __ISA_AVAILABLE_SSE42));
     }
 
     struct [[nodiscard]] _Zeroupper_on_exit { // TRANSITION, DevCom-10331414
