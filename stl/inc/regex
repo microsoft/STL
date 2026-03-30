@@ -5042,8 +5042,8 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip(
                 for (;;) {
                     _It _Lookahead_last = _First;
                     _STD _Advance_at_most(_Lookahead_last, _Last, _Max_lookahead);
-                    _First = _Skip(_First, _Skip(_First, _Lookahead_last, _Node->_Next, _Recursion_depth + 1U),
-                        _Node->_End_rep->_Next, _Recursion_depth + 1U);
+                    const _It _Intermediate = _Skip(_First, _Lookahead_last, _Node->_Next, _Recursion_depth + 1U);
+                    _First = _Skip(_First, _Intermediate, _Node->_End_rep->_Next, _Recursion_depth + 1U);
 
                     if (_First != _Lookahead_last || _First == _Last) {
                         break;
