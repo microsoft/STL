@@ -4886,8 +4886,8 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip(
     static constexpr char _Line_terminators_char[]       = {static_cast<char>(_Meta_cr), static_cast<char>(_Meta_nl)};
     static constexpr wchar_t _Line_terminators_wchar_t[] = {static_cast<wchar_t>(_Meta_cr),
         static_cast<wchar_t>(_Meta_nl), static_cast<wchar_t>(_Meta_ls), static_cast<wchar_t>(_Meta_ps)};
-    static constexpr unsigned int _Max_recursion_depth   = 50U;
-    static constexpr short _Max_lookahead                = 512;
+    constexpr unsigned int _Max_recursion_depth          = 50U;
+    constexpr short _Max_lookahead                       = 512;
     const _Node_base* _Nx                                = _Node_arg ? _Node_arg : _Start;
 
     while (_First != _Last && _Nx) { // check current node
