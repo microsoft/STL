@@ -47,7 +47,7 @@ BENCHMARK_CAPTURE(bm_lorem_search, R"(\Bibe)", R"(\Bibe)")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_lorem_search, R"((?=....)bibe)", R"((?=....)bibe)")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_lorem_search, R"((?=bibe)....)", R"((?=bibe)....)")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_lorem_search, R"((?!lorem)bibe)", R"((?!lorem)bibe)")->Apply(common_args);
-BENCHMARK_CAPTURE(bm_lorem_search, "bibe|soda", "(bibe|soda)")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_lorem_search, "(bibe|soda)", "(bibe|soda)")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_lorem_search, "(id )?bibe", "(id )?bibe")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_lorem_search, ".bibe", ".bibe")->Apply(common_args);
 
