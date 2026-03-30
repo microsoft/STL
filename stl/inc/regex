@@ -4995,15 +4995,11 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip(
                     return _First;
                 }
 
-                // GH-5452: If this node has two or more branches,
-                // examining all alternatives in a disjunction
-                // until the end of the input string
-                // could result in quadratic worst-case complexity.
-                // For this reason, we split the input string
-                // into search windows with a constant maximum length.
-                // This ensures that this heuristic has linear time complexity,
-                // because this bounds the number of characters that were read
-                // beyond the finally determined skip position by a constant.
+                // GH-5452: If this node has two or more branches, examining all alternatives in a disjunction
+                // until the end of the input string could result in quadratic worst-case complexity.
+                // For this reason, we split the input string into search windows with a constant maximum length.
+                // This ensures that this heuristic has linear time complexity, because this bounds the number
+                // of characters that were read beyond the finally determined skip position by a constant.
 
                 for (;;) {
                     _It _Lookahead_last = _First;
@@ -5037,15 +5033,11 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip(
                     return _First;
                 }
 
-                // As in GH-5452, examining the cases
-                // with no repetition and at least one repetition
-                // until the end of the input string
-                // could result in quadratic worst-case complexity.
-                // For this reason, we split the input string
-                // into search windows with a constant maximum length.
-                // This ensures that this heuristic has linear time complexity,
-                // because this bounds the number of characters that were read
-                // beyond the finally determined skip position by a constant.
+                // As in GH-5452, examining the cases with no repetition and at least one repetition
+                // until the end of the input string could result in quadratic worst-case complexity.
+                // For this reason, we split the input string into search windows with a constant maximum length.
+                // This ensures that this heuristic has linear time complexity, because this bounds the number
+                // of characters that were read beyond the finally determined skip position by a constant.
 
                 for (;;) {
                     _It _Lookahead_last = _First;
