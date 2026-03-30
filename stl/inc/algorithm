@@ -61,14 +61,18 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 #endif // ^^^ _VECTORIZED_REVERSE_COPY ^^^
 
 #if _VECTORIZED_MINMAX_ELEMENT
-_Min_max_element_t __stdcall __std_minmax_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
-_Min_max_element_t __stdcall __std_minmax_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
-_Min_max_element_t __stdcall __std_minmax_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
+_Min_max_element_t __stdcall __std_minmax_element_1i(const void* _First, const void* _Last) noexcept;
+_Min_max_element_t __stdcall __std_minmax_element_1u(const void* _First, const void* _Last) noexcept;
+_Min_max_element_t __stdcall __std_minmax_element_2i(const void* _First, const void* _Last) noexcept;
+_Min_max_element_t __stdcall __std_minmax_element_2u(const void* _First, const void* _Last) noexcept;
+_Min_max_element_t __stdcall __std_minmax_element_4i(const void* _First, const void* _Last) noexcept;
+_Min_max_element_t __stdcall __std_minmax_element_4u(const void* _First, const void* _Last) noexcept;
 #if _VECTORIZED_MINMAX_ELEMENT_64BIT_INT
-_Min_max_element_t __stdcall __std_minmax_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
+_Min_max_element_t __stdcall __std_minmax_element_8i(const void* _First, const void* _Last) noexcept;
+_Min_max_element_t __stdcall __std_minmax_element_8u(const void* _First, const void* _Last) noexcept;
 #endif // ^^^ _VECTORIZED_MINMAX_ELEMENT_64BIT_INT ^^^
-_Min_max_element_t __stdcall __std_minmax_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
-_Min_max_element_t __stdcall __std_minmax_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
+_Min_max_element_t __stdcall __std_minmax_element_f_no_unused(const void* _First, const void* _Last) noexcept;
+_Min_max_element_t __stdcall __std_minmax_element_d_no_unused(const void* _First, const void* _Last) noexcept;
 #endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
 #if _VECTORIZED_MINMAX
@@ -215,18 +219,34 @@ pair<_Ty*, _Ty*> _Minmax_element_vectorized(_Ty* const _First, _Ty* const _Last)
     _Min_max_element_t _Res;
 
     if constexpr (is_same_v<remove_const_t<_Ty>, float>) {
-        _Res = ::__std_minmax_element_f(_First, _Last, false);
+        _Res = ::__std_minmax_element_f_no_unused(_First, _Last);
     } else if constexpr (_Is_any_of_v<remove_const_t<_Ty>, double, long double>) {
-        _Res = ::__std_minmax_element_d(_First, _Last, false);
+        _Res = ::__std_minmax_element_d_no_unused(_First, _Last);
     } else if constexpr (sizeof(_Ty) == 1) {
-        _Res = ::__std_minmax_element_1(_First, _Last, _Signed);
+        if constexpr (_Signed) {
+            _Res = ::__std_minmax_element_1i(_First, _Last);
+        } else {
+            _Res = ::__std_minmax_element_1u(_First, _Last);
+        }
     } else if constexpr (sizeof(_Ty) == 2) {
-        _Res = ::__std_minmax_element_2(_First, _Last, _Signed);
+        if constexpr (_Signed) {
+            _Res = ::__std_minmax_element_2i(_First, _Last);
+        } else {
+            _Res = ::__std_minmax_element_2u(_First, _Last);
+        }
     } else if constexpr (sizeof(_Ty) == 4) {
-        _Res = ::__std_minmax_element_4(_First, _Last, _Signed);
+        if constexpr (_Signed) {
+            _Res = ::__std_minmax_element_4i(_First, _Last);
+        } else {
+            _Res = ::__std_minmax_element_4u(_First, _Last);
+        }
     } else if constexpr (sizeof(_Ty) == 8) {
 #if _VECTORIZED_MINMAX_ELEMENT_64BIT_INT
-        _Res = ::__std_minmax_element_8(_First, _Last, _Signed);
+        if constexpr (_Signed) {
+            _Res = ::__std_minmax_element_8i(_First, _Last);
+        } else {
+            _Res = ::__std_minmax_element_8u(_First, _Last);
+        }
 #else // ^^^ _VECTORIZED_MINMAX_ELEMENT_64BIT_INT / !_VECTORIZED_MINMAX_ELEMENT_64BIT_INT vvv
         static_assert(false, "unexpected size");
 #endif // ^^^ !_VECTORIZED_MINMAX_ELEMENT_64BIT_INT ^^^
