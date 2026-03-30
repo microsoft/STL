@@ -2552,10 +2552,11 @@ void test_gh_6191() {
     {
         const regex alt_re("abcdef|uvwxyz");
         const string suffix = "abcdefhhhhhhhuvwxyz";
-        for (size_t input_size = 510; input_size < 516; ++input_size) {
-            list<char> input(input_size, 'h');
-            input.insert(input.end(), suffix.begin(), suffix.end());
+        list<char> input(509, 'h');
+        input.insert(input.end(), suffix.begin(), suffix.end());
 
+        for (size_t prefixes_to_test = 0; prefixes_to_test < 6; ++prefixes_to_test) {
+            input.push_front('h');
             match_results<list<char>::const_iterator> results;
             assert(regex_search(input.cbegin(), input.cend(), results, alt_re));
             assert(string(results[0].first, results[0].second) == "abcdef");
