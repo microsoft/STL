@@ -2507,6 +2507,21 @@ void test_gh_6181() {
     }
 }
 
+void test_gh_6189() {
+    // GH-6189: Optimize skip heuristic for searches of patterns with initial dot wildcards
+    test_regex re(&g_regexTester, ".abc");
+    re.should_search_match("dabc", "dabc");
+    re.should_search_match("dabcdddd", "dabc");
+    re.should_search_match("ddabc", "dabc");
+    re.should_search_match("ddabcdddd", "dabc");
+    re.should_search_match("ddddddddddddddddabcdddddddddddd", "dabc");
+    re.should_search_match("ddddddddddddddddddddddddabc", "dabc");
+    re.should_search_match("ddabcddd", "dabc");
+    re.should_search_fail("abcddddd");
+    re.should_search_fail("ddddddddddd\nabcdddddddddd");
+    re.should_search_fail("d");
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2572,6 +2587,7 @@ int main() {
     test_gh_6118();
     test_gh_6147();
     test_gh_6181();
+    test_gh_6189();
 
     return g_regexTester.result();
 }
