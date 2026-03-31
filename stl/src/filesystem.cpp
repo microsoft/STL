@@ -114,7 +114,30 @@ namespace {
             return __std_win_error::_Success;
         }
 
-        return __std_win_error{GetLastError()};
+        __std_win_error _Last_error{GetLastError()};
+
+        switch (_Last_error) {
+        case __std_win_error::_Not_supported:
+        case __std_win_error::_Invalid_parameter:
+            break; // try more things
+        default:
+            return _Last_error; // real error, bail to the caller
+        }
+
+        // Some filesystems don't support FILE_ID_INFO's 128-bit file identifiers.
+        // Try GetFileInformationByHandle() as a fallback.
+        BY_HANDLE_FILE_INFORMATION _Info;
+        if (GetFileInformationByHandle(_Handle, &_Info)) {
+            _Id->VolumeSerialNumber = _Info.dwVolumeSerialNumber;
+            _CSTD memcpy(&_Id->FileId.Identifier[0], &_Info.nFileIndexHigh, 4);
+            _CSTD memcpy(&_Id->FileId.Identifier[4], &_Info.nFileIndexLow, 4);
+            _CSTD memset(&_Id->FileId.Identifier[8], 0, 8);
+            return __std_win_error::_Success;
+        }
+
+        _Last_error = __std_win_error{GetLastError()};
+
+        return _Last_error;
     }
 
     [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error

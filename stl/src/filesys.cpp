@@ -374,33 +374,65 @@ extern "C" _CRTIMP2_PURE space_info __CLRCALL_PURE_OR_CDECL _Statvfs(const wchar
 extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Equivalent(
     const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept { // test for equivalent file names
     // See GH-3571: File IDs are only guaranteed to be unique and stable while handles remain open
-    _FILE_ID_INFO _Info1 = {0};
-    _FILE_ID_INFO _Info2 = {0};
-    bool _Ok1            = false;
-    bool _Ok2            = false;
-
     HANDLE _Handle1 = _FilesysOpenFile(_Fname1, FILE_READ_ATTRIBUTES, FILE_FLAG_BACKUP_SEMANTICS);
-    if (_Handle1 != INVALID_HANDLE_VALUE) { // get file1 info
-        _Ok1 = GetFileInformationByHandleEx(_Handle1, FileIdInfo, &_Info1, sizeof(_Info1)) != 0;
+    HANDLE _Handle2 = _FilesysOpenFile(_Fname2, FILE_READ_ATTRIBUTES, FILE_FLAG_BACKUP_SEMANTICS);
+
+    bool _Ok1   = false;
+    bool _Ok2   = false;
+    int _Result = -1; // negative indicates error
+
+    {
+        // If we can get FILE_ID_INFO, use that as the source of truth.
+        _FILE_ID_INFO _Info1 = {0};
+        _FILE_ID_INFO _Info2 = {0};
+
+        if (_Handle1 != INVALID_HANDLE_VALUE) {
+            _Ok1 = GetFileInformationByHandleEx(_Handle1, FileIdInfo, &_Info1, sizeof(_Info1)) != 0;
+        }
+
+        if (_Handle2 != INVALID_HANDLE_VALUE) {
+            _Ok2 = GetFileInformationByHandleEx(_Handle2, FileIdInfo, &_Info2, sizeof(_Info2)) != 0;
+        }
+
+        if (_Ok1 && _Ok2) { // test existing files for equivalence
+            _Result = memcmp(&_Info1, &_Info2, sizeof(_FILE_ID_INFO)) == 0 ? 1 : 0;
+        } else if (_Ok1 || _Ok2) { // one file exists, the other doesn't
+            _Result = 0;
+        }
     }
 
-    HANDLE _Handle2 = _FilesysOpenFile(_Fname2, FILE_READ_ATTRIBUTES, FILE_FLAG_BACKUP_SEMANTICS);
-    if (_Handle2 != INVALID_HANDLE_VALUE) { // get file2 info
-        _Ok2 = GetFileInformationByHandleEx(_Handle2, FileIdInfo, &_Info2, sizeof(_Info2)) != 0;
-        CloseHandle(_Handle2);
+    if (_Result < 0) {
+        // Some filesystems don't support FILE_ID_INFO's 128-bit file identifiers.
+        // Try GetFileInformationByHandle() as a fallback.
+        BY_HANDLE_FILE_INFORMATION _Info1 = {0};
+        BY_HANDLE_FILE_INFORMATION _Info2 = {0};
+
+        if (_Handle1 != INVALID_HANDLE_VALUE) {
+            _Ok1 = GetFileInformationByHandle(_Handle1, &_Info1) != 0;
+        }
+
+        if (_Handle2 != INVALID_HANDLE_VALUE) {
+            _Ok2 = GetFileInformationByHandle(_Handle2, &_Info2) != 0;
+        }
+
+        if (_Ok1 && _Ok2) { // test existing files for equivalence
+            _Result = static_cast<int>(_Info1.dwVolumeSerialNumber == _Info2.dwVolumeSerialNumber
+                                       && _Info1.nFileIndexHigh == _Info2.nFileIndexHigh
+                                       && _Info1.nFileIndexLow == _Info2.nFileIndexLow);
+        } else if (_Ok1 || _Ok2) { // one file exists, the other doesn't
+            _Result = 0;
+        }
     }
 
     if (_Handle1 != INVALID_HANDLE_VALUE) {
         CloseHandle(_Handle1);
     }
 
-    if (!_Ok1 && !_Ok2) {
-        return -1;
-    } else if (!_Ok1 || !_Ok2) {
-        return 0;
-    } else { // test existing files for equivalence
-        return memcmp(&_Info1, &_Info2, sizeof(_FILE_ID_INFO)) == 0 ? 1 : 0;
+    if (_Handle2 != INVALID_HANDLE_VALUE) {
+        CloseHandle(_Handle2);
     }
+
+    return _Result;
 }
 
 extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
