@@ -2463,6 +2463,50 @@ void test_gh_6147() {
     g_regexTester.should_not_match(string(5000, 'a') + 'c', "(a|b)*");
 }
 
+void test_gh_6181() {
+    // GH-6181: match_results are not filled correctly
+    // when regex_match() and regex_search() are called on a default-constructed basic_regex
+
+    const string input{"abc"};
+    const regex empty_re{};
+    {
+        smatch captures;
+        assert(!regex_match(input, captures, empty_re));
+        assert(captures.ready());
+        assert(captures.empty());
+    }
+
+    {
+        smatch captures;
+        assert(!regex_search(input, captures, empty_re));
+        assert(captures.ready());
+        assert(captures.empty());
+    }
+
+    const regex abc_re{"abc"};
+    {
+        smatch captures;
+        assert(regex_match(input, captures, abc_re));
+        assert(captures.ready());
+        assert(captures.size() == 1);
+
+        assert(!regex_match(input, captures, empty_re));
+        assert(captures.ready());
+        assert(captures.empty());
+    }
+
+    {
+        smatch captures;
+        assert(regex_search(input, captures, abc_re));
+        assert(captures.ready());
+        assert(captures.size() == 1);
+
+        assert(!regex_search(input, captures, empty_re));
+        assert(captures.ready());
+        assert(captures.empty());
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2527,6 +2571,7 @@ int main() {
     test_gh_6022();
     test_gh_6118();
     test_gh_6147();
+    test_gh_6181();
 
     return g_regexTester.result();
 }

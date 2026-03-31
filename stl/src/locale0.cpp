@@ -236,6 +236,7 @@ void __CLRCALL_PURE_OR_CDECL _Locinfo::_Locinfo_dtor(_Locinfo* pLocinfo) { // de
         // so reinterpret_cast is not reliable.
         _wsetlocale(LC_ALL, L"");
     } else {
+        // CodeQL [SM02986] We are intentionally storing `wchar_t*` as `char*` due to ABI, see GH-5781
         _wsetlocale(LC_ALL, reinterpret_cast<const wchar_t*>(pLocinfo->_Oldlocname._C_str()));
     }
 }

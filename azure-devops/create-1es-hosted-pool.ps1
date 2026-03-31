@@ -48,7 +48,7 @@ if ($VMSku -ieq 'Fasv6') {
   $AvailableLocations = @('eastus2', 'northeurope') # Locations where CPP_STL_GitHub has quota for 1024 cores (32 VMs).
 }
 
-$AvailableLocationIdx = 5 # Increment for each new set of pools, to cycle through the available locations.
+$AvailableLocationIdx = 6 # Increment for each new set of pools, to cycle through the available locations.
 $Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
 
 if ($Arch -ieq 'x64') {

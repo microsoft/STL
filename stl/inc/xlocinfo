@@ -120,7 +120,7 @@ public:
         if (this != &_Right) {
             _CSTD free(_Timeptr);
             _Timeptr                               = _Right._Timeptr;
-            const_cast<_Timevec&>(_Right)._Timeptr = nullptr; // TRANSITION, should be movable-only
+            const_cast<_Timevec&>(_Right)._Timeptr = nullptr; // TRANSITION, ABI, should be movable-only
         }
 
         return *this;
@@ -183,10 +183,12 @@ public:
 
     template <class _Elem2 = _Elem, enable_if_t<is_same_v<_Elem2, char>, int> = 0>
     void _From_wide(const wchar_t* const _Right) noexcept {
+        // CodeQL [SM02986] We are intentionally storing `wchar_t*` as `char*` due to ABI, see GH-5781
         if (reinterpret_cast<wchar_t*>(_Myptr) != _Right) { // new value, discard old and copy new
             _Tidy();
 
             if (_Right) { // new is not empty, copy it
+                // CodeQL [SM02986] We are intentionally storing `wchar_t*` as `char*` due to ABI, see GH-5781
                 _Myptr = reinterpret_cast<char*>(_STD _Ntcts_dup_dbg(_Right));
             }
         }

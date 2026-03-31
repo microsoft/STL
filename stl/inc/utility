@@ -711,7 +711,7 @@ struct tuple_size<tuple<_Types...>> : integral_constant<size_t, sizeof...(_Types
 
 template <size_t _Index>
 struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, tuple<>> { // enforce bounds checking
-    static_assert(_Always_false<integral_constant<size_t, _Index>>, "tuple index out of bounds");
+    static_assert(false, "tuple index out of bounds");
 };
 
 template <class _This, class... _Rest>
@@ -1064,7 +1064,7 @@ struct hash<monostate> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = monostate;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
-    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(monostate) _CONST_CALL_OPERATOR noexcept {
+    _NODISCARD static size_t operator()(monostate) noexcept {
         return 1729; // Arbitrary value
     }
 };
