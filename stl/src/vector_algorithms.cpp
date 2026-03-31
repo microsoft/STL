@@ -3770,11 +3770,11 @@ const void* __stdcall __std_min_element_8u(const void* const _First, const void*
 }
 #endif // ^^^ !defined(_M_ARM64) ^^^
 
-const void* __stdcall __std_min_element_f_no_unused(const void* const _First, const void* const _Last) noexcept {
+const void* __stdcall __std_min_element_f_(const void* const _First, const void* const _Last) noexcept {
     return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_f, false>(_First, _Last);
 }
 
-const void* __stdcall __std_min_element_d_no_unused(const void* const _First, const void* const _Last) noexcept {
+const void* __stdcall __std_min_element_d_(const void* const _First, const void* const _Last) noexcept {
     return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_d, false>(_First, _Last);
 }
 
@@ -3821,12 +3821,12 @@ const void* __stdcall __std_min_element_8(
 
 // TRANSITION, ABI: __std_min_element_f() is preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_min_element_f(const void* const _First, const void* const _Last, bool) noexcept {
-    return __std_min_element_f_no_unused(_First, _Last);
+    return __std_min_element_f_(_First, _Last);
 }
 
 // TRANSITION, ABI: __std_min_element_d() is preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_min_element_d(const void* const _First, const void* const _Last, bool) noexcept {
-    return __std_min_element_d_no_unused(_First, _Last);
+    return __std_min_element_d_(_First, _Last);
 }
 #endif // ^^^ !defined(_M_ARM64) ^^^
 
@@ -3864,11 +3864,11 @@ const void* __stdcall __std_max_element_8u(const void* const _First, const void*
 }
 #endif // ^^^ !defined(_M_ARM64) ^^^
 
-const void* __stdcall __std_max_element_f_no_unused(const void* const _First, const void* const _Last) noexcept {
+const void* __stdcall __std_max_element_f_(const void* const _First, const void* const _Last) noexcept {
     return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_f, false>(_First, _Last);
 }
 
-const void* __stdcall __std_max_element_d_no_unused(const void* const _First, const void* const _Last) noexcept {
+const void* __stdcall __std_max_element_d_(const void* const _First, const void* const _Last) noexcept {
     return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_d, false>(_First, _Last);
 }
 
@@ -3915,12 +3915,12 @@ const void* __stdcall __std_max_element_8(
 
 // TRANSITION, ABI: __std_max_element_f() is preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_max_element_f(const void* const _First, const void* const _Last, bool) noexcept {
-    return __std_max_element_f_no_unused(_First, _Last);
+    return __std_max_element_f_(_First, _Last);
 }
 
 // TRANSITION, ABI: __std_max_element_d() is preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_max_element_d(const void* const _First, const void* const _Last, bool) noexcept {
-    return __std_max_element_d_no_unused(_First, _Last);
+    return __std_max_element_d_(_First, _Last);
 }
 #endif // ^^^ !defined(_M_ARM64) ^^^
 
@@ -3958,13 +3958,11 @@ _Min_max_element_t __stdcall __std_minmax_element_8u(const void* const _First, c
 }
 #endif // ^^^ !defined(_M_ARM64) ^^^
 
-_Min_max_element_t __stdcall __std_minmax_element_f_no_unused(
-    const void* const _First, const void* const _Last) noexcept {
+_Min_max_element_t __stdcall __std_minmax_element_f_(const void* const _First, const void* const _Last) noexcept {
     return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_f, false>(_First, _Last);
 }
 
-_Min_max_element_t __stdcall __std_minmax_element_d_no_unused(
-    const void* const _First, const void* const _Last) noexcept {
+_Min_max_element_t __stdcall __std_minmax_element_d_(const void* const _First, const void* const _Last) noexcept {
     return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_d, false>(_First, _Last);
 }
 
@@ -4011,12 +4009,12 @@ _Min_max_element_t __stdcall __std_minmax_element_8(
 
 // TRANSITION, ABI: __std_minmax_element_f() is preserved for binary compatibility (x64/x86/ARM64EC)
 _Min_max_element_t __stdcall __std_minmax_element_f(const void* const _First, const void* const _Last, bool) noexcept {
-    return __std_minmax_element_f_no_unused(_First, _Last);
+    return __std_minmax_element_f_(_First, _Last);
 }
 
 // TRANSITION, ABI: __std_minmax_element_d() is preserved for binary compatibility (x64/x86/ARM64EC)
 _Min_max_element_t __stdcall __std_minmax_element_d(const void* const _First, const void* const _Last, bool) noexcept {
-    return __std_minmax_element_d_no_unused(_First, _Last);
+    return __std_minmax_element_d_(_First, _Last);
 }
 #endif // ^^^ !defined(_M_ARM64) ^^^
 
