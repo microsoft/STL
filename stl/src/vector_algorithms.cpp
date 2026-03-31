@@ -24,11 +24,11 @@ extern "C" long __isa_enabled;
 
 namespace {
 #if !defined(_M_ARM64) && !defined(_M_ARM64EC)
-    bool _Use_avx2() noexcept {
+    [[nodiscard]] bool _Use_avx2() noexcept {
         return __check_arch_support(__IA_SUPPORT_VECTOR256, 0) || (__isa_enabled & (1 << __ISA_AVAILABLE_AVX2));
     }
 
-    bool _Use_sse42() noexcept {
+    [[nodiscard]] bool _Use_sse42() noexcept {
         return __check_arch_support(__IA_SUPPORT_SSE42, 0) || (__isa_enabled & (1 << __ISA_AVAILABLE_SSE42));
     }
 
