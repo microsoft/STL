@@ -49,7 +49,7 @@ $VisualStudioWorkloads = @(
 # "There's a single installer for both Visual Studio x64 and Visual Studio Arm64 architectures.
 # The Visual Studio Installer detects whether the system architecture is Arm64.
 # If it is, the installer downloads and installs the Arm64 version of Visual Studio."
-$VisualStudioUrl = 'https://aka.ms/vs/18/insiders/vs_Community.exe'
+$VisualStudioUrl = 'https://aka.ms/vs/insiders/vs_community.exe'
 $VisualStudioArgs = @('--quiet', '--norestart', '--wait', '--nocache')
 foreach ($workload in $VisualStudioWorkloads) {
   $VisualStudioArgs += '--add'
