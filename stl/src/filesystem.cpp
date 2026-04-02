@@ -21,17 +21,6 @@
 static_assert(__std_code_page::_Utf8 == __std_code_page{CP_UTF8});
 
 namespace {
-
-#ifdef _CRT_APP
-    BOOLEAN __stdcall _Not_supported_CreateSymbolicLinkW(const wchar_t*, const wchar_t*, DWORD) {
-        SetLastError(ERROR_NOT_SUPPORTED);
-        return 0;
-    }
-#define __vcrt_CreateSymbolicLinkW _Not_supported_CreateSymbolicLinkW
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
-#define __vcrt_CreateSymbolicLinkW CreateSymbolicLinkW
-#endif // ^^^ !defined(_CRT_APP) ^^^
-
     HANDLE __stdcall __vcp_CreateFile(const wchar_t* const _File_name, const unsigned long _Desired_access,
         const unsigned long _Share, SECURITY_ATTRIBUTES* const _Security_attributes,
         const unsigned long _Creation_disposition, const unsigned long _Flags_and_attributes,
@@ -70,14 +59,14 @@ namespace {
 
     [[nodiscard]] __std_win_error __stdcall _Create_symlink(
         const wchar_t* const _Symlink_file_name, const wchar_t* const _Target_file_name, const DWORD _Flags) noexcept {
-        if (__vcrt_CreateSymbolicLinkW(
+        if (CreateSymbolicLinkW(
                 _Symlink_file_name, _Target_file_name, _Flags | SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE)) {
             return __std_win_error::_Success;
         }
 
         DWORD _Last_error = GetLastError();
         if (_Last_error == ERROR_INVALID_PARAMETER) {
-            if (__vcrt_CreateSymbolicLinkW(_Symlink_file_name, _Target_file_name, _Flags)) {
+            if (CreateSymbolicLinkW(_Symlink_file_name, _Target_file_name, _Flags)) {
                 return __std_win_error::_Success;
             }
 
@@ -257,11 +246,9 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
         return __std_code_page{CP_UTF8};
     }
 
-#if !defined(_ONECORE)
     if (!AreFileApisANSI()) {
         return __std_code_page{CP_OEMCP};
     }
-#endif // !defined(_ONECORE)
 
     return __std_code_page{CP_ACP};
 }
@@ -478,17 +465,11 @@ struct __std_fs_file_id { // typedef struct _FILE_ID_INFO {
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_create_hard_link(
     _In_z_ const wchar_t* const _File_name, _In_z_ const wchar_t* const _Existing_file_name) noexcept {
-#if defined(_CRT_APP)
-    (void) _File_name;
-    (void) _Existing_file_name;
-    return __std_win_error::_Not_supported;
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     if (CreateHardLinkW(_File_name, _Existing_file_name, nullptr)) {
         return __std_win_error::_Success;
     }
 
     return __std_win_error{GetLastError()};
-#endif // defined(_CRT_APP)
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_create_symbolic_link(
@@ -812,7 +793,6 @@ struct __std_fs_file_id { // typedef struct _FILE_ID_INFO {
 namespace {
     _Success_(return > 0 && return < nBufferLength) DWORD WINAPI _Stl_GetTempPath2W(
         _In_ DWORD nBufferLength, _Out_writes_to_opt_(nBufferLength, return +1) LPWSTR lpBuffer) noexcept {
-#if !defined(_ONECORE)
         // See GH-3011: This is intentionally not attempting to cache the function pointer.
         // TRANSITION, ABI: This should use __crtGetTempPath2W after this code is moved into the STL's DLL.
 
@@ -823,7 +803,6 @@ namespace {
         if (_Pf) {
             return _Pf(nBufferLength, lpBuffer);
         }
-#endif // ^^^ !defined(_ONECORE) ^^^
 
         // ...otherwise use GetTempPathW.
         return GetTempPathW(nBufferLength, lpBuffer);
@@ -1023,10 +1002,6 @@ namespace {
 // TRANSITION, ABI: __std_fs_create_directory_template() is preserved for binary compatibility
 [[nodiscard]] __std_fs_create_directory_result __stdcall __std_fs_create_directory_template(
     _In_z_ const wchar_t* const _Template_directory, _In_z_ const wchar_t* const _New_directory) noexcept {
-#if defined(_CRT_APP)
-    (void) _Template_directory;
-    return __std_fs_create_directory(_New_directory);
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     if (CreateDirectoryExW(_Template_directory, _New_directory, nullptr)) {
         return {true, __std_win_error::_Success};
     }
@@ -1037,7 +1012,6 @@ namespace {
     }
 
     return {false, _Last_error};
-#endif // defined(_CRT_APP)
 }
 
 [[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error

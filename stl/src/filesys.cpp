@@ -137,15 +137,11 @@ extern "C" _CRTIMP2_PURE wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(
 }
 
 static unsigned int _Filesys_code_page() { // determine appropriate code page
-#if defined(_ONECORE)
-    return CP_ACP;
-#else // ^^^ defined(_ONECORE) / !defined(_ONECORE) vvv
     if (AreFileApisANSI()) {
         return CP_ACP;
     } else {
         return CP_OEMCP;
     }
-#endif // ^^^ !defined(_ONECORE) ^^^
 }
 
 extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _To_wide(const char* _Bsrc, wchar_t* _Wdest) noexcept {
@@ -198,21 +194,12 @@ extern "C" _CRTIMP2_PURE void* __CLRCALL_PURE_OR_CDECL _Open_dir(
 extern "C" _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL _Current_get(wchar_t (&_Dest)[_MAX_FILESYS_NAME]) noexcept {
     // get current working directory
     _Strcpy(_Dest, L"");
-#ifdef _CRT_APP
-    return false; // no support
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     return _wgetcwd(_Dest, _MAX_FILESYS_NAME) != nullptr;
-#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 extern "C" _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL _Current_set(const wchar_t* _Dirname) noexcept {
     // set current working directory
-#ifdef _CRT_APP
-    (void) _Dirname;
-    return false; // no support
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     return _wchdir(_Dirname) == 0;
-#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 extern "C" _CRTIMP2_PURE wchar_t* __CLRCALL_PURE_OR_CDECL _Symlink_get(
@@ -437,24 +424,12 @@ extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Equivalent(
 
 extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
     // link _Fname2 to _Fname1
-#ifdef _CRT_APP
-    (void) _Fname1;
-    (void) _Fname2;
-    return errno = EDOM; // hardlinks not supported
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     return CreateHardLinkW(_Fname2, _Fname1, nullptr) ? 0 : GetLastError();
-#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Symlink(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
     // link _Fname2 to _Fname1
-#ifdef _CRT_APP
-    (void) _Fname1;
-    (void) _Fname2;
-    return errno = EDOM; // symlinks not supported
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     return CreateSymbolicLinkW(_Fname2, _Fname1, 0) ? 0 : GetLastError();
-#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 extern "C" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Rename(const wchar_t* _Fname1, const wchar_t* _Fname2) noexcept {
