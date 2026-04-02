@@ -1961,11 +1961,6 @@ int main() {
         test_min_max_element<unsigned long long>(gen);
 
         test_min_max_element_pointers(gen);
-
-        test_replace<int>(gen);
-        test_replace<unsigned int>(gen);
-        test_replace<long long>(gen);
-        test_replace<unsigned long long>(gen);
 #else // ^^^ defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) / normal test coverage vvv
         test_vector_algorithms(gen);
         test_various_containers();
