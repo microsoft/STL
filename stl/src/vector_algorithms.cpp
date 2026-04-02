@@ -25,11 +25,11 @@ extern "C" long __isa_enabled;
 
 namespace {
 #if !defined(_M_ARM64) && !defined(_M_ARM64EC)
-    bool _Use_avx2() noexcept {
+    [[nodiscard]] bool _Use_avx2() noexcept {
         return __check_arch_support(__IA_SUPPORT_VECTOR256, 0) || (__isa_enabled & (1 << __ISA_AVAILABLE_AVX2));
     }
 
-    bool _Use_sse42() noexcept {
+    [[nodiscard]] bool _Use_sse42() noexcept {
         return __check_arch_support(__IA_SUPPORT_SSE42, 0) || (__isa_enabled & (1 << __ISA_AVAILABLE_SSE42));
     }
 
@@ -3281,25 +3281,16 @@ namespace {
             }
         }
 
-        template <_Min_max_mode _Mode, class _Traits>
-        auto __stdcall _Minmax_element_disp(
-            const void* const _First, const void* const _Last, const bool _Sign) noexcept {
+        template <_Min_max_mode _Mode, class _Traits, bool _Sign>
+        auto __stdcall _Minmax_element_disp(const void* const _First, const void* const _Last) noexcept {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
             if constexpr (!std::is_same_v<typename _Traits::_Neon, _Traits_8_neon>) {
                 if (_Byte_length(_First, _Last) >= 16) {
-                    if (_Sign) {
-                        return _Minmax_element_impl<_Mode, typename _Traits::_Neon, true>(_First, _Last);
-                    } else {
-                        return _Minmax_element_impl<_Mode, typename _Traits::_Neon, false>(_First, _Last);
-                    }
+                    return _Minmax_element_impl<_Mode, typename _Traits::_Neon, _Sign>(_First, _Last);
                 }
             }
 
-            if (_Sign) {
-                return _Minmax_element_impl<_Mode, typename _Traits::_Scalar, true>(_First, _Last);
-            } else {
-                return _Minmax_element_impl<_Mode, typename _Traits::_Scalar, false>(_First, _Last);
-            }
+            return _Minmax_element_impl<_Mode, typename _Traits::_Scalar, _Sign>(_First, _Last);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
             if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
                 return _Minmax_element_impl<_Mode, typename _Traits::_Avx>(_First, _Last, _Sign);
@@ -3746,101 +3737,287 @@ namespace {
 
 extern "C" {
 
+const void* __stdcall __std_min_element_1i(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_1, true>(_First, _Last);
+}
+
+const void* __stdcall __std_min_element_1u(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_1, false>(_First, _Last);
+}
+
+const void* __stdcall __std_min_element_2i(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_2, true>(_First, _Last);
+}
+
+const void* __stdcall __std_min_element_2u(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_2, false>(_First, _Last);
+}
+
+const void* __stdcall __std_min_element_4i(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_4, true>(_First, _Last);
+}
+
+const void* __stdcall __std_min_element_4u(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_4, false>(_First, _Last);
+}
+
+#ifndef _M_ARM64
+const void* __stdcall __std_min_element_8i(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_8, true>(_First, _Last);
+}
+
+const void* __stdcall __std_min_element_8u(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_8, false>(_First, _Last);
+}
+#endif // ^^^ !defined(_M_ARM64) ^^^
+
+const void* __stdcall __std_min_element_f_(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_f, false>(_First, _Last);
+}
+
+const void* __stdcall __std_min_element_d_(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_d, false>(_First, _Last);
+}
+
+#ifndef _M_ARM64
+// TRANSITION, ABI: __std_min_element_1() is preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_min_element_1(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_1>(_First, _Last, _Signed);
+    if (_Signed) {
+        return __std_min_element_1i(_First, _Last);
+    } else {
+        return __std_min_element_1u(_First, _Last);
+    }
 }
 
+// TRANSITION, ABI: __std_min_element_2() is preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_min_element_2(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_2>(_First, _Last, _Signed);
+    if (_Signed) {
+        return __std_min_element_2i(_First, _Last);
+    } else {
+        return __std_min_element_2u(_First, _Last);
+    }
 }
 
+// TRANSITION, ABI: __std_min_element_4() is preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_min_element_4(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_4>(_First, _Last, _Signed);
+    if (_Signed) {
+        return __std_min_element_4i(_First, _Last);
+    } else {
+        return __std_min_element_4u(_First, _Last);
+    }
 }
 
-#ifndef _M_ARM64
+// TRANSITION, ABI: __std_min_element_8() is preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_min_element_8(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_8>(_First, _Last, _Signed);
+    if (_Signed) {
+        return __std_min_element_8i(_First, _Last);
+    } else {
+        return __std_min_element_8u(_First, _Last);
+    }
+}
+
+// TRANSITION, ABI: __std_min_element_f() is preserved for binary compatibility (x64/x86/ARM64EC)
+const void* __stdcall __std_min_element_f(const void* const _First, const void* const _Last, bool) noexcept {
+    return __std_min_element_f_(_First, _Last);
+}
+
+// TRANSITION, ABI: __std_min_element_d() is preserved for binary compatibility (x64/x86/ARM64EC)
+const void* __stdcall __std_min_element_d(const void* const _First, const void* const _Last, bool) noexcept {
+    return __std_min_element_d_(_First, _Last);
 }
 #endif // ^^^ !defined(_M_ARM64) ^^^
 
-// TRANSITION, ABI: remove unused `bool`
-const void* __stdcall __std_min_element_f(const void* const _First, const void* const _Last, bool) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_f>(_First, _Last, false);
+const void* __stdcall __std_max_element_1i(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_1, true>(_First, _Last);
 }
 
-// TRANSITION, ABI: remove unused `bool`
-const void* __stdcall __std_min_element_d(const void* const _First, const void* const _Last, bool) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_min, _Sorting::_Traits_d>(_First, _Last, false);
+const void* __stdcall __std_max_element_1u(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_1, false>(_First, _Last);
 }
 
+const void* __stdcall __std_max_element_2i(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_2, true>(_First, _Last);
+}
+
+const void* __stdcall __std_max_element_2u(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_2, false>(_First, _Last);
+}
+
+const void* __stdcall __std_max_element_4i(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_4, true>(_First, _Last);
+}
+
+const void* __stdcall __std_max_element_4u(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_4, false>(_First, _Last);
+}
+
+#ifndef _M_ARM64
+const void* __stdcall __std_max_element_8i(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_8, true>(_First, _Last);
+}
+
+const void* __stdcall __std_max_element_8u(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_8, false>(_First, _Last);
+}
+#endif // ^^^ !defined(_M_ARM64) ^^^
+
+const void* __stdcall __std_max_element_f_(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_f, false>(_First, _Last);
+}
+
+const void* __stdcall __std_max_element_d_(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_d, false>(_First, _Last);
+}
+
+#ifndef _M_ARM64
+// TRANSITION, ABI: __std_max_element_1() is preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_max_element_1(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_1>(_First, _Last, _Signed);
+    if (_Signed) {
+        return __std_max_element_1i(_First, _Last);
+    } else {
+        return __std_max_element_1u(_First, _Last);
+    }
 }
 
+// TRANSITION, ABI: __std_max_element_2() is preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_max_element_2(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_2>(_First, _Last, _Signed);
+    if (_Signed) {
+        return __std_max_element_2i(_First, _Last);
+    } else {
+        return __std_max_element_2u(_First, _Last);
+    }
 }
 
+// TRANSITION, ABI: __std_max_element_4() is preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_max_element_4(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_4>(_First, _Last, _Signed);
+    if (_Signed) {
+        return __std_max_element_4i(_First, _Last);
+    } else {
+        return __std_max_element_4u(_First, _Last);
+    }
 }
 
-#ifndef _M_ARM64
+// TRANSITION, ABI: __std_max_element_8() is preserved for binary compatibility (x64/x86/ARM64EC)
 const void* __stdcall __std_max_element_8(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_8>(_First, _Last, _Signed);
+    if (_Signed) {
+        return __std_max_element_8i(_First, _Last);
+    } else {
+        return __std_max_element_8u(_First, _Last);
+    }
+}
+
+// TRANSITION, ABI: __std_max_element_f() is preserved for binary compatibility (x64/x86/ARM64EC)
+const void* __stdcall __std_max_element_f(const void* const _First, const void* const _Last, bool) noexcept {
+    return __std_max_element_f_(_First, _Last);
+}
+
+// TRANSITION, ABI: __std_max_element_d() is preserved for binary compatibility (x64/x86/ARM64EC)
+const void* __stdcall __std_max_element_d(const void* const _First, const void* const _Last, bool) noexcept {
+    return __std_max_element_d_(_First, _Last);
 }
 #endif // ^^^ !defined(_M_ARM64) ^^^
 
-// TRANSITION, ABI: remove unused `bool`
-const void* __stdcall __std_max_element_f(const void* const _First, const void* const _Last, bool) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_f>(_First, _Last, false);
+_Min_max_element_t __stdcall __std_minmax_element_1i(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_1, true>(_First, _Last);
 }
 
-// TRANSITION, ABI: remove unused `bool`
-const void* __stdcall __std_max_element_d(const void* const _First, const void* const _Last, bool) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_max, _Sorting::_Traits_d>(_First, _Last, false);
+_Min_max_element_t __stdcall __std_minmax_element_1u(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_1, false>(_First, _Last);
 }
 
-_Min_max_element_t __stdcall __std_minmax_element_1(
-    const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_1>(_First, _Last, _Signed);
+_Min_max_element_t __stdcall __std_minmax_element_2i(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_2, true>(_First, _Last);
 }
 
-_Min_max_element_t __stdcall __std_minmax_element_2(
-    const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_2>(_First, _Last, _Signed);
+_Min_max_element_t __stdcall __std_minmax_element_2u(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_2, false>(_First, _Last);
 }
 
-_Min_max_element_t __stdcall __std_minmax_element_4(
-    const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_4>(_First, _Last, _Signed);
+_Min_max_element_t __stdcall __std_minmax_element_4i(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_4, true>(_First, _Last);
+}
+
+_Min_max_element_t __stdcall __std_minmax_element_4u(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_4, false>(_First, _Last);
 }
 
 #ifndef _M_ARM64
-_Min_max_element_t __stdcall __std_minmax_element_8(
-    const void* const _First, const void* const _Last, const bool _Signed) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_8>(_First, _Last, _Signed);
+_Min_max_element_t __stdcall __std_minmax_element_8i(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_8, true>(_First, _Last);
+}
+
+_Min_max_element_t __stdcall __std_minmax_element_8u(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_8, false>(_First, _Last);
 }
 #endif // ^^^ !defined(_M_ARM64) ^^^
 
-// TRANSITION, ABI: remove unused `bool`
-_Min_max_element_t __stdcall __std_minmax_element_f(const void* const _First, const void* const _Last, bool) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_f>(_First, _Last, false);
+_Min_max_element_t __stdcall __std_minmax_element_f_(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_f, false>(_First, _Last);
 }
 
-// TRANSITION, ABI: remove unused `bool`
-_Min_max_element_t __stdcall __std_minmax_element_d(const void* const _First, const void* const _Last, bool) noexcept {
-    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_d>(_First, _Last, false);
+_Min_max_element_t __stdcall __std_minmax_element_d_(const void* const _First, const void* const _Last) noexcept {
+    return _Sorting::_Minmax_element_disp<_Sorting::_Mode_both, _Sorting::_Traits_d, false>(_First, _Last);
 }
+
+#ifndef _M_ARM64
+// TRANSITION, ABI: __std_minmax_element_1() is preserved for binary compatibility (x64/x86/ARM64EC)
+_Min_max_element_t __stdcall __std_minmax_element_1(
+    const void* const _First, const void* const _Last, const bool _Signed) noexcept {
+    if (_Signed) {
+        return __std_minmax_element_1i(_First, _Last);
+    } else {
+        return __std_minmax_element_1u(_First, _Last);
+    }
+}
+
+// TRANSITION, ABI: __std_minmax_element_2() is preserved for binary compatibility (x64/x86/ARM64EC)
+_Min_max_element_t __stdcall __std_minmax_element_2(
+    const void* const _First, const void* const _Last, const bool _Signed) noexcept {
+    if (_Signed) {
+        return __std_minmax_element_2i(_First, _Last);
+    } else {
+        return __std_minmax_element_2u(_First, _Last);
+    }
+}
+
+// TRANSITION, ABI: __std_minmax_element_4() is preserved for binary compatibility (x64/x86/ARM64EC)
+_Min_max_element_t __stdcall __std_minmax_element_4(
+    const void* const _First, const void* const _Last, const bool _Signed) noexcept {
+    if (_Signed) {
+        return __std_minmax_element_4i(_First, _Last);
+    } else {
+        return __std_minmax_element_4u(_First, _Last);
+    }
+}
+
+// TRANSITION, ABI: __std_minmax_element_8() is preserved for binary compatibility (x64/x86/ARM64EC)
+_Min_max_element_t __stdcall __std_minmax_element_8(
+    const void* const _First, const void* const _Last, const bool _Signed) noexcept {
+    if (_Signed) {
+        return __std_minmax_element_8i(_First, _Last);
+    } else {
+        return __std_minmax_element_8u(_First, _Last);
+    }
+}
+
+// TRANSITION, ABI: __std_minmax_element_f() is preserved for binary compatibility (x64/x86/ARM64EC)
+_Min_max_element_t __stdcall __std_minmax_element_f(const void* const _First, const void* const _Last, bool) noexcept {
+    return __std_minmax_element_f_(_First, _Last);
+}
+
+// TRANSITION, ABI: __std_minmax_element_d() is preserved for binary compatibility (x64/x86/ARM64EC)
+_Min_max_element_t __stdcall __std_minmax_element_d(const void* const _First, const void* const _Last, bool) noexcept {
+    return __std_minmax_element_d_(_First, _Last);
+}
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
 __declspec(noalias) int8_t __stdcall __std_min_1i(const void* const _First, const void* const _Last) noexcept {
     return _Sorting::_Minmax_disp<_Sorting::_Mode_min, _Sorting::_Traits_1, true>(_First, _Last);

@@ -4861,6 +4861,23 @@ void _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Copy_captures(match_results<_Bid
     _Matches._Null().second = _End;
 }
 
+template <class _FwdIt, class _Int>
+void _Advance_at_most(_FwdIt& _Pos, const _FwdIt& _Last, _Int _Amount) {
+    if constexpr (_Is_ranges_random_iter_v<_FwdIt>) {
+        auto _Shift_amount = _Last - _Pos;
+        if (_Shift_amount > _Amount) {
+            _Shift_amount = static_cast<decltype(_Shift_amount)>(_Amount);
+        }
+
+        _Pos += _Shift_amount;
+    } else {
+        while (_Amount > 0 && _Pos != _Last) {
+            ++_Pos;
+            --_Amount;
+        }
+    }
+}
+
 template <class _Elem, class _RxTraits, class _It, class _Alloc>
 _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip(
     _It _First, const _It _Last, const _Node_base* const _Node_arg, const unsigned int _Recursion_depth) {
@@ -4870,6 +4887,7 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip(
     static constexpr wchar_t _Line_terminators_wchar_t[] = {static_cast<wchar_t>(_Meta_cr),
         static_cast<wchar_t>(_Meta_nl), static_cast<wchar_t>(_Meta_ls), static_cast<wchar_t>(_Meta_ps)};
     constexpr unsigned int _Max_recursion_depth          = 50U;
+    constexpr short _Max_lookahead                       = 512;
     const _Node_base* _Nx                                = _Node_arg ? _Node_arg : _Start;
 
     while (_First != _Last && _Nx) { // check current node
@@ -4917,9 +4935,21 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip(
 
         case _N_str:
             { // check for string match
-                const auto _Node = static_cast<const _Node_str<_Elem>*>(_Nx);
-                const auto _Str  = _Node->_Data._Str();
-                return _STD _Search_translate_left(_First, _Last, _Str, _Str + _Node->_Data._Size(), _Traits, _Sflags);
+                const auto _Node         = static_cast<const _Node_str<_Elem>*>(_Nx);
+                const auto _Str          = _Node->_Data._Str();
+                const unsigned int _Size = _Node->_Data._Size();
+
+                auto _Shifted_last = _Last;
+                if (_Last != _End && _Size > 1U) { // have to continue search beyond the search window
+                    _STD _Advance_at_most(_Shifted_last, _End, static_cast<long long>(_Size - 1U));
+                }
+
+                auto _Result = _STD _Search_translate_left(_First, _Shifted_last, _Str, _Str + _Size, _Traits, _Sflags);
+                if (_Shifted_last == _Result) { // correct for search window shift
+                    return _Last;
+                } else {
+                    return _Result;
+                }
             }
 
         case _N_class:
@@ -4927,7 +4957,7 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip(
                 const auto _Node = static_cast<const _Node_class<_Elem, _RxTraits>*>(_Nx);
 
                 for (; _First != _Last; ++_First) { // look for starting match
-                    if (_Do_class(_Node, _First) != _First) {
+                    if (_Do_class(_Node, _First) != _First) { // may read beyond search window
                         return _First;
                     }
                 }
@@ -4952,27 +4982,75 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip(
 
         case _N_if:
             {
-                // GH-5452: If this node has two or more branches,
-                // examining all these branches has quadratic worst-case complexity.
-                // Thus, we only continue if this node has a single branch only.
-                // TRANSITION, ABI: After GH-5539, the parser no longer generates single-branch _N_if nodes.
-                // But we have to retain this special handling to avoid performance regression
-                // when an old parser gets mixed with a new matcher.
                 const auto _Node = static_cast<const _Node_if*>(_Nx);
 
-                if (_Node->_Child) {
+                // TRANSITION, ABI: After GH-5539, the parser no longer generates single-branch _N_if nodes.
+                // But we retain this special handling to avoid some performance regression
+                // when an old parser gets mixed with a new matcher.
+                if (!_Node->_Child) {
+                    break;
+                }
+
+                if (_Recursion_depth >= _Max_recursion_depth) {
                     return _First;
                 }
-                break;
+
+                // GH-5452: If this node has two or more branches, examining all alternatives in a disjunction
+                // until the end of the input string could result in quadratic worst-case complexity.
+                // For this reason, we split the input string into search windows with a constant maximum length.
+                // This ensures that this heuristic has linear time complexity, because this bounds the number
+                // of characters that were read beyond the finally determined skip position by a constant.
+
+                for (;;) {
+                    _It _Lookahead_last = _First;
+                    _STD _Advance_at_most(_Lookahead_last, _Last, _Max_lookahead);
+
+                    _It _Alt_last = _Lookahead_last;
+
+                    for (const _Node_if* _Alternative = _Node; _Alternative && _First != _Alt_last;
+                        _Alternative                  = _Alternative->_Child) {
+                        _Alt_last = _Skip(_First, _Alt_last, _Alternative->_Next, _Recursion_depth + 1U);
+                    }
+
+                    _First = _Alt_last;
+                    if (_First != _Lookahead_last || _First == _Last) {
+                        break;
+                    }
+                }
+
+                return _First;
             }
 
         case _N_rep:
             {
                 const auto _Node = static_cast<const _Node_rep*>(_Nx);
-                if (_Node->_Min == 0) {
+
+                if (_Node->_Min > 0) {
+                    break;
+                }
+
+                if (_Recursion_depth >= _Max_recursion_depth) {
                     return _First;
                 }
-                break;
+
+                // As in GH-5452, examining the cases with no repetition and at least one repetition
+                // until the end of the input string could result in quadratic worst-case complexity.
+                // For this reason, we split the input string into search windows with a constant maximum length.
+                // This ensures that this heuristic has linear time complexity, because this bounds the number
+                // of characters that were read beyond the finally determined skip position by a constant.
+
+                for (;;) {
+                    _It _Lookahead_last = _First;
+                    _STD _Advance_at_most(_Lookahead_last, _Last, _Max_lookahead);
+                    const _It _Intermediate = _Skip(_First, _Lookahead_last, _Node->_Next, _Recursion_depth + 1U);
+                    _First = _Skip(_First, _Intermediate, _Node->_End_rep->_Next, _Recursion_depth + 1U);
+
+                    if (_First != _Lookahead_last || _First == _Last) {
+                        break;
+                    }
+                }
+
+                return _First;
             }
 
         case _N_assert:
@@ -5015,13 +5093,22 @@ _It _Matcher3<_Elem, _RxTraits, _It, _Alloc>::_Skip(
                 return _First;
             }
 
+        case _N_dot:
+            {
+                if (_Recursion_depth >= _Max_recursion_depth) {
+                    return _First;
+                }
+
+                _First = _Skip(++_First, _Last, _Nx->_Next, _Recursion_depth + 1U);
+                return --_First;
+            }
+
         case _N_begin:
         case _N_endif:
             break;
 
         case _N_end:
         case _N_none:
-        case _N_dot:
         case _N_back:
         case _N_end_rep:
         default:

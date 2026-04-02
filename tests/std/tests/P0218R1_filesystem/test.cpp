@@ -1537,7 +1537,13 @@ void test_absolute() {
     longPath.resize(260);
     expect_absolute(longPath, longPath);
 
-    expect_absolute({}, {});
+    EXPECT(absolute(L"", ec).empty());
+    if (ec.value() != 123) {
+        wcerr << L"Warning: Expected absolute on an empty path to report ERROR_INVALID_NAME, "
+                 L"but it reported "
+              << ec.value() << L"\n";
+    }
+    EXPECT(ec.category() == system_category());
 }
 
 void test_canonical() {
