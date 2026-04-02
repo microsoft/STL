@@ -172,9 +172,7 @@ void test_to_int_ref() {
     static_assert(reference_converts_from_temporary<const long&, to_int_lvalue<Explicitly>>::value
                   == !static_cast<bool>(Explicitly));
     static_assert(!reference_converts_from_temporary<int&, to_int_xvalue<Explicitly>>::value);
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2742607
     static_assert(!reference_converts_from_temporary<const int&, to_int_xvalue<Explicitly>>::value);
-#endif // ^^^ no workaround ^^^
     static_assert(reference_converts_from_temporary<const long&, to_int_xvalue<Explicitly>>::value
                   == !static_cast<bool>(Explicitly));
     static_assert(!reference_converts_from_temporary<int&, to_int_prvalue<Explicitly>>::value);
@@ -188,9 +186,7 @@ void test_to_int_ref() {
     static_assert(
         reference_converts_from_temporary_v<const long&, to_int_lvalue<Explicitly>> == !static_cast<bool>(Explicitly));
     static_assert(!reference_converts_from_temporary_v<int&, to_int_xvalue<Explicitly>>);
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2742607
     static_assert(!reference_converts_from_temporary_v<const int&, to_int_xvalue<Explicitly>>);
-#endif // ^^^ no workaround ^^^
     static_assert(
         reference_converts_from_temporary_v<const long&, to_int_xvalue<Explicitly>> == !static_cast<bool>(Explicitly));
 

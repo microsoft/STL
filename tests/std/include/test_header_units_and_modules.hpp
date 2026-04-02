@@ -293,10 +293,8 @@ void test_flat_set() {
 void test_format() {
     using namespace std;
     puts("Testing <format>.");
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2744645
     assert(format("{} {}", 1729, "kittens") == "1729 kittens");
     assert(format(L"{} {}", 1729, L"kittens") == L"1729 kittens");
-#endif // ^^^ no workaround ^^^
 }
 
 void test_forward_list() {
@@ -616,9 +614,7 @@ void test_print() {
     println();
 
 #ifdef _CPPRTTI
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2744645
     println(cout, "The answer to life, the universe, and everything: {}", 42);
-#endif // ^^^ no workaround ^^^
     println(cout);
 #endif // _CPPRTTI
 }
@@ -664,13 +660,11 @@ void test_random() {
     lcg.discard(9999);
     assert(lcg() == 1043618065); // N4868 [rand.predef]/1
 
-#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, VSO-2226569
     // Test coverage for GH-4899 "Standard Library Modules: uniform_real_distribution emits
     // error C2512: 'std::_Unsigned128': no appropriate default constructor available":
     const double val = generate_canonical<double, 53>(lcg);
     assert(val >= 0.0);
     assert(val < 1.0);
-#endif // ^^^ no workaround ^^^
 }
 
 void test_ranges() {
