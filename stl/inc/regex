@@ -1287,7 +1287,7 @@ _BITMASK_OPS(_EMPTY_ARGUMENT, _Node_flags)
 
 enum _Node_type { // type flag for nfa nodes
     _N_none,
-    _N_nop,
+    _N_nop, // TRANSITION, ABI: preserved for binary compatibility, the parser no longer generates _N_nop nodes
     _N_bol,
     _N_eol,
     _N_wbound,
@@ -1613,8 +1613,8 @@ public:
     void _Add_coll(const _Elem*, const _Elem*);
     _Node_base* _Begin_group();
     void _End_group(_Node_base* _Back);
-    _Node_base* _Begin_assert_group(bool);
-    void _End_assert_group(_Node_base*);
+    _Node_assert* _Begin_assert_group2(bool _Neg);
+    void _End_assert_group2(_Node_assert* _Assert_start);
     _Node_base* _Begin_capture_group(unsigned int _Idx);
     void _Add_backreference(unsigned int _Idx);
     _Node_base* _Begin_if(_Node_base* _Start);
@@ -2235,7 +2235,7 @@ private:
     void _AtomEscape();
     void _Do_capture_group();
     void _Do_noncapture_group();
-    void _Do_assert_group(bool);
+    void _Do_assert_group(bool _Neg);
     bool _Wrapped_disjunction();
     void _Quantifier();
     bool _Alternative();
@@ -3620,21 +3620,19 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_End_group(_Node_base* _Back) { // add
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-_Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_Begin_assert_group(const bool _Neg) { // add assert node
-    auto _Node1_unique   = _STD make_unique<_Node_assert>(_Neg ? _N_neg_assert : _N_assert);
-    _Node_base* _Node2   = new _Node_base(_N_nop);
-    _Node_assert* _Node1 = _Node1_unique.release();
-    _Link_node(_Node1);
-    _Node1->_Child = _Node2;
-    _Node2->_Prev  = _Node1;
-    _Current       = _Node2;
-    return _Node1;
+_Node_assert* _Builder2<_FwdIt, _Elem, _RxTraits>::_Begin_assert_group2(const bool _Neg) { // add assert node
+    const auto _Node = new _Node_assert(_Neg ? _N_neg_assert : _N_assert);
+    _Link_node(_Node);
+    return _Node;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder2<_FwdIt, _Elem, _RxTraits>::_End_assert_group(_Node_base* _Nx) { // add end of assert node
-    _End_group(_Nx);
-    _Current = _Nx;
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_End_assert_group2(_Node_assert* const _Assert_start) {
+    // add end of assert node
+    _End_group(_Assert_start);
+    _Assert_start->_Child = _Assert_start->_Next;
+    _Assert_start->_Next  = nullptr;
+    _Current              = _Assert_start;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -5539,10 +5537,10 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_noncapture_group() { // add non-cap
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_assert_group(bool _Neg) { // add assert group
-    _Node_base* _Pos1 = _Nfa._Begin_assert_group(_Neg);
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Do_assert_group(const bool _Neg) { // add assert group
+    const auto _Assert_start = _Nfa._Begin_assert_group2(_Neg);
     _Disjunction();
-    _Nfa._End_assert_group(_Pos1);
+    _Nfa._End_assert_group2(_Assert_start);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
