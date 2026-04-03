@@ -1656,7 +1656,11 @@ private:
             _Newvec = _Allocate_at_least_helper(_Al, _Newcapacity);
         } else {
             _STL_INTERNAL_STATIC_ASSERT(_Policy == _Reallocation_policy::_Exactly);
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-11060638
+            _Newvec = _Al.allocate(_Newcapacity) + decltype(pointer{} - pointer{}){0};
+#else // ^^^ workaround / no workaround vvv
             _Newvec = _Al.allocate(_Newcapacity);
+#endif // ^^^ no workaround ^^^
         }
 
         _Allocation_guard<_Alty> _Guard{_Al, _Newvec, _Newcapacity};

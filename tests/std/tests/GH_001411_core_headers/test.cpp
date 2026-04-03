@@ -8,6 +8,7 @@
 
 // Also test GH-3103 "<xatomic.h>: Investigate making this a core header" and other internal core headers
 #include <__msvc_int128.hpp>
+#include <__msvc_minmax.hpp>
 #include <__msvc_system_error_abi.hpp>
 #include <__msvc_threads_core.hpp>
 #include <__msvc_xlocinfo_types.hpp>
@@ -25,6 +26,7 @@
 #endif // ^^^ _HAS_CXX20 ^^^
 
 // <__msvc_bit_utils.hpp> is included by <bit> and <limits>
+// <__msvc_doom_core.hpp> is included by <utility>
 // <__msvc_iter_core.hpp> is included by <tuple>
 // <xkeycheck.h> should not be included outside of <yvals_core.h>
 // <xtr1common> is included by <cstddef>

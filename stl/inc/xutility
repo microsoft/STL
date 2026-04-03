@@ -74,8 +74,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ unknown architecture ^^^
 
 #define _VECTORIZED_ADJACENT_FIND      _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
-#define _VECTORIZED_BITSET_FROM_STRING _VECTORIZED_FOR_X64_X86
-#define _VECTORIZED_BITSET_TO_STRING   _VECTORIZED_FOR_X64_X86
+#define _VECTORIZED_BITSET_FROM_STRING _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
+#define _VECTORIZED_BITSET_TO_STRING   _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
 #define _VECTORIZED_COUNT              _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
 #define _VECTORIZED_FIND               _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
 #define _VECTORIZED_FIND_END           _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC
@@ -196,23 +196,31 @@ const void* __stdcall __std_find_end_8(
 #endif // ^^^ _VECTORIZED_FIND_END ^^^
 
 #if _VECTORIZED_MINMAX_ELEMENT
-const void* __stdcall __std_min_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
-const void* __stdcall __std_min_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
-const void* __stdcall __std_min_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
+const void* __stdcall __std_min_element_1i(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_min_element_1u(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_min_element_2i(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_min_element_2u(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_min_element_4i(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_min_element_4u(const void* _First, const void* _Last) noexcept;
 #if _VECTORIZED_MINMAX_ELEMENT_64BIT_INT
-const void* __stdcall __std_min_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
+const void* __stdcall __std_min_element_8i(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_min_element_8u(const void* _First, const void* _Last) noexcept;
 #endif // ^^^ _VECTORIZED_MINMAX_ELEMENT_64BIT_INT ^^^
-const void* __stdcall __std_min_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
-const void* __stdcall __std_min_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
+const void* __stdcall __std_min_element_f_(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_min_element_d_(const void* _First, const void* _Last) noexcept;
 
-const void* __stdcall __std_max_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
-const void* __stdcall __std_max_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
-const void* __stdcall __std_max_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
+const void* __stdcall __std_max_element_1i(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_max_element_1u(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_max_element_2i(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_max_element_2u(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_max_element_4i(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_max_element_4u(const void* _First, const void* _Last) noexcept;
 #if _VECTORIZED_MINMAX_ELEMENT_64BIT_INT
-const void* __stdcall __std_max_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
+const void* __stdcall __std_max_element_8i(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_max_element_8u(const void* _First, const void* _Last) noexcept;
 #endif // ^^^ _VECTORIZED_MINMAX_ELEMENT_64BIT_INT ^^^
-const void* __stdcall __std_max_element_f(const void* _First, const void* _Last, bool _Unused) noexcept;
-const void* __stdcall __std_max_element_d(const void* _First, const void* _Last, bool _Unused) noexcept;
+const void* __stdcall __std_max_element_f_(const void* _First, const void* _Last) noexcept;
+const void* __stdcall __std_max_element_d_(const void* _First, const void* _Last) noexcept;
 #endif // ^^^ _VECTORIZED_MINMAX_ELEMENT ^^^
 
 #if _VECTORIZED_MINMAX
@@ -402,18 +410,34 @@ _Ty* _Min_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = is_signed_v<_Ty>;
 
     if constexpr (is_same_v<remove_const_t<_Ty>, float>) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_f(_First, _Last, false)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_f_(_First, _Last)));
     } else if constexpr (_Is_any_of_v<remove_const_t<_Ty>, double, long double>) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_d(_First, _Last, false)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_d_(_First, _Last)));
     } else if constexpr (sizeof(_Ty) == 1) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_1(_First, _Last, _Signed)));
+        if constexpr (_Signed) {
+            return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_1i(_First, _Last)));
+        } else {
+            return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_1u(_First, _Last)));
+        }
     } else if constexpr (sizeof(_Ty) == 2) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_2(_First, _Last, _Signed)));
+        if constexpr (_Signed) {
+            return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_2i(_First, _Last)));
+        } else {
+            return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_2u(_First, _Last)));
+        }
     } else if constexpr (sizeof(_Ty) == 4) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_4(_First, _Last, _Signed)));
+        if constexpr (_Signed) {
+            return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_4i(_First, _Last)));
+        } else {
+            return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_4u(_First, _Last)));
+        }
     } else if constexpr (sizeof(_Ty) == 8) {
 #if _VECTORIZED_MINMAX_ELEMENT_64BIT_INT
-        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_8(_First, _Last, _Signed)));
+        if constexpr (_Signed) {
+            return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_8i(_First, _Last)));
+        } else {
+            return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_min_element_8u(_First, _Last)));
+        }
 #else // ^^^ _VECTORIZED_MINMAX_ELEMENT_64BIT_INT / !_VECTORIZED_MINMAX_ELEMENT_64BIT_INT vvv
         static_assert(false, "unexpected size");
 #endif // ^^^ !_VECTORIZED_MINMAX_ELEMENT_64BIT_INT ^^^
@@ -427,18 +451,34 @@ _Ty* _Max_element_vectorized(_Ty* const _First, _Ty* const _Last) noexcept {
     constexpr bool _Signed = is_signed_v<_Ty>;
 
     if constexpr (is_same_v<remove_const_t<_Ty>, float>) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_f(_First, _Last, false)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_f_(_First, _Last)));
     } else if constexpr (_Is_any_of_v<remove_const_t<_Ty>, double, long double>) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_d(_First, _Last, false)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_d_(_First, _Last)));
     } else if constexpr (sizeof(_Ty) == 1) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_1(_First, _Last, _Signed)));
+        if constexpr (_Signed) {
+            return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_1i(_First, _Last)));
+        } else {
+            return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_1u(_First, _Last)));
+        }
     } else if constexpr (sizeof(_Ty) == 2) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_2(_First, _Last, _Signed)));
+        if constexpr (_Signed) {
+            return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_2i(_First, _Last)));
+        } else {
+            return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_2u(_First, _Last)));
+        }
     } else if constexpr (sizeof(_Ty) == 4) {
-        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_4(_First, _Last, _Signed)));
+        if constexpr (_Signed) {
+            return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_4i(_First, _Last)));
+        } else {
+            return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_4u(_First, _Last)));
+        }
     } else if constexpr (sizeof(_Ty) == 8) {
 #if _VECTORIZED_MINMAX_ELEMENT_64BIT_INT
-        return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_8(_First, _Last, _Signed)));
+        if constexpr (_Signed) {
+            return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_8i(_First, _Last)));
+        } else {
+            return const_cast<_Ty*>(static_cast<const _Ty*>(::__std_max_element_8u(_First, _Last)));
+        }
 #else // ^^^ _VECTORIZED_MINMAX_ELEMENT_64BIT_INT / !_VECTORIZED_MINMAX_ELEMENT_64BIT_INT vvv
         static_assert(false, "unexpected size");
 #endif // ^^^ !_VECTORIZED_MINMAX_ELEMENT_64BIT_INT ^^^
@@ -4937,14 +4977,20 @@ _CONSTEXPR20 void _Verify_ranges_do_not_overlap(const _Iter1& _First1, const _Se
 #endif // _ITERATOR_DEBUG_LEVEL != 2 ^^^
 }
 
-template <class _OutCtgIt>
-_OutCtgIt _Copy_memmove_tail(
+template <bool _Use_memcpy, class _OutCtgIt>
+_OutCtgIt _Impl_copy_memmeow_tail(
     const char* const _First_ch, const _OutCtgIt _Dest, const size_t _Byte_count, const size_t _Object_count) {
     _STL_INTERNAL_CHECK(_Byte_count == _Object_count * sizeof(*_Dest));
     // (pre-verified contiguous iterator)
     const auto _Dest_ptr = _STD _To_address(_Dest);
     const auto _Dest_ch  = const_cast<char*>(reinterpret_cast<const volatile char*>(_Dest_ptr));
-    _CSTD memmove(_Dest_ch, _First_ch, _Byte_count);
+
+    if constexpr (_Use_memcpy) {
+        _CSTD memcpy(_Dest_ch, _First_ch, _Byte_count);
+    } else {
+        _CSTD memmove(_Dest_ch, _First_ch, _Byte_count);
+    }
+
     if constexpr (is_pointer_v<_OutCtgIt>) {
         (void) _Object_count;
         // CodeQL [SM02986] This cast is correct: we're bypassing pointer arithmetic for performance.
@@ -4954,8 +5000,8 @@ _OutCtgIt _Copy_memmove_tail(
     }
 }
 
-template <class _CtgIt, class _OutCtgIt>
-_OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
+template <bool _Use_memcpy, class _CtgIt, class _OutCtgIt>
+_OutCtgIt _Impl_copy_memmeow(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
     _STL_INTERNAL_CHECK(_First <= _Last);
     const auto _First_ptr    = _STD _To_address(_First);
     const auto _Last_ptr     = _STD _To_address(_Last);
@@ -4965,17 +5011,37 @@ _OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
     const auto _Last_ch      = const_cast<const char*>(reinterpret_cast<const volatile char*>(_Last_ptr));
     const auto _Byte_count   = static_cast<size_t>(_Last_ch - _First_ch);
     _STD _Contiguous_iter_verify(_Dest, static_cast<_Iter_diff_t<_OutCtgIt>>(_Ptr_diff));
-    return _STD _Copy_memmove_tail(_First_ch, _STD move(_Dest), _Byte_count, _Object_count);
+    return _STD _Impl_copy_memmeow_tail<_Use_memcpy>(_First_ch, _STD move(_Dest), _Byte_count, _Object_count);
 }
 
-template <class _CtgIt, class _OutCtgIt>
-_OutCtgIt _Copy_memmove_n(_CtgIt _First, const size_t _Object_count, _OutCtgIt _Dest) {
+template <bool _Use_memcpy, class _CtgIt, class _OutCtgIt>
+_OutCtgIt _Impl_copy_memmeow_n(_CtgIt _First, const size_t _Object_count, _OutCtgIt _Dest) {
     _STD _Contiguous_iter_verify(_First, static_cast<_Iter_diff_t<_CtgIt>>(_Object_count));
     _STD _Contiguous_iter_verify(_Dest, static_cast<_Iter_diff_t<_OutCtgIt>>(_Object_count));
     const auto _First_ptr  = _STD _To_address(_First);
     const auto _First_ch   = const_cast<const char*>(reinterpret_cast<const volatile char*>(_First_ptr));
     const auto _Byte_count = _Object_count * sizeof(*_First_ptr);
-    return _STD _Copy_memmove_tail(_First_ch, _STD move(_Dest), _Byte_count, _Object_count);
+    return _STD _Impl_copy_memmeow_tail<_Use_memcpy>(_First_ch, _STD move(_Dest), _Byte_count, _Object_count);
+}
+
+template <class _CtgIt, class _OutCtgIt>
+_OutCtgIt _Copy_memcpy(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
+    return _STD _Impl_copy_memmeow<true>(_First, _Last, _Dest);
+}
+
+template <class _CtgIt, class _OutCtgIt>
+_OutCtgIt _Copy_memcpy_n(_CtgIt _First, const size_t _Object_count, _OutCtgIt _Dest) {
+    return _STD _Impl_copy_memmeow_n<true>(_First, _Object_count, _Dest);
+}
+
+template <class _CtgIt, class _OutCtgIt>
+_OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
+    return _STD _Impl_copy_memmeow<false>(_First, _Last, _Dest);
+}
+
+template <class _CtgIt, class _OutCtgIt>
+_OutCtgIt _Copy_memmove_n(_CtgIt _First, const size_t _Object_count, _OutCtgIt _Dest) {
+    return _STD _Impl_copy_memmeow_n<false>(_First, _Object_count, _Dest);
 }
 
 template <class _Fn>

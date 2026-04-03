@@ -442,12 +442,6 @@ std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:1 FAIL
 std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:0 FAIL
 std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:1 FAIL
 
-# VSO-2742607 C1XX __reference_constructs_from_temporary mishandles a couple of cases
-std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:0 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:1 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:0 FAIL
-std/utilities/meta/meta.unary/meta.unary.prop/reference_converts_from_temporary.pass.cpp:1 FAIL
-
 # DevCom-10892055 VSO-2453093 ADL fails to consider the namespace associated with the base class under a specific scenario
 std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.adaptor.object/range_adaptor_closure.pass.cpp:1 FAIL
@@ -557,12 +551,6 @@ std/localization/locale.categories/category.time/locale.time.get/locale.time.get
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_monthname_wide.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday_wide.pass.cpp FAIL
-
-# GH-6129 <xloctime>: time_get::do_get uses the wrong format for %c and %x
-# GH-6130 <xloctime>: time_get::do_get doesn't parse a literal %
-std/localization/locale.categories/category.time/locale.time.get.byname/get_one.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get.byname/get_one_wide.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_one.pass.cpp FAIL
 
 # GH-6134 <xloctime>: time_put::do_put does not match strftime for the %c and %r specifiers in the "C" locale
 std/localization/locale.categories/category.time/locale.time.put/locale.time.put.members/put2.pass.cpp FAIL
@@ -736,6 +724,9 @@ std/iterators/iterator.requirements/iterator.assoc.types/readable.traits/indirec
 # Not analyzed, likely bogus test. constexpr fails with "vector iterators incompatible".
 std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.default.pass.cpp FAIL
 
+# libc++ treats `fs::absolute("", ec)` as a success case, whereas we emit an error and return an empty `path`.
+std/input.output/filesystems/fs.op.funcs/fs.op.absolute/absolute.pass.cpp FAIL
+
 # Problems in this test:
 # - Clang does not trap on ARM64, but MSVC does.
 # - The test inspects `__x86_64__` and `__i386__`, which MSVC doesn't define.
@@ -752,6 +743,14 @@ std/time/time.zone/time.zone.db/time.zone.db.tzdb/current_zone.pass.cpp FAIL
 # LWG-4285 "time_get::do_get_date is problematic even after LWG-461" (Open)
 std/localization/locale.categories/category.time/locale.time.get.byname/get_date.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get.byname/get_date_wide.pass.cpp FAIL
+
+# Assertion failed: base(i) == in+sizeof(in)/sizeof(in[0])-1
+# We fixed GH-6129 "<xloctime>: time_get::do_get uses the wrong format for %c and %x",
+# which created a conflict with `#ifdef _WIN32` test code commented with:
+# `On Windows, the "%c" format lacks the leading week day`.
+# See LWG-4541 "Unclear behavior for parsing locale-dependent format".
+std/localization/locale.categories/category.time/locale.time.get.byname/get_one.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get.byname/get_one_wide.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***
@@ -1140,9 +1139,6 @@ std/input.output/filesystems/class.path/path.member/path.generic.obs/generic_str
 # Not analyzed. Assertion failed: std::equal(p.begin(), p.end(), TC.elements.begin(), ComparePathExact())
 std/input.output/filesystems/class.path/path.member/path.decompose/path.decompose.pass.cpp FAIL
 
-# Not analyzed. Assertion failed: ret.is_absolute()
-std/input.output/filesystems/fs.op.funcs/fs.op.absolute/absolute.pass.cpp FAIL
-
 # Not analyzed. Assertion failed: ret == TC.p
 std/input.output/filesystems/fs.op.funcs/fs.op.temp_dir_path/temp_directory_path.pass.cpp FAIL
 
@@ -1156,10 +1152,17 @@ std/input.output/filesystems/fs.op.funcs/fs.op.remove_all/toctou.pass.cpp FAIL
 # Not analyzed. Asserts that `fs::copy_file(p, p, ec)` and `fs::copy_file(p, p, opts, ec)` "must NOT be noexcept".
 std/input.output/filesystems/fs.op.funcs/fs.op.copy_file/copy_file.pass.cpp FAIL
 
+# Not analyzed. Implementation divergence and/or Standard ambiguity after C1XX fixed reference_constructs_from_temporary, see GH-6196.
+std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:1 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:0 FAIL
+std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:1 FAIL
+
 # This test causes the x86-hosted MSVC to exhaust heap memory.
 # SKIPPED because the failure is x86-specific.
 std/strings/basic.string/string.modifiers/string_replace/size_size_string_size_size.pass.cpp:0 SKIPPED
 std/strings/basic.string/string.modifiers/string_replace/size_size_string_size_size.pass.cpp:1 SKIPPED
+
 
 
 # *** MSVC-INTERNAL TEST HARNESS ISSUES (note: configuration :9 restricts these skips to be MSVC-internal) ***

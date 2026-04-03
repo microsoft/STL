@@ -68,7 +68,9 @@ _NODISCARD int _Countl_zero_lzcnt(const _Ty _Val) noexcept {
     } else if constexpr (_Digits == 32) {
         return static_cast<int>(__lzcnt(_Val));
     } else {
-#ifdef _M_IX86
+#ifdef _WIN64
+        return static_cast<int>(__lzcnt64(_Val));
+#else // ^^^ 64-bit / 32-bit vvv
         const unsigned int _High = _Val >> 32;
         const auto _Low          = static_cast<unsigned int>(_Val);
         if (_High == 0) {
@@ -76,9 +78,7 @@ _NODISCARD int _Countl_zero_lzcnt(const _Ty _Val) noexcept {
         } else {
             return _Countl_zero_lzcnt(_High);
         }
-#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
-        return static_cast<int>(__lzcnt64(_Val));
-#endif // ^^^ !defined(_M_IX86) ^^^
+#endif // ^^^ 32-bit ^^^
     }
 }
 
@@ -92,7 +92,11 @@ _NODISCARD int _Countl_zero_bsr(const _Ty _Val) noexcept {
             return _Digits;
         }
     } else {
-#ifdef _M_IX86
+#ifdef _WIN64
+        if (!_BitScanReverse64(&_Result, _Val)) {
+            return _Digits;
+        }
+#else // ^^^ 64-bit / 32-bit vvv
         const unsigned int _High = _Val >> 32;
         if (_BitScanReverse(&_Result, _High)) {
             return static_cast<int>(31 - _Result);
@@ -102,11 +106,7 @@ _NODISCARD int _Countl_zero_bsr(const _Ty _Val) noexcept {
         if (!_BitScanReverse(&_Result, _Low)) {
             return _Digits;
         }
-#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
-        if (!_BitScanReverse64(&_Result, _Val)) {
-            return _Digits;
-        }
-#endif // ^^^ !defined(_M_IX86) ^^^
+#endif // ^^^ 32-bit ^^^
     }
     return static_cast<int>(_Digits - 1 - _Result);
 }
@@ -202,7 +202,9 @@ _NODISCARD int _Countr_zero_tzcnt(const _Ty _Val) noexcept {
         // of the wider type.
         return static_cast<int>(_TZCNT_U32(static_cast<unsigned int>(~_Max | _Val)));
     } else {
-#ifdef _M_IX86
+#ifdef _WIN64
+        return static_cast<int>(_TZCNT_U64(_Val));
+#else // ^^^ 64-bit / 32-bit vvv
         const auto _Low = static_cast<unsigned int>(_Val);
         if (_Low == 0) {
             const unsigned int _High = _Val >> 32;
@@ -210,9 +212,7 @@ _NODISCARD int _Countr_zero_tzcnt(const _Ty _Val) noexcept {
         } else {
             return static_cast<int>(_TZCNT_U32(_Low));
         }
-#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
-        return static_cast<int>(_TZCNT_U64(_Val));
-#endif // ^^^ !defined(_M_IX86) ^^^
+#endif // ^^^ 32-bit ^^^
     }
 }
 
@@ -233,7 +233,11 @@ _NODISCARD int _Countr_zero_bsf(const _Ty _Val) noexcept {
             return _Digits;
         }
     } else {
-#ifdef _M_IX86
+#ifdef _WIN64
+        if (!_BitScanForward64(&_Result, _Val)) {
+            return _Digits;
+        }
+#else // ^^^ 64-bit / 32-bit vvv
         const auto _Low = static_cast<unsigned int>(_Val);
         if (_BitScanForward(&_Result, _Low)) {
             return static_cast<int>(_Result);
@@ -245,11 +249,7 @@ _NODISCARD int _Countr_zero_bsf(const _Ty _Val) noexcept {
         } else {
             return static_cast<int>(_Result + 32);
         }
-#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
-        if (!_BitScanForward64(&_Result, _Val)) {
-            return _Digits;
-        }
-#endif // ^^^ !defined(_M_IX86) ^^^
+#endif // ^^^ 32-bit ^^^
     }
     return static_cast<int>(_Result);
 }
@@ -288,11 +288,11 @@ _NODISCARD int _Unchecked_popcount(const _Ty _Val) noexcept {
     } else if constexpr (_Digits == 32) {
         return static_cast<int>(__popcnt(_Val));
     } else {
-#ifdef _M_IX86
-        return static_cast<int>(__popcnt(_Val >> 32) + __popcnt(static_cast<unsigned int>(_Val)));
-#else // ^^^ defined(_M_IX86) / !defined(_M_IX86) vvv
+#ifdef _WIN64
         return static_cast<int>(__popcnt64(_Val));
-#endif // ^^^ !defined(_M_IX86) ^^^
+#else // ^^^ 64-bit / 32-bit vvv
+        return static_cast<int>(__popcnt(_Val >> 32) + __popcnt(static_cast<unsigned int>(_Val)));
+#endif // ^^^ 32-bit ^^^
     }
 }
 

@@ -281,6 +281,7 @@ tests\GH_005780_non_ascii_locales
 tests\GH_005800_stable_sort_large_alignment
 tests\GH_005816_numeric_limits_traps
 tests\GH_005968_headers_provide_begin_end
+tests\GH_005974_asan_annotate_optional
 tests\LWG2381_num_get_floating_point
 tests\LWG2510_tag_classes
 tests\LWG2597_complex_branch_cut
@@ -726,6 +727,7 @@ tests\P2505R5_monadic_functions_for_std_expected
 tests\P2510R3_text_formatting_pointers
 tests\P2517R1_apply_conditional_noexcept
 tests\P2538R1_adl_proof_std_projected
+tests\P2590R2_explicit_lifetime_management
 tests\P2609R3_relaxing_ranges_just_a_smidge
 tests\P2674R1_is_implicit_lifetime
 tests\P2693R1_ostream_and_thread_id
