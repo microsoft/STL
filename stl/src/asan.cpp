@@ -3,8 +3,13 @@
 
 namespace std {
     extern "C" {
-    extern const bool _Asan_string_should_annotate   = true;
-    extern const bool _Asan_vector_should_annotate   = true;
-    extern const bool _Asan_optional_should_annotate = true;
+    // Retained for compatibility with old headers that add stl_asan.lib to the link.
+    // Use __declspec(selectany) to be compatible with new version that define these
+    // variables as __declspec(selectany) in __msvc_sanitizer_annotate_container.hpp.
+    // The new method is preferred because previously enabling just string would also
+    // enable vector and optional.
+    extern __declspec(selectany) const bool _Asan_string_should_annotate   = true;
+    extern __declspec(selectany) const bool _Asan_vector_should_annotate   = true;
+    extern __declspec(selectany) const bool _Asan_optional_should_annotate = true;
     } // extern "C"
 } // namespace std
