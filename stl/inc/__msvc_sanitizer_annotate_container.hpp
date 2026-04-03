@@ -129,15 +129,15 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ !defined(_INSERT_OPTIONAL_ANNOTATION) ^^^
 
 #ifdef _ACTIVATE_STRING_ANNOTATION
-#pragma comment(lib, "stl_asan")
+extern "C" __declspec(selectany) const bool _Asan_string_should_annotate = true;
 #pragma detect_mismatch("annotate_string", "1")
 #endif // ^^^ defined(_ACTIVATE_STRING_ANNOTATION) ^^^
 #ifdef _ACTIVATE_VECTOR_ANNOTATION
-#pragma comment(lib, "stl_asan")
+extern "C" __declspec(selectany) const bool _Asan_vector_should_annotate = true;
 #pragma detect_mismatch("annotate_vector", "1")
 #endif // ^^^ defined(_ACTIVATE_VECTOR_ANNOTATION) ^^^
 #ifdef _ACTIVATE_OPTIONAL_ANNOTATION
-#pragma comment(lib, "stl_asan")
+extern "C" __declspec(selectany) const bool _Asan_optional_should_annotate = true;
 #pragma detect_mismatch("annotate_optional", "1")
 #endif // ^^^ defined(_ACTIVATE_OPTIONAL_ANNOTATION) ^^^
 
