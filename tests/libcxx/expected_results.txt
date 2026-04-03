@@ -1158,6 +1158,12 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:1 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:0 FAIL
 std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporary.pass.cpp:1 FAIL
 
+# This test causes the x86-hosted MSVC to exhaust heap memory.
+# SKIPPED because the failure is x86-specific.
+std/strings/basic.string/string.modifiers/string_replace/size_size_string_size_size.pass.cpp:0 SKIPPED
+std/strings/basic.string/string.modifiers/string_replace/size_size_string_size_size.pass.cpp:1 SKIPPED
+
+
 
 # *** MSVC-INTERNAL TEST HARNESS ISSUES (note: configuration :9 restricts these skips to be MSVC-internal) ***
 
