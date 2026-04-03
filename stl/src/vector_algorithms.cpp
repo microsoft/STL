@@ -9682,7 +9682,7 @@ namespace {
 
         template <class _Traits, class _Ty>
         __declspec(noalias) void __stdcall _Replace_impl(
-            void* _First, const void* const _Last, const _Ty _Old_val, const _Ty _New_val) noexcept {
+            void* _First, void* const _Last, const _Ty _Old_val, const _Ty _New_val) noexcept {
 
             if (_Use_FEAT_SVE()) {
                 const size_t _Sve_vl        = svcntb();
@@ -9858,22 +9858,22 @@ extern "C" {
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
 __declspec(noalias) void __stdcall __std_replace_1(
-    void* const _First, const void* const _Last, const uint8_t _Old_val, const uint8_t _New_val) noexcept {
+    void* const _First, void* const _Last, const uint8_t _Old_val, const uint8_t _New_val) noexcept {
     _Replacing::_Replace_impl<_Replacing::_Traits_1_sve>(_First, _Last, _Old_val, _New_val);
 }
 
 __declspec(noalias) void __stdcall __std_replace_2(
-    void* const _First, const void* const _Last, const uint16_t _Old_val, const uint16_t _New_val) noexcept {
+    void* const _First, void* const _Last, const uint16_t _Old_val, const uint16_t _New_val) noexcept {
     _Replacing::_Replace_impl<_Replacing::_Traits_2_sve>(_First, _Last, _Old_val, _New_val);
 }
 
 __declspec(noalias) void __stdcall __std_replace_4(
-    void* const _First, const void* const _Last, const uint32_t _Old_val, const uint32_t _New_val) noexcept {
+    void* const _First, void* const _Last, const uint32_t _Old_val, const uint32_t _New_val) noexcept {
     _Replacing::_Replace_impl<_Replacing::_Traits_4_sve>(_First, _Last, _Old_val, _New_val);
 }
 
 __declspec(noalias) void __stdcall __std_replace_8(
-    void* const _First, const void* const _Last, const uint64_t _Old_val, const uint64_t _New_val) noexcept {
+    void* const _First, void* const _Last, const uint64_t _Old_val, const uint64_t _New_val) noexcept {
     _Replacing::_Replace_impl<_Replacing::_Traits_8_sve>(_First, _Last, _Old_val, _New_val);
 }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
