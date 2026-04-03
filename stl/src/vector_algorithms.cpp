@@ -9609,7 +9609,7 @@ namespace {
     namespace _Replacing {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
         struct _Traits_1_sve {
-            static svuint8_t _Load(svbool_t _Pred, const void* const _Ptr) noexcept {
+            static svuint8_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
                 return svld1(_Pred, static_cast<const uint8_t*>(_Ptr));
             }
 
@@ -9627,7 +9627,7 @@ namespace {
         };
 
         struct _Traits_2_sve {
-            static svuint16_t _Load(svbool_t _Pred, const void* const _Ptr) noexcept {
+            static svuint16_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
                 return svld1(_Pred, static_cast<const uint16_t*>(_Ptr));
             }
 
@@ -9645,7 +9645,7 @@ namespace {
         };
 
         struct _Traits_4_sve {
-            static svuint32_t _Load(svbool_t _Pred, const void* const _Ptr) noexcept {
+            static svuint32_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
                 return svld1(_Pred, static_cast<const uint32_t*>(_Ptr));
             }
 
@@ -9663,7 +9663,7 @@ namespace {
         };
 
         struct _Traits_8_sve {
-            static svuint64_t _Load(svbool_t _Pred, const void* const _Ptr) noexcept {
+            static svuint64_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
                 return svld1(_Pred, static_cast<const uint64_t*>(_Ptr));
             }
 
@@ -9704,9 +9704,9 @@ namespace {
                 }
 
                 if (const size_t _Tail_length = _Size_bytes & size_t{_Sve_vl - 1}; _Tail_length != 0) {
-                    auto _Tail_mask  = svwhilelt_b8(size_t{0}, _Tail_length);
-                    const auto _Data = _Traits::_Load(_Tail_mask, _First);
-                    const auto _Mask = _Traits::_Cmp(_Tail_mask, _Data, _Comparand);
+                    const auto _Tail_mask = svwhilelt_b8(size_t{0}, _Tail_length);
+                    const auto _Data      = _Traits::_Load(_Tail_mask, _First);
+                    const auto _Mask      = _Traits::_Cmp(_Tail_mask, _Data, _Comparand);
                     _Traits::_Store(_Mask, _First, _Replacement);
                 }
             } else {
