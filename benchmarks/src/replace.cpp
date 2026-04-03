@@ -34,7 +34,8 @@ void rc(benchmark::State& state) {
     }
 }
 
-// replace() is vectorized for 4 and 8 bytes only.
+BENCHMARK(r<std::uint8_t>);
+BENCHMARK(r<std::uint16_t>);
 BENCHMARK(r<std::uint32_t>);
 BENCHMARK(r<std::uint64_t>);
 
