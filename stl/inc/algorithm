@@ -6153,6 +6153,60 @@ namespace ranges {
 #endif // _HAS_CXX20
 #endif // _HAS_CXX17
 
+// Batched random integer generation for shuffle optimization.
+// From Nevin Brackett-Rozinsky and Daniel Lemire, "Batched Ranged Random Integer Generation",
+// Software: Practice and Experience 55(1), 2025.
+//
+// This algorithm extracts multiple bounded random integers from a single 64-bit random word,
+// using only multiplication (no division) in the common case.
+
+// Check if a URNG has full 64-bit range [0, 2^64 - 1].
+// Batched random generation is only beneficial for such RNGs.
+template <class _Urng>
+constexpr bool _Urng_has_full_64bit_range =
+    is_same_v<_Invoke_result_t<_Urng&>, uint64_t> && (_Urng::min) () == 0 && (_Urng::max) () == _Max_limit<uint64_t>();
+
+template <class _Diff, class _Urng>
+struct _Batched_rng_from_urng {
+    _Urng& _Ref;
+
+    explicit _Batched_rng_from_urng(_Urng& _Func) noexcept : _Ref(_Func) {}
+
+    // Generate _K bounded random indices from a single 64-bit random word.
+    // Uses backward Fisher-Yates bounds: _N, _N-1, ..., _N-_K+1.
+    // _Results[j] is uniform in [0, _N-j).
+    //
+    // _Bound is a conservative upper bound on the product of the _K bounds,
+    // used to skip the threshold computation on the fast path. Returns the
+    // (possibly tightened) bound for the caller to pass to the next call.
+    uint64_t _Batch(_Diff* _Results, uint64_t _N, uint64_t _K, uint64_t _Bound) {
+        uint64_t _Rand = static_cast<uint64_t>(_Ref());
+        uint64_t _High;
+        for (uint64_t _J = 0; _J < _K; ++_J) {
+            _Rand        = _Base128::_UMul128(_Rand, _N - _J, _High);
+            _Results[_J] = static_cast<_Diff>(_High);
+        }
+        if (_Rand < _Bound) {
+            _Bound = _N;
+            for (uint64_t _J = 1; _J < _K; ++_J) {
+                _Bound *= _N - _J;
+            }
+            const uint64_t _Threshold = (0 - _Bound) % _Bound;
+            while (_Rand < _Threshold) {
+                _Rand = static_cast<uint64_t>(_Ref());
+                for (uint64_t _J = 0; _J < _K; ++_J) {
+                    _Rand        = _Base128::_UMul128(_Rand, _N - _J, _High);
+                    _Results[_J] = static_cast<_Diff>(_High);
+                }
+            }
+        }
+        return _Bound;
+    }
+
+    _Batched_rng_from_urng(const _Batched_rng_from_urng&)            = delete;
+    _Batched_rng_from_urng& operator=(const _Batched_rng_from_urng&) = delete;
+};
+
 template <class _Diff, class _Urng>
 class _Rng_from_urng_v2 { // wrap a URNG as an RNG
 public:
@@ -6494,11 +6548,106 @@ void _Random_shuffle1(_RanIt _First, _RanIt _Last, _RngFn& _RngFunc) {
     }
 }
 
+// Batched shuffle implementation for 64-bit URNGs with full range.
+// Uses backward Fisher-Yates (Durstenfeld) with batched random generation
+// to reduce URNG calls. Adapted from Lemire's cpp_batched_random.
+template <class _RanIt, class _Urng>
+void _Random_shuffle_batched(_RanIt _First, _RanIt _Last, _Urng& _Func) {
+    _STD _Adl_verify_range(_First, _Last);
+    auto _UFirst      = _STD _Get_unwrapped(_First);
+    const auto _ULast = _STD _Get_unwrapped(_Last);
+
+    using _Diff     = _Iter_diff_t<_RanIt>;
+    auto _Remaining = static_cast<uint64_t>(_ULast - _UFirst);
+    if (_Remaining <= 1) {
+        return;
+    }
+
+    _Batched_rng_from_urng<_Diff, _Urng> _BatchedRng(_Func);
+    _Diff _Offsets[7];
+
+    // Process one element at a time while bounds are too large for batching.
+    for (; _Remaining > (uint64_t{1} << 30); --_Remaining) {
+        _BatchedRng._Batch(_Offsets, _Remaining, 1, _Remaining);
+        swap(*(_UFirst + _Remaining - 1), *(_UFirst + _Offsets[0])); // intentional ADL
+    }
+
+    // Batch of 2: product of 2 consecutive bounds fits in 64 bits.
+    {
+        uint64_t _Bound = uint64_t{1} << 60;
+        for (; _Remaining > (uint64_t{1} << 19); _Remaining -= 2) {
+            _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 2, _Bound);
+            for (uint64_t _J = 0; _J < 2; ++_J) {
+                swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
+            }
+        }
+    }
+
+    // Batch of 3.
+    {
+        uint64_t _Bound = uint64_t{1} << 57;
+        for (; _Remaining > (uint64_t{1} << 14); _Remaining -= 3) {
+            _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 3, _Bound);
+            for (uint64_t _J = 0; _J < 3; ++_J) {
+                swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
+            }
+        }
+    }
+
+    // Batch of 4.
+    {
+        uint64_t _Bound = uint64_t{1} << 56;
+        for (; _Remaining > (uint64_t{1} << 11); _Remaining -= 4) {
+            _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 4, _Bound);
+            for (uint64_t _J = 0; _J < 4; ++_J) {
+                swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
+            }
+        }
+    }
+
+    // Batch of 5.
+    {
+        uint64_t _Bound = uint64_t{1} << 55;
+        for (; _Remaining > (uint64_t{1} << 9); _Remaining -= 5) {
+            _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 5, _Bound);
+            for (uint64_t _J = 0; _J < 5; ++_J) {
+                swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
+            }
+        }
+    }
+
+    // Batch of 6.
+    {
+        uint64_t _Bound = uint64_t{1} << 54;
+        for (; _Remaining > 6; _Remaining -= 6) {
+            _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 6, _Bound);
+            for (uint64_t _J = 0; _J < 6; ++_J) {
+                swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
+            }
+        }
+    }
+
+    // Final: remaining <= 6 elements, handle in one batch.
+    if (_Remaining > 1) {
+        const auto _K = _Remaining - 1;
+        _BatchedRng._Batch(_Offsets, _Remaining, _K, 720);
+        for (uint64_t _J = 0; _J < _K; ++_J) {
+            swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
+        }
+    }
+}
+
 _EXPORT_STD template <class _RanIt, class _Urng>
 void shuffle(_RanIt _First, _RanIt _Last, _Urng&& _Func) { // shuffle [_First, _Last) using URNG _Func
     using _Urng0 = remove_reference_t<_Urng>;
-    _Rng_from_urng_v2<_Iter_diff_t<_RanIt>, _Urng0> _RngFunc(_Func);
-    _STD _Random_shuffle1(_First, _Last, _RngFunc);
+
+    // Use batched shuffle when the URNG produces full 64-bit range values.
+    if constexpr (_Urng_has_full_64bit_range<_Urng0>) {
+        _STD _Random_shuffle_batched(_First, _Last, _Func);
+    } else {
+        _Rng_from_urng_v2<_Iter_diff_t<_RanIt>, _Urng0> _RngFunc(_Func);
+        _STD _Random_shuffle1(_First, _Last, _RngFunc);
+    }
 }
 
 #if _HAS_CXX20
@@ -6510,20 +6659,37 @@ namespace ranges {
         static _It operator()(_It _First, _Se _Last, _Urng&& _Func) {
             _STD _Adl_verify_range(_First, _Last);
 
-            _Rng_from_urng_v2<iter_difference_t<_It>, remove_reference_t<_Urng>> _RngFunc(_Func);
-            auto _UResult = _Shuffle_unchecked(
-                _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _RngFunc);
+            using _Urng0 = remove_reference_t<_Urng>;
+            using _Diff  = iter_difference_t<_It>;
 
-            _STD _Seek_wrapped(_First, _STD move(_UResult));
+            // Use batched shuffle when the URNG produces full 64-bit range values.
+            if constexpr (_Urng_has_full_64bit_range<_Urng0>) {
+                auto _UResult = _Shuffle_unchecked_batched(
+                    _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _Func);
+                _STD _Seek_wrapped(_First, _STD move(_UResult));
+            } else {
+                _Rng_from_urng_v2<_Diff, _Urng0> _RngFunc(_Func);
+                auto _UResult = _Shuffle_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
+                    _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _RngFunc);
+                _STD _Seek_wrapped(_First, _STD move(_UResult));
+            }
             return _First;
         }
 
         template <random_access_range _Rng, class _Urng>
             requires permutable<iterator_t<_Rng>> && uniform_random_bit_generator<remove_reference_t<_Urng>>
         static borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Urng&& _Func) {
-            _Rng_from_urng_v2<range_difference_t<_Rng>, remove_reference_t<_Urng>> _RngFunc(_Func);
+            using _Urng0 = remove_reference_t<_Urng>;
+            using _Diff  = range_difference_t<_Rng>;
 
-            return _RANGES _Rewrap_iterator(_Range, _Shuffle_unchecked(_Ubegin(_Range), _Uend(_Range), _RngFunc));
+            // Use batched shuffle when the URNG produces full 64-bit range values.
+            if constexpr (_Urng_has_full_64bit_range<_Urng0>) {
+                return _RANGES _Rewrap_iterator(
+                    _Range, _Shuffle_unchecked_batched(_Ubegin(_Range), _Uend(_Range), _Func));
+            } else {
+                _Rng_from_urng_v2<_Diff, _Urng0> _RngFunc(_Func);
+                return _RANGES _Rewrap_iterator(_Range, _Shuffle_unchecked(_Ubegin(_Range), _Uend(_Range), _RngFunc));
+            }
         }
 
     private:
@@ -6550,6 +6716,104 @@ namespace ranges {
                 }
             }
             return _Target;
+        }
+
+        // Batched shuffle implementation for ranges.
+        // Uses backward Fisher-Yates (Durstenfeld) with batched random generation.
+        template <class _It, class _Se, class _Urng>
+        _NODISCARD static _It _Shuffle_unchecked_batched(_It _First, const _Se _Last, _Urng& _Func) {
+            _STL_INTERNAL_STATIC_ASSERT(random_access_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
+
+            using _Diff       = iter_difference_t<_It>;
+            const auto _Count = static_cast<_Diff>(_Last - _First);
+            auto _Remaining   = static_cast<uint64_t>(_Count);
+            if (_Remaining <= 1) {
+                return _First + _Count;
+            }
+
+            _Batched_rng_from_urng<_Diff, _Urng> _BatchedRng(_Func);
+            _Diff _Offsets[7];
+
+            // Process one element at a time while bounds are too large for batching.
+            for (; _Remaining > (uint64_t{1} << 30); --_Remaining) {
+                _BatchedRng._Batch(_Offsets, _Remaining, 1, _Remaining);
+                _RANGES iter_swap(
+                    _First + static_cast<_Diff>(_Remaining - 1), _First + static_cast<_Diff>(_Offsets[0]));
+            }
+
+            // Batch of 2.
+            {
+                uint64_t _Bound = uint64_t{1} << 60;
+                for (; _Remaining > (uint64_t{1} << 19); _Remaining -= 2) {
+                    _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 2, _Bound);
+                    for (uint64_t _J = 0; _J < 2; ++_J) {
+                        _RANGES iter_swap(_First + static_cast<_Diff>(_Remaining - _J - 1),
+                            _First + static_cast<_Diff>(_Offsets[_J]));
+                    }
+                }
+            }
+
+            // Batch of 3.
+            {
+                uint64_t _Bound = uint64_t{1} << 57;
+                for (; _Remaining > (uint64_t{1} << 14); _Remaining -= 3) {
+                    _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 3, _Bound);
+                    for (uint64_t _J = 0; _J < 3; ++_J) {
+                        _RANGES iter_swap(_First + static_cast<_Diff>(_Remaining - _J - 1),
+                            _First + static_cast<_Diff>(_Offsets[_J]));
+                    }
+                }
+            }
+
+            // Batch of 4.
+            {
+                uint64_t _Bound = uint64_t{1} << 56;
+                for (; _Remaining > (uint64_t{1} << 11); _Remaining -= 4) {
+                    _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 4, _Bound);
+                    for (uint64_t _J = 0; _J < 4; ++_J) {
+                        _RANGES iter_swap(_First + static_cast<_Diff>(_Remaining - _J - 1),
+                            _First + static_cast<_Diff>(_Offsets[_J]));
+                    }
+                }
+            }
+
+            // Batch of 5.
+            {
+                uint64_t _Bound = uint64_t{1} << 55;
+                for (; _Remaining > (uint64_t{1} << 9); _Remaining -= 5) {
+                    _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 5, _Bound);
+                    for (uint64_t _J = 0; _J < 5; ++_J) {
+                        _RANGES iter_swap(_First + static_cast<_Diff>(_Remaining - _J - 1),
+                            _First + static_cast<_Diff>(_Offsets[_J]));
+                    }
+                }
+            }
+
+            // Batch of 6.
+            {
+                uint64_t _Bound = uint64_t{1} << 54;
+                for (; _Remaining > 6; _Remaining -= 6) {
+                    _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 6, _Bound);
+                    for (uint64_t _J = 0; _J < 6; ++_J) {
+                        _RANGES iter_swap(_First + static_cast<_Diff>(_Remaining - _J - 1),
+                            _First + static_cast<_Diff>(_Offsets[_J]));
+                    }
+                }
+            }
+
+            // Final: remaining <= 6 elements, handle in one batch.
+            if (_Remaining > 1) {
+                const auto _K = _Remaining - 1;
+                _BatchedRng._Batch(_Offsets, _Remaining, _K, 720);
+                for (uint64_t _J = 0; _J < _K; ++_J) {
+                    _RANGES iter_swap(
+                        _First + static_cast<_Diff>(_Remaining - _J - 1), _First + static_cast<_Diff>(_Offsets[_J]));
+                }
+            }
+
+            return _First + _Count;
         }
     };
 
