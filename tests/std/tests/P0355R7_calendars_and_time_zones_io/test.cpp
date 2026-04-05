@@ -541,8 +541,12 @@ void parse_calendar_types_basic() {
     assert(y == 1999y);
 
     // negative century
-    test_parse("-1 5", "%C %y", y);
+    test_parse("-1 95", "%C %y", y);
     assert(y == -95y);
+
+    // [time.parse] example
+    test_parse("-20 76", "%3C %y", y);
+    assert(y == -1976y);
 
     // check consistency, or lack thereof
     test_parse("1887 18 87", "%Y %C %y", y);

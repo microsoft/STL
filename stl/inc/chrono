@@ -3211,11 +3211,23 @@ namespace chrono {
         }
 
         _NODISCARD static pair<int, int> _Decompose_year(const int _Year) {
-            int _Two_d_year = _Year % 100;
-            if (_Two_d_year < 0) {
-                _Two_d_year += 100;
+            // LWG-3831: the two-digit year is taken without regard to the sign of the whole year number.
+            pair<int, int> _Result(_Year, _Year % 100);
+            _Result.first -= _Result.second;
+            if (_Result.second < 0) {
+                _Result.first -= 100;
+                _Result.second = -_Result.second;
             }
-            return {_Year - _Two_d_year, _Two_d_year};
+
+            return _Result;
+        }
+
+        _NODISCARD static int _Compose_year(const int _Century, const int _Two_d_year) {
+            if (_Century >= 0) {
+                return _Century + _Two_d_year;
+            } else {
+                return _Century + (100 - _Two_d_year);
+            }
         }
 
         _NODISCARD bool _Update_if_valid(const tm& _Tp, const bool _Full_year) {
@@ -3354,7 +3366,7 @@ namespace chrono {
             bool _Have_year = false;
             int _Year{0};
             if (_Two_dig_year) {
-                _Year      = *_Century + *_Two_dig_year;
+                _Year      = _Compose_year(*_Century, *_Two_dig_year);
                 _Have_year = true;
                 if (_Day_of_year) {
                     _No_err = _No_err && _Yday_to_month_day(*_Day_of_year, _Year);
@@ -3450,7 +3462,7 @@ namespace chrono {
             // %C is only combined with %g if %G is missing, to avoid an unnecessary parse failure when the ISO and
             // Gregorian years are in different centuries.
             if (_Two_dig_iso_year && _Century && !_Iso_year) {
-                _No_err = _No_err && _Update(_Iso_year, *_Century + *_Two_dig_iso_year);
+                _No_err = _No_err && _Update(_Iso_year, _Compose_year(*_Century, *_Two_dig_iso_year));
             }
 
             return _No_err;
@@ -3588,7 +3600,7 @@ namespace chrono {
 
             if constexpr (_Can_rep_day) {
                 if (_For_time_point) {
-                    const year_month_day _Ymd{year{*_Century + *_Two_dig_year},
+                    const year_month_day _Ymd{year{_Compose_year(*_Century, *_Two_dig_year)},
                         month{static_cast<unsigned int>(*_Month)}, day{static_cast<unsigned int>(*_Day)}};
                     _Result += _CHRONO duration_cast<_DurationType>(static_cast<sys_days>(_Ymd).time_since_epoch());
                 } else if (_Used & _F_doy) {
@@ -3724,7 +3736,7 @@ namespace chrono {
 
         _NODISCARD bool _Make_year(year& _Year_result) {
             if (_Calculate_year_fields() && _Used_fields() == _F_year) {
-                _Year_result = year{*_Century + *_Two_dig_year};
+                _Year_result = year{_Compose_year(*_Century, *_Two_dig_year)};
                 return true;
             } else {
                 return false;
@@ -3733,8 +3745,8 @@ namespace chrono {
 
         _NODISCARD bool _Make_year_month(year_month& _Year_month_result) {
             if (_Calculate_year_fields() && _Used_fields() == (_F_mon | _F_year)) {
-                _Year_month_result =
-                    year_month{year{*_Century + *_Two_dig_year}, month{static_cast<unsigned int>(*_Month)}};
+                _Year_month_result = year_month{
+                    year{_Compose_year(*_Century, *_Two_dig_year)}, month{static_cast<unsigned int>(*_Month)}};
                 return true;
             } else {
                 return false;
@@ -3752,7 +3764,7 @@ namespace chrono {
             }
 
             if (_Consistent && _Test_bits(_Used_fields(), _Required, _Optional)) {
-                _Year_month_day_result = year_month_day{year{*_Century + *_Two_dig_year},
+                _Year_month_day_result = year_month_day{year{_Compose_year(*_Century, *_Two_dig_year)},
                     month{static_cast<unsigned int>(*_Month)}, day{static_cast<unsigned int>(*_Day)}};
                 return true;
             } else {

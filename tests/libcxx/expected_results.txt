@@ -517,7 +517,6 @@ std/language.support/cmp/cmp.alg/weak_order.pass.cpp FAIL
 # This test also has a bogus assumption about the file_time epoch, and file_time<nanoseconds> is doomed on Windows.
 std/time/time.clock/time.clock.file/ostream.pass.cpp FAIL
 
-# GH-4248: <chrono>: format() %y mishandles negative year values
 # LLVM-74727: [libc++] Should formatting year{-99} with %C produce "-1" or "-01"?
 std/time/time.syn/formatter.year.pass.cpp:2 FAIL
 
