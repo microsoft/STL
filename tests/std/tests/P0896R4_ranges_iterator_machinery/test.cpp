@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <__msvc_int128.hpp>
 #include <cassert>
 #include <compare>
 #include <concepts>
@@ -1544,6 +1545,27 @@ namespace iterator_concept_sentinel_test {
         return (unpack_iterator<Is>(std::make_index_sequence<iterator_archetype_max + 1>{}) && ...);
     }
     static_assert(unpack_sentinel(std::make_index_sequence<sentinel_archetype_max + 1>{}));
+
+    // Test LWG-4510
+    // "Ambiguity of std::ranges::advance and std::ranges::next when the difference type is also a sentinel type"
+    template <class T>
+    struct iterator {
+        using difference_type = int;
+
+        iterator& operator++();
+        iterator& operator++(int);
+        iterator& operator*() const;
+    };
+
+    struct any {
+        any(const auto&);
+
+        friend bool operator==(const any&, const any&);
+    };
+
+    static_assert(std::input_or_output_iterator<iterator<any>>);
+    static_assert(!std::sentinel_for<int, iterator<any>>);
+    static_assert(!std::sentinel_for<std::_Unsigned128, iterator<any>>);
 } // namespace iterator_concept_sentinel_test
 
 namespace iterator_concept_sizedsentinel_test {
