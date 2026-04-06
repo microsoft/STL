@@ -112,19 +112,15 @@ class STLTestFormat:
 
             # cpfecl translates /Fo into --import_dir, but that is not
             # used in the same way by upstream EDG.
-            try:
+            if '--import_dir' in cmd:
                 index = cmd.index('--import_dir')
                 cmd.pop(index)
                 cmd.pop(index)
-            except ValueError:
-                pass
 
             # --print_diagnostics is not recognized by upstream EDG.
-            try:
+            if '--print_diagnostics' in cmd:
                 index = cmd.index('--print_diagnostics')
                 cmd.pop(index)
-            except ValueError:
-                pass
 
             yield TestStep(cmd, shared.execDir, shared.env, False)
 
