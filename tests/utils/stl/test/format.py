@@ -130,7 +130,9 @@ class STLTestFormat:
 
         env = _mergeEnvironments(os.environ, testStep.env)
 
-        return testStep.cmd, *stl.util.executeCommand(testStep.cmd, cwd=testStep.workDir, env=env)
+        out, err, exitCode = stl.util.executeCommand(testStep.cmd, cwd=testStep.workDir, env=env)
+
+        return testStep.cmd, out, err, exitCode
 
     def getStages(self, test, litConfig):
         @dataclass
