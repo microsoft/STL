@@ -3223,7 +3223,7 @@ namespace chrono {
         }
 
         _NODISCARD static int _Compose_year(const int _Century, const int _Two_d_year) {
-            if (_Century >= 0) {
+            if (_Century >= 0 || _Two_d_year == 0) {
                 return _Century + _Two_d_year;
             } else {
                 return _Century + (100 - _Two_d_year);
