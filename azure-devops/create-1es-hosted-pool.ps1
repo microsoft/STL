@@ -29,23 +29,24 @@ $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 # | Fasv7 | southeastasia |   640 |                    |
 # | Dpsv6 | eastus2       |  1024 |                    |
 # | Dpsv6 | northeurope   |  1024 |                    |
+# | Dpsv6 | uksouth       |  1024 |                    |
 # | Dpsv6 | westcentralus |   672 | Not currently used |
 
 if ($VMSku -ieq 'Fasv6') {
   $Arch = 'x64'
   $VMSize = 'Standard_F32as_v6'
-  $PoolSize = 64
+  $PoolSize = 64 # We have quota for 4096 cores (128 VMs), so we can have old and new pools of 64 VMs each.
   $AvailableLocations = @('eastus2')
 } elseif ($VMSku -ieq 'Fasv7') {
   $Arch = 'x64'
   $VMSize = 'Standard_F32as_v7'
-  $PoolSize = 20
+  $PoolSize = 20 # Locations where we have quota for at least 640 cores (20 VMs):
   $AvailableLocations = @('australiaeast', 'northeurope', 'southeastasia')
 } elseif ($VMSku -ieq 'Dpsv6') {
   $Arch = 'arm64'
   $VMSize = 'Standard_D32ps_v6'
-  $PoolSize = 32
-  $AvailableLocations = @('eastus2', 'northeurope') # Locations where CPP_STL_GitHub has quota for 1024 cores (32 VMs).
+  $PoolSize = 32 # Locations where we have quota for at least 1024 cores (32 VMs):
+  $AvailableLocations = @('eastus2', 'northeurope', 'uksouth')
 }
 
 $AvailableLocationIdx = 7 # Increment for each new set of pools, to cycle through the available locations.
