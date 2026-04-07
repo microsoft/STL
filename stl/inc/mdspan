@@ -728,7 +728,8 @@ public:
               && conjunction_v<is_convertible<_IndexTypes, index_type>...,
                   is_nothrow_constructible<index_type, _IndexTypes>...>
     _NODISCARD constexpr index_type operator()(_IndexTypes... _Indices) const noexcept {
-        return _Index_impl(make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...);
+        return _Index_impl(
+            make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_STD move(_Indices))...);
     }
 
     _NODISCARD static constexpr bool is_always_unique() noexcept {
