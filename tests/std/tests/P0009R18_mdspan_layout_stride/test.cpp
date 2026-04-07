@@ -548,6 +548,23 @@ constexpr void check_call_operator() {
         assert(m4(1, 1, 1) == 19);
         assert(m4(1, 2, 4) == 29);
     }
+
+    { // LWG-4314: Missing move in mdspan layout mapping::operator()
+        struct LwgIndex {
+            constexpr operator int() & noexcept {
+                return 0;
+            }
+
+            constexpr operator int() && noexcept {
+                return 1;
+            }
+        };
+
+        layout_stride::mapping<extents<int, 3>> m({}, array{2});
+        LwgIndex idx;
+        assert(m(idx) == 2);
+        assert(m(LwgIndex{}) == 2);
+    }
 }
 
 constexpr void check_stride_function() {
