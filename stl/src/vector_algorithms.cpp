@@ -592,9 +592,11 @@ namespace {
                 return vrev64_u8(_Val);
             }
 
+
             static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
-                const uint8x16_t _Rev_val = vrev64q_u8(_Val);
-                return vextq_u8(_Rev_val, _Rev_val, 8);
+                static constexpr uint8_t _Idx_arr[16] = {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+                const auto _Idx                       = vld1q_u8(_Idx_arr);
+                return vqtbl1q_u8(_Val, _Idx);
             }
         };
 
@@ -604,8 +606,9 @@ namespace {
             }
 
             static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
-                const uint8x16_t _Rev_val = vreinterpretq_u8_u16(vrev64q_u16(vreinterpretq_u16_u8(_Val)));
-                return vextq_u8(_Rev_val, _Rev_val, 8);
+                static constexpr uint8_t _Idx_arr[16] = {14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1};
+                const auto _Idx                       = vld1q_u8(_Idx_arr);
+                return vqtbl1q_u8(_Val, _Idx);
             }
         };
 
@@ -615,8 +618,9 @@ namespace {
             }
 
             static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
-                const uint8x16_t _Rev_val = vreinterpretq_u8_u32(vrev64q_u32(vreinterpretq_u32_u8(_Val)));
-                return vextq_u8(_Rev_val, _Rev_val, 8);
+                static constexpr uint8_t _Idx_arr[16] = {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
+                const auto _Idx                       = vld1q_u8(_Idx_arr);
+                return vqtbl1q_u8(_Val, _Idx);
             }
         };
 
