@@ -1339,7 +1339,7 @@ constexpr void check_deduction_guides() {
         // (with volatile data_handle_type, per LWG-4511)
         int a[1]{};
         int* volatile p = a;
-        mdspan mds{p, layout_right::mapping<std::extents<std::size_t, 1>>{}, default_accessor<int>{}};
+        mdspan mds{p, layout_right::mapping<extents<size_t, 1>>{}, default_accessor<int>{}};
         static_assert(same_as<decltype(mds), mdspan<int, extents<size_t, 1>>>);
     }
 }
