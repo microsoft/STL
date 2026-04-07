@@ -2393,7 +2393,6 @@ constexpr bool test_lwg_3886() {
         expected<const QualDistinction, char> ex{unexpect};
         assert(ex.value_or({}).qual_ == Qualification::None);
     }
-#if 0 // TRANSITION, LWG-3891
     assert(
         (expected<const QualDistinction, char>{unexpect} = {QualDistinction{}}).value().qual_ == Qualification::None);
     {
@@ -2402,7 +2401,6 @@ constexpr bool test_lwg_3886() {
         ex = unexpected<char>{'*'};
         assert((ex = {QualDistinction{}}).value().qual_ == Qualification::None);
     }
-#endif // ^^^ no workaround ^^^
 
     return true;
 }
@@ -2413,7 +2411,6 @@ void test_lwg_3886_volatile() {
         expected<volatile QualDistinction, char> ex{unexpect};
         assert(ex.value_or({}).qual_ == Qualification::None);
     }
-#if 0 // TRANSITION, LWG-3891
     assert((expected<volatile QualDistinction, char>{unexpect} = {QualDistinction{}}).value().qual_
            == Qualification::None);
     {
@@ -2422,14 +2419,12 @@ void test_lwg_3886_volatile() {
         ex = unexpected<char>{'*'};
         assert((ex = {QualDistinction{}}).value().qual_ == Qualification::None);
     }
-#endif // ^^^ no workaround ^^^
 
     assert((expected<const volatile QualDistinction, char>{unexpect}.value_or({}).qual_ == Qualification::None));
     {
         expected<const volatile QualDistinction, char> ex{unexpect};
         assert(ex.value_or({}).qual_ == Qualification::None);
     }
-#if 0 // TRANSITION, LWG-3891
     assert((expected<const volatile QualDistinction, char>{unexpect} = {QualDistinction{}}).value().qual_
            == Qualification::None);
     {
@@ -2438,7 +2433,114 @@ void test_lwg_3886_volatile() {
         ex = unexpected<char>{'*'};
         assert((ex = {QualDistinction{}}).value().qual_ == Qualification::None);
     }
-#endif // ^^^ no workaround ^^^
+}
+
+// Test LWG-3891: "LWG 3870 breaks std::expected<cv T, E>"
+
+struct FakeCvAssignable {
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-11070772
+    char c_{};
+#endif // ^^^ workaround ^^^
+
+    FakeCvAssignable()                                   = default;
+    FakeCvAssignable(const FakeCvAssignable&)            = default;
+    FakeCvAssignable(FakeCvAssignable&&)                 = default;
+    FakeCvAssignable& operator=(const FakeCvAssignable&) = default;
+    FakeCvAssignable& operator=(FakeCvAssignable&&)      = default;
+
+    template <class T = FakeCvAssignable>
+    constexpr FakeCvAssignable(const volatile type_identity_t<T>&) noexcept {}
+    template <class T = FakeCvAssignable>
+    constexpr FakeCvAssignable(const volatile type_identity_t<T>&&) noexcept {}
+
+    // Per LWG-3891, the following functions shouldn't be called within expected<FakeCvAssignable, E>.
+
+    template <class T = FakeCvAssignable>
+    FakeCvAssignable& operator=(const volatile type_identity_t<T>&) noexcept {
+        assert(false);
+    }
+    template <class T = FakeCvAssignable>
+    FakeCvAssignable& operator=(const volatile type_identity_t<T>&&) noexcept {
+        assert(false);
+    }
+    template <class T = FakeCvAssignable>
+    const volatile FakeCvAssignable& operator=(const volatile type_identity_t<T>&) const volatile noexcept {
+        assert(false);
+    }
+    template <class T = FakeCvAssignable>
+    const volatile FakeCvAssignable& operator=(const volatile type_identity_t<T>&&) const volatile noexcept {
+        assert(false);
+    }
+};
+
+constexpr bool test_lwg_3891() {
+    {
+        expected<const int, char> oc{unexpect};
+        assert(!oc.has_value());
+        oc.emplace(0);
+        assert(oc.value() == 0);
+        static_assert(!is_copy_assignable_v<decltype(oc)>);
+        static_assert(!is_move_assignable_v<decltype(oc)>);
+        static_assert(!is_swappable_v<decltype(oc)>);
+
+        expected<volatile int, char> ov{unexpect}, ov2{unexpect};
+        assert(!ov.has_value());
+        ov.emplace(0);
+        assert(ov.has_value());
+        assert(ov.value_or(-1) == 0);
+        swap(ov, ov);
+        assert(ov.has_value());
+        assert(ov.value_or(-1) == 0);
+        ov = ov2;
+        assert(!ov.has_value());
+        ov = move(ov2);
+        assert(!ov.has_value());
+
+        expected<const volatile int, char> ocv{unexpect};
+        assert(!ocv.has_value());
+        ocv.emplace(0);
+        assert(ocv.has_value());
+        assert(ocv.value_or(-1) == 0);
+        static_assert(!is_copy_assignable_v<decltype(ocv)>);
+        static_assert(!is_move_assignable_v<decltype(ocv)>);
+        static_assert(!is_swappable_v<decltype(ocv)>);
+    }
+    {
+        expected<const FakeCvAssignable, char> oc{unexpect}, oc2{unexpect};
+        assert(!oc.has_value());
+        oc.emplace(FakeCvAssignable{});
+        assert(oc.has_value());
+        swap(oc, oc);
+        assert(oc.has_value());
+        oc = oc2;
+        assert(!oc.has_value());
+        oc = move(oc2);
+        assert(!oc.has_value());
+
+        expected<volatile FakeCvAssignable, char> ov{unexpect}, ov2{unexpect};
+        assert(!ov.has_value());
+        ov.emplace(FakeCvAssignable{});
+        assert(ov.has_value());
+        swap(ov, ov);
+        assert(ov.has_value());
+        ov = ov2;
+        assert(!ov.has_value());
+        ov = move(ov2);
+        assert(!ov.has_value());
+
+        expected<const volatile FakeCvAssignable, char> ocv{unexpect}, ocv2{unexpect};
+        assert(!ocv.has_value());
+        ocv.emplace(FakeCvAssignable{});
+        assert(ocv.has_value());
+        swap(ocv, ocv);
+        assert(ocv.has_value());
+        ocv = ocv2;
+        assert(!ocv.has_value());
+        ocv = move(ocv2);
+        assert(!ocv.has_value());
+    }
+
+    return true;
 }
 
 // Test GH-4011: these predicates triggered constraint recursion.
@@ -2508,6 +2610,7 @@ static_assert(!is_assignable_v<expected<void, move_only>&, ambiguating_expected_
 #endif // ^^^ no workaround ^^^
 
 static_assert(test_lwg_3886());
+static_assert(test_lwg_3891());
 
 // Test LWG-4222 "expected constructor from a single value missing a constraint"
 
@@ -2608,6 +2711,7 @@ int main() {
     test_lwg_3843();
     test_lwg_3886();
     test_lwg_3886_volatile();
+    test_lwg_3891();
     test_inherited_constructors();
 
     test_lwg_4366::test();
