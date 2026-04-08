@@ -2512,11 +2512,11 @@ public:
         }
     }
 
-    _NODISCARD static _CONSTEXPR20 size_type _Find_result_cast(_STD size_t _Off) {
-        // On 32-bit platforms, basic_string may use 64-bit size_type (depending on the allocator), while
-        // basic_string_view uses 32-bit size_t. This makes basic_string_view::npos smaller than basic_string::npos.
-        if (_Off == _STD size_t(-1)) {
-            return npos;
+    _NODISCARD static _CONSTEXPR20 size_type _Find_result_cast(const size_t _Off) noexcept {
+        if constexpr (sizeof(size_type) > sizeof(size_t)) { // only happens on 32-bit platforms with 64-bit size_type
+            if (_Off == static_cast<size_t>(-1)) {
+                return npos;
+            }
         }
         return static_cast<size_type>(_Off);
     }
