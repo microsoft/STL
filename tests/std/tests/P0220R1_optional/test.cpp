@@ -8363,10 +8363,16 @@ int run_test()
 // LLVM SOURCES END
 // clang-format on
 
+#include <algorithm>
 #include <cassert>
 #include <optional>
 #include <type_traits>
 #include <utility>
+#if _HAS_CXX20
+#include <compare>
+#include <concepts>
+#endif // _HAS_CXX20
+#include <vector>
 
 #if _HAS_CXX20
 #define CONSTEXPR20 constexpr
@@ -8575,6 +8581,33 @@ namespace msvc {
             test_volatile();
         }
     } // namespace lwg3886
+
+    namespace lwg4497 {
+        // LWG-4497 nullopt_t should be comparable
+        static_assert(std::nullopt == std::nullopt);
+        static_assert(!(std::nullopt != std::nullopt));
+        static_assert(!(std::nullopt < std::nullopt));
+        static_assert(std::nullopt <= std::nullopt);
+        static_assert(!(std::nullopt > std::nullopt));
+        static_assert(std::nullopt >= std::nullopt);
+#if _HAS_CXX20
+        static_assert(std::three_way_comparable<std::nullopt_t, std::strong_ordering>);
+        static_assert(std::is_eq(std::nullopt <=> std::nullopt));
+#endif // _HAS_CXX20
+
+        void run_test() {
+            std::vector<std::optional<int>> v = {1, std::nullopt, 3};
+
+#if _HAS_CXX20
+            auto it = std::ranges::find(v, std::nullopt);
+#else
+            auto it = std::find(v.begin(), v.end(), std::nullopt);
+#endif
+
+            assert(it != v.end());
+            assert(!it->has_value());
+        }
+    } // namespace lwg4497
 
     namespace vso406124 {
         // Defend against regression of VSO-406124
@@ -8853,6 +8886,7 @@ int main() {
 
     msvc::lwg3836::run_test();
     msvc::lwg3886::run_test();
+    msvc::lwg4497::run_test();
 
     msvc::vso406124::run_test();
     msvc::vso508126::run_test();
