@@ -3372,6 +3372,11 @@ constexpr bool _Can_form_pointer = false;
 template <class _Ty>
 constexpr bool _Can_form_pointer<_Ty, void_t<_Ty*>> = true;
 
+template <class, class = void>
+constexpr bool _Can_dereference = false;
+template <class _Ty>
+constexpr bool _Can_dereference<_Ty, void_t<decltype(*_STD declval<_Ty>())>> = true;
+
 _EXPORT_STD template <class _Ty, class _Dx /* = default_delete<_Ty> */>
 class unique_ptr { // non-copyable pointer to an object
 public:
@@ -3474,6 +3479,7 @@ public:
         return _Mypair._Get_first();
     }
 
+    template <class _Ptr = pointer, enable_if_t<_Can_dereference<_Ptr>, int> = 0>
     _NODISCARD _CONSTEXPR23 add_lvalue_reference_t<_Ty> operator*() const noexcept(noexcept(*_STD declval<pointer>())) {
 #if _HAS_CXX23
 #ifdef __cpp_lib_reference_from_temporary // TRANSITION
