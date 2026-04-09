@@ -2512,6 +2512,7 @@ public:
         }
     }
 
+private:
     _NODISCARD static _CONSTEXPR20 size_type _Find_result_cast(const size_t _Off) noexcept {
         if constexpr (sizeof(size_type) > sizeof(size_t)) { // only happens on 32-bit platforms with 64-bit size_type
             if (_Off == static_cast<size_t>(-1)) {
@@ -2521,6 +2522,7 @@ public:
         return static_cast<size_type>(_Off);
     }
 
+public:
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     _NODISCARD _CONSTEXPR20 size_type find(const _StringViewIsh& _Right, const size_type _Off = 0) const
