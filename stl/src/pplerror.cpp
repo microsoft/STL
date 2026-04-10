@@ -17,10 +17,13 @@
 
 extern "C" void* __GetPlatformExceptionInfo(int*);
 
+#endif // ^^^ defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT) ^^^
+
 namespace Concurrency {
     namespace details {
 
         _CRTIMP2 void __thiscall _ExceptionHolder::ReportUnhandledError() {
+#if defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
             if (_M_stdException) {
                 try {
                     std::rethrow_exception(_M_stdException);
@@ -43,19 +46,8 @@ namespace Concurrency {
                     }
                 }
             }
+#endif // ^^^ defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT) ^^^
         }
 
     } // namespace details
 } // namespace Concurrency
-
-#else // defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
-
-namespace Concurrency {
-    namespace details {
-
-        _CRTIMP2 void __thiscall _ExceptionHolder::ReportUnhandledError() {}
-
-    } // namespace details
-} // namespace Concurrency
-
-#endif // defined(_CRT_APP) || defined(UNDOCKED_WINDOWS_UCRT)
