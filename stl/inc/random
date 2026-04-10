@@ -871,9 +871,11 @@ public:
     }
 
     void seed(result_type _Xx0 = default_seed) { // set initial values from specified value
-        _Ty _Prev = this->_Ax[0] = _Xx0 & _WMSK;
+        _Ty _Prev    = _Xx0 & _WMSK;
+        this->_Ax[0] = _Prev;
         for (size_t _Ix = 1; _Ix < _Nx; ++_Ix) {
-            _Prev = this->_Ax[_Ix] = (_Ix + _Fx * (_Prev ^ (_Prev >> (_Wx - 2)))) & _WMSK;
+            _Prev          = (_Ix + _Fx * (_Prev ^ (_Prev >> (_Wx - 2)))) & _WMSK;
+            this->_Ax[_Ix] = _Prev;
         }
 
         this->_Idx = _Nx;
