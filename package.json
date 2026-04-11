@@ -4,11 +4,11 @@
   "description": "STL Status Chart",
   "main": "gather_stats.mjs",
   "scripts": {
-    "pregather": "npx tsc -p src_gather/tsconfig.json",
+    "pregather": "tsc -p src_gather/tsconfig.json",
     "gather": "node built/gather_stats.mjs",
-    "premake": "npx tsc -p src/tsconfig.json",
-    "make": "npx esbuild src/status_chart.mts --bundle --format=esm --minify --external:chart.js --external:chartjs-adapter-luxon --outfile=built/status_chart.mjs",
-    "view": "npx serve"
+    "premake": "tsc -p src/tsconfig.json",
+    "make": "esbuild src/status_chart.mts --bundle --format=esm --minify --external:chart.js --external:chartjs-adapter-luxon --outfile=built/status_chart.mjs",
+    "view": "serve"
   },
   "repository": {
     "type": "git",
