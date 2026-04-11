@@ -1,9 +1,7 @@
 {
-    "extends": "../tsconfig.universal.json",
-    "compilerOptions": {
-        "noEmit": true,
-    },
-    "files": [
-        "status_chart.mts",
-    ],
+  "extends": "../tsconfig.universal.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "files": ["status_chart.mts"]
 }

@@ -1,74 +1,94 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-color-mode="auto" data-light-theme="light" data-dark-theme="dark">
-
-<head>
+  <head>
     <meta charset="utf-8" />
     <!-- Copyright (c) Microsoft Corporation. -->
     <!-- SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception -->
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>STL Status Chart</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@primer/css@21.5.1/dist/primer.min.css" />
     <script type="importmap">
-        { "imports": {
-            "@kurkle/color": "https://cdn.jsdelivr.net/npm/@kurkle/color@0.4.0/dist/color.esm.min.js",
-            "chart.js": "https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.min.js",
-            "chartjs-adapter-luxon": "https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.esm.min.js",
-            "luxon": "https://cdn.jsdelivr.net/npm/luxon@3.7.2/build/es6/luxon.mjs"
-        } }
+      {
+        "imports": {
+          "@kurkle/color": "https://cdn.jsdelivr.net/npm/@kurkle/color@0.4.0/dist/color.esm.min.js",
+          "chart.js": "https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.min.js",
+          "chartjs-adapter-luxon": "https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.esm.min.js",
+          "luxon": "https://cdn.jsdelivr.net/npm/luxon@3.7.2/build/es6/luxon.mjs"
+        }
+      }
     </script>
     <script type="module" src="built/status_chart.mjs"></script>
-</head>
+  </head>
 
-<body class="container-xl markdown-body p-3">
+  <body class="container-xl markdown-body p-3">
     <h1 id="status">STL Status Chart</h1>
     <canvas id="statusChart"></canvas>
     <button class="btn" id="moreHistory" type="button">More History</button>
     <button class="btn" id="lessHistory" type="button">Less History</button>
 
     <h2>Explanation</h2>
-    <p>This tracks the progress of the <a href="https://github.com/microsoft/STL">microsoft/STL</a> repo.
-        For more info, read the <a href="https://github.com/microsoft/STL/wiki/Changelog">Changelog</a>.</p>
+    <p>
+      This tracks the progress of the <a href="https://github.com/microsoft/STL">microsoft/STL</a> repo. For more info,
+      read the <a href="https://github.com/microsoft/STL/wiki/Changelog">Changelog</a>.
+    </p>
 
     <p>This chart is interactive! Click the legend to show/hide lines.</p>
 
     <ul>
-        <li><span class="Counter bgColor-severe-emphasis fgColor-onEmphasis">0</span>
-            C++17 STL features remaining to be implemented. This reached zero when we implemented
-            <a href="https://www.reddit.com/r/cpp/comments/dgj89g/cppcon_2019_stephan_t_lavavej_floatingpoint/"
-                rel="nofollow"><code>&lt;charconv&gt;</code>, C++17's final boss</a>.
-        </li>
-        <li><span class="Counter bgColor-sponsors-emphasis fgColor-onEmphasis" id="currentValue-cxx20"></span>
-            <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx20">
-                C++20 STL features remaining to be implemented.</a>
-        </li>
-        <li><span class="Counter bgColor-done-emphasis fgColor-onEmphasis" id="currentValue-cxx23"></span>
-            <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx23">
-                C++23 STL features remaining to be implemented.</a>
-        </li>
-        <li><span class="Counter bgColor-accent-emphasis fgColor-onEmphasis" id="currentValue-cxx26"></span>
-            <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx26">
-                C++26 STL features remaining to be implemented.</a>
-        </li>
-        <li><span class="Counter bgColor-success-emphasis fgColor-onEmphasis" id="currentValue-lwg"></span>
-            <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG+-label%3AvNext">
-                LWG issue resolutions remaining to be implemented.</a>
-        </li>
-        <li><span class="Counter bgColor-emphasis fgColor-onEmphasis" id="currentValue-pr"></span>
-            <a href="https://github.com/microsoft/STL/pulls">Open pull requests.</a>
-        </li>
+      <li>
+        <span class="Counter bgColor-severe-emphasis fgColor-onEmphasis">0</span>
+        C++17 STL features remaining to be implemented. This reached zero when we implemented
+        <a
+          href="https://www.reddit.com/r/cpp/comments/dgj89g/cppcon_2019_stephan_t_lavavej_floatingpoint/"
+          rel="nofollow"
+          ><code>&lt;charconv&gt;</code>, C++17's final boss</a
+        >.
+      </li>
+      <li>
+        <span class="Counter bgColor-sponsors-emphasis fgColor-onEmphasis" id="currentValue-cxx20"></span>
+        <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx20">
+          C++20 STL features remaining to be implemented.</a
+        >
+      </li>
+      <li>
+        <span class="Counter bgColor-done-emphasis fgColor-onEmphasis" id="currentValue-cxx23"></span>
+        <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx23">
+          C++23 STL features remaining to be implemented.</a
+        >
+      </li>
+      <li>
+        <span class="Counter bgColor-accent-emphasis fgColor-onEmphasis" id="currentValue-cxx26"></span>
+        <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx26">
+          C++26 STL features remaining to be implemented.</a
+        >
+      </li>
+      <li>
+        <span class="Counter bgColor-success-emphasis fgColor-onEmphasis" id="currentValue-lwg"></span>
+        <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG+-label%3AvNext">
+          LWG issue resolutions remaining to be implemented.</a
+        >
+      </li>
+      <li>
+        <span class="Counter bgColor-emphasis fgColor-onEmphasis" id="currentValue-pr"></span>
+        <a href="https://github.com/microsoft/STL/pulls">Open pull requests.</a>
+      </li>
     </ul>
 
     <p>For all lines, fewer is better.</p>
 
-    <p>Features and LWG issue resolutions are regularly voted into the Working Paper at
-        <a href="https://isocpp.org/std/meetings-and-participation" rel="nofollow">WG21 meetings</a>.
+    <p>
+      Features and LWG issue resolutions are regularly voted into the Working Paper at
+      <a href="https://isocpp.org/std/meetings-and-participation" rel="nofollow">WG21 meetings</a>.
     </p>
 
-    <p>We don't count "patch papers" as extra work when one paper adds a feature
-        and another paper modifies that feature before we've implemented it.</p>
+    <p>
+      We don't count "patch papers" as extra work when one paper adds a feature and another paper modifies that feature
+      before we've implemented it.
+    </p>
 
-    <p>This chart weights features equally, instead of weighting
-        by usefulness for users or difficulty for implementers.</p>
+    <p>
+      This chart weights features equally, instead of weighting by usefulness for users or difficulty for implementers.
+    </p>
 
     <hr />
 
@@ -77,32 +97,37 @@
 
     <h2>Explanation</h2>
     <ul>
-        <li><span class="Counter bgColor-done-emphasis fgColor-onEmphasis" id="currentValue-vso"></span>
-            Active "old bugs" in our Microsoft-internal database. We're keeping them active while
-            porting them to GitHub, unless they're discovered to be duplicates or already fixed.</li>
-        <li><span class="Counter bgColor-danger-emphasis fgColor-onEmphasis" id="currentValue-bug"></span>
-            <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug">
-                Open GitHub bugs.</a> That is, only GitHub issues that have
-            <span class="Label Label--danger">bug</span> labels.
-        </li>
-        <li><span class="Counter Counter--primary" id="currentValue-issue"></span>
-            <a
-                href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+-label%3Acxx20+-label%3Acxx23+-label%3Acxx26+-label%3ALWG">
-                Open GitHub issues.</a> That is, all GitHub issues including
-            <span class="Label Label--danger">bug</span>,
-            <span class="Label Label--accent">performance</span>,
-            <span class="Label Label--done">throughput</span>, etc. and excluding only
-            <span class="Label Label--attention">cxx20</span>,
-            <span class="Label Label--severe">cxx23</span>,
-            <span class="Label Label--attention">cxx26</span>, and
-            <span class="Label Label--success">LWG</span> to avoid double-counting.
-        </li>
-        <li><span class="Counter bgColor-attention-emphasis fgColor-onEmphasis" id="currentValue-libcxx"></span>
-            <a href="https://github.com/microsoft/STL/blob/main/tests/libcxx/expected_results.txt">
-                Skipped/failing tests in the libcxx test suite.</a> There are many reasons for such tests:
-            STL bugs, test bugs, compiler bugs, missing STL features, missing compiler features, etc.
-            To avoid double-counting, this line excludes missing STL features.
-        </li>
+      <li>
+        <span class="Counter bgColor-done-emphasis fgColor-onEmphasis" id="currentValue-vso"></span> Active "old bugs"
+        in our Microsoft-internal database. We're keeping them active while porting them to GitHub, unless they're
+        discovered to be duplicates or already fixed.
+      </li>
+      <li>
+        <span class="Counter bgColor-danger-emphasis fgColor-onEmphasis" id="currentValue-bug"></span>
+        <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug"> Open GitHub bugs.</a> That
+        is, only GitHub issues that have <span class="Label Label--danger">bug</span> labels.
+      </li>
+      <li>
+        <span class="Counter Counter--primary" id="currentValue-issue"></span>
+        <a
+          href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+-label%3Acxx20+-label%3Acxx23+-label%3Acxx26+-label%3ALWG"
+        >
+          Open GitHub issues.</a
+        >
+        That is, all GitHub issues including <span class="Label Label--danger">bug</span>,
+        <span class="Label Label--accent">performance</span>, <span class="Label Label--done">throughput</span>, etc.
+        and excluding only <span class="Label Label--attention">cxx20</span>,
+        <span class="Label Label--severe">cxx23</span>, <span class="Label Label--attention">cxx26</span>, and
+        <span class="Label Label--success">LWG</span> to avoid double-counting.
+      </li>
+      <li>
+        <span class="Counter bgColor-attention-emphasis fgColor-onEmphasis" id="currentValue-libcxx"></span>
+        <a href="https://github.com/microsoft/STL/blob/main/tests/libcxx/expected_results.txt">
+          Skipped/failing tests in the libcxx test suite.</a
+        >
+        There are many reasons for such tests: STL bugs, test bugs, compiler bugs, missing STL features, missing
+        compiler features, etc. To avoid double-counting, this line excludes missing STL features.
+      </li>
     </ul>
 
     <hr />
@@ -112,9 +137,11 @@
 
     <h2>Explanation</h2>
     <ul>
-        <li><span class="Counter bgColor-emphasis fgColor-onEmphasis" id="currentValue-sum_age"></span>
-            The combined age of open pull requests. The unit is PR-months (like kilowatt-hours);
-            for example, 5 PRs that were all opened 2 months ago have a combined age of 10 PR-months.</li>
+      <li>
+        <span class="Counter bgColor-emphasis fgColor-onEmphasis" id="currentValue-sum_age"></span> The combined age of
+        open pull requests. The unit is PR-months (like kilowatt-hours); for example, 5 PRs that were all opened 2
+        months ago have a combined age of 10 PR-months.
+      </li>
     </ul>
 
     <hr />
@@ -123,25 +150,26 @@
     <canvas id="mergeChart"></canvas>
 
     <h2>Explanation</h2>
-    <p>For this chart, more is better. It includes merges into any branch
-        and excludes PRs that were closed without being merged, which are rare.</p>
+    <p>
+      For this chart, more is better. It includes merges into any branch and excludes PRs that were closed without being
+      merged, which are rare.
+    </p>
 
     <ul>
-        <li><span class="Counter bgColor-accent-emphasis fgColor-onEmphasis" id="currentValue-merged"></span>
-            Line: How many PRs have been merged over the past month.
-            This uses a "30 day" sliding window, with some smoothing:
-            <ul>
-                <li>PRs merged 0 to 20 days ago are weighted at 100%.</li>
-                <li>PRs merged 20 to 40 days ago are weighted from 100% to 0%.</li>
-            </ul>
-        </li>
-        <li>Bars: How many PRs were merged in each calendar month.</li>
+      <li>
+        <span class="Counter bgColor-accent-emphasis fgColor-onEmphasis" id="currentValue-merged"></span>
+        Line: How many PRs have been merged over the past month. This uses a "30 day" sliding window, with some
+        smoothing:
+        <ul>
+          <li>PRs merged 0 to 20 days ago are weighted at 100%.</li>
+          <li>PRs merged 20 to 40 days ago are weighted from 100% to 0%.</li>
+        </ul>
+      </li>
+      <li>Bars: How many PRs were merged in each calendar month.</li>
     </ul>
 
     <hr />
 
     <p>Powered by <a href="https://www.chartjs.org/">Chart.js</a>.</p>
-
-</body>
-
+  </body>
 </html>

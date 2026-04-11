@@ -1,6 +1,4 @@
 {
-    "extends": "../tsconfig.universal.json",
-    "files": [
-        "gather_stats.mts",
-    ],
+  "extends": "../tsconfig.universal.json",
+  "files": ["gather_stats.mts"]
 }
