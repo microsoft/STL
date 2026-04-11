@@ -41,6 +41,7 @@
     "dotenv": "^17.4.1",
     "esbuild": "^0.28.0",
     "luxon": "^3.7.2",
+    "prettier": "^3.8.2",
     "serve": "^14.2.6",
     "typescript": "^6.0.2",
     "yargs": "^18.0.0"
