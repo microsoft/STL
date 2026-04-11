@@ -2579,6 +2579,27 @@ void test_gh_6191() {
     }
 }
 
+void test_gh_6249() {
+    // GH-6248: Avoid generating empty groups when parsing empty alternatives
+    for (const string re : {"|a|b", "a||b", "a|b|"}) {
+        g_regexTester.should_match("a", re);
+        g_regexTester.should_match("b", re);
+        g_regexTester.should_match("", re);
+        g_regexTester.should_not_match("c", re);
+        g_regexTester.should_not_match("ab", re);
+    }
+
+    for (const string re : {"(?:|a|b)c", "(?:a||b)c", "(?:a|b|)c"}) {
+        g_regexTester.should_match("ac", re);
+        g_regexTester.should_match("bc", re);
+        g_regexTester.should_match("c", re);
+        g_regexTester.should_not_match("", re);
+        g_regexTester.should_not_match("a", re);
+        g_regexTester.should_not_match("b", re);
+        g_regexTester.should_not_match("abc", re);
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2646,6 +2667,7 @@ int main() {
     test_gh_6181();
     test_gh_6189();
     test_gh_6191();
+    test_gh_6249();
 
     return g_regexTester.result();
 }
