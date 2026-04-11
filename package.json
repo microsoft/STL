@@ -4,6 +4,7 @@
   "description": "STL Status Chart",
   "main": "gather_stats.mjs",
   "scripts": {
+    "format": "prettier --write .",
     "pregather": "tsc -p src_gather/tsconfig.json",
     "gather": "node built/gather_stats.mjs",
     "premake": "tsc -p src/tsconfig.json",
