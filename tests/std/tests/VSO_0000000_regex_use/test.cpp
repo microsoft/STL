@@ -2580,7 +2580,7 @@ void test_gh_6191() {
 }
 
 void test_gh_6249() {
-    // GH-6248: Avoid generating empty groups when parsing empty alternatives
+    // GH-6249: Avoid generating empty groups when parsing empty alternatives
     for (const string re : {"|a|b", "a||b", "a|b|"}) {
         g_regexTester.should_match("a", re);
         g_regexTester.should_match("b", re);
