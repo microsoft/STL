@@ -515,23 +515,23 @@ function write_daily_table(script_start: DateTime, all_prs: CookedPRNode[], all_
 
     let str = `
 export type DailyRow = {
-    date: string;
-    merged: number;
-    pr: number | null;
-    cxx20: number | null;
-    cxx23: number | null;
-    cxx26: number | null;
-    lwg: number | null;
-    issue: number | null;
-    bug: number | null;
-    sum_age: number;
+  date: string;
+  merged: number;
+  pr: number | null;
+  cxx20: number | null;
+  cxx23: number | null;
+  cxx26: number | null;
+  lwg: number | null;
+  issue: number | null;
+  bug: number | null;
+  sum_age: number;
 };
 export const daily_table: DailyRow[] = [
 `;
 
     for (let i = 0; i < rows.length; ++i) {
         const row = rows[i];
-        str += '    { ';
+        str += '  { ';
         str += `date: '${row.date.toISODate()}', `;
         str += `merged: ${row.merged.toFixed(2)}, `;
 
@@ -544,7 +544,7 @@ export const daily_table: DailyRow[] = [
             }
         }
 
-        str += `sum_age: ${row.sum_age.toFixed(2)}, `;
+        str += `sum_age: ${row.sum_age.toFixed(2)} `;
         str += '} as DailyRow,\n';
     }
 
@@ -566,8 +566,8 @@ function write_monthly_table(script_start: DateTime, all_prs: CookedPRNode[]) {
 
     let str = `
 export type MonthlyRow = {
-    date: string;
-    merge_bar: number;
+  date: string;
+  merge_bar: number;
 };
 export const monthly_table: MonthlyRow[] = [
 `;
@@ -578,9 +578,9 @@ export const monthly_table: MonthlyRow[] = [
         const year_month = when.toFormat('yyyy-MM');
         const value = monthly_merges.get(year_month) ?? 0;
 
-        str += '    { ';
+        str += '  { ';
         str += `date: '${year_month}-16', `; // position each bar in the middle of each month
-        str += `merge_bar: ${value}, `;
+        str += `merge_bar: ${value} `;
         str += '},\n';
     }
 
