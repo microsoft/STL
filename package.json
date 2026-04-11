@@ -24,12 +24,6 @@
     "url": "https://github.com/microsoft/STL/issues"
   },
   "homepage": "https://github.com/microsoft/STL/tree/gh-pages#readme",
-  "prettier": {
-    "arrowParens": "avoid",
-    "printWidth": 120,
-    "singleQuote": true,
-    "tabWidth": 4
-  },
   "dependencies": {
     "@octokit/graphql": "^9.0.3",
     "@types/cli-progress": "^3.11.6",
