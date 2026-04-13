@@ -3691,7 +3691,8 @@ namespace lwg4510 {
     };
 
     struct AnyType {
-        AnyType(const auto&);
+        template <class T>
+        AnyType(const T&);
 
         friend bool operator==(const AnyType&, const AnyType&);
     };
