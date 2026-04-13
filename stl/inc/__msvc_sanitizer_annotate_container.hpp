@@ -128,16 +128,17 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma detect_mismatch("annotate_optional", "0")
 #endif // ^^^ !defined(_INSERT_OPTIONAL_ANNOTATION) ^^^
 
+extern "C" {
 #ifdef _ACTIVATE_STRING_ANNOTATION
-extern "C" __declspec(selectany) const bool _Asan_string_should_annotate = true;
+__declspec(selectany) const bool _Asan_string_should_annotate = true;
 #pragma detect_mismatch("annotate_string", "1")
 #endif // ^^^ defined(_ACTIVATE_STRING_ANNOTATION) ^^^
 #ifdef _ACTIVATE_VECTOR_ANNOTATION
-extern "C" __declspec(selectany) const bool _Asan_vector_should_annotate = true;
+__declspec(selectany) const bool _Asan_vector_should_annotate = true;
 #pragma detect_mismatch("annotate_vector", "1")
 #endif // ^^^ defined(_ACTIVATE_VECTOR_ANNOTATION) ^^^
 #ifdef _ACTIVATE_OPTIONAL_ANNOTATION
-extern "C" __declspec(selectany) const bool _Asan_optional_should_annotate = true;
+__declspec(selectany) const bool _Asan_optional_should_annotate = true;
 #pragma detect_mismatch("annotate_optional", "1")
 #endif // ^^^ defined(_ACTIVATE_OPTIONAL_ANNOTATION) ^^^
 
@@ -145,7 +146,6 @@ extern "C" __declspec(selectany) const bool _Asan_optional_should_annotate = tru
 #undef _ACTIVATE_VECTOR_ANNOTATION
 #undef _ACTIVATE_OPTIONAL_ANNOTATION
 
-extern "C" {
 #ifdef _INSERT_VECTOR_ANNOTATION
 extern const bool _Asan_vector_should_annotate;
 #endif
