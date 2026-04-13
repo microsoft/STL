@@ -3688,6 +3688,8 @@ namespace lwg4510 {
         IterType& operator++();
         IterType operator++(int);
         IterType& operator*() const;
+
+        friend bool operator==(const IterType&, const IterType&);
     };
 
     struct AnyType {
@@ -3698,6 +3700,7 @@ namespace lwg4510 {
     };
 
     static_assert(std::input_or_output_iterator<IterType<AnyType>>);
+    static_assert(std::sentinel_for<IterType<AnyType>, IterType<AnyType>>);
     static_assert(!std::sentinel_for<int, IterType<AnyType>>);
     static_assert(!std::sentinel_for<std::_Unsigned128, IterType<AnyType>>);
 } // namespace lwg4510
