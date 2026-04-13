@@ -8368,11 +8368,12 @@ int run_test()
 #include <optional>
 #include <type_traits>
 #include <utility>
+#include <vector>
+
 #if _HAS_CXX20
 #include <compare>
 #include <concepts>
 #endif // _HAS_CXX20
-#include <vector>
 
 #if _HAS_CXX20
 #define CONSTEXPR20 constexpr
