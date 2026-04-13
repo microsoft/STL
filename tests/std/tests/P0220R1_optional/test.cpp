@@ -8599,11 +8599,7 @@ namespace msvc {
         void run_test() {
             std::vector<std::optional<int>> v = {1, std::nullopt, 3};
 
-#if _HAS_CXX20
-            auto it = std::ranges::find(v, std::nullopt);
-#else
             auto it = std::find(v.begin(), v.end(), std::nullopt);
-#endif
 
             assert(it != v.end());
             assert(!it->has_value());
