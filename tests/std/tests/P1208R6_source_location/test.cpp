@@ -270,7 +270,7 @@ constexpr bool test() {
 }
 
 // Also test LWG-4506 "source_location is explicitly unspecified if is constexpr or not"
-constexpr bool test_lwg_4506() {
+constexpr bool test_lwg_4506() { // COMPILE-ONLY
     auto loc                                   = source_location::current();
     auto loc_copy_constructed                  = loc;
     [[maybe_unused]] auto loc_move_constructed = move(loc_copy_constructed);
