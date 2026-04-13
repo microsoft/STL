@@ -3686,7 +3686,7 @@ namespace lwg4510 {
         using difference_type = int;
 
         IterType& operator++();
-        IterType& operator++(int);
+        IterType operator++(int);
         IterType& operator*() const;
     };
 
