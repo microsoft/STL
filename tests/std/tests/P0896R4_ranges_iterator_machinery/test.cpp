@@ -3682,23 +3682,23 @@ namespace lwg4510 {
     // Test LWG-4510
     // "Ambiguity of std::ranges::advance and std::ranges::next when the difference type is also a sentinel type"
     template <class T>
-    struct iterator {
+    struct IterType {
         using difference_type = int;
 
-        iterator& operator++();
-        iterator& operator++(int);
-        iterator& operator*() const;
+        IterType& operator++();
+        IterType& operator++(int);
+        IterType& operator*() const;
     };
 
-    struct any {
-        any(const auto&);
+    struct AnyType {
+        AnyType(const auto&);
 
-        friend bool operator==(const any&, const any&);
+        friend bool operator==(const AnyType&, const AnyType&);
     };
 
-    static_assert(std::input_or_output_iterator<iterator<any>>);
-    static_assert(!std::sentinel_for<int, iterator<any>>);
-    static_assert(!std::sentinel_for<std::_Unsigned128, iterator<any>>);
+    static_assert(std::input_or_output_iterator<IterType<AnyType>>);
+    static_assert(!std::sentinel_for<int, IterType<AnyType>>);
+    static_assert(!std::sentinel_for<std::_Unsigned128, IterType<AnyType>>);
 } // namespace lwg4510
 
 namespace vso1121031 {
