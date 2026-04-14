@@ -1204,7 +1204,8 @@ namespace iterator_cust_swap_test {
         // This test notably executes both at runtime and at compiletime.
         static_assert(bullet2<int*>);
 
-        int i0 = 42, i1 = 13;
+        int i0 = 42;
+        int i1 = 13;
         static_assert(same_as<decltype(ranges::iter_swap(&i0, &i1)), void>);
         ranges::iter_swap(&i0, &i1);
         assert(i0 == 13);

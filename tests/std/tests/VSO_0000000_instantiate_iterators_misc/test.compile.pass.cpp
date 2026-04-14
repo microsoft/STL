@@ -1547,7 +1547,8 @@ void tuple_test() {
     (void) get<volatile int>(tuple<volatile int>{});
     (void) get<const volatile int>(tuple<const volatile int>{});
 
-    int a = 1, b = 2;
+    int a     = 1;
+    int b     = 2;
     tie(a, b) = make_tuple(a, b);
     (void) forward_as_tuple(string{}, string{});
 
