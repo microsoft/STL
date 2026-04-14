@@ -148,7 +148,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
     - "MSVC Build Tools for x64/x86 (Preview)"
     - "C++ CMake tools for Windows"
     - "MSVC AddressSanitizer"
-    - "Windows 11 SDK (10.0.26100)" or later
+    - "Windows 11 SDK (10.0.28000)" or later
     - "C++ Clang tools for Windows (20.1.8 - x64/x86)"
     - *Optional, see Note 2 below:* "MSVC Build Tools for ARM64/ARM64EC (Preview)"
 * Install [Python][] 3.14.4 or later.

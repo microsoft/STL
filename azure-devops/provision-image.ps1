@@ -42,7 +42,7 @@ $VisualStudioWorkloads = @(
   'Microsoft.VisualStudio.Component.VC.Preview.ARM64',
   'Microsoft.VisualStudio.Component.VC.Preview.CLI.Support',
   'Microsoft.VisualStudio.Component.VC.Preview.Tools.x86.x64',
-  'Microsoft.VisualStudio.Component.Windows11SDK.26100'
+  'Microsoft.VisualStudio.Component.Windows11SDK.28000'
 )
 
 # https://learn.microsoft.com/visualstudio/install/visual-studio-on-arm-devices
