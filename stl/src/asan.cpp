@@ -5,7 +5,7 @@ namespace std {
     extern "C" {
     // TRANSITION, ABI: preserved for compatibility with old headers, which
     // added stl_asan.lib to the link line. We use __declspec(selectany) to be
-    // compatible with the new headers that defines these variables as
+    // compatible with the new headers that define these variables as
     // __declspec(selectany) in __msvc_sanitizer_annotate_container.hpp.
     // The new method is preferred because previously enabling just string
     // would also enable vector and optional. See GH-6186 for details.
