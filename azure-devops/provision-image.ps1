@@ -66,9 +66,9 @@ $PowerShellArgs = @('/quiet', '/norestart')
 
 # https://www.python.org
 if ($Provisioning_x64) {
-  $PythonUrl = 'https://www.python.org/ftp/python/3.14.3/python-3.14.3-amd64.exe'
+  $PythonUrl = 'https://www.python.org/ftp/python/3.14.4/python-3.14.4-amd64.exe'
 } else {
-  $PythonUrl = 'https://www.python.org/ftp/python/3.14.3/python-3.14.3-arm64.exe'
+  $PythonUrl = 'https://www.python.org/ftp/python/3.14.4/python-3.14.4-arm64.exe'
 }
 $PythonArgs = @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1', 'Include_doc=0')
 
