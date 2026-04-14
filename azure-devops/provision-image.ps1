@@ -74,7 +74,7 @@ $PythonArgs = @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1', 
 
 # https://developer.nvidia.com/cuda-toolkit
 if ($Provisioning_x64) {
-  $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/13.2.0/local_installers/cuda_13.2.0_windows.exe'
+  $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/13.2.1/local_installers/cuda_13.2.1_windows.exe'
 } else {
   $CudaUrl = 'CUDA is not installed for ARM64'
 }
