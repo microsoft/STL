@@ -21,7 +21,7 @@ steps:
     targetType: inline
     script: |
       $PSNativeCommandUseErrorActionPreference = $true
-      & "$(launchVsDevShell)" -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
+      & "$(launchVsDevShell)" -Preview -NoLogo -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
       ninja --verbose -k 0 ${{ parameters.testTargets }}
   timeoutInMinutes: 30
   condition: and(succeeded(), ${{ parameters.runTesting }})

@@ -37,7 +37,7 @@ steps:
       if (Test-Path -LiteralPath "$(buildOutputLocation)") {
           Remove-Item -LiteralPath "$(buildOutputLocation)" -Recurse -Force
       }
-      & "$(launchVsDevShell)" -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
+      & "$(launchVsDevShell)" -Preview -NoLogo -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
       cmake -G Ninja `
       -DCMAKE_CXX_COMPILER=cl `
       -DCMAKE_BUILD_TYPE=Release `
@@ -57,7 +57,7 @@ steps:
     targetType: inline
     script: |
       $PSNativeCommandUseErrorActionPreference = $true
-      & "$(launchVsDevShell)" -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
+      & "$(launchVsDevShell)" -Preview -NoLogo -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
       cmake --build "$(buildOutputLocation)"
   timeoutInMinutes: 5
   condition: and(succeeded(), ${{ parameters.buildStl }})
