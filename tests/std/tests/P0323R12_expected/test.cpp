@@ -2483,7 +2483,8 @@ constexpr bool test_lwg_3891() {
         static_assert(!is_move_assignable_v<decltype(oc)>);
         static_assert(!is_swappable_v<decltype(oc)>);
 
-        expected<volatile int, char> ov{unexpect}, ov2{unexpect};
+        expected<volatile int, char> ov{unexpect};
+        expected<volatile int, char> ov2{unexpect};
         assert(!ov.has_value());
         ov.emplace(0);
         assert(ov.has_value());
@@ -2506,7 +2507,8 @@ constexpr bool test_lwg_3891() {
         static_assert(!is_swappable_v<decltype(ocv)>);
     }
     {
-        expected<const FakeCvAssignable, char> oc{unexpect}, oc2{unexpect};
+        expected<const FakeCvAssignable, char> oc{unexpect};
+        expected<const FakeCvAssignable, char> oc2{unexpect};
         assert(!oc.has_value());
         oc.emplace(FakeCvAssignable{});
         assert(oc.has_value());
@@ -2517,7 +2519,8 @@ constexpr bool test_lwg_3891() {
         oc = move(oc2);
         assert(!oc.has_value());
 
-        expected<volatile FakeCvAssignable, char> ov{unexpect}, ov2{unexpect};
+        expected<volatile FakeCvAssignable, char> ov{unexpect};
+        expected<volatile FakeCvAssignable, char> ov2{unexpect};
         assert(!ov.has_value());
         ov.emplace(FakeCvAssignable{});
         assert(ov.has_value());
@@ -2528,7 +2531,8 @@ constexpr bool test_lwg_3891() {
         ov = move(ov2);
         assert(!ov.has_value());
 
-        expected<const volatile FakeCvAssignable, char> ocv{unexpect}, ocv2{unexpect};
+        expected<const volatile FakeCvAssignable, char> ocv{unexpect};
+        expected<const volatile FakeCvAssignable, char> ocv2{unexpect};
         assert(!ocv.has_value());
         ocv.emplace(FakeCvAssignable{});
         assert(ocv.has_value());
