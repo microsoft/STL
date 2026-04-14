@@ -49,7 +49,7 @@ if ($VMSku -ieq 'Fasv6') {
   $AvailableLocations = @('eastus2', 'northeurope', 'uksouth')
 }
 
-$AvailableLocationIdx = 7 # Increment for each new set of pools, to cycle through the available locations.
+$AvailableLocationIdx = 8 # Increment for each new set of pools, to cycle through the available locations.
 $Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
 
 if ($Arch -ieq 'x64') {
