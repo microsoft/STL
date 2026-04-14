@@ -11,9 +11,11 @@ int main() {}
 #include <cassert>
 #include <vector> // include __msvc_sanitizer_annotate_container.hpp
 
-extern "C" const bool _Asan_vector_should_annotate;
-extern "C" const bool _Asan_string_should_annotate;
-extern "C" const bool _Asan_optional_should_annotate;
+extern "C" {
+extern const bool _Asan_vector_should_annotate;
+extern const bool _Asan_string_should_annotate;
+extern const bool _Asan_optional_should_annotate;
+} // extern "C"
 
 int main() {
 #ifdef TEST_ENSURE_VECTOR_ENABLED
