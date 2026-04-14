@@ -7,6 +7,7 @@
 #define _UTILITY_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <__msvc_doom_core.hpp>
 #include <initializer_list>
 #include <type_traits>
 
@@ -1013,6 +1014,9 @@ _NODISCARD constexpr underlying_type_t<_Ty> to_underlying(_Ty _Value) noexcept {
 }
 
 _EXPORT_STD [[noreturn]] __forceinline void unreachable() noexcept /* strengthened */ {
+#ifdef _DEBUG
+    _MSVC_STL_DOOM_FUNCTION("std::unreachable() called");
+#endif // defined(_DEBUG)
     _STL_UNREACHABLE;
 }
 
