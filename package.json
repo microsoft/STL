@@ -4,11 +4,12 @@
   "description": "STL Status Chart",
   "main": "gather_stats.mjs",
   "scripts": {
-    "pregather": "npx tsc -p src_gather/tsconfig.json",
+    "format": "prettier --write .",
+    "pregather": "tsc -p src_gather/tsconfig.json",
     "gather": "node built/gather_stats.mjs",
-    "premake": "npx tsc -p src/tsconfig.json",
-    "make": "npx esbuild src/status_chart.mts --bundle --format=esm --minify --target=es2020 --external:chart.js --external:chartjs-adapter-luxon --outfile=built/status_chart.mjs",
-    "view": "npx http-server -c-1 -o"
+    "premake": "tsc -p src/tsconfig.json",
+    "make": "esbuild src/status_chart.mts --bundle --format=esm --minify --external:chart.js --external:chartjs-adapter-luxon --outfile=built/status_chart.mjs",
+    "view": "serve"
   },
   "repository": {
     "type": "git",
@@ -23,12 +24,6 @@
     "url": "https://github.com/microsoft/STL/issues"
   },
   "homepage": "https://github.com/microsoft/STL/tree/gh-pages#readme",
-  "prettier": {
-    "arrowParens": "avoid",
-    "printWidth": 120,
-    "singleQuote": true,
-    "tabWidth": 4
-  },
   "dependencies": {
     "@octokit/graphql": "^9.0.3",
     "@types/cli-progress": "^3.11.6",
@@ -40,8 +35,9 @@
     "cli-progress": "^3.12.0",
     "dotenv": "^17.4.1",
     "esbuild": "^0.28.0",
-    "http-server": "^14.1.1",
     "luxon": "^3.7.2",
+    "prettier": "^3.8.2",
+    "serve": "^14.2.6",
     "typescript": "^6.0.2",
     "yargs": "^18.0.0"
   }
