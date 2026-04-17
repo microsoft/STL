@@ -404,7 +404,7 @@ public:
         return *this;
     }
 
-    template <class... _Types>
+    template <class... _Types, enable_if_t<is_constructible_v<_Ty, _Types...>, int> = 0>
     _CONSTEXPR20 _Ty& emplace(_Types&&... _Args)
         noexcept(is_nothrow_constructible_v<_Ty, _Types...>) /* strengthened */ {
         reset();

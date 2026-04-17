@@ -8366,6 +8366,7 @@ int run_test()
 #include <algorithm>
 #include <cassert>
 #include <optional>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -8409,6 +8410,29 @@ namespace msvc {
         static_assert(check_size<not_empty>);
         static_assert(check_size<many_bases>);
     } // namespace size
+
+    namespace lwg2746 {
+        template <class V, class T, class... Args>
+        constexpr bool can_emplace_impl = false;
+        template <class T, class... Args>
+        constexpr bool
+            can_emplace_impl<std::void_t<decltype(std::declval<T&>().emplace(std::declval<Args>()...))>, T, Args...> =
+                true;
+
+        template <class T, class... Args>
+        constexpr bool can_emplace = can_emplace_impl<void, T, Args...>;
+
+        static_assert(can_emplace<std::optional<int>>);
+        static_assert(can_emplace<std::optional<int>, int>);
+        static_assert(!can_emplace<std::optional<int>, std::string>);
+        static_assert(!can_emplace<std::optional<int>, int, int>);
+
+        static_assert(can_emplace<std::optional<std::string>, const std::string&>);
+        static_assert(can_emplace<std::optional<std::string>, const char*, unsigned int>);
+        static_assert(!can_emplace<std::optional<std::string>, const wchar_t*, unsigned int>);
+        static_assert(can_emplace<std::optional<std::string>, std::initializer_list<char>>);
+        static_assert(!can_emplace<std::optional<std::string>, std::initializer_list<int>>);
+    } // namespace lwg2746
 
     namespace lwg2842 {
         struct ConvertibleFromInPlace {
