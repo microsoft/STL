@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <__msvc_int128.hpp>
 #include <cassert>
 #include <compare>
 #include <concepts>
@@ -3676,6 +3677,33 @@ namespace lwg3420 {
     static_assert(!has_member_difference_type<std::iterator_traits<X>>);
     static_assert(!has_member_value_type<std::iterator_traits<X>>);
 } // namespace lwg3420
+
+namespace lwg4510 {
+    // Test LWG-4510
+    // "Ambiguity of std::ranges::advance and std::ranges::next when the difference type is also a sentinel type"
+    template <class T>
+    struct IterType {
+        using difference_type = int;
+
+        IterType& operator++();
+        IterType operator++(int);
+        IterType& operator*() const;
+
+        friend bool operator==(const IterType&, const IterType&);
+    };
+
+    struct AnyType {
+        template <class T>
+        AnyType(const T&);
+
+        friend bool operator==(const AnyType&, const AnyType&);
+    };
+
+    static_assert(std::input_or_output_iterator<IterType<AnyType>>);
+    static_assert(std::sentinel_for<IterType<AnyType>, IterType<AnyType>>);
+    static_assert(!std::sentinel_for<int, IterType<AnyType>>);
+    static_assert(!std::sentinel_for<std::_Unsigned128, IterType<AnyType>>);
+} // namespace lwg4510
 
 namespace vso1121031 {
     // Validate that indirectly_readable_traits accepts type arguments with both value_type and element_type nested
