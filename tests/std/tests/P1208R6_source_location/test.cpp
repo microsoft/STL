@@ -15,7 +15,10 @@ using namespace std;
 #define THISCALL_OR_CDECL "__cdecl"
 #endif
 
+static_assert(semiregular<source_location>);
 static_assert(is_nothrow_default_constructible_v<source_location>);
+static_assert(is_nothrow_copy_constructible_v<source_location>);
+static_assert(is_nothrow_copy_assignable_v<source_location>);
 static_assert(is_nothrow_move_constructible_v<source_location>);
 static_assert(is_nothrow_move_assignable_v<source_location>);
 static_assert(is_nothrow_swappable_v<source_location>);
@@ -265,6 +268,20 @@ constexpr bool test() {
     header_test();
     return true;
 }
+
+// Also test LWG-4506 "source_location is explicitly unspecified if is constexpr or not"
+constexpr bool test_lwg_4506() { // COMPILE-ONLY
+    auto loc                                   = source_location::current();
+    auto loc_copy_constructed                  = loc;
+    [[maybe_unused]] auto loc_move_constructed = move(loc_copy_constructed);
+    source_location loc_copy_assigned;
+    [[maybe_unused]] source_location loc_move_assigned;
+    loc_copy_assigned = loc;
+    loc_move_assigned = move(loc_copy_assigned);
+    return true;
+}
+
+static_assert(test_lwg_4506());
 
 // Also test GH-2822 Failed to specialize std::invoke on operator() with default argument
 // std::source_location::current()
