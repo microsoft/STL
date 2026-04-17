@@ -33,6 +33,28 @@ _STD_BEGIN
 _EXPORT_STD struct nullopt_t { // no-value state indicator
     struct _Tag {};
     constexpr explicit nullopt_t(_Tag) {}
+#if _HAS_CXX20
+    _NODISCARD friend constexpr auto operator<=>(nullopt_t, nullopt_t) noexcept /* strengthened */ = default;
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+    _NODISCARD friend constexpr bool operator==(nullopt_t, nullopt_t) noexcept /* strengthened */ {
+        return true;
+    }
+    _NODISCARD friend constexpr bool operator!=(nullopt_t, nullopt_t) noexcept /* strengthened */ {
+        return false;
+    }
+    _NODISCARD friend constexpr bool operator<(nullopt_t, nullopt_t) noexcept /* strengthened */ {
+        return false;
+    }
+    _NODISCARD friend constexpr bool operator>(nullopt_t, nullopt_t) noexcept /* strengthened */ {
+        return false;
+    }
+    _NODISCARD friend constexpr bool operator<=(nullopt_t, nullopt_t) noexcept /* strengthened */ {
+        return true;
+    }
+    _NODISCARD friend constexpr bool operator>=(nullopt_t, nullopt_t) noexcept /* strengthened */ {
+        return true;
+    }
+#endif // ^^^ !_HAS_CXX20 ^^^
 };
 _EXPORT_STD inline constexpr nullopt_t nullopt{nullopt_t::_Tag{}};
 
