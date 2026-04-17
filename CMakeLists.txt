@@ -91,10 +91,13 @@ add_compile_definitions(
     _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN11_BR)
 
 if(STL_USE_ANALYZE)
-    # TRANSITION, Windows SDK 10.0.28000 emits
+    # TRANSITION, Windows SDK 10.0.28000 emits multiple warnings:
     # "warning C6553: The annotation for function 'LCMapStringEx' on _Param_(9) does not apply to a value type."
     # Reported as OS-40109504 "Windows SDK: incorrect SAL annotations on functions the STL uses".
-    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553>")
+    # "warning C28285: For function '_BitScanForward' '_Param_(1)' syntax error in 'SAL_range(0,(sizeof(Mask)*8)-1)' near 'Mask)*8'."
+    # Reported as VSO-2946529 "/analyze emits warning C28285 for _BitScanForward declared by winnt.h".
+    # Fixed by OS-PR-14602802 on 2026-01-22.
+    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553;/wd28285>")
 
     if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64ec")
         # TRANSITION, Windows SDK 10.0.28000 emits
