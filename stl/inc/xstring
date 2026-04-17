@@ -747,11 +747,11 @@ private:
 #define _ASAN_STRING_REMOVE(_Str)                       (_Str)._Remove_annotation()
 #define _ASAN_STRING_CREATE(_Str)                       (_Str)._Create_annotation()
 #define _ASAN_STRING_MODIFY(_Str, _Old_size, _New_size) (_Str)._Modify_annotation(_Old_size, _New_size)
-#else // ^^^ _INSERT_STRING_ANNOTATION / !_INSERT_STRING_ANNOTATION vvv
+#else // ^^^ defined(_INSERT_STRING_ANNOTATION) / !defined(_INSERT_STRING_ANNOTATION) vvv
 #define _ASAN_STRING_REMOVE(_Str)
 #define _ASAN_STRING_CREATE(_Str)
 #define _ASAN_STRING_MODIFY(_Str, _Old_size, _New_size)
-#endif // ^^^ !_INSERT_STRING_ANNOTATION ^^^
+#endif // ^^^ !defined(_INSERT_STRING_ANNOTATION) ^^^
 
 public:
     _CONSTEXPR20
@@ -949,9 +949,9 @@ private:
             } else { // _Strat == _Construct_strategy::_From_string
 #ifdef _INSERT_STRING_ANNOTATION
                 _Traits::copy(_My_data._Bx._Buf, _Arg, static_cast<size_t>(_Count + 1));
-#else // ^^^ _INSERT_STRING_ANNOTATION / !_INSERT_STRING_ANNOTATION vvv
+#else // ^^^ defined(_INSERT_STRING_ANNOTATION) / !defined(_INSERT_STRING_ANNOTATION) vvv
                 _Traits::copy(_My_data._Bx._Buf, _Arg, _BUF_SIZE);
-#endif // ^^^ !_INSERT_STRING_ANNOTATION ^^^
+#endif // ^^^ !defined(_INSERT_STRING_ANNOTATION) ^^^
             }
 
             _Proxy._Release();
@@ -1342,7 +1342,7 @@ private:
                 return;
             }
         }
-#endif // !defined(_INSERT_STRING_ANNOTATION)
+#endif // ^^^ !defined(_INSERT_STRING_ANNOTATION) ^^^
 
         if (_Right_data._Large_mode_engaged()) { // steal buffer
             _Swap_proxy_and_iterators(_Right);
@@ -2467,7 +2467,7 @@ public:
                 return;
             }
         }
-#endif // !defined(_INSERT_STRING_ANNOTATION)
+#endif // ^^^ !defined(_INSERT_STRING_ANNOTATION) ^^^
 
         const bool _My_large    = _My_data._Large_mode_engaged();
         const bool _Right_large = _Right_data._Large_mode_engaged();

@@ -805,7 +805,7 @@ struct _Simple_types { // wraps types from allocators with simple addressing for
     using const_pointer   = const value_type*;
 };
 
-// The number of user bytes a single byte of ASAN shadow memory can track.
+// The number of user bytes a single byte of ASan shadow memory can track.
 _INLINE_VAR constexpr size_t _Asan_granularity      = 8;
 _INLINE_VAR constexpr size_t _Asan_granularity_mask = _Asan_granularity - 1;
 

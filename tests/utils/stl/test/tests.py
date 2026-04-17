@@ -346,7 +346,7 @@ class STLTest(Test):
             self._addCustomFeature('MT')
             self._addCustomFeature('static_CRT')
 
-        # clang doesn't know how to link in the VS version of the asan runtime automatically
+        # Clang doesn't know how to link in the VS version of the ASan runtime automatically
         if 'asan' in self.config.available_features and 'clang' in self.config.available_features:
             self.linkFlags.append("/INFERASANLIBS")
 

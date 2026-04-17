@@ -206,7 +206,7 @@ bool verify_vector(vector<T, Alloc>& vec) {
 #else // ^^^ ASan instrumentation enabled / ASan instrumentation disabled vvv
     (void) vec;
     return true;
-#endif // Asan instrumentation disabled
+#endif // ^^^ ASan instrumentation disabled ^^^
 }
 
 // Note: This class does not satisfy all the allocator requirements but is sufficient for this test.
