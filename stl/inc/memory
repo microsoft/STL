@@ -4537,7 +4537,7 @@ _NODISCARD auto inout_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
 }
 
 #ifdef __cpp_lib_start_lifetime_as // TRANSITION
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty* start_lifetime_as(void* const _Ptr) noexcept {
 #ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
     static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
@@ -4545,7 +4545,7 @@ _Ty* start_lifetime_as(void* const _Ptr) noexcept {
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/1)");
     return __builtin_start_lifetime_as<_Ty>(_Ptr);
 }
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 const _Ty* start_lifetime_as(const void* const _Ptr) noexcept {
 #ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
     static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
@@ -4553,7 +4553,7 @@ const _Ty* start_lifetime_as(const void* const _Ptr) noexcept {
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/1)");
     return __builtin_start_lifetime_as<_Ty>(_Ptr);
 }
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 volatile _Ty* start_lifetime_as(volatile void* const _Ptr) noexcept {
 #ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
     static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
@@ -4561,7 +4561,7 @@ volatile _Ty* start_lifetime_as(volatile void* const _Ptr) noexcept {
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/1)");
     return __builtin_start_lifetime_as<_Ty>(_Ptr);
 }
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 const volatile _Ty* start_lifetime_as(const volatile void* const _Ptr) noexcept {
 #ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
     static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
@@ -4570,22 +4570,22 @@ const volatile _Ty* start_lifetime_as(const volatile void* const _Ptr) noexcept 
     return __builtin_start_lifetime_as<_Ty>(_Ptr);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _Ty* start_lifetime_as_array(void* const _Ptr, const size_t _Nx) noexcept {
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/5)");
     return __builtin_start_lifetime_as_array<_Ty>(_Ptr, _Nx);
 }
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 const _Ty* start_lifetime_as_array(const void* const _Ptr, const size_t _Nx) noexcept {
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/5)");
     return __builtin_start_lifetime_as_array<_Ty>(_Ptr, _Nx);
 }
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 volatile _Ty* start_lifetime_as_array(volatile void* const _Ptr, const size_t _Nx) noexcept {
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/5)");
     return __builtin_start_lifetime_as_array<_Ty>(_Ptr, _Nx);
 }
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 const volatile _Ty* start_lifetime_as_array(const volatile void* const _Ptr, const size_t _Nx) noexcept {
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/5)");
     return __builtin_start_lifetime_as_array<_Ty>(_Ptr, _Nx);
