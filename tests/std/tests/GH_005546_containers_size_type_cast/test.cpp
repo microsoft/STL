@@ -517,10 +517,87 @@ CONSTEXPR20 bool test() {
     return true;
 }
 
-#if _HAS_CXX20
-static_assert(test());
-#endif // _HAS_CXX20
+template <typename T = char>
+struct WideSizeAllocator {
+    using value_type = T;
+    using size_type  = unsigned long long;
+
+    WideSizeAllocator() = default;
+
+    template <typename U>
+    constexpr WideSizeAllocator(const WideSizeAllocator<U>&) noexcept {}
+
+    constexpr T* allocate(size_type n) {
+        return allocator<T>{}.allocate(static_cast<size_t>(n));
+    }
+    constexpr void deallocate(T* p, size_type n) noexcept {
+        allocator<T>{}.deallocate(p, static_cast<size_t>(n));
+    }
+};
+
+CONSTEXPR20 bool test_LWG4259() {
+    // On 32-bit platforms, basic_string may use 64-bit size_type (depending on the allocator), while basic_string_view
+    // uses 32-bit size_t. This makes basic_string_view::npos smaller than basic_string::npos.
+    using WideSizeString = basic_string<char, char_traits<char>, WideSizeAllocator<char>>;
+
+    WideSizeString str           = "Hello World";
+    WideSizeString not_found_str = "XYZ";
+    const char* not_found_cstr   = "XYZ";
+    assert(str.find(not_found_str) == WideSizeString::npos);
+    assert(str.find(not_found_cstr, 0, 3) == WideSizeString::npos);
+    assert(str.find(not_found_cstr) == WideSizeString::npos);
+    assert(str.find('Z') == WideSizeString::npos);
+#if _HAS_CXX17
+    string_view sv = "XYZ";
+    assert(str.find(sv) == WideSizeString::npos);
+#endif
+    assert(str.rfind(not_found_str) == WideSizeString::npos);
+    assert(str.rfind(not_found_cstr, WideSizeString::npos, 3) == WideSizeString::npos);
+    assert(str.rfind(not_found_cstr) == WideSizeString::npos);
+    assert(str.rfind('Z') == WideSizeString::npos);
+#if _HAS_CXX17
+    assert(str.rfind(sv) == WideSizeString::npos);
+#endif
+    assert(str.find_first_of(not_found_str) == WideSizeString::npos);
+    assert(str.find_first_of(not_found_cstr, 0, 3) == WideSizeString::npos);
+    assert(str.find_first_of(not_found_cstr) == WideSizeString::npos);
+    assert(str.find_first_of('Z') == WideSizeString::npos);
+#if _HAS_CXX17
+    assert(str.find_first_of(sv) == WideSizeString::npos);
+#endif
+    WideSizeString all_in_str = "Hello World!";
+    WideSizeString search_all = "Hello World";
+    assert(search_all.find_first_not_of(all_in_str) == WideSizeString::npos);
+    assert(search_all.find_first_not_of("Hello World!", 0, 12) == WideSizeString::npos);
+    assert(search_all.find_first_not_of("Hello World!") == WideSizeString::npos);
+    WideSizeString repeated = "AAAAA";
+    assert(repeated.find_first_not_of('A') == WideSizeString::npos);
+#if _HAS_CXX17
+    string_view sv_all = "Hello World!";
+    assert(search_all.find_first_not_of(sv_all) == WideSizeString::npos);
+#endif
+    assert(str.find_last_of(not_found_str) == WideSizeString::npos);
+    assert(str.find_last_of(not_found_cstr, WideSizeString::npos, 3) == WideSizeString::npos);
+    assert(str.find_last_of(not_found_cstr) == WideSizeString::npos);
+    assert(str.find_last_of('Z') == WideSizeString::npos);
+#if _HAS_CXX17
+    assert(str.find_last_of(sv) == WideSizeString::npos);
+#endif
+    assert(search_all.find_last_not_of(all_in_str) == WideSizeString::npos);
+    assert(search_all.find_last_not_of("Hello World!", WideSizeString::npos, 12) == WideSizeString::npos);
+    assert(search_all.find_last_not_of("Hello World!") == WideSizeString::npos);
+    assert(repeated.find_last_not_of('A') == WideSizeString::npos);
+#if _HAS_CXX17
+    assert(search_all.find_last_not_of(sv_all) == WideSizeString::npos);
+#endif
+    return true;
+}
 
 int main() {
+#if _HAS_CXX20
+    static_assert(test());
+    static_assert(test_LWG4259());
+#endif // _HAS_CXX20
     test();
+    test_LWG4259();
 }
