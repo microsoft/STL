@@ -1329,10 +1329,18 @@ constexpr void check_deduction_guides() {
         static_assert(same_as<decltype(mds2), mdspan<const long, dextents<int, 3>, layout_stride>>);
     }
 
-    { // const typename AccessorType::data_handle_type&, const MappingType&, const AccessorType&
+    { // typename AccessorType::data_handle_type, const MappingType&, const AccessorType&
         vector<bool> bools = {true, false, true, false};
         mdspan mds{bools.begin(), TrackingLayout<>::mapping<extents<int, 2, 2>>(1), VectorBoolAccessor{}};
         static_assert(same_as<decltype(mds), mdspan<bool, extents<int, 2, 2>, TrackingLayout<>, VectorBoolAccessor>>);
+    }
+
+    if !consteval { // typename AccessorType::data_handle_type, const MappingType&, const AccessorType&
+        // (with volatile data_handle_type, per LWG-4511)
+        int a[1]{};
+        int* volatile p = a;
+        mdspan mds{p, layout_right::mapping<extents<size_t, 1>>{}, default_accessor<int>{}};
+        static_assert(same_as<decltype(mds), mdspan<int, extents<size_t, 1>>>);
     }
 }
 
