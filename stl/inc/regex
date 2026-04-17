@@ -1618,7 +1618,7 @@ public:
     _Node_base* _Begin_capture_group(unsigned int _Idx);
     void _Add_backreference(unsigned int _Idx);
     _Node_base* _Begin_if(_Node_base* _Start);
-    void _Else_if(_Node_base*, _Node_base*);
+    void _Else_if2(_Node_base*, _Node_base*);
     void _Add_rep(int _Min, int _Max, bool _Greedy);
     void _Negate();
     _Root_node* _End_pattern();
@@ -2238,7 +2238,7 @@ private:
     void _Do_assert_group(bool _Neg);
     bool _Wrapped_disjunction();
     void _Quantifier();
-    bool _Alternative();
+    void _Alternative2();
     void _Disjunction();
     void _Calculate_loop_simplicity(_Node_base* _Nx, _Node_base* _Ne, _Node_rep* _Outer_rep, bool _Nonreentrant);
 
@@ -3659,21 +3659,25 @@ _Node_base* _Builder2<_FwdIt, _Elem, _RxTraits>::_Begin_if(_Node_base* _Start) {
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder2<_FwdIt, _Elem, _RxTraits>::_Else_if(_Node_base* _Start, _Node_base* _End) { // add else node
-    _Node_if* _Parent  = static_cast<_Node_if*>(_Start->_Next);
-    _Node_base* _First = _End->_Next;
-    _End->_Next        = nullptr;
-    _Node_base* _Last  = _Current;
-    _Current           = _End;
-    _End->_Next        = nullptr;
-    _Last->_Next       = _End;
+void _Builder2<_FwdIt, _Elem, _RxTraits>::_Else_if2(_Node_base* const _Start, _Node_base* const _End) { // add else node
+    auto _Parent = static_cast<_Node_if*>(_Start->_Next);
     while (_Parent->_Child) {
         _Parent = _Parent->_Child;
     }
 
-    _Parent->_Child        = new _Node_if(_End);
-    _Parent->_Child->_Next = _First;
-    _First->_Prev          = _Parent->_Child;
+    const auto _Elseif_node = new _Node_if(_End);
+    _Parent->_Child         = _Elseif_node;
+    const auto _First       = _End->_Next;
+    if (_First) {
+        _End->_Next         = nullptr;
+        _Elseif_node->_Next = _First;
+        _First->_Prev       = _Elseif_node;
+        _Current->_Next     = _End;
+    } else { // empty alternative
+        _Elseif_node->_Next = _End;
+    }
+
+    _Current = _End;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -5810,13 +5814,12 @@ void _Parser2<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alternative
+void _Parser2<_FwdIt, _Elem, _RxTraits>::_Alternative2() { // check for valid alternative
     bool _Found = false;
-    for (;;) { // concatenate valid elements
+    while (_Mchar != _Meta_eos && _Mchar != _Meta_bar
+           && (_Mchar != _Meta_rpar || _Disj_count == 0)) { // concatenate valid elements
         bool _Quant = true;
-        if (_Mchar == _Meta_eos || _Mchar == _Meta_bar || (_Mchar == _Meta_rpar && _Disj_count != 0)) {
-            return _Found;
-        } else if (_Mchar == _Meta_rpar && !(_L_flags & _L_paren_bal)) {
+        if (_Mchar == _Meta_rpar && !(_L_flags & _L_paren_bal)) {
             _Error(regex_constants::error_paren);
         } else if (_Mchar == _Meta_dot) { // add dot node
             _Nfa._Add_dot();
@@ -5881,26 +5884,15 @@ bool _Parser2<_FwdIt, _Elem, _RxTraits>::_Alternative() { // check for valid alt
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser2<_FwdIt, _Elem, _RxTraits>::_Disjunction() { // check for valid disjunction
     _Node_base* _Pos1 = _Nfa._Getmark();
-    if (!_Alternative()) {
-        if (_Mchar != _Meta_bar) {
-            return; // zero-length alternative not followed by '|'
-        }
 
-        // zero-length leading alternative
-        _Node_base* _Pos3 = _Nfa._Begin_group();
-        _Nfa._End_group(_Pos3);
-    }
+    _Alternative2();
 
-    if (_Mchar == _Meta_bar) {
+    if (_Mchar == _Meta_bar) { // at least one more alternative
         _Node_base* _Pos2 = _Nfa._Begin_if(_Pos1);
         do { // append terms as long as we keep finding | characters
             _Next();
-            if (!_Alternative()) { // zero-length trailing alternative
-                _Node_base* _Pos3 = _Nfa._Begin_group();
-                _Nfa._End_group(_Pos3);
-            }
-
-            _Nfa._Else_if(_Pos1, _Pos2);
+            _Alternative2();
+            _Nfa._Else_if2(_Pos1, _Pos2);
         } while (_Mchar == _Meta_bar);
     }
 }
