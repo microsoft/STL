@@ -24,12 +24,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#ifdef _ALLOW_RANDOM_DISTRIBUTION_CONST_OPERATOR
-#define _DISTRIBUTION_CONST const
-#else
-#define _DISTRIBUTION_CONST
-#endif
-
 _STD_BEGIN
 #define _RNG_PROHIBIT_CHAR(_CheckedType)               \
     static_assert(!_Is_character<_CheckedType>::value, \
@@ -1492,12 +1486,12 @@ public:
     void reset() noexcept /* strengthened */ {}
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par._Min, _Par._Max);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0._Min, _Par0._Max);
     }
 
@@ -1634,12 +1628,12 @@ public:
     void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -1795,12 +1789,12 @@ public:
     void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -1963,12 +1957,12 @@ public:
     void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -2135,12 +2129,12 @@ public:
     void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -2323,12 +2317,12 @@ public:
     void reset() noexcept /* strengthened */ {}
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -2456,12 +2450,12 @@ public:
     void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -2784,12 +2778,12 @@ public:
     void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -2973,12 +2967,12 @@ public:
     void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -3107,12 +3101,12 @@ public:
     void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -3241,12 +3235,12 @@ public:
     void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -3365,12 +3359,12 @@ public:
     void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -3495,12 +3489,12 @@ public:
     void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -3689,12 +3683,12 @@ public:
     void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -3824,12 +3818,12 @@ public:
     void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -3970,12 +3964,12 @@ public:
     void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -4184,12 +4178,12 @@ public:
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Invoke_param_pcdf(_Eng, _Par._Pcdf);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Invoke_param_pcdf(_Eng, _Par0._Pcdf);
     }
 
@@ -4346,12 +4340,12 @@ public:
     void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -4395,7 +4389,7 @@ public:
     }
 
     template <class _Engine>
-    result_type _Eval(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    result_type _Eval(_Engine& _Eng, const param_type& _Par0) {
         size_t _Px = discrete_distribution<size_t>::_Invoke_param_pcdf(_Eng, _Par0._Base_params._Pcdf);
         uniform_real_distribution<_Ty> _Dist(_Par0._Bvec[_Px], _Par0._Bvec[_Px + 1]);
         return _Dist(_Eng);
@@ -4621,12 +4615,12 @@ public:
     void reset() noexcept /* strengthened */ {} // clear internal state
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng) {
         return _Eval(_Eng, _Par);
     }
 
     template <class _Engine>
-    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         return _Eval(_Eng, _Par0);
     }
 
@@ -4671,7 +4665,7 @@ public:
     }
 
     template <class _Engine>
-    result_type _Eval(_Engine& _Eng, const param_type& _Par0) _DISTRIBUTION_CONST {
+    result_type _Eval(_Engine& _Eng, const param_type& _Par0) {
         size_t _Px  = discrete_distribution<size_t>::_Invoke_param_pcdf(_Eng, _Par0._Pcdf);
         double _Px0 = _Par0._Pvec[_Px];
         double _Px1 = _Par0._Pvec[_Px + 1];
@@ -4737,8 +4731,6 @@ public:
     random_device& operator=(const random_device&) = delete;
 };
 _STD_END
-
-#undef _DISTRIBUTION_CONST
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
