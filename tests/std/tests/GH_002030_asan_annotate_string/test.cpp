@@ -1,7 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// REQUIRES: x64 || x86
+// REQUIRES: x64 || x86 || arm64
+
+#if defined(__clang__) && defined(_M_ARM64) // TRANSITION, LLVM-184902, fixed in Clang 23
+#pragma comment(linker, "/INFERASANLIBS")
+int main() {}
+#else // ^^^ workaround / no workaround vvv
 
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
 #pragma warning(disable : 4324) // '%s': structure was padded due to alignment specifier
@@ -1923,7 +1928,7 @@ void run_allocator_matrix() {
 }
 
 void test_DevCom_10116361() {
-    // We failed to null-terminate copies of SSO strings with ASAN annotations active.
+    // We failed to null-terminate copies of SSO strings with ASan annotations active.
 #ifdef _WIN64
     constexpr const char* text = "testtest";
     constexpr size_t n         = 8;
@@ -1945,7 +1950,7 @@ void test_DevCom_10116361() {
 }
 
 void test_DevCom_10109507() {
-    // replace failed to correctly munge asan annotations while working
+    // replace failed to correctly munge ASan annotations while working
     string s("abcd");
     s.replace(0, 1, "ef", 2);
     s.replace(0, 0, "xy", 2);
@@ -1960,7 +1965,7 @@ void test_gh_3883() {
 }
 
 void test_gh_3955() {
-    // GH-3955 <xstring>: ASAN report container-overflow in a legal case
+    // GH-3955 <xstring>: ASan report container-overflow in a legal case
     string s(19, '0');
     s = &s[3];
     assert(s == string(16, '0'));
@@ -1998,3 +2003,5 @@ int main(int argc, char* argv[]) {
 #endif // ASan instrumentation enabled
     return exec.run(argc, argv);
 }
+
+#endif // ^^^ no workaround ^^^

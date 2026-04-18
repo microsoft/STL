@@ -36,21 +36,20 @@ if ($Arch -ieq 'x64') {
 
 $VisualStudioWorkloads = @(
   'Microsoft.VisualStudio.Component.VC.ASAN',
-  'Microsoft.VisualStudio.Component.VC.CLI.Support',
   'Microsoft.VisualStudio.Component.VC.CMake.Project',
   'Microsoft.VisualStudio.Component.VC.CoreIde',
   'Microsoft.VisualStudio.Component.VC.Llvm.Clang',
-  'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
-  'Microsoft.VisualStudio.Component.VC.Tools.ARM64EC',
-  'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
+  'Microsoft.VisualStudio.Component.VC.Preview.ARM64',
+  'Microsoft.VisualStudio.Component.VC.Preview.CLI.Support',
+  'Microsoft.VisualStudio.Component.VC.Preview.Tools.x86.x64',
   'Microsoft.VisualStudio.Component.Windows11SDK.26100'
 )
 
-# https://learn.microsoft.com/en-us/visualstudio/install/visual-studio-on-arm-devices
+# https://learn.microsoft.com/visualstudio/install/visual-studio-on-arm-devices
 # "There's a single installer for both Visual Studio x64 and Visual Studio Arm64 architectures.
 # The Visual Studio Installer detects whether the system architecture is Arm64.
 # If it is, the installer downloads and installs the Arm64 version of Visual Studio."
-$VisualStudioUrl = 'https://aka.ms/vs/18/insiders/vs_Community.exe'
+$VisualStudioUrl = 'https://aka.ms/vs/insiders/vs_community.exe'
 $VisualStudioArgs = @('--quiet', '--norestart', '--wait', '--nocache')
 foreach ($workload in $VisualStudioWorkloads) {
   $VisualStudioArgs += '--add'
@@ -59,23 +58,23 @@ foreach ($workload in $VisualStudioWorkloads) {
 
 # https://github.com/PowerShell/PowerShell/releases/latest
 if ($Provisioning_x64) {
-  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.4/PowerShell-7.5.4-win-x64.msi'
+  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.0/PowerShell-7.6.0-win-x64.msi'
 } else {
-  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.4/PowerShell-7.5.4-win-arm64.msi'
+  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.0/PowerShell-7.6.0-win-arm64.msi'
 }
 $PowerShellArgs = @('/quiet', '/norestart')
 
 # https://www.python.org
 if ($Provisioning_x64) {
-  $PythonUrl = 'https://www.python.org/ftp/python/3.14.2/python-3.14.2-amd64.exe'
+  $PythonUrl = 'https://www.python.org/ftp/python/3.14.3/python-3.14.3-amd64.exe'
 } else {
-  $PythonUrl = 'https://www.python.org/ftp/python/3.14.2/python-3.14.2-arm64.exe'
+  $PythonUrl = 'https://www.python.org/ftp/python/3.14.3/python-3.14.3-arm64.exe'
 }
 $PythonArgs = @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1', 'Include_doc=0')
 
 # https://developer.nvidia.com/cuda-toolkit
 if ($Provisioning_x64) {
-  $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda_12.4.0_551.61_windows.exe'
+  $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/13.2.0/local_installers/cuda_13.2.0_windows.exe'
 } else {
   $CudaUrl = 'CUDA is not installed for ARM64'
 }
@@ -177,7 +176,7 @@ Write-Host 'Setting environment variables...'
 
 Write-Host 'Enabling long paths...'
 
-# https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell
+# https://learn.microsoft.com/windows/win32/fileio/maximum-file-path-limitation
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' `
   -Value 1 -PropertyType DWORD -Force | Out-Null
 
@@ -185,6 +184,13 @@ if ($Provisioning_x64) {
   Write-Host 'Enabling native NVMe...'
   EnableNativeNVMe
 }
+
+# TRANSITION, patch Launch-VsDevShell.ps1 to pass `-vcvars_ver=preview` before a proper parameter is available.
+Write-Host 'Patching Launch-VsDevShell.ps1...'
+$launchVsDevShell = 'C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\Tools\Launch-VsDevShell.ps1'
+$paramRegex = 'VsInstanceId = \$instanceId'
+$paramSubst = '$&; DevCmdArguments = "-vcvars_ver=preview";'
+(Get-Content -Raw $launchVsDevShell) -creplace $paramRegex, $paramSubst | Set-Content -NoNewLine $launchVsDevShell
 
 # Tell create-1es-hosted-pool.ps1 that we succeeded.
 Write-Host 'PROVISION_IMAGE_SUCCEEDED'

@@ -57,8 +57,7 @@ namespace ranges {
         template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
             _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>
-        _STATIC_CALL_OPERATOR uninitialized_copy_result<_It, _Out> operator()(
-            _It _First1, _Se _Last1, _Out _First2, _OSe _Last2) _CONST_CALL_OPERATOR {
+        static uninitialized_copy_result<_It, _Out> operator()(_It _First1, _Se _Last1, _Out _First2, _OSe _Last2) {
             _STD _Adl_verify_range(_First1, _Last1);
             _STD _Adl_verify_range(_First2, _Last2);
             auto _UResult = _Uninitialized_copy_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First1)),
@@ -72,8 +71,8 @@ namespace ranges {
 
         template <input_range _Rng1, _No_throw_forward_range _Rng2>
             requires constructible_from<range_value_t<_Rng2>, range_reference_t<_Rng1>>
-        _STATIC_CALL_OPERATOR uninitialized_copy_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>>
-            operator()(_Rng1&& _Range1, _Rng2&& _Range2) _CONST_CALL_OPERATOR {
+        static uninitialized_copy_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2) {
             auto _First1  = _RANGES begin(_Range1);
             auto _UResult = _Uninitialized_copy_unchecked(_RANGES _Unwrap_range_iter<_Rng1>(_STD move(_First1)),
                 _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
@@ -145,7 +144,7 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
     auto _UFirst = _STD _Get_unwrapped_n(_First, _Count);
     auto _UDest  = _STD _Get_unwrapped_n(_Dest, _Count);
     if constexpr (_Iter_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_constructible) {
-        _UDest = _STD _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _UDest);
+        _UDest = _STD _Copy_memcpy_n(_UFirst, static_cast<size_t>(_Count), _UDest);
     } else {
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
 
@@ -183,8 +182,8 @@ namespace ranges {
     struct _Uninitialized_copy_n_fn {
         template <input_iterator _It, _No_throw_forward_iterator _Out, _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>
-        _STATIC_CALL_OPERATOR uninitialized_copy_n_result<_It, _Out> operator()(
-            _It _First1, iter_difference_t<_It> _Count, _Out _First2, _OSe _Last2) _CONST_CALL_OPERATOR {
+        static uninitialized_copy_n_result<_It, _Out> operator()(
+            _It _First1, iter_difference_t<_It> _Count, _Out _First2, _OSe _Last2) {
             if (_Count <= 0) {
                 return {_STD move(_First1), _STD move(_First2)};
             }
@@ -256,8 +255,7 @@ namespace ranges {
         template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
             _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
-        _STATIC_CALL_OPERATOR uninitialized_move_result<_It, _Out> operator()(
-            _It _First1, _Se _Last1, _Out _First2, _OSe _Last2) _CONST_CALL_OPERATOR {
+        static uninitialized_move_result<_It, _Out> operator()(_It _First1, _Se _Last1, _Out _First2, _OSe _Last2) {
             _STD _Adl_verify_range(_First1, _Last1);
             _STD _Adl_verify_range(_First2, _Last2);
             auto _UResult = _RANGES _Uninitialized_move_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First1)),
@@ -271,8 +269,8 @@ namespace ranges {
 
         template <input_range _Rng1, _No_throw_forward_range _Rng2>
             requires constructible_from<range_value_t<_Rng2>, range_rvalue_reference_t<_Rng1>>
-        _STATIC_CALL_OPERATOR uninitialized_move_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>>
-            operator()(_Rng1&& _Range1, _Rng2&& _Range2) _CONST_CALL_OPERATOR {
+        static uninitialized_move_result<borrowed_iterator_t<_Rng1>, borrowed_iterator_t<_Rng2>> operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2) {
             auto _First1  = _RANGES begin(_Range1);
             auto _UResult = _RANGES _Uninitialized_move_unchecked(_RANGES _Unwrap_range_iter<_Rng1>(_STD move(_First1)),
                 _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2));
@@ -297,7 +295,7 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
     auto _UFirst = _STD _Get_unwrapped_n(_First, _Count);
     auto _UDest  = _STD _Get_unwrapped_n(_Dest, _Count);
     if constexpr (_Iter_move_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_constructible) {
-        _UDest = _STD _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _UDest);
+        _UDest = _STD _Copy_memcpy_n(_UFirst, static_cast<size_t>(_Count), _UDest);
         _UFirst += _Count;
     } else {
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
@@ -346,8 +344,8 @@ namespace ranges {
     struct _Uninitialized_move_n_fn {
         template <input_iterator _It, _No_throw_forward_iterator _Out, _No_throw_sentinel_for<_Out> _OSe>
             requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
-        _STATIC_CALL_OPERATOR uninitialized_move_n_result<_It, _Out> operator()(
-            _It _First1, iter_difference_t<_It> _Count, _Out _First2, _OSe _Last2) _CONST_CALL_OPERATOR {
+        static uninitialized_move_n_result<_It, _Out> operator()(
+            _It _First1, iter_difference_t<_It> _Count, _Out _First2, _OSe _Last2) {
             if (_Count <= 0) {
                 return {_STD move(_First1), _STD move(_First2)};
             }
@@ -392,7 +390,7 @@ namespace ranges {
     public:
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se, class _Ty>
             requires constructible_from<iter_value_t<_It>, const _Ty&>
-        _STATIC_CALL_OPERATOR _It operator()(_It _First, _Se _Last, const _Ty& _Val) _CONST_CALL_OPERATOR {
+        static _It operator()(_It _First, _Se _Last, const _Ty& _Val) {
             _STD _Adl_verify_range(_First, _Last);
             auto _UResult = _Uninitialized_fill_unchecked(
                 _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)), _Val);
@@ -403,8 +401,7 @@ namespace ranges {
 
         template <_No_throw_forward_range _Rng, class _Ty>
             requires constructible_from<range_value_t<_Rng>, const _Ty&>
-        _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(
-            _Rng&& _Range, const _Ty& _Val) _CONST_CALL_OPERATOR {
+        static borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Val) {
             return _RANGES _Rewrap_iterator(
                 _Range, _Uninitialized_fill_unchecked(_Ubegin(_Range), _Uend(_Range), _Val));
         }
@@ -498,8 +495,7 @@ namespace ranges {
     struct _Uninitialized_fill_n_fn {
         template <_No_throw_forward_iterator _It, class _Ty>
             requires constructible_from<iter_value_t<_It>, const _Ty&>
-        _STATIC_CALL_OPERATOR _It operator()(
-            _It _First, iter_difference_t<_It> _Count, const _Ty& _Val) _CONST_CALL_OPERATOR {
+        static _It operator()(_It _First, iter_difference_t<_It> _Count, const _Ty& _Val) {
             if (_Count <= 0) {
                 return _First;
             }
@@ -536,9 +532,8 @@ namespace ranges {
             requires (!is_unbounded_array_v<_Ty>) && requires(_Ty* _Ptr, _Types&&... _Args) {
                 ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types &&>(_Args)...); // per LWG-3888
             }
-        _STATIC_CALL_OPERATOR constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) _CONST_CALL_OPERATOR
-            noexcept(noexcept(
-                ::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
+        static constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) noexcept(
+            noexcept(::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
 #ifdef __EDG__
             return _STD construct_at(_Location, _STD forward<_Types>(_Args)...);
 #else // ^^^ EDG / Other vvv
@@ -548,14 +543,6 @@ namespace ranges {
 #if defined(__clang__) // TRANSITION, LLVM-117294
                 ::new (static_cast<void*>(_Location)) _Ty();
                 return __builtin_launder(_Location); // per old resolution of LWG-3436
-#elif defined(_MSC_VER) // TRANSITION, DevCom-10798069
-                if constexpr (is_trivially_destructible_v<_Ty>) {
-                    _MSVC_CONSTEXPR return ::new (_Secret_placement_new_tag{}, static_cast<void*>(_Location)) _Ty[1]();
-                } else {
-                    // For non-trivially-destructible types, the workaround doesn't work
-                    // because additional space is required to record the number of class objects to destroy.
-                    return ::new (static_cast<void*>(_Location)) _Ty[1]();
-                }
 #else // ^^^ workaround / no workaround vvv
                 _MSVC_CONSTEXPR return ::new (static_cast<void*>(_Location)) _Ty[1]();
 #endif // ^^^ no workaround ^^^
@@ -574,7 +561,7 @@ namespace ranges {
 
     struct _Destroy_at_fn {
         template <destructible _Ty>
-        _STATIC_CALL_OPERATOR constexpr void operator()(_Ty* const _Location) _CONST_CALL_OPERATOR noexcept {
+        static constexpr void operator()(_Ty* const _Location) noexcept {
             if constexpr (is_array_v<_Ty>) {
                 (void) _RANGES _Destroy_unchecked(_RANGES begin(*_Location), _RANGES end(*_Location));
             } else {
@@ -623,7 +610,7 @@ namespace ranges {
     struct _Destroy_fn {
         template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires destructible<iter_value_t<_It>>
-        _STATIC_CALL_OPERATOR constexpr _It operator()(_It _First, _Se _Last) _CONST_CALL_OPERATOR noexcept {
+        static constexpr _It operator()(_It _First, _Se _Last) noexcept {
             _STD _Adl_verify_range(_First, _Last);
             _STD _Seek_wrapped(_First, _RANGES _Destroy_unchecked(_RANGES _Unwrap_iter<_Se>(_STD move(_First)),
                                            _RANGES _Unwrap_sent<_It>(_STD move(_Last))));
@@ -632,8 +619,7 @@ namespace ranges {
 
         template <_No_throw_input_range _Rng>
             requires destructible<range_value_t<_Rng>>
-        _STATIC_CALL_OPERATOR constexpr borrowed_iterator_t<_Rng> operator()(
-            _Rng&& _Range) _CONST_CALL_OPERATOR noexcept {
+        static constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) noexcept {
             auto _First = _RANGES begin(_Range);
             _STD _Seek_wrapped(
                 _First, _RANGES _Destroy_unchecked(_RANGES _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range)));
@@ -683,8 +669,7 @@ namespace ranges {
     struct _Destroy_n_fn {
         template <_No_throw_input_iterator _It>
             requires destructible<iter_value_t<_It>>
-        _STATIC_CALL_OPERATOR constexpr _It operator()(
-            _It _First, iter_difference_t<_It> _Count) _CONST_CALL_OPERATOR noexcept {
+        static constexpr _It operator()(_It _First, iter_difference_t<_It> _Count) noexcept {
             if (_Count <= 0) {
                 return _First;
             }
@@ -742,7 +727,7 @@ namespace ranges {
     public:
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires default_initializable<iter_value_t<_It>>
-        _STATIC_CALL_OPERATOR _It operator()(_It _First, _Se _Last) _CONST_CALL_OPERATOR {
+        static _It operator()(_It _First, _Se _Last) {
             _STD _Adl_verify_range(_First, _Last);
             auto _UResult = _Uninitialized_default_construct_unchecked(
                 _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
@@ -753,7 +738,7 @@ namespace ranges {
 
         template <_No_throw_forward_range _Rng>
             requires default_initializable<range_value_t<_Rng>>
-        _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) _CONST_CALL_OPERATOR {
+        static borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) {
             auto _UResult = _Uninitialized_default_construct_unchecked(_Ubegin(_Range), _Uend(_Range));
 
             return _RANGES _Rewrap_iterator(_Range, _STD move(_UResult));
@@ -818,7 +803,7 @@ namespace ranges {
     struct _Uninitialized_default_construct_n_fn {
         template <_No_throw_forward_iterator _It>
             requires default_initializable<iter_value_t<_It>>
-        _STATIC_CALL_OPERATOR _It operator()(_It _First, iter_difference_t<_It> _Count) _CONST_CALL_OPERATOR {
+        static _It operator()(_It _First, iter_difference_t<_It> _Count) {
             if (_Count <= 0) {
                 return _First;
             }
@@ -871,7 +856,7 @@ namespace ranges {
     public:
         template <_No_throw_forward_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires default_initializable<iter_value_t<_It>>
-        _STATIC_CALL_OPERATOR _It operator()(_It _First, _Se _Last) _CONST_CALL_OPERATOR {
+        static _It operator()(_It _First, _Se _Last) {
             _STD _Adl_verify_range(_First, _Last);
             auto _UResult = _Uninitialized_value_construct_unchecked(
                 _RANGES _Unwrap_iter<_Se>(_STD move(_First)), _RANGES _Unwrap_sent<_It>(_STD move(_Last)));
@@ -882,7 +867,7 @@ namespace ranges {
 
         template <_No_throw_forward_range _Rng>
             requires default_initializable<range_value_t<_Rng>>
-        _STATIC_CALL_OPERATOR borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) _CONST_CALL_OPERATOR {
+        static borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) {
             auto _UResult = _Uninitialized_value_construct_unchecked(_Ubegin(_Range), _Uend(_Range));
 
             return _RANGES _Rewrap_iterator(_Range, _STD move(_UResult));
@@ -935,7 +920,7 @@ namespace ranges {
     struct _Uninitialized_value_construct_n_fn {
         template <_No_throw_forward_iterator _It>
             requires default_initializable<iter_value_t<_It>>
-        _STATIC_CALL_OPERATOR _It operator()(_It _First, iter_difference_t<_It> _Count) _CONST_CALL_OPERATOR {
+        static _It operator()(_It _First, iter_difference_t<_It> _Count) {
             if (_Count <= 0) {
                 return _First;
             }
@@ -2301,7 +2286,7 @@ template <class _Ty, size_t _Size>
 void _Uninitialized_copy_multidimensional(const _Ty (&_In)[_Size], _Ty (&_Out)[_Size]) {
     using _Item = remove_all_extents_t<_Ty>;
     if constexpr (conjunction_v<is_trivially_copy_constructible<_Item>, is_trivially_destructible<_Item>>) {
-        _STD _Copy_memmove_n(_In, _Size, _Out);
+        _STD _Copy_memcpy_n(_In, _Size, _Out);
     } else if constexpr (is_array_v<_Ty>) {
         _Reverse_destroy_multidimensional_n_guard<_Ty> _Guard{_Out, 0};
         for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
@@ -2666,7 +2651,7 @@ void _Uninitialized_copy_multidimensional_al(const _Ty (&_In)[_Size], _Ty (&_Out
     using _Item = remove_all_extents_t<_Ty>;
     if constexpr (conjunction_v<is_trivially_copy_constructible<_Item>, is_trivially_destructible<_Item>,
                       _Uses_default_construct<_Alloc, _Item*, const _Item&>>) {
-        _STD _Copy_memmove_n(_In, _Size, _Out);
+        _STD _Copy_memcpy_n(_In, _Size, _Out);
     } else if constexpr (is_array_v<_Ty>) {
         _Reverse_destroy_multidimensional_n_al_guard<_Ty, _Alloc> _Guard{_Out, 0, _Al};
         for (size_t& _Idx = _Guard._Index; _Idx < _Size; ++_Idx) {
@@ -3387,6 +3372,11 @@ constexpr bool _Can_form_pointer = false;
 template <class _Ty>
 constexpr bool _Can_form_pointer<_Ty, void_t<_Ty*>> = true;
 
+template <class, class = void>
+constexpr bool _Can_dereference = false;
+template <class _Ty>
+constexpr bool _Can_dereference<_Ty, void_t<decltype(*_STD declval<_Ty>())>> = true;
+
 _EXPORT_STD template <class _Ty, class _Dx /* = default_delete<_Ty> */>
 class unique_ptr { // non-copyable pointer to an object
 public:
@@ -3489,12 +3479,15 @@ public:
         return _Mypair._Get_first();
     }
 
+    template <class _Ptr = pointer, enable_if_t<_Can_dereference<_Ptr>, int> = 0>
     _NODISCARD _CONSTEXPR23 add_lvalue_reference_t<_Ty> operator*() const noexcept(noexcept(*_STD declval<pointer>())) {
-#ifdef __cpp_lib_reference_from_temporary
+#if _HAS_CXX23
+#ifdef __cpp_lib_reference_from_temporary // TRANSITION
         static_assert(
             !reference_converts_from_temporary_v<add_lvalue_reference_t<_Ty>, decltype(*_STD declval<pointer>())>,
             "Can't return a temporary object from unique_ptr::operator*(). (N5014 [unique.ptr.single.observers]/1)");
-#endif // ^^^ defined(__cpp_lib_reference_from_temporary) ^^^
+#endif // ^^^ no workaround ^^^
+#endif // _HAS_CXX23
         return *_Mypair._Myval2;
     }
 
@@ -3943,7 +3936,7 @@ struct hash<shared_ptr<_Ty>> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = shared_ptr<_Ty>;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
-    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const shared_ptr<_Ty>& _Keyval) _CONST_CALL_OPERATOR noexcept {
+    _NODISCARD static size_t operator()(const shared_ptr<_Ty>& _Keyval) noexcept {
         return hash<typename shared_ptr<_Ty>::element_type*>()(_Keyval.get());
     }
 };
@@ -4542,6 +4535,63 @@ _NODISCARD auto inout_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
         return inout_ptr_t<_SmartPtr, _Pointer, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
     }
 }
+
+#ifdef __cpp_lib_start_lifetime_as // TRANSITION
+_EXPORT_STD template <class _Ty>
+_Ty* start_lifetime_as(void* const _Ptr) noexcept {
+#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
+    static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
+#endif // ^^^ no workaround ^^^
+    static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/1)");
+    return __builtin_start_lifetime_as<_Ty>(_Ptr);
+}
+_EXPORT_STD template <class _Ty>
+const _Ty* start_lifetime_as(const void* const _Ptr) noexcept {
+#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
+    static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
+#endif // ^^^ no workaround ^^^
+    static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/1)");
+    return __builtin_start_lifetime_as<_Ty>(_Ptr);
+}
+_EXPORT_STD template <class _Ty>
+volatile _Ty* start_lifetime_as(volatile void* const _Ptr) noexcept {
+#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
+    static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
+#endif // ^^^ no workaround ^^^
+    static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/1)");
+    return __builtin_start_lifetime_as<_Ty>(_Ptr);
+}
+_EXPORT_STD template <class _Ty>
+const volatile _Ty* start_lifetime_as(const volatile void* const _Ptr) noexcept {
+#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
+    static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
+#endif // ^^^ no workaround ^^^
+    static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/1)");
+    return __builtin_start_lifetime_as<_Ty>(_Ptr);
+}
+
+_EXPORT_STD template <class _Ty>
+_Ty* start_lifetime_as_array(void* const _Ptr, const size_t _Nx) noexcept {
+    static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/5)");
+    return __builtin_start_lifetime_as_array<_Ty>(_Ptr, _Nx);
+}
+_EXPORT_STD template <class _Ty>
+const _Ty* start_lifetime_as_array(const void* const _Ptr, const size_t _Nx) noexcept {
+    static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/5)");
+    return __builtin_start_lifetime_as_array<_Ty>(_Ptr, _Nx);
+}
+_EXPORT_STD template <class _Ty>
+volatile _Ty* start_lifetime_as_array(volatile void* const _Ptr, const size_t _Nx) noexcept {
+    static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/5)");
+    return __builtin_start_lifetime_as_array<_Ty>(_Ptr, _Nx);
+}
+_EXPORT_STD template <class _Ty>
+const volatile _Ty* start_lifetime_as_array(const volatile void* const _Ptr, const size_t _Nx) noexcept {
+    static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/5)");
+    return __builtin_start_lifetime_as_array<_Ty>(_Ptr, _Nx);
+}
+#endif // ^^^ defined(__cpp_lib_start_lifetime_as) ^^^
+
 #endif // _HAS_CXX23
 _STD_END
 

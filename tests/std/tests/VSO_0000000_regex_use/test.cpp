@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
+#include <list>
 #include <regex>
 #include <string>
 
@@ -2441,6 +2443,163 @@ void test_gh_6022() {
     g_regexTester.should_match("abaaacaabaaaadab", R"((?:(a*)b(\1*)a*c)+aabaaaad\2b)");
 }
 
+void test_gh_6118() {
+    // GH-6118: regex_search() sometimes incorrectly matches capturing groups
+    // regex_search() failed to reset capture groups between match attempts.
+    {
+        test_regex re_matching_inbetween(&g_regexTester, "a|(b)c");
+        re_matching_inbetween.should_search_match_capture_groups("ba", "a", match_default, {{-1, -1}});
+    }
+
+    {
+        test_regex re_matching_at_end(&g_regexTester, "$|(b)c");
+        re_matching_at_end.should_search_match_capture_groups("b", "", match_default, {{-1, -1}});
+    }
+}
+
+void test_gh_6147() {
+    // GH-6147: Implement small vector optimization for state frames
+    //
+    // This tests that the buffer doesn't contain uninitialized initial areas after several reallocations
+    // by forcing the creation of a sufficiently big vector followed by full backtracking.
+    g_regexTester.should_not_match(string(5000, 'a') + 'c', "(a|b)*");
+}
+
+void test_gh_6181() {
+    // GH-6181: match_results are not filled correctly
+    // when regex_match() and regex_search() are called on a default-constructed basic_regex
+
+    const string input{"abc"};
+    const regex empty_re{};
+    {
+        smatch captures;
+        assert(!regex_match(input, captures, empty_re));
+        assert(captures.ready());
+        assert(captures.empty());
+    }
+
+    {
+        smatch captures;
+        assert(!regex_search(input, captures, empty_re));
+        assert(captures.ready());
+        assert(captures.empty());
+    }
+
+    const regex abc_re{"abc"};
+    {
+        smatch captures;
+        assert(regex_match(input, captures, abc_re));
+        assert(captures.ready());
+        assert(captures.size() == 1);
+
+        assert(!regex_match(input, captures, empty_re));
+        assert(captures.ready());
+        assert(captures.empty());
+    }
+
+    {
+        smatch captures;
+        assert(regex_search(input, captures, abc_re));
+        assert(captures.ready());
+        assert(captures.size() == 1);
+
+        assert(!regex_search(input, captures, empty_re));
+        assert(captures.ready());
+        assert(captures.empty());
+    }
+}
+
+void test_gh_6189() {
+    // GH-6189: Optimize skip heuristic for searches of patterns with initial dot wildcards
+    test_regex re(&g_regexTester, ".abc");
+    re.should_search_match("dabc", "dabc");
+    re.should_search_match("dabcdddd", "dabc");
+    re.should_search_match("ddabc", "dabc");
+    re.should_search_match("ddabcdddd", "dabc");
+    re.should_search_match("ddddddddddddddddabcdddddddddddd", "dabc");
+    re.should_search_match("ddddddddddddddddddddddddabc", "dabc");
+    re.should_search_match("ddabcddd", "dabc");
+    re.should_search_fail("abcddddd");
+    re.should_search_fail("ddddddddddd\nabcdddddddddd");
+    re.should_search_fail("d");
+}
+
+void test_gh_6191() {
+    // GH-6191: Optimize searches for patterns with initial branching
+    // We must check that we handle matches near search window boundaries correctly.
+
+    {
+        const test_regex test_alt_re(&g_regexTester, "abcdef|uvwxyz");
+        test_alt_re.should_search_match("abcdef", "abcdef");
+        test_alt_re.should_search_match("uvwxyz", "uvwxyz");
+        test_alt_re.should_search_match("hhabcdef", "abcdef");
+        test_alt_re.should_search_match("hhuvwxyz", "uvwxyz");
+        test_alt_re.should_search_match("hhhhhuvwxyzhhhhhabcdefhhhhh", "uvwxyz");
+        for (size_t prefix_size = 510; prefix_size < 516; ++prefix_size) {
+            const string prefix(prefix_size, 'h');
+            test_alt_re.should_search_match(prefix + "abcdef", "abcdef");
+            test_alt_re.should_search_match(prefix + "uvwxyz", "uvwxyz");
+            test_alt_re.should_search_match(prefix + "abcdefhhhhhhhuvwxyz", "abcdef");
+            test_alt_re.should_search_match(prefix + "uvwxyzhhhhhhhabcdef", "uvwxyz");
+            test_alt_re.should_search_match(prefix + "abcdefhhhhhhhuvwxyzhhhh", "abcdef");
+            test_alt_re.should_search_match(prefix + "uvwxyzhhhhhhhabcdefhhhh", "uvwxyz");
+        }
+    }
+
+    {
+        const test_regex optional_prefix_re(&g_regexTester, "(abc)?def");
+        optional_prefix_re.should_search_match("abcdef", "abcdef");
+        optional_prefix_re.should_search_match("def", "def");
+        optional_prefix_re.should_search_match("hhabcdef", "abcdef");
+        optional_prefix_re.should_search_match("hhdef", "def");
+        optional_prefix_re.should_search_match("hhhhabcdefhhhhdefhhh", "abcdef");
+        optional_prefix_re.should_search_match("hhhdefhhhhabcdefhhh", "def");
+        for (size_t prefix_size = 510; prefix_size < 516; ++prefix_size) {
+            const string prefix(prefix_size, 'h');
+            optional_prefix_re.should_search_match(prefix + "abcdef", "abcdef");
+            optional_prefix_re.should_search_match(prefix + "def", "def");
+            optional_prefix_re.should_search_match(prefix + "abcdefhhhhhhhdef", "abcdef");
+            optional_prefix_re.should_search_match(prefix + "defhhhhhhhabcdef", "def");
+        }
+    }
+
+    // test bidirectional iterators
+    {
+        const regex alt_re("abcdef|uvwxyz");
+        const string suffix = "abcdefhhhhhhhuvwxyz";
+        list<char> input(509, 'h');
+        input.insert(input.end(), suffix.begin(), suffix.end());
+
+        for (size_t prefixes_to_test = 0; prefixes_to_test < 6; ++prefixes_to_test) {
+            input.push_front('h');
+            match_results<list<char>::const_iterator> results;
+            assert(regex_search(input.cbegin(), input.cend(), results, alt_re));
+            assert(string(results[0].first, results[0].second) == "abcdef");
+        }
+    }
+}
+
+void test_gh_6249() {
+    // GH-6249: Avoid generating empty groups when parsing empty alternatives
+    for (const string re : {"|a|b", "a||b", "a|b|"}) {
+        g_regexTester.should_match("a", re);
+        g_regexTester.should_match("b", re);
+        g_regexTester.should_match("", re);
+        g_regexTester.should_not_match("c", re);
+        g_regexTester.should_not_match("ab", re);
+    }
+
+    for (const string re : {"(?:|a|b)c", "(?:a||b)c", "(?:a|b|)c"}) {
+        g_regexTester.should_match("ac", re);
+        g_regexTester.should_match("bc", re);
+        g_regexTester.should_match("c", re);
+        g_regexTester.should_not_match("", re);
+        g_regexTester.should_not_match("a", re);
+        g_regexTester.should_not_match("b", re);
+        g_regexTester.should_not_match("abc", re);
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2503,6 +2662,12 @@ int main() {
     test_gh_5939();
     test_gh_5944();
     test_gh_6022();
+    test_gh_6118();
+    test_gh_6147();
+    test_gh_6181();
+    test_gh_6189();
+    test_gh_6191();
+    test_gh_6249();
 
     return g_regexTester.result();
 }

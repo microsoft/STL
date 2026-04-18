@@ -174,9 +174,9 @@ _INLINE_VAR constexpr size_t _Non_user_size = sizeof(void*) + _Big_allocation_al
 
 #ifdef _WIN64
 _INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAFAFAFAFAULL;
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
+#else // ^^^ 64-bit / 32-bit vvv
 _INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAUL;
-#endif // ^^^ !defined(_WIN64) ^^^
+#endif // ^^^ 32-bit ^^^
 
 template <class _Traits>
 __declspec(allocator) void* _Allocate_manually_vector_aligned(const size_t _Bytes) {
@@ -805,7 +805,7 @@ struct _Simple_types { // wraps types from allocators with simple addressing for
     using const_pointer   = const value_type*;
 };
 
-// The number of user bytes a single byte of ASAN shadow memory can track.
+// The number of user bytes a single byte of ASan shadow memory can track.
 _INLINE_VAR constexpr size_t _Asan_granularity      = 8;
 _INLINE_VAR constexpr size_t _Asan_granularity_mask = _Asan_granularity - 1;
 
@@ -1688,7 +1688,7 @@ _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _No
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX26
         {
-            return _STD _Copy_memmove(_First, _Last, _Dest);
+            return _STD _Copy_memcpy(_First, _Last, _Dest);
         }
     }
     _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
@@ -1901,20 +1901,20 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     auto _ULast  = _STD _Get_unwrapped(_STD move(_Last));
 #endif // ^^^ !_HAS_CXX20 ^^^
 
-    constexpr bool _Can_memmove = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_constructible
-                               && _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>::value;
+    constexpr bool _Can_memcpy = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_constructible
+                              && _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>::value;
 
-    if constexpr (_Can_memmove) {
+    if constexpr (_Can_memcpy) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
             if constexpr (is_same_v<decltype(_UFirst), decltype(_ULast)>) {
-                _STD _Copy_memmove(_STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _Unfancy(_Dest));
+                _STD _Copy_memcpy(_STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _Unfancy(_Dest));
                 _Dest += _ULast - _UFirst;
             } else {
                 const auto _Count = static_cast<size_t>(_STD _Contiguous_iter_distance(_UFirst, _ULast));
-                _STD _Copy_memmove_n(_STD _To_address(_UFirst), _Count, _STD _Unfancy(_Dest));
+                _STD _Copy_memcpy_n(_STD _To_address(_UFirst), _Count, _STD _Unfancy(_Dest));
                 _Dest += _Count;
             }
             return _Dest;
@@ -1942,16 +1942,16 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy_n(
     auto _UFirst = _STD _Get_unwrapped(_STD move(_First));
 #endif // ^^^ No checking ^^^
 
-    constexpr bool _Can_memmove =
+    constexpr bool _Can_memcpy =
         conjunction_v<bool_constant<_Iter_copy_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>,
             _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>;
 
-    if constexpr (_Can_memmove) {
+    if constexpr (_Can_memcpy) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            _STD _Copy_memmove_n(_UFirst, _Count, _STD _Unfancy(_Dest));
+            _STD _Copy_memcpy_n(_UFirst, _Count, _STD _Unfancy(_Dest));
             _Dest += _Count;
             return _Dest;
         }
@@ -1973,7 +1973,7 @@ _NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _InIt _Last, _No
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX26
         {
-            return _STD _Copy_memmove(_First, _Last, _Dest);
+            return _STD _Copy_memcpy(_First, _Last, _Dest);
         }
     }
 
@@ -2013,7 +2013,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_move(
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            _STD _Copy_memmove(_UFirst, _ULast, _STD _Unfancy(_Dest));
+            _STD _Copy_memcpy(_UFirst, _ULast, _STD _Unfancy(_Dest));
             return _Dest + (_ULast - _UFirst);
         }
     }
@@ -2320,11 +2320,20 @@ _NODISCARD_RAW_PTR_ALLOC _CONSTEXPR20 typename allocator_traits<_Alloc>::pointer
     if constexpr (_Should_allocate_at_least<_Alloc>) {
         auto [_Ptr, _Allocated] = _Al.allocate_at_least(_Count);
         _Count                  = _Allocated;
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-11060638
+        return _Ptr + decltype(_Ptr - _Ptr){0};
+#else // ^^^ workaround / no workaround vvv
         return _Ptr;
+#endif // ^^^ no workaround ^^^
     } else
 #endif // _HAS_CXX23
     {
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-11060638
+        using _Pointer = decltype(_Al.allocate(_Count));
+        return _Al.allocate(_Count) + decltype(_Pointer{} - _Pointer{}){0};
+#else // ^^^ workaround / no workaround vvv
         return _Al.allocate(_Count);
+#endif // ^^^ no workaround ^^^
     }
 }
 
@@ -2775,24 +2784,6 @@ template <class>
 constexpr bool _Has_guaranteed_append_range = false; // N5032 [sequence.reqmts]/112; used by flat_(multi)set::insert.
 #endif // _HAS_CXX23
 
-template <class _Elem>
-struct _Digit_pair_table {
-    _Elem _Data[100][2];
-
-    constexpr explicit _Digit_pair_table() : _Data{} {
-        for (int _Idx = 0; _Idx != 100; ++_Idx) {
-            _Data[_Idx][0] = static_cast<_Elem>('0' + _Idx / 10);
-            _Data[_Idx][1] = static_cast<_Elem>('0' + _Idx % 10);
-        }
-    }
-
-    _Digit_pair_table(const _Digit_pair_table&)            = delete;
-    _Digit_pair_table& operator=(const _Digit_pair_table&) = delete;
-};
-
-template <class _Elem>
-constexpr _Digit_pair_table<_Elem> _Digit_pairs{};
-
 template <class _Elem, class _UTy>
 _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by both to_string and thread::id output
     // format _UVal into buffer *ending at* _RNext
@@ -2800,7 +2791,7 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
 
 #ifdef _WIN64
     auto _UVal_trunc = _UVal;
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
+#else // ^^^ 64-bit / 32-bit vvv
 
     if constexpr (sizeof(_UTy) > 4) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
         while (_UVal > 0xFFFFFFFFU) {
@@ -2820,7 +2811,7 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
     }
 
     auto _UVal_trunc = static_cast<unsigned long>(_UVal);
-#endif // ^^^ !defined(_WIN64) ^^^
+#endif // ^^^ 32-bit ^^^
 
     // If we have a single digit, print [0, 9] and return. (This is necessary to correctly handle 0.)
     if (_UVal_trunc < 10) {
@@ -2830,7 +2821,7 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
 
     // Print one or more pairs of digits.
     do {
-        const unsigned long _UVal_trunc_part = _UVal_trunc % 100;
+        const auto _UVal_trunc_part = static_cast<unsigned long>(_UVal_trunc % 100);
         _UVal_trunc /= 100;
         _RNext -= 2;
         _CSTD memcpy(_RNext, _Digit_pairs<_Elem>._Data[_UVal_trunc_part], 2 * sizeof(_Elem));

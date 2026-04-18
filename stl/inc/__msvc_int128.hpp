@@ -36,7 +36,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-#if defined(_M_X64) && !defined(_M_ARM64EC) && !defined(_M_CEE_PURE) && !defined(__CUDACC__)
+#if defined(_M_X64) && !defined(_M_ARM64EC) && !defined(_M_CEE_PURE)
 #define _STL_128_INTRINSICS 1
 #ifdef __clang__ // clang doesn't have _udiv128 / _div128
 #define _STL_128_DIV_INTRINSICS 0
@@ -847,9 +847,9 @@ struct _Unsigned128 : _Base128 {
     using _Signed_type   = _Signed128;
     using _Unsigned_type = _Unsigned128;
 
-#if !_HAS_CXX17 || (_HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)) // TRANSITION, DevCom-10729775
+#if !_HAS_CXX17
     constexpr _Unsigned128() noexcept : _Base128{} {}
-#endif // ^^^ workaround for C++20 MSVC modules and header units; should be guarded for !_HAS_CXX17 only ^^^
+#endif // !_HAS_CXX17
 
     using _Base128::_Base128;
     constexpr explicit _Unsigned128(const _Base128& _That) noexcept : _Base128{_That} {}
@@ -1164,9 +1164,9 @@ struct _Signed128 : _Base128 {
     using _Signed_type   = _Signed128;
     using _Unsigned_type = _Unsigned128;
 
-#if !_HAS_CXX17 || (_HAS_CXX20 && !defined(__clang__) && !defined(__EDG__)) // TRANSITION, DevCom-10729775
+#if !_HAS_CXX17
     constexpr _Signed128() noexcept : _Base128{} {}
-#endif // ^^^ workaround for C++20 MSVC modules and header units; should be guarded for !_HAS_CXX17 only ^^^
+#endif // !_HAS_CXX17
 
     using _Base128::_Base128;
     constexpr explicit _Signed128(const _Base128& _That) noexcept : _Base128{_That} {}

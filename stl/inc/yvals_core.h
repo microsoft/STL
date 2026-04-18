@@ -85,6 +85,8 @@
 // P3323R1 Forbid atomic<cv T>, Specify atomic_ref<cv T>
 //     (for atomic<cv T>)
 // P3503R3 Make Type-Erased Allocator Use In promise And packaged_task Consistent
+// P3612R1 Harmonize Proxy-Reference Operations
+//     (deprecation controlled by _HAS_CXX26)
 
 // _HAS_CXX17 controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
@@ -360,7 +362,6 @@
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2255R2 Type Traits To Detect References Binding To Temporaries
-//     (for Clang only)
 // P2273R3 constexpr unique_ptr
 // P2278R4 cbegin Should Always Return A Constant Iterator
 // P2286R8 Formatting Ranges
@@ -388,12 +389,14 @@
 // P2540R1 Empty Product For Certain Views
 // P2549R1 unexpected<E>::error()
 // P2585R1 Improve Default Container Formatting
+// P2590R2 Explicit Lifetime Management
 // P2599R2 mdspan: index_type, size_type
 // P2604R0 mdspan: data_handle_type, data_handle(), exhaustive
 // P2613R1 mdspan: empty()
 // P2614R2 Deprecating float_denorm_style, numeric_limits::has_denorm, numeric_limits::has_denorm_loss
 // P2652R2 Disallowing User Specialization Of allocator_traits
 // P2674R1 is_implicit_lifetime
+// P2679R2 Fixing start_lifetime_as And start_lifetime_as_array
 // P2693R1 Formatting thread::id And stacktrace
 // P2713R1 Escaping Improvements In std::format
 // P2763R1 Fixing layout_stride's Default Constructor For Fully Static Extents
@@ -828,17 +831,28 @@
     _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")        \
     _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"")
 // clang-format on
-#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#elif defined(__CUDACC__) // use the same macros for Clang and CUDA's _Pragma operators
+// warning #342-D: operator may not be a static member function
+// warning #3395-D: a "static" lambda expression is nonstandard
+// clang-format off: make macros readable
+#define _STL_DISABLE_CLANG_WARNINGS  \
+    _Pragma("nv_diagnostic push")    \
+    _Pragma("nv_diag_suppress 342")  \
+    _Pragma("nv_diag_suppress 3395")
+// clang-format on
+#else // ^^^ defined(__CUDACC__) / !defined(__CUDACC__) vvv
 #define _STL_DISABLE_CLANG_WARNINGS
-#endif // ^^^ !defined(__clang__) ^^^
+#endif // ^^^ !defined(__CUDACC__) ^^^
 #endif // !defined(_STL_DISABLE_CLANG_WARNINGS)
 
 #ifndef _STL_RESTORE_CLANG_WARNINGS
 #ifdef __clang__
 #define _STL_RESTORE_CLANG_WARNINGS _Pragma("clang diagnostic pop")
-#else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+#elif defined(__CUDACC__) // use the same macros for Clang and CUDA's _Pragma operators
+#define _STL_RESTORE_CLANG_WARNINGS _Pragma("nv_diagnostic pop")
+#else // ^^^ defined(__CUDACC__) / !defined(__CUDACC__) vvv
 #define _STL_RESTORE_CLANG_WARNINGS
-#endif // ^^^ !defined(__clang__) ^^^
+#endif // ^^^ !defined(__CUDACC__) ^^^
 #endif // !defined(_STL_RESTORE_CLANG_WARNINGS)
 
 // warning: use of NaN is undefined behavior due to the currently enabled
@@ -889,12 +903,12 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 145
-#define _MSVC_STL_UPDATE  202602L
+#define _MSVC_STL_UPDATE  202604L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
-#if __CUDACC_VER_MAJOR__ < 12 || (__CUDACC_VER_MAJOR__ == 12 && __CUDACC_VER_MINOR__ < 4)
-_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 12.4 or newer.");
+#if __CUDACC_VER_MAJOR__ < 13 || (__CUDACC_VER_MAJOR__ == 13 && __CUDACC_VER_MINOR__ < 2)
+_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.2 or newer.");
 #endif // ^^^ old CUDA ^^^
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
@@ -1449,7 +1463,19 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 // STL4048 was "locale::empty() is a non-Standard extension and will be removed in the future."
 
-// next warning number: STL4049
+
+#if _HAS_CXX26 && !defined(_SILENCE_VECTOR_BOOL_STATIC_REFERENCE_SWAP_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX26_DEPRECATION_WARNINGS)
+#define _DEPRECATE_VECTOR_BOOL_STATIC_REFERENCE_SWAP                                                                  \
+    [[deprecated("warning STL4049: Static std::vector<bool>::swap(reference, reference) is deprecated by C++26 (see " \
+                 "LWG-3638 and P3612R1). Use non-member function swap(reference, reference) instead. You can define " \
+                 "_SILENCE_VECTOR_BOOL_STATIC_REFERENCE_SWAP_DEPRECATION_WARNING or "                                 \
+                 "_SILENCE_ALL_CXX26_DEPRECATION_WARNINGS to suppress this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _DEPRECATE_VECTOR_BOOL_STATIC_REFERENCE_SWAP
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4050
 
 // next error number: STL1014
 
@@ -1733,7 +1759,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_invoke_r                          202106L
 #define __cpp_lib_ios_noreplace                     202207L
 
-#ifdef __clang__ // TRANSITION, GH-5738 tracking VSO-2581622 (MSVC) and VSO-2581623 (EDG)
+#if !defined(__EDG__) && (defined(__clang__) || _MSC_VER >= 1951) // TRANSITION, GH-5738, VSO-2581623, toolset update
 #define __cpp_lib_is_implicit_lifetime 202302L
 #endif // ^^^ no workaround ^^^
 
@@ -1760,13 +1786,17 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_ranges_to_container      202202L
 #define __cpp_lib_ranges_zip               202110L
 
-// TRANSITION, MSVC and EDG haven't implemented intrinsics needed for P2255R2.
-#if defined(__clang__) && !defined(__EDG__)
+#if defined(__clang__) || defined(__EDG__) || _MSC_VER >= 1951 // TRANSITION, GH-5755, toolset update
 #define __cpp_lib_reference_from_temporary 202202L
 #endif // ^^^ no workaround ^^^
 
-#define __cpp_lib_spanstream                  202106L
-#define __cpp_lib_stacktrace                  202011L
+#define __cpp_lib_spanstream 202106L
+#define __cpp_lib_stacktrace 202011L
+
+#if !defined(__clang__) && !defined(__EDG__) && _MSC_VER >= 1951 // TRANSITION, GH-6169, toolset update
+#define __cpp_lib_start_lifetime_as 202207L
+#endif // ^^^ no workaround ^^^
+
 #define __cpp_lib_stdatomic_h                 202011L
 #define __cpp_lib_string_contains             202011L
 #define __cpp_lib_string_resize_and_overwrite 202110L
@@ -1917,19 +1947,11 @@ _EMIT_STL_ERROR(STL1013, "The STL doesn't support /RTCc because it rejects confo
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // ^^^ !defined(_ENABLE_STL_INTERNAL_CHECK) ^^^
 
-#ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't have downlevel support for static call operators.
-#define _STATIC_CALL_OPERATOR
-#define _CONST_CALL_OPERATOR const
-#else // ^^^ workaround / no workaround vvv
-#define _STATIC_CALL_OPERATOR static
-#define _CONST_CALL_OPERATOR
-#endif // ^^^ no workaround ^^^
-
-#ifdef __CUDACC__ // TRANSITION, CUDA 12.4 doesn't recognize MSVC __restrict; CUDA __restrict__ is not usable in C++
+#ifdef __CUDACC__ // TRANSITION, CUDA rejects MSVC __restrict (GH-5061); CUDA __restrict__ is unusable in C++ (GH-5097)
 #define _RESTRICT
-#else // ^^^ defined(__CUDACC__) / !defined(__CUDACC__) vvv
+#else // ^^^ workaround / no workaround vvv
 #define _RESTRICT __restrict
-#endif // ^^^ !defined(__CUDACC__) ^^^
+#endif // ^^^ no workaround ^^^
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_

@@ -578,7 +578,7 @@ public:
                 }
                 _STD construct_at(_STD addressof(_Unexpected), _STD move(_Tmp));
             } else {
-                _Ty _Tmp(_STD move(_Value));
+                remove_cv_t<_Ty> _Tmp(_STD move(_Value));
                 if constexpr (!is_trivially_destructible_v<_Ty>) {
                     _Value.~_Ty();
                 }
@@ -1206,7 +1206,7 @@ private:
     }
 
     union {
-        _Ty _Value;
+        remove_cv_t<_Ty> _Value;
         _Err _Unexpected;
     };
     bool _Has_value;

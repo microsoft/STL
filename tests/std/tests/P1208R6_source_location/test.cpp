@@ -15,7 +15,10 @@ using namespace std;
 #define THISCALL_OR_CDECL "__cdecl"
 #endif
 
+static_assert(semiregular<source_location>);
 static_assert(is_nothrow_default_constructible_v<source_location>);
+static_assert(is_nothrow_copy_constructible_v<source_location>);
+static_assert(is_nothrow_copy_assignable_v<source_location>);
 static_assert(is_nothrow_move_constructible_v<source_location>);
 static_assert(is_nothrow_move_assignable_v<source_location>);
 static_assert(is_nothrow_swappable_v<source_location>);
@@ -96,19 +99,9 @@ constexpr void sloc_constructor_test() {
     assert(x.loc.column() == 13);
 #endif // ^^^ !defined(__EDG__) ^^^
 #if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1285783 (fixed in MSVC Compiler 19.51)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-    {
-        assert(x.loc.function_name() == "void __cdecl sloc_constructor_test(void)"sv);
-    }
+    assert(x.loc.function_name() == "void __cdecl sloc_constructor_test(void)"sv);
 #else // ^^^ detailed / basic vvv
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1285783 (fixed in MSVC Compiler 19.51)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-    {
-        assert(x.loc.function_name() == "sloc_constructor_test"sv);
-    }
+    assert(x.loc.function_name() == "sloc_constructor_test"sv);
 #endif // ^^^ basic ^^^
     assert(string_view{x.loc.file_name()}.ends_with(test_cpp));
 }
@@ -142,19 +135,9 @@ constexpr void sub_member_test() {
     assert(s.x.loc.column() == 14);
 #endif // ^^^ !defined(__EDG__) ^^^
 #if _USE_DETAILED_FUNCTION_NAME_IN_SOURCE_LOCATION
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1285783 (fixed in MSVC Compiler 19.51)
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-    {
-        assert(s.x.loc.function_name() == "void __cdecl sub_member_test(void)"sv);
-    }
+    assert(s.x.loc.function_name() == "void __cdecl sub_member_test(void)"sv);
 #else // ^^^ detailed / basic vvv
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-1285783
-    if (!is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-    {
-        assert(s.x.loc.function_name() == "sub_member_test"sv);
-    }
+    assert(s.x.loc.function_name() == "sub_member_test"sv);
 #endif // ^^^ basic ^^^
     assert(string_view{s.x.loc.file_name()}.ends_with(test_cpp));
 
@@ -285,6 +268,20 @@ constexpr bool test() {
     header_test();
     return true;
 }
+
+// Also test LWG-4506 "source_location is explicitly unspecified if is constexpr or not"
+constexpr bool test_lwg_4506() { // COMPILE-ONLY
+    auto loc                                   = source_location::current();
+    auto loc_copy_constructed                  = loc;
+    [[maybe_unused]] auto loc_move_constructed = move(loc_copy_constructed);
+    source_location loc_copy_assigned;
+    [[maybe_unused]] source_location loc_move_assigned;
+    loc_copy_assigned = loc;
+    loc_move_assigned = move(loc_copy_assigned);
+    return true;
+}
+
+static_assert(test_lwg_4506());
 
 // Also test GH-2822 Failed to specialize std::invoke on operator() with default argument
 // std::source_location::current()

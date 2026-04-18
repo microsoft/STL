@@ -1955,9 +1955,22 @@ int main() {
     assert(test_constexpr());
 #endif // _HAS_CXX20
     run_randomized_tests_with_different_isa_levels([](mt19937_64& gen) {
+#ifdef _CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC
+        // Test the algorithms that *aren't* vectorized for ARM64EC:
+        test_min_max_element<long long>(gen);
+        test_min_max_element<unsigned long long>(gen);
+
+        test_min_max_element_pointers(gen);
+
+        test_replace<int>(gen);
+        test_replace<unsigned int>(gen);
+        test_replace<long long>(gen);
+        test_replace<unsigned long long>(gen);
+#else // ^^^ defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) / normal test coverage vvv
         test_vector_algorithms(gen);
         test_various_containers();
         test_bitset(gen);
         test_string(gen);
+#endif // ^^^ normal test coverage ^^^
     });
 }

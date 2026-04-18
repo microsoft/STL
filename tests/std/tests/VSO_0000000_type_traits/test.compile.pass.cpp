@@ -1339,7 +1339,7 @@ STATIC_ASSERT(is_same_v<common_reference_t<void() volatile>, void() volatile>);
 STATIC_ASSERT(is_same_v<common_reference_t<void() &&>, void() &&>);
 
 
-// N4928 [meta.trans.other]/5.3.1 as updated by P2655R3 (TRANSITION, cite new WP here):
+// N5032 [meta.trans.other]/6.3.1:
 // "Let R be COMMON-REF(T1, T2). If T1 and T2 are reference types, R is well-formed, and
 // is_convertible_v<add_pointer_t<T1>, add_pointer_t<R>> && is_convertible_v<add_pointer_t<T2>, add_pointer_t<R>>
 // is true, then the member typedef type denotes R."

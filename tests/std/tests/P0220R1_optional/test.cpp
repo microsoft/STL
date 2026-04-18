@@ -8363,10 +8363,18 @@ int run_test()
 // LLVM SOURCES END
 // clang-format on
 
+#include <algorithm>
 #include <cassert>
 #include <optional>
+#include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
+
+#if _HAS_CXX20
+#include <compare>
+#include <concepts>
+#endif // _HAS_CXX20
 
 #if _HAS_CXX20
 #define CONSTEXPR20 constexpr
@@ -8402,6 +8410,29 @@ namespace msvc {
         static_assert(check_size<not_empty>);
         static_assert(check_size<many_bases>);
     } // namespace size
+
+    namespace lwg2746 {
+        template <class V, class T, class... Args>
+        constexpr bool can_emplace_impl = false;
+        template <class T, class... Args>
+        constexpr bool
+            can_emplace_impl<std::void_t<decltype(std::declval<T&>().emplace(std::declval<Args>()...))>, T, Args...> =
+                true;
+
+        template <class T, class... Args>
+        constexpr bool can_emplace = can_emplace_impl<void, T, Args...>;
+
+        static_assert(can_emplace<std::optional<int>>);
+        static_assert(can_emplace<std::optional<int>, int>);
+        static_assert(!can_emplace<std::optional<int>, std::string>);
+        static_assert(!can_emplace<std::optional<int>, int, int>);
+
+        static_assert(can_emplace<std::optional<std::string>, const std::string&>);
+        static_assert(can_emplace<std::optional<std::string>, const char*, unsigned int>);
+        static_assert(!can_emplace<std::optional<std::string>, const wchar_t*, unsigned int>);
+        static_assert(can_emplace<std::optional<std::string>, std::initializer_list<char>>);
+        static_assert(!can_emplace<std::optional<std::string>, std::initializer_list<int>>);
+    } // namespace lwg2746
 
     namespace lwg2842 {
         struct ConvertibleFromInPlace {
@@ -8575,6 +8606,29 @@ namespace msvc {
             test_volatile();
         }
     } // namespace lwg3886
+
+    namespace lwg4497 {
+        // LWG-4497 nullopt_t should be comparable
+        static_assert(std::nullopt == std::nullopt);
+        static_assert(!(std::nullopt != std::nullopt));
+        static_assert(!(std::nullopt < std::nullopt));
+        static_assert(std::nullopt <= std::nullopt);
+        static_assert(!(std::nullopt > std::nullopt));
+        static_assert(std::nullopt >= std::nullopt);
+#if _HAS_CXX20
+        static_assert(std::three_way_comparable<std::nullopt_t, std::strong_ordering>);
+        static_assert(std::is_eq(std::nullopt <=> std::nullopt));
+#endif // _HAS_CXX20
+
+        void run_test() {
+            std::vector<std::optional<int>> v = {1, std::nullopt, 3};
+
+            auto it = std::find(v.begin(), v.end(), std::nullopt);
+
+            assert(it != v.end());
+            assert(!it->has_value());
+        }
+    } // namespace lwg4497
 
     namespace vso406124 {
         // Defend against regression of VSO-406124
@@ -8853,6 +8907,7 @@ int main() {
 
     msvc::lwg3836::run_test();
     msvc::lwg3886::run_test();
+    msvc::lwg4497::run_test();
 
     msvc::vso406124::run_test();
     msvc::vso508126::run_test();

@@ -1018,7 +1018,7 @@ private:
     _NODISCARD auto _Erase_dupes_if_not_multi_pred() {
         _STL_INTERNAL_STATIC_ASSERT(_IsUnique);
         if constexpr (_Equivalence_is_equality<key_compare, key_type>) {
-            return [](const auto& _Lhs, const auto& _Rhs) _STATIC_CALL_OPERATOR { return _Lhs.first == _Rhs.first; };
+            return [](const auto& _Lhs, const auto& _Rhs) static { return _Lhs.first == _Rhs.first; };
         } else {
             return [this](const auto& _Lhs, const auto& _Rhs) {
 #ifdef __clang__ // TRANSITION, LLVM-81243
@@ -1128,7 +1128,7 @@ private:
         _Clear_guard _Guard{this};
 
         // N5032 [flat.map.erasure]/2 and [flat.multimap.erasure]/2
-        const auto _Proj     = [](const auto& _Element) _STATIC_CALL_OPERATOR { return const_reference{_Element}; };
+        const auto _Proj     = [](const auto& _Element) static { return const_reference{_Element}; };
         const auto _New_last = _RANGES remove_if(_View_to_mutate(), _Pred, _Proj).begin();
         const auto _Old_size = size();
 

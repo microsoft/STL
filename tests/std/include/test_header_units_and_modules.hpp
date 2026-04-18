@@ -542,7 +542,9 @@ void test_new() {
 
     static_assert(is_class_v<bad_alloc>);
     static_assert(is_class_v<bad_array_new_length>);
+#ifdef __cpp_aligned_new
     static_assert(is_same_v<underlying_type_t<align_val_t>, size_t>);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
     static_assert(is_class_v<nothrow_t>);
 
     bool caught_bad_alloc = false;
@@ -658,13 +660,11 @@ void test_random() {
     lcg.discard(9999);
     assert(lcg() == 1043618065); // N4868 [rand.predef]/1
 
-#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, VSO-2226569
     // Test coverage for GH-4899 "Standard Library Modules: uniform_real_distribution emits
     // error C2512: 'std::_Unsigned128': no appropriate default constructor available":
     const double val = generate_canonical<double, 53>(lcg);
     assert(val >= 0.0);
     assert(val < 1.0);
-#endif // ^^^ no workaround ^^^
 }
 
 void test_ranges() {
