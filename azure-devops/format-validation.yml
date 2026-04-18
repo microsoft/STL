@@ -19,7 +19,7 @@ jobs:
           if (Test-Path -LiteralPath "$(validationBuildOutputLocation)") {
               Remove-Item -LiteralPath "$(validationBuildOutputLocation)" -Recurse -Force
           }
-          & "$(launchVsDevShell)" -HostArch x64 -Arch x64
+          & "$(launchVsDevShell)" -Preview -NoLogo -HostArch x64 -Arch x64
           cmake -G Ninja -S $(Build.SourcesDirectory)/tools -B "$(validationBuildOutputLocation)"
           cmake --build "$(validationBuildOutputLocation)"
       timeoutInMinutes: 5
@@ -31,7 +31,7 @@ jobs:
         targetType: inline
         script: |
           $PSNativeCommandUseErrorActionPreference = $true
-          & "$(launchVsDevShell)" -HostArch x64 -Arch x64
+          & "$(launchVsDevShell)" -Preview -NoLogo -HostArch x64 -Arch x64
           cmake --build "$(validationBuildOutputLocation)" --target run-format
       timeoutInMinutes: 5
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
@@ -42,7 +42,7 @@ jobs:
         targetType: inline
         script: |
           $PSNativeCommandUseErrorActionPreference = $true
-          & "$(launchVsDevShell)" -HostArch x64 -Arch x64
+          & "$(launchVsDevShell)" -Preview -NoLogo -HostArch x64 -Arch x64
           cmake --build "$(validationBuildOutputLocation)" --target run-validate
       timeoutInMinutes: 2
       env: { TMP: $(tmpDir), TEMP: $(tmpDir) }

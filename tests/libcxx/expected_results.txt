@@ -399,14 +399,10 @@ std/strings/strings.erasure/erase.pass.cpp:1 FAIL
 # VSO-2338880 constexpr error in vector::iterator's _Compat() check when using views::transform
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:0 FAIL
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.segmented.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.segmented.pass.cpp:1 FAIL
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_n.segmented.pass.cpp:0 FAIL
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_n.segmented.pass.cpp:1 FAIL
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.segmented.pass.cpp:0 FAIL
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.segmented.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.segmented.pass.cpp:1 FAIL
 std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:0 FAIL
 std/algorithms/alg.modifying.operations/alg.move/ranges.move.segmented.pass.cpp:1 FAIL
 
@@ -423,14 +419,6 @@ std/containers/views/mdspan/mdspan/index_operator.pass.cpp:1 FAIL
 # VSO-2574469 constexpr error in unique_ptr with a reference-to-function deleter: failure was caused by a read of an uninitialized symbol
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_deleter.pass.cpp:0 FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/pointer_deleter.pass.cpp:1 FAIL
-
-# VSO-2574473 constexpr error in ranges::join_with_view: failure was caused by unevaluable pointer value
-std/ranges/range.adaptors/range.adjacent.transform/general.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.adjacent.transform/general.pass.cpp:1 FAIL
-std/ranges/range.adaptors/range.adjacent/general.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.adjacent/general.pass.cpp:1 FAIL
-std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.not_const.pass.cpp:1 FAIL
 
 # VSO-2574489 constexpr ICE-on-valid with vector<bool>
 std/algorithms/alg.modifying.operations/alg.copy/copy_n.pass.cpp:0 FAIL
@@ -1247,7 +1235,3 @@ std/iterators/iterator.container/ssize.LWG3207.compile.pass.cpp:9 SKIPPED
 
 # This test is marked as `REQUIRES: target={{.+}}-apple-{{.+}}`.
 std/input.output/file.streams/fstreams/filebuf.virtuals/overflow.writefail.pass.cpp:9 SKIPPED
-
-# This test has one check guarded in a "not CLANG" block, but upcoming MSVC will implement the
-# same behavior for binding an xvalue conversion function result to a const lvalue reference.
-std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:9 SKIPPED

@@ -42,7 +42,7 @@ $VisualStudioWorkloads = @(
   'Microsoft.VisualStudio.Component.VC.Preview.ARM64',
   'Microsoft.VisualStudio.Component.VC.Preview.CLI.Support',
   'Microsoft.VisualStudio.Component.VC.Preview.Tools.x86.x64',
-  'Microsoft.VisualStudio.Component.Windows11SDK.26100'
+  'Microsoft.VisualStudio.Component.Windows11SDK.28000'
 )
 
 # https://learn.microsoft.com/visualstudio/install/visual-studio-on-arm-devices
@@ -66,15 +66,15 @@ $PowerShellArgs = @('/quiet', '/norestart')
 
 # https://www.python.org
 if ($Provisioning_x64) {
-  $PythonUrl = 'https://www.python.org/ftp/python/3.14.3/python-3.14.3-amd64.exe'
+  $PythonUrl = 'https://www.python.org/ftp/python/3.14.4/python-3.14.4-amd64.exe'
 } else {
-  $PythonUrl = 'https://www.python.org/ftp/python/3.14.3/python-3.14.3-arm64.exe'
+  $PythonUrl = 'https://www.python.org/ftp/python/3.14.4/python-3.14.4-arm64.exe'
 }
 $PythonArgs = @('/quiet', 'InstallAllUsers=1', 'PrependPath=1', 'CompileAll=1', 'Include_doc=0')
 
 # https://developer.nvidia.com/cuda-toolkit
 if ($Provisioning_x64) {
-  $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/13.2.0/local_installers/cuda_13.2.0_windows.exe'
+  $CudaUrl = 'https://developer.download.nvidia.com/compute/cuda/13.2.1/local_installers/cuda_13.2.1_windows.exe'
 } else {
   $CudaUrl = 'CUDA is not installed for ARM64'
 }
@@ -184,13 +184,6 @@ if ($Provisioning_x64) {
   Write-Host 'Enabling native NVMe...'
   EnableNativeNVMe
 }
-
-# TRANSITION, patch Launch-VsDevShell.ps1 to pass `-vcvars_ver=preview` before a proper parameter is available.
-Write-Host 'Patching Launch-VsDevShell.ps1...'
-$launchVsDevShell = 'C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\Tools\Launch-VsDevShell.ps1'
-$paramRegex = 'VsInstanceId = \$instanceId'
-$paramSubst = '$&; DevCmdArguments = "-vcvars_ver=preview";'
-(Get-Content -Raw $launchVsDevShell) -creplace $paramRegex, $paramSubst | Set-Content -NoNewLine $launchVsDevShell
 
 # Tell create-1es-hosted-pool.ps1 that we succeeded.
 Write-Host 'PROVISION_IMAGE_SUCCEEDED'
