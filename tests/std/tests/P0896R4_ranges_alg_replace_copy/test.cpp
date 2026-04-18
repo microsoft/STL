@@ -10,6 +10,7 @@ int main() {}
 #include <ranges>
 #include <utility>
 
+#include <is_permissive.hpp>
 #include <range_algorithm_support.hpp>
 using namespace std;
 using P = pair<int, int>;
@@ -29,27 +30,32 @@ struct instantiator {
 
     template <ranges::input_range Read, indirectly_writable<ranges::range_reference_t<Read>> Write>
     static constexpr void call() {
-        using ranges::replace_copy, ranges::replace_copy_result, ranges::equal, ranges::iterator_t;
-        { // Validate iterator + sentinel overload
-            P output[5] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
-            Read wrapped_input{input};
+#ifdef _M_IX86 // TRANSITION, GH-3567
+        if constexpr (!is_permissive_v<Read>)
+#endif // ^^^ workaround ^^^
+        {
+            using ranges::replace_copy, ranges::replace_copy_result, ranges::equal, ranges::iterator_t;
+            { // Validate iterator + sentinel overload
+                P output[5] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
+                Read wrapped_input{input};
 
-            auto result =
-                replace_copy(wrapped_input.begin(), wrapped_input.end(), Write{output}, 47, P{47, 1}, get_second);
-            static_assert(same_as<decltype(result), replace_copy_result<iterator_t<Read>, Write>>);
-            assert(result.in == wrapped_input.end());
-            assert(result.out.peek() == output + 5);
-            assert(equal(output, expected));
-        }
-        { // Validate range overload
-            P output[5] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
-            Read wrapped_input{input};
+                auto result =
+                    replace_copy(wrapped_input.begin(), wrapped_input.end(), Write{output}, 47, P{47, 1}, get_second);
+                static_assert(same_as<decltype(result), replace_copy_result<iterator_t<Read>, Write>>);
+                assert(result.in == wrapped_input.end());
+                assert(result.out.peek() == output + 5);
+                assert(equal(output, expected));
+            }
+            { // Validate range overload
+                P output[5] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
+                Read wrapped_input{input};
 
-            auto result = replace_copy(wrapped_input, Write{output}, 47, P{47, 1}, get_second);
-            static_assert(same_as<decltype(result), replace_copy_result<iterator_t<Read>, Write>>);
-            assert(result.in == wrapped_input.end());
-            assert(result.out.peek() == output + 5);
-            assert(equal(output, expected));
+                auto result = replace_copy(wrapped_input, Write{output}, 47, P{47, 1}, get_second);
+                static_assert(same_as<decltype(result), replace_copy_result<iterator_t<Read>, Write>>);
+                assert(result.in == wrapped_input.end());
+                assert(result.out.peek() == output + 5);
+                assert(equal(output, expected));
+            }
         }
     }
 };
