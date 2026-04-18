@@ -2063,9 +2063,9 @@ public:
     template <size_t _Stack_storage_size>
     _Matcher3(_It _Pfirst, _It _Plast, const _RxTraits& _Tr, _Root_node* const _Re, const unsigned int _Nx,
         const regex_constants::syntax_option_type _Sf, const regex_constants::match_flag_type _Mf,
-        unsigned char (&_Stack_storage)[_Stack_storage_size], const bool _Full)
+        unsigned char (&_Stack_storage)[_Stack_storage_size], const bool _Full_)
         : _Traits(_Tr), _Begin(_Pfirst), _End(_Plast), _Sflags(_Sf), _Mflags(_Mf), _Ncap(_Nx),
-          _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)), _Full(_Full) {
+          _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)), _Full(_Full_) {
         _Adl_verify_range(_Pfirst, _Plast);
         if (_Re->_Flags & _Fl_begin_needs_w) {
             _Char_class_w = _Lookup_char_class(static_cast<_Elem>('W'));
