@@ -2061,11 +2061,11 @@ private:
 
 public:
     template <size_t _Stack_storage_size>
-    _Matcher3(_It _Pfirst, _It _Plast, const _RxTraits& _Tr, _Root_node* _Re, unsigned int _Nx,
-        regex_constants::syntax_option_type _Sf, regex_constants::match_flag_type _Mf,
-        unsigned char (&_Stack_storage)[_Stack_storage_size])
+    _Matcher3(_It _Pfirst, _It _Plast, const _RxTraits& _Tr, _Root_node* const _Re, const unsigned int _Nx,
+        const regex_constants::syntax_option_type _Sf, const regex_constants::match_flag_type _Mf,
+        unsigned char (&_Stack_storage)[_Stack_storage_size], const bool _Full)
         : _Traits(_Tr), _Begin(_Pfirst), _End(_Plast), _Sflags(_Sf), _Mflags(_Mf), _Ncap(_Nx),
-          _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)) {
+          _Longest((_Re->_Flags & _Fl_longest) && !(_Mf & regex_constants::match_any)), _Full(_Full) {
         _Adl_verify_range(_Pfirst, _Plast);
         if (_Re->_Flags & _Fl_begin_needs_w) {
             _Char_class_w = _Lookup_char_class(static_cast<_Elem>('W'));
@@ -2128,14 +2128,13 @@ public:
         _Mflags &= ~_Mf;
     }
 
-    bool _Match(_It _Pfirst, bool _Full_match) { // try to match
+    bool _Match2(_It _Pfirst) { // try to match
         _Begin = _Pfirst;
-        return _Match(_Full_match);
+        return _Match2();
     }
 
-    bool _Match(bool _Full_match) { // try to match
+    bool _Match2() { // try to match
         _Tgt_state._Cur = _Begin;
-        _Full           = _Full_match;
         _Frames_count   = 0;
         _Matched        = false;
 
@@ -2654,9 +2653,9 @@ _OutIt _Format_sed(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out, _In
 }
 
 template <class _BidIt, class _Alloc, class _Elem, class _RxTraits, class _It>
-bool _Regex_match1(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matches,
-    const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs,
-    bool _Full) { // try to match regular expression to target text
+bool _Regex_match2(const _It _First, const _It _Last, match_results<_BidIt, _Alloc>* const _Matches,
+    const basic_regex<_Elem, _RxTraits>& _Re, const regex_constants::match_flag_type _Flgs) {
+    // try to match regular expression to target text
     static_assert(_Is_ranges_bidi_iter_v<_It>,
         "regex_match requires bidirectional iterators or stronger. See N5014 [re.alg.match]/1.");
 
@@ -2672,9 +2671,9 @@ bool _Regex_match1(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matche
     alignas(_Loop_vals_v3_t<_Iter_diff_t<_It>>) alignas(_Rx_capture_range_t<_It>) //
         alignas(_Rx_state_frame_t<_It>) unsigned char _Stackbuf[4096];
     _Matcher3<_Elem, _RxTraits, _It, void> _Mx(
-        _First, _Last, _Re._Get_traits(), _Re._Get(), _Re.mark_count() + 1, _Re.flags(), _Flgs, _Stackbuf);
+        _First, _Last, _Re._Get_traits(), _Re._Get(), _Re.mark_count() + 1, _Re.flags(), _Flgs, _Stackbuf, true);
 
-    if (!_Mx._Match(_Full)) {
+    if (!_Mx._Match2()) {
         return false;
     }
 
@@ -2692,18 +2691,17 @@ _EXPORT_STD template <class _BidIt, class _Alloc, class _Elem, class _RxTraits>
 bool regex_match(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // try to match regular expression to target text
-    _Adl_verify_range(_First, _Last);
-    return _Regex_match1(_First, _Last, _STD addressof(_Matches), _Re, _Flgs, true);
+    _STD _Adl_verify_range(_First, _Last);
+    return _STD _Regex_match2(_First, _Last, _STD addressof(_Matches), _Re, _Flgs);
 }
 
 _EXPORT_STD template <class _BidIt, class _Elem, class _RxTraits>
 _NODISCARD bool regex_match(_BidIt _First, _BidIt _Last, const basic_regex<_Elem, _RxTraits>& _Re,
     regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // try to match regular expression to target text
-    _Adl_verify_range(_First, _Last);
-    return _Regex_match1(_Get_unwrapped(_First), _Get_unwrapped(_Last),
-        static_cast<match_results<_Unwrapped_t<const _BidIt&>>*>(nullptr), _Re, _Flgs | regex_constants::match_any,
-        true);
+    _STD _Adl_verify_range(_First, _Last);
+    return _STD _Regex_match2(_Get_unwrapped(_First), _Get_unwrapped(_Last),
+        static_cast<match_results<_Unwrapped_t<const _BidIt&>>*>(nullptr), _Re, _Flgs | regex_constants::match_any);
 }
 
 _EXPORT_STD template <class _Elem, class _RxTraits>
@@ -2711,8 +2709,8 @@ _NODISCARD bool regex_match(_In_z_ const _Elem* _Str, const basic_regex<_Elem, _
     regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // try to match regular expression to target text
     const _Elem* _Last = _Str + char_traits<_Elem>::length(_Str);
-    return _Regex_match1(
-        _Str, _Last, static_cast<match_results<const _Elem*>*>(nullptr), _Re, _Flgs | regex_constants::match_any, true);
+    return _STD _Regex_match2(
+        _Str, _Last, static_cast<match_results<const _Elem*>*>(nullptr), _Re, _Flgs | regex_constants::match_any);
 }
 
 _EXPORT_STD template <class _Elem, class _Alloc, class _RxTraits>
@@ -2720,7 +2718,7 @@ bool regex_match(_In_z_ const _Elem* _Str, match_results<const _Elem*, _Alloc>& 
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // try to match regular expression to target text
     const _Elem* _Last = _Str + char_traits<_Elem>::length(_Str);
-    return _Regex_match1(_Str, _Last, _STD addressof(_Matches), _Re, _Flgs, true);
+    return _STD _Regex_match2(_Str, _Last, _STD addressof(_Matches), _Re, _Flgs);
 }
 
 _EXPORT_STD template <class _StTraits, class _StAlloc, class _Alloc, class _Elem, class _RxTraits>
@@ -2728,7 +2726,7 @@ bool regex_match(const basic_string<_Elem, _StTraits, _StAlloc>& _Str,
     match_results<typename basic_string<_Elem, _StTraits, _StAlloc>::const_iterator, _Alloc>& _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // try to match regular expression to target text
-    return _Regex_match1(_Str.begin(), _Str.end(), _STD addressof(_Matches), _Re, _Flgs, true);
+    return _STD _Regex_match2(_Str.begin(), _Str.end(), _STD addressof(_Matches), _Re, _Flgs);
 }
 
 _EXPORT_STD template <class _StTraits, class _StAlloc, class _Alloc, class _Elem, class _RxTraits>
@@ -2740,8 +2738,8 @@ _EXPORT_STD template <class _StTraits, class _StAlloc, class _Elem, class _RxTra
 _NODISCARD bool regex_match(const basic_string<_Elem, _StTraits, _StAlloc>& _Str,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // try to match regular expression to target text
-    return _Regex_match1(_Str.data(), _Str.data() + _Str.size(), static_cast<match_results<const _Elem*>*>(nullptr),
-        _Re, _Flgs | regex_constants::match_any, true);
+    return _STD _Regex_match2(_Str.data(), _Str.data() + _Str.size(),
+        static_cast<match_results<const _Elem*>*>(nullptr), _Re, _Flgs | regex_constants::match_any);
 }
 
 template <class _BidIt, class _Alloc, class _Elem, class _RxTraits, class _It>
@@ -2769,21 +2767,21 @@ bool _Regex_search2(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Match
     alignas(_Loop_vals_v3_t<_Iter_diff_t<_It>>) alignas(_Rx_capture_range_t<_It>) //
         alignas(_Rx_state_frame_t<_It>) unsigned char _Stackbuf[4096];
     _Matcher3<_Elem, _RxTraits, _It, void> _Mx(
-        _First, _Last, _Re._Get_traits(), _Re._Get(), _Re.mark_count() + 1, _Re.flags(), _Flgs, _Stackbuf);
+        _First, _Last, _Re._Get_traits(), _Re._Get(), _Re.mark_count() + 1, _Re.flags(), _Flgs, _Stackbuf, false);
 
-    if (_Mx._Match(false)) {
+    if (_Mx._Match2()) {
         _Found = true;
     } else if (_First != _Last && !(_Flgs & regex_constants::match_continuous)) { // try more on suffixes
         _Mx._Setf(regex_constants::match_prev_avail);
         _Mx._Clearf(regex_constants::_Match_not_null);
         while ((_First = _Mx._Skip(++_First, _Last)) != _Last) {
-            if (_Mx._Match(_First, false)) { // found match starting at _First
+            if (_Mx._Match2(_First)) { // found match starting at _First
                 _Found = true;
                 break;
             }
         }
 
-        if (!_Found && _Mx._Match(_Last, false)) {
+        if (!_Found && _Mx._Match2(_Last)) {
             _Found = true;
         }
     }
