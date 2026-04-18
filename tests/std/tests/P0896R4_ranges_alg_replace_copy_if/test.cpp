@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#if defined(_PREFAST_) && defined(_M_IX86) // TRANSITION, VSO-1639191
+int main() {}
+#else // ^^^ workaround / no workaround vvv
 #include <algorithm>
 #include <cassert>
 #include <concepts>
@@ -59,3 +62,4 @@ int main() {
 #endif // TRANSITION, GH-1030
     input_range_output_iterator_permutations<instantiator, P const, P>();
 }
+#endif // ^^^ no workaround ^^^
