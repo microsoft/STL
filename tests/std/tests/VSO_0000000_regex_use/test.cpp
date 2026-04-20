@@ -2600,6 +2600,33 @@ void test_gh_6249() {
     }
 }
 
+void test_gh_6262() {
+    // GH-6262: Remove match mode _Skip_zero_length
+    // Check that replacement with internal match mode _Match_not_null in regex_iterator behaves equivalently
+
+    const regex re{"^|b"};
+    const char* input = "aab";
+
+    {
+        regex_iterator<const char*> it1{input + 2, input + 3, re}, it2{input + 2, input + 3, re, match_prev_avail};
+        ++it1;
+        assert(it1 != it2);
+    }
+
+    {
+        regex_iterator<const char*> it1{input + 1, input + 3, re}, it2{input + 1, input + 3, re, match_prev_avail};
+        ++it1;
+        assert(it1 == it2);
+    }
+
+    const regex re2{"^a|b"};
+    {
+        regex_iterator<const char*> it1{input + 1, input + 3, re}, it2{input + 1, input + 3, re, match_prev_avail};
+        ++it1;
+        assert(it1 == it2);
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2668,6 +2695,7 @@ int main() {
     test_gh_6189();
     test_gh_6191();
     test_gh_6249();
+    test_gh_6262();
 
     return g_regexTester.result();
 }
