@@ -2438,10 +2438,6 @@ void test_lwg_3886_volatile() {
 // Test LWG-3891: "LWG 3870 breaks std::expected<cv T, E>"
 
 struct FakeCvAssignable {
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-11070772
-    char c_{};
-#endif // ^^^ workaround ^^^
-
     FakeCvAssignable()                                   = default;
     FakeCvAssignable(const FakeCvAssignable&)            = default;
     FakeCvAssignable(FakeCvAssignable&&)                 = default;

@@ -4539,7 +4539,7 @@ _NODISCARD auto inout_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
 #ifdef __cpp_lib_start_lifetime_as // TRANSITION
 _EXPORT_STD template <class _Ty>
 _Ty* start_lifetime_as(void* const _Ptr) noexcept {
-#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
+#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION, toolset update
     static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
 #endif // ^^^ no workaround ^^^
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/1)");
@@ -4547,7 +4547,7 @@ _Ty* start_lifetime_as(void* const _Ptr) noexcept {
 }
 _EXPORT_STD template <class _Ty>
 const _Ty* start_lifetime_as(const void* const _Ptr) noexcept {
-#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
+#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION, toolset update
     static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
 #endif // ^^^ no workaround ^^^
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/1)");
@@ -4555,7 +4555,7 @@ const _Ty* start_lifetime_as(const void* const _Ptr) noexcept {
 }
 _EXPORT_STD template <class _Ty>
 volatile _Ty* start_lifetime_as(volatile void* const _Ptr) noexcept {
-#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
+#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION, toolset update
     static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
 #endif // ^^^ no workaround ^^^
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/1)");
@@ -4563,7 +4563,7 @@ volatile _Ty* start_lifetime_as(volatile void* const _Ptr) noexcept {
 }
 _EXPORT_STD template <class _Ty>
 const volatile _Ty* start_lifetime_as(const volatile void* const _Ptr) noexcept {
-#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
+#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION, toolset update
     static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
 #endif // ^^^ no workaround ^^^
     static_assert(sizeof(_Ty) > 0, "T must be a complete type. (N5032 [obj.lifetime]/1)");

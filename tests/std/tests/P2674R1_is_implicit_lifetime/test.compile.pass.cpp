@@ -124,7 +124,6 @@ private:
     int num;
 };
 
-#ifdef __cpp_lib_is_implicit_lifetime
 template <bool Val, typename T>
 constexpr bool test_implicit_lifetime = is_implicit_lifetime_v<T> == Val && is_implicit_lifetime<T>::value == Val;
 template <bool Val, typename T>
@@ -155,7 +154,7 @@ static_assert(test_implicit_lifetime_cv<false, UserProvidedDestructorClass>);
 static_assert(test_implicit_lifetime_cv<true, StringAggregateWithImplicitlyDeclaredDestructor>);
 static_assert(test_implicit_lifetime_cv<false, StringAggregateWithUserProvidedDestructor>);
 static_assert(test_implicit_lifetime_cv<true, NonAggregateWithTrivialCtorAndTrivialDtor>);
-#ifndef __clang__ // TRANSITION, LLVM-160610
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, LLVM-160610, VSO-2941370 (EDG)
 static_assert(test_implicit_lifetime_cv<false, NonAggregateWithNonTrivialCtor>);
 static_assert(test_implicit_lifetime_cv<false, NonAggregateWithUserProvidedCtor>);
 #endif // ^^^ no workaround ^^^
@@ -177,4 +176,3 @@ static_assert(test_implicit_lifetime<false, long&>);
 static_assert(test_implicit_lifetime<false, long&&>);
 static_assert(test_implicit_lifetime<false, const long&>);
 static_assert(test_implicit_lifetime<false, const long&&>);
-#endif // ^^^ defined(__cpp_lib_is_implicit_lifetime) ^^^

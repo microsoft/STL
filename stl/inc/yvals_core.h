@@ -1759,7 +1759,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_invoke_r                          202106L
 #define __cpp_lib_ios_noreplace                     202207L
 
-#if !defined(__EDG__) && (defined(__clang__) || _MSC_VER >= 1951) // TRANSITION, GH-5738, VSO-2581623, toolset update
+#if defined(__clang__) || defined(__EDG__) || _MSC_VER >= 1951 // TRANSITION, toolset update
 #define __cpp_lib_is_implicit_lifetime 202302L
 #endif // ^^^ no workaround ^^^
 
