@@ -2605,7 +2605,7 @@ void test_gh_6262() {
     // Check that replacement with internal match mode _Match_not_null in regex_iterator behaves equivalently
 
     const regex re{"^|b"};
-    const char* input = "aab";
+    const char* const input = "aab";
 
     {
         cregex_iterator it1{input + 2, input + 3, re};
