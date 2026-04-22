@@ -2604,29 +2604,33 @@ void test_gh_6262() {
     // GH-6262: Remove match mode _Skip_zero_length
     // Check that replacement with internal match mode _Match_not_null in regex_iterator behaves equivalently
 
-    const regex re{"^|b"};
     const char* const input = "aab";
 
     {
-        cregex_iterator it1{input + 2, input + 3, re};
-        cregex_iterator it2{input + 2, input + 3, re, match_prev_avail};
-        ++it1;
-        assert(it1 != it2);
+        const regex re{"^|b"};
+        {
+            cregex_iterator it1{input + 2, input + 3, re};
+            cregex_iterator it2{input + 2, input + 3, re, match_prev_avail};
+            ++it1;
+            assert(it1 != it2);
+        }
+
+        {
+            cregex_iterator it1{input + 1, input + 3, re};
+            cregex_iterator it2{input + 1, input + 3, re, match_prev_avail};
+            ++it1;
+            assert(it1 == it2);
+        }
     }
 
     {
-        cregex_iterator it1{input + 1, input + 3, re};
-        cregex_iterator it2{input + 1, input + 3, re, match_prev_avail};
-        ++it1;
-        assert(it1 == it2);
-    }
-
-    const regex re2{"^a|b"};
-    {
-        cregex_iterator it1{input + 1, input + 3, re};
-        cregex_iterator it2{input + 1, input + 3, re, match_prev_avail};
-        ++it1;
-        assert(it1 == it2);
+        const regex re2{"^a|b"};
+        {
+            cregex_iterator it1{input + 1, input + 3, re2};
+            cregex_iterator it2{input + 1, input + 3, re2, match_prev_avail};
+            ++it1;
+            assert(it1 == it2);
+        }
     }
 }
 
