@@ -2608,20 +2608,23 @@ void test_gh_6262() {
     const char* input = "aab";
 
     {
-        regex_iterator<const char*> it1{input + 2, input + 3, re}, it2{input + 2, input + 3, re, match_prev_avail};
+        regex_iterator<const char*> it1{input + 2, input + 3, re};
+        regex_iterator<const char*> it2{input + 2, input + 3, re, match_prev_avail};
         ++it1;
         assert(it1 != it2);
     }
 
     {
-        regex_iterator<const char*> it1{input + 1, input + 3, re}, it2{input + 1, input + 3, re, match_prev_avail};
+        regex_iterator<const char*> it1{input + 1, input + 3, re};
+        regex_iterator<const char*> it2{input + 1, input + 3, re, match_prev_avail};
         ++it1;
         assert(it1 == it2);
     }
 
     const regex re2{"^a|b"};
     {
-        regex_iterator<const char*> it1{input + 1, input + 3, re}, it2{input + 1, input + 3, re, match_prev_avail};
+        regex_iterator<const char*> it1{input + 1, input + 3, re};
+        regex_iterator<const char*> it2{input + 1, input + 3, re, match_prev_avail};
         ++it1;
         assert(it1 == it2);
     }
