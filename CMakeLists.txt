@@ -6,19 +6,19 @@ cmake_minimum_required(VERSION 4.2.3)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
-if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.51.36223.2")
-    message(FATAL_ERROR "The STL must be built with MSVC Compiler 19.51.36223.2 or later. Follow the README instructions.")
+if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.52.36307.1")
+    message(FATAL_ERROR "The STL must be built with MSVC Compiler 19.52.36307.1 or later. Follow the README instructions.")
 endif()
 
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles([=[
 #include <sdkddkver.h>
-static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN11_GE, "Inspecting WDK_NTDDI_VERSION, the Windows SDK version.");
+static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN11_BR, "Inspecting WDK_NTDDI_VERSION, the Windows SDK version.");
 int main() {}
 ]=] WINDOWS_SDK_VERSION_CHECK)
 
 if(NOT WINDOWS_SDK_VERSION_CHECK)
-    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.26100) or later. Follow the README instructions.")
+    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.28000) or later. Follow the README instructions.")
 endif()
 
 if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)
@@ -88,16 +88,19 @@ set(STL_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/bin/${VCLIBS_I386_OR
 # Note that we set _WIN32_WINNT to a high level to make declarations available.
 add_compile_definitions(
     _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH WIN32_LEAN_AND_MEAN STRICT _CRT_STDIO_ARBITRARY_WIDE_SPECIFIERS
-    _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN11_GE)
+    _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN11_BR)
 
 if(STL_USE_ANALYZE)
-    # TRANSITION, Windows SDK 10.0.26100 emits
+    # TRANSITION, Windows SDK 10.0.28000 emits multiple warnings:
     # "warning C6553: The annotation for function 'LCMapStringEx' on _Param_(9) does not apply to a value type."
     # Reported as OS-40109504 "Windows SDK: incorrect SAL annotations on functions the STL uses".
-    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553>")
+    # "warning C28285: For function '_BitScanForward' '_Param_(1)' syntax error in 'SAL_range(0,(sizeof(Mask)*8)-1)' near 'Mask)*8'."
+    # Reported as VSO-2946529 "/analyze emits warning C28285 for _BitScanForward declared by winnt.h".
+    # Fixed by OS-PR-14602802 on 2026-01-22.
+    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553;/wd28285>")
 
     if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64ec")
-        # TRANSITION, Windows SDK 10.0.26100 emits
+        # TRANSITION, Windows SDK 10.0.28000 emits
         # "warning C28301: No annotations for first declaration of 'meow'"
         # for various intrinsics when building for ARM64EC.
         add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/wd28301>")

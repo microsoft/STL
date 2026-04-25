@@ -718,7 +718,7 @@ _EXPORT_STD template <class _Ty>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_trivially_copyable_v = __is_trivially_copyable(_Ty);
 
 #if _HAS_CXX23
-#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION
+#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION, toolset update
 _EXPORT_STD template <class _Ty>
 struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_implicit_lifetime : bool_constant<__builtin_is_implicit_lifetime(_Ty)> {};
 
