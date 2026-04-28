@@ -512,10 +512,8 @@ int main() {
     static_assert((mm_constexpr_tests(), true));
     test_in<mm, const P>();
 
-#if _ITERATOR_DEBUG_LEVEL < 2 // _DEBUG_LT_PRED affects comparison count
     static_assert((cmp_count_tests(), true));
     cmp_count_tests();
-#endif
 
     test_gh_1893();
     test_gh_2900();
