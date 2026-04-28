@@ -339,6 +339,22 @@ constexpr void mm_constexpr_tests() {
         ProxyRef::no>>();
 }
 
+constexpr void test_cmp_count(std::initializer_list<int> v) {
+    size_t count = 0;
+    auto _       = ranges::minmax_element(v.begin(), v.end(), [&count](int left, int right) {
+        ++count;
+        return left < right;
+    });
+    ASSERT(count <= 3 * (v.size() - 1) / 2);
+}
+
+constexpr void cmp_count_tests() {
+    test_cmp_count({1, 2, 3});
+    test_cmp_count({1, 2, 3, 4});
+    test_cmp_count({3, 2, 1});
+    test_cmp_count({4, 3, 2, 1});
+}
+
 void test_gh_1893() {
     // GH-1893: ranges::clamp was sometimes performing too many projections,
     // and we should conform at least in release mode.
@@ -436,6 +452,11 @@ int main() {
 
     static_assert((mm_constexpr_tests(), true));
     test_in<mm, const P>();
+
+#if _ITERATOR_DEBUG_LEVEL < 2 // _DEBUG_LT_PRED affects comparison count
+    static_assert((cmp_count_tests(), true));
+    cmp_count_tests();
+#endif
 
     test_gh_1893();
     test_gh_2900();

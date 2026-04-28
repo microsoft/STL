@@ -37,6 +37,15 @@ void test_all_permutations(vector<int>& v) {
     } while (next_permutation(v.begin(), v.end()));
 }
 
+void test_cmp_count(std::initializer_list<int> v) {
+    size_t count = 0;
+    auto _       = minmax_element(v.begin(), v.end(), [&count](int left, int right) {
+        ++count;
+        return left < right;
+    });
+    assert(count <= 3 * (v.size() - 1) / 2);
+}
+
 int main() {
     vector<int> v;
 
@@ -92,4 +101,11 @@ int main() {
         assert(max_element(begin(data), end(data)) == begin(data) + 3);
         assert(minmax_element(begin(data), end(data)) == make_pair(begin(data) + 9, begin(data) + 16));
     }
+
+#if _ITERATOR_DEBUG_LEVEL < 2 // _DEBUG_LT_PRED affects comparison count
+    test_cmp_count({1, 2, 3});
+    test_cmp_count({1, 2, 3, 4});
+    test_cmp_count({3, 2, 1});
+    test_cmp_count({4, 3, 2, 1});
+#endif
 }
