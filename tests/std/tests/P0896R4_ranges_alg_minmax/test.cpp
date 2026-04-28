@@ -339,13 +339,72 @@ constexpr void mm_constexpr_tests() {
         ProxyRef::no>>();
 }
 
+template <class T>
+struct InputRange {
+    T* ptr;
+    size_t size;
+
+    struct iterator {
+        using value_type      = T;
+        using difference_type = ptrdiff_t;
+
+        T* ptr;
+
+        constexpr T operator*() const {
+            return *ptr;
+        }
+
+        constexpr iterator& operator++() {
+            ++ptr;
+            return *this;
+        }
+
+        constexpr void operator++(int) {
+            ++*this;
+        }
+
+        constexpr friend bool operator==(iterator left, iterator right) {
+            return left.ptr == right.ptr;
+        }
+    };
+
+    constexpr iterator begin() const {
+        return {ptr};
+    }
+
+    constexpr iterator end() const {
+        return {ptr + size};
+    }
+};
+
 constexpr void test_cmp_count(std::initializer_list<int> v) {
-    size_t count = 0;
-    auto _       = ranges::minmax_element(v.begin(), v.end(), [&count](int left, int right) {
-        ++count;
-        return left < right;
-    });
-    ASSERT(count <= 3 * (v.size() - 1) / 2);
+    {
+        size_t count = 0;
+        auto _       = ranges::minmax(v, [&count](int left, int right) {
+            ++count;
+            return left < right;
+        });
+        ASSERT(count <= 3 * v.size() / 2);
+    }
+
+    {
+        InputRange r = {v.data(), v.size()};
+        size_t count = 0;
+        auto _       = ranges::minmax(r, [&count](int left, int right) {
+            ++count;
+            return left < right;
+        });
+        ASSERT(count <= 3 * v.size() / 2);
+    }
+
+    {
+        size_t count = 0;
+        auto _       = ranges::minmax_element(v, [&count](int left, int right) {
+            ++count;
+            return left < right;
+        });
+        ASSERT(count <= 3 * (v.size() - 1) / 2);
+    }
 }
 
 constexpr void cmp_count_tests() {

@@ -11445,8 +11445,14 @@ namespace ranges {
             } else {
                 // This initialization is correct, similar to the N4950 [dcl.init.aggr]/6 example
                 minmax_result<_Vty> _Found = {static_cast<_Vty>(*_UFirst), _Found.min};
-                if (_UFirst == _ULast) {
+                if (++_UFirst == _ULast) {
                     return _Found;
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst), _STD invoke(_Proj, _Found.min))) {
+                    _Found.min = *_UFirst;
+                } else {
+                    _Found.max = *_UFirst;
                 }
 
                 while (++_UFirst != _ULast) { // process one or two elements
