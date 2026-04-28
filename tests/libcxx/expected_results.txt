@@ -1161,7 +1161,7 @@ std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find/find.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find/ranges.find.pass.cpp:9 SKIPPED
-std/algorithms/alg.nonmodifying/alg.fold/left_folds.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.fold/ranges.fold_left.pass.cpp:9 SKIPPED
 std/atomics/atomics.ref/compare_exchange_strong.pass.cpp:9 SKIPPED
 std/atomics/atomics.ref/compare_exchange_weak.pass.cpp:9 SKIPPED
 std/atomics/atomics.ref/wait.pass.cpp:9 SKIPPED
