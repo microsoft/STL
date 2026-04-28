@@ -263,16 +263,17 @@ std/language.support/support.limits/support.limits.general/cstdlib.version.compi
 
 # P0543R3 Saturation Arithmetic
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
-std/numerics/numeric.ops/numeric.ops.sat/add_sat.compile.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/add_sat.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/div_sat.compile.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/div_sat.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/mul_sat.compile.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/mul_sat.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.compile.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/sub_sat.compile.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/sub_sat.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_add.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_add.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_cast.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_cast.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_div.assert.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_div.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_div.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_mul.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_mul.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_sub.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_sub.pass.cpp FAIL
 
 # P1789R3 Library Support For Expansion Statements
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
