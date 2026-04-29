@@ -377,7 +377,7 @@ struct InputRange {
     }
 };
 
-constexpr void test_cmp_count(std::initializer_list<int> v) {
+constexpr void test_cmp_count(initializer_list<int> v) {
     {
         size_t count = 0;
         auto _       = ranges::minmax(v, [&count](int left, int right) {

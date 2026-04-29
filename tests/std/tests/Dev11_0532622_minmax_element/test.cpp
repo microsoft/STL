@@ -37,7 +37,7 @@ void test_all_permutations(vector<int>& v) {
     } while (next_permutation(v.begin(), v.end()));
 }
 
-void test_cmp_count(std::initializer_list<int> v) {
+void test_cmp_count(initializer_list<int> v) {
     size_t count = 0;
     auto _       = minmax_element(v.begin(), v.end(), [&count](int left, int right) {
         ++count;
