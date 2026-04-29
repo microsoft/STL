@@ -267,7 +267,6 @@ std/numerics/numeric.ops/numeric.ops.sat/saturating_add.compile.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/saturating_add.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/saturating_cast.compile.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/saturating_cast.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/saturating_div.assert.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/saturating_div.compile.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/saturating_div.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/saturating_mul.compile.pass.cpp FAIL
@@ -283,6 +282,30 @@ std/utilities/intseq/intseq.binding/tuple_interface.compile.pass.cpp FAIL
 # P2592R3 Hashing Support For chrono Value Classes
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/time/time.hash/time.hash_enabled.pass.cpp FAIL
+
+# P2714R1 bind_front(), bind_back(), not_fn() For NTTP Callables
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/function.objects/func.bind.partial/bind_front.nttp.pass.cpp FAIL
+
+# P2781R9 constant_wrapper
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/const.wrap.class/adl.compile.pass.cpp FAIL
+std/utilities/const.wrap.class/assign.pass.cpp FAIL
+std/utilities/const.wrap.class/binary_ops.pass.cpp FAIL
+std/utilities/const.wrap.class/call.pass.cpp FAIL
+std/utilities/const.wrap.class/comma.pass.cpp FAIL
+std/utilities/const.wrap.class/comp.pass.cpp FAIL
+std/utilities/const.wrap.class/convert.pass.cpp FAIL
+std/utilities/const.wrap.class/ctad.compile.pass.cpp FAIL
+std/utilities/const.wrap.class/cw.pass.cpp FAIL
+std/utilities/const.wrap.class/cw_fixed.array.ctor.pass.cpp FAIL
+std/utilities/const.wrap.class/cw_fixed.ctor.pass.cpp FAIL
+std/utilities/const.wrap.class/general.pass.cpp FAIL
+std/utilities/const.wrap.class/mem_ptr.pass.cpp FAIL
+std/utilities/const.wrap.class/pseudo_mutators.pass.cpp FAIL
+std/utilities/const.wrap.class/subscript.pass.cpp FAIL
+std/utilities/const.wrap.class/types.compile.pass.cpp FAIL
+std/utilities/const.wrap.class/unary_ops.pass.cpp FAIL
 
 # P2835R7 atomic_ref::address()
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
