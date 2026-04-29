@@ -107,5 +107,5 @@ int main() {
     test_cmp_count({1, 2, 3, 4});
     test_cmp_count({3, 2, 1});
     test_cmp_count({4, 3, 2, 1});
-#endif
+#endif // _ITERATOR_DEBUG_LEVEL < 2
 }
