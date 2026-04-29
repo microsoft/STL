@@ -105,7 +105,7 @@ int main() {
         assert(minmax_element(begin(data), end(data)) == make_pair(begin(data) + 9, begin(data) + 16));
     }
 
-#if _ITERATOR_DEBUG_LEVEL < 2 // _DEBUG_LT_PRED affects comparison count
+#if _ITERATOR_DEBUG_LEVEL < 2 // TRANSITION, GH-1006
     test_cmp_count({1, 2, 3});
     test_cmp_count({1, 2, 3, 4});
     test_cmp_count({3, 2, 1});
