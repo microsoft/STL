@@ -38,7 +38,7 @@ void test_all_permutations(vector<int>& v) {
 }
 
 // N5032 [alg.min.max]/32:
-// Complexity: Let N be last - first. At most max(floor(3/2 (N − 1)), 0) comparisons
+// Complexity: Let N be last - first. At most max(floor(3/2 (N - 1)), 0) comparisons
 // and twice as many applications of the projection, if any.
 void test_cmp_count(initializer_list<int> v) {
     size_t cmp_count = 0;
