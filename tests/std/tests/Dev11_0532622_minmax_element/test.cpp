@@ -38,12 +38,12 @@ void test_all_permutations(vector<int>& v) {
 }
 
 void test_cmp_count(initializer_list<int> v) {
-    size_t count = 0;
-    auto _       = minmax_element(v.begin(), v.end(), [&count](int left, int right) {
-        ++count;
+    size_t cmp_count = 0;
+    (void) minmax_element(v.begin(), v.end(), [&cmp_count](int left, int right) {
+        ++cmp_count;
         return left < right;
     });
-    assert(count <= 3 * (v.size() - 1) / 2);
+    assert(cmp_count <= 3 * (v.size() - 1) / 2);
 }
 
 int main() {

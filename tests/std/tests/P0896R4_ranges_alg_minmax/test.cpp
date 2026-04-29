@@ -379,31 +379,31 @@ struct InputRange {
 
 constexpr void test_cmp_count(initializer_list<int> v) {
     {
-        size_t count = 0;
-        auto _       = ranges::minmax(v, [&count](int left, int right) {
-            ++count;
+        size_t cmp_count = 0;
+        (void) ranges::minmax(v, [&cmp_count](int left, int right) {
+            ++cmp_count;
             return left < right;
         });
-        ASSERT(count <= 3 * v.size() / 2);
+        ASSERT(cmp_count <= 3 * v.size() / 2);
     }
 
     {
-        InputRange r = {v.data(), v.size()};
-        size_t count = 0;
-        auto _       = ranges::minmax(r, [&count](int left, int right) {
-            ++count;
+        InputRange r     = {v.data(), v.size()};
+        size_t cmp_count = 0;
+        (void) ranges::minmax(r, [&cmp_count](int left, int right) {
+            ++cmp_count;
             return left < right;
         });
-        ASSERT(count <= 3 * v.size() / 2);
+        ASSERT(cmp_count <= 3 * v.size() / 2);
     }
 
     {
-        size_t count = 0;
-        auto _       = ranges::minmax_element(v, [&count](int left, int right) {
-            ++count;
+        size_t cmp_count = 0;
+        (void) ranges::minmax_element(v, [&cmp_count](int left, int right) {
+            ++cmp_count;
             return left < right;
         });
-        ASSERT(count <= 3 * (v.size() - 1) / 2);
+        ASSERT(cmp_count <= 3 * (v.size() - 1) / 2);
     }
 }
 
