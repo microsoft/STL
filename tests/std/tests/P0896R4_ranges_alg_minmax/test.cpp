@@ -377,6 +377,14 @@ struct InputRange {
     }
 };
 
+// For minmax:
+// N5032 [alg.min.max]/23:
+// Complexity: At most (3/2) ranges::distance(r) applications of the corresponding predicate
+// and twice as many applications of the projection, if any.
+// For minmax_element:
+// N5032 [alg.min.max]/32:
+// Complexity: Let N be last - first. At most max(floor(3/2 (N − 1)), 0) comparisons
+// and twice as many applications of the projection, if any.
 constexpr void test_cmp_count(initializer_list<int> v) {
     {
         size_t cmp_count = 0;
