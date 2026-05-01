@@ -208,29 +208,6 @@ void test_limits(const char* flag, const IntType min, const IntType max) {
     assert(value == TimeType{max});
 }
 
-void test_lwg_3536() {
-    // LWG-3536, "Should chrono::from_stream() assign zero to duration for failure?"
-    minutes mm{20};
-
-    {
-        istringstream iss{"2:2:30"};
-        iss >> parse("%H:%M:%S", mm);
-        assert(iss.fail() && mm == 20min);
-    }
-
-    {
-        istringstream iss{"June"};
-        iss >> parse("%B", mm);
-        assert(iss.fail() && mm == 20min);
-    }
-
-    {
-        istringstream iss{""};
-        iss >> parse("%B", mm);
-        assert(iss.fail() && mm == 20min);
-    }
-}
-
 void parse_seconds() {
     seconds time;
     test_parse("1", "%S", time);
@@ -1254,6 +1231,29 @@ void test_io_manipulator() {
     fail_parse(WIDEN(CharT, "a  b"), CStringOrStdString{WIDEN(CharT, "a%nb")}, time);
 }
 
+void test_lwg_3536() {
+    // LWG-3536, "Should chrono::from_stream() assign zero to duration for failure?"
+    minutes mm{20};
+
+    {
+        istringstream iss{"2:2:30"};
+        iss >> parse("%H:%M:%S", mm);
+        assert(iss.fail() && mm == 20min);
+    }
+
+    {
+        istringstream iss{"June"};
+        iss >> parse("%B", mm);
+        assert(iss.fail() && mm == 20min);
+    }
+
+    {
+        istringstream iss{""};
+        iss >> parse("%B", mm);
+        assert(iss.fail() && mm == 20min);
+    }
+}
+
 namespace lwg_3956 {
     struct has_adl_from_stream {
         int value = 0;
@@ -1298,8 +1298,6 @@ void test_lwg_3956() {
 }
 
 void test_all_parse() {
-    test_lwg_3536();
-    test_lwg_3956();
     parse_seconds();
     parse_minutes();
     parse_hours();
@@ -1315,6 +1313,8 @@ void test_all_parse() {
     test_io_manipulator<wchar_t, const wchar_t*>();
     test_io_manipulator<char, string>();
     test_io_manipulator<wchar_t, wstring>();
+    test_lwg_3536();
+    test_lwg_3956();
 }
 
 void test() {
