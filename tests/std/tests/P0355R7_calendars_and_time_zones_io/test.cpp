@@ -1297,7 +1297,7 @@ void test_lwg_3956() {
     }
 }
 
-void test_parse() {
+void test_all_parse() {
     test_lwg_3536();
     test_lwg_3956();
     parse_seconds();
@@ -1319,7 +1319,7 @@ void test_parse() {
 
 void test() {
     test_duration_output();
-    test_parse();
+    test_all_parse();
 }
 
 int main() {
