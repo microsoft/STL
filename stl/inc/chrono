@@ -4212,8 +4212,8 @@ namespace chrono {
             char _Ch;
             while (_First != _Last && _Width > 0 && '0' <= (_Ch = _Ctype_fac.narrow(*_First))
                    && _Ch <= '9') { // copy digits
-                *_Ptr = _Ch;
-                if (_Ptr < _STD cend(_Ac)) {
+                if (_Ptr < _STD cend(_Ac) - 1) { // preserve room for the null terminator written below
+                    *_Ptr = _Ch;
                     ++_Ptr; // drop trailing digits if already too large
                 }
                 ++_First;
