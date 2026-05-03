@@ -6,11 +6,13 @@
 #include <charconv>
 #include <chrono>
 #include <cstdint>
+#include <cstdio>
 #include <istream>
 #include <iterator>
 #include <limits>
 #include <locale>
 #include <ratio>
+#include <source_location>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -173,14 +175,40 @@ ios_base::iostate parse_state(const CharT* str, const CStringOrStdString& fmt, P
 
 template <class CharT, class CStringOrStdString, class Parsable>
 void test_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
-    type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
-    assert((parse_state(str, fmt, p, abbrev, offset) & ~ios_base::eofbit) == ios_base::goodbit);
+    type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr,
+    const source_location sl = source_location::current()) {
+    const auto masked_state = parse_state(str, fmt, p, abbrev, offset) & ~ios_base::eofbit;
+    const bool desirable    = masked_state == ios_base::goodbit;
+    if (!desirable) {
+        printf("test_parse() encountered a problem on line %u.\n", static_cast<unsigned int>(sl.line()));
+    }
+    assert(desirable);
+}
+
+template <class CharT, class CStringOrStdString, class Parsable>
+void test_parse(const basic_string<CharT>& str, const CStringOrStdString& fmt, Parsable& p,
+    type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr,
+    const source_location sl = source_location::current()) {
+    test_parse(str.c_str(), fmt, p, abbrev, offset, sl);
 }
 
 template <class CharT, class CStringOrStdString, class Parsable>
 void fail_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
-    type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
-    assert((parse_state(str, fmt, p, abbrev, offset) & ~ios_base::eofbit) != ios_base::goodbit);
+    type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr,
+    const source_location sl = source_location::current()) {
+    const auto masked_state = parse_state(str, fmt, p, abbrev, offset) & ~ios_base::eofbit;
+    const bool desirable    = masked_state != ios_base::goodbit;
+    if (!desirable) {
+        printf("fail_parse() encountered a problem on line %u.\n", static_cast<unsigned int>(sl.line()));
+    }
+    assert(desirable);
+}
+
+template <class CharT, class CStringOrStdString, class Parsable>
+void fail_parse(const basic_string<CharT>& str, const CStringOrStdString& fmt, Parsable& p,
+    type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr,
+    const source_location sl = source_location::current()) {
+    fail_parse(str.c_str(), fmt, p, abbrev, offset, sl);
 }
 
 template <class TimeType, class IntType = int>
