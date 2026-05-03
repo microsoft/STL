@@ -1226,6 +1226,187 @@ void parse_timepoints() {
     assert(ut == clock_cast<utc_clock>(sys_days{1d / January / 2017y}) - 1s);
 }
 
+void parse_modified_maximum_characters() {
+    const string hundred_digits(100, '1');
+    const string seventy_zeroes(70, '0');
+
+    {
+        day d{7};
+        test_parse(hundred_digits, "%d", d);
+        assert(d == day{11});
+        fail_parse(seventy_zeroes + "22", "%d", d); // 0 is not a valid day of the month
+        fail_parse(hundred_digits, "%100d", d); // overflow
+        test_parse(seventy_zeroes + "22", "%100d", d);
+        assert(d == day{22});
+
+        test_parse(hundred_digits, "%e", d);
+        assert(d == day{11});
+        fail_parse(seventy_zeroes + "22", "%e", d); // 0 is not a valid day of the month
+        fail_parse(hundred_digits, "%100e", d); // overflow
+        test_parse(seventy_zeroes + "22", "%100e", d);
+        assert(d == day{22});
+    }
+
+    {
+        hours h{33h};
+        test_parse(hundred_digits, "%H", h);
+        assert(h == 11h);
+        test_parse(seventy_zeroes + "22", "%H", h);
+        assert(h == 0h);
+        fail_parse(hundred_digits, "%100H", h); // overflow
+        test_parse(seventy_zeroes + "22", "%100H", h);
+        assert(h == 22h);
+
+        test_parse(hundred_digits, "%I", h);
+        assert(h == 11h);
+        fail_parse(seventy_zeroes + "7", "%I", h); // 0 is not a valid 12-hour clock
+        fail_parse(hundred_digits, "%100I", h); // overflow
+        test_parse(seventy_zeroes + "7", "%100I", h);
+        assert(h == 7h);
+    }
+
+    {
+        days ds{22};
+        test_parse(hundred_digits, "%j", ds);
+        assert(ds == days{111});
+        test_parse(seventy_zeroes + "1729", "%j", ds);
+        assert(ds == days{0});
+        fail_parse(hundred_digits, "%100j", ds); // overflow
+        test_parse(seventy_zeroes + "1729", "%100j", ds);
+        assert(ds == days{1729});
+    }
+
+    {
+        year_month_day ymd{1970y / January / 1d};
+        test_parse("2030 " + hundred_digits, "%Y %j", ymd);
+        assert(ymd == 2030y / April / 21d);
+        fail_parse("2030 " + seventy_zeroes + "124", "%Y %j", ymd); // 0 is not a valid day of the year
+        fail_parse("2030 " + hundred_digits, "%Y %100j", ymd); // overflow
+        test_parse("2030 " + seventy_zeroes + "124", "%Y %100j", ymd);
+        assert(ymd == 2030y / May / 4d);
+
+        fail_parse(hundred_digits + "-02-03", "%100F", ymd); // overflow
+        test_parse(seventy_zeroes + "1969-07-20", "%100F", ymd);
+        assert(ymd == 1969y / July / 20d);
+
+        test_parse("2015 4 " + hundred_digits, "%Y %u %U", ymd);
+        assert(ymd == 2015y / March / 19d);
+        test_parse("2015 4 " + seventy_zeroes + "6", "%Y %u %U", ymd);
+        assert(ymd == 2015y / January / 1d);
+        fail_parse("2015 4 " + hundred_digits, "%Y %u %100U", ymd); // overflow
+        test_parse("2015 4 " + seventy_zeroes + "6", "%Y %u %100U", ymd);
+        assert(ymd == 2015y / February / 12d);
+
+        test_parse("2015 4 " + hundred_digits, "%Y %u %W", ymd);
+        assert(ymd == 2015y / March / 19d);
+        test_parse("2015 4 " + seventy_zeroes + "6", "%Y %u %W", ymd);
+        assert(ymd == 2015y / January / 1d);
+        fail_parse("2015 4 " + hundred_digits, "%Y %u %100W", ymd); // overflow
+        test_parse("2015 4 " + seventy_zeroes + "6", "%Y %u %100W", ymd);
+        assert(ymd == 2015y / February / 12d);
+
+        test_parse("4 03 19 " + hundred_digits, "%u %V %C %g", ymd);
+        assert(ymd == 1911y / January / 19d);
+        test_parse("4 03 19 " + seventy_zeroes + "33", "%u %V %C %g", ymd);
+        assert(ymd == 1900y / January / 18d);
+        fail_parse("4 03 19 " + hundred_digits, "%u %V %C %100g", ymd); // overflow
+        test_parse("4 03 19 " + seventy_zeroes + "55", "%u %V %C %100g", ymd);
+        assert(ymd == 1955y / January / 20d);
+
+        test_parse("4 03 " + hundred_digits, "%u %V %G", ymd);
+        assert(ymd == 1111y / January / 19d);
+        test_parse("4 03 " + seventy_zeroes + "2030", "%u %V %G", ymd);
+        assert(ymd == 0y / January / 20d);
+        fail_parse("4 03 " + hundred_digits, "%u %V %100G", ymd); // overflow
+        test_parse("4 03 " + seventy_zeroes + "2030", "%u %V %100G", ymd);
+        assert(ymd == 2030y / January / 17d);
+
+        test_parse("4 2015 " + hundred_digits, "%u %G %V", ymd);
+        assert(ymd == 2015y / March / 12d);
+        fail_parse("4 2015 " + seventy_zeroes + "33", "%u %G %V", ymd); // 0 is not a valid ISO week
+        fail_parse("4 2015 " + hundred_digits, "%u %G %100V", ymd); // overflow
+        test_parse("4 2015 " + seventy_zeroes + "33", "%u %G %100V", ymd);
+        assert(ymd == 2015y / August / 13d);
+    }
+
+    {
+        month mo{January};
+        test_parse(hundred_digits, "%m", mo);
+        assert(mo == November);
+        fail_parse(seventy_zeroes + "12", "%m", mo); // 0 is not a valid month
+        fail_parse(hundred_digits, "%100m", mo); // overflow
+        test_parse(seventy_zeroes + "12", "%100m", mo);
+        assert(mo == December);
+    }
+
+    {
+        minutes mi{22min};
+        test_parse(hundred_digits, "%M", mi);
+        assert(mi == 11min);
+        test_parse(seventy_zeroes + "55", "%M", mi);
+        assert(mi == 0min);
+        fail_parse(hundred_digits, "%100M", mi); // overflow
+        test_parse(seventy_zeroes + "55", "%100M", mi);
+        assert(mi == 55min);
+    }
+
+    {
+        seconds s{22s};
+        test_parse(hundred_digits, "%S", s);
+        assert(s == 11s);
+        test_parse(seventy_zeroes + "55", "%S", s);
+        assert(s == 0s);
+        fail_parse(hundred_digits, "%100S", s); // overflow
+        test_parse(seventy_zeroes + "55", "%100S", s);
+        assert(s == 55s);
+    }
+
+    {
+        weekday wd{Thursday};
+        test_parse(hundred_digits, "%u", wd);
+        assert(wd == Monday);
+        fail_parse(seventy_zeroes + "2", "%u", wd); // 0 is not a valid weekday for %u
+        fail_parse(hundred_digits, "%100u", wd); // overflow
+        test_parse(seventy_zeroes + "2", "%100u", wd);
+        assert(wd == Tuesday);
+
+        test_parse(hundred_digits, "%w", wd);
+        assert(wd == Monday);
+        test_parse(seventy_zeroes + "2", "%w", wd);
+        assert(wd == Sunday);
+        fail_parse(hundred_digits, "%100w", wd); // overflow
+        test_parse(seventy_zeroes + "2", "%100w", wd);
+        assert(wd == Tuesday);
+    }
+
+    {
+        year y{1970y};
+        test_parse(hundred_digits, "%y", y);
+        assert(y == 2011y);
+        test_parse(seventy_zeroes + "55", "%y", y);
+        assert(y == 2000y);
+        fail_parse(hundred_digits, "%100y", y); // overflow
+        test_parse(seventy_zeroes + "55", "%100y", y);
+        assert(y == 2055y);
+
+        test_parse(hundred_digits, "%Y", y);
+        assert(y == 1111y);
+        test_parse(seventy_zeroes + "2026", "%Y", y);
+        assert(y == 0y);
+        fail_parse(hundred_digits, "%100Y", y); // overflow
+        test_parse(seventy_zeroes + "2026", "%100Y", y);
+        assert(y == 2026y);
+
+        test_parse("33 " + hundred_digits, "%y %C", y);
+        assert(y == 1133y);
+        test_parse("33 " + seventy_zeroes + "22", "%y %C", y);
+        assert(y == 33y);
+        fail_parse("33 " + hundred_digits, "%y %100C", y); // overflow
+        test_parse("33 " + seventy_zeroes + "22", "%y %100C", y);
+        assert(y == 2233y);
+    }
+}
+
 template <class CharT, class CStringOrStdString>
 void test_io_manipulator() {
     seconds time;
@@ -1337,6 +1518,7 @@ void test_all_parse() {
     parse_incomplete();
     parse_whitespace();
     parse_timepoints();
+    parse_modified_maximum_characters();
     test_io_manipulator<char, const char*>();
     test_io_manipulator<wchar_t, const wchar_t*>();
     test_io_manipulator<char, string>();
