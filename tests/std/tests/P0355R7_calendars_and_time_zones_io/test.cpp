@@ -636,7 +636,7 @@ void parse_calendar_types_basic() {
     // not ambiguous with year
     year_month_day ymd;
     test_parse("60 2004-02-29", "%j %F", ymd);
-    assert(ymd == 2004y / February / 29);
+    assert(ymd == 2004y / February / 29d);
 
     // basic year_month_day tests
     // different ways of specifying year
