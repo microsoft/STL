@@ -38,7 +38,7 @@ bool test_duration_basic_out(const duration<Rep, Period>& d, const CharT* expect
 
 template <class CharT>
 bool test_duration_locale_out() {
-    basic_stringstream<CharT> ss;
+    basic_ostringstream<CharT> ss;
     const duration<double> d{0.140625};
     ss.precision(3);
     ss << d;
@@ -155,7 +155,7 @@ ios_base::iostate parse_state(const CharT* str, const CStringOrStdString& fmt, P
         *offset = minutes::min();
     }
 
-    basic_stringstream<CharT> sstr{str};
+    basic_istringstream<CharT> sstr{str};
     if (abbrev) {
         if (offset) {
             sstr >> parse(fmt, p, *abbrev, *offset);
