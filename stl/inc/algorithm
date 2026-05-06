@@ -6549,7 +6549,10 @@ void _Random_shuffle_batched(_RanIt _First, _RanIt _Last, _Urng& _Func) {
     // Process one element at a time while bounds are too large for batching.
     for (; _Remaining > (uint64_t{1} << 30); --_Remaining) {
         _BatchedRng._Batch(_Offsets, _Remaining, 1, _Remaining);
-        swap(*(_UFirst + _Remaining - 1), *(_UFirst + _Offsets[0])); // intentional ADL
+        const auto _Target = _Remaining - 1;
+        if (static_cast<uint64_t>(_Offsets[0]) != _Target) { // avoid self-move-assignment
+            swap(*(_UFirst + _Target), *(_UFirst + _Offsets[0])); // intentional ADL
+        }
     }
 
     // Batch of 2: product of 2 consecutive bounds fits in 64 bits.
@@ -6558,7 +6561,10 @@ void _Random_shuffle_batched(_RanIt _First, _RanIt _Last, _Urng& _Func) {
         for (; _Remaining > (uint64_t{1} << 19); _Remaining -= 2) {
             _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 2, _Bound);
             for (uint64_t _J = 0; _J < 2; ++_J) {
-                swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
+                const auto _Target = _Remaining - _J - 1;
+                if (static_cast<uint64_t>(_Offsets[_J]) != _Target) { // avoid self-move-assignment
+                    swap(*(_UFirst + _Target), *(_UFirst + _Offsets[_J])); // intentional ADL
+                }
             }
         }
     }
@@ -6569,7 +6575,10 @@ void _Random_shuffle_batched(_RanIt _First, _RanIt _Last, _Urng& _Func) {
         for (; _Remaining > (uint64_t{1} << 14); _Remaining -= 3) {
             _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 3, _Bound);
             for (uint64_t _J = 0; _J < 3; ++_J) {
-                swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
+                const auto _Target = _Remaining - _J - 1;
+                if (static_cast<uint64_t>(_Offsets[_J]) != _Target) { // avoid self-move-assignment
+                    swap(*(_UFirst + _Target), *(_UFirst + _Offsets[_J])); // intentional ADL
+                }
             }
         }
     }
@@ -6580,7 +6589,10 @@ void _Random_shuffle_batched(_RanIt _First, _RanIt _Last, _Urng& _Func) {
         for (; _Remaining > (uint64_t{1} << 11); _Remaining -= 4) {
             _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 4, _Bound);
             for (uint64_t _J = 0; _J < 4; ++_J) {
-                swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
+                const auto _Target = _Remaining - _J - 1;
+                if (static_cast<uint64_t>(_Offsets[_J]) != _Target) { // avoid self-move-assignment
+                    swap(*(_UFirst + _Target), *(_UFirst + _Offsets[_J])); // intentional ADL
+                }
             }
         }
     }
@@ -6591,7 +6603,10 @@ void _Random_shuffle_batched(_RanIt _First, _RanIt _Last, _Urng& _Func) {
         for (; _Remaining > (uint64_t{1} << 9); _Remaining -= 5) {
             _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 5, _Bound);
             for (uint64_t _J = 0; _J < 5; ++_J) {
-                swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
+                const auto _Target = _Remaining - _J - 1;
+                if (static_cast<uint64_t>(_Offsets[_J]) != _Target) { // avoid self-move-assignment
+                    swap(*(_UFirst + _Target), *(_UFirst + _Offsets[_J])); // intentional ADL
+                }
             }
         }
     }
@@ -6602,7 +6617,10 @@ void _Random_shuffle_batched(_RanIt _First, _RanIt _Last, _Urng& _Func) {
         for (; _Remaining > 6; _Remaining -= 6) {
             _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 6, _Bound);
             for (uint64_t _J = 0; _J < 6; ++_J) {
-                swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
+                const auto _Target = _Remaining - _J - 1;
+                if (static_cast<uint64_t>(_Offsets[_J]) != _Target) { // avoid self-move-assignment
+                    swap(*(_UFirst + _Target), *(_UFirst + _Offsets[_J])); // intentional ADL
+                }
             }
         }
     }
@@ -6612,7 +6630,10 @@ void _Random_shuffle_batched(_RanIt _First, _RanIt _Last, _Urng& _Func) {
         const auto _K = _Remaining - 1;
         _BatchedRng._Batch(_Offsets, _Remaining, _K, 720);
         for (uint64_t _J = 0; _J < _K; ++_J) {
-            swap(*(_UFirst + _Remaining - _J - 1), *(_UFirst + _Offsets[_J])); // intentional ADL
+            const auto _Target = _Remaining - _J - 1;
+            if (static_cast<uint64_t>(_Offsets[_J]) != _Target) { // avoid self-move-assignment
+                swap(*(_UFirst + _Target), *(_UFirst + _Offsets[_J])); // intentional ADL
+            }
         }
     }
 }
@@ -6719,8 +6740,10 @@ namespace ranges {
             // Process one element at a time while bounds are too large for batching.
             for (; _Remaining > (uint64_t{1} << 30); --_Remaining) {
                 _BatchedRng._Batch(_Offsets, _Remaining, 1, _Remaining);
-                _RANGES iter_swap(
-                    _First + static_cast<_Diff>(_Remaining - 1), _First + static_cast<_Diff>(_Offsets[0]));
+                const auto _Target = _Remaining - 1;
+                if (static_cast<uint64_t>(_Offsets[0]) != _Target) { // avoid self-move-assignment
+                    _RANGES iter_swap(_First + static_cast<_Diff>(_Target), _First + static_cast<_Diff>(_Offsets[0]));
+                }
             }
 
             // Batch of 2.
@@ -6729,8 +6752,11 @@ namespace ranges {
                 for (; _Remaining > (uint64_t{1} << 19); _Remaining -= 2) {
                     _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 2, _Bound);
                     for (uint64_t _J = 0; _J < 2; ++_J) {
-                        _RANGES iter_swap(_First + static_cast<_Diff>(_Remaining - _J - 1),
-                            _First + static_cast<_Diff>(_Offsets[_J]));
+                        const auto _Target = _Remaining - _J - 1;
+                        if (static_cast<uint64_t>(_Offsets[_J]) != _Target) { // avoid self-move-assignment
+                            _RANGES iter_swap(
+                                _First + static_cast<_Diff>(_Target), _First + static_cast<_Diff>(_Offsets[_J]));
+                        }
                     }
                 }
             }
@@ -6741,8 +6767,11 @@ namespace ranges {
                 for (; _Remaining > (uint64_t{1} << 14); _Remaining -= 3) {
                     _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 3, _Bound);
                     for (uint64_t _J = 0; _J < 3; ++_J) {
-                        _RANGES iter_swap(_First + static_cast<_Diff>(_Remaining - _J - 1),
-                            _First + static_cast<_Diff>(_Offsets[_J]));
+                        const auto _Target = _Remaining - _J - 1;
+                        if (static_cast<uint64_t>(_Offsets[_J]) != _Target) { // avoid self-move-assignment
+                            _RANGES iter_swap(
+                                _First + static_cast<_Diff>(_Target), _First + static_cast<_Diff>(_Offsets[_J]));
+                        }
                     }
                 }
             }
@@ -6753,8 +6782,11 @@ namespace ranges {
                 for (; _Remaining > (uint64_t{1} << 11); _Remaining -= 4) {
                     _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 4, _Bound);
                     for (uint64_t _J = 0; _J < 4; ++_J) {
-                        _RANGES iter_swap(_First + static_cast<_Diff>(_Remaining - _J - 1),
-                            _First + static_cast<_Diff>(_Offsets[_J]));
+                        const auto _Target = _Remaining - _J - 1;
+                        if (static_cast<uint64_t>(_Offsets[_J]) != _Target) { // avoid self-move-assignment
+                            _RANGES iter_swap(
+                                _First + static_cast<_Diff>(_Target), _First + static_cast<_Diff>(_Offsets[_J]));
+                        }
                     }
                 }
             }
@@ -6765,8 +6797,11 @@ namespace ranges {
                 for (; _Remaining > (uint64_t{1} << 9); _Remaining -= 5) {
                     _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 5, _Bound);
                     for (uint64_t _J = 0; _J < 5; ++_J) {
-                        _RANGES iter_swap(_First + static_cast<_Diff>(_Remaining - _J - 1),
-                            _First + static_cast<_Diff>(_Offsets[_J]));
+                        const auto _Target = _Remaining - _J - 1;
+                        if (static_cast<uint64_t>(_Offsets[_J]) != _Target) { // avoid self-move-assignment
+                            _RANGES iter_swap(
+                                _First + static_cast<_Diff>(_Target), _First + static_cast<_Diff>(_Offsets[_J]));
+                        }
                     }
                 }
             }
@@ -6777,8 +6812,11 @@ namespace ranges {
                 for (; _Remaining > 6; _Remaining -= 6) {
                     _Bound = _BatchedRng._Batch(_Offsets, _Remaining, 6, _Bound);
                     for (uint64_t _J = 0; _J < 6; ++_J) {
-                        _RANGES iter_swap(_First + static_cast<_Diff>(_Remaining - _J - 1),
-                            _First + static_cast<_Diff>(_Offsets[_J]));
+                        const auto _Target = _Remaining - _J - 1;
+                        if (static_cast<uint64_t>(_Offsets[_J]) != _Target) { // avoid self-move-assignment
+                            _RANGES iter_swap(
+                                _First + static_cast<_Diff>(_Target), _First + static_cast<_Diff>(_Offsets[_J]));
+                        }
                     }
                 }
             }
@@ -6788,8 +6826,11 @@ namespace ranges {
                 const auto _K = _Remaining - 1;
                 _BatchedRng._Batch(_Offsets, _Remaining, _K, 720);
                 for (uint64_t _J = 0; _J < _K; ++_J) {
-                    _RANGES iter_swap(
-                        _First + static_cast<_Diff>(_Remaining - _J - 1), _First + static_cast<_Diff>(_Offsets[_J]));
+                    const auto _Target = _Remaining - _J - 1;
+                    if (static_cast<uint64_t>(_Offsets[_J]) != _Target) { // avoid self-move-assignment
+                        _RANGES iter_swap(
+                            _First + static_cast<_Diff>(_Target), _First + static_cast<_Diff>(_Offsets[_J]));
+                    }
                 }
             }
 
