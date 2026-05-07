@@ -592,7 +592,6 @@ namespace {
                 return vrev64_u8(_Val);
             }
 
-
             static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
                 static constexpr uint8_t _Idx_arr[16] = {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
                 const auto _Idx                       = vld1q_u8(_Idx_arr);
