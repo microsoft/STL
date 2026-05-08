@@ -258,8 +258,7 @@ void parse_seconds() {
     want_value("234", "%S4", time, 23s);
     want_value("0345", "%3S5", time, 34s);
     want_value(" 456", "%3S6", time, 45s);
-    test_parse("99", "%S", time); // not out-of-range for duration
-    assert(time == 99s);
+    want_value("99", "%S", time, 99s); // not out-of-range for duration
 
     milliseconds time_ms;
     want_value("12.543", "%S", time_ms, 12s + 543ms);
@@ -267,12 +266,9 @@ void parse_seconds() {
     want_value("01.234", "%S", time_ms, 1'234ms);
     want_value(" 1.234", "%S", time_ms, 1'234ms);
     want_value("1.234", "%S", time_ms, 1'234ms);
-    test_parse("1. 234", "%S 234", time_ms); // Flag should consume "1.".
-    assert(time_ms == 1s);
-    test_parse("1 .234", "%S .234", time_ms); // Flag should consume "1".
-    assert(time_ms == 1s);
-    test_parse("12..345", "%S.345", time_ms); // Flag should consume "12.".
-    assert(time_ms == 12s);
+    want_value("1. 234", "%S 234", time_ms, 1s); // Flag should consume "1.".
+    want_value("1 .234", "%S .234", time_ms, 1s); // Flag should consume "1".
+    want_value("12..345", "%S.345", time_ms, 12s); // Flag should consume "12.".
     fail_parse("1.2345", "%6S", time_ms); // would truncate
     want_value("1.2340", "%6S", time_ms, 1'234ms);
 
@@ -295,8 +291,7 @@ void parse_minutes() {
     want_value("234", "%M4", time, 23min);
     want_value("0345", "%3M5", time, 34min);
     want_value(" 456", "%3M6", time, 45min);
-    test_parse("99", "%M", time); // not out-of-range for duration
-    assert(time == 99min);
+    want_value("99", "%M", time, 99min); // not out-of-range for duration
 }
 
 void parse_hours() {
@@ -305,15 +300,13 @@ void parse_hours() {
     fail_parse("0", "%I", time);
     want_value("1", "%I", time, 1h);
     want_value("11", "%I", time, 11h);
-    test_parse("12", "%I", time); // assumes a.m.
-    assert(time == 0h);
+    want_value("12", "%I", time, 0h); // assumes a.m.
     fail_parse("13", "%I", time);
 
     fail_parse("0", "%OI", time);
     want_value("1", "%OI", time, 1h);
     want_value("11", "%OI", time, 11h);
-    test_parse("12", "%OI", time); // assumes a.m.
-    assert(time == 0h);
+    want_value("12", "%OI", time, 0h); // assumes a.m.
     fail_parse("13", "%OI", time);
 
     want_value("110", "%I0", time, 11h);
@@ -326,8 +319,7 @@ void parse_hours() {
     want_value("234", "%H4", time, 23h);
     want_value("0123", "%3H3", time, 12h);
     want_value(" 234", "%3H4", time, 23h);
-    test_parse("30", "%H", time); // not out-of-range for duration
-    assert(time == 30h);
+    want_value("30", "%H", time, 30h); // not out-of-range for duration
 
     // any permutation of %I, %p, and %H should be valid, as long as they're consistent
     want_value("8 pm 20", "%I %p %H", time, 20h);
@@ -451,10 +443,8 @@ void parse_calendar_types_basic() {
     want_value("Mon", "%a", wd, Monday);
     want_value("wedNesday", "%A", wd, Wednesday);
 
-    test_parse("1", "%w", wd); // 0-based, Sunday=0
-    assert(wd == Monday);
-    test_parse("1", "%u", wd); // ISO 1-based, Monday=1
-    assert(wd == Monday);
+    want_value("1", "%w", wd, Monday); // 0-based, Sunday=0
+    want_value("1", "%u", wd, Monday); // ISO 1-based, Monday=1
     want_value("7", "%u", wd, Sunday);
 
     test_limits<weekday, unsigned int>("%w", 0, 6);
@@ -642,21 +632,18 @@ void parse_iso_week_date() {
 
     year_month_day ref{2005y / December / 31d};
     fail_parse("2005-W52-6 19", "%G-W%V-%u %C", ymd); // inconsistent century
-    test_parse("2005-W52-6 20", "%G-W%V-%u %C", ymd); // consistent century
-    assert(ymd == ref);
+    want_value("2005-W52-6 20", "%G-W%V-%u %C", ymd, ref); // consistent century
     want_value("05-W52-6 20", "%g-W%V-%u %C", ymd, ref);
 
     fail_parse("2005-W52-6 2004", "%G-W%V-%u %Y", ymd); // inconsistent year
-    test_parse("2005-W52-6 2005", "%G-W%V-%u %Y", ymd); // consistent year
-    assert(ymd == ref);
+    want_value("2005-W52-6 2005", "%G-W%V-%u %Y", ymd, ref); // consistent year
     want_value("05-W52-6 2005", "%g-W%V-%u %Y", ymd, ref);
     want_value("2005-W52-6 05", "%G-W%V-%u %y", ymd, ref);
     want_value("05-W52-6 05", "%g-W%V-%u %y", ymd, ref);
 
     ref = 2007y / December / 31d;
     fail_parse("2008-W01-1 2008", "%G-W%V-%u %Y", ymd); // inconsistent year (!)
-    test_parse("2008-W01-1 2007", "%G-W%V-%u %Y", ymd); // consistent year
-    assert(ymd == ref);
+    want_value("2008-W01-1 2007", "%G-W%V-%u %Y", ymd, ref); // consistent year
     want_value("08-W01-1 2007", "%g-W%V-%u %Y", ymd, ref);
     want_value("2008-W01-1 07", "%G-W%V-%u %y", ymd, ref);
     want_value("08-W01-1 07", "%g-W%V-%u %y", ymd, ref);
