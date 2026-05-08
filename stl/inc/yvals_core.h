@@ -790,7 +790,7 @@
 // warning C5285: cannot declare a specialization for 'meow'
 // warning C5291: 'DERIVED': deriving from the base class 'BASE' can cause potential runtime issues
 //                due to an ABI bug. Recommend adding a 4-byte data member to the base class
-//                for the padding at the end of it to work around this bug. (TRANSITION, ABI)
+//                for the padding at the end of it to work around this bug. (/Wall, TRANSITION, ABI)
 // warning C6294: Ill-defined for-loop: initial condition does not satisfy test. Loop body not executed
 
 #ifndef _STL_DISABLED_WARNINGS
