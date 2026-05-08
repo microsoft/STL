@@ -229,21 +229,25 @@ void test_limits(const char* flag, const IntType min, const IntType max) {
     char buffer[24];
     TimeType value;
     auto conv_result = to_chars(begin(buffer), end(buffer), static_cast<make_signed_t<IntType>>(min) - 1);
-    assert(conv_result.ec == errc{} && conv_result.ptr != end(buffer));
+    assert(conv_result.ec == errc{});
+    assert(conv_result.ptr != end(buffer));
     *conv_result.ptr = '\0';
     fail_parse(buffer, flag, value);
     conv_result = to_chars(begin(buffer), end(buffer), max + 1);
-    assert(conv_result.ec == errc{} && conv_result.ptr != end(buffer));
+    assert(conv_result.ec == errc{});
+    assert(conv_result.ptr != end(buffer));
     *conv_result.ptr = '\0';
     fail_parse(buffer, flag, value);
 
     conv_result = to_chars(begin(buffer), end(buffer), min);
-    assert(conv_result.ec == errc{} && conv_result.ptr != end(buffer));
+    assert(conv_result.ec == errc{});
+    assert(conv_result.ptr != end(buffer));
     *conv_result.ptr = '\0';
     test_parse(buffer, flag, value);
     assert(value == TimeType{min});
     conv_result = to_chars(begin(buffer), end(buffer), max);
-    assert(conv_result.ec == errc{} && conv_result.ptr != end(buffer));
+    assert(conv_result.ec == errc{});
+    assert(conv_result.ptr != end(buffer));
     *conv_result.ptr = '\0';
     test_parse(buffer, flag, value);
     assert(value == TimeType{max});
@@ -469,7 +473,8 @@ void parse_time_zone() {
 
     fail_parse("Not_valid! 00", "%Z %H", time, &tz_name);
     test_parse("Valid_Tz! 07", "%Z! %H", time, &tz_name);
-    assert(tz_name == "Valid_Tz" && time == 7h);
+    assert(tz_name == "Valid_Tz");
+    assert(time == 7h);
 }
 
 void parse_calendar_types_basic() {
@@ -1008,16 +1013,20 @@ void parse_timepoints() {
 
     minutes offset;
     test_parse("thu oct 29 19:01:42 2020 0430", "%c %z", st, nullptr, &offset);
-    assert(st == ref - offset && offset == 4h + 30min);
+    assert(st == ref - offset);
+    assert(offset == 4h + 30min);
 
     test_parse("thu oct 29 19:01:42 2020 0430", "%c %z", ut, nullptr, &offset);
-    assert(ut == clock_cast<utc_clock>(ref) - offset && offset == 4h + 30min);
+    assert(ut == clock_cast<utc_clock>(ref) - offset);
+    assert(offset == 4h + 30min);
 
     test_parse("thu oct 29 19:01:42 2020 0430", "%c %z", ft, nullptr, &offset);
-    assert(ft == clock_cast<file_clock>(ref) - offset && offset == 4h + 30min);
+    assert(ft == clock_cast<file_clock>(ref) - offset);
+    assert(offset == 4h + 30min);
 
     test_parse("thu oct 29 19:01:42 2020 0430", "%c %z", lt, nullptr, &offset);
-    assert(lt.time_since_epoch() == ref.time_since_epoch() && offset == 4h + 30min);
+    assert(lt.time_since_epoch() == ref.time_since_epoch());
+    assert(offset == 4h + 30min);
 
     // N4878 [time.clock.tai]/1:
     // The clock tai_clock measures seconds since 1958-01-01 00:00:00 and is offset 10s ahead of UTC at this date.
@@ -1035,7 +1044,8 @@ void parse_timepoints() {
     test_parse("sat jan  1 00:00:32 2000", "%c", tt);
     assert(tt == clock_cast<tai_clock>(ref));
     test_parse("sat jan  1 00:00:32 2000 0430", "%c %z", tt, nullptr, &offset);
-    assert(tt == clock_cast<tai_clock>(ref) - offset && offset == 4h + 30min);
+    assert(tt == clock_cast<tai_clock>(ref) - offset);
+    assert(offset == 4h + 30min);
 
     // N4878 [time.clock.gps]/1:
     // The clock gps_clock measures seconds since the first Sunday of January, 1980 00:00:00 UTC. Leap seconds are
@@ -1047,7 +1057,8 @@ void parse_timepoints() {
     gps_seconds gt;
     ref = sys_days{1980y / January / 6d};
     test_parse("sun jan  6 00:00:00 1980 0430", "%c %z", gt, nullptr, &offset);
-    assert(gt == clock_cast<gps_clock>(ref) - offset && offset == 4h + 30min);
+    assert(gt == clock_cast<gps_clock>(ref) - offset);
+    assert(offset == 4h + 30min);
     test_parse("sun jan  6 00:00:00 1980", "%c", gt);
     assert(gt == clock_cast<gps_clock>(ref));
     test_parse("sun jan  6 00:00:19 1980", "%c", tt);
@@ -1460,19 +1471,22 @@ void test_lwg_3536() {
     {
         istringstream iss{"2:2:30"};
         iss >> parse("%H:%M:%S", mm);
-        assert(iss.fail() && mm == 20min);
+        assert(iss.fail());
+        assert(mm == 20min);
     }
 
     {
         istringstream iss{"June"};
         iss >> parse("%B", mm);
-        assert(iss.fail() && mm == 20min);
+        assert(iss.fail());
+        assert(mm == 20min);
     }
 
     {
         istringstream iss{""};
         iss >> parse("%B", mm);
-        assert(iss.fail() && mm == 20min);
+        assert(iss.fail());
+        assert(mm == 20min);
     }
 }
 
