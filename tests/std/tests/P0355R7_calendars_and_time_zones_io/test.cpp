@@ -603,7 +603,7 @@ void parse_calendar_types_basic() {
     fail_parse("367 2004", "%j %Y", ymd);
 
     // Check consistency between date and day-of-week
-    test_parse("Wed 2000-03-01", "%a %F", ymd);
+    want_value("Wed 2000-03-01", "%a %F", ymd, 2000y / March / 1d);
     fail_parse("Mon 2000-03-01", "%a %F", ymd);
 
     // For %F, width is applied only to the year
@@ -713,14 +713,14 @@ void parse_incomplete() {
     fail_parse("04", "%R", time);
 
     // Check for parsing of whitespace fields after other fields.  More whitespace tests below.
-    test_parse("15:19", "%H:%M%t", time);
-    test_parse("15:19", "%R%t", time);
+    want_value("15:19", "%H:%M%t", time, 15h + 19min);
+    want_value("15:19", "%R%t", time, 15h + 19min);
     fail_parse("15:19", "%H:%M%n", time);
     fail_parse("15:19", "%R%n", time);
 
     // However, it is OK to omit seconds from the format when parsing a duration to seconds precision.
-    test_parse("05:24", "%H:%M", time);
-    test_parse("06:25", "%R", time);
+    want_value("05:24", "%H:%M", time, 5h + 24min);
+    want_value("06:25", "%R", time, 6h + 25min);
 }
 
 void parse_whitespace() {
