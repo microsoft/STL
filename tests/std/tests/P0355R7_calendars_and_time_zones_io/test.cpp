@@ -848,8 +848,7 @@ void parse_timepoints() {
     assert(gt == clock_cast<gps_clock>(ref) - offset);
     assert(offset == 4h + 30min);
     want_value("sun jan  6 00:00:00 1980", "%c", gt, clock_cast<gps_clock>(ref));
-    test_parse("sun jan  6 00:00:19 1980", "%c", tt);
-    assert(gt == clock_cast<gps_clock>(tt));
+    want_value("sun jan  6 00:00:19 1980", "%c", tt, clock_cast<tai_clock>(ref));
 
     seconds time;
     want_value(" 1:23:42 am", "%r", time, 1h + 23min + 42s);
