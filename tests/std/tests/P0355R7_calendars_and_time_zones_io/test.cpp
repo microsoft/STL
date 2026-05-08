@@ -273,12 +273,10 @@ void parse_seconds() {
     want_value("1.2340", "%6S", time_ms, 1'234ms);
 
     duration<int64_t, atto> time_atto;
-    test_parse("0.400000000000000002", "%S", time_atto);
-    assert((time_atto == duration<int64_t, deci>{4} + duration<int64_t, atto>{2}));
+    want_value("0.400000000000000002", "%S", time_atto, duration<int64_t, deci>{4} + duration<int64_t, atto>{2});
 
     duration<float, ratio<1, 25>> time_float;
-    test_parse("0.33", "%S", time_float);
-    assert((time_float == duration<float, ratio<1, 25>>{8.25f}));
+    want_value("0.33", "%S", time_float, duration<float, ratio<1, 25>>{8.25f});
 
     fail_parse("1.2 1.3", "%S %S", time_ms);
     fail_parse("1.2 2.2", "%S %S", time_ms);
