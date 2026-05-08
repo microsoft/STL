@@ -886,9 +886,11 @@
     _Pragma("clang diagnostic push")    \
     _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
 #else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+// warning C4877: overriding non-pure virtual function 'Base::meow': was declared deprecated (/Wall)
+// warning C4996: 'meow': was declared deprecated
 #define _STL_DISABLE_DEPRECATED_WARNING \
     _Pragma("warning(push)")            \
-    _Pragma("warning(disable : 4996)") // was declared deprecated
+    _Pragma("warning(disable : 4877 4996)")
 #endif // ^^^ !defined(__clang__) ^^^
 #endif // _STL_DISABLE_DEPRECATED_WARNING
 // clang-format on
