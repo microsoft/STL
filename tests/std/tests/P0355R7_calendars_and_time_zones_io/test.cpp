@@ -192,6 +192,19 @@ void test_parse(const basic_string<CharT>& str, const CStringOrStdString& fmt, P
     test_parse(str.c_str(), fmt, p, abbrev, offset, sl);
 }
 
+template <class CharT, class CStringOrStdString, class Parsable, class Wanted>
+void want_value(const CharT* str, const CStringOrStdString& fmt, Parsable& p, const Wanted& wanted,
+    const source_location sl = source_location::current()) {
+    test_parse(str, fmt, p, nullptr, nullptr, sl);
+    assert(p == wanted);
+}
+
+template <class CharT, class CStringOrStdString, class Parsable, class Wanted>
+void want_value(const basic_string<CharT>& str, const CStringOrStdString& fmt, Parsable& p, const Wanted& wanted,
+    const source_location sl = source_location::current()) {
+    want_value(str.c_str(), fmt, p, wanted, sl);
+}
+
 template <class CharT, class CStringOrStdString, class Parsable>
 void fail_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
     type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr,
