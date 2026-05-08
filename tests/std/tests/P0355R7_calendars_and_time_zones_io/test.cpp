@@ -795,14 +795,10 @@ void parse_timepoints() {
     file_time<seconds> ft;
     local_seconds lt;
 
-    test_parse("thu oct 29 19:01:42 2020", "%c", st);
-    test_parse("thu oct 29 19:01:42 2020", "%c", ut);
-    test_parse("thu oct 29 19:01:42 2020", "%c", ft);
+    want_value("thu oct 29 19:01:42 2020", "%c", st, ref);
+    want_value("thu oct 29 19:01:42 2020", "%c", ut, clock_cast<utc_clock>(ref));
+    want_value("thu oct 29 19:01:42 2020", "%c", ft, clock_cast<file_clock>(ref));
     test_parse("thu oct 29 19:01:42 2020", "%c", lt);
-
-    assert(st == ref);
-    assert(ut == clock_cast<utc_clock>(ref));
-    assert(ft == clock_cast<file_clock>(ref));
     assert(lt.time_since_epoch() == ref.time_since_epoch());
 
     minutes offset;
