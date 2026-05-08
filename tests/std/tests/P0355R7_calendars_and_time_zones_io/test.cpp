@@ -196,7 +196,11 @@ template <class CharT, class CStringOrStdString, class Parsable, class Wanted>
 void want_value(const CharT* str, const CStringOrStdString& fmt, Parsable& p, const Wanted& wanted,
     const source_location sl = source_location::current()) {
     test_parse(str, fmt, p, nullptr, nullptr, sl);
-    assert(p == wanted);
+    const bool got_wanted = p == wanted;
+    if (!got_wanted) {
+        printf("want_value() encountered an undesired value on line %u.\n", static_cast<unsigned int>(sl.line()));
+    }
+    assert(got_wanted);
 }
 
 template <class CharT, class CStringOrStdString, class Parsable, class Wanted>
