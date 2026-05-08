@@ -361,12 +361,10 @@ void parse_other_duration() {
 
     // floating-point representations, parsing precision controlled by duration::period
     duration<float, milli> df;
-    test_parse("9.125", "%S", df);
-    assert(df.count() == 9125.0f);
+    want_value("9.125", "%S", df, duration<float, milli>{9125.0f});
 
     duration<double, milli> dd;
-    test_parse("1.875", "%S", dd);
-    assert(dd.count() == 1875.0);
+    want_value("1.875", "%S", dd, duration<double, milli>{1875.0});
 }
 
 void parse_time_zone() {
