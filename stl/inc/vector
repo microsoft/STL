@@ -529,15 +529,29 @@ private:
             const void* const _Old_last = _STD _Unfancy(_Old_last_);
             const void* const _New_last = _STD _Unfancy(_New_last_);
             if constexpr ((_Container_allocation_minimum_asan_alignment<vector>) >= _Asan_granularity) {
+                // If we realign the _End forward to maximize coverage, we need to keep other significant points
+                // aligned with our concept of the end of the buffer, otherwise we may leave shadow bytes behind when
+                // cleaning up.
+
                 // old state:
-                //   [_First, _Old_last) valid
-                //   [_Old_last, _End) poison
+                //   [_First, _Old_last_aligned) valid
+                //   [_Old_last_aligned, asan_aligned_after(_End)) poison
                 // new state:
-                //   [_First, _New_last) valid
-                //   [_New_last, asan_aligned_after(_End)) poison
+                //   [_First, _New_last_aligned) valid
+                //   [_New_last_aligned, asan_aligned_after(_End)) poison
+
+                const void* const _New_end_aligned = _STD _Get_asan_aligned_after(_End);
+                const void* const _Old_last_aligned = (_Old_last == _End) ? _New_end_aligned : _Old_last;
+                const void* const _New_last_aligned = (_New_last == _End) ? _New_end_aligned : _New_last;
+
                 _CSTD __sanitizer_annotate_contiguous_container(
-                    _First, _STD _Get_asan_aligned_after(_End), _Old_last, _New_last);
+                    _First, _New_end_aligned, _Old_last_aligned, _New_last_aligned);
             } else {
+
+                // Allocation is potentially unaligned, so we cannot annotate whole buffer since we might be
+                // entering memory owned by someone else. Therefore, pull back where the annotations end on the buffer,
+                // but may miss some coverage near end of buffer.
+
                 const auto _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
                 if (_Aligned._First == _Aligned._End) {
                     // The buffer does not end at least one shadow memory section; nothing to do.
