@@ -530,7 +530,7 @@ private:
             const void* const _New_last = _STD _Unfancy(_New_last_);
             if constexpr ((_Container_allocation_minimum_asan_alignment<vector>) >= _Asan_granularity) {
                 // If we realign the _End forward to maximize coverage, we need to keep other significant points
-                // aligned with our concept of the end of the buffer, otherwise we may leave shadow bytes behind when
+                // aligned with our concept of the end of the buffer, otherwise we may leave shadow bytes behind when 
                 // cleaning up.
 
                 // old state:

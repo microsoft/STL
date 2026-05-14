@@ -714,10 +714,9 @@ private:
             // for the non-aligned buffer options, the buffer must always have size >= 9 bytes,
             // so it will always end at least one shadow memory section.
 
-            _Asan_aligned_pointers _Aligned;
             if constexpr (_Large_string_always_asan_aligned) {
                 // If we realign the _End forward to maximize coverage, we need to keep other significant points
-                // aligned with our concept of the end of the buffer, otherwise we may leave shadow bytes behind when
+                // aligned with our concept of the end of the buffer, otherwise we may leave shadow bytes behind when 
                 // cleaning up.
 
                 // --- always aligned case ---
@@ -736,7 +735,7 @@ private:
                     _First, _New_end_aligned, _Old_last_aligned, _New_last_aligned);
                 return;
             }
-
+                
             // Allocation is potentially unaligned, so we cannot annotate whole buffer since we might be
             // entering memory owned by someone else. Therefore, pull back where the annotations end on the buffer,
             // but may miss some coverage near end of buffer.
