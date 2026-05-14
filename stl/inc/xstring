@@ -716,7 +716,7 @@ private:
 
             if constexpr (_Large_string_always_asan_aligned) {
                 // If we realign the _End forward to maximize coverage, we need to keep other significant points
-                // aligned with our concept of the end of the buffer, otherwise we may leave shadow bytes behind when 
+                // aligned with our concept of the end of the buffer, otherwise we may leave shadow bytes behind when
                 // cleaning up.
 
                 // --- always aligned case ---
@@ -727,7 +727,7 @@ private:
                 //   [_First, _New_last_aligned) valid
                 //   [_New_last_aligned, asan_aligned_after(_End)) poison
 
-                const void* const _New_end_aligned = _STD _Get_asan_aligned_after(_End);
+                const void* const _New_end_aligned  = _STD _Get_asan_aligned_after(_End);
                 const void* const _Old_last_aligned = (_Old_last == _End) ? _New_end_aligned : _Old_last;
                 const void* const _New_last_aligned = (_New_last == _End) ? _New_end_aligned : _New_last;
 
@@ -735,13 +735,13 @@ private:
                     _First, _New_end_aligned, _Old_last_aligned, _New_last_aligned);
                 return;
             }
-                
+
             // Allocation is potentially unaligned, so we cannot annotate whole buffer since we might be
             // entering memory owned by someone else. Therefore, pull back where the annotations end on the buffer,
             // but may miss some coverage near end of buffer.
             const _Asan_aligned_pointers _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
-            const void* const _Old_fixed = _Aligned._Clamp_to_end(_Old_last);
-            const void* const _New_fixed = _Aligned._Clamp_to_end(_New_last);
+            const void* const _Old_fixed          = _Aligned._Clamp_to_end(_Old_last);
+            const void* const _New_fixed          = _Aligned._Clamp_to_end(_New_last);
 
             // --- sometimes non-aligned case ---
             // old state:

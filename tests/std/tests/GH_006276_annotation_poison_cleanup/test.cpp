@@ -19,9 +19,9 @@ int main() {}
 #define NO_SANITIZER_ADDRESS __declspec(no_sanitize_address)
 #endif // __clang__
 
+#include <stdio.h>
 #include <string>
 #include <type_traits>
-#include <stdio.h>
 #include <vector>
 
 using namespace std;
@@ -29,7 +29,7 @@ using namespace std;
 extern "C" uintptr_t __asan_shadow_memory_dynamic_address;
 
 NO_SANITIZER_ADDRESS unsigned char* shadow_addr_of(const void* addr) {
-    return (unsigned char*)(((uintptr_t)addr >> 3) + __asan_shadow_memory_dynamic_address);
+    return (unsigned char*) (((uintptr_t) addr >> 3) + __asan_shadow_memory_dynamic_address);
 }
 
 NO_SANITIZER_ADDRESS unsigned char shadow_byte_of(const void* addr) {
@@ -53,7 +53,7 @@ public:
         fprintf(stderr, "Creating arena at %p with shadow at %p\n", _alloc_buffer, shadow_addr_of(_alloc_buffer));
     }
 
-     ~asan_unaware_arena() noexcept {
+    ~asan_unaware_arena() noexcept {
         fprintf(stderr, "Shadow during destruction (should be all 00):\t");
         print_shadow();
 
@@ -63,10 +63,10 @@ public:
         memset(_alloc_buffer, 0, ArenaSize);
     }
 
-    asan_unaware_arena(const asan_unaware_arena&) = delete;
+    asan_unaware_arena(const asan_unaware_arena&)            = delete;
     asan_unaware_arena& operator=(const asan_unaware_arena&) = delete;
 
-    asan_unaware_arena(asan_unaware_arena&&) = delete;
+    asan_unaware_arena(asan_unaware_arena&&)            = delete;
     asan_unaware_arena& operator=(asan_unaware_arena&&) = delete;
 
     char* allocate(size_t num_bytes) {
@@ -76,11 +76,12 @@ public:
 
         char* result = _next_alloc;
         _next_alloc += num_bytes;
-        _next_alloc = reinterpret_cast<char*>((reinterpret_cast<uintptr_t>(_next_alloc) + (AllocationAlignment - 1)) & ~(AllocationAlignment - 1)); // align the next allocation pointer.
+        _next_alloc = reinterpret_cast<char*>((reinterpret_cast<uintptr_t>(_next_alloc) + (AllocationAlignment - 1))
+                                              & ~(AllocationAlignment - 1)); // align the next allocation pointer.
 
-        fprintf(stderr, "Allocated %p -> %p (%zu bytes) from arena, %p -> %p (%zu bytes) in shadow\n",
-            result, _next_alloc, num_bytes,
-            shadow_addr_of(result), shadow_addr_of(_next_alloc), shadow_addr_of(_next_alloc) - shadow_addr_of(result));
+        fprintf(stderr, "Allocated %p -> %p (%zu bytes) from arena, %p -> %p (%zu bytes) in shadow\n", result,
+            _next_alloc, num_bytes, shadow_addr_of(result), shadow_addr_of(_next_alloc),
+            shadow_addr_of(_next_alloc) - shadow_addr_of(result));
 
         return result;
     }
@@ -90,14 +91,14 @@ public:
     }
 
 private:
-    alignas(AllocationAlignment) char _alloc_buffer [ArenaSize]{};
+    alignas(AllocationAlignment) char _alloc_buffer[ArenaSize]{};
     char* _next_alloc = _alloc_buffer;
 };
 
 template <typename T, size_t AllocSize, size_t Alignment>
 struct arena_reuse_allocator {
-    using value_type = T;
-    static constexpr size_t Size = AllocSize;
+    using value_type                                           = T;
+    static constexpr size_t Size                               = AllocSize;
     static constexpr size_t _Minimum_asan_allocation_alignment = Alignment;
 
     template <typename OtherCharType>
@@ -108,7 +109,8 @@ struct arena_reuse_allocator {
     arena_reuse_allocator(asan_unaware_arena<AllocSize, Alignment>* a) noexcept : _arena(a) {}
 
     template <typename OtherCharType>
-    arena_reuse_allocator(const arena_reuse_allocator<OtherCharType, Size, Alignment>& rhs) noexcept : _arena(rhs._arena) {}
+    arena_reuse_allocator(const arena_reuse_allocator<OtherCharType, Size, Alignment>& rhs) noexcept
+        : _arena(rhs._arena) {}
 
     T* allocate(size_t n) {
         return reinterpret_cast<T*>(_arena->allocate(n * sizeof(T)));
