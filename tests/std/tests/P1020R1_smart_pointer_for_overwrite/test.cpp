@@ -47,6 +47,7 @@ void* operator new(size_t size, const nothrow_t&) noexcept {
     return result;
 }
 
+#ifdef __cpp_aligned_new
 void* operator new(size_t size, align_val_t align) {
     void* const p = ::operator new(size, align, nothrow);
 
@@ -66,6 +67,7 @@ void* operator new(size_t size, align_val_t align, const nothrow_t&) noexcept {
 
     return result;
 }
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
 
 template <typename T, typename = void>
 struct unique_is_for_overwritable : false_type {};
@@ -188,7 +190,9 @@ void test_make_shared_for_overwrite() {
     assert(p1->value == initializedValue);
 
     auto p2 = make_shared_for_overwrite_assert<HighlyAligned>();
+#ifdef __cpp_aligned_new
     assert(reinterpret_cast<uintptr_t>(p2.get()) % alignof(HighlyAligned) == 0);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
     assert_uninitialized(addressof(*p2), sizeof(HighlyAligned));
 
     auto p3 = make_shared_for_overwrite_assert<int[100]>();
@@ -202,7 +206,9 @@ void test_make_shared_for_overwrite() {
     }
 
     auto p5 = make_shared_for_overwrite_assert<HighlyAligned[10]>();
+#ifdef __cpp_aligned_new
     assert(reinterpret_cast<uintptr_t>(p5.get()) % alignof(HighlyAligned) == 0);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
     assert_uninitialized(addressof(p5[0]), sizeof(HighlyAligned) * 10u);
 
     auto p6 = make_shared_for_overwrite_assert<DefaultInitializableInt[]>(100u);
@@ -225,7 +231,9 @@ void test_make_shared_for_overwrite() {
     auto p9 = make_shared_for_overwrite_assert<int[]>(0u); // p9 cannot be dereferenced
 
     auto p10 = make_shared_for_overwrite_assert<HighlyAligned[]>(10u);
+#ifdef __cpp_aligned_new
     assert(reinterpret_cast<uintptr_t>(p10.get()) % alignof(HighlyAligned) == 0);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
     assert_uninitialized(addressof(p10[0]), sizeof(HighlyAligned) * 10u);
 
     test_make_shared_init_destruct_order<ReportAddress[5]>(); // success one dimensional
@@ -280,7 +288,9 @@ void test_allocate_shared_for_overwrite() {
 
     allocator<HighlyAligned> a2{};
     auto p2 = allocate_shared_for_overwrite_assert<HighlyAligned>(a2);
+#ifdef __cpp_aligned_new
     assert(reinterpret_cast<uintptr_t>(p2.get()) % alignof(HighlyAligned) == 0);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
     assert_uninitialized(addressof(*p2), sizeof(HighlyAligned));
 
     auto p3 = allocate_shared_for_overwrite_assert<int[100]>(a0);
@@ -294,7 +304,9 @@ void test_allocate_shared_for_overwrite() {
     }
 
     auto p5 = allocate_shared_for_overwrite_assert<HighlyAligned[10]>(a2);
+#ifdef __cpp_aligned_new
     assert(reinterpret_cast<uintptr_t>(p5.get()) % alignof(HighlyAligned) == 0);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
     assert_uninitialized(addressof(p5[0]), sizeof(HighlyAligned) * 10u);
 
     auto p6 = allocate_shared_for_overwrite_assert<DefaultInitializableInt[]>(a1, 100u);
@@ -317,7 +329,9 @@ void test_allocate_shared_for_overwrite() {
     auto p9 = allocate_shared_for_overwrite_assert<int[]>(a0, 0u); // p9 cannot be dereferenced
 
     auto p10 = allocate_shared_for_overwrite_assert<HighlyAligned[]>(a2, 10u);
+#ifdef __cpp_aligned_new
     assert(reinterpret_cast<uintptr_t>(p10.get()) % alignof(HighlyAligned) == 0);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
     assert_uninitialized(addressof(p10[0]), sizeof(HighlyAligned) * 10u);
 
     test_allocate_shared_init_destruct_order<ReportAddress[5]>(); // success one dimensional

@@ -337,7 +337,7 @@ struct _Tree_node {
     _Nodeptr _Parent; // parent, or root of tree if head
     _Nodeptr _Right; // right subtree, or largest element if head
     char _Color; // _Red or _Black, _Black if head
-    char _Isnil; // true only if head (also nil) node; TRANSITION, should be bool
+    char _Isnil; // true only if head (also nil) node; TRANSITION, ABI, should be bool
     value_type _Myval = // the stored value, unused if head
         _Returns_exactly<value_type>(); // fake a viable constructor to workaround GH-2749
 

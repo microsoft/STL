@@ -18,8 +18,6 @@
 #define CONSTEXPR20 inline
 #endif
 
-#pragma warning(disable : 4365) // conversion from 'unsigned __int64' to 'const __int64', signed/unsigned mismatch
-
 using namespace std;
 
 constexpr int blockSize = 32;
@@ -76,33 +74,53 @@ CONSTEXPR20 void test_transform_helper(const size_t length) {
     bool or_expected_raw[size(source_raw)];
     bool xor_expected_raw[size(source_raw)];
     bool xnor_expected_raw[size(source_raw)];
+    bool l_expected_raw[size(source_raw)];
+    bool le_expected_raw[size(source_raw)];
+    bool g_expected_raw[size(source_raw)];
+    bool ge_expected_raw[size(source_raw)];
     bool not_expected_raw[size(source_raw)];
 
     transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(and_expected_raw), logical_and<>{});
     transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(or_expected_raw), logical_or<>{});
     transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(xor_expected_raw), not_equal_to<>{});
     transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(xnor_expected_raw), equal_to<>{});
+    transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(l_expected_raw), less<>{});
+    transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(le_expected_raw), less_equal<>{});
+    transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(g_expected_raw), greater<>{});
+    transform(begin(source_raw), end(source_raw), begin(source2_raw), begin(ge_expected_raw), greater_equal<>{});
     transform(begin(source_raw), end(source_raw), begin(not_expected_raw), logical_not<>{});
 
-    const vector<bool> source1(source_raw, source_raw + length);
-    const vector<bool> source2(source2_raw, source2_raw + length);
+    const vector<bool> source1(source_raw, source_raw + static_cast<ptrdiff_t>(length));
+    const vector<bool> source2(source2_raw, source2_raw + static_cast<ptrdiff_t>(length));
 
-    vector<bool> and_expected(and_expected_raw, and_expected_raw + length);
-    vector<bool> or_expected(or_expected_raw, or_expected_raw + length);
-    vector<bool> xor_expected(xor_expected_raw, xor_expected_raw + length);
-    vector<bool> xnor_expected(xnor_expected_raw, xnor_expected_raw + length);
-    vector<bool> not_expected(not_expected_raw, not_expected_raw + length);
+    vector<bool> and_expected(and_expected_raw, and_expected_raw + static_cast<ptrdiff_t>(length));
+    vector<bool> or_expected(or_expected_raw, or_expected_raw + static_cast<ptrdiff_t>(length));
+    vector<bool> xor_expected(xor_expected_raw, xor_expected_raw + static_cast<ptrdiff_t>(length));
+    vector<bool> xnor_expected(xnor_expected_raw, xnor_expected_raw + static_cast<ptrdiff_t>(length));
+    vector<bool> less_expected(l_expected_raw, l_expected_raw + static_cast<ptrdiff_t>(length));
+    vector<bool> less_equal_expected(le_expected_raw, le_expected_raw + static_cast<ptrdiff_t>(length));
+    vector<bool> greater_expected(g_expected_raw, g_expected_raw + static_cast<ptrdiff_t>(length));
+    vector<bool> greater_equal_expected(ge_expected_raw, ge_expected_raw + static_cast<ptrdiff_t>(length));
+    vector<bool> not_expected(not_expected_raw, not_expected_raw + static_cast<ptrdiff_t>(length));
 
     and_expected.resize(length + 3, false);
     or_expected.resize(length + 3, false);
     xor_expected.resize(length + 3, false);
     xnor_expected.resize(length + 3, false);
+    less_expected.resize(length + 3, false);
+    less_equal_expected.resize(length + 3, false);
+    greater_expected.resize(length + 3, false);
+    greater_equal_expected.resize(length + 3, false);
     not_expected.resize(length + 3, false);
 
     vector<bool> and_actual(length + 3);
     vector<bool> or_actual(length + 3);
     vector<bool> xor_actual(length + 3);
     vector<bool> xnor_actual(length + 3);
+    vector<bool> less_actual(length + 3);
+    vector<bool> less_equal_actual(length + 3);
+    vector<bool> greater_actual(length + 3);
+    vector<bool> greater_equal_actual(length + 3);
     vector<bool> not_actual(length + 3);
 
     // Also test combinations of vector<bool>::iterator and vector<bool>::const_iterator for the inputs.
@@ -110,57 +128,82 @@ CONSTEXPR20 void test_transform_helper(const size_t length) {
     const auto cfirst1 = source1.cbegin();
     const auto first2  = source2.begin();
     const auto cfirst2 = source2.cbegin();
-    const auto last1   = first1 + length;
-    const auto clast1  = cfirst1 + length;
+    const auto last1   = first1 + static_cast<ptrdiff_t>(length);
+    const auto clast1  = cfirst1 + static_cast<ptrdiff_t>(length);
 
     {
         auto and_ret = transform(first1, last1, first2, and_actual.begin(), logical_and<>{});
         assert(and_actual == and_expected);
-        assert(and_ret == and_actual.begin() + length);
+        assert(and_ret == and_actual.begin() + static_cast<ptrdiff_t>(length));
 
         and_actual.assign(and_actual.size(), false);
 
         and_ret = transform(first1, last1, first2, and_actual.begin(), bit_and<>{});
         assert(and_actual == and_expected);
-        assert(and_ret == and_actual.begin() + length);
+        assert(and_ret == and_actual.begin() + static_cast<ptrdiff_t>(length));
     }
 
     {
         auto or_ret = transform(first1, last1, cfirst2, or_actual.begin(), logical_or<>{});
         assert(or_actual == or_expected);
-        assert(or_ret == or_actual.begin() + length);
+        assert(or_ret == or_actual.begin() + static_cast<ptrdiff_t>(length));
 
         or_actual.assign(or_actual.size(), false);
 
         or_ret = transform(first1, last1, cfirst2, or_actual.begin(), bit_or<>{});
         assert(or_actual == or_expected);
-        assert(or_ret == or_actual.begin() + length);
+        assert(or_ret == or_actual.begin() + static_cast<ptrdiff_t>(length));
     }
 
     {
         auto xor_ret = transform(cfirst1, clast1, first2, xor_actual.begin(), not_equal_to<>{});
         assert(xor_actual == xor_expected);
-        assert(xor_ret == xor_actual.begin() + length);
+        assert(xor_ret == xor_actual.begin() + static_cast<ptrdiff_t>(length));
 
         xor_actual.assign(xor_actual.size(), false);
 
         xor_ret = transform(cfirst1, clast1, first2, xor_actual.begin(), bit_xor<>{});
         assert(xor_actual == xor_expected);
-        assert(xor_ret == xor_actual.begin() + length);
+        assert(xor_ret == xor_actual.begin() + static_cast<ptrdiff_t>(length));
     }
 
     {
         const auto xnor_ret = transform(cfirst1, clast1, cfirst2, xnor_actual.begin(), equal_to<>{});
         assert(xnor_actual == xnor_expected);
-        assert(xnor_ret == xnor_actual.begin() + length);
+        assert(xnor_ret == xnor_actual.begin() + static_cast<ptrdiff_t>(length));
 
         // bit_xnor doesn't exist in the Standard
     }
 
     {
+        const auto less_ret = transform(cfirst1, clast1, cfirst2, less_actual.begin(), less<>{});
+        assert(less_actual == less_expected);
+        assert(less_ret == less_actual.begin() + static_cast<ptrdiff_t>(length));
+    }
+
+    {
+        const auto less_equal_ret = transform(cfirst1, clast1, cfirst2, less_equal_actual.begin(), less_equal<>{});
+        assert(less_equal_actual == less_equal_expected);
+        assert(less_equal_ret == less_equal_actual.begin() + static_cast<ptrdiff_t>(length));
+    }
+
+    {
+        const auto greater_ret = transform(cfirst1, clast1, cfirst2, greater_actual.begin(), greater<>{});
+        assert(greater_actual == greater_expected);
+        assert(greater_ret == greater_actual.begin() + static_cast<ptrdiff_t>(length));
+    }
+
+    {
+        const auto greater_equal_ret =
+            transform(cfirst1, clast1, cfirst2, greater_equal_actual.begin(), greater_equal<>{});
+        assert(greater_equal_actual == greater_equal_expected);
+        assert(greater_equal_ret == greater_equal_actual.begin() + static_cast<ptrdiff_t>(length));
+    }
+
+    {
         auto not_ret = transform(first1, last1, not_actual.begin(), logical_not<>{});
         assert(not_actual == not_expected);
-        assert(not_ret == not_actual.begin() + length);
+        assert(not_ret == not_actual.begin() + static_cast<ptrdiff_t>(length));
 
         not_actual.assign(not_actual.size(), false);
 
@@ -168,7 +211,7 @@ CONSTEXPR20 void test_transform_helper(const size_t length) {
         // Continue using logical_not to test vector<bool>::const_iterator:
         not_ret = transform(cfirst1, clast1, not_actual.begin(), logical_not<>{});
         assert(not_actual == not_expected);
-        assert(not_ret == not_actual.begin() + length);
+        assert(not_ret == not_actual.begin() + static_cast<ptrdiff_t>(length));
     }
 }
 
@@ -187,6 +230,121 @@ CONSTEXPR20 bool test_transform() {
 
     // Multiple blocks, ends at block boundary
     test_transform_helper(4 * blockSize);
+    return true;
+}
+
+CONSTEXPR20 bool test_meow_of_helper(const size_t length_before, const size_t length, const size_t length_after) {
+    const size_t total_length = length_before + length + length_after;
+
+    vector<bool> zeros(total_length);
+    vector<bool> ones(total_length);
+    vector<bool> mix(total_length);
+
+    const auto first_0 = zeros.begin() + static_cast<ptrdiff_t>(length_before);
+    const auto last_0  = zeros.end() - static_cast<ptrdiff_t>(length_after);
+    const auto first_1 = ones.begin() + static_cast<ptrdiff_t>(length_before);
+    const auto last_1  = ones.end() - static_cast<ptrdiff_t>(length_after);
+    const auto first_m = mix.begin() + static_cast<ptrdiff_t>(length_before);
+    const auto last_m  = mix.end() - static_cast<ptrdiff_t>(length_after);
+
+    fill(zeros.begin(), first_0, true);
+    fill(last_0, zeros.end(), true);
+    fill(first_1, last_1, true);
+    fill(mix.begin(), first_m, true);
+    fill(first_m + static_cast<ptrdiff_t>(length / 2), last_m, true);
+
+    if (length == 0) {
+#if _HAS_CXX20
+        assert(all_of(first_0, last_0, identity{}) == true);
+        assert(all_of(first_1, last_1, identity{}) == true);
+        assert(all_of(first_m, last_m, identity{}) == true);
+
+        assert(any_of(first_0, last_0, identity{}) == false);
+        assert(any_of(first_1, last_1, identity{}) == false);
+        assert(any_of(first_m, last_m, identity{}) == false);
+
+        assert(none_of(first_0, last_0, identity{}) == true);
+        assert(none_of(first_1, last_1, identity{}) == true);
+        assert(none_of(first_m, last_m, identity{}) == true);
+#endif // _HAS_CXX20
+
+        assert(all_of(first_0, last_0, logical_not<>{}) == true);
+        assert(all_of(first_1, last_1, logical_not<>{}) == true);
+        assert(all_of(first_m, last_m, logical_not<>{}) == true);
+
+        assert(any_of(first_0, last_0, logical_not<>{}) == false);
+        assert(any_of(first_1, last_1, logical_not<>{}) == false);
+        assert(any_of(first_m, last_m, logical_not<>{}) == false);
+
+        assert(none_of(first_0, last_0, logical_not<>{}) == true);
+        assert(none_of(first_1, last_1, logical_not<>{}) == true);
+        assert(none_of(first_m, last_m, logical_not<>{}) == true);
+    } else {
+        assert(length != 1); // [first_m, last_m) needs to contain both true and false
+
+#if _HAS_CXX20
+        assert(all_of(first_0, last_0, identity{}) == false);
+        assert(all_of(first_1, last_1, identity{}) == true);
+        assert(all_of(first_m, last_m, identity{}) == false);
+
+        assert(any_of(first_0, last_0, identity{}) == false);
+        assert(any_of(first_1, last_1, identity{}) == true);
+        assert(any_of(first_m, last_m, identity{}) == true);
+
+        assert(none_of(first_0, last_0, identity{}) == true);
+        assert(none_of(first_1, last_1, identity{}) == false);
+        assert(none_of(first_m, last_m, identity{}) == false);
+#endif // _HAS_CXX20
+
+        assert(all_of(first_0, last_0, logical_not<>{}) == true);
+        assert(all_of(first_1, last_1, logical_not<>{}) == false);
+        assert(all_of(first_m, last_m, logical_not<>{}) == false);
+
+        assert(any_of(first_0, last_0, logical_not<>{}) == true);
+        assert(any_of(first_1, last_1, logical_not<>{}) == false);
+        assert(any_of(first_m, last_m, logical_not<>{}) == true);
+
+        assert(none_of(first_0, last_0, logical_not<>{}) == false);
+        assert(none_of(first_1, last_1, logical_not<>{}) == true);
+        assert(none_of(first_m, last_m, logical_not<>{}) == false);
+    }
+
+    return true;
+}
+
+CONSTEXPR20 bool test_meow_of() {
+    { // Super empty range
+        const vector<bool>::const_iterator it{}; // value-initialized, compares equal to itself
+
+#if _HAS_CXX20
+        assert(all_of(it, it, identity{}) == true);
+        assert(any_of(it, it, identity{}) == false);
+        assert(none_of(it, it, identity{}) == true);
+#endif // _HAS_CXX20
+
+        assert(all_of(it, it, logical_not<>{}) == true);
+        assert(any_of(it, it, logical_not<>{}) == false);
+        assert(none_of(it, it, logical_not<>{}) == true);
+    }
+
+    // Empty range
+    test_meow_of_helper(0, 0, 3);
+    test_meow_of_helper(3, 0, 3);
+
+    // One block, ends within block
+    test_meow_of_helper(0, 10, 3);
+    test_meow_of_helper(3, 10, 3);
+
+    // One block, exactly
+    test_meow_of_helper(0, blockSize, 0);
+
+    // Multiple blocks, spanning
+    test_meow_of_helper(3, blockSize - 2, 3);
+    test_meow_of_helper(3, blockSize + 2, 3);
+
+    // Many blocks, exactly
+    test_meow_of_helper(blockSize, 4 * blockSize, blockSize);
+
     return true;
 }
 
@@ -459,28 +617,29 @@ CONSTEXPR20 void test_copy_no_offset(const size_t length) {
 
     {
         vector<bool> dest(length, false);
-        const auto res_copy = copy(source.begin(), next(source.begin(), length), dest.begin());
+        const auto res_copy = copy(source.begin(), source.begin() + static_cast<ptrdiff_t>(length), dest.begin());
         assert(dest == result);
         assert(res_copy == dest.end());
     }
 
     {
         vector<bool> dest_n(length, false);
-        const auto res_copy_n = copy_n(source.begin(), length, dest_n.begin());
+        const auto res_copy_n = copy_n(source.begin(), static_cast<ptrdiff_t>(length), dest_n.begin());
         assert(dest_n == result);
         assert(res_copy_n == dest_n.end());
     }
 
     {
         vector<bool> dest_backward(length, false);
-        const auto res_copy_backward = copy_backward(source.begin(), next(source.begin(), length), dest_backward.end());
+        const auto res_copy_backward =
+            copy_backward(source.begin(), source.begin() + static_cast<ptrdiff_t>(length), dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == dest_backward.begin());
     }
 
     {
         vector<bool> dest_move(length, false);
-        const auto res_move = move(source.begin(), next(source.begin(), length), dest_move.begin());
+        const auto res_move = move(source.begin(), source.begin() + static_cast<ptrdiff_t>(length), dest_move.begin());
         assert(dest_move == result);
         assert(res_move == dest_move.end());
     }
@@ -488,7 +647,7 @@ CONSTEXPR20 void test_copy_no_offset(const size_t length) {
     {
         vector<bool> dest_move_backward(length, false);
         const auto res_move_backward =
-            move_backward(source.begin(), next(source.begin(), length), dest_move_backward.end());
+            move_backward(source.begin(), source.begin() + static_cast<ptrdiff_t>(length), dest_move_backward.end());
         assert(dest_move_backward == result);
         assert(res_move_backward == dest_move_backward.begin());
     }
@@ -546,37 +705,39 @@ CONSTEXPR20 void test_copy_offset_source(const size_t length) {
 
     {
         vector<bool> dest(length, false);
-        const auto res_copy = copy(next(source.begin()), next(source.begin(), length + 1), dest.begin());
+        const auto res_copy =
+            copy(next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length) + 1, dest.begin());
         assert(dest == result);
         assert(res_copy == dest.end());
     }
 
     {
         vector<bool> dest_n(length, false);
-        const auto res_copy_n = copy_n(next(source.begin()), length, dest_n.begin());
+        const auto res_copy_n = copy_n(next(source.begin()), static_cast<ptrdiff_t>(length), dest_n.begin());
         assert(dest_n == result);
         assert(res_copy_n == dest_n.end());
     }
 
     {
         vector<bool> dest_backward(length, false);
-        const auto res_copy_backward =
-            copy_backward(next(source.begin()), next(source.begin(), length + 1), dest_backward.end());
+        const auto res_copy_backward = copy_backward(
+            next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length) + 1, dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == dest_backward.begin());
     }
 
     {
         vector<bool> dest_move(length, false);
-        const auto res_move = move(next(source.begin()), next(source.begin(), length + 1), dest_move.begin());
+        const auto res_move =
+            move(next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length) + 1, dest_move.begin());
         assert(dest_move == result);
         assert(res_move == dest_move.end());
     }
 
     {
         vector<bool> dest_move_backward(length, false);
-        const auto res_move_backward =
-            move_backward(next(source.begin()), next(source.begin(), length + 1), dest_move_backward.end());
+        const auto res_move_backward = move_backward(
+            next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length) + 1, dest_move_backward.end());
         assert(dest_move_backward == result);
         assert(res_move_backward == dest_move_backward.begin());
     }
@@ -639,28 +800,30 @@ CONSTEXPR20 void test_copy_offset_dest(const size_t length) {
 
     {
         vector<bool> dest(length + 1, false);
-        const auto res_copy = copy(source.begin(), next(source.begin(), length), next(dest.begin()));
+        const auto res_copy = copy(source.begin(), source.begin() + static_cast<ptrdiff_t>(length), next(dest.begin()));
         assert(dest == result);
         assert(res_copy == dest.end());
     }
 
     {
         vector<bool> dest_n(length + 1, false);
-        const auto res_copy_n = copy_n(source.begin(), length, next(dest_n.begin()));
+        const auto res_copy_n = copy_n(source.begin(), static_cast<ptrdiff_t>(length), next(dest_n.begin()));
         assert(dest_n == result);
         assert(res_copy_n == dest_n.end());
     }
 
     {
         vector<bool> dest_backward(length + 1, false);
-        const auto res_copy_backward = copy_backward(source.begin(), next(source.begin(), length), dest_backward.end());
+        const auto res_copy_backward =
+            copy_backward(source.begin(), source.begin() + static_cast<ptrdiff_t>(length), dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == next(dest_backward.begin()));
     }
 
     {
         vector<bool> dest_move(length + 1, false);
-        const auto res_move = move(source.begin(), next(source.begin(), length), next(dest_move.begin()));
+        const auto res_move =
+            move(source.begin(), source.begin() + static_cast<ptrdiff_t>(length), next(dest_move.begin()));
         assert(dest_move == result);
         assert(res_move == dest_move.end());
     }
@@ -668,7 +831,7 @@ CONSTEXPR20 void test_copy_offset_dest(const size_t length) {
     {
         vector<bool> dest_move_backward(length + 1, false);
         const auto res_move_backward =
-            move_backward(source.begin(), next(source.begin(), length), dest_move_backward.end());
+            move_backward(source.begin(), source.begin() + static_cast<ptrdiff_t>(length), dest_move_backward.end());
         assert(dest_move_backward == result);
         assert(res_move_backward == next(dest_move_backward.begin()));
     }
@@ -731,14 +894,15 @@ CONSTEXPR20 void test_copy_offset_match(const size_t length) {
 
     {
         vector<bool> dest(length, false);
-        const auto res_copy = copy(next(source.begin()), next(source.begin(), length), next(dest.begin()));
+        const auto res_copy =
+            copy(next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length), next(dest.begin()));
         assert(dest == result);
         assert(res_copy == dest.end());
     }
 
     {
         vector<bool> dest_n(length, false);
-        const auto res_copy_n = copy_n(next(source.begin()), length - 1, next(dest_n.begin()));
+        const auto res_copy_n = copy_n(next(source.begin()), static_cast<ptrdiff_t>(length) - 1, next(dest_n.begin()));
         assert(dest_n == result);
         assert(res_copy_n == dest_n.end());
     }
@@ -746,22 +910,23 @@ CONSTEXPR20 void test_copy_offset_match(const size_t length) {
     {
         vector<bool> dest_backward(length, false);
         const auto res_copy_backward =
-            copy_backward(next(source.begin()), next(source.begin(), length), dest_backward.end());
+            copy_backward(next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length), dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == next(dest_backward.begin()));
     }
 
     {
         vector<bool> dest_move(length, false);
-        const auto res_move = move(next(source.begin()), next(source.begin(), length), next(dest_move.begin()));
+        const auto res_move =
+            move(next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length), next(dest_move.begin()));
         assert(dest_move == result);
         assert(res_move == dest_move.end());
     }
 
     {
         vector<bool> dest_move_backward(length, false);
-        const auto res_move_backward =
-            move_backward(next(source.begin()), next(source.begin(), length), dest_move_backward.end());
+        const auto res_move_backward = move_backward(
+            next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length), dest_move_backward.end());
         assert(dest_move_backward == result);
         assert(res_move_backward == next(dest_move_backward.begin()));
     }
@@ -824,14 +989,16 @@ CONSTEXPR20 void test_copy_offset_mismatch_leftshift(const size_t length) {
 
     {
         vector<bool> dest(length + 1, false);
-        const auto res_copy = copy(next(source.begin()), next(source.begin(), length), next(dest.begin(), 2));
+        const auto res_copy =
+            copy(next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length), next(dest.begin(), 2));
         assert(dest == result);
         assert(res_copy == dest.end());
     }
 
     {
         vector<bool> dest_n(length + 1, false);
-        const auto res_copy_n = copy_n(next(source.begin()), length - 1, next(dest_n.begin(), 2));
+        const auto res_copy_n =
+            copy_n(next(source.begin()), static_cast<ptrdiff_t>(length) - 1, next(dest_n.begin(), 2));
         assert(dest_n == result);
         assert(res_copy_n == dest_n.end());
     }
@@ -839,22 +1006,23 @@ CONSTEXPR20 void test_copy_offset_mismatch_leftshift(const size_t length) {
     {
         vector<bool> dest_backward(length + 1, false);
         const auto res_copy_backward =
-            copy_backward(next(source.begin()), next(source.begin(), length), dest_backward.end());
+            copy_backward(next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length), dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == next(dest_backward.begin(), 2));
     }
 
     {
         vector<bool> dest_move(length + 1, false);
-        const auto res_move = move(next(source.begin()), next(source.begin(), length), next(dest_move.begin(), 2));
+        const auto res_move =
+            move(next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length), next(dest_move.begin(), 2));
         assert(dest_move == result);
         assert(res_move == dest_move.end());
     }
 
     {
         vector<bool> dest_move_backward(length + 1, false);
-        const auto res_move_backward =
-            move_backward(next(source.begin()), next(source.begin(), length), dest_move_backward.end());
+        const auto res_move_backward = move_backward(
+            next(source.begin()), source.begin() + static_cast<ptrdiff_t>(length), dest_move_backward.end());
         assert(dest_move_backward == result);
         assert(res_move_backward == next(dest_move_backward.begin(), 2));
     }
@@ -919,37 +1087,40 @@ CONSTEXPR20 void test_copy_offset_mismatch_rightshift(const size_t length) {
 
     {
         vector<bool> dest(length, false);
-        const auto res_copy = copy(next(source.begin(), 2), next(source.begin(), length + 1), next(dest.begin()));
+        const auto res_copy =
+            copy(next(source.begin(), 2), source.begin() + static_cast<ptrdiff_t>(length) + 1, next(dest.begin()));
         assert(dest == result);
         assert(res_copy == dest.end());
     }
 
     {
         vector<bool> dest_n(length, false);
-        const auto res_copy_n = copy_n(next(source.begin(), 2), length - 1, next(dest_n.begin()));
+        const auto res_copy_n =
+            copy_n(next(source.begin(), 2), static_cast<ptrdiff_t>(length) - 1, next(dest_n.begin()));
         assert(dest_n == result);
         assert(res_copy_n == dest_n.end());
     }
 
     {
         vector<bool> dest_backward(length, false);
-        const auto res_copy_backward =
-            copy_backward(next(source.begin(), 2), next(source.begin(), length + 1), dest_backward.end());
+        const auto res_copy_backward = copy_backward(
+            next(source.begin(), 2), source.begin() + static_cast<ptrdiff_t>(length) + 1, dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == next(dest_backward.begin()));
     }
 
     {
         vector<bool> dest_move(length, false);
-        const auto res_move = move(next(source.begin(), 2), next(source.begin(), length + 1), next(dest_move.begin()));
+        const auto res_move =
+            move(next(source.begin(), 2), source.begin() + static_cast<ptrdiff_t>(length) + 1, next(dest_move.begin()));
         assert(dest_move == result);
         assert(res_move == dest_move.end());
     }
 
     {
         vector<bool> dest_move_backward(length, false);
-        const auto res_move_backward =
-            move_backward(next(source.begin(), 2), next(source.begin(), length + 1), dest_move_backward.end());
+        const auto res_move_backward = move_backward(
+            next(source.begin(), 2), source.begin() + static_cast<ptrdiff_t>(length) + 1, dest_move_backward.end());
         assert(dest_move_backward == result);
         assert(res_move_backward == next(dest_move_backward.begin()));
     }
@@ -1012,37 +1183,40 @@ CONSTEXPR20 void test_copy_offset_aligned(const size_t length) {
 
     {
         vector<bool> dest(length, false);
-        const auto res_copy = copy(next(source.begin(), 9), next(source.begin(), length + 8), next(dest.begin()));
+        const auto res_copy =
+            copy(next(source.begin(), 9), source.begin() + static_cast<ptrdiff_t>(length) + 8, next(dest.begin()));
         assert(dest == result);
         assert(res_copy == dest.end());
     }
 
     {
         vector<bool> dest_n(length, false);
-        const auto res_copy_n = copy_n(next(source.begin(), 9), length - 1, next(dest_n.begin()));
+        const auto res_copy_n =
+            copy_n(next(source.begin(), 9), static_cast<ptrdiff_t>(length) - 1, next(dest_n.begin()));
         assert(dest_n == result);
         assert(res_copy_n == dest_n.end());
     }
 
     {
         vector<bool> dest_backward(length, false);
-        const auto res_copy_backward =
-            copy_backward(next(source.begin(), 9), next(source.begin(), length + 8), dest_backward.end());
+        const auto res_copy_backward = copy_backward(
+            next(source.begin(), 9), source.begin() + static_cast<ptrdiff_t>(length) + 8, dest_backward.end());
         assert(dest_backward == result);
         assert(res_copy_backward == next(dest_backward.begin()));
     }
 
     {
         vector<bool> dest_move(length, false);
-        const auto res_move = move(next(source.begin(), 9), next(source.begin(), length + 8), next(dest_move.begin()));
+        const auto res_move =
+            move(next(source.begin(), 9), source.begin() + static_cast<ptrdiff_t>(length) + 8, next(dest_move.begin()));
         assert(dest_move == result);
         assert(res_move == dest_move.end());
     }
 
     {
         vector<bool> dest_move_backward(length, false);
-        const auto res_move_backward =
-            move_backward(next(source.begin(), 9), next(source.begin(), length + 8), dest_move_backward.end());
+        const auto res_move_backward = move_backward(
+            next(source.begin(), 9), source.begin() + static_cast<ptrdiff_t>(length) + 8, dest_move_backward.end());
         assert(dest_move_backward == result);
         assert(res_move_backward == next(dest_move_backward.begin()));
     }
@@ -1389,8 +1563,8 @@ void randomized_test_copy(mt19937_64& gen) {
         // src vector: <src_prefix> <copy_len> <src_suffix>
         // dst vector: <dst_prefix> <copy_len> <dst_suffix>
 
-        vector<bool> vb_src(src_prefix + copy_len + src_suffix);
-        vector<bool> vb_dst(dst_prefix + copy_len + dst_suffix);
+        vector<bool> vb_src(static_cast<size_t>(src_prefix + copy_len + src_suffix));
+        vector<bool> vb_dst(static_cast<size_t>(dst_prefix + copy_len + dst_suffix));
 
         generate(vb_src.begin(), vb_src.end(), bool_dist);
         generate(vb_dst.begin(), vb_dst.end(), bool_dist);
@@ -1435,7 +1609,7 @@ void randomized_test_copy(mt19937_64& gen) {
         //          ^
         //          <dst is copy_len>
 
-        vector<bool> vb(prefix + overhang + copy_len + suffix);
+        vector<bool> vb(static_cast<size_t>(prefix + overhang + copy_len + suffix));
 
         generate(vb.begin(), vb.end(), bool_dist);
 
@@ -1473,7 +1647,7 @@ void randomized_test_copy(mt19937_64& gen) {
         // Vector diagram:
         // <prefix> <src is copy_len> <gap> <dst is copy_len> <suffix>
 
-        vector<bool> vb(prefix + copy_len + gap + copy_len + suffix);
+        vector<bool> vb(static_cast<size_t>(prefix + copy_len + gap + copy_len + suffix));
 
         generate(vb.begin(), vb.end(), bool_dist);
 
@@ -1531,6 +1705,7 @@ static_assert(test_fill());
 static_assert(test_find());
 static_assert(test_count());
 static_assert(test_transform());
+static_assert(test_meow_of());
 
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2574489
 static_assert(test_copy_part_1());
@@ -1543,6 +1718,7 @@ int main() {
     test_find();
     test_count();
     test_transform();
+    test_meow_of();
     test_copy_part_1();
     test_copy_part_2();
 

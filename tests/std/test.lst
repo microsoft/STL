@@ -202,10 +202,10 @@ tests\GH_001411_core_headers
 tests\GH_001530_binomial_accuracy
 tests\GH_001541_case_sensitive_boolalpha
 tests\GH_001596_adl_proof_algorithms
+tests\GH_001600_random_inheritance
 tests\GH_001638_dllexport_derived_classes
 tests\GH_001850_clog_tied_to_cout
 tests\GH_001858_iostream_exception
-tests\GH_001912_random_distribution_operator_const
 tests\GH_001914_cached_position
 tests\GH_001923_filesystem_long_path_support
 tests\GH_002030_asan_annotate_string
@@ -276,7 +276,11 @@ tests\GH_005504_avoid_function_call_wrapping
 tests\GH_005546_containers_size_type_cast
 tests\GH_005553_regex_character_translation
 tests\GH_005768_pow_accuracy
+tests\GH_005780_non_ascii_locales
 tests\GH_005800_stable_sort_large_alignment
+tests\GH_005816_numeric_limits_traps
+tests\GH_005968_headers_provide_begin_end
+tests\GH_005974_asan_annotate_optional
 tests\LWG2381_num_get_floating_point
 tests\LWG2510_tag_classes
 tests\LWG2597_complex_branch_cut
@@ -290,6 +294,7 @@ tests\LWG3528_make_from_tuple_impl
 tests\LWG3545_pointer_traits_sfinae
 tests\LWG3561_discard_block_engine_counter
 tests\LWG3610_iota_view_size_and_integer_class
+tests\LWG4015_optional_adl_proof_operations
 tests\LWG4084_iostream_uppercase_inf_nan
 tests\LWG4105_ranges_ends_with_and_integer_class
 tests\LWG4172_unique_lock_self_move_assignment
@@ -379,6 +384,8 @@ tests\P0408R7_efficient_access_to_stringbuf_buffer
 tests\P0414R2_shared_ptr_for_arrays
 tests\P0415R1_constexpr_complex
 tests\P0426R1_constexpr_char_traits
+tests\P0429R9_flat_map
+tests\P0429R9_flat_map_ms_specific
 tests\P0433R2_deduction_guides
 tests\P0448R4_iosfwd
 tests\P0448R4_spanstream
@@ -616,6 +623,7 @@ tests\P1206R7_vector_from_range
 tests\P1206R7_vector_insert_range
 tests\P1208R6_source_location
 tests\P1209R0_erase_if_erase
+tests\P1222R4_flat_set
 tests\P1223R5_ranges_alg_find_last
 tests\P1223R5_ranges_alg_find_last_if
 tests\P1223R5_ranges_alg_find_last_if_not
@@ -718,6 +726,7 @@ tests\P2505R5_monadic_functions_for_std_expected
 tests\P2510R3_text_formatting_pointers
 tests\P2517R1_apply_conditional_noexcept
 tests\P2538R1_adl_proof_std_projected
+tests\P2590R2_explicit_lifetime_management
 tests\P2609R3_relaxing_ranges_just_a_smidge
 tests\P2674R1_is_implicit_lifetime
 tests\P2693R1_ostream_and_thread_id
@@ -725,6 +734,7 @@ tests\P2693R1_text_formatting_header_stacktrace
 tests\P2693R1_text_formatting_header_thread
 tests\P2693R1_text_formatting_stacktrace
 tests\P2693R1_text_formatting_thread_id
+tests\P3016R6_inconsistent_begin_end
 tests\P3107R5_enabled_specializations
 tests\P3349R1_contiguous_iterators_to_pointers
 tests\P3503R3_packaged_task_promise_with_allocator

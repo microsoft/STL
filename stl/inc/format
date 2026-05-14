@@ -684,7 +684,7 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
     // We care about this because if a charset is self-synchronizing then we can search through it
     // for formatting control characters _without_ generally decoding the format string.
     switch (_MSVC_EXECUTION_CHARACTER_SET) {
-    // See: https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
+    // See: https://learn.microsoft.com/windows/win32/intl/code-page-identifiers
     case 874: // Thai (Windows)
     case 1250: // ANSI Central European; Central European (Windows)
     case 1251: // ANSI Cyrillic; Cyrillic (Windows)
@@ -1295,7 +1295,7 @@ constexpr bool _Is_signed_or_unsigned_large_integer_t =
 class _Width_checker {
 public:
     template <class _Ty>
-    _NODISCARD _STATIC_CALL_OPERATOR constexpr unsigned long long operator()(const _Ty _Value) _CONST_CALL_OPERATOR {
+    _NODISCARD static constexpr unsigned long long operator()(const _Ty _Value) {
         if constexpr (_Is_signed_or_unsigned_large_integer_t<_Ty>) {
             if constexpr (is_signed_v<_Ty>) {
                 if (_Value < 0) {
@@ -1314,7 +1314,7 @@ public:
 class _Precision_checker {
 public:
     template <class _Ty>
-    _NODISCARD _STATIC_CALL_OPERATOR constexpr unsigned long long operator()(const _Ty _Value) _CONST_CALL_OPERATOR {
+    _NODISCARD static constexpr unsigned long long operator()(const _Ty _Value) {
         if constexpr (_Is_signed_or_unsigned_large_integer_t<_Ty>) {
             if constexpr (is_signed_v<_Ty>) {
                 if (_Value < 0) {
@@ -2023,8 +2023,6 @@ template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale);
 
-#pragma warning(push)
-#pragma warning(disable : 4296) // '<': expression is always false
 template <class _CharT, class _OutputIt, integral _Integral>
 _NODISCARD _OutputIt _Write_integral(
     _OutputIt _Out, const _Integral _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale) {
@@ -2072,13 +2070,16 @@ _NODISCARD _OutputIt _Write_integral(
     auto _Buffer_start = _Buffer;
     auto _Width        = static_cast<int>(_End - _Buffer_start);
 
-    if (_Value >= _Integral{0}) {
-        if (_Specs._Sgn != _Fmt_sign::_Minus) {
-            _Width += 1;
-        }
-    } else {
+    bool _Negative = false;
+    if constexpr (signed_integral<_Integral>) {
+        _Negative = _Value < _Integral{0};
+    }
+
+    if (_Negative) {
         // Remove the '-', it will be dealt with directly
         _Buffer_start += 1;
+    } else if (_Specs._Sgn != _Fmt_sign::_Minus) {
+        _Width += 1;
     }
 
     if (_Specs._Type == 'X') {
@@ -2102,7 +2103,11 @@ _NODISCARD _OutputIt _Write_integral(
 
     const bool _Write_leading_zeroes = _Specs._Leading_zero && _Specs._Alignment == _Fmt_align::_None;
     auto _Writer                     = [&, _End = _End](_OutputIt _Out) {
-        _Out = _Write_sign(_STD move(_Out), _Specs._Sgn, _Value < _Integral{0});
+        if constexpr (signed_integral<_Integral>) {
+            _Out = _Write_sign(_STD move(_Out), _Specs._Sgn, _Value < _Integral{0});
+        } else {
+            _Out = _Write_sign(_STD move(_Out), _Specs._Sgn, false);
+        }
         _Out = _Widen_and_copy<_CharT>(_Prefix.data(), _Prefix.data() + _Prefix.size(), _STD move(_Out));
         if (_Write_leading_zeroes && _Width < _Specs._Width) {
             _Out = _RANGES fill_n(_STD move(_Out), _Specs._Width - _Width, _CharT{'0'});
@@ -2122,7 +2127,6 @@ _NODISCARD _OutputIt _Write_integral(
 
     return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Right, _Writer);
 }
-#pragma warning(pop)
 
 template <class _CharT, class _OutputIt, integral _Integral>
     requires (!_CharT_or_bool<_Integral, _CharT>)
@@ -2797,7 +2801,7 @@ struct _Arg_formatter {
 // care about avoiding code bloat for code that never runs at runtime, and we can't form
 // the erased basic_format_args structure at compile time.
 template <class _Ty, class _ParseContext>
-consteval _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Pc) {
+consteval _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Parse_ctx) {
     using _CharT                = _ParseContext::char_type;
     using _Context              = basic_format_context<back_insert_iterator<_Fmt_buffer<_CharT>>, _CharT>;
     using _ArgTraits            = _Format_arg_traits<_Context>;
@@ -2808,7 +2812,7 @@ consteval _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext
     using _FormattedType = conditional_t<is_same_v<_FormattedTypeMapping, typename basic_format_arg<_Context>::handle>,
         _Ty, _FormattedTypeMapping>;
     formatter<_FormattedType, _CharT> _Formatter{};
-    return _Formatter.parse(_Pc);
+    return _Formatter.parse(_Parse_ctx);
 }
 
 // set of format parsing actions that only checks for validity
@@ -2890,33 +2894,39 @@ struct _Format_handler {
     }
 };
 
-template <_Basic_format_arg_type _ArgType, class _CharT, class _Pc>
-constexpr _Pc::iterator _Formatter_base_parse(_Dynamic_format_specs<_CharT>& _Specs, _Pc& _ParseCtx) {
-    _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>{_Specs, _ParseCtx}, _ArgType);
-    const auto _It = _Parse_format_specs(_ParseCtx._Unchecked_begin(), _ParseCtx._Unchecked_end(), _Handler);
-    if (_It != _ParseCtx._Unchecked_end() && *_It != '}') {
+// declared in <__msvc_formatter.hpp>
+template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
+template <class _ParseContext>
+constexpr _ParseContext::iterator _Formatter_base<_Ty, _CharT, _ArgType>::parse(
+    type_identity_t<_ParseContext&> _Parse_ctx) {
+    _Specs_checker<_Dynamic_specs_handler<_ParseContext>> _Handler(
+        _Dynamic_specs_handler<_ParseContext>{_Specs, _Parse_ctx}, _ArgType);
+    const auto _It = _Parse_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Handler);
+    if (_It != _Parse_ctx._Unchecked_end() && *_It != '}') {
         _Throw_format_error("Missing '}' in format string.");
     }
-    return _ParseCtx.begin() + (_It - _ParseCtx._Unchecked_begin());
+    return _Parse_ctx.begin() + (_It - _Parse_ctx._Unchecked_begin());
 }
 
-template <class _Ty, class _CharT, class _FormatContext>
-_FormatContext::iterator _Formatter_base_format(
-    const _Dynamic_format_specs<_CharT>& _Specs, const _Ty& _Val, _FormatContext& _FormatCtx) {
+// declared in <__msvc_formatter.hpp>
+template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
+template <class _FormatContext>
+_FormatContext::iterator _Formatter_base<_Ty, _CharT, _ArgType>::format(
+    const _Ty& _Val, _FormatContext& _Format_ctx) const {
     _Dynamic_format_specs<_CharT> _Format_specs = _Specs;
     if (_Specs._Dynamic_width_index >= 0) {
         _Format_specs._Width =
-            _Get_dynamic_specs<_Width_checker>(_FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
+            _Get_dynamic_specs<_Width_checker>(_Format_ctx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
     }
 
     if (_Specs._Dynamic_precision_index >= 0) {
         _Format_specs._Precision = _Get_dynamic_specs<_Precision_checker>(
-            _FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_precision_index)));
+            _Format_ctx.arg(static_cast<size_t>(_Specs._Dynamic_precision_index)));
     }
 
     return _STD visit_format_arg(
         _Arg_formatter<typename _FormatContext::iterator, _CharT>{
-            ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Format_specs)},
+            ._Ctx = _STD addressof(_Format_ctx), ._Specs = _STD addressof(_Format_specs)},
         basic_format_arg<_FormatContext>::_Make_from(_Val));
 }
 _FMT_P2286_END
@@ -3271,11 +3281,11 @@ _NODISCARD constexpr const _CharT* _Parse_range_specs(
     return _Begin;
 }
 
-// TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
-template <class _Ty, class _CharT, class _ParseContext>
-_NODISCARD constexpr _ParseContext::iterator _Range_formatter_parse(formatter<_Ty, _CharT>& _Underlying,
-    basic_string_view<_CharT>& _Separator, basic_string_view<_CharT>& _Opening_bracket,
-    basic_string_view<_CharT>& _Closing_bracket, _Range_specs<_CharT>& _Specs, _ParseContext& _Ctx) {
+// declared in <__msvc_ranges_tuple_formatter.hpp>
+template <class _Ty, class _CharT>
+    requires same_as<remove_cvref_t<_Ty>, _Ty> && formattable<_Ty, _CharT>
+template <class _ParseContext>
+constexpr _ParseContext::iterator range_formatter<_Ty, _CharT>::parse(_ParseContext& _Ctx) {
     _Range_specs_setter<_CharT> _Callback{_Specs, _Ctx};
     auto _It = _STD _Parse_range_specs(_Ctx._Unchecked_begin(), _Ctx._Unchecked_end(), _Callback);
 
@@ -3395,11 +3405,14 @@ void _Range_formatter_format_as_string(_Range&& _Rng, _FormatContext& _Ctx, cons
     }
 }
 
-template <class _Ty, class _CharT, _RANGES input_range _Range, class _FormatContext>
-_NODISCARD _FormatContext::iterator _Range_formatter_format(const formatter<_Ty, _CharT>& _Underlying,
-    const basic_string_view<_CharT> _Separator, const basic_string_view<_CharT> _Opening_bracket,
-    const basic_string_view<_CharT> _Closing_bracket, const _Range_specs<_CharT>& _Specs, _Range&& _Rng,
-    _FormatContext& _Ctx) {
+// declared in <__msvc_ranges_tuple_formatter.hpp>
+template <class _Ty, class _CharT>
+    requires same_as<remove_cvref_t<_Ty>, _Ty>
+          && formattable<_Ty, _CharT>
+             template <_RANGES input_range _Range, class _FormatContext>
+                 requires _Is_specialization_v<typename _FormatContext::iterator, back_insert_iterator>
+                       && derived_from<typename _FormatContext::iterator::container_type, _Fmt_buffer<_CharT>>
+_FormatContext::iterator range_formatter<_Ty, _CharT>::_Format(_Range&& _Rng, _FormatContext& _Ctx) const {
     auto _Format_specs = _Specs;
     if (_Specs._Dynamic_width_index >= 0) {
         _Format_specs._Width =
@@ -3549,11 +3562,10 @@ constexpr void _Set_tuple_debug_format(_FormatterType& _Formatter, _ParseContext
     }
 }
 
-// TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
-template <class... _Types, class _CharT, class _ParseContext>
-_NODISCARD constexpr _ParseContext::iterator _Tuple_formatter_parse(tuple<formatter<_Types, _CharT>...>& _Underlying,
-    basic_string_view<_CharT>& _Separator, basic_string_view<_CharT>& _Opening_bracket,
-    basic_string_view<_CharT>& _Closing_bracket, _Fill_align_and_width_specs<_CharT>& _Specs, _ParseContext& _Ctx) {
+// declared in <__msvc_ranges_tuple_formatter.hpp>
+template <class _CharT, formattable<_CharT>... _Types>
+template <class _ParseContext>
+constexpr _ParseContext::iterator _Tuple_formatter_common_base<_CharT, _Types...>::parse(_ParseContext& _Ctx) {
     _Fmt_tuple_type _Fmt_type = _Fmt_tuple_type::_None;
     _Tuple_format_specs_setter<_CharT, sizeof...(_Types) == 2> _Callback{_Specs, _Fmt_type, _Ctx};
     const auto _It = _STD _Parse_tuple_format_specs(_Ctx._Unchecked_begin(), _Ctx._Unchecked_end(), _Callback);
@@ -3595,11 +3607,14 @@ void _Tuple_formatter_format_to_context(const tuple<formatter<_Types, _CharT>...
     _STD _Copy_unchecked(_Closing_bracket._Unchecked_begin(), _Closing_bracket._Unchecked_end(), _Fmt_ctx.out());
 }
 
-template <class... _Types, class _CharT, class _FormatContext, class... _ArgTypes>
-_NODISCARD _FormatContext::iterator _Tuple_formatter_format(const tuple<formatter<_Types, _CharT>...>& _Underlying,
-    const basic_string_view<_CharT> _Separator, const basic_string_view<_CharT> _Opening_bracket,
-    const basic_string_view<_CharT> _Closing_bracket, const _Fill_align_and_width_specs<_CharT>& _Specs,
-    _FormatContext& _Fmt_ctx, _ArgTypes&... _Args) {
+// declared in <__msvc_ranges_tuple_formatter.hpp>
+template <class _CharT, formattable<_CharT>... _Types>
+template <class _FormatContext, class... _ArgTypes>
+_FormatContext::iterator _Tuple_formatter_common_base<_CharT, _Types...>::_Format(
+    _FormatContext& _Fmt_ctx, _ArgTypes&... _Args) const {
+    _STL_INTERNAL_STATIC_ASSERT(
+        (is_same_v<_ArgTypes, remove_reference_t<_Maybe_const<_Is_const_formattable, _Types>>> && ...));
+
     auto _Format_specs = _Specs;
     if (_Specs._Dynamic_width_index >= 0) {
         _Format_specs._Width =
@@ -3692,10 +3707,11 @@ _NODISCARD constexpr const _CharT* _Parse_fill_align_and_width_specs(
     return _Parse_width(_Begin, _End, _Callbacks);
 }
 
-// TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
-template <class _CharT, class _Pc>
-_NODISCARD constexpr _Pc::iterator _Fill_align_and_width_formatter_parse(
-    _Fill_align_and_width_specs<_CharT>& _Specs, _Pc& _Parse_ctx) {
+// declared in <__msvc_formatter.hpp>
+template <class _CharT>
+template <class _ParseContext>
+_NODISCARD constexpr _ParseContext::iterator _Fill_align_and_width_formatter<_CharT>::_Parse(
+    type_identity_t<_ParseContext&> _Parse_ctx) {
     _Fill_align_and_width_specs_setter<_CharT> _Callback{_Specs, _Parse_ctx};
     const auto _It =
         _Parse_fill_align_and_width_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
@@ -3706,10 +3722,11 @@ _NODISCARD constexpr _Pc::iterator _Fill_align_and_width_formatter_parse(
     return _Parse_ctx.begin() + (_It - _Parse_ctx._Unchecked_begin());
 }
 
-template <class _CharT, class _FormatContext, class _Func>
-_NODISCARD _FormatContext::iterator _Fill_align_and_width_formatter_format(
-    const _Fill_align_and_width_specs<_CharT>& _Specs, _FormatContext& _Format_ctx, const int _Width,
-    _Fmt_align _Default_align, _Func&& _Fn) {
+// declared in <__msvc_formatter.hpp>
+template <class _CharT>
+template <class _FormatContext, class _Func>
+_NODISCARD _FormatContext::iterator _Fill_align_and_width_formatter<_CharT>::_Format(
+    _FormatContext& _Format_ctx, const int _Width, _Fmt_align _Default_align, _Func&& _Fn) const {
     _Fill_align_and_width_specs _Format_specs = _Specs;
     if (_Specs._Dynamic_width_index >= 0) {
         _Format_specs._Width =

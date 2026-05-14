@@ -202,6 +202,24 @@ constexpr bool test_lwg3865() {
     return true;
 }
 
+// also test LWG-4324 "unique_ptr<void>::operator* is not SFINAE-friendly"
+
+namespace lwg_4324 {
+    template <class, class = void>
+    constexpr bool can_dereference = false;
+    template <class T>
+    constexpr bool can_dereference<T, void_t<decltype(*declval<T>())>> = true;
+
+    STATIC_ASSERT(can_dereference<unique_ptr<int>>);
+    STATIC_ASSERT(can_dereference<const unique_ptr<int>&>);
+
+    STATIC_ASSERT(!can_dereference<unique_ptr<int[]>>);
+    STATIC_ASSERT(!can_dereference<const unique_ptr<int[]>&>);
+
+    STATIC_ASSERT(!can_dereference<unique_ptr<void>>);
+    STATIC_ASSERT(!can_dereference<const unique_ptr<void>&>);
+} // namespace lwg_4324
+
 int main() {
     {
         assert(g_objects == 0);

@@ -7,8 +7,6 @@
 
 using namespace std;
 
-// TRANSITION, MSVC and EDG haven't implemented intrinsics needed for P2255R2.
-#ifdef __cpp_lib_reference_from_temporary
 template <bool Expected, class TupleOrPair, class... Args>
 void assert_constref_constructible_single() {
     static_assert(is_constructible_v<TupleOrPair, Args&...> == Expected);
@@ -88,4 +86,3 @@ void assert_lvalue_temp_converter() {
     assert_lvalue_temp_converter_single<pair<const int&, const int&>, const int&>();
     assert_lvalue_temp_converter_single<pair<int&&, int&&>, int&&>();
 }
-#endif // ^^^ no workaround ^^^

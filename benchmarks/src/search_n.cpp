@@ -61,7 +61,7 @@ void bm(benchmark::State& state) {
     }
 }
 
-void common_args(auto bm) {
+void common_args(benchmark::Benchmark* bm) {
     for (const auto& n : {40, 18, 16, 14, 10, 8, 5, 4, 3, 2, 1}) {
         bm->ArgPair(3000, n);
     }

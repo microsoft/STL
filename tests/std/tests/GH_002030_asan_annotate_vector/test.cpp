@@ -1,7 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// REQUIRES: x64 || x86
+// REQUIRES: x64 || x86 || arm64
+
+#if defined(__clang__) && defined(_M_ARM64) // TRANSITION, LLVM-184902, fixed in Clang 23
+#pragma comment(linker, "/INFERASANLIBS")
+int main() {}
+#else // ^^^ workaround / no workaround vvv
 
 #include <cassert>
 #include <cstddef>
@@ -201,7 +206,7 @@ bool verify_vector(vector<T, Alloc>& vec) {
 #else // ^^^ ASan instrumentation enabled / ASan instrumentation disabled vvv
     (void) vec;
     return true;
-#endif // Asan instrumentation disabled
+#endif // ^^^ ASan instrumentation disabled ^^^
 }
 
 // Note: This class does not satisfy all the allocator requirements but is sufficient for this test.
@@ -1097,3 +1102,5 @@ int main(int argc, char* argv[]) {
 
     return exec.run(argc, argv);
 }
+
+#endif // ^^^ no workaround ^^^

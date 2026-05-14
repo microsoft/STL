@@ -5,8 +5,6 @@
 
 using namespace std;
 
-// TRANSITION, MSVC and EDG haven't implemented intrinsics needed for P2255R2.
-#ifdef __cpp_lib_reference_from_temporary
 enum class conv_explicitly : bool {
     no,
     yes,
@@ -203,4 +201,3 @@ void test_to_int_ref_all() {
     test_to_int_ref<conv_explicitly::no>();
     test_to_int_ref<conv_explicitly::yes>();
 }
-#endif // ^^^ no workaround ^^^

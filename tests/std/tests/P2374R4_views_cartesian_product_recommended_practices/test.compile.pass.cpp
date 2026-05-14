@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#if !(defined(_PREFAST_) && defined(_M_IX86)) // TRANSITION, VSO-1639191
 // Check MSVC-STL internal machinery
 
 #include <array>
@@ -29,9 +30,9 @@ using cpv_const_difference_t = range_difference_t<const cartesian_product_view<R
 
 #ifdef _WIN64
 constexpr bool is_64_bit = true;
-#else // ^^^ 64 bit / 32 bit vvv
+#else // ^^^ 64-bit / 32-bit vvv
 constexpr bool is_64_bit = false;
-#endif // ^^^ 32 bit ^^^
+#endif // ^^^ 32-bit ^^^
 
 constexpr void check_array() {
     // Check '_Compile_time_max_size' type trait
@@ -265,7 +266,7 @@ constexpr void check_join_view() {
     static_assert(_Compile_time_max_size<const V3> == (numeric_limits<size_t>::max)());
     static_assert(sizeof(cpv_const_difference_t<V3>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
-#endif // ^^^ 64 bit ^^^
+#endif // ^^^ 64-bit ^^^
 }
 
 constexpr void check_join_with_view() {
@@ -297,7 +298,7 @@ constexpr void check_join_with_view() {
     static_assert(_Compile_time_max_size<const V3> == (numeric_limits<size_t>::max)());
     static_assert(sizeof(cpv_const_difference_t<V3>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
-#endif // ^^^ 64 bit ^^^
+#endif // ^^^ 64-bit ^^^
 
     // Check '_Compile_time_max_size' when size of joined range is 0
     using V4 = ranges::join_with_view<span<span<int, 5>, 0>, span<int, 2>>;
@@ -425,7 +426,7 @@ constexpr void check_cartesian_product_view() {
     static_assert(_Compile_time_max_size<const V3> == (numeric_limits<_Unsigned128>::max)());
     static_assert(sizeof(cpv_const_difference_t<V3>) > sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
-#endif // ^^^ 64 bit ^^^
+#endif // ^^^ 64-bit ^^^
 }
 
 struct Pred {
@@ -493,3 +494,4 @@ constexpr bool test() {
 }
 
 static_assert(test());
+#endif // ^^^ no workaround ^^^

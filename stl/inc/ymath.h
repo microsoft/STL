@@ -16,10 +16,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _EXTERN_C_UNLESS_PURE
 
-// macros for _Dtest return (0 => ZERO)
-#define _INFCODE 1
-#define _NANCODE 2
-
 _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Cosh(double, double) noexcept;
 _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double, double) noexcept;
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(double*, double, short) noexcept;

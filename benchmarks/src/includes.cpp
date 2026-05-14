@@ -96,7 +96,7 @@ void bm_includes(benchmark::State& state) {
     }
 }
 
-void common_args(auto bm) {
+void common_args(benchmark::Benchmark* bm) {
     for (const auto& spread :
         {needle_spread::dense, needle_spread::dense_random, needle_spread::sparse, needle_spread::sparse_random}) {
         for (const auto& expected_match : {true, false}) {

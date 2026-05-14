@@ -16,9 +16,9 @@ using namespace std;
 
 #ifdef _WIN64
 const size_t bad_size = 0xCCCC'CCCC'CCCC'CCCCULL;
-#else // ^^^ _WIN64 / !_WIN64 vvv
+#else // ^^^ 64-bit / 32-bit vvv
 const size_t bad_size = 0xCCCC'CCCCUL;
-#endif // _WIN64
+#endif // ^^^ 32-bit ^^^
 const unsigned long long default_state = 0xB01DFACEDEBAC1EULL;
 
 template <typename T>

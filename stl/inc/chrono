@@ -1867,7 +1867,7 @@ namespace chrono {
             using _Internal_duration = duration<__std_tzdb_epoch_milli, milli>;
             const auto _Internal_dur = _CHRONO duration_cast<_Internal_duration>(_Dur);
 
-            // TRANSITION, vNext
+            // TRANSITION, ABI
             // Because the signature of __std_tzdb_get_sys_info cannot be changed, _Type is encoded in the
             // time zone name. In vNext, this should be a dedicated argument.
             const string _Tz_arg = _Name + static_cast<char>(_Type);
@@ -2118,8 +2118,8 @@ namespace chrono {
     template <class _Ty>
     _NODISCARD const _Ty* _Locate_zone_impl(const vector<_Ty>& _Vec, string_view _Name) {
         // N5008 [time.zone.db.tzdb]/1: "Each vector in a tzdb object is sorted to enable fast lookup."
-        const auto _Result = _STD lower_bound(_Vec.begin(), _Vec.end(), _Name,
-            [](const auto& _Tz, const auto& _Sv) _STATIC_CALL_OPERATOR { return _Tz.name() < _Sv; });
+        const auto _Result = _STD lower_bound(
+            _Vec.begin(), _Vec.end(), _Name, [](const auto& _Tz, const auto& _Sv) static { return _Tz.name() < _Sv; });
         if (_Result != _Vec.end() && _Result->name() == _Name) {
             return &*_Result;
         } else {
@@ -2272,9 +2272,8 @@ namespace chrono {
             auto [_Icu_version, _Zones, _Links] = _CHRONO _Tzdb_generate_time_zones();
             auto [_Leap_sec, _All_ls_positive]  = _CHRONO _Tzdb_generate_leap_seconds(0);
             auto _Version                       = _Icu_version + "." + _STD to_string(_Leap_sec.size());
-            // TRANSITION, NVCC (was DevCom-10732572), should call emplace_front with construction arguments
-            _Tzdb_list.emplace_front(tzdb{
-                _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
+            _Tzdb_list.emplace_front(
+                _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive);
         }
 
         _NODISCARD const tzdb& front() const noexcept {
@@ -2331,9 +2330,8 @@ namespace chrono {
                 }
 
                 auto _Version = _CHRONO _Tzdb_update_version(_Tzdb.version, _Leap_sec.size());
-                // TRANSITION, NVCC (was DevCom-10732572), should call emplace_front with construction arguments
-                _Tzdb_list.emplace_front(tzdb{
-                    _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive});
+                _Tzdb_list.emplace_front(
+                    _STD move(_Version), _STD move(_Zones), _STD move(_Links), _STD move(_Leap_sec), _All_ls_positive);
             }
             return _Tzdb_list.front();
         }
@@ -3213,11 +3211,23 @@ namespace chrono {
         }
 
         _NODISCARD static pair<int, int> _Decompose_year(const int _Year) {
-            int _Two_d_year = _Year % 100;
-            if (_Two_d_year < 0) {
-                _Two_d_year += 100;
+            // LWG-3831: the two-digit year is taken without regard to the sign of the whole year number.
+            pair<int, int> _Result(_Year, _Year % 100);
+            _Result.first -= _Result.second;
+            if (_Result.second < 0) {
+                _Result.first -= 100;
+                _Result.second = -_Result.second;
             }
-            return {_Year - _Two_d_year, _Two_d_year};
+
+            return _Result;
+        }
+
+        _NODISCARD static int _Compose_year(const int _Century, const int _Two_d_year) {
+            if (_Century >= 0 || _Two_d_year == 0) {
+                return _Century + _Two_d_year;
+            } else {
+                return _Century + (100 - _Two_d_year);
+            }
         }
 
         _NODISCARD bool _Update_if_valid(const tm& _Tp, const bool _Full_year) {
@@ -3356,7 +3366,7 @@ namespace chrono {
             bool _Have_year = false;
             int _Year{0};
             if (_Two_dig_year) {
-                _Year      = *_Century + *_Two_dig_year;
+                _Year      = _Compose_year(*_Century, *_Two_dig_year);
                 _Have_year = true;
                 if (_Day_of_year) {
                     _No_err = _No_err && _Yday_to_month_day(*_Day_of_year, _Year);
@@ -3452,7 +3462,7 @@ namespace chrono {
             // %C is only combined with %g if %G is missing, to avoid an unnecessary parse failure when the ISO and
             // Gregorian years are in different centuries.
             if (_Two_dig_iso_year && _Century && !_Iso_year) {
-                _No_err = _No_err && _Update(_Iso_year, *_Century + *_Two_dig_iso_year);
+                _No_err = _No_err && _Update(_Iso_year, _Compose_year(*_Century, *_Two_dig_iso_year));
             }
 
             return _No_err;
@@ -3590,7 +3600,7 @@ namespace chrono {
 
             if constexpr (_Can_rep_day) {
                 if (_For_time_point) {
-                    const year_month_day _Ymd{year{*_Century + *_Two_dig_year},
+                    const year_month_day _Ymd{year{_Compose_year(*_Century, *_Two_dig_year)},
                         month{static_cast<unsigned int>(*_Month)}, day{static_cast<unsigned int>(*_Day)}};
                     _Result += _CHRONO duration_cast<_DurationType>(static_cast<sys_days>(_Ymd).time_since_epoch());
                 } else if (_Used & _F_doy) {
@@ -3726,7 +3736,7 @@ namespace chrono {
 
         _NODISCARD bool _Make_year(year& _Year_result) {
             if (_Calculate_year_fields() && _Used_fields() == _F_year) {
-                _Year_result = year{*_Century + *_Two_dig_year};
+                _Year_result = year{_Compose_year(*_Century, *_Two_dig_year)};
                 return true;
             } else {
                 return false;
@@ -3735,8 +3745,8 @@ namespace chrono {
 
         _NODISCARD bool _Make_year_month(year_month& _Year_month_result) {
             if (_Calculate_year_fields() && _Used_fields() == (_F_mon | _F_year)) {
-                _Year_month_result =
-                    year_month{year{*_Century + *_Two_dig_year}, month{static_cast<unsigned int>(*_Month)}};
+                _Year_month_result = year_month{
+                    year{_Compose_year(*_Century, *_Two_dig_year)}, month{static_cast<unsigned int>(*_Month)}};
                 return true;
             } else {
                 return false;
@@ -3754,7 +3764,7 @@ namespace chrono {
             }
 
             if (_Consistent && _Test_bits(_Used_fields(), _Required, _Optional)) {
-                _Year_month_day_result = year_month_day{year{*_Century + *_Two_dig_year},
+                _Year_month_day_result = year_month_day{year{_Compose_year(*_Century, *_Two_dig_year)},
                     month{static_cast<unsigned int>(*_Month)}, day{static_cast<unsigned int>(*_Day)}};
                 return true;
             } else {
@@ -5120,17 +5130,16 @@ namespace chrono {
                 _Seconds = static_cast<int>(_Val.seconds().count());
             }
 
-            return {
-                .tm_sec  = _Seconds,
-                .tm_min  = _Minutes,
-                .tm_hour = _Hours,
-                .tm_mday = static_cast<int>(_Day),
-                .tm_mon  = static_cast<int>(_Month) - 1,
-                .tm_year = _Year - 1900,
-                .tm_wday = _Weekday,
-                .tm_yday = _Yearday,
-                .tm_isdst{},
-            };
+            tm _Tm{};
+            _Tm.tm_sec  = _Seconds;
+            _Tm.tm_min  = _Minutes;
+            _Tm.tm_hour = _Hours;
+            _Tm.tm_mday = static_cast<int>(_Day);
+            _Tm.tm_mon  = static_cast<int>(_Month) - 1;
+            _Tm.tm_year = _Year - 1900;
+            _Tm.tm_wday = _Weekday;
+            _Tm.tm_yday = _Yearday;
+            return _Tm;
         }
     }
 
@@ -5457,10 +5466,10 @@ namespace chrono {
         }
 
         template <class _FormatContext, class _Ty>
-        _NODISCARD auto _Write(_FormatContext& _FormatCtx, const _Ty& _Val, const tm& _Time) const {
+        _NODISCARD auto _Write(_FormatContext& _Format_ctx, const _Ty& _Val, const tm& _Time) const {
             basic_ostringstream<_CharT> _Stream;
 
-            _Stream.imbue(_Specs._Localized ? _FormatCtx.locale() : locale::classic());
+            _Stream.imbue(_Specs._Localized ? _Format_ctx.locale() : locale::classic());
             if (_Specs._Chrono_specs_list.empty()) {
                 _Stream << _Val; // N4950 [time.format]/7
             } else {
@@ -5492,7 +5501,7 @@ namespace chrono {
                     if constexpr (is_same_v<_CharT, char>) {
                         if (_Specs._Localized) {
                             wostringstream _Wstream;
-                            _Wstream.imbue(_FormatCtx.locale());
+                            _Wstream.imbue(_Format_ctx.locale());
 
                             wchar_t _Fmt_str[4];
                             _Chrono_spec<wchar_t> _Wspec{._Modifier = _Spec._Modifier, ._Type = _Spec._Type};
@@ -5517,10 +5526,10 @@ namespace chrono {
             auto _Format_specs = _Specs;
             if (_Specs._Dynamic_width_index >= 0) {
                 _Format_specs._Width = _STD _Get_dynamic_specs<_Width_checker>(
-                    _FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
+                    _Format_ctx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
             }
 
-            return _STD _Write_aligned(_STD move(_FormatCtx.out()), _Estimated_width, _Format_specs, _Fmt_align::_Left,
+            return _STD _Write_aligned(_STD move(_Format_ctx.out()), _Estimated_width, _Format_specs, _Fmt_align::_Left,
                 [&](auto _Out) { return _STD _Fmt_write(_STD move(_Out), _Stream.view()); });
         }
 
@@ -5857,8 +5866,8 @@ struct _Fill_tm_formatter {
     }
 
     template <class _FormatContext>
-    auto format(const _Ty& _Val, _FormatContext& _FormatCtx) const {
-        return _Impl._Write(_FormatCtx, _Val, _CHRONO _Fill_tm(_Val));
+    auto format(const _Ty& _Val, _FormatContext& _Format_ctx) const {
+        return _Impl._Write(_Format_ctx, _Val, _CHRONO _Fill_tm(_Val));
     }
 
 private:
@@ -6031,8 +6040,8 @@ struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
     }
 
     template <class _FormatContext>
-    auto format(const _CHRONO sys_time<_Duration>& _Val, _FormatContext& _FormatCtx) const {
-        return _Impl._Write(_FormatCtx, _Val, _CHRONO _Fill_tm(_Val));
+    auto format(const _CHRONO sys_time<_Duration>& _Val, _FormatContext& _Format_ctx) const {
+        return _Impl._Write(_Format_ctx, _Val, _CHRONO _Fill_tm(_Val));
     }
 
 private:
@@ -6051,9 +6060,9 @@ struct formatter<_CHRONO utc_time<_Duration>, _CharT> {
     }
 
     template <class _FormatContext>
-    auto format(const _CHRONO utc_time<_Duration>& _Val, _FormatContext& _FormatCtx) const {
+    auto format(const _CHRONO utc_time<_Duration>& _Val, _FormatContext& _Format_ctx) const {
         const auto _Sys = _CHRONO utc_clock::to_sys(_Val);
-        return _Impl._Write(_FormatCtx, _Val, _CHRONO _Fill_tm(_Sys));
+        return _Impl._Write(_Format_ctx, _Val, _CHRONO _Fill_tm(_Sys));
     }
 
 private:
@@ -6072,12 +6081,12 @@ struct formatter<_CHRONO tai_time<_Duration>, _CharT> {
     }
 
     template <class _FormatContext>
-    auto format(const _CHRONO tai_time<_Duration>& _Val, _FormatContext& _FormatCtx) const {
+    auto format(const _CHRONO tai_time<_Duration>& _Val, _FormatContext& _Format_ctx) const {
         using namespace chrono;
         using _Common = common_type_t<_Duration, days>; // slightly optimize by performing conversion at compile time
         constexpr _Common _Offset{sys_days{year{1970} / January / 1} - sys_days{year{1958} / January / 1}};
         const auto _Sys = sys_time<_Duration>{_Val.time_since_epoch()} - _Offset;
-        return _Impl._Write(_FormatCtx, _Val, _CHRONO _Fill_tm(_Sys));
+        return _Impl._Write(_Format_ctx, _Val, _CHRONO _Fill_tm(_Sys));
     }
 
 private:
@@ -6096,12 +6105,12 @@ struct formatter<_CHRONO gps_time<_Duration>, _CharT> {
     }
 
     template <class _FormatContext>
-    auto format(const _CHRONO gps_time<_Duration>& _Val, _FormatContext& _FormatCtx) const {
+    auto format(const _CHRONO gps_time<_Duration>& _Val, _FormatContext& _Format_ctx) const {
         using namespace chrono;
         using _Common = common_type_t<_Duration, days>; // slightly optimize by performing conversion at compile time
         constexpr _Common _Offset{sys_days{year{1980} / January / Sunday[1]} - sys_days{year{1970} / January / 1}};
         const auto _Sys = sys_time<_Duration>{_Val.time_since_epoch()} + _Offset;
-        return _Impl._Write(_FormatCtx, _Val, _CHRONO _Fill_tm(_Sys));
+        return _Impl._Write(_Format_ctx, _Val, _CHRONO _Fill_tm(_Sys));
     }
 
 private:
@@ -6120,10 +6129,10 @@ struct formatter<_CHRONO file_time<_Duration>, _CharT> {
     }
 
     template <class _FormatContext>
-    auto format(const _CHRONO file_time<_Duration>& _Val, _FormatContext& _FormatCtx) const {
+    auto format(const _CHRONO file_time<_Duration>& _Val, _FormatContext& _Format_ctx) const {
         const auto _Utc = _CHRONO file_clock::to_utc(_Val);
         const auto _Sys = _CHRONO utc_clock::to_sys(_Utc);
-        return _Impl._Write(_FormatCtx, _Utc, _CHRONO _Fill_tm(_Sys));
+        return _Impl._Write(_Format_ctx, _Utc, _CHRONO _Fill_tm(_Sys));
     }
 
 private:
@@ -6156,10 +6165,10 @@ template <class _Duration, class _TimeZonePtr, _Format_supported_charT _CharT>
 struct formatter<_CHRONO zoned_time<_Duration, _TimeZonePtr>, _CharT>
     : formatter<_CHRONO _Local_time_format_t<common_type_t<_Duration, _CHRONO seconds>>, _CharT> {
     template <class _FormatContext>
-    auto format(const _CHRONO zoned_time<_Duration, _TimeZonePtr>& _Val, _FormatContext& _FormatCtx) const {
+    auto format(const _CHRONO zoned_time<_Duration, _TimeZonePtr>& _Val, _FormatContext& _Format_ctx) const {
         using _Mybase    = formatter<_CHRONO _Local_time_format_t<common_type_t<_Duration, _CHRONO seconds>>, _CharT>;
         const auto _Info = _Val.get_info();
-        return _Mybase::format({_Val.get_local_time(), &_Info.abbrev, &_Info.offset}, _FormatCtx);
+        return _Mybase::format({_Val.get_local_time(), &_Info.abbrev, &_Info.offset}, _Format_ctx);
     }
 };
 

@@ -32,7 +32,7 @@ void bm_shuffle(benchmark::State& state) {
     }
 }
 
-void common_args(auto bm) {
+void common_args(benchmark::Benchmark* bm) {
     bm->Arg(1 << 20);
 }
 

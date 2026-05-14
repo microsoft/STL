@@ -16,7 +16,7 @@ int main() {
     // See DevCom-274938, where a customer wanted to read a std::atomic from a read-only memory-mapped file.
     // This was originally implemented with cmpxchg8b on x86 which raised a write access violation.
 
-    // https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-createfilemappingw
+    // https://learn.microsoft.com/windows/win32/api/memoryapi/nf-memoryapi-createfilemappingw
     // "If hFile is INVALID_HANDLE_VALUE, [...] CreateFileMapping creates a file mapping object of a
     // specified size that is backed by the system paging file instead of by a file in the file system."
     // "The initial contents of the pages in a file mapping object

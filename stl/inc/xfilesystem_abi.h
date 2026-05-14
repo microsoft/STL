@@ -107,8 +107,9 @@ struct __std_fs_find_data { // typedef struct _WIN32_FIND_DATAW {
     unsigned long _File_size_high; //     DWORD nFileSizeHigh;
     unsigned long _File_size_low; //     DWORD nFileSizeLow;
 
-    // MSDN: dwReserved0 specifies the reparse point tag if
-    // MSDN:  (dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0
+    // According to https://learn.microsoft.com/windows/win32/api/minwinbase/ns-minwinbase-win32_find_dataw
+    // dwReserved0 specifies the reparse point tag if
+    // (dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0
 
     __std_fs_reparse_tag _Reparse_point_tag; //     DWORD dwReserved0;
     unsigned long _Reserved1; //     DWORD dwReserved1;

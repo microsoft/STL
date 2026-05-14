@@ -2843,9 +2843,9 @@ inline size_t _Get_stable_sort_tree_height(const size_t _Count, const size_t _Hw
     const size_t _Log_ideal_chunks = _Floor_of_log_2(_Ideal_chunks);
 #ifdef _WIN64
     constexpr size_t _Max_tree_height = 62; // to avoid ptrdiff_t overflow
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
+#else // ^^^ 64-bit / 32-bit vvv
     constexpr size_t _Max_tree_height = 30;
-#endif // ^^^ !defined(_WIN64) ^^^
+#endif // ^^^ 32-bit ^^^
     const size_t _Clamped_ideal_chunks = (_STD min) (_Max_tree_height, _Log_ideal_chunks);
 
     // similarly, if _Clamped_ideal_chunks is odd, that would break our 2 to even power invariant,
@@ -3738,7 +3738,7 @@ template <class _Ty>
 struct _Casty_plus {
     // Adds the two arguments together and casts the result back to _Ty.
     // pre: the result from adding the two arguments together can fit in _Ty
-    _NODISCARD _STATIC_CALL_OPERATOR constexpr _Ty operator()(_Ty _Val1, _Ty _Val2) _CONST_CALL_OPERATOR noexcept
+    _NODISCARD static constexpr _Ty operator()(_Ty _Val1, _Ty _Val2) noexcept
     /* terminates */ {
         return static_cast<_Ty>(_Val1 + _Val2);
     }
@@ -5196,7 +5196,7 @@ _FwdIt2 adjacent_difference(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, 
 
 template <class _Ty>
 struct _Inplace_destroy_fn {
-    _STATIC_CALL_OPERATOR void operator()(_Ty& _Obj) _CONST_CALL_OPERATOR noexcept {
+    static void operator()(_Ty& _Obj) noexcept {
         _STD _Destroy_in_place(_Obj);
     }
 };
@@ -5232,8 +5232,7 @@ _NoThrowFwdIt destroy_n(_ExPo&& _Exec, _NoThrowFwdIt _First, const _Diff _Count_
 
 template <class _Ty>
 struct _Inplace_default_construct_fn {
-    _STATIC_CALL_OPERATOR void operator()(_Ty& _Obj) _CONST_CALL_OPERATOR
-        noexcept(is_nothrow_default_constructible_v<_Ty>) {
+    static void operator()(_Ty& _Obj) noexcept(is_nothrow_default_constructible_v<_Ty>) {
         _STD _Default_construct_in_place(_Obj);
     }
 };
@@ -5271,8 +5270,7 @@ _NoThrowFwdIt uninitialized_default_construct_n(_ExPo&& _Exec, _NoThrowFwdIt _Fi
 
 template <class _Ty>
 struct _Inplace_value_construct_fn {
-    _STATIC_CALL_OPERATOR void operator()(_Ty& _Obj) _CONST_CALL_OPERATOR
-        noexcept(is_nothrow_default_constructible_v<_Ty>) {
+    static void operator()(_Ty& _Obj) noexcept(is_nothrow_default_constructible_v<_Ty>) {
         _STD _Construct_in_place(_Obj);
     }
 };

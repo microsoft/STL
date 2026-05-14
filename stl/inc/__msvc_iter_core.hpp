@@ -289,11 +289,7 @@ struct _Iter_traits_category4<false> {
 
 template <class _It>
 concept _Cpp17_random_delta =
-#if defined(__CUDACC__) && !defined(__clang__) // TRANSITION, fixed in CUDA 12.5
-    totally_ordered<_It> && requires(_It __i, typename incrementable_traits<_It>::difference_type __n) {
-#else // ^^^ workaround / no workaround vvv
     totally_ordered<_It> && requires(_It __i, incrementable_traits<_It>::difference_type __n) {
-#endif // ^^^ no workaround ^^^
         { __i += __n } -> same_as<_It&>;
         { __i -= __n } -> same_as<_It&>;
         { __i + __n } -> same_as<_It>;
@@ -410,7 +406,8 @@ concept input_or_output_iterator = requires(_It __i) {
 } && weakly_incrementable<_It>;
 
 _EXPORT_STD template <class _Se, class _It>
-concept sentinel_for = semiregular<_Se> && input_or_output_iterator<_It> && _Weakly_equality_comparable_with<_Se, _It>;
+concept sentinel_for = semiregular<_Se> && !_Integer_like<_Se> && input_or_output_iterator<_It>
+                    && _Weakly_equality_comparable_with<_Se, _It>;
 
 _EXPORT_STD template <class _Se, class _It> // specializations allowed by N5014 [iterator.concept.sizedsentinel]/3
 constexpr bool disable_sized_sentinel_for = false;
@@ -506,6 +503,9 @@ struct iterator_traits<_Ty*> : _Iterator_traits_pointer_base<_Ty> {}; // get tra
 
 template <class _Ty>
 constexpr bool _Integer_like = _Is_nonbool_integral<_Ty>;
+
+template <class _Ty>
+constexpr bool _Signed_integer_like = _Integer_like<_Ty> && is_signed_v<_Ty>;
 #endif // ^^^ !_HAS_CXX20 ^^^
 
 _INLINE_VAR constexpr auto _Meta_npos = ~size_t{0};

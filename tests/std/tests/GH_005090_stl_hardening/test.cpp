@@ -583,13 +583,11 @@ void test_mdspan_ctor_other() {
     mdspan<const char, extents<int, 3, 4>> md{other};
 }
 
-#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
 void test_mdspan_subscript_multidim() {
     const auto str{"HissMeowPurr"};
     const mdspan<const char, extents<int, 3, 4>> md{str, 3, 4};
     (void) md[1, 4];
 }
-#endif // ^^^ defined(__cpp_multidimensional_subscript) ^^^
 
 void test_mdspan_subscript_array() {
     const auto str{"HissMeowPurr"};
@@ -732,9 +730,7 @@ int main(int argc, char* argv[]) {
         test_expected_void_error_rvalue,
         test_expected_void_error_rvalue_const,
         test_mdspan_ctor_other,
-#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
         test_mdspan_subscript_multidim,
-#endif // ^^^ defined(__cpp_multidimensional_subscript) ^^^
         test_mdspan_subscript_array,
         test_mdspan_subscript_span,
         test_stacktrace_current,

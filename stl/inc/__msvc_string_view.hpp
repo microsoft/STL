@@ -2148,6 +2148,12 @@ inline namespace literals {
     } // namespace string_view_literals
 } // namespace literals
 #endif // _HAS_CXX17
+
+#if _HAS_CXX23
+template <class _Elem, class _Traits>
+constexpr bool _Equivalence_is_equality_impl<basic_string_view<_Elem, _Traits>> =
+    _Is_implementation_handled_char_traits<_Traits>;
+#endif // _HAS_CXX23
 _STD_END
 
 #pragma pop_macro("new")

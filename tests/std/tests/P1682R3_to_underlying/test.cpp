@@ -7,14 +7,8 @@
 
 using namespace std;
 
-// TRANSITION, GH-602
-// template <class T>
-// constexpr bool can_underlying = requires(T e) { to_underlying(e); };
-
-template <class, class = void>
-constexpr bool can_underlying = false;
 template <class T>
-constexpr bool can_underlying<T, void_t<decltype(to_underlying(declval<T>()))>> = true;
+concept can_underlying = requires(T e) { to_underlying(e); };
 
 enum enum1 : char { a = '1' };
 enum class enum2 : int { b = 2 };

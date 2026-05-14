@@ -572,7 +572,8 @@ public:
               && conjunction_v<is_convertible<_IndexTypes, index_type>...,
                   is_nothrow_constructible<index_type, _IndexTypes>...>
     _NODISCARD constexpr index_type operator()(_IndexTypes... _Indices) const noexcept {
-        return _Index_impl(make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...);
+        return _Index_impl(
+            make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_STD move(_Indices))...);
     }
 
     _NODISCARD static constexpr bool is_always_unique() noexcept {
@@ -727,7 +728,8 @@ public:
               && conjunction_v<is_convertible<_IndexTypes, index_type>...,
                   is_nothrow_constructible<index_type, _IndexTypes>...>
     _NODISCARD constexpr index_type operator()(_IndexTypes... _Indices) const noexcept {
-        return _Index_impl(make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...);
+        return _Index_impl(
+            make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_STD move(_Indices))...);
     }
 
     _NODISCARD static constexpr bool is_always_unique() noexcept {
@@ -975,7 +977,8 @@ public:
               && conjunction_v<is_convertible<_IndexTypes, index_type>...,
                   is_nothrow_constructible<index_type, _IndexTypes>...>
     _NODISCARD constexpr index_type operator()(_IndexTypes... _Indices) const noexcept {
-        return _Index_impl(make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_Indices)...);
+        return _Index_impl(
+            make_index_sequence<extents_type::rank()>{}, static_cast<index_type>(_STD move(_Indices))...);
     }
 
     _NODISCARD static constexpr bool is_always_unique() noexcept {
@@ -1257,6 +1260,8 @@ private:
     static_assert(
         sizeof(element_type) > 0, "ElementType must be a complete type (N4950 [mdspan.mdspan.overview]/2.1).");
     static_assert(
+        is_object_v<element_type>, "ElementType must be an object type (N5032 [mdspan.mdspan.overview]/2.1).");
+    static_assert(
         !is_abstract_v<element_type>, "ElementType cannot be an abstract type (N4950 [mdspan.mdspan.overview]/2.1).");
     static_assert(
         !is_array_v<element_type>, "ElementType cannot be an array type (N4950 [mdspan.mdspan.overview]/2.1).");
@@ -1373,7 +1378,6 @@ public:
     constexpr mdspan& operator=(const mdspan&) = default;
     constexpr mdspan& operator=(mdspan&&)      = default;
 
-#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
     template <class... _OtherIndexTypes>
         requires conjunction_v<is_convertible<_OtherIndexTypes, index_type>...,
                      is_nothrow_constructible<index_type, _OtherIndexTypes>...>
@@ -1386,7 +1390,6 @@ public:
         return _Access_impl(static_cast<index_type>(_STD move(_Indices))...);
 #endif // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^
     }
-#endif // ^^^ defined(__cpp_multidimensional_subscript) ^^^
 
 private:
     template <class _OtherIndexType, size_t... _Seq>
@@ -1552,7 +1555,7 @@ mdspan(_ElementType*, const _MappingType&)
     -> mdspan<_ElementType, typename _MappingType::extents_type, typename _MappingType::layout_type>;
 
 template <class _MappingType, class _AccessorType>
-mdspan(const typename _AccessorType::data_handle_type&, const _MappingType&, const _AccessorType&)
+mdspan(typename _AccessorType::data_handle_type, const _MappingType&, const _AccessorType&)
     -> mdspan<typename _AccessorType::element_type, typename _MappingType::extents_type,
         typename _MappingType::layout_type, _AccessorType>;
 

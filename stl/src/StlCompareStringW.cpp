@@ -14,10 +14,9 @@
 //
 // Entry:
 //   LPCWSTR  LocaleName  - locale context for the comparison.
-//   DWORD    dwCmpFlags  - see https://aka.ms/stl/comparestringex
+//   DWORD    dwCmpFlags  - https://learn.microsoft.com/windows/win32/api/stringapiset/nf-stringapiset-comparestringex
 //   LPCWSTR  lpStringn   - wide string to be compared
-//   int      cchCountn   - wide char (word) count (NOT including null terminator)
-//                        (-1 if null terminated)
+//   int      cchCountn   - wide char (word) count (NOT including null terminator) (-1 if null terminated)
 //
 // Exit:
 //   Success: 1 - if lpString1 <  lpString2

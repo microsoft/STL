@@ -32,7 +32,7 @@ void bm_lorem_search(benchmark::State& state, const char* pattern, syntax_option
     }
 }
 
-void common_args(auto bm) {
+void common_args(benchmark::Benchmark* bm) {
     bm->Arg(2)->Arg(3)->Arg(4);
 }
 
@@ -47,5 +47,8 @@ BENCHMARK_CAPTURE(bm_lorem_search, R"(\Bibe)", R"(\Bibe)")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_lorem_search, R"((?=....)bibe)", R"((?=....)bibe)")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_lorem_search, R"((?=bibe)....)", R"((?=bibe)....)")->Apply(common_args);
 BENCHMARK_CAPTURE(bm_lorem_search, R"((?!lorem)bibe)", R"((?!lorem)bibe)")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_lorem_search, "(bibe|soda)", "(bibe|soda)")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_lorem_search, "(id )?bibe", "(id )?bibe")->Apply(common_args);
+BENCHMARK_CAPTURE(bm_lorem_search, ".bibe", ".bibe")->Apply(common_args);
 
 BENCHMARK_MAIN();

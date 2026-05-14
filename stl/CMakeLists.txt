@@ -10,6 +10,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_bit_utils.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_chrono.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_cxx_stdatomic.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_doom_core.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_filebuf.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_format_ucd_tables.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_formatter.hpp
@@ -76,6 +77,8 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/generator
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/resumable
     ${CMAKE_CURRENT_LIST_DIR}/inc/filesystem
+    ${CMAKE_CURRENT_LIST_DIR}/inc/flat_map
+    ${CMAKE_CURRENT_LIST_DIR}/inc/flat_set
     ${CMAKE_CURRENT_LIST_DIR}/inc/format
     ${CMAKE_CURRENT_LIST_DIR}/inc/forward_list
     ${CMAKE_CURRENT_LIST_DIR}/inc/fstream
@@ -284,13 +287,6 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/xdateord.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xdtest.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xexp.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfcosh.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfdnorm.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfdscale.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfdtest.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xferaise.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfexp.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfsinh.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xgetwctype.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlgamma.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlocale.cpp

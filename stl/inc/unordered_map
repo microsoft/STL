@@ -495,9 +495,8 @@ unordered_map(initializer_list<pair<_Kty, _Ty>>, _Guide_size_type_t<_Alloc>, _Ha
 
 #if _HAS_CXX23
 template <_RANGES input_range _Rng, _Hasher_for_container _Hasher = hash<_Range_key_type<_Rng>>,
-    class _Keyeq                    = equal_to<_Range_key_type<_Rng>>,
-    _Allocator_for_container _Alloc = allocator<_Range_to_alloc_type<_Rng>>>
-    requires (!_Allocator_for_container<_Keyeq>)
+    _Not_allocator_for_container _Keyeq = equal_to<_Range_key_type<_Rng>>,
+    _Allocator_for_container _Alloc     = allocator<_Range_to_alloc_type<_Rng>>>
 unordered_map(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(),
     _Alloc = _Alloc()) -> unordered_map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Hasher, _Keyeq, _Alloc>;
 
@@ -865,9 +864,8 @@ unordered_multimap(initializer_list<pair<_Kty, _Ty>>, _Guide_size_type_t<_Alloc>
 
 #if _HAS_CXX23
 template <_RANGES input_range _Rng, _Hasher_for_container _Hasher = hash<_Range_key_type<_Rng>>,
-    class _Keyeq                    = equal_to<_Range_key_type<_Rng>>,
-    _Allocator_for_container _Alloc = allocator<_Range_to_alloc_type<_Rng>>>
-    requires (!_Allocator_for_container<_Keyeq>)
+    _Not_allocator_for_container _Keyeq = equal_to<_Range_key_type<_Rng>>,
+    _Allocator_for_container _Alloc     = allocator<_Range_to_alloc_type<_Rng>>>
 unordered_multimap(from_range_t, _Rng&&, _Guide_size_type_t<_Alloc> = 0, _Hasher = _Hasher(), _Keyeq = _Keyeq(),
     _Alloc = _Alloc()) -> unordered_multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Hasher, _Keyeq, _Alloc>;
 

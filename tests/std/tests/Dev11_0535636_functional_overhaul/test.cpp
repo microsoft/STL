@@ -702,12 +702,7 @@ constexpr int quadruple(int n) {
     return n * 4;
 }
 
-// separate constexpr and non-constexpr functions are TRANSITION, CWG-1129
-int square(int n) {
-    return n * n;
-}
-
-constexpr int square_constexpr(int n) {
+constexpr int square(int n) {
     return n * n;
 }
 
@@ -715,11 +710,7 @@ int square_noexcept(int n) noexcept {
     return n * n;
 }
 
-int cube(int n) {
-    return n * n * n;
-}
-
-constexpr int cube_constexpr(int n) {
+constexpr int cube(int n) {
     return n * n * n;
 }
 
@@ -1069,8 +1060,8 @@ constexpr bool test_invoke_constexpr() {
 #endif // _HAS_CXX20
     assert(invoke(&Thing::sum, p, 5) == 1025);
 
-    assert(invoke(square_constexpr, 6) == 36);
-    assert(invoke(&cube_constexpr, 7) == 343);
+    assert(invoke(square, 6) == 36);
+    assert(invoke(&cube, 7) == 343);
     return true;
 }
 

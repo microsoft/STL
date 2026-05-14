@@ -20,6 +20,7 @@
 #include <concepts>
 #include <cstddef>
 #include <cstring>
+#include <flat_set>
 #include <format>
 #include <iterator>
 #include <ranges>
@@ -329,7 +330,7 @@ void test_char_default(TestFunction check, ExceptionTest check_exception) {
 // This does not seem very useful, but it is allowed.
 template <class CharT, class TestFunction, class ExceptionTest>
 void test_char_string(TestFunction check, [[maybe_unused]] ExceptionTest check_exception) {
-    set input{CharT('a'), CharT('c'), CharT('b')}; // input not sorted.
+    flat_set input{CharT('a'), CharT('c'), CharT('b')}; // input not sorted.
 
     check(SV("abc"), SV("{:s}"), input);
 
@@ -454,7 +455,7 @@ void test_char(TestFunction check, ExceptionTest check_exception) {
 
 template <class TestFunction, class ExceptionTest>
 void test_char_to_wchar(TestFunction check, ExceptionTest check_exception) {
-    set input{'a', 'c', 'b'}; // input not sorted.
+    flat_set input{'a', 'c', 'b'}; // input not sorted.
 
     using CharT = wchar_t;
 
@@ -901,6 +902,8 @@ template <class CharT, class TestFunction, class ExceptionTest>
 void test_int(TestFunction check, ExceptionTest check_exception) {
     test_int<CharT>(check, check_exception, set{1, 42, 2, -42}); // unsorted
     test_int<CharT>(check, check_exception, multiset{1, 42, 2, -42}); // unsorted
+    test_int<CharT>(check, check_exception, flat_set{1, 42, 2, -42}); // unsorted
+    test_int<CharT>(check, check_exception, flat_multiset{1, 42, 2, -42}); // unsorted
 }
 
 //
@@ -1025,6 +1028,9 @@ void test_floating_point(TestFunction check, ExceptionTest check_exception) {
     test_floating_point<CharT>(check, check_exception, set{-42.5f, 0.0f, 1.25f, 42.5f});
     test_floating_point<CharT>(check, check_exception, multiset{-42.5, 0.0, 1.25, 42.5});
     test_floating_point<CharT>(check, check_exception, set{-42.5l, 0.0l, 1.25l, 42.5l});
+    test_floating_point<CharT>(check, check_exception, flat_set{-42.5f, 0.0f, 1.25f, 42.5f});
+    test_floating_point<CharT>(check, check_exception, flat_multiset{-42.5, 0.0, 1.25, 42.5});
+    test_floating_point<CharT>(check, check_exception, flat_set{-42.5l, 0.0l, 1.25l, 42.5l});
 }
 
 //
@@ -1248,6 +1254,8 @@ template <class CharT, class TestFunction, class ExceptionTest>
 void test_string(TestFunction check, ExceptionTest check_exception) {
     test_string<CharT>(check, check_exception, set{STR("Hello"), STR("world")});
     test_string<CharT>(check, check_exception, set{SV("Hello"), SV("world")});
+    test_string<CharT>(check, check_exception, flat_set{STR("Hello"), STR("world")});
+    test_string<CharT>(check, check_exception, flat_set{SV("Hello"), SV("world")});
 }
 
 //
@@ -1440,6 +1448,8 @@ template <class CharT, class TestFunction, class ExceptionTest>
 void test_pair_tuple(TestFunction check, ExceptionTest check_exception) {
     test_pair_tuple<CharT>(check, check_exception, set{make_pair(1, CharT('a')), make_pair(42, CharT('*'))});
     test_pair_tuple<CharT>(check, check_exception, set{make_tuple(1, CharT('a')), make_tuple(42, CharT('*'))});
+    test_pair_tuple<CharT>(check, check_exception, flat_set{make_pair(1, CharT('a')), make_pair(42, CharT('*'))});
+    test_pair_tuple<CharT>(check, check_exception, flat_set{make_tuple(1, CharT('a')), make_tuple(42, CharT('*'))});
 }
 
 //
@@ -1558,7 +1568,7 @@ void test_tuple_int(TestFunction check, ExceptionTest check_exception) {
 
 template <class CharT, class TestFunction, class ExceptionTest>
 void test_tuple_int_int_int(TestFunction check, ExceptionTest check_exception) {
-    set input{make_tuple(42, 99, 0), make_tuple(1, 10, 100)}; // unordered
+    flat_set input{make_tuple(42, 99, 0), make_tuple(1, 10, 100)}; // unsorted
 
     check(SV("{(1, 10, 100), (42, 99, 0)}"), SV("{}"), input);
     check(SV("{(1, 10, 100), (42, 99, 0)}^42"), SV("{}^42"), input);

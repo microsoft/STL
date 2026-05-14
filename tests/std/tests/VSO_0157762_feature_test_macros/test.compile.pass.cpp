@@ -349,6 +349,18 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #error __cpp_lib_filesystem is defined
 #endif
 
+#if _HAS_CXX23
+STATIC_ASSERT(__cpp_lib_flat_map == 202511L);
+#elif defined(__cpp_lib_flat_map)
+#error __cpp_lib_flat_map is defined
+#endif
+
+#if _HAS_CXX23
+STATIC_ASSERT(__cpp_lib_flat_set == 202511L);
+#elif defined(__cpp_lib_flat_set)
+#error __cpp_lib_flat_set is defined
+#endif
+
 #if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_format == 202304L);
 #elif defined(__cpp_lib_format)
@@ -491,6 +503,8 @@ STATIC_ASSERT(__cpp_lib_hypot == 201603L);
 
 STATIC_ASSERT(__cpp_lib_incomplete_container_elements == 201505L);
 
+STATIC_ASSERT(__cpp_lib_initializer_list == 202511L);
+
 #if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_int_pow2 == 202002L);
 #elif defined(__cpp_lib_int_pow2)
@@ -541,7 +555,7 @@ STATIC_ASSERT(__cpp_lib_is_constant_evaluated == 201811L);
 
 STATIC_ASSERT(__cpp_lib_is_final == 201402L);
 
-#if _HAS_CXX23 && defined(__clang__) // TRANSITION, GH-5738 tracking VSO-2581622 (MSVC) and VSO-2581623 (EDG)
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_is_implicit_lifetime == 202302L);
 #elif defined(__cpp_lib_is_implicit_lifetime)
 #error __cpp_lib_is_implicit_lifetime is defined
@@ -833,7 +847,7 @@ STATIC_ASSERT(__cpp_lib_raw_memory_algorithms == 201606L);
 #error __cpp_lib_raw_memory_algorithms is defined
 #endif
 
-#if _HAS_CXX23 && defined(__clang__) // TRANSITION, MSVC and EDG haven't implemented intrinsics needed for P2255R2.
+#if _HAS_CXX23
 STATIC_ASSERT(__cpp_lib_reference_from_temporary == 202202L);
 #elif defined(__cpp_lib_reference_from_temporary)
 #error __cpp_lib_reference_from_temporary is defined
@@ -929,6 +943,12 @@ STATIC_ASSERT(__cpp_lib_ssize == 201902L);
 STATIC_ASSERT(__cpp_lib_stacktrace == 202011L);
 #elif defined(__cpp_lib_stacktrace)
 #error __cpp_lib_stacktrace is defined
+#endif
+
+#if _HAS_CXX23 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-6169 tracking LLVM-105234 and VSO-2846756
+STATIC_ASSERT(__cpp_lib_start_lifetime_as == 202207L);
+#elif defined(__cpp_lib_start_lifetime_as)
+#error __cpp_lib_start_lifetime_as is defined
 #endif
 
 #if _HAS_CXX20
@@ -1036,6 +1056,8 @@ STATIC_ASSERT(__cpp_lib_unwrap_ref == 201811L);
 #elif defined(__cpp_lib_unwrap_ref)
 #error __cpp_lib_unwrap_ref is defined
 #endif
+
+STATIC_ASSERT(__cpp_lib_valarray == 202511L);
 
 #if _HAS_CXX20
 STATIC_ASSERT(__cpp_lib_variant == 202106L);

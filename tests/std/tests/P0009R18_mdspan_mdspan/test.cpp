@@ -840,7 +840,6 @@ constexpr void check_defaulted_copy_and_move_assignment_operators() {
     }
 }
 
-#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
 template <class Mds, class... IndexTypes>
 concept CanCallMultidimSubscriptOp = requires(const Mds& mds, IndexTypes... indices) {
     { mds[indices...] } -> same_as<typename Mds::reference>;
@@ -926,7 +925,6 @@ constexpr void check_multidimensional_subscript_operator() {
         assert((mds[i, i, move(i)] == 1));
     }
 }
-#endif // __cpp_multidimensional_subscript
 
 template <class Mds, class IndexType, size_t Rank = Mds::rank()>
 concept CanCallSubscriptOp = requires(const Mds& mds, span<IndexType, Rank> s, const array<IndexType, Rank>& a) {
@@ -1331,10 +1329,18 @@ constexpr void check_deduction_guides() {
         static_assert(same_as<decltype(mds2), mdspan<const long, dextents<int, 3>, layout_stride>>);
     }
 
-    { // const typename AccessorType::data_handle_type&, const MappingType&, const AccessorType&
+    { // typename AccessorType::data_handle_type, const MappingType&, const AccessorType&
         vector<bool> bools = {true, false, true, false};
         mdspan mds{bools.begin(), TrackingLayout<>::mapping<extents<int, 2, 2>>(1), VectorBoolAccessor{}};
         static_assert(same_as<decltype(mds), mdspan<bool, extents<int, 2, 2>, TrackingLayout<>, VectorBoolAccessor>>);
+    }
+
+    if !consteval { // typename AccessorType::data_handle_type, const MappingType&, const AccessorType&
+        // (with volatile data_handle_type, per LWG-4511)
+        int a[1]{};
+        int* volatile p = a;
+        mdspan mds{p, layout_right::mapping<extents<size_t, 1>>{}, default_accessor<int>{}};
+        static_assert(same_as<decltype(mds), mdspan<int, extents<size_t, 1>>>);
     }
 }
 
@@ -1356,9 +1362,7 @@ constexpr bool test() {
     check_data_handle_and_mapping_and_accessor_constructor();
     check_construction_from_other_mdspan();
     check_defaulted_copy_and_move_assignment_operators();
-#ifdef __cpp_multidimensional_subscript // TRANSITION, P2128R6
     check_multidimensional_subscript_operator();
-#endif // __cpp_multidimensional_subscript
     check_span_array_subscript_operator();
     check_size();
     check_empty();

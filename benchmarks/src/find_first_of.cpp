@@ -81,7 +81,7 @@ void bm(benchmark::State& state) {
     }
 }
 
-void common_args(auto bm) {
+void common_args(benchmark::Benchmark* bm) {
     bm->Args({2, 3})->Args({6, 81})->Args({7, 4})->Args({9, 3})->Args({22, 5})->Args({58, 2});
     bm->Args({75, 85})->Args({102, 4})->Args({200, 46})->Args({325, 1})->Args({400, 50});
     bm->Args({1011, 11})->Args({1280, 46})->Args({1502, 23})->Args({2203, 54})->Args({3056, 7});

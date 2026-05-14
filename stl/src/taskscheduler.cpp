@@ -34,20 +34,12 @@ namespace Concurrency {
             // the DLL in which the callback is located.
 
             HMODULE _Call_get_module_handle_ex(DWORD _Flags, LPCWSTR _Addr) {
-#if defined(_CRT_APP)
-                // We can't call GetModuleHandleExW from an app context, so treat
-                // that as a failure to call.
-                (void) _Flags;
-                (void) _Addr;
-                return nullptr;
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
                 HMODULE _Result;
                 if (!GetModuleHandleExW(_Flags, _Addr, &_Result)) {
                     return nullptr;
                 }
 
                 return _Result;
-#endif // defined(_CRT_APP)
             }
 
             enum class _STL_host_status { _Exe, _Dll, _Unknown };

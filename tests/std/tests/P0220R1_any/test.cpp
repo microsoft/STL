@@ -26,6 +26,10 @@
 // Yes, this is an awkward hand process; notably the required headers can change without notice. We should investigate
 // running the libc++ tests directly in all of our configurations so we needn't replicate this subset of files.
 
+#if !defined(__cpp_aligned_new)
+#error This test relies on libc++ machinery which assumes overaligned allocation support since C++17
+#endif
+
 #define _LIBCXX_IN_DEVCRT
 #include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers
 #include <stdlib.h>
@@ -1040,6 +1044,7 @@ int run_test()
 
 #include <any>
 #include <cassert>
+#include <type_traits>
 
 #include "any_helpers.h"
 #include "count_new.h"
@@ -1160,6 +1165,24 @@ void test_sfinae_constraints() {
     }
 }
 
+// https://llvm.org/PR176877
+// Avoid constraint meta-recursion for a type both convertible from and to std::any.
+template <class T, bool = std::is_copy_constructible<T>::value>
+void test_default_template_argument_is_copy_constructible(T) {}
+
+template <class T, bool = std::is_copy_constructible_v<T>>
+void test_default_template_argument_is_copy_constructible_v(T) {}
+
+void test_no_constraint_recursion() {
+  struct ConvertibleFromAndToAny {
+    ConvertibleFromAndToAny(std::any) {}
+  };
+
+  ConvertibleFromAndToAny src = std::any{};
+  test_default_template_argument_is_copy_constructible(src);
+  test_default_template_argument_is_copy_constructible_v(src);
+}
+
 int run_test() {
     test_copy_move_value<small>();
     test_copy_move_value<large>();
@@ -1167,8 +1190,9 @@ int run_test() {
     test_copy_value_throws<large_throws_on_copy>();
     test_move_value_throws();
     test_sfinae_constraints();
+    test_no_constraint_recursion();
 
-  return 0;
+    return 0;
 }
 } // namespace ctor::value
 // -- END: test/std/utilities/any/any.class/any.cons/value.pass.cpp

@@ -15,6 +15,8 @@ void test_escaped_string() {
     assert(format("{:?}", "\xEB!") == "\"\\x{eb}!\"");
 
     assert(format("{:?}", "\x81\x40\x40\x81") == "\"\\u{3000}\x40\\x{81}\"");
+
+    assert(format("{:?}", "\xFC\x4B") == "\"\u9ED1\"");
 }
 
 template <class TupleOrPair>

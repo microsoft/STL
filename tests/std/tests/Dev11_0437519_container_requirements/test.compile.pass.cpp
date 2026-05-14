@@ -13,7 +13,7 @@
 // A brief overview of the contents of this file:
 //
 // The first 650 lines or so of this file (everything up to the first use of DEFINE_TEST) are test
-// utilities:  stub allocators, comparers, and other kinds of types with which we can instantiate
+// utilities:  stub allocators, comparators, and other kinds of types with which we can instantiate
 // containers; test types that define a restricted set of operations; and a set of container traits
 // classes that unify the interfaces for the containers so we can use a common set of tests for
 // them (these traits also define a few useful properties for each container so we know what to
@@ -1678,7 +1678,7 @@ NOT_SUPPORTED_SPECIALIZATION(test_ordered_associative_typedefs_for_maps, tag_mul
 NOT_SUPPORTED_SPECIALIZATION(test_ordered_associative_typedefs_for_maps, tag_set);
 
 
-DEFINE_TEST(test_ordered_associative_default_constructor_with_comparer,
+DEFINE_TEST(test_ordered_associative_default_constructor_with_comparator,
 {
     // X(c) and X a(c);
     // Requires:  key_compare is CopyConstructible
@@ -1710,13 +1710,13 @@ DEFINE_TEST(test_ordered_associative_default_constructor_with_comparer,
 });
 
 
-DEFINE_TEST(test_ordered_associative_range_constructor_with_comparer, {
+DEFINE_TEST(test_ordered_associative_range_constructor_with_comparator, {
     // SPEC:  These are the only two operations for which traits are specified for key_compare, but
     // there are many other operations for which key_compare must meet other requirements (e.g. a
     // call to a.key_comp() necessitates that the key_comp type is move constructible.
     //
-    // In the rest of the tests, I have assumed std::less for the comparer, which meets any possible
-    // requirements, but it should be considered whether the comparer requirements should be more
+    // In the rest of the tests, I have assumed std::less for the comparator, which meets any possible
+    // requirements, but it should be considered whether the comparator requirements should be more
     // thoroughly specified.
 
     std::move_iterator<input_iterator<typename Traits::emplace_argument_type>> i;
@@ -1746,7 +1746,7 @@ DEFINE_TEST(test_ordered_associative_initializer_list_assign, {
 });
 
 
-DEFINE_TEST(test_ordered_associative_comparers, {
+DEFINE_TEST(test_ordered_associative_comparators, {
     // a.key_comp()
     // [No Requires clause]
     c_of_erasable const a;
@@ -1926,10 +1926,10 @@ struct check_all_ordered_associative_requirements {
     check_all_ordered_associative_requirements() {
         test_ordered_associative_typedefs<Tag>();
         test_ordered_associative_typedefs_for_maps<Tag>();
-        test_ordered_associative_default_constructor_with_comparer<Tag>();
-        test_ordered_associative_range_constructor_with_comparer<Tag>();
+        test_ordered_associative_default_constructor_with_comparator<Tag>();
+        test_ordered_associative_range_constructor_with_comparator<Tag>();
         test_ordered_associative_initializer_list_assign<Tag>();
-        test_ordered_associative_comparers<Tag>();
+        test_ordered_associative_comparators<Tag>();
         test_ordered_associative_emplace<Tag>();
         test_ordered_associative_insert<Tag>();
         test_ordered_associative_erase<Tag>();

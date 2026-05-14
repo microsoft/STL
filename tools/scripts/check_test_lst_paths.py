@@ -40,27 +40,27 @@ if __name__ == "__main__":
 
     missing_tests = existing_tests - commented_tests - unique_tests
 
-    nonexistent_tests = [str for str in unique_tests if not is_nonempty_dir(absolute_base / str)]
+    nonexistent_tests = [s for s in unique_tests if not is_nonempty_dir(absolute_base / s)]
 
     failed = False
 
     if duplicate_tests:
         failed = True
         print(f"Failure: {relative_test_lst} contains {len(duplicate_tests)} duplicate tests:", file=sys.stderr)
-        for str in sorted(duplicate_tests):
-            print(f"{str}", file=sys.stderr)
+        for s in sorted(duplicate_tests):
+            print(f"{s}", file=sys.stderr)
 
     if missing_tests:
         failed = True
         print(f"Failure: {relative_test_lst} is missing {len(missing_tests)} tests:", file=sys.stderr)
-        for str in sorted(missing_tests):
-            print(f"{str}", file=sys.stderr)
+        for s in sorted(missing_tests):
+            print(f"{s}", file=sys.stderr)
 
     if nonexistent_tests:
         failed = True
         print(f"Failure: {relative_test_lst} contains {len(nonexistent_tests)} nonexistent tests:", file=sys.stderr)
-        for str in sorted(nonexistent_tests):
-            print(f"{str}", file=sys.stderr)
+        for s in sorted(nonexistent_tests):
+            print(f"{s}", file=sys.stderr)
 
     for i in range(len(filtered_lines) - 1): # If filtered_lines is empty, range(-1) is empty.
         if filtered_lines[i] > filtered_lines[i + 1]: # Use greater-than to avoid reporting adjacent duplicates.

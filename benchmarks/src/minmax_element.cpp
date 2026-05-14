@@ -57,7 +57,7 @@ void bm(benchmark::State& state) {
 }
 
 template <size_t ElementSize>
-void common_arg(auto bm) {
+void common_arg(benchmark::Benchmark* bm) {
     bm->Arg(8021);
     // AVX tail tests
     bm->Arg(63 / ElementSize);

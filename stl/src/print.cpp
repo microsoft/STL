@@ -23,7 +23,7 @@ extern "C" {
     const int _Fd = _fileno(_Stream);
 
     if (_Fd == -2) {
-        // According to https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/fileno?view=msvc-170 ,
+        // According to https://learn.microsoft.com/cpp/c-runtime-library/reference/fileno ,
         // _fileno() returns -2 if _Stream refers to either stdout or stderr and there is no associated output stream.
         // In that case, there is also no associated console HANDLE. (We haven't observed this happening in practice.)
         return __std_unicode_console_retrieval_result{._Error = __std_win_error::_Not_supported};

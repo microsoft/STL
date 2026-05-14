@@ -994,7 +994,7 @@ struct check_all_optional_sequence_requirements<Tag, false> {};
 //
 //
 
-DEFINE_TEST(test_ordered_associative_default_constructor_with_comparer,
+DEFINE_TEST(test_ordered_associative_default_constructor_with_comparator,
 {
     // X(c) and X a(c);
     // Requires:  key_compare is CopyConstructible
@@ -1022,13 +1022,13 @@ DEFINE_TEST(test_ordered_associative_default_constructor_with_comparer,
 });
 
 
-DEFINE_TEST(test_ordered_associative_range_constructor_with_comparer, {
+DEFINE_TEST(test_ordered_associative_range_constructor_with_comparator, {
     // SPEC:  These are the only two operations for which traits are specified for key_compare, but
     // there are many other operations for which key_compare must meet other requirements (e.g. a
     // call to a.key_comp() necessitates that the key_comp type is move constructible.
     //
-    // In the rest of the tests, I have assumed std::less for the comparer, which meets any possible
-    // requirements, but it should be considered whether the comparer requirements should be more
+    // In the rest of the tests, I have assumed std::less for the comparator, which meets any possible
+    // requirements, but it should be considered whether the comparator requirements should be more
     // thoroughly specified.
 
     std::move_iterator<typename Traits::emplace_argument_type*> i;
@@ -1076,8 +1076,8 @@ DEFINE_TEST(test_ordered_associative_insert, {
 template <container_tag Tag, bool = (container_traits<Tag>::features & c_is_ordered_associative) != 0>
 struct check_all_ordered_associative_requirements {
     check_all_ordered_associative_requirements() {
-        test_ordered_associative_default_constructor_with_comparer<Tag>();
-        test_ordered_associative_range_constructor_with_comparer<Tag>();
+        test_ordered_associative_default_constructor_with_comparator<Tag>();
+        test_ordered_associative_range_constructor_with_comparator<Tag>();
         test_ordered_associative_emplace<Tag>();
         test_ordered_associative_insert<Tag>();
     }
