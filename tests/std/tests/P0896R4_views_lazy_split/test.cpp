@@ -351,6 +351,22 @@ constexpr bool instantiation_test() {
     return true;
 }
 
+constexpr bool test_lwg_3599() {
+    auto p = views::iota(0) | views::take(1) | views::reverse;
+    auto r = views::single(42) | views::lazy_split(p);
+    auto f = r.front();
+
+    static_assert(ranges::forward_range<remove_cvref_t<decltype(r)>>);
+    static_assert(!ranges::forward_range<const remove_cvref_t<decltype(r)>>);
+    static_assert(ranges::forward_range<remove_cvref_t<decltype(f)>>);
+
+    assert(ranges::distance(r) == 1);
+    assert(f.front() == 42);
+    assert(ranges::distance(f) == 1);
+
+    return true;
+}
+
 constexpr bool test_lwg_3904() {
     auto r = views::single(0) | views::lazy_split(0);
     auto i = r.begin();
@@ -370,6 +386,9 @@ void test_lwg_4027() { // COMPILE-ONLY
 int main() {
     static_assert(instantiation_test());
     instantiation_test();
+
+    static_assert(test_lwg_3599());
+    assert(test_lwg_3599());
 
     static_assert(test_lwg_3904());
     assert(test_lwg_3904());

@@ -3984,7 +3984,7 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto begin() const
-            requires forward_range<_Vw> && forward_range<const _Vw>
+            requires forward_range<_Vw> && forward_range<const _Vw> && forward_range<const _Pat>
         {
             return _Outer_iter<true>{*this, _RANGES begin(_Range)};
         }
@@ -3997,7 +3997,8 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto end() const {
-            if constexpr (forward_range<_Vw> && forward_range<const _Vw> && common_range<const _Vw>) {
+            if constexpr (forward_range<_Vw> && forward_range<const _Vw> && common_range<const _Vw>
+                          && forward_range<const _Pat>) {
                 return _Outer_iter<true>{*this, _RANGES end(_Range)};
             } else {
                 return default_sentinel;

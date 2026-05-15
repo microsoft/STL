@@ -189,6 +189,9 @@ std/re/re.regex/re.regex.construct/bad_escape.pass.cpp FAIL
 # libc++ doesn't implement LWG-3187
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_piecewise_pair_evil.pass.cpp FAIL
 
+# libc++ doesn't implement LWG-3599 "The `const` overload of `lazy_split_view::begin` should be constrained by `const Pattern`"
+std/ranges/range.adaptors/range.lazy.split/begin.pass.cpp FAIL
+
 # libc++ doesn't implement LWG-3670
 std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass.cpp FAIL
 
