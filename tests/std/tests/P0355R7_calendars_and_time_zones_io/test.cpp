@@ -192,6 +192,23 @@ void test_parse(const basic_string<CharT>& str, const CStringOrStdString& fmt, P
     test_parse(str.c_str(), fmt, p, abbrev, offset, sl);
 }
 
+template <class CharT, class CStringOrStdString, class Parsable, class Wanted>
+void want_value(const CharT* str, const CStringOrStdString& fmt, Parsable& p, const Wanted& wanted,
+    const source_location sl = source_location::current()) {
+    test_parse(str, fmt, p, nullptr, nullptr, sl);
+    const bool got_wanted = p == wanted;
+    if (!got_wanted) {
+        printf("want_value() encountered an undesired value on line %u.\n", static_cast<unsigned int>(sl.line()));
+    }
+    assert(got_wanted);
+}
+
+template <class CharT, class CStringOrStdString, class Parsable, class Wanted>
+void want_value(const basic_string<CharT>& str, const CStringOrStdString& fmt, Parsable& p, const Wanted& wanted,
+    const source_location sl = source_location::current()) {
+    want_value(str.c_str(), fmt, p, wanted, sl);
+}
+
 template <class CharT, class CStringOrStdString, class Parsable>
 void fail_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
     type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr,
@@ -216,68 +233,54 @@ void test_limits(const char* flag, const IntType min, const IntType max) {
     char buffer[24];
     TimeType value;
     auto conv_result = to_chars(begin(buffer), end(buffer), static_cast<make_signed_t<IntType>>(min) - 1);
-    assert(conv_result.ec == errc{} && conv_result.ptr != end(buffer));
+    assert(conv_result.ec == errc{});
+    assert(conv_result.ptr != end(buffer));
     *conv_result.ptr = '\0';
     fail_parse(buffer, flag, value);
     conv_result = to_chars(begin(buffer), end(buffer), max + 1);
-    assert(conv_result.ec == errc{} && conv_result.ptr != end(buffer));
+    assert(conv_result.ec == errc{});
+    assert(conv_result.ptr != end(buffer));
     *conv_result.ptr = '\0';
     fail_parse(buffer, flag, value);
 
     conv_result = to_chars(begin(buffer), end(buffer), min);
-    assert(conv_result.ec == errc{} && conv_result.ptr != end(buffer));
+    assert(conv_result.ec == errc{});
+    assert(conv_result.ptr != end(buffer));
     *conv_result.ptr = '\0';
-    test_parse(buffer, flag, value);
-    assert(value == TimeType{min});
+    want_value(buffer, flag, value, TimeType{min});
     conv_result = to_chars(begin(buffer), end(buffer), max);
-    assert(conv_result.ec == errc{} && conv_result.ptr != end(buffer));
+    assert(conv_result.ec == errc{});
+    assert(conv_result.ptr != end(buffer));
     *conv_result.ptr = '\0';
-    test_parse(buffer, flag, value);
-    assert(value == TimeType{max});
+    want_value(buffer, flag, value, TimeType{max});
 }
 
 void parse_seconds() {
     seconds time;
-    test_parse("1", "%S", time);
-    assert(time == 1s);
-    test_parse("12", "%S", time);
-    assert(time == 12s);
-    test_parse("234", "%S4", time);
-    assert(time == 23s);
-    test_parse("0345", "%3S5", time);
-    assert(time == 34s);
-    test_parse(" 456", "%3S6", time);
-    assert(time == 45s);
-    test_parse("99", "%S", time); // not out-of-range for duration
-    assert(time == 99s);
+    want_value("1", "%S", time, 1s);
+    want_value("12", "%S", time, 12s);
+    want_value("234", "%S4", time, 23s);
+    want_value("0345", "%3S5", time, 34s);
+    want_value(" 456", "%3S6", time, 45s);
+    want_value("99", "%S", time, 99s); // not out-of-range for duration
 
     milliseconds time_ms;
-    test_parse("12.543", "%S", time_ms);
-    assert(time_ms == 12s + 543ms);
+    want_value("12.543", "%S", time_ms, 12s + 543ms);
     assert(time_ms == seconds{12} + milliseconds{543});
-    test_parse("01.234", "%S", time_ms);
-    assert(time_ms == 1'234ms);
-    test_parse(" 1.234", "%S", time_ms);
-    assert(time_ms == 1'234ms);
-    test_parse("1.234", "%S", time_ms);
-    assert(time_ms == 1'234ms);
-    test_parse("1. 234", "%S 234", time_ms); // Flag should consume "1.".
-    assert(time_ms == 1s);
-    test_parse("1 .234", "%S .234", time_ms); // Flag should consume "1".
-    assert(time_ms == 1s);
-    test_parse("12..345", "%S.345", time_ms); // Flag should consume "12.".
-    assert(time_ms == 12s);
+    want_value("01.234", "%S", time_ms, 1'234ms);
+    want_value(" 1.234", "%S", time_ms, 1'234ms);
+    want_value("1.234", "%S", time_ms, 1'234ms);
+    want_value("1. 234", "%S 234", time_ms, 1s); // Flag should consume "1.".
+    want_value("1 .234", "%S .234", time_ms, 1s); // Flag should consume "1".
+    want_value("12..345", "%S.345", time_ms, 12s); // Flag should consume "12.".
     fail_parse("1.2345", "%6S", time_ms); // would truncate
-    test_parse("1.2340", "%6S", time_ms);
-    assert(time_ms == 1'234ms);
+    want_value("1.2340", "%6S", time_ms, 1'234ms);
 
     duration<int64_t, atto> time_atto;
-    test_parse("0.400000000000000002", "%S", time_atto);
-    assert((time_atto == duration<int64_t, deci>{4} + duration<int64_t, atto>{2}));
+    want_value("0.400000000000000002", "%S", time_atto, duration<int64_t, deci>{4} + duration<int64_t, atto>{2});
 
     duration<float, ratio<1, 25>> time_float;
-    test_parse("0.33", "%S", time_float);
-    assert((time_float == duration<float, ratio<1, 25>>{8.25f}));
+    want_value("0.33", "%S", time_float, duration<float, ratio<1, 25>>{8.25f});
 
     fail_parse("1.2 1.3", "%S %S", time_ms);
     fail_parse("1.2 2.2", "%S %S", time_ms);
@@ -285,76 +288,48 @@ void parse_seconds() {
 
 void parse_minutes() {
     seconds time;
-    test_parse("1", "%M", time);
-    assert(time == 1min);
-    test_parse("12", "%M", time);
-    assert(time == 12min);
-    test_parse("234", "%M4", time);
-    assert(time == 23min);
-    test_parse("0345", "%3M5", time);
-    assert(time == 34min);
-    test_parse(" 456", "%3M6", time);
-    assert(time == 45min);
-    test_parse("99", "%M", time); // not out-of-range for duration
-    assert(time == 99min);
+    want_value("1", "%M", time, 1min);
+    want_value("12", "%M", time, 12min);
+    want_value("234", "%M4", time, 23min);
+    want_value("0345", "%3M5", time, 34min);
+    want_value(" 456", "%3M6", time, 45min);
+    want_value("99", "%M", time, 99min); // not out-of-range for duration
 }
 
 void parse_hours() {
     seconds time;
 
     fail_parse("0", "%I", time);
-    test_parse("1", "%I", time);
-    assert(time == 1h);
-    test_parse("11", "%I", time);
-    assert(time == 11h);
-    test_parse("12", "%I", time); // assumes a.m.
-    assert(time == 0h);
+    want_value("1", "%I", time, 1h);
+    want_value("11", "%I", time, 11h);
+    want_value("12", "%I", time, 0h); // assumes a.m.
     fail_parse("13", "%I", time);
 
     fail_parse("0", "%OI", time);
-    test_parse("1", "%OI", time);
-    assert(time == 1h);
-    test_parse("11", "%OI", time);
-    assert(time == 11h);
-    test_parse("12", "%OI", time); // assumes a.m.
-    assert(time == 0h);
+    want_value("1", "%OI", time, 1h);
+    want_value("11", "%OI", time, 11h);
+    want_value("12", "%OI", time, 0h); // assumes a.m.
     fail_parse("13", "%OI", time);
 
-    test_parse("110", "%I0", time);
-    assert(time == 11h);
-    test_parse("0011", "%3I1", time);
-    assert(time == 1h);
-    test_parse("010", "%4I", time);
-    assert(time == 10h);
-    test_parse(" 12", "%4I", time);
-    assert(time == 0h); // assumes A.M. with no %p flag
+    want_value("110", "%I0", time, 11h);
+    want_value("0011", "%3I1", time, 1h);
+    want_value("010", "%4I", time, 10h);
+    want_value(" 12", "%4I", time, 0h); // assumes A.M. with no %p flag
 
-    test_parse("1", "%H", time);
-    assert(time == 1h);
-    test_parse("12", "%H", time);
-    assert(time == 12h);
-    test_parse("234", "%H4", time);
-    assert(time == 23h);
-    test_parse("0123", "%3H3", time);
-    assert(time == 12h);
-    test_parse(" 234", "%3H4", time);
-    assert(time == 23h);
-    test_parse("30", "%H", time); // not out-of-range for duration
-    assert(time == 30h);
+    want_value("1", "%H", time, 1h);
+    want_value("12", "%H", time, 12h);
+    want_value("234", "%H4", time, 23h);
+    want_value("0123", "%3H3", time, 12h);
+    want_value(" 234", "%3H4", time, 23h);
+    want_value("30", "%H", time, 30h); // not out-of-range for duration
 
     // any permutation of %I, %p, and %H should be valid, as long as they're consistent
-    test_parse("8 pm 20", "%I %p %H", time);
-    assert(time == 20h);
-    test_parse("8 20 pm", "%I %H %p", time);
-    assert(time == 20h);
-    test_parse("pm 8 20", "%p %I %H", time);
-    assert(time == 20h);
-    test_parse("pm 20 8", "%p %H %I", time);
-    assert(time == 20h);
-    test_parse("20 pm 8", "%H %p %I", time);
-    assert(time == 20h);
-    test_parse("20 8 pm", "%H %I %p", time);
-    assert(time == 20h);
+    want_value("8 pm 20", "%I %p %H", time, 20h);
+    want_value("8 20 pm", "%I %H %p", time, 20h);
+    want_value("pm 8 20", "%p %I %H", time, 20h);
+    want_value("pm 20 8", "%p %H %I", time, 20h);
+    want_value("20 pm 8", "%H %p %I", time, 20h);
+    want_value("20 8 pm", "%H %I %p", time, 20h);
 
     // inconsistent
     fail_parse("8 am 20", "%I %p %H", time);
@@ -367,46 +342,33 @@ void parse_hours() {
 
 void parse_other_duration() {
     seconds time;
-    test_parse("42", "%j", time);
-    assert(time == days{42});
+    want_value("42", "%j", time, days{42});
     duration<int32_t, micro> time_micro; // maximum ~35.8 minutes
     fail_parse("1", "%j", time_micro);
-    test_parse("400", "%j", time);
-    assert(time == days{400}); // not out-of-range for duration
+    want_value("400", "%j", time, days{400}); // not out-of-range for duration
 
-    test_parse(" 1:23:42", "%T", time);
-    assert(time == 1h + 23min + 42s);
-    test_parse("01:23:42", "%T", time);
-    assert(time == 1h + 23min + 42s);
+    want_value(" 1:23:42", "%T", time, 1h + 23min + 42s);
+    want_value("01:23:42", "%T", time, 1h + 23min + 42s);
 
-    test_parse("11: 2:42", "%T", time);
-    assert(time == 11h + 2min + 42s);
-    test_parse("11:02:42", "%T", time);
-    assert(time == 11h + 2min + 42s);
+    want_value("11: 2:42", "%T", time, 11h + 2min + 42s);
+    want_value("11:02:42", "%T", time, 11h + 2min + 42s);
 
-    test_parse("12:34: 4", "%T", time);
-    assert(time == 12h + 34min + 4s);
-    test_parse("12:34:04", "%T", time);
-    assert(time == 12h + 34min + 4s);
-    test_parse("00:34:04", "%T", time);
-    assert(time == 34min + 4s);
+    want_value("12:34: 4", "%T", time, 12h + 34min + 4s);
+    want_value("12:34:04", "%T", time, 12h + 34min + 4s);
+    want_value("00:34:04", "%T", time, 34min + 4s);
 
     milliseconds time_milli;
-    test_parse("12:34:56.789", "%T", time_milli);
-    assert(time_milli == 12h + 34min + 56s + 789ms);
+    want_value("12:34:56.789", "%T", time_milli, 12h + 34min + 56s + 789ms);
 
     // locale's time representation %X (== "%H : %M : %S")
-    test_parse("12:34:04", "%X", time);
-    assert(time == 12h + 34min + 4s);
+    want_value("12:34:04", "%X", time, 12h + 34min + 4s);
 
     // floating-point representations, parsing precision controlled by duration::period
     duration<float, milli> df;
-    test_parse("9.125", "%S", df);
-    assert(df.count() == 9125.0f);
+    want_value("9.125", "%S", df, duration<float, milli>{9125.0f});
 
     duration<double, milli> dd;
-    test_parse("1.875", "%S", dd);
-    assert(dd.count() == 1875.0);
+    want_value("1.875", "%S", dd, duration<double, milli>{1875.0});
 }
 
 void parse_time_zone() {
@@ -456,309 +418,200 @@ void parse_time_zone() {
 
     fail_parse("Not_valid! 00", "%Z %H", time, &tz_name);
     test_parse("Valid_Tz! 07", "%Z! %H", time, &tz_name);
-    assert(tz_name == "Valid_Tz" && time == 7h);
+    assert(tz_name == "Valid_Tz");
+    assert(time == 7h);
 }
 
 void parse_calendar_types_basic() {
     // basic day tests
     day d;
-    test_parse("1", "%d", d);
-    assert(d == day{1});
-    test_parse("23", "%d", d);
-    assert(d == day{23});
-    test_parse("012", "%d2", d);
-    assert(d == day{1});
-    test_parse(" 23", "%d3", d);
-    assert(d == day{2});
+    want_value("1", "%d", d, day{1});
+    want_value("23", "%d", d, day{23});
+    want_value("012", "%d2", d, day{1});
+    want_value(" 23", "%d3", d, day{2});
 
     test_limits<day, unsigned int>("%d", 1, 31);
 
-    test_parse("1", "%e", d);
-    assert(d == day{1});
-    test_parse("23", "%e", d);
-    assert(d == day{23});
-    test_parse("012", "%e2", d);
-    assert(d == day{1});
-    test_parse(" 23", "%e3", d);
-    assert(d == day{2});
+    want_value("1", "%e", d, day{1});
+    want_value("23", "%e", d, day{23});
+    want_value("012", "%e2", d, day{1});
+    want_value(" 23", "%e3", d, day{2});
 
     // basic weekday tests
     weekday wd;
 
-    test_parse("Mon", "%a", wd);
-    assert(wd == Monday);
-    test_parse("wedNesday", "%A", wd);
-    assert(wd == Wednesday);
+    want_value("Mon", "%a", wd, Monday);
+    want_value("wedNesday", "%A", wd, Wednesday);
 
-    test_parse("1", "%w", wd); // 0-based, Sunday=0
-    assert(wd == Monday);
-    test_parse("1", "%u", wd); // ISO 1-based, Monday=1
-    assert(wd == Monday);
-    test_parse("7", "%u", wd);
-    assert(wd == Sunday);
+    want_value("1", "%w", wd, Monday); // 0-based, Sunday=0
+    want_value("1", "%u", wd, Monday); // ISO 1-based, Monday=1
+    want_value("7", "%u", wd, Sunday);
 
     test_limits<weekday, unsigned int>("%w", 0, 6);
     test_limits<weekday, unsigned int>("%u", 1, 7);
 
     // basic month tests
     month m;
-    test_parse("Apr", "%b", m);
-    assert(m == April);
-    test_parse("deCeMbeR", "%b", m);
-    assert(m == December);
-    test_parse("September", "%B", m);
-    assert(m == September);
-    test_parse("February", "%h", m);
-    assert(m == February);
+    want_value("Apr", "%b", m, April);
+    want_value("deCeMbeR", "%b", m, December);
+    want_value("September", "%B", m, September);
+    want_value("February", "%h", m, February);
 
-    test_parse("3", "%m", m);
-    assert(m == March);
-    test_parse("11", "%m", m);
-    assert(m == November);
-    test_parse("110", "%m0", m);
-    assert(m == November);
-    test_parse("0011", "%3m1", m);
-    assert(m == January);
-    test_parse("010", "%4m", m);
-    assert(m == October);
-    test_parse(" 12", "%4m", m);
-    assert(m == December);
+    want_value("3", "%m", m, March);
+    want_value("11", "%m", m, November);
+    want_value("110", "%m0", m, November);
+    want_value("0011", "%3m1", m, January);
+    want_value("010", "%4m", m, October);
+    want_value(" 12", "%4m", m, December);
 
     test_limits<month, unsigned int>("%m", 1, 12);
 
     // basic year tests
     year y;
-    test_parse("1777", "%Y", y);
-    assert(y == 1777y);
-    test_parse("07 17", "%y %C", y);
-    assert(y == 1707y);
-    test_parse("18 077", "%C %3y", y);
-    assert(y == 1877y);
+    want_value("1777", "%Y", y, 1777y);
+    want_value("07 17", "%y %C", y, 1707y);
+    want_value("18 077", "%C %3y", y, 1877y);
 
     // interpretation of two-digit year by itself
-    test_parse("00", "%y", y);
-    assert(y == 2000y);
-    test_parse("68", "%y", y);
-    assert(y == 2068y);
-    test_parse("69", "%y", y);
-    assert(y == 1969y);
-    test_parse("99", "%y", y);
-    assert(y == 1999y);
+    want_value("00", "%y", y, 2000y);
+    want_value("68", "%y", y, 2068y);
+    want_value("69", "%y", y, 1969y);
+    want_value("99", "%y", y, 1999y);
 
     // negative century
-    test_parse("-1 95", "%C %y", y);
-    assert(y == -95y);
-    test_parse("-2 00", "%C %y", y);
-    assert(y == -200y);
+    want_value("-1 95", "%C %y", y, -95y);
+    want_value("-2 00", "%C %y", y, -200y);
 
     // [time.parse] example
-    test_parse("-20 76", "%3C %y", y);
-    assert(y == -1976y);
+    want_value("-20 76", "%3C %y", y, -1976y);
 
     // check consistency, or lack thereof
-    test_parse("1887 18 87", "%Y %C %y", y);
-    assert(y == 1887y);
+    want_value("1887 18 87", "%Y %C %y", y, 1887y);
     fail_parse("1888 18 87", "%Y %C %y", y);
     fail_parse("1887 19 87", "%Y %C %y", y);
     fail_parse("1887 18 88", "%Y %C %y", y);
 
     // basic month_day tests
     month_day md;
-    test_parse("1 Jan 1", "%j %b %d", md);
-    assert(md == January / 1d);
-    test_parse("32 Feb 1", "%j %b %d", md);
-    assert(md == February / 1d);
-    test_parse("59 Feb 28", "%j %b %d", md);
-    assert(md == February / 28d);
+    want_value("1 Jan 1", "%j %b %d", md, January / 1d);
+    want_value("32 Feb 1", "%j %b %d", md, February / 1d);
+    want_value("59 Feb 28", "%j %b %d", md, February / 28d);
     fail_parse("0", "%j", md);
     fail_parse("60", "%j", md); // could be Feb 29 or Mar 1
 
-    test_parse("January 1", "%b %d", md);
-    assert(md == January / 1d);
-    test_parse("January 31", "%b %d", md);
-    assert(md == January / 31d);
+    want_value("January 1", "%b %d", md, January / 1d);
+    want_value("January 31", "%b %d", md, January / 31d);
 
-    test_parse("February 1", "%b %d", md);
-    assert(md == February / 1d);
-    test_parse("February 29", "%b %d", md);
-    assert(md == February / 29d);
+    want_value("February 1", "%b %d", md, February / 1d);
+    want_value("February 29", "%b %d", md, February / 29d);
 
-    test_parse("March 1", "%b %d", md);
-    assert(md == March / 1d);
-    test_parse("March 31", "%b %d", md);
-    assert(md == March / 31d);
+    want_value("March 1", "%b %d", md, March / 1d);
+    want_value("March 31", "%b %d", md, March / 31d);
 
-    test_parse("April 1", "%b %d", md);
-    assert(md == April / 1d);
-    test_parse("April 30", "%b %d", md);
-    assert(md == April / 30d);
+    want_value("April 1", "%b %d", md, April / 1d);
+    want_value("April 30", "%b %d", md, April / 30d);
 
-    test_parse("May 1", "%b %d", md);
-    assert(md == May / 1d);
-    test_parse("May 31", "%b %d", md);
-    assert(md == May / 31d);
+    want_value("May 1", "%b %d", md, May / 1d);
+    want_value("May 31", "%b %d", md, May / 31d);
 
-    test_parse("June 1", "%b %d", md);
-    assert(md == June / 1d);
-    test_parse("June 30", "%b %d", md);
-    assert(md == June / 30d);
+    want_value("June 1", "%b %d", md, June / 1d);
+    want_value("June 30", "%b %d", md, June / 30d);
 
-    test_parse("July 1", "%b %d", md);
-    assert(md == July / 1d);
-    test_parse("July 31", "%b %d", md);
-    assert(md == July / 31d);
+    want_value("July 1", "%b %d", md, July / 1d);
+    want_value("July 31", "%b %d", md, July / 31d);
 
-    test_parse("August 1", "%b %d", md);
-    assert(md == August / 1d);
-    test_parse("August 31", "%b %d", md);
-    assert(md == August / 31d);
+    want_value("August 1", "%b %d", md, August / 1d);
+    want_value("August 31", "%b %d", md, August / 31d);
 
-    test_parse("September 1", "%b %d", md);
-    assert(md == September / 1d);
-    test_parse("September 30", "%b %d", md);
-    assert(md == September / 30d);
+    want_value("September 1", "%b %d", md, September / 1d);
+    want_value("September 30", "%b %d", md, September / 30d);
 
-    test_parse("October 1", "%b %d", md);
-    assert(md == October / 1d);
-    test_parse("October 31", "%b %d", md);
-    assert(md == October / 31d);
+    want_value("October 1", "%b %d", md, October / 1d);
+    want_value("October 31", "%b %d", md, October / 31d);
 
-    test_parse("November 1", "%b %d", md);
-    assert(md == November / 1d);
-    test_parse("November 30", "%b %d", md);
-    assert(md == November / 30d);
+    want_value("November 1", "%b %d", md, November / 1d);
+    want_value("November 30", "%b %d", md, November / 30d);
 
-    test_parse("December 1", "%b %d", md);
-    assert(md == December / 1d);
-    test_parse("December 31", "%b %d", md);
-    assert(md == December / 31d);
+    want_value("December 1", "%b %d", md, December / 1d);
+    want_value("December 31", "%b %d", md, December / 31d);
 
     // not ambiguous with year
     year_month_day ymd;
-    test_parse("60 2004-02-29", "%j %F", ymd);
-    assert(ymd == 2004y / February / 29d);
+    want_value("60 2004-02-29", "%j %F", ymd, 2004y / February / 29d);
 
     // basic year_month_day tests
     // different ways of specifying year
-    test_parse("12-01-1997", "%d-%m-%Y", ymd);
-    assert(ymd == 12d / January / 1997y);
-    test_parse("12-01-19 97", "%d-%m-%C %y", ymd);
-    assert(ymd == 12d / January / 1997y);
-    test_parse("12-01-97", "%d-%m-%y", ymd);
-    assert(ymd == 12d / January / 1997y);
+    want_value("12-01-1997", "%d-%m-%Y", ymd, 12d / January / 1997y);
+    want_value("12-01-19 97", "%d-%m-%C %y", ymd, 12d / January / 1997y);
+    want_value("12-01-97", "%d-%m-%y", ymd, 12d / January / 1997y);
 
     // basic %D test
-    test_parse("07/04/76 17", "%D %C", ymd);
-    assert(ymd == July / 4d / 1776y);
+    want_value("07/04/76 17", "%D %C", ymd, July / 4d / 1776y);
     // locale's date representation %x (== "%m / %d / %y")
-    test_parse("07/04/76 17", "%x %C", ymd);
-    assert(ymd == 4d / July / 1776y);
-    test_parse("12/10/15 18", "%x %C", ymd);
-    assert(ymd == 10d / December / 1815y);
+    want_value("07/04/76 17", "%x %C", ymd, 4d / July / 1776y);
+    want_value("12/10/15 18", "%x %C", ymd, 10d / December / 1815y);
 
     // day-of-year tests, leap and non-leap years
-    test_parse("60 2001-03-01", "%j %F", ymd);
-    assert(ymd == 2001y / March / 1d);
-    test_parse("61 2004-03-01", "%j %F", ymd);
-    assert(ymd == 2004y / March / 1d);
-    test_parse("90 2001-03-31", "%j %F", ymd);
-    assert(ymd == 2001y / March / last);
-    test_parse("91 2004-03-31", "%j %F", ymd);
-    assert(ymd == 2004y / March / last);
+    want_value("60 2001-03-01", "%j %F", ymd, 2001y / March / 1d);
+    want_value("61 2004-03-01", "%j %F", ymd, 2004y / March / 1d);
+    want_value("90 2001-03-31", "%j %F", ymd, 2001y / March / last);
+    want_value("91 2004-03-31", "%j %F", ymd, 2004y / March / last);
 
-    test_parse("91 2001-04-01", "%j %F", ymd);
-    assert(ymd == 2001y / April / 1d);
-    test_parse("92 2004-04-01", "%j %F", ymd);
-    assert(ymd == 2004y / April / 1d);
-    test_parse("120 2001-04-30", "%j %F", ymd);
-    assert(ymd == 2001y / April / last);
-    test_parse("121 2004-04-30", "%j %F", ymd);
-    assert(ymd == 2004y / April / last);
+    want_value("91 2001-04-01", "%j %F", ymd, 2001y / April / 1d);
+    want_value("92 2004-04-01", "%j %F", ymd, 2004y / April / 1d);
+    want_value("120 2001-04-30", "%j %F", ymd, 2001y / April / last);
+    want_value("121 2004-04-30", "%j %F", ymd, 2004y / April / last);
 
-    test_parse("121 2001-05-01", "%j %F", ymd);
-    assert(ymd == 2001y / May / 1d);
-    test_parse("122 2004-05-01", "%j %F", ymd);
-    assert(ymd == 2004y / May / 1d);
-    test_parse("151 2001-05-31", "%j %F", ymd);
-    assert(ymd == 2001y / May / last);
-    test_parse("152 2004-05-31", "%j %F", ymd);
-    assert(ymd == 2004y / May / last);
+    want_value("121 2001-05-01", "%j %F", ymd, 2001y / May / 1d);
+    want_value("122 2004-05-01", "%j %F", ymd, 2004y / May / 1d);
+    want_value("151 2001-05-31", "%j %F", ymd, 2001y / May / last);
+    want_value("152 2004-05-31", "%j %F", ymd, 2004y / May / last);
 
-    test_parse("152 2001-06-01", "%j %F", ymd);
-    assert(ymd == 2001y / June / 1d);
-    test_parse("153 2004-06-01", "%j %F", ymd);
-    assert(ymd == 2004y / June / 1d);
-    test_parse("181 2001-06-30", "%j %F", ymd);
-    assert(ymd == 2001y / June / last);
-    test_parse("182 2004-06-30", "%j %F", ymd);
-    assert(ymd == 2004y / June / last);
+    want_value("152 2001-06-01", "%j %F", ymd, 2001y / June / 1d);
+    want_value("153 2004-06-01", "%j %F", ymd, 2004y / June / 1d);
+    want_value("181 2001-06-30", "%j %F", ymd, 2001y / June / last);
+    want_value("182 2004-06-30", "%j %F", ymd, 2004y / June / last);
 
-    test_parse("182 2001-07-01", "%j %F", ymd);
-    assert(ymd == 2001y / July / 1d);
-    test_parse("183 2004-07-01", "%j %F", ymd);
-    assert(ymd == 2004y / July / 1d);
-    test_parse("212 2001-07-31", "%j %F", ymd);
-    assert(ymd == 2001y / July / last);
-    test_parse("213 2004-07-31", "%j %F", ymd);
-    assert(ymd == 2004y / July / last);
+    want_value("182 2001-07-01", "%j %F", ymd, 2001y / July / 1d);
+    want_value("183 2004-07-01", "%j %F", ymd, 2004y / July / 1d);
+    want_value("212 2001-07-31", "%j %F", ymd, 2001y / July / last);
+    want_value("213 2004-07-31", "%j %F", ymd, 2004y / July / last);
 
-    test_parse("213 2001-08-01", "%j %F", ymd);
-    assert(ymd == 2001y / August / 1d);
-    test_parse("214 2004-08-01", "%j %F", ymd);
-    assert(ymd == 2004y / August / 1d);
-    test_parse("243 2001-08-31", "%j %F", ymd);
-    assert(ymd == 2001y / August / last);
-    test_parse("244 2004-08-31", "%j %F", ymd);
-    assert(ymd == 2004y / August / last);
+    want_value("213 2001-08-01", "%j %F", ymd, 2001y / August / 1d);
+    want_value("214 2004-08-01", "%j %F", ymd, 2004y / August / 1d);
+    want_value("243 2001-08-31", "%j %F", ymd, 2001y / August / last);
+    want_value("244 2004-08-31", "%j %F", ymd, 2004y / August / last);
 
-    test_parse("244 2001-09-01", "%j %F", ymd);
-    assert(ymd == 2001y / September / 1d);
-    test_parse("245 2004-09-01", "%j %F", ymd);
-    assert(ymd == 2004y / September / 1d);
-    test_parse("273 2001-09-30", "%j %F", ymd);
-    assert(ymd == 2001y / September / last);
-    test_parse("274 2004-09-30", "%j %F", ymd);
-    assert(ymd == 2004y / September / last);
+    want_value("244 2001-09-01", "%j %F", ymd, 2001y / September / 1d);
+    want_value("245 2004-09-01", "%j %F", ymd, 2004y / September / 1d);
+    want_value("273 2001-09-30", "%j %F", ymd, 2001y / September / last);
+    want_value("274 2004-09-30", "%j %F", ymd, 2004y / September / last);
 
-    test_parse("274 2001-10-01", "%j %F", ymd);
-    assert(ymd == 2001y / October / 1d);
-    test_parse("275 2004-10-01", "%j %F", ymd);
-    assert(ymd == 2004y / October / 1d);
-    test_parse("304 2001-10-31", "%j %F", ymd);
-    assert(ymd == 2001y / October / last);
-    test_parse("305 2004-10-31", "%j %F", ymd);
-    assert(ymd == 2004y / October / last);
+    want_value("274 2001-10-01", "%j %F", ymd, 2001y / October / 1d);
+    want_value("275 2004-10-01", "%j %F", ymd, 2004y / October / 1d);
+    want_value("304 2001-10-31", "%j %F", ymd, 2001y / October / last);
+    want_value("305 2004-10-31", "%j %F", ymd, 2004y / October / last);
 
-    test_parse("305 2001-11-01", "%j %F", ymd);
-    assert(ymd == 2001y / November / 1d);
-    test_parse("306 2004-11-01", "%j %F", ymd);
-    assert(ymd == 2004y / November / 1d);
-    test_parse("334 2001-11-30", "%j %F", ymd);
-    assert(ymd == 2001y / November / last);
-    test_parse("335 2004-11-30", "%j %F", ymd);
-    assert(ymd == 2004y / November / last);
+    want_value("305 2001-11-01", "%j %F", ymd, 2001y / November / 1d);
+    want_value("306 2004-11-01", "%j %F", ymd, 2004y / November / 1d);
+    want_value("334 2001-11-30", "%j %F", ymd, 2001y / November / last);
+    want_value("335 2004-11-30", "%j %F", ymd, 2004y / November / last);
 
-    test_parse("335 2001-12-01", "%j %F", ymd);
-    assert(ymd == 2001y / December / 1d);
-    test_parse("336 2004-12-01", "%j %F", ymd);
-    assert(ymd == 2004y / December / 1d);
-    test_parse("365 2001-12-31", "%j %F", ymd);
-    assert(ymd == 2001y / December / last);
-    test_parse("366 2004-12-31", "%j %F", ymd);
-    assert(ymd == 2004y / December / last);
+    want_value("335 2001-12-01", "%j %F", ymd, 2001y / December / 1d);
+    want_value("336 2004-12-01", "%j %F", ymd, 2004y / December / 1d);
+    want_value("365 2001-12-31", "%j %F", ymd, 2001y / December / last);
+    want_value("366 2004-12-31", "%j %F", ymd, 2004y / December / last);
 
-    test_parse("82 1882", "%j %Y", ymd);
-    assert(ymd == 23d / March / 1882y);
+    want_value("82 1882", "%j %Y", ymd, 23d / March / 1882y);
     fail_parse("366 2001", "%j %Y", ymd);
     fail_parse("367 2004", "%j %Y", ymd);
 
     // Check consistency between date and day-of-week
-    test_parse("Wed 2000-03-01", "%a %F", ymd);
+    want_value("Wed 2000-03-01", "%a %F", ymd, 2000y / March / 1d);
     fail_parse("Mon 2000-03-01", "%a %F", ymd);
 
     // For %F, width is applied only to the year
-    test_parse("12345-06-07", "%5F", ymd);
-    assert(ymd == 7d / June / 12345y);
+    want_value("12345-06-07", "%5F", ymd, 7d / June / 12345y);
     fail_parse("12345-00006-07", "%5F", ymd);
     fail_parse("12345-06-00007", "%5F", ymd);
     fail_parse("12345-00006-00007", "%5F", ymd);
@@ -766,54 +619,37 @@ void parse_calendar_types_basic() {
 
 void parse_iso_week_date() {
     year_month_day ymd;
-    test_parse("2005-W52-6", "%G-W%V-%u", ymd);
-    assert(ymd == 2005y / December / 31d);
-    test_parse("2005-W52-7", "%G-W%V-%u", ymd);
-    assert(ymd == 2006y / January / 1d);
-    test_parse("2006-W01-1", "%G-W%V-%u", ymd);
-    assert(ymd == 2006y / January / 2d);
+    want_value("2005-W52-6", "%G-W%V-%u", ymd, 2005y / December / 31d);
+    want_value("2005-W52-7", "%G-W%V-%u", ymd, 2006y / January / 1d);
+    want_value("2006-W01-1", "%G-W%V-%u", ymd, 2006y / January / 2d);
     fail_parse("2006-W00-1", "%G-W%V-%u", ymd);
 
-    test_parse("2007-W52-7", "%G-W%V-%u", ymd);
-    assert(ymd == 2007y / December / 30d);
-    test_parse("2008-W01-1", "%G-W%V-%u", ymd);
-    assert(ymd == 2007y / December / 31d);
-    test_parse("2008-W01-2", "%G-W%V-%u", ymd);
-    assert(ymd == 2008y / January / 1d);
+    want_value("2007-W52-7", "%G-W%V-%u", ymd, 2007y / December / 30d);
+    want_value("2008-W01-1", "%G-W%V-%u", ymd, 2007y / December / 31d);
+    want_value("2008-W01-2", "%G-W%V-%u", ymd, 2008y / January / 1d);
 
     fail_parse("05-W52-6", "%g-W%V-%u", ymd); // no century
 
     year_month_day ref{2005y / December / 31d};
     fail_parse("2005-W52-6 19", "%G-W%V-%u %C", ymd); // inconsistent century
-    test_parse("2005-W52-6 20", "%G-W%V-%u %C", ymd); // consistent century
-    assert(ymd == ref);
-    test_parse("05-W52-6 20", "%g-W%V-%u %C", ymd);
-    assert(ymd == ref);
+    want_value("2005-W52-6 20", "%G-W%V-%u %C", ymd, ref); // consistent century
+    want_value("05-W52-6 20", "%g-W%V-%u %C", ymd, ref);
 
     fail_parse("2005-W52-6 2004", "%G-W%V-%u %Y", ymd); // inconsistent year
-    test_parse("2005-W52-6 2005", "%G-W%V-%u %Y", ymd); // consistent year
-    assert(ymd == ref);
-    test_parse("05-W52-6 2005", "%g-W%V-%u %Y", ymd);
-    assert(ymd == ref);
-    test_parse("2005-W52-6 05", "%G-W%V-%u %y", ymd);
-    assert(ymd == ref);
-    test_parse("05-W52-6 05", "%g-W%V-%u %y", ymd);
-    assert(ymd == ref);
+    want_value("2005-W52-6 2005", "%G-W%V-%u %Y", ymd, ref); // consistent year
+    want_value("05-W52-6 2005", "%g-W%V-%u %Y", ymd, ref);
+    want_value("2005-W52-6 05", "%G-W%V-%u %y", ymd, ref);
+    want_value("05-W52-6 05", "%g-W%V-%u %y", ymd, ref);
 
     ref = 2007y / December / 31d;
     fail_parse("2008-W01-1 2008", "%G-W%V-%u %Y", ymd); // inconsistent year (!)
-    test_parse("2008-W01-1 2007", "%G-W%V-%u %Y", ymd); // consistent year
-    assert(ymd == ref);
-    test_parse("08-W01-1 2007", "%g-W%V-%u %Y", ymd);
-    assert(ymd == ref);
-    test_parse("2008-W01-1 07", "%G-W%V-%u %y", ymd);
-    assert(ymd == ref);
-    test_parse("08-W01-1 07", "%g-W%V-%u %y", ymd);
-    assert(ymd == ref);
+    want_value("2008-W01-1 2007", "%G-W%V-%u %Y", ymd, ref); // consistent year
+    want_value("08-W01-1 2007", "%g-W%V-%u %Y", ymd, ref);
+    want_value("2008-W01-1 07", "%G-W%V-%u %y", ymd, ref);
+    want_value("08-W01-1 07", "%g-W%V-%u %y", ymd, ref);
 
     // ISO and Gregorian years in different centuries
-    test_parse("1699-W53-5 1700", "%G-W%V-%u %Y", ymd);
-    assert(ymd == 1d / January / 1700y);
+    want_value("1699-W53-5 1700", "%G-W%V-%u %Y", ymd, 1d / January / 1700y);
     fail_parse("1699-W54-5 1700", "%G-W%V-%u %Y", ymd);
     fail_parse("1699-W53-5 00", "%G-W%V-%u %y", ymd); // inconsistent %y (== 2000)
     fail_parse("99-W53-5 16 00", "%g-W%V-%u %C %y", ymd); // inconsistent %C+%y year (== 1600)
@@ -821,20 +657,16 @@ void parse_iso_week_date() {
 
     // This is expected to parse successfully. Even though %C+%g would give the wrong year,
     // as above we don't try to use that for the ISO year when %G is present.
-    test_parse("1699 99-W53-5 17 00", "%G %g-W%V-%u %C %y", ymd);
-    assert(ymd == 1d / January / 1700y);
+    want_value("1699 99-W53-5 17 00", "%G %g-W%V-%u %C %y", ymd, 1d / January / 1700y);
     fail_parse("1699 98-W53-5 17 00", "%G %g-W%V-%u %C %y", ymd);
 }
 
 void parse_other_week_date() {
     year_month_day ymd;
     // Year begins on Sunday.
-    test_parse("2017-01-0", "%Y-%U-%w", ymd);
-    assert(ymd == 2017y / January / 1d);
-    test_parse("2017-00-0", "%Y-%W-%w", ymd);
-    assert(ymd == 2017y / January / 1d);
-    test_parse("2017-53-0", "%Y-%U-%w", ymd);
-    assert(ymd == 2017y / December / 31d);
+    want_value("2017-01-0", "%Y-%U-%w", ymd, 2017y / January / 1d);
+    want_value("2017-00-0", "%Y-%W-%w", ymd, 2017y / January / 1d);
+    want_value("2017-53-0", "%Y-%U-%w", ymd, 2017y / December / 31d);
 
     fail_parse("2017/-1/0", "%Y/%W/%w", ymd);
     fail_parse("2017/-1/0", "%Y/%U/%w", ymd);
@@ -844,42 +676,29 @@ void parse_other_week_date() {
     fail_parse("2017-53-1", "%Y-%U-%w", ymd); // refers to 01 Jan. 2018
 
     // Year begins on Monday.
-    test_parse("2018-00-1", "%Y-%U-%w", ymd);
-    assert(ymd == 2018y / January / 1d);
-    test_parse("2018-01-1", "%Y-%W-%w", ymd);
-    assert(ymd == 2018y / January / 1d);
-    test_parse("2018-53-1", "%Y-%W-%w", ymd);
-    assert(ymd == 2018y / December / 31d);
+    want_value("2018-00-1", "%Y-%U-%w", ymd, 2018y / January / 1d);
+    want_value("2018-01-1", "%Y-%W-%w", ymd, 2018y / January / 1d);
+    want_value("2018-53-1", "%Y-%W-%w", ymd, 2018y / December / 31d);
 
     // Year begins on Tuesday.
-    test_parse("2019-00-2", "%Y-%U-%w", ymd);
-    assert(ymd == 2019y / January / 1d);
-    test_parse("2019-00-2", "%Y-%W-%w", ymd);
-    assert(ymd == 2019y / January / 1d);
+    want_value("2019-00-2", "%Y-%U-%w", ymd, 2019y / January / 1d);
+    want_value("2019-00-2", "%Y-%W-%w", ymd, 2019y / January / 1d);
 
     // Year begins on Wednesday.
-    test_parse("2020-00-3", "%Y-%U-%w", ymd);
-    assert(ymd == 2020y / January / 1d);
-    test_parse("2020-00-3", "%Y-%W-%w", ymd);
-    assert(ymd == 2020y / January / 1d);
+    want_value("2020-00-3", "%Y-%U-%w", ymd, 2020y / January / 1d);
+    want_value("2020-00-3", "%Y-%W-%w", ymd, 2020y / January / 1d);
 
     // Year begins on Thursday.
-    test_parse("2015-00-4", "%Y-%U-%w", ymd);
-    assert(ymd == 2015y / January / 1d);
-    test_parse("2015-00-4", "%Y-%W-%w", ymd);
-    assert(ymd == 2015y / January / 1d);
+    want_value("2015-00-4", "%Y-%U-%w", ymd, 2015y / January / 1d);
+    want_value("2015-00-4", "%Y-%W-%w", ymd, 2015y / January / 1d);
 
     // Year begins on Friday.
-    test_parse("2016-00-5", "%Y-%U-%w", ymd);
-    assert(ymd == 2016y / January / 1d);
-    test_parse("2016-00-5", "%Y-%W-%w", ymd);
-    assert(ymd == 2016y / January / 1d);
+    want_value("2016-00-5", "%Y-%U-%w", ymd, 2016y / January / 1d);
+    want_value("2016-00-5", "%Y-%W-%w", ymd, 2016y / January / 1d);
 
     // Year begins on Saturday.
-    test_parse("2022-00-6", "%Y-%U-%w", ymd);
-    assert(ymd == 2022y / January / 1d);
-    test_parse("2022-00-6", "%Y-%W-%w", ymd);
-    assert(ymd == 2022y / January / 1d);
+    want_value("2022-00-6", "%Y-%U-%w", ymd, 2022y / January / 1d);
+    want_value("2022-00-6", "%Y-%W-%w", ymd, 2022y / January / 1d);
 }
 
 void parse_incomplete() {
@@ -898,14 +717,14 @@ void parse_incomplete() {
     fail_parse("04", "%R", time);
 
     // Check for parsing of whitespace fields after other fields.  More whitespace tests below.
-    test_parse("15:19", "%H:%M%t", time);
-    test_parse("15:19", "%R%t", time);
+    want_value("15:19", "%H:%M%t", time, 15h + 19min);
+    want_value("15:19", "%R%t", time, 15h + 19min);
     fail_parse("15:19", "%H:%M%n", time);
     fail_parse("15:19", "%R%n", time);
 
     // However, it is OK to omit seconds from the format when parsing a duration to seconds precision.
-    test_parse("05:24", "%H:%M", time);
-    test_parse("06:25", "%R", time);
+    want_value("05:24", "%H:%M", time, 5h + 24min);
+    want_value("06:25", "%R", time, 6h + 25min);
 }
 
 void parse_whitespace() {
@@ -949,16 +768,13 @@ void test_gh_1952() {
     const auto utc_ref = clock_cast<utc_clock>(sys_days{2021y / June / 2d} + 17h + 51min + 5s + 696028us);
 
     utc_time<microseconds> utc_parsed;
-    test_parse(time_str, fmt, utc_parsed);
-    assert(utc_parsed == utc_ref);
+    want_value(time_str, fmt, utc_parsed, utc_ref);
 
     sys_time<microseconds> sys_parsed;
-    test_parse(time_str, fmt, sys_parsed);
-    assert(sys_parsed == clock_cast<system_clock>(utc_ref));
+    want_value(time_str, fmt, sys_parsed, clock_cast<system_clock>(utc_ref));
 
     file_time<microseconds> file_parsed;
-    test_parse(time_str, fmt, file_parsed);
-    assert(file_parsed == clock_cast<file_clock>(utc_ref));
+    want_value(time_str, fmt, file_parsed, clock_cast<file_clock>(utc_ref));
 
     local_time<microseconds> local_parsed;
     test_parse(time_str, fmt, local_parsed);
@@ -983,28 +799,28 @@ void parse_timepoints() {
     file_time<seconds> ft;
     local_seconds lt;
 
-    test_parse("thu oct 29 19:01:42 2020", "%c", st);
-    test_parse("thu oct 29 19:01:42 2020", "%c", ut);
-    test_parse("thu oct 29 19:01:42 2020", "%c", ft);
+    want_value("thu oct 29 19:01:42 2020", "%c", st, ref);
+    want_value("thu oct 29 19:01:42 2020", "%c", ut, clock_cast<utc_clock>(ref));
+    want_value("thu oct 29 19:01:42 2020", "%c", ft, clock_cast<file_clock>(ref));
     test_parse("thu oct 29 19:01:42 2020", "%c", lt);
-
-    assert(st == ref);
-    assert(ut == clock_cast<utc_clock>(ref));
-    assert(ft == clock_cast<file_clock>(ref));
     assert(lt.time_since_epoch() == ref.time_since_epoch());
 
     minutes offset;
     test_parse("thu oct 29 19:01:42 2020 0430", "%c %z", st, nullptr, &offset);
-    assert(st == ref - offset && offset == 4h + 30min);
+    assert(st == ref - offset);
+    assert(offset == 4h + 30min);
 
     test_parse("thu oct 29 19:01:42 2020 0430", "%c %z", ut, nullptr, &offset);
-    assert(ut == clock_cast<utc_clock>(ref) - offset && offset == 4h + 30min);
+    assert(ut == clock_cast<utc_clock>(ref) - offset);
+    assert(offset == 4h + 30min);
 
     test_parse("thu oct 29 19:01:42 2020 0430", "%c %z", ft, nullptr, &offset);
-    assert(ft == clock_cast<file_clock>(ref) - offset && offset == 4h + 30min);
+    assert(ft == clock_cast<file_clock>(ref) - offset);
+    assert(offset == 4h + 30min);
 
     test_parse("thu oct 29 19:01:42 2020 0430", "%c %z", lt, nullptr, &offset);
-    assert(lt.time_since_epoch() == ref.time_since_epoch() && offset == 4h + 30min);
+    assert(lt.time_since_epoch() == ref.time_since_epoch());
+    assert(offset == 4h + 30min);
 
     // N4878 [time.clock.tai]/1:
     // The clock tai_clock measures seconds since 1958-01-01 00:00:00 and is offset 10s ahead of UTC at this date.
@@ -1015,14 +831,13 @@ void parse_timepoints() {
 
     ref = sys_days{1957y / December / 31d} + days{1} - 10s;
     tai_seconds tt;
-    test_parse("wed jan  1 00:00:00 1958", "%c", tt);
-    assert(tt == clock_cast<tai_clock>(ref));
+    want_value("wed jan  1 00:00:00 1958", "%c", tt, clock_cast<tai_clock>(ref));
 
     ref = sys_days{2000y / January / 1d};
-    test_parse("sat jan  1 00:00:32 2000", "%c", tt);
-    assert(tt == clock_cast<tai_clock>(ref));
+    want_value("sat jan  1 00:00:32 2000", "%c", tt, clock_cast<tai_clock>(ref));
     test_parse("sat jan  1 00:00:32 2000 0430", "%c %z", tt, nullptr, &offset);
-    assert(tt == clock_cast<tai_clock>(ref) - offset && offset == 4h + 30min);
+    assert(tt == clock_cast<tai_clock>(ref) - offset);
+    assert(offset == 4h + 30min);
 
     // N4878 [time.clock.gps]/1:
     // The clock gps_clock measures seconds since the first Sunday of January, 1980 00:00:00 UTC. Leap seconds are
@@ -1034,43 +849,30 @@ void parse_timepoints() {
     gps_seconds gt;
     ref = sys_days{1980y / January / 6d};
     test_parse("sun jan  6 00:00:00 1980 0430", "%c %z", gt, nullptr, &offset);
-    assert(gt == clock_cast<gps_clock>(ref) - offset && offset == 4h + 30min);
-    test_parse("sun jan  6 00:00:00 1980", "%c", gt);
-    assert(gt == clock_cast<gps_clock>(ref));
-    test_parse("sun jan  6 00:00:19 1980", "%c", tt);
-    assert(gt == clock_cast<gps_clock>(tt));
+    assert(gt == clock_cast<gps_clock>(ref) - offset);
+    assert(offset == 4h + 30min);
+    want_value("sun jan  6 00:00:00 1980", "%c", gt, clock_cast<gps_clock>(ref));
+    want_value("sun jan  6 00:00:19 1980", "%c", tt, clock_cast<tai_clock>(ref));
 
     seconds time;
-    test_parse(" 1:23:42 am", "%r", time);
-    assert(time == 1h + 23min + 42s);
-    test_parse("2000-01-02 01:23:42 pm", "%F %r", st);
-    assert(st == sys_days{2000y / January / 2d} + (13h + 23min + 42s));
+    want_value(" 1:23:42 am", "%r", time, 1h + 23min + 42s);
+    want_value("2000-01-02 01:23:42 pm", "%F %r", st, sys_days{2000y / January / 2d} + (13h + 23min + 42s));
 
-    test_parse("11: 2:42 am", "%r", time);
-    assert(time == 11h + 2min + 42s);
-    test_parse("2000-01-02 11:02:42 pm", "%F %r", st);
-    assert(st == sys_days{2000y / January / 2d} + (23h + 2min + 42s));
+    want_value("11: 2:42 am", "%r", time, 11h + 2min + 42s);
+    want_value("2000-01-02 11:02:42 pm", "%F %r", st, sys_days{2000y / January / 2d} + (23h + 2min + 42s));
 
-    test_parse("12:34: 4 am", "%r", time);
-    assert(time == 34min + 4s);
-    test_parse("2000-01-02 12:34:04 pm", "%F %r", st);
-    assert(st == sys_days{2000y / January / 2d} + (12h + 34min + 4s));
+    want_value("12:34: 4 am", "%r", time, 34min + 4s);
+    want_value("2000-01-02 12:34:04 pm", "%F %r", st, sys_days{2000y / January / 2d} + (12h + 34min + 4s));
 
 
-    test_parse(" 3:14 2000-01-02", "%R %F", st);
-    assert(st == sys_days{2000y / January / 2d} + (3h + 14min));
-    test_parse("03:14 2000-01-02", "%R %F", st);
-    assert(st == sys_days{2000y / January / 2d} + (3h + 14min));
+    want_value(" 3:14 2000-01-02", "%R %F", st, sys_days{2000y / January / 2d} + (3h + 14min));
+    want_value("03:14 2000-01-02", "%R %F", st, sys_days{2000y / January / 2d} + (3h + 14min));
 
-    test_parse("11: 3 2000-01-02", "%R %F", st);
-    assert(st == sys_days{2000y / January / 2d} + (11h + 3min));
-    test_parse("11:03 2000-01-02", "%R %F", st);
-    assert(st == sys_days{2000y / January / 2d} + (11h + 3min));
+    want_value("11: 3 2000-01-02", "%R %F", st, sys_days{2000y / January / 2d} + (11h + 3min));
+    want_value("11:03 2000-01-02", "%R %F", st, sys_days{2000y / January / 2d} + (11h + 3min));
 
-    test_parse("00:42 2000-01-02", "%R %F", st);
-    assert(st == sys_days{2000y / January / 2d} + (42min));
-    test_parse("12:42 2000-01-02", "%R %F", st);
-    assert(st == sys_days{2000y / January / 2d} + (12h + 42min));
+    want_value("00:42 2000-01-02", "%R %F", st, sys_days{2000y / January / 2d} + (42min));
+    want_value("12:42 2000-01-02", "%R %F", st, sys_days{2000y / January / 2d} + (12h + 42min));
 
     // Historical leap seconds don't allow complete testing, because they've all been positive and there haven't been
     // any since 2016 (as of 2021).
@@ -1085,13 +887,11 @@ void parse_timepoints() {
     }
 
     utc_seconds ut_ref = utc_clock::from_sys(sys_days{1d / July / 1972y}) - 1s; // leap second insertion
-    test_parse("fri june 30 23:59:60 1972", "%c", ut);
-    assert(ut == ut_ref);
+    want_value("fri june 30 23:59:60 1972", "%c", ut, ut_ref);
 
     // Test a later leap second, where the accumulated offset is greater than 1s.
     ut_ref = utc_clock::from_sys(sys_days{1d / July / 1992y}) - 1s;
-    test_parse("tue june 30 23:59:60 1992", "%c", ut);
-    assert(ut == ut_ref);
+    want_value("tue june 30 23:59:60 1992", "%c", ut, ut_ref);
 
     // not leap-second aware
     fail_parse("fri june 30 23:59:60 1972", "%c", st);
@@ -1103,22 +903,19 @@ void parse_timepoints() {
 
     // the last leap second insertion that file_clock is not aware of
     test_parse("sat dec 31 23:59:59 2016", "%c", ut);
-    test_parse("sat dec 31 23:59:59 2016", "%c", ft);
-    assert(ft == clock_cast<file_clock>(ut));
+    want_value("sat dec 31 23:59:59 2016", "%c", ft, clock_cast<file_clock>(ut));
 
     test_parse("sat dec 31 23:59:60 2016", "%c", ut);
     fail_parse("sat dec 31 23:59:60 2016", "%c", ft);
 
     test_parse("sun jan 01 00:00:00 2017", "%c", ut);
-    test_parse("sun jan 01 00:00:00 2017", "%c", ft);
-    assert(ft == clock_cast<file_clock>(ut));
+    want_value("sun jan 01 00:00:00 2017", "%c", ft, clock_cast<file_clock>(ut));
 
     ref = sys_days{1d / January / 2020y} - 1s; // negative leap second, UTC time doesn't exist
     fail_parse("tue dec 31 23:59:59 2019", "%c", ut);
     fail_parse("tue dec 31 23:59:59 2019", "%c", ft);
 
-    test_parse("tue dec 31 23:59:59 2019", "%c", st);
-    assert(st == ref);
+    want_value("tue dec 31 23:59:59 2019", "%c", st, ref);
 
     test_parse("tue dec 31 23:59:59 2019", "%c", lt); // Not UTC, might be valid depending on the time zone.
     assert(lt.time_since_epoch() == ref.time_since_epoch());
@@ -1151,50 +948,36 @@ void parse_timepoints() {
 
 
     ut_ref = utc_clock::from_sys(sys_days{1d / January / 2022y}) - 1s; // leap second insertion
-    test_parse("fri dec 31 23:59:60 2021", "%c", ut);
-    assert(ut == ut_ref);
-    test_parse("fri dec 31 23:59:60 2021", "%c", ft);
-    assert(ft == clock_cast<file_clock>(ut_ref));
+    want_value("fri dec 31 23:59:60 2021", "%c", ut, ut_ref);
+    want_value("fri dec 31 23:59:60 2021", "%c", ft, clock_cast<file_clock>(ut_ref));
 
 
     // GH-1606: reads too many leading zeros
-    test_parse("19700405T000006", "%Y%m%dT%H%M%S", st);
-    assert(st == sys_days{5d / April / 1970y} + 6s);
+    want_value("19700405T000006", "%Y%m%dT%H%M%S", st, sys_days{5d / April / 1970y} + 6s);
 
     // GH-1280 tests
     year_month_day ymd;
-    test_parse("20200609", "%Y%m%d", ymd);
-    assert(ymd == 9d / June / 2020y);
+    want_value("20200609", "%Y%m%d", ymd, 9d / June / 2020y);
 
-    test_parse("20201213", "%Y%m%d", ymd);
-    assert(ymd == 13d / December / 2020y);
+    want_value("20201213", "%Y%m%d", ymd, 13d / December / 2020y);
 
-    test_parse("2020112", "%Y%m%d", ymd);
-    assert(ymd == 2d / November / 2020y);
+    want_value("2020112", "%Y%m%d", ymd, 2d / November / 2020y);
 
-    test_parse("2020061125", "%Y%m%d", ymd);
-    assert(ymd == 11d / June / 2020y);
+    want_value("2020061125", "%Y%m%d", ymd, 11d / June / 2020y);
 
-    test_parse("2020120625119", "%Y%m%d", ymd);
-    assert(ymd == 6d / December / 2020y);
+    want_value("2020120625119", "%Y%m%d", ymd, 6d / December / 2020y);
 
-    test_parse("2020092Text", "%Y%m%d", ymd);
-    assert(ymd == 2d / September / 2020y);
+    want_value("2020092Text", "%Y%m%d", ymd, 2d / September / 2020y);
 
-    test_parse("20200609", "%Y%m%d", ymd);
-    assert(ymd == 9d / June / 2020y);
+    want_value("20200609", "%Y%m%d", ymd, 9d / June / 2020y);
 
-    test_parse("2020112", "%Y%m%d", ymd);
-    assert(ymd == 2d / November / 2020y);
+    want_value("2020112", "%Y%m%d", ymd, 2d / November / 2020y);
 
-    test_parse("2020061125", "%Y%m%d", ymd);
-    assert(ymd == 11d / June / 2020y);
+    want_value("2020061125", "%Y%m%d", ymd, 11d / June / 2020y);
 
-    test_parse("2020124", "%Y%m%d", ymd);
-    assert(ymd == 4d / December / 2020y);
+    want_value("2020124", "%Y%m%d", ymd, 4d / December / 2020y);
 
-    test_parse("2020104Text", "%Y%m%d", ymd);
-    assert(ymd == 4d / October / 2020y);
+    want_value("2020104Text", "%Y%m%d", ymd, 4d / October / 2020y);
 
     fail_parse("202000000000000923", "%Y%m%d", ymd);
     fail_parse("202000000000000923", "%Y%m%d", ymd);
@@ -1207,14 +990,11 @@ void parse_timepoints() {
     fail_parse("1887-12-22 -1:00:00", "%F %T", st);
     fail_parse("1887-12-22 24:00:00", "%F %T", st);
 
-    test_parse("1912-06-23 00:00:00", "%F %T", st);
-    assert(st == sys_days{23d / June / 1912y});
-    test_parse("1912-06-23 23:59:59", "%F %T", st);
-    assert(st == sys_days{23d / June / 1912y} + 23h + 59min + 59s);
+    want_value("1912-06-23 00:00:00", "%F %T", st, sys_days{23d / June / 1912y});
+    want_value("1912-06-23 23:59:59", "%F %T", st, sys_days{23d / June / 1912y} + 23h + 59min + 59s);
 
     // GH-1938: parsing timepoint with year and day-of-year
-    test_parse("1882.82", "%Y.%j", st);
-    assert(st == sys_days{23d / March / 1882y});
+    want_value("1882.82", "%Y.%j", st, sys_days{23d / March / 1882y});
 
     test_gh_1952();
 
@@ -1222,8 +1002,8 @@ void parse_timepoints() {
     fail_parse("2021-08-28 00:00:60", "%F %T", ut);
 
     fail_parse("2017-01-01 05:29:60", "%F %T", ut);
-    test_parse("2017-01-01 05:29:60 +05:30", "%F %T %Ez", ut);
-    assert(ut == clock_cast<utc_clock>(sys_days{1d / January / 2017y}) - 1s);
+    want_value(
+        "2017-01-01 05:29:60 +05:30", "%F %T %Ez", ut, clock_cast<utc_clock>(sys_days{1d / January / 2017y}) - 1s);
 }
 
 void parse_modified_maximum_characters() {
@@ -1232,208 +1012,151 @@ void parse_modified_maximum_characters() {
 
     {
         day d{7};
-        test_parse(hundred_digits, "%d", d);
-        assert(d == day{11});
+        want_value(hundred_digits, "%d", d, day{11});
         fail_parse(seventy_zeroes + "22", "%d", d); // 0 is not a valid day of the month
         fail_parse(hundred_digits, "%100d", d); // overflow
-        test_parse(seventy_zeroes + "22", "%100d", d);
-        assert(d == day{22});
+        want_value(seventy_zeroes + "22", "%100d", d, day{22});
 
-        test_parse(hundred_digits, "%e", d);
-        assert(d == day{11});
+        want_value(hundred_digits, "%e", d, day{11});
         fail_parse(seventy_zeroes + "22", "%e", d); // 0 is not a valid day of the month
         fail_parse(hundred_digits, "%100e", d); // overflow
-        test_parse(seventy_zeroes + "22", "%100e", d);
-        assert(d == day{22});
+        want_value(seventy_zeroes + "22", "%100e", d, day{22});
     }
 
     {
         hours h{33h};
-        test_parse(hundred_digits, "%H", h);
-        assert(h == 11h);
-        test_parse(seventy_zeroes + "22", "%H", h);
-        assert(h == 0h);
+        want_value(hundred_digits, "%H", h, 11h);
+        want_value(seventy_zeroes + "22", "%H", h, 0h);
         fail_parse(hundred_digits, "%100H", h); // overflow
-        test_parse(seventy_zeroes + "22", "%100H", h);
-        assert(h == 22h);
+        want_value(seventy_zeroes + "22", "%100H", h, 22h);
 
-        test_parse(hundred_digits, "%I", h);
-        assert(h == 11h);
+        want_value(hundred_digits, "%I", h, 11h);
         fail_parse(seventy_zeroes + "7", "%I", h); // 0 is not a valid 12-hour clock
         fail_parse(hundred_digits, "%100I", h); // overflow
-        test_parse(seventy_zeroes + "7", "%100I", h);
-        assert(h == 7h);
+        want_value(seventy_zeroes + "7", "%100I", h, 7h);
     }
 
     {
         days ds{22};
-        test_parse(hundred_digits, "%j", ds);
-        assert(ds == days{111});
-        test_parse(seventy_zeroes + "1729", "%j", ds);
-        assert(ds == days{0});
+        want_value(hundred_digits, "%j", ds, days{111});
+        want_value(seventy_zeroes + "1729", "%j", ds, days{0});
         fail_parse(hundred_digits, "%100j", ds); // overflow
-        test_parse(seventy_zeroes + "1729", "%100j", ds);
-        assert(ds == days{1729});
+        want_value(seventy_zeroes + "1729", "%100j", ds, days{1729});
     }
 
     {
         year_month_day ymd{1970y / January / 1d};
-        test_parse("2030 " + hundred_digits, "%Y %j", ymd);
-        assert(ymd == 2030y / April / 21d);
+        want_value("2030 " + hundred_digits, "%Y %j", ymd, 2030y / April / 21d);
         fail_parse("2030 " + seventy_zeroes + "124", "%Y %j", ymd); // 0 is not a valid day of the year
         fail_parse("2030 " + hundred_digits, "%Y %100j", ymd); // overflow
-        test_parse("2030 " + seventy_zeroes + "124", "%Y %100j", ymd);
-        assert(ymd == 2030y / May / 4d);
+        want_value("2030 " + seventy_zeroes + "124", "%Y %100j", ymd, 2030y / May / 4d);
 
         fail_parse(hundred_digits + "-02-03", "%100F", ymd); // overflow
-        test_parse(seventy_zeroes + "1969-07-20", "%100F", ymd);
-        assert(ymd == 1969y / July / 20d);
+        want_value(seventy_zeroes + "1969-07-20", "%100F", ymd, 1969y / July / 20d);
 
-        test_parse("2015 4 " + hundred_digits, "%Y %u %U", ymd);
-        assert(ymd == 2015y / March / 19d);
-        test_parse("2015 4 " + seventy_zeroes + "6", "%Y %u %U", ymd);
-        assert(ymd == 2015y / January / 1d);
+        want_value("2015 4 " + hundred_digits, "%Y %u %U", ymd, 2015y / March / 19d);
+        want_value("2015 4 " + seventy_zeroes + "6", "%Y %u %U", ymd, 2015y / January / 1d);
         fail_parse("2015 4 " + hundred_digits, "%Y %u %100U", ymd); // overflow
-        test_parse("2015 4 " + seventy_zeroes + "6", "%Y %u %100U", ymd);
-        assert(ymd == 2015y / February / 12d);
+        want_value("2015 4 " + seventy_zeroes + "6", "%Y %u %100U", ymd, 2015y / February / 12d);
 
-        test_parse("2015 4 " + hundred_digits, "%Y %u %W", ymd);
-        assert(ymd == 2015y / March / 19d);
-        test_parse("2015 4 " + seventy_zeroes + "6", "%Y %u %W", ymd);
-        assert(ymd == 2015y / January / 1d);
+        want_value("2015 4 " + hundred_digits, "%Y %u %W", ymd, 2015y / March / 19d);
+        want_value("2015 4 " + seventy_zeroes + "6", "%Y %u %W", ymd, 2015y / January / 1d);
         fail_parse("2015 4 " + hundred_digits, "%Y %u %100W", ymd); // overflow
-        test_parse("2015 4 " + seventy_zeroes + "6", "%Y %u %100W", ymd);
-        assert(ymd == 2015y / February / 12d);
+        want_value("2015 4 " + seventy_zeroes + "6", "%Y %u %100W", ymd, 2015y / February / 12d);
 
-        test_parse("4 03 19 " + hundred_digits, "%u %V %C %g", ymd);
-        assert(ymd == 1911y / January / 19d);
-        test_parse("4 03 19 " + seventy_zeroes + "33", "%u %V %C %g", ymd);
-        assert(ymd == 1900y / January / 18d);
+        want_value("4 03 19 " + hundred_digits, "%u %V %C %g", ymd, 1911y / January / 19d);
+        want_value("4 03 19 " + seventy_zeroes + "33", "%u %V %C %g", ymd, 1900y / January / 18d);
         fail_parse("4 03 19 " + hundred_digits, "%u %V %C %100g", ymd); // overflow
-        test_parse("4 03 19 " + seventy_zeroes + "55", "%u %V %C %100g", ymd);
-        assert(ymd == 1955y / January / 20d);
+        want_value("4 03 19 " + seventy_zeroes + "55", "%u %V %C %100g", ymd, 1955y / January / 20d);
 
-        test_parse("4 03 " + hundred_digits, "%u %V %G", ymd);
-        assert(ymd == 1111y / January / 19d);
-        test_parse("4 03 " + seventy_zeroes + "2030", "%u %V %G", ymd);
-        assert(ymd == 0y / January / 20d);
+        want_value("4 03 " + hundred_digits, "%u %V %G", ymd, 1111y / January / 19d);
+        want_value("4 03 " + seventy_zeroes + "2030", "%u %V %G", ymd, 0y / January / 20d);
         fail_parse("4 03 " + hundred_digits, "%u %V %100G", ymd); // overflow
-        test_parse("4 03 " + seventy_zeroes + "2030", "%u %V %100G", ymd);
-        assert(ymd == 2030y / January / 17d);
+        want_value("4 03 " + seventy_zeroes + "2030", "%u %V %100G", ymd, 2030y / January / 17d);
 
-        test_parse("4 2015 " + hundred_digits, "%u %G %V", ymd);
-        assert(ymd == 2015y / March / 12d);
+        want_value("4 2015 " + hundred_digits, "%u %G %V", ymd, 2015y / March / 12d);
         fail_parse("4 2015 " + seventy_zeroes + "33", "%u %G %V", ymd); // 0 is not a valid ISO week
         fail_parse("4 2015 " + hundred_digits, "%u %G %100V", ymd); // overflow
-        test_parse("4 2015 " + seventy_zeroes + "33", "%u %G %100V", ymd);
-        assert(ymd == 2015y / August / 13d);
+        want_value("4 2015 " + seventy_zeroes + "33", "%u %G %100V", ymd, 2015y / August / 13d);
     }
 
     {
         month mo{January};
-        test_parse(hundred_digits, "%m", mo);
-        assert(mo == November);
+        want_value(hundred_digits, "%m", mo, November);
         fail_parse(seventy_zeroes + "12", "%m", mo); // 0 is not a valid month
         fail_parse(hundred_digits, "%100m", mo); // overflow
-        test_parse(seventy_zeroes + "12", "%100m", mo);
-        assert(mo == December);
+        want_value(seventy_zeroes + "12", "%100m", mo, December);
     }
 
     {
         minutes mi{22min};
-        test_parse(hundred_digits, "%M", mi);
-        assert(mi == 11min);
-        test_parse(seventy_zeroes + "55", "%M", mi);
-        assert(mi == 0min);
+        want_value(hundred_digits, "%M", mi, 11min);
+        want_value(seventy_zeroes + "55", "%M", mi, 0min);
         fail_parse(hundred_digits, "%100M", mi); // overflow
-        test_parse(seventy_zeroes + "55", "%100M", mi);
-        assert(mi == 55min);
+        want_value(seventy_zeroes + "55", "%100M", mi, 55min);
     }
 
     {
         seconds s{22s};
-        test_parse(hundred_digits, "%S", s);
-        assert(s == 11s);
-        test_parse(seventy_zeroes + "55", "%S", s);
-        assert(s == 0s);
+        want_value(hundred_digits, "%S", s, 11s);
+        want_value(seventy_zeroes + "55", "%S", s, 0s);
         fail_parse(hundred_digits, "%100S", s); // overflow
-        test_parse(seventy_zeroes + "55", "%100S", s);
-        assert(s == 55s);
+        want_value(seventy_zeroes + "55", "%100S", s, 55s);
     }
 
     {
         weekday wd{Thursday};
-        test_parse(hundred_digits, "%u", wd);
-        assert(wd == Monday);
+        want_value(hundred_digits, "%u", wd, Monday);
         fail_parse(seventy_zeroes + "2", "%u", wd); // 0 is not a valid weekday for %u
         fail_parse(hundred_digits, "%100u", wd); // overflow
-        test_parse(seventy_zeroes + "2", "%100u", wd);
-        assert(wd == Tuesday);
+        want_value(seventy_zeroes + "2", "%100u", wd, Tuesday);
 
-        test_parse(hundred_digits, "%w", wd);
-        assert(wd == Monday);
-        test_parse(seventy_zeroes + "2", "%w", wd);
-        assert(wd == Sunday);
+        want_value(hundred_digits, "%w", wd, Monday);
+        want_value(seventy_zeroes + "2", "%w", wd, Sunday);
         fail_parse(hundred_digits, "%100w", wd); // overflow
-        test_parse(seventy_zeroes + "2", "%100w", wd);
-        assert(wd == Tuesday);
+        want_value(seventy_zeroes + "2", "%100w", wd, Tuesday);
     }
 
     {
         year y{1970y};
-        test_parse(hundred_digits, "%y", y);
-        assert(y == 2011y);
-        test_parse(seventy_zeroes + "55", "%y", y);
-        assert(y == 2000y);
+        want_value(hundred_digits, "%y", y, 2011y);
+        want_value(seventy_zeroes + "55", "%y", y, 2000y);
         fail_parse(hundred_digits, "%100y", y); // overflow
-        test_parse(seventy_zeroes + "55", "%100y", y);
-        assert(y == 2055y);
+        want_value(seventy_zeroes + "55", "%100y", y, 2055y);
 
-        test_parse(hundred_digits, "%Y", y);
-        assert(y == 1111y);
-        test_parse(seventy_zeroes + "2026", "%Y", y);
-        assert(y == 0y);
+        want_value(hundred_digits, "%Y", y, 1111y);
+        want_value(seventy_zeroes + "2026", "%Y", y, 0y);
         fail_parse(hundred_digits, "%100Y", y); // overflow
-        test_parse(seventy_zeroes + "2026", "%100Y", y);
-        assert(y == 2026y);
+        want_value(seventy_zeroes + "2026", "%100Y", y, 2026y);
 
-        test_parse("33 " + hundred_digits, "%y %C", y);
-        assert(y == 1133y);
-        test_parse("33 " + seventy_zeroes + "22", "%y %C", y);
-        assert(y == 33y);
+        want_value("33 " + hundred_digits, "%y %C", y, 1133y);
+        want_value("33 " + seventy_zeroes + "22", "%y %C", y, 33y);
         fail_parse("33 " + hundred_digits, "%y %100C", y); // overflow
-        test_parse("33 " + seventy_zeroes + "22", "%y %100C", y);
-        assert(y == 2233y);
+        want_value("33 " + seventy_zeroes + "22", "%y %100C", y, 2233y);
     }
 }
 
 template <class CharT, class CStringOrStdString>
 void test_io_manipulator() {
     seconds time;
-    test_parse(WIDEN(CharT, "12"), CStringOrStdString{WIDEN(CharT, "%S")}, time);
-    assert(time == 12s);
-    test_parse(WIDEN(CharT, "12"), CStringOrStdString{WIDEN(CharT, "%M")}, time);
-    assert(time == 12min);
-    test_parse(WIDEN(CharT, "30"), CStringOrStdString{WIDEN(CharT, "%H")}, time);
-    assert(time == 30h);
-    test_parse(WIDEN(CharT, " 1:23:42"), CStringOrStdString{WIDEN(CharT, "%T")}, time);
-    assert(time == 1h + 23min + 42s);
+    want_value(WIDEN(CharT, "12"), CStringOrStdString{WIDEN(CharT, "%S")}, time, 12s);
+    want_value(WIDEN(CharT, "12"), CStringOrStdString{WIDEN(CharT, "%M")}, time, 12min);
+    want_value(WIDEN(CharT, "30"), CStringOrStdString{WIDEN(CharT, "%H")}, time, 30h);
+    want_value(WIDEN(CharT, " 1:23:42"), CStringOrStdString{WIDEN(CharT, "%T")}, time, 1h + 23min + 42s);
     basic_string<CharT> tz_name;
     test_parse(WIDEN(CharT, "Etc/GMT+11"), CStringOrStdString{WIDEN(CharT, "%Z")}, time, &tz_name);
     assert(tz_name == WIDEN(CharT, "Etc/GMT+11"));
     fail_parse(WIDEN(CharT, "Not_valid! 00"), CStringOrStdString{WIDEN(CharT, "%Z %H")}, time, &tz_name);
 
     weekday wd;
-    test_parse(WIDEN(CharT, "wedNesday"), CStringOrStdString{WIDEN(CharT, "%A")}, wd);
-    assert(wd == Wednesday);
+    want_value(WIDEN(CharT, "wedNesday"), CStringOrStdString{WIDEN(CharT, "%A")}, wd, Wednesday);
 
     month m;
-    test_parse(WIDEN(CharT, "deCeMbeR"), CStringOrStdString{WIDEN(CharT, "%b")}, m);
-    assert(m == December);
+    want_value(WIDEN(CharT, "deCeMbeR"), CStringOrStdString{WIDEN(CharT, "%b")}, m, December);
 
     sys_seconds st;
-    test_parse(WIDEN(CharT, "oct 29 19:01:42 2020"), CStringOrStdString{WIDEN(CharT, "%c")}, st);
-    assert(st == sys_days{2020y / October / 29d} + 19h + 1min + 42s);
+    want_value(WIDEN(CharT, "oct 29 19:01:42 2020"), CStringOrStdString{WIDEN(CharT, "%c")}, st,
+        sys_days{2020y / October / 29d} + 19h + 1min + 42s);
 
     fail_parse(WIDEN(CharT, "ab"), CStringOrStdString{WIDEN(CharT, "a%nb")}, time);
     test_parse(WIDEN(CharT, "a b"), CStringOrStdString{WIDEN(CharT, "a%nb")}, time);
@@ -1447,19 +1170,22 @@ void test_lwg_3536() {
     {
         istringstream iss{"2:2:30"};
         iss >> parse("%H:%M:%S", mm);
-        assert(iss.fail() && mm == 20min);
+        assert(iss.fail());
+        assert(mm == 20min);
     }
 
     {
         istringstream iss{"June"};
         iss >> parse("%B", mm);
-        assert(iss.fail() && mm == 20min);
+        assert(iss.fail());
+        assert(mm == 20min);
     }
 
     {
         istringstream iss{""};
         iss >> parse("%B", mm);
-        assert(iss.fail() && mm == 20min);
+        assert(iss.fail());
+        assert(mm == 20min);
     }
 }
 
