@@ -1230,7 +1230,6 @@ namespace test_expected {
     using TrivialityScenario6 = TrivialityScenario<IsTriviallyCopyConstructible::Yes, IsTriviallyMoveConstructible::Yes,
         IsTriviallyCopyAssignable::Yes, IsTriviallyMoveAssignable::Yes, IsTriviallyDestructible::Yes>;
 
-    // per LWG-4026, see also LLVM-74768
     template <class PODType, class Scenario>
     struct TrivialityTester {
         PODType val{};
@@ -1350,6 +1349,7 @@ namespace test_expected {
         test_triviality_of_assignment_binary<Val, TrivialityScenario6>();
     }
 
+    // Test LWG-4026 "Assignment operators of std::expected should propagate triviality"
     constexpr void test_triviality_of_assignment_all() {
         test_triviality_of_assignment<TrivialityScenario1>();
         test_triviality_of_assignment<TrivialityScenario2>();
@@ -2197,7 +2197,7 @@ namespace test_expected {
         test_special_members();
         test_constructors();
         test_assignment();
-        test_triviality_of_assignment_all(); // per LWG-4026, see also LLVM-74768
+        test_triviality_of_assignment_all();
         test_emplace();
         test_swap();
         test_access();
