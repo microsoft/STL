@@ -790,7 +790,7 @@
 // warning C5285: cannot declare a specialization for 'meow'
 // warning C5291: 'DERIVED': deriving from the base class 'BASE' can cause potential runtime issues
 //                due to an ABI bug. Recommend adding a 4-byte data member to the base class
-//                for the padding at the end of it to work around this bug. (TRANSITION, ABI)
+//                for the padding at the end of it to work around this bug. (/Wall, TRANSITION, ABI)
 // warning C6294: Ill-defined for-loop: initial condition does not satisfy test. Loop body not executed
 
 #ifndef _STL_DISABLED_WARNINGS
@@ -886,9 +886,11 @@
     _Pragma("clang diagnostic push")    \
     _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
 #else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+// warning C4877: overriding non-pure virtual function 'Base::meow': was declared deprecated (/Wall)
+// warning C4996: 'meow': was declared deprecated
 #define _STL_DISABLE_DEPRECATED_WARNING \
     _Pragma("warning(push)")            \
-    _Pragma("warning(disable : 4996)") // was declared deprecated
+    _Pragma("warning(disable : 4877 4996)")
 #endif // ^^^ !defined(__clang__) ^^^
 #endif // _STL_DISABLE_DEPRECATED_WARNING
 // clang-format on
