@@ -124,7 +124,7 @@ struct arena_reuse_allocator {
 const size_t arena_size = 256;
 
 template <size_t Alignment>
-void test_string() {
+void test_string_poisoning() {
     fprintf(stderr, "\nTesting string with allocator alignment of %zu\n", Alignment);
 
     asan_unaware_arena<arena_size, Alignment> test_arena;
@@ -140,7 +140,7 @@ void test_string() {
 }
 
 template <size_t Alignment>
-void test_vector() {
+void test_vector_poisoning() {
     fprintf(stderr, "\nTesting vector with allocator alignment of %zu\n", Alignment);
 
     asan_unaware_arena<arena_size, Alignment> test_arena;
@@ -167,11 +167,11 @@ int main() {
     // are more conservative and only poison the memory that was handed out by the
     // allocator, leaving some at the end unpoisoned.
 
-    test_string<2>(); // under poisoned code path
-    test_string<8>(); // over poisoned code path
+    test_string_poisoning<2>(); // under poisoned code path
+    test_string_poisoning<8>(); // over poisoned code path
 
-    test_vector<2>(); // under poisoned code path
-    test_vector<8>(); // over poisoned code path
+    test_vector_poisoning<2>(); // under poisoned code path
+    test_vector_poisoning<8>(); // over poisoned code path
 
     return 0;
 }
