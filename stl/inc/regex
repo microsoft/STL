@@ -1633,7 +1633,7 @@ private:
     _Node_base* _Current;
     regex_constants::syntax_option_type _Flags;
     const _RxTraits& _Traits;
-    vector<_Elem> _Chars;
+    typename _RxTraits::string_type _Chars;
 
 public:
     _Builder3(const _Builder3&)            = delete;
@@ -3599,7 +3599,6 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_coll(const _Elem* const _First, c
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 _Node_base* _Builder3<_FwdIt, _Elem, _RxTraits>::_Begin_group() { // add group node
-    _Emit_str_node();
     return _New_node(_N_group);
 }
 
