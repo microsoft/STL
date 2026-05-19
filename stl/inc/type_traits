@@ -127,10 +127,19 @@ struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS add_rvalue_reference {
 _EXPORT_STD template <class _Ty>
 using add_rvalue_reference_t = typename _Add_reference<_Ty>::_Rvalue;
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile"
+#endif // defined(__clang__)
+
 _EXPORT_STD template <class _Ty>
 add_rvalue_reference_t<_Ty> declval() noexcept {
     static_assert(false, "Calling declval is ill-formed, see N4950 [declval]/2.");
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // defined(__clang__)
 
 _EXPORT_STD template <class _Ty>
 struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS remove_extent { // remove array extent
@@ -1431,8 +1440,17 @@ struct _Common_type3<void_t<common_type_t<_Ty1, _Ty2>>, _Ty1, _Ty2, _Rest...>
 template <class _Ty1, class _Ty2, class... _Rest>
 struct common_type<_Ty1, _Ty2, _Rest...> : _Common_type3<void, _Ty1, _Ty2, _Rest...> {};
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile"
+#endif // defined(__clang__)
+
 template <class _Ty>
 _Ty _Returns_exactly() noexcept; // not defined
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // defined(__clang__)
 
 #if _HAS_CXX20
 _EXPORT_STD template <class, class, template <class> class, template <class> class>
