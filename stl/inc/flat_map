@@ -1275,13 +1275,21 @@ public:
     }
     template <class _OtherKey>
     _NODISCARD mapped_type& at(const _OtherKey& _Key_val)
+#ifdef __clang__ // TRANSITION, LLVM-198663
+        requires _Transparent<_Compare>
+#else // ^^^ workaround / no workaround vvv
         requires _Transparent<key_compare>
+#endif // ^^^ no workaround ^^^
     {
         return _At(_Key_val);
     }
     template <class _OtherKey>
     _NODISCARD const mapped_type& at(const _OtherKey& _Key_val) const
+#ifdef __clang__ // TRANSITION, LLVM-198663
+        requires _Transparent<_Compare>
+#else // ^^^ workaround / no workaround vvv
         requires _Transparent<key_compare>
+#endif // ^^^ no workaround ^^^
     {
         return _At(_Key_val);
     }
