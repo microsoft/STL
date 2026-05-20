@@ -4067,7 +4067,7 @@ namespace ranges {
 
             _Iterator() = default;
 
-            constexpr _Iterator(split_view& _Parent_, iterator_t<_Vw> _Current_, subrange<iterator_t<_Vw>> _Next_) //
+            constexpr _Iterator(split_view& _Parent_, iterator_t<_Vw> _Current_, subrange<iterator_t<_Vw>> _Next_)
                 noexcept(is_nothrow_move_constructible_v<iterator_t<_Vw>>) // strengthened
                 : _Parent{_STD addressof(_Parent_)}, _Current{_STD move(_Current_)}, _Next{_STD move(_Next_)} {}
 
@@ -4785,7 +4785,7 @@ namespace ranges {
             }
 
             _NODISCARD constexpr decltype(auto) operator*() const
-                noexcept(is_nothrow_move_constructible_v<tuple_element_t<_Index, range_reference_t<_Base>>> //
+                noexcept(is_nothrow_move_constructible_v<tuple_element_t<_Index, range_reference_t<_Base>>>
                          && noexcept(_STD get<_Index>(*_Current))) /* strengthened */ {
                 using _ElemTy = remove_cv_t<tuple_element_t<_Index, range_reference_t<_Base>>>;
                 return static_cast<_ElemTy>(_STD get<_Index>(*_Current));
@@ -4868,7 +4868,7 @@ namespace ranges {
             }
 
             _NODISCARD constexpr decltype(auto) operator[](const difference_type _Idx) const
-                noexcept(is_nothrow_move_constructible_v<tuple_element_t<_Index, range_reference_t<_Base>>> //
+                noexcept(is_nothrow_move_constructible_v<tuple_element_t<_Index, range_reference_t<_Base>>>
                          && noexcept(_STD get<_Index>(*(_Current + _Idx)))) /* strengthened */
                 requires random_access_range<_Base>
             {
@@ -6131,7 +6131,7 @@ namespace ranges {
                 requires (!_Slide_caches_first<_Base>)
                 : _Current(_STD move(_Current_)), _Count(_Count_) {}
 
-            constexpr _Iterator(_Base_iterator _Current_, _Base_iterator _Last_, range_difference_t<_Base> _Count_) //
+            constexpr _Iterator(_Base_iterator _Current_, _Base_iterator _Last_, range_difference_t<_Base> _Count_)
                 noexcept(is_nothrow_move_constructible_v<_Base_iterator>) /* strengthened */
                 requires _Slide_caches_first<_Base>
                 : _Iter_base<_Base>(_STD move(_Last_)), _Current(_STD move(_Current_)), _Count(_Count_) {}
@@ -6712,8 +6712,8 @@ namespace ranges {
             range_difference_t<_Base> _Missing = 0;
 
             constexpr _Iterator(_ParentTy* _Parent, _Base_iterator _Current_,
-                range_difference_t<_Base> _Missing_ = 0) //
-                noexcept(noexcept(_RANGES end(_Parent->_Range)) && is_nothrow_move_constructible_v<_Base_iterator> //
+                range_difference_t<_Base> _Missing_ = 0)
+                noexcept(noexcept(_RANGES end(_Parent->_Range)) && is_nothrow_move_constructible_v<_Base_iterator>
                          && is_nothrow_move_constructible_v<_Base_sentinel>) // strengthened
                 : _Current(_STD move(_Current_)), _End(_RANGES end(_Parent->_Range)), _Stride(_Parent->_Stride),
                   _Missing(_Missing_) {}
@@ -6903,7 +6903,7 @@ namespace ranges {
                 return _Copy;
             }
 
-            _NODISCARD friend constexpr difference_type operator-(const _Iterator& _Left, const _Iterator& _Right) //
+            _NODISCARD friend constexpr difference_type operator-(const _Iterator& _Left, const _Iterator& _Right)
                 noexcept(noexcept(_Left._Current - _Right._Current)) // strengthened
                 requires sized_sentinel_for<_Base_iterator, _Base_iterator>
             {
@@ -8564,7 +8564,7 @@ namespace ranges {
                 return _Iterator{*_It._Parent, _It._Inner - _Off};
             }
 
-            _NODISCARD friend constexpr difference_type operator-(const _Iterator& _Left, const _Iterator& _Right) //
+            _NODISCARD friend constexpr difference_type operator-(const _Iterator& _Left, const _Iterator& _Right)
                 noexcept(noexcept(_Left._Inner - _Right._Inner)) // strengthened
                 requires sized_sentinel_for<_Inner_iterator<_Const>, _Inner_iterator<_Const>>
             {
