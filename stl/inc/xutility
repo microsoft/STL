@@ -1985,8 +1985,8 @@ public:
         return *this;
     }
 
-    _CONSTEXPR17 reverse_iterator operator++(int) noexcept(is_nothrow_copy_constructible_v<_BidIt> //
-                                                           && noexcept(--current)) /* strengthened */ {
+    _CONSTEXPR17 reverse_iterator operator++(int)
+        noexcept(is_nothrow_copy_constructible_v<_BidIt> && noexcept(--current)) /* strengthened */ {
         reverse_iterator _Tmp = *this;
         --current;
         return _Tmp;
@@ -1997,8 +1997,8 @@ public:
         return *this;
     }
 
-    _CONSTEXPR17 reverse_iterator operator--(int) noexcept(is_nothrow_copy_constructible_v<_BidIt> //
-                                                           && noexcept(++current)) /* strengthened */ {
+    _CONSTEXPR17 reverse_iterator operator--(int)
+        noexcept(is_nothrow_copy_constructible_v<_BidIt> && noexcept(++current)) /* strengthened */ {
         reverse_iterator _Tmp = *this;
         ++current;
         return _Tmp;
@@ -3542,9 +3542,8 @@ namespace ranges {
     struct _Cdata_fn {
 #if _HAS_CXX23
         template <_Should_range_access _Ty>
-            requires requires(_Ty& _Val) { //
-                _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val)));
-            }
+            requires requires(
+                _Ty& _Val) { _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val))); }
         _NODISCARD static constexpr auto operator()(_Ty&& _Val)
             noexcept(noexcept(_RANGES data(_RANGES _Possibly_const_range(_Val)))) {
             return _RANGES _As_const_pointer(_RANGES data(_RANGES _Possibly_const_range(_Val)));
@@ -4485,8 +4484,8 @@ public:
         return *this;
     }
 
-    _CONSTEXPR17 auto operator++(int) noexcept(is_nothrow_copy_constructible_v<_Iter> //
-                                               && noexcept(++_Current)) /* strengthened */ {
+    _CONSTEXPR17 auto operator++(int)
+        noexcept(is_nothrow_copy_constructible_v<_Iter> && noexcept(++_Current)) /* strengthened */ {
 #if _HAS_CXX20
         if constexpr (forward_iterator<_Iter>) {
 #endif // _HAS_CXX20
@@ -4505,8 +4504,8 @@ public:
         return *this;
     }
 
-    _CONSTEXPR17 move_iterator operator--(int) noexcept(is_nothrow_copy_constructible_v<_Iter> //
-                                                        && noexcept(--_Current)) /* strengthened */ {
+    _CONSTEXPR17 move_iterator operator--(int)
+        noexcept(is_nothrow_copy_constructible_v<_Iter> && noexcept(--_Current)) /* strengthened */ {
         move_iterator _Tmp = *this;
         --_Current;
         return _Tmp;

@@ -175,8 +175,7 @@ struct validating_iterator_provider<T>::iterator {
         return i.operator->() >= j.operator->() ? placeholder_addr : nullptr;
     }
 
-    template <class OtherIter, enable_if_t<!is_same_v<OtherIter, iterator> //
-                                               && is_validating_iterator<OtherIter> //
+    template <class OtherIter, enable_if_t<!is_same_v<OtherIter, iterator> && is_validating_iterator<OtherIter>
                                                && is_convertible_v<T*, typename OtherIter::pointer>,
                                    int> = 0>
     constexpr operator OtherIter() const noexcept {
