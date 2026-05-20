@@ -25,9 +25,11 @@ using namespace std;
 template <class T>
 struct tagged_bool_like {
     bool val_;
+    template <class = void>
     constexpr operator bool() const noexcept {
         return val_;
     }
+    explicit operator bool() const = delete;
 };
 
 template <class T>
