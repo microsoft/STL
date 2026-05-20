@@ -1802,17 +1802,18 @@ constexpr auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2)
         static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)))
         -> decltype(_Invoker1<_Callable, _Ty1>::_Call(
             static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)) {
-    if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Functor) {
+    constexpr auto _Strat = _Invoker1<_Callable, _Ty1>::_Strategy;
+    if constexpr (_Strat == _Invoker_strategy::_Functor) {
         return static_cast<_Callable&&>(_Obj)(static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...);
-    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_object) {
+    } else if constexpr (_Strat == _Invoker_strategy::_Pmf_object) {
         return (static_cast<_Ty1&&>(_Arg1).*_Obj)(static_cast<_Types2&&>(_Args2)...);
-    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_refwrap) {
+    } else if constexpr (_Strat == _Invoker_strategy::_Pmf_refwrap) {
         return (_Arg1.get().*_Obj)(static_cast<_Types2&&>(_Args2)...);
-    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_pointer) {
+    } else if constexpr (_Strat == _Invoker_strategy::_Pmf_pointer) {
         return ((*static_cast<_Ty1&&>(_Arg1)).*_Obj)(static_cast<_Types2&&>(_Args2)...);
-    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_object) {
+    } else if constexpr (_Strat == _Invoker_strategy::_Pmd_object) {
         return static_cast<_Ty1&&>(_Arg1).*_Obj;
-    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_refwrap) {
+    } else if constexpr (_Strat == _Invoker_strategy::_Pmd_refwrap) {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1956799
         return _Arg1.get().*_Obj;
 #else // ^^^ no workaround / workaround vvv
@@ -1820,7 +1821,7 @@ constexpr auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2)
         return _Ref.*_Obj;
 #endif // ^^^ workaround ^^^
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_pointer);
+        _STL_INTERNAL_STATIC_ASSERT(_Strat == _Invoker_strategy::_Pmd_pointer);
         return (*static_cast<_Ty1&&>(_Arg1)).*_Obj;
     }
 }
