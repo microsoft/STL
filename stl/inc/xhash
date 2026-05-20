@@ -208,8 +208,8 @@ struct _Hash_vec {
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return (_STD min) (static_cast<size_type>(_STD _Max_limit<difference_type>()),
-            _Aliter_traits::max_size(_Mypair._Get_first()));
+        constexpr auto _Diff_max = static_cast<size_type>(_STD _Max_limit<difference_type>());
+        return (_STD min) (_Diff_max, _Aliter_traits::max_size(_Mypair._Get_first()));
     }
 
     _NODISCARD size_type capacity() const noexcept {

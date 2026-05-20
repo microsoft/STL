@@ -2289,7 +2289,8 @@ public:
         const size_type _Alloc_max   = _Alty_traits::max_size(_Getal());
         const size_type _Storage_max = // can always store small string
             (_STD max) (_Alloc_max, static_cast<size_type>(_BUF_SIZE));
-        return (_STD min) (static_cast<size_type>(_STD _Max_limit<difference_type>()),
+        constexpr auto _Diff_max = static_cast<size_type>(_STD _Max_limit<difference_type>());
+        return (_STD min) (_Diff_max,
             static_cast<size_type>(_Storage_max - 1) // -1 is for null terminator and/or npos
         );
     }
