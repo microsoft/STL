@@ -1110,7 +1110,7 @@ namespace iterator_cust_move_test {
         return i + 1;
     }
     static_assert(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&)(int)>);
-    static_assert(ranges::iter_move(&f)(42) == 43);
+    static_assert(ranges::iter_move (&f)(42) == 43);
     static_assert(noexcept(ranges::iter_move(&f)));
 
     struct ref_is_lvalue {

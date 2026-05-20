@@ -475,7 +475,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
             if constexpr ((random_access_range<VFirst> && ...
                               && random_access_range<all_t<Rest>>) ) { // Check 3way comparisons
                 using Cat              = common_comparison_category_t<compare_three_way_result_t<iterator_t<VFirst>>,
-                                 compare_three_way_result_t<iterator_t<all_t<Rest>>>...>;
+                    compare_three_way_result_t<iterator_t<all_t<Rest>>>...>;
                 auto i2                = r.begin();
                 same_as<Cat> auto cmp1 = i <=> i2;
                 assert(cmp1 == Cat::equivalent);

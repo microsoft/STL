@@ -2115,8 +2115,8 @@ _NODISCARD _OutputIt _Write_integral(
 
         if (_Separators > 0) {
             return _Write_separated_integer(_Buffer_start, _End, _Groups,
-                                    _STD use_facet<numpunct<_CharT>>(_Locale._Get()).thousands_sep(), //
-                                    _Separators, _STD move(_Out));
+                _STD use_facet<numpunct<_CharT>>(_Locale._Get()).thousands_sep(), //
+                _Separators, _STD move(_Out));
         }
         return _Widen_and_copy<_CharT>(_Buffer_start, _End, _STD move(_Out));
     };
