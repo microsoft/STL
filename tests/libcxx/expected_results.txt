@@ -378,8 +378,9 @@ std/utilities/variant/variant.relops/three_way.pass.cpp:0 FAIL
 std/utilities/variant/variant.relops/three_way.pass.cpp:1 FAIL
 
 # VSO-2188243 constexpr ICE in C1XX adapt::to_prvalue
-std/algorithms/robust_re_difference_type.compile.pass.cpp:0 FAIL
-std/algorithms/robust_re_difference_type.compile.pass.cpp:1 FAIL
+# SKIPPED as this is passing for some architectures.
+std/algorithms/robust_re_difference_type.compile.pass.cpp:0 SKIPPED
+std/algorithms/robust_re_difference_type.compile.pass.cpp:1 SKIPPED
 
 # DevCom-10439137 VSO-1869865: Discarded id-expression causes unnecessary reading
 std/containers/sequences/array/array.cons/initialization.pass.cpp:0 FAIL
