@@ -205,6 +205,8 @@ IncludeBlocks:   Regroup
 #     SortPriority:    0
 #     CaseSensitive:   false
 IncludeCategories:
+  - Regex:           '^<benchmark/benchmark\.h>$'
+    Priority:        5
   - Regex:           '^<(yvals|yvals_core)\.h>$'
     Priority:        10
   - Regex:           '^<__msvc_.*\.hpp>$'
