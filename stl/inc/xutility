@@ -5789,11 +5789,11 @@ template <class _Iter1, class _Iter2, class _Pr>
 constexpr bool _Equal_memcmp_is_safe =
     _Equal_memcmp_is_safe_helper<remove_const_t<_Iter1>, remove_const_t<_Iter2>, remove_const_t<_Pr>>;
 
-#if _VECTORIZED_SEARCH || _VECTORIZED_ADJACENT_FIND || _VECTORIZED_FIND_END || _VECTORIZED_FIND_FIRST_OF \
-    || _VECTORIZED_UNIQUE || _VECTORIZED_UNIQUE_COPY
 template <size_t _Size>
 constexpr bool _Is_vector_element_size = _Size == 1 || _Size == 2 || _Size == 4 || _Size == 8;
 
+#if _VECTORIZED_SEARCH || _VECTORIZED_ADJACENT_FIND || _VECTORIZED_FIND_END || _VECTORIZED_FIND_FIRST_OF \
+    || _VECTORIZED_UNIQUE || _VECTORIZED_UNIQUE_COPY
 // Can we activate the vector algorithms for search, adjacent_find, find_end, find_first_of, and default_searcher?
 // (Also used indirectly for unique and unique_copy.)
 template <class _It1, class _It2, class _Pr>
@@ -6344,23 +6344,25 @@ struct _Vector_alg_in_find_is_safe_object_pointers<_Ty1*, _Ty2*>
 // Can we activate the vector algorithms to find a value in a range of elements?
 template <class _Ty, class _Elem>
 constexpr bool _Vector_alg_in_find_is_safe_elem =
-    _Is_same_and_builtin_trivially_equality_comparable<_Ty, _Elem>
-    || disjunction_v<
+    _Is_vector_element_size<sizeof(_Elem)>
+    && (_Is_same_and_builtin_trivially_equality_comparable<_Ty, _Elem>
+        || disjunction_v<
 #ifdef __cpp_lib_byte
-        // We're finding a std::byte in a range of std::byte.
-        conjunction<is_same<_Ty, byte>, is_same<_Elem, byte>>,
+            // We're finding a std::byte in a range of std::byte.
+            conjunction<is_same<_Ty, byte>, is_same<_Elem, byte>>,
 #endif // defined(__cpp_lib_byte)
-       // We're finding an integer in a range of integers.
-       // This case is the one that requires careful runtime handling in _Could_compare_equal_to_value_type.
-        conjunction<is_integral<_Ty>, is_integral<_Elem>>,
-        // We're finding an (object or function) pointer in a range of pointers of the same type.
-        conjunction<is_pointer<_Ty>, is_same<_Ty, _Elem>>,
-        // We're finding a nullptr in a range of (object or function) pointers.
-        conjunction<is_null_pointer<_Ty>, is_pointer<_Elem>>,
-        // We're finding an object pointer in a range of object pointers, and:
-        // - One of the pointer types is a cv void*.
-        // - One of the pointer types is a cv1 U* and the other is a cv2 U*.
-        _Vector_alg_in_find_is_safe_object_pointers<_Ty, _Elem>>;
+
+            // We're finding an integer in a range of integers.
+            // This case is the one that requires careful runtime handling in _Could_compare_equal_to_value_type.
+            conjunction<is_integral<_Ty>, is_integral<_Elem>>,
+            // We're finding an (object or function) pointer in a range of pointers of the same type.
+            conjunction<is_pointer<_Ty>, is_same<_Ty, _Elem>>,
+            // We're finding a nullptr in a range of (object or function) pointers.
+            conjunction<is_null_pointer<_Ty>, is_pointer<_Elem>>,
+            // We're finding an object pointer in a range of object pointers, and:
+            // - One of the pointer types is a cv void*.
+            // - One of the pointer types is a cv1 U* and the other is a cv2 U*.
+            _Vector_alg_in_find_is_safe_object_pointers<_Ty, _Elem>>);
 
 // Can we activate the vector algorithms for find, count, remove, remove_copy, and ranges::find_last?
 // (Also used indirectly for replace and search_n.)
@@ -6840,7 +6842,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
         _Is_trivially_swappable<_Elem>, negation<is_volatile<_Elem>>>;
     constexpr size_t _Nx                = sizeof(_Elem);
 
-    if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
+    if constexpr (_Allow_vectorization && _Is_vector_element_size<sizeof(_Elem)>) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
