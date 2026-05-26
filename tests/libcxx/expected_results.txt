@@ -1182,6 +1182,19 @@ std/strings/basic.string/string.modifiers/string_replace/size_size_string_size_s
 # Clang error: arithmetic on a pointer to void
 std/ranges/range.adaptors/range.stride.view/end.pass.cpp FAIL
 
+# Not analyzed, MSVC truncation warnings.
+std/algorithms/alg.nonmodifying/alg.fold/ranges.fold_right.pass.cpp:0 FAIL
+std/algorithms/alg.nonmodifying/alg.fold/ranges.fold_right.pass.cpp:1 FAIL
+std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.float.pass.cpp:0 FAIL
+std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.float.pass.cpp:1 FAIL
+
+# Not analyzed. MSVC error C2039: 'value': is not a member of 'std::is_constructible<T,T &>'
+std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp:0 FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp:1 FAIL
+
+# Not analyzed, MSVC truncation warnings, Clang static_assert.
+std/algorithms/alg.nonmodifying/alg.fold/ranges.fold_right_last.pass.cpp FAIL
+
 
 # *** MSVC-INTERNAL TEST HARNESS ISSUES (note: configuration :9 restricts these skips to be MSVC-internal) ***
 
