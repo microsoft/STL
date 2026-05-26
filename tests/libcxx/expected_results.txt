@@ -337,6 +337,10 @@ std/utilities/optional/optional.iterator/compare.pass.cpp FAIL
 std/utilities/optional/optional.iterator/end.pass.cpp FAIL
 std/utilities/optional/optional.iterator/iterator.pass.cpp FAIL
 
+# P3383R3 mdspan::at()
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/containers/views/mdspan/mdspan/at.pass.cpp FAIL
+
 
 # *** MISSING COMPILER FEATURES ***
 
