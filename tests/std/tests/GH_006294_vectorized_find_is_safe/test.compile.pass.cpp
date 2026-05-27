@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
+#include <cstdint>
 
 using namespace std;
 
@@ -47,7 +48,7 @@ struct DefaultComparisonTooLargeSize {
 STATIC_ASSERT(
     _Vector_alg_in_find_is_safe<int*, int>); // ints are trivially equality comparable and 4 bytes, so should be allowed
 STATIC_ASSERT(_Vector_alg_in_find_is_safe<long*,
-    long>); // ints are trivially equality comparable and 4 bytes, so should be allowed
+    long>); // long is an integral type with a supported element size (4 or 8 bytes), so should be allowed
 
 STATIC_ASSERT(_Vector_alg_in_find_is_safe<int const*, int>); // "Top level const should not change the answer"
 STATIC_ASSERT(!_Vector_alg_in_find_is_safe<float*, float>); // "Don't allow floating point"
