@@ -370,10 +370,10 @@ struct arrowed_iterator {
     friend bool operator==(arrowed_iterator, arrowed_iterator);
 };
 
-static_assert(CanArrow<ranges::iterator_t<decltype(ranges::subrange<arrowed_iterator<arrow_status::good>>{} //
-                                                   | views::filter(is_even))>>);
-static_assert(!CanArrow<ranges::iterator_t<decltype(ranges::subrange<arrowed_iterator<arrow_status::bad>>{} //
-                                                    | views::filter(is_even))>>);
+static_assert(CanArrow<
+    ranges::iterator_t<decltype(ranges::subrange<arrowed_iterator<arrow_status::good>>{} | views::filter(is_even))>>);
+static_assert(!CanArrow<
+    ranges::iterator_t<decltype(ranges::subrange<arrowed_iterator<arrow_status::bad>>{} | views::filter(is_even))>>);
 
 int main() {
     // Validate views
