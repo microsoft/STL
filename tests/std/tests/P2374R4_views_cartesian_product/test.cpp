@@ -475,7 +475,7 @@ constexpr bool test_one(Expected&& expected_range, First&& first, Rest&&... rest
             if constexpr ((random_access_range<VFirst> && ...
                               && random_access_range<all_t<Rest>>) ) { // Check 3way comparisons
                 using Cat              = common_comparison_category_t<compare_three_way_result_t<iterator_t<VFirst>>,
-                                 compare_three_way_result_t<iterator_t<all_t<Rest>>>...>;
+                    compare_three_way_result_t<iterator_t<all_t<Rest>>>...>;
                 auto i2                = r.begin();
                 same_as<Cat> auto cmp1 = i <=> i2;
                 assert(cmp1 == Cat::equivalent);
@@ -967,7 +967,7 @@ int main() {
 
     { // ... move-only
         using test::Common, test::Sized;
-        test_one(expected_result_3, //
+        test_one(expected_result_3,
             move_only_view<int, input_iterator_tag, Common::no, Sized::yes>{get<0>(some_ranges)},
             move_only_view<int, forward_iterator_tag, Common::no, Sized::yes>{get<1>(some_ranges)},
             move_only_view<char, bidirectional_iterator_tag, Common::no, Sized::yes>{get<2>(some_ranges)},
@@ -977,11 +977,11 @@ int main() {
             move_only_view<int, forward_iterator_tag, Common::no, Sized::no>{get<1>(some_ranges)},
             move_only_view<char, bidirectional_iterator_tag, Common::no, Sized::no>{get<2>(some_ranges)},
             move_only_view<string_view, random_access_iterator_tag, Common::no, Sized::no>{get<3>(some_ranges)});
-        test_one(expected_result_2, //
+        test_one(expected_result_2,
             move_only_view<int, forward_iterator_tag, Common::yes, Sized::yes>{get<0>(some_ranges)},
             move_only_view<int, bidirectional_iterator_tag, Common::yes, Sized::yes>{get<1>(some_ranges)},
             move_only_view<char, random_access_iterator_tag, Common::yes, Sized::yes>{get<2>(some_ranges)});
-        test_one(expected_result_2, //
+        test_one(expected_result_2,
             move_only_view<int, forward_iterator_tag, Common::yes, Sized::no>{get<0>(some_ranges)},
             move_only_view<int, bidirectional_iterator_tag, Common::yes, Sized::no>{get<1>(some_ranges)},
             move_only_view<char, random_access_iterator_tag, Common::yes, Sized::no>{get<2>(some_ranges)});

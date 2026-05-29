@@ -3698,25 +3698,16 @@ void _Builder2<_FwdIt, _Elem, _RxTraits>::_Add_rep(int _Min, int _Max, bool _Gre
         _Node_endif* _End       = new _Node_endif;
         _Node_if* _If_expr      = new _Node_if(_End);
         _Node_if* _If_empty_str = new _Node_if(_End);
-        _Node_base* _Gbegin     = new _Node_base(_N_group);
-        _Node_end_group* _Gend  = new _Node_end_group(_N_end_group, _Fl_none, _Gbegin);
-
-        _If_empty_str->_Next = _Gbegin;
-        _Gbegin->_Prev       = _If_empty_str;
-
-        _Gbegin->_Next = _Gend;
-        _Gend->_Prev   = _Gbegin;
-
-        _Gend->_Next = _End;
-
-        _If_expr->_Child = _If_empty_str;
+        _If_empty_str->_Next    = _End;
+        _If_expr->_Child        = _If_empty_str;
 
         _Link_node(_End);
         _Insert_node(_Pos, _If_expr);
 
         if (!_Greedy) {
-            swap(_If_expr->_Next->_Prev, _If_empty_str->_Next->_Prev); // intentional ADL
-            swap(_If_expr->_Next, _If_empty_str->_Next); // intentional ADL
+            _If_expr->_Next->_Prev = _If_empty_str;
+            _End->_Prev            = _If_expr;
+            _STD swap(_If_expr->_Next, _If_empty_str->_Next);
         }
         return;
     }

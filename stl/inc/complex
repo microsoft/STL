@@ -168,8 +168,7 @@ namespace _Float_multi_prec {
 #ifdef __clang__
     [[__gnu__::__target__("fma")]]
 #endif // defined(__clang__)
-    _NODISCARD inline double
-        _Sqr_error_x86_x64_fma(const double _Xval, const double _Prod0) noexcept {
+    _NODISCARD inline double _Sqr_error_x86_x64_fma(const double _Xval, const double _Prod0) noexcept {
         const __m128d _Mx      = _mm_set_sd(_Xval);
         const __m128d _Mprod0  = _mm_set_sd(_Prod0);
         const __m128d _Mresult = _mm_fmsub_sd(_Mx, _Mx, _Mprod0);

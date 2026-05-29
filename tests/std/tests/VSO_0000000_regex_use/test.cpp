@@ -2634,6 +2634,24 @@ void test_gh_6262() {
     }
 }
 
+void test_gh_6267() {
+    // GH-6267: Avoid generating empty groups when parsing `?` quantifiers
+    for (const string re : {"a?", "a??"}) {
+        g_regexTester.should_match("a", re);
+        g_regexTester.should_match("", re);
+    }
+
+    {
+        test_regex re(&g_regexTester, "a?");
+        re.should_search_match("a", "a");
+    }
+
+    {
+        test_regex re(&g_regexTester, "a??");
+        re.should_search_match("a", "");
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2703,6 +2721,7 @@ int main() {
     test_gh_6191();
     test_gh_6249();
     test_gh_6262();
+    test_gh_6267();
 
     return g_regexTester.result();
 }
