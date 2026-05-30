@@ -55,11 +55,7 @@
 #endif // ^^^ intrinsics unavailable ^^^
 
 #if _HAS_CHARCONV_INTRINSICS
-#if defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
-#include <intrin.h> // TRANSITION, VSO-1918426
-#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64) / defined(_M_X64) vvv
 #include _STL_INTRIN_HEADER // for _umul128(), __umulh(), and __shiftright128()
-#endif // ^^^ defined(_M_X64) ^^^
 #endif // ^^^ intrinsics available ^^^
 
 #pragma pack(push, _CRT_PACKING)

@@ -790,7 +790,7 @@
 // warning C5285: cannot declare a specialization for 'meow'
 // warning C5291: 'DERIVED': deriving from the base class 'BASE' can cause potential runtime issues
 //                due to an ABI bug. Recommend adding a 4-byte data member to the base class
-//                for the padding at the end of it to work around this bug. (TRANSITION, ABI)
+//                for the padding at the end of it to work around this bug. (/Wall, TRANSITION, ABI)
 // warning C6294: Ill-defined for-loop: initial condition does not satisfy test. Loop body not executed
 
 #ifndef _STL_DISABLED_WARNINGS
@@ -886,9 +886,11 @@
     _Pragma("clang diagnostic push")    \
     _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
 #else // ^^^ defined(__clang__) / !defined(__clang__) vvv
+// warning C4877: overriding non-pure virtual function 'Base::meow': was declared deprecated (/Wall)
+// warning C4996: 'meow': was declared deprecated
 #define _STL_DISABLE_DEPRECATED_WARNING \
     _Pragma("warning(push)")            \
-    _Pragma("warning(disable : 4996)") // was declared deprecated
+    _Pragma("warning(disable : 4877 4996)")
 #endif // ^^^ !defined(__clang__) ^^^
 #endif // _STL_DISABLE_DEPRECATED_WARNING
 // clang-format on
@@ -903,7 +905,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 145
-#define _MSVC_STL_UPDATE  202604L
+#define _MSVC_STL_UPDATE  202605L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -913,8 +915,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.2 or new
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 20
-_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 20 or newer.");
+#if __clang_major__ < 22
+_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 22 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
 #if _MSC_VER < 1950 // Coarse-grained, not inspecting _MSC_FULL_VER
