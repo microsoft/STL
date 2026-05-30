@@ -60,10 +60,6 @@ std/language.support/support.exception/except.nested/assign.pass.cpp:2 SKIPPED
 std/language.support/support.exception/except.nested/ctor_copy.pass.cpp:2 SKIPPED
 std/language.support/support.exception/except.nested/ctor_default.pass.cpp:2 SKIPPED
 
-# LLVM-158341: Coroutines on arm64ec-pc-windows-msvc emit error LNK2001: unresolved external symbol #__NoopCoro_ResumeDestroy (EC Symbol)
-# SKIPPED because this is ARM64EC-specific.
-std/language.support/support.coroutines/coroutine.handle/coroutine.handle.noop/noop_coroutine.pass.cpp:2 SKIPPED
-
 # LLVM-171438: [Clang] __builtin_common_type is overly permissive
 # These tests are improperly working around this Clang bug by detecting Clang and asserting buggy results,
 # but only libc++ with Clang is affected; MSVC's STL with Clang is unaffected.
@@ -189,6 +185,9 @@ std/re/re.regex/re.regex.construct/bad_escape.pass.cpp FAIL
 # libc++ doesn't implement LWG-3187
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_piecewise_pair_evil.pass.cpp FAIL
 
+# libc++ doesn't implement LWG-3599 "The `const` overload of `lazy_split_view::begin` should be constrained by `const Pattern`"
+std/ranges/range.adaptors/range.lazy.split/begin.pass.cpp FAIL
+
 # libc++ doesn't implement LWG-3670
 std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass.cpp FAIL
 
@@ -198,10 +197,6 @@ std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer.value/ctor.ite
 
 # libc++ doesn't implement LWG-4112
 std/ranges/range.adaptors/range.join/range.join.iterator/arrow.pass.cpp FAIL
-
-# libc++ doesn't implement LWG-4266 "`layout_stride::mapping` should treat empty mappings as exhaustive"
-std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
-std/containers/views/mdspan/layout_stride/properties.pass.cpp FAIL
 
 # libc++ doesn't implement LWG-4272 "For `rank == 0`, `layout_stride` is atypically convertible"
 std/containers/views/mdspan/layout_left/ctor.layout_stride.pass.cpp FAIL
@@ -338,6 +333,10 @@ std/utilities/optional/optional.iterator/compare.pass.cpp FAIL
 std/utilities/optional/optional.iterator/end.pass.cpp FAIL
 std/utilities/optional/optional.iterator/iterator.pass.cpp FAIL
 
+# P3383R3 mdspan::at()
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/containers/views/mdspan/mdspan/at.pass.cpp FAIL
+
 
 # *** MISSING COMPILER FEATURES ***
 
@@ -379,8 +378,9 @@ std/utilities/variant/variant.relops/three_way.pass.cpp:0 FAIL
 std/utilities/variant/variant.relops/three_way.pass.cpp:1 FAIL
 
 # VSO-2188243 constexpr ICE in C1XX adapt::to_prvalue
-std/algorithms/robust_re_difference_type.compile.pass.cpp:0 FAIL
-std/algorithms/robust_re_difference_type.compile.pass.cpp:1 FAIL
+# SKIPPED as this is passing for some architectures.
+std/algorithms/robust_re_difference_type.compile.pass.cpp:0 SKIPPED
+std/algorithms/robust_re_difference_type.compile.pass.cpp:1 SKIPPED
 
 # DevCom-10439137 VSO-1869865: Discarded id-expression causes unnecessary reading
 std/containers/sequences/array/array.cons/initialization.pass.cpp:0 FAIL
@@ -1182,6 +1182,19 @@ std/strings/basic.string/string.modifiers/string_replace/size_size_string_size_s
 # MSVC error C2036: '_Sent': unknown size
 # Clang error: arithmetic on a pointer to void
 std/ranges/range.adaptors/range.stride.view/end.pass.cpp FAIL
+
+# Not analyzed, MSVC truncation warnings.
+std/algorithms/alg.nonmodifying/alg.fold/ranges.fold_right.pass.cpp:0 FAIL
+std/algorithms/alg.nonmodifying/alg.fold/ranges.fold_right.pass.cpp:1 FAIL
+std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.float.pass.cpp:0 FAIL
+std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.float.pass.cpp:1 FAIL
+
+# Not analyzed. MSVC error C2039: 'value': is not a member of 'std::is_constructible<T,T &>'
+std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp:0 FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp:1 FAIL
+
+# Not analyzed, MSVC truncation warnings, Clang static_assert.
+std/algorithms/alg.nonmodifying/alg.fold/ranges.fold_right_last.pass.cpp FAIL
 
 
 # *** MSVC-INTERNAL TEST HARNESS ISSUES (note: configuration :9 restricts these skips to be MSVC-internal) ***

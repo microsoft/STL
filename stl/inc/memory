@@ -530,7 +530,7 @@ namespace ranges {
     struct _Construct_at_fn {
         template <class _Ty, class... _Types>
             requires (!is_unbounded_array_v<_Ty>) && requires(_Ty* _Ptr, _Types&&... _Args) {
-                ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types &&>(_Args)...); // per LWG-3888
+                ::new (static_cast<void*>(_Ptr)) _Ty(static_cast<_Types&&>(_Args)...); // per LWG-3888
             }
         static constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) noexcept(
             noexcept(::new (static_cast<void*>(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
@@ -3070,8 +3070,8 @@ _NODISCARD shared_ptr<_Ty> _Allocate_shared_unbounded_array(
     // make a shared_ptr to an unbounded array
     static_assert(is_unbounded_array_v<_Ty>);
     using _Refc             = conditional_t<_IsForOverwrite, //
-                    _Ref_count_unbounded_array_alloc_for_overwrite<remove_cv_t<_Ty>, _Alloc>,
-                    _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>>;
+        _Ref_count_unbounded_array_alloc_for_overwrite<remove_cv_t<_Ty>, _Alloc>,
+        _Ref_count_unbounded_array_alloc<remove_cv_t<_Ty>, _Alloc>>;
     constexpr size_t _Align = alignof(_Refc);
     using _Storage          = _Alignas_storage_unit<_Align>;
     _Rebind_alloc_t<_Alloc, _Storage> _Rebound(_Al);
