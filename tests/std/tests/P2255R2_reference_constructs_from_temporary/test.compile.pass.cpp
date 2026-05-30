@@ -158,7 +158,9 @@ void test_one_cvref_to_object() {
 
 void test_object_types() {
     test_one_cvref_to_object<int>();
+#ifndef __clang__ // TRANSITION, LLVM-198580
     test_one_cvref_to_object<int[1]>();
+#endif // ^^^ no workaround ^^^
     test_one_cvref_to_object<to_int_lvalue<conv_explicitly::yes>>();
     test_one_cvref_to_object<to_int_lvalue<conv_explicitly::no>>();
     test_one_cvref_to_object<to_int_xvalue<conv_explicitly::yes>>();

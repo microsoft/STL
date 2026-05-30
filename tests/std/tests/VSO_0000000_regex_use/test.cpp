@@ -2600,6 +2600,58 @@ void test_gh_6249() {
     }
 }
 
+void test_gh_6262() {
+    // GH-6262: Remove match mode _Skip_zero_length
+    // Check that replacement with internal match mode _Match_not_null in regex_iterator behaves equivalently
+
+    const char* const input = "aab";
+
+    {
+        const regex re{"^|b"};
+        {
+            cregex_iterator it1{input + 2, input + 3, re};
+            cregex_iterator it2{input + 2, input + 3, re, match_prev_avail};
+            ++it1;
+            assert(it1 != it2);
+        }
+
+        {
+            cregex_iterator it1{input + 1, input + 3, re};
+            cregex_iterator it2{input + 1, input + 3, re, match_prev_avail};
+            ++it1;
+            assert(it1 == it2);
+        }
+    }
+
+    {
+        const regex re2{"^a|b"};
+        {
+            cregex_iterator it1{input + 1, input + 3, re2};
+            cregex_iterator it2{input + 1, input + 3, re2, match_prev_avail};
+            ++it1;
+            assert(it1 == it2);
+        }
+    }
+}
+
+void test_gh_6267() {
+    // GH-6267: Avoid generating empty groups when parsing `?` quantifiers
+    for (const string re : {"a?", "a??"}) {
+        g_regexTester.should_match("a", re);
+        g_regexTester.should_match("", re);
+    }
+
+    {
+        test_regex re(&g_regexTester, "a?");
+        re.should_search_match("a", "a");
+    }
+
+    {
+        test_regex re(&g_regexTester, "a??");
+        re.should_search_match("a", "");
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2668,6 +2720,8 @@ int main() {
     test_gh_6189();
     test_gh_6191();
     test_gh_6249();
+    test_gh_6262();
+    test_gh_6267();
 
     return g_regexTester.result();
 }
