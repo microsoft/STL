@@ -3,7 +3,7 @@
 
 RUNALL_INCLUDE ..\universal_prefix.lst
 RUNALL_CROSSLIST
-*	PM_CL="/EHsc /MTd /std:c++latest /permissive- /utf-8 /FImsvc_stdlib_force_include.h /wd4643"
+*	PM_CL="/EHsc /MTd /std:c++latest /permissive- /utf-8 /FImsvc_stdlib_force_include.h /wd4643 /D_HAS_NONFLOATING_COMPLEX=1"
 RUNALL_CROSSLIST
 PM_CL="/Zc:preprocessor"
 ASAN	PM_CL="-fsanitize=address /Zi" PM_LINK="/debug"
