@@ -482,95 +482,102 @@ public:
 
 private:
 #ifdef _INSERT_VECTOR_ANNOTATION
+
+    _CONSTEXPR20 bool _Should_annotate() const noexcept {
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) {
+            return false;
+        }
+#endif // _HAS_CXX20
+
+        return _Asan_vector_should_annotate;
+    }
+
+    _CONSTEXPR20 const void* _Annotation_begin() const noexcept {
+        _STL_INTERNAL_CHECK(_Mypair._Myval2._Myfirst != nullptr);
+        return _STD _Unfancy(_Mypair._Myval2._Myfirst);
+    }
+
+    _CONSTEXPR20 const void* _Annotation_at(const size_type _Index) const noexcept {
+        _STL_INTERNAL_CHECK(_Mypair._Myval2._Myfirst != nullptr);
+        return _STD _Unfancy(_Mypair._Myval2._Myfirst + _Index);
+    }
+
+    _CONSTEXPR20 const void* _Annotation_last() const noexcept {
+        _STL_INTERNAL_CHECK(_Mypair._Myval2._Mylast != nullptr);
+        return _STD _Unfancy(_Mypair._Myval2._Mylast);
+    }
+
+    _CONSTEXPR20 const void* _Annotation_last_with_difference(const difference_type _Count) const noexcept {
+        _STL_INTERNAL_CHECK(_Mypair._Myval2._Mylast != nullptr);
+        return _STD _Unfancy(_Mypair._Myval2._Mylast + _Count);
+    }
+
+    _CONSTEXPR20 const void* _Annotation_end() const noexcept {
+        _STL_INTERNAL_CHECK(_Mypair._Myval2._Myend != nullptr);
+        const void* const _End = _STD _Unfancy(_Mypair._Myval2._Myend);
+        
+        if constexpr ((_Container_allocation_minimum_asan_alignment<vector>) >= _Asan_granularity) {
+            // If the allocator alignment is less than or equal to the ASan granularity, then we can
+            // realign the end forward to maximize the annotation coverage.
+            return _STD _Get_asan_aligned_after(_End);
+        } else {
+            // The allocation may not end on an ASan granularity boundary. In that case, annotating up to _End
+            // could affect shadow bytes for memory beyond this allocation, so restrict annotations to the largest
+            // aligned subrange inside the buffer. This may leave the tail of the buffer unannotated.
+
+            return _End; // Using unaligned end will snap it to previous ASan granularity boundary.
+        }
+    }
+
     _CONSTEXPR20 void _Create_annotation() const noexcept {
-        // Annotates the shadow memory of the valid range
-        auto& _My_data = _Mypair._Myval2;
-        _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Myend, _My_data._Mylast);
+        if constexpr (!_Disable_ASan_container_annotations_for_allocator<allocator_type>) {
+            if (!_Should_annotate()) {
+                return;
+            }
+
+            _CSTD __sanitizer_annotate_contiguous_container(
+                _Annotation_begin(), _Annotation_end(), _Annotation_end(), _Annotation_last());
+        }
     }
 
     _CONSTEXPR20 void _Remove_annotation() const noexcept {
-        // Removes the shadow memory annotation of the range
-        auto& _My_data = _Mypair._Myval2;
-        _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Myend);
+        if constexpr (!_Disable_ASan_container_annotations_for_allocator<allocator_type>) {
+            if (!_Should_annotate()) {
+                return;
+            }
+
+            _CSTD __sanitizer_annotate_contiguous_container(
+                _Annotation_begin(), _Annotation_end(), _Annotation_last(), _Annotation_end());
+        }
     }
 
     _CONSTEXPR20 void _Modify_annotation(const difference_type _Count) const noexcept {
-        // Extends/shrinks the annotated range by _Count
-        if (_Count == 0) { // nothing to do
-            // This also avoids calling _Apply_annotation() with null pointers
-            // when the vector has zero capacity, see GH-2464.
-            return;
-        }
+        if constexpr (!_Disable_ASan_container_annotations_for_allocator<allocator_type>) {
+            if (!_Should_annotate()) {
+                return;
+            }
 
-        auto& _My_data = _Mypair._Myval2;
-        _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Mylast + _Count);
+            if (_Count == 0) { // nothing to do
+                // This also avoids calling _Apply_annotation() with null pointers
+                // when the vector has zero capacity, see GH-2464.
+                return;
+            }
+
+            _CSTD __sanitizer_annotate_contiguous_container(
+                _Annotation_begin(), _Annotation_end(), _Annotation_last(), _Annotation_last_with_difference(_Count));
+        }
     }
 
-    static _CONSTEXPR20 void _Apply_annotation(
-        pointer _First_, pointer _End_, pointer _Old_last_, pointer _New_last_) noexcept {
-        _STL_INTERNAL_CHECK(_First_ != nullptr);
-        _STL_INTERNAL_CHECK(_End_ != nullptr);
-        _STL_INTERNAL_CHECK(_Old_last_ != nullptr);
-        _STL_INTERNAL_CHECK(_New_last_ != nullptr);
-
+    _CONSTEXPR20 void _Set_annotation(const size_type _Target_size) const noexcept {
         if constexpr (!_Disable_ASan_container_annotations_for_allocator<allocator_type>) {
-#if _HAS_CXX20
-            if (_STD is_constant_evaluated()) {
-                return;
-            }
-#endif // _HAS_CXX20
-
-            if (!_Asan_vector_should_annotate) {
+            if (!_Should_annotate()) {
                 return;
             }
 
-            const void* const _First    = _STD _Unfancy(_First_);
-            const void* const _End      = _STD _Unfancy(_End_);
-            const void* const _Old_last = _STD _Unfancy(_Old_last_);
-            const void* const _New_last = _STD _Unfancy(_New_last_);
-            if constexpr ((_Container_allocation_minimum_asan_alignment<vector>) >= _Asan_granularity) {
-                // If we realign the _End forward to maximize coverage, we need to keep other significant points
-                // aligned with our concept of the end of the buffer, otherwise we may leave shadow bytes behind when
-                // cleaning up.
-
-                // old state:
-                //   [_First, _Old_last_aligned) valid
-                //   [_Old_last_aligned, asan_aligned_after(_End)) poison
-                // new state:
-                //   [_First, _New_last_aligned) valid
-                //   [_New_last_aligned, asan_aligned_after(_End)) poison
-
-                const void* const _New_end_aligned  = _STD _Get_asan_aligned_after(_End);
-                const void* const _Old_last_aligned = (_Old_last == _End) ? _New_end_aligned : _Old_last;
-                const void* const _New_last_aligned = (_New_last == _End) ? _New_end_aligned : _New_last;
-
-                _CSTD __sanitizer_annotate_contiguous_container(
-                    _First, _New_end_aligned, _Old_last_aligned, _New_last_aligned);
-            } else {
-
-                // Allocation is potentially unaligned, so we cannot annotate whole buffer since we might be
-                // entering memory owned by someone else. Therefore, pull back where the annotations end on the buffer,
-                // but may miss some coverage near end of buffer.
-
-                const auto _Aligned = _STD _Get_asan_aligned_first_end(_First, _End);
-                if (_Aligned._First == _Aligned._End) {
-                    // The buffer does not end at least one shadow memory section; nothing to do.
-                    return;
-                }
-
-                const void* const _Old_fixed = _Aligned._Clamp_to_end(_Old_last);
-                const void* const _New_fixed = _Aligned._Clamp_to_end(_New_last);
-
-                // old state:
-                //   [_Aligned._First, _Old_fixed) valid
-                //   [_Old_fixed, _Aligned._End) poison
-                //   [_Aligned._End, _End) valid
-                // new state:
-                //   [_Aligned._First, _New_fixed) valid
-                //   [_New_fixed, _Aligned._End) poison
-                //   [_Aligned._End, _End) valid
-                _CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
-            }
+            _CSTD __sanitizer_annotate_contiguous_container(
+                _Annotation_begin(), _Annotation_end(), _Annotation_last(), _Annotation_at(_Target_size)
+            );
         }
     }
 
@@ -582,8 +589,17 @@ private:
         constexpr explicit _Asan_extend_guard(vector* _Myvec_, size_type _Target_size_) noexcept
             : _Myvec(_Myvec_), _Target_size(_Target_size_) {
             _STL_INTERNAL_CHECK(_Myvec != nullptr);
-            auto& _My_data = _Myvec->_Mypair._Myval2;
-            _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Myfirst + _Target_size);
+
+            if constexpr (!_Disable_ASan_container_annotations_for_allocator<allocator_type>) {
+                if (!_Myvec->_Should_annotate()) {
+                    return;
+                }
+
+                _CSTD __sanitizer_annotate_contiguous_container(
+                    _Myvec->_Annotation_begin(), _Myvec->_Annotation_end(), _Myvec->_Annotation_last(),
+                    _Myvec->_Annotation_at(_Target_size)
+                );
+            }
         }
 
         _CONSTEXPR20 ~_Asan_extend_guard() {
@@ -591,9 +607,17 @@ private:
                 return;
             }
 
-            // Shrinks the shadow memory to the current size of the vector.
-            auto& _My_data = _Myvec->_Mypair._Myval2;
-            _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Myfirst + _Target_size, _My_data._Mylast);
+            if constexpr (!_Disable_ASan_container_annotations_for_allocator<allocator_type>) {
+                if (!_Myvec->_Should_annotate()) {
+                    return;
+                }
+
+                // Shrinks the shadow memory to the current size of the vector.
+                _CSTD __sanitizer_annotate_contiguous_container(
+                    _Myvec->_Annotation_begin(), _Myvec->_Annotation_end(), _Myvec->_Annotation_at(_Target_size),
+                    _Myvec->_Annotation_last()
+                );
+            }
         }
 
         _CONSTEXPR20 void _Release() noexcept {

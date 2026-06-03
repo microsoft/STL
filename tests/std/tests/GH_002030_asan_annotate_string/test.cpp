@@ -32,15 +32,12 @@ int main() {}
 #include <string_view>
 #endif // _HAS_CXX17
 
+#include <test_asan_support.hpp>
 #include <test_death.hpp>
 
 using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
-
-#ifdef __SANITIZE_ADDRESS__
-extern "C" int __sanitizer_verify_contiguous_container(const void* beg, const void* mid, const void* end) noexcept;
-#endif // ASan instrumentation enabled
 
 constexpr auto literal_input = "Hello fluffy kittens";
 #ifdef __cpp_char8_t
@@ -178,6 +175,17 @@ public:
     }
 };
 
+template <class CharType>
+bool verify_poisoning_cleared(CharType *ptr, size_t capacity) {
+#ifdef __SANITIZE_ADDRESS__
+    return std_testing::asan::verify_poisoning_cleared(ptr, capacity * sizeof(CharType));
+#else // ^^^ ASan instrumentation enabled / ASan instrumentation disabled vvv
+    (void) ptr;
+    (void) capacity;
+    return true;
+#endif // ASan instrumentation disabled
+}
+
 template <class CharType, class Alloc>
 bool verify_string(const basic_string<CharType, char_traits<CharType>, Alloc>& str) {
 #ifdef __SANITIZE_ADDRESS__
@@ -185,24 +193,12 @@ bool verify_string(const basic_string<CharType, char_traits<CharType>, Alloc>& s
         return true;
     }
 
-    const void* const buffer  = str.data();
-    const void* const buf_end = str.data() + str.capacity() + 1;
-
-    constexpr bool _Large_string_always_aligned =
-        (_Container_allocation_minimum_asan_alignment<decay_t<decltype(str)>>) >= 8;
-
-    _Asan_aligned_pointers aligned;
-    if constexpr (_Large_string_always_aligned) {
-        aligned = {buffer, _Get_asan_aligned_after(buf_end)};
-    } else {
-        aligned = _Get_asan_aligned_first_end(buffer, buf_end);
-    }
-    assert(aligned._First != aligned._End);
-
-    const void* const mid       = str.data() + str.size() + 1;
-    const void* const fixed_mid = aligned._Clamp_to_end(mid);
-
-    return __sanitizer_verify_contiguous_container(aligned._First, fixed_mid, aligned._End) != 0;
+    return std_testing::asan::verify_container_poisoning(
+        str.data(), 
+        (str.size() + 1) * sizeof(CharType), 
+        (str.capacity() + 1) * sizeof(CharType), 
+        (_Container_allocation_minimum_asan_alignment<decay_t<decltype(str)>>) >= 8
+    );
 #else // ^^^ ASan instrumentation enabled / ASan instrumentation disabled vvv
     (void) str;
     return true;
@@ -241,7 +237,8 @@ struct aligned_allocator : public custom_test_allocator<CharType, Pocma, Statele
         return new CharType[n];
     }
 
-    void deallocate(CharType* p, size_t) noexcept {
+    void deallocate(CharType* p, size_t n) noexcept {
+        assert(verify_poisoning_cleared(p, n));
         delete[] p;
     }
 };
@@ -249,6 +246,31 @@ STATIC_ASSERT(
     _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, aligned_allocator<char>>> == 8);
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
                   basic_string<wchar_t, char_traits<wchar_t>, aligned_allocator<wchar_t>>>
+              == 8);
+
+template <class CharType, class Pocma = true_type, class Stateless = true_type>
+struct extra_space_aligned_allocator : public custom_test_allocator<CharType, Pocma, Stateless> {
+    static constexpr size_t _Minimum_asan_allocation_alignment = 8;
+    static constexpr size_t extra_space_per_side = 64 / sizeof(CharType);
+
+    extra_space_aligned_allocator() = default;
+    template <class U>
+    constexpr extra_space_aligned_allocator(const extra_space_aligned_allocator<U, Pocma, Stateless>&) noexcept {}
+
+    CharType* allocate(size_t n) {
+        CharType* mem = new CharType[n + 2 * extra_space_per_side];
+        return mem + extra_space_per_side;
+    }
+
+    void deallocate(CharType* p, size_t n) noexcept {
+        assert(verify_poisoning_cleared(p - extra_space_per_side, n + 2 * extra_space_per_side));
+        delete[] (p - extra_space_per_side);
+    }
+};
+STATIC_ASSERT(
+    _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, extra_space_aligned_allocator<char>>> == 8);
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
+                  basic_string<wchar_t, char_traits<wchar_t>, extra_space_aligned_allocator<wchar_t>>>
               == 8);
 
 template <class CharType, class Pocma = true_type, class Stateless = true_type>
@@ -264,7 +286,8 @@ struct explicit_allocator : public custom_test_allocator<CharType, Pocma, Statel
         return mem + 1;
     }
 
-    void deallocate(CharType* p, size_t) noexcept {
+    void deallocate(CharType* p, size_t n) noexcept {
+        assert(verify_poisoning_cleared(p - 1, n + 1));
         delete[] (p - 1);
     }
 };
@@ -285,7 +308,8 @@ struct implicit_allocator : public custom_test_allocator<CharType, Pocma, Statel
         return mem + 1;
     }
 
-    void deallocate(CharType* p, size_t) noexcept {
+    void deallocate(CharType* p, size_t n) noexcept {
+        assert(verify_poisoning_cleared(p - 1, n + 1));
         delete[] (p - 1);
     }
 };
@@ -293,6 +317,30 @@ STATIC_ASSERT(
     _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, implicit_allocator<char>>> == 1);
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
                   basic_string<wchar_t, char_traits<wchar_t>, implicit_allocator<wchar_t>>>
+              == 2);
+
+template <class CharType, class Pocma = true_type, class Stateless = true_type>
+struct extra_space_unaligned_allocator : public custom_test_allocator<CharType, Pocma, Stateless> {
+    static constexpr size_t extra_space_per_side = 64 / sizeof(CharType);
+
+    extra_space_unaligned_allocator() = default;
+    template <class U>
+    constexpr extra_space_unaligned_allocator(const extra_space_unaligned_allocator<U, Pocma, Stateless>&) noexcept {}
+
+    CharType* allocate(size_t n) {
+        CharType* mem = new CharType[n + 1 + 2*extra_space_per_side];
+        return mem + extra_space_per_side + 1;
+    }
+
+    void deallocate(CharType* p, size_t n) noexcept {
+        assert(verify_poisoning_cleared(p - 1 - extra_space_per_side, n + 1 + 2*extra_space_per_side));
+        delete[] (p - 1 - extra_space_per_side);
+    }
+};
+STATIC_ASSERT(
+    _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, extra_space_unaligned_allocator<char>>> == 1);
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
+                  basic_string<wchar_t, char_traits<wchar_t>, extra_space_unaligned_allocator<wchar_t>>>
               == 2);
 
 // Simple allocator that opts out of ASan annotations (via `_Disable_ASan_container_annotations_for_allocator`)
@@ -367,12 +415,12 @@ void test_construction() {
         assert(verify_string(literal_constructed));
         assert(verify_string(copy_assigned_large_to_sso));
 
-        str copy_assigned_sso_to_large(get_large_input<CharType>());
+        str copy_assigned_sso_to_large(get_large_input<CharType>()); 
         copy_assigned_sso_to_large = literal_constructed_sso;
         assert(verify_string(literal_constructed_sso));
         assert(verify_string(copy_assigned_sso_to_large));
 
-        str copy_assigned_large_to_large(get_large_input<CharType>());
+        str copy_assigned_large_to_large(get_large_input<CharType>()); // creating allocator 28 with arena 8
         copy_assigned_large_to_large = literal_constructed;
         assert(verify_string(literal_constructed));
         assert(verify_string(copy_assigned_large_to_large));
@@ -392,7 +440,7 @@ void test_construction() {
         assert(verify_string(copy_assigned_sso_to_large));
         assert(verify_string(move_assigned_sso_to_large));
 
-        str move_assigned_large_to_large(get_large_input<CharType>());
+        str move_assigned_large_to_large(get_large_input<CharType>()); // creating allocator 42 with arena 12
         move_assigned_large_to_large = move(copy_assigned_large_to_large);
         assert(verify_string(copy_assigned_large_to_large));
         assert(verify_string(move_assigned_large_to_large));
@@ -909,6 +957,15 @@ void test_append() {
 
         str op_char_rstr_sso_growing = CharType{'!'} + str(max_sso_size<CharType>, CharType{'b'});
         assert(verify_string(op_char_rstr_sso_growing));
+    }
+
+    { // stress test append, testing for correctness after triggering resize (gh-6276)
+        for (size_t i = 1; i < 1024; ++i) {
+            str stress_append{};
+            stress_append.assign(i, CharType{'a'});
+            stress_append.append({CharType{'a'}});
+            assert(verify_string(stress_append));
+        }
     }
 }
 
@@ -1542,6 +1599,15 @@ void test_removal() {
         assert(verify_string(pop_back_shrinking));
     }
 
+    { // stress test pop_back - testing for correctness after triggering resize (gh-6276)
+        for (size_t i = 1; i < 1024; ++i) {
+            str stress_pop_back{};
+            stress_pop_back.assign(i, CharType{'a'});
+            stress_pop_back.pop_back();
+            assert(verify_string(stress_pop_back));
+        }
+    }
+
     { //  shrink_to_fit
         str shrink_to_fit(32, CharType{'a'});
         shrink_to_fit.resize(min_large_size);
@@ -1558,6 +1624,8 @@ void test_removal() {
         shrink_to_fit_shrinking.shrink_to_fit();
         assert(verify_string(shrink_to_fit_shrinking));
     }
+
+    
 }
 
 template <class Alloc>
@@ -1918,8 +1986,10 @@ template <class CharType>
 void run_allocator_matrix() {
     run_tests<allocator<CharType>>();
     run_custom_allocator_matrix<CharType, aligned_allocator>();
+    run_custom_allocator_matrix<CharType, extra_space_aligned_allocator>();
     run_custom_allocator_matrix<CharType, explicit_allocator>();
     run_custom_allocator_matrix<CharType, implicit_allocator>();
+    run_custom_allocator_matrix<CharType, extra_space_unaligned_allocator>();
 
     // To test ASan annotation disablement, we use an ad-hoc allocator type to avoid disrupting other
     // tests that depend on annotations being enabled. Therefore, unlike the prior tests,
@@ -1975,6 +2045,41 @@ void test_gh_3955() {
     assert(s == t);
 }
 
+
+void test_gh_6276() {
+    { 
+        basic_string<wchar_t, char_traits<wchar_t>, extra_space_unaligned_allocator<wchar_t>> unaligned{L"1234567890123456789012"};
+        assert(verify_string(unaligned));                                                               
+
+        unaligned.append(L"3");
+        assert(verify_string(unaligned));
+    }
+    
+    {
+        basic_string<wchar_t, char_traits<wchar_t>, extra_space_unaligned_allocator<wchar_t>> unaligned{L"1234567890123456789012"};
+        assert(verify_string(unaligned));
+
+        unaligned.pop_back();
+        assert(verify_string(unaligned));
+    }
+
+    {
+        basic_string<wchar_t, char_traits<wchar_t>, extra_space_aligned_allocator<wchar_t>> aligned{L"12345678901234567890123"};
+        assert(verify_string(aligned));
+
+        aligned.append(L"4");
+        assert(verify_string(aligned));
+    }
+
+    {
+        basic_string<wchar_t, char_traits<wchar_t>, extra_space_aligned_allocator<wchar_t>> aligned{L"12345678901234567890123"};
+        assert(verify_string(aligned));
+
+        aligned.pop_back();
+        assert(verify_string(aligned));
+    }
+}
+
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec([] {
         run_allocator_matrix<char>();
@@ -1989,7 +2094,9 @@ int main(int argc, char* argv[]) {
         test_DevCom_10109507();
         test_gh_3883();
         test_gh_3955();
+        test_gh_6276();
     });
+    
 #ifdef __SANITIZE_ADDRESS__
     exec.add_death_tests({
         run_asan_container_overflow_death_test<char>,
@@ -2001,6 +2108,7 @@ int main(int argc, char* argv[]) {
         run_asan_container_overflow_death_test<wchar_t>,
     });
 #endif // ASan instrumentation enabled
+
     return exec.run(argc, argv);
 }
 

@@ -19,29 +19,16 @@ int main() {}
 #define NO_SANITIZER_ADDRESS __declspec(no_sanitize_address)
 #endif // __clang__
 
-#include <stdio.h>
+#include <cstdio>
+#include <cassert>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
 
+#include <test_asan_support.hpp>
+
 using namespace std;
-
-extern "C" uintptr_t __asan_shadow_memory_dynamic_address;
-
-NO_SANITIZER_ADDRESS unsigned char* shadow_addr_of(const void* addr) {
-    return (unsigned char*) (((uintptr_t) addr >> 3) + __asan_shadow_memory_dynamic_address);
-}
-
-NO_SANITIZER_ADDRESS unsigned char shadow_byte_of(const void* addr) {
-    return *shadow_addr_of(addr);
-}
-
-NO_SANITIZER_ADDRESS void print_shadow_bytes(const void* addr, const size_t string_size) {
-    for (size_t i = 0; i < string_size; i += 8) {
-        printf("%02x ", shadow_byte_of(reinterpret_cast<const char*>(addr) + i));
-    }
-    printf("\n");
-}
 
 template <size_t ArenaSize, size_t AllocationAlignment>
 class asan_unaware_arena {
@@ -50,17 +37,13 @@ class asan_unaware_arena {
     // effects from only the container poisoning.
 public:
     asan_unaware_arena() noexcept {
-        fprintf(stderr, "Creating arena at %p with shadow at %p\n", _alloc_buffer, shadow_addr_of(_alloc_buffer));
+        fprintf(stderr, "Creating arena at %p with shadow at %p\n", _alloc_buffer, std_testing::asan::shadow_addr_of(_alloc_buffer));
     }
 
     ~asan_unaware_arena() noexcept {
-        fprintf(stderr, "Shadow during destruction (should be all 00):\t");
-        print_shadow();
-
-        // Shadow should be cleared. If it isn't, this memset will trigger an ASan container-overflow error.
-        // This will likely appear as unknown-error since partial poisoning relies on nearby
-        // shadow bytes to determine error type.
-        memset(_alloc_buffer, 0, ArenaSize);
+        fputs("Shadow during destruction (should be all 00):\n", stderr);
+        // Shadow should be cleared, otherwise the container has left scope leaving behind poisoned shadow bytes.
+        std_testing::asan::verify_container_poisoning(_alloc_buffer, ArenaSize, ArenaSize, AllocationAlignment >= 8);
     }
 
     asan_unaware_arena(const asan_unaware_arena&)            = delete;
@@ -78,16 +61,11 @@ public:
         _next_alloc += num_bytes;
         _next_alloc = reinterpret_cast<char*>((reinterpret_cast<uintptr_t>(_next_alloc) + (AllocationAlignment - 1))
                                               & ~(AllocationAlignment - 1)); // align the next allocation pointer.
-
         fprintf(stderr, "Allocated %p -> %p (%zu bytes) from arena, %p -> %p (%zu bytes) in shadow\n", result,
-            _next_alloc, num_bytes, shadow_addr_of(result), shadow_addr_of(_next_alloc),
-            shadow_addr_of(_next_alloc) - shadow_addr_of(result));
+            _next_alloc, num_bytes, std_testing::asan::shadow_addr_of(result), std_testing::asan::shadow_addr_of(_next_alloc),
+            std_testing::asan::shadow_addr_of(_next_alloc) - std_testing::asan::shadow_addr_of(result));
 
         return result;
-    }
-
-    void print_shadow() const noexcept {
-        print_shadow_bytes(_alloc_buffer, ArenaSize);
     }
 
 private:
@@ -106,7 +84,7 @@ struct arena_reuse_allocator {
         using other = arena_reuse_allocator<OtherCharType, Size, Alignment>;
     };
 
-    arena_reuse_allocator(asan_unaware_arena<AllocSize, Alignment>* a) noexcept : _arena(a) {}
+    arena_reuse_allocator() noexcept : _arena(std::make_shared<asan_unaware_arena<AllocSize, Alignment>>()) {}
 
     template <typename OtherCharType>
     arena_reuse_allocator(const arena_reuse_allocator<OtherCharType, Size, Alignment>& rhs) noexcept
@@ -118,7 +96,7 @@ struct arena_reuse_allocator {
 
     void deallocate(T*, size_t) noexcept {}
 
-    asan_unaware_arena<AllocSize, Alignment>* _arena;
+    std::shared_ptr<asan_unaware_arena<AllocSize, Alignment>> _arena;
 };
 
 const size_t arena_size = 256;
@@ -127,32 +105,84 @@ template <size_t Alignment>
 void test_string_poisoning() {
     fprintf(stderr, "\nTesting string with allocator alignment of %zu\n", Alignment);
 
-    asan_unaware_arena<arena_size, Alignment> test_arena;
-    arena_reuse_allocator<wchar_t, arena_size, Alignment> alloc(&test_arena);
-
-    basic_string<wchar_t, char_traits<wchar_t>, decltype(alloc)> test_string(L"a 24 length string repr", alloc);
-    fprintf(stderr, "Shadow after string constructor:\t\t");
-    test_arena.print_shadow();
+    basic_string<wchar_t, char_traits<wchar_t>, arena_reuse_allocator<wchar_t, arena_size, Alignment>> test_string(L"a 24 length string repr");
+    fputs("Shadow after string constructor:\n", stderr);
+    // Should not see any poisoning, since allocation size == string size.
+    assert(std_testing::asan::verify_container_poisoning(test_string.data(), 
+        (test_string.size() + 1) * sizeof(wchar_t), // +1 for null terminator 
+        (test_string.capacity() + 1) * sizeof(wchar_t), // +1 for null terminator 
+        Alignment >= 8));
 
     test_string.append(L"o"); // add any character to trigger resize
-    fprintf(stderr, "Shadow after string resize:\t\t\t");
-    test_arena.print_shadow();
+    fputs("Shadow after string resize:\n", stderr);
+    // Should see poisoning, since the allocation should have resized more than +1.
+    assert(std_testing::asan::verify_container_poisoning(test_string.data(), 
+        (test_string.size() + 1) * sizeof(wchar_t), // +1 for null terminator 
+        (test_string.capacity() + 1) * sizeof(wchar_t), // +1 for null terminator
+        Alignment >= 8));
 }
 
 template <size_t Alignment>
 void test_vector_poisoning() {
     fprintf(stderr, "\nTesting vector with allocator alignment of %zu\n", Alignment);
 
-    asan_unaware_arena<arena_size, Alignment> test_arena;
-    arena_reuse_allocator<wchar_t, arena_size, Alignment> alloc(&test_arena);
-
-    vector<wchar_t, decltype(alloc)> test_vector(23, L'a', alloc);
-    fprintf(stderr, "Shadow after vector constructor:\t\t");
-    test_arena.print_shadow();
+    vector<wchar_t, arena_reuse_allocator<wchar_t, arena_size, Alignment>> test_vector(23, L'a');
+    fputs("Shadow after vector constructor:\n", stderr);
+    // Should not see any poisoning, since allocation size == vector size.
+    assert(std_testing::asan::verify_container_poisoning(test_vector.data(), 
+        test_vector.size() * sizeof(wchar_t), 
+        test_vector.capacity() * sizeof(wchar_t), 
+        Alignment >= 8));
 
     test_vector.push_back(L'o'); // trigger resize
-    fprintf(stderr, "Shadow after vector resize:\t\t\t");
-    test_arena.print_shadow();
+    fputs("Shadow after vector resize:\n", stderr);
+    // Should see poisoning, since allocation should have resized more than +1.
+    assert(std_testing::asan::verify_container_poisoning(test_vector.data(), 
+        test_vector.size() * sizeof(wchar_t), 
+        test_vector.capacity() * sizeof(wchar_t), 
+        Alignment >= 8));
+}
+
+template <size_t Alignment>
+void test_string_poisoning_shrink() {
+    fprintf(stderr, "\nTesting string shrink with allocator alignment of %zu\n", Alignment);
+
+    basic_string<wchar_t, char_traits<wchar_t>, arena_reuse_allocator<wchar_t, arena_size, Alignment>> test_string(L"a 24 length string repr");
+    fputs("Shadow after string constructor:\n", stderr);
+    // Should not see any poisoning, since allocation size == string size.
+    assert(std_testing::asan::verify_container_poisoning(test_string.data(), 
+        (test_string.size() + 1) * sizeof(wchar_t), // +1 for null terminator
+        (test_string.capacity() + 1) * sizeof(wchar_t), // +1 for null terminator
+        Alignment >= 8));
+
+    test_string.pop_back(); // trigger size reduction
+    fputs("Shadow after string shrink:\n", stderr);
+    // Should see poisoning, since the allocation should have shrunk more than +1.
+    assert(std_testing::asan::verify_container_poisoning(test_string.data(), 
+        (test_string.size() + 1) * sizeof(wchar_t), // +1 for null terminator
+        (test_string.capacity() + 1) * sizeof(wchar_t), // +1 for null terminator
+        Alignment >= 8));
+}
+
+template <size_t Alignment>
+void test_vector_poisoning_shrink() {
+    fprintf(stderr, "\nTesting vector shrink with allocator alignment of %zu\n", Alignment);
+
+    vector<wchar_t, arena_reuse_allocator<wchar_t, arena_size, Alignment>> test_vector(16, L'a');
+    fputs("Shadow after vector constructor:\n", stderr);
+    // Should not see any poisoning, since allocation size == vector size.
+    assert(std_testing::asan::verify_container_poisoning(test_vector.data(), 
+        test_vector.size() * sizeof(wchar_t), 
+        test_vector.capacity() * sizeof(wchar_t), 
+        Alignment >= 8));
+
+    test_vector.pop_back(); // trigger size reduction
+    fputs("Shadow after vector shrink:\n", stderr);
+    // Should see poisoning, since allocation should have shrunk more than +1.
+    assert(std_testing::asan::verify_container_poisoning(test_vector.data(), 
+        test_vector.size() * sizeof(wchar_t), 
+        test_vector.capacity() * sizeof(wchar_t), 
+        Alignment >= 8));
 }
 
 int main() {
@@ -170,8 +200,14 @@ int main() {
     test_string_poisoning<2>(); // under poisoned code path
     test_string_poisoning<8>(); // over poisoned code path
 
+    test_string_poisoning_shrink<2>(); // under poisoned code path
+    test_string_poisoning_shrink<8>(); // over poisoned code path
+
     test_vector_poisoning<2>(); // under poisoned code path
     test_vector_poisoning<8>(); // over poisoned code path
+
+    test_vector_poisoning_shrink<2>(); // under poisoned code path
+    test_vector_poisoning_shrink<8>(); // over poisoned code path
 
     return 0;
 }

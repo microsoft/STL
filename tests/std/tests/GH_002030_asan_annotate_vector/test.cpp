@@ -18,6 +18,7 @@ int main() {}
 #include <vector>
 
 #include <test_death.hpp>
+#include <test_asan_support.hpp>
 
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
 
@@ -36,13 +37,6 @@ using namespace std;
 #endif
 #endif
 #endif
-
-#ifdef __SANITIZE_ADDRESS__
-extern "C" {
-void* __sanitizer_contiguous_container_find_bad_address(const void* beg, const void* mid, const void* end) noexcept;
-void __asan_describe_address(void*) noexcept;
-}
-#endif // ASan instrumentation enabled
 
 struct non_trivial_can_throw {
     non_trivial_can_throw() {
@@ -164,45 +158,26 @@ public:
     }
 };
 
+template <class CharType>
+bool verify_poisoning_cleared(CharType *ptr, size_t capacity) {
+#ifdef __SANITIZE_ADDRESS__
+    return std_testing::asan::verify_poisoning_cleared(ptr, capacity * sizeof(CharType));
+#else // ^^^ ASan instrumentation enabled / ASan instrumentation disabled vvv
+    (void) ptr;
+    (void) capacity;
+    return true;
+#endif // ASan instrumentation disabled
+}
+
 template <class T, class Alloc>
 bool verify_vector(vector<T, Alloc>& vec) {
 #ifdef __SANITIZE_ADDRESS__
-    const void* buffer  = vec.data();
-    const void* buf_end = vec.data() + vec.capacity();
-    _Asan_aligned_pointers aligned;
-
-    if constexpr ((_Container_allocation_minimum_asan_alignment<vector<T, Alloc>>) >= 8) {
-        aligned = {buffer, buf_end};
-    } else {
-        aligned = _Get_asan_aligned_first_end(buffer, buf_end);
-        if (aligned._First == aligned._End) {
-            return true;
-        }
-    }
-
-    const void* const mid       = vec.data() + vec.size();
-    const void* const fixed_mid = aligned._Clamp_to_end(mid);
-
-    void* bad_address = __sanitizer_contiguous_container_find_bad_address(aligned._First, fixed_mid, aligned._End);
-    if (bad_address == nullptr) {
-        return true;
-    }
-
-    if (bad_address < mid) {
-        cout << bad_address << " was marked as poisoned when it should not be." << endl;
-    } else {
-        cout << bad_address << " was not marked as poisoned when it should be." << endl;
-    }
-    cout << "Vector State:" << endl;
-    cout << "  begin:         " << buffer << endl;
-    cout << "  aligned begin: " << aligned._First << endl;
-    cout << "  last:          " << mid << endl;
-    cout << "  aligned_last:  " << fixed_mid << endl;
-    cout << "  end:           " << buf_end << endl;
-    cout << "  aligned_end:   " << aligned._End << endl;
-    __asan_describe_address(bad_address);
-
-    return false;
+    return std_testing::asan::verify_container_poisoning(
+            vec.data(), 
+            vec.size() * sizeof(T), 
+            vec.capacity() * sizeof(T), 
+            _Container_allocation_minimum_asan_alignment<vector<T, Alloc>> >= 8
+        );
 #else // ^^^ ASan instrumentation enabled / ASan instrumentation disabled vvv
     (void) vec;
     return true;
@@ -241,11 +216,34 @@ struct aligned_allocator : custom_test_allocator<T, Pocma, Stateless> {
         return new T[n];
     }
 
-    void deallocate(T* p, size_t) noexcept {
+    void deallocate(T* p, size_t n) noexcept {
+        assert(verify_poisoning_cleared(p, n));
         delete[] p;
     }
 };
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<char, aligned_allocator<char>>> == 8);
+
+template <class T, class Pocma = true_type, class Stateless = true_type>
+struct extra_space_aligned_allocator : public custom_test_allocator<T, Pocma, Stateless> {
+    static constexpr size_t _Minimum_asan_allocation_alignment = 8;
+    static constexpr size_t extra_space_per_side = 64 / sizeof(T);
+
+    extra_space_aligned_allocator() = default;
+    template <class U>
+    constexpr extra_space_aligned_allocator(const extra_space_aligned_allocator<U, Pocma, Stateless>&) noexcept {}
+
+    T* allocate(size_t n) {
+        T* mem = new T[n + 2 * extra_space_per_side];
+        return mem + extra_space_per_side;
+    }
+
+    void deallocate(T* p, size_t n) noexcept {
+        assert(verify_poisoning_cleared(p - extra_space_per_side, n + 2 * extra_space_per_side));
+        delete[] (p - extra_space_per_side);
+    }
+};
+STATIC_ASSERT(
+    _Container_allocation_minimum_asan_alignment<vector<char, extra_space_aligned_allocator<char>>> == 8);
 
 template <class T, class Pocma = true_type, class Stateless = true_type>
 struct explicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
@@ -260,7 +258,8 @@ struct explicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
         return mem + 1;
     }
 
-    void deallocate(T* p, size_t) noexcept {
+    void deallocate(T* p, size_t n) noexcept {
+        assert(verify_poisoning_cleared(p - 1, n + 1));
         delete[] (p - 1);
     }
 };
@@ -278,12 +277,37 @@ struct implicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
         return mem + 1;
     }
 
-    void deallocate(T* p, size_t) noexcept {
+    void deallocate(T* p, size_t n) noexcept {
+        assert(verify_poisoning_cleared(p - 1, n + 1));
         delete[] (p - 1);
     }
 };
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<char, implicit_allocator<char>>> == 1);
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<wchar_t, implicit_allocator<wchar_t>>> == 2);
+
+template <class T, class Pocma = true_type, class Stateless = true_type>
+struct extra_space_unaligned_allocator : public custom_test_allocator<T, Pocma, Stateless> {
+    static constexpr size_t extra_space_per_side = 64 / sizeof(T);
+
+    extra_space_unaligned_allocator() = default;
+    template <class U>
+    constexpr extra_space_unaligned_allocator(const extra_space_unaligned_allocator<U, Pocma, Stateless>&) noexcept {}
+
+    T* allocate(size_t n) {
+        T* mem = new T[n + 1 + 2*extra_space_per_side];
+        return mem + extra_space_per_side + 1;
+    }
+
+    void deallocate(T* p, size_t n) noexcept {
+        assert(verify_poisoning_cleared(p - 1 - extra_space_per_side, n + 1 + 2*extra_space_per_side));
+        delete[] (p - 1 - extra_space_per_side);
+    }
+};
+STATIC_ASSERT(
+    _Container_allocation_minimum_asan_alignment<vector<char, extra_space_unaligned_allocator<char>>> == 1);
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
+                  vector<wchar_t, extra_space_unaligned_allocator<wchar_t>>>
+              == 2);
 
 // Simple allocator that opts out of ASan annotations (via `_Disable_ASan_container_annotations_for_allocator`)
 template <class T, class Pocma = true_type, class Stateless = true_type>
@@ -322,6 +346,25 @@ void test_push_pop() {
     assert(verify_vector(v));
 }
 
+template <class Alloc, int Size = 1024>
+void test_push_pop_resize() {
+    using T = typename Alloc::value_type;
+
+    // Try push/pop at various sizes to cover resize code path (gh-6276)
+    for (size_t i = 1; i < Size; ++i) {
+        vector<T, Alloc> v(Size, T());
+        v.push_back(T());
+        assert(verify_vector(v));
+    }
+
+    for (size_t i = 1; i < Size; ++i) {
+        vector<T, Alloc> v(Size, T());
+        v.pop_back();
+        assert(verify_vector(v));
+    }
+
+}
+
 template <class Alloc, int Size = 1024, int Stride = 128>
 void test_reserve_shrink() {
     using T = typename Alloc::value_type;
@@ -345,7 +388,7 @@ void test_reserve_shrink() {
 
     for (int i = 0; i < Size; i += Stride) {
         for (int j = 0; j < Stride && j + i < Size; ++j) {
-            v.pop_back();
+            v.pop_back(); 
         }
 
         v.shrink_to_fit();
@@ -1015,6 +1058,7 @@ void test_empty() {
 template <class Alloc>
 void run_tests() {
     test_push_pop<Alloc>();
+    test_push_pop_resize<Alloc>();
     test_reserve_shrink<Alloc>();
     test_emplace_pop<Alloc>();
     test_move_assign<Alloc>();
@@ -1060,13 +1104,49 @@ template <class T>
 void run_allocator_matrix() {
     run_tests<allocator<T>>();
     run_custom_allocator_matrix<T, aligned_allocator>();
+    run_custom_allocator_matrix<T, extra_space_aligned_allocator>();
     run_custom_allocator_matrix<T, explicit_allocator>();
     run_custom_allocator_matrix<T, implicit_allocator>();
+    run_custom_allocator_matrix<T, extra_space_unaligned_allocator>();
 
     // To test ASan annotation disablement, we use an ad-hoc allocator type to avoid disrupting other
     // tests that depend on annotations being enabled. Therefore, unlike the prior tests,
     // this test is not parameterized by the allocator type.
     run_asan_annotations_disablement_test<T>();
+}
+
+void test_gh_6276() {
+    { 
+        vector<wchar_t, extra_space_unaligned_allocator<wchar_t>> unaligned{22, L'a'};
+        assert(verify_vector(unaligned));                                                               
+
+        unaligned.push_back(L'b');
+        assert(verify_vector(unaligned));
+    }
+    
+    {
+        vector<wchar_t, extra_space_unaligned_allocator<wchar_t>> unaligned{22, L'a'};
+        assert(verify_vector(unaligned));
+
+        unaligned.pop_back();
+        assert(verify_vector(unaligned));
+    }
+
+    {
+        vector<wchar_t, extra_space_aligned_allocator<wchar_t>> aligned{23, L'a'};
+        assert(verify_vector(aligned));
+
+        aligned.push_back(L'a');
+        assert(verify_vector(aligned));
+    }
+
+    {
+        vector<wchar_t, extra_space_aligned_allocator<wchar_t>> aligned{23, L'a'};
+        assert(verify_vector(aligned));
+
+        aligned.pop_back();
+        assert(verify_vector(aligned));
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -1089,6 +1169,8 @@ int main(int argc, char* argv[]) {
         test_insert_n_throw();
 #endif // ^^^ no workaround ^^^
 #endif // ASan instrumentation enabled
+
+        test_gh_6276();
     });
 
 #ifdef __SANITIZE_ADDRESS__
