@@ -675,7 +675,8 @@ private:
             return false;
         }
 #endif // _HAS_CXX20
-        // Only annotate if the string is large enough to be worth it, and if the user hasn't opted out via _Asan_string_should_annotate.
+       // Only annotate if the string is large enough to be worth it, and if the user hasn't opted out via
+       // _Asan_string_should_annotate.
         return _Mypair._Myval2._Myres > _Small_string_capacity && _Asan_string_should_annotate;
     }
 
@@ -692,7 +693,7 @@ private:
     }
 
     _CONSTEXPR20 const void* _Annotation_end() const noexcept {
-        auto& _My_data = _Mypair._Myval2;
+        auto& _My_data         = _Mypair._Myval2;
         const void* const _End = _My_data._Myptr() + _My_data._Myres + 1; // +1 to include null terminator in annotation
 
         constexpr bool _Large_string_always_asan_aligned =
@@ -718,8 +719,7 @@ private:
             }
 
             _CSTD __sanitizer_annotate_contiguous_container(
-                        _Annotation_begin(), _Annotation_end(), _Annotation_end(), _Annotation_last()
-            );
+                _Annotation_begin(), _Annotation_end(), _Annotation_end(), _Annotation_last());
         }
     }
 
@@ -730,8 +730,7 @@ private:
             }
 
             _CSTD __sanitizer_annotate_contiguous_container(
-                _Annotation_begin(), _Annotation_end(), _Annotation_last(), _Annotation_end()
-            );
+                _Annotation_begin(), _Annotation_end(), _Annotation_last(), _Annotation_end());
         }
     }
 
@@ -740,14 +739,13 @@ private:
             if (!_Should_annotate()) {
                 return;
             }
-    
+
             if (_Old_size == _New_size) {
                 return;
             }
 
             _CSTD __sanitizer_annotate_contiguous_container(
-                _Annotation_begin(), _Annotation_end(), _Annotation_at(_Old_size), _Annotation_at(_New_size)
-            );
+                _Annotation_begin(), _Annotation_end(), _Annotation_at(_Old_size), _Annotation_at(_New_size));
         }
     }
 

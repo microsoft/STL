@@ -516,7 +516,7 @@ private:
     _CONSTEXPR20 const void* _Annotation_end() const noexcept {
         _STL_INTERNAL_CHECK(_Mypair._Myval2._Myend != nullptr);
         const void* const _End = _STD _Unfancy(_Mypair._Myval2._Myend);
-        
+
         if constexpr ((_Container_allocation_minimum_asan_alignment<vector>) >= _Asan_granularity) {
             // If the allocator alignment is less than or equal to the ASan granularity, then we can
             // realign the end forward to maximize the annotation coverage.
@@ -576,8 +576,7 @@ private:
             }
 
             _CSTD __sanitizer_annotate_contiguous_container(
-                _Annotation_begin(), _Annotation_end(), _Annotation_last(), _Annotation_at(_Target_size)
-            );
+                _Annotation_begin(), _Annotation_end(), _Annotation_last(), _Annotation_at(_Target_size));
         }
     }
 
@@ -595,10 +594,8 @@ private:
                     return;
                 }
 
-                _CSTD __sanitizer_annotate_contiguous_container(
-                    _Myvec->_Annotation_begin(), _Myvec->_Annotation_end(), _Myvec->_Annotation_last(),
-                    _Myvec->_Annotation_at(_Target_size)
-                );
+                _CSTD __sanitizer_annotate_contiguous_container(_Myvec->_Annotation_begin(), _Myvec->_Annotation_end(),
+                    _Myvec->_Annotation_last(), _Myvec->_Annotation_at(_Target_size));
             }
         }
 
@@ -613,10 +610,8 @@ private:
                 }
 
                 // Shrinks the shadow memory to the current size of the vector.
-                _CSTD __sanitizer_annotate_contiguous_container(
-                    _Myvec->_Annotation_begin(), _Myvec->_Annotation_end(), _Myvec->_Annotation_at(_Target_size),
-                    _Myvec->_Annotation_last()
-                );
+                _CSTD __sanitizer_annotate_contiguous_container(_Myvec->_Annotation_begin(), _Myvec->_Annotation_end(),
+                    _Myvec->_Annotation_at(_Target_size), _Myvec->_Annotation_last());
             }
         }
 

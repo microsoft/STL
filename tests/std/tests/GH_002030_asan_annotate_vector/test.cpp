@@ -159,7 +159,7 @@ public:
 };
 
 template <class CharType>
-bool verify_poisoning_cleared(CharType *ptr, size_t capacity) {
+bool verify_poisoning_cleared(CharType* ptr, size_t capacity) {
 #ifdef __SANITIZE_ADDRESS__
     return std_testing::asan::verify_poisoning_cleared(ptr, capacity * sizeof(CharType));
 #else // ^^^ ASan instrumentation enabled / ASan instrumentation disabled vvv
@@ -172,12 +172,8 @@ bool verify_poisoning_cleared(CharType *ptr, size_t capacity) {
 template <class T, class Alloc>
 bool verify_vector(vector<T, Alloc>& vec) {
 #ifdef __SANITIZE_ADDRESS__
-    return std_testing::asan::verify_container_poisoning(
-            vec.data(), 
-            vec.size() * sizeof(T), 
-            vec.capacity() * sizeof(T), 
-            _Container_allocation_minimum_asan_alignment<vector<T, Alloc>> >= 8
-        );
+    return std_testing::asan::verify_container_poisoning(vec.data(), vec.size() * sizeof(T), vec.capacity() * sizeof(T),
+        _Container_allocation_minimum_asan_alignment<vector<T, Alloc>> >= 8);
 #else // ^^^ ASan instrumentation enabled / ASan instrumentation disabled vvv
     (void) vec;
     return true;
@@ -226,7 +222,7 @@ STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<char, aligned_
 template <class T, class Pocma = true_type, class Stateless = true_type>
 struct extra_space_aligned_allocator : public custom_test_allocator<T, Pocma, Stateless> {
     static constexpr size_t _Minimum_asan_allocation_alignment = 8;
-    static constexpr size_t extra_space_per_side = 64 / sizeof(T);
+    static constexpr size_t extra_space_per_side               = 64 / sizeof(T);
 
     extra_space_aligned_allocator() = default;
     template <class U>
@@ -242,8 +238,7 @@ struct extra_space_aligned_allocator : public custom_test_allocator<T, Pocma, St
         delete[] (p - extra_space_per_side);
     }
 };
-STATIC_ASSERT(
-    _Container_allocation_minimum_asan_alignment<vector<char, extra_space_aligned_allocator<char>>> == 8);
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<char, extra_space_aligned_allocator<char>>> == 8);
 
 template <class T, class Pocma = true_type, class Stateless = true_type>
 struct explicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
@@ -294,20 +289,18 @@ struct extra_space_unaligned_allocator : public custom_test_allocator<T, Pocma, 
     constexpr extra_space_unaligned_allocator(const extra_space_unaligned_allocator<U, Pocma, Stateless>&) noexcept {}
 
     T* allocate(size_t n) {
-        T* mem = new T[n + 1 + 2*extra_space_per_side];
+        T* mem = new T[n + 1 + 2 * extra_space_per_side];
         return mem + extra_space_per_side + 1;
     }
 
     void deallocate(T* p, size_t n) noexcept {
-        assert(verify_poisoning_cleared(p - 1 - extra_space_per_side, n + 1 + 2*extra_space_per_side));
+        assert(verify_poisoning_cleared(p - 1 - extra_space_per_side, n + 1 + 2 * extra_space_per_side));
         delete[] (p - 1 - extra_space_per_side);
     }
 };
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<vector<char, extra_space_unaligned_allocator<char>>> == 1);
 STATIC_ASSERT(
-    _Container_allocation_minimum_asan_alignment<vector<char, extra_space_unaligned_allocator<char>>> == 1);
-STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
-                  vector<wchar_t, extra_space_unaligned_allocator<wchar_t>>>
-              == 2);
+    _Container_allocation_minimum_asan_alignment<vector<wchar_t, extra_space_unaligned_allocator<wchar_t>>> == 2);
 
 // Simple allocator that opts out of ASan annotations (via `_Disable_ASan_container_annotations_for_allocator`)
 template <class T, class Pocma = true_type, class Stateless = true_type>
@@ -362,7 +355,6 @@ void test_push_pop_resize() {
         v.pop_back();
         assert(verify_vector(v));
     }
-
 }
 
 template <class Alloc, int Size = 1024, int Stride = 128>
@@ -388,7 +380,7 @@ void test_reserve_shrink() {
 
     for (int i = 0; i < Size; i += Stride) {
         for (int j = 0; j < Stride && j + i < Size; ++j) {
-            v.pop_back(); 
+            v.pop_back();
         }
 
         v.shrink_to_fit();
@@ -1116,14 +1108,14 @@ void run_allocator_matrix() {
 }
 
 void test_gh_6276() {
-    { 
+    {
         vector<wchar_t, extra_space_unaligned_allocator<wchar_t>> unaligned{22, L'a'};
-        assert(verify_vector(unaligned));                                                               
+        assert(verify_vector(unaligned));
 
         unaligned.push_back(L'b');
         assert(verify_vector(unaligned));
     }
-    
+
     {
         vector<wchar_t, extra_space_unaligned_allocator<wchar_t>> unaligned{22, L'a'};
         assert(verify_vector(unaligned));

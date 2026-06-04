@@ -176,7 +176,7 @@ public:
 };
 
 template <class CharType>
-bool verify_poisoning_cleared(CharType *ptr, size_t capacity) {
+bool verify_poisoning_cleared(CharType* ptr, size_t capacity) {
 #ifdef __SANITIZE_ADDRESS__
     return std_testing::asan::verify_poisoning_cleared(ptr, capacity * sizeof(CharType));
 #else // ^^^ ASan instrumentation enabled / ASan instrumentation disabled vvv
@@ -193,12 +193,9 @@ bool verify_string(const basic_string<CharType, char_traits<CharType>, Alloc>& s
         return true;
     }
 
-    return std_testing::asan::verify_container_poisoning(
-        str.data(), 
-        (str.size() + 1) * sizeof(CharType), 
-        (str.capacity() + 1) * sizeof(CharType), 
-        (_Container_allocation_minimum_asan_alignment<decay_t<decltype(str)>>) >= 8
-    );
+    return std_testing::asan::verify_container_poisoning(str.data(), (str.size() + 1) * sizeof(CharType),
+        (str.capacity() + 1) * sizeof(CharType),
+        (_Container_allocation_minimum_asan_alignment<decay_t<decltype(str)>>) >= 8);
 #else // ^^^ ASan instrumentation enabled / ASan instrumentation disabled vvv
     (void) str;
     return true;
@@ -251,7 +248,7 @@ STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
 template <class CharType, class Pocma = true_type, class Stateless = true_type>
 struct extra_space_aligned_allocator : public custom_test_allocator<CharType, Pocma, Stateless> {
     static constexpr size_t _Minimum_asan_allocation_alignment = 8;
-    static constexpr size_t extra_space_per_side = 64 / sizeof(CharType);
+    static constexpr size_t extra_space_per_side               = 64 / sizeof(CharType);
 
     extra_space_aligned_allocator() = default;
     template <class U>
@@ -267,8 +264,9 @@ struct extra_space_aligned_allocator : public custom_test_allocator<CharType, Po
         delete[] (p - extra_space_per_side);
     }
 };
-STATIC_ASSERT(
-    _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, extra_space_aligned_allocator<char>>> == 8);
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
+                  basic_string<char, char_traits<char>, extra_space_aligned_allocator<char>>>
+              == 8);
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
                   basic_string<wchar_t, char_traits<wchar_t>, extra_space_aligned_allocator<wchar_t>>>
               == 8);
@@ -328,17 +326,18 @@ struct extra_space_unaligned_allocator : public custom_test_allocator<CharType, 
     constexpr extra_space_unaligned_allocator(const extra_space_unaligned_allocator<U, Pocma, Stateless>&) noexcept {}
 
     CharType* allocate(size_t n) {
-        CharType* mem = new CharType[n + 1 + 2*extra_space_per_side];
+        CharType* mem = new CharType[n + 1 + 2 * extra_space_per_side];
         return mem + extra_space_per_side + 1;
     }
 
     void deallocate(CharType* p, size_t n) noexcept {
-        assert(verify_poisoning_cleared(p - 1 - extra_space_per_side, n + 1 + 2*extra_space_per_side));
+        assert(verify_poisoning_cleared(p - 1 - extra_space_per_side, n + 1 + 2 * extra_space_per_side));
         delete[] (p - 1 - extra_space_per_side);
     }
 };
-STATIC_ASSERT(
-    _Container_allocation_minimum_asan_alignment<basic_string<char, char_traits<char>, extra_space_unaligned_allocator<char>>> == 1);
+STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
+                  basic_string<char, char_traits<char>, extra_space_unaligned_allocator<char>>>
+              == 1);
 STATIC_ASSERT(_Container_allocation_minimum_asan_alignment<
                   basic_string<wchar_t, char_traits<wchar_t>, extra_space_unaligned_allocator<wchar_t>>>
               == 2);
@@ -415,7 +414,7 @@ void test_construction() {
         assert(verify_string(literal_constructed));
         assert(verify_string(copy_assigned_large_to_sso));
 
-        str copy_assigned_sso_to_large(get_large_input<CharType>()); 
+        str copy_assigned_sso_to_large(get_large_input<CharType>());
         copy_assigned_sso_to_large = literal_constructed_sso;
         assert(verify_string(literal_constructed_sso));
         assert(verify_string(copy_assigned_sso_to_large));
@@ -1623,7 +1622,7 @@ void test_removal() {
         shrink_to_fit_shrinking.pop_back();
         shrink_to_fit_shrinking.shrink_to_fit();
         assert(verify_string(shrink_to_fit_shrinking));
-    } 
+    }
 }
 
 template <class Alloc>
@@ -2045,16 +2044,18 @@ void test_gh_3955() {
 
 
 void test_gh_6276() {
-    { 
-        basic_string<wchar_t, char_traits<wchar_t>, extra_space_unaligned_allocator<wchar_t>> unaligned{L"1234567890123456789012"};
-        assert(verify_string(unaligned));                                                               
+    {
+        basic_string<wchar_t, char_traits<wchar_t>, extra_space_unaligned_allocator<wchar_t>> unaligned{
+            L"1234567890123456789012"};
+        assert(verify_string(unaligned));
 
         unaligned.append(L"3");
         assert(verify_string(unaligned));
     }
-    
+
     {
-        basic_string<wchar_t, char_traits<wchar_t>, extra_space_unaligned_allocator<wchar_t>> unaligned{L"1234567890123456789012"};
+        basic_string<wchar_t, char_traits<wchar_t>, extra_space_unaligned_allocator<wchar_t>> unaligned{
+            L"1234567890123456789012"};
         assert(verify_string(unaligned));
 
         unaligned.pop_back();
@@ -2062,7 +2063,8 @@ void test_gh_6276() {
     }
 
     {
-        basic_string<wchar_t, char_traits<wchar_t>, extra_space_aligned_allocator<wchar_t>> aligned{L"12345678901234567890123"};
+        basic_string<wchar_t, char_traits<wchar_t>, extra_space_aligned_allocator<wchar_t>> aligned{
+            L"12345678901234567890123"};
         assert(verify_string(aligned));
 
         aligned.append(L"4");
@@ -2070,7 +2072,8 @@ void test_gh_6276() {
     }
 
     {
-        basic_string<wchar_t, char_traits<wchar_t>, extra_space_aligned_allocator<wchar_t>> aligned{L"12345678901234567890123"};
+        basic_string<wchar_t, char_traits<wchar_t>, extra_space_aligned_allocator<wchar_t>> aligned{
+            L"12345678901234567890123"};
         assert(verify_string(aligned));
 
         aligned.pop_back();
