@@ -17,8 +17,8 @@ int main() {}
 #include <utility>
 #include <vector>
 
-#include <test_death.hpp>
 #include <test_asan_support.hpp>
+#include <test_death.hpp>
 
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
 

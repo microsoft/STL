@@ -1623,9 +1623,7 @@ void test_removal() {
         shrink_to_fit_shrinking.pop_back();
         shrink_to_fit_shrinking.shrink_to_fit();
         assert(verify_string(shrink_to_fit_shrinking));
-    }
-
-    
+    } 
 }
 
 template <class Alloc>
@@ -2096,7 +2094,6 @@ int main(int argc, char* argv[]) {
         test_gh_3955();
         test_gh_6276();
     });
-    
 #ifdef __SANITIZE_ADDRESS__
     exec.add_death_tests({
         run_asan_container_overflow_death_test<char>,
@@ -2108,7 +2105,6 @@ int main(int argc, char* argv[]) {
         run_asan_container_overflow_death_test<wchar_t>,
     });
 #endif // ASan instrumentation enabled
-
     return exec.run(argc, argv);
 }
 
