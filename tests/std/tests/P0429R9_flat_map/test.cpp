@@ -509,7 +509,7 @@ void test_construction() {
             {value_types[5].first_, value_types[5].second_},
         };
 
-        // Test LWG=4223
+        // Test LWG-4223
         {
             flat_map fmap{ranges::begin(alter_pairs), ranges::end(alter_pairs)};
             flat_map fmap1{ranges::begin(alter_pairs), ranges::end(alter_pairs), less<int>{}};
@@ -681,9 +681,9 @@ void test_construction() {
         // Test LWG-4223
         {
             MyAllocatorCounter allocation_counter;
-            flat_map fmap{from_range, value_types, MyAllocator<int>{}};
+            flat_map fmap{from_range, alter_pairs, MyAllocator<int>{}};
             assert(allocation_counter.check_then_reset());
-            flat_map fmap1{from_range, value_types, less<int>{}, MyAllocator<int>{}};
+            flat_map fmap1{from_range, alter_pairs, less<int>{}, MyAllocator<int>{}};
             assert(allocation_counter.check_then_reset());
 
             assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
@@ -692,9 +692,9 @@ void test_construction() {
         }
         {
             MyAllocatorCounter allocation_counter;
-            flat_multimap fmmap{from_range, value_types, MyAllocator<int>{}};
+            flat_multimap fmmap{from_range, alter_pairs, MyAllocator<int>{}};
             assert(allocation_counter.check_then_reset());
-            flat_multimap fmmap1{from_range, value_types, less<int>{}, MyAllocator<int>{}};
+            flat_multimap fmmap1{from_range, alter_pairs, less<int>{}, MyAllocator<int>{}};
             assert(allocation_counter.check_then_reset());
 
             assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
