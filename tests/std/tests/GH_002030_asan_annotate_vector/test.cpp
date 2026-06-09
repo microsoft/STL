@@ -345,13 +345,13 @@ void test_push_pop_resize() {
 
     // Try push/pop at various sizes to cover resize code path (gh-6276)
     for (size_t i = 1; i < Size; ++i) {
-        vector<T, Alloc> v(Size, T());
+        vector<T, Alloc> v(i, T());
         v.push_back(T());
         assert(verify_vector(v));
     }
 
     for (size_t i = 1; i < Size; ++i) {
-        vector<T, Alloc> v(Size, T());
+        vector<T, Alloc> v(i, T());
         v.pop_back();
         assert(verify_vector(v));
     }

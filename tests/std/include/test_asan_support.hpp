@@ -12,6 +12,8 @@
 
 #ifdef __SANITIZE_ADDRESS__
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
 #include <cstdio>
 
 extern "C" uintptr_t __asan_shadow_memory_dynamic_address;
@@ -23,25 +25,25 @@ namespace std_testing {
     namespace asan {
         constexpr uintptr_t shadow_granularity = 8;
 
-        const char* round_down_to_shadow_granularity(const char* const addr) {
+        inline const char* round_down_to_shadow_granularity(const char* const addr) {
             return reinterpret_cast<const char*>(reinterpret_cast<uintptr_t>(addr) & ~(shadow_granularity - 1));
         }
 
-        const char* round_up_to_shadow_granularity(const char* const addr) {
+        inline const char* round_up_to_shadow_granularity(const char* const addr) {
             return reinterpret_cast<const char*>(
                 (reinterpret_cast<uintptr_t>(addr) + shadow_granularity - 1) & ~(shadow_granularity - 1));
         }
 
-        NO_SANITIZE_ADDRESS unsigned char* shadow_addr_of(const void* const addr) {
+        NO_SANITIZE_ADDRESS inline unsigned char* shadow_addr_of(const void* const addr) {
             return reinterpret_cast<unsigned char*>(
                 (reinterpret_cast<uintptr_t>(addr) >> 3) + __asan_shadow_memory_dynamic_address);
         }
 
-        NO_SANITIZE_ADDRESS unsigned char shadow_byte_of(const void* addr) {
+        NO_SANITIZE_ADDRESS inline unsigned char shadow_byte_of(const void* addr) {
             return *shadow_addr_of(addr);
         }
 
-        void print_shadow_bytes(const void* addr, size_t num_bytes, const void* error_addr = nullptr,
+        inline void print_shadow_bytes(const void* addr, size_t num_bytes, const void* error_addr = nullptr,
             unsigned char expected_shadow_byte = 0xff /*unused shadow byte*/) {
             constexpr size_t shadow_bytes_per_line  = 16;
             constexpr uintptr_t bytes_per_line_mask = (shadow_bytes_per_line * shadow_granularity) - 1;
@@ -77,7 +79,7 @@ namespace std_testing {
             fprintf(stderr, "\n");
         }
 
-        bool verify_poisoning_cleared(void* ptr, size_t num_bytes) {
+        inline bool verify_poisoning_cleared(void* ptr, size_t num_bytes) {
             const char* const begin = round_down_to_shadow_granularity(reinterpret_cast<const char*>(ptr));
             const char* end         = reinterpret_cast<const char*>(ptr) + num_bytes;
 

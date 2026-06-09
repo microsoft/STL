@@ -419,7 +419,7 @@ void test_construction() {
         assert(verify_string(literal_constructed_sso));
         assert(verify_string(copy_assigned_sso_to_large));
 
-        str copy_assigned_large_to_large(get_large_input<CharType>()); // creating allocator 28 with arena 8
+        str copy_assigned_large_to_large(get_large_input<CharType>());
         copy_assigned_large_to_large = literal_constructed;
         assert(verify_string(literal_constructed));
         assert(verify_string(copy_assigned_large_to_large));
@@ -439,7 +439,7 @@ void test_construction() {
         assert(verify_string(copy_assigned_sso_to_large));
         assert(verify_string(move_assigned_sso_to_large));
 
-        str move_assigned_large_to_large(get_large_input<CharType>()); // creating allocator 42 with arena 12
+        str move_assigned_large_to_large(get_large_input<CharType>());
         move_assigned_large_to_large = move(copy_assigned_large_to_large);
         assert(verify_string(copy_assigned_large_to_large));
         assert(verify_string(move_assigned_large_to_large));
