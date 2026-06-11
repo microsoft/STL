@@ -1557,6 +1557,16 @@ public:
 #endif // _HAS_CXX17
 
     _CONSTEXPR20 basic_string& append(
+        _In_reads_(_Count) const _Elem* const _Ptr, const size_type _Off, _CRT_GUARDOVERFLOW const size_type _Count) {
+        // append(string_view(_Ptr).substr(_Off, _Count))
+        const size_type _Length = _Convert_size<size_type>(_Traits::length(_Ptr));
+        if (_Off > _Length) {
+            _Scary_val::_Xran();
+        }
+        return _Append(_Ptr + _Off, (_STD min) (_Length - _Off, _Count));
+    }
+
+    _CONSTEXPR20 basic_string& append(
         _In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count) {
         // append [_Ptr, _Ptr + _Count)
         return _Append(_Ptr, _Count);
@@ -1644,6 +1654,16 @@ public:
         return assign(_As_view.substr(static_cast<size_t>(_Roff), static_cast<size_t>(_Count)));
     }
 #endif // _HAS_CXX17
+
+    _CONSTEXPR20 basic_string& assign(
+        _In_reads_(_Count) const _Elem* const _Ptr, const size_type _Off, _CRT_GUARDOVERFLOW const size_type _Count) {
+        // assign(string_view(_Ptr).substr(_Off, _Count))
+        const size_type _Length = _Convert_size<size_type>(_Traits::length(_Ptr));
+        if (_Off > _Length) {
+            _Scary_val::_Xran();
+        }
+        return _Assign(_Ptr + _Off, (_STD min) (_Length - _Off, _Count));
+    }
 
     _CONSTEXPR20 basic_string& assign(
         _In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count) {
