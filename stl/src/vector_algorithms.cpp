@@ -19,7 +19,9 @@
 #include <intrin.h>
 #include <isa_availability.h>
 
-extern "C" long __isa_enabled;
+extern "C" {
+extern int __isa_enabled; // TRANSITION, <isa_availability.h> will declare this soon after 2026-06-09
+}
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
 namespace {
