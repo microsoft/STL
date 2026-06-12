@@ -2652,6 +2652,33 @@ void test_gh_6267() {
     }
 }
 
+void test_gh_6289() {
+    // GH-6289: Emit complete _N_str nodes only during NFA construction
+    g_regexTester.should_match("ab", "ab");
+    g_regexTester.should_not_match("", "ab");
+    g_regexTester.should_match("\na", "\n^a", multiline);
+    g_regexTester.should_match("a\nb", "a$\nb", multiline);
+    g_regexTester.should_match("a ", R"(a\b )");
+    g_regexTester.should_match("ab", R"(a\Bb)");
+    g_regexTester.should_match("ab", "a.");
+    g_regexTester.should_match("ab", "a[b]");
+    g_regexTester.should_match("a", "a(?:b)*");
+    g_regexTester.should_match("ab", "a(?:b)*");
+    g_regexTester.should_match("abb", "a(?:b)*");
+    g_regexTester.should_match("abc", "a(?=b)..");
+    g_regexTester.should_not_match("aab", "a(?=b)..");
+    g_regexTester.should_capture("a", "a(b)*", "");
+    g_regexTester.should_capture("ab", "a(b)*", "b");
+    g_regexTester.should_capture("abb", "a(b)*", "b");
+    g_regexTester.should_match("aba", R"((a)b\1)");
+    g_regexTester.should_match("a", "a|b|c");
+    g_regexTester.should_match("b", "a|b|c");
+    g_regexTester.should_match("c", "a|b|c");
+    g_regexTester.should_not_match("ab", "a|b|c");
+    g_regexTester.should_not_match("bc", "a|b|c");
+    g_regexTester.should_not_match("abc", "a|b|c");
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2722,6 +2749,7 @@ int main() {
     test_gh_6249();
     test_gh_6262();
     test_gh_6267();
+    test_gh_6289();
 
     return g_regexTester.result();
 }
