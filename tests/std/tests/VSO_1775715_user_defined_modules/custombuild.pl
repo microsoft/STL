@@ -12,7 +12,7 @@ sub CustomBuildHook()
 
     # Dependency order is important here:
     my @inputPaths;
-    if ($ENV{PM_COMPILER} eq "clang-cl") {
+    if (($ENV{PM_COMPILER} // "") eq "clang-cl") {
         @inputPaths = ("-x", "c++-module", "user.ixx", "-x", "none", "test.cpp");
     } else {
         @inputPaths = ("user.ixx", "test.cpp");
