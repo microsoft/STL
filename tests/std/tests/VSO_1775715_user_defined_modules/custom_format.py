@@ -16,7 +16,10 @@ class CustomTestFormat(STLTestFormat):
         userIxx = os.path.join(sourceDir, 'user.ixx')
 
         # Dependency order is important here:
-        inputPaths = [userIxx, testCpp]
+        if 'clang' in test.config.available_features:
+            inputPaths = ['-x', 'c++-module', userIxx, '-x', 'none', testCpp]
+        else:
+            inputPaths = [userIxx, testCpp]
 
         cmd = [test.cxx, *inputPaths, *test.flags, *test.compileFlags]
 
