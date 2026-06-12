@@ -11112,35 +11112,43 @@ constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _
     // find smallest and largest elements
     pair<_FwdIt, _FwdIt> _Found(_First, _First);
 
-    if (_First != _Last) {
-        while (++_First != _Last) { // process one or two elements
-            _FwdIt _Next = _First;
-            if (++_Next == _Last) { // process last element
-                if (_DEBUG_LT_PRED(_Pred, *_First, *_Found.first)) {
-                    _Found.first = _First;
-                } else if (!_DEBUG_LT_PRED(_Pred, *_First, *_Found.second)) {
+    if (_First == _Last || ++_First == _Last) {
+        return _Found;
+    }
+
+    if (_DEBUG_LT_PRED(_Pred, *_First, *_Found.first)) {
+        _Found.first = _First;
+    } else {
+        _Found.second = _First;
+    }
+
+    while (++_First != _Last) { // process one or two elements
+        _FwdIt _Next = _First;
+        if (++_Next == _Last) { // process last element
+            if (_DEBUG_LT_PRED(_Pred, *_First, *_Found.first)) {
+                _Found.first = _First;
+            } else if (!_DEBUG_LT_PRED(_Pred, *_First, *_Found.second)) {
+                _Found.second = _First;
+            }
+        } else { // process next two elements
+            if (_DEBUG_LT_PRED(_Pred, *_Next, *_First)) { // test _Next for new smallest
+                if (_DEBUG_LT_PRED(_Pred, *_Next, *_Found.first)) {
+                    _Found.first = _Next;
+                }
+
+                if (!_DEBUG_LT_PRED(_Pred, *_First, *_Found.second)) {
                     _Found.second = _First;
                 }
-            } else { // process next two elements
-                if (_DEBUG_LT_PRED(_Pred, *_Next, *_First)) { // test _Next for new smallest
-                    if (_DEBUG_LT_PRED(_Pred, *_Next, *_Found.first)) {
-                        _Found.first = _Next;
-                    }
-
-                    if (!_DEBUG_LT_PRED(_Pred, *_First, *_Found.second)) {
-                        _Found.second = _First;
-                    }
-                } else { // test _First for new smallest
-                    if (_DEBUG_LT_PRED(_Pred, *_First, *_Found.first)) {
-                        _Found.first = _First;
-                    }
-
-                    if (!_DEBUG_LT_PRED(_Pred, *_Next, *_Found.second)) {
-                        _Found.second = _Next;
-                    }
+            } else { // test _First for new smallest
+                if (_DEBUG_LT_PRED(_Pred, *_First, *_Found.first)) {
+                    _Found.first = _First;
                 }
-                _First = _Next;
+
+                if (!_DEBUG_LT_PRED(_Pred, *_Next, *_Found.second)) {
+                    _Found.second = _Next;
+                }
             }
+            _First = _Next;
         }
     }
 
@@ -11239,8 +11247,14 @@ namespace ranges {
 
             min_max_result<_It> _Found{_First, _First};
 
-            if (_First == _Last) {
+            if (_First == _Last || ++_First == _Last) {
                 return _Found;
+            }
+
+            if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Found.min))) {
+                _Found.min = _First;
+            } else {
+                _Found.max = _First;
             }
 
             while (++_First != _Last) { // process one or two elements
@@ -11431,8 +11445,14 @@ namespace ranges {
             } else {
                 // This initialization is correct, similar to the N4950 [dcl.init.aggr]/6 example
                 minmax_result<_Vty> _Found = {static_cast<_Vty>(*_UFirst), _Found.min};
-                if (_UFirst == _ULast) {
+                if (++_UFirst == _ULast) {
                     return _Found;
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_UFirst), _STD invoke(_Proj, _Found.min))) {
+                    _Found.min = *_UFirst;
+                } else {
+                    _Found.max = *_UFirst;
                 }
 
                 while (++_UFirst != _ULast) { // process one or two elements
