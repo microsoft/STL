@@ -7,6 +7,9 @@
 #include <charconv>
 #include <cstddef>
 #include <system_error>
+
+#include "test.hpp"
+
 using namespace std;
 
 inline constexpr DoubleFromCharsTestCase double_from_chars_test_cases[] = {

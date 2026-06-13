@@ -60,10 +60,6 @@ std/language.support/support.exception/except.nested/assign.pass.cpp:2 SKIPPED
 std/language.support/support.exception/except.nested/ctor_copy.pass.cpp:2 SKIPPED
 std/language.support/support.exception/except.nested/ctor_default.pass.cpp:2 SKIPPED
 
-# LLVM-158341: Coroutines on arm64ec-pc-windows-msvc emit error LNK2001: unresolved external symbol #__NoopCoro_ResumeDestroy (EC Symbol)
-# SKIPPED because this is ARM64EC-specific.
-std/language.support/support.coroutines/coroutine.handle/coroutine.handle.noop/noop_coroutine.pass.cpp:2 SKIPPED
-
 # LLVM-171438: [Clang] __builtin_common_type is overly permissive
 # These tests are improperly working around this Clang bug by detecting Clang and asserting buggy results,
 # but only libc++ with Clang is affected; MSVC's STL with Clang is unaffected.
@@ -189,6 +185,9 @@ std/re/re.regex/re.regex.construct/bad_escape.pass.cpp FAIL
 # libc++ doesn't implement LWG-3187
 std/utilities/utility/mem.res/mem.poly.allocator.class/mem.poly.allocator.mem/construct_piecewise_pair_evil.pass.cpp FAIL
 
+# libc++ doesn't implement LWG-3599 "The `const` overload of `lazy_split_view::begin` should be constrained by `const Pattern`"
+std/ranges/range.adaptors/range.lazy.split/begin.pass.cpp FAIL
+
 # libc++ doesn't implement LWG-3670
 std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass.cpp FAIL
 
@@ -198,10 +197,6 @@ std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer.value/ctor.ite
 
 # libc++ doesn't implement LWG-4112
 std/ranges/range.adaptors/range.join/range.join.iterator/arrow.pass.cpp FAIL
-
-# libc++ doesn't implement LWG-4266 "`layout_stride::mapping` should treat empty mappings as exhaustive"
-std/containers/views/mdspan/layout_stride/is_exhaustive_corner_case.pass.cpp FAIL
-std/containers/views/mdspan/layout_stride/properties.pass.cpp FAIL
 
 # libc++ doesn't implement LWG-4272 "For `rank == 0`, `layout_stride` is atypically convertible"
 std/containers/views/mdspan/layout_left/ctor.layout_stride.pass.cpp FAIL
@@ -263,16 +258,16 @@ std/language.support/support.limits/support.limits.general/cstdlib.version.compi
 
 # P0543R3 Saturation Arithmetic
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
-std/numerics/numeric.ops/numeric.ops.sat/add_sat.compile.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/add_sat.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/div_sat.compile.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/div_sat.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/mul_sat.compile.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/mul_sat.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.compile.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/saturate_cast.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/sub_sat.compile.pass.cpp FAIL
-std/numerics/numeric.ops/numeric.ops.sat/sub_sat.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_add.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_add.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_cast.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_cast.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_div.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_div.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_mul.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_mul.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_sub.compile.pass.cpp FAIL
+std/numerics/numeric.ops/numeric.ops.sat/saturating_sub.pass.cpp FAIL
 
 # P1789R3 Library Support For Expansion Statements
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
@@ -282,6 +277,30 @@ std/utilities/intseq/intseq.binding/tuple_interface.compile.pass.cpp FAIL
 # P2592R3 Hashing Support For chrono Value Classes
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/time/time.hash/time.hash_enabled.pass.cpp FAIL
+
+# P2714R1 bind_front(), bind_back(), not_fn() For NTTP Callables
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/function.objects/func.bind.partial/bind_front.nttp.pass.cpp FAIL
+
+# P2781R9 constant_wrapper
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/const.wrap.class/adl.compile.pass.cpp FAIL
+std/utilities/const.wrap.class/assign.pass.cpp FAIL
+std/utilities/const.wrap.class/binary_ops.pass.cpp FAIL
+std/utilities/const.wrap.class/call.pass.cpp FAIL
+std/utilities/const.wrap.class/comma.pass.cpp FAIL
+std/utilities/const.wrap.class/comp.pass.cpp FAIL
+std/utilities/const.wrap.class/convert.pass.cpp FAIL
+std/utilities/const.wrap.class/ctad.compile.pass.cpp FAIL
+std/utilities/const.wrap.class/cw.pass.cpp FAIL
+std/utilities/const.wrap.class/cw_fixed.array.ctor.pass.cpp FAIL
+std/utilities/const.wrap.class/cw_fixed.ctor.pass.cpp FAIL
+std/utilities/const.wrap.class/general.pass.cpp FAIL
+std/utilities/const.wrap.class/mem_ptr.pass.cpp FAIL
+std/utilities/const.wrap.class/pseudo_mutators.pass.cpp FAIL
+std/utilities/const.wrap.class/subscript.pass.cpp FAIL
+std/utilities/const.wrap.class/types.compile.pass.cpp FAIL
+std/utilities/const.wrap.class/unary_ops.pass.cpp FAIL
 
 # P2835R7 atomic_ref::address()
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
@@ -313,6 +332,10 @@ std/utilities/optional/optional.iterator/borrowed_range.compile.pass.cpp FAIL
 std/utilities/optional/optional.iterator/compare.pass.cpp FAIL
 std/utilities/optional/optional.iterator/end.pass.cpp FAIL
 std/utilities/optional/optional.iterator/iterator.pass.cpp FAIL
+
+# P3383R3 mdspan::at()
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/containers/views/mdspan/mdspan/at.pass.cpp FAIL
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -355,8 +378,9 @@ std/utilities/variant/variant.relops/three_way.pass.cpp:0 FAIL
 std/utilities/variant/variant.relops/three_way.pass.cpp:1 FAIL
 
 # VSO-2188243 constexpr ICE in C1XX adapt::to_prvalue
-std/algorithms/robust_re_difference_type.compile.pass.cpp:0 FAIL
-std/algorithms/robust_re_difference_type.compile.pass.cpp:1 FAIL
+# SKIPPED as this is passing for some architectures.
+std/algorithms/robust_re_difference_type.compile.pass.cpp:0 SKIPPED
+std/algorithms/robust_re_difference_type.compile.pass.cpp:1 SKIPPED
 
 # DevCom-10439137 VSO-1869865: Discarded id-expression causes unnecessary reading
 std/containers/sequences/array/array.cons/initialization.pass.cpp:0 FAIL
@@ -738,6 +762,10 @@ std/localization/locale.categories/category.time/locale.time.get.byname/get_date
 # See LWG-4541 "Unclear behavior for parsing locale-dependent format".
 std/localization/locale.categories/category.time/locale.time.get.byname/get_one.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get.byname/get_one_wide.pass.cpp FAIL
+
+# Bogus test rejects our validly strengthened noexcept:
+# static_assert(!noexcept((std::move(stride_iter).base())));
+std/ranges/range.adaptors/range.stride.view/iterator/base.pass.cpp FAIL
 
 
 # *** LIKELY STL BUGS ***
@@ -1150,6 +1178,23 @@ std/utilities/meta/meta.unary/meta.unary.prop/reference_constructs_from_temporar
 std/strings/basic.string/string.modifiers/string_replace/size_size_string_size_size.pass.cpp:0 SKIPPED
 std/strings/basic.string/string.modifiers/string_replace/size_size_string_size_size.pass.cpp:1 SKIPPED
 
+# Not analyzed.
+# MSVC error C2036: '_Sent': unknown size
+# Clang error: arithmetic on a pointer to void
+std/ranges/range.adaptors/range.stride.view/end.pass.cpp FAIL
+
+# Not analyzed, MSVC truncation warnings.
+std/algorithms/alg.nonmodifying/alg.fold/ranges.fold_right.pass.cpp:0 FAIL
+std/algorithms/alg.nonmodifying/alg.fold/ranges.fold_right.pass.cpp:1 FAIL
+std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.float.pass.cpp:0 FAIL
+std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.float.pass.cpp:1 FAIL
+
+# Not analyzed. MSVC error C2039: 'value': is not a member of 'std::is_constructible<T,T &>'
+std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp:0 FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp:1 FAIL
+
+# Not analyzed, MSVC truncation warnings, Clang static_assert.
+std/algorithms/alg.nonmodifying/alg.fold/ranges.fold_right_last.pass.cpp FAIL
 
 
 # *** MSVC-INTERNAL TEST HARNESS ISSUES (note: configuration :9 restricts these skips to be MSVC-internal) ***
@@ -1161,7 +1206,7 @@ std/algorithms/alg.nonmodifying/alg.equal/equal.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find.last/ranges.find_last.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find/find.pass.cpp:9 SKIPPED
 std/algorithms/alg.nonmodifying/alg.find/ranges.find.pass.cpp:9 SKIPPED
-std/algorithms/alg.nonmodifying/alg.fold/left_folds.pass.cpp:9 SKIPPED
+std/algorithms/alg.nonmodifying/alg.fold/ranges.fold_left.pass.cpp:9 SKIPPED
 std/atomics/atomics.ref/compare_exchange_strong.pass.cpp:9 SKIPPED
 std/atomics/atomics.ref/compare_exchange_weak.pass.cpp:9 SKIPPED
 std/atomics/atomics.ref/wait.pass.cpp:9 SKIPPED
