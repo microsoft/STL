@@ -2650,8 +2650,8 @@ private:
         using _Tables = _Normal_distribution_tables<_Fty>;
         using _Traits = decltype(_Tables::_Value);
         constexpr typename _Traits::_Uint_type _Value_mask =
-            ~typename _Traits::_Uint_type{0u} << _STD min(
-                _Traits::_Layer_bits, numeric_limits<typename _Traits::_Xtype>::digits - numeric_limits<_Ty>::digits);
+            ~typename _Traits::_Uint_type{0u} << (_STD min) (_Traits::_Layer_bits,
+                numeric_limits<typename _Traits::_Xtype>::digits - numeric_limits<_Ty>::digits);
         constexpr typename _Traits::_Uint_type _Layer_mask =
             (typename _Traits::_Uint_type{1u} << _Traits::_Layer_bits) - 1u;
 
