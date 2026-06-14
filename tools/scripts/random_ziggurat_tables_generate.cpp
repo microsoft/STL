@@ -51,7 +51,7 @@ struct modified_ziggurat_traits<float> {
     static constexpr string_view type_name   = "float"sv;
     static constexpr string_view type_suffix = "f"sv;
     static constexpr int rand_bits           = 32;
-    static constexpr int layer_bits          = 8;
+    static constexpr int layer_bits          = 7; // 32 - 1 (sign) - 24 (magnitude)
 };
 
 template <class FloatType = double>
