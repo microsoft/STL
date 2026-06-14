@@ -22,9 +22,6 @@ extern "C" [[nodiscard]] __float128 __sqrtq(__float128 x) noexcept;
 extern "C" [[nodiscard]] __float128 __cbrtq(__float128 x) noexcept;
 extern "C" [[nodiscard]] __float128 __erfq(__float128 x) noexcept;
 
-constexpr size_t layer_division   = 256;
-constexpr __float128 regular_area = 1.0q / layer_division;
-
 struct ziggurat_layer {
     __float128 x_inner{};
     __float128 x_outer{};
@@ -45,19 +42,25 @@ template <>
 struct modified_ziggurat_traits<double> {
     static constexpr string_view type_name   = "double"sv;
     static constexpr string_view type_suffix = ""sv;
-    static constexpr int bits                = 64;
+    static constexpr int rand_bits           = 64;
+    static constexpr int layer_bits          = 8;
 };
 
 template <>
 struct modified_ziggurat_traits<float> {
     static constexpr string_view type_name   = "float"sv;
     static constexpr string_view type_suffix = "f"sv;
-    static constexpr int bits                = 32;
+    static constexpr int rand_bits           = 32;
+    static constexpr int layer_bits          = 8;
 };
 
 template <class FloatType = double>
 void generate_tables(string_view name, bool is_signed, auto&& pdf, auto&& inverse_pdf, auto&& cdf,
     auto&& pdf_derivative, auto&& pdf_2nd_derivative, __float128 height_scale = 1.0q) {
+    using traits                      = modified_ziggurat_traits<FloatType>;
+    constexpr size_t layer_division   = 1uz << traits::layer_bits;
+    constexpr __float128 regular_area = 1.0q / layer_division;
+
     // the bottommost layer is excluded
     vector<ziggurat_layer> layers;
 
@@ -178,16 +181,15 @@ void generate_tables(string_view name, bool is_signed, auto&& pdf, auto&& invers
     }
 
     // generate tables
-    using traits                       = modified_ziggurat_traits<FloatType>;
-    const __float128 width_scale       = __scalbnq(is_signed ? 2.0q : 1.0q, -traits::bits);
-    const __float128 probability_scale = __scalbnq(1.0q, traits::bits);
-    const __float128 max_probability   = 1.0q - __scalbnq(1.0q, -traits::bits);
+    const __float128 width_scale       = __scalbnq(is_signed ? 2.0q : 1.0q, -traits::rand_bits);
+    const __float128 probability_scale = __scalbnq(1.0q, traits::rand_bits);
+    const __float128 max_probability   = 1.0q - __scalbnq(1.0q, -traits::rand_bits);
 
     println();
     println("template <>");
     println("struct {}<{}> {{", name, traits::type_name);
-    println("    static constexpr _Modified_ziggurat_tables<{}, uint{}_t, {}, {}> _Value{{", traits::type_name,
-        traits::bits, is_signed, layers.size());
+    println("    static constexpr _Modified_ziggurat_tables<{}, uint{}_t, {}, {}, {}> _Value{{", traits::type_name,
+        traits::rand_bits, is_signed, traits::layer_bits, layers.size());
 
     // _Ty _Layer_widths[_Layer_num + 1];
     print("        {{{:#}{}", static_cast<FloatType>(layers[0].x_inner * width_scale), traits::type_suffix);
@@ -205,7 +207,7 @@ void generate_tables(string_view name, bool is_signed, auto&& pdf, auto&& invers
 
     println("}},");
 
-    // _Uty _Alias_probabilities[256];
+    // _Uty _Alias_probabilities[1 << _Lw];
     for (bool first = true; const alias_table_entry& entry : alias_table) {
         if (first) {
             print("        {{{}u", static_cast<unsigned long long>(
@@ -219,7 +221,7 @@ void generate_tables(string_view name, bool is_signed, auto&& pdf, auto&& invers
 
     println("}},");
 
-    // uint8_t _Alias_indices[256];
+    // uint8_t _Alias_indices[1 << _Lw];
     for (bool first = true; const alias_table_entry& entry : alias_table) {
         if (first) {
             print("        {{{}", entry.alias_index);
@@ -278,21 +280,24 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-template <class _Ty, class _Uty, bool _Signed, int _Lx>
+template <class _Ty, class _Uty, bool _Signed, int _Lw, int _Lx>
 struct _Modified_ziggurat_tables {
+    static_assert(_Lw >= 2, "invalid table size");
+    static_assert(_Lw <= 8, "invalid table size");
     static_assert(_Lx >= 2, "invalid table size");
-    static_assert(_Lx <= 254, "invalid table size");
+    static_assert(_Lx <= (1 << _Lw) - 2, "invalid table size");
 
     using _Uint_type = _Uty;
     using _Xtype     = conditional_t<_Signed, make_signed_t<_Uty>, _Uty>;
 
+    static constexpr int _Layer_bits  = _Lw;
     static constexpr int _Layer_num   = _Lx;
     static constexpr _Ty _Width_scale = (_Signed ? _Ty{1} : _Ty{2}) * _Ty{static_cast<_Uty>(-1) / 2u + 1u};
 
     _Ty _Layer_widths[_Lx + 1];
     _Ty _Layer_heights[_Lx + 1];
-    _Uty _Alias_probabilities[256];
-    uint8_t _Alias_indices[256];
+    _Uty _Alias_probabilities[1 << _Lw];
+    uint8_t _Alias_indices[1 << _Lw];
 };)");
 }
 

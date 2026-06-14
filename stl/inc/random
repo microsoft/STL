@@ -2649,17 +2649,24 @@ private:
         using _Fty    = conditional_t<numeric_limits<_Ty>::digits <= 24, float, double>;
         using _Tables = _Normal_distribution_tables<_Fty>;
         using _Traits = decltype(_Tables::_Value);
+        constexpr typename _Traits::_Uint_type _Value_mask =
+            ~typename _Traits::_Uint_type{0u} << _STD min(
+                _Traits::_Layer_bits, numeric_limits<typename _Traits::_Xtype>::digits - numeric_limits<_Ty>::digits);
+        constexpr typename _Traits::_Uint_type _Layer_mask =
+            (typename _Traits::_Uint_type{1u} << _Traits::_Layer_bits) - 1u;
+
         _Rng_from_urng_v2<typename _Traits::_Uint_type, _Engine> _Generator(_Eng);
 
-        const auto _Xbits         = static_cast<typename _Traits::_Xtype>(_Generator._Get_all_bits());
-        const auto _Regular_layer = static_cast<uint8_t>(_Xbits);
+        const auto _Rand_bits     = static_cast<typename _Traits::_Uint_type>(_Generator._Get_all_bits());
+        const auto _Xbits         = static_cast<typename _Traits::_Xtype>(_Rand_bits & _Value_mask);
+        const auto _Regular_layer = static_cast<uint8_t>(_Rand_bits & _Layer_mask);
 
         if (_Regular_layer < _Tables::_Value._Layer_num - 1) {
             // rectangular region of a middle layer
             return static_cast<_Ty>(_Tables::_Value._Layer_widths[_Regular_layer + 1] * static_cast<_Fty>(_Xbits));
         } else {
             const auto _Lbits = static_cast<typename _Traits::_Uint_type>(_Generator._Get_all_bits());
-            const auto _Index = static_cast<uint8_t>(_Lbits);
+            const auto _Index = static_cast<uint8_t>(_Lbits & _Layer_mask);
             const uint8_t _Irregular_layer =
                 _Lbits < _Tables::_Value._Alias_probabilities[_Index] ? _Index : _Tables::_Value._Alias_indices[_Index];
 

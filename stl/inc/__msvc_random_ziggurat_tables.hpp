@@ -20,21 +20,24 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-template <class _Ty, class _Uty, bool _Signed, int _Lx>
+template <class _Ty, class _Uty, bool _Signed, int _Lw, int _Lx>
 struct _Modified_ziggurat_tables {
+    static_assert(_Lw >= 2, "invalid table size");
+    static_assert(_Lw <= 8, "invalid table size");
     static_assert(_Lx >= 2, "invalid table size");
-    static_assert(_Lx <= 254, "invalid table size");
+    static_assert(_Lx <= (1 << _Lw) - 2, "invalid table size");
 
     using _Uint_type = _Uty;
     using _Xtype     = conditional_t<_Signed, make_signed_t<_Uty>, _Uty>;
 
+    static constexpr int _Layer_bits  = _Lw;
     static constexpr int _Layer_num   = _Lx;
     static constexpr _Ty _Width_scale = (_Signed ? _Ty{1} : _Ty{2}) * _Ty{static_cast<_Uty>(-1) / 2u + 1u};
 
     _Ty _Layer_widths[_Lx + 1];
     _Ty _Layer_heights[_Lx + 1];
-    _Uty _Alias_probabilities[256];
-    uint8_t _Alias_indices[256];
+    _Uty _Alias_probabilities[1 << _Lw];
+    uint8_t _Alias_indices[1 << _Lw];
 };
 
 template <class _Ty>
@@ -42,7 +45,7 @@ struct _Normal_distribution_tables;
 
 template <>
 struct _Normal_distribution_tables<double> {
-    static constexpr _Modified_ziggurat_tables<double, uint64_t, true, 254> _Value{
+    static constexpr _Modified_ziggurat_tables<double, uint64_t, true, 8, 254> _Value{
         {0., 1.8499396913479098e-20, 3.22000654070119e-20, 3.801834492672213e-20, 4.239176863940338e-20,
             4.601072376592995e-20, 4.914927859205541e-20, 5.194925708831539e-20, 5.449510525906388e-20,
             5.684178753233453e-20, 5.902737255155258e-20, 6.107946896282281e-20, 6.301882450145966e-20,
@@ -238,7 +241,7 @@ struct _Normal_distribution_tables<double> {
 
 template <>
 struct _Normal_distribution_tables<float> {
-    static constexpr _Modified_ziggurat_tables<float, uint32_t, true, 254> _Value{
+    static constexpr _Modified_ziggurat_tables<float, uint32_t, true, 8, 254> _Value{
         {0.f, 7.9454304e-11f, 1.3829823e-10f, 1.6328755e-10f, 1.8207126e-10f, 1.9761455e-10f, 2.1109454e-10f,
             2.2312036e-10f, 2.340547e-10f, 2.4413363e-10f, 2.5352062e-10f, 2.6233432e-10f, 2.706638e-10f,
             2.7857794e-10f, 2.8613126e-10f, 2.9336775e-10f, 3.0032343e-10f, 3.070283e-10f, 3.1350755e-10f,
