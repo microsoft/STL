@@ -290,6 +290,7 @@ type CookedIssueNode = {
   labeled_cxx20: boolean;
   labeled_cxx23: boolean;
   labeled_cxx26: boolean;
+  labeled_cxx29: boolean;
   labeled_lwg: boolean;
   labeled_bug: boolean;
 };
@@ -310,6 +311,7 @@ function transform_issue_nodes(issue_nodes: RawIssueNode[]) {
       labeled_cxx20: labels.includes('cxx20'),
       labeled_cxx23: labels.includes('cxx23'),
       labeled_cxx26: labels.includes('cxx26'),
+      labeled_cxx29: labels.includes('cxx29'),
       labeled_lwg: labels.includes('LWG') && !labels.includes('vNext') && !labels.includes('blocked'),
       labeled_bug: labels.includes('bug'),
     };
@@ -358,6 +360,7 @@ type Row = {
   cxx20: number;
   cxx23: number;
   cxx26: number;
+  cxx29: number;
   lwg: number;
   issue: number;
   bug: number;
@@ -422,6 +425,7 @@ function write_daily_table(script_start: DateTime, all_prs: CookedPRNode[], all_
   let num_cxx20 = 0;
   let num_cxx23 = 0;
   let num_cxx26 = 0;
+  let num_cxx29 = 0;
   let num_lwg = 0;
   let num_issue = 0;
   let num_bug = 0;
@@ -442,6 +446,8 @@ function write_daily_table(script_start: DateTime, all_prs: CookedPRNode[], all_
               num_cxx23 += change;
             } else if (issue.labeled_cxx26) {
               num_cxx26 += change;
+            } else if (issue.labeled_cxx29) {
+              num_cxx29 += change;
             } else if (issue.labeled_lwg) {
               num_lwg += change;
             } else {
@@ -500,6 +506,7 @@ function write_daily_table(script_start: DateTime, all_prs: CookedPRNode[], all_
         cxx20: num_cxx20,
         cxx23: num_cxx23,
         cxx26: num_cxx26,
+        cxx29: num_cxx29,
         lwg: num_lwg,
         issue: num_issue,
         bug: num_bug,
@@ -520,6 +527,7 @@ export type DailyRow = {
   cxx20: number | null;
   cxx23: number | null;
   cxx26: number | null;
+  cxx29: number | null;
   lwg: number | null;
   issue: number | null;
   bug: number | null;
@@ -534,7 +542,7 @@ export const daily_table: DailyRow[] = [
     str += `date: '${row.date.toISODate()}', `;
     str += `merged: ${row.merged.toFixed(2)}, `;
 
-    const keys: Exclude<keyof Row, 'date'>[] = ['pr', 'cxx20', 'cxx23', 'cxx26', 'lwg', 'issue', 'bug'];
+    const keys: Exclude<keyof Row, 'date'>[] = ['pr', 'cxx20', 'cxx23', 'cxx26', 'cxx29', 'lwg', 'issue', 'bug'];
     for (const key of keys) {
       if (should_emit_data_point(rows, i, key)) {
         str += `${key}: ${row[key]}, `;

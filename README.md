@@ -6,7 +6,7 @@ This branch generates the STL's [Status Chart][].
 
 ## Repo
 
-1. Install [Node.js][] 25.1.0 or newer.
+1. Install [Node.js][] 26.3.1 or newer.
    - You can accept all of the installer's default options.
 2. Open a new Command Prompt.
    - You can run `node --version` to verify that Node.js was successfully installed.
@@ -51,7 +51,7 @@ GitHub's GraphQL API requires authentication:
 1. Go to your [Fine-grained personal access tokens][] on GitHub.
 2. Click "Generate new token".
 3. Name it "STL Status Chart" or anything else you'd like.
-4. Set the expiration to be no greater than 90 days.
+4. Set the expiration to be no greater than 7 days.
 5. Don't change any other settings. (This will be a read-only token.)
 6. Click "Generate token". Keep this page open.
 7. In your `chart` repo, create a file named `.env` containing:

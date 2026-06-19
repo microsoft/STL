@@ -78,6 +78,7 @@ function load_charts() {
         new DatasetInfo('cxx20', 'C++20 Features', 'smallAxis', '--fgColor-sponsors'),
         new DatasetInfo('cxx23', 'C++23 Features', 'smallAxis', '--fgColor-done'),
         new DatasetInfo('cxx26', 'C++26 Features', 'smallAxis', '--fgColor-accent'),
+        new DatasetInfo('cxx29', 'C++29 Features', 'smallAxis', '--fgColor-severe'),
         new DatasetInfo('lwg', 'LWG Resolutions', 'smallAxis', '--fgColor-success'),
         new DatasetInfo('pr', 'Pull Requests', 'smallAxis', '--fgColor-default'),
         new DatasetInfo('vso', 'Old Bugs', 'largeAxis', '--fgColor-done'),
@@ -173,6 +174,10 @@ function load_charts() {
       {
         data: get_daily_values('cxx26'),
         ...get_dataset_properties('cxx26'),
+      },
+      {
+        data: get_daily_values('cxx29'),
+        ...get_dataset_properties('cxx29'),
       },
       {
         data: get_weekly_values('lwg').concat(get_daily_values('lwg')),
@@ -548,7 +553,7 @@ function load_charts() {
     update_all_timeframes();
   });
 
-  const daily_keys = ['cxx20', 'cxx23', 'cxx26', 'lwg', 'pr', 'bug', 'issue', 'sum_age', 'merged'] as const;
+  const daily_keys = ['cxx20', 'cxx23', 'cxx26', 'cxx29', 'lwg', 'pr', 'bug', 'issue', 'sum_age', 'merged'] as const;
   for (const field of daily_keys) {
     const value = daily_table[daily_table.length - 1][field] ?? 0;
     const span = getElementByIdAs(`currentValue-${field}`, HTMLSpanElement);
