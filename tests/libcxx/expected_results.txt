@@ -861,9 +861,6 @@ std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp:2 FAIL
 std/input.output/filesystems/class.path/path.member/path.charconv.pass.cpp:0 FAIL
 std/input.output/filesystems/class.path/path.member/path.charconv.pass.cpp:1 FAIL
 
-# Not analyzed. Clang is attempting to default construct cpp17_input_iterator<int *>.
-std/iterators/predef.iterators/move.iterators/move.iterator/iterator_concept_conformance.compile.pass.cpp:2 FAIL
-
 # Not analyzed. Asserting about alloc_count.
 std/thread/futures/futures.promise/alloc_ctor.pass.cpp FAIL
 std/thread/futures/futures.promise/move_assign.pass.cpp FAIL
