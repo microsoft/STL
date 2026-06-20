@@ -2708,13 +2708,13 @@ private:
                 // tail of the bottommost layer (infinite width)
                 constexpr _Fty _Tail =
                     _Tables::_Value._Layer_widths[_Tables::_Value._Layer_num] * _Tables::_Value._Width_scale;
-                constexpr _Fty _Tail_reciprocal = _Fty{1.0} / _Tail;
+                constexpr _Fty _Tail_squared = _Tail * _Tail;
                 for (;;) {
-                    const _Fty _Xval = -_STD log(_Fty{1.0} - _STD _Nrand_impl<_Fty>(_Eng)) * _Tail_reciprocal;
+                    const _Fty _Xval =
+                        _STD sqrt(_Tail_squared - _Fty{2.0} * _STD log(_Fty{1.0} - _STD _Nrand_impl<_Fty>(_Eng)));
                     const _Fty _Yval = _STD _Nrand_impl<_Fty>(_Eng);
-                    if (_Yval < _STD exp(_Xval * _Xval * _Fty{-0.5})) {
-                        const _Fty _Xorig = _Tail + _Xval;
-                        return static_cast<_Ty>(_Xbits < 0 ? -_Xorig : _Xorig);
+                    if (_Xval * _Yval < _Tail) {
+                        return static_cast<_Ty>(_Xbits < 0 ? -_Xval : _Xval);
                     }
                 }
             } else {
