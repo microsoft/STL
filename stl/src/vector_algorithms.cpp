@@ -9690,6 +9690,9 @@ namespace {
             void* _First, void* const _Last, const _Ty _Old_val, const _Ty _New_val) noexcept {
 
             if (_Use_FEAT_SVE()) {
+                // Arm Architecture Reference Manual for A-profile architecture,
+                // B1.4.2 "Configurable SVE vector lengths":
+                // "The architecturally defined SVL set is all powers of two from 128 to 2048 bits inclusive."
                 const size_t _Sve_vl        = svcntb();
                 const size_t _Size_bytes    = _Byte_length(_First, _Last);
                 const size_t _Full_vl_bytes = _Size_bytes & ~size_t{_Sve_vl - 1};
