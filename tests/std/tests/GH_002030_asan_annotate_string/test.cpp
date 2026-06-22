@@ -1928,7 +1928,7 @@ void run_allocator_matrix() {
 }
 
 void test_DevCom_10116361() {
-    // We failed to null-terminate copies of SSO strings with ASAN annotations active.
+    // We failed to null-terminate copies of SSO strings with ASan annotations active.
 #ifdef _WIN64
     constexpr const char* text = "testtest";
     constexpr size_t n         = 8;
@@ -1950,7 +1950,7 @@ void test_DevCom_10116361() {
 }
 
 void test_DevCom_10109507() {
-    // replace failed to correctly munge asan annotations while working
+    // replace failed to correctly munge ASan annotations while working
     string s("abcd");
     s.replace(0, 1, "ef", 2);
     s.replace(0, 0, "xy", 2);
@@ -1965,7 +1965,7 @@ void test_gh_3883() {
 }
 
 void test_gh_3955() {
-    // GH-3955 <xstring>: ASAN report container-overflow in a legal case
+    // GH-3955 <xstring>: ASan report container-overflow in a legal case
     string s(19, '0');
     s = &s[3];
     assert(s == string(16, '0'));

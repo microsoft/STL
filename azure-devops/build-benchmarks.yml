@@ -24,7 +24,7 @@ steps:
       if (Test-Path -LiteralPath "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}") {
           Remove-Item -LiteralPath "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}" -Recurse -Force
       }
-      & "$(launchVsDevShell)" -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
+      & "$(launchVsDevShell)" -Preview -NoLogo -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
       cmake -G Ninja `
       -DCMAKE_CXX_COMPILER=${{ parameters.compiler }} `
       -DCMAKE_BUILD_TYPE=Release `
@@ -45,7 +45,7 @@ steps:
     targetType: inline
     script: |
       $PSNativeCommandUseErrorActionPreference = $true
-      & "$(launchVsDevShell)" -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
+      & "$(launchVsDevShell)" -Preview -NoLogo -HostArch ${{ parameters.hostArch }} -Arch ${{ parameters.targetArch }}
       cmake --build "$(benchmarkBuildOutputLocation)\${{ parameters.compiler }}"
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }

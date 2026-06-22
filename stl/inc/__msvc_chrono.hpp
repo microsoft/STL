@@ -114,6 +114,8 @@ namespace chrono {
         using rep    = _Rep;
         using period = typename _Period::type;
 
+        static_assert(!is_const_v<_Rep>, "rep type of duration must not be a const type");
+        static_assert(!is_volatile_v<_Rep>, "rep type of duration must not be a volatile type");
         static_assert(!_Is_duration_v<_Rep>, "duration can't have duration as first template argument");
         static_assert(_Is_ratio_v<_Period>, "period not an instance of std::ratio");
         static_assert(0 < _Period::num, "period negative or zero");

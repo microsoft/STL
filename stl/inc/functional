@@ -154,7 +154,7 @@ struct bit_not {
 template <>
 struct divides<void> {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) / _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) / _STD forward<_Ty2>(_Right);
     }
@@ -165,7 +165,7 @@ struct divides<void> {
 template <>
 struct modulus<void> {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) % _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) % _STD forward<_Ty2>(_Right);
     }
@@ -188,7 +188,7 @@ struct negate<void> {
 template <>
 struct logical_and<void> {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) && _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) && _STD forward<_Ty2>(_Right);
     }
@@ -199,7 +199,7 @@ struct logical_and<void> {
 template <>
 struct logical_or<void> {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) || _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) || _STD forward<_Ty2>(_Right);
     }
@@ -220,7 +220,7 @@ struct logical_not<void> {
 template <>
 struct bit_and<void> {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) & _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) & _STD forward<_Ty2>(_Right);
     }
@@ -231,7 +231,7 @@ struct bit_and<void> {
 template <>
 struct bit_or<void> {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) | _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) | _STD forward<_Ty2>(_Right);
     }
@@ -242,7 +242,7 @@ struct bit_or<void> {
 template <>
 struct bit_xor<void> {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) ^ _STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) ^ _STD forward<_Ty2>(_Right);
     }
@@ -262,7 +262,7 @@ struct bit_not<void> {
 
 struct _Bit_xnor {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(~(_STD forward<_Ty1>(_Left) ^ _STD forward<_Ty2>(_Right))) {
         return ~(_STD forward<_Ty1>(_Left) ^ _STD forward<_Ty2>(_Right));
     }
@@ -272,7 +272,7 @@ struct _Bit_xnor {
 
 struct _Bit_imply {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(~_STD forward<_Ty1>(_Left) | _STD forward<_Ty2>(_Right)) {
         return ~_STD forward<_Ty1>(_Left) | _STD forward<_Ty2>(_Right);
     }
@@ -282,7 +282,7 @@ struct _Bit_imply {
 
 struct _Bit_cimply {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) | ~_STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) | ~_STD forward<_Ty2>(_Right);
     }
@@ -292,7 +292,7 @@ struct _Bit_cimply {
 
 struct _Bit_nimply {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(_STD forward<_Ty1>(_Left) & ~_STD forward<_Ty2>(_Right)) {
         return _STD forward<_Ty1>(_Left) & ~_STD forward<_Ty2>(_Right);
     }
@@ -302,7 +302,7 @@ struct _Bit_nimply {
 
 struct _Bit_cnimply {
     template <class _Ty1, class _Ty2>
-    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const //
+    _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         -> decltype(~_STD forward<_Ty1>(_Left) & _STD forward<_Ty2>(_Right)) {
         return ~_STD forward<_Ty1>(_Left) & _STD forward<_Ty2>(_Right);
     }
@@ -697,8 +697,8 @@ public:
 
     template <class... _Types>
     _CONSTEXPR20 auto operator()(_Types&&... _Args) const
-        noexcept(noexcept(_STD invoke(_Pm, _STD forward<_Types>(_Args)...))) //
-        -> decltype(_STD invoke(_Pm, _STD forward<_Types>(_Args)...)) {
+        noexcept(noexcept(_STD invoke(_Pm, _STD forward<_Types>(_Args)...)))
+            -> decltype(_STD invoke(_Pm, _STD forward<_Types>(_Args)...)) {
         return _STD invoke(_Pm, _STD forward<_Types>(_Args)...);
     }
 };
@@ -776,28 +776,28 @@ public:
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     template <class... _Types>
     auto operator()(_Types&&... _Args) & noexcept(
-        noexcept(!_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...))) //
+        noexcept(!_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...)))
         -> decltype(!_STD declval<invoke_result_t<_Decayed&, _Types...>>()) {
         return !_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...);
     }
 
     template <class... _Types>
     auto operator()(_Types&&... _Args) const& noexcept(
-        noexcept(!_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...))) //
+        noexcept(!_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...)))
         -> decltype(!_STD declval<invoke_result_t<const _Decayed&, _Types...>>()) {
         return !_STD invoke(this->_Get_val(), _STD forward<_Types>(_Args)...);
     }
 
     template <class... _Types>
     auto operator()(_Types&&... _Args) && noexcept(
-        noexcept(!_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...))) //
+        noexcept(!_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...)))
         -> decltype(!_STD declval<invoke_result_t<_Decayed, _Types...>>()) {
         return !_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...);
     }
 
     template <class... _Types>
     auto operator()(_Types&&... _Args) const&& noexcept(
-        noexcept(!_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...))) //
+        noexcept(!_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...)))
         -> decltype(!_STD declval<invoke_result_t<const _Decayed, _Types...>>()) {
         return !_STD invoke(_STD move(this->_Get_val()), _STD forward<_Types>(_Args)...);
     }
@@ -2382,8 +2382,8 @@ struct _Select_fixer<_Cv_TiD, false, false, _Jx> { // placeholder fixer
 
 template <class _Cv_TiD, class _Untuple>
 constexpr auto _Fix_arg(_Cv_TiD& _Tid, _Untuple&& _Ut)
-    noexcept(noexcept(_Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut)))) //
-    -> decltype(_Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut))) { // translate an argument for bind
+    noexcept(noexcept(_Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut))))
+        -> decltype(_Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut))) { // translate an argument for bind
     return _Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut));
 }
 

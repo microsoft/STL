@@ -236,6 +236,7 @@ class STLTest(Test):
         if ('clang'.casefold() in os.path.basename(cxx).casefold()):
             self._addCustomFeature('clang')
             self._addCustomFeature('gcc-style-warnings')
+            self._addCustomFeature('character-conversion-warnings')
 
             if (targetArch == 'x64'.casefold()):
                 self.compileFlags.append('-m64')
@@ -261,7 +262,7 @@ class STLTest(Test):
                 self.compileFlags.append('/arm64EC')
                 self.linkFlags.append('/machine:arm64ec')
 
-                # TRANSITION, Windows SDK 10.0.26100 emits
+                # TRANSITION, Windows SDK 10.0.28000 emits
                 # "warning C28301: No annotations for first declaration of 'meow'"
                 # for various intrinsics when building for ARM64EC.
                 self.compileFlags.append('/wd28301')
@@ -346,7 +347,7 @@ class STLTest(Test):
             self._addCustomFeature('MT')
             self._addCustomFeature('static_CRT')
 
-        # clang doesn't know how to link in the VS version of the asan runtime automatically
+        # Clang doesn't know how to link in the VS version of the ASan runtime automatically
         if 'asan' in self.config.available_features and 'clang' in self.config.available_features:
             self.linkFlags.append("/INFERASANLIBS")
 

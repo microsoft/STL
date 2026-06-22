@@ -1800,7 +1800,8 @@ namespace test_ranges_swap {
         using ranges::swap;
 
         {
-            DoNotUseFallback x, y;
+            DoNotUseFallback x;
+            DoNotUseFallback y;
             swap(x, y);
         }
         {
@@ -2121,7 +2122,8 @@ namespace test_swappable_with {
         } // namespace N
 
         void test() {
-            int i = 1, j = 2;
+            int i = 1;
+            int j = 2;
             lv_swap(i, j);
             assert(i == 2 && j == 1);
 
@@ -3318,7 +3320,7 @@ namespace test_relation {
     struct Equivalent {
         template <class T, class U>
         constexpr decltype(auto) operator()(T&& t, U&& u) const
-            requires requires { static_cast<T &&>(t) == static_cast<U &&>(u); }
+            requires requires { static_cast<T&&>(t) == static_cast<U&&>(u); }
         {
             return static_cast<T&&>(t) == static_cast<U&&>(u);
         }

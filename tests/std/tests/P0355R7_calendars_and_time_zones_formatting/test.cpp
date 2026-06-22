@@ -470,7 +470,7 @@ void test_year_formatter() {
     empty_braces_helper(year{121}, STR("0121"));
 
     assert(format(STR("{:%Y %y%C}"), year{1912}) == STR("1912 1219"));
-    assert(format(STR("{:%Y %y%C}"), year{-1912}) == STR("-1912 88-20"));
+    assert(format(STR("{:%Y %y%C}"), year{-1912}) == STR("-1912 12-20"));
     assert(format(STR("{:%Y %y%C}"), year{-200}) == STR("-0200 00-02"));
     assert(format(STR("{:%Y %y%C}"), year{200}) == STR("0200 0002"));
     // TRANSITION, add tests for EY Oy Ey EC
@@ -478,6 +478,9 @@ void test_year_formatter() {
     empty_braces_helper(year{1900}, STR("1900"));
     empty_braces_helper(year{2000}, STR("2000"));
     empty_braces_helper(year{-32768}, STR("-32768 is not a valid year"));
+
+    // [time.format] example
+    assert(format(STR("{:%C %y}"), year{-1976}) == STR("-20 76"));
 }
 
 template <typename CharT>
