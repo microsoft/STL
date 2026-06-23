@@ -270,6 +270,32 @@ static constexpr int some_ints[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 using Zipped = decltype(views::zip(some_ints) | views::as_const | views::as_rvalue);
 static_assert(same_as<ranges::range_reference_t<Zipped>, tuple<const int&&>>);
 
+// LWG-4218 "Constraint recursion in basic_const_iterator's relational operators due to ADL + CWG 2369"
+namespace lwg_4218 {
+    template <class T>
+    struct adl_conversion_source {
+        operator T() const;
+
+        friend bool operator==(const adl_conversion_source&, const adl_conversion_source&) {
+            return true;
+        }
+        friend bool operator==(const adl_conversion_source&, const T&) {
+            return true;
+        }
+
+        template <same_as<adl_conversion_source> Self>
+        friend partial_ordering operator<=>(const adl_conversion_source&, const Self&) {
+            return partial_ordering::equivalent;
+        }
+    };
+
+    using cvi = basic_const_iterator<vector<int>::iterator>;
+    static_assert(totally_ordered_with<adl_conversion_source<cvi>, cvi>);
+
+    using rcvi = reverse_iterator<cvi>;
+    static_assert(totally_ordered<rcvi>);
+} // namespace lwg_4218
+
 struct instantiator {
     template <input_iterator It>
     static constexpr void call() {
