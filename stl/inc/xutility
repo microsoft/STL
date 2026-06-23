@@ -4393,11 +4393,7 @@ struct _Move_iterator_category {
 _EXPORT_STD template <class _Iter>
 class move_iterator : public _Move_iterator_category<_Iter> {
 private:
-#if _HAS_CXX17
     _Iter _Current = _Iter();
-#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
-    _Iter _Current;
-#endif // ^^^ !_HAS_CXX17 ^^^
 
 public:
     using iterator_type   = _Iter;
@@ -4428,16 +4424,11 @@ public:
         conditional_t<is_reference_v<_Iter_ref_t<_Iter>>, remove_reference_t<_Iter_ref_t<_Iter>>&&, _Iter_ref_t<_Iter>>;
 #endif // ^^^ !_HAS_CXX20 ^^^
 
-#if _HAS_CXX17
-    constexpr move_iterator()
+    _CONSTEXPR17 move_iterator()
 #if _HAS_CXX20
         requires default_initializable<_Iter>
 #endif // _HAS_CXX20
     = default;
-#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
-    move_iterator() noexcept(is_nothrow_default_constructible_v<_Iter>) // strengthened
-        : _Current() {}
-#endif // ^^^ !_HAS_CXX17 ^^^
 
     _CONSTEXPR17 explicit move_iterator(_Iter _Right) noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
         : _Current(_STD move(_Right)) {}
