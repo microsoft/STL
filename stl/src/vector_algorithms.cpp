@@ -6390,9 +6390,7 @@ namespace {
                                 return _Ix;
                             }
                         }
-
-                        ++_Ix;
-                    } while (_Ix != _Haystack_length);
+                    } while (++_Ix != _Haystack_length);
                 }
 
                 return static_cast<size_t>(-1);
