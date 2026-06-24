@@ -6321,7 +6321,7 @@ namespace {
                     } else if (_Count1 < 96) {
                         return _Count2 >= 8;
                     } else {
-                        return _Count2 >= 4;
+                        return _Count2 >= 4; // if these thresholds are adjusted, review test_gh_6342_find_first_of()
                     }
                 } else if constexpr (sizeof(_Ty) == 4) {
                     if (_Count1 < 32) {
