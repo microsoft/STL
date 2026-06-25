@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: ">=25.2.1"
+          node-version: ">=26.4.0"
       - name: Install Packages
         run: |
           npm ci
