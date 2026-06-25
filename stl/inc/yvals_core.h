@@ -919,8 +919,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.3 or new
 _EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 22 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1950 // Coarse-grained, not inspecting _MSC_FULL_VER
-_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19.50 or newer.");
+#if _MSC_VER < 1951 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19.51 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
