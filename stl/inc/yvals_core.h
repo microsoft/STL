@@ -1783,13 +1783,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_ranges_stride                     202207L
 #define __cpp_lib_ranges_to_container               202202L
 #define __cpp_lib_ranges_zip                        202110L
-
-#if defined(__clang__) || defined(__EDG__) || _MSC_VER >= 1951 // TRANSITION, GH-5755, toolset update
-#define __cpp_lib_reference_from_temporary 202202L
-#endif // ^^^ no workaround ^^^
-
-#define __cpp_lib_spanstream 202106L
-#define __cpp_lib_stacktrace 202011L
+#define __cpp_lib_reference_from_temporary          202202L
+#define __cpp_lib_spanstream                        202106L
+#define __cpp_lib_stacktrace                        202011L
 
 #if !defined(__clang__) && !defined(__EDG__) && _MSC_VER >= 1951 // TRANSITION, GH-6169, toolset update
 #define __cpp_lib_start_lifetime_as 202207L
