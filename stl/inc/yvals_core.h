@@ -1787,7 +1787,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_spanstream                        202106L
 #define __cpp_lib_stacktrace                        202011L
 
-#if !defined(__clang__) && !defined(__EDG__) && _MSC_VER >= 1951 // TRANSITION, GH-6169, toolset update
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-6169 tracking LLVM-105234 and VSO-2846756
 #define __cpp_lib_start_lifetime_as 202207L
 #endif // ^^^ no workaround ^^^
 

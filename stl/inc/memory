@@ -4534,7 +4534,7 @@ _NODISCARD auto inout_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
     }
 }
 
-#ifdef __cpp_lib_start_lifetime_as // TRANSITION
+#ifdef __cpp_lib_start_lifetime_as // TRANSITION, GH-6169
 _EXPORT_STD template <class _Ty>
 _Ty* start_lifetime_as(void* const _Ptr) noexcept {
     static_assert(is_implicit_lifetime_v<_Ty>, "T must be an implicit-lifetime type. (N5032 [obj.lifetime]/1)");
