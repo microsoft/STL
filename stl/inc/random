@@ -2672,15 +2672,17 @@ private:
 
             if (_Irregular_layer < _Tables::_Value._Layer_num) {
                 // tail of a non-bottommost layer
-                const _Fty _Xx0   = _Tables::_Value._Layer_widths[_Irregular_layer] * _Tables::_Value._Width_scale;
-                const _Fty _Xx1   = _Tables::_Value._Layer_widths[_Irregular_layer + 1] * _Tables::_Value._Width_scale;
-                const _Fty _Yy0   = _Tables::_Value._Layer_heights[_Irregular_layer];
-                const _Fty _Yy1   = _Tables::_Value._Layer_heights[_Irregular_layer + 1];
-                const _Fty _Xdiff = _Xx1 - _Xx0;
-                const _Fty _Ydiff = _Yy1 - _Yy0;
+                const _Fty _Xx0_scaled   = _Tables::_Value._Layer_widths[_Irregular_layer];
+                const _Fty _Xx1_scaled   = _Tables::_Value._Layer_widths[_Irregular_layer + 1];
+                const _Fty _Xx0          = _Xx0_scaled * _Tables::_Value._Width_scale;
+                const _Fty _Yy0          = _Tables::_Value._Layer_heights[_Irregular_layer];
+                const _Fty _Yy1          = _Tables::_Value._Layer_heights[_Irregular_layer + 1];
+                const _Fty _Xdiff_scaled = _Xx1_scaled - _Xx0_scaled;
+                const _Fty _Ydiff        = _Yy1 - _Yy0;
 
-                for (;;) {
-                    const _Fty _Dx = _Xdiff * _STD _Nrand_impl<_Fty>(_Eng);
+                for (_Fty _Dx =
+                         _Xdiff_scaled * static_cast<_Fty>(_Xbits & (numeric_limits<typename _Traits::_Xtype>::max)());
+                    ; _Dx = _Xdiff_scaled * _Tables::_Value._Width_scale * _STD _Nrand_impl<_Fty>(_Eng)) {
                     const _Fty _Dy = _Ydiff * _STD _Nrand_impl<_Fty>(_Eng);
 
                     // _Dexp = -(_Xval^2 - _Xx0^2) / 2
@@ -2709,9 +2711,12 @@ private:
                 constexpr _Fty _Tail =
                     _Tables::_Value._Layer_widths[_Tables::_Value._Layer_num] * _Tables::_Value._Width_scale;
                 constexpr _Fty _Tail_squared = _Tail * _Tail;
-                for (;;) {
-                    const _Fty _Xval =
-                        _STD sqrt(_Tail_squared - _Fty{2.0} * _STD log(_Fty{1.0} - _STD _Nrand_impl<_Fty>(_Eng)));
+                constexpr _Fty _Rand_scale   = _Fty{1.0} / _Tables::_Value._Width_scale;
+
+                for (_Fty _Uval =
+                         static_cast<_Fty>(_Xbits & (numeric_limits<typename _Traits::_Xtype>::max)()) * _Rand_scale;
+                    ; _Uval = _STD _Nrand_impl<_Fty>(_Eng)) {
+                    const _Fty _Xval = _STD sqrt(_Tail_squared - _Fty{2.0} * _STD log(_Fty{1.0} - _Uval));
                     const _Fty _Yval = _STD _Nrand_impl<_Fty>(_Eng);
                     if (_Xval * _Yval < _Tail) {
                         return static_cast<_Ty>(_Xbits < 0 ? -_Xval : _Xval);
