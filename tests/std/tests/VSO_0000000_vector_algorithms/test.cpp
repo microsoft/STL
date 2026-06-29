@@ -767,8 +767,13 @@ void test_case_replace_copy(const vector<T>& input, vector<T>& out_expected, vec
 
 template <class T>
 void test_replace(mt19937_64& gen) {
-    // replace() is vectorized for 4 and 8 bytes only.
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+    // For ARM64/ARM64EC, replace() is always vectorized.
+    constexpr bool replace_is_vectorized = true;
+#else
+    // For x64/x86, replace() is vectorized for 4 and 8 bytes only.
     constexpr bool replace_is_vectorized = sizeof(T) >= 4;
+#endif
 
     using TD = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis(0, 9);
@@ -2000,11 +2005,6 @@ int main() {
         test_min_max_element<unsigned long long>(gen);
 
         test_min_max_element_pointers(gen);
-
-        test_replace<int>(gen);
-        test_replace<unsigned int>(gen);
-        test_replace<long long>(gen);
-        test_replace<unsigned long long>(gen);
 #else // ^^^ defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) / normal test coverage vvv
         test_vector_algorithms(gen);
         test_various_containers();
