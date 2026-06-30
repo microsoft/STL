@@ -107,10 +107,27 @@ void test_LWG3662() {
     // LWG-3662 basic_string::append/assign(NTBS, pos, n) suboptimal
     string s("countersp");
 
-    s.append("hello", 1, 3);
+    // basic usage
+    const auto& r1 = s.append("hello", 1, 3);
     assert(s == "counterspell");
-    s.assign("world", 1, 3);
+    const auto& r2 = s.assign("world", 1, 3);
     assert(s == "orl");
+
+    // return value
+    assert(&r1 == &s);
+    assert(&r2 == &s);
+
+    // clamping behavior
+    s.append("hello", 2, 10);
+    assert(s == "orlllo");
+    s.assign("world", 2, 10);
+    assert(s == "rld");
+
+    // zero effective length
+    s.append("hello", 5, string::npos);
+    assert(s == "rld");
+    s.assign("world", 5, string::npos);
+    assert(s == "");
 
     try {
         s.append("hello", 10, 1);
