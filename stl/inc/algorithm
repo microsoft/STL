@@ -5774,7 +5774,7 @@ namespace ranges {
             constexpr bool _Allow_vectorization =
                 conjunction_v<_Is_trivially_ranges_swappable<_Elem>, negation<is_volatile<_Elem>>>;
 
-            if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
+            if constexpr (_Allow_vectorization && _Is_vector_element_size<_Nx>) {
                 if (!_STD is_constant_evaluated()) {
                     _STD _Reverse_vectorized<_Nx>(_STD to_address(_First), _STD to_address(_Last));
                     return;
@@ -5834,7 +5834,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
         _Is_trivially_copy_assignable_returning_same_reference<_Elem>, negation<is_volatile<_Elem>>>;
     constexpr size_t _Nx                = sizeof(_Elem);
 
-    if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
+    if constexpr (_Allow_vectorization && _Is_vector_element_size<_Nx>) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
@@ -5924,7 +5924,7 @@ namespace ranges {
                     _Is_trivially_copy_assignable_returning_same_reference<_Elem>, negation<is_volatile<_Elem>>>;
                 constexpr size_t _Nx                = sizeof(_Elem);
 
-                if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
+                if constexpr (_Allow_vectorization && _Is_vector_element_size<_Nx>) {
                     if (!_STD is_constant_evaluated()) {
                         const auto _Dest_dist = static_cast<iter_difference_t<_Out>>(_Last - _First);
                         _STD _Contiguous_iter_verify(_Output, _Dest_dist);
