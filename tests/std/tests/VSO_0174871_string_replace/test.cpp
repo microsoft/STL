@@ -104,7 +104,7 @@ void test_shrink_to_fit() {
 }
 
 void test_LWG3662() {
-    // append/assign(NTBS, pos, n) should not construct a temporary string
+    // LWG-3662 basic_string::append/assign(NTBS, pos, n) suboptimal
     string s;
 
     s.append("hello", 1, 3);
