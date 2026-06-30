@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <expected>
 // <locale> provides several explicit template instantiation definitions that might break constraints checking
 // and hence cause errors in /permissive modes.
-#include <locale>
+
+#include <expected>
+#include <locale> // required for test, see note
 #include <string>
 #include <utility>
 

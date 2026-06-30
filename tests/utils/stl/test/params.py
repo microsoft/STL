@@ -73,7 +73,7 @@ def getDefaultParameters(config, litConfig):
       Parameter(name="priority", choices=["idle", "low", "normal"], default="idle", type=str,
                 help='Process priority to run tests with: "idle" (the default), "low", or "normal". ' +
                   'Module "psutil" must be installed for this to have any effect.',
-                actions=lambda prio: beNice(prio)),
+                actions=beNice),
     ]
 
     return DEFAULT_PARAMETERS

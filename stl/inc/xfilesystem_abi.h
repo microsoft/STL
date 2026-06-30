@@ -107,8 +107,9 @@ struct __std_fs_find_data { // typedef struct _WIN32_FIND_DATAW {
     unsigned long _File_size_high; //     DWORD nFileSizeHigh;
     unsigned long _File_size_low; //     DWORD nFileSizeLow;
 
-    // MSDN: dwReserved0 specifies the reparse point tag if
-    // MSDN:  (dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0
+    // According to https://learn.microsoft.com/windows/win32/api/minwinbase/ns-minwinbase-win32_find_dataw
+    // dwReserved0 specifies the reparse point tag if
+    // (dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0
 
     __std_fs_reparse_tag _Reparse_point_tag; //     DWORD dwReserved0;
     unsigned long _Reserved1; //     DWORD dwReserved1;
@@ -258,8 +259,8 @@ _NODISCARD __std_win_error __stdcall __std_fs_open_handle(_Out_ __std_fs_file_ha
 
 void __stdcall __std_fs_close_handle(__std_fs_file_handle _Handle) noexcept;
 
-_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
-    __stdcall __std_fs_get_file_attributes_by_handle(
+_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error __stdcall
+    __std_fs_get_file_attributes_by_handle(
         _In_ __std_fs_file_handle _Handle, _Out_ unsigned long* _File_attributes) noexcept;
 
 _NODISCARD __std_ulong_and_error __stdcall __std_fs_get_final_path_name_by_handle(_In_ __std_fs_file_handle _Handle,
@@ -279,9 +280,9 @@ _NODISCARD __std_win_error __stdcall __std_fs_directory_iterator_open(_In_z_ con
 
 void __stdcall __std_fs_directory_iterator_close(_In_ __std_fs_dir_handle _Handle) noexcept;
 
-_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
-    __stdcall __std_fs_get_stats(_In_z_ const wchar_t* _Path, __std_fs_stats* _Stats, _In_ __std_fs_stats_flags _Flags,
-        _In_ __std_fs_file_attr _Symlink_attribute_hint = __std_fs_file_attr::_Invalid) noexcept;
+_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error __stdcall __std_fs_get_stats(
+    _In_z_ const wchar_t* _Path, __std_fs_stats* _Stats, _In_ __std_fs_stats_flags _Flags,
+    _In_ __std_fs_file_attr _Symlink_attribute_hint = __std_fs_file_attr::_Invalid) noexcept;
 
 _NODISCARD __std_win_error __stdcall __std_fs_directory_iterator_advance(
     _In_ __std_fs_dir_handle _Handle, _Out_ __std_fs_find_data* _Results) noexcept;
@@ -314,12 +315,11 @@ _NODISCARD __std_win_error __stdcall __std_fs_set_last_write_time(
 _NODISCARD __std_win_error __stdcall __std_fs_change_permissions(
     _In_z_ const wchar_t* _Path, _In_ bool _Follow_symlinks, _In_ bool _Readonly) noexcept;
 
-_NODISCARD _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error
-    __stdcall __std_fs_get_temp_path(_Out_writes_z_(__std_fs_temp_path_max) wchar_t* _Target) noexcept;
+_NODISCARD _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error __stdcall __std_fs_get_temp_path(
+    _Out_writes_z_(__std_fs_temp_path_max) wchar_t* _Target) noexcept;
 
-_NODISCARD _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error
-    __stdcall __std_fs_get_current_path(
-        _In_ unsigned long _Target_size, _Out_writes_z_(_Target_size) wchar_t* _Target) noexcept;
+_NODISCARD _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error __stdcall
+    __std_fs_get_current_path(_In_ unsigned long _Target_size, _Out_writes_z_(_Target_size) wchar_t* _Target) noexcept;
 
 _NODISCARD __std_win_error __stdcall __std_fs_set_current_path(_In_z_ const wchar_t* _Target) noexcept;
 
@@ -341,8 +341,8 @@ _NODISCARD __std_win_error __stdcall __std_fs_write_reparse_data_buffer(
 _NODISCARD bool __stdcall __std_fs_is_junction_from_reparse_data_buffer(
     _In_ const __std_fs_reparse_data_buffer* _Buffer) noexcept;
 
-_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
-    __stdcall __std_fs_read_name_from_reparse_data_buffer(
+_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error __stdcall
+    __std_fs_read_name_from_reparse_data_buffer(
         _In_ __std_fs_reparse_data_buffer* _Handle, _Out_ wchar_t** _Offset, _Out_ unsigned short* _Length) noexcept;
 
 struct __std_fs_create_directory_result {

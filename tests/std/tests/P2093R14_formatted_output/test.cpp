@@ -121,9 +121,11 @@ namespace test {
     private:
         void delete_console() {
             if (is_console_valid()) {
-                // According to the MSDN, we don't call CloseHandle() on handles passed to _open_osfhandle(),
-                // and we don't call _close() on file descriptors passed to _fdopen(). So, our only clean-up
-                // task is to call fclose().
+                // According to the documentation, our only clean-up task is to call fclose().
+                // * https://learn.microsoft.com/cpp/c-runtime-library/reference/open-osfhandle
+                //   + "Don't call the Win32 function CloseHandle on the original handle."
+                // * https://learn.microsoft.com/cpp/c-runtime-library/reference/fdopen-wfdopen
+                //   + "If _fdopen is successful, don't call _close on the file descriptor."
                 fclose(file_stream_ptr);
 
                 console_handle  = nullptr;
