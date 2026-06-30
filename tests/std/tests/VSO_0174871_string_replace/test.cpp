@@ -105,10 +105,10 @@ void test_shrink_to_fit() {
 
 void test_LWG3662() {
     // LWG-3662 basic_string::append/assign(NTBS, pos, n) suboptimal
-    string s;
+    string s("countersp");
 
     s.append("hello", 1, 3);
-    assert(s == "ell");
+    assert(s == "counterspell");
     s.assign("world", 1, 3);
     assert(s == "orl");
 
