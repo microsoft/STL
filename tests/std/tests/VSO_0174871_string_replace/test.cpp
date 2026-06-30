@@ -112,8 +112,6 @@ void test_LWG3662() {
     s.assign("world", 1, 3);
     assert(s == "orl");
 
-    s.clear();
-
     try {
         s.append("hello", 10, 1);
         puts("append with out-of-range position should throw");
