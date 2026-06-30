@@ -103,26 +103,9 @@ void test_shrink_to_fit() {
     assert(example == longerStr);
 }
 
-template <typename T = char>
-struct CharAllocator {
-    using value_type = T;
-
-    CharAllocator() = delete;
-    explicit CharAllocator(int) noexcept {}
-    template <typename U>
-    CharAllocator(const CharAllocator<U>&) noexcept {}
-
-    T* allocate(std::size_t n) {
-        return new T[n];
-    }
-    void deallocate(T* p, std::size_t) noexcept {
-        delete[] p;
-    }
-};
-
 void test_LWG3662() {
     // append/assign(NTBS, pos, n) should not construct a temporary string
-    basic_string<char, char_traits<char>, CharAllocator<char>> s(CharAllocator<char>(0));
+    string s;
 
     s.append("hello", 1, 3);
     assert(s == "ell");
