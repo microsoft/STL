@@ -2605,30 +2605,50 @@ public:
         return _Current <=> _Right;
     }
 
-    template <_Not_a_const_iterator _Other>
+    template <_Not_a_const_iterator _Other, same_as<_Iter> _Jter
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-11111696
+        ,
+        _Iter* = nullptr
+#endif // ^^^ workaround ^^^
+        >
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other>
-    _NODISCARD friend constexpr bool operator<(const _Other& _Left, const basic_const_iterator& _Right)
+    _NODISCARD friend constexpr bool operator<(const _Other& _Left, const basic_const_iterator<_Jter>& _Right)
         noexcept(noexcept(_STD _Fake_copy_init<bool>(_Left < _Right._Current))) /* strengthened */ {
         return _Left < _Right._Current;
     }
 
-    template <_Not_a_const_iterator _Other>
+    template <_Not_a_const_iterator _Other, same_as<_Iter> _Jter
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-11111696
+        ,
+        _Iter* = nullptr
+#endif // ^^^ workaround ^^^
+        >
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other>
-    _NODISCARD friend constexpr bool operator>(const _Other& _Left, const basic_const_iterator& _Right)
+    _NODISCARD friend constexpr bool operator>(const _Other& _Left, const basic_const_iterator<_Jter>& _Right)
         noexcept(noexcept(_STD _Fake_copy_init<bool>(_Left > _Right._Current))) /* strengthened */ {
         return _Left > _Right._Current;
     }
 
-    template <_Not_a_const_iterator _Other>
+    template <_Not_a_const_iterator _Other, same_as<_Iter> _Jter
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-11111696
+        ,
+        _Iter* = nullptr
+#endif // ^^^ workaround ^^^
+        >
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other>
-    _NODISCARD friend constexpr bool operator<=(const _Other& _Left, const basic_const_iterator& _Right)
+    _NODISCARD friend constexpr bool operator<=(const _Other& _Left, const basic_const_iterator<_Jter>& _Right)
         noexcept(noexcept(_STD _Fake_copy_init<bool>(_Left <= _Right._Current))) /* strengthened */ {
         return _Left <= _Right._Current;
     }
 
-    template <_Not_a_const_iterator _Other>
+    template <_Not_a_const_iterator _Other, same_as<_Iter> _Jter
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-11111696
+        ,
+        _Iter* = nullptr
+#endif // ^^^ workaround ^^^
+        >
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other>
-    _NODISCARD friend constexpr bool operator>=(const _Other& _Left, const basic_const_iterator& _Right)
+    _NODISCARD friend constexpr bool operator>=(const _Other& _Left, const basic_const_iterator<_Jter>& _Right)
         noexcept(noexcept(_STD _Fake_copy_init<bool>(_Left >= _Right._Current))) /* strengthened */ {
         return _Left >= _Right._Current;
     }
