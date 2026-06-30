@@ -905,12 +905,12 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 145
-#define _MSVC_STL_UPDATE  202605L
+#define _MSVC_STL_UPDATE  202606L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
-#if __CUDACC_VER_MAJOR__ < 13 || (__CUDACC_VER_MAJOR__ == 13 && __CUDACC_VER_MINOR__ < 2)
-_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.2 or newer.");
+#if __CUDACC_VER_MAJOR__ < 13 || (__CUDACC_VER_MAJOR__ == 13 && __CUDACC_VER_MINOR__ < 3)
+_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.3 or newer.");
 #endif // ^^^ old CUDA ^^^
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
@@ -919,8 +919,8 @@ _EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 13.2 or new
 _EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 22 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1950 // Coarse-grained, not inspecting _MSC_FULL_VER
-_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19.50 or newer.");
+#if _MSC_VER < 1951 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19.51 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1760,42 +1760,34 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_generator                         202207L
 #define __cpp_lib_invoke_r                          202106L
 #define __cpp_lib_ios_noreplace                     202207L
+#define __cpp_lib_is_implicit_lifetime              202302L
+#define __cpp_lib_is_scoped_enum                    202011L
+#define __cpp_lib_mdspan                            202207L
+#define __cpp_lib_move_only_function                202110L
+#define __cpp_lib_out_ptr                           202311L
+#define __cpp_lib_print                             202406L
+#define __cpp_lib_ranges_as_const                   202311L
+#define __cpp_lib_ranges_as_rvalue                  202207L
+#define __cpp_lib_ranges_cartesian_product          202207L
+#define __cpp_lib_ranges_chunk                      202202L
+#define __cpp_lib_ranges_chunk_by                   202202L
+#define __cpp_lib_ranges_contains                   202207L
+#define __cpp_lib_ranges_enumerate                  202302L
+#define __cpp_lib_ranges_find_last                  202207L
+#define __cpp_lib_ranges_fold                       202207L
+#define __cpp_lib_ranges_iota                       202202L
+#define __cpp_lib_ranges_join_with                  202202L
+#define __cpp_lib_ranges_repeat                     202207L
+#define __cpp_lib_ranges_slide                      202202L
+#define __cpp_lib_ranges_starts_ends_with           202106L
+#define __cpp_lib_ranges_stride                     202207L
+#define __cpp_lib_ranges_to_container               202202L
+#define __cpp_lib_ranges_zip                        202110L
+#define __cpp_lib_reference_from_temporary          202202L
+#define __cpp_lib_spanstream                        202106L
+#define __cpp_lib_stacktrace                        202011L
 
-#if defined(__clang__) || defined(__EDG__) || _MSC_VER >= 1951 // TRANSITION, toolset update
-#define __cpp_lib_is_implicit_lifetime 202302L
-#endif // ^^^ no workaround ^^^
-
-#define __cpp_lib_is_scoped_enum           202011L
-#define __cpp_lib_mdspan                   202207L
-#define __cpp_lib_move_only_function       202110L
-#define __cpp_lib_out_ptr                  202311L
-#define __cpp_lib_print                    202406L
-#define __cpp_lib_ranges_as_const          202311L
-#define __cpp_lib_ranges_as_rvalue         202207L
-#define __cpp_lib_ranges_cartesian_product 202207L
-#define __cpp_lib_ranges_chunk             202202L
-#define __cpp_lib_ranges_chunk_by          202202L
-#define __cpp_lib_ranges_contains          202207L
-#define __cpp_lib_ranges_enumerate         202302L
-#define __cpp_lib_ranges_find_last         202207L
-#define __cpp_lib_ranges_fold              202207L
-#define __cpp_lib_ranges_iota              202202L
-#define __cpp_lib_ranges_join_with         202202L
-#define __cpp_lib_ranges_repeat            202207L
-#define __cpp_lib_ranges_slide             202202L
-#define __cpp_lib_ranges_starts_ends_with  202106L
-#define __cpp_lib_ranges_stride            202207L
-#define __cpp_lib_ranges_to_container      202202L
-#define __cpp_lib_ranges_zip               202110L
-
-#if defined(__clang__) || defined(__EDG__) || _MSC_VER >= 1951 // TRANSITION, GH-5755, toolset update
-#define __cpp_lib_reference_from_temporary 202202L
-#endif // ^^^ no workaround ^^^
-
-#define __cpp_lib_spanstream 202106L
-#define __cpp_lib_stacktrace 202011L
-
-#if !defined(__clang__) && !defined(__EDG__) && _MSC_VER >= 1951 // TRANSITION, GH-6169, toolset update
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-6169 tracking LLVM-105234 and VSO-2846756
 #define __cpp_lib_start_lifetime_as 202207L
 #endif // ^^^ no workaround ^^^
 

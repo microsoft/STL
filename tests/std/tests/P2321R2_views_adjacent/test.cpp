@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#if defined(_PREFAST_) && defined(_M_IX86) // TRANSITION, VSO-1639191
+int main() {}
+#else // ^^^ workaround / no workaround vvv
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -1026,3 +1029,4 @@ int main() {
 #endif
     instantiation_input_only_test();
 }
+#endif // ^^^ no workaround ^^^
