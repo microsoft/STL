@@ -158,12 +158,12 @@ struct alignas(16) _Base128 {
         if (!_Is_constant_evaluated()) {
             return _umul128(_Left, _Right, &_High_result);
         }
-#elif (defined(_M_ARM64) || defined(_M_ARM64EC)) && !defined(_M_CEE_PURE)
+#elif (defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)) && !defined(_M_CEE_PURE)
         if (!_Is_constant_evaluated()) {
             _High_result = __umulh(_Left, _Right);
             return _Left * _Right;
         }
-#endif // ^^^ (defined(_M_ARM64) || defined(_M_ARM64EC)) && !defined(_M_CEE_PURE) ^^^
+#endif // ^^^ (defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)) && !defined(_M_CEE_PURE) ^^^
 
         const uint32_t __u[2] = {
             static_cast<uint32_t>(_Left),
