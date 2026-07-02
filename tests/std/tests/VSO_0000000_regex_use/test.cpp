@@ -2653,7 +2653,7 @@ void test_gh_6267() {
 }
 
 void test_gh_6289() {
-    // GH-6289: Emit complete _N_str nodes only during NFA construction
+    // GH-6289 <regex>: Emit only complete _N_str nodes during NFA construction
     g_regexTester.should_match("ab", "ab");
     g_regexTester.should_not_match("", "ab");
     g_regexTester.should_match("\na", "\n^a", multiline);
