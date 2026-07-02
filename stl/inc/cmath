@@ -9,7 +9,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <cstdlib>
-#include <xtr1common>
+#include <type_traits>
 
 #if !defined(__clang__) && !defined(_M_CEE) // TRANSITION, VSO-1663104
 #define _HAS_CMATH_INTRINSICS 1
@@ -20,8 +20,6 @@
 #if _HAS_CMATH_INTRINSICS
 #include _STL_INTRIN_HEADER
 #endif // _HAS_CMATH_INTRINSICS
-
-#include <type_traits>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
