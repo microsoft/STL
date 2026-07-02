@@ -11,9 +11,9 @@
 using namespace std;
 
 int main() {
-    constexpr double delta = 1.0e-15;
-    double b[2]            = {0.0, 1.0};
-    double p[2]            = {1.0 - delta, 1.0 + delta};
+    constexpr double delta       = 1.0e-15;
+    static constexpr double b[2] = {0.0, 1.0};
+    static constexpr double p[2] = {1.0 - delta, 1.0 + delta};
     piecewise_linear_distribution<double> dist(b, b + 2, p);
 
     mt19937_64 urbg;
