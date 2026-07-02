@@ -1873,6 +1873,44 @@ void test_gh_5757_find_first_of() {
     assert(pos == 0);
 }
 
+// GH-6342 <string>: wstring::find_first_of infinite-loops on ARM64
+void test_gh_6342_find_first_of() {
+    const wstring needle{L"abcd"}; // Important size: 4-element needle
+    wstring haystack(150, L'x'); // Important size: 150-element haystack
+
+    // See _Find_meow_of::_Bitmap_impl::_Use_bitmap_neon() in vector_algorithms.cpp.
+    // For 2-byte wchar_t, when the haystack is >= 96 elements and the needle is >= 4 elements, the bitmap is used.
+    // The vectorized code consumes 16-element chunks. 150 % 16 is 6, so the scalar tail is [144, 150).
+    // No matching elements are present in [0, 144), so we'll look at the scalar tail.
+
+    constexpr wchar_t non_ascii_character{L'\u044F'}; // U+044F CYRILLIC SMALL LETTER YA, any value >= 256 works
+
+    {
+        const auto pos1{haystack.find_first_of(needle)};
+        assert(pos1 == wstring::npos);
+    }
+    {
+        haystack[146] = non_ascii_character;
+        const auto pos2{haystack.find_first_of(needle)};
+        assert(pos2 == wstring::npos);
+        haystack[146] = L'x';
+    }
+    {
+        haystack[148] = L'b';
+        const auto pos3{haystack.find_first_of(needle)};
+        assert(pos3 == 148);
+        haystack[148] = L'x';
+    }
+    {
+        haystack[146] = non_ascii_character;
+        haystack[148] = L'b';
+        const auto pos4{haystack.find_first_of(needle)};
+        assert(pos4 == 148);
+        haystack[146] = L'x';
+        haystack[148] = L'x';
+    }
+}
+
 void test_string(mt19937_64& gen) {
     test_basic_string<char>(gen);
     test_basic_string<wchar_t>(gen);
@@ -1884,6 +1922,7 @@ void test_string(mt19937_64& gen) {
     test_basic_string<unsigned long long>(gen);
 
     test_gh_5757_find_first_of();
+    test_gh_6342_find_first_of();
 }
 
 void test_various_containers() {

@@ -154,7 +154,7 @@ static_assert(test_implicit_lifetime_cv<false, UserProvidedDestructorClass>);
 static_assert(test_implicit_lifetime_cv<true, StringAggregateWithImplicitlyDeclaredDestructor>);
 static_assert(test_implicit_lifetime_cv<false, StringAggregateWithUserProvidedDestructor>);
 static_assert(test_implicit_lifetime_cv<true, NonAggregateWithTrivialCtorAndTrivialDtor>);
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, LLVM-160610, VSO-2941370 (EDG)
+#ifndef __EDG__ // TRANSITION, VSO-2941370 (EDG)
 static_assert(test_implicit_lifetime_cv<false, NonAggregateWithNonTrivialCtor>);
 static_assert(test_implicit_lifetime_cv<false, NonAggregateWithUserProvidedCtor>);
 #endif // ^^^ no workaround ^^^
