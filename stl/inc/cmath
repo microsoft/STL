@@ -9,7 +9,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <cstdlib>
-#include <xtr1common>
+#include <type_traits>
 
 #if !defined(__clang__) && !defined(_M_CEE) // TRANSITION, VSO-1663104
 #define _HAS_CMATH_INTRINSICS 1
@@ -20,10 +20,6 @@
 #if _HAS_CMATH_INTRINSICS
 #include _STL_INTRIN_HEADER
 #endif // _HAS_CMATH_INTRINSICS
-
-#if _HAS_CXX20
-#include <type_traits>
-#endif // _HAS_CXX20
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -1120,6 +1116,112 @@ _EXPORT_STD using _CSTD isless;
 _EXPORT_STD using _CSTD islessequal;
 _EXPORT_STD using _CSTD islessgreater;
 _EXPORT_STD using _CSTD isunordered;
+
+template <class _Ty>
+_NODISCARD constexpr _Ty _Linear_for_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) noexcept {
+    if (_STD _Is_constant_evaluated()) {
+        auto _Smaller     = _ArgT;
+        auto _Larger      = _ArgB - _ArgA;
+        auto _Abs_smaller = _Float_abs(_Smaller);
+        auto _Abs_larger  = _Float_abs(_Larger);
+        if (_Abs_larger < _Abs_smaller) {
+            _Ty _Tmp = _Smaller;
+            _Smaller = _Larger;
+            _Larger  = _Tmp;
+
+            _Tmp         = _Abs_smaller;
+            _Abs_smaller = _Abs_larger;
+            _Abs_larger  = _Tmp;
+        }
+
+        if (_Abs_smaller > 1) {
+            // _Larger is too large to be subnormal, so scaling by 0.5 is exact, and the product _Smaller * _Larger is
+            // large enough that if _ArgA is subnormal, it will be too small to contribute anyway and this way can
+            // sometimes avoid overflow problems.
+            return 2 * (_Ty{0.5} * _ArgA + _Smaller * (_Ty{0.5} * _Larger));
+        } else {
+            return _ArgA + _Smaller * _Larger;
+        }
+    }
+
+    return _STD fma(_ArgT, _ArgB - _ArgA, _ArgA);
+}
+
+template <class _Ty>
+_NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) noexcept {
+    // on a line intersecting {(0.0, _ArgA), (1.0, _ArgB)}, return the Y value for X == _ArgT
+
+    const bool _T_is_finite = _Is_finite(_ArgT);
+    if (_T_is_finite && _Is_finite(_ArgA) && _Is_finite(_ArgB)) {
+        // 99% case, put it first; this block comes from P0811R3
+        if ((_ArgA <= 0 && _ArgB >= 0) || (_ArgA >= 0 && _ArgB <= 0)) {
+            // exact, monotonic, bounded, determinate, and (for _ArgA == _ArgB == 0) consistent:
+            return _ArgT * _ArgB + (1 - _ArgT) * _ArgA;
+        }
+
+        if (_ArgT == 1) {
+            // exact
+            return _ArgB;
+        }
+
+        // exact at _ArgT == 0, monotonic except near _ArgT == 1, bounded, determinate, and consistent:
+        const auto _Candidate = _Linear_for_lerp(_ArgA, _ArgB, _ArgT);
+        // monotonic near _ArgT == 1:
+        if ((_ArgT > 1) == (_ArgB > _ArgA)) {
+            if (_ArgB > _Candidate) {
+                return _ArgB;
+            }
+        } else {
+            if (_Candidate > _ArgB) {
+                return _ArgB;
+            }
+        }
+
+        return _Candidate;
+    }
+
+    if (_STD _Is_constant_evaluated()) {
+        if (_Is_nan(_ArgA)) {
+            return _ArgA;
+        }
+
+        if (_Is_nan(_ArgB)) {
+            return _ArgB;
+        }
+
+        if (_Is_nan(_ArgT)) {
+            return _ArgT;
+        }
+    } else {
+        // raise FE_INVALID if at least one of _ArgA, _ArgB, and _ArgT is signaling NaN
+        if (_Is_nan(_ArgA) || _Is_nan(_ArgB)) {
+            return (_ArgA + _ArgB) + _ArgT;
+        }
+
+        if (_Is_nan(_ArgT)) {
+            return _ArgT + _ArgT;
+        }
+    }
+
+    if (_T_is_finite) {
+        // _ArgT is finite, _ArgA and/or _ArgB is infinity
+        if (_ArgT < 0) {
+            // if _ArgT < 0:     return infinity in the "direction" of _ArgA if that exists, NaN otherwise
+            return _ArgA - _ArgB;
+        } else if (_ArgT <= 1) {
+            // if _ArgT == 0:    return _ArgA (infinity) if _ArgB is finite, NaN otherwise
+            // if 0 < _ArgT < 1: return infinity "between" _ArgA and _ArgB if that exists, NaN otherwise
+            // if _ArgT == 1:    return _ArgB (infinity) if _ArgA is finite, NaN otherwise
+            return _ArgT * _ArgB + (1 - _ArgT) * _ArgA;
+        } else {
+            // if _ArgT > 1:     return infinity in the "direction" of _ArgB if that exists, NaN otherwise
+            return _ArgB - _ArgA;
+        }
+    } else {
+        // _ArgT is an infinity; return infinity in the "direction" of _ArgA and _ArgB if that exists, NaN otherwise
+        return _ArgT * (_ArgB - _ArgA);
+    }
+}
 _STD_END
 
 #if _HAS_CXX17
@@ -1569,112 +1671,6 @@ _NODISCARD auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, const _Ty3 _Dz) noexcept /
 }
 
 #if _HAS_CXX20
-template <class _Ty>
-_NODISCARD constexpr _Ty _Linear_for_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) noexcept {
-    if (_STD is_constant_evaluated()) {
-        auto _Smaller     = _ArgT;
-        auto _Larger      = _ArgB - _ArgA;
-        auto _Abs_smaller = _Float_abs(_Smaller);
-        auto _Abs_larger  = _Float_abs(_Larger);
-        if (_Abs_larger < _Abs_smaller) {
-            _Ty _Tmp = _Smaller;
-            _Smaller = _Larger;
-            _Larger  = _Tmp;
-
-            _Tmp         = _Abs_smaller;
-            _Abs_smaller = _Abs_larger;
-            _Abs_larger  = _Tmp;
-        }
-
-        if (_Abs_smaller > 1) {
-            // _Larger is too large to be subnormal, so scaling by 0.5 is exact, and the product _Smaller * _Larger is
-            // large enough that if _ArgA is subnormal, it will be too small to contribute anyway and this way can
-            // sometimes avoid overflow problems.
-            return 2 * (_Ty{0.5} * _ArgA + _Smaller * (_Ty{0.5} * _Larger));
-        } else {
-            return _ArgA + _Smaller * _Larger;
-        }
-    }
-
-    return _STD fma(_ArgT, _ArgB - _ArgA, _ArgA);
-}
-
-template <class _Ty>
-_NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) noexcept {
-    // on a line intersecting {(0.0, _ArgA), (1.0, _ArgB)}, return the Y value for X == _ArgT
-
-    const bool _T_is_finite = _Is_finite(_ArgT);
-    if (_T_is_finite && _Is_finite(_ArgA) && _Is_finite(_ArgB)) {
-        // 99% case, put it first; this block comes from P0811R3
-        if ((_ArgA <= 0 && _ArgB >= 0) || (_ArgA >= 0 && _ArgB <= 0)) {
-            // exact, monotonic, bounded, determinate, and (for _ArgA == _ArgB == 0) consistent:
-            return _ArgT * _ArgB + (1 - _ArgT) * _ArgA;
-        }
-
-        if (_ArgT == 1) {
-            // exact
-            return _ArgB;
-        }
-
-        // exact at _ArgT == 0, monotonic except near _ArgT == 1, bounded, determinate, and consistent:
-        const auto _Candidate = _Linear_for_lerp(_ArgA, _ArgB, _ArgT);
-        // monotonic near _ArgT == 1:
-        if ((_ArgT > 1) == (_ArgB > _ArgA)) {
-            if (_ArgB > _Candidate) {
-                return _ArgB;
-            }
-        } else {
-            if (_Candidate > _ArgB) {
-                return _ArgB;
-            }
-        }
-
-        return _Candidate;
-    }
-
-    if (_STD is_constant_evaluated()) {
-        if (_Is_nan(_ArgA)) {
-            return _ArgA;
-        }
-
-        if (_Is_nan(_ArgB)) {
-            return _ArgB;
-        }
-
-        if (_Is_nan(_ArgT)) {
-            return _ArgT;
-        }
-    } else {
-        // raise FE_INVALID if at least one of _ArgA, _ArgB, and _ArgT is signaling NaN
-        if (_Is_nan(_ArgA) || _Is_nan(_ArgB)) {
-            return (_ArgA + _ArgB) + _ArgT;
-        }
-
-        if (_Is_nan(_ArgT)) {
-            return _ArgT + _ArgT;
-        }
-    }
-
-    if (_T_is_finite) {
-        // _ArgT is finite, _ArgA and/or _ArgB is infinity
-        if (_ArgT < 0) {
-            // if _ArgT < 0:     return infinity in the "direction" of _ArgA if that exists, NaN otherwise
-            return _ArgA - _ArgB;
-        } else if (_ArgT <= 1) {
-            // if _ArgT == 0:    return _ArgA (infinity) if _ArgB is finite, NaN otherwise
-            // if 0 < _ArgT < 1: return infinity "between" _ArgA and _ArgB if that exists, NaN otherwise
-            // if _ArgT == 1:    return _ArgB (infinity) if _ArgA is finite, NaN otherwise
-            return _ArgT * _ArgB + (1 - _ArgT) * _ArgA;
-        } else {
-            // if _ArgT > 1:     return infinity in the "direction" of _ArgB if that exists, NaN otherwise
-            return _ArgB - _ArgA;
-        }
-    } else {
-        // _ArgT is an infinity; return infinity in the "direction" of _ArgA and _ArgB if that exists, NaN otherwise
-        return _ArgT * (_ArgB - _ArgA);
-    }
-}
-
 _EXPORT_STD _NODISCARD constexpr inline float lerp(const float _ArgA, const float _ArgB, const float _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
