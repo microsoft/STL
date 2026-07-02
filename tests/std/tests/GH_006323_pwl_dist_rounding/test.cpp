@@ -26,7 +26,7 @@ int main() {
 
     sort(samples.begin(), samples.end());
 
-    // Given the empirical CDF for $n$ samples, $F_n(x)$, and a hypothesized CDF $F(x)$, the  Kolmogorov-Smirnov
+    // Given the empirical CDF for $n$ samples, $F_n(x)$, and a hypothesized CDF $F(x)$, the Kolmogorov-Smirnov
     // statistic is $D_n = \sup_x |F_n(x)-F(x)|$. For large samples, reject the null hypothesis (that the samples come
     // from the distribution) if $\sqrt{n}D_n > K(p)$.
 
