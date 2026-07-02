@@ -1,13 +1,13 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 4.2.3)
+cmake_minimum_required(VERSION 4.3.1)
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
-if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.52.36307.1")
-    message(FATAL_ERROR "The STL must be built with MSVC Compiler 19.52.36307.1 or later. Follow the README instructions.")
+if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19.52.36510")
+    message(FATAL_ERROR "The STL must be built with MSVC Compiler 19.52.36510 or later. Follow the README instructions.")
 endif()
 
 include(CheckCXXSourceCompiles)
@@ -94,10 +94,7 @@ if(STL_USE_ANALYZE)
     # TRANSITION, Windows SDK 10.0.28000 emits multiple warnings:
     # "warning C6553: The annotation for function 'LCMapStringEx' on _Param_(9) does not apply to a value type."
     # Reported as OS-40109504 "Windows SDK: incorrect SAL annotations on functions the STL uses".
-    # "warning C28285: For function '_BitScanForward' '_Param_(1)' syntax error in 'SAL_range(0,(sizeof(Mask)*8)-1)' near 'Mask)*8'."
-    # Reported as VSO-2946529 "/analyze emits warning C28285 for _BitScanForward declared by winnt.h".
-    # Fixed by OS-PR-14602802 on 2026-01-22.
-    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553;/wd28285>")
+    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553>")
 
     if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm64ec")
         # TRANSITION, Windows SDK 10.0.28000 emits
