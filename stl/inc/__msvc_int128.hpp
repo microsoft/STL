@@ -127,31 +127,6 @@ struct alignas(16) _Base128 {
         return _Carry ? _Difference >= _Left : _Difference > _Left;
     }
 
-    template <size_t __m, size_t __n>
-    static constexpr void _Knuth_4_3_1_M(
-        const uint32_t (&__u)[__m], const uint32_t (&__v)[__n], uint32_t (&__w)[__n + __m]) noexcept {
-#ifdef _ENABLE_STL_INTERNAL_CHECK
-        constexpr auto _Int_max = static_cast<size_t>(INT_MAX);
-        _STL_INTERNAL_STATIC_ASSERT(__m <= _Int_max);
-        _STL_INTERNAL_STATIC_ASSERT(__n <= _Int_max);
-#endif // defined(_ENABLE_STL_INTERNAL_CHECK)
-
-        for (auto& _Elem : __w) {
-            _Elem = 0;
-        }
-
-        for (int __j = 0; __j < static_cast<int>(__n); ++__j) {
-            // stash Knuth's `k` in the lower 32 bits of __t
-            uint64_t __t = 0;
-            for (int __i = 0; __i < static_cast<int>(__m); ++__i) {
-                __t += static_cast<uint64_t>(__u[__i]) * __v[__j] + __w[__i + __j];
-                __w[__i + __j] = static_cast<uint32_t>(__t);
-                __t >>= 32;
-            }
-            __w[__j + __m] = static_cast<uint32_t>(__t);
-        }
-    }
-
     _NODISCARD static constexpr uint64_t _UMul128(
         const uint64_t _Left, const uint64_t _Right, uint64_t& _High_result) noexcept {
 #if _STL_128_INTRINSICS
