@@ -1,7 +1,7 @@
 // __msvc_int128.hpp internal header (core)
 
 // Copyright (c) Microsoft Corporation.
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception AND BSL-1.0
 
 #ifndef __MSVC_INT128_HPP
 #define __MSVC_INT128_HPP
