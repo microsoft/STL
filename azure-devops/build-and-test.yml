@@ -67,6 +67,20 @@ jobs:
       configureTesting: ${{ parameters.configureTesting }}
       buildStl: ${{ parameters.buildStl }}
       testsBuildOnly: ${{ parameters.testsBuildOnly }}
+  # Emit per-binary ASan usage telemetry (BinSkim BA2032) for ASan-instrumented
+  # builds. See: https://aka.ms/useasan
+  - ${{ if and(parameters.asanBuild, parameters.buildStl) }}:
+    - task: BinSkim@4
+      displayName: 'Emit ASan usage telemetry (BinSkim BA2032)'
+      inputs:
+        TargetPattern: guardianGlob
+        AnalyzeTargetGlob: +:f|$(buildOutputLocation)\**\*.dll;+:f|$(buildOutputLocation)\**\*.exe
+        toolVersion: '4.4.9'
+      env:
+        GDN_BINSKIM_RUNONLYRULES: BA2032
+        GDN_BINSKIM_KIND: Fail;Pass;Informational
+    - task: PostAnalysis@2
+      displayName: 'Publish BinSkim BA2032 telemetry to Guardian'
   - template: build-benchmarks.yml
     parameters:
       hostArch: ${{ parameters.hostArch }}
