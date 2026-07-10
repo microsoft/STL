@@ -4674,7 +4674,7 @@ public:
         uniform_real_distribution<_Ty> _Dist;
         result_type _Xx0 = _Dist(_Eng);
 
-        if (_Px0 == _Ty{0}) {
+        if (_Px0 == 0.0) {
             _Xx0 = _STD sqrt(_Xx0);
         } else if (_Px0 != _Px1) {
             _Xx0 = static_cast<result_type>(
