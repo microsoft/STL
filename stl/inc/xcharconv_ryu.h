@@ -41,6 +41,7 @@
 #error The contents of <charconv> are only available with C++17. (Also, you should not include this internal header.)
 #endif // !_HAS_CXX17
 
+#include <__msvc_int128.hpp>
 #include <cstring>
 #include <type_traits>
 #include <utility>
@@ -142,51 +143,9 @@ inline constexpr int __DOUBLE_POW5_BITCOUNT = 121;
 
 // vvvvvvvvvv DERIVED FROM d2s_intrinsics.h vvvvvvvvvv
 
-#if _HAS_CHARCONV_INTRINSICS
-
-_NODISCARD inline uint64_t __ryu_umul128(const uint64_t __a, const uint64_t __b, uint64_t* const __productHi) {
-#if defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
-  *__productHi = __umulh(__a, __b);
-  return __a * __b;
-#else // ^^^ not native X64 / native X64 vvv
-  return _umul128(__a, __b, __productHi);
-#endif // defined(_M_ARM64) || defined(_M_ARM64EC) || defined(_M_HYBRID_X86_ARM64)
-}
-
-#else // ^^^ intrinsics available / intrinsics unavailable vvv
-
 _NODISCARD __forceinline uint64_t __ryu_umul128(const uint64_t __a, const uint64_t __b, uint64_t* const __productHi) {
-  // TRANSITION, VSO-634761
-  // The casts here help MSVC to avoid calls to the __allmul library function.
-  const uint32_t __aLo = static_cast<uint32_t>(__a);
-  const uint32_t __aHi = static_cast<uint32_t>(__a >> 32);
-  const uint32_t __bLo = static_cast<uint32_t>(__b);
-  const uint32_t __bHi = static_cast<uint32_t>(__b >> 32);
-
-  const uint64_t __b00 = static_cast<uint64_t>(__aLo) * __bLo;
-  const uint64_t __b01 = static_cast<uint64_t>(__aLo) * __bHi;
-  const uint64_t __b10 = static_cast<uint64_t>(__aHi) * __bLo;
-  const uint64_t __b11 = static_cast<uint64_t>(__aHi) * __bHi;
-
-  const uint32_t __b00Lo = static_cast<uint32_t>(__b00);
-  const uint32_t __b00Hi = static_cast<uint32_t>(__b00 >> 32);
-
-  const uint64_t __mid1 = __b10 + __b00Hi;
-  const uint32_t __mid1Lo = static_cast<uint32_t>(__mid1);
-  const uint32_t __mid1Hi = static_cast<uint32_t>(__mid1 >> 32);
-
-  const uint64_t __mid2 = __b01 + __mid1Lo;
-  const uint32_t __mid2Lo = static_cast<uint32_t>(__mid2);
-  const uint32_t __mid2Hi = static_cast<uint32_t>(__mid2 >> 32);
-
-  const uint64_t __pHi = __b11 + __mid1Hi + __mid2Hi;
-  const uint64_t __pLo = (static_cast<uint64_t>(__mid2Lo) << 32) | __b00Lo;
-
-  *__productHi = __pHi;
-  return __pLo;
+  return _Base128::_UMul128(__a, __b, *__productHi); // extracted to <__msvc_int128.hpp> for wider use
 }
-
-#endif // ^^^ intrinsics unavailable ^^^
 
 _NODISCARD inline uint64_t __ryu_shiftright128(const uint64_t __lo, const uint64_t __hi, const uint32_t __dist) {
   // In the current implementation, the shift value is always < 64.
