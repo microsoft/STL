@@ -155,8 +155,8 @@ private:
 
 template <class T, class U>
 struct almost_pair {
-    T first_; // to test LWG-4223, this member name is not `first` to avoid accidental relying
-    U second_; // to test LWG-4223, this member name is not `second` to avoid accidental relying
+    T first_; // to test LWG-4223, this member name is not `first` to avoid accidentally relying
+    U second_; // to test LWG-4223, this member name is not `second` to avoid accidentally relying
 
     constexpr operator pair<remove_cvref_t<T>, remove_cvref_t<U>>() const {
         return {first_, second_};
