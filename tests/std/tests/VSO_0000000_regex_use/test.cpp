@@ -2722,6 +2722,8 @@ void test_gh_6359() {
     g_regexTester.should_match("bca", "(?:bc)+a+");
     g_regexTester.should_match("bcbcaa", "(?:bc)+a+");
     g_regexTester.should_not_match("bcabca", "(?:bc)+a+");
+
+    g_regexTester.should_capture("a", "(?:(?=(a)))?a", "");
 }
 
 int main() {
