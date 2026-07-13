@@ -11,7 +11,7 @@ variables:
   value: 'Stl-2026-06-25T1103-x64-Fasv7-Pool'
   readonly: true
 - name: arm64PoolName
-  value: 'Stl-2026-06-25T1103-arm64-Dpsv6-Pool'
+  value: 'Stl-2026-07-13T1338-arm64-Dpdsv6-Pool'
   readonly: true
 - name: poolDemands
   value: 'EnableSpotVM -equals false'
