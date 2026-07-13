@@ -34,6 +34,9 @@ if ($Arch -ieq 'x64') {
   $Provisioning_x64 = $false
 }
 
+# FIXME: Examine the PROTOTYPE's drives.
+Get-PSDrive -PSProvider FileSystem
+
 $VisualStudioWorkloads = @(
   'Microsoft.VisualStudio.Component.VC.ASAN',
   'Microsoft.VisualStudio.Component.VC.CMake.Project',

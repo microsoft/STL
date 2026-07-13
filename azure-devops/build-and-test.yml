@@ -41,6 +41,15 @@ jobs:
     parallel: ${{ parameters.numShards }}
   timeoutInMinutes: 30
   steps:
+  # FIXME: Examine the worker's drives.
+  - task: PowerShell@2
+    displayName: 'Examine Drives'
+    inputs:
+      pwsh: true
+      targetType: inline
+      script: |
+        $PSNativeCommandUseErrorActionPreference = $true
+        Get-PSDrive -PSProvider FileSystem
   - template: checkout-self.yml
   - template: checkout-submodule.yml
     parameters:
