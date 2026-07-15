@@ -1291,6 +1291,14 @@ constexpr void check_deduction_guides() {
         mdspan mds4{
             ptr, integral_constant<size_t, 2>{}, integral_constant<size_t, 3>{}, integral_constant<size_t, 5>{}};
         static_assert(same_as<decltype(mds4), mdspan<byte, extents<size_t, 2, 3, 5>>>);
+
+        // Each pack element is deduced independently, so static and dynamic extents can be interleaved.
+        mdspan mds5{ptr, integral_constant<size_t, 2>{}, 3, integral_constant<size_t, 5>{}};
+        static_assert(same_as<decltype(mds5), mdspan<byte, extents<size_t, 2, dynamic_extent, 5>>>);
+        assert(mds5.extent(1) == 3);
+        mdspan mds6{ptr, 6, integral_constant<size_t, 5>{}};
+        static_assert(same_as<decltype(mds6), mdspan<byte, extents<size_t, dynamic_extent, 5>>>);
+        assert(mds6.extent(0) == 6);
     }
 
     { // ElementType*, span<OtherIndexType, N>

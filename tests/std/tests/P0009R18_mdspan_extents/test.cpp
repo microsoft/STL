@@ -521,6 +521,17 @@ constexpr void check_deduction_guide() {
             integral_constant<long long, 4>{}, integral_constant<size_t, 5>{}};
 
         static_assert(same_as<decltype(ext_2), extents<size_t, 49, 2, 3, 4, 5>>);
+
+        // Each pack element is deduced independently, so static and dynamic extents can be interleaved.
+        extents ext_3{integral_constant<size_t, 2>{}, 3, integral_constant<size_t, 5>{}};
+        assert(ext_3.extent(1) == 3);
+
+        static_assert(same_as<decltype(ext_3), extents<size_t, 2, dynamic_extent, 5>>);
+
+        extents ext_4{6, integral_constant<size_t, 7>{}};
+        assert(ext_4.extent(0) == 6);
+
+        static_assert(same_as<decltype(ext_4), extents<size_t, dynamic_extent, 7>>);
     }
 }
 
