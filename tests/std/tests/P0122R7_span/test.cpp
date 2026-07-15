@@ -249,6 +249,7 @@ constexpr bool test() {
         using RefToSize = integral_constant<const size_t&, integral_constant<size_t, 3>::value>;
         using RefToBool = integral_constant<const bool&, integral_constant<bool, true>::value>;
         static_assert(is_same_v<decltype(span{arr, RefToSize{}}), span<int, 3>>);
+        static_assert(is_same_v<decltype(span{arr, true_type{}}), span<int>>);
         static_assert(is_same_v<decltype(span{arr, RefToBool{}}), span<int>>);
 
         static_assert(is_nothrow_constructible_v<span<int>, array<int, 3>::iterator, size_t>); // strengthened

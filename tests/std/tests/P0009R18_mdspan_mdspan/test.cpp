@@ -1299,6 +1299,15 @@ constexpr void check_deduction_guides() {
         mdspan mds6{ptr, 6, integral_constant<size_t, 5>{}};
         static_assert(same_as<decltype(mds6), mdspan<byte, extents<size_t, dynamic_extent, 5>>>);
         assert(mds6.extent(0) == 6);
+
+        using RefToSize = integral_constant<const size_t&, integral_constant<size_t, 6>::value>;
+        using RefToBool = integral_constant<const bool&, integral_constant<bool, true>::value>;
+        mdspan mds7{ptr, RefToSize{}, true_type{}};
+        static_assert(same_as<decltype(mds7), mdspan<byte, extents<size_t, 6, dynamic_extent>>>);
+        assert(mds7.extent(1) == 1);
+        mdspan mds8{ptr, RefToSize{}, RefToBool{}};
+        static_assert(same_as<decltype(mds8), mdspan<byte, extents<size_t, 6, dynamic_extent>>>);
+        assert(mds8.extent(1) == 1);
     }
 
     { // ElementType*, span<OtherIndexType, N>

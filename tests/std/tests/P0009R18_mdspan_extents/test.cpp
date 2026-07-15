@@ -532,6 +532,17 @@ constexpr void check_deduction_guide() {
         assert(ext_4.extent(0) == 6);
 
         static_assert(same_as<decltype(ext_4), extents<size_t, dynamic_extent, 7>>);
+
+        extents ext_5{integral_constant<const size_t&, integral_constant<size_t, 2>::value>{},
+            integral_constant<const int&, integral_constant<int, 3>::value>{}};
+
+        static_assert(same_as<decltype(ext_5), extents<size_t, 2, 3>>);
+
+        extents ext_6{true_type{}, integral_constant<const bool&, integral_constant<bool, true>::value>{}};
+        assert(ext_6.extent(0) == 1);
+        assert(ext_6.extent(1) == 1);
+
+        static_assert(same_as<decltype(ext_6), extents<size_t, dynamic_extent, dynamic_extent>>);
     }
 }
 
