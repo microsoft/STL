@@ -69,7 +69,7 @@ int main() {
     // (2) URBG provides enough bits for our upper bound, but not enough to fill the type
     // (3) URBG is called multiple times, but doesn't fill the type
     // (4) URBG is called multiple times and overflows the number of bits in the type
-    assert((basic_test<mt19937_64>()));
+    assert(basic_test<mt19937_64>());
     assert((basic_test<independent_bits_engine<mt19937_64, 61, uint64_t>>()));
     assert((basic_test<independent_bits_engine<mt19937, 31, uint32_t>>()));
     assert((basic_test<independent_bits_engine<mt19937, 25, uint32_t>>()));

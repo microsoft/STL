@@ -3,7 +3,7 @@
 
 // TRANSITION, ABI: The functions in this file are preserved for binary compatibility
 
-#include <stdexcept>
+#include <yvals.h>
 
 #include <Windows.h>
 

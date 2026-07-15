@@ -38,7 +38,7 @@
 
 #include <is_permissive.hpp>
 
-// clang-format off
+// clang-format off: avoid diverging from external code
 // LLVM SOURCES BEGIN
 // -- BEGIN: test/std/utilities/variant/variant.bad_variant_access/bad_variant_access.pass.cpp
 //===----------------------------------------------------------------------===//

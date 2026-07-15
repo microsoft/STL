@@ -10,6 +10,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_bit_utils.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_chrono.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_cxx_stdatomic.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_doom_core.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_filebuf.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_format_ucd_tables.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_formatter.hpp
@@ -73,18 +74,17 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/execution
     ${CMAKE_CURRENT_LIST_DIR}/inc/expected
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/coroutine
-    ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/filesystem
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/generator
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/resumable
     ${CMAKE_CURRENT_LIST_DIR}/inc/filesystem
+    ${CMAKE_CURRENT_LIST_DIR}/inc/flat_map
+    ${CMAKE_CURRENT_LIST_DIR}/inc/flat_set
     ${CMAKE_CURRENT_LIST_DIR}/inc/format
     ${CMAKE_CURRENT_LIST_DIR}/inc/forward_list
     ${CMAKE_CURRENT_LIST_DIR}/inc/fstream
     ${CMAKE_CURRENT_LIST_DIR}/inc/functional
     ${CMAKE_CURRENT_LIST_DIR}/inc/future
     ${CMAKE_CURRENT_LIST_DIR}/inc/generator
-    ${CMAKE_CURRENT_LIST_DIR}/inc/hash_map
-    ${CMAKE_CURRENT_LIST_DIR}/inc/hash_set
     ${CMAKE_CURRENT_LIST_DIR}/inc/header-units.json
     ${CMAKE_CURRENT_LIST_DIR}/inc/initializer_list
     ${CMAKE_CURRENT_LIST_DIR}/inc/iomanip
@@ -285,59 +285,25 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/xalloc.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xcosh.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xdateord.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xdint.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xdnorm.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xdscale.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xdtento.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xdtest.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xdunscal.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xexp.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfcosh.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfdint.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfdnorm.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfdscale.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfdtento.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfdtest.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfdunsca.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xferaise.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfexp.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfprec.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfsinh.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xfvalues.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xgetwctype.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlcosh.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xldint.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xldscale.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xldtento.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xldtest.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xldunsca.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlexp.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlgamma.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlocale.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xlock.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlpoly.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlprec.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlsinh.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xlvalues.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xmbtowc.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xmtx.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xnotify.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xonce.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xpoly.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xprec.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xrngabort.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xrngdev.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xsinh.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstod.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstof.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xstoflt.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstol.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xstold.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstoll.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xstopfx.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstoul.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstoull.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xstoxflt.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstrcoll.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xstrxfrm.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xthrow.cpp
@@ -350,10 +316,6 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/xwctomb.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xwstod.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xwstof.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xwstoflt.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xwstold.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xwstopfx.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/xwstoxfl.cpp
 )
 
 set(ASAN_SOURCES
@@ -403,6 +365,7 @@ set(SATELLITE_DLL_SOURCES
 set(CMAKE_CXX_FLAGS "")
 set(CMAKE_CXX_FLAGS_DEBUG "")
 set(CMAKE_CXX_FLAGS_RELEASE "")
+set(CMAKE_MSVC_RUNTIME_CHECKS "")
 set(CMAKE_CXX_STANDARD_LIBRARIES "kernel32.lib")
 set(CMAKE_CXX_STANDARD_LIBRARIES_INIT "kernel32.lib")
 set(CMAKE_MSVC_RUNTIME_LIBRARY "")
@@ -415,6 +378,15 @@ set(CMAKE_STATIC_LINKER_FLAGS "/WX")
 set(CMAKE_STATIC_LINKER_FLAGS_DEBUG "")
 set(CMAKE_STATIC_LINKER_FLAGS_RELEASE "")
 set(CMAKE_SHARED_LINKER_FLAGS "/DEBUG:FULL /WX /RELEASE /SUBSYSTEM:Console /NODEFAULTLIB /INCREMENTAL:NO /MANIFEST:NO /DLL /profile /guard:cf /DEBUGTYPE:cv,fixup /LARGEADDRESSAWARE")
+if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /CETCOMPAT")
+endif()
+if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(x64|arm64|arm64ec)$")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /guard:ehcont")
+endif()
+if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(arm64|arm64ec)$")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /guard:delayloadsignret")
+endif()
 set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "")
 
@@ -426,6 +398,8 @@ set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
 
 add_compile_options(/nologo /WX /Gy
     "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Zp8;/std:c++latest;/permissive-;/Zc:preprocessor;/Zc:threadSafeInit-;/Zl>"
+    "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<IN_LIST:${VCLIBS_TARGET_ARCHITECTURE},x64;arm64;arm64ec>>:/guard:ehcont>"
+    "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<IN_LIST:${VCLIBS_TARGET_ARCHITECTURE},arm64;arm64ec>>:/guard:signret>"
     "$<$<COMPILE_LANGUAGE:ASM_MASM>:/W3;/quiet>"
 )
 

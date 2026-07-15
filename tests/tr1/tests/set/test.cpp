@@ -72,7 +72,7 @@ void test_set() { // test set
     CHECK_INT(v0b.size(), 0);
     CHECK(v0b.get_allocator() == al);
 
-    Mycont v1(carr, carr + 3); // differs from hash_set
+    Mycont v1(carr, carr + 3);
     CHECK_INT(v1.size(), 3);
     CHECK_INT(*v1.begin(), 'a');
 
@@ -188,10 +188,10 @@ void test_set() { // test set
     CHECK_INT(v4.count('x'), 0);
     CHECK_INT(v4.count('a'), 1);
     CHECK_INT(*v4.lower_bound('a'), 'a');
-    CHECK_INT(*v4.upper_bound('a'), 'b'); // differs from hash_set
+    CHECK_INT(*v4.upper_bound('a'), 'b');
     STD pair<typename Mycont::const_iterator, typename Mycont::const_iterator> pcc = v4.equal_range('a');
     CHECK_INT(*pcc.first, 'a');
-    CHECK_INT(*pcc.second, 'b'); // differs from hash_set
+    CHECK_INT(*pcc.second, 'b');
 
     {
         Mycont v6;
@@ -350,7 +350,7 @@ void test_multiset() { // test multiset
     CHECK_INT(v0b.size(), 0);
     CHECK(v0b.get_allocator() == al);
 
-    Mycont v1(carr, carr + 3); // differs from hash_multiset
+    Mycont v1(carr, carr + 3);
     CHECK_INT(v1.size(), 3);
     CHECK_INT(*v1.begin(), 'a');
 
@@ -464,10 +464,10 @@ void test_multiset() { // test multiset
     CHECK_INT(v4.count('x'), 0);
     CHECK_INT(v4.count('a'), 1);
     CHECK_INT(*v4.lower_bound('a'), 'a');
-    CHECK_INT(*v4.upper_bound('a'), 'b'); // differs from hash_multiset
+    CHECK_INT(*v4.upper_bound('a'), 'b');
     STD pair<typename Mycont::const_iterator, typename Mycont::const_iterator> pcc = v4.equal_range('a');
     CHECK_INT(*pcc.first, 'a');
-    CHECK_INT(*pcc.second, 'b'); // differs from hash_multiset
+    CHECK_INT(*pcc.second, 'b');
 
     {
         Mycont v6;

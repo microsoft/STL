@@ -9,12 +9,10 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
-_EMIT_STL_WARNING(STL4039, "The contents of <coroutine> are not available with /await. "
-                           "Remove /await or use /await:strict for standard coroutines. "
-                           "Use <experimental/coroutine> for legacy /await support.");
-#else // ^^^ /await / no /await vvv
-#ifndef __cpp_lib_coroutine
-_EMIT_STL_WARNING(STL4038, "The contents of <coroutine> are available only with C++20 or later or /await:strict.");
+_EMIT_STL_WARNING(STL4039, "The <coroutine> header is incompatible with the deprecated /await compiler option.");
+#elif !defined(__cpp_lib_coroutine)
+_EMIT_STL_WARNING(STL4038, "The contents of <coroutine> are available only with C++20 or later "
+                           "(or /await:strict in C++14/17).");
 #else // ^^^ <coroutine> is not available / <coroutine> is available vvv
 #ifndef _ALLOW_COROUTINE_ABI_MISMATCH
 #pragma detect_mismatch("_COROUTINE_ABI", "2")
@@ -32,6 +30,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
+
 _STD_BEGIN
 
 template <class _Ret, class = void>
@@ -46,7 +50,7 @@ _EXPORT_STD template <class _Ret, class...>
 struct coroutine_traits : _Coroutine_traits<_Ret> {};
 
 _EXPORT_STD template <class = void>
-struct coroutine_handle;
+struct _NO_SPECIALIZATIONS_CITING("N5014 [coroutine.handle.general]/2") coroutine_handle;
 
 template <>
 struct coroutine_handle<void> {
@@ -93,7 +97,7 @@ private:
 };
 
 _EXPORT_STD template <class _CoroPromise>
-struct coroutine_handle {
+struct _NO_SPECIALIZATIONS_CITING("N5014 [coroutine.handle.general]/2") coroutine_handle {
     constexpr coroutine_handle() noexcept = default;
     constexpr coroutine_handle(nullptr_t) noexcept {}
 
@@ -186,8 +190,7 @@ _NODISCARD constexpr bool operator>=(const coroutine_handle<> _Left, const corou
 
 template <class _CoroPromise>
 struct hash<coroutine_handle<_CoroPromise>> {
-    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(
-        const coroutine_handle<_CoroPromise>& _Coro) _CONST_CALL_OPERATOR noexcept {
+    _NODISCARD static size_t operator()(const coroutine_handle<_CoroPromise>& _Coro) noexcept {
         return _Hash_representation(_Coro.address());
     }
 };
@@ -255,12 +258,15 @@ _EXPORT_STD struct suspend_always {
 
 _STD_END
 
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
-#endif // ^^^ defined(__cpp_lib_coroutine) ^^^
-#endif // ^^^ !defined(_RESUMABLE_FUNCTIONS_SUPPORTED) ^^^
+#endif // ^^^ <coroutine> is available ^^^
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _COROUTINE_

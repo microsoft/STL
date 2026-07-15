@@ -20,10 +20,11 @@
 
 #include <timezone_data.hpp>
 
+// Extended to test LWG-4257 "Stream insertion for chrono::local_time should be constrained"
+// Extended to test GH-5945 "<chrono>: cannot format unsigned durations"
+
 using namespace std;
 using namespace chrono;
-
-constexpr auto intmax_max = numeric_limits<intmax_t>::max();
 
 template <typename CharT>
 [[nodiscard]] constexpr const CharT* choose_literal(const char* const str, const wchar_t* const wstr) noexcept {
@@ -252,8 +253,6 @@ void empty_braces_helper(
 
 template <typename CharT>
 void test_duration_formatter() {
-    using LongRatio = ratio<intmax_max - 1, intmax_max>;
-
     empty_braces_helper(seconds{5}, STR("5s"));
     empty_braces_helper(minutes{7}, STR("7min"));
     empty_braces_helper(hours{9}, STR("9h"));
@@ -266,8 +265,13 @@ void test_duration_formatter() {
     empty_braces_helper(duration<int, ratio<22, 7>>{40}, STR("40[22/7]s"));
     empty_braces_helper(duration<int, ratio<53, 101>>{40}, STR("40[53/101]s"));
     empty_braces_helper(duration<int, ratio<201, 2147483647>>{40}, STR("40[201/2147483647]s"));
-    // TRANSITION, LWG-3921: duration_cast used in formatting may raise UB
+
+#if 0 // TRANSITION, LWG-3921: Our duration formatting constructs an hh_mm_ss, which calls duration_cast,
+      // which triggers signed integer overflow when a duration has a pathological ratio, like this:
+    constexpr auto intmax_max = numeric_limits<intmax_t>::max();
+    using LongRatio           = ratio<intmax_max - 1, intmax_max>;
     empty_braces_helper(duration<int, LongRatio>{1}, STR("1[9223372036854775806/9223372036854775807]s"));
+#endif // ^^^ disabled test due to undefined behavior ^^^
 
     // formatting small types needs to work as iostreams << VSO-1521926
     empty_braces_helper(duration<long long, atto>{123}, STR("123as"));
@@ -282,6 +286,11 @@ void test_duration_formatter() {
     assert(format(STR("{:%T %j}"), -days{4} - 23h - 30min) == STR("-119:30:00 4"));
     assert(format(STR("{:%T %j}"), duration<float, days::period>{1.55f}) == STR("37:11:59 1"));
     assert(format(STR("{:%T %j}"), duration<float, days::period>{-1.55f}) == STR("-37:11:59 1"));
+
+    // GH-5945 "<chrono>: cannot format unsigned durations"
+    assert(format(STR("{:%T %j %q %Q}"), duration<unsigned long long, days::period>{4} + 30min)
+           == STR("96:30:00 4 min 5790"));
+    assert(format(STR("{:%T %j}"), duration<unsigned long long, days::period>{4} + 23h + 30min) == STR("119:30:00 4"));
 
     // GH-4247: <chrono>: format() should accept %X and %EX for duration and hh_mm_ss
     assert(format(STR("{:%X}"), 9h + 7min + 5s) == STR("09:07:05"));
@@ -461,7 +470,7 @@ void test_year_formatter() {
     empty_braces_helper(year{121}, STR("0121"));
 
     assert(format(STR("{:%Y %y%C}"), year{1912}) == STR("1912 1219"));
-    assert(format(STR("{:%Y %y%C}"), year{-1912}) == STR("-1912 88-20"));
+    assert(format(STR("{:%Y %y%C}"), year{-1912}) == STR("-1912 12-20"));
     assert(format(STR("{:%Y %y%C}"), year{-200}) == STR("-0200 00-02"));
     assert(format(STR("{:%Y %y%C}"), year{200}) == STR("0200 0002"));
     // TRANSITION, add tests for EY Oy Ey EC
@@ -469,6 +478,9 @@ void test_year_formatter() {
     empty_braces_helper(year{1900}, STR("1900"));
     empty_braces_helper(year{2000}, STR("2000"));
     empty_braces_helper(year{-32768}, STR("-32768 is not a valid year"));
+
+    // [time.format] example
+    assert(format(STR("{:%C %y}"), year{-1976}) == STR("-20 76"));
 }
 
 template <typename CharT>
@@ -1060,7 +1072,71 @@ void test_locale() {
     assert(stream(year_month_weekday_last{2021y / May / Tuesday[last]}) == STR("2021/Mai/Di[last]"));
 }
 
+void test_unsigned_sys_time_format_after_LWG_4274() {
+    const sys_time<duration<unsigned int>> tp{};
+    const string s = format("{:%Y-%m-%d %H:%M:%S}", tp);
+    assert(s == "1970-01-01 00:00:00");
+}
+
+template <typename T>
+concept ostream_insertable = requires(ostream& o, const T& t) { o << t; };
+
+template <typename Dur>
+void check_stream_insertion_operator_for_duration() {
+    if constexpr (ostream_insertable<sys_time<Dur>>) {
+        ostringstream oss;
+        oss << sys_time<Dur>{};
+        assert(oss.str() == "1970-01-01 00:00:00");
+    }
+
+    if constexpr (ostream_insertable<local_time<Dur>>) {
+        ostringstream oss;
+        oss << local_time<Dur>{};
+        assert(oss.str() == "1970-01-01 00:00:00");
+    }
+}
+
+// Test based on example in LWG-4257
+void check_stream_insertion_operator() {
+    // operator<< is constrained such that it does not participate when underlying duration has floating-point rep
+    using ok_dur  = duration<long long>;
+    using bad_dur = duration<double>;
+
+    static_assert(ostream_insertable<sys_time<ok_dur>>);
+    static_assert(ostream_insertable<local_time<ok_dur>>);
+    check_stream_insertion_operator_for_duration<ok_dur>();
+
+    static_assert(!ostream_insertable<sys_time<bad_dur>>);
+    static_assert(!ostream_insertable<local_time<bad_dur>>);
+    check_stream_insertion_operator_for_duration<bad_dur>();
+}
+
+// Test introduced for GH-5945 "<chrono>: cannot format unsigned durations"
+void test_format_duration_with_unsigned_rep() {
+    // operator<<(ostream&, duration _Dur) only prints _Dur.count() (does not use abs)
+    {
+        ostringstream oss;
+        oss << duration<unsigned long, nano>{3};
+        assert(oss.str() == "3ns");
+    }
+    {
+        ostringstream oss;
+        oss << duration<long, nano>{-3};
+        assert(oss.str() == "-3ns");
+    }
+
+    // format calls abs under the hood when needed, this would be rejected before fix.
+    assert(format("{}", duration<long, nano>{-3}) == "-3ns");
+    assert(format("{}", duration<unsigned long, nano>{3}) == "3ns");
+    assert(format("{:%Q}", duration<unsigned long, nano>{3}) == "3");
+}
+
 void test() {
+    test_unsigned_sys_time_format_after_LWG_4274();
+    test_format_duration_with_unsigned_rep();
+
+    check_stream_insertion_operator();
+
     test_parse_conversion_spec<char>();
     test_parse_conversion_spec<wchar_t>();
 

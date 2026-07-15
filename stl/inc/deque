@@ -854,7 +854,7 @@ public:
         _Orphan_all();
         auto _Myfirst       = _Unchecked_begin();
         const auto _Oldsize = _Mysize();
-        auto _Assign_count  = (_STD min)(_Count, _Oldsize);
+        auto _Assign_count  = (_STD min) (_Count, _Oldsize);
         for (; _Assign_count > 0; --_Assign_count) {
             *_Myfirst = _Val;
             ++_Myfirst;
@@ -976,7 +976,8 @@ public:
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return (_STD min)(static_cast<size_type>(_STD _Max_limit<difference_type>()), _Alty_traits::max_size(_Getal()));
+        constexpr auto _Diff_max = static_cast<size_type>(_STD _Max_limit<difference_type>());
+        return (_STD min) (_Diff_max, _Alty_traits::max_size(_Getal()));
     }
 
     void resize(_CRT_GUARDOVERFLOW size_type _Newsize) {
@@ -1847,6 +1848,14 @@ namespace pmr {
     using deque = _STD deque<_Ty, polymorphic_allocator<_Ty>>;
 } // namespace pmr
 #endif // _HAS_CXX17
+
+#if _HAS_CXX23
+template <class _Ty, class _Alloc>
+constexpr bool _Has_guaranteed_push_back<deque<_Ty, _Alloc>> = true;
+
+template <class _Ty, class _Alloc>
+constexpr bool _Has_guaranteed_append_range<deque<_Ty, _Alloc>> = true;
+#endif // _HAS_CXX23
 _STD_END
 
 #pragma pop_macro("new")

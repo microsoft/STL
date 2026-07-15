@@ -6,7 +6,7 @@
 #include <atomic>
 #include <xtimec.h>
 
-#include "awint.hpp"
+#include <Windows.h>
 
 namespace {
     constexpr long _Nsec_per_sec  = 1000000000L;
@@ -42,7 +42,7 @@ namespace {
         }
         return diff;
     }
-} // namespace
+} // unnamed namespace
 
 extern "C" {
 

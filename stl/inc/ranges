@@ -33,7 +33,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 // TRANSITION, non-_Ugly attribute tokens
 #pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
 #undef msvc
+#undef no_specializations
 
 _STD_BEGIN
 namespace ranges {
@@ -100,7 +102,7 @@ namespace ranges {
 
     template <range _Rng, class _Derived>
     class _Cached_position : public view_interface<_Derived> {
-        static_assert(_Always_false<_Rng>, "A range must be at least forward for position caching to be worthwhile.");
+        static_assert(false, "A range must be at least forward for position caching to be worthwhile.");
     };
 
     template <forward_range _Rng, class _Derived>
@@ -546,7 +548,8 @@ namespace ranges {
 #if _HAS_CXX23
     _EXPORT_STD template <class _Derived>
         requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
-    class range_adaptor_closure : public _Pipe::_Base<_Derived> {};
+    class _NO_SPECIALIZATIONS_CITING("N5014 [range.adaptor.object]/5") range_adaptor_closure
+        : public _Pipe::_Base<_Derived> {};
 #endif // _HAS_CXX23
 
     _EXPORT_STD template <class _Ty>
@@ -640,7 +643,7 @@ namespace ranges {
     namespace views {
         struct _Single_fn {
             template <class _Ty>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Ty&& _Val)
                 noexcept(noexcept(single_view<decay_t<_Ty>>(_STD forward<_Ty>(_Val))))
                 requires requires {
                     typename single_view<decay_t<_Ty>>;
@@ -731,8 +734,8 @@ namespace ranges {
             return *this;
         }
 
-        constexpr _Ioterator operator--(int) noexcept(is_nothrow_copy_constructible_v<_Wi> //
-                                                      && noexcept(--_Current)) /* strengthened */
+        constexpr _Ioterator operator--(int)
+            noexcept(is_nothrow_copy_constructible_v<_Wi> && noexcept(--_Current)) /* strengthened */
             requires _Decrementable<_Wi>
         {
             auto _Tmp = *this;
@@ -1039,7 +1042,7 @@ namespace ranges {
     namespace views {
         struct _Iota_fn {
             template <class _Ty>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Val) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Ty&& _Val)
                 noexcept(noexcept(iota_view<decay_t<_Ty>>(static_cast<_Ty&&>(_Val))))
                 requires requires { iota_view<decay_t<_Ty>>(static_cast<_Ty&&>(_Val)); }
             {
@@ -1047,8 +1050,7 @@ namespace ranges {
             }
 
             template <class _Ty1, class _Ty2>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
-                _Ty1&& _Start, _Ty2&& _Bound) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Ty1&& _Start, _Ty2&& _Bound)
                 noexcept(noexcept(iota_view(static_cast<_Ty1&&>(_Start), static_cast<_Ty2&&>(_Bound))))
                 requires requires { iota_view(static_cast<_Ty1&&>(_Start), static_cast<_Ty2&&>(_Bound)); }
             {
@@ -1256,7 +1258,7 @@ namespace ranges {
             requires default_initializable<_Ty>
         = default;
 
-        _NODISCARD_CTOR constexpr explicit repeat_view(const _Ty& _Value_, _Bo _Bound_ = _Bo{})
+        _NODISCARD constexpr explicit repeat_view(const _Ty& _Value_, _Bo _Bound_ = _Bo{})
             noexcept(is_nothrow_copy_constructible_v<_Ty>) // strengthened
             requires copy_constructible<_Ty>
             : _Value(in_place, _Value_), _Bound(_STD move(_Bound_)) {
@@ -1266,7 +1268,7 @@ namespace ranges {
             }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         }
-        _NODISCARD_CTOR constexpr explicit repeat_view(_Ty&& _Value_, _Bo _Bound_ = _Bo{})
+        _NODISCARD constexpr explicit repeat_view(_Ty&& _Value_, _Bo _Bound_ = _Bo{})
             noexcept(is_nothrow_move_constructible_v<_Ty>) // strengthened
             : _Value(in_place, _STD move(_Value_)), _Bound(_STD move(_Bound_)) {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -1277,7 +1279,7 @@ namespace ranges {
         }
         template <class... _TArgs, class... _BArgs>
             requires constructible_from<_Ty, _TArgs...> && constructible_from<_Bo, _BArgs...>
-        _NODISCARD_CTOR constexpr explicit repeat_view(
+        _NODISCARD constexpr explicit repeat_view(
             piecewise_construct_t, tuple<_TArgs...> _Val_args, tuple<_BArgs...> _Bound_args = tuple<>{})
             noexcept(noexcept(_RANGES _Make_box_from_tuple<_Ty>(_STD move(_Val_args)))
                      && noexcept(_STD make_from_tuple<_Bo>(_STD move(_Bound_args)))) // strengthened
@@ -1314,7 +1316,7 @@ namespace ranges {
     namespace views {
         struct _Repeat_fn {
             template <class _Ty>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Value) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Ty&& _Value)
                 noexcept(noexcept(repeat_view<decay_t<_Ty>>(_STD forward<_Ty>(_Value))))
                 requires requires { repeat_view<decay_t<_Ty>>(_STD forward<_Ty>(_Value)); }
             {
@@ -1322,8 +1324,7 @@ namespace ranges {
             }
 
             template <class _Ty1, class _Ty2>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
-                _Ty1&& _Value, _Ty2&& _Count) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Ty1&& _Value, _Ty2&& _Count)
                 noexcept(noexcept(repeat_view(_STD forward<_Ty1>(_Value), _STD forward<_Ty2>(_Count))))
                 requires requires { repeat_view(_STD forward<_Ty1>(_Value), _STD forward<_Ty2>(_Count)); }
             {
@@ -1429,7 +1430,7 @@ namespace ranges {
         struct _Istream_fn {
             template <class _StreamTy>
                 requires _Istreamable<_Ty, _StreamTy>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_StreamTy& _Stream) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_StreamTy& _Stream)
                 noexcept(is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {
                 return basic_istream_view<_Ty, typename _StreamTy::char_type, typename _StreamTy::traits_type>(_Stream);
             }
@@ -1566,15 +1567,14 @@ namespace ranges {
         public:
             template <viewable_range _Rng>
                 requires (_Choice<_Rng>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
-                noexcept(_Choice<_Rng>._No_throw) {
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range) noexcept(_Choice<_Rng>._No_throw) {
                 constexpr _St _Strat = _Choice<_Rng>._Strategy;
                 if constexpr (_Strat == _St::_All) {
                     return views::all(_STD forward<_Rng>(_Range));
                 } else if constexpr (_Strat == _St::_As_rvalue) {
                     return as_rvalue_view(_STD forward<_Rng>(_Range));
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -1826,7 +1826,7 @@ namespace ranges {
     namespace views {
         struct _Filter_fn {
             template <viewable_range _Rng, class _Pr>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range, _Pr&& _Pred) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range, _Pr&& _Pred)
                 noexcept(noexcept(filter_view(_STD forward<_Rng>(_Range), _STD forward<_Pr>(_Pred))))
                 requires requires { filter_view(static_cast<_Rng&&>(_Range), _STD forward<_Pr>(_Pred)); }
             {
@@ -1835,7 +1835,7 @@ namespace ranges {
 
             template <class _Pr>
                 requires constructible_from<decay_t<_Pr>, _Pr>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Pr&& _Pred) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Pr&& _Pred)
                 noexcept(is_nothrow_constructible_v<decay_t<_Pr>, _Pr>) {
                 return _Range_closure<_Filter_fn, decay_t<_Pr>>{_STD forward<_Pr>(_Pred)};
             }
@@ -1963,7 +1963,7 @@ namespace ranges {
                 }
             } else if constexpr (sized_sentinel_for<sentinel_t<_Vw>, iterator_t<_Vw>>) {
                 auto _Iter       = _RANGES begin(_Range);
-                const auto _Size = (_STD min)(_Count, _RANGES end(_Range) - _Iter);
+                const auto _Size = (_STD min) (_Count, _RANGES end(_Range) - _Iter);
                 return counted_iterator(_STD move(_Iter), _Size);
             } else {
                 return counted_iterator(_RANGES begin(_Range), _Count);
@@ -1982,7 +1982,7 @@ namespace ranges {
                 }
             } else if constexpr (sized_sentinel_for<sentinel_t<const _Vw>, iterator_t<const _Vw>>) {
                 auto _Iter       = _RANGES begin(_Range);
-                const auto _Size = (_STD min)(_Count, _RANGES end(_Range) - _Iter);
+                const auto _Size = (_STD min) (_Count, _RANGES end(_Range) - _Iter);
                 return counted_iterator(_STD move(_Iter), _Size);
             } else {
                 return counted_iterator(_RANGES begin(_Range), _Count);
@@ -2025,14 +2025,14 @@ namespace ranges {
             requires sized_range<_Vw>
         {
             const auto _Length = _RANGES size(_Range);
-            return (_STD min)(_Length, static_cast<decltype(_Length)>(_Count));
+            return (_STD min) (_Length, static_cast<decltype(_Length)>(_Count));
         }
 
         _NODISCARD constexpr auto size() const
             requires sized_range<const _Vw>
         {
             const auto _Length = _RANGES size(_Range);
-            return (_STD min)(_Length, static_cast<decltype(_Length)>(_Count));
+            return (_STD min) (_Length, static_cast<decltype(_Length)>(_Count));
         }
     };
 
@@ -2099,8 +2099,8 @@ namespace ranges {
 
         public:
             template <viewable_range _Rng>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
-                _Rng&& _Range, range_difference_t<_Rng> _Count) _CONST_CALL_OPERATOR noexcept(_Choice<_Rng>._No_throw) {
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range, range_difference_t<_Rng> _Count)
+                noexcept(_Choice<_Rng>._No_throw) {
                 constexpr _St _Strat = _Choice<_Rng>._Strategy;
 
                 if constexpr (_Strat == _St::_Empty) {
@@ -2114,7 +2114,7 @@ namespace ranges {
 #endif // _HAS_CXX23
                 } else {
                     // it's a "reconstructible range"; return the same kind of range with a restricted extent
-                    _Count            = (_STD min)(_RANGES distance(_Range), _Count);
+                    _Count            = (_STD min) (_RANGES distance(_Range), _Count);
                     const auto _First = _RANGES begin(_Range);
 
                     if constexpr (_Strat == _St::_Reconstruct_span) {
@@ -2131,14 +2131,14 @@ namespace ranges {
                     } else if constexpr (_Strat == _St::_Reconstruct_subrange) {
                         return subrange(_First, _First + _Count);
                     } else {
-                        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                        static_assert(false); // unexpected strategy
                     }
                 }
             }
 
             template <class _Ty>
                 requires constructible_from<decay_t<_Ty>, _Ty>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Length) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Ty&& _Length)
                 noexcept(is_nothrow_constructible_v<decay_t<_Ty>, _Ty>) {
                 return _Range_closure<_Take_fn, decay_t<_Ty>>{_STD forward<_Ty>(_Length)};
             }
@@ -2298,7 +2298,7 @@ namespace ranges {
     namespace views {
         struct _Take_while_fn {
             template <viewable_range _Rng, class _Pr>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range, _Pr _Pred) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range, _Pr _Pred)
                 noexcept(noexcept(take_while_view(_STD forward<_Rng>(_Range), _STD move(_Pred))))
                 requires requires { take_while_view(static_cast<_Rng&&>(_Range), _STD move(_Pred)); }
             {
@@ -2307,7 +2307,7 @@ namespace ranges {
 
             template <class _Pr>
                 requires constructible_from<decay_t<_Pr>, _Pr>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Pr&& _Pred) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Pr&& _Pred)
                 noexcept(is_nothrow_constructible_v<decay_t<_Pr>, _Pr>) {
                 return _Range_closure<_Take_while_fn, decay_t<_Pr>>{_STD forward<_Pr>(_Pred)};
             }
@@ -2375,7 +2375,7 @@ namespace ranges {
             requires (!(_Simple_view<_Vw> && random_access_range<const _Vw> && sized_range<const _Vw>) )
         {
             if constexpr (sized_range<_Vw> && random_access_range<_Vw>) {
-                const auto _Offset = (_STD min)(_RANGES distance(_Range), _Count);
+                const auto _Offset = (_STD min) (_RANGES distance(_Range), _Count);
                 return _RANGES begin(_Range) + _Offset;
             } else {
                 if constexpr (forward_range<_Vw>) {
@@ -2395,7 +2395,7 @@ namespace ranges {
         _NODISCARD constexpr auto begin() const
             requires random_access_range<const _Vw> && sized_range<const _Vw>
         {
-            const auto _Offset = (_STD min)(_RANGES distance(_Range), _Count);
+            const auto _Offset = (_STD min) (_RANGES distance(_Range), _Count);
             return _RANGES begin(_Range) + _Offset;
         }
 
@@ -2502,8 +2502,8 @@ namespace ranges {
 
         public:
             template <viewable_range _Rng>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
-                _Rng&& _Range, range_difference_t<_Rng> _Count) _CONST_CALL_OPERATOR noexcept(_Choice<_Rng>._No_throw) {
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range, range_difference_t<_Rng> _Count)
+                noexcept(_Choice<_Rng>._No_throw) {
                 constexpr _St _Strat = _Choice<_Rng>._Strategy;
 
                 if constexpr (_Strat == _St::_Empty) {
@@ -2515,7 +2515,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Reconstruct_repeat) {
                     if constexpr (sized_range<_Rng>) {
                         const auto _Size = _RANGES distance(_Range);
-                        _Count           = _Size - (_STD min)(_Size, _Count);
+                        _Count           = _Size - (_STD min) (_Size, _Count);
                         return repeat_view(_STD forward_like<_Rng>(*_Range._Value), _Count);
                     } else {
                         return _Range;
@@ -2523,7 +2523,7 @@ namespace ranges {
 #endif // _HAS_CXX23
                 } else {
                     // it's a "reconstructible range"; return the same kind of range with a restricted extent
-                    _Count = (_STD min)(_RANGES distance(_Range), _Count);
+                    _Count = (_STD min) (_RANGES distance(_Range), _Count);
 
                     if constexpr (_Strat == _St::_Reconstruct_span) {
                         return span(_Ubegin(_Range) + _Count, _Uend(_Range));
@@ -2537,14 +2537,14 @@ namespace ranges {
                     } else if constexpr (_Strat == _St::_Reconstruct_other) {
                         return remove_cvref_t<_Rng>(_RANGES begin(_Range) + _Count, _RANGES end(_Range));
                     } else {
-                        _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                        static_assert(false); // unexpected strategy
                     }
                 }
             }
 
             template <class _Ty>
                 requires constructible_from<decay_t<_Ty>, _Ty>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Length) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Ty&& _Length)
                 noexcept(is_nothrow_constructible_v<decay_t<_Ty>, _Ty>) {
                 return _Range_closure<_Drop_fn, decay_t<_Ty>>{_STD forward<_Ty>(_Length)};
             }
@@ -2623,7 +2623,7 @@ namespace ranges {
     namespace views {
         struct _Drop_while_fn {
             template <viewable_range _Rng, class _Pr>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range, _Pr _Pred) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range, _Pr _Pred)
                 noexcept(noexcept(drop_while_view(_STD forward<_Rng>(_Range), _STD move(_Pred))))
                 requires requires { drop_while_view(static_cast<_Rng&&>(_Range), _STD move(_Pred)); }
             {
@@ -2632,7 +2632,7 @@ namespace ranges {
 
             template <class _Pr>
                 requires constructible_from<decay_t<_Pr>, _Pr>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Pr&& _Pred) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Pr&& _Pred)
                 noexcept(is_nothrow_constructible_v<decay_t<_Pr>, _Pr>) {
                 return _Range_closure<_Drop_while_fn, decay_t<_Pr>>{_STD forward<_Pr>(_Pred)};
             }
@@ -3051,10 +3051,9 @@ namespace ranges {
 #endif // _HAS_CXX23
 
     namespace views {
-        class _Join_fn : public _Pipe::_Base<_Join_fn> {
-        public:
+        struct _Join_fn : public _Pipe::_Base<_Join_fn> {
             template <viewable_range _Rng>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range)
                 noexcept(noexcept(join_view<views::all_t<_Rng>>{_STD forward<_Rng>(_Range)}))
                 requires requires { join_view<views::all_t<_Rng>>{static_cast<_Rng&&>(_Range)}; }
             {
@@ -3323,7 +3322,7 @@ namespace ranges {
 
             _NODISCARD constexpr decltype(auto) operator*() const {
                 using _Ref = common_reference_t<iter_reference_t<_InnerIter>, iter_reference_t<_PatternIter>>;
-                return _Visit_inner_it<_Ref>([](auto&& _It) _STATIC_LAMBDA -> _Ref { return *_It; });
+                return _Visit_inner_it<_Ref>([](auto&& _It) static -> _Ref { return *_It; });
             }
 
             constexpr _Iterator& operator++() {
@@ -3589,7 +3588,7 @@ namespace ranges {
         const bool _Overflow =
             _Mul_overflow(static_cast<_Size_type>(_Compile_time_max_size<_Rng>),
                 static_cast<_Size_type>(_Compile_time_max_size<_Inner>), _Joined_max_size)
-            || _Mul_overflow((_STD max)(static_cast<_Size_type>(_Compile_time_max_size<_Rng>), _Size_type{1}) - 1,
+            || _Mul_overflow((_STD max) (static_cast<_Size_type>(_Compile_time_max_size<_Rng>), _Size_type{1}) - 1,
                 static_cast<_Size_type>(_Compile_time_max_size<_Pat>), _Pattern_max_size)
             || _Add_overflow(_Joined_max_size, _Pattern_max_size, _Result);
         if (_Overflow) {
@@ -3610,8 +3609,7 @@ namespace ranges {
     namespace views {
         struct _Join_with_fn {
             template <viewable_range _Rng, class _Pat>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
-                _Rng&& _Range, _Pat&& _Pattern) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range, _Pat&& _Pattern)
                 noexcept(noexcept(join_with_view(_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern))))
                 requires requires { join_with_view(_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern)); }
             {
@@ -3620,7 +3618,7 @@ namespace ranges {
 
             template <class _Delim>
                 requires constructible_from<decay_t<_Delim>, _Delim>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Delim&& _Delimiter) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Delim&& _Delimiter)
                 noexcept(is_nothrow_constructible_v<decay_t<_Delim>, _Delim>) {
                 return _Range_closure<_Join_with_fn, decay_t<_Delim>>{_STD forward<_Delim>(_Delimiter)};
             }
@@ -3986,7 +3984,7 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto begin() const
-            requires forward_range<_Vw> && forward_range<const _Vw>
+            requires forward_range<_Vw> && forward_range<const _Vw> && forward_range<const _Pat>
         {
             return _Outer_iter<true>{*this, _RANGES begin(_Range)};
         }
@@ -3999,7 +3997,8 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto end() const {
-            if constexpr (forward_range<_Vw> && forward_range<const _Vw> && common_range<const _Vw>) {
+            if constexpr (forward_range<_Vw> && forward_range<const _Vw> && common_range<const _Vw>
+                          && forward_range<const _Pat>) {
                 return _Outer_iter<true>{*this, _RANGES end(_Range)};
             } else {
                 return default_sentinel;
@@ -4025,8 +4024,7 @@ namespace ranges {
     namespace views {
         struct _Lazy_split_fn {
             template <viewable_range _Rng, class _Pat>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
-                _Rng&& _Range, _Pat&& _Pattern) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range, _Pat&& _Pattern)
                 noexcept(noexcept(lazy_split_view(_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern))))
                 requires requires { lazy_split_view(static_cast<_Rng&&>(_Range), static_cast<_Pat&&>(_Pattern)); }
             {
@@ -4035,7 +4033,7 @@ namespace ranges {
 
             template <class _Delim>
                 requires constructible_from<decay_t<_Delim>, _Delim>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Delim&& _Delimiter) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Delim&& _Delimiter)
                 noexcept(is_nothrow_constructible_v<decay_t<_Delim>, _Delim>) {
                 return _Range_closure<_Lazy_split_fn, decay_t<_Delim>>{_STD forward<_Delim>(_Delimiter)};
             }
@@ -4069,7 +4067,7 @@ namespace ranges {
 
             _Iterator() = default;
 
-            constexpr _Iterator(split_view& _Parent_, iterator_t<_Vw> _Current_, subrange<iterator_t<_Vw>> _Next_) //
+            constexpr _Iterator(split_view& _Parent_, iterator_t<_Vw> _Current_, subrange<iterator_t<_Vw>> _Next_)
                 noexcept(is_nothrow_move_constructible_v<iterator_t<_Vw>>) // strengthened
                 : _Parent{_STD addressof(_Parent_)}, _Current{_STD move(_Current_)}, _Next{_STD move(_Next_)} {}
 
@@ -4211,8 +4209,7 @@ namespace ranges {
     namespace views {
         struct _Split_fn {
             template <viewable_range _Rng, class _Pat>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
-                _Rng&& _Range, _Pat&& _Pattern) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range, _Pat&& _Pattern)
                 noexcept(noexcept(split_view(_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern))))
                 requires requires { split_view(static_cast<_Rng&&>(_Range), static_cast<_Pat&&>(_Pattern)); }
             {
@@ -4221,7 +4218,7 @@ namespace ranges {
 
             template <class _Delim>
                 requires constructible_from<decay_t<_Delim>, _Delim>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Delim&& _Delimiter) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Delim&& _Delimiter)
                 noexcept(is_nothrow_constructible_v<decay_t<_Delim>, _Delim>) {
                 return _Range_closure<_Split_fn, decay_t<_Delim>>{_STD forward<_Delim>(_Delimiter)};
             }
@@ -4257,8 +4254,8 @@ namespace ranges {
         public:
             template <class _It>
                 requires (input_or_output_iterator<decay_t<_It>> && _Choice<_It>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_It&& _First,
-                const iter_difference_t<decay_t<_It>> _Count) _CONST_CALL_OPERATOR noexcept(_Choice<_It>._No_throw) {
+            _NODISCARD static constexpr auto operator()(_It&& _First, const iter_difference_t<decay_t<_It>> _Count)
+                noexcept(_Choice<_It>._No_throw) {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _STL_VERIFY(_Count >= 0, "The size passed to views::counted must be non-negative");
 #endif
@@ -4390,8 +4387,7 @@ namespace ranges {
         public:
             template <viewable_range _Rng>
                 requires (_Choice<_Rng>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
-                noexcept(_Choice<_Rng>._No_throw) {
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range) noexcept(_Choice<_Rng>._No_throw) {
                 constexpr _St _Strat = _Choice<_Rng>._Strategy;
 
                 if constexpr (_Strat == _St::_All) {
@@ -4399,7 +4395,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Common) {
                     return common_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -4545,8 +4541,7 @@ namespace ranges {
         public:
             template <viewable_range _Rng>
                 requires (_Choice<_Rng>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
-                noexcept(_Choice<_Rng>._No_throw) {
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range) noexcept(_Choice<_Rng>._No_throw) {
                 constexpr _St _Strat = _Choice<_Rng>._Strategy;
 
                 if constexpr (_Strat == _St::_Base) {
@@ -4558,7 +4553,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Reverse) {
                     return reverse_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -4682,8 +4677,7 @@ namespace ranges {
         public:
             template <viewable_range _Rng>
                 requires (_Choice<_Rng>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
-                noexcept(_Choice<_Rng>._No_throw) {
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range) noexcept(_Choice<_Rng>._No_throw) {
                 using _Ty            = remove_cvref_t<_Rng>;
                 constexpr _St _Strat = _Choice<_Rng>._Strategy;
 
@@ -4700,7 +4694,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_As_const) {
                     return as_const_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -4712,7 +4706,9 @@ namespace ranges {
     template <class _Tuple, size_t _Index>
     concept _Has_tuple_element =
 #if _HAS_CXX23
-        _Tuple_like<_Tuple> && _Index < tuple_size_v<_Tuple>;
+        _Tuple_like<_Tuple> && _Index < tuple_size_v<_Tuple> && requires(_Tuple __t) {
+            { _STD get<_Index>(__t) } -> convertible_to<const tuple_element_t<_Index, _Tuple>&>;
+        };
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
         requires(_Tuple __t) {
             typename tuple_size<_Tuple>::type;
@@ -4791,7 +4787,7 @@ namespace ranges {
             }
 
             _NODISCARD constexpr decltype(auto) operator*() const
-                noexcept(is_nothrow_move_constructible_v<tuple_element_t<_Index, range_reference_t<_Base>>> //
+                noexcept(is_nothrow_move_constructible_v<tuple_element_t<_Index, range_reference_t<_Base>>>
                          && noexcept(_STD get<_Index>(*_Current))) /* strengthened */ {
                 using _ElemTy = remove_cv_t<tuple_element_t<_Index, range_reference_t<_Base>>>;
                 return static_cast<_ElemTy>(_STD get<_Index>(*_Current));
@@ -4874,7 +4870,7 @@ namespace ranges {
             }
 
             _NODISCARD constexpr decltype(auto) operator[](const difference_type _Idx) const
-                noexcept(is_nothrow_move_constructible_v<tuple_element_t<_Index, range_reference_t<_Base>>> //
+                noexcept(is_nothrow_move_constructible_v<tuple_element_t<_Index, range_reference_t<_Base>>>
                          && noexcept(_STD get<_Index>(*(_Current + _Idx)))) /* strengthened */
                 requires random_access_range<_Base>
             {
@@ -5012,17 +5008,19 @@ namespace ranges {
                 return _Get_current(_Left) == _Right._Last;
             }
 
+            // typename is a workaround for VSO-2680018 (EDG)
             template <bool _OtherConst>
                 requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
-            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
+            _NODISCARD friend constexpr typename _Iterator<_OtherConst>::difference_type operator-(
                 const _Iterator<_OtherConst>& _Left, const _Sentinel& _Right)
                 noexcept(noexcept(_Get_current(_Left) - _Right._Last)) /* strengthened */ {
                 return _Get_current(_Left) - _Right._Last;
             }
 
+            // typename is a workaround for VSO-2680018 (EDG)
             template <bool _OtherConst>
                 requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
-            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
+            _NODISCARD friend constexpr typename _Iterator<_OtherConst>::difference_type operator-(
                 const _Sentinel& _Left, const _Iterator<_OtherConst>& _Right)
                 noexcept(noexcept(_Left._Last - _Get_current(_Right))) /* strengthened */ {
                 return _Left._Last - _Get_current(_Right);
@@ -5114,10 +5112,9 @@ namespace ranges {
 
     namespace views {
         template <size_t _Index>
-        class _Elements_fn : public _Pipe::_Base<_Elements_fn<_Index>> {
-        public:
+        struct _Elements_fn : public _Pipe::_Base<_Elements_fn<_Index>> {
             template <viewable_range _Rng>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range)
                 noexcept(noexcept(elements_view<views::all_t<_Rng>, _Index>{_STD forward<_Rng>(_Range)}))
                 requires requires { elements_view<views::all_t<_Rng>, _Index>{static_cast<_Rng&&>(_Range)}; }
             {
@@ -5161,8 +5158,8 @@ namespace ranges {
         public:
             using iterator_category = input_iterator_tag;
             using iterator_concept  = conditional_t<random_access_range<_Base_t>, random_access_iterator_tag,
-                 conditional_t<bidirectional_range<_Base_t>, bidirectional_iterator_tag,
-                     conditional_t<forward_range<_Base_t>, forward_iterator_tag, input_iterator_tag>>>;
+                conditional_t<bidirectional_range<_Base_t>, bidirectional_iterator_tag,
+                    conditional_t<forward_range<_Base_t>, forward_iterator_tag, input_iterator_tag>>>;
             using difference_type   = range_difference_t<_Base_t>;
             using value_type        = tuple<difference_type, range_value_t<_Base_t>>;
 
@@ -5326,7 +5323,7 @@ namespace ranges {
 
             template <bool _OtherConst>
                 requires sized_sentinel_for<_Base_sentinel, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
-            _NODISCARD constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> _Distance_from(
+            _NODISCARD constexpr _Iterator<_OtherConst>::difference_type _Distance_from(
                 const _Iterator<_OtherConst>& _It) const noexcept(noexcept(_End - _It._Current)) {
                 return _End - _It._Current;
             }
@@ -5351,32 +5348,33 @@ namespace ranges {
                 return _Se._Equal(_It);
             }
 
+            // typename is a workaround for VSO-2680018 (EDG)
             template <bool _OtherConst>
                 requires sized_sentinel_for<_Base_sentinel, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
-            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
-                const _Iterator<_OtherConst>& _It, const _Sentinel& _Se) //
+            _NODISCARD friend constexpr typename _Iterator<_OtherConst>::difference_type operator-(
+                const _Iterator<_OtherConst>& _It, const _Sentinel& _Se)
                 noexcept(noexcept(_Se._Distance_from(_It))) /* strengthened */ {
                 return -_Se._Distance_from(_It);
             }
 
+            // typename is a workaround for VSO-2680018 (EDG)
             template <bool _OtherConst>
                 requires sized_sentinel_for<_Base_sentinel, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
-            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
-                const _Sentinel& _Se, const _Iterator<_OtherConst>& _It) //
-                noexcept(noexcept(_Se._Distance_from(_It))) /* strengthened */ {
+            _NODISCARD friend constexpr typename _Iterator<_OtherConst>::difference_type operator-(const _Sentinel& _Se,
+                const _Iterator<_OtherConst>& _It) noexcept(noexcept(_Se._Distance_from(_It))) /* strengthened */ {
                 return _Se._Distance_from(_It);
             }
         };
 
         template <class _Rng>
-        static constexpr bool _Is_end_nothrow_v = is_nothrow_move_constructible_v<sentinel_t<_Rng>> //
-                                               && noexcept(_RANGES end(_STD declval<_Rng&>()));
+        static constexpr bool _Is_end_nothrow_v =
+            is_nothrow_move_constructible_v<sentinel_t<_Rng>> && noexcept(_RANGES end(_STD declval<_Rng&>()));
 
         template <class _Rng>
             requires common_range<_Rng> && sized_range<_Rng>
-        static constexpr bool _Is_end_nothrow_v<_Rng> = is_nothrow_move_constructible_v<sentinel_t<_Rng>> //
-                                                     && noexcept(_RANGES end(_STD declval<_Rng&>())) //
-                                                     && noexcept(_RANGES distance(_STD declval<_Rng&>()));
+        static constexpr bool _Is_end_nothrow_v<_Rng> =
+            is_nothrow_move_constructible_v<sentinel_t<_Rng>> && noexcept(_RANGES end(_STD declval<_Rng&>()))
+            && noexcept(_RANGES distance(_STD declval<_Rng&>()));
 
     public:
         constexpr enumerate_view()
@@ -5456,10 +5454,9 @@ namespace ranges {
     constexpr auto _Compile_time_max_size<const enumerate_view<_Rng>> = _Compile_time_max_size<const _Rng>;
 
     namespace views {
-        class _Enumerate_fn : public _Pipe::_Base<_Enumerate_fn> {
-        public:
+        struct _Enumerate_fn : public _Pipe::_Base<_Enumerate_fn> {
             template <viewable_range _Rng>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range)
                 noexcept(noexcept(enumerate_view<views::all_t<_Rng>>{_STD forward<_Rng>(_Range)}))
                 requires requires { enumerate_view<views::all_t<_Rng>>{_STD forward<_Rng>(_Range)}; }
             {
@@ -5470,13 +5467,21 @@ namespace ranges {
         _EXPORT_STD inline constexpr _Enumerate_fn enumerate;
     } // namespace views
 
-    template <class _Size>
-    _NODISCARD constexpr _Size _Div_ceil(const _Size _Num, const _Size _Denom) noexcept {
-        _Size _Result = _Num / _Denom;
-        if (_Num % _Denom != 0) {
-            ++_Result;
+    template <class _Int>
+    _NODISCARD constexpr _Int _Div_ceil(const _Int _Num, const _Int _Denom) noexcept {
+        _STL_INTERNAL_STATIC_ASSERT(_Signed_integer_like<_Int>);
+        _STL_INTERNAL_CHECK(_Num >= 0);
+        _STL_INTERNAL_CHECK(_Denom > 0);
+
+        if constexpr (same_as<_Int, _Signed128>) {
+            return _Int::_Div_ceil(_Num, _Denom);
+        } else {
+            _Int _Result = _Num / _Denom;
+            if (_Num % _Denom != 0) {
+                ++_Result;
+            }
+            return _Result;
         }
-        return _Result;
     }
 
     _EXPORT_STD template <view _Vw>
@@ -5501,7 +5506,7 @@ namespace ranges {
 
             _NODISCARD constexpr range_difference_t<_Vw> _Get_size() const
                 noexcept(noexcept(_RANGES end(_Parent->_Range) - *_Parent->_Current)) {
-                return (_STD min)(_Parent->_Remainder, _RANGES end(_Parent->_Range) - *_Parent->_Current);
+                return (_STD min) (_Parent->_Remainder, _RANGES end(_Parent->_Range) - *_Parent->_Current);
             }
 
             _NODISCARD constexpr const iterator_t<_Vw>& _Get_current() const noexcept {
@@ -5636,7 +5641,7 @@ namespace ranges {
                     requires sized_sentinel_for<sentinel_t<_Vw>, iterator_t<_Vw>>
                 {
                     return _To_unsigned_like(
-                        (_STD min)(_Parent->_Remainder, _RANGES end(_Parent->_Range) - *_Parent->_Current));
+                        (_STD min) (_Parent->_Remainder, _RANGES end(_Parent->_Range) - *_Parent->_Current));
                 }
             };
 
@@ -5752,9 +5757,8 @@ namespace ranges {
             range_difference_t<_Base> _Count   = 0;
             range_difference_t<_Base> _Missing = 0;
 
-            constexpr _Iterator(_ParentTy* _Parent, _Base_iterator _Current_,
-                range_difference_t<_Base> _Missing_ = 0) //
-                noexcept(noexcept(_RANGES end(_Parent->_Range)) && is_nothrow_move_constructible_v<_Base_iterator> //
+            constexpr _Iterator(_ParentTy* _Parent, _Base_iterator _Current_, range_difference_t<_Base> _Missing_ = 0)
+                noexcept(noexcept(_RANGES end(_Parent->_Range)) && is_nothrow_move_constructible_v<_Base_iterator>
                          && is_nothrow_move_constructible_v<_Base_sentinel>) /* strengthened */
                 : _Current(_STD move(_Current_)), _End(_RANGES end(_Parent->_Range)), _Count(_Parent->_Count),
                   _Missing(_Missing_) {}
@@ -5762,7 +5766,7 @@ namespace ranges {
         public:
             using iterator_category = input_iterator_tag;
             using iterator_concept  = conditional_t<random_access_range<_Base>, random_access_iterator_tag,
-                 conditional_t<bidirectional_range<_Base>, bidirectional_iterator_tag, forward_iterator_tag>>;
+                conditional_t<bidirectional_range<_Base>, bidirectional_iterator_tag, forward_iterator_tag>>;
             using value_type        = decltype(views::take(subrange(_Current, _End), _Count));
             using difference_type   = range_difference_t<_Base>;
 
@@ -6058,8 +6062,7 @@ namespace ranges {
     namespace views {
         struct _Chunk_fn {
             template <viewable_range _Rng>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
-                _Rng&& _Range, const range_difference_t<_Rng> _Count) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range, const range_difference_t<_Rng> _Count)
                 noexcept(noexcept(chunk_view(_STD forward<_Rng>(_Range), _Count)))
                 requires requires { chunk_view(_STD forward<_Rng>(_Range), _Count); }
             {
@@ -6068,7 +6071,7 @@ namespace ranges {
 
             template <class _Ty>
                 requires constructible_from<decay_t<_Ty>, _Ty>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Count) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Ty&& _Count)
                 noexcept(is_nothrow_constructible_v<decay_t<_Ty>, _Ty>) {
                 return _Range_closure<_Chunk_fn, decay_t<_Ty>>{_STD forward<_Ty>(_Count)};
             }
@@ -6129,7 +6132,7 @@ namespace ranges {
                 requires (!_Slide_caches_first<_Base>)
                 : _Current(_STD move(_Current_)), _Count(_Count_) {}
 
-            constexpr _Iterator(_Base_iterator _Current_, _Base_iterator _Last_, range_difference_t<_Base> _Count_) //
+            constexpr _Iterator(_Base_iterator _Current_, _Base_iterator _Last_, range_difference_t<_Base> _Count_)
                 noexcept(is_nothrow_move_constructible_v<_Base_iterator>) /* strengthened */
                 requires _Slide_caches_first<_Base>
                 : _Iter_base<_Base>(_STD move(_Last_)), _Current(_STD move(_Current_)), _Count(_Count_) {}
@@ -6139,7 +6142,7 @@ namespace ranges {
             using difference_type   = range_difference_t<_Base>;
             using iterator_category = input_iterator_tag;
             using iterator_concept  = conditional_t<random_access_range<_Base>, random_access_iterator_tag,
-                 conditional_t<bidirectional_range<_Base>, bidirectional_iterator_tag, forward_iterator_tag>>;
+                conditional_t<bidirectional_range<_Base>, bidirectional_iterator_tag, forward_iterator_tag>>;
 
             _Iterator() = default;
 
@@ -6162,8 +6165,8 @@ namespace ranges {
                 return *this;
             }
 
-            constexpr _Iterator operator++(int) noexcept(is_nothrow_copy_constructible_v<_Base_iterator> //
-                                                         && noexcept(++_Current)) /* strengthened */ {
+            constexpr _Iterator operator++(int)
+                noexcept(is_nothrow_copy_constructible_v<_Base_iterator> && noexcept(++_Current)) /* strengthened */ {
                 auto _Tmp = *this;
                 ++*this;
                 return _Tmp;
@@ -6180,8 +6183,8 @@ namespace ranges {
                 return *this;
             }
 
-            constexpr _Iterator operator--(int) noexcept(is_nothrow_copy_constructible_v<_Base_iterator> //
-                                                         && noexcept(--_Current)) /* strengthened */
+            constexpr _Iterator operator--(int)
+                noexcept(is_nothrow_copy_constructible_v<_Base_iterator> && noexcept(--_Current)) /* strengthened */
                 requires bidirectional_range<_Base>
             {
                 auto _Tmp = *this;
@@ -6456,8 +6459,7 @@ namespace ranges {
     namespace views {
         struct _Slide_fn {
             template <viewable_range _Rng>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
-                _Rng&& _Range, const range_difference_t<_Rng> _Count) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range, const range_difference_t<_Rng> _Count)
                 noexcept(noexcept(slide_view(_STD forward<_Rng>(_Range), _Count)))
                 requires requires { slide_view(_STD forward<_Rng>(_Range), _Count); }
             {
@@ -6466,7 +6468,7 @@ namespace ranges {
 
             template <class _Ty>
                 requires constructible_from<decay_t<_Ty>, _Ty>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Count) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Ty&& _Count)
                 noexcept(is_nothrow_constructible_v<decay_t<_Ty>, _Ty>) {
                 return _Range_closure<_Slide_fn, decay_t<_Ty>>{_STD forward<_Ty>(_Count)};
             }
@@ -6657,7 +6659,7 @@ namespace ranges {
     namespace views {
         struct _Chunk_by_fn {
             template <viewable_range _Rng, class _Pr>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range, _Pr&& _Pred) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range, _Pr&& _Pred)
                 noexcept(noexcept(chunk_by_view(_STD forward<_Rng>(_Range), _STD forward<_Pr>(_Pred))))
                 requires requires { chunk_by_view(_STD forward<_Rng>(_Range), _STD forward<_Pr>(_Pred)); }
             {
@@ -6666,7 +6668,7 @@ namespace ranges {
 
             template <class _Pr>
                 requires constructible_from<decay_t<_Pr>, _Pr>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Pr&& _Pred) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Pr&& _Pred)
                 noexcept(is_nothrow_constructible_v<decay_t<_Pr>, _Pr>) {
                 return _Range_closure<_Chunk_by_fn, decay_t<_Pr>>{_STD forward<_Pr>(_Pred)};
             }
@@ -6711,8 +6713,8 @@ namespace ranges {
             range_difference_t<_Base> _Missing = 0;
 
             constexpr _Iterator(_ParentTy* _Parent, _Base_iterator _Current_,
-                range_difference_t<_Base> _Missing_ = 0) //
-                noexcept(noexcept(_RANGES end(_Parent->_Range)) && is_nothrow_move_constructible_v<_Base_iterator> //
+                range_difference_t<_Base> _Missing_ = 0)
+                noexcept(noexcept(_RANGES end(_Parent->_Range)) && is_nothrow_move_constructible_v<_Base_iterator>
                          && is_nothrow_move_constructible_v<_Base_sentinel>) // strengthened
                 : _Current(_STD move(_Current_)), _End(_RANGES end(_Parent->_Range)), _Stride(_Parent->_Stride),
                   _Missing(_Missing_) {}
@@ -6902,7 +6904,7 @@ namespace ranges {
                 return _Copy;
             }
 
-            _NODISCARD friend constexpr difference_type operator-(const _Iterator& _Left, const _Iterator& _Right) //
+            _NODISCARD friend constexpr difference_type operator-(const _Iterator& _Left, const _Iterator& _Right)
                 noexcept(noexcept(_Left._Current - _Right._Current)) // strengthened
                 requires sized_sentinel_for<_Base_iterator, _Base_iterator>
             {
@@ -6946,7 +6948,7 @@ namespace ranges {
         };
 
     public:
-        constexpr explicit stride_view(_Vw _Range_, range_difference_t<_Vw> _Stride_)
+        constexpr explicit stride_view(_Vw _Range_, const range_difference_t<_Vw> _Stride_)
             noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
             : _Range(_STD move(_Range_)), _Stride(_Stride_) {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -7049,8 +7051,7 @@ namespace ranges {
     namespace views {
         struct _Stride_fn {
             template <viewable_range _Rng>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
-                _Rng&& _Range, const range_difference_t<_Rng> _Stride) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range, const range_difference_t<_Rng> _Stride)
                 noexcept(noexcept(stride_view(_STD forward<_Rng>(_Range), _Stride)))
                 requires requires { stride_view(_STD forward<_Rng>(_Range), _Stride); }
             {
@@ -7059,7 +7060,7 @@ namespace ranges {
 
             template <class _Ty>
                 requires constructible_from<decay_t<_Ty>, _Ty>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Ty&& _Stride) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Ty&& _Stride)
                 noexcept(is_nothrow_constructible_v<decay_t<_Ty>, _Ty>) {
                 return _Range_closure<_Stride_fn, decay_t<_Ty>>{_STD forward<_Ty>(_Stride)};
             }
@@ -7116,12 +7117,12 @@ namespace ranges {
         requires (sizeof...(_LHSTupleTypes) == sizeof...(_RHSTupleTypes))
     _NODISCARD constexpr _ResultType _Zip_get_smallest_distance(
         const tuple<_LHSTupleTypes...>& _Lhs_tuple, const tuple<_RHSTupleTypes...>& _Rhs_tuple)
-        // clang-format off
         noexcept((noexcept(static_cast<_ResultType>(
-            _STD declval<const _LHSTupleTypes&>() - _STD declval<const _RHSTupleTypes&>())) && ...)) {
-        constexpr bool _Is_noexcept = (noexcept(static_cast<_ResultType>(
-            _STD declval<const _LHSTupleTypes&>() - _STD declval<const _RHSTupleTypes&>())) && ...);
-        // clang-format on
+                      _STD declval<const _LHSTupleTypes&>() - _STD declval<const _RHSTupleTypes&>()))
+                  && ...)) {
+        constexpr bool _Is_noexcept = (noexcept(static_cast<_ResultType>(_STD declval<const _LHSTupleTypes&>()
+                                                                         - _STD declval<const _RHSTupleTypes&>()))
+                                       && ...);
         const auto _Get_smallest_distance_closure = [&_Lhs_tuple,
                                                         &_Rhs_tuple]<size_t _FirstIdx /* = 0 */, size_t... _Idxs>(
                                                         index_sequence<_FirstIdx, _Idxs...>) noexcept(_Is_noexcept) {
@@ -7132,8 +7133,8 @@ namespace ranges {
             }
             const initializer_list<_ResultType> _Sizes = {
                 _First_size, (_STD get<_Idxs>(_Lhs_tuple) - _STD get<_Idxs>(_Rhs_tuple))...};
-            return _First_size < 0 ? static_cast<_ResultType>((_RANGES max)(_Sizes))
-                                   : static_cast<_ResultType>((_RANGES min)(_Sizes));
+            return _First_size < 0 ? static_cast<_ResultType>((_RANGES max) (_Sizes))
+                                   : static_cast<_ResultType>((_RANGES min) (_Sizes));
         };
 
         return _Get_smallest_distance_closure(index_sequence_for<_LHSTupleTypes...>{});
@@ -7146,7 +7147,7 @@ namespace ranges {
         noexcept((noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>()) && ...)) {
         const auto _Evaluate_equality_closure =
             [&_Lhs_tuple, &_Rhs_tuple]<size_t... _Indices>(index_sequence<_Indices...>) noexcept(
-                (noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>())&&...)) {
+                (noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>()) &&...)) {
                 return ((_STD get<_Indices>(_Lhs_tuple) == _STD get<_Indices>(_Rhs_tuple)) || ... || false);
             };
 
@@ -7211,13 +7212,12 @@ namespace ranges {
                 noexcept((noexcept(*(_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>&>()))
                           && ...)) /* strengthened */ {
                 return _Tuple_transform(
-                    [](auto& _Itr) _STATIC_LAMBDA noexcept(noexcept(*_Itr)) -> decltype(auto) { return *_Itr; },
-                    _Current);
+                    [](auto& _Itr) static noexcept(noexcept(*_Itr)) -> decltype(auto) { return *_Itr; }, _Current);
             }
 
             constexpr _Iterator& operator++() noexcept(noexcept(_Tuple_for_each(
-                [](auto& _Itr) _STATIC_LAMBDA noexcept(noexcept(++_Itr)) { ++_Itr; }, _Current))) /* strengthened */ {
-                _Tuple_for_each([](auto& _Itr) _STATIC_LAMBDA noexcept(noexcept(++_Itr)) { ++_Itr; }, _Current);
+                [](auto& _Itr) static noexcept(noexcept(++_Itr)) { ++_Itr; }, _Current))) /* strengthened */ {
+                _Tuple_for_each([](auto& _Itr) static noexcept(noexcept(++_Itr)) { ++_Itr; }, _Current);
                 return *this;
             }
 
@@ -7236,10 +7236,10 @@ namespace ranges {
             }
 
             constexpr _Iterator& operator--() noexcept(noexcept(_Tuple_for_each(
-                [](auto& _Itr) _STATIC_LAMBDA noexcept(noexcept(--_Itr)) { --_Itr; }, _Current))) // strengthened
+                [](auto& _Itr) static noexcept(noexcept(--_Itr)) { --_Itr; }, _Current))) // strengthened
                 requires _All_bidirectional<_IsConst, _ViewTypes...>
             {
-                _Tuple_for_each([](auto& _Itr) _STATIC_LAMBDA noexcept(noexcept(--_Itr)) { --_Itr; }, _Current);
+                _Tuple_for_each([](auto& _Itr) static noexcept(noexcept(--_Itr)) { --_Itr; }, _Current);
                 return *this;
             }
 
@@ -7387,6 +7387,9 @@ namespace ranges {
         private:
             friend zip_view;
 
+            template <bool _IteratorConst>
+            using _Difference_type = _Iterator<_IteratorConst>::difference_type;
+
             using _My_tuple = tuple<sentinel_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
 
             /* [[no_unique_address]] */ _My_tuple _End;
@@ -7425,22 +7428,20 @@ namespace ranges {
                 requires (sized_sentinel_for<sentinel_t<_Maybe_const<_IsConst, _ViewTypes>>,
                               iterator_t<_Maybe_const<_IteratorConst, _ViewTypes>>>
                           && ...)
-            _NODISCARD friend constexpr common_type_t<range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>
-                operator-(const _Iterator<_IteratorConst>& _Lhs, const _Sentinel& _Rhs)
-                    noexcept(noexcept(_Zip_get_smallest_distance<
-                        common_type_t<range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>>(
-                        _Get_iterator_tuple(_Lhs), _Rhs._End))) /* strengthened */ {
-                using _Difference_type = common_type_t<range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>;
-                return _Zip_get_smallest_distance<_Difference_type>(_Get_iterator_tuple(_Lhs), _Rhs._End);
+            _NODISCARD friend constexpr _Difference_type<_IteratorConst> operator-(
+                const _Iterator<_IteratorConst>& _Lhs, const _Sentinel& _Rhs)
+                noexcept(noexcept(_Zip_get_smallest_distance<_Difference_type<_IteratorConst>>(
+                    _Get_iterator_tuple(_Lhs), _Rhs._End))) /* strengthened */ {
+                return _Zip_get_smallest_distance<_Difference_type<_IteratorConst>>(
+                    _Get_iterator_tuple(_Lhs), _Rhs._End);
             }
 
             template <bool _IteratorConst>
                 requires (sized_sentinel_for<sentinel_t<_Maybe_const<_IsConst, _ViewTypes>>,
                               iterator_t<_Maybe_const<_IteratorConst, _ViewTypes>>>
                           && ...)
-            _NODISCARD friend constexpr common_type_t<range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>
-                operator-(const _Sentinel& _Lhs, const _Iterator<_IteratorConst>& _Rhs)
-                    noexcept(noexcept(-(_Rhs - _Lhs))) /* strengthened */ {
+            _NODISCARD friend constexpr _Difference_type<_IteratorConst> operator-(const _Sentinel& _Lhs,
+                const _Iterator<_IteratorConst>& _Rhs) noexcept(noexcept(-(_Rhs - _Lhs))) /* strengthened */ {
                 return -(_Rhs - _Lhs);
             }
         };
@@ -7460,9 +7461,9 @@ namespace ranges {
             }
         }
 
-        static constexpr auto _Size_closure = [](auto... _Sizes) _STATIC_LAMBDA noexcept {
+        static constexpr auto _Size_closure = [](auto... _Sizes) static noexcept {
             using _Common_unsigned_type = _Make_unsigned_like_t<common_type_t<decltype(_Sizes)...>>;
-            return (_RANGES min)({static_cast<_Common_unsigned_type>(_Sizes)...});
+            return (_RANGES min) ({static_cast<_Common_unsigned_type>(_Sizes)...});
         };
 
     public:
@@ -7534,7 +7535,7 @@ namespace ranges {
     template <class... _Rngs>
     _NODISCARD consteval auto _Zip_view_compile_time_max_size() {
         using _Size_type = common_type_t<decltype(_Compile_time_max_size<_Rngs>)...>;
-        return (_STD min)({static_cast<_Size_type>(_Compile_time_max_size<_Rngs>)...});
+        return (_STD min) ({static_cast<_Size_type>(_Compile_time_max_size<_Rngs>)...});
     }
 
     template <class... _Rngs>
@@ -7544,7 +7545,7 @@ namespace ranges {
     constexpr auto _Compile_time_max_size<const zip_view<_Rngs...>> = _Zip_view_compile_time_max_size<const _Rngs...>();
 
     namespace views {
-        struct _Zip_fn {
+        class _Zip_fn {
         private:
             template <class... _Types>
             _NODISCARD static consteval bool _Is_invocation_noexcept() {
@@ -7558,7 +7559,7 @@ namespace ranges {
 
         public:
             template <class... _Types>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Types&&... _Args) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Types&&... _Args)
                 noexcept(_Is_invocation_noexcept<_Types...>())
                 requires (sizeof...(_Types) == 0)
                       || requires { zip_view<views::all_t<_Types>...>(_STD forward<_Types>(_Args)...); }
@@ -7636,7 +7637,7 @@ namespace ranges {
         public:
             using iterator_concept = _Ziperator<_IsConst>::iterator_concept;
             using value_type       = remove_cvref_t<invoke_result_t<_Maybe_const<_IsConst, _Func>&,
-                      range_reference_t<_Maybe_const<_IsConst, _ViewTypes>>...>>;
+                range_reference_t<_Maybe_const<_IsConst, _ViewTypes>>...>>;
             using difference_type  = range_difference_t<_Base_t>;
 
             _Iterator() = default;
@@ -7660,8 +7661,8 @@ namespace ranges {
                 ++*this;
             }
 
-            constexpr _Iterator operator++(int) noexcept(is_nothrow_copy_constructible_v<_Iterator> //
-                                                         && noexcept(++*this)) // strengthened
+            constexpr _Iterator operator++(int)
+                noexcept(is_nothrow_copy_constructible_v<_Iterator> && noexcept(++*this)) // strengthened
                 requires forward_range<_Base_t>
             {
                 auto _Temp = *this;
@@ -7676,8 +7677,8 @@ namespace ranges {
                 return *this;
             }
 
-            constexpr _Iterator operator--(int) noexcept(is_nothrow_copy_constructible_v<_Iterator> //
-                                                         && noexcept(--*this)) // strengthened
+            constexpr _Iterator operator--(int)
+                noexcept(is_nothrow_copy_constructible_v<_Iterator> && noexcept(--*this)) // strengthened
                 requires bidirectional_range<_Base_t>
             {
                 auto _Temp = *this;
@@ -7771,10 +7772,6 @@ namespace ranges {
         private:
             friend zip_transform_view;
 
-            // TRANSITION, DevCom-10253131
-            template <bool _IteratorConst>
-            using _Iter_sent_difference_type = range_difference_t<_Maybe_const<_IteratorConst, _Inner_view>>;
-
             /* [[no_unique_address]] */ _Zentinel<_IsConst> _Inner;
 
             constexpr explicit _Sentinel(_Zentinel<_IsConst> _Inner_)
@@ -7802,19 +7799,21 @@ namespace ranges {
                 return _Get_iterator_inner(_Lhs) == _Rhs._Inner;
             }
 
+            // typename is a workaround for VSO-2680018 (EDG)
             template <bool _IteratorConst>
                 requires sized_sentinel_for<_Zentinel<_IsConst>, _Ziperator<_IteratorConst>>
-            _NODISCARD friend constexpr _Iter_sent_difference_type<_IteratorConst> // TRANSITION, DevCom-10253131
-                operator-(const _Iterator<_IteratorConst>& _Lhs, const _Sentinel & _Rhs)
-                    noexcept(noexcept(_Get_iterator_inner(_Lhs) - _Rhs._Inner)) /* strengthened */ {
+            _NODISCARD friend constexpr typename _Iterator<_IteratorConst>::difference_type operator-(
+                const _Iterator<_IteratorConst>& _Lhs, const _Sentinel& _Rhs)
+                noexcept(noexcept(_Get_iterator_inner(_Lhs) - _Rhs._Inner)) /* strengthened */ {
                 return _Get_iterator_inner(_Lhs) - _Rhs._Inner;
             }
 
+            // typename is a workaround for VSO-2680018 (EDG)
             template <bool _IteratorConst>
                 requires sized_sentinel_for<_Zentinel<_IsConst>, _Ziperator<_IteratorConst>>
-            _NODISCARD friend constexpr _Iter_sent_difference_type<_IteratorConst> // TRANSITION, DevCom-10253131
-                operator-(const _Sentinel & _Lhs, const _Iterator<_IteratorConst>& _Rhs)
-                    noexcept(noexcept(_Lhs._Inner - _Get_iterator_inner(_Rhs))) /* strengthened */ {
+            _NODISCARD friend constexpr typename _Iterator<_IteratorConst>::difference_type operator-(
+                const _Sentinel& _Lhs, const _Iterator<_IteratorConst>& _Rhs)
+                noexcept(noexcept(_Lhs._Inner - _Get_iterator_inner(_Rhs))) /* strengthened */ {
                 return _Lhs._Inner - _Get_iterator_inner(_Rhs);
             }
         };
@@ -7890,7 +7889,7 @@ namespace ranges {
         _Compile_time_max_size<const zip_view<_Rngs...>>;
 
     namespace views {
-        struct _Zip_transform_fn {
+        class _Zip_transform_fn {
         private:
             template <class _Func, class... _Types>
             _NODISCARD static consteval bool _Is_invocation_noexcept() {
@@ -7922,8 +7921,7 @@ namespace ranges {
         public:
             template <class _Func, class... _Types>
                 requires (_Enable_cpo<_Func, _Types...>())
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
-                _Func&& _Function, _Types&&... _Args) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Func&& _Function, _Types&&... _Args)
                 noexcept(_Is_invocation_noexcept<_Func, _Types...>()) /* strengthened */ {
                 if constexpr (sizeof...(_Types) == 0) {
                     using _Decayed_func = decay_t<_Func>;
@@ -8037,7 +8035,7 @@ namespace ranges {
         public:
             using iterator_category = input_iterator_tag;
             using iterator_concept  = conditional_t<random_access_range<_Base>, random_access_iterator_tag,
-                 conditional_t<bidirectional_range<_Base>, bidirectional_iterator_tag, forward_iterator_tag>>;
+                conditional_t<bidirectional_range<_Base>, bidirectional_iterator_tag, forward_iterator_tag>>;
             using value_type        = _Repeated_tuple<range_value_t<_Base>, _Nx>;
             using difference_type   = range_difference_t<_Base>;
 
@@ -8049,8 +8047,7 @@ namespace ranges {
                 : _Iterator(_Other, make_index_sequence<_Nx>{}) {}
 
             _NODISCARD constexpr auto operator*() const {
-                return _RANGES _Tuple_transform(
-                    [](auto& _It) _STATIC_LAMBDA -> decltype(auto) { return *_It; }, _Current);
+                return _RANGES _Tuple_transform([](auto& _It) static -> decltype(auto) { return *_It; }, _Current);
             }
 
             constexpr _Iterator& operator++() noexcept(noexcept(++_Current.front())) /* strengthened */ {
@@ -8228,7 +8225,7 @@ namespace ranges {
 
             template <bool _OtherConst>
                 requires sized_sentinel_for<_Base_sentinel, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
-            _NODISCARD constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> _Distance_from(
+            _NODISCARD constexpr _Iterator<_OtherConst>::difference_type _Distance_from(
                 const _Iterator<_OtherConst>& _It) const noexcept(noexcept(_End - _It._Current.back())) {
                 return _End - _It._Current.back();
             }
@@ -8248,19 +8245,20 @@ namespace ranges {
                 return _Se._Equal(_It);
             }
 
+            // typename is a workaround for VSO-2680018 (EDG)
             template <bool _OtherConst>
                 requires sized_sentinel_for<_Base_sentinel, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
-            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
-                const _Iterator<_OtherConst>& _It, const _Sentinel& _Se) noexcept( //
-                noexcept(_Se._Distance_from(_It))) /* strengthened */ {
+            _NODISCARD friend constexpr typename _Iterator<_OtherConst>::difference_type operator-(
+                const _Iterator<_OtherConst>& _It, const _Sentinel& _Se)
+                noexcept(noexcept(_Se._Distance_from(_It))) /* strengthened */ {
                 return -_Se._Distance_from(_It);
             }
 
+            // typename is a workaround for VSO-2680018 (EDG)
             template <bool _OtherConst>
                 requires sized_sentinel_for<_Base_sentinel, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
-            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
-                const _Sentinel& _Se, const _Iterator<_OtherConst>& _It) noexcept( //
-                noexcept(_Se._Distance_from(_It))) /* strengthened */ {
+            _NODISCARD friend constexpr typename _Iterator<_OtherConst>::difference_type operator-(const _Sentinel& _Se,
+                const _Iterator<_OtherConst>& _It) noexcept(noexcept(_Se._Distance_from(_It))) /* strengthened */ {
                 return _Se._Distance_from(_It);
             }
         };
@@ -8321,7 +8319,7 @@ namespace ranges {
             using _Size_type        = decltype(_RANGES size(_Range));
             using _Common_size_type = common_type_t<_Size_type, size_t>;
             auto _Size              = static_cast<_Common_size_type>(_RANGES size(_Range));
-            _Size -= (_STD min)(_Size, static_cast<_Common_size_type>(_Nx - 1));
+            _Size -= (_STD min) (_Size, static_cast<_Common_size_type>(_Nx - 1));
             return static_cast<_Size_type>(_Size);
         }
 
@@ -8331,7 +8329,7 @@ namespace ranges {
             using _Size_type        = decltype(_RANGES size(_Range));
             using _Common_size_type = common_type_t<_Size_type, size_t>;
             auto _Size              = static_cast<_Common_size_type>(_RANGES size(_Range));
-            _Size -= (_STD min)(_Size, static_cast<_Common_size_type>(_Nx - 1));
+            _Size -= (_STD min) (_Size, static_cast<_Common_size_type>(_Nx - 1));
             return static_cast<_Size_type>(_Size);
         }
     };
@@ -8343,7 +8341,7 @@ namespace ranges {
     _NODISCARD consteval auto _Adjacent_view_compile_time_max_size() {
         using _Size_type = common_type_t<decltype(_Compile_time_max_size<_Rng>), size_t>;
         auto _Size       = static_cast<_Size_type>(_Compile_time_max_size<_Rng>);
-        _Size -= (_STD min)(_Size, static_cast<_Size_type>(_Nx - 1));
+        _Size -= (_STD min) (_Size, static_cast<_Size_type>(_Nx - 1));
         return static_cast<_Size_type>(_Size);
     }
 
@@ -8356,10 +8354,9 @@ namespace ranges {
 
     namespace views {
         template <size_t _Nx>
-        class _Adjacent_fn : public _Pipe::_Base<_Adjacent_fn<_Nx>> {
-        public:
+        struct _Adjacent_fn : public _Pipe::_Base<_Adjacent_fn<_Nx>> {
             template <viewable_range _Rng>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range)
                 noexcept(noexcept(adjacent_view<views::all_t<_Rng>, _Nx>{_STD forward<_Rng>(_Range)}))
                 requires requires { adjacent_view<views::all_t<_Rng>, _Nx>{_STD forward<_Rng>(_Range)}; }
             {
@@ -8367,7 +8364,7 @@ namespace ranges {
             }
 
             template <viewable_range _Rng>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&&) _CONST_CALL_OPERATOR noexcept
+            _NODISCARD static constexpr auto operator()(_Rng&&) noexcept
                 requires (_Nx == 0) && forward_range<_Rng>
             {
                 return empty_view<tuple<>>{};
@@ -8436,7 +8433,7 @@ namespace ranges {
             using iterator_category = decltype(_Get_iterator_category());
             using iterator_concept  = _Inner_iterator<_Const>::iterator_concept;
             using value_type        = remove_cvref_t<
-                       _Invoke_result_with_repeated_type<_Maybe_const<_Const, _Fn>&, range_reference_t<_Base>, _Nx>>;
+                _Invoke_result_with_repeated_type<_Maybe_const<_Const, _Fn>&, range_reference_t<_Base>, _Nx>>;
             using difference_type = range_difference_t<_Base>;
 
             _Iterator() = default;
@@ -8567,7 +8564,7 @@ namespace ranges {
                 return _Iterator{*_It._Parent, _It._Inner - _Off};
             }
 
-            _NODISCARD friend constexpr difference_type operator-(const _Iterator& _Left, const _Iterator& _Right) //
+            _NODISCARD friend constexpr difference_type operator-(const _Iterator& _Left, const _Iterator& _Right)
                 noexcept(noexcept(_Left._Inner - _Right._Inner)) // strengthened
                 requires sized_sentinel_for<_Inner_iterator<_Const>, _Inner_iterator<_Const>>
             {
@@ -8593,7 +8590,7 @@ namespace ranges {
 
             template <bool _OtherConst>
                 requires sized_sentinel_for<_Inner_sentinel<_Const>, _Inner_iterator<_OtherConst>>
-            _NODISCARD constexpr range_difference_t<_Maybe_const<_OtherConst, _Inner_view>> _Distance_from(
+            _NODISCARD constexpr _Iterator<_OtherConst>::difference_type _Distance_from(
                 const _Iterator<_OtherConst>& _It) const noexcept(noexcept(_Inner - _It._Inner)) {
                 return _Inner - _It._Inner;
             }
@@ -8612,19 +8609,20 @@ namespace ranges {
                 return _Se._Equal(_It);
             }
 
+            // typename is a workaround for VSO-2680018 (EDG)
             template <bool _OtherConst>
                 requires sized_sentinel_for<_Inner_sentinel<_Const>, _Inner_iterator<_OtherConst>>
-            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Inner_view>> operator-(
-                const _Iterator<_OtherConst>& _It, const _Sentinel& _Se) noexcept( //
-                noexcept(_Se._Distance_from(_It))) /* strengthened */ {
+            _NODISCARD friend constexpr typename _Iterator<_OtherConst>::difference_type operator-(
+                const _Iterator<_OtherConst>& _It, const _Sentinel& _Se)
+                noexcept(noexcept(_Se._Distance_from(_It))) /* strengthened */ {
                 return -_Se._Distance_from(_It);
             }
 
+            // typename is a workaround for VSO-2680018 (EDG)
             template <bool _OtherConst>
                 requires sized_sentinel_for<_Inner_sentinel<_Const>, _Inner_iterator<_OtherConst>>
-            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Inner_view>> operator-(
-                const _Sentinel& _Se, const _Iterator<_OtherConst>& _It) noexcept( //
-                noexcept(_Se._Distance_from(_It))) /* strengthened */ {
+            _NODISCARD friend constexpr typename _Iterator<_OtherConst>::difference_type operator-(const _Sentinel& _Se,
+                const _Iterator<_OtherConst>& _It) noexcept(noexcept(_Se._Distance_from(_It))) /* strengthened */ {
                 return _Se._Distance_from(_It);
             }
         };
@@ -8699,10 +8697,9 @@ namespace ranges {
 
     namespace views {
         template <size_t _Nx>
-        class _Adjacent_transform_fn {
-        public:
+        struct _Adjacent_transform_fn {
             template <viewable_range _Rng, class _Fn>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&&, _Fn&& _Func) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&&, _Fn&& _Func)
                 noexcept(noexcept(views::zip_transform(_STD forward<_Fn>(_Func))))
                 requires (_Nx == 0)
                       && forward_range<_Rng> && requires { views::zip_transform(_STD forward<_Fn>(_Func)); }
@@ -8711,7 +8708,7 @@ namespace ranges {
             }
 
             template <viewable_range _Rng, class _Fn>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range, _Fn&& _Func) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range, _Fn&& _Func)
                 noexcept(noexcept(adjacent_transform_view<views::all_t<_Rng>, decay_t<_Fn>, _Nx>(
                     _STD forward<_Rng>(_Range), _STD forward<_Fn>(_Func))))
                 requires requires {
@@ -8725,7 +8722,7 @@ namespace ranges {
 
             template <class _Fn>
                 requires constructible_from<decay_t<_Fn>, _Fn>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Fn&& _Func) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Fn&& _Func)
                 noexcept(is_nothrow_constructible_v<decay_t<_Fn>, _Fn>) {
                 return _Range_closure<_Adjacent_transform_fn, decay_t<_Fn>>{_STD forward<_Fn>(_Func)};
             }
@@ -8818,6 +8815,21 @@ namespace ranges {
 
         template <bool _Const>
         class _Iterator {
+        public:
+            using iterator_category = input_iterator_tag;
+
+            using iterator_concept = conditional_t<_Cartesian_product_is_random_access<_Const, _First, _Rest...>,
+                random_access_iterator_tag,
+                conditional_t<_Cartesian_product_is_bidirectional<_Const, _First, _Rest...>, bidirectional_iterator_tag,
+                    conditional_t<forward_range<_Maybe_const<_Const, _First>>, forward_iterator_tag,
+                        input_iterator_tag>>>;
+
+            using value_type =
+                tuple<range_value_t<_Maybe_const<_Const, _First>>, range_value_t<_Maybe_const<_Const, _Rest>>...>;
+            using reference       = tuple<range_reference_t<_Maybe_const<_Const, _First>>,
+                range_reference_t<_Maybe_const<_Const, _Rest>>...>;
+            using difference_type = _Difference_type<_Const>;
+
         private:
             friend cartesian_product_view;
             using _Parent_t = _Maybe_const<_Const, cartesian_product_view>;
@@ -8858,7 +8870,7 @@ namespace ranges {
             }
 
             template <size_t _Index = sizeof...(_Rest)>
-            constexpr void _Advance(const _Difference_type<_Const> _Off) {
+            constexpr void _Advance(const difference_type _Off) {
                 if (_Off == 0) {
                     return;
                 }
@@ -8866,14 +8878,13 @@ namespace ranges {
                 auto& _Range = _STD get<_Index>(_Parent->_Bases);
                 auto& _It    = _STD get<_Index>(_Current);
                 using _Iter  = remove_reference_t<decltype(_It)>;
-                using _Diff  = _Difference_type<_Const>;
 
                 if constexpr (_Index > 0) {
-                    const auto _Size       = static_cast<_Diff>(_RANGES ssize(_Range));
+                    const auto _Size       = static_cast<difference_type>(_RANGES ssize(_Range));
                     const auto _Begin      = _RANGES begin(_Range);
-                    const auto _It_off     = static_cast<_Diff>(_It - _Begin);
-                    const auto _It_new_off = static_cast<_Diff>((_It_off + _Off) % _Size);
-                    const auto _Next_off   = static_cast<_Diff>((_It_off + _Off) / _Size);
+                    const auto _It_off     = static_cast<difference_type>(_It - _Begin);
+                    const auto _It_new_off = static_cast<difference_type>((_It_off + _Off) % _Size);
+                    const auto _Next_off   = static_cast<difference_type>((_It_off + _Off) / _Size);
                     if (_It_new_off < 0) {
                         _It = _Begin + static_cast<iter_difference_t<_Iter>>(_It_new_off + _Size);
                         _Advance<_Index - 1>(_Next_off - 1);
@@ -8883,11 +8894,11 @@ namespace ranges {
                     }
                 } else {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                    const auto _It_off = static_cast<_Diff>(_It - _RANGES begin(_Range));
+                    const auto _It_off = static_cast<difference_type>(_It - _RANGES begin(_Range));
                     _STL_VERIFY(_It_off + _Off >= 0, "Cannot advance cartesian_product_view iterator before begin "
                                                      "(N4950 [range.cartesian.iterator]/19).");
                     if constexpr (sized_range<decltype(_Range)>) {
-                        const auto _Size = static_cast<_Diff>(_RANGES ssize(_Range));
+                        const auto _Size = static_cast<difference_type>(_RANGES ssize(_Range));
                         _STL_VERIFY(_It_off + _Off < _Size
                                         || (_It_off + _Off == _Size
                                             && _Entire_tail_at_begin(make_index_sequence<sizeof...(_Rest)>{})),
@@ -8912,13 +8923,11 @@ namespace ranges {
             }
 
             template <size_t _Index = sizeof...(_Rest), class _Tuple>
-            _NODISCARD constexpr _Difference_type<_Const> _Distance_from(const _Tuple& _Tpl) const {
-                const auto _Diff =
-                    static_cast<_Difference_type<_Const>>(_STD get<_Index>(_Current) - _STD get<_Index>(_Tpl));
+            _NODISCARD constexpr difference_type _Distance_from(const _Tuple& _Tpl) const {
+                const auto _Diff = static_cast<difference_type>(_STD get<_Index>(_Current) - _STD get<_Index>(_Tpl));
                 if constexpr (_Index > 0) {
-                    _Difference_type<_Const> _Result{1};
-                    const auto _Size =
-                        static_cast<_Difference_type<_Const>>(_RANGES size(_STD get<_Index>(_Parent->_Bases)));
+                    difference_type _Result{1};
+                    const auto _Size = static_cast<difference_type>(_RANGES size(_STD get<_Index>(_Parent->_Bases)));
                     [[maybe_unused]] const bool _Overflow =
                         _Mul_overflow(_Size, _Distance_from<_Index - 1>(_Tpl), _Result)
                         || _Add_overflow(_Result, _Diff, _Result);
@@ -8953,20 +8962,6 @@ namespace ranges {
                 : _Parent(_STD addressof(_Parent_)), _Current(_STD move(_Current_)) {}
 
         public:
-            using iterator_category = input_iterator_tag;
-
-            using iterator_concept = conditional_t<_Cartesian_product_is_random_access<_Const, _First, _Rest...>,
-                random_access_iterator_tag,
-                conditional_t<_Cartesian_product_is_bidirectional<_Const, _First, _Rest...>, bidirectional_iterator_tag,
-                    conditional_t<forward_range<_Maybe_const<_Const, _First>>, forward_iterator_tag,
-                        input_iterator_tag>>>;
-
-            using value_type =
-                tuple<range_value_t<_Maybe_const<_Const, _First>>, range_value_t<_Maybe_const<_Const, _Rest>>...>;
-            using reference       = tuple<range_reference_t<_Maybe_const<_Const, _First>>,
-                      range_reference_t<_Maybe_const<_Const, _Rest>>...>;
-            using difference_type = _Difference_type<_Const>;
-
             _Iterator() = default;
 
             constexpr _Iterator(_Iterator<!_Const> _It)
@@ -8976,8 +8971,7 @@ namespace ranges {
                 : _Parent(_It._Parent), _Current(_STD move(_It._Current)) {}
 
             _NODISCARD constexpr auto operator*() const {
-                return _RANGES _Tuple_transform(
-                    [](auto& _It) _STATIC_LAMBDA -> decltype(auto) { return *_It; }, _Current);
+                return _RANGES _Tuple_transform([](auto& _It) static -> decltype(auto) { return *_It; }, _Current);
             }
 
             constexpr _Iterator& operator++() {
@@ -9241,14 +9235,13 @@ namespace ranges {
         _Cartesian_product_view_compile_time_max_size<const _Rngs...>();
 
     namespace views {
-        class _Cartesian_product_fn {
-        public:
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()() _CONST_CALL_OPERATOR noexcept {
+        struct _Cartesian_product_fn {
+            _NODISCARD static constexpr auto operator()() noexcept {
                 return views::single(tuple{});
             }
 
             template <class... _Rngs>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rngs&&... _Ranges) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rngs&&... _Ranges)
                 noexcept(noexcept(cartesian_product_view<views::all_t<_Rngs>...>{_STD forward<_Rngs>(_Ranges)...}))
                 requires requires { cartesian_product_view<views::all_t<_Rngs>...>{_STD forward<_Rngs>(_Ranges)...}; }
             {
@@ -9266,6 +9259,7 @@ _EXPORT_STD namespace views = ranges::views;
 _STD_END
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("msvc")
 
 #pragma pop_macro("new")

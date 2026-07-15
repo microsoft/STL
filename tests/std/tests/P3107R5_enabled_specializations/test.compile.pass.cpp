@@ -3,9 +3,13 @@
 
 #include <chrono>
 #include <cstddef>
+#include <deque>
 #include <format>
+#include <functional>
 #include <list>
+#include <queue>
 #include <ranges>
+#include <stack>
 #include <stacktrace>
 #include <string>
 #include <string_view>
@@ -121,12 +125,29 @@ static_assert(enable_nonlocking_formatter_optimization<long double>);
 static_assert(enable_nonlocking_formatter_optimization<nullptr_t>);
 static_assert(enable_nonlocking_formatter_optimization<void*>);
 static_assert(enable_nonlocking_formatter_optimization<const void*>);
-static_assert(enable_nonlocking_formatter_optimization<pair<int, int>>);
-static_assert(!enable_nonlocking_formatter_optimization<pair<unoptimized, int>>);
-static_assert(!enable_nonlocking_formatter_optimization<pair<int, unoptimized>>);
-static_assert(enable_nonlocking_formatter_optimization<tuple<int, int>>);
-static_assert(!enable_nonlocking_formatter_optimization<tuple<unoptimized, int>>);
-static_assert(!enable_nonlocking_formatter_optimization<tuple<int, unoptimized>>);
+
+// Extended to test LWG-4399 "enable_nonlocking_formatter_optimization for pair and tuple needs remove_cvref_t"
+template <template <class, class> class PairOrTuple, class T, class U, bool Expected>
+constexpr void test_lwg_4399_impl() {
+    static_assert(enable_nonlocking_formatter_optimization<PairOrTuple<T, U>> == Expected);
+    static_assert(enable_nonlocking_formatter_optimization<PairOrTuple<T&, U>> == Expected);
+    static_assert(enable_nonlocking_formatter_optimization<PairOrTuple<T, U&>> == Expected);
+    static_assert(enable_nonlocking_formatter_optimization<PairOrTuple<const T, U>> == Expected);
+    static_assert(enable_nonlocking_formatter_optimization<PairOrTuple<T, const U>> == Expected);
+    static_assert(enable_nonlocking_formatter_optimization<PairOrTuple<const T&, U>> == Expected);
+    static_assert(enable_nonlocking_formatter_optimization<PairOrTuple<T, const U&>> == Expected);
+}
+
+template <class T, class U, bool Expected>
+constexpr bool test_lwg_4399() {
+    test_lwg_4399_impl<pair, T, U, Expected>();
+    test_lwg_4399_impl<tuple, T, U, Expected>();
+    return true;
+}
+
+static_assert(test_lwg_4399<int, int, true>());
+static_assert(test_lwg_4399<unoptimized, int, false>());
+static_assert(test_lwg_4399<int, unoptimized, false>());
 
 // Validate that various ranges are unoptimized
 static_assert(!enable_nonlocking_formatter_optimization<list<int>>);
@@ -141,6 +162,18 @@ static_assert(!enable_nonlocking_formatter_optimization<vector<unoptimized>>);
 static_assert(!enable_nonlocking_formatter_optimization<vector<unoptimized, myalloc<unoptimized>>>);
 using R = decltype(vector<int>{} | views::take(3));
 static_assert(!enable_nonlocking_formatter_optimization<R>);
+
+// <queue> =====================================================================
+static_assert(!enable_nonlocking_formatter_optimization<queue<int>>);
+static_assert(!enable_nonlocking_formatter_optimization<queue<int, list<int>>>);
+static_assert(!enable_nonlocking_formatter_optimization<priority_queue<int>>);
+static_assert(!enable_nonlocking_formatter_optimization<priority_queue<int, deque<int>>>);
+static_assert(!enable_nonlocking_formatter_optimization<priority_queue<int, vector<int>, greater<int>>>);
+static_assert(!enable_nonlocking_formatter_optimization<priority_queue<int, deque<int>, greater<>>>);
+
+// <stack> =====================================================================
+static_assert(!enable_nonlocking_formatter_optimization<stack<int>>);
+static_assert(!enable_nonlocking_formatter_optimization<stack<int, vector<int>>>);
 
 // <stacktrace> ================================================================
 static_assert(enable_nonlocking_formatter_optimization<stacktrace_entry>);

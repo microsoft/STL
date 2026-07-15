@@ -621,8 +621,7 @@ namespace ranges {
         public:
             template <viewable_range _Rng>
                 requires (_Choice<_Rng>._Strategy != _St::_None)
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range) _CONST_CALL_OPERATOR
-                noexcept(_Choice<_Rng>._No_throw) {
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range) noexcept(_Choice<_Rng>._No_throw) {
                 constexpr _St _Strat = _Choice<_Rng>._Strategy;
 
                 if constexpr (_Strat == _St::_View) {
@@ -632,7 +631,7 @@ namespace ranges {
                 } else if constexpr (_Strat == _St::_Own) {
                     return owning_view{_STD forward<_Rng>(_Range)};
                 } else {
-                    _STL_INTERNAL_STATIC_ASSERT(false); // unexpected strategy
+                    static_assert(false); // unexpected strategy
                 }
             }
         };
@@ -1046,7 +1045,7 @@ namespace ranges {
     namespace views {
         struct _Transform_fn {
             template <viewable_range _Rng, class _Fn>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Rng&& _Range, _Fn _Fun) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Rng&& _Range, _Fn _Fun)
                 noexcept(noexcept(transform_view(_STD forward<_Rng>(_Range), _STD move(_Fun))))
                 requires requires { transform_view(static_cast<_Rng&&>(_Range), _STD move(_Fun)); }
             {
@@ -1055,7 +1054,7 @@ namespace ranges {
 
             template <class _Fn>
                 requires constructible_from<decay_t<_Fn>, _Fn>
-            _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(_Fn&& _Fun) _CONST_CALL_OPERATOR
+            _NODISCARD static constexpr auto operator()(_Fn&& _Fun)
                 noexcept(is_nothrow_constructible_v<decay_t<_Fn>, _Fn>) {
                 return _Range_closure<_Transform_fn, decay_t<_Fn>>{_STD forward<_Fn>(_Fun)};
             }
@@ -1106,9 +1105,10 @@ namespace ranges {
     _EXPORT_STD template <class _Container, input_range _Rng, class... _Types>
         requires (!view<_Container>)
     _NODISCARD constexpr _Container to(_Rng&& _Range, _Types&&... _Args) {
-        static_assert(!is_const_v<_Container>, "C must not be const. ([range.utility.conv.to])");
-        static_assert(!is_volatile_v<_Container>, "C must not be volatile. ([range.utility.conv.to])");
-        static_assert(is_class_v<_Container>, "C must be a class type. ([range.utility.conv.to])");
+        static_assert(!is_const_v<_Container>, "C must not be const. (N5014 [range.utility.conv.to]/1)");
+        static_assert(!is_volatile_v<_Container>, "C must not be volatile. (N5014 [range.utility.conv.to]/1)");
+        static_assert(is_class_v<_Container> || is_union_v<_Container>,
+            "C must be a class type. (N5014 [range.utility.conv.to]/1)");
         if constexpr (_Ref_converts<_Rng, _Container>) {
             if constexpr (constructible_from<_Container, _Rng, _Types...>) {
                 return _Container(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
@@ -1142,10 +1142,10 @@ namespace ranges {
             } else {
                 static_assert(false, "ranges::to requires the result to be constructible from the source range, either "
                                      "by using a suitable constructor, or by inserting each element of the range into "
-                                     "the default-constructed object. (N4981 [range.utility.conv.to]/2.1.5)");
+                                     "the default-constructed object. (N5014 [range.utility.conv.to]/2.1.5)");
             }
         } else if constexpr (input_range<range_reference_t<_Rng>>) {
-            const auto _Xform = [](auto&& _Elem) _STATIC_LAMBDA {
+            const auto _Xform = [](auto&& _Elem) static {
                 return _RANGES to<range_value_t<_Container>>(_STD forward<decltype(_Elem)>(_Elem));
             };
             return _RANGES to<_Container>(views::transform(ref_view{_Range}, _Xform), _STD forward<_Types>(_Args)...);
@@ -1153,7 +1153,7 @@ namespace ranges {
             static_assert(false,
                 "ranges::to requires the elements of the source range to be either implicitly convertible to the "
                 "elements of the destination container, or be ranges themselves for ranges::to to be applied "
-                "recursively. (N4981 [range.utility.conv.to]/2.3)");
+                "recursively. (N5014 [range.utility.conv.to]/2.3)");
         }
     }
 
@@ -1161,12 +1161,11 @@ namespace ranges {
     struct _To_class_fn {
         _STL_INTERNAL_STATIC_ASSERT(!is_const_v<_Container>);
         _STL_INTERNAL_STATIC_ASSERT(!is_volatile_v<_Container>);
-        _STL_INTERNAL_STATIC_ASSERT(is_class_v<_Container>);
+        _STL_INTERNAL_STATIC_ASSERT(is_class_v<_Container> || is_union_v<_Container>);
         _STL_INTERNAL_STATIC_ASSERT(!view<_Container>);
 
         template <input_range _Rng, class... _Types>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
-            _Rng&& _Range, _Types&&... _Args) _CONST_CALL_OPERATOR
+        _NODISCARD static constexpr auto operator()(_Rng&& _Range, _Types&&... _Args)
             requires requires { _RANGES to<_Container>(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...); }
         {
             return _RANGES to<_Container>(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
@@ -1176,9 +1175,10 @@ namespace ranges {
     _EXPORT_STD template <class _Container, class... _Types>
         requires (!view<_Container>)
     _NODISCARD constexpr auto to(_Types&&... _Args) {
-        static_assert(!is_const_v<_Container>, "C must not be const. ([range.utility.conv.adaptors])");
-        static_assert(!is_volatile_v<_Container>, "C must not be volatile. ([range.utility.conv.adaptors])");
-        static_assert(is_class_v<_Container>, "C must be a class type. ([range.utility.conv.adaptors])");
+        static_assert(!is_const_v<_Container>, "C must not be const. (N5014 [range.utility.conv.adaptors]/1)");
+        static_assert(!is_volatile_v<_Container>, "C must not be volatile. (N5014 [range.utility.conv.adaptors]/1)");
+        static_assert(is_class_v<_Container> || is_union_v<_Container>,
+            "C must be a class type. (N5014 [range.utility.conv.adaptors]/1)");
         return _Range_closure<_To_class_fn<_Container>, decay_t<_Types>...>{_STD forward<_Types>(_Args)...};
     }
 
@@ -1220,8 +1220,7 @@ namespace ranges {
     struct _To_template_fn {
         template <input_range _Rng, class... _Types,
             class _Deduced = remove_pointer_t<decltype(_To_helper<_Container, _Rng, _Types...>())>>
-        _NODISCARD _STATIC_CALL_OPERATOR constexpr auto operator()(
-            _Rng&& _Range, _Types&&... _Args) _CONST_CALL_OPERATOR {
+        _NODISCARD static constexpr auto operator()(_Rng&& _Range, _Types&&... _Args) {
             return _RANGES to<_Deduced>(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
         }
     };

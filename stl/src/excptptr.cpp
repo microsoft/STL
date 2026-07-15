@@ -27,10 +27,10 @@
 #include <Windows.h>
 
 // Pre-V4 managed exception code
-#define MANAGED_EXCEPTION_CODE 0XE0434F4D
+#define MANAGED_EXCEPTION_CODE 0xE0434F4D
 
 // V4 and later managed exception code
-#define MANAGED_EXCEPTION_CODE_V4 0XE0434352
+#define MANAGED_EXCEPTION_CODE_V4 0xE0434352
 
 extern "C" _CRTIMP2 void* __cdecl __AdjustPointer(void*, const PMD&); // defined in frame.cpp
 
@@ -131,7 +131,7 @@ namespace {
 
         // copy the number of parameters in use
         constexpr auto _Max_parameters = static_cast<DWORD>(EXCEPTION_MAXIMUM_PARAMETERS);
-        const auto _In_use             = (_STD min)(_Parameters, _Max_parameters);
+        const auto _In_use             = (_STD min) (_Parameters, _Max_parameters);
         _CSTD memcpy(_Dest.ExceptionInformation, _Src.ExceptionInformation, _In_use * sizeof(ULONG_PTR));
         _CSTD memset(&_Dest.ExceptionInformation[_In_use], 0, (_Max_parameters - _In_use) * sizeof(ULONG_PTR));
     }

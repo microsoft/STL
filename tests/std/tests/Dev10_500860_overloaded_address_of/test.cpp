@@ -1,22 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
-#define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
-
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <cstdlib>
-#ifndef _M_CEE_PURE
-#include <atomic>
-#endif // _M_CEE_PURE
-#include <cassert>
 #include <deque>
 #include <exception>
 #include <forward_list>
 #include <functional>
-#include <hash_map>
-#include <hash_set>
 #include <istream>
 #include <iterator>
 #include <list>
@@ -32,8 +24,11 @@
 #include <utility>
 #include <vector>
 
+#ifndef _M_CEE_PURE
+#include <atomic>
+#endif // _M_CEE_PURE
+
 using namespace std;
-using namespace stdext;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
@@ -87,11 +82,6 @@ namespace Meow {
     // If it's dragged in via ADL, this op&() will absorb anything.
     template <typename T>
     void operator&(const T&) = delete;
-
-    size_t hash_value(const Evil&) noexcept {
-        // provide an Evil hash value for stdext::hash_compare
-        return 0;
-    }
 } // namespace Meow
 
 using Meow::Evil;
@@ -120,11 +110,6 @@ template class std::map<Evil, Evil>;
 template class std::multimap<Evil, Evil>;
 template class std::set<Evil>;
 template class std::multiset<Evil>;
-
-template class stdext::hash_map<Evil, Evil>;
-template class stdext::hash_multimap<Evil, Evil>;
-template class stdext::hash_set<Evil>;
-template class stdext::hash_multiset<Evil>;
 
 template class std::unordered_map<Evil, Evil, Hash>;
 template class std::unordered_multimap<Evil, Evil, Hash>;
@@ -177,8 +162,6 @@ template class std::_List_unchecked_const_iterator<_List_val<_List_simple_types<
 template class std::reverse_iterator<Evil*>;
 template class std::move_iterator<Evil*>;
 template class std::istream_iterator<Evil>;
-template class stdext::checked_array_iterator<Evil*>;
-template class stdext::unchecked_array_iterator<Evil*>;
 
 
 template class std::shared_ptr<Evil>;

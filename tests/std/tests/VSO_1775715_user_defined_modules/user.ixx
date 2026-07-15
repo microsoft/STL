@@ -16,6 +16,11 @@ namespace user {
         assert(test_environment_preparer.succeeded());
     }
 
+    // TRANSITION, VSO-2649620 reachability problem in modules
+    // The compiler does not export the bindings for `operator==` for a string
+    // and character pointer unless we force it with this export.
+    export using std::operator==;
+
     // DevCom-10313766 VSO-1775715 "Using std::format in a module
     // requires including <format> header in .cpp files using that module"
     export template <class T>

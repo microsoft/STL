@@ -22,6 +22,11 @@
 #include <type_id.h>
 #include <variant_test_helpers.h>
 
+#if _HAS_CXX20
+#define CONSTEXPR20 constexpr
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
+#define CONSTEXPR20 inline
+#endif // ^^^ !_HAS_CXX20 ^^^
 namespace msvc {
     namespace size {
         template <class T>
@@ -743,11 +748,6 @@ namespace msvc {
     } // namespace gh2770
 
     namespace gh4901 {
-#if _HAS_CXX20
-#define CONSTEXPR20 constexpr
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-#define CONSTEXPR20 inline
-#endif // ^^^ !_HAS_CXX20 ^^^
         struct X {
             CONSTEXPR20 ~X() {}
         };
@@ -822,7 +822,6 @@ namespace msvc {
 
         static_assert(std::is_nothrow_destructible_v<std::variant<Y, int, Y2>>);
         static_assert(std::is_nothrow_destructible_v<ZC>);
-#undef CONSTEXPR20
     } // namespace gh4901
 
     namespace assign_cv {
@@ -937,9 +936,40 @@ namespace msvc {
             std::variant<std::optional<GenericSpec>> u;
         };
     } // namespace gh4959
+
+    namespace gh6085 {
+        struct WeirdlyCopyConstructible {
+            WeirdlyCopyConstructible() = default;
+            // potentially-throwing and explicit
+            explicit WeirdlyCopyConstructible(const WeirdlyCopyConstructible&) noexcept(false) = default;
+            WeirdlyCopyConstructible(WeirdlyCopyConstructible&&) noexcept                      = default;
+
+            CONSTEXPR20 WeirdlyCopyConstructible& operator=(const WeirdlyCopyConstructible&) noexcept { // non-trivial
+                return *this;
+            }
+        };
+
+        CONSTEXPR20 bool run_test() {
+            std::variant<int, WeirdlyCopyConstructible> a = 12;
+            std::variant<int, WeirdlyCopyConstructible> b = WeirdlyCopyConstructible{};
+
+            assert(a.index() == 0);
+            assert(std::get<0>(a) == 12);
+            assert(b.index() == 1);
+
+            a = b;
+            assert(a.index() == 1);
+
+            return true;
+        }
+    } // namespace gh6085
 } // namespace msvc
 
 int main() {
+#if _HAS_CXX20
+    static_assert(msvc::gh6085::run_test());
+#endif // _HAS_CXX20
+
     msvc::big_variant::run_test();
     msvc::derived_variant::run_test();
     msvc::visit::run_test();
@@ -951,5 +981,6 @@ int main() {
     msvc::vso492097::run_test();
     msvc::DevCom1031281::run_test();
     msvc::gh2770::run_test();
+    msvc::gh6085::run_test();
     msvc::assign_cv::run_test();
 }

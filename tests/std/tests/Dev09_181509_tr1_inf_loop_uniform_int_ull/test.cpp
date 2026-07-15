@@ -63,8 +63,8 @@ void add_tests(vector<fp_t>& tests) {
                          microtest<URNG, uint32_t, 2, uint32_max - 3>,
                          microtest<URNG, int64_t, int64_min, int64_max>,
                          microtest<URNG, int64_t, int64_min + 2, int64_max - 3>,
-                         microtest<URNG, uint64_t, 0, uint64_max>, // Test DDB-181509 "TR1 VC9 SP1: Infinite loop in
-                                                                   // uniform_int<unsigned long long>::_Eval()".
+                         microtest<URNG, uint64_t, 0, uint64_max>, // Test DDB-181509 (infinite loop in
+                                                                   // uniform_int_distribution<unsigned long long>)
                          microtest<URNG, uint64_t, 2, uint64_max - 3>,
 
                          microtest<URNG, int32_t, -4, 4>,
@@ -95,11 +95,11 @@ public:
 
     typedef unsigned long result_type;
 
-    static result_type min() {
+    static constexpr result_type min() {
         return 0;
     }
 
-    static result_type max() {
+    static constexpr result_type max() {
         return 90000;
     }
 

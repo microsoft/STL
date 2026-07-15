@@ -21,8 +21,8 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 #if _HAS_DEPRECATED_UNCAUGHT_EXCEPTION
-_EXPORT_STD extern "C++" _CXX17_DEPRECATE_UNCAUGHT_EXCEPTION _NODISCARD _CRTIMP2_PURE bool __CLRCALL_PURE_OR_CDECL
-    uncaught_exception() noexcept;
+_EXPORT_STD extern "C++" _CXX17_DEPRECATE_UNCAUGHT_EXCEPTION _NODISCARD _CRTIMP2_PURE bool
+    __CLRCALL_PURE_OR_CDECL uncaught_exception() noexcept;
 #endif // _HAS_DEPRECATED_UNCAUGHT_EXCEPTION
 _EXPORT_STD extern "C++" _NODISCARD _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL uncaught_exceptions() noexcept;
 
@@ -67,6 +67,16 @@ _STD_END
 
 #pragma push_macro("stdext")
 #undef stdext
+
+#define _STDEXT_BEGIN      \
+    _EXTERN_CXX_WORKAROUND \
+    namespace stdext {
+
+#define _STDEXT_END \
+    }               \
+    _END_EXTERN_CXX_WORKAROUND
+
+#define _STDEXT ::stdext::
 
 _STDEXT_BEGIN
 class _NODISCARD exception;
@@ -202,6 +212,10 @@ _EXPORT_STD using _STDEXT bad_array_new_length;
 _EXPORT_STD using _STDEXT bad_exception;
 
 _STD_END
+
+#undef _STDEXT_BEGIN
+#undef _STDEXT_END
+#undef _STDEXT
 
 #pragma pop_macro("stdext")
 

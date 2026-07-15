@@ -72,7 +72,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Tolower(int c, const _Ctypevec* ploc)
 
     // convert int c to multibyte string
     if (ploc == nullptr ? _cpp_isleadbyte((c >> 8) & 0xff) : (ploc->_Table[(c >> 8) & 0xff] & _LEADBYTE) != 0) {
-        inbuffer[0] = (c >> 8 & 0xff);
+        inbuffer[0] = ((c >> 8) & 0xff);
         inbuffer[1] = static_cast<unsigned char>(c);
         inbuffer[2] = 0;
         size        = 2;

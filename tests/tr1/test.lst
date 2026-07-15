@@ -50,8 +50,6 @@ tests\functional8
 tests\functional9
 tests\future
 tests\future1
-tests\hash_map
-tests\hash_set
 tests\initializer_list
 tests\iomanip
 tests\ios

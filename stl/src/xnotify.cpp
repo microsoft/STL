@@ -93,8 +93,8 @@ _CRTIMP2_PURE void __cdecl _Cnd_do_broadcast_at_thread_exit() noexcept {
                 if (block->data[i].res) {
                     *block->data[i].res = 1;
                 }
-                _Mtx_unlock(block->data[i].mtx);
                 _Cnd_broadcast(block->data[i].cnd);
+                _Mtx_unlock(block->data[i].mtx);
                 block->data[i].mtx = nullptr;
                 --block->num_used;
             }

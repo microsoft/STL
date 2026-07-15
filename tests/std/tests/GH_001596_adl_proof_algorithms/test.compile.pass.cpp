@@ -4,14 +4,15 @@
 #ifndef _M_CEE // TRANSITION, VSO-1659496
 #include <algorithm>
 #include <cstddef>
-#if _HAS_CXX17
-#include <execution>
-#endif // _HAS_CXX17
 #include <memory>
 #include <new>
 #include <numeric>
 #include <type_traits>
 #include <utility>
+
+#if _HAS_CXX17
+#include <execution>
+#endif // _HAS_CXX17
 
 template <class Tag>
 struct tagged_truth {
@@ -40,7 +41,7 @@ struct tagged_less {
 template <class Tag>
 struct tagged_zero_equality {
     template <class T>
-    constexpr auto operator()(T&& t) const //
+    constexpr auto operator()(T&& t) const
         -> decltype(std::forward<T>(t) == std::remove_cv_t<std::remove_reference_t<T>>{}) {
         return std::forward<T>(t) == std::remove_cv_t<std::remove_reference_t<T>>{};
     }

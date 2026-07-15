@@ -743,9 +743,7 @@ int main() {
     // Validate non-views
     { // ... C array
         static constexpr int join_me[5][2] = {{0, 1}, {2, 3}, {4, 5}, {6, 7}, {8, 9}};
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
         static_assert(test_one(join_me, expected_ints));
-#endif // ^^^ no workaround ^^^
         test_one(join_me, expected_ints);
     }
     { // ... fwd container

@@ -1,12 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
-
 #include <algorithm>
 #include <cassert>
-#include <hash_map>
-#include <hash_set>
 #include <map>
 #include <set>
 #include <unordered_map>
@@ -144,11 +140,6 @@ int main() {
     test_s<set<int>>();
     test_mm<multimap<int, int>>();
     test_ms<multiset<int>>();
-
-    test_m<hash_map<int, int>>();
-    test_s<hash_set<int>>();
-    test_mm<hash_multimap<int, int>>();
-    test_ms<hash_multiset<int>>();
 
     test_m<unordered_map<int, int>>();
     test_s<unordered_set<int>>();

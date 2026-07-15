@@ -130,10 +130,13 @@ public:
         _Move_from(_That);
     }
 
-    template <class _ValueType, enable_if_t<conjunction_v<negation<is_same<decay_t<_ValueType>, any>>,
-                                                negation<_Is_specialization<decay_t<_ValueType>, in_place_type_t>>,
-                                                is_copy_constructible<decay_t<_ValueType>>>,
-                                    int> = 0>
+    template <class _ValueType,
+        enable_if_t<!is_same_v<decay_t<_ValueType>, any> && !_Is_specialization_v<decay_t<_ValueType>, in_place_type_t>,
+            int> = 0, // Separate these conditions into two `enable_if_t`s to avoid meta-recursion.
+                      // See LLVM-176877 and GH-6109. N5032 [temp.deduct.general]/7 guarantees:
+                      // "The substitution proceeds in lexical order and stops when
+                      // a condition that causes deduction to fail is encountered."
+        enable_if_t<is_copy_constructible_v<decay_t<_ValueType>>, int> = 0>
     any(_ValueType&& _Value) { // initialize with _Value
         _Emplace<decay_t<_ValueType>>(_STD forward<_ValueType>(_Value));
     }
@@ -176,12 +179,14 @@ public:
 
     // Assignment [any.assign]
     any& operator=(const any& _That) {
-        _Assign(_That);
+        any _Tmp = _That;
+        _Reset_and_move_from(_Tmp);
         return *this;
     }
 
     any& operator=(any&& _That) noexcept {
-        _Assign(_STD move(_That));
+        any _Tmp = _STD move(_That);
+        _Reset_and_move_from(_Tmp);
         return *this;
     }
 
@@ -190,7 +195,8 @@ public:
                                     int> = 0>
     any& operator=(_ValueType&& _Value) {
         // replace contained value with an object of type decay_t<_ValueType> initialized from _Value
-        _Assign(_STD forward<_ValueType>(_Value));
+        any _Tmp = _STD forward<_ValueType>(_Value);
+        _Reset_and_move_from(_Tmp);
         return *this;
     }
 
@@ -230,7 +236,9 @@ public:
     }
 
     void swap(any& _That) noexcept {
-        _That = _STD exchange(*this, _STD move(_That));
+        any _Tmp = _STD move(*this);
+        _Reset_and_move_from(_That);
+        _That._Reset_and_move_from(_Tmp);
     }
 
     // Observers [any.observers]
@@ -284,6 +292,7 @@ private:
     }
 
     void _Move_from(any& _That) noexcept {
+        _STL_INTERNAL_CHECK(_Storage._TypeData == 0); // !has_value()
         _Storage._TypeData = _That._Storage._TypeData;
         switch (_Rep()) {
         case _Any_representation::_Small:
@@ -302,13 +311,14 @@ private:
         }
     }
 
-    void _Assign(any _That) noexcept { // intentionally pass by value
+    void _Reset_and_move_from(any& _That) noexcept {
         reset();
         _Move_from(_That);
     }
 
     template <class _Decayed, class... _Types>
     _Decayed& _Emplace(_Types&&... _Args) { // emplace construct _Decayed
+        _STL_INTERNAL_CHECK(_Storage._TypeData == 0); // !has_value()
         if constexpr (_Any_is_trivial<_Decayed>) {
             // using the _Trivial representation
             auto& _Obj = reinterpret_cast<_Decayed&>(_Storage._TrivialData);

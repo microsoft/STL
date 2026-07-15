@@ -47,6 +47,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
+
 #if _HAS_CXX23
 #include <xutility>
 #endif // _HAS_CXX23
@@ -57,6 +58,12 @@
 _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
+#undef msvc
+#undef no_specializations
 
 _STD_BEGIN
 #if _HAS_CXX23
@@ -90,7 +97,7 @@ enum class _Basic_format_arg_type : uint8_t {
 static_assert(static_cast<int>(_Basic_format_arg_type::_Custom_type) < 16, "must fit in 4-bit bitfield");
 
 #if _HAS_CXX23
-_EXPORT_STD template <class _Ty>
+_EXPORT_STD template <class _Ty> // specializations allowed by N5014 [format.formatter.locking]/1
 constexpr bool enable_nonlocking_formatter_optimization = false;
 
 _NODISCARD consteval bool _Is_debug_enabled_fmt_type(_Basic_format_arg_type _Ty) {
@@ -126,7 +133,7 @@ struct _Dynamic_format_specs : _Basic_format_specs<_CharT> {
 [[noreturn]] inline void _Throw_format_error(const char* _Message);
 
 _EXPORT_STD template <class _CharT>
-class basic_format_parse_context;
+class _NO_SPECIALIZATIONS_CITING("N5014 [format.parse.ctx]/2") basic_format_parse_context;
 
 template <class _CharT>
 concept _Format_supported_charT = _Is_any_of_v<_CharT, char, wchar_t>;
@@ -139,14 +146,6 @@ struct formatter {
 };
 
 _FMT_P2286_BEGIN
-// TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
-template <_Basic_format_arg_type _ArgType, class _CharT, class _Pc>
-constexpr _Pc::iterator _Formatter_base_parse(_Dynamic_format_specs<_CharT>& _Specs, _Pc& _ParseCtx);
-
-template <class _Ty, class _CharT, class _FormatContext>
-_FormatContext::iterator _Formatter_base_format(
-    const _Dynamic_format_specs<_CharT>& _Specs, const _Ty& _Val, _FormatContext& _FormatCtx);
-
 template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
 struct _Formatter_base {
 public:
@@ -158,15 +157,11 @@ public:
     }
 #endif // _HAS_CXX23
 
-    template <class _Pc = basic_format_parse_context<_CharT>>
-    constexpr _Pc::iterator parse(type_identity_t<_Pc&> _ParseCtx) {
-        return _Formatter_base_parse<_ArgType>(_Specs, _ParseCtx);
-    }
+    template <class _ParseContext = basic_format_parse_context<_CharT>>
+    constexpr _ParseContext::iterator parse(type_identity_t<_ParseContext&> _Parse_ctx); // defined in <format>
 
     template <class _FormatContext>
-    _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) const {
-        return _Formatter_base_format(_Specs, _Val, _FormatCtx);
-    }
+    _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _Format_ctx) const; // defined in <format>
 
 private:
     _Dynamic_format_specs<_CharT> _Specs;
@@ -323,12 +318,12 @@ _EXPORT_STD enum class range_format { disabled, map, set, sequence, string, debu
 
 template <class _Ty>
 struct _Invalid_format_kind {
-    static_assert(_Always_false<_Ty>, "A program that instantiates the primary template of format_kind is ill-formed. "
-                                      "(N4981 [format.range.fmtkind]/1)");
+    static_assert(false, "A program that instantiates the primary template of format_kind is ill-formed. "
+                         "(N4981 [format.range.fmtkind]/1)");
 };
 
 _EXPORT_STD template <class _Ty>
-constexpr _Invalid_format_kind<_Ty> format_kind;
+constexpr _Invalid_format_kind<_Ty> format_kind; // specializations allowed by N5014 [format.range.fmtkind]/3
 
 template <class _Ty>
 constexpr bool _Is_two_tuple = false;
@@ -395,11 +390,12 @@ constexpr bool enable_nonlocking_formatter_optimization<basic_string_view<_CharT
 
 template <class _Ty1, class _Ty2>
 constexpr bool enable_nonlocking_formatter_optimization<pair<_Ty1, _Ty2>> =
-    enable_nonlocking_formatter_optimization<_Ty1> && enable_nonlocking_formatter_optimization<_Ty2>;
+    enable_nonlocking_formatter_optimization<remove_cvref_t<_Ty1>>
+    && enable_nonlocking_formatter_optimization<remove_cvref_t<_Ty2>>;
 
 template <class... _Ts>
 constexpr bool enable_nonlocking_formatter_optimization<tuple<_Ts...>> =
-    (enable_nonlocking_formatter_optimization<_Ts> && ...);
+    (enable_nonlocking_formatter_optimization<remove_cvref_t<_Ts>> && ...);
 
 template <class _CharT>
 struct _Fill_align_and_width_specs {
@@ -411,36 +407,27 @@ struct _Fill_align_and_width_specs {
     _CharT _Fill[4 / sizeof(_CharT)]{' '};
 };
 
-// TRANSITION, VSO-1236041: Avoid declaring and defining member functions in different headers.
-template <class _CharT, class _Pc>
-_NODISCARD constexpr _Pc::iterator _Fill_align_and_width_formatter_parse(
-    _Fill_align_and_width_specs<_CharT>& _Specs, _Pc& _Parse_ctx);
-
-template <class _CharT, class _FormatContext, class _Func>
-_NODISCARD _FormatContext::iterator _Fill_align_and_width_formatter_format(
-    const _Fill_align_and_width_specs<_CharT>& _Specs, _FormatContext& _Format_ctx, int _Width,
-    _Fmt_align _Default_align, _Func&& _Fn);
-
 template <class _CharT>
 struct _Fill_align_and_width_formatter {
 public:
     template <class _ParseContext = basic_format_parse_context<_CharT>> // improves throughput, see GH-5003
-    _NODISCARD constexpr _ParseContext::iterator _Parse(type_identity_t<_ParseContext&> _Parse_ctx) {
-        return _STD _Fill_align_and_width_formatter_parse(_Specs, _Parse_ctx);
-    }
+    _NODISCARD constexpr _ParseContext::iterator _Parse(
+        type_identity_t<_ParseContext&> _Parse_ctx); // defined in <format>
 
     template <class _FormatContext, class _Func>
-    _NODISCARD constexpr auto _Format(
-        _FormatContext& _Format_ctx, const int _Width, _Fmt_align _Default_align, _Func&& _Fn) const {
-        return _STD _Fill_align_and_width_formatter_format(
-            _Specs, _Format_ctx, _Width, _Default_align, _STD forward<_Func>(_Fn));
-    }
+    _NODISCARD _FormatContext::iterator _Format(_FormatContext& _Format_ctx, const int _Width,
+        _Fmt_align _Default_align,
+        _Func&& _Fn) const; // defined in <format>
 
 private:
     _Fill_align_and_width_specs<_CharT> _Specs;
 };
 #endif // _HAS_CXX23
 _STD_END
+
+// TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
+#pragma pop_macro("msvc")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

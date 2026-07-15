@@ -4,7 +4,8 @@
 #include <yvals_core.h>
 
 #include <cstdlib>
-#include <synchapi.h>
+
+#include <Windows.h>
 
 // Provides forwarders for InitOnceBeginInitialize and InitOnceComplete for
 // environments that can't use /ALTERNATENAME.

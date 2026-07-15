@@ -7,20 +7,62 @@ Creates a 1ES Hosted Pool, set up for the STL's CI.
 
 .DESCRIPTION
 See https://github.com/microsoft/STL/wiki/Checklist-for-Toolset-Updates for more information.
+
+.PARAMETER VMSku
+The VM SKU can be Fasv6, Fasv7, or Dpsv6.
 #>
+[CmdletBinding(PositionalBinding=$false)]
+Param(
+  [Parameter(Mandatory)][ValidateSet('Fasv6', 'Fasv7', 'Dpsv6')][String]$VMSku
+)
 
 $ErrorActionPreference = 'Stop'
 
 $CurrentDate = Get-Date
+$Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 
-$Location = 'eastus2'
-$VMSize = 'Standard_F32as_v6'
+# | SKU   | Location      | Cores | Notes              |
+# |-------|---------------|------:|--------------------|
+# | Fasv6 | eastus2       |  4096 |                    |
+# | Fasv7 | australiaeast |   740 |                    |
+# | Fasv7 | northeurope   |   640 |                    |
+# | Fasv7 | southeastasia |   640 |                    |
+# | Dpsv6 | eastus2       |  1024 |                    |
+# | Dpsv6 | northeurope   |  1024 |                    |
+# | Dpsv6 | uksouth       |  1024 |                    |
+# | Dpsv6 | westcentralus |   672 | Not currently used |
+
+if ($VMSku -ieq 'Fasv6') {
+  $Arch = 'x64'
+  $VMSize = 'Standard_F32as_v6'
+  $PoolSize = 64 # We have quota for 4096 cores (128 VMs), so we can have old and new pools of 64 VMs each.
+  $AvailableLocations = @('eastus2')
+} elseif ($VMSku -ieq 'Fasv7') {
+  $Arch = 'x64'
+  $VMSize = 'Standard_F32as_v7'
+  $PoolSize = 20 # Locations where we have quota for at least 640 cores (20 VMs):
+  $AvailableLocations = @('australiaeast', 'northeurope', 'southeastasia')
+} elseif ($VMSku -ieq 'Dpsv6') {
+  $Arch = 'arm64'
+  $VMSize = 'Standard_D32ps_v6'
+  $PoolSize = 32 # Locations where we have quota for at least 1024 cores (32 VMs):
+  $AvailableLocations = @('eastus2', 'northeurope', 'uksouth')
+}
+
+$AvailableLocationIdx = 10 # Increment for each new set of pools, to cycle through the available locations.
+$Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
+
+if ($Arch -ieq 'x64') {
+  $ImagePublisher = 'MicrosoftWindowsServer'
+  $ImageOffer = 'WindowsServer'
+  $ImageSku = '2025-datacenter-azure-edition'
+} else {
+  $ImageId = '/SharedGalleries/WindowsServer.1P/Images/2025-datacenter-azure-edition-arm64/Versions/latest'
+}
+
 $ProtoVMName = 'PROTOTYPE'
-$ImagePublisher = 'MicrosoftWindowsServer'
-$ImageOffer = 'WindowsServer'
-$ImageSku = '2025-datacenter-azure-edition'
 
-$LogFile = '1es-hosted-pool.log'
+$LogFile = "1es-hosted-pool-$Timestamp-$Arch-$VMSku.log"
 $ProgressActivity = 'Preparing STL CI pool'
 $TotalProgress = 38
 $CurrentProgress = 1
@@ -82,15 +124,16 @@ Update-AzConfig `
   -Scope 'Process' >> $LogFile
 
 ####################################################################################################
-Display-ProgressBar -Status 'Setting the subscription context'
+Display-ProgressBar -Status 'Getting the subscription context'
 
-Set-AzContext `
-  -SubscriptionName 'CPP_STL_GitHub' >> $LogFile
+if ((Get-AzContext).Subscription.Name -cne 'CPP_STL_GitHub') {
+  Write-Error 'Please sign in with `Connect-AzAccount -Subscription ''CPP_STL_GitHub''` before running this script.'
+}
 
 ####################################################################################################
 Display-ProgressBar -Status 'Creating resource group'
 
-$ResourceGroupName = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-ddTHHmm')
+$ResourceGroupName = "Stl-$Timestamp-$Arch-$VMSku"
 
 New-AzResourceGroup `
   -Name $ResourceGroupName `
@@ -105,7 +148,7 @@ $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser',
 ####################################################################################################
 Display-ProgressBar -Status 'Creating public IP address'
 
-$PublicIpAddressName = $ResourceGroupName + '-PublicIpAddress'
+$PublicIpAddressName = "$ResourceGroupName-PublicIpAddress"
 $PublicIpAddress = New-AzPublicIpAddress `
   -Name $PublicIpAddressName `
   -ResourceGroupName $ResourceGroupName `
@@ -116,7 +159,7 @@ $PublicIpAddress = New-AzPublicIpAddress `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating NAT gateway'
 
-$NatGatewayName = $ResourceGroupName + '-NatGateway'
+$NatGatewayName = "$ResourceGroupName-NatGateway"
 $NatGateway = New-AzNatGateway `
   -Name $NatGatewayName `
   -ResourceGroupName $ResourceGroupName `
@@ -128,7 +171,7 @@ $NatGateway = New-AzNatGateway `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating network security group'
 
-$NetworkSecurityGroupName = $ResourceGroupName + '-NetworkSecurity'
+$NetworkSecurityGroupName = "$ResourceGroupName-NetworkSecurity"
 $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
   -Name $NetworkSecurityGroupName `
   -ResourceGroupName $ResourceGroupName `
@@ -137,10 +180,7 @@ $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating virtual network subnet config'
 
-# TRANSITION, 2025-09-30: "On September 30, 2025, default outbound access for new deployments will be retired."
-# https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/default-outbound-access
-# We're using `-DefaultOutboundAccess $false` to opt-in early.
-$SubnetName = $ResourceGroupName + '-Subnet'
+$SubnetName = "$ResourceGroupName-Subnet"
 $Subnet = New-AzVirtualNetworkSubnetConfig `
   -Name $SubnetName `
   -AddressPrefix '10.0.0.0/16' `
@@ -151,7 +191,7 @@ $Subnet = New-AzVirtualNetworkSubnetConfig `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating virtual network'
 
-$VirtualNetworkName = $ResourceGroupName + '-Network'
+$VirtualNetworkName = "$ResourceGroupName-Network"
 $VirtualNetwork = New-AzVirtualNetwork `
   -Name $VirtualNetworkName `
   -ResourceGroupName $ResourceGroupName `
@@ -162,7 +202,7 @@ $VirtualNetwork = New-AzVirtualNetwork `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating network interface'
 
-$NicName = $ResourceGroupName + '-NIC'
+$NicName = "$ResourceGroupName-NIC"
 $Nic = New-AzNetworkInterface `
   -Name $NicName `
   -ResourceGroupName $ResourceGroupName `
@@ -172,12 +212,21 @@ $Nic = New-AzNetworkInterface `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating prototype VM config'
 
-# Previously: -Priority 'Spot'
-$VM = New-AzVMConfig `
-  -VMName $ProtoVMName `
-  -VMSize $VMSize `
-  -DiskControllerType 'NVMe' `
-  -Priority 'Regular'
+if ($Arch -ieq 'x64') {
+  $VM = New-AzVMConfig `
+    -VMName $ProtoVMName `
+    -VMSize $VMSize `
+    -DiskControllerType 'NVMe' `
+    -Priority 'Regular'
+} else {
+  $VM = New-AzVMConfig `
+    -VMName $ProtoVMName `
+    -VMSize $VMSize `
+    -DiskControllerType 'SCSI' `
+    -Priority 'Regular' `
+    -SecurityType 'TrustedLaunch' `
+    -SharedGalleryImageId $ImageId
+}
 
 ####################################################################################################
 Display-ProgressBar -Status 'Setting prototype VM OS'
@@ -199,12 +248,16 @@ $VM = Add-AzVMNetworkInterface `
 ####################################################################################################
 Display-ProgressBar -Status 'Setting prototype VM source image'
 
-$VM = Set-AzVMSourceImage `
-  -VM $VM `
-  -PublisherName $ImagePublisher `
-  -Offer $ImageOffer `
-  -Skus $ImageSku `
-  -Version 'latest'
+if ($Arch -ieq 'x64') {
+  $VM = Set-AzVMSourceImage `
+    -VM $VM `
+    -PublisherName $ImagePublisher `
+    -Offer $ImageOffer `
+    -Skus $ImageSku `
+    -Version 'latest'
+} else {
+  # We passed -SharedGalleryImageId to New-AzVMConfig above.
+}
 
 ####################################################################################################
 Display-ProgressBar -Status 'Setting prototype VM boot diagnostic'
@@ -236,7 +289,8 @@ Display-ProgressBar -Status 'Running provision-image.ps1 in VM'
 $ProvisionImageResult = Invoke-AzVMRunCommand `
   -ResourceId $VM.ID `
   -CommandId 'RunPowerShellScript' `
-  -ScriptPath "$PSScriptRoot\provision-image.ps1"
+  -ScriptPath "$PSScriptRoot\provision-image.ps1" `
+  -Parameter @{ 'Arch' = $Arch; }
 
 Write-Host $ProvisionImageResult.value.Message
 
@@ -295,7 +349,7 @@ Set-AzVM `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating gallery'
 
-$GalleryName = 'StlBuild_' + $CurrentDate.ToString('yyyy_MM_ddTHHmm') + '_Gallery'
+$GalleryName = "$ResourceGroupName-Gallery" -replace '-', '_'
 $Gallery = New-AzGallery `
   -Location $Location `
   -ResourceGroupName $ResourceGroupName `
@@ -314,9 +368,13 @@ New-AzRoleAssignment `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating image definition'
 
-$ImageDefinitionName = $ResourceGroupName + '-ImageDefinition'
+$ImageDefinitionName = "$ResourceGroupName-ImageDefinition"
 $FeatureTrustedLaunch = @{ Name = 'SecurityType'; Value = 'TrustedLaunch'; }
-$FeatureNVMe = @{ Name = 'DiskControllerTypes'; Value = 'SCSI, NVMe'; }
+if ($Arch -ieq 'x64') {
+  $FeatureNVMe = @{ Name = 'DiskControllerTypes'; Value = 'SCSI, NVMe'; }
+} else {
+  $FeatureNVMe = @{ Name = 'DiskControllerTypes'; Value = 'SCSI'; }
+}
 $ImageDefinitionFeatures = @($FeatureTrustedLaunch, $FeatureNVMe)
 New-AzGalleryImageDefinition `
   -Location $Location `
@@ -325,9 +383,10 @@ New-AzGalleryImageDefinition `
   -Name $ImageDefinitionName `
   -OsState 'Generalized' `
   -OsType 'Windows' `
-  -Publisher $ImagePublisher `
-  -Offer $ImageOffer `
-  -Sku $ImageSku `
+  -Publisher 'StlPublisher' `
+  -Offer 'StlOffer' `
+  -Sku 'StlSku' `
+  -Architecture $Arch `
   -Feature $ImageDefinitionFeatures `
   -HyperVGeneration 'V2' >> $LogFile
 
@@ -352,7 +411,7 @@ Register-AzResourceProvider `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating 1ES image'
 
-$ImageName = $ResourceGroupName + '-Image'
+$ImageName = "$ResourceGroupName-Image"
 New-AzResource `
   -Location $Location `
   -ResourceGroupName $ResourceGroupName `
@@ -364,14 +423,14 @@ New-AzResource `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating 1ES Hosted Pool'
 
-$PoolName = $ResourceGroupName + '-Pool'
+$PoolName = "$ResourceGroupName-Pool"
 
 $PoolProperties = @{
   'organization' = 'https://dev.azure.com/vclibs'
   'projects' = @('STL')
   'sku' = @{ 'name' = $VMSize; 'tier' = 'StandardSSD'; 'enableSpot' = $false; }
   'images' = @(@{ 'imageName' = $ImageName; 'poolBufferPercentage' = '100'; })
-  'maxPoolSize' = 64
+  'maxPoolSize' = $PoolSize
   'agentProfile' = @{ 'type' = 'Stateless'; }
 }
 

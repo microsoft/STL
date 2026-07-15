@@ -13,6 +13,10 @@ read the guidelines for submitting STL bug reports in `README.md`. If you are
 having problems with any component that is not the STL, instructions to get
 to the right place are there.
 
+Even if your project is using an older version of the MSVC Build Tools, please
+check the Latest production release (or better yet, the Preview release) before
+reporting bugs. This will save time by avoiding reports of already-fixed bugs.
+
 # Command-line test case
 ```
 C:\Temp>type repro.cpp
@@ -53,17 +57,32 @@ Alternatively, include `static_assert` or `assert` lines in your
 test case above whose failure clearly indicates the problem.
 
 # STL version
-* Option 1: Visual Studio version
-  + Help > About Microsoft Visual Studio > Copy Info, we need only the first two lines
+* Option 1: MSVC Compiler version
   + Example:
     ```
-    Microsoft Visual Studio Community 2022
-    Version 17.6.0 Preview 3.0
+    C:\Temp>cl.exe
+    Microsoft (R) C/C++ Optimizing Compiler Version 19.50.35503 for x64
+    Copyright (C) Microsoft Corporation.  All rights reserved.
+
+    usage: cl [ option... ] filename... [ /link linkoption... ]
     ```
-* Option 2: git commit hash
+* Option 2: `_MSVC_STL_UPDATE` value
   + Example:
     ```
-    https://github.com/microsoft/STL/commit/2195148
+    C:\Temp>type meow.cpp
+    #include <iostream>
+    int main() {
+        std::cout << _MSVC_STL_UPDATE << "\n";
+    }
+
+    C:\Temp>cl /EHsc /nologo /W4 meow.cpp && meow
+    meow.cpp
+    202507
+    ```
+* Option 3: git commit hash
+  + Example:
+    ```
+    https://github.com/microsoft/STL/commit/219514876ea86491de191ceaa88632616bbc0f19
     ```
 
 # Additional context

@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <algorithm>
 #include <benchmark/benchmark.h>
+
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <queue>
@@ -56,7 +57,7 @@ void BM_push_range(benchmark::State& state) {
     }
 }
 
-void common_args(auto bm) {
+void common_args(benchmark::Benchmark* bm) {
     bm->RangeMultiplier(100)->Range(1, vec_size)->Arg(vec_size / 2 + 1);
 }
 

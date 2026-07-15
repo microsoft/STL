@@ -4,6 +4,9 @@
 // test <vector>
 #define TEST_NAME "<vector>"
 
+// Since P3612R1 the static vector<bool>::swap(reference, reference) is deprecated
+#define _SILENCE_VECTOR_BOOL_STATIC_REFERENCE_SWAP_DEPRECATION_WARNING
+
 #include "tdefs.h"
 #include <stddef.h>
 #include <vector>

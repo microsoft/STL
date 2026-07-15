@@ -1,16 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _USE_NAMED_IDL_NAMESPACE 1
-#define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 #include <array>
 #include <bitset>
 #include <complex>
 #include <cstdio>
 #include <deque>
 #include <forward_list>
-#include <hash_map>
-#include <hash_set>
 #include <initializer_list>
 #include <iterator>
 #include <list>
@@ -455,46 +451,6 @@ void forward_list_test() {
 #endif // ^^^ no workaround ^^^
 }
 
-// Note about hash*_test:
-// hash* containers have construction semantics like trees instead of hashes
-// so construct_*tree*_containers_from_iterators_test is correct.
-
-void hash_map_test() {
-    hash_map<int, int> value{};
-    hash_baseclass_test(value);
-    construct_tree_containers_from_iterators_test(value);
-    swap_test(value);
-    equality_test(value);
-}
-
-void hash_multimap_test() {
-    hash_multimap<int, int> value{};
-    hash_baseclass_test(value);
-    construct_tree_containers_from_iterators_test(value);
-    insert_associative_direct_test(value);
-    insert_with_iterator_test(value);
-    swap_test(value);
-    equality_test(value);
-}
-
-void hash_set_test() {
-    hash_set<int> value{};
-    hash_baseclass_test(value);
-    construct_tree_containers_from_iterators_test(value);
-    insert_with_iterator_test(value);
-    swap_test(value);
-    equality_test(value);
-}
-
-void hash_multiset_test() {
-    hash_multiset<int> value{};
-    hash_baseclass_test(value);
-    construct_tree_containers_from_iterators_test(value);
-    insert_with_iterator_test(value);
-    swap_test(value);
-    equality_test(value);
-}
-
 void initializer_list_test() {
     initializer_list<int> value{};
     (void) begin(value);
@@ -791,7 +747,7 @@ void extended_math_functions_test(T value) {
 
 namespace std {
     template <typename T>
-    inline const T* cbegin(valarray<T>& arr) {
+    const T* cbegin(valarray<T>& arr) {
         return begin(arr); // unqualified
     }
 } // namespace std
@@ -998,22 +954,4 @@ void complex_test() {
     STATIC_ASSERT(is_same_v<decltype(pow(i, cf)), complex<double>>);
     STATIC_ASSERT(is_same_v<decltype(pow(cf, cf)), complex<float>>);
     STATIC_ASSERT(is_same_v<decltype(pow(f, cf)), complex<float>>);
-}
-
-
-void xhash_test() {
-    (void) stdext::hash_value(5);
-    (void) stdext::hash_value(string{"cat"});
-    (void) stdext::hash_value(static_cast<int*>(nullptr));
-    (void) stdext::hash_value(static_cast<void*>(nullptr));
-    (void) stdext::hash_value(static_cast<int (*)(int)>(nullptr));
-    (void) stdext::hash_value(nullptr);
-
-    (void) stdext::hash_compare<int>()(5);
-    (void) stdext::hash_compare<string>()("Hello");
-    (void) stdext::hash_compare<const char*>()("World");
-    (void) stdext::hash_compare<wstring>()(L"Wello");
-    (void) stdext::hash_compare<const wchar_t*>()(L"Horld");
-
-    // rest of xhash is covered by container tests
 }

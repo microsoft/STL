@@ -335,7 +335,7 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
             if constexpr (CanZipTransform<TransformType, RangeTypes&...>) {
                 using ExpectedZipTransformType = ZipTransformType;
                 constexpr bool is_noexcept     = is_nothrow_move_constructible_v<ranges::_Movable_box<TransformType>>
-                                          && is_nothrow_constructible_v<InnerView, AllView<RangeTypes>&&...>;
+                                              && is_nothrow_constructible_v<InnerView, AllView<RangeTypes>&&...>;
 
                 static_assert(
                     same_as<decltype(views::zip_transform(std::forward<TransformType_>(transformer), test_ranges...)),
@@ -498,13 +498,10 @@ constexpr bool test_one(TransformType_&& transformer, const TransformedElementsC
             // Validate contents of zip-transformed range
             assert(ranges::equal(zipped_transformed_range, transformed_elements));
 
-#pragma warning(push)
-#pragma warning(disable : 4127) // Conditional Expression is Constant
             if (!(ranges::forward_range<AllView<RangeTypes>> && ...)) // intentionally not if constexpr
             {
                 return true;
             }
-#pragma warning(pop)
 
             // Validate view_interface::data()
             //
@@ -696,9 +693,9 @@ private:
         range_type<conditional_t<same_as<Category, input_iterator_tag>, forward_iterator_tag, input_iterator_tag>,
             const int, IsSized, IsCommon, Diff>;
     using differing_size_member_range_type            = range_type<Category, const int,
-                   (IsSized == test::Sized::yes ? test::Sized::no : test::Sized::yes), IsCommon, Diff>;
+        (IsSized == test::Sized::yes ? test::Sized::no : test::Sized::yes), IsCommon, Diff>;
     using differing_is_common_range_type              = range_type<Category, const int, IsSized,
-                     (IsCommon == test::Common::yes ? test::Common::no : test::Common::yes), Diff>;
+        (IsCommon == test::Common::yes ? test::Common::no : test::Common::yes), Diff>;
     using differing_iterator_sentinel_diff_range_type = range_type<Category, const int, IsSized, IsCommon,
         (Diff == test::CanDifference::yes ? test::CanDifference::no : test::CanDifference::yes)>;
 

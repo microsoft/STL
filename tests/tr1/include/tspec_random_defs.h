@@ -129,12 +129,12 @@ One_arg poisson_distribution_vals[] = {
     {FLIT(99.0), FLIT(0.03986496337366227799), FLIT(0.0)},
 };
 
-typedef unsigned int uniform_int_type;
-uniform_int<uniform_int_type> uniform_int_dist(10, 90);
-int uniform_int_smaller_ok = 0;
-int uniform_int_larger_ok  = 0;
+typedef unsigned int uniform_int_distribution_type;
+uniform_int_distribution<uniform_int_distribution_type> uniform_int_distribution_dist(10, 90);
+int uniform_int_distribution_smaller_ok = 0;
+int uniform_int_distribution_larger_ok  = 0;
 
-One_arg uniform_int_vals[] = {
+One_arg uniform_int_distribution_vals[] = {
     {FLIT(0.0), FLIT(0.0), FLIT(0.0)},
     {FLIT(11.0), FLIT(0.012345679012345678328), FLIT(0.0)},
     {FLIT(22.0), FLIT(0.012345679012345678328), FLIT(0.0)},
@@ -147,12 +147,12 @@ One_arg uniform_int_vals[] = {
     {FLIT(99.0), FLIT(0.0), FLIT(0.0)},
 };
 
-typedef double uniform_real_type;
-uniform_real<uniform_real_type> uniform_real_dist(40.2, 60.5);
-int uniform_real_smaller_ok = 0;
-int uniform_real_larger_ok  = 0;
+typedef double uniform_real_distribution_type;
+uniform_real_distribution<uniform_real_distribution_type> uniform_real_distribution_dist(40.2, 60.5);
+int uniform_real_distribution_smaller_ok = 0;
+int uniform_real_distribution_larger_ok  = 0;
 
-One_arg uniform_real_vals[] = {
+One_arg uniform_real_distribution_vals[] = {
     {FLIT(0.0), FLIT(0.0), FLIT(0.0)},
     {FLIT(11.0), FLIT(0.0), FLIT(0.0)},
     {FLIT(22.0), FLIT(0.0), FLIT(0.0)},

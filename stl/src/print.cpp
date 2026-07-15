@@ -14,8 +14,8 @@
 
 extern "C" {
 
-[[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_unicode_console_retrieval_result
-    __stdcall __std_get_unicode_console_handle_from_file_stream(_In_ FILE* const _Stream) noexcept {
+[[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_unicode_console_retrieval_result __stdcall
+    __std_get_unicode_console_handle_from_file_stream(_In_ FILE* const _Stream) noexcept {
     if (_Stream == nullptr) {
         return __std_unicode_console_retrieval_result{._Error = __std_win_error::_Invalid_parameter};
     }
@@ -23,7 +23,7 @@ extern "C" {
     const int _Fd = _fileno(_Stream);
 
     if (_Fd == -2) {
-        // According to https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/fileno?view=msvc-170 ,
+        // According to https://learn.microsoft.com/cpp/c-runtime-library/reference/fileno ,
         // _fileno() returns -2 if _Stream refers to either stdout or stderr and there is no associated output stream.
         // In that case, there is also no associated console HANDLE. (We haven't observed this happening in practice.)
         return __std_unicode_console_retrieval_result{._Error = __std_win_error::_Not_supported};
@@ -255,9 +255,9 @@ namespace {
 
 extern "C" {
 
-[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
-    __stdcall __std_print_to_unicode_console(_In_ const __std_unicode_console_handle _Console_handle,
-        _In_reads_(_Str_size) const char* const _Str, _In_ const size_t _Str_size) noexcept {
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error __stdcall __std_print_to_unicode_console(
+    _In_ const __std_unicode_console_handle _Console_handle, _In_reads_(_Str_size) const char* const _Str,
+    _In_ const size_t _Str_size) noexcept {
     if (_Console_handle == __std_unicode_console_handle::_Invalid || _Str == nullptr) {
         return __std_win_error::_Invalid_parameter;
     }
@@ -297,9 +297,8 @@ extern "C" {
     }
 }
 
-[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
-    __stdcall __std_print_newline_only_to_unicode_console(
-        _In_ const __std_unicode_console_handle _Console_handle) noexcept {
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error __stdcall
+    __std_print_newline_only_to_unicode_console(_In_ const __std_unicode_console_handle _Console_handle) noexcept {
     if (_Console_handle == __std_unicode_console_handle::_Invalid) {
         return __std_win_error::_Invalid_parameter;
     }

@@ -17,6 +17,10 @@
 #include <type_traits>
 #include <utility>
 
+#if _HAS_CXX23
+#include <ranges> // for integer-class types in test_gh_2524_all()
+#endif // _HAS_CXX23
+
 using namespace std;
 
 constexpr auto literal_input     = "Hello fluffy kittens";
@@ -393,6 +397,10 @@ constexpr bool test_interface() {
         assign_literal_count.assign(get_literal_input<CharType>(), 2);
         assert(ranges::equal(assign_literal_count, "He"sv));
 
+        str assign_literal_pos_len;
+        assign_literal_pos_len.assign(get_literal_input<CharType>(), 2, 3);
+        assert(ranges::equal(assign_literal_pos_len, "llo"sv));
+
         str assign_iterator;
         assign_iterator.assign(begin(get_view_input<CharType>()), end(get_view_input<CharType>()));
         assert(ranges::equal(assign_iterator, get_view_input<CharType>()));
@@ -630,7 +638,7 @@ constexpr bool test_interface() {
 
         str insert_initializer_list = get_literal_input<CharType>();
         const auto it_ilist         = insert_initializer_list.insert(insert_initializer_list.begin() + 6,
-                    {CharType{'c'}, CharType{'u'}, CharType{'t'}, CharType{'e'}, CharType{' '}});
+            {CharType{'c'}, CharType{'u'}, CharType{'t'}, CharType{'e'}, CharType{' '}});
         assert(it_ilist == insert_initializer_list.begin() + 6);
         assert(ranges::equal(insert_initializer_list, "Hello cute fluffy kittens"sv));
 
@@ -747,6 +755,10 @@ constexpr bool test_interface() {
         str append_literal_count(2, CharType{'b'});
         append_literal_count.append(get_literal_input<CharType>(), 2);
         assert(ranges::equal(append_literal_count, "bbHe"sv));
+
+        str append_literal_pos_len(2, CharType{'b'});
+        append_literal_pos_len.append(get_literal_input<CharType>(), 2, 3);
+        assert(ranges::equal(append_literal_pos_len, "bbllo"sv));
 
         str append_iterator(2, CharType{'b'});
         append_iterator.append(begin(get_view_input<CharType>()), end(get_view_input<CharType>()));
@@ -2226,14 +2238,40 @@ constexpr void test_all() {
 }
 
 #if _HAS_CXX23
+template <class I>
 void test_gh_2524() { // COMPILE-ONLY
     // GH-2524 resize_and_overwrite generates warning C4018 when Operation returns int
     string s;
     s.resize_and_overwrite(1, [](char* buffer, size_t) {
         *buffer = 'x';
-        int i   = 1;
+        I i     = 1;
         return i;
     });
+}
+
+void test_gh_2524_all() { // COMPILE-ONLY
+    test_gh_2524<signed char>();
+    test_gh_2524<short>();
+    test_gh_2524<int>();
+    test_gh_2524<long>();
+    test_gh_2524<long long>();
+
+    test_gh_2524<unsigned char>();
+    test_gh_2524<unsigned short>();
+    test_gh_2524<unsigned int>();
+    test_gh_2524<unsigned long>();
+    test_gh_2524<unsigned long long>();
+
+    test_gh_2524<char>();
+#ifdef __cpp_char8_t
+    test_gh_2524<char8_t>();
+#endif // defined(__cpp_char8_t)
+    test_gh_2524<char16_t>();
+    test_gh_2524<char32_t>();
+    test_gh_2524<wchar_t>();
+
+    test_gh_2524<_Signed128>();
+    test_gh_2524<_Unsigned128>();
 }
 #endif // _HAS_CXX23
 

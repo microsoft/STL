@@ -64,31 +64,63 @@ _NODISCARD _CONSTEXPR23 to_chars_result _Integer_to_chars(
     switch (_Base) {
     case 10:
         { // Derived from _UIntegral_to_buff()
-            // Performance note: Ryu's digit table should be faster here.
-            constexpr bool _Use_chunks = sizeof(_Unsigned) > sizeof(size_t);
+#ifdef _WIN64
+            auto _Trunc = _Value;
+#else // ^^^ 64-bit / 32-bit vvv
+            if constexpr (sizeof(_Unsigned) > 4) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
+                while (_Value > 0xFFFFFFFFU) {
+                    auto _Value_chunk = static_cast<unsigned long>(_Value % 100000000);
+                    _Value /= 100000000;
 
-            if constexpr (_Use_chunks) { // For 64-bit numbers on 32-bit platforms, work in chunks to avoid 64-bit
-                                         // divisions.
-                while (_Value > 0xFFFF'FFFFU) {
-                    // Performance note: Ryu's division workaround would be faster here.
-                    unsigned long _Chunk = static_cast<unsigned long>(_Value % 1'000'000'000);
-                    _Value               = static_cast<_Unsigned>(_Value / 1'000'000'000);
+                    for (int _Idx = 0; _Idx != 3; ++_Idx) {
+                        const unsigned long _Value_chunk_part = _Value_chunk % 100;
+                        _Value_chunk /= 100;
+                        _RNext -= 2;
+                        if (!_STD _Is_constant_evaluated()) {
+                            _CSTD memcpy(_RNext, _Digit_pairs<char>._Data[_Value_chunk_part], 2);
+                        } else {
+                            _RNext[0] = _Digit_pairs<char>._Data[_Value_chunk_part][0];
+                            _RNext[1] = _Digit_pairs<char>._Data[_Value_chunk_part][1];
+                        }
+                    }
 
-                    for (int _Idx = 0; _Idx != 9; ++_Idx) {
-                        *--_RNext = static_cast<char>('0' + _Chunk % 10);
-                        _Chunk /= 10;
+                    _RNext -= 2;
+                    if (!_STD _Is_constant_evaluated()) {
+                        _CSTD memcpy(_RNext, _Digit_pairs<char>._Data[_Value_chunk], 2);
+                    } else {
+                        _RNext[0] = _Digit_pairs<char>._Data[_Value_chunk][0];
+                        _RNext[1] = _Digit_pairs<char>._Data[_Value_chunk][1];
                     }
                 }
             }
 
-            using _Truncated = conditional_t<_Use_chunks, unsigned long, _Unsigned>;
+            auto _Trunc = static_cast<unsigned long>(_Value);
+#endif // ^^^ 32-bit ^^^
 
-            _Truncated _Trunc = static_cast<_Truncated>(_Value);
+            // If we have a single digit, print [0, 9] and return. (This is necessary to correctly handle 0.)
+            if (_Trunc < 10) {
+                *--_RNext = static_cast<char>('0' + _Trunc);
+                break;
+            }
 
+            // Print one or more pairs of digits.
             do {
-                *--_RNext = static_cast<char>('0' + _Trunc % 10);
-                _Trunc /= 10;
-            } while (_Trunc != 0);
+                const auto _Trunc_part = static_cast<unsigned long>(_Trunc % 100);
+                _Trunc /= 100;
+                _RNext -= 2;
+                if (!_STD _Is_constant_evaluated()) {
+                    _CSTD memcpy(_RNext, _Digit_pairs<char>._Data[_Trunc_part], 2);
+                } else {
+                    _RNext[0] = _Digit_pairs<char>._Data[_Trunc_part][0];
+                    _RNext[1] = _Digit_pairs<char>._Data[_Trunc_part][1];
+                }
+            } while (_Trunc >= 10);
+
+            // If we have an unpaired digit, print it.
+            // For example, 1729 is printed as 17 29, and 19937 is printed as 1 99 37.
+            if (_Trunc != 0) {
+                *--_RNext = static_cast<char>('0' + _Trunc);
+            }
             break;
         }
 
@@ -717,7 +749,7 @@ _NODISCARD inline bool _Multiply_by_power_of_ten(_Big_integer_flt& _Xval, const 
 
     for (uint32_t _Large_power = _Power / 10; _Large_power != 0;) {
         const uint32_t _Current_power =
-            (_STD min)(_Large_power, static_cast<uint32_t>(_STD size(_Large_power_indices)));
+            (_STD min) (_Large_power, static_cast<uint32_t>(_STD size(_Large_power_indices)));
 
         const _Unpack_index& _Index = _Large_power_indices[_Current_power - 1];
         _Big_integer_flt _Multiplier{};
@@ -1355,8 +1387,8 @@ _NODISCARD errc _Convert_decimal_string_to_floating_type(
     // fractional part. If the exponent is positive, then the integer part consists of the first 'exponent' digits,
     // or all present digits if there are fewer digits. If the exponent is zero or negative, then the integer part
     // is empty. In either case, the remaining digits form the fractional part of the mantissa.
-    const uint32_t _Positive_exponent      = static_cast<uint32_t>((_STD max)(0, _Data._Myexponent));
-    const uint32_t _Integer_digits_present = (_STD min)(_Positive_exponent, _Data._Mymantissa_count);
+    const uint32_t _Positive_exponent      = static_cast<uint32_t>((_STD max) (0, _Data._Myexponent));
+    const uint32_t _Integer_digits_present = (_STD min) (_Positive_exponent, _Data._Mymantissa_count);
     const uint32_t _Integer_digits_missing = _Positive_exponent - _Integer_digits_present;
     const uint8_t* const _Integer_first    = _Data._Mymantissa;
     const uint8_t* const _Integer_last     = _Data._Mymantissa + _Integer_digits_present;
@@ -1738,21 +1770,21 @@ _NODISCARD from_chars_result _Ordinary_floating_from_chars(const char* const _Fi
     // Adjust _Exponent and _Exponent_adjustment when they have different signedness to avoid overflow.
     if (_Exponent > 0 && _Exponent_adjustment < 0) {
         if (_Is_hexadecimal) {
-            const ptrdiff_t _Further_adjustment = (_STD max)(-((_Exponent - 1) / 4 + 1), _Exponent_adjustment);
+            const ptrdiff_t _Further_adjustment = (_STD max) (-((_Exponent - 1) / 4 + 1), _Exponent_adjustment);
             _Exponent += _Further_adjustment * 4;
             _Exponent_adjustment -= _Further_adjustment;
         } else {
-            const ptrdiff_t _Further_adjustment = (_STD max)(-_Exponent, _Exponent_adjustment);
+            const ptrdiff_t _Further_adjustment = (_STD max) (-_Exponent, _Exponent_adjustment);
             _Exponent += _Further_adjustment;
             _Exponent_adjustment -= _Further_adjustment;
         }
     } else if (_Exponent < 0 && _Exponent_adjustment > 0) {
         if (_Is_hexadecimal) {
-            const ptrdiff_t _Further_adjustment = (_STD min)((-_Exponent - 1) / 4 + 1, _Exponent_adjustment);
+            const ptrdiff_t _Further_adjustment = (_STD min) ((-_Exponent - 1) / 4 + 1, _Exponent_adjustment);
             _Exponent += _Further_adjustment * 4;
             _Exponent_adjustment -= _Further_adjustment;
         } else {
-            const ptrdiff_t _Further_adjustment = (_STD min)(-_Exponent, _Exponent_adjustment);
+            const ptrdiff_t _Further_adjustment = (_STD min) (-_Exponent, _Exponent_adjustment);
             _Exponent += _Further_adjustment;
             _Exponent_adjustment -= _Further_adjustment;
         }
@@ -2295,7 +2327,6 @@ _NODISCARD to_chars_result _Floating_to_chars_hex_shortest(
 
             const _Uint_type _Mask = (_Uint_type{1} << _Number_of_bits_remaining) - 1;
             _Adjusted_mantissa &= _Mask;
-
         } while (_Adjusted_mantissa != 0);
     }
 
@@ -2325,7 +2356,7 @@ _NODISCARD to_chars_result _Floating_to_chars_hex_shortest(
 }
 
 template <class _Floating>
-_NODISCARD inline to_chars_result _Floating_to_chars_general_precision(
+_NODISCARD to_chars_result _Floating_to_chars_general_precision(
     char* _First, char* const _Last, const _Floating _Value, int _Precision) noexcept {
 
     using _Traits    = _Floating_type_traits<_Floating>;
@@ -2382,7 +2413,7 @@ _NODISCARD inline to_chars_result _Floating_to_chars_general_precision(
         _Table_end   = _Table_begin + _Precision + 5;
     } else {
         _Table_begin = _Tables::_Ordinary_X_table;
-        _Table_end   = _Table_begin + (_STD min)(_Precision, _Tables::_Max_P) + 5;
+        _Table_end   = _Table_begin + (_STD min) (_Precision, _Tables::_Max_P) + 5;
     }
 
     // Profiling indicates that linear search is faster than binary search for small tables.
@@ -2429,13 +2460,13 @@ _NODISCARD inline to_chars_result _Floating_to_chars_general_precision(
     // Write into the local buffer.
     // Clamping _Effective_precision allows _Buffer to be as small as possible, and increases efficiency.
     if (_Use_fixed_notation) {
-        _Effective_precision = (_STD min)(_Precision - (_Scientific_exponent_X + 1), _Max_fixed_precision);
+        _Effective_precision = (_STD min) (_Precision - (_Scientific_exponent_X + 1), _Max_fixed_precision);
         const to_chars_result _Buf_result =
             _Floating_to_chars_fixed_precision(_Buffer, _STD end(_Buffer), _Value, _Effective_precision);
         _STL_INTERNAL_CHECK(_Buf_result.ec == errc{});
         _Significand_last = _Buf_result.ptr;
     } else {
-        _Effective_precision = (_STD min)(_Precision - 1, _Max_scientific_precision);
+        _Effective_precision = (_STD min) (_Precision - 1, _Max_scientific_precision);
         const to_chars_result _Buf_result =
             _Floating_to_chars_scientific_precision(_Buffer, _STD end(_Buffer), _Value, _Effective_precision);
         _STL_INTERNAL_CHECK(_Buf_result.ec == errc{});

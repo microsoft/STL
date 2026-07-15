@@ -1,11 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 #include <cassert>
 #include <functional>
-#include <hash_map>
-#include <hash_set>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -428,9 +425,6 @@ void assert_P0809() {
 }
 
 int main() {
-    assert_unique<stdext::hash_set<string_view, string_legacy_traits, test_allocator<string_view>>>();
-    assert_unique<
-        stdext::hash_map<string_view, size_t, string_legacy_traits, test_allocator<pair<const string_view, size_t>>>>();
     assert_unique<unordered_set<string_view, hash<string_view>, equal_to<>, test_allocator<string_view>>>();
     assert_unique<unordered_map<string_view, size_t, hash<string_view>, equal_to<>,
         test_allocator<pair<const string_view, size_t>>>>();
@@ -443,9 +437,6 @@ int main() {
     assert_unique<unordered_map<test_str, size_t, transparent_string_hasher, transparent_string_equal,
         test_allocator<pair<const test_str, size_t>>>>();
 
-    assert_multi<stdext::hash_multiset<string_view, string_legacy_traits, test_allocator<string_view>>>();
-    assert_multi<stdext::hash_multimap<string_view, size_t, string_legacy_traits,
-        test_allocator<pair<const string_view, size_t>>>>();
     assert_multi<unordered_multiset<string_view, hash<string_view>, equal_to<>, test_allocator<string_view>>>();
     assert_multi<unordered_multimap<string_view, size_t, hash<string_view>, equal_to<>,
         test_allocator<pair<const string_view, size_t>>>>();

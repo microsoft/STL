@@ -240,6 +240,56 @@ void test_filesystem() {
     assert(info.capacity != static_cast<decltype(info.capacity)>(-1));
 }
 
+#if TEST_STANDARD >= 23
+void test_flat_map() {
+    using namespace std;
+    puts("Testing <flat_map>.");
+
+    [[maybe_unused]] constexpr sorted_unique_t unique_tag         = sorted_unique;
+    [[maybe_unused]] constexpr sorted_equivalent_t equivalent_tag = sorted_equivalent;
+
+    constexpr auto simple_truth = [](const auto&) { return true; };
+
+    flat_map<int, int> fm;
+    fm.emplace(42, 172);
+    fm.emplace(42, 729);
+    assert(fm.size() == 1);
+    assert(erase_if(fm, simple_truth) == 1);
+    assert(fm.empty());
+
+    flat_multimap<int, int> fmm;
+    fmm.emplace(42, 172);
+    fmm.emplace(42, 729);
+    assert(fmm.size() == 2);
+    assert(erase_if(fmm, simple_truth) == 2);
+    assert(fmm.empty());
+}
+
+void test_flat_set() {
+    using namespace std;
+    puts("Testing <flat_set>.");
+
+    [[maybe_unused]] constexpr sorted_unique_t unique_tag         = sorted_unique;
+    [[maybe_unused]] constexpr sorted_equivalent_t equivalent_tag = sorted_equivalent;
+
+    constexpr auto simple_truth = [](const auto&) { return true; };
+
+    flat_set<int> fs;
+    fs.emplace(42);
+    fs.emplace(42);
+    assert(fs.size() == 1);
+    assert(erase_if(fs, simple_truth) == 1);
+    assert(fs.empty());
+
+    flat_multiset<int> fms;
+    fms.emplace(42);
+    fms.emplace(42);
+    assert(fms.size() == 2);
+    assert(erase_if(fms, simple_truth) == 2);
+    assert(fms.empty());
+}
+#endif // TEST_STANDARD >= 23
+
 void test_format() {
     using namespace std;
     puts("Testing <format>.");
@@ -492,7 +542,9 @@ void test_new() {
 
     static_assert(is_class_v<bad_alloc>);
     static_assert(is_class_v<bad_array_new_length>);
+#ifdef __cpp_aligned_new
     static_assert(is_same_v<underlying_type_t<align_val_t>, size_t>);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
     static_assert(is_class_v<nothrow_t>);
 
     bool caught_bad_alloc = false;
@@ -608,13 +660,11 @@ void test_random() {
     lcg.discard(9999);
     assert(lcg() == 1043618065); // N4868 [rand.predef]/1
 
-#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, VSO-2226569
     // Test coverage for GH-4899 "Standard Library Modules: uniform_real_distribution emits
     // error C2512: 'std::_Unsigned128': no appropriate default constructor available":
     const double val = generate_canonical<double, 53>(lcg);
     assert(val >= 0.0);
     assert(val < 1.0);
-#endif // ^^^ no workaround ^^^
 }
 
 void test_ranges() {
@@ -858,7 +908,9 @@ __declspec(dllexport) void test_stacktrace() { // export test_stacktrace to have
         desc.resize(pos);
     }
 
+#ifndef _M_ARM64EC // TRANSITION, GH-5830
     assert(desc == "test_stacktrace");
+#endif // ^^^ no workaround ^^^
 }
 #endif // TEST_STANDARD >= 23
 
@@ -1191,6 +1243,10 @@ void all_cpp_header_tests() {
     test_expected();
 #endif // TEST_STANDARD >= 23
     test_filesystem();
+#if TEST_STANDARD >= 23
+    test_flat_map();
+    test_flat_set();
+#endif // TEST_STANDARD >= 23
     test_format();
     test_forward_list();
     test_fstream();

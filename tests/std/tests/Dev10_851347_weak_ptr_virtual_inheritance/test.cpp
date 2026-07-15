@@ -4,6 +4,7 @@
 #include <cassert>
 #include <memory>
 #include <utility>
+
 #ifndef _M_CEE_PURE // in /clr:pure we miss runtime coverage of weak_ptr converting constructor
 #include <atomic>
 #include <thread>

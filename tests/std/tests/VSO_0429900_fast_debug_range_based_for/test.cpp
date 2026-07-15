@@ -1,23 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 #include <array>
 #include <cassert>
 #include <deque>
 #include <forward_list>
-#include <hash_map>
-#include <hash_set>
 #include <list>
 #include <map>
 #include <memory>
 #include <regex>
 #include <set>
 #include <string>
-#include <string_view>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+#if _HAS_CXX17
+#include <string_view>
+#endif // _HAS_CXX17
+
+#if _HAS_CXX23
+#include <flat_map>
+#include <flat_set>
+#endif // _HAS_CXX23
 
 using namespace std;
 
@@ -34,10 +39,20 @@ void assert_range_for_impl(Range& c) {
     for (auto&& val : c) {
         STATIC_ASSERT(is_same_v<remove_reference_t<decltype(val)>, remove_reference_t<decltype(*b)>>);
         assert(b != c.end());
-        if (is_same_v<remove_const_t<Range>, vector<bool>>) {
-            assert(*b == val);
-        } else {
-            assert_same_address(*b, val);
+
+        using RC = remove_const_t<Range>;
+#if _HAS_CXX23
+        if constexpr (_Is_specialization_v<RC, flat_map> || _Is_specialization_v<RC, flat_multimap>) {
+            assert_same_address(b->first, val.first);
+            assert_same_address(b->second, val.second);
+        } else
+#endif // _HAS_CXX23
+        {
+            if (is_same_v<RC, vector<bool>>) {
+                assert(*b == val);
+            } else {
+                assert_same_address(*b, val);
+            }
         }
 
         ++b;
@@ -151,19 +166,23 @@ int main() {
     vb.push_back(false);
     assert_range_for(vb);
 
-    test_case_set_container<hash_multiset>();
-    test_case_set_container<hash_set>();
     test_case_set_container<multiset>();
     test_case_set_container<set>();
     test_case_set_container<unordered_multiset>();
     test_case_set_container<unordered_set>();
+#if _HAS_CXX23
+    test_case_set_container<flat_set>();
+    test_case_set_container<flat_multiset>();
+#endif // _HAS_CXX23
 
-    test_case_map_container<hash_map>();
-    test_case_map_container<hash_multimap>();
     test_case_map_container<map>();
     test_case_map_container<multimap>();
     test_case_map_container<unordered_map>();
     test_case_map_container<unordered_multimap>();
+#if _HAS_CXX23
+    test_case_map_container<flat_map>();
+    test_case_map_container<flat_multimap>();
+#endif // _HAS_CXX23
 
     cmatch matchResults;
     assert_range_for(matchResults);

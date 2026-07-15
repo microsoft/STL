@@ -3,6 +3,10 @@
 
 // iostream object pointers
 
+#ifdef _M_CEE_PURE
+#error This file cannot be built with /clr:pure.
+#endif
+
 #include <iostream>
 
 #include <Windows.h>
@@ -10,11 +14,6 @@
 #include "init_locks.hpp"
 
 _STD_BEGIN
-
-#if defined(_M_CEE) && !defined(_M_CEE_MIXED)
-#error This file cannot be built /clr:pure, etc. because of the use of _PGLOBAL.
-#endif
-
 #pragma warning(disable : 4074)
 #pragma init_seg(compiler)
 _PGLOBAL static std::_Init_locks initlocks;

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#if !(defined(_PREFAST_) && defined(_M_IX86)) // TRANSITION, VSO-1639191
 // Check MSVC-STL internal machinery
 
 #include <array>
@@ -29,9 +30,9 @@ using cpv_const_difference_t = range_difference_t<const cartesian_product_view<R
 
 #ifdef _WIN64
 constexpr bool is_64_bit = true;
-#else // ^^^ 64 bit / 32 bit vvv
+#else // ^^^ 64-bit / 32-bit vvv
 constexpr bool is_64_bit = false;
-#endif // ^^^ 32 bit ^^^
+#endif // ^^^ 32-bit ^^^
 
 constexpr void check_array() {
     // Check '_Compile_time_max_size' type trait
@@ -43,7 +44,7 @@ constexpr void check_array() {
     static_assert(_Compile_time_max_size<const int[9]> == 9);
 
     // Computing cartesian product for small arrays does not require big range_size_t
-    using A1 = all_t<int(&)[4]>;
+    using A1 = all_t<int (&)[4]>;
     static_assert(sizeof(cpv_size_t<A1>) <= sizeof(size_t));
     static_assert(sizeof(cpv_size_t<A1, A1>) <= sizeof(size_t));
     static_assert(sizeof(cpv_size_t<A1, A1, A1>) <= sizeof(size_t));
@@ -54,7 +55,7 @@ constexpr void check_array() {
     static_assert(sizeof(cpv_difference_t<A1, A1, A1>) <= sizeof(ptrdiff_t));
 
     // Computing cartesian product for big arrays requires bigger types
-    using A2 = all_t<int(&)[500'000'000]>;
+    using A2 = all_t<int (&)[500'000'000]>;
     static_assert(sizeof(cpv_size_t<A2, A2, A2>) > sizeof(size_t));
     static_assert(sizeof(cpv_difference_t<A2, A2, A2>) > sizeof(ptrdiff_t));
 }
@@ -175,11 +176,7 @@ constexpr void check_single_view() {
 
 enum class CheckConstAdaptor : bool { no, yes };
 
-#ifdef __clang__ // TRANSITION, LLVM-104189
-template <template <class...> class SimpleRangeAdaptor, CheckConstAdaptor CCA, class... Args>
-#else // ^^^ workaround / no workaround vvv
 template <template <class, class...> class SimpleRangeAdaptor, CheckConstAdaptor CCA, class... Args>
-#endif // ^^^ no workaround ^^^
 constexpr void check_simple_range_adaptor() {
     using ValTy = tuple<int>; // for ranges::elements_view
     using V1    = SimpleRangeAdaptor<all_t<array<ValTy, 100>>, Args...>; // owning_view
@@ -269,7 +266,7 @@ constexpr void check_join_view() {
     static_assert(_Compile_time_max_size<const V3> == (numeric_limits<size_t>::max)());
     static_assert(sizeof(cpv_const_difference_t<V3>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
-#endif // ^^^ 64 bit ^^^
+#endif // ^^^ 64-bit ^^^
 }
 
 constexpr void check_join_with_view() {
@@ -301,7 +298,7 @@ constexpr void check_join_with_view() {
     static_assert(_Compile_time_max_size<const V3> == (numeric_limits<size_t>::max)());
     static_assert(sizeof(cpv_const_difference_t<V3>) <= sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
-#endif // ^^^ 64 bit ^^^
+#endif // ^^^ 64-bit ^^^
 
     // Check '_Compile_time_max_size' when size of joined range is 0
     using V4 = ranges::join_with_view<span<span<int, 5>, 0>, span<int, 2>>;
@@ -429,7 +426,7 @@ constexpr void check_cartesian_product_view() {
     static_assert(_Compile_time_max_size<const V3> == (numeric_limits<_Unsigned128>::max)());
     static_assert(sizeof(cpv_const_difference_t<V3>) > sizeof(ptrdiff_t));
     static_assert(sizeof(cpv_const_difference_t<V3, V3, V3>) > sizeof(ptrdiff_t));
-#endif // ^^^ 64 bit ^^^
+#endif // ^^^ 64-bit ^^^
 }
 
 struct Pred {
@@ -497,3 +494,4 @@ constexpr bool test() {
 }
 
 static_assert(test());
+#endif // ^^^ no workaround ^^^

@@ -7,11 +7,12 @@
 #define _STRING_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <xstring>
 // The <cctype> include below is to workaround many projects that assumed
 // <string> includes it. We workaround it instead of fixing all the upstream
 // projects because <cctype> is inexpensive. See VSO-663136.
-#include <cctype>
+
+#include <cctype> // TRANSITION, see note
+#include <xstring>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)

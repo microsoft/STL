@@ -57,8 +57,8 @@ ios_base::iostate _Getint_v2(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int&
     for (char* const _Pe = &_Ac[_Max_int_dig - 1];
         _First != _Last && '0' <= (_Ch = _Ctype_fac.narrow(*_First)) && _Ch <= '9' && _Digits_read < _Hi_digits;
         ++_Digits_read, (void) ++_First) { // copy digits
-        *_Ptr = _Ch;
-        if (_Ptr < _Pe) {
+        if (_Ptr < _Pe) { // preserve room for the null terminator written below
+            *_Ptr = _Ch;
             ++_Ptr; // drop trailing digits if already too large
         }
     }
@@ -244,9 +244,9 @@ protected:
                 reinterpret_cast<const _Elem*>(_Maklocwcs(reinterpret_cast<const wchar_t*>(_Lobj._W_Getmonths())));
             _Ampm = reinterpret_cast<const _Elem*>(_Maklocwcs(L":AM:am:PM:pm"));
         } else {
-            _Days   = _Maklocstr(_Lobj._Getdays(), static_cast<_Elem*>(nullptr), _Cvt);
-            _Months = _Maklocstr(_Lobj._Getmonths(), static_cast<_Elem*>(nullptr), _Cvt);
-            _Ampm   = _Maklocstr(":AM:am:PM:pm", static_cast<_Elem*>(nullptr), _Cvt);
+            _Days   = _Maklocstr<_Elem>(_Lobj._Getdays(), _Cvt);
+            _Months = _Maklocstr<_Elem>(_Lobj._Getmonths(), _Cvt);
+            _Ampm   = _Maklocstr<_Elem>(":AM:am:PM:pm", _Cvt);
         }
     }
 
@@ -421,6 +421,7 @@ protected:
                     // CodeQL [SM03231] This is parsing tm_year (years since 1900); leap years are irrelevant.
                     _Pt->tm_year = _Ans + 100; // [00, 68] parsed as [2000, 2068]
                 } else if (_Ans < 100) {
+                    // CodeQL [SM03231] This is parsing tm_year (years since 1900); leap years are irrelevant.
                     _Pt->tm_year = _Ans; // [69, 99] parsed as [1969, 1999]
                 }
             } else {
@@ -452,7 +453,7 @@ protected:
             break;
 
         case 'c':
-            _First = _Getfmt(_First, _Last, _Iosbase, _State, _Pt, "%b %d %H : %M : %S %Y");
+            _First = _Getfmt(_First, _Last, _Iosbase, _State, _Pt, "%a %b %e %T %Y");
             break;
 
         case 'C':
@@ -546,7 +547,7 @@ protected:
             break;
 
         case 'x':
-            _First = _Getfmt(_First, _Last, _Iosbase, _State, _Pt, "%d / %m / %y");
+            _First = _Getfmt(_First, _Last, _Iosbase, _State, _Pt, "%m / %d / %y");
             break;
 
         case 'y':
@@ -556,6 +557,7 @@ protected:
                     // CodeQL [SM03231] This is parsing tm_year (years since 1900); leap years are irrelevant.
                     _Pt->tm_year = _Ans + 100; // [00, 68] parsed as [2000, 2068]
                 } else {
+                    // CodeQL [SM03231] This is parsing tm_year (years since 1900); leap years are irrelevant.
                     _Pt->tm_year = _Ans; // [69, 99] parsed as [1969, 1999]
                 }
             }
@@ -567,6 +569,14 @@ protected:
             if (!(_State & ios_base::failbit)) {
                 // CodeQL [SM03231] This is parsing tm_year (years since 1900); leap years are irrelevant.
                 _Pt->tm_year = _Ans - 1900; // parsed literally
+            }
+            break;
+
+        case '%':
+            if (_First == _Last || _Ctype_fac.narrow(*_First) != '%') {
+                _State |= ios_base::failbit;
+            } else {
+                ++_First;
             }
             break;
 

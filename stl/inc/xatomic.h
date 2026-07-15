@@ -44,9 +44,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _INTRIN_ACQ_REL(x) x
 #define _YIELD_PROCESSOR() __yield()
 
-#else // ^^^ ARM64/ARM64EC/HYBRID_X86_ARM64 / unsupported hardware vvv
-#error Unsupported hardware
-#endif // hardware
+#else // ^^^ ARM64/ARM64EC/HYBRID_X86_ARM64 / unknown architecture vvv
+#error Unknown architecture
+#endif // ^^^ unknown architecture ^^^
 
 #define _MT_INCR(x) _INTRIN_RELAXED(_InterlockedIncrement)(reinterpret_cast<volatile long*>(&x))
 #define _MT_DECR(x) _INTRIN_ACQ_REL(_InterlockedDecrement)(reinterpret_cast<volatile long*>(&x))
@@ -62,9 +62,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #elif defined(_M_IX86) || defined(_M_X64)
 // x86/x64 hardware only emits memory barriers inside _Interlocked intrinsics
 #define _Compiler_or_memory_barrier() _Compiler_barrier()
-#else // ^^^ x86/x64 / unsupported hardware vvv
-#error Unsupported hardware
-#endif // hardware
+#else // ^^^ x86/x64 / unknown architecture vvv
+#error Unknown architecture
+#endif // ^^^ unknown architecture ^^^
 
 _STD_BEGIN
 

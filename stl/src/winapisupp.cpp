@@ -8,7 +8,6 @@
 
 #include <Windows.h>
 
-#if !defined(_ONECORE)
 namespace {
 
 // Use this macro for defining the following function pointers
@@ -24,7 +23,6 @@ namespace {
 #define IFDYNAMICGETCACHEDFUNCTION(fn_name) if (const auto pf##fn_name = __KERNEL32Function_##fn_name)
 
 } // unnamed namespace
-#endif // ^^^ !defined(_ONECORE) ^^^
 
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 
@@ -35,7 +33,11 @@ extern "C" _CRTIMP2 BOOL __cdecl __crtIsPackagedApp() noexcept {
 
 #endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 
-#if _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
+// Previously, x64/x86 Desktop builds had to support targeting old versions of Windows, so we dllexported functions to
+// dynamically load new Windows APIs. Now, we directly call those Windows APIs, and the dllexported functions have
+// become simple wrappers, but they still need to be preserved for binary compatibility. The ARM64, App, and OneCore
+// builds never supported targeting old versions of Windows, so they never provided these dllexported functions.
+#if !(defined(_M_ARM64) || defined(_CRT_APP) || defined(_ONECORE))
 
 // TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 ULONGLONG __cdecl __crtGetTickCount64() noexcept {
@@ -126,15 +128,7 @@ extern "C" _CRTIMP2 DWORD __cdecl __crtGetCurrentProcessorNumber() noexcept {
 // TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 BOOLEAN __cdecl __crtCreateSymbolicLinkW(
     _In_ LPCWSTR const lpSymlinkFileName, _In_ LPCWSTR const lpTargetFileName, _In_ DWORD const dwFlags) noexcept {
-#ifdef _CRT_APP
-    (void) lpSymlinkFileName;
-    (void) lpTargetFileName;
-    (void) dwFlags;
-    SetLastError(ERROR_NOT_SUPPORTED);
-    return 0;
-#else // ^^^ defined(_CRT_APP) / !defined(_CRT_APP) vvv
     return CreateSymbolicLinkW(lpSymlinkFileName, lpTargetFileName, dwFlags);
-#endif // ^^^ !defined(_CRT_APP) ^^^
 }
 
 // TRANSITION, ABI: preserved for binary compatibility
@@ -150,38 +144,26 @@ extern "C" _CRTIMP2 BOOL __cdecl __crtSetFileInformationByHandle(_In_ HANDLE con
     _In_reads_bytes_(dwBufferSize) LPVOID const lpFileInformation, _In_ DWORD const dwBufferSize) noexcept {
     return SetFileInformationByHandle(hFile, FileInformationClass, lpFileInformation, dwBufferSize);
 }
-#endif // _STL_WIN32_WINNT < _WIN32_WINNT_VISTA
-
-#if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 
 // TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSystemTimeAsFileTime) noexcept {
     GetSystemTimePreciseAsFileTime(lpSystemTimeAsFileTime);
 }
 
-#endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
+#endif // ^^^ !(defined(_M_ARM64) || defined(_CRT_APP) || defined(_ONECORE)) ^^^
 
 extern "C" _Success_(return > 0 && return < BufferLength) DWORD __stdcall __crtGetTempPath2W(
     _In_ DWORD BufferLength, _Out_writes_to_opt_(BufferLength, return +1) LPWSTR Buffer) noexcept {
-#if !defined(_ONECORE)
     // use GetTempPath2W if it is available (only on Windows 11+)...
     IFDYNAMICGETCACHEDFUNCTION(GetTempPath2W) {
         return pfGetTempPath2W(BufferLength, Buffer);
     }
-#endif // ^^^ !defined(_ONECORE) ^^^
 
     // ...otherwise use GetTempPathW.
     return GetTempPathW(BufferLength, Buffer);
 }
 
 // Helper to load all necessary Win32 API function pointers
-
-#if defined(_ONECORE)
-
-// All APIs are statically available, and we can't call GetModuleHandleW().
-
-#else // ^^^ defined(_ONECORE) / !defined(_ONECORE) vvv
-
 static int __cdecl initialize_pointers() noexcept {
     HINSTANCE hKernel32 = GetModuleHandleW(L"kernel32.dll");
     _Analysis_assume_(hKernel32);
@@ -194,5 +176,3 @@ static int __cdecl initialize_pointers() noexcept {
 }
 
 _CRTALLOC(".CRT$XIC") static _PIFV pinit = initialize_pointers;
-
-#endif // ^^^ !defined(_ONECORE) ^^^

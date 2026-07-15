@@ -34,7 +34,6 @@ void test_all_permutations(vector<int>& v) {
         assert(min_element(v.begin(), v.end()) == first_smallest);
         assert(max_element(v.begin(), v.end()) == first_largest);
         assert(minmax_element(v.begin(), v.end()) == make_pair(first_smallest, last_largest));
-
     } while (next_permutation(v.begin(), v.end()));
 }
 

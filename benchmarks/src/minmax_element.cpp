@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <algorithm>
 #include <benchmark/benchmark.h>
+
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <random>
@@ -57,7 +58,7 @@ void bm(benchmark::State& state) {
 }
 
 template <size_t ElementSize>
-void common_arg(auto bm) {
+void common_arg(benchmark::Benchmark* bm) {
     bm->Arg(8021);
     // AVX tail tests
     bm->Arg(63 / ElementSize);

@@ -18,16 +18,13 @@
 #ifdef _M_CEE_PURE
 // no intrinsics for /clr:pure
 #elif defined(_M_ARM64) || defined(_M_ARM64EC)
-// https://learn.microsoft.com/en-us/cpp/build/arm64-windows-abi-conventions?view=msvc-170#base-requirements
+// https://learn.microsoft.com/cpp/build/arm64-windows-abi-conventions#base-requirements
 // Both floating-point and NEON support are presumed to be present in hardware.
 #define _FMP_USING_STD_FMA
-#elif defined(__clang__) // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
-// TRANSITION, not using x86/x64 FMA intrinsics for Clang yet
 #elif defined(_M_IX86) || defined(_M_X64)
 #define _FMP_USING_X86_X64_INTRINSICS
 #include <__msvc_bit_utils.hpp>
-#include <emmintrin.h>
-extern "C" __m128d __cdecl _mm_fmsub_sd(__m128d, __m128d, __m128d);
+#include <intrin.h>
 #endif // ^^^ defined(_M_IX86) || defined(_M_X64) ^^^
 
 #pragma pack(push, _CRT_PACKING)
@@ -167,6 +164,9 @@ namespace _Float_multi_prec {
     }
 
 #ifdef _FMP_USING_X86_X64_INTRINSICS
+#ifdef __clang__
+    [[__gnu__::__target__("fma")]]
+#endif // defined(__clang__)
     _NODISCARD inline double _Sqr_error_x86_x64_fma(const double _Xval, const double _Prod0) noexcept {
         const __m128d _Mx      = _mm_set_sd(_Xval);
         const __m128d _Mprod0  = _mm_set_sd(_Prod0);
@@ -189,18 +189,13 @@ namespace _Float_multi_prec {
         const double _Prod0 = _Xval * _Xval;
 
 #if defined(_FMP_USING_X86_X64_INTRINSICS)
-
-#ifdef __AVX2__
-        return {_Prod0, _Sqr_error_x86_x64_fma(_Xval, _Prod0)};
-#else // ^^^ defined(__AVX2__) / !defined(__AVX2__) vvv
+#ifndef __AVX2__
         const bool _Definitely_have_fma = __isa_available >= _Stl_isa_available_avx2;
-        if (_Definitely_have_fma) {
-            return {_Prod0, _Sqr_error_x86_x64_fma(_Xval, _Prod0)};
-        } else {
+        if (!_Definitely_have_fma) {
             return {_Prod0, _Sqr_error_fallback(_Xval, _Prod0)};
         }
 #endif // ^^^ !defined(__AVX2__) ^^^
-
+        return {_Prod0, _Sqr_error_x86_x64_fma(_Xval, _Prod0)};
 #elif defined(_FMP_USING_STD_FMA)
         return {_Prod0, _Sqr_error_std_fma(_Xval, _Prod0)};
 #else // ^^^ defined(_FMP_USING_STD_FMA) / not using intrinsics vvv
@@ -428,7 +423,7 @@ public:
     }
 
     static bool _Signbit(_Ty _Left) {
-        return (_STD signbit)(static_cast<double>(_Left));
+        return (_STD signbit) (static_cast<double>(_Left));
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -550,7 +545,7 @@ public:
 
     static bool _Isinf(_Ty _Left) noexcept { // test for infinity
 #if defined(__LDBL_DIG__) && __LDBL_DIG__ == 18
-        return _CSTD _LDtest(&_Left) == _INFCODE;
+        return _CSTD _LDtest(&_Left) == FP_INFINITE;
 #else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
         const auto _Uint = _Bit_cast<uint64_t>(_Left);
         return (_Uint & 0x7fffffffffffffffU) == 0x7ff0000000000000U;
@@ -559,7 +554,7 @@ public:
 
     static _CONSTEXPR20 bool _Isnan(_Ty _Left) noexcept {
 #if defined(__LDBL_DIG__) && __LDBL_DIG__ == 18
-        return _CSTD _LDtest(&_Left) == _NANCODE;
+        return _CSTD _LDtest(&_Left) == FP_NAN;
 #else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
         const auto _Uint = _Bit_cast<uint64_t>(_Left);
         return (_Uint & 0x7fffffffffffffffU) > 0x7ff0000000000000U;
@@ -572,7 +567,7 @@ public:
 
     static bool _Signbit(_Ty _Left) noexcept {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return (_STD signbit)(_Left);
+        return (_STD signbit) (_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) noexcept { // return sinh(_Left) * _Right
@@ -708,7 +703,7 @@ public:
 
     static bool _Signbit(_Ty _Left) noexcept {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return (_STD signbit)(_Left);
+        return (_STD signbit) (_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) noexcept { // return sinh(_Left) * _Right
@@ -847,7 +842,7 @@ public:
 
     static bool _Signbit(_Ty _Left) noexcept {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return (_STD signbit)(_Left);
+        return (_STD signbit) (_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) noexcept { // return sinh(_Left) * _Right

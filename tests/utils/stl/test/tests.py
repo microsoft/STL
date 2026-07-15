@@ -236,6 +236,7 @@ class STLTest(Test):
         if ('clang'.casefold() in os.path.basename(cxx).casefold()):
             self._addCustomFeature('clang')
             self._addCustomFeature('gcc-style-warnings')
+            self._addCustomFeature('character-conversion-warnings')
 
             if (targetArch == 'x64'.casefold()):
                 self.compileFlags.append('-m64')
@@ -244,8 +245,11 @@ class STLTest(Test):
             elif (targetArch == 'arm64'.casefold()):
                 self.compileFlags.append('--target=arm64-pc-windows-msvc')
             elif (targetArch == 'arm64ec'.casefold()):
-                # TRANSITION, LLVM-116256 (fixed in Clang 20)
-                return Result(UNSUPPORTED, 'clang targeting arm64ec is not supported')
+                self.compileFlags.append('--target=arm64ec-pc-windows-msvc')
+                # TRANSITION, GH-5825: As of Clang 20, compiling with `-fuse-ld=link` (avoiding lld-link)
+                # appears to be critically necessary for unknown reasons.
+                self.compileFlags.append('-fuse-ld=link')
+                self.linkFlags.append('/machine:arm64ec')
         elif ('nvcc'.casefold() in os.path.basename(cxx).casefold()):
             self._addCustomFeature('nvcc')
 
@@ -258,7 +262,7 @@ class STLTest(Test):
                 self.compileFlags.append('/arm64EC')
                 self.linkFlags.append('/machine:arm64ec')
 
-                # TRANSITION, Windows SDK 10.0.26100.4188 emits
+                # TRANSITION, Windows SDK 10.0.28000 emits
                 # "warning C28301: No annotations for first declaration of 'meow'"
                 # for various intrinsics when building for ARM64EC.
                 self.compileFlags.append('/wd28301')
@@ -313,6 +317,8 @@ class STLTest(Test):
                 self.requires.append('edg') # available for x64, see features.py
             elif flag[1:] == 'arch:AVX2':
                 self.requires.append('arch_avx2') # available for x86 and x64, see features.py
+            elif flag[1:] == 'D_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC':
+                self.requires.append('arm64ec')
             elif flag[1:] == 'MDd':
                 self._addCustomFeature('MDd')
                 self._addCustomFeature('debug_CRT')
@@ -341,14 +347,13 @@ class STLTest(Test):
             self._addCustomFeature('MT')
             self._addCustomFeature('static_CRT')
 
-        # clang doesn't know how to link in the VS version of the asan runtime automatically
+        # Clang doesn't know how to link in the VS version of the ASan runtime automatically
         if 'asan' in self.config.available_features and 'clang' in self.config.available_features:
             self.linkFlags.append("/INFERASANLIBS")
 
         # code analysis settings
         if 'espxengine' in self.config.available_features:
             self.compileFlags.extend(["/analyze:rulesetdirectory", ';'.join(litConfig.ruleset_dirs[self.config.name])])
-            self.env['Esp.Extensions'] = 'CppCoreCheck.dll'
             self.env['Esp.AnnotationBuildLevel'] = 'Ignore'
 
 class LibcxxTest(STLTest):

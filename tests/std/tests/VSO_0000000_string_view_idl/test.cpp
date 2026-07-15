@@ -247,7 +247,7 @@ int main(int argc, char* argv[]) {
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
     // basic_string_view::_Copy_s() is a non-Standard extension that's unconditionally checked.
-    // See: https://learn.microsoft.com/en-us/cpp/standard-library/basic-string-view-class?view=msvc-170#_copy_s
+    // See: https://learn.microsoft.com/cpp/standard-library/basic-string-view-class#_copy_s
     exec.add_death_tests({
         test_case_Copy_s,
     });

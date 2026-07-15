@@ -384,9 +384,8 @@ template <class _Kty, class _Ty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>
 map(initializer_list<pair<_Kty, _Ty>>, _Alloc) -> map<_Kty, _Ty, less<_Kty>, _Alloc>;
 
 #if _HAS_CXX23
-template <_RANGES input_range _Rng, class _Pr = less<_Range_key_type<_Rng>>,
+template <_RANGES input_range _Rng, _Not_allocator_for_container _Pr = less<_Range_key_type<_Rng>>,
     _Allocator_for_container _Alloc = allocator<_Range_to_alloc_type<_Rng>>>
-    requires (!_Allocator_for_container<_Pr>)
 map(from_range_t, _Rng&&, _Pr = _Pr(), _Alloc = _Alloc())
     -> map<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Pr, _Alloc>;
 
@@ -615,9 +614,8 @@ template <class _Kty, class _Ty, class _Alloc, enable_if_t<_Is_allocator<_Alloc>
 multimap(initializer_list<pair<_Kty, _Ty>>, _Alloc) -> multimap<_Kty, _Ty, less<_Kty>, _Alloc>;
 
 #if _HAS_CXX23
-template <_RANGES input_range _Rng, class _Pr = less<_Range_key_type<_Rng>>,
+template <_RANGES input_range _Rng, _Not_allocator_for_container _Pr = less<_Range_key_type<_Rng>>,
     _Allocator_for_container _Alloc = allocator<_Range_to_alloc_type<_Rng>>>
-    requires (!_Allocator_for_container<_Pr>)
 multimap(from_range_t, _Rng&&, _Pr = _Pr(), _Alloc = _Alloc())
     -> multimap<_Range_key_type<_Rng>, _Range_mapped_type<_Rng>, _Pr, _Alloc>;
 

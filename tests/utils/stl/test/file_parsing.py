@@ -58,7 +58,7 @@ _INCLUDE_REGEX = re.compile(r'^RUNALL_INCLUDE (?P<filename>.+$)')
 _TAGS_REGEX = re.compile(r'^(?P<tags>(\*|\w+(,\w+)*))\t+(?P<remainder>.*)$')
 _ENV_VAR_MULTI_ITEM_REGEX = re.compile(r'(?P<name>\w+)="(?P<value>.*?)"')
 _CROSSLIST_REGEX = re.compile(r'^RUNALL_CROSSLIST$')
-_EXPECTED_RESULT_REGEX = re.compile(r'^(?P<prefix>.*) (?P<result>.*?)$')
+_EXPECTED_RESULT_REGEX = re.compile(r'^(?P<prefix>[^ ]+) (?P<result>\w+)$')
 
 
 def _parse_env_line(line: str) -> Optional[_TmpEnvEntry]:
@@ -101,7 +101,7 @@ def _do_crosslist(ctx: _ParseCtx):
 
 
 def _parse_env_lst(env_lst: Path, ctx: _ParseCtx):
-    for line in parse_commented_file(env_lst):
+    for _, line in _parse_commented_file(env_lst):
         if (m:=_INCLUDE_REGEX.match(line)) is not None:
             p = env_lst.parent / Path(m.group("filename"))
             _parse_env_lst(p, ctx)
@@ -112,19 +112,19 @@ def _parse_env_lst(env_lst: Path, ctx: _ParseCtx):
             ctx.current.append(_parse_env_line(line))
 
 
-def parse_commented_file(filename: Union[str, bytes, os.PathLike]) \
-        -> List[str]:
+def _parse_commented_file(filename: Union[str, bytes, os.PathLike]) \
+        -> List[Tuple[int, str]]:
     if str(filename) in _preprocessed_file_cache:
         return _preprocessed_file_cache[str(filename)]
 
     filename_path = Path(filename)
     result = list()
     with filename_path.open() as f:
-        for line in f.readlines():
+        for line_number, line in enumerate(f.readlines(), start=1):
             if (line:=_COMMENT_REGEX.sub("", line)):
                 line = line.strip()
                 if line:
-                    result.append(line)
+                    result.append((line_number, line))
 
         _preprocessed_file_cache[str(filename)] = result
         return result
@@ -136,13 +136,17 @@ def parse_result_file(filename: Union[str, bytes, os.PathLike]) \
         return _expected_result_entry_cache[str(filename)]
 
     res = dict()
-    for line in parse_commented_file(filename):
+    for line_number, line in _parse_commented_file(filename):
         m = _EXPECTED_RESULT_REGEX.match(line)
+        if m is None:
+            raise Exception(f'Incorrectly formatted line {line_number}: "{line}" in {filename}.')
         prefix = m.group("prefix")
         result = m.group("result")
         result_code = getattr(lit.Test, result, None)
         if result_code is None:
-            result_code = getattr(stl.test.tests, result)
+            result_code = getattr(stl.test.tests, result, None)
+        if result_code is None:
+            raise Exception(f'Unknown result code "{result}" in line {line_number}: "{line}" in {filename}.')
         res[prefix] = result_code
 
     _expected_result_entry_cache[str(filename)] = res

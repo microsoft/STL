@@ -2,13 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
-#define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
 
 #include <array>
 #include <cassert>
 #include <cstring>
 #include <deque>
-#include <experimental/filesystem>
 #include <forward_list>
 #include <iterator>
 #include <list>
@@ -30,6 +28,8 @@
 #if _HAS_CXX20
 #include <span>
 #endif // _HAS_CXX20
+
+#include <experimental_filesystem.hpp>
 
 using namespace std;
 
@@ -188,9 +188,6 @@ int main() {
 #if _HAS_CXX17
     test_iterator<std::filesystem::path::iterator>();
 #endif // _HAS_CXX17
-
-    test_iterator<stdext::checked_array_iterator<int*>>();
-    test_iterator<stdext::unchecked_array_iterator<int*>>();
 
     {
         // Also test string iterator subtraction.

@@ -7,6 +7,7 @@
 #include <memory>
 #include <thread>
 #include <type_traits>
+
 #ifdef _DEBUG
 #include <crtdbg.h>
 #endif // _DEBUG

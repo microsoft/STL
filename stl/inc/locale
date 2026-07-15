@@ -23,76 +23,45 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 template <class _Elem>
-int __CRTDECL _LStrcoll(const _Elem* _First1, const _Elem* _Last1, const _Elem* _First2, const _Elem* _Last2,
-    const _Locinfo::_Collvec*) { // perform locale-specific comparison of _Elem sequences
-    for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, ++_First2) {
-        if (*_First1 < *_First2) {
-            return -1; // [_First1, _Last1) < [_First2, _Last2)
-        } else if (*_First2 < *_First1) {
-            return +1; // [_First1, _Last1) > [_First2, _Last2)
+int _LStrcoll(const _Elem* _First1, const _Elem* _Last1, const _Elem* _First2, const _Elem* _Last2,
+    const _Locinfo::_Collvec* _Vector) { // perform locale-specific comparison of _Elem sequences
+    if constexpr (is_same_v<_Elem, char>) {
+        return _Strcoll(_First1, _Last1, _First2, _Last2, _Vector);
+    } else if constexpr (_Is_wchar_or_crtbld_ushort<_Elem>) { // no-op casts if _Elem is wchar_t
+        return _Wcscoll(reinterpret_cast<const wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_Last1),
+            reinterpret_cast<const wchar_t*>(_First2), reinterpret_cast<const wchar_t*>(_Last2), _Vector);
+    } else {
+        for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, ++_First2) {
+            if (*_First1 < *_First2) {
+                return -1; // [_First1, _Last1) < [_First2, _Last2)
+            } else if (*_First2 < *_First1) {
+                return +1; // [_First1, _Last1) > [_First2, _Last2)
+            }
         }
+
+        return _First2 != _Last2 ? -1 : _First1 != _Last1 ? +1 : 0;
     }
-
-    return _First2 != _Last2 ? -1 : _First1 != _Last1 ? +1 : 0;
 }
-
-template <>
-inline int __CRTDECL _LStrcoll(const char* _First1, const char* _Last1, const char* _First2, const char* _Last2,
-    const _Locinfo::_Collvec* _Vector) { // perform locale-specific comparison of char sequences
-    return _Strcoll(_First1, _Last1, _First2, _Last2, _Vector);
-}
-
-template <>
-inline int __CRTDECL _LStrcoll(const wchar_t* _First1, const wchar_t* _Last1, const wchar_t* _First2,
-    const wchar_t* _Last2,
-    const _Locinfo::_Collvec* _Vector) { // perform locale-specific comparison of wchar_t sequences
-    return _Wcscoll(_First1, _Last1, _First2, _Last2, _Vector);
-}
-
-#ifdef _CRTBLD
-template <>
-inline int __CRTDECL _LStrcoll(const unsigned short* _First1, const unsigned short* _Last1,
-    const unsigned short* _First2, const unsigned short* _Last2,
-    const _Locinfo::_Collvec* _Vector) { // perform locale-specific comparison of unsigned short sequences
-    return _Wcscoll(reinterpret_cast<const wchar_t*>(_First1), reinterpret_cast<const wchar_t*>(_Last1),
-        reinterpret_cast<const wchar_t*>(_First2), reinterpret_cast<const wchar_t*>(_Last2), _Vector);
-}
-#endif // defined(_CRTBLD)
 
 template <class _Elem>
-size_t __CRTDECL _LStrxfrm(_Elem* _First1, _Elem* _Last1, const _Elem* _First2, const _Elem* _Last2,
-    const _Locinfo::_Collvec*) { // perform locale-specific transform of _Elems [_First1, _Last1)
-    const ptrdiff_t _Count = _Last2 - _First2;
-    if (_Count <= _Last1 - _First1) {
-        _CSTD memcpy(_First1, _First2, _Count * sizeof(_Elem));
+size_t _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return) _Elem* _First1, _Elem* _Last1,
+    _In_reads_(_Last2 - _First2) const _Elem* _First2, const _Elem* _Last2,
+    _In_opt_ const _Locinfo::_Collvec* _Vector) {
+    // perform locale-specific transform of _Elems [_First1, _Last1)
+    if constexpr (is_same_v<_Elem, char>) {
+        return _Strxfrm(_First1, _Last1, _First2, _Last2, _Vector);
+    } else if constexpr (_Is_wchar_or_crtbld_ushort<_Elem>) { // no-op casts if _Elem is wchar_t
+        return _Wcsxfrm(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<wchar_t*>(_Last1),
+            reinterpret_cast<const wchar_t*>(_First2), reinterpret_cast<const wchar_t*>(_Last2), _Vector);
+    } else {
+        const ptrdiff_t _Count = _Last2 - _First2;
+        if (_Count <= _Last1 - _First1) {
+            _CSTD memcpy(_First1, _First2, _Count * sizeof(_Elem));
+        }
+
+        return _Count;
     }
-
-    return _Count;
 }
-
-template <>
-inline size_t __CRTDECL _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return) char* _First1,
-    _In_z_ char* _Last1, const char* _First2, const char* _Last2,
-    const _Locinfo::_Collvec* _Vector) { // perform locale-specific transform of chars [_First1, _Last1)
-    return _Strxfrm(_First1, _Last1, _First2, _Last2, _Vector);
-}
-
-template <>
-inline size_t __CRTDECL _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return) wchar_t* _First1,
-    _In_z_ wchar_t* _Last1, const wchar_t* _First2, const wchar_t* _Last2,
-    const _Locinfo::_Collvec* _Vector) { // perform locale-specific transform of wchar_ts [_First1, _Last1)
-    return _Wcsxfrm(_First1, _Last1, _First2, _Last2, _Vector);
-}
-
-#ifdef _CRTBLD
-template <>
-inline size_t __CRTDECL _LStrxfrm(_Out_writes_(_Last1 - _First1) _Post_readable_size_(return) unsigned short* _First1,
-    _In_z_ unsigned short* _Last1, const unsigned short* _First2, const unsigned short* _Last2,
-    const _Locinfo::_Collvec* _Vector) { // perform locale-specific transform of unsigned shorts [_First1, _Last1)
-    return _Wcsxfrm(reinterpret_cast<wchar_t*>(_First1), reinterpret_cast<wchar_t*>(_Last1),
-        reinterpret_cast<const wchar_t*>(_First2), reinterpret_cast<const wchar_t*>(_Last2), _Vector);
-}
-#endif // defined(_CRTBLD)
 
 template <class _Elem>
 class _Regex_traits;
@@ -191,7 +160,7 @@ protected:
     }
 
 private:
-    _Locinfo::_Collvec _Coll; // used by _LStrcoll and _XStrxfrm
+    _Locinfo::_Collvec _Coll; // used by _LStrcoll and _LStrxfrm
 
     friend _Regex_traits<_Elem>;
 };

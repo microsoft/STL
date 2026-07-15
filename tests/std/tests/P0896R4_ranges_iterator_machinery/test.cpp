@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <__msvc_int128.hpp>
 #include <cassert>
 #include <compare>
 #include <concepts>
@@ -112,6 +113,20 @@ struct simple_input_iter {
     simple_input_iter operator++(int);
 
     bool operator==(simple_input_iter const&) const = default;
+};
+
+struct empty_list_input_iter {
+    using value_type      = double;
+    using difference_type = long;
+
+    // not default constructible, although initializable with {}
+    explicit empty_list_input_iter(std::initializer_list<int>);
+
+    value_type operator*() const;
+    empty_list_input_iter& operator++();
+    empty_list_input_iter operator++(int);
+
+    bool operator==(const empty_list_input_iter&) const = default;
 };
 
 template <class Base = empty_type>
@@ -324,14 +339,18 @@ struct destructible_archetype<0> {
 };
 inline constexpr std::size_t destructible_archetype_max = 1;
 
-// clang-format off
-#define COPYABLE_OPS(prefix)                                                    \
-    prefix##_archetype(prefix##_archetype const&) requires (I != 1);            \
-    prefix##_archetype(prefix##_archetype&&) requires (I == 2) = delete;        \
-                                                                                \
-    prefix##_archetype& operator=(prefix##_archetype const&) requires (I != 3); \
-    prefix##_archetype& operator=(prefix##_archetype&&) requires (I == 4) = delete
-// clang-format on
+#define COPYABLE_OPS(prefix)                                 \
+    prefix##_archetype(prefix##_archetype const&)            \
+        requires (I != 1);                                   \
+    prefix##_archetype(prefix##_archetype&&)                 \
+        requires (I == 2)                                    \
+    = delete;                                                \
+                                                             \
+    prefix##_archetype& operator=(prefix##_archetype const&) \
+        requires (I != 3);                                   \
+    prefix##_archetype& operator=(prefix##_archetype&&)      \
+        requires (I == 4)                                    \
+    = delete
 
 template <std::size_t I>
 struct semiregular_archetype : destructible_archetype<I> {
@@ -359,25 +378,29 @@ struct weakly_incrementable_archetype_dt<7> {
 
 template <std::size_t I, class Derived, class Post = void>
 struct increment_ops {
-    // clang-format off
-    void operator++() requires (I == 8);
-    Derived operator++() requires (I == 9);
-    Derived& operator++() requires (I < 8 || I >= 10);
-    Post operator++(int) requires (I != 10);
-    // clang-format on
+    void operator++()
+        requires (I == 8);
+    Derived operator++()
+        requires (I == 9);
+    Derived& operator++()
+        requires (I < 8 || I >= 10);
+    Post operator++(int)
+        requires (I != 10);
 };
 
 template <std::size_t I>
 struct weakly_incrementable_archetype : destructible_archetype<I>,
                                         weakly_incrementable_archetype_dt<I>,
                                         increment_ops<I, weakly_incrementable_archetype<I>, void> {
-    // clang-format off
-    weakly_incrementable_archetype(weakly_incrementable_archetype const&)                       = delete;
-    weakly_incrementable_archetype(weakly_incrementable_archetype&&) requires (I < 1 || I >= 3) = default;
+    weakly_incrementable_archetype(weakly_incrementable_archetype const&) = delete;
+    weakly_incrementable_archetype(weakly_incrementable_archetype&&)
+        requires (I < 1 || I >= 3)
+    = default;
 
     weakly_incrementable_archetype& operator=(weakly_incrementable_archetype const&) = delete;
-    weakly_incrementable_archetype& operator=(weakly_incrementable_archetype&&) requires (I < 3 || I >= 5) = default;
-    // clang-format on
+    weakly_incrementable_archetype& operator=(weakly_incrementable_archetype&&)
+        requires (I < 3 || I >= 5)
+    = default;
 };
 
 inline constexpr std::size_t weakly_incrementable_archetype_max = 11;
@@ -390,11 +413,11 @@ struct incrementable_archetype : weakly_incrementable_archetype<I>,
     COPYABLE_OPS(incrementable);
     using increment_ops<I, incrementable_archetype<I>, incrementable_archetype<I>>::operator++;
 
-    // clang-format off
-    bool operator==(incrementable_archetype const&) const requires (I != 12);
+    bool operator==(incrementable_archetype const&) const
+        requires (I != 12);
     bool operator!=(incrementable_archetype const&) const
-        requires (I == 13) = delete;
-    // clang-format on
+        requires (I == 13)
+    = delete;
 };
 
 inline constexpr std::size_t incrementable_archetype_max = 14;
@@ -403,13 +426,15 @@ template <std::size_t I>
 struct iterator_archetype : weakly_incrementable_archetype<I> {
     COPYABLE_OPS(iterator);
 
-    // clang-format off
-    iterator_archetype& operator++() requires (I > 9);
-    void operator++(int) requires (I != 10);
+    iterator_archetype& operator++()
+        requires (I > 9);
+    void operator++(int)
+        requires (I != 10);
 
-    void operator*() requires (I == 11);
-    int operator*() requires (I != 11);
-    // clang-format on
+    void operator*()
+        requires (I == 11);
+    int operator*()
+        requires (I != 11);
 };
 
 inline constexpr std::size_t iterator_archetype_max = 12;
@@ -463,14 +488,15 @@ struct output_iterator_archetype : iterator_archetype<I>,
     COPYABLE_OPS(output_iterator);
     using increment_ops<I, output_iterator_archetype<I>, output_iterator_archetype<I>&>::operator++;
 
-    // clang-format off
     // dereference ops from iterator_archetype
-    void operator*() requires (I == 11);
-    output_iterator_archetype& operator*() requires (I != 11);
+    void operator*()
+        requires (I == 11);
+    output_iterator_archetype& operator*()
+        requires (I != 11);
 
     // indirectly_writable requirements
-    void operator=(int) requires (I != 12);
-    // clang-format on
+    void operator=(int)
+        requires (I != 12);
 };
 
 inline constexpr std::size_t output_iterator_archetype_max = 13;
@@ -503,11 +529,11 @@ struct input_iterator_archetype : iterator_archetype<I>,
     COPYABLE_OPS(input_iterator);
     using increment_ops<I, input_iterator_archetype<I>, void>::operator++;
 
-    // clang-format off
     // dereference ops from iterator_archetype
-    void operator*() const requires (I == 11);
-    int& operator*() const requires (I != 11);
-    // clang-format on
+    void operator*() const
+        requires (I == 11);
+    int& operator*() const
+        requires (I != 11);
 };
 
 inline constexpr std::size_t input_iterator_archetype_max = 16;
@@ -520,22 +546,25 @@ struct forward_iterator_archetype : input_iterator_archetype<I>,
     COPYABLE_OPS(forward_iterator);
     using increment_ops<I, forward_iterator_archetype<I>, forward_iterator_archetype<I>>::operator++;
 
-    // clang-format off
-    bool operator==(forward_iterator_archetype const&) const requires (I != 17);
-    bool operator!=(forward_iterator_archetype const&) const requires (I == 18) = delete;
-    // clang-format on
+    bool operator==(forward_iterator_archetype const&) const
+        requires (I != 17);
+    bool operator!=(forward_iterator_archetype const&) const
+        requires (I == 18)
+    = delete;
 };
 
 inline constexpr std::size_t forward_iterator_archetype_max = 19;
 
 template <std::size_t I, class Derived>
 struct decrement_ops {
-    // clang-format off
-    void operator--() requires (I == 19);
-    Derived operator--() requires (I == 20);
-    Derived& operator--() requires (I < 19 || I >= 21);
-    Derived operator--(int) requires (I != 21);
-    // clang-format on
+    void operator--()
+        requires (I == 19);
+    Derived operator--()
+        requires (I == 20);
+    Derived& operator--()
+        requires (I < 19 || I >= 21);
+    Derived operator--(int)
+        requires (I != 21);
 };
 
 template <std::size_t I>
@@ -560,22 +589,31 @@ struct random_iterator_archetype : bidi_iterator_archetype<I>,
     using increment_ops<I, random_iterator_archetype<I>, random_iterator_archetype<I>>::operator++;
     using decrement_ops<I, random_iterator_archetype<I>>::operator--;
 
-    // clang-format off
-    std::strong_ordering operator<=>(random_iterator_archetype const&) const requires (I != 22);
+    std::strong_ordering operator<=>(random_iterator_archetype const&) const
+        requires (I != 22);
 
-    int operator-(random_iterator_archetype const&) const requires (I != 5 && I != 23);
+    int operator-(random_iterator_archetype const&) const
+        requires (I != 5 && I != 23);
 
-    random_iterator_archetype& operator+=(int) requires (I != 24);
-    random_iterator_archetype operator+(int) const requires (I != 25);
-    friend random_iterator_archetype operator+(int, random_iterator_archetype const&) requires (I != 26) {}
+    random_iterator_archetype& operator+=(int)
+        requires (I != 24);
+    random_iterator_archetype operator+(int) const
+        requires (I != 25);
+    friend random_iterator_archetype operator+(int, random_iterator_archetype const&)
+        requires (I != 26)
+    {}
 
-    random_iterator_archetype& operator-=(int) requires (I != 27);
-    random_iterator_archetype operator-(int) const requires (I != 28);
+    random_iterator_archetype& operator-=(int)
+        requires (I != 27);
+    random_iterator_archetype operator-(int) const
+        requires (I != 28);
 
-    void operator[](int) const requires (I == 29);
-    int operator[](int) const requires (I == 30);
-    int& operator[](int) const requires (I < 29 || I >= 31);
-    // clang-format on
+    void operator[](int) const
+        requires (I == 29);
+    int operator[](int) const
+        requires (I == 30);
+    int& operator[](int) const
+        requires (I < 29 || I >= 31);
 };
 
 inline constexpr std::size_t random_iterator_archetype_max = 31;
@@ -608,16 +646,21 @@ struct contig_iterator_archetype : increment_ops<I, contig_iterator_archetype<I>
     using increment_ops<I, contig_iterator_archetype<I>, contig_iterator_archetype<I>>::operator++;
     using decrement_ops<I, contig_iterator_archetype<I>>::operator--;
 
-    // clang-format off
-    int operator-(contig_iterator_archetype const&) const requires (I != 5 && I != 23);
+    int operator-(contig_iterator_archetype const&) const
+        requires (I != 5 && I != 23);
 
-    contig_iterator_archetype& operator+=(int) requires (I != 24);
-    contig_iterator_archetype operator+(int) const requires (I != 25);
-    friend contig_iterator_archetype operator+(int, contig_iterator_archetype const&) requires (I != 26) {}
+    contig_iterator_archetype& operator+=(int)
+        requires (I != 24);
+    contig_iterator_archetype operator+(int) const
+        requires (I != 25);
+    friend contig_iterator_archetype operator+(int, contig_iterator_archetype const&)
+        requires (I != 26)
+    {}
 
-    contig_iterator_archetype& operator-=(int) requires (I != 27);
-    contig_iterator_archetype operator-(int) const requires (I != 28);
-    // clang-format on
+    contig_iterator_archetype& operator-=(int)
+        requires (I != 27);
+    contig_iterator_archetype operator-(int) const
+        requires (I != 28);
 };
 
 template <std::size_t I>
@@ -842,15 +885,13 @@ namespace iterator_traits_test {
         auto operator<=>(with_pointer const&) const = default;
     };
 
-    // clang-format off
     template <class T>
-    concept has_empty_traits = !(requires { typename iterator_traits<T>::iterator_concept; }
-        || requires { typename iterator_traits<T>::iterator_category; }
-        || requires { typename iterator_traits<T>::value_type; }
-        || requires { typename iterator_traits<T>::difference_type; }
-        || requires { typename iterator_traits<T>::pointer; }
-        || requires { typename iterator_traits<T>::reference; });
-    // clang-format on
+    concept has_empty_traits = !requires { typename iterator_traits<T>::iterator_concept; } //
+                            && !requires { typename iterator_traits<T>::iterator_category; } //
+                            && !requires { typename iterator_traits<T>::value_type; } //
+                            && !requires { typename iterator_traits<T>::difference_type; } //
+                            && !requires { typename iterator_traits<T>::pointer; } //
+                            && !requires { typename iterator_traits<T>::reference; };
 
     // Verify that iterator_traits pulls from nested member typedefs when the four key names are defined
     using four_members =
@@ -916,6 +957,7 @@ namespace iterator_traits_test {
     // * 3.2.2: "... Otherwise, reference names iter_reference_t<I>."
     // * 3.2.3.4 "... Otherwise, iterator_category names... input_iterator_tag."
     static_assert(check<simple_input_iter, no_such_type, input_iterator_tag, double, long, void, double>());
+    static_assert(check<empty_list_input_iter, no_such_type, input_iterator_tag, double, long, void, double>());
 
     // N4928 [iterator.traits]:
     // * 3.2.1: "... Otherwise, pointer names void."
@@ -1083,7 +1125,7 @@ namespace iterator_cust_move_test {
         return i + 1;
     }
     static_assert(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&)(int)>);
-    static_assert(ranges::iter_move(&f)(42) == 43);
+    static_assert(ranges::iter_move (&f)(42) == 43);
     static_assert(noexcept(ranges::iter_move(&f)));
 
     struct ref_is_lvalue {
@@ -1178,7 +1220,8 @@ namespace iterator_cust_swap_test {
         // This test notably executes both at runtime and at compiletime.
         static_assert(bullet2<int*>);
 
-        int i0 = 42, i1 = 13;
+        int i0 = 42;
+        int i1 = 13;
         static_assert(same_as<decltype(ranges::iter_swap(&i0, &i1)), void>);
         ranges::iter_swap(&i0, &i1);
         assert(i0 == 13);
@@ -1965,9 +2008,9 @@ namespace iter_ops {
         constexpr explicit trace_iterator(int const pos, trace& t) noexcept(NoThrow == nothrow::yes)
             : trace_{&t}, pos_{pos} {}
 
-        // clang-format off
-        trace_iterator(trace_iterator const&) requires is_forward = default;
-        // clang-format on
+        trace_iterator(trace_iterator const&)
+            requires is_forward
+        = default;
         trace_iterator(trace_iterator&&) = default;
 
         constexpr trace_iterator& operator=(trace_iterator const& that) noexcept(NoThrow == nothrow::yes)
@@ -3302,7 +3345,7 @@ namespace reverse_iterator_test {
 namespace move_iterator_test {
     using std::bidirectional_iterator_tag, std::default_sentinel_t, std::forward_iterator_tag, std::input_iterator_tag,
         std::move_iterator, std::move_sentinel, std::random_access_iterator_tag, std::same_as, std::string,
-        std::three_way_comparable, std::three_way_comparable_with;
+        std::three_way_comparable, std::three_way_comparable_with, std::default_initializable;
 
     template <bool CanCopy>
     struct input_iter {
@@ -3322,11 +3365,13 @@ namespace move_iterator_test {
         };
 
         input_iter() = default;
-        // clang-format off
-        input_iter(input_iter const&) requires CanCopy = default;
+        input_iter(input_iter const&)
+            requires CanCopy
+        = default;
         input_iter(input_iter&&) = default;
-        input_iter& operator=(input_iter const&) requires CanCopy = default;
-        // clang-format on
+        input_iter& operator=(input_iter const&)
+            requires CanCopy
+        = default;
         input_iter& operator=(input_iter&&) = default;
 
         reference operator*() const;
@@ -3389,6 +3434,8 @@ namespace move_iterator_test {
     static_assert(same_as<move_iterator<simple_forward_iter<>>::iterator_category, forward_iterator_tag>);
     static_assert(same_as<move_iterator<simple_input_iter>::iterator_concept, input_iterator_tag>);
     static_assert(same_as<move_iterator<simple_input_iter>::iterator_category, input_iterator_tag>);
+    static_assert(same_as<move_iterator<empty_list_input_iter>::iterator_concept, input_iterator_tag>);
+    static_assert(same_as<move_iterator<empty_list_input_iter>::iterator_category, input_iterator_tag>);
     static_assert(same_as<move_iterator<input_iter<true>>::iterator_concept, input_iterator_tag>);
     static_assert(same_as<move_iterator<xvalue_random_iter>::iterator_concept, random_access_iterator_tag>);
     static_assert(same_as<move_iterator<xvalue_random_iter>::iterator_category, random_access_iterator_tag>);
@@ -3493,6 +3540,14 @@ namespace move_iterator_test {
         !has_greater_eq<move_iterator<simple_random_iter<sentinel_base>>, move_sentinel<std::default_sentinel_t>>);
     static_assert(!three_way_comparable<move_iterator<simple_random_iter<sentinel_base>>,
         move_sentinel<std::default_sentinel_t>>);
+
+    // LWG-4125 "move_iterator's default constructor should be constrained"
+    // Validate default-constructibility
+    static_assert(!default_initializable<move_iterator<simple_input_iter>>);
+    static_assert(!default_initializable<move_iterator<empty_list_input_iter>>);
+    static_assert(default_initializable<move_iterator<input_iter<true>>>);
+    static_assert(default_initializable<move_iterator<input_iter<false>>>);
+    static_assert(default_initializable<move_iterator<int*>>);
 
     // GH-3014 "<ranges>: list-initialization is misused"
     void test_gh_3014() { // COMPILE-ONLY
@@ -3648,6 +3703,33 @@ namespace lwg3420 {
     static_assert(!has_member_difference_type<std::iterator_traits<X>>);
     static_assert(!has_member_value_type<std::iterator_traits<X>>);
 } // namespace lwg3420
+
+namespace lwg4510 {
+    // Test LWG-4510
+    // "Ambiguity of std::ranges::advance and std::ranges::next when the difference type is also a sentinel type"
+    template <class T>
+    struct IterType {
+        using difference_type = int;
+
+        IterType& operator++();
+        IterType operator++(int);
+        IterType& operator*() const;
+
+        friend bool operator==(const IterType&, const IterType&);
+    };
+
+    struct AnyType {
+        template <class T>
+        AnyType(const T&);
+
+        friend bool operator==(const AnyType&, const AnyType&);
+    };
+
+    static_assert(std::input_or_output_iterator<IterType<AnyType>>);
+    static_assert(std::sentinel_for<IterType<AnyType>, IterType<AnyType>>);
+    static_assert(!std::sentinel_for<int, IterType<AnyType>>);
+    static_assert(!std::sentinel_for<std::_Unsigned128, IterType<AnyType>>);
+} // namespace lwg4510
 
 namespace vso1121031 {
     // Validate that indirectly_readable_traits accepts type arguments with both value_type and element_type nested

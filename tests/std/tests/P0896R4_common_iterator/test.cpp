@@ -203,15 +203,13 @@ constexpr bool test_operator_arrow() {
 // common_iterator supports "copyable but not equality_comparable" iterators, which combination test::iterator does not
 // provide (I don't think this is a combination of properties that any real iterator will ever exhibit). Whip up
 // something so we can test the iterator_category metaprogramming.
-// clang-format off
 template <class T>
-concept no_iterator_traits = !requires { typename iterator_traits<T>::iterator_concept; }
-    && !requires { typename iterator_traits<T>::iterator_category; }
-    && !requires { typename iterator_traits<T>::value_type; }
-    && !requires { typename iterator_traits<T>::difference_type; }
-    && !requires { typename iterator_traits<T>::pointer; }
-    && !requires { typename iterator_traits<T>::reference; };
-// clang-format on
+concept no_iterator_traits = !requires { typename iterator_traits<T>::iterator_concept; } //
+                          && !requires { typename iterator_traits<T>::iterator_category; } //
+                          && !requires { typename iterator_traits<T>::value_type; } //
+                          && !requires { typename iterator_traits<T>::difference_type; } //
+                          && !requires { typename iterator_traits<T>::pointer; } //
+                          && !requires { typename iterator_traits<T>::reference; };
 
 struct input_copy_but_no_eq {
     using value_type      = int;

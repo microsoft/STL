@@ -886,7 +886,7 @@ public:
     constexpr common_iterator(const common_iterator<_OIter, _OSe>& _Right)
         noexcept(is_nothrow_constructible_v<_Iter, const _OIter&>
                  && is_nothrow_constructible_v<_Se, const _OSe&>) // strengthened
-        : _Val{_Right._Get_val()} {}
+        : _Val{_Right._Get_val_for_hardened_construction()} {}
 
     template <class _OIter, class _OSe>
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
@@ -895,25 +895,30 @@ public:
         noexcept(is_nothrow_constructible_v<_Iter, const _OIter&> && is_nothrow_constructible_v<_Se, const _OSe&>
                  && is_nothrow_assignable_v<_Iter&, const _OIter&>
                  && is_nothrow_assignable_v<_Se&, const _OSe&>) /* strengthened */ {
-        _Val = _Right._Get_val();
+        auto& _Right_val = _Right._Get_val();
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Right_val._Contains != _Variantish_state::_Nothing,
+            "common_iterator can only be assigned from if it holds a value");
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
+        _Val = _Right_val;
         return *this;
     }
 
     _NODISCARD constexpr decltype(auto) operator*() {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be dereferenced if it holds an iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return *_Val._Get_first();
     }
 
     _NODISCARD constexpr decltype(auto) operator*() const
         requires _Dereferenceable<const _Iter>
     {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be dereferenced if it holds an iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return *_Val._Get_first();
     }
 
@@ -922,10 +927,10 @@ public:
               && (_Has_member_arrow<const _Iter&> || is_reference_v<iter_reference_t<_Iter>>
                   || constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>)
     {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be dereferenced if it holds an iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         if constexpr (_Has_member_arrow<const _Iter&> || is_pointer_v<_Iter>) {
             return _Val._Get_first();
         } else if constexpr (is_reference_v<iter_reference_t<_Iter>>) {
@@ -948,19 +953,19 @@ public:
     }
 
     constexpr common_iterator& operator++() {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be incremented if it holds an iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         ++_Val._Get_first();
         return *this;
     }
 
     constexpr decltype(auto) operator++(int) {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be incremented if it holds an iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         if constexpr (forward_iterator<_Iter>) {
             common_iterator _Tmp = *this;
             ++_Val._Get_first();
@@ -990,11 +995,11 @@ public:
     _NODISCARD friend constexpr bool operator==(
         const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         auto& _Right_val = _Right._Get_val();
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(
             _Left._Val._Contains != _Variantish_state::_Nothing && _Right_val._Contains != _Variantish_state::_Nothing,
             "common_iterators can only be compared if both hold a value");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
 
         if (_Left._Val._Contains == _Variantish_state::_Holds_first) {
             if (_Right_val._Contains == _Variantish_state::_Holds_first) {
@@ -1020,11 +1025,11 @@ public:
     _NODISCARD friend constexpr iter_difference_t<_OIter> operator-(
         const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         auto& _Right_val = _Right._Get_val();
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(
             _Left._Val._Contains != _Variantish_state::_Nothing && _Right_val._Contains != _Variantish_state::_Nothing,
             "Cannot take difference of valueless common_iterators");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
 
         if (_Left._Val._Contains == _Variantish_state::_Holds_first) {
             if (_Right_val._Contains == _Variantish_state::_Holds_first) {
@@ -1045,10 +1050,10 @@ public:
         noexcept(noexcept(_RANGES iter_move(_Right._Val._Get_first())))
         requires input_iterator<_Iter>
     {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Right._Val._Contains == _Variantish_state::_Holds_first,
             "can only iter_move from common_iterator if it holds an iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return _RANGES iter_move(_Right._Val._Get_first());
     }
 
@@ -1056,11 +1061,11 @@ public:
     friend constexpr void iter_swap(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right)
         noexcept(noexcept(_RANGES iter_swap(_Left._Val._Get_first(), _Right._Get_val()._Get_first()))) {
         auto& _Right_val = _Right._Get_val();
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Left._Val._Contains == _Variantish_state::_Holds_first
                         && _Right_val._Contains == _Variantish_state::_Holds_first,
             "can only iter_swap common_iterators if both hold iterators");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return _RANGES iter_swap(_Left._Val._Get_first(), _Right_val._Get_first());
     }
 
@@ -1068,6 +1073,14 @@ public:
         return _Val;
     }
     _NODISCARD constexpr const _Variantish<_Iter, _Se>& _Get_val() const noexcept {
+        return _Val;
+    }
+
+    _NODISCARD constexpr const _Variantish<_Iter, _Se>& _Get_val_for_hardened_construction() const noexcept {
+#if _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Val._Contains != _Variantish_state::_Nothing,
+            "common_iterator can only be constructed from if it holds a value");
+#endif // _MSVC_STL_HARDENING_COMMON_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return _Val;
     }
 
@@ -1153,9 +1166,9 @@ public:
     constexpr counted_iterator(_Iter _Right, const iter_difference_t<_Iter> _Diff)
         noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
         : _Current(_STD move(_Right)), _Length(_Diff) {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Diff >= 0, "counted_iterator requires non-negative length n");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
     }
 
     template <class _Other>
@@ -1188,18 +1201,18 @@ public:
 
     // [counted.iter.elem]
     _NODISCARD constexpr decltype(auto) operator*() noexcept(noexcept(*_Current)) /* strengthened */ {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Length > 0, "counted_iterator dereference beyond end of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return *_Current;
     }
 
     _NODISCARD constexpr decltype(auto) operator*() const noexcept(noexcept(*_Current)) /* strengthened */
         requires _Dereferenceable<const _Iter>
     {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Length > 0, "counted_iterator dereference beyond end of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return *_Current;
     }
 
@@ -1212,26 +1225,26 @@ public:
     _NODISCARD constexpr decltype(auto) operator[](const iter_difference_t<_Iter> _Diff) const
         requires random_access_iterator<_Iter>
     {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Diff < _Length, "counted_iterator index out of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return _Current[_Diff];
     }
 
     // [counted.iter.nav]
     constexpr counted_iterator& operator++() {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Length > 0, "counted_iterator increment beyond end of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         ++_Current;
         --_Length;
         return *this;
     }
 
     constexpr decltype(auto) operator++(int) {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Length > 0, "counted_iterator increment beyond end of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         --_Length;
         _TRY_BEGIN
         return _Current++;
@@ -1246,9 +1259,9 @@ public:
     constexpr counted_iterator operator++(int)
         requires forward_iterator<_Iter>
     {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Length > 0, "counted_iterator increment beyond end of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         counted_iterator _Tmp = *this;
         ++_Current;
         --_Length;
@@ -1288,9 +1301,9 @@ public:
     constexpr counted_iterator& operator+=(const iter_difference_t<_Iter> _Diff)
         requires random_access_iterator<_Iter>
     {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Diff <= _Length, "counted_iterator seek beyond end of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _Current += _Diff;
         _Length -= _Diff;
         return *this;
@@ -1324,9 +1337,9 @@ public:
     constexpr counted_iterator& operator-=(const iter_difference_t<_Iter> _Diff)
         requires random_access_iterator<_Iter>
     {
-#if _ITERATOR_DEBUG_LEVEL != 0
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(-_Diff <= _Length, "counted_iterator decrement beyond end of range");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _Current -= _Diff;
         _Length += _Diff;
         return *this;
@@ -1360,12 +1373,18 @@ public:
         noexcept(noexcept(_RANGES iter_move(_Right._Current)))
         requires input_iterator<_Iter>
     {
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Right._Length > 0, "iter_move on a counted_iterator beyond end of range");
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         return _RANGES iter_move(_Right._Current);
     }
 
     template <indirectly_swappable<_Iter> _Other>
     friend constexpr void iter_swap(const counted_iterator& _Left, const counted_iterator<_Other>& _Right)
         noexcept(noexcept(_RANGES iter_swap(_Left._Current, _Right.base()))) {
+#if _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Left._Length > 0 && _Right.count() > 0, "iter_swap on a counted_iterator beyond end of range");
+#endif // _MSVC_STL_HARDENING_COUNTED_ITERATOR || _ITERATOR_DEBUG_LEVEL != 0
         _RANGES iter_swap(_Left._Current, _Right.base());
     }
 
@@ -1465,413 +1484,6 @@ struct iterator_traits<counted_iterator<_Iter>> : iterator_traits<_Iter> {
 #endif // _HAS_CXX20
 
 _STD_END
-
-#pragma push_macro("stdext")
-#pragma push_macro("checked_array_iterator")
-#pragma push_macro("make_checked_array_iterator")
-#pragma push_macro("make_unchecked_array_iterator")
-#pragma push_macro("unchecked_array_iterator")
-#undef stdext
-#undef checked_array_iterator
-#undef make_checked_array_iterator
-#undef make_unchecked_array_iterator
-#undef unchecked_array_iterator
-
-_STDEXT_BEGIN
-template <class _Ptr>
-class _DEPRECATE_STDEXT_ARR_ITERS checked_array_iterator { // wrap a pointer with checking
-private:
-    using _Pointee_type = _STD remove_pointer_t<_Ptr>;
-    static_assert(_STD is_pointer_v<_Ptr> && _STD is_object_v<_Pointee_type>,
-        "checked_array_iterator requires pointers to objects");
-
-public:
-    using iterator_category = _STD random_access_iterator_tag;
-    using value_type        = _STD remove_cv_t<_Pointee_type>;
-    using difference_type   = _STD ptrdiff_t;
-    using pointer           = _Ptr;
-    using reference         = _Pointee_type&;
-#if _HAS_CXX20
-    using iterator_concept = _STD contiguous_iterator_tag;
-#endif // _HAS_CXX20
-
-    constexpr checked_array_iterator() = default;
-
-    constexpr checked_array_iterator(const _Ptr _Array, const size_t _Size, const size_t _Index = 0) noexcept
-        : _Myarray(_Array), _Mysize(_Size), _Myindex(_Index) {
-        _STL_VERIFY(_Index <= _Size, "checked_array_iterator construction index out of range");
-    }
-
-    _STL_DISABLE_DEPRECATED_WARNING
-    template <class _Ty = _Pointee_type, _STD enable_if_t<!_STD is_const_v<_Ty>, int> = 0>
-    constexpr operator checked_array_iterator<const _Ty*>() const noexcept {
-        return checked_array_iterator<const _Ty*>{_Myarray, _Mysize, _Myindex};
-    }
-    _STL_RESTORE_DEPRECATED_WARNING
-
-    _NODISCARD constexpr _Ptr base() const noexcept {
-        return _Myarray + _Myindex;
-    }
-
-    _NODISCARD constexpr reference operator*() const noexcept {
-        return *operator->();
-    }
-
-    _NODISCARD constexpr pointer operator->() const noexcept {
-        _STL_VERIFY(_Myarray, "cannot dereference value-initialized or null checked_array_iterator");
-        _STL_VERIFY(_Myindex < _Mysize, "cannot dereference end checked_array_iterator");
-        return _Myarray + _Myindex;
-    }
-
-    constexpr checked_array_iterator& operator++() noexcept {
-        _STL_VERIFY(_Myarray, "cannot increment value-initialized or null checked_array_iterator");
-        _STL_VERIFY(_Myindex < _Mysize, "cannot increment checked_array_iterator past end");
-        ++_Myindex;
-        return *this;
-    }
-
-    constexpr checked_array_iterator operator++(int) noexcept {
-        checked_array_iterator _Tmp = *this;
-        ++*this;
-        return _Tmp;
-    }
-
-    constexpr checked_array_iterator& operator--() noexcept {
-        _STL_VERIFY(_Myarray, "cannot decrement value-initialized or null checked_array_iterator");
-        _STL_VERIFY(_Myindex != 0, "cannot decrement checked_array_iterator before begin");
-        --_Myindex;
-        return *this;
-    }
-
-    constexpr checked_array_iterator operator--(int) noexcept {
-        checked_array_iterator _Tmp = *this;
-        --*this;
-        return _Tmp;
-    }
-
-    constexpr checked_array_iterator& operator+=(const difference_type _Off) noexcept {
-        if (_Off != 0) {
-            _STL_VERIFY(_Myarray, "cannot seek value-initialized or null checked_array_iterator");
-        }
-
-        if (_Off < 0) {
-            _STL_VERIFY(
-                _Myindex >= size_t{0} - static_cast<size_t>(_Off), "cannot seek checked_array_iterator before begin");
-        }
-
-        if (_Off > 0) {
-            _STL_VERIFY(
-                _Mysize - _Myindex >= static_cast<size_t>(_Off), "cannot seek checked_array_iterator after end");
-        }
-
-        _Myindex += _Off;
-        return *this;
-    }
-
-    _NODISCARD constexpr checked_array_iterator operator+(const difference_type _Off) const noexcept {
-        checked_array_iterator _Tmp = *this;
-        _Tmp += _Off;
-        return _Tmp;
-    }
-
-    _NODISCARD friend constexpr checked_array_iterator operator+(
-        const difference_type _Off, const checked_array_iterator<_Ptr>& _Next) noexcept {
-        return _Next + _Off;
-    }
-
-    constexpr checked_array_iterator& operator-=(const difference_type _Off) noexcept {
-        if (_Off != 0) {
-            _STL_VERIFY(_Myarray, "cannot seek value-initialized or null checked_array_iterator");
-        }
-
-        if (_Off > 0) {
-            _STL_VERIFY(_Myindex >= static_cast<size_t>(_Off), "cannot seek checked_array_iterator before begin");
-        }
-
-        if (_Off < 0) {
-            _STL_VERIFY(_Mysize - _Myindex >= size_t{0} - static_cast<size_t>(_Off),
-                "cannot seek checked_array_iterator after end");
-        }
-
-        _Myindex -= _Off;
-        return *this;
-    }
-
-    _NODISCARD constexpr checked_array_iterator operator-(const difference_type _Off) const noexcept {
-        checked_array_iterator _Tmp = *this;
-        _Tmp -= _Off;
-        return _Tmp;
-    }
-
-    _NODISCARD constexpr difference_type operator-(const checked_array_iterator& _Right) const noexcept {
-        _STL_VERIFY(_Myarray == _Right._Myarray && _Mysize == _Right._Mysize,
-            "cannot subtract incompatible checked_array_iterators");
-        return static_cast<difference_type>(_Myindex - _Right._Myindex);
-    }
-
-    _NODISCARD constexpr reference operator[](const difference_type _Off) const noexcept {
-        return *(*this + _Off);
-    }
-
-    _NODISCARD constexpr bool operator==(const checked_array_iterator& _Right) const noexcept {
-        _STL_VERIFY(_Myarray == _Right._Myarray && _Mysize == _Right._Mysize,
-            "cannot compare incompatible checked_array_iterators for equality");
-        return _Myindex == _Right._Myindex;
-    }
-
-#if _HAS_CXX20
-    _NODISCARD constexpr _STD strong_ordering operator<=>(const checked_array_iterator& _Right) const noexcept {
-        _STL_VERIFY(_Myarray == _Right._Myarray && _Mysize == _Right._Mysize,
-            "cannot compare incompatible checked_array_iterators");
-        return _Myindex <=> _Right._Myindex;
-    }
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-    _NODISCARD constexpr bool operator!=(const checked_array_iterator& _Right) const noexcept {
-        return !(*this == _Right);
-    }
-
-    _NODISCARD constexpr bool operator<(const checked_array_iterator& _Right) const noexcept {
-        _STL_VERIFY(_Myarray == _Right._Myarray && _Mysize == _Right._Mysize,
-            "cannot compare incompatible checked_array_iterators");
-        return _Myindex < _Right._Myindex;
-    }
-
-    _NODISCARD constexpr bool operator>(const checked_array_iterator& _Right) const noexcept {
-        return _Right < *this;
-    }
-
-    _NODISCARD constexpr bool operator<=(const checked_array_iterator& _Right) const noexcept {
-        return !(_Right < *this);
-    }
-
-    _NODISCARD constexpr bool operator>=(const checked_array_iterator& _Right) const noexcept {
-        return !(*this < _Right);
-    }
-#endif // ^^^ !_HAS_CXX20 ^^^
-
-    friend constexpr void _Verify_range(
-        const checked_array_iterator& _First, const checked_array_iterator& _Last) noexcept {
-        _STL_VERIFY(_First._Myarray == _Last._Myarray && _First._Mysize == _Last._Mysize,
-            "mismatching checked_array_iterators");
-        _STL_VERIFY(_First._Myindex <= _Last._Myindex, "transposed checked_array_iterator range");
-    }
-
-    constexpr void _Verify_offset(const difference_type _Off) const noexcept {
-        if (_Off < 0) {
-            _STL_VERIFY(_Myindex >= size_t{0} - static_cast<size_t>(_Off),
-                "cannot seek checked_array_iterator iterator before begin");
-        }
-
-        if (_Off > 0) {
-            _STL_VERIFY(_Mysize - _Myindex >= static_cast<size_t>(_Off),
-                "cannot seek checked_array_iterator iterator after end");
-        }
-    }
-
-    using _Prevent_inheriting_unwrap = checked_array_iterator;
-
-    _NODISCARD constexpr _Ptr _Unwrapped() const noexcept {
-        return _Myarray + _Myindex;
-    }
-
-    constexpr void _Seek_to(_Ptr _It) noexcept {
-        _Myindex = static_cast<size_t>(_It - _Myarray);
-    }
-
-private:
-    _Ptr _Myarray   = nullptr; // beginning of array
-    size_t _Mysize  = 0; // size of array
-    size_t _Myindex = 0; // offset into array
-};
-
-_STL_DISABLE_DEPRECATED_WARNING
-template <class _Ptr>
-_DEPRECATE_STDEXT_ARR_ITERS _NODISCARD constexpr checked_array_iterator<_Ptr> make_checked_array_iterator(
-    const _Ptr _Array, const size_t _Size, const size_t _Index = 0) noexcept {
-    return checked_array_iterator<_Ptr>(_Array, _Size, _Index);
-}
-_STL_RESTORE_DEPRECATED_WARNING
-
-template <class _Ptr>
-class _DEPRECATE_STDEXT_ARR_ITERS unchecked_array_iterator { // wrap a pointer without checking, to silence warnings
-private:
-    using _Pointee_type = _STD remove_pointer_t<_Ptr>;
-    static_assert(_STD is_pointer_v<_Ptr> && _STD is_object_v<_Pointee_type>,
-        "unchecked_array_iterator requires pointers to objects");
-
-public:
-    using iterator_category = _STD random_access_iterator_tag;
-    using value_type        = _STD remove_cv_t<_Pointee_type>;
-    using difference_type   = _STD ptrdiff_t;
-    using pointer           = _Ptr;
-    using reference         = _Pointee_type&;
-#if _HAS_CXX20
-    using iterator_concept = _STD contiguous_iterator_tag;
-#endif // _HAS_CXX20
-
-    constexpr unchecked_array_iterator() = default;
-
-    constexpr explicit unchecked_array_iterator(const _Ptr _Src) noexcept : _Myptr(_Src) {}
-
-    _STL_DISABLE_DEPRECATED_WARNING
-    template <class _Ty = _Pointee_type, _STD enable_if_t<!_STD is_const_v<_Ty>, int> = 0>
-    constexpr operator unchecked_array_iterator<const _Ty*>() const noexcept {
-        return unchecked_array_iterator<const _Ty*>{_Myptr};
-    }
-    _STL_RESTORE_DEPRECATED_WARNING
-
-    _NODISCARD constexpr _Ptr base() const noexcept {
-        return _Myptr;
-    }
-
-    _NODISCARD constexpr reference operator*() const noexcept {
-        return *_Myptr;
-    }
-
-    _NODISCARD constexpr pointer operator->() const noexcept {
-        return _Myptr;
-    }
-
-    constexpr unchecked_array_iterator& operator++() noexcept {
-        ++_Myptr;
-        return *this;
-    }
-
-    constexpr unchecked_array_iterator operator++(int) noexcept {
-        unchecked_array_iterator _Tmp = *this;
-        ++_Myptr;
-        return _Tmp;
-    }
-
-    constexpr unchecked_array_iterator& operator--() noexcept {
-        --_Myptr;
-        return *this;
-    }
-
-    constexpr unchecked_array_iterator operator--(int) noexcept {
-        unchecked_array_iterator _Tmp = *this;
-        --_Myptr;
-        return _Tmp;
-    }
-
-    constexpr unchecked_array_iterator& operator+=(const difference_type _Off) noexcept {
-        _Myptr += _Off;
-        return *this;
-    }
-
-    _NODISCARD constexpr unchecked_array_iterator operator+(const difference_type _Off) const noexcept {
-        unchecked_array_iterator _Tmp = *this;
-        _Tmp += _Off;
-        return _Tmp;
-    }
-
-    _NODISCARD friend constexpr unchecked_array_iterator operator+(
-        const difference_type _Off, const unchecked_array_iterator& _Next) noexcept {
-        return _Next + _Off;
-    }
-
-    constexpr unchecked_array_iterator& operator-=(const difference_type _Off) noexcept {
-        return *this += -_Off;
-    }
-
-    _NODISCARD constexpr unchecked_array_iterator operator-(const difference_type _Off) const noexcept {
-        unchecked_array_iterator _Tmp = *this;
-        _Tmp -= _Off;
-        return _Tmp;
-    }
-
-    _NODISCARD constexpr difference_type operator-(const unchecked_array_iterator& _Right) const noexcept {
-        return _Myptr - _Right._Myptr;
-    }
-
-    _NODISCARD constexpr reference operator[](const difference_type _Off) const noexcept {
-        return *(*this + _Off);
-    }
-
-    _NODISCARD constexpr bool operator==(const unchecked_array_iterator& _Right) const noexcept {
-        return _Myptr == _Right._Myptr;
-    }
-
-#if _HAS_CXX20
-    _NODISCARD constexpr _STD strong_ordering operator<=>(const unchecked_array_iterator& _Right) const noexcept {
-        return _Myptr <=> _Right._Myptr;
-    }
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-    _NODISCARD constexpr bool operator!=(const unchecked_array_iterator& _Right) const noexcept {
-        return !(*this == _Right);
-    }
-
-    _NODISCARD constexpr bool operator<(const unchecked_array_iterator& _Right) const noexcept {
-        return _Myptr < _Right._Myptr;
-    }
-
-    _NODISCARD constexpr bool operator>(const unchecked_array_iterator& _Right) const noexcept {
-        return _Right < *this;
-    }
-
-    _NODISCARD constexpr bool operator<=(const unchecked_array_iterator& _Right) const noexcept {
-        return !(_Right < *this);
-    }
-
-    _NODISCARD constexpr bool operator>=(const unchecked_array_iterator& _Right) const noexcept {
-        return !(*this < _Right);
-    }
-#endif // ^^^ !_HAS_CXX20 ^^^
-
-#if _ITERATOR_DEBUG_LEVEL != 0
-    friend constexpr void _Verify_range(
-        const unchecked_array_iterator _First, const unchecked_array_iterator _Last) noexcept {
-        _STD _Verify_range(_First._Myptr, _Last._Myptr);
-    }
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-
-    using _Prevent_inheriting_unwrap = unchecked_array_iterator;
-
-    static constexpr bool _Unwrap_when_unverified = true;
-
-    _NODISCARD constexpr _Ptr _Unwrapped() const noexcept {
-        return _Myptr;
-    }
-
-    constexpr void _Seek_to(_Ptr _It) noexcept {
-        _Myptr = _It;
-    }
-
-private:
-    _Ptr _Myptr = nullptr; // underlying pointer
-};
-
-_STL_DISABLE_DEPRECATED_WARNING
-template <class _Ptr>
-_DEPRECATE_STDEXT_ARR_ITERS _NODISCARD unchecked_array_iterator<_Ptr> make_unchecked_array_iterator(
-    const _Ptr _It) noexcept {
-    return unchecked_array_iterator<_Ptr>(_It);
-}
-_STL_RESTORE_DEPRECATED_WARNING
-_STDEXT_END
-
-#if _HAS_CXX20
-_STD_BEGIN
-_STL_DISABLE_DEPRECATED_WARNING
-template <class _Ty>
-struct pointer_traits<_STDEXT checked_array_iterator<_Ty*>> {
-    using pointer         = _STDEXT checked_array_iterator<_Ty*>;
-    using element_type    = _Ty;
-    using difference_type = ptrdiff_t;
-
-    _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
-        return _Iter._Unwrapped();
-    }
-};
-_STL_RESTORE_DEPRECATED_WARNING
-_STD_END
-#endif // _HAS_CXX20
-
-#pragma pop_macro("unchecked_array_iterator")
-#pragma pop_macro("make_unchecked_array_iterator")
-#pragma pop_macro("make_checked_array_iterator")
-#pragma pop_macro("checked_array_iterator")
-#pragma pop_macro("stdext")
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

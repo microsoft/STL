@@ -156,7 +156,9 @@ void test_make_shared_not_array() {
 
     shared_ptr<HighlyAligned> p5 = make_shared<HighlyAligned>();
     assert_shared_use_get(p5);
+#ifdef __cpp_aligned_new
     assert(reinterpret_cast<uintptr_t>(p5.get()) % alignof(HighlyAligned) == 0);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
     assert(p5->a == 0 && p5->b == 0 && p5->c == 0 && p5->d == 0);
 }
 
@@ -209,7 +211,9 @@ void test_make_shared_array_known_bounds() {
 
     shared_ptr<HighlyAligned[6]> p6 = make_shared<HighlyAligned[6]>();
     assert_shared_use_get(p6);
+#ifdef __cpp_aligned_new
     assert(reinterpret_cast<uintptr_t>(p6.get()) % alignof(HighlyAligned) == 0);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
     for (int i = 0; i < 6; ++i) {
         assert(p6[i].a == 0 && p6[i].b == 0 && p6[i].c == 0 && p6[i].d == 0);
     }
@@ -279,7 +283,9 @@ void test_make_shared_array_unknown_bounds() {
 
     shared_ptr<HighlyAligned[]> p7 = make_shared<HighlyAligned[]>(7u);
     assert_shared_use_get(p7);
+#ifdef __cpp_aligned_new
     assert(reinterpret_cast<uintptr_t>(p7.get()) % alignof(HighlyAligned) == 0);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
     for (int i = 0; i < 7; ++i) {
         assert(p7[i].a == 0 && p7[i].b == 0 && p7[i].c == 0 && p7[i].d == 0);
     }
@@ -422,7 +428,9 @@ void test_allocate_shared_not_array() {
     {
         shared_ptr<HighlyAligned> p5 = allocate_shared<HighlyAligned>(a5);
         assert_shared_use_get(p5);
+#ifdef __cpp_aligned_new
         assert(reinterpret_cast<uintptr_t>(p5.get()) % alignof(HighlyAligned) == 0);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
         assert(p5->a == 0 && p5->b == 0 && p5->c == 0 && p5->d == 0);
     }
     assert_construct_destruct_equal();
@@ -502,7 +510,9 @@ void test_allocate_shared_array_known_bounds() {
     {
         shared_ptr<HighlyAligned[6]> p6 = allocate_shared<HighlyAligned[6]>(a6);
         assert_shared_use_get(p6);
+#ifdef __cpp_aligned_new
         assert(reinterpret_cast<uintptr_t>(p6.get()) % alignof(HighlyAligned) == 0);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
         for (int i = 0; i < 6; ++i) {
             assert(p6[i].a == 0 && p6[i].b == 0 && p6[i].c == 0 && p6[i].d == 0);
         }
@@ -603,7 +613,9 @@ void test_allocate_shared_array_unknown_bounds() {
     {
         shared_ptr<HighlyAligned[]> p7 = allocate_shared<HighlyAligned[]>(a7, 7u);
         assert_shared_use_get(p7);
+#ifdef __cpp_aligned_new
         assert(reinterpret_cast<uintptr_t>(p7.get()) % alignof(HighlyAligned) == 0);
+#endif // ^^^ defined(__cpp_aligned_new) ^^^
         for (int i = 0; i < 7; ++i) {
             assert(p7[i].a == 0 && p7[i].b == 0 && p7[i].c == 0 && p7[i].d == 0);
         }

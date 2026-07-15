@@ -95,7 +95,7 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) noexcept 
 
             res = WAIT_OBJECT_0;
 
-        } else if (target->tv_sec < 0 || target->tv_sec == 0 && target->tv_nsec <= 0) {
+        } else if (target->tv_sec < 0 || (target->tv_sec == 0 && target->tv_nsec <= 0)) {
             // target time <= 0 --> plain trylock or timed wait for time that has passed; try to lock with 0 timeout
             if (mtx->_Thread_id != current_thread_id) { // not this thread, lock it
                 if (TryAcquireSRWLockExclusive(get_srw_lock(mtx)) != 0) {
@@ -109,7 +109,7 @@ static _Thrd_result mtx_do_lock(_Mtx_t mtx, const _timespec64* target) noexcept 
             // TRANSITION, ABI: this branch is preserved for `_Mtx_timedlock`
             _timespec64 now;
             _Timespec64_get_sys(&now);
-            while (now.tv_sec < target->tv_sec || now.tv_sec == target->tv_sec && now.tv_nsec < target->tv_nsec) {
+            while (now.tv_sec < target->tv_sec || (now.tv_sec == target->tv_sec && now.tv_nsec < target->tv_nsec)) {
                 // time has not expired
                 if (mtx->_Thread_id == current_thread_id
                     || TryAcquireSRWLockExclusive(get_srw_lock(mtx)) != 0) { // stop waiting

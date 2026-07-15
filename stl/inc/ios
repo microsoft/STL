@@ -300,13 +300,6 @@ _EXPORT_STD inline ios_base& __CLRCALL_OR_CDECL uppercase(ios_base& _Iosbase) { 
     _Iosbase.setf(ios_base::uppercase);
     return _Iosbase;
 }
-
-#if _HAS_TR1_NAMESPACE
-namespace _DEPRECATE_TR1_NAMESPACE tr1 {
-    using _STD hexfloat;
-}
-#endif // _HAS_TR1_NAMESPACE
-
 _STD_END
 
 #pragma pop_macro("new")

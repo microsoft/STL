@@ -31,6 +31,10 @@ import <execution>;
 import <expected>;
 #endif // TEST_STANDARD >= 23
 import <filesystem>;
+#if TEST_STANDARD >= 23
+import <flat_map>;
+import <flat_set>;
+#endif // TEST_STANDARD >= 23
 import <format>;
 import <forward_list>;
 import <fstream>;

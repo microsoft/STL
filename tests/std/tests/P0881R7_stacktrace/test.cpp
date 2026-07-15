@@ -13,7 +13,6 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <thread>
 
 #ifdef HAS_EXPORT
 #define MAYBE_EXPORT __declspec(dllexport)
@@ -309,8 +308,7 @@ void test_impl() {
 }
 
 int main() {
-#if !(defined(__clang__) && defined(_M_ARM64)) // TRANSITION, LLVM-74530
-    jthread t{test_impl};
+#if !((defined(__clang__) && defined(_M_ARM64)) || defined(_M_ARM64EC)) // TRANSITION, LLVM-74530, GH-5830
     test_impl();
-#endif
+#endif // ^^^ no workaround ^^^
 }

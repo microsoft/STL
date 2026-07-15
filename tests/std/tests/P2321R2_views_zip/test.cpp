@@ -356,12 +356,9 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... rngs)
             return do_tuples_reference_same_objects(lhs_tuple, rhs_tuple);
         }));
 
-#pragma warning(push)
-#pragma warning(disable : 4127) // Conditional Expression is Constant
         if (!(ranges::forward_range<AllView<RangeTypes>> && ...)) { // intentionally not if constexpr
             return true;
         }
-#pragma warning(pop)
 
         // Validate view_interface::data()
         //
@@ -703,7 +700,7 @@ private:
     using differing_size_member_range_type =
         range_type<Category, int, (IsSized == test::Sized::yes ? test::Sized::no : test::Sized::yes), IsCommon, Diff>;
     using differing_is_common_range_type              = range_type<Category, int, IsSized,
-                     (IsCommon == test::Common::yes ? test::Common::no : test::Common::yes), Diff>;
+        (IsCommon == test::Common::yes ? test::Common::no : test::Common::yes), Diff>;
     using differing_iterator_sentinel_diff_range_type = range_type<Category, int, IsSized, IsCommon,
         (Diff == test::CanDifference::yes ? test::CanDifference::no : test::CanDifference::yes)>;
 

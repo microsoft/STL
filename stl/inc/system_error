@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <xcall_once.h>
 #include <xerrc.h>
+
 #ifndef _M_CEE_PURE
 #include <atomic>
 #endif // !defined(_M_CEE_PURE)
@@ -31,8 +32,10 @@ _STL_DISABLE_CLANG_WARNINGS
 // TRANSITION, non-_Ugly attribute tokens
 #pragma push_macro("msvc")
 #pragma push_macro("noop_dtor")
+#pragma push_macro("no_specializations")
 #undef msvc
 #undef noop_dtor
+#undef no_specializations
 
 _STD_BEGIN
 _EXPORT_STD enum class io_errc { // error codes for ios_base::failure
@@ -46,7 +49,7 @@ template <>
 struct is_error_code_enum<io_errc> : true_type {};
 
 _EXPORT_STD template <class _Ty>
-constexpr bool is_error_code_enum_v = is_error_code_enum<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool is_error_code_enum_v = is_error_code_enum<_Ty>::value;
 
 _EXPORT_STD template <class _Enum>
 struct is_error_condition_enum : false_type {};
@@ -55,7 +58,8 @@ template <>
 struct is_error_condition_enum<errc> : true_type {};
 
 _EXPORT_STD template <class _Ty>
-constexpr bool is_error_condition_enum_v = is_error_condition_enum<_Ty>::value;
+_NO_SPECIALIZATIONS_OF_VARIABLE_TEMPLATES constexpr bool is_error_condition_enum_v =
+    is_error_condition_enum<_Ty>::value;
 
 _EXPORT_STD class error_code;
 _EXPORT_STD class error_condition;
@@ -443,7 +447,7 @@ struct hash<error_code> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = error_code;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
-    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const error_code& _Keyval) _CONST_CALL_OPERATOR noexcept {
+    _NODISCARD static size_t operator()(const error_code& _Keyval) noexcept {
         return hash<int>{}(_Keyval.value());
     }
 };
@@ -453,7 +457,7 @@ struct hash<error_condition> {
     using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = error_condition;
     using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
-    _NODISCARD _STATIC_CALL_OPERATOR size_t operator()(const error_condition& _Keyval) _CONST_CALL_OPERATOR noexcept {
+    _NODISCARD static size_t operator()(const error_condition& _Keyval) noexcept {
         return hash<int>{}(_Keyval.value());
     }
 };
@@ -733,6 +737,7 @@ _STD_END
 #endif // _HAS_CXX17
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("noop_dtor")
 #pragma pop_macro("msvc")
 

@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
+#include <list>
 #include <regex>
 #include <string>
 
@@ -896,6 +898,29 @@ void test_gh_993() {
         Z_icase_regex.should_search_match(lowercase_subject, L"z");
         z_case_regex.should_search_match(lowercase_subject, L"z");
         z_icase_regex.should_search_match(lowercase_subject, L"z");
+    }
+}
+
+void test_gh_997() {
+    // GH-997: <regex>: Grouping within repetition causes regex stack error
+    // GH-1528: <regex>: regex_match gets caught in recursive loop until stack overflow occurs
+    g_regexTester.should_match(string(2000, 'a'), "(?:a)+");
+    g_regexTester.should_match(string(2000, 'a'), "(?:a|bc)+");
+
+    {
+        test_wregex rgx(&g_regexTester, LR"(^http[s]?://([^.]+\.)*example\.com/.*$)", icase);
+
+        rgx.should_search_match(L"https://www.example.com/meow", L"https://www.example.com/meow");
+
+        rgx.should_search_fail(
+            L"https://www.bogus.invalid/"
+            L"123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-"
+            L"123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-"
+            L"123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-"
+            L"123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-"
+            L"123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456.89-123456789-123456789."
+            L"123456789-12345678.-123456789-123456789-1.3456789-123456789-123456789-123456789-123456789-123456789-"
+            L"123456789-123456789-123456789-123456789-123456789-123456789-123456789-123456789-1234");
     }
 }
 
@@ -2129,6 +2154,531 @@ void test_gh_5672() {
     }
 }
 
+void test_gh_5774() {
+    // GH-5774: Process non-greedy and longest-mode simple loops non-recursively.
+    // This extends our test coverage on non-greedy simple loops with bounded number of repetitions.
+    g_regexTester.should_not_match("", "a+?");
+    g_regexTester.should_match("b", "a{0}?b");
+    g_regexTester.should_not_match("ab", "a{0}?b");
+    g_regexTester.should_match("ab", "a{0,1}?b");
+    g_regexTester.should_not_match("aab", "a{0,1}?b");
+    g_regexTester.should_match("aab", "a{0,2}?b");
+    g_regexTester.should_match("aab", "a{1,2}?b");
+    g_regexTester.should_not_match("aab", "a{1}?b");
+    g_regexTester.should_not_match("aaab", "a{1,2}?b");
+    g_regexTester.should_match("aaab", "a{1,3}?b");
+}
+
+void test_gh_5790() {
+    // GH-5790: Process greedy simple loops non-recursively.
+    // This extends our test coverage on (mainly greedy) simple loops.
+    g_regexTester.should_not_match("", "a+");
+    g_regexTester.should_match("b", "a{0}b");
+    g_regexTester.should_not_match("ab", "a{0}b");
+    g_regexTester.should_match("ab", "a{0,1}b");
+    g_regexTester.should_not_match("aab", "a{0,1}b");
+    g_regexTester.should_match("aab", "a{0,2}b");
+    g_regexTester.should_match("aab", "a{1,2}b");
+    g_regexTester.should_not_match("aab", "a{1}b");
+    g_regexTester.should_not_match("aaab", "a{1,2}b");
+    g_regexTester.should_match("aaab", "a{1,3}b");
+
+    // Check that greedy and non-greedy search find the appropriate match.
+    // For the following regexes, greedy and leftmost-longest search yield the same matches.
+    for (syntax_option_type options : {ECMAScript, extended}) {
+        {
+            test_regex greedy_a_star(&g_regexTester, "a*", options);
+            greedy_a_star.should_search_match("aaaaaaaaaa", "aaaaaaaaaa");
+        }
+
+        {
+            test_regex bounded_greedy_a_rep(&g_regexTester, "a{5}", options);
+            bounded_greedy_a_rep.should_search_match("aaaaaaaaaa", "aaaaa");
+        }
+
+        {
+            test_regex upper_bounded_greedy_a_rep(&g_regexTester, "a{0,5}", options);
+            upper_bounded_greedy_a_rep.should_search_match("aaaaaaaaaa", "aaaaa");
+        }
+
+        {
+            test_regex lower_bounded_greedy_a_rep(&g_regexTester, "a{4,1000}", options);
+            lower_bounded_greedy_a_rep.should_search_match("aaaaaaaaaa", "aaaaaaaaaa");
+        }
+
+        {
+            test_regex lower_and_upper_bounded_greedy_a_rep(&g_regexTester, "a{2,5}", options);
+            lower_and_upper_bounded_greedy_a_rep.should_search_match("aaaaaaaaaa", "aaaaa");
+        }
+
+        {
+            test_regex too_large_min_greedy_a_rep(&g_regexTester, "a{11,1000}", options);
+            too_large_min_greedy_a_rep.should_search_fail("aaaaaaaaaa");
+        }
+    }
+
+    {
+        test_regex nongreedy_a_star(&g_regexTester, "a*?");
+        nongreedy_a_star.should_search_match("aaaaaaaaaa", "");
+    }
+
+    {
+        test_regex bounded_nongreedy_a_rep(&g_regexTester, "a{5}?");
+        bounded_nongreedy_a_rep.should_search_match("aaaaaaaaaa", "aaaaa");
+    }
+
+    {
+        test_regex upper_bounded_nongreedy_a_rep(&g_regexTester, "a{0,5}?");
+        upper_bounded_nongreedy_a_rep.should_search_match("aaaaaaaaaa", "");
+    }
+
+    {
+        test_regex lower_bounded_nongreedy_a_rep(&g_regexTester, "a{4,1000}?");
+        lower_bounded_nongreedy_a_rep.should_search_match("aaaaaaaaaa", "aaaa");
+    }
+
+    {
+        test_regex lower_and_upper_bounded_nongreedy_a_rep(&g_regexTester, "a{2,5}?");
+        lower_and_upper_bounded_nongreedy_a_rep.should_search_match("aaaaaaaaaa", "aa");
+    }
+
+    {
+        test_regex too_large_min_nongreedy_a_rep(&g_regexTester, "a{11,1000}?");
+        too_large_min_nongreedy_a_rep.should_search_fail("aaaaaaaaaa");
+    }
+}
+
+void test_gh_5792() {
+    // GH-5792: <regex>: regex_match() throws regex_error(error_stack)
+    // when a repeated pattern contains a lookahead assertion
+    g_regexTester.should_match("", "(?:(?=ab))*");
+    g_regexTester.should_match("", "(?:(?!ab))*");
+    g_regexTester.should_not_match("bc", "(?:(?=ab))+bc");
+    g_regexTester.should_match("bc", "(?:(?!ab))+bc");
+}
+
+void test_gh_5797() {
+    // GH-5797: <regex>: Loops with bounded number of repetitions and context-dependent empty alternative are mishandled
+    g_regexTester.should_match("bc", "(?:b|c|(?=bc)){3}");
+    g_regexTester.should_match("bc", "(^|b|c){3}");
+    g_regexTester.should_match("bc", "(^|b|c){3}", regex_constants::extended);
+}
+
+void test_gh_5798() {
+    // GH-5798: <regex>: Process generic loops non-recursively.
+    // This extends our test coverage on non-simple loops,
+    // especially on bounds on the number of repetitions.
+    for (string quantifier_suffix : {"", "?"}) {
+        g_regexTester.should_not_match("", "(a|bc)+" + quantifier_suffix);
+        g_regexTester.should_match("b", "(a|cd){0}?b" + quantifier_suffix);
+        g_regexTester.should_not_match("ab", "(a|cd){0}?b" + quantifier_suffix);
+        g_regexTester.should_match("ab", "(a|cd){0,1}?b" + quantifier_suffix);
+        g_regexTester.should_not_match("aab", "(a|cd){0,1}?b" + quantifier_suffix);
+        g_regexTester.should_match("acdb", "(a|cd){0,2}?b" + quantifier_suffix);
+        g_regexTester.should_match("cdab", "(a|cd){1,2}?b" + quantifier_suffix);
+        g_regexTester.should_not_match("acdb", "(a|cd){1}?b" + quantifier_suffix);
+        g_regexTester.should_not_match("cdacdb", "(a|cd){1,2}?b" + quantifier_suffix);
+        g_regexTester.should_match("cdacdb", "(a|cd){1,3}?b" + quantifier_suffix);
+        g_regexTester.should_match("a", "(a|(?=^)){2}" + quantifier_suffix);
+    }
+
+    // Check that greedy and non-greedy search find the appropriate match.
+    // For the following regexes, greedy and leftmost-longest search yield the same matches.
+    for (syntax_option_type options : {ECMAScript, extended}) {
+        {
+            test_regex greedy_a_or_bc_star(&g_regexTester, "(a|bc)*", options);
+            greedy_a_or_bc_star.should_search_match("aabcabcabcbcaa", "aabcabcabcbcaa");
+        }
+
+        {
+            test_regex bounded_greedy_a_or_bc_rep(&g_regexTester, "(a|bc){5}", options);
+            bounded_greedy_a_or_bc_rep.should_search_match("aabcabcabcbcaa", "aabcabc");
+        }
+
+        {
+            test_regex upper_bounded_greedy_a_or_bc_rep(&g_regexTester, "(a|bc){0,5}", options);
+            upper_bounded_greedy_a_or_bc_rep.should_search_match("aabcabcabcbcaa", "aabcabc");
+        }
+
+        {
+            test_regex lower_bounded_greedy_a_or_bc_rep(&g_regexTester, "(a|bc){4,1000}", options);
+            lower_bounded_greedy_a_or_bc_rep.should_search_match("aabcabcabcbcaa", "aabcabcabcbcaa");
+        }
+
+        {
+            test_regex lower_and_upper_bounded_greedy_a_or_bc_rep(&g_regexTester, "(a|bc){2,5}", options);
+            lower_and_upper_bounded_greedy_a_or_bc_rep.should_search_match("aabcabcabcbcaa", "aabcabc");
+        }
+
+        {
+            test_regex too_large_min_greedy_a_or_bc_rep(&g_regexTester, "(a|bc){11,1000}", options);
+            too_large_min_greedy_a_or_bc_rep.should_search_fail("aabcabcabcbcaa");
+        }
+    }
+
+    {
+        test_regex nongreedy_a_or_bc_star(&g_regexTester, "(a|bc)*?");
+        nongreedy_a_or_bc_star.should_search_match("aabcabcabcbcaa", "");
+    }
+
+    {
+        test_regex bounded_nongreedy_a_or_bc_rep(&g_regexTester, "(a|bc){5}?");
+        bounded_nongreedy_a_or_bc_rep.should_search_match("aabcabcabcbcaa", "aabcabc");
+    }
+
+    {
+        test_regex upper_bounded_nongreedy_a_or_bc_rep(&g_regexTester, "(a|bc){0,5}?");
+        upper_bounded_nongreedy_a_or_bc_rep.should_search_match("aabcabcabcbcaa", "");
+    }
+
+    {
+        test_regex lower_bounded_nongreedy_a_or_bc_rep(&g_regexTester, "(a|bc){4,1000}?");
+        lower_bounded_nongreedy_a_or_bc_rep.should_search_match("aabcabcabcbcaa", "aabca");
+    }
+
+    {
+        test_regex lower_and_upper_bounded_nongreedy_a_or_bc_rep(&g_regexTester, "(a|bc){2,5}?");
+        lower_and_upper_bounded_nongreedy_a_or_bc_rep.should_search_match("aabcabcabcbcaa", "aa");
+    }
+
+    {
+        test_regex too_large_min_nongreedy_a_or_bc_rep(&g_regexTester, "(a|bc){11,1000}?");
+        too_large_min_nongreedy_a_or_bc_rep.should_search_fail("aabcabcabcbcaa");
+    }
+}
+
+void test_gh_5865() {
+    // GH-5865: <regex>: Remove capture extent vectors from stack frames
+    // These tests check correct restoration of capturing groups
+    // when backtracking over positive lookahead assertions that matched successfully.
+    g_regexTester.should_capture("ab", "(?:(?=(.*))ab)*", "ab");
+    g_regexTester.should_capture("abcd", "(?:(?=(.*))ab)*cd", "abcd");
+    g_regexTester.should_capture("abab", "(?:(?=(.*))ab)*ab", "abab");
+}
+
+void test_gh_5918() {
+    // GH-5918: Remove capture validity vectors from stack frames
+    // These tests verify that reset capturing groups are restored correctly when backtracking.
+    g_regexTester.should_match("ababa", R"((?:(a)(?:|b\1b))*)");
+    g_regexTester.should_match("ababa", R"((?:(a)(?:|b\1b))*?)");
+    g_regexTester.should_match("ababa", R"((?:(a)(?:|b\1b)){2})");
+}
+
+void test_gh_5939() {
+    // GH-5939: Avoid stack growth in simple loops
+    // This PR manipulates the stack while processing simple loops to avoid growing it.
+    // The following tests verify that backtracking from such loops still works
+    // and matches capturing groups even with these modifications to the stack.
+    g_regexTester.should_match("abcdd", R"(([abc])*?abcd\1d)");
+
+    g_regexTester.should_match("abb", R"((a)*ab\1b)");
+    g_regexTester.should_match("abb", R"((a){0,1}ab\1b)");
+    g_regexTester.should_not_match("abb", R"((a){1,1}ab\1b)");
+    g_regexTester.should_not_match("abb", R"((a){1,2}ab\1b)");
+    g_regexTester.should_match("aabab", R"((a){1,2}ab\1b)");
+    g_regexTester.should_match("abcdab", R"((?:([abc])([abc]))*cd\1\2)");
+    g_regexTester.should_match("abcdab", R"((?:([abc])([abc])){0,1}cd\1\2)");
+    g_regexTester.should_match("abbacdba", R"((?:([abc])([abc]))*cd\1\2)");
+    g_regexTester.should_match("abbacdab", R"((?:([abc])([abc]))*bacd\1\2)");
+    g_regexTester.should_match("abbacd", R"((?:([abc])([abc]))*abbacd\1\2)");
+    g_regexTester.should_match("abbacdba", R"((?:([abc])([abc]))+cd\1\2)");
+    g_regexTester.should_match("abbacdab", R"((?:([abc])([abc]))+bacd\1\2)");
+    g_regexTester.should_match("abbacdab", R"((?:([abc])([abc])){0,2}bacd\1\2)");
+    g_regexTester.should_match("abbacdab", R"((?:([abc])([abc])){1,2}bacd\1\2)");
+    g_regexTester.should_not_match("abbacdab", R"((?:([abc])([abc]))+abbacd\1\2)");
+    g_regexTester.should_match("abbacdba", R"((?:([abc])([abc])){2,}cd\1\2)");
+    g_regexTester.should_not_match("abbacdab", R"((?:([abc])([abc])){2,}bacd\1\2)");
+    g_regexTester.should_not_match("abbacdab", R"((?:([abc])([abc])){2,}abbacd\1\2)");
+    g_regexTester.should_match("abcbbacdba", R"((?:([abc])([abc])){2,}cd\1\2)");
+    g_regexTester.should_match("abcbbacdcb", R"((?:([abc])([abc])){2,}bacd\1\2)");
+    g_regexTester.should_not_match("abcbbacdab", R"((?:([abc])([abc])){2,}abbacd\1\2)");
+}
+
+void test_gh_5944() {
+    // GH-5944: <regex>: Revising the stack and complexity limits
+
+    // long strings should be matched successfully if the regex is simple
+    g_regexTester.should_match(string(20000000, 'a'), "a+");
+
+    // too much backtracking in complex regex expressions must result in a complexity exception
+    try {
+        regex re("a*[^b]*a*[^b]*a*[^b]*a*[^b]*a*[^b]*a*[^b]*");
+        (void) regex_match("aaaaaaaaaaaaaaaaaaaaaaaaaaaaab", re);
+        assert(false);
+    } catch (const regex_error& ex) {
+        assert(ex.code() == error_complexity);
+    }
+}
+
+void test_gh_6022() {
+    // GH-6022: Optimize matching of branchless loops
+    g_regexTester.should_match("acddabb", R"((?:([ac])*d)*ab\1b)");
+    g_regexTester.should_match("acdaadabab", R"((?:([ac])*d)*ab\1b)");
+    g_regexTester.should_match("acddabcb", R"((?:([ac])*d)*dab\1b)");
+
+    g_regexTester.should_match("addabb", R"((?:(a){0,1}d)*ab\1b)");
+    g_regexTester.should_match("adadabab", R"((?:(a){0,1}d)*ab\1b)");
+    g_regexTester.should_match("adadabb", R"((?:(a){0,1}d)*adadab\1b)");
+    g_regexTester.should_not_match("adaddabab", R"((?:(a){0,1}d)*ab\1b)");
+    g_regexTester.should_not_match("dabb", R"((?:(a){1,1}d)+ab\1b)");
+    g_regexTester.should_not_match("addabb", R"((?:(a){1,2}d)+ab\1b)");
+    g_regexTester.should_not_match("adaadabb", R"((?:(a){1,2}d)+ab\1b)");
+
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcdbc", R"((?:(?:([abc])([abc]))*d)+cd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdab", R"((?:(?:([abc])([abc]))*d)+dcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdab", R"((?:(?:([abc])([abc]))*d)+bcdcd\1\2)");
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcd", R"((?:(?:([abc])([abc]))*d)*abbcdcd\1\2)");
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcdba", R"((?:(?:([abc])([abc]))*d)*dabbcdcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdba", R"((?:(?:([abc])([abc]))*d)+ddabbcdcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdab", R"((?:(?:([abc])([abc]))*d)+baddabbcdcd\1\2)");
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcdac", R"((?:(?:([abc])([abc]))*d)*abbaddabbcdcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdac", R"((?:(?:([abc])([abc]))*d)*dabbaddabcdcd\1\2)");
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcdbc", R"((?:(?:([abc])([abc]))*d)*acdabbaddabbcdcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdbc", R"((?:(?:([abc])([abc]))*d)*dacdabbaddabbcdcd\1\2)");
+    g_regexTester.should_not_match("bacabcdacdabbaddabbcdcdca", R"((?:(?:([abc])([abc]))*d)*bcdacdabbaddabbcdcd\1\2)");
+    g_regexTester.should_not_match(
+        "bacabcdacdabbaddabbcdcdba", R"((?:(?:([abc])([abc]))*d)*cabcdacdabbaddabbcdcd\1\2)");
+    g_regexTester.should_match("bacabcdacdabbaddabbcdcd", R"((?:(?:([abc])([abc]))*d)*bacabcdacdabbaddabbcdcd\1\2)");
+
+    g_regexTester.should_match("abaaacaabaaaadab", R"((?:(a*)b(\1*)a*c)+aabaaaad\2b)");
+}
+
+void test_gh_6118() {
+    // GH-6118: regex_search() sometimes incorrectly matches capturing groups
+    // regex_search() failed to reset capture groups between match attempts.
+    {
+        test_regex re_matching_inbetween(&g_regexTester, "a|(b)c");
+        re_matching_inbetween.should_search_match_capture_groups("ba", "a", match_default, {{-1, -1}});
+    }
+
+    {
+        test_regex re_matching_at_end(&g_regexTester, "$|(b)c");
+        re_matching_at_end.should_search_match_capture_groups("b", "", match_default, {{-1, -1}});
+    }
+}
+
+void test_gh_6147() {
+    // GH-6147: Implement small vector optimization for state frames
+    //
+    // This tests that the buffer doesn't contain uninitialized initial areas after several reallocations
+    // by forcing the creation of a sufficiently big vector followed by full backtracking.
+    g_regexTester.should_not_match(string(5000, 'a') + 'c', "(a|b)*");
+}
+
+void test_gh_6181() {
+    // GH-6181: match_results are not filled correctly
+    // when regex_match() and regex_search() are called on a default-constructed basic_regex
+
+    const string input{"abc"};
+    const regex empty_re{};
+    {
+        smatch captures;
+        assert(!regex_match(input, captures, empty_re));
+        assert(captures.ready());
+        assert(captures.empty());
+    }
+
+    {
+        smatch captures;
+        assert(!regex_search(input, captures, empty_re));
+        assert(captures.ready());
+        assert(captures.empty());
+    }
+
+    const regex abc_re{"abc"};
+    {
+        smatch captures;
+        assert(regex_match(input, captures, abc_re));
+        assert(captures.ready());
+        assert(captures.size() == 1);
+
+        assert(!regex_match(input, captures, empty_re));
+        assert(captures.ready());
+        assert(captures.empty());
+    }
+
+    {
+        smatch captures;
+        assert(regex_search(input, captures, abc_re));
+        assert(captures.ready());
+        assert(captures.size() == 1);
+
+        assert(!regex_search(input, captures, empty_re));
+        assert(captures.ready());
+        assert(captures.empty());
+    }
+}
+
+void test_gh_6189() {
+    // GH-6189: Optimize skip heuristic for searches of patterns with initial dot wildcards
+    test_regex re(&g_regexTester, ".abc");
+    re.should_search_match("dabc", "dabc");
+    re.should_search_match("dabcdddd", "dabc");
+    re.should_search_match("ddabc", "dabc");
+    re.should_search_match("ddabcdddd", "dabc");
+    re.should_search_match("ddddddddddddddddabcdddddddddddd", "dabc");
+    re.should_search_match("ddddddddddddddddddddddddabc", "dabc");
+    re.should_search_match("ddabcddd", "dabc");
+    re.should_search_fail("abcddddd");
+    re.should_search_fail("ddddddddddd\nabcdddddddddd");
+    re.should_search_fail("d");
+}
+
+void test_gh_6191() {
+    // GH-6191: Optimize searches for patterns with initial branching
+    // We must check that we handle matches near search window boundaries correctly.
+
+    {
+        const test_regex test_alt_re(&g_regexTester, "abcdef|uvwxyz");
+        test_alt_re.should_search_match("abcdef", "abcdef");
+        test_alt_re.should_search_match("uvwxyz", "uvwxyz");
+        test_alt_re.should_search_match("hhabcdef", "abcdef");
+        test_alt_re.should_search_match("hhuvwxyz", "uvwxyz");
+        test_alt_re.should_search_match("hhhhhuvwxyzhhhhhabcdefhhhhh", "uvwxyz");
+        for (size_t prefix_size = 510; prefix_size < 516; ++prefix_size) {
+            const string prefix(prefix_size, 'h');
+            test_alt_re.should_search_match(prefix + "abcdef", "abcdef");
+            test_alt_re.should_search_match(prefix + "uvwxyz", "uvwxyz");
+            test_alt_re.should_search_match(prefix + "abcdefhhhhhhhuvwxyz", "abcdef");
+            test_alt_re.should_search_match(prefix + "uvwxyzhhhhhhhabcdef", "uvwxyz");
+            test_alt_re.should_search_match(prefix + "abcdefhhhhhhhuvwxyzhhhh", "abcdef");
+            test_alt_re.should_search_match(prefix + "uvwxyzhhhhhhhabcdefhhhh", "uvwxyz");
+        }
+    }
+
+    {
+        const test_regex optional_prefix_re(&g_regexTester, "(abc)?def");
+        optional_prefix_re.should_search_match("abcdef", "abcdef");
+        optional_prefix_re.should_search_match("def", "def");
+        optional_prefix_re.should_search_match("hhabcdef", "abcdef");
+        optional_prefix_re.should_search_match("hhdef", "def");
+        optional_prefix_re.should_search_match("hhhhabcdefhhhhdefhhh", "abcdef");
+        optional_prefix_re.should_search_match("hhhdefhhhhabcdefhhh", "def");
+        for (size_t prefix_size = 510; prefix_size < 516; ++prefix_size) {
+            const string prefix(prefix_size, 'h');
+            optional_prefix_re.should_search_match(prefix + "abcdef", "abcdef");
+            optional_prefix_re.should_search_match(prefix + "def", "def");
+            optional_prefix_re.should_search_match(prefix + "abcdefhhhhhhhdef", "abcdef");
+            optional_prefix_re.should_search_match(prefix + "defhhhhhhhabcdef", "def");
+        }
+    }
+
+    // test bidirectional iterators
+    {
+        const regex alt_re("abcdef|uvwxyz");
+        const string suffix = "abcdefhhhhhhhuvwxyz";
+        list<char> input(509, 'h');
+        input.insert(input.end(), suffix.begin(), suffix.end());
+
+        for (size_t prefixes_to_test = 0; prefixes_to_test < 6; ++prefixes_to_test) {
+            input.push_front('h');
+            match_results<list<char>::const_iterator> results;
+            assert(regex_search(input.cbegin(), input.cend(), results, alt_re));
+            assert(string(results[0].first, results[0].second) == "abcdef");
+        }
+    }
+}
+
+void test_gh_6249() {
+    // GH-6249: Avoid generating empty groups when parsing empty alternatives
+    for (const string re : {"|a|b", "a||b", "a|b|"}) {
+        g_regexTester.should_match("a", re);
+        g_regexTester.should_match("b", re);
+        g_regexTester.should_match("", re);
+        g_regexTester.should_not_match("c", re);
+        g_regexTester.should_not_match("ab", re);
+    }
+
+    for (const string re : {"(?:|a|b)c", "(?:a||b)c", "(?:a|b|)c"}) {
+        g_regexTester.should_match("ac", re);
+        g_regexTester.should_match("bc", re);
+        g_regexTester.should_match("c", re);
+        g_regexTester.should_not_match("", re);
+        g_regexTester.should_not_match("a", re);
+        g_regexTester.should_not_match("b", re);
+        g_regexTester.should_not_match("abc", re);
+    }
+}
+
+void test_gh_6262() {
+    // GH-6262: Remove match mode _Skip_zero_length
+    // Check that replacement with internal match mode _Match_not_null in regex_iterator behaves equivalently
+
+    const char* const input = "aab";
+
+    {
+        const regex re{"^|b"};
+        {
+            cregex_iterator it1{input + 2, input + 3, re};
+            cregex_iterator it2{input + 2, input + 3, re, match_prev_avail};
+            ++it1;
+            assert(it1 != it2);
+        }
+
+        {
+            cregex_iterator it1{input + 1, input + 3, re};
+            cregex_iterator it2{input + 1, input + 3, re, match_prev_avail};
+            ++it1;
+            assert(it1 == it2);
+        }
+    }
+
+    {
+        const regex re2{"^a|b"};
+        {
+            cregex_iterator it1{input + 1, input + 3, re2};
+            cregex_iterator it2{input + 1, input + 3, re2, match_prev_avail};
+            ++it1;
+            assert(it1 == it2);
+        }
+    }
+}
+
+void test_gh_6267() {
+    // GH-6267: Avoid generating empty groups when parsing `?` quantifiers
+    for (const string re : {"a?", "a??"}) {
+        g_regexTester.should_match("a", re);
+        g_regexTester.should_match("", re);
+    }
+
+    {
+        test_regex re(&g_regexTester, "a?");
+        re.should_search_match("a", "a");
+    }
+
+    {
+        test_regex re(&g_regexTester, "a??");
+        re.should_search_match("a", "");
+    }
+}
+
+void test_gh_6289() {
+    // GH-6289 <regex>: Emit only complete _N_str nodes during NFA construction
+    g_regexTester.should_match("ab", "ab");
+    g_regexTester.should_not_match("", "ab");
+    g_regexTester.should_match("\na", "\n^a", multiline);
+    g_regexTester.should_match("a\nb", "a$\nb", multiline);
+    g_regexTester.should_match("a ", R"(a\b )");
+    g_regexTester.should_match("ab", R"(a\Bb)");
+    g_regexTester.should_match("ab", "a.");
+    g_regexTester.should_match("ab", "a[b]");
+    g_regexTester.should_match("a", "a(?:b)*");
+    g_regexTester.should_match("ab", "a(?:b)*");
+    g_regexTester.should_match("abb", "a(?:b)*");
+    g_regexTester.should_match("abc", "a(?=b)..");
+    g_regexTester.should_not_match("aab", "a(?=b)..");
+    g_regexTester.should_capture("a", "a(b)*", "");
+    g_regexTester.should_capture("ab", "a(b)*", "b");
+    g_regexTester.should_capture("abb", "a(b)*", "b");
+    g_regexTester.should_match("aba", R"((a)b\1)");
+    g_regexTester.should_match("a", "a|b|c");
+    g_regexTester.should_match("b", "a|b|c");
+    g_regexTester.should_match("c", "a|b|c");
+    g_regexTester.should_not_match("ab", "a|b|c");
+    g_regexTester.should_not_match("bc", "a|b|c");
+    g_regexTester.should_not_match("abc", "a|b|c");
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2160,6 +2710,7 @@ int main() {
     test_gh_731();
     test_gh_992();
     test_gh_993();
+    test_gh_997();
     test_gh_4995();
     test_gh_5058();
     test_gh_5160();
@@ -2180,6 +2731,25 @@ int main() {
     test_gh_5509();
     test_gh_5576();
     test_gh_5672();
+    test_gh_5774();
+    test_gh_5790();
+    test_gh_5792();
+    test_gh_5797();
+    test_gh_5798();
+    test_gh_5865();
+    test_gh_5918();
+    test_gh_5939();
+    test_gh_5944();
+    test_gh_6022();
+    test_gh_6118();
+    test_gh_6147();
+    test_gh_6181();
+    test_gh_6189();
+    test_gh_6191();
+    test_gh_6249();
+    test_gh_6262();
+    test_gh_6267();
+    test_gh_6289();
 
     return g_regexTester.result();
 }

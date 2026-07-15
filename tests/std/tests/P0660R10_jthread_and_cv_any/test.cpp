@@ -147,30 +147,30 @@ int main() {
     assert(jthread::hardware_concurrency() == thread::hardware_concurrency());
 
     { // first wait_until overload; without the cancellation this would deadlock
-        jthread worker([](stop_token token) {
-            mutex m;
-            condition_variable_any cv;
+        mutex m;
+        condition_variable_any cv;
+        jthread worker([&](stop_token token) {
             unique_lock lck{m};
             assert(cv.wait(lck, move(token), [] { return false; }) == false);
         });
     }
 
-    static constexpr auto forever  = chrono::steady_clock::duration::max();
-    static constexpr auto infinity = chrono::steady_clock::time_point::max();
+    constexpr auto forever  = chrono::steady_clock::duration::max();
+    constexpr auto infinity = chrono::steady_clock::time_point::max();
 
     { // ditto without the cancellation this would deadlock
-        jthread worker([](stop_token token) {
-            mutex m;
-            condition_variable_any cv;
+        mutex m;
+        condition_variable_any cv;
+        jthread worker([&](stop_token token) {
             unique_lock lck{m};
             assert(cv.wait_until(lck, move(token), infinity, [] { return false; }) == false);
         });
     }
 
     { // ditto without the cancellation this would deadlock
-        jthread worker([](stop_token token) {
-            mutex m;
-            condition_variable_any cv;
+        mutex m;
+        condition_variable_any cv;
+        jthread worker([&](stop_token token) {
             unique_lock lck{m};
             assert(cv.wait_for(lck, move(token), forever, [] { return false; }) == false);
         });

@@ -1800,7 +1800,8 @@ namespace test_ranges_swap {
         using ranges::swap;
 
         {
-            DoNotUseFallback x, y;
+            DoNotUseFallback x;
+            DoNotUseFallback y;
             swap(x, y);
         }
         {
@@ -2121,7 +2122,8 @@ namespace test_swappable_with {
         } // namespace N
 
         void test() {
-            int i = 1, j = 2;
+            int i = 1;
+            int j = 2;
             lv_swap(i, j);
             assert(i == 2 && j == 1);
 
@@ -2906,7 +2908,7 @@ namespace test_predicate {
     void test() {
         {
             using Fn  = Bool (tag::*)(int);
-            using RFn = Bool (tag::*)(int)&&;
+            using RFn = Bool (tag::*)(int) &&;
             {
                 // N4849 [func.require]/1.1: "... f is a pointer to member function of a class T and
                 // is_base_of_v<T, remove_reference_t<decltype(t_1)>> is true"

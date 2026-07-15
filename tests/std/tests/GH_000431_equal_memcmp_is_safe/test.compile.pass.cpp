@@ -529,10 +529,11 @@ STATIC_ASSERT(test_equal_memcmp_is_safe_for_types<magic, DefaultComparisonOddSiz
 // The only difference between _Equal_memcmp_is_safe and _Vector_alg_in_search_is_safe is how the magic works
 STATIC_ASSERT(_Equal_memcmp_is_safe<DefaultComparison*, DefaultComparison*, equal_to<>> == magic);
 STATIC_ASSERT(_Equal_memcmp_is_safe<DefaultComparisonOddSize*, DefaultComparisonOddSize*, equal_to<>> == magic);
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_SEARCH || _VECTORIZED_ADJACENT_FIND || _VECTORIZED_FIND_END || _VECTORIZED_FIND_FIRST_OF \
+    || _VECTORIZED_UNIQUE || _VECTORIZED_UNIQUE_COPY
 STATIC_ASSERT(_Vector_alg_in_search_is_safe<DefaultComparison*, DefaultComparison*, equal_to<>> == magic);
 STATIC_ASSERT(!_Vector_alg_in_search_is_safe<DefaultComparisonOddSize*, DefaultComparisonOddSize*, equal_to<>>);
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _Vector_alg_in_search_is_safe is available ^^^
 #endif // _HAS_CXX20
 
 // Test _Std_char_traits_eq

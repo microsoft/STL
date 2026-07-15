@@ -403,15 +403,27 @@ template <HasMutCopy MutCopyStatus, HasConstCopy ConstCopyStatus, HasMutMove Mut
     HasConstMove ConstMoveStatus>
 struct State {
     State() = default;
-    // clang-format off
-    State(State&) requires (static_cast<bool>(MutCopyStatus))           = default;
-    State(State&) requires (!static_cast<bool>(MutCopyStatus))          = delete;
-    State(const State&) requires (static_cast<bool>(ConstCopyStatus))   = default;
-    State(const State&) requires (!static_cast<bool>(ConstCopyStatus))  = delete;
-    State(State&&) requires (static_cast<bool>(MutMoveStatus))          = default;
-    State(State&&) requires (!static_cast<bool>(MutMoveStatus))         = delete;
-    State(const State&&) requires (!static_cast<bool>(ConstMoveStatus)) = delete;
-    // clang-format on
+    State(State&)
+        requires (static_cast<bool>(MutCopyStatus))
+    = default;
+    State(State&)
+        requires (!static_cast<bool>(MutCopyStatus))
+    = delete;
+    State(const State&)
+        requires (static_cast<bool>(ConstCopyStatus))
+    = default;
+    State(const State&)
+        requires (!static_cast<bool>(ConstCopyStatus))
+    = delete;
+    State(State&&)
+        requires (static_cast<bool>(MutMoveStatus))
+    = default;
+    State(State&&)
+        requires (!static_cast<bool>(MutMoveStatus))
+    = delete;
+    State(const State&&)
+        requires (!static_cast<bool>(ConstMoveStatus))
+    = delete;
 
     template <class U = State>
         requires (!static_cast<bool>(ConstCopyStatus) && static_cast<bool>(ConstMoveStatus))

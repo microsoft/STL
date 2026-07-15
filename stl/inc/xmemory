@@ -27,9 +27,11 @@ _STL_DISABLE_CLANG_WARNINGS
 
 // TRANSITION, non-_Ugly attribute tokens
 #pragma push_macro("msvc")
+#pragma push_macro("no_specializations")
 #undef msvc
+#undef no_specializations
 
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_REMOVE
 extern "C" {
 void* __stdcall __std_remove_1(void* _First, void* _Last, uint8_t _Val) noexcept;
 void* __stdcall __std_remove_2(void* _First, void* _Last, uint16_t _Val) noexcept;
@@ -40,27 +42,21 @@ void* __stdcall __std_remove_8(void* _First, void* _Last, uint64_t _Val) noexcep
 _STD_BEGIN
 template <class _Ty, class _TVal>
 _Ty* _Remove_vectorized(_Ty* const _First, _Ty* const _Last, const _TVal _Val) noexcept {
-    if constexpr (is_pointer_v<_Ty>) {
-#ifdef _WIN64
-        return reinterpret_cast<_Ty*>(::__std_remove_8(_First, _Last, reinterpret_cast<uint64_t>(_Val)));
-#else
-        return reinterpret_cast<_Ty*>(::__std_remove_4(_First, _Last, reinterpret_cast<uint32_t>(_Val)));
-#endif
-    } else if constexpr (sizeof(_Ty) == 1) {
-        return reinterpret_cast<_Ty*>(::__std_remove_1(_First, _Last, static_cast<uint8_t>(_Val)));
+    if constexpr (sizeof(_Ty) == 1) {
+        return reinterpret_cast<_Ty*>(::__std_remove_1(_First, _Last, _STD _Find_arg_cast<uint8_t>(_Val)));
     } else if constexpr (sizeof(_Ty) == 2) {
-        return reinterpret_cast<_Ty*>(::__std_remove_2(_First, _Last, static_cast<uint16_t>(_Val)));
+        return reinterpret_cast<_Ty*>(::__std_remove_2(_First, _Last, _STD _Find_arg_cast<uint16_t>(_Val)));
     } else if constexpr (sizeof(_Ty) == 4) {
-        return reinterpret_cast<_Ty*>(::__std_remove_4(_First, _Last, static_cast<uint32_t>(_Val)));
+        return reinterpret_cast<_Ty*>(::__std_remove_4(_First, _Last, _STD _Find_arg_cast<uint32_t>(_Val)));
     } else if constexpr (sizeof(_Ty) == 8) {
-        return reinterpret_cast<_Ty*>(::__std_remove_8(_First, _Last, static_cast<uint64_t>(_Val)));
+        return reinterpret_cast<_Ty*>(::__std_remove_8(_First, _Last, _STD _Find_arg_cast<uint64_t>(_Val)));
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(false); // Unexpected size
+        static_assert(false, "unexpected size");
     }
 }
 _STD_END
 
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_REMOVE ^^^
 
 _STD_BEGIN
 template <class _Ptrty>
@@ -127,7 +123,7 @@ _NODISCARD constexpr size_t _Get_size_of_n(const size_t _Count) {
 }
 
 template <class _Ty>
-constexpr size_t _New_alignof = (_STD max)(alignof(_Ty), __STDCPP_DEFAULT_NEW_ALIGNMENT__);
+constexpr size_t _New_alignof = (_STD max) (alignof(_Ty), __STDCPP_DEFAULT_NEW_ALIGNMENT__);
 
 #ifdef __clang__ // Clang and MSVC implement P0784R7 differently; see GH-1532
 #define _CLANG_CONSTEXPR20 _CONSTEXPR20
@@ -178,9 +174,9 @@ _INLINE_VAR constexpr size_t _Non_user_size = sizeof(void*) + _Big_allocation_al
 
 #ifdef _WIN64
 _INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAFAFAFAFAULL;
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
+#else // ^^^ 64-bit / 32-bit vvv
 _INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAUL;
-#endif // ^^^ !defined(_WIN64) ^^^
+#endif // ^^^ 32-bit ^^^
 
 template <class _Traits>
 __declspec(allocator) void* _Allocate_manually_vector_aligned(const size_t _Bytes) {
@@ -244,7 +240,7 @@ __declspec(allocator) _CONSTEXPR20 void* _Allocate(const size_t _Bytes) {
 #if defined(_M_IX86) || defined(_M_X64)
         if (_Bytes >= _Big_allocation_threshold) {
             // boost the alignment of big allocations to help autovectorization
-            _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
+            _Passed_align = (_STD max) (_Align, _Big_allocation_alignment);
         }
 #endif // defined(_M_IX86) || defined(_M_X64)
         return _Traits::_Allocate_aligned(_Bytes, _Passed_align);
@@ -277,7 +273,7 @@ _CONSTEXPR20 void _Deallocate(void* _Ptr, size_t _Bytes) noexcept {
 #if defined(_M_IX86) || defined(_M_X64)
         if (_Bytes >= _Big_allocation_threshold) {
             // boost the alignment of big allocations to help autovectorization
-            _Passed_align = (_STD max)(_Align, _Big_allocation_alignment);
+            _Passed_align = (_STD max) (_Align, _Big_allocation_alignment);
         }
 #endif // defined(_M_IX86) || defined(_M_X64)
         ::operator delete(_Ptr, _Bytes, align_val_t{_Passed_align});
@@ -555,7 +551,7 @@ struct allocation_result {
 #endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Alloc>
-struct allocator_traits;
+struct _NO_SPECIALIZATIONS_CITING("N5014 [allocator.traits.general]/1") allocator_traits;
 
 _STL_DISABLE_DEPRECATED_WARNING
 template <class _Alloc>
@@ -756,8 +752,9 @@ struct _Default_allocator_traits { // traits for std::allocator
 };
 
 _EXPORT_STD template <class _Alloc>
-struct allocator_traits : conditional_t<_Is_default_allocator<_Alloc>::value, _Default_allocator_traits<_Alloc>,
-                              _Normal_allocator_traits<_Alloc>> {};
+struct _NO_SPECIALIZATIONS_CITING("N5014 [allocator.traits.general]/1") allocator_traits
+    : conditional_t<_Is_default_allocator<_Alloc>::value, _Default_allocator_traits<_Alloc>,
+          _Normal_allocator_traits<_Alloc>> {};
 
 // _Choose_pocca_v returns whether an attempt to propagate allocators is necessary in copy assignment operations.
 // Note that even when false_type, callers should call _Pocca as we want to assign allocators even when equal.
@@ -795,6 +792,9 @@ constexpr bool _Is_simple_alloc_v =
     && is_same_v<typename allocator_traits<_Alloc>::pointer, typename _Alloc::value_type*>
     && is_same_v<typename allocator_traits<_Alloc>::const_pointer, const typename _Alloc::value_type*>;
 
+// SCARY iterators are permitted but not required by the Standard. See:
+// N2911 Minimizing Dependencies Within Generic Classes For Faster And Smaller Programs
+// N2980 SCARY Iterator Assignment And Initialization
 template <class _Value_type>
 struct _Simple_types { // wraps types from allocators with simple addressing for use in iterators
                        // and other SCARY machinery
@@ -805,7 +805,7 @@ struct _Simple_types { // wraps types from allocators with simple addressing for
     using const_pointer   = const value_type*;
 };
 
-// The number of user bytes a single byte of ASAN shadow memory can track.
+// The number of user bytes a single byte of ASan shadow memory can track.
 _INLINE_VAR constexpr size_t _Asan_granularity      = 8;
 _INLINE_VAR constexpr size_t _Asan_granularity_mask = _Asan_granularity - 1;
 
@@ -929,8 +929,8 @@ constexpr size_t _Container_allocation_minimum_asan_alignment = alignof(typename
 template <class _Container>
 constexpr size_t _Container_allocation_minimum_asan_alignment<_Container,
     void_t<decltype(_Container::allocator_type::_Minimum_asan_allocation_alignment)>> =
-    (_STD max)(
-        alignof(typename _Container::value_type), _Container::allocator_type::_Minimum_asan_allocation_alignment);
+    (_STD max) (alignof(typename _Container::value_type),
+        _Container::allocator_type::_Minimum_asan_allocation_alignment);
 
 _EXPORT_STD template <class _Ty>
 class allocator {
@@ -962,7 +962,7 @@ public:
 
 #if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     template <class _Other>
-    struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS rebind {
+    struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES rebind {
         using other = allocator<_Other>;
     };
 
@@ -1035,7 +1035,7 @@ public:
     using const_pointer _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = const void*;
 
     template <class _Other>
-    struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS rebind {
+    struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS _NO_SPECIALIZATIONS_OF_MEMBER_CLASS_TEMPLATES rebind {
         using other = allocator<_Other>;
     };
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
@@ -1688,7 +1688,7 @@ _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _No
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX26
         {
-            return _STD _Copy_memmove(_First, _Last, _Dest);
+            return _STD _Copy_memcpy(_First, _Last, _Dest);
         }
     }
     _Uninitialized_backout<_NoThrowFwdIt> _Backout{_Dest};
@@ -1723,6 +1723,7 @@ namespace ranges {
 
     template <class _InIt, class _OutIt>
     in_out_result<_InIt, _OutIt> _Copy_memcpy_count(_InIt _IFirst, _OutIt _OFirst, const size_t _Count) noexcept {
+        // (pre-verified contiguous iterator)
         const auto _IFirstPtr     = _STD _To_address(_IFirst);
         const auto _OFirstPtr     = _STD _To_address(_OFirst);
         const auto _IFirst_ch     = const_cast<char*>(reinterpret_cast<const volatile char*>(_IFirstPtr));
@@ -1746,6 +1747,7 @@ namespace ranges {
     template <class _InIt, class _OutIt, class _DistIt>
     in_out_result<_InIt, _OutIt> _Copy_memcpy_distance(
         _InIt _IFirst, _OutIt _OFirst, const _DistIt _DFirst, const _DistIt _DLast) noexcept {
+        // (pre-verified contiguous iterator)
         // equivalent to _Copy_memcpy_count(_IFirst, _OFirst, _DLast - _DFirst) but computes distance more efficiently
         const auto _IFirstPtr   = _STD _To_address(_IFirst);
         const auto _OFirstPtr   = _STD _To_address(_OFirst);
@@ -1760,13 +1762,13 @@ namespace ranges {
         if constexpr (is_pointer_v<_InIt>) {
             _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count_bytes);
         } else {
-            _IFirst += _Count_bytes / sizeof(iter_value_t<_InIt>);
+            _IFirst += static_cast<iter_difference_t<_InIt>>(_Count_bytes / sizeof(iter_value_t<_InIt>));
         }
 
         if constexpr (is_pointer_v<_OutIt>) {
             _OFirst = reinterpret_cast<_OutIt>(_OFirst_ch + _Count_bytes);
         } else {
-            _OFirst += _Count_bytes / sizeof(iter_value_t<_OutIt>);
+            _OFirst += static_cast<iter_difference_t<_OutIt>>(_Count_bytes / sizeof(iter_value_t<_OutIt>));
         }
         return {_STD move(_IFirst), _STD move(_OFirst)};
     }
@@ -1782,7 +1784,7 @@ namespace ranges {
         const auto _ILast_ch    = const_cast<const char*>(reinterpret_cast<const volatile char*>(_ILastPtr));
         const auto _OFirst_ch   = const_cast<char*>(reinterpret_cast<const volatile char*>(_OFirstPtr));
         const auto _OLast_ch    = const_cast<const char*>(reinterpret_cast<const volatile char*>(_OLastPtr));
-        const auto _Count_bytes = static_cast<size_t>((_STD min)(_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
+        const auto _Count_bytes = static_cast<size_t>((_STD min) (_ILast_ch - _IFirst_ch, _OLast_ch - _OFirst_ch));
         _CSTD memcpy(_OFirst_ch, _IFirst_ch, _Count_bytes);
         if constexpr (is_pointer_v<_InIt>) {
             _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count_bytes);
@@ -1816,12 +1818,14 @@ namespace ranges {
                 return _RANGES _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
                     _RANGES next(_OFirst, _STD move(_OLast)));
             } else if constexpr (_Is_sized1) {
-                return _RANGES _Copy_memcpy_distance(
-                    _IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
+                const auto _Dist = _ILast - _IFirst;
+                _STD _Contiguous_iter_verify(_OFirst, static_cast<iter_difference_t<_Out>>(_Dist));
+                return _RANGES _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _IFirst + _Dist);
             } else {
                 _STL_INTERNAL_STATIC_ASSERT(_Is_sized2);
-                return _RANGES _Copy_memcpy_distance(
-                    _IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                const auto _Dist = _OLast - _OFirst;
+                _STD _Contiguous_iter_verify(_IFirst, static_cast<iter_difference_t<_It>>(_Dist));
+                return _RANGES _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _OFirst + _Dist);
             }
         } else {
             if constexpr (_Can_memcpy) {
@@ -1897,20 +1901,20 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     auto _ULast  = _STD _Get_unwrapped(_STD move(_Last));
 #endif // ^^^ !_HAS_CXX20 ^^^
 
-    constexpr bool _Can_memmove = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_constructible
-                               && _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>::value;
+    constexpr bool _Can_memcpy = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_constructible
+                              && _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>::value;
 
-    if constexpr (_Can_memmove) {
+    if constexpr (_Can_memcpy) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
             if constexpr (is_same_v<decltype(_UFirst), decltype(_ULast)>) {
-                _STD _Copy_memmove(_STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _Unfancy(_Dest));
+                _STD _Copy_memcpy(_STD _To_address(_UFirst), _STD _To_address(_ULast), _STD _Unfancy(_Dest));
                 _Dest += _ULast - _UFirst;
             } else {
-                const auto _Count = static_cast<size_t>(_ULast - _UFirst);
-                _STD _Copy_memmove_n(_STD _To_address(_UFirst), _Count, _STD _Unfancy(_Dest));
+                const auto _Count = static_cast<size_t>(_STD _Contiguous_iter_distance(_UFirst, _ULast));
+                _STD _Copy_memcpy_n(_STD _To_address(_UFirst), _Count, _STD _Unfancy(_Dest));
                 _Dest += _Count;
             }
             return _Dest;
@@ -1938,16 +1942,16 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy_n(
     auto _UFirst = _STD _Get_unwrapped(_STD move(_First));
 #endif // ^^^ No checking ^^^
 
-    constexpr bool _Can_memmove =
+    constexpr bool _Can_memcpy =
         conjunction_v<bool_constant<_Iter_copy_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>,
             _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>;
 
-    if constexpr (_Can_memmove) {
+    if constexpr (_Can_memcpy) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            _STD _Copy_memmove_n(_UFirst, _Count, _STD _Unfancy(_Dest));
+            _STD _Copy_memcpy_n(_UFirst, _Count, _STD _Unfancy(_Dest));
             _Dest += _Count;
             return _Dest;
         }
@@ -1969,7 +1973,7 @@ _NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _InIt _Last, _No
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX26
         {
-            return _STD _Copy_memmove(_First, _Last, _Dest);
+            return _STD _Copy_memcpy(_First, _Last, _Dest);
         }
     }
 
@@ -2009,7 +2013,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_move(
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            _STD _Copy_memmove(_UFirst, _ULast, _STD _Unfancy(_Dest));
+            _STD _Copy_memcpy(_UFirst, _ULast, _STD _Unfancy(_Dest));
             return _Dest + (_ULast - _UFirst);
         }
     }
@@ -2316,11 +2320,20 @@ _NODISCARD_RAW_PTR_ALLOC _CONSTEXPR20 typename allocator_traits<_Alloc>::pointer
     if constexpr (_Should_allocate_at_least<_Alloc>) {
         auto [_Ptr, _Allocated] = _Al.allocate_at_least(_Count);
         _Count                  = _Allocated;
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-11060638
+        return _Ptr + decltype(_Ptr - _Ptr){0};
+#else // ^^^ workaround / no workaround vvv
         return _Ptr;
+#endif // ^^^ no workaround ^^^
     } else
 #endif // _HAS_CXX23
     {
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-11060638
+        using _Pointer = decltype(_Al.allocate(_Count));
+        return _Al.allocate(_Count) + decltype(_Pointer{} - _Pointer{}){0};
+#else // ^^^ workaround / no workaround vvv
         return _Al.allocate(_Count);
+#endif // ^^^ no workaround ^^^
     }
 }
 
@@ -2333,7 +2346,7 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
     _UFirst           = _STD _Find_unchecked(_UFirst, _ULast, _Val);
     auto _UNext       = _UFirst;
     if (_UFirst != _ULast) {
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _VECTORIZED_REMOVE
         if constexpr (_Vector_alg_in_find_is_safe<decltype(_UFirst), _Ty>) {
 #if _HAS_CXX20
             if (!_STD is_constant_evaluated())
@@ -2352,7 +2365,7 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
                 return _First;
             }
         }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ _VECTORIZED_REMOVE ^^^
 
         while (++_UFirst != _ULast) {
             if (!(*_UFirst == _Val)) {
@@ -2395,7 +2408,7 @@ _CONSTEXPR20 typename _Container::size_type _Erase_remove(_Container& _Cont, con
     const auto _Old_size = _Cont.size();
     _STD _Seek_wrapped(_First, _STD remove(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _Val));
     _Cont.erase(_First, _Last);
-    return _Old_size - _Cont.size();
+    return static_cast<typename _Container::size_type>(_Old_size - _Cont.size());
 }
 
 template <class _Container, class _Pr>
@@ -2406,7 +2419,7 @@ _CONSTEXPR20 typename _Container::size_type _Erase_remove_if(_Container& _Cont, 
     const auto _Old_size = _Cont.size();
     _STD _Seek_wrapped(_First, _STD remove_if(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _Pred));
     _Cont.erase(_First, _Last);
-    return _Old_size - _Cont.size();
+    return static_cast<typename _Container::size_type>(_Old_size - _Cont.size());
 }
 
 template <class _Container, class _Pr>
@@ -2759,6 +2772,16 @@ namespace ranges {
     elements_of(_Rng&&, _Alloc) -> elements_of<_Rng&&, _Alloc>;
 #endif // ^^^ !defined(__cpp_lib_byte) ^^^
 } // namespace ranges
+
+template <class>
+constexpr bool _Has_guaranteed_push_back = false; // N5032 [sequence.reqmts]/104, /108; used by flat_(multi)map::insert.
+
+// N5032 [container.reqmts]/66.1; used by various flat_(multi)set inserting functions.
+template <class _Ty>
+constexpr bool _Has_guaranteed_single_insertion = _Has_guaranteed_push_back<_Ty>;
+
+template <class>
+constexpr bool _Has_guaranteed_append_range = false; // N5032 [sequence.reqmts]/112; used by flat_(multi)set::insert.
 #endif // _HAS_CXX23
 
 template <class _Elem, class _UTy>
@@ -2768,28 +2791,47 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // used by bot
 
 #ifdef _WIN64
     auto _UVal_trunc = _UVal;
-#else // ^^^ defined(_WIN64) / !defined(_WIN64) vvv
+#else // ^^^ 64-bit / 32-bit vvv
 
-    constexpr bool _Big_uty = sizeof(_UTy) > 4;
-    if constexpr (_Big_uty) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
+    if constexpr (sizeof(_UTy) > 4) { // For 64-bit numbers, work in chunks to avoid 64-bit divisions.
         while (_UVal > 0xFFFFFFFFU) {
-            auto _UVal_chunk = static_cast<unsigned long>(_UVal % 1000000000);
-            _UVal /= 1000000000;
+            auto _UVal_chunk = static_cast<unsigned long>(_UVal % 100000000);
+            _UVal /= 100000000;
 
-            for (int _Idx = 0; _Idx != 9; ++_Idx) {
-                *--_RNext = static_cast<_Elem>('0' + _UVal_chunk % 10);
-                _UVal_chunk /= 10;
+            for (int _Idx = 0; _Idx != 3; ++_Idx) {
+                const unsigned long _UVal_chunk_part = _UVal_chunk % 100;
+                _UVal_chunk /= 100;
+                _RNext -= 2;
+                _CSTD memcpy(_RNext, _Digit_pairs<_Elem>._Data[_UVal_chunk_part], 2 * sizeof(_Elem));
             }
+
+            _RNext -= 2;
+            _CSTD memcpy(_RNext, _Digit_pairs<_Elem>._Data[_UVal_chunk], 2 * sizeof(_Elem));
         }
     }
 
     auto _UVal_trunc = static_cast<unsigned long>(_UVal);
-#endif // ^^^ !defined(_WIN64) ^^^
+#endif // ^^^ 32-bit ^^^
 
+    // If we have a single digit, print [0, 9] and return. (This is necessary to correctly handle 0.)
+    if (_UVal_trunc < 10) {
+        *--_RNext = static_cast<_Elem>('0' + _UVal_trunc);
+        return _RNext;
+    }
+
+    // Print one or more pairs of digits.
     do {
-        *--_RNext = static_cast<_Elem>('0' + _UVal_trunc % 10);
-        _UVal_trunc /= 10;
-    } while (_UVal_trunc != 0);
+        const auto _UVal_trunc_part = static_cast<unsigned long>(_UVal_trunc % 100);
+        _UVal_trunc /= 100;
+        _RNext -= 2;
+        _CSTD memcpy(_RNext, _Digit_pairs<_Elem>._Data[_UVal_trunc_part], 2 * sizeof(_Elem));
+    } while (_UVal_trunc >= 10);
+
+    // If we have an unpaired digit, print it. For example, 1729 is printed as 17 29, and 19937 is printed as 1 99 37.
+    if (_UVal_trunc != 0) {
+        *--_RNext = static_cast<_Elem>('0' + _UVal_trunc);
+    }
+
     return _RNext;
 }
 _STD_END
@@ -2813,6 +2855,7 @@ _STD_END
 #endif // ^^^ !_HAS_CXX20 ^^^
 
 // TRANSITION, non-_Ugly attribute tokens
+#pragma pop_macro("no_specializations")
 #pragma pop_macro("msvc")
 
 #pragma pop_macro("new")

@@ -217,6 +217,9 @@ struct uses_allocator<stack<_Ty, _Container>, _Alloc> : uses_allocator<_Containe
 template <_Format_supported_charT _CharT, class _Ty, formattable<_CharT> _Container>
 struct formatter<stack<_Ty, _Container>, _CharT>
     : _Adaptor_formatter_base<stack<_Ty, _Container>, _CharT, _RANGES ref_view> {};
+
+template <class _Ty, class _Container>
+constexpr bool enable_nonlocking_formatter_optimization<stack<_Ty, _Container>> = false;
 #endif // _HAS_CXX23
 _STD_END
 
