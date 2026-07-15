@@ -272,7 +272,7 @@ concept _Span_compatible_range =
 
 template <class _Ty>
 concept _Integral_constant_like =
-    is_integral_v<remove_cvref_t<decltype(_Ty::value)>> && !is_same_v<bool, remove_const_t<decltype(_Ty::value)>>
+    is_integral_v<remove_cvref_t<decltype(_Ty::value)>> && !is_same_v<bool, remove_cvref_t<decltype(_Ty::value)>>
     && convertible_to<_Ty, decltype(_Ty::value)> && equality_comparable_with<_Ty, decltype(_Ty::value)>
     && bool_constant<_Ty() == _Ty::value>::value
     && bool_constant<static_cast<decltype(_Ty::value)>(_Ty()) == _Ty::value>::value;
