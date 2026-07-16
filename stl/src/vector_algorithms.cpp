@@ -6089,8 +6089,7 @@ namespace {
             template <class _Ty>
             __forceinline bool _Make_bitmap_large_neon(
                 const void* const _Needle, const size_t _Needle_length, uint8x16x2_t& _Bitmap) noexcept {
-                // TRANSITION, DevCom-11055227
-                constexpr uint8_t _Mask_arr[16] = {
+                static constexpr uint8_t _Mask_arr[16] = {
                     0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
                 const auto _Mask = vld1q_u8(_Mask_arr);
 
@@ -9996,8 +9995,7 @@ namespace {
             }
 
             static uint32_t _Mask(const _Vec_t _First, const _Vec_t _Second) noexcept {
-                // TRANSITION, DevCom-11055227
-                constexpr uint16_t _Weights_arr[8] = {1, 2, 4, 8, 16, 32, 64, 128};
+                static constexpr uint16_t _Weights_arr[8] = {1, 2, 4, 8, 16, 32, 64, 128};
                 const auto _Weights                = vld1q_u16(_Weights_arr);
 
                 const auto _Cmp  = vceqq_u16(_First, _Second);
@@ -10028,8 +10026,7 @@ namespace {
             }
 
             static uint32_t _Mask(const _Vec_t _First, const _Vec_t _Second) noexcept {
-                // TRANSITION, DevCom-11055227
-                constexpr uint32_t _Weights_arr[4] = {1, 2, 4, 8};
+                static constexpr uint32_t _Weights_arr[4] = {1, 2, 4, 8};
                 const auto _Weights                = vld1q_u32(_Weights_arr);
 
                 const auto _Cmp  = vceqq_u32(_First, _Second);
@@ -11266,7 +11263,6 @@ namespace {
             }
 
             static _Vec_t _Load_constant() noexcept {
-                // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
                 static constexpr uint32_t _Idx_arr[4] = {0x01010101, 0x01010101, 0x00000000, 0x00000000};
                 const auto _Idx                       = vld1q_u8(reinterpret_cast<const uint8_t*>(_Idx_arr));
                 return _Idx;
@@ -11297,7 +11293,6 @@ namespace {
             }
 
             static _Vec_t _Load_constant() noexcept {
-                // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
                 static constexpr uint64_t _Wx_arr[2] = {0x0010002000400080, 0x0001000200040008};
                 const auto _Wx                       = vld1q_u64(_Wx_arr);
                 return vreinterpretq_u16_u64(_Wx);
@@ -11543,7 +11538,6 @@ namespace {
             }
 
             static uint16_t _To_bits(const _Vec _Ex1) noexcept {
-                // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
                 static constexpr uint8_t _Idx_arr[16] = {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
                 const auto _Idx                       = vld1q_u8(_Idx_arr);
 
@@ -11587,7 +11581,6 @@ namespace {
             }
 
             static uint8_t _To_bits(const _Vec _Ex1) noexcept {
-                // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
                 static constexpr uint8_t _Idx_arr[16] = {
                     14, 12, 10, 8, 6, 4, 2, 0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
                 const auto _Idx = vld1q_u8(_Idx_arr);
