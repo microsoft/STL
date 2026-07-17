@@ -500,7 +500,7 @@ void test_construction() {
             assert(fmmap == fmmap1);
         }
 
-        almost_pair<int, const int> alter_pairs[]{
+        almost_pair<int&, const int> alter_pairs[]{
             {value_types[0].first_, value_types[0].second_},
             {value_types[1].first_, value_types[1].second_},
             {value_types[2].first_, value_types[2].second_},
@@ -578,13 +578,13 @@ void test_construction() {
             assert(fmmap == fmmap1);
         }
 
-        almost_pair<int, const int&&> alter_pairs[]{
-            {value_types[0].first_, move(value_types[0].second_)},
-            {value_types[1].first_, move(value_types[1].second_)},
-            {value_types[2].first_, move(value_types[2].second_)},
-            {value_types[3].first_, move(value_types[3].second_)},
-            {value_types[4].first_, move(value_types[4].second_)},
-            {value_types[5].first_, move(value_types[5].second_)},
+        almost_pair<int&&, const int&> alter_pairs[]{
+            {move(value_types[0].first_), value_types[0].second_},
+            {move(value_types[1].first_), value_types[1].second_},
+            {move(value_types[2].first_), value_types[2].second_},
+            {move(value_types[3].first_), value_types[3].second_},
+            {move(value_types[4].first_), value_types[4].second_},
+            {move(value_types[5].first_), value_types[5].second_},
         };
 
         // Test LWG-4223
@@ -634,13 +634,13 @@ void test_construction() {
             assert(fmmap == fmmap1);
         }
 
-        almost_pair<const int&&, int> alter_pairs[]{
-            {move(value_types[0].first_), value_types[0].second_},
-            {move(value_types[1].first_), value_types[1].second_},
-            {move(value_types[2].first_), value_types[2].second_},
-            {move(value_types[3].first_), value_types[3].second_},
-            {move(value_types[4].first_), value_types[4].second_},
-            {move(value_types[5].first_), value_types[5].second_},
+        almost_pair<const int, const int&&> alter_pairs[]{
+            {value_types[0].first_, move(value_types[0].second_)},
+            {value_types[1].first_, move(value_types[1].second_)},
+            {value_types[2].first_, move(value_types[2].second_)},
+            {value_types[3].first_, move(value_types[3].second_)},
+            {value_types[4].first_, move(value_types[4].second_)},
+            {value_types[5].first_, move(value_types[5].second_)},
         };
 
         // Test LWG-4223
@@ -679,12 +679,12 @@ void test_construction() {
             assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
             assert(fmap == fmap1);
 
-            almost_pair<const int&&, int&> alter_pairs[]{
-                {move(value_types[0].first_), value_types[0].second_},
-                {move(value_types[1].first_), value_types[1].second_},
-                {move(value_types[2].first_), value_types[2].second_},
-                {move(value_types[3].first_), value_types[3].second_},
-                {move(value_types[4].first_), value_types[4].second_},
+            almost_pair<const int&, int&> alter_pairs[]{
+                {value_types[0].first_, value_types[0].second_},
+                {value_types[1].first_, value_types[1].second_},
+                {value_types[2].first_, value_types[2].second_},
+                {value_types[3].first_, value_types[3].second_},
+                {value_types[4].first_, value_types[4].second_},
             };
             // Test LWG-4223
             flat_map fmap2{sorted_unique, ranges::begin(alter_pairs), ranges::end(alter_pairs), less<int>{}};
