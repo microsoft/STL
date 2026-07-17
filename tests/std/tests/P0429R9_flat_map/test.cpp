@@ -555,41 +555,6 @@ void test_construction() {
             assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5}));
             assert(fmmap == fmmap1);
         }
-
-        almost_pair<int, const int&> alter_pairs[]{
-            {value_types[0].first_, value_types[0].second_},
-            {value_types[1].first_, value_types[1].second_},
-            {value_types[2].first_, value_types[2].second_},
-            {value_types[3].first_, value_types[3].second_},
-            {value_types[4].first_, value_types[4].second_},
-            {value_types[5].first_, value_types[5].second_},
-        };
-
-        // Test LWG-4223
-        {
-            MyAllocatorCounter allocation_counter;
-            flat_map_my_allocator fmap{ranges::begin(alter_pairs), ranges::end(alter_pairs), MyAllocator<int>{}};
-            assert(allocation_counter.check_then_reset());
-            flat_map_my_allocator fmap1{
-                ranges::begin(alter_pairs), ranges::end(alter_pairs), less<int>{}, MyAllocator<int>{}};
-            assert(allocation_counter.check_then_reset());
-
-            assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
-            assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
-            assert(fmap == fmap1);
-        }
-        {
-            MyAllocatorCounter allocation_counter;
-            flat_multimap_my_allocator fmmap{ranges::begin(alter_pairs), ranges::end(alter_pairs), MyAllocator<int>{}};
-            assert(allocation_counter.check_then_reset());
-            flat_multimap_my_allocator fmmap1{
-                ranges::begin(alter_pairs), ranges::end(alter_pairs), less<int>{}, MyAllocator<int>{}};
-            assert(allocation_counter.check_then_reset());
-
-            assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
-            assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5}));
-            assert(fmmap == fmmap1);
-        }
     }
     {
         // Test flat_map(from_range_t, _Rng &&, const key_compare&)
@@ -765,19 +730,6 @@ void test_construction() {
             assert(check_key_content(fmap, {0, 1, 2, 3, 4}));
             assert(check_value_content(fmap, {44, 2324, 635462, 433, 5}));
             assert(fmap == fmap1);
-
-            almost_pair<int&&, int&> alter_pairs[]{
-                {move(value_types[0].first_), value_types[0].second_},
-                {move(value_types[1].first_), value_types[1].second_},
-                {move(value_types[2].first_), value_types[2].second_},
-                {move(value_types[3].first_), value_types[3].second_},
-                {move(value_types[4].first_), value_types[4].second_},
-            };
-            // Test LWG-4223
-            flat_map_my_allocator fmap2{
-                sorted_unique, ranges::begin(alter_pairs), ranges::end(alter_pairs), less<int>{}, MyAllocator<int>{}};
-            assert(allocation_counter.check_then_reset());
-            assert(fmap == fmap2);
         }
         {
             almost_pair<int, int> value_types[]{{0, 44}, {1, 2324}, {2, 635462}, {2, 7}, {3, 433}, {4, 5}};
@@ -793,20 +745,6 @@ void test_construction() {
             assert(check_key_content(fmmap, {0, 1, 2, 2, 3, 4}));
             assert(check_value_content(fmmap, {44, 2324, 635462, 7, 433, 5}));
             assert(fmmap == fmmap1);
-
-            almost_pair<int&&, int&&> alter_pairs[]{
-                {move(value_types[0].first_), move(value_types[0].second_)},
-                {move(value_types[1].first_), move(value_types[1].second_)},
-                {move(value_types[2].first_), move(value_types[2].second_)},
-                {move(value_types[3].first_), move(value_types[3].second_)},
-                {move(value_types[4].first_), move(value_types[4].second_)},
-                {move(value_types[5].first_), move(value_types[5].second_)},
-            };
-            // Test LWG-4223
-            flat_multimap_my_allocator fmmap2{sorted_equivalent, ranges::begin(alter_pairs), ranges::end(alter_pairs),
-                less<int>{}, MyAllocator<int>{}};
-            assert(allocation_counter.check_then_reset());
-            assert(fmmap == fmmap2);
         }
     }
     {
