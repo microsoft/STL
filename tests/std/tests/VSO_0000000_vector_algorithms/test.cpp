@@ -767,8 +767,8 @@ void test_case_replace_copy(const vector<T>& input, vector<T>& out_expected, vec
 
 template <class T>
 void test_replace(mt19937_64& gen) {
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
-    // For ARM64/ARM64EC, replace() is always vectorized.
+#if defined(_M_ARM64)
+    // For ARM64, replace() is always vectorized.
     constexpr bool replace_is_vectorized = true;
 #else
     // For x64/x86, replace() is vectorized for 4 and 8 bytes only.
