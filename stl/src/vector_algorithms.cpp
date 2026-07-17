@@ -9857,6 +9857,7 @@ __declspec(noalias) void __stdcall __std_replace_8(
 #else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
 __declspec(noalias) void __stdcall __std_replace_4(
     void* _First, void* const _Last, const uint32_t _Old_val, const uint32_t _New_val) noexcept {
+#if !defined(_M_ARM64EC) // not ARM64EC, which lacks AVX2
     if (_Use_avx2()) {
         const __m256i _Comparand   = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(_Old_val));
         const __m256i _Replacement = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(_New_val));
@@ -9881,17 +9882,20 @@ __declspec(noalias) void __stdcall __std_replace_4(
         }
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-    } else {
-        for (auto _Cur = reinterpret_cast<uint32_t*>(_First); _Cur != _Last; ++_Cur) {
-            if (*_Cur == _Old_val) {
-                *_Cur = _New_val;
-            }
+        return;
+    }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+
+    for (auto _Cur = reinterpret_cast<uint32_t*>(_First); _Cur != _Last; ++_Cur) {
+        if (*_Cur == _Old_val) {
+            *_Cur = _New_val;
         }
     }
 }
 
 __declspec(noalias) void __stdcall __std_replace_8(
     void* _First, void* const _Last, const uint64_t _Old_val, const uint64_t _New_val) noexcept {
+#if !defined(_M_ARM64EC) // not ARM64EC, which lacks AVX2
     if (_Use_avx2()) {
 #ifdef _WIN64
         const __m256i _Comparand   = _mm256_broadcastq_epi64(_mm_cvtsi64_si128(_Old_val));
@@ -9921,11 +9925,13 @@ __declspec(noalias) void __stdcall __std_replace_8(
         }
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-    } else {
-        for (auto _Cur = reinterpret_cast<uint64_t*>(_First); _Cur != _Last; ++_Cur) {
-            if (*_Cur == _Old_val) {
-                *_Cur = _New_val;
-            }
+        return;
+    }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+
+    for (auto _Cur = reinterpret_cast<uint64_t*>(_First); _Cur != _Last; ++_Cur) {
+        if (*_Cur == _Old_val) {
+            *_Cur = _New_val;
         }
     }
 }
