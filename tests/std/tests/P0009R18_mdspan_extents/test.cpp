@@ -536,8 +536,15 @@ constexpr void check_deduction_guide() {
 
         static_assert(same_as<decltype(ext_4), extents<size_t, dynamic_extent, 7>>);
 
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-11122321
+#pragma warning(push)
+#pragma warning(disable : 4365)
+#endif // ^^^ workaround ^^^
         extents ext_5{integral_constant<const size_t&, integral_constant<size_t, 2>::value>{},
             integral_constant<const int&, integral_constant<int, 3>::value>{}};
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-11122321
+#pragma warning(pop)
+#endif // ^^^ workaround ^^^
 
         static_assert(same_as<decltype(ext_5), extents<size_t, 2, 3>>);
 
