@@ -687,8 +687,10 @@ void test_construction() {
                 {value_types[4].first_, value_types[4].second_},
             };
             // Test LWG-4223
-            flat_map fmap2{sorted_unique, ranges::begin(alter_pairs), ranges::end(alter_pairs), less<int>{}};
+            flat_map fmap2{sorted_unique, ranges::begin(alter_pairs), ranges::end(alter_pairs)};
+            flat_map fmap3{sorted_unique, ranges::begin(alter_pairs), ranges::end(alter_pairs), less<int>{}};
             assert(fmap2 == fmap);
+            assert(fmap3 == fmap);
         }
         {
             almost_pair<int, int> value_types[]{{0, 44}, {1, 2324}, {2, 635462}, {2, 7}, {3, 433}, {4, 5}};
@@ -709,8 +711,10 @@ void test_construction() {
                 {move(value_types[5].first_), move(value_types[5].second_)},
             };
             // Test LWG-4223
-            flat_multimap fmmap2{sorted_equivalent, ranges::begin(alter_pairs), ranges::end(alter_pairs), less<int>{}};
+            flat_multimap fmmap2{sorted_equivalent, ranges::begin(alter_pairs), ranges::end(alter_pairs)};
+            flat_multimap fmmap3{sorted_equivalent, ranges::begin(alter_pairs), ranges::end(alter_pairs), less<int>{}};
             assert(fmmap2 == fmmap);
+            assert(fmmap3 == fmmap);
         }
     }
     {
