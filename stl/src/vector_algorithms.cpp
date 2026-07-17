@@ -56,40 +56,8 @@ namespace {
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-    bool _Use_FEAT_DotProd() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_V82_DP_INSTRUCTIONS_AVAILABLE);
-    }
-
-    bool _Use_FEAT_I8MM() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_V82_I8MM_INSTRUCTIONS_AVAILABLE);
-    }
-
-    bool _Use_FEAT_SHA3() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_SHA3_INSTRUCTIONS_AVAILABLE);
-    }
-
     bool _Use_FEAT_SVE() noexcept {
         return IsProcessorFeaturePresent(PF_ARM_SVE_INSTRUCTIONS_AVAILABLE);
-    }
-
-    bool _Use_FEAT_SVE2() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_SVE2_INSTRUCTIONS_AVAILABLE);
-    }
-
-    bool _Use_FEAT_SVE2p1() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_SVE2_1_INSTRUCTIONS_AVAILABLE);
-    }
-
-    bool _Use_FEAT_SVE_SHA3() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_SVE_SHA3_INSTRUCTIONS_AVAILABLE);
-    }
-
-    bool _Use_FEAT_AES() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_SVE_AES_INSTRUCTIONS_AVAILABLE);
-    }
-
-    bool _Use_FEAT_BitPerm() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_SVE_BITPERM_INSTRUCTIONS_AVAILABLE);
     }
 #endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
 
