@@ -5,13 +5,13 @@
 
 variables:
 - name: x64SlowPoolName
-  value: 'Stl-2026-06-25T1103-x64-Fasv6-Pool'
+  value: 'Stl-2026-07-15T0800-x64-Fasv6-Pool'
   readonly: true
 - name: x64FastPoolName
-  value: 'Stl-2026-06-25T1103-x64-Fasv7-Pool'
+  value: 'Stl-2026-07-15T0800-x64-Fasv7-Pool'
   readonly: true
 - name: arm64PoolName
-  value: 'Stl-2026-06-25T1103-arm64-Dpsv6-Pool'
+  value: 'Stl-2026-07-15T0800-arm64-Dpdsv6-Pool'
   readonly: true
 - name: poolDemands
   value: 'EnableSpotVM -equals false'
@@ -19,17 +19,26 @@ variables:
 - name: launchVsDevShell
   value: 'C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\Tools\Launch-VsDevShell.ps1'
   readonly: true
+# The x64 SKUs Fasv6 and Fasv7 don't have local temporary storage, so they must use 'C:'.
+# When we can use Fadsv7, local temporary storage should be available as 'N:'.
+- name: x64PoolWorkRoot
+  value: 'C:'
+  readonly: true
+# The arm64 SKU Dpdsv6 has local temporary storage, available as 'E:'.
+- name: arm64PoolWorkRoot
+  value: 'E:'
+  readonly: true
 - name: tmpDir
-  value: 'C:\stlTemp'
+  value: '$(workRoot)\stlTemp'
   readonly: true
 - name: buildOutputLocation
-  value: 'C:\stlBuild'
+  value: '$(workRoot)\stlBuild'
   readonly: true
 - name: benchmarkBuildOutputLocation
-  value: 'C:\stlBenchmark'
+  value: '$(workRoot)\stlBenchmark'
   readonly: true
 - name: validationBuildOutputLocation
-  value: 'C:\stlValidation'
+  value: '$(workRoot)\stlValidation'
   readonly: true
 - name: Codeql.SkipTaskAutoInjection
   value: true

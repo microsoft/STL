@@ -2652,6 +2652,80 @@ void test_gh_6267() {
     }
 }
 
+void test_gh_6289() {
+    // GH-6289 <regex>: Emit only complete _N_str nodes during NFA construction
+    g_regexTester.should_match("ab", "ab");
+    g_regexTester.should_not_match("", "ab");
+    g_regexTester.should_match("\na", "\n^a", multiline);
+    g_regexTester.should_match("a\nb", "a$\nb", multiline);
+    g_regexTester.should_match("a ", R"(a\b )");
+    g_regexTester.should_match("ab", R"(a\Bb)");
+    g_regexTester.should_match("ab", "a.");
+    g_regexTester.should_match("ab", "a[b]");
+    g_regexTester.should_match("a", "a(?:b)*");
+    g_regexTester.should_match("ab", "a(?:b)*");
+    g_regexTester.should_match("abb", "a(?:b)*");
+    g_regexTester.should_match("abc", "a(?=b)..");
+    g_regexTester.should_not_match("aab", "a(?=b)..");
+    g_regexTester.should_capture("a", "a(b)*", "");
+    g_regexTester.should_capture("ab", "a(b)*", "b");
+    g_regexTester.should_capture("abb", "a(b)*", "b");
+    g_regexTester.should_match("aba", R"((a)b\1)");
+    g_regexTester.should_match("a", "a|b|c");
+    g_regexTester.should_match("b", "a|b|c");
+    g_regexTester.should_match("c", "a|b|c");
+    g_regexTester.should_not_match("ab", "a|b|c");
+    g_regexTester.should_not_match("bc", "a|b|c");
+    g_regexTester.should_not_match("abc", "a|b|c");
+}
+
+void test_gh_6359() {
+    // GH-6359: Avoid generating group nodes for non-capturing groups
+    g_regexTester.should_match("abc", "ab*c");
+    g_regexTester.should_match("abbbbc", "ab*c");
+    g_regexTester.should_match("ac", "ab*c");
+    g_regexTester.should_not_match("", "ab*c");
+    g_regexTester.should_not_match("a", "ab*c");
+    g_regexTester.should_not_match("c", "ab*c");
+
+    g_regexTester.should_match("abcd", "a(?:bc)*d");
+    g_regexTester.should_match("abcbcd", "a(?:bc)*d");
+    g_regexTester.should_match("ad", "a(?:bc)*d");
+    g_regexTester.should_not_match("", "a(?:bc)*d");
+    g_regexTester.should_not_match("a", "a(?:bc)*d");
+    g_regexTester.should_not_match("d", "a(?:bc)*d");
+    g_regexTester.should_not_match("abccd", "a(?:bc)*d");
+
+    g_regexTester.should_capture("ad", "a(bc)*d", "");
+    g_regexTester.should_not_match("", "a(bc)*d");
+    g_regexTester.should_not_match("a", "a(bc)*d");
+    g_regexTester.should_not_match("d", "a(bc)*d");
+    g_regexTester.should_not_match("abccd", "a(bc)*d");
+
+    {
+        test_regex re_with_capture_group{&g_regexTester, "^a(bc)*d$"};
+        re_with_capture_group.should_search_match_capture_groups("abcd", "abcd", match_default, {{1, 3}});
+        re_with_capture_group.should_search_match_capture_groups("abcbcd", "abcbcd", match_default, {{3, 5}});
+    }
+
+    g_regexTester.should_match("abcbcd", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_match("abcbcbcbcd", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_not_match("ad", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_not_match("", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_not_match("a", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_not_match("d", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_not_match("abcd", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_not_match("abcbc", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_not_match("bcbcd", "a(?:(?:bc)+){2}d");
+    g_regexTester.should_match("abcd", "a(?:(?:bc)*){2}d");
+
+    g_regexTester.should_match("bca", "(?:bc)+a+");
+    g_regexTester.should_match("bcbcaa", "(?:bc)+a+");
+    g_regexTester.should_not_match("bcabca", "(?:bc)+a+");
+
+    g_regexTester.should_capture("a", "(?:(?=(a)))?a", "");
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2722,6 +2796,8 @@ int main() {
     test_gh_6249();
     test_gh_6262();
     test_gh_6267();
+    test_gh_6289();
+    test_gh_6359();
 
     return g_regexTester.result();
 }
