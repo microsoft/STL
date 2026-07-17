@@ -11,9 +11,12 @@
 #include <cwchar>
 #include <type_traits>
 
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+#include <arm_sve.h>
+#endif
+
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
 #include <arm64_neon.h>
-#include <arm_sve.h>
 
 #include <Windows.h>
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
@@ -55,11 +58,11 @@ namespace {
     }
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     bool _Use_FEAT_SVE() noexcept {
         return IsProcessorFeaturePresent(PF_ARM_SVE_INSTRUCTIONS_AVAILABLE);
     }
-#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#endif // ^^^ defined(_M_ARM64) ^^^
 
     size_t _Byte_length(const void* const _First, const void* const _Last) noexcept {
         return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
@@ -9577,7 +9580,7 @@ __declspec(noalias) size_t __stdcall __std_mismatch_8(
 
 namespace {
     namespace _Replacing {
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
         struct _Traits_1_sve {
             static svuint8_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
                 return svld1(_Pred, static_cast<const uint8_t*>(_Ptr));
@@ -9690,7 +9693,9 @@ namespace {
                 }
             }
         }
+#endif // ^^^ defined(_M_ARM64) ^^^
 
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
         template <class _Traits, class _Ty>
         __declspec(noalias) void __stdcall _Replace_copy_impl(
             const void* _First, const void* const _Last, void* _Dest, const _Ty _Old_val, const _Ty _New_val) noexcept {
@@ -9829,7 +9834,7 @@ namespace {
 
 extern "C" {
 
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
 __declspec(noalias) void __stdcall __std_replace_1(
     void* const _First, void* const _Last, const uint8_t _Old_val, const uint8_t _New_val) noexcept {
     _Replacing::_Replace_impl<_Replacing::_Traits_1_sve>(_First, _Last, _Old_val, _New_val);
@@ -9849,7 +9854,7 @@ __declspec(noalias) void __stdcall __std_replace_8(
     void* const _First, void* const _Last, const uint64_t _Old_val, const uint64_t _New_val) noexcept {
     _Replacing::_Replace_impl<_Replacing::_Traits_8_sve>(_First, _Last, _Old_val, _New_val);
 }
-#else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
 __declspec(noalias) void __stdcall __std_replace_4(
     void* _First, void* const _Last, const uint32_t _Old_val, const uint32_t _New_val) noexcept {
     if (_Use_avx2()) {
@@ -9924,7 +9929,7 @@ __declspec(noalias) void __stdcall __std_replace_8(
         }
     }
 }
-#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
 __declspec(noalias) void __stdcall __std_replace_copy_1(const void* const _First, const void* const _Last,
     void* const _Dest, const uint8_t _Old_val, const uint8_t _New_val) noexcept {
