@@ -24,7 +24,7 @@ stages:
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
-      value: '$(x64PoolWorkRoot)'
+      value: '$(x64SlowPoolWorkRoot)'
       readonly: true
     jobs:
       - template: build-and-test.yml
@@ -43,7 +43,7 @@ stages:
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
-      value: '$(x64PoolWorkRoot)'
+      value: '$(x64SlowPoolWorkRoot)'
       readonly: true
     jobs:
       - template: build-and-test.yml
