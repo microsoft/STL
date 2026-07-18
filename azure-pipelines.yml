@@ -14,7 +14,7 @@ stages:
     dependsOn: []
     displayName: 'Code Format'
     pool:
-      name: ${{ variables.x64SlowPoolName }}
+      name: ${{ variables.x64MediumPoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
@@ -27,7 +27,7 @@ stages:
     dependsOn: []
     displayName: 'Build x64'
     pool:
-      name: ${{ variables.x64SlowPoolName }}
+      name: ${{ variables.x64MediumPoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
@@ -49,7 +49,7 @@ stages:
     dependsOn: []
     displayName: 'Build x86'
     pool:
-      name: ${{ variables.x64SlowPoolName }}
+      name: ${{ variables.x64MediumPoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
@@ -71,7 +71,7 @@ stages:
     dependsOn: []
     displayName: 'Build ARM64 (Cross)'
     pool:
-      name: ${{ variables.x64SlowPoolName }}
+      name: ${{ variables.x64MediumPoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
@@ -93,7 +93,7 @@ stages:
     dependsOn: []
     displayName: 'Build ARM64EC (Cross)'
     pool:
-      name: ${{ variables.x64SlowPoolName }}
+      name: ${{ variables.x64MediumPoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
@@ -139,7 +139,7 @@ stages:
     dependsOn: []
     displayName: 'Configure Tests'
     pool:
-      name: ${{ variables.x64SlowPoolName }}
+      name: ${{ variables.x64MediumPoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
