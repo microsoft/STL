@@ -9,11 +9,11 @@ Creates a 1ES Hosted Pool, set up for the STL's CI.
 See https://github.com/microsoft/STL/wiki/Checklist-for-Toolset-Updates for more information.
 
 .PARAMETER VMSku
-The VM SKU can be Fasv6, Fasv7, or Dpdsv6.
+The VM SKU can be Fasv6, Fasv7, Fadsv7, or Dpdsv6.
 #>
 [CmdletBinding(PositionalBinding=$false)]
 Param(
-  [Parameter(Mandatory)][ValidateSet('Fasv6', 'Fasv7', 'Dpdsv6')][String]$VMSku
+  [Parameter(Mandatory)][ValidateSet('Fasv6', 'Fasv7', 'Fadsv7', 'Dpdsv6')][String]$VMSku
 )
 
 $ErrorActionPreference = 'Stop'
@@ -27,6 +27,7 @@ $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 # | Fasv7  | australiaeast  |   740 |                    |
 # | Fasv7  | northeurope    |   640 |                    |
 # | Fasv7  | southeastasia  |   640 |                    |
+# | Fadsv7 | australiaeast  |  2048 |                    |
 # | Dpdsv6 | australiaeast  |  2048 |                    |
 # | Dpdsv6 | southcentralus |  2048 |                    |
 
@@ -40,6 +41,11 @@ if ($VMSku -ieq 'Fasv6') {
   $VMSize = 'Standard_F32as_v7'
   $PoolSize = 20 # Locations where we have quota for at least 640 cores (20 VMs):
   $AvailableLocations = @('australiaeast', 'northeurope', 'southeastasia')
+} elseif ($VMSku -ieq 'Fadsv7') {
+  $Arch = 'x64'
+  $VMSize = 'Standard_F32ads_v7'
+  $PoolSize = 32 # We have quota for 2048 cores (64 VMs), so we can have old and new pools of 32 VMs each.
+  $AvailableLocations = @('australiaeast')
 } elseif ($VMSku -ieq 'Dpdsv6') {
   $Arch = 'arm64'
   $VMSize = 'Standard_D32pds_v6'
