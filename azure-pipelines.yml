@@ -90,20 +90,20 @@ stages:
           configureTesting: false
           runTesting: false
 
-  - stage: Build_ARM64EC_Cross
+  - stage: Build_ARM64EC
     dependsOn: []
-    displayName: 'Build ARM64EC (Cross)'
+    displayName: 'Build ARM64EC'
     pool:
-      name: ${{ variables.x64MediumPoolName }}
+      name: ${{ variables.arm64PoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
-      value: '$(x64MediumPoolWorkRoot)'
+      value: '$(arm64PoolWorkRoot)'
       readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
-          hostArch: x64
+          hostArch: arm64
           targetArch: arm64
           targetPlatform: arm64ec
           analyzeBuild: true
