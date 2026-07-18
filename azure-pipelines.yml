@@ -89,28 +89,6 @@ stages:
           configureTesting: false
           runTesting: false
 
-  - stage: Build_ARM64EC_Cross
-    dependsOn: []
-    displayName: 'Build ARM64EC (Cross)'
-    pool:
-      name: ${{ variables.x64MediumPoolName }}
-      demands: ${{ variables.poolDemands }}
-    variables:
-    - name: workRoot
-      value: '$(x64MediumPoolWorkRoot)'
-      readonly: true
-    jobs:
-      - template: azure-devops/build-and-test.yml
-        parameters:
-          hostArch: x64
-          targetArch: arm64
-          targetPlatform: arm64ec
-          analyzeBuild: true
-          buildBenchmarks: true
-          numShards: 1
-          configureTesting: false
-          runTesting: false
-
   # This ARM64-native build will detect problems with the ARM64 pool as early as possible.
   # The stage dependencies are structured to optimize the critical path.
   - stage: Build_ARM64_Native
@@ -129,6 +107,28 @@ stages:
           hostArch: arm64
           targetArch: arm64
           targetPlatform: arm64
+          analyzeBuild: true
+          buildBenchmarks: true
+          numShards: 1
+          configureTesting: false
+          runTesting: false
+
+  - stage: Build_ARM64EC_Cross
+    dependsOn: []
+    displayName: 'Build ARM64EC (Cross)'
+    pool:
+      name: ${{ variables.x64MediumPoolName }}
+      demands: ${{ variables.poolDemands }}
+    variables:
+    - name: workRoot
+      value: '$(x64MediumPoolWorkRoot)'
+      readonly: true
+    jobs:
+      - template: azure-devops/build-and-test.yml
+        parameters:
+          hostArch: x64
+          targetArch: arm64
+          targetPlatform: arm64ec
           analyzeBuild: true
           buildBenchmarks: true
           numShards: 1
