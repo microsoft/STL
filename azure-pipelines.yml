@@ -68,11 +68,9 @@ stages:
           configureTesting: false
           runTesting: false
 
-  # This ARM64-native build will detect problems with the ARM64 pool as early as possible.
-  # The stage dependencies are structured to optimize the critical path.
-  - stage: Build_ARM64_Native
+  - stage: Build_ARM64
     dependsOn: []
-    displayName: 'Build ARM64 (Native)'
+    displayName: 'Build ARM64'
     pool:
       name: ${{ variables.arm64PoolName }}
       demands: ${{ variables.poolDemands }}
