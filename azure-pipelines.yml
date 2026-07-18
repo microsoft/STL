@@ -10,6 +10,7 @@ pr:
   drafts: false
 
 stages:
+##### Phase 1: Initial Builds #####
   - stage: Code_Format
     dependsOn: []
     displayName: 'Code Format'
@@ -155,6 +156,7 @@ stages:
           buildStl: false
           runTesting: false
 
+##### Phase 2: Primary Test Architectures #####
   - stage: Test_x64
     dependsOn:
       - Code_Format
@@ -197,6 +199,7 @@ stages:
           targetArch: arm64
           targetPlatform: arm64
 
+##### Phase 3: Secondary Test Architectures #####
   - stage: Test_x86
     dependsOn: Test_x64
     displayName: 'Test x86'
