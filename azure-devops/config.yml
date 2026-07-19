@@ -5,16 +5,16 @@
 
 variables:
 - name: x64SlowPoolName
-  value: 'Stl-FIXME-x64-Fasv6-Pool'
+  value: 'Stl-2026-07-18T1628-x64-Fasv6-Pool'
   readonly: true
 - name: x64MediumPoolName
-  value: 'Stl-FIXME-x64-Fasv7-Pool'
+  value: 'Stl-2026-07-18T1628-x64-Fasv7-Pool'
   readonly: true
 - name: x64FastPoolName
-  value: 'Stl-FIXME-x64-Fadsv7-Pool'
+  value: 'Stl-2026-07-18T1628-x64-Fadsv7-Pool'
   readonly: true
 - name: arm64PoolName
-  value: 'Stl-FIXME-arm64-Dpdsv6-Pool'
+  value: 'Stl-2026-07-18T1628-arm64-Dpdsv6-Pool'
   readonly: true
 - name: poolDemands
   value: 'EnableSpotVM -equals false'
