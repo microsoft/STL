@@ -21,15 +21,23 @@ $ErrorActionPreference = 'Stop'
 $CurrentDate = Get-Date
 $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 
-# | SKU    | Location       | Cores | Notes              |
-# |--------|----------------|------:|--------------------|
-# | Fasv6  | eastus2        |  4096 |                    |
-# | Fasv7  | australiaeast  |   740 |                    |
-# | Fasv7  | northeurope    |   640 |                    |
-# | Fasv7  | southeastasia  |   640 |                    |
-# | Fadsv7 | australiaeast  |  2048 |                    |
-# | Dpdsv6 | australiaeast  |  2048 |                    |
-# | Dpdsv6 | southcentralus |  2048 |                    |
+# We use 16 cores for the prototype VM ($ProtoVMSize) because we don't need a ton of cores to run provision-image.ps1,
+# and this allows us to stay below our total regional vCPU quota when running create-1es-hosted-pool.ps1 for several
+# SKUs simultaneously. (Our regional vCPU quota is 100, "enforced across all VM series in a given region" as
+# https://learn.microsoft.com/azure/quotas/regional-quota-requests explains. We're creating individual prototype VMs,
+# outside of the 1ES Hosted Pools we prepare later, so the prototypes are subject to the limit of 100.)
+# As long as everything else matches, we can use the image captured from the prototype VM
+# to create a 1ES Hosted Pool with larger VMs ($PoolSkuName) without any issues.
+
+# | SKU    | Location       | Cores | Notes
+# |--------|----------------|------:|-------
+# | Fasv6  | eastus2        |  4096 |
+# | Fasv7  | australiaeast  |   740 |
+# | Fasv7  | northeurope    |   640 |
+# | Fasv7  | southeastasia  |   640 |
+# | Fadsv7 | australiaeast  |  2048 |
+# | Dpdsv6 | australiaeast  |  2048 |
+# | Dpdsv6 | southcentralus |  2048 |
 
 if ($VMSku -ieq 'Fasv6') {
   $Arch = 'x64'
