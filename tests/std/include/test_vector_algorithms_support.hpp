@@ -41,10 +41,6 @@ inline void initialize_randomness(std::mt19937_64& gen) {
 }
 
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
-extern "C" {
-extern int __isa_enabled; // TRANSITION, <isa_availability.h> will declare this soon after 2026-06-09
-}
-
 inline void disable_instructions(ISA_AVAILABILITY isa) {
     const unsigned long as_ulong = static_cast<unsigned long>(isa);
 
