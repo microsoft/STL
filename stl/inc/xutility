@@ -62,18 +62,22 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _VECTORIZED_FOR_X64_X86               0
 #define _VECTORIZED_FOR_X64_X86_ARM64         0
 #define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 0
+#define _VECTORIZED_FOR_ARM64                 0
 #elif defined(_M_ARM64EC) && !defined(_CALL_ALL_X64_VECTOR_ALGORITHMS_ON_ARM64EC) // normal ARM64EC usage
 #define _VECTORIZED_FOR_X64_X86               0
 #define _VECTORIZED_FOR_X64_X86_ARM64         0
 #define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
+#define _VECTORIZED_FOR_ARM64                 0
 #elif defined(_M_ARM64)
 #define _VECTORIZED_FOR_X64_X86               0
 #define _VECTORIZED_FOR_X64_X86_ARM64         1
 #define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
+#define _VECTORIZED_FOR_ARM64                 1
 #elif defined(_M_X64) || defined(_M_IX86) // also when testing ARM64EC fallbacks for x64 algorithms
 #define _VECTORIZED_FOR_X64_X86               1
 #define _VECTORIZED_FOR_X64_X86_ARM64         1
 #define _VECTORIZED_FOR_X64_X86_ARM64_ARM64EC 1
+#define _VECTORIZED_FOR_ARM64                 0
 #else // ^^^ known architecture / unknown architecture vvv
 #error Unknown architecture
 #endif // ^^^ unknown architecture ^^^
@@ -109,11 +113,7 @@ _STL_DISABLE_CLANG_WARNINGS
 // as this does not improve performance over the scalar code.
 #define _VECTORIZED_MINMAX_ELEMENT_64BIT_INT _VECTORIZED_FOR_X64_X86
 
-#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
-#define _VECTORIZED_REPLACE_1_2 1
-#else
-#define _VECTORIZED_REPLACE_1_2 0
-#endif
+#define _VECTORIZED_REPLACE_1_2 _VECTORIZED_FOR_ARM64 // not ARM64EC, which lacks SVE
 
 #ifndef _USE_STD_VECTOR_FLOATING_ALGORITHMS
 #if _USE_STD_VECTOR_ALGORITHMS && !defined(_M_FP_EXCEPT)
