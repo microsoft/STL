@@ -517,14 +517,14 @@ CONSTEXPR20 bool test() {
     return true;
 }
 
-template <typename T = char>
+template <class T = char>
 struct WideSizeAllocator {
     using value_type = T;
     using size_type  = unsigned long long;
 
     WideSizeAllocator() = default;
 
-    template <typename U>
+    template <class U>
     constexpr WideSizeAllocator(const WideSizeAllocator<U>&) noexcept {}
 
     CONSTEXPR20 T* allocate(size_type n) {
