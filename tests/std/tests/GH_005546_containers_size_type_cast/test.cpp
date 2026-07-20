@@ -553,15 +553,15 @@ CONSTEXPR20 bool test_LWG4259() {
     // uses 32-bit size_t. This makes basic_string_view::npos smaller than basic_string::npos.
     using WideSizeString = basic_string<char, char_traits<char>, WideSizeAllocator<char>>;
 
-    WideSizeString str           = "Hello World";
-    WideSizeString not_found_str = "XYZ";
-    const char* not_found_cstr   = "XYZ";
+    const WideSizeString str           = "Hello World";
+    const WideSizeString not_found_str = "XYZ";
+    const char* const not_found_cstr   = "XYZ";
     assert(str.find(not_found_str) == WideSizeString::npos);
     assert(str.find(not_found_cstr, 0, 3) == WideSizeString::npos);
     assert(str.find(not_found_cstr) == WideSizeString::npos);
     assert(str.find('Z') == WideSizeString::npos);
 #if _HAS_CXX17
-    string_view sv = "XYZ";
+    const string_view sv = "XYZ";
     assert(str.find(sv) == WideSizeString::npos);
 #endif
     assert(str.rfind(not_found_str) == WideSizeString::npos);
@@ -578,15 +578,15 @@ CONSTEXPR20 bool test_LWG4259() {
 #if _HAS_CXX17
     assert(str.find_first_of(sv) == WideSizeString::npos);
 #endif
-    WideSizeString all_in_str = "Hello World!";
-    WideSizeString search_all = "Hello World";
+    const WideSizeString all_in_str = "Hello World!";
+    const WideSizeString search_all = "Hello World";
     assert(search_all.find_first_not_of(all_in_str) == WideSizeString::npos);
     assert(search_all.find_first_not_of("Hello World!", 0, 12) == WideSizeString::npos);
     assert(search_all.find_first_not_of("Hello World!") == WideSizeString::npos);
-    WideSizeString repeated = "AAAAA";
+    const WideSizeString repeated = "AAAAA";
     assert(repeated.find_first_not_of('A') == WideSizeString::npos);
 #if _HAS_CXX17
-    string_view sv_all = "Hello World!";
+    const string_view sv_all = "Hello World!";
     assert(search_all.find_first_not_of(sv_all) == WideSizeString::npos);
 #endif
     assert(str.find_last_of(not_found_str) == WideSizeString::npos);
