@@ -517,7 +517,7 @@ CONSTEXPR20 bool test() {
     return true;
 }
 
-template <class T = char>
+template <class T>
 struct WideSizeAllocator {
     using value_type = T;
     using size_type  = unsigned long long;
