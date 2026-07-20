@@ -528,6 +528,7 @@ struct WideSizeAllocator {
     constexpr WideSizeAllocator(const WideSizeAllocator<U>&) noexcept {}
 
     CONSTEXPR20 T* allocate(size_type n) {
+        check_alloc_in_range_of_size_t(n);
         return allocator<T>{}.allocate(static_cast<size_t>(n));
     }
     CONSTEXPR20 void deallocate(T* p, size_type n) noexcept {
