@@ -527,10 +527,10 @@ struct WideSizeAllocator {
     template <typename U>
     constexpr WideSizeAllocator(const WideSizeAllocator<U>&) noexcept {}
 
-    constexpr T* allocate(size_type n) {
+    CONSTEXPR20 T* allocate(size_type n) {
         return allocator<T>{}.allocate(static_cast<size_t>(n));
     }
-    constexpr void deallocate(T* p, size_type n) noexcept {
+    CONSTEXPR20 void deallocate(T* p, size_type n) noexcept {
         allocator<T>{}.deallocate(p, static_cast<size_t>(n));
     }
 
