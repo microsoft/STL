@@ -533,6 +533,18 @@ struct WideSizeAllocator {
     constexpr void deallocate(T* p, size_type n) noexcept {
         allocator<T>{}.deallocate(p, static_cast<size_t>(n));
     }
+
+    template <class U>
+    friend constexpr bool operator==(const WideSizeAllocator&, const WideSizeAllocator<U>&) noexcept {
+        return true;
+    }
+
+#if !_HAS_CXX20
+    template <class U>
+    friend constexpr bool operator!=(const WideSizeAllocator&, const WideSizeAllocator<U>&) noexcept {
+        return false;
+    }
+#endif // !_HAS_CXX20
 };
 
 CONSTEXPR20 bool test_LWG4259() {
