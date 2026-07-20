@@ -586,8 +586,8 @@ CONSTEXPR20 bool test_LWG4259() {
     const WideSizeString repeated = "AAAAA";
     assert(repeated.find_first_not_of('A') == WideSizeString::npos);
 #if _HAS_CXX17
-    const string_view sv_all = all_in_cstr;
-    assert(str.find_first_not_of(sv_all) == WideSizeString::npos);
+    const string_view all_in_sv = all_in_cstr;
+    assert(str.find_first_not_of(all_in_sv) == WideSizeString::npos);
 #endif
     assert(str.find_last_of(not_found_str) == WideSizeString::npos);
     assert(str.find_last_of(not_found_cstr, WideSizeString::npos, 3) == WideSizeString::npos);
@@ -601,7 +601,7 @@ CONSTEXPR20 bool test_LWG4259() {
     assert(str.find_last_not_of(all_in_cstr) == WideSizeString::npos);
     assert(repeated.find_last_not_of('A') == WideSizeString::npos);
 #if _HAS_CXX17
-    assert(str.find_last_not_of(sv_all) == WideSizeString::npos);
+    assert(str.find_last_not_of(all_in_sv) == WideSizeString::npos);
 #endif
     return true;
 }
