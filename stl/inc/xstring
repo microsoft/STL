@@ -2531,7 +2531,7 @@ public:
     }
 
 private:
-    _NODISCARD static _CONSTEXPR20 size_type _Find_result_cast(const size_t _Result) noexcept {
+    _NODISCARD static _CONSTEXPR20 size_type _Find_result_cast(const size_t _Result) noexcept { // N5054 [string.find]/3
         if constexpr (sizeof(size_type) > sizeof(size_t)) { // only happens on 32-bit platforms with 64-bit size_type
             if (_Result == static_cast<size_t>(-1)) {
                 return npos;
