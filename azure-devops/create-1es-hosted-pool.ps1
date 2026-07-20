@@ -9,11 +9,11 @@ Creates a 1ES Hosted Pool, set up for the STL's CI.
 See https://github.com/microsoft/STL/wiki/Checklist-for-Toolset-Updates for more information.
 
 .PARAMETER VMSku
-The VM SKU can be Fasv6, Fasv7, or Dpsv6.
+The VM SKU can be Fasv6, Fasv7, or Dpdsv6.
 #>
 [CmdletBinding(PositionalBinding=$false)]
 Param(
-  [Parameter(Mandatory)][ValidateSet('Fasv6', 'Fasv7', 'Dpsv6')][String]$VMSku
+  [Parameter(Mandatory)][ValidateSet('Fasv6', 'Fasv7', 'Dpdsv6')][String]$VMSku
 )
 
 $ErrorActionPreference = 'Stop'
@@ -21,34 +21,33 @@ $ErrorActionPreference = 'Stop'
 $CurrentDate = Get-Date
 $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 
-# | SKU   | Location      | Cores | Notes              |
-# |-------|---------------|------:|--------------------|
-# | Fasv6 | eastus2       |  4096 |                    |
-# | Fasv7 | australiaeast |   740 |                    |
-# | Fasv7 | northeurope   |   640 |                    |
-# | Fasv7 | southeastasia |   640 |                    |
-# | Dpsv6 | eastus2       |  1024 |                    |
-# | Dpsv6 | northeurope   |  1024 |                    |
-# | Dpsv6 | westcentralus |   672 | Not currently used |
+# | SKU    | Location       | Cores | Notes              |
+# |--------|----------------|------:|--------------------|
+# | Fasv6  | eastus2        |  4096 |                    |
+# | Fasv7  | australiaeast  |   740 |                    |
+# | Fasv7  | northeurope    |   640 |                    |
+# | Fasv7  | southeastasia  |   640 |                    |
+# | Dpdsv6 | australiaeast  |  2048 |                    |
+# | Dpdsv6 | southcentralus |  2048 |                    |
 
 if ($VMSku -ieq 'Fasv6') {
   $Arch = 'x64'
   $VMSize = 'Standard_F32as_v6'
-  $PoolSize = 64
+  $PoolSize = 64 # We have quota for 4096 cores (128 VMs), so we can have old and new pools of 64 VMs each.
   $AvailableLocations = @('eastus2')
 } elseif ($VMSku -ieq 'Fasv7') {
   $Arch = 'x64'
   $VMSize = 'Standard_F32as_v7'
-  $PoolSize = 20
+  $PoolSize = 20 # Locations where we have quota for at least 640 cores (20 VMs):
   $AvailableLocations = @('australiaeast', 'northeurope', 'southeastasia')
-} elseif ($VMSku -ieq 'Dpsv6') {
+} elseif ($VMSku -ieq 'Dpdsv6') {
   $Arch = 'arm64'
-  $VMSize = 'Standard_D32ps_v6'
-  $PoolSize = 32
-  $AvailableLocations = @('eastus2', 'northeurope') # Locations where CPP_STL_GitHub has quota for 1024 cores (32 VMs).
+  $VMSize = 'Standard_D32pds_v6'
+  $PoolSize = 64 # Locations where we have quota for at least 2048 cores (64 VMs):
+  $AvailableLocations = @('australiaeast', 'southcentralus')
 }
 
-$AvailableLocationIdx = 7 # Increment for each new set of pools, to cycle through the available locations.
+$AvailableLocationIdx = 11 # Increment for each new set of pools, to cycle through the available locations.
 $Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
 
 if ($Arch -ieq 'x64') {
@@ -179,11 +178,6 @@ $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
 ####################################################################################################
 Display-ProgressBar -Status 'Creating virtual network subnet config'
 
-# TRANSITION, 2026-03-31: "After March 31, 2026, new virtual networks will default to using private subnets,
-# meaning that an explicit outbound method must be enabled in order to reach public endpoints on the Internet
-# and within Microsoft."
-# https://learn.microsoft.com/azure/virtual-network/ip-services/default-outbound-access
-# We're using `-DefaultOutboundAccess $false` to opt-in early.
 $SubnetName = "$ResourceGroupName-Subnet"
 $Subnet = New-AzVirtualNetworkSubnetConfig `
   -Name $SubnetName `

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <__msvc_int128.hpp>
 #include <cassert>
 #include <compare>
 #include <concepts>
@@ -112,6 +113,20 @@ struct simple_input_iter {
     simple_input_iter operator++(int);
 
     bool operator==(simple_input_iter const&) const = default;
+};
+
+struct empty_list_input_iter {
+    using value_type      = double;
+    using difference_type = long;
+
+    // not default constructible, although initializable with {}
+    explicit empty_list_input_iter(std::initializer_list<int>);
+
+    value_type operator*() const;
+    empty_list_input_iter& operator++();
+    empty_list_input_iter operator++(int);
+
+    bool operator==(const empty_list_input_iter&) const = default;
 };
 
 template <class Base = empty_type>
@@ -942,6 +957,7 @@ namespace iterator_traits_test {
     // * 3.2.2: "... Otherwise, reference names iter_reference_t<I>."
     // * 3.2.3.4 "... Otherwise, iterator_category names... input_iterator_tag."
     static_assert(check<simple_input_iter, no_such_type, input_iterator_tag, double, long, void, double>());
+    static_assert(check<empty_list_input_iter, no_such_type, input_iterator_tag, double, long, void, double>());
 
     // N4928 [iterator.traits]:
     // * 3.2.1: "... Otherwise, pointer names void."
@@ -1109,7 +1125,7 @@ namespace iterator_cust_move_test {
         return i + 1;
     }
     static_assert(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&)(int)>);
-    static_assert(ranges::iter_move(&f)(42) == 43);
+    static_assert(ranges::iter_move (&f)(42) == 43);
     static_assert(noexcept(ranges::iter_move(&f)));
 
     struct ref_is_lvalue {
@@ -1204,7 +1220,8 @@ namespace iterator_cust_swap_test {
         // This test notably executes both at runtime and at compiletime.
         static_assert(bullet2<int*>);
 
-        int i0 = 42, i1 = 13;
+        int i0 = 42;
+        int i1 = 13;
         static_assert(same_as<decltype(ranges::iter_swap(&i0, &i1)), void>);
         ranges::iter_swap(&i0, &i1);
         assert(i0 == 13);
@@ -3328,7 +3345,7 @@ namespace reverse_iterator_test {
 namespace move_iterator_test {
     using std::bidirectional_iterator_tag, std::default_sentinel_t, std::forward_iterator_tag, std::input_iterator_tag,
         std::move_iterator, std::move_sentinel, std::random_access_iterator_tag, std::same_as, std::string,
-        std::three_way_comparable, std::three_way_comparable_with;
+        std::three_way_comparable, std::three_way_comparable_with, std::default_initializable;
 
     template <bool CanCopy>
     struct input_iter {
@@ -3417,6 +3434,8 @@ namespace move_iterator_test {
     static_assert(same_as<move_iterator<simple_forward_iter<>>::iterator_category, forward_iterator_tag>);
     static_assert(same_as<move_iterator<simple_input_iter>::iterator_concept, input_iterator_tag>);
     static_assert(same_as<move_iterator<simple_input_iter>::iterator_category, input_iterator_tag>);
+    static_assert(same_as<move_iterator<empty_list_input_iter>::iterator_concept, input_iterator_tag>);
+    static_assert(same_as<move_iterator<empty_list_input_iter>::iterator_category, input_iterator_tag>);
     static_assert(same_as<move_iterator<input_iter<true>>::iterator_concept, input_iterator_tag>);
     static_assert(same_as<move_iterator<xvalue_random_iter>::iterator_concept, random_access_iterator_tag>);
     static_assert(same_as<move_iterator<xvalue_random_iter>::iterator_category, random_access_iterator_tag>);
@@ -3521,6 +3540,14 @@ namespace move_iterator_test {
         !has_greater_eq<move_iterator<simple_random_iter<sentinel_base>>, move_sentinel<std::default_sentinel_t>>);
     static_assert(!three_way_comparable<move_iterator<simple_random_iter<sentinel_base>>,
         move_sentinel<std::default_sentinel_t>>);
+
+    // LWG-4125 "move_iterator's default constructor should be constrained"
+    // Validate default-constructibility
+    static_assert(!default_initializable<move_iterator<simple_input_iter>>);
+    static_assert(!default_initializable<move_iterator<empty_list_input_iter>>);
+    static_assert(default_initializable<move_iterator<input_iter<true>>>);
+    static_assert(default_initializable<move_iterator<input_iter<false>>>);
+    static_assert(default_initializable<move_iterator<int*>>);
 
     // GH-3014 "<ranges>: list-initialization is misused"
     void test_gh_3014() { // COMPILE-ONLY
@@ -3676,6 +3703,33 @@ namespace lwg3420 {
     static_assert(!has_member_difference_type<std::iterator_traits<X>>);
     static_assert(!has_member_value_type<std::iterator_traits<X>>);
 } // namespace lwg3420
+
+namespace lwg4510 {
+    // Test LWG-4510
+    // "Ambiguity of std::ranges::advance and std::ranges::next when the difference type is also a sentinel type"
+    template <class T>
+    struct IterType {
+        using difference_type = int;
+
+        IterType& operator++();
+        IterType operator++(int);
+        IterType& operator*() const;
+
+        friend bool operator==(const IterType&, const IterType&);
+    };
+
+    struct AnyType {
+        template <class T>
+        AnyType(const T&);
+
+        friend bool operator==(const AnyType&, const AnyType&);
+    };
+
+    static_assert(std::input_or_output_iterator<IterType<AnyType>>);
+    static_assert(std::sentinel_for<IterType<AnyType>, IterType<AnyType>>);
+    static_assert(!std::sentinel_for<int, IterType<AnyType>>);
+    static_assert(!std::sentinel_for<std::_Unsigned128, IterType<AnyType>>);
+} // namespace lwg4510
 
 namespace vso1121031 {
     // Validate that indirectly_readable_traits accepts type arguments with both value_type and element_type nested

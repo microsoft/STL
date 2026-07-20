@@ -154,7 +154,10 @@ constexpr bool test() {
     }
 
     {
-        int w = 11, x = 22, y = 33, z = 44;
+        int w = 11;
+        int x = 22;
+        int y = 33;
+        int z = 44;
 
         tuple<int&, const int&, int&&, const int&&> t0(w, x, move(y), move(z));
 

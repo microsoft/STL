@@ -612,14 +612,14 @@ private:
 #define _ASAN_VECTOR_CREATE_GUARD    _Asan_create_guard _Annotator(*this)
 #define _ASAN_VECTOR_EXTEND_GUARD(n) _Asan_extend_guard _Annotator(this, (n))
 #define _ASAN_VECTOR_RELEASE_GUARD   _Annotator._Release()
-#else // ^^^ _INSERT_VECTOR_ANNOTATION / !_INSERT_VECTOR_ANNOTATION vvv
+#else // ^^^ defined(_INSERT_VECTOR_ANNOTATION) / !defined(_INSERT_VECTOR_ANNOTATION) vvv
 #define _ASAN_VECTOR_MODIFY(n)
 #define _ASAN_VECTOR_REMOVE
 #define _ASAN_VECTOR_CREATE
 #define _ASAN_VECTOR_CREATE_GUARD
 #define _ASAN_VECTOR_EXTEND_GUARD(n)
 #define _ASAN_VECTOR_RELEASE_GUARD
-#endif // ^^^ !_INSERT_VECTOR_ANNOTATION ^^^
+#endif // ^^^ !defined(_INSERT_VECTOR_ANNOTATION) ^^^
 
     using _Scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Simple_types<_Ty>,
         _Vec_iter_types<_Ty, size_type, difference_type, pointer, const_pointer>>>;
@@ -1923,8 +1923,8 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 size_type max_size() const noexcept {
-        return (_STD min) (static_cast<size_type>(_STD _Max_limit<difference_type>()), //
-            _Alty_traits::max_size(_Getal()));
+        constexpr auto _Diff_max = static_cast<size_type>(_STD _Max_limit<difference_type>());
+        return (_STD min) (_Diff_max, _Alty_traits::max_size(_Getal()));
     }
 
     _NODISCARD _CONSTEXPR20 size_type capacity() const noexcept {
@@ -3211,7 +3211,6 @@ public:
         constexpr auto _Diff_max  = static_cast<size_type>(_STD _Max_limit<difference_type>());
         const size_type _Ints_max = this->_Myvec.max_size();
 
-        // Use a const bool to avoid warning C4127 "conditional expression is constant" with Defect Report P2280R4
         const bool _Would_overflow = _Ints_max > _Diff_max / _VBITS;
         if (_Would_overflow) { // max_size bound by difference_type limits
             return _Diff_max;
@@ -3871,7 +3870,7 @@ _CONSTEXPR20 _OutIt _Copy_vbool(_VbIt _First, _VbIt _Last, _OutIt _Dest) {
         return _DestEnd;
     } else if (_IsSingleBlockDest) {
         const auto _SourceShift = _IsRightShift ? _First._Myoff - _Dest._Myoff : _Dest._Myoff - _First._Myoff;
-        const auto _SourceVal   = _IsRightShift ? (*_VbFirst & _FirstSourceMask) >> _SourceShift //
+        const auto _SourceVal   = _IsRightShift ? (*_VbFirst & _FirstSourceMask) >> _SourceShift
                                                 : (*_VbFirst & _FirstSourceMask) << _SourceShift;
 
         const auto _DestMask = _FirstDestMask | (_DestEnd._Myoff == 0 ? 0 : _LastDestMask);

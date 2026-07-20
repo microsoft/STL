@@ -805,7 +805,7 @@ struct _Simple_types { // wraps types from allocators with simple addressing for
     using const_pointer   = const value_type*;
 };
 
-// The number of user bytes a single byte of ASAN shadow memory can track.
+// The number of user bytes a single byte of ASan shadow memory can track.
 _INLINE_VAR constexpr size_t _Asan_granularity      = 8;
 _INLINE_VAR constexpr size_t _Asan_granularity_mask = _Asan_granularity - 1;
 
@@ -2681,14 +2681,13 @@ concept _Container_compatible_range =
     (_RANGES input_range<_Rng>) && convertible_to<_RANGES range_reference_t<_Rng>, _Elem>;
 
 template <_RANGES input_range _Rng>
-using _Range_key_type = remove_const_t<typename _RANGES range_value_t<_Rng>::first_type>;
+using _Range_key_type = remove_cvref_t<tuple_element_t<0, _RANGES range_value_t<_Rng>>>;
 
 template <_RANGES input_range _Rng>
-using _Range_mapped_type = _RANGES range_value_t<_Rng>::second_type;
+using _Range_mapped_type = remove_cvref_t<tuple_element_t<1, _RANGES range_value_t<_Rng>>>;
 
 template <_RANGES input_range _Rng>
-using _Range_to_alloc_type =
-    pair<const typename _RANGES range_value_t<_Rng>::first_type, typename _RANGES range_value_t<_Rng>::second_type>;
+using _Range_to_alloc_type = pair<const _Range_key_type<_Rng>, _Range_mapped_type<_Rng>>;
 #endif // _HAS_CXX23
 
 template <class _Ty,

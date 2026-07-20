@@ -132,7 +132,9 @@ def killProcessAndChildren(pid):
             try:
                 child.kill()
             except psutil.NoSuchProcess:
+                # CodeQL: Intentionally ignore this exception; if the process has already terminated, that's fine.
                 pass
         psutilProc.kill()
     except psutil.NoSuchProcess:
+        # CodeQL: Intentionally ignore this exception; if the process has already terminated, that's fine.
         pass

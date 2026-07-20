@@ -206,7 +206,6 @@ tests\GH_001600_random_inheritance
 tests\GH_001638_dllexport_derived_classes
 tests\GH_001850_clog_tied_to_cout
 tests\GH_001858_iostream_exception
-tests\GH_001912_random_distribution_operator_const
 tests\GH_001914_cached_position
 tests\GH_001923_filesystem_long_path_support
 tests\GH_002030_asan_annotate_string
@@ -282,6 +281,7 @@ tests\GH_005800_stable_sort_large_alignment
 tests\GH_005816_numeric_limits_traps
 tests\GH_005968_headers_provide_begin_end
 tests\GH_005974_asan_annotate_optional
+tests\GH_006323_pwl_dist_rounding
 tests\LWG2381_num_get_floating_point
 tests\LWG2510_tag_classes
 tests\LWG2597_complex_branch_cut

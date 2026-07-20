@@ -19,7 +19,9 @@
 #include <intrin.h>
 #include <isa_availability.h>
 
-extern "C" long __isa_enabled;
+extern "C" {
+extern int __isa_enabled; // TRANSITION, <isa_availability.h> will declare this soon after 2026-06-09
+}
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
 namespace {
@@ -593,8 +595,9 @@ namespace {
             }
 
             static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
-                const uint8x16_t _Rev_val = vrev64q_u8(_Val);
-                return vextq_u8(_Rev_val, _Rev_val, 8);
+                static constexpr uint8_t _Idx_arr[16] = {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+                const auto _Idx                       = vld1q_u8(_Idx_arr);
+                return vqtbl1q_u8(_Val, _Idx);
             }
         };
 
@@ -604,8 +607,9 @@ namespace {
             }
 
             static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
-                const uint8x16_t _Rev_val = vreinterpretq_u8_u16(vrev64q_u16(vreinterpretq_u16_u8(_Val)));
-                return vextq_u8(_Rev_val, _Rev_val, 8);
+                static constexpr uint8_t _Idx_arr[16] = {14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1};
+                const auto _Idx                       = vld1q_u8(_Idx_arr);
+                return vqtbl1q_u8(_Val, _Idx);
             }
         };
 
@@ -615,8 +619,9 @@ namespace {
             }
 
             static uint8x16_t _Rev(const uint8x16_t _Val) noexcept {
-                const uint8x16_t _Rev_val = vreinterpretq_u8_u32(vrev64q_u32(vreinterpretq_u32_u8(_Val)));
-                return vextq_u8(_Rev_val, _Rev_val, 8);
+                static constexpr uint8_t _Idx_arr[16] = {12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3};
+                const auto _Idx                       = vld1q_u8(_Idx_arr);
+                return vqtbl1q_u8(_Val, _Idx);
             }
         };
 
@@ -6084,8 +6089,7 @@ namespace {
             template <class _Ty>
             __forceinline bool _Make_bitmap_large_neon(
                 const void* const _Needle, const size_t _Needle_length, uint8x16x2_t& _Bitmap) noexcept {
-                // TRANSITION, DevCom-11055227
-                constexpr uint8_t _Mask_arr[16] = {
+                static constexpr uint8_t _Mask_arr[16] = {
                     0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
                 const auto _Mask = vld1q_u8(_Mask_arr);
 
@@ -6316,7 +6320,7 @@ namespace {
                     } else if (_Count1 < 96) {
                         return _Count2 >= 8;
                     } else {
-                        return _Count2 >= 4;
+                        return _Count2 >= 4; // if these thresholds are adjusted, review test_gh_6342_find_first_of()
                     }
                 } else if constexpr (sizeof(_Ty) == 4) {
                     if (_Count1 < 32) {
@@ -6385,9 +6389,7 @@ namespace {
                                 return _Ix;
                             }
                         }
-
-                        ++_Ix;
-                    } while (_Ix != _Haystack_length);
+                    } while (++_Ix != _Haystack_length);
                 }
 
                 return static_cast<size_t>(-1);
@@ -9993,9 +9995,8 @@ namespace {
             }
 
             static uint32_t _Mask(const _Vec_t _First, const _Vec_t _Second) noexcept {
-                // TRANSITION, DevCom-11055227
-                constexpr uint16_t _Weights_arr[8] = {1, 2, 4, 8, 16, 32, 64, 128};
-                const auto _Weights                = vld1q_u16(_Weights_arr);
+                static constexpr uint16_t _Weights_arr[8] = {1, 2, 4, 8, 16, 32, 64, 128};
+                const auto _Weights                       = vld1q_u16(_Weights_arr);
 
                 const auto _Cmp  = vceqq_u16(_First, _Second);
                 const auto _Bits = vandq_u16(_Cmp, _Weights);
@@ -10025,9 +10026,8 @@ namespace {
             }
 
             static uint32_t _Mask(const _Vec_t _First, const _Vec_t _Second) noexcept {
-                // TRANSITION, DevCom-11055227
-                constexpr uint32_t _Weights_arr[4] = {1, 2, 4, 8};
-                const auto _Weights                = vld1q_u32(_Weights_arr);
+                static constexpr uint32_t _Weights_arr[4] = {1, 2, 4, 8};
+                const auto _Weights                       = vld1q_u32(_Weights_arr);
 
                 const auto _Cmp  = vceqq_u32(_First, _Second);
                 const auto _Bits = vandq_u32(_Cmp, _Weights);
@@ -11263,7 +11263,6 @@ namespace {
             }
 
             static _Vec_t _Load_constant() noexcept {
-                // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
                 static constexpr uint32_t _Idx_arr[4] = {0x01010101, 0x01010101, 0x00000000, 0x00000000};
                 const auto _Idx                       = vld1q_u8(reinterpret_cast<const uint8_t*>(_Idx_arr));
                 return _Idx;
@@ -11294,7 +11293,6 @@ namespace {
             }
 
             static _Vec_t _Load_constant() noexcept {
-                // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
                 static constexpr uint64_t _Wx_arr[2] = {0x0010002000400080, 0x0001000200040008};
                 const auto _Wx                       = vld1q_u64(_Wx_arr);
                 return vreinterpretq_u16_u64(_Wx);
@@ -11540,7 +11538,6 @@ namespace {
             }
 
             static uint16_t _To_bits(const _Vec _Ex1) noexcept {
-                // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
                 static constexpr uint8_t _Idx_arr[16] = {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
                 const auto _Idx                       = vld1q_u8(_Idx_arr);
 
@@ -11584,7 +11581,6 @@ namespace {
             }
 
             static uint8_t _To_bits(const _Vec _Ex1) noexcept {
-                // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
                 static constexpr uint8_t _Idx_arr[16] = {
                     14, 12, 10, 8, 6, 4, 2, 0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
                 const auto _Idx = vld1q_u8(_Idx_arr);

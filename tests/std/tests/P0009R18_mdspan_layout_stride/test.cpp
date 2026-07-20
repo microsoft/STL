@@ -346,7 +346,9 @@ constexpr void check_construction_from_other_mappings() {
 
     { // Check invalid construction
         using Mapping = layout_stride::mapping<extents<unsigned int, 4, 4>>;
+#ifndef __clang__ // TRANSITION, LLVM-198716
         static_assert(!is_constructible_v<Mapping, NotLayoutMappingAlikeAtAll::mapping<extents<int, 4, 4>>>);
+#endif // ^^^ no workaround ^^^
         static_assert(!is_constructible_v<Mapping, layout_left::mapping<extents<int, 4, 3>>>);
         static_assert(!is_constructible_v<Mapping, layout_right::mapping<extents<int, 3, 4>>>);
         static_assert(!is_constructible_v<Mapping, layout_left::mapping<extents<long, 4, 4, 4>>>);
@@ -547,6 +549,23 @@ constexpr void check_call_operator() {
         assert(m4(1, 1, 0) == 16);
         assert(m4(1, 1, 1) == 19);
         assert(m4(1, 2, 4) == 29);
+    }
+
+    { // LWG-4314: Missing move in mdspan layout mapping::operator()
+        struct LwgIndex {
+            constexpr operator int() & noexcept {
+                return 0;
+            }
+
+            constexpr operator int() && noexcept {
+                return 1;
+            }
+        };
+
+        layout_stride::mapping<extents<int, 3>> m({}, array{2});
+        LwgIndex idx;
+        assert(m(idx) == 2);
+        assert(m(LwgIndex{}) == 2);
     }
 }
 
