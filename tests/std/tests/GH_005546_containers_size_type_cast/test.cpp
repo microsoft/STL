@@ -579,15 +579,14 @@ CONSTEXPR20 bool test_LWG4259() {
     assert(str.find_first_of(not_found_sv) == WideSizeString::npos);
 #endif
     const WideSizeString all_in_str = "Hello World!";
-    const WideSizeString search_all = "Hello World";
-    assert(search_all.find_first_not_of(all_in_str) == WideSizeString::npos);
-    assert(search_all.find_first_not_of("Hello World!", 0, 12) == WideSizeString::npos);
-    assert(search_all.find_first_not_of("Hello World!") == WideSizeString::npos);
+    assert(str.find_first_not_of(all_in_str) == WideSizeString::npos);
+    assert(str.find_first_not_of("Hello World!", 0, 12) == WideSizeString::npos);
+    assert(str.find_first_not_of("Hello World!") == WideSizeString::npos);
     const WideSizeString repeated = "AAAAA";
     assert(repeated.find_first_not_of('A') == WideSizeString::npos);
 #if _HAS_CXX17
     const string_view sv_all = "Hello World!";
-    assert(search_all.find_first_not_of(sv_all) == WideSizeString::npos);
+    assert(str.find_first_not_of(sv_all) == WideSizeString::npos);
 #endif
     assert(str.find_last_of(not_found_str) == WideSizeString::npos);
     assert(str.find_last_of(not_found_cstr, WideSizeString::npos, 3) == WideSizeString::npos);
@@ -596,12 +595,12 @@ CONSTEXPR20 bool test_LWG4259() {
 #if _HAS_CXX17
     assert(str.find_last_of(not_found_sv) == WideSizeString::npos);
 #endif
-    assert(search_all.find_last_not_of(all_in_str) == WideSizeString::npos);
-    assert(search_all.find_last_not_of("Hello World!", WideSizeString::npos, 12) == WideSizeString::npos);
-    assert(search_all.find_last_not_of("Hello World!") == WideSizeString::npos);
+    assert(str.find_last_not_of(all_in_str) == WideSizeString::npos);
+    assert(str.find_last_not_of("Hello World!", WideSizeString::npos, 12) == WideSizeString::npos);
+    assert(str.find_last_not_of("Hello World!") == WideSizeString::npos);
     assert(repeated.find_last_not_of('A') == WideSizeString::npos);
 #if _HAS_CXX17
-    assert(search_all.find_last_not_of(sv_all) == WideSizeString::npos);
+    assert(str.find_last_not_of(sv_all) == WideSizeString::npos);
 #endif
     return true;
 }
