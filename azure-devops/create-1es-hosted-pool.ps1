@@ -9,11 +9,11 @@ Creates a 1ES Hosted Pool, set up for the STL's CI.
 See https://github.com/microsoft/STL/wiki/Checklist-for-Toolset-Updates for more information.
 
 .PARAMETER VMSku
-The VM SKU can be Fasv6, Fasv7, or Dpdsv6.
+The VM SKU can be Fasv6, Fasv7, Fadsv7, or Dpdsv6.
 #>
 [CmdletBinding(PositionalBinding=$false)]
 Param(
-  [Parameter(Mandatory)][ValidateSet('Fasv6', 'Fasv7', 'Dpdsv6')][String]$VMSku
+  [Parameter(Mandatory)][ValidateSet('Fasv6', 'Fasv7', 'Fadsv7', 'Dpdsv6')][String]$VMSku
 )
 
 $ErrorActionPreference = 'Stop'
@@ -21,33 +21,51 @@ $ErrorActionPreference = 'Stop'
 $CurrentDate = Get-Date
 $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 
-# | SKU    | Location       | Cores | Notes              |
-# |--------|----------------|------:|--------------------|
-# | Fasv6  | eastus2        |  4096 |                    |
-# | Fasv7  | australiaeast  |   740 |                    |
-# | Fasv7  | northeurope    |   640 |                    |
-# | Fasv7  | southeastasia  |   640 |                    |
-# | Dpdsv6 | australiaeast  |  2048 |                    |
-# | Dpdsv6 | southcentralus |  2048 |                    |
+# We use 16 cores for the prototype VM ($ProtoVMSize) because we don't need a ton of cores to run provision-image.ps1,
+# and this allows us to stay below our total regional vCPU quota when running create-1es-hosted-pool.ps1 for several
+# SKUs simultaneously. (Our regional vCPU quota is 100, "enforced across all VM series in a given region" as
+# https://learn.microsoft.com/azure/quotas/regional-quota-requests explains. We're creating individual prototype VMs,
+# outside of the 1ES Hosted Pools we prepare later, so the prototypes are subject to the limit of 100.)
+# As long as everything else matches, we can use the image captured from the prototype VM
+# to create a 1ES Hosted Pool with larger VMs ($PoolSkuName) without any issues.
+
+# | SKU    | Location       | Cores | Notes
+# |--------|----------------|------:|-------
+# | Fasv6  | eastus2        |  4096 |
+# | Fasv7  | australiaeast  |   740 |
+# | Fasv7  | northeurope    |   640 |
+# | Fasv7  | southeastasia  |   640 |
+# | Fadsv7 | australiaeast  |  2048 |
+# | Dpdsv6 | australiaeast  |  2048 |
+# | Dpdsv6 | southcentralus |  2048 |
 
 if ($VMSku -ieq 'Fasv6') {
   $Arch = 'x64'
-  $VMSize = 'Standard_F32as_v6'
-  $PoolSize = 64 # We have quota for 4096 cores (128 VMs), so we can have old and new pools of 64 VMs each.
+  $ProtoVMSize = 'Standard_F16as_v6'
+  $PoolSkuName = 'Standard_F64as_v6'
+  $PoolSize = 32 # We have quota for 4096 cores (64 VMs), so we can have old and new pools of 32 VMs each.
   $AvailableLocations = @('eastus2')
 } elseif ($VMSku -ieq 'Fasv7') {
   $Arch = 'x64'
-  $VMSize = 'Standard_F32as_v7'
-  $PoolSize = 20 # Locations where we have quota for at least 640 cores (20 VMs):
+  $ProtoVMSize = 'Standard_F16as_v7'
+  $PoolSkuName = 'Standard_F48as_v7'
+  $PoolSize = 13 # Locations where we have quota for at least 640 cores (13 VMs):
   $AvailableLocations = @('australiaeast', 'northeurope', 'southeastasia')
+} elseif ($VMSku -ieq 'Fadsv7') {
+  $Arch = 'x64'
+  $ProtoVMSize = 'Standard_F16ads_v7'
+  $PoolSkuName = 'Standard_F48ads_v7'
+  $PoolSize = 21 # We have quota for 2048 cores (42 VMs), so we can have old and new pools of 21 VMs each.
+  $AvailableLocations = @('australiaeast')
 } elseif ($VMSku -ieq 'Dpdsv6') {
   $Arch = 'arm64'
-  $VMSize = 'Standard_D32pds_v6'
-  $PoolSize = 64 # Locations where we have quota for at least 2048 cores (64 VMs):
+  $ProtoVMSize = 'Standard_D16pds_v6'
+  $PoolSkuName = 'Standard_D64pds_v6'
+  $PoolSize = 32 # Locations where we have quota for at least 2048 cores (32 VMs):
   $AvailableLocations = @('australiaeast', 'southcentralus')
 }
 
-$AvailableLocationIdx = 11 # Increment for each new set of pools, to cycle through the available locations.
+$AvailableLocationIdx = 12 # Increment for each new set of pools, to cycle through the available locations.
 $Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
 
 if ($Arch -ieq 'x64') {
@@ -213,13 +231,13 @@ Display-ProgressBar -Status 'Creating prototype VM config'
 if ($Arch -ieq 'x64') {
   $VM = New-AzVMConfig `
     -VMName $ProtoVMName `
-    -VMSize $VMSize `
+    -VMSize $ProtoVMSize `
     -DiskControllerType 'NVMe' `
     -Priority 'Regular'
 } else {
   $VM = New-AzVMConfig `
     -VMName $ProtoVMName `
-    -VMSize $VMSize `
+    -VMSize $ProtoVMSize `
     -DiskControllerType 'SCSI' `
     -Priority 'Regular' `
     -SecurityType 'TrustedLaunch' `
@@ -426,7 +444,7 @@ $PoolName = "$ResourceGroupName-Pool"
 $PoolProperties = @{
   'organization' = 'https://dev.azure.com/vclibs'
   'projects' = @('STL')
-  'sku' = @{ 'name' = $VMSize; 'tier' = 'StandardSSD'; 'enableSpot' = $false; }
+  'sku' = @{ 'name' = $PoolSkuName; 'tier' = 'StandardSSD'; 'enableSpot' = $false; }
   'images' = @(@{ 'imageName' = $ImageName; 'poolBufferPercentage' = '100'; })
   'maxPoolSize' = $PoolSize
   'agentProfile' = @{ 'type' = 'Stateless'; }
