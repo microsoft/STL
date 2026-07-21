@@ -561,9 +561,6 @@ std/localization/locale.categories/category.time/locale.time.get/locale.time.get
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday.pass.cpp FAIL
 std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/get_weekday_wide.pass.cpp FAIL
 
-# GH-6134 <xloctime>: time_put::do_put does not match strftime for the %c and %r specifiers in the "C" locale
-std/localization/locale.categories/category.time/locale.time.put/locale.time.put.members/put2.pass.cpp FAIL
-
 # GH-6135 <xloctime>: time_put_byname doesn't encode the output in UTF-8 even if the locale name contains ".UTF-8"
 std/localization/locale.categories/category.time/locale.time.put.byname/put1.pass.cpp FAIL
 
