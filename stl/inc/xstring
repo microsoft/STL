@@ -2530,20 +2530,31 @@ public:
         }
     }
 
+private:
+    _NODISCARD static _CONSTEXPR20 size_type _Find_result_cast(const size_t _Result) noexcept { // N5054 [string.find]/3
+        if constexpr (sizeof(size_type) > sizeof(size_t)) { // only happens on 32-bit platforms with 64-bit size_type
+            if (_Result == static_cast<size_t>(-1)) {
+                return npos;
+            }
+        }
+        return static_cast<size_type>(_Result);
+    }
+
+public:
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     _NODISCARD _CONSTEXPR20 size_type find(const _StringViewIsh& _Right, const size_type _Off = 0) const
         noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for _Right beginning at or after _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return static_cast<size_type>(_Traits_find<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_find<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _As_view.data(), _As_view.size()));
     }
 #endif // _HAS_CXX17
 
     _NODISCARD _CONSTEXPR20 size_type find(const basic_string& _Right, const size_type _Off = 0) const noexcept {
         // look for _Right beginning at or after _Off
-        return static_cast<size_type>(_Traits_find<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_find<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Right._Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Right._Mypair._Myval2._Mysize)));
     }
@@ -2551,7 +2562,7 @@ public:
     _NODISCARD _CONSTEXPR20 size_type find(_In_reads_(_Count) const _Elem* const _Ptr, const size_type _Off,
         const size_type _Count) const noexcept /* strengthened */ {
         // look for [_Ptr, _Ptr + _Count) beginning at or after _Off
-        return static_cast<size_type>(
+        return _Find_result_cast(
             _Traits_find<_Traits>(_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize),
                 static_cast<size_t>(_Off), _Ptr, static_cast<size_t>(_Count)));
     }
@@ -2559,13 +2570,13 @@ public:
     _NODISCARD _CONSTEXPR20 size_type find(_In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept
     /* strengthened */ {
         // look for [_Ptr, <null>) beginning at or after _Off
-        return static_cast<size_type>(_Traits_find<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_find<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ptr, _Traits::length(_Ptr)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find(const _Elem _Ch, const size_type _Off = 0) const noexcept {
         // look for _Ch at or after _Off
-        return static_cast<size_type>(_Traits_find_ch<_Traits>(
+        return _Find_result_cast(_Traits_find_ch<_Traits>(
             _Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ch));
     }
 
@@ -2575,14 +2586,14 @@ public:
         noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for _Right beginning before _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return static_cast<size_type>(_Traits_rfind<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_rfind<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _As_view.data(), _As_view.size()));
     }
 #endif // _HAS_CXX17
 
     _NODISCARD _CONSTEXPR20 size_type rfind(const basic_string& _Right, const size_type _Off = npos) const noexcept {
         // look for _Right beginning before _Off
-        return static_cast<size_type>(_Traits_rfind<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_rfind<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Right._Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Right._Mypair._Myval2._Mysize)));
     }
@@ -2590,7 +2601,7 @@ public:
     _NODISCARD _CONSTEXPR20 size_type rfind(_In_reads_(_Count) const _Elem* const _Ptr, const size_type _Off,
         const size_type _Count) const noexcept /* strengthened */ {
         // look for [_Ptr, _Ptr + _Count) beginning before _Off
-        return static_cast<size_type>(
+        return _Find_result_cast(
             _Traits_rfind<_Traits>(_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize),
                 static_cast<size_t>(_Off), _Ptr, static_cast<size_t>(_Count)));
     }
@@ -2598,13 +2609,13 @@ public:
     _NODISCARD _CONSTEXPR20 size_type rfind(_In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept
     /* strengthened */ {
         // look for [_Ptr, <null>) beginning before _Off
-        return static_cast<size_type>(_Traits_rfind<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_rfind<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ptr, _Traits::length(_Ptr)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type rfind(const _Elem _Ch, const size_type _Off = npos) const noexcept {
         // look for _Ch before _Off
-        return static_cast<size_type>(_Traits_rfind_ch<_Traits>(
+        return _Find_result_cast(_Traits_rfind_ch<_Traits>(
             _Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ch));
     }
 
@@ -2614,7 +2625,7 @@ public:
         noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for one of _Right at or after _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _As_view.data(), _As_view.size()));
     }
 #endif // _HAS_CXX17
@@ -2622,7 +2633,7 @@ public:
     _NODISCARD _CONSTEXPR20 size_type find_first_of(
         const basic_string& _Right, const size_type _Off = 0) const noexcept {
         // look for one of _Right at or after _Off
-        return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Right._Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Right._Mypair._Myval2._Mysize)));
     }
@@ -2630,7 +2641,7 @@ public:
     _NODISCARD _CONSTEXPR20 size_type find_first_of(_In_reads_(_Count) const _Elem* const _Ptr, const size_type _Off,
         const size_type _Count) const noexcept /* strengthened */ {
         // look for one of [_Ptr, _Ptr + _Count) at or after _Off
-        return static_cast<size_type>(
+        return _Find_result_cast(
             _Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize),
                 static_cast<size_t>(_Off), _Ptr, static_cast<size_t>(_Count)));
     }
@@ -2638,13 +2649,13 @@ public:
     _NODISCARD _CONSTEXPR20 size_type find_first_of(
         _In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
-        return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ptr, _Traits::length(_Ptr)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_of(const _Elem _Ch, const size_type _Off = 0) const noexcept {
         // look for _Ch at or after _Off
-        return static_cast<size_type>(_Traits_find_ch<_Traits>(
+        return _Find_result_cast(_Traits_find_ch<_Traits>(
             _Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ch));
     }
 
@@ -2654,14 +2665,14 @@ public:
         noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for one of _Right before _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return static_cast<size_type>(_Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _As_view.data(), _As_view.size()));
     }
 #endif // _HAS_CXX17
 
     _NODISCARD _CONSTEXPR20 size_type find_last_of(const basic_string& _Right, size_type _Off = npos) const noexcept {
         // look for one of _Right before _Off
-        return static_cast<size_type>(_Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Right._Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Right._Mypair._Myval2._Mysize)));
     }
@@ -2669,7 +2680,7 @@ public:
     _NODISCARD _CONSTEXPR20 size_type find_last_of(_In_reads_(_Count) const _Elem* const _Ptr, const size_type _Off,
         const size_type _Count) const noexcept /* strengthened */ {
         // look for one of [_Ptr, _Ptr + _Count) before _Off
-        return static_cast<size_type>(
+        return _Find_result_cast(
             _Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize),
                 static_cast<size_t>(_Off), _Ptr, static_cast<size_t>(_Count)));
     }
@@ -2677,13 +2688,13 @@ public:
     _NODISCARD _CONSTEXPR20 size_type find_last_of(
         _In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept /* strengthened */ {
         // look for one of [_Ptr, <null>) before _Off
-        return static_cast<size_type>(_Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ptr, _Traits::length(_Ptr)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_last_of(const _Elem _Ch, const size_type _Off = npos) const noexcept {
         // look for _Ch before _Off
-        return static_cast<size_type>(_Traits_rfind_ch<_Traits>(
+        return _Find_result_cast(_Traits_rfind_ch<_Traits>(
             _Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ch));
     }
 
@@ -2693,7 +2704,7 @@ public:
         noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for none of _Right at or after _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return static_cast<size_type>(_Traits_find_first_not_of<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_find_first_not_of<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _As_view.data(), _As_view.size()));
     }
 #endif // _HAS_CXX17
@@ -2701,7 +2712,7 @@ public:
     _NODISCARD _CONSTEXPR20 size_type find_first_not_of(
         const basic_string& _Right, const size_type _Off = 0) const noexcept {
         // look for none of _Right at or after _Off
-        return static_cast<size_type>(_Traits_find_first_not_of<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_find_first_not_of<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Right._Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Right._Mypair._Myval2._Mysize)));
     }
@@ -2709,7 +2720,7 @@ public:
     _NODISCARD _CONSTEXPR20 size_type find_first_not_of(_In_reads_(_Count) const _Elem* const _Ptr,
         const size_type _Off, const size_type _Count) const noexcept /* strengthened */ {
         // look for none of [_Ptr, _Ptr + _Count) at or after _Off
-        return static_cast<size_type>(
+        return _Find_result_cast(
             _Traits_find_first_not_of<_Traits>(_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize),
                 static_cast<size_t>(_Off), _Ptr, static_cast<size_t>(_Count)));
     }
@@ -2717,13 +2728,13 @@ public:
     _NODISCARD _CONSTEXPR20 size_type find_first_not_of(
         _In_z_ const _Elem* const _Ptr, size_type _Off = 0) const noexcept /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
-        return static_cast<size_type>(_Traits_find_first_not_of<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_find_first_not_of<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ptr, _Traits::length(_Ptr)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_not_of(const _Elem _Ch, const size_type _Off = 0) const noexcept {
         // look for non-_Ch at or after _Off
-        return static_cast<size_type>(_Traits_find_not_ch<_Traits>(
+        return _Find_result_cast(_Traits_find_not_ch<_Traits>(
             _Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ch));
     }
 
@@ -2733,7 +2744,7 @@ public:
         noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for none of _Right before _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return static_cast<size_type>(_Traits_find_last_not_of<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_find_last_not_of<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _As_view.data(), _As_view.size()));
     }
 #endif // _HAS_CXX17
@@ -2741,7 +2752,7 @@ public:
     _NODISCARD _CONSTEXPR20 size_type find_last_not_of(
         const basic_string& _Right, const size_type _Off = npos) const noexcept {
         // look for none of _Right before _Off
-        return static_cast<size_type>(_Traits_find_last_not_of<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_find_last_not_of<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Right._Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Right._Mypair._Myval2._Mysize)));
     }
@@ -2749,7 +2760,7 @@ public:
     _NODISCARD _CONSTEXPR20 size_type find_last_not_of(_In_reads_(_Count) const _Elem* const _Ptr, const size_type _Off,
         const size_type _Count) const noexcept /* strengthened */ {
         // look for none of [_Ptr, _Ptr + _Count) before _Off
-        return static_cast<size_type>(
+        return _Find_result_cast(
             _Traits_find_last_not_of<_Traits>(_Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize),
                 static_cast<size_t>(_Off), _Ptr, static_cast<size_t>(_Count)));
     }
@@ -2757,13 +2768,13 @@ public:
     _NODISCARD _CONSTEXPR20 size_type find_last_not_of(
         _In_z_ const _Elem* const _Ptr, const size_type _Off = npos) const noexcept /* strengthened */ {
         // look for none of [_Ptr, <null>) before _Off
-        return static_cast<size_type>(_Traits_find_last_not_of<_Traits>(_Mypair._Myval2._Myptr(),
+        return _Find_result_cast(_Traits_find_last_not_of<_Traits>(_Mypair._Myval2._Myptr(),
             static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ptr, _Traits::length(_Ptr)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_last_not_of(const _Elem _Ch, const size_type _Off = npos) const noexcept {
         // look for non-_Ch before _Off
-        return static_cast<size_type>(_Traits_rfind_not_ch<_Traits>(
+        return _Find_result_cast(_Traits_rfind_not_ch<_Traits>(
             _Mypair._Myval2._Myptr(), static_cast<size_t>(_Mypair._Myval2._Mysize), static_cast<size_t>(_Off), _Ch));
     }
 
