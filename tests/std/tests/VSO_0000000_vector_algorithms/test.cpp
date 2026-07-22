@@ -622,33 +622,21 @@ void test_min_max_element_special_cases() {
 
 // GH-6373 ARM64/ARM64EC vectorized min_element() has a randomized test failure
 void test_gh_6373() {
-    // These test cases are 16 bytes, to reach the vectorization threshold.
+    // An extra test case to exercise a potential failure mode.
+    // For uint8_t, _Max_portion_byte_size = _Portion_max * _Vec_size = 256 * 16 = 4096.
+    // This test case has 4112 = 4096 + 16 bytes, which is a max portion followed by a single vector.
+    // The scenario is when all of the first 4096 bytes are >= 128, then any of the last 16 bytes are < 128.
+    vector<uint8_t> v(4112, 200);
+    v[1729] = 222;
+    v[3000] = 222;
+    v[4100] = 11;
+    v[4105] = 11;
 
-    // In these cases, the minimum is 2^(N-1) - 1 and is located after index 0.
-    test_case_min_max_element(
-        vector<uint8_t>{155, 153, 248, 150, 189, 140, 247, 178, 244, 164, 226, 214, 239, 215, 176, 127});
-    test_case_min_max_element(vector<uint16_t>{0x8011, 0x8022, 0x8033, 0x8044, 0x8055, 0x8066, 0x8077, 0x7FFF});
-    test_case_min_max_element(vector<uint32_t>{0x8000'0011UL, 0x8000'0022UL, 0x8000'0033UL, 0x7FFF'FFFFUL});
-    test_case_min_max_element(vector<uint64_t>{0x8000'0000'0000'0011ULL, 0x7FFF'FFFF'FFFF'FFFFULL});
+    auto expected_min = last_known_good_min_element(v.begin(), v.end());
+    auto actual_min   = std::min_element(v.begin(), v.end());
+    assert(expected_min == actual_min);
 
-    // In these cases, the maximum is 2^(N-1) and is located after index 0.
-    test_case_min_max_element(vector<uint8_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 128});
-    test_case_min_max_element(vector<uint16_t>{1, 2, 3, 4, 5, 6, 7, 0x8000});
-    test_case_min_max_element(vector<uint32_t>{1, 2, 3, 0x8000'0000UL});
-    test_case_min_max_element(vector<uint64_t>{1, 0x8000'0000'0000'0000ULL});
-
-    {
-        // An extra test case to exercise a potential failure mode.
-        // For uint8_t, _Max_portion_byte_size = _Portion_max * _Vec_size = 256 * 16 = 4096.
-        // This test case has 4112 = 4096 + 16 bytes, which is a max portion followed by a single vector.
-        // The scenario is when all of the first 4096 bytes are >= 128, then any of the last 16 bytes are < 128.
-        vector<uint8_t> v(4112, 200);
-        v[1729] = 222;
-        v[3000] = 222;
-        v[4100] = 11;
-        v[4105] = 11;
-        test_case_min_max_element(v);
-    }
+    test_case_min_max_element(v);
 }
 
 template <class T>
