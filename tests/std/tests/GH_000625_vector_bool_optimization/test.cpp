@@ -1518,6 +1518,49 @@ CONSTEXPR20 bool test_copy_part_2() {
     return true;
 }
 
+CONSTEXPR20 bool test_is_permutation() {
+    constexpr bool perm_source_raw[] = {
+        false, true, false, false, false, true, false, true, true, false, false, true, false, false, true, true};
+    const vector<bool> perm_source(begin(perm_source_raw), end(perm_source_raw));
+
+    // Actually a permutation
+    constexpr bool perm_raw[] = {
+        true, false, true, false, false, true, false, false, true, false, true, false, true, false, false, true};
+    const vector<bool> perm(begin(perm_raw), end(perm_raw));
+    assert(is_permutation(perm_source.begin(), perm_source.end(), perm.begin()));
+    assert(is_permutation(perm_source.begin(), perm_source.end(), perm.begin(), perm.end()));
+    assert(is_permutation(begin(perm_source_raw), end(perm_source_raw), perm.begin()));
+    assert(is_permutation(begin(perm_source_raw), end(perm_source_raw), perm.begin(), perm.end()));
+    assert(is_permutation(perm_source.begin(), perm_source.end(), begin(perm_raw)));
+    assert(is_permutation(perm_source.begin(), perm_source.end(), begin(perm_raw), end(perm_raw)));
+    assert(is_permutation(begin(perm_source_raw), end(perm_source_raw), begin(perm_raw)));
+    assert(is_permutation(begin(perm_source_raw), end(perm_source_raw), begin(perm_raw), end(perm_raw)));
+
+    // One extra true value
+    constexpr bool extra_true_raw[] = {
+        true, false, true, false, false, true, false, false, true, true, true, false, true, false, false, true};
+    const vector<bool> extra_true(begin(extra_true_raw), end(extra_true_raw));
+    assert(!is_permutation(perm_source.begin(), perm_source.end(), extra_true.begin()));
+    assert(!is_permutation(perm_source.begin(), perm_source.end(), extra_true.begin(), extra_true.end()));
+    assert(!is_permutation(begin(perm_source_raw), end(perm_source_raw), extra_true.begin()));
+    assert(!is_permutation(begin(perm_source_raw), end(perm_source_raw), extra_true.begin(), extra_true.end()));
+    assert(!is_permutation(perm_source.begin(), perm_source.end(), begin(extra_true_raw)));
+    assert(!is_permutation(perm_source.begin(), perm_source.end(), begin(extra_true_raw), end(extra_true_raw)));
+    assert(!is_permutation(begin(perm_source_raw), end(perm_source_raw), begin(extra_true_raw)));
+    assert(!is_permutation(begin(perm_source_raw), end(perm_source_raw), begin(extra_true_raw), end(extra_true_raw)));
+
+    // One element longer
+    constexpr bool longer_raw[] = {
+        true, false, true, false, false, true, false, false, true, false, true, false, true, false, false, true, false};
+    const vector<bool> longer(begin(longer_raw), end(longer_raw));
+    assert(!is_permutation(perm_source.begin(), perm_source.end(), longer.begin(), longer.end()));
+    assert(!is_permutation(begin(perm_source_raw), end(perm_source_raw), longer.begin(), longer.end()));
+    assert(!is_permutation(perm_source.begin(), perm_source.end(), begin(longer_raw), end(longer_raw)));
+    assert(!is_permutation(begin(perm_source_raw), end(perm_source_raw), begin(longer_raw), end(longer_raw)));
+
+    return true;
+}
+
 void initialize_randomness(mt19937_64& gen) {
     constexpr size_t n = mt19937_64::state_size;
     constexpr size_t w = mt19937_64::word_size;
@@ -1710,6 +1753,7 @@ static_assert(test_meow_of());
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-2574489
 static_assert(test_copy_part_1());
 static_assert(test_copy_part_2());
+static_assert(test_is_permutation());
 #endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX20
 
@@ -1721,6 +1765,7 @@ int main() {
     test_meow_of();
     test_copy_part_1();
     test_copy_part_2();
+    test_is_permutation();
 
     test_huge_vector_bool();
 
