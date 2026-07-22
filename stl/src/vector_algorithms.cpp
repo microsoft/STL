@@ -2970,6 +2970,13 @@ namespace {
             auto _Cur_min_val       = _Traits::_Init_min_val;
             auto _Cur_max_val       = _Traits::_Init_max_val;
 
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+            if constexpr (!_Sign && _Traits::_Has_unsigned_cmp) {
+                _Cur_min_val = -1;
+                _Cur_max_val = 0;
+            }
+#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+
             if constexpr (_Traits::_Vectorized) {
                 auto _Base                = static_cast<const char*>(_First);
                 size_t _Portion_byte_size = _Byte_length(_First, _Last) & ~_Traits::_Vec_mask;
@@ -3029,6 +3036,14 @@ namespace {
                         return _Traits::_H_max_u(_Vals);
                     }
                 };
+                const auto _Less_wrap = [](const auto _Lhs, const auto _Rhs) noexcept {
+                    if constexpr (_Sign || !_Traits::_Has_unsigned_cmp) {
+                        return _Lhs < _Rhs;
+                    } else {
+                        using _UTy = _Traits::_Unsigned_t;
+                        return static_cast<_UTy>(_Lhs) < static_cast<_UTy>(_Rhs);
+                    }
+                };
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
                 const auto _Cmp_gt_wrap = [](const auto _First, const auto _Second) noexcept {
                     return _Traits::_Cmp_gt(_First, _Second);
@@ -3041,6 +3056,7 @@ namespace {
                 };
                 const auto _H_min_wrap = [](const auto _Vals) noexcept { return _Traits::_H_min(_Vals); };
                 const auto _H_max_wrap = [](const auto _Vals) noexcept { return _Traits::_H_max(_Vals); };
+                const auto _Less_wrap  = [](const auto _Lhs, const auto _Rhs) noexcept { return _Lhs < _Rhs; };
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
                 const auto _Update_min_max = [&](const auto _Cur_vals, [[maybe_unused]] const auto _Blend_idx_0,
@@ -3134,7 +3150,7 @@ namespace {
                             const auto _H_min     = _H_min_wrap(_Cur_vals_min);
                             const auto _H_min_val = _Traits::_Get_any(_H_min); // Get any element of it
 
-                            if (_H_min_val < _Cur_min_val) { // Current horizontal min is less than the old
+                            if (_Less_wrap(_H_min_val, _Cur_min_val)) { // Current horizontal min is less than the old
                                 _Cur_min_val = _H_min_val; // update min
                                 // Mask of all elems eq to min
                                 const auto _Eq_mask = _Traits::_Cmp_eq(_H_min, _Cur_vals_min);
@@ -3161,8 +3177,8 @@ namespace {
                             const auto _H_max     = _H_max_wrap(_Cur_vals_max);
                             const auto _H_max_val = _Traits::_Get_any(_H_max); // Get any element of it
 
-                            if (_Mode == _Mode_both && _Cur_max_val <= _H_max_val
-                                || _Mode == _Mode_max && _Cur_max_val < _H_max_val) {
+                            if (_Mode == _Mode_both && !_Less_wrap(_H_max_val, _Cur_max_val)
+                                || _Mode == _Mode_max && _Less_wrap(_Cur_max_val, _H_max_val)) {
                                 // max_element: current horizontal max is greater than the old, update max
                                 // minmax_element: current horizontal max is not less than the old, update max
                                 _Cur_max_val = _H_max_val;

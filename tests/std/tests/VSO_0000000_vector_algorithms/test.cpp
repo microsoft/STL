@@ -620,6 +620,37 @@ void test_min_max_element_special_cases() {
            == v.begin() + 2 * block_size_in_elements + last_vector_first_elem + 9);
 }
 
+// GH-6373 ARM64/ARM64EC vectorized minmax_element() family mishandles unsigned elements
+void test_gh_6373() {
+    // These test cases are 16 bytes, to reach the vectorization threshold.
+
+    // In these cases, the minimum is 2^(N-1) - 1 and is located after index 0.
+    test_case_min_max_element(
+        vector<uint8_t>{155, 153, 248, 150, 189, 140, 247, 178, 244, 164, 226, 214, 239, 215, 176, 127});
+    test_case_min_max_element(vector<uint16_t>{0x8011, 0x8022, 0x8033, 0x8044, 0x8055, 0x8066, 0x8077, 0x7FFF});
+    test_case_min_max_element(vector<uint32_t>{0x8000'0011UL, 0x8000'0022UL, 0x8000'0033UL, 0x7FFF'FFFFUL});
+    test_case_min_max_element(vector<uint64_t>{0x8000'0000'0000'0011ULL, 0x7FFF'FFFF'FFFF'FFFFULL});
+
+    // In these cases, the maximum is 2^(N-1) and is located after index 0.
+    test_case_min_max_element(vector<uint8_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 128});
+    test_case_min_max_element(vector<uint16_t>{1, 2, 3, 4, 5, 6, 7, 0x8000});
+    test_case_min_max_element(vector<uint32_t>{1, 2, 3, 0x8000'0000UL});
+    test_case_min_max_element(vector<uint64_t>{1, 0x8000'0000'0000'0000ULL});
+
+    {
+        // This is an extra test case to exercise an additional failure mode that was resolved by the same fix.
+        // For uint8_t, _Max_portion_byte_size = _Portion_max * _Vec_size = 256 * 16 = 4096.
+        // This test case has 4112 = 4096 + 16 bytes, which is a max portion followed by a single vector.
+        // The scenario is when all of the first 4096 bytes are >= 128, then any of the last 16 bytes are < 128.
+        vector<uint8_t> v(4112, 200);
+        v[1729] = 222;
+        v[3000] = 222;
+        v[4100] = 11;
+        v[4105] = 11;
+        test_case_min_max_element(v);
+    }
+}
+
 template <class T>
 void test_is_sorted_until(mt19937_64& gen) {
     using Limits = numeric_limits<T>;
@@ -1324,6 +1355,8 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_case_min_max_element(vector<int64_t>{10, 0x8000'0000LL, 20, 30});
     test_case_min_max_element(
         vector<int64_t>{-6604286336755016904, -4365366089374418225, 6104371530830675888, -8582621853879131834});
+
+    test_gh_6373();
 
     test_is_sorted_until<char>(gen);
     test_is_sorted_until<signed char>(gen);
