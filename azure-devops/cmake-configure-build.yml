@@ -25,6 +25,7 @@ parameters:
     - '--order=lexical'
     - '--num-shards=$(System.TotalJobsInPhase)'
     - '--run-shard=$(System.JobPositionInPhase)'
+    - '--filter=VSO_0000000_vector_algorithms'
 
 steps:
 - task: PowerShell@2
