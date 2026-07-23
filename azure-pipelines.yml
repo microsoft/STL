@@ -10,12 +10,17 @@ pr:
   drafts: false
 
 stages:
+##### Phase 1: Initial Builds #####
   - stage: Code_Format
     dependsOn: []
     displayName: 'Code Format'
     pool:
-      name: ${{ variables.x64SlowPoolName }}
+      name: ${{ variables.x64MediumPoolName }}
       demands: ${{ variables.poolDemands }}
+    variables:
+    - name: workRoot
+      value: '$(x64MediumPoolWorkRoot)'
+      readonly: true
     jobs:
       - template: azure-devops/format-validation.yml
 
@@ -23,8 +28,12 @@ stages:
     dependsOn: []
     displayName: 'Build x64'
     pool:
-      name: ${{ variables.x64SlowPoolName }}
+      name: ${{ variables.x64MediumPoolName }}
       demands: ${{ variables.poolDemands }}
+    variables:
+    - name: workRoot
+      value: '$(x64MediumPoolWorkRoot)'
+      readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
@@ -41,8 +50,12 @@ stages:
     dependsOn: []
     displayName: 'Build x86'
     pool:
-      name: ${{ variables.x64SlowPoolName }}
+      name: ${{ variables.x64MediumPoolName }}
       demands: ${{ variables.poolDemands }}
+    variables:
+    - name: workRoot
+      value: '$(x64MediumPoolWorkRoot)'
+      readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
@@ -55,56 +68,44 @@ stages:
           configureTesting: false
           runTesting: false
 
-  - stage: Build_ARM64_Cross
+  - stage: Build_ARM64
     dependsOn: []
-    displayName: 'Build ARM64 (Cross)'
-    pool:
-      name: ${{ variables.x64SlowPoolName }}
-      demands: ${{ variables.poolDemands }}
-    jobs:
-      - template: azure-devops/build-and-test.yml
-        parameters:
-          hostArch: x64
-          targetArch: arm64
-          targetPlatform: arm64
-          analyzeBuild: true
-          buildBenchmarks: true
-          numShards: 1
-          configureTesting: false
-          runTesting: false
-
-  - stage: Build_ARM64EC_Cross
-    dependsOn: []
-    displayName: 'Build ARM64EC (Cross)'
-    pool:
-      name: ${{ variables.x64SlowPoolName }}
-      demands: ${{ variables.poolDemands }}
-    jobs:
-      - template: azure-devops/build-and-test.yml
-        parameters:
-          hostArch: x64
-          targetArch: arm64
-          targetPlatform: arm64ec
-          analyzeBuild: true
-          buildBenchmarks: true
-          numShards: 1
-          configureTesting: false
-          runTesting: false
-
-  # This ARM64-native build will detect problems with the ARM64 pool as early as possible.
-  # The stage dependencies are structured to optimize the critical path.
-  - stage: Build_ARM64_Native
-    dependsOn: []
-    displayName: 'Build ARM64 (Native)'
+    displayName: 'Build ARM64'
     pool:
       name: ${{ variables.arm64PoolName }}
       demands: ${{ variables.poolDemands }}
+    variables:
+    - name: workRoot
+      value: '$(arm64PoolWorkRoot)'
+      readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
           hostArch: arm64
           targetArch: arm64
           targetPlatform: arm64
+          analyzeBuild: true
+          buildBenchmarks: true
+          numShards: 1
+          configureTesting: false
+          runTesting: false
+
+  - stage: Build_ARM64EC
+    dependsOn: []
+    displayName: 'Build ARM64EC'
+    pool:
+      name: ${{ variables.arm64PoolName }}
+      demands: ${{ variables.poolDemands }}
+    variables:
+    - name: workRoot
+      value: '$(arm64PoolWorkRoot)'
+      readonly: true
+    jobs:
+      - template: azure-devops/build-and-test.yml
+        parameters:
+          hostArch: arm64
+          targetArch: arm64
+          targetPlatform: arm64ec
           analyzeBuild: true
           buildBenchmarks: true
           numShards: 1
@@ -115,8 +116,12 @@ stages:
     dependsOn: []
     displayName: 'Configure Tests'
     pool:
-      name: ${{ variables.x64SlowPoolName }}
+      name: ${{ variables.x64MediumPoolName }}
       demands: ${{ variables.poolDemands }}
+    variables:
+    - name: workRoot
+      value: '$(x64MediumPoolWorkRoot)'
+      readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
@@ -127,18 +132,23 @@ stages:
           buildStl: false
           runTesting: false
 
+##### Phase 2: Primary Test Architectures #####
   - stage: Test_x64
     dependsOn:
       - Code_Format
       - Build_x64
       - Build_x86
-      - Build_ARM64_Cross
-      - Build_ARM64EC_Cross
+      - Build_ARM64
+      - Build_ARM64EC
       - Configure_Tests
     displayName: 'Test x64'
     pool:
       name: ${{ variables.x64FastPoolName }}
       demands: ${{ variables.poolDemands }}
+    variables:
+    - name: workRoot
+      value: '$(x64FastPoolWorkRoot)'
+      readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
@@ -146,27 +156,22 @@ stages:
           targetArch: x64
           targetPlatform: x64
 
-  - stage: Test_x86
-    dependsOn: Test_x64
-    displayName: 'Test x86'
-    pool:
-      name: ${{ variables.x64SlowPoolName }}
-      demands: ${{ variables.poolDemands }}
-    jobs:
-      - template: azure-devops/build-and-test.yml
-        parameters:
-          hostArch: x86
-          targetArch: x86
-          targetPlatform: x86
-
   - stage: Test_ARM64
     dependsOn:
-      - Build_ARM64_Native
-      - Test_x64
+      - Code_Format
+      - Build_x64
+      - Build_x86
+      - Build_ARM64
+      - Build_ARM64EC
+      - Configure_Tests
     displayName: 'Test ARM64'
     pool:
       name: ${{ variables.arm64PoolName }}
       demands: ${{ variables.poolDemands }}
+    variables:
+    - name: workRoot
+      value: '$(arm64PoolWorkRoot)'
+      readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
@@ -174,14 +179,38 @@ stages:
           targetArch: arm64
           targetPlatform: arm64
 
+##### Phase 3: Secondary Test Architectures #####
+  - stage: Test_x86
+    dependsOn:
+      - Test_x64
+      - Test_ARM64
+    displayName: 'Test x86'
+    pool:
+      name: ${{ variables.x64SlowPoolName }}
+      demands: ${{ variables.poolDemands }}
+    variables:
+    - name: workRoot
+      value: '$(x64SlowPoolWorkRoot)'
+      readonly: true
+    jobs:
+      - template: azure-devops/build-and-test.yml
+        parameters:
+          hostArch: x86
+          targetArch: x86
+          targetPlatform: x86
+
   - stage: Test_ARM64EC
     dependsOn:
-      - Build_ARM64_Native
       - Test_x64
+      - Test_ARM64
     displayName: 'Test ARM64EC'
     pool:
       name: ${{ variables.arm64PoolName }}
       demands: ${{ variables.poolDemands }}
+    variables:
+    - name: workRoot
+      value: '$(arm64PoolWorkRoot)'
+      readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
         parameters:
