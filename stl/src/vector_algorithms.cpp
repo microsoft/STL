@@ -9663,38 +9663,45 @@ namespace {
             }
         };
 
+        // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
+        // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
+        template <class _Traits, class _Ty>
+        __declspec(noalias) __declspec(noinline) void __stdcall _Replace_sve(
+            void* _First, void* const _Last, const _Ty _Old_val, const _Ty _New_val) noexcept {
+            // Arm Architecture Reference Manual for A-profile architecture,
+            // B1.4.2 "Configurable SVE vector lengths":
+            // "The architecturally defined SVL set is all powers of two from 128 to 2048 bits inclusive."
+            const size_t _Sve_vl        = svcntb();
+            const size_t _Size_bytes    = _Byte_length(_First, _Last);
+            const size_t _Full_vl_bytes = _Size_bytes & ~size_t{_Sve_vl - 1};
+
+            const void* _Stop_at = _First;
+            _Advance_bytes(_Stop_at, _Full_vl_bytes);
+
+            const auto _Comparand   = _Traits::_Set(_Old_val);
+            const auto _Replacement = _Traits::_Set(_New_val);
+
+            const auto _True = svptrue_b8();
+            while (_First != _Stop_at) {
+                const auto _Data = _Traits::_Load(_True, _First);
+                const auto _Mask = _Traits::_Cmp(_True, _Data, _Comparand);
+                _Traits::_Store(_Mask, _First, _Replacement);
+                _Advance_bytes(_First, _Sve_vl);
+            }
+
+            if (const size_t _Tail_length = _Size_bytes & size_t{_Sve_vl - 1}; _Tail_length != 0) {
+                const auto _Tail_mask = svwhilelt_b8(size_t{0}, _Tail_length);
+                const auto _Data      = _Traits::_Load(_Tail_mask, _First);
+                const auto _Mask      = _Traits::_Cmp(_Tail_mask, _Data, _Comparand);
+                _Traits::_Store(_Mask, _First, _Replacement);
+            }
+        }
+
         template <class _Traits, class _Ty>
         __declspec(noalias) void __stdcall _Replace_impl(
             void* _First, void* const _Last, const _Ty _Old_val, const _Ty _New_val) noexcept {
-
             if (_Use_FEAT_SVE()) {
-                // Arm Architecture Reference Manual for A-profile architecture,
-                // B1.4.2 "Configurable SVE vector lengths":
-                // "The architecturally defined SVL set is all powers of two from 128 to 2048 bits inclusive."
-                const size_t _Sve_vl        = svcntb();
-                const size_t _Size_bytes    = _Byte_length(_First, _Last);
-                const size_t _Full_vl_bytes = _Size_bytes & ~size_t{_Sve_vl - 1};
-
-                const void* _Stop_at = _First;
-                _Advance_bytes(_Stop_at, _Full_vl_bytes);
-
-                const auto _Comparand   = _Traits::_Set(_Old_val);
-                const auto _Replacement = _Traits::_Set(_New_val);
-
-                const auto _True = svptrue_b8();
-                while (_First != _Stop_at) {
-                    const auto _Data = _Traits::_Load(_True, _First);
-                    const auto _Mask = _Traits::_Cmp(_True, _Data, _Comparand);
-                    _Traits::_Store(_Mask, _First, _Replacement);
-                    _Advance_bytes(_First, _Sve_vl);
-                }
-
-                if (const size_t _Tail_length = _Size_bytes & size_t{_Sve_vl - 1}; _Tail_length != 0) {
-                    const auto _Tail_mask = svwhilelt_b8(size_t{0}, _Tail_length);
-                    const auto _Data      = _Traits::_Load(_Tail_mask, _First);
-                    const auto _Mask      = _Traits::_Cmp(_Tail_mask, _Data, _Comparand);
-                    _Traits::_Store(_Mask, _First, _Replacement);
-                }
+                _Replace_sve<_Traits>(_First, _Last, _Old_val, _New_val);
             } else {
                 for (auto _Cur = static_cast<_Ty*>(_First); _Cur != _Last; ++_Cur) {
                     if (*_Cur == _Old_val) {
