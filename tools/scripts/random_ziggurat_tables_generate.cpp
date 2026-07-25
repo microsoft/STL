@@ -182,8 +182,8 @@ void generate_tables(string_view name, bool is_signed, auto&& pdf, auto&& invers
 
     // generate tables
     const __float128 width_scale       = __scalbnq(is_signed ? 2.0q : 1.0q, -traits::rand_bits);
-    const __float128 probability_scale = __scalbnq(1.0q, traits::rand_bits);
-    const __float128 max_probability   = 1.0q - __scalbnq(1.0q, -traits::rand_bits);
+    const __float128 probability_scale = __scalbnq(1.0q, traits::rand_bits - traits::layer_bits);
+    const __float128 max_probability   = 1.0q - 1.0q / probability_scale;
 
     println();
     println("template <>");
@@ -207,27 +207,17 @@ void generate_tables(string_view name, bool is_signed, auto&& pdf, auto&& invers
 
     println("}},");
 
-    // _Uty _Alias_probabilities[1 << _Lw];
+    // _Uty _Alias_table[1 << _Lw];
     for (bool first = true; const alias_table_entry& entry : alias_table) {
+        const auto table_value = (static_cast<unsigned long long>(
+                                      __nearbyintq(__fminq(entry.probability, max_probability) * probability_scale))
+                                     << traits::layer_bits)
+                               | entry.alias_index;
         if (first) {
-            print("        {{{}u", static_cast<unsigned long long>(
-                                       __nearbyintq(__fminq(entry.probability, max_probability) * probability_scale)));
+            print("        {{{}u", table_value);
             first = false;
         } else {
-            print(", {}u", static_cast<unsigned long long>(
-                               __nearbyintq(__fminq(entry.probability, max_probability) * probability_scale)));
-        }
-    }
-
-    println("}},");
-
-    // uint8_t _Alias_indices[1 << _Lw];
-    for (bool first = true; const alias_table_entry& entry : alias_table) {
-        if (first) {
-            print("        {{{}", entry.alias_index);
-            first = false;
-        } else {
-            print(", {}", entry.alias_index);
+            print(", {}u", table_value);
         }
     }
 
@@ -283,7 +273,7 @@ _STD_BEGIN
 template <class _Ty, class _Uty, bool _Signed, int _Lw, int _Lx>
 struct _Modified_ziggurat_tables {
     static_assert(_Lw >= 2, "invalid table size");
-    static_assert(_Lw <= 8, "invalid table size");
+    static_assert(_Lw < 31, "invalid table size");
     static_assert(_Lx >= 2, "invalid table size");
     static_assert(_Lx <= (1 << _Lw) - 2, "invalid table size");
 
@@ -296,8 +286,7 @@ struct _Modified_ziggurat_tables {
 
     _Ty _Layer_widths[_Lx + 1];
     _Ty _Layer_heights[_Lx + 1];
-    _Uty _Alias_probabilities[1 << _Lw];
-    uint8_t _Alias_indices[1 << _Lw];
+    _Uty _Alias_table[1 << _Lw];
 };)");
 }
 

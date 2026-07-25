@@ -2659,16 +2659,17 @@ private:
 
         const auto _Rand_bits     = static_cast<typename _Traits::_Uint_type>(_Generator._Get_all_bits());
         const auto _Xbits         = static_cast<typename _Traits::_Xtype>(_Rand_bits & _Value_mask);
-        const auto _Regular_layer = static_cast<uint8_t>(_Rand_bits & _Layer_mask);
+        const auto _Regular_layer = static_cast<int>(_Rand_bits & _Layer_mask);
 
         if (_Regular_layer < _Tables::_Value._Layer_num - 1) {
             // rectangular region of a middle layer
             return static_cast<_Ty>(_Tables::_Value._Layer_widths[_Regular_layer + 1] * static_cast<_Fty>(_Xbits));
         } else {
-            const auto _Lbits = static_cast<typename _Traits::_Uint_type>(_Generator._Get_all_bits());
-            const auto _Index = static_cast<uint8_t>(_Lbits & _Layer_mask);
-            const uint8_t _Irregular_layer =
-                _Lbits < _Tables::_Value._Alias_probabilities[_Index] ? _Index : _Tables::_Value._Alias_indices[_Index];
+            const auto _Lbits           = static_cast<typename _Traits::_Uint_type>(_Generator._Get_all_bits());
+            const auto _Index           = static_cast<int>(_Lbits & _Layer_mask);
+            const auto _Irregular_layer = _Lbits < (_Tables::_Value._Alias_table[_Index] & ~_Layer_mask)
+                                            ? _Index
+                                            : static_cast<int>(_Tables::_Value._Alias_table[_Index] & _Layer_mask);
 
             if (_Irregular_layer < _Tables::_Value._Layer_num) {
                 // tail of a non-bottommost layer
