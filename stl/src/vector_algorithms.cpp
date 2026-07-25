@@ -9590,6 +9590,16 @@ __declspec(noalias) size_t __stdcall __std_mismatch_8(
 
 namespace {
     namespace _Replacing {
+        template <class _Ty>
+        __declspec(noalias) void __stdcall _Replace_fallback(
+            void* _First, void* const _Last, const _Ty _Old_val, const _Ty _New_val) noexcept {
+            for (auto _Cur = static_cast<_Ty*>(_First); _Cur != _Last; ++_Cur) {
+                if (*_Cur == _Old_val) {
+                    *_Cur = _New_val;
+                }
+            }
+        }
+
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
         struct _Traits_1_sve {
             static svuint8_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
@@ -9703,11 +9713,7 @@ namespace {
             if (_Use_FEAT_SVE()) {
                 _Replace_sve<_Traits>(_First, _Last, _Old_val, _New_val);
             } else {
-                for (auto _Cur = static_cast<_Ty*>(_First); _Cur != _Last; ++_Cur) {
-                    if (*_Cur == _Old_val) {
-                        *_Cur = _New_val;
-                    }
-                }
+                _Replace_fallback(_First, _Last, _Old_val, _New_val);
             }
         }
 #endif // ^^^ defined(_M_ARM64) ^^^
@@ -9903,11 +9909,7 @@ __declspec(noalias) void __stdcall __std_replace_4(
     }
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
 
-    for (auto _Cur = reinterpret_cast<uint32_t*>(_First); _Cur != _Last; ++_Cur) {
-        if (*_Cur == _Old_val) {
-            *_Cur = _New_val;
-        }
-    }
+    _Replacing::_Replace_fallback(_First, _Last, _Old_val, _New_val);
 }
 
 __declspec(noalias) void __stdcall __std_replace_8(
@@ -9946,11 +9948,7 @@ __declspec(noalias) void __stdcall __std_replace_8(
     }
 #endif // ^^^ !defined(_M_ARM64EC) ^^^
 
-    for (auto _Cur = reinterpret_cast<uint64_t*>(_First); _Cur != _Last; ++_Cur) {
-        if (*_Cur == _Old_val) {
-            *_Cur = _New_val;
-        }
-    }
+    _Replacing::_Replace_fallback(_First, _Last, _Old_val, _New_val);
 }
 #endif // ^^^ !defined(_M_ARM64) ^^^
 
