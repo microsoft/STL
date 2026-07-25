@@ -72,7 +72,8 @@ template <class TestFunc>
 void run_tests_with_different_isa_levels(TestFunc tests) {
     tests();
 
-#if (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE_PURE)
+#if !defined(_M_CEE_PURE)
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
     const auto original_isa = __isa_enabled;
 
     disable_instructions(__ISA_AVAILABLE_AVX2);
@@ -82,7 +83,8 @@ void run_tests_with_different_isa_levels(TestFunc tests) {
     tests();
 
     __isa_enabled = original_isa;
-#endif // (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE_PURE)
+#endif // ^^^ defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC)) ^^^
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 }
 
 template <class TestFunc>
