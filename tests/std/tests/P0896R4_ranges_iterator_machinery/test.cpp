@@ -115,6 +115,20 @@ struct simple_input_iter {
     bool operator==(simple_input_iter const&) const = default;
 };
 
+struct empty_list_input_iter {
+    using value_type      = double;
+    using difference_type = long;
+
+    // not default constructible, although initializable with {}
+    explicit empty_list_input_iter(std::initializer_list<int>);
+
+    value_type operator*() const;
+    empty_list_input_iter& operator++();
+    empty_list_input_iter operator++(int);
+
+    bool operator==(const empty_list_input_iter&) const = default;
+};
+
 template <class Base = empty_type>
 struct simple_forward_iter : Base {
     using value_type      = double;
@@ -943,6 +957,7 @@ namespace iterator_traits_test {
     // * 3.2.2: "... Otherwise, reference names iter_reference_t<I>."
     // * 3.2.3.4 "... Otherwise, iterator_category names... input_iterator_tag."
     static_assert(check<simple_input_iter, no_such_type, input_iterator_tag, double, long, void, double>());
+    static_assert(check<empty_list_input_iter, no_such_type, input_iterator_tag, double, long, void, double>());
 
     // N4928 [iterator.traits]:
     // * 3.2.1: "... Otherwise, pointer names void."
@@ -3330,7 +3345,7 @@ namespace reverse_iterator_test {
 namespace move_iterator_test {
     using std::bidirectional_iterator_tag, std::default_sentinel_t, std::forward_iterator_tag, std::input_iterator_tag,
         std::move_iterator, std::move_sentinel, std::random_access_iterator_tag, std::same_as, std::string,
-        std::three_way_comparable, std::three_way_comparable_with;
+        std::three_way_comparable, std::three_way_comparable_with, std::default_initializable;
 
     template <bool CanCopy>
     struct input_iter {
@@ -3419,6 +3434,8 @@ namespace move_iterator_test {
     static_assert(same_as<move_iterator<simple_forward_iter<>>::iterator_category, forward_iterator_tag>);
     static_assert(same_as<move_iterator<simple_input_iter>::iterator_concept, input_iterator_tag>);
     static_assert(same_as<move_iterator<simple_input_iter>::iterator_category, input_iterator_tag>);
+    static_assert(same_as<move_iterator<empty_list_input_iter>::iterator_concept, input_iterator_tag>);
+    static_assert(same_as<move_iterator<empty_list_input_iter>::iterator_category, input_iterator_tag>);
     static_assert(same_as<move_iterator<input_iter<true>>::iterator_concept, input_iterator_tag>);
     static_assert(same_as<move_iterator<xvalue_random_iter>::iterator_concept, random_access_iterator_tag>);
     static_assert(same_as<move_iterator<xvalue_random_iter>::iterator_category, random_access_iterator_tag>);
@@ -3523,6 +3540,14 @@ namespace move_iterator_test {
         !has_greater_eq<move_iterator<simple_random_iter<sentinel_base>>, move_sentinel<std::default_sentinel_t>>);
     static_assert(!three_way_comparable<move_iterator<simple_random_iter<sentinel_base>>,
         move_sentinel<std::default_sentinel_t>>);
+
+    // LWG-4125 "move_iterator's default constructor should be constrained"
+    // Validate default-constructibility
+    static_assert(!default_initializable<move_iterator<simple_input_iter>>);
+    static_assert(!default_initializable<move_iterator<empty_list_input_iter>>);
+    static_assert(default_initializable<move_iterator<input_iter<true>>>);
+    static_assert(default_initializable<move_iterator<input_iter<false>>>);
+    static_assert(default_initializable<move_iterator<int*>>);
 
     // GH-3014 "<ranges>: list-initialization is misused"
     void test_gh_3014() { // COMPILE-ONLY

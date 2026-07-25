@@ -397,6 +397,10 @@ constexpr bool test_interface() {
         assign_literal_count.assign(get_literal_input<CharType>(), 2);
         assert(ranges::equal(assign_literal_count, "He"sv));
 
+        str assign_literal_pos_len;
+        assign_literal_pos_len.assign(get_literal_input<CharType>(), 2, 3);
+        assert(ranges::equal(assign_literal_pos_len, "llo"sv));
+
         str assign_iterator;
         assign_iterator.assign(begin(get_view_input<CharType>()), end(get_view_input<CharType>()));
         assert(ranges::equal(assign_iterator, get_view_input<CharType>()));
@@ -751,6 +755,10 @@ constexpr bool test_interface() {
         str append_literal_count(2, CharType{'b'});
         append_literal_count.append(get_literal_input<CharType>(), 2);
         assert(ranges::equal(append_literal_count, "bbHe"sv));
+
+        str append_literal_pos_len(2, CharType{'b'});
+        append_literal_pos_len.append(get_literal_input<CharType>(), 2, 3);
+        assert(ranges::equal(append_literal_pos_len, "bbllo"sv));
 
         str append_iterator(2, CharType{'b'});
         append_iterator.append(begin(get_view_input<CharType>()), end(get_view_input<CharType>()));

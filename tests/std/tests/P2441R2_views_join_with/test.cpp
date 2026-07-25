@@ -375,9 +375,6 @@ struct instantiator {
             Outer empty{span<Inner, 0>{}};
             test_one(empty, "*#"sv, views::empty<char>);
         }
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, LLVM-60293 and VSO-1900294
-        if constexpr (ranges::forward_range<Outer> || ranges::common_range<Outer>)
-#endif // ^^^ workaround ^^^
         { // Range-of-rvalue delimiter
             Inner inner_ranges[] = {Inner{span{input[0]}}, Inner{span{input[1]}}, Inner{span{input[2]}},
                 Inner{span{input[3]}}, Inner{span{input[4]}}, Inner{span{input[5]}}, Inner{span{input[6]}},

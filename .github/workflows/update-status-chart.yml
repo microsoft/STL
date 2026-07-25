@@ -18,7 +18,7 @@ jobs:
         with:
           ref: gh-pages
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ">=26.4.0"
       - name: Install Packages
