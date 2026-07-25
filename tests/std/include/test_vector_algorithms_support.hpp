@@ -73,17 +73,19 @@ void run_tests_with_different_isa_levels(TestFunc tests) {
     tests();
 
 #if !defined(_M_CEE_PURE)
-#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+#if defined(_M_IX86) || defined(_M_X64)
     const auto original_isa = __isa_enabled;
 
+#if !defined(_M_ARM64EC) // not ARM64EC, which lacks AVX2
     disable_instructions(__ISA_AVAILABLE_AVX2);
     tests();
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     disable_instructions(__ISA_AVAILABLE_SSE42);
     tests();
 
     __isa_enabled = original_isa;
-#endif // ^^^ defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC)) ^^^
+#endif // ^^^ defined(_M_IX86) || defined(_M_X64) ^^^
 #endif // ^^^ !defined(_M_CEE_PURE) ^^^
 }
 
