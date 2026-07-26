@@ -414,6 +414,32 @@ void test_gh_3014() { // COMPILE-ONLY
     [[maybe_unused]] decltype(as_const(r).begin()) i = r.begin(); // Check 'iterator(iterator<!Const> i)'
 }
 
+// LWG-3797 "elements_view insufficiently constrained"
+namespace lwg_3797 {
+    struct Constifier {
+        template <class T>
+        constexpr const T& operator()(const T& t) const noexcept {
+            return t;
+        }
+    };
+
+    struct Mover {
+        template <class T>
+        constexpr remove_reference_t<T>&& operator()(T&& t) const noexcept {
+            return static_cast<remove_reference_t<T>&&>(t);
+        }
+    };
+
+    using MoveOnlySubrange = ranges::subrange<test::iterator<test::input, int>, test::sentinel<int>>;
+    static_assert(!CanViewElements<vector<MoveOnlySubrange>>);
+    static_assert(!CanViewElements<decltype(vector<MoveOnlySubrange>{} | views::transform(Constifier{}))>);
+    static_assert(!CanViewElements<decltype(vector<MoveOnlySubrange>{} | views::transform(Mover{}))>);
+#if _HAS_CXX23
+    static_assert(!CanViewElements<decltype(vector<MoveOnlySubrange>{} | views::as_const)>);
+    static_assert(!CanViewElements<decltype(vector<MoveOnlySubrange>{} | views::as_rvalue)>);
+#endif // _HAS_CXX23
+} // namespace lwg_3797
+
 int main() {
     { // Validate copyable views
         constexpr span<const P> s{some_pairs};

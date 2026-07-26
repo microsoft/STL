@@ -360,8 +360,6 @@ std/utilities/utility/mem.res/mem.res.monotonic.buffer/mem.res.monotonic.buffer.
 # DevCom-1436243 VSO-1335743 constexpr new initialized array
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:0 FAIL
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.modifiers/reset_self.pass.cpp:1 FAIL
-std/utilities/smartptr/unique.ptr/unique.ptr.create/make_unique.array.pass.cpp:0 FAIL
-std/utilities/smartptr/unique.ptr/unique.ptr.create/make_unique.array.pass.cpp:1 FAIL
 
 # DevCom-1626139 VSO-1456427 "compile-time NaN comparison"
 std/iterators/predef.iterators/reverse.iterators/reverse.iter.cmp/three-way.pass.cpp:0 FAIL
@@ -860,9 +858,6 @@ std/utilities/variant/variant.variant/variant.ctor/T.pass.cpp:2 FAIL
 # Not analyzed. MSVC emits "warning C4310: cast truncates constant value" for char(0xc3).
 std/input.output/filesystems/class.path/path.member/path.charconv.pass.cpp:0 FAIL
 std/input.output/filesystems/class.path/path.member/path.charconv.pass.cpp:1 FAIL
-
-# Not analyzed. Clang is attempting to default construct cpp17_input_iterator<int *>.
-std/iterators/predef.iterators/move.iterators/move.iterator/iterator_concept_conformance.compile.pass.cpp:2 FAIL
 
 # Not analyzed. Asserting about alloc_count.
 std/thread/futures/futures.promise/alloc_ctor.pass.cpp FAIL
