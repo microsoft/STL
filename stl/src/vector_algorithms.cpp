@@ -14,10 +14,6 @@
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
 #include <arm_sve.h>
 #include <isa_availability.h>
-
-extern "C" {
-extern unsigned long long __arm64_xstate_features; // TRANSITION, __processor_features_0_63 will bake this in soon
-}
 #endif // ^^^ defined(_M_ARM64) ^^^
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
@@ -59,18 +55,9 @@ namespace {
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     bool _Use_FEAT_SVE() noexcept {
-        // <winnt.h> defines the following constants:
-        constexpr int _Pf_arm_sve_instructions_available = 46; // PF_ARM_SVE_INSTRUCTIONS_AVAILABLE
-        constexpr int _Xstate_arm64_sve                  = 2; // XSTATE_ARM64_SVE
-        constexpr auto _Xstate_mask_arm64_sve            = 1ull << _Xstate_arm64_sve; // XSTATE_MASK_ARM64_SVE
-
-        const bool _Sve_in_processor_features =
-            (__processor_features_0_63 & (1ull << _Pf_arm_sve_instructions_available)) != 0;
-
-        // TRANSITION, __processor_features_0_63 will bake this in soon:
-        const bool _Sve_in_enabled_xstate_features = (__arm64_xstate_features & _Xstate_mask_arm64_sve) != 0;
-
-        return _Sve_in_processor_features && _Sve_in_enabled_xstate_features;
+        constexpr int _Idx_sve   = 46; // PF_ARM_SVE_INSTRUCTIONS_AVAILABLE in <winnt.h>
+        constexpr auto _Mask_sve = 1ull << _Idx_sve;
+        return (__processor_features_0_63 & _Mask_sve) != 0;
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
 
