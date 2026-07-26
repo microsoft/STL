@@ -22,21 +22,26 @@ int main() {
     constexpr size_t source_len = size(source);
     static_assert(size(expected_all_true) == source_len, "sizes should match");
 
-    bool dest_false_replaced[source_len];
-    replace_copy(begin(source), end(source), begin(dest_false_replaced), 0, 2);
-    assert(memcmp(dest_false_replaced, expected_all_true, source_len) == 0);
-
-    bool dest_true_replaced[source_len];
-    replace_copy(begin(source), end(source), begin(dest_true_replaced), 1, 4);
-    assert(memcmp(dest_true_replaced, source, source_len) == 0);
-
+    {
+        bool dest_false_replaced[source_len];
+        replace_copy(begin(source), end(source), begin(dest_false_replaced), 0, 2);
+        assert(memcmp(dest_false_replaced, expected_all_true, source_len) == 0);
+    }
+    {
+        bool dest_true_replaced[source_len];
+        replace_copy(begin(source), end(source), begin(dest_true_replaced), 1, 4);
+        assert(memcmp(dest_true_replaced, source, source_len) == 0);
+    }
 #if _HAS_CXX20
-    bool ranges_dest_false_replaced[source_len];
-    ranges::replace_copy(source, begin(ranges_dest_false_replaced), 0, 2);
-    assert(memcmp(ranges_dest_false_replaced, expected_all_true, source_len) == 0);
-
-    bool ranges_dest_true_replaced[source_len];
-    ranges::replace_copy(source, begin(ranges_dest_true_replaced), 1, 4);
-    assert(memcmp(ranges_dest_true_replaced, source, source_len) == 0);
+    {
+        bool ranges_dest_false_replaced[source_len];
+        ranges::replace_copy(source, begin(ranges_dest_false_replaced), 0, 2);
+        assert(memcmp(ranges_dest_false_replaced, expected_all_true, source_len) == 0);
+    }
+    {
+        bool ranges_dest_true_replaced[source_len];
+        ranges::replace_copy(source, begin(ranges_dest_true_replaced), 1, 4);
+        assert(memcmp(ranges_dest_true_replaced, source, source_len) == 0);
+    }
 #endif // _HAS_CXX20
 }
