@@ -216,6 +216,13 @@ To build the ARM64EC target:
 1. `cmake --preset ARM64EC`
 1. `cmake --build --preset ARM64EC`
 
+**Note on `TESTS_BUILD_ONLY` target behaviors:**
+Please be aware of the default behavior when building tests for specific target architectures:
+
+* When `TESTS_BUILD_ONLY` is set to `ARM64`, ARM64 tests can run natively.
+* When `TESTS_BUILD_ONLY` is set to `AMD64`, both x64 and x86 tests can run natively.
+* Setting `TESTS_BUILD_ONLY` to `x86` is generally only applicable when using a Wow64 prompt or a 32-bit OS.
+
 # How To Consume
 
 Consumption of the built library is largely based on the build system you're using. There are at least 2 directories
