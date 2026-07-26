@@ -9579,7 +9579,7 @@ namespace {
     namespace _Replacing {
         template <class _Ty>
         __declspec(noalias) void __stdcall _Replace_fallback(
-            void* _First, void* const _Last, const _Ty _Old_val, const _Ty _New_val) noexcept {
+            void* const _First, void* const _Last, const _Ty _Old_val, const _Ty _New_val) noexcept {
             for (auto _Cur = static_cast<_Ty*>(_First); _Cur != _Last; ++_Cur) {
                 if (*_Cur == _Old_val) {
                     *_Cur = _New_val;
