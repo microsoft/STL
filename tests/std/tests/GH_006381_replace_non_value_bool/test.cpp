@@ -10,11 +10,11 @@
 using namespace std;
 
 int main() {
-    // Test replace_copy against an attempt to replace bool value with a non-value representation
-    // Compare with direct memcmp instead of algorithms or loops: make the possible failure as deterministic as possible
+    // Test replace() and replace_copy() against attempts to replace bool values with non-value representations.
+    // Compare with direct memcmp() instead of algorithms or loops to make any failures as deterministic as possible.
 
-    // We're not trying to actually engage the vectorization, we only need dispatch to the separately compiled code;
-    // so it does not matter if the amount of values don't pass a threshold that is not in headers
+    // We're not trying to actually engage any vectorization, we only need to dispatch to the separately compiled code,
+    // so it doesn't matter if the array size is below the vectorization thresholds in the separately compiled code.
 
     static constexpr bool source[]            = {true, true, false, true, false, false, false};
     static constexpr bool expected_all_true[] = {true, true, true, true, true, true, true};
