@@ -46,16 +46,16 @@ int main() {
     }
 #if _HAS_CXX20
     {
-        bool dest_false_replaced_inplace[source_len];
-        ranges::copy(source, dest_false_replaced_inplace);
-        ranges::replace(dest_false_replaced_inplace, 0, 2);
-        assert(memcmp(dest_false_replaced_inplace, expected_all_true, source_len) == 0);
+        bool ranges_dest_false_replaced_inplace[source_len];
+        ranges::copy(source, ranges_dest_false_replaced_inplace);
+        ranges::replace(ranges_dest_false_replaced_inplace, 0, 2);
+        assert(memcmp(ranges_dest_false_replaced_inplace, expected_all_true, source_len) == 0);
     }
     {
-        bool dest_true_replaced_inplace[source_len];
-        ranges::copy(source, dest_true_replaced_inplace);
-        ranges::replace(dest_true_replaced_inplace, 1, 4);
-        assert(memcmp(dest_true_replaced_inplace, source, source_len) == 0);
+        bool ranges_dest_true_replaced_inplace[source_len];
+        ranges::copy(source, ranges_dest_true_replaced_inplace);
+        ranges::replace(ranges_dest_true_replaced_inplace, 1, 4);
+        assert(memcmp(ranges_dest_true_replaced_inplace, source, source_len) == 0);
     }
     {
         bool ranges_dest_false_replaced[source_len];
