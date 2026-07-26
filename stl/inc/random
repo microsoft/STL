@@ -4674,12 +4674,14 @@ public:
         uniform_real_distribution<_Ty> _Dist;
         result_type _Xx0 = _Dist(_Eng);
 
-        if (_Px0 != _Px1) {
+        if (_Px0 == 0.0) {
+            _Xx0 = _STD sqrt(_Xx0);
+        } else if (_Px0 != _Px1) {
             _Xx0 = static_cast<result_type>(
-                (_STD sqrt(_Px0 * _Px0 * (1.0 - _Xx0) + _Px1 * _Px1 * _Xx0) - _Px0) / (_Px1 - _Px0));
+                (_Xx0 * (_Px0 + _Px1)) / (_STD sqrt(_Px0 * _Px0 * (1.0 - _Xx0) + _Px1 * _Px1 * _Xx0) + _Px0));
         }
 
-        return _Par0._Bvec[_Px] + _Xx0 * (_Par0._Bvec[_Px + 1] - _Par0._Bvec[_Px]);
+        return _STD _Common_lerp(_Par0._Bvec[_Px], _Par0._Bvec[_Px + 1], _Xx0);
     }
 
     discrete_distribution<size_t> _Unused; // TRANSITION, ABI: this was a base class subobject
