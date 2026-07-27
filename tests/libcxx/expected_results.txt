@@ -291,10 +291,7 @@ std/utilities/const.wrap.class/call.pass.cpp FAIL
 std/utilities/const.wrap.class/comma.pass.cpp FAIL
 std/utilities/const.wrap.class/comp.pass.cpp FAIL
 std/utilities/const.wrap.class/convert.pass.cpp FAIL
-std/utilities/const.wrap.class/ctad.compile.pass.cpp FAIL
 std/utilities/const.wrap.class/cw.pass.cpp FAIL
-std/utilities/const.wrap.class/cw_fixed.array.ctor.pass.cpp FAIL
-std/utilities/const.wrap.class/cw_fixed.ctor.pass.cpp FAIL
 std/utilities/const.wrap.class/general.pass.cpp FAIL
 std/utilities/const.wrap.class/mem_ptr.pass.cpp FAIL
 std/utilities/const.wrap.class/pseudo_mutators.pass.cpp FAIL
