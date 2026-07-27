@@ -66,9 +66,6 @@ std/language.support/support.exception/except.nested/ctor_default.pass.cpp:2 SKI
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:2 FAIL
 std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:2 FAIL
 
-# LLVM-182390: [libc++][test] facet.num.get.members/get_long.pass.cpp uses std::to_string() without including <string>
-std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long.pass.cpp FAIL
-
 # LLVM-182392: [libc++][test] vector/trivial_relocation.pass.cpp uses implementation-specific attribute [[clang::trivial_abi]]
 std/containers/sequences/vector/trivial_relocation.pass.cpp:0 FAIL
 std/containers/sequences/vector/trivial_relocation.pass.cpp:1 FAIL
