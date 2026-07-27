@@ -42,12 +42,6 @@ std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp
 # LLVM-122638: [libc++][test] re.regex.construct/bad_backref.pass.cpp assumes non-standard extension to extended regular expressions
 std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
 
-# LLVM-138375: [libc++][test] Make narrowing in nasty_char_traits::to_char_type more explicit
-std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:1 FAIL
-
 # LLVM-158302: Clang 20 i686-pc-windows-msvc regression, silent bad codegen for std::current_exception()
 # SKIPPED because this is x86-specific.
 std/language.support/support.exception/except.nested/assign.pass.cpp:2 SKIPPED
