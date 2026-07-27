@@ -36,12 +36,6 @@ std/time/time.syn/formatter.zoned_time.pass.cpp:1 FAIL
 # LLVM-74838: [libc++] std::regex match_prev_avail implementation is regressed
 std/re/re.const/re.matchflag/match_prev_avail.pass.cpp FAIL
 
-# LLVM-90196: [libc++][format] Formatting range with m range-type is incorrect
-std/utilities/format/format.range/format.range.formatter/format.functions.format.pass.cpp FAIL
-std/utilities/format/format.range/format.range.formatter/format.functions.vformat.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtset/format.functions.format.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.pass.cpp FAIL
-
 # LLVM-100506: [libc++][test] Precondition violation in rand.dist.uni.real/param_ctor.pass.cpp
 std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
 
