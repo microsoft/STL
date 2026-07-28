@@ -419,7 +419,9 @@ __declspec(noalias) void _Replace_vectorized(
 template <class _Ty, class _TVal1, class _TVal2>
 __declspec(noalias) void _Replace_copy_vectorized(const _Ty* const _First, const _Ty* const _Last, _Ty* const _Dest,
     const _TVal1 _Old_val, const _TVal2 _New_val) noexcept {
-    if constexpr (sizeof(_Ty) == 1) {
+    if constexpr (is_same_v<_Ty, bool>) {
+        ::__std_replace_copy_1(_First, _Last, _Dest, static_cast<bool>(_Old_val), static_cast<bool>(_New_val));
+    } else if constexpr (sizeof(_Ty) == 1) {
         ::__std_replace_copy_1(
             _First, _Last, _Dest, _STD _Find_arg_cast<uint8_t>(_Old_val), _STD _Find_arg_cast<uint8_t>(_New_val));
     } else if constexpr (sizeof(_Ty) == 2) {
