@@ -1212,17 +1212,6 @@ std/utilities/memory/util.smartptr/util.smartptr.shared/pointer_destruction.pass
 # Clang error: incomplete type 'complete_type_allocator<std::_Ref_count_resource_alloc<int *, std::default_delete<int>, complete_type_allocator<int>>>' used in type trait expression
 std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/pointer_deleter_allocator.pass.cpp FAIL
 
-# Not analyzed.
-# MSVC warning C4804: '<<': unsafe use of type 'bool' in operation
-std/language.support/support.types/byteops/lshift.assign.pass.cpp:0 FAIL
-std/language.support/support.types/byteops/lshift.assign.pass.cpp:1 FAIL
-std/language.support/support.types/byteops/lshift.pass.cpp:0 FAIL
-std/language.support/support.types/byteops/lshift.pass.cpp:1 FAIL
-std/language.support/support.types/byteops/rshift.assign.pass.cpp:0 FAIL
-std/language.support/support.types/byteops/rshift.assign.pass.cpp:1 FAIL
-std/language.support/support.types/byteops/rshift.pass.cpp:0 FAIL
-std/language.support/support.types/byteops/rshift.pass.cpp:1 FAIL
-
 # Not analyzed. MSVC's STL doesn't support _BitInt, but the tests ask Clang, which reports that support is available.
 std/containers/views/mdspan/extents/bitint.pass.cpp:2 FAIL
 std/language.support/support.limits/limits/numeric.limits.members/digits.pass.cpp:2 FAIL
@@ -1271,6 +1260,10 @@ std/depr/depr.c.headers/setjmp_h.compile.pass.cpp:9 SKIPPED
 std/input.output/file.streams/fstreams/ifstream.members/buffered_reads.pass.cpp:9 SKIPPED
 std/input.output/file.streams/fstreams/ofstream.members/buffered_writes.pass.cpp:9 SKIPPED
 std/language.support/support.runtime/csetjmp.pass.cpp:9 SKIPPED
+std/language.support/support.types/byteops/lshift.assign.pass.cpp:9 SKIPPED
+std/language.support/support.types/byteops/lshift.pass.cpp:9 SKIPPED
+std/language.support/support.types/byteops/rshift.assign.pass.cpp:9 SKIPPED
+std/language.support/support.types/byteops/rshift.pass.cpp:9 SKIPPED
 std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.pointer.pass.cpp:9 SKIPPED
 std/ranges/range.adaptors/range.lazy.split/constraints.compile.pass.cpp:9 SKIPPED
 std/ranges/range.utility/range.utility.conv/to.pass.cpp:9 SKIPPED
