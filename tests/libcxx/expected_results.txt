@@ -241,6 +241,18 @@ std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
 std/numerics/c.math/fpclassify.pass.cpp FAIL
+std/numerics/c.math/isgreater.pass.cpp:0 FAIL
+std/numerics/c.math/isgreater.pass.cpp:1 FAIL
+std/numerics/c.math/isgreaterequal.pass.cpp:0 FAIL
+std/numerics/c.math/isgreaterequal.pass.cpp:1 FAIL
+std/numerics/c.math/isless.pass.cpp:0 FAIL
+std/numerics/c.math/isless.pass.cpp:1 FAIL
+std/numerics/c.math/islessequal.pass.cpp:0 FAIL
+std/numerics/c.math/islessequal.pass.cpp:1 FAIL
+std/numerics/c.math/islessgreater.pass.cpp:0 FAIL
+std/numerics/c.math/islessgreater.pass.cpp:1 FAIL
+std/numerics/c.math/isunordered.pass.cpp:0 FAIL
+std/numerics/c.math/isunordered.pass.cpp:1 FAIL
 
 # P0543R3 Saturation Arithmetic
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
