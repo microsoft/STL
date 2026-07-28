@@ -906,6 +906,14 @@ std/algorithms/alg.modifying.operations/alg.fill/fill_n.pass.cpp:0 SKIPPED
 std/algorithms/alg.modifying.operations/alg.fill/fill_n.pass.cpp:1 SKIPPED
 std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp:0 SKIPPED
 std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp:1 SKIPPED
+std/algorithms/alg.nonmodifying/alg.find.first.of/pstl.find_first_of_pred.pass.cpp:0 SKIPPED
+std/algorithms/alg.nonmodifying/alg.find.first.of/pstl.find_first_of_pred.pass.cpp:1 SKIPPED
+std/algorithms/alg.nonmodifying/alg.find.first.of/pstl.find_first_of.pass.cpp:0 SKIPPED
+std/algorithms/alg.nonmodifying/alg.find.first.of/pstl.find_first_of.pass.cpp:1 SKIPPED
+std/algorithms/alg.nonmodifying/mismatch/pstl.mismatch_pred.pass.cpp:0 SKIPPED
+std/algorithms/alg.nonmodifying/mismatch/pstl.mismatch_pred.pass.cpp:1 SKIPPED
+std/algorithms/alg.nonmodifying/mismatch/pstl.mismatch.pass.cpp:0 SKIPPED
+std/algorithms/alg.nonmodifying/mismatch/pstl.mismatch.pass.cpp:1 SKIPPED
 std/containers/associative/map/map.access/iterator.pass.cpp:0 SKIPPED
 std/containers/associative/map/map.access/iterator.pass.cpp:1 SKIPPED
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:0 SKIPPED
@@ -1214,17 +1222,6 @@ std/language.support/support.types/byteops/rshift.assign.pass.cpp:0 FAIL
 std/language.support/support.types/byteops/rshift.assign.pass.cpp:1 FAIL
 std/language.support/support.types/byteops/rshift.pass.cpp:0 FAIL
 std/language.support/support.types/byteops/rshift.pass.cpp:1 FAIL
-
-# Not analyzed.
-# MSVC warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-std/algorithms/alg.nonmodifying/alg.find.first.of/pstl.find_first_of_pred.pass.cpp:0 FAIL
-std/algorithms/alg.nonmodifying/alg.find.first.of/pstl.find_first_of_pred.pass.cpp:1 FAIL
-std/algorithms/alg.nonmodifying/alg.find.first.of/pstl.find_first_of.pass.cpp:0 FAIL
-std/algorithms/alg.nonmodifying/alg.find.first.of/pstl.find_first_of.pass.cpp:1 FAIL
-std/algorithms/alg.nonmodifying/mismatch/pstl.mismatch_pred.pass.cpp:0 FAIL
-std/algorithms/alg.nonmodifying/mismatch/pstl.mismatch_pred.pass.cpp:1 FAIL
-std/algorithms/alg.nonmodifying/mismatch/pstl.mismatch.pass.cpp:0 FAIL
-std/algorithms/alg.nonmodifying/mismatch/pstl.mismatch.pass.cpp:1 FAIL
 
 # Not analyzed. MSVC's STL doesn't support _BitInt, but the tests ask Clang, which reports that support is available.
 std/containers/views/mdspan/extents/bitint.pass.cpp:2 FAIL
