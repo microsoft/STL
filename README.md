@@ -216,6 +216,19 @@ To build the ARM64EC target:
 1. `cmake --preset ARM64EC`
 1. `cmake --build --preset ARM64EC`
 
+## Building ARM64 Natively
+
+By default, the x64 and x86 presets are configured to both build and run the tests.
+The ARM64 and ARM64EC presets assume that you're cross-compiling, so they enable an option `TESTS_BUILD_ONLY`
+to build test executables without running them. If you have an ARM64 machine, you'll want to use
+the native compiler, and you'll want to disable `TESTS_BUILD_ONLY`:
+
+1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
+1. `vcvarsall.bat arm64 -vcvars_ver=preview`
+1. `popd`
+1. `cmake --preset ARM64 -DTESTS_BUILD_ONLY=OFF`
+1. `cmake --build --preset ARM64`
+
 # How To Consume
 
 Consumption of the built library is largely based on the build system you're using. There are at least 2 directories
