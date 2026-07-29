@@ -91,11 +91,7 @@ constexpr int fe_major_except = FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW;
 
 bool check_feexcept(
     [[maybe_unused]] const int expected_excepts, [[maybe_unused]] const int except_mask = fe_major_except) {
-#if defined(_M_ARM64) || defined(_M_ARM64EC) // TRANSITION, GH-5685
-    return true;
-#else // ^^^ workaround / no workaround vvv
     return fetestexcept(except_mask) == (expected_excepts & except_mask);
-#endif // ^^^ no workaround ^^^
 }
 #else // ^^^ defined(_M_FP_STRICT) / !defined(_M_FP_STRICT) vvv
 class ExceptGuard {
