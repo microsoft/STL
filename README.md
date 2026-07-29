@@ -58,7 +58,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N5046][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N5054][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
@@ -149,9 +149,9 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
     - "C++ CMake tools for Windows"
     - "MSVC AddressSanitizer"
     - "Windows 11 SDK (10.0.28000)" or later
-    - "C++ Clang tools for Windows (20.1.8 - x64/x86)"
+    - "C++ Clang tools for Windows (22.1.3 - x64/x86)"
     - *Optional, see Note 2 below:* "MSVC Build Tools for ARM64/ARM64EC (Preview)"
-* Install [Python][] 3.14.4 or later.
+* Install [Python][] 3.14.6 or later.
   + Select "Add python.exe to PATH" if you want to follow the instructions below that invoke `python`.
     Otherwise, you should be familiar with alternative methods.
 
@@ -215,6 +215,19 @@ To build the ARM64EC target:
 1. `popd`
 1. `cmake --preset ARM64EC`
 1. `cmake --build --preset ARM64EC`
+
+## Building ARM64 Natively
+
+By default, the x64 and x86 presets are configured to both build and run the tests.
+The ARM64 and ARM64EC presets assume that you're cross-compiling, so they enable an option `TESTS_BUILD_ONLY`
+to build test executables without running them. If you have an ARM64 machine, you'll want to use
+the native compiler, and you'll want to disable `TESTS_BUILD_ONLY`:
+
+1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
+1. `vcvarsall.bat arm64 -vcvars_ver=preview`
+1. `popd`
+1. `cmake --preset ARM64 -DTESTS_BUILD_ONLY=OFF`
+1. `cmake --build --preset ARM64`
 
 # How To Consume
 
@@ -606,7 +619,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N5046]: https://wg21.link/N5046
+[N5054]: https://wg21.link/N5054
 [NOTICE.txt]: NOTICE.txt
 [STL-CI-badge]: https://dev.azure.com/vclibs/STL/_apis/build/status%2FSTL-CI?branchName=main "STL-CI"
 [STL-CI-link]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main

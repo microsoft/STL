@@ -1575,11 +1575,10 @@ namespace chrono {
     }
 
     template <class _To, class _From>
-    constexpr bool _Duration_underflows_with = !treat_as_floating_point_v<typename _From::rep>
-                                            && _From::period::den / _STD _Gcd(_From::period::den, _To::period::den)
-                                                   > INTMAX_MAX
-                                                         / (_To::period::num
-                                                             / _STD _Gcd(_From::period::num, _To::period::num));
+    constexpr bool _Duration_underflows_with =
+        !treat_as_floating_point_v<typename _From::rep>
+        && _From::period::den / _STD _Gcd(_From::period::den, _To::period::den)
+               > INTMAX_MAX / (_To::period::num / _STD _Gcd(_From::period::num, _To::period::num));
 
     template <class _To, class _From>
     _NODISCARD constexpr _To _Duration_cast_underflow_to_zero(const _From& _Dur) {
@@ -3344,8 +3343,8 @@ namespace chrono {
             // (c) Offset to desired week.
             const int _Jan1_wday = _Jan1_weekday(_Year);
             const int _Yday      = 1 + _Prev_weekday(_Starting_wday, _Jan1_wday) // (a)
-                            + _Prev_weekday(*_Weekday, _Starting_wday) // (b)
-                            + 7 * (_Week - 1); // (c)
+                                 + _Prev_weekday(*_Weekday, _Starting_wday) // (b)
+                                 + 7 * (_Week - 1); // (c)
             return _Update(_Day_of_year, _Yday) && !_Out_of_range(_Day_of_year, 1, _Days_in_year(_Year))
                 && _Yday_to_month_day(*_Day_of_year, _Year);
         }
@@ -3479,9 +3478,7 @@ namespace chrono {
             // and calendar computations are relatively expensive.
 
             // Most time-of-day fields are deferred until we know if we're parsing a time_point.
-            if (_Out_of_range(_Hour_12, 1, 12) //
-                || _Out_of_range(_Weekday, 0, 6) //
-                || _Out_of_range(_Day, 1, 31) //
+            if (_Out_of_range(_Hour_12, 1, 12) || _Out_of_range(_Weekday, 0, 6) || _Out_of_range(_Day, 1, 31)
                 || _Out_of_range(_Month, 1, 12)) {
                 return false;
             }

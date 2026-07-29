@@ -127,10 +127,19 @@ struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS add_rvalue_reference {
 _EXPORT_STD template <class _Ty>
 using add_rvalue_reference_t = typename _Add_reference<_Ty>::_Rvalue;
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile"
+#endif // defined(__clang__)
+
 _EXPORT_STD template <class _Ty>
 add_rvalue_reference_t<_Ty> declval() noexcept {
     static_assert(false, "Calling declval is ill-formed, see N4950 [declval]/2.");
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // defined(__clang__)
 
 _EXPORT_STD template <class _Ty>
 struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS remove_extent { // remove array extent
@@ -718,13 +727,11 @@ _EXPORT_STD template <class _Ty>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_trivially_copyable_v = __is_trivially_copyable(_Ty);
 
 #if _HAS_CXX23
-#ifdef __cpp_lib_is_implicit_lifetime // TRANSITION, toolset update
 _EXPORT_STD template <class _Ty>
 struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_implicit_lifetime : bool_constant<__builtin_is_implicit_lifetime(_Ty)> {};
 
 _EXPORT_STD template <class _Ty>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_implicit_lifetime_v = __builtin_is_implicit_lifetime(_Ty);
-#endif // ^^^ no workaround ^^^
 #endif // _HAS_CXX23
 
 _EXPORT_STD template <class _Ty>
@@ -748,46 +755,21 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool has_unique_object_representati
 #endif // _HAS_CXX17
 
 #if _HAS_CXX23
-#ifdef __cpp_lib_reference_from_temporary // TRANSITION
-#ifdef __clang__ // TRANSITION, LLVM-114344
-template <class _Ty>
-struct _Adjust_ref_binding_source {
-    using type = _Ty;
-};
-template <class _Ty>
-    requires is_scalar_v<_Ty> || is_void_v<_Ty>
-struct _Adjust_ref_binding_source<_Ty> {
-    using type = remove_cv_t<_Ty>;
-};
-template <class _Ty>
-    requires is_function_v<_Ty> && requires { typename void_t<_Ty&>; }
-struct _Adjust_ref_binding_source<_Ty> {
-    using type = _Ty&;
-};
-
-template <class _Ty>
-using _Adjust_ref_binding_source_t = _Adjust_ref_binding_source<_Ty>::type;
-#else // ^^^ workaround / no workaround vvv
-template <class _Ty>
-using _Adjust_ref_binding_source_t = _Ty;
-#endif // ^^^ no workaround ^^^
-
 _EXPORT_STD template <class _Ty, class _Uty>
 struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS reference_constructs_from_temporary
-    : bool_constant<__reference_constructs_from_temporary(_Ty, _Adjust_ref_binding_source_t<_Uty>)> {};
+    : bool_constant<__reference_constructs_from_temporary(_Ty, _Uty)> {};
 
 _EXPORT_STD template <class _Ty, class _Uty>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool reference_constructs_from_temporary_v =
-    __reference_constructs_from_temporary(_Ty, _Adjust_ref_binding_source_t<_Uty>);
+    __reference_constructs_from_temporary(_Ty, _Uty);
 
 _EXPORT_STD template <class _Ty, class _Uty>
 struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS reference_converts_from_temporary
-    : bool_constant<__reference_converts_from_temporary(_Ty, _Adjust_ref_binding_source_t<_Uty>)> {};
+    : bool_constant<__reference_converts_from_temporary(_Ty, _Uty)> {};
 
 _EXPORT_STD template <class _Ty, class _Uty>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool reference_converts_from_temporary_v =
-    __reference_converts_from_temporary(_Ty, _Adjust_ref_binding_source_t<_Uty>);
-#endif // ^^^ no workaround ^^^
+    __reference_converts_from_temporary(_Ty, _Uty);
 #endif // _HAS_CXX23
 
 #if _HAS_CXX17
@@ -1454,8 +1436,17 @@ struct _Common_type3<void_t<common_type_t<_Ty1, _Ty2>>, _Ty1, _Ty2, _Rest...>
 template <class _Ty1, class _Ty2, class... _Rest>
 struct common_type<_Ty1, _Ty2, _Rest...> : _Common_type3<void, _Ty1, _Ty2, _Rest...> {};
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile"
+#endif // defined(__clang__)
+
 template <class _Ty>
 _Ty _Returns_exactly() noexcept; // not defined
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // defined(__clang__)
 
 #if _HAS_CXX20
 _EXPORT_STD template <class, class, template <class> class, template <class> class>
@@ -1703,8 +1694,8 @@ struct _Invoker_functor {
 
     template <class _Callable, class... _Types>
     static constexpr auto _Call(_Callable&& _Obj, _Types&&... _Args)
-        noexcept(noexcept(static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...))) //
-        -> decltype(static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...)) {
+        noexcept(noexcept(static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...)))
+            -> decltype(static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...)) {
         return static_cast<_Callable&&>(_Obj)(static_cast<_Types&&>(_Args)...);
     }
 };
@@ -1714,8 +1705,8 @@ struct _Invoker_pmf_object {
 
     template <class _Decayed, class _Ty1, class... _Types2>
     static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2)
-        noexcept(noexcept((static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...))) //
-        -> decltype((static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
+        noexcept(noexcept((static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+            -> decltype((static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
         return (static_cast<_Ty1&&>(_Arg1).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     }
 };
@@ -1725,8 +1716,8 @@ struct _Invoker_pmf_refwrap {
 
     template <class _Decayed, class _Refwrap, class... _Types2>
     static constexpr auto _Call(_Decayed _Pmf, _Refwrap _Rw, _Types2&&... _Args2)
-        noexcept(noexcept((_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...))) //
-        -> decltype((_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
+        noexcept(noexcept((_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+            -> decltype((_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
         return (_Rw.get().*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     }
 };
@@ -1736,8 +1727,8 @@ struct _Invoker_pmf_pointer {
 
     template <class _Decayed, class _Ty1, class... _Types2>
     static constexpr auto _Call(_Decayed _Pmf, _Ty1&& _Arg1, _Types2&&... _Args2)
-        noexcept(noexcept(((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...))) //
-        -> decltype(((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
+        noexcept(noexcept(((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...)))
+            -> decltype(((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...)) {
         return ((*static_cast<_Ty1&&>(_Arg1)).*_Pmf)(static_cast<_Types2&&>(_Args2)...);
     }
 };
@@ -1804,20 +1795,21 @@ constexpr auto invoke(_Callable&& _Obj) noexcept(noexcept(static_cast<_Callable&
 _EXPORT_STD template <class _Callable, class _Ty1, class... _Types2>
 constexpr auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2)
     noexcept(noexcept(_Invoker1<_Callable, _Ty1>::_Call(
-        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...))) //
-    -> decltype(_Invoker1<_Callable, _Ty1>::_Call(
-        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)) {
-    if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Functor) {
+        static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)))
+        -> decltype(_Invoker1<_Callable, _Ty1>::_Call(
+            static_cast<_Callable&&>(_Obj), static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...)) {
+    constexpr auto _Strat = _Invoker1<_Callable, _Ty1>::_Strategy;
+    if constexpr (_Strat == _Invoker_strategy::_Functor) {
         return static_cast<_Callable&&>(_Obj)(static_cast<_Ty1&&>(_Arg1), static_cast<_Types2&&>(_Args2)...);
-    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_object) {
+    } else if constexpr (_Strat == _Invoker_strategy::_Pmf_object) {
         return (static_cast<_Ty1&&>(_Arg1).*_Obj)(static_cast<_Types2&&>(_Args2)...);
-    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_refwrap) {
+    } else if constexpr (_Strat == _Invoker_strategy::_Pmf_refwrap) {
         return (_Arg1.get().*_Obj)(static_cast<_Types2&&>(_Args2)...);
-    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmf_pointer) {
+    } else if constexpr (_Strat == _Invoker_strategy::_Pmf_pointer) {
         return ((*static_cast<_Ty1&&>(_Arg1)).*_Obj)(static_cast<_Types2&&>(_Args2)...);
-    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_object) {
+    } else if constexpr (_Strat == _Invoker_strategy::_Pmd_object) {
         return static_cast<_Ty1&&>(_Arg1).*_Obj;
-    } else if constexpr (_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_refwrap) {
+    } else if constexpr (_Strat == _Invoker_strategy::_Pmd_refwrap) {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1956799
         return _Arg1.get().*_Obj;
 #else // ^^^ no workaround / workaround vvv
@@ -1825,7 +1817,7 @@ constexpr auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2)
         return _Ref.*_Obj;
 #endif // ^^^ workaround ^^^
     } else {
-        _STL_INTERNAL_STATIC_ASSERT(_Invoker1<_Callable, _Ty1>::_Strategy == _Invoker_strategy::_Pmd_pointer);
+        _STL_INTERNAL_STATIC_ASSERT(_Strat == _Invoker_strategy::_Pmd_pointer);
         return (*static_cast<_Ty1&&>(_Arg1)).*_Obj;
     }
 }
@@ -1864,13 +1856,8 @@ template <class _From, class _To, class = void>
 struct _Invoke_convertible : false_type {};
 
 #if _HAS_CXX23
-#ifdef __cpp_lib_reference_from_temporary // TRANSITION
 template <class _To, class _From>
 using _Not_reference_converts_from_temporary = bool_constant<!reference_converts_from_temporary_v<_To, _From>>;
-#else // ^^^ no workaround / workaround vvv
-template <class _To, class _From>
-using _Not_reference_converts_from_temporary = true_type;
-#endif // ^^^ workaround ^^^
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
 template <class _To, class _From>
 using _Not_reference_converts_from_temporary = true_type;
@@ -2027,7 +2014,6 @@ struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_layout_compatible : bool_constant<_
 _EXPORT_STD template <class _Ty1, class _Ty2>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_layout_compatible_v = __is_layout_compatible(_Ty1, _Ty2);
 
-#ifndef __clang__ // TRANSITION, LLVM-135273
 _EXPORT_STD template <class _Base, class _Derived>
 struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_pointer_interconvertible_base_of
     : bool_constant<__is_pointer_interconvertible_base_of(_Base, _Derived)> {};
@@ -2035,15 +2021,6 @@ struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_pointer_interconvertible_base_of
 _EXPORT_STD template <class _Base, class _Derived>
 _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_pointer_interconvertible_base_of_v =
     __is_pointer_interconvertible_base_of(_Base, _Derived);
-#else // ^^^ no workaround / workaround vvv
-_EXPORT_STD template <class _Base, class _Derived>
-struct _NO_SPECIALIZATIONS_OF_TYPE_TRAITS is_pointer_interconvertible_base_of
-    : bool_constant<__is_pointer_interconvertible_base_of(remove_cv_t<_Base>, remove_cv_t<_Derived>)> {};
-
-_EXPORT_STD template <class _Base, class _Derived>
-_NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_pointer_interconvertible_base_of_v =
-    __is_pointer_interconvertible_base_of(remove_cv_t<_Base>, remove_cv_t<_Derived>);
-#endif // ^^^ workaround ^^^
 
 #ifndef __clang__ // TRANSITION, LLVM-48860
 _EXPORT_STD template <class _ClassTy, class _MemberTy>
@@ -2166,8 +2143,8 @@ private:
 public:
     template <class... _Types>
     _CONSTEXPR20 auto operator()(_Types&&... _Args) const
-        noexcept(noexcept(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...))) //
-        -> decltype(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...)) {
+        noexcept(noexcept(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...)))
+            -> decltype(_STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...)) {
         return _STD invoke(*_Ptr, static_cast<_Types&&>(_Args)...);
     }
 };

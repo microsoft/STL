@@ -27,10 +27,9 @@
 #if _HAS_CXX17
 #include <charconv>
 
-#include "../P0067R5_charconv/test.hpp"
-// ^^^ needs to be included first ^^^
 #include "../P0067R5_charconv/double_from_chars_test_cases.hpp"
 #include "../P0067R5_charconv/float_from_chars_test_cases.hpp"
+#include "../P0067R5_charconv/test.hpp"
 #endif // _HAS_CXX17
 
 using namespace std;

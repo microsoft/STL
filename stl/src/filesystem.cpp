@@ -129,8 +129,8 @@ namespace {
         return _Last_error;
     }
 
-    [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
-        __stdcall _Set_delete_flag(_In_ __std_fs_file_handle _Handle) {
+    [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error __stdcall _Set_delete_flag(
+        _In_ __std_fs_file_handle _Handle) {
 
         // See minwinbase.h and WinBase.h.
         FILE_DISPOSITION_INFO_EX _Info_ex{FILE_DISPOSITION_FLAG_DELETE | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS};
@@ -187,8 +187,8 @@ void __stdcall __std_fs_close_handle(const __std_fs_file_handle _Handle) noexcep
     }
 }
 
-[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
-    __stdcall __std_fs_get_file_attributes_by_handle(
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error __stdcall
+    __std_fs_get_file_attributes_by_handle(
         _In_ const __std_fs_file_handle _Handle, _Out_ unsigned long* const _File_attributes) noexcept {
     // read the attributes from _Handle and store it in _File_attributes
     const HANDLE _As_plain_handle = reinterpret_cast<HANDLE>(_Handle);
@@ -413,8 +413,8 @@ struct __std_fs_file_id { // typedef struct _FILE_ID_INFO {
 }; // } FILE_ID_INFO, ...;
 
 // TRANSITION, ABI: preserved for binary compatibility
-[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
-    __stdcall __std_fs_get_file_id(_Out_ __std_fs_file_id* const _Id, _In_z_ const wchar_t* const _Path) noexcept {
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error __stdcall __std_fs_get_file_id(
+    _Out_ __std_fs_file_id* const _Id, _In_z_ const wchar_t* const _Path) noexcept {
     __std_win_error _Last_error;
     const _STD _Fs_file _Handle(
         _Path, __std_access_rights::_File_read_attributes, __std_fs_file_flags::_Backup_semantics, &_Last_error);
@@ -507,8 +507,8 @@ struct __std_fs_file_id { // typedef struct _FILE_ID_INFO {
     return _Buffer->_Reparse_tag == IO_REPARSE_TAG_MOUNT_POINT;
 }
 
-[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
-    __stdcall __std_fs_read_name_from_reparse_data_buffer(_In_ __std_fs_reparse_data_buffer* const _Buffer,
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error __stdcall
+    __std_fs_read_name_from_reparse_data_buffer(_In_ __std_fs_reparse_data_buffer* const _Buffer,
         _Out_ wchar_t** const _Offset, _Out_ unsigned short* const _Length) noexcept {
     if (_Buffer->_Reparse_tag == IO_REPARSE_TAG_SYMLINK) {
         auto& _Symlink_buffer             = _Buffer->_Symbolic_link_reparse_buffer;
@@ -809,8 +809,8 @@ namespace {
     }
 } // unnamed namespace
 
-[[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error
-    __stdcall __std_fs_get_temp_path(_Out_writes_z_(__std_fs_temp_path_max) wchar_t* const _Target) noexcept {
+[[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error __stdcall
+    __std_fs_get_temp_path(_Out_writes_z_(__std_fs_temp_path_max) wchar_t* const _Target) noexcept {
     // calls GetTempPath2W if available (Win11+), else calls GetTempPathW
     // If getting the path failed, returns 0 size; otherwise, returns the size of the
     // expected directory. If the path could be resolved to an existing directory,
@@ -839,9 +839,9 @@ namespace {
     return {_Size, __std_win_error::_Success};
 }
 
-[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
-    __stdcall __std_fs_get_stats(_In_z_ const wchar_t* const _Path, __std_fs_stats* const _Stats,
-        _In_ __std_fs_stats_flags _Flags, _In_ const __std_fs_file_attr _Symlink_attribute_hint) noexcept {
+[[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error __stdcall __std_fs_get_stats(
+    _In_z_ const wchar_t* const _Path, __std_fs_stats* const _Stats, _In_ __std_fs_stats_flags _Flags,
+    _In_ const __std_fs_file_attr _Symlink_attribute_hint) noexcept {
     const bool _Follow_symlinks = _STD _Bitmask_includes_any(_Flags, __std_fs_stats_flags::_Follow_symlinks);
     _Flags &= ~__std_fs_stats_flags::_Follow_symlinks;
     if (_Follow_symlinks && _STD _Bitmask_includes_any(_Flags, __std_fs_stats_flags::_Reparse_tag)) {
@@ -1014,8 +1014,8 @@ namespace {
     return {false, _Last_error};
 }
 
-[[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error
-    __stdcall __std_fs_get_current_path(
+[[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error __stdcall
+    __std_fs_get_current_path(
         _In_ const unsigned long _Target_size, _Out_writes_z_(_Target_size) wchar_t* const _Target) noexcept {
     // If getting the path failed, GetCurrentDirectoryW returns 0; otherwise, returns the size of the expected
     // directory.

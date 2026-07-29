@@ -620,6 +620,37 @@ void test_min_max_element_special_cases() {
            == v.begin() + 2 * block_size_in_elements + last_vector_first_elem + 9);
 }
 
+// GH-6373 ARM64/ARM64EC vectorized minmax_element() family mishandles unsigned elements
+void test_gh_6373() {
+    // These test cases are 16 bytes, to reach the vectorization threshold.
+
+    // In these cases, the minimum is 2^(N-1) - 1 and is located after index 0.
+    test_case_min_max_element(
+        vector<uint8_t>{155, 153, 248, 150, 189, 140, 247, 178, 244, 164, 226, 214, 239, 215, 176, 127});
+    test_case_min_max_element(vector<uint16_t>{0x8011, 0x8022, 0x8033, 0x8044, 0x8055, 0x8066, 0x8077, 0x7FFF});
+    test_case_min_max_element(vector<uint32_t>{0x8000'0011UL, 0x8000'0022UL, 0x8000'0033UL, 0x7FFF'FFFFUL});
+    test_case_min_max_element(vector<uint64_t>{0x8000'0000'0000'0011ULL, 0x7FFF'FFFF'FFFF'FFFFULL});
+
+    // In these cases, the maximum is 2^(N-1) and is located after index 0.
+    test_case_min_max_element(vector<uint8_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 128});
+    test_case_min_max_element(vector<uint16_t>{1, 2, 3, 4, 5, 6, 7, 0x8000});
+    test_case_min_max_element(vector<uint32_t>{1, 2, 3, 0x8000'0000UL});
+    test_case_min_max_element(vector<uint64_t>{1, 0x8000'0000'0000'0000ULL});
+
+    {
+        // This is an extra test case to exercise an additional failure mode that was resolved by the same fix.
+        // For uint8_t, _Max_portion_byte_size = _Portion_max * _Vec_size = 256 * 16 = 4096.
+        // This test case has 4112 = 4096 + 16 bytes, which is a max portion followed by a single vector.
+        // The scenario is when all of the first 4096 bytes are >= 128, then any of the last 16 bytes are < 128.
+        vector<uint8_t> v(4112, 200);
+        v[1729] = 222;
+        v[3000] = 222;
+        v[4100] = 11;
+        v[4105] = 11;
+        test_case_min_max_element(v);
+    }
+}
+
 template <class T>
 void test_is_sorted_until(mt19937_64& gen) {
     using Limits = numeric_limits<T>;
@@ -767,8 +798,13 @@ void test_case_replace_copy(const vector<T>& input, vector<T>& out_expected, vec
 
 template <class T>
 void test_replace(mt19937_64& gen) {
-    // replace() is vectorized for 4 and 8 bytes only.
+#if defined(_M_ARM64)
+    // For ARM64, replace() is always vectorized.
+    constexpr bool replace_is_vectorized = true;
+#else
+    // For x64/x86, replace() is vectorized for 4 and 8 bytes only.
     constexpr bool replace_is_vectorized = sizeof(T) >= 4;
+#endif
 
     using TD = conditional_t<sizeof(T) == 1, int, T>;
     uniform_int_distribution<TD> dis(0, 9);
@@ -1325,6 +1361,8 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_case_min_max_element(
         vector<int64_t>{-6604286336755016904, -4365366089374418225, 6104371530830675888, -8582621853879131834});
 
+    test_gh_6373();
+
     test_is_sorted_until<char>(gen);
     test_is_sorted_until<signed char>(gen);
     test_is_sorted_until<unsigned char>(gen);
@@ -1873,6 +1911,44 @@ void test_gh_5757_find_first_of() {
     assert(pos == 0);
 }
 
+// GH-6342 <string>: wstring::find_first_of infinite-loops on ARM64
+void test_gh_6342_find_first_of() {
+    const wstring needle{L"abcd"}; // Important size: 4-element needle
+    wstring haystack(150, L'x'); // Important size: 150-element haystack
+
+    // See _Find_meow_of::_Bitmap_impl::_Use_bitmap_neon() in vector_algorithms.cpp.
+    // For 2-byte wchar_t, when the haystack is >= 96 elements and the needle is >= 4 elements, the bitmap is used.
+    // The vectorized code consumes 16-element chunks. 150 % 16 is 6, so the scalar tail is [144, 150).
+    // No matching elements are present in [0, 144), so we'll look at the scalar tail.
+
+    constexpr wchar_t non_ascii_character{L'\u044F'}; // U+044F CYRILLIC SMALL LETTER YA, any value >= 256 works
+
+    {
+        const auto pos1{haystack.find_first_of(needle)};
+        assert(pos1 == wstring::npos);
+    }
+    {
+        haystack[146] = non_ascii_character;
+        const auto pos2{haystack.find_first_of(needle)};
+        assert(pos2 == wstring::npos);
+        haystack[146] = L'x';
+    }
+    {
+        haystack[148] = L'b';
+        const auto pos3{haystack.find_first_of(needle)};
+        assert(pos3 == 148);
+        haystack[148] = L'x';
+    }
+    {
+        haystack[146] = non_ascii_character;
+        haystack[148] = L'b';
+        const auto pos4{haystack.find_first_of(needle)};
+        assert(pos4 == 148);
+        haystack[146] = L'x';
+        haystack[148] = L'x';
+    }
+}
+
 void test_string(mt19937_64& gen) {
     test_basic_string<char>(gen);
     test_basic_string<wchar_t>(gen);
@@ -1884,6 +1960,7 @@ void test_string(mt19937_64& gen) {
     test_basic_string<unsigned long long>(gen);
 
     test_gh_5757_find_first_of();
+    test_gh_6342_find_first_of();
 }
 
 void test_various_containers() {

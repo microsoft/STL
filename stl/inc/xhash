@@ -208,8 +208,8 @@ struct _Hash_vec {
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return (_STD min) (static_cast<size_type>(_STD _Max_limit<difference_type>()),
-            _Aliter_traits::max_size(_Mypair._Get_first()));
+        constexpr auto _Diff_max = static_cast<size_type>(_STD _Max_limit<difference_type>());
+        return (_STD min) (_Diff_max, _Aliter_traits::max_size(_Mypair._Get_first()));
     }
 
     _NODISCARD size_type capacity() const noexcept {
@@ -291,7 +291,7 @@ public:
     using const_iterator = typename _Mylist::const_iterator;
 
     using _Unchecked_iterator       = conditional_t<is_same_v<key_type, value_type>,
-              typename _Mylist::_Unchecked_const_iterator, typename _Mylist::_Unchecked_iterator>;
+        typename _Mylist::_Unchecked_const_iterator, typename _Mylist::_Unchecked_iterator>;
     using _Unchecked_const_iterator = typename _Mylist::_Unchecked_const_iterator;
 
     using _Aliter = _Rebind_alloc_t<_Alnode, _Unchecked_iterator>;

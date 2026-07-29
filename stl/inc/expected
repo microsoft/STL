@@ -316,13 +316,13 @@ public:
 
     template <class _UErr>
         requires is_constructible_v<_Err, const _UErr&>
-    constexpr explicit(!is_convertible_v<const _UErr&, _Err>) expected(const unexpected<_UErr>& _Other) //
+    constexpr explicit(!is_convertible_v<const _UErr&, _Err>) expected(const unexpected<_UErr>& _Other)
         noexcept(is_nothrow_constructible_v<_Err, const _UErr&>) // strengthened
         : _Unexpected(_Other._Unexpected), _Has_value(false) {}
 
     template <class _UErr>
         requires is_constructible_v<_Err, _UErr>
-    constexpr explicit(!is_convertible_v<_UErr, _Err>) expected(unexpected<_UErr>&& _Other) //
+    constexpr explicit(!is_convertible_v<_UErr, _Err>) expected(unexpected<_UErr>&& _Other)
         noexcept(is_nothrow_constructible_v<_Err, _UErr>) // strengthened
         : _Unexpected(_STD move(_Other._Unexpected)), _Has_value(false) {}
 

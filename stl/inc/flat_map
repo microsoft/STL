@@ -281,7 +281,7 @@ class _Flat_map_base {
 private:
     using _Sorted_t = conditional_t<_IsUnique, sorted_unique_t, sorted_equivalent_t>;
     using _Derived  = conditional_t<_IsUnique, flat_map<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>,
-         flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>>;
+        flat_multimap<_Key, _Mapped, _Compare, _KeyContainer, _MappedContainer>>;
 
     static constexpr const char* _Msg_not_sorted_maybe_unique =
         _IsUnique ? "Keys were not sorted-unique! (N5032 [flat.map.overview]/10)"
@@ -1275,13 +1275,21 @@ public:
     }
     template <class _OtherKey>
     _NODISCARD mapped_type& at(const _OtherKey& _Key_val)
+#ifdef __clang__ // TRANSITION, LLVM-198663
+        requires _Transparent<_Compare>
+#else // ^^^ workaround / no workaround vvv
         requires _Transparent<key_compare>
+#endif // ^^^ no workaround ^^^
     {
         return _At(_Key_val);
     }
     template <class _OtherKey>
     _NODISCARD const mapped_type& at(const _OtherKey& _Key_val) const
+#ifdef __clang__ // TRANSITION, LLVM-198663
+        requires _Transparent<_Compare>
+#else // ^^^ workaround / no workaround vvv
         requires _Transparent<key_compare>
+#endif // ^^^ no workaround ^^^
     {
         return _At(_Key_val);
     }

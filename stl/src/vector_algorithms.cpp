@@ -11,15 +11,16 @@
 #include <cwchar>
 #include <type_traits>
 
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+#include <arm_sve.h>
+#include <isa_availability.h>
+#endif // ^^^ defined(_M_ARM64) ^^^
+
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
 #include <arm64_neon.h>
-
-#include <Windows.h>
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
 #include <intrin.h>
 #include <isa_availability.h>
-
-extern "C" long __isa_enabled;
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
 namespace {
@@ -52,43 +53,13 @@ namespace {
     }
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
-    bool _Use_FEAT_DotProd() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_V82_DP_INSTRUCTIONS_AVAILABLE);
-    }
-
-    bool _Use_FEAT_I8MM() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_V82_I8MM_INSTRUCTIONS_AVAILABLE);
-    }
-
-    bool _Use_FEAT_SHA3() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_SHA3_INSTRUCTIONS_AVAILABLE);
-    }
-
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     bool _Use_FEAT_SVE() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_SVE_INSTRUCTIONS_AVAILABLE);
+        constexpr int _Idx_sve   = 46; // PF_ARM_SVE_INSTRUCTIONS_AVAILABLE in <winnt.h>
+        constexpr auto _Mask_sve = 1ull << _Idx_sve;
+        return (__processor_features_0_63 & _Mask_sve) != 0;
     }
-
-    bool _Use_FEAT_SVE2() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_SVE2_INSTRUCTIONS_AVAILABLE);
-    }
-
-    bool _Use_FEAT_SVE2p1() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_SVE2_1_INSTRUCTIONS_AVAILABLE);
-    }
-
-    bool _Use_FEAT_SVE_SHA3() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_SVE_SHA3_INSTRUCTIONS_AVAILABLE);
-    }
-
-    bool _Use_FEAT_AES() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_SVE_AES_INSTRUCTIONS_AVAILABLE);
-    }
-
-    bool _Use_FEAT_BitPerm() noexcept {
-        return IsProcessorFeaturePresent(PF_ARM_SVE_BITPERM_INSTRUCTIONS_AVAILABLE);
-    }
-#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#endif // ^^^ defined(_M_ARM64) ^^^
 
     size_t _Byte_length(const void* const _First, const void* const _Last) noexcept {
         return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
@@ -2968,6 +2939,13 @@ namespace {
             auto _Cur_min_val       = _Traits::_Init_min_val;
             auto _Cur_max_val       = _Traits::_Init_max_val;
 
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+            if constexpr (!_Sign && _Traits::_Has_unsigned_cmp) {
+                _Cur_min_val = -1;
+                _Cur_max_val = 0;
+            }
+#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+
             if constexpr (_Traits::_Vectorized) {
                 auto _Base                = static_cast<const char*>(_First);
                 size_t _Portion_byte_size = _Byte_length(_First, _Last) & ~_Traits::_Vec_mask;
@@ -3027,6 +3005,14 @@ namespace {
                         return _Traits::_H_max_u(_Vals);
                     }
                 };
+                const auto _Less_wrap = [](const auto _Lhs, const auto _Rhs) noexcept {
+                    if constexpr (_Sign || !_Traits::_Has_unsigned_cmp) {
+                        return _Lhs < _Rhs;
+                    } else {
+                        using _UTy = _Traits::_Unsigned_t;
+                        return static_cast<_UTy>(_Lhs) < static_cast<_UTy>(_Rhs);
+                    }
+                };
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
                 const auto _Cmp_gt_wrap = [](const auto _First, const auto _Second) noexcept {
                     return _Traits::_Cmp_gt(_First, _Second);
@@ -3039,6 +3025,7 @@ namespace {
                 };
                 const auto _H_min_wrap = [](const auto _Vals) noexcept { return _Traits::_H_min(_Vals); };
                 const auto _H_max_wrap = [](const auto _Vals) noexcept { return _Traits::_H_max(_Vals); };
+                const auto _Less_wrap  = [](const auto _Lhs, const auto _Rhs) noexcept { return _Lhs < _Rhs; };
 #endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
 
                 const auto _Update_min_max = [&](const auto _Cur_vals, [[maybe_unused]] const auto _Blend_idx_0,
@@ -3132,7 +3119,7 @@ namespace {
                             const auto _H_min     = _H_min_wrap(_Cur_vals_min);
                             const auto _H_min_val = _Traits::_Get_any(_H_min); // Get any element of it
 
-                            if (_H_min_val < _Cur_min_val) { // Current horizontal min is less than the old
+                            if (_Less_wrap(_H_min_val, _Cur_min_val)) { // Current horizontal min is less than the old
                                 _Cur_min_val = _H_min_val; // update min
                                 // Mask of all elems eq to min
                                 const auto _Eq_mask = _Traits::_Cmp_eq(_H_min, _Cur_vals_min);
@@ -3159,8 +3146,8 @@ namespace {
                             const auto _H_max     = _H_max_wrap(_Cur_vals_max);
                             const auto _H_max_val = _Traits::_Get_any(_H_max); // Get any element of it
 
-                            if (_Mode == _Mode_both && _Cur_max_val <= _H_max_val
-                                || _Mode == _Mode_max && _Cur_max_val < _H_max_val) {
+                            if (_Mode == _Mode_both && !_Less_wrap(_H_max_val, _Cur_max_val)
+                                || _Mode == _Mode_max && _Less_wrap(_Cur_max_val, _H_max_val)) {
                                 // max_element: current horizontal max is greater than the old, update max
                                 // minmax_element: current horizontal max is not less than the old, update max
                                 _Cur_max_val = _H_max_val;
@@ -6087,8 +6074,7 @@ namespace {
             template <class _Ty>
             __forceinline bool _Make_bitmap_large_neon(
                 const void* const _Needle, const size_t _Needle_length, uint8x16x2_t& _Bitmap) noexcept {
-                // TRANSITION, DevCom-11055227
-                constexpr uint8_t _Mask_arr[16] = {
+                static constexpr uint8_t _Mask_arr[16] = {
                     0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
                 const auto _Mask = vld1q_u8(_Mask_arr);
 
@@ -6319,7 +6305,7 @@ namespace {
                     } else if (_Count1 < 96) {
                         return _Count2 >= 8;
                     } else {
-                        return _Count2 >= 4;
+                        return _Count2 >= 4; // if these thresholds are adjusted, review test_gh_6342_find_first_of()
                     }
                 } else if constexpr (sizeof(_Ty) == 4) {
                     if (_Count1 < 32) {
@@ -6388,9 +6374,7 @@ namespace {
                                 return _Ix;
                             }
                         }
-
-                        ++_Ix;
-                    } while (_Ix != _Haystack_length);
+                    } while (++_Ix != _Haystack_length);
                 }
 
                 return static_cast<size_t>(-1);
@@ -9609,6 +9593,134 @@ __declspec(noalias) size_t __stdcall __std_mismatch_8(
 
 namespace {
     namespace _Replacing {
+        template <class _Ty>
+        __declspec(noalias) void __stdcall _Replace_fallback(
+            void* const _First, void* const _Last, const _Ty _Old_val, const _Ty _New_val) noexcept {
+            for (auto _Cur = static_cast<_Ty*>(_First); _Cur != _Last; ++_Cur) {
+                if (*_Cur == _Old_val) {
+                    *_Cur = _New_val;
+                }
+            }
+        }
+
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+        struct _Traits_1_sve {
+            static svuint8_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
+                return svld1(_Pred, static_cast<const uint8_t*>(_Ptr));
+            }
+
+            static svuint8_t _Set(const uint8_t _Val) noexcept {
+                return svdup_n_u8(_Val);
+            }
+
+            static svbool_t _Cmp(const svbool_t _Pred, const svuint8_t _Lhs, const svuint8_t _Rhs) noexcept {
+                return svcmpeq(_Pred, _Lhs, _Rhs);
+            }
+
+            static void _Store(const svbool_t _Pred, void* const _Ptr, const svuint8_t _Val) noexcept {
+                svst1(_Pred, static_cast<uint8_t*>(_Ptr), _Val);
+            }
+        };
+
+        struct _Traits_2_sve {
+            static svuint16_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
+                return svld1(_Pred, static_cast<const uint16_t*>(_Ptr));
+            }
+
+            static svuint16_t _Set(const uint16_t _Val) noexcept {
+                return svdup_n_u16(_Val);
+            }
+
+            static svbool_t _Cmp(const svbool_t _Pred, const svuint16_t _Lhs, const svuint16_t _Rhs) noexcept {
+                return svcmpeq(_Pred, _Lhs, _Rhs);
+            }
+
+            static void _Store(const svbool_t _Pred, void* const _Ptr, const svuint16_t _Val) noexcept {
+                svst1(_Pred, static_cast<uint16_t*>(_Ptr), _Val);
+            }
+        };
+
+        struct _Traits_4_sve {
+            static svuint32_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
+                return svld1(_Pred, static_cast<const uint32_t*>(_Ptr));
+            }
+
+            static svuint32_t _Set(const uint32_t _Val) noexcept {
+                return svdup_n_u32(_Val);
+            }
+
+            static svbool_t _Cmp(const svbool_t _Pred, const svuint32_t _Lhs, const svuint32_t _Rhs) noexcept {
+                return svcmpeq(_Pred, _Lhs, _Rhs);
+            }
+
+            static void _Store(const svbool_t _Pred, void* const _Ptr, const svuint32_t _Val) noexcept {
+                svst1(_Pred, static_cast<uint32_t*>(_Ptr), _Val);
+            }
+        };
+
+        struct _Traits_8_sve {
+            static svuint64_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
+                return svld1(_Pred, static_cast<const uint64_t*>(_Ptr));
+            }
+
+            static svuint64_t _Set(const uint64_t _Val) noexcept {
+                return svdup_n_u64(_Val);
+            }
+
+            static svbool_t _Cmp(const svbool_t _Pred, const svuint64_t _Lhs, const svuint64_t _Rhs) noexcept {
+                return svcmpeq(_Pred, _Lhs, _Rhs);
+            }
+
+            static void _Store(const svbool_t _Pred, void* const _Ptr, const svuint64_t _Val) noexcept {
+                svst1(_Pred, static_cast<uint64_t*>(_Ptr), _Val);
+            }
+        };
+
+        // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
+        // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
+        template <class _Traits, class _Ty>
+        __declspec(noalias) __declspec(noinline) void __stdcall _Replace_sve(
+            void* _First, void* const _Last, const _Ty _Old_val, const _Ty _New_val) noexcept {
+            // Arm Architecture Reference Manual for A-profile architecture,
+            // B1.4.2 "Configurable SVE vector lengths":
+            // "The architecturally defined SVL set is all powers of two from 128 to 2048 bits inclusive."
+            const size_t _Sve_vl        = svcntb();
+            const size_t _Size_bytes    = _Byte_length(_First, _Last);
+            const size_t _Full_vl_bytes = _Size_bytes & ~size_t{_Sve_vl - 1};
+
+            const void* _Stop_at = _First;
+            _Advance_bytes(_Stop_at, _Full_vl_bytes);
+
+            const auto _Comparand   = _Traits::_Set(_Old_val);
+            const auto _Replacement = _Traits::_Set(_New_val);
+
+            const auto _True = svptrue_b8();
+            while (_First != _Stop_at) {
+                const auto _Data = _Traits::_Load(_True, _First);
+                const auto _Mask = _Traits::_Cmp(_True, _Data, _Comparand);
+                _Traits::_Store(_Mask, _First, _Replacement);
+                _Advance_bytes(_First, _Sve_vl);
+            }
+
+            if (const size_t _Tail_length = _Size_bytes & size_t{_Sve_vl - 1}; _Tail_length != 0) {
+                const auto _Tail_mask = svwhilelt_b8(size_t{0}, _Tail_length);
+                const auto _Data      = _Traits::_Load(_Tail_mask, _First);
+                const auto _Mask      = _Traits::_Cmp(_Tail_mask, _Data, _Comparand);
+                _Traits::_Store(_Mask, _First, _Replacement);
+            }
+        }
+
+        template <class _Traits, class _Ty>
+        __declspec(noalias) void __stdcall _Replace_impl(
+            void* _First, void* const _Last, const _Ty _Old_val, const _Ty _New_val) noexcept {
+            if (_Use_FEAT_SVE()) {
+                _Replace_sve<_Traits>(_First, _Last, _Old_val, _New_val);
+            } else {
+                _Replace_fallback(_First, _Last, _Old_val, _New_val);
+            }
+        }
+#endif // ^^^ defined(_M_ARM64) ^^^
+
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
         template <class _Traits, class _Ty>
         __declspec(noalias) void __stdcall _Replace_copy_impl(
@@ -9748,10 +9860,30 @@ namespace {
 
 extern "C" {
 
-#ifndef _M_ARM64
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+__declspec(noalias) void __stdcall __std_replace_1(
+    void* const _First, void* const _Last, const uint8_t _Old_val, const uint8_t _New_val) noexcept {
+    _Replacing::_Replace_impl<_Replacing::_Traits_1_sve>(_First, _Last, _Old_val, _New_val);
+}
+
+__declspec(noalias) void __stdcall __std_replace_2(
+    void* const _First, void* const _Last, const uint16_t _Old_val, const uint16_t _New_val) noexcept {
+    _Replacing::_Replace_impl<_Replacing::_Traits_2_sve>(_First, _Last, _Old_val, _New_val);
+}
+
+__declspec(noalias) void __stdcall __std_replace_4(
+    void* const _First, void* const _Last, const uint32_t _Old_val, const uint32_t _New_val) noexcept {
+    _Replacing::_Replace_impl<_Replacing::_Traits_4_sve>(_First, _Last, _Old_val, _New_val);
+}
+
+__declspec(noalias) void __stdcall __std_replace_8(
+    void* const _First, void* const _Last, const uint64_t _Old_val, const uint64_t _New_val) noexcept {
+    _Replacing::_Replace_impl<_Replacing::_Traits_8_sve>(_First, _Last, _Old_val, _New_val);
+}
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
 __declspec(noalias) void __stdcall __std_replace_4(
     void* _First, void* const _Last, const uint32_t _Old_val, const uint32_t _New_val) noexcept {
-#ifndef _M_ARM64EC
+#if !defined(_M_ARM64EC) // not ARM64EC, which lacks AVX2
     if (_Use_avx2()) {
         const __m256i _Comparand   = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(_Old_val));
         const __m256i _Replacement = _mm256_broadcastd_epi32(_mm_cvtsi32_si128(_New_val));
@@ -9776,20 +9908,16 @@ __declspec(noalias) void __stdcall __std_replace_4(
         }
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-    } else
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-    {
-        for (auto _Cur = reinterpret_cast<uint32_t*>(_First); _Cur != _Last; ++_Cur) {
-            if (*_Cur == _Old_val) {
-                *_Cur = _New_val;
-            }
-        }
+        return;
     }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+
+    _Replacing::_Replace_fallback(_First, _Last, _Old_val, _New_val);
 }
 
 __declspec(noalias) void __stdcall __std_replace_8(
     void* _First, void* const _Last, const uint64_t _Old_val, const uint64_t _New_val) noexcept {
-#ifndef _M_ARM64EC
+#if !defined(_M_ARM64EC) // not ARM64EC, which lacks AVX2
     if (_Use_avx2()) {
 #ifdef _WIN64
         const __m256i _Comparand   = _mm256_broadcastq_epi64(_mm_cvtsi64_si128(_Old_val));
@@ -9819,15 +9947,11 @@ __declspec(noalias) void __stdcall __std_replace_8(
         }
 
         _mm256_zeroupper(); // TRANSITION, DevCom-10331414
-    } else
-#endif // ^^^ !defined(_M_ARM64EC) ^^^
-    {
-        for (auto _Cur = reinterpret_cast<uint64_t*>(_First); _Cur != _Last; ++_Cur) {
-            if (*_Cur == _Old_val) {
-                *_Cur = _New_val;
-            }
-        }
+        return;
     }
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+
+    _Replacing::_Replace_fallback(_First, _Last, _Old_val, _New_val);
 }
 #endif // ^^^ !defined(_M_ARM64) ^^^
 
@@ -9996,9 +10120,8 @@ namespace {
             }
 
             static uint32_t _Mask(const _Vec_t _First, const _Vec_t _Second) noexcept {
-                // TRANSITION, DevCom-11055227
-                constexpr uint16_t _Weights_arr[8] = {1, 2, 4, 8, 16, 32, 64, 128};
-                const auto _Weights                = vld1q_u16(_Weights_arr);
+                static constexpr uint16_t _Weights_arr[8] = {1, 2, 4, 8, 16, 32, 64, 128};
+                const auto _Weights                       = vld1q_u16(_Weights_arr);
 
                 const auto _Cmp  = vceqq_u16(_First, _Second);
                 const auto _Bits = vandq_u16(_Cmp, _Weights);
@@ -10028,9 +10151,8 @@ namespace {
             }
 
             static uint32_t _Mask(const _Vec_t _First, const _Vec_t _Second) noexcept {
-                // TRANSITION, DevCom-11055227
-                constexpr uint32_t _Weights_arr[4] = {1, 2, 4, 8};
-                const auto _Weights                = vld1q_u32(_Weights_arr);
+                static constexpr uint32_t _Weights_arr[4] = {1, 2, 4, 8};
+                const auto _Weights                       = vld1q_u32(_Weights_arr);
 
                 const auto _Cmp  = vceqq_u32(_First, _Second);
                 const auto _Bits = vandq_u32(_Cmp, _Weights);
@@ -11266,7 +11388,6 @@ namespace {
             }
 
             static _Vec_t _Load_constant() noexcept {
-                // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
                 static constexpr uint32_t _Idx_arr[4] = {0x01010101, 0x01010101, 0x00000000, 0x00000000};
                 const auto _Idx                       = vld1q_u8(reinterpret_cast<const uint8_t*>(_Idx_arr));
                 return _Idx;
@@ -11297,7 +11418,6 @@ namespace {
             }
 
             static _Vec_t _Load_constant() noexcept {
-                // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
                 static constexpr uint64_t _Wx_arr[2] = {0x0010002000400080, 0x0001000200040008};
                 const auto _Wx                       = vld1q_u64(_Wx_arr);
                 return vreinterpretq_u16_u64(_Wx);
@@ -11543,7 +11663,6 @@ namespace {
             }
 
             static uint16_t _To_bits(const _Vec _Ex1) noexcept {
-                // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
                 static constexpr uint8_t _Idx_arr[16] = {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
                 const auto _Idx                       = vld1q_u8(_Idx_arr);
 
@@ -11587,7 +11706,6 @@ namespace {
             }
 
             static uint8_t _To_bits(const _Vec _Ex1) noexcept {
-                // We do not omit static here, despite DevCom-11055227, because codegen is worse - see DevCom-11056805.
                 static constexpr uint8_t _Idx_arr[16] = {
                     14, 12, 10, 8, 6, 4, 2, 0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
                 const auto _Idx = vld1q_u8(_Idx_arr);

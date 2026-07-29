@@ -41,8 +41,6 @@ inline void initialize_randomness(std::mt19937_64& gen) {
 }
 
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
-extern "C" long __isa_enabled;
-
 inline void disable_instructions(ISA_AVAILABILITY isa) {
     const unsigned long as_ulong = static_cast<unsigned long>(isa);
 
@@ -74,17 +72,35 @@ template <class TestFunc>
 void run_tests_with_different_isa_levels(TestFunc tests) {
     tests();
 
-#if (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE_PURE)
+#if !defined(_M_CEE_PURE)
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    // No STL_TEST_DOWNLEVEL_MACHINE logic here because MSVC-internal testing currently doesn't support SVE
+
+    constexpr int sve_index = 46; // PF_ARM_SVE_INSTRUCTIONS_AVAILABLE in <winnt.h>
+    constexpr auto sve_mask = 1ull << sve_index;
+
+    const auto original_processor_features_0_63 = __processor_features_0_63;
+
+    if ((__processor_features_0_63 & sve_mask) != 0) {
+        __processor_features_0_63 &= ~sve_mask;
+        tests();
+    }
+
+    __processor_features_0_63 = original_processor_features_0_63;
+#elif defined(_M_IX86) || defined(_M_X64)
     const auto original_isa = __isa_enabled;
 
+#if !defined(_M_ARM64EC) // not ARM64EC, which lacks AVX2
     disable_instructions(__ISA_AVAILABLE_AVX2);
     tests();
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
 
     disable_instructions(__ISA_AVAILABLE_SSE42);
     tests();
 
     __isa_enabled = original_isa;
-#endif // (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE_PURE)
+#endif // ^^^ defined(_M_IX86) || defined(_M_X64) ^^^
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 }
 
 template <class TestFunc>

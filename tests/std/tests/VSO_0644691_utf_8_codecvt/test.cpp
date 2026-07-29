@@ -32,7 +32,7 @@ const encoding_test_char utf_test_cases[] = {
     {"\xED\x9F\xBF", L"\uD7FF"}, // U+D7FF unencoded from the Hangul Jamo Extended-B block,
                                  // last character before UTF-16 illegal region
     {"\xED\xA0\x80", nullptr}, // U+D800 beginning of surrogate range
-    {nullptr, L"\xD800"}, //
+    {nullptr, L"\xD800"},
     {"\xED\xBF\xBF", nullptr}, // U+DFFF end of surrogate range
     {nullptr, L"\xDFFF"},
     {"\xEE\x80\x80", L"\uE000"}, // U+E000 unencoded from the private use area, first codepoint after surrogate range

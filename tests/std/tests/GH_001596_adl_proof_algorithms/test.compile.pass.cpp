@@ -41,7 +41,7 @@ struct tagged_less {
 template <class Tag>
 struct tagged_zero_equality {
     template <class T>
-    constexpr auto operator()(T&& t) const //
+    constexpr auto operator()(T&& t) const
         -> decltype(std::forward<T>(t) == std::remove_cv_t<std::remove_reference_t<T>>{}) {
         return std::forward<T>(t) == std::remove_cv_t<std::remove_reference_t<T>>{};
     }
