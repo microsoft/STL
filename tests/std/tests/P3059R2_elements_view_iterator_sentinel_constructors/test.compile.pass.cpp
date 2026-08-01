@@ -77,7 +77,7 @@ static_assert(constructible_from<ConstIterator, Iterator>);
 static_assert(constructible_from<ConstSentinel, Sentinel>);
 
 
- // Verify that normal iteration through elements_view compiles.
+// Verify that normal iteration through elements_view compiles.
 bool test_elements_view() {
     using element_type = tuple<int, string>;
 

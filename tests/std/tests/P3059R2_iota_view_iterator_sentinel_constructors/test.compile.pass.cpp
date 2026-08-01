@@ -88,7 +88,7 @@ static_assert(sentinel_for<NonCommonSentinel, NonCommonIterator>);
 static_assert(constructible_from<NonCommonView, NonCommonIterator, NonCommonSentinel>);
 
 
- // Verify that normal iteration through iota_view compiles.
+// Verify that normal iteration through iota_view compiles.
 bool test_iota_view() {
     const auto view = views::iota(1, 6);
 
