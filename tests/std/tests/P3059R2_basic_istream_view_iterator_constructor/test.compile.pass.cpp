@@ -14,6 +14,6 @@ using Iterator = ranges::iterator_t<View>;
 // basic_istream_view::iterator directly from the parent view.
 static_assert(!constructible_from<Iterator, View&>);
 
-// The iterator must remain copyable and movable through its public interface.
+// The iterator must remain non-copyable but movable through its public interface.
 static_assert(!copy_constructible<Iterator>);
 static_assert(move_constructible<Iterator>);
