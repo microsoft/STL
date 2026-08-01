@@ -138,6 +138,73 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
   <Type Name="std::variant&lt;*&gt;">
       <Intrinsic Name="index" Expression="(int)_Which"/>
+
+      <Intrinsic Name="type" Condition="index() ==  0" Optional="true" Expression="typeid(_Head)"/>
+      <Intrinsic Name="type" Condition="index() ==  1" Optional="true" Expression="typeid(_Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() ==  2" Optional="true" Expression="typeid(_Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() ==  3" Optional="true" Expression="typeid(_Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() ==  4" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() ==  5" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() ==  6" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() ==  7" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() ==  8" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() ==  9" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 10" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 11" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 12" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 13" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 14" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 15" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 16" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 17" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 18" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 19" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 20" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 21" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 22" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 23" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 24" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 25" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 26" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 27" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 28" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 29" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 30" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+      <Intrinsic Name="type" Condition="index() == 31" Optional="true" Expression="typeid(_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head)"/>
+
+      <Intrinsic Name="value" Condition="index() ==  0" Optional="true" Expression="_Head"/>
+      <Intrinsic Name="value" Condition="index() ==  1" Optional="true" Expression="_Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() ==  2" Optional="true" Expression="_Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() ==  3" Optional="true" Expression="_Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() ==  4" Optional="true" Expression="_Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() ==  5" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() ==  6" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() ==  7" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() ==  8" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() ==  9" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 10" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 11" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 12" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 13" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 14" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 15" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 16" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 17" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 18" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 19" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 20" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 21" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 22" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 23" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 24" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 25" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 26" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 27" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 28" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 29" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 30" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+      <Intrinsic Name="value" Condition="index() == 31" Optional="true" Expression="_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head"/>
+
       <DisplayString Condition="index() &lt; 0">[valueless_by_exception]</DisplayString>
       <DisplayString Condition="index() ==  0" Optional="true">{{ index=0, value={_Head} }}</DisplayString>
       <DisplayString Condition="index() ==  1" Optional="true">{{ index=1, value={_Tail._Head} }}</DisplayString>
@@ -173,6 +240,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <DisplayString Condition="index() == 31" Optional="true">{{ index=31, value={_Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Tail._Head} }}</DisplayString>
       <Expand>
           <Item Name="index">index()</Item>
+          <Synthetic Name="[type]" Condition="index() &gt;= 0">
+              <DisplayString>{type()}</DisplayString>
+          </Synthetic>
           <Item Name="[value]" Condition="index() ==  0" Optional="true">_Head</Item>
           <Item Name="[value]" Condition="index() ==  1" Optional="true">_Tail._Head</Item>
           <Item Name="[value]" Condition="index() ==  2" Optional="true">_Tail._Tail._Head</Item>
