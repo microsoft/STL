@@ -1208,6 +1208,22 @@ struct _Iterator_base0 {
     static constexpr bool _Unwrap_when_unverified = true;
 };
 
+// The iterator debugging library (IDL) below lets a container invalidate ("orphan") its iterators without either
+// side needing to know about the other directly, by routing everything through a shared proxy object. Invariants:
+//
+// * Every container owns a dynamically allocated _Container_proxy at all times, including in its
+//   default-constructed and moved-from states.
+// * A container and its proxy always point to each other (_Container_base12::_Myproxy and
+//   _Container_proxy::_Mycont, respectively), regardless of whether IDL is enabled; if a proxy exists, this holds.
+// * Every valid iterator holds a non-owning pointer to its parent container's proxy (_Iterator_base12::_Myproxy).
+//   An orphaned iterator has a null _Myproxy.
+// * The proxy's _Myfirstiter, together with each iterator's _Mynextiter, forms an intrusive singly linked list of
+//   iterators rooted at the proxy. Every valid iterator belonging to a container is reachable through this list;
+//   there are no valid "free-floating" iterators.
+// * Whenever the proxies and the intrusive list are manipulated, the debug lock (_Lockit(_LOCK_DEBUG)) is held.
+//   The only things we do outside of that lock are things like iterator compatibility checks that compare proxy
+//   pointers: those pointers don't change even if the containers are being swapped concurrently (only the
+//   proxies' data members change, not their addresses).
 struct _Container_base12;
 struct _Container_proxy { // store head of iterator chain and back pointer
     _CONSTEXPR20 _Container_proxy() noexcept = default;
