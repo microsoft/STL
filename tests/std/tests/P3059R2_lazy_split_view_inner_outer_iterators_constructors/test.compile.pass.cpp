@@ -6,6 +6,7 @@
 #include <ranges>
 #include <string_view>
 #include <utility>
+#include <array>
 
 using namespace std;
 
@@ -72,3 +73,40 @@ static_assert(!constructible_from<InputInner, InputOuter>);
 
 static_assert(move_constructible<InputOuter>);
 static_assert(move_constructible<InputInner>);
+
+
+
+
+constexpr bool test_lazy_split_view() {
+    array input{1, 2, 0, 3, 4};
+
+    auto view = input | views::lazy_split(0);
+
+    auto outer = view.begin();
+
+    const auto first_part = *outer;
+    auto first_inner      = first_part.begin();
+
+    if (*first_inner != 1) {
+        return false;
+    }
+
+    ++first_inner;
+    if (*first_inner != 2) {
+        return false;
+    }
+
+    ++outer;
+
+    const auto second_part = *outer;
+    auto second_inner      = second_part.begin();
+
+    if (*second_inner != 3) {
+        return false;
+    }
+
+    ++second_inner;
+    return *second_inner == 4;
+}
+
+static_assert(test_lazy_split_view());
