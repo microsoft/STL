@@ -692,6 +692,7 @@ namespace ranges {
     template <weakly_incrementable _Wi>
         requires copyable<_Wi>
     struct _Ioterator : _Ioterator_category_base<_Wi> {
+
         /* [[no_unique_address]] */ _Wi _Current{};
 
         using iterator_concept = conditional_t<_Advanceable<_Wi>, random_access_iterator_tag,
@@ -704,9 +705,15 @@ namespace ranges {
             requires default_initializable<_Wi>
         = default;
 
+    private:
         constexpr explicit _Ioterator(_Wi _Val) noexcept(is_nothrow_move_constructible_v<_Wi>) /* strengthened */
             : _Current(_STD move(_Val)) {}
 
+        template <weakly_incrementable _Wj, semiregular _Bj>
+            requires _Weakly_equality_comparable_with<_Wj, _Bj> && copyable<_Wj>
+        friend class iota_view;
+
+    public:
         _NODISCARD constexpr _Wi operator*() const noexcept(is_nothrow_copy_constructible_v<_Wi>) {
             return _Current;
         }
@@ -902,7 +909,17 @@ namespace ranges {
         requires _Weakly_equality_comparable_with<_Wi, _Bo> && copyable<_Wi>
     struct _Iotinel {
     private:
+        
+        template <weakly_incrementable _Wj, semiregular _Bj>
+            requires _Weakly_equality_comparable_with<_Wj, _Bj> && copyable<_Wj>
+        friend class iota_view;
+
         using _It = _Ioterator<_Wi>;
+
+        /* [[no_unique_address]] */ _Bo _Last{};
+
+        constexpr explicit _Iotinel(_Bo _Last_) noexcept(is_nothrow_move_constructible_v<_Bo>)
+            : _Last(_STD move(_Last_)) {}
 
         _NODISCARD constexpr bool _Equal(const _It& _That) const noexcept(noexcept(_That._Current == _Last)) {
             return _That._Current == _Last;
@@ -915,7 +932,7 @@ namespace ranges {
         }
 
     public:
-        /* [[no_unique_address]] */ _Bo _Last{};
+        _Iotinel() = default;
 
         _NODISCARD friend constexpr bool operator==(const _It& _Left, const _Iotinel& _Right)
             noexcept(noexcept(_Right._Equal(_Left))) /* strengthened */ {
@@ -4769,6 +4786,10 @@ namespace ranges {
 
             iterator_t<_Base> _Current{};
 
+            constexpr explicit _Iterator(iterator_t<_Base> _Current_)
+                noexcept(is_nothrow_move_constructible_v<iterator_t<_Base>>) // strengthened
+                : _Current{_STD move(_Current_)} {}
+
         public:
             using iterator_concept = conditional_t<random_access_range<_Base>, random_access_iterator_tag,
                 conditional_t<bidirectional_range<_Base>, bidirectional_iterator_tag,
@@ -4779,10 +4800,6 @@ namespace ranges {
             _Iterator()
                 requires default_initializable<iterator_t<_Base>>
             = default;
-
-            constexpr explicit _Iterator(iterator_t<_Base> _Current_)
-                noexcept(is_nothrow_move_constructible_v<iterator_t<_Base>>) // strengthened
-                : _Current{_STD move(_Current_)} {}
 
             constexpr _Iterator(_Iterator<!_Const> _It)
                 noexcept(is_nothrow_constructible_v<iterator_t<_Base>, iterator_t<_Vw>>) // strengthened
@@ -5004,11 +5021,13 @@ namespace ranges {
                 return _It._Current;
             }
 
-        public:
-            _Sentinel() = default;
             constexpr explicit _Sentinel(sentinel_t<_Base> _Last_)
                 noexcept(is_nothrow_move_constructible_v<sentinel_t<_Base>>) // strengthened
                 : _Last(_STD move(_Last_)) {}
+
+        public:
+            _Sentinel() = default;
+
 
             constexpr _Sentinel(_Sentinel<!_Const> _Se)
                 noexcept(is_nothrow_constructible_v<sentinel_t<_Base>, sentinel_t<_Vw>>) // strengthened
