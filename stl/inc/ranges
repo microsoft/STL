@@ -2961,12 +2961,14 @@ namespace ranges {
                 return _It._Get_outer() == _Last;
             }
 
-        public:
-            _Sentinel() = default;
             constexpr explicit _Sentinel(_Parent_t& _Parent)
                 noexcept(noexcept(_RANGES end(_Parent._Range))
                          && is_nothrow_move_constructible_v<sentinel_t<_Base>>) // strengthened
                 : _Last(_RANGES end(_Parent._Range)) {}
+
+        public:
+            _Sentinel() = default;
+
 
             constexpr _Sentinel(_Sentinel<!_Const> _Se)
                 noexcept(is_nothrow_constructible_v<sentinel_t<_Base>, sentinel_t<_Vw>>) // strengthened
