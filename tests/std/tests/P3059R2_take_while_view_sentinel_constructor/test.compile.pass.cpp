@@ -54,7 +54,7 @@ static_assert(move_constructible<ConstSentinel>);
 static_assert(constructible_from<ConstSentinel, Sentinel>);
 
 
-// P3059R2: take_while_view::sentinel.
+ // Verify that normal iteration through take_while_view compiles.
 bool test_take_while_view() {
     int values[] = {2, 4, 6, 7, 8, 10};
 

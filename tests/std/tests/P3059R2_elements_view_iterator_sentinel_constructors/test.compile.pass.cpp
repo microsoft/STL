@@ -77,7 +77,7 @@ static_assert(constructible_from<ConstIterator, Iterator>);
 static_assert(constructible_from<ConstSentinel, Sentinel>);
 
 
-// Use a non-common underlying range so elements_view has a distinct sentinel.
+ // Verify that normal iteration through elements_view compiles.
 bool test_elements_view() {
     using element_type = tuple<int, string>;
 

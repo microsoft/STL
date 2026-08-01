@@ -132,7 +132,7 @@ static_assert(test_common_filter_view());
 static_assert(test_non_common_filter_view());
 
 
-// Use a non-common underlying range so filter_view has a distinct sentinel.
+ // Verify that normal iteration through filter_view compiles.
 bool test_filter_view() {
     vector values{1, 2, 3, 4, 5, 6};
 

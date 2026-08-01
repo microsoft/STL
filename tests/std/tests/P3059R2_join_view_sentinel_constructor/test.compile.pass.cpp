@@ -50,7 +50,7 @@ static_assert(move_constructible<ConstSentinel>);
 static_assert(constructible_from<ConstSentinel, Sentinel>);
 
 
-// The outer range is non-common, causing join_view to use its sentinel type.
+ // Verify that normal iteration through join_view compiles.
 bool test_join_view() {
     array<array<int, 2>, 3> values{{
         {1, 2},

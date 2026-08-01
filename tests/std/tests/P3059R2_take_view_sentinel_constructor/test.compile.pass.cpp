@@ -49,7 +49,7 @@ static_assert(move_constructible<ConstSentinel>);
 // const sentinel specialization must remain available.
 static_assert(constructible_from<ConstSentinel, Sentinel>);
 
-// A non-common underlying range causes take_view to use its sentinel type.
+ // Verify that normal iteration through take_view compiles.
 bool test_take_view() {
     int values[] = {1, 2, 3, 4, 5};
 

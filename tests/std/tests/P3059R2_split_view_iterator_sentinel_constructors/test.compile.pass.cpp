@@ -50,7 +50,7 @@ static_assert(forward_iterator<Iterator>);
 static_assert(sentinel_for<Sentinel, Iterator>);
 
 
-// P3059R2: split_view::iterator and split_view::sentinel.
+ // Verify that normal iteration through split_view compiles.
 bool test_split_view() {
     const string_view input = "alpha,beta,gamma";
     auto view               = views::split(input, ',');
