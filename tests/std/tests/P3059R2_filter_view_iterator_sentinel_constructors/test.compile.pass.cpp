@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <concepts>
-#include <cassert>
-#include <ranges>
-#include <iterator>
-#include <vector>
 #include <array>
+#include <cassert>
+#include <concepts>
+#include <iterator>
+#include <ranges>
 #include <utility>
+#include <vector>
 
 using namespace std;
 
@@ -147,7 +147,6 @@ bool test_filter_view() {
     return result == vector{2, 4, 6};
 }
 
-int main()
-{
+int main() {
     assert(test_common_filter_view());
 }

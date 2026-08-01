@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <concepts>
 #include <cassert>
-#include <ranges>
+#include <concepts>
 #include <iterator>
+#include <ranges>
 #include <vector>
 
 using namespace std;
@@ -69,7 +69,6 @@ bool test_take_view() {
     return result == vector{1, 2, 3};
 }
 
-int main()
-{
+int main() {
     assert(test_take_view());
 }

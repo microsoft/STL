@@ -909,7 +909,6 @@ namespace ranges {
         requires _Weakly_equality_comparable_with<_Wi, _Bo> && copyable<_Wi>
     struct _Iotinel {
     private:
-        
         template <weakly_incrementable _Wj, semiregular _Bj>
             requires _Weakly_equality_comparable_with<_Wj, _Bj> && copyable<_Wj>
         friend class iota_view;
@@ -1764,9 +1763,8 @@ namespace ranges {
 
         class _Sentinel {
         private:
-            /* [[no_unique_address]] */ sentinel_t<_Vw> _Last{};
-            
             friend filter_view;
+            /* [[no_unique_address]] */ sentinel_t<_Vw> _Last{};
 
             constexpr explicit _Sentinel(filter_view& _Parent)
                 noexcept(noexcept(_RANGES end(_Parent._Range))

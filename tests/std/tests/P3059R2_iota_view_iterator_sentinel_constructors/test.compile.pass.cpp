@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <cassert>
 #include <concepts>
 #include <ranges>
-#include <cassert>
 #include <vector>
 
 using namespace std;
@@ -105,7 +105,6 @@ bool test_iota_view() {
     return result == vector{1, 2, 3, 4, 5};
 }
 
-int main()
-{
+int main() {
     assert(test_iota_view());
 }

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <concepts>
 #include <cassert>
+#include <concepts>
 #include <ranges>
 #include <string>
 #include <string_view>
@@ -56,8 +56,7 @@ bool test_split_view() {
     auto view               = views::split(input, ',');
 
     vector<string> result;
-    for (const auto part : view)
-    {
+    for (const auto part : view) {
         result.emplace_back(part.begin(), part.end());
     }
 

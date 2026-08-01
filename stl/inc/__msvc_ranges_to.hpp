@@ -920,8 +920,6 @@ namespace ranges {
         private:
             friend transform_view;
 
-
-
             using _Parent_t = _Maybe_const<_Const, transform_view>;
             using _Base     = _Maybe_const<_Const, _Vw>;
             template <bool _OtherConst>

@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <concepts>
+#include <array>
 #include <cassert>
+#include <concepts>
+#include <istream>
 #include <ranges>
 #include <sstream>
-#include <istream>
 #include <string>
 #include <string_view>
 #include <utility>
-#include <array>
 #include <vector>
 
 using namespace std;
@@ -77,9 +77,6 @@ static_assert(!constructible_from<InputInner, InputOuter>);
 
 static_assert(move_constructible<InputOuter>);
 static_assert(move_constructible<InputInner>);
-
-
-
 
 constexpr bool test_lazy_split_view() {
     array input{1, 2, 0, 3, 4};
@@ -161,8 +158,7 @@ bool test_lazy_split_view_input_range() {
     return result == vector<vector<int>>{{1}, {2}, {3}};
 }
 
-int main()
-{
+int main() {
     assert(test_lazy_split_view_forward_range());
     assert(test_lazy_split_view_input_range());
 }

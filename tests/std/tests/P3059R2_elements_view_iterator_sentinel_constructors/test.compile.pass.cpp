@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <concepts>
 #include <cassert>
-#include <ranges>
+#include <concepts>
 #include <iterator>
+#include <ranges>
 #include <string>
 #include <tuple>
-#include <vector>
 #include <utility>
+#include <vector>
 
 using namespace std;
 
@@ -103,7 +103,6 @@ bool test_elements_view() {
     return result == vector<string>{"one", "two", "three"};
 }
 
-int main()
-{
+int main() {
     assert(test_elements_view());
 }

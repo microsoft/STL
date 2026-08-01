@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-
+#include <cassert>
 #include <concepts>
 #include <ranges>
-#include <vector>
-#include <cassert>
 #include <sstream>
+#include <vector>
 
 using namespace std;
 
@@ -21,7 +20,7 @@ static_assert(!copy_constructible<Iterator>);
 static_assert(move_constructible<Iterator>);
 
 
-//Verify normal stream extraction through the iterator returned by begin().
+// Verify normal stream extraction through the iterator returned by begin().
 bool test_basic_istream_view() {
     istringstream input{"10 20 30 40"};
     auto view = ranges::istream_view<int>(input);
@@ -34,8 +33,6 @@ bool test_basic_istream_view() {
     return result == vector{10, 20, 30, 40};
 }
 
-int main()
-{
+int main() {
     assert(test_basic_istream_view());
 }
-
