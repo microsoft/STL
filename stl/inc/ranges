@@ -1613,6 +1613,16 @@ namespace ranges {
                 _STL_VERIFY(_Current != _RANGES end(_Parent->_Range), "cannot dereference end filter_view iterator");
             }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
+            constexpr _Iterator(filter_view& _Parent_, iterator_t<_Vw> _Current_)
+                noexcept(is_nothrow_move_constructible_v<iterator_t<_Vw>>) // strengthened
+                : _Current(_STD move(_Current_)), _Parent{_STD addressof(_Parent_)} {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STD _Adl_verify_range(_Current, _RANGES end(_Parent_._Range));
+                if constexpr (forward_range<_Vw>) {
+                    _STD _Adl_verify_range(_RANGES begin(_Parent_._Range), _Current);
+                }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+            }
 
         public:
             using iterator_concept = conditional_t<bidirectional_range<_Vw>, bidirectional_iterator_tag,
@@ -1624,16 +1634,6 @@ namespace ranges {
                 requires default_initializable<iterator_t<_Vw>>
             = default;
 
-            constexpr _Iterator(filter_view& _Parent_, iterator_t<_Vw> _Current_)
-                noexcept(is_nothrow_move_constructible_v<iterator_t<_Vw>>) // strengthened
-                : _Current(_STD move(_Current_)), _Parent{_STD addressof(_Parent_)} {
-#if _ITERATOR_DEBUG_LEVEL != 0
-                _STD _Adl_verify_range(_Current, _RANGES end(_Parent_._Range));
-                if constexpr (forward_range<_Vw>) {
-                    _STD _Adl_verify_range(_RANGES begin(_Parent_._Range), _Current);
-                }
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-            }
 
             _NODISCARD constexpr const iterator_t<_Vw>& base() const& noexcept {
                 return _Current;
