@@ -1613,6 +1613,9 @@ namespace ranges {
                 _STL_VERIFY(_Current != _RANGES end(_Parent->_Range), "cannot dereference end filter_view iterator");
             }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
+
+            friend filter_view; // to so that filter_view had access to the private constructor
+
             constexpr _Iterator(filter_view& _Parent_, iterator_t<_Vw> _Current_)
                 noexcept(is_nothrow_move_constructible_v<iterator_t<_Vw>>) // strengthened
                 : _Current(_STD move(_Current_)), _Parent{_STD addressof(_Parent_)} {
@@ -1743,6 +1746,9 @@ namespace ranges {
         class _Sentinel {
         private:
             /* [[no_unique_address]] */ sentinel_t<_Vw> _Last{};
+            
+            friend filter_view; // for filter_view to have the access to this constructor
+
             constexpr explicit _Sentinel(filter_view& _Parent)
                 noexcept(noexcept(_RANGES end(_Parent._Range))
                          && is_nothrow_move_constructible_v<sentinel_t<_Vw>>) // strengthened
