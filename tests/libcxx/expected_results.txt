@@ -1338,10 +1338,10 @@ std/ranges/range.adaptors/range.split/sentinel/ctor.parent.pass.cpp:1 FAIL
 std/ranges/range.adaptors/range.split/sentinel/ctor.parent.pass.cpp:2 FAIL
 # take.while.view
 std/ranges/range.adaptors/range.take.while/sentinel/ctor.convert.pass.cpp:0 FAIL
-std/ranges/range.adaptors/range.take.while/sentinel/ctor.base.pass.cpp:0 FAIL	
-std/ranges/range.adaptors/range.take.while/sentinel/ctor.base.pass.cpp:1 FAIL	
-std/ranges/range.adaptors/range.take.while/sentinel/ctor.base.pass.cpp:2 FAIL	
-std/ranges/range.adaptors/range.take.while/sentinel/ctor.convert.pass.cpp:2 FAIL	
+std/ranges/range.adaptors/range.take.while/sentinel/ctor.base.pass.cpp:0 FAIL
+std/ranges/range.adaptors/range.take.while/sentinel/ctor.base.pass.cpp:1 FAIL
+std/ranges/range.adaptors/range.take.while/sentinel/ctor.base.pass.cpp:2 FAIL
+std/ranges/range.adaptors/range.take.while/sentinel/ctor.convert.pass.cpp:2 FAIL
 std/ranges/range.adaptors/range.take.while/sentinel/ctor.convert.pass.cpp:1 FAIL
 # take.view
 std/ranges/range.adaptors/range.take/range.take.sentinel/ctor.pass.cpp:0 FAIL
