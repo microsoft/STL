@@ -1766,7 +1766,7 @@ namespace ranges {
         private:
             /* [[no_unique_address]] */ sentinel_t<_Vw> _Last{};
             
-            friend filter_view; // for filter_view to have the access to this constructor
+            friend filter_view;
 
             constexpr explicit _Sentinel(filter_view& _Parent)
                 noexcept(noexcept(_RANGES end(_Parent._Range))
