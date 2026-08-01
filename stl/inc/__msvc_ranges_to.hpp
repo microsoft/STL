@@ -672,6 +672,19 @@ namespace ranges {
             using _Parent_t = _Maybe_const<_Const, transform_view>;
             using _Base     = _Maybe_const<_Const, _Vw>;
 
+
+            constexpr _Iterator(_Parent_t& _Parent_, iterator_t<_Base> _Current_)
+                noexcept(is_nothrow_move_constructible_v<iterator_t<_Base>>) // strengthened
+                : _Current{_STD move(_Current_)}, _Parent{_STD addressof(_Parent_)} {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STD _Adl_verify_range(_Current, _RANGES end(_Parent_._Range));
+                if constexpr (forward_range<_Base>) {
+                    _STD _Adl_verify_range(_RANGES begin(_Parent_._Range), _Current);
+                }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+            }
+
+
             iterator_t<_Base> _Current{};
             _Parent_t* _Parent{};
 
@@ -698,17 +711,6 @@ namespace ranges {
             _Iterator()
                 requires default_initializable<iterator_t<_Base>>
             = default;
-
-            constexpr _Iterator(_Parent_t& _Parent_, iterator_t<_Base> _Current_)
-                noexcept(is_nothrow_move_constructible_v<iterator_t<_Base>>) // strengthened
-                : _Current{_STD move(_Current_)}, _Parent{_STD addressof(_Parent_)} {
-#if _ITERATOR_DEBUG_LEVEL != 0
-                _STD _Adl_verify_range(_Current, _RANGES end(_Parent_._Range));
-                if constexpr (forward_range<_Base>) {
-                    _STD _Adl_verify_range(_RANGES begin(_Parent_._Range), _Current);
-                }
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-            }
 
             constexpr _Iterator(_Iterator<!_Const> _It)
                 noexcept(is_nothrow_constructible_v<iterator_t<_Base>, iterator_t<_Vw>>) // strengthened
@@ -918,10 +920,18 @@ namespace ranges {
         private:
             friend transform_view;
 
+
+
             using _Parent_t = _Maybe_const<_Const, transform_view>;
             using _Base     = _Maybe_const<_Const, _Vw>;
             template <bool _OtherConst>
             using _Maybe_const_iter = iterator_t<_Maybe_const<_OtherConst, _Vw>>;
+
+
+            constexpr explicit _Sentinel(sentinel_t<_Base> _Last_)
+                noexcept(is_nothrow_move_constructible_v<sentinel_t<_Base>>) // strengthened
+                : _Last(_STD move(_Last_)) {}
+
 
             sentinel_t<_Base> _Last{};
 
@@ -937,9 +947,6 @@ namespace ranges {
 
         public:
             _Sentinel() = default;
-            constexpr explicit _Sentinel(sentinel_t<_Base> _Last_)
-                noexcept(is_nothrow_move_constructible_v<sentinel_t<_Base>>) // strengthened
-                : _Last(_STD move(_Last_)) {}
 
             constexpr _Sentinel(_Sentinel<!_Const> _Se)
                 noexcept(is_nothrow_constructible_v<sentinel_t<_Base>, sentinel_t<_Vw>>) // strengthened
