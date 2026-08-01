@@ -672,7 +672,6 @@ namespace ranges {
             using _Parent_t = _Maybe_const<_Const, transform_view>;
             using _Base     = _Maybe_const<_Const, _Vw>;
 
-
             constexpr _Iterator(_Parent_t& _Parent_, iterator_t<_Base> _Current_)
                 noexcept(is_nothrow_move_constructible_v<iterator_t<_Base>>) // strengthened
                 : _Current{_STD move(_Current_)}, _Parent{_STD addressof(_Parent_)} {
@@ -683,7 +682,6 @@ namespace ranges {
                 }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
             }
-
 
             iterator_t<_Base> _Current{};
             _Parent_t* _Parent{};
@@ -925,11 +923,9 @@ namespace ranges {
             template <bool _OtherConst>
             using _Maybe_const_iter = iterator_t<_Maybe_const<_OtherConst, _Vw>>;
 
-
             constexpr explicit _Sentinel(sentinel_t<_Base> _Last_)
                 noexcept(is_nothrow_move_constructible_v<sentinel_t<_Base>>) // strengthened
                 : _Last(_STD move(_Last_)) {}
-
 
             sentinel_t<_Base> _Last{};
 
