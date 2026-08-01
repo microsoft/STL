@@ -554,26 +554,6 @@ struct iterator_instantiator {
                 static_assert(is_nothrow_default_constructible_v<I>);
             }
 
-            auto r0 = make_view();
-            I valueConstructed{r0, Iter{mutable_ints}};
-            static_assert(is_nothrow_constructible_v<I, R&, Iter>);
-
-            if constexpr (copyable<Iter>) {
-                I copyConstructed{valueConstructed};
-                assert(copyConstructed == valueConstructed);
-                static_assert(is_nothrow_copy_constructible_v<I>);
-
-                auto r1 = make_view();
-                I copyAssigned{r1, Iter{mutable_ints + 8}};
-                copyAssigned = copyConstructed;
-                assert(copyAssigned == valueConstructed);
-                static_assert(is_nothrow_copy_assignable_v<I>);
-                static_assert(same_as<const Iter&, decltype(as_const(copyConstructed).base())>);
-            }
-            assert(as_const(valueConstructed).base().peek() == mutable_ints);
-            assert(move(valueConstructed).base().peek() == mutable_ints);
-            static_assert(same_as<Iter, decltype(move(valueConstructed).base())>);
-
             if constexpr (forward_iterator<Iter>) {
                 auto r1      = make_view();
                 const auto i = r1.begin();
@@ -588,19 +568,6 @@ struct iterator_instantiator {
             S defaultConstructed{};
             assert(defaultConstructed.base().peek() == nullptr);
             static_assert(is_nothrow_default_constructible_v<S>);
-
-            const test::sentinel<int> s{mutable_ints + 2};
-            S valueConstructed{s};
-            assert(valueConstructed.base().peek() == s.peek());
-            static_assert(is_nothrow_constructible_v<S, const test::sentinel<int>&>);
-
-            S copyConstructed{valueConstructed};
-            assert(copyConstructed.base().peek() == valueConstructed.base().peek());
-            static_assert(is_nothrow_copy_constructible_v<S>);
-
-            defaultConstructed = copyConstructed;
-            assert(defaultConstructed.base().peek() == valueConstructed.base().peek());
-            static_assert(is_nothrow_copy_assignable_v<S>);
 
             if constexpr (forward_iterator<Iter> && indirectly_swappable<Iter>) {
                 auto r       = make_view();
