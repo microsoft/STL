@@ -905,54 +905,6 @@ namespace ranges {
         }
     };
 
-    template <weakly_incrementable _Wi, semiregular _Bo>
-        requires _Weakly_equality_comparable_with<_Wi, _Bo> && copyable<_Wi>
-    struct _Iotinel {
-    private:
-        template <weakly_incrementable _Wj, semiregular _Bj>
-            requires _Weakly_equality_comparable_with<_Wj, _Bj> && copyable<_Wj>
-        friend class iota_view;
-
-        using _It = _Ioterator<_Wi>;
-
-        /* [[no_unique_address]] */ _Bo _Last{};
-
-        constexpr explicit _Iotinel(_Bo _Last_) noexcept(is_nothrow_move_constructible_v<_Bo>)
-            : _Last(_STD move(_Last_)) {}
-
-        _NODISCARD constexpr bool _Equal(const _It& _That) const noexcept(noexcept(_That._Current == _Last)) {
-            return _That._Current == _Last;
-        }
-
-        _NODISCARD constexpr iter_difference_t<_Wi> _Delta(const _It& _That) const
-            noexcept(noexcept(_Last - _That._Current)) {
-            _STL_INTERNAL_STATIC_ASSERT(sized_sentinel_for<_Bo, _Wi>);
-            return _Last - _That._Current;
-        }
-
-    public:
-        _Iotinel() = default;
-
-        _NODISCARD friend constexpr bool operator==(const _It& _Left, const _Iotinel& _Right)
-            noexcept(noexcept(_Right._Equal(_Left))) /* strengthened */ {
-            return _Right._Equal(_Left);
-        }
-
-        _NODISCARD friend constexpr iter_difference_t<_Wi> operator-(const _It& _Left, const _Iotinel& _Right)
-            noexcept(noexcept(_Right._Delta(_Left))) /* strengthened */
-            requires sized_sentinel_for<_Bo, _Wi>
-        {
-            return -_Right._Delta(_Left);
-        }
-
-        _NODISCARD friend constexpr iter_difference_t<_Wi> operator-(const _Iotinel& _Left, const _It& _Right)
-            noexcept(noexcept(_Left._Delta(_Right))) /* strengthened */
-            requires sized_sentinel_for<_Bo, _Wi>
-        {
-            return _Left._Delta(_Right);
-        }
-    };
-
     _EXPORT_STD template <weakly_incrementable _Wi, semiregular _Bo = unreachable_sentinel_t>
         requires _Weakly_equality_comparable_with<_Wi, _Bo> && copyable<_Wi>
     class iota_view : public view_interface<iota_view<_Wi, _Bo>> {
