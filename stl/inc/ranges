@@ -4075,6 +4075,10 @@ namespace ranges {
             subrange<iterator_t<_Vw>> _Next = {};
             bool _Trailing_empty            = false;
 
+            constexpr _Iterator(split_view& _Parent_, iterator_t<_Vw> _Current_, subrange<iterator_t<_Vw>> _Next_)
+                noexcept(is_nothrow_move_constructible_v<iterator_t<_Vw>>) // strengthened
+                : _Parent{_STD addressof(_Parent_)}, _Current{_STD move(_Current_)}, _Next{_STD move(_Next_)} {}
+
         public:
             using iterator_concept  = forward_iterator_tag;
             using iterator_category = input_iterator_tag;
@@ -4082,10 +4086,6 @@ namespace ranges {
             using difference_type   = range_difference_t<_Vw>;
 
             _Iterator() = default;
-
-            constexpr _Iterator(split_view& _Parent_, iterator_t<_Vw> _Current_, subrange<iterator_t<_Vw>> _Next_)
-                noexcept(is_nothrow_move_constructible_v<iterator_t<_Vw>>) // strengthened
-                : _Parent{_STD addressof(_Parent_)}, _Current{_STD move(_Current_)}, _Next{_STD move(_Next_)} {}
 
             _NODISCARD constexpr iterator_t<_Vw> base() const
                 noexcept(is_nothrow_copy_constructible_v<iterator_t<_Vw>>) /* strengthened */ {
@@ -4143,12 +4143,15 @@ namespace ranges {
                 return !_It._Trailing_empty && _It._Current == _Last;
             }
 
-        public:
-            _Sentinel() = default;
+            friend split_view;
             constexpr explicit _Sentinel(split_view& _Parent)
                 noexcept(noexcept(_RANGES end(_Parent._Range))
                          && is_nothrow_move_constructible_v<sentinel_t<_Vw>>) // strengthened
                 : _Last(_RANGES end(_Parent._Range)) {}
+
+
+        public:
+            _Sentinel() = default;
 
             _NODISCARD friend constexpr bool operator==(const _Iterator& _It, const _Sentinel& _Se)
                 noexcept(noexcept(_Se._Equal(_It))) /* strengthened */ {
