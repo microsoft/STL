@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <concepts>
+#include <cassert>
 #include <ranges>
+#include <iterator>
+#include <vector>
 
 using namespace std;
 
@@ -45,3 +48,28 @@ static_assert(move_constructible<ConstSentinel>);
 // The public conversion from the non-const sentinel specialization to the
 // const sentinel specialization must remain available.
 static_assert(constructible_from<ConstSentinel, Sentinel>);
+
+// A non-common underlying range causes take_view to use its sentinel type.
+bool test_take_view() {
+    int values[] = {1, 2, 3, 4, 5};
+
+    auto base = ranges::subrange{
+        counted_iterator{values, 5},
+        default_sentinel,
+    };
+
+    auto view = base | views::take(3);
+
+    vector<int> result;
+
+    for (auto first = view.begin(), last = view.end(); first != last; ++first) {
+        result.push_back(*first);
+    }
+
+    return result == vector{1, 2, 3};
+}
+
+int main()
+{
+    assert(test_take_view());
+}

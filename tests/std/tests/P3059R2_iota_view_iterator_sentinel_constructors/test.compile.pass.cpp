@@ -3,6 +3,8 @@
 
 #include <concepts>
 #include <ranges>
+#include <cassert>
+#include <vector>
 
 using namespace std;
 
@@ -84,3 +86,26 @@ static_assert(sentinel_for<NonCommonSentinel, NonCommonIterator>);
 // The public iota_view constructor taking its iterator and sentinel must
 // remain available.
 static_assert(constructible_from<NonCommonView, NonCommonIterator, NonCommonSentinel>);
+
+
+// Verify that users can still obtain and use the iterator and sentinel through
+// begin() and end().
+bool test_iota_view() {
+    const auto view = views::iota(1, 6);
+
+    auto first = view.begin();
+    auto last  = view.end();
+
+    vector<int> result;
+
+    for (; first != last; ++first) {
+        result.push_back(*first);
+    }
+
+    return result == vector{1, 2, 3, 4, 5};
+}
+
+int main()
+{
+    assert(test_iota_view());
+}

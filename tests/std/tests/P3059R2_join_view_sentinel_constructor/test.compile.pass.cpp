@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <array>
 #include <concepts>
+#include <cassert>
 #include <ranges>
+#include <array>
+#include <iterator>
+#include <vector>
 
 using namespace std;
 
@@ -45,3 +48,31 @@ static_assert(move_constructible<ConstSentinel>);
 // The public conversion from sentinel<false> to sentinel<true> must remain
 // available.
 static_assert(constructible_from<ConstSentinel, Sentinel>);
+
+
+// The outer range is non-common, causing join_view to use its sentinel type.
+bool test_join_view() {
+    array<array<int, 2>, 3> values{{
+        {1, 2},
+        {3, 4},
+        {5, 6},
+    }};
+
+    auto outer = values | views::take(2);
+    auto view  = outer | views::join;
+
+    vector<int> result;
+
+    const auto last = view.end();
+
+    for (auto first = view.begin(); first != last; ++first) {
+        result.push_back(*first);
+    }
+
+    return result == vector{1, 2, 3, 4};
+}
+
+int main()
+{
+    assert(test_join_view());
+}

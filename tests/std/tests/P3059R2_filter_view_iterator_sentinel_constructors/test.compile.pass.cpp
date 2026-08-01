@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <array>
 #include <concepts>
+#include <cassert>
 #include <ranges>
+#include <iterator>
+#include <vector>
+#include <array>
 #include <utility>
 
 using namespace std;
@@ -127,3 +130,24 @@ constexpr bool test_non_common_filter_view() {
 
 static_assert(test_common_filter_view());
 static_assert(test_non_common_filter_view());
+
+
+// Use a non-common underlying range so filter_view has a distinct sentinel.
+bool test_filter_view() {
+    vector values{1, 2, 3, 4, 5, 6};
+
+    auto view = values | views::filter([](const int value) { return value % 2 == 0; });
+
+    vector<int> result;
+    auto last = view.end();
+    for (auto first = view.begin(); first != last; ++first) {
+        result.push_back(*first);
+    }
+
+    return result == vector{2, 4, 6};
+}
+
+int main()
+{
+    assert(test_common_filter_view());
+}

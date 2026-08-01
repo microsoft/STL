@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <concepts>
+#include <cassert>
 #include <ranges>
+#include <iterator>
+#include <vector>
 
 using namespace std;
 
@@ -49,3 +52,29 @@ static_assert(move_constructible<ConstSentinel>);
 // The public converting constructor from sentinel<false> to sentinel<true>
 // must remain available.
 static_assert(constructible_from<ConstSentinel, Sentinel>);
+
+
+// P3059R2: take_while_view::sentinel.
+bool test_take_while_view() {
+    int values[] = {2, 4, 6, 7, 8, 10};
+
+    auto base = ranges::subrange{
+        counted_iterator{values, 6},
+        default_sentinel,
+    };
+
+    auto view = base | views::take_while([](const int value) { return value % 2 == 0; });
+
+    vector<int> result;
+    auto last = view.end();
+    for (auto first = view.begin(); first != last; ++first) {
+        result.push_back(*first);
+    }
+
+    return result == vector{2, 4, 6};
+}
+
+int main()
+{
+    assert(test_take_while_view());
+}

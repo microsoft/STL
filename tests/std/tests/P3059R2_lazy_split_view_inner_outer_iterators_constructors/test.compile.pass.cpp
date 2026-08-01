@@ -2,11 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <concepts>
-#include <istream>
+#include <cassert>
 #include <ranges>
+#include <sstream>
+#include <istream>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <array>
+#include <vector>
 
 using namespace std;
 
@@ -110,3 +114,55 @@ constexpr bool test_lazy_split_view() {
 }
 
 static_assert(test_lazy_split_view());
+
+// This exercises the forward-range outer-iterator constructor and the
+// inner-iterator created from the outer iterator.
+bool test_lazy_split_view_forward_range() {
+    const string input = "one,two,three";
+    auto view          = input | views::lazy_split(',');
+
+    vector<string> result;
+    auto last = view.end();
+    for (auto outer = view.begin(); outer != last; ++outer) {
+        string part;
+
+        for (const char character : *outer) {
+            part.push_back(character);
+        }
+
+        result.push_back(move(part));
+    }
+
+    return result == vector<string>{"one", "two", "three"};
+}
+
+
+// This exercises the constructor used when the underlying range is an input
+// range rather than a forward range.
+bool test_lazy_split_view_input_range() {
+    istringstream input{"1 0 2 0 3"};
+
+    auto source  = ranges::istream_view<int>(input);
+    auto pattern = views::single(0);
+    auto view    = views::lazy_split(source, pattern);
+
+    vector<vector<int>> result;
+    auto last = view.end();
+    for (auto outer = view.begin(); outer != last; ++outer) {
+        vector<int> part;
+
+        for (const int value : *outer) {
+            part.push_back(value);
+        }
+
+        result.push_back(move(part));
+    }
+
+    return result == vector<vector<int>>{{1}, {2}, {3}};
+}
+
+int main()
+{
+    assert(test_lazy_split_view_forward_range());
+    assert(test_lazy_split_view_input_range());
+}

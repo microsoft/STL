@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <concepts>
+#include <cassert>
 #include <ranges>
+#include <string>
+#include <string_view>
+#include <vector>
 
 using namespace std;
 
@@ -44,3 +48,22 @@ static_assert(move_constructible<Sentinel>);
 // iterator interface.
 static_assert(forward_iterator<Iterator>);
 static_assert(sentinel_for<Sentinel, Iterator>);
+
+
+// P3059R2: split_view::iterator and split_view::sentinel.
+bool test_split_view() {
+    const string_view input = "alpha,beta,gamma";
+    auto view               = views::split(input, ',');
+
+    vector<string> result;
+    for (const auto part : view)
+    {
+        result.emplace_back(part.begin(), part.end());
+    }
+
+    return result == vector<string>{"alpha", "beta", "gamma"};
+}
+
+int main() {
+    assert(test_split_view());
+}

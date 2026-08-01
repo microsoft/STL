@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <concepts>
+#include <cassert>
 #include <ranges>
+#include <iterator>
+#include <vector>
 
 using namespace std;
 
@@ -54,3 +57,29 @@ static_assert(!constructible_from<ConstSentinel, ConstBaseSentinel>);
 // iterator/sentinel specializations to their const counterparts.
 static_assert(constructible_from<ConstIterator, Iterator>);
 static_assert(constructible_from<ConstSentinel, Sentinel>);
+
+
+// Use a non-common underlying range so transform_view has a distinct sentinel.
+bool test_transform_view() {
+    int values[] = {1, 2, 3, 4};
+
+    auto base = ranges::subrange{
+        counted_iterator{values, 4},
+        default_sentinel,
+    };
+
+    auto view = base | views::transform([](const int value) { return value * value; });
+
+    vector<int> result;
+    auto last = view.end();
+    for (auto first = view.begin(); first != last; ++first) {
+        result.push_back(*first);
+    }
+
+    return result == vector{1, 4, 9, 16};
+}
+
+int main()
+{
+    assert(test_transform_view());
+}

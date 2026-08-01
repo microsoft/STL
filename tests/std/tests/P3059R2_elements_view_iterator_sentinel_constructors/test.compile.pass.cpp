@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <concepts>
+#include <cassert>
 #include <ranges>
+#include <iterator>
+#include <string>
 #include <tuple>
+#include <vector>
 #include <utility>
 
 using namespace std;
@@ -71,3 +75,35 @@ static_assert(sentinel_for<ConstSentinel, ConstIterator>);
 // available.
 static_assert(constructible_from<ConstIterator, Iterator>);
 static_assert(constructible_from<ConstSentinel, Sentinel>);
+
+
+// Use a non-common underlying range so elements_view has a distinct sentinel.
+bool test_elements_view() {
+    using element_type = tuple<int, string>;
+
+    element_type values[] = {
+        {1, "one"},
+        {2, "two"},
+        {3, "three"},
+    };
+
+    auto base = ranges::subrange{
+        counted_iterator{values, 3},
+        default_sentinel,
+    };
+
+    auto view = base | views::elements<1>;
+
+    vector<string> result;
+    auto last = view.end();
+    for (auto first = view.begin(); first != last; ++first) {
+        result.push_back(*first);
+    }
+
+    return result == vector<string>{"one", "two", "three"};
+}
+
+int main()
+{
+    assert(test_elements_view());
+}
