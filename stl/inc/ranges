@@ -1347,12 +1347,14 @@ namespace ranges {
         private:
             basic_istream_view* _Parent;
 
+            friend basic_istream_view;
+            constexpr explicit _Iterator(basic_istream_view& _Parent_) noexcept : _Parent{_STD addressof(_Parent_)} {}
+
         public:
             using iterator_concept = input_iterator_tag;
             using difference_type  = ptrdiff_t;
             using value_type       = _Ty;
 
-            constexpr explicit _Iterator(basic_istream_view& _Parent_) noexcept : _Parent{_STD addressof(_Parent_)} {}
 
             _Iterator(const _Iterator&) = delete;
             _Iterator(_Iterator&&)      = default;
