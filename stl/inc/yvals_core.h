@@ -407,7 +407,6 @@
 // P3107R5 Permit An Efficient Implementation Of <print>
 // P3142R0 Printing Blank Lines With println()
 // P3235R3 std::print More Types Faster With Less Memory
-//     (partial implementation; see GH-4924)
 // P3567R2 flat_meow Fixes
 
 // Parallel Algorithms Notes
