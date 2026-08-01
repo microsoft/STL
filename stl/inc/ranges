@@ -3697,6 +3697,16 @@ namespace ranges {
             _ParentTy* _Parent   = nullptr;
             bool _Trailing_empty = false;
 
+            constexpr explicit _Outer_iter(_ParentTy& _Parent_) noexcept // strengthened
+                requires (!forward_range<_BaseTy>)
+                : _Parent{_STD addressof(_Parent_)} {}
+
+            constexpr _Outer_iter(_ParentTy& _Parent_, iterator_t<_BaseTy> _Current_)
+                noexcept(is_nothrow_move_constructible_v<iterator_t<_BaseTy>>) // strengthened
+                requires forward_range<_BaseTy>
+                : _Mybase{_STD move(_Current_)}, _Parent{_STD addressof(_Parent_)} {}
+
+
             _NODISCARD constexpr iterator_t<_BaseTy>& _Get_current() noexcept {
                 if constexpr (forward_range<_BaseTy>) {
                     return this->_Current;
@@ -3743,15 +3753,6 @@ namespace ranges {
             };
 
             _Outer_iter() = default;
-
-            constexpr explicit _Outer_iter(_ParentTy& _Parent_) noexcept // strengthened
-                requires (!forward_range<_BaseTy>)
-                : _Parent{_STD addressof(_Parent_)} {}
-
-            constexpr _Outer_iter(_ParentTy& _Parent_, iterator_t<_BaseTy> _Current_)
-                noexcept(is_nothrow_move_constructible_v<iterator_t<_BaseTy>>) // strengthened
-                requires forward_range<_BaseTy>
-                : _Mybase{_STD move(_Current_)}, _Parent{_STD addressof(_Parent_)} {}
 
             constexpr _Outer_iter(_Outer_iter<!_Const> _It)
                 requires _Const && convertible_to<iterator_t<_Vw>, iterator_t<_BaseTy>>
@@ -3890,15 +3891,18 @@ namespace ranges {
                 }
             }
 
+            friend lazy_split_view;
+            constexpr explicit _Inner_iter(_Outer_iter<_Const> _It_)
+                noexcept(is_nothrow_move_constructible_v<_Outer_iter<_Const>>) // strengthened
+                : _It{_STD move(_It_)} {}
+
         public:
             using iterator_concept = _Outer_iter<_Const>::iterator_concept;
             using value_type       = range_value_t<_BaseTy>;
             using difference_type  = range_difference_t<_BaseTy>;
 
             _Inner_iter() = default;
-            constexpr explicit _Inner_iter(_Outer_iter<_Const> _It_)
-                noexcept(is_nothrow_move_constructible_v<_Outer_iter<_Const>>) // strengthened
-                : _It{_STD move(_It_)} {}
+
 
             _NODISCARD constexpr const iterator_t<_BaseTy>& base() const& noexcept {
                 return _It._Get_current();
