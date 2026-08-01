@@ -32,7 +32,7 @@ $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 # | SKU    | Location       | Cores | Notes
 # |--------|----------------|------:|-------
 # | Fasv6  | eastus2        |  4096 |
-# | Fasv7  | australiaeast  |   740 |
+# | Fasv7  | australiaeast  |   740 | Currently unused to stay within our regional (all-SKU) quota of 4736 cores
 # | Fasv7  | northeurope    |   640 |
 # | Fasv7  | southeastasia  |   640 |
 # | Fadsv7 | australiaeast  |  2048 |
@@ -50,7 +50,7 @@ if ($VMSku -ieq 'Fasv6') {
   $ProtoVMSize = 'Standard_F16as_v7'
   $PoolSkuName = 'Standard_F48as_v7'
   $PoolSize = 13 # Locations where we have quota for at least 640 cores (13 VMs):
-  $AvailableLocations = @('australiaeast', 'northeurope', 'southeastasia')
+  $AvailableLocations = @('northeurope', 'southeastasia')
 } elseif ($VMSku -ieq 'Fadsv7') {
   $Arch = 'x64'
   $ProtoVMSize = 'Standard_F16ads_v7'
@@ -65,7 +65,7 @@ if ($VMSku -ieq 'Fasv6') {
   $AvailableLocations = @('australiaeast', 'southcentralus')
 }
 
-$AvailableLocationIdx = 12 # Increment for each new set of pools, to cycle through the available locations.
+$AvailableLocationIdx = 13 # Increment for each new set of pools, to cycle through the available locations.
 $Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
 
 if ($Arch -ieq 'x64') {
