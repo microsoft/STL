@@ -3,8 +3,8 @@
 
 #include <algorithm>
 #include <cassert>
-#include <ranges>
 #include <istream>
+#include <ranges>
 #include <span>
 #include <sstream>
 #include <string>
