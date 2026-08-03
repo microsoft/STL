@@ -8,10 +8,25 @@
 #include <ranges>
 #include <sstream>
 #include <type_traits>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 
 using namespace std;
+
+// P3059R2 - Making user-defined constructors of view iterators/sentinels private
+constexpr void iterator_sentinel() {
+    using View     = ranges::basic_istream_view<int, char>;
+    using Iterator = ranges::iterator_t<View>;
+
+    // P3059R2: users must not be able to construct
+    // basic_istream_view::iterator directly from the parent view.
+    static_assert(!constructible_from<Iterator, View&>);
+
+    // The iterator must remain non-copyable but movable through its public interface.
+    static_assert(!copy_constructible<Iterator>);
+    static_assert(move_constructible<Iterator>);
+}
 
 constexpr int expected_empty[] = {-1, -1, -1, -1, -1};
 constexpr int expected_vals[]  = {0, 1, 2, 3, -1};
@@ -169,4 +184,5 @@ int main() {
     test_one_type<streamable>();
 
     static_assert(test_constexpr());
+    iterator_sentinel();
 }
