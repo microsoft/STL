@@ -414,6 +414,7 @@ extern "C" {
         return _Px;
     }
 
+    // TRANSITION, investigate handling C23 7.12.1 "Treatment of error conditions" and 7.12.8.3 "The lgamma functions".
     return _Boost_call([=] { return ::boost::math::lgamma(_Px); });
 }
 
@@ -422,6 +423,7 @@ extern "C" {
         return _Px;
     }
 
+    // TRANSITION, investigate handling C23 7.12.1 "Treatment of error conditions" and 7.12.8.3 "The lgamma functions".
     return _Boost_call([=] { return ::boost::math::lgamma(_Px); });
 }
 
@@ -499,6 +501,7 @@ extern "C" {
         return _Px;
     }
 
+    // TRANSITION, investigate handling C23 7.12.1 "Treatment of error conditions" and 7.12.8.4 "The tgamma functions".
     return _Boost_call([=] { return ::boost::math::tgamma(_Px); });
 }
 
@@ -507,6 +510,7 @@ extern "C" {
         return _Px;
     }
 
+    // TRANSITION, investigate handling C23 7.12.1 "Treatment of error conditions" and 7.12.8.4 "The tgamma functions".
     return _Boost_call([=] { return ::boost::math::tgamma(_Px); });
 }
 } // extern "C"
