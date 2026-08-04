@@ -1851,7 +1851,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
-  <Type Name="std::ranges::iota_view&lt;*,*&gt;::_Sentinel">
+  <Type Name="std::ranges::iota_view&lt;*,*&gt;::_Sentinel&lt;*&gt;">
     <DisplayString>{{ last={_Last} }}</DisplayString>
     <Expand>
       <Item Name="[last]">_Last</Item>
