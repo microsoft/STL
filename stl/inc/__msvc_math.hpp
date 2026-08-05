@@ -3,13 +3,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// This lies outside of the inclusion guard because the UCRT's math.h allows for repeated inclusion
-// with behavioral differences dictated by this macro. math.h can be included once without this macro
-// defined and a second time with it defined, resulting in the nonstandard math constants being defined.
-#ifdef _USE_MATH_DEFINES
-#include <corecrt_math_defines.h>
-#endif
-
 #ifndef __MSVC_MATH_HPP
 #define __MSVC_MATH_HPP
 
