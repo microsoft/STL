@@ -964,14 +964,14 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19
 #endif // ^^^ inline (not constexpr) in C++20 and earlier ^^^
 
 // Math functions that became constexpr in C++23
-#if _HAS_CXX23 && defined(_MSVC_CONSTEXPR_CMATH)
+#if _HAS_CXX23 && defined(_MSVC_LIBC_MATH)
 #define _CONSTEXPR_CMATH23 constexpr
 #else // ^^^ constexpr in C++23 and later / inline when /Zc:cmath- opts out of constexpr, and in C++20 and earlier vvv
 #define _CONSTEXPR_CMATH23 inline
 #endif // ^^^ inline when /Zc:cmath- opts out of constexpr, and in C++20 and earlier ^^^
 
 // Math functions that became constexpr in C++26
-#if _HAS_CXX26 && defined(_MSVC_CONSTEXPR_CMATH)
+#if _HAS_CXX26 && defined(_MSVC_LIBC_MATH)
 #define _CONSTEXPR_CMATH26 constexpr
 #else // ^^^ constexpr in C++26 and later / inline when /Zc:cmath- opts out of constexpr, and in C++23 and earlier vvv
 #define _CONSTEXPR_CMATH26 inline
@@ -1831,15 +1831,15 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
 #endif
 
-#if 0 && _HAS_CXX26 && defined(_MSVC_CONSTEXPR_CMATH) // TRANSITION, GH-3789
-#define __cpp_lib_constexpr_cmath 202306L // P1383R2 More constexpr For <cmath> And <complex>
-#elif _HAS_CXX23 && defined(_MSVC_CONSTEXPR_CMATH)
-// _MSVC_CONSTEXPR_CMATH is defined when MSVC supports constexpr <cmath>, but not when /Zc:cmath- opts out.
+// The option /Zc:cmath- disables support for constexpr <cmath>.
 // TRANSITION, Clang and EDG lack support for constexpr <cmath>.
+#if 0 && _HAS_CXX26 && defined(_MSVC_LIBC_MATH) // TRANSITION, GH-3789
+#define __cpp_lib_constexpr_cmath 202306L // P1383R2 More constexpr For <cmath> And <complex>
+#elif _HAS_CXX23 && defined(_MSVC_LIBC_MATH)
 #define __cpp_lib_constexpr_cmath 202202L // P0533R9 constexpr For <cmath> And <cstdlib>
 #endif
 
-#if 0 && _HAS_CXX26 && defined(_MSVC_CONSTEXPR_CMATH) // TRANSITION, GH-3789
+#if 0 && _HAS_CXX26 && defined(_MSVC_LIBC_MATH) // TRANSITION, GH-3789
 #define __cpp_lib_constexpr_complex 202306L // P1383R2 More constexpr For <cmath> And <complex>
 #elif _HAS_CXX20
 #define __cpp_lib_constexpr_complex 201711L // P0415R1 constexpr For <complex> (Again)

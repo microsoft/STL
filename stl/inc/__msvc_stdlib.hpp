@@ -231,7 +231,7 @@ typedef struct _lldiv_t {
 } lldiv_t;
 
 // stdlib functions that became constexpr in C++23
-#if _HAS_CXX23 && defined(_MSVC_CONSTEXPR_CMATH)
+#if _HAS_CXX23 && defined(_MSVC_LIBC_MATH)
 #define _CONSTEXPR_CSTDLIB23 constexpr
 #else // ^^^ constexpr in C++23 and later / inline when /Zc:cmath- opts out of constexpr, and in C++20 and earlier vvv
 #define _CONSTEXPR_CSTDLIB23 inline
