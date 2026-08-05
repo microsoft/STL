@@ -78,6 +78,17 @@ extern "C" {
     _STL_DEF_FUNC3(specs, name, double, double, double, lastarg) \
     _STL_DEF_FUNC3(specs, name##l, long double, long double, long double, lastarg)
 
+#define _STL_DEF_OVERLOADED_CLASSIFICATION1(specs, ret, name, op_val, builtin, fptype)     \
+    _NODISCARD specs ret __cdecl name(fptype _Xx) noexcept /* strengthened */ {            \
+        return builtin(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, _Xx) op_val; \
+    }
+
+// Defines three overloaded functions with signature `ret (fp-type)`.
+#define _STL_DEF_OVERLOADED_CLASSIFICATION_FAMILY1(specs, ret, name, op_val)                    \
+    _STL_DEF_OVERLOADED_CLASSIFICATION1(specs, ret, name, op_val, __builtin_fpclassifyf, float) \
+    _STL_DEF_OVERLOADED_CLASSIFICATION1(specs, ret, name, op_val, __builtin_fpclassify, double) \
+    _STL_DEF_OVERLOADED_CLASSIFICATION1(specs, ret, name, op_val, __builtin_fpclassifyl, long double)
+
 // N.B. static_cast<bool> is used when the builtin returns int.
 #define _STL_DEF_OVERLOADED_COMPARISON1(specs, name, builtin, fptype)            \
     _NODISCARD specs bool __cdecl name(fptype _Xx) noexcept /* strengthened */ { \
@@ -301,55 +312,11 @@ _STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, fmin)
 _STL_DEF_FAMILY3(_CONSTEXPR_CMATH23, fma)
 
 extern "C++" {
-_NODISCARD _CONSTEXPR_CMATH23 int __cdecl fpclassify(float _Xx) noexcept /* strengthened */ {
-    return __builtin_fpclassifyf(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, _Xx);
-}
-_NODISCARD _CONSTEXPR_CMATH23 int __cdecl fpclassify(double _Xx) noexcept /* strengthened */ {
-    return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, _Xx);
-}
-_NODISCARD _CONSTEXPR_CMATH23 int __cdecl fpclassify(long double _Xx) noexcept /* strengthened */ {
-    return __builtin_fpclassifyl(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, _Xx);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isfinite(float _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) <= 0;
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isfinite(double _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) <= 0;
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isfinite(long double _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) <= 0;
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isinf(float _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_INFINITE;
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isinf(double _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_INFINITE;
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isinf(long double _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_INFINITE;
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnan(float _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_NAN;
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnan(double _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_NAN;
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnan(long double _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_NAN;
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnormal(float _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_NORMAL;
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnormal(double _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_NORMAL;
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnormal(long double _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_NORMAL;
-}
+_STL_DEF_OVERLOADED_CLASSIFICATION_FAMILY1(_CONSTEXPR_CMATH23, int, fpclassify, /*unchanged*/)
+_STL_DEF_OVERLOADED_CLASSIFICATION_FAMILY1(_CONSTEXPR_CMATH23, bool, isfinite, <= 0)
+_STL_DEF_OVERLOADED_CLASSIFICATION_FAMILY1(_CONSTEXPR_CMATH23, bool, isinf, == FP_INFINITE)
+_STL_DEF_OVERLOADED_CLASSIFICATION_FAMILY1(_CONSTEXPR_CMATH23, bool, isnan, == FP_NAN)
+_STL_DEF_OVERLOADED_CLASSIFICATION_FAMILY1(_CONSTEXPR_CMATH23, bool, isnormal, == FP_NORMAL)
 
 _STL_DEF_OVERLOADED_COMPARISON_FAMILY1(_CONSTEXPR_CMATH23, signbit)
 _STL_DEF_OVERLOADED_COMPARISON_FAMILY2(_CONSTEXPR_CMATH23, isgreater)
@@ -456,6 +423,8 @@ _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl tanhf(float _Xx) noexcept /* str
 #undef _STL_DEF_RETURN_FAMILY1
 #undef _STL_DEF_LASTARG_FAMILY2
 #undef _STL_DEF_LASTARG_FAMILY3
+#undef _STL_DEF_OVERLOADED_CLASSIFICATION1
+#undef _STL_DEF_OVERLOADED_CLASSIFICATION_FAMILY1
 #undef _STL_DEF_OVERLOADED_COMPARISON1
 #undef _STL_DEF_OVERLOADED_COMPARISON2
 #undef _STL_DEF_OVERLOADED_COMPARISON_FAMILY1
