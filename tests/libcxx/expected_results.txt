@@ -406,25 +406,6 @@ std/containers/views/views.span/span.cons/deduct.pass.cpp FAIL
 std/strings/basic.string/string.ops/string_substr/subview.pass.cpp FAIL
 std/strings/string.view/string.view.ops/subview.pass.cpp FAIL
 
-# P3059R2 Making User-Defined Constructors Of View Iterators/Sentinels private
-# Will be implemented by GH-6382.
-std/ranges/range.adaptors/range.elements/iterator/ctor.base.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.elements/sentinel/ctor.base.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.filter/iterator/ctor.parent.iter.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.join/range.join.sentinel/ctor.parent.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.lazy.split/range.lazy.split.inner/ctor.outer_iterator.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer/ctor.parent.base.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer/ctor.parent.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.split/sentinel/ctor.parent.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.take.while/sentinel/ctor.base.pred.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.take/range.take.sentinel/ctor.base.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.transform/iterator/ctor.parent.iter.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.transform/sentinel/ctor.base.compile.pass.cpp FAIL
-std/ranges/range.factories/range.iota.view/iterator/ctor.value.compile.pass.cpp FAIL
-std/ranges/range.factories/range.iota.view/sentinel/ctor.value.compile.pass.cpp FAIL
-std/ranges/range.factories/range.istream.view/ctor.pass.cpp FAIL
-std/ranges/range.factories/range.istream.view/iterator/ctor.parent.compile.pass.cpp FAIL
-
 # P3060R3 views::indices
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/ranges/range.factories/range.iota.view/indices.pass.cpp FAIL
