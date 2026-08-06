@@ -818,6 +818,10 @@ std/iterators/iterator.requirements/iterator.assoc.types/readable.traits/indirec
 # Not analyzed, likely bogus test. constexpr fails with "vector iterators incompatible".
 std/ranges/range.adaptors/range.join.with/range.join.with.iterator/ctor.default.pass.cpp FAIL
 
+# The test dereferences a basic_istream_view iterator after begin() fails on an empty stream.
+# This violates the iterator's dereference precondition and triggers MSVC STL's internal verification.
+std/ranges/range.factories/range.istream.view/ctor.pass.cpp FAIL
+
 # libc++ treats `fs::absolute("", ec)` as a success case, whereas we emit an error and return an empty `path`.
 std/input.output/filesystems/fs.op.funcs/fs.op.absolute/absolute.pass.cpp FAIL
 
