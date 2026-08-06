@@ -769,9 +769,18 @@ _NODISCARD _CONSTEXPR20 bool operator==(const array<_Ty, _Size>& _Left, const ar
 }
 
 #if _HAS_CXX20
+inline constexpr size_t _Array_compare_memcmp_max_count = 64;
+
 _EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
     const array<_Ty, _Size>& _Left, const array<_Ty, _Size>& _Right) {
+    if constexpr (_Size != 0 && _Size <= _Array_compare_memcmp_max_count
+                  && _Lex_compare_memcmp_is_safe_elements<_Ty, _Ty>) {
+        if (!_STD is_constant_evaluated()) {
+            return _CSTD memcmp(_Left.data(), _Right.data(), _Size) <=> 0;
+        }
+    }
+
     return _STD lexicographical_compare_three_way(
         _Left.data(), _Left.data() + _Size, _Right.data(), _Right.data() + _Size, _Synth_three_way{});
 }
