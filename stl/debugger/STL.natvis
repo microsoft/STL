@@ -1852,9 +1852,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::ranges::iota_view&lt;*,*&gt;::_Sentinel&lt;*&gt;">
-    <DisplayString>{{ last={_Last} }}</DisplayString>
+    <AlternativeType Name="std::ranges::_Iotinel&lt;*&gt;"/>
+    <DisplayString>{&amp;_Last, na}</DisplayString>
     <Expand>
-      <Item Name="[last]">_Last</Item>
+      <Item Name="[bound]">_Last</Item>
     </Expand>
   </Type>
 
@@ -1915,13 +1916,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <SmartPointer Usage="Minimal">&amp;_Current,na</SmartPointer>
     <Expand>
       <Item Name="[value]">_Current</Item>
-    </Expand>
-  </Type>
-
-  <Type Name="std::ranges::_Iotinel&lt;*&gt;">
-    <DisplayString>{&amp;_Last,na}</DisplayString>
-    <Expand>
-      <Item Name="[bound]">_Last</Item>
     </Expand>
   </Type>
 
