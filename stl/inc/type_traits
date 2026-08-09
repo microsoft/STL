@@ -384,8 +384,8 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_compound_v = !is_fundamenta
 // however, in other contexts the calling convention distinguishes distinct
 // function types and is semantically significant.
 //
-// New code should not use these macros.  They are kept only for existing
-// specializations.  (See GH #2279 for rationale.)
+// New code should not use these macros.  They are retained only for existing
+// uses.  (See GH #2279 for rationale.)
 
 // _EMIT_CDECL(FUNC, OPT1, OPT2, OPT3) - Always expands to
 // FUNC(__cdecl, OPT1, OPT2, OPT3). __cdecl is universally supported.
@@ -427,8 +427,7 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_compound_v = !is_fundamenta
 #endif // ^^^ __vectorcall not supported ^^^
 
 // _NON_MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)
-// Emits FUNC for every supported non-member calling convention.
-// Used to generate free-function specializations (e.g., std::function::operator()).
+// Emits FUNC for non-member function types with every supported calling convention.
 #define _NON_MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
     _EMIT_CDECL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)          \
     _EMIT_CLRCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)        \
@@ -455,9 +454,9 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_compound_v = !is_fundamenta
 
 // _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC)
 // When __cpp_noexcept_function_type is defined, additionally iterates over
-// noexcept: (none) and noexcept, yielding 24 specializations; otherwise 12.
-// Used by std::function, ptr_fun, and type traits to generate overloads
-// that vary by calling convention.
+// noexcept: (none) and noexcept, invoking FUNC for 24 cv-ref-noexcept
+// combinations per enabled calling convention; otherwise 12.
+// Used by _Function_args to recognize every supported function type.
 #ifdef __cpp_noexcept_function_type
 #define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) \
     _NON_MEMBER_CALL_CV_REF(FUNC, )            \
@@ -468,6 +467,7 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_compound_v = !is_fundamenta
 
 // _MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)
 // Same as _NON_MEMBER_CALL but also emits __thiscall (x86 only).
+// Used for member function types in type traits and internal helpers.
 #define _MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
     _EMIT_CDECL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)      \
     _EMIT_CLRCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)    \
@@ -502,11 +502,11 @@ _NO_SPECIALIZATIONS_OF_TYPE_TRAITS constexpr bool is_compound_v = !is_fundamenta
 // _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS)
 // Generates a flat list of CLASS expansions for every cv-ref-noexcept
 // combination (12 or 24, depending on __cpp_noexcept_function_type).
-// Used to define internal wrapper classes (e.g., in std::function)
-// that vary by qualifier.
+// Used by type traits to generate cv-ref-noexcept specializations for ellipsis
+// function types, which do not have calling-convention variants.
 //
-// This macro exists only for legacy specializations.  New components
-// (e.g., move_only_function) intentionally do not provide such coverage.
+// This macro exists only for legacy specializations.  New components should
+// generate these specializations without using this macro.
 #ifdef __cpp_noexcept_function_type
 #define _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS) \
     CLASS(_EMPTY_ARGUMENT)                   \
