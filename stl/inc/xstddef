@@ -290,38 +290,61 @@ _NODISCARD constexpr _Ty* _Unfancy(_Ty* _Ptr) noexcept { // do nothing for plain
 }
 _STD_END
 
+// Code-emitting macros for cv-qualified, ref-qualified, and calling-convention
+// variations.  These macros are used to stamp out repetitive specializations
+// for std::function (e.g., std::function<int __stdcall()>) and its internal
+// helpers.  The calling convention does not propagate to operator() and has no
+// semantic effect; it exists only for source compatibility with code that forms
+// function types from explicitly-conventioned function pointers.
+//
+// New code should not use these macros.  They are kept only for existing
+// specializations.  (See GH #2279 for rationale.)
+//
+// _EMIT_CDECL(FUNC, OPT1, OPT2, OPT3) - If __cdecl is supported, expands to
+// FUNC(__cdecl, OPT1, OPT2, OPT3). Otherwise expands to nothing.
 #define _EMIT_CDECL(FUNC, OPT1, OPT2, OPT3) FUNC(__cdecl, OPT1, OPT2, OPT3)
 
+// _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3) - If _M_CEE is defined (managed C++),
+// expands to FUNC(__clrcall, OPT1, OPT2, OPT3). Otherwise nothing.
 #ifdef _M_CEE
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__clrcall, OPT1, OPT2, OPT3)
-
 #else // _M_CEE
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3)
 #endif // _M_CEE
 
+// _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3) - On x86 without _M_CEE, expands to
+// FUNC(__fastcall, OPT1, OPT2, OPT3). Otherwise nothing.
 #if defined(_M_IX86) && !defined(_M_CEE)
 #define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__fastcall, OPT1, OPT2, OPT3)
-
 #else // defined(_M_IX86) && !defined(_M_CEE)
 #define _EMIT_FASTCALL(FUNC, OPT1, OPT2, OPT3)
 #endif // defined(_M_IX86) && !defined(_M_CEE)
 
+// _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3) - On x86, expands to
+// FUNC(__stdcall, OPT1, OPT2, OPT3). Otherwise nothing.
 #ifdef _M_IX86
 #define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)  FUNC(__stdcall, OPT1, OPT2, OPT3)
+// _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3) - On x86, expands to
+// FUNC(__thiscall, OPT1, OPT2, OPT3). Otherwise nothing.
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__thiscall, OPT1, OPT2, OPT3)
-
 #else // _M_IX86
 #define _EMIT_STDCALL(FUNC, OPT1, OPT2, OPT3)
 #define _EMIT_THISCALL(FUNC, OPT1, OPT2, OPT3)
 #endif // _M_IX86
 
+// _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3) - On x86 with SSE2 or on x64
+// (excluding _M_CEE), expands to FUNC(__vectorcall, OPT1, OPT2, OPT3).
+// Otherwise nothing.
 #if ((defined(_M_IX86) && _M_IX86_FP >= 2) || defined(_M_X64)) && !defined(_M_CEE)
 #define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__vectorcall, OPT1, OPT2, OPT3)
-
 #else // defined(_M_IX86) && _M_IX86_FP >= 2 etc.
 #define _EMIT_VECTORCALL(FUNC, OPT1, OPT2, OPT3)
 #endif // defined(_M_IX86) && _M_IX86_FP >= 2 etc.
 
+// _NON_MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)
+// Emits FUNC for every supported non-member calling convention.
+// Used to generate free-function specializations (e.g., std::function::operator()
+// for different calling conventions).
 #define _NON_MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
     _EMIT_CDECL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)          \
     _EMIT_CLRCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)        \
@@ -329,17 +352,30 @@ _STD_END
     _EMIT_STDCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)        \
     _EMIT_VECTORCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)
 
+// _NON_MEMBER_CALL_CV(FUNC, REF_OPT, NOEXCEPT_OPT)
+// Like _NON_MEMBER_CALL but iterates over cv-qualifiers:
+// (none), const, volatile, const volatile.
 #define _NON_MEMBER_CALL_CV(FUNC, REF_OPT, NOEXCEPT_OPT)    \
     _NON_MEMBER_CALL(FUNC, , REF_OPT, NOEXCEPT_OPT)         \
     _NON_MEMBER_CALL(FUNC, const, REF_OPT, NOEXCEPT_OPT)    \
     _NON_MEMBER_CALL(FUNC, volatile, REF_OPT, NOEXCEPT_OPT) \
     _NON_MEMBER_CALL(FUNC, const volatile, REF_OPT, NOEXCEPT_OPT)
 
+// _NON_MEMBER_CALL_CV_REF(FUNC, NOEXCEPT_OPT)
+// Like _NON_MEMBER_CALL_CV but additionally iterates over ref-qualifiers:
+// (none), &, &&.
 #define _NON_MEMBER_CALL_CV_REF(FUNC, NOEXCEPT_OPT) \
     _NON_MEMBER_CALL_CV(FUNC, , NOEXCEPT_OPT)       \
     _NON_MEMBER_CALL_CV(FUNC, &, NOEXCEPT_OPT)      \
     _NON_MEMBER_CALL_CV(FUNC, &&, NOEXCEPT_OPT)
 
+// _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC)
+// When __cpp_noexcept_function_type is defined, additionally iterates over
+// noexcept: (none) and noexcept, yielding 4*3*2 = 24 specializations.
+// Otherwise falls back to _NON_MEMBER_CALL_CV_REF(FUNC, ) (12 specializations).
+//
+// This is the primary macro used by std::function to generate all required
+// operator() overloads with all calling conventions.
 #ifdef __cpp_noexcept_function_type
 #define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) \
     _NON_MEMBER_CALL_CV_REF(FUNC, )            \
@@ -348,6 +384,9 @@ _STD_END
 #define _NON_MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _NON_MEMBER_CALL_CV_REF(FUNC, )
 #endif // __cpp_noexcept_function_type
 
+// _MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)
+// Same as _NON_MEMBER_CALL but also emits __thiscall (x86 only).
+// Used to generate member-function specializations.
 #define _MEMBER_CALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
     _EMIT_CDECL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)      \
     _EMIT_CLRCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)    \
@@ -356,17 +395,23 @@ _STD_END
     _EMIT_THISCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)   \
     _EMIT_VECTORCALL(FUNC, CV_OPT, REF_OPT, NOEXCEPT_OPT)
 
+// _MEMBER_CALL_CV(FUNC, REF_OPT, NOEXCEPT_OPT)
+// Like _MEMBER_CALL but iterates over cv-qualifiers.
 #define _MEMBER_CALL_CV(FUNC, REF_OPT, NOEXCEPT_OPT)    \
     _MEMBER_CALL(FUNC, , REF_OPT, NOEXCEPT_OPT)         \
     _MEMBER_CALL(FUNC, const, REF_OPT, NOEXCEPT_OPT)    \
     _MEMBER_CALL(FUNC, volatile, REF_OPT, NOEXCEPT_OPT) \
     _MEMBER_CALL(FUNC, const volatile, REF_OPT, NOEXCEPT_OPT)
 
+// _MEMBER_CALL_CV_REF(FUNC, NOEXCEPT_OPT)
+// Like _MEMBER_CALL_CV but iterates over ref-qualifiers.
 #define _MEMBER_CALL_CV_REF(FUNC, NOEXCEPT_OPT) \
     _MEMBER_CALL_CV(FUNC, , NOEXCEPT_OPT)       \
     _MEMBER_CALL_CV(FUNC, &, NOEXCEPT_OPT)      \
     _MEMBER_CALL_CV(FUNC, &&, NOEXCEPT_OPT)
 
+// _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC)
+// Same logic as _NON_MEMBER_CALL_CV_REF_NOEXCEPT but for member functions.
 #ifdef __cpp_noexcept_function_type
 #define _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) \
     _MEMBER_CALL_CV_REF(FUNC, )            \
@@ -375,10 +420,19 @@ _STD_END
 #define _MEMBER_CALL_CV_REF_NOEXCEPT(FUNC) _MEMBER_CALL_CV_REF(FUNC, )
 #endif // __cpp_noexcept_function_type
 
+// _CLASS_DEFINE_CONST(CLASS) - Expands CLASS with no qualifiers and with const.
 #define _CLASS_DEFINE_CONST(CLASS) \
     CLASS(_EMPTY_ARGUMENT)         \
     CLASS(const)
 
+// _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS)
+// Generates a flat list of CLASS expansions for every cv-ref-noexcept
+// combination (12 or 24, depending on __cpp_noexcept_function_type).
+// Used to define internal wrapper classes (e.g., in std::function)
+// that vary by qualifier.
+//
+// This macro exists only for legacy specializations.  New components
+// (e.g., move_only_function) intentionally do not provide such coverage.
 #ifdef __cpp_noexcept_function_type
 #define _CLASS_DEFINE_CV_REF_NOEXCEPT(CLASS) \
     CLASS(_EMPTY_ARGUMENT)                   \
