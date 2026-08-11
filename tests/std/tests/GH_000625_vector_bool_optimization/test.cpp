@@ -1561,6 +1561,114 @@ CONSTEXPR20 bool test_is_permutation() {
     return true;
 }
 
+void test_is_permutation_vbool_like_iterators() {
+    // vector<bool> like proxy reference class with evil behavior
+    struct vbool_like_reference {
+        const bool* ptr;
+
+        operator bool() const {
+            return *ptr;
+        }
+
+        // proxy-to-proxy comparison; the evil part, not present in vector<bool> proxies
+        bool operator==(const vbool_like_reference&) const {
+            return true; // all proxies are equal
+        }
+
+        // proxy-to-other-proxy comparison; the evil part, not present in vector<bool> proxies
+        bool operator==(const vector<bool>::reference&) const {
+            return true; // all proxies are equal
+        }
+    };
+
+    struct vbool_like_iterator {
+        using iterator_category = random_access_iterator_tag;
+        using value_type        = bool;
+        using difference_type   = ptrdiff_t;
+        using pointer           = bool*;
+        using reference         = vbool_like_reference;
+
+        const bool* ptr;
+
+        vbool_like_reference operator*() const {
+            return {ptr};
+        }
+
+        vbool_like_iterator& operator++() {
+            ++ptr;
+            return *this;
+        }
+
+        vbool_like_iterator& operator--() {
+            --ptr;
+            return *this;
+        }
+
+        vbool_like_iterator& operator+=(ptrdiff_t d) {
+            ptr += d;
+            return *this;
+        }
+
+        vbool_like_iterator& operator-=(ptrdiff_t d) {
+            ptr -= d;
+            return *this;
+        }
+
+        vbool_like_iterator operator+(ptrdiff_t d) const {
+            return {ptr + d};
+        }
+
+        vbool_like_iterator operator-(ptrdiff_t d) const {
+            return {ptr - d};
+        }
+
+        ptrdiff_t operator-(const vbool_like_iterator& other) const {
+            return ptr - other.ptr;
+        }
+
+        bool operator==(const vbool_like_iterator& other) const {
+            return ptr == other.ptr;
+        }
+
+        bool operator!=(const vbool_like_iterator& other) const {
+            return ptr != other.ptr;
+        }
+
+        bool operator<(const vbool_like_iterator& other) const {
+            return ptr < other.ptr;
+        }
+
+        bool operator<=(const vbool_like_iterator& other) const {
+            return ptr <= other.ptr;
+        }
+
+        bool operator>(const vbool_like_iterator& other) const {
+            return ptr > other.ptr;
+        }
+
+        bool operator>=(const vbool_like_iterator& other) const {
+            return ptr >= other.ptr;
+        }
+    };
+
+    bool all_true[] = {true, true, true};
+    vector<bool> some_true{true, false, true};
+
+    const vbool_like_iterator all_true_begin{begin(all_true)};
+    const vbool_like_iterator all_true_end{end(all_true)};
+
+    // different true count
+    assert(count(all_true_begin, all_true_end, true) == 3);
+    assert(count(some_true.begin(), some_true.end(), true) == 2);
+
+    // but still equivalent
+    assert(equal(all_true_begin, all_true_end, some_true.begin(), some_true.end()));
+    assert(mismatch(all_true_begin, all_true_end, some_true.begin(), some_true.end()).first == all_true_end);
+
+    // now these are permutations due to equivalence
+    assert(is_permutation(all_true_begin, all_true_end, some_true.begin(), some_true.end()));
+}
+
 void initialize_randomness(mt19937_64& gen) {
     constexpr size_t n = mt19937_64::state_size;
     constexpr size_t w = mt19937_64::word_size;
@@ -1766,6 +1874,7 @@ int main() {
     test_copy_part_1();
     test_copy_part_2();
     test_is_permutation();
+    test_is_permutation_vbool_like_iterators();
 
     test_huge_vector_bool();
 
