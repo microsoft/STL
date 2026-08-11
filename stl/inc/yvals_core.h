@@ -407,7 +407,6 @@
 // P3107R5 Permit An Efficient Implementation Of <print>
 // P3142R0 Printing Blank Lines With println()
 // P3235R3 std::print More Types Faster With Less Memory
-//     (partial implementation; see GH-4924)
 // P3567R2 flat_meow Fixes
 
 // Parallel Algorithms Notes
@@ -905,7 +904,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 145
-#define _MSVC_STL_UPDATE  202607L
+#define _MSVC_STL_UPDATE  202608L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)

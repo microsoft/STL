@@ -36,23 +36,11 @@ std/time/time.syn/formatter.zoned_time.pass.cpp:1 FAIL
 # LLVM-74838: [libc++] std::regex match_prev_avail implementation is regressed
 std/re/re.const/re.matchflag/match_prev_avail.pass.cpp FAIL
 
-# LLVM-90196: [libc++][format] Formatting range with m range-type is incorrect
-std/utilities/format/format.range/format.range.formatter/format.functions.format.pass.cpp FAIL
-std/utilities/format/format.range/format.range.formatter/format.functions.vformat.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtset/format.functions.format.pass.cpp FAIL
-std/utilities/format/format.range/format.range.fmtset/format.functions.vformat.pass.cpp FAIL
-
 # LLVM-100506: [libc++][test] Precondition violation in rand.dist.uni.real/param_ctor.pass.cpp
 std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
 
 # LLVM-122638: [libc++][test] re.regex.construct/bad_backref.pass.cpp assumes non-standard extension to extended regular expressions
 std/re/re.regex/re.regex.construct/bad_backref.pass.cpp FAIL
-
-# LLVM-138375: [libc++][test] Make narrowing in nasty_char_traits::to_char_type more explicit
-std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_append/initializer_list.pass.cpp:1 FAIL
-std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:0 FAIL
-std/strings/basic.string/string.modifiers/string_assign/string.pass.cpp:1 FAIL
 
 # LLVM-158302: Clang 20 i686-pc-windows-msvc regression, silent bad codegen for std::current_exception()
 # SKIPPED because this is x86-specific.
@@ -65,9 +53,6 @@ std/language.support/support.exception/except.nested/ctor_default.pass.cpp:2 SKI
 # but only libc++ with Clang is affected; MSVC's STL with Clang is unaffected.
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:2 FAIL
 std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:2 FAIL
-
-# LLVM-182390: [libc++][test] facet.num.get.members/get_long.pass.cpp uses std::to_string() without including <string>
-std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get.members/get_long.pass.cpp FAIL
 
 # LLVM-182392: [libc++][test] vector/trivial_relocation.pass.cpp uses implementation-specific attribute [[clang::trivial_abi]]
 std/containers/sequences/vector/trivial_relocation.pass.cpp:0 FAIL
@@ -140,9 +125,6 @@ std/language.support/support.limits/support.limits.general/mdspan.version.compil
 
 # libc++ has not implemented P2937R0: "Freestanding Library: Remove strtok"
 std/language.support/support.limits/support.limits.general/cstring.version.compile.pass.cpp FAIL
-
-# libc++ has not implemented P3016R6: "Resolve Inconsistencies In begin/end For valarray And Braced Initializer Lists"
-std/language.support/support.initlist/support.initlist.range/begin_end.pass.cpp FAIL
 
 # libc++ has not implemented P3323R1: "Forbid atomic<cv T>, Specify atomic_ref<cv T>"
 std/atomics/atomics.ref/member_types.compile.pass.cpp FAIL
@@ -252,9 +234,31 @@ std/language.support/support.dynamic/new.delete/new.delete.single/new.size_nothr
 std/depr/depr.c.headers/uchar_h.compile.pass.cpp FAIL
 std/strings/c.strings/cuchar.compile.pass.cpp FAIL
 
+# P0493R5 Atomic Minimum/Maximum
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/atomics/atomics.ref/fetch_max.pass.cpp FAIL
+std/atomics/atomics.ref/fetch_min.pass.cpp FAIL
+std/atomics/atomics.types.operations/atomics.types.operations.req/atomic_fetch_max_explicit.pass.cpp FAIL
+std/atomics/atomics.types.operations/atomics.types.operations.req/atomic_fetch_max.pass.cpp FAIL
+std/atomics/atomics.types.operations/atomics.types.operations.req/atomic_fetch_min_explicit.pass.cpp FAIL
+std/atomics/atomics.types.operations/atomics.types.operations.req/atomic_fetch_min.pass.cpp FAIL
+
 # P0533R9 constexpr For <cmath> And <cstdlib>
 std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
+std/numerics/c.math/fpclassify.pass.cpp FAIL
+std/numerics/c.math/isgreater.pass.cpp:0 FAIL
+std/numerics/c.math/isgreater.pass.cpp:1 FAIL
+std/numerics/c.math/isgreaterequal.pass.cpp:0 FAIL
+std/numerics/c.math/isgreaterequal.pass.cpp:1 FAIL
+std/numerics/c.math/isless.pass.cpp:0 FAIL
+std/numerics/c.math/isless.pass.cpp:1 FAIL
+std/numerics/c.math/islessequal.pass.cpp:0 FAIL
+std/numerics/c.math/islessequal.pass.cpp:1 FAIL
+std/numerics/c.math/islessgreater.pass.cpp:0 FAIL
+std/numerics/c.math/islessgreater.pass.cpp:1 FAIL
+std/numerics/c.math/isunordered.pass.cpp:0 FAIL
+std/numerics/c.math/isunordered.pass.cpp:1 FAIL
 
 # P0543R3 Saturation Arithmetic
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
@@ -269,10 +273,84 @@ std/numerics/numeric.ops/numeric.ops.sat/saturating_mul.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/saturating_sub.compile.pass.cpp FAIL
 std/numerics/numeric.ops/numeric.ops.sat/saturating_sub.pass.cpp FAIL
 
+# P0792R14 function_ref: A Type-Erased Callable Reference
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/function.objects/func.wrap/func.wrap.ref/ctad.pass.cpp FAIL
+std/utilities/function.objects/func.wrap/func.wrap.ref/func.wrap.ref.ctor/assign.delete.pass.cpp FAIL
+std/utilities/function.objects/func.wrap/func.wrap.ref/func.wrap.ref.ctor/constant_wrapper.pass.cpp FAIL
+std/utilities/function.objects/func.wrap/func.wrap.ref/func.wrap.ref.ctor/constant_wrapper_ptr.pass.cpp FAIL
+std/utilities/function.objects/func.wrap/func.wrap.ref/func.wrap.ref.ctor/constant_wrapper_ref.pass.cpp FAIL
+std/utilities/function.objects/func.wrap/func.wrap.ref/func.wrap.ref.ctor/copy.pass.cpp FAIL
+std/utilities/function.objects/func.wrap/func.wrap.ref/func.wrap.ref.ctor/copy_assign.pass.cpp FAIL
+std/utilities/function.objects/func.wrap/func.wrap.ref/func.wrap.ref.ctor/function_ptr.pass.cpp FAIL
+std/utilities/function.objects/func.wrap/func.wrap.ref/func.wrap.ref.ctor/move.pass.cpp FAIL
+std/utilities/function.objects/func.wrap/func.wrap.ref/func.wrap.ref.ctor/move_assign.pass.cpp FAIL
+std/utilities/function.objects/func.wrap/func.wrap.ref/func.wrap.ref.ctor/ref.pass.cpp FAIL
+std/utilities/function.objects/func.wrap/func.wrap.ref/func.wrap.ref.inv/invoke.pass.cpp FAIL
+std/utilities/function.objects/func.wrap/func.wrap.ref/trivially_copyable.compile.pass.cpp FAIL
+
 # P1789R3 Library Support For Expansion Statements
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/utilities/intseq/intseq.binding/structured_binding.pass.cpp FAIL
 std/utilities/intseq/intseq.binding/tuple_interface.compile.pass.cpp FAIL
+
+# P1885R12 <text_encoding>: Naming Text Encodings To Demystify Them
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/language.support/support.limits/support.limits.general/text_encoding.version.compile.pass.cpp FAIL
+std/localization/locales/locale/locale.members/encoding.pass.cpp FAIL
+std/text/text_encoding/text_encoding.ctor/default.pass.cpp FAIL
+std/text/text_encoding/text_encoding.ctor/id.pass.cpp FAIL
+std/text/text_encoding/text_encoding.ctor/string_view.pass.cpp FAIL
+std/text/text_encoding/text_encoding.eq/equal.id.pass.cpp FAIL
+std/text/text_encoding/text_encoding.eq/equal.pass.cpp FAIL
+std/text/text_encoding/text_encoding.hash/enabled_hash.pass.cpp FAIL
+std/text/text_encoding/text_encoding.hash/hash.pass.cpp FAIL
+std/text/text_encoding/text_encoding.members/aliases_view.compile.pass.cpp FAIL
+std/text/text_encoding/text_encoding.members/aliases.pass.cpp FAIL
+std/text/text_encoding/text_encoding.members/environment.pass.cpp FAIL
+std/text/text_encoding/text_encoding.members/id.compile.pass.cpp FAIL
+std/text/text_encoding/text_encoding.members/literal.pass.cpp FAIL
+std/text/text_encoding/text_encoding.members/text_encoding.aliases_view/begin.pass.cpp FAIL
+std/text/text_encoding/text_encoding.members/text_encoding.aliases_view/empty.pass.cpp FAIL
+std/text/text_encoding/text_encoding.members/text_encoding.aliases_view/end.pass.cpp FAIL
+std/text/text_encoding/text_encoding.members/text_encoding.aliases_view/front.pass.cpp FAIL
+std/text/text_encoding/text_encoding.members/text_encoding.aliases_view/index.pass.cpp FAIL
+std/text/text_encoding/text_encoding.members/text_encoding.aliases_view/iterator.pass.cpp FAIL
+std/text/text_encoding/text_encoding.members/text_encoding.aliases_view/operator-bool.pass.cpp FAIL
+std/text/text_encoding/trivially_copyable.compile.pass.cpp FAIL
+
+# P1901R2 Enabling The Use Of weak_ptr As Keys In Unordered Associative Containers
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.obs/owner_equal_shared_ptr.pass.cpp FAIL
+std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.obs/owner_equal_weak_ptr.pass.cpp FAIL
+std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.obs/owner_hash.pass.cpp FAIL
+std/utilities/memory/util.smartptr/util.smartptr.weak/util.smartptr.ownerequal/owner_equal.pass.cpp FAIL
+std/utilities/memory/util.smartptr/util.smartptr.weak/util.smartptr.ownerhash/owner_hash.pass.cpp FAIL
+std/utilities/memory/util.smartptr/util.smartptr.weak/util.smartptr.weak.obs/owner_equal_shared_ptr.pass.cpp FAIL
+std/utilities/memory/util.smartptr/util.smartptr.weak/util.smartptr.weak.obs/owner_equal_weak_ptr.pass.cpp FAIL
+std/utilities/memory/util.smartptr/util.smartptr.weak/util.smartptr.weak.obs/owner_hash.pass.cpp FAIL
+std/utilities/memory/util.smartptr/util.smartptr.weak/util.smartptr.weak.obs/owner_hash.pass.cpp FAIL
+
+# P2542R8 views::concat
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/ranges/range.adaptors/range.concat/adaptor.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/begin.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/constraints.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/ctad.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/ctor.default.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/ctor.views.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/end.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/iterator/arithmetic.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/iterator/compare.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/iterator/ctor.other.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/iterator/decrement.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/iterator/deref.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/iterator/increment.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/iterator/iter_move.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/iterator/iter_swap.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/iterator/member_types.compile.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/iterator/subscript.pass.cpp FAIL
+std/ranges/range.adaptors/range.concat/size.pass.cpp FAIL
 
 # P2592R3 Hashing Support For chrono Value Classes
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
@@ -291,16 +369,17 @@ std/utilities/const.wrap.class/call.pass.cpp FAIL
 std/utilities/const.wrap.class/comma.pass.cpp FAIL
 std/utilities/const.wrap.class/comp.pass.cpp FAIL
 std/utilities/const.wrap.class/convert.pass.cpp FAIL
-std/utilities/const.wrap.class/ctad.compile.pass.cpp FAIL
 std/utilities/const.wrap.class/cw.pass.cpp FAIL
-std/utilities/const.wrap.class/cw_fixed.array.ctor.pass.cpp FAIL
-std/utilities/const.wrap.class/cw_fixed.ctor.pass.cpp FAIL
 std/utilities/const.wrap.class/general.pass.cpp FAIL
 std/utilities/const.wrap.class/mem_ptr.pass.cpp FAIL
 std/utilities/const.wrap.class/pseudo_mutators.pass.cpp FAIL
 std/utilities/const.wrap.class/subscript.pass.cpp FAIL
 std/utilities/const.wrap.class/types.compile.pass.cpp FAIL
 std/utilities/const.wrap.class/unary_ops.pass.cpp FAIL
+
+# P2821R5 span::at()
+# Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
+std/containers/views/views.span/span.elem/at.pass.cpp FAIL
 
 # P2835R7 atomic_ref::address()
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
@@ -316,10 +395,35 @@ std/utilities/function.objects/refwrap/refwrap.comparisons/compare.three_way.ref
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/utilities/optional/optional.object/optional.object.ctor/ref_t.pass.cpp FAIL
 
+# P3029R1 Improving mdspan And span CTAD
+# Will be implemented by GH-5692.
+std/containers/views/mdspan/extents/ctad.pass.cpp FAIL
+std/containers/views/mdspan/mdspan/deduction.pass.cpp FAIL
+std/containers/views/views.span/span.cons/deduct.pass.cpp FAIL
+
 # P3044R2 basic_string::subview()
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
 std/strings/basic.string/string.ops/string_substr/subview.pass.cpp FAIL
 std/strings/string.view/string.view.ops/subview.pass.cpp FAIL
+
+# P3059R2 Making User-Defined Constructors Of View Iterators/Sentinels private
+# Will be implemented by GH-6382.
+std/ranges/range.adaptors/range.elements/iterator/ctor.base.compile.pass.cpp FAIL
+std/ranges/range.adaptors/range.elements/sentinel/ctor.base.compile.pass.cpp FAIL
+std/ranges/range.adaptors/range.filter/iterator/ctor.parent.iter.compile.pass.cpp FAIL
+std/ranges/range.adaptors/range.join/range.join.sentinel/ctor.parent.compile.pass.cpp FAIL
+std/ranges/range.adaptors/range.lazy.split/range.lazy.split.inner/ctor.outer_iterator.compile.pass.cpp FAIL
+std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer/ctor.parent.base.compile.pass.cpp FAIL
+std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer/ctor.parent.compile.pass.cpp FAIL
+std/ranges/range.adaptors/range.split/sentinel/ctor.parent.compile.pass.cpp FAIL
+std/ranges/range.adaptors/range.take.while/sentinel/ctor.base.pred.compile.pass.cpp FAIL
+std/ranges/range.adaptors/range.take/range.take.sentinel/ctor.base.compile.pass.cpp FAIL
+std/ranges/range.adaptors/range.transform/iterator/ctor.parent.iter.compile.pass.cpp FAIL
+std/ranges/range.adaptors/range.transform/sentinel/ctor.base.compile.pass.cpp FAIL
+std/ranges/range.factories/range.iota.view/iterator/ctor.value.compile.pass.cpp FAIL
+std/ranges/range.factories/range.iota.view/sentinel/ctor.value.compile.pass.cpp FAIL
+std/ranges/range.factories/range.istream.view/ctor.pass.cpp FAIL
+std/ranges/range.factories/range.istream.view/iterator/ctor.parent.compile.pass.cpp FAIL
 
 # P3060R3 views::indices
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
@@ -765,6 +869,13 @@ std/localization/locale.categories/category.time/locale.time.get.byname/get_one_
 # static_assert(!noexcept((std::move(stride_iter).base())));
 std/ranges/range.adaptors/range.stride.view/iterator/base.pass.cpp FAIL
 
+# Bogus cpp03_allocator is not rebindable
+std/containers/sequences/vector/vector.cons/construct_iter_iter.pass.cpp FAIL
+std/containers/sequences/vector/vector.cons/construct_iter_iter_alloc.pass.cpp FAIL
+
+# Bogus ASSERT_NOT_NOEXCEPT rejects our strengthening
+std/input.output/syncstream/syncbuf/syncstream.syncbuf.assign/swap.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not analyzed, likely STL bugs. Various assertions.
@@ -906,6 +1017,14 @@ std/algorithms/alg.modifying.operations/alg.fill/fill_n.pass.cpp:0 SKIPPED
 std/algorithms/alg.modifying.operations/alg.fill/fill_n.pass.cpp:1 SKIPPED
 std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp:0 SKIPPED
 std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp:1 SKIPPED
+std/algorithms/alg.nonmodifying/alg.find.first.of/pstl.find_first_of_pred.pass.cpp:0 SKIPPED
+std/algorithms/alg.nonmodifying/alg.find.first.of/pstl.find_first_of_pred.pass.cpp:1 SKIPPED
+std/algorithms/alg.nonmodifying/alg.find.first.of/pstl.find_first_of.pass.cpp:0 SKIPPED
+std/algorithms/alg.nonmodifying/alg.find.first.of/pstl.find_first_of.pass.cpp:1 SKIPPED
+std/algorithms/alg.nonmodifying/mismatch/pstl.mismatch_pred.pass.cpp:0 SKIPPED
+std/algorithms/alg.nonmodifying/mismatch/pstl.mismatch_pred.pass.cpp:1 SKIPPED
+std/algorithms/alg.nonmodifying/mismatch/pstl.mismatch.pass.cpp:0 SKIPPED
+std/algorithms/alg.nonmodifying/mismatch/pstl.mismatch.pass.cpp:1 SKIPPED
 std/containers/associative/map/map.access/iterator.pass.cpp:0 SKIPPED
 std/containers/associative/map/map.access/iterator.pass.cpp:1 SKIPPED
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:0 SKIPPED
@@ -1191,6 +1310,19 @@ std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp:1 FAIL
 # Not analyzed, MSVC truncation warnings, Clang static_assert.
 std/algorithms/alg.nonmodifying/alg.fold/ranges.fold_right_last.pass.cpp FAIL
 
+# Not analyzed, test aborts.
+std/containers/unord/unord.map/unord.map.cnstr/exceptions.pass.cpp FAIL
+
+# Not analyzed.
+# MSVC error C2440: 'initializing': cannot convert from 'const std::shared_ptr<int>::{ctor}::_Fancy_t' to 'const std::shared_ptr<int>::{ctor}::_Raw_t'
+# Clang error: no viable conversion from 'const _Fancy_t' (aka 'const Pointer<int>') to 'const _Raw_t' (aka 'int *const')
+std/utilities/memory/util.smartptr/util.smartptr.shared/pointer_destruction.pass.cpp FAIL
+
+# Not analyzed.
+# MSVC error C2139: 'complete_type_allocator<_Newfirst>': an undefined class is not allowed as an argument to compiler intrinsic type trait '__is_empty'
+# Clang error: incomplete type 'complete_type_allocator<std::_Ref_count_resource_alloc<int *, std::default_delete<int>, complete_type_allocator<int>>>' used in type trait expression
+std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/pointer_deleter_allocator.pass.cpp FAIL
+
 
 # *** MSVC-INTERNAL TEST HARNESS ISSUES (note: configuration :9 restricts these skips to be MSVC-internal) ***
 
@@ -1218,8 +1350,15 @@ std/depr/depr.c.headers/setjmp_h.compile.pass.cpp:9 SKIPPED
 std/input.output/file.streams/fstreams/ifstream.members/buffered_reads.pass.cpp:9 SKIPPED
 std/input.output/file.streams/fstreams/ofstream.members/buffered_writes.pass.cpp:9 SKIPPED
 std/language.support/support.runtime/csetjmp.pass.cpp:9 SKIPPED
+std/language.support/support.types/byteops/lshift.assign.pass.cpp:9 SKIPPED
+std/language.support/support.types/byteops/lshift.pass.cpp:9 SKIPPED
+std/language.support/support.types/byteops/rshift.assign.pass.cpp:9 SKIPPED
+std/language.support/support.types/byteops/rshift.pass.cpp:9 SKIPPED
 std/numerics/numeric.ops/numeric.ops.midpoint/midpoint.pointer.pass.cpp:9 SKIPPED
 std/ranges/range.adaptors/range.lazy.split/constraints.compile.pass.cpp:9 SKIPPED
+std/ranges/range.factories/range.iota.view/ctor.value.bound.pass.cpp:9 SKIPPED
+std/ranges/range.factories/range.iota.view/end.pass.cpp:9 SKIPPED
+std/ranges/range.factories/range.iota.view/iterator/star.pass.cpp:9 SKIPPED
 std/ranges/range.utility/range.utility.conv/to.pass.cpp:9 SKIPPED
 std/thread/thread.jthread/assign.move.pass.cpp:9 SKIPPED
 std/utilities/meta/meta.unary/dependent_return_type.pass.cpp:9 SKIPPED
@@ -1265,6 +1404,9 @@ std/time/time.syn/formatter.weekday_last.pass.cpp:9 SKIPPED
 std/time/time.syn/formatter.weekday.pass.cpp:9 SKIPPED
 std/time/time.syn/formatter.year_month_day.pass.cpp:9 SKIPPED
 std/utilities/function.objects/func.wrap/func.wrap.func/noncopyable_return_type.pass.cpp:9 SKIPPED
+
+# This test is marked as `XFAIL: !has-128-bit-atomics`, but the MSVC-internal test harness doesn't yet parse XFAIL.
+std/atomics/atomics.types.generic/padding.pass.cpp:9 SKIPPED
 
 # This test is marked as `REQUIRES: large_tests`. The GitHub test harness doesn't define that feature, so it doesn't
 # run this test. However, the MSVC-internal test harness doesn't yet parse REQUIRES, and simply runs everything.
