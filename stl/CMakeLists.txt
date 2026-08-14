@@ -70,6 +70,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/cwchar
     ${CMAKE_CURRENT_LIST_DIR}/inc/cwctype
     ${CMAKE_CURRENT_LIST_DIR}/inc/deque
+    ${CMAKE_CURRENT_LIST_DIR}/inc/dryfish
     ${CMAKE_CURRENT_LIST_DIR}/inc/exception
     ${CMAKE_CURRENT_LIST_DIR}/inc/execution
     ${CMAKE_CURRENT_LIST_DIR}/inc/expected
@@ -115,7 +116,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/ratio
     ${CMAKE_CURRENT_LIST_DIR}/inc/regex
     ${CMAKE_CURRENT_LIST_DIR}/inc/scoped_allocator
-    ${CMAKE_CURRENT_LIST_DIR}/inc/dryfish
     ${CMAKE_CURRENT_LIST_DIR}/inc/semaphore
     ${CMAKE_CURRENT_LIST_DIR}/inc/set
     ${CMAKE_CURRENT_LIST_DIR}/inc/shared_mutex
