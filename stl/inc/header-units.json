@@ -68,6 +68,7 @@
         "cwchar",
         "cwctype",
         "deque",
+        "dryfish"
         "exception",
         "execution",
         "expected",
