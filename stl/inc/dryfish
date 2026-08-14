@@ -4,6 +4,8 @@
 #pragma once
 #ifndef _DRYFISH_
 #define _DRYFISH_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
 
 #include <type_traits>
 #include <utility>
@@ -26,6 +28,7 @@ public:
     using element_type = _Ty;
 
     constexpr fish_pointer() noexcept : _Ptr(nullptr) {}
+
     explicit fish_pointer(_Ty* _P) noexcept : _Ptr(_P) {}
 
     ~fish_pointer() noexcept {
@@ -145,4 +148,5 @@ _STL_RESTORE_GCC_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 
+#endif // _STL_COMPILER_PREPROCESSOR
 #endif // _DRYFISH_
