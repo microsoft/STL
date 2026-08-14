@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <utility>
 #include <cstddef>
+#include <memory>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -20,30 +21,37 @@ _STL_DISABLE_GCC_WARNINGS
 _STD_BEGIN
 
 template <class _Ty>
-class fish_pointer {
+class _Fish_pointer { // unique_ptr-like ownership wrapper
 private:
     _Ty* _Ptr;
+
+    template <class _Uty>
+    static void _Check_delete() {
+        static_assert(0 < sizeof(_Uty), "can't delete incomplete type");
+    }
 
 public:
     using element_type = _Ty;
 
-    constexpr fish_pointer() noexcept : _Ptr(nullptr) {}
+    constexpr _Fish_pointer() noexcept : _Ptr(nullptr) {}
 
-    explicit fish_pointer(_Ty* _P) noexcept : _Ptr(_P) {}
+    explicit _Fish_pointer(_Ty* _P) noexcept : _Ptr(_P) {}
 
-    ~fish_pointer() noexcept {
+    ~_Fish_pointer() noexcept {
+        _Check_delete<_Ty>();
         delete _Ptr;
     }
 
-    fish_pointer(const fish_pointer&) = delete;
-    fish_pointer& operator=(const fish_pointer&) = delete;
+    _Fish_pointer(const _Fish_pointer&) = delete;
+    _Fish_pointer& operator=(const _Fish_pointer&) = delete;
 
-    fish_pointer(fish_pointer&& _Other) noexcept : _Ptr(_Other._Ptr) {
+    _Fish_pointer(_Fish_pointer&& _Other) noexcept : _Ptr(_Other._Ptr) {
         _Other._Ptr = nullptr;
     }
 
-    fish_pointer& operator=(fish_pointer&& _Other) noexcept {
+    _Fish_pointer& operator=(_Fish_pointer&& _Other) noexcept {
         if (this != _STD addressof(_Other)) {
+            _Check_delete<_Ty>();
             delete _Ptr;
             _Ptr = _Other._Ptr;
             _Other._Ptr = nullptr;
@@ -68,6 +76,7 @@ public:
     }
 
     void reset(_Ty* _P = nullptr) noexcept {
+        _Check_delete<_Ty>();
         delete _Ptr;
         _Ptr = _P;
     }
@@ -78,38 +87,38 @@ public:
         return _Tmp;
     }
 
-    void swap(fish_pointer& _Other) noexcept {
+    void swap(_Fish_pointer& _Other) noexcept {
         _STD swap(_Ptr, _Other._Ptr);
     }
 };
 
 template <class _Ty, class... _Args>
-_NODISCARD fish_pointer<_Ty> make_dry(_Args&&... _Vals) {
-    return fish_pointer<_Ty>(new _Ty(_STD forward<_Args>(_Vals)...));
+_NODISCARD _Fish_pointer<_Ty> _Make_dry(_Args&&... _Args) {
+    return _Fish_pointer<_Ty>(new _Ty(_STD forward<_Args>(_Args)...));
 }
 
 template <class _Ty>
-class dry_array {
+class _Dry_array {
 private:
     _Ty* _Data;
     size_t _Size;
 
 public:
-    explicit dry_array(size_t _N) : _Data(new _Ty[_N]), _Size(_N) {}
+    explicit _Dry_array(size_t _N) : _Data(new _Ty[_N]), _Size(_N) {}
 
-    ~dry_array() {
+    ~_Dry_array() {
         delete[] _Data;
     }
 
-    dry_array(const dry_array&) = delete;
-    dry_array& operator=(const dry_array&) = delete;
+    _Dry_array(const _Dry_array&) = delete;
+    _Dry_array& operator=(const _Dry_array&) = delete;
 
-    dry_array(dry_array&& _Other) noexcept : _Data(_Other._Data), _Size(_Other._Size) {
+    _Dry_array(_Dry_array&& _Other) noexcept : _Data(_Other._Data), _Size(_Other._Size) {
         _Other._Data = nullptr;
         _Other._Size = 0;
     }
 
-    dry_array& operator=(dry_array&& _Other) noexcept {
+    _Dry_array& operator=(_Dry_array&& _Other) noexcept {
         if (this != _STD addressof(_Other)) {
             delete[] _Data;
             _Data = _Other._Data;
@@ -140,6 +149,16 @@ public:
         return _Data;
     }
 };
+
+// Non-standard aliases for user convenience (reserved names)
+using fish_pointer = _Fish_pointer;
+template <class _Ty, class... _Args>
+_NODISCARD fish_pointer<_Ty> make_dry(_Args&&... _Args) {
+    return _Make_dry<_Ty>(_STD forward<_Args>(_Args)...);
+}
+
+template <class _Ty>
+using dry_array = _Dry_array<_Ty>;
 
 _STD_END
 
