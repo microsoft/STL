@@ -80,6 +80,7 @@
 #include <codecvt>
 #include <complex>
 #include <deque>
+#include <dryfish>
 #include <exception>
 #include <expected>
 #include <filesystem>
