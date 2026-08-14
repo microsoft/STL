@@ -1,0 +1,148 @@
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _DRYFISH_
+#define _DRYFISH_
+
+#include <type_traits>
+#include <utility>
+#include <cstddef>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+_STL_DISABLE_GCC_WARNINGS
+
+_STD_BEGIN
+
+template <class _Ty>
+class fish_pointer {
+private:
+    _Ty* _Ptr;
+
+public:
+    using element_type = _Ty;
+
+    constexpr fish_pointer() noexcept : _Ptr(nullptr) {}
+    explicit fish_pointer(_Ty* _P) noexcept : _Ptr(_P) {}
+
+    ~fish_pointer() noexcept {
+        delete _Ptr;
+    }
+
+    fish_pointer(const fish_pointer&) = delete;
+    fish_pointer& operator=(const fish_pointer&) = delete;
+
+    fish_pointer(fish_pointer&& _Other) noexcept : _Ptr(_Other._Ptr) {
+        _Other._Ptr = nullptr;
+    }
+
+    fish_pointer& operator=(fish_pointer&& _Other) noexcept {
+        if (this != _STD addressof(_Other)) {
+            delete _Ptr;
+            _Ptr = _Other._Ptr;
+            _Other._Ptr = nullptr;
+        }
+        return *this;
+    }
+
+    _NODISCARD _Ty& operator*() const noexcept {
+        return *_Ptr;
+    }
+
+    _NODISCARD _Ty* operator->() const noexcept {
+        return _Ptr;
+    }
+
+    _NODISCARD explicit operator bool() const noexcept {
+        return _Ptr != nullptr;
+    }
+
+    _NODISCARD _Ty* get() const noexcept {
+        return _Ptr;
+    }
+
+    void reset(_Ty* _P = nullptr) noexcept {
+        delete _Ptr;
+        _Ptr = _P;
+    }
+
+    _NODISCARD _Ty* release() noexcept {
+        _Ty* _Tmp = _Ptr;
+        _Ptr = nullptr;
+        return _Tmp;
+    }
+
+    void swap(fish_pointer& _Other) noexcept {
+        _STD swap(_Ptr, _Other._Ptr);
+    }
+};
+
+template <class _Ty, class... _Args>
+_NODISCARD fish_pointer<_Ty> make_dry(_Args&&... _Args) {
+    return fish_pointer<_Ty>(new _Ty(_STD forward<_Args>(_Args)...));
+}
+
+template <class _Ty>
+class dry_array {
+private:
+    _Ty* _Data;
+    size_t _Size;
+
+public:
+    explicit dry_array(size_t _N) : _Data(new _Ty[_N]), _Size(_N) {}
+
+    ~dry_array() {
+        delete[] _Data;
+    }
+
+    dry_array(const dry_array&) = delete;
+    dry_array& operator=(const dry_array&) = delete;
+
+    dry_array(dry_array&& _Other) noexcept : _Data(_Other._Data), _Size(_Other._Size) {
+        _Other._Data = nullptr;
+        _Other._Size = 0;
+    }
+
+    dry_array& operator=(dry_array&& _Other) noexcept {
+        if (this != _STD addressof(_Other)) {
+            delete[] _Data;
+            _Data = _Other._Data;
+            _Size = _Other._Size;
+            _Other._Data = nullptr;
+            _Other._Size = 0;
+        }
+        return *this;
+    }
+
+    _NODISCARD _Ty& operator[](size_t _Idx) {
+        return _Data[_Idx];
+    }
+
+    _NODISCARD const _Ty& operator[](size_t _Idx) const {
+        return _Data[_Idx];
+    }
+
+    _NODISCARD size_t size() const noexcept {
+        return _Size;
+    }
+
+    _NODISCARD _Ty* data() noexcept {
+        return _Data;
+    }
+
+    _NODISCARD const _Ty* data() const noexcept {
+        return _Data;
+    }
+};
+
+_STD_END
+
+_STL_RESTORE_CLANG_WARNINGS
+_STL_RESTORE_GCC_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+
+#endif // _DRYFISH_
