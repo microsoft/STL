@@ -151,7 +151,8 @@ public:
 };
 
 // Non-standard aliases for user convenience (reserved names)
-using fish_pointer = _Fish_pointer;
+template <class _Ty>
+using fish_pointer = _Fish_pointer<_Ty>;
 template <class _Ty, class... _Args>
 _NODISCARD fish_pointer<_Ty> make_dry(_Args&&... _Args) {
     return _Make_dry<_Ty>(_STD forward<_Args>(_Args)...);
