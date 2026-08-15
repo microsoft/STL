@@ -238,13 +238,9 @@ _STD_BEGIN
 
 _EXPORT_STD class exception_ptr {
 public:
-    exception_ptr() noexcept {
-        __ExceptionPtrCreate(this);
-    }
+    exception_ptr() noexcept {}
 
-    exception_ptr(nullptr_t) noexcept {
-        __ExceptionPtrCreate(this);
-    }
+    exception_ptr(nullptr_t) noexcept {}
 
     ~exception_ptr() noexcept {
         __ExceptionPtrDestroy(this);
@@ -267,12 +263,12 @@ public:
 
     exception_ptr& operator=(nullptr_t) noexcept {
         exception_ptr _Ptr;
-        __ExceptionPtrAssign(this, &_Ptr);
+        swap(*this, _Ptr);
         return *this;
     }
 
     explicit operator bool() const noexcept {
-        return __ExceptionPtrToBool(this);
+        return _Data1 != nullptr;
     }
 
     static exception_ptr _Copy_exception(_In_ void* _Except, _In_ const void* _Ptr) {
@@ -286,11 +282,16 @@ public:
     }
 
     friend void swap(exception_ptr& _Lhs, exception_ptr& _Rhs) noexcept {
-        __ExceptionPtrSwap(&_Lhs, &_Rhs);
+        void* const _Data1 = _Lhs._Data1;
+        void* const _Data2 = _Lhs._Data2;
+        _Lhs._Data1       = _Rhs._Data1;
+        _Lhs._Data2       = _Rhs._Data2;
+        _Rhs._Data1       = _Data1;
+        _Rhs._Data2       = _Data2;
     }
 
     _NODISCARD friend bool operator==(const exception_ptr& _Lhs, const exception_ptr& _Rhs) noexcept {
-        return __ExceptionPtrCompare(&_Lhs, &_Rhs);
+        return _Lhs._Data1 == _Rhs._Data1;
     }
 
     _NODISCARD friend bool operator==(const exception_ptr& _Lhs, nullptr_t) noexcept {
