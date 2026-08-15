@@ -282,12 +282,12 @@ public:
     }
 
     friend void swap(exception_ptr& _Lhs, exception_ptr& _Rhs) noexcept {
-        void* const _Data1 = _Lhs._Data1;
-        void* const _Data2 = _Lhs._Data2;
-        _Lhs._Data1       = _Rhs._Data1;
-        _Lhs._Data2       = _Rhs._Data2;
-        _Rhs._Data1       = _Data1;
-        _Rhs._Data2       = _Data2;
+        void* const _LhsData1 = _Lhs._Data1;
+        void* const _LhsData2 = _Lhs._Data2;
+        _Lhs._Data1           = _Rhs._Data1;
+        _Lhs._Data2           = _Rhs._Data2;
+        _Rhs._Data1           = _LhsData1;
+        _Rhs._Data2           = _LhsData2;
     }
 
     _NODISCARD friend bool operator==(const exception_ptr& _Lhs, const exception_ptr& _Rhs) noexcept {
