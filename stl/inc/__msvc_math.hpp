@@ -328,7 +328,7 @@ _STL_DEF_OVERLOADED_COMPARISON_FAMILY2(_CONSTEXPR_CMATH23, islessgreater)
 _STL_DEF_OVERLOADED_COMPARISON_FAMILY2(_CONSTEXPR_CMATH23, isunordered)
 } // extern "C++"
 
-// Preserve the sign of zero when atan2 underflows.
+// TRANSITION, LLVM-214934: Preserve the sign of zero when atan2 underflows.
 // __builtin_atan2 can return +0 for tiny negative results.
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl atan2f(float _Xx0, float _Xx1) noexcept /* strengthened */ {
     float _Result = __builtin_atan2f(_Xx0, _Xx1);
