@@ -6,11 +6,11 @@ Because Microsoft is lazy and I don't like it so I fork to add everything I like
 ### What's new:
 Added myself: `<dryfish>` header and fish pointer.
 ### Roadmap:
-- [] Add GC
-- [] Add dynamic type
-- Add Kotlin's feture
-- more!
+- [ ] Add GC
+- [ ] Add dynamic type
+- [ ] Add Kotlin's feture
+- [ ] more!
 ### Credit:
 Microsoft: Original developer
 
-Me: GC
+Me: lol
