@@ -8,7 +8,7 @@ Added myself: `<dryfish>` header and fish pointer.
 ### Roadmap:
 - [ ] Add GC
 - [ ] Add dynamic type
-- [ ] Add Kotlin's feture
+- [ ] Add Kotlin's feature (subStringBefore, Asinc/Await, etc)
 - [ ] more!
 ### Credit:
 Microsoft: Original developer
