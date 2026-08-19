@@ -59,6 +59,12 @@ namespace {
         constexpr auto _Mask_sve = 1ull << _Idx_sve;
         return (__processor_features_0_63 & _Mask_sve) != 0;
     }
+
+    // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
+    // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
+    __declspec(noinline) size_t _Sve_vl() noexcept {
+        return svcntb();
+    }
 #endif // ^^^ defined(_M_ARM64) ^^^
 
     size_t _Byte_length(const void* const _First, const void* const _Last) noexcept {
@@ -11577,6 +11583,67 @@ namespace {
             _Traits::_Exit_vectorized(); // TRANSITION, DevCom-10331414
         }
 
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+        __forceinline svbool_t _Load_predicate(const void* const _Src) noexcept {
+            return *reinterpret_cast<const svbool_t*>(_Src);
+        }
+
+        __declspec(noinline) void __stdcall _Impl_sve_1(char* const _Dest, const void* _Src, const size_t _Size_bits,
+            const char _Elem0, const char _Elem1) noexcept {
+            const size_t _Step_size_bits = svcntb();
+            const size_t _Step_bytes     = _Step_size_bits / 8;
+            size_t _Remaining_bits       = _Size_bits;
+            if (_Size_bits >= _Step_size_bits) {
+                char* _Pos = _Dest + _Size_bits;
+                _Remaining_bits &= _Step_size_bits - 1;
+                char* const _Stop_at = _Dest + _Remaining_bits;
+                const auto _Px0      = svdup_u8(static_cast<uint8_t>(_Elem0));
+                const auto _Px1      = svdup_u8(static_cast<uint8_t>(_Elem1));
+                const auto _True     = svptrue_b8();
+
+                do {
+                    const auto _Pred  = _Load_predicate(_Src);
+                    const auto _Elems = svrev_u8(svsel_u8(_Pred, _Px1, _Px0));
+                    _Pos -= _Step_size_bits;
+                    svst1_u8(_True, reinterpret_cast<uint8_t*>(_Pos), _Elems);
+                    _Advance_bytes(_Src, _Step_bytes);
+                } while (_Pos != _Stop_at);
+            }
+
+            _Impl<_Traits_1_neon>(_Dest, _Src, _Remaining_bits, _Elem0, _Elem1);
+        }
+
+        __declspec(noinline) void __stdcall _Impl_sve_2(wchar_t* const _Dest, const void* _Src, const size_t _Size_bits,
+            const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
+            const size_t _Step_size_bits = svcntb();
+            const size_t _Step_bytes     = _Step_size_bits / 8;
+            size_t _Remaining_bits       = _Size_bits;
+            if (_Size_bits >= _Step_size_bits) {
+                wchar_t* _Pos = _Dest + _Size_bits;
+                _Remaining_bits &= _Step_size_bits - 1;
+                wchar_t* const _Stop_at   = _Dest + _Remaining_bits;
+                const size_t _Output_size = _Step_size_bits / 2;
+                const auto _Px0           = svdup_u16(static_cast<uint16_t>(_Elem0));
+                const auto _Px1           = svdup_u16(static_cast<uint16_t>(_Elem1));
+                const auto _True          = svptrue_b16();
+
+                do {
+                    const auto _Packed_pred = _Load_predicate(_Src);
+                    const auto _Pred_lo     = svzip1_b8(_Packed_pred, _Packed_pred);
+                    const auto _Pred_hi     = svzip2_b8(_Packed_pred, _Packed_pred);
+                    const auto _Elems_lo    = svrev_u16(svsel_u16(_Pred_lo, _Px1, _Px0));
+                    const auto _Elems_hi    = svrev_u16(svsel_u16(_Pred_hi, _Px1, _Px0));
+                    _Pos -= _Step_size_bits;
+                    svst1_u16(_True, reinterpret_cast<uint16_t*>(_Pos), _Elems_hi);
+                    svst1_u16(_True, reinterpret_cast<uint16_t*>(_Pos + _Output_size), _Elems_lo);
+                    _Advance_bytes(_Src, _Step_bytes);
+                } while (_Pos != _Stop_at);
+            }
+
+            _Impl<_Traits_2_neon>(_Dest, _Src, _Remaining_bits, _Elem0, _Elem1);
+        }
+#endif // ^^^ defined(_M_ARM64) ^^^
+
 #if !defined(_M_ARM64) && !defined(_M_ARM64EC)
         template <class _Avx_traits, class _Sse_traits, class _Elem>
         void __stdcall _Dispatch(_Elem* const _Dest, const void* const _Src, const size_t _Size_bits,
@@ -11602,6 +11669,12 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_1(
     char* const _Dest, const void* const _Src, const size_t _Size_bits, const char _Elem0, const char _Elem1) noexcept {
     using namespace _Bitset_to_string;
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    if (_Use_FEAT_SVE() && _Size_bits >= 128) {
+        _Impl_sve_1(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
+        return;
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
     _Impl<_Traits_1_neon>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     _Dispatch<_Traits_1_avx, _Traits_1_sse>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
@@ -11612,6 +11685,12 @@ __declspec(noalias) void __stdcall __std_bitset_to_string_2(wchar_t* const _Dest
     const size_t _Size_bits, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
     using namespace _Bitset_to_string;
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    if (_Use_FEAT_SVE() && _Size_bits >= 128) {
+        _Impl_sve_2(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
+        return;
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
     _Impl<_Traits_2_neon>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     _Dispatch<_Traits_2_avx, _Traits_2_sse>(_Dest, _Src, _Size_bits, _Elem0, _Elem1);
@@ -11888,6 +11967,111 @@ namespace {
             return true;
         }
 
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+        __forceinline void _Store_predicate(void* const _Dest, const svbool_t _Pred) noexcept {
+            *reinterpret_cast<svbool_t*>(_Dest) = _Pred;
+        }
+
+        template <class _Elem>
+        bool _Finish_sve(uint8_t* const _Dest, uint8_t* const _Dest_end, const _Elem* const _Src,
+            const size_t _Size_convert, const _Elem* const _Extra, const size_t _Extra_size, const _Elem _Elem0,
+            const _Elem _Elem1) noexcept {
+            for (size_t _Ix = 0; _Ix != _Extra_size; ++_Ix) {
+                if (const _Elem _Cur = _Extra[_Ix]; _Cur != _Elem0 && _Cur != _Elem1) {
+                    return false;
+                }
+            }
+
+            if (_Dest != _Dest_end) {
+                memset(_Dest, 0, _Byte_length(_Dest, _Dest_end));
+            }
+
+            for (size_t _Ix = 0; _Ix != _Size_convert; ++_Ix) {
+                const _Elem _Cur = _Src[_Size_convert - _Ix - 1];
+
+                if (_Cur != _Elem0 && _Cur != _Elem1) {
+                    return false;
+                }
+
+                _Dest[_Ix >> 3] |= static_cast<uint8_t>(_Cur == _Elem1) << (_Ix & 0x7);
+            }
+
+            return true;
+        }
+
+        __declspec(noinline) bool _Impl_sve_1(void* const _Dest, const char* const _Src, const size_t _Size_bytes,
+            const size_t _Size_bits, const size_t _Size_chars, const char _Elem0, const char _Elem1) noexcept {
+            const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
+            const size_t _Step_in      = svcntb();
+            const size_t _Step_out     = _Step_in / 8;
+            const char* _Src_end       = _Src + _Size_convert;
+            uint8_t* _Dest_bytes       = static_cast<uint8_t*>(_Dest);
+            uint8_t* const _Dest_end   = _Dest_bytes + _Size_bytes;
+
+            const auto _True = svptrue_b8();
+            const auto _Dx0  = svdup_u8(static_cast<uint8_t>(_Elem0));
+            const auto _Dx1  = svdup_u8(static_cast<uint8_t>(_Elem1));
+
+            size_t _Remaining = _Size_convert;
+            while (_Remaining >= _Step_in) {
+                _Src_end -= _Step_in;
+                const auto _Val     = svrev_u8(svld1_u8(_True, reinterpret_cast<const uint8_t*>(_Src_end)));
+                const auto _Ne0     = svcmpne_u8(_True, _Val, _Dx0);
+                const auto _Ex1     = svcmpeq_u8(_True, _Val, _Dx1);
+                const auto _Invalid = svbic_b_z(_True, _Ne0, _Ex1);
+                if (svptest_any(_True, _Invalid)) {
+                    return false;
+                }
+
+                _Store_predicate(_Dest_bytes, _Ex1);
+                _Dest_bytes += _Step_out;
+                _Remaining -= _Step_in;
+            }
+
+            return _Finish_sve(_Dest_bytes, _Dest_end, _Src, _Remaining, _Src + _Size_convert,
+                _Size_chars - _Size_convert, _Elem0, _Elem1);
+        }
+
+        __declspec(noinline) bool _Impl_sve_2(void* const _Dest, const wchar_t* const _Src, const size_t _Size_bytes,
+            const size_t _Size_bits, const size_t _Size_chars, const wchar_t _Elem0, const wchar_t _Elem1) noexcept {
+            const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
+            const size_t _Step_in      = svcntb();
+            const size_t _Step_out     = _Step_in / 8;
+            const size_t _Half_step    = _Step_in / 2;
+            const wchar_t* _Src_end    = _Src + _Size_convert;
+            uint8_t* _Dest_bytes       = static_cast<uint8_t*>(_Dest);
+            uint8_t* const _Dest_end   = _Dest_bytes + _Size_bytes;
+
+            const auto _Pg  = svptrue_b16();
+            const auto _Dx0 = svdup_u16(static_cast<uint16_t>(_Elem0));
+            const auto _Dx1 = svdup_u16(static_cast<uint16_t>(_Elem1));
+
+            size_t _Remaining = _Size_convert;
+            while (_Remaining >= _Step_in) {
+                _Src_end -= _Step_in;
+                const auto _Val_hi = svrev_u16(svld1_u16(_Pg, reinterpret_cast<const uint16_t*>(_Src_end)));
+                const auto _Val_lo =
+                    svrev_u16(svld1_u16(_Pg, reinterpret_cast<const uint16_t*>(_Src_end + _Half_step)));
+                const auto _Ne0_hi     = svcmpne_u16(_Pg, _Val_hi, _Dx0);
+                const auto _Ex1_hi     = svcmpeq_u16(_Pg, _Val_hi, _Dx1);
+                const auto _Ne0_lo     = svcmpne_u16(_Pg, _Val_lo, _Dx0);
+                const auto _Ex1_lo     = svcmpeq_u16(_Pg, _Val_lo, _Dx1);
+                const auto _Invalid_hi = svbic_b_z(_Pg, _Ne0_hi, _Ex1_hi);
+                const auto _Invalid_lo = svbic_b_z(_Pg, _Ne0_lo, _Ex1_lo);
+                if (svptest_any(_Pg, _Invalid_hi) || svptest_any(_Pg, _Invalid_lo)) {
+                    return false;
+                }
+
+                _Store_predicate(_Dest_bytes, svuzp1_b8(_Ex1_lo, _Ex1_hi));
+                _Dest_bytes += _Step_out;
+                _Remaining -= _Step_in;
+            }
+
+            return _Finish_sve(_Dest_bytes, _Dest_end, _Src, _Remaining, _Src + _Size_convert,
+                _Size_chars - _Size_convert, _Elem0, _Elem1);
+        }
+#endif // ^^^ defined(_M_ARM64) ^^^
+
         template <class _Elem>
         bool _Fallback(void* const _Dest, const _Elem* const _Src, const size_t _Size_bytes, const size_t _Size_bits,
             const size_t _Size_chars, const _Elem _Elem0, const _Elem _Elem1) noexcept {
@@ -11943,6 +12127,12 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_1(void* const _Dest,
     using namespace _Bitset_from_string;
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
+    if (_Use_FEAT_SVE() && _Size_convert >= _Sve_vl()) {
+        return _Impl_sve_1(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
     return _Impl<_Traits_1_neon>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Dispatch<_Traits_1_avx, _Traits_1_sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
@@ -11955,6 +12145,12 @@ __declspec(noalias) bool __stdcall __std_bitset_from_string_2(void* const _Dest,
     using namespace _Bitset_from_string;
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    const size_t _Size_convert = (_Size_chars <= _Size_bits) ? _Size_chars : _Size_bits;
+    if (_Use_FEAT_SVE() && _Size_convert >= _Sve_vl()) {
+        return _Impl_sve_2(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
     return _Impl<_Traits_2_neon>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
     return _Dispatch<_Traits_2_avx, _Traits_2_sse>(_Dest, _Src, _Size_bytes, _Size_bits, _Size_chars, _Elem0, _Elem1);
