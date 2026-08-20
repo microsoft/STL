@@ -15,7 +15,7 @@ template <class T>
 constexpr void test_comparison_functions();
 
 constexpr bool test_cmath() {
-#ifndef _MSVC_LIBC_MATH // TRANSITION, MSVC-PR-767184 fixing error LNK2005: frexp already defined in test.obj
+#if defined(_MSVC_INTERNAL_TESTING) || !defined(_MSVC_LIBC_MATH) // TRANSITION, MSVC-PR-767184/772024 fixed LNK2005
     {
         int exponent = 0;
         assert(frexp(15.5f, &exponent) == 0.96875f);
