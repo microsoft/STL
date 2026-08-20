@@ -10175,7 +10175,7 @@ namespace {
         };
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
-        struct _SVE_8 {
+        struct _Sve_8 {
             using _Vec_t = svuint64_t;
 
             static size_t _Step() noexcept {
@@ -10222,7 +10222,7 @@ namespace {
             }
         };
 
-        struct _SVE_4 {
+        struct _Sve_4 {
             using _Vec_t = svuint32_t;
 
             static size_t _Step() noexcept {
@@ -10269,19 +10269,19 @@ namespace {
             }
         };
 
-        struct _SVE_2 {
-            using _Vec_t = _SVE_4::_Vec_t;
+        struct _Sve_2 {
+            using _Vec_t = _Sve_4::_Vec_t;
 
             static size_t _Step() noexcept {
-                return _SVE_4::_Step();
+                return _Sve_4::_Step();
             }
 
             static svbool_t _Whilelt(size_t _Op1, size_t _Op2) noexcept {
-                return _SVE_4::_Whilelt(_Op1, _Op2);
+                return _Sve_4::_Whilelt(_Op1, _Op2);
             }
 
             static _Vec_t _Set(const uint16_t _Val) noexcept {
-                return _SVE_4::_Set(static_cast<uint32_t>(_Val));
+                return _Sve_4::_Set(static_cast<uint32_t>(_Val));
             }
 
             static _Vec_t _Load(svbool_t _Pred, const void* const _Ptr) noexcept {
@@ -10289,11 +10289,11 @@ namespace {
             }
 
             static svbool_t _Cmpne(svbool_t _Pred, const _Vec_t _Data, const _Vec_t _Comparand) noexcept {
-                return _SVE_4::_Cmpne(_Pred, _Data, _Comparand);
+                return _Sve_4::_Cmpne(_Pred, _Data, _Comparand);
             }
 
             static _Vec_t _Compact(svbool_t _Mask, const _Vec_t _Data) noexcept {
-                return _SVE_4::_Compact(_Mask, _Data);
+                return _Sve_4::_Compact(_Mask, _Data);
             }
 
             static void* _Store_masked(svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
@@ -10316,19 +10316,19 @@ namespace {
             }
         };
 
-        struct _SVE_1 {
-            using _Vec_t = _SVE_4::_Vec_t;
+        struct _Sve_1 {
+            using _Vec_t = _Sve_4::_Vec_t;
 
             static size_t _Step() noexcept {
-                return _SVE_4::_Step();
+                return _Sve_4::_Step();
             }
 
             static svbool_t _Whilelt(size_t _Op1, size_t _Op2) noexcept {
-                return _SVE_4::_Whilelt(_Op1, _Op2);
+                return _Sve_4::_Whilelt(_Op1, _Op2);
             }
 
             static _Vec_t _Set(const uint8_t _Val) noexcept {
-                return _SVE_4::_Set(static_cast<uint32_t>(_Val));
+                return _Sve_4::_Set(static_cast<uint32_t>(_Val));
             }
 
             static _Vec_t _Load(svbool_t _Pred, const void* const _Ptr) noexcept {
@@ -10336,11 +10336,11 @@ namespace {
             }
 
             static svbool_t _Cmpne(svbool_t _Pred, const _Vec_t _Data, const _Vec_t _Comparand) noexcept {
-                return _SVE_4::_Cmpne(_Pred, _Data, _Comparand);
+                return _Sve_4::_Cmpne(_Pred, _Data, _Comparand);
             }
 
             static _Vec_t _Compact(svbool_t _Mask, const _Vec_t _Data) noexcept {
-                return _SVE_4::_Compact(_Mask, _Data);
+                return _Sve_4::_Compact(_Mask, _Data);
             }
 
             static void* _Store_masked(svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
@@ -10739,7 +10739,7 @@ void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _V
     const size_t _Size_bytes = _Byte_length(_First, _Last);
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE() && _Sve_vl() > 16) {
-        return _Removing::_Remove_impl_sve<_Removing::_SVE_1>(_First, _Last, _Val);
+        return _Removing::_Remove_impl_sve<_Removing::_Sve_1>(_First, _Last, _Val);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
     if (_Size_bytes >= 8) {
@@ -10767,7 +10767,7 @@ void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _
     const size_t _Size_bytes = _Byte_length(_First, _Last);
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE() && _Sve_vl() > 16) {
-        return _Removing::_Remove_impl_sve<_Removing::_SVE_2>(_First, _Last, _Val);
+        return _Removing::_Remove_impl_sve<_Removing::_Sve_2>(_First, _Last, _Val);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
     if (_Size_bytes >= 16) {
@@ -10794,7 +10794,7 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE()) {
-        return _Removing::_Remove_impl_sve<_Removing::_SVE_4>(_First, _Last, _Val);
+        return _Removing::_Remove_impl_sve<_Removing::_Sve_4>(_First, _Last, _Val);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
@@ -10827,7 +10827,7 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
 
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE()) {
-        return _Removing::_Remove_impl_sve<_Removing::_SVE_8>(_First, _Last, _Val);
+        return _Removing::_Remove_impl_sve<_Removing::_Sve_8>(_First, _Last, _Val);
     }
 #else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
 #if !defined(_M_ARM64EC)
@@ -10857,7 +10857,7 @@ void* __stdcall __std_remove_copy_1(
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes <= 96 || _Sve_vl() > 16);
     if (_Use_sve) {
-        return _Removing::_Remove_copy_impl_sve<_Removing::_SVE_1>(_First, _Last, _Out, _Val);
+        return _Removing::_Remove_copy_impl_sve<_Removing::_Sve_1>(_First, _Last, _Out, _Val);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
     if (_Size_bytes >= 8) {
@@ -10886,7 +10886,7 @@ void* __stdcall __std_remove_copy_2(
     // machines. On these CPUs SVE is faster for all input sizes, whereas on a 4x128b machine SVE wins only for
     // _Size_bytes <= 256.
     if (_Use_FEAT_SVE()) {
-        return _Removing::_Remove_copy_impl_sve<_Removing::_SVE_2>(_First, _Last, _Out, _Val);
+        return _Removing::_Remove_copy_impl_sve<_Removing::_Sve_2>(_First, _Last, _Out, _Val);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
@@ -10913,7 +10913,7 @@ void* __stdcall __std_remove_copy_4(
     // as this does not improve performance over the scalar code.
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE()) {
-        return _Removing::_Remove_copy_impl_sve<_Removing::_SVE_4>(_First, _Last, _Out, _Val);
+        return _Removing::_Remove_copy_impl_sve<_Removing::_Sve_4>(_First, _Last, _Out, _Val);
     }
 #else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
 #if !defined(_M_ARM64EC)
@@ -10942,7 +10942,7 @@ void* __stdcall __std_remove_copy_8(
     const size_t _Size_bytes = _Byte_length(_First, _Last);
     bool _Use_sve            = _Use_FEAT_SVE() && (_Size_bytes > 512 || _Sve_vl() > 16);
     if (_Use_sve) {
-        return _Removing::_Remove_copy_impl_sve<_Removing::_SVE_8>(_First, _Last, _Out, _Val);
+        return _Removing::_Remove_copy_impl_sve<_Removing::_Sve_8>(_First, _Last, _Out, _Val);
     }
 #else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
 #if !defined(_M_ARM64EC)
