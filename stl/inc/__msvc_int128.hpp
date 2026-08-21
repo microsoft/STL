@@ -1370,8 +1370,6 @@ struct _Signed128 : _Base128 {
     }
 
     _NODISCARD friend constexpr _Signed128 operator*(_Signed128 _Left, _Signed128 _Right) noexcept {
-        // The low 128 bits of a two's-complement product equal the unsigned product, so the sign normalization in the old
-        // implementation was unnecessary.
         _Signed128 _Result;
         _Result._Word[0] = _UMul128(_Left._Word[0], _Right._Word[0], _Result._Word[1]);
         _Result._Word[1] += _Left._Word[1] * _Right._Word[0];

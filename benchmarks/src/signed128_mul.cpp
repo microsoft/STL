@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <random>
 #include <utility>
+#include <vector>
 
 using namespace std;
 
