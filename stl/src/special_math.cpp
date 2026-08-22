@@ -30,12 +30,12 @@
 #include <boost/math/special_functions/ellint_2.hpp>
 #include <boost/math/special_functions/ellint_3.hpp>
 #include <boost/math/special_functions/expint.hpp>
+#include <boost/math/special_functions/gamma.hpp>
 #include <boost/math/special_functions/hermite.hpp>
 #include <boost/math/special_functions/laguerre.hpp>
 #include <boost/math/special_functions/legendre.hpp>
 #include <boost/math/special_functions/spherical_harmonic.hpp>
 #include <boost/math/special_functions/zeta.hpp>
-#include <boost/math/special_functions/gamma.hpp>
 #include <boost/math/tools/config.hpp>
 #include <boost/math/tools/precision.hpp>
 
@@ -478,8 +478,7 @@ extern "C" {
     return _Boost_call([=] { return ::boost::math::sph_neumann(_Pn, _Px); });
 }
 
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_lgammaf(
-    float _Px) noexcept {
+[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_lgammaf(float _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -487,8 +486,7 @@ extern "C" {
     return _Boost_call([=] { return ::boost::math::lgamma(_Px); });
 }
 
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_lgamma(
-    double _Px) noexcept {
+[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_lgamma(double _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -496,8 +494,7 @@ extern "C" {
     return _Boost_call([=] { return ::boost::math::lgamma(_Px); });
 }
 
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_tgammaf(
-    float _Px) noexcept {
+[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_tgammaf(float _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -505,8 +502,7 @@ extern "C" {
     return _Boost_call([=] { return ::boost::math::tgamma(_Px); });
 }
 
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_tgamma(
-    double _Px) noexcept {
+[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_tgamma(double _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }

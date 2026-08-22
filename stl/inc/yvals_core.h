@@ -1817,7 +1817,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 // MSVC conditionally suppports constexpr cmath under an "opt-out" model.
 // The compiler defines the macro used below to detect support.
 #if defined(_MSVC_CONSTEXPR_CMATH)
-#define __cpp_lib_constexpr_cmath             202202L
+#define __cpp_lib_constexpr_cmath 202202L
 #endif
 #endif // _HAS_CXX23
 

@@ -9,7 +9,6 @@
 
 #if _STL_COMPILER_PREPROCESSOR
 #include <math.h>
-
 #include <stdlib.h>
 
 #pragma pack(push, _CRT_PACKING)

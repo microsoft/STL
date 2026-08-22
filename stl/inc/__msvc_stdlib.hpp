@@ -78,16 +78,14 @@ _onexit_m_t __clrcall _onexit_m_appdomain(_onexit_m_t _Function);
 #ifdef __cplusplus
 [System::Security::SecurityCritical]
 #endif
-    _Check_return_ int __clrcall
-    _atexit_m(_In_opt_ void(__clrcall* _Function)(void));
+    _Check_return_ int __clrcall _atexit_m(_In_opt_ void(__clrcall* _Function)(void));
 
 _onexit_m_t __clrcall _onexit_m(_onexit_m_t _Function);
 #else
 #ifdef __cplusplus
 [System::Security::SecurityCritical]
 #endif
-    _Check_return_ inline int __clrcall
-    _atexit_m(_In_opt_ void(__clrcall* _Function)(void)) {
+    _Check_return_ inline int __clrcall _atexit_m(_In_opt_ void(__clrcall* _Function)(void)) {
     return _atexit_m_appdomain(_Function);
 }
 
@@ -106,8 +104,7 @@ extern "C++" {
 #ifdef __cplusplus
 [System::Security::SecurityCritical]
 #endif
-    inline int __clrcall
-    atexit(void(__clrcall* _Function)(void)) {
+    inline int __clrcall atexit(void(__clrcall* _Function)(void)) {
     return _atexit_m_appdomain(_Function);
 }
 
@@ -234,12 +231,12 @@ typedef struct _lldiv_t {
 } lldiv_t;
 
 extern "C" {
-    _Check_return_ constexpr int __cdecl abs(_In_ int) noexcept;
-    _Check_return_ constexpr long __cdecl labs(_In_ long) noexcept;
-    _Check_return_ constexpr long long __cdecl llabs(_In_ long long) noexcept;
-    _Check_return_ constexpr div_t __cdecl div(_In_ int, _In_ int) noexcept;
-    _Check_return_ constexpr ldiv_t __cdecl ldiv(_In_ long, _In_ long) noexcept;
-    _Check_return_ constexpr lldiv_t __cdecl lldiv(_In_ long long, _In_ long long) noexcept;
+_Check_return_ constexpr int __cdecl abs(_In_ int) noexcept;
+_Check_return_ constexpr long __cdecl labs(_In_ long) noexcept;
+_Check_return_ constexpr long long __cdecl llabs(_In_ long long) noexcept;
+_Check_return_ constexpr div_t __cdecl div(_In_ int, _In_ int) noexcept;
+_Check_return_ constexpr ldiv_t __cdecl ldiv(_In_ long, _In_ long) noexcept;
+_Check_return_ constexpr lldiv_t __cdecl lldiv(_In_ long long, _In_ long long) noexcept;
 }
 
 #pragma warning(push)
@@ -260,15 +257,18 @@ extern "C" {
     return _Xx >= 0 ? _Xx : -_Xx;
 }
 
-[[nodiscard]] _Check_return_ constexpr div_t __cdecl div(_In_ int _Numerator, _In_ int _Denominator) noexcept /* strengthened */ {
+[[nodiscard]] _Check_return_ constexpr div_t __cdecl div(_In_ int _Numerator, _In_ int _Denominator) noexcept
+/* strengthened */ {
     return {_Numerator / _Denominator, _Numerator % _Denominator};
 }
 
-[[nodiscard]] _Check_return_ constexpr ldiv_t __cdecl ldiv(_In_ long _Numerator, _In_ long _Denominator) noexcept /* strengthened */ {
+[[nodiscard]] _Check_return_ constexpr ldiv_t __cdecl ldiv(_In_ long _Numerator, _In_ long _Denominator) noexcept
+/* strengthened */ {
     return {_Numerator / _Denominator, _Numerator % _Denominator};
 }
 
-[[nodiscard]] _Check_return_ constexpr lldiv_t __cdecl lldiv(_In_ long long _Numerator, _In_ long long _Denominator) noexcept
+[[nodiscard]] _Check_return_ constexpr lldiv_t __cdecl lldiv(
+    _In_ long long _Numerator, _In_ long long _Denominator) noexcept
 /* strengthened */ {
     return {_Numerator / _Denominator, _Numerator % _Denominator};
 }
@@ -484,8 +484,8 @@ __DEFINE_CPP_OVERLOAD_STANDARD_FUNC_1_1(char*, __RETURN_POLICY_DST, _ACRTIMP, _u
 _Success_(return == 0) _Check_return_opt_ _ACRTIMP errno_t __cdecl _i64toa_s(
     _In_ __int64 _Value, _Out_writes_z_(_BufferCount) char* _Buffer, _In_ size_t _BufferCount, _In_ int _Radix);
 
-_Success_(return == 0) _CRT_INSECURE_DEPRECATE(_i64toa_s) _ACRTIMP
-    char* __cdecl _i64toa(_In_ __int64 _Value, _Pre_notnull_ _Post_z_ char* _Buffer, _In_ int _Radix);
+_Success_(return == 0) _CRT_INSECURE_DEPRECATE(_i64toa_s) _ACRTIMP char* __cdecl _i64toa(
+    _In_ __int64 _Value, _Pre_notnull_ _Post_z_ char* _Buffer, _In_ int _Radix);
 
 _Success_(return == 0) _Check_return_opt_ _ACRTIMP errno_t __cdecl _ui64toa_s(_In_ unsigned __int64 _Value,
     _Out_writes_z_(_BufferCount) char* _Buffer, _In_ size_t _BufferCount, _In_ int _Radix);
@@ -513,9 +513,9 @@ __DEFINE_CPP_OVERLOAD_SECURE_FUNC_0_4(errno_t, _ecvt_s, char, _Buffer, _In_ doub
 _Check_return_ _CRT_INSECURE_DEPRECATE(_ecvt_s)
 _ACRTIMP char* __cdecl _ecvt(_In_ double _Value, _In_ int _DigitCount, _Out_ int* _PtDec, _Out_ int* _PtSign);
 
-_Success_(return == 0) _Check_return_wat_ _ACRTIMP errno_t
-    __cdecl _fcvt_s(_Out_writes_z_(_BufferCount) char* _Buffer, _In_ size_t _BufferCount, _In_ double _Value,
-        _In_ int _FractionalDigitCount, _Out_ int* _PtDec, _Out_ int* _PtSign);
+_Success_(return == 0) _Check_return_wat_ _ACRTIMP errno_t __cdecl _fcvt_s(_Out_writes_z_(_BufferCount) char* _Buffer,
+    _In_ size_t _BufferCount, _In_ double _Value, _In_ int _FractionalDigitCount, _Out_ int* _PtDec,
+    _Out_ int* _PtSign);
 
 __DEFINE_CPP_OVERLOAD_SECURE_FUNC_0_4(_Success_(return == 0) errno_t, _fcvt_s, char, _Buffer, _In_ double, _Value,
     _In_ int, _FractionalDigitCount, _Out_ int*, _PtDec, _Out_ int*, _PtSign)
@@ -559,19 +559,19 @@ _Check_return_ _ACRTIMP int __cdecl mblen(
 _Check_return_ _ACRTIMP int __cdecl _mblen_l(
     _In_reads_bytes_opt_(_MaxCount) _Pre_opt_z_ char const* _Ch, _In_ size_t _MaxCount, _In_opt_ _locale_t _Locale);
 
-_Check_return_ _Post_satisfies_(return <= _String_length_(_String)) _ACRTIMP size_t
-    __cdecl _mbstrlen(_In_z_ char const* _String);
+_Check_return_ _Post_satisfies_(return <= _String_length_(_String)) _ACRTIMP size_t __cdecl _mbstrlen(
+    _In_z_ char const* _String);
 
-_Check_return_ _Post_satisfies_(return <= _String_length_(_String) || return == (size_t) -1) _ACRTIMP size_t
-    __cdecl _mbstrlen_l(_In_z_ char const* _String, _In_opt_ _locale_t _Locale);
+_Check_return_ _Post_satisfies_(return <= _String_length_(_String) || return == (size_t) -1) _ACRTIMP size_t __cdecl
+    _mbstrlen_l(_In_z_ char const* _String, _In_opt_ _locale_t _Locale);
 
 _Check_return_ _Post_satisfies_(
-    (return <= _String_length_(_String) && return <= _MaxCount) || return == (size_t) -1) _ACRTIMP size_t
-    __cdecl _mbstrnlen(_In_z_ char const* _String, _In_ size_t _MaxCount);
+    (return <= _String_length_(_String) && return <= _MaxCount) || return == (size_t) -1) _ACRTIMP size_t __cdecl
+    _mbstrnlen(_In_z_ char const* _String, _In_ size_t _MaxCount);
 
-_Post_satisfies_(
-    (return <= _String_length_(_String) && return <= _MaxCount) || return == (size_t) -1) _Check_return_ _ACRTIMP size_t
-    __cdecl _mbstrnlen_l(_In_z_ char const* _String, _In_ size_t _MaxCount, _In_opt_ _locale_t _Locale);
+_Post_satisfies_((return <= _String_length_(_String) && return <= _MaxCount)
+                 || return == (size_t) -1) _Check_return_ _ACRTIMP size_t __cdecl
+    _mbstrnlen_l(_In_z_ char const* _String, _In_ size_t _MaxCount, _In_opt_ _locale_t _Locale);
 
 _Success_(return != -1) _ACRTIMP int __cdecl mbtowc(_Pre_notnull_ _Post_z_ wchar_t* _DstCh,
     _In_reads_or_z_opt_(_SrcSizeInBytes) char const* _SrcCh, _In_ size_t _SrcSizeInBytes);
@@ -794,20 +794,20 @@ _DCRTIMP void __cdecl _sleep(_In_ unsigned long _Duration);
 _Check_return_ _CRT_NONSTDC_DEPRECATE(_ecvt) _CRT_INSECURE_DEPRECATE(_ecvt_s) _ACRTIMP
     char* __cdecl ecvt(_In_ double _Value, _In_ int _DigitCount, _Out_ int* _PtDec, _Out_ int* _PtSign);
 
-_Check_return_ _CRT_NONSTDC_DEPRECATE(_fcvt) _CRT_INSECURE_DEPRECATE(_fcvt_s) _ACRTIMP
-    char* __cdecl fcvt(_In_ double _Value, _In_ int _FractionalDigitCount, _Out_ int* _PtDec, _Out_ int* _PtSign);
+_Check_return_ _CRT_NONSTDC_DEPRECATE(_fcvt) _CRT_INSECURE_DEPRECATE(_fcvt_s) _ACRTIMP char* __cdecl fcvt(
+    _In_ double _Value, _In_ int _FractionalDigitCount, _Out_ int* _PtDec, _Out_ int* _PtSign);
 
 _CRT_NONSTDC_DEPRECATE(_gcvt)
-_CRT_INSECURE_DEPRECATE(_fcvt_s) _ACRTIMP
-    char* __cdecl gcvt(_In_ double _Value, _In_ int _DigitCount, _Pre_notnull_ _Post_z_ char* _DstBuf);
+_CRT_INSECURE_DEPRECATE(_fcvt_s)
+_ACRTIMP char* __cdecl gcvt(_In_ double _Value, _In_ int _DigitCount, _Pre_notnull_ _Post_z_ char* _DstBuf);
 
 _CRT_NONSTDC_DEPRECATE(_itoa)
-_CRT_INSECURE_DEPRECATE(_itoa_s) _ACRTIMP
-    char* __cdecl itoa(_In_ int _Value, _Pre_notnull_ _Post_z_ char* _Buffer, _In_ int _Radix);
+_CRT_INSECURE_DEPRECATE(_itoa_s)
+_ACRTIMP char* __cdecl itoa(_In_ int _Value, _Pre_notnull_ _Post_z_ char* _Buffer, _In_ int _Radix);
 
 _CRT_NONSTDC_DEPRECATE(_ltoa)
-_CRT_INSECURE_DEPRECATE(_ltoa_s) _ACRTIMP
-    char* __cdecl ltoa(_In_ long _Value, _Pre_notnull_ _Post_z_ char* _Buffer, _In_ int _Radix);
+_CRT_INSECURE_DEPRECATE(_ltoa_s)
+_ACRTIMP char* __cdecl ltoa(_In_ long _Value, _Pre_notnull_ _Post_z_ char* _Buffer, _In_ int _Radix);
 
 
 _CRT_NONSTDC_DEPRECATE(_swab)
@@ -815,8 +815,8 @@ _ACRTIMP void __cdecl swab(
     _Inout_updates_z_(_SizeInBytes) char* _Buf1, _Inout_updates_z_(_SizeInBytes) char* _Buf2, _In_ int _SizeInBytes);
 
 _CRT_NONSTDC_DEPRECATE(_ultoa)
-_CRT_INSECURE_DEPRECATE(_ultoa_s) _ACRTIMP
-    char* __cdecl ultoa(_In_ unsigned long _Value, _Pre_notnull_ _Post_z_ char* _Buffer, _In_ int _Radix);
+_CRT_INSECURE_DEPRECATE(_ultoa_s)
+_ACRTIMP char* __cdecl ultoa(_In_ unsigned long _Value, _Pre_notnull_ _Post_z_ char* _Buffer, _In_ int _Radix);
 
 #define environ _environ
 
