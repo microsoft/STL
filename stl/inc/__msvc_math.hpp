@@ -262,7 +262,7 @@ _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, tanh)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, exp)
 _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, exp2)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, expm1)
-_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, frexp, int*)
+_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, frexp, int*) // _NODISCARD is desirable, despite the out-param
 _STL_DEF_RETURN_FAMILY1(_CONSTEXPR_CMATH23, ilogb, int)
 _STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, ldexp, int)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, log)
@@ -295,7 +295,7 @@ _STL_DEF_RETURN_FAMILY1(_CONSTEXPR_CMATH23, llround, long long)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, trunc)
 _STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, fmod)
 _STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, remainder)
-_STL_DEF_LASTARG_FAMILY3(_CONSTEXPR_CMATH23, remquo, int*)
+_STL_DEF_LASTARG_FAMILY3(_CONSTEXPR_CMATH23, remquo, int*) // _NODISCARD is desirable, despite the out-param
 _STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, copysign)
 // nan() is declared above
 _STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, nextafter)
@@ -390,6 +390,7 @@ _NODISCARD _CONSTEXPR_CMATH26 long double __cdecl atan2l(long double _Xx0, long 
     return _Result;
 }
 
+// _NODISCARD is desirable, despite the out-param
 _NODISCARD _CONSTEXPR_CMATH23 float __cdecl modff(float _Xx0, float* _Xx1) noexcept /* strengthened */ {
     return __builtin_modff(_Xx0, _Xx1);
 }
