@@ -409,6 +409,22 @@ extern "C" {
     return _Boost_call([=] { return ::boost::math::legendre_p(_Pl, _Px); });
 }
 
+[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_lgamma(double _Px) noexcept {
+    if (_STD isnan(_Px)) {
+        return _Px;
+    }
+
+    return _Boost_call([=] { return ::boost::math::lgamma(_Px); });
+}
+
+[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_lgammaf(float _Px) noexcept {
+    if (_STD isnan(_Px)) {
+        return _Px;
+    }
+
+    return _Boost_call([=] { return ::boost::math::lgamma(_Px); });
+}
+
 [[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_riemann_zeta(const double _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
@@ -478,23 +494,7 @@ extern "C" {
     return _Boost_call([=] { return ::boost::math::sph_neumann(_Pn, _Px); });
 }
 
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_lgammaf(float _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::lgamma(_Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_lgamma(double _Px) noexcept {
-    if (_STD isnan(_Px)) {
-        return _Px;
-    }
-
-    return _Boost_call([=] { return ::boost::math::lgamma(_Px); });
-}
-
-[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_tgammaf(float _Px) noexcept {
+[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_tgamma(double _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -502,7 +502,7 @@ extern "C" {
     return _Boost_call([=] { return ::boost::math::tgamma(_Px); });
 }
 
-[[nodiscard]] _CRT_SATELLITE_2 double __stdcall __std_smf_tgamma(double _Px) noexcept {
+[[nodiscard]] _CRT_SATELLITE_2 float __stdcall __std_smf_tgammaf(float _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
