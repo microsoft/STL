@@ -3,10 +3,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// This lies outside of the inclusion guard because the UCRT's math.h allows
-// for repeated inclusion with behavioral differences dictated by this macro.
-// math.h can be included once without this macro defined and a second time
-// with it defined, resulting in the nonstandard math constants being defined.
+// This lies outside of the inclusion guard because the UCRT's math.h allows for repeated inclusion
+// with behavioral differences dictated by this macro. math.h can be included once without this macro
+// defined and a second time with it defined, resulting in the nonstandard math constants being defined.
 #ifdef _USE_MATH_DEFINES
 #include <corecrt_math_defines.h>
 #endif
@@ -14,11 +13,10 @@
 #ifndef __MSVC_MATH_HPP
 #define __MSVC_MATH_HPP
 
-// When a user writes `#include <math.h>`, the MSVC frontend arranges for this
-// file to be included first. Because this file is intended to supplant the
-// CRT's math components, we define the _INC_MATH macro to neutralize the
-// contents of math.h when it is processed after. _INC_MATH is used as the
-// include guard for the CRT's math file and is an intended public API.
+// When a user writes `#include <math.h>`, the MSVC frontend arranges for this file to be included first.
+// Because this file is intended to supersede the UCRT's math components, we define the _INC_MATH macro
+// to neutralize the contents of math.h when it is processed after. _INC_MATH is used as the include guard
+// for the UCRT's math.h and is an intended public API.
 #define _INC_MATH
 
 #include <yvals_core.h>
@@ -35,9 +33,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 extern "C" {
 
-#define _STL_DEF_FUNC1(specs, name, ret, fptype)                                \
-    _NODISCARD specs ret __cdecl name(fptype _Xx) noexcept /* strengthened */ { \
-        return __builtin_##name(_Xx);                                           \
+#define _STL_DEF_FUNC1(specs, name, ret, arg0)                                \
+    _NODISCARD specs ret __cdecl name(arg0 _Xx) noexcept /* strengthened */ { \
+        return __builtin_##name(_Xx);                                         \
     }
 
 #define _STL_DEF_FUNC2(specs, name, ret, arg0, arg1)                                      \
@@ -113,24 +111,21 @@ extern "C" {
         return static_cast<bool>(__builtin_##name(static_cast<double>(_Xx0), static_cast<double>(_Xx1))); \
     }
 
-// **Declares** three non-overloaded functions with signature `fp-type (fp-type)`.
-// These declarations are intended to match functions defined within the UCRT
-// because libc does not yet implement them fully.
+// *Declares* three non-overloaded functions with signature `fp-type (fp-type)`.
+// These declarations are intended to match UCRT function definitions because libc does not yet implement them fully.
 #define _STL_DECLARE_FAMILY1(specs, name)                                      \
     _NODISCARD specs float __cdecl name##f(float) noexcept /* strengthened */; \
     _NODISCARD specs double __cdecl name(double) noexcept /* strengthened */;  \
     _NODISCARD specs long double __cdecl name##l(long double) noexcept /* strengthened */;
 
-// Some functions that are needed for C++26 constexpr cmath are not yet
-// implemented by libc. We polyfill the library with the UCRT and mark these
-// functions with this macro. The resulting declarations are not able to be
-// used during constant-evaluation yet.
+// Some functions that are needed for C++26 constexpr cmath are not yet implemented by libc.
+// We polyfill the library with the UCRT and mark these functions with this macro.
+// The resulting declarations are not able to be used during constant-evaluation yet.
 #define _CONSTEXPR_CMATH26_NYI inline
 
-// On x86, when not using /arch:SSE2 or greater, floating point operations
-// are performed using the x87 instruction set and FLT_EVAL_METHOD is 2.
-// (When /fp:fast is used, floating point operations may be consistent, so
-// we use the default types.)
+// On x86, when not using /arch:SSE2 or greater, floating-point operations are performed
+// using the x87 instruction set and FLT_EVAL_METHOD is 2. (When /fp:fast is used,
+// floating-point operations may be consistent, so we use the default types.)
 #if defined(_M_IX86) && _M_IX86_FP < 2 && !defined(_M_FP_FAST)
 using float_t  = long double;
 using double_t = long double;
@@ -141,9 +136,8 @@ using double_t = double;
 
 #define MATH_ERRNO     1
 #define MATH_ERREXCEPT 2
-// The UCRT defines this to be MATH_ERRNO | MATH_ERREXCEPT, but we are unsure
-// of the quality of errno handling in libc. We broadcast MATH_ERREXCEPT as a
-// minimum, leaving extension to include MATH_ERRNO as an option in the future.
+// The UCRT defines this to be MATH_ERRNO | MATH_ERREXCEPT, but we're unsure of the quality of errno handling in libc.
+// We broadcast MATH_ERREXCEPT as a minimum, keeping MATH_ERRNO as a potential future option.
 #define math_errhandling (MATH_ERREXCEPT)
 
 // These macro definitions were copied verbatim from the UCRT. The intent was
@@ -163,7 +157,7 @@ using double_t = double;
 #define FP_ILOGB0   (-0x7fffffff - _C2)
 #define FP_ILOGBNAN 0x7fffffff
 
-// These macro definitions were _not_ copied verbatim from the UCRT because we
+// These macro definitions were *not* copied verbatim from the UCRT because we
 // are now able to take advantage of the __builtin_inf family.
 #define INFINITY  (__builtin_inff())
 #define HUGE_VALF (__builtin_inff())
@@ -172,16 +166,14 @@ using double_t = double;
 #define NAN       (__builtin_nanf(""))
 
 // The nan family of functions is not routed to builtins because the builtins
-// require a string literal argument and so cannot uphold the interface of
-// these functions.
+// require a string literal argument and so cannot uphold the interface of these functions.
 _NODISCARD float __cdecl nanf(const char*) noexcept /* strengthened */;
 _NODISCARD double __cdecl nan(const char*) noexcept /* strengthened */;
 _NODISCARD long double __cdecl nanl(const char*) noexcept /* strengthened */;
 
-// Under /Oi (implied by /O2), MSVC treats the following functions as intrinsics that
-// cannot be redefined. We use #pragma function to instruct MSVC to treat them as regular
-// functions that can be defined, but we first need to declare the function before we can
-// do so.
+// Under /Oi (implied by /O2), MSVC treats the following functions as intrinsics that cannot be redefined.
+// We use `#pragma function` to instruct MSVC to treat them as regular functions that can be defined,
+// but we first need to declare them.
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl acosf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl acos(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl asinf(float) noexcept;
@@ -285,16 +277,14 @@ _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, expm1)
 _STL_DEF_FAMILY2(_CONSTEXPR_CMATH26, hypot)
 _STL_DEF_FAMILY1(inline, nearbyint)
 
-// libc does not yet implement lgamma or tgamma. Polyfilling with the UCRT's
-// implementation pulls in the UCRT's fma, which results in linker errors due
-// to our conflicting definition. Instead, we prearranged for implementations
-// of lgamma and tgamma to be ready in the satellite lib.
+// libc does not yet implement lgamma or tgamma. Polyfilling with the UCRT's implementation
+// pulls in the UCRT's fma, which results in linker errors due to our conflicting definition.
+// Instead, we prearranged for implementations of lgamma and tgamma to be ready in the satellite lib.
 //
-// _CRT_SATELLITE_2 is commented out because it is undefined at the point of
-// this header's inclusion. We'd normally address that by including yvals.h,
-// but that makes this header non-core. Otherwise, this header can be a core
-// header. The macro definition is empty in usage, so the comment has the same
-// physical effect (though maybe a different mental effect).
+// _CRT_SATELLITE_2 is commented out because it is undefined at the point of this header's inclusion.
+// We'd normally address that by including yvals.h, but that makes this header non-core.
+// Otherwise, this header can be a core header. The macro definition is empty in usage,
+// so the comment has the same physical effect (though maybe a different mental effect).
 _NODISCARD /*_CRT_SATELLITE_2*/ float __stdcall __std_smf_lgammaf(float) noexcept;
 _NODISCARD /*_CRT_SATELLITE_2*/ double __stdcall __std_smf_lgamma(double) noexcept;
 _NODISCARD /*_CRT_SATELLITE_2*/ float __stdcall __std_smf_tgammaf(float) noexcept;
@@ -336,9 +326,8 @@ _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, tan)
 _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, tanh)
 _STL_DEF_FAMILY3(_CONSTEXPR_CMATH23, fma)
 
-// The UCRT defines the following functions on x86 as inline functions that
-// forward to their double siblings, so forward-declaring them without defining
-// them does not a successful polyfill make.
+// The UCRT defines the following functions on x86 as inline functions that forward to their double siblings,
+// so forward-declaring them without defining them does not result in a successful polyfill.
 #pragma function(coshf)
 _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl coshf(float _Xx) noexcept /* strengthened */ {
     return __builtin_coshf(_Xx);
