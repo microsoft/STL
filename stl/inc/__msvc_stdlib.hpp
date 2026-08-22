@@ -281,20 +281,21 @@ _ACRTIMP errno_t __cdecl rand_s(_Out_ unsigned int* _RandomValue);
 #endif
 
 extern "C++" {
-[[nodiscard]] constexpr long abs(long const _X) noexcept /* strengthened */ {
-    return labs(_X);
+[[nodiscard]] constexpr long abs(long const _Xx) noexcept /* strengthened */ {
+    return labs(_Xx);
 }
 
-[[nodiscard]] constexpr long long abs(long long const _X) noexcept /* strengthened */ {
-    return llabs(_X);
+[[nodiscard]] constexpr long long abs(long long const _Xx) noexcept /* strengthened */ {
+    return llabs(_Xx);
 }
 
-[[nodiscard]] constexpr ldiv_t div(long const _A1, long const _A2) noexcept /* strengthened */ {
-    return ldiv(_A1, _A2);
+[[nodiscard]] constexpr ldiv_t div(long const _Numerator, long const _Denominator) noexcept /* strengthened */ {
+    return ldiv(_Numerator, _Denominator);
 }
 
-[[nodiscard]] constexpr lldiv_t div(long long const _A1, long long const _A2) noexcept /* strengthened */ {
-    return lldiv(_A1, _A2);
+[[nodiscard]] constexpr lldiv_t div(long long const _Numerator, long long const _Denominator) noexcept
+/* strengthened */ {
+    return lldiv(_Numerator, _Denominator);
 }
 }
 
