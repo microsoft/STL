@@ -245,37 +245,161 @@ _NODISCARD _CONSTEXPR_CMATH26 double __cdecl tan(double) noexcept;
 #pragma function(sqrtf, sqrt)
 #pragma function(tanf, tan)
 
-_STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, ceil)
-_STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, logb)
-_STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, fabs)
-_STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, round)
-_STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, trunc)
-_STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, floor)
-_STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, fmod)
-_STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, remainder)
-_STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, copysign)
-_STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, nextafter)
-_STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, fdim)
-_STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, fmax)
-_STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, fmin)
-_STL_DEF_RETURN_FAMILY1(_CONSTEXPR_CMATH23, lround, long)
-_STL_DEF_RETURN_FAMILY1(_CONSTEXPR_CMATH23, llround, long long)
+// The following order matches N5054 [cmath.syn].
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, acos)
-_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, acosh)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, asin)
-_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, asinh)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, atan)
-_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, atanh)
-_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, cbrt)
+// atan2() is hand-crafted
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, cos)
+_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, sin)
+_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, tan)
+_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, acosh)
+_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, asinh)
+_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, atanh)
 _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, cosh)
-_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, erf)
-_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, erfc)
+_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, sinh)
+_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, tanh)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, exp)
 _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, exp2)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, expm1)
+_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, frexp, int*)
+_STL_DEF_RETURN_FAMILY1(_CONSTEXPR_CMATH23, ilogb, int)
+_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, ldexp, int)
+_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, log)
+_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, log10)
+_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, log1p)
+_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, log2)
+_STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, logb)
+// modf() is hand-crafted
+_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, scalbn, int)
+_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, scalbln, long)
+_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, cbrt)
+// abs() is in <__msvc_stdlib.hpp>
+_STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, fabs)
 _STL_DEF_FAMILY2(_CONSTEXPR_CMATH26, hypot)
+_STL_DEF_FAMILY2(_CONSTEXPR_CMATH26, pow)
+_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, sqrt)
+_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, erf)
+_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, erfc)
+// lgamma() is hand-crafted
+// tgamma() is hand-crafted
+_STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, ceil)
+_STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, floor)
 _STL_DEF_FAMILY1(inline, nearbyint)
+_STL_DEF_FAMILY1(inline, rint)
+_STL_DEF_RETURN_FAMILY1(inline, lrint, long)
+_STL_DEF_RETURN_FAMILY1(inline, llrint, long long)
+_STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, round)
+_STL_DEF_RETURN_FAMILY1(_CONSTEXPR_CMATH23, lround, long)
+_STL_DEF_RETURN_FAMILY1(_CONSTEXPR_CMATH23, llround, long long)
+_STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, trunc)
+_STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, fmod)
+_STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, remainder)
+_STL_DEF_LASTARG_FAMILY3(_CONSTEXPR_CMATH23, remquo, int*)
+_STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, copysign)
+// nan() is declared above
+_STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, nextafter)
+_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, nexttoward, long double)
+_STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, fdim)
+_STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, fmax)
+_STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, fmin)
+_STL_DEF_FAMILY3(_CONSTEXPR_CMATH23, fma)
+
+extern "C++" {
+_NODISCARD _CONSTEXPR_CMATH23 int __cdecl fpclassify(float _Xx) noexcept /* strengthened */ {
+    return __builtin_fpclassifyf(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, _Xx);
+}
+_NODISCARD _CONSTEXPR_CMATH23 int __cdecl fpclassify(double _Xx) noexcept /* strengthened */ {
+    return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, _Xx);
+}
+_NODISCARD _CONSTEXPR_CMATH23 int __cdecl fpclassify(long double _Xx) noexcept /* strengthened */ {
+    return __builtin_fpclassifyl(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, _Xx);
+}
+
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isfinite(float _Xx) noexcept /* strengthened */ {
+    return fpclassify(_Xx) <= 0;
+}
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isfinite(double _Xx) noexcept /* strengthened */ {
+    return fpclassify(_Xx) <= 0;
+}
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isfinite(long double _Xx) noexcept /* strengthened */ {
+    return fpclassify(_Xx) <= 0;
+}
+
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isinf(float _Xx) noexcept /* strengthened */ {
+    return fpclassify(_Xx) == FP_INFINITE;
+}
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isinf(double _Xx) noexcept /* strengthened */ {
+    return fpclassify(_Xx) == FP_INFINITE;
+}
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isinf(long double _Xx) noexcept /* strengthened */ {
+    return fpclassify(_Xx) == FP_INFINITE;
+}
+
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnan(float _Xx) noexcept /* strengthened */ {
+    return fpclassify(_Xx) == FP_NAN;
+}
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnan(double _Xx) noexcept /* strengthened */ {
+    return fpclassify(_Xx) == FP_NAN;
+}
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnan(long double _Xx) noexcept /* strengthened */ {
+    return fpclassify(_Xx) == FP_NAN;
+}
+
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnormal(float _Xx) noexcept /* strengthened */ {
+    return fpclassify(_Xx) == FP_NORMAL;
+}
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnormal(double _Xx) noexcept /* strengthened */ {
+    return fpclassify(_Xx) == FP_NORMAL;
+}
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnormal(long double _Xx) noexcept /* strengthened */ {
+    return fpclassify(_Xx) == FP_NORMAL;
+}
+
+_STL_DEF_OVERLOADED_PREDICATE_FAMILY1(_CONSTEXPR_CMATH23, signbit)
+_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isgreater)
+_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isgreaterequal)
+_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isless)
+_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, islessequal)
+_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, islessgreater)
+_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isunordered)
+} // extern "C++"
+
+// Preserve the sign of zero when atan2 underflows.
+// __builtin_atan2 can return +0 for tiny negative results.
+_NODISCARD _CONSTEXPR_CMATH26 float __cdecl atan2f(float _Xx0, float _Xx1) noexcept /* strengthened */ {
+    float _Result = static_cast<float>(__builtin_atan2f(_Xx0, _Xx1));
+    if (_Result == 0.0F && _Xx0 != 0.0F) {
+        return __builtin_copysignf(0.0F, _Xx0);
+    }
+    return _Result;
+}
+_NODISCARD _CONSTEXPR_CMATH26 double __cdecl atan2(double _Xx0, double _Xx1) noexcept /* strengthened */ {
+    double _Result = static_cast<double>(__builtin_atan2(_Xx0, _Xx1));
+    if (_Result == 0.0 && _Xx0 != 0.0) {
+        return __builtin_copysign(0.0, _Xx0);
+    }
+    return _Result;
+}
+_NODISCARD _CONSTEXPR_CMATH26 long double __cdecl atan2l(long double _Xx0, long double _Xx1) noexcept
+/* strengthened */ {
+    long double _Result = static_cast<long double>(__builtin_atan2l(_Xx0, _Xx1));
+    if (_Result == 0.0L && _Xx0 != 0.0L) {
+        return __builtin_copysignl(0.0L, _Xx0);
+    }
+    return _Result;
+}
+
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl modff(float _Xx0, float* _Xx1) noexcept /* strengthened */ {
+    return __builtin_modff(_Xx0, _Xx1);
+}
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl modf(double _Xx0, double* _Xx1) noexcept /* strengthened */ {
+    return __builtin_modf(_Xx0, _Xx1);
+}
+_NODISCARD _CONSTEXPR_CMATH23 long double __cdecl modfl(long double _Xx0, long double* _Xx1) noexcept
+/* strengthened */ {
+    return __builtin_modfl(_Xx0, _Xx1);
+}
 
 // libc does not yet implement lgamma or tgamma. Polyfilling with the UCRT's implementation
 // pulls in the UCRT's fma, which results in linker errors due to our conflicting definition.
@@ -293,11 +417,9 @@ _NODISCARD /*_CRT_SATELLITE_2*/ double __stdcall __std_smf_tgamma(double) noexce
 _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl lgammaf(float _Xx) noexcept /* strengthened */ {
     return __std_smf_lgammaf(_Xx);
 }
-
 _NODISCARD _CONSTEXPR_CMATH26_NYI double __cdecl lgamma(double _Xx) noexcept /* strengthened */ {
     return __std_smf_lgamma(_Xx);
 }
-
 _NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl lgammal(long double _Xx) noexcept /* strengthened */ {
     return __std_smf_lgamma(static_cast<double>(_Xx));
 }
@@ -305,26 +427,12 @@ _NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl lgammal(long double _Xx) n
 _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl tgammaf(float _Xx) noexcept /* strengthened */ {
     return __std_smf_tgammaf(_Xx);
 }
-
 _NODISCARD _CONSTEXPR_CMATH26_NYI double __cdecl tgamma(double _Xx) noexcept /* strengthened */ {
     return __std_smf_tgamma(_Xx);
 }
-
 _NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl tgammal(long double _Xx) noexcept /* strengthened */ {
     return __std_smf_tgamma(static_cast<double>(_Xx));
 }
-
-_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, log)
-_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, log10)
-_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, log1p)
-_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, log2)
-_STL_DEF_FAMILY2(_CONSTEXPR_CMATH26, pow)
-_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, sin)
-_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, sinh)
-_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, sqrt)
-_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, tan)
-_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, tanh)
-_STL_DEF_FAMILY3(_CONSTEXPR_CMATH23, fma)
 
 // The UCRT defines the following functions on x86 as inline functions that forward to their double siblings,
 // so forward-declaring them without defining them does not result in a successful polyfill.
@@ -341,128 +449,6 @@ _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl sinhf(float _Xx) noexcept /* str
 #pragma function(tanhf)
 _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl tanhf(float _Xx) noexcept /* strengthened */ {
     return __builtin_tanhf(_Xx);
-}
-
-extern "C++" {
-_NODISCARD _CONSTEXPR_CMATH23 int __cdecl fpclassify(float _Xx) noexcept /* strengthened */ {
-    return __builtin_fpclassifyf(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, _Xx);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 int __cdecl fpclassify(double _Xx) noexcept /* strengthened */ {
-    return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, _Xx);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 int __cdecl fpclassify(long double _Xx) noexcept /* strengthened */ {
-    return __builtin_fpclassifyl(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, _Xx);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isfinite(float _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) <= 0;
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isfinite(double _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) <= 0;
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isfinite(long double _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) <= 0;
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isinf(float _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_INFINITE;
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isinf(double _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_INFINITE;
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isinf(long double _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_INFINITE;
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnan(float _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_NAN;
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnan(double _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_NAN;
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnan(long double _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_NAN;
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnormal(float _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_NORMAL;
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnormal(double _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_NORMAL;
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnormal(long double _Xx) noexcept /* strengthened */ {
-    return fpclassify(_Xx) == FP_NORMAL;
-}
-
-_STL_DEF_OVERLOADED_PREDICATE_FAMILY1(_CONSTEXPR_CMATH23, signbit)
-_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isgreater)
-_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isgreaterequal)
-_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isless)
-_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, islessequal)
-_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, islessgreater)
-_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isunordered)
-} // extern "C++"
-
-_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, nexttoward, long double)
-_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, frexp, int*)
-_STL_DEF_RETURN_FAMILY1(_CONSTEXPR_CMATH23, ilogb, int)
-_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, ldexp, int)
-
-_NODISCARD _CONSTEXPR_CMATH23 float __cdecl modff(float _Xx0, float* _Xx1) noexcept /* strengthened */ {
-    return __builtin_modff(_Xx0, _Xx1);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 double __cdecl modf(double _Xx0, double* _Xx1) noexcept /* strengthened */ {
-    return __builtin_modf(_Xx0, _Xx1);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 long double __cdecl modfl(long double _Xx0, long double* _Xx1) noexcept
-/* strengthened */ {
-    return __builtin_modfl(_Xx0, _Xx1);
-}
-
-_STL_DEF_RETURN_FAMILY1(inline, lrint, long)
-_STL_DEF_RETURN_FAMILY1(inline, llrint, long long)
-_STL_DEF_FAMILY1(inline, rint)
-_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, scalbn, int)
-_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, scalbln, long)
-_STL_DEF_LASTARG_FAMILY3(_CONSTEXPR_CMATH23, remquo, int*)
-
-// Preserve the sign of zero when atan2 underflows.
-// __builtin_atan2 can return +0 for tiny negative results.
-_NODISCARD _CONSTEXPR_CMATH26 float __cdecl atan2f(float _Xx0, float _Xx1) noexcept /* strengthened */ {
-    float _Result = static_cast<float>(__builtin_atan2f(_Xx0, _Xx1));
-    if (_Result == 0.0F && _Xx0 != 0.0F) {
-        return __builtin_copysignf(0.0F, _Xx0);
-    }
-    return _Result;
-}
-
-_NODISCARD _CONSTEXPR_CMATH26 double __cdecl atan2(double _Xx0, double _Xx1) noexcept /* strengthened */ {
-    double _Result = static_cast<double>(__builtin_atan2(_Xx0, _Xx1));
-    if (_Result == 0.0 && _Xx0 != 0.0) {
-        return __builtin_copysign(0.0, _Xx0);
-    }
-    return _Result;
-}
-
-_NODISCARD _CONSTEXPR_CMATH26 long double __cdecl atan2l(long double _Xx0, long double _Xx1) noexcept
-/* strengthened */ {
-    long double _Result = static_cast<long double>(__builtin_atan2l(_Xx0, _Xx1));
-    if (_Result == 0.0L && _Xx0 != 0.0L) {
-        return __builtin_copysignl(0.0L, _Xx0);
-    }
-    return _Result;
 }
 
 _NODISCARD double __cdecl _j0(double);
