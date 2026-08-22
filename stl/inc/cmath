@@ -153,7 +153,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float fmod(_In_ float _Xx, _In_ flo
     return _CSTD fmodf(_Xx, _Yx);
 }
 
-_CONSTEXPR_CMATH23 float frexp(_In_ float _Xx, _Out_ int* _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float frexp(_In_ float _Xx, _Out_ int* _Yx) noexcept /* strengthened */ {
     return _CSTD frexpf(_Xx, _Yx);
 }
 
@@ -209,7 +209,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long lround(_In_ float _Xx) noexcep
     return _CSTD lroundf(_Xx);
 }
 
-_CONSTEXPR_CMATH23 float modf(_In_ float _Xx, _Out_ float* _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float modf(_In_ float _Xx, _Out_ float* _Yx) noexcept /* strengthened */ {
     return _CSTD modff(_Xx, _Yx);
 }
 
@@ -236,7 +236,8 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float remainder(_In_ float _Xx, _In
     return _CSTD remainderf(_Xx, _Yx);
 }
 
-_CONSTEXPR_CMATH23 float remquo(_In_ float _Xx, _In_ float _Yx, _Out_ int* _Zx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float remquo(_In_ float _Xx, _In_ float _Yx, _Out_ int* _Zx) noexcept
+/* strengthened */ {
     return _CSTD remquof(_Xx, _Yx, _Zx);
 }
 
@@ -418,7 +419,8 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double fmod(_In_ long double _
     return _CSTD fmodl(_Xx, _Yx);
 }
 
-_CONSTEXPR_CMATH23 long double frexp(_In_ long double _Xx, _Out_ int* _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double frexp(_In_ long double _Xx, _Out_ int* _Yx) noexcept
+/* strengthened */ {
     return _CSTD frexpl(_Xx, _Yx);
 }
 
@@ -476,7 +478,8 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long lround(_In_ long double _Xx) n
     return _CSTD lroundl(_Xx);
 }
 
-_CONSTEXPR_CMATH23 long double modf(_In_ long double _Xx, _Out_ long double* _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double modf(_In_ long double _Xx, _Out_ long double* _Yx) noexcept
+/* strengthened */ {
     return _CSTD modfl(_Xx, _Yx);
 }
 
@@ -504,7 +507,8 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double remainder(_In_ long dou
     return _CSTD remainderl(_Xx, _Yx);
 }
 
-_CONSTEXPR_CMATH23 long double remquo(_In_ long double _Xx, _In_ long double _Yx, _Out_ int* _Zx) noexcept
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double remquo(
+    _In_ long double _Xx, _In_ long double _Yx, _Out_ int* _Zx) noexcept
 /* strengthened */ {
     return _CSTD remquol(_Xx, _Yx, _Zx);
 }
@@ -577,7 +581,7 @@ _STD_END
 
 _EXTERN_CXX_WORKAROUND
 template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>
-_CONSTEXPR_CMATH23 double frexp(_Ty _Value, _Out_ int* const _Exp) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 double frexp(_Ty _Value, _Out_ int* const _Exp) noexcept /* strengthened */ {
     return _CSTD frexp(static_cast<double>(_Value), _Exp);
 }
 
@@ -608,7 +612,7 @@ _NODISCARD _CONSTEXPR_CMATH23 _STD _Common_float_type_t<_Ty1, _STD _Common_float
 }
 
 template <class _Ty1, class _Ty2, _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>, int> = 0>
-_CONSTEXPR_CMATH23 _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo) noexcept
+_NODISCARD _CONSTEXPR_CMATH23 _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo) noexcept
 /* strengthened */ {
     using _Common = _STD _Common_float_type_t<_Ty1, _Ty2>;
     if constexpr (_STD is_same_v<_Common, float>) {
