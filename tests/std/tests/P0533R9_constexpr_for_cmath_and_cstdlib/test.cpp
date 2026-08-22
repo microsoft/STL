@@ -381,7 +381,7 @@ constexpr bool test_cstdlib() {
 }
 
 int main() {
-#ifndef _M_ARM64EC // TRANSITION, reported many occurrences of error LNK2019: unresolved external symbol
+#if defined(_MSVC_INTERNAL_TESTING) || !defined(_M_ARM64EC) // TRANSITION, MSVC-PR-767414/MSVC-PR-768260 fixed LNK2019
     test_cmath();
     test_cstdlib();
 #endif // ^^^ no workaround ^^^
