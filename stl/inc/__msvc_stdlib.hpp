@@ -92,10 +92,7 @@ _Check_return_ int __clrcall _atexit_m_appdomain(_In_opt_ void(__clrcall* _Funct
 
 _onexit_m_t __clrcall _onexit_m_appdomain(_onexit_m_t _Function);
 
-#ifdef __cplusplus
-[System::Security::SecurityCritical]
-#endif
-    _Check_return_ int __clrcall _atexit_m(_In_opt_ void(__clrcall* _Function)(void));
+[System::Security::SecurityCritical] _Check_return_ int __clrcall _atexit_m(_In_opt_ void(__clrcall* _Function)(void));
 
 _onexit_m_t __clrcall _onexit_m(_onexit_m_t _Function);
 #pragma warning(pop)
@@ -808,11 +805,6 @@ _DCRTIMP void __cdecl _sleep(_In_ unsigned long _Duration);
 //
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 #if defined(_CRT_INTERNAL_NONSTDC_NAMES) && _CRT_INTERNAL_NONSTDC_NAMES
-
-#ifndef __cplusplus
-#define max(a, b) (((a) > (b)) ? (a) : (b))
-#define min(a, b) (((a) < (b)) ? (a) : (b))
-#endif
 
 #define sys_errlist _sys_errlist
 #define sys_nerr    _sys_nerr
