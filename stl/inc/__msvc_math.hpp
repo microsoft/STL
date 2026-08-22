@@ -51,7 +51,7 @@ extern "C" {
     }
 
 // `long double` and `double` are the same width on MSVC, so `long double`
-// variants of math functions forward to the `long` variants.
+// variants of math functions forward to the `double` variants.
 #define _STL_DEF_LDOUBLE_FORWARD_FUNC1(specs, name)                                      \
     _NODISCARD specs long double name##l(long double _Xx0) noexcept /* strengthened */ { \
         return name(static_cast<double>(_Xx0));                                          \
@@ -76,32 +76,28 @@ extern "C" {
 #define _STL_DECLARE_FUNC2(specs, name, ret, fptype) _NODISCARD specs ret name(fptype, fptype);
 
 // Defines three non-overloaded functions with signature `fp-type(fp-type)`.
-// The names of the float and long double variants are suffixed with `f` and `l`,
-// respectively.
+// The names of the float and long double variants are suffixed with `f` and `l`, respectively.
 #define _STL_DEF_FAMILY1(specs, name)            \
     _STL_DEF_FUNC1(specs, name##f, float, float) \
     _STL_DEF_FUNC1(specs, name, double, double)  \
     _STL_DEF_LDOUBLE_FORWARD_FUNC1(specs, name)
 
 // Defines three non-overloaded functions with signature `fp-type(fp-type, fp-type)`.
-// The names of the float and long double variants are suffixed with `f` and `l`,
-// respectively.
+// The names of the float and long double variants are suffixed with `f` and `l`, respectively.
 #define _STL_DEF_FAMILY2(specs, name)            \
     _STL_DEF_FUNC2(specs, name##f, float, float) \
     _STL_DEF_FUNC2(specs, name, double, double)  \
     _STL_DEF_LDOUBLE_FORWARD_FUNC2(specs, name)
 
-// Defines three non-overloaded functions with signature `fp-type(fp-type, fp-type)`.
-// The names of the float and long double variants are suffixed with `f` and `l`,
-// respectively.
+// Defines three non-overloaded functions with signature `fp-type(fp-type, fp-type, fp-type)`.
+// The names of the float and long double variants are suffixed with `f` and `l`, respectively.
 #define _STL_DEF_FAMILY3(specs, name)            \
     _STL_DEF_FUNC3(specs, name##f, float, float) \
     _STL_DEF_FUNC3(specs, name, double, double)  \
     _STL_DEF_LDOUBLE_FORWARD_FUNC3(specs, name)
 
 // Defines three non-overloaded functions with signature `int-type(fp-type)`.
-// The names of the float and long double variants are suffixed with `f` and `l`,
-// respectively.
+// The names of the float and long double variants are suffixed with `f` and `l`, respectively.
 #define _STL_DEF_ROUNDING_FAMILY1(specs, name, ret) \
     _STL_DEF_FUNC1(specs, name##f, ret, float)      \
     _STL_DEF_FUNC1(specs, name, ret, double)        \
