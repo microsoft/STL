@@ -45,9 +45,9 @@ extern "C" {
         return __builtin_##name(_Xx0, _Xx1);                                      \
     }
 
-#define _STL_DEF_FUNC3(specs, name, ret, fptype)                                                   \
-    _NODISCARD specs ret name(fptype _Xx0, fptype _Xx1, fptype _Xx2) noexcept /* strengthened */ { \
-        return __builtin_##name(_Xx0, _Xx1, _Xx2);                                                 \
+#define _STL_DEF_FUNC3(specs, name, ret, arg0, arg1, arg2)                                   \
+    _NODISCARD specs ret name(arg0 _Xx0, arg1 _Xx1, arg2 _Xx2) noexcept /* strengthened */ { \
+        return __builtin_##name(_Xx0, _Xx1, _Xx2);                                           \
     }
 
 // `long double` and `double` are the same width on MSVC, so `long double`
@@ -78,10 +78,10 @@ extern "C" {
 
 // Defines three non-overloaded functions with signature `fp-type(fp-type, fp-type, fp-type)`.
 // The names of the float and long double variants are suffixed with `f` and `l`, respectively.
-#define _STL_DEF_FAMILY3(specs, name)            \
-    _STL_DEF_FUNC3(specs, name##f, float, float) \
-    _STL_DEF_FUNC3(specs, name, double, double)  \
-    _STL_DEF_FUNC3(specs, name##l, long double, long double)
+#define _STL_DEF_FAMILY3(specs, name)                           \
+    _STL_DEF_FUNC3(specs, name##f, float, float, float, float)  \
+    _STL_DEF_FUNC3(specs, name, double, double, double, double) \
+    _STL_DEF_FUNC3(specs, name##l, long double, long double, long double, long double)
 
 // Defines three non-overloaded functions with signature `int-type(fp-type)`.
 // The names of the float and long double variants are suffixed with `f` and `l`, respectively.
@@ -96,6 +96,13 @@ extern "C" {
     _STL_DEF_FUNC2(specs, name##f, float, float, lastarg) \
     _STL_DEF_FUNC2(specs, name, double, double, lastarg)  \
     _STL_DEF_FUNC2(specs, name##l, long double, long double, lastarg)
+
+// Defines three non-overloaded functions with signature `fp-type(fp-type, fp-type, lastarg)`.
+// The names of the float and long double variants are suffixed with `f` and `l`, respectively.
+#define _STL_DEF_LASTARG_FAMILY3(specs, name, lastarg)           \
+    _STL_DEF_FUNC3(specs, name##f, float, float, float, lastarg) \
+    _STL_DEF_FUNC3(specs, name, double, double, double, lastarg) \
+    _STL_DEF_FUNC3(specs, name##l, long double, long double, long double, lastarg)
 
 // N.B. static_cast<bool> is used when the builtin returns int.
 #define _STL_DEF_OVERLOADED_PREDICATE1(specs, name, builtin, fptype)     \
@@ -452,19 +459,7 @@ _STL_DEF_RETURN_FAMILY1(inline, llrint, long long)
 _STL_DEF_FAMILY1(inline, rint)
 _STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, scalbn, int)
 _STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, scalbln, long)
-
-_NODISCARD _CONSTEXPR_CMATH23 float remquof(float _Xx0, float _Xx1, int* _Xx2) noexcept /* strengthened */ {
-    return __builtin_remquof(_Xx0, _Xx1, _Xx2);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 double remquo(double _Xx0, double _Xx1, int* _Xx2) noexcept /* strengthened */ {
-    return __builtin_remquo(_Xx0, _Xx1, _Xx2);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 long double remquol(long double _Xx0, long double _Xx1, int* _Xx2) noexcept
-/* strengthened */ {
-    return __builtin_remquol(_Xx0, _Xx1, _Xx2);
-}
+_STL_DEF_LASTARG_FAMILY3(_CONSTEXPR_CMATH23, remquo, int*)
 
 // Preserve the sign of zero when atan2 underflows.
 // __builtin_atan2 can return +0 for tiny negative results.
@@ -521,6 +516,7 @@ _NODISCARD double yn(int, double);
 #undef _STL_DEF_FAMILY3
 #undef _STL_DEF_RETURN_FAMILY1
 #undef _STL_DEF_LASTARG_FAMILY2
+#undef _STL_DEF_LASTARG_FAMILY3
 #undef _STL_DEF_OVERLOADED_PREDICATE1
 #undef _STL_DEF_OVERLOADED_PREDICATE2
 #undef _STL_DEF_OVERLOADED_PREDICATE_FAMILY1
