@@ -324,7 +324,7 @@ _NODISCARD _CONSTEXPR_CMATH26 double __cdecl tan(double) noexcept;
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, acos)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, asin)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, atan)
-// atan2() is hand-crafted
+// atan2() is hand-crafted because of the workaround for LLVM-214934
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, cos)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, sin)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, tan)
@@ -345,7 +345,7 @@ _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, log10)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, log1p)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, log2)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, logb)
-// modf() is hand-crafted
+// modf() is hand-crafted because it has a unique signature
 _STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, scalbn, int)
 _STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, scalbln, long)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, cbrt)
@@ -356,8 +356,8 @@ _STL_DEF_FAMILY2(_CONSTEXPR_CMATH26, pow)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, sqrt)
 _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, erf)
 _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, erfc)
-// lgamma() is hand-crafted
-// tgamma() is hand-crafted
+// lgamma() is hand-crafted because it is not yet implemented by libc
+// tgamma() is hand-crafted because it is not yet implemented by libc
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, ceil)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, floor)
 _STL_DEF_FAMILY1(inline, nearbyint)
