@@ -63,42 +63,36 @@ extern "C" {
 #define _STL_DECLARE_FUNC1(specs, name, ret, fptype) _NODISCARD specs ret name(fptype);
 
 // Defines three non-overloaded functions with signature `fp-type(fp-type)`.
-// The names of the float and long double variants are suffixed with `f` and `l`, respectively.
 #define _STL_DEF_FAMILY1(specs, name)            \
     _STL_DEF_FUNC1(specs, name##f, float, float) \
     _STL_DEF_FUNC1(specs, name, double, double)  \
     _STL_DEF_FUNC1(specs, name##l, long double, long double)
 
 // Defines three non-overloaded functions with signature `fp-type(fp-type, fp-type)`.
-// The names of the float and long double variants are suffixed with `f` and `l`, respectively.
 #define _STL_DEF_FAMILY2(specs, name)                   \
     _STL_DEF_FUNC2(specs, name##f, float, float, float) \
     _STL_DEF_FUNC2(specs, name, double, double, double) \
     _STL_DEF_FUNC2(specs, name##l, long double, long double, long double)
 
 // Defines three non-overloaded functions with signature `fp-type(fp-type, fp-type, fp-type)`.
-// The names of the float and long double variants are suffixed with `f` and `l`, respectively.
 #define _STL_DEF_FAMILY3(specs, name)                           \
     _STL_DEF_FUNC3(specs, name##f, float, float, float, float)  \
     _STL_DEF_FUNC3(specs, name, double, double, double, double) \
     _STL_DEF_FUNC3(specs, name##l, long double, long double, long double, long double)
 
 // Defines three non-overloaded functions with signature `int-type(fp-type)`.
-// The names of the float and long double variants are suffixed with `f` and `l`, respectively.
 #define _STL_DEF_RETURN_FAMILY1(specs, name, ret) \
     _STL_DEF_FUNC1(specs, name##f, ret, float)    \
     _STL_DEF_FUNC1(specs, name, ret, double)      \
     _STL_DEF_FUNC1(specs, name##l, ret, long double)
 
 // Defines three non-overloaded functions with signature `fp-type(fp-type, lastarg)`.
-// The names of the float and long double variants are suffixed with `f` and `l`, respectively.
 #define _STL_DEF_LASTARG_FAMILY2(specs, name, lastarg)    \
     _STL_DEF_FUNC2(specs, name##f, float, float, lastarg) \
     _STL_DEF_FUNC2(specs, name, double, double, lastarg)  \
     _STL_DEF_FUNC2(specs, name##l, long double, long double, lastarg)
 
 // Defines three non-overloaded functions with signature `fp-type(fp-type, fp-type, lastarg)`.
-// The names of the float and long double variants are suffixed with `f` and `l`, respectively.
 #define _STL_DEF_LASTARG_FAMILY3(specs, name, lastarg)           \
     _STL_DEF_FUNC3(specs, name##f, float, float, float, lastarg) \
     _STL_DEF_FUNC3(specs, name, double, double, double, lastarg) \
