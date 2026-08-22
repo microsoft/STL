@@ -97,30 +97,11 @@ inline _onexit_m_t __clrcall _onexit_m(_onexit_t _Function) {
 #endif
 
 
-#ifdef _M_CEE_PURE
-// In pure mode, atexit is the same as atexit_m_appdomain
-extern "C++" {
-
-#ifdef __cplusplus
-[System::Security::SecurityCritical]
-#endif
-    inline int __clrcall atexit(void(__clrcall* _Function)(void)) {
-    return _atexit_m_appdomain(_Function);
-}
-
-inline _onexit_t __clrcall _onexit(_onexit_t _Function) {
-    return _onexit_m_appdomain(_Function);
-}
-
-} // extern "C++"
-#else
 int __cdecl atexit(void(__cdecl*)(void));
 _onexit_t __cdecl _onexit(_In_opt_ _onexit_t _Func);
-#endif
 
 int __cdecl at_quick_exit(void(__cdecl*)(void));
 
-#ifndef _M_CEE_PURE
 // a purecall handler procedure. Never returns normally
 typedef void(__cdecl* _purecall_handler)(void);
 
@@ -143,17 +124,6 @@ _ACRTIMP _invalid_parameter_handler __cdecl _set_thread_local_invalid_parameter_
     _In_opt_ _invalid_parameter_handler _Handler);
 
 _ACRTIMP _invalid_parameter_handler __cdecl _get_thread_local_invalid_parameter_handler(void);
-#endif
-
-
-#if defined __cplusplus && defined _M_CEE_PURE
-extern "C++" {
-typedef void(__clrcall* _purecall_handler)(void);
-typedef _purecall_handler _purecall_handler_m;
-
-_MRTIMP _purecall_handler __cdecl _set_purecall_handler(_In_opt_ _purecall_handler _Handler);
-} // extern "C++"
-#endif
 
 
 #define _OUT_TO_DEFAULT 0
