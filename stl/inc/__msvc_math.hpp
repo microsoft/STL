@@ -85,9 +85,9 @@ extern "C" {
 
 // Defines three non-overloaded functions with signature `int-type(fp-type)`.
 // The names of the float and long double variants are suffixed with `f` and `l`, respectively.
-#define _STL_DEF_ROUNDING_FAMILY1(specs, name, ret) \
-    _STL_DEF_FUNC1(specs, name##f, ret, float)      \
-    _STL_DEF_FUNC1(specs, name, ret, double)        \
+#define _STL_DEF_RETURN_FAMILY1(specs, name, ret) \
+    _STL_DEF_FUNC1(specs, name##f, ret, float)    \
+    _STL_DEF_FUNC1(specs, name, ret, double)      \
     _STL_DEF_FUNC1(specs, name##l, ret, long double)
 
 // Defines three non-overloaded functions with signature `fp-type(fp-type, lastarg)`.
@@ -272,8 +272,8 @@ _STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, nextafter)
 _STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, fdim)
 _STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, fmax)
 _STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, fmin)
-_STL_DEF_ROUNDING_FAMILY1(_CONSTEXPR_CMATH23, lround, long int)
-_STL_DEF_ROUNDING_FAMILY1(_CONSTEXPR_CMATH23, llround, long long)
+_STL_DEF_RETURN_FAMILY1(_CONSTEXPR_CMATH23, lround, long int)
+_STL_DEF_RETURN_FAMILY1(_CONSTEXPR_CMATH23, llround, long long)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, acos)
 _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, acosh)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, asin)
@@ -432,7 +432,7 @@ _STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isunordered)
 
 _STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, nexttoward, long double)
 _STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, frexp, int*)
-_STL_DEF_ROUNDING_FAMILY1(_CONSTEXPR_CMATH23, ilogb, int)
+_STL_DEF_RETURN_FAMILY1(_CONSTEXPR_CMATH23, ilogb, int)
 _STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, ldexp, int)
 
 _NODISCARD _CONSTEXPR_CMATH23 float modff(float _Xx0, float* _Xx1) noexcept /* strengthened */ {
@@ -447,8 +447,8 @@ _NODISCARD _CONSTEXPR_CMATH23 long double modfl(long double _Xx0, long double* _
     return __builtin_modfl(_Xx0, _Xx1);
 }
 
-_STL_DEF_ROUNDING_FAMILY1(inline, lrint, long)
-_STL_DEF_ROUNDING_FAMILY1(inline, llrint, long long)
+_STL_DEF_RETURN_FAMILY1(inline, lrint, long)
+_STL_DEF_RETURN_FAMILY1(inline, llrint, long long)
 _STL_DEF_FAMILY1(inline, rint)
 _STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, scalbn, int)
 _STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, scalbln, long)
@@ -519,7 +519,7 @@ _NODISCARD double yn(int, double);
 #undef _STL_DEF_FAMILY1
 #undef _STL_DEF_FAMILY2
 #undef _STL_DEF_FAMILY3
-#undef _STL_DEF_ROUNDING_FAMILY1
+#undef _STL_DEF_RETURN_FAMILY1
 #undef _STL_DEF_LASTARG_FAMILY2
 #undef _STL_DEF_OVERLOADED_PREDICATE1
 #undef _STL_DEF_OVERLOADED_PREDICATE2
