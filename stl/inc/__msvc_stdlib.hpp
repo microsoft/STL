@@ -295,7 +295,7 @@ extern "C++" {
 /* strengthened */ {
     return lldiv(_Numerator, _Denominator);
 }
-}
+} // extern "C++"
 
 // Structs used to fool the compiler into not generating floating point
 // instructions when copying and pushing [long] double values
