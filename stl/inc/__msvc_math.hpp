@@ -454,25 +454,6 @@ _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl tanhf(float _Xx) noexcept /* str
     return __builtin_tanhf(_Xx);
 }
 
-_NODISCARD double __cdecl _j0(double);
-_NODISCARD double __cdecl _j1(double);
-_NODISCARD double __cdecl _jn(int, double);
-_NODISCARD double __cdecl _y0(double);
-_NODISCARD double __cdecl _y1(double);
-_NODISCARD double __cdecl _yn(int, double);
-
-#if defined(_CRT_INTERNAL_NONSTDC_NAMES) && _CRT_INTERNAL_NONSTDC_NAMES
-
-// These functions are included in the Open Group Standard Base Specifications.
-_NODISCARD double __cdecl j0(double);
-_NODISCARD double __cdecl j1(double);
-_NODISCARD double __cdecl jn(int, double);
-_NODISCARD double __cdecl y0(double);
-_NODISCARD double __cdecl y1(double);
-_NODISCARD double __cdecl yn(int, double);
-
-#endif // defined(_CRT_INTERNAL_NONSTDC_NAMES) && _CRT_INTERNAL_NONSTDC_NAMES
-
 #undef _STL_DEF_FUNC1
 #undef _STL_DEF_FUNC2
 #undef _STL_DEF_FUNC3
