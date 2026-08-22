@@ -17,6 +17,7 @@
 // Because this file is intended to supersede the UCRT's math components, we define the _INC_MATH macro
 // to neutralize the contents of math.h when it is processed after. _INC_MATH is used as the include guard
 // for the UCRT's math.h and is an intended public API.
+// This file intentionally avoids providing most of the Microsoft-specific/non-Standard machinery in math.h.
 #define _INC_MATH
 
 #include <yvals_core.h>
