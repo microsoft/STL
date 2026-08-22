@@ -34,6 +34,10 @@ ___std_smf_laguerre@12
 ___std_smf_laguerref@8
 ___std_smf_legendre@12
 ___std_smf_legendref@8
+___std_smf_lgamma@8
+___std_smf_lgammaf@4
+___std_smf_tgamma@8
+___std_smf_tgammaf@4
 ___std_smf_riemann_zeta@8
 ___std_smf_riemann_zetaf@4
 ___std_smf_sph_bessel@12

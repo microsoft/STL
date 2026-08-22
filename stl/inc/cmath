@@ -11,11 +11,20 @@
 #include <cstdlib>
 #include <type_traits>
 
-#if !defined(__clang__) && !defined(_M_CEE) // TRANSITION, VSO-1663104
+#if !defined(__clang__) && !defined(_M_CEE) && !defined(_MSVC_CONSTEXPR_CMATH) // TRANSITION, VSO-1663104
 #define _HAS_CMATH_INTRINSICS 1
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
 #define _HAS_CMATH_INTRINSICS 0
 #endif // ^^^ intrinsics unavailable ^^^
+
+// MSVC provides builtins for math functions in C++23 and later if the user
+// has not specified -Zc:cmath-. The compiler defines the macro below to make
+// detection simpler.
+#if defined(__clang__) || defined(_MSVC_CONSTEXPR_CMATH)
+#define _HAS_CMATH_BUILTINS 1
+#else // ^^^ builtins available / builtins unavailable vvv
+#define _HAS_CMATH_BUILTINS 0
+#endif
 
 #if _HAS_CMATH_INTRINSICS
 #include _STL_INTRIN_HEADER
@@ -29,11 +38,11 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _EXTERN_CXX_WORKAROUND
-_NODISCARD _Check_return_ inline float acos(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float acos(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD acosf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float acosh(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float acosh(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD acoshf(_Xx);
 }
 
@@ -61,22 +70,23 @@ _NODISCARD _Check_return_ inline float cbrt(_In_ float _Xx) noexcept /* strength
     return _CSTD cbrtf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float ceil(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float ceil(_In_ float _Xx) noexcept /* strengthened */ {
 #if _HAS_CMATH_INTRINSICS
     return __ceilf(_Xx);
-#elif defined(__clang__)
+#elif _HAS_CMATH_BUILTINS
     return __builtin_ceilf(_Xx);
-#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
+#else // ^^^ _HAS_CMATH_BUILTINS / intrinsics unavailable vvv
     return _CSTD ceilf(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-_NODISCARD _Check_return_ inline float copysign(_In_ float _Number, _In_ float _Sign) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float copysign(_In_ float _Number, _In_ float _Sign) noexcept
+/* strengthened */ {
 #if _HAS_CMATH_INTRINSICS
     return __copysignf(_Number, _Sign);
-#elif defined(__clang__)
+#elif _HAS_CMATH_BUILTINS
     return __builtin_copysignf(_Number, _Sign);
-#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
+#else // ^^^ _HAS_CMATH_BUILTINS / intrinsics unavailable vvv
     return _CSTD copysignf(_Number, _Sign);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -109,41 +119,37 @@ _NODISCARD _Check_return_ inline float expm1(_In_ float _Xx) noexcept /* strengt
     return _CSTD expm1f(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float fabs(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float fabs(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD fabsf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float fdim(_In_ float _Xx, _In_ float _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float fdim(_In_ float _Xx, _In_ float _Yx) noexcept /* strengthened */ {
     return _CSTD fdimf(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline float floor(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float floor(_In_ float _Xx) noexcept /* strengthened */ {
 #if _HAS_CMATH_INTRINSICS
     return __floorf(_Xx);
-#elif defined(__clang__)
+#elif _HAS_CMATH_BUILTINS
     return __builtin_floorf(_Xx);
-#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
+#else // ^^^ _HAS_CMATH_BUILTINS / intrinsics unavailable vvv
     return _CSTD floorf(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-_NODISCARD _Check_return_ inline float fma(_In_ float _Xx, _In_ float _Yx, _In_ float _Zx) noexcept /* strengthened */ {
-    return _CSTD fmaf(_Xx, _Yx, _Zx);
-}
-
-_NODISCARD _Check_return_ inline float fmax(_In_ float _Xx, _In_ float _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float fmax(_In_ float _Xx, _In_ float _Yx) noexcept /* strengthened */ {
     return _CSTD fmaxf(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline float fmin(_In_ float _Xx, _In_ float _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float fmin(_In_ float _Xx, _In_ float _Yx) noexcept /* strengthened */ {
     return _CSTD fminf(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline float fmod(_In_ float _Xx, _In_ float _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float fmod(_In_ float _Xx, _In_ float _Yx) noexcept /* strengthened */ {
     return _CSTD fmodf(_Xx, _Yx);
 }
 
-inline float frexp(_In_ float _Xx, _Out_ int* _Yx) noexcept /* strengthened */ {
+_CONSTEXPR_CMATH23 float frexp(_In_ float _Xx, _Out_ int* _Yx) noexcept /* strengthened */ {
     return _CSTD frexpf(_Xx, _Yx);
 }
 
@@ -151,11 +157,11 @@ _NODISCARD _Check_return_ inline float hypot(_In_ float _Xx, _In_ float _Yx) noe
     return _CSTD hypotf(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline int ilogb(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 int ilogb(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD ilogbf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float ldexp(_In_ float _Xx, _In_ int _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float ldexp(_In_ float _Xx, _In_ int _Yx) noexcept /* strengthened */ {
     return _CSTD ldexpf(_Xx, _Yx);
 }
 
@@ -167,7 +173,7 @@ _NODISCARD _Check_return_ inline long long llrint(_In_ float _Xx) noexcept /* st
     return _CSTD llrintf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long long llround(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long long llround(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD llroundf(_Xx);
 }
 
@@ -187,7 +193,7 @@ _NODISCARD _Check_return_ inline float log2(_In_ float _Xx) noexcept /* strength
     return _CSTD log2f(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float logb(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float logb(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD logbf(_Xx);
 }
 
@@ -195,7 +201,7 @@ _NODISCARD _Check_return_ inline long lrint(_In_ float _Xx) noexcept /* strength
     return _CSTD lrintf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long lround(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long lround(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD lroundf(_Xx);
 }
 
@@ -207,11 +213,13 @@ _NODISCARD _Check_return_ inline float nearbyint(_In_ float _Xx) noexcept /* str
     return _CSTD nearbyintf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float nextafter(_In_ float _Xx, _In_ float _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float nextafter(_In_ float _Xx, _In_ float _Yx) noexcept
+/* strengthened */ {
     return _CSTD nextafterf(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline float nexttoward(_In_ float _Xx, _In_ long double _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float nexttoward(_In_ float _Xx, _In_ long double _Yx) noexcept
+/* strengthened */ {
     return _CSTD nexttowardf(_Xx, _Yx);
 }
 
@@ -219,11 +227,12 @@ _NODISCARD _Check_return_ inline float pow(_In_ float _Xx, _In_ float _Yx) noexc
     return _CSTD powf(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline float remainder(_In_ float _Xx, _In_ float _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float remainder(_In_ float _Xx, _In_ float _Yx) noexcept
+/* strengthened */ {
     return _CSTD remainderf(_Xx, _Yx);
 }
 
-inline float remquo(_In_ float _Xx, _In_ float _Yx, _Out_ int* _Zx) noexcept /* strengthened */ {
+_CONSTEXPR_CMATH23 float remquo(_In_ float _Xx, _In_ float _Yx, _Out_ int* _Zx) noexcept /* strengthened */ {
     return _CSTD remquof(_Xx, _Yx, _Zx);
 }
 
@@ -231,21 +240,21 @@ _NODISCARD _Check_return_ inline float rint(_In_ float _Xx) noexcept /* strength
     return _CSTD rintf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float round(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float round(_In_ float _Xx) noexcept /* strengthened */ {
 #if _HAS_CMATH_INTRINSICS
     return __roundf(_Xx);
-#elif defined(__clang__)
+#elif _HAS_CMATH_BUILTINS
     return __builtin_roundf(_Xx);
-#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
+#else // ^^^ _HAS_CMATH_BUILTINS / intrinsics unavailable vvv
     return _CSTD roundf(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-_NODISCARD _Check_return_ inline float scalbln(_In_ float _Xx, _In_ long _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float scalbln(_In_ float _Xx, _In_ long _Yx) noexcept /* strengthened */ {
     return _CSTD scalblnf(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline float scalbn(_In_ float _Xx, _In_ int _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float scalbn(_In_ float _Xx, _In_ int _Yx) noexcept /* strengthened */ {
     return _CSTD scalbnf(_Xx, _Yx);
 }
 
@@ -273,21 +282,21 @@ _NODISCARD _Check_return_ inline float tgamma(_In_ float _Xx) noexcept /* streng
     return _CSTD tgammaf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float trunc(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float trunc(_In_ float _Xx) noexcept /* strengthened */ {
 #if _HAS_CMATH_INTRINSICS
     return __truncf(_Xx);
-#elif defined(__clang__)
+#elif _HAS_CMATH_BUILTINS
     return __builtin_truncf(_Xx);
-#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
+#else // ^^^ _HAS_CMATH_BUILTINS / intrinsics unavailable vvv
     return _CSTD truncf(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-_NODISCARD _Check_return_ inline long double acos(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double acos(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD acosl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double acosh(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double acosh(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD acoshl(_Xx);
 }
 
@@ -316,23 +325,24 @@ _NODISCARD _Check_return_ inline long double cbrt(_In_ long double _Xx) noexcept
     return _CSTD cbrtl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double ceil(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double ceil(_In_ long double _Xx) noexcept /* strengthened */ {
 #if _HAS_CMATH_INTRINSICS
     return __ceil(static_cast<double>(_Xx));
-#elif defined(__clang__)
+#elif _HAS_CMATH_BUILTINS
     return __builtin_ceill(_Xx);
 #else // ^^^ defined(__clang__) / intrinsics unavailable vvv
     return _CSTD ceill(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-_NODISCARD _Check_return_ inline long double copysign(_In_ long double _Number, _In_ long double _Sign) noexcept
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double copysign(
+    _In_ long double _Number, _In_ long double _Sign) noexcept
 /* strengthened */ {
 #if _HAS_CMATH_INTRINSICS
     return __copysign(static_cast<double>(_Number), static_cast<double>(_Sign));
-#elif defined(__clang__)
+#elif _HAS_CMATH_BUILTINS
     return __builtin_copysignl(_Number, _Sign);
-#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
+#else // ^^^ _HAS_CMATH_BUILTINS  / intrinsics unavailable vvv
     return _CSTD copysignl(_Number, _Sign);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -365,46 +375,41 @@ _NODISCARD _Check_return_ inline long double expm1(_In_ long double _Xx) noexcep
     return _CSTD expm1l(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double fabs(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double fabs(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD fabsl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double fdim(_In_ long double _Xx, _In_ long double _Yx) noexcept
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double fdim(_In_ long double _Xx, _In_ long double _Yx) noexcept
 /* strengthened */ {
     return _CSTD fdiml(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline long double floor(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double floor(_In_ long double _Xx) noexcept /* strengthened */ {
 #if _HAS_CMATH_INTRINSICS
     return __floor(static_cast<double>(_Xx));
-#elif defined(__clang__)
+#elif _HAS_CMATH_BUILTINS
     return __builtin_floorl(_Xx);
-#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
+#else // ^^^ _HAS_CMATH_BUILTINS / intrinsics unavailable vvv
     return _CSTD floorl(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-_NODISCARD _Check_return_ inline long double fma(
-    _In_ long double _Xx, _In_ long double _Yx, _In_ long double _Zx) noexcept /* strengthened */ {
-    return _CSTD fmal(_Xx, _Yx, _Zx);
-}
-
-_NODISCARD _Check_return_ inline long double fmax(_In_ long double _Xx, _In_ long double _Yx) noexcept
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double fmax(_In_ long double _Xx, _In_ long double _Yx) noexcept
 /* strengthened */ {
     return _CSTD fmaxl(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline long double fmin(_In_ long double _Xx, _In_ long double _Yx) noexcept
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double fmin(_In_ long double _Xx, _In_ long double _Yx) noexcept
 /* strengthened */ {
     return _CSTD fminl(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline long double fmod(_In_ long double _Xx, _In_ long double _Yx) noexcept
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double fmod(_In_ long double _Xx, _In_ long double _Yx) noexcept
 /* strengthened */ {
     return _CSTD fmodl(_Xx, _Yx);
 }
 
-inline long double frexp(_In_ long double _Xx, _Out_ int* _Yx) noexcept /* strengthened */ {
+_CONSTEXPR_CMATH23 long double frexp(_In_ long double _Xx, _Out_ int* _Yx) noexcept /* strengthened */ {
     return _CSTD frexpl(_Xx, _Yx);
 }
 
@@ -413,11 +418,12 @@ _NODISCARD _Check_return_ inline long double hypot(_In_ long double _Xx, _In_ lo
     return _CSTD hypotl(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline int ilogb(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 int ilogb(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD ilogbl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double ldexp(_In_ long double _Xx, _In_ int _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double ldexp(_In_ long double _Xx, _In_ int _Yx) noexcept
+/* strengthened */ {
     return _CSTD ldexpl(_Xx, _Yx);
 }
 
@@ -429,7 +435,7 @@ _NODISCARD _Check_return_ inline long long llrint(_In_ long double _Xx) noexcept
     return _CSTD llrintl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long long llround(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long long llround(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD llroundl(_Xx);
 }
 
@@ -449,7 +455,7 @@ _NODISCARD _Check_return_ inline long double log2(_In_ long double _Xx) noexcept
     return _CSTD log2l(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double logb(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double logb(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD logbl(_Xx);
 }
 
@@ -457,7 +463,7 @@ _NODISCARD _Check_return_ inline long lrint(_In_ long double _Xx) noexcept /* st
     return _CSTD lrintl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long lround(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long lround(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD lroundl(_Xx);
 }
 
@@ -469,12 +475,12 @@ _NODISCARD _Check_return_ inline long double nearbyint(_In_ long double _Xx) noe
     return _CSTD nearbyintl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double nextafter(_In_ long double _Xx, _In_ long double _Yx) noexcept
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double nextafter(_In_ long double _Xx, _In_ long double _Yx) noexcept
 /* strengthened */ {
     return _CSTD nextafterl(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline long double nexttoward(_In_ long double _Xx, _In_ long double _Yx) noexcept
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double nexttoward(_In_ long double _Xx, _In_ long double _Yx) noexcept
 /* strengthened */ {
     return _CSTD nexttowardl(_Xx, _Yx);
 }
@@ -484,12 +490,13 @@ _NODISCARD _Check_return_ inline long double pow(_In_ long double _Xx, _In_ long
     return _CSTD powl(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline long double remainder(_In_ long double _Xx, _In_ long double _Yx) noexcept
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double remainder(_In_ long double _Xx, _In_ long double _Yx) noexcept
 /* strengthened */ {
     return _CSTD remainderl(_Xx, _Yx);
 }
 
-inline long double remquo(_In_ long double _Xx, _In_ long double _Yx, _Out_ int* _Zx) noexcept /* strengthened */ {
+_CONSTEXPR_CMATH23 long double remquo(_In_ long double _Xx, _In_ long double _Yx, _Out_ int* _Zx) noexcept
+/* strengthened */ {
     return _CSTD remquol(_Xx, _Yx, _Zx);
 }
 
@@ -497,21 +504,23 @@ _NODISCARD _Check_return_ inline long double rint(_In_ long double _Xx) noexcept
     return _CSTD rintl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double round(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double round(_In_ long double _Xx) noexcept /* strengthened */ {
 #if _HAS_CMATH_INTRINSICS
     return __round(static_cast<double>(_Xx));
-#elif defined(__clang__)
+#elif _HAS_CMATH_BUILTINS
     return __builtin_roundl(_Xx);
-#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
+#else // ^^^ _HAS_CMATH_BUILTINS / intrinsics unavailable vvv
     return _CSTD roundl(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-_NODISCARD _Check_return_ inline long double scalbln(_In_ long double _Xx, _In_ long _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double scalbln(_In_ long double _Xx, _In_ long _Yx) noexcept
+/* strengthened */ {
     return _CSTD scalblnl(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline long double scalbn(_In_ long double _Xx, _In_ int _Yx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double scalbn(_In_ long double _Xx, _In_ int _Yx) noexcept
+/* strengthened */ {
     return _CSTD scalbnl(_Xx, _Yx);
 }
 
@@ -539,12 +548,12 @@ _NODISCARD _Check_return_ inline long double tgamma(_In_ long double _Xx) noexce
     return _CSTD tgammal(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double trunc(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double trunc(_In_ long double _Xx) noexcept /* strengthened */ {
 #if _HAS_CMATH_INTRINSICS
     return __trunc(static_cast<double>(_Xx));
-#elif defined(__clang__)
+#elif _HAS_CMATH_BUILTINS
     return __builtin_truncl(_Xx);
-#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
+#else // ^^^ _HAS_CMATH_BUILTINS / intrinsics unavailable vvv
     return _CSTD truncl(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -576,7 +585,7 @@ _NODISCARD _STD _Common_float_type_t<_Ty1, _Ty2> pow(_Ty1 _Left, _Ty2 _Right) no
 
 template <class _Ty1, class _Ty2, class _Ty3,
     _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2> && _STD is_arithmetic_v<_Ty3>, int> = 0>
-_NODISCARD _STD _Common_float_type_t<_Ty1, _STD _Common_float_type_t<_Ty2, _Ty3>> fma(
+_NODISCARD _CONSTEXPR_CMATH23 _STD _Common_float_type_t<_Ty1, _STD _Common_float_type_t<_Ty2, _Ty3>> fma(
     _Ty1 _Left, _Ty2 _Middle, _Ty3 _Right) noexcept /* strengthened */ {
     using _Common = _STD _Common_float_type_t<_Ty1, _STD _Common_float_type_t<_Ty2, _Ty3>>;
     if constexpr (_STD is_same_v<_Common, float>) {
@@ -589,7 +598,8 @@ _NODISCARD _STD _Common_float_type_t<_Ty1, _STD _Common_float_type_t<_Ty2, _Ty3>
 }
 
 template <class _Ty1, class _Ty2, _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>, int> = 0>
-_STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo) noexcept /* strengthened */ {
+_CONSTEXPR_CMATH23 _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo) noexcept
+/* strengthened */ {
     using _Common = _STD _Common_float_type_t<_Ty1, _Ty2>;
     if constexpr (_STD is_same_v<_Common, float>) {
         return _CSTD remquof(static_cast<_Common>(_Left), static_cast<_Common>(_Right), _Pquo);
@@ -915,6 +925,7 @@ _GENERIC_MATH_CLASSIFY1_RETV(isnan, false)
 #undef _GENERIC_MATH_CLASSIFY1_RETV_WCHAR_T
 #undef _GENERIC_MATH_CLASSIFY1_RETV_CHAR8_T
 #undef _GENERIC_MATH_CLASSIFY1_RETV
+#undef _HAS_CMATH_BUILTINS
 #undef _HAS_CMATH_INTRINSICS
 _END_EXTERN_CXX_WORKAROUND
 
