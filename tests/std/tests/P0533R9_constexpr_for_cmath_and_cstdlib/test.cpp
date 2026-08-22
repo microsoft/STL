@@ -9,12 +9,12 @@
 using namespace std;
 
 template <class T>
-constexpr void test_classification_functions();
+constexpr void test_classification_functions_cxx23();
 
 template <class T>
-constexpr void test_comparison_functions();
+constexpr void test_comparison_functions_cxx23();
 
-constexpr bool test_cmath() {
+constexpr bool test_cmath_cxx23() {
 #if defined(_MSVC_INTERNAL_TESTING) || !defined(_MSVC_LIBC_MATH) // TRANSITION, MSVC-PR-767184/772024 fixed LNK2005
     {
         int exponent = 0;
@@ -214,26 +214,26 @@ constexpr bool test_cmath() {
     assert(fmal(5.125l, 3.0l, 2.5l) == 17.875l);
     assert(fma(17, 100, 29) == 1729.0);
 
-    test_classification_functions<float>();
-    test_classification_functions<double>();
-    test_classification_functions<long double>();
-    test_classification_functions<int>();
+    test_classification_functions_cxx23<float>();
+    test_classification_functions_cxx23<double>();
+    test_classification_functions_cxx23<long double>();
+    test_classification_functions_cxx23<int>();
 
 #ifndef _MSVC_INTERNAL_TESTING // TRANSITION, MSVC-PR-767404 fixed the comparison functions in constant evaluation
     if !consteval
 #endif // ^^^ workaround ^^^
     {
-        test_comparison_functions<float>();
-        test_comparison_functions<double>();
-        test_comparison_functions<long double>();
-        test_comparison_functions<int>();
+        test_comparison_functions_cxx23<float>();
+        test_comparison_functions_cxx23<double>();
+        test_comparison_functions_cxx23<long double>();
+        test_comparison_functions_cxx23<int>();
     }
 
     return true;
 }
 
 template <class T>
-constexpr void test_classification_functions() {
+constexpr void test_classification_functions_cxx23() {
     {
         constexpr T zro{};
         constexpr T val = static_cast<T>(5);
@@ -292,7 +292,7 @@ constexpr void test_classification_functions() {
 }
 
 template <class T>
-constexpr void test_comparison_functions() {
+constexpr void test_comparison_functions_cxx23() {
     constexpr T lo = static_cast<T>(-3);
     constexpr T hi = static_cast<T>(4);
 
@@ -352,7 +352,7 @@ constexpr void test_comparison_functions() {
     }
 }
 
-constexpr bool test_cstdlib() {
+constexpr bool test_cstdlib_cxx23() {
     assert(abs(-5) == 5);
     assert(abs(-5L) == 5L);
     assert(abs(-5LL) == 5LL);
@@ -380,14 +380,263 @@ constexpr bool test_cstdlib() {
     return true;
 }
 
+constexpr bool test_cmath_cxx26() {
+    // These tests use round() because they're checking for basic functionality, not precision.
+
+    assert(round(acos(0.6f) * 1000.0f) == 927.0f);
+    assert(round(acos(0.6) * 1000.0) == 927.0);
+    assert(round(acos(0.6l) * 1000.0l) == 927.0l);
+    assert(round(acosf(0.6f) * 1000.0f) == 927.0f);
+    assert(round(acosl(0.6l) * 1000.0l) == 927.0l);
+    assert(round(acos(-1) * 1000.0) == 3142.0);
+
+    assert(round(asin(0.6f) * 1000.0f) == 644.0f);
+    assert(round(asin(0.6) * 1000.0) == 644.0);
+    assert(round(asin(0.6l) * 1000.0l) == 644.0l);
+    assert(round(asinf(0.6f) * 1000.0f) == 644.0f);
+    assert(round(asinl(0.6l) * 1000.0l) == 644.0l);
+    assert(round(asin(1) * 1000.0) == 1571.0);
+
+    assert(round(atan(0.6f) * 1000.0f) == 540.0f);
+    assert(round(atan(0.6) * 1000.0) == 540.0);
+    assert(round(atan(0.6l) * 1000.0l) == 540.0l);
+    assert(round(atanf(0.6f) * 1000.0f) == 540.0f);
+    assert(round(atanl(0.6l) * 1000.0l) == 540.0l);
+    assert(round(atan(1) * 1000.0) == 785.0);
+
+    assert(round(atan2(0.06f, 0.1f) * 1000.0f) == 540.0f);
+    assert(round(atan2(0.06, 0.1) * 1000.0) == 540.0);
+    assert(round(atan2(0.06l, 0.1l) * 1000.0l) == 540.0l);
+    assert(round(atan2f(0.06f, 0.1f) * 1000.0f) == 540.0f);
+    assert(round(atan2l(0.06l, 0.1l) * 1000.0l) == 540.0l);
+    assert(round(atan2(17, 29) * 1000.0) == 530.0);
+
+    assert(round(cos(0.6f) * 1000.0f) == 825.0f);
+    assert(round(cos(0.6) * 1000.0) == 825.0);
+    assert(round(cos(0.6l) * 1000.0l) == 825.0l);
+    assert(round(cosf(0.6f) * 1000.0f) == 825.0f);
+    assert(round(cosl(0.6l) * 1000.0l) == 825.0l);
+    assert(round(cos(1729) * 1000.0) == 432.0);
+
+    assert(round(sin(0.6f) * 1000.0f) == 565.0f);
+    assert(round(sin(0.6) * 1000.0) == 565.0);
+    assert(round(sin(0.6l) * 1000.0l) == 565.0l);
+    assert(round(sinf(0.6f) * 1000.0f) == 565.0f);
+    assert(round(sinl(0.6l) * 1000.0l) == 565.0l);
+    assert(round(sin(1729) * 1000.0) == 902.0);
+
+    assert(round(tan(0.6f) * 1000.0f) == 684.0f);
+    assert(round(tan(0.6) * 1000.0) == 684.0);
+    assert(round(tan(0.6l) * 1000.0l) == 684.0l);
+    assert(round(tanf(0.6f) * 1000.0f) == 684.0f);
+    assert(round(tanl(0.6l) * 1000.0l) == 684.0l);
+    assert(round(tan(1729) * 1000.0) == 2087.0);
+
+    if !consteval { // TRANSITION, GH-3789
+        assert(round(acosh(3.3f) * 1000.0f) == 1863.0f);
+        assert(round(acosh(3.3) * 1000.0) == 1863.0);
+        assert(round(acosh(3.3l) * 1000.0l) == 1863.0l);
+        assert(round(acoshf(3.3f) * 1000.0f) == 1863.0f);
+        assert(round(acoshl(3.3l) * 1000.0l) == 1863.0l);
+        assert(round(acosh(7) * 1000.0) == 2634.0);
+
+        assert(round(asinh(3.3f) * 1000.0f) == 1909.0f);
+        assert(round(asinh(3.3) * 1000.0) == 1909.0);
+        assert(round(asinh(3.3l) * 1000.0l) == 1909.0l);
+        assert(round(asinhf(3.3f) * 1000.0f) == 1909.0f);
+        assert(round(asinhl(3.3l) * 1000.0l) == 1909.0l);
+        assert(round(asinh(7) * 1000.0) == 2644.0);
+
+        assert(round(atanh(0.6f) * 1000.0f) == 693.0f);
+        assert(round(atanh(0.6) * 1000.0) == 693.0);
+        assert(round(atanh(0.6l) * 1000.0l) == 693.0l);
+        assert(round(atanhf(0.6f) * 1000.0f) == 693.0f);
+        assert(round(atanhl(0.6l) * 1000.0l) == 693.0l);
+        assert(round(atanh(0) * 1000.0) == 0.0);
+
+        assert(round(cosh(0.6f) * 1000.0f) == 1185.0f);
+        assert(round(cosh(0.6) * 1000.0) == 1185.0);
+        assert(round(cosh(0.6l) * 1000.0l) == 1185.0l);
+        assert(round(coshf(0.6f) * 1000.0f) == 1185.0f);
+        assert(round(coshl(0.6l) * 1000.0l) == 1185.0l);
+        assert(round(cosh(2) * 1000.0) == 3762.0);
+
+        assert(round(sinh(0.6f) * 1000.0f) == 637.0f);
+        assert(round(sinh(0.6) * 1000.0) == 637.0);
+        assert(round(sinh(0.6l) * 1000.0l) == 637.0l);
+        assert(round(sinhf(0.6f) * 1000.0f) == 637.0f);
+        assert(round(sinhl(0.6l) * 1000.0l) == 637.0l);
+        assert(round(sinh(2) * 1000.0) == 3627.0);
+
+        assert(round(tanh(0.6f) * 1000.0f) == 537.0f);
+        assert(round(tanh(0.6) * 1000.0) == 537.0);
+        assert(round(tanh(0.6l) * 1000.0l) == 537.0l);
+        assert(round(tanhf(0.6f) * 1000.0f) == 537.0f);
+        assert(round(tanhl(0.6l) * 1000.0l) == 537.0l);
+        assert(round(tanh(2) * 1000.0) == 964.0);
+    }
+
+    assert(round(exp(0.6f) * 1000.0f) == 1822.0f);
+    assert(round(exp(0.6) * 1000.0) == 1822.0);
+    assert(round(exp(0.6l) * 1000.0l) == 1822.0l);
+    assert(round(expf(0.6f) * 1000.0f) == 1822.0f);
+    assert(round(expl(0.6l) * 1000.0l) == 1822.0l);
+    assert(round(exp(2) * 1000.0) == 7389.0);
+
+    if !consteval { // TRANSITION, GH-3789
+        assert(round(exp2(0.6f) * 1000.0f) == 1516.0f);
+        assert(round(exp2(0.6) * 1000.0) == 1516.0);
+        assert(round(exp2(0.6l) * 1000.0l) == 1516.0l);
+        assert(round(exp2f(0.6f) * 1000.0f) == 1516.0f);
+        assert(round(exp2l(0.6l) * 1000.0l) == 1516.0l);
+        assert(round(exp2(-3) * 1000.0) == 125.0);
+    }
+
+    assert(round(expm1(0.6f) * 1000.0f) == 822.0f);
+    assert(round(expm1(0.6) * 1000.0) == 822.0);
+    assert(round(expm1(0.6l) * 1000.0l) == 822.0l);
+    assert(round(expm1f(0.6f) * 1000.0f) == 822.0f);
+    assert(round(expm1l(0.6l) * 1000.0l) == 822.0l);
+    assert(round(expm1(2) * 1000.0) == 6389.0);
+
+    assert(round(log(0.6f) * 1000.0f) == -511.0f);
+    assert(round(log(0.6) * 1000.0) == -511.0);
+    assert(round(log(0.6l) * 1000.0l) == -511.0l);
+    assert(round(logf(0.6f) * 1000.0f) == -511.0f);
+    assert(round(logl(0.6l) * 1000.0l) == -511.0l);
+    assert(round(log(7) * 1000.0) == 1946.0);
+
+    assert(round(log10(0.6f) * 1000.0f) == -222.0f);
+    assert(round(log10(0.6) * 1000.0) == -222.0);
+    assert(round(log10(0.6l) * 1000.0l) == -222.0l);
+    assert(round(log10f(0.6f) * 1000.0f) == -222.0f);
+    assert(round(log10l(0.6l) * 1000.0l) == -222.0l);
+    assert(round(log10(7) * 1000.0) == 845.0);
+
+    assert(round(log1p(0.6f) * 1000.0f) == 470.0f);
+    assert(round(log1p(0.6) * 1000.0) == 470.0);
+    assert(round(log1p(0.6l) * 1000.0l) == 470.0l);
+    assert(round(log1pf(0.6f) * 1000.0f) == 470.0f);
+    assert(round(log1pl(0.6l) * 1000.0l) == 470.0l);
+    assert(round(log1p(7) * 1000.0) == 2079.0);
+
+    assert(round(log2(0.6f) * 1000.0f) == -737.0f);
+    assert(round(log2(0.6) * 1000.0) == -737.0);
+    assert(round(log2(0.6l) * 1000.0l) == -737.0l);
+    assert(round(log2f(0.6f) * 1000.0f) == -737.0f);
+    assert(round(log2l(0.6l) * 1000.0l) == -737.0l);
+    assert(round(log2(7) * 1000.0) == 2807.0);
+
+    assert(round(cbrt(0.6f) * 1000.0f) == 843.0f);
+    assert(round(cbrt(0.6) * 1000.0) == 843.0);
+    assert(round(cbrt(0.6l) * 1000.0l) == 843.0l);
+    assert(round(cbrtf(0.6f) * 1000.0f) == 843.0f);
+    assert(round(cbrtl(0.6l) * 1000.0l) == 843.0l);
+    assert(round(cbrt(7) * 1000.0) == 1913.0);
+
+    assert(round(hypot(3.3f, 7.7f) * 1000.0f) == 8377.0f);
+    assert(round(hypot(3.3, 7.7) * 1000.0) == 8377.0);
+    assert(round(hypot(3.3l, 7.7l) * 1000.0l) == 8377.0l);
+    assert(round(hypotf(3.3f, 7.7f) * 1000.0f) == 8377.0f);
+    assert(round(hypotl(3.3l, 7.7l) * 1000.0l) == 8377.0l);
+    assert(round(hypot(3, 7) * 1000.0) == 7616.0);
+
+    assert(round(pow(3.3f, 0.6f) * 1000.0f) == 2047.0f);
+    assert(round(pow(3.3, 0.6) * 1000.0) == 2047.0);
+    assert(round(pow(3.3l, 0.6l) * 1000.0l) == 2047.0l);
+    assert(round(powf(3.3f, 0.6f) * 1000.0f) == 2047.0f);
+    assert(round(powl(3.3l, 0.6l) * 1000.0l) == 2047.0l);
+    assert(round(pow(2, -3) * 1000.0) == 125.0);
+
+    assert(round(sqrt(0.6f) * 1000.0f) == 775.0f);
+    assert(round(sqrt(0.6) * 1000.0) == 775.0);
+    assert(round(sqrt(0.6l) * 1000.0l) == 775.0l);
+    assert(round(sqrtf(0.6f) * 1000.0f) == 775.0f);
+    assert(round(sqrtl(0.6l) * 1000.0l) == 775.0l);
+    assert(round(sqrt(7) * 1000.0) == 2646.0);
+
+    if !consteval { // TRANSITION, GH-3789
+        assert(round(erf(0.6f) * 1000.0f) == 604.0f);
+        assert(round(erf(0.6) * 1000.0) == 604.0);
+        assert(round(erf(0.6l) * 1000.0l) == 604.0l);
+        assert(round(erff(0.6f) * 1000.0f) == 604.0f);
+        assert(round(erfl(0.6l) * 1000.0l) == 604.0l);
+        assert(round(erf(1) * 1000.0) == 843.0);
+
+        assert(round(erfc(0.6f) * 1000.0f) == 396.0f);
+        assert(round(erfc(0.6) * 1000.0) == 396.0);
+        assert(round(erfc(0.6l) * 1000.0l) == 396.0l);
+        assert(round(erfcf(0.6f) * 1000.0f) == 396.0f);
+        assert(round(erfcl(0.6l) * 1000.0l) == 396.0l);
+        assert(round(erfc(1) * 1000.0) == 157.0);
+
+        assert(round(lgamma(0.6f) * 1000.0f) == 398.0f);
+        assert(round(lgamma(0.6) * 1000.0) == 398.0);
+        assert(round(lgamma(0.6l) * 1000.0l) == 398.0l);
+        assert(round(lgammaf(0.6f) * 1000.0f) == 398.0f);
+        assert(round(lgammal(0.6l) * 1000.0l) == 398.0l);
+        assert(round(lgamma(5) * 1000.0) == 3178.0);
+
+        assert(round(tgamma(0.6f) * 1000.0f) == 1489.0f);
+        assert(round(tgamma(0.6) * 1000.0) == 1489.0);
+        assert(round(tgamma(0.6l) * 1000.0l) == 1489.0l);
+        assert(round(tgammaf(0.6f) * 1000.0f) == 1489.0f);
+        assert(round(tgammal(0.6l) * 1000.0l) == 1489.0l);
+        assert(round(tgamma(5) * 1000.0) == 24000.0);
+    }
+
+    return true;
+}
+
+#if defined(_MSVC_INTERNAL_TESTING) || !defined(_M_ARM64EC) // TRANSITION, MSVC-PR-767414/MSVC-PR-768260 fixed LNK2019
+void test_cmath_runtime() {
+    assert(nearbyint(3.14f) == 3.0f);
+    assert(nearbyint(3.14) == 3.0);
+    assert(nearbyint(3.14l) == 3.0l);
+    assert(nearbyintf(3.14f) == 3.0f);
+    assert(nearbyintl(3.14l) == 3.0l);
+    assert(nearbyint(1729) == 1729.0);
+
+    assert(rint(3.14f) == 3.0f);
+    assert(rint(3.14) == 3.0);
+    assert(rint(3.14l) == 3.0l);
+    assert(rintf(3.14f) == 3.0f);
+    assert(rintl(3.14l) == 3.0l);
+    assert(rint(1729) == 1729.0);
+
+    assert(lrint(3.14f) == 3L);
+    assert(lrint(3.14) == 3L);
+    assert(lrint(3.14l) == 3L);
+    assert(lrintf(3.14f) == 3L);
+    assert(lrintl(3.14l) == 3L);
+    assert(lrint(1729) == 1729L);
+
+    assert(llrint(0x1p60f) == 0x1000'0000'0000'0000LL);
+    assert(llrint(0x1p60) == 0x1000'0000'0000'0000LL);
+    assert(llrint(0x1p60l) == 0x1000'0000'0000'0000LL);
+    assert(llrintf(0x1p60f) == 0x1000'0000'0000'0000LL);
+    assert(llrintl(0x1p60l) == 0x1000'0000'0000'0000LL);
+    assert(llrint(1729) == 1729LL);
+
+    assert(isnan(nan("")));
+    assert(isnan(nanf("")));
+    assert(isnan(nanl("")));
+}
+#endif // ^^^ no workaround ^^^
+
 int main() {
 #if defined(_MSVC_INTERNAL_TESTING) || !defined(_M_ARM64EC) // TRANSITION, MSVC-PR-767414/MSVC-PR-768260 fixed LNK2019
-    test_cmath();
-    test_cstdlib();
+    test_cmath_cxx23();
+    test_cstdlib_cxx23();
+    test_cmath_cxx26();
+    test_cmath_runtime();
 #endif // ^^^ no workaround ^^^
 
 #ifdef __cpp_lib_constexpr_cmath
-    static_assert(test_cmath());
-    static_assert(test_cstdlib());
+    static_assert(test_cmath_cxx23());
+    static_assert(test_cstdlib_cxx23());
+#if _HAS_CXX26 && defined(_MSVC_LIBC_MATH) // TRANSITION, GH-3789, should be `__cpp_lib_constexpr_cmath >= 202306L`
+    static_assert(test_cmath_cxx26());
+#endif // ^^^ _HAS_CXX26 && defined(_MSVC_LIBC_MATH) ^^^
 #endif // ^^^ defined(__cpp_lib_constexpr_cmath) ^^^
 }
