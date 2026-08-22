@@ -17,14 +17,12 @@
 #define _HAS_CMATH_INTRINSICS 0
 #endif // ^^^ intrinsics unavailable ^^^
 
-// MSVC provides builtins for math functions in C++23 and later if the user
-// has not specified -Zc:cmath-. The compiler defines the macro below to make
-// detection simpler.
+// MSVC provides constexpr builtins in C++23 and later, except when /Zc:cmath- opts out of constexpr.
 #if defined(__clang__) || defined(_MSVC_CONSTEXPR_CMATH)
 #define _HAS_CMATH_BUILTINS 1
 #else // ^^^ builtins available / builtins unavailable vvv
 #define _HAS_CMATH_BUILTINS 0
-#endif
+#endif // ^^^ builtins unavailable ^^^
 
 #if _HAS_CMATH_INTRINSICS
 #include _STL_INTRIN_HEADER
@@ -330,7 +328,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double ceil(_In_ long double _
     return __ceil(static_cast<double>(_Xx));
 #elif _HAS_CMATH_BUILTINS
     return __builtin_ceill(_Xx);
-#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
+#else // ^^^ _HAS_CMATH_BUILTINS / intrinsics unavailable vvv
     return _CSTD ceill(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
 }
@@ -342,7 +340,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double copysign(
     return __copysign(static_cast<double>(_Number), static_cast<double>(_Sign));
 #elif _HAS_CMATH_BUILTINS
     return __builtin_copysignl(_Number, _Sign);
-#else // ^^^ _HAS_CMATH_BUILTINS  / intrinsics unavailable vvv
+#else // ^^^ _HAS_CMATH_BUILTINS / intrinsics unavailable vvv
     return _CSTD copysignl(_Number, _Sign);
 #endif // ^^^ intrinsics unavailable ^^^
 }
