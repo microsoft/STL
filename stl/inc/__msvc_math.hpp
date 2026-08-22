@@ -79,27 +79,27 @@ extern "C" {
     _STL_DEF_FUNC3(specs, name##l, long double, long double, long double, lastarg)
 
 // N.B. static_cast<bool> is used when the builtin returns int.
-#define _STL_DEF_OVERLOADED_PREDICATE1(specs, name, builtin, fptype)             \
+#define _STL_DEF_OVERLOADED_COMPARISON1(specs, name, builtin, fptype)            \
     _NODISCARD specs bool __cdecl name(fptype _Xx) noexcept /* strengthened */ { \
         return static_cast<bool>(builtin(_Xx));                                  \
     }
 
-#define _STL_DEF_OVERLOADED_PREDICATE2(specs, name, builtin, fptype)                           \
+#define _STL_DEF_OVERLOADED_COMPARISON2(specs, name, builtin, fptype)                          \
     _NODISCARD specs bool __cdecl name(fptype _Xx0, fptype _Xx1) noexcept /* strengthened */ { \
         return static_cast<bool>(builtin(_Xx0, _Xx1));                                         \
     }
 
 // Defines three overloaded functions with signature `bool (fp-type)`.
-#define _STL_DEF_OVERLOADED_PREDICATE_FAMILY1(specs, name)                  \
-    _STL_DEF_OVERLOADED_PREDICATE1(specs, name, __builtin_##name##f, float) \
-    _STL_DEF_OVERLOADED_PREDICATE1(specs, name, __builtin_##name, double)   \
-    _STL_DEF_OVERLOADED_PREDICATE1(specs, name, __builtin_##name##l, long double)
+#define _STL_DEF_OVERLOADED_COMPARISON_FAMILY1(specs, name)                  \
+    _STL_DEF_OVERLOADED_COMPARISON1(specs, name, __builtin_##name##f, float) \
+    _STL_DEF_OVERLOADED_COMPARISON1(specs, name, __builtin_##name, double)   \
+    _STL_DEF_OVERLOADED_COMPARISON1(specs, name, __builtin_##name##l, long double)
 
 // Defines four overloaded functions with signature `bool (fp-type, fp-type)`.
-#define _STL_DEF_OVERLOADED_PREDICATE_FAMILY2(specs, name)                                                \
-    _STL_DEF_OVERLOADED_PREDICATE2(specs, name, __builtin_##name##f, float)                               \
-    _STL_DEF_OVERLOADED_PREDICATE2(specs, name, __builtin_##name, double)                                 \
-    _STL_DEF_OVERLOADED_PREDICATE2(specs, name, __builtin_##name##l, long double)                         \
+#define _STL_DEF_OVERLOADED_COMPARISON_FAMILY2(specs, name)                                               \
+    _STL_DEF_OVERLOADED_COMPARISON2(specs, name, __builtin_##name##f, float)                              \
+    _STL_DEF_OVERLOADED_COMPARISON2(specs, name, __builtin_##name, double)                                \
+    _STL_DEF_OVERLOADED_COMPARISON2(specs, name, __builtin_##name##l, long double)                        \
     template <class _Ty0, class _Ty1>                                                                     \
     _NODISCARD specs bool __cdecl name(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {                \
         return static_cast<bool>(__builtin_##name(static_cast<double>(_Xx0), static_cast<double>(_Xx1))); \
@@ -351,13 +351,13 @@ _NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnormal(long double _Xx) noexcept /*
     return fpclassify(_Xx) == FP_NORMAL;
 }
 
-_STL_DEF_OVERLOADED_PREDICATE_FAMILY1(_CONSTEXPR_CMATH23, signbit)
-_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isgreater)
-_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isgreaterequal)
-_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isless)
-_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, islessequal)
-_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, islessgreater)
-_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isunordered)
+_STL_DEF_OVERLOADED_COMPARISON_FAMILY1(_CONSTEXPR_CMATH23, signbit)
+_STL_DEF_OVERLOADED_COMPARISON_FAMILY2(_CONSTEXPR_CMATH23, isgreater)
+_STL_DEF_OVERLOADED_COMPARISON_FAMILY2(_CONSTEXPR_CMATH23, isgreaterequal)
+_STL_DEF_OVERLOADED_COMPARISON_FAMILY2(_CONSTEXPR_CMATH23, isless)
+_STL_DEF_OVERLOADED_COMPARISON_FAMILY2(_CONSTEXPR_CMATH23, islessequal)
+_STL_DEF_OVERLOADED_COMPARISON_FAMILY2(_CONSTEXPR_CMATH23, islessgreater)
+_STL_DEF_OVERLOADED_COMPARISON_FAMILY2(_CONSTEXPR_CMATH23, isunordered)
 } // extern "C++"
 
 // Preserve the sign of zero when atan2 underflows.
@@ -456,10 +456,10 @@ _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl tanhf(float _Xx) noexcept /* str
 #undef _STL_DEF_RETURN_FAMILY1
 #undef _STL_DEF_LASTARG_FAMILY2
 #undef _STL_DEF_LASTARG_FAMILY3
-#undef _STL_DEF_OVERLOADED_PREDICATE1
-#undef _STL_DEF_OVERLOADED_PREDICATE2
-#undef _STL_DEF_OVERLOADED_PREDICATE_FAMILY1
-#undef _STL_DEF_OVERLOADED_PREDICATE_FAMILY2
+#undef _STL_DEF_OVERLOADED_COMPARISON1
+#undef _STL_DEF_OVERLOADED_COMPARISON2
+#undef _STL_DEF_OVERLOADED_COMPARISON_FAMILY1
+#undef _STL_DEF_OVERLOADED_COMPARISON_FAMILY2
 #undef _STL_DECLARE_FAMILY1
 #undef _CONSTEXPR_CMATH26_NYI
 
