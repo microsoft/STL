@@ -572,7 +572,7 @@ _NODISCARD _CONSTEXPR_CMATH23 long double remquol(long double _Xx0, long double 
     return __builtin_remquol(_Xx0, _Xx1, _Xx2);
 }
 
-// TRANSITION: Preserve the sign of zero when atan2 underflows.
+// Preserve the sign of zero when atan2 underflows.
 // __builtin_atan2 can return +0 for tiny negative results.
 _NODISCARD _CONSTEXPR_CMATH26 float atan2f(float _Xx0, float _Xx1) noexcept /* strengthened */ {
     float _Result = static_cast<float>(__builtin_atan2f(_Xx0, _Xx1));
