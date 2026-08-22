@@ -12,7 +12,7 @@
 #include <type_traits>
 
 // MSVC provides constexpr builtins in C++23 and later, except when /Zc:cmath- opts out of constexpr.
-#if defined(__clang__) || defined(_MSVC_CONSTEXPR_CMATH)
+#if defined(__clang__) || defined(__cpp_lib_constexpr_cmath)
 #define _HAS_CMATH_BUILTINS 1
 #else // ^^^ builtins available / builtins unavailable vvv
 #define _HAS_CMATH_BUILTINS 0

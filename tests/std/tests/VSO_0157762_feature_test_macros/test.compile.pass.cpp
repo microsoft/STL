@@ -221,7 +221,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_charconv == 202207L);
 #error __cpp_lib_constexpr_charconv is defined
 #endif
 
-#if _HAS_CXX23 && defined(_MSVC_CONSTEXPR_CMATH) // TRANSITION, Clang and EDG lack support for constexpr <cmath>.
+#if _HAS_CXX23 && defined(_MSVC_LIBC_MATH) // TRANSITION, Clang and EDG lack support for constexpr <cmath>.
 STATIC_ASSERT(__cpp_lib_constexpr_cmath == 202202L);
 #elif defined(__cpp_lib_constexpr_cmath)
 #error __cpp_lib_constexpr_cmath is defined
