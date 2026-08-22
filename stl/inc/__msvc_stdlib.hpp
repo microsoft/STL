@@ -3,8 +3,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#ifndef _MSVC_STDLIB_HPP
-#define _MSVC_STDLIB_HPP
+#ifndef __MSVC_STDLIB_HPP
+#define __MSVC_STDLIB_HPP
 
 // Prevent later inclusions of stdlib.h from having any effect.
 #define _INC_STDLIB
@@ -833,4 +833,4 @@ onexit_t __cdecl onexit(_In_opt_ onexit_t _Func);
 _CRT_END_C_HEADER
 _UCRT_RESTORE_CLANG_WARNINGS
 #pragma warning(pop) // _UCRT_DISABLED_WARNINGS
-#endif // _MSVC_STDLIB_HPP
+#endif // __MSVC_STDLIB_HPP
