@@ -491,17 +491,7 @@ _NODISCARD _CONSTEXPR_CMATH23 long double frexpl(long double _Xx0, int* _Xx1) no
     return __builtin_frexpl(_Xx0, _Xx1);
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 int ilogbf(float _Xx) noexcept /* strengthened */ {
-    return __builtin_ilogbf(_Xx);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 int ilogb(double _Xx) noexcept /* strengthened */ {
-    return __builtin_ilogb(_Xx);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 int ilogbl(long double _Xx) noexcept /* strengthened */ {
-    return __builtin_ilogbl(_Xx);
-}
+_STL_DEF_ROUNDING_FAMILY1(_CONSTEXPR_CMATH23, ilogb, int)
 
 _NODISCARD _CONSTEXPR_CMATH23 float ldexpf(float _Xx0, int _Xx1) noexcept /* strengthened */ {
     return __builtin_ldexpf(_Xx0, _Xx1);
@@ -527,41 +517,9 @@ _NODISCARD _CONSTEXPR_CMATH23 long double modfl(long double _Xx0, long double* _
     return __builtin_modfl(_Xx0, _Xx1);
 }
 
-_NODISCARD inline long lrintf(float _Xx0) noexcept /* strengthened */ {
-    return __builtin_lrintf(_Xx0);
-}
-
-_NODISCARD inline long lrint(double _Xx0) noexcept /* strengthened */ {
-    return __builtin_lrint(_Xx0);
-}
-
-_NODISCARD inline long lrintl(long double _Xx0) noexcept /* strengthened */ {
-    return __builtin_lrintl(_Xx0);
-}
-
-_NODISCARD inline long long llrintf(float _Xx0) noexcept /* strengthened */ {
-    return __builtin_llrintf(_Xx0);
-}
-
-_NODISCARD inline long long llrint(double _Xx0) noexcept /* strengthened */ {
-    return __builtin_llrint(_Xx0);
-}
-
-_NODISCARD inline long long llrintl(long double _Xx0) noexcept /* strengthened */ {
-    return __builtin_llrintl(_Xx0);
-}
-
-_NODISCARD inline float rintf(float _Xx0) noexcept /* strengthened */ {
-    return __builtin_rintf(_Xx0);
-}
-
-_NODISCARD inline double rint(double _Xx0) noexcept /* strengthened */ {
-    return __builtin_rint(_Xx0);
-}
-
-_NODISCARD inline long double rintl(long double _Xx0) noexcept /* strengthened */ {
-    return __builtin_rintl(_Xx0);
-}
+_STL_DEF_ROUNDING_FAMILY1(inline, lrint, long)
+_STL_DEF_ROUNDING_FAMILY1(inline, llrint, long long)
+_STL_DEF_FAMILY1(inline, rint)
 
 _NODISCARD _CONSTEXPR_CMATH23 float scalbnf(float _Xx0, int _Xx1) noexcept /* strengthened */ {
     return __builtin_scalbnf(_Xx0, _Xx1);
