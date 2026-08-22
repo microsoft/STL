@@ -199,6 +199,8 @@ _NODISCARD _CONSTEXPR_CMATH26 float __cdecl acosf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl acos(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl asinf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl asin(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 float __cdecl atan2f(float, float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 double __cdecl atan2(double, double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl atanf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl atan(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH23 float __cdecl copysignf(float, float) noexcept;
@@ -213,6 +215,9 @@ _NODISCARD _CONSTEXPR_CMATH26 float __cdecl log10f(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl log10(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl log2f(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl log2(double) noexcept;
+_NODISCARD inline long __cdecl lrintf(float) noexcept;
+_NODISCARD inline long __cdecl lrint(double) noexcept;
+_NODISCARD inline long __cdecl lrintl(long double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl powf(float, float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl pow(double, double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl sinf(float) noexcept;
@@ -227,6 +232,7 @@ _NODISCARD _CONSTEXPR_CMATH23 long double __cdecl fmal(long double, long double,
 
 #pragma function(acosf, acos)
 #pragma function(asinf, asin)
+#pragma function(atan2f, atan2)
 #pragma function(atanf, atan)
 #pragma function(ceilf, ceil)
 #pragma function(copysignf, copysign)
@@ -241,6 +247,7 @@ _NODISCARD _CONSTEXPR_CMATH23 long double __cdecl fmal(long double, long double,
 #pragma function(log10f, log10)
 #pragma function(log2f, log2)
 #pragma function(logf, log)
+#pragma function(lrintf, lrint, lrintl)
 #pragma function(powf, pow)
 #pragma function(sinf, sin)
 #pragma function(sqrtf, sqrt)
