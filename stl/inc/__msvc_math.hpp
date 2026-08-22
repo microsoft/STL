@@ -182,19 +182,6 @@ _NODISCARD long double __cdecl nanl(const char*) noexcept /* strengthened */;
 // cannot be redefined. We use #pragma function to instruct MSVC to treat them as regular
 // functions that can be defined, but we first need to declare the function before we can
 // do so.
-_NODISCARD _CONSTEXPR_CMATH23 float __cdecl ceilf(float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 double __cdecl ceil(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 double __cdecl fabs(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 float __cdecl floorf(float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 double __cdecl floor(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 float __cdecl fmaxf(float, float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 double __cdecl fmax(double, double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 long double __cdecl fmaxl(long double, long double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 float __cdecl fminf(float, float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 double __cdecl fmin(double, double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 long double __cdecl fminl(long double, long double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 float __cdecl fmodf(float, float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 double __cdecl fmod(double, double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl acosf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl acos(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl asinf(float) noexcept;
@@ -203,18 +190,34 @@ _NODISCARD _CONSTEXPR_CMATH26 float __cdecl atan2f(float, float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl atan2(double, double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl atanf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl atan(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl ceilf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl ceil(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH23 float __cdecl copysignf(float, float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH23 double __cdecl copysign(double, double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl cosf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl cos(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl expf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl exp(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 float __cdecl logf(float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 double __cdecl log(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl fabs(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl floorf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl floor(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl fmaf(float, float, float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl fma(double, double, double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 long double __cdecl fmal(long double, long double, long double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl fmaxf(float, float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl fmax(double, double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 long double __cdecl fmaxl(long double, long double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl fminf(float, float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl fmin(double, double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 long double __cdecl fminl(long double, long double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl fmodf(float, float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl fmod(double, double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl log10f(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl log10(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl log2f(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl log2(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 float __cdecl logf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 double __cdecl log(double) noexcept;
 _NODISCARD inline long __cdecl lrintf(float) noexcept;
 _NODISCARD inline long __cdecl lrint(double) noexcept;
 _NODISCARD inline long __cdecl lrintl(long double) noexcept;
@@ -226,9 +229,6 @@ _NODISCARD _CONSTEXPR_CMATH26 float __cdecl sqrtf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl sqrt(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl tanf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl tan(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 float __cdecl fmaf(float, float, float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 double __cdecl fma(double, double, double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 long double __cdecl fmal(long double, long double, long double) noexcept;
 
 #pragma function(acosf, acos)
 #pragma function(asinf, asin)
