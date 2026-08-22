@@ -174,9 +174,9 @@ using double_t = double;
 // The nan family of functions is not routed to builtins because the builtins
 // require a string literal argument and so cannot uphold the interface of
 // these functions.
-_NODISCARD float nanf(const char*);
-_NODISCARD double nan(const char*);
-_NODISCARD long double nanl(const char*);
+_NODISCARD float nanf(const char*) noexcept /* strengthened */;
+_NODISCARD double nan(const char*) noexcept /* strengthened */;
+_NODISCARD long double nanl(const char*) noexcept /* strengthened */;
 
 // Under /Oi (implied by /O2), MSVC treats the following functions as intrinsics that
 // cannot be redefined. We use #pragma function to instruct MSVC to treat them as regular
@@ -333,17 +333,17 @@ _STL_DEF_FAMILY3(_CONSTEXPR_CMATH23, fma)
 // forward to their double siblings, so forward-declaring them without defining
 // them does not a successful polyfill make.
 #pragma function(coshf, cosh, coshl)
-_NODISCARD _CONSTEXPR_CMATH26_NYI float coshf(float _Xx) {
+_NODISCARD _CONSTEXPR_CMATH26_NYI float coshf(float _Xx) noexcept /* strengthened */ {
     return __builtin_coshf(_Xx);
 }
 
 #pragma function(sinhf, sinh, sinhl)
-_NODISCARD _CONSTEXPR_CMATH26_NYI float sinhf(float _Xx) {
+_NODISCARD _CONSTEXPR_CMATH26_NYI float sinhf(float _Xx) noexcept /* strengthened */ {
     return __builtin_sinhf(_Xx);
 }
 
 #pragma function(tanhf, tanh, tanhl)
-_NODISCARD _CONSTEXPR_CMATH26_NYI float tanhf(float _Xx) {
+_NODISCARD _CONSTEXPR_CMATH26_NYI float tanhf(float _Xx) noexcept /* strengthened */ {
     return __builtin_tanhf(_Xx);
 }
 
