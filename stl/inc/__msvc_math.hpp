@@ -425,6 +425,10 @@ _NODISCARD _CONSTEXPR_CMATH23 bool isgreater(double _Xx0, double _Xx1) noexcept 
 _NODISCARD _CONSTEXPR_CMATH23 bool isgreater(long double _Xx0, long double _Xx1) noexcept /* strengthened */ {
     return static_cast<bool>(__builtin_isgreaterl(_Xx0, _Xx1));
 }
+template <class _Ty0, class _Ty1>
+_NODISCARD _CONSTEXPR_CMATH23 bool isgreater(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
+    return static_cast<bool>(__builtin_isgreater(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
+}
 
 _NODISCARD _CONSTEXPR_CMATH23 bool isgreaterequal(float _Xx0, float _Xx1) noexcept /* strengthened */ {
     return static_cast<bool>(__builtin_isgreaterequalf(_Xx0, _Xx1));
@@ -434,6 +438,10 @@ _NODISCARD _CONSTEXPR_CMATH23 bool isgreaterequal(double _Xx0, double _Xx1) noex
 }
 _NODISCARD _CONSTEXPR_CMATH23 bool isgreaterequal(long double _Xx0, long double _Xx1) noexcept /* strengthened */ {
     return static_cast<bool>(__builtin_isgreaterequall(_Xx0, _Xx1));
+}
+template <class _Ty0, class _Ty1>
+_NODISCARD _CONSTEXPR_CMATH23 bool isgreaterequal(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
+    return static_cast<bool>(__builtin_isgreaterequal(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
 }
 
 _NODISCARD _CONSTEXPR_CMATH23 bool isless(float _Xx0, float _Xx1) noexcept /* strengthened */ {
@@ -445,6 +453,10 @@ _NODISCARD _CONSTEXPR_CMATH23 bool isless(double _Xx0, double _Xx1) noexcept /* 
 _NODISCARD _CONSTEXPR_CMATH23 bool isless(long double _Xx0, long double _Xx1) noexcept /* strengthened */ {
     return static_cast<bool>(__builtin_islessl(_Xx0, _Xx1));
 }
+template <class _Ty0, class _Ty1>
+_NODISCARD _CONSTEXPR_CMATH23 bool isless(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
+    return static_cast<bool>(__builtin_isless(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
+}
 
 _NODISCARD _CONSTEXPR_CMATH23 bool islessequal(float _Xx0, float _Xx1) noexcept /* strengthened */ {
     return static_cast<bool>(__builtin_islessequalf(_Xx0, _Xx1));
@@ -454,6 +466,10 @@ _NODISCARD _CONSTEXPR_CMATH23 bool islessequal(double _Xx0, double _Xx1) noexcep
 }
 _NODISCARD _CONSTEXPR_CMATH23 bool islessequal(long double _Xx0, long double _Xx1) noexcept /* strengthened */ {
     return static_cast<bool>(__builtin_islessequall(_Xx0, _Xx1));
+}
+template <class _Ty0, class _Ty1>
+_NODISCARD _CONSTEXPR_CMATH23 bool islessequal(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
+    return static_cast<bool>(__builtin_islessequal(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
 }
 
 _NODISCARD _CONSTEXPR_CMATH23 bool islessgreater(float _Xx0, float _Xx1) noexcept /* strengthened */ {
@@ -465,6 +481,10 @@ _NODISCARD _CONSTEXPR_CMATH23 bool islessgreater(double _Xx0, double _Xx1) noexc
 _NODISCARD _CONSTEXPR_CMATH23 bool islessgreater(long double _Xx0, long double _Xx1) noexcept /* strengthened */ {
     return static_cast<bool>(__builtin_islessgreaterl(_Xx0, _Xx1));
 }
+template <class _Ty0, class _Ty1>
+_NODISCARD _CONSTEXPR_CMATH23 bool islessgreater(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
+    return static_cast<bool>(__builtin_islessgreater(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
+}
 
 _NODISCARD _CONSTEXPR_CMATH23 bool isunordered(float _Xx0, float _Xx1) noexcept /* strengthened */ {
     return static_cast<bool>(__builtin_isunorderedf(_Xx0, _Xx1));
@@ -475,32 +495,6 @@ _NODISCARD _CONSTEXPR_CMATH23 bool isunordered(double _Xx0, double _Xx1) noexcep
 _NODISCARD _CONSTEXPR_CMATH23 bool isunordered(long double _Xx0, long double _Xx1) noexcept /* strengthened */ {
     return static_cast<bool>(__builtin_isunorderedl(_Xx0, _Xx1));
 }
-
-template <class _Ty0, class _Ty1>
-_NODISCARD _CONSTEXPR_CMATH23 bool isgreater(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isgreater(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
-}
-
-template <class _Ty0, class _Ty1>
-_NODISCARD _CONSTEXPR_CMATH23 bool isgreaterequal(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isgreaterequal(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
-}
-
-template <class _Ty0, class _Ty1>
-_NODISCARD _CONSTEXPR_CMATH23 bool isless(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isless(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
-}
-
-template <class _Ty0, class _Ty1>
-_NODISCARD _CONSTEXPR_CMATH23 bool islessequal(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_islessequal(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
-}
-
-template <class _Ty0, class _Ty1>
-_NODISCARD _CONSTEXPR_CMATH23 bool islessgreater(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_islessgreater(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
-}
-
 template <class _Ty0, class _Ty1>
 _NODISCARD _CONSTEXPR_CMATH23 bool isunordered(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
     return static_cast<bool>(__builtin_isunordered(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
