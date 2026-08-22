@@ -200,14 +200,12 @@ typedef struct _lldiv_t {
     long long rem;
 } lldiv_t;
 
-extern "C" {
 _Check_return_ constexpr int __cdecl abs(_In_ int) noexcept;
 _Check_return_ constexpr long __cdecl labs(_In_ long) noexcept;
 _Check_return_ constexpr long long __cdecl llabs(_In_ long long) noexcept;
 _Check_return_ constexpr div_t __cdecl div(_In_ int, _In_ int) noexcept;
 _Check_return_ constexpr ldiv_t __cdecl ldiv(_In_ long, _In_ long) noexcept;
 _Check_return_ constexpr lldiv_t __cdecl lldiv(_In_ long long, _In_ long long) noexcept;
-}
 
 #pragma warning(push)
 #pragma warning(disable : 4163) // 'meow' not available as an intrinsic function
