@@ -18,6 +18,7 @@
 #define _HAS_CMATH_BUILTINS 0
 #endif // ^^^ builtins unavailable ^^^
 
+// When constexpr builtins are unavailable, fall back to intrinsics for better codegen.
 #if !_HAS_CMATH_BUILTINS && !defined(_M_CEE) // TRANSITION, VSO-1663104
 #define _HAS_CMATH_INTRINSICS 1
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
