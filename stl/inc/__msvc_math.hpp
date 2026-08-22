@@ -62,37 +62,37 @@ extern "C" {
 // noexcept.
 #define _STL_DECLARE_FUNC1(specs, name, ret, fptype) _NODISCARD specs ret name(fptype);
 
-// Defines three non-overloaded functions with signature `fp-type(fp-type)`.
+// Defines three non-overloaded functions with signature `fp-type (fp-type)`.
 #define _STL_DEF_FAMILY1(specs, name)            \
     _STL_DEF_FUNC1(specs, name##f, float, float) \
     _STL_DEF_FUNC1(specs, name, double, double)  \
     _STL_DEF_FUNC1(specs, name##l, long double, long double)
 
-// Defines three non-overloaded functions with signature `fp-type(fp-type, fp-type)`.
+// Defines three non-overloaded functions with signature `fp-type (fp-type, fp-type)`.
 #define _STL_DEF_FAMILY2(specs, name)                   \
     _STL_DEF_FUNC2(specs, name##f, float, float, float) \
     _STL_DEF_FUNC2(specs, name, double, double, double) \
     _STL_DEF_FUNC2(specs, name##l, long double, long double, long double)
 
-// Defines three non-overloaded functions with signature `fp-type(fp-type, fp-type, fp-type)`.
+// Defines three non-overloaded functions with signature `fp-type (fp-type, fp-type, fp-type)`.
 #define _STL_DEF_FAMILY3(specs, name)                           \
     _STL_DEF_FUNC3(specs, name##f, float, float, float, float)  \
     _STL_DEF_FUNC3(specs, name, double, double, double, double) \
     _STL_DEF_FUNC3(specs, name##l, long double, long double, long double, long double)
 
-// Defines three non-overloaded functions with signature `int-type(fp-type)`.
+// Defines three non-overloaded functions with signature `ret (fp-type)`.
 #define _STL_DEF_RETURN_FAMILY1(specs, name, ret) \
     _STL_DEF_FUNC1(specs, name##f, ret, float)    \
     _STL_DEF_FUNC1(specs, name, ret, double)      \
     _STL_DEF_FUNC1(specs, name##l, ret, long double)
 
-// Defines three non-overloaded functions with signature `fp-type(fp-type, lastarg)`.
+// Defines three non-overloaded functions with signature `fp-type (fp-type, lastarg)`.
 #define _STL_DEF_LASTARG_FAMILY2(specs, name, lastarg)    \
     _STL_DEF_FUNC2(specs, name##f, float, float, lastarg) \
     _STL_DEF_FUNC2(specs, name, double, double, lastarg)  \
     _STL_DEF_FUNC2(specs, name##l, long double, long double, lastarg)
 
-// Defines three non-overloaded functions with signature `fp-type(fp-type, fp-type, lastarg)`.
+// Defines three non-overloaded functions with signature `fp-type (fp-type, fp-type, lastarg)`.
 #define _STL_DEF_LASTARG_FAMILY3(specs, name, lastarg)           \
     _STL_DEF_FUNC3(specs, name##f, float, float, float, lastarg) \
     _STL_DEF_FUNC3(specs, name, double, double, double, lastarg) \
@@ -109,13 +109,13 @@ extern "C" {
         return static_cast<bool>(builtin(_Xx0, _Xx1));                                 \
     }
 
-// Defines three overloaded functions with signature `bool(fp-type)`.
+// Defines three overloaded functions with signature `bool (fp-type)`.
 #define _STL_DEF_OVERLOADED_PREDICATE_FAMILY1(specs, name)                  \
     _STL_DEF_OVERLOADED_PREDICATE1(specs, name, __builtin_##name##f, float) \
     _STL_DEF_OVERLOADED_PREDICATE1(specs, name, __builtin_##name, double)   \
     _STL_DEF_OVERLOADED_PREDICATE1(specs, name, __builtin_##name##l, long double)
 
-// Defines four overloaded functions with signature `bool(fp-type, fp-type)`.
+// Defines four overloaded functions with signature `bool (fp-type, fp-type)`.
 #define _STL_DEF_OVERLOADED_PREDICATE_FAMILY2(specs, name)                                                \
     _STL_DEF_OVERLOADED_PREDICATE2(specs, name, __builtin_##name##f, float)                               \
     _STL_DEF_OVERLOADED_PREDICATE2(specs, name, __builtin_##name, double)                                 \
@@ -125,7 +125,7 @@ extern "C" {
         return static_cast<bool>(__builtin_##name(static_cast<double>(_Xx0), static_cast<double>(_Xx1))); \
     }
 
-// **Declares** two non-overloaded functions with signature `fp-type(fp-type)`.
+// **Declares** two non-overloaded functions with signature `fp-type (fp-type)`.
 // A third function, corresponding to the `long double` variant of the function,
 // is **defined** to call the double variant. These declarations are intended to
 // match functions defined within the UCRT because libc does not yet implement
