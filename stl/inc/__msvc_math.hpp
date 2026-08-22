@@ -196,6 +196,7 @@ _NODISCARD _CONSTEXPR_CMATH26 float __cdecl cosf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl cos(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl expf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl exp(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl fabsf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH23 double __cdecl fabs(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH23 float __cdecl floorf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH23 double __cdecl floor(double) noexcept;
@@ -236,7 +237,7 @@ _NODISCARD _CONSTEXPR_CMATH26 double __cdecl tan(double) noexcept;
 #pragma function(copysignf, copysign)
 #pragma function(cosf, cos)
 #pragma function(expf, exp)
-#pragma function(fabs)
+#pragma function(fabsf, fabs)
 #pragma function(floorf, floor)
 #pragma function(fmaf, fma, fmal)
 #pragma function(fmaxf, fmax, fmaxl)
