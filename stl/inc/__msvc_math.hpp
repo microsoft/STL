@@ -500,6 +500,7 @@ _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl tanhf(float _Xx) noexcept /* str
 #undef _STL_DEF_OVERLOADED_COMPARISON_FAMILY2
 #undef _STL_DECLARE_FAMILY1
 #undef _CONSTEXPR_CMATH26_NYI
+#undef _CONSTEXPR_CMATH26_NYI_DECL
 
 } // extern "C"
 
