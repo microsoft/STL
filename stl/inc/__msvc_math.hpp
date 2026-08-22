@@ -331,9 +331,9 @@ _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, tan)
 _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, acosh)
 _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, asinh)
 _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, atanh)
-_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, cosh)
-_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, sinh)
-_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, tanh)
+_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, cosh) // additional workarounds for this polyfill are defined below
+_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, sinh) // additional workarounds for this polyfill are defined below
+_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, tanh) // additional workarounds for this polyfill are defined below
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, exp)
 _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, exp2)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, expm1)
@@ -466,21 +466,30 @@ _NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl tgammal(long double _Xx) n
     return __std_smf_tgamma(static_cast<double>(_Xx));
 }
 
-// The UCRT defines the following functions on x86 as inline functions that forward to their double siblings,
-// so forward-declaring them without defining them does not result in a successful polyfill.
-#pragma function(coshf)
+// The UCRT defines the following functions as inline functions that forward to their double siblings,
+// so forward-declaring them without defining them would not result in a successful polyfill.
+#if defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64)
+#pragma function(coshf, sinhf, tanhf)
 _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl coshf(float _Xx) noexcept /* strengthened */ {
     return __builtin_coshf(_Xx);
 }
-
-#pragma function(sinhf)
 _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl sinhf(float _Xx) noexcept /* strengthened */ {
     return __builtin_sinhf(_Xx);
 }
-
-#pragma function(tanhf)
 _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl tanhf(float _Xx) noexcept /* strengthened */ {
     return __builtin_tanhf(_Xx);
+}
+#endif // ^^^ defined(_M_IX86) && !defined(_M_HYBRID_X86_ARM64) ^^^
+
+#pragma function(coshl, sinhl, tanhl)
+_NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl coshl(long double _Xx) noexcept /* strengthened */ {
+    return _CSTD cosh(static_cast<double>(_Xx));
+}
+_NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl sinhl(long double _Xx) noexcept /* strengthened */ {
+    return _CSTD sinh(static_cast<double>(_Xx));
+}
+_NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl tanhl(long double _Xx) noexcept /* strengthened */ {
+    return _CSTD tanh(static_cast<double>(_Xx));
 }
 
 #undef _STL_DEF_FUNC1
