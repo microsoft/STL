@@ -14,7 +14,7 @@
 #ifndef __MSVC_STDLIB_HPP
 #define __MSVC_STDLIB_HPP
 
-// Prevent later inclusions of stdlib.h from having any effect.
+// Prevent later inclusions of <stdlib.h> from having any effect.
 #define _INC_STDLIB
 
 #include <corecrt.h>
@@ -230,12 +230,19 @@ typedef struct _lldiv_t {
     long long rem;
 } lldiv_t;
 
-_Check_return_ constexpr int __cdecl abs(_In_ int) noexcept;
-_Check_return_ constexpr long __cdecl labs(_In_ long) noexcept;
-_Check_return_ constexpr long long __cdecl llabs(_In_ long long) noexcept;
-_Check_return_ constexpr div_t __cdecl div(_In_ int, _In_ int) noexcept;
-_Check_return_ constexpr ldiv_t __cdecl ldiv(_In_ long, _In_ long) noexcept;
-_Check_return_ constexpr lldiv_t __cdecl lldiv(_In_ long long, _In_ long long) noexcept;
+// stdlib functions that became constexpr in C++23
+#if _HAS_CXX23 && defined(_MSVC_CONSTEXPR_CMATH)
+#define _CONSTEXPR_CSTDLIB23 constexpr
+#else // ^^^ constexpr in C++23 and later / inline when /Zc:cmath- opts out of constexpr, and in C++20 and earlier vvv
+#define _CONSTEXPR_CSTDLIB23 inline
+#endif // ^^^ inline when /Zc:cmath- opts out of constexpr, and in C++20 and earlier ^^^
+
+_Check_return_ _CONSTEXPR_CSTDLIB23 int __cdecl abs(_In_ int) noexcept;
+_Check_return_ _CONSTEXPR_CSTDLIB23 long __cdecl labs(_In_ long) noexcept;
+_Check_return_ _CONSTEXPR_CSTDLIB23 long long __cdecl llabs(_In_ long long) noexcept;
+_Check_return_ _CONSTEXPR_CSTDLIB23 div_t __cdecl div(_In_ int, _In_ int) noexcept;
+_Check_return_ _CONSTEXPR_CSTDLIB23 ldiv_t __cdecl ldiv(_In_ long, _In_ long) noexcept;
+_Check_return_ _CONSTEXPR_CSTDLIB23 lldiv_t __cdecl lldiv(_In_ long long, _In_ long long) noexcept;
 
 #pragma warning(push)
 #pragma warning(disable : 4163) // 'meow' not available as an intrinsic function
@@ -243,31 +250,31 @@ _Check_return_ constexpr lldiv_t __cdecl lldiv(_In_ long long, _In_ long long) n
 #pragma function(div, ldiv, lldiv)
 #pragma warning(pop)
 
-[[nodiscard]] _Check_return_ constexpr int __cdecl abs(_In_ int _Xx) noexcept /* strengthened */ {
+[[nodiscard]] _Check_return_ _CONSTEXPR_CSTDLIB23 int __cdecl abs(_In_ int _Xx) noexcept /* strengthened */ {
     return _Xx >= 0 ? _Xx : -_Xx;
 }
 
-[[nodiscard]] _Check_return_ constexpr long __cdecl labs(_In_ long _Xx) noexcept /* strengthened */ {
+[[nodiscard]] _Check_return_ _CONSTEXPR_CSTDLIB23 long __cdecl labs(_In_ long _Xx) noexcept /* strengthened */ {
     return _Xx >= 0 ? _Xx : -_Xx;
 }
 
-[[nodiscard]] _Check_return_ constexpr long long __cdecl llabs(_In_ long long _Xx) noexcept /* strengthened */ {
+[[nodiscard]] _Check_return_ _CONSTEXPR_CSTDLIB23 long long __cdecl llabs(_In_ long long _Xx) noexcept
+/* strengthened */ {
     return _Xx >= 0 ? _Xx : -_Xx;
 }
 
-[[nodiscard]] _Check_return_ constexpr div_t __cdecl div(_In_ int _Numerator, _In_ int _Denominator) noexcept
+[[nodiscard]] _Check_return_ _CONSTEXPR_CSTDLIB23 div_t __cdecl div(_In_ int _Numerator, _In_ int _Denominator) noexcept
 /* strengthened */ {
     return {_Numerator / _Denominator, _Numerator % _Denominator};
 }
 
-[[nodiscard]] _Check_return_ constexpr ldiv_t __cdecl ldiv(_In_ long _Numerator, _In_ long _Denominator) noexcept
-/* strengthened */ {
+[[nodiscard]] _Check_return_ _CONSTEXPR_CSTDLIB23 ldiv_t __cdecl ldiv(
+    _In_ long _Numerator, _In_ long _Denominator) noexcept /* strengthened */ {
     return {_Numerator / _Denominator, _Numerator % _Denominator};
 }
 
-[[nodiscard]] _Check_return_ constexpr lldiv_t __cdecl lldiv(
-    _In_ long long _Numerator, _In_ long long _Denominator) noexcept
-/* strengthened */ {
+[[nodiscard]] _Check_return_ _CONSTEXPR_CSTDLIB23 lldiv_t __cdecl lldiv(
+    _In_ long long _Numerator, _In_ long long _Denominator) noexcept /* strengthened */ {
     return {_Numerator / _Denominator, _Numerator % _Denominator};
 }
 
@@ -310,19 +317,20 @@ _ACRTIMP errno_t __cdecl rand_s(_Out_ unsigned int* _RandomValue);
 
 
 extern "C++" {
-[[nodiscard]] constexpr long abs(long const _Xx) noexcept /* strengthened */ {
+[[nodiscard]] _CONSTEXPR_CSTDLIB23 long abs(long const _Xx) noexcept /* strengthened */ {
     return labs(_Xx);
 }
 
-[[nodiscard]] constexpr long long abs(long long const _Xx) noexcept /* strengthened */ {
+[[nodiscard]] _CONSTEXPR_CSTDLIB23 long long abs(long long const _Xx) noexcept /* strengthened */ {
     return llabs(_Xx);
 }
 
-[[nodiscard]] constexpr ldiv_t div(long const _Numerator, long const _Denominator) noexcept /* strengthened */ {
+[[nodiscard]] _CONSTEXPR_CSTDLIB23 ldiv_t div(long const _Numerator, long const _Denominator) noexcept
+/* strengthened */ {
     return ldiv(_Numerator, _Denominator);
 }
 
-[[nodiscard]] constexpr lldiv_t div(long long const _Numerator, long long const _Denominator) noexcept
+[[nodiscard]] _CONSTEXPR_CSTDLIB23 lldiv_t div(long long const _Numerator, long long const _Denominator) noexcept
 /* strengthened */ {
     return lldiv(_Numerator, _Denominator);
 }
