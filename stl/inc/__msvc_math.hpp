@@ -339,17 +339,17 @@ _STL_DEF_FAMILY3(_CONSTEXPR_CMATH23, fma)
 // The UCRT defines the following functions on x86 as inline functions that
 // forward to their double siblings, so forward-declaring them without defining
 // them does not a successful polyfill make.
-#pragma function(coshf, cosh, coshl)
+#pragma function(coshf)
 _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl coshf(float _Xx) noexcept /* strengthened */ {
     return __builtin_coshf(_Xx);
 }
 
-#pragma function(sinhf, sinh, sinhl)
+#pragma function(sinhf)
 _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl sinhf(float _Xx) noexcept /* strengthened */ {
     return __builtin_sinhf(_Xx);
 }
 
-#pragma function(tanhf, tanh, tanhl)
+#pragma function(tanhf)
 _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl tanhf(float _Xx) noexcept /* strengthened */ {
     return __builtin_tanhf(_Xx);
 }
