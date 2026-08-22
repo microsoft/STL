@@ -208,7 +208,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long lround(_In_ float _Xx) noexcep
     return _CSTD lroundf(_Xx);
 }
 
-inline float modf(_In_ float _Xx, _Out_ float* _Yx) noexcept /* strengthened */ {
+_CONSTEXPR_CMATH23 float modf(_In_ float _Xx, _Out_ float* _Yx) noexcept /* strengthened */ {
     return _CSTD modff(_Xx, _Yx);
 }
 
@@ -475,7 +475,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long lround(_In_ long double _Xx) n
     return _CSTD lroundl(_Xx);
 }
 
-inline long double modf(_In_ long double _Xx, _Out_ long double* _Yx) noexcept /* strengthened */ {
+_CONSTEXPR_CMATH23 long double modf(_In_ long double _Xx, _Out_ long double* _Yx) noexcept /* strengthened */ {
     return _CSTD modfl(_Xx, _Yx);
 }
 
