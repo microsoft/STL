@@ -336,6 +336,8 @@ extern "C++" {
 }
 } // extern "C++"
 
+#undef _CONSTEXPR_CSTDLIB23
+
 
 // Structs used to fool the compiler into not generating floating point
 // instructions when copying and pushing [long] double values
