@@ -772,9 +772,9 @@ _GENERIC_MATH_ISNORMAL(wchar_t)
 
 #if _HAS_CMATH_INTRINSICS
 #define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, MSVC_INTRIN)
-#elif defined(__clang__)
+#elif _HAS_CMATH_BUILTINS
 #define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, CLANG_INTRIN)
-#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
+#else // ^^^ _HAS_CMATH_BUILTINS / intrinsics unavailable vvv
 #define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, _CSTD FUN)
 #endif // ^^^ intrinsics unavailable ^^^
 
@@ -801,9 +801,9 @@ _GENERIC_MATH_ISNORMAL(wchar_t)
 
 #if _HAS_CMATH_INTRINSICS
 #define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, MSVC_INTRIN)
-#elif defined(__clang__)
+#elif _HAS_CMATH_BUILTINS
 #define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, CLANG_INTRIN)
-#else // ^^^ defined(__clang__) / intrinsics unavailable vvv
+#else // ^^^ _HAS_CMATH_BUILTINS / intrinsics unavailable vvv
 #define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
 #endif // ^^^ intrinsics unavailable ^^^
 
