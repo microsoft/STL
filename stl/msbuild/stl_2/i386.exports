@@ -36,8 +36,6 @@ ___std_smf_legendre@12
 ___std_smf_legendref@8
 ___std_smf_lgamma@8
 ___std_smf_lgammaf@4
-___std_smf_tgamma@8
-___std_smf_tgammaf@4
 ___std_smf_riemann_zeta@8
 ___std_smf_riemann_zetaf@4
 ___std_smf_sph_bessel@12
@@ -46,3 +44,5 @@ ___std_smf_sph_legendre@16
 ___std_smf_sph_legendref@12
 ___std_smf_sph_neumann@12
 ___std_smf_sph_neumannf@8
+___std_smf_tgamma@8
+___std_smf_tgammaf@4
