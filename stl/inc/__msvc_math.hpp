@@ -33,35 +33,37 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #pragma warning(disable : 4163) // 'meow' not available as an intrinsic function
 
-#define _STL_DEF_FUNC1(specs, name, ret, fptype)                                   \
-    extern "C" _NODISCARD specs ret name(fptype _Xx) noexcept /* strengthened */ { \
-        return __builtin_##name(_Xx);                                              \
+extern "C" {
+
+#define _STL_DEF_FUNC1(specs, name, ret, fptype)                        \
+    _NODISCARD specs ret name(fptype _Xx) noexcept /* strengthened */ { \
+        return __builtin_##name(_Xx);                                   \
     }
 
-#define _STL_DEF_FUNC2(specs, name, ret, fptype)                                                 \
-    extern "C" _NODISCARD specs ret name(fptype _Xx0, fptype _Xx1) noexcept /* strengthened */ { \
-        return __builtin_##name(_Xx0, _Xx1);                                                     \
+#define _STL_DEF_FUNC2(specs, name, ret, fptype)                                      \
+    _NODISCARD specs ret name(fptype _Xx0, fptype _Xx1) noexcept /* strengthened */ { \
+        return __builtin_##name(_Xx0, _Xx1);                                          \
     }
 
-#define _STL_DEF_FUNC3(specs, name, ret, fptype)                                                              \
-    extern "C" _NODISCARD specs ret name(fptype _Xx0, fptype _Xx1, fptype _Xx2) noexcept /* strengthened */ { \
-        return __builtin_##name(_Xx0, _Xx1, _Xx2);                                                            \
+#define _STL_DEF_FUNC3(specs, name, ret, fptype)                                                   \
+    _NODISCARD specs ret name(fptype _Xx0, fptype _Xx1, fptype _Xx2) noexcept /* strengthened */ { \
+        return __builtin_##name(_Xx0, _Xx1, _Xx2);                                                 \
     }
 
 // `long double` and `double` are the same width on MSVC, so `long double`
 // variants of math functions forward to the `long` variants.
-#define _STL_DEF_LDOUBLE_FORWARD_FUNC1(specs, name)                                                 \
-    extern "C" _NODISCARD specs long double name##l(long double _Xx0) noexcept /* strengthened */ { \
-        return name(static_cast<double>(_Xx0));                                                     \
+#define _STL_DEF_LDOUBLE_FORWARD_FUNC1(specs, name)                                      \
+    _NODISCARD specs long double name##l(long double _Xx0) noexcept /* strengthened */ { \
+        return name(static_cast<double>(_Xx0));                                          \
     }
 
-#define _STL_DEF_LDOUBLE_FORWARD_FUNC2(specs, name)                                                                   \
-    extern "C" _NODISCARD specs long double name##l(long double _Xx0, long double _Xx1) noexcept /* strengthened */ { \
-        return name(static_cast<double>(_Xx0), static_cast<double>(_Xx1));                                            \
+#define _STL_DEF_LDOUBLE_FORWARD_FUNC2(specs, name)                                                        \
+    _NODISCARD specs long double name##l(long double _Xx0, long double _Xx1) noexcept /* strengthened */ { \
+        return name(static_cast<double>(_Xx0), static_cast<double>(_Xx1));                                 \
     }
 
 #define _STL_DEF_LDOUBLE_FORWARD_FUNC3(specs, name)                                                   \
-    extern "C" _NODISCARD specs long double name##l(                                                  \
+    _NODISCARD specs long double name##l(                                                             \
         long double _Xx0, long double _Xx1, long double _Xx2) noexcept /* strengthened */ {           \
         return name(static_cast<double>(_Xx0), static_cast<double>(_Xx1), static_cast<double>(_Xx2)); \
     }
@@ -69,9 +71,9 @@ _STL_DISABLE_CLANG_WARNINGS
 // N.B. Declarations stamped out by these macros are not noexcept because they
 // are intended to match the definitions in the UCRT, which are not themselves
 // noexcept.
-#define _STL_DECLARE_FUNC1(specs, name, ret, fptype) extern "C" _NODISCARD specs ret name(fptype);
+#define _STL_DECLARE_FUNC1(specs, name, ret, fptype) _NODISCARD specs ret name(fptype);
 
-#define _STL_DECLARE_FUNC2(specs, name, ret, fptype) extern "C" _NODISCARD specs ret name(fptype, fptype);
+#define _STL_DECLARE_FUNC2(specs, name, ret, fptype) _NODISCARD specs ret name(fptype, fptype);
 
 // Defines three non-overloaded functions with signature `fp-type(fp-type)`.
 // The names of the float and long double variants are suffixed with `f` and `l`,
@@ -189,20 +191,17 @@ using double_t = double;
 #define HUGE_VALL (__builtin_infl())
 #define NAN       (__builtin_nanf(""))
 
-extern "C" {
 // The nan family of functions is not routed to builtins because the builtins
 // require a string literal argument and so cannot uphold the interface of
 // these functions.
 _NODISCARD float nanf(const char*);
 _NODISCARD double nan(const char*);
 _NODISCARD long double nanl(const char*);
-}
 
 // Under /Oi (implied by /O2), MSVC treats the following functions as intrinsics that
 // cannot be redefined. We use #pragma function to instruct MSVC to treat them as regular
 // functions that can be defined, but we first need to declare the function before we can
 // do so.
-extern "C" {
 _NODISCARD _CONSTEXPR_CMATH23 float ceilf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH23 double ceil(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH23 double fabs(double) noexcept;
@@ -245,7 +244,6 @@ _NODISCARD _CONSTEXPR_CMATH26 double tan(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH23 float fmaf(float, float, float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH23 double fma(double, double, double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH23 long double fmal(long double, long double, long double) noexcept;
-}
 
 #pragma function(acosf, acos)
 #pragma function(asinf, asin)
@@ -283,13 +281,6 @@ _STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, fmax)
 _STL_DEF_FAMILY2(_CONSTEXPR_CMATH23, fmin)
 _STL_DEF_ROUNDING_FAMILY1(_CONSTEXPR_CMATH23, lround, long int)
 _STL_DEF_ROUNDING_FAMILY1(_CONSTEXPR_CMATH23, llround, long long)
-_STL_DEF_PREDICATE_FAMILY1(signbit, __builtin_signbit)
-_STL_DEF_PREDICATE_FAMILY2(isgreater, __builtin_isgreater)
-_STL_DEF_PREDICATE_FAMILY2(isless, __builtin_isless)
-_STL_DEF_PREDICATE_FAMILY2(islessequal, __builtin_islessequal)
-_STL_DEF_PREDICATE_FAMILY2(islessgreater, __builtin_islessgreater)
-_STL_DEF_PREDICATE_FAMILY2(isgreaterequal, __builtin_isgreaterequal)
-_STL_DEF_PREDICATE_FAMILY2(isunordered, __builtin_isunordered)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, acos)
 _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI, acosh)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, asin)
@@ -307,7 +298,6 @@ _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, expm1)
 _STL_DEF_FAMILY2(_CONSTEXPR_CMATH26, hypot)
 _STL_DEF_FAMILY1(inline, nearbyint)
 
-extern "C" {
 // libc does not yet implement lgamma or tgamma. Polyfilling with the UCRT's
 // implementation pulls in the UCRT's fma, which results in linker errors due
 // to our conflicting definition. Instead, we prearranged for implementations
@@ -322,29 +312,28 @@ _NODISCARD /*_CRT_SATELLITE_2*/ float __stdcall __std_smf_lgammaf(float) noexcep
 _NODISCARD /*_CRT_SATELLITE_2*/ double __stdcall __std_smf_lgamma(double) noexcept;
 _NODISCARD /*_CRT_SATELLITE_2*/ float __stdcall __std_smf_tgammaf(float) noexcept;
 _NODISCARD /*_CRT_SATELLITE_2*/ double __stdcall __std_smf_tgamma(double) noexcept;
-}
 
-extern "C" _NODISCARD _CONSTEXPR_CMATH26_NYI float lgammaf(float _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26_NYI float lgammaf(float _Xx) noexcept /* strengthened */ {
     return __std_smf_lgammaf(_Xx);
 }
 
-extern "C" _NODISCARD _CONSTEXPR_CMATH26_NYI double lgamma(double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26_NYI double lgamma(double _Xx) noexcept /* strengthened */ {
     return __std_smf_lgamma(_Xx);
 }
 
-extern "C" _NODISCARD _CONSTEXPR_CMATH26_NYI long double lgammal(long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26_NYI long double lgammal(long double _Xx) noexcept /* strengthened */ {
     return __std_smf_lgamma(static_cast<double>(_Xx));
 }
 
-extern "C" _NODISCARD _CONSTEXPR_CMATH26_NYI float tgammaf(float _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26_NYI float tgammaf(float _Xx) noexcept /* strengthened */ {
     return __std_smf_tgammaf(_Xx);
 }
 
-extern "C" _NODISCARD _CONSTEXPR_CMATH26_NYI double tgamma(double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26_NYI double tgamma(double _Xx) noexcept /* strengthened */ {
     return __std_smf_tgamma(_Xx);
 }
 
-extern "C" _NODISCARD _CONSTEXPR_CMATH26_NYI long double tgammal(long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26_NYI long double tgammal(long double _Xx) noexcept /* strengthened */ {
     return __std_smf_tgamma(static_cast<double>(_Xx));
 }
 
@@ -363,21 +352,19 @@ _STL_DEF_FAMILY3(_CONSTEXPR_CMATH23, fma)
 // The UCRT defines the following functions on x86 as inline functions that
 // forward to their double siblings, so forward-declaring them without defining
 // them does not a successful polyfill make.
-extern "C" {
 #pragma function(coshf, cosh, coshl)
 _NODISCARD _CONSTEXPR_CMATH26_NYI float coshf(float _Xx) {
     return __builtin_coshf(_Xx);
 }
 
 #pragma function(sinhf, sinh, sinhl)
-extern "C" _NODISCARD _CONSTEXPR_CMATH26_NYI float sinhf(float _Xx) {
+_NODISCARD _CONSTEXPR_CMATH26_NYI float sinhf(float _Xx) {
     return __builtin_sinhf(_Xx);
 }
 
 #pragma function(tanhf, tanh, tanhl)
-extern "C" _NODISCARD _CONSTEXPR_CMATH26_NYI float tanhf(float _Xx) {
+_NODISCARD _CONSTEXPR_CMATH26_NYI float tanhf(float _Xx) {
     return __builtin_tanhf(_Xx);
-}
 }
 
 extern "C++" {
@@ -440,6 +427,14 @@ _NODISCARD _CONSTEXPR_CMATH23 bool isnormal(double _Xx) noexcept /* strengthened
 _NODISCARD _CONSTEXPR_CMATH23 bool isnormal(long double _Xx) noexcept /* strengthened */ {
     return fpclassify(_Xx) == FP_NORMAL;
 }
+
+_STL_DEF_PREDICATE_FAMILY1(signbit, __builtin_signbit)
+_STL_DEF_PREDICATE_FAMILY2(isgreater, __builtin_isgreater)
+_STL_DEF_PREDICATE_FAMILY2(isgreaterequal, __builtin_isgreaterequal)
+_STL_DEF_PREDICATE_FAMILY2(isless, __builtin_isless)
+_STL_DEF_PREDICATE_FAMILY2(islessequal, __builtin_islessequal)
+_STL_DEF_PREDICATE_FAMILY2(islessgreater, __builtin_islessgreater)
+_STL_DEF_PREDICATE_FAMILY2(isunordered, __builtin_isunordered)
 
 _NODISCARD _CONSTEXPR_CMATH23 float nexttowardf(float _Xx0, long double _Xx1) noexcept /* strengthened */ {
     return __builtin_nexttowardf(_Xx0, _Xx1);
@@ -631,26 +626,22 @@ _NODISCARD _CONSTEXPR_CMATH23 bool isunordered(_Ty1 _X0, _Ty2 _X1) noexcept /* s
 }
 } // extern "C++"
 
-extern "C" {
 _NODISCARD double _j0(double);
 _NODISCARD double _j1(double);
 _NODISCARD double _jn(int, double);
 _NODISCARD double _y0(double);
 _NODISCARD double _y1(double);
 _NODISCARD double _yn(int, double);
-}
 
 #if defined(_CRT_INTERNAL_NONSTDC_NAMES) && _CRT_INTERNAL_NONSTDC_NAMES
 
 // These functions are included in the Open Group Standard Base Specifications.
-extern "C" {
 _NODISCARD double j0(double);
 _NODISCARD double j1(double);
 _NODISCARD double jn(int, double);
 _NODISCARD double y0(double);
 _NODISCARD double y1(double);
 _NODISCARD double yn(int, double);
-}
 
 #endif // defined(_CRT_INTERNAL_NONSTDC_NAMES) && _CRT_INTERNAL_NONSTDC_NAMES
 
@@ -670,6 +661,8 @@ _NODISCARD double yn(int, double);
 #undef _STL_DEF_ROUNDING_FAMILY1
 #undef _STL_DECLARE_FAMILY1
 #undef _CONSTEXPR_CMATH26_NYI
+
+} // extern "C"
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
