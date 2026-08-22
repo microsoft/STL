@@ -6,6 +6,7 @@
 // This file was derived from <stdlib.h> in the Windows 11 SDK (10.0.28000), with some alterations:
 // * Formatted with clang-format.
 // * Removed _M_CEE_PURE checks (never defined here).
+// * Removed _M_CEE_MIXED checks (within _M_CEE checks, because /clr:pure is never used here).
 // * Removed __cplusplus checks (always defined here).
 // * Changed code to support the MSVC frontend intercepting inclusions of <stdlib.h>.
 // * Changed code for C++23's P0533R9 "constexpr For <cmath> And <cstdlib>".
@@ -91,25 +92,12 @@ _Check_return_ int __clrcall _atexit_m_appdomain(_In_opt_ void(__clrcall* _Funct
 
 _onexit_m_t __clrcall _onexit_m_appdomain(_onexit_m_t _Function);
 
-#ifdef _M_CEE_MIXED
 #ifdef __cplusplus
 [System::Security::SecurityCritical]
 #endif
     _Check_return_ int __clrcall _atexit_m(_In_opt_ void(__clrcall* _Function)(void));
 
 _onexit_m_t __clrcall _onexit_m(_onexit_m_t _Function);
-#else
-#ifdef __cplusplus
-[System::Security::SecurityCritical]
-#endif
-    _Check_return_ inline int __clrcall _atexit_m(_In_opt_ void(__clrcall* _Function)(void)) {
-    return _atexit_m_appdomain(_Function);
-}
-
-inline _onexit_m_t __clrcall _onexit_m(_onexit_t _Function) {
-    return _onexit_m_appdomain(_Function);
-}
-#endif
 #pragma warning(pop)
 #endif
 
