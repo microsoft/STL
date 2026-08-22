@@ -62,8 +62,6 @@ extern "C" {
 // noexcept.
 #define _STL_DECLARE_FUNC1(specs, name, ret, fptype) _NODISCARD specs ret name(fptype);
 
-#define _STL_DECLARE_FUNC2(specs, name, ret, fptype) _NODISCARD specs ret name(fptype, fptype);
-
 // Defines three non-overloaded functions with signature `fp-type(fp-type)`.
 // The names of the float and long double variants are suffixed with `f` and `l`, respectively.
 #define _STL_DEF_FAMILY1(specs, name)            \
@@ -518,7 +516,6 @@ _NODISCARD double yn(int, double);
 #undef _STL_DEF_FUNC3
 #undef _STL_DEF_LDOUBLE_FORWARD_FUNC1
 #undef _STL_DECLARE_FUNC1
-#undef _STL_DECLARE_FUNC2
 #undef _STL_DEF_FAMILY1
 #undef _STL_DEF_FAMILY2
 #undef _STL_DEF_FAMILY3
