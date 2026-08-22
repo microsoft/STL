@@ -40,9 +40,9 @@ extern "C" {
         return __builtin_##name(_Xx);                                   \
     }
 
-#define _STL_DEF_FUNC2(specs, name, ret, fptype)                                      \
-    _NODISCARD specs ret name(fptype _Xx0, fptype _Xx1) noexcept /* strengthened */ { \
-        return __builtin_##name(_Xx0, _Xx1);                                          \
+#define _STL_DEF_FUNC2(specs, name, ret, arg0, arg1)                              \
+    _NODISCARD specs ret name(arg0 _Xx0, arg1 _Xx1) noexcept /* strengthened */ { \
+        return __builtin_##name(_Xx0, _Xx1);                                      \
     }
 
 #define _STL_DEF_FUNC3(specs, name, ret, fptype)                                                   \
@@ -73,10 +73,10 @@ extern "C" {
 
 // Defines three non-overloaded functions with signature `fp-type(fp-type, fp-type)`.
 // The names of the float and long double variants are suffixed with `f` and `l`, respectively.
-#define _STL_DEF_FAMILY2(specs, name)            \
-    _STL_DEF_FUNC2(specs, name##f, float, float) \
-    _STL_DEF_FUNC2(specs, name, double, double)  \
-    _STL_DEF_FUNC2(specs, name##l, long double, long double)
+#define _STL_DEF_FAMILY2(specs, name)                   \
+    _STL_DEF_FUNC2(specs, name##f, float, float, float) \
+    _STL_DEF_FUNC2(specs, name, double, double, double) \
+    _STL_DEF_FUNC2(specs, name##l, long double, long double, long double)
 
 // Defines three non-overloaded functions with signature `fp-type(fp-type, fp-type, fp-type)`.
 // The names of the float and long double variants are suffixed with `f` and `l`, respectively.
@@ -91,6 +91,13 @@ extern "C" {
     _STL_DEF_FUNC1(specs, name##f, ret, float)      \
     _STL_DEF_FUNC1(specs, name, ret, double)        \
     _STL_DEF_FUNC1(specs, name##l, ret, long double)
+
+// Defines three non-overloaded functions with signature `fp-type(fp-type, lastarg)`.
+// The names of the float and long double variants are suffixed with `f` and `l`, respectively.
+#define _STL_DEF_LASTARG_FAMILY2(specs, name, lastarg)    \
+    _STL_DEF_FUNC2(specs, name##f, float, float, lastarg) \
+    _STL_DEF_FUNC2(specs, name, double, double, lastarg)  \
+    _STL_DEF_FUNC2(specs, name##l, long double, long double, lastarg)
 
 // N.B. static_cast<bool> is used when the builtin returns int.
 #define _STL_DEF_OVERLOADED_PREDICATE1(specs, name, builtin, fptype)     \
@@ -425,43 +432,10 @@ _STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, islessgreater)
 _STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isunordered)
 } // extern "C++"
 
-_NODISCARD _CONSTEXPR_CMATH23 float nexttowardf(float _Xx0, long double _Xx1) noexcept /* strengthened */ {
-    return __builtin_nexttowardf(_Xx0, _Xx1);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 double nexttoward(double _Xx0, long double _Xx1) noexcept /* strengthened */ {
-    return __builtin_nexttoward(_Xx0, _Xx1);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 long double nexttowardl(long double _Xx0, long double _Xx1) noexcept /* strengthened */ {
-    return __builtin_nexttowardl(_Xx0, _Xx1);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 float frexpf(float _Xx0, int* _Xx1) noexcept /* strengthened */ {
-    return __builtin_frexpf(_Xx0, _Xx1);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 double frexp(double _Xx0, int* _Xx1) noexcept /* strengthened */ {
-    return __builtin_frexp(_Xx0, _Xx1);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 long double frexpl(long double _Xx0, int* _Xx1) noexcept /* strengthened */ {
-    return __builtin_frexpl(_Xx0, _Xx1);
-}
-
+_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, nexttoward, long double)
+_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, frexp, int*)
 _STL_DEF_ROUNDING_FAMILY1(_CONSTEXPR_CMATH23, ilogb, int)
-
-_NODISCARD _CONSTEXPR_CMATH23 float ldexpf(float _Xx0, int _Xx1) noexcept /* strengthened */ {
-    return __builtin_ldexpf(_Xx0, _Xx1);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 double ldexp(double _Xx0, int _Xx1) noexcept /* strengthened */ {
-    return __builtin_ldexp(_Xx0, _Xx1);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 long double ldexpl(long double _Xx0, int _Xx1) noexcept /* strengthened */ {
-    return __builtin_ldexpl(_Xx0, _Xx1);
-}
+_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, ldexp, int)
 
 _NODISCARD _CONSTEXPR_CMATH23 float modff(float _Xx0, float* _Xx1) noexcept /* strengthened */ {
     return __builtin_modff(_Xx0, _Xx1);
@@ -478,30 +452,8 @@ _NODISCARD _CONSTEXPR_CMATH23 long double modfl(long double _Xx0, long double* _
 _STL_DEF_ROUNDING_FAMILY1(inline, lrint, long)
 _STL_DEF_ROUNDING_FAMILY1(inline, llrint, long long)
 _STL_DEF_FAMILY1(inline, rint)
-
-_NODISCARD _CONSTEXPR_CMATH23 float scalbnf(float _Xx0, int _Xx1) noexcept /* strengthened */ {
-    return __builtin_scalbnf(_Xx0, _Xx1);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 double scalbn(double _Xx0, int _Xx1) noexcept /* strengthened */ {
-    return __builtin_scalbn(_Xx0, _Xx1);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 long double scalbnl(long double _Xx0, int _Xx1) noexcept /* strengthened */ {
-    return __builtin_scalbnl(_Xx0, _Xx1);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 float scalblnf(float _Xx0, long _Xx1) noexcept /* strengthened */ {
-    return __builtin_scalblnf(_Xx0, _Xx1);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 double scalbln(double _Xx0, long _Xx1) noexcept /* strengthened */ {
-    return __builtin_scalbln(_Xx0, _Xx1);
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 long double scalblnl(long double _Xx0, long _Xx1) noexcept /* strengthened */ {
-    return __builtin_scalblnl(_Xx0, _Xx1);
-}
+_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, scalbn, int)
+_STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, scalbln, long)
 
 _NODISCARD _CONSTEXPR_CMATH23 float remquof(float _Xx0, float _Xx1, int* _Xx2) noexcept /* strengthened */ {
     return __builtin_remquof(_Xx0, _Xx1, _Xx2);
@@ -571,6 +523,7 @@ _NODISCARD double yn(int, double);
 #undef _STL_DEF_FAMILY2
 #undef _STL_DEF_FAMILY3
 #undef _STL_DEF_ROUNDING_FAMILY1
+#undef _STL_DEF_LASTARG_FAMILY2
 #undef _STL_DEF_OVERLOADED_PREDICATE1
 #undef _STL_DEF_OVERLOADED_PREDICATE2
 #undef _STL_DEF_OVERLOADED_PREDICATE_FAMILY1
