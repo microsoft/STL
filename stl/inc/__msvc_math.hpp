@@ -25,6 +25,73 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #pragma warning(disable : 4163) // 'meow' not available as an intrinsic function
 
+extern "C++" {
+namespace _Msvc { // duplicate type traits not provided by <yvals_core.h>
+    template <class _Ty>
+    constexpr bool _Is_arithmetic_v = false;
+
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<bool> = true;
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<char> = true;
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<signed char> = true;
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<unsigned char> = true;
+#ifdef _NATIVE_WCHAR_T_DEFINED
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<wchar_t> = true;
+#endif // ^^^ defined(_NATIVE_WCHAR_T_DEFINED) ^^^
+#ifdef __cpp_char8_t
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<char8_t> = true;
+#endif // ^^^ defined(__cpp_char8_t) ^^^
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<char16_t> = true;
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<char32_t> = true;
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<short> = true;
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<unsigned short> = true;
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<int> = true;
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<unsigned int> = true;
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<long> = true;
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<unsigned long> = true;
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<long long> = true;
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<unsigned long long> = true;
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<float> = true;
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<double> = true;
+    template <>
+    _INLINE_VAR constexpr bool _Is_arithmetic_v<long double> = true;
+
+    template <class _Ty>
+    constexpr bool _Is_arithmetic_v<const _Ty> = _Is_arithmetic_v<_Ty>;
+    template <class _Ty>
+    constexpr bool _Is_arithmetic_v<volatile _Ty> = _Is_arithmetic_v<_Ty>;
+    template <class _Ty>
+    constexpr bool _Is_arithmetic_v<const volatile _Ty> = _Is_arithmetic_v<_Ty>;
+
+    template <bool _Test, class _Ty = void>
+    struct _Enable_if {};
+    template <class _Ty>
+    struct _Enable_if<true, _Ty> {
+        using type = _Ty;
+    };
+
+    template <bool _Test, class _Ty = void>
+    using _Enable_if_t = typename _Enable_if<_Test, _Ty>::type;
+} // namespace _Msvc
+} // extern "C++"
+
 extern "C" {
 
 #define _STL_DEF_FUNC1(specs, name, ret, arg0)                                \
@@ -107,13 +174,14 @@ extern "C" {
     _STL_DEF_OVERLOADED_COMPARISON1(specs, name, __builtin_##name##l, long double)
 
 // Defines four overloaded functions with signature `bool (fp-type, fp-type)`.
-#define _STL_DEF_OVERLOADED_COMPARISON_FAMILY2(specs, name)                                               \
-    _STL_DEF_OVERLOADED_COMPARISON2(specs, name, __builtin_##name##f, float)                              \
-    _STL_DEF_OVERLOADED_COMPARISON2(specs, name, __builtin_##name, double)                                \
-    _STL_DEF_OVERLOADED_COMPARISON2(specs, name, __builtin_##name##l, long double)                        \
-    template <class _Ty0, class _Ty1>                                                                     \
-    _NODISCARD specs bool __cdecl name(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {                \
-        return static_cast<bool>(__builtin_##name(static_cast<double>(_Xx0), static_cast<double>(_Xx1))); \
+#define _STL_DEF_OVERLOADED_COMPARISON_FAMILY2(specs, name)                                                \
+    _STL_DEF_OVERLOADED_COMPARISON2(specs, name, __builtin_##name##f, float)                               \
+    _STL_DEF_OVERLOADED_COMPARISON2(specs, name, __builtin_##name, double)                                 \
+    _STL_DEF_OVERLOADED_COMPARISON2(specs, name, __builtin_##name##l, long double)                         \
+    template <class _Ty0, class _Ty1,                                                                      \
+        ::_Msvc::_Enable_if_t<::_Msvc::_Is_arithmetic_v<_Ty0>&& ::_Msvc::_Is_arithmetic_v<_Ty1>, int> = 0> \
+    _NODISCARD specs bool __cdecl name(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {                 \
+        return static_cast<bool>(__builtin_##name(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));  \
     }
 
 // *Declares* three non-overloaded functions with signature `fp-type (fp-type)`.
