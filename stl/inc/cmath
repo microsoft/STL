@@ -135,6 +135,11 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float floor(_In_ float _Xx) noexcep
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float fma(_In_ float _Xx, _In_ float _Yx, _In_ float _Zx) noexcept
+/* strengthened */ {
+    return _CSTD fmaf(_Xx, _Yx, _Zx);
+}
+
 _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float fmax(_In_ float _Xx, _In_ float _Yx) noexcept /* strengthened */ {
     return _CSTD fmaxf(_Xx, _Yx);
 }
@@ -390,6 +395,11 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double floor(_In_ long double 
 #else // ^^^ _HAS_CMATH_BUILTINS / intrinsics unavailable vvv
     return _CSTD floorl(_Xx);
 #endif // ^^^ intrinsics unavailable ^^^
+}
+
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double fma(
+    _In_ long double _Xx, _In_ long double _Yx, _In_ long double _Zx) noexcept /* strengthened */ {
+    return _CSTD fmal(_Xx, _Yx, _Zx);
 }
 
 _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double fmax(_In_ long double _Xx, _In_ long double _Yx) noexcept
