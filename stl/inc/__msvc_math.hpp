@@ -35,19 +35,19 @@ _STL_DISABLE_CLANG_WARNINGS
 
 extern "C" {
 
-#define _STL_DEF_FUNC1(specs, name, ret, fptype)                        \
-    _NODISCARD specs ret name(fptype _Xx) noexcept /* strengthened */ { \
-        return __builtin_##name(_Xx);                                   \
+#define _STL_DEF_FUNC1(specs, name, ret, fptype)                                \
+    _NODISCARD specs ret __cdecl name(fptype _Xx) noexcept /* strengthened */ { \
+        return __builtin_##name(_Xx);                                           \
     }
 
-#define _STL_DEF_FUNC2(specs, name, ret, arg0, arg1)                              \
-    _NODISCARD specs ret name(arg0 _Xx0, arg1 _Xx1) noexcept /* strengthened */ { \
-        return __builtin_##name(_Xx0, _Xx1);                                      \
+#define _STL_DEF_FUNC2(specs, name, ret, arg0, arg1)                                      \
+    _NODISCARD specs ret __cdecl name(arg0 _Xx0, arg1 _Xx1) noexcept /* strengthened */ { \
+        return __builtin_##name(_Xx0, _Xx1);                                              \
     }
 
-#define _STL_DEF_FUNC3(specs, name, ret, arg0, arg1, arg2)                                   \
-    _NODISCARD specs ret name(arg0 _Xx0, arg1 _Xx1, arg2 _Xx2) noexcept /* strengthened */ { \
-        return __builtin_##name(_Xx0, _Xx1, _Xx2);                                           \
+#define _STL_DEF_FUNC3(specs, name, ret, arg0, arg1, arg2)                                           \
+    _NODISCARD specs ret __cdecl name(arg0 _Xx0, arg1 _Xx1, arg2 _Xx2) noexcept /* strengthened */ { \
+        return __builtin_##name(_Xx0, _Xx1, _Xx2);                                                   \
     }
 
 // Defines three non-overloaded functions with signature `fp-type (fp-type)`.
@@ -87,14 +87,14 @@ extern "C" {
     _STL_DEF_FUNC3(specs, name##l, long double, long double, long double, lastarg)
 
 // N.B. static_cast<bool> is used when the builtin returns int.
-#define _STL_DEF_OVERLOADED_PREDICATE1(specs, name, builtin, fptype)     \
-    _NODISCARD specs bool name(fptype _Xx) noexcept /* strengthened */ { \
-        return static_cast<bool>(builtin(_Xx));                          \
+#define _STL_DEF_OVERLOADED_PREDICATE1(specs, name, builtin, fptype)             \
+    _NODISCARD specs bool __cdecl name(fptype _Xx) noexcept /* strengthened */ { \
+        return static_cast<bool>(builtin(_Xx));                                  \
     }
 
-#define _STL_DEF_OVERLOADED_PREDICATE2(specs, name, builtin, fptype)                   \
-    _NODISCARD specs bool name(fptype _Xx0, fptype _Xx1) noexcept /* strengthened */ { \
-        return static_cast<bool>(builtin(_Xx0, _Xx1));                                 \
+#define _STL_DEF_OVERLOADED_PREDICATE2(specs, name, builtin, fptype)                           \
+    _NODISCARD specs bool __cdecl name(fptype _Xx0, fptype _Xx1) noexcept /* strengthened */ { \
+        return static_cast<bool>(builtin(_Xx0, _Xx1));                                         \
     }
 
 // Defines three overloaded functions with signature `bool (fp-type)`.
@@ -109,17 +109,17 @@ extern "C" {
     _STL_DEF_OVERLOADED_PREDICATE2(specs, name, __builtin_##name, double)                                 \
     _STL_DEF_OVERLOADED_PREDICATE2(specs, name, __builtin_##name##l, long double)                         \
     template <class _Ty0, class _Ty1>                                                                     \
-    _NODISCARD specs bool name(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {                        \
+    _NODISCARD specs bool __cdecl name(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {                \
         return static_cast<bool>(__builtin_##name(static_cast<double>(_Xx0), static_cast<double>(_Xx1))); \
     }
 
 // **Declares** three non-overloaded functions with signature `fp-type (fp-type)`.
 // These declarations are intended to match functions defined within the UCRT
 // because libc does not yet implement them fully.
-#define _STL_DECLARE_FAMILY1(specs, name)                              \
-    _NODISCARD specs float name##f(float) noexcept /* strengthened */; \
-    _NODISCARD specs double name(double) noexcept /* strengthened */;  \
-    _NODISCARD specs long double name##l(long double) noexcept /* strengthened */;
+#define _STL_DECLARE_FAMILY1(specs, name)                                      \
+    _NODISCARD specs float __cdecl name##f(float) noexcept /* strengthened */; \
+    _NODISCARD specs double __cdecl name(double) noexcept /* strengthened */;  \
+    _NODISCARD specs long double __cdecl name##l(long double) noexcept /* strengthened */;
 
 // Some functions that are needed for C++26 constexpr cmath are not yet
 // implemented by libc. We polyfill the library with the UCRT and mark these
@@ -174,56 +174,56 @@ using double_t = double;
 // The nan family of functions is not routed to builtins because the builtins
 // require a string literal argument and so cannot uphold the interface of
 // these functions.
-_NODISCARD float nanf(const char*) noexcept /* strengthened */;
-_NODISCARD double nan(const char*) noexcept /* strengthened */;
-_NODISCARD long double nanl(const char*) noexcept /* strengthened */;
+_NODISCARD float __cdecl nanf(const char*) noexcept /* strengthened */;
+_NODISCARD double __cdecl nan(const char*) noexcept /* strengthened */;
+_NODISCARD long double __cdecl nanl(const char*) noexcept /* strengthened */;
 
 // Under /Oi (implied by /O2), MSVC treats the following functions as intrinsics that
 // cannot be redefined. We use #pragma function to instruct MSVC to treat them as regular
 // functions that can be defined, but we first need to declare the function before we can
 // do so.
-_NODISCARD _CONSTEXPR_CMATH23 float ceilf(float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 double ceil(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 double fabs(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 float floorf(float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 double floor(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 float fmaxf(float, float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 double fmax(double, double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 long double fmaxl(long double, long double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 float fminf(float, float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 double fmin(double, double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 long double fminl(long double, long double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 float fmodf(float, float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 double fmod(double, double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 float acosf(float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 double acos(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 float asinf(float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 double asin(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 float atanf(float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 double atan(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 float copysignf(float, float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 double copysign(double, double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 float cosf(float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 double cos(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 float expf(float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 double exp(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 float logf(float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 double log(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 float log10f(float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 double log10(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 float log2f(float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 double log2(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 float powf(float, float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 double pow(double, double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 float sinf(float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 double sin(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 float sqrtf(float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 double sqrt(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 float tanf(float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH26 double tan(double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 float fmaf(float, float, float) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 double fma(double, double, double) noexcept;
-_NODISCARD _CONSTEXPR_CMATH23 long double fmal(long double, long double, long double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl ceilf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl ceil(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl fabs(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl floorf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl floor(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl fmaxf(float, float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl fmax(double, double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 long double __cdecl fmaxl(long double, long double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl fminf(float, float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl fmin(double, double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 long double __cdecl fminl(long double, long double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl fmodf(float, float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl fmod(double, double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 float __cdecl acosf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 double __cdecl acos(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 float __cdecl asinf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 double __cdecl asin(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 float __cdecl atanf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 double __cdecl atan(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl copysignf(float, float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl copysign(double, double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 float __cdecl cosf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 double __cdecl cos(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 float __cdecl expf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 double __cdecl exp(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 float __cdecl logf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 double __cdecl log(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 float __cdecl log10f(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 double __cdecl log10(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 float __cdecl log2f(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 double __cdecl log2(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 float __cdecl powf(float, float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 double __cdecl pow(double, double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 float __cdecl sinf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 double __cdecl sin(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 float __cdecl sqrtf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 double __cdecl sqrt(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 float __cdecl tanf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26 double __cdecl tan(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl fmaf(float, float, float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl fma(double, double, double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 long double __cdecl fmal(long double, long double, long double) noexcept;
 
 #pragma function(acosf, acos)
 #pragma function(asinf, asin)
@@ -293,27 +293,27 @@ _NODISCARD /*_CRT_SATELLITE_2*/ double __stdcall __std_smf_lgamma(double) noexce
 _NODISCARD /*_CRT_SATELLITE_2*/ float __stdcall __std_smf_tgammaf(float) noexcept;
 _NODISCARD /*_CRT_SATELLITE_2*/ double __stdcall __std_smf_tgamma(double) noexcept;
 
-_NODISCARD _CONSTEXPR_CMATH26_NYI float lgammaf(float _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl lgammaf(float _Xx) noexcept /* strengthened */ {
     return __std_smf_lgammaf(_Xx);
 }
 
-_NODISCARD _CONSTEXPR_CMATH26_NYI double lgamma(double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26_NYI double __cdecl lgamma(double _Xx) noexcept /* strengthened */ {
     return __std_smf_lgamma(_Xx);
 }
 
-_NODISCARD _CONSTEXPR_CMATH26_NYI long double lgammal(long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl lgammal(long double _Xx) noexcept /* strengthened */ {
     return __std_smf_lgamma(static_cast<double>(_Xx));
 }
 
-_NODISCARD _CONSTEXPR_CMATH26_NYI float tgammaf(float _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl tgammaf(float _Xx) noexcept /* strengthened */ {
     return __std_smf_tgammaf(_Xx);
 }
 
-_NODISCARD _CONSTEXPR_CMATH26_NYI double tgamma(double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26_NYI double __cdecl tgamma(double _Xx) noexcept /* strengthened */ {
     return __std_smf_tgamma(_Xx);
 }
 
-_NODISCARD _CONSTEXPR_CMATH26_NYI long double tgammal(long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl tgammal(long double _Xx) noexcept /* strengthened */ {
     return __std_smf_tgamma(static_cast<double>(_Xx));
 }
 
@@ -333,78 +333,78 @@ _STL_DEF_FAMILY3(_CONSTEXPR_CMATH23, fma)
 // forward to their double siblings, so forward-declaring them without defining
 // them does not a successful polyfill make.
 #pragma function(coshf, cosh, coshl)
-_NODISCARD _CONSTEXPR_CMATH26_NYI float coshf(float _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl coshf(float _Xx) noexcept /* strengthened */ {
     return __builtin_coshf(_Xx);
 }
 
 #pragma function(sinhf, sinh, sinhl)
-_NODISCARD _CONSTEXPR_CMATH26_NYI float sinhf(float _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl sinhf(float _Xx) noexcept /* strengthened */ {
     return __builtin_sinhf(_Xx);
 }
 
 #pragma function(tanhf, tanh, tanhl)
-_NODISCARD _CONSTEXPR_CMATH26_NYI float tanhf(float _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl tanhf(float _Xx) noexcept /* strengthened */ {
     return __builtin_tanhf(_Xx);
 }
 
 extern "C++" {
-_NODISCARD _CONSTEXPR_CMATH23 int fpclassify(float _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 int __cdecl fpclassify(float _Xx) noexcept /* strengthened */ {
     return __builtin_fpclassifyf(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, _Xx);
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 int fpclassify(double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 int __cdecl fpclassify(double _Xx) noexcept /* strengthened */ {
     return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, _Xx);
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 int fpclassify(long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 int __cdecl fpclassify(long double _Xx) noexcept /* strengthened */ {
     return __builtin_fpclassifyl(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, _Xx);
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 bool isfinite(float _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isfinite(float _Xx) noexcept /* strengthened */ {
     return fpclassify(_Xx) <= 0;
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 bool isfinite(double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isfinite(double _Xx) noexcept /* strengthened */ {
     return fpclassify(_Xx) <= 0;
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 bool isfinite(long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isfinite(long double _Xx) noexcept /* strengthened */ {
     return fpclassify(_Xx) <= 0;
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 bool isinf(float _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isinf(float _Xx) noexcept /* strengthened */ {
     return fpclassify(_Xx) == FP_INFINITE;
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 bool isinf(double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isinf(double _Xx) noexcept /* strengthened */ {
     return fpclassify(_Xx) == FP_INFINITE;
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 bool isinf(long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isinf(long double _Xx) noexcept /* strengthened */ {
     return fpclassify(_Xx) == FP_INFINITE;
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 bool isnan(float _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnan(float _Xx) noexcept /* strengthened */ {
     return fpclassify(_Xx) == FP_NAN;
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 bool isnan(double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnan(double _Xx) noexcept /* strengthened */ {
     return fpclassify(_Xx) == FP_NAN;
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 bool isnan(long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnan(long double _Xx) noexcept /* strengthened */ {
     return fpclassify(_Xx) == FP_NAN;
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 bool isnormal(float _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnormal(float _Xx) noexcept /* strengthened */ {
     return fpclassify(_Xx) == FP_NORMAL;
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 bool isnormal(double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnormal(double _Xx) noexcept /* strengthened */ {
     return fpclassify(_Xx) == FP_NORMAL;
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 bool isnormal(long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 bool __cdecl isnormal(long double _Xx) noexcept /* strengthened */ {
     return fpclassify(_Xx) == FP_NORMAL;
 }
 
@@ -422,15 +422,16 @@ _STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, frexp, int*)
 _STL_DEF_RETURN_FAMILY1(_CONSTEXPR_CMATH23, ilogb, int)
 _STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, ldexp, int)
 
-_NODISCARD _CONSTEXPR_CMATH23 float modff(float _Xx0, float* _Xx1) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl modff(float _Xx0, float* _Xx1) noexcept /* strengthened */ {
     return __builtin_modff(_Xx0, _Xx1);
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 double modf(double _Xx0, double* _Xx1) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl modf(double _Xx0, double* _Xx1) noexcept /* strengthened */ {
     return __builtin_modf(_Xx0, _Xx1);
 }
 
-_NODISCARD _CONSTEXPR_CMATH23 long double modfl(long double _Xx0, long double* _Xx1) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH23 long double __cdecl modfl(long double _Xx0, long double* _Xx1) noexcept
+/* strengthened */ {
     return __builtin_modfl(_Xx0, _Xx1);
 }
 
@@ -443,7 +444,7 @@ _STL_DEF_LASTARG_FAMILY3(_CONSTEXPR_CMATH23, remquo, int*)
 
 // Preserve the sign of zero when atan2 underflows.
 // __builtin_atan2 can return +0 for tiny negative results.
-_NODISCARD _CONSTEXPR_CMATH26 float atan2f(float _Xx0, float _Xx1) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26 float __cdecl atan2f(float _Xx0, float _Xx1) noexcept /* strengthened */ {
     float _Result = static_cast<float>(__builtin_atan2f(_Xx0, _Xx1));
     if (_Result == 0.0F && _Xx0 != 0.0F) {
         return __builtin_copysignf(0.0F, _Xx0);
@@ -451,7 +452,7 @@ _NODISCARD _CONSTEXPR_CMATH26 float atan2f(float _Xx0, float _Xx1) noexcept /* s
     return _Result;
 }
 
-_NODISCARD _CONSTEXPR_CMATH26 double atan2(double _Xx0, double _Xx1) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26 double __cdecl atan2(double _Xx0, double _Xx1) noexcept /* strengthened */ {
     double _Result = static_cast<double>(__builtin_atan2(_Xx0, _Xx1));
     if (_Result == 0.0 && _Xx0 != 0.0) {
         return __builtin_copysign(0.0, _Xx0);
@@ -459,7 +460,8 @@ _NODISCARD _CONSTEXPR_CMATH26 double atan2(double _Xx0, double _Xx1) noexcept /*
     return _Result;
 }
 
-_NODISCARD _CONSTEXPR_CMATH26 long double atan2l(long double _Xx0, long double _Xx1) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26 long double __cdecl atan2l(long double _Xx0, long double _Xx1) noexcept
+/* strengthened */ {
     long double _Result = static_cast<long double>(__builtin_atan2l(_Xx0, _Xx1));
     if (_Result == 0.0L && _Xx0 != 0.0L) {
         return __builtin_copysignl(0.0L, _Xx0);
@@ -467,22 +469,22 @@ _NODISCARD _CONSTEXPR_CMATH26 long double atan2l(long double _Xx0, long double _
     return _Result;
 }
 
-_NODISCARD double _j0(double);
-_NODISCARD double _j1(double);
-_NODISCARD double _jn(int, double);
-_NODISCARD double _y0(double);
-_NODISCARD double _y1(double);
-_NODISCARD double _yn(int, double);
+_NODISCARD double __cdecl _j0(double);
+_NODISCARD double __cdecl _j1(double);
+_NODISCARD double __cdecl _jn(int, double);
+_NODISCARD double __cdecl _y0(double);
+_NODISCARD double __cdecl _y1(double);
+_NODISCARD double __cdecl _yn(int, double);
 
 #if defined(_CRT_INTERNAL_NONSTDC_NAMES) && _CRT_INTERNAL_NONSTDC_NAMES
 
 // These functions are included in the Open Group Standard Base Specifications.
-_NODISCARD double j0(double);
-_NODISCARD double j1(double);
-_NODISCARD double jn(int, double);
-_NODISCARD double y0(double);
-_NODISCARD double y1(double);
-_NODISCARD double yn(int, double);
+_NODISCARD double __cdecl j0(double);
+_NODISCARD double __cdecl j1(double);
+_NODISCARD double __cdecl jn(int, double);
+_NODISCARD double __cdecl y0(double);
+_NODISCARD double __cdecl y1(double);
+_NODISCARD double __cdecl yn(int, double);
 
 #endif // defined(_CRT_INTERNAL_NONSTDC_NAMES) && _CRT_INTERNAL_NONSTDC_NAMES
 
