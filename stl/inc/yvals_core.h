@@ -331,6 +331,7 @@
 // P0401R6 Providing Size Feedback In The Allocator Interface
 // P0429R9 <flat_map>
 // P0448R4 <spanstream>
+// P0533R9 constexpr For <cmath> And <cstdlib>
 // P0627R6 unreachable()
 // P0798R8 Monadic Operations For optional
 // P0881R7 <stacktrace>
@@ -408,7 +409,10 @@
 // P3142R0 Printing Blank Lines With println()
 // P3235R3 std::print More Types Faster With Less Memory
 // P3567R2 flat_meow Fixes
-// P0533R9 constexpr for <cmath> and <cstdlib>
+
+// _HAS_CXX26 controls:
+// P1383R2 More constexpr For <cmath> And <complex>
+//     (partial implementation)
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -959,21 +963,19 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19
 #define _CONSTEXPR23 inline
 #endif // ^^^ inline (not constexpr) in C++20 and earlier ^^^
 
-// Math functions that became constexpr in C++23. Support is conditioned on whether
-// -Zc:cmath- is specified.
+// Math functions that became constexpr in C++23
 #if _HAS_CXX23 && defined(_MSVC_CONSTEXPR_CMATH)
 #define _CONSTEXPR_CMATH23 constexpr
-#else // ^^^ constexpr in C++23 and later / inline (not constexpr) in C++20 and earlier vvv
+#else // ^^^ constexpr in C++23 and later / inline when /Zc:cmath- opts out of constexpr, and in C++20 and earlier vvv
 #define _CONSTEXPR_CMATH23 inline
-#endif
+#endif // ^^^ inline when /Zc:cmath- opts out of constexpr, and in C++20 and earlier ^^^
 
-// Math functions that became constexpr in C++26. Support is conditioned on whether
-// -Zc:cmath- is specified.
+// Math functions that became constexpr in C++26
 #if _HAS_CXX26 && defined(_MSVC_CONSTEXPR_CMATH)
 #define _CONSTEXPR_CMATH26 constexpr
-#else // ^^^ constexpr in C++26 and later / inline (not constexpr) in C++23 and earlier vvv
+#else // ^^^ constexpr in C++26 and later / inline when /Zc:cmath- opts out of constexpr, and in C++23 and earlier vvv
 #define _CONSTEXPR_CMATH26 inline
-#endif
+#endif // ^^^ inline when /Zc:cmath- opts out of constexpr, and in C++23 and earlier ^^^
 
 // P2465R3 Standard Library Modules std And std.compat
 #ifdef _BUILD_STD_MODULE
@@ -1696,7 +1698,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_common_reference_wrapper        202302L
 #define __cpp_lib_concepts                        202207L
 #define __cpp_lib_constexpr_algorithms            201806L
-#define __cpp_lib_constexpr_complex               201711L
 #define __cpp_lib_constexpr_dynamic_alloc         201907L
 #define __cpp_lib_constexpr_functional            201907L
 #define __cpp_lib_constexpr_iterator              201811L
@@ -1813,12 +1814,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_to_underlying               202102L
 #define __cpp_lib_tuple_like                  202207L
 #define __cpp_lib_unreachable                 202202L
-
-// MSVC conditionally suppports constexpr cmath under an "opt-out" model.
-// The compiler defines the macro used below to detect support.
-#if defined(_MSVC_CONSTEXPR_CMATH)
-#define __cpp_lib_constexpr_cmath 202202L
-#endif
 #endif // _HAS_CXX23
 
 // macros with language mode sensitivity
@@ -1834,6 +1829,20 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
 #else
 #define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
+#endif
+
+#if 0 && _HAS_CXX26 && defined(_MSVC_CONSTEXPR_CMATH) // TRANSITION, GH-3789
+#define __cpp_lib_constexpr_cmath 202306L // P1383R2 More constexpr For <cmath> And <complex>
+#elif _HAS_CXX23 && defined(_MSVC_CONSTEXPR_CMATH)
+// _MSVC_CONSTEXPR_CMATH is defined when MSVC supports constexpr <cmath>, but not when /Zc:cmath- opts out.
+// TRANSITION, Clang and EDG lack support for constexpr <cmath>.
+#define __cpp_lib_constexpr_cmath 202202L // P0533R9 constexpr For <cmath> And <cstdlib>
+#endif
+
+#if 0 && _HAS_CXX26 && defined(_MSVC_CONSTEXPR_CMATH) // TRANSITION, GH-3789
+#define __cpp_lib_constexpr_complex 202306L // P1383R2 More constexpr For <cmath> And <complex>
+#elif _HAS_CXX20
+#define __cpp_lib_constexpr_complex 201711L // P0415R1 constexpr For <complex> (Again)
 #endif
 
 #if _HAS_CXX23
