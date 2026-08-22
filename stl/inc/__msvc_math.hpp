@@ -107,6 +107,33 @@ extern "C" {
     _STL_DEF_FUNC1(specs, name, ret, double)        \
     _STL_DEF_FUNC1(specs, name##l, ret, long double)
 
+// N.B. static_cast<bool> is used when the builtin returns int.
+#define _STL_DEF_OVERLOADED_PREDICATE1(specs, name, builtin, fptype)     \
+    _NODISCARD specs bool name(fptype _Xx) noexcept /* strengthened */ { \
+        return static_cast<bool>(builtin(_Xx));                          \
+    }
+
+#define _STL_DEF_OVERLOADED_PREDICATE2(specs, name, builtin, fptype)                   \
+    _NODISCARD specs bool name(fptype _Xx0, fptype _Xx1) noexcept /* strengthened */ { \
+        return static_cast<bool>(builtin(_Xx0, _Xx1));                                 \
+    }
+
+// Defines three overloaded functions with signature `bool(fp-type)`.
+#define _STL_DEF_OVERLOADED_PREDICATE_FAMILY1(specs, name)                  \
+    _STL_DEF_OVERLOADED_PREDICATE1(specs, name, __builtin_##name##f, float) \
+    _STL_DEF_OVERLOADED_PREDICATE1(specs, name, __builtin_##name, double)   \
+    _STL_DEF_OVERLOADED_PREDICATE1(specs, name, __builtin_##name##l, long double)
+
+// Defines four overloaded functions with signature `bool(fp-type, fp-type)`.
+#define _STL_DEF_OVERLOADED_PREDICATE_FAMILY2(specs, name)                                                \
+    _STL_DEF_OVERLOADED_PREDICATE2(specs, name, __builtin_##name##f, float)                               \
+    _STL_DEF_OVERLOADED_PREDICATE2(specs, name, __builtin_##name, double)                                 \
+    _STL_DEF_OVERLOADED_PREDICATE2(specs, name, __builtin_##name##l, long double)                         \
+    template <class _Ty0, class _Ty1>                                                                     \
+    _NODISCARD specs bool name(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {                        \
+        return static_cast<bool>(__builtin_##name(static_cast<double>(_Xx0), static_cast<double>(_Xx1))); \
+    }
+
 // **Declares** two non-overloaded functions with signature `fp-type(fp-type)`.
 // A third function, corresponding to the `long double` variant of the function,
 // is **defined** to call the double variant. These declarations are intended to
@@ -404,101 +431,13 @@ _NODISCARD _CONSTEXPR_CMATH23 bool isnormal(long double _Xx) noexcept /* strengt
     return fpclassify(_Xx) == FP_NORMAL;
 }
 
-// N.B. static_cast<bool> is used when the builtin returns int.
-
-_NODISCARD _CONSTEXPR_CMATH23 bool signbit(float _Xx) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_signbitf(_Xx));
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool signbit(double _Xx) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_signbit(_Xx));
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool signbit(long double _Xx) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_signbitl(_Xx));
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool isgreater(float _Xx0, float _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isgreaterf(_Xx0, _Xx1));
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool isgreater(double _Xx0, double _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isgreater(_Xx0, _Xx1));
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool isgreater(long double _Xx0, long double _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isgreaterl(_Xx0, _Xx1));
-}
-template <class _Ty0, class _Ty1>
-_NODISCARD _CONSTEXPR_CMATH23 bool isgreater(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isgreater(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool isgreaterequal(float _Xx0, float _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isgreaterequalf(_Xx0, _Xx1));
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool isgreaterequal(double _Xx0, double _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isgreaterequal(_Xx0, _Xx1));
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool isgreaterequal(long double _Xx0, long double _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isgreaterequall(_Xx0, _Xx1));
-}
-template <class _Ty0, class _Ty1>
-_NODISCARD _CONSTEXPR_CMATH23 bool isgreaterequal(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isgreaterequal(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool isless(float _Xx0, float _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_islessf(_Xx0, _Xx1));
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool isless(double _Xx0, double _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isless(_Xx0, _Xx1));
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool isless(long double _Xx0, long double _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_islessl(_Xx0, _Xx1));
-}
-template <class _Ty0, class _Ty1>
-_NODISCARD _CONSTEXPR_CMATH23 bool isless(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isless(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool islessequal(float _Xx0, float _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_islessequalf(_Xx0, _Xx1));
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool islessequal(double _Xx0, double _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_islessequal(_Xx0, _Xx1));
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool islessequal(long double _Xx0, long double _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_islessequall(_Xx0, _Xx1));
-}
-template <class _Ty0, class _Ty1>
-_NODISCARD _CONSTEXPR_CMATH23 bool islessequal(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_islessequal(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool islessgreater(float _Xx0, float _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_islessgreaterf(_Xx0, _Xx1));
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool islessgreater(double _Xx0, double _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_islessgreater(_Xx0, _Xx1));
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool islessgreater(long double _Xx0, long double _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_islessgreaterl(_Xx0, _Xx1));
-}
-template <class _Ty0, class _Ty1>
-_NODISCARD _CONSTEXPR_CMATH23 bool islessgreater(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_islessgreater(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
-}
-
-_NODISCARD _CONSTEXPR_CMATH23 bool isunordered(float _Xx0, float _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isunorderedf(_Xx0, _Xx1));
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool isunordered(double _Xx0, double _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isunordered(_Xx0, _Xx1));
-}
-_NODISCARD _CONSTEXPR_CMATH23 bool isunordered(long double _Xx0, long double _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isunorderedl(_Xx0, _Xx1));
-}
-template <class _Ty0, class _Ty1>
-_NODISCARD _CONSTEXPR_CMATH23 bool isunordered(_Ty0 _Xx0, _Ty1 _Xx1) noexcept /* strengthened */ {
-    return static_cast<bool>(__builtin_isunordered(static_cast<double>(_Xx0), static_cast<double>(_Xx1)));
-}
+_STL_DEF_OVERLOADED_PREDICATE_FAMILY1(_CONSTEXPR_CMATH23, signbit)
+_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isgreater)
+_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isgreaterequal)
+_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isless)
+_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, islessequal)
+_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, islessgreater)
+_STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isunordered)
 } // extern "C++"
 
 _NODISCARD _CONSTEXPR_CMATH23 float nexttowardf(float _Xx0, long double _Xx1) noexcept /* strengthened */ {
@@ -649,6 +588,10 @@ _NODISCARD double yn(int, double);
 #undef _STL_DEF_FAMILY2
 #undef _STL_DEF_FAMILY3
 #undef _STL_DEF_ROUNDING_FAMILY1
+#undef _STL_DEF_OVERLOADED_PREDICATE1
+#undef _STL_DEF_OVERLOADED_PREDICATE2
+#undef _STL_DEF_OVERLOADED_PREDICATE_FAMILY1
+#undef _STL_DEF_OVERLOADED_PREDICATE_FAMILY2
 #undef _STL_DECLARE_FAMILY1
 #undef _CONSTEXPR_CMATH26_NYI
 
