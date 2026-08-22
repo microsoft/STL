@@ -3,6 +3,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// This file was derived from <stdlib.h> in the Windows 11 SDK (10.0.28000), with some alterations:
+// * Formatted with clang-format.
+// * Removed _M_CEE_PURE checks (never defined here).
+// * Removed __cplusplus checks (always defined here).
+// * Changed code to support the MSVC frontend intercepting inclusions of <stdlib.h>.
+// * Changed code for C++23's P0533R9 "constexpr For <cmath> And <cstdlib>".
+// Avoid introducing further unnecessary divergence between <stdlib.h> and this file.
+
 #ifndef __MSVC_STDLIB_HPP
 #define __MSVC_STDLIB_HPP
 
@@ -26,13 +34,22 @@ _CRT_BEGIN_C_HEADER
 #define _countof __crt_countof
 #endif
 
+
 // Minimum and maximum macros
 #define __max(a, b) (((a) > (b)) ? (a) : (b))
 #define __min(a, b) (((a) < (b)) ? (a) : (b))
 
+
 _ACRTIMP void __cdecl _swab(_Inout_updates_(_SizeInBytes) _Post_readable_size_(_SizeInBytes) char* _Buf1,
     _Inout_updates_(_SizeInBytes) _Post_readable_size_(_SizeInBytes) char* _Buf2, _In_ int _SizeInBytes);
 
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//
+// Exit and Abort
+//
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// Argument values for exit()
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
 
@@ -102,6 +119,12 @@ _onexit_t __cdecl _onexit(_In_opt_ _onexit_t _Func);
 
 int __cdecl at_quick_exit(void(__cdecl*)(void));
 
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//
+// Global State (errno, global handlers, etc.)
+//
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 // a purecall handler procedure. Never returns normally
 typedef void(__cdecl* _purecall_handler)(void);
 
@@ -126,6 +149,7 @@ _ACRTIMP _invalid_parameter_handler __cdecl _set_thread_local_invalid_parameter_
 _ACRTIMP _invalid_parameter_handler __cdecl _get_thread_local_invalid_parameter_handler(void);
 
 
+// Argument values for _set_error_mode().
 #define _OUT_TO_DEFAULT 0
 #define _OUT_TO_STDERR  1
 #define _OUT_TO_MSGBOX  2
@@ -185,6 +209,12 @@ _ACRTIMP errno_t __cdecl _set_fmode(_In_ int _Mode);
 
 _ACRTIMP errno_t __cdecl _get_fmode(_Out_ int* _PMode);
 
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//
+// Math
+//
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 typedef struct _div_t {
     int quot;
     int rem;
@@ -278,6 +308,7 @@ _Check_return_ _ACRTIMP int __cdecl rand(void);
 _ACRTIMP errno_t __cdecl rand_s(_Out_ unsigned int* _RandomValue);
 #endif
 
+
 extern "C++" {
 [[nodiscard]] constexpr long abs(long const _Xx) noexcept /* strengthened */ {
     return labs(_Xx);
@@ -296,6 +327,7 @@ extern "C++" {
     return lldiv(_Numerator, _Denominator);
 }
 } // extern "C++"
+
 
 // Structs used to fool the compiler into not generating floating point
 // instructions when copying and pushing [long] double values
@@ -347,6 +379,12 @@ typedef struct {
 } _LDBL12;
 #pragma pack(pop)
 
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//
+// Narrow String to Number Conversions
+//
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 _Check_return_ _ACRTIMP double __cdecl atof(_In_z_ char const* _String);
 _Check_return_ _CRT_JIT_INTRINSIC _ACRTIMP int __cdecl atoi(_In_z_ char const* _String);
 _Check_return_ _ACRTIMP long __cdecl atol(_In_z_ char const* _String);
@@ -425,6 +463,12 @@ _Check_return_ _ACRTIMP unsigned __int64 __cdecl _strtoui64(
 _Check_return_ _ACRTIMP unsigned __int64 __cdecl _strtoui64_l(
     _In_z_ char const* _String, _Out_opt_ _Deref_post_z_ char** _EndPtr, _In_ int _Radix, _In_opt_ _locale_t _Locale);
 
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//
+// Number to Narrow String Conversions
+//
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 _Success_(return == 0) _Check_return_opt_ _ACRTIMP errno_t __cdecl _itoa_s(
     _In_ int _Value, _Out_writes_z_(_BufferCount) char* _Buffer, _In_ size_t _BufferCount, _In_ int _Radix);
 
@@ -501,6 +545,12 @@ __DEFINE_CPP_OVERLOAD_SECURE_FUNC_0_2(
 _CRT_INSECURE_DEPRECATE(_gcvt_s)
 _ACRTIMP char* __cdecl _gcvt(_In_ double _Value, _In_ int _DigitCount, _Pre_notnull_ _Post_z_ char* _Buffer);
 
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//
+// Multibyte String Operations and Conversions
+//
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 // Maximum number of bytes in multi-byte character in the current locale
 // (also defined in ctype.h).
 #ifndef MB_CUR_MAX
@@ -609,6 +659,12 @@ __DEFINE_CPP_OVERLOAD_STANDARD_NFUNC_0_3_SIZE_EX(_ACRTIMP, _wcstombs_l, _wcstomb
     _Out_writes_(_MaxCount), char, _Dest, _In_z_ wchar_t const*, _Source, _In_ size_t, _MaxCount, _In_opt_ _locale_t,
     _Locale)
 
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//
+// Path Manipulation
+//
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 // Sizes for buffers used by the _makepath() and _splitpath() functions.
 // note that the sizes include space for 0-terminator
 #define _MAX_PATH  260 // max. length of full pathname
@@ -747,6 +803,12 @@ _DCRTIMP void __cdecl _sleep(_In_ unsigned long _Duration);
 
 #endif // _CRT_FUNCTIONS_REQUIRED
 
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//
+// Non-ANSI Names for Compatibility
+//
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 #if defined(_CRT_INTERNAL_NONSTDC_NAMES) && _CRT_INTERNAL_NONSTDC_NAMES
 
 #ifndef __cplusplus
