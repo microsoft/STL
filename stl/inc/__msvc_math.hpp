@@ -26,10 +26,12 @@
 #if _STL_COMPILER_PREPROCESSOR
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
-#pragma warning(disable : _STL_DISABLED_WARNINGS 4163) // 'meow' not available as an intrinsic function
-#pragma push_macro("new")
-
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
 _STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+#pragma warning(disable : 4163) // 'meow' not available as an intrinsic function
 
 #define _STL_DEF_FUNC1(specs, name, ret, fptype)                                   \
     extern "C" _NODISCARD specs ret name(fptype _Xx) noexcept /* strengthened */ { \
@@ -669,8 +671,8 @@ _NODISCARD double yn(int, double);
 #undef _STL_DECLARE_FAMILY1
 #undef _CONSTEXPR_CMATH26_NYI
 
-_STL_RESTORE_CLANG_WARNINGS
 #pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 #endif // _STL_COMPILER_PREPROCESSOR
