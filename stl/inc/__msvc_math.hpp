@@ -368,14 +368,14 @@ _STL_DEF_OVERLOADED_PREDICATE_FAMILY2(_CONSTEXPR_CMATH23, isunordered)
 // Preserve the sign of zero when atan2 underflows.
 // __builtin_atan2 can return +0 for tiny negative results.
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl atan2f(float _Xx0, float _Xx1) noexcept /* strengthened */ {
-    float _Result = static_cast<float>(__builtin_atan2f(_Xx0, _Xx1));
+    float _Result = __builtin_atan2f(_Xx0, _Xx1);
     if (_Result == 0.0F && _Xx0 != 0.0F) {
         return __builtin_copysignf(0.0F, _Xx0);
     }
     return _Result;
 }
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl atan2(double _Xx0, double _Xx1) noexcept /* strengthened */ {
-    double _Result = static_cast<double>(__builtin_atan2(_Xx0, _Xx1));
+    double _Result = __builtin_atan2(_Xx0, _Xx1);
     if (_Result == 0.0 && _Xx0 != 0.0) {
         return __builtin_copysign(0.0, _Xx0);
     }
@@ -383,7 +383,7 @@ _NODISCARD _CONSTEXPR_CMATH26 double __cdecl atan2(double _Xx0, double _Xx1) noe
 }
 _NODISCARD _CONSTEXPR_CMATH26 long double __cdecl atan2l(long double _Xx0, long double _Xx1) noexcept
 /* strengthened */ {
-    long double _Result = static_cast<long double>(__builtin_atan2l(_Xx0, _Xx1));
+    long double _Result = __builtin_atan2l(_Xx0, _Xx1);
     if (_Result == 0.0L && _Xx0 != 0.0L) {
         return __builtin_copysignl(0.0L, _Xx0);
     }
