@@ -57,17 +57,6 @@ extern "C" {
         return name(static_cast<double>(_Xx0));                                          \
     }
 
-#define _STL_DEF_LDOUBLE_FORWARD_FUNC2(specs, name)                                                        \
-    _NODISCARD specs long double name##l(long double _Xx0, long double _Xx1) noexcept /* strengthened */ { \
-        return name(static_cast<double>(_Xx0), static_cast<double>(_Xx1));                                 \
-    }
-
-#define _STL_DEF_LDOUBLE_FORWARD_FUNC3(specs, name)                                                   \
-    _NODISCARD specs long double name##l(                                                             \
-        long double _Xx0, long double _Xx1, long double _Xx2) noexcept /* strengthened */ {           \
-        return name(static_cast<double>(_Xx0), static_cast<double>(_Xx1), static_cast<double>(_Xx2)); \
-    }
-
 // N.B. Declarations stamped out by these macros are not noexcept because they
 // are intended to match the definitions in the UCRT, which are not themselves
 // noexcept.
@@ -80,21 +69,21 @@ extern "C" {
 #define _STL_DEF_FAMILY1(specs, name)            \
     _STL_DEF_FUNC1(specs, name##f, float, float) \
     _STL_DEF_FUNC1(specs, name, double, double)  \
-    _STL_DEF_LDOUBLE_FORWARD_FUNC1(specs, name)
+    _STL_DEF_FUNC1(specs, name##l, long double, long double)
 
 // Defines three non-overloaded functions with signature `fp-type(fp-type, fp-type)`.
 // The names of the float and long double variants are suffixed with `f` and `l`, respectively.
 #define _STL_DEF_FAMILY2(specs, name)            \
     _STL_DEF_FUNC2(specs, name##f, float, float) \
     _STL_DEF_FUNC2(specs, name, double, double)  \
-    _STL_DEF_LDOUBLE_FORWARD_FUNC2(specs, name)
+    _STL_DEF_FUNC2(specs, name##l, long double, long double)
 
 // Defines three non-overloaded functions with signature `fp-type(fp-type, fp-type, fp-type)`.
 // The names of the float and long double variants are suffixed with `f` and `l`, respectively.
 #define _STL_DEF_FAMILY3(specs, name)            \
     _STL_DEF_FUNC3(specs, name##f, float, float) \
     _STL_DEF_FUNC3(specs, name, double, double)  \
-    _STL_DEF_LDOUBLE_FORWARD_FUNC3(specs, name)
+    _STL_DEF_FUNC3(specs, name##l, long double, long double)
 
 // Defines three non-overloaded functions with signature `int-type(fp-type)`.
 // The names of the float and long double variants are suffixed with `f` and `l`, respectively.
@@ -576,8 +565,6 @@ _NODISCARD double yn(int, double);
 #undef _STL_DEF_FUNC2
 #undef _STL_DEF_FUNC3
 #undef _STL_DEF_LDOUBLE_FORWARD_FUNC1
-#undef _STL_DEF_LDOUBLE_FORWARD_FUNC2
-#undef _STL_DEF_LDOUBLE_FORWARD_FUNC3
 #undef _STL_DECLARE_FUNC1
 #undef _STL_DECLARE_FUNC2
 #undef _STL_DEF_FAMILY1
