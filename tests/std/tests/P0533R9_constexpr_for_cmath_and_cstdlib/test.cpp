@@ -219,13 +219,15 @@ constexpr bool test_cmath() {
     test_classification_functions<long double>();
     test_classification_functions<int>();
 
-    if !consteval { // TRANSITION, the comparison functions "are do-nothing stubs because we don't need them"
-                    // in constant evaluation, OOPSY DOODLE
+#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, MSVC-PR-767404 fixed the comparison functions in constant evaluation
+    if !consteval
+#endif // ^^^ workaround ^^^
+    {
         test_comparison_functions<float>();
         test_comparison_functions<double>();
         test_comparison_functions<long double>();
         test_comparison_functions<int>();
-    } // ^^^ no workaround ^^^
+    }
 
     return true;
 }
@@ -257,9 +259,12 @@ constexpr void test_classification_functions() {
         constexpr T inf = numeric_limits<T>::infinity();
         constexpr T nan = numeric_limits<T>::quiet_NaN();
 
-        if constexpr (!is_same_v<T, float>) { // TRANSITION, MSVC-PR-767404 fixing fpclassify for subnormal floats
+#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, MSVC-PR-767404 fixed fpclassify for subnormal floats
+        if constexpr (!is_same_v<T, float>)
+#endif // ^^^ workaround ^^^
+        {
             assert(fpclassify(sub) == FP_SUBNORMAL);
-        } // ^^^ no workaround ^^^
+        }
         assert(fpclassify(inf) == FP_INFINITE);
         assert(fpclassify(nan) == FP_NAN);
 
@@ -275,9 +280,12 @@ constexpr void test_classification_functions() {
         assert(!isnan(inf));
         assert(isnan(nan));
 
-        if constexpr (!is_same_v<T, float>) { // TRANSITION, MSVC-PR-767404 fixing fpclassify for subnormal floats
+#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, MSVC-PR-767404 fixed fpclassify for subnormal floats
+        if constexpr (!is_same_v<T, float>)
+#endif // ^^^ workaround ^^^
+        {
             assert(!isnormal(sub));
-        } // ^^^ no workaround ^^^
+        }
         assert(!isnormal(inf));
         assert(!isnormal(nan));
     }
