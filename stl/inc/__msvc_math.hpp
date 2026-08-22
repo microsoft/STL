@@ -50,18 +50,6 @@ extern "C" {
         return __builtin_##name(_Xx0, _Xx1, _Xx2);                                           \
     }
 
-// `long double` and `double` are the same width on MSVC, so `long double`
-// variants of math functions forward to the `double` variants.
-#define _STL_DEF_LDOUBLE_FORWARD_FUNC1(specs, name)                                      \
-    _NODISCARD specs long double name##l(long double _Xx0) noexcept /* strengthened */ { \
-        return name(static_cast<double>(_Xx0));                                          \
-    }
-
-// N.B. Declarations stamped out by these macros are not noexcept because they
-// are intended to match the definitions in the UCRT, which are not themselves
-// noexcept.
-#define _STL_DECLARE_FUNC1(specs, name, ret, fptype) _NODISCARD specs ret name(fptype);
-
 // Defines three non-overloaded functions with signature `fp-type (fp-type)`.
 #define _STL_DEF_FAMILY1(specs, name)            \
     _STL_DEF_FUNC1(specs, name##f, float, float) \
@@ -125,15 +113,13 @@ extern "C" {
         return static_cast<bool>(__builtin_##name(static_cast<double>(_Xx0), static_cast<double>(_Xx1))); \
     }
 
-// **Declares** two non-overloaded functions with signature `fp-type (fp-type)`.
-// A third function, corresponding to the `long double` variant of the function,
-// is **defined** to call the double variant. These declarations are intended to
-// match functions defined within the UCRT because libc does not yet implement
-// them fully.
-#define _STL_DECLARE_FAMILY1(specs, name)            \
-    _STL_DECLARE_FUNC1(specs, name##f, float, float) \
-    _STL_DECLARE_FUNC1(specs, name, double, double)  \
-    _STL_DEF_LDOUBLE_FORWARD_FUNC1(specs, name)
+// **Declares** three non-overloaded functions with signature `fp-type (fp-type)`.
+// These declarations are intended to match functions defined within the UCRT
+// because libc does not yet implement them fully.
+#define _STL_DECLARE_FAMILY1(specs, name)                              \
+    _NODISCARD specs float name##f(float) noexcept /* strengthened */; \
+    _NODISCARD specs double name(double) noexcept /* strengthened */;  \
+    _NODISCARD specs long double name##l(long double) noexcept /* strengthened */;
 
 // Some functions that are needed for C++26 constexpr cmath are not yet
 // implemented by libc. We polyfill the library with the UCRT and mark these
@@ -503,8 +489,6 @@ _NODISCARD double yn(int, double);
 #undef _STL_DEF_FUNC1
 #undef _STL_DEF_FUNC2
 #undef _STL_DEF_FUNC3
-#undef _STL_DEF_LDOUBLE_FORWARD_FUNC1
-#undef _STL_DECLARE_FUNC1
 #undef _STL_DEF_FAMILY1
 #undef _STL_DEF_FAMILY2
 #undef _STL_DEF_FAMILY3
