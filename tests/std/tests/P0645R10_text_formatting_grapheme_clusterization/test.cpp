@@ -12,9 +12,8 @@
 
 using namespace std;
 
-
 // GraphemeBreakTest-18.0.0.txt
-// Date: 2026-05-12, 22:11:40 GMT
+// Date: 2026-06-12, 00:44:16 GMT
 template <typename T>
 struct test_case_data {
     vector<T> code_points;
