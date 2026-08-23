@@ -1832,7 +1832,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif
 
 // The option /Zc:cmath- disables support for constexpr <cmath>.
-// TRANSITION, Clang and EDG lack support for constexpr <cmath>.
+// TRANSITION, GH-6412, Clang and EDG lack support for constexpr <cmath>.
 #if 0 && _HAS_CXX26 && defined(_MSVC_LIBC_MATH) // TRANSITION, GH-3789
 #define __cpp_lib_constexpr_cmath 202306L // P1383R2 More constexpr For <cmath> And <complex>
 #elif _HAS_CXX23 && defined(_MSVC_LIBC_MATH)
