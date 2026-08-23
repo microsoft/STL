@@ -977,6 +977,8 @@ _EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC Compiler 19
 #define _CONSTEXPR_CMATH26 inline
 #endif // ^^^ inline when /Zc:cmath- opts out of constexpr, and in C++23 and earlier ^^^
 
+#define _CONSTEXPR_CMATH26_NYI inline // TRANSITION, GH-3789
+
 // P2465R3 Standard Library Modules std And std.compat
 #ifdef _BUILD_STD_MODULE
 #if !_HAS_CXX20

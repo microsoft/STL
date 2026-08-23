@@ -194,8 +194,7 @@ extern "C" {
 // Some functions that are needed for C++26 constexpr cmath are not yet implemented by libc.
 // We polyfill the library with the UCRT and mark these functions with this macro.
 // The resulting declarations are not able to be used during constant evaluation yet.
-#define _CONSTEXPR_CMATH26_NYI      inline
-#define _CONSTEXPR_CMATH26_NYI_DECL _EMPTY_ARGUMENT
+#define _CONSTEXPR_CMATH26_NYI_DECL _EMPTY_ARGUMENT // TRANSITION, GH-3789
 
 // On x86, when not using /arch:SSE2 or greater, floating-point operations are performed
 // using the x87 instruction set and FLT_EVAL_METHOD is 2. (When /fp:fast is used,
@@ -498,7 +497,6 @@ _NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl tanhl(long double _Xx) noe
 #undef _STL_DEF_OVERLOADED_COMPARISON_FAMILY1
 #undef _STL_DEF_OVERLOADED_COMPARISON_FAMILY2
 #undef _STL_DECLARE_FAMILY1
-#undef _CONSTEXPR_CMATH26_NYI
 #undef _CONSTEXPR_CMATH26_NYI_DECL
 
 } // extern "C"
