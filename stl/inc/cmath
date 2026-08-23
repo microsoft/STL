@@ -1669,24 +1669,26 @@ _GENERIC_MATH_SPECIAL_UINT1(sph_neumann)
 #undef _GENERIC_MATH_SPECIAL_UINT1
 #undef _GENERIC_MATH_SPECIAL_UINT2
 
-_EXPORT_STD _NODISCARD inline double hypot(const double _Dx, const double _Dy, const double _Dz) noexcept
+_EXPORT_STD _NODISCARD _CONSTEXPR_CMATH26_NYI double hypot(
+    const double _Dx, const double _Dy, const double _Dz) noexcept
 /* strengthened */ {
     return __std_smf_hypot3(_Dx, _Dy, _Dz);
 }
 
-_EXPORT_STD _NODISCARD inline float hypot(const float _Dx, const float _Dy, const float _Dz) noexcept
+_EXPORT_STD _NODISCARD _CONSTEXPR_CMATH26_NYI float hypot(const float _Dx, const float _Dy, const float _Dz) noexcept
 /* strengthened */ {
     return __std_smf_hypot3f(_Dx, _Dy, _Dz);
 }
 
-_EXPORT_STD _NODISCARD inline long double hypot(
+_EXPORT_STD _NODISCARD _CONSTEXPR_CMATH26_NYI long double hypot(
     const long double _Dx, const long double _Dy, const long double _Dz) noexcept /* strengthened */ {
     return __std_smf_hypot3(static_cast<double>(_Dx), static_cast<double>(_Dy), static_cast<double>(_Dz));
 }
 
 _EXPORT_STD template <class _Ty1, class _Ty2, class _Ty3,
     enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>, int> = 0>
-_NODISCARD auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, const _Ty3 _Dz) noexcept /* strengthened */ {
+_NODISCARD _CONSTEXPR_CMATH26_NYI auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, const _Ty3 _Dz) noexcept
+/* strengthened */ {
     // N4950 [cmath.syn]/3 "Sufficient additional overloads"
     // Note that this template is selected by overload resolution only when at least one
     // argument is double/long double/integral but not all three are double or long double.

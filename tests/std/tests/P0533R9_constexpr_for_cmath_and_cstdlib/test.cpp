@@ -541,6 +541,14 @@ constexpr bool test_cmath_cxx26() {
     assert(round(hypotl(3.3l, 7.7l) * 1000.0l) == 8377.0l);
     assert(round(hypot(3, 7) * 1000.0) == 7616.0);
 
+    if !consteval { // TRANSITION, GH-3789
+        assert(round(hypot(2.2f, 3.3f, 4.4f) * 1000.0f) == 5924.0f);
+        assert(round(hypot(2.2, 3.3, 4.4) * 1000.0) == 5924.0);
+        assert(round(hypot(2.2l, 3.3l, 4.4l) * 1000.0l) == 5924.0l);
+        assert(round(hypot(2, 3, 4) * 1000.0) == 5385.0);
+        // No 3-arg overloads for hypotf() and hypotl()
+    }
+
     assert(round(pow(3.3f, 0.6f) * 1000.0f) == 2047.0f);
     assert(round(pow(3.3, 0.6) * 1000.0) == 2047.0);
     assert(round(pow(3.3l, 0.6l) * 1000.0l) == 2047.0l);
