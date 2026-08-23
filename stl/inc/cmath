@@ -777,27 +777,27 @@ _GENERIC_MATH_ISNORMAL(wchar_t)
 #endif // defined(_NATIVE_WCHAR_T_DEFINED)
 #undef _GENERIC_MATH_ISNORMAL
 
-#define _GENERIC_MATH1_BASE(NAME, RET, FUN)                                         \
-    template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>        \
-    _NODISCARD _CONSTEXPR_CMATH23 RET NAME(_Ty _Left) noexcept /* strengthened */ { \
-        return FUN(static_cast<double>(_Left));                                     \
+#define _GENERIC_MATH1_BASE(SPECS, NAME, RET, FUN)                           \
+    template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0> \
+    _NODISCARD SPECS RET NAME(_Ty _Left) noexcept /* strengthened */ {       \
+        return FUN(static_cast<double>(_Left));                              \
     }
 
-#define _GENERIC_MATH1R(FUN, RET) _GENERIC_MATH1_BASE(FUN, RET, _CSTD FUN)
-#define _GENERIC_MATH1(FUN)       _GENERIC_MATH1R(FUN, double)
+#define _GENERIC_MATH1R(SPECS, FUN, RET) _GENERIC_MATH1_BASE(SPECS, FUN, RET, _CSTD FUN)
+#define _GENERIC_MATH1(SPECS, FUN)       _GENERIC_MATH1R(SPECS, FUN, double)
 
 #if _HAS_CMATH_BUILTINS
-#define _GENERIC_MATH1I(FUN, BUILTIN, INTRINSIC) _GENERIC_MATH1_BASE(FUN, double, BUILTIN)
+#define _GENERIC_MATH1I(SPECS, FUN, BUILTIN, INTRINSIC) _GENERIC_MATH1_BASE(SPECS, FUN, double, BUILTIN)
 #elif _HAS_CMATH_INTRINSICS
-#define _GENERIC_MATH1I(FUN, BUILTIN, INTRINSIC) _GENERIC_MATH1_BASE(FUN, double, INTRINSIC)
+#define _GENERIC_MATH1I(SPECS, FUN, BUILTIN, INTRINSIC) _GENERIC_MATH1_BASE(SPECS, FUN, double, INTRINSIC)
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
-#define _GENERIC_MATH1I(FUN, BUILTIN, INTRINSIC) _GENERIC_MATH1_BASE(FUN, double, _CSTD FUN)
+#define _GENERIC_MATH1I(SPECS, FUN, BUILTIN, INTRINSIC) _GENERIC_MATH1_BASE(SPECS, FUN, double, _CSTD FUN)
 #endif // ^^^ intrinsics unavailable ^^^
 
-#define _GENERIC_MATH1X(FUN, ARG2)                                                                \
-    template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>                      \
-    _NODISCARD _CONSTEXPR_CMATH23 double FUN(_Ty _Left, ARG2 _Arg2) noexcept /* strengthened */ { \
-        return _CSTD FUN(static_cast<double>(_Left), _Arg2);                                      \
+#define _GENERIC_MATH1X(SPECS, FUN, ARG2)                                            \
+    template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>         \
+    _NODISCARD SPECS double FUN(_Ty _Left, ARG2 _Arg2) noexcept /* strengthened */ { \
+        return _CSTD FUN(static_cast<double>(_Left), _Arg2);                         \
     }
 
 // When the arguments are both floats or both long doubles, overload resolution prefers the
@@ -806,22 +806,21 @@ _GENERIC_MATH_ISNORMAL(wchar_t)
 // when the types of the two arguments differ, in which case _Common_float_type_t is either double
 // or long double. Note that double and long double have the same underlying representation on our
 // supported platforms.
-#define _GENERIC_MATH2_BASE(NAME, FUN)                                                       \
-    template <class _Ty1, class _Ty2,                                                        \
-        _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>, int> = 0> \
-    _NODISCARD _CONSTEXPR_CMATH23 _STD _Common_float_type_t<_Ty1, _Ty2> NAME(                \
-        _Ty1 _Left, _Ty2 _Right) noexcept /* strengthened */ {                               \
-        return FUN(static_cast<double>(_Left), static_cast<double>(_Right));                 \
+#define _GENERIC_MATH2_BASE(SPECS, NAME, FUN)                                                                          \
+    template <class _Ty1, class _Ty2,                                                                                  \
+        _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>, int> = 0>                           \
+    _NODISCARD SPECS _STD _Common_float_type_t<_Ty1, _Ty2> NAME(_Ty1 _Left, _Ty2 _Right) noexcept /* strengthened */ { \
+        return FUN(static_cast<double>(_Left), static_cast<double>(_Right));                                           \
     }
 
-#define _GENERIC_MATH2(FUN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
+#define _GENERIC_MATH2(SPECS, FUN) _GENERIC_MATH2_BASE(SPECS, FUN, _CSTD FUN)
 
 #if _HAS_CMATH_BUILTINS
-#define _GENERIC_MATH2I(FUN, BUILTIN, INTRINSIC) _GENERIC_MATH2_BASE(FUN, BUILTIN)
+#define _GENERIC_MATH2I(SPECS, FUN, BUILTIN, INTRINSIC) _GENERIC_MATH2_BASE(SPECS, FUN, BUILTIN)
 #elif _HAS_CMATH_INTRINSICS
-#define _GENERIC_MATH2I(FUN, BUILTIN, INTRINSIC) _GENERIC_MATH2_BASE(FUN, INTRINSIC)
+#define _GENERIC_MATH2I(SPECS, FUN, BUILTIN, INTRINSIC) _GENERIC_MATH2_BASE(SPECS, FUN, INTRINSIC)
 #else // ^^^ intrinsics available / intrinsics unavailable vvv
-#define _GENERIC_MATH2I(FUN, BUILTIN, INTRINSIC) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
+#define _GENERIC_MATH2I(SPECS, FUN, BUILTIN, INTRINSIC) _GENERIC_MATH2_BASE(SPECS, FUN, _CSTD FUN)
 #endif // ^^^ intrinsics unavailable ^^^
 
 // TRANSITION, DevCom-10294165, additional overloads are not templated to avoid ambiguity with the overload in UCRT
@@ -861,64 +860,64 @@ _GENERIC_MATH_ISNORMAL(wchar_t)
     _GENERIC_MATH_CLASSIFY1_RETV_WCHAR_T(FUN, RETV)
 
 // The following order matches N4950 [cmath.syn].
-_GENERIC_MATH1(acos)
-_GENERIC_MATH1(asin)
-_GENERIC_MATH1(atan)
-_GENERIC_MATH2(atan2)
-_GENERIC_MATH1(cos)
-_GENERIC_MATH1(sin)
-_GENERIC_MATH1(tan)
-_GENERIC_MATH1(acosh)
-_GENERIC_MATH1(asinh)
-_GENERIC_MATH1(atanh)
-_GENERIC_MATH1(cosh)
-_GENERIC_MATH1(sinh)
-_GENERIC_MATH1(tanh)
-_GENERIC_MATH1(exp)
-_GENERIC_MATH1(exp2)
-_GENERIC_MATH1(expm1)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26, acos)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26, asin)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26, atan)
+_GENERIC_MATH2(_CONSTEXPR_CMATH26, atan2)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26, cos)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26, sin)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26, tan)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, acosh)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, asinh)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, atanh)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, cosh)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, sinh)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, tanh)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26, exp)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, exp2)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26, expm1)
 // frexp() is hand-crafted
-_GENERIC_MATH1R(ilogb, int)
-_GENERIC_MATH1X(ldexp, int)
-_GENERIC_MATH1(log)
-_GENERIC_MATH1(log10)
-_GENERIC_MATH1(log1p)
-_GENERIC_MATH1(log2)
-_GENERIC_MATH1(logb)
+_GENERIC_MATH1R(_CONSTEXPR_CMATH23, ilogb, int)
+_GENERIC_MATH1X(_CONSTEXPR_CMATH23, ldexp, int)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26, log)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26, log10)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26, log1p)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26, log2)
+_GENERIC_MATH1(_CONSTEXPR_CMATH23, logb)
 // No modf(), types must match
-_GENERIC_MATH1X(scalbn, int)
-_GENERIC_MATH1X(scalbln, long)
-_GENERIC_MATH1(cbrt)
+_GENERIC_MATH1X(_CONSTEXPR_CMATH23, scalbn, int)
+_GENERIC_MATH1X(_CONSTEXPR_CMATH23, scalbln, long)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26, cbrt)
 // abs() has integer overloads
-_GENERIC_MATH1(fabs)
-_GENERIC_MATH2(hypot)
+_GENERIC_MATH1(_CONSTEXPR_CMATH23, fabs)
+_GENERIC_MATH2(_CONSTEXPR_CMATH26, hypot)
 // 3-arg hypot() is hand-crafted
 // pow() is hand-crafted
-_GENERIC_MATH1(sqrt)
-_GENERIC_MATH1(erf)
-_GENERIC_MATH1(erfc)
-_GENERIC_MATH1(lgamma)
-_GENERIC_MATH1(tgamma)
-_GENERIC_MATH1I(ceil, __builtin_ceil, __ceil)
-_GENERIC_MATH1I(floor, __builtin_floor, __floor)
-_GENERIC_MATH1(nearbyint)
-_GENERIC_MATH1(rint)
-_GENERIC_MATH1R(lrint, long)
-_GENERIC_MATH1R(llrint, long long)
-_GENERIC_MATH1I(round, __builtin_round, __round)
-_GENERIC_MATH1R(lround, long)
-_GENERIC_MATH1R(llround, long long)
-_GENERIC_MATH1I(trunc, __builtin_trunc, __trunc)
-_GENERIC_MATH2(fmod)
-_GENERIC_MATH2(remainder)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26, sqrt)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, erf)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, erfc)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, lgamma)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, tgamma)
+_GENERIC_MATH1I(_CONSTEXPR_CMATH23, ceil, __builtin_ceil, __ceil)
+_GENERIC_MATH1I(_CONSTEXPR_CMATH23, floor, __builtin_floor, __floor)
+_GENERIC_MATH1(inline, nearbyint)
+_GENERIC_MATH1(inline, rint)
+_GENERIC_MATH1R(inline, lrint, long)
+_GENERIC_MATH1R(inline, llrint, long long)
+_GENERIC_MATH1I(_CONSTEXPR_CMATH23, round, __builtin_round, __round)
+_GENERIC_MATH1R(_CONSTEXPR_CMATH23, lround, long)
+_GENERIC_MATH1R(_CONSTEXPR_CMATH23, llround, long long)
+_GENERIC_MATH1I(_CONSTEXPR_CMATH23, trunc, __builtin_trunc, __trunc)
+_GENERIC_MATH2(_CONSTEXPR_CMATH23, fmod)
+_GENERIC_MATH2(_CONSTEXPR_CMATH23, remainder)
 // remquo() is hand-crafted
-_GENERIC_MATH2I(copysign, __builtin_copysign, __copysign)
+_GENERIC_MATH2I(_CONSTEXPR_CMATH23, copysign, __builtin_copysign, __copysign)
 // nan(const char*) is exempt
-_GENERIC_MATH2(nextafter)
-_GENERIC_MATH1X(nexttoward, long double)
-_GENERIC_MATH2(fdim)
-_GENERIC_MATH2(fmax)
-_GENERIC_MATH2(fmin)
+_GENERIC_MATH2(_CONSTEXPR_CMATH23, nextafter)
+_GENERIC_MATH1X(_CONSTEXPR_CMATH23, nexttoward, long double)
+_GENERIC_MATH2(_CONSTEXPR_CMATH23, fdim)
+_GENERIC_MATH2(_CONSTEXPR_CMATH23, fmax)
+_GENERIC_MATH2(_CONSTEXPR_CMATH23, fmin)
 // fma() is hand-crafted
 // lerp() is hand-crafted
 // fpclassify() is hand-crafted
