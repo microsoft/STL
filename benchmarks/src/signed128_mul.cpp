@@ -12,7 +12,7 @@
 
 using namespace std;
 
-_NODISCARD constexpr _Signed128 _old_mul128(_Signed128 _Left, _Signed128 _Right) {
+_NODISCARD constexpr _Signed128 old_mul128(_Signed128 _Left, _Signed128 _Right) {
     bool _negative = false;
     _Left._Strip_negative(_negative);
     _Right._Strip_negative(_negative);
@@ -25,7 +25,7 @@ _NODISCARD constexpr _Signed128 _old_mul128(_Signed128 _Left, _Signed128 _Right)
 
 vector<pair<_Signed128, _Signed128>> init_test_set() {
     vector<pair<_Signed128, _Signed128>> vec(1'000'000);
-    mt19937_64 mt64;
+    mt19937_64 mt64{};
     for (auto& [val1, val2] : vec) {
         val1._Word[0] = mt64();
         val1._Word[1] = mt64();
@@ -45,7 +45,8 @@ void bm_signed128_mul(benchmark::State& state) {
         res = it->first * it->second;
 
         benchmark::DoNotOptimize(res);
-        if (++it == vec.end()) {
+        ++it;
+        if (it == vec.end()) {
             it = vec.begin();
         }
     }
@@ -58,10 +59,11 @@ void bm_signed128_oldmul(benchmark::State& state) {
     _Signed128 res = 0;
 
     for (auto _ : state) {
-        res = _old_mul128(it->first, it->second);
+        res = old_mul128(it->first, it->second);
 
         benchmark::DoNotOptimize(res);
-        if (++it == vec.end()) {
+        ++it;
+        if (it == vec.end()) {
             it = vec.begin();
         }
     }
