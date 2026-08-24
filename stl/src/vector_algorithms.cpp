@@ -10855,6 +10855,7 @@ void* __stdcall __std_remove_copy_1(
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
     const size_t _Size_bytes = _Byte_length(_First, _Last);
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    // For 8-bit element types SVE is only faster than Neon at same VL for small input sizes.
     bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes <= 96 || _Sve_vl() > 16);
     if (_Use_sve) {
         return _Removing::_Remove_copy_impl_sve<_Removing::_Sve_1>(_First, _Last, _Out, _Val);
@@ -10939,6 +10940,7 @@ void* __stdcall __std_remove_copy_4(
 void* __stdcall __std_remove_copy_8(
     const void* _First, const void* const _Last, void* _Out, const uint64_t _Val) noexcept {
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    // For 64-bit element types SVE is only faster than the scalar fallback at VL128 for large input sizes.
     const size_t _Size_bytes = _Byte_length(_First, _Last);
     bool _Use_sve            = _Use_FEAT_SVE() && (_Size_bytes > 512 || _Sve_vl() > 16);
     if (_Use_sve) {
