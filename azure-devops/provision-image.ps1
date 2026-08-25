@@ -42,6 +42,7 @@ $VisualStudioWorkloads = @(
   'Microsoft.VisualStudio.Component.VC.Preview.ARM64',
   'Microsoft.VisualStudio.Component.VC.Preview.CLI.Support',
   'Microsoft.VisualStudio.Component.VC.Preview.Tools.x86.x64',
+  'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', # TRANSITION, DevCom-11142709
   'Microsoft.VisualStudio.Component.Windows11SDK.28000'
 )
 

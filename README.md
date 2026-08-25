@@ -145,6 +145,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
   + **You must install the Insiders IDE and the Preview build tools for STL development.** *See Note 1 below.*
   + Select the "Desktop development with C++" workload.
   + Select the following components at a minimum:
+    - "MSVC Build Tools for x64/x86 (Latest)" <!-- TRANSITION, DevCom-11142709 -->
     - "MSVC Build Tools for x64/x86 (Preview)"
     - "C++ CMake tools for Windows"
     - "MSVC AddressSanitizer"
