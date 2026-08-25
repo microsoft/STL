@@ -58,9 +58,9 @@ foreach ($workload in $VisualStudioWorkloads) {
 
 # https://github.com/PowerShell/PowerShell/releases/latest
 if ($Provisioning_x64) {
-  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.4/PowerShell-7.6.4-win-x64.msi'
+  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.5/PowerShell-7.6.5-win-x64.msi'
 } else {
-  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.4/PowerShell-7.6.4-win-arm64.msi'
+  $PowerShellUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.6.5/PowerShell-7.6.5-win-arm64.msi'
 }
 $PowerShellArgs = @('/quiet', '/norestart')
 
