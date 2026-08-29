@@ -12,6 +12,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <PropertyGroup>
         <FinalBinary>p_codecvt_ids</FinalBinary>
 
+        <DependsOnVCStartupLib>$(MsvcpFlavor)</DependsOnVCStartupLib>
+        <DependsOnVCRuntimeLib>$(MsvcpFlavor)</DependsOnVCRuntimeLib>
+
         <TargetAppFamily Condition="'$(MsvcpFlavor)' == 'app'">true</TargetAppFamily>
         <TargetCoreSystem Condition="'$(MsvcpFlavor)' == 'onecore'">true</TargetCoreSystem>
         <TargetNetFx Condition="'$(MsvcpFlavor)' == 'netfx'">true</TargetNetFx>
