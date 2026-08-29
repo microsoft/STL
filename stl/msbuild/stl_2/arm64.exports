@@ -34,6 +34,8 @@ __std_smf_laguerre
 __std_smf_laguerref
 __std_smf_legendre
 __std_smf_legendref
+__std_smf_lgamma
+__std_smf_lgammaf
 __std_smf_riemann_zeta
 __std_smf_riemann_zetaf
 __std_smf_sph_bessel
@@ -42,3 +44,5 @@ __std_smf_sph_legendre
 __std_smf_sph_legendref
 __std_smf_sph_neumann
 __std_smf_sph_neumannf
+__std_smf_tgamma
+__std_smf_tgammaf

@@ -17,12 +17,14 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_heap_algorithms.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_int128.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_iter_core.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_math.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_minmax.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_ostream.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_print.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_ranges_to.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_ranges_tuple_formatter.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_sanitizer_annotate_container.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_stdlib.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_string_view.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_system_error_abi.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_threads_core.hpp
@@ -397,7 +399,7 @@ add_compile_definitions(_CRTBLD _HAS_OLD_IOSTREAMS_MEMBERS=1)
 set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "Embedded")
 
 add_compile_options(/nologo /WX /Gy
-    "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Zp8;/std:c++latest;/permissive-;/Zc:preprocessor;/Zc:threadSafeInit-;/Zl>"
+    "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Zp8;/std:c++latest;/permissive-;/Zc:preprocessor;/Zc:threadSafeInit-;/Zc:cmath-;/Zl>"
     "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<IN_LIST:${VCLIBS_TARGET_ARCHITECTURE},x64;arm64;arm64ec>>:/guard:ehcont>"
     "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<IN_LIST:${VCLIBS_TARGET_ARCHITECTURE},arm64;arm64ec>>:/guard:signret>"
     "$<$<COMPILE_LANGUAGE:ASM_MASM>:/W3;/quiet>"
