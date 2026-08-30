@@ -8743,7 +8743,7 @@ namespace msvc {
 
         template <class T, class U>
         constexpr std::optional<bool> try_cmp_gteq(const T& t, const U& u) {
-            if constexpr (has_cmp_lteq<const T&, const U&>) {
+            if constexpr (has_cmp_gteq<const T&, const U&>) {
                 return t >= u;
             } else {
                 return {};
@@ -8986,31 +8986,31 @@ namespace msvc {
         constexpr bool has_usual_cmp_neq = false;
         template <class T, class U>
         constexpr bool has_usual_cmp_neq<T, U, std::void_t<decltype(std::declval<T>() != std::declval<U>())>> =
-            std::enable_if_t<std::is_same_v<decltype(std::declval<T>() == std::declval<U>()), bool>, bool>{true};
+            std::enable_if_t<std::is_same_v<decltype(std::declval<T>() != std::declval<U>()), bool>, bool>{true};
 
         template <class, class, class = void>
         constexpr bool has_usual_cmp_lt = false;
         template <class T, class U>
         constexpr bool has_usual_cmp_lt<T, U, std::void_t<decltype(std::declval<T>() < std::declval<U>())>> =
-            std::enable_if_t<std::is_same_v<decltype(std::declval<T>() == std::declval<U>()), bool>, bool>{true};
+            std::enable_if_t<std::is_same_v<decltype(std::declval<T>() < std::declval<U>()), bool>, bool>{true};
 
         template <class, class, class = void>
         constexpr bool has_usual_cmp_lteq = false;
         template <class T, class U>
         constexpr bool has_usual_cmp_lteq<T, U, std::void_t<decltype(std::declval<T>() <= std::declval<U>())>> =
-            std::enable_if_t<std::is_same_v<decltype(std::declval<T>() == std::declval<U>()), bool>, bool>{true};
+            std::enable_if_t<std::is_same_v<decltype(std::declval<T>() <= std::declval<U>()), bool>, bool>{true};
 
         template <class, class, class = void>
         constexpr bool has_usual_cmp_gt = false;
         template <class T, class U>
         constexpr bool has_usual_cmp_gt<T, U, std::void_t<decltype(std::declval<T>() > std::declval<U>())>> =
-            std::enable_if_t<std::is_same_v<decltype(std::declval<T>() == std::declval<U>()), bool>, bool>{true};
+            std::enable_if_t<std::is_same_v<decltype(std::declval<T>() > std::declval<U>()), bool>, bool>{true};
 
         template <class, class, class = void>
         constexpr bool has_usual_cmp_gteq = false;
         template <class T, class U>
         constexpr bool has_usual_cmp_gteq<T, U, std::void_t<decltype(std::declval<T>() >= std::declval<U>())>> =
-            std::enable_if_t<std::is_same_v<decltype(std::declval<T>() == std::declval<U>()), bool>, bool>{true};
+            std::enable_if_t<std::is_same_v<decltype(std::declval<T>() >= std::declval<U>()), bool>, bool>{true};
 
         struct noop {};
 

@@ -3330,7 +3330,7 @@ namespace reverse_iterator_test {
     static_assert(!has_greater_eq<reverse_iterator<double*>, reverse_iterator<simple_random_iter<>>>);
     static_assert(!three_way_comparable_with<reverse_iterator<double*>, reverse_iterator<simple_random_iter<>>>);
 
-#if _HAS_CXX23 && (defined(__clang__) || defined(__EDG__)) // TRANSTION, DevCom-10817483 (CWG-2813)
+#if _HAS_CXX23 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-10817483 (CWG-2813)
     static_assert(has_eq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
     static_assert(has_eq<reverse_iterator<simple_contiguous_iter<>>, reverse_iterator<double*>>);
     static_assert(has_neq<reverse_iterator<double*>, reverse_iterator<simple_contiguous_iter<>>>);
@@ -3564,7 +3564,7 @@ namespace move_iterator_test {
     static_assert(!has_greater_eq<move_iterator<double*>, move_iterator<simple_random_iter<>>>);
     static_assert(!three_way_comparable_with<move_iterator<double*>, move_iterator<simple_random_iter<>>>);
 
-#if _HAS_CXX23 && (defined(__clang__) || defined(__EDG__)) // TRANSTION, DevCom-10817483 (CWG-2813)
+#if _HAS_CXX23 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-10817483 (CWG-2813)
     static_assert(has_eq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
     static_assert(has_eq<move_iterator<simple_contiguous_iter<>>, move_iterator<double*>>);
     static_assert(has_neq<move_iterator<double*>, move_iterator<simple_contiguous_iter<>>>);
