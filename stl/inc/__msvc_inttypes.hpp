@@ -43,9 +43,25 @@ typedef _Lldiv_t imaxdiv_t;
 // Functions
 //
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-_Check_return_ _ACRTIMP intmax_t __cdecl imaxabs(_In_ intmax_t _Number);
 
-_Check_return_ _ACRTIMP imaxdiv_t __cdecl imaxdiv(_In_ intmax_t _Numerator, _In_ intmax_t _Denominator);
+// inttypes functions that became constexpr in C++23
+#if _HAS_CXX23 && defined(_MSVC_LIBC_MATH)
+#define _CONSTEXPR_CINTTYPES23 constexpr
+#else // ^^^ constexpr in C++23 and later / inline when /Zc:cmath- opts out of constexpr, and in C++20 and earlier vvv
+#define _CONSTEXPR_CINTTYPES23 inline
+#endif // ^^^ inline when /Zc:cmath- opts out of constexpr, and in C++20 and earlier ^^^
+
+[[nodiscard]] _Check_return_ _CONSTEXPR_CINTTYPES23 intmax_t __cdecl imaxabs(_In_ intmax_t _Number) noexcept
+/* strengthened */ {
+    return _Number >= 0 ? _Number : -_Number;
+}
+
+[[nodiscard]] _Check_return_ _CONSTEXPR_CINTTYPES23 imaxdiv_t __cdecl imaxdiv(
+    _In_ intmax_t _Numerator, _In_ intmax_t _Denominator) noexcept /* strengthened */ {
+    return {_Numerator / _Denominator, _Numerator % _Denominator};
+}
+
+#undef _CONSTEXPR_CINTTYPES23
 
 _ACRTIMP intmax_t __cdecl strtoimax(
     _In_z_ char const* _String, _Out_opt_ _Deref_post_z_ char** _EndPtr, _In_ int _Radix);
