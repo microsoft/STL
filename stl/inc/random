@@ -32,20 +32,20 @@ _STD_BEGIN
 #define _RNG_REQUIRE_REALTYPE(_RandType, _CheckedType)                    \
     static_assert(_Is_any_of_v<_CheckedType, float, double, long double>, \
         "invalid template argument for " #_RandType                       \
-        ": N4950 [rand.req.genl]/1.4 requires one of float, double, or long double")
+        ": N5054 [rand.req.genl]/1.5 requires one of float, double, or long double")
 
 #define _RNG_REQUIRE_INTTYPE(_RandType, _CheckedType)                                                                 \
     static_assert(_Is_any_of_v<_CheckedType, signed char, short, int, long, long long, unsigned char, unsigned short, \
                       unsigned int, unsigned long, unsigned long long>,                                               \
         "invalid template argument for " #_RandType                                                                   \
-        ": N4950 [rand.req.genl]/1.5 requires one of signed char, short, int, long, long long, unsigned char, "       \
+        ": N5054 [rand.req.genl]/1.6 requires one of signed char, short, int, long, long long, unsigned char, "       \
         "unsigned short, unsigned int, unsigned long, or unsigned long long");                                        \
     _RNG_PROHIBIT_CHAR(_CheckedType)
 
 #define _RNG_REQUIRE_UINTTYPE(_RandType, _CheckedType)                                                              \
     static_assert(                                                                                                  \
         _Is_any_of_v<_CheckedType, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>, \
-        "invalid template argument for " #_RandType ": N4950 [rand.req.genl]/1.6 requires one of "                  \
+        "invalid template argument for " #_RandType ": N5054 [rand.req.genl]/1.7 requires one of "                  \
         "unsigned char, unsigned short, unsigned int, unsigned long, or unsigned long long");                       \
     _RNG_PROHIBIT_CHAR(_CheckedType)
 
@@ -1501,8 +1501,7 @@ public:
     template <class _Elem, class _Traits>
     friend basic_istream<_Elem, _Traits>& operator>>(
         basic_istream<_Elem, _Traits>& _Istr, uniform_int_distribution& _Dist) {
-        using _Read_ty = conditional_t<sizeof(result_type) == 1,
-            conditional_t<is_signed_v<result_type>, int, unsigned int>, result_type>;
+        using _Read_ty = decltype(+result_type{});
 
         _Read_ty _Min0;
         _Read_ty _Max0;
