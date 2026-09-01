@@ -52,7 +52,7 @@ if ($VMSku -ieq 'Fadsv7') {
   $AvailableLocations = @('australiaeast', 'southcentralus')
 }
 
-$AvailableLocationIdx = 14 # Increment for each new set of pools, to cycle through the available locations.
+$AvailableLocationIdx = 15 # Increment for each new set of pools, to cycle through the available locations.
 $Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
 
 if ($Arch -ieq 'x64') {
