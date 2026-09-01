@@ -35,7 +35,7 @@ $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 # | Fasv7  | australiaeast  |   740 | Currently unused to stay within our regional (all-SKU) quota of 4736 cores
 # | Fasv7  | northeurope    |   640 |
 # | Fasv7  | southeastasia  |   640 |
-# | Fadsv7 | australiaeast  |  2048 |
+# | Fadsv7 | australiaeast  |  3024 |
 # | Dpdsv6 | australiaeast  |  2048 |
 # | Dpdsv6 | southcentralus |  2048 |
 
@@ -57,8 +57,8 @@ if ($VMSku -ieq 'Fasv6') {
   $Arch = 'x64'
   $DiskType = 'NVMe'
   $ProtoVMSize = 'Standard_F16ads_v7'
-  $PoolSkuName = 'Standard_F48ads_v7'
-  $PoolSize = 21 # We have quota for 2048 cores (42 VMs), so we can have old and new pools of 21 VMs each.
+  $PoolSkuName = 'Standard_F64ads_v7'
+  $PoolSize = 23 # We have quota for 3024 cores (47 VMs), so we can have old and new pools of 23 VMs each.
   $AvailableLocations = @('australiaeast')
 } elseif ($VMSku -ieq 'Dpdsv6') {
   $Arch = 'arm64'
