@@ -15,11 +15,11 @@ stages:
     dependsOn: []
     displayName: 'Code Format'
     pool:
-      name: ${{ variables.x64MediumPoolName }}
+      name: ${{ variables.x64PoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
-      value: '$(x64MediumPoolWorkRoot)'
+      value: '$(x64PoolWorkRoot)'
       readonly: true
     jobs:
       - template: azure-devops/format-validation.yml
@@ -28,11 +28,11 @@ stages:
     dependsOn: []
     displayName: 'Build x64'
     pool:
-      name: ${{ variables.x64MediumPoolName }}
+      name: ${{ variables.x64PoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
-      value: '$(x64MediumPoolWorkRoot)'
+      value: '$(x64PoolWorkRoot)'
       readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
@@ -50,11 +50,11 @@ stages:
     dependsOn: []
     displayName: 'Build x86'
     pool:
-      name: ${{ variables.x64MediumPoolName }}
+      name: ${{ variables.x64PoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
-      value: '$(x64MediumPoolWorkRoot)'
+      value: '$(x64PoolWorkRoot)'
       readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
@@ -116,11 +116,11 @@ stages:
     dependsOn: []
     displayName: 'Configure Tests'
     pool:
-      name: ${{ variables.x64MediumPoolName }}
+      name: ${{ variables.x64PoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
-      value: '$(x64MediumPoolWorkRoot)'
+      value: '$(x64PoolWorkRoot)'
       readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
@@ -143,11 +143,11 @@ stages:
       - Configure_Tests
     displayName: 'Test x64'
     pool:
-      name: ${{ variables.x64FastPoolName }}
+      name: ${{ variables.x64PoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
-      value: '$(x64FastPoolWorkRoot)'
+      value: '$(x64PoolWorkRoot)'
       readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml
@@ -186,11 +186,11 @@ stages:
       - Test_ARM64
     displayName: 'Test x86'
     pool:
-      name: ${{ variables.x64SlowPoolName }}
+      name: ${{ variables.x64PoolName }}
       demands: ${{ variables.poolDemands }}
     variables:
     - name: workRoot
-      value: '$(x64SlowPoolWorkRoot)'
+      value: '$(x64PoolWorkRoot)'
       readonly: true
     jobs:
       - template: azure-devops/build-and-test.yml

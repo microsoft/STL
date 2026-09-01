@@ -4,13 +4,7 @@
 # Common configuration used by both pipelines
 
 variables:
-- name: x64SlowPoolName
-  value: 'Stl-2026-08-25T2113-x64-Fasv6-Pool'
-  readonly: true
-- name: x64MediumPoolName
-  value: 'Stl-2026-08-25T2113-x64-Fasv7-Pool'
-  readonly: true
-- name: x64FastPoolName
+- name: x64PoolName
   value: 'Stl-2026-08-25T2113-x64-Fadsv7-Pool'
   readonly: true
 - name: arm64PoolName
@@ -22,16 +16,8 @@ variables:
 - name: launchVsDevShell
   value: 'C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\Tools\Launch-VsDevShell.ps1'
   readonly: true
-# The x64 SKU Fasv6 doesn't have local temporary storage, so it must use 'C:'.
-- name: x64SlowPoolWorkRoot
-  value: 'C:'
-  readonly: true
-# The x64 SKU Fasv7 doesn't have local temporary storage, so it must use 'C:'.
-- name: x64MediumPoolWorkRoot
-  value: 'C:'
-  readonly: true
 # The x64 SKU Fadsv7 has local temporary storage, available as 'N:' (for NVMe).
-- name: x64FastPoolWorkRoot
+- name: x64PoolWorkRoot
   value: 'N:'
   readonly: true
 # The arm64 SKU Dpdsv6 has local temporary storage, available as 'E:'.
