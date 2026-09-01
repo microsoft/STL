@@ -41,24 +41,28 @@ $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 
 if ($VMSku -ieq 'Fasv6') {
   $Arch = 'x64'
+  $DiskType = 'NVMe'
   $ProtoVMSize = 'Standard_F16as_v6'
   $PoolSkuName = 'Standard_F64as_v6'
   $PoolSize = 32 # We have quota for 4096 cores (64 VMs), so we can have old and new pools of 32 VMs each.
   $AvailableLocations = @('eastus2')
 } elseif ($VMSku -ieq 'Fasv7') {
   $Arch = 'x64'
+  $DiskType = 'NVMe'
   $ProtoVMSize = 'Standard_F16as_v7'
   $PoolSkuName = 'Standard_F48as_v7'
   $PoolSize = 13 # Locations where we have quota for at least 640 cores (13 VMs):
   $AvailableLocations = @('northeurope', 'southeastasia')
 } elseif ($VMSku -ieq 'Fadsv7') {
   $Arch = 'x64'
+  $DiskType = 'NVMe'
   $ProtoVMSize = 'Standard_F16ads_v7'
   $PoolSkuName = 'Standard_F48ads_v7'
   $PoolSize = 21 # We have quota for 2048 cores (42 VMs), so we can have old and new pools of 21 VMs each.
   $AvailableLocations = @('australiaeast')
 } elseif ($VMSku -ieq 'Dpdsv6') {
   $Arch = 'arm64'
+  $DiskType = 'SCSI'
   $ProtoVMSize = 'Standard_D16pds_v6'
   $PoolSkuName = 'Standard_D64pds_v6'
   $PoolSize = 32 # Locations where we have quota for at least 2048 cores (32 VMs):
@@ -232,13 +236,13 @@ if ($Arch -ieq 'x64') {
   $VM = New-AzVMConfig `
     -VMName $ProtoVMName `
     -VMSize $ProtoVMSize `
-    -DiskControllerType 'NVMe' `
+    -DiskControllerType $DiskType `
     -Priority 'Regular'
 } else {
   $VM = New-AzVMConfig `
     -VMName $ProtoVMName `
     -VMSize $ProtoVMSize `
-    -DiskControllerType 'SCSI' `
+    -DiskControllerType $DiskType `
     -Priority 'Regular' `
     -SecurityType 'TrustedLaunch' `
     -SharedGalleryImageId $ImageId
@@ -386,7 +390,7 @@ Display-ProgressBar -Status 'Creating image definition'
 
 $ImageDefinitionName = "$ResourceGroupName-ImageDefinition"
 $FeatureTrustedLaunch = @{ Name = 'SecurityType'; Value = 'TrustedLaunch'; }
-if ($Arch -ieq 'x64') {
+if ($DiskType -ieq 'NVMe') {
   $FeatureNVMe = @{ Name = 'DiskControllerTypes'; Value = 'SCSI, NVMe'; }
 } else {
   $FeatureNVMe = @{ Name = 'DiskControllerTypes'; Value = 'SCSI'; }
