@@ -287,14 +287,26 @@ _NODISCARD _CONSTEXPR_CMATH26 double __cdecl log(double) noexcept;
 _NODISCARD inline long __cdecl lrintf(float) noexcept;
 _NODISCARD inline long __cdecl lrint(double) noexcept;
 _NODISCARD inline long __cdecl lrintl(long double) noexcept;
+_NODISCARD inline float __cdecl nearbyintf(float) noexcept;
+_NODISCARD inline double __cdecl nearbyint(double) noexcept;
+_NODISCARD inline long double __cdecl nearbyintl(long double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl powf(float, float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl pow(double, double) noexcept;
+_NODISCARD inline float __cdecl rintf(float) noexcept;
+_NODISCARD inline double __cdecl rint(double) noexcept;
+_NODISCARD inline long double __cdecl rintl(long double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl roundf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl round(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 long double __cdecl roundl(long double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl sinf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl sin(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl sqrtf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl sqrt(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl tanf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl tan(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 float __cdecl truncf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 double __cdecl trunc(double) noexcept;
+_NODISCARD _CONSTEXPR_CMATH23 long double __cdecl truncl(long double) noexcept;
 
 #pragma function(acosf, acos)
 #pragma function(asinf, asin)
@@ -314,10 +326,14 @@ _NODISCARD _CONSTEXPR_CMATH26 double __cdecl tan(double) noexcept;
 #pragma function(log2f, log2)
 #pragma function(logf, log)
 #pragma function(lrintf, lrint, lrintl)
+#pragma function(nearbyintf, nearbyint, nearbyintl)
 #pragma function(powf, pow)
+#pragma function(rintf, rint, rintl)
+#pragma function(roundf, round, roundl)
 #pragma function(sinf, sin)
 #pragma function(sqrtf, sqrt)
 #pragma function(tanf, tan)
+#pragma function(truncf, trunc, truncl)
 
 // The following order matches N5054 [cmath.syn].
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, acos)
