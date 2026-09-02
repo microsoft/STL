@@ -2747,7 +2747,7 @@ _NODISCARD bool regex_match(const basic_string<_Elem, _StTraits, _StAlloc>& _Str
 }
 
 template <class _It, class _Elem, class _RxTraits>
-bool _Regex_search3(const _It _First, const _It _Last, const basic_regex<_Elem, _RxTraits>& _Re,
+bool _Regex_search4(const _It _First, const _It _Last, const basic_regex<_Elem, _RxTraits>& _Re,
     const regex_constants::match_flag_type _Flgs) {
     // search for regular expression match in target text
     static_assert(_Is_ranges_bidi_iter_v<_It>,
@@ -2767,7 +2767,7 @@ bool _Regex_search3(const _It _First, const _It _Last, const basic_regex<_Elem, 
 
 
 template <class _BidIt, class _Alloc, class _Elem, class _RxTraits>
-bool _Regex_search3(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _Matches,
+bool _Regex_search4(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, const regex_constants::match_flag_type _Flgs) {
     // search for regular expression match in target text
     static_assert(_Is_ranges_bidi_iter_v<_BidIt>,
@@ -2803,7 +2803,7 @@ bool regex_search(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _M
     // search for regular expression match in target text
     _STD _Adl_verify_range(_First, _Last);
     _Matches._Org = _First;
-    return _STD _Regex_search3(_First, _Last, _Matches, _Re, _Flgs);
+    return _STD _Regex_search4(_First, _Last, _Matches, _Re, _Flgs);
 }
 
 _EXPORT_STD template <class _BidIt, class _Elem, class _RxTraits>
@@ -2811,7 +2811,7 @@ _NODISCARD bool regex_search(_BidIt _First, _BidIt _Last, const basic_regex<_Ele
     regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // search for regular expression match in target text
     _STD _Adl_verify_range(_First, _Last);
-    return _STD _Regex_search3(
+    return _STD _Regex_search4(
         _STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last), _Re, _Flgs | regex_constants::match_any);
 }
 
@@ -2819,7 +2819,7 @@ _EXPORT_STD template <class _Elem, class _RxTraits>
 _NODISCARD bool regex_search(_In_z_ const _Elem* _Str, const basic_regex<_Elem, _RxTraits>& _Re,
     regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // search for regular expression match in target text
-    return _STD _Regex_search3(_Str, _Str + char_traits<_Elem>::length(_Str), _Re, _Flgs | regex_constants::match_any);
+    return _STD _Regex_search4(_Str, _Str + char_traits<_Elem>::length(_Str), _Re, _Flgs | regex_constants::match_any);
 }
 
 _EXPORT_STD template <class _Elem, class _Alloc, class _RxTraits>
@@ -2827,7 +2827,7 @@ bool regex_search(_In_z_ const _Elem* _Str, match_results<const _Elem*, _Alloc>&
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // search for regular expression match in target text
     _Matches._Org = _Str;
-    return _STD _Regex_search3(_Str, _Str + char_traits<_Elem>::length(_Str), _Matches, _Re, _Flgs);
+    return _STD _Regex_search4(_Str, _Str + char_traits<_Elem>::length(_Str), _Matches, _Re, _Flgs);
 }
 
 _EXPORT_STD template <class _StTraits, class _StAlloc, class _Alloc, class _Elem, class _RxTraits>
@@ -2837,7 +2837,7 @@ bool regex_search(const basic_string<_Elem, _StTraits, _StAlloc>& _Str,
     // search for regular expression match in target text
     auto _First   = _Str.begin();
     _Matches._Org = _First;
-    return _STD _Regex_search3(_First, _Str.end(), _Matches, _Re, _Flgs);
+    return _STD _Regex_search4(_First, _Str.end(), _Matches, _Re, _Flgs);
 }
 
 _EXPORT_STD template <class _StTraits, class _StAlloc, class _Alloc, class _Elem, class _RxTraits>
@@ -2850,7 +2850,7 @@ _NODISCARD bool regex_search(const basic_string<_Elem, _StTraits, _StAlloc>& _St
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
     // search for regular expression match in target text
     const auto _First = _Str.data();
-    return _STD _Regex_search3(_First, _First + _Str.size(), _Re, _Flgs | regex_constants::match_any);
+    return _STD _Regex_search4(_First, _First + _Str.size(), _Re, _Flgs | regex_constants::match_any);
 }
 
 template <class _OutIt, class _BidIt, class _RxTraits, class _Elem, class _Traits, class _Alloc>
@@ -2865,7 +2865,7 @@ _OutIt _Regex_replace1(_OutIt _Result, _BidIt _First, _BidIt _Last, const basic_
     regex_constants::match_flag_type _Not_null{};
 
     _Matches._Org = _Pos;
-    while (_STD _Regex_search3(_Pos, _Last, _Matches, _Re, _Flags | _Not_null)) { // replace at each match
+    while (_STD _Regex_search4(_Pos, _Last, _Matches, _Re, _Flags | _Not_null)) { // replace at each match
         if (!(_Flgs & regex_constants::format_no_copy)) {
             _Result = _STD copy(_Matches.prefix().first, _Matches.prefix().second, _Result);
         }
@@ -2969,7 +2969,7 @@ public:
         : _Begin(_First), _End(_Last), _MyRe(_STD addressof(_Re)), _Flags(_Fl) {
         _STD _Adl_verify_range(_Begin, _End);
         _MyVal._Org = _Begin;
-        if (!_STD _Regex_search3(_Begin, _End, _MyVal, *_MyRe, _Flags)) {
+        if (!_STD _Regex_search4(_Begin, _End, _MyVal, *_MyRe, _Flags)) {
             _MyRe = nullptr;
         } else {
             this->_Adopt(_MyRe);
@@ -3029,7 +3029,7 @@ public:
 
             // _Adl_verify_range(_Start, _End) checked in constructor
             if (_Start == _End
-                || !_STD _Regex_search3(_Start, _End, _MyVal, *_MyRe,
+                || !_STD _Regex_search4(_Start, _End, _MyVal, *_MyRe,
                     _Flags | regex_constants::_Match_not_null)) { // store end-of-sequence iterator
                 _MyRe = nullptr;
 
@@ -3050,7 +3050,7 @@ public:
         _Flags |= regex_constants::match_prev_avail;
 
         // _Adl_verify_range(_Start, _End) checked in constructor
-        if (!_STD _Regex_search3(_Start, _End, _MyVal, *_MyRe, _Flags)) {
+        if (!_STD _Regex_search4(_Start, _End, _MyVal, *_MyRe, _Flags)) {
             // mark at end of sequence
             _MyRe = nullptr;
 
