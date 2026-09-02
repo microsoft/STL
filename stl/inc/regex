@@ -2644,7 +2644,7 @@ _OutIt _Format_sed(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out, _In
 
 template <class _It, class _Elem, class _RxTraits>
 bool _Regex_match2(_It _First, _It _Last, const basic_regex<_Elem, _RxTraits>& _Re,
-    regex_constants::match_flag_type _Flgs) { // try to match regular expression to target text
+    const regex_constants::match_flag_type _Flgs) { // try to match regular expression to target text
     static_assert(_Is_ranges_bidi_iter_v<_It>,
         "regex_match requires bidirectional iterators or stronger. See N5014 [re.alg.match]/1.");
 
@@ -2662,7 +2662,7 @@ bool _Regex_match2(_It _First, _It _Last, const basic_regex<_Elem, _RxTraits>& _
 
 template <class _BidIt, class _Alloc, class _Elem, class _RxTraits>
 bool _Regex_match2(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _Matches,
-    const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs) {
+    const basic_regex<_Elem, _RxTraits>& _Re, const regex_constants::match_flag_type _Flgs) {
     // try to match regular expression to target text
     static_assert(_Is_ranges_bidi_iter_v<_BidIt>,
         "regex_match requires bidirectional iterators or stronger. See N5014 [re.alg.match]/1.");
