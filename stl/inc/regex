@@ -2666,7 +2666,6 @@ bool _Regex_match2(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _
     // try to match regular expression to target text
     static_assert(_Is_ranges_bidi_iter_v<_BidIt>,
         "regex_match requires bidirectional iterators or stronger. See N5014 [re.alg.match]/1.");
-    using _It = _Remove_cvref_t<decltype(_STD _Get_unwrapped(_First))>;
 
     // clear _Matches before doing work
     _Matches._Ready = true;
@@ -2676,6 +2675,7 @@ bool _Regex_match2(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _
         return false;
     }
 
+    using _It = _Remove_cvref_t<decltype(_STD _Get_unwrapped(_First))>;
     alignas(_Loop_vals_v3_t<_Iter_diff_t<_It>>) alignas(_Rx_capture_range_t<_It>) //
         alignas(_Rx_state_frame_t<_It>) unsigned char _Stackbuf[4096];
     _Matcher3<_Elem, _RxTraits, _It, void> _Mx(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last),
@@ -2773,8 +2773,6 @@ bool _Regex_search3(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& 
     static_assert(_Is_ranges_bidi_iter_v<_BidIt>,
         "regex_search requires bidirectional iterators or stronger. See N5014 [re.alg.search]/1.");
 
-    using _It = _Remove_cvref_t<decltype(_STD _Get_unwrapped(_First))>;
-
     // clear _Matches before doing work
     _Matches._Ready = true;
     _Matches._Resize(0);
@@ -2783,6 +2781,7 @@ bool _Regex_search3(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& 
         return false;
     }
 
+    using _It = _Remove_cvref_t<decltype(_STD _Get_unwrapped(_First))>;
     alignas(_Loop_vals_v3_t<_Iter_diff_t<_It>>) alignas(_Rx_capture_range_t<_It>) //
         alignas(_Rx_state_frame_t<_It>) unsigned char _Stackbuf[4096];
     _Matcher3<_Elem, _RxTraits, _It, void> _Mx(_STD _Get_unwrapped(_First), _STD _Get_unwrapped(_Last),
