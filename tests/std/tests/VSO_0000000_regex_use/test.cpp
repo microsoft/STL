@@ -2732,8 +2732,8 @@ void test_gh_6423() {
     const regex re("a((bc)*d)e");
     {
         cmatch cm;
-        const char* input = "abcbcde";
-        const char* last  = input + char_traits<char>::length(input);
+        const char* const input = "abcbcde";
+        const char* const last  = input + char_traits<char>::length(input);
         assert(regex_match(input, re));
         assert(regex_match(input, cm, re));
         assert(cm.ready());
@@ -2814,8 +2814,8 @@ void test_gh_6423() {
 
     {
         cmatch cm;
-        const char* input = "xyzabcbcdezyx";
-        const char* last  = input + char_traits<char>::length(input);
+        const char* const input = "xyzabcbcdezyx";
+        const char* const last  = input + char_traits<char>::length(input);
         assert(regex_search(input, re));
         assert(regex_search(input, cm, re));
         assert(cm.ready());
