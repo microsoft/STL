@@ -14,6 +14,7 @@
         "__msvc_formatter.hpp",
         "__msvc_heap_algorithms.hpp",
         "__msvc_int128.hpp",
+        "__msvc_inttypes.hpp",
         "__msvc_iter_core.hpp",
         "__msvc_math.hpp",
         "__msvc_minmax.hpp",

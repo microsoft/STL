@@ -1,7 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// TRANSITION, MSVC frontend needs to intercept inclusions of <inttypes.h>:
+#ifndef _M_CEE_PURE
+#include <__msvc_inttypes.hpp>
+#endif
+// ^^^ workaround ^^^
+
 #include <cassert>
+#include <cinttypes>
 #include <cmath>
 #include <cstdlib>
 #include <limits>
@@ -399,6 +406,17 @@ CONSTEXPR_CMATH23 bool test_cstdlib_cxx23() {
     return true;
 }
 
+CONSTEXPR_CMATH23 bool test_cinttypes_cxx23() {
+    // Test LWG-3834 "Missing constexpr for std::intmax_t math functions in <cinttypes>".
+
+    assert(imaxabs(-5LL) == 5LL);
+
+    assert(imaxdiv(1729LL, 100LL).quot == 17LL);
+    assert(imaxdiv(1729LL, 100LL).rem == 29LL);
+
+    return true;
+}
+
 CONSTEXPR_CMATH26 bool test_cmath_cxx26() {
     // These tests use round() because they're checking for basic functionality, not precision.
 
@@ -657,6 +675,7 @@ int main() {
 #if defined(_MSVC_INTERNAL_TESTING) || !defined(_M_ARM64EC) // TRANSITION, MSVC-PR-767414/MSVC-PR-768260 fixed LNK2019
     test_cmath_cxx23();
     test_cstdlib_cxx23();
+    test_cinttypes_cxx23();
     test_cmath_cxx26();
     test_cmath_runtime();
 #endif // ^^^ no workaround ^^^
@@ -664,6 +683,7 @@ int main() {
 #ifdef __cpp_lib_constexpr_cmath
     static_assert(test_cmath_cxx23());
     static_assert(test_cstdlib_cxx23());
+    static_assert(test_cinttypes_cxx23());
 #if _HAS_CXX26 && defined(_MSVC_LIBC_MATH) // TRANSITION, GH-3789, should be `__cpp_lib_constexpr_cmath >= 202306L`
     static_assert(test_cmath_cxx26());
 #endif // ^^^ _HAS_CXX26 && defined(_MSVC_LIBC_MATH) ^^^
