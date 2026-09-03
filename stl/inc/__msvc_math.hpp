@@ -294,8 +294,8 @@ inline namespace _Msvc_math {
     _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, sqrt)
     _STL_DECLARE_DOUBLE_DEF_OTHERS1(_CONSTEXPR_CMATH26, _CONSTEXPR_CMATH26_NYI_DECL, _CONSTEXPR_CMATH26_NYI, erf)
     _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, erfc)
-    // lgamma() is hand-crafted because it is not yet implemented by libc
-    // tgamma() is hand-crafted because it is not yet implemented by libc
+    _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, lgamma)
+    _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, tgamma)
     _STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, ceil)
     _STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, floor)
     _STL_DEF_FAMILY1(inline, nearbyint)
@@ -357,41 +357,6 @@ inline namespace _Msvc_math {
     _NODISCARD _CONSTEXPR_CMATH23 long double __cdecl modfl(long double _Xx0, long double* _Xx1) noexcept
     /* strengthened */ {
         return __builtin_modfl(_Xx0, _Xx1);
-    }
-
-    // libc does not yet implement lgamma or tgamma. Polyfilling with the UCRT's implementation
-    // pulls in the UCRT's fma, which results in linker errors due to our conflicting definition.
-    // Instead, we prearranged for implementations of lgamma and tgamma to be ready in the satellite lib.
-    //
-    // _CRT_SATELLITE_2 is commented out because it is undefined at the point of this header's inclusion.
-    // We'd normally address that by including yvals.h, but that makes this header non-core.
-    // Otherwise, this header can be a core header. The macro definition is empty in usage,
-    // so the comment has the same physical effect (though maybe a different mental effect).
-    extern "C" {
-    _NODISCARD /*_CRT_SATELLITE_2*/ float __stdcall __std_smf_lgammaf(float) noexcept;
-    _NODISCARD /*_CRT_SATELLITE_2*/ double __stdcall __std_smf_lgamma(double) noexcept;
-    _NODISCARD /*_CRT_SATELLITE_2*/ float __stdcall __std_smf_tgammaf(float) noexcept;
-    _NODISCARD /*_CRT_SATELLITE_2*/ double __stdcall __std_smf_tgamma(double) noexcept;
-    } // extern "C"
-
-    _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl lgammaf(float _Xx) noexcept /* strengthened */ {
-        return __std_smf_lgammaf(_Xx);
-    }
-    _NODISCARD _CONSTEXPR_CMATH26_NYI double __cdecl lgamma(double _Xx) noexcept /* strengthened */ {
-        return __std_smf_lgamma(_Xx);
-    }
-    _NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl lgammal(long double _Xx) noexcept /* strengthened */ {
-        return __std_smf_lgamma(static_cast<double>(_Xx));
-    }
-
-    _NODISCARD _CONSTEXPR_CMATH26_NYI float __cdecl tgammaf(float _Xx) noexcept /* strengthened */ {
-        return __std_smf_tgammaf(_Xx);
-    }
-    _NODISCARD _CONSTEXPR_CMATH26_NYI double __cdecl tgamma(double _Xx) noexcept /* strengthened */ {
-        return __std_smf_tgamma(_Xx);
-    }
-    _NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl tgammal(long double _Xx) noexcept /* strengthened */ {
-        return __std_smf_tgamma(static_cast<double>(_Xx));
     }
 
 #undef _STL_DEF_FUNC1
