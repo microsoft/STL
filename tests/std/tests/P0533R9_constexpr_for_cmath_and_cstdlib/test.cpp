@@ -469,46 +469,68 @@ CONSTEXPR_CMATH26 bool test_cmath_cxx26() {
     assert(round(tanl(0.6l) * 1000.0l) == 684.0l);
     assert(round(tan(1729) * 1000.0) == 2087.0);
 
+    assert(round(acosh(3.3f) * 1000.0f) == 1863.0f);
     if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
-        assert(round(acosh(3.3f) * 1000.0f) == 1863.0f);
         assert(round(acosh(3.3) * 1000.0) == 1863.0);
         assert(round(acosh(3.3l) * 1000.0l) == 1863.0l);
-        assert(round(acoshf(3.3f) * 1000.0f) == 1863.0f);
+    }
+    assert(round(acoshf(3.3f) * 1000.0f) == 1863.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(acoshl(3.3l) * 1000.0l) == 1863.0l);
         assert(round(acosh(7) * 1000.0) == 2634.0);
+    }
 
-        assert(round(asinh(3.3f) * 1000.0f) == 1909.0f);
+    assert(round(asinh(3.3f) * 1000.0f) == 1909.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(asinh(3.3) * 1000.0) == 1909.0);
         assert(round(asinh(3.3l) * 1000.0l) == 1909.0l);
-        assert(round(asinhf(3.3f) * 1000.0f) == 1909.0f);
+    }
+    assert(round(asinhf(3.3f) * 1000.0f) == 1909.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(asinhl(3.3l) * 1000.0l) == 1909.0l);
         assert(round(asinh(7) * 1000.0) == 2644.0);
+    }
 
-        assert(round(atanh(0.6f) * 1000.0f) == 693.0f);
+    assert(round(atanh(0.6f) * 1000.0f) == 693.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(atanh(0.6) * 1000.0) == 693.0);
         assert(round(atanh(0.6l) * 1000.0l) == 693.0l);
-        assert(round(atanhf(0.6f) * 1000.0f) == 693.0f);
+    }
+    assert(round(atanhf(0.6f) * 1000.0f) == 693.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(atanhl(0.6l) * 1000.0l) == 693.0l);
         assert(round(atanh(0) * 1000.0) == 0.0);
+    }
 
-        assert(round(cosh(0.6f) * 1000.0f) == 1185.0f);
+    assert(round(cosh(0.6f) * 1000.0f) == 1185.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(cosh(0.6) * 1000.0) == 1185.0);
         assert(round(cosh(0.6l) * 1000.0l) == 1185.0l);
-        assert(round(coshf(0.6f) * 1000.0f) == 1185.0f);
+    }
+    assert(round(coshf(0.6f) * 1000.0f) == 1185.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(coshl(0.6l) * 1000.0l) == 1185.0l);
         assert(round(cosh(2) * 1000.0) == 3762.0);
+    }
 
-        assert(round(sinh(0.6f) * 1000.0f) == 637.0f);
+    assert(round(sinh(0.6f) * 1000.0f) == 637.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(sinh(0.6) * 1000.0) == 637.0);
         assert(round(sinh(0.6l) * 1000.0l) == 637.0l);
-        assert(round(sinhf(0.6f) * 1000.0f) == 637.0f);
+    }
+    assert(round(sinhf(0.6f) * 1000.0f) == 637.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(sinhl(0.6l) * 1000.0l) == 637.0l);
         assert(round(sinh(2) * 1000.0) == 3627.0);
+    }
 
-        assert(round(tanh(0.6f) * 1000.0f) == 537.0f);
+    assert(round(tanh(0.6f) * 1000.0f) == 537.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(tanh(0.6) * 1000.0) == 537.0);
         assert(round(tanh(0.6l) * 1000.0l) == 537.0l);
-        assert(round(tanhf(0.6f) * 1000.0f) == 537.0f);
+    }
+    assert(round(tanhf(0.6f) * 1000.0f) == 537.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(tanhl(0.6l) * 1000.0l) == 537.0l);
         assert(round(tanh(2) * 1000.0) == 964.0);
     }
@@ -600,11 +622,13 @@ CONSTEXPR_CMATH26 bool test_cmath_cxx26() {
     assert(round(sqrtl(0.6l) * 1000.0l) == 775.0l);
     assert(round(sqrt(7) * 1000.0) == 2646.0);
 
+    assert(round(erf(0.6f) * 1000.0f) == 604.0f);
     if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
-        assert(round(erf(0.6f) * 1000.0f) == 604.0f);
         assert(round(erf(0.6) * 1000.0) == 604.0);
         assert(round(erf(0.6l) * 1000.0l) == 604.0l);
-        assert(round(erff(0.6f) * 1000.0f) == 604.0f);
+    }
+    assert(round(erff(0.6f) * 1000.0f) == 604.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(erfl(0.6l) * 1000.0l) == 604.0l);
         assert(round(erf(1) * 1000.0) == 843.0);
 
