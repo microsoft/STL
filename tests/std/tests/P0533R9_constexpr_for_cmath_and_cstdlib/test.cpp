@@ -8,13 +8,32 @@
 #include <type_traits>
 using namespace std;
 
-template <class T>
-constexpr void test_classification_functions_cxx23();
+#if !_HAS_CXX17
+#pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wc++17-extensions" // warning: constexpr if is a C++17 extension
+#endif // ^^^ defined(__clang__) ^^^
+#endif // ^^^ !_HAS_CXX17 ^^^
+
+#ifdef __cpp_lib_constexpr_cmath
+#define CONSTEXPR_CMATH23 constexpr
+#else
+#define CONSTEXPR_CMATH23 inline
+#endif
+
+#if _HAS_CXX26 && defined(_MSVC_LIBC_MATH) // TRANSITION, GH-3789, should be `__cpp_lib_constexpr_cmath >= 202306L`
+#define CONSTEXPR_CMATH26 constexpr
+#else
+#define CONSTEXPR_CMATH26 inline
+#endif
 
 template <class T>
-constexpr void test_comparison_functions_cxx23();
+CONSTEXPR_CMATH23 void test_classification_functions_cxx23();
 
-constexpr bool test_cmath_cxx23() {
+template <class T>
+CONSTEXPR_CMATH23 void test_comparison_functions_cxx23();
+
+CONSTEXPR_CMATH23 bool test_cmath_cxx23() {
 #if defined(_MSVC_INTERNAL_TESTING) || !defined(_MSVC_LIBC_MATH) // TRANSITION, MSVC-PR-767184/772024 fixed LNK2005
     {
         int exponent = 0;
@@ -220,7 +239,7 @@ constexpr bool test_cmath_cxx23() {
     test_classification_functions_cxx23<int>();
 
 #ifndef _MSVC_INTERNAL_TESTING // TRANSITION, MSVC-PR-767404 fixed the comparison functions in constant evaluation
-    if !consteval
+    if (!_Is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     {
         test_comparison_functions_cxx23<float>();
@@ -233,7 +252,7 @@ constexpr bool test_cmath_cxx23() {
 }
 
 template <class T>
-constexpr void test_classification_functions_cxx23() {
+CONSTEXPR_CMATH23 void test_classification_functions_cxx23() {
     {
         constexpr T zro{};
         constexpr T val = static_cast<T>(5);
@@ -292,7 +311,7 @@ constexpr void test_classification_functions_cxx23() {
 }
 
 template <class T>
-constexpr void test_comparison_functions_cxx23() {
+CONSTEXPR_CMATH23 void test_comparison_functions_cxx23() {
     constexpr T lo = static_cast<T>(-3);
     constexpr T hi = static_cast<T>(4);
 
@@ -352,7 +371,7 @@ constexpr void test_comparison_functions_cxx23() {
     }
 }
 
-constexpr bool test_cstdlib_cxx23() {
+CONSTEXPR_CMATH23 bool test_cstdlib_cxx23() {
     assert(abs(-5) == 5);
     assert(abs(-5L) == 5L);
     assert(abs(-5LL) == 5LL);
@@ -380,7 +399,7 @@ constexpr bool test_cstdlib_cxx23() {
     return true;
 }
 
-constexpr bool test_cmath_cxx26() {
+CONSTEXPR_CMATH26 bool test_cmath_cxx26() {
     // These tests use round() because they're checking for basic functionality, not precision.
 
     assert(round(acos(0.6f) * 1000.0f) == 927.0f);
@@ -432,7 +451,7 @@ constexpr bool test_cmath_cxx26() {
     assert(round(tanl(0.6l) * 1000.0l) == 684.0l);
     assert(round(tan(1729) * 1000.0) == 2087.0);
 
-    if !consteval { // TRANSITION, GH-3789
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(acosh(3.3f) * 1000.0f) == 1863.0f);
         assert(round(acosh(3.3) * 1000.0) == 1863.0);
         assert(round(acosh(3.3l) * 1000.0l) == 1863.0l);
@@ -483,7 +502,7 @@ constexpr bool test_cmath_cxx26() {
     assert(round(expl(0.6l) * 1000.0l) == 1822.0l);
     assert(round(exp(2) * 1000.0) == 7389.0);
 
-    if !consteval { // TRANSITION, GH-3789
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(exp2(0.6f) * 1000.0f) == 1516.0f);
         assert(round(exp2(0.6) * 1000.0) == 1516.0);
         assert(round(exp2(0.6l) * 1000.0l) == 1516.0l);
@@ -541,13 +560,15 @@ constexpr bool test_cmath_cxx26() {
     assert(round(hypotl(3.3l, 7.7l) * 1000.0l) == 8377.0l);
     assert(round(hypot(3, 7) * 1000.0) == 7616.0);
 
-    if !consteval { // TRANSITION, GH-3789
+#if _HAS_CXX17
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(hypot(2.2f, 3.3f, 4.4f) * 1000.0f) == 5924.0f);
         assert(round(hypot(2.2, 3.3, 4.4) * 1000.0) == 5924.0);
         assert(round(hypot(2.2l, 3.3l, 4.4l) * 1000.0l) == 5924.0l);
         assert(round(hypot(2, 3, 4) * 1000.0) == 5385.0);
         // No 3-arg overloads for hypotf() and hypotl()
     }
+#endif // ^^^ _HAS_CXX17 ^^^
 
     assert(round(pow(3.3f, 0.6f) * 1000.0f) == 2047.0f);
     assert(round(pow(3.3, 0.6) * 1000.0) == 2047.0);
@@ -563,7 +584,7 @@ constexpr bool test_cmath_cxx26() {
     assert(round(sqrtl(0.6l) * 1000.0l) == 775.0l);
     assert(round(sqrt(7) * 1000.0) == 2646.0);
 
-    if !consteval { // TRANSITION, GH-3789
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(erf(0.6f) * 1000.0f) == 604.0f);
         assert(round(erf(0.6) * 1000.0) == 604.0);
         assert(round(erf(0.6l) * 1000.0l) == 604.0l);
