@@ -192,12 +192,15 @@ extern "C" {
     _NODISCARD specs long double __cdecl name##l(long double) noexcept /* strengthened */;
 
 // Defines a non-overloaded function with signature `float (float)`, then
-// *declares* two non-overloaded functions with signatures `double (double)` and `long double (long double)`.
+// *declares* a non-overloaded function with signature `double (double)`, then
+// defines a non-overloaded function with signature `long double (long double)`.
 // This is used when libc has implemented a function for `float` but has not yet implemented it for `double`.
-#define _STL_DEF_FLOAT_DECLARE_OTHERS1(specs_def_float, specs_decl_others, name)          \
-    _STL_DEF_FUNC1(specs_def_float, name##f, float, float)                                \
-    _NODISCARD specs_decl_others double __cdecl name(double) noexcept /* strengthened */; \
-    _NODISCARD specs_decl_others long double __cdecl name##l(long double) noexcept /* strengthened */;
+#define _STL_DECLARE_DOUBLE_DEF_OTHERS1(specs_def_flt, specs_decl_dbl, specs_def_lng, name)             \
+    _STL_DEF_FUNC1(specs_def_flt, name##f, float, float)                                                \
+    _NODISCARD specs_decl_dbl double __cdecl name(double) noexcept /* strengthened */;                  \
+    _NODISCARD specs_def_lng long double __cdecl name##l(long double _Xx) noexcept /* strengthened */ { \
+        return _CSTD name(static_cast<double>(_Xx));                                                    \
+    }
 
 // Some functions that are needed for C++26 constexpr cmath are not yet implemented by libc.
 // We polyfill the library with the UCRT and mark these functions with this macro.
@@ -270,6 +273,7 @@ _NODISCARD _CONSTEXPR_CMATH23 double __cdecl copysign(double, double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl cosf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl cos(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl coshf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl coshl(long double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl expf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl exp(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH23 float __cdecl fabsf(float) noexcept;
@@ -310,11 +314,13 @@ _NODISCARD _CONSTEXPR_CMATH23 long double __cdecl roundl(long double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl sinf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl sin(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl sinhf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl sinhl(long double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl sqrtf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl sqrt(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl tanf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 double __cdecl tan(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH26 float __cdecl tanhf(float) noexcept;
+_NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl tanhl(long double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH23 float __cdecl truncf(float) noexcept;
 _NODISCARD _CONSTEXPR_CMATH23 double __cdecl trunc(double) noexcept;
 _NODISCARD _CONSTEXPR_CMATH23 long double __cdecl truncl(long double) noexcept;
@@ -326,7 +332,7 @@ _NODISCARD _CONSTEXPR_CMATH23 long double __cdecl truncl(long double) noexcept;
 #pragma function(ceilf, ceil)
 #pragma function(copysignf, copysign)
 #pragma function(cosf, cos)
-#pragma function(coshf)
+#pragma function(coshf, coshl)
 #pragma function(expf, exp)
 #pragma function(fabsf, fabs)
 #pragma function(floorf, floor)
@@ -343,10 +349,10 @@ _NODISCARD _CONSTEXPR_CMATH23 long double __cdecl truncl(long double) noexcept;
 #pragma function(rintf, rint, rintl)
 #pragma function(roundf, round, roundl)
 #pragma function(sinf, sin)
-#pragma function(sinhf)
+#pragma function(sinhf, sinhl)
 #pragma function(sqrtf, sqrt)
 #pragma function(tanf, tan)
-#pragma function(tanhf)
+#pragma function(tanhf, tanhl)
 #pragma function(truncf, trunc, truncl)
 
 // The following order matches N5054 [cmath.syn].
@@ -357,12 +363,12 @@ _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, atan)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, cos)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, sin)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, tan)
-_STL_DEF_FLOAT_DECLARE_OTHERS1(_CONSTEXPR_CMATH26, _CONSTEXPR_CMATH26_NYI_DECL, acosh)
-_STL_DEF_FLOAT_DECLARE_OTHERS1(_CONSTEXPR_CMATH26, _CONSTEXPR_CMATH26_NYI_DECL, asinh)
-_STL_DEF_FLOAT_DECLARE_OTHERS1(_CONSTEXPR_CMATH26, _CONSTEXPR_CMATH26_NYI_DECL, atanh)
-_STL_DEF_FLOAT_DECLARE_OTHERS1(_CONSTEXPR_CMATH26, _CONSTEXPR_CMATH26_NYI_DECL, cosh) // additional workarounds below
-_STL_DEF_FLOAT_DECLARE_OTHERS1(_CONSTEXPR_CMATH26, _CONSTEXPR_CMATH26_NYI_DECL, sinh) // additional workarounds below
-_STL_DEF_FLOAT_DECLARE_OTHERS1(_CONSTEXPR_CMATH26, _CONSTEXPR_CMATH26_NYI_DECL, tanh) // additional workarounds below
+_STL_DECLARE_DOUBLE_DEF_OTHERS1(_CONSTEXPR_CMATH26, _CONSTEXPR_CMATH26_NYI_DECL, _CONSTEXPR_CMATH26_NYI, acosh)
+_STL_DECLARE_DOUBLE_DEF_OTHERS1(_CONSTEXPR_CMATH26, _CONSTEXPR_CMATH26_NYI_DECL, _CONSTEXPR_CMATH26_NYI, asinh)
+_STL_DECLARE_DOUBLE_DEF_OTHERS1(_CONSTEXPR_CMATH26, _CONSTEXPR_CMATH26_NYI_DECL, _CONSTEXPR_CMATH26_NYI, atanh)
+_STL_DECLARE_DOUBLE_DEF_OTHERS1(_CONSTEXPR_CMATH26, _CONSTEXPR_CMATH26_NYI_DECL, _CONSTEXPR_CMATH26_NYI, cosh)
+_STL_DECLARE_DOUBLE_DEF_OTHERS1(_CONSTEXPR_CMATH26, _CONSTEXPR_CMATH26_NYI_DECL, _CONSTEXPR_CMATH26_NYI, sinh)
+_STL_DECLARE_DOUBLE_DEF_OTHERS1(_CONSTEXPR_CMATH26, _CONSTEXPR_CMATH26_NYI_DECL, _CONSTEXPR_CMATH26_NYI, tanh)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, exp)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, exp2)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, expm1)
@@ -383,7 +389,7 @@ _STL_DEF_FAMILY1(_CONSTEXPR_CMATH23, fabs)
 _STL_DEF_FAMILY2(_CONSTEXPR_CMATH26, hypot)
 _STL_DEF_FAMILY2(_CONSTEXPR_CMATH26, pow)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, sqrt)
-_STL_DEF_FLOAT_DECLARE_OTHERS1(_CONSTEXPR_CMATH26, _CONSTEXPR_CMATH26_NYI_DECL, erf)
+_STL_DECLARE_DOUBLE_DEF_OTHERS1(_CONSTEXPR_CMATH26, _CONSTEXPR_CMATH26_NYI_DECL, _CONSTEXPR_CMATH26_NYI, erf)
 _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, erfc)
 // lgamma() is hand-crafted because it is not yet implemented by libc
 // tgamma() is hand-crafted because it is not yet implemented by libc
@@ -485,19 +491,6 @@ _NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl tgammal(long double _Xx) n
     return __std_smf_tgamma(static_cast<double>(_Xx));
 }
 
-// The UCRT defines the following functions as inline functions that forward to their double siblings,
-// so forward-declaring them without defining them would not result in a successful polyfill.
-#pragma function(coshl, sinhl, tanhl)
-_NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl coshl(long double _Xx) noexcept /* strengthened */ {
-    return _CSTD cosh(static_cast<double>(_Xx));
-}
-_NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl sinhl(long double _Xx) noexcept /* strengthened */ {
-    return _CSTD sinh(static_cast<double>(_Xx));
-}
-_NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl tanhl(long double _Xx) noexcept /* strengthened */ {
-    return _CSTD tanh(static_cast<double>(_Xx));
-}
-
 #undef _STL_DEF_FUNC1
 #undef _STL_DEF_FUNC2
 #undef _STL_DEF_FUNC3
@@ -514,7 +507,7 @@ _NODISCARD _CONSTEXPR_CMATH26_NYI long double __cdecl tanhl(long double _Xx) noe
 #undef _STL_DEF_OVERLOADED_COMPARISON_FAMILY1
 #undef _STL_DEF_OVERLOADED_COMPARISON_FAMILY2
 #undef _STL_DECLARE_FAMILY1
-#undef _STL_DEF_FLOAT_DECLARE_OTHERS1
+#undef _STL_DECLARE_DOUBLE_DEF_OTHERS1
 #undef _CONSTEXPR_CMATH26_NYI_DECL
 
 } // extern "C"
