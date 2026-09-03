@@ -41,7 +41,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float acos(_In_ float _Xx) noexcept
     return _CSTD acosf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float acosh(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI float acosh(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD acoshf(_Xx);
 }
 
@@ -49,7 +49,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float asin(_In_ float _Xx) noexcept
     return _CSTD asinf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float asinh(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI float asinh(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD asinhf(_Xx);
 }
 
@@ -57,7 +57,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float atan(_In_ float _Xx) noexcept
     return _CSTD atanf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float atanh(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI float atanh(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD atanhf(_Xx);
 }
 
@@ -94,15 +94,15 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float cos(_In_ float _Xx) noexcept 
     return _CSTD cosf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float cosh(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI float cosh(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD coshf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float erf(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI float erf(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD erff(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float erfc(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI float erfc(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD erfcf(_Xx);
 }
 
@@ -169,7 +169,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 float ldexp(_In_ float _Xx, _In_ in
     return _CSTD ldexpf(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline float lgamma(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI float lgamma(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD lgammaf(_Xx);
 }
 
@@ -267,7 +267,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float sin(_In_ float _Xx) noexcept 
     return _CSTD sinf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float sinh(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI float sinh(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD sinhf(_Xx);
 }
 
@@ -279,11 +279,11 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float tan(_In_ float _Xx) noexcept 
     return _CSTD tanf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float tanh(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI float tanh(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD tanhf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float tgamma(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI float tgamma(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD tgammaf(_Xx);
 }
 
@@ -301,7 +301,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double acos(_In_ long double _
     return _CSTD acosl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double acosh(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double acosh(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD acoshl(_Xx);
 }
 
@@ -309,7 +309,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double asin(_In_ long double _
     return _CSTD asinl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double asinh(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double asinh(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD asinhl(_Xx);
 }
 
@@ -317,7 +317,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double atan(_In_ long double _
     return _CSTD atanl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double atanh(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double atanh(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD atanhl(_Xx);
 }
 
@@ -356,15 +356,15 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double cos(_In_ long double _X
     return _CSTD cosl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double cosh(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double cosh(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD coshl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double erf(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double erf(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD erfl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double erfc(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double erfc(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD erfcl(_Xx);
 }
 
@@ -438,7 +438,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH23 long double ldexp(_In_ long double 
     return _CSTD ldexpl(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline long double lgamma(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double lgamma(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD lgammal(_Xx);
 }
 
@@ -541,7 +541,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double sin(_In_ long double _X
     return _CSTD sinl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double sinh(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double sinh(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD sinhl(_Xx);
 }
 
@@ -553,11 +553,11 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double tan(_In_ long double _X
     return _CSTD tanl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double tanh(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double tanh(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD tanhl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double tgamma(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26_NYI long double tgamma(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD tgammal(_Xx);
 }
 
