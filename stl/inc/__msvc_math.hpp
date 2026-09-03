@@ -350,7 +350,7 @@ _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, cosh) // additional workaround
 _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, sinh) // additional workarounds for this polyfill are defined below
 _STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, tanh) // additional workarounds for this polyfill are defined below
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, exp)
-_STL_DECLARE_FAMILY1(_CONSTEXPR_CMATH26_NYI_DECL, exp2)
+_STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, exp2)
 _STL_DEF_FAMILY1(_CONSTEXPR_CMATH26, expm1)
 _STL_DEF_LASTARG_FAMILY2(_CONSTEXPR_CMATH23, frexp, int*) // _NODISCARD is desirable, despite the out-param
 _STL_DEF_RETURN_FAMILY1(_CONSTEXPR_CMATH23, ilogb, int)

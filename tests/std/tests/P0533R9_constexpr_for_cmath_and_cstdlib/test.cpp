@@ -520,14 +520,12 @@ CONSTEXPR_CMATH26 bool test_cmath_cxx26() {
     assert(round(expl(0.6l) * 1000.0l) == 1822.0l);
     assert(round(exp(2) * 1000.0) == 7389.0);
 
-    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
-        assert(round(exp2(0.6f) * 1000.0f) == 1516.0f);
-        assert(round(exp2(0.6) * 1000.0) == 1516.0);
-        assert(round(exp2(0.6l) * 1000.0l) == 1516.0l);
-        assert(round(exp2f(0.6f) * 1000.0f) == 1516.0f);
-        assert(round(exp2l(0.6l) * 1000.0l) == 1516.0l);
-        assert(round(exp2(-3) * 1000.0) == 125.0);
-    }
+    assert(round(exp2(0.6f) * 1000.0f) == 1516.0f);
+    assert(round(exp2(0.6) * 1000.0) == 1516.0);
+    assert(round(exp2(0.6l) * 1000.0l) == 1516.0l);
+    assert(round(exp2f(0.6f) * 1000.0f) == 1516.0f);
+    assert(round(exp2l(0.6l) * 1000.0l) == 1516.0l);
+    assert(round(exp2(-3) * 1000.0) == 125.0);
 
     assert(round(expm1(0.6f) * 1000.0f) == 822.0f);
     assert(round(expm1(0.6) * 1000.0) == 822.0);

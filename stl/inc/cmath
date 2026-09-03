@@ -110,7 +110,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float exp(_In_ float _Xx) noexcept 
     return _CSTD expf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float exp2(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26 float exp2(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD exp2f(_Xx);
 }
 
@@ -372,7 +372,7 @@ _NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double exp(_In_ long double _X
     return _CSTD expl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double exp2(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD _Check_return_ _CONSTEXPR_CMATH26 long double exp2(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD exp2l(_Xx);
 }
 
@@ -874,7 +874,7 @@ _GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, cosh)
 _GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, sinh)
 _GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, tanh)
 _GENERIC_MATH1(_CONSTEXPR_CMATH26, exp)
-_GENERIC_MATH1(_CONSTEXPR_CMATH26_NYI, exp2)
+_GENERIC_MATH1(_CONSTEXPR_CMATH26, exp2)
 _GENERIC_MATH1(_CONSTEXPR_CMATH26, expm1)
 // frexp() is hand-crafted
 _GENERIC_MATH1R(_CONSTEXPR_CMATH23, ilogb, int)
