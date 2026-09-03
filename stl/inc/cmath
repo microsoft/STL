@@ -1698,16 +1698,15 @@ _NODISCARD _CONSTEXPR_CMATH26_NYI auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, con
 }
 
 #if _HAS_CXX20
-_EXPORT_STD _NODISCARD constexpr inline float lerp(const float _ArgA, const float _ArgB, const float _ArgT) noexcept {
+_EXPORT_STD _NODISCARD constexpr float lerp(const float _ArgA, const float _ArgB, const float _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
 
-_EXPORT_STD _NODISCARD constexpr inline double lerp(
-    const double _ArgA, const double _ArgB, const double _ArgT) noexcept {
+_EXPORT_STD _NODISCARD constexpr double lerp(const double _ArgA, const double _ArgB, const double _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
 
-_EXPORT_STD _NODISCARD constexpr inline long double lerp(
+_EXPORT_STD _NODISCARD constexpr long double lerp(
     const long double _ArgA, const long double _ArgB, const long double _ArgT) noexcept {
     return _Common_lerp(static_cast<double>(_ArgA), static_cast<double>(_ArgB), static_cast<double>(_ArgT));
 }
