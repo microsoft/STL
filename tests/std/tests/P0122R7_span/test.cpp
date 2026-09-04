@@ -996,6 +996,66 @@ constexpr bool test() {
         static_assert(is_same_v<decltype(sp_nine.rend()), span<int, 9>::reverse_iterator>);
     }
 
+    // LWG-4293: The subviews of a span with const-qualified bool element type must
+    // directly-initialize the returned span, never list-initialize it.
+    {
+        bool sequence[9]{true, false, true, false, true, false, true, false, true};
+
+        const span<const bool> sp_dyn(sequence);
+        const span<const bool, 9> sp_nine(sequence);
+
+        auto first_1 = sp_dyn.first(4);
+        auto first_2 = sp_nine.first<4>();
+        static_assert(noexcept(sp_dyn.first(4))); // strengthened
+        static_assert(noexcept(sp_nine.first<4>())); // strengthened
+        static_assert(is_same_v<decltype(first_1), span<const bool>>);
+        static_assert(is_same_v<decltype(first_2), span<const bool, 4>>);
+        assert(first_1.data() == begin(sequence));
+        assert(first_2.data() == begin(sequence));
+        assert(first_1.size() == 4);
+        assert(first_2.size() == 4);
+        assert(first_1[3] == false);
+        assert(first_2[3] == false);
+
+        auto last_1 = sp_dyn.last(4);
+        auto last_2 = sp_nine.last<4>();
+        static_assert(noexcept(sp_dyn.last(4))); // strengthened
+        static_assert(noexcept(sp_nine.last<4>())); // strengthened
+        static_assert(is_same_v<decltype(last_1), span<const bool>>);
+        static_assert(is_same_v<decltype(last_2), span<const bool, 4>>);
+        assert(last_1.data() == begin(sequence) + 5);
+        assert(last_2.data() == begin(sequence) + 5);
+        assert(last_1.size() == 4);
+        assert(last_2.size() == 4);
+        assert(last_1[0] == false);
+        assert(last_2[3] == true);
+
+        auto subspan_1 = sp_dyn.subspan(3, 4);
+        auto subspan_2 = sp_dyn.subspan(3);
+        auto subspan_3 = sp_nine.subspan<3, 4>();
+        auto subspan_4 = sp_nine.subspan<3>();
+        static_assert(noexcept(sp_dyn.subspan(3, 4))); // strengthened
+        static_assert(noexcept(sp_dyn.subspan(3))); // strengthened
+        static_assert(noexcept(sp_nine.subspan<3, 4>())); // strengthened
+        static_assert(noexcept(sp_nine.subspan<3>())); // strengthened
+        static_assert(is_same_v<decltype(subspan_1), span<const bool>>);
+        static_assert(is_same_v<decltype(subspan_2), span<const bool>>);
+        static_assert(is_same_v<decltype(subspan_3), span<const bool, 4>>);
+        static_assert(is_same_v<decltype(subspan_4), span<const bool, 6>>);
+        assert(subspan_1.data() == begin(sequence) + 3);
+        assert(subspan_2.data() == begin(sequence) + 3);
+        assert(subspan_3.data() == begin(sequence) + 3);
+        assert(subspan_4.data() == begin(sequence) + 3);
+        assert(subspan_1.size() == 4);
+        assert(subspan_2.size() == 6);
+        assert(subspan_3.size() == 4);
+        assert(subspan_4.size() == 6);
+        assert(subspan_1[0] == false);
+        assert(subspan_2[5] == true);
+        assert(subspan_3[0] == false);
+        assert(subspan_4[5] == true);
+    }
+
     return true;
 }
 
