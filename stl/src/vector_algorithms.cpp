@@ -59,6 +59,12 @@ namespace {
         constexpr auto _Mask_sve = 1ull << _Idx_sve;
         return (__processor_features_0_63 & _Mask_sve) != 0;
     }
+
+    // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
+    // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
+    __declspec(noinline) size_t _Sve_vl() noexcept {
+        return svcntb();
+    }
 #endif // ^^^ defined(_M_ARM64) ^^^
 
     size_t _Byte_length(const void* const _First, const void* const _Last) noexcept {
@@ -10167,6 +10173,305 @@ namespace {
                 return _Out;
             }
         };
+
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+        struct _Sve_8 {
+            using _Vec_t = svuint64_t;
+
+            static size_t _Step() noexcept {
+                return svcntd();
+            }
+
+            static svbool_t _Whilelt(size_t _Op1, size_t _Op2) noexcept {
+                return svwhilelt_b64(_Op1, _Op2);
+            }
+
+            static _Vec_t _Set(const uint64_t _Val) noexcept {
+                return svdup_n_u64(_Val);
+            }
+
+            static _Vec_t _Load(svbool_t _Pred, const void* const _Ptr) noexcept {
+                return svld1(_Pred, static_cast<const uint64_t*>(_Ptr));
+            }
+
+            static svbool_t _Cmpne(svbool_t _Pred, const _Vec_t _Data, const _Vec_t _Comparand) noexcept {
+                return svcmpne(_Pred, _Data, _Comparand);
+            }
+
+            static _Vec_t _Compact(svbool_t _Mask, const _Vec_t _Data) noexcept {
+                return svcompact(_Mask, _Data);
+            }
+
+            static void* _Store_masked(svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+                // We use _Pred, rather than whilelt(0, _Size) to save an instruction. This is fine because we allow
+                // redundant elements to be written.
+                svst1(_Pred, static_cast<uint64_t*>(_Out), _Data);
+                const auto _Size = svcntp_b64(_Pred, _Mask) * sizeof(uint64_t);
+                _Advance_bytes(_Out, _Size);
+                return _Out;
+            }
+
+            static void* _Store_masked_copy(
+                svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+                const auto _N_elems    = svcntp_b64(_Pred, _Mask);
+                const auto _Store_pred = svwhilelt_b64(size_t{0}, _N_elems);
+                svst1(_Store_pred, static_cast<uint64_t*>(_Out), _Data);
+                const auto _Size = _N_elems * sizeof(uint64_t);
+                _Advance_bytes(_Out, _Size);
+                return _Out;
+            }
+        };
+
+        struct _Sve_4 {
+            using _Vec_t = svuint32_t;
+
+            static size_t _Step() noexcept {
+                return svcntw();
+            }
+
+            static svbool_t _Whilelt(size_t _Op1, size_t _Op2) noexcept {
+                return svwhilelt_b32(_Op1, _Op2);
+            }
+
+            static _Vec_t _Set(const uint32_t _Val) noexcept {
+                return svdup_n_u32(_Val);
+            }
+
+            static _Vec_t _Load(svbool_t _Pred, const void* const _Ptr) noexcept {
+                return svld1(_Pred, static_cast<const uint32_t*>(_Ptr));
+            }
+
+            static svbool_t _Cmpne(svbool_t _Pred, const _Vec_t _Data, const _Vec_t _Comparand) noexcept {
+                return svcmpne(_Pred, _Data, _Comparand);
+            }
+
+            static _Vec_t _Compact(svbool_t _Mask, const _Vec_t _Data) noexcept {
+                return svcompact(_Mask, _Data);
+            }
+
+            static void* _Store_masked(svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+                // We use _Pred, rather than whilelt(0, _Size) to save an instruction. This is fine because we allow
+                // redundant elements to be written.
+                svst1(_Pred, static_cast<uint32_t*>(_Out), _Data);
+                const auto _Size = svcntp_b32(_Pred, _Mask) * sizeof(uint32_t);
+                _Advance_bytes(_Out, _Size);
+                return _Out;
+            }
+
+            static void* _Store_masked_copy(
+                svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+                const auto _N_elems    = svcntp_b32(_Pred, _Mask);
+                const auto _Store_pred = svwhilelt_b32(size_t{0}, _N_elems);
+                svst1(_Store_pred, static_cast<uint32_t*>(_Out), _Data);
+                const auto _Size = _N_elems * sizeof(uint32_t);
+                _Advance_bytes(_Out, _Size);
+                return _Out;
+            }
+        };
+
+        struct _Sve_2 {
+            using _Vec_t = _Sve_4::_Vec_t;
+
+            static size_t _Step() noexcept {
+                return _Sve_4::_Step();
+            }
+
+            static svbool_t _Whilelt(size_t _Op1, size_t _Op2) noexcept {
+                return _Sve_4::_Whilelt(_Op1, _Op2);
+            }
+
+            static _Vec_t _Set(const uint16_t _Val) noexcept {
+                return _Sve_4::_Set(static_cast<uint32_t>(_Val));
+            }
+
+            static _Vec_t _Load(svbool_t _Pred, const void* const _Ptr) noexcept {
+                return svld1uh_u32(_Pred, static_cast<const uint16_t*>(_Ptr));
+            }
+
+            static svbool_t _Cmpne(svbool_t _Pred, const _Vec_t _Data, const _Vec_t _Comparand) noexcept {
+                return _Sve_4::_Cmpne(_Pred, _Data, _Comparand);
+            }
+
+            static _Vec_t _Compact(svbool_t _Mask, const _Vec_t _Data) noexcept {
+                return _Sve_4::_Compact(_Mask, _Data);
+            }
+
+            static void* _Store_masked(svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+                // We use _Pred, rather than whilelt(0, _Size) to save an instruction. This is fine because we allow
+                // redundant elements to be written.
+                svst1h_u32(_Pred, static_cast<uint16_t*>(_Out), _Data);
+                const auto _Size = svcntp_b32(_Pred, _Mask) * sizeof(uint16_t);
+                _Advance_bytes(_Out, _Size);
+                return _Out;
+            }
+
+            static void* _Store_masked_copy(
+                svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+                const auto _N_elems    = svcntp_b32(_Pred, _Mask);
+                const auto _Store_pred = svwhilelt_b32(size_t{0}, _N_elems);
+                svst1h_u32(_Store_pred, static_cast<uint16_t*>(_Out), _Data);
+                const auto _Size = _N_elems * sizeof(uint16_t);
+                _Advance_bytes(_Out, _Size);
+                return _Out;
+            }
+        };
+
+        struct _Sve_1 {
+            using _Vec_t = _Sve_4::_Vec_t;
+
+            static size_t _Step() noexcept {
+                return _Sve_4::_Step();
+            }
+
+            static svbool_t _Whilelt(size_t _Op1, size_t _Op2) noexcept {
+                return _Sve_4::_Whilelt(_Op1, _Op2);
+            }
+
+            static _Vec_t _Set(const uint8_t _Val) noexcept {
+                return _Sve_4::_Set(static_cast<uint32_t>(_Val));
+            }
+
+            static _Vec_t _Load(svbool_t _Pred, const void* const _Ptr) noexcept {
+                return svld1ub_u32(_Pred, static_cast<const uint8_t*>(_Ptr));
+            }
+
+            static svbool_t _Cmpne(svbool_t _Pred, const _Vec_t _Data, const _Vec_t _Comparand) noexcept {
+                return _Sve_4::_Cmpne(_Pred, _Data, _Comparand);
+            }
+
+            static _Vec_t _Compact(svbool_t _Mask, const _Vec_t _Data) noexcept {
+                return _Sve_4::_Compact(_Mask, _Data);
+            }
+
+            static void* _Store_masked(svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+                // We use _Pred, rather than whilelt(0, _Size) to save an instruction. This is fine because we allow
+                // redundant elements to be written.
+                svst1b_u32(_Pred, static_cast<uint8_t*>(_Out), _Data);
+                const auto _Size = svcntp_b32(_Pred, _Mask) * sizeof(uint8_t);
+                _Advance_bytes(_Out, _Size);
+                return _Out;
+            }
+
+            static void* _Store_masked_copy(
+                svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+                const auto _N_elems    = svcntp_b32(_Pred, _Mask);
+                const auto _Store_pred = svwhilelt_b32(size_t{0}, _N_elems);
+                svst1b_u32(_Store_pred, static_cast<uint8_t*>(_Out), _Data);
+                const auto _Size = _N_elems * sizeof(uint8_t);
+                _Advance_bytes(_Out, _Size);
+                return _Out;
+            }
+        };
+
+        // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
+        // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
+        template <class _Traits, class _Ty>
+        __declspec(noinline) void* _Remove_impl_sve(void* _First, void* const _Last, const _Ty _Val) noexcept {
+            void* _Out        = _First;
+            const auto _Match = _Traits::_Set(_Val);
+
+            const size_t _Size_bytes = _Byte_length(_First, _Last);
+            const size_t _Step_elems = _Traits::_Step();
+            const size_t _Step_bytes = _Step_elems * sizeof(_Ty);
+
+            const auto _True = svptrue_b8();
+
+            const size_t _Unroll_bytes = 2 * _Step_bytes;
+            if (const size_t _Chunk_size = _Size_bytes & ~size_t{_Unroll_bytes - 1}; _Chunk_size != 0) {
+                const void* _Stop_at = _First;
+                _Advance_bytes(_Stop_at, _Chunk_size);
+
+                do {
+                    const auto _Src_lo = _Traits::_Load(_True, _First);
+                    const auto _Src_hi = _Traits::_Load(_True, static_cast<const _Ty*>(_First) + _Step_elems);
+
+                    const auto _Mask_lo = _Traits::_Cmpne(_True, _Src_lo, _Match);
+                    const auto _Mask_hi = _Traits::_Cmpne(_True, _Src_hi, _Match);
+
+                    const auto _Result_lo = _Traits::_Compact(_Mask_lo, _Src_lo);
+                    const auto _Result_hi = _Traits::_Compact(_Mask_hi, _Src_hi);
+
+                    _Out = _Traits::_Store_masked(_True, _Out, _Result_lo, _Mask_lo);
+                    _Out = _Traits::_Store_masked(_True, _Out, _Result_hi, _Mask_hi);
+
+                    _Advance_bytes(_First, _Unroll_bytes);
+                } while (_First != _Stop_at);
+            }
+
+            if ((_Size_bytes & _Step_bytes) != 0) { // use original _Size_bytes; we've read only 2 * _Step_bytes chunks
+                const auto _Src    = _Traits::_Load(_True, _First);
+                const auto _Mask   = _Traits::_Cmpne(_True, _Src, _Match);
+                const auto _Result = _Traits::_Compact(_Mask, _Src);
+                _Out               = _Traits::_Store_masked(_True, _Out, _Result, _Mask);
+                _Advance_bytes(_First, _Step_bytes);
+            }
+
+            if (_First != _Last) {
+                const size_t _Tail_length_elems = _Byte_length(_First, _Last) / sizeof(_Ty);
+                const auto _Tail_mask           = _Traits::_Whilelt(size_t{0}, _Tail_length_elems);
+                const auto _Src                 = _Traits::_Load(_Tail_mask, _First);
+                const auto _Mask                = _Traits::_Cmpne(_Tail_mask, _Src, _Match);
+                const auto _Result              = _Traits::_Compact(_Mask, _Src);
+                _Out                            = _Traits::_Store_masked(_Tail_mask, _Out, _Result, _Mask);
+            }
+
+            return _Out;
+        }
+
+        // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
+        // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
+        template <class _Traits, class _Ty>
+        __declspec(noinline) void* _Remove_copy_impl_sve(
+            const void* _First, const void* const _Last, void* _Out, const _Ty _Val) noexcept {
+            const auto _Match        = _Traits::_Set(_Val);
+            const size_t _Size_bytes = _Byte_length(_First, _Last);
+            const size_t _Step_elems = _Traits::_Step();
+            const size_t _Step_bytes = _Step_elems * sizeof(_Ty);
+
+            const auto _True = svptrue_b8();
+
+            const size_t _Unroll_bytes = 2 * _Step_bytes;
+            if (const size_t _Chunk_size = _Size_bytes & ~size_t{_Unroll_bytes - 1}; _Chunk_size != 0) {
+                const void* _Stop_at = _First;
+                _Advance_bytes(_Stop_at, _Chunk_size);
+
+                do {
+                    const auto _Src_lo = _Traits::_Load(_True, _First);
+                    const auto _Src_hi = _Traits::_Load(_True, static_cast<const _Ty*>(_First) + _Step_elems);
+
+                    const auto _Mask_lo = _Traits::_Cmpne(_True, _Src_lo, _Match);
+                    const auto _Mask_hi = _Traits::_Cmpne(_True, _Src_hi, _Match);
+
+                    const auto _Result_lo = _Traits::_Compact(_Mask_lo, _Src_lo);
+                    const auto _Result_hi = _Traits::_Compact(_Mask_hi, _Src_hi);
+
+                    _Out = _Traits::_Store_masked_copy(_True, _Out, _Result_lo, _Mask_lo);
+                    _Out = _Traits::_Store_masked_copy(_True, _Out, _Result_hi, _Mask_hi);
+
+                    _Advance_bytes(_First, _Unroll_bytes);
+                } while (_First != _Stop_at);
+            }
+
+            if ((_Size_bytes & _Step_bytes) != 0) { // use original _Size_bytes; we've read only 2 * _Step_bytes chunks
+                const auto _Src    = _Traits::_Load(_True, _First);
+                const auto _Mask   = _Traits::_Cmpne(_True, _Src, _Match);
+                const auto _Result = _Traits::_Compact(_Mask, _Src);
+                _Out               = _Traits::_Store_masked_copy(_True, _Out, _Result, _Mask);
+                _Advance_bytes(_First, _Step_bytes);
+            }
+
+            if (_First != _Last) {
+                const size_t _Tail_length_elems = _Byte_length(_First, _Last) / sizeof(_Ty);
+                const auto _Tail_mask           = _Traits::_Whilelt(size_t{0}, _Tail_length_elems);
+                const auto _Src                 = _Traits::_Load(_Tail_mask, _First);
+                const auto _Mask                = _Traits::_Cmpne(_Tail_mask, _Src, _Match);
+                const auto _Result              = _Traits::_Compact(_Mask, _Src);
+                _Out                            = _Traits::_Store_masked_copy(_Tail_mask, _Out, _Result, _Mask);
+            }
+
+            return _Out;
+        }
+#endif // ^^^ defined(_M_ARM64) ^^^
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
         constexpr auto _Tables_1_sse = _Make_tables<256, 8>(1, 1);
         constexpr auto _Tables_2_sse = _Make_tables<256, 16>(2, 2);
@@ -10431,7 +10736,13 @@ void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _V
     void* _Out = _First;
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 8) {
+    const size_t _Size_bytes = _Byte_length(_First, _Last);
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    if (_Use_FEAT_SVE() && _Sve_vl() > 16) {
+        return _Removing::_Remove_impl_sve<_Removing::_Sve_1>(_First, _Last, _Val);
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
+    if (_Size_bytes >= 8) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
         _Out   = _Removing::_Remove_impl<_Removing::_Neon_1>(_First, _Stop, _Val);
@@ -10453,7 +10764,13 @@ void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _
     void* _Out = _First;
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
+    const size_t _Size_bytes = _Byte_length(_First, _Last);
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    if (_Use_FEAT_SVE() && _Sve_vl() > 16) {
+        return _Removing::_Remove_impl_sve<_Removing::_Sve_2>(_First, _Last, _Val);
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
+    if (_Size_bytes >= 16) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Out   = _Removing::_Remove_impl<_Removing::_Neon_2>(_First, _Stop, _Val);
@@ -10475,6 +10792,11 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
     void* _Out = _First;
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    if (_Use_FEAT_SVE()) {
+        return _Removing::_Remove_impl_sve<_Removing::_Sve_4>(_First, _Last, _Val);
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
@@ -10503,7 +10825,12 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
 void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _Val) noexcept {
     void* _Out = _First;
 
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    if (_Use_FEAT_SVE()) {
+        return _Removing::_Remove_impl_sve<_Removing::_Sve_8>(_First, _Last, _Val);
+    }
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+#if !defined(_M_ARM64EC)
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
@@ -10517,7 +10844,8 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
         _Out   = _Removing::_Remove_impl<_Removing::_Sse_8>(_First, _Stop, _Val);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
@@ -10525,7 +10853,15 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
 void* __stdcall __std_remove_copy_1(
     const void* _First, const void* const _Last, void* _Out, const uint8_t _Val) noexcept {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 8) {
+    const size_t _Size_bytes = _Byte_length(_First, _Last);
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    // For 8-bit element types SVE is only faster than Neon at same VL for small input sizes.
+    bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes <= 96 || _Sve_vl() > 16);
+    if (_Use_sve) {
+        return _Removing::_Remove_copy_impl_sve<_Removing::_Sve_1>(_First, _Last, _Out, _Val);
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
+    if (_Size_bytes >= 8) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
         _Out   = _Removing::_Remove_copy_impl<_Removing::_Neon_1>(_First, _Stop, _Out, _Val);
@@ -10546,6 +10882,14 @@ void* __stdcall __std_remove_copy_1(
 void* __stdcall __std_remove_copy_2(
     const void* _First, const void* const _Last, void* _Out, const uint16_t _Val) noexcept {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    // Note: Using SVE unconditionally for all input sizes here is an intentional choice to optimize for 2x128b
+    // machines. On these CPUs SVE is faster for all input sizes, whereas on a 4x128b machine SVE wins only for
+    // _Size_bytes <= 256.
+    if (_Use_FEAT_SVE()) {
+        return _Removing::_Remove_copy_impl_sve<_Removing::_Sve_2>(_First, _Last, _Out, _Val);
+    }
+#endif // ^^^ defined(_M_ARM64) ^^^
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
@@ -10566,9 +10910,14 @@ void* __stdcall __std_remove_copy_2(
 
 void* __stdcall __std_remove_copy_4(
     const void* _First, const void* const _Last, void* _Out, const uint32_t _Val) noexcept {
-// We choose not to vectorize remove_copy for 32-bit elements on ARM64/ARM64EC
-// as this does not improve performance over the scalar code.
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
+    // We choose not to vectorize remove_copy for 32-bit elements on ARM64/ARM64EC with Neon,
+    // as this does not improve performance over the scalar code.
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    if (_Use_FEAT_SVE()) {
+        return _Removing::_Remove_copy_impl_sve<_Removing::_Sve_4>(_First, _Last, _Out, _Val);
+    }
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+#if !defined(_M_ARM64EC)
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
@@ -10582,14 +10931,23 @@ void* __stdcall __std_remove_copy_4(
         _Out   = _Removing::_Remove_copy_impl<_Removing::_Sse_4>(_First, _Stop, _Out, _Val);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
 
 void* __stdcall __std_remove_copy_8(
     const void* _First, const void* const _Last, void* _Out, const uint64_t _Val) noexcept {
-#if !defined(_M_ARM64) && !defined(_M_ARM64EC)
+#if defined(_M_ARM64) // not ARM64EC, which lacks SVE
+    // For 64-bit element types SVE is only faster than the scalar fallback at VL128 for large input sizes.
+    const size_t _Size_bytes = _Byte_length(_First, _Last);
+    bool _Use_sve            = _Use_FEAT_SVE() && (_Size_bytes > 512 || _Sve_vl() > 16);
+    if (_Use_sve) {
+        return _Removing::_Remove_copy_impl_sve<_Removing::_Sve_8>(_First, _Last, _Out, _Val);
+    }
+#else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
+#if !defined(_M_ARM64EC)
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
@@ -10603,7 +10961,8 @@ void* __stdcall __std_remove_copy_8(
         _Out   = _Removing::_Remove_copy_impl<_Removing::_Sse_8>(_First, _Stop, _Out, _Val);
         _First = _Stop;
     }
-#endif // ^^^ !defined(_M_ARM64) && !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64EC) ^^^
+#endif // ^^^ !defined(_M_ARM64) ^^^
 
     return _Removing::_Remove_fallback(_First, _Last, _Out, _Val);
 }
