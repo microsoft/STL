@@ -42,7 +42,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
         <LinkGenerateDebugInformation>true</LinkGenerateDebugInformation>
         <LinkProgramDataBaseFileName>$(OutputPath)\$(OutputName)$(_PDB_VER_NAME_)$(DllPdbFlavorSuffix)</LinkProgramDataBaseFileName>
-        <LinkProgramDataBaseFileName Condition="'$(BuildArchitecture)' =='arm64ec' and '$(Platform)' != '$(BuildArchitecture)'">$(OutputPath)\$(OutputName).arm64$(DllPdbFlavorSuffix)</LinkProgramDataBaseFileName>
+        <LinkProgramDataBaseFileName Condition="'$(BuildingArm64XEC)' == 'true'">$(OutputPath)\$(OutputName).arm64$(DllPdbFlavorSuffix)</LinkProgramDataBaseFileName>
 
         <LinkAdditionalOptions>-debugtype:cv,fixup $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions Condition="$(DebugBuild) != 'true'">-opt:ref,icf=3 $(LinkAdditionalOptions)</LinkAdditionalOptions>
