@@ -364,8 +364,6 @@ public:
     }
 
     // [span.sub] Subviews
-    // LWG-4293: The returned spans are directly-initialized, so an initializer_list
-    // constructor can never hijack these calls for const-qualified bool element types.
     template <size_t _Count>
     _NODISCARD constexpr auto first() const noexcept /* strengthened */ {
         if constexpr (_Extent != dynamic_extent) {
