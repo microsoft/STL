@@ -14,6 +14,7 @@
 #include <limits>
 #include <numeric>
 #include <optional>
+#include <random>
 #include <type_traits>
 
 using namespace std;
@@ -91,11 +92,7 @@ constexpr int fe_major_except = FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW;
 
 bool check_feexcept(
     [[maybe_unused]] const int expected_excepts, [[maybe_unused]] const int except_mask = fe_major_except) {
-#if defined(_M_ARM64) || defined(_M_ARM64EC) // TRANSITION, GH-5685
-    return true;
-#else // ^^^ workaround / no workaround vvv
     return fetestexcept(except_mask) == (expected_excepts & except_mask);
-#endif // ^^^ no workaround ^^^
 }
 #else // ^^^ defined(_M_FP_STRICT) / !defined(_M_FP_STRICT) vvv
 class ExceptGuard {
@@ -1133,6 +1130,38 @@ constexpr bool test_gh_2112() {
     return true;
 }
 
+#ifdef _M_FP_STRICT
+template <typename Ty>
+void test_lerp_exception() {
+    mt19937_64 rng(20260802'064821);
+    uniform_int_distribution<long long> dist_ab(-1LL << 58, (1LL << 58) - 1);
+    uniform_int_distribution<long long> dist_t(-3LL << 52, (5LL << 52) - 1);
+
+    for (int i = 0; i < 1'000'000; ++i) {
+        const long long ia = dist_ab(rng);
+        const long long ib = dist_ab(rng);
+        const long long it = dist_t(rng);
+        const Ty a         = static_cast<Ty>(_Bit_cast<double>(ia ^ (ia >> 63)) * 0x1p+991);
+        const Ty b         = static_cast<Ty>(_Bit_cast<double>(ib ^ (ib >> 63)) * 0x1p+991);
+        const Ty t         = static_cast<Ty>(it * 0x1p-53);
+
+        feclearexcept(FE_ALL_EXCEPT);
+        const Ty result      = lerp(a, b, t);
+        const int exceptions = fetestexcept(FE_ALL_EXCEPT);
+
+        if ((exceptions & ~FE_INEXACT) != 0) {
+            constexpr int hex_precision = (numeric_limits<Ty>::digits - 1 + 3) / 4;
+            printf("         a: %+.*a\n", hex_precision, a);
+            printf("         b: %+.*a\n", hex_precision, b);
+            printf("         t: %+.*a\n", hex_precision, t);
+            printf("    result: %+.*a\n", hex_precision, result);
+            printf("exceptions: %#x\n", exceptions);
+            exit(1);
+        }
+    }
+}
+#endif // _M_FP_STRICT
+
 int main() {
     test_constants<float>();
     test_constants<double>();
@@ -1207,4 +1236,9 @@ int main() {
     test_gh_1917();
     test_gh_2112();
     STATIC_ASSERT(test_gh_2112());
+
+#ifdef _M_FP_STRICT
+    test_lerp_exception<float>();
+    test_lerp_exception<double>();
+#endif // _M_FP_STRICT
 }
