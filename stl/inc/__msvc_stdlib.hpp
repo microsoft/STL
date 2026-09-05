@@ -295,21 +295,21 @@ _ACRTIMP errno_t __cdecl rand_s(_Out_ unsigned int* _RandomValue);
 extern "C++" {
 inline namespace _Msvc_stdlib {
     [[nodiscard]] _CONSTEXPR_CSTDLIB23 long abs(long const _Xx) noexcept /* strengthened */ {
-        return labs(_Xx);
+        return _Xx >= 0 ? _Xx : -_Xx;
     }
 
     [[nodiscard]] _CONSTEXPR_CSTDLIB23 long long abs(long long const _Xx) noexcept /* strengthened */ {
-        return llabs(_Xx);
+        return _Xx >= 0 ? _Xx : -_Xx;
     }
 
     [[nodiscard]] _CONSTEXPR_CSTDLIB23 ldiv_t div(long const _Numerator, long const _Denominator) noexcept
     /* strengthened */ {
-        return ldiv(_Numerator, _Denominator);
+        return {_Numerator / _Denominator, _Numerator % _Denominator};
     }
 
     [[nodiscard]] _CONSTEXPR_CSTDLIB23 lldiv_t div(long long const _Numerator, long long const _Denominator) noexcept
     /* strengthened */ {
-        return lldiv(_Numerator, _Denominator);
+        return {_Numerator / _Denominator, _Numerator % _Denominator};
     }
 } // namespace _Msvc_stdlib
 } // extern "C++"
