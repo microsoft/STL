@@ -4,14 +4,85 @@
 #include <algorithm>
 #include <cassert>
 #include <forward_list>
+#include <iterator>
 #include <ranges>
 #include <span>
+#include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
 #include <range_algorithm_support.hpp>
 using namespace std;
+
+// P3059R2 - Making user-defined constructors of view iterators/sentinels private
+constexpr void iterator_sentinel() {
+    // Use a non-common range so elements_view::end() returns its nested sentinel
+    // instead of an iterator.
+    using Element      = pair<int, long>;
+    using Base         = ranges::subrange<Element*, unreachable_sentinel_t>;
+    using View         = ranges::elements_view<Base, 0>;
+    using BaseIterator = ranges::iterator_t<Base>;
+    using BaseSentinel = ranges::sentinel_t<Base>;
+
+    using Iterator = ranges::iterator_t<View>;
+    using Sentinel = ranges::sentinel_t<View>;
+
+    static_assert(!same_as<Iterator, Sentinel>);
+
+    // P3059R2: users must not be able to construct elements_view::iterator
+    // directly from the underlying range iterator.
+    static_assert(!constructible_from<Iterator, BaseIterator>);
+
+    // P3059R2: users must not be able to construct elements_view::sentinel
+    // directly from the underlying range sentinel.
+    static_assert(!constructible_from<Sentinel, BaseSentinel>);
+
+    // The public special member functions must remain available.
+    static_assert(default_initializable<Iterator>);
+    static_assert(copy_constructible<Iterator>);
+    static_assert(move_constructible<Iterator>);
+
+    static_assert(default_initializable<Sentinel>);
+    static_assert(copy_constructible<Sentinel>);
+    static_assert(move_constructible<Sentinel>);
+
+    // Verify the iterator and sentinel still satisfy their public interfaces.
+    static_assert(random_access_iterator<Iterator>);
+    static_assert(sentinel_for<Sentinel, Iterator>);
+
+    // Test the const specializations.
+    using ConstBaseIterator = ranges::iterator_t<const Base>;
+    using ConstBaseSentinel = ranges::sentinel_t<const Base>;
+
+    using ConstIterator = ranges::iterator_t<const View>;
+    using ConstSentinel = ranges::sentinel_t<const View>;
+
+    static_assert(!same_as<ConstIterator, ConstSentinel>);
+
+    // The implementation-only constructors for the const specializations must
+    // also be inaccessible.
+    static_assert(!constructible_from<ConstIterator, ConstBaseIterator>);
+    static_assert(!constructible_from<ConstSentinel, ConstBaseSentinel>);
+
+    static_assert(default_initializable<ConstIterator>);
+    static_assert(copy_constructible<ConstIterator>);
+    static_assert(move_constructible<ConstIterator>);
+
+    static_assert(default_initializable<ConstSentinel>);
+    static_assert(copy_constructible<ConstSentinel>);
+    static_assert(move_constructible<ConstSentinel>);
+
+    static_assert(random_access_iterator<ConstIterator>);
+    static_assert(sentinel_for<ConstSentinel, ConstIterator>);
+
+    // The public non-const-to-const converting constructors must remain
+    // available.
+    static_assert(constructible_from<ConstIterator, Iterator>);
+    static_assert(constructible_from<ConstSentinel, Sentinel>);
+}
+
 using P = pair<int, int>;
 
 // Validate views::keys and views::values
@@ -466,4 +537,5 @@ int main() {
         static_assert(test_one(v));
         test_one(v);
     }
+    iterator_sentinel();
 }
