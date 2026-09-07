@@ -32,6 +32,7 @@ $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 # | SKU    | Location       | Cores | Notes
 # |--------|----------------|------:|-------
 # | Fadsv7 | australiaeast  |  3024 |
+# | Fadsv7 | swedencentral  |  2560 |
 # | Dpdsv6 | australiaeast  |  2048 |
 # | Dpdsv6 | southcentralus |  2048 |
 
@@ -39,9 +40,9 @@ if ($VMSku -ieq 'Fadsv7') {
   $Arch = 'x64'
   $DiskType = 'NVMe'
   $ProtoVMSize = 'Standard_F16ads_v7'
-  $PoolSkuName = 'Standard_F64ads_v7'
-  $PoolSize = 23 # We have quota for 3024 cores (47 VMs), so we can have old and new pools of 23 VMs each.
-  $AvailableLocations = @('australiaeast')
+  $PoolSkuName = 'Standard_F80ads_v7'
+  $PoolSize = 32 # Locations where we have quota for at least 2560 cores (32 VMs):
+  $AvailableLocations = @('australiaeast', 'swedencentral')
 } elseif ($VMSku -ieq 'Dpdsv6') {
   $Arch = 'arm64'
   $DiskType = 'SCSI'
