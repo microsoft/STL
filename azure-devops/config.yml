@@ -5,7 +5,7 @@
 
 variables:
 - name: x64PoolName
-  value: 'Stl-2026-08-25T2113-x64-Fadsv7-Pool'
+  value: 'Stl-2026-09-07T1343-x64-Fadsv7-Pool'
   readonly: true
 - name: arm64PoolName
   value: 'Stl-2026-08-25T2113-arm64-Dpdsv6-Pool'
