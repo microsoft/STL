@@ -111,7 +111,7 @@ Function DownloadAndInstall {
     mkdir $tempPath -Force | Out-Null
     $fileName = [uri]::new($Url).Segments[-1]
     $installerPath = Join-Path $tempPath $fileName
-    curl.exe --fail -L -o $installerPath -s -S $Url
+    curl.exe --fail --silent --show-error --location --output $installerPath $Url
     if ($LASTEXITCODE -ne 0) {
       Write-Error "curl.exe failed with non-zero exit code $LASTEXITCODE."
     }
