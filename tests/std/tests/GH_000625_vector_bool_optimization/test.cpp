@@ -1561,96 +1561,116 @@ CONSTEXPR20 bool test_is_permutation() {
     return true;
 }
 
+// vector<bool> like proxy reference class with evil behavior
+struct vbool_like_reference {
+    const bool* ptr;
+
+    operator bool() const {
+        return *ptr;
+    }
+
+    // proxy-to-proxy comparison; the evil part, not present in vector<bool> proxies
+    bool operator==(const vbool_like_reference&) const {
+        return true; // all proxies are equal
+    }
+
+    // proxy-to-other-proxy comparison; the evil part, not present in vector<bool> proxies
+    bool operator==(const vector<bool>::reference&) const {
+        return true; // all proxies are equal
+    }
+};
+
+struct vbool_like_iterator {
+    using iterator_category = random_access_iterator_tag;
+    using value_type        = bool;
+    using difference_type   = ptrdiff_t;
+    using pointer           = bool*;
+    using reference         = vbool_like_reference;
+
+    const bool* ptr;
+
+    vbool_like_reference operator*() const {
+        return {ptr};
+    }
+
+    vbool_like_iterator& operator++() {
+        ++ptr;
+        return *this;
+    }
+
+    vbool_like_iterator& operator--() {
+        --ptr;
+        return *this;
+    }
+
+    vbool_like_iterator operator++(int) {
+        vbool_like_iterator result;
+        ++ptr;
+        return result;
+    }
+
+    vbool_like_iterator operator--(int) {
+        vbool_like_iterator result;
+        --ptr;
+        return result;
+    }
+
+    vbool_like_iterator& operator+=(const ptrdiff_t d) {
+        ptr += d;
+        return *this;
+    }
+
+    vbool_like_iterator& operator-=(const ptrdiff_t d) {
+        ptr -= d;
+        return *this;
+    }
+
+    vbool_like_iterator operator+(const ptrdiff_t d) const {
+        return {ptr + d};
+    }
+
+    vbool_like_iterator operator-(const ptrdiff_t d) const {
+        return {ptr - d};
+    }
+
+    vbool_like_reference operator[](const ptrdiff_t d) const {
+        return {ptr - d};
+    }
+
+    ptrdiff_t operator-(const vbool_like_iterator& other) const {
+        return ptr - other.ptr;
+    }
+
+    bool operator==(const vbool_like_iterator& other) const {
+        return ptr == other.ptr;
+    }
+
+    bool operator!=(const vbool_like_iterator& other) const {
+        return ptr != other.ptr;
+    }
+
+    bool operator<(const vbool_like_iterator& other) const {
+        return ptr < other.ptr;
+    }
+
+    bool operator<=(const vbool_like_iterator& other) const {
+        return ptr <= other.ptr;
+    }
+
+    bool operator>(const vbool_like_iterator& other) const {
+        return ptr > other.ptr;
+    }
+
+    bool operator>=(const vbool_like_iterator& other) const {
+        return ptr >= other.ptr;
+    }
+};
+
+vbool_like_iterator operator+(const ptrdiff_t d, const vbool_like_iterator& i) {
+    return {d + i.ptr};
+}
+
 void test_is_permutation_vbool_like_iterators() {
-    // vector<bool> like proxy reference class with evil behavior
-    struct vbool_like_reference {
-        const bool* ptr;
-
-        operator bool() const {
-            return *ptr;
-        }
-
-        // proxy-to-proxy comparison; the evil part, not present in vector<bool> proxies
-        bool operator==(const vbool_like_reference&) const {
-            return true; // all proxies are equal
-        }
-
-        // proxy-to-other-proxy comparison; the evil part, not present in vector<bool> proxies
-        bool operator==(const vector<bool>::reference&) const {
-            return true; // all proxies are equal
-        }
-    };
-
-    struct vbool_like_iterator {
-        using iterator_category = random_access_iterator_tag;
-        using value_type        = bool;
-        using difference_type   = ptrdiff_t;
-        using pointer           = bool*;
-        using reference         = vbool_like_reference;
-
-        const bool* ptr;
-
-        vbool_like_reference operator*() const {
-            return {ptr};
-        }
-
-        vbool_like_iterator& operator++() {
-            ++ptr;
-            return *this;
-        }
-
-        vbool_like_iterator& operator--() {
-            --ptr;
-            return *this;
-        }
-
-        vbool_like_iterator& operator+=(ptrdiff_t d) {
-            ptr += d;
-            return *this;
-        }
-
-        vbool_like_iterator& operator-=(ptrdiff_t d) {
-            ptr -= d;
-            return *this;
-        }
-
-        vbool_like_iterator operator+(ptrdiff_t d) const {
-            return {ptr + d};
-        }
-
-        vbool_like_iterator operator-(ptrdiff_t d) const {
-            return {ptr - d};
-        }
-
-        ptrdiff_t operator-(const vbool_like_iterator& other) const {
-            return ptr - other.ptr;
-        }
-
-        bool operator==(const vbool_like_iterator& other) const {
-            return ptr == other.ptr;
-        }
-
-        bool operator!=(const vbool_like_iterator& other) const {
-            return ptr != other.ptr;
-        }
-
-        bool operator<(const vbool_like_iterator& other) const {
-            return ptr < other.ptr;
-        }
-
-        bool operator<=(const vbool_like_iterator& other) const {
-            return ptr <= other.ptr;
-        }
-
-        bool operator>(const vbool_like_iterator& other) const {
-            return ptr > other.ptr;
-        }
-
-        bool operator>=(const vbool_like_iterator& other) const {
-            return ptr >= other.ptr;
-        }
-    };
-
     bool all_true[] = {true, true, true};
     vector<bool> some_true{true, false, true};
 
