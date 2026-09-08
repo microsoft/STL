@@ -20,11 +20,9 @@ template <equality Eq, args Args>
 void perm_arr_check(benchmark::State& state) {
     const auto size = static_cast<size_t>(state.range(0));
     vector<bool> v1 = random_vector<bool>(size);
-    vector<bool> v2;
-    if constexpr (Eq == equality::eq) {
-        v2 = v1;
-    } else {
-        v2 = random_vector<bool>(size, 1u);
+    vector<bool> v2 = v1;
+    if constexpr (Eq == equality::neq) {
+        v2[v2.size() / 2].flip();
     }
 
     auto a1 = make_unique<bool[]>(size);
@@ -50,11 +48,9 @@ template <equality Eq, args Args>
 void perm_vbool_check(benchmark::State& state) {
     const auto size = static_cast<size_t>(state.range(0));
     vector<bool> v1 = random_vector<bool>(size);
-    vector<bool> v2;
-    if constexpr (Eq == equality::eq) {
-        v2 = v1;
-    } else {
-        v2 = random_vector<bool>(size, 1u);
+    vector<bool> v2 = v1;
+    if constexpr (Eq == equality::neq) {
+        v2[v2.size() / 2].flip();
     }
 
     for (auto _ : state) {
