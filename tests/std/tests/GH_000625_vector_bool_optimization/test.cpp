@@ -1604,13 +1604,13 @@ struct vbool_like_iterator {
     }
 
     vbool_like_iterator operator++(int) {
-        vbool_like_iterator result;
+        const vbool_like_iterator result = *this;
         ++ptr;
         return result;
     }
 
     vbool_like_iterator operator--(int) {
-        vbool_like_iterator result;
+        const vbool_like_iterator result = *this;
         --ptr;
         return result;
     }
