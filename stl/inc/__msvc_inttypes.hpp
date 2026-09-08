@@ -51,15 +51,19 @@ typedef _Lldiv_t imaxdiv_t;
 #define _CONSTEXPR_CINTTYPES23 inline
 #endif // ^^^ inline when /Zc:cmath- opts out of constexpr, and in C++20 and earlier ^^^
 
-[[nodiscard]] _Check_return_ _CONSTEXPR_CINTTYPES23 intmax_t __cdecl imaxabs(_In_ intmax_t _Number) noexcept
-/* strengthened */ {
-    return _Number >= 0 ? _Number : -_Number;
-}
+extern "C++" {
+inline namespace _Msvc_inttypes {
+    [[nodiscard]] _Check_return_ _CONSTEXPR_CINTTYPES23 intmax_t __cdecl imaxabs(_In_ intmax_t _Number) noexcept
+    /* strengthened */ {
+        return _Number >= 0 ? _Number : -_Number;
+    }
 
-[[nodiscard]] _Check_return_ _CONSTEXPR_CINTTYPES23 imaxdiv_t __cdecl imaxdiv(
-    _In_ intmax_t _Numerator, _In_ intmax_t _Denominator) noexcept /* strengthened */ {
-    return {_Numerator / _Denominator, _Numerator % _Denominator};
-}
+    [[nodiscard]] _Check_return_ _CONSTEXPR_CINTTYPES23 imaxdiv_t __cdecl imaxdiv(
+        _In_ intmax_t _Numerator, _In_ intmax_t _Denominator) noexcept /* strengthened */ {
+        return {_Numerator / _Denominator, _Numerator % _Denominator};
+    }
+} // namespace _Msvc_inttypes
+} // extern "C++"
 
 #undef _CONSTEXPR_CINTTYPES23
 
