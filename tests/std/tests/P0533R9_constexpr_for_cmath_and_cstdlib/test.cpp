@@ -1,20 +1,46 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// TRANSITION, MSVC frontend needs to intercept inclusions of <inttypes.h>:
+#ifndef _M_CEE_PURE
+#include <__msvc_inttypes.hpp>
+#endif
+// ^^^ workaround ^^^
+
 #include <cassert>
+#include <cinttypes>
 #include <cmath>
 #include <cstdlib>
 #include <limits>
 #include <type_traits>
 using namespace std;
 
-template <class T>
-constexpr void test_classification_functions_cxx23();
+#if !_HAS_CXX17
+#pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wc++17-extensions" // warning: constexpr if is a C++17 extension
+#endif // ^^^ defined(__clang__) ^^^
+#endif // ^^^ !_HAS_CXX17 ^^^
+
+#ifdef __cpp_lib_constexpr_cmath
+#define CONSTEXPR_CMATH23 constexpr
+#else
+#define CONSTEXPR_CMATH23 inline
+#endif
+
+#if _HAS_CXX26 && defined(_MSVC_LIBC_MATH) // TRANSITION, GH-3789, should be `__cpp_lib_constexpr_cmath >= 202306L`
+#define CONSTEXPR_CMATH26 constexpr
+#else
+#define CONSTEXPR_CMATH26 inline
+#endif
 
 template <class T>
-constexpr void test_comparison_functions_cxx23();
+CONSTEXPR_CMATH23 void test_classification_functions_cxx23();
 
-constexpr bool test_cmath_cxx23() {
+template <class T>
+CONSTEXPR_CMATH23 void test_comparison_functions_cxx23();
+
+CONSTEXPR_CMATH23 bool test_cmath_cxx23() {
 #if defined(_MSVC_INTERNAL_TESTING) || !defined(_MSVC_LIBC_MATH) // TRANSITION, MSVC-PR-767184/772024 fixed LNK2005
     {
         int exponent = 0;
@@ -220,7 +246,7 @@ constexpr bool test_cmath_cxx23() {
     test_classification_functions_cxx23<int>();
 
 #ifndef _MSVC_INTERNAL_TESTING // TRANSITION, MSVC-PR-767404 fixed the comparison functions in constant evaluation
-    if !consteval
+    if (!_Is_constant_evaluated())
 #endif // ^^^ workaround ^^^
     {
         test_comparison_functions_cxx23<float>();
@@ -233,7 +259,7 @@ constexpr bool test_cmath_cxx23() {
 }
 
 template <class T>
-constexpr void test_classification_functions_cxx23() {
+CONSTEXPR_CMATH23 void test_classification_functions_cxx23() {
     {
         constexpr T zro{};
         constexpr T val = static_cast<T>(5);
@@ -292,7 +318,7 @@ constexpr void test_classification_functions_cxx23() {
 }
 
 template <class T>
-constexpr void test_comparison_functions_cxx23() {
+CONSTEXPR_CMATH23 void test_comparison_functions_cxx23() {
     constexpr T lo = static_cast<T>(-3);
     constexpr T hi = static_cast<T>(4);
 
@@ -352,7 +378,7 @@ constexpr void test_comparison_functions_cxx23() {
     }
 }
 
-constexpr bool test_cstdlib_cxx23() {
+CONSTEXPR_CMATH23 bool test_cstdlib_cxx23() {
     assert(abs(-5) == 5);
     assert(abs(-5L) == 5L);
     assert(abs(-5LL) == 5LL);
@@ -380,7 +406,18 @@ constexpr bool test_cstdlib_cxx23() {
     return true;
 }
 
-constexpr bool test_cmath_cxx26() {
+CONSTEXPR_CMATH23 bool test_cinttypes_cxx23() {
+    // Test LWG-3834 "Missing constexpr for std::intmax_t math functions in <cinttypes>".
+
+    assert(imaxabs(-5LL) == 5LL);
+
+    assert(imaxdiv(1729LL, 100LL).quot == 17LL);
+    assert(imaxdiv(1729LL, 100LL).rem == 29LL);
+
+    return true;
+}
+
+CONSTEXPR_CMATH26 bool test_cmath_cxx26() {
     // These tests use round() because they're checking for basic functionality, not precision.
 
     assert(round(acos(0.6f) * 1000.0f) == 927.0f);
@@ -432,46 +469,68 @@ constexpr bool test_cmath_cxx26() {
     assert(round(tanl(0.6l) * 1000.0l) == 684.0l);
     assert(round(tan(1729) * 1000.0) == 2087.0);
 
-    if !consteval { // TRANSITION, GH-3789
-        assert(round(acosh(3.3f) * 1000.0f) == 1863.0f);
+    assert(round(acosh(3.3f) * 1000.0f) == 1863.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(acosh(3.3) * 1000.0) == 1863.0);
         assert(round(acosh(3.3l) * 1000.0l) == 1863.0l);
-        assert(round(acoshf(3.3f) * 1000.0f) == 1863.0f);
+    }
+    assert(round(acoshf(3.3f) * 1000.0f) == 1863.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(acoshl(3.3l) * 1000.0l) == 1863.0l);
         assert(round(acosh(7) * 1000.0) == 2634.0);
+    }
 
-        assert(round(asinh(3.3f) * 1000.0f) == 1909.0f);
+    assert(round(asinh(3.3f) * 1000.0f) == 1909.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(asinh(3.3) * 1000.0) == 1909.0);
         assert(round(asinh(3.3l) * 1000.0l) == 1909.0l);
-        assert(round(asinhf(3.3f) * 1000.0f) == 1909.0f);
+    }
+    assert(round(asinhf(3.3f) * 1000.0f) == 1909.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(asinhl(3.3l) * 1000.0l) == 1909.0l);
         assert(round(asinh(7) * 1000.0) == 2644.0);
+    }
 
-        assert(round(atanh(0.6f) * 1000.0f) == 693.0f);
+    assert(round(atanh(0.6f) * 1000.0f) == 693.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(atanh(0.6) * 1000.0) == 693.0);
         assert(round(atanh(0.6l) * 1000.0l) == 693.0l);
-        assert(round(atanhf(0.6f) * 1000.0f) == 693.0f);
+    }
+    assert(round(atanhf(0.6f) * 1000.0f) == 693.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(atanhl(0.6l) * 1000.0l) == 693.0l);
         assert(round(atanh(0) * 1000.0) == 0.0);
+    }
 
-        assert(round(cosh(0.6f) * 1000.0f) == 1185.0f);
+    assert(round(cosh(0.6f) * 1000.0f) == 1185.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(cosh(0.6) * 1000.0) == 1185.0);
         assert(round(cosh(0.6l) * 1000.0l) == 1185.0l);
-        assert(round(coshf(0.6f) * 1000.0f) == 1185.0f);
+    }
+    assert(round(coshf(0.6f) * 1000.0f) == 1185.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(coshl(0.6l) * 1000.0l) == 1185.0l);
         assert(round(cosh(2) * 1000.0) == 3762.0);
+    }
 
-        assert(round(sinh(0.6f) * 1000.0f) == 637.0f);
+    assert(round(sinh(0.6f) * 1000.0f) == 637.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(sinh(0.6) * 1000.0) == 637.0);
         assert(round(sinh(0.6l) * 1000.0l) == 637.0l);
-        assert(round(sinhf(0.6f) * 1000.0f) == 637.0f);
+    }
+    assert(round(sinhf(0.6f) * 1000.0f) == 637.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(sinhl(0.6l) * 1000.0l) == 637.0l);
         assert(round(sinh(2) * 1000.0) == 3627.0);
+    }
 
-        assert(round(tanh(0.6f) * 1000.0f) == 537.0f);
+    assert(round(tanh(0.6f) * 1000.0f) == 537.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(tanh(0.6) * 1000.0) == 537.0);
         assert(round(tanh(0.6l) * 1000.0l) == 537.0l);
-        assert(round(tanhf(0.6f) * 1000.0f) == 537.0f);
+    }
+    assert(round(tanhf(0.6f) * 1000.0f) == 537.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(tanhl(0.6l) * 1000.0l) == 537.0l);
         assert(round(tanh(2) * 1000.0) == 964.0);
     }
@@ -483,14 +542,12 @@ constexpr bool test_cmath_cxx26() {
     assert(round(expl(0.6l) * 1000.0l) == 1822.0l);
     assert(round(exp(2) * 1000.0) == 7389.0);
 
-    if !consteval { // TRANSITION, GH-3789
-        assert(round(exp2(0.6f) * 1000.0f) == 1516.0f);
-        assert(round(exp2(0.6) * 1000.0) == 1516.0);
-        assert(round(exp2(0.6l) * 1000.0l) == 1516.0l);
-        assert(round(exp2f(0.6f) * 1000.0f) == 1516.0f);
-        assert(round(exp2l(0.6l) * 1000.0l) == 1516.0l);
-        assert(round(exp2(-3) * 1000.0) == 125.0);
-    }
+    assert(round(exp2(0.6f) * 1000.0f) == 1516.0f);
+    assert(round(exp2(0.6) * 1000.0) == 1516.0);
+    assert(round(exp2(0.6l) * 1000.0l) == 1516.0l);
+    assert(round(exp2f(0.6f) * 1000.0f) == 1516.0f);
+    assert(round(exp2l(0.6l) * 1000.0l) == 1516.0l);
+    assert(round(exp2(-3) * 1000.0) == 125.0);
 
     assert(round(expm1(0.6f) * 1000.0f) == 822.0f);
     assert(round(expm1(0.6) * 1000.0) == 822.0);
@@ -541,13 +598,15 @@ constexpr bool test_cmath_cxx26() {
     assert(round(hypotl(3.3l, 7.7l) * 1000.0l) == 8377.0l);
     assert(round(hypot(3, 7) * 1000.0) == 7616.0);
 
-    if !consteval { // TRANSITION, GH-3789
+#if _HAS_CXX17
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(hypot(2.2f, 3.3f, 4.4f) * 1000.0f) == 5924.0f);
         assert(round(hypot(2.2, 3.3, 4.4) * 1000.0) == 5924.0);
         assert(round(hypot(2.2l, 3.3l, 4.4l) * 1000.0l) == 5924.0l);
         assert(round(hypot(2, 3, 4) * 1000.0) == 5385.0);
         // No 3-arg overloads for hypotf() and hypotl()
     }
+#endif // ^^^ _HAS_CXX17 ^^^
 
     assert(round(pow(3.3f, 0.6f) * 1000.0f) == 2047.0f);
     assert(round(pow(3.3, 0.6) * 1000.0) == 2047.0);
@@ -563,11 +622,13 @@ constexpr bool test_cmath_cxx26() {
     assert(round(sqrtl(0.6l) * 1000.0l) == 775.0l);
     assert(round(sqrt(7) * 1000.0) == 2646.0);
 
-    if !consteval { // TRANSITION, GH-3789
-        assert(round(erf(0.6f) * 1000.0f) == 604.0f);
+    assert(round(erf(0.6f) * 1000.0f) == 604.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(erf(0.6) * 1000.0) == 604.0);
         assert(round(erf(0.6l) * 1000.0l) == 604.0l);
-        assert(round(erff(0.6f) * 1000.0f) == 604.0f);
+    }
+    assert(round(erff(0.6f) * 1000.0f) == 604.0f);
+    if (!_Is_constant_evaluated()) { // TRANSITION, GH-3789
         assert(round(erfl(0.6l) * 1000.0l) == 604.0l);
         assert(round(erf(1) * 1000.0) == 843.0);
 
@@ -636,6 +697,7 @@ int main() {
 #if defined(_MSVC_INTERNAL_TESTING) || !defined(_M_ARM64EC) // TRANSITION, MSVC-PR-767414/MSVC-PR-768260 fixed LNK2019
     test_cmath_cxx23();
     test_cstdlib_cxx23();
+    test_cinttypes_cxx23();
     test_cmath_cxx26();
     test_cmath_runtime();
 #endif // ^^^ no workaround ^^^
@@ -643,6 +705,7 @@ int main() {
 #ifdef __cpp_lib_constexpr_cmath
     static_assert(test_cmath_cxx23());
     static_assert(test_cstdlib_cxx23());
+    static_assert(test_cinttypes_cxx23());
 #if _HAS_CXX26 && defined(_MSVC_LIBC_MATH) // TRANSITION, GH-3789, should be `__cpp_lib_constexpr_cmath >= 202306L`
     static_assert(test_cmath_cxx26());
 #endif // ^^^ _HAS_CXX26 && defined(_MSVC_LIBC_MATH) ^^^

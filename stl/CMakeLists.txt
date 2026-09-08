@@ -16,6 +16,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_formatter.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_heap_algorithms.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_int128.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_inttypes.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_iter_core.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_math.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_minmax.hpp
