@@ -1634,7 +1634,7 @@ struct vbool_like_iterator {
     }
 
     vbool_like_reference operator[](const ptrdiff_t d) const {
-        return {ptr - d};
+        return {ptr + d};
     }
 
     ptrdiff_t operator-(const vbool_like_iterator& other) const {
