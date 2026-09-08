@@ -1590,6 +1590,9 @@ enum class _Rx_char_class_kind : int { // must be aligned with corresponding _No
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 class _Builder3 { // provides operations used by _Parser3 to build the nfa
+private:
+    using _String_type = typename _RxTraits::string_type;
+
 public:
     _Builder3(const _RxTraits& _Tr, regex_constants::syntax_option_type);
     void _Setlong();
@@ -1602,6 +1605,7 @@ public:
     void _Add_dot();
     void _Add_char(_Elem _Ch);
     void _Add_class();
+    void _Finalize_class();
     void _Add_char_to_class(_Elem _Ch);
     void _Add_range(_Elem, _Elem);
     void _Add_named_class(typename _RxTraits::char_class_type, _Rx_char_class_kind);
@@ -1627,14 +1631,20 @@ private:
     void _Add_char_to_bitmap(unsigned char _Ch);
     void _Add_char_to_array(_Elem _Ch);
     void _Add_elts(_Node_class<_Elem, _RxTraits>*, typename _RxTraits::char_class_type, bool);
-    void _Char_to_elts(const _Elem*, const _Elem*, _Sequence<_Elem>**);
+    void _Add_coll_elem_to_buf(
+        vector<_String_type>& _Target, unsigned int _Start_length, const _Elem* _First, const _Elem* _Last);
+    void _Fill_coll_sequence_from_buf(
+        _Sequence<_Elem>*& _Seq_start, vector<_String_type>& _Source, unsigned int _Start_length);
     void _Generate_rep(_Node_base* _First_inner, int _Min, int _Max, bool _Greedy);
 
     _Root_node* _Root;
     _Node_base* _Current;
     regex_constants::syntax_option_type _Flags;
     const _RxTraits& _Traits;
-    typename _RxTraits::string_type _Chars;
+    _String_type _Chars;
+    _String_type _Ranges;
+    vector<_String_type> _Coll_elems;
+    vector<_String_type> _Equivs;
 
 public:
     _Builder3(const _Builder3&)            = delete;
@@ -3375,6 +3385,37 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_class() { // add bracket expressi
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
+void _Builder3<_FwdIt, _Elem, _RxTraits>::_Finalize_class() { // finalize bracket expression node
+    const auto _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
+    if (_Node->_Classes != typename _RxTraits::char_class_type{}) {
+        _Add_elts(_Node, _Node->_Classes, false);
+        if constexpr (sizeof(_Elem) == 1) { // unset when all code points are less than 256
+            _Node->_Classes = typename _RxTraits::char_class_type{};
+        }
+    }
+
+    if (!_Chars.empty()) {
+        _Node->_Large = new _Buf<_Elem>;
+        _Node->_Large->_Insert2(_Chars.data(), _Chars.data() + _Chars.size());
+        _Chars.clear();
+    }
+
+    if (!_Ranges.empty()) {
+        _Node->_Ranges = new _Buf<_Elem>;
+        _Node->_Ranges->_Insert2(_Ranges.data(), _Ranges.data() + _Ranges.size());
+        _Ranges.clear();
+    }
+
+    if (!_Coll_elems.empty()) {
+        _Fill_coll_sequence_from_buf(_Node->_Coll, _Coll_elems, 2U);
+    }
+
+    if (!_Equivs.empty()) {
+        _Fill_coll_sequence_from_buf(_Node->_Equiv, _Equivs, 1U);
+    }
+}
+
+template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_char_to_bitmap(unsigned char _Ch) { // add character to accelerator table
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
 
@@ -3387,12 +3428,7 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_char_to_bitmap(unsigned char _Ch)
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_char_to_array(_Elem _Ch) { // append character to character array
-    _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
-    if (!_Node->_Large) {
-        _Node->_Large = new _Buf<_Elem>;
-    }
-
-    _Node->_Large->_Insert2(_Ch);
+    _Chars.push_back(_Ch);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -3414,7 +3450,6 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_char_to_class(_Elem _Ch) { // add
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_range(_Elem _Arg0, const _Elem _Arg1) {
     // add character range to set
-    using _String_type                   = typename _RxTraits::string_type;
     using _Char_traits_type              = typename _String_type::traits_type;
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
 
@@ -3497,12 +3532,8 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_range(_Elem _Arg0, const _Elem _A
     }
 
     // store remaining range as pair
-    if (!_Node->_Ranges) {
-        _Node->_Ranges = new _Buf<_Elem>;
-    }
-
-    _Node->_Ranges->_Insert2(_Arg0);
-    _Node->_Ranges->_Insert2(_Arg1);
+    _Ranges.push_back(_Arg0);
+    _Ranges.push_back(_Arg1);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -3527,18 +3558,20 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_named_class(
     // add contents of named class to bracket expression
     using _Char_class_type               = typename _RxTraits::char_class_type;
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
-    _Add_elts(_Node, _Cl, _Kind != _Rx_char_class_kind::_Positive);
-    if constexpr (sizeof(_Elem) > 1U) {
-        if (_Kind == _Rx_char_class_kind::_Positive) {
-            auto _Cl_all_bits_set = static_cast<_Char_class_type>(-1);
-            if ((_Node->_Classes != _Cl_all_bits_set && _Cl != _Cl_all_bits_set)
-                || _Node->_Classes == _Char_class_type{}) {
-                _Node->_Classes = static_cast<_Char_class_type>(_Node->_Classes | _Cl);
-            } else if (_Node->_Classes != _Cl) {
-                _Node->_Classes = static_cast<_Char_class_type>(_Node->_Classes & _Cl);
+    if (_Kind == _Rx_char_class_kind::_Positive) {
+        const auto _Cl_all_bits_set = static_cast<_Char_class_type>(-1);
+        if ((_Node->_Classes != _Cl_all_bits_set && _Cl != _Cl_all_bits_set) || _Node->_Classes == _Char_class_type{}) {
+            _Node->_Classes = static_cast<_Char_class_type>(_Node->_Classes | _Cl);
+        } else if (_Node->_Classes != _Cl) {
+            _Add_elts(_Node, _Cl_all_bits_set, false);
+            _Node->_Classes = static_cast<_Char_class_type>(_Node->_Classes & _Cl);
+            if constexpr (sizeof(_Elem) > 1) { // set only when potentially matching code points >= 256
                 _Node->_Flags |= _Fl_class_cl_all_bits;
             }
-        } else {
+        }
+    } else {
+        _Add_elts(_Node, _Cl, true);
+        if constexpr (sizeof(_Elem) > 1) { // set only when potentially matching code points >= 256
             auto _Node_flag = static_cast<_Node_flags>(_Kind);
             _Node->_Flags |= _Node_flag;
             _Root->_Flags |= _Node_flag;
@@ -3547,20 +3580,38 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_named_class(
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-void _Builder3<_FwdIt, _Elem, _RxTraits>::_Char_to_elts(const _Elem* const _First, const _Elem* const _Last,
-    _Sequence<_Elem>** _Cur) { // add collation element to element sequence
-    auto _Diff = static_cast<unsigned int>(_Last - _First);
-    while (*_Cur && _Diff < (*_Cur)->_Sz) {
-        _Cur = &(*_Cur)->_Next;
+void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_coll_elem_to_buf(
+    vector<_String_type>& _Target, unsigned int _Start_length, const _Elem* _First, const _Elem* _Last) {
+    // add collation element to internal length-partitioned buffer
+    auto _Length = static_cast<size_t>(_Last - _First);
+    if (_Length > UINT_MAX) {
+        _Xregex_error(regex_constants::error_space);
     }
 
-    if (!(*_Cur) || _Diff != (*_Cur)->_Sz) {
-        // add new sequence holding elements of the same length
-        _Sequence<_Elem>* _Node = *_Cur;
-        *_Cur                   = new _Sequence<_Elem>(_Diff);
-        (*_Cur)->_Next          = _Node;
+    if (_Target.size() <= _Length - _Start_length) {
+        _Target.resize(_Length - _Start_length + 1U);
     }
-    (*_Cur)->_Data._Insert2(_First, _Last);
+
+    _Target[_Length - _Start_length].append(_First, _Last);
+}
+
+template <class _FwdIt, class _Elem, class _RxTraits>
+void _Builder3<_FwdIt, _Elem, _RxTraits>::_Fill_coll_sequence_from_buf(
+    _Sequence<_Elem>*& _Seq_start, vector<_String_type>& _Source, const unsigned int _Start_length) {
+    // generate collation element sequence from internal length-partitioned buffer
+    unsigned int _Length{_Start_length};
+    for (auto& _Elems_of_length : _Source) {
+        if (!_Elems_of_length.empty()) {
+            auto _Seq   = new _Sequence<_Elem>(_Length);
+            _Seq->_Next = _Seq_start;
+            _Seq_start  = _Seq;
+            auto _Start = _Elems_of_length.data();
+            _Seq->_Data._Insert2(_Start, _Start + _Elems_of_length.size());
+            _Elems_of_length.clear();
+        }
+
+        ++_Length;
+    }
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -3586,17 +3637,14 @@ void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_equiv(const _Elem* const _First, 
     }
 
     if constexpr (sizeof(_Elem) > 1U) { // map range
-        _Sequence<_Elem>** _Cur = _STD addressof(_Node->_Equiv);
-        _Char_to_elts(_First, _Last, _Cur);
+        _Add_coll_elem_to_buf(_Equivs, 1U, _First, _Last);
     }
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Builder3<_FwdIt, _Elem, _RxTraits>::_Add_coll(const _Elem* const _First, const _Elem* const _Last) {
     // add collation element to bracket expression
-    _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
-    _Sequence<_Elem>** _Cur              = _STD addressof(_Node->_Coll);
-    _Char_to_elts(_First, _Last, _Cur);
+    _Add_coll_elem_to_buf(_Coll_elems, 2U, _First, _Last);
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -5447,6 +5495,7 @@ bool _Parser3<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { //
                   : _Char == 'S' ? _Rx_char_class_kind::_Negated_s
                   : _Char == 'D' ? _Rx_char_class_kind::_Negated_d
                                  : _Rx_char_class_kind::_Positive);
+    _Next();
 
     if (_Addit) {
         _Nfa._Add_class();
@@ -5455,12 +5504,14 @@ bool _Parser3<_FwdIt, _Elem, _RxTraits>::_CharacterClassEscape(bool _Addit) { //
         // Since the former negation is defective, do the latter instead.
         if (_Kind != _Rx_char_class_kind::_Positive) {
             _Nfa._Negate();
-            _Kind = _Rx_char_class_kind::_Positive;
         }
+
+        _Nfa._Add_named_class(_Cls, _Rx_char_class_kind::_Positive);
+        _Nfa._Finalize_class();
+    } else {
+        _Nfa._Add_named_class(_Cls, _Kind);
     }
 
-    _Nfa._Add_named_class(_Cls, _Kind);
-    _Next();
     return true;
 }
 
@@ -5575,6 +5626,7 @@ void _Parser3<_FwdIt, _Elem, _RxTraits>::_CharacterClass() { // add bracket expr
     }
 
     _ClassRanges();
+    _Nfa._Finalize_class();
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
