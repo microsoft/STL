@@ -17,6 +17,7 @@ Param(
 )
 
 $ErrorActionPreference = 'Stop'
+$PSNativeCommandUseErrorActionPreference = $true
 
 $CurrentDate = Get-Date
 $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
