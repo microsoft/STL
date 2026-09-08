@@ -1210,11 +1210,15 @@ struct _Iterator_base0 {
 
 // The machinery below implements iterator debugging (informally "IDL", after the _ITERATOR_DEBUG_LEVEL macro,
 // where "L" stands for "level"). It lets a container invalidate ("orphan") its iterators without either side
-// needing to know about the other directly, by routing everything through a shared proxy object. Only containers
-// with _ITERATOR_DEBUG_LEVEL != 0 use it; at level 0 they derive from _Container_base0 and use
-// _Fake_proxy_ptr_impl instead, and no proxy is allocated at all.
+// needing to know about the other directly, by routing everything through a shared proxy object.
 //
-// Invariants at both levels 1 and 2:
+// Most containers use it only when _ITERATOR_DEBUG_LEVEL != 0; at level 0 they derive from _Container_base0 and
+// use _Fake_proxy_ptr_impl, so no proxy is allocated. deque is the exception: _Deque_val derives from
+// _Container_base12 and _Deque_const_iterator from _Iterator_base12 at every level, because deque's offset-based
+// iterators reach the container through the proxy (see _Getcont() and _Unwrapped()) even when iterator debugging
+// is off. A deque therefore allocates a real proxy at level 0 too.
+//
+// Invariants for any container that uses _Container_base12:
 //
 // * Such a container owns a dynamically allocated _Container_proxy at all times, including in its
 //   default-constructed and moved-from states. This is TRANSITION, ABI: allocating the proxy separately (instead
@@ -1222,22 +1226,23 @@ struct _Iterator_base0 {
 //   move assignment operators aren't unconditionally noexcept -- reloading the proxy when allocators compare
 //   unequal can throw. We intend to revisit this strategy in vNext (see GH-169).
 // * A container and its proxy always point to each other, via _Container_base12::_Myproxy and
-//   _Container_proxy::_Mycont respectively.
+//   _Container_proxy::_Mycont respectively. (_Container_proxy_ptr12 can briefly hold a freshly allocated proxy
+//   that isn't bound to a container yet; see _Leave_proxy_unbound and _Bind.)
 // * Every valid iterator holds a non-owning pointer to its parent container's proxy (_Iterator_base12::_Myproxy);
 //   an orphaned iterator has a null _Myproxy.
 //
-// Additional invariants at level 2 only, where we also track the container's iterators individually:
+// Additional invariants at _ITERATOR_DEBUG_LEVEL == 2 only, where we also track iterators individually:
 //
 // * The proxy's _Myfirstiter, together with each iterator's _Mynextiter, forms an intrusive singly linked list of
 //   iterators rooted at the proxy. Every valid iterator belonging to a container is reachable through this list;
-//   there are no valid "free-floating" iterators. At level 1 this list is unused: _Adopt merely copies _Myproxy,
-//   _Orphan_all does nothing, and _Myfirstiter remains null.
+//   there are no valid "free-floating" iterators. Below level 2 the list is unused: _Adopt merely copies
+//   _Myproxy, _Orphan_all does nothing, and _Myfirstiter remains null.
 // * Whenever that list is manipulated at runtime, the debug lock (_Lockit(_LOCK_DEBUG)) is held. During constant
 //   evaluation we skip the lock and take the unlocked paths instead (see the is_constant_evaluated() checks
 //   below), as constant evaluation is single-threaded and _Lockit isn't usable there.
 //
 // The lock guards that list, not the proxy pointers themselves: _Alloc_proxy and _Reload_proxy install a new
-// proxy without taking it at either level, and at level 1 _Swap_proxy_and_iterators calls the unlocked helper
+// proxy without taking it at any level, and below level 2 _Swap_proxy_and_iterators calls the unlocked helper
 // directly. The other things we do outside the lock are things like iterator compatibility checks that compare
 // proxy pointers: those pointers don't change when containers are swapped (only the proxies' data members
 // change, not their addresses).
