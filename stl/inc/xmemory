@@ -1232,7 +1232,7 @@ struct _Iterator_base0 {
 // * Every valid iterator holds a non-owning pointer to its parent container's proxy (_Iterator_base12::_Myproxy).
 //   Orphaning an iterator nulls that pointer, but only level 2 tracks invalidation and can null iterators through
 //   _Orphan_all. Below it, _Orphan_all is a no-op, so an invalidated iterator retains its _Myproxy; that pointer
-//   becomes dangling only when the proxy itself is destroyed.
+//   becomes dangling only when the proxy itself is destroyed.
 
 //   becomes dangling only when the proxy itself is destroyed.
 
