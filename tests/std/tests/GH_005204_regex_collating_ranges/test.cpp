@@ -697,16 +697,18 @@ void test_gh_6441() {
     gh_994_verify_match("csa", "[[.cs.]][a]", true);
     gh_994_verify_match("cscs", "[[.cs.]][a]", false);
     gh_994_verify_match("cscs", "[a][[.cs.]]", false);
-    gh_994_verify_match("cscs", "[[.cs.]][[.dzs.]]", false);
+    gh_994_verify_match("csdzs", "[[.cs.]][[.dzs.]]", true);
     gh_994_verify_match("cscs", "[[.cs.]][[.dzs.]]", false);
     gh_994_verify_match("cscs", "[[.dzs.]][[.cs.]]", false);
 
+#ifndef _M_CEE_PURE
     g_regexTester.should_match("ab", "[[=a=]][b]");
     g_regexTester.should_not_match("aa", "[[=a=]][b]");
     g_regexTester.should_not_match("aa", "[b][[=a=]]");
     g_regexTester.should_match("ab", "[[=a=]][[=b=]]");
     g_regexTester.should_not_match("aa", "[[=a=]][[=b=]]");
     g_regexTester.should_not_match("bb", "[[=a=]][[=b=]]");
+#endif
 }
 
 int main() {
