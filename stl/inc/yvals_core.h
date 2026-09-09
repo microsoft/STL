@@ -789,8 +789,8 @@
 //                copy/move constructors and copy/move assignment operators are not trivial (/Wall)
 // warning C5246: 'member': the initialization of a subobject should be wrapped in braces (/Wall)
 // warning C5278: adding a specialization for 'type trait' has undefined behavior
-// warning C5280: a static operator '()' requires at least '/std:c++23preview'
-// warning C5281: a static lambda requires at least '/std:c++23preview'
+// warning C5280: a static operator '()' requires at least '/std:c++23'
+// warning C5281: a static lambda requires at least '/std:c++23'
 // warning C5285: cannot declare a specialization for 'meow'
 // warning C5291: 'DERIVED': deriving from the base class 'BASE' can cause potential runtime issues
 //                due to an ABI bug. Recommend adding a 4-byte data member to the base class
