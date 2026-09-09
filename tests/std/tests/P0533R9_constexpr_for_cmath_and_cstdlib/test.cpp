@@ -640,7 +640,6 @@ CONSTEXPR_CMATH26 bool test_cmath_cxx26() {
     return true;
 }
 
-#if defined(_MSVC_INTERNAL_TESTING) || !defined(_M_ARM64EC) // TRANSITION, MSVC-PR-767414/MSVC-PR-768260 fixed LNK2019
 void test_cmath_runtime() {
     assert(nearbyint(3.14f) == 3.0f);
     assert(nearbyint(3.14) == 3.0);
@@ -674,16 +673,13 @@ void test_cmath_runtime() {
     assert(isnan(nanf("")));
     assert(isnan(nanl("")));
 }
-#endif // ^^^ no workaround ^^^
 
 int main() {
-#if defined(_MSVC_INTERNAL_TESTING) || !defined(_M_ARM64EC) // TRANSITION, MSVC-PR-767414/MSVC-PR-768260 fixed LNK2019
     test_cmath_cxx23();
     test_cstdlib_cxx23();
     test_cinttypes_cxx23();
     test_cmath_cxx26();
     test_cmath_runtime();
-#endif // ^^^ no workaround ^^^
 
 #ifdef __cpp_lib_constexpr_cmath
     static_assert(test_cmath_cxx23());
