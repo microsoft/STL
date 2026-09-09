@@ -1221,15 +1221,17 @@ struct _Iterator_base0 {
 // Invariants for any container that uses _Container_base12:
 //
 // * Such a container owns a dynamically allocated _Container_proxy at all times, including in its
-//   default-constructed and moved-from states. This is TRANSITION, ABI: allocating the proxy separately (instead
-//   of, say, storing it inline) is the major reason many containers' allocator-extended move constructors and
-//   move assignment operators aren't unconditionally noexcept -- reloading the proxy when allocators compare
-//   unequal can throw. We intend to revisit this strategy in vNext (see GH-169).
+//   default-constructed and moved-from states. This is TRANSITION, ABI: because the proxy is allocated separately
+//   instead of being stored inline, any operation that has to attach a fresh proxy has to allocate. Where such an
+//   operation is still declared noexcept, it deliberately terminates on OOM rather than weaken its specification
+//   -- see the _Reload_proxy call in vector's move assignment operator, tagged TRANSITION, VSO-466800. We intend
+//   to revisit this strategy in vNext (see GH-169).
 // * A container and its proxy always point to each other, via _Container_base12::_Myproxy and
 //   _Container_proxy::_Mycont respectively. (_Container_proxy_ptr12 can briefly hold a freshly allocated proxy
 //   that isn't bound to a container yet; see _Leave_proxy_unbound and _Bind.)
-// * Every valid iterator holds a non-owning pointer to its parent container's proxy (_Iterator_base12::_Myproxy);
-//   an orphaned iterator has a null _Myproxy.
+// * Every valid iterator holds a non-owning pointer to its parent container's proxy (_Iterator_base12::_Myproxy).
+//   Orphaning an iterator nulls that pointer, but only level 2 actually orphans anything: _Orphan_all is a no-op
+//   below it, so an invalidated iterator there keeps its now-dangling _Myproxy.
 //
 // Additional invariants at _ITERATOR_DEBUG_LEVEL == 2 only, where we also track iterators individually:
 //
@@ -1243,9 +1245,10 @@ struct _Iterator_base0 {
 //
 // The lock guards that list, not the proxy pointers themselves: _Alloc_proxy and _Reload_proxy install a new
 // proxy without taking it at any level, and below level 2 _Swap_proxy_and_iterators calls the unlocked helper
-// directly. The other things we do outside the lock are things like iterator compatibility checks that compare
-// proxy pointers: those pointers don't change when containers are swapped (only the proxies' data members
-// change, not their addresses).
+// directly. Iterator compatibility checks also run outside the lock; they compare the container addresses that
+// _Getcont() reads back out of the proxies (see deque's _Compat). Note what swapping actually changes: the two
+// containers exchange their _Myproxy values and each proxy's _Mycont is rewritten to its new container, while
+// existing iterators go on pointing at the same proxy object -- which is how they follow the contents across.
 struct _Container_base12;
 struct _Container_proxy { // store head of iterator chain and back pointer
     _CONSTEXPR20 _Container_proxy() noexcept = default;
