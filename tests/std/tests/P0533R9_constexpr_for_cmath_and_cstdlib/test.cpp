@@ -243,15 +243,10 @@ CONSTEXPR_CMATH23 bool test_cmath_cxx23() {
     test_classification_functions_cxx23<long double>();
     test_classification_functions_cxx23<int>();
 
-#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, MSVC-PR-767404 fixed the comparison functions in constant evaluation
-    if (!_Is_constant_evaluated())
-#endif // ^^^ workaround ^^^
-    {
-        test_comparison_functions_cxx23<float>();
-        test_comparison_functions_cxx23<double>();
-        test_comparison_functions_cxx23<long double>();
-        test_comparison_functions_cxx23<int>();
-    }
+    test_comparison_functions_cxx23<float>();
+    test_comparison_functions_cxx23<double>();
+    test_comparison_functions_cxx23<long double>();
+    test_comparison_functions_cxx23<int>();
 
     return true;
 }
@@ -283,12 +278,7 @@ CONSTEXPR_CMATH23 void test_classification_functions_cxx23() {
         constexpr T inf = numeric_limits<T>::infinity();
         constexpr T nan = numeric_limits<T>::quiet_NaN();
 
-#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, MSVC-PR-767404 fixed fpclassify for subnormal floats
-        if constexpr (!is_same_v<T, float>)
-#endif // ^^^ workaround ^^^
-        {
-            assert(fpclassify(sub) == FP_SUBNORMAL);
-        }
+        assert(fpclassify(sub) == FP_SUBNORMAL);
         assert(fpclassify(inf) == FP_INFINITE);
         assert(fpclassify(nan) == FP_NAN);
 
@@ -304,12 +294,7 @@ CONSTEXPR_CMATH23 void test_classification_functions_cxx23() {
         assert(!isnan(inf));
         assert(isnan(nan));
 
-#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, MSVC-PR-767404 fixed fpclassify for subnormal floats
-        if constexpr (!is_same_v<T, float>)
-#endif // ^^^ workaround ^^^
-        {
-            assert(!isnormal(sub));
-        }
+        assert(!isnormal(sub));
         assert(!isnormal(inf));
         assert(!isnormal(nan));
     }
