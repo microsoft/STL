@@ -708,7 +708,7 @@ void test_gh_6441() {
     g_regexTester.should_match("ab", "[[=a=]][[=b=]]");
     g_regexTester.should_not_match("aa", "[[=a=]][[=b=]]");
     g_regexTester.should_not_match("bb", "[[=a=]][[=b=]]");
-#endif
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 }
 
 int main() {
