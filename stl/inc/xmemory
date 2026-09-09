@@ -1230,8 +1230,9 @@ struct _Iterator_base0 {
 //   _Container_proxy::_Mycont respectively. (_Container_proxy_ptr12 can briefly hold a freshly allocated proxy
 //   that isn't bound to a container yet; see _Leave_proxy_unbound and _Bind.)
 // * Every valid iterator holds a non-owning pointer to its parent container's proxy (_Iterator_base12::_Myproxy).
-//   Orphaning an iterator nulls that pointer, but only level 2 actually orphans anything: _Orphan_all is a no-op
-//   below it, so an invalidated iterator there keeps its now-dangling _Myproxy.
+//   Orphaning an iterator nulls that pointer, but only level 2 tracks invalidation and can null iterators through
+//   _Orphan_all. Below it, _Orphan_all is a no-op, so an invalidated iterator retains its _Myproxy; that pointer
+//   becomes dangling only when the proxy itself is destroyed.
 //
 // Additional invariants at _ITERATOR_DEBUG_LEVEL == 2 only, where we also track iterators individually:
 //
