@@ -29,6 +29,7 @@ stages:
     jobs:
       - template: build-and-test.yml
         parameters:
+          jobTimeoutInMinutes: 20
           hostArch: x64
           targetArch: x64
           targetPlatform: x64
@@ -48,6 +49,7 @@ stages:
     jobs:
       - template: build-and-test.yml
         parameters:
+          jobTimeoutInMinutes: 20
           hostArch: x86
           targetArch: x86
           targetPlatform: x86
@@ -67,6 +69,7 @@ stages:
     jobs:
       - template: build-and-test.yml
         parameters:
+          jobTimeoutInMinutes: 25
           hostArch: arm64
           targetArch: arm64
           targetPlatform: arm64
