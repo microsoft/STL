@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// TRANSITION, MSVC frontend needs to intercept inclusions of <inttypes.h>:
+// TRANSITION, MSVC-PR-777572 (merged 2026-09-03) changed the MSVC frontend to intercept inclusions of <inttypes.h>:
 #ifndef _M_CEE_PURE
 #include <__msvc_inttypes.hpp>
 #endif
