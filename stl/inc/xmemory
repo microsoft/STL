@@ -1237,9 +1237,11 @@ struct _Iterator_base0 {
 // Additional invariants at _ITERATOR_DEBUG_LEVEL == 2 only, where we also track iterators individually:
 //
 // * The proxy's _Myfirstiter, together with each iterator's _Mynextiter, forms an intrusive singly linked list of
-//   iterators rooted at the proxy. Every valid iterator belonging to a container is reachable through this list;
-//   there are no valid "free-floating" iterators. Below level 2 the list is unused: _Adopt merely copies
-//   _Myproxy, _Orphan_all does nothing, and _Myfirstiter remains null.
+//   iterators rooted at the proxy. Every valid iterator currently associated with a container is reachable
+//   through this list. A null _Myproxy means no such association: the iterator was orphaned, was never adopted,
+//   or disowned itself -- an end-of-sequence regex_iterator is a valid iterator in that state (see the
+//   _Adopt(nullptr) calls in <regex>). Below level 2 the list is unused: _Adopt merely copies _Myproxy,
+//   _Orphan_all does nothing, and _Myfirstiter remains null.
 // * Whenever that list is manipulated at runtime, the debug lock (_Lockit(_LOCK_DEBUG)) is held. During constant
 //   evaluation we skip the lock and take the unlocked paths instead (see the is_constant_evaluated() checks
 //   below), as constant evaluation is single-threaded and _Lockit isn't usable there.
