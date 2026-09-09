@@ -41,7 +41,6 @@ template <class T>
 CONSTEXPR_CMATH23 void test_comparison_functions_cxx23();
 
 CONSTEXPR_CMATH23 bool test_cmath_cxx23() {
-#if defined(_MSVC_INTERNAL_TESTING) || !defined(_MSVC_LIBC_MATH) // TRANSITION, MSVC-PR-767184/772024 fixed LNK2005
     {
         int exponent = 0;
         assert(frexp(15.5f, &exponent) == 0.96875f);
@@ -57,7 +56,6 @@ CONSTEXPR_CMATH23 bool test_cmath_cxx23() {
         assert(frexp(1729, &exponent) == 0.84423828125);
         assert(exponent == 11);
     }
-#endif // ^^^ no workaround ^^^
 
     assert(ilogb(0.1729f) == -3);
     assert(ilogb(0.1729) == -3);
