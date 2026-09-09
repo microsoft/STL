@@ -644,6 +644,11 @@ std/localization/locale.categories/category.time/locale.time.put/locale.time.put
 # GH-6135 <xloctime>: time_put_byname doesn't encode the output in UTF-8 even if the locale name contains ".UTF-8"
 std/localization/locale.categories/category.time/locale.time.put.byname/put1.pass.cpp FAIL
 
+# GH-6445 <cmath>: constexpr fpclassify() rejects signaling NaNs on x86
+# SKIPPED because this is x86-specific.
+std/numerics/c.math/fpclassify.pass.cpp:0 SKIPPED
+std/numerics/c.math/fpclassify.pass.cpp:1 SKIPPED
+
 
 # *** VCRUNTIME BUGS ***
 
