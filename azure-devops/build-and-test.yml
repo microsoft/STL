@@ -39,7 +39,7 @@ jobs:
 - job: '${{ parameters.targetPlatform }}'
   strategy:
     parallel: ${{ parameters.numShards }}
-  timeoutInMinutes: 30
+  timeoutInMinutes: 20
   steps:
   - template: checkout-self.yml
   - template: checkout-submodule.yml
