@@ -694,6 +694,17 @@ void test_gh_6441() {
         re_two_classes_with_large_char_ranges.should_search_fail(L"\u0120\u0120");
     }
 
+    for (auto pattern : {LR"(^[\d[:alpha:]]$)", LR"(^[[:alpha:]\d]$)"}) {
+        test_wregex re_alphanumeric(&g_regexTester, pattern);
+        re_alphanumeric.should_search_match(L"a", L"a");
+        re_alphanumeric.should_search_match(L"0", L"0");
+        re_alphanumeric.should_search_fail(L" ");
+
+        re_alphanumeric.should_search_match(L"\u0100", L"\u0100"); // U+0100 LATIN CAPITAL LETTER A WITH MACRON
+        re_alphanumeric.should_search_match(L"\u0662", L"\u0662"); // U+0662 ARABIC-INDIC DIGIT TWO
+        re_alphanumeric.should_search_fail(L"\u202F"); // U+202F NARROW NO-BREAK SPACE
+    }
+
     gh_994_verify_match("csa", "[[.cs.]][a]", true);
     gh_994_verify_match("cscs", "[[.cs.]][a]", false);
     gh_994_verify_match("cscs", "[a][[.cs.]]", false);
