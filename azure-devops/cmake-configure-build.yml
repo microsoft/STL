@@ -25,6 +25,7 @@ parameters:
     - '--order=lexical'
     - '--num-shards=$(System.TotalJobsInPhase)'
     - '--run-shard=$(System.JobPositionInPhase)'
+    - '--filter=P0811R3_midpoint_lerp'
 
 steps:
 - task: PowerShell@2
