@@ -61,6 +61,16 @@ std/containers/sequences/vector/trivial_relocation.pass.cpp:1 FAIL
 # LLVM-182397: [libc++][test] rand.dist.bern.negbin/eval.pass.cpp constructs with p == 1, which has undefined behavior
 std/numerics/rand/rand.dist/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp FAIL
 
+# LLVM-222431: [libcxx][test] `signaling_NaN()` should not be used in `constexpr <cmath>` tests
+std/numerics/c.math/isgreater.pass.cpp:0 FAIL
+std/numerics/c.math/isgreater.pass.cpp:1 FAIL
+std/numerics/c.math/isgreaterequal.pass.cpp:0 FAIL
+std/numerics/c.math/isgreaterequal.pass.cpp:1 FAIL
+std/numerics/c.math/islessequal.pass.cpp:0 FAIL
+std/numerics/c.math/islessequal.pass.cpp:1 FAIL
+std/numerics/c.math/isunordered.pass.cpp:0 FAIL
+std/numerics/c.math/isunordered.pass.cpp:1 FAIL
+
 # Non-Standard regex behavior.
 # "It seems likely that the test is still non-conforming due to how libc++ handles the 'w' character class."
 std/re/re.traits/lookup_classname.pass.cpp FAIL
@@ -244,21 +254,10 @@ std/atomics/atomics.types.operations/atomics.types.operations.req/atomic_fetch_m
 std/atomics/atomics.types.operations/atomics.types.operations.req/atomic_fetch_min.pass.cpp FAIL
 
 # P0533R9 constexpr For <cmath> And <cstdlib>
-std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
-std/numerics/c.math/fpclassify.pass.cpp FAIL
-std/numerics/c.math/isgreater.pass.cpp:0 FAIL
-std/numerics/c.math/isgreater.pass.cpp:1 FAIL
-std/numerics/c.math/isgreaterequal.pass.cpp:0 FAIL
-std/numerics/c.math/isgreaterequal.pass.cpp:1 FAIL
-std/numerics/c.math/isless.pass.cpp:0 FAIL
-std/numerics/c.math/isless.pass.cpp:1 FAIL
-std/numerics/c.math/islessequal.pass.cpp:0 FAIL
-std/numerics/c.math/islessequal.pass.cpp:1 FAIL
-std/numerics/c.math/islessgreater.pass.cpp:0 FAIL
-std/numerics/c.math/islessgreater.pass.cpp:1 FAIL
-std/numerics/c.math/isunordered.pass.cpp:0 FAIL
-std/numerics/c.math/isunordered.pass.cpp:1 FAIL
+# GH-6412 Implement P0533R9 (C++23 constexpr <cmath>) for Clang and EDG
+std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp:2 FAIL
+std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp:2 FAIL
+std/numerics/c.math/fpclassify.pass.cpp:2 FAIL
 
 # P0543R3 Saturation Arithmetic
 # Add 'std-at-least-c++26' to tests/utils/stl/test/tests.py when beginning work on C++26.
@@ -644,6 +643,11 @@ std/localization/locale.categories/category.time/locale.time.put/locale.time.put
 
 # GH-6135 <xloctime>: time_put_byname doesn't encode the output in UTF-8 even if the locale name contains ".UTF-8"
 std/localization/locale.categories/category.time/locale.time.put.byname/put1.pass.cpp FAIL
+
+# GH-6445 <cmath>: constexpr fpclassify() rejects signaling NaNs on x86
+# SKIPPED because this is x86-specific.
+std/numerics/c.math/fpclassify.pass.cpp:0 SKIPPED
+std/numerics/c.math/fpclassify.pass.cpp:1 SKIPPED
 
 
 # *** VCRUNTIME BUGS ***
