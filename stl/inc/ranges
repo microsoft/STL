@@ -7140,14 +7140,23 @@ namespace ranges {
         return _Get_smallest_distance_closure(index_sequence_for<_LHSTupleTypes...>{});
     }
 
+    // Work around C2382 when mixing #include <ranges> with import std;: a noexcept fold expression prevents
+    // the compiler from matching the textual and module declarations, while a variable template is trivially matched.
+    template <class _LHSTupleType, class _RHSTupleType>
+    inline constexpr bool _Zip_iterator_sentinel_equal_is_nothrow = false;
+
+    template <class... _LHSTupleTypes, class... _RHSTupleTypes>
+    inline constexpr bool _Zip_iterator_sentinel_equal_is_nothrow<tuple<_LHSTupleTypes...>, tuple<_RHSTupleTypes...>> =
+        (noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>()) && ...);
+
     template <class... _LHSTupleTypes, class... _RHSTupleTypes>
         requires (sizeof...(_LHSTupleTypes) == sizeof...(_RHSTupleTypes))
     _NODISCARD constexpr bool _Zip_iterator_sentinel_equal(
         const tuple<_LHSTupleTypes...>& _Lhs_tuple, const tuple<_RHSTupleTypes...>& _Rhs_tuple)
-        noexcept((noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>()) && ...)) {
+        noexcept(_Zip_iterator_sentinel_equal_is_nothrow<tuple<_LHSTupleTypes...>, tuple<_RHSTupleTypes...>>) {
         const auto _Evaluate_equality_closure =
             [&_Lhs_tuple, &_Rhs_tuple]<size_t... _Indices>(index_sequence<_Indices...>) noexcept(
-                (noexcept(_STD declval<const _LHSTupleTypes&>() == _STD declval<const _RHSTupleTypes&>()) &&...)) {
+                _Zip_iterator_sentinel_equal_is_nothrow<tuple<_LHSTupleTypes...>, tuple<_RHSTupleTypes...>>) {
                 return ((_STD get<_Indices>(_Lhs_tuple) == _STD get<_Indices>(_Rhs_tuple)) || ... || false);
             };
 
