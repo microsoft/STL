@@ -92,7 +92,6 @@ constexpr void test_integral() {
             static_assert(same_as<typename iterator_traits<I>::iterator_category, input_iterator_tag>);
         }
 
-        assert(I{} == I{T{0}});
         static_assert(is_nothrow_default_constructible_v<I>);
         assert(I{} == I{});
         assert(!(I{} != I{}));
@@ -109,10 +108,6 @@ constexpr void test_integral() {
         assert(*first == T{0});
         assert(*second == T{1});
         static_assert(noexcept(*first));
-
-        assert(first == I{T{0}});
-        assert(second == I{T{1}});
-        static_assert(noexcept(noexcept(I{T{0}}))); // strengthened
 
         {
             I tmp = first;
@@ -347,6 +342,85 @@ static_assert(!CanUnaryViewsIota<ranges::iota_view<int, int>>);
 static_assert(!CanUnaryViewsIota<ranges::iota_view<const char*, const char*>>);
 static_assert(!CanUnaryViewsIota<ranges::iota_view<ranges::iterator_t<ranges::iota_view<long long>>,
         ranges::iterator_t<ranges::iota_view<long long>>>>);
+
+// Verify an unbounded iota_view. Its end type is unreachable_sentinel_t.
+using UnboundedView     = ranges::iota_view<int>;
+using UnboundedIterator = ranges::iterator_t<UnboundedView>;
+using UnboundedSentinel = ranges::sentinel_t<UnboundedView>;
+
+static_assert(same_as<UnboundedSentinel, unreachable_sentinel_t>);
+
+// P3059R2: users must not be able to construct iota_view::iterator
+// directly from an iota value.
+static_assert(!constructible_from<UnboundedIterator, int>);
+
+// The iterator's public default constructor and special member functions
+// must remain available.
+static_assert(default_initializable<UnboundedIterator>);
+static_assert(copy_constructible<UnboundedIterator>);
+static_assert(move_constructible<UnboundedIterator>);
+
+static_assert(random_access_iterator<UnboundedIterator>);
+static_assert(sentinel_for<UnboundedSentinel, UnboundedIterator>);
+
+// The public iota_view constructor taking its iterator and sentinel must
+// remain available.
+static_assert(constructible_from<UnboundedView, UnboundedIterator, UnboundedSentinel>);
+
+// Verify a bounded common iota_view. Its end type is the iterator type.
+using CommonView     = ranges::iota_view<int, int>;
+using CommonIterator = ranges::iterator_t<CommonView>;
+using CommonSentinel = ranges::sentinel_t<CommonView>;
+
+static_assert(same_as<CommonIterator, CommonSentinel>);
+
+// P3059R2: users must not be able to construct iota_view::iterator
+// directly from an iota value.
+static_assert(!constructible_from<CommonIterator, int>);
+
+static_assert(default_initializable<CommonIterator>);
+static_assert(copy_constructible<CommonIterator>);
+static_assert(move_constructible<CommonIterator>);
+
+static_assert(random_access_iterator<CommonIterator>);
+static_assert(sentinel_for<CommonSentinel, CommonIterator>);
+
+// The public iota_view constructor taking two iterators must remain
+// available for a common iota_view.
+static_assert(constructible_from<CommonView, CommonIterator, CommonSentinel>);
+
+// Verify a bounded non-common iota_view. Different value and bound types
+// cause end() to return the implementation sentinel type.
+using NonCommonView     = ranges::iota_view<int, long>;
+using NonCommonIterator = ranges::iterator_t<NonCommonView>;
+using NonCommonSentinel = ranges::sentinel_t<NonCommonView>;
+
+static_assert(!same_as<NonCommonIterator, NonCommonSentinel>);
+
+// P3059R2: users must not be able to construct iota_view::iterator
+// directly from an iota value.
+static_assert(!constructible_from<NonCommonIterator, int>);
+
+// P3059R2: users must not be able to construct iota_view::sentinel
+// directly from an iota bound.
+static_assert(!constructible_from<NonCommonSentinel, long>);
+
+// The iterator's and sentinel's public default constructors and special
+// member functions must remain available.
+static_assert(default_initializable<NonCommonIterator>);
+static_assert(copy_constructible<NonCommonIterator>);
+static_assert(move_constructible<NonCommonIterator>);
+
+static_assert(default_initializable<NonCommonSentinel>);
+static_assert(copy_constructible<NonCommonSentinel>);
+static_assert(move_constructible<NonCommonSentinel>);
+
+static_assert(random_access_iterator<NonCommonIterator>);
+static_assert(sentinel_for<NonCommonSentinel, NonCommonIterator>);
+
+// The public iota_view constructor taking its iterator and sentinel must
+// remain available.
+static_assert(constructible_from<NonCommonView, NonCommonIterator, NonCommonSentinel>);
 
 int main() {
     // Validate standard signed integer types

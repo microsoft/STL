@@ -723,6 +723,46 @@ void test_lwg_4112() { // COMPILE-ONLY
     static_assert(!CanArrow<ranges::iterator_t<bad_joined_range>>);
 }
 
+// Making user-defined constructors of view iterators/sentinels private
+using InnerRange = array<int, 3>;
+
+// Use a non-common outer range so join_view::end() returns its nested sentinel
+// instead of an iterator.
+using Base = ranges::subrange<InnerRange*, unreachable_sentinel_t>;
+using View = ranges::join_view<Base>;
+
+using Iterator = ranges::iterator_t<View>;
+using Sentinel = ranges::sentinel_t<View>;
+
+static_assert(!same_as<Iterator, Sentinel>);
+
+// P3059R2: users must not be able to construct join_view::sentinel directly
+// from its parent join_view.
+static_assert(!constructible_from<Sentinel, View&>);
+
+// The sentinel must remain usable through its public special member functions.
+static_assert(default_initializable<Sentinel>);
+static_assert(copy_constructible<Sentinel>);
+static_assert(move_constructible<Sentinel>);
+
+// Verify the const sentinel specialization.
+using ConstIterator = ranges::iterator_t<const View>;
+using ConstSentinel = ranges::sentinel_t<const View>;
+
+static_assert(!same_as<ConstIterator, ConstSentinel>);
+
+// P3059R2: the implementation-only constructor of sentinel<true> must also
+// be inaccessible.
+static_assert(!constructible_from<ConstSentinel, const View&>);
+
+static_assert(default_initializable<ConstSentinel>);
+static_assert(copy_constructible<ConstSentinel>);
+static_assert(move_constructible<ConstSentinel>);
+
+// The public conversion from sentinel<false> to sentinel<true> must remain
+// available.
+static_assert(constructible_from<ConstSentinel, Sentinel>);
+
 int main() {
     // Validate views
     constexpr string_view expected = "Hello World!"sv;

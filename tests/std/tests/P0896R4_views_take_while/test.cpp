@@ -468,6 +468,45 @@ using move_only_view = test::range<Category, const int, test::Sized{is_random}, 
     IsCommon, test::CanCompare{derived_from<Category, forward_iterator_tag>},
     test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}, test::CanView::yes, test::Copyability::move_only>;
 
+// Making user-defined constructors of view iterators/sentinels private
+// Use a non-common underlying range so take_while_view has a distinct
+// iterator and sentinel type.
+using Base = ranges::subrange<int*, unreachable_sentinel_t>;
+using View = ranges::take_while_view<Base, Pred>;
+
+using BaseSentinel = ranges::sentinel_t<Base>;
+using Iterator     = ranges::iterator_t<View>;
+using Sentinel     = ranges::sentinel_t<View>;
+
+static_assert(!same_as<Iterator, Sentinel>);
+
+// P3059R2: users must not be able to construct take_while_view::sentinel
+// directly from the underlying sentinel and a pointer to the predicate.
+static_assert(!constructible_from<Sentinel, BaseSentinel, const Pred*>);
+
+// The sentinel must remain default-initializable, copyable, and movable
+// through its public interface.
+static_assert(default_initializable<Sentinel>);
+static_assert(copy_constructible<Sentinel>);
+static_assert(move_constructible<Sentinel>);
+
+// Verify the same requirements for the const sentinel specialization.
+using ConstBaseSentinel = ranges::sentinel_t<const Base>;
+using ConstIterator     = ranges::iterator_t<const View>;
+using ConstSentinel     = ranges::sentinel_t<const View>;
+
+static_assert(!same_as<ConstIterator, ConstSentinel>);
+
+static_assert(!constructible_from<ConstSentinel, ConstBaseSentinel, const Pred*>);
+
+static_assert(default_initializable<ConstSentinel>);
+static_assert(copy_constructible<ConstSentinel>);
+static_assert(move_constructible<ConstSentinel>);
+
+// The public converting constructor from sentinel<false> to sentinel<true>
+// must remain available.
+static_assert(constructible_from<ConstSentinel, Sentinel>);
+
 int main() {
     // Validate views
     { // ... copyable

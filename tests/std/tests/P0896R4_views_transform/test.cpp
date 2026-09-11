@@ -554,26 +554,6 @@ struct iterator_instantiator {
                 static_assert(is_nothrow_default_constructible_v<I>);
             }
 
-            auto r0 = make_view();
-            I valueConstructed{r0, Iter{mutable_ints}};
-            static_assert(is_nothrow_constructible_v<I, R&, Iter>);
-
-            if constexpr (copyable<Iter>) {
-                I copyConstructed{valueConstructed};
-                assert(copyConstructed == valueConstructed);
-                static_assert(is_nothrow_copy_constructible_v<I>);
-
-                auto r1 = make_view();
-                I copyAssigned{r1, Iter{mutable_ints + 8}};
-                copyAssigned = copyConstructed;
-                assert(copyAssigned == valueConstructed);
-                static_assert(is_nothrow_copy_assignable_v<I>);
-                static_assert(same_as<const Iter&, decltype(as_const(copyConstructed).base())>);
-            }
-            assert(as_const(valueConstructed).base().peek() == mutable_ints);
-            assert(move(valueConstructed).base().peek() == mutable_ints);
-            static_assert(same_as<Iter, decltype(move(valueConstructed).base())>);
-
             if constexpr (forward_iterator<Iter>) {
                 auto r1      = make_view();
                 const auto i = r1.begin();
@@ -588,19 +568,6 @@ struct iterator_instantiator {
             S defaultConstructed{};
             assert(defaultConstructed.base().peek() == nullptr);
             static_assert(is_nothrow_default_constructible_v<S>);
-
-            const test::sentinel<int> s{mutable_ints + 2};
-            S valueConstructed{s};
-            assert(valueConstructed.base().peek() == s.peek());
-            static_assert(is_nothrow_constructible_v<S, const test::sentinel<int>&>);
-
-            S copyConstructed{valueConstructed};
-            assert(copyConstructed.base().peek() == valueConstructed.base().peek());
-            static_assert(is_nothrow_copy_constructible_v<S>);
-
-            defaultConstructed = copyConstructed;
-            assert(defaultConstructed.base().peek() == valueConstructed.base().peek());
-            static_assert(is_nothrow_copy_assignable_v<S>);
 
             if constexpr (forward_iterator<Iter> && indirectly_swappable<Iter>) {
                 auto r       = make_view();
@@ -885,6 +852,57 @@ void test_lwg_4027() { // COMPILE-ONLY
     using CIt2 = decltype(cbegin(r));
     static_assert(same_as<CIt1, CIt2>);
 }
+
+
+struct transform_fn {
+    constexpr int operator()(const int value) const noexcept {
+        return value * 2;
+    }
+};
+
+// Making user-defined constructors of view iterators/sentinels private
+// Use a non-common range so transform_view has distinct iterator and sentinel
+// types. unreachable_sentinel_t also makes the underlying sentinel type easy
+// to name without defining additional test machinery.
+using Base = ranges::subrange<int*, unreachable_sentinel_t>;
+using View = ranges::transform_view<Base, transform_fn>;
+
+using BaseIterator = ranges::iterator_t<Base>;
+using BaseSentinel = ranges::sentinel_t<Base>;
+
+using Iterator = ranges::iterator_t<View>;
+using Sentinel = ranges::sentinel_t<View>;
+
+// P3059R2: users must not be able to construct transform_view::iterator
+// directly from the parent transform_view and the underlying iterator.
+static_assert(!constructible_from<Iterator, View&, BaseIterator>);
+
+// P3059R2: users must not be able to construct transform_view::sentinel
+// directly from the underlying sentinel.
+static_assert(!constructible_from<Sentinel, BaseSentinel>);
+
+// The iterator and sentinel must remain copyable and movable through their
+// public interfaces.
+static_assert(copy_constructible<Iterator>);
+static_assert(move_constructible<Iterator>);
+static_assert(copy_constructible<Sentinel>);
+static_assert(move_constructible<Sentinel>);
+
+// Verify the corresponding constructors are also inaccessible for the const
+// iterator and sentinel specializations.
+using ConstBaseIterator = ranges::iterator_t<const Base>;
+using ConstBaseSentinel = ranges::sentinel_t<const Base>;
+
+using ConstIterator = ranges::iterator_t<const View>;
+using ConstSentinel = ranges::sentinel_t<const View>;
+
+static_assert(!constructible_from<ConstIterator, const View&, ConstBaseIterator>);
+static_assert(!constructible_from<ConstSentinel, ConstBaseSentinel>);
+
+// P3059R2 does not remove the public converting constructors from non-const
+// iterator/sentinel specializations to their const counterparts.
+static_assert(constructible_from<ConstIterator, Iterator>);
+static_assert(constructible_from<ConstSentinel, Sentinel>);
 
 int main() {
     { // Validate copyable views
