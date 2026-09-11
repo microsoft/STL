@@ -157,6 +157,8 @@
 //     __cpp_lib_freestanding_variant)
 // P2517R1 Conditional noexcept For apply()
 // P2875R4 Undeprecate polymorphic_allocator::destroy
+// P2944R3 Comparisons For reference_wrapper
+//     (only for optional)
 // LWG-2385 function::assign allocator argument doesn't make sense
 // Enforcement of matching allocator value_types
 
