@@ -40,9 +40,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _MSVC_STL_DOOM_FUNCTION(mesg) ::_invoke_watson(nullptr, nullptr, nullptr, 0, 0)
 #else // Use the MSVC __fastfail intrinsic:
 extern "C" __declspec(noreturn) void __fastfail(unsigned int); // declared by <intrin.h>
-#define _MSVC_STL_DOOM_FUNCTION(mesg)                                                  \
-    __fastfail(5); /* __fastfail(FAST_FAIL_INVALID_ARG), value defined by <winnt.h> */ \
-    _STL_UNREACHABLE /* TRANSITION, DevCom-10914110 */
+#define _MSVC_STL_DOOM_FUNCTION(mesg) __fastfail(5); /* __fastfail(FAST_FAIL_INVALID_ARG), value in <winnt.h> */
 #endif // choose "doom function"
 #endif // ^^^ !defined(_MSVC_STL_DOOM_FUNCTION) ^^^
 
