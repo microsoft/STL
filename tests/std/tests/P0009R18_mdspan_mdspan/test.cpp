@@ -1283,6 +1283,29 @@ constexpr void check_deduction_guides() {
         static_assert(same_as<decltype(mds1), mdspan<byte, dextents<size_t, 2>>>);
         mdspan mds2{ptr, 2, 3, 5};
         static_assert(same_as<decltype(mds2), mdspan<byte, dextents<size_t, 3>>>);
+
+        mdspan mds3{ptr, integral_constant<size_t, 6>{}, integral_constant<size_t, 5>{}};
+        static_assert(same_as<decltype(mds3), mdspan<byte, extents<size_t, 6, 5>>>);
+        mdspan mds4{
+            ptr, integral_constant<size_t, 2>{}, integral_constant<size_t, 3>{}, integral_constant<size_t, 5>{}};
+        static_assert(same_as<decltype(mds4), mdspan<byte, extents<size_t, 2, 3, 5>>>);
+
+        // Each pack element is deduced independently, so static and dynamic extents can be interleaved.
+        mdspan mds5{ptr, integral_constant<size_t, 2>{}, 3, integral_constant<size_t, 5>{}};
+        static_assert(same_as<decltype(mds5), mdspan<byte, extents<size_t, 2, dynamic_extent, 5>>>);
+        assert(mds5.extent(1) == 3);
+        mdspan mds6{ptr, 6, integral_constant<size_t, 5>{}};
+        static_assert(same_as<decltype(mds6), mdspan<byte, extents<size_t, dynamic_extent, 5>>>);
+        assert(mds6.extent(0) == 6);
+
+        using RefToSize = integral_constant<const size_t&, integral_constant<size_t, 6>::value>;
+        using RefToBool = integral_constant<const bool&, integral_constant<bool, true>::value>;
+        mdspan mds7{ptr, RefToSize{}, true_type{}};
+        static_assert(same_as<decltype(mds7), mdspan<byte, extents<size_t, 6, dynamic_extent>>>);
+        assert(mds7.extent(1) == 1);
+        mdspan mds8{ptr, RefToSize{}, RefToBool{}};
+        static_assert(same_as<decltype(mds8), mdspan<byte, extents<size_t, 6, dynamic_extent>>>);
+        assert(mds8.extent(1) == 1);
     }
 
     { // ElementType*, span<OtherIndexType, N>
