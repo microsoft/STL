@@ -16,7 +16,14 @@ sub CustomBuildHook()
     my $stdCompatIxx = "$stlModulesDir\\std.compat.ixx";
 
     # Dependency order is important here:
-    my @inputPaths = ($stdIxx, $stdCompatIxx, "test.cpp", "test2.cpp", "test3.cpp", "test4.cpp", "classic.cpp");
+    my @moduleUnits = ($stdIxx, $stdCompatIxx);
+    my @traditionalUnits = ("test.cpp", "test2.cpp", "test3.cpp", "test4.cpp", "classic.cpp");
+    my @inputPaths;
+    if (($ENV{PM_COMPILER} // "") eq "clang-cl") {
+        @inputPaths = ("-x", "c++-module", @moduleUnits, "-x", "none", @traditionalUnits);
+    } else {
+        @inputPaths = (@moduleUnits, @traditionalUnits);
+    }
 
     Run::ExecuteCL(join(" ", @inputPaths, "/Fe$cwd.exe"));
 }

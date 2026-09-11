@@ -1,6 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+module;
+
+#ifdef __clang__
+#pragma clang diagnostic push
+// warning: 'std' is a reserved name for a module [-Wreserved-module-identifier]
+#pragma clang diagnostic ignored "-Wreserved-module-identifier"
+#endif // defined(__clang__)
+
 export module std.compat;
 
 export import std;
@@ -531,3 +539,7 @@ export using std::towlower;
 export using std::towupper;
 export using std::towctrans;
 export using std::wctrans;
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // defined(__clang__)

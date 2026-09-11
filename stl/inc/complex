@@ -21,7 +21,8 @@
 // https://learn.microsoft.com/cpp/build/arm64-windows-abi-conventions#base-requirements
 // Both floating-point and NEON support are presumed to be present in hardware.
 #define _FMP_USING_STD_FMA
-#elif defined(_M_IX86) || defined(_M_X64)
+#elif (defined(_M_IX86) || defined(_M_X64)) \
+    && !(defined(_BUILD_STD_MODULE) && defined(__clang__)) // TRANSITION, LLVM-195661
 #define _FMP_USING_X86_X64_INTRINSICS
 #include <__msvc_bit_utils.hpp>
 #include <intrin.h>
