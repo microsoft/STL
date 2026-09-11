@@ -2726,6 +2726,174 @@ void test_gh_6359() {
     g_regexTester.should_capture("a", "(?:(?=(a)))?a", "");
 }
 
+void test_gh_6423() {
+    // GH-6423: Unwrap iterators in `match_results` overloads
+    // Test that all regex_match and regex_search overloads still compile and work in principle
+    const regex re("a((bc)*d)e");
+    {
+        cmatch cm;
+        const char* const input = "abcbcde";
+        const char* const last  = input + char_traits<char>::length(input);
+        assert(regex_match(input, re));
+        assert(regex_match(input, cm, re));
+        assert(cm.ready());
+        assert(cm.size() == 3);
+        assert(cm[0].matched);
+        assert(cm[0].first == input);
+        assert(cm[0].second == last);
+        assert(cm.position(0) == 0);
+        assert(cm[1].matched);
+        assert(cm[1].first == input + 1);
+        assert(cm[1].second == input + 6);
+        assert(cm.position(1) == 1);
+        assert(cm[2].matched);
+        assert(cm[2].first == input + 3);
+        assert(cm[2].second == input + 5);
+        assert(cm.position(2) == 3);
+        assert(!cm.prefix().matched);
+        assert(cm.prefix().first == input);
+        assert(cm.prefix().second == input);
+        assert(!cm.suffix().matched);
+        assert(cm.suffix().first == last);
+        assert(cm.suffix().second == last);
+    }
+
+    {
+        smatch sm;
+        const string input = "abcbcde";
+        assert(regex_match(input, re));
+        assert(regex_match(input, sm, re));
+        assert(sm.ready());
+        assert(sm.size() == 3);
+        assert(sm[0].matched);
+        assert(sm[0].first == input.begin());
+        assert(sm[0].second == input.end());
+        assert(sm.position(0) == 0);
+        assert(sm[1].matched);
+        assert(sm[1].first == input.begin() + 1);
+        assert(sm[1].second == input.begin() + 6);
+        assert(sm.position(1) == 1);
+        assert(sm[2].matched);
+        assert(sm[2].first == input.begin() + 3);
+        assert(sm[2].second == input.begin() + 5);
+        assert(sm.position(2) == 3);
+        assert(!sm.prefix().matched);
+        assert(sm.prefix().first == input.begin());
+        assert(sm.prefix().second == input.begin());
+        assert(!sm.suffix().matched);
+        assert(sm.suffix().first == input.end());
+        assert(sm.suffix().second == input.end());
+    }
+
+    {
+        match_results<vector<char>::const_iterator> vm;
+        const vector<char> input = {'a', 'b', 'c', 'b', 'c', 'd', 'e'};
+        assert(regex_match(input.begin(), input.end(), re));
+        assert(regex_match(input.begin(), input.end(), vm, re));
+        assert(vm.ready());
+        assert(vm.size() == 3);
+        assert(vm[0].matched);
+        assert(vm[0].first == input.begin());
+        assert(vm[0].second == input.end());
+        assert(vm.position(0) == 0);
+        assert(vm[1].matched);
+        assert(vm[1].first == input.begin() + 1);
+        assert(vm[1].second == input.begin() + 6);
+        assert(vm.position(1) == 1);
+        assert(vm[2].matched);
+        assert(vm[2].first == input.begin() + 3);
+        assert(vm[2].second == input.begin() + 5);
+        assert(vm.position(2) == 3);
+        assert(!vm.prefix().matched);
+        assert(vm.prefix().first == input.begin());
+        assert(vm.prefix().second == input.begin());
+        assert(!vm.suffix().matched);
+        assert(vm.suffix().first == input.end());
+        assert(vm.suffix().second == input.end());
+    }
+
+    {
+        cmatch cm;
+        const char* const input = "xyzabcbcdezyx";
+        const char* const last  = input + char_traits<char>::length(input);
+        assert(regex_search(input, re));
+        assert(regex_search(input, cm, re));
+        assert(cm.ready());
+        assert(cm.size() == 3);
+        assert(cm[0].matched);
+        assert(cm[0].first == input + 3);
+        assert(cm[0].second == last - 3);
+        assert(cm.position(0) == 3);
+        assert(cm[1].matched);
+        assert(cm[1].first == input + 4);
+        assert(cm[1].second == input + 9);
+        assert(cm.position(1) == 4);
+        assert(cm[2].matched);
+        assert(cm[2].first == input + 6);
+        assert(cm[2].second == input + 8);
+        assert(cm.prefix().matched);
+        assert(cm.prefix().first == input);
+        assert(cm.prefix().second == input + 3);
+        assert(cm.suffix().matched);
+        assert(cm.suffix().first == last - 3);
+        assert(cm.suffix().second == last);
+    }
+
+    {
+        smatch sm;
+        const string input = "xyzabcbcdezyx";
+        assert(regex_search(input, re));
+        assert(regex_search(input, sm, re));
+        assert(sm.ready());
+        assert(sm.size() == 3);
+        assert(sm[0].matched);
+        assert(sm[0].first == input.begin() + 3);
+        assert(sm[0].second == input.end() - 3);
+        assert(sm.position(0) == 3);
+        assert(sm[1].matched);
+        assert(sm[1].first == input.begin() + 4);
+        assert(sm[1].second == input.begin() + 9);
+        assert(sm.position(1) == 4);
+        assert(sm[2].matched);
+        assert(sm[2].first == input.begin() + 6);
+        assert(sm[2].second == input.begin() + 8);
+        assert(sm.position(2) == 6);
+        assert(sm.prefix().matched);
+        assert(sm.prefix().first == input.begin());
+        assert(sm.prefix().second == input.begin() + 3);
+        assert(sm.suffix().matched);
+        assert(sm.suffix().first == input.end() - 3);
+        assert(sm.suffix().second == input.end());
+    }
+
+    {
+        match_results<vector<char>::const_iterator> vm;
+        const vector<char> input = {'x', 'y', 'z', 'a', 'b', 'c', 'b', 'c', 'd', 'e', 'z', 'y', 'x'};
+        assert(regex_search(input.begin(), input.end(), re));
+        assert(regex_search(input.begin(), input.end(), vm, re));
+        assert(vm.ready());
+        assert(vm.size() == 3);
+        assert(vm[0].matched);
+        assert(vm[0].first == input.begin() + 3);
+        assert(vm[0].second == input.end() - 3);
+        assert(vm.position(0) == 3);
+        assert(vm[1].matched);
+        assert(vm[1].first == input.begin() + 4);
+        assert(vm[1].second == input.begin() + 9);
+        assert(vm.position(1) == 4);
+        assert(vm[2].matched);
+        assert(vm[2].first == input.begin() + 6);
+        assert(vm[2].second == input.begin() + 8);
+        assert(vm.position(2) == 6);
+        assert(vm.prefix().matched);
+        assert(vm.prefix().first == input.begin());
+        assert(vm.prefix().second == input.begin() + 3);
+        assert(vm.suffix().matched);
+        assert(vm.suffix().first == input.end() - 3);
+        assert(vm.suffix().second == input.end());
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -2798,6 +2966,7 @@ int main() {
     test_gh_6267();
     test_gh_6289();
     test_gh_6359();
+    test_gh_6423();
 
     return g_regexTester.result();
 }

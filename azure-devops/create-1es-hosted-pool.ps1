@@ -9,14 +9,15 @@ Creates a 1ES Hosted Pool, set up for the STL's CI.
 See https://github.com/microsoft/STL/wiki/Checklist-for-Toolset-Updates for more information.
 
 .PARAMETER VMSku
-The VM SKU can be Fasv6, Fasv7, Fadsv7, or Dpdsv6.
+The VM SKU can be Fadsv7 or Dpdsv6.
 #>
 [CmdletBinding(PositionalBinding=$false)]
 Param(
-  [Parameter(Mandatory)][ValidateSet('Fasv6', 'Fasv7', 'Fadsv7', 'Dpdsv6')][String]$VMSku
+  [Parameter(Mandatory)][ValidateSet('Fadsv7', 'Dpdsv6')][String]$VMSku
 )
 
 $ErrorActionPreference = 'Stop'
+$PSNativeCommandUseErrorActionPreference = $true
 
 $CurrentDate = Get-Date
 $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
@@ -31,41 +32,28 @@ $Timestamp = $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 
 # | SKU    | Location       | Cores | Notes
 # |--------|----------------|------:|-------
-# | Fasv6  | eastus2        |  4096 |
-# | Fasv7  | australiaeast  |   740 | Currently unused to stay within our regional (all-SKU) quota of 4736 cores
-# | Fasv7  | northeurope    |   640 |
-# | Fasv7  | southeastasia  |   640 |
-# | Fadsv7 | australiaeast  |  2048 |
+# | Fadsv7 | australiaeast  |  3024 |
+# | Fadsv7 | swedencentral  |  2560 |
 # | Dpdsv6 | australiaeast  |  2048 |
 # | Dpdsv6 | southcentralus |  2048 |
 
-if ($VMSku -ieq 'Fasv6') {
+if ($VMSku -ieq 'Fadsv7') {
   $Arch = 'x64'
-  $ProtoVMSize = 'Standard_F16as_v6'
-  $PoolSkuName = 'Standard_F64as_v6'
-  $PoolSize = 32 # We have quota for 4096 cores (64 VMs), so we can have old and new pools of 32 VMs each.
-  $AvailableLocations = @('eastus2')
-} elseif ($VMSku -ieq 'Fasv7') {
-  $Arch = 'x64'
-  $ProtoVMSize = 'Standard_F16as_v7'
-  $PoolSkuName = 'Standard_F48as_v7'
-  $PoolSize = 13 # Locations where we have quota for at least 640 cores (13 VMs):
-  $AvailableLocations = @('northeurope', 'southeastasia')
-} elseif ($VMSku -ieq 'Fadsv7') {
-  $Arch = 'x64'
+  $DiskType = 'NVMe'
   $ProtoVMSize = 'Standard_F16ads_v7'
-  $PoolSkuName = 'Standard_F48ads_v7'
-  $PoolSize = 21 # We have quota for 2048 cores (42 VMs), so we can have old and new pools of 21 VMs each.
-  $AvailableLocations = @('australiaeast')
+  $PoolSkuName = 'Standard_F80ads_v7'
+  $PoolSize = 32 # Locations where we have quota for at least 2560 cores (32 VMs):
+  $AvailableLocations = @('australiaeast', 'swedencentral')
 } elseif ($VMSku -ieq 'Dpdsv6') {
   $Arch = 'arm64'
+  $DiskType = 'SCSI'
   $ProtoVMSize = 'Standard_D16pds_v6'
   $PoolSkuName = 'Standard_D64pds_v6'
   $PoolSize = 32 # Locations where we have quota for at least 2048 cores (32 VMs):
   $AvailableLocations = @('australiaeast', 'southcentralus')
 }
 
-$AvailableLocationIdx = 13 # Increment for each new set of pools, to cycle through the available locations.
+$AvailableLocationIdx = 15 # Increment for each new set of pools, to cycle through the available locations.
 $Location = $AvailableLocations[$AvailableLocationIdx % $AvailableLocations.Length]
 
 if ($Arch -ieq 'x64') {
@@ -232,13 +220,13 @@ if ($Arch -ieq 'x64') {
   $VM = New-AzVMConfig `
     -VMName $ProtoVMName `
     -VMSize $ProtoVMSize `
-    -DiskControllerType 'NVMe' `
+    -DiskControllerType $DiskType `
     -Priority 'Regular'
 } else {
   $VM = New-AzVMConfig `
     -VMName $ProtoVMName `
     -VMSize $ProtoVMSize `
-    -DiskControllerType 'SCSI' `
+    -DiskControllerType $DiskType `
     -Priority 'Regular' `
     -SecurityType 'TrustedLaunch' `
     -SharedGalleryImageId $ImageId
@@ -386,7 +374,7 @@ Display-ProgressBar -Status 'Creating image definition'
 
 $ImageDefinitionName = "$ResourceGroupName-ImageDefinition"
 $FeatureTrustedLaunch = @{ Name = 'SecurityType'; Value = 'TrustedLaunch'; }
-if ($Arch -ieq 'x64') {
+if ($DiskType -ieq 'NVMe') {
   $FeatureNVMe = @{ Name = 'DiskControllerTypes'; Value = 'SCSI, NVMe'; }
 } else {
   $FeatureNVMe = @{ Name = 'DiskControllerTypes'; Value = 'SCSI'; }

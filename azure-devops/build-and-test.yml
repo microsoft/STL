@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 parameters:
+- name: jobTimeoutInMinutes
+  type: string
 - name: hostArch
   type: string
 - name: targetArch
@@ -39,7 +41,7 @@ jobs:
 - job: '${{ parameters.targetPlatform }}'
   strategy:
     parallel: ${{ parameters.numShards }}
-  timeoutInMinutes: 30
+  timeoutInMinutes: ${{ parameters.jobTimeoutInMinutes }}
   steps:
   - template: checkout-self.yml
   - template: checkout-submodule.yml
