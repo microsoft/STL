@@ -10182,7 +10182,7 @@ namespace {
                 return svcntd();
             }
 
-            static svbool_t _Whilelt(size_t _Op1, size_t _Op2) noexcept {
+            static svbool_t _Whilelt(const size_t _Op1, const size_t _Op2) noexcept {
                 return svwhilelt_b64(_Op1, _Op2);
             }
 
@@ -10190,19 +10190,20 @@ namespace {
                 return svdup_n_u64(_Val);
             }
 
-            static _Vec_t _Load(svbool_t _Pred, const void* const _Ptr) noexcept {
+            static _Vec_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
                 return svld1(_Pred, static_cast<const uint64_t*>(_Ptr));
             }
 
-            static svbool_t _Cmpne(svbool_t _Pred, const _Vec_t _Data, const _Vec_t _Comparand) noexcept {
+            static svbool_t _Cmpne(const svbool_t _Pred, const _Vec_t _Data, const _Vec_t _Comparand) noexcept {
                 return svcmpne(_Pred, _Data, _Comparand);
             }
 
-            static _Vec_t _Compact(svbool_t _Mask, const _Vec_t _Data) noexcept {
+            static _Vec_t _Compact(const svbool_t _Mask, const _Vec_t _Data) noexcept {
                 return svcompact(_Mask, _Data);
             }
 
-            static void* _Store_masked(svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+            static void* _Store_masked(
+                const svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
                 // We use _Pred, rather than whilelt(0, _Size) to save an instruction. This is fine because we allow
                 // redundant elements to be written.
                 svst1(_Pred, static_cast<uint64_t*>(_Out), _Data);
@@ -10212,7 +10213,7 @@ namespace {
             }
 
             static void* _Store_masked_copy(
-                svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+                const svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
                 const auto _N_elems    = svcntp_b64(_Pred, _Mask);
                 const auto _Store_pred = svwhilelt_b64(size_t{0}, _N_elems);
                 svst1(_Store_pred, static_cast<uint64_t*>(_Out), _Data);
@@ -10229,7 +10230,7 @@ namespace {
                 return svcntw();
             }
 
-            static svbool_t _Whilelt(size_t _Op1, size_t _Op2) noexcept {
+            static svbool_t _Whilelt(const size_t _Op1, const size_t _Op2) noexcept {
                 return svwhilelt_b32(_Op1, _Op2);
             }
 
@@ -10237,19 +10238,20 @@ namespace {
                 return svdup_n_u32(_Val);
             }
 
-            static _Vec_t _Load(svbool_t _Pred, const void* const _Ptr) noexcept {
+            static _Vec_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
                 return svld1(_Pred, static_cast<const uint32_t*>(_Ptr));
             }
 
-            static svbool_t _Cmpne(svbool_t _Pred, const _Vec_t _Data, const _Vec_t _Comparand) noexcept {
+            static svbool_t _Cmpne(const svbool_t _Pred, const _Vec_t _Data, const _Vec_t _Comparand) noexcept {
                 return svcmpne(_Pred, _Data, _Comparand);
             }
 
-            static _Vec_t _Compact(svbool_t _Mask, const _Vec_t _Data) noexcept {
+            static _Vec_t _Compact(const svbool_t _Mask, const _Vec_t _Data) noexcept {
                 return svcompact(_Mask, _Data);
             }
 
-            static void* _Store_masked(svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+            static void* _Store_masked(
+                const svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
                 // We use _Pred, rather than whilelt(0, _Size) to save an instruction. This is fine because we allow
                 // redundant elements to be written.
                 svst1(_Pred, static_cast<uint32_t*>(_Out), _Data);
@@ -10259,7 +10261,7 @@ namespace {
             }
 
             static void* _Store_masked_copy(
-                svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+                const svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
                 const auto _N_elems    = svcntp_b32(_Pred, _Mask);
                 const auto _Store_pred = svwhilelt_b32(size_t{0}, _N_elems);
                 svst1(_Store_pred, static_cast<uint32_t*>(_Out), _Data);
@@ -10276,7 +10278,7 @@ namespace {
                 return _Sve_4::_Step();
             }
 
-            static svbool_t _Whilelt(size_t _Op1, size_t _Op2) noexcept {
+            static svbool_t _Whilelt(const size_t _Op1, const size_t _Op2) noexcept {
                 return _Sve_4::_Whilelt(_Op1, _Op2);
             }
 
@@ -10284,19 +10286,20 @@ namespace {
                 return _Sve_4::_Set(static_cast<uint32_t>(_Val));
             }
 
-            static _Vec_t _Load(svbool_t _Pred, const void* const _Ptr) noexcept {
+            static _Vec_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
                 return svld1uh_u32(_Pred, static_cast<const uint16_t*>(_Ptr));
             }
 
-            static svbool_t _Cmpne(svbool_t _Pred, const _Vec_t _Data, const _Vec_t _Comparand) noexcept {
+            static svbool_t _Cmpne(const svbool_t _Pred, const _Vec_t _Data, const _Vec_t _Comparand) noexcept {
                 return _Sve_4::_Cmpne(_Pred, _Data, _Comparand);
             }
 
-            static _Vec_t _Compact(svbool_t _Mask, const _Vec_t _Data) noexcept {
+            static _Vec_t _Compact(const svbool_t _Mask, const _Vec_t _Data) noexcept {
                 return _Sve_4::_Compact(_Mask, _Data);
             }
 
-            static void* _Store_masked(svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+            static void* _Store_masked(
+                const svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
                 // We use _Pred, rather than whilelt(0, _Size) to save an instruction. This is fine because we allow
                 // redundant elements to be written.
                 svst1h_u32(_Pred, static_cast<uint16_t*>(_Out), _Data);
@@ -10306,7 +10309,7 @@ namespace {
             }
 
             static void* _Store_masked_copy(
-                svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+                const svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
                 const auto _N_elems    = svcntp_b32(_Pred, _Mask);
                 const auto _Store_pred = svwhilelt_b32(size_t{0}, _N_elems);
                 svst1h_u32(_Store_pred, static_cast<uint16_t*>(_Out), _Data);
@@ -10323,7 +10326,7 @@ namespace {
                 return _Sve_4::_Step();
             }
 
-            static svbool_t _Whilelt(size_t _Op1, size_t _Op2) noexcept {
+            static svbool_t _Whilelt(const size_t _Op1, const size_t _Op2) noexcept {
                 return _Sve_4::_Whilelt(_Op1, _Op2);
             }
 
@@ -10331,19 +10334,20 @@ namespace {
                 return _Sve_4::_Set(static_cast<uint32_t>(_Val));
             }
 
-            static _Vec_t _Load(svbool_t _Pred, const void* const _Ptr) noexcept {
+            static _Vec_t _Load(const svbool_t _Pred, const void* const _Ptr) noexcept {
                 return svld1ub_u32(_Pred, static_cast<const uint8_t*>(_Ptr));
             }
 
-            static svbool_t _Cmpne(svbool_t _Pred, const _Vec_t _Data, const _Vec_t _Comparand) noexcept {
+            static svbool_t _Cmpne(const svbool_t _Pred, const _Vec_t _Data, const _Vec_t _Comparand) noexcept {
                 return _Sve_4::_Cmpne(_Pred, _Data, _Comparand);
             }
 
-            static _Vec_t _Compact(svbool_t _Mask, const _Vec_t _Data) noexcept {
+            static _Vec_t _Compact(const svbool_t _Mask, const _Vec_t _Data) noexcept {
                 return _Sve_4::_Compact(_Mask, _Data);
             }
 
-            static void* _Store_masked(svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+            static void* _Store_masked(
+                const svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
                 // We use _Pred, rather than whilelt(0, _Size) to save an instruction. This is fine because we allow
                 // redundant elements to be written.
                 svst1b_u32(_Pred, static_cast<uint8_t*>(_Out), _Data);
@@ -10353,7 +10357,7 @@ namespace {
             }
 
             static void* _Store_masked_copy(
-                svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+                const svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
                 const auto _N_elems    = svcntp_b32(_Pred, _Mask);
                 const auto _Store_pred = svwhilelt_b32(size_t{0}, _N_elems);
                 svst1b_u32(_Store_pred, static_cast<uint8_t*>(_Out), _Data);
