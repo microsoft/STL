@@ -10733,10 +10733,10 @@ namespace {
 extern "C" {
 
 void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _Val) noexcept {
-    void* _Out = _First;
+    const size_t _Size_bytes = _Byte_length(_First, _Last);
+    void* _Out               = _First;
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-    const size_t _Size_bytes = _Byte_length(_First, _Last);
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE() && _Sve_vl() > 16) {
         return _Removing::_Remove_impl_sve<_Removing::_Sve_1>(_First, _Last, _Val);
@@ -10749,7 +10749,7 @@ void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _V
         _First = _Stop;
     }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 8) {
+    if (_Use_sse42() && _Size_bytes >= 8) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
         _Out   = _Removing::_Remove_impl<_Removing::_Sse_1>(_First, _Stop, _Val);
@@ -10761,10 +10761,10 @@ void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _V
 }
 
 void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _Val) noexcept {
-    void* _Out = _First;
+    const size_t _Size_bytes = _Byte_length(_First, _Last);
+    void* _Out               = _First;
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-    const size_t _Size_bytes = _Byte_length(_First, _Last);
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE() && _Sve_vl() > 16) {
         return _Removing::_Remove_impl_sve<_Removing::_Sve_2>(_First, _Last, _Val);
@@ -10777,7 +10777,7 @@ void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _
         _First = _Stop;
     }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 16) {
+    if (_Use_sse42() && _Size_bytes >= 16) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Out   = _Removing::_Remove_impl<_Removing::_Sse_2>(_First, _Stop, _Val);
@@ -10789,7 +10789,8 @@ void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _
 }
 
 void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _Val) noexcept {
-    void* _Out = _First;
+    const size_t _Size_bytes = _Byte_length(_First, _Last);
+    void* _Out               = _First;
 
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
@@ -10797,14 +10798,14 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
         return _Removing::_Remove_impl_sve<_Removing::_Sve_4>(_First, _Last, _Val);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
+    if (_Size_bytes >= 16) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Out   = _Removing::_Remove_impl<_Removing::_Neon_4>(_First, _Stop, _Val);
         _First = _Stop;
     }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
+    if (_Use_avx2() && _Size_bytes >= 32) {
         void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
         _Out   = _Removing::_Remove_impl<_Removing::_Avx_4>(_First, _Stop, _Val);
@@ -10852,8 +10853,8 @@ void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _
 
 void* __stdcall __std_remove_copy_1(
     const void* _First, const void* const _Last, void* _Out, const uint8_t _Val) noexcept {
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
     const size_t _Size_bytes = _Byte_length(_First, _Last);
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     // For 8-bit element types SVE is only faster than Neon at same VL for small input sizes.
     const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes <= 96 || _Sve_vl() > 16);
@@ -10868,7 +10869,7 @@ void* __stdcall __std_remove_copy_1(
         _First = _Stop;
     }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 8) {
+    if (_Use_sse42() && _Size_bytes >= 8) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{7});
         _Out   = _Removing::_Remove_copy_impl<_Removing::_Sse_1>(_First, _Stop, _Out, _Val);
@@ -10881,6 +10882,7 @@ void* __stdcall __std_remove_copy_1(
 
 void* __stdcall __std_remove_copy_2(
     const void* _First, const void* const _Last, void* _Out, const uint16_t _Val) noexcept {
+    const size_t _Size_bytes = _Byte_length(_First, _Last);
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     // Note: Using SVE unconditionally for all input sizes here is an intentional choice to optimize for 2x128b
@@ -10890,14 +10892,14 @@ void* __stdcall __std_remove_copy_2(
         return _Removing::_Remove_copy_impl_sve<_Removing::_Sve_2>(_First, _Last, _Out, _Val);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Size_bytes >= 16) {
+    if (_Size_bytes >= 16) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Out   = _Removing::_Remove_copy_impl<_Removing::_Neon_2>(_First, _Stop, _Out, _Val);
         _First = _Stop;
     }
 #else // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) / !defined(_M_ARM64) && !defined(_M_ARM64EC) vvv
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_sse42() && _Size_bytes >= 16) {
+    if (_Use_sse42() && _Size_bytes >= 16) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0xF});
         _Out   = _Removing::_Remove_copy_impl<_Removing::_Sse_2>(_First, _Stop, _Out, _Val);
@@ -10939,16 +10941,17 @@ void* __stdcall __std_remove_copy_4(
 
 void* __stdcall __std_remove_copy_8(
     const void* _First, const void* const _Last, void* _Out, const uint64_t _Val) noexcept {
+    [[maybe_unused]] const size_t _Size_bytes = _Byte_length(_First, _Last);
+
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     // For 64-bit element types SVE is only faster than the scalar fallback at VL128 for large input sizes.
-    const size_t _Size_bytes = _Byte_length(_First, _Last);
-    const bool _Use_sve      = _Use_FEAT_SVE() && (_Size_bytes > 512 || _Sve_vl() > 16);
+    const bool _Use_sve = _Use_FEAT_SVE() && (_Size_bytes > 512 || _Sve_vl() > 16);
     if (_Use_sve) {
         return _Removing::_Remove_copy_impl_sve<_Removing::_Sve_8>(_First, _Last, _Out, _Val);
     }
 #else // ^^^ defined(_M_ARM64) / !defined(_M_ARM64) vvv
 #if !defined(_M_ARM64EC)
-    if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
+    if (_Use_avx2() && _Size_bytes >= 32) {
         const void* _Stop = _First;
         _Advance_bytes(_Stop, _Size_bytes & ~size_t{0x1F});
         _Out   = _Removing::_Remove_copy_impl<_Removing::_Avx_8>(_First, _Stop, _Out, _Val);
