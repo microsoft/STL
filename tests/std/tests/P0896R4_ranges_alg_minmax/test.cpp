@@ -339,6 +339,89 @@ constexpr void mm_constexpr_tests() {
         ProxyRef::no>>();
 }
 
+template <class T>
+struct InputRange {
+    T* ptr;
+    size_t size;
+
+    struct iterator {
+        using value_type      = T;
+        using difference_type = ptrdiff_t;
+
+        T* ptr;
+
+        constexpr T operator*() const {
+            return *ptr;
+        }
+
+        constexpr iterator& operator++() {
+            ++ptr;
+            return *this;
+        }
+
+        constexpr void operator++(int) {
+            ++*this;
+        }
+
+        constexpr friend bool operator==(iterator left, iterator right) {
+            return left.ptr == right.ptr;
+        }
+    };
+
+    constexpr iterator begin() const {
+        return {ptr};
+    }
+
+    constexpr iterator end() const {
+        return {ptr + size};
+    }
+};
+
+// For minmax:
+// N5032 [alg.min.max]/23:
+// Complexity: At most (3/2) ranges::distance(r) applications of the corresponding predicate
+// and twice as many applications of the projection, if any.
+// For minmax_element:
+// N5032 [alg.min.max]/32:
+// Complexity: Let N be last - first. At most max(floor(3/2 (N - 1)), 0) comparisons
+// and twice as many applications of the projection, if any.
+constexpr void test_cmp_count(initializer_list<int> v) {
+    {
+        size_t cmp_count = 0;
+        (void) ranges::minmax(v, [&cmp_count](int left, int right) {
+            ++cmp_count;
+            return left < right;
+        });
+        ASSERT(cmp_count <= 3 * v.size() / 2);
+    }
+
+    {
+        InputRange r     = {v.data(), v.size()};
+        size_t cmp_count = 0;
+        (void) ranges::minmax(r, [&cmp_count](int left, int right) {
+            ++cmp_count;
+            return left < right;
+        });
+        ASSERT(cmp_count <= 3 * v.size() / 2);
+    }
+
+    {
+        size_t cmp_count = 0;
+        (void) ranges::minmax_element(v, [&cmp_count](int left, int right) {
+            ++cmp_count;
+            return left < right;
+        });
+        ASSERT(cmp_count <= 3 * (v.size() - 1) / 2);
+    }
+}
+
+constexpr void cmp_count_tests() {
+    test_cmp_count({1, 2, 3});
+    test_cmp_count({1, 2, 3, 4});
+    test_cmp_count({3, 2, 1});
+    test_cmp_count({4, 3, 2, 1});
+}
+
 void test_gh_1893() {
     // GH-1893: ranges::clamp was sometimes performing too many projections,
     // and we should conform at least in release mode.
@@ -436,6 +519,9 @@ int main() {
 
     static_assert((mm_constexpr_tests(), true));
     test_in<mm, const P>();
+
+    static_assert((cmp_count_tests(), true));
+    cmp_count_tests();
 
     test_gh_1893();
     test_gh_2900();
