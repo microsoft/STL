@@ -10207,20 +10207,18 @@ namespace {
             template <_Alg _Kind>
             static void* _Store_masked(
                 const svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+                const auto _N_elems = svcntp_b64(_Pred, _Mask);
                 if constexpr (_Kind == _Alg::_Remove) {
                     // We use _Pred, rather than whilelt(0, _Size) to save an instruction.
                     // This is fine because we allow redundant elements to be written.
                     svst1(_Pred, static_cast<uint64_t*>(_Out), _Data);
-                    const auto _Size = svcntp_b64(_Pred, _Mask) * sizeof(uint64_t);
-                    _Advance_bytes(_Out, _Size);
                 } else {
                     static_assert(_Kind == _Alg::_Remove_copy);
-                    const auto _N_elems    = svcntp_b64(_Pred, _Mask);
                     const auto _Store_pred = svwhilelt_b64(size_t{0}, _N_elems);
                     svst1(_Store_pred, static_cast<uint64_t*>(_Out), _Data);
-                    const auto _Size = _N_elems * sizeof(uint64_t);
-                    _Advance_bytes(_Out, _Size);
                 }
+                const auto _Size = _N_elems * sizeof(uint64_t);
+                _Advance_bytes(_Out, _Size);
                 return _Out;
             }
         };
@@ -10255,20 +10253,18 @@ namespace {
             template <_Alg _Kind>
             static void* _Store_masked(
                 const svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+                const auto _N_elems = svcntp_b32(_Pred, _Mask);
                 if constexpr (_Kind == _Alg::_Remove) {
                     // We use _Pred, rather than whilelt(0, _Size) to save an instruction.
                     // This is fine because we allow redundant elements to be written.
                     svst1(_Pred, static_cast<uint32_t*>(_Out), _Data);
-                    const auto _Size = svcntp_b32(_Pred, _Mask) * sizeof(uint32_t);
-                    _Advance_bytes(_Out, _Size);
                 } else {
                     static_assert(_Kind == _Alg::_Remove_copy);
-                    const auto _N_elems    = svcntp_b32(_Pred, _Mask);
                     const auto _Store_pred = svwhilelt_b32(size_t{0}, _N_elems);
                     svst1(_Store_pred, static_cast<uint32_t*>(_Out), _Data);
-                    const auto _Size = _N_elems * sizeof(uint32_t);
-                    _Advance_bytes(_Out, _Size);
                 }
+                const auto _Size = _N_elems * sizeof(uint32_t);
+                _Advance_bytes(_Out, _Size);
                 return _Out;
             }
         };
@@ -10303,20 +10299,18 @@ namespace {
             template <_Alg _Kind>
             static void* _Store_masked(
                 const svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+                const auto _N_elems = svcntp_b32(_Pred, _Mask);
                 if constexpr (_Kind == _Alg::_Remove) {
                     // We use _Pred, rather than whilelt(0, _Size) to save an instruction.
                     // This is fine because we allow redundant elements to be written.
                     svst1h_u32(_Pred, static_cast<uint16_t*>(_Out), _Data);
-                    const auto _Size = svcntp_b32(_Pred, _Mask) * sizeof(uint16_t);
-                    _Advance_bytes(_Out, _Size);
                 } else {
                     static_assert(_Kind == _Alg::_Remove_copy);
-                    const auto _N_elems    = svcntp_b32(_Pred, _Mask);
                     const auto _Store_pred = svwhilelt_b32(size_t{0}, _N_elems);
                     svst1h_u32(_Store_pred, static_cast<uint16_t*>(_Out), _Data);
-                    const auto _Size = _N_elems * sizeof(uint16_t);
-                    _Advance_bytes(_Out, _Size);
                 }
+                const auto _Size = _N_elems * sizeof(uint16_t);
+                _Advance_bytes(_Out, _Size);
                 return _Out;
             }
         };
@@ -10351,20 +10345,18 @@ namespace {
             template <_Alg _Kind>
             static void* _Store_masked(
                 const svbool_t _Pred, void* _Out, const _Vec_t _Data, const svbool_t _Mask) noexcept {
+                const auto _N_elems = svcntp_b32(_Pred, _Mask);
                 if constexpr (_Kind == _Alg::_Remove) {
                     // We use _Pred, rather than whilelt(0, _Size) to save an instruction.
                     // This is fine because we allow redundant elements to be written.
                     svst1b_u32(_Pred, static_cast<uint8_t*>(_Out), _Data);
-                    const auto _Size = svcntp_b32(_Pred, _Mask) * sizeof(uint8_t);
-                    _Advance_bytes(_Out, _Size);
                 } else {
                     static_assert(_Kind == _Alg::_Remove_copy);
-                    const auto _N_elems    = svcntp_b32(_Pred, _Mask);
                     const auto _Store_pred = svwhilelt_b32(size_t{0}, _N_elems);
                     svst1b_u32(_Store_pred, static_cast<uint8_t*>(_Out), _Data);
-                    const auto _Size = _N_elems * sizeof(uint8_t);
-                    _Advance_bytes(_Out, _Size);
                 }
+                const auto _Size = _N_elems * sizeof(uint8_t);
+                _Advance_bytes(_Out, _Size);
                 return _Out;
             }
         };
