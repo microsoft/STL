@@ -185,10 +185,10 @@ For example, `<atomic>` has conditionally compiled code for the `_M_ARM64` and `
 The following instructions assume that you're starting in the previously cloned `STL` directory.
 If you installed VS to a non-default location, change the `vcvarsall.bat` paths below accordingly.
 
-To build the x64 target (recommended):
+To build the x64 target (recommended on x64 hosts):
 
 1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
-1. `vcvarsall.bat x64 -vcvars_ver=preview`
+1. `vcvarsall.bat x64 -vcvars_ver=preview` (x64 hosts) or `vcvarsall.bat arm64_x64 -vcvars_ver=preview` (ARM64 hosts)
 1. `popd`
 1. `cmake --preset x64`
 1. `cmake --build --preset x64`
@@ -196,15 +196,15 @@ To build the x64 target (recommended):
 To build the x86 target:
 
 1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
-1. `vcvarsall.bat x86 -vcvars_ver=preview`
+1. `vcvarsall.bat x86 -vcvars_ver=preview` (x64 hosts) or `vcvarsall.bat arm64_x86 -vcvars_ver=preview` (ARM64 hosts)
 1. `popd`
 1. `cmake --preset x86`
 1. `cmake --build --preset x86`
 
-To build the ARM64 target:
+To build the ARM64 target (recommended on ARM64 hosts):
 
 1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
-1. `vcvarsall.bat x64_arm64 -vcvars_ver=preview`
+1. `vcvarsall.bat x64_arm64 -vcvars_ver=preview` (x64 hosts) or `vcvarsall.bat arm64 -vcvars_ver=preview` (ARM64 hosts)
 1. `popd`
 1. `cmake --preset ARM64`
 1. `cmake --build --preset ARM64`
@@ -212,23 +212,10 @@ To build the ARM64 target:
 To build the ARM64EC target:
 
 1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
-1. `vcvarsall.bat x64_arm64 -vcvars_ver=preview`
+1. `vcvarsall.bat x64_arm64 -vcvars_ver=preview` (x64 hosts) or `vcvarsall.bat arm64 -vcvars_ver=preview` (ARM64 hosts)
 1. `popd`
 1. `cmake --preset ARM64EC`
 1. `cmake --build --preset ARM64EC`
-
-## Building ARM64 Natively
-
-By default, the x64 and x86 presets are configured to both build and run the tests.
-The ARM64 and ARM64EC presets assume that you're cross-compiling, so they enable an option `TESTS_BUILD_ONLY`
-to build test executables without running them. If you have an ARM64 machine, you'll want to use
-the native compiler, and you'll want to disable `TESTS_BUILD_ONLY`:
-
-1. `pushd "%ProgramFiles%\Microsoft Visual Studio\18\Insiders\VC\Auxiliary\Build"`
-1. `vcvarsall.bat arm64 -vcvars_ver=preview`
-1. `popd`
-1. `cmake --preset ARM64 -DTESTS_BUILD_ONLY=OFF`
-1. `cmake --build --preset ARM64`
 
 # How To Consume
 

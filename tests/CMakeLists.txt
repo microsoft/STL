@@ -15,7 +15,35 @@ set(LLVM_PROJECT_SOURCE_DIR "${STL_SOURCE_DIR}/llvm-project" CACHE PATH
 set(LIBCXX_SOURCE_DIR "${LLVM_PROJECT_SOURCE_DIR}/libcxx" CACHE PATH
     "Location of the libcxx source tree")
 
-option(TESTS_BUILD_ONLY "Only run the build steps of tests" OFF)
+if(NOT DEFINED TESTS_CAN_RUN)
+    set(TESTS_RUN_PROBE "${CMAKE_CURRENT_BINARY_DIR}/tests-run-probe${CMAKE_EXECUTABLE_SUFFIX}")
+    set(TESTS_SAVED_TRY_COMPILE_TARGET_TYPE "${CMAKE_TRY_COMPILE_TARGET_TYPE}")
+    set(CMAKE_TRY_COMPILE_TARGET_TYPE EXECUTABLE)
+    try_compile(TESTS_COMPILED
+        SOURCE_FROM_CONTENT test.cpp "int main() {}"
+        COPY_FILE "${TESTS_RUN_PROBE}"
+        NO_CACHE)
+    set(CMAKE_TRY_COMPILE_TARGET_TYPE "${TESTS_SAVED_TRY_COMPILE_TARGET_TYPE}")
+    unset(TESTS_SAVED_TRY_COMPILE_TARGET_TYPE)
+
+    set(TESTS_CAN_RUN OFF)
+    if(TESTS_COMPILED)
+        execute_process(COMMAND "${TESTS_RUN_PROBE}" RESULT_VARIABLE TESTS_RUN_RESULT)
+        if("${TESTS_RUN_RESULT}" STREQUAL "0")
+            set(TESTS_CAN_RUN ON)
+        endif()
+    endif()
+    file(REMOVE "${TESTS_RUN_PROBE}")
+    set(TESTS_CAN_RUN "${TESTS_CAN_RUN}" CACHE INTERNAL "Whether test executables can run on the build host")
+endif()
+
+if(TESTS_CAN_RUN)
+    set(TESTS_BUILD_ONLY_DEFAULT OFF)
+else()
+    set(TESTS_BUILD_ONLY_DEFAULT ON)
+endif()
+
+option(TESTS_BUILD_ONLY "Only run the build steps of tests" "${TESTS_BUILD_ONLY_DEFAULT}")
 
 add_subdirectory(libcxx)
 add_subdirectory(std)
