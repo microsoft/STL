@@ -10370,8 +10370,8 @@ namespace {
         // IMPORTANT: __declspec(noinline) is necessary because any use of SVE intrinsics
         // will generate an SVE prologue outside of branches like `if (_Use_FEAT_SVE())`.
         template <class _Traits, class _Ty>
-        __declspec(noinline) void* _Remove_impl_sve(void* _First, void* const _Last, const _Ty _Val) noexcept {
-            void* _Out        = _First;
+        __declspec(noinline) void* _Remove_impl_sve(
+            const void* _First, const void* const _Last, void* _Out, const _Ty _Val) noexcept {
             const auto _Match = _Traits::_Set(_Val);
 
             const size_t _Size_bytes = _Byte_length(_First, _Last);
@@ -10739,7 +10739,7 @@ extern "C" {
 void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _Val) noexcept {
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE() && _Sve_vl() > 16) {
-        return _Removing::_Remove_impl_sve<_Removing::_Sve_1>(_First, _Last, _Val);
+        return _Removing::_Remove_impl_sve<_Removing::_Sve_1>(_First, _Last, _First, _Val);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
 
@@ -10768,7 +10768,7 @@ void* __stdcall __std_remove_1(void* _First, void* const _Last, const uint8_t _V
 void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _Val) noexcept {
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE() && _Sve_vl() > 16) {
-        return _Removing::_Remove_impl_sve<_Removing::_Sve_2>(_First, _Last, _Val);
+        return _Removing::_Remove_impl_sve<_Removing::_Sve_2>(_First, _Last, _First, _Val);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
 
@@ -10797,7 +10797,7 @@ void* __stdcall __std_remove_2(void* _First, void* const _Last, const uint16_t _
 void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _Val) noexcept {
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE()) {
-        return _Removing::_Remove_impl_sve<_Removing::_Sve_4>(_First, _Last, _Val);
+        return _Removing::_Remove_impl_sve<_Removing::_Sve_4>(_First, _Last, _First, _Val);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
 
@@ -10833,7 +10833,7 @@ void* __stdcall __std_remove_4(void* _First, void* const _Last, const uint32_t _
 void* __stdcall __std_remove_8(void* _First, void* const _Last, const uint64_t _Val) noexcept {
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE()) {
-        return _Removing::_Remove_impl_sve<_Removing::_Sve_8>(_First, _Last, _Val);
+        return _Removing::_Remove_impl_sve<_Removing::_Sve_8>(_First, _Last, _First, _Val);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
 
