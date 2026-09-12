@@ -10923,13 +10923,14 @@ void* __stdcall __std_remove_copy_2(
 
 void* __stdcall __std_remove_copy_4(
     const void* _First, const void* const _Last, void* _Out, const uint32_t _Val) noexcept {
-    // We choose not to vectorize remove_copy for 32-bit elements on ARM64/ARM64EC with Neon,
-    // as this does not improve performance over the scalar code.
 #if defined(_M_ARM64) // not ARM64EC, which lacks SVE
     if (_Use_FEAT_SVE()) {
         return _Removing::_Remove_copy_impl_sve<_Removing::_Sve_4>(_First, _Last, _Out, _Val);
     }
 #endif // ^^^ defined(_M_ARM64) ^^^
+
+    // We choose not to vectorize remove_copy for 32-bit elements on ARM64/ARM64EC with Neon,
+    // as this does not improve performance over the scalar code.
 
 #if !defined(_M_ARM64) && !defined(_M_ARM64EC)
     if (const size_t _Size_bytes = _Byte_length(_First, _Last); _Use_avx2() && _Size_bytes >= 32) {
