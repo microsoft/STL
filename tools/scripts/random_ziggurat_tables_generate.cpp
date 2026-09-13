@@ -214,10 +214,10 @@ void generate_tables(string_view name, bool is_signed, auto&& pdf, auto&& invers
                                      << traits::layer_bits)
                                | entry.alias_index;
         if (first) {
-            print("        {{{}u", table_value);
+            print("        {{{:#x}u", table_value);
             first = false;
         } else {
-            print(", {}u", table_value);
+            print(", {:#x}u", table_value);
         }
     }
 
@@ -286,7 +286,7 @@ struct _Modified_ziggurat_tables {
 
     _Ty _Layer_widths[_Lx + 1];
     _Ty _Layer_heights[_Lx + 1];
-    _Uty _Alias_table[1 << _Lw];
+    _Uty _Alias_table[1 << _Lw]; // lower _Layer_bits bits are indices, upper bits are probabilities
 };)");
 }
 
