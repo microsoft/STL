@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdio>
 #include <format>
 #include <iterator>
 #include <span>
@@ -1182,7 +1183,11 @@ void run_unicode_test_data_utf32() {
         size_t i = 0;
         while (iter != default_sentinel) {
             assert(i < test_case.breaks.size());
-            assert(*iter == test_case.code_points[test_case.breaks[i]]);
+            const char* fmt = "Iter: %lX, rhs: %lX\n";
+            char buf[200];
+            assert(*iter == test_case.code_points[test_case.breaks[i]]
+                   && snprintf(buf, sizeof buf, fmt, (unsigned long) *iter,
+                       (unsigned long) test_case.code_points[test_case.breaks[i]]));
             ++iter;
             ++i;
         }
