@@ -22,7 +22,7 @@
 //
 // COPYRIGHT AND PERMISSION NOTICE
 //
-// Copyright (c) 1991-2022 Unicode, Inc. All rights reserved.
+// Copyright (c) 1991-2026 Unicode, Inc. All rights reserved.
 // Distributed under the Terms of Use in https://www.unicode.org/copyright.html.
 //
 // Permission is hereby granted, free of charge, to any person obtaining

@@ -113,7 +113,7 @@ MSVC_FORMAT_UCD_TABLES_HPP_TEMPLATE = """
 //
 // COPYRIGHT AND PERMISSION NOTICE
 //
-// Copyright (c) 1991-2022 Unicode, Inc. All rights reserved.
+// Copyright (c) 1991-2026 Unicode, Inc. All rights reserved.
 // Distributed under the Terms of Use in https://www.unicode.org/copyright.html.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -296,19 +296,19 @@ def generate_data_tables() -> str:
     and EastAsianWidth.txt.
 
     GraphemeBreakProperty.txt can be found at
-    https://www.unicode.org/Public/UCD/latest/ucd/auxiliary/GraphemeBreakProperty.txt
+    https://www.unicode.org/Public/18.0.0/ucd/auxiliary/GraphemeBreakProperty.txt
 
     emoji-data.txt can be found at
-    https://www.unicode.org/Public/UCD/latest/ucd/emoji/emoji-data.txt
+    https://www.unicode.org/Public/18.0.0/ucd/emoji/emoji-data.txt
 
     DerivedGeneralCategory.txt can be found at
-    https://www.unicode.org/Public/UCD/latest/ucd/extracted/DerivedGeneralCategory.txt
+    https://www.unicode.org/Public/18.0.0/ucd/extracted/DerivedGeneralCategory.txt
 
     DerivedCoreProperties.txt can be found at
-    https://www.unicode.org/Public/UCD/latest/ucd/DerivedCoreProperties.txt
+    https://www.unicode.org/Public/18.0.0/ucd/DerivedCoreProperties.txt
 
     EastAsianWidth.txt can be found at
-    https://www.unicode.org/Public/UCD/latest/ucd/EastAsianWidth.txt
+    https://www.unicode.org/Public/18.0.0/ucd/EastAsianWidth.txt
 
     All files are expected to be in the same directory as this script.
     """
